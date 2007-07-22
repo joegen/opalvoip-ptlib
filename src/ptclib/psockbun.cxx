@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.11  2007/07/22 04:03:32  rjongbloed
+ * Fixed issues with STUN usage in socket bundling, now OpalTransport indicates
+ *   if it wants local or NAT address/port for inclusion to outgoing PDUs.
+ *
  * Revision 1.10  2007/07/03 08:55:18  rjongbloed
  * Fixed various issues with handling interfaces going up, eg not being added
  *   to currently active ReadFrom().
@@ -379,29 +383,27 @@ void PInterfaceMonitor::OnRemoveInterface(const PIPSocket::InterfaceEntry & entr
 
 //////////////////////////////////////////////////
 
-PMonitoredSockets::PMonitoredSockets(BOOL reuseAddr)
+PMonitoredSockets::PMonitoredSockets(BOOL reuseAddr, PSTUNClient * stunClient)
   : localPort(0)
   , reuseAddress(reuseAddr)
-  , stun(NULL)
+  , stun(stunClient)
 {
 }
 
 
-BOOL PMonitoredSockets::CreateSocket(SocketInfo & info)
+BOOL PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
 {
   delete info.socket;
 
-  if (stun == NULL) {
-    info.socket = new PUDPSocket(localPort);
+  if (stun != NULL && stun->CreateSocket(info.socket, binding))
     return TRUE;
-  }
 
-  if (!stun->CreateSocket(info.socket)) {
-    PTRACE(1, "UDP\tSTUN could not create socket!");
-    return FALSE;
-  }
+  info.socket = new PUDPSocket;
+  if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive))
+    return true;
 
-  return TRUE;
+  delete info.socket;
+  return false;
 }
 
 
@@ -411,6 +413,7 @@ BOOL PMonitoredSockets::DestroySocket(SocketInfo & info)
     return FALSE;
 
   BOOL result = info.socket->Close();
+  PTRACE_IF(4, result, "UDP\tClosed bundled socket " << info.socket);
 
   // This is pretty ugly, but needed to make sure multi-threading doesn't crash
   unsigned failSafe = 100; // Approx. two seconds
@@ -429,6 +432,19 @@ BOOL PMonitoredSockets::DestroySocket(SocketInfo & info)
   info.socket = NULL;
 
   return result;
+}
+
+
+BOOL PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
+                                         PIPSocket::Address & address,
+                                         WORD & port,
+                                         BOOL usingNAT) const
+{
+  if (info.socket == NULL)
+    return FALSE;
+
+  return usingNAT ? info.socket->GetLocalAddress(address, port)
+                  : info.socket->PUDPSocket::GetLocalAddress(address, port);
 }
 
 
@@ -490,16 +506,18 @@ BOOL PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
   info.inUse = false;
 
+  PTRACE_IF(2, !ok, "UDP\tSocket read failure: " << info.socket->GetErrorText(PChannel::LastReadError));
+
   return ok;
 }
 
 
-PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, BOOL reuseAddr)
+PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, BOOL reuseAddr, PSTUNClient * stunClient)
 {
   if (iface.IsEmpty() || iface == "*" || PIPSocket::Address(iface).IsAny())
-    return new PMonitoredSocketBundle(reuseAddr);
+    return new PMonitoredSocketBundle(reuseAddr, stunClient);
   else
-    return new PSingleMonitoredSocket(iface, reuseAddr);
+    return new PSingleMonitoredSocket(iface, reuseAddr, stunClient);
 }
 
 
@@ -577,10 +595,9 @@ const PString & PMonitoredSocketChannel::GetInterface()
 }
 
 
-BOOL PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port)
+BOOL PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port, BOOL usingNAT)
 {
-  port = socketBundle->GetPort();
-  return socketBundle->GetAddress(GetInterface(), address);
+  return socketBundle->GetAddress(GetInterface(), address, port, usingNAT);
 }
 
 
@@ -605,8 +622,8 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketBundle::PMonitoredSocketBundle(BOOL reuseAddr)
-  : PMonitoredSockets(reuseAddr)
+PMonitoredSocketBundle::PMonitoredSocketBundle(BOOL reuseAddr, PSTUNClient * stunClient)
+  : PMonitoredSockets(reuseAddr, stunClient)
   , closing(FALSE)
 {
 }
@@ -664,16 +681,18 @@ BOOL PMonitoredSocketBundle::Close()
 }
 
 
-BOOL PMonitoredSocketBundle::GetAddress(const PString & iface, PIPSocket::Address & address) const
+BOOL PMonitoredSocketBundle::GetAddress(const PString & iface,
+                                        PIPSocket::Address & address,
+                                        WORD & port,
+                                        BOOL usingNAT) const
 {
   PSafeLockReadOnly guard(*this);
 
-  SocketInfoMap_T::const_iterator iter = socketInfoMap.find(iface);
-  if (iter != socketInfoMap.end()) 
-    return iter->second.socket->GetLocalAddress(address);
+  if (!guard.IsLocked())
+    return FALSE;
 
-  address = PIPSocket::GetDefaultIpAny();
-  return FALSE;
+  SocketInfoMap_T::const_iterator iter = socketInfoMap.find(iface);
+  return iter != socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
 }
 
 
@@ -684,10 +703,7 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   SplitInterfaceDescription(iface, binding, name);
 
   SocketInfo info;
-  CreateSocket(info);
-  if (!info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) 
-    delete info.socket;
-  else {
+  if (CreateSocket(info, binding)) {
     if (localPort == 0)
       localPort = info.socket->GetPort();
     socketInfoMap[iface] = info;
@@ -768,18 +784,24 @@ BOOL PMonitoredSocketBundle::ReadFrom(void * buf,
       readers += interfaceAddedSignal;
 
       UnlockReadWrite();
-      ok = PSocket::Select(readers, timeout) == PChannel::NoError;
+      PChannel::Errors errorCode = PSocket::Select(readers, timeout);
       if (!LockReadWrite())
         return FALSE;
 
       PUDPSocket * socket = NULL;
-      if (ok) {
+      if (errorCode != PChannel::NoError) {
+        PTRACE(2, "UDP\tMulti-interface read select failure: " << errorCode);
+      }
+      else {
         socket = (PUDPSocket *)&readers[0];
         ok = socket->ReadFrom(buf, len, addr, port);
         if (ok)
           lastReadCount = socket->GetLastReadCount();
-        else if (socket->GetErrorCode(PChannel::LastReadError) == PChannel::NotOpen)
-          socket->Close(); // If interface goes down, socket is not open to OS, but still is to us. Make them agree.
+        else {
+          PTRACE(2, "UDP\tSocket read failure: " << socket->GetErrorText(PChannel::LastReadError));
+          if (socket->GetErrorCode(PChannel::LastReadError) == PChannel::NotOpen)
+            socket->Close(); // If interface goes down, socket is not open to OS, but still is to us. Make them agree.
+        }
       }
 
       for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
@@ -832,8 +854,8 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 
 //////////////////////////////////////////////////
 
-PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, BOOL reuseAddr)
-  : PMonitoredSocketBundle(reuseAddr)
+PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, BOOL reuseAddr, PSTUNClient * stunClient)
+  : PMonitoredSocketBundle(reuseAddr, stunClient)
   , theInterface(_theInterface)
 {
 }
@@ -865,15 +887,11 @@ BOOL PSingleMonitoredSocket::Open(WORD port)
       return FALSE;
   }
 
-  if (theInfo.socket == NULL) {
-    if (!CreateSocket(theInfo))
-      return FALSE;
-  }
-
-  if (!theInfo.socket->Listen(theEntry.GetAddress(), 0, port, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive))
+  localPort = port;
+  if (!CreateSocket(theInfo, theEntry.GetAddress()))
     return FALSE;
 
-  localPort = theInfo.socket->GetPort();
+  localPort = theInfo.socket->PUDPSocket::GetPort();
   return TRUE;
 }
 
@@ -894,15 +912,14 @@ BOOL PSingleMonitoredSocket::Close()
 }
 
 
-BOOL PSingleMonitoredSocket::GetAddress(const PString & iface, PIPSocket::Address & address) const
+BOOL PSingleMonitoredSocket::GetAddress(const PString & iface,
+                                        PIPSocket::Address & address,
+                                        WORD & port,
+                                        BOOL usingNAT) const
 {
   PSafeLockReadOnly guard(*this);
 
-  if (guard.IsLocked() && theInfo.socket != NULL && IsInterface(iface))
-    return theInfo.socket->GetLocalAddress(address);
-
-  address = PIPSocket::GetDefaultIpAny();
-  return FALSE;
+  return guard.IsLocked() && IsInterface(iface) && GetSocketAddress(theInfo, address, port, usingNAT);
 }
 
 

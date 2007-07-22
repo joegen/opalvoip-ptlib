@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.8  2007/07/22 04:03:32  rjongbloed
+ * Fixed issues with STUN usage in socket bundling, now OpalTransport indicates
+ *   if it wants local or NAT address/port for inclusion to outgoing PDUs.
+ *
  * Revision 1.7  2007/07/03 08:55:17  rjongbloed
  * Fixed various issues with handling interfaces going up, eg not being added
  *   to currently active ReadFrom().
@@ -205,11 +209,13 @@ class PInterfaceMonitorClient : public PSafeObject
 class PMonitoredSockets : public PInterfaceMonitorClient
 {
   PCLASSINFO(PMonitoredSockets, PInterfaceMonitorClient);
-  public:
+  protected:
     PMonitoredSockets(
-      BOOL reuseAddr = FALSE
+      BOOL reuseAddr,
+      PSTUNClient * stunClient
     );
 
+  public:
     /** Open the socket(s) using the specified port. If port is zero then a
         system allocated port is used. In this case and when multiple
         interfaces are supported, all sockets use the same dynamic port value.
@@ -232,7 +238,9 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     /// Get the local address for the given interface.
     virtual BOOL GetAddress(
       const PString & iface,        /// Interface to get address for
-      PIPSocket::Address & address  /// Address of interface
+      PIPSocket::Address & address, /// Address of interface
+      WORD & port,                  /// Port listening on
+      BOOL usingNAT                 /// Require NAT address/port
     ) const = 0;
 
     /** Write to the remote address/port using the socket(s) available. If the
@@ -278,8 +286,9 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         of PMonitoredSockets depending on teh iface parameter.
       */
     static PMonitoredSockets * Create(
-      const PString & iface,
-      BOOL reuseAddr = FALSE
+      const PString & iface,            /// Interface name to create socket for
+      BOOL reuseAddr = FALSE,           /// Re-use or exclusive port number
+      PSTUNClient * stunClient = NULL   /// STUN client code
     );
 
   protected:
@@ -292,8 +301,17 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       bool         inUse;
     };
 
-    BOOL CreateSocket(SocketInfo & info);
+    BOOL CreateSocket(
+      SocketInfo & info,
+      const PIPSocket::Address & binding
+    );
     BOOL DestroySocket(SocketInfo & info);
+    BOOL GetSocketAddress(
+      const SocketInfo & info,
+      PIPSocket::Address & address,
+      WORD & port,
+      BOOL usingNAT
+    ) const;
 
     BOOL WriteToSocket(
       const void * buf,
@@ -374,7 +392,8 @@ class PMonitoredSocketChannel : public PChannel
       */
     BOOL GetLocal(
       PIPSocket::Address & address, /// IP address of local interface
-      WORD & port                   /// port number of local binding
+      WORD & port,                  /// Port listening on
+      BOOL usingNAT                 /// Require NAT address/port
     );
 
     /// Set the remote address/port for all Write() functions
@@ -437,7 +456,8 @@ class PMonitoredSocketBundle : public PMonitoredSockets
   PCLASSINFO(PMonitoredSocketBundle, PMonitoredSockets);
   public:
     PMonitoredSocketBundle(
-      BOOL reuseAddr = FALSE
+      BOOL reuseAddr = FALSE,
+      PSTUNClient * stunClient = NULL
     );
     ~PMonitoredSocketBundle();
 
@@ -459,8 +479,10 @@ class PMonitoredSocketBundle : public PMonitoredSockets
 
     /// Get the local address for the given interface.
     virtual BOOL GetAddress(
-      const PString & iface,
-      PIPSocket::Address & address
+      const PString & iface,        /// Interface to get address for
+      PIPSocket::Address & address, /// Address of interface
+      WORD & port,                  /// Port listening on
+      BOOL usingNAT                 /// Require NAT address/port
     ) const;
 
     /** Write to the remote address/port using the socket(s) available. If the
@@ -523,7 +545,8 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
   public:
     PSingleMonitoredSocket(
       const PString & theInterface,
-      BOOL reuseAddr = FALSE
+      BOOL reuseAddr = FALSE,
+      PSTUNClient * stunClient = NULL
     );
     ~PSingleMonitoredSocket();
 
@@ -551,8 +574,10 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
 
     /// Get the local address for the given interface.
     virtual BOOL GetAddress(
-      const PString & iface,
-      PIPSocket::Address & address
+      const PString & iface,        /// Interface to get address for
+      PIPSocket::Address & address, /// Address of interface
+      WORD & port,                  /// Port listening on
+      BOOL usingNAT                 /// Require NAT address/port
     ) const;
 
     /** Write to the remote address/port using the socket(s) available. If the
