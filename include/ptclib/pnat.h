@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.10  2007/07/22 03:07:30  rjongbloed
+ * Added parameter so can bind STUN socket to specific interface.
+ *
  * Revision 1.9  2007/04/18 23:49:50  csoutheren
  * Add usage of precompiled headers
  *
@@ -95,11 +98,12 @@ public:
   //@}
 
 
-  /** Factory Create
-    */
-    static PNatMethod * Create(const PString & name,        ///< Feature Name Expression
-					    PPluginManager * pluginMgr = NULL   ///< Plugin Manager
-                         );
+    /** Factory Create
+      */
+    static PNatMethod * Create(
+      const PString & name,        ///< Feature Name Expression
+      PPluginManager * pluginMgr = NULL   ///< Plugin Manager
+    );
 
   /**@name General Functions */
   //@{
@@ -110,15 +114,16 @@ public:
    virtual BOOL GetExternalAddress(
       PIPSocket::Address & externalAddress, /// External address of router
       const PTimeInterval & maxAge = 1000   /// Maximum age for caching
-   ) =0;
+   ) = 0;
 
   /**  CreateSocketPair
     Create the UDP Socket pair
   */
    virtual BOOL CreateSocketPair(
       PUDPSocket * & socket1,
-      PUDPSocket * & socket2
-   ) =0;
+      PUDPSocket * & socket2,
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
+   ) = 0;
 
   /**Returns whether the Nat Method is ready and available in
      assisting in NAT Traversal. The principal is function is
