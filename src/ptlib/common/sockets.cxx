@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.216  2007/07/22 03:17:53  rjongbloed
+ * Added check for legal hostname characters as system function does not
+ *   always return "no host" when some illegal characters are used.
+ *
  * Revision 1.215  2007/06/29 02:47:28  rjongbloed
  * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
  *
@@ -1174,6 +1178,14 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   mutex.Wait();
 
   PCaselessString key = name;
+
+  // Check for a legal hostname as per RFC952
+  if (key.IsEmpty() ||
+      key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-.") != P_MAX_INDEX ||
+      key[key.GetLength()-1] == '-' ||
+      !isalpha(key[0]))
+    return NULL;
+
   PIPCacheData * host = GetAt(key);
   int localErrNo = NETDB_SUCCESS;
 
