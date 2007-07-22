@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.27  2007/07/22 17:30:58  shorne
+ * fixed compile issue when no expat
+ *
  * Revision 1.26  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -124,10 +127,9 @@
 #pragma implementation "pxmlrpc.h"
 #endif
 
-#include <ptclib/pxmlrpc.h>
-
-
 #if P_EXPAT
+
+#include <ptclib/pxmlrpc.h>
 
 #include <ptclib/mime.h>
 #include <ptclib/http.h>
