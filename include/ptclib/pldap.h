@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.13  2007/07/22 23:54:38  rjongbloed
+ * Fixed MSVC compiler warning.
+ *
  * Revision 1.12  2007/07/20 21:44:03  shorne
  * Removed virtual on PLDAPSchema::SchemaName
  *
@@ -527,61 +530,62 @@ class PLDAPStructBase : public PObject {
 
 class PLDAPSchema : public PObject
 {
-   public:
-	   PLDAPSchema();
+  public:
+    PLDAPSchema();
 
-	   enum AttributeType {
-	     AttibuteUnknown = -1,
-         AttributeString,
-		 AttributeBinary,
-		 AttributeNumeric
-	   };
+    enum AttributeType {
+        AttibuteUnknown = -1,
+        AttributeString,
+        AttributeBinary,
+        AttributeNumeric
+    };
 
-	   class Attribute
-	   {
-	     public:
-		   Attribute(const PString & name, AttributeType type);
-		   PString       m_name;
-           AttributeType m_type;
-	   };
+    class Attribute
+    {
+    public:
+        Attribute() : m_type(AttibuteUnknown) { }
+        Attribute(const PString & name, AttributeType type);
+        PString       m_name;
+        AttributeType m_type;
+    };
 
-	   typedef std::list<Attribute> attributeList;
+    typedef std::list<Attribute> attributeList;
 
-	   static PLDAPSchema * CreateSchema(const PString & schemaname, PPluginManager * pluginMgr = NULL);
-	   static PStringList GetSchemaNames(PPluginManager * pluginMgr = NULL);
-	   static PStringList GetSchemaFriendlyNames(const PString & schema, PPluginManager * pluginMgr = NULL);
+    static PLDAPSchema * CreateSchema(const PString & schemaname, PPluginManager * pluginMgr = NULL);
+    static PStringList GetSchemaNames(PPluginManager * pluginMgr = NULL);
+    static PStringList GetSchemaFriendlyNames(const PString & schema, PPluginManager * pluginMgr = NULL);
 
-	   void OnReceivedAttribute(const PString & attribute, const PString & value);
+    void OnReceivedAttribute(const PString & attribute, const PString & value);
 
-	   void OnSendSchema(PList<PLDAPSession::ModAttrib> & attributes,
-		                 PLDAPSession::ModAttrib::Operation op=PLDAPSession::ModAttrib::Add);
+    void OnSendSchema(PList<PLDAPSession::ModAttrib> & attributes,
+        PLDAPSession::ModAttrib::Operation op=PLDAPSession::ModAttrib::Add);
 
-	   void LoadSchema();
+    void LoadSchema();
 
-	   PStringList SchemaName() { return PStringList(); }
-	   virtual void AttributeList(attributeList & /*attrib*/) {};
-
-
-	   PStringList GetAttributeList();
-	   BOOL Exists(const PString & attribute);
-
-	   BOOL SetAttribute(const PString & attribute, const PString & value);
-	   BOOL SetAttribute(const PString & attribute, const PBYTEArray & value);
-
-	   BOOL GetAttribute(const PString & attribute, PString & value);
-	   BOOL GetAttribute(const PString & attribute, PBYTEArray & value);
-
-       AttributeType GetAttributeType(const PString & attribute);
+    PStringList SchemaName() { return PStringList(); }
+    virtual void AttributeList(attributeList & /*attrib*/) {};
 
 
-   protected:
-	  typedef std::map<PString,PString> ldapAttributes;
-	  typedef std::map<PString,PBYTEArray> ldapBinAttributes;
+    PStringList GetAttributeList();
+    BOOL Exists(const PString & attribute);
+
+    BOOL SetAttribute(const PString & attribute, const PString & value);
+    BOOL SetAttribute(const PString & attribute, const PBYTEArray & value);
+
+    BOOL GetAttribute(const PString & attribute, PString & value);
+    BOOL GetAttribute(const PString & attribute, PBYTEArray & value);
+
+    AttributeType GetAttributeType(const PString & attribute);
 
 
-	  attributeList           attributelist;
-	  ldapAttributes          attributes;
-	  ldapBinAttributes       binattributes;   
+  protected:
+    typedef std::map<PString,PString> ldapAttributes;
+    typedef std::map<PString,PBYTEArray> ldapBinAttributes;
+
+
+    attributeList           attributelist;
+    ldapAttributes          attributes;
+    ldapBinAttributes       binattributes;   
 };
 
 
