@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.16  2007/07/22 03:07:31  rjongbloed
+ * Added parameter so can bind STUN socket to specific interface.
+ *
  * Revision 1.15  2007/04/19 04:33:53  csoutheren
  * Fixed problems with pre-compiled headers
  *
@@ -144,17 +147,19 @@ class PSTUNClient : public PNatMethod
     );
 
 
-    void Initialise(const PString & server,
-                     WORD portBase = 0, 
-					 WORD portMax = 0,
-                     WORD portPairBase = 0, 
-					 WORD portPairMax = 0);
+    void Initialise(
+      const PString & server,
+      WORD portBase = 0, 
+      WORD portMax = 0,
+      WORD portPairBase = 0, 
+      WORD portPairMax = 0
+    );
 
-	/**Get the NAT Method Name
-	 */
-	static PStringList GetNatMethodName() { return PStringList("STUN"); }
+    /**Get the NAT Method Name
+     */
+    static PStringList GetNatMethodName() { return PStringList("STUN"); }
 
-	virtual PStringList GetName() const
+    virtual PStringList GetName() const
       { return GetNatMethodName(); }
 
     /**Get the current STUN server address and port being used.
@@ -252,7 +257,8 @@ class PSTUNClient : public PNatMethod
        FALSE.
       */
     BOOL CreateSocket(
-      PUDPSocket * & socket
+      PUDPSocket * & socket,
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
     );
 
     /**Create a socket pair.
@@ -270,7 +276,8 @@ class PSTUNClient : public PNatMethod
       */
     virtual BOOL CreateSocketPair(
       PUDPSocket * & socket1,
-      PUDPSocket * & socket2
+      PUDPSocket * & socket2,
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
     );
 
     /**Get the timeout for responses from STUN server.
@@ -325,7 +332,7 @@ class PSTUNClient : public PNatMethod
     PINDEX             pollRetries;
     PINDEX             numSocketsForPairing;
 
-    bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const;
+    bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding) const;
 
     NatTypes           natType;
     PIPSocket::Address cachedExternalAddress;

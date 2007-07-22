@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.24  2007/07/22 03:07:31  rjongbloed
+ * Added parameter so can bind STUN socket to specific interface.
+ *
  * Revision 1.23  2007/02/11 13:13:07  shorne
  * Added message when stun server cannot be reached
  *
@@ -471,7 +474,7 @@ public:
 };
 
 
-bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const
+bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding) const
 {
   PWaitAndSignal mutex(portInfo.mutex);
 
@@ -482,7 +485,7 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const
     if (portInfo.currentPort > portInfo.maxPort)
       portInfo.currentPort = portInfo.basePort;
 
-    if (socket.Listen(1, portInfo.currentPort)) {
+    if (socket.Listen(binding, 1, portInfo.currentPort)) {
       socket.SetSendAddress(serverAddress, serverPort);
       socket.SetReadTimeout(replyTimeout);
       return true;
@@ -502,7 +505,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(BOOL force)
     return natType;
 
   PUDPSocket socket;
-  if (!OpenSocket(socket, singlePortInfo))
+  if (!OpenSocket(socket, singlePortInfo, PIPSocket::GetDefaultIpAny()))
     return natType = UnknownNat;
 
   // RFC3489 discovery
@@ -645,7 +648,7 @@ BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
   externalAddress = 0; // Set to invalid address
 
   PUDPSocket socket;
-  if (!OpenSocket(socket, singlePortInfo))
+  if (!OpenSocket(socket, singlePortInfo, PIPSocket::GetDefaultIpAny()))
     return false;
 
   PSTUNMessage request(PSTUNMessage::BindingRequest);
@@ -671,7 +674,7 @@ BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
 }
 
 
-BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
+BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding)
 {
   socket = NULL;
 
@@ -696,7 +699,7 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
   }
 
   PSTUNUDPSocket * stunSocket = new PSTUNUDPSocket;
-  if (OpenSocket(*stunSocket, singlePortInfo))
+  if (OpenSocket(*stunSocket, singlePortInfo, binding))
   {
     PSTUNMessage request(PSTUNMessage::BindingRequest);
     request.AddAttribute(PSTUNChangeRequest(false, false));
@@ -728,7 +731,8 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
 
 
 BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
-                                   PUDPSocket * & socket2)
+                                   PUDPSocket * & socket2,
+                                   const PIPSocket::Address & binding)
 {
   socket1 = NULL;
   socket2 = NULL;
@@ -762,7 +766,7 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   for (i = 0; i < numSocketsForPairing; i++)
   {
     PINDEX idx = stunSocket.Append(new PSTUNUDPSocket);
-	if (!OpenSocket(stunSocket[idx], pairedPortInfo)) {
+    if (!OpenSocket(stunSocket[idx], pairedPortInfo, binding)) {
       PTRACE(1, "STUN\tUnable to open socket to server " << serverAddress);
       return false;
 	}
