@@ -345,10 +345,10 @@ BOOL PVideoInputDevice_1394AVC::GetFrameSizeLimits(unsigned & minWidth,
                                                    unsigned & maxWidth,
                                                    unsigned & maxHeight) 
 {
-  minWidth = 160;
-  maxWidth = 320;
-  minHeight = 120;
-  maxHeight = 240;
+  minWidth = CIFWidth;
+  maxWidth = CIFWidth;
+  minHeight = CIFHeight;
+  maxHeight = CIFHeight;
   return TRUE;
 }
 
@@ -488,7 +488,7 @@ BOOL PVideoInputDevice_1394AVC::SetColourFormat(const PString & newFormat)
 
 BOOL PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
 {
-  if ( ! ( (width == 320 && height == 240) || (width == 160 && height == 120) ) )
+  if ( ! ( (width == CIFWidth && height == CIFHeight) ) )
     return FALSE;
 
   frameWidth = width;
