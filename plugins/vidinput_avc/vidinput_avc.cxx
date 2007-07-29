@@ -209,6 +209,8 @@ PStringList PVideoInputDevice_1394AVC::GetInputDeviceNames()
         if (rom1394_get_node_type(&dir) == ROM1394_NODE_TYPE_AVC) {
           PString ufname = (PString)dir.label;
           PString *devname = new PString(pt);
+ 	  if (ufname.IsEmpty ())
+ 	    ufname = "Nameless device";
           mutex.Wait();
           if (dico == NULL)
             dico = new PDictionary<PString, PString>;
