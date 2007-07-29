@@ -120,7 +120,6 @@ BOOL PVideoInputDevice_1394AVC::Open(const PString & devName, BOOL startImmediat
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
   colourFormat = "RGB24";
-  nativeVerticalFlip = true;
   
   deviceName = devName; // FIXME: looks useless
   
