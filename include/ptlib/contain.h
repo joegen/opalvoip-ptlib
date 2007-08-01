@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.67  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.66  2006/04/10 23:57:27  csoutheren
  * Checked in changes to remove some warnings with gcc effc++ flag
  *
@@ -257,6 +260,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract container class
 
+// The type below cannot be nested into PContainer as DevStudio 2005 AUTOEXP.DAT doesn't like it
+class PContainerReference {
+  public:
+    inline PContainerReference(PINDEX initialSize)
+      : size(initialSize), count(1), deleteObjects(TRUE)
+    {
+    }
+
+    inline PContainerReference(const PContainerReference & ref)
+      : size(ref.size), count(1), deleteObjects(ref.deleteObjects)
+    {  
+    }
+
+    PINDEX   size;         // Size of what the container contains
+    PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
+    BOOL deleteObjects;    // Used by PCollection but put here for efficiency
+
+  private:
+    PContainerReference & operator=(const PContainerReference &) 
+    { return *this; }
+};
+
 /** Abstract class to embody the base functionality of a {\it container}.
 
 Fundamentally, a container is an object that contains other objects. There
@@ -459,24 +484,7 @@ class PContainer : public PObject
     void Destruct();
 
 
-    class Reference {
-      public:
-        inline Reference(PINDEX initialSize)
-          : size(initialSize), count(1), deleteObjects(TRUE) { }
-
-        Reference(const Reference & ref)
-          : size(ref.size), count(1), deleteObjects(ref.deleteObjects)
-        {  
-        }
-
-        PINDEX   size;         // Size of what the container contains
-        PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
-        BOOL deleteObjects;    // Used by PCollection but put here for efficiency
-
-      private:
-        Reference & operator=(const Reference &) 
-        { return *this; }
-    } * reference;
+    PContainerReference * reference;
 };
 
 
