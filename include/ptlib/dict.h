@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.38  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.37  2006/06/30 00:56:31  csoutheren
  * Applied 1494931 - various pwlib bug fixes and enhancement
  * Thanks to Frederich Heem
@@ -259,6 +262,41 @@ class POrdinalKey : public PObject
 
 //////////////////////////////////////////////////////////////////////////////
 
+// Member variables
+struct PHashTableElement
+{
+    PObject * key;
+    PObject * data;
+    PHashTableElement * next;
+    PHashTableElement * prev;
+};
+
+PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
+#ifdef DOC_PLUS_PLUS
+{
+#endif
+  public:
+    virtual ~PHashTableInfo() { Destruct(); }
+    virtual void DestroyContents();
+
+    PINDEX AppendElement(PObject * key, PObject * data);
+    PObject * RemoveElement(const PObject & key);
+    BOOL SetLastElementAt(PINDEX index);
+    PHashTableElement * GetElementAt(const PObject & key);
+    PINDEX GetElementsIndex(const PObject*obj,BOOL byVal,BOOL keys) const;
+
+    PINDEX lastIndex;
+    PINDEX lastBucket;
+    PHashTableElement * lastElement;
+
+    BOOL deleteKeys;
+
+  typedef PHashTableElement Element;
+  friend class PHashTable;
+  friend class PAbstractSet;
+};
+
+
 /**The hash table class is the basis for implementing the #PSet# and
    #PDictionary# classes.
 
@@ -364,44 +402,10 @@ class PHashTable : public PCollection
     ) const;
   //@}
 
-
-    // Member variables
-    class Element {
-      public:
-        friend class Table;
-        PObject * key;
-        PObject * data;
-        Element * next;
-        Element * prev;
-    };
-
-    PDECLARE_BASEARRAY(Table, Element *)
-#ifdef DOC_PLUS_PLUS
-    {
-#endif
-      public:
-        virtual ~Table() { Destruct(); }
-        virtual void DestroyContents();
-
-        PINDEX AppendElement(PObject * key, PObject * data);
-        PObject * RemoveElement(const PObject & key);
-        BOOL SetLastElementAt(PINDEX index);
-        Element * GetElementAt(const PObject & key);
-        PINDEX GetElementsIndex(const PObject*obj,BOOL byVal,BOOL keys) const;
-
-        PINDEX    lastIndex;
-        PINDEX    lastBucket;
-        Element * lastElement;
-
-        BOOL deleteKeys;
-
-      friend class PHashTable;
-      friend class PAbstractSet;
-    };
-    friend class Table;
-
-
-    Table * hashTable;
+    // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
+    typedef PHashTableElement Element;
+    typedef PHashTableInfo Table;
+    PHashTableInfo * hashTable;
 };
 
 
