@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.36  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.35  2006/06/30 00:56:31  csoutheren
  * Applied 1494931 - various pwlib bug fixes and enhancement
  * Thanks to Frederich Heem
@@ -1164,7 +1167,8 @@ class PArrayObjects : public PCollection
 
   protected:
     PBASEARRAY(ObjPtrArray, PObject *);
-    ObjPtrArray * theArray;
+    // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
+    PBaseArray<PObject *> * theArray;
 };
 
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.33  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.32  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -140,6 +143,23 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PList container class
+
+struct PListElement
+{
+    PListElement(PObject * theData);
+    PListElement * prev;
+    PListElement * next;
+    PObject * data;
+};
+
+struct PListInfo
+{
+    PListInfo() { head = tail = lastElement = NULL; }
+    PListElement * head;
+    PListElement * tail;
+    PListElement * lastElement;
+    PINDEX    lastIndex;
+};
 
 /**This class is a collection of objects which are descendents of the
    #PObject# class. It is implemeted as a doubly linked list.
@@ -382,23 +402,9 @@ class PAbstractList : public PCollection
       PINDEX index  ///< Ordinal index of the list element to set as current.
     ) const;
 
-    class Element {
-      public:
-        friend class Info;
-        Element(PObject * theData);
-        Element * prev;
-        Element * next;
-        PObject * data;
-    };
-
-    class Info {
-      public:
-        Info() { head = tail = lastElement = NULL; }
-        Element * head;
-        Element * tail;
-        Element * lastElement;
-        PINDEX    lastIndex;
-    } * info;
+    // The types below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
+    typedef PListElement Element;
+    PListInfo * info;
 };
 
 
@@ -810,6 +816,32 @@ template <class T> class PStack : public PAbstractList
 ///////////////////////////////////////////////////////////////////////////////
 // Sorted List of PObjects
 
+struct PSortedListElement
+{
+  PSortedListElement * parent;
+  PSortedListElement * left;
+  PSortedListElement * right;
+  PObject            * data;
+  PINDEX               subTreeSize;
+  enum { Red, Black }  colour;
+};
+
+struct PSortedListInfo
+{
+  PSortedListInfo();
+
+  PSortedListElement * root;
+  PSortedListElement * lastElement;
+  PINDEX               lastIndex;
+  PSortedListElement   nil;
+
+  PSortedListElement * Successor(const PSortedListElement * node) const;
+  PSortedListElement * Predecessor(const PSortedListElement * node) const;
+  PSortedListElement * OrderSelect(PSortedListElement * node, PINDEX index) const;
+
+  typedef PSortedListElement Element;
+};
+
 /**This class is a collection of objects which are descendents of the
    #PObject# class. It is implemeted as a Red-Black binary tree to
    maintain the objects in rank order. Note that this requires that the
@@ -1021,36 +1053,20 @@ class PAbstractSortedList : public PCollection
     ) const;
   //@}
 
-    struct Element {
-      friend class Info;
-      Element * parent;
-      Element * left;
-      Element * right;
-      PObject * data;
-      PINDEX subTreeSize;
-      enum { Red, Black } colour;
-    };
+    // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
+    typedef PSortedListElement Element;
 
   protected:
-    struct Info {
-      Info();
-
-      Element * root;
-      Element * lastElement;
-      PINDEX    lastIndex;
-      Element   nil;
-
-      Element * Successor(const Element * node) const;
-      Element * Predecessor(const Element * node) const;
-      Element * OrderSelect(Element * node, PINDEX index) const;
-    } * info;
-
+    
     // New functions for class
     void RemoveElement(Element * node);
     void LeftRotate(Element * node);
     void RightRotate(Element * node);
     void DeleteSubTrees(Element * node, BOOL deleteObject);
     PINDEX ValueSelect(const Element * node, const PObject & obj, const Element ** lastElement) const;
+
+    // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
+    PSortedListInfo * info;
 };
 
 

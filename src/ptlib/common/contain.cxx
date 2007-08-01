@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.179  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.178  2007/06/29 02:47:28  rjongbloed
  * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
  *
@@ -687,7 +690,7 @@ extern "C" int vsprintf(char *, const char *, va_list);
 
 PContainer::PContainer(PINDEX initialSize)
 {
-  reference = new Reference(initialSize);
+  reference = new PContainerReference(initialSize);
   PAssert(reference != NULL, POutOfMemory);
 }
 
@@ -700,7 +703,7 @@ PContainer::PContainer(int, const PContainer * cont)
   PEnterAndLeave m(cont->reference->critSec);
 #endif
 
-  reference = new Reference(*cont->reference);   // create a new reference
+  reference = new PContainerReference(*cont->reference);   // create a new reference
   PAssert(reference != NULL, POutOfMemory);
 }
 
@@ -769,7 +772,7 @@ void PContainer::Destruct()
   if (reference != NULL) {
 
 #if PCONTAINER_USES_CRITSEC
-    Reference * ref = reference;
+    PContainerReference * ref = reference;
     ref->critSec.Enter();
 #endif
 
@@ -812,8 +815,8 @@ BOOL PContainer::MakeUnique()
   if (IsUnique())
     return TRUE;
 
-  Reference * oldReference = reference;
-  reference = new Reference(*reference);
+  PContainerReference * oldReference = reference;
+  reference = new PContainerReference(*reference);
   --oldReference->count;
 
   return FALSE;
@@ -994,7 +997,7 @@ BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
     }
 
     --reference->count;
-    reference = new Reference(newSize);
+    reference = new PContainerReference(newSize);
 
   } else {
 
