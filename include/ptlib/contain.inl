@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.56  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.55  2007/06/29 02:47:28  rjongbloed
  * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
  *
@@ -445,7 +448,7 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractList::PAbstractList()
-  : info(new Info) { PAssert(info != NULL, POutOfMemory); }
+  : info(new PListInfo) { PAssert(info != NULL, POutOfMemory); }
 
 PINLINE PObject & PAbstractList::GetReferenceAt(PINDEX index) const
   { PObject * obj = GetAt(index);

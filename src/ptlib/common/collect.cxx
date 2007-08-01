@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.73  2007/08/01 05:20:48  rjongbloed
+ * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
+ *
  * Revision 1.72  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -492,7 +495,7 @@ void PAbstractList::CloneContents(const PAbstractList * list)
 {
   Element * element = list->info->head;
 
-  info = new Info;
+  info = new PListInfo;
   PAssert(info != NULL, POutOfMemory);
 
   while (element != NULL) {
@@ -756,7 +759,7 @@ BOOL PAbstractList::SetCurrent(PINDEX index) const
 }
 
 
-PAbstractList::Element::Element(PObject * theData)
+PListElement::PListElement(PObject * theData)
 {
   next = prev = NULL;
   data = theData;
@@ -767,12 +770,12 @@ PAbstractList::Element::Element(PObject * theData)
 
 PAbstractSortedList::PAbstractSortedList()
 {
-  info = new Info;
+  info = new PSortedListInfo;
   PAssert(info != NULL, POutOfMemory);
 }
 
 
-PAbstractSortedList::Info::Info()
+PSortedListInfo::PSortedListInfo()
 {
   root = &nil;
   lastElement = NULL;
@@ -800,9 +803,9 @@ void PAbstractSortedList::CopyContents(const PAbstractSortedList & list)
 
 void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
 {
-  Info * otherInfo = list->info;
+  PSortedListInfo * otherInfo = list->info;
 
-  info = new Info;
+  info = new PSortedListInfo;
   PAssert(info != NULL, POutOfMemory);
   reference->size = 0;
 
@@ -1196,7 +1199,7 @@ void PAbstractSortedList::RightRotate(Element * node)
 }
 
 
-PAbstractSortedList::Element * PAbstractSortedList::Info ::Successor(const Element * node) const
+PSortedListElement * PSortedListInfo::Successor(const PSortedListElement * node) const
 {
   Element * next;
   if (node->right != &nil) {
@@ -1215,7 +1218,7 @@ PAbstractSortedList::Element * PAbstractSortedList::Info ::Successor(const Eleme
 }
 
 
-PAbstractSortedList::Element * PAbstractSortedList::Info ::Predecessor(const Element * node) const
+PSortedListElement * PSortedListInfo::Predecessor(const PSortedListElement * node) const
 {
   Element * pred;
   if (node->left != &nil) {
@@ -1234,7 +1237,7 @@ PAbstractSortedList::Element * PAbstractSortedList::Info ::Predecessor(const Ele
 }
 
 
-PAbstractSortedList::Element * PAbstractSortedList::Info::OrderSelect(Element * node, PINDEX index) const
+PSortedListElement * PSortedListInfo::OrderSelect(PSortedListElement * node, PINDEX index) const
 {
   PINDEX r = node->left->subTreeSize+1;
   if (index == r)
@@ -1337,7 +1340,7 @@ void POrdinalKey::PrintOn(ostream & strm) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void PHashTable::Table::DestroyContents()
+void PHashTableInfo::DestroyContents()
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
     Element * list = GetAt(i);
@@ -1358,7 +1361,7 @@ void PHashTable::Table::DestroyContents()
 }
 
 
-PINDEX PHashTable::Table::AppendElement(PObject * key, PObject * data)
+PINDEX PHashTableInfo::AppendElement(PObject * key, PObject * data)
 {
   lastElement = NULL;
 
@@ -1388,7 +1391,7 @@ PINDEX PHashTable::Table::AppendElement(PObject * key, PObject * data)
 }
 
 
-PObject * PHashTable::Table::RemoveElement(const PObject & key)
+PObject * PHashTableInfo::RemoveElement(const PObject & key)
 {
   PObject * obj = NULL;
   if (GetElementAt(key) != NULL) {
@@ -1409,7 +1412,7 @@ PObject * PHashTable::Table::RemoveElement(const PObject & key)
 }
 
 
-BOOL PHashTable::Table::SetLastElementAt(PINDEX index)
+BOOL PHashTableInfo::SetLastElementAt(PINDEX index)
 {
   if (index == 0 || lastElement == NULL || lastIndex == P_MAX_INDEX) {
     lastIndex = 0;
@@ -1456,7 +1459,7 @@ BOOL PHashTable::Table::SetLastElementAt(PINDEX index)
 }
 
 
-PHashTable::Element * PHashTable::Table::GetElementAt(const PObject & key)
+PHashTableElement * PHashTableInfo::GetElementAt(const PObject & key)
 {
   if (lastElement != NULL && *lastElement->key == key)
     return lastElement;
@@ -1477,7 +1480,7 @@ PHashTable::Element * PHashTable::Table::GetElementAt(const PObject & key)
 }
 
 
-PINDEX PHashTable::Table::GetElementsIndex(
+PINDEX PHashTableInfo::GetElementsIndex(
                            const PObject * obj, BOOL byValue, BOOL keys) const
 {
   PINDEX index = 0;
