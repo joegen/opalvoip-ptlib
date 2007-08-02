@@ -2404,7 +2404,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\rfc1155.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\shttpsvc.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ptclib\snmp.cxx"
 					>
 				</File>
 				<File
@@ -3145,7 +3153,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\rfc1155.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ptclib\shttpsvc.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\snmp.h"
 					>
 				</File>
 				<File
