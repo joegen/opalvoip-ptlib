@@ -733,6 +733,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\rfc1155.cxx">
+			</File>
+			<File
 				RelativePath="..\common\safecoll.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -794,6 +797,9 @@
 			</File>
 			<File
 				RelativePath="..\..\ptclib\shttpsvc.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\snmp.cxx">
 			</File>
 			<File
 				RelativePath="..\..\ptclib\snmpclnt.cxx">
@@ -1343,6 +1349,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 					RelativePath="..\..\..\Include\PtLib\Remconn.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\rfc1155.h">
+				</File>
+				<File
 					RelativePath="..\..\..\include\ptlib\safecoll.h">
 				</File>
 				<File
@@ -1356,6 +1365,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\shttpsvc.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\snmp.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\sockagg.h">
