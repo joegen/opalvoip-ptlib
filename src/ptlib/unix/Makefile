@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.148  2007/08/02 18:48:56  shorne
+# Added SNMP Server support
+#
 # Revision 1.147  2007/06/14 00:43:04  csoutheren
 # Removed warnings on Linux
 # Fixed Makefiles for new socket bundle code
@@ -644,7 +647,9 @@ ifdef HAS_SNMP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/snmpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/snmpserv.cxx \
-	$(COMPONENT_SRC_DIR)/psnmp.cxx 
+	$(COMPONENT_SRC_DIR)/psnmp.cxx \
+	$(COMPONENT_SRC_DIR)/snmp.cxx \
+	$(COMPONENT_SRC_DIR)/rfc1155.cxx 
 endif
 
 ifdef HAS_FTP
