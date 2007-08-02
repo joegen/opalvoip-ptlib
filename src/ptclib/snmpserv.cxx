@@ -6,6 +6,7 @@
  * Portable Windows Library
  *
  * Copyright (c) 1993-2002 Equivalence Pty. Ltd.
+ * Copyright (c) 2007 ISVO(Asia) Pte. Ltd.
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -24,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpserv.cxx,v $
+ * Revision 1.5  2007/08/02 18:48:46  shorne
+ * Added SNMP Server support
+ *
  * Revision 1.4  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -39,7 +43,109 @@
  */
 
 #include <ptlib.h>
+
+#ifdef P_SNMP
+
 #include <ptclib/psnmp.h>
+
+#define SNMP_VERSION 0
+
+static const char defaultCommunity[] = "public";
+
+PSNMPServer::PSNMPServer(PIPSocket::Address binding, WORD localPort, PINDEX timeout, PINDEX rxSize, PINDEX txSize)
+ : PThread(1000,AutoDeleteThread),
+   community(defaultCommunity),
+   version(SNMP_VERSION),
+   maxRxSize(rxSize),
+   maxTxSize(txSize)
+{
+  SetReadTimeout(PTimeInterval(0, timeout));
+
+  baseSocket = new PUDPSocket;
+  
+  if (!baseSocket->Listen(binding, 0, localPort)) {
+	  PTRACE(4,"SNMPsrv\tError: Unable to Listen on port " << localPort);
+  } else {
+      Open(baseSocket);
+	  Resume();
+  }
+}
+
+void PSNMPServer::Main()
+{
+   if (!HandleChannel())
+	     Close();
+}
+
+PSNMPServer::~PSNMPServer()
+{
+	Close();
+}
+
+BOOL PSNMPServer::HandleChannel()
+{
+
+  PBYTEArray readBuffer;
+  PBYTEArray sendBuffer;
+
+  for (;;) {
+   	if (!IsOpen())
+	  return FALSE;
+
+		// Reaading
+	    PINDEX rxSize = 0;
+		for (;;) {
+			readBuffer.SetSize(maxRxSize);
+
+			if (!Read(readBuffer.GetPointer()+rxSize, maxRxSize - rxSize)) {
+
+			// if the buffer was too small, then we are receiving datagrams
+			// and the datagram was too big
+			if (PChannel::GetErrorCode() == PChannel::BufferTooSmall) 
+				lastErrorCode = RxBufferTooSmall;
+			else
+				lastErrorCode = NoResponse;
+
+			PTRACE(4,"SNMPsrv\tRead Error " << lastErrorCode);
+			return FALSE;
+
+			} else if ((rxSize + GetLastReadCount()) >= 10)
+			break;
+
+			else 
+			rxSize += GetLastReadCount();
+		}
+
+	     rxSize += GetLastReadCount();
+
+		PIPSocket::Address remoteAddress;
+		WORD remotePort;
+		baseSocket->GetLastReceiveAddress(remoteAddress, remotePort);
+
+		if (!Authorise(remoteAddress)) {
+		  PTRACE(4,"SNMPsrv\tReceived UnAuthorized Message from IP " << remoteAddress);
+		  continue;
+		} 
+	      
+		// process the request
+		if (ProcessPDU(readBuffer, sendBuffer) >= 0) {
+			// send the packet
+			baseSocket->SetSendAddress(remoteAddress, remotePort);
+			if (!Write(sendBuffer, sendBuffer.GetSize())) {
+			    PTRACE(4,"SNMPsrv\tWrite Error.");
+			    continue;
+			}
+		}
+  }
+
+}
+
+
+void PSNMPServer::SetVersion(PASNInt newVersion)
+{
+  version = newVersion;
+}
+
 
 
 BOOL PSNMPServer::SendGetResponse (PSNMPVarBindingList &)
@@ -49,82 +155,108 @@ BOOL PSNMPServer::SendGetResponse (PSNMPVarBindingList &)
 }
 
 
-void PSNMPServer::OnGetRequest (PSNMPVarBindingList &)
+BOOL PSNMPServer::OnGetRequest (PINDEX , PSNMP::BindingList &, PSNMP::ErrorType &)
 {
+	return FALSE;
 }
 
 
-void PSNMPServer::OnGetNextRequest (PSNMPVarBindingList &)
+BOOL PSNMPServer::OnGetNextRequest (PINDEX , PSNMP::BindingList &, PSNMP::ErrorType &)
 {
+	return FALSE;
 }
 
 
-void PSNMPServer::OnSetRequest (PSNMPVarBindingList &)
+BOOL PSNMPServer::OnSetRequest (PINDEX , PSNMP::BindingList &,PSNMP::ErrorType &)
 {
+	return FALSE;
 }
 
 
-BOOL PSNMP::DecodeTrap(const PBYTEArray & readBuffer,
-                                       PINDEX & version,
-                                      PString & community,
-                                      PString & enterprise,
-                           PIPSocket::Address & address,
-                                       PINDEX & genericTrapType,
-                                      PINDEX  & specificTrapType,
-                                 PASNUnsigned & timeTicks,
-                          PSNMPVarBindingList & varsOut)
+template <typename PDUType>
+static void DecodeOID(const PDUType & pdu, PINDEX & reqID, PSNMP::BindingList & varlist)
 {
-  // parse the response
-  PASNSequence response(readBuffer);
-  PINDEX seqLen = response.GetSize();
+   reqID = pdu.m_request_id;
+   const PSNMP_VarBindList & vars = pdu.m_variable_bindings;
 
-  // check PDU
-  if (seqLen != 3 ||
-      response[0].GetType() != PASNObject::Integer ||
-      response[1].GetType() != PASNObject::String ||
-      response[2].GetType() != PASNObject::Choice) 
-    return FALSE;
+  // create the Requested list
+  for (PINDEX i = 0; i < vars.GetSize(); i++) {
+    varlist.push_back(pair<PString,PRFC1155_ObjectSyntax>(vars[i].m_name.AsString(),vars[i].m_value));
+  }
+}
 
-  // check the PDU data
-  const PASNSequence & rPduData = response[2].GetSequence();
-  seqLen = rPduData.GetSize();
-  if (seqLen != 6 ||
-      rPduData.GetChoice()  != Trap ||
-      rPduData[0].GetType() != PASNObject::ObjectID ||
-      rPduData[1].GetType() != PASNObject::IPAddress ||
-      rPduData[2].GetType() != PASNObject::Integer ||
-      rPduData[3].GetType() != PASNObject::Integer ||
-      rPduData[4].GetType() != PASNObject::TimeTicks ||
-      rPduData[5].GetType() != PASNObject::Sequence) 
-    return FALSE;
+template <typename PDUType>
+static void EncodeOID(PDUType & pdu, const PINDEX & reqID, 
+					  const PSNMP::BindingList & varlist, 
+					  const PSNMP::ErrorType & errCode)
+{
+   pdu.m_request_id = reqID;
+   pdu.m_error_status = errCode;
+   pdu.m_error_index = 0;
 
-  version          = response[0].GetInteger();
-  community        = response[1].GetString();
-  enterprise       = rPduData[0].GetString();
-  address          = rPduData[1].GetIPAddress();
-  genericTrapType  = rPduData[2].GetInteger();
-  specificTrapType = rPduData[3].GetInteger();
-  timeTicks        = rPduData[4].GetUnsigned();
+   if (errCode == PSNMP::NoError) {
+	   // Build the response list
+		PSNMP_VarBindList & vars = pdu.m_variable_bindings;
+		PINDEX i = 0;
+		vars.SetSize(varlist.size());
+		PSNMP::BindingList::const_iterator Iter = varlist.begin();
+		while (Iter != varlist.end()) {
+		  vars[i].m_name.SetValue(Iter->first);
+		  vars[i].m_value = Iter->second;
+		  i++;
+		  ++Iter;
+		}
+   }
+}
 
-  // check the variable bindings
-  const PASNSequence & rBindings = rPduData[5].GetSequence();
-  PINDEX bindingCount = rBindings.GetSize();
 
-  // create the return list
-  for (PINDEX i = 0; i < bindingCount; i++) {
-    if (rBindings[i].GetType() != PASNObject::Sequence) 
-      return TRUE;
+int PSNMPServer::ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & sendBuffer)
+{
 
-    const PASNSequence & rVar = rBindings[i].GetSequence();
-    if (rVar.GetSize() != 2 ||
-        rVar[0].GetType() != PASNObject::ObjectID) 
-      return TRUE;
-
-    varsOut.Append(rVar[0].GetString(), (PASNObject *)rVar[1].Clone());
+  PSNMP_PDUs pdu;
+  if (!pdu.Decode((PASN_Stream &)readBuffer)) {
+	   PTRACE(4,"SNMPsrv\tERROR DECODING PDU");
+	  return -1;
   }
 
-  return TRUE;
+
+  PSNMP::BindingList varlist;
+  PINDEX reqID;
+
+  BOOL success = TRUE;
+  PSNMP::ErrorType errCode = PSNMP::NoError;
+  switch (pdu.GetTag()) {
+	  case PSNMP_PDUs::e_get_request:
+           DecodeOID<PSNMP_GetRequest_PDU>(pdu,reqID,varlist);
+		   success = OnGetRequest(reqID,varlist,errCode);
+		   break;
+	  case PSNMP_PDUs::e_get_next_request:
+           DecodeOID<PSNMP_GetNextRequest_PDU>(pdu,reqID,varlist);
+		   success = OnGetNextRequest(reqID,varlist,errCode);
+		   break;
+
+	  case PSNMP_PDUs::e_set_request:
+           DecodeOID<PSNMP_SetRequest_PDU>(pdu,reqID,varlist);
+		   success = OnSetRequest(reqID,varlist,errCode);
+           break;
+
+  	  case PSNMP_PDUs::e_get_response:
+	  case PSNMP_PDUs::e_trap:
+		    PTRACE(4,"SNMPsrv\tSNMP Request/Response not supported");
+			errCode= PSNMP::GenErr;
+			success = FALSE;
+  }
+
+  // Write the varlist
+    PSNMP_PDUs sendpdu;
+    sendpdu.SetTag(PSNMP_PDUs::e_get_response);
+    EncodeOID<PSNMP_GetResponse_PDU>(sendpdu, reqID,varlist,errCode);
+    
+	sendpdu.Encode((PASN_Stream &)sendBuffer);
+
+    return success;
 }
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
