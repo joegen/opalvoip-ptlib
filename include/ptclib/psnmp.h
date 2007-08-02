@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psnmp.h,v $
+ * Revision 1.10  2007/08/02 18:48:35  shorne
+ * Added SNMP Server support
+ *
  * Revision 1.9  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -79,9 +82,14 @@
 #pragma interface
 #endif
 
+#ifdef P_SNMP
+
 #include <ptlib/sockets.h>
+#include <ptclib/snmp.h>
 #include <ptclib/pasn.h>
 
+#include <list>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -217,6 +225,8 @@ class PSNMP : public PIndirectChannel
                                       PINDEX  & specificTrapType,
                                  PASNUnsigned & timeTicks,
                           PSNMPVarBindingList & varsOut);
+
+	typedef list<pair<PString,PRFC1155_ObjectSyntax> > BindingList;
 };
 
 
@@ -286,17 +296,45 @@ class PSNMPClient : public PSNMP
 
 /** Class which supplies SNMP data
  */
-class PSNMPServer : public PSNMP
+class PSNMPServer : public PSNMP, PThread
 {
   PCLASSINFO(PSNMPServer, PSNMP)
   public:
 
-    virtual void OnGetRequest     (PSNMPVarBindingList & vars);
-    virtual void OnGetNextRequest (PSNMPVarBindingList & vars);
-    virtual void OnSetRequest     (PSNMPVarBindingList & vars);
+    PSNMPServer(PIPSocket::Address binding = PIPSocket::GetDefaultIpAny(), 
+		        WORD localPort = 161,   
+				PINDEX timeout = 5000, 
+				PINDEX rxSize = 10000, 
+				PINDEX txSize = 10000);
+
+	~PSNMPServer();
+
+	void Main();
+
+	void SetVersion(PASNInt newVersion);
+	BOOL HandleChannel();
+	int ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & writeBuffer);
+
+	virtual BOOL Authorise(const PIPSocket::Address & received);
+
+	virtual BOOL OnGetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+	virtual BOOL OnGetNextRequest (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+	virtual BOOL OnSetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
 
     BOOL SendGetResponse          (PSNMPVarBindingList & vars);
+  
+  protected:
+    PString   community;
+    PASNInt   version;
+    PINDEX    lastErrorIndex;
+    ErrorType lastErrorCode;
+    PBYTEArray readBuffer;
+    PINDEX     maxRxSize;
+    PINDEX     maxTxSize;
+	PUDPSocket * baseSocket;
 };
+
+#endif // P_SNMP
 
 #endif
 
