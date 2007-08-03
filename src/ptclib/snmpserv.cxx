@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpserv.cxx,v $
+ * Revision 1.6  2007/08/03 00:57:31  rjongbloed
+ * Added missing function implementation to new SNMP server code so DLL can link.
+ *
  * Revision 1.5  2007/08/02 18:48:46  shorne
  * Added SNMP Server support
  *
@@ -138,6 +141,12 @@ BOOL PSNMPServer::HandleChannel()
 		}
   }
 
+}
+
+
+BOOL PSNMPServer::Authorise(const PIPSocket::Address & /*received*/)
+{
+  return TRUE;
 }
 
 
