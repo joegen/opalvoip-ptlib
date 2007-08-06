@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.40  2007/08/06 00:37:00  csoutheren
+ * Remove compile warnings on Linux
+ *
  * Revision 1.39  2007/04/13 07:16:55  rjongbloed
  * Fixed possible crash if plug in fails to load correctly.
  *
@@ -212,24 +215,22 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
   }
 
   else {
-    unsigned (*GetAPIVersion)();
-    if (!dll->GetFunction("PWLibPlugin_GetAPIVersion", (PDynaLink::Function &)GetAPIVersion)) {
+    PDynaLink::Function fn;
+    if (!dll->GetFunction("PWLibPlugin_GetAPIVersion", fn))
       PTRACE(2, "PLUGIN\t" << fileName << " is not a PWLib plugin");
-    }
 
     else {
+      unsigned (*GetAPIVersion)() = (unsigned (*)())fn;
       int version = (*GetAPIVersion)();
       switch (version) {
         case 0 : // old-style service plugins, and old-style codec plugins
           {
-            // declare local pointer to register function
-            void (*triggerRegister)(PPluginManager *);
-
             // call the register function (if present)
-            if (dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) 
-              (*triggerRegister)(this);
-            else {
+            if (!dll->GetFunction("PWLibPlugin_TriggerRegister", fn)) 
               PTRACE(2, "PLUGIN\t" << fileName << " has no registration-trigger function");
+            else {
+              void (*triggerRegister)(PPluginManager *) = (void (*)(PPluginManager *))fn;
+              (*triggerRegister)(this);
             }
           }
           // fall through to new version

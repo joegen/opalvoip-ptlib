@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpserv.cxx,v $
+ * Revision 1.7  2007/08/06 00:37:00  csoutheren
+ * Remove compile warnings on Linux
+ *
  * Revision 1.6  2007/08/03 00:57:31  rjongbloed
  * Added missing function implementation to new SNMP server code so DLL can link.
  *
@@ -235,35 +238,37 @@ int PSNMPServer::ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & sendBuff
   BOOL success = TRUE;
   PSNMP::ErrorType errCode = PSNMP::NoError;
   switch (pdu.GetTag()) {
-	  case PSNMP_PDUs::e_get_request:
-           DecodeOID<PSNMP_GetRequest_PDU>(pdu,reqID,varlist);
-		   success = OnGetRequest(reqID,varlist,errCode);
-		   break;
-	  case PSNMP_PDUs::e_get_next_request:
-           DecodeOID<PSNMP_GetNextRequest_PDU>(pdu,reqID,varlist);
-		   success = OnGetNextRequest(reqID,varlist,errCode);
-		   break;
+    case PSNMP_PDUs::e_get_request:
+      DecodeOID<PSNMP_GetRequest_PDU>(pdu,reqID,varlist);
+      success = OnGetRequest(reqID,varlist,errCode);
+      break;
+    case PSNMP_PDUs::e_get_next_request:
+      DecodeOID<PSNMP_GetNextRequest_PDU>(pdu,reqID,varlist);
+      success = OnGetNextRequest(reqID,varlist,errCode);
+      break;
 
-	  case PSNMP_PDUs::e_set_request:
-           DecodeOID<PSNMP_SetRequest_PDU>(pdu,reqID,varlist);
-		   success = OnSetRequest(reqID,varlist,errCode);
-           break;
+    case PSNMP_PDUs::e_set_request:
+      DecodeOID<PSNMP_SetRequest_PDU>(pdu,reqID,varlist);
+      success = OnSetRequest(reqID,varlist,errCode);
+      break;
 
-  	  case PSNMP_PDUs::e_get_response:
-	  case PSNMP_PDUs::e_trap:
-		    PTRACE(4,"SNMPsrv\tSNMP Request/Response not supported");
-			errCode= PSNMP::GenErr;
-			success = FALSE;
+    case PSNMP_PDUs::e_get_response:
+    case PSNMP_PDUs::e_trap:
+    default:
+      PTRACE(4,"SNMPsrv\tSNMP Request/Response not supported");
+      errCode= PSNMP::GenErr;
+      success = FALSE;
   }
 
   // Write the varlist
+  if (success) {
     PSNMP_PDUs sendpdu;
     sendpdu.SetTag(PSNMP_PDUs::e_get_response);
     EncodeOID<PSNMP_GetResponse_PDU>(sendpdu, reqID,varlist,errCode);
-    
-	sendpdu.Encode((PASN_Stream &)sendBuffer);
+    sendpdu.Encode((PASN_Stream &)sendBuffer);
+  }
 
-    return success;
+  return success;
 }
 
 #endif
