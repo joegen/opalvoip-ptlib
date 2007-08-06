@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.203  2007/08/06 00:36:37  csoutheren
+# NDEBUG is passed to opt builds, _DEBUG is passed to debug builds
+#
 # Revision 1.202  2006/06/27 11:52:14  csoutheren
 # Patch 1509205 - Fixes typo in GCC flags under Solaris
 # Thanks to Boris Pavacic
@@ -969,10 +972,12 @@ ifndef MEMORY_CHECK
 MEMORY_CHECK := 1
 endif
 
-STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG -DNDEBUG
+STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG
 LDFLAGS		+= $(DEBLDFLAGS)
 
 else
+
+STDCCFLAGS	+= -DNDEBUG
 
 ifneq ($(OSTYPE),Darwin)
   ifeq ($(OSTYPE),solaris)
