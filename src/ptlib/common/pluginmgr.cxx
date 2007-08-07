@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.41  2007/08/07 07:59:21  csoutheren
+ * Allow plugin suffix to be determined via virtual
+ *
  * Revision 1.40  2007/08/06 00:37:00  csoutheren
  * Remove compile warnings on Linux
  *
@@ -184,9 +187,14 @@ const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
 
 //////////////////////////////////////////////////////
 
+PString PPluginManager::GetPluginSuffix() const
+{
+  return PWPLUGIN_SUFFIX;
+}
+
 void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
 { 
-  PLoadPluginDirectory<PPluginManager>(*this, dir, PWPLUGIN_SUFFIX); 
+  PLoadPluginDirectory<PPluginManager>(*this, dir, GetPluginSuffix()); 
 }
 
 PStringArray PPluginManager::GetPluginDirs()
