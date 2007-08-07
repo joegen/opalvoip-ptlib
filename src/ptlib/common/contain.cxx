@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.180  2007/08/07 01:37:54  csoutheren
+ * Safeguard against weird copy constructors copying themselves
+ *
  * Revision 1.179  2007/08/01 05:20:48  rjongbloed
  * Changes to container classes to become compatible with advanced DevStudio 2005 "Visualizers".
  *
@@ -696,6 +699,9 @@ PContainer::PContainer(PINDEX initialSize)
 
 PContainer::PContainer(int, const PContainer * cont)
 {
+  if (cont == this)
+    return;
+
   PAssert(cont != NULL, PInvalidParameter);
   PAssert2(cont->reference != NULL, cont->GetClass(), "Clone of deleted container");
 
@@ -709,6 +715,9 @@ PContainer::PContainer(int, const PContainer * cont)
 
 PContainer::PContainer(const PContainer & cont)
 {
+  if (&cont == this)
+    return;
+
   PAssert2(cont.reference != NULL, cont.GetClass(), "Copy of deleted container");
 
 #if PCONTAINER_USES_CRITSEC
@@ -727,7 +736,6 @@ void PContainer::AssignContents(const PContainer & cont)
   cont.reference->critSec.Enter();
   reference->critSec.Enter();
 #endif
-
 
   if(cont.reference == NULL){
     PAssertAlways("container reference is null");
