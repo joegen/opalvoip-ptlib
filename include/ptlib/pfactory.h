@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.28  2007/08/07 01:37:05  csoutheren
+ * Add RegisterAs function to allow registering a factory worker using another key
+ *
  * Revision 1.27  2007/04/18 23:49:50  csoutheren
  * Add usage of precompiled headers
  *
@@ -305,6 +308,11 @@ class PFactory : PFactoryBase
       GetInstance().Register_Internal(key, new WorkerBase(instance));
     }
 
+    static BOOL RegisterAs(const _Key_T & newKey, const _Key_T & oldKey)
+    {
+      return GetInstance().RegisterAs_Internal(newKey, oldKey);
+    }
+
     static void Unregister(const _Key_T & key)
     {
       GetInstance().Unregister_Internal(key);
@@ -383,6 +391,15 @@ class PFactory : PFactoryBase
       PWaitAndSignal m(mutex);
       if (keyMap.find(key) == keyMap.end())
         keyMap[key] = worker;
+    }
+
+    BOOL RegisterAs_Internal(const _Key_T & newKey, const _Key_T & oldKey)
+    {
+      PWaitAndSignal m(mutex);
+      if (keyMap.find(oldKey) == keyMap.end())
+        return FALSE;
+      keyMap[newKey] = keyMap[oldKey];
+      return TRUE;
     }
 
     void Unregister_Internal(const _Key_T & key)
