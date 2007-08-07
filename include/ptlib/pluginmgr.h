@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.21  2007/08/07 07:59:11  csoutheren
+ * Allow plugin suffix to be determined via virtual
+ *
  * Revision 1.20  2007/04/02 05:29:54  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -169,6 +172,8 @@ class PPluginManager : public PObject
     void RemoveNotifier(
       const PNotifier & filterFunction
     );
+
+    virtual PString GetPluginSuffix() const;
 
   protected:
     void CallNotifier(PDynaLink & dll, INT code);
