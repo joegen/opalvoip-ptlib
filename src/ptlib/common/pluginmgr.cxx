@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.43  2007/08/08 08:58:53  csoutheren
+ * More plugin manager changes, as the last approach dead-ended :(
+ *
  * Revision 1.42  2007/08/08 07:12:18  csoutheren
  * More re-arrangement of plugin suffixes
  *
@@ -184,23 +187,46 @@
 
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
-
 const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
-
 
 //////////////////////////////////////////////////////
 
-void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
+void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
 { 
   PStringList suffixes;
   suffixes.AppendString(PWPLUGIN_SUFFIX);
-  LoadPluginDirectory(dir, suffixes);
+
+  PFactory<PPluginSuffix>::KeyList_T keys = PFactory<PPluginSuffix>::GetKeyList();
+  PFactory<PPluginSuffix>::KeyList_T::const_iterator r;
+  for (r = keys.begin(); r != keys.end(); ++r)
+    suffixes.AppendString(*r);
+
+  LoadPluginDirectory(directory, suffixes);
 }
 
-
-void PPluginManager::LoadPluginDirectory (const PDirectory & dir, const PStringList & suffixes)
-{ 
-  PLoadPluginDirectory<PPluginManager>(*this, dir, suffixes); 
+void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes)
+{
+  PDirectory dir = directory;
+  if (!dir.Open()) {
+    PTRACE(4, "PLUGIN\tCannot open plugin directory " << dir);
+    return;
+  }
+  PTRACE(4, "PLUGIN\tEnumerating plugin directory " << dir);
+  do {
+    PString entry = dir + dir.GetEntryName();
+    PDirectory subdir = entry;
+    if (subdir.Open())
+      LoadPluginDirectory(entry, suffixes);
+    else {
+      PFilePath fn(entry);
+      for (PINDEX i = 0; i < suffixes.GetSize(); ++i) {
+        PString suffix = suffixes[i];
+        PTRACE(5, "PLUGIN\tChecking " << fn << " against suffix " << suffix);
+        if ((fn.GetType() *= PDynaLink::GetExtension()) && (fn.GetTitle().Right(strlen(suffix)) *= suffix)) 
+          LoadPlugin(entry);
+      }
+    }
+  } while (dir.Next());
 }
 
 PStringArray PPluginManager::GetPluginDirs()
@@ -489,11 +515,6 @@ PPluginModuleManager::PPluginModuleManager(const char * _signatureFunctionName, 
     pluginMgr = &PPluginManager::GetPluginManager();
 }
 
-PString PPluginModuleManager::GetSuffix() const
-{
-  return PWPLUGIN_SUFFIX;
-}
-
 void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
 {
   PDynaLink::Function dummyFunction;
@@ -529,8 +550,14 @@ class PluginLoaderStartup : public PProcessStartup
   public:
     void OnStartup()
     { 
+      // load the actual DLLs, which will also load the system plugins
+      PStringArray dirs = PPluginManager::GetPluginDirs();
+      PPluginManager & mgr = PPluginManager::GetPluginManager();
+      PINDEX i;
+      for (i = 0; i < dirs.GetSize(); i++) 
+        mgr.LoadPluginDirectory(dirs[i]);
+
       // load the plugin module managers, and construct the list of suffixes
-      PStringList suffixes;
       PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
       PFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
       for (r = keyList.begin(); r != keyList.end(); ++r) {
@@ -540,19 +567,8 @@ class PluginLoaderStartup : public PProcessStartup
         } else {
           PTRACE(3, "PLUGIN\tCreated manager for plugins of type " << *r);
           managers.push_back(mgr);
-          PString suffix = mgr->GetSuffix();
-          if (suffixes.GetStringsIndex(suffix) == P_MAX_INDEX)
-            suffixes.AppendString(suffix);
         }
       }
-
-      // load the actual DLLs, which will also load the system plugins
-      PStringArray dirs = PPluginManager::GetPluginDirs();
-      PPluginManager & mgr = PPluginManager::GetPluginManager();
-      PINDEX i;
-      for (i = 0; i < dirs.GetSize(); i++) 
-        mgr.LoadPluginDirectory(dirs[i], suffixes);
-
     }
 
     void OnShutdown()
