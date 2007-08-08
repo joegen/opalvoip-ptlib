@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.42  2007/08/08 07:12:18  csoutheren
+ * More re-arrangement of plugin suffixes
+ *
  * Revision 1.41  2007/08/07 07:59:21  csoutheren
  * Allow plugin suffix to be determined via virtual
  *
@@ -187,14 +190,17 @@ const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
 
 //////////////////////////////////////////////////////
 
-PString PPluginManager::GetPluginSuffix() const
-{
-  return PWPLUGIN_SUFFIX;
-}
-
 void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
 { 
-  PLoadPluginDirectory<PPluginManager>(*this, dir, GetPluginSuffix()); 
+  PStringList suffixes;
+  suffixes.AppendString(PWPLUGIN_SUFFIX);
+  LoadPluginDirectory(dir, suffixes);
+}
+
+
+void PPluginManager::LoadPluginDirectory (const PDirectory & dir, const PStringList & suffixes)
+{ 
+  PLoadPluginDirectory<PPluginManager>(*this, dir, suffixes); 
 }
 
 PStringArray PPluginManager::GetPluginDirs()
@@ -483,6 +489,11 @@ PPluginModuleManager::PPluginModuleManager(const char * _signatureFunctionName, 
     pluginMgr = &PPluginManager::GetPluginManager();
 }
 
+PString PPluginModuleManager::GetSuffix() const
+{
+  return PWPLUGIN_SUFFIX;
+}
+
 void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
 {
   PDynaLink::Function dummyFunction;
@@ -518,14 +529,8 @@ class PluginLoaderStartup : public PProcessStartup
   public:
     void OnStartup()
     { 
-      // load the actual DLLs, which will also load the system plugins
-      PStringArray dirs = PPluginManager::GetPluginDirs();
-      PPluginManager & mgr = PPluginManager::GetPluginManager();
-      PINDEX i;
-      for (i = 0; i < dirs.GetSize(); i++) 
-        mgr.LoadPluginDirectory(dirs[i]);
-
-      // now load the plugin module managers
+      // load the plugin module managers, and construct the list of suffixes
+      PStringList suffixes;
       PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
       PFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
       for (r = keyList.begin(); r != keyList.end(); ++r) {
@@ -535,8 +540,19 @@ class PluginLoaderStartup : public PProcessStartup
         } else {
           PTRACE(3, "PLUGIN\tCreated manager for plugins of type " << *r);
           managers.push_back(mgr);
+          PString suffix = mgr->GetSuffix();
+          if (suffixes.GetStringsIndex(suffix) == P_MAX_INDEX)
+            suffixes.AppendString(suffix);
         }
       }
+
+      // load the actual DLLs, which will also load the system plugins
+      PStringArray dirs = PPluginManager::GetPluginDirs();
+      PPluginManager & mgr = PPluginManager::GetPluginManager();
+      PINDEX i;
+      for (i = 0; i < dirs.GetSize(); i++) 
+        mgr.LoadPluginDirectory(dirs[i], suffixes);
+
     }
 
     void OnShutdown()
