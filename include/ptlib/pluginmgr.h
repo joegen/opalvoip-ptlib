@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.23  2007/08/08 08:58:39  csoutheren
+ * More plugin manager changes, as the last approach dead-ended :(
+ *
  * Revision 1.22  2007/08/08 07:12:03  csoutheren
  * More re-arrangement of plugin suffixes
  *
@@ -92,31 +95,10 @@
 
 #include <ptlib/plugin.h>
 
-template <class C>
-void PLoadPluginDirectory(C & obj, const PDirectory & directory, const PStringList & suffixes)
-{
-  PDirectory dir = directory;
-  if (!dir.Open()) {
-    PTRACE(4, "PLUGIN\tCannot open plugin directory " << dir);
-    return;
-  }
-  PTRACE(4, "PLUGIN\tEnumerating plugin directory " << dir);
-  do {
-    PString entry = dir + dir.GetEntryName();
-    PDirectory subdir = entry;
-    if (subdir.Open())
-      PLoadPluginDirectory<C>(obj, entry, suffixes);
-    else {
-      PFilePath fn(entry);
-      for (PINDEX i = 0; i < suffixes.GetSize(); ++i) {
-        PString suffix = suffixes[i];
-        PTRACE(5, "PLUGIN\tChecking " << fn << " against suffix " << suffix);
-        if ((fn.GetType() *= PDynaLink::GetExtension()) && (fn.GetTitle().Right(strlen(suffix)) *= suffix)) 
-          obj.LoadPlugin(entry);
-      }
-    }
-  } while (dir.Next());
-}
+class PPluginSuffix {
+  private:
+    int dummy;
+};
 
 //////////////////////////////////////////////////////
 //
@@ -131,7 +113,6 @@ class PPluginManager : public PObject
     // functions to load/unload a dynamic plugin 
     BOOL LoadPlugin (const PString & fileName);
     void LoadPluginDirectory (const PDirectory & dir);
-    void LoadPluginDirectory (const PDirectory & dir, const PStringList & suffixes);
   
     // functions to access the plugins' services 
     PStringList GetPluginTypes() const;
@@ -177,6 +158,7 @@ class PPluginManager : public PObject
     );
 
   protected:
+    void LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes);
     void CallNotifier(PDynaLink & dll, INT code);
 
     PMutex pluginListMutex;
@@ -215,8 +197,6 @@ class PPluginModuleManager : public PObject
 
     virtual void OnShutdown()
     { }
-
-    virtual PString GetSuffix() const;
 
   protected:
     PluginListType pluginList;
