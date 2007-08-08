@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.22  2007/08/08 07:12:03  csoutheren
+ * More re-arrangement of plugin suffixes
+ *
  * Revision 1.21  2007/08/07 07:59:11  csoutheren
  * Allow plugin suffix to be determined via virtual
  *
@@ -90,7 +93,7 @@
 #include <ptlib/plugin.h>
 
 template <class C>
-void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * suffix = NULL)
+void PLoadPluginDirectory(C & obj, const PDirectory & directory, const PStringList & suffixes)
 {
   PDirectory dir = directory;
   if (!dir.Open()) {
@@ -102,16 +105,15 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * su
     PString entry = dir + dir.GetEntryName();
     PDirectory subdir = entry;
     if (subdir.Open())
-      PLoadPluginDirectory<C>(obj, entry, suffix);
+      PLoadPluginDirectory<C>(obj, entry, suffixes);
     else {
       PFilePath fn(entry);
-      if (
-           (fn.GetType() *= PDynaLink::GetExtension()) &&
-           (
-             (suffix == NULL) || (fn.GetTitle().Right(strlen(suffix)) *= suffix)
-           )
-         ) 
-        obj.LoadPlugin(entry);
+      for (PINDEX i = 0; i < suffixes.GetSize(); ++i) {
+        PString suffix = suffixes[i];
+        PTRACE(5, "PLUGIN\tChecking " << fn << " against suffix " << suffix);
+        if ((fn.GetType() *= PDynaLink::GetExtension()) && (fn.GetTitle().Right(strlen(suffix)) *= suffix)) 
+          obj.LoadPlugin(entry);
+      }
     }
   } while (dir.Next());
 }
@@ -129,6 +131,7 @@ class PPluginManager : public PObject
     // functions to load/unload a dynamic plugin 
     BOOL LoadPlugin (const PString & fileName);
     void LoadPluginDirectory (const PDirectory & dir);
+    void LoadPluginDirectory (const PDirectory & dir, const PStringList & suffixes);
   
     // functions to access the plugins' services 
     PStringList GetPluginTypes() const;
@@ -173,8 +176,6 @@ class PPluginManager : public PObject
       const PNotifier & filterFunction
     );
 
-    virtual PString GetPluginSuffix() const;
-
   protected:
     void CallNotifier(PDynaLink & dll, INT code);
 
@@ -214,6 +215,8 @@ class PPluginModuleManager : public PObject
 
     virtual void OnShutdown()
     { }
+
+    virtual PString GetSuffix() const;
 
   protected:
     PluginListType pluginList;
