@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.24  2007/08/09 10:31:33  csoutheren
+ * Restored template for OpenH323 compatibility
+ *
  * Revision 1.23  2007/08/08 08:58:39  csoutheren
  * More plugin manager changes, as the last approach dead-ended :(
  *
@@ -99,6 +102,33 @@ class PPluginSuffix {
   private:
     int dummy;
 };
+
+template <class C>
+void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * suffix = NULL)
+{
+  PDirectory dir = directory;
+  if (!dir.Open()) {
+    PTRACE(4, "Cannot open plugin directory " << dir);
+    return;
+  }
+  PTRACE(4, "Enumerating plugin directory " << dir);
+  do {
+    PString entry = dir + dir.GetEntryName();
+    PDirectory subdir = entry;
+    if (subdir.Open())
+      PLoadPluginDirectory<C>(obj, entry, suffix);
+    else {
+      PFilePath fn(entry);
+      if (
+           (fn.GetType() *= PDynaLink::GetExtension()) &&
+           (
+             (suffix == NULL) || (fn.GetTitle().Right(strlen(suffix)) *= suffix)
+           )
+         )
+        obj.LoadPlugin(entry);
+    }
+  } while (dir.Next());
+}
 
 //////////////////////////////////////////////////////
 //
