@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.12  2007/08/10 10:07:29  dsandras
+ * Fixed DNS support thanks to Vincent Luba <luba novacom be>.
+ *
  * Revision 1.11  2006/02/26 11:51:20  csoutheren
  * Extended DNS test program to include URL based SRV lookups
  * Re-arranged SRV lookup code to allow access to internal routine
@@ -155,7 +158,7 @@ typedef enum _DnsSection
   DnsSectionQuestion,
   DnsSectionAnswer,
   DnsSectionAuthority,
-  DnsSectionAddtional,
+  DnsSectionAdditional,
 } DNS_SECTION;
 
 
