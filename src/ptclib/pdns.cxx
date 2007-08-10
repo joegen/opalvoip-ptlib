@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.24.2.4  2007/08/10 10:08:01  dsandras
+ * Fixed DNS support thanks to Vincent Luba <luba novacom be>.
+ *
  * Revision 1.24.2.3  2006/04/22 13:36:50  dsandras
  * More backports from HEAD.
  *
@@ -174,7 +177,7 @@ static BOOL ProcessDNSRecords(
     else if (i < nsCount)
       section = DnsSectionAuthority;
     else // if (i < arCount)
-      section = DnsSectionAddtional;
+      section = DnsSectionAdditional;
 
     // get the name
     char pName[MAXDNAME];
@@ -395,7 +398,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
     // see if any A records match this hostname
     PDNS_RECORD aRecord = results;
     while (aRecord != NULL) {
-      if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
+      if ((dnsRecord->Flags.S.Section == DnsSectionAdditional) && (dnsRecord->wType == DNS_TYPE_A)) {
         record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
         break;
       }
@@ -641,7 +644,7 @@ PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS
     // see if any A records match this hostname
     PDNS_RECORD aRecord = results;
     while (aRecord != NULL) {
-      if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
+      if ((dnsRecord->Flags.S.Section == DnsSectionAdditional) && (dnsRecord->wType == DNS_TYPE_A)) {
         record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
         break;
       }

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.9.2.2  2007/08/10 10:08:01  dsandras
+ * Fixed DNS support thanks to Vincent Luba <luba novacom be>.
+ *
  * Revision 1.9.2.1  2006/03/12 21:14:47  dsandras
  * Backports from HEAD.
  *
@@ -158,7 +161,7 @@ typedef enum _DnsSection
   DnsSectionQuestion,
   DnsSectionAnswer,
   DnsSectionAuthority,
-  DnsSectionAddtional,
+  DnsSectionAdditional,
 } DNS_SECTION;
 
 
