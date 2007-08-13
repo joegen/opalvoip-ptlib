@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.13  2007/08/13 00:56:30  rjongbloed
+ * Fixed compile on DevStudio 2003
+ *
  * Revision 1.12  2007/08/10 10:07:29  dsandras
  * Fixed DNS support thanks to Vincent Luba <luba novacom be>.
  *
@@ -81,6 +84,9 @@
 
 #  include <windns.h>
 #  pragma comment(lib, P_DNS_LIBRARY)
+
+// Accommodate spelling error in windns.h
+enum { DnsSectionAdditional = DnsSectionAddtional };
 
 #else
 
