@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.85  2007/08/15 17:45:37  shorne
+ * Fix so PServiceProcess can run other than in Debug Mode
+ *
  * Revision 1.84  2006/10/11 01:04:59  csoutheren
  * Applied path 1549187 - Fixed problem with PServiceProcess under Windows
  * Thanks to Borko Jandras
@@ -688,7 +691,8 @@ int PServiceProcess::_main(void * arg)
       return 1;
   }
 
-  debugMode = arguments.GetCount() > 0 && (strcasecmp(arguments[0], "Debug") == 0 || strcasecmp(arguments[0], "foreground"));
+  debugMode = arguments.GetCount() > 0 && 
+	              (strcasecmp(arguments[0], "Debug") == 0 || strcasecmp(arguments[0], "foreground") == 0);
   currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
   if (!debugMode && arguments.GetCount() > 0) {
