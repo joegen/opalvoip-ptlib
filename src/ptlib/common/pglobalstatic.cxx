@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.10  2007/08/17 08:46:01  csoutheren
+ * Remove unnecessary inclusions of <iostream>
+ *
  * Revision 1.9  2007/06/09 17:25:48  dsandras
  * Integrated DirectShow support from Luc Saillard <luc saillard org> with
  * the help of Matthias Schneider <ma30002000 yahoo de>.
@@ -71,6 +74,7 @@
 
 #include <ptbuildopts.h>
 #include <ptlib/plugin.h>
+#include <iostream>
 
 
 //
