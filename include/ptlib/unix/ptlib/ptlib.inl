@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.38  2007/08/17 05:29:19  csoutheren
+ * Add field to Linux showing locking thread to assist in debugging
+ *
  * Revision 1.37  2006/06/21 13:27:03  csoutheren
  * Fixed link problem with gcc 2.95.3
  *
@@ -209,10 +212,10 @@ PINLINE PCriticalSection::~PCriticalSection()
 { ::sem_destroy(&sem); }
 
 PINLINE void PCriticalSection::Wait() 
-{ ::sem_wait(&sem); }
+{ ::sem_wait(&sem); lockerId = pthread_self(); }
 
 PINLINE void PCriticalSection::Signal()
-{ ::sem_post(&sem); }
+{ lockerId = (pthread_t)-1; ::sem_post(&sem); }
 
 #endif
 

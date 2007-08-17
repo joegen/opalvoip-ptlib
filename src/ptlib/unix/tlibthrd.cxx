@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.168  2007/08/17 05:29:19  csoutheren
+ * Add field to Linux showing locking thread to assist in debugging
+ *
  * Revision 1.167  2007/07/19 08:11:47  csoutheren
  * Fix problem with hex in log stream
  *
@@ -1748,7 +1751,6 @@ PTimedMutex::PTimedMutex()
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-  ownerThreadId = (pthread_t)-1;
 #endif
 }
 
@@ -1763,7 +1765,6 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
   pthread_mutex_init(&mutex, NULL);
-  ownerThreadId = (pthread_t)-1;
 #endif
 }
 
@@ -1782,12 +1783,13 @@ PTimedMutex::~PTimedMutex()
 
 void PTimedMutex::Wait() 
 {
-#if P_HAS_RECURSIVE_MUTEX == 0
   pthread_t currentThreadId = pthread_self();
+
+#if P_HAS_RECURSIVE_MUTEX == 0
 
   // if the mutex is already acquired by this thread,
   // then just increment the lock count
-  if (pthread_equal(ownerThreadId, currentThreadId)) {
+  if (pthread_equal(lockerId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
     ++lockCount;
@@ -1799,12 +1801,13 @@ void PTimedMutex::Wait()
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
 #if P_HAS_RECURSIVE_MUTEX == 0
-  PAssert((ownerThreadId == (pthread_t)-1) && (lockCount.IsZero()),
+  PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
           "PMutex acquired whilst locked by another thread");
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
-  ownerThreadId = currentThreadId;
 #endif
+
+  lockerId = currentThreadId;
 }
 
 
@@ -1816,12 +1819,12 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
     return TRUE;
   }
 
-#if P_HAS_RECURSIVE_MUTEX == 0
   // get the current thread ID
   pthread_t currentThreadId = pthread_self();
 
+#if P_HAS_RECURSIVE_MUTEX == 0
   // if we already have the mutex, return immediately
-  if (pthread_equal(ownerThreadId, currentThreadId)) {
+  if (pthread_equal(lockerId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
     ++lockCount;
@@ -1839,34 +1842,27 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-#if P_HAS_RECURSIVE_MUTEX
-  return pthread_mutex_timedlock(&mutex, &absTime) == 0;
-#else
-
   if (pthread_mutex_timedlock(&mutex, &absTime) != 0)
     return FALSE;
 
-  PAssert((ownerThreadId == (pthread_t)-1) && (lockCount.IsZero()),
+#if P_HAS_RECURSIVE_MUTEX == 0
+  PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
           "PMutex acquired whilst locked by another thread");
+#endif
 
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
-  ownerThreadId = currentThreadId;
+  lockerId = currentThreadId;
   return TRUE;
-
-#endif
 
 #else // P_PTHREADS_XPG6
 
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
-#if P_HAS_RECURSIVE_MUTEX == 0
-      PAssert((ownerThreadId == (pthread_t)-1) && (lockCount.IsZero()),
+      PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
               "PMutex acquired whilst locked by another thread");
-      // Note this is protected by the mutex itself only the thread with
-      // the lock can alter it.
-      ownerThreadId = currentThreadId;
-#endif // P_HAS_RECURSIVE_MUTEX
+
+      lockerId = currentThreadId;
 
       return TRUE;
     }
@@ -1882,12 +1878,12 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 void PTimedMutex::Signal()
 {
-#if P_HAS_RECURSIVE_MUTEX == 0
-  if (!pthread_equal(ownerThreadId, pthread_self())) {
+  if (!pthread_equal(lockerId, pthread_self())) {
     PAssertAlways("PMutex signal failed - no matching wait or signal by wrong thread");
     return;
   }
 
+#if P_HAS_RECURSIVE_MUTEX == 0
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
@@ -1896,9 +1892,10 @@ void PTimedMutex::Signal()
     return;
   }
 
-  // otherwise mark mutex as available
-  ownerThreadId = (pthread_t)-1;
 #endif
+
+  // otherwise mark mutex as available
+  lockerId = (pthread_t)-1;
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
 }
@@ -1908,7 +1905,7 @@ BOOL PTimedMutex::WillBlock() const
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   pthread_t currentThreadId = pthread_self();
-  if (currentThreadId == ownerThreadId)
+  if (currentThreadId == lockerId)
     return FALSE;
 #endif
 
