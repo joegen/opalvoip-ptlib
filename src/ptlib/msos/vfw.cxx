@@ -25,6 +25,11 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.43  2007/08/17 07:36:38  rjongbloed
+ * Speed up camera opening by allowing colour format and frame size and rate
+ *   to be set before device is opened. This also fixes the device not opening
+ *   at all when it does not support the default colour format or size.
+ *
  * Revision 1.42  2007/04/20 06:47:48  csoutheren
  * Really disable video code when video is turned off
  *
@@ -760,6 +765,9 @@ BOOL PVideoInputDevice_VideoForWindows::IsCapturing()
 
 BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFmt)
 {
+  if (!IsOpen())
+    return PVideoDevice::SetColourFormat(colourFmt); // Not open yet, just set internal variables
+
   BOOL running = IsCapturing();
   if (running)
     Stop();
@@ -781,6 +789,7 @@ BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFm
     bi->bmiHeader.biCompression = mmioFOURCC(colourFmt[0],colourFmt[1],colourFmt[2],colourFmt[3]);
   else {
     bi->bmiHeader.biCompression = 0xffffffff; // Indicate invalid colour format
+    PVideoDevice::SetColourFormat(oldFormat);
     return FALSE;
   }
 
@@ -807,6 +816,9 @@ BOOL PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate))
     return FALSE;
+
+  if (!IsOpen())
+    return TRUE; // Not open yet, just set internal variables
 
   BOOL running = IsCapturing();
   if (running)
@@ -846,6 +858,9 @@ BOOL PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 
 BOOL PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigned height)
 {
+  if (!IsOpen())
+    return PVideoDevice::SetFrameSize(width, height); // Not open yet, just set internal variables
+
   BOOL running = IsCapturing();
   if (running)
     Stop();
@@ -1129,30 +1144,7 @@ BOOL PVideoInputDevice_VideoForWindows::InitialiseCapture()
     TestAllFormats(); // list acceptable formats and frame resolutions for video capture driver
 #endif
   
-  if (!SetFrameRate(frameRate))
-    return FALSE;
-
-  if (!preferredColourFormat.IsEmpty())
-    return SetColourFormat(preferredColourFormat);
-
-  if (!colourFormat.IsEmpty())
-    return SetColourFormat(colourFormat);
-
-  PVideoDeviceBitmap bi(hCaptureWindow);
-
-  PINDEX i = 0;
-  while (FormatTable[i].colourFormat != NULL) {
-    if (bi->bmiHeader.biCompression == FormatTable[i].compression) {
-      colourFormat = FormatTable[i].colourFormat;
-      frameWidth = bi->bmiHeader.biWidth;
-      frameHeight = bi->bmiHeader.biHeight < 0 ? -bi->bmiHeader.biHeight : bi->bmiHeader.biHeight;
-      return TRUE;
-    }
-    i++;
-  }
-
-  // Don't know what is going on here, so set it to something known ...
-  return SetColourFormat("");
+  return SetFrameRate(frameRate) && SetColourFormatConverter(colourFormat.IsEmpty() ? PString("YUV420P") : colourFormat);
 }
 
 
