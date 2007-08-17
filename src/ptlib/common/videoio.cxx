@@ -24,6 +24,11 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.72  2007/08/17 07:36:38  rjongbloed
+ * Speed up camera opening by allowing colour format and frame size and rate
+ *   to be set before device is opened. This also fixes the device not opening
+ *   at all when it does not support the default colour format or size.
+ *
  * Revision 1.71  2007/06/02 14:40:24  dsandras
  * Fixed source / destination width and height inversion when setting up
  * the converter, which was breaking things for cameras not supporting
@@ -721,10 +726,12 @@ int PVideoDevice::GetChannel() const
 }
 
 
-BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
+BOOL PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
 {
   PVideoFrameInfo src = *this;
   PVideoFrameInfo dst = *this;
+
+  PString colourFmt = newColourFmt; // make copy, just in case newColourFmt is reference to member colourFormat
 
   if (converter != NULL) {
     if (CanCaptureVideo()) {
