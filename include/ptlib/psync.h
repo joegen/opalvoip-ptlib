@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psync.h,v $
+ * Revision 1.7  2007/08/17 07:29:21  csoutheren
+ * Fix build on MacOSX
+ *
  * Revision 1.6  2007/08/17 05:29:19  csoutheren
  * Add field to Linux showing locking thread to assist in debugging
  *
@@ -83,7 +86,7 @@ class PSync : public PObject
     virtual void Signal() = 0;
   //@}
 
-#ifdef P_LINUX
+#ifdef P_PTHREADS
     PSync()
       : lockerId(pthread_t(-1)) { }
   protected:
