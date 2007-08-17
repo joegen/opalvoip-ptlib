@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.28  2007/08/17 05:29:19  csoutheren
+ * Add field to Linux showing locking thread to assist in debugging
+ *
  * Revision 1.27  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -149,7 +152,6 @@
 
 #  if defined(P_PTHREADS) && !defined(VX_TASKS)
 #    if P_HAS_RECURSIVE_MUTEX == 0
-       mutable pthread_t ownerThreadId;
        mutable PAtomicInteger lockCount;
 #    endif
 #  endif
