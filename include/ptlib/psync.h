@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psync.h,v $
+ * Revision 1.6  2007/08/17 05:29:19  csoutheren
+ * Add field to Linux showing locking thread to assist in debugging
+ *
  * Revision 1.5  2007/05/07 14:05:09  csoutheren
  * Add PSyncNULL
  *
@@ -79,6 +82,13 @@ class PSync : public PObject
      */
     virtual void Signal() = 0;
   //@}
+
+#ifdef P_LINUX
+    PSync()
+      : lockerId(pthread_t(-1)) { }
+  protected:
+    pthread_t lockerId;
+#endif
 };
 
 class PSyncNULL : public PSync
