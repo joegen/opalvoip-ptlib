@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.170  2007/08/17 07:29:21  csoutheren
+ * Fix build on MacOSX
+ *
  * Revision 1.169  2007/08/17 07:05:13  csoutheren
  * Fix problem with false asserts based on mutex locking
  *
@@ -1863,9 +1866,10 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
 
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
+#if P_HAS_RECURSIVE_MUTEX == 0
       PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
               "PMutex acquired whilst locked by another thread");
-
+#endif
       lockerId = currentThreadId;
 
       return TRUE;
