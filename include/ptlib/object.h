@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.123  2007/08/17 08:46:01  csoutheren
+ * Remove unnecessary inclusions of <iostream>
+ *
  * Revision 1.122  2007/07/16 05:38:20  csoutheren
  * Fix compile problem when enabling memory checking on Windows
  *
@@ -481,12 +484,12 @@
   #endif
 #else
   #if (__GNUC__ >= 3)
-    #include <iostream>
+    #include <iosfwd>
     #ifndef __MWERKS__
       #include <iomanip>
     #endif
   #else
-    #include <iostream.h>
+    #include <iosfwd>
     #ifdef __GNUC__
       #include <strstream.h>
     #else
