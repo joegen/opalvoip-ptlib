@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.169  2007/08/17 07:05:13  csoutheren
+ * Fix problem with false asserts based on mutex locking
+ *
  * Revision 1.168  2007/08/17 05:29:19  csoutheren
  * Add field to Linux showing locking thread to assist in debugging
  *
@@ -1813,14 +1816,15 @@ void PTimedMutex::Wait()
 
 BOOL PTimedMutex::Wait(const PTimeInterval & waitTime) 
 {
+  // get the current thread ID
+  pthread_t currentThreadId = pthread_self();
+
   // if waiting indefinitely, then do so
   if (waitTime == PMaxTimeInterval) {
     Wait();
+    lockerId = currentThreadId;
     return TRUE;
   }
-
-  // get the current thread ID
-  pthread_t currentThreadId = pthread_self();
 
 #if P_HAS_RECURSIVE_MUTEX == 0
   // if we already have the mutex, return immediately
@@ -1878,12 +1882,12 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 void PTimedMutex::Signal()
 {
+#if P_HAS_RECURSIVE_MUTEX == 0
   if (!pthread_equal(lockerId, pthread_self())) {
     PAssertAlways("PMutex signal failed - no matching wait or signal by wrong thread");
     return;
   }
 
-#if P_HAS_RECURSIVE_MUTEX == 0
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
@@ -1892,10 +1896,10 @@ void PTimedMutex::Signal()
     return;
   }
 
-#endif
-
   // otherwise mark mutex as available
   lockerId = (pthread_t)-1;
+
+#endif
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
 }
