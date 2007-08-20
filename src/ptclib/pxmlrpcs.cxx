@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.9  2007/08/20 08:43:00  shorne
+ * Fixed issue compiling without Expat
+ *
  * Revision 1.8  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -63,9 +66,9 @@
 
 #define   DEFAULT_XMPRPC_URL  "/RPC2"
 
-#include <ptclib/pxmlrpcs.h>
-
 #if P_EXPAT
+
+#include <ptclib/pxmlrpcs.h>
 
 PXMLRPCServerResource::PXMLRPCServerResource()
   : PHTTPResource(DEFAULT_XMPRPC_URL)
