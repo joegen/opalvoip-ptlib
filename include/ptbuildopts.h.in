@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.61  2007/08/21 10:33:32  rjongbloed
+ * Improved build/configure of direct sound.
+ *
  * Revision 1.60  2007/06/18 18:23:00  dsandras
  * Added patch from Elaine Xiong <elaine xiong sun com> to optimize
  * color space conversions using MediaLib.
@@ -662,8 +665,6 @@
 #undef P_POP3SMTP
 #undef P_AUDIO
 #undef P_ALSA
-#undef P_DIRECTSOUND
-#undef P_DIRECTSHOW
 #undef P_VIDEO
 #undef NO_VIDEO_CAPTURE
 
@@ -690,6 +691,23 @@
 #undef P_PTHREADS_XPG6      
 #undef P_HAS_SEMAPHORES_XPG6
 #undef P_EXCEPTIONS
+
+/////////////////////////////////////////////////
+//
+// DirectX Support (Windows only)
+//
+
+#undef P_DIRECTSOUND
+#undef P_DIRECTSHOW
+
+#if defined(_MSC_VER) && (defined(P_DIRECTSOUND) || defined(P_DIRECTSHOW))
+
+#pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
+
+#define P_DIRECTSOUND_LIBRARY "@DIRECTX_DIR@/lib/x86/dsound.lib"
+
+#endif
+
 
 /////////////////////////////////////////////////
 //
