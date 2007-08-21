@@ -25,6 +25,9 @@
  * Contributor(s): /
  *
  * $Log: sound_directsound.cxx,v $
+ * Revision 1.4  2007/08/21 10:33:32  rjongbloed
+ * Improved build/configure of direct sound.
+ *
  * Revision 1.3  2007/06/22 05:23:51  rjongbloed
  * Fixed logging to include "subsystem" name.
  *
@@ -53,7 +56,7 @@
 #define DXGetErrorString9(r) r
 
 
-#pragma comment(lib, "dsound.lib")
+#pragma comment(lib, P_DIRECTSOUND_LIBRARY)
 
 
 #define P_FORCE_STATIC_PLUGIN
