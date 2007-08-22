@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.17  2007/08/22 05:04:39  rjongbloed
+ * Added ability to set a specific local port for STUN created sockets.
+ *
  * Revision 1.16  2007/07/22 03:07:31  rjongbloed
  * Added parameter so can bind STUN socket to specific interface.
  *
@@ -128,7 +131,7 @@ class PSTUNClient : public PNatMethod
       DefaultPort = 3478
     };
 
-	PSTUNClient();
+    PSTUNClient();
 
     PSTUNClient(
       const PString & server,
@@ -258,7 +261,8 @@ class PSTUNClient : public PNatMethod
       */
     BOOL CreateSocket(
       PUDPSocket * & socket,
-      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      WORD localPort = 0
     );
 
     /**Create a socket pair.

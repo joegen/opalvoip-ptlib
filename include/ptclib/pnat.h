@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.11  2007/08/22 05:04:39  rjongbloed
+ * Added ability to set a specific local port for STUN created sockets.
+ *
  * Revision 1.10  2007/07/22 03:07:30  rjongbloed
  * Added parameter so can bind STUN socket to specific interface.
  *
@@ -162,6 +165,13 @@ public:
 
 protected:
   struct PortInfo {
+      PortInfo(WORD port = 0)
+        : basePort(port)
+        , maxPort(port)
+        , currentPort(port)
+      {
+      }
+
       PMutex mutex;
       WORD   basePort;
       WORD   maxPort;
