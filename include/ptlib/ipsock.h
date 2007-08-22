@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.90  2007/08/22 05:00:02  rjongbloed
+ * Added function to return local and peer address as string in "addr:port" format.
+ *
  * Revision 1.89  2007/06/27 03:15:21  rjongbloed
  * Added ability to select filtering of down network interfaces.
  *
@@ -697,11 +700,12 @@ class PIPSocket : public PSocket
        */
     );
 
-    /** Get the Internet Protocol address for the local host.
+    /** Get the Internet Protocol address and port for the local host.
 
        @return
-       TRUE if the IP number was returned.
+       FALSE (or empty string) if the IP number was not available.
      */
+    virtual PString GetLocalAddress();
     virtual BOOL GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
@@ -710,12 +714,13 @@ class PIPSocket : public PSocket
       WORD & port        ///< Variable to receive peer hosts port number
     );
 
-    /** Get the Internet Protocol address for the peer host the socket is
-       connected to.
+    /** Get the Internet Protocol address for the peer host and port the
+       socket is connected to.
 
        @return
-       TRUE if the IP number was returned.
+       FALSE (or empty string) if the IP number was not available.
      */
+    virtual PString GetPeerAddress();
     virtual BOOL GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
