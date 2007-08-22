@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.39  2007/08/22 07:00:53  rjongbloed
+ * Added new MSWIN_FIND_FILE option to locate files, eg .lib files, within the
+ *   features detected directory sub-tree. Different packaging someimes has
+ *   lib files in slightly different locations.
+ *
  * Revision 1.38  2007/02/10 07:21:23  csoutheren
  * Fixed problem with excluding directories
  *
@@ -168,7 +173,7 @@
 #include <vector>
 #include <map>
 
-#define VERSION "1.10"
+#define VERSION "1.11"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -236,9 +241,18 @@ class Feature
       string defineValue;
     };
     list<CheckFileInfo> checkFiles;
+
     list<string> checkDirectories;
+
+    struct FindFileInfo {
+      string symbol;
+      string filename;
+    };
+    list<FindFileInfo> findFiles;
+
     list<string> ifFeature;
     list<string> ifNotFeature;
+
     string breaker;
     string directory;
     States state;
@@ -312,6 +326,17 @@ void Feature::Parse(const string & optionName, const string & optionValue)
   else if (optionName == "CHECK_DIR")
     checkDirectories.push_back(GetFullPathNameString(optionValue));
 
+  else if (optionName == "FIND_FILE") {
+    int comma = optionValue.find(',');
+    if (comma == string::npos)
+      return;
+
+    FindFileInfo find;
+    find.symbol.assign(optionValue, 0, comma);
+    find.filename.assign(optionValue, comma+1, INT_MAX);
+    findFiles.push_back(find);
+  }
+
   else if (optionName == "IF_FEATURE") {
     const char * delimiters = "&";
     string::size_type lastPos = optionValue.find_first_not_of(delimiters, 0);
@@ -372,6 +397,50 @@ void Feature::Adjust(string & line)
     if (pos != string::npos)
       line.replace(pos, directorySymbol.length(), directory);
   }
+
+  for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
+    int pos = line.find(file->symbol);
+    if (pos != string::npos) {
+      line = "#define " + file->symbol + " \"" + file->filename + '"';
+      break;
+    }
+  }
+}
+
+
+bool FindFileInTree(const string & directory, string & filename)
+{
+  bool found = false;
+  string wildcard = directory;
+  wildcard += "*.*";
+
+  WIN32_FIND_DATA fileinfo;
+  HANDLE hFindFile = FindFirstFile(wildcard.c_str(), &fileinfo);
+  if (hFindFile != INVALID_HANDLE_VALUE) {
+    do {
+      if (stricmp(fileinfo.cFileName, filename.c_str()) == 0) {
+        filename.insert(0, directory);
+        found = true;
+        break;
+      }
+
+      string subdir = GetFullPathNameString(directory + fileinfo.cFileName);
+      if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
+           fileinfo.cFileName[0] != '.' &&
+           stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
+           !DirExcluded(subdir)) {
+        subdir += '\\';
+
+        found = FindFileInTree(subdir, filename);
+        if (found)
+          break;
+      }
+    } while (FindNextFile(hFindFile, &fileinfo));
+
+    FindClose(hFindFile);
+  }
+
+  return found;
 }
 
 
@@ -412,6 +481,12 @@ bool Feature::Locate(const char * testDir)
   pos = directory.length()-1;
   if (directory[pos] == '/')
     directory.erase(pos);
+
+  for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
+    FindFileInTree(directory + '\\', file->filename);
+    while ((pos = file->filename.find('\\')) != string::npos)
+      file->filename[pos] = '/';
+  }
 
   return true;
 }
