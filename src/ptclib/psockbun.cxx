@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.12  2007/08/22 05:08:26  rjongbloed
+ * Fixed issue where if a bundled socket using STUN to be on specific local address,
+ *   eg sip an port 5060 can still accept calls from local network on that port.
+ *
  * Revision 1.11  2007/07/22 04:03:32  rjongbloed
  * Fixed issues with STUN usage in socket bundling, now OpalTransport indicates
  *   if it wants local or NAT address/port for inclusion to outgoing PDUs.
@@ -395,12 +399,18 @@ BOOL PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
 {
   delete info.socket;
 
-  if (stun != NULL && stun->CreateSocket(info.socket, binding))
+  if (stun != NULL && stun->CreateSocket(info.socket, binding, localPort)) {
+    PTRACE(4, "UDP\tCreated bundled socket via STUN internal="
+           << binding << ':' << info.socket->PUDPSocket::GetPort()
+           << " external=" << info.socket->GetLocalAddress());
     return TRUE;
+  }
 
   info.socket = new PUDPSocket;
-  if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive))
+  if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
+    PTRACE(4, "UDP\tCreated bundled socket " << binding << ':' << info.socket->GetPort());
     return true;
+  }
 
   delete info.socket;
   return false;
