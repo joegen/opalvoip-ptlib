@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.25  2007/08/22 05:04:39  rjongbloed
+ * Added ability to set a specific local port for STUN created sockets.
+ *
  * Revision 1.24  2007/07/22 03:07:31  rjongbloed
  * Added parameter so can bind STUN socket to specific interface.
  *
@@ -674,7 +677,7 @@ BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
 }
 
 
-BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding)
+BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort)
 {
   socket = NULL;
 
@@ -699,7 +702,16 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address &
   }
 
   PSTUNUDPSocket * stunSocket = new PSTUNUDPSocket;
-  if (OpenSocket(*stunSocket, singlePortInfo, binding))
+
+  BOOL opened;
+  if (localPort == 0)
+    opened = OpenSocket(*stunSocket, singlePortInfo, binding);
+  else {
+    PortInfo portInfo = localPort;
+    opened = OpenSocket(*stunSocket, portInfo, binding);
+  }
+
+  if (opened)
   {
     PSTUNMessage request(PSTUNMessage::BindingRequest);
     request.AddAttribute(PSTUNChangeRequest(false, false));
