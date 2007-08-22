@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.217  2007/08/22 05:00:02  rjongbloed
+ * Added function to return local and peer address as string in "addr:port" format.
+ *
  * Revision 1.216  2007/07/22 03:17:53  rjongbloed
  * Added check for legal hostname characters as system function does not
  *   always return "no host" when some illegal characters are used.
@@ -1893,13 +1896,22 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 }
 
 
+PString PIPSocket::GetLocalAddress()
+{
+  PStringStream str;
+  Address addr;
+  WORD port;
+  if (GetLocalAddress(addr, port))
+    str << addr << ':' << port;
+  return str;
+}
+
+
 BOOL PIPSocket::GetLocalAddress(Address & addr)
 {
   WORD dummy;
   return GetLocalAddress(addr, dummy);
 }
-
-
 
 
 BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
@@ -1938,6 +1950,17 @@ BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 #endif
 
   return TRUE;
+}
+
+
+PString PIPSocket::GetPeerAddress()
+{
+  PStringStream str;
+  Address addr;
+  WORD port;
+  if (GetPeerAddress(addr, port))
+    str << addr << ':' << port;
+  return str;
 }
 
 
