@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.cxx,v $
+ * Revision 1.4  2007/08/25 06:37:39  csoutheren
+ * Fixed compilation on 64bit Linux
+ *
  * Revision 1.3  2007/04/30 00:07:38  csoutheren
  * Fix problems with PODBC on Windows
  *
@@ -689,7 +692,7 @@ PString PODBC::Field::operator=(const PString & str)
 }
 
 
-BOOL PODBC::Field::DataFragment(PString & Buffer,PINDEX & fragment,long & size)
+BOOL PODBC::Field::DataFragment(PString & Buffer,PINDEX & fragment, PTODBC::SQLINTEGER & size)
 {
   PINDEX fragcount = PINDEX(Data.sbinlong.GetLength()/size);
 // Value less than Buffer Size
@@ -1048,7 +1051,7 @@ BOOL PODBCStmt::IsValid()
 
 PTODBC::DWORD PODBCStmt::GetChangedRowCount(void)
 {
-   long nRows=0;
+   SQLINTEGER nRows=0;
    if(!SQL_OK(SQLRowCount(m_hStmt,&nRows)))
     return 0;
    return nRows;
@@ -1194,7 +1197,7 @@ BOOL PODBCRecord::InternalBindColumn(::USHORT Column,PTODBC::LPVOID pBuffer,
         PTODBC::ULONG pBufferSize,PTODBC::LONG * pReturnedBufferSize,
         PTODBC::USHORT nType)
 {
-   PTODBC::LONG pReturnedSize=0;
+   SQLINTEGER pReturnedSize=0;
 
    SQLRETURN Ret=SQLBindCol(m_hStmt,Column,nType,
                pBuffer,pBufferSize,&pReturnedSize);
@@ -1216,7 +1219,7 @@ PINDEX PODBCRecord::ColumnByName(PString Column)
 }
 
 BOOL PODBCRecord::InternalGetData(PTODBC::USHORT Column, PTODBC::LPVOID pBuffer, 
-    PTODBC::ULONG pBufLen, PTODBC::LONG * dataLen, int Type)
+    PTODBC::ULONG pBufLen, PTODBC::SQLINTEGER * dataLen, int Type)
 {
    SQLINTEGER od=0;
    int Err=SQLGetData(m_hStmt,Column,Type,pBuffer,pBufLen,&od);
@@ -1430,8 +1433,8 @@ BOOL PODBCRecord::InternalSaveLongData(SQLRETURN nRet, PODBC::Row & rec)
    while (nRet == SQL_NEED_DATA) {
 	 nRet = SQLParamData(m_hStmt,&pToken);
 
-   if (col != (PINDEX)pToken) {
-     col = (PINDEX)pToken;
+   if (col != *(PINDEX*)pToken) {
+     col = *(PINDEX*)pToken;
      DataSlice = PString();
      frag = 0;
      cbData = MAX_DATA_LEN;
