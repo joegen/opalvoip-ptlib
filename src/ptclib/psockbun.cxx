@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.13  2007/08/26 20:01:58  hfriederich
+ * Allow to filter interfaces based on remote address
+ *
  * Revision 1.12  2007/08/22 05:08:26  rjongbloed
  * Fixed issue where if a bundled socket using STUN to be on specific local address,
  *   eg sip an port 5060 can still accept calls from local network on that port.
@@ -93,9 +96,9 @@ PInterfaceMonitorClient::~PInterfaceMonitorClient()
 }
 
 
-PStringArray PInterfaceMonitorClient::GetInterfaces(BOOL includeLoopBack)
+PStringArray PInterfaceMonitorClient::GetInterfaces(BOOL includeLoopBack, const PIPSocket::Address & destination)
 {
-  return PInterfaceMonitor::GetInstance().GetInterfaces(includeLoopBack);
+  return PInterfaceMonitor::GetInstance().GetInterfaces(includeLoopBack, destination);
 }
 
 
@@ -113,6 +116,7 @@ static PInterfaceMonitor * PInterfaceMonitorInstance;
 PInterfaceMonitor::PInterfaceMonitor(unsigned refresh)
   : refreshInterval(refresh)
   , updateThread(NULL)
+  , interfaceFilter(NULL)
 {
   PInterfaceMonitorInstanceMutex.Wait();
   PAssert(PInterfaceMonitorInstance == NULL, PLogicError);
@@ -124,6 +128,8 @@ PInterfaceMonitor::PInterfaceMonitor(unsigned refresh)
 PInterfaceMonitor::~PInterfaceMonitor()
 {
   Stop();
+  
+  delete interfaceFilter;
 }
 
 
@@ -293,17 +299,24 @@ static BOOL SplitInterfaceDescription(const PString & iface,
 }
 
 
-PStringArray PInterfaceMonitor::GetInterfaces(BOOL includeLoopBack)
+PStringArray PInterfaceMonitor::GetInterfaces(BOOL includeLoopBack, 
+                                              const PIPSocket::Address & destination)
 {
   PWaitAndSignal guard(mutex);
+  
+  PIPSocket::InterfaceTable ifaces = currentInterfaces;
+  
+  if (interfaceFilter != NULL && !destination.IsAny()) {
+    ifaces = interfaceFilter->FilterInterfaces(destination, ifaces);
+  }
 
   PStringArray names;
 
-  names.SetSize(currentInterfaces.GetSize());
+  names.SetSize(ifaces.GetSize());
   PINDEX count = 0;
 
-  for (PINDEX i = 0; i < currentInterfaces.GetSize(); ++i) {
-    PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
+  for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
+    PIPSocket::InterfaceEntry & entry = ifaces[i];
     if (includeLoopBack || !entry.GetAddress().IsLoopback())
       names[count++] = MakeInterfaceDescription(entry);
   }
@@ -333,6 +346,15 @@ BOOL PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::Inter
   }
 
   return FALSE;
+}
+
+
+void PInterfaceMonitor::SetInterfaceFilter(PInterfaceFilter * filter)
+{
+  PWaitAndSignal m(mutex);
+  
+  delete interfaceFilter;
+  interfaceFilter = filter;
 }
 
 

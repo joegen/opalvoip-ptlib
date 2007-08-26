@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.9  2007/08/26 20:01:58  hfriederich
+ * Allow to filter interfaces based on remote address
+ *
  * Revision 1.8  2007/07/22 04:03:32  rjongbloed
  * Fixed issues with STUN usage in socket bundling, now OpalTransport indicates
  *   if it wants local or NAT address/port for inclusion to outgoing PDUs.
@@ -76,6 +79,7 @@
 
 class PSTUNClient;
 class PInterfaceMonitorClient;
+class PInterfaceFilter;
 
 
 //////////////////////////////////////////////////
@@ -117,7 +121,8 @@ class PInterfaceMonitor : public PObject
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
     PStringArray GetInterfaces(
-      BOOL includeLoopBack = FALSE   /// Flag for if loopback is to included in list
+      BOOL includeLoopBack = FALSE,  /// Flag for if loopback is to included in list
+      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
     );
 
     /** Return information about an active interface given the descriptor
@@ -128,6 +133,11 @@ class PInterfaceMonitor : public PObject
       const PString & iface,  /// Interface desciptor name
       InterfaceEntry & info   /// Information on the interface
     );
+    
+    /** Sets the monitor's interface filter. Note that the monitor instance
+        handles deletion of the filter.
+      */
+    void SetInterfaceFilter(PInterfaceFilter * filter);
 
   protected:
     void UpdateThreadMain();
@@ -150,6 +160,8 @@ class PInterfaceMonitor : public PObject
     PMutex         mutex;
     PThread      * updateThread;
     PSyncPoint     threadRunning;
+    
+    PInterfaceFilter * interfaceFilter;
 
   friend class PInterfaceMonitorClient;
 };
@@ -173,10 +185,13 @@ class PInterfaceMonitorClient : public PSafeObject
 
     /** Get an array of all current interface descriptors, possibly including
         the loopback (127.0.0.1) interface. Note the names are of the form
-        ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
+        ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0".
+        If destination is not 'any' and a filter is set, filters the interface list
+        before returning it.
       */
     virtual PStringArray GetInterfaces(
-      BOOL includeLoopBack = FALSE   /// Flag for if loopback is to included in list
+      BOOL includeLoopBack = FALSE,  /// Flag for if loopback is to included in list
+      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny() /// destination
     );
 
     /** Return information about an active interface given the descriptor
@@ -196,6 +211,17 @@ class PInterfaceMonitorClient : public PSafeObject
     virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
 
   friend class PInterfaceMonitor;
+};
+
+
+//////////////////////////////////////////////////
+
+class PInterfaceFilter : public PObject {
+  PCLASSINFO(PInterfaceFilter, PObject);
+  
+  public:
+    virtual PIPSocket::InterfaceTable FilterInterfaces(const PIPSocket::Address & destination,
+                                                       PIPSocket::InterfaceTable & interfaces) const = 0;
 };
 
 
