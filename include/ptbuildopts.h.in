@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.62  2007/08/26 12:24:59  rjongbloed
+ * Changes to allow for 64 bit builds and 64 bit library linking.
+ *
  * Revision 1.61  2007/08/21 10:33:32  rjongbloed
  * Improved build/configure of direct sound.
  *
@@ -704,7 +707,14 @@
 
 #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
 
-#define P_DIRECTSOUND_LIBRARY "@DIRECTX_DIR@/lib/x86/dsound.lib"
+#undef P_DIRECTSOUND_LIB64
+#undef P_DIRECTSOUND_LIB32
+
+#if defined(_WIN64)
+#define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB64
+#else
+#define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
+#endif
 
 #endif
 
