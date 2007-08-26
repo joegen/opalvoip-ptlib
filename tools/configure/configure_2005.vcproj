@@ -186,7 +186,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy Release\configure.exe ..\.. &gt; nul"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
