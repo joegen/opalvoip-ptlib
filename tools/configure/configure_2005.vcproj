@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="configure"
 	ProjectGUID="{9C8D0100-6709-4628-9993-69F443AF69E8}"
+	RootNamespace="configure"
 	>
 	<Platforms>
 		<Platform
@@ -50,7 +51,7 @@
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 			/>
@@ -67,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Debug/configure.exe"
+				OutputFile="$(SolutionDir)/configure.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -139,7 +140,7 @@
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -155,7 +156,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Release/configure.exe"
+				OutputFile="$(SolutionDir)/configure.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/configure.pdb"
