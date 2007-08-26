@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.40  2007/08/26 12:25:00  rjongbloed
+ * Changes to allow for 64 bit builds and 64 bit library linking.
+ *
  * Revision 1.39  2007/08/22 07:00:53  rjongbloed
  * Added new MSWIN_FIND_FILE option to locate files, eg .lib files, within the
  *   features detected directory sub-tree. Different packaging someimes has
@@ -172,8 +175,10 @@
 #include <windows.h>
 #include <vector>
 #include <map>
+#include <io.h>
 
-#define VERSION "1.11"
+
+#define VERSION "1.12"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -186,7 +191,7 @@ string ToLower(const string & _str)
   string str = _str;
   string::iterator r;
   for(r = str.begin(); r != str.end(); ++r)
-    *r = tolower(*r);
+    *r = (char)tolower(*r);
   return str;
 }
 
@@ -246,7 +251,9 @@ class Feature
 
     struct FindFileInfo {
       string symbol;
-      string filename;
+      string basename;
+      string subdir;
+      string fullname;
     };
     list<FindFileInfo> findFiles;
 
@@ -280,7 +287,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     displayName = optionValue;
 
   else if (optionName == "DEFINE") {
-    int equal = optionValue.find('=');
+    string::size_type equal = optionValue.find('=');
     if (equal == string::npos)
       simpleDefineName = optionValue;
     else {
@@ -290,18 +297,18 @@ void Feature::Parse(const string & optionName, const string & optionValue)
   }
 
   else if (optionName == "VERSION") {
-    int equal = optionValue.find('=');
+    string::size_type equal = optionValue.find('=');
     if (equal != string::npos)
       defines.insert(pair<string,string>(optionValue.substr(0, equal), optionValue.substr(equal+1)));
   }
 
   else if (optionName == "CHECK_FILE") {
-    int comma = optionValue.find(',');
+    string::size_type comma = optionValue.find(',');
     if (comma == string::npos)
       return;
 
     CheckFileInfo check;
-    int pipe = optionValue.find('|');
+    string::size_type pipe = optionValue.find('|');
     if (pipe < 0 || pipe > comma)
       check.fileName.assign(optionValue, 0, comma);
     else {
@@ -309,7 +316,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
       check.fileText.assign(optionValue, pipe+1, comma-pipe-1);
     }
 
-    int equal = optionValue.find('=', comma);
+    string::size_type equal = optionValue.find('=', comma);
     if (equal == string::npos)
       check.defineName.assign(optionValue, comma+1, INT_MAX);
     else {
@@ -327,13 +334,20 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     checkDirectories.push_back(GetFullPathNameString(optionValue));
 
   else if (optionName == "FIND_FILE") {
-    int comma = optionValue.find(',');
-    if (comma == string::npos)
+    string::size_type comma1 = optionValue.find(',');
+    if (comma1 == string::npos)
       return;
 
+    string::size_type comma2 = optionValue.find(',', comma1+1);
+    if (comma2 == string::npos)
+      comma2 = INT_MAX-1;
+
     FindFileInfo find;
-    find.symbol.assign(optionValue, 0, comma);
-    find.filename.assign(optionValue, comma+1, INT_MAX);
+    find.symbol.assign(optionValue, 0, comma1);
+    find.basename.assign(optionValue, comma1+1, comma2-comma1-1);
+    find.subdir.assign(optionValue, comma2+1, INT_MAX);
+    if (find.subdir.empty())
+      find.subdir = "...";
     findFiles.push_back(find);
   }
 
@@ -356,7 +370,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
 
 static bool CompareName(const string & line, const string & name)
 {
-  int pos = line.find(name);
+  string::size_type pos = line.find(name);
   if (pos == string::npos)
     return false;
 
@@ -390,20 +404,19 @@ void Feature::Adjust(string & line)
         break;
       }
     }
+
+    for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
+      if (!file->fullname.empty() && CompareName(line, file->symbol)) {
+        line = "#define " + file->symbol + " \"" + file->fullname + '"';
+        break;
+      }
+    }
   }
 
   if (directorySymbol[0] != '\0') {
-    int pos = line.find(directorySymbol);
+    string::size_type pos = line.find(directorySymbol);
     if (pos != string::npos)
       line.replace(pos, directorySymbol.length(), directory);
-  }
-
-  for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
-    int pos = line.find(file->symbol);
-    if (pos != string::npos) {
-      line = "#define " + file->symbol + " \"" + file->filename + '"';
-      break;
-    }
   }
 }
 
@@ -475,7 +488,7 @@ bool Feature::Locate(const char * testDir)
 
   cout << "Located " << displayName << " at " << directory << endl;
 
-  int pos;
+  string::size_type pos;
   while ((pos = directory.find('\\')) != string::npos)
     directory[pos] = '/';
   pos = directory.length()-1;
@@ -483,9 +496,22 @@ bool Feature::Locate(const char * testDir)
     directory.erase(pos);
 
   for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
-    FindFileInTree(directory + '\\', file->filename);
-    while ((pos = file->filename.find('\\')) != string::npos)
-      file->filename[pos] = '/';
+    string::size_type elipses = file->subdir.find("...");
+    if (elipses == string::npos) {
+      string filename = directory + '/' + file->subdir + '/' + file->basename;
+      if (_access(filename.c_str(), 0) == 0)
+        file->fullname = filename;
+    }
+    else {
+      string subdir = directory + '/';
+      subdir.append(file->subdir, 0, elipses);
+      string filename = file->basename;
+      if (FindFileInTree(subdir, filename)) {
+        while ((pos = filename.find('\\')) != string::npos)
+          filename[pos] = '/';
+        file->fullname = filename;
+      }
+    }
   }
 
   return true;
@@ -697,21 +723,21 @@ int main(int argc, char* argv[])
   while (conf.good()) {
     string line;
     getline(conf, line);
-    int pos;
+    string::size_type pos;
     if ((pos = line.find("AC_CONFIG_HEADERS")) != string::npos) {
       if ((pos = line.find('(', pos)) != string::npos) {
-        int end = line.find(')', pos);
+        string::size_type end = line.find(')', pos);
         if (end != string::npos)
           headers.push_back(line.substr(pos+1, end-pos-1));
       }
     }
     else if ((pos = line.find("dnl MSWIN_")) != string::npos) {
-      int space = line.find(' ', pos+10);
+      string::size_type space = line.find(' ', pos+10);
       if (space != string::npos) {
         string optionName(line, pos+10, space-pos-10);
         while (line[space] == ' ')
           space++;
-        int comma = line.find(',', space);
+        string::size_type comma = line.find(',', space);
         if (comma != string::npos) {
           string optionValue(line, comma+1, INT_MAX);
           if (!optionValue.empty()) {
@@ -743,12 +769,12 @@ int main(int argc, char* argv[])
       while (version.good()) {
         string line;
         getline(version, line);
-        int pos;
+        string::size_type pos;
         int i;
         for (i = 0; i < (sizeof(VersionTags)/sizeof(VersionTags[0])); ++i) {
-          int tagLen = strlen(VersionTags[i]);
+          size_t tagLen = strlen(VersionTags[i]);
           if ((pos = line.find(VersionTags[i])) != string::npos) {
-            int space = line.find(' ', pos+tagLen);
+            string::size_type space = line.find(' ', pos+tagLen);
             if (space != string::npos) {
               while (line[space] == ' ')
                 space++;
