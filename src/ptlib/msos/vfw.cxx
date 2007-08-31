@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.44  2007/08/31 09:33:28  rjongbloed
+ * Fixed missing ShowWindow on starting video output immediately.
+ *
  * Revision 1.43  2007/08/17 07:36:38  rjongbloed
  * Speed up camera opening by allowing colour format and frame size and rate
  *   to be set before device is opened. This also fixes the device not opening
@@ -1373,7 +1376,7 @@ PStringList PVideoOutputDevice_Window::GetOutputDeviceNames()
 }
 
 
-BOOL PVideoOutputDevice_Window::Open(const PString & name, BOOL /*startImmediate*/)
+BOOL PVideoOutputDevice_Window::Open(const PString & name, BOOL startImmediate)
 {
   Close();
 
@@ -1385,7 +1388,7 @@ BOOL PVideoOutputDevice_Window::Open(const PString & name, BOOL /*startImmediate
 
   m_started.Wait();
 
-  return m_hWnd != NULL;
+  return startImmediate ? Start() : m_hWnd != NULL;
 }
 
 
