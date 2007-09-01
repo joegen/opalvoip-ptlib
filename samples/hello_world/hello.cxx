@@ -18,7 +18,9 @@ PCREATE_PROCESS(Hello)
 
 void Hello::Main()
 {
-  cout << "Hello world!\n";
+  cout << "Hello world!\n\n"
+          "From " << GetOSClass() << ' ' << GetOSName() << " (" << GetOSVersion() << ")"
+          " on " << GetOSHardware() << endl;
 }
 
 // End of hello.cxx
