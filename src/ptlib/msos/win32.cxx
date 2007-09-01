@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.161  2007/09/01 05:16:18  rjongbloed
+ * Added Windows Vista to OS descirption functions.
+ *
  * Revision 1.160  2007/07/03 08:43:31  rjongbloed
  * Fixed corect reporting of a socket being closed by OS as "NotOpen" aka EBADF.
  *
@@ -1661,14 +1664,21 @@ PString PProcess::GetOSName()
       return "ME";
 
     case VER_PLATFORM_WIN32_NT :
-      if (info.dwMajorVersion < 5)
-        return "NT";
-    else if (info.dwMinorVersion == 0) 
-      return "2000";
-    else if (info.dwMinorVersion == 1)
-      return "XP";
-    else
-      return "Server 2003";
+      switch (info.dwMajorVersion) {
+        case 4 :
+          return "NT";
+        case 5:
+          switch (info.dwMinorVersion) {
+            case 0 :
+              return "2000";
+            case 1 :
+              return "XP";
+          }
+          return "Server 2003";
+
+        case 6 :
+          return "Vista";
+      }
   }
   return "?";
 }
@@ -1686,7 +1696,7 @@ PString PProcess::GetOSHardware()
         case PROCESSOR_INTEL_486 :
           return "i486";
         case PROCESSOR_INTEL_PENTIUM :
-          return "i586";
+          return psprintf("i586 (Model=%u Stepping=%u)", info.wProcessorRevision>>8, info.wProcessorRevision&0xff);
       }
       return "iX86";
 
