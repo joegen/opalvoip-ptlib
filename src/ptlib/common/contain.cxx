@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.181  2007/09/03 22:13:47  shorne
+ * Ensure RegularExpression is compiled without error before execute
+ *
  * Revision 1.180  2007/08/07 01:37:54  csoutheren
  * Safeguard against weird copy constructors copying themselves
  *
@@ -3279,6 +3282,9 @@ BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len
     ((PRegularExpression*)this)->lastError = NotCompiled;
     return FALSE;
   }
+
+  if (((PRegularExpression*)this)->lastError != NoError)
+    return FALSE;
 
   regmatch_t match;
 
