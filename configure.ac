@@ -594,12 +594,23 @@ P_HAS_ATOMIC_INT=0
 P_NEEDS_GNU_CXX_NAMESPACE=0
 AC_MSG_CHECKING(if atomic integer available)
 AC_TRY_COMPILE([#include <bits/atomicity.h>],
-               [_Atomic_word val;], P_HAS_ATOMIC_INT=1)
-if test ${P_HAS_ATOMIC_INT} = 1 ; then
+               [_Atomic_word val;], P_HAS_ATOMIC_INT=1,
+    AC_TRY_COMPILE([#include <ext/atomicity.h>],
+		[_Atomic_word val;], P_HAS_ATOMIC_INT=2)
+)
+if test ${P_HAS_ATOMIC_INT} != 0 ; then
   AC_MSG_RESULT(yes)
   AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
-  AC_TRY_COMPILE([#include <bits/atomicity.h>],
-                 [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)], P_NEEDS_GNU_CXX_NAMESPACE=1)
+  if test ${P_HAS_ATOMIC_INT} = 1 ; then
+    AC_TRY_COMPILE([#include <bits/atomicity.h>],
+        [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
+        P_NEEDS_GNU_CXX_NAMESPACE=1)
+  else
+    P_HAS_ATOMIC_INT=1
+    AC_TRY_COMPILE([#include <ext/atomicity.h>],
+        [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
+        P_NEEDS_GNU_CXX_NAMESPACE=1)
+  fi
   if test ${P_NEEDS_GNU_CXX_NAMESPACE} = 1 ; then
     AC_MSG_RESULT(yes)
   else
@@ -608,6 +619,7 @@ if test ${P_HAS_ATOMIC_INT} = 1 ; then
 else
   AC_MSG_RESULT(no)
 fi
+
 AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
 AC_DEFINE_UNQUOTED(P_NEEDS_GNU_CXX_NAMESPACE, ${P_NEEDS_GNU_CXX_NAMESPACE})
 
