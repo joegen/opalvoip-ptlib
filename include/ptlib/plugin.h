@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.16  2007/09/04 02:15:53  rjongbloed
+ * Allow for API versions other than zero.
+ *
  * Revision 1.15  2006/01/08 14:49:08  dsandras
  * Several fixes to allow compilation on Open Solaris thanks to Brian Lu <brian.lu _AT_____ sun.com>. Many thanks!
  *
@@ -134,7 +137,11 @@ class PDevicePluginAdapter : public PDevicePluginAdapterBase
     }
 };
 
+
+#ifndef PWLIB_PLUGIN_API_VERSION
 #define PWLIB_PLUGIN_API_VERSION 0
+#endif
+
 
 //////////////////////////////////////////////////////
 //
