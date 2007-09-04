@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.46  2007/09/04 11:31:48  csoutheren
+ * Add PlayTone
+ * Add access to session variable table
+ *
  * Revision 1.45  2007/07/09 00:10:44  csoutheren
  * Fix compilation without expat
  *
@@ -226,9 +230,6 @@ class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
 
-class PVXMLTransferOptions;
-class PVXMLTransferResult;
-
 // these are the same strings as the Opal equivalents, but as this is PWLib, we can't use Opal contants
 #define VXML_PCM16         "PCM-16"
 #define VXML_G7231         "G.723.1"
@@ -384,6 +385,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayResource(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual BOOL PlayTone(const PString & toneSpec, PINDEX repeat = 1, PINDEX delay = 0);
 
     //virtual BOOL PlayMedia(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
@@ -411,9 +413,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
-    virtual BOOL DoTransfer(const PVXMLTransferOptions &) { return TRUE; }
-    virtual void OnTransfer(const PVXMLTransferResult &);
-
     void SetCallingToken( PString& token ) { callingCallToken = token; }
 
     PXMLElement * FindHandler(const PString & event);
@@ -423,6 +422,8 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     void OnEndRecording(const PString & channelName);
     void RecordEnd();
     void Trigger();
+
+    PStringToString & GetSessionVars() { return sessionVars; }
 
   protected:
     void Initialise();
@@ -446,13 +447,13 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     BOOL TraverseProperty();
 
     void SayAs(const PString & className, const PString & text);
+    void SayAs(const PString & className, const PString & text, const PString & voice);
+
     static PTimeInterval StringToTime(const PString & str);
 
     PURL NormaliseResourceName(const PString & src);
 
     PXMLElement * FindForm(const PString & id);
-
-    virtual BOOL TraverseTransfer();
 
     //friend class PVXMLChannel;
 
@@ -503,7 +504,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     void      ExecuteDialog();
 
     PString       callingCallToken;
-    PSyncPoint    transferSync;
     PSyncPoint    answerSync;
     PString       grammarResult;
     PString       eventName;
@@ -630,6 +630,19 @@ class PVXMLPlayableData : public PVXMLPlayable
     BOOL Rewind(PChannel * chan);
   protected:
     PBYTEArray data;
+};
+
+//////////////////////////////////////////////////////////////////
+
+#include <ptclib/dtmf.h>
+
+class PVXMLPlayableTone : public PVXMLPlayableData
+{
+  PCLASSINFO(PVXMLPlayableTone, PVXMLPlayableData);
+  public:
+    BOOL Open(PVXMLChannel & chan, const PString & toneSpec, PINDEX _delay, PINDEX _repeat, BOOL v);
+  protected:
+    PTones tones;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -790,64 +803,6 @@ class PVXMLChannel : public PDelayChannel
 
 
 //////////////////////////////////////////////////////////////////
-
-class PVXMLTransferOptions : public PObject
-{
-  PCLASSINFO(PVXMLTransferOptions, PObject);
-  public:
-    PVXMLTransferOptions() { }
-
-    void SetCallingToken(const PString & calling) { callingToken = calling; }
-    PString GetCallingToken() const               { return callingToken; }
-    
-    void SetCalledToken(const PString & called)   { calledToken = called; }
-    PString GetCalledToken( ) const               { return calledToken; }
-
-    void SetSourceDNR(const PString & src)        { source = src; }
-    PString GetSourceDNR() const                  { return source; }
-
-    void SetDestinationDNR(const PString & dest ) { destination = dest; }
-    PString GetDestinationDNR() const             { return destination; }
-
-    void SetTimeout(unsigned int time)            { timeout = time; }
-    unsigned int GetTimeout() const               { return timeout; }
-
-    void SetBridge(BOOL brdg)                     { bridge = brdg; }
-    BOOL GetBridge() const                        { return bridge; }
-
-  private:
-    PString callingToken;
-    PString calledToken;
-    PString destination;
-    PString source;
-    unsigned int timeout;
-    BOOL bridge;
-};
-
-class PVXMLTransferResult : public PString
-{
-  PCLASSINFO(PVXMLTransferResult, PString);
-  public:
-    PVXMLTransferResult()
-    { }
-
-    PVXMLTransferResult(char * cstr) 
-      : PString( cstr ) 
-    { }
-
-    PVXMLTransferResult(const PString & str )
-      : PString(str)
-    {}
-
-    void SetName(const PString & n) 
-    { name = n; }
-
-    PString GetName() const         
-    { return name; } 
-
-  private:
-    PString name;
-};
 
 #endif // P_EXPAT
 #endif
