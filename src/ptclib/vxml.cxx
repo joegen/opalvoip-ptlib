@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.74  2007/09/04 11:33:21  csoutheren
+ * Add PlayTone
+ * Add access to session variable table
+ *
  * Revision 1.73  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -534,6 +538,24 @@ BOOL PVXMLPlayableData::Rewind(PChannel * chan)
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableData> vxmlPlayableDataFactory("PCM Data");
+
+///////////////////////////////////////////////////////////////
+
+BOOL PVXMLPlayableTone::Open(PVXMLChannel & chan, const PString & toneSpec, PINDEX _delay, PINDEX _repeat, BOOL v)
+{ 
+  // populate the tone buffer
+  PTones tones;
+
+  if (!tones.Generate(toneSpec))
+    return FALSE;
+
+  PINDEX len = tones.GetSize() * sizeof(short);
+  memcpy(data.GetPointer(len), tones.GetPointer(), len);
+
+  return PVXMLPlayable::Open(chan, _delay, _repeat, v); 
+}
+
+PFactory<PVXMLPlayable>::Worker<PVXMLPlayableTone> vxmlPlayableToneFactory("Tone");
 
 ///////////////////////////////////////////////////////////////
 
@@ -1058,7 +1080,6 @@ BOOL PVXMLSession::Close()
       waitForEvent.Signal();
 
       // Signal all syncpoints that could be waiting for things
-      transferSync.Signal();
       answerSync.Signal();
       vxmlChannel->Close();
 
@@ -1347,11 +1368,6 @@ void PVXMLSession::ProcessNode()
       }
     }
 
-    else if (nodeType *= "transfer") {
-      if (!forceEnd) 
-        TraverseTransfer();
-    }
-
     else if (nodeType *= "submit")
       TraverseSubmit();
 
@@ -1543,6 +1559,15 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
   return TRUE;
 }
 
+BOOL PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX delay)
+{
+  if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable("Tone", toneSpec, repeat, delay, true))
+    return FALSE;
+
+  AllowClearCall();
+
+  return TRUE;
+}
 
 void PVXMLSession::GetBeepData(PBYTEArray & data, unsigned ms)
 {
@@ -1745,7 +1770,10 @@ BOOL PVXMLSession::TraverseAudio()
     if (element->GetName() *= "value") {
       PString className = element->GetAttribute("class");
       PString value = EvaluateExpr(element->GetAttribute("expr"));
-      SayAs(className, value);
+      PString voice = element->GetAttribute("voice");
+      if (voice.IsEmpty())
+        GetVar("voice");
+      SayAs(className, value, voice);
     }
 
     else if (element->GetName() *= "sayas") {
@@ -1970,6 +1998,15 @@ PXMLElement * PVXMLSession::FindHandler(const PString & event)
 
 void PVXMLSession::SayAs(const PString & className, const PString & _text)
 {
+  SayAs(className, _text, GetVar("voice"));
+}
+
+
+void PVXMLSession::SayAs(const PString & className, const PString & _text, const PString & voice)
+{
+  if (textToSpeech != NULL)
+    textToSpeech->SetVoice(voice);
+
   PString text = _text.Trim();
   if (!text.IsEmpty()) {
     PTextToSpeech::TextType type = PTextToSpeech::Literal;
@@ -2001,8 +2038,7 @@ void PVXMLSession::SayAs(const PString & className, const PString & _text)
     else if (className *= "duration")
       type = PTextToSpeech::Duration;
 
-    else
-      PlayText(text, type);
+    PlayText(text, type);
   }
 }
 
@@ -2017,60 +2053,6 @@ PTimeInterval PVXMLSession::StringToTime(const PString & str)
     msecs = msecs * 1000;
 
   return PTimeInterval(msecs);
-}
-
-BOOL PVXMLSession::TraverseTransfer()
-{
-  PVXMLTransferOptions opts;
-
-  PAssert(currentNode != NULL, "TraverseTransfer(): Expected valid node");
-  if (currentNode == NULL)
-    return FALSE;
-
-  PAssert(currentNode->IsElement(), "TraverseTransfer(): Expected element");
-  
-  // Retreive parameters
-  PString dest = ((PXMLElement*)currentNode)->GetAttribute("dest");
-  PString source = ((PXMLElement*)currentNode)->GetAttribute("source");
-  PString connectTimeoutStr = ((PXMLElement*)currentNode)->GetAttribute("connecttimeout");
-  PString bridgeStr = ((PXMLElement*)currentNode)->GetAttribute("dest");
-  
-  BOOL bridge = bridgeStr *= "true";
-  PINDEX connectTimeout = connectTimeoutStr.AsInteger();
-
-  if ((connectTimeout < 2) && (connectTimeout > 30))
-    connectTimeout = 30;
-
-  if (dest.Find("phone://") == P_MAX_INDEX)
-    return FALSE;
-  dest.Delete(0, 8);
-
-  if (source.Find("phone://") == P_MAX_INDEX)
-    return FALSE;
-  source.Delete(0, 8);
-
-  opts.SetCallingToken(callingCallToken );
-  opts.SetDestinationDNR(dest);
-  opts.SetSourceDNR(source);
-  opts.SetTimeout(connectTimeout);
-  opts.SetBridge(bridge);
-
-  DoTransfer(opts);
-
-  // Wait for the transfer result signal
-  transferSync.Wait();
-
-  return TRUE;
-}
-
-void PVXMLSession::OnTransfer(const PVXMLTransferResult & args)
-{
-  // transfer has ended, save result
-  SetVar(args.GetName(), args);
-
-  // Signal transfer initiator that the transfer has ended and the VXML can 
-  // continue
-  transferSync.Signal();
 }
 
 BOOL PVXMLSession::TraverseIf()
@@ -3013,6 +2995,242 @@ BOOL PVXMLChannelG729::IsSilenceFrame(const void * /*buf*/, PINDEX /*len*/) cons
   return FALSE;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
+class TextToSpeech_Sample : public PTextToSpeech
+{
+  public:
+    TextToSpeech_Sample();
+    PStringArray GetVoiceList();
+    BOOL SetVoice(const PString & voice);
+    BOOL SetRate(unsigned rate);
+    unsigned GetRate();
+    BOOL SetVolume(unsigned volume);
+    unsigned GetVolume();
+    BOOL OpenFile   (const PFilePath & fn);
+    BOOL OpenChannel(PChannel * chanel);
+    BOOL IsOpen()    { return opened; }
+    BOOL Close();
+    BOOL Speak(const PString & text, TextType hint = Default);
+    BOOL SpeakFile(const PString & text);
+
+  protected:
+    //PTextToSpeech * defaultEngine;
+
+    PMutex mutex;
+    BOOL opened;
+    BOOL usingFile;
+    PString text;
+    PFilePath path;
+    unsigned volume, rate;
+    PString voice;
+
+    std::vector<PFilePath> filenames;
+};
+
+TextToSpeech_Sample::TextToSpeech_Sample()
+{
+  PWaitAndSignal m(mutex);
+  usingFile = opened = FALSE;
+  rate = 8000;
+  volume = 100;
+}
+
+PStringArray TextToSpeech_Sample::GetVoiceList()
+{
+  PStringArray r;
+  return r;
+}
+
+BOOL TextToSpeech_Sample::SetVoice(const PString & v)
+{
+  voice = v;
+  return TRUE;
+}
+
+BOOL TextToSpeech_Sample::SetRate(unsigned v)
+{
+  rate = v;
+  return TRUE;
+}
+
+unsigned TextToSpeech_Sample::GetRate()
+{
+  return rate;
+}
+
+BOOL TextToSpeech_Sample::SetVolume(unsigned v)
+{
+  volume = v;
+  return TRUE;
+}
+
+unsigned TextToSpeech_Sample::GetVolume()
+{
+  return volume;
+}
+
+BOOL TextToSpeech_Sample::OpenFile(const PFilePath & fn)
+{
+  PWaitAndSignal m(mutex);
+
+  Close();
+  usingFile = TRUE;
+  path = fn;
+  opened = TRUE;
+
+  PTRACE(3, "TTS\tWriting speech to " << fn);
+
+  return TRUE;
+}
+
+BOOL TextToSpeech_Sample::OpenChannel(PChannel * /*chanel*/)
+{
+  PWaitAndSignal m(mutex);
+
+  Close();
+  usingFile = FALSE;
+  opened = FALSE;
+
+  return TRUE;
+}
+
+BOOL TextToSpeech_Sample::Close()
+{
+  PWaitAndSignal m(mutex);
+
+  if (!opened)
+    return TRUE;
+
+  BOOL stat = TRUE;
+
+  if (usingFile) {
+    PWAVFile outputFile("PCM-16", path, PFile::WriteOnly);
+    if (!outputFile.IsOpen()) {
+      PTRACE(1, "TTS\tCannot create output file " << path);
+      stat = FALSE;
+    }
+    else {
+      std::vector<PFilePath>::const_iterator r;
+      for (r = filenames.begin(); r != filenames.end(); ++r) {
+        PFilePath f = *r;
+        PWAVFile file;
+        file.SetAutoconvert();
+        if (!file.Open(f, PFile::ReadOnly)) {
+          PTRACE(1, "TTS\tCannot open input file " << f);
+          stat = FALSE;
+        } else {
+          PTRACE(1, "TTS\tReading from " << f);
+          BYTE buffer[1024];
+          for (;;) {
+            if (!file.Read(buffer, 1024))
+              break;
+            outputFile.Write(buffer, file.GetLastReadCount());
+          }
+        }
+      }
+    }
+    filenames.erase(filenames.begin(), filenames.end());
+  }
+
+  opened = FALSE;
+  return stat;
+}
+
+BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
+{
+  PStringArray tokens = text.Tokenise("\t\n\r ", FALSE);
+  for (PINDEX i = 0; i < tokens.GetSize(); ++i) {
+    PString word = tokens[i].Trim();
+    switch (hint) {
+      case Default:
+        break;
+      case Literal:
+        break;
+      case Phone:
+      case Digits:
+        for (PINDEX i = 0; i < text.GetLength(); ++i) {
+          if (isdigit(text[i]))
+            SpeakFile(PString(text[i]));
+        }
+        break;
+      case Number:
+        {
+          int number = atoi(word);
+          if (number < 0) {
+            SpeakFile("negative");
+            number = -number;
+          } 
+          else if (number == 0) {
+            SpeakFile("0");
+          } 
+          else {
+            if (number >= 1000000) {
+              int millions = number / 1000000;
+              number = number % 1000000;
+              Speak(PString(PString::Signed, millions), Number);
+              SpeakFile("million");
+            }
+            if (number >= 1000) {
+              int thousands = number / 1000;
+              number = number % 1000;
+              Speak(PString(PString::Signed, thousands), Number);
+              SpeakFile("thousand");
+            }
+            if (number >= 100) {
+              int hundreds = number / 100;
+              number = number % 100;
+              Speak(PString(PString::Signed, hundreds), Number);
+              SpeakFile("hundred");
+            }
+            if (!SpeakFile(PString(PString::Signed, number))) {
+              int tens = number / 10;
+              number = number % 10;
+              if (tens > 0)
+                SpeakFile(PString(PString::Signed, tens*10));
+              if (number > 0)
+                SpeakFile(PString(PString::Signed, number));
+            }
+          }
+        }
+        break;
+      case Currency:
+        break;
+      case Time:
+        break;
+      case Date:
+        break;
+      case IPAddress:
+        {
+          PIPSocket::Address addr(text);
+          for (PINDEX i = 0; i < 4; ++i) {
+            int octet = addr[i];
+            if (octet < 100)
+              Speak(octet, Number);
+            else
+              Speak(octet, Digits);
+            if (i != 3)
+              SpeakFile("dot");
+          }
+        }
+        break;
+      case Duration:
+        break;
+    }
+  }
+  return TRUE;
+}
+
+BOOL TextToSpeech_Sample::SpeakFile(const PString & text)
+{
+  PFilePath f = PDirectory(voice) + (text + ".wav");
+  if (!PFile::Exists(f))
+    return FALSE;
+  filenames.push_back(f);
+  return TRUE;
+}
+
+PFactory<PTextToSpeech>::Worker<TextToSpeech_Sample> sampleTTSFactory("sampler", false);
 
 #endif   // P_EXPAT
 
