@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.254  2007/09/04 02:00:03  rjongbloed
+ * Added environment variables PWLIB_TRACE_LEVEL, PWLIB_TRACE_OPTIONS
+ *   and PWLIB_TRACE_FILE so can get tracing during early stages of application
+ *   initialisation, or from applications that do not allow tracing to be adjusted.
+ *
  * Revision 1.253  2007/07/06 02:44:33  csoutheren
  * Fixed compile on Linux
  *
@@ -886,7 +891,6 @@ class PSimpleThread : public PThread
     INT parameter;
 };
 
-static PMutex * PTraceMutex = NULL;
 
 #ifndef __NUCLEUS_PLUS__
 static ostream * PErrorStream = &cerr;
@@ -911,70 +915,141 @@ void PSetErrorStream(ostream * s)
 
 //////////////////////////////////////////////////////////////////////////////
 
-#if !defined(__NUCLEUS_PLUS__) 
-static ostream * PTraceStream = &cerr;
+class PTraceInfo
+{
+public:
+  unsigned      currentLevel;
+  unsigned      options;
+  unsigned      thresholdLevel;
+  const char  * filename;
+  ostream     * stream;
+  PTimeInterval startTick;
+  const char  * rolloverPattern;
+  unsigned      lastDayOfYear;
+
+  PCriticalSection * mutex;
+
+
+  PTraceInfo()
+    : currentLevel(0)
+    , filename(NULL)
+#ifdef __NUCLEUS_PLUS__
+    , stream(NULL)
 #else
-
-#ifdef __NUCLEUS_PLUS__ 
-static ostream * PTraceStream = 0L;
+    , stream(&cerr)
+#endif
+    , startTick(PTimer::Tick())
+    , rolloverPattern("yyyy_MM_dd")
+    , lastDayOfYear(0)
+  {
+    // This flag must never be destroyed before it is finished with. As we
+    // cannot assure destruction at the right time we simply allocate it and
+    // NEVER destroy it! This is OK as the only reason for its destruction is
+    // the program is exiting and then who cares?
+#if PMEMORY_CHECK
+    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
 
+    mutex = new PCriticalSection;
+
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
 #endif
 
-static unsigned PTraceOptions = PTrace::FileAndLine;
-static unsigned PTraceLevelThreshold = 0;
-static PTimeInterval ApplicationStartTick = PTimer::Tick();
-unsigned PTraceCurrentLevel;
-static const char * PTrace_Filename = NULL;
-static const char * PTrace_RolloverPattern = "yyyy_MM_dd";
-static int PTrace_lastDayOfYear = 0;
+    const char * env = getenv("PWLIB_TRACE_STARTUP"); // Backward compatibility test
+    if (env != NULL) {
+      thresholdLevel = atoi(env);
+      options = PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine;
+    }
+    else {
+      env = getenv("PWLIB_TRACE_LEVEL");
+      thresholdLevel = env != NULL ? atoi(env) : 0;
+
+      env = getenv("PWLIB_TRACE_OPTIONS");
+      options = env != NULL ? atoi(env) : PTrace::FileAndLine;
+    }
+
+    OpenTraceFile(getenv("PWLIB_TRACE_FILE"));
+  }
+
+  static PTraceInfo & Instance()
+  {
+    static PTraceInfo info;
+    return info;
+  }
+
+  void SetStream(ostream * newStream)
+  {
+#ifndef __NUCLEUS_PLUS__
+    if (newStream == NULL)
+      newStream = &cerr;
+#endif
+
+    mutex->Wait();
+
+    if (stream != &cerr && stream != &cout)
+      delete stream;
+    stream = newStream;
+
+    mutex->Signal();
+  }
+
+  void OpenTraceFile(const char * newFilename)
+  {
+    if (newFilename != NULL)
+      filename = newFilename;
+
+    if (filename == NULL)
+      return;
+
+#if PMEMORY_CHECK
+    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+
+    if (strcasecmp(filename, "stderr") == 0)
+      SetStream(&cerr);
+    else if (strcasecmp(filename, "stdout") == 0)
+      SetStream(&cout);
+#ifdef _WIN32
+    else if (strcasecmp(filename, "DEBUGSTREAM") == 0)
+      SetStream(new PDebugStream);
+#endif
+    else {
+      PFilePath fn(filename);
+      fn.Replace("%P", PString((unsigned int) PProcess::Current().GetProcessID()));
+     
+      if ((options & PTrace::RotateDaily) != 0)
+      {
+          PTime now;
+          fn = PFilePath(fn.GetDirectory() + fn.GetTitle() + now.AsString(rolloverPattern, ((options&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) + fn.GetType());
+      }
+
+      PTextFile * traceOutput;
+      if (options & PTrace::AppendToFile) {
+        traceOutput = new PTextFile(fn, PFile::ReadWrite);
+        traceOutput->SetPosition(0, PFile::End);
+      }
+      else 
+        traceOutput = new PTextFile(fn, PFile::WriteOnly);
+
+      if (traceOutput->IsOpen())
+        SetStream(traceOutput);
+      else {
+        PTRACE(0, PProcess::Current().GetName() << "Could not open trace output file \"" << fn << '"');
+        delete traceOutput;
+      }
+    }
+
+  #if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
+  #endif
+  }
+};
+
 
 void PTrace::SetStream(ostream * s)
 {
-#ifndef __NUCLEUS_PLUS__
-  if (s == NULL)
-    s = &cerr;
-#endif
-
-  if (PTraceMutex == NULL)
-    PTraceStream = s;
-  else {
-    PWaitAndSignal m(*PTraceMutex);
-    PTraceStream = s;
-  }
-}
-
-static void OpenTraceFile()
-{
-  PFilePath fn(PTrace_Filename);
-  PFilePath temp = PTrace_Filename;
-
-  int i;
-  if ((i = temp.Find("%P")) != P_MAX_INDEX)
-  {
-    temp.Replace("%P", PString((unsigned int) PProcess::Current().GetProcessID()));
-    fn = temp;
-  }
- 
-  if ((PTraceOptions & PTrace::RotateDaily) != 0)
-  {
-      PTime now;
-      fn = PFilePath(fn.GetDirectory() + fn.GetTitle() + now.AsString((const char *) PTrace_RolloverPattern, ((PTraceOptions&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) + fn.GetType());
-  }
-
-  PTextFile * traceOutput;
-  if (PTraceOptions & PTrace::AppendToFile) {
-    traceOutput = new PTextFile(fn, PFile::ReadWrite);
-    traceOutput->SetPosition(0, PFile::End);
-  } else 
-    traceOutput = new PTextFile(fn, PFile::WriteOnly);
-
-  if (traceOutput->IsOpen())
-    PTrace::SetStream(traceOutput);
-  else {
-    PTRACE(0, PProcess::Current().GetName() << "Could not open trace output file \"" << fn << '"');
-    delete traceOutput;
-  }
+  PTraceInfo::Instance().SetStream(s);
 }
 
 void PTrace::Initialise(
@@ -988,46 +1063,19 @@ void PTrace::Initialise(
 
 void PTrace::Initialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
 {
-  // If we have a tracing version, then open trace file and set modes
-#if PTRACING
-  PProcess & process = PProcess::Current();
-#endif
+  PTraceInfo & info = PTraceInfo::Instance();
 
-#if PMEMORY_CHECK
-  int ignoreAllocations = -1;
-#endif
-
-  PTrace_Filename = filename;
-  PTraceOptions = options;
-
+  info.options = options;
+  info.thresholdLevel = level;
+  info.rolloverPattern = rolloverPattern != NULL ? rolloverPattern : "yyyy_MM_dd";
   // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
   // between os_gmtime and os_localtime?
-  if (options & RotateDaily) {
-    if (rolloverPattern != NULL)
-      PTrace_RolloverPattern = rolloverPattern;
-    else
-      PTrace_RolloverPattern = "yyyy_MM_dd";
-    PTrace_lastDayOfYear = PTime().GetDayOfYear(); 
-  }
-  else
-    PTrace_lastDayOfYear = 0;
+  info.lastDayOfYear = (options & RotateDaily) != 0 ? PTime().GetDayOfYear() : 0;
 
-  if (filename != NULL) {
-#if PMEMORY_CHECK
-    ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE) ? 1 : 0;
-#endif
-
-#ifdef _WIN32
-    if (strcasecmp(filename, "DEBUGSTREAM") == 0)
-      PTrace::SetStream(new PDebugStream);
-    else
-#endif
-      OpenTraceFile();
-  }
-
-  PTraceLevelThreshold = level;
+  info.OpenTraceFile(filename);
 
 #if PTRACING
+  PProcess & process = PProcess::Current();
   Begin(0, "", 0) << "\tVersion " << process.GetVersion(TRUE)
                   << " by " << process.GetManufacturer()
                   << " on " << process.GetOSClass() << ' ' << process.GetOSName()
@@ -1036,118 +1084,109 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
                   << End;
 #endif
 
-#if PMEMORY_CHECK
-  if (ignoreAllocations >= 0)
-    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations != 0);
-#endif
 }
 
 
 void PTrace::SetOptions(unsigned options)
 {
-  PTraceOptions |= options;
+  PTraceInfo::Instance().options |= options;
 }
 
 
 void PTrace::ClearOptions(unsigned options)
 {
-  PTraceOptions &= ~options;
+  PTraceInfo::Instance().options &= ~options;
 }
 
 
 unsigned PTrace::GetOptions()
 {
-  return PTraceOptions;
+  return PTraceInfo::Instance().options;
 }
 
 
 void PTrace::SetLevel(unsigned level)
 {
-  PTraceLevelThreshold = level;
+  PTraceInfo::Instance().thresholdLevel = level;
 }
 
 
 unsigned PTrace::GetLevel()
 {
-  return PTraceLevelThreshold;
+  return PTraceInfo::Instance().thresholdLevel;
 }
 
 
 BOOL PTrace::CanTrace(unsigned level)
 {
-  return level <= PTraceLevelThreshold;
+  return level <= PTraceInfo::Instance().thresholdLevel;
 }
 
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
-  if (PTraceMutex == NULL) {
-    PAssertAlways("Cannot use PTRACE before PProcess constructed.");
-    return *PTraceStream;
-  }
+  PTraceInfo & info = PTraceInfo::Instance();
 
   if (level == UINT_MAX)
-    return *PTraceStream;
+    return *info.stream;
 
-  PTraceMutex->Wait();
+  info.mutex->Wait();
 
   // Before we do new trace, make sure we clear any errors on the stream
-  PTraceStream->clear();
+  info.stream->clear();
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex
-  PTraceCurrentLevel = level;
+  info.currentLevel = level;
 
-  if ((PTrace_Filename != NULL) && (PTraceOptions&RotateDaily) != 0) {
-    int day = PTime().GetDayOfYear();
-    if (day != PTrace_lastDayOfYear) {
-      delete PTraceStream;
-      PTraceStream = NULL;
-      OpenTraceFile();
-      PTrace_lastDayOfYear = day;
-      if (PTraceStream == NULL) {
-        PTraceMutex->Signal();
-        return *PTraceStream;
+  if ((info.filename != NULL) && (info.options&RotateDaily) != 0) {
+    unsigned day = PTime().GetDayOfYear();
+    if (day != info.lastDayOfYear) {
+      info.OpenTraceFile(NULL);
+      info.lastDayOfYear = day;
+      if (info.stream == NULL) {
+        info.mutex->Signal();
+        return *info.stream;
       }
     }
   }
 
-  if ((PTraceOptions&SystemLogStream) == 0) {
-    if ((PTraceOptions&DateAndTime) != 0) {
+  if ((info.options&SystemLogStream) == 0) {
+    if ((info.options&DateAndTime) != 0) {
       PTime now;
-      *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", (PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local);
+      *info.stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", (info.options&GMTTime) ? PTime::GMT : PTime::Local);
     }
 
-    if ((PTraceOptions&Timestamp) != 0)
-      *PTraceStream << setprecision(3) << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
+    if ((info.options&Timestamp) != 0)
+      *info.stream << setprecision(3) << setw(10) << (PTimer::Tick()-info.startTick) << '\t';
 
-    if ((PTraceOptions&Thread) != 0) {
+    if ((info.options&Thread) != 0) {
       PThread * thread = PThread::Current();
       if (thread == NULL)
-        *PTraceStream << "ThreadID=0x"
+        *info.stream << "ThreadID=0x"
                       << setfill('0') << hex << setw(8)
                       << PThread::GetCurrentThreadId()
                       << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
         if (name.GetLength() <= 12)
-          *PTraceStream << setw(12) << name;
+          *info.stream << setw(12) << name;
         else
-          *PTraceStream << name.Left(10) << "..." << name.Right(10);
+          *info.stream << name.Left(10) << "..." << name.Right(10);
       }
-      *PTraceStream << '\t';
+      *info.stream << '\t';
     }
 
-    if ((PTraceOptions&ThreadAddress) != 0)
-      *PTraceStream << hex << setfill('0')
+    if ((info.options&ThreadAddress) != 0)
+      *info.stream << hex << setfill('0')
                     << setw(7) << (void *)PThread::Current()
                     << dec << setfill(' ') << '\t';
   }
 
-  if ((PTraceOptions&TraceLevel) != 0)
-    *PTraceStream << level << '\t';
+  if ((info.options&TraceLevel) != 0)
+    *info.stream << level << '\t';
 
-  if ((PTraceOptions&FileAndLine) != 0 && fileName != NULL) {
+  if ((info.options&FileAndLine) != 0 && fileName != NULL) {
     const char * file = strrchr(fileName, '/');
     if (file != NULL)
       file++;
@@ -1159,15 +1198,17 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
         file = fileName;
     }
 
-    *PTraceStream << setw(16) << file << '(' << lineNum << ")\t";
+    *info.stream << setw(16) << file << '(' << lineNum << ")\t";
   }
 
-  return *PTraceStream;
+  return *info.stream;
 }
 
 
 ostream & PTrace::End(ostream & s)
 {
+  PTraceInfo & info = PTraceInfo::Instance();
+
   /* Only output if there is something to output, this prevents some blank trace
      entries from appearing under some patholgical conditions. Unfortunately if
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
@@ -1186,19 +1227,19 @@ ostream & PTrace::End(ostream & s)
 #endif
 #endif
     {
-    if ((PTraceOptions&SystemLogStream) != 0) {
+    if ((info.options&SystemLogStream) != 0) {
       // Get the trace level for this message and set the stream width to that
       // level so that the PSystemLog can extract the log level back out of the
       // ios structure. There could be portability issues with this though it
       // should work pretty universally.
-      s.width(PTraceCurrentLevel+1);
+      s.width(info.currentLevel+1);
       s.flush();
     }
     else
       s << endl;
   }
 
-  PTraceMutex->Signal();
+  info.mutex->Signal();
 
   return s;
 }
@@ -1210,7 +1251,7 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
   line = lineNum;
   name = traceName;
 
-  if ((PTraceOptions&Blocks) != 0) {
+  if ((PTraceInfo::Instance().options&Blocks) != 0) {
     PThread * thread = PThread::Current();
     thread->traceBlockIndentLevel += 2;
 
@@ -1225,7 +1266,7 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
 
 PTrace::Block::~Block()
 {
-  if ((PTraceOptions&Blocks) != 0) {
+  if ((PTraceInfo::Instance().options&Blocks) != 0) {
     PThread * thread = PThread::Current();
 
     ostream & s = PTrace::Begin(1, file, line);
@@ -2046,18 +2087,6 @@ PProcess::PProcess(const char * manuf, const char * name,
   status = stat;
   buildNumber = build;
 
-  // This flag must never be destroyed before it is finished with. As we
-  // cannot assure destruction at the right time we simply allocate it and
-  // NEVER destroy it! This is OK as the only reason for its destruction is
-  // the program is exiting and then who cares?
-#if PMEMORY_CHECK
-  BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
-  PTraceMutex = new PMutex;
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-#endif
-
 #ifndef P_RTEMS
   if (p_argv != 0 && p_argc > 0) {
     arguments.SetArgs(p_argc-1, p_argv+1);
@@ -2116,11 +2145,6 @@ PProcess::PProcess(const char * manuf, const char * name,
     PProcessStartup * levelSet = PFactory<PProcessStartup>::CreateInstance("SetTraceLevel");
     if (levelSet != NULL) 
       levelSet->OnStartup();
-    else {
-      char * env = ::getenv("PWLIB_TRACE_STARTUP");
-      if (env != NULL) 
-        PTrace::Initialise(atoi(env), NULL, PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-    }
 
     PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
     PProcessStartupFactory::KeyList_T::const_iterator r;
