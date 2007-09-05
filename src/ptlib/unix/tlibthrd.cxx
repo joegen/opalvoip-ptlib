@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.174  2007/09/05 12:40:11  csoutheren
+ * Add generic test for mutex type
+ *
  * Revision 1.173  2007/09/05 11:58:47  csoutheren
  * Fixed build on MacOSX
  *
@@ -1742,20 +1745,21 @@ BOOL PSemaphore::WillBlock() const
 #endif
 }
 
-#if defined(P_QNX) && (P_HAS_RECURSIVE_MUTEX == 1)
-#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
-#endif
-#if defined(P_MACOSX) && (P_HAS_RECURSIVE_MUTEX == 1)
-#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
-#endif
-
 PTimedMutex::PTimedMutex()
 //  : PSemaphore(PXMutex)
 {
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
   PAssertPTHREAD(pthread_mutexattr_init, (&attr));
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr,
+#if P_HAS_RECURSIVE_MUTEX == 2
+PTHREAD_MUTEX_RECURSIVE
+#else
+PTHREAD_MUTEX_RECURSIVE_NP
+#endif
+));
+
   PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
