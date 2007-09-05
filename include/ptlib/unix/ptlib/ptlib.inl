@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.40  2007/09/05 11:09:10  csoutheren
+ * Removed misleading and incorrect code from Linux implementation of
+ * PCriticalSection. Apologies to Hannes Friederich :(
+ *
  * Revision 1.39  2007/09/05 08:03:25  hfriederich
  * Implement PCriticalSection with named semaphores
  *
@@ -200,43 +204,5 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 #endif // !VX_TASKS
 
 #endif // BE_THREADS
-
-///////////////////////////////////////////////////////////////////////////////
-
-#if defined P_HAS_SEMAPHORES && !defined VX_TASKS
-
-PINLINE PCriticalSection::PCriticalSection()
-{ ::sem_init(&sem, 0, 1); }
-
-PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
-{ ::sem_init(&sem, 0, 1); }
-
-PINLINE PCriticalSection::~PCriticalSection()
-{ ::sem_destroy(&sem); }
-
-PINLINE void PCriticalSection::Wait() 
-{ ::sem_wait(&sem); lockerId = pthread_self(); }
-
-PINLINE void PCriticalSection::Signal()
-{ lockerId = (pthread_t)-1; ::sem_post(&sem); }
-
-#elif defined P_HAS_NAMED_SEMAPHORES
-
-PINLINE PCriticalSection::PCriticalSection()
-{ sem = PSemaphore::CreateSem(1); }
-
-PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
-{ sem = PSemaphore::CreateSem(1); }
-
-PINLINE PCriticalSection::~PCriticalSection()
-{  sem_close(sem); }
-
-PINLINE void PCriticalSection::Wait()
-{  sem_wait(sem); lockerId = pthread_self(); }
-
-PINLINE void PCriticalSection::Signal()
-{  lockerId = (pthread_t)-1; sem_post(sem); }
-
-#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
