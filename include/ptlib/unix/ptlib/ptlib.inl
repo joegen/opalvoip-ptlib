@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.39  2007/09/05 08:03:25  hfriederich
+ * Implement PCriticalSection with named semaphores
+ *
  * Revision 1.38  2007/08/17 05:29:19  csoutheren
  * Add field to Linux showing locking thread to assist in debugging
  *
@@ -216,6 +219,23 @@ PINLINE void PCriticalSection::Wait()
 
 PINLINE void PCriticalSection::Signal()
 { lockerId = (pthread_t)-1; ::sem_post(&sem); }
+
+#elif defined P_HAS_NAMED_SEMAPHORES
+
+PINLINE PCriticalSection::PCriticalSection()
+{ sem = PSemaphore::CreateSem(1); }
+
+PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
+{ sem = PSemaphore::CreateSem(1); }
+
+PINLINE PCriticalSection::~PCriticalSection()
+{  sem_close(sem); }
+
+PINLINE void PCriticalSection::Wait()
+{  sem_wait(sem); lockerId = pthread_self(); }
+
+PINLINE void PCriticalSection::Signal()
+{  lockerId = (pthread_t)-1; sem_post(sem); }
 
 #endif
 

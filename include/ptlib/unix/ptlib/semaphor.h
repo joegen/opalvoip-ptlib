@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.25  2007/09/05 08:03:25  hfriederich
+ * Implement PCriticalSection with named semaphores
+ *
  * Revision 1.24  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -139,7 +142,9 @@
     mutable sem_t semId;
 #elif defined(P_HAS_NAMED_SEMAPHORES)
     mutable sem_t *semId;
-    sem_t *CreateSem(unsigned initialValue);
+    static sem_t *CreateSem(unsigned initialValue);
+	friend PCriticalSection::PCriticalSection();
+	friend PCriticalSection::PCriticalSection(const PCriticalSection &);
 #else
     mutable unsigned currentCount;
     mutable unsigned maximumCount;
