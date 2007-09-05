@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.20  2007/09/05 11:09:09  csoutheren
+ * Removed misleading and incorrect code from Linux implementation of
+ * PCriticalSection. Apologies to Hannes Friederich :(
+ *
  * Revision 1.19  2006/09/22 00:32:21  csoutheren
  * Forced PAtomicInteger::operator= to be private in all compile paths
  *
@@ -110,8 +114,10 @@
 /** This class implements critical section mutexes using the most
   * efficient mechanism available on the host platform.
   * For Windows, CriticalSection is used.
-  * On other platforms, the sem_wait call is used.
+  * On other platforms, pthread_mutex_t is used
   */
+
+#ifdef _WIN32
 
 class PCriticalSection : public PSync
 {
@@ -154,13 +160,11 @@ class PCriticalSection : public PSync
   private:
     PCriticalSection & operator=(const PCriticalSection &) { return *this; }
 
-// Include platform dependent part of class
-#ifdef _WIN32
 #include "msos/ptlib/critsec.h"
-#else
-#include "unix/ptlib/critsec.h"
-#endif
+
 };
+
+#endif
 
 typedef PWaitAndSignal PEnterAndLeave;
 
