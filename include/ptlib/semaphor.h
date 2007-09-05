@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.22  2007/09/05 11:58:47  csoutheren
+ * Fixed build on MacOSX
+ *
  * Revision 1.21  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -114,6 +117,7 @@
 
 #include <ptlib/psync.h>
 #include <limits.h>
+#include <ptlib/critsec.h>
 
 /**This class defines a thread synchonisation object. This is in the form of a
    integer semaphore. The semaphore has a count and a maximum value. The

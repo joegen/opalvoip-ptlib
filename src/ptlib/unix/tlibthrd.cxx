@@ -27,11 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
- * Revision 1.172  2007/09/05 11:28:15  hfriederich
- * Cleanup & protection against recursive initialization
- *
- * Revision 1.171  2007/09/05 08:53:27  hfriederich
- * Prevent recursive initialization when using named semaphores
+ * Revision 1.173  2007/09/05 11:58:47  csoutheren
+ * Fixed build on MacOSX
  *
  * Revision 1.170  2007/08/17 07:29:21  csoutheren
  * Fix build on MacOSX
@@ -631,39 +628,6 @@ static BOOL PAssertThreadOp(int retval,
 {
   if (retval == 0) {
     PTRACE_IF(2, retry > 0, "PWLib\t" << funcname << " required " << retry << " retries!");
-    return FALSE;
-  }
-
-  if (errno == EINTR || errno == EAGAIN) {
-    if (++retry < 1000) {
-#if defined(P_RTEMS)
-      sched_yield();
-#else
-      usleep(10000); // Basically just swap out thread to try and clear blockage
-#endif
-      return TRUE;   // Return value to try again
-    }
-    // Give up and assert
-  }
-
-  PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
-  return FALSE;
-}
-
-#define PAssertPTHREAD_NoPTrace(func, args) \
-  { \
-    unsigned threadOpRetry = 0; \
-    while (PAssertThreadOpNoPThread(func args, threadOpRetry, #func, __FILE__, __LINE__)); \
-  }
-  
-  static BOOL PAssertThreadOpNoPThread(int retval,
-                            unsigned & retry,
-                            const char * funcname,
-                            const char * file,
-                            unsigned line)
-{
-  if (retval == 0) {
-    // Don't use PTrace here!
     return FALSE;
   }
 
@@ -1605,16 +1569,14 @@ sem_t * PSemaphore::CreateSem(unsigned initialValue)
   // Since sem_open and sem_unlink are two operations, there is a small
   // window of opportunity that two simultaneous accesses may return
   // the same semaphore. Therefore, the static mutex is used to
-  // prevent this.
-  // Don't use PTRACE within the assertion macro as this will lead
-  // to a recursive initialization (__gnu_cxx::recursive_init)
+  // prevent this, even if the chances are small
   static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
-  PAssertPTHREAD_NoPTrace(pthread_mutex_lock, (&semCreationMutex));
+  PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
   
   sem_unlink("/pwlib_sem");
   sem = sem_open("/pwlib_sem", (O_CREAT | O_EXCL), 700, initialValue);
   
-  PAssertPTHREAD_NoPTrace(pthread_mutex_unlock, (&semCreationMutex));
+  PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
   
   PAssert(((int)sem != SEM_FAILED), "Couldn't create named semaphore");
   return sem;
@@ -1792,10 +1754,10 @@ PTimedMutex::PTimedMutex()
 {
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
-  PAssertPTHREAD_NoPTrace(pthread_mutexattr_init, (&attr));
-  PAssertPTHREAD_NoPTrace(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
-  PAssertPTHREAD_NoPTrace(pthread_mutex_init, (&mutex, &attr));
-  PAssertPTHREAD_NoPTrace(pthread_mutexattr_destroy, (&attr));
+  PAssertPTHREAD(pthread_mutexattr_init, (&attr));
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
 #endif
