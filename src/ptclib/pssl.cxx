@@ -26,8 +26,12 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.45 2007/04/04 01:51:38 rjongbloed Exp $
+ * $Id: pssl.cxx,v 1.46 2007/09/05 12:55:43 csoutheren Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.46  2007/09/05 12:55:43  csoutheren
+ * Applied 1711861 - patches for better OpenBSD support
+ * Thanks to Antoine Jacoutot
+ *
  * Revision 1.45  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -790,7 +794,7 @@ PSSLDiffieHellman::~PSSLDiffieHellman()
     DH_free(dh);
 }
 
-#if defined(__BEOS__) || defined(__APPLE__)
+#if defined(__BEOS__) || defined(__APPLE__) || defined(__OpenBSD__)
 // 2/21/04 Yuri Kiryanov - fix for compiler choke on BeOS for usage of
 // SSL function d2i_DHparams_bio below in PSSLDiffieHellman::Load
 // 5/26/06 Hannes Friederich - Mac OS X seems to need that fix too...
