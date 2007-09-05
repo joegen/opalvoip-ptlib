@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.172  2007/09/05 11:28:15  hfriederich
+ * Cleanup & protection against recursive initialization
+ *
  * Revision 1.171  2007/09/05 08:53:27  hfriederich
  * Prevent recursive initialization when using named semaphores
  *
@@ -1789,10 +1792,10 @@ PTimedMutex::PTimedMutex()
 {
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
-  PAssertPTHREAD(pthread_mutexattr_init, (&attr));
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
-  PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
+  PAssertPTHREAD_NoPTrace(pthread_mutexattr_init, (&attr));
+  PAssertPTHREAD_NoPTrace(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+  PAssertPTHREAD_NoPTrace(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD_NoPTrace(pthread_mutexattr_destroy, (&attr));
 #else
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
 #endif
