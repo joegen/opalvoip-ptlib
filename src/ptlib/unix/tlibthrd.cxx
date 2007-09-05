@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.175  2007/09/05 12:47:08  csoutheren
+ * Fixes, fixes, fixes
+ *
  * Revision 1.174  2007/09/05 12:40:11  csoutheren
  * Add generic test for mutex type
  *
@@ -1773,7 +1776,14 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
   PAssertPTHREAD(pthread_mutexattr_init, (&attr));
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, 
+#if P_HAS_RECURSIVE_MUTEX == 2
+PTHREAD_MUTEX_RECURSIVE
+#else
+PTHREAD_MUTEX_RECURSIVE_NP
+#endif
+));
+
   PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
