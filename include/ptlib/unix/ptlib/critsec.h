@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.5  2007/09/05 08:03:25  hfriederich
+ * Implement PCriticalSection with named semaphores
+ *
  * Revision 1.4  2005/11/04 06:56:10  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -46,6 +49,8 @@
   // Unix specific critical section implementation
 #if defined P_HAS_SEMAPHORES && !defined P_VXWORKS
   mutable sem_t sem;
+#elif defined P_HAS_NAMED_SEMAPHORES
+  mutable sem_t * sem;
 #endif
 
 // End Of File ///////////////////////////////////////////////////////////////
