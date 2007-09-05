@@ -27,11 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
- * Revision 1.26  2007/09/05 11:28:14  hfriederich
- * Cleanup & protection against recursive initialization
- *
- * Revision 1.25  2007/09/05 08:03:25  hfriederich
- * Implement PCriticalSection with named semaphores
+ * Revision 1.27  2007/09/05 11:58:47  csoutheren
+ * Fixed build on MacOSX
  *
  * Revision 1.24  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
@@ -145,7 +142,7 @@
     mutable sem_t semId;
 #elif defined(P_HAS_NAMED_SEMAPHORES)
     mutable sem_t *semId;
-    static sem_t *CreateSem(unsigned initialValue);
+    sem_t *CreateSem(unsigned initialValue);
 #else
     mutable unsigned currentCount;
     mutable unsigned maximumCount;

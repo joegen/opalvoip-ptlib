@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.16  2007/09/05 11:58:47  csoutheren
+ * Fixed build on MacOSX
+ *
  * Revision 1.15  2007/09/05 11:09:09  csoutheren
  * Removed misleading and incorrect code from Linux implementation of
  * PCriticalSection. Apologies to Hannes Friederich :(
@@ -159,7 +162,7 @@ class PTimedMutex : public PSync
 typedef PCriticalSection PMutex;
 #else
 typedef PTimedMutex PMutex;
-typedef PTimedMutex PCriticalSection;
+#define	PCriticalSection PTimedMutex
 #endif
 
 #endif
