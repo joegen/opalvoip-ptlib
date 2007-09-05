@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.26  2007/09/05 11:28:14  hfriederich
+ * Cleanup & protection against recursive initialization
+ *
  * Revision 1.25  2007/09/05 08:03:25  hfriederich
  * Implement PCriticalSection with named semaphores
  *
@@ -143,8 +146,6 @@
 #elif defined(P_HAS_NAMED_SEMAPHORES)
     mutable sem_t *semId;
     static sem_t *CreateSem(unsigned initialValue);
-	friend PCriticalSection::PCriticalSection();
-	friend PCriticalSection::PCriticalSection(const PCriticalSection &);
 #else
     mutable unsigned currentCount;
     mutable unsigned maximumCount;
