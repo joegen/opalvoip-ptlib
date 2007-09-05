@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.11  2007/09/05 12:55:43  csoutheren
+ * Applied 1711861 - patches for better OpenBSD support
+ * Thanks to Antoine Jacoutot
+ *
  * Revision 1.10  2006/04/23 18:16:59  dsandras
  * Fixed OSS plugin when there is no resampling.
  *
@@ -380,7 +384,7 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         // When adding these to the 'dsp' string array, only the first one
         // found is used.
 
-#ifndef P_NETBSD
+#if !defined P_NETBSD || !defined P_OPENBSD
         // Look for dsp
         if (filename == "dsp") {
           dsp.SetAt(0, devname);
