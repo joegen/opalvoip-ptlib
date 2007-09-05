@@ -825,7 +825,7 @@ if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
 else
   AC_TRY_COMPILE([#include <pthread.h>],
 	   [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);], P_HAS_RECURSIVE_MUTEX=2)
-  if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
+  if test ${P_HAS_RECURSIVE_MUTEX} = 2 ; then
     AC_MSG_RESULT(PTHREAD_MUTEX_RECURSIVE)
   else
     AC_MSG_RESULT(no)
