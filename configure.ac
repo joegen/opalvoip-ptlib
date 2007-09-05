@@ -774,6 +774,10 @@ else
     HAS_PTHREADS=yes
     ENDLDLIBS="$ENDLDLIBS -pthread"
     STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
+  elif test ${OSTYPE} = FreeBSD ; then
+    HAS_PTHREADS=yes
+    ENDLDLIBS="$ENDLDLIBS -pthread"
+    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
   fi
 fi
 
@@ -817,16 +821,12 @@ AC_MSG_CHECKING(if recursive mutexes are available)
 AC_TRY_COMPILE([#include <pthread.h>],
                [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);], P_HAS_RECURSIVE_MUTEX=1)
 if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT(PTHREAD_MUTEX_RECURSIVE_NP)
 else
-  if test ${OSTYPE} == Darwin ; then
-    AC_TRY_COMPILE([#include <pthread.h>],
-    			   [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);], P_HAS_RECURSIVE_MUTEX=1)
-    if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
-    fi
+  AC_TRY_COMPILE([#include <pthread.h>],
+	   [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);], P_HAS_RECURSIVE_MUTEX=2)
+  if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
+    AC_MSG_RESULT(PTHREAD_MUTEX_RECURSIVE)
   else
     AC_MSG_RESULT(no)
   fi
