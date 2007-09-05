@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.15  2007/09/05 11:09:09  csoutheren
+ * Removed misleading and incorrect code from Linux implementation of
+ * PCriticalSection. Apologies to Hannes Friederich :(
+ *
  * Revision 1.14  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -155,6 +159,7 @@ class PTimedMutex : public PSync
 typedef PCriticalSection PMutex;
 #else
 typedef PTimedMutex PMutex;
+typedef PTimedMutex PCriticalSection;
 #endif
 
 #endif

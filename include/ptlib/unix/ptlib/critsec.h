@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.6  2007/09/05 11:09:09  csoutheren
+ * Removed misleading and incorrect code from Linux implementation of
+ * PCriticalSection. Apologies to Hannes Friederich :(
+ *
  * Revision 1.5  2007/09/05 08:03:25  hfriederich
  * Implement PCriticalSection with named semaphores
  *
@@ -47,10 +51,7 @@
  */
 
   // Unix specific critical section implementation
-#if defined P_HAS_SEMAPHORES && !defined P_VXWORKS
-  mutable sem_t sem;
-#elif defined P_HAS_NAMED_SEMAPHORES
-  mutable sem_t * sem;
-#endif
+
+// not used
 
 // End Of File ///////////////////////////////////////////////////////////////
