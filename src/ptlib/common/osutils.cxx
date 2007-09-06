@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.255  2007/09/06 00:01:19  rjongbloed
+ * Fixed recursion problem in initialising PTRACE under linux.
+ *
  * Revision 1.254  2007/09/04 02:00:03  rjongbloed
  * Added environment variables PWLIB_TRACE_LEVEL, PWLIB_TRACE_OPTIONS
  *   and PWLIB_TRACE_FILE so can get tracing during early stages of application
@@ -917,6 +920,10 @@ void PSetErrorStream(ostream * s)
 
 class PTraceInfo
 {
+  /* NOTE you cannot have any complex types in this structure. Anything
+     that might do an asert or PTRACE will crash due to recursion.
+   */
+
 public:
   unsigned      currentLevel;
   unsigned      options;
@@ -927,7 +934,23 @@ public:
   const char  * rolloverPattern;
   unsigned      lastDayOfYear;
 
-  PCriticalSection * mutex;
+#if defined(_WIN32)
+  CRITICAL_SECTION mutex;
+  void InitMutex() { InitializeCriticalSection(&mutex); }
+  void Lock()      { EnterCriticalSection(&mutex); }
+  void Unlock()    { LeaveCriticalSection(&mutex); }
+#elif defined(P_PTHREADS)
+  pthread_mutex_t mutex;
+  void InitMutex() { pthread_mutex_init(&mutex, NULL); }
+  void Lock()      { pthread_mutex_lock(&mutex); }
+  void Unlock()    { pthread_mutex_unlock(&mutex); }
+#else
+  PMutex * mutex;
+  void InitMutex() { mutex = new PMutex; }
+  void Lock()      { mutex->Wait(); }
+  void Unlock()    { mutex->Signal(); }
+#endif
+
 
 
   PTraceInfo()
@@ -942,19 +965,7 @@ public:
     , rolloverPattern("yyyy_MM_dd")
     , lastDayOfYear(0)
   {
-    // This flag must never be destroyed before it is finished with. As we
-    // cannot assure destruction at the right time we simply allocate it and
-    // NEVER destroy it! This is OK as the only reason for its destruction is
-    // the program is exiting and then who cares?
-#if PMEMORY_CHECK
-    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
-
-    mutex = new PCriticalSection;
-
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-#endif
+    InitMutex();
 
     const char * env = getenv("PWLIB_TRACE_STARTUP"); // Backward compatibility test
     if (env != NULL) {
@@ -985,13 +996,13 @@ public:
       newStream = &cerr;
 #endif
 
-    mutex->Wait();
+    Lock();
 
     if (stream != &cerr && stream != &cout)
       delete stream;
     stream = newStream;
 
-    mutex->Signal();
+    Unlock();
   }
 
   void OpenTraceFile(const char * newFilename)
@@ -1130,7 +1141,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   if (level == UINT_MAX)
     return *info.stream;
 
-  info.mutex->Wait();
+  info.Lock();
 
   // Before we do new trace, make sure we clear any errors on the stream
   info.stream->clear();
@@ -1145,7 +1156,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       info.OpenTraceFile(NULL);
       info.lastDayOfYear = day;
       if (info.stream == NULL) {
-        info.mutex->Signal();
+        info.Unlock();
         return *info.stream;
       }
     }
@@ -1239,7 +1250,7 @@ ostream & PTrace::End(ostream & s)
       s << endl;
   }
 
-  info.mutex->Signal();
+  info.Unlock();
 
   return s;
 }
