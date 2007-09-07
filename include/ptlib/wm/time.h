@@ -62,7 +62,7 @@ time_t				mktime(struct tm* t);
 time_t				time(time_t* t);
 #endif // _WIN32_WCE < 0x502
 
-#if _WIN32_WCE == 0x501
+#if _WIN32_WCE < 0x501
 size_t wcsftime(
    wchar_t *strDest,
    size_t maxsize,
