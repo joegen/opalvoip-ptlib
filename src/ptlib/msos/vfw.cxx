@@ -25,6 +25,10 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.45  2007/09/07 04:42:31  rjongbloed
+ * Added fail safe delay as some camera drivers ignore the frame rate
+ *   set in the CAPTUREPARMS structure and supply frames too fast.
+ *
  * Revision 1.44  2007/08/31 09:33:28  rjongbloed
  * Fixed missing ShowWindow on starting video output immediately.
  *
@@ -212,6 +216,7 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pluginmgr.h>
+#include <ptclib/delaychan.h>
 
 #ifdef _MSC_VER
 #ifndef _WIN32_WCE
@@ -484,6 +489,7 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
     BOOL          isCapturingNow;
+    PAdaptiveDelay m_Pacing;
 };
 
 
@@ -976,6 +982,9 @@ PINDEX PVideoInputDevice_VideoForWindows::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice_VideoForWindows::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
+  // Some camera drivers ignore the frame rate set in the CAPTUREPARMS structure,
+  // so we have a fail safe delay here.
+  m_Pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
