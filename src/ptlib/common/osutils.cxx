@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.256  2007/09/08 08:40:58  hfriederich
+ * Make PTRACE pthread_mutex recursive to avoid deadlocks
+ *
  * Revision 1.255  2007/09/06 00:01:19  rjongbloed
  * Fixed recursion problem in initialising PTRACE under linux.
  *
@@ -939,9 +942,23 @@ public:
   void InitMutex() { InitializeCriticalSection(&mutex); }
   void Lock()      { EnterCriticalSection(&mutex); }
   void Unlock()    { LeaveCriticalSection(&mutex); }
-#elif defined(P_PTHREADS)
+#elif defined(P_PTHREADS) && P_HAS_RECURSIVE_MUTEX
   pthread_mutex_t mutex;
-  void InitMutex() { pthread_mutex_init(&mutex, NULL); }
+  void InitMutex() {
+    // NOTE this should actually guard against various errors
+    // returned.
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr,
+#if P_HAS_RECURSIVE_MUTEX == 2
+PTHREAD_MUTEX_RECURSIVE
+#else
+PTHREAD_MUTEX_RECURSIVE_NP
+#endif
+    );
+    pthread_mutex_init(&mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
+  }
   void Lock()      { pthread_mutex_lock(&mutex); }
   void Unlock()    { pthread_mutex_unlock(&mutex); }
 #else
