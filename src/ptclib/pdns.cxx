@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.33  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.32  2007/08/10 10:07:29  dsandras
  * Fixed DNS support thanks to Vincent Luba <luba novacom be>.
  *
@@ -137,6 +140,9 @@
 #include <ptclib/pdns.h>
 #include <ptclib/url.h>
 #include <ptlib/ipsock.h>
+
+#define new PNEW
+
 
 #if P_DNS
 

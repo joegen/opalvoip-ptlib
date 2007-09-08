@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.124  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.123  2007/08/17 08:46:01  csoutheren
  * Remove unnecessary inclusions of <iostream>
  *
@@ -921,7 +924,11 @@ trace level is sufficient.
 
 #endif
 
-#if PMEMORY_CHECK
+
+
+#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
+
+#define PMEMORY_HEAP 1
 
 /** Memory heap checking class.
 This class implements the memory heap checking and validation functions. It
@@ -930,11 +937,10 @@ also initialises memory on allocation and deallocation to help catch errors
 involving the use of dangling pointers.
 */
 class PMemoryHeap {
-  protected:
+  public:
     /// Initialise the memory checking subsystem.
     PMemoryHeap();
 
-  public:
     // Clear up the memory checking subsystem, dumping memory leaks.
     ~PMemoryHeap();
 
@@ -1000,7 +1006,7 @@ class PMemoryHeap {
         bytes before or after the actual data part of the memory block.
      */
     static Validation Validate(
-      void * ptr,             ///< Pointer to memory block to check
+      const void * ptr,       ///< Pointer to memory block to check
       const char * className, ///< Class name it should be.
       ostream * error         ///< Stream to receive error message (may be NULL)
     );
@@ -1031,12 +1037,21 @@ class PMemoryHeap {
      */
     static void DumpStatistics(ostream & strm /** Stream to output to */);
 
-    /* Get number of allocation.
-      Each allocation is counted and if desired the next allocation request
-      number may be obtained via this function.
-      @return Allocation request number.
+#if PMEMORY_CHECK
+    struct State {
+      DWORD allocationNumber;
+    };
+#else
+    typedef _CrtMemState State;
+#endif
+
+    /* Get memory state.
+      This returns a state that may be used to determine where to start dumping
+      objects from.
      */
-    static DWORD GetAllocationRequest();
+    static void GetState(
+      State & state  ///< Memory state
+    );
 
     /** Dump allocated objects.
        Dump ojects allocated and not deallocated since the specified object
@@ -1046,7 +1061,7 @@ class PMemoryHeap {
        Output is to the default stream.
      */
     static void DumpObjectsSince(
-      DWORD objectNumber    ///< Memory object to begin dump from.
+      const State & when    ///< Memory state to begin dump from.
     );
 
     /** Dump allocated objects.
@@ -1055,7 +1070,7 @@ class PMemoryHeap {
        function.
      */
     static void DumpObjectsSince(
-      DWORD objectNumber,   ///< Memory object to begin dump from.
+      const State & when,   ///< Memory state to begin dump from.
       ostream & strm        ///< Stream to output dump
     );
 
@@ -1068,6 +1083,8 @@ class PMemoryHeap {
       DWORD point   ///< Allocation number to stop at.
     );
 
+#if PMEMORY_CHECK
+
   protected:
     void * InternalAllocate(
       size_t nSize,           // Number of bytes to allocate.
@@ -1076,7 +1093,7 @@ class PMemoryHeap {
       const char * className  // Class name for allocating function.
     );
     Validation InternalValidate(
-      void * ptr,             // Pointer to memory block to check
+      const void * ptr,       // Pointer to memory block to check
       const char * className, // Class name it should be.
       ostream * error         // Stream to receive error message (may be NULL)
     );
@@ -1160,7 +1177,55 @@ class PMemoryHeap {
 #elif defined(P_VXWORKS)
     void * mutex;
 #endif
+
+#else
+
+    _CrtMemState initialState;
+
+#endif // PMEMORY_CHECK
 };
+
+
+#if !PMEMORY_CHECK
+
+#define P_CLIENT_BLOCK (_CLIENT_BLOCK|(0x61<<16)) // This identifies a PObject derived class
+
+__inline void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
+{
+  return _malloc_dbg(nSize, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK, file, line);
+}
+
+__inline void * PMemoryHeap::Allocate(size_t count, size_t iSize, const char * file, int line)
+{
+  return _calloc_dbg(count, iSize, _NORMAL_BLOCK, file, line);
+}
+
+__inline void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
+{
+  return _realloc_dbg(ptr, nSize, _NORMAL_BLOCK, file, line);
+}
+
+__inline void PMemoryHeap::Deallocate(void * ptr, const char * className)
+{
+  _free_dbg(ptr, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK);
+}
+
+__inline void PMemoryHeap::GetState(State & state)
+{
+  _CrtMemCheckpoint(&state);
+}
+
+__inline void PMemoryHeap::DumpObjectsSince(const State & state)
+{
+  _CrtMemDumpAllObjectsSince(&state);
+}
+
+__inline void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
+{
+  _CrtSetBreakAlloc(objectNumber);
+}
+
+#endif // !PMEMORY_CHECK
 
 
 /** Allocate memory for the run time library.
@@ -1284,38 +1349,31 @@ inline void operator delete[](void * ptr, const char *, int)
 #endif
 
 
-#else // PMEMORY_CHECK
+class PMemoryHeapIgnoreAllocationsForScope {
+public:
+  PMemoryHeapIgnoreAllocationsForScope() : previousIgnoreAllocations(PMemoryHeap::SetIgnoreAllocations(TRUE)) { }
+  ~PMemoryHeapIgnoreAllocationsForScope() { PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations); }
+private:
+  BOOL previousIgnoreAllocations;
+};
+
+#define PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE PMemoryHeapIgnoreAllocationsForScope instance_PMemoryHeapIgnoreAllocationsForScope
+
+
+#else // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
+
+#define PMEMORY_HEAP 0
 
 #define PNEW new
 
-#if defined(__GNUC__) || (defined(_WIN32_WCE) && defined(_X86_))
-
 #define PNEW_AND_DELETE_FUNCTIONS
-
-#else
-
-#define PNEW_AND_DELETE_FUNCTIONS \
-    void * operator new(size_t nSize) \
-      { return malloc(nSize); } \
-    void operator delete(void * ptr) \
-      { free(ptr); } \
-    void * operator new[](size_t nSize) \
-      { return malloc(nSize); } \
-    void operator delete[](void * ptr) \
-      { free(ptr); }
-
-void * operator new(size_t nSize);
-void * operator new[](size_t nSize);
-
-void operator delete(void * ptr);
-void operator delete[](void * ptr);
-
-#endif
 
 #define runtime_malloc(s) malloc(s)
 #define runtime_free(p) free(p)
 
-#endif // PMEMORY_CHECK
+#define PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE
+
+#endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
 
 /** Declare all the standard PWlib class information.
@@ -1328,23 +1386,17 @@ The use of the #PDECLARE_CLASS# macro is no longer recommended for reasons
 of compatibility with documentation systems.
 */
 
-/*
-
-  ORIGINAL
-
 #define PCLASSINFO(cls, par) \
   public: \
-    static const char * Class() \
+    static inline const char * Class() \
       { return #cls; } \
+    virtual BOOL InternalIsDescendant(const char * clsName) const \
+      { return strcmp(clsName, cls::Class()) == 0 || par::InternalIsDescendant(clsName); } \
     virtual const char * GetClass(unsigned ancestor = 0) const \
       { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
-    virtual BOOL IsClass(const char * clsName) const \
-      { return strcmp(clsName, cls::Class()) == 0; } \
-    virtual BOOL IsDescendant(const char * clsName) const \
-      { return strcmp(clsName, cls::Class()) == 0 || par::IsDescendant(clsName); } \
     virtual Comparison CompareObjectMemoryDirect(const PObject & obj) const \
-      { return (Comparison)memcmp(this, &obj, sizeof(cls)); } 
-*/
+      { return (Comparison)memcmp(this, &obj, sizeof(cls)); } \
+    PNEW_AND_DELETE_FUNCTIONS
 
 
 #if P_HAS_TYPEINFO
@@ -1364,15 +1416,6 @@ template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const 
 
 #include <typeinfo>
 
-#define   PCLASSNAME(cls) (#cls)
-
-#define PBASECLASSINFO(cls, par) \
-  public: \
-    static inline const char * Class() \
-      { return PCLASSNAME(cls); } \
-    virtual BOOL InternalIsDescendant(const char * clsName) const \
-      { return strcmp(clsName, PCLASSNAME(cls)) == 0 || par::InternalIsDescendant(clsName); } \
-
 #else // P_HAS_TYPEINFO
 
 #define PIsDescendant(ptr, cls)    ((ptr)->InternalIsDescendant(cls::Class()))
@@ -1388,22 +1431,8 @@ template<class BaseClass> inline BaseClass * PAssertCast(PObject * obj, const ch
 #define PDownCast(cls, ptr) ((cls*)(ptr))
 #endif
 
-#define PBASECLASSINFO(cls, par) \
-  public: \
-    static const char * Class() \
-      { return #cls; } \
-    virtual BOOL InternalIsDescendant(const char * clsName) const \
-      { return strcmp(clsName, cls::Class()) == 0 || par::InternalIsDescendant(clsName); } \
-
 #endif // P_HAS_TYPEINFO
 
-
-#define PCLASSINFO(cls, par) \
-    PBASECLASSINFO(cls, par) \
-    virtual const char * GetClass(unsigned ancestor = 0) const \
-      { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
-    virtual Comparison CompareObjectMemoryDirect(const PObject & obj) const \
-      { return (Comparison)memcmp(this, &obj, sizeof(cls)); } \
 
 /** Declare a class with PWLib class information.
 This macro is used to declare a new class with a single public ancestor. It
@@ -1451,7 +1480,7 @@ class PObject {
 
        @return pointer to C string literal.
      */      
-    static inline const char * Class()    { return PCLASSNAME(PObject); }
+    static inline const char * Class()    { return "PObject"; }
 
     /** Get the current dynamic type of the object instance.
 

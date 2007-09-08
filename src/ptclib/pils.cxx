@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.cxx,v $
+ * Revision 1.6  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.5  2003/06/05 23:19:52  rjongbloed
  * Changed LDAP version to be compatible with ILS servers.
  *
@@ -49,6 +52,9 @@
 #include <ptlib.h>
 
 #include <ptclib/pils.h>
+
+
+#define new PNEW
 
 
 #if P_LDAP

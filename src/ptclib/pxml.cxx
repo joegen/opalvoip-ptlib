@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.47  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.46  2007/04/23 01:15:24  csoutheren
  * Removed warnings on Windows
  *
@@ -124,6 +127,9 @@
 #if P_EXPAT
 
 #include <expat.h>
+
+
+#define new PNEW
 
 
 #define CACHE_BUFFER_SIZE   1024

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.22  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.21  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -135,6 +138,7 @@ PINSTANTIATE_FACTORY(PTextToSpeech, PString)
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
 
+
 ////////////////////////////////////////////////////////////
 //
 // Text to speech using Microsoft's Speech API (SAPI)
@@ -188,6 +192,9 @@ PFactory<PTextToSpeech>::Worker<PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SA
 
 int * PTextToSpeech_SAPI::refCount;
 PMutex PTextToSpeech_SAPI::refMutex;
+
+
+#define new PNEW
 
 
 PTextToSpeech_SAPI::PTextToSpeech_SAPI()
@@ -389,6 +396,8 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 //  Generic text to speech using Festival
 //
 
+#undef new
+
 class PTextToSpeech_Festival : public PTextToSpeech
 {
   PCLASSINFO(PTextToSpeech_Festival, PTextToSpeech);
@@ -424,6 +433,8 @@ class PTextToSpeech_Festival : public PTextToSpeech
     unsigned volume, rate;
     PString voice;
 };
+
+#define new PNEW
 
 PFactory<PTextToSpeech>::Worker<PTextToSpeech_Festival> festivalTTSFactory("Festival", false);
 

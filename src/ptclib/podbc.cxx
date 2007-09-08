@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.cxx,v $
+ * Revision 1.5  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.4  2007/08/25 06:37:39  csoutheren
  * Fixed compilation on 64bit Linux
  *
@@ -64,6 +67,9 @@
 
 #include <ptclib/podbc.h>
 using namespace PTODBC;
+
+#define new PNEW
+
 
 #ifdef _MSC_VER
  #pragma warning(disable:4244)

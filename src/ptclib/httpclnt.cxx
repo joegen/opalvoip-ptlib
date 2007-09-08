@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.39  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.38  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -290,6 +293,9 @@
 #endif
 
 #include <ctype.h>
+
+
+#define new PNEW
 
 
 //////////////////////////////////////////////////////////////////////////////

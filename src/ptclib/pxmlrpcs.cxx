@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.10  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.9  2007/08/20 08:43:00  shorne
  * Fixed issue compiling without Expat
  *
@@ -69,6 +72,9 @@
 #if P_EXPAT
 
 #include <ptclib/pxmlrpcs.h>
+
+#define new PNEW
+
 
 PXMLRPCServerResource::PXMLRPCServerResource()
   : PHTTPResource(DEFAULT_XMPRPC_URL)

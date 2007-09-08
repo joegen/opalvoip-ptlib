@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.50  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.49  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -195,6 +198,9 @@
 #include <ptlib.h>
 #include <ptclib/httpform.h>
 #include <ptclib/cypher.h>
+
+
+#define new PNEW
 
 
 //////////////////////////////////////////////////////////////////////////////
