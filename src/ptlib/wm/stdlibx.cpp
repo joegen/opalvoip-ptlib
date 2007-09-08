@@ -483,6 +483,9 @@ __int64 _atoi64(const char *nptr)
 }
 
 int stricmp(const char* s1, const char* s2 ) { return _stricmp(s1, s2); }
+int strcasecmp(const char* s1, const char* s2 ) { return _stricmp(s1, s2); }
+int strncasecmp(const char* s1, const char* s2, int n) { return _strnicmp(s1, s2, n); }
+
 int stricmp(const wchar_t* s1, const char* s2 )
 { 
 	int len = wcslen(s1);
@@ -493,12 +496,16 @@ int stricmp(const wchar_t* s1, const char* s2 )
 	return len;
 };
 
-int strcasecmp(const char* s1, const char* s2 ) { return _stricmp(s1, s2); }
-int strncasecmp(const char* s1, const char* s2, int n) { return _strnicmp(s1, s2, n); }
+#endif // _WIN32_WCE < 0x502
 
 int strcasecmp(const wchar_t* s1, const char* s2 ) 
 { 
-	return stricmp(s1, s2); 
+	int len = wcslen(s1);
+	if(NULL == s2) // Some optimization here
+		return len;
+
+	while(--len && (*s1++ == *s2++)) ;
+	return len;
 } 
 
 int strncasecmp( const wchar_t* s1, const char* s2, int n ) 
@@ -513,10 +520,8 @@ int strncasecmp( const wchar_t* s1, const char* s2, int n )
 
 int strcasecmp(PString s1, const char* s2)
 {
-	return stricmp((const char*) s1, s2); 
+	return _stricmp((const char*) s1, s2); 
 }
-
-#endif // _WIN32_WCE < 0x502
 
 char * _mktemp (char *temp)
 {
