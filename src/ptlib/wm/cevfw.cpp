@@ -18,16 +18,76 @@
 #include <ptlib/wm/mmsystemx.h>
 #include <ptlib/wm/cevfw.h>
 
-BOOL VFWAPI capDefGetDriverDescription (UINT, LPSTR, int, LPSTR, int ) 
+static const TCHAR* gszCEVideoCapClassName = _T("CEVideoCaptureWndClass");
+static const char* gszCEVideoCapDevName = "Video Input";
+static const char* gszCEVideoCapDevVersion = "0.1";
+static HWND ghWndCapture = NULL;
+
+BOOL VFWAPI capDefGetDriverDescription (UINT, LPSTR szName, int, LPSTR lpszVer, int ) 
 { 
-	PTRACE(0, ">>> capDefGetDriverDescription called. Should it?" << endl );
-	return FALSE; 
+	PTRACE(2, "capDefGetDriverDescription() called." << endl );
+	if( szName )
+		strcpy(szName, gszCEVideoCapDevName);
+		
+	if( lpszVer )
+		strcpy(lpszVer, gszCEVideoCapDevVersion);
+	 
+	return TRUE; 
 }
 
-HWND VFWAPI capDefCreateCaptureWindow(LPCSTR, DWORD, int, int, int, int, HWND, int) 
+LRESULT WINAPI CapWindowProc(
+    HWND hWnd,
+    UINT Msg,
+    WPARAM wParam,
+    LPARAM lParam)
+{
+	if((Msg >= WM_CAP_START) && (Msg <= WM_CAP_GET_USER_DATA))
+	{
+		PTRACE(2, "CapWindowProc() called. Msg: " 
+			<< Msg << ". wParam: " << wParam << ". lParam: " << lParam << endl );
+	}
+
+	return ::DefWindowProc(hWnd, Msg, wParam, lParam );
+}
+
+extern HANDLE hInstance;
+
+HWND VFWAPI capDefCreateCaptureWindow(LPCSTR szTitle, 
+	DWORD dwStyle, int x, int y, int width, int height, HWND hwndParent, int) 
 { 
-	PTRACE(0, ">>> capDefCreateCaptureWindow called. Should it?" << endl );
-	return NULL; 
+	PTRACE(2, "capDefCreateCaptureWindow() called." << endl );
+	
+	USES_CONVERSION;
+	WNDCLASS wc;
+	ATOM atom;
+
+	ZeroMemory(&wc, sizeof(wc));
+    wc.lpfnWndProc = CapWindowProc;
+    wc.hInstance = (HINSTANCE) hInstance;
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.lpszClassName = gszCEVideoCapClassName;
+
+	atom = RegisterClass(&wc);
+
+	if ((ghWndCapture = ::CreateWindowExW( 0L, 
+		(LPCTSTR) atom,
+		A2W(szTitle && *szTitle? szTitle : gszCEVideoCapDevName),
+           dwStyle,
+           x, y,
+           width + GetSystemMetrics(SM_CXFIXEDFRAME),
+           height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
+           (HWND) hwndParent,
+		   NULL, // hMenu
+		   NULL, // hInstance
+		   NULL // lParam
+		   )) == NULL) 
+	{ 
+		PTRACE(2, "capDefCreateCaptureWindow() failed. Last error: " << GetLastError() << endl );
+		return NULL; 
+	}
+
+	PTRACE(2, "capDefCreateCaptureWindow() created window. hWnd: " << ghWndCapture << endl );
+	return ghWndCapture; 
 }
 
 // Function declarations. 
