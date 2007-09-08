@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.86  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.85  2007/08/15 17:45:37  shorne
  * Fix so PServiceProcess can run other than in Debug Mode
  *
@@ -329,6 +332,9 @@
 #include <ptlib/msos/ptlib/debstrm.h>
 
 
+#define new PNEW
+
+
 #define UWM_SYSTRAY (WM_USER + 1)
 #define ICON_RESID 1
 #define SYSTRAY_ICON_ID 1
@@ -556,16 +562,12 @@ void PSystemLog::Output(Level level, const char * msg)
 int PSystemLog::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
-#if PMEMORY_CHECK
-    BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
+    PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+
     int ppos = pptr() - pbase();
     char * newptr = string.GetPointer(string.GetSize() + 10);
     setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
-#endif
   }
   if (c != EOF) {
     *pptr() = (char)c;
@@ -599,19 +601,13 @@ int PSystemLog::Buffer::sync()
   }
   PSystemLog::Output(logLevel, string);
 
-#if PMEMORY_CHECK
-  BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
+  PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
   string.SetSize(10);
   char * base = string.GetPointer();
   *base = '\0';
   setp(base, base + string.GetSize() - 1);
  
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
-#endif
-
   return 0;
 }
 
@@ -662,17 +658,15 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 
 int PServiceProcess::_main(void * arg)
 {
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
-  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
-  PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
-  PTrace::ClearOptions(PTrace::FileAndLine);
-  PTrace::SetOptions(PTrace::SystemLogStream);
-  PTrace::SetLevel(4);
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
-#endif
+  {
+    PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+
+    PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+    PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
+    PTrace::ClearOptions(PTrace::FileAndLine);
+    PTrace::SetOptions(PTrace::SystemLogStream);
+    PTrace::SetLevel(4);
+  }
 
   hInstance = (HINSTANCE)arg;
 
@@ -809,7 +803,7 @@ enum {
   CutMenuID,
   DeleteMenuID,
   SelectAllMenuID,
-#if PMEMORY_CHECK
+#if PMEMORY_HEAP
   MarkMenuID,
   DumpMenuID,
   StatsMenuID,
@@ -857,7 +851,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
   AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
-#if PMEMORY_CHECK
+#if PMEMORY_HEAP
   AppendMenu(menu, MF_STRING, MarkMenuID, "&Mark Memory");
   AppendMenu(menu, MF_STRING, DumpMenuID, "&Dump Memory");
   AppendMenu(menu, MF_STRING, StatsMenuID, "&Statistics");
@@ -966,8 +960,8 @@ static void SaveWindowPosition(HWND hWnd)
 
 LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef _DEBUG
-  static DWORD allocationNumber;
+#if PMEMORY_HEAP
+  static PMemoryHeap::State memoryState;
 #endif
 
   switch (msg) {
@@ -1048,13 +1042,13 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           ShowWindow(hWnd, SW_HIDE);
           break;
 
-#if PMEMORY_CHECK
+#if PMEMORY_HEAP
         case MarkMenuID :
-          allocationNumber = PMemoryHeap::GetAllocationRequest();
+          PMemoryHeap::GetState(memoryState);
           break;
 
         case DumpMenuID :
-          PMemoryHeap::DumpObjectsSince(allocationNumber);
+          PMemoryHeap::DumpObjectsSince(memoryState);
           break;
 
         case StatsMenuID :

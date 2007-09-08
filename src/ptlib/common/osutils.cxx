@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.257  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.256  2007/09/08 08:40:58  hfriederich
  * Make PTRACE pthread_mutex recursive to avoid deadlocks
  *
@@ -1030,9 +1033,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     if (filename == NULL)
       return;
 
-#if PMEMORY_CHECK
-    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
+    PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
     if (strcasecmp(filename, "stderr") == 0)
       SetStream(&cerr);
@@ -1067,10 +1068,6 @@ PTHREAD_MUTEX_RECURSIVE_NP
         delete traceOutput;
       }
     }
-
-  #if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-  #endif
   }
 };
 
@@ -2086,7 +2083,7 @@ int PProcess::_main(void *)
 
 void PProcess::PreInitialise(int c, char ** v, char ** e)
 {
-#if PMEMORY_CHECK
+#if PMEMORY_HEAP
   PMemoryHeap::SetIgnoreAllocations(FALSE);
 #endif
 

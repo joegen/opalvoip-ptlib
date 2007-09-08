@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.46  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.45  2007/09/07 04:42:31  rjongbloed
  * Added fail safe delay as some camera drivers ignore the frame rate
  *   set in the CAPTUREPARMS structure and supply frames too fast.
@@ -1340,7 +1343,7 @@ static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr
 class PVideoOutputDevice_Window_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoOutputDevice_Window; }
+    virtual PObject *   CreateInstance(int /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
     virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
     virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return ParseWindowDeviceName(deviceName); }
 } PVideoOutputDevice_Window_descriptor;

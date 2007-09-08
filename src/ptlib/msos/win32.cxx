@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.162  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.161  2007/09/01 05:16:18  rjongbloed
  * Added Windows Vista to OS descirption functions.
  *
@@ -594,8 +597,6 @@
 #endif
 #endif
 
-#define new PNEW
-
 #if defined(_WIN32_DCOM) 
   #include <objbase.h>
 #ifdef _MSC_VER
@@ -604,6 +605,10 @@
 #endif
 
 #include "../common/pglobalstatic.cxx"
+
+
+#define new PNEW
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
@@ -1629,7 +1634,7 @@ PProcess::~PProcess()
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
-#if PMEMORY_CHECK || _DEBUG
+#if _DEBUG
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
 #endif
