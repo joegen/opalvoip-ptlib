@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.37  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.36  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -156,6 +159,9 @@
 #include <ptlib.h>
 
 #include <ctype.h>
+
+
+#define new PNEW
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.70  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.69  2007/06/18 19:23:40  dsandras
  * Fixed previous commit.
  *
@@ -458,6 +461,9 @@ class PStandardColourConverter : public PColourConverter
 
 #define PSTANDARD_COLOUR_CONVERTER(from,to) \
   PCOLOUR_CONVERTER2(P_##from##_##to,PStandardColourConverter,#from,#to)
+
+
+#define new PNEW
 
 
 ///////////////////////////////////////////////////////////////////////////////
