@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.12  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.11  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -63,6 +66,9 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <ptclib/ftp.h>
+
+
+#define new PNEW
 
 
 /////////////////////////////////////////////////////////

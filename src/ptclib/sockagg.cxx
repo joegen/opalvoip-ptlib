@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.20  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.19  2006/11/20 03:17:24  csoutheren
  * Fixed incorrect check time on trace message
  *
@@ -97,6 +100,9 @@
 #include <ptclib/sockagg.h>
 
 #include <fcntl.h>
+
+#define new PNEW
+
 
 ////////////////////////////////////////////////////////////////
 
