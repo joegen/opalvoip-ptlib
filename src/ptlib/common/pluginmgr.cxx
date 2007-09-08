@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.44  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.43  2007/08/08 08:58:53  csoutheren
  * More plugin manager changes, as the last approach dead-ended :(
  *
@@ -188,6 +191,22 @@
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
 const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
+
+
+class PluginLoaderStartup : public PProcessStartup
+{
+  PCLASSINFO(PluginLoaderStartup, PProcessStartup);
+  public:
+    void OnStartup();
+    void OnShutdown();
+
+  protected:
+    std::vector<PPluginModuleManager *> managers;
+};
+
+
+#define new PNEW
+
 
 //////////////////////////////////////////////////////
 
@@ -544,46 +563,38 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-class PluginLoaderStartup : public PProcessStartup
+void PluginLoaderStartup::OnStartup()
+{ 
+  // load the actual DLLs, which will also load the system plugins
+  PStringArray dirs = PPluginManager::GetPluginDirs();
+  PPluginManager & mgr = PPluginManager::GetPluginManager();
+  PINDEX i;
+  for (i = 0; i < dirs.GetSize(); i++) 
+    mgr.LoadPluginDirectory(dirs[i]);
+
+  // load the plugin module managers, and construct the list of suffixes
+  PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
+  PFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
+  for (r = keyList.begin(); r != keyList.end(); ++r) {
+    PPluginModuleManager * mgr = PFactory<PPluginModuleManager>::CreateInstance(*r);
+    if (mgr == NULL) {
+      PTRACE(1, "PLUGIN\tCannot create manager for plugins of type " << *r);
+    } else {
+      PTRACE(3, "PLUGIN\tCreated manager for plugins of type " << *r);
+      managers.push_back(mgr);
+    }
+  }
+}
+
+void PluginLoaderStartup::OnShutdown()
 {
-  PCLASSINFO(PluginLoaderStartup, PProcessStartup);
-  public:
-    void OnStartup()
-    { 
-      // load the actual DLLs, which will also load the system plugins
-      PStringArray dirs = PPluginManager::GetPluginDirs();
-      PPluginManager & mgr = PPluginManager::GetPluginManager();
-      PINDEX i;
-      for (i = 0; i < dirs.GetSize(); i++) 
-        mgr.LoadPluginDirectory(dirs[i]);
-
-      // load the plugin module managers, and construct the list of suffixes
-      PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
-      PFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
-      for (r = keyList.begin(); r != keyList.end(); ++r) {
-        PPluginModuleManager * mgr = PFactory<PPluginModuleManager>::CreateInstance(*r);
-        if (mgr == NULL) {
-          PTRACE(1, "PLUGIN\tCannot create manager for plugins of type " << *r);
-        } else {
-          PTRACE(3, "PLUGIN\tCreated manager for plugins of type " << *r);
-          managers.push_back(mgr);
-        }
-      }
-    }
-
-    void OnShutdown()
-    {
-      while (managers.begin() != managers.end()) {
-        std::vector<PPluginModuleManager *>::iterator r = managers.begin();
-        PPluginModuleManager * mgr = *r;
-        managers.erase(r);
-        mgr->OnShutdown();
-      }
-    }
-
-  protected:
-    std::vector<PPluginModuleManager *> managers;
-};
+  while (managers.begin() != managers.end()) {
+    std::vector<PPluginModuleManager *>::iterator r = managers.begin();
+    PPluginModuleManager * mgr = *r;
+    managers.erase(r);
+    mgr->OnShutdown();
+  }
+}
 
 static PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
 

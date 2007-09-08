@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.88  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.87  2007/07/06 02:44:33  csoutheren
  * Fixed compile on Linux
  *
@@ -859,7 +862,7 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
 }
 
 
-PMemoryHeap::Validation PMemoryHeap::Validate(void * ptr,
+PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr,
                                               const char * className,
                                               ostream * error)
 {
@@ -868,7 +871,7 @@ PMemoryHeap::Validation PMemoryHeap::Validate(void * ptr,
 }
 
 
-PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
+PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
                                                       const char * className,
                                                       ostream * error)
 {
@@ -1006,10 +1009,10 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 }
 
 
-DWORD PMemoryHeap::GetAllocationRequest()
+void PMemoryHeap::GetState(State & state)
 {
   Wrapper mem;
-  return mem->allocationRequest;
+  state.allocationNumber = mem->allocationRequest;
 }
 
 
@@ -1019,18 +1022,18 @@ void PMemoryHeap::SetAllocationBreakpoint(DWORD point)
 }
 
 
-void PMemoryHeap::DumpObjectsSince(DWORD objectNumber)
+void PMemoryHeap::DumpObjectsSince(const State & state)
 {
   Wrapper mem;
   if (mem->leakDumpStream != NULL)
-    mem->InternalDumpObjectsSince(objectNumber, *mem->leakDumpStream);
+    mem->InternalDumpObjectsSince(state.allocationNumber, *mem->leakDumpStream);
 }
 
 
-void PMemoryHeap::DumpObjectsSince(DWORD objectNumber, ostream & strm)
+void PMemoryHeap::DumpObjectsSince(const State & state, ostream & strm)
 {
   Wrapper mem;
-  mem->InternalDumpObjectsSince(objectNumber, strm);
+  mem->InternalDumpObjectsSince(state.allocationNumber, strm);
 }
 
 
@@ -1071,6 +1074,97 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #else // PMEMORY_CHECK
 
+#if defined(_MSC_VER) && defined(_DEBUG)
+
+static PMemoryHeap memoryHeap;
+static _CRT_DUMP_CLIENT pfnOldCrtDumpClient;
+static bool hadCrtDumpLeak = false;
+
+static void __cdecl MyCrtDumpClient(void * ptr, size_t size)
+{
+  if(_CrtReportBlockType(ptr) == P_CLIENT_BLOCK) {
+    const PObject * obj = (PObject *)ptr;
+    _RPT1(_CRT_WARN, "Class %s\n", obj->GetClass());
+    hadCrtDumpLeak = true;
+  }
+
+  if (pfnOldCrtDumpClient != NULL)
+    pfnOldCrtDumpClient(ptr, size);
+}
+
+
+PMemoryHeap::PMemoryHeap()
+{
+  _CrtMemCheckpoint(&initialState);
+  pfnOldCrtDumpClient = _CrtSetDumpClient(MyCrtDumpClient);
+}
+
+
+PMemoryHeap::~PMemoryHeap()
+{
+  _CrtMemDumpAllObjectsSince(&initialState);
+
+  if (hadCrtDumpLeak) {
+    extern void PWaitOnExitConsoleWindow();
+    PWaitOnExitConsoleWindow();
+  }
+
+  _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) & ~_CRTDBG_LEAK_CHECK_DF);
+}
+
+
+BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+{
+  int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  if (ignore)
+    _CrtSetDbgFlag(flags & ~_CRTDBG_ALLOC_MEM_DF);
+  else
+    _CrtSetDbgFlag(flags | _CRTDBG_ALLOC_MEM_DF);
+  return (flags & _CRTDBG_ALLOC_MEM_DF) == 0;
+}
+
+
+PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * className, ostream * /*strm*/)
+{
+  if (!_CrtIsValidHeapPointer(ptr))
+    return Bad;
+
+  if (_CrtReportBlockType(ptr) != P_CLIENT_BLOCK)
+    return Ok;
+
+  const PObject * obj = (PObject *)ptr;
+  return strcmp(obj->GetClass(), className) == 0 ? Ok : Trashed;
+}
+
+
+BOOL PMemoryHeap::ValidateHeap(ostream * /*strm*/)
+{
+  return _CrtCheckMemory();
+}
+
+
+void PMemoryHeap::DumpStatistics()
+{
+  _CrtMemState state;
+  _CrtMemCheckpoint(&state);
+  _CrtMemDumpStatistics(&state);
+}
+
+
+void PMemoryHeap::DumpStatistics(ostream & /*strm*/)
+{
+  DumpStatistics();
+}
+
+
+void PMemoryHeap::DumpObjectsSince(const State & state, ostream & /*strm*/)
+{
+  DumpObjectsSince(state);
+}
+
+
+#else // defined(_MSC_VER) && defined(_DEBUG)
+
 #ifndef P_VXWORKS
 
 #if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
@@ -1092,6 +1186,8 @@ void operator delete[](void * ptr)
 }
 
 #endif // !P_VXWORKS
+
+#endif // defined(_MSC_VER) && defined(_DEBUG)
 
 #endif // PMEMORY_CHECK
 
