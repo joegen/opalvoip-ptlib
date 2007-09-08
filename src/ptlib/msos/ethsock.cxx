@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.51  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.50  2007/07/03 08:42:27  rjongbloed
  * Fixed strange issue where interface list return is sometimes empty if polled
  *   while an interface  is going up or down.
@@ -359,7 +362,7 @@ class WinSNMPLoader : public PProcessStartup
     {
       PWaitAndSignal m(mutex);
       if (snmpLibrary == NULL) {
-        snmpLibrary = new PWin32SnmpLibrary;
+        snmpLibrary = PNEW PWin32SnmpLibrary;
       }
       return *snmpLibrary;
     }

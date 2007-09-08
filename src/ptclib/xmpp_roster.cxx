@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_roster.cxx,v $
+ * Revision 1.6  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.5  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -50,6 +53,9 @@
 
 #include <ptlib.h>
 #include <ptclib/xmpp_roster.h>
+
+#define new PNEW
+
 
 #if P_EXPAT
 

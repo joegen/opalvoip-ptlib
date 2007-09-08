@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_muc.cxx,v $
+ * Revision 1.4  2007/09/08 11:34:29  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.3  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -45,6 +48,9 @@
 
 #include <ptlib.h>
 #include <ptclib/xmpp_muc.h>
+
+#define new PNEW
+
 
 #if P_EXPAT
 
