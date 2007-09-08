@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.53  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.52  2007/05/09 12:04:23  csoutheren
  * Applied 1705775 - PWAVFile::UpdateHeader() redundancy
  * Thanks to Fabrizio Ammollo
@@ -234,6 +237,9 @@
 #include <ptlib.h>
 #include <ptlib/pfactory.h>
 #include <ptclib/pwavfile.h>
+
+#define new PNEW
+
 
 const char WAVLabelRIFF[4] = { 'R', 'I', 'F', 'F' };
 const char WAVLabelWAVE[4] = { 'W', 'A', 'V', 'E' };

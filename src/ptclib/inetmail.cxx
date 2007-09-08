@@ -24,6 +24,9 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.32  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.31  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -136,6 +139,9 @@
 
 static const PString CRLF = "\r\n";
 static const PString CRLFdotCRLF = "\r\n.\r\n";
+
+
+#define new PNEW
 
 
 //////////////////////////////////////////////////////////////////////////////

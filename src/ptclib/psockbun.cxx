@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.14  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.13  2007/08/26 20:01:58  hfriederich
  * Allow to filter interfaces based on remote address
  *
@@ -80,6 +83,9 @@
 #include <ptlib.h>
 #include <ptclib/psockbun.h>
 #include <ptclib/pstun.h>
+
+
+#define new PNEW
 
 
 //////////////////////////////////////////////////

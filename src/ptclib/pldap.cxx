@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.23  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.22  2007/07/19 15:05:36  shorne
  * Added Factory loaded LDAP schemas
  *
@@ -103,6 +106,9 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/pldap.h>
+
+#define new PNEW
+
 
 #if P_LDAP
 

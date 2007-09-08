@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.16  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.15  2007/04/20 06:47:14  csoutheren
  * Really disable video code when video is turned off
  *
@@ -110,6 +113,9 @@
 
 
 static const char DefaultYUVFileName[] = "*.yuv";
+
+
+#define new PNEW
 
 
 ///////////////////////////////////////////////////////////////////////////////

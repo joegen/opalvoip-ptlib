@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.26  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.25  2007/08/22 05:04:39  rjongbloed
  * Added ability to set a specific local port for STUN created sockets.
  *
@@ -112,6 +115,9 @@
 #include <ptlib.h>
 #include <ptclib/pstun.h>
 #include <ptclib/random.h>
+
+#define new PNEW
+
 
 #if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
 #error "pstun.cxx must be compiled without precompiled headers"

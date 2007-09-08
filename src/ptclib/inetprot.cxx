@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.63  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.62  2007/04/02 03:34:14  rjongbloed
  * Prevent premature flushing of log buffer when dumping MIME fields.
  *
@@ -237,6 +240,9 @@
 
 
 static const char * CRLF = "\r\n";
+
+
+#define new PNEW
 
 
 //////////////////////////////////////////////////////////////////////////////

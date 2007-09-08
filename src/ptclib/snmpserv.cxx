@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpserv.cxx,v $
+ * Revision 1.8  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.7  2007/08/06 00:37:00  csoutheren
  * Remove compile warnings on Linux
  *
@@ -53,6 +56,9 @@
 #ifdef P_SNMP
 
 #include <ptclib/psnmp.h>
+
+#define new PNEW
+
 
 #define SNMP_VERSION 0
 

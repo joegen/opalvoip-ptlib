@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.29  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.28  2007/08/07 01:37:05  csoutheren
  * Add RegisterAs function to allow registering a factory worker using another key
  *
@@ -292,7 +295,18 @@ class PFactory : PFactoryBase
         }
 
       protected:
-        virtual Abstract_T * Create(const Key_T & /*key*/) const { return new _Concrete_T; }
+        virtual Abstract_T * Create(const Key_T & /*key*/) const
+        {
+#if PMEMORY_HEAP
+          // Singletons are never deallocated, so make sure they arenot reported as a leak
+          BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(isSingleton);
+#endif
+          Abstract_T * instance = new _Concrete_T;
+#if PMEMORY_HEAP
+          PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
+#endif
+          return instance;
+        }
     };
 
     typedef std::map<_Key_T, WorkerBase *> KeyMap_T;
@@ -305,7 +319,7 @@ class PFactory : PFactoryBase
 
     static void Register(const _Key_T & key, Abstract_T * instance)
     {
-      GetInstance().Register_Internal(key, new WorkerBase(instance));
+      GetInstance().Register_Internal(key, PNEW WorkerBase(instance));
     }
 
     static BOOL RegisterAs(const _Key_T & newKey, const _Key_T & oldKey)
@@ -380,6 +394,7 @@ class PFactory : PFactoryBase
         return *(PFactory *)b;
       }
 
+      PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
       PFactory * factory = new PFactory;
       factories[className] = factory;
       return *factory;

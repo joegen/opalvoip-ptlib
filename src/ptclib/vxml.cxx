@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.75  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.74  2007/09/04 11:33:21  csoutheren
  * Add PlayTone
  * Add access to session variable table
@@ -308,6 +311,55 @@
 #include <ptclib/memfile.h>
 #include <ptclib/random.h>
 #include <ptclib/http.h>
+
+
+class PVXMLChannelPCM : public PVXMLChannel
+{
+  PCLASSINFO(PVXMLChannelPCM, PVXMLChannel);
+
+  public:
+    PVXMLChannelPCM();
+
+  protected:
+    // overrides from PVXMLChannel
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
+    virtual void GetBeepData(PBYTEArray & data, unsigned ms);
+};
+
+
+class PVXMLChannelG7231 : public PVXMLChannel
+{
+  PCLASSINFO(PVXMLChannelG7231, PVXMLChannel);
+  public:
+    PVXMLChannelG7231();
+
+    // overrides from PVXMLChannel
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
+};
+
+
+class PVXMLChannelG729 : public PVXMLChannel
+{
+  PCLASSINFO(PVXMLChannelG729, PVXMLChannel);
+  public:
+    PVXMLChannelG729();
+
+    // overrides from PVXMLChannel
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
+};
+
+
+#define new PNEW
+
 
 #define SMALL_BREAK_MSECS   1000
 #define MEDIUM_BREAK_MSECS  2500
@@ -2801,22 +2853,6 @@ void PVXMLChannel::FlushQueue()
 
 ///////////////////////////////////////////////////////////////
 
-class PVXMLChannelPCM : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLChannelPCM, PVXMLChannel);
-
-  public:
-    PVXMLChannelPCM();
-
-  protected:
-    // overrides from PVXMLChannel
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
-    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
-    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
-    virtual void GetBeepData(PBYTEArray & data, unsigned ms);
-};
-
 PFactory<PVXMLChannel>::Worker<PVXMLChannelPCM> pcmVXMLChannelFactory(VXML_PCM16);
 
 PVXMLChannelPCM::PVXMLChannelPCM()
@@ -2884,19 +2920,6 @@ void PVXMLChannelPCM::GetBeepData(PBYTEArray & data, unsigned ms)
 
 ///////////////////////////////////////////////////////////////
 
-class PVXMLChannelG7231 : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLChannelG7231, PVXMLChannel);
-  public:
-    PVXMLChannelG7231();
-
-    // overrides from PVXMLChannel
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
-    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
-    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
-};
-
 PFactory<PVXMLChannel>::Worker<PVXMLChannelG7231> g7231VXMLChannelFactory(VXML_G7231);
 
 PVXMLChannelG7231::PVXMLChannelG7231()
@@ -2951,19 +2974,6 @@ BOOL PVXMLChannelG7231::IsSilenceFrame(const void * buf, PINDEX len) const
 }
 
 ///////////////////////////////////////////////////////////////
-
-class PVXMLChannelG729 : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLChannelG729, PVXMLChannel);
-  public:
-    PVXMLChannelG729();
-
-    // overrides from PVXMLChannel
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
-    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
-    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
-};
 
 PFactory<PVXMLChannel>::Worker<PVXMLChannelG729> g729VXMLChannelFactory(VXML_G729);
 
