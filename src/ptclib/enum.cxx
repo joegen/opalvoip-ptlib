@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.12  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.11  2007/06/27 15:26:52  shorne
  * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
  *
@@ -64,6 +67,9 @@
 #include <ptlib.h>
 #include <ptclib/pdns.h>
 #include <ptclib/enum.h>
+
+#define new PNEW
+
 
 #if P_DNS
 

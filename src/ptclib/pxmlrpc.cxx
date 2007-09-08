@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.28  2007/09/08 11:34:28  rjongbloed
+ * Improved memory checking (leaks etc), especially when using MSVC debug library.
+ *
  * Revision 1.27  2007/07/22 17:30:58  shorne
  * fixed compile issue when no expat
  *
@@ -133,6 +136,9 @@
 
 #include <ptclib/mime.h>
 #include <ptclib/http.h>
+
+
+#define new PNEW
 
 
 static const char NoIndentElements[] = "methodName name string int boolean double dateTime.iso8601";
