@@ -133,14 +133,17 @@ char *			_ui64toa (unsigned __int64 val,char *buf,int radix);
 __int64			_atoi64(const char *nptr);
 
 int stricmp(const char* s1, const char* s2 ); 
-int stricmp(const wchar_t* s1, const char* s2 ); 
 
 int strcasecmp(const char* s1, const char* s2 ); 
 int strncasecmp(const char* s1, const char* s2, int n);
 
+int stricmp(const wchar_t* s1, const char* s2 ); 
+
+#endif // _WIN32_WCE < 0x502
+
 int strcasecmp(const wchar_t* s1, const char* s2 ); 
 int strncasecmp(const wchar_t* s1, const char* s2, int n);
-#endif // _WIN32_WCE < 0x502
+int strcasecmp(PString s1, const char* s2);
 
 LONG RegDeleteValue( HKEY hKey, const char* lpValueName );
 
