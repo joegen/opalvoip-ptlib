@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.126  2007/09/09 10:29:49  rjongbloed
+ * Fixed DevStudio 2003 build with memory check code.
+ *
  * Revision 1.125  2007/09/09 09:42:48  rjongbloed
  * Fixed DevStudio 2003 build with memory check code.
  *
@@ -1321,6 +1324,10 @@ PCLASSINFO macro.
       { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
     void operator delete(void * ptr) \
       { PMemoryHeap::Deallocate(ptr, Class()); } \
+    void * operator new(size_t, void * placement) \
+      { return placement; } \
+    void operator delete(void *, void *) \
+      { } \
     void * operator new[](size_t nSize, const char * file, int line) \
       { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
     void * operator new[](size_t nSize) \
@@ -1339,9 +1346,6 @@ inline void * operator new[](size_t nSize, const char * file, int line)
 #ifndef __GNUC__
 void * operator new(size_t nSize);
 void * operator new[](size_t nSize);
-
-__inline void * operator new(size_t nSize, void * place) { return place; }
-__inline void * operator new[](size_t nSize, void * place) { return place; }
 
 void operator delete(void * ptr);
 void operator delete[](void * ptr);
