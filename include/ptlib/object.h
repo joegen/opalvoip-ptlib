@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.125  2007/09/09 09:42:48  rjongbloed
+ * Fixed DevStudio 2003 build with memory check code.
+ *
  * Revision 1.124  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -467,6 +470,7 @@
 
 #ifdef _WIN32
   #include <malloc.h>
+  #include <crtdbg.h>
 #endif
 
 #include <string.h>
@@ -1335,6 +1339,9 @@ inline void * operator new[](size_t nSize, const char * file, int line)
 #ifndef __GNUC__
 void * operator new(size_t nSize);
 void * operator new[](size_t nSize);
+
+__inline void * operator new(size_t nSize, void * place) { return place; }
+__inline void * operator new[](size_t nSize, void * place) { return place; }
 
 void operator delete(void * ptr);
 void operator delete[](void * ptr);
