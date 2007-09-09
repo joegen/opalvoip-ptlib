@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.30  2007/09/09 09:42:09  rjongbloed
+ * Prevent internal factory allocations from being included in memory leaks
+ *   as they are never deallocated during the life of the program.
+ *
  * Revision 1.29  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -291,6 +295,7 @@ class PFactory : PFactoryBase
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase(singleton)
         {
+          PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
           PFactory<_Abstract_T, _Key_T>::Register(key, this);   // here
         }
 
