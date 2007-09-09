@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.258  2007/09/09 09:40:26  rjongbloed
+ * Prevented memory leak detection from considering anything
+ *   allocated before the PProcess constructor is complete.
+ *
  * Revision 1.257  2007/09/08 11:34:29  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -2083,10 +2087,6 @@ int PProcess::_main(void *)
 
 void PProcess::PreInitialise(int c, char ** v, char ** e)
 {
-#if PMEMORY_HEAP
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
-#endif
-
   p_argc = c;
   p_argv = v;
   p_envp = e;
@@ -2181,6 +2181,11 @@ PProcess::PProcess(const char * manuf, const char * name,
       }
     }
   }
+
+#if PMEMORY_HEAP
+  // Now we start looking for memory leaks!
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
 }
 
 

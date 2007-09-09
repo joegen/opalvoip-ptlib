@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.89  2007/09/09 09:40:26  rjongbloed
+ * Prevented memory leak detection from considering anything
+ *   allocated before the PProcess constructor is complete.
+ *
  * Revision 1.88  2007/09/08 11:34:29  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -1097,6 +1101,7 @@ PMemoryHeap::PMemoryHeap()
 {
   _CrtMemCheckpoint(&initialState);
   pfnOldCrtDumpClient = _CrtSetDumpClient(MyCrtDumpClient);
+  _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) & ~_CRTDBG_ALLOC_MEM_DF);
 }
 
 
