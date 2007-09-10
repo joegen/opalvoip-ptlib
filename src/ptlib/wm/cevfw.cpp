@@ -63,7 +63,7 @@ HWND VFWAPI capDefCreateCaptureWindow(LPCSTR szTitle,
 
 	ZeroMemory(&wc, sizeof(wc));
     wc.lpfnWndProc = CapWindowProc;
-    wc.hInstance = (HINSTANCE) hInstance;
+    wc.hInstance = (HINSTANCE) NULL; // Hope it would find one
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszClassName = gszCEVideoCapClassName;
 
