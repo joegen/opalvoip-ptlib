@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.14  2007/09/11 13:38:56  hfriederich
+ * Allow to do lookup SRV records using complete SRV query string
+ *
  * Revision 1.13  2007/08/13 00:56:30  rjongbloed
  * Fixed compile on DevStudio 2003
  *
@@ -310,12 +313,18 @@ BOOL GetSRVRecords(
   * @return TRUE if the service could be resolved, else FALSE
   */
 
+BOOL LookupSRV(
+         const PString & srvQuery,
+         WORD defaultPort,
+         PIPSocketAddressAndPortVector & addrList
+);
+
 BOOL LookupSRV( 
          const PString & domain,                  ///< domain to lookup
          const PString & service,                 ///< service to use
-                    WORD defaultPort,             ///< default por to use
+         WORD defaultPort,                        ///< default por to use
          PIPSocketAddressAndPortVector & addrList ///< returned list of sockets and ports
-);  
+); 
 
 BOOL LookupSRV( 
          const PURL & url,          ///< URL to lookup
