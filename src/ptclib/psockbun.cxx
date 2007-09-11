@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.15  2007/09/11 08:37:30  rjongbloed
+ * Set thread name for Network Interface Monitor thread.
+ *
  * Revision 1.14  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -160,6 +163,7 @@ BOOL PInterfaceMonitor::Start()
 
   PIPSocket::GetInterfaceTable(currentInterfaces);
   updateThread = new PThreadObj<PInterfaceMonitor>(*this, &PInterfaceMonitor::UpdateThreadMain);
+  updateThread->SetThreadName("Network Interface Monitor");
   return TRUE;
 }
 
