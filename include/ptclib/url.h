@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.36  2007/09/11 10:34:14  hfriederich
+ * Get access to portSupplied variable
+ *
  * Revision 1.35  2007/04/18 23:49:50  csoutheren
  * Add usage of precompiled headers
  *
@@ -328,6 +331,9 @@ class PURL : public PObject
 
     /// Set the port field in the URL.
     void SetPort(WORD newPort);
+    
+    /// Get if explicit port is specified.
+    BOOL GetPortSupplied() const { return portSupplied; }
 
     /// Get if path is relative or absolute
     BOOL GetRelativePath() const { return relativePath; }
