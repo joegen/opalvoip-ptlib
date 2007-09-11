@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.34  2007/09/11 13:38:56  hfriederich
+ * Allow to do lookup SRV records using complete SRV query string
+ *
  * Revision 1.33  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -587,15 +590,26 @@ BOOL PDNS::LookupSRV(
   }
 
   PTRACE(6,"DNS\tSRV Lookup " << domain << " service " << service);
-
-  PDNS::SRVRecordList srvRecords;
+  
   PString srvLookupStr = service;
   if (srvLookupStr.Right(1) != ".")
     srvLookupStr += ".";
   srvLookupStr += domain;
+  
+  return LookupSRV(srvLookupStr, defaultPort, addrList);
+}
+
+BOOL PDNS::LookupSRV(
+              const PString & srvLookupStr,
+              WORD defaultPort,
+              PIPSocketAddressAndPortVector & addrList
+)
+{
+
+  PDNS::SRVRecordList srvRecords;
   BOOL found = PDNS::GetRecords(srvLookupStr, srvRecords);
   if (found) {
-    PTRACE(6,"DNS\tSRV Record found " << domain << " service " << service);
+    PTRACE(6,"DNS\tSRV Record found " << srvLookupStr);
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
       PIPSocketAddressAndPort addrAndPort;
