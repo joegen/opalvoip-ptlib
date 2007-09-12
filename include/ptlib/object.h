@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.128  2007/09/12 18:43:43  ykiryanov
+ * Added !defined(_WIN32_WCE)  to new memory leakage dectection code. Memory organized other way on WCE based devices and crtdbg.h API  is not present
+ *
  * Revision 1.127  2007/09/12 00:55:41  rjongbloed
  * Improved memory leak detection, reduce false positives.
  *
@@ -936,7 +939,7 @@ trace level is sufficient.
 
 
 
-#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
+#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
 
 #define PMEMORY_HEAP 1
 
@@ -1052,7 +1055,7 @@ class PMemoryHeap {
       DWORD allocationNumber;
     };
 #else
-    typedef _CrtMemState State;
+	typedef _CrtMemState State;
 #endif
 
     /* Get memory state.
