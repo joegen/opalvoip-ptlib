@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.127  2007/09/12 00:55:41  rjongbloed
+ * Improved memory leak detection, reduce false positives.
+ *
  * Revision 1.126  2007/09/09 10:29:49  rjongbloed
  * Fixed DevStudio 2003 build with memory check code.
  *
@@ -1187,52 +1190,11 @@ class PMemoryHeap {
 
 #else
 
+#define P_CLIENT_BLOCK (_CLIENT_BLOCK|(0x61<<16)) // This identifies a PObject derived class
     _CrtMemState initialState;
 
 #endif // PMEMORY_CHECK
 };
-
-
-#if !PMEMORY_CHECK
-
-#define P_CLIENT_BLOCK (_CLIENT_BLOCK|(0x61<<16)) // This identifies a PObject derived class
-
-__inline void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
-{
-  return _malloc_dbg(nSize, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK, file, line);
-}
-
-__inline void * PMemoryHeap::Allocate(size_t count, size_t iSize, const char * file, int line)
-{
-  return _calloc_dbg(count, iSize, _NORMAL_BLOCK, file, line);
-}
-
-__inline void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
-{
-  return _realloc_dbg(ptr, nSize, _NORMAL_BLOCK, file, line);
-}
-
-__inline void PMemoryHeap::Deallocate(void * ptr, const char * className)
-{
-  _free_dbg(ptr, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK);
-}
-
-__inline void PMemoryHeap::GetState(State & state)
-{
-  _CrtMemCheckpoint(&state);
-}
-
-__inline void PMemoryHeap::DumpObjectsSince(const State & state)
-{
-  _CrtMemDumpAllObjectsSince(&state);
-}
-
-__inline void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
-{
-  _CrtSetBreakAlloc(objectNumber);
-}
-
-#endif // !PMEMORY_CHECK
 
 
 /** Allocate memory for the run time library.
@@ -1370,6 +1332,16 @@ private:
 
 #define PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE PMemoryHeapIgnoreAllocationsForScope instance_PMemoryHeapIgnoreAllocationsForScope
 
+class PMemoryAllocationBreakpoint {
+public:
+  PMemoryAllocationBreakpoint(DWORD point)
+  {
+    PMemoryHeap::SetAllocationBreakpoint(point);
+  }
+};
+
+#define PMEMORY_ALLOCATION_BREAKPOINT(point) PMemoryAllocationBreakpoint PMemoryAllocationBreakpointInstance(point)
+
 
 #else // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
@@ -1383,6 +1355,7 @@ private:
 #define runtime_free(p) free(p)
 
 #define PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE
+#define PMEMORY_ALLOCATION_BREAKPOINT(point)
 
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
