@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.90  2007/09/12 00:55:41  rjongbloed
+ * Improved memory leak detection, reduce false positives.
+ *
  * Revision 1.89  2007/09/09 09:40:26  rjongbloed
  * Prevented memory leak detection from considering anything
  *   allocated before the PProcess constructor is complete.
@@ -1080,7 +1083,6 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 
-static PMemoryHeap memoryHeap;
 static _CRT_DUMP_CLIENT pfnOldCrtDumpClient;
 static bool hadCrtDumpLeak = false;
 
@@ -1118,14 +1120,37 @@ PMemoryHeap::~PMemoryHeap()
 }
 
 
-BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+static PMemoryHeap & MemoryHeapInstance()
 {
-  int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-  if (ignore)
-    _CrtSetDbgFlag(flags & ~_CRTDBG_ALLOC_MEM_DF);
-  else
-    _CrtSetDbgFlag(flags | _CRTDBG_ALLOC_MEM_DF);
-  return (flags & _CRTDBG_ALLOC_MEM_DF) == 0;
+  static PMemoryHeap instance;
+  return instance;
+}
+
+
+void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
+{
+  MemoryHeapInstance();
+  return _malloc_dbg(nSize, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK, file, line);
+}
+
+
+void * PMemoryHeap::Allocate(size_t count, size_t iSize, const char * file, int line)
+{
+  MemoryHeapInstance();
+  return _calloc_dbg(count, iSize, _NORMAL_BLOCK, file, line);
+}
+
+
+void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
+{
+  MemoryHeapInstance();
+  return _realloc_dbg(ptr, nSize, _NORMAL_BLOCK, file, line);
+}
+
+
+void PMemoryHeap::Deallocate(void * ptr, const char * className)
+{
+  _free_dbg(ptr, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK);
 }
 
 
@@ -1148,6 +1173,17 @@ BOOL PMemoryHeap::ValidateHeap(ostream * /*strm*/)
 }
 
 
+BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+{
+  int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  if (ignore)
+    _CrtSetDbgFlag(flags & ~_CRTDBG_ALLOC_MEM_DF);
+  else
+    _CrtSetDbgFlag(flags | _CRTDBG_ALLOC_MEM_DF);
+  return (flags & _CRTDBG_ALLOC_MEM_DF) == 0;
+}
+
+
 void PMemoryHeap::DumpStatistics()
 {
   _CrtMemState state;
@@ -1162,9 +1198,27 @@ void PMemoryHeap::DumpStatistics(ostream & /*strm*/)
 }
 
 
+void PMemoryHeap::GetState(State & state)
+{
+  _CrtMemCheckpoint(&state);
+}
+
+
+void PMemoryHeap::DumpObjectsSince(const State & state)
+{
+  _CrtMemDumpAllObjectsSince(&state);
+}
+
+
 void PMemoryHeap::DumpObjectsSince(const State & state, ostream & /*strm*/)
 {
   DumpObjectsSince(state);
+}
+
+
+void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
+{
+  _CrtSetBreakAlloc(objectNumber);
 }
 
 
