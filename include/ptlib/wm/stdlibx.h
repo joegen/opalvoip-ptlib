@@ -143,7 +143,10 @@ int stricmp(const wchar_t* s1, const char* s2 );
 
 int strcasecmp(const wchar_t* s1, const char* s2 ); 
 int strncasecmp(const wchar_t* s1, const char* s2, int n);
+
+#ifdef __PSTRING__
 int strcasecmp(PString s1, const char* s2);
+#endif
 
 LONG RegDeleteValue( HKEY hKey, const char* lpValueName );
 
