@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.91  2007/09/12 18:44:26  ykiryanov
+ * Added !defined(_WIN32_WCE)  to new memory leakage dectection code. Memory organized other way on WCE based devices and crtdbg.h API  is not present
+ *
  * Revision 1.90  2007/09/12 00:55:41  rjongbloed
  * Improved memory leak detection, reduce false positives.
  *
@@ -1081,7 +1084,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #else // PMEMORY_CHECK
 
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
 
 static _CRT_DUMP_CLIENT pfnOldCrtDumpClient;
 static bool hadCrtDumpLeak = false;
