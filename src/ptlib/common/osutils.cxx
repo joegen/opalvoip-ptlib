@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.259  2007/09/12 18:28:40  ykiryanov
+ * Added code to retrieve module name for WCE based projects
+ *
  * Revision 1.258  2007/09/09 09:40:26  rjongbloed
  * Prevented memory leak detection from considering anything
  *   allocated before the PProcess constructor is complete.
@@ -2117,17 +2120,21 @@ PProcess::PProcess(const char * manuf, const char * name,
     arguments.SetArgs(p_argc-1, p_argv+1);
 
     
-#if defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32) 
     // Try to get the real image path for this process
-    GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
+#ifndef _WIN32_WCE
+	GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
+#else
+	wchar_t wcsModuleName[1024];
+	if(GetModuleFileName(GetModuleHandle(NULL), wcsModuleName, 1024))
+		wcstombs(executableFile.GetPointer(1024), wcsModuleName, 1024);
+#endif
     executableFile.Replace("\\??\\","");
 
     if(executableFile.IsEmpty()){
 	// Ok something went wrong, just use the default
     executableFile = PString(p_argv[0]);
     }
-#else
-    executableFile = PString(p_argv[0]);
 #endif
 
     if (!PFile::Exists(executableFile)) {
