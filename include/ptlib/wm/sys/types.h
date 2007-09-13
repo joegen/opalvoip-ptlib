@@ -6,7 +6,7 @@
 //
 //////////////////////////////////////////////////////
 //
-// (c) Yuri Kiryanov, developer@dinsk.net
+// (c) Yuri Kiryanov, openh323@kiryanov.com
 // for Openh323, www.Openh323.org
 //
 // Windows CE Port
@@ -26,6 +26,8 @@ typedef long off_t;
 #endif
 
 #ifdef __cplusplus
+
+#include <winbase.h>
 
 typedef DWORD  SERVICE_STATUS_HANDLE;
 typedef struct _SERVICE_STATUS {
