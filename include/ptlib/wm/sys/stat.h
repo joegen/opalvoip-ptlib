@@ -6,12 +6,11 @@
 //
 //////////////////////////////////////////////////////
 //
-// (c) Yuri Kiryanov, yuri@kiryanov.com
+// (c) Yuri Kiryanov, developer@dinsk.net
 // for Openh323, www.Openh323.org
 //
 // Windows CE Port
-// Extra header file 
+// Extra header file to please compiler
 // 
 
-#include <stdlibx.h>
 
