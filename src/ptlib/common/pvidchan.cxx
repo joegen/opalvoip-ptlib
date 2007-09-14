@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.20  2007/09/14 01:14:25  csoutheren
+ * Fix warnings under VS.net 2003
+ *
  * Revision 1.19  2007/04/20 06:47:48  csoutheren
  * Really disable video code when video is turned off
  *
@@ -95,7 +98,7 @@
  *
  */
 
-#ifndef _WIN32_WCE
+#ifndef __GNUC__
 #pragma implementation "video.h"
 #endif
 
