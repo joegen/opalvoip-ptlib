@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.73  2007/09/14 01:14:25  csoutheren
+ * Fix warnings under VS.net 2003
+ *
  * Revision 1.72  2007/08/17 07:36:38  rjongbloed
  * Speed up camera opening by allowing colour format and frame size and rate
  *   to be set before device is opened. This also fixes the device not opening
@@ -312,9 +315,9 @@
  *
  */
 
-#ifndef _WIN32_WCE
+#ifndef __GNUC__
 #pragma implementation "videoio.h"
-#endif // !_WIN32_WCE 
+#endif 
 
 #include <ptlib.h>
 
