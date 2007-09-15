@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.129  2007/09/15 21:46:50  dsandras
+ * Applied patch from Matthias Schneider to fix WIN32 build. Many thanks!
+ *
  * Revision 1.128  2007/09/12 18:43:43  ykiryanov
  * Added !defined(_WIN32_WCE)  to new memory leakage dectection code. Memory organized other way on WCE based devices and crtdbg.h API  is not present
  *
@@ -479,6 +482,9 @@
 
 #ifdef _WIN32
   #include <malloc.h>
+#endif
+
+#ifdef _MSC_VER
   #include <crtdbg.h>
 #endif
 
