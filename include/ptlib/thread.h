@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.54  2007/09/17 11:14:42  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.53  2007/09/17 05:30:43  rjongbloed
  * Added thread local storage in tracing to avoid a certain class of deadlocks.
  *
@@ -527,12 +530,14 @@ class PThread : public PObject
     PString threadName;
 
   private:
+#if PTRACING
     PStringStream traceStream;
     unsigned      traceLevel;
     friend class PTrace;
 
     unsigned traceBlockIndentLevel;
     friend class PTrace::Block;
+#endif
 
 
 // Include platform dependent part of class
