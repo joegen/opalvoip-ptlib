@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.cxx,v $
+ * Revision 1.8  2007/09/17 11:14:46  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.7  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -413,12 +416,14 @@ void XMPP::BaseStreamHandler::Main()
 
     if (pdu != NULL)
     {
+#if PTRACING
       if (PTrace::CanTrace(5)) {
         ostream& os = PTrace::Begin(5, __FILE__, __LINE__);
         os << "XMPP\tRCV: ";
         pdu->GetRootElement()->Output(os, *pdu, 0);
         os << PTrace::End;
       }
+#endif
 
       OnElement(*pdu);
     }

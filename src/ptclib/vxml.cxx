@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.76  2007/09/17 11:14:46  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.75  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -2806,7 +2809,7 @@ BOOL PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
     return QueuePlayable("URL", url.AsString(), repeat, delay);
 }
 
-BOOL PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
+BOOL PVXMLChannel::QueueData(const PBYTEArray & PTRACE_PARAM(data), PINDEX repeat, PINDEX delay)
 {
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   PVXMLPlayableData * item = dynamic_cast<PVXMLPlayableData *>(PFactory<PVXMLPlayable>::CreateInstance("PCM Data"));
