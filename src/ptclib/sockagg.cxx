@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.21  2007/09/17 11:14:46  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.20  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -455,8 +458,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
                                          FALSE);
 
     if (ret == WAIT_FAILED) {
-      DWORD err = WSAGetLastError();
-      PTRACE(1, "SockAgg\tWSAWaitForMultipleEvents error " << err);
+      PTRACE(1, "SockAgg\tWSAWaitForMultipleEvents error " << WSAGetLastError());
     }
 
     {
@@ -521,8 +523,13 @@ void PHandleAggregator::WorkerThreadBase::Main()
                 handle->closed = !handle->OnRead();
                 handle->beingProcessed = FALSE;
     
-                unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
-                PTRACE_IF(4, duration > 50, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
+#if PTRACING
+                if (PTrace::CanTrace(4)) {
+                  unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
+                  if (duration > 50)
+                    PTRACE(4, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
+                }
+#endif
               }
 
               // check for socket close
