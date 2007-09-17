@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.48  2007/09/17 11:14:46  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.47  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -539,7 +542,7 @@ void PXML::AutoReloadThread(PThread &, INT)
   autoLoadTimer.Reset();
 }
 
-void PXML::OnAutoLoad(BOOL ok)
+void PXML::OnAutoLoad(BOOL PTRACE_PARAM(ok))
 {
   PTRACE_IF(3, !ok, "XML\tFailed to load XML: " << GetErrorString());
 }

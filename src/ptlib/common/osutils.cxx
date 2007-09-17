@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.261  2007/09/17 11:14:46  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.260  2007/09/17 05:30:43  rjongbloed
  * Added thread local storage in tracing to avoid a certain class of deadlocks.
  *
@@ -934,6 +937,8 @@ void PSetErrorStream(ostream * s)
 
 //////////////////////////////////////////////////////////////////////////////
 
+#if PTRACING
+
 class PTraceInfo
 {
   /* NOTE you cannot have any complex types in this structure. Anything
@@ -1311,6 +1316,8 @@ PTrace::Block::~Block()
     thread->traceBlockIndentLevel -= 2;
   }
 }
+
+#endif // PTRACING
 
 
 ///////////////////////////////////////////////////////////////////////////////
