@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2007/09/17 11:14:45  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.6  2004/10/26 06:00:45  csoutheren
  * Added -t and -o options
  *
@@ -64,12 +67,14 @@ StunClient::StunClient()
 void StunClient::Main()
 {
   PArgList & args = GetArguments();
+#if PTRACING
   args.Parse("t-trace."       "-no-trace."
              "o-output:"      "-no-output.");
 
   PTrace::Initialise(args.GetOptionCount('t'),
                    args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
                    PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+#endif
 
   WORD portbase, portmax;
 
