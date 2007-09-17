@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.262  2007/09/17 12:45:17  rjongbloed
+ * Fixed DevStudio 2003 build.
+ *
  * Revision 1.261  2007/09/17 11:14:46  rjongbloed
  * Added "No Trace" build configuration.
  *
@@ -1184,7 +1187,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   PThread * thread = PThread::Current();
 
-  ostream & stream = thread != NULL ? thread->traceStream : *info.stream;
+  ostream & stream = thread != NULL ? (ostream &)thread->traceStream : *info.stream;
 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
