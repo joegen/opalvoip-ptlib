@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.260  2007/09/17 05:30:43  rjongbloed
+ * Added thread local storage in tracing to avoid a certain class of deadlocks.
+ *
  * Revision 1.259  2007/09/12 18:28:40  ykiryanov
  * Added code to retrieve module name for WCE based projects
  *
@@ -1164,59 +1167,56 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   info.Lock();
 
-  // Before we do new trace, make sure we clear any errors on the stream
-  info.stream->clear();
-
-  // Save log level for this message so End() function can use. This is
-  // protected by the PTraceMutex
-  info.currentLevel = level;
-
   if ((info.filename != NULL) && (info.options&RotateDaily) != 0) {
     unsigned day = PTime().GetDayOfYear();
     if (day != info.lastDayOfYear) {
       info.OpenTraceFile(NULL);
       info.lastDayOfYear = day;
-      if (info.stream == NULL) {
-        info.Unlock();
-        return *info.stream;
-      }
+      if (info.stream == NULL)
+        info.SetStream(&cerr);
     }
   }
+
+  PThread * thread = PThread::Current();
+
+  ostream & stream = thread != NULL ? thread->traceStream : *info.stream;
+
+  // Before we do new trace, make sure we clear any errors on the stream
+  stream.clear();
 
   if ((info.options&SystemLogStream) == 0) {
     if ((info.options&DateAndTime) != 0) {
       PTime now;
-      *info.stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", (info.options&GMTTime) ? PTime::GMT : PTime::Local);
+      stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", (info.options&GMTTime) ? PTime::GMT : PTime::Local);
     }
 
     if ((info.options&Timestamp) != 0)
-      *info.stream << setprecision(3) << setw(10) << (PTimer::Tick()-info.startTick) << '\t';
+      stream << setprecision(3) << setw(10) << (PTimer::Tick()-info.startTick) << '\t';
 
     if ((info.options&Thread) != 0) {
-      PThread * thread = PThread::Current();
       if (thread == NULL)
-        *info.stream << "ThreadID=0x"
-                      << setfill('0') << hex << setw(8)
-                      << PThread::GetCurrentThreadId()
-                      << setfill(' ') << dec;
+        stream << "ThreadID=0x"
+               << setfill('0') << hex << setw(8)
+               << PThread::GetCurrentThreadId()
+               << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
         if (name.GetLength() <= 12)
-          *info.stream << setw(12) << name;
+          stream << setw(12) << name;
         else
-          *info.stream << name.Left(10) << "..." << name.Right(10);
+          stream << name.Left(10) << "..." << name.Right(10);
       }
-      *info.stream << '\t';
+      stream << '\t';
     }
 
     if ((info.options&ThreadAddress) != 0)
-      *info.stream << hex << setfill('0')
-                    << setw(7) << (void *)PThread::Current()
-                    << dec << setfill(' ') << '\t';
+      stream << hex << setfill('0')
+             << setw(7) << (void *)PThread::Current()
+             << dec << setfill(' ') << '\t';
   }
 
   if ((info.options&TraceLevel) != 0)
-    *info.stream << level << '\t';
+    stream << level << '\t';
 
   if ((info.options&FileAndLine) != 0 && fileName != NULL) {
     const char * file = strrchr(fileName, '/');
@@ -1230,50 +1230,51 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
         file = fileName;
     }
 
-    *info.stream << setw(16) << file << '(' << lineNum << ")\t";
+    stream << setw(16) << file << '(' << lineNum << ")\t";
   }
 
-  return *info.stream;
+  // Save log level for this message so End() function can use. This is
+  // protected by the PTraceMutex or is thread local
+  if (thread == NULL)
+    info.currentLevel = level;
+  else {
+    thread->traceLevel = level;
+    info.Unlock();
+  }
+
+  return stream;
 }
 
 
-ostream & PTrace::End(ostream & s)
+ostream & PTrace::End(ostream & paramStream)
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
-  /* Only output if there is something to output, this prevents some blank trace
-     entries from appearing under some patholgical conditions. Unfortunately if
-     stderr is used the unitbuf flag causes the out_waiting() not to work so we 
-     must suffer with blank lines in that case.
-   */
-#if 0
-#ifndef P_LINUX
-  ::streambuf & rb = *s.rdbuf();
-  if (((s.flags()&ios::unitbuf) != 0) ||
-#ifdef __USE_STL__
-          rb.pubseekoff(0, ios::cur, ios::out) > 0
-#else
-          rb.out_waiting() > 0
-#endif
-      )
-#endif
-#endif
-    {
-    if ((info.options&SystemLogStream) != 0) {
-      // Get the trace level for this message and set the stream width to that
-      // level so that the PSystemLog can extract the log level back out of the
-      // ios structure. There could be portability issues with this though it
-      // should work pretty universally.
-      s.width(info.currentLevel+1);
-      s.flush();
-    }
-    else
-      s << endl;
+  PThread * thread = PThread::Current();
+
+  if (thread != NULL) {
+    PAssert(&paramStream == &thread->traceStream, PLogicError);
+    info.Lock();
+    *info.stream << thread->traceStream;
+    thread->traceStream = PString::Empty();
+  }
+  else {
+    PAssert(&paramStream == info.stream, PLogicError);
   }
 
-  info.Unlock();
+  if ((info.options&SystemLogStream) != 0) {
+    // Get the trace level for this message and set the stream width to that
+    // level so that the PSystemLog can extract the log level back out of the
+    // ios structure. There could be portability issues with this though it
+    // should work pretty universally.
+    info.stream->width((thread != NULL ? thread->traceLevel : info.currentLevel) + 1);
+    info.stream->flush();
+  }
+  else
+    *info.stream << endl;
 
-  return s;
+  info.Unlock();
+  return paramStream;
 }
 
 

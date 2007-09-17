@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.53  2007/09/17 05:30:43  rjongbloed
+ * Added thread local storage in tracing to avoid a certain class of deadlocks.
+ *
  * Revision 1.52  2007/07/08 23:54:53  rjongbloed
  * Fixed MSVC warnings
  *
@@ -524,6 +527,10 @@ class PThread : public PObject
     PString threadName;
 
   private:
+    PStringStream traceStream;
+    unsigned      traceLevel;
+    friend class PTrace;
+
     unsigned traceBlockIndentLevel;
     friend class PTrace::Block;
 
