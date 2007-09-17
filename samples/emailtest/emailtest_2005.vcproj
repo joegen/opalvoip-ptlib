@@ -15,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
-			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
+			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -49,7 +49,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=1"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -107,8 +107,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
-			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
+			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -140,7 +140,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;PTRACING=1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -168,6 +168,98 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
+				SubSystem="1"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="No Trace|Win32"
+			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/emailtest.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=0"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="precompile.h"
+				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
+				WarningLevel="4"
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG,_AFXDLL"
+				Culture="3081"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\lib"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="1"
@@ -233,6 +325,16 @@
 						BasicRuntimeChecks="3"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="precompile.cxx"
@@ -257,6 +359,17 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BasicRuntimeChecks="3"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
