@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.87  2007/09/17 11:14:47  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.86  2007/09/08 11:34:29  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -586,10 +589,10 @@ int PSystemLog::Buffer::underflow()
 
 int PSystemLog::Buffer::sync()
 {
-  Level logLevel;
-  if (log->width() == 0 || (PTrace::GetOptions()&PTrace::SystemLogStream) == 0)
-    logLevel = log->logLevel;
-  else {
+  Level logLevel = log->logLevel;
+
+#if PTRACING
+  if (log->width() != 0 &&(PTrace::GetOptions()&PTrace::SystemLogStream) != 0) {
     // Trace system sets the ios stream width as the last thing it does before
     // doing a flush, which gets us here. SO now we can get a PTRACE looking
     // exactly like a PSYSTEMLOG of appropriate level.
@@ -599,6 +602,8 @@ int PSystemLog::Buffer::sync()
       traceLevel = PSystemLog::NumLogLevels-1;
     logLevel = (Level)traceLevel;
   }
+#endif
+
   PSystemLog::Output(logLevel, string);
 
   PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
@@ -662,10 +667,12 @@ int PServiceProcess::_main(void * arg)
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
     PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+#if PTRACING
     PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
     PTrace::ClearOptions(PTrace::FileAndLine);
     PTrace::SetOptions(PTrace::SystemLogStream);
     PTrace::SetLevel(4);
+#endif
   }
 
   hInstance = (HINSTANCE)arg;
