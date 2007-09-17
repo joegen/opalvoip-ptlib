@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.47  2007/09/17 11:14:47  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.46  2007/09/08 11:34:29  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -1032,7 +1035,7 @@ LRESULT CALLBACK PVideoInputDevice_VideoForWindows::ErrorHandler(HWND hWnd, int 
 }
 
 
-LRESULT PVideoInputDevice_VideoForWindows::HandleError(int id, LPCSTR err)
+LRESULT PVideoInputDevice_VideoForWindows::HandleError(int id, LPCSTR PTRACE_PARAM(err))
 {
   if (id != 0) {
     PTRACE(1, "PVidInp\tErrorHandler: [id="<< id << "] " << err);
@@ -1094,17 +1097,21 @@ BOOL PVideoInputDevice_VideoForWindows::InitialiseCapture()
   }
 
   WORD devId;
-  if (PTrace::CanTrace(6)) { // list available video capture drivers
-    PTRACE(5, "PVidInp\tEnumerating available video capture drivers");
+
+#if PTRACING
+  if (PTrace::CanTrace(4)) { // list available video capture drivers
+    ostream & trace = PTrace::Begin(5, __FILE__, __LINE__);
+    trace << "PVidInp\tEnumerating available video capture drivers:\n";
     for (devId = 0; devId < 10; devId++) { 
       char name[100];
       char version[200];
       if (capGetDriverDescription(devId, name, sizeof(name), version, sizeof(version)) ) 
-      {
-        PTRACE(5, "PVidInp\tVideo device[" << devId << "] = " << name << ", " << version);
-      }
+        trace << "  Video device[" << devId << "] = " << name << ", " << version << '\n';
     }
+    trace << PTrace::End;
   }
+#endif
+
   if (deviceName.GetLength() == 1 && isdigit(deviceName[0]))
     devId = (WORD)(deviceName[0] - '0');
   else {

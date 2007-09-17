@@ -25,6 +25,9 @@
  * Contributor(s): /
  *
  * $Log: sound_directsound.cxx,v $
+ * Revision 1.5  2007/09/17 11:14:47  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.4  2007/08/21 10:33:32  rjongbloed
  * Improved build/configure of direct sound.
  *
@@ -174,8 +177,9 @@ PSoundChannelDirectSound::Open (const PString & _device,
     				InitCaptureDevice (&deviceGUID) : 
 				InitPlaybackDevice (&deviceGUID);
 
-  if (!result) 
-    PTRACE (4, "dsound\tCould not open device " << ((mDirection == Player) ? "Playback" : "Recording") << " failed");
+  if (!result) {
+    PTRACE(4, "dsound\tCould not open device " << ((mDirection == Player) ? "Playback" : "Recording") << " failed");
+  }
 
   return result;
 }
