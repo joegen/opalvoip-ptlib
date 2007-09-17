@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.163  2007/09/17 11:14:48  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.162  2007/09/08 11:34:29  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -1295,7 +1298,9 @@ PThread::PThread(PINDEX stackSize,
 
   SetPriority(priorityLevel);
 
+#if PTRACING
   traceBlockIndentLevel = 0;
+#endif
 
   if (autoDelete) {
     PProcess & process = PProcess::Current();
@@ -1504,7 +1509,9 @@ void PThread::InitialiseProcessThread()
   threadId = GetCurrentThreadId();
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(threadId, this);
+#if PTRACING
   traceBlockIndentLevel = 0;
+#endif
 }
 
 
