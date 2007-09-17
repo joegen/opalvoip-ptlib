@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.9  2007/09/17 11:14:45  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.8  2006/06/21 03:28:43  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -111,14 +114,18 @@ void XMLRPCApp::Main()
              "d-debug."
              "f-float."
              "i-integer."
-             "o-output:"
              "s-struct."
+#if PTRACING
              "t-trace."
+             "o-output:"
+#endif
              "-echo-struct."
              );
 
+#if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL);
+#endif
 
   if (args.GetCount() < 2) {
     PError << "usage: xmlrpc url method [parms...]" << endl;
