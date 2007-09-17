@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.10  2007/09/17 11:14:42  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.9  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -126,15 +129,19 @@ void ThreadSafe::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
+#if PTRACING
              "t-trace."       "-no-trace."
              "o-output:"      "-no-output."
+#endif
              "1-test1."       "-no-test1."
              "2-test2."       "-no-test2."
              "3-test3."       "-no-test3.");
 
+#if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
                      PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+#endif
 
   if (args.HasOption('1'))
     Test1(args);

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.130  2007/09/17 11:14:42  rjongbloed
+ * Added "No Trace" build configuration.
+ *
  * Revision 1.129  2007/09/15 21:46:50  dsandras
  * Applied patch from Matthias Schneider to fix WIN32 build. Many thanks!
  *
@@ -698,12 +701,10 @@ and NT GUI applications. An application could change this pointer to a
 // Debug and tracing
 
 #ifndef PTRACING
-#ifndef _DEBUG
-#define PTRACING 0
-#else
 #define PTRACING 1
 #endif
-#endif
+
+#if PTRACING
 
 /**Class to encapsulate tracing functions.
    This class does not require any instances and is only being used as a
@@ -892,16 +893,6 @@ public:
   };
 };
 
-#if !PTRACING
-
-#define PTRACE_PARAM(param)
-#define PTRACE_BLOCK(n)
-#define PTRACE_LINE()
-#define PTRACE(level, arg)
-#define PTRACE_IF(level, cond, args)
-
-#else
-
 /* Macro to conditionally declare a parameter to a function to avoid compiler
    warning due that parameter only being used in a PTRACE */
 #define PTRACE_PARAM(param) param
@@ -941,7 +932,15 @@ trace level is sufficient.
     if (!(PTrace::CanTrace(level)  && (cond))) ; else \
       PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End
 
-#endif
+#else // PTRACING
+
+#define PTRACE_PARAM(param)
+#define PTRACE_BLOCK(n)
+#define PTRACE_LINE()
+#define PTRACE(level, arg)
+#define PTRACE_IF(level, cond, args)
+
+#endif // PTRACING
 
 
 
