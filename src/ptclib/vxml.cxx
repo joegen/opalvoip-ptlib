@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.77  2007/09/18 06:21:12  csoutheren
+ * Fix spelling mistakes
+ *
  * Revision 1.76  2007/09/17 11:14:46  rjongbloed
  * Added "No Trace" build configuration.
  *
@@ -396,14 +399,11 @@ BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLe
 
   while (len > 0) {
     BOOL stat = channel.ReadFrame(buf, len);
-    if (stat) 
-      return TRUE;
-    if ((repeat == 0) || !Rewind(channel.GetBaseReadChannel()))
+    if (!stat) 
       return FALSE;
     PINDEX readLen = channel.GetLastReadCount();
-    if(readLen == 0){
+    if (readLen == 0)
       return TRUE;
-    }
     len -= readLen;
     buf += readLen;
   }
@@ -716,7 +716,6 @@ static PString MD5AsHex(const PString & str)
 PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key, const PString & fileType)
 {
   PString md5   = MD5AsHex(key);
-  PString md5_2 = MD5AsHex(key);
 
   return directory + ((prefix + "_") + md5 + fileType);
 }
@@ -736,10 +735,21 @@ BOOL PVXMLCache::Get(const PString & prefix,
     return FALSE;
   }
 
+  {
+    PFile file(dataFn, PFile::ReadOnly);
+    if (!file.IsOpen() || (file.GetLength() == 0)) {
+      PTRACE(4, "PVXML\tDeleting empty cache file for key " << key);
+      PFile::Remove(dataFn, TRUE);
+      PFile::Remove(typeFn, TRUE);
+      return FALSE;
+    }
+  }
+
   PTextFile typeFile(typeFn, PFile::ReadOnly);
   if (!typeFile.IsOpen()) {
     PTRACE(4, "PVXML\tCannot find type for cached key " << key << " in cache");
-    PFile::Remove(dataFn);
+    PFile::Remove(dataFn, TRUE);
+    PFile::Remove(typeFn, TRUE);
     return FALSE;
   }
 
@@ -1219,30 +1229,28 @@ void PVXMLSession::ExecuteDialog()
   ProcessNode();
 
   // Wait for the buffer to complete before continuing to the next node
-  if (currentNode == NULL) {
-    if (IsPlaying())
-      return;
-  }
+  if (currentNode != NULL) {
 
-  // if the current node has children, then process the first child
-  else if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
-    currentNode = ((PXMLElement *)currentNode)->GetElement(0);
+    // if the current node has children, then process the first child
+    if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
+      currentNode = ((PXMLElement *)currentNode)->GetElement(0);
 
-  // else process the next sibling
-  else {
-    // Keep moving up the parents until we find a next sibling
-    while ((currentNode != NULL) && currentNode->GetNextObject() == NULL) {
-      currentNode = currentNode->GetParent();
-      // if we are on the backwards traversal through a <field> then wait
-      // for a grammar recognition and throw events if necessary
-      if (currentNode != NULL && (currentNode->IsElement() == TRUE) && (((PXMLElement*)currentNode)->GetName() *= "field")) {
-        listening = TRUE;
-        PlaySilence(timeout);
+    // else process the next sibling
+    else {
+      // Keep moving up the parents until we find a next sibling
+      while ((currentNode != NULL) && currentNode->GetNextObject() == NULL) {
+        currentNode = currentNode->GetParent();
+        // if we are on the backwards traversal through a <field> then wait
+        // for a grammar recognition and throw events if necessary
+        if (currentNode != NULL && (currentNode->IsElement() == TRUE) && (((PXMLElement*)currentNode)->GetName() *= "field")) {
+          listening = TRUE;
+          PlaySilence(timeout);
+        }
       }
-    }
 
-    if (currentNode != NULL)
-      currentNode = currentNode->GetNextObject();
+      if (currentNode != NULL)
+        currentNode = currentNode->GetNextObject();
+    }
   }
 
   // Determine if we should quit
@@ -1608,7 +1616,7 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueueData(data, repeat, delay))
     return FALSE;
-
+  
   AllowClearCall();
 
   return TRUE;
@@ -1687,7 +1695,12 @@ BOOL PVXMLSession::PlayText(const PString & _text,
     return FALSE;
   }
 
-  return vxmlChannel->QueuePlayable(playable);
+  if (!vxmlChannel->QueuePlayable(playable))
+    return FALSE;
+
+  AllowClearCall();
+
+  return TRUE;
 }
 
 BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeech::TextType type, PStringArray & filenameList, BOOL useCache)
@@ -1705,9 +1718,9 @@ BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeec
     PFilePath dataFn;
 
     // see if we have converted this text before
-    PString contentType;
+    PString contentType = "audio/x-wav";
     if (useCache)
-      spoken = PVXMLCache::GetResourceCache().Get(prefix, text, "wav", contentType, dataFn);
+      spoken = PVXMLCache::GetResourceCache().Get(prefix, contentType + "\n" + text, "wav", contentType, dataFn);
 
     // if not cached, then use the text to speech converter
     if (!spoken) {
@@ -2708,9 +2721,13 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 
         // repeat the item if needed
         if (currentPlayItem->GetRepeat() > 1) {
-          currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
-          currentPlayItem->OnRepeat(*this);
-          continue;
+          if (!currentPlayItem->Rewind(GetBaseReadChannel())) {
+            PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
+          } else {
+            currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
+            currentPlayItem->OnRepeat(*this);
+            continue;
+          }
         } 
 
         // see if end of queue delay specified
@@ -3025,6 +3042,8 @@ class TextToSpeech_Sample : public PTextToSpeech
     BOOL IsOpen()    { return opened; }
     BOOL Close();
     BOOL Speak(const PString & text, TextType hint = Default);
+    BOOL SpeakNumber(unsigned number);
+
     BOOL SpeakFile(const PString & text);
 
   protected:
@@ -3150,87 +3169,199 @@ BOOL TextToSpeech_Sample::Close()
   return stat;
 }
 
+BOOL TextToSpeech_Sample::SpeakNumber(unsigned number)
+{
+  return Speak(PString(PString::Signed, number), Number);
+}
+
+
 BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
 {
-  PStringArray tokens = text.Tokenise("\t\n\r ", FALSE);
-  for (PINDEX i = 0; i < tokens.GetSize(); ++i) {
-    PString word = tokens[i].Trim();
-    switch (hint) {
-      case Default:
-        break;
-      case Literal:
-        break;
-      case Phone:
-      case Digits:
-        for (PINDEX i = 0; i < text.GetLength(); ++i) {
-          if (isdigit(text[i]))
-            SpeakFile(PString(text[i]));
+  // break into lines
+  PStringArray lines = text.Lines();
+  PINDEX i;
+  for (i = 0; i < lines.GetSize(); ++i) {
+
+    PString line = lines[i].Trim();
+    if (line.IsEmpty())
+      continue;
+
+    if (hint == DateAndTime) {
+      Speak(text, Date);
+      Speak(text, Time);
+      continue;
+    }
+
+    if (hint == Date) {
+      PTime time(line);
+      if (time.IsValid()) {
+        SpeakFile(time.GetDayName(time.GetDayOfWeek(), PTime::FullName));
+        SpeakNumber(time.GetDay());
+        SpeakFile(time.GetMonthName(time.GetMonth(), PTime::FullName));
+        SpeakNumber(time.GetYear());
+      }
+      continue;
+    }
+
+    if (hint == Time) {
+      PTime time(line);
+      if (time.IsValid()) {
+        int hour = time.GetHour();
+        if (hour < 13) {
+          SpeakNumber(hour);
+          SpeakNumber(time.GetMinute());
+          SpeakFile(PTime::GetTimeAM());
         }
-        break;
-      case Number:
-        {
-          int number = atoi(word);
-          if (number < 0) {
-            SpeakFile("negative");
-            number = -number;
-          } 
-          else if (number == 0) {
-            SpeakFile("0");
-          } 
-          else {
-            if (number >= 1000000) {
-              int millions = number / 1000000;
-              number = number % 1000000;
-              Speak(PString(PString::Signed, millions), Number);
-              SpeakFile("million");
-            }
-            if (number >= 1000) {
-              int thousands = number / 1000;
-              number = number % 1000;
-              Speak(PString(PString::Signed, thousands), Number);
-              SpeakFile("thousand");
-            }
-            if (number >= 100) {
-              int hundreds = number / 100;
-              number = number % 100;
-              Speak(PString(PString::Signed, hundreds), Number);
-              SpeakFile("hundred");
-            }
-            if (!SpeakFile(PString(PString::Signed, number))) {
-              int tens = number / 10;
-              number = number % 10;
-              if (tens > 0)
-                SpeakFile(PString(PString::Signed, tens*10));
-              if (number > 0)
-                SpeakFile(PString(PString::Signed, number));
-            }
-          }
+        else {
+          SpeakNumber(hour-12);
+          SpeakNumber(time.GetMinute());
+          SpeakFile(PTime::GetTimePM());
         }
-        break;
-      case Currency:
-        break;
-      case Time:
-        break;
-      case Date:
-        break;
-      case IPAddress:
-        {
-          PIPSocket::Address addr(text);
-          for (PINDEX i = 0; i < 4; ++i) {
-            int octet = addr[i];
-            if (octet < 100)
-              Speak(octet, Number);
+      }
+      continue;
+    }
+
+    if (hint == Default) {
+      BOOL isTime = FALSE;
+      BOOL isDate = FALSE;
+
+      for (i = 0; !isDate && i < 7; ++i)
+        isDate |= line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName));
+      for (i = 0; !isDate && i < 7; ++i)
+        isDate |= line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
+      for (i = 0; !isDate && i < 12; ++i)
+        isDate |= line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName));
+      for (i = 0; !isDate && i < 12; ++i)
+        isDate |= line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+
+      if (!isTime)
+        isTime = line.Find(PTime::GetTimeSeparator());
+      if (!isDate)
+        isDate = line.Find(PTime::GetDateSeparator());
+
+      if (isDate && isTime) {
+        Speak(line, DateAndTime);
+        continue;
+      }
+      if (isDate) {
+        Speak(line, Date);
+        continue;
+      }
+      else if (isTime) {
+        Speak(line, Time);
+        continue;
+      }
+    }
+      
+    PStringArray tokens = line.Tokenise("\t ", FALSE);
+    for (PINDEX j = 0; j < tokens.GetSize(); ++j) {
+      PString word = tokens[i].Trim();
+      switch (hint) {
+
+        case Time:
+        case Date:
+        case DateAndTime:
+          PAssertAlways("Logic error");
+          break;
+
+        case Literal:
+        case Default:
+          {
+            // assume anything with a dot is an ip address
+            BOOL isIpAddress = TRUE;
+            BOOL isDigits = TRUE;
+
+            PINDEX i;
+            for (i = 0; i < word.GetLength(); ++i) {
+              if (word[i] == '.')
+                isDigits = FALSE;
+              else if (!isdigit(word[i]))
+                isDigits = isIpAddress = FALSE;
+            }
+
+            if (isIpAddress)
+              return Speak(word, IPAddress);
+            else if (isDigits)
+              return Speak(word, Number);
             else
-              Speak(octet, Digits);
-            if (i != 3)
-              SpeakFile("dot");
+              return Speak(word, Spell);
           }
-        }
-        break;
-      case Duration:
-        break;
+          break;
+
+        case Spell:
+          for (PINDEX i = 0; i < text.GetLength(); ++i) 
+            SpeakFile(PString(text[i]));
+          break;
+
+        case Phone:
+        case Digits:
+          for (PINDEX i = 0; i < text.GetLength(); ++i) {
+            if (isdigit(text[i]))
+              SpeakFile(PString(text[i]));
+          }
+          break;
+
+        case Duration:
+        case Currency:
+        case Number:
+          {
+            int number = atoi(line);
+            if (number < 0) {
+              SpeakFile("negative");
+              number = -number;
+            } 
+            else if (number == 0) {
+              SpeakFile("0");
+            } 
+            else {
+              if (number >= 1000000) {
+                int millions = number / 1000000;
+                number = number % 1000000;
+                SpeakNumber(millions);
+                SpeakFile("million");
+              }
+              if (number >= 1000) {
+                int thousands = number / 1000;
+                number = number % 1000;
+                SpeakNumber(thousands);
+                SpeakFile("thousand");
+              }
+              if (number >= 100) {
+                int hundreds = number / 100;
+                number = number % 100;
+                SpeakNumber(hundreds);
+                SpeakFile("hundred");
+              }
+              if (!SpeakFile(PString(PString::Signed, number))) {
+                int tens = number / 10;
+                number = number % 10;
+                if (tens > 0)
+                  SpeakNumber(tens*10);
+                if (number > 0)
+                  SpeakNumber(number);
+              }
+            }
+          }
+          break;
+
+        case IPAddress:
+          {
+            PIPSocket::Address addr(line);
+            for (PINDEX i = 0; i < 4; ++i) {
+              int octet = addr[i];
+              if (octet < 100)
+                SpeakNumber(octet);
+              else
+                Speak(octet, Digits);
+              if (i != 3)
+                SpeakFile("dot");
+            }
+          }
+          break;
+      }
     }
   }
+
   return TRUE;
 }
 
