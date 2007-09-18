@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.15.2.9  2007/09/18 09:25:46  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.15.2.8  2007/06/02 12:10:03  dsandras
  * Added patch from Michael Smith <msmith cbnco com> refreshing video
  * capabilities when appropriate. Thanks!
@@ -288,9 +291,9 @@ PCREATE_VIDINPUT_PLUGIN(V4L);
 #define HINT_FORCE_DBLBUF                   0x0400  /// Force double buffering on quickcam express
 
 static struct {
-  char     *name_regexp;        // String used to match the driver name
-  char     *name;               // String used for ptrace output
-  char     *version;             // Apply the hint if kernel
+  const char     *name_regexp;        // String used to match the driver name
+  const char     *name;               // String used for ptrace output
+  const char     *version;             // Apply the hint if kernel
                                 // version < given version,
                                 // 0 means always apply
   unsigned hints;               // Hint flags
