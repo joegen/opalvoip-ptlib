@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.h,v $
+ * Revision 1.9  2007/09/18 06:21:49  csoutheren
+ * Add new texttospeech types
+ *
  * Revision 1.8  2007/04/19 04:33:53  csoutheren
  * Fixed problems with pre-compiled headers
  *
@@ -77,9 +80,11 @@ class PTextToSpeech : public PObject
       Currency,
       Time,
       Date,
+      DateAndTime,
       Phone,
       IPAddress,
-      Duration
+      Duration,
+      Spell
     };
 
     virtual PStringArray GetVoiceList() = 0;
