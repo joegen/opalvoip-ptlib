@@ -4299,7 +4299,7 @@ fi
 if test "${enable_v4l2+set}" = set; then
   enableval=$enable_v4l2;
 else
-  enable_v4l2=no
+  enable_v4l2=yes
 fi
 
 
@@ -4322,15 +4322,9 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#ifdef __linux__
-#include <linux/types.h>
-#include <linux/time.h>
-#else
-#ifdef __sun
-#include <sys/types.h>
-#include <sys/time.h>
-#endif
-#endif
+		#ifdef __linux__
+		#include <linux/types.h>
+		#endif
 
 
 #include <$VIDEODEV>
@@ -4367,6 +4361,77 @@ ac_res=`eval echo '${'$as_ac_Header'}'`
 echo "${ECHO_T}$ac_res" >&6; }
 if test `eval echo '${'$as_ac_Header'}'` = yes; then
   V4L2HDR=1
+else
+
+		    # We can't use AC_CHECK_HEADER again because
+                    # the value is cached, perhaps we have another
+                    # method to do this more cleanly ?
+		    { echo "$as_me:$LINENO: checking for $VIDEODEV with sys/types.h" >&5
+echo $ECHO_N "checking for $VIDEODEV with sys/types.h... $ECHO_C" >&6; }
+		    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+					#ifdef __linux__
+					#include <sys/types.h>
+					#include <linux/types.h>
+                                        #else
+                                        #ifdef __sun
+                                        #include <sys/types.h>
+                                        #include <sys/time.h>
+                                        #else
+					#error "not supported"
+					#endif
+					#endif
+					#include "$VIDEODEV"
+
+int
+main ()
+{
+
+				        return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+
+				        V4L2HDR=1
+				        { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+				        { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 fi
 
 
