@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.h,v $
+ * Revision 1.25  2007/09/18 06:20:57  csoutheren
+ * Fix spelling mistakes
+ *
  * Revision 1.24  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -290,7 +293,7 @@ class PTelnetSocket : public PTCPSocket
       EndOfRecordOption   = 25,   ///< Record boundary marker.
       TACACSUID           = 26,   ///< TACACS user identification.
       OutputMark          = 27,   ///< Output marker or banner text.
-      TerminalLocation    = 28,   ///< Terminals physical location infromation.
+      TerminalLocation    = 28,   ///< Terminals physical location information.
       Use3270RegimeOption = 29,   ///< 3270 regime.
       UseX3PADOption      = 30,   ///< X.3 PAD
       WindowSize          = 31,   ///< NAWS - Negotiate About Window Size.
