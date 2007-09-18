@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.115.2.1  2007/09/18 08:20:21  dsandras
+ * Fixed GCC 4.2 warnings.
+ *
  * Revision 1.115  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -589,7 +592,7 @@ Note that this evaluates the expression defined by #ptr# twice. To
 prevent incorrect behaviour with this, the macro will assume that the
 #ptr# parameter is an L-Value.
  */
-#define PAssertNULL(p) ((&(p)&&(p)!=NULL)?(p): \
+#define PAssertNULL(p) (((p)!=NULL)?(p): \
                      (PAssertFunc(__FILE__,__LINE__, __CLASS__, PNullPointerReference),(p)))
 
 /** This macro is used to assert immediately.
