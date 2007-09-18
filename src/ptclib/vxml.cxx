@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.78  2007/09/18 09:14:18  rjongbloed
+ * Fixed some (likely benign) uninitialised members.
+ *
  * Revision 1.77  2007/09/18 06:21:12  csoutheren
  * Fix spelling mistakes
  *
@@ -812,10 +815,15 @@ PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
   vxmlThread       = NULL;
+  threadRunning    = FALSE;
   vxmlChannel      = NULL;
   finishWhenEmpty  = TRUE;
   textToSpeech     = NULL;
-  autoDeleteTextToSpeech = FALSE;
+  loaded           = FALSE;
+  emptyAction      = FALSE;
+  recordDTMFTerm   = FALSE;
+  defaultDTMF      = 0;
+  timeout          = DEFAULT_TIMEOUT;
 
   autoDeleteTextToSpeech = FALSE;
   SetTextToSpeech(_tts, autoDelete);
@@ -832,8 +840,8 @@ void PVXMLSession::Initialise()
   listening        = FALSE;
   forceEnd         = FALSE;
   currentForm      = NULL;
+  currentField     = NULL;
   currentNode      = NULL;
-  autoDeleteTextToSpeech = FALSE;
 }
 
 PVXMLSession::~PVXMLSession()
