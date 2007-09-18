@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.46.2.1  2007/09/18 08:20:21  dsandras
+ * Fixed GCC 4.2 warnings.
+ *
  * Revision 1.46  2005/11/25 01:01:13  csoutheren
  * Applied patch #1351168
  * PWlib various fixes
@@ -416,7 +419,7 @@ class PASN_Integer : public PASN_ConstrainedObject
 };
 
 struct PASN_Names{
-    char * name;
+    const char * name;
     PINDEX value; 
 };
 
