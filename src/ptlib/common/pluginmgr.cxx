@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.29.2.1  2007/09/18 08:20:22  dsandras
+ * Fixed GCC 4.2 warnings.
+ *
  * Revision 1.29  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -171,28 +174,25 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
   }
 
   else {
-    unsigned (*GetAPIVersion)();
-    if (!dll->GetFunction("PWLibPlugin_GetAPIVersion", (PDynaLink::Function &)GetAPIVersion)) {
+    PDynaLink::Function fn;
+    if (!dll->GetFunction("PWLibPlugin_GetAPIVersion", fn))
       PTRACE(3, fileName << " is not a PWLib plugin");
-    }
 
     else {
+      unsigned (*GetAPIVersion)() = (unsigned (*)())fn;
       int version = (*GetAPIVersion)();
       switch (version) {
         case 0 : // old-style service plugins, and old-style codec plugins
           {
-            // declare local pointer to register function
-            void (*triggerRegister)(PPluginManager *);
-
             // call the register function (if present)
-            if (dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) 
-              (*triggerRegister)(this);
+            if (!dll->GetFunction("PWLibPlugin_TriggerRegister", fn)) 
+              PTRACE(2, "PLUGIN\t" << fileName << " has no registration-trigger function");
             else {
-              PTRACE(3, fileName << " has no registration-trigger function");
+              void (*triggerRegister)(PPluginManager *) = (void (*)(PPluginManager *))fn;
+              (*triggerRegister)(this);
             }
-          }
           // fall through to new version
-
+          }
         case 1 : // factory style plugins
           // call the notifier
           CallNotifier(*dll, 0);

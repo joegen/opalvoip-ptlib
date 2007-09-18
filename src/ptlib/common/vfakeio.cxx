@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.34.2.1  2007/09/18 08:20:22  dsandras
+ * Fixed GCC 4.2 warnings.
+ *
  * Revision 1.34  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -179,7 +182,7 @@ enum {
 
 typedef struct {
     char ascii;
-    char *line[MAX_L_HEIGHT];
+    const char *line[MAX_L_HEIGHT];
 } OneVFakeLetterData;
 
 

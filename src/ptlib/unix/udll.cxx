@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.19.2.1  2007/09/18 08:20:22  dsandras
+ * Fixed GCC 4.2 warnings.
+ *
  * Revision 1.19  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -437,7 +440,7 @@ BOOL PDynaLink::GetFunction(const PString & fn, Function & func)
   if (p == NULL)
     return FALSE;
 
-  func = (Function &)p;
+  func = (Function)p;
   return TRUE;
 }
 
