@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.23  2007/09/18 06:20:56  csoutheren
+ * Fix spelling mistakes
+ *
  * Revision 1.22  2007/02/01 23:56:44  csoutheren
  * Added extra AddMIME with seperate key and value fields
  *
@@ -128,7 +131,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     PMIMEInfo(
       PInternetProtocol & socket   ///< Application socket to read MIME info.
     );
-    // Construct a MIME infromation dictionary from the specified source.
+    // Construct a MIME information dictionary from the specified source.
 
 
   // Overrides from class PObject
