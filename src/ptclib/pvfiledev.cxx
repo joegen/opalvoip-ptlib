@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.17  2007/09/20 10:01:32  shorne
+ * Fixed bug with repeating YUVfile
+ *
  * Revision 1.16  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -341,6 +344,7 @@ BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
         return FALSE;
 
       case Channel_PlayAndRepeat:
+	    file->Open(deviceName, PFile::ReadOnly, PFile::MustExist);
         if (!file->SetPosition(0) || !file->ReadFrame(readBuffer))
           return FALSE;
         break;
