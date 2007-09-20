@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.89  2007/09/20 05:43:25  rjongbloed
+ * Added ability to log output to debugger.
+ *
  * Revision 1.88  2007/09/20 05:31:53  rjongbloed
  * Added ability to log output to debugger.
  *
@@ -464,10 +467,10 @@ void PSystemLog::Output(Level level, const char * msg)
     WaitForSingleObject(mutex, INFINITE);
 
     ostream * out;
-    if (process.systemLogOutput == WindowLogOutput || process.systemLogOutput == DebuggerLogOutput)
+    if (process.systemLogFileName == WindowLogOutput || process.systemLogFileName == DebuggerLogOutput)
       out = new PStringStream;
     else
-      out = new ofstream(process.systemLogOutput, ios::app);
+      out = new ofstream(process.systemLogFileName, ios::app);
 
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
@@ -507,9 +510,9 @@ void PSystemLog::Output(Level level, const char * msg)
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
       *out << endl;
 
-    if (process.systemLogOutput == WindowLogOutput)
+    if (process.systemLogFileName == WindowLogOutput)
       process.DebugOutput(*(PStringStream*)out);
-    else if (process.systemLogOutput == DebuggerLogOutput)
+    else if (process.systemLogFileName == DebuggerLogOutput)
       OutputDebugStringA(*(PStringStream*)out);
 
     delete out;
@@ -631,7 +634,7 @@ int PSystemLog::Buffer::sync()
 PServiceProcess::PServiceProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : PProcess(manuf, name, major, minor, stat, build),
-    systemLogOutput(GetFile().GetDirectory() + GetName() + " Log.TXT")
+    systemLogFileName(GetFile().GetDirectory() + GetName() + " Log.TXT")
 {
   controlWindow = debugWindow = NULL;
   currentLogLevel = PSystemLog::Warning;
@@ -946,13 +949,13 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
     };
     SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(TabStops), (LPARAM)(LPDWORD)TabStops);
 
-    systemLogOutput = cfg.GetString(SystemLogFileNameKey);
-    if (systemLogOutput.IsEmpty())
-      systemLogOutput = WindowLogOutput;
-    if (systemLogOutput != WindowLogOutput) {
-      if (systemLogOutput != DebuggerLogOutput)
-        PFile::Remove(systemLogOutput);
-      DebugOutput("Sending all system log output to \"" + systemLogOutput + "\".\n");
+    systemLogFileName = cfg.GetString(SystemLogFileNameKey);
+    if (systemLogFileName.IsEmpty())
+      systemLogFileName = WindowLogOutput;
+    if (systemLogFileName != WindowLogOutput) {
+      if (systemLogFileName != DebuggerLogOutput)
+        PFile::Remove(systemLogFileName);
+      DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
     }
   }
 
@@ -1118,12 +1121,12 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             fileDlgInfo.Flags = OFN_ENABLEHOOK|OFN_HIDEREADONLY|OFN_NOVALIDATE|OFN_EXPLORER|OFN_CREATEPROMPT;
             fileDlgInfo.lCustData = (DWORD)this;
             if (GetSaveFileName(&fileDlgInfo)) {
-              if (systemLogOutput != fileBuffer) {
-                systemLogOutput = fileBuffer;
-                PFile::Remove(systemLogOutput);
+              if (systemLogFileName != fileBuffer) {
+                systemLogFileName = fileBuffer;
+                PFile::Remove(systemLogFileName);
                 PConfig cfg(ServiceSimulationSectionName);
-                cfg.SetString(SystemLogFileNameKey, systemLogOutput);
-                DebugOutput("Sending all system log output to \"" + systemLogOutput + "\".\n");
+                cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+                DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
                 PError << "Logging started for \"" << GetName() << "\" version " << GetVersion(TRUE) << endl;
               }
             }
@@ -1131,22 +1134,22 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           break;
 
         case WindowOutputMenuID :
-          if (systemLogOutput != WindowLogOutput) {
+          if (systemLogFileName != WindowLogOutput) {
             PError << "Logging stopped." << endl;
-            DebugOutput("System log output to \"" + systemLogOutput + "\" stopped.\n");
-            systemLogOutput = WindowLogOutput;
+            DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
+            systemLogFileName = WindowLogOutput;
             PConfig cfg(ServiceSimulationSectionName);
-            cfg.SetString(SystemLogFileNameKey, systemLogOutput);
+            cfg.SetString(SystemLogFileNameKey, systemLogFileName);
           }
           break;
 
         case DebuggerOutputMenuID :
-          if (systemLogOutput != DebuggerLogOutput) {
+          if (systemLogFileName != DebuggerLogOutput) {
             PError << "Logging stopped." << endl;
-            DebugOutput("System log output to \"" + systemLogOutput + "\" stopped.\n");
-            systemLogOutput = DebuggerLogOutput;
+            DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
+            systemLogFileName = DebuggerLogOutput;
             PConfig cfg(ServiceSimulationSectionName);
-            cfg.SetString(SystemLogFileNameKey, systemLogOutput);
+            cfg.SetString(SystemLogFileNameKey, systemLogFileName);
           }
           break;
 
@@ -1836,7 +1839,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
         nid.uCallbackMessage = UWM_SYSTRAY; // message sent to nid.hWnd
         nid.Add();    // This adds the icon
         debugWindow = (HWND)-1;
-        systemLogOutput = DebuggerLogOutput;
+        systemLogFileName = DebuggerLogOutput;
         return TRUE;
       }
       return FALSE;
