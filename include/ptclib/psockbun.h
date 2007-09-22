@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.10  2007/09/22 04:32:03  rjongbloed
+ * Fixed lock up on exit whena  gatekeeper is used.
+ * Also fixed fatal "read error" (ECONNRESET) when send packet to a machine which
+ *   is not listening on the specified port. No error is lgged but does not stop listener.
+ *
  * Revision 1.9  2007/08/26 20:01:58  hfriederich
  * Allow to filter interfaces based on remote address
  *
@@ -378,7 +383,8 @@ class PMonitoredSocketChannel : public PChannel
   //@{
     /// Construct a monitored socket bundle channel
     PMonitoredSocketChannel(
-      const PMonitoredSocketsPtr & sockets  /// Monitored socket bundle to use in channel
+      const PMonitoredSocketsPtr & sockets,  /// Monitored socket bundle to use in channel
+      BOOL shared                            /// Monitored socket is shared by other channels
     );
   //@}
 
@@ -462,6 +468,7 @@ class PMonitoredSocketChannel : public PChannel
 
   protected:
     PMonitoredSocketsPtr socketBundle;
+    BOOL                 sharedBundle;
     PString              currentInterface;
     BOOL                 promiscuousReads;
     PIPSocket::Address   remoteAddress;
