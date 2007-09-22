@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.16  2007/09/22 04:32:03  rjongbloed
+ * Fixed lock up on exit whena  gatekeeper is used.
+ * Also fixed fatal "read error" (ECONNRESET) when send packet to a machine which
+ *   is not listening on the specified port. No error is lgged but does not stop listener.
+ *
  * Revision 1.15  2007/09/11 08:37:30  rjongbloed
  * Set thread name for Network Interface Monitor thread.
  *
@@ -539,18 +544,45 @@ BOOL PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
   info.socket->SetReadTimeout(timeout);
 
-  UnlockReadWrite();
-  BOOL ok = info.socket->ReadFrom(buf, len, addr, port);
-  if (!LockReadWrite())
-    return FALSE;
+  for (;;) {
+    UnlockReadWrite();
+    BOOL ok = info.socket->ReadFrom(buf, len, addr, port);
+    if (!LockReadWrite())
+      return FALSE;
+
+    if (ok)
+      break;
+
+    switch (info.socket->GetErrorNumber()) {
+      case ECONNRESET :
+      case ECONNREFUSED :
+        PTRACE(2, "UDP\tPort on remote not ready.");
+        break;
+
+      case EMSGSIZE :
+        PTRACE(2, "RTP_UDP\tRead packet too large for buffer of " << len << " bytes.");
+        break;
+
+      case EAGAIN :
+        // Shouldn't happen, but it does.
+        break;
+
+      default:
+        PTRACE(1, "UDP\tSocket read error ("
+               << info.socket->GetErrorNumber(PChannel::LastReadError) << "): "
+               << info.socket->GetErrorText(PChannel::LastReadError));
+
+      case EINTR :
+        info.inUse = false;
+        return false;
+    }
+  }
 
   lastReadCount = info.socket->GetLastReadCount();
 
   info.inUse = false;
 
-  PTRACE_IF(2, !ok, "UDP\tSocket read failure: " << info.socket->GetErrorText(PChannel::LastReadError));
-
-  return ok;
+  return TRUE;
 }
 
 
@@ -565,8 +597,9 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, BOOL reuseA
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketChannel::PMonitoredSocketChannel(const PMonitoredSocketsPtr & sock)
+PMonitoredSocketChannel::PMonitoredSocketChannel(const PMonitoredSocketsPtr & sock, BOOL shared)
   : socketBundle(sock)
+  , sharedBundle(shared)
   , promiscuousReads(false)
   , closing(FALSE)
   , remotePort(0)
@@ -585,7 +618,7 @@ BOOL PMonitoredSocketChannel::IsOpen() const
 BOOL PMonitoredSocketChannel::Close()
 {
   closing = TRUE;
-  return TRUE;
+  return sharedBundle || socketBundle == NULL || socketBundle->Close();
 }
 
 
@@ -614,7 +647,7 @@ BOOL PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 
 BOOL PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
 {
-  return socketBundle != NULL && socketBundle->WriteTo(buffer, length, remoteAddress, remotePort, GetInterface(), lastWriteCount);
+  return IsOpen() && socketBundle->WriteTo(buffer, length, remoteAddress, remotePort, GetInterface(), lastWriteCount);
 }
 
 
@@ -728,8 +761,13 @@ BOOL PMonitoredSocketBundle::GetAddress(const PString & iface,
                                         WORD & port,
                                         BOOL usingNAT) const
 {
-  PSafeLockReadOnly guard(*this);
+  if (iface.IsEmpty()) {
+    address = PIPSocket::GetDefaultIpAny();
+    port = localPort;
+    return TRUE;
+  }
 
+  PSafeLockReadOnly guard(*this);
   if (!guard.IsLocked())
     return FALSE;
 
