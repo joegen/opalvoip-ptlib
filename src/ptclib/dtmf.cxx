@@ -12,6 +12,10 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.19  2007/09/23 08:58:22  rjongbloed
+ * Fixed DTMF detecter after CNG added, always detected a CNG no matter what!
+ * Added generation of CNG tone using 'X' code.
+ *
  * Revision 1.18  2007/07/19 08:10:32  csoutheren
  * Add detection of CNG
  *
@@ -113,7 +117,7 @@ PDTMFDecoder::PDTMFDecoder()
   /* p1[kk] = (-cos(2 * 3.141592 * dtmf[kk] / 8000.0) * FSC) */
   p1[0] = -3497; p1[1] = -3369; p1[2] = -3212; p1[3] = -3027;
   p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
-  p1[9] = -2660;
+  p1[8] = -2660;
 }
 
 
@@ -158,7 +162,7 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples)
       /* Threshold */
       if (y[kk] > FSC/10 && y[kk] > ia) {
         if (kk < 8)
-          s |= 1 << kk;
+        s |= 1 << kk;
         else if (kk == 8)
           s = 0x100;
       }
@@ -534,7 +538,7 @@ void PTones::AddSample(int sample, unsigned volume)
 PDTMFEncoder::PDTMFEncoder(const char * dtmf, unsigned milliseconds) :
    PTones() 
 {
-    AddTone(dtmf, milliseconds);
+  AddTone(dtmf, milliseconds);
 }
 
 PDTMFEncoder::PDTMFEncoder(char digit, unsigned milliseconds) :
@@ -555,41 +559,44 @@ void PDTMFEncoder::AddTone(const char * str, unsigned milliseconds)
 
 void PDTMFEncoder::AddTone(char digit, unsigned milliseconds)
 {
-    // DTMF frequencies as per http://www.commlinx.com.au/DTMF_frequencies.htm
+  // DTMF frequencies as per http://www.commlinx.com.au/DTMF_frequencies.htm
 
-    static unsigned const dtmfFreqs[16][2] = {
-      { 941,1336 },  // 0
-      { 697,1209 },  // 1
-      { 697,1336 },  // 2
-      { 697,1477 },  // 3
-      { 770,1209 },  // 4
-      { 770,1336 },  // 5
-      { 770,1477 },  // 6
-      { 852,1209 },  // 7
-      { 852,1336 },  // 8
-      { 852,1477 },  // 9
-      { 697,1633 },  // A
-      { 770,1633 },  // B
-      { 852,1633 },  // C
-      { 941,1633 },  // D
-      { 941,1209 },  // *
-      { 941,1477 }   // #
-    };
+  static struct {
+    char code;
+    char operation;
+    unsigned frequency1;
+    unsigned frequency2;
+  } const dtmfData[] = {
+    { '0', '+', 941,1336 }, 
+    { '1', '+', 697,1209 }, 
+    { '2', '+', 697,1336 }, 
+    { '3', '+', 697,1477 }, 
+    { '4', '+', 770,1209 }, 
+    { '5', '+', 770,1336 }, 
+    { '6', '+', 770,1477 }, 
+    { '7', '+', 852,1209 }, 
+    { '8', '+', 852,1336 }, 
+    { '9', '+', 852,1477 }, 
+    { '*', '+', 941,1209 }, 
+    { '#', '+', 941,1477 }, 
+    { 'A', '+', 697,1633 }, 
+    { 'B', '+', 770,1633 }, 
+    { 'C', '+', 852,1633 }, 
+    { 'D', '+', 941,1633 }, 
+    { 'a', '+', 697,1633 }, 
+    { 'b', '+', 770,1633 }, 
+    { 'c', '+', 852,1633 }, 
+    { 'd', '+', 941,1633 }, 
+    { 'X', '-', 1100     }, // CNG
+    { 'x', '-', 1100     }  // CNG
+  };
 
-  digit = (char)toupper(digit);
-  PINDEX index;
-  if ('0' <= digit && digit <= '9')
-    index = digit - '0';
-  else if ('A' <= digit && digit <= 'D')
-    index = digit + 10 - 'A';
-  else if (digit == '*')
-    index = 14;
-  else if (digit == '#')
-    index = 15;
-  else
-    return;
-
-  Generate('+', dtmfFreqs[index][0], dtmfFreqs[index][1], milliseconds);
+  for (PINDEX i = 0; i < PARRAYSIZE(dtmfData); i++) {
+    if (dtmfData[i].code == digit) {
+      Generate(dtmfData[i].operation, dtmfData[i].frequency1, dtmfData[i].frequency2, milliseconds);
+      break;
+    }
+  }
 }
 
 
