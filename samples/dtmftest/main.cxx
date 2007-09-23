@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2007/09/23 08:56:37  rjongbloed
+ * Added generation of CNG tone for testing.
+ *
  * Revision 1.7  2006/12/13 04:56:03  csoutheren
  * Applied 1613270 - fixed for dtmfEncoder
  * Thanks to Frederic Heem
@@ -60,6 +63,8 @@ PCREATE_PROCESS(DtmfTest);
 #include  <ptclib/random.h>
 #include  <ptlib/sound.h>
 
+
+static const PINDEX samplesPerMillisecond = 8;
 
 
 DtmfTest::DtmfTest()
@@ -141,7 +146,7 @@ void DtmfTest::Main()
   cout << "Sample section  is " << milliseconds << " ms long.\n";
 
 
-  PShortArray noiseSignal(milliseconds * 8);
+  PShortArray noiseSignal(milliseconds * samplesPerMillisecond);
   if (args.HasOption('n')) {
     unsigned noise = args.GetOptionString('n').AsUnsigned();
     if (noise < 10 || noise > 10000) {
@@ -165,7 +170,7 @@ void DtmfTest::Main()
       tonesToPlay += args[i];
   }
   if (tonesToPlay.IsEmpty())
-    tonesToPlay = "0123456789ABCD*#";
+    tonesToPlay = "0123456789ABCD*#X";
 
 
   if (args.HasOption('s')) {
@@ -187,24 +192,21 @@ void DtmfTest::Main()
     return;
   }
 
-  PShortArray result(milliseconds * 8);
+  PShortArray result(milliseconds * samplesPerMillisecond);
   PDTMFDecoder decoder;
 
   int nCorrect = 0;
   for (const char * pDTMF = tonesToPlay; *pDTMF != '\0'; pDTMF++) {
-#if 0
-    PDTMFEncoder encoder;
-    encoder.AddTone(*pDTMF, milliseconds);
-#else
     PDTMFEncoder encoder(*pDTMF, milliseconds);
-#endif
 
     for (i = 0; i < result.GetSize(); i++)
       result[i] = encoder[i] + noiseSignal[i];
 
-    PTime startTime;
-    PString detectedTones = decoder.Decode(result.GetPointer(), result.GetSize());
-    PTimeInterval elapsed = PTime() - startTime;
+    PString detectedTones;
+
+    PINDEX sample = 0;
+    while (sample < result.GetSize() && (detectedTones = decoder.Decode(&result[sample], samplesPerMillisecond)).IsEmpty())
+      sample += samplesPerMillisecond;
 
     if (detectedTones.IsEmpty())
       detectedTones = " ";
@@ -217,10 +219,10 @@ void DtmfTest::Main()
       cout << "Fail";
     }
 
-    cout << "       decode time : " << elapsed.GetInterval() << " millisecs" << endl;
+    cout << "       decode time : " << sample/samplesPerMillisecond << " msecs, " << sample << " samples" << endl;
   }
 
-  cout << endl << "Test run complete. Correctly interpreted " << (int)((nCorrect / 0.16) + 0.5) << "%" << endl;
+  cout << endl << "Test run complete. Correctly interpreted " << (100 * nCorrect / tonesToPlay.GetLength()) << "%" << endl;
 }
 
 // End of File ///////////////////////////////////////////////////////////////
