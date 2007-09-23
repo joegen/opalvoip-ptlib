@@ -154,6 +154,14 @@ case "$target_cpu" in
 		   P_64BIT=1 ;
 		   ;;
 
+   hppa )          MACHTYPE=hppa ;
+		   ;;
+
+   hppa64 )        MACHTYPE=hppa64 ;
+		   P_64BIT=1 ;
+                   LIB64=1 ;
+		   ;;
+
    sparc )         MACHTYPE=sparc ;
 		   ;;
 
