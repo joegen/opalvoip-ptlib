@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.11  2007/09/25 14:27:51  hfriederich
+ * Don't use STUN if interface filter is in use and STUN server is not
+ * reachable through local binding. This avoids unnecessary timeouts.
+ *
  * Revision 1.10  2007/09/22 04:32:03  rjongbloed
  * Fixed lock up on exit whena  gatekeeper is used.
  * Also fixed fatal "read error" (ECONNRESET) when send packet to a machine which
@@ -128,6 +132,16 @@ class PInterfaceMonitor : public PObject
     PStringArray GetInterfaces(
       BOOL includeLoopBack = FALSE,  /// Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+    );
+
+    /** Returns whether destination is reachable through binding or not.
+        The default behaviour returns TRUE unless there is an interface
+        filter installed an the filter does not return 'binding' among
+        it's interfaces.
+      */
+    BOOL IsValidBindingForDestination(
+      const PIPSocket::Address & binding,
+      const PIPSocket::Address & destination
     );
 
     /** Return information about an active interface given the descriptor
