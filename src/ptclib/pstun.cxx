@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.27  2007/09/25 14:25:33  hfriederich
+ * Allow to get STUN server address as PIPSocket::Address instance
+ *
  * Revision 1.26  2007/09/08 11:34:28  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -192,6 +195,13 @@ PString PSTUNClient::GetServer() const
   PStringStream str;
   str << serverAddress << ':' << serverPort;
   return str;
+}
+
+
+void PSTUNClient::GetServer(PIPSocket::Address & address, WORD & port) const
+{
+  address = serverAddress;
+  port = serverPort;
 }
 
 
