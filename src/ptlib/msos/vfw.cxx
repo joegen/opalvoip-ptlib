@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.48  2007/09/25 10:54:52  rjongbloed
+ * Fixed window title getting more than it is supposed to.
+ *
  * Revision 1.47  2007/09/17 11:14:47  rjongbloed
  * Added "No Trace" build configuration.
  *
@@ -1592,31 +1595,34 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
   DWORD dwStyle;
   HWND hParent;
   if (ParseWindowDeviceName(deviceName, &dwStyle, &hParent)) {
-    PINDEX pos = deviceName.Find("TITLE=");
-    PString title = pos == P_MAX_INDEX ? DEFAULT_TITLE : PString(PString::Literal, &deviceName[pos+6]);
+    PString title = DEFAULT_TITLE;
 
-    int x = CW_USEDEFAULT;
+    PINDEX pos = deviceName.Find("TITLE=\"");
+    if (pos != P_MAX_INDEX) {
+      pos += 6;
+      PINDEX quote = deviceName.FindLast('"');
+      PString quotedTitle = deviceName(pos, quote > pos ? quote : P_MAX_INDEX);
+      title = PString(PString::Literal, quotedTitle);
+    }
+
     pos = deviceName.Find("X=");
-    if (pos != P_MAX_INDEX)
-      x = atoi(&deviceName[pos+2]);
+    int x = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
 
-    int y = CW_USEDEFAULT;
     pos = deviceName.Find("Y=");
-    if (pos != P_MAX_INDEX)
-      y = atoi(&deviceName[pos+2]);
+    int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
 
 #ifndef _WIN32_WCE
-    m_hWnd = CreateWindow(wndClassName, 
-		title, 
-		dwStyle,
-        x, y, frameWidth, frameHeight,
+    m_hWnd = CreateWindow(wndClassName,
+                          title, 
+                          dwStyle,
+                          x, y, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
 #else
-    m_hWnd = CreateWindow(wndClassName, 
-		(LPCWSTR) title.AsUCS2(),
-		dwStyle,
-        x, y, frameWidth, frameHeight,
-        hParent, NULL, GetModuleHandle(NULL), this);
+    m_hWnd = CreateWindow(wndClassName,
+                          (LPCWSTR) title.AsUCS2(),
+                          dwStyle,
+                          x, y, frameWidth, frameHeight,
+                          hParent, NULL, GetModuleHandle(NULL), this);
 #endif
   }
 
