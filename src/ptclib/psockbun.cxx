@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.17  2007/09/25 14:27:51  hfriederich
+ * Don't use STUN if interface filter is in use and STUN server is not
+ * reachable through local binding. This avoids unnecessary timeouts.
+ *
  * Revision 1.16  2007/09/22 04:32:03  rjongbloed
  * Fixed lock up on exit whena  gatekeeper is used.
  * Also fixed fatal "read error" (ECONNRESET) when send packet to a machine which
@@ -342,6 +346,24 @@ PStringArray PInterfaceMonitor::GetInterfaces(BOOL includeLoopBack,
 }
 
 
+BOOL PInterfaceMonitor::IsValidBindingForDestination(const PIPSocket::Address & binding,
+                                                     const PIPSocket::Address & destination)
+{
+  PWaitAndSignal guard(mutex);
+  
+  if (interfaceFilter == NULL)
+    return TRUE;
+  
+  PIPSocket::InterfaceTable ifaces = currentInterfaces;
+  ifaces = interfaceFilter->FilterInterfaces(destination, ifaces);
+  for (PINDEX i = 0; i < ifaces.GetSize(); i++) {
+    if (ifaces[i].GetAddress() == binding)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+
 BOOL PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::InterfaceEntry & info)
 {
   PIPSocket::Address addr;
@@ -435,12 +457,19 @@ PMonitoredSockets::PMonitoredSockets(BOOL reuseAddr, PSTUNClient * stunClient)
 BOOL PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
 {
   delete info.socket;
-
-  if (stun != NULL && stun->CreateSocket(info.socket, binding, localPort)) {
-    PTRACE(4, "UDP\tCreated bundled socket via STUN internal="
-           << binding << ':' << info.socket->PUDPSocket::GetPort()
-           << " external=" << info.socket->GetLocalAddress());
-    return TRUE;
+  
+  if (stun != NULL) {
+    PIPSocket::Address address;
+    WORD port;
+    stun->GetServer(address, port);
+    if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
+      if (stun->CreateSocket(info.socket, binding, localPort)) {
+        PTRACE(4, "UDP\tCreated bundled socket via STUN internal="
+               << binding << ':' << info.socket->PUDPSocket::GetPort()
+               << " external=" << info.socket->GetLocalAddress());
+        return TRUE;
+      }
+    }
   }
 
   info.socket = new PUDPSocket;
