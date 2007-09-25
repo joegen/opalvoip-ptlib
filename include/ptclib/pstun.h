@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.18  2007/09/25 14:25:32  hfriederich
+ * Allow to get STUN server address as PIPSocket::Address instance
+ *
  * Revision 1.17  2007/08/22 05:04:39  rjongbloed
  * Added ability to set a specific local port for STUN created sockets.
  *
@@ -168,6 +171,8 @@ class PSTUNClient : public PNatMethod
     /**Get the current STUN server address and port being used.
       */
     PString GetServer() const;
+    
+    void GetServer(PIPSocket::Address & address, WORD & port) const;
 
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
