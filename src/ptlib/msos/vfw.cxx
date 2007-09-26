@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.50  2007/09/26 04:21:48  rjongbloed
+ * Fixed incorrect position returned if never move the window.
+ *
  * Revision 1.49  2007/09/26 03:43:09  rjongbloed
  * Added ability to get last position of window video output device.
  *
@@ -1623,22 +1626,22 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
     }
 
     pos = deviceName.Find("X=");
-    int x = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
+    m_lastX = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
 
     pos = deviceName.Find("Y=");
-    int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
+    m_lastY = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
 
 #ifndef _WIN32_WCE
     m_hWnd = CreateWindow(wndClassName,
                           title, 
                           dwStyle,
-                          x, y, frameWidth, frameHeight,
+                          m_lastX, m_lastY, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
 #else
     m_hWnd = CreateWindow(wndClassName,
                           (LPCWSTR) title.AsUCS2(),
                           dwStyle,
-                          x, y, frameWidth, frameHeight,
+                          m_lastX, m_lastY, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
 #endif
   }
@@ -1668,7 +1671,7 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       }
 
     case WM_MOVE :
-      {
+      if (m_hWnd != NULL) {
         RECT rect;
         GetWindowRect(m_hWnd, &rect);
         m_lastX = rect.left;
