@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.49  2007/09/26 03:43:09  rjongbloed
+ * Added ability to get last position of window video output device.
+ *
  * Revision 1.48  2007/09/25 10:54:52  rjongbloed
  * Fixed window title getting more than it is supposed to.
  *
@@ -1295,6 +1298,15 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
       */
     virtual BOOL FrameComplete();
 
+    /**Get the position of the output device, where relevant. For devices such as
+       files, this always returns zeros. For devices such as Windows, this is the
+       position of the window on the screen.
+      */
+    virtual BOOL GetPosition(
+      int & x,  // X position of device surface
+      int & y   // Y position of device surface
+    ) const;
+
     LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
   protected:
@@ -1306,6 +1318,8 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     PSyncPoint m_started;
     BITMAPINFO m_bitmap;
     bool       m_flipped;
+    int        m_lastX;
+    int        m_lastY;
 };
 
 
@@ -1369,6 +1383,8 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   m_hWnd = NULL;
   m_thread = NULL;
   m_flipped = FALSE;
+  m_lastX = 0;
+  m_lastY = 0;
 
   m_bitmap.bmiHeader.biSize = sizeof(m_bitmap.bmiHeader);
   m_bitmap.bmiHeader.biWidth = frameWidth;
@@ -1422,17 +1438,10 @@ BOOL PVideoOutputDevice_Window::IsOpen()
 
 BOOL PVideoOutputDevice_Window::Close()
 {
-  HWND hWnd;
-  {
-    PWaitAndSignal m(mutex);
-    if (m_hWnd == NULL)
-      return FALSE;
+  if (m_hWnd == NULL)
+    return FALSE;
 
-    hWnd = m_hWnd;
-    m_hWnd = NULL;
-  }
-
-  SendMessage(hWnd, WM_CLOSE, 0, 0);
+  SendMessage(m_hWnd, WM_CLOSE, 0, 0);
   m_thread->WaitForTermination(3000);
   delete m_thread;
   return TRUE;
@@ -1529,6 +1538,14 @@ BOOL PVideoOutputDevice_Window::FrameComplete()
   Draw(hDC);
   ReleaseDC(m_hWnd, hDC);
 
+  return TRUE;
+}
+
+
+BOOL PVideoOutputDevice_Window::GetPosition(int & x, int & y) const
+{
+  x = m_lastX;
+  y = m_lastY;
   return TRUE;
 }
 
@@ -1649,6 +1666,15 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
         EndPaint(m_hWnd, &paint);
         break;
       }
+
+    case WM_MOVE :
+      {
+        RECT rect;
+        GetWindowRect(m_hWnd, &rect);
+        m_lastX = rect.left;
+        m_lastY = rect.top;
+      }
+      break;
 
     case WM_CLOSE :
       DestroyWindow(m_hWnd);

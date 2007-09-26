@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.59  2007/09/26 03:43:09  rjongbloed
+ * Added ability to get last position of window video output device.
+ *
  * Revision 1.58  2007/05/19 09:33:29  rjongbloed
  * Fixed compiler warnings.
  *
@@ -836,6 +839,17 @@ class PVideoOutputDevice : public PVideoDevice
       const BYTE * data,
       BOOL endFrame = TRUE
     ) = 0;
+
+    /**Get the position of the output device, where relevant. For devices such as
+       files, this always returns zeros. For devices such as Windows, this is the
+       position of the window on the screen.
+       
+       Returns: TRUE if the position is available.
+      */
+    virtual BOOL GetPosition(
+      int & x,  // X position of device surface
+      int & y   // Y position of device surface
+    ) const;
 };
 
 
