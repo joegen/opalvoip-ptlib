@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.19  2007/09/26 03:40:03  rjongbloed
+ * Added ability to set position and title of SDL window.
+ *
  * Revision 1.18  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -284,6 +287,24 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
 #ifdef _WIN32
   SDL_SetModuleHandle(GetModuleHandle(NULL));
 #endif
+
+  PString title = "Video Output";
+  PINDEX pos = deviceName.Find("TITLE=\"");
+  if (pos != P_MAX_INDEX) {
+    pos += 6;
+    PINDEX quote = deviceName.FindLast('"');
+    PString quotedTitle = deviceName(pos, quote > pos ? quote : P_MAX_INDEX);
+    title = PString(PString::Literal, quotedTitle);
+  }
+  ::SDL_WM_SetCaption(title, NULL);
+
+  pos = deviceName.Find("X=");
+  int x = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 0;
+
+  pos = deviceName.Find("Y=");
+  int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 0;
+
+  _putenv(psprintf("SDL_VIDEO_WINDOW_POS=%i,%i", x, y));
 
   screen = ::SDL_SetVideoMode(frameWidth, frameHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
   if (screen == NULL) {
