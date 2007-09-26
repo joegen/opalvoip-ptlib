@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.74  2007/09/26 03:43:09  rjongbloed
+ * Added ability to get last position of window video output device.
+ *
  * Revision 1.73  2007/09/14 01:14:25  csoutheren
  * Fix warnings under VS.net 2003
  *
@@ -1138,6 +1141,12 @@ PVideoOutputDevice::PVideoOutputDevice()
 
 
 BOOL PVideoOutputDevice::CanCaptureVideo() const
+{
+  return FALSE;
+}
+
+
+BOOL PVideoOutputDevice::GetPosition(int &, int &) const
 {
   return FALSE;
 }
