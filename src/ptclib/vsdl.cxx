@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.21  2007/09/27 03:36:07  rjongbloed
+ * Fixed Linux compatibility.
+ *
  * Revision 1.20  2007/09/27 03:27:56  rjongbloed
  * Use posix version of function.
  *
@@ -307,7 +310,8 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
   pos = deviceName.Find("Y=");
   int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 0;
 
-  putenv(psprintf("SDL_VIDEO_WINDOW_POS=%i,%i", x, y));
+  PString winpos(PString::Printf, "SDL_VIDEO_WINDOW_POS=%i,%i", x, y);
+  putenv(winpos.GetPointer());
 
   screen = ::SDL_SetVideoMode(frameWidth, frameHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
   if (screen == NULL) {
