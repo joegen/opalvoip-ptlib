@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.20  2007/09/27 03:27:56  rjongbloed
+ * Use posix version of function.
+ *
  * Revision 1.19  2007/09/26 03:40:03  rjongbloed
  * Added ability to set position and title of SDL window.
  *
@@ -304,7 +307,7 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
   pos = deviceName.Find("Y=");
   int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 0;
 
-  _putenv(psprintf("SDL_VIDEO_WINDOW_POS=%i,%i", x, y));
+  putenv(psprintf("SDL_VIDEO_WINDOW_POS=%i,%i", x, y));
 
   screen = ::SDL_SetVideoMode(frameWidth, frameHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
   if (screen == NULL) {
