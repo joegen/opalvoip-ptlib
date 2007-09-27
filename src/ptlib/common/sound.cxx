@@ -25,6 +25,10 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.15  2007/09/27 23:27:08  rjongbloed
+ * Changed PSoundChannel::CreateOpenedChannel so uses default value for
+ *   driver and/or device names if they are empty strings or "*".
+ *
  * Revision 1.14  2007/06/09 05:34:22  rjongbloed
  * Fixed legacy PSoundChannel::Open() function so creates the correct plug in device.
  *
@@ -152,13 +156,24 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const PString & driverName,
                                                    unsigned bitsPerSample,
                                                    PPluginManager * pluginMgr)
 {
+  PString adjustedDeviceName = deviceName;
   PSoundChannel * sndChan;
-  if (driverName.IsEmpty() || driverName == "*")
-    sndChan = CreateChannelByName(deviceName, dir, pluginMgr);
-  else
+  if (driverName.IsEmpty() || driverName == "*") {
+    if (deviceName.IsEmpty() || deviceName == "*")
+      adjustedDeviceName = PSoundChannel::GetDefaultDevice(dir);
+    sndChan = CreateChannelByName(adjustedDeviceName, dir, pluginMgr);
+  }
+  else {
+    if (deviceName.IsEmpty() || deviceName == "*") {
+      PStringList devices = PSoundChannel::GetDriversDeviceNames(driverName, PSoundChannel::Player);
+      if (devices.IsEmpty())
+        return NULL;
+      adjustedDeviceName = devices[0];
+    }
     sndChan = CreateChannel(driverName, pluginMgr);
+  }
 
-  if (sndChan != NULL && sndChan->Open(deviceName, dir, numChannels, sampleRate, bitsPerSample))
+  if (sndChan != NULL && sndChan->Open(adjustedDeviceName, dir, numChannels, sampleRate, bitsPerSample))
     return sndChan;
 
   delete sndChan;
