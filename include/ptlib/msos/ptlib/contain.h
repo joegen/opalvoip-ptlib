@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.63  2007/09/27 03:28:47  rjongbloed
+ * Remove warnings over using posix functions.
+ *
  * Revision 1.62  2007/06/26 03:08:29  rjongbloed
  * Assure some MSVC system symbols are not redefined if already defined.
  *
@@ -261,6 +264,10 @@ and from the pre-processor options for this project"
 
 #if !defined(_CRT_SECURE_NO_DEPRECATE) && (_MSC_VER>=1400)
 #define _CRT_SECURE_NO_DEPRECATE 1
+#endif
+
+#if !defined(_CRT_NONSTDC_NO_WARNINGS) && (_MSC_VER>=1400)
+#define _CRT_NONSTDC_NO_WARNINGS 1
 #endif
 
 #endif
