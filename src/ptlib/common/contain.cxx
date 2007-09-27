@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.182  2007/09/27 23:19:21  rjongbloed
+ * Fixed PString sprintf appending to string where combined length
+ *   is greater than 1000 bytes, thanks Tomas Hoger.
+ *
  * Revision 1.181  2007/09/03 22:13:47  shorne
  * Ensure RegularExpression is compiled without error before execute
  *
@@ -2521,7 +2525,7 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
   PAssert(SetSize(2000), POutOfMemory);
   ::vsprintf(theArray+len, fmt, arg);
 #else
-  PINDEX size = 0;
+  PINDEX size = len;
   do {
     size += 1000;
     PAssert(SetSize(size), POutOfMemory);
