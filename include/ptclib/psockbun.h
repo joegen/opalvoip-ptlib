@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.12  2007/09/28 09:59:16  hfriederich
+ * Allow to use PInterfaceMonitor without running monitor thread
+ *
  * Revision 1.11  2007/09/25 14:27:51  hfriederich
  * Don't use STUN if interface filter is in use and STUN server is not
  * reachable through local binding. This avoids unnecessary timeouts.
@@ -110,7 +113,8 @@ class PInterfaceMonitor : public PObject
     };
 
     PInterfaceMonitor(
-      unsigned refreshInterval = DefaultRefreshInterval
+      unsigned refreshInterval = DefaultRefreshInterval,
+      BOOL runMonitorThread = TRUE
     );
     virtual ~PInterfaceMonitor();
 
@@ -157,10 +161,11 @@ class PInterfaceMonitor : public PObject
         handles deletion of the filter.
       */
     void SetInterfaceFilter(PInterfaceFilter * filter);
+    
+    virtual void RefreshInterfaceList();
 
   protected:
     void UpdateThreadMain();
-    virtual void RefreshInterfaceList();
 
     void AddClient(PInterfaceMonitorClient *);
     void RemoveClient(PInterfaceMonitorClient *);
@@ -175,6 +180,7 @@ class PInterfaceMonitor : public PObject
     ClientList_T              currentClients;
     PIPSocket::InterfaceTable currentInterfaces;
 
+    BOOL runMonitorThread;
     PTimeInterval  refreshInterval;
     PMutex         mutex;
     PThread      * updateThread;

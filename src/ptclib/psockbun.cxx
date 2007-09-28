@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.18  2007/09/28 09:59:16  hfriederich
+ * Allow to use PInterfaceMonitor without running monitor thread
+ *
  * Revision 1.17  2007/09/25 14:27:51  hfriederich
  * Don't use STUN if interface filter is in use and STUN server is not
  * reachable through local binding. This avoids unnecessary timeouts.
@@ -131,10 +134,11 @@ BOOL PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, InterfaceE
 static PMutex PInterfaceMonitorInstanceMutex;
 static PInterfaceMonitor * PInterfaceMonitorInstance;
 
-PInterfaceMonitor::PInterfaceMonitor(unsigned refresh)
+PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, BOOL _runMonitorThread)
   : refreshInterval(refresh)
   , updateThread(NULL)
   , interfaceFilter(NULL)
+  , runMonitorThread(_runMonitorThread)
 {
   PInterfaceMonitorInstanceMutex.Wait();
   PAssert(PInterfaceMonitorInstance == NULL, PLogicError);
@@ -166,6 +170,11 @@ PInterfaceMonitor & PInterfaceMonitor::GetInstance()
 BOOL PInterfaceMonitor::Start()
 {
   PWaitAndSignal m(mutex);
+  
+  if (runMonitorThread == FALSE) {
+    PIPSocket::GetInterfaceTable(currentInterfaces);
+    return TRUE;
+  }
 
   if (updateThread != NULL)
     return FALSE;
