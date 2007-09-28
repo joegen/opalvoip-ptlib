@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.75  2007/09/28 00:23:29  rjongbloed
+ * Changed PVideoXXXDevice::CreateOpenedDevice so uses default value for
+ *   driver and/or device names if they are empty strings or "*".
+ *
  * Revision 1.74  2007/09/26 03:43:09  rjongbloed
  * Added ability to get last position of window video output device.
  *
@@ -399,6 +403,30 @@ static struct {
   { "UYV444",  24 },
   { "SBGGR8",   8 }
 };
+
+
+template <class VideoDevice>
+static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
+                                              const PString & driverName,
+                                              PPluginManager * pluginMgr)
+{
+  PString adjustedDriverName = driverName;
+
+  if (adjustedDeviceName.IsEmpty() || adjustedDeviceName == "*") {
+    if (driverName.IsEmpty() || driverName == "*") {
+      PStringList drivers = VideoDevice::GetDriverNames(pluginMgr);
+      if (drivers.IsEmpty())
+        return NULL;
+      adjustedDriverName = drivers[0];
+    }
+
+    PStringList devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
+    if (!devices.IsEmpty())
+      adjustedDeviceName = devices[0];
+  }
+
+  return VideoDevice::CreateDeviceByName(adjustedDeviceName, adjustedDriverName, pluginMgr);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1383,9 +1411,12 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
                                                           BOOL startImmediate,
                                                           PPluginManager * pluginMgr)
 {
-  PVideoInputDevice * device = CreateDeviceByName(deviceName, driverName, pluginMgr);
+  PString adjustedDeviceName = deviceName;
+  PVideoInputDevice * device = CreateDeviceWithDefaults<PVideoInputDevice>(adjustedDeviceName, driverName, pluginMgr);
+  if (device == NULL)
+    return NULL;
 
-  if (device != NULL && device->Open(deviceName, startImmediate))
+  if (device->Open(adjustedDeviceName, startImmediate))
     return device;
 
   delete device;
@@ -1396,9 +1427,12 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
                                                           BOOL startImmediate)
 {
-  PVideoInputDevice * device = CreateDeviceByName(args.deviceName, args.driverName, args.pluginMgr);
+  OpenArgs adjustedArgs = args;
+  PVideoInputDevice * device = CreateDeviceWithDefaults<PVideoInputDevice>(adjustedArgs.deviceName, args.driverName, NULL);
+  if (device == NULL)
+    return NULL;
 
-  if (device != NULL && device->OpenFull(args, startImmediate))
+  if (device->OpenFull(adjustedArgs, startImmediate))
     return device;
 
   delete device;
@@ -1463,13 +1497,12 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &drive
                                                             BOOL startImmediate,
                                                             PPluginManager * pluginMgr)
 {
-  PVideoOutputDevice * device;
-  if (driverName.IsEmpty() || driverName == "*")
-    device = CreateDeviceByName(deviceName, driverName, pluginMgr);
-  else
-    device = CreateDevice(driverName, pluginMgr);
+  PString adjustedDeviceName = deviceName;
+  PVideoOutputDevice * device = CreateDeviceWithDefaults<PVideoOutputDevice>(adjustedDeviceName, driverName, pluginMgr);
+  if (device == NULL)
+    return NULL;
 
-  if (device != NULL && device->Open(deviceName, startImmediate))
+  if (device->Open(adjustedDeviceName, startImmediate))
     return device;
 
   delete device;
@@ -1480,13 +1513,12 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &drive
 PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const OpenArgs & args,
                                                             BOOL startImmediate)
 {
-  PVideoOutputDevice * device;
-  if (args.driverName.IsEmpty() || args.driverName == "*")
-    device = CreateDeviceByName(args.deviceName, args.driverName, args.pluginMgr);
-  else
-    device = CreateDevice(args.driverName, args.pluginMgr);
+  OpenArgs adjustedArgs = args;
+  PVideoOutputDevice * device = CreateDeviceWithDefaults<PVideoOutputDevice>(adjustedArgs.deviceName, args.driverName, NULL);
+  if (device == NULL)
+    return NULL;
 
-  if (device != NULL && device->OpenFull(args, startImmediate))
+  if (device->OpenFull(adjustedArgs, startImmediate))
     return device;
 
   delete device;
