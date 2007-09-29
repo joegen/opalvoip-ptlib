@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.173.2.1  2007/09/29 10:09:42  dsandras
+ * Fixed PString sprintf appending to string where combined length
+ * is greater than 1000 bytes, thanks Tomas Hoger from RedHat.
+ *
  * Revision 1.173  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -2465,7 +2469,7 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
   PAssert(SetSize(2000), POutOfMemory);
   ::vsprintf(theArray+len, fmt, arg);
 #else
-  PINDEX size = 0;
+  PINDEX size = len;
   do {
     size += 1000;
     PAssert(SetSize(size), POutOfMemory);
