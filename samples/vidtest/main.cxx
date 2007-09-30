@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.17  2007/09/30 18:26:11  dsandras
+ * Reverted accidental commit. Sorry.
+ *
  * Revision 1.16  2007/09/30 17:34:40  dsandras
  * Killed GCC 4.2 warnings.
  *
@@ -132,7 +135,7 @@ void VidTest::Main()
        );
 
 #if PTRACING
-  PTrace::Initialise(9,
+  PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
