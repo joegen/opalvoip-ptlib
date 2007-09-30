@@ -1317,21 +1317,22 @@ struct pwlib_fmt
     char *pwlib_format;
     GUID  media_format;
 };
+
 static struct pwlib_fmt formats[] =
 {
-    {"Grey",    MEDIASUBTYPE_RGB8 },
-    {"BGR32",   MEDIASUBTYPE_RGB32}, /* Microsoft assumes that we are in little endian */
-    {"BGR24",   MEDIASUBTYPE_RGB24},
-    {"RGB565",  MEDIASUBTYPE_RGB565},
-    {"RGB555",  MEDIASUBTYPE_RGB555},
-    {"YUV420P", MEDIASUBTYPE_I420},
-    {"YUV422P", MEDIASUBTYPE_YUYV},
-    {"YUV411",  MEDIASUBTYPE_Y411},
-    {"YUV411P", MEDIASUBTYPE_Y41P},
-    {"YUV410P", MEDIASUBTYPE_YVU9},
-    {"YUY2",    MEDIASUBTYPE_YUY2},
-    {"MJPEG",   MEDIASUBTYPE_MJPG},
-    {"UYVY422", MEDIASUBTYPE_UYVY},
+    {(char*) "Grey",    MEDIASUBTYPE_RGB8 },
+    {(char*) "BGR32",   MEDIASUBTYPE_RGB32}, /* Microsoft assumes that we are in little endian */
+    {(char*) "BGR24",   MEDIASUBTYPE_RGB24},
+    {(char*) "RGB565",  MEDIASUBTYPE_RGB565},
+    {(char*) "RGB555",  MEDIASUBTYPE_RGB555},
+    {(char*) "YUV420P", MEDIASUBTYPE_I420},
+    {(char*) "YUV422P", MEDIASUBTYPE_YUYV},
+    {(char*) "YUV411",  MEDIASUBTYPE_Y411},
+    {(char*) "YUV411P", MEDIASUBTYPE_Y41P},
+    {(char*) "YUV410P", MEDIASUBTYPE_YVU9},
+    {(char*) "YUY2",    MEDIASUBTYPE_YUY2},
+    {(char*) "MJPEG",   MEDIASUBTYPE_MJPG},
+    {(char*) "UYVY422", MEDIASUBTYPE_UYVY},
 };
 
 static GUID pwlib_format_to_media_format(const char *format)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.64  2007/09/30 17:34:40  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.63  2007/09/27 03:28:47  rjongbloed
  * Remove warnings over using posix functions.
  *
@@ -229,8 +232,8 @@
 
 #ifndef _CONTAIN_H
 #ifndef _WIN32_WCE
-#error "Please remove pwlib\include\ptlib\msos from the tool include path \"
-and from the pre-processor options for this project"
+#error "Please remove pwlib\include\ptlib\msos from the tool include path" \
+"and from the pre-processor options for this project"
 #endif // !_WIN32_WCE
 #endif
 
