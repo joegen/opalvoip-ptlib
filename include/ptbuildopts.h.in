@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.63  2007/09/30 17:34:39  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.62  2007/08/26 12:24:59  rjongbloed
  * Changes to allow for 64 bit builds and 64 bit library linking.
  *
@@ -702,6 +705,7 @@
 
 #undef P_DIRECTSOUND
 #undef P_DIRECTSHOW
+#undef P_VFW_CAPTURE
 
 #if defined(_MSC_VER) && (defined(P_DIRECTSOUND) || defined(P_DIRECTSHOW))
 
