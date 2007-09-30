@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.16  2007/09/30 17:34:40  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.15  2007/04/16 01:59:48  rjongbloed
  * Added function to video info class to parse standard size strings
  *   to width/height, eg "CIF", "QCIF", "VGA" etc
@@ -129,7 +132,7 @@ void VidTest::Main()
        );
 
 #if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
+  PTrace::Initialise(9,
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif

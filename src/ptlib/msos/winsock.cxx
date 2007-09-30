@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.75  2007/09/30 17:34:40  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.74  2006/10/03 06:28:26  csoutheren
  * Ensure ios bits are reset when a PChannel is closed
  *
@@ -282,7 +285,11 @@
 #else
 #define IPX_PTYPE 0x4000
 #define NS_DEFAULT 0
+
+#ifndef SVCID_NETWARE
 #define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
+#endif /* SVCID_NETWARE */
+
 #define SVCID_FILE_SERVER SVCID_NETWARE(0x4)
 #endif
 
