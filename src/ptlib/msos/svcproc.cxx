@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.90  2007/09/30 17:34:40  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.89  2007/09/20 05:43:25  rjongbloed
  * Added ability to log output to debugger.
  *
@@ -730,7 +733,7 @@ int PServiceProcess::_main(void * arg)
 
   if (!debugMode && !isWin95) {
     static SERVICE_TABLE_ENTRY dispatchTable[] = {
-      { "", PServiceProcess::StaticMainEntry },
+      { (char*) "", PServiceProcess::StaticMainEntry },
       { NULL, NULL }
     };
     dispatchTable[0].lpServiceName = (char *)(const char *)GetName();
@@ -1315,7 +1318,7 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 
   // register our service control handler:
   statusHandle = RegisterServiceCtrlHandler(GetName(), StaticControlEntry);
-  if (statusHandle == NULL)
+  if (statusHandle == FALSE)
     return;
 
   // report the status to Service Control Manager.
