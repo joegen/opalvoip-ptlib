@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.20  2007/09/30 17:34:40  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.19  2007/09/17 04:15:40  rjongbloed
  * Tidy up of some traces.
  *
@@ -251,7 +254,7 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
 
   DWORD disposition;
 
-  return RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+  return RegCreateKeyEx(rootKey, subkey, 0, (char*) "", REG_OPTION_NON_VOLATILE,
                         KEY_ALL_ACCESS, &secattr, &key, &disposition);
 }
 #endif // _WIN32_WCE
@@ -330,7 +333,7 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 #endif
 
     DWORD disposition;
-    error = RegCreateKeyEx(basekey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+    error = RegCreateKeyEx(basekey, subkey, 0, (char*) "", REG_OPTION_NON_VOLATILE,
                            KEY_ALL_ACCESS, NULL, &key, &disposition);
     if (error != ERROR_SUCCESS) {
       PTRACE(1, "PTLib\tCould not create registry entry "

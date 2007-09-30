@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.11  2007/09/30 17:34:40  dsandras
+ * Killed GCC 4.2 warnings.
+ *
  * Revision 1.10  2007/08/17 08:46:01  csoutheren
  * Remove unnecessary inclusions of <iostream>
  *
@@ -104,7 +107,9 @@
   #if defined(_WIN32) 
     PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
     #if ! defined(NO_VIDEO_CAPTURE)
-      PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
+      #if defined(P_VFW_CAPTURE) 
+        PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
+      #endif /*P_VFW_CAPTURE*/
       #if defined(P_DIRECTSHOW) 
         PWLIB_STATIC_LOAD_PLUGIN(DirectShow, PVideoInputDevice)
       #endif /*P_DIRECTSHOW*/
