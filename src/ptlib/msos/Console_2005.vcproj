@@ -93,10 +93,9 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-			OutputDirectory=".\..\..\..\Lib\wm5"
-			IntermediateDirectory=".\..\..\..\Lib\wm5\Debug"
+			OutputDirectory="..\..\..\lib\wm5"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -127,10 +126,7 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptlib.h"
-				PrecompiledHeaderFile=".\..\..\..\Lib\wm5\Debug/Console.pch"
-				AssemblerListingLocation=".\..\..\..\Lib\wm5\Debug/"
-				ObjectFile=".\..\..\..\Lib\wm5\Debug/"
-				ProgramDataBaseFileName="..\..\..\Lib\wm5\PTLibd.pdb"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
 				BrowseInformation="1"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
@@ -149,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\Lib\wm5\ptlibsd.lib"
+				OutputFile="$(OutDir)\ptlibsd.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -178,12 +174,12 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-			OutputDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
-			IntermediateDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
+			OutputDirectory="..\..\..\lib\wm6"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -205,17 +201,16 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC;PTRACING=1"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptlib.h"
-				PrecompiledHeaderFile=".\..\..\..\Lib\wm6\Debug/Console.pch"
 				AssemblerListingLocation=""
 				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(TargetDir)/$(TargetName).pdb"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
 				BrowseInformation="1"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
@@ -234,7 +229,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\Lib\wm6\ptlibsd.lib"
+				OutputFile="$(OutDir)\ptlibsd.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -336,12 +331,95 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-			OutputDirectory=".\..\..\..\Lib\wm5"
-			IntermediateDirectory=".\..\..\..\Lib\wm5\Release"
+			OutputDirectory="..\..\..\lib\wm5"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				ExecutionBucket="7"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\include"
+				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC;PTRACING=1"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				TreatWChar_tAsBuiltInType="false"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="ptlib.h"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
+				WarningLevel="4"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				Culture="3081"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\ptlibs.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCCodeSignTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<DeploymentTool
+				ForceDirty="-1"
+				RemoteDirectory=""
+				RegisterOutput="0"
+				AdditionalFiles=""
+			/>
+			<DebuggerTool
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+			OutputDirectory="..\..\..\lib\wm6"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -373,97 +451,9 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptlib.h"
-				PrecompiledHeaderFile=".\..\..\..\Lib\wm5\Release/Console.pch"
-				AssemblerListingLocation=".\..\..\..\Lib\wm5\Release/"
-				ObjectFile=".\..\..\..\Lib\wm5\Release/"
-				ProgramDataBaseFileName="..\..\..\Lib\wm5\PTLib.pdb"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				Culture="3081"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="..\..\..\Lib\wm5\ptlibs.lib"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-			<DeploymentTool
-				ForceDirty="-1"
-				RemoteDirectory=""
-				RegisterOutput="0"
-				AdditionalFiles=""
-			/>
-			<DebuggerTool
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-			OutputDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
-			IntermediateDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="1"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				ExecutionBucket="7"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				TreatWChar_tAsBuiltInType="false"
-				RuntimeTypeInfo="true"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="ptlib.h"
-				PrecompiledHeaderFile=".\..\..\..\Lib\wm6\Release/Console.pch"
 				AssemblerListingLocation=""
 				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(TargetDir)/$(TargetName).pdb"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -481,7 +471,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\Lib\wm6\ptlibs.lib"
+				OutputFile="$(OutDir)\ptlibs.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -583,10 +573,9 @@
 		</Configuration>
 		<Configuration
 			Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-			OutputDirectory="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\$(ConfigurationName)"
-			IntermediateDirectory="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)\$(ConfigurationName)"
+			OutputDirectory="..\..\..\lib\wm5"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -612,7 +601,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC"
+				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC;PTRACING=0"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -620,10 +609,7 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptlib.h"
-				PrecompiledHeaderFile=".\..\..\..\Lib\wm5\Release/Console.pch"
-				AssemblerListingLocation=".\..\..\..\Lib\wm5\Release/"
-				ObjectFile=".\..\..\..\Lib\wm5\Release/"
-				ProgramDataBaseFileName="..\..\..\Lib\wm5\PTLib.pdb"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -641,7 +627,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\Lib\wm5\ptlibs.lib"
+				OutputFile="$(OutDir)\ptlibsn.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -670,12 +656,12 @@
 		</Configuration>
 		<Configuration
 			Name="No Trace|Windows Mobile 6 Professional SDK (ARMV4I)"
-			OutputDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
-			IntermediateDirectory="Windows Mobile 6 Professional SDK (ARMV4I)\$(ConfigurationName)"
+			OutputDirectory="..\..\..\lib\wm6"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -698,8 +684,8 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC"
+				AdditionalIncludeDirectories="..\..\..\include"
+				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC;PTRACING=0"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -707,10 +693,9 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptlib.h"
-				PrecompiledHeaderFile=".\..\..\..\Lib\wm6\Release/Console.pch"
 				AssemblerListingLocation=""
 				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(TargetDir)/$(TargetName).pdb"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -728,7 +713,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\Lib\wm6\ptlibs.lib"
+				OutputFile="$(OutDir)\ptlibsn.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -1271,7 +1256,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="0"
-							AdditionalIncludeDirectories=""
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
 							PreprocessorDefinitions=""
 							UsePrecompiledHeader="0"
 							BrowseInformation="1"
@@ -1283,7 +1268,7 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="0"
-							AdditionalIncludeDirectories=""
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
 							PreprocessorDefinitions=""
 							UsePrecompiledHeader="0"
 							BrowseInformation="1"
@@ -1308,7 +1293,7 @@
 							Name="VCCLCompilerTool"
 							Optimization="2"
 							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories=""
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
 							PreprocessorDefinitions=""
 							UsePrecompiledHeader="0"
 						/>
@@ -1320,7 +1305,7 @@
 							Name="VCCLCompilerTool"
 							Optimization="2"
 							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories=""
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
 							PreprocessorDefinitions=""
 							UsePrecompiledHeader="0"
 						/>
@@ -1344,7 +1329,7 @@
 							Name="VCCLCompilerTool"
 							Optimization="2"
 							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories=""
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
 							PreprocessorDefinitions=""
 							UsePrecompiledHeader="0"
 						/>
@@ -1356,7 +1341,7 @@
 							Name="VCCLCompilerTool"
 							Optimization="2"
 							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories=""
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
 							PreprocessorDefinitions=""
 							UsePrecompiledHeader="0"
 						/>
@@ -5115,6 +5100,20 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5123,8 +5122,36 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="No Trace|Win32"
 						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="No Trace|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -6355,7 +6382,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6368,7 +6395,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6393,7 +6420,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6405,7 +6432,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6429,7 +6456,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6441,7 +6468,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6470,7 +6497,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6483,7 +6510,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6508,7 +6535,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6520,7 +6547,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6544,7 +6571,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6556,7 +6583,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6585,7 +6612,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6598,7 +6625,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6623,7 +6650,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6635,7 +6662,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6659,7 +6686,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6671,7 +6698,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6700,7 +6727,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6713,7 +6740,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						BrowseInformation="1"
@@ -6738,7 +6765,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6750,7 +6777,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6774,7 +6801,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"
@@ -6786,7 +6813,7 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="0"
 						WarningLevel="1"

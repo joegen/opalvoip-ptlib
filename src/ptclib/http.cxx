@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.127  2007/10/03 01:18:46  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.126  2007/06/29 02:47:28  rjongbloed
  * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
  *
@@ -451,7 +454,7 @@
 
 #include <ctype.h>
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(_WIN32_WCE)
 #include <shellapi.h>
 #pragma comment(lib,"shell32.lib")
 #endif
