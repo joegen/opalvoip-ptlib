@@ -21,7 +21,6 @@
 #include <winsock.h>
 #include <atlconv.h>
 #include <cmnintrin.h>
-#include <ptlib/wm/time.h>
 
 #ifdef __cplusplus
 
@@ -175,34 +174,6 @@ BOOL WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
   const char* lpString, const char* );
 
 #endif // __cplusplus
-
-#ifndef ECONNRESET
-#define ECONNRESET WSAECONNRESET
-#endif
- 
-#ifndef ECONNREFUSED
-#define ECONNREFUSED WSAECONNREFUSED
-#endif
- 
-#ifndef ENETUNREACH
-#define ENETUNREACH WSAENETUNREACH
-#endif
- 
-#ifndef EHOSTUNREACH
-#define EHOSTUNREACH WSAEHOSTUNREACH
-#endif
-
-#ifndef ETIMEDOUT
-#define ETIMEDOUT WSAETIMEDOUT
-#endif
- 
-#ifndef EADDRINUSE
-#define EADDRINUSE WSAEADDRINUSE
-#endif
- 
-#ifndef EADDRNOTAVAIL
-#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#endif
 
 #endif // _WIN32_WCE
 
