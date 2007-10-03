@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.64  2007/10/03 01:18:34  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.63  2007/09/30 17:34:39  dsandras
  * Killed GCC 4.2 warnings.
  *
@@ -323,11 +326,13 @@
 // OpenSSL library for secure sockets layer
 //
 
+#ifndef _WIN32_WCE
 #undef P_SSL 
 #undef P_WINSSL 
 #undef P_SSL_AES
 #undef P_WINSSL_AES
 #undef P_SSL_USE_CONST
+#endif
 
 #ifdef P_WINSSL
 #define P_SSL 1
@@ -493,8 +498,10 @@
 // EXPAT library for XML parsing
 //
 
+#ifndef _WIN32_WCE
 #undef P_EXPAT 
 #undef P_WINEXPAT 
+#endif
 
 #ifdef P_WINEXPAT 
 #define P_EXPAT 1
@@ -530,7 +537,9 @@
 // OpenLDAP
 //
 
+#ifndef _WIN32_WCE
 #undef P_LDAP 
+#endif
 
 #if defined(_MSC_VER) && P_LDAP
 
@@ -574,7 +583,9 @@
 // SAPI speech API (Windows only)
 //
 
-#undef P_SAPI 
+#ifndef _WIN32_WCE
+#undef P_SAPI
+#endif
 
 #if defined(_MSC_VER) && P_SAPI
 
@@ -595,9 +606,11 @@
 // Cyrus SASL
 //
 
+#ifndef _WIN32_WCE
 #undef P_SASL 
 #undef P_SASL2
 #undef P_HAS_SASL_SASL_H 
+#endif
 
 #if defined(_MSC_VER) && (defined(P_SASL) || defined(P_SASL2))
 
@@ -615,7 +628,9 @@
 // SDL toolkit
 //
 
+#ifndef _WIN32_WCE
 #undef P_SDL
+#endif
 
 #if defined(_MSC_VER) && P_SDL
 #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
@@ -703,9 +718,11 @@
 // DirectX Support (Windows only)
 //
 
+#ifndef _WIN32_WCE
 #undef P_DIRECTSOUND
 #undef P_DIRECTSHOW
 #undef P_VFW_CAPTURE
+#endif
 
 #if defined(_MSC_VER) && (defined(P_DIRECTSOUND) || defined(P_DIRECTSHOW))
 
