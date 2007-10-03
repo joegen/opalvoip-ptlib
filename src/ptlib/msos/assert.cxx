@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.44  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.43  2007/04/08 01:53:37  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -163,8 +166,6 @@
 
 #include <ptlib.h>
 #include <ptlib/svcproc.h>
-
-#include <errno.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -426,11 +427,12 @@ void PAssertFunc(const char * msg)
 #if !defined(_WIN32_WCE)
 		pstr, 
 		"Portable Windows Library",
+        MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
 #else
 		PString(pstr).AsUCS2(), 
 		L"Portable Windows Library",
+        MB_ABORTRETRYIGNORE|MB_ICONHAND)) {
 #endif // !_WIN32_WCE
-        MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
       case IDABORT :
 #if !defined(_WIN32_WCE)
 		  FatalExit(1);  // Never returns

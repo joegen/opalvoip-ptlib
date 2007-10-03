@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipe.cxx,v $
+ * Revision 1.6  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.5  2004/10/23 10:51:59  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -59,6 +62,12 @@ PPipeChannel::PPipeChannel()
 }
 
 
+#ifdef _WIN32_WCE
+BOOL PPipeChannel::PlatformOpen(const PString &, const PStringArray &, OpenMode, BOOL, BOOL, const PStringToString *)
+{
+  return FALSE;
+}
+#else
 BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
                                 const PStringArray & argumentList,
                                 OpenMode mode,
@@ -98,8 +107,6 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     }
     envStr = envBuf.GetPointer();
   }
-
-#ifndef _WIN32_WCE
 
   STARTUPINFO startup;
   memset(&startup, 0, sizeof(startup));
@@ -164,10 +171,11 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     if (startup.hStdOutput != startup.hStdError)
       CloseHandle(startup.hStdError);
   }
-#endif // !_WIN32_WCE
 
   return IsOpen();
 }
+#endif // !_WIN32_WCE
+
 
 
 PPipeChannel::~PPipeChannel()
@@ -281,9 +289,14 @@ BOOL PPipeChannel::Execute()
 }
 
 
+#ifdef _WIN32_WCE
+BOOL PPipeChannel::ReadStandardError(PString &, BOOL)
+{
+  return FALSE;
+}
+#else
 BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
 {
-#ifndef _WIN32_WCE
   DWORD available, bytesRead;
   if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
     return ConvertOSError(-2, LastReadError);
@@ -311,11 +324,8 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
   return ConvertOSError(ReadFile(hStandardError,
                         errors.GetPointer(available+2)+1, available,
                         &bytesRead, NULL) ? 0 : -2, LastReadError);
-
-#else
-  return FALSE;
-#endif // !_WIN32_WCE
 }
+#endif // !_WIN32_WCE
 
 
 // End Of File ///////////////////////////////////////////////////////////////

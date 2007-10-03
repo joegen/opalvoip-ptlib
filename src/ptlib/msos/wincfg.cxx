@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.21  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.20  2007/09/30 17:34:40  dsandras
  * Killed GCC 4.2 warnings.
  *
@@ -95,11 +98,6 @@
 
 #include <winuser.h>
 #include <winnls.h>
-
-#include <process.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/stat.h>
 
 #define new PNEW
 
