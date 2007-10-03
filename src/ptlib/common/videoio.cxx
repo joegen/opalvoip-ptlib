@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.76  2007/10/03 04:22:21  csoutheren
+ * Fixed typo
+ *
  * Revision 1.75  2007/09/28 00:23:29  rjongbloed
  * Changed PVideoXXXDevice::CreateOpenedDevice so uses default value for
  *   driver and/or device names if they are empty strings or "*".
@@ -322,7 +325,7 @@
  *
  */
 
-#ifndef __GNUC__
+#ifdef __GNUC__
 #pragma implementation "videoio.h"
 #endif 
 
