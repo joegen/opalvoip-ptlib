@@ -317,6 +317,9 @@ void printchar (char n)
 	printf(" %d ",n);	
 }
 
+
+#if _WIN32_WCE < 0x501
+
 long strtol (const char *nptr,char **endptr,int ibase)
 {
 	const TCHAR* tnptr = PString(nptr).AsUCS2();
@@ -395,6 +398,37 @@ size_t strspn( const char *string, const char *strCharSet )
     return(0);
 }
 
+__int64 _atoi64(const char *nptr)
+{
+        int c;              /* current char */
+        __int64 total;      /* current total */
+        int sign;           /* if '-', then negative, otherwise positive */
+
+        /* skip whitespace */
+        while ( isspace((int)(unsigned char)*nptr) )
+            ++nptr;
+
+        c = (int)(unsigned char)*nptr++;
+        sign = c;           /* save sign indication */
+        if (c == '-' || c == '+')
+            c = (int)(unsigned char)*nptr++;    /* skip sign */
+
+        total = 0;
+
+        while (isdigit(c)) {
+            total = 10 * total + (c - '0');     /* accumulate digit */
+            c = (int)(unsigned char)*nptr++;    /* get next char */
+        }
+
+        if (sign == '-')
+            return -total;
+        else
+            return total;   /* return result, negated if necessary */
+}
+
+#endif
+
+
 static void x64toa (unsigned __int64 val,char *buf,unsigned radix,int is_neg)
 {
         char *p;                /* pointer to traverse string */
@@ -453,34 +487,6 @@ char * _ui64toa (unsigned __int64 val,char *buf,int radix)
 }
 
 #if _WIN32_WCE < 0x502
-
-__int64 _atoi64(const char *nptr)
-{
-        int c;              /* current char */
-        __int64 total;      /* current total */
-        int sign;           /* if '-', then negative, otherwise positive */
-
-        /* skip whitespace */
-        while ( isspace((int)(unsigned char)*nptr) )
-            ++nptr;
-
-        c = (int)(unsigned char)*nptr++;
-        sign = c;           /* save sign indication */
-        if (c == '-' || c == '+')
-            c = (int)(unsigned char)*nptr++;    /* skip sign */
-
-        total = 0;
-
-        while (isdigit(c)) {
-            total = 10 * total + (c - '0');     /* accumulate digit */
-            c = (int)(unsigned char)*nptr++;    /* get next char */
-        }
-
-        if (sign == '-')
-            return -total;
-        else
-            return total;   /* return result, negated if necessary */
-}
 
 int stricmp(const char* s1, const char* s2 ) { return _stricmp(s1, s2); }
 
@@ -575,17 +581,17 @@ char * _mktemp (char *temp)
         return(temp);
 }
 
-void WINAPI DnsRecordListFree(PDNS_RECORD pRecordList, DNS_FREE_TYPE FreeType)
+void WINAPI DnsRecordListFree(PDNS_RECORD /*pRecordList*/, DNS_FREE_TYPE /*FreeType*/)
 {
 }
 
 DNS_STATUS WINAPI DnsQuery_A(
-  const char* pszName,
-  WORD wType,
-  DWORD fOptions,
-  PIP4_ARRAY aipServers,
-  PDNS_RECORD* ppQueryResultsSet,
-  PVOID* pReserved
+  const char* /*pszName*/,
+  WORD /*wType*/,
+  DWORD /*fOptions*/,
+  PIP4_ARRAY /*aipServers*/,
+  PDNS_RECORD* /*ppQueryResultsSet*/,
+  PVOID* /*pReserved*/
 )
 {
 	return 0;

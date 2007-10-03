@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.21  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.20  2007/04/08 01:53:37  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -213,8 +216,6 @@
 #if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
 #error "sound_win32.cxx must be compiled without precompiled headers"
 #endif
-
-#include <process.h>
 
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>

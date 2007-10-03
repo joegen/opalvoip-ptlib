@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.84  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.83  2007/04/08 01:53:37  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -302,22 +305,11 @@
 
 #include <ptlib/pprocess.h>
 
-#include <errno.h>
-#include <fcntl.h>
-#include <share.h>
-#include <sys/stat.h>
-#ifdef _MSC_VER
-#include <crtdbg.h>
-#endif
-
 #if !P_USE_INLINES
 #include <ptlib/osutil.inl>
 #include <ptlib/msos/ptlib/ptlib.inl>
 #endif
 
-#ifdef _WIN32_WCE
-#include <ptlib/wm/time.h>
-#endif
 
 ostream & operator<<(ostream & s, PInt64 v)
 {
