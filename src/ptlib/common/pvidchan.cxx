@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.21  2007/10/03 04:25:51  csoutheren
+ * Fixed typo
+ *
  * Revision 1.20  2007/09/14 01:14:25  csoutheren
  * Fix warnings under VS.net 2003
  *
@@ -98,7 +101,7 @@
  *
  */
 
-#ifndef __GNUC__
+#ifdef __GNUC__
 #pragma implementation "video.h"
 #endif
 
