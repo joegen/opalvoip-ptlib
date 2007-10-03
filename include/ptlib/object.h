@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.131  2007/10/03 01:18:44  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.130  2007/09/17 11:14:42  rjongbloed
  * Added "No Trace" build configuration.
  *
@@ -483,14 +486,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#ifdef _WIN32
-  #include <malloc.h>
-#endif
-
-#ifdef _MSC_VER
-  #include <crtdbg.h>
-#endif
-
 #include <string.h>
 
 #ifdef __USE_STL__
@@ -524,10 +519,6 @@
       #include <iomanip.h>
     #endif
   #endif
-#endif
-
-#ifdef _WIN32_WCE
-  #include <stdlibx.h>
 #endif
 
 #if (__GNUC__ < 3) && !defined(_STLP_IOS_BASE_H)

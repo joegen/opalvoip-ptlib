@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.26  2007/10/03 01:18:44  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.25  2006/01/18 07:18:00  csoutheren
  * Added explicit copy constructor for PCriticalSection on Windows
  *
@@ -114,8 +117,6 @@
  * Revision 1.1  1994/04/01  14:38:42  robertj
  * Initial revision
  */
-
-#include <direct.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////

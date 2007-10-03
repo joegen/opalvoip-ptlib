@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.12  2007/10/03 01:18:44  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.11  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -64,8 +67,6 @@
  *
  */
 
-#ifndef _WIN32_WCE
-
 #define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)
 #define ENOTSOCK                (WSAENOTSOCK|PWIN32ErrorFlag)
 #define EMSGSIZE                (WSAEMSGSIZE|PWIN32ErrorFlag)
@@ -89,8 +90,6 @@
 #define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
 #define EHOSTDOWN               (WSAEHOSTDOWN|PWIN32ErrorFlag)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
-
-#endif
 
 
 #define NETDB_SUCCESS 0
