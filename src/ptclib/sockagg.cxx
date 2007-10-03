@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.22  2007/10/03 01:18:46  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.21  2007/09/17 11:14:46  rjongbloed
  * Added "No Trace" build configuration.
  *
@@ -102,8 +105,6 @@
 #include <ptlib.h>
 #include <ptclib/sockagg.h>
 
-#include <fcntl.h>
-
 #define new PNEW
 
 
@@ -156,6 +157,8 @@ bool PAggregatorFD::IsValid()
 }
 
 #else // #if _WIN32
+
+#include <fcntl.h>
 
 class LocalEvent : public PHandleAggregator::EventBase
 {

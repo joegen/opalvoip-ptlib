@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.218  2007/10/03 01:18:46  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.217  2007/08/22 05:00:02  rjongbloed
  * Added function to return local and peer address as string in "addr:port" format.
  *
@@ -1577,7 +1580,7 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
-#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
+#if !defined(__NUCLEUS_PLUS__) && !defined(P_VXWORKS)
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
@@ -1589,7 +1592,7 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
-#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
+#if !defined(__NUCLEUS_PLUS__) && !defined(P_VXWORKS)
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
@@ -1615,9 +1618,6 @@ WORD PSocket::GetPortByService(const char * protocol, const PString & service)
 
 #if defined( __NUCLEUS_PLUS__ )
   PAssertAlways("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
-  return 0;
-#elif defined(_WIN32_WCE)
-  PAssertAlways("PSocket::GetPortByService: problem for WindowsCE as no port given.");
   return 0;
 #elif defined(P_VXWORKS)
   PAssertAlways("PSocket::GetPortByService: problem as no ::getservbyname in VxWorks");
@@ -1652,7 +1652,7 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
+#if !defined(__NUCLEUS_PLUS__) && !defined(P_VXWORKS)
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);

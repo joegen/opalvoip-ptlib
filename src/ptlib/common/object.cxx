@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.92  2007/10/03 01:18:46  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.91  2007/09/12 18:44:26  ykiryanov
  * Added !defined(_WIN32_WCE)  to new memory leakage dectection code. Memory organized other way on WCE based devices and crtdbg.h API  is not present
  *
@@ -413,8 +416,6 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   int err = errno;
 #endif
 
-#ifndef _WIN32_WCE
-
   #if (__GNUC__ >= 3) && defined (__USE_STL__)
   ostringstream str;
   #else
@@ -438,8 +439,6 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   #endif
 
   PAssertFunc(s);
-
-#endif // !_WIN32_WCE
 }
 
 PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject&obj) const
@@ -1227,7 +1226,7 @@ void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
 
 #else // defined(_MSC_VER) && defined(_DEBUG)
 
-#ifndef P_VXWORKS
+#if !defined(P_VXWORKS) && !defined(_WIN32_WCE)
 
 #if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new[](size_t nSize) throw (std::bad_alloc)
