@@ -23,9 +23,6 @@
 
 #define _INC_TIME // for wce.h
 
-#include <windows.h>
-#include <stdlib.h>
-
 #ifndef _TM_DEFINED
 #define _TM_DEFINED
 struct tm {
@@ -41,10 +38,6 @@ struct tm {
         };
 #endif // _TM_DEFINED
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
 #ifndef _CLOCK_T_DEFINED
 typedef long clock_t;
 #define _CLOCK_T_DEFINED
@@ -53,14 +46,22 @@ typedef long clock_t;
 /* Clock ticks macro - ANSI version */
 #define CLOCKS_PER_SEC  1000
 
+#ifndef _TIME_T_DEFINED
+typedef long  time_t;
+#define _TIME_T_DEFINED 	/* avoid multiple def's of time_t */
+#endif
+
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 /* Function prototypes */
-#if _WIN32_WCE < 0x502
-clock_t				clock(void);
-struct tm *			gmtime(const time_t* t);
-struct tm *			localtime(const time_t* t);
-time_t				mktime(struct tm* t);
-time_t				time(time_t* t);
-#endif // _WIN32_WCE < 0x502
+clock_t     clock(void);
+struct tm * gmtime(const time_t* t);
+struct tm * localtime(const time_t* t);
+time_t      mktime(struct tm* t);
+time_t      time(time_t* t);
 
 #if _WIN32_WCE < 0x501
 size_t wcsftime(
@@ -71,16 +72,12 @@ size_t wcsftime(
 );
 #endif
 
-#ifndef  __cplusplus
-time_t	__cdecl FileTimeToTime(const struct _FILETIME FileTime);
-time_t	__cdecl SystemTimeToTime(const struct _SYSTEMTIME* pSystemTime);
-#else
+#ifdef  __cplusplus
+};
+
 time_t	FileTimeToTime(const FILETIME FileTime);
 time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
-#endif
 
-#ifdef  __cplusplus
-}
 #endif
 
 #endif  /* _INC_TIME */

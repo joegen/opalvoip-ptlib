@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.73  2007/10/03 01:18:45  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.72  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -282,6 +285,14 @@ extern "C" {\
        exit( instance._main() ); \
      } \
 }
+#elif defined(_WIN32_WCE)
+#define PCREATE_PROCESS(cls) \
+  int WinMain(HINSTANCE, HINSTANCE, LPWSTR, int) \
+    { cls *pInstance = new cls(); \
+      int terminationValue = pInstance->_main(); \
+      delete pInstance; \
+      return terminationValue; \
+    }
 #else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
