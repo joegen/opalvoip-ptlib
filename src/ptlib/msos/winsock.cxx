@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.76  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.75  2007/09/30 17:34:40  dsandras
  * Killed GCC 4.2 warnings.
  *
@@ -276,34 +279,35 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
-#include <nspapi.h>
 #include <svcguid.h>
 
-#include <wsipx.h>
-#ifdef _MSC_VER
-#include <wsnwlink.h>
-#else
-#define IPX_PTYPE 0x4000
-#define NS_DEFAULT 0
-
-#ifndef SVCID_NETWARE
-#define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
-#endif /* SVCID_NETWARE */
-
-#define SVCID_FILE_SERVER SVCID_NETWARE(0x4)
-#endif
-
-#if defined(P_WINSOCK2_LIBRARY)
-#ifdef _MSC_VER
-#pragma comment(lib, P_WINSOCK2_LIBRARY)
-#endif
-#else
 #ifndef _WIN32_WCE
-#ifdef _MSC_VER
-#pragma comment(lib, "wsock32.lib")
-#endif
+  #include <nspapi.h>
+  #include <wsipx.h>
+
+  #ifdef _MSC_VER
+    #include <wsnwlink.h>
+
+    #if defined(P_WINSOCK2_LIBRARY)
+      #pragma comment(lib, P_WINSOCK2_LIBRARY)
+    #else
+      #pragma comment(lib, "wsock32.lib")
+    #endif
+
+  #else
+
+    #define IPX_PTYPE 0x4000
+    #define NS_DEFAULT 0
+
+    #ifndef SVCID_NETWARE
+    #define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
+    #endif /* SVCID_NETWARE */
+
+    #define SVCID_FILE_SERVER SVCID_NETWARE(0x4)
+
+  #endif
+
 #endif // !_WIN32_WCE
-#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
