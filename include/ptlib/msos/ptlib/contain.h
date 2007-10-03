@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.65  2007/10/03 01:18:44  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.64  2007/09/30 17:34:40  dsandras
  * Killed GCC 4.2 warnings.
  *
@@ -243,62 +246,63 @@
 
 #ifdef _MSC_VER
 
-#pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
-#pragma warning(disable:4251)  // disable warning exported structs
-#pragma warning(disable:4511)  // default copy ctor not generated warning
-#pragma warning(disable:4512)  // default assignment op not generated warning
-#pragma warning(disable:4514)  // unreferenced inline removed
-#pragma warning(disable:4699)  // precompiled headers
-#pragma warning(disable:4702)  // disable warning about unreachable code
-#pragma warning(disable:4705)  // disable warning about statement has no effect
-#pragma warning(disable:4710)  // inline not expanded warning
-#pragma warning(disable:4711)  // auto inlining warning
-#pragma warning(disable:4786)  // identifier was truncated to '255' characters in the debug information
-#pragma warning(disable:4097)  // typedef synonym for class
-#pragma warning(disable:4800)  // forcing value to bool 'true' or 'false' (performance warning)
+  #pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
+  #pragma warning(disable:4251)  // disable warning exported structs
+  #pragma warning(disable:4511)  // default copy ctor not generated warning
+  #pragma warning(disable:4512)  // default assignment op not generated warning
+  #pragma warning(disable:4514)  // unreferenced inline removed
+  #pragma warning(disable:4699)  // precompiled headers
+  #pragma warning(disable:4702)  // disable warning about unreachable code
+  #pragma warning(disable:4705)  // disable warning about statement has no effect
+  #pragma warning(disable:4710)  // inline not expanded warning
+  #pragma warning(disable:4711)  // auto inlining warning
+  #pragma warning(disable:4786)  // identifier was truncated to '255' characters in the debug information
+  #pragma warning(disable:4097)  // typedef synonym for class
+  #pragma warning(disable:4800)  // forcing value to bool 'true' or 'false' (performance warning)
 
-#if _MSC_VER>=800
-#define PHAS_TEMPLATES
-#endif
+  #if _MSC_VER>=800
+    #define PHAS_TEMPLATES
+  #endif
 
-#if !defined(__USE_STL__) && (_MSC_VER>=1300)
-#define __USE_STL__ 1
-#endif
+  #if !defined(__USE_STL__) && (_MSC_VER>=1300)
+    #define __USE_STL__ 1
+  #endif
 
-#if !defined(_CRT_SECURE_NO_DEPRECATE) && (_MSC_VER>=1400)
-#define _CRT_SECURE_NO_DEPRECATE 1
-#endif
+  #if !defined(_CRT_SECURE_NO_DEPRECATE) && (_MSC_VER>=1400)
+    #define _CRT_SECURE_NO_DEPRECATE 1
+  #endif
 
-#if !defined(_CRT_NONSTDC_NO_WARNINGS) && (_MSC_VER>=1400)
-#define _CRT_NONSTDC_NO_WARNINGS 1
-#endif
+  #if !defined(_CRT_NONSTDC_NO_WARNINGS) && (_MSC_VER>=1400)
+    #define _CRT_NONSTDC_NO_WARNINGS 1
+  #endif
 
-#endif
+#endif // _MSC_VER
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Machine & Compiler dependent declarations
 
 #if defined(_WIN32) && !defined(WIN32)
-#define WIN32  1
+  #define WIN32  1
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
 
-#  ifndef WINVER
-#  define WINVER 0x401
-#  endif
+  #ifndef WINVER
+  #define WINVER 0x401
+  #endif
 
-#  ifndef STRICT
-#  define STRICT
-#  endif
+  #ifndef STRICT
+  #define STRICT
+  #endif
 
-#  ifndef WIN32_LEAN_AND_MEAN
-#  define WIN32_LEAN_AND_MEAN
-#  endif
+  #ifndef WIN32_LEAN_AND_MEAN
+  #define WIN32_LEAN_AND_MEAN
+  #endif
 
-#  include <windows.h>
+  #include <windows.h>
 
-#  undef DELETE   // Remove define from NT headers.
+  #undef DELETE   // Remove define from NT headers.
 
 
 #else
@@ -318,19 +322,19 @@
 
 // Declaration for exported callback functions to OS
 #if defined(_WIN32)
-#  define PEXPORTED __stdcall
+  #define PEXPORTED __stdcall
 #elif defined(_WINDOWS)
-#  define PEXPORTED WINAPI __export
+  #define PEXPORTED WINAPI __export
 #else
-#  define PEXPORTED __far __pascal
+  #define PEXPORTED __far __pascal
 #endif
 
 
 // Declaration for static global variables (WIN16 compatibility)
 #if defined(_WIN32)
-#  define PSTATIC
+  #define PSTATIC
 #else
-#  define PSTATIC __near
+  #define PSTATIC __near
 #endif
 
 
@@ -354,33 +358,33 @@ typedef short PInt16;
 typedef long PInt32;
 
 #ifdef __MINGW32__
-#define __USE_STL__
-using namespace std;
-#define P_HAS_INT64
-typedef signed __int64 PInt64;
-typedef unsigned __int64 PUInt64;
+  #define __USE_STL__
+  using namespace std;
+  #define P_HAS_INT64
+  typedef signed __int64 PInt64;
+  typedef unsigned __int64 PUInt64;
 #endif
 
 // Declaration for 64 bit unsigned integer quantity
-#if defined(_MSC_VER) && defined(_WIN32)
+#if defined(_MSC_VER)
 
-#define P_HAS_INT64
+  #define P_HAS_INT64
 
-typedef signed __int64 PInt64;
-typedef unsigned __int64 PUInt64;
+  typedef signed __int64 PInt64;
+  typedef unsigned __int64 PUInt64;
 
-#if _MSC_VER<1300
+  #if _MSC_VER<1300
 
-class ostream;
-class istream;
+    class ostream;
+    class istream;
 
-ostream & operator<<(ostream & s, PInt64 v);
-ostream & operator<<(ostream & s, PUInt64 v);
+    ostream & operator<<(ostream & s, PInt64 v);
+    ostream & operator<<(ostream & s, PUInt64 v);
 
-istream & operator>>(istream & s, PInt64 & v);
-istream & operator>>(istream & s, PUInt64 & v);
+    istream & operator>>(istream & s, PInt64 & v);
+    istream & operator>>(istream & s, PUInt64 & v);
 
-#endif
+  #endif
 
 #endif
 
@@ -389,45 +393,46 @@ istream & operator>>(istream & s, PUInt64 & v);
 // Type used in array indexes especially that required by operator[] functions.
 #if defined(_MSC_VER) || defined(__MINGW32__)
 
-# define PINDEX int
-# if defined(_WIN32)
+  #define PINDEX int
+  #if defined(_WIN32)
     const PINDEX P_MAX_INDEX = 0x7fffffff;
-# else
+  #else
     const PINDEX P_MAX_INDEX = 0x7fff;
-# endif
-  inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
-# define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+  #endif
+    inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
+  #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
 #else
 
-# define PINDEX unsigned
-# ifndef SIZEOF_INT
-#  define SIZEOF_INT sizeof(int)
-# endif
-# if SIZEOF_INT == 4
-    const PINDEX P_MAX_INDEX = 0xffffffff;
-# else
-    const PINDEX P_MAX_INDEX = 0xffff;
-# endif
-# define PABSINDEX(idx) (idx)
-# define PASSERTINDEX(idx)
+  #define PINDEX unsigned
+  #ifndef SIZEOF_INT
+  # define SIZEOF_INT sizeof(int)
+  #endif
+  #if SIZEOF_INT == 4
+     const PINDEX P_MAX_INDEX = 0xffffffff;
+  #else
+     const PINDEX P_MAX_INDEX = 0xffff;
+  #endif
+  #define PABSINDEX(idx) (idx)
+  #define PASSERTINDEX(idx)
 
 #endif
 
 #ifndef _WIN32_WCE 
 
-#if _MSC_VER>=1400
-#define strcasecmp(s1,s2) _stricmp(s1,s2)
-#define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
-#else
-#define strcasecmp(s1,s2) stricmp(s1,s2)
-#define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
-//#define _putenv ::putenv
-//#define _close ::close
-//#define _access ::access
-#endif
+  #if _MSC_VER>=1400
+    #define strcasecmp(s1,s2) _stricmp(s1,s2)
+    #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
+  #else
+    #define strcasecmp(s1,s2) stricmp(s1,s2)
+    #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
+    //#define _putenv ::putenv
+    //#define _close ::close
+    //#define _access ::access
+  #endif
 
 #endif // !_WIN32_WCE 
+
 
 class PWin32Overlapped : public OVERLAPPED
 {
@@ -475,66 +480,75 @@ class RegistryKey
 // used by various modules to disable the winsock2 include to avoid header file problems
 #ifndef P_KNOCKOUT_WINSOCK2
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable:4127 4706)
-#endif
-
-#if defined(P_WINSOCKv1)
-
-  #include <winsock.h>
-
-#else // P_WINSOCKv1
-
-  ///IPv6 support
-  // Needed for for IPv6 socket API. Must be included before "windows.h"
-  #include <winsock2.h> // Version 2 of windows socket
-  #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
-
-  #if P_HAS_IPV6 && !defined IPPROTO_IPV6
-    #include "tpipv6.h"  // For IPv6 Tech Preview.
+  #if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable:4127 4706)
   #endif
 
-#endif // P_WINSOCKv1
+  #if defined(P_WINSOCKv1)
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
+    #include <winsock.h>
 
-#define PIPX
+  #else // P_WINSOCKv1
 
-typedef int socklen_t;
+    ///IPv6 support
+    // Needed for for IPv6 socket API. Must be included before "windows.h"
+    #include <winsock2.h> // Version 2 of windows socket
+    #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
+
+    #if P_HAS_IPV6 && !defined IPPROTO_IPV6
+      #include "tpipv6.h"  // For IPv6 Tech Preview.
+    #endif
+
+  #endif // P_WINSOCKv1
+
+  #if defined(_MSC_VER)
+    #pragma warning(pop)
+  #endif
+
+  #define PIPX
+
+  typedef int socklen_t;
 
 #endif  // P_KNOCKOUT_WINSOCK2
 
 #if defined(_MSC_VER) && !defined(_WIN32)
-extern "C" int __argc;
-extern "C" char ** __argv;
+  extern "C" int __argc;
+  extern "C" char ** __argv;
 #endif
 
 #ifdef __BORLANDC__
-#define __argc _argc
-#define __argv _argv
+  #define __argc _argc
+  #define __argv _argv
 #endif
 
 #undef Yield
 
 #define P_THREADIDENTIFIER DWORD
 
-#include <sys/types.h>
-#include <errno.h>
-#include <io.h>
-
 #if defined(_MSC_VER)
-#pragma warning(disable:4201)
+  #pragma warning(disable:4201)
 #endif
+
+#include <malloc.h>
 #include <mmsystem.h>
 
 
 #ifndef _WIN32_WCE
-#include <vfw.h>
+  #include <crtdbg.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <errno.h>
+  #include <io.h>
+  #include <fcntl.h>
+  #include <direct.h>
+  #include <vfw.h>
 #else
-#include <cevfw.h>
+  #include <ptlib/wm/stdlibx.h>
+  #include <ptlib/wm/errno.h>
+  #include <ptlib/wm/sys/types.h>
+  #include <ptlib/wm/time.h>
+  #include <ptlib/wm/cevfw.h>
 #endif
 
 #define   P_HAS_TYPEINFO  1
@@ -543,66 +557,66 @@ extern "C" char ** __argv;
 
 // preload <string> and kill warnings
 #if defined(_MSC_VER)
-#pragma warning(push)
-#include <yvals.h>    
-#pragma warning(disable:4100)
-#pragma warning(disable:4018)
-#pragma warning(disable:4663)
-#pragma warning(disable:4146)
-#pragma warning(disable:4244)
-#pragma warning(disable:4786)
+  #pragma warning(push)
+  #include <yvals.h>    
+  #pragma warning(disable:4100)
+  #pragma warning(disable:4018)
+  #pragma warning(disable:4663)
+  #pragma warning(disable:4146)
+  #pragma warning(disable:4244)
+  #pragma warning(disable:4786)
 #endif
 #include <string>
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 // preload <vector> and kill warnings
 #if defined(_MSC_VER)
-#pragma warning(push)
-#include <yvals.h>    
-#pragma warning(disable:4018)
-#pragma warning(disable:4663)
-#pragma warning(disable:4786)
+  #pragma warning(push)
+  #include <yvals.h>    
+  #pragma warning(disable:4018)
+  #pragma warning(disable:4663)
+  #pragma warning(disable:4786)
 #endif
 #include <vector>
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 // preload <map> and kill warnings
 #if defined(_MSC_VER)
-#pragma warning(push)
-#include <yvals.h>    
-#pragma warning(disable:4018)
-#pragma warning(disable:4663)
-#pragma warning(disable:4786)
+  #pragma warning(push)
+  #include <yvals.h>    
+  #pragma warning(disable:4018)
+  #pragma warning(disable:4663)
+  #pragma warning(disable:4786)
 #endif
 #include <map>
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 // preload <utility> and kill warnings
 #if defined(_MSC_VER)
-#pragma warning(push)
-#include <yvals.h>    
-#pragma warning(disable:4786)
+  #pragma warning(push)
+  #include <yvals.h>    
+  #pragma warning(disable:4786)
 #endif
 #include <utility>
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 // preload <iterator> and kill warnings
 #if defined(_MSC_VER)
-#pragma warning(push)
-#include <yvals.h>    
-#pragma warning(disable:4786)
+  #pragma warning(push)
+  #include <yvals.h>    
+  #pragma warning(disable:4786)
 #endif
 #include <iterator>
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 // preload <algorithm> and kill warnings
@@ -610,28 +624,23 @@ extern "C" char ** __argv;
 
 // preload <queue> and kill warnings
 #if defined(_MSC_VER)
-#pragma warning(push)
-#include <yvals.h>    
-#pragma warning(disable:4284)
+  #pragma warning(push)
+  #include <yvals.h>    
+  #pragma warning(disable:4284)
 #endif
 #include <queue>
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 // VS.net won't work without this :(
 #if _MSC_VER>=1300
-using namespace std;
+  using namespace std;
 #endif
 
 #if defined(_MSC_VER)
-#pragma warning(disable:4786)
+  #pragma warning(disable:4786)
 #endif
-
-///////////////////////////////////////////////////////////////////////////////
-// Fill in common declarations
-
-//#include "../../contain.h"
 
 
 #endif // _OBJECT_H
