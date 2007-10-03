@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.165  2007/10/03 20:52:27  dsandras
+ * Applied patch from Matthias Schneider for mingw compilation. Thanks a lot!
+ *
  * Revision 1.164  2007/10/03 01:18:47  rjongbloed
  * Fixed build for Windows Mobile 5 and added Windows Mobile 6
  *
@@ -595,6 +598,10 @@
 #include <ptlib/msos/ptlib/debstrm.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
+#ifdef __MINGW32__
+#include <process.h>
+#endif
 
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
   #include <process.h>

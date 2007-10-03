@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.66  2007/10/03 20:52:27  dsandras
+ * Applied patch from Matthias Schneider for mingw compilation. Thanks a lot!
+ *
  * Revision 1.65  2007/10/03 01:18:44  rjongbloed
  * Fixed build for Windows Mobile 5 and added Windows Mobile 6
  *
@@ -535,7 +538,9 @@ class RegistryKey
 
 
 #ifndef _WIN32_WCE
+#ifdef _MSC_VER
   #include <crtdbg.h>
+#endif
   #include <sys/types.h>
   #include <sys/stat.h>
   #include <errno.h>
