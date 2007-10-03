@@ -147,22 +147,14 @@ struct tm * __cdecl gmtime (const time_t *timp)
 
 }
 
-#ifndef  __cplusplus
-time_t	FileTimeToTime(const struct _FILETIME FileTime)
-#else
 time_t	FileTimeToTime(const FILETIME FileTime)
-#endif
 {
 	SYSTEMTIME SystemTime;
 	FileTimeToSystemTime(&FileTime,&SystemTime);
 	return SystemTimeToTime(&SystemTime);
 }
 
-#ifndef  __cplusplus
-time_t	SystemTimeToTime(const struct _SYSTEMTIME* pSystemTime)
-#else
 time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime)
-#endif
 {	
 	tm aTm;
 	aTm.tm_sec = pSystemTime->wSecond;  
@@ -203,13 +195,13 @@ static SYSTEMTIME TmToSystemTime(tm &t)
 {
 	SYSTEMTIME s;
 
-	s.wYear      = t.tm_year + 1900;
-	s.wMonth     = t.tm_mon+1;
-	s.wDayOfWeek = t.tm_wday;
-	s.wDay       = t.tm_mday;
-	s.wHour      = t.tm_hour;
-	s.wMinute    = t.tm_min;
-	s.wSecond    = t.tm_sec;
+	s.wYear      = (WORD)(t.tm_year + 1900);
+	s.wMonth     = (WORD)(t.tm_mon + 1);
+	s.wDayOfWeek = (WORD) t.tm_wday;
+	s.wDay       = (WORD) t.tm_mday;
+	s.wHour      = (WORD) t.tm_hour;
+	s.wMinute    = (WORD) t.tm_min;
+	s.wSecond    = (WORD) t.tm_sec;
 	s.wMilliseconds = 0;
 
 	return s;
@@ -303,7 +295,7 @@ typedef struct {
 } transitionTime;
 
 static void cvtdate (int trantype, int year, int month, int week, int dayofweek,
-			             int date, int hour, int min, int sec, int msec,
+			             int /*date*/, int hour, int min, int sec, int msec,
 						 transitionTime* pDST)
 {
 	const int days[]           = {-1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 364};
@@ -486,8 +478,10 @@ time_t time( time_t *timer )
 	SYSTEMTIME s;
 	GetLocalTime( &s );
 	tm t = SystemTimeToTm(s);
-
-	return mktime( &t );
+	time_t tt = mktime( &t );
+        if (timer != NULL)
+          *timer = tt;
+        return tt;
 }
 
 #endif // _WIN32_WCE

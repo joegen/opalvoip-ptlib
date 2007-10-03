@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.52  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.51  2007/09/08 11:34:29  rjongbloed
  * Improved memory checking (leaks etc), especially when using MSVC debug library.
  *
@@ -198,12 +201,14 @@
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
-#include <snmp.h>
 
-#ifndef _WIN32_WCE
-#ifdef _MSC_VER
-#pragma comment(lib, "snmpapi.lib")
-#endif
+#ifdef _WIN32_WCE
+  #include <ptlib/wm/snmp.h>
+#else
+  #include <snmp.h>
+  #ifdef _MSC_VER
+    #pragma comment(lib, "snmpapi.lib")
+  #endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -972,9 +977,14 @@ BOOL PWin32PacketDriver::IoControl(UINT func,
   return CompleteIO(received, overlap);
 }
 
+#ifdef _WIN32_WCE
+BOOL PWin32PacketDriver::CompleteIO(DWORD &, PWin32Overlapped &)
+{
+  return TRUE;
+}
+#else
 BOOL PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap)
 {
-#ifndef _WIN32_WCE
   received = 0;
   if (GetOverlappedResult(hDriver, &overlap, &received, TRUE)) {
     dwError = ERROR_SUCCESS;
@@ -983,10 +993,8 @@ BOOL PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap
 
   dwError = ::GetLastError();
   return FALSE;
-#else
-  return TRUE;
-#endif
 }
+#endif
 
 BOOL PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
 {
@@ -1107,9 +1115,14 @@ static PString SearchRegistryKeys(const PString & key,
 }
 
 
+#ifdef _WIN32_WCE
+BOOL PWin32PacketVxD::BindInterface(const PString &)
+{
+  return FALSE;
+}
+#else
 BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
 {
-#ifndef _WIN32_WCE
   BYTE buf[20];
   DWORD rxsize;
 
@@ -1181,9 +1194,9 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
         transportBinding.AppendString(SERVICES_REGISTRY_KEY "Class\\" + str);
     }
   }
-#endif // !_WIN32_WCE
   return TRUE;
 }
+#endif // !_WIN32_WCE
 
 
 BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
@@ -1324,9 +1337,14 @@ PWin32PacketSYS::PWin32PacketSYS()
 
 static const char PacketDeviceStr[] = "\\Device\\" PACKET_SERVICE_NAME "_";
 
+#ifdef _WIN32_WCE
+BOOL PWin32PacketSYS::EnumInterfaces(PINDEX, PString &)
+{
+  return FALSE;
+}
+#else
 BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
 {
-#ifndef _WIN32_WCE
   RegistryKey registry(SERVICES_REGISTRY_KEY PACKET_SERVICE_NAME "\\Linkage",
                        RegistryKey::ReadOnly);
   if (!RegistryQueryMultiSz(registry, "Export", idx, name)) {
@@ -1337,14 +1355,19 @@ BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
   if (strncasecmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
     name.Delete(0, sizeof(PacketDeviceStr)-1);
 
-#endif // !_WIN32_WCE
   return TRUE;
 }
+#endif // !_WIN32_WCE
 
 
+#ifdef _WIN32_WCE
+BOOL PWin32PacketSYS::BindInterface(const PString &)
+{
+  return FALSE;
+}
+#else
 BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
 {
-#ifndef _WIN32_WCE
   Close();
 
   if (!DefineDosDevice(DDD_RAW_TARGET_PATH,
@@ -1370,9 +1393,9 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
   registryKey = SERVICES_REGISTRY_KEY + interfaceName + "\\Parameters\\Tcpip";
   dwError = ERROR_SUCCESS;
 
-#endif // !_WIN32_WCE
   return TRUE;
 }
+#endif // !_WIN32_WCE
 
 
 BOOL PWin32PacketSYS::EnumIpAddress(PINDEX idx,

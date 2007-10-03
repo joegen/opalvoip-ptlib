@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.164  2007/10/03 01:18:47  rjongbloed
+ * Fixed build for Windows Mobile 5 and added Windows Mobile 6
+ *
  * Revision 1.163  2007/09/17 11:14:48  rjongbloed
  * Added "No Trace" build configuration.
  *
@@ -589,22 +592,20 @@
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
 
-#include <process.h>
 #include <ptlib/msos/ptlib/debstrm.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#ifndef _WIN32_WCE
-#ifdef _MSC_VER
-#pragma comment(lib, "mpr.lib")
-#endif
+#if defined(_MSC_VER) && !defined(_WIN32_WCE)
+  #include <process.h>
+  #pragma comment(lib, "mpr.lib")
 #endif
 
 #if defined(_WIN32_DCOM) 
   #include <objbase.h>
-#ifdef _MSC_VER
-  #pragma comment(lib, _OLE_LIB)
-#endif
+  #ifdef _MSC_VER
+    #pragma comment(lib, _OLE_LIB)
+  #endif
 #endif
 
 #include "../common/pglobalstatic.cxx"
@@ -785,8 +786,8 @@ unsigned PTimer::Resolution()
   if (QueryPerformanceFrequency(&frequency) && frequency.QuadPart >= 1000)
     return 1;
 
-  DWORD err = GetLastError();
 #ifndef _WIN32_WCE
+  DWORD err = GetLastError();
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
@@ -1546,7 +1547,6 @@ void PProcess::HouseKeepingThread::Main()
     process.deleteThreadMutex.Wait();
     HANDLE handles[MAXIMUM_WAIT_OBJECTS];
     DWORD numHandles = 1;
-    DWORD dwFlags;
     handles[0] = breakBlock.GetHandle();
     for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
       PThread & thread = process.autoDeleteThreads[i];
@@ -1558,6 +1558,7 @@ void PProcess::HouseKeepingThread::Main()
 
         // make sure we don't put invalid handles into the list
 #ifndef _WIN32_WCE
+        DWORD dwFlags;
         if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
           PTRACE(2, "PWLib\tRefused to put invalid handle into wait list");
         }
@@ -1761,8 +1762,8 @@ PDirectory PProcess::GetOSConfigDir()
 PString PProcess::GetUserName() const
 {
   PString username;
-  unsigned long size = 50;
 #ifndef _WIN32_WCE
+  unsigned long size = 50;
   ::GetUserName(username.GetPointer((PINDEX)size), &size);
 #else
   TCHAR wcsuser[50] = {0};
