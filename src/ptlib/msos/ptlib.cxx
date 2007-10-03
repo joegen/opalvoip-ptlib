@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.85  2007/10/03 01:57:37  rjongbloed
+ * Fixed DevStudio 2003 compatibility
+ *
  * Revision 1.84  2007/10/03 01:18:47  rjongbloed
  * Fixed build for Windows Mobile 5 and added Windows Mobile 6
  *
@@ -308,6 +311,10 @@
 #if !P_USE_INLINES
 #include <ptlib/osutil.inl>
 #include <ptlib/msos/ptlib/ptlib.inl>
+#endif
+
+#ifndef _WIN32_WCE
+#include <share.h>
 #endif
 
 
