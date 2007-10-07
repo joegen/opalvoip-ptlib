@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.13  2007/10/07 07:35:30  rjongbloed
+ * Changed bundled sockets so does not return error if interface goes away it just
+ *   blocks reads till the interface comes back, or is explicitly closed.
+ * Also return error codes, rather than just a BOOL.
+ *
  * Revision 1.12  2007/09/28 09:59:16  hfriederich
  * Allow to use PInterfaceMonitor without running monitor thread
  *
@@ -277,8 +282,8 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       WORD port
     ) = 0;
 
-    /// Indicate if the scoket(s) are open and ready for reads/writes.
-    virtual BOOL IsOpen() const = 0;
+    /// Indicate if the socket(s) are open and ready for reads/writes.
+    BOOL IsOpen() const { return opened; }
 
     /// Close all socket(s)
     virtual BOOL Close() = 0;
@@ -299,7 +304,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         Otherwise the iface parameter indicates the specific interface socket
         to write the data to.
       */
-    virtual BOOL WriteTo(
+    virtual PChannel::Errors WriteToBundle(
       const void * buffer,              /// Data to write
       PINDEX length,                    /// Length of data
       const PIPSocket::Address & addr,  /// Remote IP address to write to
@@ -314,7 +319,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         Otherwise the iface parameter indicates the specific interface socket
         to read the data from.
       */
-    virtual BOOL ReadFrom(
+    virtual PChannel::Errors ReadFromBundle(
       void * buffer,                /// Data to read
       PINDEX length,                /// Maximum length of data
       PIPSocket::Address & addr,    /// Remote IP address data came from
@@ -364,7 +369,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       BOOL usingNAT
     ) const;
 
-    BOOL WriteToSocket(
+    PChannel::Errors WriteToSocket(
       const void * buf,
       PINDEX len,
       const PIPSocket::Address & addr,
@@ -372,7 +377,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       const SocketInfo & info,
       PINDEX & lastWriteCount
     );
-    BOOL ReadFromSocket(
+    PChannel::Errors ReadFromSocket(
       SocketInfo & info,
       void * buf,
       PINDEX len,
@@ -385,6 +390,9 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     WORD          localPort;
     BOOL          reuseAddress;
     PSTUNClient * stun;
+
+    bool          opened;
+    PUDPSocket    interfaceAddedSignal;
 };
 
 typedef PSafePtr<PMonitoredSockets> PMonitoredSocketsPtr;
@@ -524,9 +532,6 @@ class PMonitoredSocketBundle : public PMonitoredSockets
       WORD port
     );
 
-    /// Indicate if the scoket(s) are open and ready for reads/writes.
-    virtual BOOL IsOpen() const;
-
     /// Close all socket(s)
     virtual BOOL Close();
 
@@ -543,7 +548,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
         Otherwise the iface parameter indicates the specific interface socket
         to write the data to.
       */
-    virtual BOOL WriteTo(
+    virtual PChannel::Errors WriteToBundle(
       const void * buf,
       PINDEX len,
       const PIPSocket::Address & addr,
@@ -558,7 +563,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
         Otherwise the iface parameter indicates the specific interface socket
         to read the data from.
       */
-    virtual BOOL ReadFrom(
+    virtual PChannel::Errors ReadFromBundle(
       void * buf,
       PINDEX len,
       PIPSocket::Address & addr,
@@ -581,8 +586,6 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     void CloseSocket(const SocketInfoMap_T::iterator & iterSocket);
 
     SocketInfoMap_T socketInfoMap;
-    bool            closing;
-    PUDPSocket      interfaceAddedSignal;
 };
 
 
@@ -619,9 +622,6 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
       WORD port
     );
 
-    /// Indicate if the scoket(s) are open and ready for reads/writes.
-    virtual BOOL IsOpen() const;
-
     /// Close all socket(s)
     virtual BOOL Close();
 
@@ -638,7 +638,7 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
         Otherwise the iface parameter indicates the specific interface socket
         to write the data to.
       */
-    virtual BOOL WriteTo(
+    virtual PChannel::Errors WriteToBundle(
       const void * buf,
       PINDEX len,
       const PIPSocket::Address & addr,
@@ -653,7 +653,7 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
         Otherwise the iface parameter indicates the specific interface socket
         to read the data from.
       */
-    virtual BOOL ReadFrom(
+    virtual PChannel::Errors ReadFromBundle(
       void * buf,
       PINDEX len,
       PIPSocket::Address & addr,
