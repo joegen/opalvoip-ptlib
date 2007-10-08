@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.94  2007/10/08 05:04:10  rjongbloed
+ * Fixed bug introduced to prevent execution if had compiler error, did not allow
+ *   for getting NoMatch error on execution and using an instance twice.
+ * Also made lastError member mutable to clean up lots of cont casts.
+ *
  * Revision 1.93  2007/06/29 02:47:28  rjongbloed
  * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
  *
@@ -3281,7 +3286,7 @@ class PRegularExpression : public PObject
     int flagsSaved;
 
     void * expression;
-    int lastError;
+    mutable ErrorCodes lastError;
 };
 
 PString psprintf(const char * cfmt, ...);
