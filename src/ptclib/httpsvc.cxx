@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.98  2007/10/08 05:56:33  rjongbloed
+ * Fixed correct name being used for html file override of config pages.
+ *
  * Revision 1.97  2007/02/12 22:52:38  csoutheren
  * Applied 1650597 - PHTTPServiceThread leaks sockets
  * Thanks to Dave Parr
@@ -776,7 +779,7 @@ PConfigPage::PConfigPage(PHTTPServiceProcess & app,
 void PConfigPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PServiceHTML::ProcessMacros(request, text,
-                              GetURL().AsString(PURL::PathOnly).Mid(1),
+                              GetURL().AsString(PURL::PathOnly),
                               PServiceHTML::LoadFromFile);
   PHTTPConfig::OnLoadedText(request, text);
   PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::NoOptions);
@@ -805,7 +808,7 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
     process.BeginRestartSystem();
 
   PServiceHTML::ProcessMacros(request, reply,
-                              GetURL().AsString(PURL::PathOnly).Mid(1),
+                              GetURL().AsString(PURL::PathOnly),
                               PServiceHTML::LoadFromFile);
   OnLoadedText(request, reply);
 
@@ -842,7 +845,7 @@ PConfigSectionsPage::PConfigSectionsPage(PHTTPServiceProcess & app,
 void PConfigSectionsPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PServiceHTML::ProcessMacros(request, text,
-                              GetURL().AsString(PURL::PathOnly).Mid(1),
+                              GetURL().AsString(PURL::PathOnly),
                               PServiceHTML::LoadFromFile);
   PHTTPConfigSectionList::OnLoadedText(request, text);
 }
@@ -1051,7 +1054,7 @@ void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
   PServiceHTML::ProcessMacros(request, text,
-                              GetURL().AsString(PURL::PathOnly).Mid(1),
+                              GetURL().AsString(PURL::PathOnly),
                               PServiceHTML::LoadFromFile);
 
   switch (securedConf.GetValidation()) {
