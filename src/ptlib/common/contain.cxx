@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.183  2007/10/08 05:04:10  rjongbloed
+ * Fixed bug introduced to prevent execution if had compiler error, did not allow
+ *   for getting NoMatch error on execution and using an instance twice.
+ * Also made lastError member mutable to clean up lots of cont casts.
+ *
  * Revision 1.182  2007/09/27 23:19:21  rjongbloed
  * Fixed PString sprintf appending to string where combined length
  *   is greater than 1000 bytes, thanks Tomas Hoger.
@@ -3222,7 +3227,7 @@ PRegularExpression::~PRegularExpression()
 
 PRegularExpression::ErrorCodes PRegularExpression::GetErrorCode() const
 {
-  return (ErrorCodes)lastError;
+  return lastError;
 }
 
 
@@ -3254,7 +3259,7 @@ BOOL PRegularExpression::Compile(const char * pattern, int flags)
     lastError = BadPattern;
   else {
     expression = new regex_t;
-    lastError = regcomp(regexpression, pattern, flags);
+    lastError = (ErrorCodes)regcomp(regexpression, pattern, flags);
   }
   return lastError == NoError;
 }
@@ -3283,16 +3288,16 @@ BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, int flags) c
 BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len, int flags) const
 {
   if (expression == NULL) {
-    ((PRegularExpression*)this)->lastError = NotCompiled;
+    lastError = NotCompiled;
     return FALSE;
   }
 
-  if (((PRegularExpression*)this)->lastError != NoError)
+  if (lastError != NoError && lastError != NoMatch)
     return FALSE;
 
   regmatch_t match;
 
-  ((PRegularExpression*)this)->lastError = regexec(regexpression, cstr, 1, &match, flags);
+  lastError = (ErrorCodes)regexec(regexpression, cstr, 1, &match, flags);
   if (lastError != NoError)
     return FALSE;
 
@@ -3331,7 +3336,7 @@ BOOL PRegularExpression::Execute(const char * cstr,
                                  int flags) const
 {
   if (expression == NULL) {
-    ((PRegularExpression*)this)->lastError = NotCompiled;
+    lastError = NotCompiled;
     return FALSE;
   }
 
@@ -3344,8 +3349,7 @@ BOOL PRegularExpression::Execute(const char * cstr,
   else
     count = 1;
 
-  ((PRegularExpression*)this)->lastError = regexec(regexpression, cstr, count, matches, flags);
-
+  lastError = (ErrorCodes)regexec(regexpression, cstr, count, matches, flags);
   if (lastError == NoError) {
     starts.SetMinSize(count);
     ends.SetMinSize(count);
