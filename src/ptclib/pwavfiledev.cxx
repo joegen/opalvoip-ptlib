@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfiledev.cxx,v $
+ * Revision 1.2  2007/10/09 02:35:39  rjongbloed
+ * Added ability to make WAV file audio record device auto repeat the WAV file
+ *   when reach end of file, signaled by appending an '*' to end of filename.
+ *
  * Revision 1.1  2007/04/13 07:03:20  rjongbloed
  * Added WAV file audio device "plug in".
  *
@@ -49,8 +53,14 @@ class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServic
     }
     virtual bool ValidateDeviceName(const PString & deviceName, int userData) const
     {
-        return (deviceName.Right(4) *= ".wav") &&
-               PFile::Access(deviceName, userData == PSoundChannel::Recorder ? PFile::ReadOnly : PFile::WriteOnly);
+      PCaselessString adjustedDevice = deviceName;
+      PINDEX length = adjustedDevice.GetLength();
+      if (userData == PSoundChannel::Recorder && length > 5 && adjustedDevice.NumCompare(".wav*", 5, length-5) == PObject::EqualTo)
+        adjustedDevice.Delete(length-1, 1);
+      else if (length < 5 || adjustedDevice.NumCompare(".wav", 4, length-4) != PObject::EqualTo)
+        return false;
+
+      return PFile::Access(adjustedDevice, userData == PSoundChannel::Recorder ? PFile::ReadOnly : PFile::WriteOnly);
     }
 } PSoundChannel_WAVFile_descriptor;
 
@@ -64,6 +74,7 @@ PINSTANTIATE_FACTORY(PSoundChannel, WAVFile)
 ///////////////////////////////////////////////////////////////////////////////
 
 PSoundChannel_WAVFile::PSoundChannel_WAVFile()
+  : m_autoRepeat(false)
 {
 }
 
@@ -73,6 +84,7 @@ PSoundChannel_WAVFile::PSoundChannel_WAVFile(const PString & device,
                                              unsigned numChannels,
                                              unsigned sampleRate,
                                              unsigned bitsPerSample)
+  : m_autoRepeat(false)
 {
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
@@ -110,7 +122,14 @@ BOOL PSoundChannel_WAVFile::Open(const PString & device,
     return m_WAVFile.Open(device, PFile::WriteOnly);
   }
 
-  if (!m_WAVFile.Open(device, PFile::ReadOnly))
+  PString adjustedDevice = device;
+  PINDEX lastCharPos = adjustedDevice.GetLength()-1;
+  if (adjustedDevice[lastCharPos] == '*') {
+    adjustedDevice.Delete(lastCharPos, 1);
+    m_autoRepeat = true;
+  }
+
+  if (!m_WAVFile.Open(adjustedDevice, PFile::ReadOnly))
     return FALSE;
 
   if (m_WAVFile.GetChannels() == numChannels &&
@@ -212,6 +231,10 @@ BOOL PSoundChannel_WAVFile::StartRecording()
 BOOL PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
   BOOL ok = m_WAVFile.Read(data, size);
+  if (!ok && m_autoRepeat) {
+    m_WAVFile.SetPosition(0);
+    ok = m_WAVFile.Read(data, size);
+  }
   lastReadCount = m_WAVFile.GetLastReadCount();
   m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate());
   return ok;
