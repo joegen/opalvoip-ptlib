@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.21  2007/10/12 03:52:15  rjongbloed
+ * Fixed broken virtual by someone changing base class function signature,
+ *   and the override is silently not called. pet hate #1 about C++!
+ *
  * Revision 1.20  2007/10/12 00:27:22  rjongbloed
  * Added more logging
  *
@@ -1022,7 +1026,7 @@ PSingleMonitoredSocket::~PSingleMonitoredSocket()
 }
 
 
-PStringArray PSingleMonitoredSocket::GetInterfaces(BOOL /*includeLoopBack*/)
+PStringArray PSingleMonitoredSocket::GetInterfaces(BOOL /*includeLoopBack*/, const PIPSocket::Address & /*destination*/)
 {
   PSafeLockReadOnly guard(*this);
 

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.14  2007/10/12 03:52:15  rjongbloed
+ * Fixed broken virtual by someone changing base class function signature,
+ *   and the override is silently not called. pet hate #1 about C++!
+ *
  * Revision 1.13  2007/10/07 07:35:30  rjongbloed
  * Changed bundled sockets so does not return error if interface goes away it just
  *   blocks reads till the interface comes back, or is explicitly closed.
@@ -610,7 +614,10 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
         the loopback (127.0.0.1) interface. Note the names are of the form
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
-    virtual PStringArray GetInterfaces(BOOL includeLoopBack = FALSE);
+    virtual PStringArray GetInterfaces(
+      BOOL includeLoopBack = FALSE,  /// Flag for if loopback is to included in list
+      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+    );
 
     /** Open the socket(s) using the specified port. If port is zero then a
         system allocated port is used. In this case and when multiple
