@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.22  2007/10/12 11:11:58  csoutheren
+ * Fix warning on gcc
+ *
  * Revision 1.21  2007/10/12 03:52:15  rjongbloed
  * Fixed broken virtual by someone changing base class function signature,
  *   and the override is silently not called. pet hate #1 about C++!
@@ -147,10 +150,10 @@ static PMutex PInterfaceMonitorInstanceMutex;
 static PInterfaceMonitor * PInterfaceMonitorInstance;
 
 PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, BOOL _runMonitorThread)
-  : refreshInterval(refresh)
+  : runMonitorThread(_runMonitorThread)
+  , refreshInterval(refresh)
   , updateThread(NULL)
   , interfaceFilter(NULL)
-  , runMonitorThread(_runMonitorThread)
 {
   PInterfaceMonitorInstanceMutex.Wait();
   PAssert(PInterfaceMonitorInstance == NULL, PLogicError);
