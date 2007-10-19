@@ -32,9 +32,9 @@
    which extracts the version numbers
  */
 
-#define MAJOR_VERSION 1
-#define MINOR_VERSION 12
-#define BUILD_TYPE    ReleaseCode
+#define MAJOR_VERSION 2
+#define MINOR_VERSION 0
+#define BUILD_TYPE    BetaCode
 #define BUILD_NUMBER 0
 
 
