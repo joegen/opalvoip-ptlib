@@ -1200,6 +1200,7 @@ EXPORTS
     ??0OnSessionEstablished_PNotifier@Roster@XMPP@@QAE@PAV12@@Z @1198 NONAME
     ??0OnSessionReleased_PNotifier@Roster@XMPP@@QAE@PAV12@@Z @1199 NONAME
     ??0OnSessionReleased_PSmartNotifier@Room@MUC@XMPP@@QAE@I@Z @1200 NONAME
+    ??0OpenArgs@PVideoDevice@@QAE@ABU01@@Z @17061 NONAME
     ??0OpenArgs@PVideoDevice@@QAE@XZ @1201 NONAME
     ??0Option@PHTML@@QAE@PBD@Z @1202 NONAME
     ??0Option@PHTML@@QAE@W4DisableCodes@1@PBD@Z @1203 NONAME
@@ -1517,7 +1518,7 @@ EXPORTS
     ??0PInt32l@@QAE@J@Z @1515 NONAME
     ??0PInt32l@@QAE@XZ @1516 NONAME
     ??0PIntCondMutex@@QAE@HHW4Operation@0@@Z @1517 NONAME
-    ??0PInterfaceMonitor@@QAE@I@Z @1518 NONAME
+    ??0PInterfaceMonitor@@QAE@IH@Z @17062 NONAME
     ??0PInterfaceMonitorClient@@QAE@XZ @1519 NONAME
     ??0PInternetProtocol@@IAE@PBDHPBQBD@Z @1520 NONAME
     ??0PIpAccessControlEntry@@QAE@ABVPString@@@Z @1521 NONAME
@@ -1582,7 +1583,7 @@ EXPORTS
     ??0PModem@@QAE@ABVPString@@KEW4Parity@PSerialChannel@@EW4FlowControl@3@2@Z @1580 NONAME
     ??0PModem@@QAE@XZ @1581 NONAME
     ??0PMonitoredSocketBundle@@QAE@HPAVPSTUNClient@@@Z @1582 NONAME
-    ??0PMonitoredSocketChannel@@QAE@ABV?$PSafePtr@VPMonitoredSockets@@@@@Z @1583 NONAME
+    ??0PMonitoredSocketChannel@@QAE@ABV?$PSafePtr@VPMonitoredSockets@@@@H@Z @17063 NONAME
     ??0PMonitoredSockets@@IAE@HPAVPSTUNClient@@@Z @1584 NONAME
     ??0PMultiMediaFile@@QAE@XZ @1585 NONAME
     ??0PMultipartFormInfo@@QAE@XZ @1586 NONAME
@@ -2597,6 +2598,7 @@ EXPORTS
     ??1OnSessionEstablished_PNotifier@Roster@XMPP@@UAE@XZ @2595 NONAME
     ??1OnSessionReleased_PNotifier@Roster@XMPP@@UAE@XZ @2596 NONAME
     ??1OnSessionReleased_PSmartNotifier@Room@MUC@XMPP@@UAE@XZ @2597 NONAME
+    ??1OpenArgs@PVideoDevice@@QAE@XZ @17064 NONAME
     ??1Option@PHTML@@UAE@XZ @2598 NONAME
     ??1OrderedList@PHTML@@UAE@XZ @2599 NONAME
     ??1out_of_range@std@@UAE@XZ @2600 NONAME
@@ -12778,7 +12780,7 @@ EXPORTS
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@VAddress@PIPSocket@@@Z @12776 NONAME
     ?GetInterfaces@PInterfaceMonitor@@QAE?AVPStringArray@@HABVAddress@PIPSocket@@@Z @12777 NONAME
     ?GetInterfaces@PInterfaceMonitorClient@@UAE?AVPStringArray@@HABVAddress@PIPSocket@@@Z @12778 NONAME
-    ?GetInterfaces@PSingleMonitoredSocket@@UAE?AVPStringArray@@H@Z @12779 NONAME
+    ?GetInterfaces@PSingleMonitoredSocket@@UAE?AVPStringArray@@HABVAddress@PIPSocket@@@Z @17065 NONAME
     ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@H@Z @12780 NONAME
     ?GetInterval@PTimeInterval@@QBEKXZ @12781 NONAME
     ?GetIP@Psockaddr@@QBE?AVAddress@PIPSocket@@XZ @12782 NONAME
@@ -13059,6 +13061,8 @@ EXPORTS
     ?GetPosition@PFile@@UBEJXZ @13057 NONAME
     ?GetPosition@PMemoryFile@@UBEJXZ @13058 NONAME
     ?GetPosition@PVideoFile@@UBEJXZ @13059 NONAME
+    ?GetPosition@PVideoOutputDevice@@UBEHAAH0@Z @17066 NONAME
+    ?GetPosition@PVideoOutputDevice_Window@@UBEHAAH0@Z @17067 NONAME
     ?GetPosition@PWAVFile@@UBEJXZ @13060 NONAME
     ?GetPosition@PWAVFileConverterPCM@@UBEJABVPWAVFile@@@Z @13061 NONAME
     ?GetPostDialString@PModem@@QBE?AVPString@@XZ @13062 NONAME
@@ -13150,6 +13154,7 @@ EXPORTS
     ?GetSequence@PASNSequence@@UBEABV1@XZ @13148 NONAME
     ?GetServer@JID@XMPP@@QBE?AVPString@@XZ @13149 NONAME
     ?GetServer@PSTUNClient@@QBE?AVPString@@XZ @13150 NONAME
+    ?GetServer@PSTUNClient@@QBEXAAVAddress@PIPSocket@@AAG@Z @17068 NONAME
     ?GetServerName@PHTTPServer@@UBE?AVPString@@XZ @13151 NONAME
     ?GetService@NAPTR_DNS@@QBE?AVPString@@XZ @13152 NONAME
     ?GetService@PSocket@@QBE?AVPString@@XZ @13153 NONAME
@@ -14048,10 +14053,9 @@ EXPORTS
     ?IsOpen@PICMPSocket@@UBEHXZ @14046 NONAME
     ?IsOpen@PIndirectChannel@@UBEHXZ @14047 NONAME
     ?IsOpen@PLDAPSession@@QBEHXZ @14048 NONAME
-    ?IsOpen@PMonitoredSocketBundle@@UBEHXZ @14049 NONAME
     ?IsOpen@PMonitoredSocketChannel@@UBEHXZ @14050 NONAME
+    ?IsOpen@PMonitoredSockets@@QBEHXZ @17069 NONAME
     ?IsOpen@PPipeChannel@@UBEHXZ @14051 NONAME
-    ?IsOpen@PSingleMonitoredSocket@@UBEHXZ @14052 NONAME
     ?IsOpen@PSoundChannel@@UBEHXZ @14053 NONAME
     ?IsOpen@PSoundChannelDirectSound@@UBEHXZ @14054 NONAME
     ?IsOpen@PSoundChannelWin32@@UBEHXZ @14055 NONAME
@@ -14136,6 +14140,7 @@ EXPORTS
     ?IsValid@PTime@@QBEHXZ @14134 NONAME
     ?IsValid@PWAVFile@@QBEHXZ @14135 NONAME
     ?IsValid@SecurityID@@QBEHXZ @14136 NONAME
+    ?IsValidBindingForDestination@PInterfaceMonitor@@QAEHABVAddress@PIPSocket@@0@Z @17070 NONAME
     ?ItemChangedHandlers@Roster@XMPP@@UAEAAVPNotifierList@@XZ @14137 NONAME
     ?Juxtapose@PTones@@IAE_NIIII@Z @14138 NONAME
     ?KeepAliveTag@PHTTP@@SAABVPString@@XZ @14139 NONAME
@@ -15181,10 +15186,8 @@ EXPORTS
     ?ReadFrom@PLDAPAttr_surname@RTPerson@PILSSession@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15179 NONAME
     ?ReadFrom@PLDAPAttr_timestamp@RTPerson@PILSSession@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15180 NONAME
     ?ReadFrom@PMIMEInfo@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15181 NONAME
-    ?ReadFrom@PMonitoredSocketBundle@@UAEHPAXHAAVAddress@PIPSocket@@AAGAAVPString@@AAHABVPTimeInterval@@@Z @15182 NONAME
     ?ReadFrom@PObject@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15183 NONAME
     ?ReadFrom@POrdinalToString@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15184 NONAME
-    ?ReadFrom@PSingleMonitoredSocket@@UAEHPAXHAAVAddress@PIPSocket@@AAGAAVPString@@AAHABVPTimeInterval@@@Z @15185 NONAME
     ?ReadFrom@PSocksUDPSocket@@UAEHPAXHAAVAddress@PIPSocket@@AAG@Z @15186 NONAME
     ?ReadFrom@PSortedStringList@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15187 NONAME
     ?ReadFrom@PString@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15188 NONAME
@@ -15197,8 +15200,10 @@ EXPORTS
     ?ReadFrom@PTimeInterval@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15195 NONAME
     ?ReadFrom@PURL@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15196 NONAME
     ?ReadFrom@PWaveFormat@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @15197 NONAME
+    ?ReadFromBundle@PMonitoredSocketBundle@@UAE?AW4Errors@PChannel@@PAXHAAVAddress@PIPSocket@@AAGAAVPString@@AAHABVPTimeInterval@@@Z @17071 NONAME
+    ?ReadFromBundle@PSingleMonitoredSocket@@UAE?AW4Errors@PChannel@@PAXHAAVAddress@PIPSocket@@AAGAAVPString@@AAHABVPTimeInterval@@@Z @17072 NONAME
     ?ReadFromDXBuffer@PSoundChannelDirectSound@@AAEHPBXH@Z @15198 NONAME
-    ?ReadFromSocket@PMonitoredSockets@@IAEHAAUSocketInfo@1@PAXHAAVAddress@PIPSocket@@AAGAAHABVPTimeInterval@@@Z @15199 NONAME
+    ?ReadFromSocket@PMonitoredSockets@@IAE?AW4Errors@PChannel@@AAUSocketInfo@1@PAXHAAVAddress@PIPSocket@@AAGAAHABVPTimeInterval@@@Z @17073 NONAME
     ?ReadLine@PInternetProtocol@@UAEHAAVPString@@H@Z @15200 NONAME
     ?ReadLine@PTextFile@@QAEHAAVPString@@@Z @15201 NONAME
     ?ReadPacket@PEthSocket@@QAEHAAVPBYTEArray@@AATAddress@1@1AAGAAHAAPAE@Z @15202 NONAME
@@ -15233,7 +15238,7 @@ EXPORTS
     ?RefererTag@PHTTP@@SAABVPString@@XZ @15231 NONAME
     ?refMutex@PTextToSpeech_SAPI@@1VPCriticalSection@@A @15232 NONAME
     ?Refresh@Roster@XMPP@@UAEXH@Z @15233 NONAME
-    ?RefreshInterfaceList@PInterfaceMonitor@@MAEXXZ @15234 NONAME
+    ?RefreshInterfaceList@PInterfaceMonitor@@UAEXXZ @17074 NONAME
     ?Register@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@SAXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@1@@Z @15235 NONAME
     ?Register@?$PFactory@VPNatMethod@@VPString@@@@SAXABVPString@@PAVWorkerBase@1@@Z @15236 NONAME
     ?Register@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@SAXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@1@@Z @15237 NONAME
@@ -16344,11 +16349,11 @@ EXPORTS
     ?WriteString@PChannel@@QAEHABVPString@@@Z @16342 NONAME
     ?WriteTo@PIPDatagramSocket@@UAEHPBXHABVAddress@PIPSocket@@G@Z @16343 NONAME
     ?WriteTo@PIPXSocket@@UAEHPBXHABVAddress@1@G@Z @16344 NONAME
-    ?WriteTo@PMonitoredSocketBundle@@UAEHPBXHABVAddress@PIPSocket@@GABVPString@@AAH@Z @16345 NONAME
-    ?WriteTo@PSingleMonitoredSocket@@UAEHPBXHABVAddress@PIPSocket@@GABVPString@@AAH@Z @16346 NONAME
     ?WriteTo@PSocksUDPSocket@@UAEHPBXHABVAddress@PIPSocket@@G@Z @16347 NONAME
+    ?WriteToBundle@PMonitoredSocketBundle@@UAE?AW4Errors@PChannel@@PBXHABVAddress@PIPSocket@@GABVPString@@AAH@Z @17075 NONAME
+    ?WriteToBundle@PSingleMonitoredSocket@@UAE?AW4Errors@PChannel@@PBXHABVAddress@PIPSocket@@GABVPString@@AAH@Z @17076 NONAME
     ?WriteToDXBuffer@PSoundChannelDirectSound@@AAEHPBXH@Z @16348 NONAME
-    ?WriteToSocket@PMonitoredSockets@@IAEHPBXHABVAddress@PIPSocket@@GABUSocketInfo@1@AAH@Z @16349 NONAME
+    ?WriteToSocket@PMonitoredSockets@@IAE?AW4Errors@PChannel@@PBXHABVAddress@PIPSocket@@GABUSocketInfo@1@AAH@Z @17077 NONAME
     ?WriteTrap@PSNMP@@SAXAAVPChannel@@W4TrapType@1@ABVPString@@2HKABVPSNMPVarBindingList@@ABVAddress@PIPSocket@@@Z @16350 NONAME
     ?WWWAuthenticateTag@PHTTP@@SAABVPString@@XZ @16351 NONAME
     ?XmlDecl@PXMLParser@@UAEXPBD0H@Z @16352 NONAME
