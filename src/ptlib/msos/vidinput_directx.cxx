@@ -38,8 +38,8 @@
 
 #ifdef _MSC_VER
 #ifndef _WIN32_WCE
-#pragma comment(lib,"strmbase.lib")
 #pragma comment(lib,"strmiids.lib")
+#pragma comment(lib,"quartz.lib")
 #endif
 #endif
 
@@ -53,6 +53,28 @@ static const char *media_format_to_pwlib_format(const GUID guid);
 static char *guid_to_string(const GUID guid);
 
 PCREATE_VIDINPUT_PLUGIN(DirectShow);
+
+
+static void MyDeleteMediaType(AM_MEDIA_TYPE *pmt)
+{
+    if (pmt == NULL)
+	return;
+
+    if (pmt->cbFormat != 0)
+    {
+	CoTaskMemFree((PVOID)pmt->pbFormat);
+        pmt->cbFormat = 0;
+        pmt->pbFormat = NULL;
+    }
+    if (pmt->pUnk != NULL)
+    {
+        // Uncessessary because pUnk should not be used, but safest.
+        pmt->pUnk->Release();
+        pmt->pUnk = NULL;
+    }
+
+    CoTaskMemFree(pmt);
+}
 
 PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
 {
@@ -228,7 +250,6 @@ BOOL PVideoInputDevice_DirectShow::InitialiseCapture()
 PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
 {
     HRESULT hr;
-    IBaseFilter * pSrc = NULL;
     IMoniker *pMoniker =NULL;
     ICreateDevEnum *pDevEnum =NULL;
     IEnumMoniker *pClassEnum = NULL;
@@ -265,16 +286,8 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
         return list;
     }
 
-    while (1)
+    while (hr = pClassEnum->Next(1, &pMoniker, &cFetched), hr==S_OK)
     {
-	// Get the next device
-	hr = pClassEnum->Next(1, &pMoniker, &cFetched);
-	if (hr != S_OK)
-	{
-	    PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() No more video capture device");
-	    break;
-	}
-
 	// Get the property bag
 	IPropertyBag *pPropBag;
 
@@ -317,7 +330,7 @@ BOOL PVideoInputDevice_DirectShow::Open(const PString & devName, BOOL startImmed
 
     /* FIXME: If the device is already open, close it */
     if (IsOpen())
-	Close();
+	     return TRUE;
 
     deviceName = devName;
 
@@ -447,7 +460,6 @@ BOOL PVideoInputDevice_DirectShow::Start()
 
 BOOL PVideoInputDevice_DirectShow::Stop()
 {
-    HRESULT hr;
 
     PTRACE(1,"PVidDirectShow\tStop()");
 
@@ -475,19 +487,20 @@ BOOL PVideoInputDevice_DirectShow::IsCapturing()
 void PVideoInputDevice_DirectShow::FlipVertical(BYTE *buffer)
 {
     unsigned int bytesPerLine = frameBytes / frameHeight;
-    BYTE templine[bytesPerLine];
+	BYTE  * templine = new BYTE[bytesPerLine];
     BYTE *s = buffer;
     BYTE *d = buffer + frameBytes - bytesPerLine;
     unsigned int i;
 
     for (i=0; i<frameHeight/2; i++)
     {
-	memcpy(templine, s, bytesPerLine);
+	memcpy(&templine, s, bytesPerLine);
 	memcpy(s, d, bytesPerLine);
-	memcpy(d, templine, bytesPerLine);
+	memcpy(d, &templine, bytesPerLine);
 	s += bytesPerLine;
 	d -= bytesPerLine;
     }
+    delete templine;
 }
 
 /*
@@ -621,9 +634,9 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
     AM_MEDIA_TYPE *pMediaFormat;
     int iCount, iSize;
     VIDEO_STREAM_CONFIG_CAPS scc;
-    unsigned int i;
+    int i;
     BOOL was_capturing = FALSE;
-    OAFilterState filterState;
+    OAFilterState filterState = State_Stopped;
 
     PTRACE(4, "PVidDirectShow\tSetFormat(\""
 	      << (wanted_format.IsEmpty()?"Not changed":wanted_format) <<"\", "
@@ -662,7 +675,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
 	return FALSE;
     }
 
-    for (i=0; i<iCount; i++, DeleteMediaType(pMediaFormat))
+    for (i=0; i<iCount; i++, MyDeleteMediaType(pMediaFormat))
     {
 	pMediaFormat = NULL;
 	hr = pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc);
@@ -764,7 +777,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
 	}
 #endif
 
-	DeleteMediaType(pMediaFormat);
+	MyDeleteMediaType(pMediaFormat);
 	pStreamConfig->Release();
 	return TRUE;
     }
@@ -1025,6 +1038,12 @@ BOOL PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
 }
 
 
+BOOL PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & /*deviceName*/,InputDeviceCapabilities & /*caps*/)  
+{ 
+    // To do!
+    return FALSE; 
+}
+
 /*
  *
  *
@@ -1036,7 +1055,7 @@ BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
     AM_MEDIA_TYPE *pMediaFormat;
     int iCount, iSize;
     VIDEO_STREAM_CONFIG_CAPS scc;
-    unsigned int i;
+    int i;
 
     PTRACE(1, "PVidDirectShow\tListSupportedFormats()");
 
@@ -1087,7 +1106,7 @@ BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
 		    << (10000000.0/VideoInfo->AvgTimePerFrame) << "fps)");
 	}
 
-	DeleteMediaType(pMediaFormat);
+	MyDeleteMediaType(pMediaFormat);
     }
 
     pStreamConfig->Release();
@@ -1145,8 +1164,10 @@ BOOL PVideoInputDevice_DirectShow::GetDefaultFormat()
 
     }
 
-    DeleteMediaType(pMediaFormat);
+    MyDeleteMediaType(pMediaFormat);
     pStreamConfig->Release();
+
+	return TRUE;
 }
 
 
@@ -1207,8 +1228,13 @@ static const char *ErrorMessage(HRESULT hr)
     if (dwMsgLen)
 	return string;
 
+#ifdef __MINGW32__  // This function is not recognised in Windows
     snprintf(string, sizeof(string), "0x%8.8x", hr);
-    return string;
+	return string;
+#else
+	return PString();
+#endif
+    
 }
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
@@ -1312,20 +1338,17 @@ static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 }
 
 
-struct pwlib_fmt
-{
+struct {
     char *pwlib_format;
     GUID  media_format;
-};
-
-static struct pwlib_fmt formats[] =
+} formats[] =
 {
     {(char*) "Grey",    MEDIASUBTYPE_RGB8 },
     {(char*) "BGR32",   MEDIASUBTYPE_RGB32}, /* Microsoft assumes that we are in little endian */
     {(char*) "BGR24",   MEDIASUBTYPE_RGB24},
     {(char*) "RGB565",  MEDIASUBTYPE_RGB565},
     {(char*) "RGB555",  MEDIASUBTYPE_RGB555},
-    {(char*) "YUV420P", MEDIASUBTYPE_I420},
+    {(char*) "YUV420P", MEDIASUBTYPE_IYUV},  
     {(char*) "YUV422P", MEDIASUBTYPE_YUYV},
     {(char*) "YUV411",  MEDIASUBTYPE_Y411},
     {(char*) "YUV411P", MEDIASUBTYPE_Y41P},
@@ -1416,7 +1439,7 @@ static const char *media_format_to_pwlib_format(const GUID guid)
 	return "BGR24";
     else if (guid == MEDIASUBTYPE_RGB32)
 	return "BGR32";
-    else if (guid == MEDIASUBTYPE_I420)
+    else if (guid == MEDIASUBTYPE_IYUV)
 	return "I420";
     else
 	return guid_to_string(guid); /* FIXME: memory leak */
@@ -1436,30 +1459,5 @@ static char *guid_to_string(const GUID guid)
 
     return strdup(guid_string);
 }
-
-#ifdef __MINGW32__
-
-static void DeleteMediaType(AM_MEDIA_TYPE *pmt)
-{
-    if (pmt == NULL)
-	return;
-
-    if (pmt->cbFormat != 0)
-    {
-	CoTaskMemFree((PVOID)pmt->pbFormat);
-        pmt->cbFormat = 0;
-        pmt->pbFormat = NULL;
-    }
-    if (pmt->pUnk != NULL)
-    {
-        // Uncessessary because pUnk should not be used, but safest.
-        pmt->pUnk->Release();
-        pmt->pUnk = NULL;
-    }
-
-    CoTaskMemFree(pmt);
-}
-
-#endif
 
 #endif /*P_DIRECTSHOW*/
