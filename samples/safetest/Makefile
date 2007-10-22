@@ -41,7 +41,7 @@
 PROG = safetest
 SOURCES := main.cxx precompile.cxx
 
-include $(PWLIBDIR)/make/ptlib.mak
+include $(PTLIBDIR)/make/ptlib.mak
 
 ###############################################################################
 

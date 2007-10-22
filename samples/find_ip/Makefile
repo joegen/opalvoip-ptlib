@@ -3,10 +3,10 @@
 PROG    = find_ip
 SOURCES = find_ip.cxx
 
-ifndef PWLIBDIR
-PWLIBDIR=$(HOME)/pwlib
+ifndef PTLIBDIR
+PTLIBDIR=$(HOME)/ptlib
 endif
 
-include $(PWLIBDIR)/make/ptlib.mak
+include $(PTLIBDIR)/make/ptlib.mak
 
 # End of Makefile
