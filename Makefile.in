@@ -246,7 +246,7 @@ ptlib:
 	$(MAKE) -C src/ptlib/$(TARGETDIR) both
 
 docs: 
-	doxygen pwlib_cfg.dxy
+	doxygen ptlib_cfg.dxy
 
 install:
 	( for dir in $(DESTDIR)$(LIBDIR) \
