@@ -1,4 +1,4 @@
-/*! \mainpage Portable Windows Library
+/*! \mainpage Portable Tools Library
 
 \section contents Table of Contents
 
@@ -12,7 +12,7 @@
 
 \section intro Introduction
 
-This document provides reference information for the PWLib C++ class library. It is not intended
+This document provides reference information for the PTLib C++ class library. It is not intended
 as a tutorial document.
 
 Last updated 17 May, 2004
@@ -24,36 +24,39 @@ Portions Copyright (C) 2004 Post Increment, All Rights Reserved
 
 \section overview Overview
 
-PWLib is a moderately large C++ class library that originated many years ago as
+PTLib is a moderately large C++ class library that originated many years ago as
 a method to produce applications that run on both Microsoft Windows and Unix
 X-Windows systems. It also was to have a Macintosh port as well, but this never
-eventuated.
+eventuated. In those days it was called the PWLib the Portable Windows Library.
 
 Since then, the availability of multi-platform GUI toolkits such as KDE and wxWindows,
-and the development of the OpenH323 project as primary user of the library, 
+and the development of the OpenH323 and OPAL projects as primary user of the library, 
 has emphasised the focus on networking, I/O portability, multi-threading
-and portability. Mostly, the library is used to create high performance and
-highly portable network-centric applications.
+and protocol portability. Mostly, the library is used to create high performance and
+highly portable network-centric applications. So all the GUI abstractions ahave been
+dropped and it was renamed the Portable Tools Library that you see today.
 
-In addition to these high level functions, basic "container" classes such as arrays, linear lists,
-sorted lists (RB Tree) and dictionaries (hash tables) are available. These were
-created before the emergence of STL as a standard, so unfortunately these 
+In addition to these high level functions, basic "container" classes such as arrays,
+linear lists, sorted lists (RB Tree) and dictionaries (hash tables) are available. These
+were created before the emergence of STL as a standard, so unfortunately these 
 constructs are incompatible with iterators and generic algorithms.
-Development continues in this area, and future versions of PWLIB will see increased
-use of, and compatibility with, STL
 
-The library is used extensively by many companies for both commercial and Open Source products.
-The motivation in making PWLib available as Open Source was primarily to support the OpenH323 project,
-but it is definitely useful as a stand-alone library.
+Development continues in this area, and future versions of PTLib will see increased
+use of, and compatibility with, STL, but it is a long and slow process.
 
-The classes within PWLib are seperated into two types:
+The library is used extensively by many companies for both commercial and Open Source
+products. The motivation in making PTLib available as Open Source was primarily to
+support the OpenH323 and OPAL projects, but it is definitely useful as a stand-alone
+library to anyone that wishes to write portable applications.
+
+The classes within PTLib are seperated into two types:
 \ref base 
 and
 \ref components 
 The
 \ref base 
 contain all of the essential support for constructs such as containers, threads and sockets
-that are dependent on platform specific features. All PWLib programs will require the
+that are dependent on platform specific features. All PTLib programs will require the
 \ref base 
 
 The
@@ -67,14 +70,14 @@ may be divided
 into discrete library archives. Other platforms (notably Unix platforms) combine all of the code into a single library 
 and rely on the linker to omit code that is not required.
 
-Note that previous versions of PWLib also contained GUI classes and GUI components, but support for these
+Note that previous versions of PTLib also contained GUI classes and GUI components, but support for these
 classes has been discontinued.
 
-\section using Using PWLib
-Tutorial introductions for PWLib are available elsewhere (see http://toncar.cz/openh323/tut), but some 
+\section using Using PTLib
+Tutorial introductions for PTLib are available elsewhere (see http://toncar.cz/openh323/tut), but some 
 information on how to create a simple program is always useful.
 
-Here is the canonical "Hello world!" program written using the PWLib infrastructure.
+Here is the canonical "Hello world!" program written using the PTLib infrastructure.
 
 \verbatim
 
@@ -108,8 +111,8 @@ everything into your PProcess descedent rather than globals.
 \section base Base Classes
 
 \subsection object_h Base Object Classes
- \li PObject - the base class for all other classes in the PWLib
- \li PContainer - the base class for all reference-counted classes in PWLib
+ \li PObject - the base class for all other classes in the PTLib
+ \li PContainer - the base class for all reference-counted classes in PTLib
  \li PAbstractArray - base class for array of objects. Equivalent to the STL vector template class
  \li PAbstractList - base class for lists of objects. Equivalent to the STL list template class
  \li PAbstractDictionary - base class for dictionaries. Equivalent to the STL map template class
@@ -175,7 +178,7 @@ Implementation of the HTTP protocol
   \li PHTTPServiceProcess - a PServiceProcess descendant that contains a HTTP server
 
 \subsection protocol Protocol Classes
-Implementation of various Internet-related protocols. Some of these are implemented within PWLib - some require external libraries for support
+Implementation of various Internet-related protocols. Some of these are implemented within PTLib - some require external libraries for support
   \li PInternetProtocol - base class for all text-based Internet protocols
   \li PPOP3 - base class for POP3 protocol classes. See also PPOP3Client and PPOP3Server
   \li PSMTMP - base class for SMTP protocol classes. See also PSMTPClient and PSMTPServer

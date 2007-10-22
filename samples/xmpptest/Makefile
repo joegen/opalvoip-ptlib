@@ -45,6 +45,6 @@ STDCCFLAGS += `wx-config --cxxflags`
 
 LDFLAGS += `wx-config  --libs`
 
-include $(PWLIBDIR)/make/ptlib.mak
+include $(PTLIBDIR)/make/ptlib.mak
 
 

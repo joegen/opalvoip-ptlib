@@ -1,6 +1,3 @@
-ifndef PWLIBDIR
-PWLIBDIR = $(HOME)/pwlib
-endif
 
 PLUGIN_NAME	= v4l
 PLUGIN_FAMILY	= device/videoinput

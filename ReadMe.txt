@@ -5,15 +5,15 @@
 Contents
 --------
 
-	1.	Introduction
-	2.	Apologies
-	3.	CVS Access
-	4.	Building PTLib
-	5.	Using PTLib
-	6.  IPv6 issues
-	7.	Platform Specific Issues
-	8.	Conclusion
-	9.	Licensing
+   1.  Introduction
+   2.  Apologies
+   3.  CVS Access
+   4.  Building PTLib
+   5.  Using PTLib
+   6.  IPv6 issues
+   7.  Platform Specific Issues
+   8.  Conclusion
+   9.  Licensing
 
 
 
@@ -22,16 +22,16 @@ Contents
 1. Introduction
 ---------------
 
-PTLib (Portable Tools Library) is a moderately large class library that has it's genesis
-many years ago as PWLib (portable Windows Library), a method to product applications to run
-on both Microsoft Windows and Unix systems. It has also been ported to other systems such
-as Mac OSX, VxWorks and other embedded systems
+PTLib (Portable Tools Library) is a moderately large class library that has it's
+genesis many years ago as PWLib (portable Windows Library), a method to product
+applications to run on both Microsoft Windows and Unix systems. It has also been
+ported to other systems such as Mac OSX, VxWorks and other embedded systems
 
 Since then the system has grown to include many classes that assist in writing
-complete multi-platform applications. Classes for I/O portability, multi-threading
-portability, aid in producing unix daemons and NT services portably and all
-sorts of internet protocols were added over the years. So it became a Portable
-Tools Library and was renamed to PTLib.
+complete multi-platform applications. Classes for I/O portability, multi-
+threading portability, aid in producing unix daemons and NT services portably
+and all sorts of internet protocols were added over the years. So it became a
+Portable Tools Library and was renamed to PTLib.
 
 All this over and above basic "container" classes such as arrays, linear lists,
 sorted lists (RB Tree) and dictionaries (hash tables) which were all created
@@ -78,13 +78,13 @@ with the words "Why did you..." as the answer is quite likely to be "Because!"
 There is a public SVN archive available at svn.sourceforge.net. To extract, use a
 command line like the following:
 
-        cvs -z3 -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co module
+    cvs -z3 -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co module
 
 where "module" is one of the module names specified above.
 
 If you would like see the structure of the CVS, then use the View CVS tool at:
 
-	http://cvs.sourceforge.net/viewcvs.py/openh323/
+    http://cvs.sourceforge.net/viewcvs.py/openh323/
 
 
 ================================================================================
@@ -116,19 +116,18 @@ Actually, better yet, UPGRADE YOUR COMPILER!!!!
 Note that more complete instructions can be found at the following URL, but here 
 are the basics:
 
-	http://www.voxgratia.org/docs/ptlib_windows.html 
+    http://www.voxgratia.org/docs/ptlib_windows.html 
 
 1.  Note you will need the bison and flex tools to compile some parts of the
     system. You can get a copy from http://www.openh323.org/bin/flexbison.zip,
     follow the instructions included in that package and put the executables
     somewhere in your path.
 
-2.  Start MSVC (v5, v6 or v7 (.NET)). If you have another compiler you are on
-    your own! Add these folders to the Include Files path as follows:
+2.  Start DevStudio .NET 2003 or .NET 2005. MSVC v6 may work, but is no longer
+    actively supported. If you have another compiler you are on your own! Add
+    these directories to the Include Files path as follows:
     
-    In VisualStudio v5/6 go into the Tools menu, Options item, Directories tab.
-    
-    In VisualStudio v7, go into the Tools menu, Options item. In the Options
+    In VisualStudio v7/8, go into the Tools menu, Options item. In the Options
     dialog, open the Projects folder, VC++ Directories item. In the 'Show
     Directories for:' list, select 'Include files'.
 	
@@ -142,7 +141,12 @@ are the basics:
     directory to your PATH environment variable (so the MergeSym tool can 
     be found).
 
-2.  The build should automatically create a file ptlib/include/ptbuildopts.h
+3.  Open the ptlib.sln or ptlib_2005.sln file for DevStudio 2003 or 2005
+    respectively.
+
+4.  Select Release mode and build MergeSym.
+
+    The build should automatically create a file ptlib/include/ptbuildopts.h
     via the configure.exe program that should be in the ptlib directory. If
     you have any problems try running the program directly from a command
     line. Use ".\configure --help" to get information on options such as
@@ -152,13 +156,10 @@ are the basics:
     to compile the various libraries in a manner suitable for use by PTLib
     under Windows.
 
-3.  In VisualStudio v5/6 open the ptlib.dsw file in the ptlib top directory.
-    If you have the minimum library it will come up with several requests to
-    find .dsp files, just cancel past these.
-	
-    In VisualStudio v7 open the ptlib.sln file in the ptlib top directory.
+5.  You can then build the entire solution for Release, Debug and No Trace
+    versions as you require.
 
-4.  That's it, now you're on your own!
+5.  That's it, now you're on your own!
 
 
 
@@ -182,9 +183,10 @@ MSDevWizard will not build in VisualStudio v7 and so is not included as a projec
 --------------
 
 1.	If you have not put ptlib it into your home directory (~/ptlib) then
-	you will have to defined the environment variable PWLIBDIR to point to
+	you will have to defined the environment variable PTLIBDIR to point to
 	the correct directory.
-        Also make sure you have added the $PWLIBDIR/lib directory to your 
+
+        Also make sure you have added the $PTLIBDIR/lib directory to your 
         LD_LIBRARY_PATH environment variable if you intend to use shared 
         libraries (the default).
 
@@ -301,18 +303,18 @@ program.
 PROG    = hello
 SOURCES = hello.cxx
 
-ifndef PWLIBDIR
+ifndef PTLIBDIR
 PTLIBDIR=$(HOME)/ptlib
 endif
 
-include $(PWLIBDIR)/make/ptlib.mak
+include $(PTLIBDIR)/make/ptlib.mak
 
 # End of Makefile
 
 
 
 --------------------------------------------------------------------------------
-5.2. PWlib Classes
+5.2. PTlib Classes
 ------------------
 
 The classes in PTLib fall into the following broad categories
@@ -350,12 +352,11 @@ Linux and FreeBSD) and cooperative on those that don't.
 6. IPv6 support in ptlib
 ------------------------
 
-The IPv6 support in ptlib is still experimental. You have to get the latest
-CVS version to compile it (does work since 7th November 2002). Pwlib can be
-compiled with or without the IPv6 support.
+The IPv6 support in PTlib is supported and can be enabled or disabled via
+the configure program.
 
 When compiled with the IPv6 support, applications using only IPv4 are still 
-fully backward compatible. Pwlib is able to manage simultaneously IPv4 and
+fully backward compatible. PTLib is able to manage simultaneously IPv4 and
 IPv6 connections.
 
 
@@ -804,7 +805,7 @@ that PTLib uses.
 ----------------------------
 The standard build for OpenSSL off http://www.openssl.org does work though it
 is rather tricky and requires things like Perl to be installed on your
-Windows box. However the build does work and is correct for PWlib use. Make
+Windows box. However the build does work and is correct for PTlib use. Make
 sure you build the non-DLL Debug and Release versions.
 
 7.8.2. EXPAT under Windows
