@@ -756,10 +756,10 @@
 //
 #undef USE_SYSTEM_SWAB
 
-#undef	PWLIB_MAJOR
-#undef	PWLIB_MINOR
-#undef	PWLIB_BUILD
-#undef	PWLIB_VERSION
+#undef	PTLIB_MAJOR
+#undef	PTLIB_MINOR
+#undef	PTLIB_BUILD
+#undef	PTLIB_VERSION
 
 #undef	P_64BIT
 #undef	PHAS_TEMPLATES
