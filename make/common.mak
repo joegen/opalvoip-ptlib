@@ -283,7 +283,7 @@
 ######################################################################
 
 # Submodules built with make lib
-LIBDIRS += $(PWLIBDIR)
+LIBDIRS += $(PTLIBDIR)
 
 
 ifndef OBJDIR
@@ -294,12 +294,12 @@ vpath %.cxx $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
 vpath %.dep $(DEPDIR)
-vpath %.gch $(PWLIBDIR)/include
+vpath %.gch $(PTLIBDIR)/include
 
 #
-# add common directory to include path - must be after PW and PT directories
+# add common directory to include path - must be after PT directories
 #
-STDCCFLAGS	+= -I$(PWLIBDIR)/include
+STDCCFLAGS	+= -I$(PTLIBDIR)/include
 
 ifneq ($(P_SHAREDLIB),1)
 
@@ -380,10 +380,10 @@ ifdef BUILDFILES
 OBJS += $(OBJDIR)/buildnum.o
 endif
 
-TARGET_LIBS	= $(PWLIBDIR)/lib/$(PTLIB_FILE)
+TARGET_LIBS	= $(PTLIBDIR)/lib/$(PTLIB_FILE)
 
 # distinguish betweek building and using pwlib
-ifeq (,$(wildcard $(PWLIBDIR)/src))
+ifeq (,$(wildcard $(PTLIBDIR)/src))
 TARGET_LIBS     = $(SYSLIBDIR)/$(PTLIB_FILE)
 endif
 
@@ -392,7 +392,7 @@ ifeq ($(OSTYPE),beos)
 # BeOS won't find dynamic libraries unless they are in one of the system
 # library directories or in the lib directory under the application's
 # directory
-	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PW_LIBDIR) lib; fi
+	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PT_LIBDIR) lib; fi
 endif
 	$(CPLUS) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 ifeq ($(OSTYPE),VxWorks)
@@ -401,16 +401,16 @@ endif
 
 ifdef DEBUG
 
-ifneq (,$(wildcard $(PWLIBDIR)/src/ptlib/unix))
-$(PW_LIBDIR)/$(PTLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix debug
+ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
+$(PT_LIBDIR)/$(PTLIB_FILE):
+	$(MAKE) -C $(PTLIBDIR)/src/ptlib/unix debug
 endif
 
 else
 
-ifneq (,$(wildcard $(PWLIBDIR)/src/ptlib/unix))
-$(PW_LIBDIR)/$(PTLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix opt
+ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
+$(PT_LIBDIR)/$(PTLIB_FILE):
+	$(MAKE) -C $(PTLIBDIR)/src/ptlib/unix opt
 endif
 
 endif
@@ -426,11 +426,11 @@ endif
 # ifdef PROG
 endif
 
-$(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PWLIBDIR)/include/ptlib.h
+$(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PTLIBDIR)/include/ptlib.h
 	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -x c++ -c $< -o $@
 
-PCH_FILES =	$(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
+PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
 
 #ifdef USE_PCH
 #PCH:		$(PCH_FILES)
