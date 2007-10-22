@@ -389,6 +389,13 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     virtual PStringList GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
+	/**Retrieve a list of Device Capabilities
+	  */
+	static BOOL GetDeviceCapabilities(
+      const PString & /*deviceName*/,           ///< Name of device
+	  InputDeviceCapabilities & /*caps*/        ///< List of supported capabilities
+	  )  { return FALSE; }
+
     /**Open the device given the device name.
       */
     virtual BOOL Open(
