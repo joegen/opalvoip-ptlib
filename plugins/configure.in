@@ -3,15 +3,6 @@ AC_INIT(../include/ptlib.h)
 AC_PROG_CXX
 
 dnl ########################################################################
-dnl set the PWLIB directory to the current directory
-
-PWLIBDIR=`pwd`
-echo "Plugin source directory is $PWLIBDIR";
-AC_SUBST(PWLIBDIR)
-dnl set the pwlib installation dir for pwlib-config
-AC_SUBST(PWINSTDIR)
-
-dnl ########################################################################
 dnl set the PREFIX accordingly
 if test "x$prefix" = "xNONE"; then
    INSTALLPREFIX="/usr/local"
@@ -113,7 +104,7 @@ fi
 fi # enable_audio
 
 AC_ARG_ENABLE(video,
-       [  --disable-video         disable video device support in PWLIB])
+       [  --disable-video         disable video device support])
 
 if test "${enable_video}z" = "z" ; then
   enable_video=yes
