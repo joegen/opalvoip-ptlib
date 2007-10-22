@@ -160,18 +160,18 @@
 # Log truncated by CRS 14 April 2003
 #
 
-ifndef PWLIBDIR
-	echo "No PWLIBDIR environment variable defined!"
-	echo "You need to define PWLIBDIR!"
+ifndef PTLIBDIR
+	echo "No PTLIBDIR environment variable defined!"
+	echo "You need to define PTLIBDIR!"
 	echo "Try something like:"
-	echo "PWLIBDIR = $(HOME)/pwlib"
+	echo "PTLIBDIR = $(HOME)/ptlib"
 	exit 1
 endif
 
 ####################################################
 
 # include generated build options file, then include it
-include $(PWLIBDIR)/make/ptbuildopts.mak
+include $(PTLIBDIR)/make/ptbuildopts.mak
 
 ###############################################################################
 #
@@ -454,7 +454,7 @@ endif # P_SHAREDLIB
 
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
-SYSLIBDIR	:= $(shell $(PWLIBDIR)/make/ptlib-config --libdir)
+SYSLIBDIR	:= $(shell $(PTLIBDIR)/make/ptlib-config --libdir)
 
 endif # linux
 
@@ -503,7 +503,7 @@ endif
 
 LDLIBS		+= -lossaudio
 
-STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include
+STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PTLIBDIR)/include
 
 # enable the USE_PTH line to compile using pth
 # enable the USE_NATIVE_THREADS line to compile using native threads
@@ -820,13 +820,13 @@ STDCCFLAGS	+= -I$(NUCLEUSDIR)/plus \
 		-I$(NUCLEUSDIR)/plusplus \
 		-I$(NUCLEUSDIR)/net \
 		-I$(NUCLEUSDIR) \
-		-I$(PWLIBDIR)/include/ptlib/Nucleus++ \
+		-I$(PTLIBDIR)/include/ptlib/Nucleus++ \
 		-I$(WORK)/embedded/libraries/socketshim/BerkleySockets \
 		-I${STLDIR} \
 		-I/usr/local/powerpc-motorola-eabi/include \
 		-I${WORK}/embedded/libraries/configuration
 
-UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/Nucleus++
+UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/Nucleus++
 MEMORY_CHECK	=	0
 endif # Nucleus
 
@@ -940,26 +940,20 @@ SHELL		:= /bin/sh
 ifdef PREFIX
 UNIX_INC_DIR	= $(PREFIX)/include/ptlib/unix
 else
-UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
+UNIX_INC_DIR	= $(PTLIBDIR)/include/ptlib/unix
 endif
 
 ifndef UNIX_SRC_DIR
-UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
+UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/unix
 endif
 
-PW_LIBDIR	= $(PWLIBDIR)/lib
+PT_LIBDIR	= $(PTLIBDIR)/lib
 
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
-PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
-
-# set name of the PW library (may not be used)
-PWLIB_BASE	= pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
-PW_OBJBASE	= obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
-PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
+PT_OBJDIR	= $(PT_LIBDIR)/$(PT_OBJBASE)
 
 ###############################################################################
 #
@@ -1000,7 +994,7 @@ endif
 
 # feature migrated to configure.in
 # #define templates if available
-# ifndef NO_PWLIB_TEMPLATES
+# ifndef NO_PTLIB_TEMPLATES
 # STDCCFLAGS	+= -DPHAS_TEMPLATES
 # endif
 
@@ -1015,7 +1009,7 @@ endif
 
 
 # add library directory to library path and include the library
-LDFLAGS		+= -L$(PW_LIBDIR)
+LDFLAGS		+= -L$(PT_LIBDIR)
 
 LDLIBS		+= -l$(PTLIB_BASE)$(LIB_TYPE)
 
