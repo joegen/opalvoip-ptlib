@@ -4,12 +4,12 @@
 # apparently shamelessly ripped from gtk's gtk-config.in
 #
 
-VERSION="@PWLIB_VERSION@"
+VERSION="@PTLIB_VERSION@"
 CCFLAGS="@STDCCFLAGS@"
 LDFLAGS="@LDFLAGS@"
 LIBS="@ENDLDLIBS@ -lpt"
 LIBDIR="@LIBDIR@"
-PWINSTDIR="@INSTALLPREFIX@/share/pwlib"
+PTINSTDIR="@INSTALLPREFIX@/share/ptlib"
 MACHTYPE="@MACHTYPE@"
 OSTYPE="@OSTYPE@"
 OSRELEASE="@OSRELEASE@"
@@ -17,7 +17,7 @@ SHAREDLIBEXT="@SHAREDLIBEXT@"
 INSTALLPREFIX="@INSTALLPREFIX@"
 
 # usage="Usage: ptlib-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--libs] [--cflags]"
-usage="Usage: ptlib-config [--version] [--pwlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext] [--prefix] [--libdir]"
+usage="Usage: ptlib-config [--version] [--ptlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext] [--prefix] [--libdir]"
 
 if test $# -eq 0; then
       echo "${usage}" 1>&2
@@ -34,8 +34,8 @@ while test $# -gt 0; do
     --version)
       echo $VERSION
       ;;
-    --pwlibdir)
-      echo $PWINSTDIR
+    --ptlibdir)
+      echo $PTINSTDIR
       ;;
     --ldflags)
       echo $LDFLAGS
@@ -66,7 +66,7 @@ while test $# -gt 0; do
       ;;
     --all)
       echo VERSION      = $VERSION
-      echo PWLIBDIR     = $PWINSTDIR
+      echo PTLIBDIR     = $PTINSTDIR
       echo LDFLAGS      = $LDFLAGS
       echo CCFLAGS      = $CCFLAGS
       echo LIBS         = $LIBS

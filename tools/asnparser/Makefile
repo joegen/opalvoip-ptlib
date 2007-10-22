@@ -47,8 +47,8 @@
 #
 
 
-ifndef PWLIBDIR
-PWLIBDIR=$(HOME)/pwlib
+ifndef PTLIBDIR
+PTLIBDIR=$(HOME)/ptlib
 endif
 
 PROG		= asnparser
@@ -57,7 +57,7 @@ SOURCES		= asn_grammar.cxx asn_lex.cxx main.cxx
 CLEAN_FILES	= asn_grammar.cxx asn_grammar.h asn_grammar.output asn_lex.cxx asnparser.txt
 
 
-include $(PWLIBDIR)/make/ptlib.mak
+include $(PTLIBDIR)/make/ptlib.mak
 
 asn_grammar.cxx: asn_grammar.y
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
