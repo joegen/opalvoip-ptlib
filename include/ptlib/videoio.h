@@ -267,6 +267,7 @@
 
 #include <ptlib/plugin.h>
 #include <ptlib/pluginmgr.h>
+#include <list>
 
 class PColourConverter;
 
@@ -963,6 +964,15 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
 
 #endif // SHOULD_BE_MOVED_TO_PLUGIN
 
+typedef struct {
+public:
+	unsigned      height;
+	unsigned      width;
+	const char*   format;
+	double        fps;
+} InputDeviceCapability; 
+
+typedef std::list<InputDeviceCapability>  InputDeviceCapabilities;
 
 /**This class defines a video input device.
  */
@@ -1035,6 +1045,13 @@ class PVideoInputDevice : public PVideoDevice
       BOOL startImmediate = TRUE          ///< Immediately start display
     );
 
+	/**Retrieve a list of Device Capabilities
+	  */
+	static BOOL GetDeviceCapabilities(
+      const PString & /*deviceName*/,           ///< Name of device
+	  InputDeviceCapabilities & /*caps*/        ///< List of supported capabilities
+	) { return FALSE; }
+
     /**Open the device given the device name.
       */
     virtual BOOL Open(
@@ -1089,6 +1106,8 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   public:
     virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
     virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
+	virtual BOOL GetDeviceCapabilities(const PString & deviceName, InputDeviceCapabilities & caps) const
+	                                  { return className::GetDeviceCapabilities(deviceName,caps); }
 };
 
 #define PCREATE_VIDINPUT_PLUGIN(name) \
