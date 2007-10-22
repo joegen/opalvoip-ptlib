@@ -10,7 +10,7 @@ Contents
 	3.	CVS Access
 	4.	Building PTLib
 	5.	Using PTLib
-    6.  IPv6 issues
+	6.  IPv6 issues
 	7.	Platform Specific Issues
 	8.	Conclusion
 	9.	Licensing
@@ -22,12 +22,10 @@ Contents
 1. Introduction
 ---------------
 
-PTLib is a moderately large class library that has its genesis many years ago as
-PWLib (portable Windows Library), a method to product applications to run on both
-Microsoft Windows and Unix X-Windows systems. It also was to have a Macintosh port
-as well but that never eventuated. The parts of the library relating to GUI
-functions have long been removed as other class libraries such as wxWidgets were
-much more advanced.
+PTLib (Portable Tools Library) is a moderately large class library that has it's genesis
+many years ago as PWLib (portable Windows Library), a method to product applications to run
+on both Microsoft Windows and Unix systems. It has also been ported to other systems such
+as Mac OSX, VxWorks and other embedded systems
 
 Since then the system has grown to include many classes that assist in writing
 complete multi-platform applications. Classes for I/O portability, multi-threading
