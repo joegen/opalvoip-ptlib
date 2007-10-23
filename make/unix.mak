@@ -161,11 +161,15 @@
 #
 
 ifndef PTLIBDIR
+ifdef PWLIBDIR
+PTLIBDIR := $(PWLIBDIR)
+else
 	echo "No PTLIBDIR environment variable defined!"
 	echo "You need to define PTLIBDIR!"
 	echo "Try something like:"
 	echo "PTLIBDIR = $(HOME)/ptlib"
 	exit 1
+endif
 endif
 
 ####################################################
