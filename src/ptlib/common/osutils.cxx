@@ -1209,8 +1209,8 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
                << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
-        if (name.GetLength() <= 12)
-          stream << setw(12) << name;
+        if (name.GetLength() <= 23)
+          stream << setw(23) << name;
         else
           stream << name.Left(10) << "..." << name.Right(10);
       }
