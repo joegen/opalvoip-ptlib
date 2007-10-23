@@ -1366,7 +1366,7 @@ PTimer::PTimer(const PTimeInterval & time)
 
 void PTimer::Construct()
 {
-  state = Starting;
+  state = Stopped;
 
   timerList = PProcess::Current().GetTimerList();
 
