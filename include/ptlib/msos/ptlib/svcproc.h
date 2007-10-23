@@ -142,6 +142,7 @@
 
   protected:
     PCaselessString systemLogFileName;
+    BOOL debugHidden; /// Flag to indicate service is run in simulation mode without showing the control window 
 
   private:
     static void __stdcall StaticMainEntry(DWORD argc, LPTSTR * argv);
