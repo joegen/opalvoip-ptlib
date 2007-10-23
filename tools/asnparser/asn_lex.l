@@ -99,6 +99,7 @@ extern unsigned lineNumber;
 int LexEcho = FALSE;
 #define YY_USER_ACTION if (LexEcho) cout << yytext << flush;
 
+extern ModuleDefinition * Module;
 
 int ReferenceTokenContext = MODULEREFERENCE;
 int IdentifierTokenContext = IDENTIFIER;
@@ -124,6 +125,7 @@ static int TokenSelect(int context, int token1, int token2)
 %option nounput nodefault never-interactive
 
 %x comment_line
+%x cstyle_comment_line
 
 %%
 
@@ -182,6 +184,7 @@ static int TokenSelect(int context, int token1, int token2)
 "OCTET"                            { return OCTET; }
 "OF"                               { return OF_t; }
 "OPTIONAL"                         { return OPTIONAL_t; }
+"PATTERN"                          { return PATTERN_t; }
 "PDV"                              { return PDV; }
 "PLUS-INFINITY"                    { return PLUS_INFINITY; }
 "PRESENT"                          { return PRESENT; }
@@ -248,6 +251,22 @@ static int TokenSelect(int context, int token1, int token2)
   }
 
 <comment_line>. {
+}
+
+
+"/*" {
+   BEGIN(cstyle_comment_line);
+}
+
+<cstyle_comment_line>\n {
+   lineNumber++;
+}
+
+<cstyle_comment_line>"*/" {
+   BEGIN(INITIAL);
+}
+
+<cstyle_comment_line>. {
 }
 
 
@@ -341,9 +360,20 @@ static int TokenSelect(int context, int token1, int token2)
 
 ([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.680 section 9.2 */
     yylval.sval = new PString(yytext);
+
+   if( Module != NULL )
+   {
+      if( Module->IsImportModule( *yylval.sval ) )
+      {
+       return MODULEREFERENCE;
+      }
+   }
     if (CurrentImportList != NULL &&
 	CurrentImportList->GetValuesIndex(SearchType(*yylval.sval)) != P_MAX_INDEX)
+    {
+       PError << "IMPORT_IDENTIFIER" << endl;
       return IMPORT_IDENTIFIER;
+    }
     return ReferenceTokenContext;
   }
 
