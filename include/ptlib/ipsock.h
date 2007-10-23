@@ -776,7 +776,16 @@ class PIPSocket : public PSocket
      */
     static PString GetGatewayInterface();
 
- #ifdef _WIN32
+    /** Get the interface address that will be used to reach the specified
+        remote address. Uses longest prefix match when multiple matching interfaces
+        are found.
+
+       @return
+       Network interface address.
+      */
+    static PIPSocket::Address GetRouteInterfaceAddress(PIPSocket::Address remoteAddress);
+
+#ifdef _WIN32
     /** Get the IP address for the interface that is being used as the gateway,
        that is, the interface that packets on the default route will be sent.
 
