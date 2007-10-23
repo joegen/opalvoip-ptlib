@@ -552,8 +552,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
         if (h > maxfds)
           maxfds = h;
       }
-      socket.px_selectMutex.Wait();
-      socket.px_selectThread = unblockThread;
+      socket.px_selectMutex[i].Wait();
+      socket.px_selectThread[i] = unblockThread;
     }
   }
 
@@ -572,8 +572,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
   for (i = 0; i < 3; i++) {
     for (j = 0; j < list[i]->GetSize(); j++) {
       PSocket & socket = (*list[i])[j];
-      socket.px_selectThread = NULL;
-      socket.px_selectMutex.Signal();
+      socket.px_selectThread[i] = NULL;
+      socket.px_selectMutex[i].Signal();
       if (lastError == NoError) {
         int h = socket.GetHandle();
         if (h < 0)
@@ -614,8 +614,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
         if (h > maxfds)
           maxfds = h;
       }
-      socket.px_selectMutex.Wait();
-      socket.px_selectThread = unblockThread;
+      socket.px_selectMutex[i].Wait();
+      socket.px_selectThread[i] = unblockThread;
     }
   }
 
@@ -644,8 +644,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
   for (i = 0; i < 3; i++) {
     for (j = 0; j < list[i]->GetSize(); j++) {
       PSocket & socket = (*list[i])[j];
-      socket.px_selectThread = NULL;
-      socket.px_selectMutex.Signal();
+      socket.px_selectThread[i] = NULL;
+      socket.px_selectMutex[i].Signal();
       if (lastError == NoError) {
         int h = socket.GetHandle();
         if (h < 0)
