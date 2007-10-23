@@ -2752,6 +2752,56 @@ BOOL PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
   return addr.IsValid();
 }
 
+
+PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remoteAddress)
+{
+  PIPSocket::InterfaceTable hostInterfaceTable;
+  PIPSocket::GetInterfaceTable(hostInterfaceTable);
+
+  PIPSocket::RouteTable hostRouteTable;
+  PIPSocket::GetRouteTable(hostRouteTable);
+
+  if (hostInterfaceTable.IsEmpty())
+    return PIPSocket::GetDefaultIpAny();
+
+  for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
+    if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
+      PTRACE(5, "PWLib\tRoute packet for " << remoteAddress
+             << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+             << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+      return hostInterfaceTable[IfaceIdx].GetAddress();
+    }
+  }
+
+  PIPSocket::RouteEntry * route = NULL;
+  for (PINDEX routeIdx = 0; routeIdx < hostRouteTable.GetSize(); routeIdx++) {
+    PIPSocket::RouteEntry & routeEntry = hostRouteTable[routeIdx];
+
+    DWORD network = (DWORD) routeEntry.GetNetwork();
+    DWORD mask = (DWORD) routeEntry.GetNetMask();
+
+    if (((DWORD)remoteAddress & mask) == network) {
+      if (route == NULL)
+        route = &routeEntry;
+      else if ((DWORD)routeEntry.GetNetMask() > (DWORD)route->GetNetMask())
+        route = &routeEntry;
+    }
+  }
+
+  if (route != NULL) {
+    for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
+      if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
+        PTRACE(5, "PWLib\tRoute packet for " << remoteAddress
+               << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+               << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+        return hostInterfaceTable[IfaceIdx].GetAddress();
+      }
+    }
+  }
+
+  return PIPSocket::GetDefaultIpAny();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
 
