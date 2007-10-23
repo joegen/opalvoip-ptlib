@@ -43,7 +43,7 @@
 ifndef PTLIBDIR
 
 ifdef PWLIBDIR
-PTLIBDIR=$PWLIBDIR
+PTLIBDIR=$(PWLIBDIR)
 else
 
 $(error No PTLIBDIR environment variable defined! \
