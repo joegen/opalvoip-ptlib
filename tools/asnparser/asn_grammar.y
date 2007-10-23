@@ -194,6 +194,7 @@ static PString * ConcatNames(PString * s1, char c, PString * s2)
 %token OCTET            
 %token OF_t              
 %token OPTIONAL_t
+%token PATTERN_t              
 %token PDV              
 %token PLUS_INFINITY    
 %token PRESENT          
@@ -318,6 +319,7 @@ static PString * ConcatNames(PString * s1, char c, PString * s2)
 %type <tval> NullType
 %type <tval> ObjectClassFieldType
 %type <tval> ObjectIdentifierType
+%type <tval> PatternType 
 %type <tval> OctetStringType 
 %type <tval> RealType
 %type <tval> SequenceType ComponentType ComponentTypeLists
@@ -688,6 +690,7 @@ BuiltinType
   | ObjectClassFieldType
   | ObjectIdentifierType 
   | OctetStringType 
+  | PatternType 
   | RealType 
   | SequenceType 
   | SequenceOfType 
@@ -727,7 +730,8 @@ DefinedType
 ExternalTypeReference
   : MODULEREFERENCE '.' TYPEREFERENCE
       {
-	*$1 += *$3;
+//	*$1 += *$3;
+   *$1 = *$3;
 	delete $3;
       }
   ;
@@ -1021,6 +1025,14 @@ OctetStringType
   ;
 
 
+PatternType
+  : PATTERN_t CSTRING
+      {
+	$$ = new OctetStringType;
+      }
+  ;
+
+
 RealType
   : REAL
       {
@@ -1267,7 +1279,7 @@ Constraint
 	$$ = $2;
       }
   ;
-
+ 
 ConstraintSpec
   : ElementSetSpecs
   | GeneralConstraint
