@@ -1048,9 +1048,19 @@ class PVideoInputDevice : public PVideoDevice
 	/**Retrieve a list of Device Capabilities
 	  */
 	static BOOL GetDeviceCapabilities(
-      const PString & /*deviceName*/,           ///< Name of device
-	  InputDeviceCapabilities & /*caps*/        ///< List of supported capabilities
-	) { return FALSE; }
+      const PString & deviceName,           ///< Name of device
+	  InputDeviceCapabilities * caps,       ///< List of supported capabilities
+	  PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
+	);
+
+	/**Retrieve a list of Device Capabilities for a particular driver
+	  */
+	static BOOL GetDeviceCapabilities(
+      const PString & deviceName,           ///< Name of device
+	  const PString & driverName,           ///< Device Driver
+	  InputDeviceCapabilities * caps,       ///< List of supported capabilities
+	  PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
+	);
 
     /**Open the device given the device name.
       */
@@ -1106,8 +1116,8 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   public:
     virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
     virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
-	virtual BOOL GetDeviceCapabilities(const PString & deviceName, InputDeviceCapabilities & caps) const
-	                                  { return className::GetDeviceCapabilities(deviceName,caps); }
+	virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
+	                       { return className::GetDeviceCapabilities(deviceName,(InputDeviceCapabilities *)caps); }
 };
 
 #define PCREATE_VIDINPUT_PLUGIN(name) \

@@ -156,7 +156,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 	  */
 	static BOOL GetDeviceCapabilities(
       const PString & /*deviceName*/,           ///< Name of device
-	  InputDeviceCapabilities & /*caps*/        ///< List of supported capabilities
+	  InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
 	  )  { return FALSE; }
 
     /**Get the maximum frame size in bytes.

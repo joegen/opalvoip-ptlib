@@ -1193,7 +1193,7 @@ PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
   colourFormat = "RGB24";
   bytesPerPixel = 3;
   swappedRedAndBlue = false;
-  SetFrameSize(frameWidth, frameHeight);
+//  SetFrameSize(frameWidth, frameHeight);
 }
 
 
@@ -1202,22 +1202,22 @@ BOOL PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
   PWaitAndSignal m(mutex);
 
   PINDEX newBytesPerPixel;
-  bool newSwappedRedAndBlue;
+
   if (colourFormat *= "RGB32") {
     newBytesPerPixel = 4;
-    newSwappedRedAndBlue = false;
+    swappedRedAndBlue = false;
   }
   else if (colourFormat *= "RGB24") {
     newBytesPerPixel = 3;
-    newSwappedRedAndBlue = false;
+    swappedRedAndBlue = false;
   }
   else if (colourFormat *= "BGR32") {
     newBytesPerPixel = 4;
-    newSwappedRedAndBlue = true;
+    swappedRedAndBlue = true;
   }
   else if (colourFormat *= "BGR24") {
     newBytesPerPixel = 3;
-    newSwappedRedAndBlue = true;
+    swappedRedAndBlue = true;
   }
   else
     return FALSE;
@@ -1408,6 +1408,20 @@ PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & device
   return (PVideoInputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoInputPluginBaseClass,0,driverName);
 }
 
+BOOL PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName,InputDeviceCapabilities * caps, PPluginManager * pluginMgr)
+{
+	return GetDeviceCapabilities(deviceName, "*",caps,pluginMgr);
+}
+
+BOOL PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName,const PString & driverName, InputDeviceCapabilities * caps, PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, (void *)caps);
+}
+
+
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driverName,
                                                           const PString & deviceName,
@@ -1441,7 +1455,6 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
   delete device;
   return NULL;
 }
-
 
 BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {
