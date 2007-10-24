@@ -190,6 +190,17 @@ void VidTest::Main()
   PString inputDeviceName = args.GetOptionString("input-device");
   if (inputDeviceName.IsEmpty())
     inputDeviceName = devices[0];
+
+  InputDeviceCapabilities caps;
+   if (PVideoInputDevice::GetDeviceCapabilities(inputDeviceName,inputDriverName,&caps)) {
+		  cout << "Grabber " << inputDeviceName << " capabilities." << endl;
+	  for (std::list<InputDeviceCapability>::const_iterator r = caps.begin(); r != caps.end(); ++r) {
+		  cout << "        w: " << r->width << " h: " << r->height << " fmt: " << r->format << " fps: " << r->fps << endl;
+	  }
+	  cout << endl;
+   } else {
+     cout << "InputDevice " << inputDeviceName << " capabilities not Available." << endl;
+   }
     
   if (grabber == NULL)
     grabber = PVideoInputDevice::CreateDeviceByName(inputDeviceName);
@@ -332,8 +343,11 @@ void VidTest::Main()
 
   cout << "Display frame size set to " << display->GetFrameWidth() << 'x' << display->GetFrameHeight() << endl;
 
-
+#ifdef _WIN32  // Must be BGR for the colour to appear correct
+  PCaselessString colourFormat = args.GetOptionString("colour-format", "BGR24").ToUpper();
+#else
   PCaselessString colourFormat = args.GetOptionString("colour-format", "RGB24").ToUpper();
+#endif
   if (!grabber->SetColourFormatConverter(colourFormat) ) {
     cerr << "Video input device could not be set to colour format \"" << colourFormat << '"' << endl;
     return;
