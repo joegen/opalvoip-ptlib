@@ -638,7 +638,7 @@ BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & formatT
 
   if (capSetVideoFormat(hWnd, theArray, GetSize())) {
     PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-            << formatTableEntry.colourFormat << ' '
+            << PString(formatTableEntry.colourFormat) << ' '
             << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
             << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
     return TRUE;
@@ -648,7 +648,7 @@ BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & formatT
     bmi.bmiHeader.biHeight = height; 
     if (capSetVideoFormat(hWnd, theArray, GetSize())) {
       PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-              << formatTableEntry.colourFormat << ' '
+              << PString(formatTableEntry.colourFormat) << ' '
               << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
               << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
       return TRUE;
@@ -656,7 +656,7 @@ BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & formatT
   }
 
   PTRACE(1, "PVidInp\tcapSetVideoFormat failed: "
-          << formatTableEntry.colourFormat << ' '
+          << PString(formatTableEntry.colourFormat) << ' '
           << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
           << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime)
           << " - lastError=" << ::GetLastError());
