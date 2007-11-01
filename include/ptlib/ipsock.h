@@ -999,7 +999,7 @@ class PIPSocketAddressAndPort
     { }
 
     PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char _sep = ':')
-      : sep(_sep)
+      : port(defaultPort), sep(_sep)
     { Parse(str, defaultPort, sep); }
 
     BOOL Parse(const PString & str, WORD defaultPort = 0, char sep = ':');
