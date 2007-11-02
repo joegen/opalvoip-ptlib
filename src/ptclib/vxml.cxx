@@ -3344,9 +3344,9 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
                 int tens = number / 10;
                 number = number % 10;
                 if (tens > 0)
-                  SpeakNumber(tens*10);
+                  SpeakFile(PString(PString::Signed, tens*10));
                 if (number > 0)
-                  SpeakNumber(number);
+                  SpeakFile(PString(PString::Signed, number));
               }
             }
           }
