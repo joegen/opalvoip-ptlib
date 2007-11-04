@@ -2520,14 +2520,24 @@ PString PIPSocket::Address::AsString() const
     str.MakeMinimumSize();
     return str;
   }
-#endif
-#ifdef P_VXWORKS
+
+#elif defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];
   inet_ntoa_b(v.four, ipStorage);
   return ipStorage;    
-#else // P_VXWORKS
+
+#elif defined(P_HAS_INET_NTOP)
+  static PCriticalSection m;
   return inet_ntoa(v.four);
-#endif // P_VXWORKS
+
+#else
+
+  PString str;
+  if (inet_ntop(AF_INET, sa, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
+    return PString::Empty()
+  return str;
+
+#endif 
 }
 
 
