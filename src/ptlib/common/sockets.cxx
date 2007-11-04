@@ -2509,7 +2509,12 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 
 PString PIPSocket::Address::AsString() const
 {
-#if P_HAS_IPV6
+#if defined(P_VXWORKS)
+  char ipStorage[INET_ADDR_LEN];
+  inet_ntoa_b(v.four, ipStorage);
+  return ipStorage;    
+#else
+# if defined(P_HAS_IPV6)
   if (version == 6) {
     PString str;
     Psockaddr sa(*this, 0);
@@ -2520,26 +2525,18 @@ PString PIPSocket::Address::AsString() const
     str.MakeMinimumSize();
     return str;
   }
-
-#else 
-# if defined(P_VXWORKS)
-  char ipStorage[INET_ADDR_LEN];
-  inet_ntoa_b(v.four, ipStorage);
-  return ipStorage;    
-
-# elif defined(P_HAS_INET_NTOP)
-  static PCriticalSection m;
-  return inet_ntoa(v.four);
-
-# endif
-#endif
+#endif // P_HAS_IPV6
+# if defined(P_HAS_INET_NTOP)
   PString str;
   if (inet_ntop(AF_INET, v.four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
     return PString::Empty()
   str.MakeMinimumSize();
   return str;
-
-#endif 
+# else
+  static PCriticalSection m;
+  return inet_ntoa(v.four);
+#endif // P_HAS_INET_NTOP
+#endif // P_VXWORKS
 }
 
 
