@@ -772,6 +772,7 @@
 #undef  PMEMORY_CHECK
 #undef  P_HAS_RECVMSG
 #undef  P_HAS_UPAD128_T
+#undef  P_HAS_INET_NTOP
 
 #endif // _PT_BUILDOPTS_H
 
