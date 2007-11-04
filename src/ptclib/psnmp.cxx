@@ -83,6 +83,9 @@
 #endif
 
 #include <ptlib.h>
+#include <ptbuildopts.h>
+
+#ifdef P_SNMP
 #include <ptclib/psnmp.h>
 
 #define new PNEW
@@ -192,5 +195,6 @@ PString PSNMP::GetErrorText(ErrorType err)
     return SnmpErrorCodeTable[err];
 }
 
+#endif // P_SNMP
 
 // End Of File ///////////////////////////////////////////////////////////////
