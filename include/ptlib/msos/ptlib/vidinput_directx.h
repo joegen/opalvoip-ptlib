@@ -118,7 +118,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
      */
     static BOOL GetDeviceCapabilities(
           const PString & deviceName,           ///< Name of device
-	  InputDeviceCapabilities & caps        ///< List of supported capabilities
+	  InputDeviceCapabilities * caps        ///< List of supported capabilities
     );
 
 
