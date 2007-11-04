@@ -2521,20 +2521,22 @@ PString PIPSocket::Address::AsString() const
     return str;
   }
 
-#elif defined(P_VXWORKS)
+#else 
+# if defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];
   inet_ntoa_b(v.four, ipStorage);
   return ipStorage;    
 
-#elif defined(P_HAS_INET_NTOP)
+# elif defined(P_HAS_INET_NTOP)
   static PCriticalSection m;
   return inet_ntoa(v.four);
 
-#else
-
+# endif
+#endif
   PString str;
-  if (inet_ntop(AF_INET, sa, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
+  if (inet_ntop(AF_INET, v.four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
     return PString::Empty()
+  str.MakeMinimumSize();
   return str;
 
 #endif 
