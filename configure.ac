@@ -2064,6 +2064,7 @@ dnl check for HTTPSVC support
 
 dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
 dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
+dnl MSWIN_IF_FEATURE httpsvc,!http
 
 AC_ARG_ENABLE(httpsvc,
        [  --disable-httpsvc       disable HTTP service support])
