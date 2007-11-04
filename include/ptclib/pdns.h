@@ -89,9 +89,11 @@
 #  pragma comment(lib, P_DNS_LIBRARY)
 
 // Accommodate spelling error in windns.h
+#ifndef __MINGW32__
 enum { DnsSectionAdditional = DnsSectionAddtional };
+#endif
 
-#else
+#else /* WIN32 */
 
 #  define  P_HAS_RESOLVER 1         // set if using Unix-style DNS routines
 #  include <arpa/nameser.h>

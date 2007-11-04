@@ -1038,7 +1038,7 @@ BOOL PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
 }
 
 
-BOOL PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & /*deviceName*/,InputDeviceCapabilities & /*caps*/)  
+BOOL PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & /*deviceName*/,InputDeviceCapabilities * /*caps*/)  
 { 
     // To do!
     return FALSE; 
@@ -1338,7 +1338,7 @@ static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 }
 
 
-struct {
+const static struct {
     char *pwlib_format;
     GUID  media_format;
 } formats[] =
