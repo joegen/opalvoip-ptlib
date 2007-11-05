@@ -166,9 +166,9 @@
 
 #ifndef P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
-#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PTLib_PlugIns;C:\\PWLIB_PLUGINS"
 #  else
-#    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/pwlib"
+#    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"
 #  endif
 #endif
 
@@ -186,8 +186,10 @@
 #endif
 #endif
 
+#define ENV_PTLIB_PLUGIN_DIR  "PTLIBPLUGINDIR"
 #define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
 
+#define PTPLUGIN_SUFFIX       "_ptplugin"
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
 const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
@@ -213,6 +215,7 @@ class PluginLoaderStartup : public PProcessStartup
 void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
 { 
   PStringList suffixes;
+  suffixes.AppendString(PTPLUGIN_SUFFIX);
   suffixes.AppendString(PWPLUGIN_SUFFIX);
 
   PFactory<PPluginSuffix>::KeyList_T keys = PFactory<PPluginSuffix>::GetKeyList();
@@ -250,8 +253,10 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PS
 
 PStringArray PPluginManager::GetPluginDirs()
 {
-  PString env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
-  if (env == NULL) 
+  PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
+  if (env.IsEmpty()) 
+    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
+  if (env.IsEmpty()) 
     env = P_DEFAULT_PLUGIN_DIR;
 
   // split into directories on correct seperator
