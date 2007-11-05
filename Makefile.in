@@ -239,7 +239,7 @@ $(subst tagbuild,,$(STANDARD_TARGETS)) ::
 	set -e; $(foreach dir,$(SUBDIRS),if test -e $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
 
 update:
-	cvs update
+	svn update
 	$(MAKE) bothdepend both
 
 ptlib:
