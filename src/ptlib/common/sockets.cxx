@@ -2533,7 +2533,8 @@ PString PIPSocket::Address::AsString() const
   str.MakeMinimumSize();
   return str;
 # else
-  static PCriticalSection m;
+  static PCriticalSection x;
+  PWaitAndSignal m(x);
   return inet_ntoa(v.four);
 #endif // P_HAS_INET_NTOP
 #endif // P_VXWORKS
