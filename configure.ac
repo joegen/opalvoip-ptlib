@@ -2155,6 +2155,33 @@ fi
 AC_SUBST(HAS_VIDFILE)
 
 dnl ########################################################################
+dnl check for enabling app share support
+
+dnl MSWIN_DISPLAY    appshare,Application share support
+dnl MSWIN_DEFINE     appshare,P_APPSHARE
+
+if test "$HAS_VIDEO" \!= "1" ; then
+  default_appshare=no
+fi
+
+AC_ARG_ENABLE(vidfile,
+       [  --enable-appshare        enable Application share support])
+
+if test "${enable_appshare}z" = "z" ; then
+  enable_vidfile=$default_appshare
+fi
+
+HAS_APPSHARE=
+if test "$enable_appshare" = "no" ; then
+  AC_MSG_NOTICE(Application share support disabled)
+else
+  AC_MSG_NOTICE(Application share enabled)
+  HAS_APPSHARE=1
+  AC_DEFINE(P_APPSHARE, 1)
+fi
+AC_SUBST(HAS_APPSHARE)
+
+dnl ########################################################################
 dnl check for sound support
 
 dnl MSWIN_DISPLAY audio,Sound support
