@@ -2528,8 +2528,8 @@ PString PIPSocket::Address::AsString() const
 #endif // P_HAS_IPV6
 # if defined(P_HAS_INET_NTOP)
   PString str;
-  if (inet_ntop(AF_INET, v.four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
-    return PString::Empty()
+  if (inet_ntop(AF_INET, (const void *)&v.four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
+    return PString::Empty();
   str.MakeMinimumSize();
   return str;
 # else
