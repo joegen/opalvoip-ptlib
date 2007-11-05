@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PTLIBDIR PTINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PTLIB_VERSION BUILD_TYPE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC USE_PCH SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_VIDFILE HAS_AUDIO HAS_OSS HAS_ALSA HAS_ODBC STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS DEBUG_FLAG INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PTLIBDIR PTINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PTLIB_VERSION BUILD_TYPE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC USE_PCH SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_VIDFILE HAS_APPSHARE HAS_AUDIO HAS_OSS HAS_ALSA HAS_ODBC STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS DEBUG_FLAG INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -889,6 +889,7 @@ Optional Features:
   --disable-configfile    disable config file support
   --enable-sockagg        enable socket aggregation (experimental)
   --enable-vidfile        enable video file support
+  --enable-appshare        enable Application share support
   --disable-audio         disable audio support
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
@@ -7874,71 +7875,10 @@ if test "${enable_ipv6}z" = "z" ; then
 fi
 
 HAS_IPV6=
-HAS_INET_NTOP=
 
 if test "$enable_ipv6" = "no" ; then
   { echo "$as_me:$LINENO: IPV6 disabled" >&5
 echo "$as_me: IPV6 disabled" >&6;}
-  echo "$as_me:$LINENO: checking for inet_ntop" >&5
-echo $ECHO_N "checking for inet_ntop... $ECHO_C" >&6
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <sys/types.h>
-                  #include <netinet/in.h>
-                  #include <arpa/inet.h>
-int
-main ()
-{
-int af; void * src; char * dst; socklen_t len; inet_ntop(af, src, dst, len);
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  HAS_INET_NTOP=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-HAS_INET_NTOP=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-  if test $HAS_INET_NTOP = no ; then
-    echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-  else
-    cat >>confdefs.h <<\_ACEOF
-#define P_HAS_INET_NTOP 1
-_ACEOF
-
-    echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-  fi
 else
   echo "$as_me:$LINENO: checking for IPv6 support" >&5
 echo $ECHO_N "checking for IPv6 support... $ECHO_C" >&6
@@ -8054,6 +7994,68 @@ _ACEOF
   fi
 fi
 
+
+HAS_INET_NTOP=
+echo "$as_me:$LINENO: checking for inet_ntop" >&5
+echo $ECHO_N "checking for inet_ntop... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <sys/types.h>
+                #include <netinet/in.h>
+                #include <arpa/inet.h>
+int
+main ()
+{
+int af; void * src; char * dst; socklen_t len; inet_ntop(af, src, dst, len);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  HAS_INET_NTOP=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+HAS_INET_NTOP=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+if test $HAS_INET_NTOP = no ; then
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+else
+  cat >>confdefs.h <<\_ACEOF
+#define P_HAS_INET_NTOP 1
+_ACEOF
+
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+fi
 
 
 
@@ -9157,6 +9159,37 @@ echo "$as_me: Video file support enabled" >&6;}
   HAS_VIDFILE=1
   cat >>confdefs.h <<\_ACEOF
 #define P_VIDFILE 1
+_ACEOF
+
+fi
+
+
+
+
+if test "$HAS_VIDEO" \!= "1" ; then
+  default_appshare=no
+fi
+
+# Check whether --enable-vidfile or --disable-vidfile was given.
+if test "${enable_vidfile+set}" = set; then
+  enableval="$enable_vidfile"
+
+fi;
+
+if test "${enable_appshare}z" = "z" ; then
+  enable_vidfile=$default_appshare
+fi
+
+HAS_APPSHARE=
+if test "$enable_appshare" = "no" ; then
+  { echo "$as_me:$LINENO: Application share support disabled" >&5
+echo "$as_me: Application share support disabled" >&6;}
+else
+  { echo "$as_me:$LINENO: Application share enabled" >&5
+echo "$as_me: Application share enabled" >&6;}
+  HAS_APPSHARE=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_APPSHARE 1
 _ACEOF
 
 fi
@@ -10770,6 +10803,7 @@ s,@HAS_HTTPSVC@,$HAS_HTTPSVC,;t t
 s,@HAS_CONFIG_FILE@,$HAS_CONFIG_FILE,;t t
 s,@HAS_SOCKAGG@,$HAS_SOCKAGG,;t t
 s,@HAS_VIDFILE@,$HAS_VIDFILE,;t t
+s,@HAS_APPSHARE@,$HAS_APPSHARE,;t t
 s,@HAS_AUDIO@,$HAS_AUDIO,;t t
 s,@HAS_OSS@,$HAS_OSS,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t

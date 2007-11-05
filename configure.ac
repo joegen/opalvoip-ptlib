@@ -1582,21 +1582,9 @@ if test "${enable_ipv6}z" = "z" ; then
 fi
 
 HAS_IPV6=
-HAS_INET_NTOP=
 
 if test "$enable_ipv6" = "no" ; then
   AC_MSG_NOTICE(IPV6 disabled)
-  AC_MSG_CHECKING(for inet_ntop)
-  AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <netinet/in.h>
-                  #include <arpa/inet.h>],
-                  [int af; void * src; char * dst; socklen_t len; inet_ntop(af, src, dst, len);], HAS_INET_NTOP=yes, HAS_INET_NTOP=no)
-  if test $HAS_INET_NTOP = no ; then
-    AC_MSG_RESULT(no)
-  else
-    AC_DEFINE(P_HAS_INET_NTOP, 1)
-    AC_MSG_RESULT(yes)
-  fi
 else
   AC_MSG_CHECKING(for IPv6 support)
   AC_TRY_COMPILE([#include <sys/types.h>
@@ -1618,6 +1606,19 @@ else
   fi
 fi
 AC_SUBST(HAS_IPV6)
+
+HAS_INET_NTOP=
+AC_MSG_CHECKING(for inet_ntop)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <netinet/in.h>
+                #include <arpa/inet.h>],
+                [int af; void * src; char * dst; socklen_t len; inet_ntop(af, src, dst, len);], HAS_INET_NTOP=yes, HAS_INET_NTOP=no)
+if test $HAS_INET_NTOP = no ; then
+  AC_MSG_RESULT(no)
+else
+  AC_DEFINE(P_HAS_INET_NTOP, 1)
+  AC_MSG_RESULT(yes)
+fi
 
 dnl ########################################################################
 dnl look for QoS functions
