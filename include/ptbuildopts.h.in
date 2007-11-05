@@ -649,6 +649,15 @@
 
 #endif
 
+/////////////////////////////////////////////////
+//
+// APP Share Input 
+//
+#undef P_APPSHARE
+
+#if defined(_MSC_VER) && P_APPSHARE
+#pragma include_alias(<ptlib/vidinput_app.h>, <ptlib/msos/ptlib/vidinput_app.h>)
+#endif
 
 /////////////////////////////////////////////////
 //
