@@ -1316,6 +1316,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vidinput_app.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\vsdl.cxx">
 			</File>
 			<File
@@ -1934,6 +1937,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\videoio.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\vidinput_app.h">
 				</File>
 			</Filter>
 		</Filter>
