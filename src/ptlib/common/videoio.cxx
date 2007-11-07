@@ -420,7 +420,22 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
       PStringList drivers = VideoDevice::GetDriverNames(pluginMgr);
       if (drivers.IsEmpty())
         return NULL;
-      adjustedDriverName = drivers[0];
+
+      // Give precedence to drivers like camera grabbers, leave out the fail safe types such as NULL
+      PINDEX driverIndex;
+      for (driverIndex = drivers.GetSize()-1; driverIndex > 0; --driverIndex) {
+        static const char * lowPriorityDrivers[] = {
+          "YUVFile", "FakeVideo", "NULLOutput"
+        };
+        PINDEX i;
+        for (i = 0; i < PARRAYSIZE(lowPriorityDrivers); i++) {
+          if (drivers[driverIndex] == lowPriorityDrivers[i])
+            break;
+        }
+        if (i == PARRAYSIZE(lowPriorityDrivers))
+          break;
+      }
+      adjustedDriverName = drivers[driverIndex];
     }
 
     PStringList devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
