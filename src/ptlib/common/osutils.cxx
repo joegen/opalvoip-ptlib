@@ -2239,6 +2239,16 @@ PProcess & PProcess::Current()
 }
 
 
+void PProcess::OnThreadStart(PThread & /*thread*/)
+{
+}
+
+
+void PProcess::OnThreadEnded(PThread & /*thread*/)
+{
+}
+
+
 BOOL PProcess::IsInitialised()
 {
   return PProcessInstance != NULL;

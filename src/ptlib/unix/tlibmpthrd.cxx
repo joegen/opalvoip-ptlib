@@ -429,9 +429,13 @@ long PThread::PX_ThreadStart(void * arg)
     thread->suspend_semaphore->Wait();	// Wait for the Resume
   }
 
+  process.OnThreadStart(*thread);
+
   // now call the the thread main routine
   //PTRACE(1, "tlibthrd\tAbout to call Main");
   thread->Main();
+
+  process.OnThreadEnded(*thread);
 
 #ifdef DEBUG_THREADS
   if (debug_mpthreads)

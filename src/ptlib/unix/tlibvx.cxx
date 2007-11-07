@@ -138,7 +138,9 @@ int PThread::ThreadFunction(void *threadPtr)
   if (::semTake(thread->syncPoint, WAIT_FOREVER) == OK) {
     if (::semDelete(thread->syncPoint) == OK)
       thread->syncPoint = NULL;
-  thread->Main();
+    process.OnThreadStart(*thread);
+    thread->Main();
+    process.OnThreadEnded(*thread);
   }
   else
     printf("::ThreadFunction> ::semTake failed, errno=0x%X\n",errno);
