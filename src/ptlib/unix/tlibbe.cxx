@@ -152,7 +152,11 @@ int32 PThread::ThreadFunction(void * threadPtr)
   process.activeThreads.SetAt((unsigned) thread->mId, thread);
   process.threadMutex.Signal();
 
+  process.OnThreadStart(*thread);
+
   thread->Main();
+
+  process.OnThreadEnded(*thread);
 
   return 0;
 }

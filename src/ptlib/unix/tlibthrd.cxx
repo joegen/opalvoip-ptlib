@@ -1357,6 +1357,8 @@ void * PThread::PX_ThreadStart(void * arg)
 
   PTRACE(5, "PWLib\tStarted thread " << thread << ' ' << thread->threadName);
 
+  PProcess::Current().OnThreadStart(*thread);
+
   // now call the the thread main routine
   thread->Main();
 
@@ -1369,10 +1371,11 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PThread::PX_ThreadEnd(void * arg)
 {
+  PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
+  process.OnThreadEnded(*thread);
   process.threadMutex.Wait();
 
-  PThread * thread = (PThread *)arg;
   pthread_t id = thread->GetThreadId();
   if (id == 0) {
     // Don't know why, but pthreads under Linux at least can call this function

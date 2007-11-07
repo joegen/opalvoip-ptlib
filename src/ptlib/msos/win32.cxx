@@ -1262,7 +1262,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #endif
 
+  process.OnThreadStart(*thread);
   thread->Main();
+  process.OnThreadEnded(*thread);
 
 #if defined(_WIN32_DCOM)
   ::CoUninitialize();
