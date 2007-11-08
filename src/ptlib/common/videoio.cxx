@@ -764,8 +764,10 @@ BOOL PVideoDevice::SetChannel(int channelNum)
     return FALSE;
   }
 
-  if (channelNum >= GetNumChannels())
+  if (channelNum >= GetNumChannels()) {
+    PTRACE(2, "PVidDev\tSetChannel number (" << channelNum << ") too large.");
     return FALSE;
+  }
 
   channelNumber = channelNum;
   return TRUE;
