@@ -1316,9 +1316,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vidinput_app.cxx">
-			</File>
-			<File
 				RelativePath="..\..\ptclib\vsdl.cxx">
 			</File>
 			<File
