@@ -1718,7 +1718,7 @@ PASN_BMPString::PASN_BMPString(const char * str)
 }
 
 
-PASN_BMPString::PASN_BMPString(const PWORDArray & wstr)
+PASN_BMPString::PASN_BMPString(const PWCharArray & wstr)
   : PASN_ConstrainedObject(UniversalBMPString, UniversalTagClass)
 {
   Construct();
@@ -1758,7 +1758,7 @@ PASN_BMPString & PASN_BMPString::operator=(const PASN_BMPString & other)
 {
   PASN_ConstrainedObject::operator=(other);
 
-  value = PWORDArray(other.value, other.value.GetSize());
+  value = PWCharArray(other.value, other.value.GetSize());
   characterSet = other.characterSet;
   firstChar = other.firstChar;
   lastChar = other.lastChar;
@@ -1780,7 +1780,7 @@ BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
   if (characterSet.IsEmpty())
     return TRUE;
 
-  const WORD * wptr = characterSet;
+  const wchar_t * wptr = characterSet;
   PINDEX count = characterSet.GetSize();
   while (count-- > 0) {
     if (*wptr == ch)
@@ -1792,7 +1792,7 @@ BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
 }
 
 
-PASN_BMPString & PASN_BMPString::operator=(const PWORDArray & array)
+PASN_BMPString & PASN_BMPString::operator=(const PWCharArray & array)
 {
   PINDEX paramSize = array.GetSize();
 
@@ -1821,7 +1821,7 @@ PASN_BMPString & PASN_BMPString::operator=(const PWORDArray & array)
 
 void PASN_BMPString::SetCharacterSet(ConstraintType ctype, const char * charSet)
 {
-  PWORDArray array(strlen(charSet));
+  PWCharArray array(strlen(charSet));
 
   PINDEX count = 0;
   while (*charSet != '\0')
@@ -1831,7 +1831,7 @@ void PASN_BMPString::SetCharacterSet(ConstraintType ctype, const char * charSet)
 }
 
 
-void PASN_BMPString::SetCharacterSet(ConstraintType ctype, const PWORDArray & charSet)
+void PASN_BMPString::SetCharacterSet(ConstraintType ctype, const PWCharArray & charSet)
 {
   if (ctype == Unconstrained) {
     firstChar = 0;

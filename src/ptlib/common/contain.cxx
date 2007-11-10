@@ -1292,7 +1292,7 @@ PString::PString(const char * cstr)
 }
 
 
-PString::PString(const WORD * ustr)
+PString::PString(const wchar_t * ustr)
 {
   if (ustr == NULL)
     SetSize(1);
@@ -1313,14 +1313,14 @@ PString::PString(const char * cstr, PINDEX len)
 }
 
 
-PString::PString(const WORD * ustr, PINDEX len)
+PString::PString(const wchar_t * ustr, PINDEX len)
   : PCharArray(len+1)
 {
   InternalFromUCS2(ustr, len);
 }
 
 
-PString::PString(const PWORDArray & ustr)
+PString::PString(const PWCharArray & ustr)
 {
   InternalFromUCS2(ustr, ustr.GetSize());
 }
@@ -2364,22 +2364,22 @@ double PString::AsReal() const
 }
 
 
-PWORDArray PString::AsUCS2() const
+PWCharArray PString::AsUCS2() const
 {
 #ifdef P_HAS_G_CONVERT
 
   gsize g_len = 0;
   gchar * g_ucs2 = g_convert(theArray, GetSize()-1, "UCS-2", "UTF-8", 0, &g_len, 0);
   if (g_ucs2 == NULL)
-    return PWORDArray();
+    return PWCharArray();
 
-  PWORDArray ucs2((const WORD *)g_ucs2, (PINDEX)g_len);
+  PWCharArray ucs2((const WORD *)g_ucs2, (PINDEX)g_len);
   g_free(g_ucs2)
   return ucs2;
 
 #else
 
-  PWORDArray ucs2(GetSize()); // Always bigger than required
+  PWCharArray ucs2(GetSize()); // Always bigger than required
 
   PINDEX count = 0;
   PINDEX i = 0;
@@ -2420,7 +2420,7 @@ PWORDArray PString::AsUCS2() const
 }
 
 
-void PString::InternalFromUCS2(const WORD * ptr, PINDEX len)
+void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
 {
   if (ptr == NULL || len <= 0) {
     *this = Empty();
