@@ -619,14 +619,14 @@ EXPORTS
     ??0?$PList@VPThread@@@@QAA@XZ @617 NONAME
     ??0?$PList@VPTimer@@@@IAA@HPBV0@@Z @618 NONAME
     ??0?$PList@VPTimer@@@@QAA@XZ @619 NONAME
+    ??0?$PList@VRouteEntry@PIPSocket@@@@IAA@HPBV0@@Z @12781 NONAME
+    ??0?$PList@VRouteEntry@PIPSocket@@@@QAA@XZ @12782 NONAME
     ??0?$PNatMethodServiceDescriptor@VPSTUNClient@@@@QAA@XZ @620 NONAME
     ??0?$POrdinalDictionary@VPString@@@@IAA@HPBV0@@Z @621 NONAME
     ??0?$POrdinalDictionary@VPString@@@@QAA@XZ @622 NONAME
     ??0?$PSafePtr@VPMonitoredSockets@@@@QAA@ABV0@@Z @623 NONAME
     ??0?$PScalarArray@F@@QAA@H@Z @624 NONAME
-    ??0?$PScalarArray@G@@QAA@ABV0@@Z @625 NONAME
     ??0?$PScalarArray@G@@QAA@H@Z @626 NONAME
-    ??0?$PScalarArray@G@@QAA@PBGHH@Z @627 NONAME
     ??0?$PScalarArray@H@@QAA@ABV0@@Z @628 NONAME
     ??0?$PScalarArray@H@@QAA@H@Z @629 NONAME
     ??0?$PScalarArray@I@@QAA@ABV0@@Z @630 NONAME
@@ -1114,7 +1114,7 @@ EXPORTS
     ??0PASN_BitString@@QAA@IPBE@Z @1112 NONAME
     ??0PASN_BitString@@QAA@IW4TagClass@PASN_Object@@I@Z @1113 NONAME
     ??0PASN_BMPString@@QAA@ABV0@@Z @1114 NONAME
-    ??0PASN_BMPString@@QAA@ABV?$PScalarArray@G@@@Z @1115 NONAME
+    ??0PASN_BMPString@@QAA@ABV?$PBaseArray@G@@@Z @12783 NONAME
     ??0PASN_BMPString@@QAA@IW4TagClass@PASN_Object@@@Z @1116 NONAME
     ??0PASN_BMPString@@QAA@PBD@Z @1117 NONAME
     ??0PASN_Boolean@@QAA@ABV0@@Z @1118 NONAME
@@ -1529,7 +1529,7 @@ EXPORTS
     ??0PString@@IAA@HPBV0@@Z @1527 NONAME
     ??0PString@@QAA@ABV0@@Z @1528 NONAME
     ??0PString@@QAA@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @1529 NONAME
-    ??0PString@@QAA@ABV?$PScalarArray@G@@@Z @1530 NONAME
+    ??0PString@@QAA@ABV?$PBaseArray@G@@@Z @12784 NONAME
     ??0PString@@QAA@D@Z @1531 NONAME
     ??0PString@@QAA@F@Z @1532 NONAME
     ??0PString@@QAA@G@Z @1533 NONAME
@@ -1953,6 +1953,7 @@ EXPORTS
     ??1?$PList@VPSTUNUDPSocket@@@@UAA@XZ @1951 NONAME
     ??1?$PList@VPThread@@@@UAA@XZ @1952 NONAME
     ??1?$PList@VPTimer@@@@UAA@XZ @1953 NONAME
+    ??1?$PList@VRouteEntry@PIPSocket@@@@UAA@XZ @12785 NONAME
     ??1?$PNatMethodServiceDescriptor@VPSTUNClient@@@@UAA@XZ @1954 NONAME
     ??1?$POrdinalDictionary@VPString@@@@UAA@XZ @1955 NONAME
     ??1?$PSafePtr@VPMonitoredSockets@@@@UAA@XZ @1956 NONAME
@@ -2567,7 +2568,7 @@ EXPORTS
     ??4PASN_Array@@QAAAAV0@ABV0@@Z @2565 NONAME
     ??4PASN_BitString@@QAAAAV0@ABV0@@Z @2566 NONAME
     ??4PASN_BMPString@@QAAAAV0@ABV0@@Z @2567 NONAME
-    ??4PASN_BMPString@@QAAAAV0@ABV?$PScalarArray@G@@@Z @2568 NONAME
+    ??4PASN_BMPString@@QAAAAV0@ABV?$PBaseArray@G@@@Z @12786 NONAME
     ??4PASN_Boolean@@QAAAAV0@H@Z @2569 NONAME
     ??4PASN_Choice@@QAAAAV0@ABV0@@Z @2570 NONAME
     ??4PASN_ConstrainedObject@@QAAAAV0@ABV0@@Z @2571 NONAME
@@ -3328,6 +3329,7 @@ EXPORTS
     ??_7?$PList@VPSTUNUDPSocket@@@@6B@ @3326 NONAME
     ??_7?$PList@VPThread@@@@6B@ @3327 NONAME
     ??_7?$PList@VPTimer@@@@6B@ @3328 NONAME
+    ??_7?$PList@VRouteEntry@PIPSocket@@@@6B@ @12787 NONAME
     ??_7?$PNatMethodServiceDescriptor@VPSTUNClient@@@@6B@ @3329 NONAME
     ??_7?$POrdinalDictionary@VPString@@@@6B@ @3330 NONAME
     ??_7?$PSafePtr@VPMonitoredSockets@@@@6B@ @3331 NONAME
@@ -4113,6 +4115,7 @@ EXPORTS
     ??_R0?AV?$PList@VPSTUNUDPSocket@@@@@8 @4111 NONAME
     ??_R0?AV?$PList@VPThread@@@@@8 @4112 NONAME
     ??_R0?AV?$PList@VPTimer@@@@@8 @4113 NONAME
+    ??_R0?AV?$PList@VRouteEntry@PIPSocket@@@@@8 @12788 NONAME
     ??_R0?AV?$PNatMethodServiceDescriptor@VPSTUNClient@@@@@8 @4114 NONAME
     ??_R0?AV?$POrdinalDictionary@VPString@@@@@8 @4115 NONAME
     ??_R0?AV?$PSafePtr@VPMonitoredSockets@@@@@8 @4116 NONAME
@@ -4692,6 +4695,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$PList@VPSTUNUDPSocket@@@@8 @4690 NONAME
     ??_R1A@?0A@EA@?$PList@VPThread@@@@8 @4691 NONAME
     ??_R1A@?0A@EA@?$PList@VPTimer@@@@8 @4692 NONAME
+    ??_R1A@?0A@EA@?$PList@VRouteEntry@PIPSocket@@@@8 @12789 NONAME
     ??_R1A@?0A@EA@?$PNatMethodServiceDescriptor@VPSTUNClient@@@@8 @4693 NONAME
     ??_R1A@?0A@EA@?$POrdinalDictionary@VPString@@@@8 @4694 NONAME
     ??_R1A@?0A@EA@?$PSafePtr@VPMonitoredSockets@@@@8 @4695 NONAME
@@ -5295,6 +5299,7 @@ EXPORTS
     ??_R2?$PList@VPSTUNUDPSocket@@@@8 @5293 NONAME
     ??_R2?$PList@VPThread@@@@8 @5294 NONAME
     ??_R2?$PList@VPTimer@@@@8 @5295 NONAME
+    ??_R2?$PList@VRouteEntry@PIPSocket@@@@8 @12790 NONAME
     ??_R2?$PNatMethodServiceDescriptor@VPSTUNClient@@@@8 @5296 NONAME
     ??_R2?$POrdinalDictionary@VPString@@@@8 @5297 NONAME
     ??_R2?$PSafePtr@VPMonitoredSockets@@@@8 @5298 NONAME
@@ -5864,6 +5869,7 @@ EXPORTS
     ??_R3?$PList@VPSTUNUDPSocket@@@@8 @5862 NONAME
     ??_R3?$PList@VPThread@@@@8 @5863 NONAME
     ??_R3?$PList@VPTimer@@@@8 @5864 NONAME
+    ??_R3?$PList@VRouteEntry@PIPSocket@@@@8 @12791 NONAME
     ??_R3?$PNatMethodServiceDescriptor@VPSTUNClient@@@@8 @5865 NONAME
     ??_R3?$POrdinalDictionary@VPString@@@@8 @5866 NONAME
     ??_R3?$PSafePtr@VPMonitoredSockets@@@@8 @5867 NONAME
@@ -6433,6 +6439,7 @@ EXPORTS
     ??_R4?$PList@VPSTUNUDPSocket@@@@6B@ @6431 NONAME
     ??_R4?$PList@VPThread@@@@6B@ @6432 NONAME
     ??_R4?$PList@VPTimer@@@@6B@ @6433 NONAME
+    ??_R4?$PList@VRouteEntry@PIPSocket@@@@6B@ @12792 NONAME
     ??_R4?$PNatMethodServiceDescriptor@VPSTUNClient@@@@6B@ @6434 NONAME
     ??_R4?$POrdinalDictionary@VPString@@@@6B@ @6435 NONAME
     ??_R4?$PSafePtr@VPMonitoredSockets@@@@6B@ @6436 NONAME
@@ -7173,7 +7180,7 @@ EXPORTS
     ?AsString@PURL@@QBA?AVPString@@W4UrlFormat@1@@Z @7171 NONAME
     ?AsString@PURLLegacyScheme@@UBA?AVPString@@W4UrlFormat@PURL@@ABV4@@Z @7172 NONAME
     ?AssureConnect@PHTTPClient@@IAAHABVPURL@@AAVPMIMEInfo@@@Z @7173 NONAME
-    ?AsUCS2@PString@@QBA?AV?$PScalarArray@G@@XZ @7174 NONAME
+    ?AsUCS2@PString@@QBA?AV?$PBaseArray@G@@XZ @12793 NONAME
     ?AsUnsigned64@PString@@QBA_KI@Z @7175 NONAME
     ?AsUnsigned@PString@@QBAKI@Z @7176 NONAME
     ?ate@?$_Iosb@H@std@@2W4_Openmode@12@B @7177 NONAME
@@ -7345,6 +7352,7 @@ EXPORTS
     ?Class@?$PList@VPSTUNUDPSocket@@@@SAPBDXZ @7343 NONAME
     ?Class@?$PList@VPThread@@@@SAPBDXZ @7344 NONAME
     ?Class@?$PList@VPTimer@@@@SAPBDXZ @7345 NONAME
+    ?Class@?$PList@VRouteEntry@PIPSocket@@@@SAPBDXZ @12794 NONAME
     ?Class@?$POrdinalDictionary@VPString@@@@SAPBDXZ @7346 NONAME
     ?Class@?$PSafePtr@VPMonitoredSockets@@@@SAPBDXZ @7347 NONAME
     ?Class@?$PSet@VPString@@@@SAPBDXZ @7348 NONAME
@@ -7670,6 +7678,7 @@ EXPORTS
     ?Clone@?$PList@VPSTUNUDPSocket@@@@UBAPAVPObject@@XZ @7668 NONAME
     ?Clone@?$PList@VPThread@@@@UBAPAVPObject@@XZ @7669 NONAME
     ?Clone@?$PList@VPTimer@@@@UBAPAVPObject@@XZ @7670 NONAME
+    ?Clone@?$PList@VRouteEntry@PIPSocket@@@@UBAPAVPObject@@XZ @12795 NONAME
     ?Clone@?$POrdinalDictionary@VPString@@@@UBAPAVPObject@@XZ @7671 NONAME
     ?Clone@?$PSet@VPString@@@@UBAPAVPObject@@XZ @7672 NONAME
     ?Clone@?$PSortedList@VNAPTRRecord@PDNS@@@@UBAPAVPObject@@XZ @7673 NONAME
@@ -7885,6 +7894,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PList@VPSTUNUDPSocket@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @7883 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPThread@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @7884 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPTimer@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @7885 NONAME
+    ?CompareObjectMemoryDirect@?$PList@VRouteEntry@PIPSocket@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @12796 NONAME
     ?CompareObjectMemoryDirect@?$POrdinalDictionary@VPString@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @7886 NONAME
     ?CompareObjectMemoryDirect@?$PSafePtr@VPMonitoredSockets@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @7887 NONAME
     ?CompareObjectMemoryDirect@?$PSet@VPString@@@@UBA?AW4Comparison@PObject@@ABV3@@Z @7888 NONAME
@@ -9078,6 +9088,7 @@ EXPORTS
     ?GetClass@?$PList@VPSTUNUDPSocket@@@@UBAPBDI@Z @9075 NONAME
     ?GetClass@?$PList@VPThread@@@@UBAPBDI@Z @9076 NONAME
     ?GetClass@?$PList@VPTimer@@@@UBAPBDI@Z @9077 NONAME
+    ?GetClass@?$PList@VRouteEntry@PIPSocket@@@@UBAPBDI@Z @12797 NONAME
     ?GetClass@?$POrdinalDictionary@VPString@@@@UBAPBDI@Z @9078 NONAME
     ?GetClass@?$PSafePtr@VPMonitoredSockets@@@@UBAPBDI@Z @9079 NONAME
     ?GetClass@?$PSet@VPString@@@@UBAPBDI@Z @9080 NONAME
@@ -9395,6 +9406,13 @@ EXPORTS
     ?GetDescription@PWAVFileFormatG7231_ms@@UBA?AVPString@@XZ @9392 NONAME
     ?GetDescription@PWAVFileFormatG7231_vivo@@UBA?AVPString@@XZ @9393 NONAME
     ?GetDescription@PWAVFileFormatPCM@@UBA?AVPString@@XZ @9394 NONAME
+    ?GetDeviceCapabilities@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@UBA_NABVPString@@PAX@Z @12798 NONAME
+    ?GetDeviceCapabilities@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@UBA_NABVPString@@PAX@Z @12799 NONAME
+    ?GetDeviceCapabilities@PDevicePluginServiceDescriptor@@UBA_NABVPString@@PAX@Z @12800 NONAME
+    ?GetDeviceCapabilities@PVideoInputDevice@@SAHABVPString@@0PAV?$list@UInputDeviceCapability@@V?$allocator@UInputDeviceCapability@@@std@@@std@@PAVPPluginManager@@@Z @12801 NONAME
+    ?GetDeviceCapabilities@PVideoInputDevice@@SAHABVPString@@PAV?$list@UInputDeviceCapability@@V?$allocator@UInputDeviceCapability@@@std@@@std@@PAVPPluginManager@@@Z @12802 NONAME
+    ?GetDeviceCapabilities@PVideoInputDevice_FakeVideo@@SAHABVPString@@PAV?$list@UInputDeviceCapability@@V?$allocator@UInputDeviceCapability@@@std@@@std@@@Z @12803 NONAME
+    ?GetDeviceCapabilities@PVideoInputDevice_VideoForWindows@@SAHABVPString@@PAV?$list@UInputDeviceCapability@@V?$allocator@UInputDeviceCapability@@@std@@@std@@@Z @12804 NONAME
     ?GetDeviceID@PSoundChannelWin32@@AAAHABVPString@@W4Directions@PSoundChannel@@AAI@Z @9395 NONAME
     ?GetDeviceNames@?$PNatMethodServiceDescriptor@VPSTUNClient@@@@UBA?AVPStringList@@H@Z @9396 NONAME
     ?GetDeviceNames@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@UBA?AVPStringList@@H@Z @9397 NONAME
@@ -9589,6 +9607,7 @@ EXPORTS
     ?GetInteger@PWin32AsnAny@@QAAHAAJ@Z @9586 NONAME
     ?GetInterface@PIPSocket@@SA?AVPString@@VAddress@1@@Z @9587 NONAME
     ?GetInterface@PMonitoredSocketChannel@@QAAABVPString@@XZ @9588 NONAME
+    ?GetInterface@RouteEntry@PIPSocket@@QBAABVPString@@XZ @12805 NONAME
     ?GetInterfaceAddress@PWin32SnmpLibrary@@QAA?AVAddress@PIPSocket@@H@Z @9589 NONAME
     ?GetInterfaceInfo@PInterfaceMonitor@@QAAHABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @9590 NONAME
     ?GetInterfaceInfo@PInterfaceMonitorClient@@UAAHABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @9591 NONAME
@@ -9709,6 +9728,8 @@ EXPORTS
     ?GetNatTypeString@PSTUNClient@@SA?AVPString@@W4NatTypes@1@@Z @9706 NONAME
     ?GetNest@PReadWriteMutex@@IBAPAVNest@1@XZ @9707 NONAME
     ?GetNetMask@InterfaceEntry@PIPSocket@@QBA?AVAddress@2@XZ @9708 NONAME
+    ?GetNetMask@RouteEntry@PIPSocket@@QBA?AVAddress@2@XZ @12806 NONAME
+    ?GetNetwork@RouteEntry@PIPSocket@@QBA?AVAddress@2@XZ @12807 NONAME
     ?GetNetworkInterface@PIPSocket@@SAHAAVAddress@1@@Z @9709 NONAME
     ?GetNext@MXRecordList@PDNS@@QAAPAVMXRecord@2@XZ @9710 NONAME
     ?GetNext@NAPTRRecordList@PDNS@@QAAPAVNAPTRRecord@2@PBD@Z @9711 NONAME
@@ -9782,6 +9803,7 @@ EXPORTS
     ?GetPluginDirs@PPluginManager@@SA?AVPStringArray@@XZ @9779 NONAME
     ?GetPluginList@PPluginModuleManager@@UBA?AV?$PDictionary@VPString@@VPDynaLink@@@@XZ @9780 NONAME
     ?GetPluginManager@PPluginManager@@SAAAV1@XZ @9781 NONAME
+    ?GetPluginsDeviceCapabilities@PPluginManager@@QBAHABVPString@@00PAX@Z @12808 NONAME
     ?GetPluginsDeviceNames@PPluginManager@@QBA?AVPStringList@@ABVPString@@0H@Z @9782 NONAME
     ?GetPluginsProviding@PPluginManager@@QBA?AVPStringList@@ABVPString@@@Z @9783 NONAME
     ?GetPluginTypes@PPluginManager@@QBA?AVPStringList@@XZ @9784 NONAME
@@ -9851,6 +9873,7 @@ EXPORTS
     ?GetReturnCode@PPipeChannel@@QBAHXZ @9848 NONAME
     ?GetRoot@PDirectory@@QBA?AV1@XZ @9849 NONAME
     ?GetRouteAddress@PIPSocket@@SA?AVAddress@1@V21@@Z @9850 NONAME
+    ?GetRouteInterfaceAddress@PIPSocket@@SA?AVAddress@1@V21@@Z @12809 NONAME
     ?GetRouteTable@PIPSocket@@SAHAAV?$PList@VRouteEntry@PIPSocket@@@@@Z @9851 NONAME
     ?GetSampleRate@PSound@@QBAIXZ @9852 NONAME
     ?GetSampleRate@PSoundChannel@@UBAIXZ @9853 NONAME
@@ -10197,6 +10220,7 @@ EXPORTS
     ?InternalIsDescendant@?$PList@VPSTUNUDPSocket@@@@UBAHPBD@Z @10194 NONAME
     ?InternalIsDescendant@?$PList@VPThread@@@@UBAHPBD@Z @10195 NONAME
     ?InternalIsDescendant@?$PList@VPTimer@@@@UBAHPBD@Z @10196 NONAME
+    ?InternalIsDescendant@?$PList@VRouteEntry@PIPSocket@@@@UBAHPBD@Z @12810 NONAME
     ?InternalIsDescendant@?$POrdinalDictionary@VPString@@@@UBAHPBD@Z @10197 NONAME
     ?InternalIsDescendant@?$PSafePtr@VPMonitoredSockets@@@@UBAHPBD@Z @10198 NONAME
     ?InternalIsDescendant@?$PSet@VPString@@@@UBAHPBD@Z @10199 NONAME
@@ -10909,6 +10933,8 @@ EXPORTS
     ?OnSyntaxError@PFTPServer@@UAAXH@Z @10907 NONAME
     ?OnSYST@PFTPServer@@UAAHABVPCaselessString@@@Z @10908 NONAME
     ?OnTextData@PSMTPServer@@MAAHAAVPCharArray@@AAH@Z @10909 NONAME
+    ?OnThreadEnded@PProcess@@UAAXAAVPThread@@@Z @12811 NONAME
+    ?OnThreadStart@PProcess@@UAAXAAVPThread@@@Z @12812 NONAME
     ?OnTimeout@PTimer@@UAAXXZ @10910 NONAME
     ?OnTOP@PPOP3Server@@MAAXHH@Z @10911 NONAME
     ?OnTURN@PSMTPServer@@MAAXXZ @10912 NONAME
@@ -11555,7 +11581,7 @@ EXPORTS
     ?SetChannel@PVideoInputDevice_FakeVideo@@UAAHH@Z @11553 NONAME
     ?SetChannel@PVideoInputDevice_YUVFile@@UAAHH@Z @11554 NONAME
     ?SetChannels@PWAVFile@@UAAXI@Z @11555 NONAME
-    ?SetCharacterSet@PASN_BMPString@@QAAXW4ConstraintType@PASN_Object@@ABV?$PScalarArray@G@@@Z @11556 NONAME
+    ?SetCharacterSet@PASN_BMPString@@QAAXW4ConstraintType@PASN_Object@@ABV?$PBaseArray@G@@@Z @12813 NONAME
     ?SetCharacterSet@PASN_BMPString@@UAAXW4ConstraintType@PASN_Object@@II@Z @11557 NONAME
     ?SetCharacterSet@PASN_BMPString@@UAAXW4ConstraintType@PASN_Object@@PBD@Z @11558 NONAME
     ?SetCharacterSet@PASN_ConstrainedString@@QAAXPBDHW4ConstraintType@PASN_Object@@@Z @11559 NONAME
@@ -11765,7 +11791,7 @@ EXPORTS
     ?SetURLSpace@PHTTPServer@@QAAXABVPHTTPSpace@@@Z @11763 NONAME
     ?SetUserName@PProcess@@QAAHABVPString@@H@Z @11764 NONAME
     ?SetUserName@PURL@@QAAXABVPString@@@Z @11765 NONAME
-    ?SetValue@PASN_BMPString@@QAAXABV?$PScalarArray@G@@@Z @11766 NONAME
+    ?SetValue@PASN_BMPString@@QAAXABV?$PBaseArray@G@@@Z @12814 NONAME
     ?SetValue@PASN_BMPString@@QAAXPBD@Z @11767 NONAME
     ?SetValue@PASN_ConstrainedString@@QAAXABVPString@@@Z @11768 NONAME
     ?SetValue@PASN_ConstrainedString@@QAAXPBD@Z @11769 NONAME
