@@ -758,7 +758,7 @@ PString PTime::GetTimeZoneString(TimeZoneType type)
 {
   TIME_ZONE_INFORMATION tz;
   PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
-  return (const WORD *)(type == StandardTime ? tz.StandardName : tz.DaylightName);
+  return (const wchar_t *)(type == StandardTime ? tz.StandardName : tz.DaylightName);
 }
 
 

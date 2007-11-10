@@ -243,7 +243,7 @@ BOOL PASN_BMPString::DecodeBER(PBER_Stream & strm, unsigned len)
 
 void PASN_BMPString::EncodeBER(PBER_Stream & strm) const
 {
-  strm.BlockEncode((const BYTE *)(const WORD *)value, value.GetSize()*2);
+  strm.BlockEncode((const BYTE *)(const wchar_t *)value, value.GetSize()*2);
 }
 
 ///////////////////////////////////////////////////////////////////////
