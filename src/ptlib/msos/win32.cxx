@@ -1838,10 +1838,43 @@ BOOL PProcess::IsServiceProcess() const
 }
 
 
+#ifdef _WIN32_WCE
+
 BOOL PProcess::IsGUIProcess() const
 {
+  return TRUE;
+}
+
+#else
+
+static int IsGUIProcessStatus;
+
+static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
+{
+  char wndClassName[100];
+  GetClassName(hWnd, wndClassName, sizeof(wndClassName));
+  if (strcmp(wndClassName, "ConsoleWindowClass") != 0)
+    return TRUE;
+
+  DWORD wndProcess;
+  GetWindowThreadProcessId(hWnd, &wndProcess);
+  if (wndProcess != (DWORD)thisProcess)
+    return TRUE;
+
+  IsGUIProcessStatus = -1;
   return FALSE;
 }
+
+BOOL PProcess::IsGUIProcess() const
+{
+  if (IsGUIProcessStatus == 0) {
+    IsGUIProcessStatus = 1;
+    EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+  }
+  return IsGUIProcessStatus > 0;
+}
+
+#endif // _WIN32_WCE
 
 
 ///////////////////////////////////////////////////////////////////////////////
