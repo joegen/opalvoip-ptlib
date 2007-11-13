@@ -104,6 +104,7 @@
 
 #include <ctype.h>
 #include <signal.h>
+#include <stdexcept>
 #include <ptlib/pprocess.h>
 
 #ifndef __BEOS__
@@ -177,16 +178,18 @@ void PAssertFunc(const char * msg)
   if (&trace != &PError)
     PError << msg << endl;
 
+  char *env;
+
 #if P_EXCEPTIONS
   //Throw a runtime exception if the environment variable PWLIB_ASSERT_EXCEPTION is set
-  char * env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  env = ::getenv("PWLIB_ASSERT_EXCEPTION");
   if (env != NULL){
     throw std::runtime_error(msg);
   }
 #endif
   
 #ifndef P_VXWORKS
-  char * env = ::getenv("PWLIB_ASSERT_ACTION");
+  env = ::getenv("PWLIB_ASSERT_ACTION");
   if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
     inAssert = FALSE;
     return;
