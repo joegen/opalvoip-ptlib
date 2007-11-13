@@ -108,9 +108,9 @@ void PTelnetSocket::Construct()
   SetTheirOption(EchoOption);
 
 #ifdef _DEBUG
-  debug = TRUE;
+  debug = PTrue;
 #else
-  debug = FALSE;
+  debug = PFalse;
 #endif
 }
 
@@ -118,32 +118,32 @@ void PTelnetSocket::Construct()
 #define PTelnetError if (debug) PError << "PTelnetSocket: "
 #define PDebugError if (debug) PError
 
-BOOL PTelnetSocket::Connect(const PString & host)
+PBoolean PTelnetSocket::Connect(const PString & host)
 {
   PTelnetError << "Connect" << endl;
 
   if (!PTCPSocket::Connect(host))
-    return FALSE;
+    return PFalse;
 
   SendDo(SuppressGoAhead);
   SendDo(StatusOption);
   SendWill(TerminalSpeed);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::Accept(PSocket & sock)
+PBoolean PTelnetSocket::Accept(PSocket & sock)
 {
   if (!PTCPSocket::Accept(sock))
-    return FALSE;
+    return PFalse;
 
   SendDo(SuppressGoAhead);
   SendWill(StatusOption);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
+PBoolean PTelnetSocket::Write(void const * buffer, PINDEX length)
 {
   const BYTE * base = (const BYTE *)buffer;
   const BYTE * next = base;
@@ -154,12 +154,12 @@ BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
             !(length > 1 && next[1] == '\n') && !IsOurOption(TransmitBinary)) {
       // send the characters
       if (!PTCPSocket::Write(base, (next - base) + 1))
-        return FALSE;
+        return PFalse;
       count += lastWriteCount;
 
       char null = '\0';
       if (!PTCPSocket::Write(&null, 1))
-        return FALSE;
+        return PFalse;
       count += lastWriteCount;
 
       base = next+1;
@@ -168,7 +168,7 @@ BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
     if (*next == IAC) {
       // send the characters
       if (!PTCPSocket::Write(base, (next - base) + 1))
-        return FALSE;
+        return PFalse;
       count += lastWriteCount;
       base = next;
     }
@@ -179,16 +179,16 @@ BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
 
   if (next > base) {
     if (!PTCPSocket::Write(base, next - base))
-      return FALSE;
+      return PFalse;
     count += lastWriteCount;
   }
 
   lastWriteCount = count;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::SendCommand(Command cmd, int opt)
+PBoolean PTelnetSocket::SendCommand(Command cmd, int opt)
 {
   BYTE buffer[3];
   buffer[0] = IAC;
@@ -210,19 +210,19 @@ BOOL PTelnetSocket::SendCommand(Command cmd, int opt)
       if (opt) {
         // Send the command
         if (!PTCPSocket::Write(buffer, 2))
-          return FALSE;
+          return PFalse;
         // Send a TimingMark for output flush.
         buffer[1] = TimingMark;
         if (!PTCPSocket::Write(buffer, 2))
-          return FALSE;
+          return PFalse;
         // Send a DataMark for synchronisation.
         if (cmd != AbortOutput) {
           buffer[1] = DataMark;
           if (!PTCPSocket::Write(buffer, 2))
-            return FALSE;
+            return PFalse;
           // Send the datamark character as the only out of band data byte.
           if (!WriteOutOfBand(&buffer[1], 1))
-            return FALSE;
+            return PFalse;
         }
         // Then flush any waiting input data.
         PTimeInterval oldTimeout = readTimeout;
@@ -237,7 +237,7 @@ BOOL PTelnetSocket::SendCommand(Command cmd, int opt)
       return PTCPSocket::Write(buffer, 2);
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -293,21 +293,21 @@ static PString GetTELNETOptionName(PINDEX code)
 }
 
 
-BOOL PTelnetSocket::StartSend(const char * which, BYTE code)
+PBoolean PTelnetSocket::StartSend(const char * which, BYTE code)
 {
   PTelnetError << which << ' ' << GetTELNETOptionName(code) << ' ';
   if (IsOpen())
-    return TRUE;
+    return PTrue;
 
   PDebugError << "not open yet." << endl;
   return SetErrorValues(NotOpen, EBADF);
 }
 
 
-BOOL PTelnetSocket::SendDo(BYTE code)
+PBoolean PTelnetSocket::SendDo(BYTE code)
 {
   if (!StartSend("SendDo", code))
-    return FALSE;
+    return PFalse;
 
   OptionInfo & opt = option[code];
 
@@ -320,7 +320,7 @@ BOOL PTelnetSocket::SendDo(BYTE code)
 
     case OptionInfo::IsYes :
       PDebugError << "already enabled." << endl;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantNo :
       PDebugError << "queued.";
@@ -330,12 +330,12 @@ BOOL PTelnetSocket::SendDo(BYTE code)
     case OptionInfo::WantNoQueued :
       PDebugError << "already queued." << endl;
       opt.theirState = OptionInfo::IsNo;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantYes :
       PDebugError << "already negotiating." << endl;
       opt.theirState = OptionInfo::IsNo;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantYesQueued :
       PDebugError << "dequeued.";
@@ -344,21 +344,21 @@ BOOL PTelnetSocket::SendDo(BYTE code)
   }
 
   PDebugError << endl;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::SendDont(BYTE code)
+PBoolean PTelnetSocket::SendDont(BYTE code)
 {
   if (!StartSend("SendDont", code))
-    return FALSE;
+    return PFalse;
 
   OptionInfo & opt = option[code];
 
   switch (opt.theirState) {
     case OptionInfo::IsNo :
       PDebugError << "already disabled." << endl;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::IsYes :
       PDebugError << "initiated.";
@@ -369,7 +369,7 @@ BOOL PTelnetSocket::SendDont(BYTE code)
     case OptionInfo::WantNo :
       PDebugError << "already negotiating." << endl;
       opt.theirState = OptionInfo::IsNo;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantNoQueued :
       PDebugError << "dequeued.";
@@ -384,21 +384,21 @@ BOOL PTelnetSocket::SendDont(BYTE code)
     case OptionInfo::WantYesQueued :
       PDebugError << "already queued." << endl;
       opt.theirState = OptionInfo::IsYes;
-      return FALSE;
+      return PFalse;
   }
 
   PDebugError << endl;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::SendWill(BYTE code)
+PBoolean PTelnetSocket::SendWill(BYTE code)
 {
   if (!StartSend("SendWill", code))
-    return FALSE;
+    return PFalse;
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   OptionInfo & opt = option[code];
 
@@ -411,7 +411,7 @@ BOOL PTelnetSocket::SendWill(BYTE code)
 
     case OptionInfo::IsYes :
       PDebugError << "already enabled." << endl;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantNo :
       PDebugError << "queued.";
@@ -421,12 +421,12 @@ BOOL PTelnetSocket::SendWill(BYTE code)
     case OptionInfo::WantNoQueued :
       PDebugError << "already queued." << endl;
       opt.ourState = OptionInfo::IsNo;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantYes :
       PDebugError << "already negotiating." << endl;
       opt.ourState = OptionInfo::IsNo;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantYesQueued :
       PDebugError << "dequeued.";
@@ -435,21 +435,21 @@ BOOL PTelnetSocket::SendWill(BYTE code)
   }
 
   PDebugError << endl;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::SendWont(BYTE code)
+PBoolean PTelnetSocket::SendWont(BYTE code)
 {
   if (!StartSend("SendWont", code))
-    return FALSE;
+    return PFalse;
 
   OptionInfo & opt = option[code];
 
   switch (opt.ourState) {
     case OptionInfo::IsNo :
       PDebugError << "already disabled." << endl;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::IsYes :
       PDebugError << "initiated.";
@@ -460,7 +460,7 @@ BOOL PTelnetSocket::SendWont(BYTE code)
     case OptionInfo::WantNo :
       PDebugError << "already negotiating." << endl;
       opt.ourState = OptionInfo::IsNo;
-      return FALSE;
+      return PFalse;
 
     case OptionInfo::WantNoQueued :
       PDebugError << "dequeued.";
@@ -475,19 +475,19 @@ BOOL PTelnetSocket::SendWont(BYTE code)
     case OptionInfo::WantYesQueued :
       PDebugError << "already queued." << endl;
       opt.ourState = OptionInfo::IsYes;
-      return FALSE;
+      return PFalse;
   }
 
   PDebugError << endl;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTelnetSocket::SendSubOption(BYTE code,
+PBoolean PTelnetSocket::SendSubOption(BYTE code,
                                     const BYTE * info, PINDEX len, int subCode)
 {
   if (!StartSend("SendSubOption", code))
-    return FALSE;
+    return PFalse;
 
   PDebugError << "with " << len << " bytes." << endl;
 
@@ -542,7 +542,7 @@ void PTelnetSocket::GetWindowSize(WORD & width, WORD & height) const
 }
 
 
-BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
+PBoolean PTelnetSocket::Read(void * data, PINDEX bytesToRead)
 {
   PBYTEArray buffer(bytesToRead);
   PINDEX charsLeft = bytesToRead;
@@ -684,7 +684,7 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
     }
   }
   lastReadCount = bytesToRead;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -912,12 +912,12 @@ void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX len)
 }
 
 
-BOOL PTelnetSocket::OnCommand(BYTE code)
+PBoolean PTelnetSocket::OnCommand(BYTE code)
 {
   if (code == NOP)
-    return TRUE;
+    return PTrue;
   PTelnetError << "unknown command " << (int)code << endl;
-  return TRUE;
+  return PTrue;
 }
 
 void PTelnetSocket::OnOutOfBand(const void *, PINDEX length)

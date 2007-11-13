@@ -88,15 +88,15 @@ PDECLARE_SORTED_LIST(NAPTRRecordList, PDNS::NAPTRRecord)
     PDNS::NAPTRRecord * HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS_RECORD results);
 
     void UnlockOrder()
-    { orderLocked = FALSE; }
+    { orderLocked = PFalse; }
 
   protected:
     PINDEX     currentPos;
     int        lastOrder;
-    BOOL       orderLocked;
+    PBoolean       orderLocked;
 };
 
-inline BOOL GetRecords(const PString & domain, NAPTRRecordList & recordList)
+inline PBoolean GetRecords(const PString & domain, NAPTRRecordList & recordList)
 { return Lookup<NAPTR_SRV, NAPTRRecordList, NAPTRRecord>(domain, recordList); }
 
 /**
@@ -108,13 +108,13 @@ void SetENUMServers(const PStringArray & serverlist);
   * Perform a lookup of the specified DN using the specified service
   * and domain list. Returns the resultant URL
   *
-  * @return TRUE if the DN could be resolved, else FALSE
+  * @return PTrue if the DN could be resolved, else PFalse
   */
-BOOL ENUMLookup(
+PBoolean ENUMLookup(
                 const PString & dn,             ///< DN to lookup
                 const PString & service,        ///< ENUM service to use
                 const PStringArray & domains,   ///< list of ENUM domains to search
-                PString & URL                   ///< resolved URL, if return value is TRUE
+                PString & URL                   ///< resolved URL, if return value is PTrue
 );
 
 /**
@@ -123,11 +123,11 @@ BOOL ENUMLookup(
   *
   * This function uses the default domain list, which can be set by the SetENUMServers function
   *
-  * @return TRUE if the DN could be resolved, else FALSE
+  * @return PTrue if the DN could be resolved, else PFalse
   */
-BOOL ENUMLookup(const PString & dn,             ///< DN to lookup
+PBoolean ENUMLookup(const PString & dn,             ///< DN to lookup
                 const PString & service,        ///< ENUM service to use
-                PString & URL                   ///< resolved URL, if return value is TRUE
+                PString & URL                   ///< resolved URL, if return value is PTrue
 );   
 
 
@@ -159,12 +159,12 @@ void SetRDSServers(const PStringArray & servers);
   * specified service. Returns the resultant corresponding 
   * signalling addresses
   *
-  * @return TRUE if the url could be resolved, else FALSE
+  * @return PTrue if the url could be resolved, else PFalse
   */
 
-BOOL RDSLookup(const PURL & url,           ///< URL to lookup
+PBoolean RDSLookup(const PURL & url,           ///< URL to lookup
             const PString & service,       ///< Service to use
-			  PStringList & dn             ///< resolved addresses, if return value is TRUE
+			  PStringList & dn             ///< resolved addresses, if return value is PTrue
 );
 
 /**
@@ -172,13 +172,13 @@ BOOL RDSLookup(const PURL & url,           ///< URL to lookup
   * on the specified server list that uses the specified service
   * Returns the resultant corresponding signalling addresses
   *
-  * @return TRUE if the url could be resolved, else FALSE
+  * @return PTrue if the url could be resolved, else PFalse
   */
 
-BOOL RDSLookup(const PURL & url,            ///< URL to lookup
+PBoolean RDSLookup(const PURL & url,            ///< URL to lookup
             const PString & service,        ///< Service to use
        const PStringArray & naptrSpaces,    ///< RDS Servers to lookup
-              PStringList & returnStr       ///< resolved addresses, if return value is TRUE
+              PStringList & returnStr       ///< resolved addresses, if return value is PTrue
 );
 
 }; // namespace PDNS

@@ -669,7 +669,7 @@ PString PTime::GetTimeSeparator()
 }
 
 
-BOOL PTime::GetTimeAMPM()
+PBoolean PTime::GetTimeAMPM()
 {
   char str[2];
   PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_ITIME, str, sizeof(str));
@@ -735,7 +735,7 @@ PTime::DateOrder PTime::GetDateOrder()
 }
 
 
-BOOL PTime::IsDaylightSavings()
+PBoolean PTime::IsDaylightSavings()
 {
   TIME_ZONE_INFORMATION tz;
   DWORD result = GetTimeZoneInformation(&tz);
@@ -815,7 +815,7 @@ void PDirectory::Construct()
 {
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
-  PCaselessString::AssignContents(CreateFullPath(*this, TRUE));
+  PCaselessString::AssignContents(CreateFullPath(*this, PTrue));
 }
 
 
@@ -827,7 +827,7 @@ void PDirectory::CopyContents(const PDirectory & dir)
 }
 
 
-BOOL PDirectory::Open(int newScanMask)
+PBoolean PDirectory::Open(int newScanMask)
 {
   scanMask = newScanMask;
 #ifdef UNICODE
@@ -837,23 +837,23 @@ BOOL PDirectory::Open(int newScanMask)
   hFindFile = FindFirstFile(operator+("*.*"), &fileinfo);
 #endif
   if (hFindFile == INVALID_HANDLE_VALUE)
-    return FALSE;
+    return PFalse;
 
-  return Filtered() ? Next() : TRUE;
+  return Filtered() ? Next() : PTrue;
 }
 
 
-BOOL PDirectory::Next()
+PBoolean PDirectory::Next()
 {
   if (hFindFile == INVALID_HANDLE_VALUE)
-    return FALSE;
+    return PFalse;
 
   do {
     if (!FindNextFile(hFindFile, &fileinfo))
-      return FALSE;
+      return PFalse;
   } while (Filtered());
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -863,7 +863,7 @@ PCaselessString PDirectory::GetEntryName() const
 }
 
 
-BOOL PDirectory::IsSubDir() const
+PBoolean PDirectory::IsSubDir() const
 {
   return (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
@@ -890,7 +890,7 @@ void PDirectory::Close()
 }
 
 
-PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
+PString PDirectory::CreateFullPath(const PString & path, PBoolean isDirectory)
 {
   if (path.IsEmpty() && !isDirectory)
     return path;
@@ -925,13 +925,13 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 }
 
 
-typedef BOOL (WINAPI *GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
+typedef PBoolean (WINAPI *GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
                                               PULARGE_INTEGER lpFreeBytesAvailableToCaller,
                                               PULARGE_INTEGER lpTotalNumberOfBytes,
                                               PULARGE_INTEGER lpTotalNumberOfFreeBytes);
 
 
-BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
+PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
   clusterSize = 512;
   total = free = ULONG_MAX;
@@ -949,10 +949,10 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   }
 
   if (root.IsEmpty())
-    return FALSE;
+    return PFalse;
 
 #ifndef _WIN32_WCE
-  BOOL needTotalAndFree = TRUE;
+  PBoolean needTotalAndFree = PTrue;
 
   static GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
         (GetDiskFreeSpaceExType)GetProcAddress(LoadLibrary("KERNEL32.DLL"), "GetDiskFreeSpaceExA");
@@ -966,7 +966,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
                            &totalNumberOfFreeBytes)) {
       total = totalNumberOfBytes.QuadPart;
       free = totalNumberOfFreeBytes.QuadPart;
-      needTotalAndFree = FALSE;
+      needTotalAndFree = PFalse;
     }
   }
 
@@ -976,7 +976,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
     if (strcasecmp(fsName, "FAT32") == 0) {
       clusterSize = 4096; // Cannot use GetDiskFreeSpace() results for FAT32
       if (!needTotalAndFree)
-        return TRUE;
+        return PTrue;
     }
   }
 
@@ -992,22 +992,22 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
                         &totalNumberOfClusters)) 
 {
     if (root[0] != '\\' || ::GetLastError() != ERROR_NOT_SUPPORTED)
-      return FALSE;
+      return PFalse;
 
     PString drive = "A:";
     while (WNetAddConnection(root, NULL, drive) != NO_ERROR) {
       if (GetLastError() != ERROR_ALREADY_ASSIGNED)
-        return FALSE;
+        return PFalse;
       drive[0]++;
     }
-    BOOL ok = GetDiskFreeSpace(drive+'\\',
+    PBoolean ok = GetDiskFreeSpace(drive+'\\',
                                &sectorsPerCluster,
                                &bytesPerSector,
                                &numberOfFreeClusters,
                                &totalNumberOfClusters);
-    WNetCancelConnection(drive, TRUE);
+    WNetCancelConnection(drive, PTrue);
     if (!ok)
-      return FALSE;
+      return PFalse;
   }
 
   if (needTotalAndFree) {
@@ -1018,7 +1018,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   if (clusterSize == 0)
     clusterSize = bytesPerSector*sectorsPerCluster;
 
-  return TRUE;
+  return PTrue;
 #elif _WIN32_WCE < 300
   USES_CONVERSION;
     ULARGE_INTEGER freeBytesAvailableToCaller;
@@ -1032,11 +1032,11 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
     total = totalNumberOfBytes.QuadPart;
     free = totalNumberOfFreeBytes.QuadPart;
     clusterSize = 512; //X3
-    return TRUE;
+    return PTrue;
   }
-  return FALSE;
+  return PFalse;
 #else
-  return FALSE;
+  return PFalse;
 #endif
 }
 
@@ -1049,13 +1049,13 @@ static PString IllegalFilenameCharacters =
   "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\0x10"
   "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f";
 
-BOOL PFilePath::IsValid(char c)
+PBoolean PFilePath::IsValid(char c)
 {
   return IllegalFilenameCharacters.Find(c) == P_MAX_INDEX;
 }
 
 
-BOOL PFilePath::IsValid(const PString & str)
+PBoolean PFilePath::IsValid(const PString & str)
 {
   return str != "." && str != ".." &&
          str.FindOneOf(IllegalFilenameCharacters) == P_MAX_INDEX;
@@ -1122,12 +1122,12 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
 }
 
 
-BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
+PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 {
   if (status >= 0) {
     lastError = NoError;
     osError = 0;
-    return TRUE;
+    return PTrue;
   }
 
   if (status != -2)
@@ -1157,12 +1157,12 @@ BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
       case WSAEMSGSIZE :
         osError |= PWIN32ErrorFlag;
         lastError = BufferTooSmall;
-        return FALSE;
+        return PFalse;
       case WSAEWOULDBLOCK :
       case WSAETIMEDOUT :
         osError |= PWIN32ErrorFlag;
         lastError = Timeout;
-        return FALSE;
+        return PFalse;
       default :
         osError |= PWIN32ErrorFlag;
     }
@@ -1171,7 +1171,7 @@ BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return TRUE;
+      return PTrue;
     case ENOENT :
       lastError = NotFound;
       break;
@@ -1203,7 +1203,7 @@ BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
       lastError = Miscellaneous;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1213,7 +1213,7 @@ BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 PWin32Overlapped::PWin32Overlapped()
 {
   memset(this, 0, sizeof(*this));
-  hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  hEvent = CreateEvent(NULL, PTrue, PFalse, NULL);
 }
 
 PWin32Overlapped::~PWin32Overlapped()
@@ -1247,8 +1247,8 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
  * after the thread has been started
  *
 #ifndef _WIN32_WCE
-  AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
-  AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
+  AttachThreadInput(thread->threadId, ((PThread&)process).threadId, PTrue);
+  AttachThreadInput(((PThread&)process).threadId, thread->threadId, PTrue);
 #endif
 */
 
@@ -1276,8 +1276,8 @@ void PThread::Win32AttachThreadInput()
 {
 #ifndef _WIN32_WCE
   PProcess & process = PProcess::Current();
-  ::AttachThreadInput(threadId, ((PThread&)process).threadId, TRUE);
-  ::AttachThreadInput(((PThread&)process).threadId, threadId, TRUE);
+  ::AttachThreadInput(threadId, ((PThread&)process).threadId, PTrue);
+  ::AttachThreadInput(((PThread&)process).threadId, threadId, PTrue);
 #endif
 }
 
@@ -1364,10 +1364,10 @@ void PThread::Terminate()
 }
 
 
-BOOL PThread::IsTerminated() const
+PBoolean PThread::IsTerminated() const
 {
   if (this == PThread::Current())
-    return FALSE;
+    return PFalse;
 
   return WaitForTermination(0);
 }
@@ -1379,35 +1379,35 @@ void PThread::WaitForTermination() const
 }
 
 
-BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if ((this == PThread::Current()) || threadHandle == NULL) {
     PTRACE(3, "PWLib\tWaitForTermination short circuited");
-    return TRUE;
+    return PTrue;
   }
 
   DWORD result;
   PINDEX retries = 10;
   while ((result = WaitForSingleObject(threadHandle, maxWait.GetInterval())) != WAIT_TIMEOUT) {
     if (result == WAIT_OBJECT_0)
-      return TRUE;
+      return PTrue;
 
     if (::GetLastError() != ERROR_INVALID_HANDLE) {
       PAssertAlways(POperatingSystemError);
-      return TRUE;
+      return PTrue;
     }
 
     if (retries == 0)
-      return TRUE;
+      return PTrue;
 
     retries--;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-void PThread::Suspend(BOOL susp)
+void PThread::Suspend(PBoolean susp)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
   if (susp)
@@ -1424,7 +1424,7 @@ void PThread::Resume()
 }
 
 
-BOOL PThread::IsSuspended() const
+PBoolean PThread::IsSuspended() const
 {
   SuspendThread(threadHandle);
   return ResumeThread(threadHandle) > 1;
@@ -1512,7 +1512,7 @@ void PThread::Yield()
 void PThread::InitialiseProcessThread()
 {
   originalStackSize = 0;
-  autoDelete = FALSE;
+  autoDelete = PFalse;
   threadHandle = GetCurrentThread();
   threadId = GetCurrentThreadId();
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
@@ -1593,7 +1593,7 @@ void PProcess::HouseKeepingThread::Main()
     DWORD result;
     int retries = 100;
 
-    while ((result = WaitForMultipleObjects(numHandles, handles, FALSE, delay)) == WAIT_FAILED) {
+    while ((result = WaitForMultipleObjects(numHandles, handles, PFalse, delay)) == WAIT_FAILED) {
 
       // if we get an invalid handle error, than assume this is because a thread ended between
       // creating the handle list and testing it. So, cleanup the list before calling 
@@ -1798,13 +1798,13 @@ PString PProcess::GetUserName() const
 }
 
 
-BOOL PProcess::SetUserName(const PString & username, BOOL)
+PBoolean PProcess::SetUserName(const PString & username, PBoolean)
 {
   if (username.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1814,13 +1814,13 @@ PString PProcess::GetGroupName() const
 }
 
 
-BOOL PProcess::SetGroupName(const PString & groupname, BOOL)
+PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean)
 {
   if (groupname.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1830,15 +1830,15 @@ DWORD PProcess::GetProcessID() const
 }
 
 
-BOOL PProcess::IsServiceProcess() const
+PBoolean PProcess::IsServiceProcess() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PProcess::IsGUIProcess() const
+PBoolean PProcess::IsGUIProcess() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1887,7 +1887,7 @@ void PSemaphore::Wait()
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & timeout)
+PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 {
   DWORD result = WaitForSingleObject(handle, timeout.GetInterval());
   PAssertOS(result != WAIT_FAILED);
@@ -1903,15 +1903,15 @@ void PSemaphore::Signal()
 }
 
 
-BOOL PSemaphore::WillBlock() const
+PBoolean PSemaphore::WillBlock() const
 {
   PSemaphore * unconst = (PSemaphore *)this;
 
   if (!unconst->Wait(0))
-    return TRUE;
+    return PTrue;
 
   unconst->Signal();
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1919,12 +1919,12 @@ BOOL PSemaphore::WillBlock() const
 // PTimedMutex
 
 PTimedMutex::PTimedMutex()
-  : PSemaphore(::CreateMutex(NULL, FALSE, NULL))
+  : PSemaphore(::CreateMutex(NULL, PFalse, NULL))
 {
 }
 
 PTimedMutex::PTimedMutex(const PTimedMutex &)
-  : PSemaphore(::CreateMutex(NULL, FALSE, NULL))
+  : PSemaphore(::CreateMutex(NULL, PFalse, NULL))
 {
 }
 
@@ -1937,12 +1937,12 @@ void PTimedMutex::Signal()
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
-  : PSemaphore(::CreateEvent(NULL, FALSE, FALSE, NULL))
+  : PSemaphore(::CreateEvent(NULL, PFalse, PFalse, NULL))
 {
 }
 
 PSyncPoint::PSyncPoint(const PSyncPoint &)
-  : PSemaphore(::CreateEvent(NULL, FALSE, FALSE, NULL))
+  : PSemaphore(::CreateEvent(NULL, PFalse, PFalse, NULL))
 {
 }
 
@@ -1979,7 +1979,7 @@ PString PDynaLink::GetExtension()
 }
 
 
-BOOL PDynaLink::Open(const PString & name)
+PBoolean PDynaLink::Open(const PString & name)
 {
 #ifdef UNICODE
   USES_CONVERSION;
@@ -2000,13 +2000,13 @@ void PDynaLink::Close()
 }
 
 
-BOOL PDynaLink::IsLoaded() const
+PBoolean PDynaLink::IsLoaded() const
 {
   return _hDLL != NULL;
 }
 
 
-PString PDynaLink::GetName(BOOL full) const
+PString PDynaLink::GetName(PBoolean full) const
 {
   PFilePathString str;
   if (_hDLL != NULL) 
@@ -2032,10 +2032,10 @@ PString PDynaLink::GetName(BOOL full) const
 }
 
 
-BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
 {
   if (_hDLL == NULL)
-    return FALSE;
+    return PFalse;
 
 #ifndef _WIN32_WCE 
   FARPROC p = GetProcAddress(_hDLL, (LPSTR)(DWORD)LOWORD(index));
@@ -2043,17 +2043,17 @@ BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
  FARPROC p = GetProcAddress(_hDLL, (LPTSTR)(DWORD)LOWORD(index));
 #endif
   if (p == NULL)
-    return FALSE;
+    return PFalse;
 
   func = (Function)p;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
 {
   if (_hDLL == NULL)
-    return FALSE;
+    return PFalse;
 
 #ifdef UNICODE
   USES_CONVERSION;
@@ -2062,10 +2062,10 @@ BOOL PDynaLink::GetFunction(const PString & name, Function & func)
   FARPROC p = GetProcAddress(_hDLL, name);
 #endif
   if (p == NULL)
-    return FALSE;
+    return PFalse;
 
   func = (Function)p;
-  return TRUE;
+  return PTrue;
 }
 
 

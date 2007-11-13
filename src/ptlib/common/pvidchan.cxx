@@ -40,7 +40,7 @@
  * Various cleanups thanks for Frederic Heem
  *
  * Revision 1.17  2006/02/20 06:14:41  csoutheren
- * Return FALSE if video channel read fails
+ * Return PFalse if video channel read fails
  *
  * Revision 1.16  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
@@ -156,7 +156,7 @@ PString PVideoChannel::GetDefaultDevice(Directions /*dir*/)
 }
 
 
-BOOL PVideoChannel::Open(const PString & dev,
+PBoolean PVideoChannel::Open(const PString & dev,
                          Directions dir)
 {
   PWaitAndSignal m(accessMutex);
@@ -166,17 +166,17 @@ BOOL PVideoChannel::Open(const PString & dev,
   deviceName = dev;
   direction = dir;
   
-  return TRUE;
+  return PTrue;
 }
 
 
 
-BOOL PVideoChannel::Read(void * buf, PINDEX  len)
+PBoolean PVideoChannel::Read(void * buf, PINDEX  len)
 {
   PWaitAndSignal m(accessMutex);
 
   if (mpInput == NULL)  
-    return FALSE;
+    return PFalse;
 
   BYTE * dataBuf;
   PINDEX dataLen;
@@ -184,23 +184,23 @@ BOOL PVideoChannel::Read(void * buf, PINDEX  len)
   dataLen = len;
   return mpInput->GetFrameData(dataBuf, &dataLen);
 
-  // CHANGED  return TRUE;
+  // CHANGED  return PTrue;
 }
 
-BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
+PBoolean PVideoChannel::Write(const void * buf,  //image data to be rendered
                           PINDEX      /* len */)
 {
   PWaitAndSignal m(accessMutex);
 
   if (mpOutput == NULL)
-    return FALSE;
+    return PFalse;
 
 
   if (mpInput == NULL) {
     PTRACE(6,"PVC\t::Write, frame size is "
               << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
               " VideoGrabber is unavailabile");
-    return mpOutput->SetFrameData(0, 0, mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(), (const BYTE *)buf, TRUE);
+    return mpOutput->SetFrameData(0, 0, mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(), (const BYTE *)buf, PTrue);
   }
 
   PTRACE(6,"PVC\t::Write, frame size is " 
@@ -208,21 +208,21 @@ BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
                " VideoGrabber is source of size");
   return mpOutput->SetFrameData(0, 0,
         mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
-           (const BYTE *)buf, TRUE);  
+           (const BYTE *)buf, PTrue);  
 }
 
-BOOL PVideoChannel::Close()
+PBoolean PVideoChannel::Close()
 {
   PWaitAndSignal m(accessMutex);
 
   CloseVideoReader();
   CloseVideoPlayer();
 
-  return TRUE;
+  return PTrue;
 }
 
 /*returns true if either input or output is open */
-BOOL PVideoChannel::IsOpen() const 
+PBoolean PVideoChannel::IsOpen() const 
 {
    PWaitAndSignal m(accessMutex);
 
@@ -235,7 +235,7 @@ PString PVideoChannel::GetName() const
   return deviceName;
 }
 
-void PVideoChannel::AttachVideoPlayer(PVideoOutputDevice * device, BOOL keepCurrent)
+void PVideoChannel::AttachVideoPlayer(PVideoOutputDevice * device, PBoolean keepCurrent)
 {
   PWaitAndSignal m(accessMutex);
 
@@ -247,7 +247,7 @@ void PVideoChannel::AttachVideoPlayer(PVideoOutputDevice * device, BOOL keepCurr
   mpOutput = device;
 }
 
-void PVideoChannel::AttachVideoReader(PVideoInputDevice * device, BOOL keepCurrent)
+void PVideoChannel::AttachVideoReader(PVideoInputDevice * device, PBoolean keepCurrent)
 {
   PWaitAndSignal m(accessMutex);
 
@@ -299,32 +299,32 @@ PINDEX  PVideoChannel::GetGrabWidth()
      return 0;
 }
 
-BOOL PVideoChannel::IsGrabberOpen()
+PBoolean PVideoChannel::IsGrabberOpen()
 {
   PWaitAndSignal m(accessMutex);
 
   if (mpInput != NULL)
     return mpInput->IsOpen();
   else
-    return FALSE; 
+    return PFalse; 
 }
 
-BOOL PVideoChannel::IsRenderOpen()      
+PBoolean PVideoChannel::IsRenderOpen()      
 {
   PWaitAndSignal m(accessMutex);
 
   if (mpOutput != NULL)
     return mpOutput->IsOpen();
   else
-    return FALSE; 
+    return PFalse; 
 }
 
-BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
+PBoolean PVideoChannel::DisplayRawData(void *videoBuffer)
 {
   PWaitAndSignal m(accessMutex);
 
   if ((mpOutput == NULL) || (mpInput == NULL))
-    return FALSE;
+    return PFalse;
   
   PINDEX length=0;
 
@@ -336,7 +336,7 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
   Read(videoBuffer, length);
   Write((const void *)videoBuffer, length);
   
-  return TRUE;      
+  return PTrue;      
 }
 
 void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)     
@@ -369,7 +369,7 @@ PVideoOutputDevice *PVideoChannel::GetVideoPlayer()
   return mpOutput;
 }
 
-BOOL  PVideoChannel::Redraw(const void * frame) 
+PBoolean  PVideoChannel::Redraw(const void * frame) 
 { 
   PTRACE(6,"PVC\t::Redraw a frame");
   return Write(frame, 0);
@@ -407,14 +407,14 @@ void PVideoChannel::EnableAccess()
 }
 
 
-BOOL PVideoChannel::ToggleVFlipInput()
+PBoolean PVideoChannel::ToggleVFlipInput()
 {
   PWaitAndSignal m(accessMutex);
 
  if (mpOutput != NULL)
   return mpInput->SetVFlipState(mpInput->GetVFlipState()); 
 
- return FALSE;
+ return PFalse;
 }
 
 #endif

@@ -284,7 +284,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     return str;
   }
 
-  BOOL hadPrevious = FALSE;
+  PBoolean hadPrevious = PFalse;
   long tmp;
 
   str.fill('0');
@@ -293,7 +293,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     tmp = (long)(ms/86400000);
     if (tmp > 0 || width > (precision+10)) {
       str << tmp << 'd';
-      hadPrevious = TRUE;
+      hadPrevious = PTrue;
     }
 
     tmp = (long)(ms%86400000)/3600000;
@@ -305,7 +305,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     if (hadPrevious)
       str.width(2);
     str << tmp << ':';
-    hadPrevious = TRUE;
+    hadPrevious = PTrue;
   }
 
   tmp = (long)(ms%3600000)/60000;
@@ -313,7 +313,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     if (hadPrevious)
       str.width(2);
     str << tmp << ':';
-    hadPrevious = TRUE;
+    hadPrevious = PTrue;
   }
 
   if (hadPrevious)
@@ -446,7 +446,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
   PString fmt, dsep;
 
   PString tsep = GetTimeSeparator();
-  BOOL is12hour = GetTimeAMPM();
+  PBoolean is12hour = GetTimeAMPM();
 
   switch (format ) {
     case LongDateTime :
@@ -548,7 +548,7 @@ PString PTime::AsString(const char * format, int zone) const
 {
   PAssert(format != NULL, PInvalidParameter);
 
-  BOOL is12hour = strchr(format, 'a') != NULL;
+  PBoolean is12hour = strchr(format, 'a') != NULL;
 
   PStringStream str;
   str.fill('0');

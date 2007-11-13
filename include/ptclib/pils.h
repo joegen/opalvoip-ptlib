@@ -107,9 +107,9 @@ class PILSSession : public PLDAPSession
        PLDAP_ATTR_INIT(RTPerson, PString,     sappid,       PProcess::Current().GetName()); // Must be non-empty
        PLDAP_ATTR_INIT(RTPerson, PString,     sappguid,     "none"); // Must be non-empty
        PLDAP_ATTR_SIMP(RTPerson, PStringList, smimetype);
-       PLDAP_ATTR_INIT(RTPerson, BOOL,        ilsa32833566, 0); // 1=audio capable
-       PLDAP_ATTR_INIT(RTPerson, BOOL,        ilsa32964638, 0); // 1=video capable
-       PLDAP_ATTR_INIT(RTPerson, BOOL,        ilsa26214430, 0); // 1=in a call
+       PLDAP_ATTR_INIT(RTPerson, PBoolean,        ilsa32833566, 0); // 1=audio capable
+       PLDAP_ATTR_INIT(RTPerson, PBoolean,        ilsa32964638, 0); // 1=video capable
+       PLDAP_ATTR_INIT(RTPerson, PBoolean,        ilsa26214430, 0); // 1=in a call
        PLDAP_ATTR_INIT(RTPerson, unsigned,    ilsa26279966, 0); // unknown
        PLDAP_ATTR_INIT(RTPerson, unsigned,    ilsa39321630, 0); // 1 personal; 2 business user; 4 adults-only
        PLDAP_ATTR_INIT(RTPerson, time_t,      timestamp,    PTime().GetTimeInSeconds());
@@ -119,19 +119,19 @@ class PILSSession : public PLDAPSession
 
     PLDAP_STRUCT_END();
 
-    BOOL AddPerson(
+    PBoolean AddPerson(
       const RTPerson & person
     );
 
-    BOOL ModifyPerson(
+    PBoolean ModifyPerson(
       const RTPerson & person
     );
 
-    BOOL DeletePerson(
+    PBoolean DeletePerson(
       const RTPerson & person
     );
 
-    BOOL SearchPerson(
+    PBoolean SearchPerson(
       const PString & canonicalName,
       RTPerson & person
     );

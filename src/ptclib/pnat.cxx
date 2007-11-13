@@ -84,7 +84,7 @@ PNatMethod * PNatStrategy::GetMethod()
   return NULL;
 }
 
-BOOL PNatStrategy::RemoveMethod(const PString & meth)
+PBoolean PNatStrategy::RemoveMethod(const PString & meth)
 {
   for (PINDEX i=0; i < natlist.GetSize(); i++) {
        PNatMethod * m = (PNatMethod *)natlist.GetAt(i);
@@ -92,12 +92,12 @@ BOOL PNatStrategy::RemoveMethod(const PString & meth)
 	     PStringList methname = m->GetNatMethodName();
 	     if (methname[0] == meth) {
             natlist.RemoveAt(i);
-            return TRUE;
+            return PTrue;
 	     }
 	   }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 void PNatStrategy::SetPortRanges(

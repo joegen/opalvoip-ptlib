@@ -155,7 +155,7 @@ class PBase64 : public PObject
     PBase64();
 
     void StartEncoding(
-      BOOL useCRLFs = TRUE  // Use CR, LF pairs in end of line characters.
+      PBoolean useCRLFs = PTrue  // Use CR, LF pairs in end of line characters.
     );
     // Begin a base 64 encoding operation, initialising the object instance.
 
@@ -213,12 +213,12 @@ class PBase64 : public PObject
     /** Incorporate the specified data into the base 64 decoding.
     
        @return
-       TRUE if block was last in the Base64 encoded string.
+       PTrue if block was last in the Base64 encoded string.
      */
-    BOOL ProcessDecoding(
+    PBoolean ProcessDecoding(
       const PString & str      // String to be encoded
     );
-    BOOL ProcessDecoding(
+    PBoolean ProcessDecoding(
       const char * cstr        // C String to be encoded
     );
 
@@ -227,7 +227,7 @@ class PBase64 : public PObject
        @return
        Decoded data for the processed Base64 string.
      */
-    BOOL GetDecodedData(
+    PBoolean GetDecodedData(
       void * dataBlock,    // Pointer to data to be decoded from base64
       PINDEX length        // Length of the data block.
     );
@@ -240,14 +240,14 @@ class PBase64 : public PObject
        @return
        Decoded data for the processed Base64 string.
      */
-    BOOL IsDecodeOK() { return perfectDecode; }
+    PBoolean IsDecodeOK() { return perfectDecode; }
 
 
     /** Convert a printable text string to binary data using the Internet MIME
        standard base 64 content transfer encoding.
 
-       The base64 string is checked and TRUE returned if all perfectly correct.
-       If FALSE is returned then the string had extraneous or illegal
+       The base64 string is checked and PTrue returned if all perfectly correct.
+       If PFalse is returned then the string had extraneous or illegal
        characters in it that were ignored. This does not mean that the data is
        not valid, only that it is suspect.
     
@@ -257,11 +257,11 @@ class PBase64 : public PObject
     static PString Decode(
       const PString & str // Encoded base64 string to be decoded.
     );
-    static BOOL Decode(
+    static PBoolean Decode(
       const PString & str, // Encoded base64 string to be decoded.
       PBYTEArray & data    // Converted binary data from base64.
     );
-    static BOOL Decode(
+    static PBoolean Decode(
       const PString & str, // Encoded base64 string to be decoded.
       void * dataBlock,    // Pointer to data to be decoded from base64
       PINDEX length        // Length of the data block.
@@ -277,9 +277,9 @@ class PBase64 : public PObject
     BYTE    saveTriple[3];
     PINDEX  saveCount;
     PINDEX  nextLine;
-    BOOL    useCRLFs;
+    PBoolean    useCRLFs;
 
-    BOOL       perfectDecode;
+    PBoolean       perfectDecode;
     PINDEX     quadPosition;
     PBYTEArray decodedData;
     PINDEX     decodeSize;
@@ -609,12 +609,12 @@ class PCypher : public PObject
       const PString & cypher   ///< Base64 Cypher text string to be decoded.
     );
     /**Decode the data. */
-    BOOL Decode(
+    PBoolean Decode(
       const PString & cypher,  ///< Base64 Cypher text string to be decoded.
       PString & clear          ///< Clear text string decoded.
     );
     /**Decode the data. */
-    BOOL Decode(
+    PBoolean Decode(
       const PString & cypher,  ///< Base64 Cypher text string to be decoded.
       PBYTEArray & clear       ///< Clear text binary data decoded.
     );
@@ -645,7 +645,7 @@ class PCypher : public PObject
     @return
       decoded string.
     */
-    BOOL Decode(
+    PBoolean Decode(
       const PBYTEArray & coded, ///< Encoded data (cyphertext).
       PBYTEArray & clear       ///< Clear text binary data decoded.
     );
@@ -669,7 +669,7 @@ class PCypher : public PObject
 
     /** Initialise the encoding/decoding sequence. */
     virtual void Initialise(
-      BOOL encoding   ///< Flag for encoding/decoding sequence about to start.
+      PBoolean encoding   ///< Flag for encoding/decoding sequence about to start.
     ) = 0;
 
     /** Encode an n bit block of memory according to the encryption algorithm. */
@@ -744,7 +744,7 @@ class PTEACypher : public PCypher
   protected:
     /** Initialise the encoding/decoding sequence. */
     virtual void Initialise(
-      BOOL encoding   ///< Flag for encoding/decoding sequence about to start.
+      PBoolean encoding   ///< Flag for encoding/decoding sequence about to start.
     );
 
     /** Encode an n bit block of memory according to the encryption algorithm. */
@@ -856,14 +856,14 @@ class PSecureConfig : public PConfig
        State of the validation keys.
      */
 
-    BOOL ValidatePending();
+    PBoolean ValidatePending();
     /* Validate a pending secured option list for the product. All secured
        keys with the <CODE>pendingPrefix</CODE> name will be checked against
        the value of the field <CODE>securityKey</CODE>. If they match then
        they are copied to the secured variables.
 
        @return
-       TRUE if secure key values are valid.
+       PTrue if secure key values are valid.
      */
 
     void ResetPending();

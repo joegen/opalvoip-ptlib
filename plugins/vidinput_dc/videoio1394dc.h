@@ -102,30 +102,30 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Open the device given the device name.
       */
-    BOOL Open(
+    PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      PBoolean startImmediate = PTrue    /// Immediately start device
     );
 
     /**Determine of the device is currently open.
       */
-    BOOL IsOpen();
+    PBoolean IsOpen();
 
     /**Close the device.
       */
-    BOOL Close();
+    PBoolean Close();
 
     /**Start the video device I/O.
       */
-    BOOL Start();
+    PBoolean Start();
 
     /**Stop the video device I/O capture.
       */
-    BOOL Stop();
+    PBoolean Stop();
 
     /**Determine if the video device I/O capture is in progress.
       */
-    BOOL IsCapturing();
+    PBoolean IsCapturing();
 
     /**Get a list of all of the drivers available.
       */
@@ -143,14 +143,14 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */
-    BOOL GetFrameData(
+    PBoolean GetFrameData(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
-    BOOL GetFrameDataNoDelay(
+    PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
@@ -162,7 +162,7 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Set brightness of the image. 0xffff-Very bright.
      */
-    BOOL SetBrightness(unsigned newBrightness);
+    PBoolean SetBrightness(unsigned newBrightness);
 
 
     /**Get the whiteness of the image. 0xffff-Very white.
@@ -171,7 +171,7 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Set whiteness of the image. 0xffff-Very white.
      */
-    BOOL SetWhiteness(unsigned newWhiteness);
+    PBoolean SetWhiteness(unsigned newWhiteness);
 
 
     /**Get the colour of the image. 0xffff-lots of colour.
@@ -180,7 +180,7 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Set colour of the image. 0xffff-lots of colour.
      */
-    BOOL SetColour(unsigned newColour);
+    PBoolean SetColour(unsigned newColour);
 
 
     /**Get the contrast of the image. 0xffff-High contrast.
@@ -189,7 +189,7 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Set contrast of the image. 0xffff-High contrast.
      */
-    BOOL SetContrast(unsigned newContrast);
+    PBoolean SetContrast(unsigned newContrast);
 
 
     /**Get the hue of the image. 0xffff-High hue.
@@ -198,17 +198,17 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
     /**Set hue of the image. 0xffff-High hue.
      */
-    BOOL SetHue(unsigned newHue);
+    PBoolean SetHue(unsigned newHue);
     
     
     /**Return whiteness, brightness, colour, contrast and hue in one call.
      */
-    BOOL GetParameters (int *whiteness, int *brightness, 
+    PBoolean GetParameters (int *whiteness, int *brightness, 
 				int *colour, int *contrast, int *hue);
 
     /**Get the minimum & maximum size of a frame on the device.
     */
-    BOOL GetFrameSizeLimits(
+    PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   /// Variable to receive minimum width
       unsigned & minHeight,  /// Variable to receive minimum height
       unsigned & maxWidth,   /// Variable to receive maximum width
@@ -218,34 +218,34 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
     void ClearMapping();
 
     int GetNumChannels();
-    BOOL SetChannel(
+    PBoolean SetChannel(
          int channelNumber  /// New channel number for device.
     );
-    BOOL SetFrameRate(
+    PBoolean SetFrameRate(
       unsigned rate  /// Frames  per second
     );
-    BOOL SetVideoFormat(
+    PBoolean SetVideoFormat(
       VideoFormat videoFormat   /// New video format
     );
-    BOOL SetFrameSize(
+    PBoolean SetFrameSize(
       unsigned width,   /// New width of frame
       unsigned height   /// New height of frame
     );
-    BOOL SetColourFormat(
+    PBoolean SetColourFormat(
       const PString & colourFormat   // New colour format for device.
     );
 
 
     /**Try all known video formats & see which ones are accepted by the video driver
      */
-    BOOL TestAllFormats();
+    PBoolean TestAllFormats();
 
 
  protected:
     PINDEX frameBytes;
     raw1394handle_t handle;
-    BOOL is_capturing;
-    BOOL UseDMA;
+    PBoolean is_capturing;
+    PBoolean UseDMA;
     nodeid_t * camera_nodes;
     int numCameras;
     dc1394_cameracapture camera;

@@ -630,6 +630,23 @@ fi
 
 
 dnl ########################################################################
+dnl check for Windows-like integer BOOL
+dnl
+dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
+dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
+
+AC_ARG_ENABLE(ansi-bool,
+       [  --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool])
+
+if test "${enable_ansi_bool}x" = "x" ; then
+  AC_MSG_NOTICE(Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true))
+  AC_DEFINE(P_USE_STANDARD_CXX_BOOL)
+else
+  AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
+fi
+
+
+dnl ########################################################################
 dnl check for recvmsg
 
 P_HAS_RECVMSG=

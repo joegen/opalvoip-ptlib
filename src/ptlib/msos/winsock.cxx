@@ -143,7 +143,7 @@
  * New directory structure
  *
  * Revision 1.40  1998/11/14 06:31:15  robertj
- * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
+ * Changed semantics of os_sendto to return PTrue if ANY bytes are sent.
  *
  * Revision 1.39  1998/09/24 03:31:02  robertj
  * Added open software license.
@@ -337,9 +337,9 @@ PWinSock::~PWinSock()
 }
 
 
-BOOL PWinSock::OpenSocket()
+PBoolean PWinSock::OpenSocket()
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -375,7 +375,7 @@ PSocket::~PSocket()
 }
 
 
-BOOL PSocket::Read(void * buf, PINDEX len)
+PBoolean PSocket::Read(void * buf, PINDEX len)
 {
   flush();
   lastReadCount = 0;
@@ -388,17 +388,17 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 }
 
 
-BOOL PSocket::Write(const void * buf, PINDEX len)
+PBoolean PSocket::Write(const void * buf, PINDEX len)
 {
   flush();
   return os_sendto(buf, len, 0, NULL, 0) && lastWriteCount >= len;
 }
 
 
-BOOL PSocket::Close()
+PBoolean PSocket::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
   flush();
   return ConvertOSError(os_close());
 }
@@ -419,14 +419,14 @@ int PSocket::os_socket(int af, int type, int proto)
 }
 
 
-BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
+PBoolean PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   if (readTimeout == PMaxTimeInterval)
     return ConvertOSError(::connect(os_handle, addr, size));
 
   DWORD fionbio = 1;
   if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &fionbio)))
-    return FALSE;
+    return PFalse;
   fionbio = 0;
 
   if (::connect(os_handle, addr, size) != SOCKET_ERROR)
@@ -504,7 +504,7 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 }
 
 
-BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
+PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
 {
   if (listener.GetReadTimeout() != PMaxTimeInterval) {
     P_fd_set readfds = listener.GetHandle();
@@ -523,7 +523,7 @@ BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
 }
 
 
-BOOL PSocket::os_recvfrom(void * buf,
+PBoolean PSocket::os_recvfrom(void * buf,
                           PINDEX len,
                           int flags,
                           struct sockaddr * from,
@@ -534,20 +534,20 @@ BOOL PSocket::os_recvfrom(void * buf,
   if (readTimeout != PMaxTimeInterval) {
     DWORD available;
     if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
-      return FALSE;
+      return PFalse;
 
     if (available == 0) {
       P_fd_set readfds = os_handle;
       P_timeval tv = readTimeout;
       int selval = ::select(0, readfds, NULL, NULL, tv);
       if (!ConvertOSError(selval, LastReadError))
-        return FALSE;
+        return PFalse;
 
       if (selval == 0)
         return SetErrorValues(Timeout, EAGAIN, LastReadError);
 
       if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
-        return FALSE;
+        return PFalse;
     }
 
     if (available > 0 && len > (PINDEX)available)
@@ -556,14 +556,14 @@ BOOL PSocket::os_recvfrom(void * buf,
 
   int recvResult = ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
   if (!ConvertOSError(recvResult, LastReadError))
-    return FALSE;
+    return PFalse;
 
   lastReadCount = recvResult;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSocket::os_sendto(const void * buf,
+PBoolean PSocket::os_sendto(const void * buf,
                         PINDEX len,
                         int flags,
                         struct sockaddr * to,
@@ -576,7 +576,7 @@ BOOL PSocket::os_sendto(const void * buf,
     P_timeval tv = writeTimeout;
     int selval = ::select(0, NULL, writefds, NULL, tv);
     if (selval < 0)
-      return FALSE;
+      return PFalse;
 
     if (selval == 0) {
 #ifndef _WIN32_WCE
@@ -584,19 +584,19 @@ BOOL PSocket::os_sendto(const void * buf,
 #else
       SetLastError(EAGAIN);
 #endif
-      return FALSE;
+      return PFalse;
     }
   }
 
   int sendResult = ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
   if (!ConvertOSError(sendResult, LastWriteError))
-    return FALSE;
+    return PFalse;
 
   if (sendResult == 0)
-    return FALSE;
+    return PFalse;
 
   lastWriteCount = sendResult;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -669,22 +669,22 @@ PChannel::Errors PSocket::Select(SelectList & read,
 }
 
 
-BOOL PSocket::ConvertOSError(int status, ErrorGroup group)
+PBoolean PSocket::ConvertOSError(int status, ErrorGroup group)
 {
   Errors lastError;
   int osError;
-  BOOL ok = ConvertOSError(status, lastError, osError);
+  PBoolean ok = ConvertOSError(status, lastError, osError);
   SetErrorValues(lastError, osError, group);
   return ok;
 }
 
 
-BOOL PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
+PBoolean PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
 {
   if (status >= 0) {
     lastError = NoError;
     osError = 0;
-    return TRUE;
+    return PTrue;
   }
 
 #ifdef _WIN32
@@ -695,7 +695,7 @@ BOOL PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return TRUE;
+      return PTrue;
     case WSAEWOULDBLOCK :
       lastError = Timeout;
       break;
@@ -703,7 +703,7 @@ BOOL PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
       osError |= PWIN32ErrorFlag;
       lastError = Miscellaneous;
   }
-  return FALSE;
+  return PFalse;
 #endif
 }
 
@@ -774,7 +774,7 @@ BYTE PIPSocket::Address::Byte4() const
 //////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-BOOL P_IsOldWin95()
+PBoolean P_IsOldWin95()
 {
   static int state = -1;
   if (state < 0) {
@@ -791,22 +791,22 @@ BOOL P_IsOldWin95()
 }
 
 
-BOOL PIPSocket::IsLocalHost(const PString & hostname)
+PBoolean PIPSocket::IsLocalHost(const PString & hostname)
 {
   if (hostname.IsEmpty())
-    return TRUE;
+    return PTrue;
 
   if (hostname *= "localhost")
-    return TRUE;
+    return PTrue;
 
   // lookup the host address using inet_addr, assuming it is a "." address
   PIPSocket::Address addr = hostname;
   if (addr.IsLoopback())  // Is 127.0.0.1 or ::1
-    return TRUE;
+    return PTrue;
 
   if (addr == 0) {
     if (!GetHostAddress(hostname, addr))
-      return FALSE;
+      return PFalse;
   }
 
   // Seb: Should check that it's really IPv4 aware.
@@ -819,49 +819,49 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 #if P_HAS_IPV6
     if (host_info->h_length == 16) {
       if (addr == *(struct in6_addr *)host_info->h_addr_list[i])
-        return TRUE;
+        return PTrue;
     }
     else
 #endif
     if (addr == *(struct in_addr *)host_info->h_addr_list[i])
-      return TRUE;
+      return PTrue;
   }
-  return FALSE;
+  return PFalse;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-BOOL PUDPSocket::disableGQoS = TRUE;
+PBoolean PUDPSocket::disableGQoS = PTrue;
 
 void PUDPSocket::EnableGQoS()
 {
-  disableGQoS = FALSE;
+  disableGQoS = PFalse;
 }
 
 #if P_HAS_QOS
-BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
+PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & address)
 {
   if (disableGQoS)
-    return FALSE;
+    return PFalse;
 
   if (!address.IsValid())
-    return FALSE;
+    return PFalse;
 
   // Check to See if OS supportive
     OSVERSIONINFO versInfo;
     ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
     versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     if (!(GetVersionEx(&versInfo)))
-        return FALSE;
+        return PFalse;
     else
     {
         if (versInfo.dwMajorVersion < 5)
-            return FALSE;  // Not Supported in Windows
+            return PFalse;  // Not Supported in Windows
 
         if (versInfo.dwMajorVersion == 5 &&
             versInfo.dwMinorVersion == 0)
-            return FALSE;         //Windows 2000 does not always support QOS_DESTADDR
+            return PFalse;         //Windows 2000 does not always support QOS_DESTADDR
     }
 
   // Need to put in a check to see if the NIC has 802.1p packet priority support 
@@ -871,14 +871,14 @@ BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
   PString NICname =  PIPSocket::GetInterface(address);
 
   // For Now Assume it can.
-  return TRUE;
+  return PTrue;
 }
 
 #else
 
-BOOL PUDPSocket::SupportQoS(const PIPSocket::Address &)
+PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address &)
 {
-  return FALSE;
+  return PFalse;
 }
 #endif  // P_HAS_QOS
 
@@ -1024,7 +1024,7 @@ PIPXSocket::Address::operator PString() const
 }
 
 
-BOOL PIPXSocket::Address::IsValid() const
+PBoolean PIPXSocket::Address::IsValid() const
 {
   static Address empty;
   return memcmp(this, &empty, sizeof(empty)) != 0;
@@ -1047,7 +1047,7 @@ PString PIPXSocket::GetName() const
 }
 
 
-BOOL PIPXSocket::OpenSocket()
+PBoolean PIPXSocket::OpenSocket()
 {
   return ConvertOSError(os_handle = os_socket(AF_IPX, SOCK_DGRAM, NSPROTO_IPX));
 }
@@ -1059,7 +1059,7 @@ const char * PIPXSocket::GetProtocolName() const
 }
 
 
-BOOL PIPXSocket::SetPacketType(int type)
+PBoolean PIPXSocket::SetPacketType(int type)
 {
   return ConvertOSError(::setsockopt(os_handle,
                            NSPROTO_IPX, IPX_PTYPE, (char *)&type, sizeof(type)));
@@ -1083,9 +1083,9 @@ PString PIPXSocket::GetHostName(const Address & addr)
 }
 
 
-BOOL PIPXSocket::GetHostAddress(Address &)
+PBoolean PIPXSocket::GetHostAddress(Address &)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1104,16 +1104,16 @@ static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
 
 
 #ifdef P_HAS_QOS
-BOOL PIPXSocket::GetHostAddress(const PString & /*hostname*/, Address & /*addr*/)
+PBoolean PIPXSocket::GetHostAddress(const PString & /*hostname*/, Address & /*addr*/)
 {
-  return FALSE;
+  return PFalse;
 }
 #else
-BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
+PBoolean PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
 {
   addr = hostname;
   if (addr.IsValid())
-    return TRUE;
+    return PTrue;
 
   static GUID netware_file_server = SVCID_FILE_SERVER;
   CSADDR_INFO addr_info[10];
@@ -1130,75 +1130,75 @@ BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
                              NULL
                             );
   if (num <= 0)
-    return FALSE;
+    return PFalse;
 
   AssignAddress(addr, *(sockaddr_ipx *)addr_info[0].RemoteAddr.lpSockaddr);
-  return TRUE;
+  return PTrue;
 }
 #endif
 
 
 
-BOOL PIPXSocket::GetLocalAddress(Address & addr)
+PBoolean PIPXSocket::GetLocalAddress(Address & addr)
 {
   sockaddr_ipx sip;
   int size = sizeof(sip);
   if (!ConvertOSError(::getsockname(os_handle, (struct sockaddr *)&sip, &size)))
-    return FALSE;
+    return PFalse;
 
   AssignAddress(addr, sip);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PIPXSocket::GetLocalAddress(Address & addr, WORD & portNum)
+PBoolean PIPXSocket::GetLocalAddress(Address & addr, WORD & portNum)
 {
   sockaddr_ipx sip;
   int size = sizeof(sip);
   if (!ConvertOSError(::getsockname(os_handle, (struct sockaddr *)&sip, &size)))
-    return FALSE;
+    return PFalse;
 
   AssignAddress(addr, sip);
   portNum = Net2Host(sip.sa_socket);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PIPXSocket::GetPeerAddress(Address & addr)
+PBoolean PIPXSocket::GetPeerAddress(Address & addr)
 {
   sockaddr_ipx sip;
   int size = sizeof(sip);
   if (!ConvertOSError(::getpeername(os_handle, (struct sockaddr *)&sip, &size)))
-    return FALSE;
+    return PFalse;
 
   AssignAddress(addr, sip);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PIPXSocket::GetPeerAddress(Address & addr, WORD & portNum)
+PBoolean PIPXSocket::GetPeerAddress(Address & addr, WORD & portNum)
 {
   sockaddr_ipx sip;
   int size = sizeof(sip);
   if (!ConvertOSError(::getpeername(os_handle, (struct sockaddr *)&sip, &size)))
-    return FALSE;
+    return PFalse;
 
   AssignAddress(addr, sip);
   portNum = Net2Host(sip.sa_socket);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PIPXSocket::Connect(const PString & host)
+PBoolean PIPXSocket::Connect(const PString & host)
 {
   Address addr;
   if (GetHostAddress(host, addr))
     return Connect(addr);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIPXSocket::Connect(const Address & addr)
+PBoolean PIPXSocket::Connect(const Address & addr)
 {
   // close the port if it is already open
   if (IsOpen())
@@ -1209,7 +1209,7 @@ BOOL PIPXSocket::Connect(const Address & addr)
 
   // attempt to create a socket
   if (!OpenSocket())
-    return FALSE;
+    return PFalse;
 
   // attempt to lookup the host name
   sockaddr_ipx sip;
@@ -1218,14 +1218,14 @@ BOOL PIPXSocket::Connect(const Address & addr)
   AssignAddress(sip, addr);
   sip.sa_socket  = Host2Net(port);  // set the port
   if (os_connect((struct sockaddr *)&sip, sizeof(sip)))
-    return TRUE;
+    return PTrue;
 
   os_close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIPXSocket::Listen(unsigned, WORD newPort, Reusability reuse)
+PBoolean PIPXSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 {
   // make sure we have a port
   if (newPort != 0)
@@ -1235,7 +1235,7 @@ BOOL PIPXSocket::Listen(unsigned, WORD newPort, Reusability reuse)
   if (!IsOpen()) {
     // attempt to create a socket
     if (!OpenSocket())
-      return FALSE;
+      return PFalse;
   }
 
   // attempt to listen
@@ -1250,17 +1250,17 @@ BOOL PIPXSocket::Listen(unsigned, WORD newPort, Reusability reuse)
       int size = sizeof(sip);
       if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sip, &size))) {
         port = Net2Host(sip.sa_socket);
-        return TRUE;
+        return PTrue;
       }
     }
   }
 
   os_close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIPXSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
+PBoolean PIPXSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 {
   lastReadCount = 0;
 
@@ -1275,7 +1275,7 @@ BOOL PIPXSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 }
 
 
-BOOL PIPXSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
+PBoolean PIPXSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
 {
   lastWriteCount = 0;
 
@@ -1296,7 +1296,7 @@ PSPXSocket::PSPXSocket(WORD port)
 }
 
 
-BOOL PSPXSocket::OpenSocket()
+PBoolean PSPXSocket::OpenSocket()
 {
   return ConvertOSError(os_handle = os_socket(AF_IPX, SOCK_STREAM, NSPROTO_SPX));
 }
@@ -1308,18 +1308,18 @@ const char * PSPXSocket::GetProtocolName() const
 }
 
 
-BOOL PSPXSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
+PBoolean PSPXSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
   if (PIPXSocket::Listen(queueSize, newPort, reuse) &&
       ConvertOSError(::listen(os_handle, queueSize)))
-    return TRUE;
+    return PTrue;
 
   os_close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSPXSocket::Accept(PSocket & socket)
+PBoolean PSPXSocket::Accept(PSocket & socket)
 {
   PAssert(PIsDescendant(&socket, PIPXSocket), "Invalid listener socket");
 
@@ -1327,10 +1327,10 @@ BOOL PSPXSocket::Accept(PSocket & socket)
   sip.sa_family = AF_IPX;
   int size = sizeof(sip);
   if (!os_accept(socket, (struct sockaddr *)&sip, &size))
-    return FALSE;
+    return PFalse;
 
   port = ((PIPXSocket &)socket).GetPort();
-  return TRUE;
+  return PTrue;
 }
 
 #endif

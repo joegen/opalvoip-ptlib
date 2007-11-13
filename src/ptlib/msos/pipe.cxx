@@ -63,16 +63,16 @@ PPipeChannel::PPipeChannel()
 
 
 #ifdef _WIN32_WCE
-BOOL PPipeChannel::PlatformOpen(const PString &, const PStringArray &, OpenMode, BOOL, BOOL, const PStringToString *)
+PBoolean PPipeChannel::PlatformOpen(const PString &, const PStringArray &, OpenMode, PBoolean, PBoolean, const PStringToString *)
 {
-  return FALSE;
+  return PFalse;
 }
 #else
-BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
+PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
                                 const PStringArray & argumentList,
                                 OpenMode mode,
-                                BOOL searchPath,
-                                BOOL stderrSeparate,
+                                PBoolean searchPath,
+                                PBoolean stderrSeparate,
                                 const PStringToString * environment)
 {
   subProgName = subProgram;
@@ -120,7 +120,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   SECURITY_ATTRIBUTES security;
   security.nLength = sizeof(security);
   security.lpSecurityDescriptor = NULL;
-  security.bInheritHandle = TRUE;
+  security.bInheritHandle = PTrue;
 
   if (mode == ReadOnly)
     hToChild = INVALID_HANDLE_VALUE;
@@ -128,7 +128,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     HANDLE writeEnd;
     PAssertOS(CreatePipe(&startup.hStdInput, &writeEnd, &security, 0));
     PAssertOS(DuplicateHandle(GetCurrentProcess(), writeEnd,
-                              GetCurrentProcess(), &hToChild, 0, FALSE,
+                              GetCurrentProcess(), &hToChild, 0, PFalse,
                               DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS));
   }
 
@@ -150,7 +150,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   }
 
   if (ConvertOSError(CreateProcess(prog, cmdLine.GetPointer(),
-                                   NULL, NULL, TRUE, 0, envStr,
+                                   NULL, NULL, PTrue, 0, envStr,
                                    NULL, &startup, &info) ? 0 : -2))
     os_handle = info.dwProcessId;
   else {
@@ -184,7 +184,7 @@ PPipeChannel::~PPipeChannel()
 }
 
 
-BOOL PPipeChannel::IsOpen() const
+PBoolean PPipeChannel::IsOpen() const
 {
   return os_handle != -1;
 }
@@ -201,12 +201,12 @@ int PPipeChannel::GetReturnCode() const
 }
 
 
-BOOL PPipeChannel::CanReadAndWrite()
+PBoolean PPipeChannel::CanReadAndWrite()
 {
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PPipeChannel::IsRunning() const
+PBoolean PPipeChannel::IsRunning() const
 {
   DWORD code;
   return GetExitCodeProcess(info.hProcess, &code) && (code == STILL_ACTIVE);
@@ -233,35 +233,35 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 }
 
 
-BOOL PPipeChannel::Kill(int signal)
+PBoolean PPipeChannel::Kill(int signal)
 {
   return ConvertOSError(TerminateProcess(info.hProcess, signal) ? 0 : -2);
 }
 
 
-BOOL PPipeChannel::Read(void * buffer, PINDEX len)
+PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 {
   lastReadCount = 0;
   DWORD count;
   if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 :-2, LastReadError))
-    return FALSE;
+    return PFalse;
   lastReadCount = count;
   return lastReadCount > 0;
 }
       
 
-BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
+PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
 {
   lastWriteCount = 0;
   DWORD count;
   if (!ConvertOSError(WriteFile(hToChild, buffer, len, &count, NULL) ? 0 : -2, LastWriteError))
-    return FALSE;
+    return PFalse;
   lastWriteCount = count;
   return lastWriteCount >= len;
 }
 
 
-BOOL PPipeChannel::Close()
+PBoolean PPipeChannel::Close()
 {
   if (IsOpen()) {
     os_handle = -1;
@@ -272,30 +272,30 @@ BOOL PPipeChannel::Close()
     if (hStandardError != INVALID_HANDLE_VALUE)
       CloseHandle(hStandardError);
     if (!TerminateProcess(info.hProcess, 1))
-      return FALSE;
+      return PFalse;
   }
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PPipeChannel::Execute()
+PBoolean PPipeChannel::Execute()
 {
   flush();
   clear();
   if (hToChild != INVALID_HANDLE_VALUE)
     CloseHandle(hToChild);
   hToChild = INVALID_HANDLE_VALUE;
-  return TRUE;
+  return PTrue;
 }
 
 
 #ifdef _WIN32_WCE
-BOOL PPipeChannel::ReadStandardError(PString &, BOOL)
+PBoolean PPipeChannel::ReadStandardError(PString &, PBoolean)
 {
-  return FALSE;
+  return PFalse;
 }
 #else
-BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
+PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 {
   DWORD available, bytesRead;
   if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
@@ -307,7 +307,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
                           &bytesRead, NULL) ? 0 : -2, LastReadError);
 
   if (wait)
-    return FALSE;
+    return PFalse;
 
   char firstByte;
   if (!ReadFile(hStandardError, &firstByte, 1, &bytesRead, NULL))
@@ -319,7 +319,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
     return ConvertOSError(-2, LastReadError);
 
   if (available == 0)
-    return TRUE;
+    return PTrue;
 
   return ConvertOSError(ReadFile(hStandardError,
                         errors.GetPointer(available+2)+1, available,

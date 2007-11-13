@@ -218,7 +218,7 @@ class PHTML : public PStringStream
 
 
   // New functions for class.
-    BOOL Is(ElementInSet elmt) const;
+    PBoolean Is(ElementInSet elmt) const;
     void Set(ElementInSet elmt);
     void Clr(ElementInSet elmt);
     void Toggle(ElementInSet elmt);
@@ -667,7 +667,7 @@ class PHTML : public PStringStream
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
-        BOOL borderFlag;
+        PBoolean borderFlag;
     };
     friend class TableStart;
 
@@ -733,7 +733,7 @@ class PHTML : public PStringStream
         virtual ~FieldElement() {}
         virtual void AddAttr(PHTML & html) const;
       private:
-        BOOL disabledFlag;
+        PBoolean disabledFlag;
     };
 
     class Select : public FieldElement {
@@ -780,7 +780,7 @@ class PHTML : public PStringStream
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        BOOL selectedFlag;
+        PBoolean selectedFlag;
     };
 
     class FormField : public FieldElement {
@@ -962,7 +962,7 @@ class PHTML : public PStringStream
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * valueString;
-        BOOL checkedFlag;
+        PBoolean checkedFlag;
     };
 
     class CheckBox : public RadioButton {

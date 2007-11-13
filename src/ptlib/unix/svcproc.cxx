@@ -466,7 +466,7 @@ PServiceProcess::PServiceProcess(const char * manuf,
   : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
 {
   currentLogLevel = PSystemLog::Warning;
-  isTerminating = FALSE;
+  isTerminating = PFalse;
 }
 
 
@@ -533,7 +533,7 @@ int PServiceProcess::InitialiseService()
 {
 #ifndef P_VXWORKS
 #if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(TRUE);
+  PMemoryHeap::SetIgnoreAllocations(PTrue);
 #endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
@@ -541,9 +541,9 @@ int PServiceProcess::InitialiseService()
   PTrace::SetOptions(PTrace::SystemLogStream);
   PTrace::SetLevel(4);
 #if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
+  PMemoryHeap::SetIgnoreAllocations(PFalse);
 #endif
-  debugMode = FALSE;
+  debugMode = PFalse;
 
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
@@ -568,7 +568,7 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('v')) {
     cout << "Product Name: " << productName << endl
          << "Manufacturer: " << manufacturer << endl
-         << "Version     : " << GetVersion(TRUE) << endl
+         << "Version     : " << GetVersion(PTrue) << endl
          << "System      : " << GetOSName() << '-'
                              << GetOSHardware() << ' '
                              << GetOSVersion() << endl;
@@ -662,27 +662,27 @@ int PServiceProcess::InitialiseService()
     }
   }
 
-  BOOL helpAndExit = FALSE;
+  PBoolean helpAndExit = PFalse;
 
   // if displaying help, then do it
   if (args.HasOption('h')) 
-    helpAndExit = TRUE;
+    helpAndExit = PTrue;
   else if (!args.HasOption('d') && !args.HasOption('x')) {
     cout << "error: must specify one of -v, -h, -t, -k, -d or -x" << endl;
-    helpAndExit = TRUE;
+    helpAndExit = PTrue;
   }
 
   // set flag for console messages
   if (args.HasOption('c')) {
     systemLogFileName = '-';
-    debugMode = TRUE;
+    debugMode = PTrue;
   }
 
   if (args.HasOption('l')) {
     systemLogFileName = args.GetOptionString('l');
     if (systemLogFileName.IsEmpty()) {
       cout << "error: must specify file name for -l" << endl;
-      helpAndExit = TRUE;
+      helpAndExit = PTrue;
     }
     else if (PDirectory::Exists(systemLogFileName))
       systemLogFileName = PDirectory(systemLogFileName) + PProcess::Current().GetFile().GetFileName() + ".log";
@@ -727,7 +727,7 @@ int PServiceProcess::InitialiseService()
       return 1;
     }
   }
-  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(TRUE));
+  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(PTrue));
 
   if (args.HasOption('i'))
     SetConfigurationPath(args.GetOptionString('i'));
@@ -846,9 +846,9 @@ int PServiceProcess::_main(void *)
 }
 
 
-BOOL PServiceProcess::OnPause()
+PBoolean PServiceProcess::OnPause()
 {
-  return TRUE;
+  return PTrue;
 }
 
 void PServiceProcess::OnContinue()
@@ -871,9 +871,9 @@ void PServiceProcess::Terminate()
     return;
   }
 
-  isTerminating = TRUE;
+  isTerminating = PTrue;
 
-  PSYSTEMLOG(Warning, "Stopping service process \"" << GetName() << "\" v" << GetVersion(TRUE));
+  PSYSTEMLOG(Warning, "Stopping service process \"" << GetName() << "\" v" << GetVersion(PTrue));
 
   // Avoid strange errors caused by threads (and the process itself!) being destoyed 
   // before they have EVER been scheduled
@@ -927,13 +927,13 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   signal(SIGFPE, SIG_DFL);
   signal(SIGBUS, SIG_DFL);
 
-  static BOOL inHandler = FALSE;
+  static PBoolean inHandler = PFalse;
   if (inHandler) {
     raise(SIGQUIT); // Dump core
     _exit(-1); // Fail safe if raise() didn't dump core and exit
   }
 
-  inHandler = TRUE;
+  inHandler = PTrue;
 
 #ifdef P_MAC_MPTHREADS
   unsigned tid = (unsigned)MPCurrentTaskID();

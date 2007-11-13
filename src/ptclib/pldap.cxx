@@ -140,7 +140,7 @@ PLDAPSession::~PLDAPSession()
 }
 
 
-BOOL PLDAPSession::Open(const PString & server, WORD port)
+PBoolean PLDAPSession::Open(const PString & server, WORD port)
 {
   Close();
 
@@ -153,48 +153,48 @@ BOOL PLDAPSession::Open(const PString & server, WORD port)
 
   ldapContext = ldap_init(server, port);
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   SetOption(LDAP_OPT_PROTOCOL_VERSION, protocolVersion);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PLDAPSession::Close()
+PBoolean PLDAPSession::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   ldap_unbind(ldapContext);
   ldapContext = NULL;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PLDAPSession::SetOption(int optcode, int value)
+PBoolean PLDAPSession::SetOption(int optcode, int value)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   return ldap_set_option(ldapContext, optcode, &value);
 }
 
 
-BOOL PLDAPSession::SetOption(int optcode, void * value)
+PBoolean PLDAPSession::SetOption(int optcode, void * value)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   return ldap_set_option(ldapContext, optcode, value);
 }
 
 
-BOOL PLDAPSession::Bind(const PString & who,
+PBoolean PLDAPSession::Bind(const PString & who,
                         const PString & passwd,
                         AuthenticationMethod authMethod)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   const char * whoPtr;
   if (who.IsEmpty())
@@ -277,9 +277,9 @@ void PLDAPSession::StringModAttrib::AddValue(const PString & value)
 }
 
 
-BOOL PLDAPSession::StringModAttrib::IsBinary() const
+PBoolean PLDAPSession::StringModAttrib::IsBinary() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -332,9 +332,9 @@ void PLDAPSession::BinaryModAttrib::AddValue(const PBYTEArray & value)
 }
 
 
-BOOL PLDAPSession::BinaryModAttrib::IsBinary() const
+PBoolean PLDAPSession::BinaryModAttrib::IsBinary() const
 {
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -419,10 +419,10 @@ static PList<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase & 
 }
 
 
-BOOL PLDAPSession::Add(const PString & dn, const PList<ModAttrib> & attributes)
+PBoolean PLDAPSession::Add(const PString & dn, const PList<ModAttrib> & attributes)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   PBYTEArray storage;
   int msgid;
@@ -433,40 +433,40 @@ BOOL PLDAPSession::Add(const PString & dn, const PList<ModAttrib> & attributes)
                              NULL,
                              &msgid);
   if (errorNumber != LDAP_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   P_timeval tval = timeout;
   LDAPMessage * result = NULL;
   ldap_result(ldapContext, msgid, LDAP_MSG_ALL, tval, &result);
   if (result)
-    errorNumber = ldap_result2error(ldapContext, result, TRUE);
+    errorNumber = ldap_result2error(ldapContext, result, PTrue);
 
   return errorNumber == LDAP_SUCCESS;
 }
 
 
-BOOL PLDAPSession::Add(const PString & dn, const PStringToString & attributes)
+PBoolean PLDAPSession::Add(const PString & dn, const PStringToString & attributes)
 {
   return Add(dn, AttribsFromDict(attributes));
 }
 
 
-BOOL PLDAPSession::Add(const PString & dn, const PStringArray & attributes)
+PBoolean PLDAPSession::Add(const PString & dn, const PStringArray & attributes)
 {
   return Add(dn, AttribsFromArray(attributes));
 }
 
 
-BOOL PLDAPSession::Add(const PString & dn, const PLDAPStructBase & attributes)
+PBoolean PLDAPSession::Add(const PString & dn, const PLDAPStructBase & attributes)
 {
   return Add(dn, AttribsFromStruct(attributes));
 }
 
 
-BOOL PLDAPSession::Modify(const PString & dn, const PList<ModAttrib> & attributes)
+PBoolean PLDAPSession::Modify(const PString & dn, const PList<ModAttrib> & attributes)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   PBYTEArray storage;
   int msgid;
@@ -477,51 +477,51 @@ BOOL PLDAPSession::Modify(const PString & dn, const PList<ModAttrib> & attribute
                                 NULL,
                                 &msgid);
   if (errorNumber != LDAP_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   P_timeval tval = timeout;
   LDAPMessage * result = NULL;
   ldap_result(ldapContext, msgid, LDAP_MSG_ALL, tval, &result);
   if (result)
-    errorNumber = ldap_result2error(ldapContext, result, TRUE);
+    errorNumber = ldap_result2error(ldapContext, result, PTrue);
 
   return errorNumber == LDAP_SUCCESS;
 }
 
 
-BOOL PLDAPSession::Modify(const PString & dn, const PStringToString & attributes)
+PBoolean PLDAPSession::Modify(const PString & dn, const PStringToString & attributes)
 {
   return Modify(dn, AttribsFromDict(attributes));
 }
 
 
-BOOL PLDAPSession::Modify(const PString & dn, const PStringArray & attributes)
+PBoolean PLDAPSession::Modify(const PString & dn, const PStringArray & attributes)
 {
   return Modify(dn, AttribsFromArray(attributes));
 }
 
 
-BOOL PLDAPSession::Modify(const PString & dn, const PLDAPStructBase & attributes)
+PBoolean PLDAPSession::Modify(const PString & dn, const PLDAPStructBase & attributes)
 {
   return Modify(dn, AttribsFromStruct(attributes));
 }
 
 
-BOOL PLDAPSession::Delete(const PString & dn)
+PBoolean PLDAPSession::Delete(const PString & dn)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   int msgid;
   errorNumber = ldap_delete_ext(ldapContext, dn, NULL, NULL, &msgid);
   if (errorNumber != LDAP_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   P_timeval tval = timeout;
   LDAPMessage * result = NULL;
   ldap_result(ldapContext, msgid, LDAP_MSG_ALL, tval, &result);
   if (result)
-    errorNumber = ldap_result2error(ldapContext, result, TRUE);
+    errorNumber = ldap_result2error(ldapContext, result, PTrue);
 
   return errorNumber == LDAP_SUCCESS;
 }
@@ -531,8 +531,8 @@ PLDAPSession::SearchContext::SearchContext()
 {
   result = NULL;
   message = NULL;
-  found = FALSE;
-  completed = FALSE;
+  found = PFalse;
+  completed = PFalse;
 }
 
 
@@ -546,14 +546,14 @@ PLDAPSession::SearchContext::~SearchContext()
 }
 
 
-BOOL PLDAPSession::Search(SearchContext & context,
+PBoolean PLDAPSession::Search(SearchContext & context,
                           const PString & filter,
                           const PStringArray & attributes,
                           const PString & baseDN,
                           SearchScope scope)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   PCharArray storage;
   char ** attribs = attributes.ToCharArray(&storage);
@@ -573,7 +573,7 @@ BOOL PLDAPSession::Search(SearchContext & context,
                                 ScopeCode[scope],
                                 filter,
                                 attribs,
-                                FALSE,
+                                PFalse,
                                 NULL,
                                 NULL,
                                 tval,
@@ -581,28 +581,28 @@ BOOL PLDAPSession::Search(SearchContext & context,
                                 &context.msgid);
 
   if (errorNumber != LDAP_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   if (ldap_result(ldapContext, context.msgid, LDAP_MSG_ONE, tval, &context.result) > 0)
     return GetNextSearchResult(context);
 
   if (context.result)
-    errorNumber = ldap_result2error(ldapContext, context.result, TRUE);
+    errorNumber = ldap_result2error(ldapContext, context.result, PTrue);
   if (errorNumber == 0)
     errorNumber = LDAP_OTHER;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PLDAPSession::GetSearchResult(SearchContext & context, PStringToString & data)
+PBoolean PLDAPSession::GetSearchResult(SearchContext & context, PStringToString & data)
 {
   data.RemoveAll();
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if (context.result == NULL || context.message == NULL || context.completed)
-    return FALSE;
+    return PFalse;
 
   // Extract the resulting data
 
@@ -633,30 +633,30 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context, PStringToString & da
   if (ber != NULL)
     ber_free (ber, 0);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PLDAPSession::GetSearchResult(SearchContext & context,
+PBoolean PLDAPSession::GetSearchResult(SearchContext & context,
                                    const PString & attribute,
                                    PString & data)
 {
   data.MakeEmpty();
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if (context.result == NULL || context.message == NULL || context.completed)
-    return FALSE;
+    return PFalse;
 
   if (attribute == "dn") {
     data = GetSearchResultDN(context);
-    return TRUE;
+    return PTrue;
   }
 
   char ** values = ldap_get_values(ldapContext, context.message, attribute);
   if (values == NULL)
-    return FALSE;
+    return PFalse;
 
   PINDEX count = ldap_count_values(values);
   for (PINDEX i = 0; i < count; i++) {
@@ -666,31 +666,31 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context,
   }
 
   ldap_value_free(values);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PLDAPSession::GetSearchResult(SearchContext & context,
+PBoolean PLDAPSession::GetSearchResult(SearchContext & context,
                                    const PString & attribute,
                                    PStringArray & data)
 {
   data.RemoveAll();
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if (context.result == NULL || context.message == NULL || context.completed)
-    return FALSE;
+    return PFalse;
 
   if (attribute == "dn") {
     data.SetSize(1);
     data[0] = GetSearchResultDN(context);
-    return TRUE;
+    return PTrue;
   }
 
   char ** values = ldap_get_values(ldapContext, context.message, attribute);
   if (values == NULL)
-    return FALSE;
+    return PFalse;
 
   PINDEX count = ldap_count_values(values);
   data.SetSize(count);
@@ -698,29 +698,29 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context,
     data[i] = values[i];
 
   ldap_value_free(values);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PLDAPSession::GetSearchResult(SearchContext & context,
+PBoolean PLDAPSession::GetSearchResult(SearchContext & context,
                                    const PString & attribute,
                                    PArray<PBYTEArray> & data)
 {
   data.RemoveAll();
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if (attribute == "dn") {
     char * dn = ldap_get_dn(ldapContext, context.message);
     data.Append(new PBYTEArray((const BYTE *)dn, ::strlen(dn)));
     ldap_memfree(dn);
-    return TRUE;
+    return PTrue;
   }
 
   struct berval ** values = ldap_get_values_len(ldapContext, context.message, attribute);
   if (values == NULL)
-    return FALSE;
+    return PFalse;
 
   PINDEX count = ldap_count_values_len(values);
   data.SetSize(count);
@@ -732,17 +732,17 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context,
   }
 
   ldap_value_free_len(values);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PLDAPSession::GetSearchResult(SearchContext & context,
+PBoolean PLDAPSession::GetSearchResult(SearchContext & context,
                                    PLDAPStructBase & data)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
-  BOOL atLeastOne = FALSE;
+  PBoolean atLeastOne = PFalse;
 
   for (PINDEX i = 0; i < data.GetNumAttributes(); i++) {
     PLDAPAttributeBase & attr = data.GetAttribute(i);
@@ -750,14 +750,14 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context,
       PArray<PBYTEArray> bin;
       if (GetSearchResult(context, attr.GetName(), bin)) {
         attr.FromBinary(bin);
-        atLeastOne = TRUE;
+        atLeastOne = PTrue;
       }
     }
     else {
       PString str;
       if (GetSearchResult(context, attr.GetName(), str)) {
         attr.FromString(str);
-        atLeastOne = TRUE;
+        atLeastOne = PTrue;
       }
     }
   }
@@ -782,13 +782,13 @@ PString PLDAPSession::GetSearchResultDN(SearchContext & context)
 }
 
 
-BOOL PLDAPSession::GetNextSearchResult(SearchContext & context)
+PBoolean PLDAPSession::GetNextSearchResult(SearchContext & context)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if (context.result == NULL || context.completed)
-    return FALSE;
+    return PFalse;
 
   P_timeval tval = timeout;
   do {
@@ -800,16 +800,16 @@ BOOL PLDAPSession::GetNextSearchResult(SearchContext & context)
     if (context.message != NULL) {
       switch (ldap_msgtype(context.message)) {
         case LDAP_RES_SEARCH_ENTRY :
-          context.found = TRUE;
+          context.found = PTrue;
           errorNumber = LDAP_SUCCESS;
-          return TRUE;
+          return PTrue;
 
         case LDAP_RES_SEARCH_RESULT :
-          errorNumber = ldap_result2error(ldapContext, context.message, FALSE);
+          errorNumber = ldap_result2error(ldapContext, context.message, PFalse);
           if (errorNumber == 0 && !context.found)
             errorNumber = LDAP_NO_RESULTS_RETURNED;
-          context.completed = TRUE;
-          return FALSE;
+          context.completed = PTrue;
+          return PFalse;
       }
       // Ignore other result message types for now ...
     }
@@ -818,10 +818,10 @@ BOOL PLDAPSession::GetNextSearchResult(SearchContext & context)
   } while (ldap_result(ldapContext, context.msgid, LDAP_MSG_ONE, tval, &context.result) > 0);
 
   if (context.result)
-    errorNumber = ldap_result2error(ldapContext, context.result, FALSE);
+    errorNumber = ldap_result2error(ldapContext, context.result, PFalse);
   if (errorNumber == 0)
     errorNumber = LDAP_OTHER;
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -884,7 +884,7 @@ void PLDAPAttributeBase::FromString(const PString & str)
 
 PBYTEArray PLDAPAttributeBase::ToBinary() const
 {
-  return PBYTEArray((const BYTE *)pointer, size, FALSE);
+  return PBYTEArray((const BYTE *)pointer, size, PFalse);
 }
 
 
@@ -1015,53 +1015,53 @@ void PLDAPSchema::OnReceivedAttribute(const PString & attribute, const PString &
    SetAttribute(attribute,value);
 }
 
-BOOL PLDAPSchema::SetAttribute(const PString & attribute, const PString & value)
+PBoolean PLDAPSchema::SetAttribute(const PString & attribute, const PString & value)
 {
 
 	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
 		if ((r->m_name == attribute) &&  (r->m_type != AttributeBinary)) {
 	       attributes.insert(make_pair(attribute,value));
 		   PTRACE(4, "schema\tMatch " << attribute);
-		   return TRUE;
+		   return PTrue;
 		}
 	}
 
-	return FALSE;
+	return PFalse;
 }
 
-BOOL PLDAPSchema::SetAttribute(const PString & attribute, const PBYTEArray & value)
+PBoolean PLDAPSchema::SetAttribute(const PString & attribute, const PBYTEArray & value)
 {
 	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
 		if ((r->m_name == attribute) && (r->m_type == AttributeBinary)) {
 	       binattributes.insert(make_pair(attribute,value));
 		   PTRACE(4, "schema\tMatch Binary " << attribute);
-		   return TRUE;
+		   return PTrue;
 		}
 	}
 
-	return FALSE;
+	return PFalse;
 }
 
-BOOL PLDAPSchema::GetAttribute(const PString & attribute, PString & value)
+PBoolean PLDAPSchema::GetAttribute(const PString & attribute, PString & value)
 {
 	for (ldapAttributes::const_iterator r = attributes.begin(); r != attributes.end(); ++r) {
 		if (r->first == attribute) {
 			value = r->second;
-			return TRUE;
+			return PTrue;
 		}
 	}
-	return FALSE; 
+	return PFalse; 
 }
 
-BOOL PLDAPSchema::GetAttribute(const PString & attribute, PBYTEArray & value)
+PBoolean PLDAPSchema::GetAttribute(const PString & attribute, PBYTEArray & value)
 {
 	for (ldapBinAttributes::const_iterator r = binattributes.begin(); r != binattributes.end(); ++r) {
 		if (r->first == attribute) {
 			value = r->second;
-			return TRUE;
+			return PTrue;
 		}
 	}
-	return FALSE; 
+	return PFalse; 
 }
 
 PStringList PLDAPSchema::GetAttributeList()
@@ -1073,24 +1073,24 @@ PStringList PLDAPSchema::GetAttributeList()
 	return att;
 }
 
-BOOL PLDAPSchema::Exists(const PString & attribute)
+PBoolean PLDAPSchema::Exists(const PString & attribute)
 {
 	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
 	  if (r->m_name == attribute) {
 		  if (r->m_type == AttributeString) {
 	          for (ldapAttributes::const_iterator r = attributes.begin(); r != attributes.end(); ++r) {
                   if (r->first == attribute)
-			         return TRUE;
+			         return PTrue;
 		      }
 		  } else if (r->m_type == AttributeBinary) {
 	          for (ldapBinAttributes::const_iterator r = binattributes.begin(); r != binattributes.end(); ++r) {
                   if (r->first == attribute)
-			         return TRUE;
+			         return PTrue;
 			  }
 		  }
 	  }
 	}
-	return FALSE;
+	return PFalse;
 }
 
 PLDAPSchema::AttributeType PLDAPSchema::GetAttributeType(const PString & attribute)

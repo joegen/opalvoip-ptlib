@@ -88,7 +88,7 @@ class DelayThread : public PThread
   PCLASSINFO(DelayThread, PThread);
   
 public:
-  DelayThread(PINDEX _delay, BOOL _checkTimer);
+  DelayThread(PINDEX _delay, PBoolean _checkTimer);
     
   ~DelayThread();
 
@@ -97,7 +97,7 @@ public:
  protected:
   PINDEX delay;
 
-  BOOL checkTimer;
+  PBoolean checkTimer;
 
   MyTimer localPTimer;
 
@@ -152,20 +152,20 @@ class LauncherThread : public PThread
 public:
   LauncherThread()
     : PThread(10000, NoAutoDeleteThread)
-    { iteration = 0; keepGoing = TRUE; }
+    { iteration = 0; keepGoing = PTrue; }
   
   void Main();
     
   PINDEX GetIteration() { return iteration; }
 
-  virtual void Terminate() { keepGoing = FALSE; }
+  virtual void Terminate() { keepGoing = PFalse; }
 
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
 
  protected:
   PINDEX iteration;
   PTime startTime;
-  BOOL  keepGoing;
+  PBoolean  keepGoing;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ class PTimerTest : public PProcess
 
     PINDEX Interval()   { return interval; }
 
-    BOOL   CheckTimer() { return checkTimer; }
+    PBoolean   CheckTimer() { return checkTimer; }
 
     static PTimerTest & Current()
       { return (PTimerTest &)PProcess::Current(); }
@@ -196,7 +196,7 @@ class PTimerTest : public PProcess
 
     PINDEX interval;
 
-    BOOL   checkTimer;
+    PBoolean   checkTimer;
 
 
     /**Code to run the second test supported by this application. */

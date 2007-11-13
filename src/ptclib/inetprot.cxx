@@ -252,12 +252,12 @@ PInternetProtocol::PInternetProtocol(const char * svcName,
                                      PINDEX cmdCount,
                                      char const * const * cmdNames)
   : defaultServiceName(svcName),
-    commandNames(cmdCount, cmdNames, TRUE),
+    commandNames(cmdCount, cmdNames, PTrue),
     readLineTimeout(0, 10)   // 10 seconds
 {
   SetReadTimeout(PTimeInterval(0, 0, 10));  // 10 minutes
   stuffingState = DontStuff;
-  newLineToCRLF = TRUE;
+  newLineToCRLF = PTrue;
   unReadCount = 0;
 }
 
@@ -268,7 +268,7 @@ void PInternetProtocol::SetReadLineTimeout(const PTimeInterval & t)
 }
 
 
-BOOL PInternetProtocol::Read(void * buf, PINDEX len)
+PBoolean PInternetProtocol::Read(void * buf, PINDEX len)
 {
   lastReadCount = PMIN(unReadCount, len);
   const char * unReadPtr = ((const char *)unReadBuffer)+unReadCount;
@@ -292,7 +292,7 @@ BOOL PInternetProtocol::Read(void * buf, PINDEX len)
 }
 
 
-BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
+PBoolean PInternetProtocol::Write(const void * buf, PINDEX len)
 {
   if (len == 0 || stuffingState == DontStuff)
     return PIndirectChannel::Write(buf, len);
@@ -312,11 +312,11 @@ BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
             if (newLineToCRLF) {
               if (current > base) {
                 if (!PIndirectChannel::Write(base, current - base))
-                  return FALSE;
+                  return PFalse;
                 totalWritten += lastWriteCount;
               }
               if (!PIndirectChannel::Write("\r", 1))
-                return FALSE;
+                return PFalse;
               totalWritten += lastWriteCount;
               base = current;
             }
@@ -331,11 +331,11 @@ BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
         if (*current == '.') {
           if (current > base) {
             if (!PIndirectChannel::Write(base, current - base))
-              return FALSE;
+              return PFalse;
             totalWritten += lastWriteCount;
           }
           if (!PIndirectChannel::Write(".", 1))
-            return FALSE;
+            return PFalse;
           totalWritten += lastWriteCount;
           base = current;
         }
@@ -350,7 +350,7 @@ BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
 
   if (current > base) {  
     if (!PIndirectChannel::Write(base, current - base))  
-      return FALSE;  
+      return PFalse;  
     totalWritten += lastWriteCount;  
   }  
   
@@ -359,11 +359,11 @@ BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
 }
 
 
-BOOL PInternetProtocol::AttachSocket(PIPSocket * socket)
+PBoolean PInternetProtocol::AttachSocket(PIPSocket * socket)
 {
   if (socket->IsOpen()) {
     if (Open(socket))
-      return TRUE;
+      return PTrue;
     Close();
     SetErrorValues(Miscellaneous, 0x41000000);
   }
@@ -372,11 +372,11 @@ BOOL PInternetProtocol::AttachSocket(PIPSocket * socket)
     delete socket;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PInternetProtocol::Connect(const PString & address, WORD port)
+PBoolean PInternetProtocol::Connect(const PString & address, WORD port)
 {
   if (port == 0)
     return Connect(address, defaultServiceName);
@@ -391,7 +391,7 @@ BOOL PInternetProtocol::Connect(const PString & address, WORD port)
 }
 
 
-BOOL PInternetProtocol::Connect(const PString & address, const PString & service)
+PBoolean PInternetProtocol::Connect(const PString & address, const PString & service)
 {
   if (readTimeout == PMaxTimeInterval)
     return AttachSocket(new PTCPSocket(address, service));
@@ -404,7 +404,7 @@ BOOL PInternetProtocol::Connect(const PString & address, const PString & service
 }
 
 
-BOOL PInternetProtocol::Accept(PSocket & listener)
+PBoolean PInternetProtocol::Accept(PSocket & listener)
 {
   if (readTimeout == PMaxTimeInterval)
     return AttachSocket(new PTCPSocket(listener));
@@ -431,7 +431,7 @@ PIPSocket * PInternetProtocol::GetSocket() const
 }
 
 
-BOOL PInternetProtocol::WriteLine(const PString & line)
+PBoolean PInternetProtocol::WriteLine(const PString & line)
 {
   if (line.FindOneOf(CRLF) == P_MAX_INDEX)
     return WriteString(line + CRLF);
@@ -439,23 +439,23 @@ BOOL PInternetProtocol::WriteLine(const PString & line)
   PStringArray lines = line.Lines();
   for (PINDEX i = 0; i < lines.GetSize(); i++)
     if (!WriteString(lines[i] + CRLF))
-      return FALSE;
+      return PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PInternetProtocol::ReadLine(PString & str, BOOL allowContinuation)
+PBoolean PInternetProtocol::ReadLine(PString & str, PBoolean allowContinuation)
 {
   str = PString();
 
   PCharArray line(100);
   PINDEX count = 0;
-  BOOL gotEndOfLine = FALSE;
+  PBoolean gotEndOfLine = PFalse;
 
   int c = ReadChar();
   if (c < 0)
-    return FALSE;
+    return PFalse;
 
   PTimeInterval oldTimeout = GetReadTimeout();
   SetReadTimeout(readLineTimeout);
@@ -498,10 +498,10 @@ BOOL PInternetProtocol::ReadLine(PString & str, BOOL allowContinuation)
 
       case '\n' :
         if (count == 0 || !allowContinuation || (c = ReadChar()) < 0)
-          gotEndOfLine = TRUE;
+          gotEndOfLine = PTrue;
         else if (c != ' ' && c != '\t') {
           UnRead(c);
-          gotEndOfLine = TRUE;
+          gotEndOfLine = PTrue;
         }
         break;
 
@@ -545,18 +545,18 @@ void PInternetProtocol::UnRead(const void * buffer, PINDEX len)
 }
 
 
-BOOL PInternetProtocol::WriteCommand(PINDEX cmdNumber)
+PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber)
 {
   if (cmdNumber >= commandNames.GetSize())
-    return FALSE;
+    return PFalse;
   return WriteLine(commandNames[cmdNumber]);
 }
 
 
-BOOL PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param)
+PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param)
 {
   if (cmdNumber >= commandNames.GetSize())
-    return FALSE;
+    return PFalse;
   if (param.IsEmpty())
     return WriteLine(commandNames[cmdNumber]);
   else
@@ -564,11 +564,11 @@ BOOL PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param)
 }
 
 
-BOOL PInternetProtocol::ReadCommand(PINDEX & num, PString & args)
+PBoolean PInternetProtocol::ReadCommand(PINDEX & num, PString & args)
 {
   do {
     if (!ReadLine(args))
-      return FALSE;
+      return PFalse;
   } while (args.IsEmpty());
 
   PINDEX endCommand = args.Find(' ');
@@ -580,17 +580,17 @@ BOOL PInternetProtocol::ReadCommand(PINDEX & num, PString & args)
   if (num != P_MAX_INDEX)
     args = args.Mid(endCommand+1);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PInternetProtocol::WriteResponse(unsigned code, const PString & info)
+PBoolean PInternetProtocol::WriteResponse(unsigned code, const PString & info)
 {
   return WriteResponse(psprintf("%03u", code), info);
 }
 
 
-BOOL PInternetProtocol::WriteResponse(const PString & code,
+PBoolean PInternetProtocol::WriteResponse(const PString & code,
                                        const PString & info)
 {
   if (info.FindOneOf(CRLF) == P_MAX_INDEX)
@@ -600,13 +600,13 @@ BOOL PInternetProtocol::WriteResponse(const PString & code,
   PINDEX i;
   for (i = 0; i < lines.GetSize()-1; i++)
     if (!WriteString(code + '-' + lines[i] + CRLF))
-      return FALSE;
+      return PFalse;
 
   return WriteString(code & lines[i] + CRLF);
 }
 
 
-BOOL PInternetProtocol::ReadResponse()
+PBoolean PInternetProtocol::ReadResponse()
 {
   PString line;
   if (!ReadLine(line)) {
@@ -617,12 +617,12 @@ BOOL PInternetProtocol::ReadResponse()
       lastResponseInfo = "Remote shutdown";
       SetErrorValues(ProtocolFailure, 0, LastReadError);
     }
-    return FALSE;
+    return PFalse;
   }
 
   PINDEX continuePos = ParseResponse(line);
   if (continuePos == 0)
-    return TRUE;
+    return PTrue;
 
   PString prefix = line.Left(continuePos);
   char continueChar = line[continuePos];
@@ -634,7 +634,7 @@ BOOL PInternetProtocol::ReadResponse()
         lastResponseInfo += GetErrorText(LastReadError);
       else
         SetErrorValues(ProtocolFailure, 0, LastReadError);
-      return FALSE;
+      return PFalse;
     }
     if (line.Left(continuePos) == prefix)
       lastResponseInfo += line.Mid(continuePos+1);
@@ -642,13 +642,13 @@ BOOL PInternetProtocol::ReadResponse()
       lastResponseInfo += line;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PInternetProtocol::ReadResponse(int & code, PString & info)
+PBoolean PInternetProtocol::ReadResponse(int & code, PString & info)
 {
-  BOOL retval = ReadResponse();
+  PBoolean retval = ReadResponse();
 
   code = lastResponseCode;
   info = lastResponseInfo;
@@ -719,7 +719,7 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
-  BOOL output_cr = strm.fill() == '\r';
+  PBoolean output_cr = strm.fill() == '\r';
   strm.fill(' ');
   for (PINDEX i = 0; i < GetSize(); i++) {
     PString name = GetKeyAt(i) + ": ";
@@ -770,26 +770,26 @@ void PMIMEInfo::ReadFrom(istream &strm)
 }
 
 
-BOOL PMIMEInfo::Read(PInternetProtocol & socket)
+PBoolean PMIMEInfo::Read(PInternetProtocol & socket)
 {
   RemoveAll();
 
   PString line;
-  while (socket.ReadLine(line, TRUE)) {
+  while (socket.ReadLine(line, PTrue)) {
     if (line.IsEmpty())
-      return TRUE;
+      return PTrue;
     AddMIME(line);
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMIMEInfo::AddMIME(const PString & line)
+PBoolean PMIMEInfo::AddMIME(const PString & line)
 {
   PINDEX colonPos = line.Find(':');
   if (colonPos == P_MAX_INDEX)
-    return FALSE;
+    return PFalse;
 
   PCaselessString fieldName  = line.Left(colonPos).Trim();
   PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
@@ -797,7 +797,7 @@ BOOL PMIMEInfo::AddMIME(const PString & line)
   return AddMIME(fieldName, fieldValue);
 }
 
-BOOL PMIMEInfo::AddMIME(const PString & fieldName, const PString & _fieldValue)
+PBoolean PMIMEInfo::AddMIME(const PString & fieldName, const PString & _fieldValue)
 {
   PString fieldValue(_fieldValue);
 
@@ -806,11 +806,11 @@ BOOL PMIMEInfo::AddMIME(const PString & fieldName, const PString & _fieldValue)
 
   SetAt(fieldName, fieldValue);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PMIMEInfo::Write(PInternetProtocol & socket) const
+PBoolean PMIMEInfo::Write(PInternetProtocol & socket) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
     PString name = GetKeyAt(i) + ": ";
@@ -819,12 +819,12 @@ BOOL PMIMEInfo::Write(PInternetProtocol & socket) const
       PStringArray vals = value.Lines();
       for (PINDEX j = 0; j < vals.GetSize(); j++) {
         if (!socket.WriteLine(name + vals[j]))
-          return FALSE;
+          return PFalse;
       }
     }
     else {
       if (!socket.WriteLine(name + value))
-        return FALSE;
+        return PFalse;
     }
   }
 
@@ -882,12 +882,12 @@ PStringToString & PMIMEInfo::GetContentTypes()
 {
   static PStringToString contentTypes(PARRAYSIZE(DefaultContentTypes),
                                       DefaultContentTypes,
-                                      TRUE);
+                                      PTrue);
   return contentTypes;
 }
 
 
-void PMIMEInfo::SetAssociation(const PStringToString & allTypes, BOOL merge)
+void PMIMEInfo::SetAssociation(const PStringToString & allTypes, PBoolean merge)
 {
   PStringToString & types = GetContentTypes();
   if (!merge)

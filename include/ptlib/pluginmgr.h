@@ -141,7 +141,7 @@ class PPluginManager : public PObject
 
   public:
     // functions to load/unload a dynamic plugin 
-    BOOL LoadPlugin (const PString & fileName);
+    PBoolean LoadPlugin (const PString & fileName);
     void LoadPluginDirectory (const PDirectory & dir);
   
     // functions to access the plugins' services 
@@ -153,7 +153,7 @@ class PPluginManager : public PObject
     PStringList GetPluginsDeviceNames(const PString & serviceName, const PString & serviceType, int userData = 0) const;
 
     // function to register a service (used by the plugins themselves)
-    BOOL RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
+    PBoolean RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
 
     // Get the list of plugin directories
     static PStringArray GetPluginDirs();
@@ -180,7 +180,7 @@ class PPluginManager : public PObject
 
     void AddNotifier(
       const PNotifier & filterFunction,
-      BOOL existing = FALSE
+      PBoolean existing = PFalse
     );
 
     void RemoveNotifier(
@@ -213,8 +213,8 @@ class PPluginModuleManager : public PObject
 
     PPluginModuleManager(const char * _signatureFunctionName, PPluginManager * pluginMgr = NULL);
 
-    BOOL LoadPlugin(const PString & fileName)
-    { if (pluginMgr == NULL) return FALSE; else return pluginMgr->LoadPlugin(fileName); }
+    PBoolean LoadPlugin(const PString & fileName)
+    { if (pluginMgr == NULL) return PFalse; else return pluginMgr->LoadPlugin(fileName); }
 
     void LoadPluginDirectory(const PDirectory &directory)
     { if (pluginMgr != NULL) pluginMgr->LoadPluginDirectory(directory); }

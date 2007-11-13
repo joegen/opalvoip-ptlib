@@ -83,9 +83,9 @@ PString PTime::GetTimeSeparator()
 }
 
 
-BOOL PTime::GetTimeAMPM()
+PBoolean PTime::GetTimeAMPM()
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -171,7 +171,7 @@ PString PSerialChannel::GetName() const
 }
 
 
-BOOL PSerialChannel::Read(void * buf, PINDEX len)
+PBoolean PSerialChannel::Read(void * buf, PINDEX len)
 {
   char * b = (char *)buf;
   while (len > 0) {
@@ -185,28 +185,28 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 }
 
 
-BOOL PSerialChannel::Write(const void * buf, PINDEX len)
+PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
 {
   const char * b = (const char *)buf;
   while (len-- > 0) {
     if (!WriteChar(*b++))
-      return FALSE;
+      return PFalse;
   }
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSerialChannel::Close()
+PBoolean PSerialChannel::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   os_handle = -1;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
+PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
   switch (speed) {
@@ -244,7 +244,7 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       biosParm |= 0xe0;
       break;
     default :
-      return FALSE;
+      return PFalse;
   }
 
   switch (data) {
@@ -266,7 +266,7 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       biosParm |= 3;
       break;
     default :
-      return FALSE;
+      return PFalse;
   }
 
   switch (parity) {
@@ -284,7 +284,7 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       biosParm |= 0x10;
       break;
     default :
-      return FALSE;
+      return PFalse;
   }
 
   switch (stop) {
@@ -297,17 +297,17 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       biosParm |= 4;
       break;
     default :
-      return FALSE;
+      return PFalse;
   }
 
   if (outputFlow != DefaultFlowControl || inputFlow != DefaultFlowControl)
-    return FALSE;
+    return PFalse;
 
   _bios_serialcom(_COM_INIT, os_handle, biosParm);
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
+PBoolean PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
        Parity parity, BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
   Close();
@@ -315,13 +315,13 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
   os_handle = -1;
   if (PCaselessString("COM") != port.Left(3) &&
                                               port[3] >= '1' && port[3] <= '4')
-    return FALSE;
+    return PFalse;
   os_handle = port[3] - '1';
   return SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow);
 }
 
 
-BOOL PSerialChannel::SetSpeed(DWORD speed)
+PBoolean PSerialChannel::SetSpeed(DWORD speed)
 {
   return SetCommsParam(speed,
                  0, DefaultParity, 0, DefaultFlowControl, DefaultFlowControl);
@@ -335,7 +335,7 @@ DWORD PSerialChannel::GetSpeed() const
 }
 
 
-BOOL PSerialChannel::SetDataBits(BYTE data)
+PBoolean PSerialChannel::SetDataBits(BYTE data)
 {
   return SetCommsParam(0,
               data, DefaultParity, 0, DefaultFlowControl, DefaultFlowControl);
@@ -348,7 +348,7 @@ BYTE PSerialChannel::GetDataBits() const
 }
 
 
-BOOL PSerialChannel::SetParity(Parity parity)
+PBoolean PSerialChannel::SetParity(Parity parity)
 {
   return SetCommsParam(0,0, parity, 0, DefaultFlowControl, DefaultFlowControl);
 }
@@ -361,7 +361,7 @@ PSerialChannel::Parity PSerialChannel::GetParity() const
 }
 
 
-BOOL PSerialChannel::SetStopBits(BYTE stop)
+PBoolean PSerialChannel::SetStopBits(BYTE stop)
 {
   return SetCommsParam(0,
                0, DefaultParity, stop, DefaultFlowControl, DefaultFlowControl);
@@ -374,7 +374,7 @@ BYTE PSerialChannel::GetStopBits() const
 }
 
 
-BOOL PSerialChannel::SetInputFlowControl(FlowControl flowControl)
+PBoolean PSerialChannel::SetInputFlowControl(FlowControl flowControl)
 {
   return SetCommsParam(0,0, DefaultParity, 0, flowControl, DefaultFlowControl);
 }
@@ -386,7 +386,7 @@ PSerialChannel::FlowControl PSerialChannel::GetInputFlowControl() const
 }
 
 
-BOOL PSerialChannel::SetOutputFlowControl(FlowControl flowControl)
+PBoolean PSerialChannel::SetOutputFlowControl(FlowControl flowControl)
 {
   return SetCommsParam(0,0, DefaultParity, 0, DefaultFlowControl, flowControl);
 }
@@ -398,7 +398,7 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 }
 
 
-void PSerialChannel::SetDTR(BOOL state)
+void PSerialChannel::SetDTR(PBoolean state)
 {
   if (!IsOpen())
     return;
@@ -406,7 +406,7 @@ void PSerialChannel::SetDTR(BOOL state)
 }
 
 
-void PSerialChannel::SetRTS(BOOL state)
+void PSerialChannel::SetRTS(PBoolean state)
 {
   if (!IsOpen())
     return;
@@ -414,7 +414,7 @@ void PSerialChannel::SetRTS(BOOL state)
 }
 
 
-void PSerialChannel::SetBreak(BOOL state)
+void PSerialChannel::SetBreak(PBoolean state)
 {
   if (!IsOpen())
     return;
@@ -423,37 +423,37 @@ void PSerialChannel::SetBreak(BOOL state)
 }
 
 
-BOOL PSerialChannel::GetCTS()
+PBoolean PSerialChannel::GetCTS()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8010) == 0x10;
 }
 
 
-BOOL PSerialChannel::GetDSR()
+PBoolean PSerialChannel::GetDSR()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8020) == 0x20;
 }
 
 
-BOOL PSerialChannel::GetDCD()
+PBoolean PSerialChannel::GetDCD()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8080) == 0x80;
 }
 
 
-BOOL PSerialChannel::GetRing()
+PBoolean PSerialChannel::GetRing()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8040) == 0x40;
 }
@@ -476,10 +476,10 @@ PStringList PSerialChannel::GetPortNames()
 ///////////////////////////////////////////////////////////////////////////////
 // PPipeChannel
 
-BOOL PPipeChannel::Execute()
+PBoolean PPipeChannel::Execute()
 {
   if (hasRun)
-    return FALSE;
+    return PFalse;
 
   flush();
   if (os_handle >= 0) {
@@ -488,15 +488,15 @@ BOOL PPipeChannel::Execute()
   }
 
   if (!ConvertOSError(system(subProgName)))
-    return FALSE;
+    return PFalse;
 
   if (!fromChild.IsEmpty()) {
     os_handle = _open(fromChild, _O_RDONLY);
     if (!ConvertOSError(os_handle))
-      return FALSE;
+      return PFalse;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -620,7 +620,7 @@ void PThread::SwitchContext(PThread * from)
     context[7] = (int)stackTop-16;  // Change the stack pointer in jmp_buf
   }
 
-  longjmp(context, TRUE);
+  longjmp(context, PTrue);
   PAssertAlways("longjmp failed"); // Should never get here
 }
 
@@ -646,10 +646,10 @@ PDynaLink::~PDynaLink()
 }
 
 
-BOOL PDynaLink::Open(const PString & name)
+PBoolean PDynaLink::Open(const PString & name)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -658,21 +658,21 @@ void PDynaLink::Close()
 }
 
 
-BOOL PDynaLink::IsLoaded() const
+PBoolean PDynaLink::IsLoaded() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
 {
-  return FALSE;
+  return PFalse;
 }
 
 

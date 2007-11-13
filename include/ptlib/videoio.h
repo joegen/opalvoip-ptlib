@@ -297,9 +297,9 @@ class PVideoFrameInfo : public PObject
     /**Set the frame size to be used.
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetFrameSize(
+    virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
     );
@@ -307,9 +307,9 @@ class PVideoFrameInfo : public PObject
     /**Get the frame size being used.
 
        Default behaviour returns the value of the frameWidth and frameHeight
-       variable and returns TRUE.
+       variable and returns PTrue.
     */
-    virtual BOOL GetFrameSize(
+    virtual PBoolean GetFrameSize(
       unsigned & width,
       unsigned & height
     ) const;
@@ -329,9 +329,9 @@ class PVideoFrameInfo : public PObject
     /**Set the video frame rate to be used on the device.
 
        Default behaviour sets the value of the frameRate variable and then
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetFrameRate(
+    virtual PBoolean SetFrameRate(
       unsigned rate  ///< Frames  per second
     );
 
@@ -344,9 +344,9 @@ class PVideoFrameInfo : public PObject
     /**Set the colour format to be used.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns TRUE if not an empty string.
+       returns PTrue if not an empty string.
     */
-    virtual BOOL SetColourFormat(
+    virtual PBoolean SetColourFormat(
       const PString & colourFormat // New colour format for device.
     );
 
@@ -377,7 +377,7 @@ class PVideoFrameInfo : public PObject
 
     /** Parse the standard size string names ("qcif", "cif" etc)
       */
-    static BOOL ParseSize(
+    static PBoolean ParseSize(
       const PString & str,  ///< String to parse
       unsigned & width,     ///< Resultant width
       unsigned & height     ///< Resulatant height
@@ -477,33 +477,33 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Open the device given the device name.
       */
-    virtual BOOL OpenFull(
+    virtual PBoolean OpenFull(
       const OpenArgs & args,      ///< Parameters to set on opened device
-      BOOL startImmediate = TRUE  ///< Immediately start device
+      PBoolean startImmediate = PTrue  ///< Immediately start device
     );
 
     /**Open the device given the device name.
       */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & deviceName,   ///< Device name to open
-      BOOL startImmediate = TRUE    ///< Immediately start device
+      PBoolean startImmediate = PTrue    ///< Immediately start device
     ) = 0;
 
     /**Determine if the device is currently open.
       */
-    virtual BOOL IsOpen() = 0;
+    virtual PBoolean IsOpen() = 0;
 
     /**Close the device.
       */
-    virtual BOOL Close() = 0;
+    virtual PBoolean Close() = 0;
 
     /**Start the video device I/O capture.
       */
-    virtual BOOL Start() = 0;
+    virtual PBoolean Start() = 0;
 
     /**Stop the video device I/O capture.
       */
-    virtual BOOL Stop() = 0;
+    virtual PBoolean Stop() = 0;
 
 
 #if PTRACING
@@ -513,9 +513,9 @@ class PVideoDevice : public PVideoFrameInfo
     /**Set the video format to be used.
 
        Default behaviour sets the value of the videoFormat variable and then
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetVideoFormat(
+    virtual PBoolean SetVideoFormat(
       VideoFormat videoFormat   ///< New video format
     );
 
@@ -536,9 +536,9 @@ class PVideoDevice : public PVideoFrameInfo
        special value of -1 will find the first working channel number.
 
        Default behaviour sets the value of the channelNumber variable and then
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetChannel(
+    virtual PBoolean SetChannel(
       int channelNumber  ///< New channel number for device.
     );
 
@@ -554,28 +554,28 @@ class PVideoDevice : public PVideoFrameInfo
        is compatible with a registered converter, and install that converter
        so that the correct format is used.
     */
-    virtual BOOL SetColourFormatConverter(
+    virtual PBoolean SetColourFormatConverter(
       const PString & colourFormat // New colour format for device.
     );
 
     /**Get the video conversion vertical flip state.
-       Default action is to return FALSE.
+       Default action is to return PFalse.
      */
-    virtual BOOL GetVFlipState();
+    virtual PBoolean GetVFlipState();
 
     /**Set the video conversion vertical flip state.
-       Default action is to return FALSE.
+       Default action is to return PFalse.
      */
-    virtual BOOL SetVFlipState(
-      BOOL newVFlipState    ///< New vertical flip state
+    virtual PBoolean SetVFlipState(
+      PBoolean newVFlipState    ///< New vertical flip state
     );
 
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
-       FALSE.
+       PFalse.
     */
-    virtual BOOL GetFrameSizeLimits(
+    virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   ///< Variable to receive minimum width
       unsigned & minHeight,  ///< Variable to receive minimum height
       unsigned & maxWidth,   ///< Variable to receive maximum width
@@ -588,7 +588,7 @@ class PVideoDevice : public PVideoFrameInfo
        If the device does not support the size, a set of alternate resolutions
        are attempted.  A converter is setup if possible.
     */
-    virtual BOOL SetFrameSizeConverter(
+    virtual PBoolean SetFrameSizeConverter(
       unsigned width,  ///< New width of frame
       unsigned height, ///< New height of frame
       ResizeMode resizeMode = eMaxResizeMode ///< Mode to use if resizing is required.
@@ -599,10 +599,10 @@ class PVideoDevice : public PVideoFrameInfo
        If the device does not support the size, a set of alternate resolutions
        are attempted.  A converter is setup if possible.
     */
-    virtual BOOL SetFrameSizeConverter(
+    virtual PBoolean SetFrameSizeConverter(
       unsigned width,                   ///< New width of frame
       unsigned height,                  ///< New height of frame
-	  BOOL  /*bScaleNotCrop*/           ///< Not used.
+	  PBoolean  /*bScaleNotCrop*/           ///< Not used.
 	  )  { return SetFrameSizeConverter(width,height,eScale); }
 
 
@@ -612,9 +612,9 @@ class PVideoDevice : public PVideoFrameInfo
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetFrameSize(
+    virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
     );
@@ -622,9 +622,9 @@ class PVideoDevice : public PVideoFrameInfo
     /**Get the frame size being used.
 
        Default behaviour returns the value of the frameWidth and frameHeight
-       variable and returns TRUE.
+       variable and returns PTrue.
     */
-    virtual BOOL GetFrameSize(
+    virtual PBoolean GetFrameSize(
       unsigned & width,
       unsigned & height
     ) const;
@@ -644,7 +644,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /** Is the device a camera, and obtain video
      */
-    virtual BOOL CanCaptureVideo() const = 0;
+    virtual PBoolean CanCaptureVideo() const = 0;
 
     /**Get the brightness of the image. 0xffff-Very bright. -1 is unknown.
      */
@@ -652,7 +652,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Set brightness of the image. 0xffff-Very bright.
      */
-    virtual BOOL SetBrightness(unsigned newBrightness);
+    virtual PBoolean SetBrightness(unsigned newBrightness);
 
 
     /**Get the whiteness of the image. 0xffff-Very white. -1 is unknown.
@@ -661,7 +661,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Set whiteness of the image. 0xffff-Very white.
      */
-    virtual BOOL SetWhiteness(unsigned newWhiteness);
+    virtual PBoolean SetWhiteness(unsigned newWhiteness);
 
 
     /**Get the colour of the image. 0xffff-lots of colour. -1 is unknown.
@@ -670,7 +670,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Set colour of the image. 0xffff-lots of colour.
      */
-    virtual BOOL SetColour(unsigned newColour);
+    virtual PBoolean SetColour(unsigned newColour);
 
 
     /**Get the contrast of the image. 0xffff-High contrast. -1 is unknown.
@@ -679,7 +679,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Set contrast of the image. 0xffff-High contrast.
      */
-    virtual BOOL SetContrast(unsigned newContrast);
+    virtual PBoolean SetContrast(unsigned newContrast);
 
 
     /**Get the hue of the image. 0xffff-High hue. -1 is unknown.
@@ -688,12 +688,12 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Set hue of the image. 0xffff-High hue.
      */
-    virtual BOOL SetHue(unsigned newHue);
+    virtual PBoolean SetHue(unsigned newHue);
     
     
     /**Return whiteness, brightness, colour, contrast and hue in one call.
      */
-    virtual BOOL GetParameters(
+    virtual PBoolean GetParameters(
       int *whiteness,
       int *brightness,
       int *colour,
@@ -704,7 +704,7 @@ class PVideoDevice : public PVideoFrameInfo
     
     /** Set VideoFormat and VideoChannel in one ioctl
      */
-    virtual BOOL SetVideoChannelFormat (
+    virtual PBoolean SetVideoChannelFormat (
       int channelNumber, 
       VideoFormat videoFormat
     );
@@ -731,7 +731,7 @@ class PVideoDevice : public PVideoFrameInfo
     int          channelNumber;
     // Preferred native colour format from video input device, empty == no preference
     PString      preferredColourFormat;
-    BOOL         nativeVerticalFlip;
+    PBoolean         nativeVerticalFlip;
 
     PColourConverter * converter;
     PBYTEArray         frameStore;
@@ -802,7 +802,7 @@ class PVideoOutputDevice : public PVideoDevice
     static PVideoOutputDevice *CreateOpenedDevice(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
-      BOOL startImmediate = TRUE,         ///< Immediately start display
+      PBoolean startImmediate = PTrue,         ///< Immediately start display
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -810,34 +810,34 @@ class PVideoOutputDevice : public PVideoDevice
     */
     static PVideoOutputDevice *CreateOpenedDevice(
       const OpenArgs & args,              ///< Parameters to set on opened device
-      BOOL startImmediate = TRUE          ///< Immediately start display
+      PBoolean startImmediate = PTrue          ///< Immediately start display
     );
 
     /**Close the device.
       */
-    virtual BOOL Close() { return TRUE; }
+    virtual PBoolean Close() { return PTrue; }
 
     /**Start the video device I/O display.
       */
-    virtual BOOL Start() { return TRUE; }
+    virtual PBoolean Start() { return PTrue; }
 
     /**Stop the video device I/O display.
       */
-    virtual BOOL Stop() { return TRUE; }
+    virtual PBoolean Stop() { return PTrue; }
 
     /** Is the device a camera, and obtain video
      */
-    virtual BOOL CanCaptureVideo() const;
+    virtual PBoolean CanCaptureVideo() const;
 
     /**Set a section of the output frame buffer.
       */
-    virtual BOOL SetFrameData(
+    virtual PBoolean SetFrameData(
       unsigned x,
       unsigned y,
       unsigned width,
       unsigned height,
       const BYTE * data,
-      BOOL endFrame = TRUE
+      PBoolean endFrame = PTrue
     ) = 0;
 
     /**Get the position of the output device, where relevant. For devices such as
@@ -846,7 +846,7 @@ class PVideoOutputDevice : public PVideoDevice
        
        Returns: TRUE if the position is available.
       */
-    virtual BOOL GetPosition(
+    virtual PBoolean GetPosition(
       int & x,  // X position of device surface
       int & y   // Y position of device surface
     ) const;
@@ -865,16 +865,16 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
     PVideoOutputDeviceRGB();
 
     /**Set the colour format to be used.
-       Note that this function does not do any conversion. If it returns TRUE
+       Note that this function does not do any conversion. If it returns PTrue
        then the video device does the colour format in native mode.
 
        To utilise an internal converter use the SetColourFormatConverter()
        function.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetColourFormat(
+    virtual PBoolean SetColourFormat(
       const PString & colourFormat // New colour format for device.
     );
 
@@ -884,9 +884,9 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetFrameSize(
+    virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
     );
@@ -900,18 +900,18 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
 
     /**Set a section of the output frame buffer.
       */
-    virtual BOOL SetFrameData(
+    virtual PBoolean SetFrameData(
       unsigned x,
       unsigned y,
       unsigned width,
       unsigned height,
       const BYTE * data,
-      BOOL endFrame = TRUE
+      PBoolean endFrame = PTrue
     );
 
     /**Indicate frame may be displayed.
       */
-    virtual BOOL FrameComplete() = 0;
+    virtual PBoolean FrameComplete() = 0;
 
   protected:
     PMutex     mutex;
@@ -936,18 +936,18 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
 
     /**Open the device given the device name.
       */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & deviceName,   ///< Device name (filename base) to open
-      BOOL startImmediate = TRUE    ///< Immediately start device
+      PBoolean startImmediate = PTrue    ///< Immediately start device
     );
 
     /**Determine if the device is currently open.
       */
-    virtual BOOL IsOpen();
+    virtual PBoolean IsOpen();
 
     /**Close the device.
       */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Get a list of all of the drivers available.
       */
@@ -955,7 +955,7 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
 
     /**Indicate frame may be displayed.
       */
-    virtual BOOL EndFrame();
+    virtual PBoolean EndFrame();
 
   protected:
     unsigned   frameNumber;
@@ -1024,7 +1024,7 @@ class PVideoInputDevice : public PVideoDevice
     static PVideoInputDevice *CreateOpenedDevice(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
-      BOOL startImmediate = TRUE,         ///< Immediately start grabbing
+      PBoolean startImmediate = PTrue,         ///< Immediately start grabbing
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -1032,50 +1032,50 @@ class PVideoInputDevice : public PVideoDevice
     */
     static PVideoInputDevice *CreateOpenedDevice(
       const OpenArgs & args,              ///< Parameters to set on opened device
-      BOOL startImmediate = TRUE          ///< Immediately start display
+      PBoolean startImmediate = PTrue          ///< Immediately start display
     );
 
     /**Open the device given the device name.
       */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & deviceName,   ///< Device name to open
-      BOOL startImmediate = TRUE    ///< Immediately start device
+      PBoolean startImmediate = PTrue    ///< Immediately start device
     ) = 0;
 
-    virtual BOOL Close(
-    ) { return TRUE; }
+    virtual PBoolean Close(
+    ) { return PTrue; }
 
     /** Is the device a camera, and obtain video
      */
-    virtual BOOL CanCaptureVideo() const;
+    virtual PBoolean CanCaptureVideo() const;
  
     /**Determine if the video device I/O capture is in progress.
       */
-    virtual BOOL IsCapturing() = 0;
+    virtual PBoolean IsCapturing() = 0;
 
     /**Grab a frame.
       */
-    virtual BOOL GetFrame(
+    virtual PBoolean GetFrame(
       PBYTEArray & frame
     );
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */
-    virtual BOOL GetFrameData(
+    virtual PBoolean GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned = NULL  ///< OPtional bytes returned.
     ) = 0;
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
-    virtual BOOL GetFrameDataNoDelay(
+    virtual PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned = NULL  ///< OPtional bytes returned.
     ) = 0;
 
     /**Try all known video formats & see which ones are accepted by the video driver
      */
-    virtual BOOL TestAllFormats() = 0;
+    virtual PBoolean TestAllFormats() = 0;
 };
 
 

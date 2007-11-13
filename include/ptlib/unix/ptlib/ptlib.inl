@@ -98,7 +98,7 @@
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
  *
  * Revision 1.20  2001/03/12 02:35:20  robertj
- * Fixed PDirectory::Exists so only returns TRUE if a directory and not file.
+ * Fixed PDirectory::Exists so only returns PTrue if a directory and not file.
  *
  * Revision 1.19  2000/04/05 02:55:11  robertj
  * Added microseconds to PTime class.
@@ -158,16 +158,16 @@ PINLINE unsigned PTimer::Resolution()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PDirectory::IsRoot() const
+PINLINE PBoolean PDirectory::IsRoot() const
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
 
 PINLINE PDirectory PDirectory::GetRoot() const
   { return PString(PDIR_SEPARATOR); }
 
-PINLINE BOOL PDirectory::IsSeparator(char ch)
+PINLINE PBoolean PDirectory::IsSeparator(char ch)
   { return ch == PDIR_SEPARATOR; }
 
-PINLINE BOOL PDirectory::Change(const PString & p)
+PINLINE PBoolean PDirectory::Change(const PString & p)
   { return chdir((char *)(const char *)p) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ PINLINE PString PFilePath::GetVolume() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
+PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean)
   { return unlink((char *)(const char *)name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////

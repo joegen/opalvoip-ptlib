@@ -59,8 +59,8 @@
     Address     macAddress;
     MediumTypes medium;
     unsigned    filterMask;
-    BOOL        fakeMacHeader;
-    BOOL        ipppInterface;
+    PBoolean        fakeMacHeader;
+    PBoolean        ipppInterface;
 };
 
 #endif

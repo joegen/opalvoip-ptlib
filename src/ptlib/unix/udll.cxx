@@ -394,7 +394,7 @@ PString PDynaLink::GetExtension()
   return PString(".so");
 }
 
-BOOL PDynaLink::Open(const PString & _name)
+PBoolean PDynaLink::Open(const PString & _name)
 {
   Close();
 
@@ -429,12 +429,12 @@ void PDynaLink::Close()
   name.MakeEmpty();
 }
 
-BOOL PDynaLink::IsLoaded() const
+PBoolean PDynaLink::IsLoaded() const
 {
   return dllHandle != NULL;
 }
 
-PString PDynaLink::GetName(BOOL full) const
+PString PDynaLink::GetName(PBoolean full) const
 {
   if (!IsLoaded())
     return "";
@@ -451,15 +451,15 @@ PString PDynaLink::GetName(BOOL full) const
 }
 
 
-BOOL PDynaLink::GetFunction(PINDEX, Function &)
+PBoolean PDynaLink::GetFunction(PINDEX, Function &)
 {
-  return FALSE;
+  return PFalse;
 }
 
-BOOL PDynaLink::GetFunction(const PString & fn, Function & func)
+PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
 {
   if (dllHandle == NULL)
-    return FALSE;
+    return PFalse;
 
 #if defined(P_OPENBSD)
   void * p = dlsym(dllHandle, (char *)(const char *)fn);
@@ -468,10 +468,10 @@ BOOL PDynaLink::GetFunction(const PString & fn, Function & func)
 #endif
 
   if (p == NULL)
-    return FALSE;
+    return PFalse;
 
   func = (Function)p;
-  return TRUE;
+  return PTrue;
 }
 
 #endif

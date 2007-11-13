@@ -98,27 +98,27 @@ PINLINE PTime::PTime()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PDirectory::IsRoot() const
+PINLINE PBoolean PDirectory::IsRoot() const
 #ifdef WOT_NO_FILESYSTEM
-  { return TRUE;}
+  { return PTrue;}
 #else
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
 #endif
 
-PINLINE BOOL PDirectory::IsSeparator(char ch)
+PINLINE PBoolean PDirectory::IsSeparator(char ch)
   { return ch == PDIR_SEPARATOR; }
 
 #ifdef WOT_NO_FILESYSTEM
-PINLINE BOOL PDirectory::Change(const PString &)
-  { return TRUE;}
+PINLINE PBoolean PDirectory::Change(const PString &)
+  { return PTrue;}
 
-PINLINE BOOL PDirectory::Exists(const PString & p)
-  { return FALSE; }
+PINLINE PBoolean PDirectory::Exists(const PString & p)
+  { return PFalse; }
 #else
-PINLINE BOOL PDirectory::Change(const PString & p)
+PINLINE PBoolean PDirectory::Change(const PString & p)
   { return chdir(p) == 0; }
 
-PINLINE BOOL PDirectory::Exists(const PString & p)
+PINLINE PBoolean PDirectory::Exists(const PString & p)
   { return access((const char *)p, 0) == 0; }
 #endif
 
@@ -129,14 +129,14 @@ PINLINE PString PFilePath::GetVolume() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PFile::Exists(const PFilePath & name)
+PINLINE PBoolean PFile::Exists(const PFilePath & name)
 #ifdef WOT_NO_FILESYSTEM
-  { return FALSE; }
+  { return PFalse; }
 #else
   { return access(name, 0) == 0; }
 #endif
 
-PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
+PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean)
   { return unlink(name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////

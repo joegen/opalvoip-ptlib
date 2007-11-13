@@ -51,7 +51,7 @@
  * Fix problem with VS.net asserting on in isprint when chars outside normal range
  *
  * Revision 1.85  2004/04/18 04:33:37  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
+ * Changed all operators that return PBoolean to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
  *
  * Revision 1.84  2004/04/03 08:22:20  csoutheren
@@ -358,7 +358,7 @@ static PINDEX CountBits(unsigned range)
   return nBits;
 }
 
-inline BOOL CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
+inline PBoolean CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
 {
   // a 1mbit PDU has got to be an error
   return (0 <= offset && offset <= upper);
@@ -377,7 +377,7 @@ static PINDEX FindNameByValue(const PASN_Names *names, unsigned namesCount, PIND
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Object::PASN_Object(unsigned theTag, TagClass theTagClass, BOOL extend)
+PASN_Object::PASN_Object(unsigned theTag, TagClass theTagClass, PBoolean extend)
 {
   extendable = extend;
 
@@ -523,7 +523,7 @@ PINDEX PASN_Null::GetDataLength() const
 }
 
 
-BOOL PASN_Null::Decode(PASN_Stream & strm)
+PBoolean PASN_Null::Decode(PASN_Stream & strm)
 {
   return strm.NullDecode(*this);
 }
@@ -537,14 +537,14 @@ void PASN_Null::Encode(PASN_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Boolean::PASN_Boolean(BOOL val)
+PASN_Boolean::PASN_Boolean(PBoolean val)
   : PASN_Object(UniversalBoolean, UniversalTagClass)
 {
   value = val;
 }
 
 
-PASN_Boolean::PASN_Boolean(unsigned tag, TagClass tagClass, BOOL val)
+PASN_Boolean::PASN_Boolean(unsigned tag, TagClass tagClass, PBoolean val)
   : PASN_Object(tag, tagClass)
 {
   value = val;
@@ -568,9 +568,9 @@ PObject * PASN_Boolean::Clone() const
 void PASN_Boolean::PrintOn(ostream & strm) const
 {
   if (value)
-    strm << "TRUE";
+    strm << "PTrue";
   else
-    strm << "FALSE";
+    strm << "PFalse";
 }
 
 
@@ -586,7 +586,7 @@ PINDEX PASN_Boolean::GetDataLength() const
 }
 
 
-BOOL PASN_Boolean::Decode(PASN_Stream & strm)
+PBoolean PASN_Boolean::Decode(PASN_Stream & strm)
 {
   return strm.BooleanDecode(*this);
 }
@@ -614,7 +614,7 @@ PASN_Integer::PASN_Integer(unsigned tag, TagClass tagClass, unsigned val)
 }
 
 
-BOOL PASN_Integer::IsUnsigned() const
+PBoolean PASN_Integer::IsUnsigned() const
 {
   return constraint != Unconstrained && lowerLimit >= 0;
 }
@@ -716,7 +716,7 @@ PINDEX PASN_Integer::GetDataLength() const
 }
 
 
-BOOL PASN_Integer::Decode(PASN_Stream & strm)
+PBoolean PASN_Integer::Decode(PASN_Stream & strm)
 {
   return strm.IntegerDecode(*this);
 }
@@ -731,7 +731,7 @@ void PASN_Integer::Encode(PASN_Stream & strm) const
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Enumeration::PASN_Enumeration(unsigned val)
-: PASN_Object(UniversalEnumeration, UniversalTagClass, FALSE),names(NULL),namesCount(0)
+: PASN_Object(UniversalEnumeration, UniversalTagClass, PFalse),names(NULL),namesCount(0)
 {
   value = val;
   maxEnumValue = P_MAX_INDEX;
@@ -739,7 +739,7 @@ PASN_Enumeration::PASN_Enumeration(unsigned val)
 
 
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
-                                   unsigned maxEnum, BOOL extend,
+                                   unsigned maxEnum, PBoolean extend,
                                    unsigned val)
   : PASN_Object(tag, tagClass, extend),names(NULL),namesCount(0)
 {
@@ -750,7 +750,7 @@ PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
 
 
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
-                                   unsigned maxEnum, BOOL extend,
+                                   unsigned maxEnum, PBoolean extend,
                                    const PASN_Names * nameSpec,
                                    unsigned namesCnt,
                                    unsigned val)
@@ -808,7 +808,7 @@ PINDEX PASN_Enumeration::GetDataLength() const
 }
 
 
-BOOL PASN_Enumeration::Decode(PASN_Stream & strm)
+PBoolean PASN_Enumeration::Decode(PASN_Stream & strm)
 {
   return strm.EnumerationDecode(*this);
 }
@@ -886,7 +886,7 @@ PINDEX PASN_Real::GetDataLength() const
 }
 
 
-BOOL PASN_Real::Decode(PASN_Stream & strm)
+PBoolean PASN_Real::Decode(PASN_Stream & strm)
 {
   return strm.RealDecode(*this);
 }
@@ -1015,13 +1015,13 @@ PString PASN_ObjectId::GetTypeAsString() const
 }
 
 
-BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
+PBoolean PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
 {
   value.SetSize(0);
 
   // handle zero length strings correctly
   if (dataLen == 0)
-    return TRUE;
+    return PTrue;
 
   unsigned subId;
 
@@ -1033,7 +1033,7 @@ BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
     subId = 0;
     do {    /* shift and add in low order 7 bits */
       if (strm.IsAtEnd())
-        return FALSE;
+        return PFalse;
       byte = strm.ByteDecode();
       subId = (subId << 7) + (byte & 0x7f);
       dataLen--;
@@ -1061,7 +1061,7 @@ BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
     value[1] = subId-80;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1129,7 +1129,7 @@ PINDEX PASN_ObjectId::GetDataLength() const
 }
 
 
-BOOL PASN_ObjectId::Decode(PASN_Stream & strm)
+PBoolean PASN_ObjectId::Decode(PASN_Stream & strm)
 {
   return strm.ObjectIdDecode(*this);
 }
@@ -1200,20 +1200,20 @@ void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 }
 
 
-BOOL PASN_BitString::SetSize(unsigned nBits)
+PBoolean PASN_BitString::SetSize(unsigned nBits)
 {
   if (!CheckByteOffset(nBits))
-    return FALSE;
+    return PFalse;
 
   if (constraint == Unconstrained)
     totalBits = nBits;
   else if (totalBits < (unsigned)lowerLimit) {
     if (lowerLimit < 0)
-      return FALSE;
+      return PFalse;
     totalBits = lowerLimit;
   } else if ((unsigned)totalBits > upperLimit) {
     if (upperLimit > (unsigned)MaximumSetSize)
-      return FALSE;
+      return PFalse;
     totalBits = upperLimit;
   } else
     totalBits = nBits;
@@ -1225,7 +1225,7 @@ bool PASN_BitString::operator[](PINDEX bit) const
 {
   if ((unsigned)bit < totalBits)
     return (bitData[bit>>3] & (1 << (7 - (bit&7)))) != 0;
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1324,7 +1324,7 @@ PINDEX PASN_BitString::GetDataLength() const
 }
 
 
-BOOL PASN_BitString::Decode(PASN_Stream & strm)
+PBoolean PASN_BitString::Decode(PASN_Stream & strm)
 {
   return strm.BitStringDecode(*this);
 }
@@ -1477,19 +1477,19 @@ PINDEX PASN_OctetString::GetDataLength() const
 }
 
 
-BOOL PASN_OctetString::SetSize(PINDEX newSize)
+PBoolean PASN_OctetString::SetSize(PINDEX newSize)
 {
   if (!CheckByteOffset(newSize, MaximumStringSize))
-    return FALSE;
+    return PFalse;
 
   if (constraint != Unconstrained) {
     if (newSize < (PINDEX)lowerLimit) {
       if (lowerLimit < 0)
-        return FALSE;
+        return PFalse;
       newSize = lowerLimit;
     } else if ((unsigned)newSize > upperLimit) {
       if (upperLimit > (unsigned)MaximumStringSize)
-        return FALSE;
+        return PFalse;
       newSize = upperLimit;
     }
   }
@@ -1498,7 +1498,7 @@ BOOL PASN_OctetString::SetSize(PINDEX newSize)
 }
 
 
-BOOL PASN_OctetString::Decode(PASN_Stream & strm)
+PBoolean PASN_OctetString::Decode(PASN_Stream & strm)
 {
   return strm.OctetStringDecode(*this);
 }
@@ -1637,7 +1637,7 @@ PINDEX PASN_ConstrainedString::GetDataLength() const
 }
 
 
-BOOL PASN_ConstrainedString::Decode(PASN_Stream & strm)
+PBoolean PASN_ConstrainedString::Decode(PASN_Stream & strm)
 {
   return strm.ConstrainedStringDecode(*this);
 }
@@ -1769,26 +1769,26 @@ PASN_BMPString & PASN_BMPString::operator=(const PASN_BMPString & other)
 }
 
 
-BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
+PBoolean PASN_BMPString::IsLegalCharacter(WORD ch)
 {
   if (ch < firstChar)
-    return FALSE;
+    return PFalse;
 
   if (ch > lastChar)
-    return FALSE;
+    return PFalse;
 
   if (characterSet.IsEmpty())
-    return TRUE;
+    return PTrue;
 
   const WORD * wptr = characterSet;
   PINDEX count = characterSet.GetSize();
   while (count-- > 0) {
     if (*wptr == ch)
-      return TRUE;
+      return PTrue;
     wptr++;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1931,7 +1931,7 @@ PINDEX PASN_BMPString::GetDataLength() const
 }
 
 
-BOOL PASN_BMPString::Decode(PASN_Stream & strm)
+PBoolean PASN_BMPString::Decode(PASN_Stream & strm)
 {
   return strm.BMPStringDecode(*this);
 }
@@ -2031,7 +2031,7 @@ PTime PASN_UniversalTime::GetValue() const
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Choice::PASN_Choice(unsigned nChoices, BOOL extend)
+PASN_Choice::PASN_Choice(unsigned nChoices, PBoolean extend)
   : PASN_Object(0, ApplicationTagClass, extend),names(NULL),namesCount(0)
 {
   numChoices = nChoices;
@@ -2040,7 +2040,7 @@ PASN_Choice::PASN_Choice(unsigned nChoices, BOOL extend)
 
 
 PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
-                         unsigned upper, BOOL extend)
+                         unsigned upper, PBoolean extend)
   : PASN_Object(tag, tagClass, extend),names(NULL),namesCount(0)
 {
   numChoices = upper;
@@ -2049,7 +2049,7 @@ PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
 
 
 PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
-                         unsigned upper, BOOL extend, const PASN_Names * nameSpec,unsigned namesCnt)
+                         unsigned upper, PBoolean extend, const PASN_Names * nameSpec,unsigned namesCnt)
   : PASN_Object(tag, tagClass, extend),
     names(nameSpec),namesCount(namesCnt)
 {
@@ -2126,10 +2126,10 @@ PString PASN_Choice::GetTagName() const
 }
 
 
-BOOL PASN_Choice::CheckCreate() const
+PBoolean PASN_Choice::CheckCreate() const
 {
   if (choice != NULL)
-    return TRUE;
+    return PTrue;
 
   return ((PASN_Choice *)this)->CreateObject();
 }
@@ -2241,15 +2241,15 @@ PINDEX PASN_Choice::GetDataLength() const
 }
 
 
-BOOL PASN_Choice::IsPrimitive() const
+PBoolean PASN_Choice::IsPrimitive() const
 {
   if (CheckCreate())
     return choice->IsPrimitive();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PASN_Choice::Decode(PASN_Stream & strm)
+PBoolean PASN_Choice::Decode(PASN_Stream & strm)
 {
   return strm.ChoiceDecode(*this);
 }
@@ -2273,7 +2273,7 @@ PINDEX PASN_Choice::GetValueByName(PString name) const
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Sequence::PASN_Sequence(unsigned tag, TagClass tagClass,
-                             unsigned nOpts, BOOL extend, unsigned nExtend)
+                             unsigned nOpts, PBoolean extend, unsigned nExtend)
   : PASN_Object(tag, tagClass, extend)
 {
   optionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, nOpts);
@@ -2315,7 +2315,7 @@ PASN_Sequence & PASN_Sequence::operator=(const PASN_Sequence & other)
 }
 
 
-BOOL PASN_Sequence::HasOptionalField(PINDEX opt) const
+PBoolean PASN_Sequence::HasOptionalField(PINDEX opt) const
 {
   if (opt < (PINDEX)optionMap.GetSize())
     return optionMap[opt];
@@ -2409,13 +2409,13 @@ PINDEX PASN_Sequence::GetDataLength() const
 }
 
 
-BOOL PASN_Sequence::IsPrimitive() const
+PBoolean PASN_Sequence::IsPrimitive() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PASN_Sequence::Decode(PASN_Stream & strm)
+PBoolean PASN_Sequence::Decode(PASN_Stream & strm)
 {
   return PreambleDecode(strm) && UnknownExtensionsDecode(strm);
 }
@@ -2428,7 +2428,7 @@ void PASN_Sequence::Encode(PASN_Stream & strm) const
 }
 
 
-BOOL PASN_Sequence::PreambleDecode(PASN_Stream & strm)
+PBoolean PASN_Sequence::PreambleDecode(PASN_Stream & strm)
 {
   return strm.SequencePreambleDecode(*this);
 }
@@ -2440,7 +2440,7 @@ void PASN_Sequence::PreambleEncode(PASN_Stream & strm) const
 }
 
 
-BOOL PASN_Sequence::KnownExtensionDecode(PASN_Stream & strm, PINDEX fld, PASN_Object & field)
+PBoolean PASN_Sequence::KnownExtensionDecode(PASN_Stream & strm, PINDEX fld, PASN_Object & field)
 {
   return strm.SequenceKnownDecode(*this, fld, field);
 }
@@ -2452,7 +2452,7 @@ void PASN_Sequence::KnownExtensionEncode(PASN_Stream & strm, PINDEX fld, const P
 }
 
 
-BOOL PASN_Sequence::UnknownExtensionsDecode(PASN_Stream & strm)
+PBoolean PASN_Sequence::UnknownExtensionsDecode(PASN_Stream & strm)
 {
   return strm.SequenceUnknownDecode(*this);
 }
@@ -2467,7 +2467,7 @@ void PASN_Sequence::UnknownExtensionsEncode(PASN_Stream & strm) const
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Set::PASN_Set(unsigned tag, TagClass tagClass,
-                   unsigned nOpts, BOOL extend, unsigned nExtend)
+                   unsigned nOpts, PBoolean extend, unsigned nExtend)
   : PASN_Sequence(tag, tagClass, nOpts, extend, nExtend)
 {
 }
@@ -2514,24 +2514,24 @@ PASN_Array & PASN_Array::operator=(const PASN_Array & other)
 }
 
 
-BOOL PASN_Array::SetSize(PINDEX newSize)
+PBoolean PASN_Array::SetSize(PINDEX newSize)
 {
   if (newSize > MaximumArraySize)
-    return FALSE;
+    return PFalse;
 
   PINDEX originalSize = array.GetSize();
   if (!array.SetSize(newSize))
-    return FALSE;
+    return PFalse;
 
   for (PINDEX i = originalSize; i < newSize; i++) {
     PASN_Object * obj = CreateObject();
     if (obj == NULL)
-      return FALSE;
+      return PFalse;
 
     array.SetAt(i, obj);
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -2583,13 +2583,13 @@ PINDEX PASN_Array::GetDataLength() const
 }
 
 
-BOOL PASN_Array::IsPrimitive() const
+PBoolean PASN_Array::IsPrimitive() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PASN_Array::Decode(PASN_Stream & strm)
+PBoolean PASN_Array::Decode(PASN_Stream & strm)
 {
   return strm.ArrayDecode(*this);
 }

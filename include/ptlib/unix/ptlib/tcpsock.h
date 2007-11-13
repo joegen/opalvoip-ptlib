@@ -60,6 +60,6 @@
 // PTCPSocket
 
   public:
-    virtual BOOL Read(void * buf, PINDEX len);
+    virtual PBoolean Read(void * buf, PINDEX len);
 
 // End Of File ////////////////////////////////////////////////////////////////

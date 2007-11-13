@@ -339,8 +339,8 @@
 
 
 namespace PWLib {
-  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoInputDevice> > vidinChannelFactoryAdapter("PVideoInputDevice", TRUE);
-  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoOutputDevice> > vidoutChannelFactoryAdapter("PVideoOutputDevice", TRUE);
+  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoInputDevice> > vidinChannelFactoryAdapter("PVideoInputDevice", PTrue);
+  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoOutputDevice> > vidoutChannelFactoryAdapter("PVideoOutputDevice", PTrue);
 };
 
 template <> PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PString & type) const
@@ -445,21 +445,21 @@ PVideoFrameInfo::PVideoFrameInfo()
 }
 
 
-BOOL PVideoFrameInfo::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoFrameInfo::SetFrameSize(unsigned width, unsigned height)
 {
   if (width < 8 || height < 8)
-    return FALSE;
+    return PFalse;
   frameWidth = width;
   frameHeight = height;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoFrameInfo::GetFrameSize(unsigned & width, unsigned & height) const
+PBoolean PVideoFrameInfo::GetFrameSize(unsigned & width, unsigned & height) const
 {
   width = frameWidth;
   height = frameHeight;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -479,13 +479,13 @@ unsigned PVideoFrameInfo::GetFrameHeight() const
 }
 
 
-BOOL PVideoFrameInfo::SetFrameRate(unsigned rate)
+PBoolean PVideoFrameInfo::SetFrameRate(unsigned rate)
 {
   if (rate < 1 || rate > 999)
-    return FALSE;
+    return PFalse;
 
   frameRate = rate;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -495,19 +495,19 @@ unsigned PVideoFrameInfo::GetFrameRate() const
 }
 
 
-BOOL PVideoFrameInfo::SetColourFormat(const PString & colourFmt)
+PBoolean PVideoFrameInfo::SetColourFormat(const PString & colourFmt)
 {
   if (!colourFmt) {
     colourFormat = colourFmt.ToUpper();
-    return TRUE;
+    return PTrue;
   }
 
   for (PINDEX i = 0; i < PARRAYSIZE(colourFormatBPPTab); i++) {
     if (SetColourFormat(colourFormatBPPTab[i].colourFormat))
-      return TRUE;
+      return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -528,7 +528,7 @@ PINDEX PVideoFrameInfo::CalculateFrameBytes(unsigned width, unsigned height,
 }
  
 
-BOOL PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
+PBoolean PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
 {
   static struct {
     const char * name;
@@ -571,7 +571,7 @@ BOOL PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned 
     if (str *= sizeTable[i].name) {
       width = sizeTable[i].width;
       height = sizeTable[i].height;
-      return TRUE;
+      return PTrue;
     }
   }
 
@@ -588,7 +588,7 @@ PVideoDevice::PVideoDevice()
 
   videoFormat = Auto;
   channelNumber = -1;  // -1 will find the first working channel number.
-  nativeVerticalFlip = FALSE;
+  nativeVerticalFlip = PFalse;
 
   converter = NULL;
 }
@@ -606,13 +606,13 @@ PVideoDevice::OpenArgs::OpenArgs()
     videoFormat(Auto),
     channelNumber(0),
     colourFormat("YUV420P"),
-    convertFormat(TRUE),
+    convertFormat(PTrue),
     rate(0),
     width(CIFWidth),
     height(CIFHeight),
-    convertSize(TRUE),
+    convertSize(PTrue),
     resizeMode(eScale),
-    flip(FALSE),
+    flip(PFalse),
     brightness(-1),
     whiteness(-1),
     contrast(-1),
@@ -622,108 +622,108 @@ PVideoDevice::OpenArgs::OpenArgs()
 }
 
 
-BOOL PVideoDevice::OpenFull(const OpenArgs & args, BOOL startImmediate)
+PBoolean PVideoDevice::OpenFull(const OpenArgs & args, PBoolean startImmediate)
 {
   if (args.deviceName[0] == '#') {
     PStringArray devices = GetDeviceNames();
     PINDEX id = args.deviceName.Mid(1).AsUnsigned();
     if (id == 0 || id > devices.GetSize())
-      return FALSE;
+      return PFalse;
 
-    if (!Open(devices[id-1], FALSE))
-      return FALSE;
+    if (!Open(devices[id-1], PFalse))
+      return PFalse;
   }
   else {
-    if (!Open(args.deviceName, FALSE))
-      return FALSE;
+    if (!Open(args.deviceName, PFalse))
+      return PFalse;
   }
 
   if (!SetVideoFormat(args.videoFormat))
-    return FALSE;
+    return PFalse;
 
   if (!SetChannel(args.channelNumber))
-    return FALSE;
+    return PFalse;
 
   if (args.convertFormat) {
     if (!SetColourFormatConverter(args.colourFormat))
-      return FALSE;
+      return PFalse;
   }
   else {
     if (!SetColourFormat(args.colourFormat))
-      return FALSE;
+      return PFalse;
   }
 
   if (args.rate > 0) {
     if (!SetFrameRate(args.rate))
-      return FALSE;
+      return PFalse;
   }
 
   if (args.convertSize) {
     if (!SetFrameSizeConverter(args.width, args.height, args.resizeMode))
-      return FALSE;
+      return PFalse;
   }
   else {
     if (!SetFrameSize(args.width, args.height))
-      return FALSE;
+      return PFalse;
   }
 
   if (!SetVFlipState(args.flip))
-    return FALSE;
+    return PFalse;
 
   if (args.brightness >= 0) {
     if (!SetBrightness(args.brightness))
-      return FALSE;
+      return PFalse;
   }
 
   if (args.whiteness >= 0) {
     if (!SetWhiteness(args.whiteness))
-      return FALSE;
+      return PFalse;
   }
 
   if (args.contrast >= 0) {
     if (!SetContrast(args.contrast))
-      return FALSE;
+      return PFalse;
   }
 
   if (args.colour >= 0) {
     if (!SetColour(args.colour))
-      return FALSE;
+      return PFalse;
   }
 
   if (args.hue >= 0) {
     if (!SetColour(args.hue))
-      return FALSE;
+      return PFalse;
   }
 
   if (startImmediate)
     return Start();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoDevice::Close()
+PBoolean PVideoDevice::Close()
 {
-  return TRUE;  
+  return PTrue;  
 }
 
 
-BOOL PVideoDevice::Start()
+PBoolean PVideoDevice::Start()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoDevice::Stop()
+PBoolean PVideoDevice::Stop()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoDevice::SetVideoFormat(VideoFormat videoFmt)
+PBoolean PVideoDevice::SetVideoFormat(VideoFormat videoFmt)
 {
   videoFormat = videoFmt;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -739,21 +739,21 @@ int PVideoDevice::GetNumChannels()
 }
 
 
-BOOL PVideoDevice::SetChannel(int channelNum)
+PBoolean PVideoDevice::SetChannel(int channelNum)
 {
   if (channelNum < 0) { // Seek out the first available channel
     for (int c = 0; c < GetNumChannels(); c++) {
       if (SetChannel(c))
-        return TRUE;
+        return PTrue;
     }
-    return FALSE;
+    return PFalse;
   }
 
   if (channelNum >= GetNumChannels())
-    return FALSE;
+    return PFalse;
 
   channelNumber = channelNum;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -763,7 +763,7 @@ int PVideoDevice::GetChannel() const
 }
 
 
-BOOL PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
+PBoolean PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
 {
   PVideoFrameInfo src = *this;
   PVideoFrameInfo dst = *this;
@@ -773,11 +773,11 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
   if (converter != NULL) {
     if (CanCaptureVideo()) {
       if (converter->GetDstColourFormat() == colourFmt)
-        return TRUE;
+        return PTrue;
     }
     else {
       if (converter->GetSrcColourFormat() == colourFmt)
-        return TRUE;
+        return PTrue;
     }
     converter->GetSrcFrameInfo(src);
     converter->GetDstFrameInfo(dst);
@@ -803,7 +803,7 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
         converter = PColourConverter::Create(src, dst);
         if (converter != NULL) {
           converter->SetVFlipState(nativeVerticalFlip);
-          return TRUE;
+          return PTrue;
         }
       }
     }
@@ -815,12 +815,12 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
       dst.SetColourFormat(colourFmt);
       converter = PColourConverter::Create(src, dst);
       if (PAssertNULL(converter) == NULL)
-        return FALSE;
+        return PFalse;
       converter->SetVFlipState(nativeVerticalFlip);
     }
 
     PTRACE(3, "PVidDev\tSetColourFormatConverter success for native " << colourFmt);    
-    return TRUE;
+    return PTrue;
   }
   
   /************************
@@ -854,18 +854,18 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
         // set converter properties that depend on this color format
         PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " and device using " << formatToTry);
         converter->SetVFlipState(nativeVerticalFlip);
-        return TRUE;
+        return PTrue;
       } 
     } 
     knownFormatIdx++;
   }
 
   PTRACE(2, "PVidDev\tSetColourFormatConverter  FAILED for " << colourFmt);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PVideoDevice::GetVFlipState()
+PBoolean PVideoDevice::GetVFlipState()
 {
   if (converter != NULL)
     return converter->GetVFlipState() ^ nativeVerticalFlip;
@@ -874,29 +874,29 @@ BOOL PVideoDevice::GetVFlipState()
 }
 
 
-BOOL PVideoDevice::SetVFlipState(BOOL newVFlip)
+PBoolean PVideoDevice::SetVFlipState(PBoolean newVFlip)
 {
   if (newVFlip && converter == NULL) {
     converter = PColourConverter::Create(*this, *this);
     if (PAssertNULL(converter) == NULL)
-      return FALSE;
+      return PFalse;
   }
 
   if (converter != NULL)
     converter->SetVFlipState(newVFlip ^ nativeVerticalFlip);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
+PBoolean PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
                                       unsigned & minHeight,
                                       unsigned & maxWidth,
                                       unsigned & maxHeight) 
 {
   minWidth = minHeight = 1;
   maxWidth = maxHeight = UINT_MAX;
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -947,19 +947,19 @@ static struct {
     { 160, 120,    640, 480 },
 };
 
-BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, ResizeMode resizeMode)
+PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, ResizeMode resizeMode)
 {
   if (SetFrameSize(width, height)) {
     if (nativeVerticalFlip && converter == NULL) {
       converter = PColourConverter::Create(*this, *this);
       if (PAssertNULL(converter) == NULL)
-        return FALSE;
+        return PFalse;
     }
     if (converter != NULL) {
       converter->SetFrameSize(frameWidth, frameHeight);
       converter->SetVFlipState(nativeVerticalFlip);
     }
-    return TRUE;
+    return PTrue;
   }
 
   // Try and get the most compatible physical frame size to convert from/to
@@ -989,7 +989,7 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Resize
     converter = PColourConverter::Create(src, dst);
     if (converter == NULL) {
       PTRACE(1, "PVidDev\tSetFrameSizeConverter Colour converter creation failed");
-      return FALSE;
+      return PFalse;
     }
   }
   else
@@ -1003,11 +1003,11 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Resize
 
   PTRACE(3,"PVidDev\tColour converter used from " << converter->GetSrcFrameWidth() << 'x' << converter->GetSrcFrameHeight() << " [" << converter->GetSrcColourFormat() << "]" << " to " << converter->GetDstFrameWidth() << 'x' << converter->GetDstFrameHeight() << " [" << converter->GetDstColourFormat() << "]");
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 {
 #if PTRACING
   unsigned oldWidth = frameWidth;
@@ -1035,17 +1035,17 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
     if (!converter->SetSrcFrameSize(width, height) ||
         !converter->SetDstFrameSize(width, height)) {
       PTRACE(1, "PVidDev\tSetFrameSize with converter failed with " << width << 'x' << height);
-      return FALSE;
+      return PFalse;
     }
   }
 
   PTRACE_IF(2, oldWidth != frameWidth || oldHeight != frameHeight,
             "PVidDev\tSetFrameSize to " << frameWidth << 'x' << frameHeight);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) const
+PBoolean PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) const
 {
   // Channels get very upset at this not returning the output size.
   return converter != NULL ? converter->GetDstFrameSize(width, height) : PVideoFrameInfo::GetFrameSize(width, height);
@@ -1070,10 +1070,10 @@ int PVideoDevice::GetBrightness()
 }
 
 
-BOOL PVideoDevice::SetBrightness(unsigned newBrightness)
+PBoolean PVideoDevice::SetBrightness(unsigned newBrightness)
 {
   frameBrightness = newBrightness;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1083,10 +1083,10 @@ int PVideoDevice::GetWhiteness()
 }
 
 
-BOOL PVideoDevice::SetWhiteness(unsigned newWhiteness)
+PBoolean PVideoDevice::SetWhiteness(unsigned newWhiteness)
 {
   frameWhiteness = newWhiteness;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1096,10 +1096,10 @@ int PVideoDevice::GetColour()
 }
 
 
-BOOL PVideoDevice::SetColour(unsigned newColour)
+PBoolean PVideoDevice::SetColour(unsigned newColour)
 {
   frameColour=newColour;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1109,10 +1109,10 @@ int PVideoDevice::GetContrast()
 }
 
 
-BOOL PVideoDevice::SetContrast(unsigned newContrast)
+PBoolean PVideoDevice::SetContrast(unsigned newContrast)
 {
   frameContrast=newContrast;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1122,21 +1122,21 @@ int PVideoDevice::GetHue()
 }
 
 
-BOOL PVideoDevice::SetHue(unsigned newHue)
+PBoolean PVideoDevice::SetHue(unsigned newHue)
 {
   frameHue=newHue;
-  return TRUE;
+  return PTrue;
 }
 
     
-BOOL PVideoDevice::GetParameters (int *whiteness,
+PBoolean PVideoDevice::GetParameters (int *whiteness,
                                   int *brightness, 
                                   int *colour,
                                   int *contrast,
                                   int *hue)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   *brightness = frameBrightness;
   *colour     = frameColour;
@@ -1144,12 +1144,12 @@ BOOL PVideoDevice::GetParameters (int *whiteness,
   *hue        = frameHue;
   *whiteness  = frameWhiteness;
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
+PBoolean PVideoDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
 {
-  BOOL err1, err2;
+  PBoolean err1, err2;
 
   err1 = SetChannel (newNumber);
   err2 = SetVideoFormat (newFormat);
@@ -1171,15 +1171,15 @@ PVideoOutputDevice::PVideoOutputDevice()
 }
 
 
-BOOL PVideoOutputDevice::CanCaptureVideo() const
+PBoolean PVideoOutputDevice::CanCaptureVideo() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PVideoOutputDevice::GetPosition(int &, int &) const
+PBoolean PVideoOutputDevice::GetPosition(int &, int &) const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1197,7 +1197,7 @@ PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
 }
 
 
-BOOL PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
+PBoolean PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
 {
   PWaitAndSignal m(mutex);
 
@@ -1220,10 +1220,10 @@ BOOL PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
     newSwappedRedAndBlue = true;
   }
   else
-    return FALSE;
+    return PFalse;
 
   if (!PVideoOutputDevice::SetColourFormat(colourFormat))
-    return FALSE;
+    return PFalse;
 
   bytesPerPixel = newBytesPerPixel;
   scanLineWidth = ((frameWidth*bytesPerPixel+3)/4)*4;
@@ -1231,12 +1231,12 @@ BOOL PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
 }
 
 
-BOOL PVideoOutputDeviceRGB::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoOutputDeviceRGB::SetFrameSize(unsigned width, unsigned height)
 {
   PWaitAndSignal m(mutex);
 
   if (!PVideoOutputDevice::SetFrameSize(width, height))
-    return FALSE;
+    return PFalse;
 
   scanLineWidth = ((frameWidth*bytesPerPixel+3)/4)*4;
   return frameStore.SetSize(frameHeight*scanLineWidth);
@@ -1250,15 +1250,15 @@ PINDEX PVideoOutputDeviceRGB::GetMaxFrameBytes()
 }
 
 
-BOOL PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
+PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
                                          unsigned width, unsigned height,
                                          const BYTE * data,
-                                         BOOL endFrame)
+                                         PBoolean endFrame)
 {
   PWaitAndSignal m(mutex);
 
   if (x+width > frameWidth || y+height > frameHeight)
-    return FALSE;
+    return PFalse;
 
   if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
     if (converter != NULL)
@@ -1269,7 +1269,7 @@ BOOL PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
   else {
     if (converter != NULL) {
       PAssertAlways("Converted output of partial RGB frame not supported");
-      return FALSE;
+      return PFalse;
     }
 
     if (x == 0 && width == frameWidth)
@@ -1284,7 +1284,7 @@ BOOL PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
   if (endFrame)
     return FrameComplete();
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1300,34 +1300,34 @@ PVideoOutputDevicePPM::PVideoOutputDevicePPM()
 }
 
 
-BOOL PVideoOutputDevicePPM::Open(const PString & name,
-                                 BOOL /*startImmediate*/)
+PBoolean PVideoOutputDevicePPM::Open(const PString & name,
+                                 PBoolean /*startImmediate*/)
 {
   Close();
 
   PFilePath path = name;
   if (!PDirectory::Exists(path.GetDirectory()))
-    return FALSE;
+    return PFalse;
 
   if (path != psprintf(path, 12345))
     deviceName = path;
   else
     deviceName = path.GetDirectory() + path.GetTitle() + "%u" + path.GetType();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoOutputDevicePPM::IsOpen()
+PBoolean PVideoOutputDevicePPM::IsOpen()
 {
   return !deviceName;
 }
 
 
-BOOL PVideoOutputDevicePPM::Close()
+PBoolean PVideoOutputDevicePPM::Close()
 {
   deviceName.MakeEmpty();
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1339,20 +1339,20 @@ PStringList PVideoOutputDevicePPM::GetDeviceNames() const
 }
 
 
-BOOL PVideoOutputDevicePPM::EndFrame()
+PBoolean PVideoOutputDevicePPM::EndFrame()
 {
   PFile file;
   if (!file.Open(psprintf(deviceName, frameNumber++), PFile::WriteOnly)) {
     PTRACE(1, "PPMVid\tFailed to open PPM output file \""
            << file.GetName() << "\": " << file.GetErrorText());
-    return FALSE;
+    return PFalse;
   }
 
   file << "P6 " << frameWidth  << " " << frameHeight << " " << 255 << "\n";
 
   if (!file.Write(frameStore, frameStore.GetSize())) {
     PTRACE(1, "PPMVid\tFailed to write frame data to PPM output file " << file.GetName());
-    return FALSE;
+    return PFalse;
   }
 
   PTRACE(6, "PPMVid\tFinished writing PPM file " << file.GetName());
@@ -1365,9 +1365,9 @@ BOOL PVideoOutputDevicePPM::EndFrame()
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
 
-BOOL PVideoInputDevice::CanCaptureVideo() const
+PBoolean PVideoInputDevice::CanCaptureVideo() const
 {
-  return TRUE;
+  return PTrue;
 }
 
 static const char videoInputPluginBaseClass[] = "PVideoInputDevice";
@@ -1411,7 +1411,7 @@ PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & device
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driverName,
                                                           const PString & deviceName,
-                                                          BOOL startImmediate,
+                                                          PBoolean startImmediate,
                                                           PPluginManager * pluginMgr)
 {
   PString adjustedDeviceName = deviceName;
@@ -1428,7 +1428,7 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
 
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
-                                                          BOOL startImmediate)
+                                                          PBoolean startImmediate)
 {
   OpenArgs adjustedArgs = args;
   PVideoInputDevice * device = CreateDeviceWithDefaults<PVideoInputDevice>(adjustedArgs.deviceName, args.driverName, NULL);
@@ -1443,14 +1443,14 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
 }
 
 
-BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
+PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {
   PINDEX returned;
   if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
+    return PFalse;
 
   frame.SetSize(returned);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1497,7 +1497,7 @@ PVideoOutputDevice * PVideoOutputDevice::CreateDeviceByName(const PString & devi
 
 PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &driverName,
                                                             const PString &deviceName,
-                                                            BOOL startImmediate,
+                                                            PBoolean startImmediate,
                                                             PPluginManager * pluginMgr)
 {
   PString adjustedDeviceName = deviceName;
@@ -1514,7 +1514,7 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &drive
 
 
 PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const OpenArgs & args,
-                                                            BOOL startImmediate)
+                                                            PBoolean startImmediate)
 {
   OpenArgs adjustedArgs = args;
   PVideoOutputDevice * device = CreateDeviceWithDefaults<PVideoOutputDevice>(adjustedArgs.deviceName, args.driverName, NULL);

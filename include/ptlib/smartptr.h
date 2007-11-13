@@ -117,9 +117,9 @@ class PSmartPointer : public PObject
        object instance.
 
        @return
-       TRUE if the pointer is NULL.
+       PTrue if the pointer is NULL.
      */
-    BOOL IsNULL() const { return object == NULL; }
+    PBoolean IsNULL() const { return object == NULL; }
 
     /** Get the current value if the internal smart object pointer.
 

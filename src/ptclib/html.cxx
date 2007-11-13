@@ -175,7 +175,7 @@ void PHTML::AssignContents(const PContainer & cont)
 }
 
 
-BOOL PHTML::Is(ElementInSet elmt) const
+PBoolean PHTML::Is(ElementInSet elmt) const
 {
   return (elementSet[elmt>>3]&(1<<(elmt&7))) != 0;
 }
@@ -627,7 +627,7 @@ void PHTML::DefinitionItem::Output(PHTML & html) const
 PHTML::TableStart::TableStart(const char * attr)
   : Element("TABLE", attr, InTable, InBody, BothCRLF)
 {
-  borderFlag = FALSE;
+  borderFlag = PFalse;
 }
 
 PHTML::TableStart::TableStart(BorderCodes border, const char * attr)
@@ -753,7 +753,7 @@ void PHTML::Select::AddAttr(PHTML & html) const
 PHTML::Option::Option(const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, Enabled)
 {
-  selectedFlag = FALSE;
+  selectedFlag = PFalse;
 }
 
 PHTML::Option::Option(SelectionCodes select,
@@ -767,7 +767,7 @@ PHTML::Option::Option(DisableCodes disabled,
                       const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, disabled)
 {
-  selectedFlag = FALSE;
+  selectedFlag = PFalse;
 }
 
 PHTML::Option::Option(SelectionCodes select,
@@ -980,7 +980,7 @@ PHTML::RadioButton::RadioButton(const char * fname,
   : InputField("radio", fname, Enabled, attr)
 {
   valueString = value;
-  checkedFlag = FALSE;
+  checkedFlag = PFalse;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
@@ -990,7 +990,7 @@ PHTML::RadioButton::RadioButton(const char * fname,
   : InputField("radio", fname, disabled, attr)
 {
   valueString = value;
-  checkedFlag = FALSE;
+  checkedFlag = PFalse;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
@@ -1027,14 +1027,14 @@ void PHTML::RadioButton::AddAttr(PHTML & html) const
 
 
 PHTML::CheckBox::CheckBox(const char * fname, const char * attr)
-  : RadioButton("checkbox", fname, "TRUE", UnChecked, Enabled, attr)
+  : RadioButton("checkbox", fname, "PTrue", UnChecked, Enabled, attr)
 {
 }
 
 PHTML::CheckBox::CheckBox(const char * fname,
                           DisableCodes disabled,
                           const char * attr)
-  : RadioButton("checkbox", fname, "TRUE", UnChecked, disabled, attr)
+  : RadioButton("checkbox", fname, "PTrue", UnChecked, disabled, attr)
 {
 }
 
@@ -1042,7 +1042,7 @@ PHTML::CheckBox::CheckBox(const char * fname,
                           CheckedCodes check,
                           DisableCodes disabled,
                           const char * attr)
-  : RadioButton("checkbox", fname, "TRUE", check, disabled, attr)
+  : RadioButton("checkbox", fname, "PTrue", check, disabled, attr)
 {
 }
 

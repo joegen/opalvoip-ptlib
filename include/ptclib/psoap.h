@@ -86,13 +86,13 @@ public:
   void AddParameter( PString name, PString type, PString value );
 
   //! Add a parameter using a PXMLElement
-  void AddParameter( PXMLElement* parameter, BOOL dirty = TRUE );
+  void AddParameter( PXMLElement* parameter, PBoolean dirty = PTrue );
 
   //! Get parameter "name" with type "string"
-  BOOL GetParameter( const PString & name, PString & value );
+  PBoolean GetParameter( const PString & name, PString & value );
 
   //! Get parameter "name" with type "int"
-  BOOL GetParameter( const PString & name, int & value );
+  PBoolean GetParameter( const PString & name, int & value );
 
   //! Get parameter "name"
   PXMLElement* GetParameter( const PString & name );
@@ -104,7 +104,7 @@ public:
   PString AsString( void );
   
   //! Parse a string for a valid SOAP message
-  BOOL Load(const PString & str);
+  PBoolean Load(const PString & str);
 
   //! State of the PSOAPMessage when used as a response
   enum 
@@ -182,13 +182,13 @@ class PSOAPServerResource : public PHTTPResource
     );
 
     // overrides from PHTTPResource
-    BOOL LoadHeaders( PHTTPRequest & request );
-    BOOL OnPOSTData( PHTTPRequest & request, const PStringToString & data );
+    PBoolean LoadHeaders( PHTTPRequest & request );
+    PBoolean OnPOSTData( PHTTPRequest & request, const PStringToString & data );
 
     // new functions
-    virtual BOOL OnSOAPRequest( const PString & body, PString & reply );
-    virtual BOOL SetMethod( const PString & methodName, const PNotifier & func );
-    BOOL OnSOAPRequest( const PString & methodName, PSOAPMessage & request, PString & reply );
+    virtual PBoolean OnSOAPRequest( const PString & body, PString & reply );
+    virtual PBoolean SetMethod( const PString & methodName, const PNotifier & func );
+    PBoolean OnSOAPRequest( const PString & methodName, PSOAPMessage & request, PString & reply );
 
     virtual PSOAPMessage FormatFault( PINDEX code, const PString & str );
 
@@ -220,9 +220,9 @@ class PSOAPClient : public PObject
 
     void SetTimeout( const PTimeInterval & _timeout ) { timeout = _timeout; }
 
-    BOOL MakeRequest( const PString & method, const PString & nameSpace );
-    BOOL MakeRequest( const PString & method, const PString & nameSpace,  PSOAPMessage & response );
-    BOOL MakeRequest( PSOAPMessage  & request, PSOAPMessage & response );
+    PBoolean MakeRequest( const PString & method, const PString & nameSpace );
+    PBoolean MakeRequest( const PString & method, const PString & nameSpace,  PSOAPMessage & response );
+    PBoolean MakeRequest( PSOAPMessage  & request, PSOAPMessage & response );
 
     PString GetFaultText() const { return faultText; }
     PINDEX  GetFaultCode() const { return faultCode; }
@@ -230,7 +230,7 @@ class PSOAPClient : public PObject
     //! Set a specific SOAPAction field in the HTTTP header, default = " " 
     void setSOAPAction( PString saction ) { soapAction = saction; }
   protected:
-    BOOL PerformRequest( PSOAPMessage & request, PSOAPMessage & response );
+    PBoolean PerformRequest( PSOAPMessage & request, PSOAPMessage & response );
 
     PURL url;
     PINDEX  faultCode;

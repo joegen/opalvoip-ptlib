@@ -50,6 +50,6 @@
 
   public:
     PString GetName() const;
-    BOOL Close();
+    PBoolean Close();
 
 // End Of File ////////////////////////////////////////////////////////////////

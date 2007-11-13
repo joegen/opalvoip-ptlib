@@ -119,7 +119,7 @@
     };
 
   protected:
-    BOOL PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout);
+    PBoolean PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout);
     int  PXClose();
 
     PString     channelName;

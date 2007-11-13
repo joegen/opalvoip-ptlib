@@ -104,18 +104,18 @@ class JRingBuffer;
 // PSound
 
   public:
-    BOOL Close();
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
+    PBoolean Close();
+    PBoolean Write(const void * buf, PINDEX len);
+    PBoolean Read(void * buf, PINDEX len);
   
   protected:
-    BOOL  Setup();
+    PBoolean  Setup();
 
     static PMutex dictMutex;
 
     Directions direction;
     PString device;
-    BOOL isInitialised;
+    PBoolean isInitialised;
 
 #if defined(P_MAC_MPTHREADS)
     JRingBuffer *mpInput;

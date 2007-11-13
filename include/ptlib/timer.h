@@ -241,9 +241,9 @@ class PTimer : public PTimeInterval
        for one shot timers as repeating timers are always running.
        
        @return
-       TRUE if timer is still counting.
+       PTrue if timer is still counting.
      */
-    BOOL IsRunning() const;
+    PBoolean IsRunning() const;
 
     /** Pause a running timer. This differs from the #Stop()# function in
        that the timer may be resumed at the point that it left off. That is
@@ -260,9 +260,9 @@ class PTimer : public PTimeInterval
     /** Determine if the timer is currently paused.
 
        @return
-       TRUE if timer paused.
+       PTrue if timer paused.
      */
-    BOOL IsPaused() const;
+    PBoolean IsPaused() const;
 
     /** Restart a timer continuing from the time it was initially.
      */
@@ -339,7 +339,7 @@ class PTimer : public PTimeInterval
        This is an internal function.
      */
     void StartRunning(
-      BOOL once   // Flag for one shot or continuous.
+      PBoolean once   // Flag for one shot or continuous.
     );
 
     /* Process the timer decrementing it by the delta amount and calling the
@@ -358,7 +358,7 @@ class PTimer : public PTimeInterval
     PTimeInterval resetTime;
     // The time to reset a timer to when RunContinuous() is called.
 
-    BOOL oneshot;
+    PBoolean oneshot;
     // Timer operates once then stops.
 
     enum { Stopped, Starting, Running, Paused } state;

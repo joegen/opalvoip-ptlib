@@ -109,7 +109,7 @@
  * Fixed usage of MakeEmpty() with PStringStream.
  *
  * Revision 1.73  2004/04/18 04:33:36  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
+ * Changed all operators that return PBoolean to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
  *
  * Revision 1.72  2004/04/11 13:26:25  csoutheren
@@ -784,9 +784,9 @@ class PString : public PCharArray {
        old array copied to it.
 
        @return
-       TRUE if the memory for the array was allocated successfully.
+       PTrue if the memory for the array was allocated successfully.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in elements.
     );
 
@@ -796,9 +796,9 @@ class PString : public PCharArray {
        #GetLength()# equal to zero.
 
        @return
-       TRUE if no non-null characters in string.
+       PTrue if no non-null characters in string.
      */
-    virtual BOOL IsEmpty() const;
+    virtual PBoolean IsEmpty() const;
 
     /**Make this instance to be the one and only reference to the container
        contents. This implicitly does a clone of the contents of the container
@@ -806,9 +806,9 @@ class PString : public PCharArray {
        the function does nothing.
 
        @return
-       TRUE if the instance was already unique.
+       PTrue if the instance was already unique.
      */
-    virtual BOOL MakeUnique();
+    virtual PBoolean MakeUnique();
   //@}
 
 
@@ -822,9 +822,9 @@ class PString : public PCharArray {
        from the old string buffer copied to it.
 
        @return
-       TRUE if new memory block successfully allocated.
+       PTrue if new memory block successfully allocated.
      */
-    BOOL MakeMinimumSize();
+    PBoolean MakeMinimumSize();
 
     /**Determine the length of the null terminated string. This is different
        from #PContainer::GetSize()# which returns the amount of memory
@@ -840,7 +840,7 @@ class PString : public PCharArray {
        to executing !IsEmpty() on the string.
 
        @return
-       TRUE if non-null characters in string.
+       PTrue if non-null characters in string.
      */
     bool operator!() const;
   //@}
@@ -1100,7 +1100,7 @@ class PString : public PCharArray {
     /**Compare two strings using case insensitive comparison.
 
        @return
-       TRUE if equal.
+       PTrue if equal.
      */
     bool operator*=(
       const PString & str  ///< PString object to compare against.
@@ -1111,7 +1111,7 @@ class PString : public PCharArray {
        to other overloaded versions.
 
        @return
-       TRUE if equal.
+       PTrue if equal.
      */
     bool operator==(
       const PObject & str  ///< PString object to compare against.
@@ -1122,7 +1122,7 @@ class PString : public PCharArray {
        to other overloaded versions.
 
        @return
-       TRUE if not equal.
+       PTrue if not equal.
      */
     bool operator!=(
       const PObject & str  ///< PString object to compare against.
@@ -1133,7 +1133,7 @@ class PString : public PCharArray {
        to other overloaded versions.
 
        @return
-       TRUE if less than.
+       PTrue if less than.
      */
     bool operator<(
       const PObject & str  ///< PString object to compare against.
@@ -1144,7 +1144,7 @@ class PString : public PCharArray {
        to other overloaded versions.
 
        @return
-       TRUE if greater than.
+       PTrue if greater than.
      */
     bool operator>(
       const PObject & str  ///< PString object to compare against.
@@ -1155,7 +1155,7 @@ class PString : public PCharArray {
        to other overloaded versions.
 
        @return
-       TRUE if less than or equal.
+       PTrue if less than or equal.
      */
     bool operator<=(
       const PObject & str  ///< PString object to compare against.
@@ -1166,7 +1166,7 @@ class PString : public PCharArray {
        to other overloaded versions.
 
        @return
-       TRUE if greater than or equal.
+       PTrue if greater than or equal.
      */
     bool operator>=(
       const PObject & str  ///< PString object to compare against.
@@ -1181,7 +1181,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if equal.
+       PTrue if equal.
      */
     bool operator*=(
       const char * cstr  ///< C string to compare against.
@@ -1195,7 +1195,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if equal.
+       PTrue if equal.
      */
     bool operator==(
       const char * cstr  ///< C string to compare against.
@@ -1209,7 +1209,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if not equal.
+       PTrue if not equal.
      */
     bool operator!=(
       const char * cstr  ///< C string to compare against.
@@ -1223,7 +1223,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if less than.
+       PTrue if less than.
      */
     bool operator<(
       const char * cstr  ///< C string to compare against.
@@ -1237,7 +1237,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if greater than.
+       PTrue if greater than.
      */
     bool operator>(
       const char * cstr  ///< C string to compare against.
@@ -1251,7 +1251,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if less than or equal.
+       PTrue if less than or equal.
      */
     bool operator<=(
       const char * cstr  ///< C string to compare against.
@@ -1265,7 +1265,7 @@ class PString : public PCharArray {
 \end{verbatim}
 
        @return
-       TRUE if greater than or equal.
+       PTrue if greater than or equal.
      */
     bool operator>=(
       const char * cstr  ///< C string to compare against.
@@ -1277,10 +1277,10 @@ class PString : public PCharArray {
        parameter. If #count# greater than the length of the #str# parameter
        then the actual length of #str# is used. If #count# and the length of
        #str# are greater than the length of the string remaining from the
-       #offset# then FALSE is returned.
+       #offset# then PFalse is returned.
 
        @return
-       TRUE if str is a substring of .
+       PTrue if str is a substring of .
      */
     Comparison NumCompare(
       const PString & str,        ///< PString object to compare against.
@@ -1294,10 +1294,10 @@ class PString : public PCharArray {
        parameter. If #count# greater than the length of the #str# parameter
        then the actual length of #str# is used. If #count# and the length of
        #str# are greater than the length of the string remaining from the
-       #offset# then FALSE is returned.
+       #offset# then PFalse is returned.
 
        @return
-       TRUE if str is a substring of .
+       PTrue if str is a substring of .
      */
     Comparison NumCompare(
       const char * cstr,          ///< C string object to compare against.
@@ -1450,7 +1450,7 @@ class PString : public PCharArray {
        position of regular expression in the string, or P_MAX_INDEX if no
        characters from the set are in the string.
      */
-    BOOL FindRegEx(
+    PBoolean FindRegEx(
       const PRegularExpression & regex, ///< regular expression to find
       PINDEX & pos,                     ///< Position of matched expression
       PINDEX & len,                     ///< Length of matched expression
@@ -1472,7 +1472,7 @@ class PString : public PCharArray {
     void Replace(
       const PString & target,   ///< Text to be removed.
       const PString & subs,     ///< String to be inserted into the gaps created
-      BOOL all = FALSE,         ///< Replace all occurrences of target text.
+      PBoolean all = PFalse,         ///< Replace all occurrences of target text.
       PINDEX offset = 0         ///< Offset into string to begin search.
     );
 
@@ -1651,7 +1651,7 @@ class PString : public PCharArray {
     PStringArray Tokenise(
       const PString & separators,
         ///< A string for the set of separator characters that delimit tokens.
-      BOOL onePerSeparator = TRUE
+      PBoolean onePerSeparator = PTrue
         ///< Flag for if there are empty tokens between consecutive separators.
     ) const;
     /**Split the string into an array of substrings.
@@ -1659,11 +1659,11 @@ class PString : public PCharArray {
        from the specified set.
        
        There are two options for the tokenisation, the first is where the
-       #onePerSeparator# is TRUE. This form will produce a token
+       #onePerSeparator# is PTrue. This form will produce a token
        for each delimiter found in the set. Thus the string ",two,three,,five"
        would be split into 5 substrings; "", "two", "three", "" and "five".
        
-       The second form where #onePerSeparator# is FALSE is used
+       The second form where #onePerSeparator# is PFalse is used
        where consecutive delimiters do not constitute a empty token. In this
        case the string "  a list  of words  " would be split into 5 substrings;
        "a", "list", "of", "words" and "".
@@ -1681,7 +1681,7 @@ class PString : public PCharArray {
     PStringArray Tokenise(
       const char * cseparators,
         ///< A C string for the set of separator characters that delimit tokens.
-      BOOL onePerSeparator = TRUE
+      PBoolean onePerSeparator = PTrue
         ///< Flag for if there are empty tokens between consecutive separators.
     ) const;
 
@@ -2194,7 +2194,7 @@ class PStringStream : public PString, public iostream
         virtual streampos seekoff(streamoff, ios::seek_dir, int);
 #endif
         PStringStream & string;
-        BOOL            fixedBufferSize;
+        PBoolean            fixedBufferSize;
     };
 };
 
@@ -2228,7 +2228,7 @@ class PStringArray : public PArray {
     PStringArray(
       PINDEX count,                 ///< Count of strings in array
       char const * const * strarr,  ///< Array of C strings
-      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
+      PBoolean caseless = PFalse         ///< New strings are to be PCaselessStrings
     );
     /**Create a PStringArray of length one from the single string.
      */
@@ -2385,7 +2385,7 @@ PDECLARE_LIST(PStringList, PString);
     PStringList(
       PINDEX count,                 ///< Count of strings in array
       char const * const * strarr,  ///< Array of C strings
-      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
+      PBoolean caseless = PFalse         ///< New strings are to be PCaselessStrings
     );
     /**Create a PStringList of length one from the single string.
      */
@@ -2497,7 +2497,7 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     PSortedStringList(
       PINDEX count,                 ///< Count of strings in array
       char const * const * strarr,  ///< Array of C strings
-      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
+      PBoolean caseless = PFalse         ///< New strings are to be PCaselessStrings
     );
     /**Create a PSortedStringList of length one from the single string.
      */
@@ -2581,7 +2581,7 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
 #ifdef DOC_PLUS_PLUS
 class PStringSet : public PSet {
 #endif
-PDECLARE_SET(PStringSet, PString, TRUE);
+PDECLARE_SET(PStringSet, PString, PTrue);
   public:
   /**@name Construction */
   //@{
@@ -2590,7 +2590,7 @@ PDECLARE_SET(PStringSet, PString, TRUE);
     PStringSet(
       PINDEX count,                 ///< Count of strings in array
       char const * const * strarr,  ///< Array of C strings
-      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
+      PBoolean caseless = PFalse         ///< New strings are to be PCaselessStrings
     );
     /**Create a PStringSet containing the single string.
      */
@@ -2708,9 +2708,9 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        function. The hash table is used to locate the entry.
 
        @return
-       TRUE if the object value is in the dictionary.
+       PTrue if the object value is in the dictionary.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const K & key   // Key to look for in the dictionary.
       ) const { return AbstractContains(key); }
 
@@ -2748,9 +2748,9 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        of the keys and the order of insertion.
 
        @return
-       TRUE if the new object could be placed into the dictionary.
+       PTrue if the new object could be placed into the dictionary.
      */
-    virtual BOOL SetDataAt(
+    virtual PBoolean SetDataAt(
       PINDEX index,        // Ordinal index in the dictionary.
       const PString & str  // New string value to put into the dictionary.
     ) { return PAbstractDictionary::SetDataAt(index, PNEW PString(str)); }
@@ -2764,9 +2764,9 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        to the data item.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       const K & key,       // Key for position in dictionary to add object.
       const PString & str  // New string value to put into the dictionary.
     ) { return AbstractSetAt(key, PNEW PString(str)); }
@@ -2865,16 +2865,16 @@ template <class K> class PStringDictionary : public PAbstractDictionary
       { return (PString &)GetRefAt(key); } \
     inline PString operator()(const K & key, const char * dflt = "") const \
       { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
-    virtual BOOL Contains(const K & key) const \
+    virtual PBoolean Contains(const K & key) const \
       { return AbstractContains(key); } \
     virtual PString * RemoveAt(const K & key) \
       { PString * s = GetAt(key); AbstractSetAt(key, NULL); \
         return reference->deleteObjects ? (s ? (PString *)-1 : NULL) : s; } \
     virtual PString * GetAt(const K & key) const \
       { return (PString *)AbstractGetAt(key); } \
-    virtual BOOL SetDataAt(PINDEX index, const PString & str) \
+    virtual PBoolean SetDataAt(PINDEX index, const PString & str) \
       { return PAbstractDictionary::SetDataAt(index,PNEW PString(str));} \
-    virtual BOOL SetAt(const K & key, const PString & str) \
+    virtual PBoolean SetAt(const K & key, const PString & str) \
       { return AbstractSetAt(key, PNEW PString(str)); } \
     inline const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
@@ -2977,7 +2977,7 @@ PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString);
     PStringToOrdinal(
       PINDEX count,                ///< Count of strings in initialiser array
       const Initialiser * init,    ///< Array of Initialiser structures
-      BOOL caseless = FALSE        ///< New keys are to be PCaselessStrings
+      PBoolean caseless = PFalse        ///< New keys are to be PCaselessStrings
     );
   //@}
 
@@ -3027,8 +3027,8 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
     PStringToString(
       PINDEX count,                ///< Count of strings in initialiser array
       const Initialiser * init,    ///< Array of Initialiser structures
-      BOOL caselessKeys = FALSE,   ///< New keys are to be PCaselessStrings
-      BOOL caselessValues = FALSE  ///< New values are to be PCaselessStrings
+      PBoolean caselessKeys = PFalse,   ///< New keys are to be PCaselessStrings
+      PBoolean caselessValues = PFalse  ///< New values are to be PCaselessStrings
     );
   //@}
 
@@ -3183,7 +3183,7 @@ class PRegularExpression : public PObject
   /**@name Compile & Execute functions */
   //@{
     /** Compiler pattern. */
-    BOOL Compile(
+    PBoolean Compile(
       const PString & pattern,    ///< Pattern to compile
       int flags = IgnoreCase      ///< Pattern match options
     );
@@ -3192,55 +3192,55 @@ class PRegularExpression : public PObject
        execution of the pattern match algorithm.
 
        @return
-       TRUE if successfully compiled.
+       PTrue if successfully compiled.
      */
-    BOOL Compile(
+    PBoolean Compile(
       const char * cpattern,      ///< Pattern to compile
       int flags = IgnoreCase      ///< Pattern match options
     );
 
 
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const PString & str,    ///< Source string to search
       PINDEX & start,         ///< First match locations
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const PString & str,    ///< Source string to search
       PINDEX & start,         ///< First match locations
       PINDEX & len,           ///< Length of match
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const char * cstr,      ///< Source string to search
       PINDEX & start,         ///< First match locations
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const char * cstr,      ///< Source string to search
       PINDEX & start,         ///< First match locations
       PINDEX & len,           ///< Length of match
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const PString & str,    ///< Source string to search
       PIntArray & starts,     ///< List of match locations
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const PString & str,    ///< Source string to search
       PIntArray & starts,     ///< List of match locations
       PIntArray & ends,       ///< List of match ends
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    BOOL Execute(
+    PBoolean Execute(
       const char * cstr,      ///< Source string to search
       PIntArray & starts,     ///< List of match locations
       int flags = 0           ///< Pattern match options
@@ -3258,9 +3258,9 @@ class PRegularExpression : public PObject
        will always be set to the same size as that array.
 
        @return
-       TRUE if successfully compiled.
+       PTrue if successfully compiled.
      */
-    BOOL Execute(
+    PBoolean Execute(
       const char * cstr,      ///< Source string to search
       PIntArray & starts,     ///< List of match locations
       PIntArray & ends,       ///< List of match ends

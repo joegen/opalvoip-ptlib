@@ -103,13 +103,13 @@ class PMemoryFile : public PFile
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -119,11 +119,11 @@ class PMemoryFile : public PFile
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
-       @return TRUE if at least len bytes were written to the channel.
+       @return PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
@@ -144,9 +144,9 @@ class PMemoryFile : public PFile
        expanding the file, or truncating it if being made shorter.
 
        @return
-       TRUE if the file size was changed to the length specified.
+       PTrue if the file size was changed to the length specified.
      */
-    BOOL SetLength(
+    PBoolean SetLength(
       off_t len   ///< New length of file.
     );
 
@@ -158,9 +158,9 @@ class PMemoryFile : public PFile
        #pos# are meaningful.
 
        @return
-       TRUE if the new file position was set.
+       PTrue if the new file position was set.
      */
-    BOOL SetPosition(
+    PBoolean SetPosition(
       off_t pos,                         ///< New position to set.
       FilePositionOrigin origin = Start  ///< Origin for position change.
     );

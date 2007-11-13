@@ -101,7 +101,7 @@ void Audio::Main()
     cout << endl
          << "Product Name: " <<  (const char *)GetName() << endl
          << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
+         << "Version     : " <<  (const char *)GetVersion(PTrue) << endl
          << "System      : " <<  (const char *)GetOSName() << '-'
          <<  (const char *)GetOSHardware() << ' '
          <<  (const char *)GetOSVersion() << endl
@@ -210,17 +210,17 @@ TestAudioDevice::~TestAudioDevice()
   AllowDeleteObjects();
   access.Wait();
   RemoveAll();
-  endNow = TRUE;
+  endNow = PTrue;
   access.Signal();
   PThread::Sleep(100);
 }
 
 void TestAudioDevice::Test(const PString & captureFileName)
 {
-   endNow = FALSE;
+   endNow = PFalse;
    PConsoleChannel console(PConsoleChannel::StandardInput);
 
-   AllowDeleteObjects(FALSE);
+   AllowDeleteObjects(PFalse);
    PTRACE(3, "Start operation of TestAudioDevice");
 
    TestAudioRead reader(*this, captureFileName);
@@ -286,7 +286,7 @@ void TestAudioDevice::Test(const PString & captureFileName)
   }
 
 endAudioTest:
-  endNow = TRUE;
+  endNow = PTrue;
   cout  << "end audio test" << endl;
 
   reader.WaitForTermination();
@@ -327,12 +327,12 @@ void TestAudioDevice::WriteAudioFrame(PBYTEArray *data)
   Append(data);
   if (GetSize() > 50) {
     cout << "The audio reader thread is not working - exit now before memory is exhausted" << endl;
-    endNow = TRUE;
+    endNow = PTrue;
   }
   return;
 }
 
-BOOL TestAudioDevice::DoEndNow()
+PBoolean TestAudioDevice::DoEndNow()
 {
     return endNow;
 }
@@ -425,7 +425,7 @@ TestAudio::TestAudio(TestAudioDevice &master)
      controller(master)
 {
     iterations = 0;
-    keepGoing = TRUE;
+    keepGoing = PTrue;
     Resume();
 }
 
@@ -435,7 +435,7 @@ TestAudio::~TestAudio()
 }
 
 
-BOOL TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
+PBoolean TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
 {
   if (dir == PSoundChannel::Recorder) 
     name = "Recorder";
@@ -454,14 +454,14 @@ BOOL TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
       cerr <<  "Please check that \"" << devName << "\" is a valid device name" << endl;
       PTRACE(3, "TestAudio\tFailed to open device for " << name << " and device name of " << devName);
 
-    return FALSE;
+    return PFalse;
   }
   
   currentVolume = 90;
   sound.SetVolume(currentVolume);
   
   sound.SetBuffers(480, 2);
-  return TRUE;
+  return PTrue;
 }
 
 

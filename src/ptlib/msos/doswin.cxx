@@ -70,7 +70,7 @@
 
 void PDirectory::Construct()
 {
-  PString::operator=(CreateFullPath(*this, TRUE));
+  PString::operator=(CreateFullPath(*this, PTrue));
 }
 
 
@@ -81,25 +81,25 @@ void PDirectory::CopyContents(const PDirectory & dir)
 }
 
 
-BOOL PDirectory::Open(int newScanMask)
+PBoolean PDirectory::Open(int newScanMask)
 {
   scanMask = newScanMask;
 
   if (_dos_findfirst(*this+"*.*", 0xff, &fileinfo) != 0)
-    return FALSE;
+    return PFalse;
 
-  return Filtered() ? Next() : TRUE;
+  return Filtered() ? Next() : PTrue;
 }
 
 
-BOOL PDirectory::Next()
+PBoolean PDirectory::Next()
 {
   do {
     if (_dos_findnext(&fileinfo) != 0)
-      return FALSE;
+      return PFalse;
   } while (Filtered());
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -109,7 +109,7 @@ PCaselessString PDirectory::GetEntryName() const
 }
 
 
-BOOL PDirectory::IsSubDir() const
+PBoolean PDirectory::IsSubDir() const
 {
   return (fileinfo.attrib&_A_SUBDIR) != 0;
 }
@@ -130,7 +130,7 @@ PCaselessString PDirectory::GetVolume() const
 }
 
 
-PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
+PString PDirectory::CreateFullPath(const PString & path, PBoolean isDirectory)
 {
   PString curdir;
   PAssert(getcwd(curdir.GetPointer(P_MAX_PATH),
@@ -200,19 +200,19 @@ PString PChannel::GetErrorText() const
 }
 
 
-BOOL PChannel::ConvertOSError(int error)
+PBoolean PChannel::ConvertOSError(int error)
 {
   if (error >= 0) {
     lastError = NoError;
     osError = 0;
-    return TRUE;
+    return PTrue;
   }
 
   osError = errno;
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return TRUE;
+      return PTrue;
     case ENOENT :
       lastError = NotFound;
       break;
@@ -238,7 +238,7 @@ BOOL PChannel::ConvertOSError(int error)
       lastError = Miscellaneous;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -246,9 +246,9 @@ BOOL PChannel::ConvertOSError(int error)
 // PPipeChannel
 
 void PPipeChannel::Construct(const PString & subProgram,
-                const char * const * arguments, OpenMode mode, BOOL searchPath)
+                const char * const * arguments, OpenMode mode, PBoolean searchPath)
 {
-  hasRun = FALSE;
+  hasRun = PFalse;
 
   if (searchPath || subProgram.FindOneOf(":\\/") != P_MAX_INDEX)
     subProgName = subProgram;
@@ -290,7 +290,7 @@ PPipeChannel::~PPipeChannel()
 }
 
 
-BOOL PPipeChannel::Read(void * buffer, PINDEX amount)
+PBoolean PPipeChannel::Read(void * buffer, PINDEX amount)
 {
   if (!hasRun)
     Execute();
@@ -301,12 +301,12 @@ BOOL PPipeChannel::Read(void * buffer, PINDEX amount)
 }
       
 
-BOOL PPipeChannel::Write(const void * buffer, PINDEX amount)
+PBoolean PPipeChannel::Write(const void * buffer, PINDEX amount)
 {
   if (hasRun) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   flush();
@@ -315,7 +315,7 @@ BOOL PPipeChannel::Write(const void * buffer, PINDEX amount)
 }
 
 
-BOOL PPipeChannel::Close()
+PBoolean PPipeChannel::Close()
 {
   if (!hasRun)
     Execute();
@@ -325,7 +325,7 @@ BOOL PPipeChannel::Close()
 
   PFile::Remove(toChild);
   PFile::Remove(fromChild);
-  return TRUE;
+  return PTrue;
 }
 
 

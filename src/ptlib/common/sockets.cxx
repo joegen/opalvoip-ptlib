@@ -191,7 +191,7 @@
  * Fixed selection of QoS to use more flexible #if rather than #ifdef
  *
  * Revision 1.171  2004/04/18 04:33:38  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
+ * Changed all operators that return PBoolean to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
  *
  * Revision 1.170  2004/04/18 00:50:14  ykiryanov
@@ -490,7 +490,7 @@
  * New directory structure
  *
  * Revision 1.79  1998/11/14 06:28:36  robertj
- * Changed senatics of os_sendto to return TRUE if ANY bytes are sent.
+ * Changed senatics of os_sendto to return PTrue if ANY bytes are sent.
  *
  * Revision 1.78  1998/11/08 12:05:04  robertj
  * Fixed multiple thread access problem with DNS aliases array.
@@ -808,18 +808,18 @@ void PIPSocket::SetDefaultIpAddressFamilyV6()
 }
 
 
-BOOL PIPSocket::IsIpAddressFamilyV6Supported()
+PBoolean PIPSocket::IsIpAddressFamilyV6Supported()
 {
   int s = ::socket(PF_INET6, SOCK_DGRAM, 0);
   if (s < 0)
-    return FALSE;
+    return PFalse;
 
 #if _WIN32
   closesocket(s);
 #else
   _close(s);
 #endif
-  return TRUE;
+  return PTrue;
 }
 
 #endif
@@ -938,7 +938,7 @@ class PIPCacheData : public PObject
     const PString & GetHostName() const { return hostname; }
     const PIPSocket::Address & GetHostAddress() const { return address; }
     const PStringList & GetHostAliases() const { return aliases; }
-    BOOL HasAged() const;
+    PBoolean HasAged() const;
   private:
     PString            hostname;
     PIPSocket::Address address;
@@ -953,9 +953,9 @@ PDICTIONARY(PHostByName_private, PCaselessString, PIPCacheData);
 class PHostByName : PHostByName_private
 {
   public:
-    BOOL GetHostName(const PString & name, PString & hostname);
-    BOOL GetHostAddress(const PString & name, PIPSocket::Address & address);
-    BOOL GetHostAliases(const PString & name, PStringArray & aliases);
+    PBoolean GetHostName(const PString & name, PString & hostname);
+    PBoolean GetHostAddress(const PString & name, PIPSocket::Address & address);
+    PBoolean GetHostAliases(const PString & name, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PString & name);
     PMutex mutex;
@@ -992,9 +992,9 @@ PDICTIONARY(PHostByAddr_private, PIPCacheKey, PIPCacheData);
 class PHostByAddr : PHostByAddr_private
 {
   public:
-    BOOL GetHostName(const PIPSocket::Address & addr, PString & hostname);
-    BOOL GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address);
-    BOOL GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
+    PBoolean GetHostName(const PIPSocket::Address & addr, PString & hostname);
+    PBoolean GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address);
+    PBoolean GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PIPSocket::Address & addr);
     PMutex mutex;
@@ -1090,10 +1090,10 @@ void PIPCacheData::AddEntry(struct addrinfo * addr_info)
     return;
 
   // Add canonical name
-  BOOL add_it = TRUE;
+  PBoolean add_it = PTrue;
   for (i = 0; i < aliases.GetSize(); i++) {
     if (addr_info->ai_canonname != NULL && (aliases[i] *= addr_info->ai_canonname)) {
-      add_it = FALSE;
+      add_it = PFalse;
       break;
     }
   }
@@ -1103,10 +1103,10 @@ void PIPCacheData::AddEntry(struct addrinfo * addr_info)
 
   // Add IP address
   PIPSocket::Address ip(addr_info->ai_family, addr_info->ai_addrlen, addr_info->ai_addr);
-  add_it = TRUE;
+  add_it = PTrue;
   for (i = 0; i < aliases.GetSize(); i++) {
     if (aliases[i] *= ip.AsString()) {
-      add_it = FALSE;
+      add_it = PFalse;
       break;
     }
   }
@@ -1126,7 +1126,7 @@ static PTimeInterval GetConfigTime(const char * /*key*/, DWORD dflt)
 }
 
 
-BOOL PIPCacheData::HasAged() const
+PBoolean PIPCacheData::HasAged() const
 {
   static PTimeInterval retirement = GetConfigTime("Age Limit", 300000); // 5 minutes
   PTime now;
@@ -1135,7 +1135,7 @@ BOOL PIPCacheData::HasAged() const
 }
 
 
-BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
+PBoolean PHostByName::GetHostName(const PString & name, PString & hostname)
 {
   PIPCacheData * host = GetHost(name);
 
@@ -1150,7 +1150,7 @@ BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
 }
 
 
-BOOL PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & address)
+PBoolean PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & address)
 {
   PIPCacheData * host = GetHost(name);
 
@@ -1163,7 +1163,7 @@ BOOL PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & addr
 }
 
 
-BOOL PHostByName::GetHostAliases(const PString & name, PStringArray & aliases)
+PBoolean PHostByName::GetHostAliases(const PString & name, PStringArray & aliases)
 {
   PIPCacheData * host = GetHost(name);
 
@@ -1295,7 +1295,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 }
 
 
-BOOL PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostname)
+PBoolean PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostname)
 {
   PIPCacheData * host = GetHost(addr);
 
@@ -1309,7 +1309,7 @@ BOOL PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostnam
 }
 
 
-BOOL PHostByAddr::GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address)
+PBoolean PHostByAddr::GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address)
 {
   PIPCacheData * host = GetHost(addr);
 
@@ -1321,7 +1321,7 @@ BOOL PHostByAddr::GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Add
 }
 
 
-BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases)
+PBoolean PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases)
 {
   PIPCacheData * host = GetHost(addr);
 
@@ -1409,7 +1409,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     localErrNo = h_errno;
 
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    extern int P_IsOldWin95();
+    extern PBoolean P_IsOldWin95();
     if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
       host_info->h_addr_list[1] = NULL;
 #endif
@@ -1492,7 +1492,7 @@ P_timeval::P_timeval()
 {
   tval.tv_usec = 0;
   tval.tv_sec = 0;
-  infinite = FALSE;
+  infinite = PFalse;
 }
 
 
@@ -1512,37 +1512,37 @@ PSocket::PSocket()
 {
   port = 0;
 #if P_HAS_RECVMSG
-  catchReceiveToAddr = FALSE;
+  catchReceiveToAddr = PFalse;
 #endif
 }
 
 
-BOOL PSocket::Connect(const PString &)
+PBoolean PSocket::Connect(const PString &)
 {
   PAssertAlways("Illegal operation.");
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSocket::Listen(unsigned, WORD, Reusability)
+PBoolean PSocket::Listen(unsigned, WORD, Reusability)
 {
   PAssertAlways("Illegal operation.");
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSocket::Accept(PSocket &)
+PBoolean PSocket::Accept(PSocket &)
 {
   PAssertAlways("Illegal operation.");
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSocket::SetOption(int option, int value, int level)
+PBoolean PSocket::SetOption(int option, int value, int level)
 {
 #ifdef _WIN32_WCE
   if(option == SO_RCVBUF || option == SO_SNDBUF || option == IP_TOS)
-    return TRUE;
+    return PTrue;
 #endif
 
   return ConvertOSError(::setsockopt(os_handle, level, option,
@@ -1550,14 +1550,14 @@ BOOL PSocket::SetOption(int option, int value, int level)
 }
 
 
-BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize, int level)
+PBoolean PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize, int level)
 {
   return ConvertOSError(::setsockopt(os_handle, level, option,
                                      (char *)valuePtr, valueSize));
 }
 
 
-BOOL PSocket::GetOption(int option, int & value, int level)
+PBoolean PSocket::GetOption(int option, int & value, int level)
 {
   socklen_t valSize = sizeof(value);
   return ConvertOSError(::getsockopt(os_handle, level, option,
@@ -1565,14 +1565,14 @@ BOOL PSocket::GetOption(int option, int & value, int level)
 }
 
 
-BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize, int level)
+PBoolean PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize, int level)
 {
   return ConvertOSError(::getsockopt(os_handle, level, option,
                                      (char *)valuePtr, (socklen_t *)&valueSize));
 }
 
 
-BOOL PSocket::Shutdown(ShutdownValue value)
+PBoolean PSocket::Shutdown(ShutdownValue value)
 {
   return ConvertOSError(::shutdown(os_handle, value));
 }
@@ -1842,29 +1842,29 @@ PString PIPSocket::GetHostName(const Address & addr)
 }
 
 
-BOOL PIPSocket::GetHostAddress(Address & addr)
+PBoolean PIPSocket::GetHostAddress(Address & addr)
 {
   return pHostByName().GetHostAddress(GetHostName(), addr);
 }
 
 
-BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
+PBoolean PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
 {
   if (hostname.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   // Check for special case of "[ipaddr]"
   if (hostname[0] == '[') {
     PINDEX end = hostname.Find(']');
     if (end != P_MAX_INDEX) {
       if (addr.FromString(hostname(1, end-1)))
-        return TRUE;
+        return PTrue;
     }
   }
 
   // Assuming it is a "." address and return if so
   if (addr.FromString(hostname))
-    return TRUE;
+    return PTrue;
 
   // otherwise lookup the name as a host name
   return pHostByName().GetHostAddress(hostname, addr);
@@ -1907,14 +1907,14 @@ PString PIPSocket::GetLocalAddress()
 }
 
 
-BOOL PIPSocket::GetLocalAddress(Address & addr)
+PBoolean PIPSocket::GetLocalAddress(Address & addr)
 {
   WORD dummy;
   return GetLocalAddress(addr, dummy);
 }
 
 
-BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
+PBoolean PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 {
 #if P_HAS_IPV6
   Address   addrv4;
@@ -1922,7 +1922,7 @@ BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
-    return FALSE;
+    return PFalse;
 
   addr = sa.GetIP();
   portNum = sa.GetPort();
@@ -1942,14 +1942,14 @@ BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
   sockaddr_in address;
   socklen_t size = sizeof(address);
   if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
-    return FALSE;
+    return PFalse;
 
   addr = address.sin_addr;
   portNum = ntohs(address.sin_port);
 
 #endif
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1964,20 +1964,20 @@ PString PIPSocket::GetPeerAddress()
 }
 
 
-BOOL PIPSocket::GetPeerAddress(Address & addr)
+PBoolean PIPSocket::GetPeerAddress(Address & addr)
 {
   WORD portNum;
   return GetPeerAddress(addr, portNum);
 }
 
-BOOL PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
+PBoolean PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 {
 #if P_HAS_IPV6
 
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getpeername(os_handle, sa, &size)))
-    return FALSE;
+    return PFalse;
 
   addr = sa.GetIP();
   portNum = sa.GetPort();
@@ -1987,14 +1987,14 @@ BOOL PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
   sockaddr_in address;
   socklen_t size = sizeof(address);
   if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
-    return FALSE;
+    return PFalse;
 
   addr = address.sin_addr;
   portNum = ntohs(address.sin_port);
 
 #endif
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -2020,7 +2020,7 @@ PString PIPSocket::GetPeerHostName()
 }
 
 
-BOOL PIPSocket::Connect(const PString & host)
+PBoolean PIPSocket::Connect(const PString & host)
 {
   Address ipnum(host);
 #if P_HAS_IPV6
@@ -2030,11 +2030,11 @@ BOOL PIPSocket::Connect(const PString & host)
   if (ipnum.IsValid() || GetHostAddress(host, ipnum))
     return Connect(INADDR_ANY, 0, ipnum);
 #endif  
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIPSocket::Connect(const Address & addr)
+PBoolean PIPSocket::Connect(const Address & addr)
 {
 #if P_HAS_IPV6
   return Connect(GetDefaultIpAny(), 0, addr);
@@ -2044,7 +2044,7 @@ BOOL PIPSocket::Connect(const Address & addr)
 }
 
 
-BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
+PBoolean PIPSocket::Connect(WORD localPort, const Address & addr)
 {
 #if P_HAS_IPV6
   return Connect(GetDefaultIpAny(), localPort, addr);
@@ -2054,13 +2054,13 @@ BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
 }
 
 
-BOOL PIPSocket::Connect(const Address & iface, const Address & addr)
+PBoolean PIPSocket::Connect(const Address & iface, const Address & addr)
 {
   return Connect(iface, 0, addr);
 }
 
 
-BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & addr)
+PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address & addr)
 {
   // close the port if it is already open
   if (IsOpen())
@@ -2075,38 +2075,38 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
 
   // attempt to create a socket with the right family
   if (!OpenSocket(sa->sa_family))
-    return FALSE;
+    return PFalse;
 
   if (localPort != 0 || iface.IsValid()) {
     Psockaddr bind_sa(iface, localPort);
 
     if (!SetOption(SO_REUSEADDR, 0)) {
       os_close();
-      return FALSE;
+      return PFalse;
     }
     
     if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize()))) {
       os_close();
-      return FALSE;
+      return PFalse;
     }
   }
   
   // attempt to connect
   if (os_connect(sa, sa.GetSize()))
-    return TRUE;
+    return PTrue;
   
 #else
 
   // attempt to create a socket
   if (!OpenSocket())
-    return FALSE;
+    return PFalse;
 
   // attempt to connect
   sockaddr_in sin;
   if (localPort != 0 || iface.IsValid()) {
     if (!SetOption(SO_REUSEADDR, 0)) {
       os_close();
-      return FALSE;
+      return PFalse;
     }
     memset(&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
@@ -2114,7 +2114,7 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
     sin.sin_port        = htons(localPort);       // set the port
     if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
       os_close();
-      return FALSE;
+      return PFalse;
     }
   }
 
@@ -2123,16 +2123,16 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
   sin.sin_port   = htons(port);  // set the port
   sin.sin_addr   = addr;
   if (os_connect((struct sockaddr *)&sin, sizeof(sin)))
-    return TRUE;
+    return PTrue;
 
 #endif
 
   os_close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
+PBoolean PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
 #if P_HAS_IPV6
   return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
@@ -2142,7 +2142,7 @@ BOOL PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 }
 
 
-BOOL PIPSocket::Listen(const Address & bindAddr,
+PBoolean PIPSocket::Listen(const Address & bindAddr,
                        unsigned,
                        WORD newPort,
                        Reusability reuse)
@@ -2165,10 +2165,10 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
     // attempt to create a socket
 #if P_HAS_IPV6
     if (!OpenSocket(bind_sa->sa_family))
-      return FALSE;
+      return PFalse;
 #else
     if (!OpenSocket())
-      return FALSE;
+      return PFalse;
 #endif
   }
   
@@ -2176,14 +2176,14 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
   // attempt to listen
   if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
     os_close();
-    return FALSE;
+    return PFalse;
   }
 #else
   // attempt to listen
   int value = reuse == CanReuseAddress ? 1 : 0;
   if (!SetOption(SO_REUSEADDR, &value, sizeof(int))) {
     os_close();
-    return FALSE;
+    return PFalse;
   }
 #endif // BEOS
 
@@ -2193,10 +2193,10 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
     Psockaddr sa;
     socklen_t size = sa.GetSize();
     if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
-      return FALSE;
+      return PFalse;
 
     port = sa.GetPort();
-    return TRUE;
+    return PTrue;
   }
 
 #else
@@ -2222,14 +2222,14 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
     socklen_t size = sizeof(sin);
     if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
       port = ntohs(sin.sin_port);
-      return TRUE;
+      return PTrue;
     }
   }
 
 #endif
 
   os_close();
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -2242,10 +2242,10 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback()
 #if P_HAS_IPV6
 
 /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
-BOOL PIPSocket::Address::IsV4Mapped() const
+PBoolean PIPSocket::Address::IsV4Mapped() const
 {
   if (version != 6)
-    return FALSE;
+    return PFalse;
   return IN6_IS_ADDR_V4MAPPED(&v.six) || IN6_IS_ADDR_V4COMPAT(&v.six);
 }
 
@@ -2264,7 +2264,7 @@ const PIPSocket::Address & PIPSocket::Address::GetAny6()
 #endif
 
 
-BOOL PIPSocket::Address::IsAny() const
+PBoolean PIPSocket::Address::IsAny() const
 {
   return (!IsValid());
 }
@@ -2422,7 +2422,7 @@ bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
     return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
   else if (addr.GetVersion() == 6 && addr.IsV4Mapped()) 
     return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
-  return FALSE;
+  return PFalse;
 }
 
 bool PIPSocket::Address::operator==(in6_addr & addr) const
@@ -2531,7 +2531,7 @@ PString PIPSocket::Address::AsString() const
 }
 
 
-BOOL PIPSocket::Address::FromString(const PString & dotNotation)
+PBoolean PIPSocket::Address::FromString(const PString & dotNotation)
 {
   (*this) = dotNotation;
   return IsValid();
@@ -2620,7 +2620,7 @@ PINDEX PIPSocket::Address::GetSize() const
 }
 
 
-BOOL PIPSocket::Address::IsValid() const
+PBoolean PIPSocket::Address::IsValid() const
 {
   switch (version) {
 #if P_HAS_IPV6
@@ -2631,11 +2631,11 @@ BOOL PIPSocket::Address::IsValid() const
     case 4 :
       return (DWORD)*this != INADDR_ANY;
   }
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIPSocket::Address::IsLoopback() const
+PBoolean PIPSocket::Address::IsLoopback() const
 {
 #if P_HAS_IPV6
   if (version == 6)
@@ -2645,22 +2645,22 @@ BOOL PIPSocket::Address::IsLoopback() const
 }
 
 
-BOOL PIPSocket::Address::IsBroadcast() const
+PBoolean PIPSocket::Address::IsBroadcast() const
 {
 #if P_HAS_IPV6
   if (version == 6) // In IPv6, no broadcast exist. Only multicast
-    return FALSE;
+    return PFalse;
 #endif
 
   return *this == broadcast4;
 }
 
-BOOL PIPSocket::Address::IsRFC1918() const 
+PBoolean PIPSocket::Address::IsRFC1918() const 
 { 
 #if P_HAS_IPV6
   if (version == 6) {
     if (IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six))
-      return TRUE;
+      return PTrue;
     if (IsV4Mapped())
       return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]).IsRFC1918();
   }
@@ -2720,7 +2720,7 @@ void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 
 
 #ifdef __NUCLEUS_NET__
-BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
+PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
     InterfaceEntry *IE;
     list<IPInterface>::iterator i;
@@ -2738,7 +2738,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 }
 #endif
 
-BOOL PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
+PBoolean PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
 {
   PIPSocket::InterfaceTable interfaceTable;
   if (PIPSocket::GetInterfaceTable(interfaceTable)) {
@@ -2800,14 +2800,14 @@ PObject * PTCPSocket::Clone() const
 
 
 // By default IPv4 only adresses
-BOOL PTCPSocket::OpenSocket()
+PBoolean PTCPSocket::OpenSocket()
 {
   return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0));
 }
 
 
 // ipAdressFamily should be AF_INET or AF_INET6
-BOOL PTCPSocket::OpenSocket(int ipAdressFamily) 
+PBoolean PTCPSocket::OpenSocket(int ipAdressFamily) 
 {
   return ConvertOSError(os_handle = os_socket(ipAdressFamily, SOCK_STREAM, 0));
 }
@@ -2819,24 +2819,24 @@ const char * PTCPSocket::GetProtocolName() const
 }
 
 
-BOOL PTCPSocket::Write(const void * buf, PINDEX len)
+PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
 {
   flush();
   PINDEX writeCount = 0;
 
   while (len > 0) {
     if (!os_sendto(((char *)buf)+writeCount, len, 0, NULL, 0))
-      return FALSE;
+      return PFalse;
     writeCount += lastWriteCount;
     len -= lastWriteCount;
   }
 
   lastWriteCount = writeCount;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
+PBoolean PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
 #if P_HAS_IPV6
   return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
@@ -2846,21 +2846,21 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 }
 
 
-BOOL PTCPSocket::Listen(const Address & bindAddr,
+PBoolean PTCPSocket::Listen(const Address & bindAddr,
                         unsigned queueSize,
                         WORD newPort,
                         Reusability reuse)
 {
   if (PIPSocket::Listen(bindAddr, queueSize, newPort, reuse) &&
       ConvertOSError(::listen(os_handle, queueSize)))
-    return TRUE;
+    return PTrue;
 
   os_close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PTCPSocket::Accept(PSocket & socket)
+PBoolean PTCPSocket::Accept(PSocket & socket)
 {
   PAssert(PIsDescendant(&socket, PIPSocket), "Invalid listener socket");
 
@@ -2869,7 +2869,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
   Psockaddr sa;
   PINDEX size = sa.GetSize();
   if (!os_accept(socket, sa, &size))
-    return FALSE;
+    return PFalse;
     
 #else
 
@@ -2877,17 +2877,17 @@ BOOL PTCPSocket::Accept(PSocket & socket)
   address.sin_family = AF_INET;
   PINDEX size = sizeof(address);
   if (!os_accept(socket, (struct sockaddr *)&address, &size))
-    return FALSE;
+    return PFalse;
 
 #endif
 
   port = ((PIPSocket &)socket).GetPort();
   
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
+PBoolean PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 {
 #ifdef __NUCLEUS_NET__
   PAssertAlways("WriteOutOfBand unavailable on Nucleus Plus");
@@ -2904,7 +2904,7 @@ BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
   }
   else {
     lastWriteCount = count;
-    return TRUE;
+    return PTrue;
   }
 }
 
@@ -2922,7 +2922,7 @@ PIPDatagramSocket::PIPDatagramSocket()
 }
 
 
-BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
+PBoolean PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
                                  Address & addr, WORD & port)
 {
   lastReadCount = 0;
@@ -2951,7 +2951,7 @@ BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 }
 
 
-BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
+PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
                                 const Address & addr, WORD port)
 {
   lastWriteCount = 0;
@@ -3020,13 +3020,13 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 }
 
 
-BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
+PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
 {
   if (qos==NULL)
-    return FALSE;
+    return PFalse;
 
   qosSpec = *qos;
-  return TRUE;
+  return PTrue;
 }
 
 #if P_HAS_QOS
@@ -3036,17 +3036,17 @@ PQoS & PUDPSocket::GetQoSSpec()
 }
 #endif
 
-BOOL PUDPSocket::ApplyQoS()
+PBoolean PUDPSocket::ApplyQoS()
 {
 #ifdef _WIN32_WCE
-  return FALSE;   //QoS not supported
+  return PFalse;   //QoS not supported
 #endif
 
   char DSCPval = 0;
   if (qosSpec.GetDSCP() < 0 ||
       qosSpec.GetDSCP() > 63) {
     if (qosSpec.GetServiceType() == SERVICETYPE_PNOTDEFINED)
-      return TRUE;
+      return PTrue;
     else {
       switch (qosSpec.GetServiceType()) {
         case SERVICETYPE_GUARANTEED:
@@ -3068,30 +3068,30 @@ BOOL PUDPSocket::ApplyQoS()
 #ifdef _WIN32
 #if P_HAS_QOS
   if (disableGQoS)
-    return FALSE;
+    return PFalse;
 
-  BOOL usesetsockopt = FALSE;
+  PBoolean usesetsockopt = PFalse;
 
   OSVERSIONINFO versInfo;
   ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
   versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   if (!(GetVersionEx(&versInfo)))
-    usesetsockopt = TRUE;
+    usesetsockopt = PTrue;
   else {
     if (versInfo.dwMajorVersion < 5)
-      usesetsockopt = TRUE;
+      usesetsockopt = PTrue;
 
     if (disableGQoS)
-          return FALSE;
+          return PFalse;
 
-    BOOL usesetsockopt = FALSE;
+    PBoolean usesetsockopt = PFalse;
 
     if (versInfo.dwMajorVersion == 5 &&
         versInfo.dwMinorVersion == 0)
-      usesetsockopt = TRUE;         //Windows 2000 does not always support QOS_DESTADDR
+      usesetsockopt = PTrue;         //Windows 2000 does not always support QOS_DESTADDR
   }
 
-  BOOL retval = FALSE;
+  PBoolean retval = PFalse;
   if (!usesetsockopt && sendAddress.IsValid() && sendPort != 0) {
     sockaddr_in sa;
     sa.sin_family = AF_INET;
@@ -3125,7 +3125,7 @@ BOOL PUDPSocket::ApplyQoS()
   socklen_t cursize = sizeof(curval);
   rv = ::getsockopt(os_handle,IPPROTO_IP, IP_TOS, (char *)(&curval), &cursize);
   if (curval == setDSCP)
-    return TRUE;    //Required DSCP already set
+    return PTrue;    //Required DSCP already set
 
 
   rv = ::setsockopt(os_handle, IPPROTO_IP, IP_TOS, (char *)&setDSCP, sizeof(setDSCP));
@@ -3138,13 +3138,13 @@ BOOL PUDPSocket::ApplyQoS()
     err = errno;
 #endif
     PTRACE(1,"QOS\tsetsockopt failed with code " << err);
-    return FALSE;
+    return PFalse;
   }
     
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
+PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 {
 #ifdef _WIN32_WCE   //QOS not supported
   return ConvertOSError(os_handle = os_socket(af, type, proto));
@@ -3158,7 +3158,7 @@ BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 
   //Try to find a QOS-enabled protocol
  
-  BOOL retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
+  PBoolean retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
                                                             NULL,
                                                             &bufferSize));
     
@@ -3175,13 +3175,13 @@ BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
   }
 
   qosProtocol = installedProtocols;
-  BOOL haveQoSproto = FALSE;
+  PBoolean haveQoSproto = PFalse;
 
   for (i=0; i<numProtocols; qosProtocol++, i++) {
     if ((qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) &&
         (qosProtocol->iSocketType == type) &&
         (qosProtocol->iAddressFamily == af)) {
-      haveQoSproto = TRUE;
+      haveQoSproto = PTrue;
       break;
     }
   }
@@ -3209,7 +3209,7 @@ BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
   if (os_handle == INVALID_SOCKET)
     return retval;
 #else
-  BOOL retval = ConvertOSError(os_handle = os_socket(af, type, proto));
+  PBoolean retval = ConvertOSError(os_handle = os_socket(af, type, proto));
 #endif
 
   return retval;
@@ -3221,7 +3221,7 @@ BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 
 #define COULD_HAVE_QOS
 
-static BOOL CheckOSVersion()
+static PBoolean CheckOSVersion()
 {
     OSVERSIONINFO versInfo;
     ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
@@ -3231,16 +3231,16 @@ static BOOL CheckOSVersion()
         if (versInfo.dwMajorVersion > 5 ||
            (versInfo.dwMajorVersion == 5 &&
             versInfo.dwMinorVersion > 0))
-          return TRUE;
+          return PTrue;
     }
-  return FALSE;
+  return PFalse;
 }
 
 #endif
 #endif
 #endif
 
-BOOL PUDPSocket::OpenSocket()
+PBoolean PUDPSocket::OpenSocket()
 {
 #ifdef COULD_HAVE_QOS
   if (CheckOSVersion()) 
@@ -3250,7 +3250,7 @@ BOOL PUDPSocket::OpenSocket()
   return ConvertOSError(os_handle = os_socket(AF_INET,SOCK_DGRAM, 0));
 }
 
-BOOL PUDPSocket::OpenSocket(int ipAdressFamily)
+PBoolean PUDPSocket::OpenSocket(int ipAdressFamily)
 {
 #ifdef COULD_HAVE_QOS
   if (CheckOSVersion()) 
@@ -3266,20 +3266,20 @@ const char * PUDPSocket::GetProtocolName() const
 }
 
 
-BOOL PUDPSocket::Connect(const PString & address)
+PBoolean PUDPSocket::Connect(const PString & address)
 {
   sendPort = 0;
   return PIPDatagramSocket::Connect(address);
 }
 
 
-BOOL PUDPSocket::Read(void * buf, PINDEX len)
+PBoolean PUDPSocket::Read(void * buf, PINDEX len)
 {
   return PIPDatagramSocket::ReadFrom(buf, len, lastReceiveAddress, lastReceivePort);
 }
 
 
-BOOL PUDPSocket::Write(const void * buf, PINDEX len)
+PBoolean PUDPSocket::Write(const void * buf, PINDEX len)
 {
   if (sendPort == 0)
     return PIPDatagramSocket::Write(buf, len);
@@ -3311,30 +3311,30 @@ void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
 
 //////////////////////////////////////////////////////////////////////////////
 
-BOOL PICMPSocket::OpenSocket(int)
+PBoolean PICMPSocket::OpenSocket(int)
 {
-  return FALSE;
+  return PFalse;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-BOOL PIPSocketAddressAndPort::Parse(const PString & str, WORD defaultPort, char _sep)
+PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD defaultPort, char _sep)
 {
   sep = _sep;
   PINDEX pos = str.Find(sep);
   if (pos != P_MAX_INDEX) {
     port    = (WORD)str.Mid(pos+1).AsInteger();
     if (!PIPSocket::GetHostAddress(str.Left(pos), address))
-      return FALSE;
+      return PFalse;
   }
   else if (port == 0)
-    return FALSE;
+    return PFalse;
   else {
     port = defaultPort;
     if (!PIPSocket::GetHostAddress(str, address))
-      return FALSE;
+      return PFalse;
   }
-  return TRUE;
+  return PTrue;
 }
 
 

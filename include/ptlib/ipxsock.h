@@ -123,9 +123,9 @@ class PIPXSocket : public PSocket
         operator PString() const;
         /** Determine if address is valid. Note that this does not mean that
             the host is online.
-            @return TRUE is address is valid.
+            @return PTrue is address is valid.
           */
-        BOOL IsValid() const;
+        PBoolean IsValid() const;
       /** Output string representation of IPX address to stream. */
       friend ostream & operator<<(
         ostream & strm, ///< Stream to output to
@@ -159,9 +159,9 @@ class PIPXSocket : public PSocket
        #PIPSocket::SetPort()# function.
 
        @return
-       TRUE if the channel was successfully connected to the remote host.
+       PTrue if the channel was successfully connected to the remote host.
      */
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
     );
     /**Connect a socket to a remote host on the port number of the socket.
@@ -174,9 +174,9 @@ class PIPXSocket : public PSocket
        #PIPSocket::SetPort()# function.
 
        @return
-       TRUE if the channel was successfully connected to the remote host.
+       PTrue if the channel was successfully connected to the remote host.
      */
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const Address & address   ///< Address of remote machine to connect to.
     );
 
@@ -193,9 +193,9 @@ class PIPXSocket : public PSocket
        For the UDP protocol, the #queueSize# parameter is ignored.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
@@ -216,18 +216,18 @@ class PIPXSocket : public PSocket
     /**Get the IPX address for the specified host.
 
        @return
-       TRUE if the IPX number was returned.
+       PTrue if the IPX number was returned.
      */
-    static BOOL GetHostAddress(
+    static PBoolean GetHostAddress(
       Address & addr    ///< Variable to receive this hosts IP address
     );
 
     /**Get the IPX address for the specified host.
 
        @return
-       TRUE if the IPX number was returned.
+       PTrue if the IPX number was returned.
      */
-    static BOOL GetHostAddress(
+    static PBoolean GetHostAddress(
       const PString & hostname,
       /** Name of host to get address for. This may be either a server name or
          an IPX number in "colon" format.
@@ -238,18 +238,18 @@ class PIPXSocket : public PSocket
     /**Get the IPX/SPX address for the local host.
 
        @return
-       TRUE if the IPX number was returned.
+       PTrue if the IPX number was returned.
      */
-    BOOL GetLocalAddress(
+    PBoolean GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IPX address
     );
 
     /**Get the IPX/SPX address for the local host.
 
        @return
-       TRUE if the IPX number was returned.
+       PTrue if the IPX number was returned.
      */
-    BOOL GetLocalAddress(
+    PBoolean GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IPX address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -258,9 +258,9 @@ class PIPXSocket : public PSocket
        connected to.
 
        @return
-       TRUE if the IPX number was returned.
+       PTrue if the IPX number was returned.
      */
-    BOOL GetPeerAddress(
+    PBoolean GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IPX address
     );
 
@@ -268,9 +268,9 @@ class PIPXSocket : public PSocket
        connected to.
 
        @return
-       TRUE if the IPX number was returned.
+       PTrue if the IPX number was returned.
      */
-    BOOL GetPeerAddress(
+    PBoolean GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IPX address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -281,9 +281,9 @@ class PIPXSocket : public PSocket
     /**Sets the packet type for datagrams sent by this socket.
 
        @return
-       TRUE if the type was successfully set.
+       PTrue if the type was successfully set.
      */
-    BOOL SetPacketType(
+    PBoolean SetPacketType(
       int type    ///< IPX packet type for this socket.
     );
 
@@ -298,9 +298,9 @@ class PIPXSocket : public PSocket
     /**Read a datagram from a remote computer.
        
        @return
-       TRUE if all the bytes were sucessfully written.
+       PTrue if all the bytes were sucessfully written.
      */
-    virtual BOOL ReadFrom(
+    virtual PBoolean ReadFrom(
       void * buf,     ///< Data to be written as URGENT TCP data.
       PINDEX len,     ///< Number of bytes pointed to by #buf#.
       Address & addr, ///< Address from which the datagram was received.
@@ -310,9 +310,9 @@ class PIPXSocket : public PSocket
     /**Write a datagram to a remote computer.
 
        @return
-       TRUE if all the bytes were sucessfully written.
+       PTrue if all the bytes were sucessfully written.
      */
-    virtual BOOL WriteTo(
+    virtual PBoolean WriteTo(
       const void * buf,   ///< Data to be written as URGENT TCP data.
       PINDEX len,         ///< Number of bytes pointed to by #buf#.
       const Address & addr, ///< Address to which the datagram is sent.
@@ -322,7 +322,7 @@ class PIPXSocket : public PSocket
 
 
   protected:
-    virtual BOOL OpenSocket();
+    virtual PBoolean OpenSocket();
     virtual const char * GetProtocolName() const;
 
 

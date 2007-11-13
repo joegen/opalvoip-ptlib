@@ -81,6 +81,7 @@ Try \`$me --help' for more information."
 
 # Parse command line
 while test $# -gt 0 ; do
+   echo $1
   case $1 in
     --time-stamp | --time* | -t )
        echo "$timestamp" ; exit 0 ;;

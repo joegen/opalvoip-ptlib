@@ -69,7 +69,7 @@ protected:
     const PString   m_AuthID;
     const PString   m_Password;
 
-    BOOL            Start(const PString& mechanism, const char ** output, unsigned& len);
+    PBoolean            Start(const PString& mechanism, const char ** output, unsigned& len);
     PSASLResult     Negotiate(const char * input, const char ** output);
 
 public:
@@ -87,10 +87,10 @@ public:
     const PString&  GetAuthID() const   { return m_AuthID; }
     const PString&  GetPassword() const { return m_Password; }
 
-    BOOL            Init(const PString& fqdn, PStringSet& supportedMechanisms);
-    BOOL            Start(const PString& mechanism, PString& output);
+    PBoolean            Init(const PString& fqdn, PStringSet& supportedMechanisms);
+    PBoolean            Start(const PString& mechanism, PString& output);
     PSASLResult     Negotiate(const PString& input, PString& output);
-    BOOL            End();
+    PBoolean            End();
 };
 
 #endif  // _PSASL

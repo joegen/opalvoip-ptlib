@@ -34,7 +34,7 @@ class Vxmltest : public PProcess
     PDECLARE_NOTIFIER(PThread, Vxmltest, InputThread);
 
   protected:
-    BOOL inputRunning;
+    PBoolean inputRunning;
     PVXMLSession * vxml;
 };
 

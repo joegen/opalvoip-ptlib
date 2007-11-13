@@ -72,7 +72,7 @@
  */
 
   public:
-    BOOL Close();
+    PBoolean Close();
 
   private:
 #ifndef P_VXWORKS

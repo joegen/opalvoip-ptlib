@@ -773,6 +773,11 @@
 #undef  P_HAS_RECVMSG
 #undef  P_HAS_UPAD128_T
 
+#undef  P_USE_STANDARD_CXX_BOOL
+#if !defined(P_USE_STANDARD_CXX_BOOL)
+#  define P_USE_INTEGER_BOOL
+#endif
+
 #endif // _PT_BUILDOPTS_H
 
 

@@ -5,7 +5,7 @@
 //  PTime
 //
 
-BOOL PTime::GetTimeAMPM()
+PBoolean PTime::GetTimeAMPM()
 {
 #if defined(P_USE_LANGINFO)
   return strstr(nl_langinfo(T_FMT), "%p") != NULL;
@@ -25,7 +25,7 @@ PAssertAlways("No RTC");
 #else
 #warning No AMPM implementation
 #endif
-  return FALSE;
+  return PFalse;
 #endif
 }
 
@@ -282,12 +282,12 @@ PAssertAlways("Using default month names");
 }
 
 
-BOOL PTime::IsDaylightSavings()
+PBoolean PTime::IsDaylightSavings()
 {
 #ifdef __NUCLEUS_PLUS__
 #pragma message ("No RTC")
 PAssertAlways("No RTC");
-return FALSE;
+return PFalse;
 #else
   time_t theTime = ::time(NULL);
   return ::localtime(&theTime)->tm_isdst != 0;

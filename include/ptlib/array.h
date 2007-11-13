@@ -210,7 +210,7 @@ class PAbstractArray : public PContainer
        memory. This can be an important distinction when the pointer is
        obtained via an operator created in the #PBASEARRAY# macro.
 
-       If the #dynamicAllocation# parameter is FALSE then the
+       If the #dynamicAllocation# parameter is PFalse then the
        pointer is used directly by the container. It will not be copied to a
        dynamically allocated buffer. If the #SetSize()# function is used to
        change the size of the buffer, the object will be converted to a
@@ -222,7 +222,7 @@ class PAbstractArray : public PContainer
                                    ///< constructor will assert.
       const void *buffer,          ///< Pointer to an array of elements.
       PINDEX bufferSizeInElements, ///< Number of elements pointed to by buffer.
-      BOOL dynamicAllocation       ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamicAllocation       ///< Buffer is copied and dynamically allocated.
     );
   //@}
 
@@ -281,9 +281,9 @@ class PAbstractArray : public PContainer
        then the data beyond the new size is lost.
 
        @return
-       TRUE if the memory for the array was allocated successfully.
+       PTrue if the memory for the array was allocated successfully.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in elements.
     );
   //@}
@@ -325,20 +325,20 @@ class PAbstractArray : public PContainer
        contents and the contents of the parameter. The paramters contents is then
        copied to the end of the existing array.
        
-       Note this does nothing and returns FALSE if the target array is not
+       Note this does nothing and returns PFalse if the target array is not
        dynamically allocated, or if the two arrays are of base elements of
        different sizes.
 
        @return
-       TRUE if the memory allocation succeeded.
+       PTrue if the memory allocation succeeded.
      */
-    BOOL Concatenate(
+    PBoolean Concatenate(
       const PAbstractArray & array  ///< Array to concatenate.
     );
   //@}
 
   protected:
-    BOOL InternalSetSize(PINDEX newSize, BOOL force);
+    PBoolean InternalSetSize(PINDEX newSize, PBoolean force);
 
     virtual void PrintElementOn(
       ostream & stream,
@@ -356,7 +356,7 @@ class PAbstractArray : public PContainer
     char * theArray;
 
     /// Flag indicating the array was allocated on the heap.
-    BOOL allocatedDynamically;
+    PBoolean allocatedDynamically;
 
   friend class PArrayObjects;
 };
@@ -407,7 +407,7 @@ template <class T> class PBaseArray : public PAbstractArray
     PBaseArray(
       T const * buffer,   ///< Pointer to an array of the elements of type {\bf T}.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     ) : PAbstractArray(sizeof(T), buffer, length, dynamic) { }
   //@}
 
@@ -427,9 +427,9 @@ template <class T> class PBaseArray : public PAbstractArray
        expand, if necessary, to fit the new element in.
 
        @return
-       TRUE if new memory for the array was successfully allocated.
+       PTrue if new memory for the array was successfully allocated.
      */
-    BOOL SetAt(
+    PBoolean SetAt(
       PINDEX index,   ///< Position in the array to set the new value.
       T val           ///< Value to set in the array.
     ) {
@@ -541,13 +541,13 @@ template <class T> class PBaseArray : public PAbstractArray
        contents and the contents of the parameter. The paramters contents is then
        copied to the end of the existing array.
        
-       Note this does nothing and returns FALSE if the target array is not
+       Note this does nothing and returns PFalse if the target array is not
        dynamically allocated.
 
        @return
-       TRUE if the memory allocation succeeded.
+       PTrue if the memory allocation succeeded.
      */
-    BOOL Concatenate(
+    PBoolean Concatenate(
       const PBaseArray & array  ///< Other array to concatenate
     ) {
       return PAbstractArray::Concatenate(array);
@@ -589,7 +589,7 @@ template <class T> class PBaseArray : public PAbstractArray
   PDECLARE_CLASS(cls, PBaseArray<T>) \
     cls(PINDEX initialSize = 0) \
       : PBaseArray<T>(initialSize) { } \
-    cls(T const * buffer, PINDEX length, BOOL dynamic = TRUE) \
+    cls(T const * buffer, PINDEX length, PBoolean dynamic = PTrue) \
       : PBaseArray<T>(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
@@ -632,7 +632,7 @@ template <class T> class PScalarArray : public PBaseArray<T>
     PScalarArray(
       T const * buffer,   ///< Pointer to an array of the elements of type {\bf T}.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     ) : PBaseArray<T>(buffer, length, dynamic) { }
   //@}
 
@@ -668,11 +668,11 @@ template <class T> class PScalarArray : public PBaseArray<T>
   public: \
     inline cls(PINDEX initialSize = 0) \
       : PAbstractArray(sizeof(P_##cls##_Base_Type), initialSize) { } \
-    inline cls(P_##cls##_Base_Type const * buffer, PINDEX length, BOOL dynamic = TRUE) \
+    inline cls(P_##cls##_Base_Type const * buffer, PINDEX length, PBoolean dynamic = PTrue) \
       : PAbstractArray(sizeof(P_##cls##_Base_Type), buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
-    inline BOOL SetAt(PINDEX index, P_##cls##_Base_Type val) \
+    inline PBoolean SetAt(PINDEX index, P_##cls##_Base_Type val) \
       { return SetMinSize(index+1) && \
                      val==(((P_##cls##_Base_Type *)theArray)[index] = val); } \
     inline P_##cls##_Base_Type GetAt(PINDEX index) const \
@@ -689,7 +689,7 @@ template <class T> class PScalarArray : public PBaseArray<T>
       { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline operator P_##cls##_Base_Type const *() const \
       { return (P_##cls##_Base_Type const *)theArray; } \
-    inline BOOL Concatenate(cls const & array) \
+    inline PBoolean Concatenate(cls const & array) \
       { return PAbstractArray::Concatenate(array); } \
   }
 
@@ -698,7 +698,7 @@ template <class T> class PScalarArray : public PBaseArray<T>
   PDECLARE_CLASS(cls, cls##_PTemplate) \
     cls(PINDEX initialSize = 0) \
       : cls##_PTemplate(initialSize) { } \
-    cls(T const * buffer, PINDEX length, BOOL dynamic = TRUE) \
+    cls(T const * buffer, PINDEX length, PBoolean dynamic = PTrue) \
       : cls##_PTemplate(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
@@ -726,7 +726,7 @@ class PCharArray : public PBaseArray {
     PCharArray(
       char const * buffer,   ///< Pointer to an array of chars.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
@@ -763,7 +763,7 @@ class PShortArray : public PBaseArray {
     PShortArray(
       short const * buffer,   ///< Pointer to an array of shorts.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -789,7 +789,7 @@ class PIntArray : public PBaseArray {
     PIntArray(
       int const * buffer,   ///< Pointer to an array of ints.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -815,7 +815,7 @@ class PLongArray : public PBaseArray {
     PLongArray(
       long const * buffer,   ///< Pointer to an array of longs.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -841,7 +841,7 @@ class PBYTEArray : public PBaseArray {
     PBYTEArray(
       BYTE const * buffer,   ///< Pointer to an array of BYTEs.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -880,7 +880,7 @@ class PWORDArray : public PBaseArray {
     PWORDArray(
       WORD const * buffer,   ///< Pointer to an array of WORDs.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -906,7 +906,7 @@ class PUnsignedArray : public PBaseArray {
     PUnsignedArray(
       unsigned const * buffer,   ///< Pointer to an array of unsigned ints.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -932,7 +932,7 @@ class PDWORDArray : public PBaseArray {
     PDWORDArray(
       DWORD const * buffer,   ///< Pointer to an array of DWORDs.
       PINDEX length,      ///< Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
@@ -1029,9 +1029,9 @@ class PArrayObjects : public PCollection
        made smaller then the data beyond the new size is lost.
 
        @return
-       TRUE if the memory for the array was allocated successfully.
+       PTrue if the memory for the array was allocated successfully.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in objects.
     );
   //@}
@@ -1089,9 +1089,9 @@ class PArrayObjects : public PCollection
        All objects are shifted down to fill the vacated position.
 
        @return
-       TRUE if the object was in the collection.
+       PTrue if the object was in the collection.
      */
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     );
 
@@ -1115,9 +1115,9 @@ class PArrayObjects : public PCollection
        set then the old object is also deleted.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -1324,7 +1324,7 @@ class PBitArray : public PBYTEArray
     PBitArray(
       const void * buffer,   ///< Pointer to an array of the elements of type {\bf T}.
       PINDEX length,         ///< Number of bits (not bytes!) pointed to by #buffer#.
-      BOOL dynamic = TRUE    ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = PTrue    ///< Buffer is copied and dynamically allocated.
     );
   //@}
 
@@ -1351,9 +1351,9 @@ class PBitArray : public PBYTEArray
        then the data beyond the new size is lost.
 
        @return
-       TRUE if the memory for the array was allocated successfully.
+       PTrue if the memory for the array was allocated successfully.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in bits, not bytes.
     );
 
@@ -1361,20 +1361,20 @@ class PBitArray : public PBYTEArray
        expand, if necessary, to fit the new element in.
 
        @return
-       TRUE if new memory for the array was successfully allocated.
+       PTrue if new memory for the array was successfully allocated.
      */
-    BOOL SetAt(
+    PBoolean SetAt(
       PINDEX index,   ///< Position in the array to set the new value.
-      BOOL val           ///< Value to set in the array.
+      PBoolean val           ///< Value to set in the array.
     );
 
     /**Get a bit from the array. If the #index# is beyond the end
-       of the allocated array then FALSE is returned.
+       of the allocated array then PFalse is returned.
 
        @return
        value at the array position.
      */
-    BOOL GetAt(
+    PBoolean GetAt(
       PINDEX index  ///< Position on the array to get value from.
     ) const;
 
@@ -1420,40 +1420,40 @@ class PBitArray : public PBYTEArray
        @return
        value at the array position.
      */
-    BOOL operator[](
+    PBoolean operator[](
       PINDEX index  ///< Position on the array to get value from.
     ) const { return GetAt(index); }
 
     /**Set a bit to the array.
 
-       This is functionally identical to the #PContainer::SetAt(index, TRUE)#
+       This is functionally identical to the #PContainer::SetAt(index, PTrue)#
        function.
      */
     PBitArray & operator+=(
       PINDEX index  ///< Position on the array to get value from.
-    ) { SetAt(index, TRUE); return *this; }
+    ) { SetAt(index, PTrue); return *this; }
 
     /**Set a bit to the array.
 
-       This is functionally identical to the #PContainer::SetAt(index, TRUE)#
+       This is functionally identical to the #PContainer::SetAt(index, PTrue)#
        function.
      */
     PBitArray & operator-=(
       PINDEX index  ///< Position on the array to get value from.
-    ) { SetAt(index, FALSE); return *this; }
+    ) { SetAt(index, PFalse); return *this; }
 
     /**Concatenate one array to the end of this array.
        This function will allocate a new array large enough for the existing 
        contents and the contents of the parameter. The paramters contents is then
        copied to the end of the existing array.
        
-       Note this does nothing and returns FALSE if the target array is not
+       Note this does nothing and returns PFalse if the target array is not
        dynamically allocated.
 
        @return
-       TRUE if the memory allocation succeeded.
+       PTrue if the memory allocation succeeded.
      */
-    BOOL Concatenate(
+    PBoolean Concatenate(
       const PBitArray & array  ///< Other array to concatenate
     );
   //@}

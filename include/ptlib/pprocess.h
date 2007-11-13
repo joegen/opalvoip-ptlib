@@ -456,12 +456,12 @@ class PProcess : public PThread
     static PProcess & Current();
 
     /**Determine if the current processes object instance has been initialised.
-       If this returns TRUE it is safe to use the PProcess::Current() function.
+       If this returns PTrue it is safe to use the PProcess::Current() function.
        
        @return
-       TRUE if process class has been initialised.
+       PTrue if process class has been initialised.
      */
-    static BOOL IsInitialised();
+    static PBoolean IsInitialised();
 
     /**Set the termination value for the process.
     
@@ -518,9 +518,9 @@ class PProcess : public PThread
        dialog box and for determining the location of the configuration
        information as used by the #PConfig# class.
 
-       If the #full# parameter is TRUE then a version string
+       If the #full# parameter is PTrue then a version string
        built from the major, minor, status and build veriosn codes is
-       returned. If FALSE then only the major and minor versions are
+       returned. If PFalse then only the major and minor versions are
        returned.
 
        The default for this information is "1.0".
@@ -529,7 +529,7 @@ class PProcess : public PThread
        string for the version eg "1.0b3".
      */
     virtual PString GetVersion(
-      BOOL full = TRUE ///< TRUE for full version, FALSE for short version.
+      PBoolean full = PTrue ///< PTrue for full version, PFalse for short version.
     ) const;
 
     /**Get the processes executable image file path.
@@ -577,12 +577,12 @@ class PProcess : public PThread
        meaningful for all platforms.
 
        @return
-       TRUE if processes owner changed. The most common reason for failure is
+       PTrue if processes owner changed. The most common reason for failure is
        that the process does not have the privilege to change the effective user.
       */
-    BOOL SetUserName(
+    PBoolean SetUserName(
       const PString & username, ///< New user name or uid
-      BOOL permanent = FALSE    ///< Flag for if effective or real user
+      PBoolean permanent = PFalse    ///< Flag for if effective or real user
     );
 
     /**Get the effective group name of the owner of the process, eg "root" etc.
@@ -615,13 +615,13 @@ class PProcess : public PThread
        meaningful for all platforms.
 
        @return
-       TRUE if processes group changed. The most common reason for failure is
+       PTrue if processes group changed. The most common reason for failure is
        that the process does not have the privilege to change the effective
        group.
       */
-    BOOL SetGroupName(
+    PBoolean SetGroupName(
       const PString & groupname, ///< New group name or gid
-      BOOL permanent = FALSE     ///< Flag for if effective or real group
+      PBoolean permanent = PFalse     ///< Flag for if effective or real group
     );
 
     /**Get the maximum file handle value for the process.
@@ -639,9 +639,9 @@ class PProcess : public PThread
        For some platforms this is meaningless.
 
        @return
-       TRUE if successfully set the maximum file hadles.
+       PTrue if successfully set the maximum file hadles.
       */
-    BOOL SetMaxHandles(
+    PBoolean SetMaxHandles(
       int newLimit  ///< New limit on file handles
     );
 

@@ -88,7 +88,7 @@ class PConsoleChannel : public PChannel
        The channel is opened it on the specified port and with the specified
        attributes.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       ConsoleType type  /// Type of console for object
     );
   //@}

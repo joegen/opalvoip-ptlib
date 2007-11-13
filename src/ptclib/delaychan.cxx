@@ -70,20 +70,20 @@
 PAdaptiveDelay::PAdaptiveDelay(unsigned _maximumSlip, unsigned _minimumDelay)
   : jitterLimit(_maximumSlip), minimumDelay(_minimumDelay)
 {
-  firstTime = TRUE;
+  firstTime = PTrue;
 }
 
 void PAdaptiveDelay::Restart()
 {
-  firstTime = TRUE;
+  firstTime = PTrue;
 }
 
-BOOL PAdaptiveDelay::Delay(int frameTime)
+PBoolean PAdaptiveDelay::Delay(int frameTime)
 {
   if (firstTime) {
-    firstTime = FALSE;
+    firstTime = PFalse;
     targetTime = PTime();   // targetTime is the time we want to delay to
-    return TRUE;
+    return PTrue;
   }
 
   // Set the new target
@@ -135,13 +135,13 @@ PDelayChannel::PDelayChannel(PChannel &channel,
    minimumDelay(min)
 {
   maximumSlip = -PTimeInterval(max);
-  if(Open(channel) == FALSE){
+  if(Open(channel) == PFalse){
     PTRACE(1,"Delay\tPDelayChannel cannot open channel");
   }
   PTRACE(5,"Delay\tdelay = " << frameDelay << ", size = " << frameSize);
 }
 
-BOOL PDelayChannel::Read(void * buf, PINDEX count)
+PBoolean PDelayChannel::Read(void * buf, PINDEX count)
 {
   if (mode != DelayWritesOnly)
     Wait(count, nextReadTick);
@@ -149,7 +149,7 @@ BOOL PDelayChannel::Read(void * buf, PINDEX count)
 }
 
 
-BOOL PDelayChannel::Write(const void * buf, PINDEX count)
+PBoolean PDelayChannel::Write(const void * buf, PINDEX count)
 {
   if (mode != DelayReadsOnly)
     Wait(count, nextWriteTick);

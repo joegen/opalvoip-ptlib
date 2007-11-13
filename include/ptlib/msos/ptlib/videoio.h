@@ -65,16 +65,16 @@
 // PVideoDevice
 
   public:
-    virtual BOOL SetColourFormat(const PString & colourFormat);
-    virtual BOOL SetFrameRate(unsigned rate);
-    virtual BOOL SetFrameSize(unsigned width, unsigned height);
+    virtual PBoolean SetColourFormat(const PString & colourFormat);
+    virtual PBoolean SetFrameRate(unsigned rate);
+    virtual PBoolean SetFrameSize(unsigned width, unsigned height);
 
   protected:
     static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
     LRESULT HandleError(int id, LPCSTR err);
     static LRESULT CALLBACK VideoHandler(HWND hWnd, LPVIDEOHDR vh);
     LRESULT HandleVideo(LPVIDEOHDR vh);
-    BOOL InitialiseCapture();
+    PBoolean InitialiseCapture();
     void HandleCapture();
 
     PThread     * captureThread;
@@ -86,7 +86,7 @@
     LPBYTE        lastFramePtr;
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
-    BOOL          isCapturingNow;
+    PBoolean          isCapturingNow;
 
   friend class PVideoInputThread;
 

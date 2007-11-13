@@ -37,7 +37,7 @@ void PSemaphore::Wait()
   pNucleusSemaphore->Obtain();
   }
   
-BOOL PSemaphore::Wait(const PTimeInterval & timeout)
+PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
   {
 // Convert timeout to a number of ticks!
   STATUS retval =  pNucleusSemaphore->Obtain( timeout.GetInterval()/
@@ -48,9 +48,9 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
   PAssert(retval != NU_SEMAPHORE_DELETED, "Semaphore Deleted");
 
   if (retval == NU_SUCCESS)
-    return TRUE;
+    return PTrue;
   else
-    return FALSE;
+    return PFalse;
   }
 
 void PSemaphore::Signal()
@@ -58,7 +58,7 @@ void PSemaphore::Signal()
   pNucleusSemaphore->Release();
   }
 
-BOOL PSemaphore::WillBlock() const
+PBoolean PSemaphore::WillBlock() const
   {
   SemaphoreInfo * pNucleusSemaphoreInfo = 0;
   STATUS retval = pNucleusSemaphore->Information(&pNucleusSemaphoreInfo);

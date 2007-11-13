@@ -61,7 +61,7 @@
 // PVideo
 
   public:
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     virtual PString GetName() const;
     // Return the name of the channel.

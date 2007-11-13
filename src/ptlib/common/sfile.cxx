@@ -75,19 +75,19 @@ PStructuredFile::PStructuredFile(const PFilePath & name, OpenMode mode, int opts
 }
 
 
-BOOL PStructuredFile::Read(void * buffer)
+PBoolean PStructuredFile::Read(void * buffer)
 {
   PAssert(structureSize > 0, PInvalidParameter);
   if (!PFile::Read(buffer, structureSize))
-    return FALSE;
+    return PFalse;
   if (GetLastReadCount() != structureSize)
-    return FALSE;
+    return PFalse;
   // Translate all structure elements according to endian-ness.
-  return TRUE;
+  return PTrue;
 }
       
 
-BOOL PStructuredFile::Write(const void * buffer)
+PBoolean PStructuredFile::Write(const void * buffer)
 {
   PAssert(structureSize > 0, PInvalidParameter);
   // Translate all structure elements according to endian-ness.

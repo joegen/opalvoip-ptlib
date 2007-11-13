@@ -200,7 +200,7 @@
  * try locking the mutex before unlocking it in ~PThread and ~PSemaphore.
  *
  * Revision 1.117  2003/04/08 03:29:31  robertj
- * Fixed IsSuspeneded() so returns TRUE if thread not started yet, this makes
+ * Fixed IsSuspeneded() so returns PTrue if thread not started yet, this makes
  *   it the same as the Win32 semantics.
  *
  * Revision 1.116  2003/03/10 15:37:00  rogerh
@@ -626,7 +626,7 @@ int PX_NewHandle(const char *, int);
     while (PAssertThreadOp(func args, threadOpRetry, #func, __FILE__, __LINE__)); \
   }
 
-static BOOL PAssertThreadOp(int retval,
+static PBoolean PAssertThreadOp(int retval,
                             unsigned & retry,
                             const char * funcname,
                             const char * file,
@@ -634,7 +634,7 @@ static BOOL PAssertThreadOp(int retval,
 {
   if (retval == 0) {
     PTRACE_IF(2, retry > 0, "PWLib\t" << funcname << " required " << retry << " retries!");
-    return FALSE;
+    return PFalse;
   }
 
   if (errno == EINTR || errno == EAGAIN) {
@@ -644,13 +644,13 @@ static BOOL PAssertThreadOp(int retval,
 #else
       usleep(10000); // Basically just swap out thread to try and clear blockage
 #endif
-      return TRUE;   // Return value to try again
+      return PTrue;   // Return value to try again
     }
     // Give up and assert
   }
 
   PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -658,13 +658,13 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
     PHouseKeepingThread()
       : PThread(1000, NoAutoDeleteThread, NormalPriority, "Housekeeper")
-      { closing = FALSE; Resume(); }
+      { closing = PFalse; Resume(); }
 
     void Main();
-    void SetClosing() { closing = TRUE; }
+    void SetClosing() { closing = PTrue; }
 
   protected:
-    BOOL closing;
+    PBoolean closing;
 };
 
 
@@ -692,7 +692,7 @@ void PProcess::SignalTimerChange()
 {
   if (housekeepingThread == NULL) {
 #if PMEMORY_CHECK
-    BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+    PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(PTrue);
 #endif
     housekeepingThread = new PHouseKeepingThread;
 #if PMEMORY_CHECK
@@ -728,7 +728,7 @@ void PProcess::Construct()
 }
 
 
-BOOL PProcess::SetMaxHandles(int newMax)
+PBoolean PProcess::SetMaxHandles(int newMax)
 {
 #ifndef P_RTEMS
   // get the current process limit
@@ -742,14 +742,14 @@ BOOL PProcess::SetMaxHandles(int newMax)
     maxHandles = rl.rlim_cur;
     if (maxHandles == newMax) {
       PTRACE(2, "PWLib\tNew maximum per-process file handles set to " << maxHandles);
-      return TRUE;
+      return PTrue;
     }
   }
 #endif // !P_RTEMS
 
   PTRACE(1, "PWLib\tCannot set per-process file handle limit to "
          << newMax << " (is " << maxHandles << ") - check permissions");
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -769,12 +769,12 @@ PProcess::~PProcess()
   PTRACE(5, "PWLib\tDestroyed process " << this);
 }
 
-BOOL PProcess::PThreadKill(pthread_t id, unsigned sig)
+PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 {
   PWaitAndSignal m(threadMutex);
 
   if (!activeThreads.Contains((unsigned)id)) 
-    return FALSE;
+    return PFalse;
 
   return pthread_kill(id, sig) == 0;
 }
@@ -790,7 +790,7 @@ PThread::PThread()
 
 void PThread::InitialiseProcessThread()
 {
-  autoDelete          = FALSE;
+  autoDelete          = PFalse;
 
   PX_origStackSize    = 0;
   PX_threadId         = pthread_self();
@@ -813,7 +813,7 @@ void PThread::InitialiseProcessThread()
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
 
-  PX_firstTimeStart = FALSE;
+  PX_firstTimeStart = PFalse;
 
   traceBlockIndentLevel = 0;
 }
@@ -848,7 +848,7 @@ PThread::PThread(PINDEX stackSize,
   PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 
   // new thread is actually started the first time Resume() is called.
-  PX_firstTimeStart = TRUE;
+  PX_firstTimeStart = PTrue;
 
   traceBlockIndentLevel = 0;
 
@@ -951,7 +951,7 @@ void PX_SuspendSignalHandler(int)
   if (thread == NULL)
     return;
 
-  BOOL notResumed = TRUE;
+  PBoolean notResumed = PTrue;
   while (notResumed) {
     BYTE ch;
     notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
@@ -962,7 +962,7 @@ void PX_SuspendSignalHandler(int)
 }
 
 
-void PThread::Suspend(BOOL susp)
+void PThread::Suspend(PBoolean susp)
 {
   PAssertPTHREAD(pthread_mutex_lock, (&PX_suspendMutex));
 
@@ -974,7 +974,7 @@ void PThread::Suspend(BOOL susp)
       if (PX_suspendCount > 0)
         PX_suspendCount--;
       if (PX_suspendCount == 0) {
-        PX_firstTimeStart = FALSE;
+        PX_firstTimeStart = PFalse;
         Restart();
       }
     }
@@ -1020,20 +1020,20 @@ void PThread::Suspend(BOOL susp)
 
 void PThread::Resume()
 {
-  Suspend(FALSE);
+  Suspend(PFalse);
 }
 
 
-BOOL PThread::IsSuspended() const
+PBoolean PThread::IsSuspended() const
 {
   if (PX_firstTimeStart)
-    return TRUE;
+    return PTrue;
 
   if (IsTerminated())
-    return FALSE;
+    return PFalse;
 
   PAssertPTHREAD(pthread_mutex_lock, ((pthread_mutex_t *)&PX_suspendMutex));
-  BOOL suspended = PX_suspendCount != 0;
+  PBoolean suspended = PX_suspendCount != 0;
   PAssertPTHREAD(pthread_mutex_unlock, ((pthread_mutex_t *)&PX_suspendMutex));
   return suspended;
 }
@@ -1297,7 +1297,7 @@ void PThread::Terminate()
 }
 
 
-BOOL PThread::IsTerminated() const
+PBoolean PThread::IsTerminated() const
 {
   pthread_t id = PX_threadId;
   return (id == 0) || !PPThreadKill(id, 0);
@@ -1320,11 +1320,11 @@ void PThread::WaitForTermination() const
 }
 
 
-BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if (this == Current()) {
     PTRACE(2, "WaitForTermination(t) short circuited");
-    return TRUE;
+    return PTrue;
   }
   
   PTRACE(6, "PWLib\tWaitForTermination(" << maxWait << ')');
@@ -1333,11 +1333,11 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
-      return FALSE;
+      return PFalse;
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
                // CPU usage and also yeilds so other threads can run.
   }
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1616,11 +1616,11 @@ void PSemaphore::Wait()
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & waitTime) 
+PBoolean PSemaphore::Wait(const PTimeInterval & waitTime) 
 {
   if (waitTime == PMaxTimeInterval) {
     Wait();
-    return TRUE;
+    return PTrue;
   }
 
   // create absolute finish time 
@@ -1637,10 +1637,10 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
   if (sem_timedwait(&semId, &absTime) == 0) {
-    return TRUE;
+    return PTrue;
   }
   else {
-    return FALSE;
+    return PFalse;
   }
 
 #else
@@ -1649,7 +1649,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   // thread to get very busy
   do {
     if (sem_trywait(&semId) == 0)
-      return TRUE;
+      return PTrue;
 
 #if defined(P_LINUX)
   // sched_yield in a tight loop is bad karma
@@ -1660,17 +1660,17 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
 #endif
   } while (PTime() < finishTime);
 
-  return FALSE;
+  return PFalse;
 
 #endif
 #elif defined(P_HAS_NAMED_SEMAPHORES)
   do {
     if(sem_trywait(semId) == 0)
-      return TRUE;
+      return PTrue;
     PThread::Current()->Sleep(10);
   } while (PTime() < finishTime);
   
-  return FALSE;
+  return PFalse;
 #else
 
   struct timespec absTime;
@@ -1683,11 +1683,11 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   thread->PXSetWaitingSemaphore(this);
   queuedLocks++;
 
-  BOOL ok = TRUE;
+  PBoolean ok = PTrue;
   while (currentCount == 0) {
     int err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
     if (err == ETIMEDOUT) {
-      ok = FALSE;
+      ok = PFalse;
       break;
     }
     else
@@ -1727,22 +1727,22 @@ void PSemaphore::Signal()
 }
 
 
-BOOL PSemaphore::WillBlock() const
+PBoolean PSemaphore::WillBlock() const
 {
 #if defined(P_HAS_SEMAPHORES)
   if (sem_trywait((sem_t *)&semId) != 0) {
     PAssertOS(errno == EAGAIN || errno == EINTR);
-    return TRUE;
+    return PTrue;
   }
   PAssertPTHREAD(sem_post, ((sem_t *)&semId));
-  return FALSE;
+  return PFalse;
 #elif defined(P_HAS_NAMED_SEMAPHORES)
   if (sem_trywait(semId) != 0) {
     PAssertOS(errno == EAGAIN || errno == EINTR);
-    return TRUE;
+    return PTrue;
   }
   PAssertPTHREAD(sem_post, (semId));
-  return FALSE;
+  return PFalse;
 #else
   return currentCount == 0;
 #endif
@@ -1834,7 +1834,7 @@ void PTimedMutex::Wait()
 }
 
 
-BOOL PTimedMutex::Wait(const PTimeInterval & waitTime) 
+PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime) 
 {
   // get the current thread ID
   pthread_t currentThreadId = pthread_self();
@@ -1843,7 +1843,7 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
   if (waitTime == PMaxTimeInterval) {
     Wait();
     lockerId = currentThreadId;
-    return TRUE;
+    return PTrue;
   }
 
 #if P_HAS_RECURSIVE_MUTEX == 0
@@ -1852,7 +1852,7 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
     ++lockCount;
-    return TRUE;
+    return PTrue;
   }
 #endif
 
@@ -1867,7 +1867,7 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
   if (pthread_mutex_timedlock(&mutex, &absTime) != 0)
-    return FALSE;
+    return PFalse;
 
 #if P_HAS_RECURSIVE_MUTEX == 0
   PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
@@ -1877,7 +1877,7 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
   lockerId = currentThreadId;
-  return TRUE;
+  return PTrue;
 
 #else // P_PTHREADS_XPG6
 
@@ -1889,13 +1889,13 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime)
 #endif
       lockerId = currentThreadId;
 
-      return TRUE;
+      return PTrue;
     }
 
     PThread::Current()->Sleep(10); // sleep for 10ms
   } while (PTime() < finishTime);
 
-  return FALSE;
+  return PFalse;
 
 #endif // P_PTHREADS_XPG6
 }
@@ -1926,20 +1926,20 @@ void PTimedMutex::Signal()
 }
 
 
-BOOL PTimedMutex::WillBlock() const
+PBoolean PTimedMutex::WillBlock() const
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   pthread_t currentThreadId = pthread_self();
   if (currentThreadId == lockerId)
-    return FALSE;
+    return PFalse;
 #endif
 
   pthread_mutex_t * mp = (pthread_mutex_t*)&mutex;
   if (pthread_mutex_trylock(mp) != 0)
-    return TRUE;
+    return PTrue;
 
   PAssertPTHREAD(pthread_mutex_unlock, (mp));
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1975,7 +1975,7 @@ void PSyncPoint::Wait()
 }
 
 
-BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
+PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
 {
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
@@ -2012,7 +2012,7 @@ void PSyncPoint::Signal()
 }
 
 
-BOOL PSyncPoint::WillBlock() const
+PBoolean PSyncPoint::WillBlock() const
 {
   return signalCount == 0;
 }

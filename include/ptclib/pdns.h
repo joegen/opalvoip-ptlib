@@ -215,10 +215,10 @@ namespace PDNS {
 //
 
 template <unsigned type, class RecordListType, class RecordType>
-BOOL Lookup(const PString & name, RecordListType & recordList)
+PBoolean Lookup(const PString & name, RecordListType & recordList)
 {
   if (name.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   recordList.RemoveAll();
 
@@ -230,7 +230,7 @@ BOOL Lookup(const PString & name, RecordListType & recordList)
                                  &results, 
                                  NULL);
   if (status != 0)
-    return FALSE;
+    return PFalse;
 
   // find records matching the correct type
   PDNS_RECORD dnsRecord = results;
@@ -254,14 +254,14 @@ class SRVRecord : public PObject
   PCLASSINFO(SRVRecord, PObject);
   public:
     SRVRecord()
-    { used = FALSE; }
+    { used = PFalse; }
 
     Comparison Compare(const PObject & obj) const;
     void PrintOn(ostream & strm) const;
 
     PString            hostName;
     PIPSocket::Address hostAddress;
-    BOOL               used;
+    PBoolean               used;
     WORD port;
     WORD priority;
     WORD weight;
@@ -285,13 +285,13 @@ PDECLARE_SORTED_LIST(SRVRecordList, PDNS::SRVRecord)
   * return a list of DNS SRV record with the specified service type
   */
 
-inline BOOL GetRecords(const PString & service, SRVRecordList & serviceList)
+inline PBoolean GetRecords(const PString & service, SRVRecordList & serviceList)
 { return Lookup<DNS_TYPE_SRV, SRVRecordList, SRVRecord>(service, serviceList); }
 
 /**
   * provided for backwards compatibility
   */
-inline BOOL GetSRVRecords(
+inline PBoolean GetSRVRecords(
       const PString & service,
       SRVRecordList & serviceList
 )
@@ -301,7 +301,7 @@ inline BOOL GetSRVRecords(
   * return a list of DNS SRV record with the specified service, type and domain
   */
 
-BOOL GetSRVRecords(
+PBoolean GetSRVRecords(
       const PString & service,
       const PString & type,
       const PString & domain,
@@ -310,26 +310,26 @@ BOOL GetSRVRecords(
 
 /**
   * Perform a DNS lookup of the specified service
-  * @return TRUE if the service could be resolved, else FALSE
+  * @return PTrue if the service could be resolved, else PFalse
   */
 
-BOOL LookupSRV(
+PBoolean LookupSRV(
          const PString & srvQuery,
          WORD defaultPort,
          PIPSocketAddressAndPortVector & addrList
 );
 
-BOOL LookupSRV( 
+PBoolean LookupSRV( 
          const PString & domain,                  ///< domain to lookup
          const PString & service,                 ///< service to use
          WORD defaultPort,                        ///< default por to use
          PIPSocketAddressAndPortVector & addrList ///< returned list of sockets and ports
 ); 
 
-BOOL LookupSRV( 
+PBoolean LookupSRV( 
          const PURL & url,          ///< URL to lookup
          const PString & service,   ///< service to use
-         PStringList & returnStr    ///< resolved addresses, if return value is TRUE
+         PStringList & returnStr    ///< resolved addresses, if return value is PTrue
 );  
 
 ////////////////////////////////////////////////////////////////
@@ -339,13 +339,13 @@ class MXRecord : public PObject
   PCLASSINFO(MXRecord, PObject);
   public:
     MXRecord()
-    { used = FALSE; }
+    { used = PFalse; }
     Comparison Compare(const PObject & obj) const;
     void PrintOn(ostream & strm) const;
 
     PString            hostName;
     PIPSocket::Address hostAddress;
-    BOOL               used;
+    PBoolean               used;
     WORD               preference;
 };
 
@@ -365,7 +365,7 @@ PDECLARE_SORTED_LIST(MXRecordList, PDNS::MXRecord)
 /**
   * return a list of MX records for the specified domain
   */
-inline BOOL GetRecords(
+inline PBoolean GetRecords(
       const PString & domain,
       MXRecordList & serviceList
 )
@@ -374,7 +374,7 @@ inline BOOL GetRecords(
 /**
   * provided for backwards compatibility
   */
-inline BOOL GetMXRecords(
+inline PBoolean GetMXRecords(
       const PString & domain,
       MXRecordList & serviceList
 )

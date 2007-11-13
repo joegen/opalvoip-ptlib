@@ -285,9 +285,9 @@ class PHTTPSpace : public PContainer
        path to another resource but not if it is a leaf node.
 
        @return
-       TRUE if resource added, FALSE if failed.
+       PTrue if resource added, PFalse if failed.
      */
-    BOOL AddResource(
+    PBoolean AddResource(
       PHTTPResource * resource, ///< Resource to add to the name space.
       AddOptions overwrite = ErrorOnExist
         ///< Flag to overwrite an existing resource if it already exists.
@@ -298,9 +298,9 @@ class PHTTPSpace : public PContainer
        path to another resource then the function will fail.
 
        @return
-       TRUE if resource deleted, FALSE if failed.
+       PTrue if resource deleted, PFalse if failed.
      */
-    BOOL DelResource(
+    PBoolean DelResource(
       const PURL & url          ///< URL to search for in the name space.
     );
 
@@ -352,7 +352,7 @@ class PHTTPSpace : public PContainer
     } * root;
 
   private:
-    BOOL SetSize(PINDEX) { return FALSE; }
+    PBoolean SetSize(PINDEX) { return PFalse; }
 };
 
 #endif // P_HTTPSVC
@@ -411,7 +411,7 @@ class PHTTP : public PInternetProtocol
       Conflict,                    ///< 409 - resource conflict on action
       Gone,                        ///< 410 - resource gone away
       LengthRequired,              ///< 411 - no Content-Length
-      UnlessTrue,                  ///< 412 - no Range header for TRUE Unless
+      UnlessTrue,                  ///< 412 - no Range header for PTrue Unless
       InternalServerError = 500,   ///< 500 - server has encountered an unexpected error
       NotImplemented,              ///< 501 - server does not implement request
       BadGateway,                  ///< 502 - error whilst acting as gateway
@@ -459,7 +459,7 @@ class PHTTP : public PInternetProtocol
        <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
 
        The default bahaviour looks for a space or a '-' and splits the code
-       and info either side of that character, then returns FALSE.
+       and info either side of that character, then returns PFalse.
 
        @return
        Position of continuation character in response, 0 if no continuation
@@ -512,7 +512,7 @@ class PHTTPClient : public PHTTP
        200!
 
        @return
-       TRUE if all of header returned and ready to receive body.
+       PTrue if all of header returned and ready to receive body.
      */
     int ExecuteCommand(
       Commands cmd,
@@ -520,7 +520,7 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & outMIME,
       const PString & dataBody,
       PMIMEInfo & replyMime,
-      BOOL persist = TRUE
+      PBoolean persist = PTrue
     );
     int ExecuteCommand(
       const PString & cmdName,
@@ -528,17 +528,17 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & outMIME,
       const PString & dataBody,
       PMIMEInfo & replyMime,
-      BOOL persist = TRUE
+      PBoolean persist = PTrue
     );
 
     /// Write a HTTP command to server
-    BOOL WriteCommand(
+    PBoolean WriteCommand(
       Commands cmd,
       const PString & url,
       PMIMEInfo & outMIME,
       const PString & dataBody
     );
-    BOOL WriteCommand(
+    PBoolean WriteCommand(
       const PString & cmdName,
       const PString & url,
       PMIMEInfo & outMIME,
@@ -546,16 +546,16 @@ class PHTTPClient : public PHTTP
     );
 
     /// Read a response from the server
-    BOOL ReadResponse(
+    PBoolean ReadResponse(
       PMIMEInfo & replyMIME
     );
 
     /// Read the body of the HTTP command
-    BOOL ReadContentBody(
+    PBoolean ReadContentBody(
       PMIMEInfo & replyMIME,
       PBYTEArray & body
     );
-    BOOL ReadContentBody(
+    PBoolean ReadContentBody(
       PMIMEInfo & replyMIME,
       PString & body
     );
@@ -564,69 +564,69 @@ class PHTTPClient : public PHTTP
     /** Get the document specified by the URL.
 
        @return
-       TRUE if document is being transferred.
+       PTrue if document is being transferred.
      */
-    BOOL GetTextDocument(
+    PBoolean GetTextDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       PString & document,       ///< Body read
-      BOOL persist = TRUE       ///< if TRUE, enable HTTP persistence
+      PBoolean persist = PTrue       ///< if PTrue, enable HTTP persistence
     );
 
     /** Get the document specified by the URL.
 
        @return
-       TRUE if document is being transferred.
+       PTrue if document is being transferred.
      */
-    BOOL GetDocument(
+    PBoolean GetDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
       PMIMEInfo & replyMIME,    ///< MIME info in response
-      BOOL persist = TRUE       ///< if TRUE, enable HTTP persistence
+      PBoolean persist = PTrue       ///< if PTrue, enable HTTP persistence
     );
 
     /** Get the header for the document specified by the URL.
 
        @return
-       TRUE if document header is being transferred.
+       PTrue if document header is being transferred.
      */
-    BOOL GetHeader(
+    PBoolean GetHeader(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
       PMIMEInfo & replyMIME,    ///< MIME info in response
-      BOOL persist = TRUE       ///< if TRUE, enable HTTP persistence
+      PBoolean persist = PTrue       ///< if PTrue, enable HTTP persistence
     );
 
 
     /** Post the data specified to the URL.
 
        @return
-       TRUE if document is being transferred.
+       PTrue if document is being transferred.
      */
-    BOOL PostData(
+    PBoolean PostData(
       const PURL & url,       ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,    ///< MIME info in request
       const PString & data,   ///< Information posted to the HTTP server.
       PMIMEInfo & replyMIME,  ///< MIME info in response
-      BOOL persist = TRUE     ///< if TRUE, enable HTTP persistence
+      PBoolean persist = PTrue     ///< if PTrue, enable HTTP persistence
     );
 
     /** Post the data specified to the URL.
 
        @return
-       TRUE if document is being transferred.
+       PTrue if document is being transferred.
      */
-    BOOL PostData(
+    PBoolean PostData(
       const PURL & url,       ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,    ///< MIME info in request
       const PString & data,   ///< Information posted to the HTTP server.
       PMIMEInfo & replyMIME,  ///< MIME info in response
       PString & replyBody,    ///< Body of response
-      BOOL persist = TRUE     ///< if TRUE, enable HTTP persistence
+      PBoolean persist = PTrue     ///< if PTrue, enable HTTP persistence
     );
 
   protected:
-    BOOL AssureConnect(const PURL & url, PMIMEInfo & outMIME);
-    BOOL InternalReadContentBody(
+    PBoolean AssureConnect(const PURL & url, PMIMEInfo & outMIME);
+    PBoolean InternalReadContentBody(
       PMIMEInfo & replyMIME,
       PAbstractArray & body
     );
@@ -676,11 +676,11 @@ class PHTTPConnectionInfo : public PObject
     const PMIMEInfo & GetMIME() const { return mimeInfo; }
     void SetMIME(const PString & tag, const PString & value);
 
-    BOOL IsCompatible(int major, int minor) const;
+    PBoolean IsCompatible(int major, int minor) const;
 
-    BOOL IsPersistant() const         { return isPersistant; }
-    BOOL WasPersistant() const        { return wasPersistant; }
-    BOOL IsProxyConnection() const    { return isProxyConnection; }
+    PBoolean IsPersistant() const         { return isPersistant; }
+    PBoolean WasPersistant() const        { return wasPersistant; }
+    PBoolean IsProxyConnection() const    { return isProxyConnection; }
     int  GetMajorVersion() const      { return majorVersion; }
     int  GetMinorVersion() const      { return minorVersion; }
 
@@ -713,16 +713,16 @@ class PHTTPConnectionInfo : public PObject
     PString GetEntityBody() const   { return entityBody; }
 
   protected:
-    BOOL Initialise(PHTTPServer & server, PString & args);
+    PBoolean Initialise(PHTTPServer & server, PString & args);
     void DecodeMultipartFormInfo(const PString & type, const PString & entityBody);
 
     PHTTP::Commands commandCode;
     PString         commandName;
     PURL            url;
     PMIMEInfo       mimeInfo;
-    BOOL            isPersistant;
-    BOOL            wasPersistant;
-    BOOL            isProxyConnection;
+    PBoolean            isPersistant;
+    PBoolean            wasPersistant;
+    PBoolean            isProxyConnection;
     int             majorVersion;
     int             minorVersion;
     PString         entityBody;        // original entity body (POST only)
@@ -747,7 +747,7 @@ class PHTTPConnectionInfo : public PObject
     basic POP3 server functionality.
 
     The server socket thread would continuously call the
-    #ProcessMessage()# function until it returns FALSE. This will then
+    #ProcessMessage()# function until it returns PFalse. This will then
     call the appropriate virtual function on parsing the POP3 protocol.
  */
 class PHTTPServer : public PHTTP
@@ -793,12 +793,12 @@ class PHTTPServer : public PHTTP
        is used when the socket is acting as a server.
 
        @return
-       TRUE if the request specified persistant mode and the request version
-       allows it, FALSE if the socket closed, timed out, the protocol does not
+       PTrue if the request specified persistant mode and the request version
+       allows it, PFalse if the socket closed, timed out, the protocol does not
        allow persistant mode, or the client did not request it
        timed out
      */
-    virtual BOOL ProcessCommand();
+    virtual PBoolean ProcessCommand();
 
     /** Handle a GET command from a client.
 
@@ -807,11 +807,11 @@ class PHTTPServer : public PHTTP
        #PHTTPResource# object contained therein.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnGET(
+    virtual PBoolean OnGET(
       const PURL & url,                    ///< Universal Resource Locator for document.
       const PMIMEInfo & info,              ///< Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
@@ -826,11 +826,11 @@ class PHTTPServer : public PHTTP
        #PHTTPResource# object contained therein.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnHEAD(
+    virtual PBoolean OnHEAD(
       const PURL & url,                   ///< Universal Resource Locator for document.
       const PMIMEInfo & info,             ///< Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
@@ -843,11 +843,11 @@ class PHTTPServer : public PHTTP
        #PHTTPResource# object contained therein.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnPOST(
+    virtual PBoolean OnPOST(
       const PURL & url,                   ///< Universal Resource Locator for document.
       const PMIMEInfo & info,             ///< Extra MIME information in command.
       const PStringToString & data,       ///< Variables provided in the POST data.
@@ -862,11 +862,11 @@ class PHTTPServer : public PHTTP
        The default implementation returns OnError(BadGateway).
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnProxy(
+    virtual PBoolean OnProxy(
       const PHTTPConnectionInfo & conInfo   ///<  HTTP connection information
     );
 
@@ -882,9 +882,9 @@ class PHTTPServer : public PHTTP
     /** Handle an unknown command.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
      */
-    virtual BOOL OnUnknown(
+    virtual PBoolean OnUnknown(
       const PCaselessString & command,         ///< Complete command line received.
       const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
     );
@@ -905,9 +905,9 @@ class PHTTPServer : public PHTTP
        nothing.
 
        @return
-       TRUE if requires v1.1 chunked transfer encoding.
+       PTrue if requires v1.1 chunked transfer encoding.
      */
-    BOOL StartResponse(
+    PBoolean StartResponse(
       StatusCode code,      ///< Status code for the response.
       PMIMEInfo & headers,  ///< MIME variables included in response.
       long bodySize         ///< Size of the rest of the response.
@@ -920,9 +920,9 @@ class PHTTPServer : public PHTTP
        viewer.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
      */
-    virtual BOOL OnError(
+    virtual PBoolean OnError(
       StatusCode code,                         ///< Status code for the error response.
       const PCaselessString & extra,           ///< Extra information included in the response.
       const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
@@ -1008,9 +1008,9 @@ class PHTTPAuthority : public PObject
        the realm specified by the class instance.
 
        @return
-       TRUE if the user and password are authorised in the realm.
+       PTrue if the user and password are authorised in the realm.
      */
-    virtual BOOL Validate(
+    virtual PBoolean Validate(
       const PHTTPRequest & request,  ///< Request information.
       const PString & authInfo       ///< Authority information string.
     ) const = 0;
@@ -1019,12 +1019,12 @@ class PHTTPAuthority : public PObject
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
-       The default behaviour is to return TRUE.
+       The default behaviour is to return PTrue.
 
        @return
-       TRUE if the authorisation in the realm is to be applied.
+       PTrue if the authorisation in the realm is to be applied.
      */
-    virtual BOOL IsActive() const;
+    virtual PBoolean IsActive() const;
 
   protected:
     static void DecodeBasicAuthority(
@@ -1080,9 +1080,9 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        the realm specified by the class instance.
 
        @return
-       TRUE if the user and password are authorised in the realm.
+       PTrue if the user and password are authorised in the realm.
      */
-    virtual BOOL Validate(
+    virtual PBoolean Validate(
       const PHTTPRequest & request,  ///< Request information.
       const PString & authInfo       ///< Authority information string.
     ) const;
@@ -1091,12 +1091,12 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
-       The default behaviour is to return TRUE.
+       The default behaviour is to return PTrue.
 
        @return
-       TRUE if the authorisation in the realm is to be applied.
+       PTrue if the authorisation in the realm is to be applied.
      */
-    virtual BOOL IsActive() const;
+    virtual PBoolean IsActive() const;
 
     /** Get the user name allocated to this simple authorisation.
 
@@ -1167,9 +1167,9 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        the realm specified by the class instance.
 
        @return
-       TRUE if the user and password are authorised in the realm.
+       PTrue if the user and password are authorised in the realm.
      */
-    virtual BOOL Validate(
+    virtual PBoolean Validate(
       const PHTTPRequest & request,  ///< Request information.
       const PString & authInfo       ///< Authority information string.
     ) const;
@@ -1178,12 +1178,12 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
-       The default behaviour is to return TRUE.
+       The default behaviour is to return PTrue.
 
        @return
-       TRUE if the authorisation in the realm is to be applied.
+       PTrue if the authorisation in the realm is to be applied.
      */
-    virtual BOOL IsActive() const;
+    virtual PBoolean IsActive() const;
 
     /** Get the user name allocated to this simple authorisation.
 
@@ -1289,11 +1289,11 @@ class PHTTPResource : public PObject
        a resource to be sent to the socket.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close.
+       PTrue if the connection may persist, PFalse if the connection must close.
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnGET(
+    virtual PBoolean OnGET(
       PHTTPServer & server,       ///< HTTP server that received the request
       const PURL & url,           ///< Universal Resource Locator for document.
       const PMIMEInfo & info,     ///< Extra MIME information in command.
@@ -1305,11 +1305,11 @@ class PHTTPResource : public PObject
        The default action calls #SendData()#.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close.
+       PTrue if the connection may persist, PFalse if the connection must close.
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
     */
-    virtual BOOL OnGETData(
+    virtual PBoolean OnGETData(
       PHTTPServer & server,                       ///< HTTP server that received the request
       const PURL & url,                           ///< Universal Resource Locator for document
       const PHTTPConnectionInfo & connectInfo,    ///< HTTP connection information
@@ -1323,11 +1323,11 @@ class PHTTPResource : public PObject
        be sent to the socket.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnHEAD(
+    virtual PBoolean OnHEAD(
       PHTTPServer & server,       ///< HTTP server that received the request
       const PURL & url,           ///< Universal Resource Locator for document.
       const PMIMEInfo & info,     ///< Extra MIME information in command.
@@ -1341,11 +1341,11 @@ class PHTTPResource : public PObject
        received.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
      */
-    virtual BOOL OnPOST(
+    virtual PBoolean OnPOST(
       PHTTPServer & server,         ///< HTTP server that received the request
       const PURL & url,             ///< Universal Resource Locator for document.
       const PMIMEInfo & info,       ///< Extra MIME information in command.
@@ -1358,11 +1358,11 @@ class PHTTPResource : public PObject
        The default action calls #Post()#.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close.
+       PTrue if the connection may persist, PFalse if the connection must close.
        If there is no ContentLength field in the response, this value must
-       be FALSE for correct operation.
+       be PFalse for correct operation.
     */
-    virtual BOOL OnPOSTData(
+    virtual PBoolean OnPOSTData(
       PHTTPRequest & request,        ///< request information
       const PStringToString & data   ///< Variables in the POST data.
     );
@@ -1371,9 +1371,9 @@ class PHTTPResource : public PObject
        specified.
 
        @return
-       TRUE if has been modified since.
+       PTrue if has been modified since.
      */
-    virtual BOOL IsModifiedSince(
+    virtual PBoolean IsModifiedSince(
       const PTime & when    ///< Time to see if modified later than
     );
 
@@ -1382,7 +1382,7 @@ class PHTTPResource : public PObject
        @return
        Status of load operation.
      */
-    virtual BOOL GetExpirationDate(
+    virtual PBoolean GetExpirationDate(
       PTime & when          ///< Time that the resource expires
     );
 
@@ -1405,9 +1405,9 @@ class PHTTPResource : public PObject
        required by the resource and return the status for the load.
 
        @return
-       TRUE if all OK, FALSE if an error occurred.
+       PTrue if all OK, PFalse if an error occurred.
      */
-    virtual BOOL LoadHeaders(
+    virtual PBoolean LoadHeaders(
       PHTTPRequest & request    ///<  Information on this request.
     ) = 0;
 
@@ -1426,9 +1426,9 @@ class PHTTPResource : public PObject
        if successful, call the #OnLoadedText()# function.
 
        @return
-       TRUE if there is still more to load.
+       PTrue if there is still more to load.
      */
-    virtual BOOL LoadData(
+    virtual PBoolean LoadData(
       PHTTPRequest & request,    ///<  Information on this request.
       PCharArray & data          ///<  Data used in reply.
     );
@@ -1462,9 +1462,9 @@ class PHTTPResource : public PObject
        success.
 
        @return
-       TRUE if the connection may persist, FALSE if the connection must close
+       PTrue if the connection may persist, PFalse if the connection must close
      */
-    virtual BOOL Post(
+    virtual PBoolean Post(
       PHTTPRequest & request,       ///<  Information on this request.
       const PStringToString & data, ///<  Variables in the POST data.
       PHTML & replyMessage          ///<  Reply message for post.
@@ -1474,12 +1474,12 @@ class PHTTPResource : public PObject
   protected:
     /** See if the resource is authorised given the mime info
      */
-    virtual BOOL CheckAuthority(
+    virtual PBoolean CheckAuthority(
       PHTTPServer & server,               ///<  Server to send response to.
       const PHTTPRequest & request,       ///<  Information on this request.
       const PHTTPConnectionInfo & conInfo ///<  Information on the connection
     );
-    static BOOL CheckAuthority(
+    static PBoolean CheckAuthority(
                    PHTTPAuthority & authority,
                       PHTTPServer & server,
                const PHTTPRequest & request,
@@ -1488,12 +1488,12 @@ class PHTTPResource : public PObject
 
 
     /** common code for GET and HEAD commands */
-    virtual BOOL OnGETOrHEAD(
+    virtual PBoolean OnGETOrHEAD(
       PHTTPServer & server,       ///<  HTTP server that received the request
       const PURL & url,           ///<  Universal Resource Locator for document.
       const PMIMEInfo & info,     ///<  Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo,
-      BOOL  IsGet
+      PBoolean  IsGet
     );
 
     /// Base URL for the resource, may accept URLS with a longer hierarchy
@@ -1557,9 +1557,9 @@ class PHTTPString : public PHTTPResource
        required by the resource and return the status for the load.
 
        @return
-       TRUE if all OK, FALSE if an error occurred.
+       PTrue if all OK, PFalse if an error occurred.
      */
-    virtual BOOL LoadHeaders(
+    virtual PBoolean LoadHeaders(
       PHTTPRequest & request    // Information on this request.
     );
 
@@ -1661,18 +1661,18 @@ class PHTTPFile : public PHTTPResource
        required by the resource and return the status for the load.
 
        @return
-       TRUE if all OK, FALSE if an error occurred.
+       PTrue if all OK, PFalse if an error occurred.
      */
-    virtual BOOL LoadHeaders(
+    virtual PBoolean LoadHeaders(
       PHTTPRequest & request    // Information on this request.
     );
 
     /** Get a block of data that the resource contains.
 
        @return
-       TRUE if more to load.
+       PTrue if more to load.
      */
-    virtual BOOL LoadData(
+    virtual PBoolean LoadData(
       PHTTPRequest & request,    // Information on this request.
       PCharArray & data          // Data used in reply.
     );
@@ -1774,18 +1774,18 @@ class PHTTPTailFile : public PHTTPFile
        required by the resource and return the status for the load.
 
        @return
-       TRUE if all OK, FALSE if an error occurred.
+       PTrue if all OK, PFalse if an error occurred.
      */
-    virtual BOOL LoadHeaders(
+    virtual PBoolean LoadHeaders(
       PHTTPRequest & request    // Information on this request.
     );
 
     /** Get a block of data that the resource contains.
 
        @return
-       TRUE if more to load.
+       PTrue if more to load.
      */
-    virtual BOOL LoadData(
+    virtual PBoolean LoadData(
       PHTTPRequest & request,    // Information on this request.
       PCharArray & data          // Data used in reply.
     );
@@ -1842,9 +1842,9 @@ class PHTTPDirectory : public PHTTPFile
        required by the resource and return the status for the load.
 
        @return
-       TRUE if all OK, FALSE if an error occurred.
+       PTrue if all OK, PFalse if an error occurred.
      */
-    virtual BOOL LoadHeaders(
+    virtual PBoolean LoadHeaders(
       PHTTPRequest & request    /// Information on this request.
     );
 
@@ -1872,20 +1872,20 @@ class PHTTPDirectory : public PHTTPFile
 
     /** Enable or disable directory listings when a default directory file does not exist
      */
-    void AllowDirectories(BOOL enable = TRUE);
+    void AllowDirectories(PBoolean enable = PTrue);
 
   protected:
-    BOOL CheckAuthority(
+    PBoolean CheckAuthority(
       PHTTPServer & server,               // Server to send response to.
       const PHTTPRequest & request,       // Information on this request.
       const PHTTPConnectionInfo & conInfo // Information on the connection
     );
 
-    BOOL FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations);
+    PBoolean FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations);
 
     PDirectory basePath;
     PString authorisationRealm;
-    BOOL allowDirectoryListing;
+    PBoolean allowDirectoryListing;
 };
 
 

@@ -86,7 +86,7 @@ static const char PortInputFlow[] = "PortInputFlow";
 static const char PortOutputFlow[] = "PortOutputFlow";
 
 
-BOOL PSerialChannel::Open(PConfig & cfg)
+PBoolean PSerialChannel::Open(PConfig & cfg)
 {
   PStringList ports = GetPortNames();
   return Open(cfg.GetString(PortName, ports[0]),
@@ -113,19 +113,19 @@ void PSerialChannel::SaveSettings(PConfig & cfg)
 
 void PSerialChannel::ClearDTR()
 {
-  SetDTR(FALSE);
+  SetDTR(PFalse);
 }
 
 
 void PSerialChannel::ClearRTS()
 {
-  SetRTS(FALSE);
+  SetRTS(PFalse);
 }
 
 
 void PSerialChannel::ClearBreak()
 {
-  SetBreak(FALSE);
+  SetBreak(PFalse);
 }
 
 

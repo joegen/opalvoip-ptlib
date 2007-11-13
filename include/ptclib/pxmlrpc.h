@@ -149,19 +149,19 @@ class PXMLRPC : public PObject
 
     void SetTimeout(const PTimeInterval & _timeout) { timeout = _timeout; }
 
-    BOOL MakeRequest(const PString & method);
-    BOOL MakeRequest(const PString & method,  PXMLRPCBlock & response);
-    BOOL MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
-    BOOL MakeRequest(const PString & method, const PXMLRPCStructBase & args, PXMLRPCStructBase & reply);
+    PBoolean MakeRequest(const PString & method);
+    PBoolean MakeRequest(const PString & method,  PXMLRPCBlock & response);
+    PBoolean MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
+    PBoolean MakeRequest(const PString & method, const PXMLRPCStructBase & args, PXMLRPCStructBase & reply);
 
     PString GetFaultText() const { return faultText; }
     PINDEX  GetFaultCode() const { return faultCode; }
 
-    static BOOL    ISO8601ToPTime(const PString & iso8601, PTime & val, int tz = PTime::GMT);
+    static PBoolean    ISO8601ToPTime(const PString & iso8601, PTime & val, int tz = PTime::GMT);
     static PString PTimeToISO8601(const PTime & val);
 
   protected:
-    BOOL PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
+    PBoolean PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
 
     PURL          url;
     PINDEX        faultCode;
@@ -180,7 +180,7 @@ class PXMLRPCBlock : public PXML
     PXMLRPCBlock(const PString & method);
     PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & structData);
 
-    BOOL Load(const PString & str);
+    PBoolean Load(const PString & str);
 
     PXMLElement * GetParams();
     PXMLElement * GetParam(PINDEX idx) const;
@@ -190,29 +190,29 @@ class PXMLRPCBlock : public PXML
     PINDEX  GetFaultCode() const                     { return faultCode; }
     PString GetFaultText() const                     { return faultText; }
     void SetFault(PINDEX code, const PString & text) { faultCode = code; faultText = text; }
-    BOOL ValidateResponse();
+    PBoolean ValidateResponse();
 
     // helper functions for getting parameters
-    BOOL GetParams(PXMLRPCStructBase & data);
-    BOOL GetParam(PINDEX idx, PString & type, PString & result);
-    BOOL GetExpectedParam(PINDEX idx, const PString & expectedType, PString & value);
+    PBoolean GetParams(PXMLRPCStructBase & data);
+    PBoolean GetParam(PINDEX idx, PString & type, PString & result);
+    PBoolean GetExpectedParam(PINDEX idx, const PString & expectedType, PString & value);
 
-    BOOL GetParam(PINDEX idx, PString & result);
-    BOOL GetParam(PINDEX idx, int & result);
-    BOOL GetParam(PINDEX idx, double & result);
-    BOOL GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
-    BOOL GetParam(PINDEX idx, PStringToString & result);
-    BOOL GetParam(PINDEX idx, PXMLRPCStructBase & result);
-    BOOL GetParam(PINDEX idx, PStringArray & result);
-    BOOL GetParam(PINDEX idx, PArray<PStringToString> & result);
+    PBoolean GetParam(PINDEX idx, PString & result);
+    PBoolean GetParam(PINDEX idx, int & result);
+    PBoolean GetParam(PINDEX idx, double & result);
+    PBoolean GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
+    PBoolean GetParam(PINDEX idx, PStringToString & result);
+    PBoolean GetParam(PINDEX idx, PXMLRPCStructBase & result);
+    PBoolean GetParam(PINDEX idx, PStringArray & result);
+    PBoolean GetParam(PINDEX idx, PArray<PStringToString> & result);
 
     // static functions for parsing values
-    BOOL ParseScalar(PXMLElement * element, PString & type, PString & value);
-    BOOL ParseStruct(PXMLElement * element, PStringToString & structDict);
-    BOOL ParseStruct(PXMLElement * element, PXMLRPCStructBase & structData);
-    BOOL ParseArray(PXMLElement * element, PStringArray & array);
-    BOOL ParseArray(PXMLElement * element, PArray<PStringToString> & array);
-    BOOL ParseArray(PXMLElement * element, PXMLRPCVariableBase & array);
+    PBoolean ParseScalar(PXMLElement * element, PString & type, PString & value);
+    PBoolean ParseStruct(PXMLElement * element, PStringToString & structDict);
+    PBoolean ParseStruct(PXMLElement * element, PXMLRPCStructBase & structData);
+    PBoolean ParseArray(PXMLElement * element, PStringArray & array);
+    PBoolean ParseArray(PXMLElement * element, PArray<PStringToString> & array);
+    PBoolean ParseArray(PXMLElement * element, PXMLRPCVariableBase & array);
 
     // static functions for creating values
     static PXMLElement * CreateValueElement(PXMLElement * element);
@@ -273,9 +273,9 @@ class PXMLRPCVariableBase : public PObject {
     virtual PString ToString(PINDEX i) const;
     virtual void FromString(PINDEX i, const PString & str);
     virtual PXMLRPCStructBase * GetStruct(PINDEX i) const;
-    virtual BOOL IsArray() const;
+    virtual PBoolean IsArray() const;
     virtual PINDEX GetSize() const;
-    virtual BOOL SetSize(PINDEX);
+    virtual PBoolean SetSize(PINDEX);
 
     PString ToBase64(PAbstractArray & data) const;
     void FromBase64(const PString & str, PAbstractArray & data);
@@ -298,9 +298,9 @@ class PXMLRPCArrayBase : public PXMLRPCVariableBase {
   public:
     virtual void PrintOn(ostream & strm) const;
     virtual void Copy(const PXMLRPCVariableBase & other);
-    virtual BOOL IsArray() const;
+    virtual PBoolean IsArray() const;
     virtual PINDEX GetSize() const;
-    virtual BOOL SetSize(PINDEX);
+    virtual PBoolean SetSize(PINDEX);
 
   protected:
     PContainer & array;
@@ -316,7 +316,7 @@ class PXMLRPCArrayObjectsBase : public PXMLRPCArrayBase {
   public:
     virtual PString ToString(PINDEX i) const;
     virtual void FromString(PINDEX i, const PString & str);
-    virtual BOOL SetSize(PINDEX);
+    virtual PBoolean SetSize(PINDEX);
 
     virtual PObject * CreateObject() const = 0;
 
@@ -479,7 +479,7 @@ class PXMLRPCStructBase : public PObject {
 
 
 #define PXMLRPC_FUNC_NOARG_NOREPLY(name) \
-  BOOL name() { return MakeRequest(#name); }
+  PBoolean name() { return MakeRequest(#name); }
 
 
 #define PXMLRPC_FUNC_SINGLE_ARG(name, vartype, argtype) \
@@ -504,7 +504,7 @@ class PXMLRPCStructBase : public PObject {
 #endif
 #define PXMLRPC_FUNC_NO_ARGS(name) \
   }; \
-  BOOL name(name##_out & reply) \
+  PBoolean name(name##_out & reply) \
     { return MakeRequest(#name, name##_in(), reply); }
 
 
@@ -524,7 +524,7 @@ class PXMLRPCStructBase : public PObject {
       const name##_in & instance; \
     } variable; \
   }; \
-  BOOL name(const name##_in & args, name##_out & reply) \
+  PBoolean name(const name##_in & args, name##_out & reply) \
     { return MakeRequest(#name, name##_in_carrier(args), reply); }
 
 
@@ -533,7 +533,7 @@ class PXMLRPCStructBase : public PObject {
 #endif
 #define PXMLRPC_FUNC_NORM_ARGS(name) \
   }; \
-  BOOL name(const name##_in & args, name##_out & reply) \
+  PBoolean name(const name##_in & args, name##_out & reply) \
     { return MakeRequest(#name, args, reply); }
 
 

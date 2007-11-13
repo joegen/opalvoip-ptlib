@@ -109,10 +109,10 @@ class PSTUNUDPSocket : public PUDPSocket
   public:
     PSTUNUDPSocket();
 
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -180,14 +180,14 @@ class PSTUNClient : public PNatMethod
        a service name as found in /etc/services. The host substring may be
        a DNS name or explicit IP address.
       */
-    BOOL SetServer(
+    PBoolean SetServer(
       const PString & server
     );
 
     /**Set the STUN server to use by IP address and port.
        If serverPort is zero then the default port of 3478 is used.
       */
-    BOOL SetServer(
+    PBoolean SetServer(
       const PIPSocket::Address & serverAddress,
       WORD serverPort = 0
     );
@@ -210,14 +210,14 @@ class PSTUNClient : public PNatMethod
        guarantee an up to date value.
       */
     NatTypes GetNatType(
-      BOOL force = FALSE    ///< Force a new check
+      PBoolean force = PFalse    ///< Force a new check
     );
 
     /**Determine via the STUN protocol the NAT type for the router.
        As for GetNatType() but returns an English string for the type.
       */
     PString GetNatTypeName(
-      BOOL force = FALSE    ///< Force a new check
+      PBoolean force = PFalse    ///< Force a new check
     ) { return GetNatTypeString(GetNatType(force)); }
 
     /**Get NatTypes enumeration as an English string for the type.
@@ -237,7 +237,7 @@ class PSTUNClient : public PNatMethod
       Use the force variable to guarantee an up to date test
       */
     RTPSupportTypes IsSupportingRTP(
-      BOOL force = FALSE    ///< Force a new check
+      PBoolean force = PFalse    ///< Force a new check
     );
 
     /**Determine the external router address.
@@ -247,7 +247,7 @@ class PSTUNClient : public PNatMethod
        A cached address is returned provided it is no older than the time
        specified.
       */
-    virtual BOOL GetExternalAddress(
+    virtual PBoolean GetExternalAddress(
       PIPSocket::Address & externalAddress, ///< External address of router
       const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
     );
@@ -262,9 +262,9 @@ class PSTUNClient : public PNatMethod
        sure the socket is deleted to avoid memory leaks.
 
        The socket pointer is set to NULL if the function fails and returns
-       FALSE.
+       PFalse.
       */
-    BOOL CreateSocket(
+    PBoolean CreateSocket(
       PUDPSocket * & socket,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
       WORD localPort = 0
@@ -281,9 +281,9 @@ class PSTUNClient : public PNatMethod
        sure the sockets are deleted to avoid memory leaks.
 
        The socket pointers are set to NULL if the function fails and returns
-       FALSE.
+       PFalse.
       */
-    virtual BOOL CreateSocketPair(
+    virtual PBoolean CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
@@ -332,7 +332,7 @@ class PSTUNClient : public PNatMethod
        The availablity of the STUN Method is dependant on the Type
        of NAT being used.
      */
-    virtual BOOL IsAvailable();
+    virtual PBoolean IsAvailable();
 
   protected:
     PIPSocket::Address serverAddress;

@@ -83,7 +83,7 @@ class HTTP_PSSLChannel : public PSSLChannel
   public:
     HTTP_PSSLChannel(PSecureHTTPServiceProcess * svc, PSSLContext * context = NULL);
 
-    virtual BOOL RawSSLRead(void * buf, PINDEX & len);
+    virtual PBoolean RawSSLRead(void * buf, PINDEX & len);
 
   protected:
     enum { PreRead_Size = 4 };
@@ -100,7 +100,7 @@ PSecureHTTPServiceProcess::PSecureHTTPServiceProcess(const Info & inf)
   : PHTTPServiceProcess(inf)
 {
   sslContext = new PSSLContext;
-  disableSSL = FALSE;
+  disableSSL = PFalse;
 }
 
 
@@ -139,8 +139,8 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 }
 
 
-BOOL PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certificateFile,
-                                                     BOOL create,
+PBoolean PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certificateFile,
+                                                     PBoolean create,
                                                      const char * dn)
 {
   if (create && !PFile::Exists(certificateFile)) {
@@ -155,17 +155,17 @@ BOOL PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certifica
     }
     if (!certificate.CreateRoot(name, key)) {
       PTRACE(0, "MTGW\tCould not create certificate");
-      return FALSE;
+      return PFalse;
     }
     certificate.Save(certificateFile);
-    key.Save(certificateFile, TRUE);
+    key.Save(certificateFile, PTrue);
   }
 
   return sslContext->UseCertificate(certificateFile) &&
          sslContext->UsePrivateKey(certificateFile);
 }
 
-BOOL PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, const PString & line)
+PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, const PString & line)
 { 
   // get the MIME info
   PMIMEInfo mime(*chan);
@@ -202,7 +202,7 @@ BOOL PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, cons
   chan->WriteString(str);
   chan->Close();
 
-  return FALSE; 
+  return PFalse; 
 }
 
 PString PSecureHTTPServiceProcess::CreateNonSSLMessage(const PString & url)
@@ -227,7 +227,7 @@ HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * _svc, PSSLContext
 }
 
 
-BOOL HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
+PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
 { 
   if (preReadLen == 0)
     return PSSLChannel::RawSSLRead(buf, len); 
@@ -238,7 +238,7 @@ BOOL HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
     // read some bytes from the channel
     preReadLen = 0;
     while (preReadLen < PreRead_Size) {
-      BOOL b = chan->Read(preRead + preReadLen, PreRead_Size - preReadLen); 
+      PBoolean b = chan->Read(preRead + preReadLen, PreRead_Size - preReadLen); 
       if (!b)
         break;
       preReadLen += chan->GetLastReadCount();
@@ -257,7 +257,7 @@ BOOL HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
         line += (char)ch;
 
       if (!svc->OnDetectedNonSSLConnection(chan, line))
-        return FALSE;
+        return PFalse;
     }
   }
 
@@ -265,7 +265,7 @@ BOOL HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
   len = PMIN(len, preReadLen);
   memcpy(buf, preRead, len);
   preReadLen -= len;
-  return TRUE;
+  return PTrue;
 }
 
 #endif //P_SSL

@@ -103,6 +103,14 @@
 
 #include <ptlib/psync.h>
 
+#if defined(__GNUC__)
+#  if __GNUC__ >= 4 && __GNUC_MINOR__ >= 2
+#     include <ext/atomicity.h>
+#  else
+#     include <bits/atomicity.h>
+#  endif
+#endif
+
 #if P_HAS_ATOMIC_INT
 #if P_NEEDS_GNU_CXX_NAMESPACE
 #define EXCHANGE_AND_ADD(v,i)   __gnu_cxx::__exchange_and_add(v,i)
@@ -192,9 +200,9 @@ class PAtomicInteger
         * is a non-atomic test - use the return value of the operator++() or
         * operator--() tests to perform atomic operations
         *
-        * @return TRUE if the integer has a value of zero
+        * @return PTrue if the integer has a value of zero
         */
-      BOOL IsZero() const                 { return value == 0; }
+      PBoolean IsZero() const                 { return value == 0; }
 
       /**
         * atomically increment the integer value
@@ -224,22 +232,22 @@ class PAtomicInteger
       { value = v; }
     protected:
       long value;
-#elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_EXCHANGE)
+#elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_INCREMENT) && defined(_STLP_ATOMIC_DECREMENT)
     public:
       inline PAtomicInteger(__stl_atomic_t v = 0)
         : value(v) { }
-      BOOL IsZero() const                { return value == 0; }
+      PBoolean IsZero() const                { return value == 0; }
       inline int operator++()            { return _STLP_ATOMIC_INCREMENT(&value); }
       inline int unsigned operator--()   { return _STLP_ATOMIC_DECREMENT(&value); }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
     protected:
       __stl_atomic_t value;
-#elif !defined(_STLP_INTERNAL_THREADS_H) && P_HAS_ATOMIC_INT
+#elif defined(__GNUC__) && P_HAS_ATOMIC_INT
     public:
       inline PAtomicInteger(int v = 0)
         : value(v) { }
-      BOOL IsZero() const                { return value == 0; }
+      PBoolean IsZero() const                { return value == 0; }
       inline int operator++()            { return EXCHANGE_AND_ADD(&value, 1) + 1; }
       inline int unsigned operator--()   { return EXCHANGE_AND_ADD(&value, -1) - 1; }
       inline operator int () const       { return value; }
@@ -252,7 +260,7 @@ class PAtomicInteger
     public:
       inline PAtomicInteger(int v = 0)
         : value(v) { }
-      BOOL IsZero() const                { return value == 0; }
+      PBoolean IsZero() const                { return value == 0; }
       inline int operator++()            { PWaitAndSignal m(critSec); value++; return value;}
       inline int operator--()            { PWaitAndSignal m(critSec); value--; return value;}
       inline operator int () const       { return value; }

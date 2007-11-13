@@ -346,7 +346,7 @@ ostream & operator<<(ostream & s, PUInt64 v)
 
 const int MaxDigits = (64+2)/3+1; // Maximum is 22 digit octal number, plus sign
 
-static void GetDigits(BOOL sign, istream & s, char * buffer)
+static void GetDigits(PBoolean sign, istream & s, char * buffer)
 {
   PINDEX count = 0;
 
@@ -383,7 +383,7 @@ static void GetDigits(BOOL sign, istream & s, char * buffer)
 istream & operator>>(istream & s, PInt64 & v)
 {
   char b[MaxDigits+1];
-  GetDigits(TRUE, s, b);
+  GetDigits(PTrue, s, b);
   v = _atoi64(b);
   return s;
 }
@@ -392,7 +392,7 @@ istream & operator>>(istream & s, PInt64 & v)
 istream & operator>>(istream & s, PUInt64 & v)
 {
   char b[MaxDigits+1];
-  GetDigits(FALSE, s, b);
+  GetDigits(PFalse, s, b);
   v = _atoi64(b);
   return s;
 }
@@ -411,7 +411,7 @@ PInt64 PString::AsInt64(unsigned base) const
   while (isspace(*ptr))
     ptr++;
 
-  BOOL negative = *ptr == '-';
+  PBoolean negative = *ptr == '-';
   if (*ptr == '-' || *ptr == '+')
     ptr++;
 
@@ -508,23 +508,23 @@ PString PChannel::GetName() const
 }
 
 
-BOOL PChannel::Read(void *, PINDEX)
+PBoolean PChannel::Read(void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PChannel::Write(const void *, PINDEX)
+PBoolean PChannel::Write(const void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PChannel::Close()
+PBoolean PChannel::Close()
 {
-  return FALSE;
+  return PFalse;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -539,19 +539,19 @@ PDirectory PDirectory::GetParent() const
 }
 
 
-BOOL PDirectory::Change(const PString & p)
+PBoolean PDirectory::Change(const PString & p)
 {
   PDirectory d = p;
 
   if (d[0] != '\\')
     if (_chdrive(toupper(d[0])-'A'+1) != 0)
-      return FALSE;
+      return PFalse;
 
   return _chdir(d + ".") == 0;
 }
 
 
-BOOL PDirectory::Filtered()
+PBoolean PDirectory::Filtered()
 {
 #if defined(_WIN32)
 #ifdef _WIN32_WCE
@@ -564,11 +564,11 @@ BOOL PDirectory::Filtered()
   char * name = fileinfo.name;
 #endif
   if (strcmp(name, ".") == 0)
-    return TRUE;
+    return PTrue;
   if (strcmp(name, "..") == 0)
-    return TRUE;
+    return PTrue;
   if (scanMask == PFileInfo::AllPermissions)
-    return FALSE;
+    return PFalse;
 
   PFileInfo inf;
   PAssert(PFile::GetInfo(*this+name, inf), POperatingSystemError);
@@ -576,7 +576,7 @@ BOOL PDirectory::Filtered()
 }
 
 
-BOOL PDirectory::IsRoot() const
+PBoolean PDirectory::IsRoot() const
 {
   if ((*this)[1] == ':')
     return GetLength() == 3;
@@ -603,9 +603,9 @@ PStringArray PDirectory::GetPath() const
     return path;
 
   if ((*this)[1] == ':')
-    path = Tokenise("/\\", FALSE);
+    path = Tokenise("/\\", PFalse);
   else {
-    path = Mid(2).Tokenise("/\\", FALSE);
+    path = Mid(2).Tokenise("/\\", PFalse);
     path[0].Splice("\\\\", 0);
   }
 
@@ -617,7 +617,7 @@ PStringArray PDirectory::GetPath() const
 }
 
 
-BOOL PDirectory::GetInfo(PFileInfo & info) const
+PBoolean PDirectory::GetInfo(PFileInfo & info) const
 {
   return PFile::GetInfo(*this + GetEntryName(), info);
 }
@@ -627,13 +627,13 @@ BOOL PDirectory::GetInfo(PFileInfo & info) const
 // File Path
 
 PFilePath::PFilePath(const PString & str)
-  : PCaselessString(PDirectory::CreateFullPath(str, FALSE))
+  : PCaselessString(PDirectory::CreateFullPath(str, PFalse))
 {
 }
 
 
 PFilePath::PFilePath(const char * cstr)
-  : PCaselessString(PDirectory::CreateFullPath(cstr, FALSE))
+  : PCaselessString(PDirectory::CreateFullPath(cstr, PFalse))
 {
 }
 
@@ -668,7 +668,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
 void PFilePath::AssignContents(const PContainer & cont)
 {
   PCaselessString::AssignContents(cont);
-  PCaselessString::AssignContents(PDirectory::CreateFullPath(*this, FALSE));
+  PCaselessString::AssignContents(PDirectory::CreateFullPath(*this, PFalse));
 }
 
 
@@ -776,7 +776,7 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
-BOOL PFile::Access(const PFilePath & name, OpenMode mode)
+PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
 {
   int accmode;
 
@@ -803,19 +803,19 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 }
 
 
-BOOL PFile::Remove(const PFilePath & name, BOOL force)
+PBoolean PFile::Remove(const PFilePath & name, PBoolean force)
 {
   if (remove(name) == 0)
-    return TRUE;
+    return PTrue;
   if (!force || errno != EACCES)
-    return FALSE;
+    return PFalse;
   if (_chmod(name, _S_IWRITE) != 0)
-    return FALSE;
+    return PFalse;
   return remove(name) == 0;
 }
 
 
-BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL force)
+PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBoolean force)
 {
   if (newname.FindOneOf(":\\/") != P_MAX_INDEX) {
 #ifdef _WIN32_WCE
@@ -823,30 +823,30 @@ BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL forc
 #else
     errno = EINVAL;
 #endif // _WIN32_WCE
-    return FALSE;
+    return PFalse;
   }
   PString fullname = oldname.GetDirectory() + newname;
   if (rename(oldname, fullname) == 0)
-    return TRUE;
+    return PTrue;
   if (!force || errno == ENOENT || !Exists(fullname))
-    return FALSE;
-  if (!Remove(fullname, TRUE))
-    return FALSE;
+    return PFalse;
+  if (!Remove(fullname, PTrue))
+    return PFalse;
   return rename(oldname, fullname) == 0;
 }
 
 
-BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL force)
+PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBoolean force)
 {
   if (rename(oldname, newname) == 0)
-    return TRUE;
+    return PTrue;
   if (errno == ENOENT)
-    return FALSE;
+    return PFalse;
   if (force && Exists(newname)) {
-    if (!Remove(newname, TRUE))
-      return FALSE;
+    if (!Remove(newname, PTrue))
+      return PFalse;
     if (rename(oldname, newname) == 0)
-      return TRUE;
+      return PTrue;
   }
   return Copy(oldname, newname, force) && Remove(oldname);
 }
@@ -854,7 +854,7 @@ BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL forc
 
 #ifdef _WIN32_WCE
 
-BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
+PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   USES_CONVERSION;
   
@@ -1021,10 +1021,10 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
 #endif
 
 
-BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
+PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   if (name.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   PString fn = name;
   PINDEX pos = fn.GetLength()-1;
@@ -1034,7 +1034,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
   struct stat s;
   if (stat(fn, &s) != 0)
-    return FALSE;
+    return PFalse;
 
   info.created =  (s.st_ctime < 0) ? 0 : s.st_ctime;
   info.modified = (s.st_mtime < 0) ? 0 : s.st_mtime;
@@ -1077,12 +1077,12 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   info.hidden = (attr & _A_HIDDEN) != 0;
 #endif
 
-  return TRUE;
+  return PTrue;
 }
 
 #endif // _WIN32_WCE
 
-BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
+PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
 {
 #if defined(_WIN32) && !defined(_WIN32_WCE)
   FileSecurityPermissions(name, permissions);
@@ -1092,13 +1092,13 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 }
 
 
-BOOL PFile::IsTextFile() const
+PBoolean PFile::IsTextFile() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PFile::Open(OpenMode mode, int opts)
+PBoolean PFile::Open(OpenMode mode, int opts)
 {
   Close();
   clear();
@@ -1138,7 +1138,7 @@ BOOL PFile::Open(OpenMode mode, int opts)
     oflags |= O_TRUNC;
 
   if ((opts&Temporary) != 0)
-    removeOnClose = TRUE;
+    removeOnClose = PTrue;
 
   int sflags = _SH_DENYNO;
   if ((opts&DenySharedRead) == DenySharedRead)
@@ -1156,7 +1156,7 @@ BOOL PFile::Open(OpenMode mode, int opts)
 }
 
 
-BOOL PFile::SetLength(off_t len)
+PBoolean PFile::SetLength(off_t len)
 {
   return ConvertOSError(_chsize(GetHandle(), len));
 }
@@ -1165,13 +1165,13 @@ BOOL PFile::SetLength(off_t len)
 ///////////////////////////////////////////////////////////////////////////////
 // PTextFile
 
-BOOL PTextFile::IsTextFile() const
+PBoolean PTextFile::IsTextFile() const
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTextFile::ReadLine(PString & str)
+PBoolean PTextFile::ReadLine(PString & str)
 {
   char * ptr = str.GetPointer(100);
   PINDEX len = 0;
@@ -1187,7 +1187,7 @@ BOOL PTextFile::ReadLine(PString & str)
 }
 
 
-BOOL PTextFile::WriteLine(const PString & str)
+PBoolean PTextFile::WriteLine(const PString & str)
 {
   return WriteString(str) && WriteChar('\n');
 }
@@ -1207,23 +1207,23 @@ PConsoleChannel::PConsoleChannel(ConsoleType type)
 }
 
 
-BOOL PConsoleChannel::Open(ConsoleType type)
+PBoolean PConsoleChannel::Open(ConsoleType type)
 {
   switch (type) {
     case StandardInput :
       os_handle = 0;
-      return TRUE;
+      return PTrue;
 
     case StandardOutput :
       os_handle = 1;
-      return TRUE;
+      return PTrue;
 
     case StandardError :
       os_handle = 2;
-      return TRUE;
+      return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1233,7 +1233,7 @@ PString PConsoleChannel::GetName() const
 }
 
 
-BOOL PConsoleChannel::Read(void * buffer, PINDEX length)
+PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 {
   flush();
   lastReadCount = _read(os_handle, buffer, length);
@@ -1241,7 +1241,7 @@ BOOL PConsoleChannel::Read(void * buffer, PINDEX length)
 }
 
 
-BOOL PConsoleChannel::Write(const void * buffer, PINDEX length)
+PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
   flush();
   lastWriteCount = _write(os_handle, buffer, length);
@@ -1249,10 +1249,10 @@ BOOL PConsoleChannel::Write(const void * buffer, PINDEX length)
 }
 
 
-BOOL PConsoleChannel::Close()
+PBoolean PConsoleChannel::Close()
 {
   os_handle = -1;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1275,10 +1275,10 @@ void PProcess::Construct()
 }
 
 
-BOOL PProcess::SetMaxHandles(int /*newLimit*/)
+PBoolean PProcess::SetMaxHandles(int /*newLimit*/)
 {
   // Not applicable
-  return TRUE;
+  return PTrue;
 }
 
 

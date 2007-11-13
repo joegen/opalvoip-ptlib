@@ -621,7 +621,7 @@ PMemoryHeap::Wrapper::~Wrapper()
 
 PMemoryHeap::PMemoryHeap()
 {
-  isDestroyed = FALSE;
+  isDestroyed = PFalse;
 
   listHead = NULL;
   listTail = NULL;
@@ -669,7 +669,7 @@ PMemoryHeap::~PMemoryHeap()
     InternalDumpObjectsSince(firstRealObject, *leakDumpStream);
   }
 
-  isDestroyed = TRUE;
+  isDestroyed = PTrue;
 
 #if defined(_WIN32)
   DeleteCriticalSection(&mutex);
@@ -929,7 +929,7 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
 }
 
 
-BOOL PMemoryHeap::ValidateHeap(ostream * error)
+PBoolean PMemoryHeap::ValidateHeap(ostream * error)
 {
   Wrapper mem;
 
@@ -941,13 +941,13 @@ BOOL PMemoryHeap::ValidateHeap(ostream * error)
     if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
       if (error != NULL)
         *error << "Underrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
-      return FALSE;
+      return PFalse;
     }
   
     if (memcmp((char *)(obj+1)+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
       if (error != NULL)
         *error << "Overrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
-      return FALSE;
+      return PFalse;
     }
 
     obj = obj->next;
@@ -957,20 +957,20 @@ BOOL PMemoryHeap::ValidateHeap(ostream * error)
   if (!_CrtCheckMemory()) {
     if (error != NULL)
       *error << "Heap failed MSVCRT validation!" << endl;
-    return FALSE;
+    return PFalse;
   }
 #endif
   if (error != NULL)
     *error << "Heap passed validation." << endl;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 {
   Wrapper mem;
 
-  BOOL ignoreAllocations = (mem->flags&NoLeakPrint) != 0;
+  PBoolean ignoreAllocations = (mem->flags&NoLeakPrint) != 0;
 
   if (ignore)
     mem->flags |= NoLeakPrint;
@@ -1048,7 +1048,7 @@ void PMemoryHeap::DumpObjectsSince(const State & state, ostream & strm)
 
 void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 {
-  BOOL first = TRUE;
+  PBoolean first = PTrue;
   for (Header * obj = listHead; obj != NULL; obj = obj->next) {
     if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
       continue;
@@ -1058,7 +1058,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 #if !defined(_WIN32)
       cin.get();
 #endif
-      first = FALSE;
+      first = PFalse;
     }
 
     BYTE * data = (BYTE *)&obj[1];
@@ -1075,7 +1075,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     if (obj->className != NULL)
       strm << '"' << obj->className << "\" ";
 
-    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(16, obj->size), FALSE)
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(16, obj->size), PFalse)
                  << dec << setfill(' ') << endl;
   }
 }
@@ -1169,13 +1169,13 @@ PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * cla
 }
 
 
-BOOL PMemoryHeap::ValidateHeap(ostream * /*strm*/)
+PBoolean PMemoryHeap::ValidateHeap(ostream * /*strm*/)
 {
   return _CrtCheckMemory();
 }
 
 
-BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 {
   int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   if (ignore)
@@ -1342,46 +1342,46 @@ void PInt64__::ShiftRight(int bits)
 }
 
 
-BOOL PInt64::Lt(const PInt64 & v) const
+PBoolean PInt64::Lt(const PInt64 & v) const
 {
   if ((long)high < (long)v.high)
-    return TRUE;
+    return PTrue;
   if ((long)high > (long)v.high)
-    return FALSE;
+    return PFalse;
   if ((long)high < 0)
     return (long)low > (long)v.low;
   return (long)low < (long)v.low;
 }
 
 
-BOOL PInt64::Gt(const PInt64 & v) const
+PBoolean PInt64::Gt(const PInt64 & v) const
 {
   if ((long)high > (long)v.high)
-    return TRUE;
+    return PTrue;
   if ((long)high < (long)v.high)
-    return FALSE;
+    return PFalse;
   if ((long)high < 0)
     return (long)low < (long)v.low;
   return (long)low > (long)v.low;
 }
 
 
-BOOL PUInt64::Lt(const PUInt64 & v) const
+PBoolean PUInt64::Lt(const PUInt64 & v) const
 {
   if (high < v.high)
-    return TRUE;
+    return PTrue;
   if (high > v.high)
-    return FALSE;
+    return PFalse;
   return low < high;
 }
 
 
-BOOL PUInt64::Gt(const PUInt64 & v) const
+PBoolean PUInt64::Gt(const PUInt64 & v) const
 {
   if (high > v.high)
-    return TRUE;
+    return PTrue;
   if (high < v.high)
-    return FALSE;
+    return PFalse;
   return low > high;
 }
 
