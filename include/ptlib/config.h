@@ -318,11 +318,11 @@ class PConfig : public PObject
        the default "DefVal" being used, or the user had explicitly saved the
        value "DefVal" into the PConfig.
      */
-    virtual BOOL HasKey(
+    virtual PBoolean HasKey(
       const PString & key       ///< Key of the variable.
     ) const;
     /**Determine if the particular variable in the section is actually present. */
-    virtual BOOL HasKey(
+    virtual PBoolean HasKey(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key       ///< Key of the variable.
     ) const;
@@ -373,45 +373,45 @@ class PConfig : public PObject
     /** Get a boolean variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
-       The boolean value can be specified in a number of ways. The TRUE value
+       The boolean value can be specified in a number of ways. The PTrue value
        is returned if the string value for the variable begins with either the
        'T' character or the 'Y' character. Alternatively if the string can
-       be converted to a numeric value, a non-zero value will also return TRUE.
-       Thus the values can be Key=True, Key=Yes or Key=1 for TRUE and
-       Key=False, Key=No, or Key=0 for FALSE.
+       be converted to a numeric value, a non-zero value will also return PTrue.
+       Thus the values can be Key=True, Key=Yes or Key=1 for PTrue and
+       Key=False, Key=No, or Key=0 for PFalse.
 
        If the key is not present the value returned is the that provided by
        the #dlft# parameter. Note that this is different from the
-       key being present but having no value, in which case FALSE is returned.
+       key being present but having no value, in which case PFalse is returned.
 
        @return boolean value of the variable.
      */
-    virtual BOOL GetBoolean(
+    virtual PBoolean GetBoolean(
       const PString & key,      ///< The key name for the variable.
-      BOOL dflt = FALSE         ///< Default value for the variable.
+      PBoolean dflt = PFalse         ///< Default value for the variable.
     ) const;
     /** Get a boolean variable determined by the key in the section. */
-    virtual BOOL GetBoolean(
+    virtual PBoolean GetBoolean(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key,      ///< The key name for the variable.
-      BOOL dflt = FALSE         ///< Default value for the variable.
+      PBoolean dflt = PFalse         ///< Default value for the variable.
     ) const;
 
     /** Set a boolean variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
-       If value is TRUE then the string "True" is written to the variable
+       If value is PTrue then the string "True" is written to the variable
        otherwise the string "False" is set.
      */
     virtual void SetBoolean(
       const PString & key,      ///< The key name for the variable.
-      BOOL value                ///< New value to set for the variable.
+      PBoolean value                ///< New value to set for the variable.
     );
     /** Set a boolean variable determined by the key in the section. */
     virtual void SetBoolean(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key,      ///< The key name for the variable.
-      BOOL value                ///< New value to set for the variable.
+      PBoolean value                ///< New value to set for the variable.
     );
 
 

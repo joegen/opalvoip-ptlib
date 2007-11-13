@@ -69,13 +69,13 @@ class CircularBuffer
       if (rval) {
         PTRACE(1, __func__ << " can not init mutex");
         init = false;
-        //return FALSE;
+        //return PFalse;
       }
       rval = pthread_cond_init(&cond, NULL);
       if (rval) {
         PTRACE(1, __func__ << " can not init cond");
         init = false;
-        //return FALSE;
+        //return PFalse;
       }
    }
 
@@ -91,13 +91,13 @@ class CircularBuffer
    }
  
 
-   BOOL Full()
+   PBoolean Full()
    {
       /* head + 1 == tail */
       return head_next() == tail;
    }
 
-   BOOL Empty()
+   PBoolean Empty()
    {
       return head == tail;
    }

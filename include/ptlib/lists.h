@@ -233,9 +233,9 @@ class PAbstractList : public PCollection
        set in any other way.
 
        @return
-       Always TRUE.
+       Always PTrue.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size for the list, this is ignored.
     );
   //@}
@@ -285,9 +285,9 @@ class PAbstractList : public PCollection
        is set then the object is also deleted.
 
        @return
-       TRUE if the object was in the collection.
+       PTrue if the object was in the collection.
      */
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     );
 
@@ -313,9 +313,9 @@ class PAbstractList : public PCollection
        function will assert.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -328,9 +328,9 @@ class PAbstractList : public PCollection
        function will assert.
        
        @return
-       TRUE if the object was successfully replaced.
+       PTrue if the object was successfully replaced.
      */   
-    virtual BOOL ReplaceAt(
+    virtual PBoolean ReplaceAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -396,9 +396,9 @@ class PAbstractList : public PCollection
        point for a sequential move to the required index.
 
        @return
-       TRUE if the index could be set as the current element.
+       PTrue if the index could be set as the current element.
      */
-    BOOL SetCurrent(
+    PBoolean SetCurrent(
       PINDEX index  ///< Ordinal index of the list element to set as current.
     ) const;
 
@@ -922,9 +922,9 @@ class PAbstractSortedList : public PCollection
        set in any other way.
 
        @return
-       Always TRUE.
+       Always PTrue.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  // New size for the sorted list, this is ignored.
     );
   //@}
@@ -977,9 +977,9 @@ class PAbstractSortedList : public PCollection
        same instance of the object that is in the collection.
 
        @return
-       TRUE if the object was in the collection.
+       PTrue if the object was in the collection.
      */
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       const PObject * obj   // Existing object to remove from the collection.
     );
 
@@ -1004,13 +1004,13 @@ class PAbstractSortedList : public PCollection
      */
     virtual void RemoveAll();
 
-    /**This method simply returns FALSE as the list order is mantained by the 
+    /**This method simply returns PFalse as the list order is mantained by the 
        class. Kept to mimic #PAbstractList# interface.
        
        @return
-       FALSE allways
+       PFalse allways
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       PINDEX index,   // Index position in collection to set.
       PObject * val   // New value to place into the collection.
     );
@@ -1062,7 +1062,7 @@ class PAbstractSortedList : public PCollection
     void RemoveElement(Element * node);
     void LeftRotate(Element * node);
     void RightRotate(Element * node);
-    void DeleteSubTrees(Element * node, BOOL deleteObject);
+    void DeleteSubTrees(Element * node, PBoolean deleteObject);
     PINDEX ValueSelect(const Element * node, const PObject & obj, const Element ** lastElement) const;
 
     // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it

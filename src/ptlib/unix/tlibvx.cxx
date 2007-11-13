@@ -96,7 +96,7 @@ CCriticalSection::~CCriticalSection()
 void CCriticalSection::Lock()
 {
   if (locked == false) {
-    if (::intContext() == FALSE)
+    if (::intContext() == PFalse)
       taskLocked = ::taskLock();
     else
       taskLocked = ERROR;
@@ -282,7 +282,7 @@ void PThread::Terminate()
 }
 
 
-BOOL PThread::IsTerminated() const
+PBoolean PThread::IsTerminated() const
 {
   STATUS stat = ERROR;
   if (PX_threadId != 0)
@@ -300,22 +300,22 @@ void PThread::WaitForTermination() const
 }
 
 
-BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if (PX_threadId == 0)
-    return TRUE;
+    return PTrue;
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
-      return FALSE;
+      return PFalse;
     Current()->Sleep(100);
   }
- return TRUE;
+ return PTrue;
 }
 
 
-void PThread::Suspend(BOOL susp)
+void PThread::Suspend(PBoolean susp)
 {
   if (!IsTerminated()) {
     if (susp) {
@@ -343,9 +343,9 @@ void PThread::Resume()
 }
 
 
-BOOL PThread::IsSuspended() const
+PBoolean PThread::IsSuspended() const
 {
-  BOOL isSuspended = FALSE;
+  PBoolean isSuspended = PFalse;
   if (!IsTerminated())
     isSuspended = ::taskIsSuspended(PX_threadId);
   else
@@ -415,7 +415,7 @@ void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for
 void PThread::InitialiseProcessThread()
 {
   originalStackSize = 0;
-  autoDelete = FALSE;
+  autoDelete = PFalse;
 
   PX_threadId = ::taskIdSelf();
   PAssertOS((PX_threadId != ERROR) && (PX_threadId != 0));
@@ -441,7 +441,7 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
   while (!IsTerminated()) {
     Current()->Sleep(100);
   }
-  return TRUE;
+  return PTrue;
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
@@ -618,7 +618,7 @@ void PSemaphore::Wait()
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & timeout)
+PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 {
   long wait;
 	if (timeout == PMaxTimeInterval) {
@@ -656,7 +656,7 @@ void PSemaphore::Signal()
   section.Unlock();
 }
 
-BOOL PSemaphore::WillBlock() const
+PBoolean PSemaphore::WillBlock() const
 {
   return initialVar == 0;
 }
@@ -690,7 +690,7 @@ void PMutex::Wait()
 	PAssertOS(result == OK);
 }
 
-BOOL PMutex::Wait(const PTimeInterval & timeout)
+PBoolean PMutex::Wait(const PTimeInterval & timeout)
 {
   long wait;
 	if (timeout == PMaxTimeInterval) {
@@ -712,7 +712,7 @@ void PMutex::Signal()
 	::semGive(semId);
 }
 
-BOOL PMutex::WillBlock() const 
+PBoolean PMutex::WillBlock() const 
 {
   STATUS result = ::semTake(semId, NO_WAIT);
   PAssertOS((result != ERROR) || (errno == S_objLib_OBJ_UNAVAILABLE));

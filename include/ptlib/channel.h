@@ -239,7 +239,7 @@ class PChannelStreamBuffer : public streambuf {
     virtual streampos seekoff(streamoff, ios::seek_dir, int);
 #endif
 
-    BOOL SetBufferSize(
+    PBoolean SetBufferSize(
       PINDEX newSize
     );
 
@@ -328,9 +328,9 @@ class PChannel : public PObject, public iostream {
        channel. For example, in the #PFile# class it returns if the file is
        currently open.
 
-       @return TRUE if the channel is open.
+       @return PTrue if the channel is open.
      */
-    virtual BOOL IsOpen() const;
+    virtual PBoolean IsOpen() const;
 
     /** Get the platform and I/O channel type name of the channel. For example,
        it would return the filename in #PFile# type channels.
@@ -396,13 +396,13 @@ class PChannel : public PObject, public iostream {
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -438,9 +438,9 @@ class PChannel : public PObject, public iostream {
        all of the bytes have been read, or an error occurs.
 
        @return
-       TRUE if the read of #len# bytes was sucessfull.
+       PTrue if the read of #len# bytes was sucessfull.
      */
-    BOOL ReadBlock(
+    PBoolean ReadBlock(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -463,9 +463,9 @@ class PChannel : public PObject, public iostream {
        of calling the OnReadComplete() before returning.
 
        @return
-       TRUE if the read was sucessfully queued.
+       PTrue if the read was sucessfully queued.
      */
-    virtual BOOL ReadAsync(
+    virtual PBoolean ReadAsync(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -508,12 +508,12 @@ class PChannel : public PObject, public iostream {
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE if at least len bytes were written to the channel.
+       PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
@@ -538,17 +538,17 @@ class PChannel : public PObject, public iostream {
        Note that this asserts if the value is not in the range 0..255.
 
        @return
-       TRUE if the byte was successfully written.
+       PTrue if the byte was successfully written.
      */
-    BOOL WriteChar(int c);
+    PBoolean WriteChar(int c);
 
     /** Write a string to the channel. This function simply uses the Write()
        function so all comments on that function also apply.
 
        @return
-       TRUE if the character written.
+       PTrue if the character written.
      */
-    BOOL WriteString(const PString & str);
+    PBoolean WriteString(const PString & str);
 
     /** Begin an asynchronous write from channel. The write timeout is used as
        in other write operations, in this case calling the OnWriteComplete()
@@ -557,9 +557,9 @@ class PChannel : public PObject, public iostream {
        the addition of calling the OnWriteComplete() before returning.
 
        @return
-       TRUE of the write operation was succesfully queued.
+       PTrue of the write operation was succesfully queued.
      */
-    virtual BOOL WriteAsync(
+    virtual PBoolean WriteAsync(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
@@ -579,9 +579,9 @@ class PChannel : public PObject, public iostream {
   //@{
     /** Close the channel, shutting down the link to the data source.
 
-       @return TRUE if the channel successfully closed.
+       @return PTrue if the channel successfully closed.
      */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     enum ShutdownValue {
       ShutdownRead         = 0,
@@ -591,21 +591,21 @@ class PChannel : public PObject, public iostream {
 
     /** Close one or both of the data streams associated with a channel.
 
-       The default behavour is to do nothing and return FALSE.
+       The default behavour is to do nothing and return PFalse.
 
        @return
-       TRUE if the shutdown was successfully performed.
+       PTrue if the shutdown was successfully performed.
      */
-    virtual BOOL Shutdown(
+    virtual PBoolean Shutdown(
       ShutdownValue option
     );
 
     /**Set the iostream buffer size for reads and writes.
 
        @return
-       TRUE if the new buffer size was set.
+       PTrue if the new buffer size was set.
       */
-    BOOL SetBufferSize(
+    PBoolean SetBufferSize(
       PINDEX newSize    ///< New buffer size
     );
 
@@ -646,9 +646,9 @@ class PChannel : public PObject, public iostream {
                                      milliseconds.
 \end{description}
        @return
-       TRUE if the command string was completely processed.
+       PTrue if the command string was completely processed.
      */
-    BOOL SendCommandString(
+    PBoolean SendCommandString(
       const PString & command  ///< Command to send to the channel
     );
 
@@ -749,9 +749,9 @@ class PChannel : public PObject, public iostream {
        This will set the lastError and osError member variables for access by
        GetErrorCode() and GetErrorNumber().
        
-       @return TRUE if there was no error.
+       @return PTrue if there was no error.
      */
-    static BOOL ConvertOSError(
+    static PBoolean ConvertOSError(
       int libcReturnValue,
       Errors & lastError,
       int & osError
@@ -778,10 +778,10 @@ class PChannel : public PObject, public iostream {
         implemented by operating systems to do a real scattered read
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       const VectorOfSlice & slices    // slices to read to
     );
 
@@ -791,10 +791,10 @@ class PChannel : public PObject, public iostream {
         implemented by operating systems to do a real scattered write
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const VectorOfSlice & slices    // slices to read to
     );
   //@}
@@ -809,18 +809,18 @@ class PChannel : public PObject, public iostream {
       The internal error codes are set by this function. They may be obtained
       via the #GetErrorCode()# and #GetErrorNumber()# functions.
        
-       @return TRUE if there was no error.
+       @return PTrue if there was no error.
      */
-    virtual BOOL ConvertOSError(
+    virtual PBoolean ConvertOSError(
       int libcReturnValue,
       ErrorGroup group = LastGeneralError ///< Error group to set
     );
 
   public:
     /**Set error values to those specified.
-       Return TRUE if errorCode is NoError, FALSE otherwise
+       Return PTrue if errorCode is NoError, PFalse otherwise
       */
-    BOOL SetErrorValues(
+    PBoolean SetErrorValues(
       Errors errorCode,   ///< Error code to translate.
       int osError,        ///< OS error number to translate.
       ErrorGroup group = LastGeneralError ///< Error group to set
@@ -833,14 +833,14 @@ class PChannel : public PObject, public iostream {
       is adjusted for amount of time it actually took, so it can be used
       for a multiple character timeout.
 
-       @return TRUE if there was no error.
+       @return PTrue if there was no error.
      */
     int ReadCharWithTimeout(
       PTimeInterval & timeout  // Timeout for read.
     );
 
     // Receive a (partial) command string, determine if completed yet.
-    BOOL ReceiveCommandString(
+    PBoolean ReceiveCommandString(
       int nextChar,
       const PString & reply,
       PINDEX & pos,
@@ -871,7 +871,7 @@ class PChannel : public PObject, public iostream {
       // Complete platform dependent construction.
 
     // Member variables
-    BOOL abortCommandString;
+    PBoolean abortCommandString;
       // Flag to abort the transmission of a command in SendCommandString().
 
 

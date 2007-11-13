@@ -80,7 +80,7 @@ static u_int8_t raw_buffer[RAW_BUFFER_SIZE];
 PVideoInputDevice_1394AVC::PVideoInputDevice_1394AVC()
 {
   handle = NULL;
-  is_capturing = FALSE;
+  is_capturing = PFalse;
   dv_decoder = NULL;
 }
 
@@ -89,19 +89,19 @@ PVideoInputDevice_1394AVC::~PVideoInputDevice_1394AVC()
   Close();
 }
 
-BOOL PVideoInputDevice_1394AVC::Open(const PString & devName, BOOL startImmediate)
+PBoolean PVideoInputDevice_1394AVC::Open(const PString & devName, PBoolean startImmediate)
 {
   PTRACE(3, "trying to open " << devName);
 
   if (IsOpen())
     Close();
 
-  UseDMA = TRUE; // FIXME: useful?
+  UseDMA = PTrue; // FIXME: useful?
 
   handle = raw1394_new_handle();
   if (handle == NULL) {
     PTRACE(3, "No handle.");
-    return FALSE;
+    return PFalse;
   }
   
   mutex.Wait();
@@ -114,7 +114,7 @@ BOOL PVideoInputDevice_1394AVC::Open(const PString & devName, BOOL startImmediat
   if(raw1394_set_port(handle, port) != 0) {
     PTRACE(3, "couldn't set the port");
     Close();
-    return FALSE;
+    return PFalse;
   }
   
   frameWidth = CIFWidth;
@@ -127,24 +127,24 @@ BOOL PVideoInputDevice_1394AVC::Open(const PString & devName, BOOL startImmediat
       || !SetVideoFormat(videoFormat)) {
     PTRACE(3, "SetChannel() or SetVideoFormat() failed");
     Close();
-    return FALSE;
+    return PFalse;
   }
   
   if (startImmediate && !Start()) {
     Close();
-    return FALSE;
+    return PFalse;
   }
   
   PTRACE(3, "Successfully opened avc1394");
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_1394AVC::IsOpen() 
+PBoolean PVideoInputDevice_1394AVC::IsOpen() 
 {
   return handle != NULL;
 }
 
-BOOL PVideoInputDevice_1394AVC::Close()
+PBoolean PVideoInputDevice_1394AVC::Close()
 {
   PTRACE(3, "Close()");
   if (IsOpen()) {
@@ -152,37 +152,37 @@ BOOL PVideoInputDevice_1394AVC::Close()
       Stop();
     raw1394_destroy_handle(handle);
     handle = NULL;
-    return TRUE;
+    return PTrue;
   }
   else
-    return FALSE;
+    return PFalse;
 }
 
-BOOL PVideoInputDevice_1394AVC::Start()
+PBoolean PVideoInputDevice_1394AVC::Start()
 {
-  if (!IsOpen()) return FALSE;
-  if (IsCapturing()) return TRUE;
+  if (!IsOpen()) return PFalse;
+  if (IsCapturing()) return PTrue;
   
   if (raw1394_set_iso_handler(handle, 63, &RawISOHandler)!= NULL) {
     PTRACE (3, "Cannot set_iso_handler");
-    return FALSE;
+    return PFalse;
   }
   
-  is_capturing = TRUE;
-  return TRUE;
+  is_capturing = PTrue;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_1394AVC::Stop()
+PBoolean PVideoInputDevice_1394AVC::Stop()
 {
   if (IsCapturing()) {
-    is_capturing = FALSE;
-    return TRUE;
+    is_capturing = PFalse;
+    return PTrue;
   }
   else
-    return FALSE;
+    return PFalse;
 }
 
-BOOL PVideoInputDevice_1394AVC::IsCapturing()
+PBoolean PVideoInputDevice_1394AVC::IsCapturing()
 {
   return is_capturing;
 }
@@ -237,15 +237,15 @@ PStringList PVideoInputDevice_1394AVC::GetInputDeviceNames()
   return Result;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetVideoFormat(VideoFormat newFormat)
+PBoolean PVideoInputDevice_1394AVC::SetVideoFormat(VideoFormat newFormat)
 {
   // FIXME: isn't it inherited from PVideoDevice anyway?
   if (!PVideoDevice::SetVideoFormat(newFormat)) {
     PTRACE(3,"PVideoDevice::SetVideoFormat failed");
-    return FALSE;
+    return PFalse;
   }
   else
-    return TRUE;
+    return PTrue;
 }
 
 int PVideoInputDevice_1394AVC::GetBrightness()
@@ -253,9 +253,9 @@ int PVideoInputDevice_1394AVC::GetBrightness()
   return -1;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetBrightness(unsigned newBrightness)
+PBoolean PVideoInputDevice_1394AVC::SetBrightness(unsigned newBrightness)
 {
-  return FALSE;
+  return PFalse;
 }
 
 int PVideoInputDevice_1394AVC::GetHue()
@@ -263,9 +263,9 @@ int PVideoInputDevice_1394AVC::GetHue()
   return -1;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetHue(unsigned newHue)
+PBoolean PVideoInputDevice_1394AVC::SetHue(unsigned newHue)
 {
-  return FALSE;
+  return PFalse;
 }
 
 int PVideoInputDevice_1394AVC::GetContrast()
@@ -273,12 +273,12 @@ int PVideoInputDevice_1394AVC::GetContrast()
   return -1;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetContrast(unsigned newContrast)
+PBoolean PVideoInputDevice_1394AVC::SetContrast(unsigned newContrast)
 {
-  return FALSE;
+  return PFalse;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetColour(unsigned newColour) 
+PBoolean PVideoInputDevice_1394AVC::SetColour(unsigned newColour) 
 {
   return -1;
 }
@@ -288,9 +288,9 @@ int PVideoInputDevice_1394AVC::GetColour()
   return -1;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetWhiteness(unsigned newWhiteness) 
+PBoolean PVideoInputDevice_1394AVC::SetWhiteness(unsigned newWhiteness) 
 {
-  return FALSE;
+  return PFalse;
 }
 
 int PVideoInputDevice_1394AVC::GetWhiteness()
@@ -298,14 +298,14 @@ int PVideoInputDevice_1394AVC::GetWhiteness()
   return -1;
 }
 
-BOOL PVideoInputDevice_1394AVC::GetParameters (int *whiteness, int *brightness,
+PBoolean PVideoInputDevice_1394AVC::GetParameters (int *whiteness, int *brightness,
                                        int *colour, int *contrast, int *hue)
 {
   *whiteness = -1;
   *brightness = -1;
   *colour = -1;
   *hue = -1;
-  return FALSE;
+  return PFalse;
 }
 
 int PVideoInputDevice_1394AVC::GetNumChannels() 
@@ -321,25 +321,25 @@ int PVideoInputDevice_1394AVC::GetNumChannels()
   return Result;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetChannel(int newChannel)
+PBoolean PVideoInputDevice_1394AVC::SetChannel(int newChannel)
 {
-  if (PVideoDevice::SetChannel(newChannel) == FALSE)
-    return FALSE;
+  if (PVideoDevice::SetChannel(newChannel) == PFalse)
+    return PFalse;
 
   if(IsCapturing()) {
     Stop();
     Start();
   }
   
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetFrameRate(unsigned rate)
+PBoolean PVideoInputDevice_1394AVC::SetFrameRate(unsigned rate)
 {
   return PVideoDevice::SetFrameRate(rate);
 }
 
-BOOL PVideoInputDevice_1394AVC::GetFrameSizeLimits(unsigned & minWidth,
+PBoolean PVideoInputDevice_1394AVC::GetFrameSizeLimits(unsigned & minWidth,
                                                    unsigned & minHeight,
                                                    unsigned & maxWidth,
                                                    unsigned & maxHeight) 
@@ -348,7 +348,7 @@ BOOL PVideoInputDevice_1394AVC::GetFrameSizeLimits(unsigned & minWidth,
   maxWidth = CIFWidth;
   minHeight = CIFHeight;
   maxHeight = CIFHeight;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -358,13 +358,13 @@ PINDEX PVideoInputDevice_1394AVC::GetMaxFrameBytes()
 }
 
 
-BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
+PBoolean PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
                                                   PINDEX * bytesReturned)
 {
-  if (!IsCapturing()) return FALSE;
+  if (!IsCapturing()) return PFalse;
 
-  BOOL frame_complete = FALSE;
-  BOOL found_first_frame = FALSE;
+  PBoolean frame_complete = PFalse;
+  PBoolean found_first_frame = PFalse;
   int skipped = 0;
   int broken_frames = 0;
   BYTE capture_buffer[150000];
@@ -373,7 +373,7 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
   // this starts the bytes' rain
   if (raw1394_start_iso_rcv(handle, 63) < 0) {
     PTRACE(3, "Cannot receive data on channel 63");
-    return FALSE;
+    return PFalse;
   }
   // calling the raw1394 event manager, to get a frame:
   while(!frame_complete) {
@@ -381,13 +381,13 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
     if (*(uint32_t *)raw_buffer >= 492) {
       if (!found_first_frame) {
         if (raw_buffer[16] == 0x1f && raw_buffer[17] == 0x07)
-          found_first_frame = TRUE;
+          found_first_frame = PTrue;
         else
           skipped ++;
       }
       if (skipped > 500) {
         PTRACE (3, "Skipped much too many frames");
-        return FALSE;
+        return PFalse;
       }
       if (found_first_frame) {
         if (raw_buffer[16] == 0x1f
@@ -401,7 +401,7 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
             capture_buffer_end = capture_buffer;
           }
           else
-            frame_complete = TRUE;
+            frame_complete = PTrue;
         }
         if (!frame_complete) {
           memcpy (capture_buffer_end, raw_buffer+16, 480);
@@ -410,7 +410,7 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
       } // found_first_frame
       if (broken_frames > 30) {
         PTRACE(3, "Too many broken frames!");
-        return FALSE;
+        return PFalse;
       }
     }
   }
@@ -418,11 +418,11 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
   raw1394_stop_iso_rcv(handle, 63);
   
   dv_decoder_t *dv;
-  dv = dv_decoder_new(TRUE, FALSE, FALSE);
+  dv = dv_decoder_new(PTrue, PFalse, PFalse);
   dv->quality = DV_QUALITY_BEST; // FIXME: best!?
   if(dv_parse_header(dv, capture_buffer) < 0) {
     PTRACE(3, "cannot parse dv frame header");
-    return FALSE;
+    return PFalse;
   }
   
   dv_color_space_t color_space;
@@ -457,14 +457,14 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
   }
   else {
     PTRACE(3, "Converter must exist. Something goes wrong.");
-    return FALSE;
+    return PFalse;
   }
   
-  return TRUE;
+  return PTrue;
   
 }
 
-BOOL PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+PBoolean PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
@@ -475,20 +475,20 @@ void PVideoInputDevice_1394AVC::ClearMapping()
   // do nothing...
 }
 
-BOOL PVideoInputDevice_1394AVC::TestAllFormats()
+PBoolean PVideoInputDevice_1394AVC::TestAllFormats()
 {
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetColourFormat(const PString & newFormat)
+PBoolean PVideoInputDevice_1394AVC::SetColourFormat(const PString & newFormat)
 {
   return newFormat == colourFormat;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
 {
   if ( ! ( (width == CIFWidth && height == CIFHeight) ) )
-    return FALSE;
+    return PFalse;
 
   frameWidth = width;
   frameHeight = height;
@@ -496,7 +496,7 @@ BOOL PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
   nativeVerticalFlip = true;
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
-  return TRUE;
+  return PTrue;
 }
 
 

@@ -182,7 +182,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
   public:
     void SignalTimerChange();
-    BOOL PThreadKill(pthread_t id, unsigned signal);
+    PBoolean PThreadKill(pthread_t id, unsigned signal);
 
   protected:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);

@@ -31,7 +31,7 @@
  * Fixed function argument comments to be compatible with Doxygen
  *
  * Revision 1.30  2004/04/18 04:33:36  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
+ * Changed all operators that return PBoolean to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
  *
  * Revision 1.29  2003/09/17 05:41:59  csoutheren
@@ -384,7 +384,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are equal.
+       PTrue if intervals are equal.
      */
     bool operator==(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -398,7 +398,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are not equal.
+       PTrue if intervals are not equal.
      */
     bool operator!=(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -412,7 +412,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are greater than.
+       PTrue if intervals are greater than.
      */
     bool operator> (
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -426,7 +426,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are greater than or equal.
+       PTrue if intervals are greater than or equal.
      */
     bool operator>=(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -440,7 +440,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are less than.
+       PTrue if intervals are less than.
      */
     bool operator< (
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -454,7 +454,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are less than or equal.
+       PTrue if intervals are less than or equal.
      */
     bool operator<=(
       const PTimeInterval & interval   ///< Time interval to compare.

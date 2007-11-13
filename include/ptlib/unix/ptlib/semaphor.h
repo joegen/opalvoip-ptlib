@@ -64,7 +64,7 @@
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
  *
  * Revision 1.16  2002/06/09 16:36:34  rogerh
- * friend BOOL PThread::Terminate() should be type void (found by gcc 3.1)
+ * friend PBoolean PThread::Terminate() should be type void (found by gcc 3.1)
  *
  * Revision 1.15  2002/01/23 04:26:36  craigs
  * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
@@ -153,11 +153,11 @@
 #elif defined(__BEOS__)
 
   public:
-    PSemaphore(BOOL fNested); 
+    PSemaphore(PBoolean fNested); 
     void Create(unsigned initial);
 
   protected:
-    BOOL mfNested; // Does it support recursive locks?
+    PBoolean mfNested; // Does it support recursive locks?
     thread_id mOwner; // delete can be called by owner thread
     sem_id semId;
     volatile int32 mCount;

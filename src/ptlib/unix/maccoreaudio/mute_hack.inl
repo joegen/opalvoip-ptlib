@@ -9,13 +9,13 @@ pthread_mutex_t& PSoundChannelCoreAudio::GetWriteMuteMutex(){
 	return isWriteMute_Mutex;
 }
 
-BOOL& PSoundChannelCoreAudio::GetReadMute(){
-	static BOOL isReadMute(FALSE);
+PBoolean& PSoundChannelCoreAudio::GetReadMute(){
+	static PBoolean isReadMute(PFalse);
 	return isReadMute;
 }
 
-BOOL& PSoundChannelCoreAudio::GetWriteMute(){
-	static BOOL isWriteMute(FALSE);
+PBoolean& PSoundChannelCoreAudio::GetWriteMute(){
+	static PBoolean isWriteMute(PFalse);
 	return isWriteMute;
 }
 
@@ -27,7 +27,7 @@ pthread_mutex_t& PSoundChannelCoreAudio::GetIsMuteMutex(){
 	}
 }
 
-BOOL& PSoundChannelCoreAudio::isMute(){
+PBoolean& PSoundChannelCoreAudio::isMute(){
 	if(direction == Recorder){
 		return GetReadMute();
 	} else {

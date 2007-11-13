@@ -23,7 +23,7 @@
 //
 
 PSNMP_Message::PSNMP_Message(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Sequence(tag, tagClass, 0, FALSE, 0)
+  : PASN_Sequence(tag, tagClass, 0, PFalse, 0)
 {
 }
 
@@ -71,17 +71,17 @@ PINDEX PSNMP_Message::GetDataLength() const
 }
 
 
-BOOL PSNMP_Message::Decode(PASN_Stream & strm)
+PBoolean PSNMP_Message::Decode(PASN_Stream & strm)
 {
   if (!PreambleDecode(strm))
-    return FALSE;
+    return PFalse;
 
   if (!m_version.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_community.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_data.Decode(strm))
-    return FALSE;
+    return PFalse;
 
   return UnknownExtensionsDecode(strm);
 }
@@ -123,7 +123,7 @@ const static PASN_Names Names_PSNMP_PDUs[]={
 //
 
 PSNMP_PDUs::PSNMP_PDUs(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Choice(tag, tagClass, 5, FALSE
+  : PASN_Choice(tag, tagClass, 5, PFalse
 #ifndef PASN_NOPRINTON
     ,(const PASN_Names *)Names_PSNMP_PDUs,5
 #endif
@@ -242,28 +242,28 @@ PSNMP_PDUs::operator const PSNMP_Trap_PDU &() const
 }
 
 
-BOOL PSNMP_PDUs::CreateObject()
+PBoolean PSNMP_PDUs::CreateObject()
 {
   switch (tag) {
     case e_get_request :
       choice = new PSNMP_GetRequest_PDU();
-      return TRUE;
+      return PTrue;
     case e_get_next_request :
       choice = new PSNMP_GetNextRequest_PDU();
-      return TRUE;
+      return PTrue;
     case e_get_response :
       choice = new PSNMP_GetResponse_PDU();
-      return TRUE;
+      return PTrue;
     case e_set_request :
       choice = new PSNMP_SetRequest_PDU();
-      return TRUE;
+      return PTrue;
     case e_trap :
       choice = new PSNMP_Trap_PDU();
-      return TRUE;
+      return PTrue;
   }
 
   choice = NULL;
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -281,7 +281,7 @@ PObject * PSNMP_PDUs::Clone() const
 //
 
 PSNMP_VarBind::PSNMP_VarBind(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Sequence(tag, tagClass, 0, FALSE, 0)
+  : PASN_Sequence(tag, tagClass, 0, PFalse, 0)
 {
 }
 
@@ -325,15 +325,15 @@ PINDEX PSNMP_VarBind::GetDataLength() const
 }
 
 
-BOOL PSNMP_VarBind::Decode(PASN_Stream & strm)
+PBoolean PSNMP_VarBind::Decode(PASN_Stream & strm)
 {
   if (!PreambleDecode(strm))
-    return FALSE;
+    return PFalse;
 
   if (!m_name.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_value.Decode(strm))
-    return FALSE;
+    return PFalse;
 
   return UnknownExtensionsDecode(strm);
 }
@@ -395,7 +395,7 @@ PObject * PSNMP_VarBindList::Clone() const
 //
 
 PSNMP_PDU::PSNMP_PDU(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Sequence(tag, tagClass, 0, FALSE, 0)
+  : PASN_Sequence(tag, tagClass, 0, PFalse, 0)
 {
 }
 
@@ -447,19 +447,19 @@ PINDEX PSNMP_PDU::GetDataLength() const
 }
 
 
-BOOL PSNMP_PDU::Decode(PASN_Stream & strm)
+PBoolean PSNMP_PDU::Decode(PASN_Stream & strm)
 {
   if (!PreambleDecode(strm))
-    return FALSE;
+    return PFalse;
 
   if (!m_request_id.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_error_status.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_error_index.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_variable_bindings.Decode(strm))
-    return FALSE;
+    return PFalse;
 
   return UnknownExtensionsDecode(strm);
 }
@@ -492,7 +492,7 @@ PObject * PSNMP_PDU::Clone() const
 //
 
 PSNMP_Trap_PDU::PSNMP_Trap_PDU(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Sequence(tag, tagClass, 0, FALSE, 0)
+  : PASN_Sequence(tag, tagClass, 0, PFalse, 0)
 {
 }
 
@@ -552,23 +552,23 @@ PINDEX PSNMP_Trap_PDU::GetDataLength() const
 }
 
 
-BOOL PSNMP_Trap_PDU::Decode(PASN_Stream & strm)
+PBoolean PSNMP_Trap_PDU::Decode(PASN_Stream & strm)
 {
   if (!PreambleDecode(strm))
-    return FALSE;
+    return PFalse;
 
   if (!m_enterprise.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_agent_addr.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_generic_trap.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_specific_trap.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_time_stamp.Decode(strm))
-    return FALSE;
+    return PFalse;
   if (!m_variable_bindings.Decode(strm))
-    return FALSE;
+    return PFalse;
 
   return UnknownExtensionsDecode(strm);
 }

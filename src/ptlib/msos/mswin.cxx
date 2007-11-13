@@ -109,7 +109,7 @@ PString PTime::GetTimeSeparator()
 }
 
 
-BOOL PTime::GetTimeAMPM()
+PBoolean PTime::GetTimeAMPM()
 {
   return GetProfileInt("intl", "iTime", 0) != 0;
 }
@@ -187,9 +187,9 @@ PTime::DateOrder PTime::GetDateOrder()
 }
 
 
-BOOL PTime::IsDaylightSavings()
+PBoolean PTime::IsDaylightSavings()
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -230,7 +230,7 @@ PString PSerialChannel::GetName() const
 }
 
 
-BOOL PSerialChannel::IsReadBlocked(PObject * obj)
+PBoolean PSerialChannel::IsReadBlocked(PObject * obj)
 {
   PSerialChannel & chan = *(PSerialChannel *)PAssertNULL(obj);
   COMSTAT stat;
@@ -240,7 +240,7 @@ BOOL PSerialChannel::IsReadBlocked(PObject * obj)
 }
 
 
-BOOL PSerialChannel::Read(void * buf, PINDEX len)
+PBoolean PSerialChannel::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
@@ -248,7 +248,7 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
     PThread::Yield();
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   if (readTimeout != PMaxTimeInterval)
@@ -258,7 +258,7 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 
   lastReadCount = ReadComm(os_handle, buf, len);
   if (lastReadCount > 0)
-    return TRUE;
+    return PTrue;
 
   COMSTAT stat;
   GetCommError(os_handle, &stat);
@@ -268,7 +268,7 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 }
 
 
-BOOL PSerialChannel::IsWriteBlocked(PObject * obj)
+PBoolean PSerialChannel::IsWriteBlocked(PObject * obj)
 {
   PSerialChannel & chan = *(PSerialChannel *)PAssertNULL(obj);
   COMSTAT stat;
@@ -278,14 +278,14 @@ BOOL PSerialChannel::IsWriteBlocked(PObject * obj)
 }
 
 
-BOOL PSerialChannel::Write(const void * buf, PINDEX len)
+PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
 {
   lastWriteCount = 0;
 
   if (!IsOpen()) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   if (writeTimeout != PMaxTimeInterval)
@@ -304,21 +304,21 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
 }
 
 
-BOOL PSerialChannel::Close()
+PBoolean PSerialChannel::Close()
 {
   if (!IsOpen()) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
-  BOOL retVal = CloseComm(os_handle) == 0;
+  PBoolean retVal = CloseComm(os_handle) == 0;
   os_handle = -1;
   return retVal;
 }
 
 
-BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
+PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
   if (IsOpen())
@@ -349,7 +349,7 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
     default :
       if (speed > 9600) {
         osError = EINVAL;
-        return FALSE;
+        return PFalse;
       }
       deviceControlBlock.BaudRate = (UINT)speed;
   }
@@ -384,34 +384,34 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
   }
   switch (inputFlow) {
     case NoFlowControl :
-      deviceControlBlock.fRtsflow = FALSE;
-      deviceControlBlock.fInX = FALSE;
+      deviceControlBlock.fRtsflow = PFalse;
+      deviceControlBlock.fInX = PFalse;
       break;
     case XonXoff :
-      deviceControlBlock.fRtsflow = FALSE;
-      deviceControlBlock.fInX = TRUE;
+      deviceControlBlock.fRtsflow = PFalse;
+      deviceControlBlock.fInX = PTrue;
       break;
     case RtsCts :
-      deviceControlBlock.fRtsflow = TRUE;
-      deviceControlBlock.fInX = FALSE;
+      deviceControlBlock.fRtsflow = PTrue;
+      deviceControlBlock.fInX = PFalse;
       break;
   }
 
   switch (outputFlow) {
     case NoFlowControl :
-      deviceControlBlock.fOutxCtsFlow = FALSE;
-      deviceControlBlock.fOutxDsrFlow = FALSE;
-      deviceControlBlock.fOutX = FALSE;
+      deviceControlBlock.fOutxCtsFlow = PFalse;
+      deviceControlBlock.fOutxDsrFlow = PFalse;
+      deviceControlBlock.fOutX = PFalse;
       break;
     case XonXoff :
-      deviceControlBlock.fOutxCtsFlow = FALSE;
-      deviceControlBlock.fOutxDsrFlow = FALSE;
-      deviceControlBlock.fOutX = TRUE;
+      deviceControlBlock.fOutxCtsFlow = PFalse;
+      deviceControlBlock.fOutxDsrFlow = PFalse;
+      deviceControlBlock.fOutX = PTrue;
       break;
     case RtsCts :
-      deviceControlBlock.fOutxCtsFlow = TRUE;
-      deviceControlBlock.fOutxDsrFlow = FALSE;
-      deviceControlBlock.fOutX = FALSE;
+      deviceControlBlock.fOutxCtsFlow = PTrue;
+      deviceControlBlock.fOutxDsrFlow = PFalse;
+      deviceControlBlock.fOutX = PFalse;
       break;
   }
 
@@ -419,21 +419,21 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
     osError = EBADF;
     lastError = NotOpen;
     lastError = BadParameter;
-    return FALSE;
+    return PFalse;
   }
 
   if (SetCommState(&deviceControlBlock) < 0) {
     osError = EINVAL;
-    return FALSE;
+    return PFalse;
   }
 
   PAssert(GetCommState(os_handle, &deviceControlBlock) == 0,
                                                         POperatingSystemError);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
+PBoolean PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
        Parity parity, BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
   Close();
@@ -464,7 +464,7 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
         lastError = Miscellaneous;
     }
     os_handle = -1;
-    return FALSE;
+    return PFalse;
   }
 
   deviceControlBlock.Id = (BYTE)os_handle;
@@ -472,15 +472,15 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
 
   if (!SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow)) {
     CloseComm(os_handle);
-    return FALSE;
+    return PFalse;
   }
 
   SetCommEventMask(os_handle, EV_CTSS|EV_DSR|EV_RING|EV_RLSDS);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSerialChannel::SetSpeed(DWORD speed)
+PBoolean PSerialChannel::SetSpeed(DWORD speed)
 {
   return SetCommsParam(speed,
                  0, DefaultParity, 0, DefaultFlowControl, DefaultFlowControl);
@@ -521,7 +521,7 @@ DWORD PSerialChannel::GetSpeed() const
 }
 
 
-BOOL PSerialChannel::SetDataBits(BYTE data)
+PBoolean PSerialChannel::SetDataBits(BYTE data)
 {
   return SetCommsParam(0,
               data, DefaultParity, 0, DefaultFlowControl, DefaultFlowControl);
@@ -534,7 +534,7 @@ BYTE PSerialChannel::GetDataBits() const
 }
 
 
-BOOL PSerialChannel::SetParity(Parity parity)
+PBoolean PSerialChannel::SetParity(Parity parity)
 {
   return SetCommsParam(0,0, parity, 0, DefaultFlowControl, DefaultFlowControl);
 }
@@ -556,7 +556,7 @@ PSerialChannel::Parity PSerialChannel::GetParity() const
 }
 
 
-BOOL PSerialChannel::SetStopBits(BYTE stop)
+PBoolean PSerialChannel::SetStopBits(BYTE stop)
 {
   return SetCommsParam(0,
                0, DefaultParity, stop, DefaultFlowControl, DefaultFlowControl);
@@ -569,7 +569,7 @@ BYTE PSerialChannel::GetStopBits() const
 }
 
 
-BOOL PSerialChannel::SetInputFlowControl(FlowControl flowControl)
+PBoolean PSerialChannel::SetInputFlowControl(FlowControl flowControl)
 {
   return SetCommsParam(0,0, DefaultParity, 0, flowControl, DefaultFlowControl);
 }
@@ -585,7 +585,7 @@ PSerialChannel::FlowControl PSerialChannel::GetInputFlowControl() const
 }
 
 
-BOOL PSerialChannel::SetOutputFlowControl(FlowControl flowControl)
+PBoolean PSerialChannel::SetOutputFlowControl(FlowControl flowControl)
 {
   return SetCommsParam(0,0, DefaultParity, 0, DefaultFlowControl, flowControl);
 }
@@ -601,7 +601,7 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 }
 
 
-void PSerialChannel::SetDTR(BOOL state)
+void PSerialChannel::SetDTR(PBoolean state)
 {
   if (!IsOpen()) {
     osError = EBADF;
@@ -614,7 +614,7 @@ void PSerialChannel::SetDTR(BOOL state)
 }
 
 
-void PSerialChannel::SetRTS(BOOL state)
+void PSerialChannel::SetRTS(PBoolean state)
 {
   if (!IsOpen()) {
     osError = EBADF;
@@ -627,7 +627,7 @@ void PSerialChannel::SetRTS(BOOL state)
 }
 
 
-void PSerialChannel::SetBreak(BOOL state)
+void PSerialChannel::SetBreak(PBoolean state)
 {
   if (!IsOpen()) {
     osError = EBADF;
@@ -642,48 +642,48 @@ void PSerialChannel::SetBreak(BOOL state)
 }
 
 
-BOOL PSerialChannel::GetCTS()
+PBoolean PSerialChannel::GetCTS()
 {
   if (!IsOpen()) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   return (GetCommEventMask(os_handle, 0)&EV_CTSS) != 0;
 }
 
 
-BOOL PSerialChannel::GetDSR()
+PBoolean PSerialChannel::GetDSR()
 {
   if (!IsOpen()) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   return (GetCommEventMask(os_handle, 0)&EV_DSR) != 0;
 }
 
 
-BOOL PSerialChannel::GetDCD()
+PBoolean PSerialChannel::GetDCD()
 {
   if (!IsOpen()) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   return (GetCommEventMask(os_handle, 0)&EV_RLSDS) != 0;
 }
 
 
-BOOL PSerialChannel::GetRing()
+PBoolean PSerialChannel::GetRing()
 {
   if (!IsOpen()) {
     osError = EBADF;
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   return (GetCommEventMask(os_handle, 0)&EV_RING) != 0;
@@ -705,10 +705,10 @@ PStringList PSerialChannel::GetPortNames()
 ///////////////////////////////////////////////////////////////////////////////
 // PPipeChannel
 
-BOOL PPipeChannel::Execute()
+PBoolean PPipeChannel::Execute()
 {
   if (hasRun)
-    return FALSE;
+    return PFalse;
 
   flush();
   if (os_handle >= 0) {
@@ -773,7 +773,7 @@ BOOL PPipeChannel::Execute()
   _asm mov  word ptr [shellEntry], di;
   _asm mov  word ptr [shellEntry+2], es;
   if (shellEntry == NULL)
-    return FALSE;
+    return PFalse;
 
   _asm lea  di, word ptr seb;
   _asm mov  dx, 3;
@@ -791,10 +791,10 @@ BOOL PPipeChannel::Execute()
 #endif
   _asm mov  word ptr hVirtualMachine, ax; // Really EAX
   if (hVirtualMachine == 0)
-    return FALSE;
+    return PFalse;
 
   if (fromChild.IsEmpty())
-    return TRUE;
+    return PTrue;
 
   // Wait for child to complete
   
@@ -975,7 +975,7 @@ void PThread::SwitchContext(PThread * from)
   *StackTop = stackTop;
   *StackUsed = stackTop - stackUsed;
   
-  longjmp(context, TRUE);
+  longjmp(context, PTrue);
   PAssertAlways("longjmp failed"); // Should never get here
 }
 
@@ -1001,7 +1001,7 @@ PDynaLink::~PDynaLink()
 }
 
 
-BOOL PDynaLink::Open(const PString & name)
+PBoolean PDynaLink::Open(const PString & name)
 {
   if ((_hDLL = LoadLibrary(name)) < HINSTANCE_ERROR)
     _hDLL = NULL;
@@ -1018,37 +1018,37 @@ void PDynaLink::Close()
 }
 
 
-BOOL PDynaLink::IsLoaded() const
+PBoolean PDynaLink::IsLoaded() const
 {
   return _hDLL != NULL;
 }
 
 
-BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
 {
   if (_hDLL == NULL)
-    return FALSE;
+    return PFalse;
 
   FARPROC p = GetProcAddress(_hDLL, (LPSTR)(DWORD)LOWORD(index));
   if (p == NULL)
-    return FALSE;
+    return PFalse;
 
   func = (Function)p;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
 {
   if (_hDLL == NULL)
-    return FALSE;
+    return PFalse;
 
   FARPROC p = GetProcAddress(_hDLL, name);
   if (p == NULL)
-    return FALSE;
+    return PFalse;
 
   func = (Function)p;
-  return TRUE;
+  return PTrue;
 }
 
 

@@ -9,14 +9,14 @@
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::NullDecode(PASN_Null & value)
+PBoolean PBER_Stream::NullDecode(PASN_Null & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return FALSE;
+    return PFalse;
 
   byteOffset += len;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -27,45 +27,45 @@ void PBER_Stream::NullEncode(const PASN_Null & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::BooleanDecode(PASN_Boolean & value)
+PBoolean PBER_Stream::BooleanDecode(PASN_Boolean & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return FALSE;
+    return PFalse;
 
   while (len-- > 0) {
     if (IsAtEnd())
-      return FALSE;
-    value = (BOOL)ByteDecode();
+      return PFalse;
+    value = (PBoolean)ByteDecode();
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
 void PBER_Stream::BooleanEncode(const PASN_Boolean & value)
 {
   HeaderEncode(value);
-  ByteEncode((BOOL)value);
+  ByteEncode((PBoolean)value);
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::IntegerDecode(PASN_Integer & value)
+PBoolean PBER_Stream::IntegerDecode(PASN_Integer & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return FALSE;
+    return PFalse;
 
   int accumulator = (char)ByteDecode(); // sign extended first byte
   while (--len > 0) {
     if (IsAtEnd())
-      return FALSE;
+      return PFalse;
     accumulator = (accumulator << 8) | ByteDecode();
   }
 
   value = accumulator;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -79,21 +79,21 @@ void PBER_Stream::IntegerEncode(const PASN_Integer & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::EnumerationDecode(PASN_Enumeration & value)
+PBoolean PBER_Stream::EnumerationDecode(PASN_Enumeration & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return FALSE;
+    return PFalse;
 
   unsigned val = 0;
   while (len-- > 0) {
     if (IsAtEnd())
-      return FALSE;
+      return PFalse;
     val = (val << 8) | ByteDecode();
   }
 
   value = val;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -107,16 +107,16 @@ void PBER_Stream::EnumerationEncode(const PASN_Enumeration & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::RealDecode(PASN_Real & value)
+PBoolean PBER_Stream::RealDecode(PASN_Real & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return FALSE;
+    return PFalse;
 
   PAssertAlways(PUnimplementedFunction);
   byteOffset += len;
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -127,11 +127,11 @@ void PBER_Stream::RealEncode(const PASN_Real &)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::ObjectIdDecode(PASN_ObjectId & value)
+PBoolean PBER_Stream::ObjectIdDecode(PASN_ObjectId & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return FALSE;
+    return PFalse;
 
   return value.CommonDecode(*this, len);
 }
@@ -147,7 +147,7 @@ void PBER_Stream::ObjectIdEncode(const PASN_ObjectId & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PASN_BitString::DecodeBER(PBER_Stream & strm, unsigned len)
+PBoolean PASN_BitString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
   totalBits = len*8 - strm.ByteDecode();
   unsigned nBytes = (totalBits+7)/8;
@@ -167,11 +167,11 @@ void PASN_BitString::EncodeBER(PBER_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::BitStringDecode(PASN_BitString & value)
+PBoolean PBER_Stream::BitStringDecode(PASN_BitString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return FALSE;
+    return PFalse;
 
   return value.DecodeBER(*this, len);
 }
@@ -185,11 +185,11 @@ void PBER_Stream::BitStringEncode(const PASN_BitString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::OctetStringDecode(PASN_OctetString & value)
+PBoolean PBER_Stream::OctetStringDecode(PASN_OctetString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return FALSE;
+    return PFalse;
 
   return BlockDecode(value.GetPointer(len), len) == len;
 }
@@ -203,7 +203,7 @@ void PBER_Stream::OctetStringEncode(const PASN_OctetString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PASN_ConstrainedString::DecodeBER(PBER_Stream & strm, unsigned len)
+PBoolean PASN_ConstrainedString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
   return strm.BlockDecode((BYTE *)value.GetPointer(len+1), len) == len;
 }
@@ -216,11 +216,11 @@ void PASN_ConstrainedString::EncodeBER(PBER_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
+PBoolean PBER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return FALSE;
+    return PFalse;
 
   return value.DecodeBER(*this, len);
 }
@@ -234,7 +234,7 @@ void PBER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PASN_BMPString::DecodeBER(PBER_Stream & strm, unsigned len)
+PBoolean PASN_BMPString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
   value.SetSize(len/2);
   return strm.BlockDecode((BYTE *)value.GetPointer(len), len) == len;
@@ -248,11 +248,11 @@ void PASN_BMPString::EncodeBER(PBER_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::BMPStringDecode(PASN_BMPString & value)
+PBoolean PBER_Stream::BMPStringDecode(PASN_BMPString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return FALSE;
+    return PFalse;
 
   return value.DecodeBER(*this, len);
 }
@@ -266,16 +266,16 @@ void PBER_Stream::BMPStringEncode(const PASN_BMPString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::ChoiceDecode(PASN_Choice & value)
+PBoolean PBER_Stream::ChoiceDecode(PASN_Choice & value)
 {
   PINDEX savedPosition = GetPosition();
 
   unsigned tag;
   PASN_Object::TagClass tagClass;
-  BOOL primitive;
+  PBoolean primitive;
   unsigned entryLen;
   if (!HeaderDecode(tag, tagClass, primitive, entryLen))
-    return FALSE;
+    return PFalse;
 
   SetPosition(savedPosition);
 
@@ -283,7 +283,7 @@ BOOL PBER_Stream::ChoiceDecode(PASN_Choice & value)
   if (value.IsValid())
     return value.GetObject().Decode(*this);
 
-  return TRUE;
+  return PTrue;
 }
 
 void PBER_Stream::ChoiceEncode(const PASN_Choice & value)
@@ -294,13 +294,13 @@ void PBER_Stream::ChoiceEncode(const PASN_Choice & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PASN_Sequence::PreambleDecodeBER(PBER_Stream & strm)
+PBoolean PASN_Sequence::PreambleDecodeBER(PBER_Stream & strm)
 {
   fields.RemoveAll();
 
   unsigned len;
   if (!strm.HeaderDecode(*this, len))
-    return FALSE;
+    return PFalse;
 
   endBasicEncoding = strm.GetPosition() + len;
   return !strm.IsAtEnd();
@@ -313,10 +313,10 @@ void PASN_Sequence::PreambleEncodeBER(PBER_Stream & strm) const
 }
 
 
-BOOL PASN_Sequence::KnownExtensionDecodeBER(PBER_Stream & strm, PINDEX, PASN_Object & field)
+PBoolean PASN_Sequence::KnownExtensionDecodeBER(PBER_Stream & strm, PINDEX, PASN_Object & field)
 {
   if (strm.GetPosition() >= endBasicEncoding)
-    return FALSE;
+    return PFalse;
 
   return field.Decode(strm);
 }
@@ -328,17 +328,17 @@ void PASN_Sequence::KnownExtensionEncodeBER(PBER_Stream & strm, PINDEX, const PA
 }
 
 
-BOOL PASN_Sequence::UnknownExtensionsDecodeBER(PBER_Stream & strm)
+PBoolean PASN_Sequence::UnknownExtensionsDecodeBER(PBER_Stream & strm)
 {
   while (strm.GetPosition() < endBasicEncoding) {
     PINDEX savedPosition = strm.GetPosition();
 
     unsigned tag;
     PASN_Object::TagClass tagClass;
-    BOOL primitive;
+    PBoolean primitive;
     unsigned entryLen;
     if (!strm.HeaderDecode(tag, tagClass, primitive, entryLen))
-      return FALSE;
+      return PFalse;
 
     PINDEX nextEntryPosition = strm.GetPosition() + entryLen;
     strm.SetPosition(savedPosition);
@@ -348,13 +348,13 @@ BOOL PASN_Sequence::UnknownExtensionsDecodeBER(PBER_Stream & strm)
       strm.SetPosition(nextEntryPosition);
     else {
       if (!obj->Decode(strm))
-        return FALSE;
+        return PFalse;
 
       fields.Append(obj);
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -366,7 +366,7 @@ void PASN_Sequence::UnknownExtensionsEncodeBER(PBER_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::SequencePreambleDecode(PASN_Sequence & seq)
+PBoolean PBER_Stream::SequencePreambleDecode(PASN_Sequence & seq)
 {
   return seq.PreambleDecodeBER(*this);
 }
@@ -378,7 +378,7 @@ void PBER_Stream::SequencePreambleEncode(const PASN_Sequence & seq)
 }
 
 
-BOOL PBER_Stream::SequenceKnownDecode(PASN_Sequence & seq, PINDEX fld, PASN_Object & field)
+PBoolean PBER_Stream::SequenceKnownDecode(PASN_Sequence & seq, PINDEX fld, PASN_Object & field)
 {
   return seq.KnownExtensionDecodeBER(*this, fld, field);
 }
@@ -390,7 +390,7 @@ void PBER_Stream::SequenceKnownEncode(const PASN_Sequence & seq, PINDEX fld, con
 }
 
 
-BOOL PBER_Stream::SequenceUnknownDecode(PASN_Sequence & seq)
+PBoolean PBER_Stream::SequenceUnknownDecode(PASN_Sequence & seq)
 {
   return seq.UnknownExtensionsDecodeBER(*this);
 }
@@ -403,27 +403,27 @@ void PBER_Stream::SequenceUnknownEncode(const PASN_Sequence & seq)
 
 ///////////////////////////////////////////////////////////////////////
 
-BOOL PBER_Stream::ArrayDecode(PASN_Array & array)
+PBoolean PBER_Stream::ArrayDecode(PASN_Array & array)
 {
   array.RemoveAll();
 
   unsigned len;
   if (!HeaderDecode(array, len))
-    return FALSE;
+    return PFalse;
 
   PINDEX endOffset = byteOffset + len;
   PINDEX count = 0;
   while (byteOffset < endOffset) {
     if (!array.SetSize(count+1))
-      return FALSE;
+      return PFalse;
     if (!array[count].Decode(*this))
-      return FALSE;
+      return PFalse;
     count++;
   }
 
   byteOffset = endOffset;
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -460,7 +460,7 @@ PBER_Stream & PBER_Stream::operator=(const PBYTEArray & bytes)
   return *this;
 }
 
-BOOL PBER_Stream::Read(PChannel & chan)
+PBoolean PBER_Stream::Read(PChannel & chan)
 {
   SetSize(0);
   PINDEX offset = 0;
@@ -468,7 +468,7 @@ BOOL PBER_Stream::Read(PChannel & chan)
   // read the sequence header
   int b;
   if ((b = chan.ReadChar()) < 0)
-    return FALSE;
+    return PFalse;
 
   SetAt(offset++, (char)b);
 
@@ -476,14 +476,14 @@ BOOL PBER_Stream::Read(PChannel & chan)
   if ((b&0x1f) == 0x1f) {
     do {
       if ((b = chan.ReadChar()) < 0)
-        return FALSE;
+        return PFalse;
       SetAt(offset++, (char)b);
     } while ((b & 0x80) != 0);
   }
 
   // read the first byte of the ASN length
   if ((b = chan.ReadChar()) < 0)
-    return FALSE;
+    return PFalse;
 
   SetAt(offset++, (char)b);
 
@@ -497,7 +497,7 @@ BOOL PBER_Stream::Read(PChannel & chan)
     while (lenLen-- > 0) {
       // read the length
       if ((b = chan.ReadChar()) < 0)
-        return FALSE;
+        return PFalse;
       dataLen = (dataLen << 8) | b;
       SetAt(offset++, (char)b);
     }
@@ -507,16 +507,16 @@ BOOL PBER_Stream::Read(PChannel & chan)
   BYTE * bufptr = GetPointer(dataLen+offset) + offset;
   while (dataLen > 0) {
     if (!chan.Read(bufptr, dataLen))
-      return FALSE;
+      return PFalse;
     PINDEX readbytes = chan.GetLastReadCount();
     bufptr += readbytes;
     dataLen -= readbytes;
   }
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PBER_Stream::Write(PChannel & chan)
+PBoolean PBER_Stream::Write(PChannel & chan)
 {
   CompleteEncoding();
   return chan.Write(theArray, GetSize());
@@ -525,7 +525,7 @@ BOOL PBER_Stream::Write(PChannel & chan)
 
 PASN_Object * PBER_Stream::CreateObject(unsigned tag,
                                         PASN_Object::TagClass tagClass,
-                                        BOOL primitive) const
+                                        PBoolean primitive) const
 {
   if (tagClass == PASN_Object::UniversalTagClass) {
     switch (tag) {
@@ -582,12 +582,12 @@ PASN_Object * PBER_Stream::CreateObject(unsigned tag,
   if (primitive)
     return new PASN_OctetString(tag, tagClass);
   else
-    return new PASN_Sequence(tag, tagClass, 0, FALSE, 0);
+    return new PASN_Sequence(tag, tagClass, 0, PFalse, 0);
 }
 
-BOOL PBER_Stream::HeaderDecode(unsigned & tagVal,
+PBoolean PBER_Stream::HeaderDecode(unsigned & tagVal,
                                PASN_Object::TagClass & tagClass,
-                               BOOL & primitive,
+                               PBoolean & primitive,
                                unsigned & len)
 {
   BYTE ident = ByteDecode();
@@ -599,7 +599,7 @@ BOOL PBER_Stream::HeaderDecode(unsigned & tagVal,
     tagVal = 0;
     do {
       if (IsAtEnd())
-        return FALSE;
+        return PFalse;
 
       b = ByteDecode();
       tagVal = (tagVal << 7) | (b&0x7f);
@@ -607,12 +607,12 @@ BOOL PBER_Stream::HeaderDecode(unsigned & tagVal,
   }
 
   if (IsAtEnd())
-    return FALSE;
+    return PFalse;
 
   BYTE len_len = ByteDecode();
   if ((len_len & 0x80) == 0) {
     len = len_len;
-    return TRUE;
+    return PTrue;
   }
 
   len_len &= 0x7f;
@@ -620,28 +620,28 @@ BOOL PBER_Stream::HeaderDecode(unsigned & tagVal,
   len = 0;
   while (len_len-- > 0) {
     if (IsAtEnd())
-      return FALSE;
+      return PFalse;
 
     len = (len << 8) | ByteDecode();
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PBER_Stream::HeaderDecode(PASN_Object & obj, unsigned & len)
+PBoolean PBER_Stream::HeaderDecode(PASN_Object & obj, unsigned & len)
 {
   PINDEX pos = byteOffset;
 
   unsigned tagVal;
   PASN_Object::TagClass tagClass;
-  BOOL primitive;
+  PBoolean primitive;
   if (HeaderDecode(tagVal, tagClass, primitive, len) &&
               tagVal == obj.GetTag() && tagClass == obj.GetTagClass())
-    return TRUE;
+    return PTrue;
 
   byteOffset = pos;
-  return FALSE;
+  return PFalse;
 }
 
 

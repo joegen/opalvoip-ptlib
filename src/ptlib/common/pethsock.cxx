@@ -28,7 +28,7 @@
  *
  * $Log: pethsock.cxx,v $
  * Revision 1.6  2004/04/18 04:33:38  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
+ * Changed all operators that return PBoolean to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
  *
  * Revision 1.5  2001/10/03 03:13:05  robertj
@@ -185,27 +185,27 @@ const char * PEthSocket::GetProtocolName() const
 }
 
 
-BOOL PEthSocket::Listen(unsigned, WORD, Reusability)
+PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr)
+PBoolean PEthSocket::GetIpAddress(PIPSocket::Address & addr)
 {
   PIPSocket::Address net_mask;
   return EnumIpAddress(0, addr, net_mask);
 }
 
 
-BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
+PBoolean PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
 {
   return EnumIpAddress(0, addr, net_mask);
 }
 
 
-BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
+PBoolean PEthSocket::ReadPacket(PBYTEArray & buffer,
                             Address & dest,
                             Address & src,
                             WORD & type,
@@ -217,7 +217,7 @@ BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
 
   do {
     if (!Read(frame, sizeof(*frame)))
-      return FALSE;
+      return PFalse;
   } while (lastReadCount < MinFrameSize);
 
   dest = frame->dst_addr;
@@ -225,7 +225,7 @@ BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
   length = lastReadCount;
   frame->Parse(type, payload, length);
 
-  return TRUE;
+  return PTrue;
 }
 
 

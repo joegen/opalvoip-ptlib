@@ -97,7 +97,7 @@ PFTP::PFTP()
 }
 
 
-BOOL PFTP::SendPORT(const PIPSocket::Address & addr, WORD port)
+PBoolean PFTP::SendPORT(const PIPSocket::Address & addr, WORD port)
 {
   PString str(PString::Printf,
               "%i,%i,%i,%i,%i,%i",

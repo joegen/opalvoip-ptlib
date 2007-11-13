@@ -264,7 +264,7 @@
 class PContainerReference {
   public:
     inline PContainerReference(PINDEX initialSize)
-      : size(initialSize), count(1), deleteObjects(TRUE)
+      : size(initialSize), count(1), deleteObjects(PTrue)
     {
     }
 
@@ -275,7 +275,7 @@ class PContainerReference {
 
     PINDEX   size;         // Size of what the container contains
     PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
-    BOOL deleteObjects;    // Used by PCollection but put here for efficiency
+    PBoolean deleteObjects;    // Used by PCollection but put here for efficiency
 
   private:
     PContainerReference & operator=(const PContainerReference &) 
@@ -361,14 +361,14 @@ class PContainer : public PObject
        new number of elements.
 
        Note for some types of containers this does not do anything as they
-       inherently only contain one item. The function returns TRUE always and
+       inherently only contain one item. The function returns PTrue always and
        the new value is ignored.
 
        @return
-       TRUE if the size was successfully changed. The value FALSE usually
+       PTrue if the size was successfully changed. The value PFalse usually
        indicates failure due to insufficient memory.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size for the container.
     ) = 0;
 
@@ -377,7 +377,7 @@ class PContainer : public PObject
        specified. The #SetSize()# function is always called, either with the
        new value or the previous size, whichever is the larger.
      */
-    BOOL SetMinSize(
+    PBoolean SetMinSize(
       PINDEX minSize  ///< Possible, new size for the container.
     );
 
@@ -385,17 +385,17 @@ class PContainer : public PObject
        Determine if the container that this object references contains any
        elements.
 
-       @return TRUE if #GetSize()# returns zero.
+       @return PTrue if #GetSize()# returns zero.
      */
-    virtual BOOL IsEmpty() const;
+    virtual PBoolean IsEmpty() const;
 
     /**Determine if container is unique reference.
        Determine if this instance is the one and only reference to the
        container contents.
 
-       @return TRUE if the reference count is one.
+       @return PTrue if the reference count is one.
      */
-    BOOL IsUnique() const;
+    PBoolean IsUnique() const;
 
     /**Make this instance to be the one and only reference to the container
        contents. This implicitly does a clone of the contents of the container
@@ -403,9 +403,9 @@ class PContainer : public PObject
        the function does nothing.
 
        @return
-       TRUE if the instance was already unique.
+       PTrue if the instance was already unique.
      */
-    virtual BOOL MakeUnique();
+    virtual PBoolean MakeUnique();
   //@}
 
   protected:
@@ -524,12 +524,12 @@ class PContainer : public PObject
           Destruct();
         }
 
-        BOOL MakeUnique()
+        PBoolean MakeUnique()
         {
           if (par::MakeUnique())
-            return TRUE;
+            return PTrue;
           CloneContents(c);
-          return FALSE;
+          return PFalse;
         }
 \end{verbatim}
     Then the #DestroyContents()#, #CloneContents()# and #CopyContents()# functions
@@ -543,8 +543,8 @@ class PContainer : public PObject
     cls & operator=(const cls & c) \
       { AssignContents(c); return *this; } \
     virtual ~cls() { Destruct(); } \
-    virtual BOOL MakeUnique() \
-      { if(par::MakeUnique())return TRUE; CloneContents(this);return FALSE; } \
+    virtual PBoolean MakeUnique() \
+      { if(par::MakeUnique())return PTrue; CloneContents(this);return PFalse; } \
   protected: \
     cls(int dummy, const cls * c) : par(dummy, c) { CloneContents(c); } \
     virtual void DestroyContents(); \
@@ -681,9 +681,9 @@ class PCollection : public PContainer
        made by pointer, not by value. Thus the parameter must point to the
        same instance of the object that is in the collection.
 
-       @return TRUE if the object was in the collection.
+       @return PTrue if the object was in the collection.
      */
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     ) = 0;
 
@@ -716,11 +716,11 @@ class PCollection : public PContainer
        ordinal position. Also the exact behaviour when the index is greater
        than the size of the collection depends on the collection type, eg in
        an array collection the array is expanded to accommodate the new index,
-       whereas in a list it will return FALSE.
+       whereas in a list it will return PFalse.
 
-       @return TRUE if the object was successfully added.
+       @return PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     ) = 0;
@@ -757,7 +757,7 @@ class PCollection : public PContainer
     ) const = 0;
 
     /**Allow or disallow the deletion of the objects contained in the
-       collection. If TRUE then whenever an object is removed, overwritten or
+       collection. If PTrue then whenever an object is removed, overwritten or
        the colelction is deleted due to all references being destroyed, the
        object is deleted.
 
@@ -770,7 +770,7 @@ class PCollection : public PContainer
        call to SetAt().
      */
     PINLINE void AllowDeleteObjects(
-      BOOL yes = TRUE   ///< New value for flag for deleting objects
+      PBoolean yes = PTrue   ///< New value for flag for deleting objects
     );
 
     /**Disallow the deletion of the objects contained in the collection. See

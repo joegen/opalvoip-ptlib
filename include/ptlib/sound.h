@@ -231,9 +231,9 @@ class PSound : public PBYTEArray
        format conversions between file and driver are performed.
 
        @return
-       TRUE if the sound is loaded successfully.
+       PTrue if the sound is loaded successfully.
      */
-    BOOL Load(
+    PBoolean Load(
       const PFilePath & filename   ///< Sound file to load.
     );
 
@@ -241,9 +241,9 @@ class PSound : public PBYTEArray
        object.
 
        @return
-       TRUE if the sound is saved successfully.
+       PTrue if the sound is saved successfully.
      */
-    BOOL Save(
+    PBoolean Save(
       const PFilePath & filename   ///< Sound file to load.
     );
   //@}
@@ -251,10 +251,10 @@ class PSound : public PBYTEArray
   /**@name Access functions */
   //@{
     /// Play the sound on the default sound device.
-    BOOL Play();
+    PBoolean Play();
 
     /// Play the sound to the specified sound device.
-    BOOL Play(const PString & device);
+    PBoolean Play(const PString & device);
 
     /**Set the internal sound format to linear PCM at the specification in
        the parameters.
@@ -292,16 +292,16 @@ class PSound : public PBYTEArray
   /**@name Miscellaneous functions */
   //@{
     /**Play a sound file to the default device. If the #wait#
-       parameter is TRUE then the function does not return until the file has
-       been played. If FALSE then the sound play is begun asynchronously and
+       parameter is PTrue then the function does not return until the file has
+       been played. If PFalse then the sound play is begun asynchronously and
        the function returns immediately.
 
        @return
-       TRUE if the sound is playing or has played.
+       PTrue if the sound is playing or has played.
      */
-    static BOOL PlayFile(
+    static PBoolean PlayFile(
       const PFilePath & file, ///< Sound file to play.
-      BOOL wait = TRUE        ///< Flag to play sound synchronously.
+      PBoolean wait = PTrue        ///< Flag to play sound synchronously.
     );
 
     /// Play the "standard" warning beep for the platform.
@@ -478,9 +478,9 @@ class PSoundChannel : public PChannel
        platform specific and is as returned in the GetDevices() function.
 
        @return
-       TRUE if the sound device is valid for playing/recording.
+       PTrue if the sound device is valid for playing/recording.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & device,       ///< Name of sound driver/device
       Directions dir,               ///< Sound I/O direction
       unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
@@ -491,15 +491,15 @@ class PSoundChannel : public PChannel
     /**Test if this instance of PSoundChannel is open.
 
        @return
-       TRUE if this instance is open.
+       PTrue if this instance is open.
      */
-    virtual BOOL IsOpen() const;
+    virtual PBoolean IsOpen() const;
 
     /** Close the channel, shutting down the link to the data source.
 
-       @return TRUE if the channel successfully closed.
+       @return PTrue if the channel successfully closed.
      */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Get the OS specific handle for the PSoundChannel.
 
@@ -514,9 +514,9 @@ class PSoundChannel : public PChannel
     /**Abort the background playing/recording of the sound channel.
 
        @return
-       TRUE if the sound has successfully been aborted.
+       PTrue if the sound has successfully been aborted.
      */
-    virtual BOOL Abort();
+    virtual PBoolean Abort();
   //@}
 
   /**@name Channel set up functions */
@@ -528,9 +528,9 @@ class PSoundChannel : public PChannel
        by information in the file being played.
 
        @return
-       TRUE if the format is valid.
+       PTrue if the format is valid.
      */
-    virtual BOOL SetFormat(
+    virtual PBoolean SetFormat(
       unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
       unsigned sampleRate = 8000,   ///< Samples per second
       unsigned bitsPerSample = 16   ///< Number of bits per sample
@@ -551,9 +551,9 @@ class PSoundChannel : public PChannel
        power of two, so 20000 => 32768.
 
        @return
-       TRUE if the sound device is valid for playing/recording.
+       PTrue if the sound device is valid for playing/recording.
      */
-    virtual BOOL SetBuffers(
+    virtual PBoolean SetBuffers(
       PINDEX size,      ///< Size of each buffer
       PINDEX count = 2  ///< Number of buffers
     );
@@ -561,9 +561,9 @@ class PSoundChannel : public PChannel
     /**Get the internal buffers for the sound channel I/O. 
 
        @return
-       TRUE if the buffer size were obtained.
+       PTrue if the buffer size were obtained.
      */
-    virtual BOOL GetBuffers(
+    virtual PBoolean GetBuffers(
       PINDEX & size,    // Size of each buffer
       PINDEX & count    // Number of buffers
     );
@@ -576,9 +576,9 @@ class PSoundChannel : public PChannel
        The volume range is 0 == quiet.  100 == LOUD.
         
        @return
-       TRUE if there were no errors.
+       PTrue if there were no errors.
     */
-    virtual BOOL SetVolume(
+    virtual PBoolean SetVolume(
       unsigned volume   ///< New volume level
     );
 
@@ -586,9 +586,9 @@ class PSoundChannel : public PChannel
        The volume range is 0 == quiet.  100 == LOUD.
 
        @return
-       TRUE if there were no errors.
+       PTrue if there were no errors.
     */
-    virtual BOOL GetVolume(
+    virtual PBoolean GetVolume(
       unsigned & volume   ///< Variable to receive volume level.
     );
   //@}
@@ -602,18 +602,18 @@ class PSoundChannel : public PChannel
        of bytes written.
                                                                                                                                             
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
  
        @return
-       TRUE if at least len bytes were written to the channel.
+       PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(const void * buf, PINDEX len);
+    virtual PBoolean Write(const void * buf, PINDEX len);
 
     virtual PINDEX GetLastWriteCount() const;
 
     /**Play a sound to the open device. If the #wait# parameter is
-       TRUE then the function does not return until the file has been played.
-       If FALSE then the sound play is begun asynchronously and the function
+       PTrue then the function does not return until the file has been played.
+       If PFalse then the sound play is begun asynchronously and the function
        returns immediately.
 
        Note if the driver is closed of the object destroyed then the sound
@@ -624,16 +624,16 @@ class PSoundChannel : public PChannel
        performed.
 
        @return
-       TRUE if the sound is playing or has played.
+       PTrue if the sound is playing or has played.
      */
 
-    virtual BOOL PlaySound(
+    virtual PBoolean PlaySound(
       const PSound & sound,   ///< Sound to play.
-      BOOL wait = TRUE        ///< Flag to play sound synchronously.
+      PBoolean wait = PTrue        ///< Flag to play sound synchronously.
     );
     /**Play a sound file to the open device. If the #wait#
-       parameter is TRUE then the function does not return until the file has
-       been played. If FALSE then the sound play is begun asynchronously and
+       parameter is PTrue then the function does not return until the file has
+       been played. If PFalse then the sound play is begun asynchronously and
        the function returns immediately.
 
        Note if the driver is closed of the object destroyed then the sound
@@ -644,28 +644,28 @@ class PSoundChannel : public PChannel
        performed.
 
        @return
-       TRUE if the sound is playing or has played.
+       PTrue if the sound is playing or has played.
      */
-    virtual BOOL PlayFile(
+    virtual PBoolean PlayFile(
       const PFilePath & file, ///< Sound file to play.
-      BOOL wait = TRUE        ///< Flag to play sound synchronously.
+      PBoolean wait = PTrue        ///< Flag to play sound synchronously.
     );
 
     /**Indicate if the sound play begun with PlayBuffer() or PlayFile() has
        completed.
 
        @return
-       TRUE if the sound has completed playing.
+       PTrue if the sound has completed playing.
      */
-    virtual BOOL HasPlayCompleted();
+    virtual PBoolean HasPlayCompleted();
 
     /**Block the thread until the sound play begun with PlayBuffer() or
        PlayFile() has completed.
 
        @return
-       TRUE if the sound has successfully completed playing.
+       PTrue if the sound has successfully completed playing.
      */
-    virtual BOOL WaitForPlayCompletion();
+    virtual PBoolean WaitForPlayCompletion();
 
   //@}
 
@@ -677,13 +677,13 @@ class PSoundChannel : public PChannel
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -705,9 +705,9 @@ class PSoundChannel : public PChannel
        without blocking.
 
        @return
-       TRUE if the sound has been recorded.
+       PTrue if the sound has been recorded.
      */
-    virtual BOOL RecordSound(
+    virtual PBoolean RecordSound(
       PSound & sound ///< Sound recorded
     );
 
@@ -721,9 +721,9 @@ class PSoundChannel : public PChannel
        without blocking.
 
        @return
-       TRUE if the sound has been recorded.
+       PTrue if the sound has been recorded.
      */
-    virtual BOOL RecordFile(
+    virtual PBoolean RecordFile(
       const PFilePath & file ///< Sound file recorded
     );
 
@@ -731,18 +731,18 @@ class PSoundChannel : public PChannel
        initiate the recording.
 
        @return
-       TRUE if the sound driver has successfully started recording.
+       PTrue if the sound driver has successfully started recording.
      */
-    virtual BOOL StartRecording();
+    virtual PBoolean StartRecording();
 
     /**Determine if a record buffer has been filled, so that the next Read()
        call will not block. Provided that the amount of data read is less than
        the buffer size.
 
        @return
-       TRUE if the sound driver has filled a buffer.
+       PTrue if the sound driver has filled a buffer.
      */
-    virtual BOOL IsRecordBufferFull();
+    virtual PBoolean IsRecordBufferFull();
 
     /**Determine if all of the record buffer allocated has been filled. There
        is an implicit Abort() of the recording if this occurs and recording is
@@ -750,18 +750,18 @@ class PSoundChannel : public PChannel
        a new recording.
 
        @return
-       TRUE if the sound driver has filled a buffer.
+       PTrue if the sound driver has filled a buffer.
      */
-    virtual BOOL AreAllRecordBuffersFull();
+    virtual PBoolean AreAllRecordBuffersFull();
 
     /**Block the thread until a record buffer has been filled, so that the
        next Read() call will not block. Provided that the amount of data read
        is less than the buffer size.
 
        @return
-       TRUE if the sound driver has filled a buffer.
+       PTrue if the sound driver has filled a buffer.
      */
-    virtual BOOL WaitForRecordBufferFull();
+    virtual PBoolean WaitForRecordBufferFull();
 
     /**Block the thread until all of the record buffer allocated has been
        filled. There is an implicit Abort() of the recording if this occurs
@@ -769,9 +769,9 @@ class PSoundChannel : public PChannel
        again to start a new recording.
 
        @return
-       TRUE if the sound driver has filled a buffer.
+       PTrue if the sound driver has filled a buffer.
      */
-    virtual BOOL WaitForAllRecordBuffersFull();
+    virtual PBoolean WaitForAllRecordBuffersFull();
   //@}
 
   protected:

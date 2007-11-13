@@ -471,7 +471,7 @@ static const char *bridges_with_352x288_fixed_width[] = {
 };
 #endif
 
-#define HINT(h) ((driver_hints[hint_index].hints & h) ? TRUE : FALSE)
+#define HINT(h) ((driver_hints[hint_index].hints & h) ? PTrue : PFalse)
 #define MAJOR(a) (int)((unsigned short) (a) >> 8)
 #define MINOR(a) (int)((unsigned short) (a) & 0xFF) 
 // this is used to get more userfriendly names:
@@ -522,10 +522,10 @@ V4LNames::Update()
           int videoFd = ::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
 
           if ((videoFd > 0) || (errno == EBUSY)){
-            BOOL valid = FALSE;
+            PBoolean valid = PFalse;
             struct video_capability  videoCaps;
             if (ioctl(videoFd, VIDIOCGCAP, &videoCaps) >= 0 && (videoCaps.type & VID_TYPE_CAPTURE) != 0)
-              valid = TRUE;
+              valid = PTrue;
             if (videoFd >= 0)
               close(videoFd); 
             if (valid)
@@ -709,7 +709,7 @@ PVideoInputDevice_V4L::PVideoInputDevice_V4L()
 
   canMap           = -1;
   for (int i=0; i<2; i++)
-    pendingSync[i] = FALSE;
+    pendingSync[i] = PFalse;
 }
 
 PVideoInputDevice_V4L::~PVideoInputDevice_V4L()
@@ -744,7 +744,7 @@ static struct {
 };
 
 
-BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
+PBoolean PVideoInputDevice_V4L::Open(const PString & devName, PBoolean startImmediate)
 {
   struct utsname buf;
   PString version;
@@ -764,21 +764,21 @@ BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
   videoFd = ::open((const char *)deviceName, O_RDWR);
   if (videoFd < 0) {
     PTRACE(1,"PVideoInputDevice_V4L::Open failed : "<< ::strerror(errno));
-    return FALSE;
+    return PFalse;
   }
   
   // get the device capabilities
   if (!RefreshCapabilities()) {
     ::close (videoFd);
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   }
   
   if ((videoCapability.type & VID_TYPE_CAPTURE) == 0) {
     PTRACE(1,"PVideoInputDevice_V4L:: device capablilities reports cannot capture");
     ::close (videoFd);
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   }
 
   hint_index = PARRAYSIZE(driver_hints) - 1;
@@ -829,15 +829,15 @@ BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
 	/* Only check if the called doesn't return an error */
 	for (tbl = 0; tbl < PARRAYSIZE(bridges_with_640x480_fixed_width); tbl ++) {
 	   if (strcmp(bridges_with_640x480_fixed_width[tbl], channel.name) == 0) {
-	      BOOL false_positive = FALSE;
+	      PBoolean false_positive = PFalse;
 	      unsigned int idx;
 	      for (idx = 0; idx < PARRAYSIZE(sensors_with_352x288_fixed_width); idx++) {
 		 if (strcmp(sensors_with_352x288_fixed_width[idx], videoCapability.name) == 0) {
-		    false_positive = TRUE;
+		    false_positive = PTrue;
 		    break;
 		 }
 	      }
-	      if (false_positive == FALSE) {
+	      if (false_positive == PFalse) {
 		 PTRACE(1,"PVideoInputDevice_V4L::Open: Found fixed 640x480 sensor");
 		 hint_index = 0;
 		 break;
@@ -873,20 +873,20 @@ BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
     ::ioctl(videoFd, VIDIOCSAUDIO, &videoAudio);
     } 
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::IsOpen() 
+PBoolean PVideoInputDevice_V4L::IsOpen() 
 {
   return videoFd >= 0;
 }
 
 
-BOOL PVideoInputDevice_V4L::Close()
+PBoolean PVideoInputDevice_V4L::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
 
   // Mute audio
@@ -903,23 +903,23 @@ BOOL PVideoInputDevice_V4L::Close()
   videoFd = -1;
   canMap  = -1;
   
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::Start()
+PBoolean PVideoInputDevice_V4L::Start()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::Stop()
+PBoolean PVideoInputDevice_V4L::Stop()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::IsCapturing()
+PBoolean PVideoInputDevice_V4L::IsCapturing()
 {
   return IsOpen();
 }
@@ -930,11 +930,11 @@ PStringList PVideoInputDevice_V4L::GetInputDeviceNames()
   return GetNames().GetInputDeviceNames();
 }
 
-BOOL PVideoInputDevice_V4L::SetVideoFormat(VideoFormat newFormat)
+PBoolean PVideoInputDevice_V4L::SetVideoFormat(VideoFormat newFormat)
 {
   if (!PVideoDevice::SetVideoFormat(newFormat)) {
     PTRACE(1,"PVideoDevice::SetVideoFormat\t failed");
-    return FALSE;
+    return PFalse;
   }
 
   // The channel and format are both set at the same time with one ioctl().
@@ -943,7 +943,7 @@ BOOL PVideoInputDevice_V4L::SetVideoFormat(VideoFormat newFormat)
   if (channelNumber == -1) {
     if (!SetChannel(channelNumber)){
       PTRACE(1,"PVideoDevice::Cannot set default channel in SetVideoFormat");
-      return FALSE;
+      return PFalse;
     }
   }
 
@@ -951,7 +951,7 @@ BOOL PVideoInputDevice_V4L::SetVideoFormat(VideoFormat newFormat)
   channel.channel = channelNumber;
   if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
     PTRACE(1,"VideoInputDevice Get Channel info failed : "<< ::strerror(errno));    
-    return FALSE;
+    return PFalse;
   }
   
   // set channel information
@@ -963,22 +963,22 @@ BOOL PVideoInputDevice_V4L::SetVideoFormat(VideoFormat newFormat)
   if (::ioctl(videoFd, VIDIOCSCHAN, &channel) >= 0) {
     // format change might affect frame size limits; grab them again
     RefreshCapabilities();
-    return TRUE;
+    return PTrue;
   }
 
   PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
 
   if (newFormat != Auto)
-    return FALSE;
+    return PFalse;
 
   if (SetVideoFormat(PAL))
-    return TRUE;
+    return PTrue;
   if (SetVideoFormat(NTSC))
-    return TRUE;
+    return PTrue;
   if (SetVideoFormat(SECAM))
-    return TRUE;
+    return PTrue;
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -992,17 +992,17 @@ int PVideoInputDevice_V4L::GetNumChannels()
 }
 
 
-BOOL PVideoInputDevice_V4L::SetChannel(int newChannel)
+PBoolean PVideoInputDevice_V4L::SetChannel(int newChannel)
 {
   if (!PVideoDevice::SetChannel(newChannel))
-    return FALSE;
+    return PFalse;
 
   // get channel information (to check if channel is valid)
   struct video_channel channel;
   channel.channel = channelNumber;
   if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
     PTRACE(1,"VideoInputDevice:: Get info on channel " << channelNumber << " failed : "<< ::strerror(errno));    
-    return FALSE;
+    return PFalse;
   }
   
   // set channel information
@@ -1011,24 +1011,24 @@ BOOL PVideoInputDevice_V4L::SetChannel(int newChannel)
   // set the information
   if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
     PTRACE(1,"VideoInputDevice:: Set info on channel " << channelNumber << " failed : "<< ::strerror(errno));    
-    return FALSE;
+    return PFalse;
   }
   
   // it's unlikely that channel change would affect frame size limits,
   // but grab them again all the same
   RefreshCapabilities();
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::SetVideoChannelFormat (int newNumber, VideoFormat videoFormat) 
+PBoolean PVideoInputDevice_V4L::SetVideoChannelFormat (int newNumber, VideoFormat videoFormat) 
 {
   if (!PVideoDevice::SetChannel(newNumber))
-    return FALSE;
+    return PFalse;
 
   if (!PVideoDevice::SetVideoFormat(videoFormat)) {
     PTRACE(1,"PVideoDevice::SetVideoFormat\t failed");
-    return FALSE;
+    return PFalse;
   }
 
   static int fmt[4] = { VIDEO_MODE_PAL, VIDEO_MODE_NTSC, 
@@ -1041,7 +1041,7 @@ BOOL PVideoInputDevice_V4L::SetVideoChannelFormat (int newNumber, VideoFormat vi
   if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
     PTRACE(1,"VideoInputDevice Get Channel info failed : "<< ::strerror(errno));    
 
-    return FALSE;
+    return PFalse;
   }
   
   // set channel information
@@ -1052,25 +1052,25 @@ BOOL PVideoInputDevice_V4L::SetVideoChannelFormat (int newNumber, VideoFormat vi
   if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
     PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
 
-    return FALSE;
+    return PFalse;
   }
 
   // format change may affect frame size limits
   RefreshCapabilities();
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
+PBoolean PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
 {
   PINDEX colourFormatIndex = 0;
   while (newFormat != colourFormatTab[colourFormatIndex].colourFormat) {
     colourFormatIndex++;
     if (colourFormatIndex >= PARRAYSIZE(colourFormatTab))
-      return FALSE;
+      return PFalse;
   }
 
   if (!PVideoDevice::SetColourFormat(newFormat))
-    return FALSE;
+    return PFalse;
 
   ClearMapping();
 
@@ -1078,7 +1078,7 @@ BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
   struct video_picture pictureInfo;
   if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
     PTRACE(1,"PVideoInputDevice_V4L::Get pict info failed : "<< ::strerror(errno));
-    return FALSE;
+    return PFalse;
   }
   
   // set colour format
@@ -1092,7 +1092,7 @@ BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
     PTRACE(1,"PVideoInputDevice_V4L::Set pict info failed : "<< ::strerror(errno));
     PTRACE(1,"PVideoInputDevice_V4L:: used code of "<<colourFormatCode);
     PTRACE(1,"PVideoInputDevice_V4L:: palette: "<<colourFormatTab[colourFormatIndex].colourFormat);
-    return FALSE;
+    return PFalse;
   }
   
 
@@ -1100,7 +1100,7 @@ BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
   if( (HINT(HINT_ONLY_WORKS_PREF_PALETTE) ) &&                   
       ( colourFormatCode == driver_hints[hint_index].pref_palette) ) {
     PTRACE(3,"PVideoInputDevice_V4L:: SetColourFormat succeeded with "<<newFormat);
-    return TRUE;
+    return PTrue;
   }
 
   // Some drivers always return success for CSPICT, and can't
@@ -1112,18 +1112,18 @@ BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
       HINT(HINT_CGPICT_DOESNT_SET_PALETTE) &&
       HINT(HINT_HAS_PREF_PALETTE)) {
       if (colourFormatCode != driver_hints[hint_index].pref_palette)
-        return FALSE;
+        return PFalse;
   }
 
   // Some V4L drivers can't use CGPICT to check for errors.
   if (!HINT(HINT_CGPICT_DOESNT_SET_PALETTE)) {
     if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
       PTRACE(1,"PVideoInputDevice_V4L::Get pict info failed : "<< ::strerror(errno));
-      return FALSE;
+      return PFalse;
     }
     
     if (pictureInfo.palette != colourFormatCode)
-      return FALSE;
+      return PFalse;
   }
   
   // set the new information
@@ -1131,22 +1131,22 @@ BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
 }
 
 
-BOOL PVideoInputDevice_V4L::SetFrameRate(unsigned rate)
+PBoolean PVideoInputDevice_V4L::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate))
-    return FALSE;
+    return PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::GetFrameSizeLimits(unsigned & minWidth,
+PBoolean PVideoInputDevice_V4L::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & minHeight,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if(HINT(HINT_FORCE_LARGE_SIZE)) {
     videoCapability.maxheight = 288;
@@ -1162,16 +1162,16 @@ BOOL PVideoInputDevice_V4L::GetFrameSizeLimits(unsigned & minWidth,
     
   PTRACE(3,"PVideoInputDevice_V4L:\t GetFrameSizeLimits. "<<minWidth<<"x"<<minHeight<<" -- "<<maxWidth<<"x"<<maxHeight);
   
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_V4L::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoInputDevice_V4L::SetFrameSize(unsigned width, unsigned height)
 {
   PTRACE(5, "PVideoInputDevice_V4L\t SetFrameSize " << width <<"x"<<height << " Initiated.");
   if (!PVideoDevice::SetFrameSize(width, height)) {
     PTRACE(3,"PVideoInputDevice_V4L\t SetFrameSize "<<width<<"x"<<height<<" FAILED");
-    return FALSE;
+    return PFalse;
   }
 
   ClearMapping();
@@ -1179,12 +1179,12 @@ BOOL PVideoInputDevice_V4L::SetFrameSize(unsigned width, unsigned height)
   if (!VerifyHardwareFrameSize(width, height)) {
     PTRACE(3,"PVideoInputDevice_V4L\t SetFrameSize failed for "<<width<<"x"<<height);
     PTRACE(3,"VerifyHardwareFrameSize failed.");
-    return FALSE;
+    return PFalse;
   }
 
   frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1194,14 +1194,14 @@ PINDEX PVideoInputDevice_V4L::GetMaxFrameBytes()
 }
 
 
-BOOL PVideoInputDevice_V4L::GetFrameData(BYTE *buffer, PINDEX *bytesReturned)
+PBoolean PVideoInputDevice_V4L::GetFrameData(BYTE *buffer, PINDEX *bytesReturned)
 {
   m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
 
-BOOL PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+PBoolean PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   if (canMap < 0) {
     //When canMap is < 0, it is the first use of GetFrameData. Check for memory mapping.
@@ -1238,7 +1238,7 @@ BOOL PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRet
           canMap = 0;
           //This video device cannot do memory mapping.
         }
-        pendingSync[currentFrame] = TRUE;
+        pendingSync[currentFrame] = PTrue;
       }
     }
   }
@@ -1283,13 +1283,13 @@ BOOL PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRet
     
     return NormalReadProcess(buffer, bytesReturned);
   }
-  pendingSync[ 1 - currentFrame ] = TRUE;
+  pendingSync[ 1 - currentFrame ] = PTrue;
   
   // device does support memory mapping, get data
 
   // wait for the frame to load. 
   ret = ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
-  pendingSync[currentFrame] = FALSE;    
+  pendingSync[currentFrame] = PFalse;    
   if (ret < 0) {
     PTRACE(1,"PVideoInputDevice_V4L::GetFrameData csync failed : " << ::strerror(errno));
     ClearMapping();
@@ -1311,12 +1311,12 @@ BOOL PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRet
   // change buffers
   currentFrame = 1 - currentFrame;
 
-  return TRUE;
+  return PTrue;
 }
 
 //This video device does not support memory mapping - so 
 // use normal read process to extract a frame of video data.
-BOOL PVideoInputDevice_V4L::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesReturned)
+PBoolean PVideoInputDevice_V4L::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesReturned)
 { 
 
    ssize_t ret;
@@ -1329,15 +1329,15 @@ BOOL PVideoInputDevice_V4L::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesR
     
       if (ret < 0) {
         PTRACE(1,"PVideoInputDevice_V4L::NormalReadProcess() failed");
-        return FALSE;
+        return PFalse;
       }      
     }
 
     if ((PINDEX)ret != frameBytes) {
       PTRACE(1,"PVideoInputDevice_V4L::NormalReadProcess() returned a short read");
-      // Not a completely fatal. Maybe it should return FALSE instead of a partial
+      // Not a completely fatal. Maybe it should return PFalse instead of a partial
       // image though?
-      // return FALSE;
+      // return PFalse;
     }
     
     if (converter != NULL)
@@ -1346,7 +1346,7 @@ BOOL PVideoInputDevice_V4L::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesR
     if (bytesReturned != NULL)
       *bytesReturned = frameBytes;
 
-    return TRUE;
+    return PTrue;
 }
 
 void PVideoInputDevice_V4L::ClearMapping()
@@ -1357,7 +1357,7 @@ void PVideoInputDevice_V4L::ClearMapping()
         int res = ::ioctl(videoFd, VIDIOCSYNC, &i);
         if (res < 0) 
           PTRACE(1,"PVideoInputDevice_V4L::GetFrameData csync failed : " << ::strerror(errno));
-          pendingSync[i] = FALSE;    
+          pendingSync[i] = PFalse;    
         }
         ::munmap(videoBuffer, frame.size);
     }
@@ -1369,39 +1369,39 @@ void PVideoInputDevice_V4L::ClearMapping()
 
 
 
-BOOL PVideoInputDevice_V4L::VerifyHardwareFrameSize(unsigned width, unsigned height)
+PBoolean PVideoInputDevice_V4L::VerifyHardwareFrameSize(unsigned width, unsigned height)
 {
   struct video_window vwin;
 
   if (HINT(HINT_FORCE_LARGE_SIZE))
     if(  (width==352) && (height==288) ) {
       PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize USB OK  352x288 ");
-      return TRUE;
+      return PTrue;
     } else {
       PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize USB FAIL "<<width<<"x"<<height);
-      return FALSE;
+      return PFalse;
     }
     
   if (HINT(HINT_ALWAYS_WORKS_320_240) &&  (width==320) && (height==240) ) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize OK  for  320x240 ");
-    return TRUE;
+    return PTrue;
   }
     
   if (HINT(HINT_ALWAYS_WORKS_640_480) &&  (width==640) && (height==480) ) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize OK for 640x480 ");
-    return TRUE;
+    return PTrue;
   }
      
   if (HINT(HINT_CGWIN_FAILS)) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize fails for size "
             << width << "x" << height);
-    return FALSE;
+    return PFalse;
   }
   
   // Request current hardware frame size
   if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize VIDIOCGWIN1 error::" << ::strerror(errno));
-    return FALSE;
+    return PFalse;
   }
 
   // Request the width and height
@@ -1422,15 +1422,15 @@ BOOL PVideoInputDevice_V4L::VerifyHardwareFrameSize(unsigned width, unsigned hei
   // Read back settings to be careful about existing (broken) V4L drivers
   if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize VIDIOCGWIN2 error::" << ::strerror(errno));
-    return FALSE;
+    return PFalse;
   }
   
   if ((vwin.width != width) || (vwin.height != height)) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize Size mismatch.");
-    return FALSE;
+    return PFalse;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 int PVideoInputDevice_V4L::GetBrightness() 
@@ -1506,106 +1506,106 @@ int PVideoInputDevice_V4L::GetHue()
   return frameHue; 
 }
 
-BOOL PVideoInputDevice_V4L::SetBrightness(unsigned newBrightness) 
+PBoolean PVideoInputDevice_V4L::SetBrightness(unsigned newBrightness) 
 { 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   vp.brightness = newBrightness;
   if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   frameBrightness=newBrightness;
-  return TRUE;
+  return PTrue;
 }
-BOOL PVideoInputDevice_V4L::SetWhiteness(unsigned newWhiteness) 
+PBoolean PVideoInputDevice_V4L::SetWhiteness(unsigned newWhiteness) 
 { 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   vp.whiteness = newWhiteness;
   if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   frameWhiteness = newWhiteness;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_V4L::SetColour(unsigned newColour) 
+PBoolean PVideoInputDevice_V4L::SetColour(unsigned newColour) 
 { 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   vp.colour = newColour;
   if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   frameColour = newColour;
-  return TRUE;
+  return PTrue;
 }
-BOOL PVideoInputDevice_V4L::SetContrast(unsigned newContrast) 
+PBoolean PVideoInputDevice_V4L::SetContrast(unsigned newContrast) 
 { 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   vp.contrast = newContrast;
   if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   frameContrast = newContrast;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_V4L::SetHue(unsigned newHue) 
+PBoolean PVideoInputDevice_V4L::SetHue(unsigned newHue) 
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
   vp.hue = newHue;
   if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return FALSE;
+    return PFalse;
 
    frameHue=newHue; 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_V4L::GetParameters (int *whiteness, int *brightness, 
+PBoolean PVideoInputDevice_V4L::GetParameters (int *whiteness, int *brightness, 
                                       int *colour, int *contrast, int *hue)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
     {
       PTRACE(3, "GetParams bombs out!");
-      return FALSE;
+      return PFalse;
     }
 
   *brightness = vp.brightness;
@@ -1620,21 +1620,21 @@ BOOL PVideoInputDevice_V4L::GetParameters (int *whiteness, int *brightness,
   frameHue        = *hue;
   frameWhiteness  = *whiteness;
  
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_V4L::TestAllFormats()
+PBoolean PVideoInputDevice_V4L::TestAllFormats()
 {
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_V4L::RefreshCapabilities()
+PBoolean PVideoInputDevice_V4L::RefreshCapabilities()
 {
   if (::ioctl(videoFd, VIDIOCGCAP, &videoCapability) < 0)  {
     PTRACE(1,"PVideoInputV4lDevice:: get device capablilities failed : "<< ::strerror(errno));
-    return FALSE;
+    return PFalse;
   }
-  return TRUE;
+  return PTrue;
 }
 
 

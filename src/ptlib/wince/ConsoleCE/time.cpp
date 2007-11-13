@@ -198,7 +198,7 @@ static SYSTEMTIME TmToSystemTime(tm &t)
 }
 
 static TIME_ZONE_INFORMATION gTZInfoCache;
-static BOOL gbTZInfoCacheInitialized = FALSE;
+static PBoolean gbTZInfoCacheInitialized = PFalse;
 
 static void GetTZBias(int* pTZBiasSecs = NULL, int* pDSTBiasSecs = NULL)
 {
@@ -206,7 +206,7 @@ static void GetTZBias(int* pTZBiasSecs = NULL, int* pDSTBiasSecs = NULL)
 	{
 		if( GetTimeZoneInformation(&gTZInfoCache) == 0xFFFFFFFF)
 			return;
-		gbTZInfoCacheInitialized = TRUE;
+		gbTZInfoCacheInitialized = PTrue;
 	}
 
 	if(pTZBiasSecs != NULL)
@@ -293,7 +293,7 @@ static void cvtdate (int trantype, int year, int month, int week, int dayofweek,
 	const int DAY_MILLISEC     = (24L * 60L * 60L * 1000L);
 	const int BASE_DOW         = 4; //
 	const int LEAP_YEAR_ADJUST = 17L; 
-	BOOL bIsLeapYear = ((year & 3) == 0);
+	PBoolean bIsLeapYear = ((year & 3) == 0);
 
 	int yearday;
 	int monthdow;
@@ -335,7 +335,7 @@ static void cvtdate (int trantype, int year, int month, int week, int dayofweek,
 	}
 }
 
-static gbUseDST = TRUE;
+static gbUseDST = PTrue;
 
 int isindst(struct tm *pt)
 {

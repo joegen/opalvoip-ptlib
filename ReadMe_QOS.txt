@@ -8,7 +8,7 @@ This document explains the revised QOS implementation for PTLIB and openh323.
 ============
 Update 25.4.05:
 802.1p/q is now supported natively however is disabled 
-To enable set the Static PUDPSocket::disableQoS = FALSE;
+To enable set the Static PUDPSocket::disableQoS = PFalse;
 
 QoS support is now negotiated between the calling parties
 and will only functions when both parties have.

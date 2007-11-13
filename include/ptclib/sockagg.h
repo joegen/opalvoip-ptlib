@@ -154,8 +154,8 @@ class PAggregatedHandle : public PObject
 {
   PCLASSINFO(PAggregatedHandle, PObject);
   public:
-    PAggregatedHandle(BOOL _autoDelete = FALSE)
-      : autoDelete(_autoDelete), closed(FALSE), beingProcessed(FALSE), preReadDone(FALSE)
+    PAggregatedHandle(PBoolean _autoDelete = PFalse)
+      : autoDelete(_autoDelete), closed(PFalse), beingProcessed(PFalse), preReadDone(PFalse)
     { }
 
     virtual PAggregatorFDList_t GetFDs() = 0;
@@ -163,24 +163,24 @@ class PAggregatedHandle : public PObject
     virtual PTimeInterval GetTimeout()
     { return PMaxTimeInterval; }
 
-    virtual BOOL Init()      { return TRUE; }
-    virtual BOOL PreRead()   { return TRUE; }
-    virtual BOOL OnRead() = 0;
+    virtual PBoolean Init()      { return PTrue; }
+    virtual PBoolean PreRead()   { return PTrue; }
+    virtual PBoolean OnRead() = 0;
     virtual void DeInit()    { }
     virtual void OnClose()   { }
 
-    virtual BOOL IsPreReadDone() const
+    virtual PBoolean IsPreReadDone() const
     { return preReadDone; }
 
-    virtual void SetPreReadDone(BOOL v = TRUE)
+    virtual void SetPreReadDone(PBoolean v = PTrue)
     { preReadDone = v; }
 
-    BOOL autoDelete;
-    BOOL closed;
-    BOOL beingProcessed;
+    PBoolean autoDelete;
+    PBoolean closed;
+    PBoolean beingProcessed;
 
   protected:
-    BOOL preReadDone;
+    PBoolean preReadDone;
 };
 
 #ifdef _MSC_VER
@@ -219,17 +219,17 @@ class PHandleAggregator : public PObject
 
         EventBase & event;
         PAggregatedHandleList_t handleList;
-        BOOL listChanged;
-        BOOL shutdown;
+        PBoolean listChanged;
+        PBoolean shutdown;
     };
 
     typedef std::vector<WorkerThreadBase *> WorkerList_t;
 
     PHandleAggregator(unsigned _max = 10);
 
-    BOOL AddHandle(PAggregatedHandle * handle);
+    PBoolean AddHandle(PAggregatedHandle * handle);
 
-    BOOL RemoveHandle(PAggregatedHandle * handle);
+    PBoolean RemoveHandle(PAggregatedHandle * handle);
 
     PMutex listMutex;
     WorkerList_t workers;
@@ -254,7 +254,7 @@ class PSocketAggregator : public PHandleAggregator
         AggregatedPSocket(PSocketType * _s)
           : psocket(_s), fd(_s->GetHandle()) { }
 
-        BOOL OnRead()
+        PBoolean OnRead()
         { return psocket->OnRead(); }
 
         PAggregatorFDList_t GetFDs()
@@ -268,7 +268,7 @@ class PSocketAggregator : public PHandleAggregator
     typedef std::map<PSocketType *, AggregatedPSocket *> SocketList_t;
     SocketList_t socketList;
 
-    BOOL AddSocket(PSocketType * sock)
+    PBoolean AddSocket(PSocketType * sock)
     { 
       PWaitAndSignal m(listMutex);
 
@@ -282,19 +282,19 @@ class PSocketAggregator : public PHandleAggregator
       return false;
     }
 
-    BOOL RemoveSocket(PSocketType * sock)
+    PBoolean RemoveSocket(PSocketType * sock)
     { 
       PWaitAndSignal m(listMutex);
 
       typename SocketList_t::iterator r = socketList.find(sock);
       if (r == socketList.end()) 
-        return FALSE;
+        return PFalse;
 
       AggregatedPSocket * handle = r->second;
       RemoveHandle(handle);
       delete handle;
       socketList.erase(r);
-      return TRUE;
+      return PTrue;
     }
 };
 

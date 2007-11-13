@@ -133,7 +133,7 @@ void Threadex::Main()
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
          << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(TRUE) << endl
+         << "Version     : " << GetVersion(PTrue) << endl
          << "System      : " << GetOSName() << '-'
          << GetOSHardware() << ' '
          << GetOSVersion() << endl;
@@ -183,7 +183,7 @@ DelayThread::DelayThread(PINDEX _delay)
   PTRACE(5, "Constructor for a non auto deleted delay thread");
 }    
 
-DelayThread::DelayThread(PINDEX _delay, BOOL)
+DelayThread::DelayThread(PINDEX _delay, PBoolean)
   : PThread(10000, AutoDeleteThread), delay(_delay)
 {
   PTRACE(5, "Constructor for an auto deleted  delay thread");
@@ -213,7 +213,7 @@ void LauncherThread::AutoCreatedMain(PThread &, INT param)
 void LauncherThread::Main()
 {
   PINDEX delay = Threadex::Current().Delay();
-  BOOL   doCreate = Threadex::Current().Create();
+  PBoolean   doCreate = Threadex::Current().Create();
 
   PThread *thread = NULL;
   if (Threadex::Current().AutoDelete()) {
@@ -224,7 +224,7 @@ void LauncherThread::Main()
                                      PThread::NormalPriority,
                                      "auto deleted %X");
       } else {
-	thread = new DelayThread(delay, TRUE);
+	thread = new DelayThread(delay, PTrue);
 	thread->Resume();
       }
       //     PThread::Sleep(1);

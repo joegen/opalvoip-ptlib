@@ -168,19 +168,19 @@ PRASDLL::PRASDLL()
 #define new PNEW
 
 
-static BOOL IsWinVer401()
+static PBoolean IsWinVer401()
 {
   OSVERSIONINFO verinf;
   verinf.dwOSVersionInfoSize = sizeof(verinf);
   GetVersionEx(&verinf);
 
   if (verinf.dwPlatformId != VER_PLATFORM_WIN32_NT)
-    return FALSE;
+    return PFalse;
 
   if (verinf.dwMajorVersion < 4)
-    return FALSE;
+    return PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -203,10 +203,10 @@ PRemoteConnection::~PRemoteConnection()
 }
 
 
-BOOL PRemoteConnection::Open(const PString & name,
+PBoolean PRemoteConnection::Open(const PString & name,
                              const PString & user,
                              const PString & pass,
-                             BOOL existing)
+                             PBoolean existing)
 {
   if (name != remoteName) {
     Close();
@@ -218,7 +218,7 @@ BOOL PRemoteConnection::Open(const PString & name,
 }
 
 
-BOOL PRemoteConnection::Open(const PString & name, BOOL existing)
+PBoolean PRemoteConnection::Open(const PString & name, PBoolean existing)
 {
   if (name != remoteName) {
     Close();
@@ -248,13 +248,13 @@ void PRemoteConnection::Construct()
 }
 
 
-BOOL PRemoteConnection::Open(BOOL existing)
+PBoolean PRemoteConnection::Open(PBoolean existing)
 {
   Close();
   if (!Ras.IsLoaded())
-    return FALSE;
+    return PFalse;
 
-  BOOL isVer401 = IsWinVer401();
+  PBoolean isVer401 = IsWinVer401();
 
   RASCONN connection;
   connection.dwSize = isVer401 ? sizeof(RASCONN) : SizeWin400_RASCONN;
@@ -284,12 +284,12 @@ BOOL PRemoteConnection::Open(BOOL existing)
 
   if (rasConnection != NULL && GetStatus() == Connected) {
     osError = 0;
-    return TRUE;
+    return PTrue;
   }
   rasConnection = NULL;
 
   if (existing)
-    return FALSE;
+    return PFalse;
 
   RASDIALPARAMS params;
   memset(&params, 0, sizeof(params));
@@ -308,7 +308,7 @@ BOOL PRemoteConnection::Open(BOOL existing)
 
   osError = Ras.Dial(NULL, NULL, &params, 0, NULL, &rasConnection);
   if (osError == 0)
-    return TRUE;
+    return PTrue;
 
   if (rasConnection != NULL) {
     Ras.HangUp(rasConnection);
@@ -316,7 +316,7 @@ BOOL PRemoteConnection::Open(BOOL existing)
   }
 
   SetLastError(osError);
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -548,7 +548,7 @@ PRemoteConnection::Status
 
 
 PRemoteConnection::Status
-      PRemoteConnection::SetConfiguration(const Configuration & config, BOOL create)
+      PRemoteConnection::SetConfiguration(const Configuration & config, PBoolean create)
 {
   return SetConfiguration(remoteName, config, create);
 }
@@ -557,7 +557,7 @@ PRemoteConnection::Status
 PRemoteConnection::Status
       PRemoteConnection::SetConfiguration(const PString & name,
                                           const Configuration & config,
-                                          BOOL create)
+                                          PBoolean create)
 {
   if (!Ras.IsLoaded() || Ras.SetEntryProperties == NULL || Ras.ValidateEntryName == NULL)
     return NotInstalled;

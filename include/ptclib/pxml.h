@@ -112,7 +112,7 @@ class PXMLParser : public PObject
 
     PXMLParser(int options = -1);
     ~PXMLParser();
-    BOOL Parse(const char * data, int dataLen, BOOL final);
+    PBoolean Parse(const char * data, int dataLen, PBoolean final);
     void GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX & errorLine);
 
     virtual void StartElement(const char * name, const char **attrs);
@@ -129,7 +129,7 @@ class PXMLParser : public PObject
 
     PString GetVersion() const  { return version; }
     PString GetEncoding() const { return encoding; }
-    BOOL GetStandAlone() const  { return standAlone; }
+    PBoolean GetStandAlone() const  { return standAlone; }
 
     PXMLElement * GetXMLTree() const;
     PXMLElement * SetXMLTree(PXMLElement * newRoot);
@@ -161,11 +161,11 @@ class PXMLBase : public PObject
 
     int GetOptions() const { return options; }
 
-    virtual BOOL IsNoIndentElement(
+    virtual PBoolean IsNoIndentElement(
       const PString & /*elementName*/
     ) const
     {
-      return FALSE;
+      return PFalse;
     }
 
   protected:
@@ -192,32 +192,32 @@ class PXML : public PXMLBase
 
     ~PXML();
 
-    BOOL IsDirty() const;
+    PBoolean IsDirty() const;
 
-    BOOL Load(const PString & data, int options = -1);
+    PBoolean Load(const PString & data, int options = -1);
 
-    BOOL StartAutoReloadURL(const PURL & url, 
+    PBoolean StartAutoReloadURL(const PURL & url, 
                             const PTimeInterval & timeout, 
                             const PTimeInterval & refreshTime,
                             int _options = -1);
-    BOOL StopAutoReloadURL();
+    PBoolean StopAutoReloadURL();
     PString GetAutoReloadStatus() { PWaitAndSignal m(autoLoadMutex); PString str = autoLoadError; return str; }
-    BOOL AutoLoadURL();
-    virtual void OnAutoLoad(BOOL ok);
+    PBoolean AutoLoadURL();
+    virtual void OnAutoLoad(PBoolean ok);
 
-    BOOL LoadURL(const PURL & url);
-    BOOL LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
-    BOOL LoadFile(const PFilePath & fn, int options = -1);
+    PBoolean LoadURL(const PURL & url);
+    PBoolean LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
+    PBoolean LoadFile(const PFilePath & fn, int options = -1);
 
     virtual void OnLoaded() { }
 
-    BOOL Save(int options = -1);
-    BOOL Save(PString & data, int options = -1);
-    BOOL SaveFile(const PFilePath & fn, int options = -1);
+    PBoolean Save(int options = -1);
+    PBoolean Save(PString & data, int options = -1);
+    PBoolean SaveFile(const PFilePath & fn, int options = -1);
 
     void RemoveAll();
 
-    BOOL IsNoIndentElement(
+    PBoolean IsNoIndentElement(
       const PString & elementName
     ) const;
 
@@ -229,7 +229,7 @@ class PXML : public PXMLBase
     PXMLElement * GetRootElement() const { return rootElement; }
     PXMLElement * SetRootElement(PXMLElement * p);
     PXMLElement * SetRootElement(const PString & documentType);
-    BOOL          RemoveElement(PINDEX idx);
+    PBoolean          RemoveElement(PINDEX idx);
 
     PCaselessString GetDocumentType() const;
 
@@ -256,7 +256,7 @@ class PXML : public PXMLBase
     PXMLElement * rootElement;
     PMutex rootMutex;
 
-    BOOL loadFromFile;
+    PBoolean loadFromFile;
     PFilePath loadFilename;
     PString version, encoding;
     int standAlone;
@@ -284,7 +284,7 @@ class PXMLObject : public PObject {
   PCLASSINFO(PXMLObject, PObject);
   public:
     PXMLObject(PXMLElement * _parent)
-      : parent(_parent) { dirty = FALSE; }
+      : parent(_parent) { dirty = PFalse; }
 
     PXMLElement * GetParent()
       { return parent; }
@@ -299,16 +299,16 @@ class PXMLObject : public PObject {
 
     virtual void Output(ostream & strm, const PXMLBase & xml, int indent) const = 0;
 
-    virtual BOOL IsElement() const = 0;
+    virtual PBoolean IsElement() const = 0;
 
     void SetDirty();
-    BOOL IsDirty() const { return dirty; }
+    PBoolean IsDirty() const { return dirty; }
 
     virtual PXMLObject * Clone(PXMLElement * parent) const = 0;
 
   protected:
     PXMLElement * parent;
-    BOOL dirty;
+    PBoolean dirty;
 };
 
 ////////////////////////////////////////////////////////////
@@ -319,9 +319,9 @@ class PXMLData : public PXMLObject {
     PXMLData(PXMLElement * _parent, const PString & data);
     PXMLData(PXMLElement * _parent, const char * data, int len);
 
-    BOOL IsElement() const    { return FALSE; }
+    PBoolean IsElement() const    { return PFalse; }
 
-    void SetString(const PString & str, BOOL dirty = TRUE);
+    void SetString(const PString & str, PBoolean dirty = PTrue);
 
     PString GetString() const           { return value; }
 
@@ -341,7 +341,7 @@ class PXMLElement : public PXMLObject {
     PXMLElement(PXMLElement * _parent, const char * name = NULL);
     PXMLElement(PXMLElement * _parent, const PString & name, const PString & data);
 
-    BOOL IsElement() const { return TRUE; }
+    PBoolean IsElement() const { return PTrue; }
 
     void PrintOn(ostream & strm) const;
     void Output(ostream & strm, const PXMLBase & xml, int indent) const;
@@ -355,29 +355,29 @@ class PXMLElement : public PXMLObject {
     PINDEX GetSize() const
       { return subObjects.GetSize(); }
 
-    PXMLObject  * AddSubObject(PXMLObject * elem, BOOL dirty = TRUE);
+    PXMLObject  * AddSubObject(PXMLObject * elem, PBoolean dirty = PTrue);
 
-    PXMLElement * AddChild    (PXMLElement * elem, BOOL dirty = TRUE);
-    PXMLData    * AddChild    (PXMLData    * elem, BOOL dirty = TRUE);
+    PXMLElement * AddChild    (PXMLElement * elem, PBoolean dirty = PTrue);
+    PXMLData    * AddChild    (PXMLData    * elem, PBoolean dirty = PTrue);
 
     void SetAttribute(const PCaselessString & key,
                       const PString & value,
-                      BOOL setDirty = TRUE);
+                      PBoolean setDirty = PTrue);
 
     PString GetAttribute(const PCaselessString & key) const;
     PString GetKeyAttribute(PINDEX idx) const;
     PString GetDataAttribute(PINDEX idx) const;
-    BOOL HasAttribute(const PCaselessString & key);
-    BOOL HasAttributes() const      { return attributes.GetSize() > 0; }
+    PBoolean HasAttribute(const PCaselessString & key);
+    PBoolean HasAttributes() const      { return attributes.GetSize() > 0; }
     PINDEX GetNumAttributes() const { return attributes.GetSize(); }
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLObject  * GetElement(PINDEX idx = 0) const;
-    BOOL          RemoveElement(PINDEX idx);
+    PBoolean          RemoveElement(PINDEX idx);
 
     PINDEX FindObject(PXMLObject * ptr) const;
 
-    BOOL HasSubObjects() const
+    PBoolean HasSubObjects() const
       { return subObjects.GetSize() != 0; }
 
     PXMLObjectArray  GetSubObjects() const
@@ -391,7 +391,7 @@ class PXMLElement : public PXMLObject {
     PCaselessString name;
     PStringToString attributes;
     PXMLObjectArray subObjects;
-    BOOL dirty;
+    PBoolean dirty;
 };
 
 ////////////////////////////////////////////////////////////
@@ -406,17 +406,17 @@ class PXMLSettings : public PXML
     PXMLSettings(const PString & data, int options = PXMLParser::NewLineAfterElement);
     PXMLSettings(const PConfig & data, int options = PXMLParser::NewLineAfterElement);
 
-    BOOL Load(const PString & data);
-    BOOL LoadFile(const PFilePath & fn);
+    PBoolean Load(const PString & data);
+    PBoolean LoadFile(const PFilePath & fn);
 
-    BOOL Save();
-    BOOL Save(PString & data);
-    BOOL SaveFile(const PFilePath & fn);
+    PBoolean Save();
+    PBoolean Save(PString & data);
+    PBoolean SaveFile(const PFilePath & fn);
 
     void SetAttribute(const PCaselessString & section, const PString & key, const PString & value);
 
     PString GetAttribute(const PCaselessString & section, const PString & key) const;
-    BOOL    HasAttribute(const PCaselessString & section, const PString & key) const;
+    PBoolean    HasAttribute(const PCaselessString & section, const PString & key) const;
 
     void ToConfig(PConfig & cfg) const;
 };
@@ -433,7 +433,7 @@ class PXMLStreamParser : public PXMLParser
     virtual PXML * Read(PChannel * channel);
 
   protected:
-    BOOL rootOpen;
+    PBoolean rootOpen;
     PQueue<PXML> messages;
 };
 

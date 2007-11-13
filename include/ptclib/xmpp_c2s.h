@@ -86,8 +86,8 @@ namespace XMPP
       const PString&  GetServerHost() const   { return m_Hostname; }
       WORD            GetServerPort() const   { return m_Port; }
 
-      virtual BOOL Open();
-      virtual BOOL Close();
+      virtual PBoolean Open();
+      virtual PBoolean Close();
 
     protected:
       PString         m_Hostname;
@@ -104,12 +104,12 @@ namespace XMPP
       PCLASSINFO(StreamHandler, BaseStreamHandler);
 
     public:
-      StreamHandler(const JID& jid, const PString& pwd, BOOL newAccount = FALSE);
+      StreamHandler(const JID& jid, const PString& pwd, PBoolean newAccount = PFalse);
       ~StreamHandler();
 
-      virtual BOOL IsEstablished() const        { return m_State == Established; }
+      virtual PBoolean IsEstablished() const        { return m_State == Established; }
 
-      virtual BOOL Start(Transport * transport = 0);
+      virtual PBoolean Start(Transport * transport = 0);
 
       /** Request the delivery of the specified stanza
       NOTE: the StreamHandler takes ownership of the stanza
@@ -117,7 +117,7 @@ namespace XMPP
       BIG NOTE: use this method and not Write() if you want to
       get a notification when an answer to an iq arrives
       */
-      BOOL    Send(Stanza * stanza);
+      PBoolean    Send(Stanza * stanza);
 
       void    SetVersion(WORD major, WORD minor);
       void    GetVersion(WORD& major, WORD& minor) const;
@@ -160,12 +160,12 @@ namespace XMPP
           The response handler will receive a PIQ stanza (a smart
           pointer to a XMPP::IQ)
        */
-      virtual BOOL DiscoverItems(
+      virtual PBoolean DiscoverItems(
                     const PString& jid,           ///< JID to which a query will be send
                     PNotifier * responseHandler,
                     const PString& node = PString::Empty()); ///< Optional node
 
-      virtual BOOL DiscoverInfo(
+      virtual PBoolean DiscoverInfo(
                     const PString& jid,           ///< JID to which a query will be send
                     PNotifier * responseHandler,
                     const PString& node = PString::Empty()); ///< Optional node
@@ -198,7 +198,7 @@ namespace XMPP
       virtual void    HandleSessionSentState(PXML& pdu);
       virtual void    HandleEstablishedState(PXML& pdu);
 
-      virtual BOOL    Discover(const PString& xmlns,
+      virtual PBoolean    Discover(const PString& xmlns,
                                const PString& jid,
                                PNotifier * responseHandler,
                                const PString& node);
@@ -206,15 +206,15 @@ namespace XMPP
       WORD                m_VersionMajor;
       WORD                m_VersionMinor;
       PString             m_StreamID;
-      BOOL                m_NewAccount;
+      PBoolean                m_NewAccount;
       JID                 m_JID;
       const PString       m_Password;
 #if P_SASL2
       PSASLClient         m_SASL;
       PString             m_Mechanism;
 #endif
-      BOOL                m_HasBind;
-      BOOL                m_HasSession;
+      PBoolean                m_HasBind;
+      PBoolean                m_HasSession;
 
       PNotifierList       m_SessionEstablishedHandlers;
       PNotifierList       m_SessionReleasedHandlers;

@@ -500,11 +500,11 @@ PString PProcess::GetUserName() const
 }
 
 
-BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
+PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
 {
 #ifdef P_VXWORKS
   PAssertAlways("PProcess::SetUserName - not implemented for VxWorks");
-  return FALSE;
+  return PFalse;
 #else
   if (username.IsEmpty())
     return seteuid(getuid()) != -1;
@@ -539,7 +539,7 @@ BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
   }
 
   if (uid < 0)
-    return FALSE;
+    return PFalse;
 
   if (permanent)
     return setuid(uid) != -1;
@@ -588,11 +588,11 @@ PString PProcess::GetGroupName() const
 }
 
 
-BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
+PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean permanent)
 {
 #ifdef P_VXWORKS
   PAssertAlways("PProcess::SetGroupName - not implemented for VxWorks");
-  return FALSE;
+  return PFalse;
 #else
   if (groupname.IsEmpty())
     return setegid(getgid()) != -1;
@@ -627,7 +627,7 @@ BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
   }
 
   if (gid < 0)
-    return FALSE;
+    return PFalse;
 
   if (permanent)
     return setgid(gid) != -1;
@@ -760,7 +760,7 @@ void PProcess::PXOnSignal(int sig)
 #endif
   if (sig == 28) {
 #if PMEMORY_CHECK
-    BOOL oldIgnore = PMemoryHeap::SetIgnoreAllocations(TRUE);
+    PBoolean oldIgnore = PMemoryHeap::SetIgnoreAllocations(PTrue);
     static DWORD allocationIndex = 0;
 #endif
     PStringStream strm;

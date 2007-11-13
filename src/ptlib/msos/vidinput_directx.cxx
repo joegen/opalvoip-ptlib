@@ -71,8 +71,8 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   pCapture = NULL;
   pGrabber = NULL;
 
-  flipVertical = FALSE;
-  isCapturingNow = FALSE;
+  flipVertical = PFalse;
+  isCapturingNow = PFalse;
   capturing_duration = 10000; // arbitrary large value suffices
 }
 
@@ -157,14 +157,14 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
 
     // Obtain interfaces for Sample Grabber
     pGrabberFilter->QueryInterface(IID_ISampleGrabber, (void**)&pGrabber);
-    hr = pGrabber->SetBufferSamples(TRUE);
+    hr = pGrabber->SetBufferSamples(PTrue);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to SetBufferSamples: " << ErrorMessage(hr));
 	return hr;
     }
 
-    hr = pGrabber->SetOneShot(FALSE);
+    hr = pGrabber->SetOneShot(PFalse);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to SetOneShot: " << ErrorMessage(hr));
@@ -186,7 +186,7 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
     return hr;
 }
 
-BOOL PVideoInputDevice_DirectShow::InitialiseCapture()
+PBoolean PVideoInputDevice_DirectShow::InitialiseCapture()
 {
     HRESULT hr;
 
@@ -196,13 +196,13 @@ BOOL PVideoInputDevice_DirectShow::InitialiseCapture()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to initialize interfaces: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
     hr = SetDevice(deviceName, &pSrcFilter);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to select a device: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
 
     // Add Capture filter to our graph.
@@ -210,7 +210,7 @@ BOOL PVideoInputDevice_DirectShow::InitialiseCapture()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't add the capture filter to the graph: " << ErrorMessage(hr));
-        return FALSE;
+        return PFalse;
     }
 
     // Add the filter to our graph
@@ -221,7 +221,7 @@ BOOL PVideoInputDevice_DirectShow::InitialiseCapture()
 	return hr;
     }
 
-    return TRUE;
+    return PTrue;
 }
 
 
@@ -311,7 +311,7 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
     return list;
 }
 
-BOOL PVideoInputDevice_DirectShow::Open(const PString & devName, BOOL startImmediate)
+PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName, PBoolean startImmediate)
 {
     PTRACE(1,"PVidDirectShow\tOpen("<<devName<<"," << startImmediate<<")");
 
@@ -322,7 +322,7 @@ BOOL PVideoInputDevice_DirectShow::Open(const PString & devName, BOOL startImmed
     deviceName = devName;
 
     if (!InitialiseCapture())
-	return FALSE;
+	return PFalse;
 
     ListSupportedFormats();
     GetDefaultFormat();
@@ -330,22 +330,22 @@ BOOL PVideoInputDevice_DirectShow::Open(const PString & devName, BOOL startImmed
     if (startImmediate)
 	return Start();
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::IsOpen()
+PBoolean PVideoInputDevice_DirectShow::IsOpen()
 {
     PTRACE(1,"PVidDirectShow\tIsOpen()");
 
     return pCapture != NULL;
 }
 
-BOOL PVideoInputDevice_DirectShow::Close()
+PBoolean PVideoInputDevice_DirectShow::Close()
 {
     HRESULT hr;
 
     if (!IsOpen())
-	return FALSE;
+	return PFalse;
 
     hr = pGrabber->SetCallback(NULL, 0);
     if (FAILED(hr))
@@ -367,10 +367,10 @@ BOOL PVideoInputDevice_DirectShow::Close()
     SAFE_RELEASE(pGrabber);
 
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::Start()
+PBoolean PVideoInputDevice_DirectShow::Start()
 {
     HRESULT hr;
     long evCode;
@@ -379,7 +379,7 @@ BOOL PVideoInputDevice_DirectShow::Start()
     PTRACE(1,"PVidDirectShow\tStart()");
 
     if (IsCapturing())
-	return TRUE;
+	return PTrue;
 
     // http://msdn2.microsoft.com/en-us/library/ms784859.aspx
     hr = pCapture->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
@@ -398,14 +398,14 @@ BOOL PVideoInputDevice_DirectShow::Start()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't run the graph: " << ErrorMessage(hr));
-        return FALSE;
+        return PFalse;
     }
 
     hr = pME->WaitForCompletion(INFINITE, &evCode);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't wait for completion: " << ErrorMessage(hr));
-        return FALSE;
+        return PFalse;
     }
 
     /*
@@ -440,30 +440,30 @@ BOOL PVideoInputDevice_DirectShow::Start()
     SetBrightness((unsigned)-1);
 #endif
 
-    isCapturingNow = TRUE;
+    isCapturingNow = PTrue;
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::Stop()
+PBoolean PVideoInputDevice_DirectShow::Stop()
 {
     HRESULT hr;
 
     PTRACE(1,"PVidDirectShow\tStop()");
 
     if (IsCapturing())
-	return FALSE;
+	return PFalse;
 
     if (pMC)
 	pMC->StopWhenReady();
 
-    isCapturingNow = FALSE;
+    isCapturingNow = PFalse;
 
-    return TRUE;
+    return PTrue;
 }
 
 
-BOOL PVideoInputDevice_DirectShow::IsCapturing()
+PBoolean PVideoInputDevice_DirectShow::IsCapturing()
 {
     return isCapturingNow;
 }
@@ -494,13 +494,13 @@ void PVideoInputDevice_DirectShow::FlipVertical(BYTE *buffer)
  *
  *
  */
-BOOL PVideoInputDevice_DirectShow::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+PBoolean PVideoInputDevice_DirectShow::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
-BOOL PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
+PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
     HRESULT hr;
     long cbBuffer = frameBytes;
@@ -508,25 +508,25 @@ BOOL PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
     if (converter != NULL)
     {
 	if (tempFrame == NULL)
-	    return FALSE;
+	    return PFalse;
 
 	hr = pGrabber->GetCurrentBuffer(&cbBuffer, NULL);
 	if (FAILED(hr))
 	{
 	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer size: " << ErrorMessage(hr));
-	    return FALSE;
+	    return PFalse;
 	}
 	if (frameBytes < cbBuffer)
 	{
 	    PTRACE(1, "PVidDirectShow\tBuffer too short (needed "<< cbBuffer << "  got " << frameBytes);
-	    return FALSE;
+	    return PFalse;
 	}
 
 	hr = pGrabber->GetCurrentBuffer(&cbBuffer, (long*)tempFrame);
 	if (FAILED(hr))
 	{
 	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
-	    return FALSE;
+	    return PFalse;
 	}
 
 	if (flipVertical)
@@ -539,7 +539,7 @@ BOOL PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
 	if (FAILED(hr))
 	{
 	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
-	    return FALSE;
+	    return PFalse;
 	}
 
 	if (flipVertical)
@@ -549,7 +549,7 @@ BOOL PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
 
     }
 
-    return TRUE;
+    return PTrue;
 }
 
 PINDEX PVideoInputDevice_DirectShow::GetMaxFrameBytes()
@@ -614,7 +614,7 @@ PINDEX PVideoInputDevice_DirectShow::GetMaxFrameBytes()
  *  Fmt[26] = (YUV420P, 1024x576, 10fps)
  *  Fmt[27] = (YUV420P, 1280x960, 7.5fps)
  */
-BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int width, int height, int fps)
+PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int width, int height, int fps)
 {
     HRESULT hr;
     IAMStreamConfig *pStreamConfig;
@@ -622,7 +622,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
     int iCount, iSize;
     VIDEO_STREAM_CONFIG_CAPS scc;
     unsigned int i;
-    BOOL was_capturing = FALSE;
+    PBoolean was_capturing = PFalse;
     OAFilterState filterState;
 
     PTRACE(4, "PVidDirectShow\tSetFormat(\""
@@ -634,7 +634,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
     if (!wanted_format.IsEmpty() && wanted_guid_format == MEDIATYPE_NULL)
     {
 	PTRACE(4, "PVidDirectShow\tColorspace not supported ("<< wanted_format << ")");
-	return FALSE;
+	return PFalse;
     }
 
     hr = pCapture->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
@@ -643,7 +643,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
     if (FAILED(hr))
     {
 	PTRACE(1, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
 
     hr = pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize);
@@ -651,7 +651,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
     {
 	PTRACE(1, "PVidDirectShow\tFailed to GetNumberOfCapabilities: " << ErrorMessage(hr));
 	pStreamConfig->Release();
-	return FALSE;
+	return PFalse;
     }
 
     /* Sanity check: just to be sure that the Streamcaps is a VIDEOSTREAM and not AUDIOSTREAM */
@@ -659,7 +659,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
     {
 	PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
 	pStreamConfig->Release();
-	return FALSE;
+	return PFalse;
     }
 
     for (i=0; i<iCount; i++, DeleteMediaType(pMediaFormat))
@@ -720,7 +720,7 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
 	    PTRACE(1, "PVidDirectShow\tRetrying ...");
 	    was_capturing = isCapturingNow;
 	    Close();
-	    Open(deviceName, FALSE);
+	    Open(deviceName, PFalse);
 	    hr = pStreamConfig->SetFormat(pMediaFormat);
 	    if (FAILED(hr))
 	    {
@@ -748,11 +748,11 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
 	    pMediaFormat->subtype == MEDIASUBTYPE_RGB565 ||
 	    pMediaFormat->subtype == MEDIASUBTYPE_RGB555)
 	{
-	    flipVertical = TRUE;
+	    flipVertical = PTrue;
 	}
 	else
 	{
-	    flipVertical = FALSE;
+	    flipVertical = PFalse;
 	}
 #endif
 
@@ -766,25 +766,25 @@ BOOL PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, int w
 
 	DeleteMediaType(pMediaFormat);
 	pStreamConfig->Release();
-	return TRUE;
+	return PTrue;
     }
 
     pStreamConfig->Release();
-    return FALSE;
+    return PFalse;
 }
 
 
-BOOL PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned height)
 {
     PTRACE(1,"PVidDirectShow\tSetFrameSize(" << width << ", " << height << ")");
 
     if (!SetFormat(colourFormat, width, height, frameRate))
-	return FALSE;
+	return PFalse;
 
     PTRACE(1,"PVidDirectShow\tSetFrameSize " << width << "x" << height << " is suported in hardware");
 
     if (!PVideoDevice::SetFrameSize(width, height))
-	return FALSE;
+	return PFalse;
 
     frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
@@ -794,14 +794,14 @@ BOOL PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned height)
     if (tempFrame == NULL)
     {
 	PTRACE(1,"PVidDirectShow\tNot enought memory to allocate tempFrame ("<<frameBytes<<")");
-	return FALSE;
+	return PFalse;
     }
 
     PTRACE(4,"PVidDirectShow\tset frame size " << width << "x" << height << "  frameBytes="<<frameBytes);
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::SetFrameRate(unsigned rate)
+PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned rate)
 {
     PTRACE(1,"PVidDirectShow\tSetFrameRate("<<rate<<"fps)");
 
@@ -811,22 +811,22 @@ BOOL PVideoInputDevice_DirectShow::SetFrameRate(unsigned rate)
 	rate = 50;
 
     if (!SetFormat(colourFormat, frameWidth, frameHeight, rate))
-	return FALSE;
+	return PFalse;
 
     return PVideoDevice::SetFrameRate(rate);
 }
 
-BOOL PVideoInputDevice_DirectShow::SetColourFormat(const PString & colourFmt)
+PBoolean PVideoInputDevice_DirectShow::SetColourFormat(const PString & colourFmt)
 {
     PTRACE(1,"PVidDirectShow\tSetColourFormat("<<colourFmt<<")");
 
     if (!SetFormat(colourFmt, frameWidth, frameHeight, frameRate))
-	return FALSE;
+	return PFalse;
 
     if (!PVideoDevice::SetColourFormat(colourFmt))
-	return FALSE;
+	return PFalse;
 
-    return TRUE;
+    return PTrue;
 }
 
 
@@ -837,7 +837,7 @@ BOOL PVideoInputDevice_DirectShow::SetColourFormat(const PString & colourFmt)
  *
  *
  */
-BOOL PVideoInputDevice_DirectShow::GetControlCommon(long control, int *newValue)
+PBoolean PVideoInputDevice_DirectShow::GetControlCommon(long control, int *newValue)
 {
     IAMVideoProcAmp *pVideoProcAmp;
     long Min, Max, Stepping, Def, CapsFlags, Val;
@@ -847,7 +847,7 @@ BOOL PVideoInputDevice_DirectShow::GetControlCommon(long control, int *newValue)
     if (FAILED(hr))
     {
 	PTRACE(4, "PVidDirectShow\tFailed to find VideoProcAmp interface: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
 
     hr = pVideoProcAmp->GetRange(control, &Min, &Max, &Stepping, &Def, &CapsFlags);
@@ -855,7 +855,7 @@ BOOL PVideoInputDevice_DirectShow::GetControlCommon(long control, int *newValue)
     {
 	PTRACE(4, "PVidDirectShow\tFailed to getRange interface on " << control << " : " << ErrorMessage(hr));
 	pVideoProcAmp->Release();
-	return FALSE;
+	return PFalse;
     }
 
     hr = pVideoProcAmp->Get(control, &Val, &CapsFlags);
@@ -871,7 +871,7 @@ BOOL PVideoInputDevice_DirectShow::GetControlCommon(long control, int *newValue)
 	*newValue = ((Val - Min) * 65536) / ((Max-Min));
 
     pVideoProcAmp->Release();
-    return TRUE;
+    return PTrue;
 }
 
 int PVideoInputDevice_DirectShow::GetBrightness()
@@ -899,10 +899,10 @@ int PVideoInputDevice_DirectShow::GetHue()
   return GetControlCommon(VideoProcAmp_Hue, &frameHue);
 }
 
-BOOL PVideoInputDevice_DirectShow::GetParameters(int *whiteness, int *brightness, int *colour, int *contrast, int *hue)
+PBoolean PVideoInputDevice_DirectShow::GetParameters(int *whiteness, int *brightness, int *colour, int *contrast, int *hue)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   frameWhiteness = -1;
   frameBrightness = -1;
@@ -927,7 +927,7 @@ BOOL PVideoInputDevice_DirectShow::GetParameters(int *whiteness, int *brightness
   *contrast   = frameContrast;
   *hue        = frameHue;
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -937,7 +937,7 @@ BOOL PVideoInputDevice_DirectShow::GetParameters(int *whiteness, int *brightness
  *
  *
  */
-BOOL PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
+PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
 {
     IAMVideoProcAmp *pVideoProcAmp;
     long Min, Max, Stepping, Def, CapsFlags;
@@ -949,7 +949,7 @@ BOOL PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
     if (FAILED(hr))
     {
 	PTRACE(4, "PVidDirectShow\tFailed to find VideoProcAmp interface: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
 
     hr = pVideoProcAmp->GetRange(control, &Min, &Max, &Stepping, &Def, &CapsFlags);
@@ -957,7 +957,7 @@ BOOL PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
     {
 	PTRACE(4, "PVidDirectShow\tFailed to getRange interface on " << control << " : " << ErrorMessage(hr));
 	pVideoProcAmp->Release();
-	return FALSE;
+	return PFalse;
     }
 
     if (newValue == -1)
@@ -971,57 +971,57 @@ BOOL PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
 	PTRACE(4, "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
 
     pVideoProcAmp->Release();
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::SetBrightness(unsigned newBrightness)
+PBoolean PVideoInputDevice_DirectShow::SetBrightness(unsigned newBrightness)
 {
     if (!SetControlCommon(VideoProcAmp_Brightness, newBrightness))
-	return FALSE;
+	return PFalse;
 
     frameBrightness = newBrightness;
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::SetColour(unsigned newColour)
+PBoolean PVideoInputDevice_DirectShow::SetColour(unsigned newColour)
 {
     if (!SetControlCommon(VideoProcAmp_Saturation, newColour))
-	return FALSE;
+	return PFalse;
 
     frameColour = newColour;
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::SetContrast(unsigned newContrast)
+PBoolean PVideoInputDevice_DirectShow::SetContrast(unsigned newContrast)
 {
     if (!SetControlCommon(VideoProcAmp_Contrast, newContrast))
-	return FALSE;
+	return PFalse;
 
     frameContrast = newContrast;
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::SetHue(unsigned newHue)
+PBoolean PVideoInputDevice_DirectShow::SetHue(unsigned newHue)
 {
     if (!SetControlCommon(VideoProcAmp_Hue, newHue))
-	return FALSE;
+	return PFalse;
 
     frameHue = newHue;
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
+PBoolean PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
 {
     if (!SetControlCommon(VideoProcAmp_Gamma, newWhiteness))
-	return FALSE;
+	return PFalse;
 
     frameWhiteness = newWhiteness;
 
-    return TRUE;
+    return PTrue;
 }
 
 
@@ -1029,7 +1029,7 @@ BOOL PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
  *
  *
  */
-BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
+PBoolean PVideoInputDevice_DirectShow::ListSupportedFormats()
 {
     HRESULT hr;
     IAMStreamConfig *pStreamConfig;
@@ -1045,7 +1045,7 @@ BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
     if (FAILED(hr))
     {
 	PTRACE(4, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
 
     hr = pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize);
@@ -1053,7 +1053,7 @@ BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
     {
 	PTRACE(1, "PVidDirectShow\tFailed to GetNumberOfCapabilities: " << ErrorMessage(hr));
 	pStreamConfig->Release();
-	return FALSE;
+	return PFalse;
     }
 
     /* Sanity check: just to be sure that the Streamcaps is a VIDEOSTREAM and not AUDIOSTREAM */
@@ -1061,7 +1061,7 @@ BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
     {
 	PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
 	pStreamConfig->Release();
-	return FALSE;
+	return PFalse;
     }
 
     for (i=0; i<iCount; i++)
@@ -1092,14 +1092,14 @@ BOOL PVideoInputDevice_DirectShow::ListSupportedFormats()
 
     pStreamConfig->Release();
 
-    return TRUE;
+    return PTrue;
 }
 
 /*
  *
  *
  */
-BOOL PVideoInputDevice_DirectShow::GetDefaultFormat()
+PBoolean PVideoInputDevice_DirectShow::GetDefaultFormat()
 {
     HRESULT hr;
     IAMStreamConfig *pStreamConfig;
@@ -1113,7 +1113,7 @@ BOOL PVideoInputDevice_DirectShow::GetDefaultFormat()
     if (FAILED(hr))
     {
 	PTRACE(4, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
-	return FALSE;
+	return PFalse;
     }
 
     hr = pStreamConfig->GetFormat(&pMediaFormat);
@@ -1121,7 +1121,7 @@ BOOL PVideoInputDevice_DirectShow::GetDefaultFormat()
     {
 	PTRACE(1, "PVidDirectShow\tFailed to getFormat: " << ErrorMessage(hr));
 	pStreamConfig->Release();
-	return FALSE;
+	return PFalse;
     }
 
     if ((pMediaFormat->formattype == FORMAT_VideoInfo)     &&

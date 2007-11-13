@@ -565,7 +565,7 @@ SnmpUtilDbgPrint(
 #define DEFINE_SIZEOF(Array)        (sizeof(Array)/sizeof((Array)[0]))
 #define DEFINE_OID(SubIdArray)      {DEFINE_SIZEOF(SubIdArray),(SubIdArray)}
 #define DEFINE_NULLOID()            {0,NULL} 
-#define DEFINE_NULLOCTETS()         {NULL,0,FALSE}
+#define DEFINE_NULLOCTETS()         {NULL,0,BOOL}
 
 #define DEFAULT_SNMP_PORT_UDP       161
 #define DEFAULT_SNMP_PORT_IPX       36879

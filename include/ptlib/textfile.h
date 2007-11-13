@@ -152,9 +152,9 @@ class PTextFile : public PFile
        was some error other than end of file.
        
        @return
-       TRUE if successful, FALSE if at end of file or a read error.
+       PTrue if successful, PFalse if at end of file or a read error.
      */
-    BOOL ReadLine(
+    PBoolean ReadLine(
       PString & str  ///< String into which line of text is read.
     );
 
@@ -165,9 +165,9 @@ class PTextFile : public PFile
        failure mode.
 
        @return
-       TRUE if successful, FALSE if an error occurred.
+       PTrue if successful, PFalse if an error occurred.
      */
-    BOOL WriteLine(
+    PBoolean WriteLine(
       const PString & str  ///< String to write with end of line terminator.
     );
   //@}

@@ -61,7 +61,7 @@
  * Added BCC capability to send mail.
  *
  * Revision 1.4  1995/07/02 01:19:46  robertj
- * Change GetMessageBidy to return BOOL and have body string as
+ * Change GetMessageBidy to return PBoolean and have body string as
  *   parameter, due to slight change in semantics for large bodies.
  *
  * Revision 1.3  1995/06/17 00:42:22  robertj
@@ -149,9 +149,9 @@ class PMail : public PObject
     /**Attempt to log on to the mail system using the parameters provided.
 
        @return
-       TRUE if successfully logged on.
+       PTrue if successfully logged on.
      */
-    BOOL LogOn(
+    PBoolean LogOn(
       const PString & username,  ///< User withing mail system to use.
       const PString & password   ///< Password for user in mail system.
     );
@@ -159,9 +159,9 @@ class PMail : public PObject
     /**Attempt to log on to the mail system using the parameters provided.
 
        @return
-       TRUE if successfully logged on.
+       PTrue if successfully logged on.
      */
-    BOOL LogOn(
+    PBoolean LogOn(
       const PString & username,  ///< User withing mail system to use.
       const PString & password,  ///< Password for user in mail system.
       const PString & service
@@ -174,16 +174,16 @@ class PMail : public PObject
     /**Log off from the mail system.
 
        @return
-       TRUE if successfully logged off.
+       PTrue if successfully logged off.
      */
-    virtual BOOL LogOff();
+    virtual PBoolean LogOff();
 
     /**Determine if the mail session is active and logged into the mail system.
 
        @return
-       TRUE if logged into the mail system.
+       PTrue if logged into the mail system.
      */
-    BOOL IsLoggedOn() const;
+    PBoolean IsLoggedOn() const;
   //@}
 
   /**@name Send message functions */
@@ -191,10 +191,10 @@ class PMail : public PObject
     /**Send a new simple mail message.
 
        @return
-       TRUE if the mail message was successfully queued. Note that this does
+       PTrue if the mail message was successfully queued. Note that this does
        {\bf not} mean that it has been delivered.
      */
-    BOOL SendNote(
+    PBoolean SendNote(
       const PString & recipient,  ///< Name of recipient of the mail message.
       const PString & subject,    ///< Subject name for the mail message.
       const char * body           ///< Text body of the mail message.
@@ -203,10 +203,10 @@ class PMail : public PObject
     /**Send a new simple mail message.
 
        @return
-       TRUE if the mail message was successfully queued. Note that this does
+       PTrue if the mail message was successfully queued. Note that this does
        {\bf not} mean that it has been delivered.
      */
-    BOOL SendNote(
+    PBoolean SendNote(
       const PString & recipient,  ///< Name of recipient of the mail message.
       const PString & subject,    ///< Subject name for the mail message.
       const char * body,          ///< Text body of the mail message.
@@ -217,10 +217,10 @@ class PMail : public PObject
     /**Send a new simple mail message.
 
        @return
-       TRUE if the mail message was successfully queued. Note that this does
+       PTrue if the mail message was successfully queued. Note that this does
        {\bf not} mean that it has been delivered.
      */
-    BOOL SendNote(
+    PBoolean SendNote(
       const PString & recipient,  ///< Name of recipient of the mail message.
       const PStringList & carbonCopies, ///< Name of CC recipients.
       const PStringList & blindCarbons, ///< Name of BCC recipients.
@@ -239,7 +239,7 @@ class PMail : public PObject
        An array of ID strings.
      */
     PStringArray GetMessageIDs(
-      BOOL unreadOnly = TRUE    ///< Only get the IDs for unread messages.
+      PBoolean unreadOnly = PTrue    ///< Only get the IDs for unread messages.
     );
 
     /// Message header for each mail item.
@@ -257,9 +257,9 @@ class PMail : public PObject
     /**Get the header information for a message.
 
        @return
-       TRUE if header information was successfully obtained.
+       PTrue if header information was successfully obtained.
      */
-    BOOL GetMessageHeader(
+    PBoolean GetMessageHeader(
       const PString & id,      ///< Identifier of message to get header.
       Header & hdrInfo         ///< Header info for the message.
     );
@@ -268,51 +268,51 @@ class PMail : public PObject
        parameter.
 
        Note that if the body text for the mail message is very large, the
-       function will return FALSE. To tell between an error getting the message
+       function will return PFalse. To tell between an error getting the message
        body and having a large message body the #GetErrorCode()# function
        must be used.
 
        To get a large message body, the #GetMessageAttachments()# should
-       be used with the #includeBody# parameter set to TRUE so that
+       be used with the #includeBody# parameter set to PTrue so that
        the message body is placed into a disk file.
 
        @return
-       TRUE if the body text was retrieved, FALSE if the body was too large or
+       PTrue if the body text was retrieved, PFalse if the body was too large or
        some other error occurred.
      */
-    BOOL GetMessageBody(
+    PBoolean GetMessageBody(
       const PString & id,      ///< Identifier of message to get body.
       PString & body,          ///< Body text of mail message.
-      BOOL markAsRead = FALSE  ///< Mark the message as read.
+      PBoolean markAsRead = PFalse  ///< Mark the message as read.
     );
 
     /**Get all of the attachments for a message as disk files.
 
        @return
-       TRUE if attachments were successfully obtained.
+       PTrue if attachments were successfully obtained.
      */
-    BOOL GetMessageAttachments(
+    PBoolean GetMessageAttachments(
       const PString & id,       ///< Identifier of message to get attachments.
       PStringArray & filenames, ///< File names for each attachment.
-      BOOL includeBody = FALSE, ///< Include the message body as first attachment
-      BOOL markAsRead = FALSE   ///< Mark the message as read
+      PBoolean includeBody = PFalse, ///< Include the message body as first attachment
+      PBoolean markAsRead = PFalse   ///< Mark the message as read
     );
 
     /**Mark the message as read.
 
        @return
-       TRUE if message was successfully marked as read.
+       PTrue if message was successfully marked as read.
      */
-    BOOL MarkMessageRead(
+    PBoolean MarkMessageRead(
       const PString & id      ///< Identifier of message to get header.
     );
 
     /**Delete the message from the system.
 
        @return
-       TRUE if message was successfully deleted.
+       PTrue if message was successfully deleted.
      */
-    BOOL DeleteMessage(
+    PBoolean DeleteMessage(
       const PString & id      ///< Identifier of message to get header.
     );
   //@}
@@ -371,7 +371,7 @@ class PMail : public PObject
     // Common construction code.
 
     /// Flag indicating the session is active.
-    BOOL loggedOn;
+    PBoolean loggedOn;
 
 
 // Include platform dependent part of class

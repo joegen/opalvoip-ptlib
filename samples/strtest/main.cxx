@@ -11,7 +11,7 @@
 #define SPECIALNAME     "openH323"
 #define COUNT_MAX       2000000
 
-BOOL finishFlag;
+PBoolean finishFlag;
 
 template <class S>
 struct StringConv {
@@ -39,7 +39,7 @@ class StringHolder
       strncpy(buffer, ptr, 20);
 
       if (strcmp((const char *)buffer, SPECIALNAME)) {
-        finishFlag = TRUE;
+        finishFlag = PTrue;
         cerr << "String compare failed at " << count << " in " << label << " thread" << endl;
         return;
       }
@@ -90,11 +90,11 @@ void Test1()
   StringHolder<PString, PStringConv> holder(SPECIALNAME);
 
   PThread * thread = holder.StartThread();
-  finishFlag = FALSE;
+  finishFlag = PFalse;
   int count = 0;
   while (!finishFlag && count < COUNT_MAX) 
     holder.TestString(count++, "main");
-  finishFlag = TRUE;
+  finishFlag = PTrue;
   thread->WaitForTermination(9000);
   cerr << "finish" << endl;
 }

@@ -83,7 +83,7 @@ PQueueChannel::~PQueueChannel()
 }
 
 
-BOOL PQueueChannel::Open(PINDEX size)
+PBoolean PQueueChannel::Open(PINDEX size)
 {
   if (size == 0)
     Close();
@@ -101,14 +101,14 @@ BOOL PQueueChannel::Open(PINDEX size)
     unfull.Signal();
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PQueueChannel::Close()
+PBoolean PQueueChannel::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   mutex.Wait();
   if (queueBuffer != NULL)
@@ -118,11 +118,11 @@ BOOL PQueueChannel::Close()
   mutex.Signal();
   unempty.Signal();
   unfull.Signal();
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PQueueChannel::Read(void * buf, PINDEX count)
+PBoolean PQueueChannel::Read(void * buf, PINDEX count)
 {
   mutex.Wait();
 
@@ -130,7 +130,7 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
 
   if (!IsOpen()) {
     mutex.Signal();
-    return FALSE;
+    return PFalse;
   }
 
   BYTE * buffer = (BYTE *)buf;
@@ -202,11 +202,11 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
   // unlock the buffer
   mutex.Signal();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PQueueChannel::Write(const void * buf, PINDEX count)
+PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 {
   mutex.Wait();
 
@@ -214,7 +214,7 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
 
   if (!IsOpen()) {
     mutex.Signal();
-    return FALSE;
+    return PFalse;
   }
 
   const BYTE * buffer = (BYTE *)buf;
@@ -267,7 +267,7 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
     enqueuePos = 0;
 
   // see if we need to signal reader that queue was empty
-  BOOL queueWasEmpty = queueLength == 0;
+  PBoolean queueWasEmpty = queueLength == 0;
 
   // increment queue length by the amount we copied
   queueLength += copyLen;
@@ -280,7 +280,7 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
 
   mutex.Signal();
 
-  return TRUE;
+  return PTrue;
 }
 
 

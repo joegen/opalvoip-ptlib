@@ -158,23 +158,23 @@ class PTextToSpeech_SAPI : public PTextToSpeech
 
     // overrides
     PStringArray GetVoiceList();
-    BOOL SetVoice(const PString & voice);
+    PBoolean SetVoice(const PString & voice);
 
-    BOOL SetRate(unsigned rate);
+    PBoolean SetRate(unsigned rate);
     unsigned GetRate();
 
-    BOOL SetVolume(unsigned volume);
+    PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
 
-    BOOL OpenFile   (const PFilePath & fn);
-    BOOL OpenChannel(PChannel * channel);
-    BOOL IsOpen()     { return opened; }
+    PBoolean OpenFile   (const PFilePath & fn);
+    PBoolean OpenChannel(PChannel * channel);
+    PBoolean IsOpen()     { return opened; }
 
-    BOOL Close      ();
-    BOOL Speak      (const PString & str, TextType hint);
+    PBoolean Close      ();
+    PBoolean Speak      (const PString & str, TextType hint);
 
   protected:
-    BOOL OpenVoice();
+    PBoolean OpenVoice();
 
     static PMutex refMutex;
     static int * refCount;
@@ -182,8 +182,8 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     PMutex mutex;
     CComPtr<ISpVoice> m_cpVoice;
     CComPtr<ISpStream> cpWavStream;
-    BOOL opened;
-    BOOL usingFile;
+    PBoolean opened;
+    PBoolean usingFile;
     unsigned rate, volume;
     PString voice;
 };
@@ -209,7 +209,7 @@ PTextToSpeech_SAPI::PTextToSpeech_SAPI()
     (*refCount)++;
   }
 
-  usingFile = opened = FALSE;
+  usingFile = opened = PFalse;
 }
 
 
@@ -224,7 +224,7 @@ PTextToSpeech_SAPI::~PTextToSpeech_SAPI()
   }
 }
 
-BOOL PTextToSpeech_SAPI::OpenVoice()
+PBoolean PTextToSpeech_SAPI::OpenVoice()
 {
   PWaitAndSignal m(mutex);
 
@@ -232,25 +232,25 @@ BOOL PTextToSpeech_SAPI::OpenVoice()
   return (opened = SUCCEEDED(hr));
 }
 
-BOOL PTextToSpeech_SAPI::OpenChannel(PChannel *)
+PBoolean PTextToSpeech_SAPI::OpenChannel(PChannel *)
 {
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = FALSE;
-  return (opened = FALSE);
+  usingFile = PFalse;
+  return (opened = PFalse);
 }
 
 
-BOOL PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
+PBoolean PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
 {
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = TRUE;
+  usingFile = PTrue;
 
   if (!OpenVoice())
-    return FALSE;
+    return PFalse;
 
   CSpStreamFormat wavFormat;
   wavFormat.AssignFormat(SPSF_8kHz16BitMono);
@@ -263,20 +263,20 @@ BOOL PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
 
   if (!SUCCEEDED(hr)) {
     cpWavStream.Release();
-    return FALSE;
+    return PFalse;
   }
 
-  hr = m_cpVoice->SetOutput(cpWavStream, TRUE);
+  hr = m_cpVoice->SetOutput(cpWavStream, PTrue);
 
   return (opened = SUCCEEDED(hr));
 }
 
-BOOL PTextToSpeech_SAPI::Close()
+PBoolean PTextToSpeech_SAPI::Close()
 {
   PWaitAndSignal m(mutex);
 
   if (!opened)
-    return TRUE;
+    return PTrue;
 
   if (usingFile) {
     if (opened)
@@ -287,18 +287,18 @@ BOOL PTextToSpeech_SAPI::Close()
   if (opened)
     m_cpVoice.Release();
 
-  opened = FALSE;
+  opened = PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTextToSpeech_SAPI::Speak(const PString & otext, TextType hint)
+PBoolean PTextToSpeech_SAPI::Speak(const PString & otext, TextType hint)
 {
   PWaitAndSignal m(mutex);
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   PString text = otext;
 
@@ -359,17 +359,17 @@ PStringArray PTextToSpeech_SAPI::GetVoiceList()
   return voiceList;
 }
 
-BOOL PTextToSpeech_SAPI::SetVoice(const PString & v)
+PBoolean PTextToSpeech_SAPI::SetVoice(const PString & v)
 {
   PWaitAndSignal m(mutex);
   voice = v;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PTextToSpeech_SAPI::SetRate(unsigned v)
+PBoolean PTextToSpeech_SAPI::SetRate(unsigned v)
 {
   rate = v;
-  return TRUE;
+  return PTrue;
 }
 
 unsigned PTextToSpeech_SAPI::GetRate()
@@ -377,10 +377,10 @@ unsigned PTextToSpeech_SAPI::GetRate()
   return rate;
 }
 
-BOOL PTextToSpeech_SAPI::SetVolume(unsigned v)
+PBoolean PTextToSpeech_SAPI::SetVolume(unsigned v)
 {
   volume = v;
-  return TRUE;
+  return PTrue;
 }
 
 unsigned PTextToSpeech_SAPI::GetVolume()
@@ -407,27 +407,27 @@ class PTextToSpeech_Festival : public PTextToSpeech
 
     // overrides
     PStringArray GetVoiceList();
-    BOOL SetVoice(const PString & voice);
+    PBoolean SetVoice(const PString & voice);
 
-    BOOL SetRate(unsigned rate);
+    PBoolean SetRate(unsigned rate);
     unsigned GetRate();
 
-    BOOL SetVolume(unsigned volume);
+    PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
 
-    BOOL OpenFile   (const PFilePath & fn);
-    BOOL OpenChannel(PChannel * channel);
-    BOOL IsOpen()    { return opened; }
+    PBoolean OpenFile   (const PFilePath & fn);
+    PBoolean OpenChannel(PChannel * channel);
+    PBoolean IsOpen()    { return opened; }
 
-    BOOL Close      ();
-    BOOL Speak      (const PString & str, TextType hint);
+    PBoolean Close      ();
+    PBoolean Speak      (const PString & str, TextType hint);
 
   protected:
-    BOOL Invoke(const PString & str, const PFilePath & fn);
+    PBoolean Invoke(const PString & str, const PFilePath & fn);
 
     PMutex mutex;
-    BOOL opened;
-    BOOL usingFile;
+    PBoolean opened;
+    PBoolean usingFile;
     PString text;
     PFilePath path;
     unsigned volume, rate;
@@ -441,7 +441,7 @@ PFactory<PTextToSpeech>::Worker<PTextToSpeech_Festival> festivalTTSFactory("Fest
 PTextToSpeech_Festival::PTextToSpeech_Festival()
 {
   PWaitAndSignal m(mutex);
-  usingFile = opened = FALSE;
+  usingFile = opened = PFalse;
   rate = 8000;
   volume = 100;
 }
@@ -452,59 +452,59 @@ PTextToSpeech_Festival::~PTextToSpeech_Festival()
   PWaitAndSignal m(mutex);
 }
 
-BOOL PTextToSpeech_Festival::OpenChannel(PChannel *)
+PBoolean PTextToSpeech_Festival::OpenChannel(PChannel *)
 {
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = FALSE;
-  opened = FALSE;
+  usingFile = PFalse;
+  opened = PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PTextToSpeech_Festival::OpenFile(const PFilePath & fn)
+PBoolean PTextToSpeech_Festival::OpenFile(const PFilePath & fn)
 {
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = TRUE;
+  usingFile = PTrue;
   path = fn;
-  opened = TRUE;
+  opened = PTrue;
 
   PTRACE(3, "TTS\tWriting speech to " << fn);
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PTextToSpeech_Festival::Close()
+PBoolean PTextToSpeech_Festival::Close()
 {
   PWaitAndSignal m(mutex);
 
   if (!opened)
-    return TRUE;
+    return PTrue;
 
-  BOOL stat = FALSE;
+  PBoolean stat = PFalse;
 
   if (usingFile)
     stat = Invoke(text, path);
 
   text = PString();
 
-  opened = FALSE;
+  opened = PFalse;
 
   return stat;
 }
 
 
-BOOL PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
+PBoolean PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
 {
   PWaitAndSignal m(mutex);
 
   if (!IsOpen()) {
     PTRACE(2, "TTS\tAttempt to speak whilst engine not open");
-    return FALSE;
+    return PFalse;
   }
 
   PString str = ostr;
@@ -519,12 +519,12 @@ BOOL PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
   if (usingFile) {
     PTRACE(3, "TTS\tSpeaking " << ostr);
     text = text & str;
-    return TRUE;
+    return PTrue;
   }
 
   PTRACE(1, "TTS\tStream mode not supported for Festival");
 
-  return FALSE;
+  return PFalse;
 }
 
 PStringArray PTextToSpeech_Festival::GetVoiceList()
@@ -538,17 +538,17 @@ PStringArray PTextToSpeech_Festival::GetVoiceList()
   return voiceList;
 }
 
-BOOL PTextToSpeech_Festival::SetVoice(const PString & v)
+PBoolean PTextToSpeech_Festival::SetVoice(const PString & v)
 {
   PWaitAndSignal m(mutex);
   voice = v;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PTextToSpeech_Festival::SetRate(unsigned v)
+PBoolean PTextToSpeech_Festival::SetRate(unsigned v)
 {
   rate = v;
-  return TRUE;
+  return PTrue;
 }
 
 unsigned PTextToSpeech_Festival::GetRate()
@@ -556,10 +556,10 @@ unsigned PTextToSpeech_Festival::GetRate()
   return rate;
 }
 
-BOOL PTextToSpeech_Festival::SetVolume(unsigned v)
+PBoolean PTextToSpeech_Festival::SetVolume(unsigned v)
 {
   volume = v;
-  return TRUE;
+  return PTrue;
 }
 
 unsigned PTextToSpeech_Festival::GetVolume()
@@ -567,12 +567,12 @@ unsigned PTextToSpeech_Festival::GetVolume()
   return volume;
 }
 
-BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fname)
+PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fname)
 {
   PString text = otext;
-  text.Replace('\n', ' ', TRUE);
-  text.Replace('\"', '\'', TRUE);
-  text.Replace('\\', ' ', TRUE);
+  text.Replace('\n', ' ', PTrue);
+  text.Replace('\"', '\'', PTrue);
+  text.Replace('\\', ' ', PTrue);
   text = "\"" + text + "\"";
 
   PString cmdLine = "echo " + text + " | ./text2wave -F " + PString(PString::Unsigned, rate) + " -otype riff > " + fname;
@@ -583,7 +583,7 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
   system(cmdLine);
 #endif
 
-  return TRUE;
+  return PTrue;
 
 #else
 

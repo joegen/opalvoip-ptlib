@@ -55,7 +55,7 @@
   public:
     // Overrides from class PChannel
       
-    virtual BOOL Close();
+    virtual PBoolean Close();
       // Close the channel.
 
     virtual PString GetName() const;

@@ -100,7 +100,7 @@ PXMLRPCServerResource::PXMLRPCServerResource(
 {
 }
 
-BOOL PXMLRPCServerResource::SetMethod(const PString & methodName, const PNotifier & func)
+PBoolean PXMLRPCServerResource::SetMethod(const PString & methodName, const PNotifier & func)
 {
   PWaitAndSignal m(methodMutex);
 
@@ -117,15 +117,15 @@ BOOL PXMLRPCServerResource::SetMethod(const PString & methodName, const PNotifie
   // set the function
   methodInfo->methodFunc = func;
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PXMLRPCServerResource::LoadHeaders(PHTTPRequest & /*request*/)    // Information on this request.
+PBoolean PXMLRPCServerResource::LoadHeaders(PHTTPRequest & /*request*/)    // Information on this request.
 {
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PXMLRPCServerResource::OnPOSTData(PHTTPRequest & request,
+PBoolean PXMLRPCServerResource::OnPOSTData(PHTTPRequest & request,
                                 const PStringToString & /*data*/)
 {
   PString reply;
@@ -145,7 +145,7 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & body, PString & repl
 {
   // get body of message here
   PXMLRPCBlock request;
-  BOOL ok = request.Load(body);
+  PBoolean ok = request.Load(body);
 
   // if cannot parse XML, set return
   if (!ok) {

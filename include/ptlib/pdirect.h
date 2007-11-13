@@ -284,7 +284,7 @@ class PFileInfo : public PObject
        dependent, for example under unix it is a file beginning with a '.'
        character while under MS-DOS there is a file system attribute for it.
      */
-    BOOL hidden;
+    PBoolean hidden;
 };
 
 
@@ -377,9 +377,9 @@ class PDirectory : public PFilePathString
     /**Determine if the directory is the root directory of a volume.
     
        @return
-       TRUE if the object is a root directory.
+       PTrue if the object is a root directory.
      */
-    BOOL IsRoot() const;
+    PBoolean IsRoot() const;
 
     /**Get the root directory of a volume.
     
@@ -398,9 +398,9 @@ class PDirectory : public PFilePathString
        separator.
 
        @return
-       TRUE if may be used to separate directories in a path.
+       PTrue if may be used to separate directories in a path.
      */
-    PINLINE static BOOL IsSeparator(
+    PINLINE static PBoolean IsSeparator(
       char ch    ///< Character to check as being a separator.
     );
 
@@ -412,9 +412,9 @@ class PDirectory : public PFilePathString
        to use all of these bytes.
 
        @return
-       TRUE if the information could be determined.
+       PTrue if the information could be determined.
      */
-    BOOL GetVolumeSpace(
+    PBoolean GetVolumeSpace(
       PInt64 & total,     ///< Total number of bytes available on volume
       PInt64 & free,      ///< Number of bytes unused on the volume
       DWORD & clusterSize ///< "Quantisation factor" in bytes for files on volume
@@ -426,49 +426,49 @@ class PDirectory : public PFilePathString
     /**Test for if the directory exists.
 
        @return
-       TRUE if directory exists.
+       PTrue if directory exists.
      */
-    BOOL Exists() const;
+    PBoolean Exists() const;
 
     /**Test for if the specified directory exists.
 
        @return
-       TRUE if directory exists.
+       PTrue if directory exists.
      */
-    static BOOL Exists(
+    static PBoolean Exists(
       const PString & path   ///< Directory file path.
     );
       
     /**Change the current working directory to the objects location.
 
        @return
-       TRUE if current working directory was changed.
+       PTrue if current working directory was changed.
      */
-    BOOL Change() const;
+    PBoolean Change() const;
 
     /**Change the current working directory to that specified..
 
        @return
-       TRUE if current working directory was changed.
+       PTrue if current working directory was changed.
      */
-    static BOOL Change(
+    static PBoolean Change(
       const PString & path   ///< Directory file path.
     );
       
     /**Create a new directory with the specified permissions.
 
        @return
-       TRUE if directory created.
+       PTrue if directory created.
      */
-    BOOL Create(
+    PBoolean Create(
       int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
     ) const;
     /**Create a new directory as specified with the specified permissions.
 
        @return
-       TRUE if directory created.
+       PTrue if directory created.
      */
-    static BOOL Create(
+    static PBoolean Create(
       const PString & p,   ///< Directory file path.
       int perm = PFileInfo::DefaultDirPerms    ///< Permission on new directory.
     );
@@ -476,16 +476,16 @@ class PDirectory : public PFilePathString
     /**Delete the directory.
 
        @return
-       TRUE if directory was deleted.
+       PTrue if directory was deleted.
      */
-    BOOL Remove();
+    PBoolean Remove();
 
     /**Delete the specified directory.
 
        @return
-       TRUE if directory was deleted.
+       PTrue if directory was deleted.
      */
-    static BOOL Remove(
+    static PBoolean Remove(
       const PString & path   ///< Directory file path.
     );
   //@}
@@ -504,10 +504,10 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       TRUE if directory was successfully opened, and there was at least one
+       PTrue if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       int scanMask = PFileInfo::AllFiles    ///< Mask of files to provide.
     );
       
@@ -522,10 +522,10 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       TRUE if directory was successfully opened, and there was at least one
+       PTrue if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-    virtual BOOL Restart(
+    virtual PBoolean Restart(
       int scanMask = PFileInfo::AllFiles    ///< Mask of files to provide.
     );
       
@@ -538,9 +538,9 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       TRUE if there is another valid file in the directory.
+       PTrue if there is another valid file in the directory.
      */
-    BOOL Next();
+    PBoolean Next();
       
     /// Close the directory during or after a file list scan.
     virtual void Close();
@@ -568,16 +568,16 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       TRUE if entry is a subdirectory.
+       PTrue if entry is a subdirectory.
      */
-    virtual BOOL IsSubDir() const;
+    virtual PBoolean IsSubDir() const;
 
     /**Get file information on the current directory entry.
     
        @return
-       TRUE if file information was successfully retrieved.
+       PTrue if file information was successfully retrieved.
      */
-    virtual BOOL GetInfo(
+    virtual PBoolean GetInfo(
       PFileInfo & info    ///< Object to receive the file information.
     ) const;
   //@}

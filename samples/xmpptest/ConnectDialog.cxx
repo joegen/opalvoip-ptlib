@@ -85,7 +85,7 @@ bool _ConnectDialog::Create( wxWindow* parent, wxWindowID id, const wxString& ca
     GetSizer()->SetSizeHints(this);
     Centre();
 ////@end _ConnectDialog creation
-    return TRUE;
+    return PTrue;
 }
 
 /*!
@@ -100,7 +100,7 @@ void _ConnectDialog::CreateControls()
 
     wxBoxSizer* item2 = new wxBoxSizer(wxVERTICAL);
     item1->SetSizer(item2);
-    item1->SetAutoLayout(TRUE);
+    item1->SetAutoLayout(PTrue);
 
     wxFlexGridSizer* item3 = new wxFlexGridSizer(2, 2, 0, 0);
     item2->Add(item3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
@@ -128,7 +128,7 @@ void _ConnectDialog::CreateControls()
 
     wxCheckBox* item9 = new wxCheckBox( item1, ID_CHECKBOX, _("Remember password"), wxDefaultPosition, wxDefaultSize, 0 );
     m_RememberPwd = item9;
-    item9->SetValue(FALSE);
+    item9->SetValue(PFalse);
     item9->SetHelpText(_("Check to save the password"));
     if (ShowToolTips())
         item9->SetToolTip(_("Check to save the password"));
@@ -153,5 +153,5 @@ void _ConnectDialog::CreateControls()
 
 bool _ConnectDialog::ShowToolTips()
 {
-    return TRUE;
+    return PTrue;
 }

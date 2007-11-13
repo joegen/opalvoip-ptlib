@@ -163,7 +163,7 @@ class PCondMutex : public PMutex
     /** This is the condition that must be met for the WaitCondition() function
        to acquire the mutex.
      */
-    virtual BOOL Condition() = 0;
+    virtual PBoolean Condition() = 0;
 
     /** This function is called immediately before blocking on the condition in
        the WaitCondition() function. This could get called multiple times
@@ -222,9 +222,9 @@ class PIntCondMutex : public PCondMutex
     /** This is the condition that must be met for the WaitCondition() function
        to acquire the mutex.
 
-       @return TRUE if condition is met.
+       @return PTrue if condition is met.
      */
-    virtual BOOL Condition();
+    virtual PBoolean Condition();
 
     /**Get the current value of the condition variable.
       @return Current condition variable value.
@@ -396,7 +396,7 @@ class PReadWaitAndSignal {
       */
     PReadWaitAndSignal(
       const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
-      BOOL start = TRUE    ///< Start read operation on PReadWriteMutex before returning.
+      PBoolean start = PTrue    ///< Start read operation on PReadWriteMutex before returning.
     );
     /** End read operation on the PReadWriteMutex.
         This will execute the EndRead() function on the PReadWriteMutex that
@@ -434,7 +434,7 @@ class PWriteWaitAndSignal {
       */
     PWriteWaitAndSignal(
       const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
-      BOOL start = TRUE    ///< Start write operation on PReadWriteMutex before returning.
+      PBoolean start = PTrue    ///< Start write operation on PReadWriteMutex before returning.
     );
     /** End write operation on the PReadWriteMutex.
         This will execute the EndWrite() function on the PReadWriteMutex that

@@ -98,7 +98,7 @@ protected:
   int sampleTime;                     // Length of each sample
   ReceiveTimeQueue rectime;           // Queue of timestamps for ensure read/write in sync
   PTimeInterval lastTimeStamp;        // LastTimeStamp of recieved data
-  BOOL receiveReady;
+  PBoolean receiveReady;
   void *ref_buf;
   void *echo_buf;
   void *e_buf;

@@ -86,24 +86,24 @@
       // Return the name of the channel.
 
       
-    virtual BOOL Read(void * buf, PINDEX len);
+    virtual PBoolean Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
       // requested number of characters were read.
 
-    virtual BOOL Write(const void * buf, PINDEX len);
+    virtual PBoolean Write(const void * buf, PINDEX len);
       // Low level write to the channel. This function will block until the
       // requested number of characters were written.
 
-    virtual BOOL Close();
+    virtual PBoolean Close();
       // Close the channel.
 
 
     PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
     // Get a text form of the last error encountered.
 
-    BOOL SetFormat(const PWaveFormat & format);
+    PBoolean SetFormat(const PWaveFormat & format);
 
-    BOOL Open(const PString & device, Directions dir,const PWaveFormat & format);
+    PBoolean Open(const PString & device, Directions dir,const PWaveFormat & format);
     // Open with format other than PCM
 
   protected:
@@ -120,7 +120,7 @@
     PMutex           bufferMutex;
 
   private:
-    BOOL OpenDevice(unsigned id);
-    BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
+    PBoolean OpenDevice(unsigned id);
+    PBoolean GetDeviceID(const PString & device, Directions dir, unsigned& id);
 
 // End Of File ///////////////////////////////////////////////////////////////

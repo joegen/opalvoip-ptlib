@@ -89,7 +89,7 @@ XMPP::JID::JID(const PString& jid)
 
 
 XMPP::JID::JID(const PString& user, const PString& server, const PString& resource)
-  : m_User(user), m_Server(server), m_Resource(resource), m_IsDirty(TRUE)
+  : m_User(user), m_Server(server), m_Resource(resource), m_IsDirty(PTrue)
 {
   BuildJID();
 }
@@ -128,21 +128,21 @@ XMPP::JID::operator const PString&() const
 
 void XMPP::JID::SetUser(const PString& user)
 {
-  m_IsDirty = TRUE;
+  m_IsDirty = PTrue;
   m_User = user;
 }
 
 
 void XMPP::JID::SetServer(const PString& server)
 {
-  m_IsDirty = TRUE;
+  m_IsDirty = PTrue;
   m_Server = server;
 }
 
 
 void XMPP::JID::SetResource(const PString& resource)
 {
-  m_IsDirty = TRUE;
+  m_IsDirty = PTrue;
   m_Resource = resource;
 }
 
@@ -189,7 +189,7 @@ void XMPP::JID::BuildJID() const
   if (!m_Resource.IsEmpty())
     m_JID += "/" + m_Resource;
 
-  m_IsDirty = FALSE;
+  m_IsDirty = PFalse;
 }
 
 ///////////////////////////////////////////////////////
@@ -237,36 +237,36 @@ XMPP::Stream::~Stream()
 }
 
 
-BOOL XMPP::Stream::Close()
+PBoolean XMPP::Stream::Close()
 {
   if (IsOpen()) {
     OnClose();
     return PIndirectChannel::Close();
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL XMPP::Stream::Write(const void * buf, PINDEX len)
+PBoolean XMPP::Stream::Write(const void * buf, PINDEX len)
 {
   PTRACE(5, "XMPP\tSND: " << (const char *)buf);
   return PIndirectChannel::Write(buf, len);
 }
 
 
-BOOL XMPP::Stream::Write(const PString& data)
+PBoolean XMPP::Stream::Write(const PString& data)
 {
   return Write((const char *)data, data.GetLength());
 }
 
 
-BOOL XMPP::Stream::Write(const PXML& pdu)
+PBoolean XMPP::Stream::Write(const PXML& pdu)
 {
   PXMLElement * root = pdu.GetRootElement();
 
   if (root == NULL)
-    return FALSE;
+    return PFalse;
 
   PStringStream os;
   root->Output(os, pdu, 0);
@@ -291,7 +291,7 @@ void XMPP::Stream::Reset()
 XMPP::BaseStreamHandler::BaseStreamHandler()
   : PThread(0x1000, PThread::NoAutoDeleteThread),
     m_Stream(NULL),
-    m_AutoReconnect(TRUE),
+    m_AutoReconnect(PTrue),
     m_ReconnectTimeout(1000)
 {
 }
@@ -303,7 +303,7 @@ XMPP::BaseStreamHandler::~BaseStreamHandler()
 }
 
 
-BOOL XMPP::BaseStreamHandler::Start(XMPP::Transport * transport)
+PBoolean XMPP::BaseStreamHandler::Start(XMPP::Transport * transport)
 {
   if (m_Stream != NULL)
     Stop();
@@ -313,7 +313,7 @@ BOOL XMPP::BaseStreamHandler::Start(XMPP::Transport * transport)
   m_Stream->CloseHandlers().Add(new PCREATE_NOTIFIER(OnClose));
 
   if (!transport->IsOpen() && !transport->Open())
-    return FALSE;
+    return PFalse;
 
   if (m_Stream->Open(transport))
   {
@@ -321,17 +321,17 @@ BOOL XMPP::BaseStreamHandler::Start(XMPP::Transport * transport)
       Resume();
     else
       Restart();
-    return TRUE;
+    return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL XMPP::BaseStreamHandler::Stop(const PString& _error)
+PBoolean XMPP::BaseStreamHandler::Stop(const PString& _error)
 {
   if (m_Stream == NULL)
-    return FALSE;
+    return PFalse;
 
   if (!_error.IsEmpty())
   {
@@ -349,7 +349,7 @@ BOOL XMPP::BaseStreamHandler::Stop(const PString& _error)
   delete m_Stream;
   m_Stream = NULL;
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -363,35 +363,35 @@ void XMPP::BaseStreamHandler::OnClose(XMPP::Stream&, INT)
 }
 
 
-void XMPP::BaseStreamHandler::SetAutoReconnect(BOOL b, long t)
+void XMPP::BaseStreamHandler::SetAutoReconnect(PBoolean b, long t)
 {
   m_AutoReconnect = b;
   m_ReconnectTimeout = t;
 }
 
 
-BOOL XMPP::BaseStreamHandler::Write(const void * buf, PINDEX len)
+PBoolean XMPP::BaseStreamHandler::Write(const void * buf, PINDEX len)
 {
   if (m_Stream == NULL)
-    return FALSE;
+    return PFalse;
 
   return m_Stream->Write(buf, len);
 }
 
 
-BOOL XMPP::BaseStreamHandler::Write(const PString& data)
+PBoolean XMPP::BaseStreamHandler::Write(const PString& data)
 {
   if (m_Stream == NULL)
-    return FALSE;
+    return PFalse;
 
   return m_Stream->Write(data);
 }
 
 
-BOOL XMPP::BaseStreamHandler::Write(const PXML& pdu)
+PBoolean XMPP::BaseStreamHandler::Write(const PXML& pdu)
 {
   if (m_Stream == NULL)
-    return FALSE;
+    return PFalse;
 
   return m_Stream->Write(pdu);
 }
@@ -532,13 +532,13 @@ XMPP::Message::Message(PXML * pdu)
 }
 
 
-BOOL XMPP::Message::IsValid() const
+PBoolean XMPP::Message::IsValid() const
 {
   return XMPP::Message::IsValid(this);
 }
 
 
-BOOL XMPP::Message::IsValid(const PXML * pdu)
+PBoolean XMPP::Message::IsValid(const PXML * pdu)
 {
   PXMLElement * elem = PAssertNULL(pdu)->GetRootElement();
   return elem != NULL && elem->GetName() == XMPP::MessageStanzaTag();
@@ -751,13 +751,13 @@ XMPP::Presence::Presence(PXML * pdu)
 }
 
 
-BOOL XMPP::Presence::IsValid() const
+PBoolean XMPP::Presence::IsValid() const
 {
   return XMPP::Presence::IsValid(this);
 }
 
 
-BOOL XMPP::Presence::IsValid(const PXML * pdu)
+PBoolean XMPP::Presence::IsValid(const PXML * pdu)
 {
   PXMLElement * elem = PAssertNULL(pdu)->GetRootElement();
   return elem != NULL && elem->GetName() == XMPP::PresenceStanzaTag();
@@ -980,7 +980,7 @@ const PString & XMPP::IQ::TypeTag() { static PString s = "type"; return s; }
 
 
 XMPP::IQ::IQ(XMPP::IQ::IQType type, PXMLElement * body)
-  : m_Processed(FALSE),
+  : m_Processed(PFalse),
     m_OriginalIQ(NULL)
 {
   SetRootElement(new PXMLElement(NULL, XMPP::IQStanzaTag()));
@@ -992,7 +992,7 @@ XMPP::IQ::IQ(XMPP::IQ::IQType type, PXMLElement * body)
 
 
 XMPP::IQ::IQ(PXML& pdu)
-  : m_Processed(FALSE),
+  : m_Processed(PFalse),
     m_OriginalIQ(NULL)
 {
   if (XMPP::IQ::IsValid(&pdu)) {
@@ -1005,7 +1005,7 @@ XMPP::IQ::IQ(PXML& pdu)
 
 
 XMPP::IQ::IQ(PXML * pdu)
-  : m_Processed(FALSE),
+  : m_Processed(PFalse),
     m_OriginalIQ(NULL)
 {
   if (XMPP::IQ::IsValid(pdu)) {
@@ -1023,29 +1023,29 @@ XMPP::IQ::~IQ()
 }
 
 
-BOOL XMPP::IQ::IsValid() const
+PBoolean XMPP::IQ::IsValid() const
 {
   return XMPP::IQ::IsValid(this);
 }
 
 
-BOOL XMPP::IQ::IsValid(const PXML * pdu)
+PBoolean XMPP::IQ::IsValid(const PXML * pdu)
 {
   PXMLElement * elem = PAssertNULL(pdu)->GetRootElement();
 
   if (elem == NULL || elem->GetName() != XMPP::IQStanzaTag())
-    return FALSE;
+    return PFalse;
 
   PString s = elem->GetAttribute(XMPP::IQ::TypeTag());
 
   if (s.IsEmpty() || (s != "get" && s != "set" && s != "result" && s != "error"))
-    return FALSE;
+    return PFalse;
 
   /* Appartently when a server sends a set to us there's no id...
   s = elem->GetAttribute(XMPP::IQ::ID);
   return !s.IsEmpty();
   */
-  return TRUE;
+  return PTrue;
 }
 
 

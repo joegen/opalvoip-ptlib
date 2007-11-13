@@ -139,7 +139,7 @@ class PModem : public PSerialChannel
 
 
   // Overrides from class PChannel
-    virtual BOOL Close();
+    virtual PBoolean Close();
     // Close the modem serial port channel.
 
 
@@ -150,9 +150,9 @@ class PModem : public PSerialChannel
        parameters.
        
        @return
-       TRUE if the modem serial port was successfully opened.
+       PTrue if the modem serial port was successfully opened.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & port,   ///< Serial port name to open.
       DWORD speed = 0,        ///< Speed of serial port.
       BYTE data = 0,          ///< Number of data bits for serial port.
@@ -167,9 +167,9 @@ class PModem : public PSerialChannel
        correct configuration file section is already set.
 
        @return
-       TRUE if the modem serial port was successfully opened.
+       PTrue if the modem serial port was successfully opened.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       PConfig & cfg   ///< Configuration file to read parameters from.
     );
 
@@ -204,9 +204,9 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the initialise to start.
     
        @return
-       TRUE if the <A>Initialise()</A> function may proceeed.
+       PTrue if the <A>Initialise()</A> function may proceeed.
      */
-    BOOL CanInitialise() const;
+    PBoolean CanInitialise() const;
 
     /** Send the initialisation meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
@@ -214,10 +214,10 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       TRUE if command string sent successfully and the objects state has
+       PTrue if command string sent successfully and the objects state has
        changed.
      */
-    BOOL Initialise();
+    PBoolean Initialise();
 
     /** Set the modem de-initialisation meta-command string.
 
@@ -243,9 +243,9 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the de-initialise to start.
     
        @return
-       TRUE if the <A>Deinitialise()</A> function may proceeed.
+       PTrue if the <A>Deinitialise()</A> function may proceeed.
      */
-    BOOL CanDeinitialise() const;
+    PBoolean CanDeinitialise() const;
 
     /** Send the de-initialisation meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
@@ -253,10 +253,10 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       TRUE if command string sent successfully and the objects state has
+       PTrue if command string sent successfully and the objects state has
        changed.
      */
-    BOOL Deinitialise();
+    PBoolean Deinitialise();
 
     /** Set the modem pre-dial meta-command string.
 
@@ -373,9 +373,9 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the dial to start.
     
        @return
-       TRUE if the <A>Dial()</A> function may proceeed.
+       PTrue if the <A>Dial()</A> function may proceeed.
      */
-    BOOL CanDial() const;
+    PBoolean CanDial() const;
 
     /** Send the dial meta-command strings to the modem. The return
        value indicates that the conditions for the operation to start were met,
@@ -387,10 +387,10 @@ class PModem : public PSerialChannel
        post-dial string.
 
        @return
-       TRUE if command string sent successfully and the objects state has
+       PTrue if command string sent successfully and the objects state has
        changed.
      */
-    BOOL Dial(const PString & number);
+    PBoolean Dial(const PString & number);
 
     /** Set the modem hang up meta-command string.
 
@@ -416,9 +416,9 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the hang up to start.
     
        @return
-       TRUE if the <A>HangUp()</A> function may proceeed.
+       PTrue if the <A>HangUp()</A> function may proceeed.
      */
-    BOOL CanHangUp() const;
+    PBoolean CanHangUp() const;
 
     /** Send the hang up meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
@@ -426,17 +426,17 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       TRUE if command string sent successfully and the objects state has
+       PTrue if command string sent successfully and the objects state has
        changed.
      */
-    BOOL HangUp();
+    PBoolean HangUp();
 
     /** The modem is in a state that allows the user command to start.
     
        @return
-       TRUE if the <A>SendUser()</A> function may proceeed.
+       PTrue if the <A>SendUser()</A> function may proceeed.
      */
-    BOOL CanSendUser() const;
+    PBoolean CanSendUser() const;
 
     /** Send an arbitrary user meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
@@ -444,9 +444,9 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       TRUE if command string sent successfully.
+       PTrue if command string sent successfully.
      */
-    BOOL SendUser(
+    PBoolean SendUser(
       const PString & str   ///< User command string to send.
     );
 
@@ -454,14 +454,14 @@ class PModem : public PSerialChannel
     // Abort the current meta-string command operation eg dial, hang up etc.
 
     /** The modem is in a state that allows the user application to read from
-       the channel. Reading while this is TRUE can interfere with the operation
+       the channel. Reading while this is PTrue can interfere with the operation
        of the meta-string processing. This function is only usefull when
        multi-threading is used.
 
        @return
-       TRUE if <A>Read()</A> operations are "safe".
+       PTrue if <A>Read()</A> operations are "safe".
      */
-    BOOL CanRead() const;
+    PBoolean CanRead() const;
 
     enum Status {
       Unopened,           ///< Has not been opened yet

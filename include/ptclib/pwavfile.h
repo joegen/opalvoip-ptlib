@@ -253,14 +253,14 @@ class PWAVFileFormat
     /**
       * write any extra headers after the FORMAT chunk
       */
-    virtual BOOL WriteExtraChunks(PWAVFile & /*file*/)
-    { return TRUE; }
+    virtual PBoolean WriteExtraChunks(PWAVFile & /*file*/)
+    { return PTrue; }
 
     /**
       * read any extra headers after the FORMAT chunk
       */
-    virtual BOOL ReadExtraChunks(PWAVFile & /*file*/)
-    { return TRUE; }
+    virtual PBoolean ReadExtraChunks(PWAVFile & /*file*/)
+    { return PTrue; }
 
      /**
       * called before the reading/writing starts
@@ -277,12 +277,12 @@ class PWAVFileFormat
     /**
       * write data to the file
       */
-    virtual BOOL Read(PWAVFile & file, void * buf, PINDEX & len);
+    virtual PBoolean Read(PWAVFile & file, void * buf, PINDEX & len);
 
     /**
       * read data from the file
       */
-    virtual BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
+    virtual PBoolean Write(PWAVFile & file, const void * buf, PINDEX & len);
 };
 
 typedef PFactory<PWAVFileFormat, PCaselessString> PWAVFileFormatByFormatFactory;
@@ -297,11 +297,11 @@ class PWAVFileConverter
     virtual ~PWAVFileConverter() { }
     virtual unsigned GetFormat    (const PWAVFile & file) const = 0;
     virtual off_t GetPosition     (const PWAVFile & file) const = 0;
-    virtual BOOL SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;
+    virtual PBoolean SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;
     virtual unsigned GetSampleSize(const PWAVFile & file) const = 0;
     virtual off_t GetDataLength   (PWAVFile & file) = 0;
-    virtual BOOL Read             (PWAVFile & file, void * buf, PINDEX len)  = 0;
-    virtual BOOL Write            (PWAVFile & file, const void * buf, PINDEX len) = 0;
+    virtual PBoolean Read             (PWAVFile & file, void * buf, PINDEX len)  = 0;
+    virtual PBoolean Write            (PWAVFile & file, const void * buf, PINDEX len) = 0;
 };
 
 typedef PFactory<PWAVFileConverter, unsigned> PWAVFileConverterFactory;
@@ -414,10 +414,10 @@ class PWAVFile : public PFile
        processing such as byte-order swaping.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
     */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -426,10 +426,10 @@ class PWAVFile : public PFile
        processing such as byte-order swaping.
 
        @return
-       TRUE indicates that at least one character was written to the channel.
-       FALSE means no bytes were written due to timeout or some other I/O error.
+       PTrue indicates that at least one character was written to the channel.
+       PFalse means no bytes were written due to timeout or some other I/O error.
     */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf,   ///< Pointer to a block of memory to receive the write bytes.
       PINDEX len    ///< Maximum number of bytes to write to the channel.
     );
@@ -443,9 +443,9 @@ class PWAVFile : public PFile
        open) then a new unique temporary filename is generated.
 
        @return
-       TRUE if the file was successfully opened.
+       PTrue if the file was successfully opened.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
       int opts = ModeDefault      ///< Options for open operation.
     );
@@ -461,9 +461,9 @@ class PWAVFile : public PFile
        then the #name# parameter is ignored.
 
        @return
-       TRUE if the file was successfully opened.
+       PTrue if the file was successfully opened.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PFilePath & name,    ///< Name of file to open.
       OpenMode mode = ReadWrite, ///< Mode in which to open the file.
       int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
@@ -472,9 +472,9 @@ class PWAVFile : public PFile
     /** Close the file channel.
         If a WAV file has been written to, this will update the header
         to contain the correct size information.
-        @return TRUE if close was OK.
+        @return PTrue if close was OK.
       */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Set the current active position in the file for the next read or write
        operation. The #pos# variable is a signed number which is
@@ -488,9 +488,9 @@ class PWAVFile : public PFile
        perform SetPosition().
 
        @return
-       TRUE if the new file position was set.
+       PTrue if the new file position was set.
      */
-    virtual BOOL SetPosition(
+    virtual PBoolean SetPosition(
       off_t pos,                         ///< New position to set.
       FilePositionOrigin origin = Start  ///< Origin for position change.
     );
@@ -509,8 +509,8 @@ class PWAVFile : public PFile
   //@{
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
-    virtual BOOL SetFormat(unsigned fmt);
-    virtual BOOL SetFormat(const PString & format);
+    virtual PBoolean SetFormat(unsigned fmt);
+    virtual PBoolean SetFormat(const PString & format);
 
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
@@ -549,10 +549,10 @@ class PWAVFile : public PFile
     /**Determine if the WAV file is a valid wave file.
 
       @return
-      TRUE indicates that the WAV file is valid
-      FALSE indicates that the WAV file is invalid
+      PTrue indicates that the WAV file is valid
+      PFalse indicates that the WAV file is invalid
     */
-    BOOL IsValid() const { return isValidWAV; }
+    PBoolean IsValid() const { return isValidWAV; }
 
     /**
       *Return a string that describes the WAV format
@@ -569,14 +569,14 @@ class PWAVFile : public PFile
  
     friend class PWAVFileConverter;
 
-    BOOL RawRead(void * buf, PINDEX len);
-    BOOL RawWrite(const void * buf, PINDEX len);
+    PBoolean RawRead(void * buf, PINDEX len);
+    PBoolean RawWrite(const void * buf, PINDEX len);
 
-    BOOL FileRead(void * buf, PINDEX len);
-    BOOL FileWrite(const void * buf, PINDEX len);
+    PBoolean FileRead(void * buf, PINDEX len);
+    PBoolean FileWrite(const void * buf, PINDEX len);
 
     off_t RawGetPosition() const;
-    BOOL RawSetPosition(off_t pos, FilePositionOrigin origin);
+    PBoolean RawSetPosition(off_t pos, FilePositionOrigin origin);
     off_t RawGetDataLength();
 
     void SetLastReadCount(PINDEX v) { lastReadCount = v; } 
@@ -591,22 +591,22 @@ class PWAVFile : public PFile
 
     PBYTEArray wavHeaderData;
 
-    BOOL ProcessHeader();
-    BOOL GenerateHeader();
-    BOOL UpdateHeader();
+    PBoolean ProcessHeader();
+    PBoolean GenerateHeader();
+    PBoolean UpdateHeader();
 
-    BOOL     isValidWAV;
+    PBoolean     isValidWAV;
 
     unsigned int origFmt;
     PWAVFileFormat * formatHandler;
 
-    BOOL     autoConvert;
+    PBoolean     autoConvert;
     PWAVFileConverter * autoConverter;
 
     off_t lenHeader;
     off_t lenData;
 
-    BOOL     header_needs_updating;
+    PBoolean     header_needs_updating;
 };
 
 #endif

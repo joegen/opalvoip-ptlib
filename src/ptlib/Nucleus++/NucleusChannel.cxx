@@ -16,25 +16,25 @@
 #include "../common/pchannel.cxx"
 #define new PNEW
 
-BOOL PChannel::Read(void *, PINDEX)
+PBoolean PChannel::Read(void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PChannel::Write(const void *, PINDEX)
+PBoolean PChannel::Write(const void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PChannel::Close()
+PBoolean PChannel::Close()
 {
    ::shutdown(os_handle,2);
    os_handle=-1;
-   return FALSE;
+   return PFalse;
 }
 
 
@@ -55,12 +55,12 @@ PString PChannel::GetErrorText() const
   return GetErrorText(lastError, osError);
 }
 
-BOOL PChannel::ConvertOSError(int err)
+PBoolean PChannel::ConvertOSError(int err)
 {
   return ConvertOSError(err, lastError, osError);
 }
 
-BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
+PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
 
 {
   osError = (err >= 0) ? 0 : errno;
@@ -68,7 +68,7 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return TRUE;
+      return PTrue;
 
     case EINTR:
       lastError = Interrupted;
@@ -111,34 +111,34 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
       lastError = Miscellaneous;
       break;
   }
-  return FALSE;
+  return PFalse;
 }
 
-BOOL PChannel::PXSetIOBlock (int type, const PTimeInterval & timeout)
+PBoolean PChannel::PXSetIOBlock (int type, const PTimeInterval & timeout)
 {
   return PXSetIOBlock(type, os_handle, timeout);
 }
 
-BOOL PChannel::PXSetIOBlock (int type, int blockHandle, const PTimeInterval & timeout)
+PBoolean PChannel::PXSetIOBlock (int type, int blockHandle, const PTimeInterval & timeout)
 {
   if (blockHandle < 0) {
     lastError = NotOpen;
-    return FALSE;
+    return PFalse;
   }
 
   int stat = PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
 
-  // if select returned < 0, then covert errno into lastError and return FALSE
+  // if select returned < 0, then covert errno into lastError and return PFalse
   if (stat < 0)
     return ConvertOSError(stat);
 
-  // if the select succeeded, then return TRUE
+  // if the select succeeded, then return PTrue
   if (stat > 0) 
-    return TRUE;
+    return PTrue;
 
-  // otherwise, a timeout occurred so return FALSE
+  // otherwise, a timeout occurred so return PFalse
   lastError = Timeout;
-  return FALSE;
+  return PFalse;
 }
 
 int PChannel::PXClose()

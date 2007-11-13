@@ -223,7 +223,7 @@
  * Added 64 bit integer.
  *
  * Revision 1.4  1994/11/19  00:18:26  robertj
- * Changed PInteger to be INT, ie standard type like BOOL/WORD etc.
+ * Changed PInteger to be INT, ie standard type like PBoolean/WORD etc.
  *
  * Revision 1.3  1994/07/02  03:18:09  robertj
  * Support for 16 bit systems.

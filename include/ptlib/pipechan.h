@@ -175,8 +175,8 @@ class PPipeChannel : public PChannel
     PPipeChannel(
       const PString & subProgram,  ///< Sub program name or command line.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
     /**Create a new pipe channel.
        This executes the subProgram and transfers data from its stdin/stdout/stderr.
@@ -187,8 +187,8 @@ class PPipeChannel : public PChannel
       const PString & subProgram,  ///< Sub program name or command line.
       const PStringArray & argumentList, ///< Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
     /**Create a new pipe channel.
        This executes the subProgram and transfers data from its stdin/stdout/stderr.
@@ -199,8 +199,8 @@ class PPipeChannel : public PChannel
       const PString & subProgram,  ///< Sub program name or command line.
       const PStringToString & environment, ///< Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
     /**Create a new pipe channel.
        This executes the subProgram and transfers data from its stdin/stdout/stderr.
@@ -212,8 +212,8 @@ class PPipeChannel : public PChannel
       const PStringArray & argumentList, ///< Array of arguments to sub-program.
       const PStringToString & environment, ///< Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
 
     /// Close the pipe channel, killing the sub-process.
@@ -254,13 +254,13 @@ class PPipeChannel : public PChannel
        similar to end of file for the PFile channel.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -271,15 +271,15 @@ class PPipeChannel : public PChannel
        of bytes written.
 
        If the sub-program has completed its run then this function will fail
-       returning FALSE.
+       returning PFalse.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE if at least len bytes were written to the channel.
+       PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
@@ -292,33 +292,33 @@ class PPipeChannel : public PChannel
        not yet called the #Execute()# function this will run the
        sub-program.
      */
-    virtual BOOL Close();
+    virtual PBoolean Close();
   //@}
 
   /**@name New member functions */
   //@{
     /** Open a channel. */
-    BOOL Open(
+    PBoolean Open(
       const PString & subProgram,  ///< Sub program name or command line.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
     /** Open a channel. */
-    BOOL Open(
+    PBoolean Open(
       const PString & subProgram,  ///< Sub program name or command line.
       const PStringArray & argumentList, ///< Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
     /** Open a channel. */
-    BOOL Open(
+    PBoolean Open(
       const PString & subProgram,  ///< Sub program name or command line.
       const PStringToString & environment, ///< Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
     /**Open a new pipe channel allowing the subProgram to be executed and
        data transferred from its stdin/stdout/stderr.
@@ -343,7 +343,7 @@ class PPipeChannel : public PChannel
        #argumentList# parameters.
 
        The #searchPath# parameter indicates that the system PATH
-       for executables should be searched for the sub-program. If FALSE then
+       for executables should be searched for the sub-program. If PFalse then
        only the explicit or implicit path contained in the
        #subProgram# parameter is searched for the executable.
 
@@ -357,13 +357,13 @@ class PPipeChannel : public PChannel
        then the same invironment as calling process uses is passed to the
        child process.
      */
-    BOOL Open(
+    PBoolean Open(
       const PString & subProgram,  ///< Sub program name or command line.
       const PStringArray & argumentList, ///< Array of arguments to sub-program.
       const PStringToString & environment, ///< Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   ///< Mode for the pipe channel.
-      BOOL searchPath = TRUE,      ///< Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  ///< Standard error is on separate pipe
+      PBoolean searchPath = PTrue,      ///< Flag for system PATH to be searched.
+      PBoolean stderrSeparate = PFalse  ///< Standard error is on separate pipe
     );
 
     /**Get the full file path for the sub-programs executable file.
@@ -384,9 +384,9 @@ class PPipeChannel : public PChannel
        give an end of file to the stdin of the remote process. This is often
        necessary.
 
-       @return TRUE if execute was successful.
+       @return PTrue if execute was successful.
      */
-    BOOL Execute();
+    PBoolean Execute();
 
     /**Determine if the program associated with the PPipeChannel is still
        executing. This is useful for determining the status of PPipeChannels
@@ -394,9 +394,9 @@ class PPipeChannel : public PChannel
        concurrent multi-processing.
        
        @return
-       TRUE if the program associated with the PPipeChannel is still running
+       PTrue if the program associated with the PPipeChannel is still running
      */
-    BOOL IsRunning() const;
+    PBoolean IsRunning() const;
 
     /**Get the return code from the most recent Close;
 
@@ -426,34 +426,34 @@ class PPipeChannel : public PChannel
        specified.
      
        @return
-       TRUE if the process received the signal. Note that this does not mean
+       PTrue if the process received the signal. Note that this does not mean
        that the process has actually terminated.
      */
-    BOOL Kill(
+    PBoolean Kill(
       int signal = 9  ///< Signal code to be sent to process.
     );
 
     /**Read all available data on the standard error stream of the
-       sub-process. If the #wait# parameter is FALSE then only
-       the text currently available is returned. If TRUE then the function
+       sub-process. If the #wait# parameter is PFalse then only
+       the text currently available is returned. If PTrue then the function
        blocks as long as necessary to get some number of bytes.
 
        @return
-       TRUE indicates that at least one character was read from stderr.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from stderr.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    BOOL ReadStandardError(
+    PBoolean ReadStandardError(
       PString & errors,   ///< String to receive standard error text.
-      BOOL wait = FALSE   ///< Flag to indicate if function should block
+      PBoolean wait = PFalse   ///< Flag to indicate if function should block
     );
 
     /**Determine if the platform can support simultaneous read and writes from
-       the PPipeChannel (eg MSDOS returns FALSE, Unix returns TRUE).
+       the PPipeChannel (eg MSDOS returns PFalse, Unix returns PTrue).
        
        @return
-       TRUE if platform supports concurrent multi-processing.
+       PTrue if platform supports concurrent multi-processing.
      */
-    static BOOL CanReadAndWrite();
+    static PBoolean CanReadAndWrite();
   //@}
 
 
@@ -464,11 +464,11 @@ class PPipeChannel : public PChannel
 
 
   private:
-    BOOL PlatformOpen(const PString & subProgram,
+    PBoolean PlatformOpen(const PString & subProgram,
                       const PStringArray & arguments,
                       OpenMode mode,
-                      BOOL searchPath,
-                      BOOL stderrSeparate,
+                      PBoolean searchPath,
+                      PBoolean stderrSeparate,
                       const PStringToString * environment);
 
 

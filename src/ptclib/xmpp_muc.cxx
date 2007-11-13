@@ -100,10 +100,10 @@ XMPP::MUC::Room::Room(C2S::StreamHandler * handler, const JID& jid, const PStrin
 }
 
 
-BOOL XMPP::MUC::Room::Enter()
+PBoolean XMPP::MUC::Room::Enter()
 {
   if (PAssertNULL(m_Handler) == NULL)
-    return FALSE;
+    return PFalse;
 
   JID ourUser(m_RoomJID);
   ourUser.SetResource(m_User.m_Nick);
@@ -122,10 +122,10 @@ BOOL XMPP::MUC::Room::Enter()
 }
 
 
-BOOL XMPP::MUC::Room::Leave()
+PBoolean XMPP::MUC::Room::Leave()
 {
   if (PAssertNULL(m_Handler) == NULL)
-    return FALSE;
+    return PFalse;
 
   XMPP::Presence pre;
   pre.SetTo(m_RoomJID);
@@ -135,7 +135,7 @@ BOOL XMPP::MUC::Room::Leave()
 }
 
 
-BOOL XMPP::MUC::Room::SendMessage(const PString& msg)
+PBoolean XMPP::MUC::Room::SendMessage(const PString& msg)
 {
   XMPP::Message _msg;
   _msg.SetBody(msg);
@@ -144,10 +144,10 @@ BOOL XMPP::MUC::Room::SendMessage(const PString& msg)
 }
 
 
-BOOL XMPP::MUC::Room::SendMessage(Message& msg)
+PBoolean XMPP::MUC::Room::SendMessage(Message& msg)
 {
   if (PAssertNULL(m_Handler) == NULL)
-    return FALSE;
+    return PFalse;
 
   msg.SetTo(m_RoomJID);
   msg.SetType(XMPP::Message::GroupChat);

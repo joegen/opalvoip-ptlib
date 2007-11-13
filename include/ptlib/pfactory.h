@@ -304,7 +304,7 @@ class PFactory : PFactoryBase
         {
 #if PMEMORY_HEAP
           // Singletons are never deallocated, so make sure they arenot reported as a leak
-          BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(isSingleton);
+          PBoolean previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(isSingleton);
 #endif
           Abstract_T * instance = new _Concrete_T;
 #if PMEMORY_HEAP
@@ -327,7 +327,7 @@ class PFactory : PFactoryBase
       GetInstance().Register_Internal(key, PNEW WorkerBase(instance));
     }
 
-    static BOOL RegisterAs(const _Key_T & newKey, const _Key_T & oldKey)
+    static PBoolean RegisterAs(const _Key_T & newKey, const _Key_T & oldKey)
     {
       return GetInstance().RegisterAs_Internal(newKey, oldKey);
     }
@@ -352,7 +352,7 @@ class PFactory : PFactoryBase
       return GetInstance().CreateInstance_Internal(key);
     }
 
-    static BOOL IsSingleton(const _Key_T & key)
+    static PBoolean IsSingleton(const _Key_T & key)
     {
       return GetInstance().IsSingleton_Internal(key);
     }
@@ -413,13 +413,13 @@ class PFactory : PFactoryBase
         keyMap[key] = worker;
     }
 
-    BOOL RegisterAs_Internal(const _Key_T & newKey, const _Key_T & oldKey)
+    PBoolean RegisterAs_Internal(const _Key_T & newKey, const _Key_T & oldKey)
     {
       PWaitAndSignal m(mutex);
       if (keyMap.find(oldKey) == keyMap.end())
-        return FALSE;
+        return PFalse;
       keyMap[newKey] = keyMap[oldKey];
-      return TRUE;
+      return PTrue;
     }
 
     void Unregister_Internal(const _Key_T & key)

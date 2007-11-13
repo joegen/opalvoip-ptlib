@@ -120,7 +120,7 @@ void SafeTest::Main()
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
          << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(TRUE) << endl
+         << "Version     : " << GetVersion(PTrue) << endl
          << "System      : " << GetOSName() << '-'
          << GetOSHardware() << ' '
          << GetOSVersion() << endl;
@@ -182,7 +182,7 @@ void SafeTest::Main()
   ui.Resume();
   ui.WaitForTermination();
 
-  exitNow = TRUE;
+  exitNow = PTrue;
 
   cerr << "in preexit delay, let all threads die" << endl;
   PThread::Sleep(delay * 2);
@@ -225,7 +225,7 @@ void SafeTest::DelayThreadsDict::DeleteObject(PObject * object) const
   }
 }
 
-BOOL SafeTest::UseOnThreadEnd()
+PBoolean SafeTest::UseOnThreadEnd()
 {
   return useOnThreadEnd;
 }
@@ -286,7 +286,7 @@ DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
   : safeTest(_safeTest),
     delay(_delay)
 {
-  threadRunning = TRUE;
+  threadRunning = PTrue;
 
   PTRACE(5, "Constructor for a non auto deleted delay thread");
 
@@ -320,7 +320,7 @@ void DelayThread::DelayThreadMain(PThread &thisThread, INT)
 
 
   if (safeTest.UseOnThreadEnd()) {
-    threadRunning = FALSE;
+    threadRunning = PFalse;
     new OnDelayThreadEnd(safeTest, id);
   } else {
     SafeReference();    
@@ -344,7 +344,7 @@ void DelayThread::Release()
 void DelayThread::OnReleaseThreadMain(PThread &, INT)
 {
   safeTest.OnReleased(*this);
-  threadRunning = FALSE;
+  threadRunning = PFalse;
   SafeDereference();
 }
 
@@ -359,13 +359,13 @@ ReporterThread::ReporterThread(LauncherThread & _launcher)
   : PThread(10000, NoAutoDeleteThread),
     launcher(_launcher)
 {
-  terminateNow = FALSE;
+  terminateNow = PFalse;
   Resume();
 }
 
 void ReporterThread::Terminate()
 {
-  terminateNow = TRUE;
+  terminateNow = PTrue;
   exitFlag.Signal();
 }
 
@@ -386,7 +386,7 @@ LauncherThread::LauncherThread(SafeTest &_safeTest)
     safeTest(_safeTest)
 { 
   iteration = 0; 
-  keepGoing = TRUE; 
+  keepGoing = PTrue; 
 
   if (safeTest.RegularReporting())
     reporter = new ReporterThread(*this);

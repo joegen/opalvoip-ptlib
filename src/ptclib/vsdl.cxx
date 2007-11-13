@@ -175,7 +175,7 @@ PStringList PVideoOutputDevice_SDL::GetDeviceNames() const
 }
 
 
-BOOL PVideoOutputDevice_SDL::Open(const PString & name, BOOL /*startImmediate*/)
+PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImmediate*/)
 {
   Close();
 
@@ -192,13 +192,13 @@ BOOL PVideoOutputDevice_SDL::Open(const PString & name, BOOL /*startImmediate*/)
 }
 
 
-BOOL PVideoOutputDevice_SDL::IsOpen()
+PBoolean PVideoOutputDevice_SDL::IsOpen()
 {
   return screen != NULL && overlay != NULL;
 }
 
 
-BOOL PVideoOutputDevice_SDL::Close()
+PBoolean PVideoOutputDevice_SDL::Close()
 {
   if (IsOpen()) {
     sdlStop.Signal();
@@ -206,29 +206,29 @@ BOOL PVideoOutputDevice_SDL::Close()
     delete sdlThread;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoOutputDevice_SDL::SetColourFormat(const PString & colourFormat)
+PBoolean PVideoOutputDevice_SDL::SetColourFormat(const PString & colourFormat)
 {
   if (colourFormat *= "YUV420P")
     return PVideoOutputDevice::SetColourFormat(colourFormat);
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PVideoOutputDevice_SDL::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoOutputDevice_SDL::SetFrameSize(unsigned width, unsigned height)
 {
   {
     PWaitAndSignal m(mutex);
 
     if (width == frameWidth && height == frameHeight)
-      return TRUE;
+      return PTrue;
 
     if (!PVideoOutputDevice::SetFrameSize(width, height))
-      return FALSE;
+      return PFalse;
   }
 
   adjustSize.Signal();
@@ -243,18 +243,18 @@ PINDEX PVideoOutputDevice_SDL::GetMaxFrameBytes()
 }
 
 
-BOOL PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
+PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
                                           unsigned width, unsigned height,
                                           const BYTE * data,
-                                          BOOL endFrame) 
+                                          PBoolean endFrame) 
 {
   PWaitAndSignal m(mutex);
 
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   if (x != 0 || y != 0 || width != frameWidth || height != frameHeight || !endFrame)
-    return FALSE;
+    return PFalse;
 
   ::SDL_LockYUVOverlay(overlay);
 
@@ -278,7 +278,7 @@ BOOL PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
 
   updateOverlay = true;
 
-  return TRUE;
+  return PTrue;
 }
 
 

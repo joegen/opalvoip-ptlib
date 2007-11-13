@@ -47,16 +47,16 @@
 
 // Copied from MSOS version
 #ifdef __NUCLEUS_MNT__
-    virtual BOOL Read(void * buf, PINDEX len);
+    virtual PBoolean Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
       // requested number of characters were read.
 
-    virtual BOOL Write(const void * buf, PINDEX len);
+    virtual PBoolean Write(const void * buf, PINDEX len);
       // Low level write to the channel. This function will block until the
       // requested number of characters were written.
 #endif
 
-    BOOL Close();
+    PBoolean Close();
 };
 
 #endif

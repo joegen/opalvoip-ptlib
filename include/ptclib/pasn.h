@@ -212,7 +212,7 @@ class PASNObject : public PObject
     /** Decode an ASN length in the buffer at the given ptr. The ptr is moved
        to the byte after the end of the encoded length.
      */
-    static BOOL DecodeASNLength (
+    static PBoolean DecodeASNLength (
       const PBYTEArray & buffer,  ///< buffer to decode data from
       PINDEX & ptr,               ///< ptr to decode from
       WORD & len                  ///< returned length
@@ -266,7 +266,7 @@ class PASNObject : public PObject
     );
     // Return the length of an encoded ASN integer with the specified value 
 
-    static BOOL DecodeASNInteger (
+    static PBoolean DecodeASNInteger (
       const PBYTEArray & buffer,  ///< buffer to decode from
       PINDEX & ptr,               ///< ptr to data in buffer
       PASNInt & value,            ///< returned value
@@ -274,7 +274,7 @@ class PASNObject : public PObject
     );
     // Decode an ASN integer value in the specified buffer 
 
-    static BOOL DecodeASNUnsigned (
+    static PBoolean DecodeASNUnsigned (
       const PBYTEArray & buffer,  ///< buffer to decode from
       PINDEX & ptr,               ///< ptr to data in buffer
       PASNUnsigned & value,       ///< returned value
@@ -344,7 +344,7 @@ class PASNString : public PASNObject
     PString GetTypeAsString() const;
 
   protected:
-    BOOL Decode(const PBYTEArray & buffer, PINDEX & i, PASNObject::ASNType type);
+    PBoolean Decode(const PBYTEArray & buffer, PINDEX & i, PASNObject::ASNType type);
     void Encode(PBYTEArray & buffer,             PASNObject::ASNType type);
 
     PString value;
@@ -410,7 +410,7 @@ class PASNUnsignedInteger : public PASNObject
     PASNUnsignedInteger()
       { value = 0; }
 
-    BOOL Decode(const PBYTEArray & buffer, PINDEX & i, PASNObject::ASNType theType);
+    PBoolean Decode(const PBYTEArray & buffer, PINDEX & i, PASNObject::ASNType theType);
     void Encode(PBYTEArray & buffer, PASNObject::ASNType theType);
 
   private:
@@ -486,7 +486,7 @@ class PASNGauge : public PASNUnsignedInteger
     PASNGauge(const PBYTEArray & buffer, PINDEX & ptr)
       { Decode(buffer, ptr); }
 
-    BOOL Decode(const PBYTEArray & buffer, PINDEX & i)
+    PBoolean Decode(const PBYTEArray & buffer, PINDEX & i)
       { return PASNUnsignedInteger::Decode(buffer, i, Gauge); }
 
     void Encode(PBYTEArray & buffer)
@@ -526,7 +526,7 @@ class PASNObjectID : public PASNObject
     PString GetTypeAsString() const;
 
   protected:
-    BOOL Decode(const PBYTEArray & buffer, PINDEX & i);
+    PBoolean Decode(const PBYTEArray & buffer, PINDEX & i);
 
   private:
     PDWORDArray value;
@@ -587,12 +587,12 @@ class PASNSequence : public PASNObject
 
     void PrintOn(ostream & strm) const;
     void Encode(PBYTEArray & buffer);
-    BOOL Decode(const PBYTEArray & buffer, PINDEX & i);
+    PBoolean Decode(const PBYTEArray & buffer, PINDEX & i);
     WORD GetEncodedLength();
     ASNType GetType() const;
     PString GetTypeAsString() const;
 
-    BOOL Encode(PBYTEArray & buffer, PINDEX maxLen) ;
+    PBoolean Encode(PBYTEArray & buffer, PINDEX maxLen) ;
 
   private:
     PASNObjectList sequence;

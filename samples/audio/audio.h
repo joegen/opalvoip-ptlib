@@ -59,14 +59,14 @@ PDECLARE_LIST(TestAudioDevice, PBYTEArray *)
   virtual ~TestAudioDevice();
   
   void Test(const PString & captureFileName);
-  BOOL DoEndNow();
+  PBoolean DoEndNow();
   
   void WriteAudioFrame(PBYTEArray *data);
   PBYTEArray *GetNextAudioFrame();
   
  protected:
   PMutex access;
-  BOOL endNow;
+  PBoolean endNow;
 
 };
 
@@ -79,7 +79,7 @@ class TestAudio : public PThread
     TestAudio(TestAudioDevice &master);
     virtual ~TestAudio();
 
-    virtual void Terminate() { keepGoing = FALSE; }
+    virtual void Terminate() { keepGoing = PFalse; }
     void LowerVolume();
     void RaiseVolume();
     
@@ -87,12 +87,12 @@ class TestAudio : public PThread
 
   protected:
     PString name;
-    BOOL OpenAudio(enum PSoundChannel::Directions dir);
+    PBoolean OpenAudio(enum PSoundChannel::Directions dir);
 
     PINDEX             currentVolume;
     TestAudioDevice    &controller;
     PSoundChannel      sound;
-    BOOL               keepGoing;
+    PBoolean               keepGoing;
     PINDEX             iterations;
 };
 

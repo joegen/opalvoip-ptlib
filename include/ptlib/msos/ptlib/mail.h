@@ -75,7 +75,7 @@
     DWORD    lastError;
     unsigned hUserInterface;
 
-    BOOL LogOnCommonInterface(const char * username,
+    PBoolean LogOnCommonInterface(const char * username,
                                   const char * password, const char * service);
 
 #if P_HAS_CMC

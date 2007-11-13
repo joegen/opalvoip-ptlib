@@ -104,7 +104,7 @@ class ReporterThread : public PThread
   PSyncPoint exitFlag;
   
   /**Flag to indicate end this thread */
-  BOOL terminateNow;
+  PBoolean terminateNow;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ public:
     PString id;
 
     /**Flag to indicate we are still going */
-    BOOL threadRunning;
+    PBoolean threadRunning;
 
     /**The name of this thread */
     PStringStream name;
@@ -294,7 +294,7 @@ public:
   PInt64 GetIteration() { return iteration; }
 
   /**Cause this thread to stop work and end */
-  virtual void Terminate() { keepGoing = FALSE; }
+  virtual void Terminate() { keepGoing = PFalse; }
 
   /**Access function, which is callled by the UserInterfaceThread.
    It reports the time since this program stared.*/
@@ -326,7 +326,7 @@ public:
 
   /**A flag to indicate that we have to keep on doing our job, of
      launching DelayThread instances */
-  BOOL            keepGoing;
+  PBoolean            keepGoing;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,15 +387,15 @@ class SafeTest : public PProcess
     PINDEX GetRandom() { return random.Generate() % (delay >> 2); }
 
     /**Report the status of the useOnThreadEnd flag */
-    BOOL UseOnThreadEnd();
+    PBoolean UseOnThreadEnd();
 
-    /**Return TRUE or FALSE, to decide if we use PThread::Create */
-    BOOL AvoidPThreadCreate() { return avoidPThreadCreate; }
+    /**Return PTrue or PFalse, to decide if we use PThread::Create */
+    PBoolean AvoidPThreadCreate() { return avoidPThreadCreate; }
 
 
-    /**Return TRUE or FALSE to determine if a thread should be
+    /**Return PTrue or PFalse to determine if a thread should be
        launched to regularly report on status */
-    BOOL RegularReporting() { return regularReporting; }
+    PBoolean RegularReporting() { return regularReporting; }
  protected:
 
     /**The thread safe list of DelayThread s that we manage */
@@ -409,7 +409,7 @@ class SafeTest : public PProcess
     } delayThreadsActive;
 
     /**The flag to say when we exit */
-    BOOL exitNow;
+    PBoolean exitNow;
      
     /**The delay each thread has to wait for */
     PINDEX delay;
@@ -426,15 +426,15 @@ class SafeTest : public PProcess
 
     /**Flag to indicate that we use the OnDelayThreadEnd mechanism for
        signifing the end of a DelayThread */
-    BOOL useOnThreadEnd;
+    PBoolean useOnThreadEnd;
 
     /**Flag to indicate if we can use PThread::Create to generate
        temporary thread, or if we use the supplied thread class */
-    BOOL avoidPThreadCreate;
+    PBoolean avoidPThreadCreate;
     
 
     /**Flag to determine if a thread is used to regularly report on status */
-    BOOL regularReporting;
+    PBoolean regularReporting;
 };
 
 

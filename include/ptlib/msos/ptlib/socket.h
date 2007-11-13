@@ -114,17 +114,17 @@
     ~PSocket();
       // close a socket
 
-    virtual BOOL Read(void * buf, PINDEX len);
-    virtual BOOL Write(const void * buf, PINDEX len);
-    virtual BOOL Close();
+    virtual PBoolean Read(void * buf, PINDEX len);
+    virtual PBoolean Write(const void * buf, PINDEX len);
+    virtual PBoolean Close();
 
   protected:
-    BOOL ConvertOSError(int status, ErrorGroup group = LastGeneralError);
-    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
+    PBoolean ConvertOSError(int status, ErrorGroup group = LastGeneralError);
+    static PBoolean ConvertOSError(int error, Errors & lastError, int & osError);
 
   private:
 #ifdef PHAS_WINSOCK
-    static BOOL WinSockStarted;
+    static PBoolean WinSockStarted;
 #endif
 
 

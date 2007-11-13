@@ -46,19 +46,19 @@ public:
   PVideoInputDevice_BSDCAPTURE();
   ~PVideoInputDevice_BSDCAPTURE();
 
-  BOOL Open(
+  PBoolean Open(
     const PString &deviceName,
-    BOOL startImmediate = TRUE
+    PBoolean startImmediate = PTrue
   );
 
-  BOOL IsOpen();
+  PBoolean IsOpen();
 
-  BOOL Close();
+  PBoolean Close();
 
-  BOOL Start();
-  BOOL Stop();
+  PBoolean Start();
+  PBoolean Stop();
 
-  BOOL IsCapturing();
+  PBoolean IsCapturing();
 
   static PStringList GetInputDeviceNames();
 
@@ -67,48 +67,48 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-//  BOOL GetFrame(
+//  PBoolean GetFrame(
 //    PBYTEArray & frame
 //  );
-  BOOL GetFrameData(
+  PBoolean GetFrameData(
     BYTE * buffer,
     PINDEX * bytesReturned = NULL
   );
-  BOOL GetFrameDataNoDelay(
+  PBoolean GetFrameDataNoDelay(
     BYTE * buffer,
     PINDEX * bytesReturned = NULL
   );
 
-  BOOL GetFrameSizeLimits(unsigned int&, unsigned int&,
+  PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
-  BOOL TestAllFormats();
+  PBoolean TestAllFormats();
 
-  BOOL SetFrameSize(unsigned int, unsigned int);
-  BOOL SetFrameRate(unsigned int);
-  BOOL VerifyHardwareFrameSize(unsigned int, unsigned int);
+  PBoolean SetFrameSize(unsigned int, unsigned int);
+  PBoolean SetFrameRate(unsigned int);
+  PBoolean VerifyHardwareFrameSize(unsigned int, unsigned int);
 
-  BOOL GetParameters(int*, int*, int*, int*, int*);
+  PBoolean GetParameters(int*, int*, int*, int*, int*);
 
-  BOOL SetColourFormat(const PString&);
+  PBoolean SetColourFormat(const PString&);
 
   int GetContrast();
-  BOOL SetContrast(unsigned int);
+  PBoolean SetContrast(unsigned int);
   int GetBrightness();
-  BOOL SetBrightness(unsigned int);
+  PBoolean SetBrightness(unsigned int);
 //  int GetWhiteness();
-//  BOOL SetWhiteness(unsigned int);
+//  PBoolean SetWhiteness(unsigned int);
 //  int GetColour();
-//  BOOL SetColour(unsigned int);
+//  PBoolean SetColour(unsigned int);
   int GetHue();
-  BOOL SetHue(unsigned int);
+  PBoolean SetHue(unsigned int);
 
-//  BOOL SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
-  BOOL SetVideoFormat(PVideoDevice::VideoFormat);
+//  PBoolean SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
+  PBoolean SetVideoFormat(PVideoDevice::VideoFormat);
   int GetNumChannels();
-  BOOL SetChannel(int);
+  PBoolean SetChannel(int);
 
-  BOOL NormalReadProcess(BYTE*, PINDEX*);
+  PBoolean NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
 

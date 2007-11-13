@@ -72,9 +72,9 @@
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS)
   public:
     virtual void Wait();
-    virtual BOOL Wait(const PTimeInterval & timeout);
+    virtual PBoolean Wait(const PTimeInterval & timeout);
     virtual void Signal();
-    virtual BOOL WillBlock() const;
+    virtual PBoolean WillBlock() const;
   private:
     unsigned signalCount;
 #endif

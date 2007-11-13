@@ -199,7 +199,7 @@ PBase64::PBase64()
 }
 
 
-void PBase64::StartEncoding(BOOL useCRLF)
+void PBase64::StartEncoding(PBoolean useCRLF)
 {
   encodedString = "";
   encodeLength = nextLine = saveCount = 0;
@@ -336,20 +336,20 @@ PString PBase64::Encode(const void * data, PINDEX length)
 
 void PBase64::StartDecoding()
 {
-  perfectDecode = TRUE;
+  perfectDecode = PTrue;
   quadPosition = 0;
   decodedData.SetSize(0);
   decodeSize = 0;
 }
 
 
-BOOL PBase64::ProcessDecoding(const PString & str)
+PBoolean PBase64::ProcessDecoding(const PString & str)
 {
   return ProcessDecoding((const char *)str);
 }
 
 
-BOOL PBase64::ProcessDecoding(const char * cstr)
+PBoolean PBase64::ProcessDecoding(const char * cstr)
 {
   static const BYTE Base642Binary[256] = {
     96, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 99, 99, 98, 99, 99,
@@ -374,21 +374,21 @@ BOOL PBase64::ProcessDecoding(const char * cstr)
     BYTE value = Base642Binary[(BYTE)*cstr++];
     switch (value) {
       case 96 : // end of string
-        return FALSE;
+        return PFalse;
 
       case 97 : // '=' sign
         if (quadPosition == 3 || (quadPosition == 2 && *cstr == '=')) {
           quadPosition = 0;  // Reset this to zero, as have a perfect decode
-          return TRUE; // Stop decoding now as must be at end of data
+          return PTrue; // Stop decoding now as must be at end of data
         }
-        perfectDecode = FALSE;  // Ignore '=' sign but flag decode as suspect
+        perfectDecode = PFalse;  // Ignore '=' sign but flag decode as suspect
         break;
 
       case 98 : // CRLFs
         break;  // Ignore totally
 
       case 99 :  // Illegal characters
-        perfectDecode = FALSE;  // Ignore rubbish but flag decode as suspect
+        perfectDecode = PFalse;  // Ignore rubbish but flag decode as suspect
         break;
 
       default : // legal value from 0 to 63
@@ -427,10 +427,10 @@ PBYTEArray PBase64::GetDecodedData()
 }
 
 
-BOOL PBase64::GetDecodedData(void * dataBlock, PINDEX length)
+PBoolean PBase64::GetDecodedData(void * dataBlock, PINDEX length)
 {
   perfectDecode = quadPosition == 0;
-  BOOL bigEnough = length >= decodeSize;
+  PBoolean bigEnough = length >= decodeSize;
   memcpy(dataBlock, decodedData, bigEnough ? decodeSize : length);
   decodedData.SetSize(0);
   decodeSize = 0;
@@ -446,7 +446,7 @@ PString PBase64::Decode(const PString & str)
 }
 
 
-BOOL PBase64::Decode(const PString & str, PBYTEArray & data)
+PBoolean PBase64::Decode(const PString & str, PBYTEArray & data)
 {
   PBase64 decoder;
   decoder.ProcessDecoding(str);
@@ -455,7 +455,7 @@ BOOL PBase64::Decode(const PString & str, PBYTEArray & data)
 }
 
 
-BOOL PBase64::Decode(const PString & str, void * dataBlock, PINDEX length)
+PBoolean PBase64::Decode(const PString & str, void * dataBlock, PINDEX length)
 {
   PBase64 decoder;
   decoder.ProcessDecoding(str);
@@ -970,7 +970,7 @@ void PCypher::Encode(const void * data, PINDEX length, PBYTEArray & coded)
 {
   PAssert((blockSize%8) == 0, PUnsupportedFeature);
 
-  Initialise(TRUE);
+  Initialise(PTrue);
 
   const BYTE * in = (const BYTE *)data;
   BYTE * out = coded.GetPointer(
@@ -1007,28 +1007,28 @@ PString PCypher::Decode(const PString & cypher)
 }
 
 
-BOOL PCypher::Decode(const PString & cypher, PString & clear)
+PBoolean PCypher::Decode(const PString & cypher, PString & clear)
 {
   clear = PString();
 
   PBYTEArray clearText;
   if (!Decode(cypher, clearText))
-    return FALSE;
+    return PFalse;
 
   if (clearText.IsEmpty())
-    return TRUE;
+    return PTrue;
 
   PINDEX sz = clearText.GetSize();
   memcpy(clear.GetPointer(sz+1), (const BYTE *)clearText, sz);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PCypher::Decode(const PString & cypher, PBYTEArray & clear)
+PBoolean PCypher::Decode(const PString & cypher, PBYTEArray & clear)
 {
   PBYTEArray coded;
   if (!PBase64::Decode(cypher, coded))
-    return FALSE;
+    return PFalse;
   return Decode(coded, clear);
 }
 
@@ -1055,13 +1055,13 @@ PINDEX PCypher::Decode(const PBYTEArray & coded, void * data, PINDEX length)
 }
 
 
-BOOL PCypher::Decode(const PBYTEArray & coded, PBYTEArray & clear)
+PBoolean PCypher::Decode(const PBYTEArray & coded, PBYTEArray & clear)
 {
   PAssert((blockSize%8) == 0, PUnsupportedFeature);
   if (coded.IsEmpty() || (coded.GetSize()%blockSize) != 0)
-    return FALSE;
+    return PFalse;
 
-  Initialise(FALSE);
+  Initialise(PFalse);
 
   const BYTE * in = coded;
   PINDEX length = coded.GetSize();
@@ -1075,11 +1075,11 @@ BOOL PCypher::Decode(const PBYTEArray & coded, PBYTEArray & clear)
 
   if (blockSize != 1) {
     if (*--out >= blockSize)
-      return FALSE;
+      return PFalse;
     clear.SetSize(length - blockSize + *out);
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1122,7 +1122,7 @@ void PTEACypher::GenerateKey(Key & newKey)
 
 static const DWORD TEADelta = 0x9e3779b9;    // Magic number for key schedule
 
-void PTEACypher::Initialise(BOOL)
+void PTEACypher::Initialise(PBoolean)
 {
   k0 = ((const PUInt32l *)(const BYTE *)key)[0];
   k1 = ((const PUInt32l *)(const BYTE *)key)[1];
@@ -1210,24 +1210,24 @@ void PSecureConfig::GetProductKey(PTEACypher::Key & prodKey) const
 PSecureConfig::ValidationState PSecureConfig::GetValidation() const
 {
   PString str;
-  BOOL allEmpty = TRUE;
+  PBoolean allEmpty = PTrue;
   PMessageDigest5 digestor;
   for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
     str = GetString(securedKeys[i]);
     if (!str.IsEmpty()) {
       digestor.Process(str.Trim());
-      allEmpty = FALSE;
+      allEmpty = PFalse;
     }
   }
   str = GetString(expiryDateKey);
   if (!str.IsEmpty()) {
     digestor.Process(str);
-    allEmpty = FALSE;
+    allEmpty = PFalse;
   }
   str = GetString(optionBitsKey);
   if (!str.IsEmpty()) {
     digestor.Process(str);
-    allEmpty = FALSE;
+    allEmpty = PFalse;
   }
 
   PString vkey = GetString(securityKey);
@@ -1256,20 +1256,20 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
 }
 
 
-BOOL PSecureConfig::ValidatePending()
+PBoolean PSecureConfig::ValidatePending()
 {
   if (GetValidation() != Pending)
-    return FALSE;
+    return PFalse;
 
   PString vkey = GetString(securityKey);
   if (vkey.IsEmpty())
-    return TRUE;
+    return PTrue;
 
   PMessageDigest5::Code code;
   BYTE info[sizeof(code)+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
-    return FALSE;
+    return PFalse;
 
   PTime expiryDate(0, 0, 0,
             1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
@@ -1291,7 +1291,7 @@ BOOL PSecureConfig::ValidatePending()
   digestor.Complete(code);
 
   if (memcmp(info, &code, sizeof(code)) != 0)
-    return FALSE;
+    return PFalse;
 
   SetString(expiryDateKey, expiry);
   SetString(optionBitsKey, options);
@@ -1304,7 +1304,7 @@ BOOL PSecureConfig::ValidatePending()
   }
   DeleteKey(pendingPrefix + securityKey);
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1315,7 +1315,7 @@ void PSecureConfig::ResetPending()
       DeleteKey(securedKeys[i]);
   }
   else {
-    SetBoolean(pendingPrefix + securityKey, TRUE);
+    SetBoolean(pendingPrefix + securityKey, PTrue);
 
     for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
       PString str = GetString(securedKeys[i]);

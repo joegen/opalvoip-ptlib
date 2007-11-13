@@ -70,7 +70,7 @@ class PSoundHandleEntry : public PObject {
     unsigned sampleRate;
     unsigned bitsPerSample;
     unsigned fragmentValue;
-    BOOL isInitialised;
+    PBoolean isInitialised;
 };
 
 PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
@@ -81,9 +81,9 @@ PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
 #include "../../sound.h"
 
     virtual PString GetName() const;
-	virtual BOOL Read(void * buf, PINDEX len);
-	virtual BOOL Write(const void * buf, PINDEX len);
-	virtual BOOL Close();
+	virtual PBoolean Read(void * buf, PINDEX len);
+	virtual PBoolean Write(const void * buf, PINDEX len);
+	virtual PBoolean Close();
 
     PString m_device;
     Directions m_Direction;

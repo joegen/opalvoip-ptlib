@@ -94,7 +94,7 @@ PSNMPServer::~PSNMPServer()
 	Close();
 }
 
-BOOL PSNMPServer::HandleChannel()
+PBoolean PSNMPServer::HandleChannel()
 {
 
   PBYTEArray readBuffer;
@@ -102,7 +102,7 @@ BOOL PSNMPServer::HandleChannel()
 
   for (;;) {
    	if (!IsOpen())
-	  return FALSE;
+	  return PFalse;
 
 		// Reaading
 	    PINDEX rxSize = 0;
@@ -119,7 +119,7 @@ BOOL PSNMPServer::HandleChannel()
 				lastErrorCode = NoResponse;
 
 			PTRACE(4,"SNMPsrv\tRead Error " << lastErrorCode);
-			return FALSE;
+			return PFalse;
 
 			} else if ((rxSize + GetLastReadCount()) >= 10)
 			break;
@@ -153,9 +153,9 @@ BOOL PSNMPServer::HandleChannel()
 }
 
 
-BOOL PSNMPServer::Authorise(const PIPSocket::Address & /*received*/)
+PBoolean PSNMPServer::Authorise(const PIPSocket::Address & /*received*/)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -166,28 +166,28 @@ void PSNMPServer::SetVersion(PASNInt newVersion)
 
 
 
-BOOL PSNMPServer::SendGetResponse (PSNMPVarBindingList &)
+PSNMP::ErrorType PSNMPServer::SendGetResponse (PSNMPVarBindingList &)
 {
   PAssertAlways("SendGetResponse not yet implemented");
   return GenErr;
 }
 
 
-BOOL PSNMPServer::OnGetRequest (PINDEX , PSNMP::BindingList &, PSNMP::ErrorType &)
+PBoolean PSNMPServer::OnGetRequest (PINDEX , PSNMP::BindingList &, PSNMP::ErrorType &)
 {
-	return FALSE;
+	return PFalse;
 }
 
 
-BOOL PSNMPServer::OnGetNextRequest (PINDEX , PSNMP::BindingList &, PSNMP::ErrorType &)
+PBoolean PSNMPServer::OnGetNextRequest (PINDEX , PSNMP::BindingList &, PSNMP::ErrorType &)
 {
-	return FALSE;
+	return PFalse;
 }
 
 
-BOOL PSNMPServer::OnSetRequest (PINDEX , PSNMP::BindingList &,PSNMP::ErrorType &)
+PBoolean PSNMPServer::OnSetRequest (PINDEX , PSNMP::BindingList &,PSNMP::ErrorType &)
 {
-	return FALSE;
+	return PFalse;
 }
 
 
@@ -241,7 +241,7 @@ int PSNMPServer::ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & sendBuff
   PSNMP::BindingList varlist;
   PINDEX reqID;
 
-  BOOL success = TRUE;
+  PBoolean success = PTrue;
   PSNMP::ErrorType errCode = PSNMP::NoError;
   switch (pdu.GetTag()) {
     case PSNMP_PDUs::e_get_request:
@@ -263,7 +263,7 @@ int PSNMPServer::ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & sendBuff
     default:
       PTRACE(4,"SNMPsrv\tSNMP Request/Response not supported");
       errCode= PSNMP::GenErr;
-      success = FALSE;
+      success = PFalse;
   }
 
   // Write the varlist

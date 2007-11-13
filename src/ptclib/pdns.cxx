@@ -154,16 +154,16 @@
 
 #ifdef P_HAS_RESOLVER
 
-static BOOL GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char * buff)
+static PBoolean GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char * buff)
 {
   int len = dn_expand(reply, replyEnd, cp, buff, MAXDNAME);
   if (len < 0)
-    return FALSE;
+    return PFalse;
   cp += len;
-  return TRUE;
+  return PTrue;
 }
 
-static BOOL ProcessDNSRecords(
+static PBoolean ProcessDNSRecords(
         const BYTE * reply,
         const BYTE * replyEnd,
               BYTE * cp,
@@ -192,7 +192,7 @@ static BOOL ProcessDNSRecords(
     // get the name
     char pName[MAXDNAME];
     if (!GetDN(reply, replyEnd, cp, pName)) 
-      return FALSE;
+      return PFalse;
 
     // get other common parts of the record
     WORD  type;
@@ -225,7 +225,7 @@ static BOOL ProcessDNSRecords(
         GETSHORT(newRecord->Data.SRV.wPort, data);
         if (!GetDN(reply, replyEnd, data, newRecord->Data.SRV.pNameTarget)) {
           free(newRecord);
-          return FALSE;
+          return PFalse;
         }
         break;
 
@@ -235,7 +235,7 @@ static BOOL ProcessDNSRecords(
         GETSHORT(newRecord->Data.MX.wPreference,  data);
         if (!GetDN(reply, replyEnd, data, newRecord->Data.MX.pNameExchange)) {
           free(newRecord);
-          return FALSE;
+          return PFalse;
         }
         break;
 
@@ -250,7 +250,7 @@ static BOOL ProcessDNSRecords(
         memset(newRecord, 0, sizeof(DnsRecord));
         if (!GetDN(reply, replyEnd, data, newRecord->Data.NS.pNameHost)) {
           delete newRecord;
-          return FALSE;
+          return PFalse;
         }
         break;
     }
@@ -273,7 +273,7 @@ static BOOL ProcessDNSRecords(
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 void DnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
@@ -449,9 +449,9 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetFirst()
     priList.SetSize(1);
     WORD lastPri = (*this)[0].priority;
     priList[0] = lastPri;
-    (*this)[0].used = FALSE;
+    (*this)[0].used = PFalse;
     for (i = 1; i < GetSize(); i++) {
-      (*this)[i].used = FALSE;
+      (*this)[i].used = PFalse;
       if ((*this)[i].priority != lastPri) {
         priPos++;
         priList.SetSize(priPos);
@@ -507,7 +507,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
         if (!(*this)[i].used) {
           totalWeight += (*this)[i].weight;
           if (totalWeight >= targetWeight) {
-            (*this)[i].used = TRUE;
+            (*this)[i].used = PTrue;
             return &(*this)[i];
           }
         }
@@ -520,7 +520,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
     for (i = firstPos; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
       if (!(*this)[i].used) {
         if (count == j) {
-          (*this)[i].used = TRUE;
+          (*this)[i].used = PTrue;
           return &(*this)[i];
         }
         count++;
@@ -534,7 +534,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
   return NULL;
 }
 
-BOOL PDNS::GetSRVRecords(
+PBoolean PDNS::GetSRVRecords(
   const PString & _service,
   const PString & type,
   const PString & domain,
@@ -542,7 +542,7 @@ BOOL PDNS::GetSRVRecords(
 )
 {
   if (_service.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   PStringStream service;
   if (_service[0] != '_')
@@ -553,7 +553,7 @@ BOOL PDNS::GetSRVRecords(
   return GetSRVRecords(service, recordList);
 }
 
-BOOL PDNS::LookupSRV(
+PBoolean PDNS::LookupSRV(
            const PURL & url,
         const PString & service,
           PStringList & returnList)
@@ -563,7 +563,7 @@ BOOL PDNS::LookupSRV(
 
   if (!LookupSRV(url.GetHostName(), service, defaultPort, info)) {
     PTRACE(6,"DNS\tSRV Lookup Fail no domain " << url );
-    return FALSE;
+    return PFalse;
   }
 
   PString user = url.GetUserName();
@@ -577,7 +577,7 @@ BOOL PDNS::LookupSRV(
   return returnList.GetSize() != 0;;
 }
 
-BOOL PDNS::LookupSRV(
+PBoolean PDNS::LookupSRV(
          const PString & domain,            ///< domain to lookup
          const PString & service,           ///< service to use
                     WORD defaultPort,       ///< default port to use
@@ -586,7 +586,7 @@ BOOL PDNS::LookupSRV(
 {
   if (domain.GetLength() == 0) {
     PTRACE(6,"DNS\tSRV lookup failed - cannot resolve hostname " << domain);
-    return FALSE;
+    return PFalse;
   }
 
   PTRACE(6,"DNS\tSRV Lookup " << domain << " service " << service);
@@ -599,7 +599,7 @@ BOOL PDNS::LookupSRV(
   return LookupSRV(srvLookupStr, defaultPort, addrList);
 }
 
-BOOL PDNS::LookupSRV(
+PBoolean PDNS::LookupSRV(
               const PString & srvLookupStr,
               WORD defaultPort,
               PIPSocketAddressAndPortVector & addrList
@@ -607,7 +607,7 @@ BOOL PDNS::LookupSRV(
 {
 
   PDNS::SRVRecordList srvRecords;
-  BOOL found = PDNS::GetRecords(srvLookupStr, srvRecords);
+  PBoolean found = PDNS::GetRecords(srvLookupStr, srvRecords);
   if (found) {
     PTRACE(6,"DNS\tSRV Record found " << srvLookupStr);
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
@@ -700,7 +700,7 @@ PDNS::MXRecord * PDNS::MXRecordList::GetFirst()
 {
   PINDEX i;
   for (i = 0; i < GetSize(); i++) 
-    (*this)[i].used = FALSE;
+    (*this)[i].used = PFalse;
 
   lastIndex = 0;
 

@@ -68,9 +68,9 @@
   protected:
     HANDLE hFindFile;
     WIN32_FIND_DATA fileinfo;
-    BOOL Filtered();
+    PBoolean Filtered();
 
   public:
-    static PString CreateFullPath(const PString & path, BOOL isDirectory);
+    static PString CreateFullPath(const PString & path, PBoolean isDirectory);
 
 // End Of File ///////////////////////////////////////////////////////////////
