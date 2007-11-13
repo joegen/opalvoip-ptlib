@@ -558,27 +558,9 @@ PChannel::Errors PMonitoredSockets::WriteToSocket(const void * buf,
                                                   const SocketInfo & info,
                                                   PINDEX & lastWriteCount)
 {
-#ifndef __BEOS__
-  if (addr.IsBroadcast()) {
-    if (!info.socket->SetOption(SO_BROADCAST, 1)) {
-      PTRACE(2, "MonSock\tError allowing broadcast: " << info.socket->GetErrorText());
-      return PChannel::Miscellaneous;
-    }
-  }
-#else
-  PTRACE(3, "MonSock\tBroadcast option under BeOS is not implemented yet");
-#endif
-
   info.socket->WriteTo(buf, len, addr, port);
-  PChannel::Errors errorCode = info.socket->GetErrorCode(PChannel::LastWriteError);
-
-#ifndef __BEOS__
-  if (addr.IsBroadcast())
-    info.socket->SetOption(SO_BROADCAST, 0);
-#endif
-
   lastWriteCount = info.socket->GetLastWriteCount();
-  return errorCode;
+  return info.socket->GetErrorCode(PChannel::LastWriteError);
 }
 
 
