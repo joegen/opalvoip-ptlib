@@ -129,15 +129,22 @@ class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginSe
   public:
     virtual PObject * CreateInstance(int /*userData*/) const
     {
-        return new PVideoInputDevice_YUVFile;
+      return new PVideoInputDevice_YUVFile;
     }
     virtual PStringList GetDeviceNames(int /*userData*/) const
     {
-        return PVideoInputDevice_YUVFile::GetInputDeviceNames();
+      return PVideoInputDevice_YUVFile::GetInputDeviceNames();
     }
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
-        return (deviceName.Right(4) *= ".yuv") && PFile::Access(deviceName, PFile::ReadOnly);
+      PCaselessString adjustedDevice = deviceName;
+      PINDEX length = adjustedDevice.GetLength();
+      if (length > 5 && adjustedDevice.NumCompare(".yuv*", 5, length-5) == PObject::EqualTo)
+        adjustedDevice.Delete(length-1, 1);
+      else if (length < 5 || adjustedDevice.NumCompare(".yuv", 4, length-4) != PObject::EqualTo)
+        return false;
+
+      return PFile::Access(adjustedDevice, PFile::ReadOnly);
     }
 } PVideoInputDevice_YUVFile_descriptor;
 
@@ -167,8 +174,14 @@ BOOL PVideoInputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startIm
   Close();
 
   PFilePath fileName;
-  if (_deviceName != DefaultYUVFileName)
+  if (_deviceName != DefaultYUVFileName) {
     fileName = _deviceName;
+    PINDEX lastCharPos = fileName.GetLength()-1;
+    if (fileName[lastCharPos] == '*') {
+      fileName.Delete(lastCharPos, 1);
+      SetChannel(Channel_PlayAndRepeat);
+    }
+  }
   else {
     PDirectory dir;
     if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
