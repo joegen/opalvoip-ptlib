@@ -32,4 +32,7 @@
 PROG = ipv6test
 SOURCES := main.cxx precompile.cxx
 
-include $(PWLIBDIR)/make/ptlib.mak
+ifndef PTLIBDIR
+PTLIBDIR=${HOME}/ptlib
+endif
+include $(PTLIBDIR)/make/ptlib.mak

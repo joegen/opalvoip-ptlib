@@ -1209,8 +1209,8 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
                << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
-        if (name.GetLength() <= 12)
-          stream << setw(12) << name;
+        if (name.GetLength() <= 23)
+          stream << setw(23) << name;
         else
           stream << name.Left(10) << "..." << name.Right(10);
       }
@@ -1366,7 +1366,7 @@ PTimer::PTimer(const PTimeInterval & time)
 
 void PTimer::Construct()
 {
-  state = Starting;
+  state = Stopped;
 
   timerList = PProcess::Current().GetTimerList();
 
@@ -2236,6 +2236,16 @@ PProcess & PProcess::Current()
     _exit(1);
   }
   return *PProcessInstance;
+}
+
+
+void PProcess::OnThreadStart(PThread & /*thread*/)
+{
+}
+
+
+void PProcess::OnThreadEnded(PThread & /*thread*/)
+{
 }
 
 

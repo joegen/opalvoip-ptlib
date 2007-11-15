@@ -7,12 +7,12 @@ AC_PROG_CXX
 AC_LANG(C++)
 
 dnl ########################################################################
-dnl set the PWLIB directory to the current directory
+dnl set the PTLIB directory to the current directory
 
-PWLIBDIR=`pwd`
-AC_SUBST(PWLIBDIR)
-dnl set the pwlib installation dir for pwlib-config
-AC_SUBST(PWINSTDIR)
+PTLIBDIR=`pwd`
+AC_SUBST(PTLIBDIR)
+dnl set the PTLib installation dir for ptlib-config
+AC_SUBST(PTINSTDIR)
 
 dnl ########################################################################
 dnl set the PREFIX accordingly
@@ -32,34 +32,34 @@ AC_SUBST(LIBDIR)
 
 
 dnl ########################################################################
-dnl extract the PWLIB version
+dnl extract the PTLib version
 dnl MSWIN_DISPLAY version,Version
-dnl MSWIN_VERSION version,PWLIB_MAJOR=MAJOR_VERSION
-dnl MSWIN_VERSION version,PWLIB_MINOR=MINOR_VERSION
-dnl MSWIN_VERSION version,PWLIB_BUILD=BUILD_NUMBER
-dnl MSWIN_VERSION version,PWLIB_VERSION=VERSION
+dnl MSWIN_VERSION version,PTLIB_MAJOR=MAJOR_VERSION
+dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
+dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
+dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 
-MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-MINOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-BUILD_NUMBER=`cat ${PWLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-PWLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
-BUILD_TYPE=`cat ${PWLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
+PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
+BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
 
 AC_SUBST(MAJOR_VERSION)
 AC_SUBST(MINOR_VERSION)
 AC_SUBST(BUILD_NUMBER)
-AC_SUBST(PWLIB_VERSION)
+AC_SUBST(PTLIB_VERSION)
 AC_SUBST(BUILD_TYPE)
 AC_SUBST(MAJOR_VERSION, $MAJOR_VERSION)
 AC_SUBST(MINOR_VERSION, $MINOR_VERSION)
 AC_SUBST(BUILD_NUMBER, $BUILD_NUMBER)
 
-AC_MSG_NOTICE(PTLib version is ${PWLIB_VERSION});
+AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
 
-AC_DEFINE_UNQUOTED([PWLIB_MAJOR],   [$MAJOR_VERSION], [Major version])
-AC_DEFINE_UNQUOTED([PWLIB_MINOR],   [$MINOR_VERSION], [Minor version])
-AC_DEFINE_UNQUOTED([PWLIB_BUILD],   [$BUILD_NUMBER], [Build number])
-AC_DEFINE_UNQUOTED([PWLIB_VERSION], ["$PWLIB_VERSION"], [pwlib version])
+AC_DEFINE_UNQUOTED([PTLIB_MAJOR],   [$MAJOR_VERSION], [Major version])
+AC_DEFINE_UNQUOTED([PTLIB_MINOR],   [$MINOR_VERSION], [Minor version])
+AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER], [Build number])
+AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
 
 dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
@@ -424,7 +424,7 @@ if test 0 = 1 ;  then
   dnl fi
 
   dnl as much as this flag would help, there is no known linker
-  dnl that can handle pwlib when it has been compiled with it
+  dnl that can handle PTLib when it has been compiled with it
   dnl AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
   dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
   dnl $CXX $CFLAGS -fvtable-gc -c conftest.cc > /dev/null 2>&1
@@ -466,7 +466,7 @@ dnl ########################################################################
 dnl we need flex, so we better make sure it's there
 AC_PATH_PROG(FLEX, flex)
 if test -z "$FLEX" ; then
-        AC_MSG_ERROR(pwlib needs the GNU Project fast lexical analyzer generator flex, 1)
+        AC_MSG_ERROR(PTLib needs the GNU Project fast lexical analyzer generator flex, 1)
 fi
 
 dnl ########################################################################
@@ -480,7 +480,7 @@ dnl ########################################################################
 dnl we need bison, so we better make sure it's there
 AC_PATH_PROG(BISON, bison)
 if test -z "$BISON" ; then
-        AC_MSG_ERROR(pwlib needs the GNU Project parser generator bison, 1)
+        AC_MSG_ERROR(PTLib needs the GNU Project parser generator bison, 1)
 fi
 
 dnl ########################################################################
@@ -899,10 +899,10 @@ HAS_LIBDL=no
 P_DYNALINK=0
 if test ${OSTYPE} = beos ; then
   P_DYNALINK=1
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in BeOS")
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside PTLib in BeOS")
 elif test ${OSTYPE} = Darwin ; then
   P_DYNALINK=1
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in Darwin")
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside PTLib in Darwin")
 else
   AC_CHECK_HEADERS(dlfcn.h, HAS_DLFCN=yes, HAS_DLFCN=no)
   if test "$HAS_DLFCN" = yes ; then
@@ -948,9 +948,9 @@ fi
 AC_SUBST(HAS_PLUGINS)
 
 if test "x$LIB64" != "x" ; then
-  AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib64/pwlib"], [Default plugin directory])
+  AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib64/ptlib"], [Default plugin directory])
 else
-  AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib/pwlib"], [Default plugin directory])
+  AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib/ptlib"], [Default plugin directory])
 fi
 
 dnl ########################################################################
@@ -1624,6 +1624,19 @@ else
 fi
 AC_SUBST(HAS_IPV6)
 
+HAS_INET_NTOP=
+AC_MSG_CHECKING(for inet_ntop)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <netinet/in.h>
+                #include <arpa/inet.h>],
+                [int af; void * src; char * dst; socklen_t len; inet_ntop(af, src, dst, len);], HAS_INET_NTOP=yes, HAS_INET_NTOP=no)
+if test $HAS_INET_NTOP = no ; then
+  AC_MSG_RESULT(no)
+else
+  AC_DEFINE(P_HAS_INET_NTOP, 1)
+  AC_MSG_RESULT(yes)
+fi
+
 dnl ########################################################################
 dnl look for QoS functions
 
@@ -2069,6 +2082,7 @@ dnl check for HTTPSVC support
 
 dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
 dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
+dnl MSWIN_IF_FEATURE httpsvc,http
 
 AC_ARG_ENABLE(httpsvc,
        [  --disable-httpsvc       disable HTTP service support])
@@ -2157,6 +2171,33 @@ else
   AC_DEFINE(P_VIDFILE, 1)
 fi
 AC_SUBST(HAS_VIDFILE)
+
+dnl ########################################################################
+dnl check for enabling app share support
+
+dnl MSWIN_DISPLAY    appshare,Application share support
+dnl MSWIN_DEFINE     appshare,P_APPSHARE
+
+if test "$HAS_VIDEO" \!= "1" ; then
+  default_appshare=no
+fi
+
+AC_ARG_ENABLE(vidfile,
+       [  --enable-appshare        enable Application share support])
+
+if test "${enable_appshare}z" = "z" ; then
+  enable_vidfile=$default_appshare
+fi
+
+HAS_APPSHARE=
+if test "$enable_appshare" = "no" ; then
+  AC_MSG_NOTICE(Application share support disabled)
+else
+  AC_MSG_NOTICE(Application share enabled)
+  HAS_APPSHARE=1
+  AC_DEFINE(P_APPSHARE, 1)
+fi
+AC_SUBST(HAS_APPSHARE)
 
 dnl ########################################################################
 dnl check for sound support

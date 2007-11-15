@@ -128,8 +128,8 @@
     PThread   * px_readThread;
     PThread   * px_writeThread;
     PMutex      px_writeMutex;
-    PThread   * px_selectThread;
-    PMutex      px_selectMutex;
+    PThread   * px_selectThread[3];
+    PMutex      px_selectMutex[3];
 
 #endif //#ifndef __PCHANNEL_UNIX__ 
 

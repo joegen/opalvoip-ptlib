@@ -426,11 +426,11 @@ void PAssertFunc(const char * msg)
     switch (MessageBox(NULL, 
 #if !defined(_WIN32_WCE)
 		pstr, 
-		"Portable Windows Library",
+		"Portable Tools Library",
         MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
 #else
 		PString(pstr).AsUCS2(), 
-		L"Portable Windows Library",
+		L"Portable Tools Library",
         MB_ABORTRETRYIGNORE|MB_ICONHAND)) {
 #endif // !_WIN32_WCE
       case IDABORT :

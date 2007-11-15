@@ -112,7 +112,7 @@
 				TypeLibraryName=".\Release/MergeSym.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying symbol merge utility to pwlib\lib directory."
+				Description="Copying symbol merge utility to ptlib\lib directory."
 				CommandLine="copy $(TargetPath) ..\..\lib &gt; nul"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -174,7 +174,7 @@
 				TypeLibraryName=".\Release/MergeSym.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying symbol merge utility to pwlib/lib directory."
+				Description="Copying symbol merge utility to ptlib/lib directory."
 				CommandLine="copy Release\mergesym.exe ..\..\lib &gt; nul"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>

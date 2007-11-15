@@ -389,6 +389,13 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     virtual PStringList GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
+	/**Retrieve a list of Device Capabilities
+	  */
+	static BOOL GetDeviceCapabilities(
+      const PString & /*deviceName*/,           ///< Name of device
+	  InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
+	  )  { return FALSE; }
+
     /**Open the device given the device name.
       */
     virtual PBoolean Open(
@@ -631,7 +638,7 @@ PBoolean PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & for
 
   if (capSetVideoFormat(hWnd, theArray, GetSize())) {
     PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-            << formatTableEntry.colourFormat << ' '
+            << PString(formatTableEntry.colourFormat) << ' '
             << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
             << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
     return PTrue;
@@ -641,7 +648,7 @@ PBoolean PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & for
     bmi.bmiHeader.biHeight = height; 
     if (capSetVideoFormat(hWnd, theArray, GetSize())) {
       PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-              << formatTableEntry.colourFormat << ' '
+              << PString(formatTableEntry.colourFormat) << ' '
               << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
               << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
       return PTrue;
@@ -649,7 +656,7 @@ PBoolean PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & for
   }
 
   PTRACE(1, "PVidInp\tcapSetVideoFormat failed: "
-          << formatTableEntry.colourFormat << ' '
+          << PString(formatTableEntry.colourFormat) << ' '
           << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
           << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime)
           << " - lastError=" << ::GetLastError());

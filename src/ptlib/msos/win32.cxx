@@ -758,7 +758,7 @@ PString PTime::GetTimeZoneString(TimeZoneType type)
 {
   TIME_ZONE_INFORMATION tz;
   PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
-  return (const WORD *)(type == StandardTime ? tz.StandardName : tz.DaylightName);
+  return (const wchar_t *)(type == StandardTime ? tz.StandardName : tz.DaylightName);
 }
 
 
@@ -1262,7 +1262,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #endif
 
+  process.OnThreadStart(*thread);
   thread->Main();
+  process.OnThreadEnded(*thread);
 
 #if defined(_WIN32_DCOM)
   ::CoUninitialize();
@@ -1836,10 +1838,43 @@ PBoolean PProcess::IsServiceProcess() const
 }
 
 
+#ifdef _WIN32_WCE
+
 PBoolean PProcess::IsGUIProcess() const
 {
-  return PFalse;
+  return PTrue;
 }
+
+#else
+
+static int IsGUIProcessStatus;
+
+static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
+{
+  char wndClassName[100];
+  GetClassName(hWnd, wndClassName, sizeof(wndClassName));
+  if (strcmp(wndClassName, "ConsoleWindowClass") != 0)
+    return TRUE;
+
+  DWORD wndProcess;
+  GetWindowThreadProcessId(hWnd, &wndProcess);
+  if (wndProcess != (DWORD)thisProcess)
+    return TRUE;
+
+  IsGUIProcessStatus = -1;
+  return FALSE;
+}
+
+PBoolean PProcess::IsGUIProcess() const
+{
+  if (IsGUIProcessStatus == 0) {
+    IsGUIProcessStatus = 1;
+    EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+  }
+  return IsGUIProcessStatus > 0;
+}
+
+#endif // _WIN32_WCE
 
 
 ///////////////////////////////////////////////////////////////////////////////

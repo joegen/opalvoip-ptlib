@@ -486,16 +486,16 @@
 #
 #
 
-ifndef PWLIBDIR
-PWLIBDIR := $(HOME)/pwlib
+ifndef PTLIBDIR
+PTLIBDIR := $(HOME)/ptlib
 endif
 
-include $(PWLIBDIR)/make/unix.mak
+include $(PTLIBDIR)/make/unix.mak
 
 OBJDIR	= $(PT_OBJDIR)
-LIBDIR  = $(PW_LIBDIR)
+LIBDIR  = $(PT_LIBDIR)
 TARGET  = $(LIBDIR)/$(PTLIB_FILE)
-VERSION_FILE = $(PWLIBDIR)/version.h
+VERSION_FILE = $(PTLIBDIR)/version.h
 
 ##########################################
 
@@ -814,7 +814,7 @@ $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 LIB_BASENAME=$(PTLIB_BASE)
 LIB_FILENAME=$(PTLIB_FILE)
 
-include $(PWLIBDIR)/make/lib.mak
+include $(PTLIBDIR)/make/lib.mak
 
 #######################################################
 

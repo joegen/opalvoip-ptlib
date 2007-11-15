@@ -18,7 +18,6 @@
 			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			IntermediateDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -47,10 +46,7 @@
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Debug/MergeSym.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				ProgramDataBaseFileName="$(TargetDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -71,12 +67,12 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ptlibsd.lib mpr.lib"
-				OutputFile=".\Debug/MergeSym.exe"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/MergeSym.pdb"
+				ProgramDatabaseFile="$(TargetDir)\$(TargetName).pdb"
 				SubSystem="1"
 			/>
 			<Tool
@@ -102,8 +98,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying symbol merge utility to pwlib/lib directory."
-				CommandLine="copy Release\mergesym.exe ..\..\lib &gt; nul"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -111,7 +106,6 @@
 			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			IntermediateDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -142,10 +136,7 @@
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Release/MergeSym.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				ProgramDataBaseFileName="$(TargetDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -165,11 +156,11 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ptlibs.lib mpr.lib"
-				OutputFile=".\Release/MergeSym.exe"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\lib"
-				ProgramDatabaseFile=".\Release/MergeSym.pdb"
+				ProgramDatabaseFile="$(TargetDir)\$(TargetName).pdb"
 				SubSystem="1"
 			/>
 			<Tool
@@ -195,8 +186,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying symbol merge utility to pwlib/lib directory."
-				CommandLine="copy Release\mergesym.exe ..\..\lib &gt; nul"
+				Description="Copying symbol merge utility to ptlib/lib directory."
+				CommandLine="copy $(TargetPath) ..\..\lib &gt; nul"
 			/>
 		</Configuration>
 		<Configuration
@@ -204,7 +195,6 @@
 			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			IntermediateDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
@@ -235,10 +225,7 @@
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Release/MergeSym.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				ProgramDataBaseFileName="$(TargetDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -258,11 +245,11 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ptlibs.lib mpr.lib"
-				OutputFile=".\Release/MergeSym.exe"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\lib"
-				ProgramDatabaseFile=".\Release/MergeSym.pdb"
+				ProgramDatabaseFile="$(TargetDir)\$(TargetName).pdb"
 				SubSystem="1"
 			/>
 			<Tool
@@ -288,8 +275,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copying symbol merge utility to pwlib/lib directory."
-				CommandLine="copy Release\mergesym.exe ..\..\lib &gt; nul"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

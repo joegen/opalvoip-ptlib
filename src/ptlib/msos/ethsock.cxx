@@ -1992,7 +1992,7 @@ PString PIPSocket::GetGatewayInterface()
     return PString::Empty();
 
   return snmp.GetInterfaceName(ifNum);
-}
+} 
 
 PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress()
 {

@@ -420,7 +420,22 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
       PStringList drivers = VideoDevice::GetDriverNames(pluginMgr);
       if (drivers.IsEmpty())
         return NULL;
-      adjustedDriverName = drivers[0];
+
+      // Give precedence to drivers like camera grabbers, leave out the fail safe types such as NULL
+      PINDEX driverIndex;
+      for (driverIndex = drivers.GetSize()-1; driverIndex > 0; --driverIndex) {
+        static const char * lowPriorityDrivers[] = {
+          "YUVFile", "FakeVideo", "NULLOutput"
+        };
+        PINDEX i;
+        for (i = 0; i < PARRAYSIZE(lowPriorityDrivers); i++) {
+          if (drivers[driverIndex] == lowPriorityDrivers[i])
+            break;
+        }
+        if (i == PARRAYSIZE(lowPriorityDrivers))
+          break;
+      }
+      adjustedDriverName = drivers[driverIndex];
     }
 
     PStringList devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
@@ -749,8 +764,10 @@ PBoolean PVideoDevice::SetChannel(int channelNum)
     return PFalse;
   }
 
-  if (channelNum >= GetNumChannels())
+  if (channelNum >= GetNumChannels()) {
+    PTRACE(2, "PVidDev\tSetChannel number (" << channelNum << ") too large.");
     return PFalse;
+  }
 
   channelNumber = channelNum;
   return PTrue;
@@ -1193,7 +1210,7 @@ PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
   colourFormat = "RGB24";
   bytesPerPixel = 3;
   swappedRedAndBlue = false;
-  SetFrameSize(frameWidth, frameHeight);
+//  SetFrameSize(frameWidth, frameHeight);
 }
 
 
@@ -1202,22 +1219,22 @@ PBoolean PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
   PWaitAndSignal m(mutex);
 
   PINDEX newBytesPerPixel;
-  bool newSwappedRedAndBlue;
+
   if (colourFormat *= "RGB32") {
     newBytesPerPixel = 4;
-    newSwappedRedAndBlue = false;
+    swappedRedAndBlue = false;
   }
   else if (colourFormat *= "RGB24") {
     newBytesPerPixel = 3;
-    newSwappedRedAndBlue = false;
+    swappedRedAndBlue = false;
   }
   else if (colourFormat *= "BGR32") {
     newBytesPerPixel = 4;
-    newSwappedRedAndBlue = true;
+    swappedRedAndBlue = true;
   }
   else if (colourFormat *= "BGR24") {
     newBytesPerPixel = 3;
-    newSwappedRedAndBlue = true;
+    swappedRedAndBlue = true;
   }
   else
     return PFalse;
@@ -1408,6 +1425,20 @@ PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & device
   return (PVideoInputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoInputPluginBaseClass,0,driverName);
 }
 
+PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName,InputDeviceCapabilities * caps, PPluginManager * pluginMgr)
+{
+	return GetDeviceCapabilities(deviceName, "*",caps,pluginMgr);
+}
+
+PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName,const PString & driverName, InputDeviceCapabilities * caps, PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, (void *)caps);
+}
+
+
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driverName,
                                                           const PString & deviceName,
@@ -1441,7 +1472,6 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
   delete device;
   return NULL;
 }
-
 
 PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {

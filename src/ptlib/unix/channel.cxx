@@ -182,7 +182,9 @@ void PChannel::Construct()
   px_lastBlockType = PXReadBlock;
   px_readThread = NULL;
   px_writeThread = NULL;
-  px_selectThread = NULL;
+  px_selectThread[0] = NULL;
+  px_selectThread[1] = NULL;
+  px_selectThread[2] = NULL;
 }
 
 
@@ -414,7 +416,9 @@ int PChannel::PXClose()
 
   AbortIO(px_readThread, px_threadMutex);
   AbortIO(px_writeThread, px_threadMutex);
-  AbortIO(px_selectThread, px_threadMutex);
+  AbortIO(px_selectThread[0], px_threadMutex);
+  AbortIO(px_selectThread[1], px_threadMutex);
+  AbortIO(px_selectThread[2], px_threadMutex);
 
   int stat;
   do {

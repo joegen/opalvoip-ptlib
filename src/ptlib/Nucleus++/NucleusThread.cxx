@@ -291,6 +291,9 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 }
 
 void pwNUTask::Entry()
-  {
+{
+  PProcess & process = PProcess::Current();
+  process.OnThreadStart(*AssociatedPThread);
   AssociatedPThread->Main();
-  }
+  process.OnThreadEnded(*AssociatedPThread);
+}

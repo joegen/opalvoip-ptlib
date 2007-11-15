@@ -175,9 +175,9 @@
 include ../../../make/unix.mak
 
 OBJDIR  = $(PT_OBJDIR)
-LIBDIR  = $(PW_LIBDIR)
+LIBDIR  = $(PT_LIBDIR)
 TARGET  = $(PTLIB_FILE)
-VERSION_FILE = $(PWLIBDIR)/version.h
+VERSION_FILE = $(PTLIBDIR)/version.h
 
 COMPONENT_SRC_DIR	= ../../ptclib
 COMMON_SRC_DIR		= ../common
@@ -291,9 +291,9 @@ endif
 links:
 	ln -snf $(LIBDIR)/obj_$(PLATFORM_TYPE)_d obj_$(PLATFORM_TYPE)_d
 	ln -snf $(LIBDIR)/obj_$(PLATFORM_TYPE)_r obj_$(PLATFORM_TYPE)_r
-	ln -snf $(PWLIBDIR)/make make
+	ln -snf $(PTLIBDIR)/make make
 	ln -snf $(UNIX_INC_DIR)/ptlib unix_include
-	ln -snf $(PWLIBDIR)/include/ptlib common_include
+	ln -snf $(PTLIBDIR)/include/ptlib common_include
 
 
 # End of Makefile

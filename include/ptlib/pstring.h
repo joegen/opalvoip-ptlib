@@ -373,6 +373,8 @@
 
 class PStringArray;
 class PRegularExpression;
+PBASEARRAY(PWCharArray, wchar_t);
+
 
 /**The character string class. It supports a wealth of additional functions
    for string processing and conversion. Operators are provided so that
@@ -451,7 +453,7 @@ class PString : public PCharArray {
        of the string and its terminating '\0' character.
      */
     PString(
-      const WORD * ustr ///< UCS-2 null terminated string.
+      const wchar_t * ustr ///< UCS-2 null terminated string.
     );
 
     /**Create a string from the array. A new memory block is allocated of
@@ -483,7 +485,7 @@ class PString : public PCharArray {
        #'\0'# character will be lost.
      */
     PString(
-      const WORD * ustr,  ///< Pointer to a string of UCS-2 characters.
+      const wchar_t * ustr,  ///< Pointer to a string of UCS-2 characters.
       PINDEX len          ///< Length of the string in bytes.
     );
 
@@ -498,7 +500,7 @@ class PString : public PCharArray {
        #'\0'# character will be lost.
      */
     PString(
-      const PWORDArray & ustr ///< UCS-2 null terminated string.
+      const PWCharArray & ustr ///< UCS-2 null terminated string.
     );
 
     /**Create a string from the single character. This is most commonly used
@@ -1866,9 +1868,9 @@ class PString : public PCharArray {
     double AsReal() const;
      
     /**Convert UTF-8 string to UCS-2.
-       Note the resultant PWORDArray will have the trailing null included.
+       Note the resultant PWCharArray will have the trailing null included.
       */
-    PWORDArray AsUCS2() const;
+    PWCharArray AsUCS2() const;
 
     /**Convert a standard null terminated string to a "pascal" style string.
        This consists of a songle byte for the length of the string and then
@@ -1917,7 +1919,7 @@ class PString : public PCharArray {
 
   protected:
     void InternalFromUCS2(
-      const WORD * ptr,
+      const wchar_t * ptr,
       PINDEX len
     );
     virtual Comparison InternalCompare(
