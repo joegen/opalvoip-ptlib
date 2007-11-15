@@ -246,8 +246,6 @@
 #include <ptlib/ipsock.h>
 
 
-#ifdef P_HTTPSVC
-
 #include <ptclib/html.h>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -354,8 +352,6 @@ class PHTTPSpace : public PContainer
   private:
     PBoolean SetSize(PINDEX) { return PFalse; }
 };
-
-#endif // P_HTTPSVC
 
 #ifdef _WIN32_WCE
 #undef TRACE
@@ -633,8 +629,6 @@ class PHTTPClient : public PHTTP
 
     PString userAgentName;
 };
-
-#ifdef P_HTTPSVC
 
 //////////////////////////////////////////////////////////////////////////////
 // PMultipartFormInfo
@@ -1904,9 +1898,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
     PFilePath realPath;
 };
 
-#endif // P_HTTPSVC
-
-#endif
+#endif // _PHTTP
 
 
 // End Of File ///////////////////////////////////////////////////////////////

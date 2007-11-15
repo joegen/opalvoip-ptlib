@@ -455,6 +455,20 @@ class PProcess : public PThread
      */
     static PProcess & Current();
 
+    /**Callback for when a thread is started by the PTLib system. Note this is
+       called in the context of the new thread.
+      */
+    virtual void OnThreadStart(
+      PThread & thread
+    );
+
+    /**Callback for when a thread is ended if wqas started in the PTLib system.
+       Note this is called in the context of the old thread.
+      */
+    virtual void OnThreadEnded(
+      PThread & thread
+    );
+
     /**Determine if the current processes object instance has been initialised.
        If this returns PTrue it is safe to use the PProcess::Current() function.
        
@@ -547,6 +561,10 @@ class PProcess : public PThread
        Process ID for process.
      */
     DWORD GetProcessID() const;
+
+    /**Return the time at which the program was started 
+    */
+    PTime GetStartTime() const;
 
     /**Get the effective user name of the owner of the process, eg "root" etc.
        This is a platform dependent string only provided by platforms that are
@@ -712,34 +730,30 @@ class PProcess : public PThread
     static PDirectory GetOSConfigDir();
   //@}
 
-    PTimerList * GetTimerList();
-    /* Get the list of timers handled by the application. This is an internal
+    /**Get the list of timers handled by the application. This is an internal
        function and should not need to be called by the user.
        
        @return
        list of timers.
      */
+    PTimerList * GetTimerList();
 
+    /**Internal initialisation function called directly from
+       #_main()#. The user should never call this function.
+     */
     static void PreInitialise(
       int argc,     // Number of program arguments.
       char ** argv, // Array of strings for program arguments.
       char ** envp  // Array of string for the system environment
     );
-    /* Internal initialisation function called directly from
+
+    /**Internal shutdown function called directly from the ~PProcess
        #_main()#. The user should never call this function.
      */
-
     static void PreShutdown();
-    /* Internal shutdown function called directly from the ~PProcess
-       #_main()#. The user should never call this function.
-     */
 
+    /// Main function for process, called from real main after initialisation
     virtual int _main(void * arg = NULL);
-    // Main function for process, called from real main after initialisation
-
-    PTime GetStartTime() const;
-    /* return the time at which the program was started 
-    */
 
   private:
     void Construct();

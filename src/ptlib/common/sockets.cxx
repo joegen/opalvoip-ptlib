@@ -2509,7 +2509,12 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 
 PString PIPSocket::Address::AsString() const
 {
-#if P_HAS_IPV6
+#if defined(P_VXWORKS)
+  char ipStorage[INET_ADDR_LEN];
+  inet_ntoa_b(v.four, ipStorage);
+  return ipStorage;    
+#else
+# if defined(P_HAS_IPV6)
   if (version == 6) {
     PString str;
     Psockaddr sa(*this, 0);
@@ -2520,13 +2525,18 @@ PString PIPSocket::Address::AsString() const
     str.MakeMinimumSize();
     return str;
   }
-#endif
-#ifdef P_VXWORKS
-  char ipStorage[INET_ADDR_LEN];
-  inet_ntoa_b(v.four, ipStorage);
-  return ipStorage;    
-#else // P_VXWORKS
+#endif // P_HAS_IPV6
+# if defined(P_HAS_INET_NTOP)
+  PString str;
+  if (inet_ntop(AF_INET, (const void *)&v.four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
+    return PString::Empty();
+  str.MakeMinimumSize();
+  return str;
+# else
+  static PCriticalSection x;
+  PWaitAndSignal m(x);
   return inet_ntoa(v.four);
+#endif // P_HAS_INET_NTOP
 #endif // P_VXWORKS
 }
 
@@ -2752,6 +2762,56 @@ PBoolean PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
   return addr.IsValid();
 }
 
+
+PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remoteAddress)
+{
+  PIPSocket::InterfaceTable hostInterfaceTable;
+  PIPSocket::GetInterfaceTable(hostInterfaceTable);
+
+  PIPSocket::RouteTable hostRouteTable;
+  PIPSocket::GetRouteTable(hostRouteTable);
+
+  if (hostInterfaceTable.IsEmpty())
+    return PIPSocket::GetDefaultIpAny();
+
+  for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
+    if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
+      PTRACE(5, "PWLib\tRoute packet for " << remoteAddress
+             << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+             << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+      return hostInterfaceTable[IfaceIdx].GetAddress();
+    }
+  }
+
+  PIPSocket::RouteEntry * route = NULL;
+  for (PINDEX routeIdx = 0; routeIdx < hostRouteTable.GetSize(); routeIdx++) {
+    PIPSocket::RouteEntry & routeEntry = hostRouteTable[routeIdx];
+
+    DWORD network = (DWORD) routeEntry.GetNetwork();
+    DWORD mask = (DWORD) routeEntry.GetNetMask();
+
+    if (((DWORD)remoteAddress & mask) == network) {
+      if (route == NULL)
+        route = &routeEntry;
+      else if ((DWORD)routeEntry.GetNetMask() > (DWORD)route->GetNetMask())
+        route = &routeEntry;
+    }
+  }
+
+  if (route != NULL) {
+    for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
+      if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
+        PTRACE(5, "PWLib\tRoute packet for " << remoteAddress
+               << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+               << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+        return hostInterfaceTable[IfaceIdx].GetAddress();
+      }
+    }
+  }
+
+  return PIPSocket::GetDefaultIpAny();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
 
@@ -2956,21 +3016,38 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 {
   lastWriteCount = 0;
 
+  BOOL broadcast = addr.IsAny() || addr.IsBroadcast();
+  if (broadcast) {
+#ifdef __BEOS__
+    PAssertAlways("Broadcast option under BeOS is not implemented yet");
+    return FALSE;
+#else
+    if (!SetOption(SO_BROADCAST, 1))
+      return FALSE;
+#endif
+  }
+
 #if P_HAS_IPV6
 
-  Psockaddr sa(addr, port);
-  return os_sendto(buf, len, 0, sa, sa.GetSize()) && lastWriteCount >= len;
+  Psockaddr sa(broadcast ? Address::GetBroadcast() : addr, port);
+  BOOL ok = os_sendto(buf, len, 0, sa, sa.GetSize());
 
 #else
 
   sockaddr_in sockAddr;
   sockAddr.sin_family = AF_INET;
-  sockAddr.sin_addr = addr;
+  sockAddr.sin_addr = (broadcast ? Address::GetBroadcast() : addr);
   sockAddr.sin_port = htons(port);
-  return os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr))
-         && lastWriteCount >= len;
+  BOOL ok = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr));
 
 #endif
+
+#ifndef __BEOS__
+  if (broadcast)
+    SetOption(SO_BROADCAST, 0);
+#endif
+
+  return ok && lastWriteCount >= len;
 }
 
 

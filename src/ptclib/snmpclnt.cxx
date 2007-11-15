@@ -57,6 +57,10 @@
  */
 
 #include <ptlib.h>
+#include <ptbuildopts.h>
+
+#ifdef P_SNMP
+
 #include <ptclib/psnmp.h>
 
 #define new PNEW
@@ -496,5 +500,6 @@ void PSNMP::WriteTrap(                 PChannel & channel,
   channel.Write(sendBuffer, sendBuffer.GetSize());
 }
 
+#endif // P_SNMP
 
 // End Of File ///////////////////////////////////////////////////////////////

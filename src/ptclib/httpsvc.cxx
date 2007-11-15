@@ -345,6 +345,10 @@
 #endif
 
 #include <ptlib.h>
+#include <ptbuildopts.h>
+
+#ifdef P_HTTPSVC
+
 #include <ptclib/httpsvc.h>
 #include <ptlib/sockets.h>
 
@@ -2055,5 +2059,6 @@ PBoolean PServiceHTTPDirectory::GetExpirationDate(PTime & when)
   return PTrue;
 }
 
+#endif // P_HTTPSVC
 
 ///////////////////////////////////////////////////////////////////

@@ -137,11 +137,20 @@ class PCriticalSection : public PSync
     /**Create a new critical section object .
      */
     PCriticalSection();
+
+    /**Allow copy constructor, but it actually does not copy the critical section,
+       it creates a brand new one as they cannot be shared in that way.
+     */
     PCriticalSection(const PCriticalSection &);
 
     /**Destroy the critical section object
      */
     ~PCriticalSection();
+
+    /**Assignment operator is allowed but does nothing. Overwriting the old critical
+       section information would be very bad.
+      */
+    PCriticalSection & operator=(const PCriticalSection &) { return *this; }
   //@}
 
   /**@name Operations */
@@ -165,8 +174,6 @@ class PCriticalSection : public PSync
 
   //@}
 
-  private:
-    PCriticalSection & operator=(const PCriticalSection &) { return *this; }
 
 #include "msos/ptlib/critsec.h"
 

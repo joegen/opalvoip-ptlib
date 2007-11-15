@@ -267,6 +267,7 @@
 
 #include <ptlib/plugin.h>
 #include <ptlib/pluginmgr.h>
+#include <list>
 
 class PColourConverter;
 
@@ -963,6 +964,15 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
 
 #endif // SHOULD_BE_MOVED_TO_PLUGIN
 
+typedef struct {
+public:
+	unsigned      height;
+	unsigned      width;
+	const char*   format;
+	double        fps;
+} InputDeviceCapability; 
+
+typedef std::list<InputDeviceCapability>  InputDeviceCapabilities;
 
 /**This class defines a video input device.
  */
@@ -1035,6 +1045,23 @@ class PVideoInputDevice : public PVideoDevice
       PBoolean startImmediate = PTrue          ///< Immediately start display
     );
 
+    /**Retrieve a list of Device Capabilities
+      */
+    static PBoolean GetDeviceCapabilities(
+      const PString & deviceName,           ///< Name of device
+      InputDeviceCapabilities * caps,       ///< List of supported capabilities
+      PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
+    );
+
+    /**Retrieve a list of Device Capabilities for a particular driver
+      */
+    static PBoolean GetDeviceCapabilities(
+      const PString & deviceName,           ///< Name of device
+      const PString & driverName,           ///< Device Driver
+      InputDeviceCapabilities * caps,       ///< List of supported capabilities
+      PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
+    );
+
     /**Open the device given the device name.
       */
     virtual PBoolean Open(
@@ -1089,6 +1116,8 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   public:
     virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
     virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
+	virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
+	                       { return className::GetDeviceCapabilities(deviceName,(InputDeviceCapabilities *)caps); }
 };
 
 #define PCREATE_VIDINPUT_PLUGIN(name) \

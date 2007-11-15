@@ -740,7 +740,7 @@ class PASN_BMPString : public PASN_ConstrainedObject
     PCLASSINFO(PASN_BMPString, PASN_ConstrainedObject);
   public:
     PASN_BMPString(const char * str = NULL);
-    PASN_BMPString(const PWORDArray & wstr);
+    PASN_BMPString(const PWCharArray & wstr);
     PASN_BMPString(unsigned tag, TagClass tagClass);
 
     PASN_BMPString(const PASN_BMPString & other);
@@ -748,18 +748,18 @@ class PASN_BMPString : public PASN_ConstrainedObject
 
     PASN_BMPString & operator=(const char * v) { return operator=(PString(v).AsUCS2()); }
     PASN_BMPString & operator=(const PString & v) { return operator=(v.AsUCS2()); }
-    PASN_BMPString & operator=(const PWORDArray & v);
+    PASN_BMPString & operator=(const PWCharArray & v);
     operator PString() const { return GetValue(); }
-    operator PWORDArray() const { return value; }
+    operator PWCharArray() const { return value; }
     PString GetValue() const { return value; }
-    void GetValue(PWORDArray & v) const { v = value; }
+    void GetValue(PWCharArray & v) const { v = value; }
     void SetValue(const char * v) { operator=(PString(v).AsUCS2()); }
     void SetValue(const PString & v) { operator=(v.AsUCS2()); }
-    void SetValue(const PWORDArray & v) { operator=(v); }
+    void SetValue(const PWCharArray & v) { operator=(v); }
     void SetValue(const PASN_BMPString & v) { operator=(v.value); }
 
     void SetCharacterSet(ConstraintType ctype, const char * charSet);
-    void SetCharacterSet(ConstraintType ctype, const PWORDArray & charSet);
+    void SetCharacterSet(ConstraintType ctype, const PWCharArray & charSet);
     void SetCharacterSet(ConstraintType ctype, unsigned firstChar, unsigned lastChar);
 
     virtual Comparison Compare(const PObject & obj) const;
@@ -785,9 +785,9 @@ class PASN_BMPString : public PASN_ConstrainedObject
     void Construct();
     PBoolean IsLegalCharacter(WORD ch);
 
-    PWORDArray value;
-    PWORDArray characterSet;
-    WORD firstChar, lastChar;
+    PWCharArray value;
+    PWCharArray characterSet;
+    wchar_t firstChar, lastChar;
     unsigned charSetUnalignedBits;
     unsigned charSetAlignedBits;
 };

@@ -708,6 +708,9 @@ int PServiceProcess::_main(void * arg)
 
   debugMode = arguments.GetCount() > 0 && 
 	              (strcasecmp(arguments[0], "Debug") == 0 || strcasecmp(arguments[0], "foreground") == 0);
+  debugHidden = arguments.GetCount() > 0 && strcasecmp(arguments[0], "DebugHidden") == 0;
+  if (debugHidden)
+    debugMode=TRUE;
   currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
   if (!debugMode && arguments.GetCount() > 0) {
@@ -1269,7 +1272,7 @@ void PServiceProcess::DebugOutput(const char * out)
   }
 
 
-  if (!IsWindowVisible(controlWindow))
+  if (!IsWindowVisible(controlWindow) && !debugHidden)
     ShowWindow(controlWindow, SW_SHOWDEFAULT);
 
   int len = strlen(out);

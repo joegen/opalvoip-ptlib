@@ -40,16 +40,21 @@
 # Added open software license.
 #
 
-ifndef PWLIBDIR
+ifndef PTLIBDIR
 
-$(error No PWLIBDIR environment variable defined! \
-You need to define PWLIBDIR! \
+ifdef PWLIBDIR
+PTLIBDIR=$(PWLIBDIR)
+else
+
+$(error No PTLIBDIR environment variable defined! \
+You need to define PTLIBDIR! \
 Try something like: \
-PWLIBDIR = $(HOME)/pwlib)
+PTLIBDIR = $(HOME)/ptlib)
 
 endif
+endif
 
-include $(PWLIBDIR)/make/unix.mak
-include $(PWLIBDIR)/make/common.mak
+include $(PTLIBDIR)/make/unix.mak
+include $(PTLIBDIR)/make/common.mak
 
 # End of ptlib.mak

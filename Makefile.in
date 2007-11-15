@@ -213,7 +213,7 @@
 PREFIX=@INSTALLPREFIX@
 exec_prefix = ${PREFIX}
 LIBDIR=@LIBDIR@
-export PWLIBDIR=@PWLIBDIR@
+export PTLIBDIR=@PTLIBDIR@
 
 INSTALL=@INSTALL@
 
@@ -239,7 +239,7 @@ $(subst tagbuild,,$(STANDARD_TARGETS)) ::
 	set -e; $(foreach dir,$(SUBDIRS),if test -e $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
 
 update:
-	cvs update
+	svn update
 	$(MAKE) bothdepend both
 
 ptlib:
@@ -254,7 +254,7 @@ install:
 		     $(DESTDIR)$(PREFIX)/include/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptclib \
-                     $(DESTDIR)$(PREFIX)/share/pwlib/make ; \
+                     $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
 	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
@@ -275,12 +275,12 @@ install:
 		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ifeq (1, $(HAS_PLUGINS))
-	cd plugins/pwlib/device/ ; \
+	cd plugins/ptlib/device/ ; \
 	( for dir in ./* ;\
-		do mkdir -p $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir ; \
-		chmod 755 $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir ; \
+		do mkdir -p $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
+		chmod 755 $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
-			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir; \
+			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir; \
 		done ); \
 	done )
 endif
@@ -296,18 +296,18 @@ endif
 		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptclib; \
 	done)
 	(for fn in make/*.mak ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/pwlib/make; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/ptlib/make; \
 	done)
-	$(INSTALL) -m 755 make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
+	$(INSTALL) -m 755 make/ptlib-config $(DESTDIR)$(PREFIX)/share/ptlib/make/
+	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; ln -snf ../share/ptlib/make/ptlib-config ptlib-config)
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
 	       $(DESTDIR)$(PREFIX)/include/ptclib \
 	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
 	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
-	       $(DESTDIR)$(PREFIX)/share/pwlib \
-	       $(DESTDIR)$(LIBDIR)/pwlib/devices \
+	       $(DESTDIR)$(PREFIX)/share/ptlib \
+	       $(DESTDIR)$(LIBDIR)/ptlib/devices \
 	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* \
               @libdir@/libpt.so 
 

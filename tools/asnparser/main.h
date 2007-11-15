@@ -1170,8 +1170,8 @@ class ImportModule : public PObject
 
     void GenerateCplusplus(ostream & hdr, ostream & cxx);
 
-  protected:
     PString   fullModuleName;
+  protected:
     PString   shortModuleName;
     PString   filename;
     PString   directoryPrefix;
@@ -1194,6 +1194,16 @@ class ModuleDefinition : public PObject
     void SetExportAll();
     void SetExports(TypesList * syms);
 
+    bool IsImportModule( const PString & name ) const
+    { 
+       for( PINDEX i = 0; i < imports.GetSize(); ++i )
+       {
+          if( imports[i].fullModuleName == name )
+             return true;
+       }
+       return false;
+    }
+    
     void AddImport(ImportModule * mod)  { imports.Append(mod); }
     void AddType(TypeBase * type)       { types.Append(type); }
     void AddValue(ValueBase * val)      { values.Append(val); }

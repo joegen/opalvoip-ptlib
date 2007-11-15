@@ -2987,7 +2987,7 @@ const char * BMPStringType::GetAncestorClass() const
 void BMPStringType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
   StringTypeBase::GenerateOperators(hdr, cxx, actualType);
-  GenerateOperator("PWORDArray &", hdr, cxx, actualType);
+  GenerateOperator("PWCharArray &", hdr, cxx, actualType);
   GenerateOperator("PASN_BMPString &", hdr, cxx, actualType);
 }
 

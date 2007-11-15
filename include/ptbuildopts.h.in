@@ -649,6 +649,15 @@
 
 #endif
 
+/////////////////////////////////////////////////
+//
+// APP Share Input 
+//
+#undef P_APPSHARE
+
+#if defined(_MSC_VER) && P_APPSHARE
+#pragma include_alias(<ptlib/vidinput_app.h>, <ptlib/msos/ptlib/vidinput_app.h>)
+#endif
 
 /////////////////////////////////////////////////
 //
@@ -756,10 +765,10 @@
 //
 #undef USE_SYSTEM_SWAB
 
-#undef	PWLIB_MAJOR
-#undef	PWLIB_MINOR
-#undef	PWLIB_BUILD
-#undef	PWLIB_VERSION
+#undef	PTLIB_MAJOR
+#undef	PTLIB_MINOR
+#undef	PTLIB_BUILD
+#undef	PTLIB_VERSION
 
 #undef	P_64BIT
 #undef	PHAS_TEMPLATES
@@ -772,6 +781,7 @@
 #undef  PMEMORY_CHECK
 #undef  P_HAS_RECVMSG
 #undef  P_HAS_UPAD128_T
+#undef  P_HAS_INET_NTOP
 
 #undef  P_USE_STANDARD_CXX_BOOL
 #if !defined(P_USE_STANDARD_CXX_BOOL)

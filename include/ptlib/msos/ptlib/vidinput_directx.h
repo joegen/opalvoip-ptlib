@@ -37,7 +37,10 @@
 #include <ptlib/pluginmgr.h>
 #include <ptclib/delaychan.h>
 
+#ifdef __MINGW32__
 #include <mingw_dshow_port.h>
+#endif
+
 #include <windows.h>
 #include <ddraw.h>
 #include <dshow.h>
@@ -79,8 +82,7 @@ extern "C" {
 };
 
 #else
-#include <Mtype.h>
-#include <qedit.h>
+#include <Qedit.h>
 #endif
 
 /**This class defines a video input device.
@@ -111,6 +113,13 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 
     PStringList GetDeviceNames() const
       { return GetInputDeviceNames(); }
+
+    /**Retrieve a list of Device Capabilities
+     */
+    static BOOL GetDeviceCapabilities(
+          const PString & deviceName,           ///< Name of device
+	  InputDeviceCapabilities * caps        ///< List of supported capabilities
+    );
 
 
     /**Determine if the device is currently open.
@@ -262,7 +271,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     void FlipVertical(BYTE *buffer);
 
     char *tempFrame;			/* Buffer used when a converter is needed */
-    unsigned int frameBytes;		/* Size of a frame in Bytes */
+    long frameBytes;		        /* Size of a frame in Bytes */
     int  capturing_duration;
     PBoolean flipVertical;
     PAdaptiveDelay m_pacing;

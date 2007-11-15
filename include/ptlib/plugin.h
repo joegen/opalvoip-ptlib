@@ -169,6 +169,8 @@ class PDevicePluginServiceDescriptor : public PPluginServiceDescriptor
     virtual PObject *   CreateInstance(int userData) const = 0;
     virtual PStringList GetDeviceNames(int userData) const = 0;
     virtual bool        ValidateDeviceName(const PString & deviceName, int userData) const;
+	virtual bool        GetDeviceCapabilities(const PString & deviceName, 
+											         void * capabilities) const;
 };
 
 

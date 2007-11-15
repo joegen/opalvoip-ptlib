@@ -65,14 +65,16 @@
  *
  */
 
-#include <ptlib.h>
-
 #ifdef __GNUC__
 #pragma implementation "shttpsvc.h"
 #endif
 
-#include <ptclib/shttpsvc.h>
+#include <ptlib.h>
+#include <ptbuildopts.h>
 
+#ifdef P_HTTPSVC
+
+#include <ptclib/shttpsvc.h>
 
 #ifdef P_SSL
 
@@ -269,5 +271,7 @@ PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
 }
 
 #endif //P_SSL
+
+#endif // P_HTTPSVC
 
 // End Of File ///////////////////////////////////////////////////////////////
