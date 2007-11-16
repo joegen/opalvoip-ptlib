@@ -2857,6 +2857,13 @@ PString & PStringArray::operator[](PINDEX index)
 }
 
 
+static void strcpy_with_increment(char * & strPtr, const PString & str)
+{
+  PINDEX len = str.GetLength()+1;
+  memcpy(strPtr, (const char *)str, len);
+  strPtr += len;
+}
+
 char ** PStringArray::ToCharArray(PCharArray * storage) const
 {
   PINDEX i;
@@ -2875,14 +2882,11 @@ char ** PStringArray::ToCharArray(PCharArray * storage) const
   if (storagePtr == NULL)
     return NULL;
 
-  char * strPtr = (char *)&storagePtr[GetSize()+1];
+  char * strPtr = (char *)&storagePtr[mySize+1];
 
   for (i = 0; i < mySize; i++) {
     storagePtr[i] = strPtr;
-    const PString & str = (*this)[i];
-    PINDEX len = str.GetLength()+1;
-    memcpy(strPtr, (const char *)str, len);
-    strPtr += len;
+    strcpy_with_increment(strPtr, (*this)[i]);
   }
 
   storagePtr[i] = NULL;
@@ -3173,6 +3177,45 @@ void PStringToString::ReadFrom(istream & strm)
     else
       SetAt(str.Left(equal), str.Mid(equal+1));
   }
+}
+
+
+char ** PStringToString::ToCharArray(bool withEqualSign, PCharArray * storage) const
+{
+  PINDEX i;
+
+  PINDEX mySize = GetSize();
+  PINDEX numPointers = mySize*(withEqualSign ? 1 : 2) + 1;
+  PINDEX storageSize = numPointers*sizeof(char *);
+  for (i = 0; i < mySize; i++)
+    storageSize += GetKeyAt(i).GetLength()+1 + GetDataAt(i).GetLength()+1;
+
+  char ** storagePtr;
+  if (storage != NULL)
+    storagePtr = (char **)storage->GetPointer(storageSize);
+  else
+    storagePtr = (char **)malloc(storageSize);
+
+  if (storagePtr == NULL)
+    return NULL;
+
+  char * strPtr = (char *)&storagePtr[numPointers];
+  PINDEX strIndex = 0;
+
+  for (i = 0; i < mySize; i++) {
+    storagePtr[strIndex++] = strPtr;
+    if (withEqualSign)
+      strcpy_with_increment(strPtr, GetKeyAt(i) + '=' + GetDataAt(i));
+    else {
+      strcpy_with_increment(strPtr, GetKeyAt(i));
+      storagePtr[strIndex++] = strPtr;
+      strcpy_with_increment(strPtr, GetDataAt(i));
+    }
+  }
+
+  storagePtr[strIndex] = NULL;
+
+  return storagePtr;
 }
 
 
