@@ -2956,21 +2956,38 @@ BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 {
   lastWriteCount = 0;
 
+  BOOL broadcast = addr.IsAny() || addr.IsBroadcast();
+  if (broadcast) {
+#ifdef __BEOS__
+    PAssertAlways("Broadcast option under BeOS is not implemented yet");
+    return FALSE;
+#else
+    if (!SetOption(SO_BROADCAST, 1))
+      return FALSE;
+#endif
+  }
+
 #if P_HAS_IPV6
 
-  Psockaddr sa(addr, port);
-  return os_sendto(buf, len, 0, sa, sa.GetSize()) && lastWriteCount >= len;
+  Psockaddr sa(broadcast ? Address::GetBroadcast() : addr, port);
+  BOOL ok = os_sendto(buf, len, 0, sa, sa.GetSize());
 
 #else
 
   sockaddr_in sockAddr;
   sockAddr.sin_family = AF_INET;
-  sockAddr.sin_addr = addr;
+  sockAddr.sin_addr = (broadcast ? Address::GetBroadcast() : addr);
   sockAddr.sin_port = htons(port);
-  return os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr))
-         && lastWriteCount >= len;
+  BOOL ok = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr));
 
 #endif
+
+#ifndef __BEOS__
+  if (broadcast)
+    SetOption(SO_BROADCAST, 0);
+#endif
+
+  return ok && lastWriteCount >= len;
 }
 
 
