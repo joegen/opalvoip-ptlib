@@ -803,7 +803,7 @@ PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
 }
 
 
-PBoolean PFile::Remove(const PFilePath & name, PBoolean force)
+PBoolean PFile::Remove(const PString & name, PBoolean force)
 {
   if (remove(name) == 0)
     return PTrue;
