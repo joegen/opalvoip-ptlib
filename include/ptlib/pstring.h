@@ -2350,7 +2350,7 @@ class PStringArray : public PArray {
     PStringArray operator + (const PString & str);
 
     /**Create an array of C strings.
-       If storage is NULL then this returns a single pointer that may be
+       If storage is NULL then this returns a single pointer that must be
        disposed of using free(). Note that each of the strings are part of the
        same memory allocation so only one free() is required.
 
@@ -3045,6 +3045,23 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
       istream &strm   // Stream to read the objects contents from.
     );
   //@}
+
+    /**Create an array of C strings.
+       If withEqualSign is true then array is GetSize()+1 strings of the form
+       key=value. If false then the array is GetSize()*2+1 strings where
+       consecutive pointers are the key and option respecitively of each
+       entry in the dictionary.
+
+       If storage is NULL then this returns a single pointer that must be
+       disposed of using free(). Note that each of the strings are part of the
+       same memory allocation so only one free() is required.
+
+       If storage is not null then that is used to allocate the memory.
+      */
+    char ** ToCharArray(
+      bool withEqualSign,
+      PCharArray * storage = NULL
+    ) const;
 };
 
 
