@@ -172,6 +172,9 @@ PINLINE PBoolean PDirectory::Restart(int scanMask)
 PINLINE PBoolean PFile::Exists(const PFilePath & name)
   { return _access(name, 0) == 0; }
 
+PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean force)
+  { return PFile::Remove((const PString &)name, force); }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
