@@ -484,6 +484,7 @@ PMonitoredSockets::PMonitoredSockets(BOOL reuseAddr, PSTUNClient * stunClient)
 BOOL PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
 {
   delete info.socket;
+  info.socket = NULL;
   
   if (stun != NULL) {
     PIPSocket::Address address;
@@ -506,6 +507,7 @@ BOOL PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   }
 
   delete info.socket;
+  info.socket = NULL;
   return false;
 }
 
