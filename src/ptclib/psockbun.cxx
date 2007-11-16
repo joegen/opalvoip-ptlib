@@ -605,6 +605,11 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
         break;
 
       case PChannel::NoError :
+        if (sockets.IsEmpty()) { // Timeout
+          info.inUse = false;
+          return PChannel::Timeout;
+        }
+
         if (info.socket == NULL) // Interface went down
           break;
 
