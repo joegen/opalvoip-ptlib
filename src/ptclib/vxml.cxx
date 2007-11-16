@@ -3226,13 +3226,13 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       PBoolean isDate = PFalse;
 
       for (i = 0; !isDate && i < 7; ++i)
-        isDate |= line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName));
+        isDate = line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName));
       for (i = 0; !isDate && i < 7; ++i)
-        isDate |= line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
+        isDate = line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
       for (i = 0; !isDate && i < 12; ++i)
-        isDate |= line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName));
+        isDate = line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName));
       for (i = 0; !isDate && i < 12; ++i)
-        isDate |= line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+        isDate = line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
 
       if (!isTime)
         isTime = line.Find(PTime::GetTimeSeparator());
