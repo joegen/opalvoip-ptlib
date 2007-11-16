@@ -344,8 +344,8 @@ public:
   private:
     PMutex mutex;
 
-    PBoolean (WINAPI *_Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
-    PBoolean (WINAPI *_Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
+    BOOL (WINAPI *_Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
+    BOOL (WINAPI *_Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
 
     PBoolean Init(DWORD upTime, HANDLE * trapEvent, AsnObjectIdentifier * firstSupportedRegion)
     { return (*_Init)(upTime, trapEvent, firstSupportedRegion); }
