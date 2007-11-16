@@ -563,6 +563,8 @@ class PServiceHTTPFile : public PHTTPFile
       : PHTTPFile(filename) { needSignature = needSig; }
     PServiceHTTPFile(const PString & filename, const PFilePath & file, PBoolean needSig = PFalse)
       : PHTTPFile(filename, file) { needSignature = needSig; }
+    PServiceHTTPFile(const PString & filename, const PString & file, PBoolean needSig = PFalse)
+      : PHTTPFile(filename, file) { needSignature = needSig; }
     PServiceHTTPFile(const PString & filename, const PHTTPAuthority & auth, PBoolean needSig = PFalse)
       : PHTTPFile(filename, auth) { needSignature = needSig; }
     PServiceHTTPFile(const PString & filename, const PFilePath & file, const PHTTPAuthority & auth, PBoolean needSig = PFalse)

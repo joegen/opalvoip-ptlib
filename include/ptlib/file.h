@@ -409,6 +409,10 @@ class PFile : public PChannel
       const PFilePath & name,   // Name of file to delete.
       PBoolean force = PFalse      // Force deletion even if file is protected.
     );
+    static PBoolean Remove(
+      const PString & name,   // Name of file to delete.
+      PBoolean force = PFalse      // Force deletion even if file is protected.
+    );
 
     /**Delete the current file. If #force# is PFalse and the file
        is protected against being deleted then the function fails. If

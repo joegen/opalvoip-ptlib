@@ -180,6 +180,9 @@ PINLINE PString PFilePath::GetVolume() const
 PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean)
   { return unlink((char *)(const char *)name) == 0; }
 
+PINLINE PBoolean PFile::Remove(const PString & name, PBoolean)
+  { return unlink((char *)(const char *)name) == 0; }
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PString PChannel::GetName() const
