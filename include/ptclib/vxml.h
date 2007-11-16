@@ -359,7 +359,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual PBoolean LoadVXML(const PString & xml);
     virtual PBoolean IsLoaded() const { return loaded; }
 
-    virtual PBoolean Open(PBoolean isPCM); // For backward compatibility PFalse=G.723.1
     virtual PBoolean Open(const PString & mediaFormat);
     virtual PBoolean Close();
 

@@ -1094,14 +1094,6 @@ PXMLElement * PVXMLSession::FindForm(const PString & id)
 }
 
 
-PBoolean PVXMLSession::Open(PBoolean isPCM)
-{
-  if (isPCM)
-    return Open(VXML_PCM16);
-  else
-    return Open(VXML_G7231);
-}
-
 PBoolean PVXMLSession::Open(const PString & _mediaFormat)
 {
   mediaFormat = _mediaFormat;
