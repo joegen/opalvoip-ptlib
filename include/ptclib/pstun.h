@@ -251,6 +251,12 @@ class PSTUNClient : public PNatMethod
       PIPSocket::Address & externalAddress, ///< External address of router
       const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
     );
+    
+    /**Invalidates the cached external address
+       This allows to lazily update the external address cache at the next 
+       attempt to get the external address.
+      */
+    void InvalidateExternalAddressCache();
 
     /**Create a single socket.
        The STUN protocol is used to create a socket for which the external IP

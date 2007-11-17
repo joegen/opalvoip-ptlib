@@ -172,6 +172,8 @@ class PInterfaceMonitor : public PObject
     void SetInterfaceFilter(PInterfaceFilter * filter);
     
     virtual void RefreshInterfaceList();
+    
+    void OnRemoveSTUNClient(const PSTUNClient *stun);
 
   protected:
     void UpdateThreadMain();
@@ -236,6 +238,12 @@ class PInterfaceMonitorClient : public PSafeObject
       const PString & iface,  /// Interface desciptor name
       InterfaceEntry & info   /// Information on the interface
     );
+    
+    /**Returns the priority of this client. A higher value means higher priority.
+       Higher priority clients get their callback functions called first. Clients
+       with the same priority get called in the order of their insertion.
+      */
+    virtual PINDEX GetPriority() const { return 50; }
 
   protected:
     /// Call back function for when an interface has been added to the system
@@ -243,6 +251,9 @@ class PInterfaceMonitorClient : public PSafeObject
 
     /// Call back function for when an interface has been removed from the system
     virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
+    
+    /// Called when a PSTUNClient is about to be destroyed
+    virtual void OnRemoveSTUNClient(const PSTUNClient *stun) {};
 
   friend class PInterfaceMonitor;
 };
@@ -352,6 +363,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     );
 
   protected:
+    virtual void OnRemoveSTUNClient(const PSTUNClient *stun);
     struct SocketInfo {
       SocketInfo()
         : socket(NULL)
