@@ -608,8 +608,12 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
   while (opened) {
     PSocket::SelectList sockets;
-    if (info.socket != NULL && info.socket->IsOpen())
+    if (info.socket != NULL && info.socket->IsOpen()) {
       sockets += *info.socket;
+    } else if (!info.socket->IsOpen()) {
+      // socket closed by monitor thread. release the inUse flag
+      info.inUse = false;
+    }
     sockets += interfaceAddedSignal;
 
     UnlockReadWrite();
