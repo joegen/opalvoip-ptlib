@@ -693,6 +693,12 @@ BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
 }
 
 
+void PSTUNClient::InvalidateExternalAddressCache() {
+  cachedExternalAddress = 0;
+  natType = UnknownNat;
+}
+
+
 BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort)
 {
   socket = NULL;

@@ -425,9 +425,18 @@ void PInterfaceMonitor::AddClient(PInterfaceMonitorClient * client)
 {
   PWaitAndSignal m(mutex);
 
-  if (currentClients.empty())
+  if (currentClients.empty()) {
     Start();
-  currentClients.push_back(client);
+    currentClients.push_back(client);
+  } else {
+    for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
+      if ((*iter)->GetPriority() >= client->GetPriority()) {
+        currentClients.insert(iter, client);
+        return;
+      }
+    }
+    currentClients.push_back(client);
+  }
 }
 
 
@@ -446,7 +455,7 @@ void PInterfaceMonitor::OnAddInterface(const PIPSocket::InterfaceEntry & entry)
 {
   PWaitAndSignal m(mutex);
 
-  for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
+  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
     if (client->LockReadWrite()) {
       client->OnAddInterface(entry);
@@ -460,10 +469,24 @@ void PInterfaceMonitor::OnRemoveInterface(const PIPSocket::InterfaceEntry & entr
 {
   PWaitAndSignal m(mutex);
 
-  for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
+  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
     if (client->LockReadWrite()) {
       client->OnRemoveInterface(entry);
+      client->UnlockReadWrite();
+    }
+  }
+}
+
+
+void PInterfaceMonitor::OnRemoveSTUNClient(const PSTUNClient *stun)
+{
+  PWaitAndSignal m(mutex);
+  
+  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
+    PInterfaceMonitorClient *client = *iter;
+    if (client->LockReadWrite()) {
+      client->OnRemoveSTUNClient(stun);
       client->UnlockReadWrite();
     }
   }
@@ -659,6 +682,13 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, BOOL reuseA
     return new PMonitoredSocketBundle(reuseAddr, stunClient);
   else
     return new PSingleMonitoredSocket(iface, reuseAddr, stunClient);
+}
+
+
+void PMonitoredSockets::OnRemoveSTUNClient(const PSTUNClient *_stun)
+{
+  if (stun == _stun)
+    stun = NULL;
 }
 
 
