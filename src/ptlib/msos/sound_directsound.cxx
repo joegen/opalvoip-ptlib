@@ -49,7 +49,7 @@
 
 #include <ptlib.h>
 
-#ifdef P_DIRECTSOUND
+#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
 
 #include <ptlib/msos/ptlib/sound_directsound.h>
 

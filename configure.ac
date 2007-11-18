@@ -2261,6 +2261,7 @@ dnl look for Direct Sound
 
 dnl MSWIN_DISPLAY    dsound,Direct Sound Support
 dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
+dnl MSWIN_CHECK_FILE dsound,include\armmacros.s,P_DIRECTSOUND_WINCE=1
 dnl MSWIN_DIR_SYMBOL dsound,DIRECTX_DIR
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB64,dsound.lib,lib/x64
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib/x86
