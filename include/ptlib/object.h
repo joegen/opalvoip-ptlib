@@ -1377,8 +1377,8 @@ of compatibility with documentation systems.
       { return strcmp(clsName, cls::Class()) == 0 || par::InternalIsDescendant(clsName); } \
     virtual const char * GetClass(unsigned ancestor = 0) const \
       { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
-    virtual Comparison CompareObjectMemoryDirect(const PObject & obj) const \
-      { return (Comparison)memcmp(this, &obj, sizeof(cls)); } \
+    virtual Comparison CompareObjectMemoryDirect(const PObject & _obj) const \
+      { return (Comparison)memcmp(this, &_obj, sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
 
 
