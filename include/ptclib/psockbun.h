@@ -253,7 +253,7 @@ class PInterfaceMonitorClient : public PSafeObject
     virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
     
     /// Called when a PSTUNClient is about to be destroyed
-    virtual void OnRemoveSTUNClient(const PSTUNClient *stun) {};
+    virtual void OnRemoveSTUNClient(const PSTUNClient * /*stun*/) { }
 
   friend class PInterfaceMonitor;
 };
