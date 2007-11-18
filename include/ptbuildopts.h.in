@@ -726,6 +726,7 @@
 //
 // DirectX Support (Windows only)
 //
+#undef P_DIRECTSOUND_WINCE
 
 #ifndef _WIN32_WCE
 #undef P_DIRECTSOUND
@@ -733,7 +734,7 @@
 #undef P_VFW_CAPTURE
 #endif
 
-#if defined(_MSC_VER) && (defined(P_DIRECTSOUND) || defined(P_DIRECTSHOW))
+#if defined(_MSC_VER) && (defined(P_DIRECTSOUND) || defined(P_DIRECTSHOW)) && !defined(P_DIRECTSOUND_WINCE)
 
 #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
 
