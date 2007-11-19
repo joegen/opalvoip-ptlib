@@ -240,11 +240,12 @@
 #pragma interface
 #endif
 
+#include <ptbuildopts.h>
+
 #include <ptclib/inetprot.h>
 #include <ptclib/mime.h>
 #include <ptclib/url.h>
 #include <ptlib/ipsock.h>
-
 
 #ifdef P_HTTPSVC
 
