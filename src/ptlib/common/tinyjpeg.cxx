@@ -403,7 +403,15 @@ static void process_Huffman_data_unit(struct jdec_private *priv, int component)
    }
 
   for (j = 0; j < 64; j++)
+#ifndef P_MEDIALIB
     c->DCT[j] = DCT[zigzag[j]];
+#else
+  {
+    c->DCT[j] = DCT[zigzag[j]] * c->Q_table[j];
+    if (j == 0)
+      c->DCT[j] += 1024;
+  }
+#endif    
 }
 
 /*
@@ -1559,7 +1567,11 @@ static void print_SOF(const unsigned char *stream)
  *
  ******************************************************************************/
 
+#ifndef P_MEDIALIB
 static void build_quantization_table(float *qtable, const unsigned char *ref_table)
+#else
+static void build_quantization_table(uint16_t *qtable, const unsigned char *ref_table)
+#endif
 {
   /* Taken from libjpeg. Copyright Independent JPEG Group's LLM idct.
    * For float AA&N IDCT method, divisors are equal to quantization
@@ -1579,7 +1591,11 @@ static void build_quantization_table(float *qtable, const unsigned char *ref_tab
 
   for (i=0; i<8; i++) {
      for (j=0; j<8; j++) {
+#ifndef P_MEDIALIB
        *qtable++ = ref_table[*zz++] * aanscalefactor[i] * aanscalefactor[j];
+#else
+       *qtable++ = ref_table[*zz++];
+#endif       
      }
    }
 
@@ -1588,7 +1604,11 @@ static void build_quantization_table(float *qtable, const unsigned char *ref_tab
 static int parse_DQT(struct jdec_private *priv, const unsigned char *stream)
 {
   int qi;
+#ifndef P_MEDIALIB
   float *table;
+#else
+  uint16_t *table;
+#endif
   const unsigned char *dqt_block_end;
 
   trace("> DQT marker\n");

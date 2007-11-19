@@ -89,6 +89,12 @@
  */   
 #include <stdint.h>
 #include "tinyjpeg-internal.h"
+#ifdef SOLARIS
+#include "ptbuildopts.h"
+#endif
+#ifdef P_MEDIALIB
+#include <mlib.h>
+#endif
 
 #define FAST_FLOAT float
 #define DCTSIZE	   8
@@ -139,6 +145,7 @@ static inline unsigned char descale_and_clamp(int x, int shift)
 void
 tinyjpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
 {
+#ifndef P_MEDIALIB
   FAST_FLOAT tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   FAST_FLOAT tmp10, tmp11, tmp12, tmp13;
   FAST_FLOAT z5, z10, z11, z12, z13;
@@ -299,5 +306,8 @@ tinyjpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
     wsptr += DCTSIZE;		/* advance pointer to next row */
     outptr += stride;
   }
+#else
+  mlib_VideoIDCT8x8_U8_S16_NA(output_buf, compptr->DCT, stride);
+#endif  
 }
 
