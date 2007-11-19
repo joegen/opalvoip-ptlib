@@ -288,11 +288,12 @@ class PVideoFrameInfo : public PObject
     };
 
     enum StandardSizes {
-      CIF16Width = 1408, CIF16Height = 1152,
-      CIF4Width  = 704,  CIF4Height  = 576,
-      CIFWidth   = 352,  CIFHeight   = 288,
+      SQCIFWidth = 128,  SQCIFHeight = 96,
       QCIFWidth  = 176,  QCIFHeight  = 144,
-      SQCIFWidth = 144,  SQCIFHeight = 96,
+      CIFWidth   = 352,  CIFHeight   = 288,
+      CIF4Width  = 704,  CIF4Height  = 576,
+      CIF16Width = 1408, CIF16Height = 1152,
+      HDTVWidth  = 1920, HDTVHeight  = 1080,
     };
 
     /**Set the frame size to be used.
