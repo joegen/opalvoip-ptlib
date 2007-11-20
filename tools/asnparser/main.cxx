@@ -319,12 +319,12 @@ class OutputFile : public PTextFile
   public:
     ~OutputFile() { Close(); }
 
-    BOOL Open(const PFilePath & path, const PString & suffix, const char * extension);
-    BOOL Close();
+    PBoolean Open(const PFilePath & path, const PString & suffix, const char * extension);
+    PBoolean Close();
 };
 
 
-BOOL OutputFile::Open(const PFilePath & path,
+PBoolean OutputFile::Open(const PFilePath & path,
                       const PString & suffix,
                       const char * extension)
 {
@@ -346,7 +346,7 @@ BOOL OutputFile::Open(const PFilePath & path,
 }
 
 
-BOOL OutputFile::Close()
+PBoolean OutputFile::Close()
 {
   if (IsOpen())
     *this << "\n"
@@ -367,8 +367,8 @@ class App : public PProcess
   public:
     App();
     void Main();
-    BOOL SetClassHeaderFile(PArgList & args);
-    BOOL SetClassHeader(PArgList & args);
+    PBoolean SetClassHeaderFile(PArgList & args);
+    PBoolean SetClassHeader(PArgList & args);
     void OutputAdditionalHeaders(ostream & hdr, const PString & className);
   protected:
     PStringToString classToHeader;
@@ -495,7 +495,7 @@ void App::Main()
 }
 
 
-BOOL App::SetClassHeaderFile(PArgList & args)
+PBoolean App::SetClassHeaderFile(PArgList & args)
 {
   PStringArray lines = args.GetOptionString("classheaderfile").Lines();
   if (lines.IsEmpty()) {
@@ -530,7 +530,7 @@ BOOL App::SetClassHeaderFile(PArgList & args)
 }
 
 
-BOOL App::SetClassHeader(PArgList & args)
+PBoolean App::SetClassHeader(PArgList & args)
 {
   PStringArray lines = args.GetOptionString("classheader").Lines();
   if (lines.IsEmpty()) {
@@ -672,7 +672,7 @@ Constraint::Constraint(ConstraintElementBase * elmt)
 }
 
 
-Constraint::Constraint(ConstraintElementList * stnd, BOOL extend, ConstraintElementList * ext)
+Constraint::Constraint(ConstraintElementList * stnd, PBoolean extend, ConstraintElementList * ext)
 {
   if (stnd != NULL) {
     standard = *stnd;
@@ -729,7 +729,7 @@ void Constraint::GenerateCplusplus(const PString & fn, ostream & hdr, ostream & 
 }
 
 
-BOOL Constraint::ReferencesType(const TypeBase & type)
+PBoolean Constraint::ReferencesType(const TypeBase & type)
 {
   PINDEX i;
 
@@ -761,7 +761,7 @@ void ConstraintElementBase::GenerateCplusplus(const PString &, ostream &, ostrea
 }
 
 
-BOOL ConstraintElementBase::ReferencesType(const TypeBase &)
+PBoolean ConstraintElementBase::ReferencesType(const TypeBase &)
 {
   return FALSE;
 }
@@ -797,7 +797,7 @@ void ElementListConstraintElement::GenerateCplusplus(const PString & fn, ostream
 }
 
 
-BOOL ElementListConstraintElement::ReferencesType(const TypeBase & type)
+PBoolean ElementListConstraintElement::ReferencesType(const TypeBase & type)
 {
   for (PINDEX i = 0; i < elements.GetSize(); i++) {
     if (elements[i].ReferencesType(type))
@@ -893,7 +893,7 @@ void SubTypeConstraintElement::GenerateCplusplus(const PString &, ostream & hdr,
 }
 
 
-BOOL SubTypeConstraintElement::ReferencesType(const TypeBase & type)
+PBoolean SubTypeConstraintElement::ReferencesType(const TypeBase & type)
 {
   return subtype->ReferencesType(type);
 }
@@ -913,7 +913,7 @@ NestedConstraintConstraintElement::~NestedConstraintConstraintElement()
 }
 
 
-BOOL NestedConstraintConstraintElement::ReferencesType(const TypeBase & type)
+PBoolean NestedConstraintConstraintElement::ReferencesType(const TypeBase & type)
 {
   if (constraint == NULL)
     return FALSE;
@@ -1014,7 +1014,7 @@ void WithComponentConstraintElement::GenerateCplusplus(const PString &, ostream 
 /////////////////////////////////////////////////////////
 
 InnerTypeConstraintElement::InnerTypeConstraintElement(ConstraintElementList * list,
-                                                       BOOL part)
+                                                       PBoolean part)
   : ElementListConstraintElement(list)
 {
   partial = part;
@@ -1205,19 +1205,19 @@ TypeBase * TypeBase::FlattenThisType(const TypeBase &)
 }
 
 
-BOOL TypeBase::IsChoice() const
+PBoolean TypeBase::IsChoice() const
 {
   return FALSE;
 }
 
 
-BOOL TypeBase::IsParameterizedType() const
+PBoolean TypeBase::IsParameterizedType() const
 {
   return FALSE;
 }
 
 
-BOOL TypeBase::IsPrimitiveType() const
+PBoolean TypeBase::IsPrimitiveType() const
 {
   return TRUE;
 }
@@ -1252,13 +1252,13 @@ PString TypeBase::GetTypeName() const
 }
 
 
-BOOL TypeBase::CanReferenceType() const
+PBoolean TypeBase::CanReferenceType() const
 {
   return FALSE;
 }
 
 
-BOOL TypeBase::ReferencesType(const TypeBase &)
+PBoolean TypeBase::ReferencesType(const TypeBase &)
 {
   return FALSE;
 }
@@ -1269,7 +1269,7 @@ void TypeBase::SetImportPrefix(const PString &)
 }
 
 
-BOOL TypeBase::IsParameterisedImport() const
+PBoolean TypeBase::IsParameterisedImport() const
 {
   return FALSE;
 }
@@ -1386,7 +1386,7 @@ void TypeBase::GenerateCplusplusConstraints(const PString & prefix, ostream & hd
 
 /////////////////////////////////////////////////////////
 
-DefinedType::DefinedType(PString * name, BOOL parameter)
+DefinedType::DefinedType(PString * name, PBoolean parameter)
   : TypeBase(Tag::IllegalUniversalTag),
     referenceName(*name)
 {
@@ -1445,13 +1445,13 @@ void DefinedType::PrintOn(ostream & strm) const
 }
 
 
-BOOL DefinedType::CanReferenceType() const
+PBoolean DefinedType::CanReferenceType() const
 {
   return TRUE;
 }
 
 
-BOOL DefinedType::IsChoice() const
+PBoolean DefinedType::IsChoice() const
 {
   if (baseType != NULL)
     return baseType->IsChoice();
@@ -1459,7 +1459,7 @@ BOOL DefinedType::IsChoice() const
 }
 
 
-BOOL DefinedType::IsParameterizedType() const
+PBoolean DefinedType::IsParameterizedType() const
 {
   if (baseType != NULL)
     return baseType->IsParameterizedType();
@@ -1467,7 +1467,7 @@ BOOL DefinedType::IsParameterizedType() const
 }
 
 
-BOOL DefinedType::ReferencesType(const TypeBase & type)
+PBoolean DefinedType::ReferencesType(const TypeBase & type)
 {
   if (unresolved) {
     unresolved = FALSE;
@@ -1535,13 +1535,13 @@ void ParameterizedType::PrintOn(ostream & strm) const
 }
 
 
-BOOL ParameterizedType::IsParameterizedType() const
+PBoolean ParameterizedType::IsParameterizedType() const
 {
   return TRUE;
 }
 
 
-BOOL ParameterizedType::ReferencesType(const TypeBase & type)
+PBoolean ParameterizedType::ReferencesType(const TypeBase & type)
 {
   for (PINDEX i = 0; i < arguments.GetSize(); i++) {
     if (arguments[i].ReferencesType(type))
@@ -1618,13 +1618,13 @@ const char * SelectionType::GetAncestorClass() const
 }
 
 
-BOOL SelectionType::CanReferenceType() const
+PBoolean SelectionType::CanReferenceType() const
 {
   return TRUE;
 }
 
 
-BOOL SelectionType::ReferencesType(const TypeBase & type)
+PBoolean SelectionType::ReferencesType(const TypeBase & type)
 {
   return baseType->ReferencesType(type);
 }
@@ -1640,14 +1640,14 @@ BooleanType::BooleanType()
 
 void BooleanType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(BOOL v)";
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(PBoolean v)";
   if (Module->UsingInlines())
     hdr << " { SetValue(v);  return *this; }\n";
   else {
     hdr << ";\n";
     cxx << actualType.GetTemplatePrefix()
         << actualType.GetIdentifier() << " & "
-        << actualType.GetClassNameString() << "::operator=(BOOL v)\n"
+        << actualType.GetClassNameString() << "::operator=(PBoolean v)\n"
            "{\n"
            "  SetValue(v);\n"
            "  return *this;\n"
@@ -1724,7 +1724,7 @@ const char * IntegerType::GetAncestorClass() const
 
 /////////////////////////////////////////////////////////
 
-EnumeratedType::EnumeratedType(NamedNumberList * enums, BOOL extend, NamedNumberList * ext)
+EnumeratedType::EnumeratedType(NamedNumberList * enums, PBoolean extend, NamedNumberList * ext)
   : TypeBase(Tag::UniversalEnumeration),
     enumerations(*enums)
 {
@@ -1766,7 +1766,7 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   PINDEX i;
   PArgList & args = PProcess::Current().GetArguments();
-  BOOL xml_output = args.HasOption('x');
+  PBoolean xml_output = args.HasOption('x');
 
   cxx << "#ifndef PASN_NOPRINTON\n"
       "const static PASN_Names Names_"<< GetIdentifier() << "[]={\n";
@@ -1824,13 +1824,13 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    hdr << "    BOOL DecodeXER(PXER_Stream & strm);\n"
+    hdr << "    PBoolean DecodeXER(PXER_Stream & strm);\n"
            "    void EncodeXER(PXER_Stream & strm) const;\n";
 
     cxx << "}\n"
            "\n"
         << GetTemplatePrefix()
-        << "BOOL " << GetClassNameString() << "::DecodeXER(PXER_Stream & strm)\n"
+        << "PBoolean " << GetClassNameString() << "::DecodeXER(PXER_Stream & strm)\n"
            "{\n"
            "  PXMLElement * elem = strm.GetCurrentElement();\n"
            "  PXMLObject * sub_elem = elem->GetElement();\n"
@@ -2028,7 +2028,7 @@ const char * NullType::GetAncestorClass() const
 /////////////////////////////////////////////////////////
 
 SequenceType::SequenceType(TypesList * stnd,
-                           BOOL extend,
+                           PBoolean extend,
                            TypesList * ext,
                            unsigned tagNum)
   : TypeBase(tagNum)
@@ -2079,7 +2079,7 @@ TypeBase * SequenceType::FlattenThisType(const TypeBase & parent)
 }
 
 
-BOOL SequenceType::IsPrimitiveType() const
+PBoolean SequenceType::IsPrimitiveType() const
 {
   return FALSE;
 }
@@ -2088,7 +2088,7 @@ BOOL SequenceType::IsPrimitiveType() const
 void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   PArgList & args = PProcess::Current().GetArguments();
-  BOOL xml_output = args.HasOption('x');
+  PBoolean xml_output = args.HasOption('x');
 
   PINDEX i;
 
@@ -2107,7 +2107,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
       << ')';
 
   // Output enum for optional parameters
-  BOOL outputEnum = FALSE;
+  PBoolean outputEnum = FALSE;
   for (i = 0; i < fields.GetSize(); i++) {
     if (i >= numFields || fields[i].IsOptional()) {
       if (outputEnum)
@@ -2139,7 +2139,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   // Output declarations for generated functions
   hdr << "\n"
          "    PINDEX GetDataLength() const;\n"
-         "    BOOL Decode(PASN_Stream & strm);\n"
+         "    PBoolean Decode(PASN_Stream & strm);\n"
          "    void Encode(PASN_Stream & strm) const;\n"
          "#ifndef PASN_NOPRINTON\n"
          "    void PrintOn(ostream & strm) const;\n"
@@ -2147,7 +2147,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    hdr << "    BOOL PreambleDecodeXER(PXER_Stream & strm);\n";
+    hdr << "    PBoolean PreambleDecodeXER(PXER_Stream & strm);\n";
 
     if (fields.GetSize())
       hdr << "    void PreambleEncodeXER(PXER_Stream &) const;\n";
@@ -2194,14 +2194,14 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   if (xml_output)
   {
     cxx << GetTemplatePrefix()
-        << "BOOL " << GetClassNameString() << "::PreambleDecodeXER(PXER_Stream & strm)\n"
+        << "PBoolean " << GetClassNameString() << "::PreambleDecodeXER(PXER_Stream & strm)\n"
            "{\n";
 
     if (fields.GetSize())
     {
       cxx << "  PXMLElement * elem = strm.GetCurrentElement();\n"
              "  PXMLElement * sub_elem;\n"
-             "  BOOL result;\n"
+             "  PBoolean result;\n"
              "\n";
 
       for (i = 0; i < fields.GetSize(); i++)
@@ -2302,7 +2302,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "\n"
          "\n"
       << GetTemplatePrefix()
-      << "BOOL " << GetClassNameString() << "::Decode(PASN_Stream & strm)\n"
+      << "PBoolean " << GetClassNameString() << "::Decode(PASN_Stream & strm)\n"
          "{\n"
          "  if (!PreambleDecode(strm))\n"
          "    return FALSE;\n\n";
@@ -2368,13 +2368,13 @@ const char * SequenceType::GetAncestorClass() const
 }
 
 
-BOOL SequenceType::CanReferenceType() const
+PBoolean SequenceType::CanReferenceType() const
 {
   return TRUE;
 }
 
 
-BOOL SequenceType::ReferencesType(const TypeBase & type)
+PBoolean SequenceType::ReferencesType(const TypeBase & type)
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++)
     if (fields[i].ReferencesType(type))
@@ -2433,7 +2433,7 @@ TypeBase * SequenceOfType::FlattenThisType(const TypeBase & parent)
 }
 
 
-BOOL SequenceOfType::IsPrimitiveType() const
+PBoolean SequenceOfType::IsPrimitiveType() const
 {
   return FALSE;
 }
@@ -2506,13 +2506,13 @@ const char * SequenceOfType::GetAncestorClass() const
 }
 
 
-BOOL SequenceOfType::CanReferenceType() const
+PBoolean SequenceOfType::CanReferenceType() const
 {
   return TRUE;
 }
 
 
-BOOL SequenceOfType::ReferencesType(const TypeBase & type)
+PBoolean SequenceOfType::ReferencesType(const TypeBase & type)
 {
   return baseType->ReferencesType(type) && baseType->IsParameterizedType();
 }
@@ -2550,7 +2550,7 @@ SetOfType::SetOfType(TypeBase * base, Constraint * constraint)
 /////////////////////////////////////////////////////////
 
 ChoiceType::ChoiceType(TypesList * stnd,
-                       BOOL extendable,
+                       PBoolean extendable,
                        TypesList * extensions)
   : SequenceType(stnd, extendable, extensions, Tag::IllegalUniversalTag)
 {
@@ -2564,7 +2564,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   // PrintOn() debug output into acncestor constructor
   unsigned namesCount=0;
   int prevNum = -1;
-  BOOL outputEnum = FALSE;
+  PBoolean outputEnum = FALSE;
   for (i = 0; i < fields.GetSize(); i++) {
     const Tag & fieldTag = fields[i].GetTag();
     if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
@@ -2643,7 +2643,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "\n";
 
   // Generate code for type safe cast operators of selected choice object
-  BOOL needExtraLine = FALSE;
+  PBoolean needExtraLine = FALSE;
 
   if (Module->UsingOperators()) {
     PStringSet typesOutput(PARRAYSIZE(StandardClasses), StandardClasses);
@@ -2739,13 +2739,13 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
 
   // Generate virtual function to create chosen object based on discriminator
-  hdr << "    BOOL CreateObject();\n";
+  hdr << "    PBoolean CreateObject();\n";
   cxx << GetTemplatePrefix()
-      << "BOOL " << GetClassNameString() << "::CreateObject()\n"
+      << "PBoolean " << GetClassNameString() << "::CreateObject()\n"
          "{\n";
 
   // special case: if choice is all NULLs then simply output code
-  BOOL allNull = TRUE;
+  PBoolean allNull = TRUE;
   for (i = 0; allNull && i < fields.GetSize(); i++) 
     allNull = allNull && strcmp(fields[i].GetAncestorClass(), "PASN_Null") == 0;
 
@@ -2823,7 +2823,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 void ChoiceType::GenerateForwardDecls(ostream & hdr)
 {
   // Output forward declarations for choice pointers, but not standard classes
-  BOOL needExtraLine = FALSE;
+  PBoolean needExtraLine = FALSE;
 
   PStringSet typesOutput(PARRAYSIZE(StandardClasses), StandardClasses);
   typesOutput += GetIdentifier();
@@ -2846,13 +2846,13 @@ void ChoiceType::GenerateForwardDecls(ostream & hdr)
 }
 
 
-BOOL ChoiceType::IsPrimitiveType() const
+PBoolean ChoiceType::IsPrimitiveType() const
 {
   return FALSE;
 }
 
 
-BOOL ChoiceType::IsChoice() const
+PBoolean ChoiceType::IsChoice() const
 {
   return TRUE;
 }
@@ -2864,7 +2864,7 @@ const char * ChoiceType::GetAncestorClass() const
 }
 
 
-BOOL ChoiceType::ReferencesType(const TypeBase & type)
+PBoolean ChoiceType::ReferencesType(const TypeBase & type)
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     if (fields[i].ReferencesType(type) && fields[i].IsParameterizedType())
@@ -3260,7 +3260,7 @@ TypeBase * ObjectClassFieldType::FlattenThisType(const TypeBase & parent)
 }
 
 
-BOOL ObjectClassFieldType::IsPrimitiveType() const
+PBoolean ObjectClassFieldType::IsPrimitiveType() const
 {
   return FALSE;
 }
@@ -3270,7 +3270,7 @@ void ObjectClassFieldType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   BeginGenerateCplusplus(hdr, cxx);
 
-  hdr << "    BOOL DecodeSubType(";
+  hdr << "    PBoolean DecodeSubType(";
   GenerateCplusplusConstraints(PString(), hdr, cxx);
   hdr << " & obj) { return PASN_OctetString::DecodeSubType(obj); }\n"
          "    void EncodeSubType(const ";
@@ -3285,13 +3285,13 @@ void ObjectClassFieldType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 }
 
 
-BOOL ObjectClassFieldType::CanReferenceType() const
+PBoolean ObjectClassFieldType::CanReferenceType() const
 {
   return TRUE;
 }
 
 
-BOOL ObjectClassFieldType::ReferencesType(const TypeBase & type)
+PBoolean ObjectClassFieldType::ReferencesType(const TypeBase & type)
 {
   for (PINDEX i = 0; i < constraints.GetSize(); i++) {
     if (constraints[i].ReferencesType(type))
@@ -3303,7 +3303,7 @@ BOOL ObjectClassFieldType::ReferencesType(const TypeBase & type)
 
 /////////////////////////////////////////////////////////
 
-ImportedType::ImportedType(PString * theName, BOOL param)
+ImportedType::ImportedType(PString * theName, PBoolean param)
   : TypeBase(Tag::IllegalUniversalTag)
 {
   identifier = name = *theName;
@@ -3336,7 +3336,7 @@ void ImportedType::SetImportPrefix(const PString & prefix)
 }
 
 
-BOOL ImportedType::IsParameterisedImport() const
+PBoolean ImportedType::IsParameterisedImport() const
 {
   return parameterised;
 }
@@ -3420,7 +3420,7 @@ void DefinedValue::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
 /////////////////////////////////////////////////////////
 
-BooleanValue::BooleanValue(BOOL newVal)
+BooleanValue::BooleanValue(PBoolean newVal)
 {
   value = newVal;
 }
@@ -3870,13 +3870,13 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
                                          const PString & modName,
                                          const PString & headerPrefix,
                                          unsigned numFiles,
-                                         BOOL useNamespaces,
-                                         BOOL useInlines,
-                                         BOOL useOperators,
-                                         BOOL verbose)
+                                         PBoolean useNamespaces,
+                                         PBoolean useInlines,
+                                         PBoolean useOperators,
+                                         PBoolean verbose)
 {
   PArgList & args = PProcess::Current().GetArguments();
-  BOOL xml_output = args.HasOption('x');
+  PBoolean xml_output = args.HasOption('x');
   PINDEX i;
 
   usingInlines = useInlines;
@@ -3908,12 +3908,12 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
 
   // Reorder types
   // Determine if we need a separate file for template closure
-  BOOL hasTemplates = FALSE;
+  PBoolean hasTemplates = FALSE;
   types.DisallowDeleteObjects();
   PINDEX loopDetect = 0;
   PINDEX bubble = 0;
   while (bubble < types.GetSize()) {
-    BOOL makesReference = FALSE;
+    PBoolean makesReference = FALSE;
 
     TypeBase & bubbleType = types[bubble];
     if (bubbleType.CanReferenceType()) {
