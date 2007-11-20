@@ -163,8 +163,9 @@ void ThreadSafe::Test1(PArgList & args)
 
   cout << "Starting " << threadCount << " threads." << endl;
 
+  PRandom random;
   for (PINDEX i = 0; i < threadCount; i++) {
-    PTimeInterval duration = PRandom::Number()%540000 + 60000;
+    PTimeInterval duration = random.Generate(600000, 60000);
     cout << setw(4) << (i + 1) << '=' << duration;
     if (i%5 == 4)
       cout << '\n';

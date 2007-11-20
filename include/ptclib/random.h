@@ -107,7 +107,7 @@ class PRandom
        This generates one pseudorandom unsigned integer (32bit) which is
        uniformly distributed among 0 to 2^32-1 for each call.
       */
-    unsigned Generate();
+    unsigned Generate(unsigned maximum = UINT_MAX, unsigned minimum = 0);
 
     /**Get the next psuedo-random number in sequence.
       */
