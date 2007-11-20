@@ -128,7 +128,7 @@ class NamedNumber : public PObject
     PString name;
     PString reference;
     int number;
-    BOOL autonumber;
+    PBoolean autonumber;
 };
 
 PLIST(NamedNumberList, NamedNumber);
@@ -207,17 +207,17 @@ class Constraint : public PObject
     PCLASSINFO(Constraint, PObject);
   public:
     Constraint(ConstraintElementBase * elmt);
-    Constraint(ConstraintElementList * std, BOOL extend, ConstraintElementList * ext);
+    Constraint(ConstraintElementList * std, PBoolean extend, ConstraintElementList * ext);
 
     void PrintOn(ostream &) const;
 
-    BOOL IsExtendable() const { return extendable; }
+    PBoolean IsExtendable() const { return extendable; }
     void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
-    BOOL ReferencesType(const TypeBase & type);
+    PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     ConstraintElementList standard;
-    BOOL                  extendable;
+    PBoolean              extendable;
     ConstraintElementList extensions;
 };
 
@@ -232,7 +232,7 @@ class ConstraintElementBase : public PObject
     void SetExclusions(ConstraintElementBase * excl) { exclusions = excl; }
 
     virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     ConstraintElementBase * exclusions;
@@ -256,7 +256,7 @@ class ElementListConstraintElement : public ConstraintElementBase
     void PrintOn(ostream &) const;
 
     virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     ConstraintElementList elements;
@@ -306,7 +306,7 @@ class SubTypeConstraintElement : public ConstraintElementBase
     ~SubTypeConstraintElement();
     void PrintOn(ostream &) const;
     void GenerateCplusplus(const PString &, ostream &, ostream &);
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean ReferencesType(const TypeBase & type);
   protected:
     TypeBase * subtype;
 };
@@ -319,7 +319,7 @@ class NestedConstraintConstraintElement : public ConstraintElementBase
     NestedConstraintConstraintElement(Constraint * con);
     ~NestedConstraintConstraintElement();
 
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     Constraint * constraint;
@@ -371,13 +371,13 @@ class InnerTypeConstraintElement : public ElementListConstraintElement
 {
     PCLASSINFO(InnerTypeConstraintElement, ElementListConstraintElement);
   public:
-    InnerTypeConstraintElement(ConstraintElementList * list, BOOL partial);
+    InnerTypeConstraintElement(ConstraintElementList * list, PBoolean partial);
 
     void PrintOn(ostream &) const;
     virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
 
   protected:
-    BOOL partial;
+    PBoolean partial;
 };
 
 
@@ -409,13 +409,13 @@ class TypeBase : public PObject
     PString GetIdentifier() const { return identifier; }
     void SetTag(Tag::Type cls, unsigned num, Tag::Mode mode);
     const Tag & GetTag() const { return tag; }
-    BOOL HasNonStandardTag() const { return tag != defaultTag; }
+    PBoolean HasNonStandardTag() const { return tag != defaultTag; }
     void SetParameters(PStringList * list);
     void AddConstraint(Constraint * constraint) { constraints.Append(constraint); }
-    BOOL HasConstraints() const { return constraints.GetSize() > 0; }
+    PBoolean HasConstraints() const { return constraints.GetSize() > 0; }
     void MoveConstraints(TypeBase * from);
-    BOOL HasParameters() const { return !parameters.IsEmpty(); }
-    BOOL IsOptional() const { return isOptional; }
+    PBoolean HasParameters() const { return !parameters.IsEmpty(); }
+    PBoolean IsOptional() const { return isOptional; }
     void SetOptional() { isOptional = TRUE; }
     void SetDefaultValue(ValueBase * value) { defaultValue = value; }
     const PString & GetTemplatePrefix() const { return templatePrefix; }
@@ -424,20 +424,20 @@ class TypeBase : public PObject
     virtual void AdjustIdentifier();
     virtual void FlattenUsedTypes();
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
-    virtual BOOL IsChoice() const;
-    virtual BOOL IsParameterizedType() const;
-    virtual BOOL IsPrimitiveType() const;
+    virtual PBoolean IsChoice() const;
+    virtual PBoolean IsParameterizedType() const;
+    virtual PBoolean IsPrimitiveType() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual void GenerateForwardDecls(ostream & hdr);
     virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
     virtual const char * GetAncestorClass() const = 0;
     virtual PString GetTypeName() const;
-    virtual BOOL CanReferenceType() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean CanReferenceType() const;
+    virtual PBoolean ReferencesType(const TypeBase & type);
     virtual void SetImportPrefix(const PString &);
-    virtual BOOL IsParameterisedImport() const;
+    virtual PBoolean IsParameterisedImport() const;
 
-    BOOL IsGenerated() const { return isGenerated; }
+    PBoolean IsGenerated() const { return isGenerated; }
     void BeginGenerateCplusplus(ostream & hdr, ostream & cxx);
     void EndGenerateCplusplus(ostream & hdr, ostream & cxx);
     void GenerateCplusplusConstructor(ostream & hdr, ostream & cxx);
@@ -455,9 +455,9 @@ class TypeBase : public PObject
     Tag            tag;
     Tag            defaultTag;
     ConstraintList constraints;
-    BOOL           isOptional;
+    PBoolean           isOptional;
     ValueBase    * defaultValue;
-    BOOL           isGenerated;
+    PBoolean           isGenerated;
     PStringList    parameters;
     PString        templatePrefix;
     PString        classNameString;
@@ -468,27 +468,27 @@ class DefinedType : public TypeBase
 {
     PCLASSINFO(DefinedType, TypeBase);
   public:
-    DefinedType(PString * name, BOOL parameter);
+    DefinedType(PString * name, PBoolean parameter);
     DefinedType(TypeBase * refType, TypeBase * bType);
     DefinedType(TypeBase * refType, const PString & name);
     DefinedType(TypeBase * refType, const TypeBase & parent);
 
     void PrintOn(ostream &) const;
 
-    virtual BOOL IsChoice() const;
-    virtual BOOL IsParameterizedType() const;
+    virtual PBoolean IsChoice() const;
+    virtual PBoolean IsParameterizedType() const;
     virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
     virtual const char * GetAncestorClass() const;
     virtual PString GetTypeName() const;
-    virtual BOOL CanReferenceType() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean CanReferenceType() const;
+    virtual PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     void ConstructFromType(TypeBase * refType, const PString & name);
 
     PString referenceName;
     TypeBase * baseType;
-    BOOL unresolved;
+    PBoolean unresolved;
 };
 
 
@@ -500,9 +500,9 @@ class ParameterizedType : public DefinedType
 
     void PrintOn(ostream &) const;
 
-    virtual BOOL IsParameterizedType() const;
+    virtual PBoolean IsParameterizedType() const;
     virtual PString GetTypeName() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     TypesList arguments;
@@ -522,8 +522,8 @@ class SelectionType : public TypeBase
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual const char * GetAncestorClass() const;
-    virtual BOOL CanReferenceType() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean CanReferenceType() const;
+    virtual PBoolean ReferencesType(const TypeBase & type);
 
   protected:
     PString selection;
@@ -558,7 +558,7 @@ class EnumeratedType : public TypeBase
 {
     PCLASSINFO(EnumeratedType, TypeBase);
   public:
-    EnumeratedType(NamedNumberList * enums, BOOL extend, NamedNumberList * ext);
+    EnumeratedType(NamedNumberList * enums, PBoolean extend, NamedNumberList * ext);
     void PrintOn(ostream &) const;
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
@@ -567,7 +567,7 @@ class EnumeratedType : public TypeBase
   protected:
     NamedNumberList enumerations;
     PINDEX numEnums;
-    BOOL extendable;
+    PBoolean extendable;
 };
 
 
@@ -619,20 +619,20 @@ class SequenceType : public TypeBase
     void PrintOn(ostream &) const;
   public:
     SequenceType(TypesList * std,
-                 BOOL extendable,
+                 PBoolean extendable,
                  TypesList * extensions,
                  unsigned tagNum = Tag::UniversalSequence);
     virtual void FlattenUsedTypes();
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
-    virtual BOOL IsPrimitiveType() const;
+    virtual PBoolean IsPrimitiveType() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual const char * GetAncestorClass() const;
-    virtual BOOL CanReferenceType() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean CanReferenceType() const;
+    virtual PBoolean ReferencesType(const TypeBase & type);
   protected:
     TypesList fields;
     PINDEX numFields;
-    BOOL extendable;
+    PBoolean extendable;
 };
 
 
@@ -645,12 +645,12 @@ class SequenceOfType : public TypeBase
     void PrintOn(ostream &) const;
     virtual void FlattenUsedTypes();
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
-    virtual BOOL IsPrimitiveType() const;
+    virtual PBoolean IsPrimitiveType() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual void GenerateForwardDecls(ostream & hdr);
     virtual const char * GetAncestorClass() const;
-    virtual BOOL CanReferenceType() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean CanReferenceType() const;
+    virtual PBoolean ReferencesType(const TypeBase & type);
   protected:
     TypeBase * baseType;
 };
@@ -679,14 +679,14 @@ class ChoiceType : public SequenceType
     PCLASSINFO(ChoiceType, SequenceType);
   public:
     ChoiceType(TypesList * std = NULL,
-               BOOL extendable = FALSE,
+               PBoolean extendable = FALSE,
                TypesList * extensions = NULL);
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual void GenerateForwardDecls(ostream & hdr);
-    virtual BOOL IsPrimitiveType() const;
-    virtual BOOL IsChoice() const;
+    virtual PBoolean IsPrimitiveType() const;
+    virtual PBoolean IsChoice() const;
     virtual const char * GetAncestorClass() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean ReferencesType(const TypeBase & type);
 };
 
 
@@ -894,10 +894,10 @@ class ObjectClassFieldType : public TypeBase
     virtual const char * GetAncestorClass() const;
     void PrintOn(ostream &) const;
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
-    virtual BOOL IsPrimitiveType() const;
+    virtual PBoolean IsPrimitiveType() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
-    virtual BOOL CanReferenceType() const;
-    virtual BOOL ReferencesType(const TypeBase & type);
+    virtual PBoolean CanReferenceType() const;
+    virtual PBoolean ReferencesType(const TypeBase & type);
   protected:
     PString asnObjectClassName;
     PString asnObjectClassField;
@@ -908,15 +908,15 @@ class ImportedType : public TypeBase
 {
     PCLASSINFO(ImportedType, TypeBase);
   public:
-    ImportedType(PString * name, BOOL parameterised);
+    ImportedType(PString * name, PBoolean parameterised);
     virtual const char * GetAncestorClass() const;
     virtual void AdjustIdentifier();
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual void SetImportPrefix(const PString &);
-    virtual BOOL IsParameterisedImport() const;
+    virtual PBoolean IsParameterisedImport() const;
   protected:
     PString modulePrefix;
-    BOOL    parameterised;
+    PBoolean    parameterised;
 };
 
 
@@ -959,7 +959,7 @@ class DefinedValue : public ValueBase
   protected:
     PString referenceName;
     ValueBase * actualValue;
-    BOOL unresolved;
+    PBoolean unresolved;
 };
 
 
@@ -967,11 +967,11 @@ class BooleanValue : public ValueBase
 {
     PCLASSINFO(BooleanValue, ValueBase);
   public:
-    BooleanValue(BOOL newVal);
+    BooleanValue(PBoolean newVal);
     void PrintOn(ostream &) const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
   protected:
-    BOOL value;
+    PBoolean value;
 };
 
 
@@ -1221,27 +1221,27 @@ class ModuleDefinition : public PObject
     int GetIndentLevel() const { return indentLevel; }
     void SetIndentLevel(int delta) { indentLevel += delta; }
 
-    BOOL UsingInlines() const { return usingInlines; }
-    BOOL UsingOperators() const { return usingOperators; }
+    PBoolean UsingInlines() const { return usingInlines; }
+    PBoolean UsingOperators() const { return usingOperators; }
 
     void GenerateCplusplus(const PFilePath & path,
                            const PString & modName,
                            const PString & headerDir,
                            unsigned numFiles,
-                           BOOL useNamespaces,
-                           BOOL useInlines,
-                           BOOL useOperators,
-                           BOOL verbose);
+                           PBoolean useNamespaces,
+                           PBoolean useInlines,
+                           PBoolean useOperators,
+                           PBoolean verbose);
 
 
   protected:
     PString         moduleName;
     PString         classNamePrefix;
-    BOOL            separateClassFiles;
+    PBoolean            separateClassFiles;
     PStringList     definitiveId;
     Tag::Mode       defaultTagMode;
     TypesList       exports;
-    BOOL            exportAll;
+    PBoolean            exportAll;
     ImportsList     imports;
     PStringToString importNames;
     TypesList       types;
@@ -1249,8 +1249,8 @@ class ModuleDefinition : public PObject
     ValuesList      values;
     MibList         mibs;
     int             indentLevel;
-    BOOL            usingInlines;
-    BOOL            usingOperators;
+    PBoolean            usingInlines;
+    PBoolean            usingOperators;
 };
 
 
