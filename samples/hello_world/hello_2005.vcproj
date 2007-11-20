@@ -52,6 +52,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=1"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -334,6 +335,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="_DEBUG;_CONSOLE;PTRACING=1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -614,6 +616,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=0"
 				StringPooling="true"
 				RuntimeLibrary="2"
