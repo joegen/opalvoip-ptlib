@@ -146,6 +146,7 @@ void DtmfTest::Main()
   cout << "Sample section  is " << milliseconds << " ms long.\n";
 
 
+  PRandom random;
   PShortArray noiseSignal(milliseconds * samplesPerMillisecond);
   if (args.HasOption('n')) {
     unsigned noise = args.GetOptionString('n').AsUnsigned();
@@ -155,7 +156,7 @@ void DtmfTest::Main()
     }
     cout << "Peak noise magnitude is " << noise << '\n';
     for (i = 0; i < noiseSignal.GetSize(); i++)
-      noiseSignal[i] = (short)(PRandom::Number() % noise/2 - noise/2); 
+      noiseSignal[i] = (short)((int)random.Generate(noise/2) - noise/2); 
   }
 
 
