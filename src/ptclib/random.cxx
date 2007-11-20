@@ -140,32 +140,42 @@ void PRandom::SetSeed(DWORD seed)
   *(r++) = b = ind(mm,y>>RandBits) + x; \
 }
 
-unsigned PRandom::Generate()
+
+static unsigned redistribute(unsigned value, unsigned maximum, unsigned minimum)
 {
-  if (randcnt--)
-    return randrsl[randcnt];
+  unsigned range = maximum - minimum;
+  while (value > range)
+    value = (value/range) ^ (value%range);
+  return value + minimum;
+}
 
-  register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
-  mm=randmem; r=randrsl;
-  a = randa; b = randb + (++randc);
-  for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
-  {
-    rngstep( a<<13, a, b, mm, m, m2, r, x);
-    rngstep( a>>6 , a, b, mm, m, m2, r, x);
-    rngstep( a<<2 , a, b, mm, m, m2, r, x);
-    rngstep( a>>16, a, b, mm, m, m2, r, x);
-  }
-  for (m2 = mm; m2<mend; )
-  {
-    rngstep( a<<13, a, b, mm, m, m2, r, x);
-    rngstep( a>>6 , a, b, mm, m, m2, r, x);
-    rngstep( a<<2 , a, b, mm, m, m2, r, x);
-    rngstep( a>>16, a, b, mm, m, m2, r, x);
-  }
-  randb = b; randa = a;
 
-  randcnt = RandSize-1;
-  return randrsl[randcnt];
+unsigned PRandom::Generate(unsigned maximum, unsigned minimum)
+{
+  if (randcnt-- == 0) {
+    register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
+    mm=randmem; r=randrsl;
+    a = randa; b = randb + (++randc);
+    for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
+    {
+      rngstep( a<<13, a, b, mm, m, m2, r, x);
+      rngstep( a>>6 , a, b, mm, m, m2, r, x);
+      rngstep( a<<2 , a, b, mm, m, m2, r, x);
+      rngstep( a>>16, a, b, mm, m, m2, r, x);
+    }
+    for (m2 = mm; m2<mend; )
+    {
+      rngstep( a<<13, a, b, mm, m, m2, r, x);
+      rngstep( a>>6 , a, b, mm, m, m2, r, x);
+      rngstep( a<<2 , a, b, mm, m, m2, r, x);
+      rngstep( a>>16, a, b, mm, m, m2, r, x);
+    }
+    randb = b; randa = a;
+
+    randcnt = RandSize-1;
+  }
+
+  return redistribute(randrsl[randcnt], maximum, minimum);
 }
 
 
@@ -186,7 +196,7 @@ unsigned PRandom::Number()
 
 unsigned int PRandom::Number(unsigned int min, unsigned int max)
 {
-  return ((PRandom::Number() % (max - min + 1)) + min);
+  return redistribute(PRandom::Number(), max, min);
 }
 
 // End Of File ///////////////////////////////////////////////////////////////
