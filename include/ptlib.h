@@ -26,7 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * Last change to $Revision$ by $Author$ on $Date$
  */
 
 #ifndef _PTLIB_H
