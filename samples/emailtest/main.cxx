@@ -23,20 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.4  2007/03/05 21:26:22  dereksmithies
- * Fix parameters: add short form of parameters. Improve --help output.
- *
- * Revision 1.3  2006/07/22 07:27:26  rjongbloed
- * Fixed various compilation issues
- *
- * Revision 1.2  2006/06/20 09:23:56  csoutheren
- * Applied patch 1465192
- * Fix pwlib make files, and config for unix
- *
- * Revision 1.1  2004/08/11 07:39:05  csoutheren
- * Initial version
- *
+ * $Id$
  */
 
 #include "precompile.h"

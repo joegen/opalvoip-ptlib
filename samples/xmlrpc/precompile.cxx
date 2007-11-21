@@ -7,10 +7,7 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: precompile.cxx,v $
- * Revision 1.1  2002/03/26 07:05:28  craigs
- * Initial version
- *
+ * $Id$
  */
 
 #include <ptlib.h>

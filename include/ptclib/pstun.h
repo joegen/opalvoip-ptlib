@@ -23,67 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pstun.h,v $
- * Revision 1.18  2007/09/25 14:25:32  hfriederich
- * Allow to get STUN server address as PIPSocket::Address instance
- *
- * Revision 1.17  2007/08/22 05:04:39  rjongbloed
- * Added ability to set a specific local port for STUN created sockets.
- *
- * Revision 1.16  2007/07/22 03:07:31  rjongbloed
- * Added parameter so can bind STUN socket to specific interface.
- *
- * Revision 1.15  2007/04/19 04:33:53  csoutheren
- * Fixed problems with pre-compiled headers
- *
- * Revision 1.14  2007/02/11 13:13:18  shorne
- * Added GetName function
- *
- * Revision 1.13  2006/12/23 15:08:00  shorne
- * Now Factory loaded for ease of addition of new NAT Methods
- *
- * Revision 1.12  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.11  2005/07/13 11:15:15  csoutheren
- * Backported NAT abstraction files from isvo branch
- *
- * Revision 1.10  2005/06/20 10:55:16  rjongbloed
- * Changed the timeout and retries so if there is a blocking firewall it does not take 15 seconds to find out!
- * Added access functions so timeout and retries are application configurable.
- * Added function (and << operator) to get NAT type enum as string.
- *
- * Revision 1.9.4.1  2005/04/25 13:21:36  shorne
- * Add Support for other NAT methods
- *
- * Revision 1.9  2004/11/25 07:23:46  csoutheren
- * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
- *
- * Revision 1.8  2004/03/14 05:47:52  rjongbloed
- * Fixed incorrect detection of symmetric NAT (eg Linux masquerading) and also
- *   some NAT systems which are partially blocked due to firewall rules.
- *
- * Revision 1.7  2004/02/24 11:15:48  rjongbloed
- * Added function to get external router address, also did a bunch of documentation.
- *
- * Revision 1.6  2004/01/17 17:54:02  rjongbloed
- * Added function to get server name from STUN client.
- *
- * Revision 1.5  2003/10/05 00:56:25  rjongbloed
- * Rewrite of STUN to not to use imported code with undesirable license.
- *
- * Revision 1.4  2003/02/05 06:26:49  robertj
- * More work in making the STUN usable for Symmetric NAT systems.
- *
- * Revision 1.3  2003/02/04 07:01:02  robertj
- * Added ip/port version of constructor.
- *
- * Revision 1.2  2003/02/04 05:05:55  craigs
- * Added new functions
- *
- * Revision 1.1  2003/02/04 03:31:04  robertj
- * Added STUN
- *
+ * $Id$
  */
 
 #ifndef _PSTUN_H

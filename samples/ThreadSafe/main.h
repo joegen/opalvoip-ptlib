@@ -5,28 +5,7 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: main.h,v $
- * Revision 1.7  2006/06/21 03:28:42  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.6  2003/10/27 22:12:56  dereksmithies
- * Add more good changes to get Compare method work. Thanks to Gene Small
- *
- * Revision 1.5  2003/10/13 23:38:31  dereksmithies
- * Add debugging statements, usage(), Fixed Compare method. Thanks Gene Small.
- *
- * Revision 1.4  2002/12/11 03:38:35  robertj
- * Added more tests
- *
- * Revision 1.3  2002/12/02 01:08:29  robertj
- * Updated to latest safe collection classes, thanks Vladimir Nesic
- *
- * Revision 1.2  2002/05/02 00:30:03  robertj
- * Allowed for non-template containers
- *
- * Revision 1.1  2002/05/01 04:16:44  robertj
- * Added thread safe collection classes.
- *
+ * $Id$
  */
 
 #ifndef _ThreadSafe_MAIN_H

@@ -26,22 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ethsock.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.4  1998/11/30 22:06:39  robertj
- * New directory structure.
- *
- * Revision 1.3  1998/09/24 04:11:34  robertj
- * Added open software license.
- *
- * Revision 1.2  1998/09/08 09:53:56  robertj
- * Fixed ppp and ippp compatibility.
- *
- * Revision 1.1  1998/08/21 05:30:13  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PETHSOCKET

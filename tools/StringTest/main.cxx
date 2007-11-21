@@ -23,11 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.1  2006/06/26 02:16:09  dereksmithies
- * Initial release of a program to test the speed and performance of the PString class.
- *
- *
+ * $Id$
  */
 #include  <ptlib.h>
 #include <ptlib/pprocess.h>

@@ -7,38 +7,7 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: main.cxx,v $
- * Revision 1.10  2007/09/17 11:14:42  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.9  2005/11/30 12:47:39  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.8  2004/10/14 12:31:46  rjongbloed
- * Added synchronous mode for safe collection RemoveAll() to wait until all objects
- *   have actually been deleted before returning.
- *
- * Revision 1.7  2004/09/07 11:32:02  rjongbloed
- * Changed function name in PSafeCollection to something more standard for collections
- *
- * Revision 1.6  2004/04/04 13:24:19  rjongbloed
- * Changes to support native C++ Run Time Type Information
- *
- * Revision 1.5  2003/10/27 22:12:56  dereksmithies
- * Add more good changes to get Compare method work. Thanks to Gene Small
- *
- * Revision 1.4  2003/10/13 23:38:31  dereksmithies
- * Add debugging statements, usage(), Fixed Compare method. Thanks Gene Small.
- *
- * Revision 1.3  2002/12/11 03:38:45  robertj
- * Added more tests
- *
- * Revision 1.2  2002/05/02 00:30:26  robertj
- * Added dump of thread times during start up.
- *
- * Revision 1.1  2002/05/01 04:16:44  robertj
- * Added thread safe collection classes.
- *
+ * $Id$
  */
 
 #include <ptlib.h>

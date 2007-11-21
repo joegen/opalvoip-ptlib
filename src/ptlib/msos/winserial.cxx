@@ -26,27 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: winserial.cxx,v $
- * Revision 1.7  2005/01/12 03:24:08  csoutheren
- * More cleanup of event handling
- *
- * Revision 1.6  2005/01/11 12:46:37  csoutheren
- * Removed handle leak on serial port caused by memset
- * Thanks to Dmitry Samokhin
- *
- * Revision 1.5  2004/12/27 22:38:27  csoutheren
- * Fixed problems with accessing serial port under Windows
- *
- * Revision 1.4  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.3  2000/03/20 17:55:05  robertj
- * Fixed prolem with XON/XOFF under NT, thanks Damien Slee.
- *
- * Revision 1.2  1998/11/30 12:32:47  robertj
- * Added missing copyright header.
- *
+ * $Id$
  */
 
 #include <ptlib.h>

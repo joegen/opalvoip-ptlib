@@ -26,30 +26,7 @@
  *
  * Contributor(s): brian.lu@sun.com
  *
- * $Log: sound_sunaudio.cxx,v $
- * Revision 1.6  2007/06/26 10:57:06  dsandras
- * Applied patch from Elaine Xion <elaine xiong sun com> to fix
- * volume settings in the SunAudio plugin. Thanks !
- *
- * Revision 1.5  2006/10/12 18:20:03  dsandras
- * Fixed initialization of SUN Audio plugin thanks to Brian Lu <brian lu sun com>
- *
- * Revision 1.4  2006/09/17 16:01:38  dsandras
- * Fixed possible crash on hangup with "Media patch thread not terminated"
- * message thanks to Brian Lu <brian lu sun com>.
- *
- * Revision 1.3  2006/07/03 21:12:51  dsandras
- * Applied patch from Brian Lu <brian lu sun com> to add support for the AUDIODEV
- * environment variable. Many thanks!
- *
- * Revision 1.2  2006/05/29 18:40:28  dsandras
- * Applied patch from Brian Lu <brian lu sun com>. Thanks!
- *
- * Revision 1.1  2006/01/24 20:43:11  dsandras
- * Added Sunaudio support for OpenSolaris thanks to Brian Lu <brian lu sun com>.
- * Thanks a lot for this!
- *
- * The original codes are from ../../src/ptlib/unix/sunaudio.cxx
+ * $Id$
  */
 
 #ifdef _GNUC_

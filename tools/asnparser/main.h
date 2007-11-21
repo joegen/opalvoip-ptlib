@@ -29,50 +29,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.h,v $
- * Revision 1.15  2003/10/03 00:13:04  rjongbloed
- * Added ability to specify CHOICE field selection by function rather than operator as the operator technique does not work with some dumb compilers.
- * Added ability to specify that the header file name be different from the module name and module prefix string.
- *
- * Revision 1.14  2003/02/27 04:04:14  robertj
- * Added ability to have alternate directories for header file
- *   includes in generated C++ code.
- *
- * Revision 1.13  2001/08/03 09:01:02  robertj
- * Added assignement operator with RHS of PWORDArray to classes
- *   descended from PASN_BMPString.
- *
- * Revision 1.12  2001/06/14 02:09:20  robertj
- * Corrected support for ASN object class type reference constructs
- *   ie TYPE-IDENTIFIER.&Type encoded as octet string.
- *
- * Revision 1.11  2000/03/21 21:23:24  robertj
- * Added option to rename imported module names, allows include filename matching.
- *
- * Revision 1.10  1999/09/18 04:17:40  robertj
- * Added generation of C++ inlines for some  functions.
- * Optimised CreateObject() switch statements, collapsing common cases.
- *
- * Revision 1.9  1999/08/09 13:02:36  robertj
- * Added ASN compiler #defines for backward support of pre GCC 2.9 compilers.
- * Added ASN compiler #defines to reduce its memory footprint.
- * Added ASN compiler code generation of assignment operators for string classes.
- *
- * Revision 1.8  1999/07/22 06:48:56  robertj
- * Added comparison operation to base ASN classes and compiled ASN code.
- * Added support for ANY type in ASN parser.
- *
- * Revision 1.7  1999/06/30 08:57:20  robertj
- * Fixed bug in encodeing sequence of constrained primitive type. Constraint not set.
- * Fixed bug in not emitting namespace use clause.
- * Added "normalisation" of separate sequence of <base type> to be single class.
- *
- * Revision 1.6  1999/06/09 06:58:09  robertj
- * Adjusted heading comments.
- *
- * Revision 1.5  1999/06/07 01:56:26  robertj
- * Added header comment on license.
- *
+ * $Id$
  */
 
 #ifndef _MAIN_H

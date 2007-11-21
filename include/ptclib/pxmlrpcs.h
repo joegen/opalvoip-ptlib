@@ -23,19 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pxmlrpcs.h,v $
- * Revision 1.4  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.3  2003/02/19 01:50:31  robertj
- * Change to make it easier to set a fault from the server function handler.
- *
- * Revision 1.2  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.1  2002/10/02 08:54:34  craigs
- * Added support for XMLRPC server
- *
+ * $Id$
  */
 
 #ifndef _PXMLRPCSRVR_H

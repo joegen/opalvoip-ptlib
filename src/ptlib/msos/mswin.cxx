@@ -26,65 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: mswin.cxx,v $
- * Revision 1.18  2001/08/07 03:20:39  robertj
- * Fixed close of DLL so flagged as closed, thanks Stefan Ditscheid.
- *
- * Revision 1.17  1998/09/24 03:30:51  robertj
- * Added open software license.
- *
- * Revision 1.16  1996/02/15 14:55:02  robertj
- * Win16 compatibility
- *
- * Revision 1.15  1996/01/28 02:55:33  robertj
- * WIN16 support.
- *
- * Revision 1.14  1995/12/10 11:58:37  robertj
- * Added WIN32 registry support for PConfig objects.
- *
- * Revision 1.13  1995/08/24 12:40:52  robertj
- * Changed PChannel so not a PContainer.
- *
- * Revision 1.12  1995/07/02 01:24:45  robertj
- * Added running of hidden VM for DOS program in PPipeChannel.
- *
- * Revision 1.11  1995/06/17 00:59:23  robertj
- * Moved PPipeChannel::Execute from common dos/windows to individual files.
- *
- * Revision 1.10  1995/03/12 05:00:06  robertj
- * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
- * Used built-in equate for WIN32 API (_WIN32).
- *
- * Revision 1.9  1995/01/09  12:28:00  robertj
- * Added implementation for PConfig::Environment
- *
- * Revision 1.8  1994/10/23  05:41:29  robertj
- * Fixed config file bugs.
- *
- * Revision 1.7  1994/08/22  00:18:02  robertj
- * Fixed bug in serial comms timers.
- *
- * Revision 1.6  1994/08/04  13:24:27  robertj
- * Added DCB so can set paraemters on closed channel.
- *
- * Revision 1.5  1994/07/27  06:00:10  robertj
- * Backup
- *
- * Revision 1.4  1994/07/21  12:35:18  robertj
- * *** empty log message ***
- *
- * Revision 1.3  1994/07/17  11:01:04  robertj
- * Ehancements, implementation, bug fixes etc.
- *
- * Revision 1.2  1994/07/02  03:18:09  robertj
- * Multi-threading implementation.
- *
- * Revision 1.1  1994/06/25  12:13:01  robertj
- * Initial revision
- *
-// Revision 1.1  1994/04/01  14:39:35  robertj
-// Initial revision
-//
+ * $Id$
  */
 
 #include "ptlib.h"

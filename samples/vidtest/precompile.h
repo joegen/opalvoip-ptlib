@@ -23,13 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.h,v $
- * Revision 1.1  2003/04/28 08:18:42  craigs
- * Initial version
- *
- * Revision 1.1  2003/02/20 01:10:52  robertj
- * Changed precompiled header so can precompile more than just ptlib.h
- *
+ * $Id$
  */
 
 #include <ptlib.h>

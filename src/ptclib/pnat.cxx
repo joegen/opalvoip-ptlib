@@ -26,26 +26,8 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pnat.cxx,v $
- * Revision 1.5  2007/04/13 07:19:23  rjongbloed
- * Removed separate Win32 solution for "plug in static loading" issue,
- *   and used the PLOAD_FACTORY() mechanism for everything.
- * Slight clean up of the PLOAD_FACTORY macro.
- *
- * Revision 1.4  2006/12/23 15:08:11  shorne
- * Now Factory loaded for ease of addition of new NAT Methods
- *
- * Revision 1.3  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2005/07/13 11:15:26  csoutheren
- * Backported NAT abstraction files from isvo branch
- *
- * Revision 1.1.2.1  2005/04/25 13:24:55  shorne
- * Initial version
- *
- *
-*/
+ * $Id$
+ */
 
 #include <ptlib.h>
 #include <ptclib/pnat.h>

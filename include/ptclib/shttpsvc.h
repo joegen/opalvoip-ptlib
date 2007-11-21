@@ -23,30 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: shttpsvc.h,v $
- * Revision 1.7  2004/04/24 03:58:15  rjongbloed
- * Allow for run time enable/disable of secure web access to HTTP process,
- *   changed from old debug only hack to "correct" usager. Thanks Ben Lear
- *
- * Revision 1.6  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.5  2002/08/05 05:40:45  robertj
- * Fixed missing pragma interface/implementation
- *
- * Revision 1.4  2001/12/13 09:19:09  robertj
- * Added ability to create HTTP server certificate if one does not exist.
- *
- * Revision 1.3  2001/05/16 06:02:05  craigs
- * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
- *
- * Revision 1.2  2001/03/27 03:56:01  craigs
- * Added hack to allow secure servers to act as non-secure servers
- *
- * Revision 1.1  2001/02/15 02:41:14  robertj
- * Added class to do secure HTTP based service process.
- *
+ * $Id$
  */
 
 #ifndef SHTTPSVC_H

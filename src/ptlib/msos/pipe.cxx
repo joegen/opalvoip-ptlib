@@ -26,26 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pipe.cxx,v $
- * Revision 1.6  2007/10/03 01:18:47  rjongbloed
- * Fixed build for Windows Mobile 5 and added Windows Mobile 6
- *
- * Revision 1.5  2004/10/23 10:51:59  ykiryanov
- * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
- *
- * Revision 1.4  2004/04/03 06:54:30  rjongbloed
- * Many and various changes to support new Visual C++ 2003
- *
- * Revision 1.3  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.2  1998/11/30 07:37:56  robertj
- * Fixed (previous bug) of incorrect handle values.
- *
- * Revision 1.1  1998/11/30 04:57:42  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

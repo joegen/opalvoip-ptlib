@@ -11,44 +11,7 @@
  * Originally written by Poul-Henning Kamp <phk@freebsd.org>
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
- * $Log: dtmf.h,v $
- * Revision 1.11  2007/07/19 08:10:18  csoutheren
- * Add detection of CNG
- *
- * Revision 1.10  2007/04/19 04:33:53  csoutheren
- * Fixed problems with pre-compiled headers
- *
- * Revision 1.9  2006/12/13 04:56:03  csoutheren
- * Applied 1613270 - fixed for dtmfEncoder
- * Thanks to Frederic Heem
- *
- * Revision 1.8  2006/10/25 08:18:20  rjongbloed
- * Major upgrade of tone generation subsystem.
- *
- * Revision 1.7  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.6  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.5  2004/09/09 23:50:48  csoutheren
- * Fixed problem with duplicate definition of sinetab causing problems
- *
- * Revision 1.4  2004/09/09 05:23:37  dereksmithies
- * Add utility function to report on dtmf characters used.
- *
- * Revision 1.3  2004/09/09 04:00:00  csoutheren
- * Added DTMF encoding functions
- *
- * Revision 1.2  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.1  2002/01/23 11:43:26  rogerh
- * Add DTMF Decoder class. This can be passed PCM audio data
- * (at 16 bit, 8 KHz) and returns any DTMF codes detected.
- * Tested with NetMeeting sending DTMF over a G.711 stream.
- *
+ * $Id$
  */
  
 #ifndef _DTMF_H

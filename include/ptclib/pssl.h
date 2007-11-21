@@ -23,67 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pssl.h,v $
- * Revision 1.20  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.19  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.18  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.17  2002/03/28 07:26:36  robertj
- * Added Diffie-Hellman parameters wrapper class.
- *
- * Revision 1.16  2001/12/13 09:15:20  robertj
- * Added function to get private key as ray DER binary data or as base64 string.
- *
- * Revision 1.15  2001/12/06 04:06:03  robertj
- * Removed "Win32 SSL xxx" build configurations in favour of system
- *   environment variables to select optional libraries.
- *
- * Revision 1.14  2001/10/31 01:30:40  robertj
- * Added enhancements for saving/loading/creating certificates and keys.
- *
- * Revision 1.13  2001/09/10 02:51:22  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.12  2001/06/01 00:53:59  robertj
- * Added certificate constructor that takes a PBYTEArray
- *
- * Revision 1.11  2001/05/16 06:02:05  craigs
- * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
- *
- * Revision 1.10  2000/11/14 08:33:16  robertj
- * Added certificate and private key classes.
- *
- * Revision 1.9  2000/08/25 08:11:02  robertj
- * Fixed OpenSSL support so can operate as a server channel.
- *
- * Revision 1.8  2000/08/04 12:52:18  robertj
- * SSL changes, added error functions, removed need to have openssl include directory in app.
- *
- * Revision 1.7  2000/01/10 02:23:18  craigs
- * Update for new OpenSSL
- *
- * Revision 1.6  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.5  1998/12/04 13:01:51  craigs
- * Changed for SSLeay 0.9
- *
- * Revision 1.4  1998/09/23 06:19:50  robertj
- * Added open source copyright license.
- *
- * Revision 1.3  1997/05/04 02:49:52  craigs
- * Added support for client and server certificates
- *
- * Revision 1.1  1996/11/15 07:37:48  craigs
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PSSL_H

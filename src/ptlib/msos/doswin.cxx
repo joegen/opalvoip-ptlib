@@ -26,37 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: doswin.cxx,v $
- * Revision 1.10  1998/09/24 03:30:43  robertj
- * Added open software license.
- *
- * Revision 1.9  1996/01/02 12:55:15  robertj
- * Fixed copy of directories.
- *
- * Revision 1.8  1995/12/10 11:56:42  robertj
- * Moved error code for specific WIN32 and MS-DOS versions.
- *
- * Revision 1.7  1995/08/24 12:41:10  robertj
- * Changed PChannel so not a PContainer.
- *
- * Revision 1.6  1995/07/31 12:14:52  robertj
- * Added semaphore class.
- *
- * Revision 1.5  1995/06/17 00:59:18  robertj
- * Moved PPipeChannel::Execute from common dos/windows to individual files.
- *
- * Revision 1.4  1995/04/01 08:05:59  robertj
- * Fixed yield for straight DOS and QUICKWIN systems.
- *
- * Revision 1.3  1995/03/25 02:09:11  robertj
- * Added check for network login name.
- *
-// Revision 1.2  1995/03/14  13:31:36  robertj
-// Implemented DOS pipe channel.
-//
-// Revision 1.1  1995/03/14  12:45:16  robertj
-// Initial revision
-//
+ * $Id$
  */
 
 #include "ptlib.h"

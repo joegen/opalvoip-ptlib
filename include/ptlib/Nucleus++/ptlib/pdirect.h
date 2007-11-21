@@ -26,40 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pdirect.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.9  1999/03/09 08:52:25  robertj
- * Changes caused by documentation frenzy.
- *
- * Revision 1.8  1998/11/30 22:06:53  robertj
- * New directory structure.
- *
- * Revision 1.7  1998/11/24 09:38:16  robertj
- * FreeBSD port.
- *
- * Revision 1.6  1998/11/10 12:59:05  robertj
- * Fixed strange problems with readdir_r usage.
- *
- * Revision 1.5  1998/11/05 10:33:53  robertj
- * Solaris compatibility.
- *
- * Revision 1.4  1998/11/05 09:58:30  craigs
- * Added static buffer for reentrant routines
- *
- * Revision 1.3  1998/09/24 04:11:43  robertj
- * Added open software license.
- *
- * Revision 1.2  1996/08/03 12:08:19  craigs
- * Changed for new common directories
- *
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
- *
- * Revision 1.1  1994/04/12  08:31:05  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PDIRECTORY

@@ -18,18 +18,7 @@
  * Classes to support streaming video input from IEEE 1394 cameras.
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
- * $Log: videoio1394dc.h,v $
- * Revision 1.3  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2002/05/30 22:49:35  dereks
- * correct implementation of GetInputDeviceNames().
- *
- * Revision 1.1  2002/02/20 02:37:26  dereks
- * Initial release of Firewire camera support for linux.
- * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
- *
- *
+ * $Id$
  */
 
 

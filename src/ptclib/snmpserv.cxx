@@ -24,31 +24,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: snmpserv.cxx,v $
- * Revision 1.8  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.7  2007/08/06 00:37:00  csoutheren
- * Remove compile warnings on Linux
- *
- * Revision 1.6  2007/08/03 00:57:31  rjongbloed
- * Added missing function implementation to new SNMP server code so DLL can link.
- *
- * Revision 1.5  2007/08/02 18:48:46  shorne
- * Added SNMP Server support
- *
- * Revision 1.4  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.3  1998/11/30 04:52:09  robertj
- * New directory structure
- *
- * Revision 1.2  1998/09/23 06:22:42  robertj
- * Added open source copyright license.
- *
- * Revision 1.1  1996/09/14 13:02:18  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

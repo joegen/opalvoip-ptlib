@@ -24,33 +24,7 @@
  *
  * Contributor(s): Miguel Rodriguez Perez.
  *
- * $Log: paec.cxx,v $
- * Revision 1.7  2007/03/19 07:06:51  shorne
- * correctly set the receive timestamp if buffer runs dry
- *
- * Revision 1.6  2007/03/18 06:23:59  shorne
- * Added check to ensure AEC buffer is not empty
- *
- * Revision 1.5  2007/03/15 21:36:41  shorne
- * fix for buffer underrun
- *
- * Revision 1.4  2007/03/06 00:22:00  shorne
- * Changed to a buffering type arrangement
- *
- * Revision 1.3  2007/02/18 18:39:28  shorne
- * Added PWaitAndSignal
- *
- * Revision 1.2  2006/06/20 09:23:56  csoutheren
- * Applied patch 1465192
- * Fix pwlib make files, and config for unix
- *
- * Revision 1.1  2006/02/26 09:19:17  shorne
- * AEC moved to seperate library
- *
- * Revision 1.1  2006/01/26 08:05:03  shorne
- * Added AEC support
- *
- *
+ * $Id$
  */
 
 #include <ptlib.h>
