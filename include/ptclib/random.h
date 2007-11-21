@@ -107,9 +107,24 @@ class PRandom
        This generates one pseudorandom unsigned integer (32bit) which is
        uniformly distributed among 0 to 2^32-1 for each call.
       */
-    unsigned Generate(unsigned maximum = UINT_MAX, unsigned minimum = 0);
+    unsigned Generate();
 
     /**Get the next psuedo-random number in sequence.
+       This generates one pseudorandom unsigned integer from 0 to maximum.
+       Uses the Generate() function and scales accordingly.
+      */
+    unsigned Generate(unsigned maximum);
+
+    /**Get the next psuedo-random number in sequence.
+       This generates one pseudorandom unsigned integer from minimum to maximum.
+       Uses the Generate() function and scales and shifts accordingly.
+      */
+    unsigned Generate(unsigned minimum, unsigned maximum);
+
+    /**Get the next psuedo-random number in sequence.
+       This generates one pseudorandom unsigned integer which is
+       uniformly distributed among 0 to maximum for each call. Uses
+       Generate()
       */
     inline operator unsigned() { return Generate(); }
 
@@ -120,9 +135,13 @@ class PRandom
       */
     static unsigned Number();
 
-    /** Get a random number between min and max
+    /** Get a random number between zero and maximum
     */
-    static unsigned int Number(unsigned int min, unsigned int max);
+    static unsigned Number(unsigned maximum);
+
+    /** Get a random number between minimum and maximum
+    */
+    static unsigned Number(unsigned minimum, unsigned maximum);
 
   protected:
     enum {
