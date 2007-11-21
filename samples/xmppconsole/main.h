@@ -8,27 +8,7 @@
  * Copied by Derek Smithies, 1)removed all the wxwidget stuff.
  *                           2)turned into a console application.
  *
- * $Log: main.h,v $
- * Revision 1.2  2006/06/21 03:28:44  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.1  2005/08/04 03:29:12  dereksmithies
- * Initial release of a console application to test XMPP messages between running applications.
- * Thanks to Indranet Technologies ltd for sponsoring the work.
- * Thanks to Federico Pinna & Reitek S.p.A for the inital work of getting XMPP going.
- *
- *
- *
- *
- *
- *
- * Commit log from old XMPP Test application.
- * Revision 1.2  2004/05/09 07:23:49  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.1  2004/04/26 01:51:58  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
+ * $Id$
  */
 
 #ifndef _XMPPConsole_MAIN_H

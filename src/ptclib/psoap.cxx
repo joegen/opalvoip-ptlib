@@ -23,42 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psoap.cxx,v $
- * Revision 1.11  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.10  2007/04/10 05:08:48  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.9  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.8  2004/04/24 01:06:32  rjongbloed
- * Apploed  patch that impliments a number of checks to avoid segfaults when dealing with
- *   various clients. Thanks Ben Lear
- *
- * Revision 1.7  2004/01/17 17:45:59  csoutheren
- * Changed to use PString::MakeEmpty
- *
- * Revision 1.6  2003/10/08 21:58:13  dereksmithies
- * Add client authentication support. many thanks to Ben Lear.
- *
- * Revision 1.5  2003/04/28 00:09:14  craigs
- * Patches from Andreas Sikkema
- *
- * Revision 1.4  2003/03/31 06:20:56  craigs
- * Split the expat wrapper from the XML file handling to allow reuse of the parser
- *
- * Revision 1.3  2003/02/09 23:31:54  robertj
- * Added referention PString's for efficiency.
- *
- * Revision 1.2  2003/02/09 23:22:46  robertj
- * Fixed spelling errors, and setting return values, thanks Andreas Sikkema
- *
- * Revision 1.1  2003/02/04 22:46:48  robertj
- * Added basic SOAP support, thanks Andreas Sikkema
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

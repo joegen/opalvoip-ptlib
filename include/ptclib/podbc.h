@@ -27,30 +27,8 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: podbc.h,v $
- * Revision 1.4  2007/08/25 06:37:39  csoutheren
- * Fixed compilation on 64bit Linux
- *
- * Revision 1.3  2007/04/30 00:07:26  csoutheren
- * Fix problems with PODBC on Windows
- *
- * Revision 1.2  2007/04/25 09:21:20  csoutheren
- * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
- *
- * Revision 1.1  2007/04/13 18:17:57  shorne
- * added ODBC support for linux thx Michal Z
- *
- * Revision 1.3  2006/06/27 04:28:16  shorne
- * Removed debuging code
- *
- * Revision 1.2  2006/06/25 11:20:24  csoutheren
- * Add detection of ODBC on Windows
- *
- * Revision 1.1  2006/01/27 06:35:30  shorne
- * added ODBC support
- *
- *
-*/
+ * $Id$
+ */
 
 /**
 	ODBC Support for PWLIB

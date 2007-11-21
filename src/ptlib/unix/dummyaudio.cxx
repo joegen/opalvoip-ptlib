@@ -26,24 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: dummyaudio.cxx,v $
- * Revision 1.5  2005/07/13 13:02:35  csoutheren
- * Unified interface across Windows and Unix
- *
- * Revision 1.4  2002/02/09 00:52:01  robertj
- * Slight adjustment to API and documentation for volume functions.
- *
- * Revision 1.3  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannel
- *
- * Revision 1.2  2001/09/27 08:37:45  rogerh
- * remove unwanted lastError
- *
- * Revision 1.1  2001/02/23 08:48:10  rogerh
- * Implement a dummy PSoundChannel class. There is no functionality
- * but it allows OpenH323 to link.
- *
- *
+ * $Id$
  */
 
 #pragma implementation "sound.h"

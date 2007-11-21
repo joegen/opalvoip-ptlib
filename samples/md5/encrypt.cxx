@@ -5,18 +5,7 @@
  *
  * Author: Derek J Smithies, <derek@indranet.co.nz>
  *
- * $Log: encrypt.cxx,v $
- * Revision 1.3  2006/06/21 03:28:42  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.2  2005/11/30 12:47:40  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.1  2005/03/02 21:50:03  dereksmithies
- * Initial release of example code to calculate MD5 sums of a supplied string.
- *
- *
- *
+ * $Id$
  */
 #include <ptlib.h>
 #include <ptlib/pprocess.h>

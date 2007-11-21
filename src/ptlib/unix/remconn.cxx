@@ -26,22 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: remconn.cxx,v $
- * Revision 1.20  2004/02/22 03:36:41  ykiryanov
- * Added inclusion of signal.h on BeOS to define SIGINT
- *
- * Revision 1.19  2003/12/02 10:46:15  csoutheren
- * Added patch for Solaris, thanks to Michal Zygmuntowicz
- *
- * Revision 1.18  2002/10/10 04:43:44  robertj
- * VxWorks port, thanks Martijn Roest
- *
- * Revision 1.17  1998/11/30 21:51:49  robertj
- * New directory structure.
- *
- * Revision 1.16  1998/09/24 04:12:15  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #pragma implementation "remconn.h"

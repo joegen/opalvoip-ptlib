@@ -26,38 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: icmp.cxx,v $
- * Revision 1.16  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.15  2004/02/15 02:53:32  rjongbloed
- * Added compatibility with Windows Mobile 2003, thanks Joerg Schoemer
- *
- * Revision 1.14  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.13  1999/08/08 09:29:37  robertj
- * Changed Success to PingSuccess to avoid namespace collision with X define of the same name
- *
- * Revision 1.12  1999/02/16 08:08:06  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.11  1998/11/30 04:48:39  robertj
- * New directory structure
- *
- * Revision 1.10  1998/09/24 03:30:46  robertj
- * Added open software license.
- *
- * Revision 1.9  1998/01/26 00:53:33  robertj
- * Added error codes, TTL and data buffer to Ping.
- *
- * Revision 1.8  1997/10/03 13:32:46  robertj
- * Changed to late binding so do not need icmp.lib to compile system.
- *
- * Revision 1.7  1996/10/29 13:27:17  robertj
- * Change ICMP to use DLL rather than Winsock
- *
+ * $Id$
  */
 
 #include <ptlib.h>

@@ -24,16 +24,7 @@
  *
  * Contributor(s): /
  *
- * $Log: sound_directsound.h,v $
- * Revision 1.2  2007/05/19 08:54:42  rjongbloed
- * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
- *
- * Revision 1.1  2007/05/15 21:39:26  dsandras
- * Added initial code for a DirectSound plugin thanks to Vincent Luba.
- * Code contributed by NOVACOM (http://www.novacom.be).
- *
- * Revision 1.1  2006/09/15 10:04:05  luba vincent
- * First implementation of DirectSound driver
+ * $Id$
  */
 
 #ifndef __DIRECTSOUND_H__

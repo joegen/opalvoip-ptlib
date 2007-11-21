@@ -26,32 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: NucleusDebstrm.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- *
- * Revision 1.6  1998/09/24 03:39:55  robertj
- * Added open software license.
- *
- * Revision 1.5  1997/07/08 12:57:50  robertj
- * DLL support
- *
- * Revision 1.4  1996/11/04 03:34:24  robertj
- * Fixed missing #define for multiple inclusion of file.
- *
- * Revision 1.3  1996/08/17 10:00:40  robertj
- * Changes for Windows DLL support.
- *
- * Revision 1.2  1994/12/21 11:57:19  robertj
- * Fixed debugging stream.
- *
- * Revision 1.1  1994/08/21  23:43:02  robertj
- * Initial revision
- *
- * Revision 1.1  1994/07/27  05:58:07  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 

@@ -21,14 +21,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.h,v $
- * Revision 1.2  2006/06/21 03:28:42  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.1  2004/09/10 01:59:35  dereksmithies
- * Initial release of program to test Dtmf creation and detection.
- *
- *
+ * $Id$
  */
 
 #ifndef _Dtmftest_MAIN_H

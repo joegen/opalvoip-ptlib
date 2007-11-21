@@ -23,30 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: qchannel.cxx,v $
- * Revision 1.7  2005/11/30 23:24:51  dereksmithies
- * Ensure the PQueueChannel is closed on destruction, so that an os_handle
- * value of 1 is never passed to PChannel::Close()
- *
- * Revision 1.6  2005/11/24 04:44:16  dereksmithies
- * Fix memory leak.
- *
- * Revision 1.5  2005/10/21 08:19:22  csoutheren
- * Removed race conditions when channels closed in seperate thread from Read/Write
- *
- * Revision 1.4  2005/10/06 08:17:04  csoutheren
- * Removed potential deadlock when using bidrectional PQueueChannel
- *
- * Revision 1.3  2005/09/16 08:25:07  csoutheren
- * Changed Read to return partial data rather than loop
- *
- * Revision 1.2  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.1  2001/07/10 03:07:07  robertj
- * Added queue channel and delay channel classes to ptclib.
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

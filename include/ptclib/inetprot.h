@@ -23,73 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: inetprot.h,v $
- * Revision 1.20  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.19  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.18  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.17  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.16  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.15  2001/09/26 09:37:04  robertj
- * Added virtual keyword to a lot of functions so can be overridden.
- *
- * Revision 1.14  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.13  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.12  1998/09/23 06:19:40  robertj
- * Added open source copyright license.
- *
- * Revision 1.11  1996/09/14 13:09:13  robertj
- * Major upgrade:
- *   rearranged sockets to help support IPX.
- *   added indirect channel class and moved all protocols to descend from it,
- *   separating the protocol from the low level byte transport.
- *
- * Revision 1.10  1996/05/15 10:07:00  robertj
- * Added access function to set intercharacter line read timeout.
- *
- * Revision 1.9  1996/05/09 12:14:02  robertj
- * Rewrote the "unread" buffer usage and then used it to improve ReadLine() performance.
- *
- * Revision 1.8  1996/03/31 08:43:38  robertj
- * Added version of WriteCommand() and ExecteCommand() without argument string.
- *
- * Revision 1.7  1996/03/16 04:35:32  robertj
- * Added PString parameter version of UnRead().
- * Changed lastResponseCode to an integer.
- * Added ParseReponse() for splitting reponse line into code and info.
- *
- * Revision 1.6  1996/02/13 12:57:05  robertj
- * Added access to the last response in an application socket.
- *
- * Revision 1.5  1996/02/03 11:33:16  robertj
- * Changed RadCmd() so can distinguish between I/O error and unknown command.
- *
- * Revision 1.4  1996/01/23 13:08:43  robertj
- * Major rewrite for HTTP support.
- *
- * Revision 1.3  1995/06/17 11:12:15  robertj
- * Documentation update.
- *
- * Revision 1.2  1995/06/17 00:39:53  robertj
- * More implementation.
- *
- * Revision 1.1  1995/06/04 13:17:16  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PINTERNETPROTOCOL

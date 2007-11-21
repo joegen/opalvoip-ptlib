@@ -26,34 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pipechan.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.8  1999/08/17 07:38:02  robertj
- * Fixed inlines so are inlined in optimised version
- *
- * Revision 1.7  1998/11/30 22:06:55  robertj
- * New directory structure.
- *
- * Revision 1.6  1998/10/26 11:09:19  robertj
- * Added separation of stdout and stderr.
- *
- * Revision 1.5  1998/09/24 04:11:44  robertj
- * Added open software license.
- *
- * Revision 1.4  1996/12/30 03:23:52  robertj
- * Commonised kill and wait functions.
- *
- * Revision 1.3  1996/08/03 12:08:19  craigs
- * Changed for new common directories
- *
- * Revision 1.2  1996/04/15 10:50:48  craigs
- * Last revision prior to release of MibMaster
- *
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PPIPECHANNEL

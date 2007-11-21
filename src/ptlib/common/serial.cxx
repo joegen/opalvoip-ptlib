@@ -26,19 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: serial.cxx,v $
- * Revision 1.4  1998/11/30 12:32:26  robertj
- * Split serial channel and modem, modem to components library.
- *
- * Revision 1.3  1998/09/23 06:22:38  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1996/04/15 10:57:59  robertj
- * Moved some functions from INL to serial.cxx so unix linker can make smaller executables.
- *
- * Revision 1.1  1996/04/14 02:54:14  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

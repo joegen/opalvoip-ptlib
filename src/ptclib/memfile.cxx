@@ -23,22 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: memfile.cxx,v $
- * Revision 1.5  2004/04/03 08:22:21  csoutheren
- * Remove pseudo-RTTI and replaced with real RTTI
- *
- * Revision 1.4  2002/12/19 03:35:43  robertj
- * Fixed missing set of lastWriteCount in Write() function.
- *
- * Revision 1.3  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.2  2002/06/27 03:53:35  robertj
- * Cleaned up documentation and added Compare() function.
- *
- * Revision 1.1  2002/06/26 09:03:16  craigs
- * Initial version
- *
+ * $Id$
  */
 
 #include <ptlib.h>

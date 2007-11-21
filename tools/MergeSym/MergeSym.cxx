@@ -23,59 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: MergeSym.cxx,v $
- * Revision 1.20  2007/06/05 00:57:48  rjongbloed
- * Fixed output of separate DEF file to source file when no symbols change.
- *
- * Revision 1.19  2007/06/04 08:31:31  rjongbloed
- * Added ability for MergeSym to output new DEF file to different location, not changing the source DEF file.
- *
- * Revision 1.18  2006/07/09 09:46:25  csoutheren
- * Updated to work with VS 2005
- * Thanks to Martin Brown
- *
- * Revision 1.17  2006/06/26 05:22:52  shorne
- * Fixed compile issue
- *
- * Revision 1.16  2005/04/20 07:02:11  csoutheren
- * Changed handle "," in include paths
- *
- * Revision 1.15  2004/06/05 04:55:29  rjongbloed
- * Removed the unmangled versions of symbols to eliminate problems withthe line length
- *   exceeding MSVC linkers internal limits. Has added benefit of making files half the size.
- *
- * Revision 1.14  2004/05/22 07:41:32  rjongbloed
- * Added ability to specify command line override of the "dumpbin" program run
- *   to get library symbols, very useful for debugging.
- *
- * Revision 1.13  2004/04/09 07:03:23  rjongbloed
- * Added ability to get the output to DUMPBIN sent to a file.
- *
- * Revision 1.12  2004/04/03 06:54:32  rjongbloed
- * Many and various changes to support new Visual C++ 2003
- *
- * Revision 1.11  2003/10/30 11:27:12  rjongbloed
- * Fixed ability to specify partial path for -x parameter.
- *
- * Revision 1.10  2003/02/11 07:00:17  robertj
- * Added copying def file to a backup version before alteration from read only.
- *
- * Revision 1.9  2002/06/13 05:51:01  robertj
- * Added ignore of some inherently private symbols exported by libraru eg debug
- *   line number info and real number constants.
- *
- * Revision 1.8  2000/12/18 07:31:10  robertj
- * Fixed minor irritation with DEF file being reordered when symbol added.
- *
- * Revision 1.7  2000/04/29 05:48:22  robertj
- * Added error and progress reporting in searching path for external DEF files.
- *
- * Revision 1.6  2000/04/29 05:01:49  robertj
- * Added multiple external DEF file capability (-x flag).
- * Added directory search path argument for external DEF files.
- * Fixed bug for symbols in external DEF file actively removed from merged DEF file.
- * Added copyright notice.
- *
+ * $Id$
  */
 
 #include <ptlib.h>

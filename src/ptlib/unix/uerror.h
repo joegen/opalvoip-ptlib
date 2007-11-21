@@ -26,10 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: uerror.h,v $
- * Revision 1.2  1998/09/24 04:12:28  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #ifndef PXERROR_H

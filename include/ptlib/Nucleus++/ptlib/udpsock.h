@@ -26,25 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: udpsock.h,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.4  1998/11/30 22:07:29  robertj
- * New directory structure.
- *
- * Revision 1.3  1998/09/24 04:12:07  robertj
- * Added open software license.
- *
- * Revision 1.2  1996/08/03 12:10:23  craigs
- * Changed for new common directories
- *
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
- *
- * Revision 1.1  1994/04/12  08:31:05  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PUDPSOCKET

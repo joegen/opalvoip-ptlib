@@ -26,26 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pethsock.cxx,v $
- * Revision 1.6  2004/04/18 04:33:38  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
- *   for improved compatibility with std STL usage removing many warnings.
- *
- * Revision 1.5  2001/10/03 03:13:05  robertj
- * Changed to allow use of NULL pointer to indicate address of all zeros.
- *
- * Revision 1.4  1998/11/30 04:58:52  robertj
- * New directory structure
- *
- * Revision 1.3  1998/09/23 06:22:29  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1998/09/14 12:37:51  robertj
- * Added function to parse type and payload address out of ethernet/802.2 packet.
- *
- * Revision 1.1  1998/08/31 12:59:55  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

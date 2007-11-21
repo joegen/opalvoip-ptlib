@@ -26,31 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: filepath.h,v $
- * Revision 1.7  2003/09/17 01:18:03  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.6  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.5  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.4  1998/11/30 22:06:43  robertj
- * New directory structure.
- *
- * Revision 1.3  1998/09/24 04:11:36  robertj
- * Added open software license.
- *
- * Revision 1.2  1996/08/03 12:08:19  craigs
- * Changed for new common directories
- *
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
- *
+ * $Id$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

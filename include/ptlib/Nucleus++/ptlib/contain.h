@@ -26,25 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: contain.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.13  1999/05/01 11:29:19  robertj
- * Alpha linux port changes.
- *
- * Revision 1.12  1999/01/08 01:27:43  robertj
- * Moved include of pmachdep to earlier in inclusions.
- *
- * Revision 1.11  1998/11/30 22:06:35  robertj
- * New directory structure.
- *
- * Revision 1.10  1998/11/03 10:56:33  robertj
- * Removed unused extern for PErrorStream
- *
- * Revision 1.9  1998/09/24 04:11:31  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #ifndef _PCONTAIN

@@ -26,31 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipsock.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.7  1999/02/22 13:26:53  robertj
- * BeOS port changes.
- *
- * Revision 1.6  1998/11/30 22:06:49  robertj
- * New directory structure.
- *
- * Revision 1.5  1998/09/24 04:11:40  robertj
- * Added open software license.
- *
- * Revision 1.4  1997/10/03 14:47:07  craigs
- * Fixed ifdef guard
- *
- * Revision 1.3  1996/08/03 12:08:19  craigs
- * Changed for new common directories
- *
- * Revision 1.2  1996/04/15 10:50:48  craigs
- * Last revision prior to release of MibMaster
- *
- * Revision 1.1  1994/04/12  08:31:05  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PIPSOCKET

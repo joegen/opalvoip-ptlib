@@ -21,12 +21,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.h,v $
- * Revision 1.1  2006/06/26 02:16:09  dereksmithies
- * Initial release of a program to test the speed and performance of the PString class.
- *
-
- *
+ * $Id$
  */
 
 #ifndef _StringTest_MAIN_H

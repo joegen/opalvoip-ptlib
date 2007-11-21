@@ -26,16 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: config.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.8  1998/11/30 22:06:32  robertj
- * New directory structure.
- *
- * Revision 1.7  1998/09/24 04:11:30  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #ifndef _PCONFIG

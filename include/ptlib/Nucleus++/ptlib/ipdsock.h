@@ -26,22 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipdsock.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.4  1998/11/30 22:06:47  robertj
- * New directory structure.
- *
- * Revision 1.3  1998/09/24 04:11:39  robertj
- * Added open software license.
- *
- * Revision 1.2  1996/08/03 12:08:19  craigs
- * Changed for new common directories
- *
- * Revision 1.1  1996/05/25 06:07:23  craigs
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PIPDATAGRAMSOCKET

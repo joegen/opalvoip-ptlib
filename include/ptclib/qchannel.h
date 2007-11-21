@@ -23,23 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: qchannel.h,v $
- * Revision 1.5  2007/04/19 04:33:53  csoutheren
- * Fixed problems with pre-compiled headers
- *
- * Revision 1.4  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.3  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.2  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.1  2001/07/10 03:07:07  robertj
- * Added queue channel and delay channel classes to ptclib.
- *
+ * $Id$
  */
 
 #ifndef _QCHANNEL_H

@@ -26,37 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sockagg.h,v $
- * Revision 1.9  2006/03/09 05:32:59  csoutheren
- * Reverted to conservative locking strategy, with OnClose
- *
- * Revision 1.8  2006/03/07 07:38:02  csoutheren
- * Refine timing windows on socket handling and cleanup unused code
- *
- * Revision 1.7  2006/03/06 02:37:25  csoutheren
- * Change handle locking to help prevent aggregation threads from hogging list
- *  access
- *
- * Revision 1.6  2006/03/02 07:50:37  csoutheren
- * Cleanup unused code
- * Add OnClose function
- *
- * Revision 1.5  2006/01/18 07:16:56  csoutheren
- * Latest version of socket aggregation code
- *
- * Revision 1.4  2006/01/03 04:23:32  csoutheren
- * Fixed Unix implementation
- *
- * Revision 1.3  2005/12/23 06:44:30  csoutheren
- * Working implementation
- *
- * Revision 1.2  2005/12/22 07:27:36  csoutheren
- * More implementation
- *
- * Revision 1.1  2005/12/22 03:55:52  csoutheren
- * Added initial version of socket aggregation classes
- *
- *
+ * $Id$
  */
 
 

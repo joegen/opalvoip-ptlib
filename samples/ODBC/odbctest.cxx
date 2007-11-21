@@ -25,24 +25,8 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: odbctest.cxx,v $
- * Revision 1.5  2007/04/13 18:17:57  shorne
- * added ODBC support for linux thx Michal Z
- *
- * Revision 1.4  2007/03/21 15:32:04  shorne
- * Added link to podbc.h
- *
- * Revision 1.3  2006/06/21 03:28:41  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.2  2005/08/09 09:08:13  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.1.2.1  2005/04/25 13:55:19  shorne
- * Initial version
- *
- *
-*/
+ * $Id$
+ */
 
 
 #include <ptlib.h>

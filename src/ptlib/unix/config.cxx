@@ -26,78 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: config.cxx,v $
- * Revision 1.37  2006/06/21 03:28:44  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.36  2004/04/03 23:55:59  csoutheren
- * Added fix for PConfig environment variables under Linux
- *   Thanks to Michal Zygmuntowicz
- *
- * Revision 1.35  2003/03/17 08:10:59  robertj
- * Fixed bug with parsing lines with no equal sign
- *
- * Revision 1.34  2003/01/30 23:46:05  dereks
- * Fix compile error on gcc 3.2
- *
- * Revision 1.33  2003/01/26 03:57:12  robertj
- * Fixed problem with last change so can still operate if do not have write
- *   access to the directory config file is in.
- * Improved error reporting.
- *
- * Revision 1.32  2003/01/24 12:12:20  robertj
- * Changed so that a crash in some other thread can no longer cause the
- *   config file to be truncated to zero bytes.
- *
- * Revision 1.31  2001/09/14 07:36:27  robertj
- * Fixed bug where fails to read last line of config file if not ended with '\n'.
- *
- * Revision 1.30  2001/06/30 06:59:07  yurik
- * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
- *
- * Revision 1.29  2001/05/24 00:56:38  robertj
- * Fixed problem with config file being written every time on exit. Now is
- *   only written if it the config was modified by the application.
- *
- * Revision 1.28  2001/03/10 04:15:29  robertj
- * Incorrect case for .ini extension
- *
- * Revision 1.27  2001/03/09 06:31:22  robertj
- * Added ability to set default PConfig file or path to find it.
- *
- * Revision 1.26  2000/10/19 04:17:04  craigs
- * Changed to allow writing of config files whilst config file is open
- *
- * Revision 1.25  2000/10/02 20:58:06  robertj
- * Fixed bug where subsequent config file opening uses first opened filename.
- *
- * Revision 1.24  2000/08/30 04:45:02  craigs
- * Added ability to have multiple lines with the same key
- *
- * Revision 1.23  2000/08/16 04:21:27  robertj
- * Fixed subtle difference between UNix and Win32 section names (ignore trailing backslash)
- *
- * Revision 1.22  2000/05/25 12:10:06  robertj
- * Added PConfig::HasKey() function to determine if value actually set.
- *
- * Revision 1.21  2000/05/02 08:30:26  craigs
- * Removed "memory leaks" caused by brain-dead GNU linker
- *
- * Revision 1.20  1998/12/16 12:40:41  robertj
- * Fixed bug where .ini file is not written when service run as a daemon.
- *
- * Revision 1.19  1998/12/16 09:57:37  robertj
- * Fixed bug in writing .ini file, not truncating file when shrinking.
- *
- * Revision 1.18  1998/11/30 21:51:41  robertj
- * New directory structure.
- *
- * Revision 1.17  1998/11/03 02:30:38  robertj
- * Fixed emeory leak of environment.
- *
- * Revision 1.16  1998/09/24 04:12:11  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #define _CONFIG_CXX
