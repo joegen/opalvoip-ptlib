@@ -23,7 +23,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #ifndef _PVIDEOIOV4L2
 #define _PVIDEOIOV4L2

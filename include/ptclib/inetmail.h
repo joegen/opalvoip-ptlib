@@ -24,7 +24,9 @@
  *
  * Contributor(s): Federico Pinna and Reitek S.p.A.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PMAILPROTOCOL

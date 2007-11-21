@@ -21,7 +21,9 @@
  *
  * The author of this code is Derek J Smithies
  * *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 /*! \mainpage Thread safe test of PSafeXXX
@@ -40,7 +42,7 @@
 \author  Derek J Smithies
 
 
-$Date: 2006/02/12 21:42:07 $
+$Date$
 
 
 \section secContents Contents

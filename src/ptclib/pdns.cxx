@@ -23,7 +23,9 @@
  *
  * Copyright 2003 Equivalence Pty. Ltd.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

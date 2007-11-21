@@ -4,7 +4,9 @@
  * PWLib application header file for sound test.
  *
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
  
 #ifndef _AUDIO_MAIN_H
