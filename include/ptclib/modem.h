@@ -23,56 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: modem.h,v $
- * Revision 1.16  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.15  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.14  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.13  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.12  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.11  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.10  1998/12/02 03:51:39  robertj
- * Unix compatibility changes
- *
- * Revision 1.9  1998/09/23 06:20:53  robertj
- * Added open source copyright license.
- *
- * Revision 1.8  1995/06/17 11:12:46  robertj
- * Documentation update.
- *
- * Revision 1.7  1995/03/14 12:41:51  robertj
- * Updated documentation to use HTML codes.
- *
- * Revision 1.6  1995/01/06  10:31:02  robertj
- * Documentation.
- *
- * Revision 1.5  1994/08/23  11:32:52  robertj
- * Oops
- *
- * Revision 1.4  1994/08/22  00:46:48  robertj
- * Added pragma fro GNU C++ compiler.
- *
- * Revision 1.3  1994/08/21  23:43:02  robertj
- * Moved meta-string transmitter from PModem to PChannel.
- *
- * Revision 1.2  1994/07/25  03:32:29  robertj
- * Fixed bug in GCC with enums.
- *
- * Revision 1.1  1994/06/25  11:55:15  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 

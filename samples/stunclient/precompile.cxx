@@ -23,10 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.cxx,v $
- * Revision 1.1  2003/02/04 03:31:04  robertj
- * Added STUN
- *
+ * $Id$
  */
 
 #include <ptlib.h>

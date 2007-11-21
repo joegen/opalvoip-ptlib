@@ -23,36 +23,7 @@
  *
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
- * $Log: dummyvideo.cxx,v $
- * Revision 1.8  2004/01/02 23:30:18  rjongbloed
- * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
- *
- * Revision 1.7  2002/04/10 08:40:36  rogerh
- * Simplify the SetVideoChannelFormat() code. Use the implementation in the
- * ancestor class.
- *
- * Revision 1.6  2002/04/05 06:41:54  rogerh
- * Apply video changes from Damien Sandras <dsandras@seconix.com>.
- * The Video Channel and Format are no longer set in Open(). Instead
- * call the new SetVideoChannelFormat() method. This makes video capture
- * and GnomeMeeting more stable with certain Linux video capture devices.
- *
- * Revision 1.5  2002/01/14 11:52:44  rogerh
- * Add TestAllFormats
- *
- * Revision 1.4  2001/12/05 08:34:41  rogerh
- * Add more dummy functions
- *
- * Revision 1.3  2001/09/24 09:11:07  rogerh
- * Add dummy methods, submitted by Andreas Wrede <awrede@mac.com>
- *
- * Revision 1.2  2001/06/27 17:43:32  rogerh
- * MakeOpen to return FALSE. Also change every things else to return failure.
- *
- * Revision 1.1  2001/06/27 17:27:23  rogerh
- * Dummy video allows code dependent on PVideoInputDevice to compile and link.
- * It has no functionality.
- *
+ * $Id$
  */
 
 #pragma implementation "videoio.h"

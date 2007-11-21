@@ -23,56 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psnmp.h,v $
- * Revision 1.10  2007/08/02 18:48:35  shorne
- * Added SNMP Server support
- *
- * Revision 1.9  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.8  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.7  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.6  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.5  1998/11/30 02:50:55  robertj
- * New directory structure
- *
- * Revision 1.4  1998/09/23 06:27:38  robertj
- * Added open source copyright license.
- *
- * Revision 1.3  1996/11/04 03:56:16  robertj
- * Added selectable read buffer size.
- *
- * Revision 1.2  1996/09/20 12:19:36  robertj
- * Used read timeout instead of member variable.
- *
- * Revision 1.1  1996/09/14 12:58:57  robertj
- * Initial revision
- *
- * Revision 1.6  1996/05/09 13:23:49  craigs
- * Added trap functions
- *
- * Revision 1.5  1996/04/23 12:12:46  craigs
- * Changed to use GetErrorText function
- *
- * Revision 1.4  1996/04/16 13:20:43  craigs
- * Final version prior to beta1 release
- *
- * Revision 1.3  1996/04/15 09:05:30  craigs
- * Latest version prior to integration with Robert's changes
- *
- * Revision 1.2  1996/04/01 12:36:12  craigs
- * Fixed RCS header, added IPAddress functions
- *
- * Revision 1.1  1996/03/02 06:49:51  craigs
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PSNMP_H

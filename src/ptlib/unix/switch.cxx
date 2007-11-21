@@ -26,44 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: switch.cxx,v $
- * Revision 1.23  2003/01/06 18:41:08  rogerh
- * Add NetBSD patches, taken from the NetBSD pkg patches.
- * Submitted by Andreas Wrede
- *
- * Revision 1.22  2002/10/10 04:43:44  robertj
- * VxWorks port, thanks Martijn Roest
- *
- * Revision 1.21  2001/08/11 15:38:43  rogerh
- * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
- *
- * Revision 1.20  2000/03/08 12:17:09  rogerh
- * Add OpenBSD support
- *
- * Revision 1.19  1999/05/12 02:12:02  robertj
- * Fixed stack size on alpha
- *
- * Revision 1.18  1999/05/01 11:29:20  robertj
- * Alpha linux port changes.
- *
- * Revision 1.17  1999/03/05 07:03:27  robertj
- * Some more BeOS port changes.
- *
- * Revision 1.16  1999/02/22 13:26:54  robertj
- * BeOS port changes.
- *
- * Revision 1.15  1998/12/21 06:50:36  robertj
- * Linux PPC support
- *
- * Revision 1.14  1998/12/04 12:21:14  robertj
- * FreeBSD support
- *
- * Revision 1.13  1998/11/05 09:04:16  craigs
- * Changed free to runtime_free
- *
- * Revision 1.12  1998/09/24 04:12:21  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #include <ptlib.h>

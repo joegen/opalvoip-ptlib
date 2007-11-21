@@ -25,21 +25,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.5  2007/01/12 22:34:22  rjongbloed
- * Fixed compile error in tone sample app
- *
- * Revision 1.4  2006/07/22 07:27:26  rjongbloed
- * Fixed various compilation issues
- *
- * Revision 1.3  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.2  2005/08/18 00:24:50  dereksmithies
- * Tidyup so compiles on linux, tidy up copyright headers, add cvs logging.
- *
- *
- *
+ * $Id$
  */
 
 #include <ptlib.h>

@@ -26,25 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: NucleusConfig.cxx,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.20  1998/12/16 12:40:41  robertj
- * Fixed bug where .ini file is not written when service run as a daemon.
- *
- * Revision 1.19  1998/12/16 09:57:37  robertj
- * Fixed bug in writing .ini file, not truncating file when shrinking.
- *
- * Revision 1.18  1998/11/30 21:51:41  robertj
- * New directory structure.
- *
- * Revision 1.17  1998/11/03 02:30:38  robertj
- * Fixed emeory leak of environment.
- *
- * Revision 1.16  1998/09/24 04:12:11  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #define _CONFIG_CXX

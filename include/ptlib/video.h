@@ -26,74 +26,7 @@
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
- * $Log: video.h,v $
- * Revision 1.19  2007/04/20 06:47:02  csoutheren
- * Really disable video code when video is turned off
- *
- * Revision 1.18  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.17  2003/11/19 04:28:21  csoutheren
- * Changed to support video output plugins
- *
- * Revision 1.16  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.15  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.14  2003/04/15 21:10:29  dereks
- * Patches for Firewire video. Thanks Georgi Georgiev.
- *
- * Revision 1.13  2003/03/17 07:45:14  robertj
- * Removed redundant "render now" function.
- *
- * Revision 1.12  2003/02/18 03:55:59  dereks
- * Add 1394AVC pathces from  Georgi Georgiev. Thanks!
- *
- * Revision 1.11  2003/01/11 05:30:13  robertj
- * Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
- *
- * Revision 1.10  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.9  2002/02/20 02:37:26  dereks
- * Initial release of Firewire camera support for linux.
- * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
- *
- * Revision 1.8  2002/01/04 04:11:45  dereks
- * Add video flip code from Walter Whitlock, which flips code at the grabber.
- *
- * Revision 1.7  2001/12/03 03:44:52  dereks
- * Add method to retrive pointer to the attached video display class.
- *
- * Revision 1.6  2001/11/28 00:07:32  dereks
- * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
- * Enabled adjustment of the video frame rate
- * New fictitous image, a blank grey area
- *
- * Revision 1.5  2001/10/23 02:11:00  dereks
- * Extend video channel so it can display raw data, using attached video devices.
- *
- * Revision 1.4  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.3  2001/03/07 01:42:59  dereks
- * miscellaneous video fixes. Works on linux now. Add debug statements
- * (at PTRACE level of 1)
- *
- * Revision 1.2  2000/12/19 22:20:26  dereks
- * Add video channel classes to connect to the PwLib PVideoInputDevice class.
- * Add PFakeVideoInput class to generate test images for video.
- *
- * Revision 1.1  2000/11/09 00:43:04  dereks
- * Initial release.
- *
- * 
- *
+ * $Id$
  */
 
 #ifndef _PVIDEO

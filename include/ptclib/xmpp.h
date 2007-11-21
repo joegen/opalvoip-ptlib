@@ -23,28 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: xmpp.h,v $
- * Revision 1.6  2007/04/10 05:08:46  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.5  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.3  2004/05/09 07:23:46  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.2  2004/04/26 01:51:57  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
- * Revision 1.1  2004/04/22 12:31:00  rjongbloed
- * Added PNotifier extensions and XMPP (Jabber) support,
- *   thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Id$
  */
 
 #ifndef _XMPP

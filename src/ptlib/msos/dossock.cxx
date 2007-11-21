@@ -26,13 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: dossock.cxx,v $
- * Revision 1.3  1998/09/24 03:30:42  robertj
- * Added open software license.
- *
- * Revision 1.2  1995/02/05 00:53:15  robertj
- * Commonised out of band stuff.
- *
+ * $Id$
  */
 
 #include <ptlib.h>

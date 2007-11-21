@@ -23,13 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.h,v $
- * Revision 1.1  2003/03/28 01:15:44  robertj
- * OpenLDAP support.
- *
- * Revision 1.1  2003/02/20 01:10:52  robertj
- * Changed precompiled header so can precompile more than just ptlib.h
- *
+ * $Id$
  */
 
 #include <ptlib.h>

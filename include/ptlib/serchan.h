@@ -26,64 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: serchan.h,v $
- * Revision 1.18  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.17  2005/02/20 21:18:30  dereksmithies
- * Fix documentation typos.
- *
- * Revision 1.16  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.15  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.14  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.13  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.12  1999/03/09 02:59:50  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.11  1999/02/16 08:11:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.10  1998/09/23 06:21:21  robertj
- * Added open source copyright license.
- *
- * Revision 1.9  1995/07/31 12:15:46  robertj
- * Removed PContainer from PChannel ancestor.
- *
- * Revision 1.8  1995/06/17 11:13:18  robertj
- * Documentation update.
- *
- * Revision 1.7  1995/03/14 12:42:33  robertj
- * Updated documentation to use HTML codes.
- *
- * Revision 1.6  1995/01/14  06:19:37  robertj
- * Documentation
- *
- * Revision 1.5  1994/08/23  11:32:52  robertj
- * Oops
- *
- * Revision 1.4  1994/08/22  00:46:48  robertj
- * Added pragma fro GNU C++ compiler.
- *
- * Revision 1.3  1994/07/17  10:46:06  robertj
- * Moved data to PChannel class.
- *
- * Revision 1.2  1994/06/25  11:55:15  robertj
- * Unix version synchronisation.
- *
- * Revision 1.1  1994/04/20  12:17:44  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PSERIALCHANNEL

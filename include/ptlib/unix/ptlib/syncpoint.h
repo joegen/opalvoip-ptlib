@@ -26,39 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: syncpoint.h,v $
- * Revision 1.8  2005/11/25 00:06:12  csoutheren
- * Applied patch #1364593 from Hannes Friederich
- * Also changed so PTimesMutex is no longer descended from PSemaphore on
- * non-Windows platforms
- *
- * Revision 1.7  2004/04/30 16:18:41  ykiryanov
- * BeOS modifications derived from BLocker use
- *
- * Revision 1.6  2003/09/17 01:18:03  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.5  2001/09/20 05:38:25  robertj
- * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
- * Also prevented semaphore from being created if subclass does not use it.
- *
- * Revision 1.4  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.3  1998/11/30 22:07:18  robertj
- * New directory structure.
- *
- * Revision 1.2  1998/09/24 04:11:59  robertj
- * Added open software license.
- *
- * Revision 1.1  1998/03/24 07:31:04  robertj
- * Initial revision
- *
- * Revision 1.1  1998/03/23 02:42:03  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

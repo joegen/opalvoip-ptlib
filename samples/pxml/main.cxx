@@ -7,16 +7,7 @@
  *
  * Copyright 2002 David Iodice.
  *
- * $Log: main.cxx,v $
- * Revision 1.3  2006/07/22 07:27:26  rjongbloed
- * Fixed various compilation issues
- *
- * Revision 1.2  2005/11/30 12:47:40  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.1  2002/03/07 01:56:56  robertj
- * Added XML sample/test program.
- *
+ * $Id$
  */
 
 #include <ptlib.h>

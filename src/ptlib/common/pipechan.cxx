@@ -26,31 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pipechan.cxx,v $
- * Revision 1.8  2004/04/03 08:22:21  csoutheren
- * Remove pseudo-RTTI and replaced with real RTTI
- *
- * Revision 1.7  1998/11/30 04:59:04  robertj
- * New directory structure
- *
- * Revision 1.6  1998/10/30 10:42:32  robertj
- * Better function arrangement for multi platforming.
- *
- * Revision 1.5  1998/10/29 11:29:18  robertj
- * Added ability to set environment in sub-process.
- *
- * Revision 1.4  1998/10/26 09:11:06  robertj
- * Added ability to separate out stdout from stderr on pipe channels.
- *
- * Revision 1.3  1998/09/23 06:22:31  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1996/05/09 12:18:41  robertj
- * Fixed syntax error found by Mac platform.
- *
- * Revision 1.1  1996/04/14 02:54:14  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

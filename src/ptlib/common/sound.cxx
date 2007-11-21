@@ -24,65 +24,7 @@
  * Contributor(s): Craig Southeren
  *                 Snark at GnomeMeeting
  *
- * $Log: sound.cxx,v $
- * Revision 1.15  2007/09/27 23:27:08  rjongbloed
- * Changed PSoundChannel::CreateOpenedChannel so uses default value for
- *   driver and/or device names if they are empty strings or "*".
- *
- * Revision 1.14  2007/06/09 05:34:22  rjongbloed
- * Fixed legacy PSoundChannel::Open() function so creates the correct plug in device.
- *
- * Revision 1.13  2007/04/13 07:03:20  rjongbloed
- * Added WAV file audio device "plug in".
- *
- * Revision 1.12  2007/02/01 03:16:15  csoutheren
- * Implement GetName for sound channels
- *
- * Revision 1.11  2005/08/09 09:08:11  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.10.8.1  2005/07/17 09:27:08  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.10  2004/11/17 10:13:14  csoutheren
- * Fixed compilation with gcc 4.0.0
- *
- * Revision 1.9  2004/10/28 20:07:10  csoutheren
- * Fixes for MacOSX platforms, thanks to Hannes Friederich
- *
- * Revision 1.8  2004/08/16 06:40:59  csoutheren
- * Added adapters template to make device plugins available via the abstract factory interface
- *
- * Revision 1.7  2004/04/03 23:53:10  csoutheren
- * Added various changes to improce compatibility with the Sun Forte compiler
- *   Thanks to Brian Cameron
- * Added detection of readdir_r version
- *
- * Revision 1.6  2004/04/02 04:07:54  ykiryanov
- * Added ifndef BeOS for PSound
- *
- * Revision 1.5  2003/11/12 08:55:58  csoutheren
- * Added newline at end of file to remove gcc warning
- *
- * Revision 1.4  2003/11/12 05:17:25  csoutheren
- * Added more backwards compatibility functions for PSoundChannel
- *
- * Revision 1.3  2003/11/12 04:42:02  csoutheren
- * Removed non-specific code when compiling for WIn32
- *
- * Revision 1.2  2003/11/12 03:27:25  csoutheren
- * Initial version of plugin code from Snark of GnomeMeeting with changes
- *    by Craig Southeren of Post Increment
- *
- * Revision 1.1.2.1  2003/10/07 01:33:19  csoutheren
- * Initial checkin of pwlib code to do plugins.
- * Modified from original code and concept provided by Snark of Gnomemeeting
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

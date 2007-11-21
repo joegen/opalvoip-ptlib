@@ -23,12 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.cxx,v $
- * Revision 1.1  2006/05/23 04:36:49  dereksmithies
- * Initial release of a test program to examine the operation of PTimer.
- *
- *
- *
+ * $Id$
  */
 
 #include "precompile.h"

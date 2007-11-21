@@ -26,65 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ethsock.h,v $
- * Revision 1.18  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.17  2004/04/18 04:33:36  rjongbloed
- * Changed all operators that return BOOL to return standard type bool. This is primarily
- *   for improved compatibility with std STL usage removing many warnings.
- *
- * Revision 1.16  2003/09/17 05:41:58  csoutheren
- * Removed recursive includes
- *
- * Revision 1.15  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.14  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.13  2001/10/03 03:15:05  robertj
- * Changed to allow use of NULL pointer to indicate address of all zeros.
- *
- * Revision 1.12  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.11  1999/03/09 02:59:49  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.10  1999/02/16 08:07:11  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.9  1998/11/20 03:18:24  robertj
- * Split rad and write buffers to separate pools.
- *
- * Revision 1.8  1998/11/19 05:18:21  robertj
- * Added route table manipulation functions to PIPSocket class.
- *
- * Revision 1.7  1998/10/12 09:34:40  robertj
- * New method for getting IP addresses of interfaces.
- *
- * Revision 1.6  1998/09/23 06:20:31  robertj
- * Added open source copyright license.
- *
- * Revision 1.5  1998/09/14 12:27:21  robertj
- * Added function to parse type out of ethernet/802.2 frame.
- *
- * Revision 1.4  1998/08/25 11:06:34  robertj
- * Fixed output of PEthSocket::Address variables to streams.
- *
- * Revision 1.3  1998/08/22 04:07:42  robertj
- * Fixed GNU problem with structure packing
- *
- * Revision 1.2  1998/08/21 05:26:34  robertj
- * Fine tuning of interface.
- *
- * Revision 1.1  1998/08/20 05:46:45  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PETHSOCKET

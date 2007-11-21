@@ -17,19 +17,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: qos.cxx,v $
- * Revision 1.3  2006/11/02 03:05:19  csoutheren
- * Fixed incorrect comparison of QoS value
- * Thanks to Nick Hoath
- *
- * Revision 1.2  2003/10/27 04:06:13  csoutheren
- * Added code to allow compilation of new QoS code on Unix
- *
- * Revision 1.1  2003/10/27 03:20:10  csoutheren
- * Initial version of QoS implementation
- *   Thanks to Henry Harrison of AliceStreet
- *
- *
+ * $Id$
  */
 
 

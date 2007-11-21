@@ -23,37 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ftpsrvr.cxx,v $
- * Revision 1.10  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.9  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.8  2000/06/21 01:10:18  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.7  2000/06/21 01:01:22  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.6  1999/02/16 06:04:41  robertj
- * Fixed bug in FTP server for PASV mode, may return incorrect IP address.
- *
- * Revision 1.5  1998/11/30 04:50:48  robertj
- * New directory structure
- *
- * Revision 1.4  1998/10/13 14:06:21  robertj
- * Complete rewrite of memory leak detection code.
- *
- * Revision 1.3  1998/09/23 06:22:02  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1996/10/26 01:39:49  robertj
- * Added check for security breach using 3 way FTP transfer or use of privileged PORT.
- *
- * Revision 1.1  1996/09/14 13:02:35  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

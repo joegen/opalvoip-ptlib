@@ -21,13 +21,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.h,v $
- * Revision 1.2  2006/06/21 03:28:42  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.1  2004/08/11 07:39:05  csoutheren
- * Initial version
- *
+ * $Id$
  */
 
 #ifndef _Emailtest_MAIN_H

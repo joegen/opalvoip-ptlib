@@ -24,14 +24,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: xmpp_roster.h,v $
- * Revision 1.2  2004/05/09 07:23:46  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.1  2004/04/26 01:51:57  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
- *
+ * $Id$
  */
 
 #ifndef _XMPP_ROSTER

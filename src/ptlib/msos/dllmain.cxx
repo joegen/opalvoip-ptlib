@@ -26,19 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: dllmain.cxx,v $
- * Revision 1.4  2007/05/19 08:54:45  rjongbloed
- * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
- *
- * Revision 1.3  2005/09/18 13:01:43  dominance
- * fixed pragma warnings when building with gcc.
- *
- * Revision 1.2  2004/10/23 10:53:19  ykiryanov
- * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
- *
- * Revision 1.1  1998/09/25 11:04:09  craigs
- * Initial revision
- *
+ * $Id$
  */
 
 #ifdef _MSC_VER

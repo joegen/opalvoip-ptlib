@@ -23,53 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pasn.h,v $
- * Revision 1.15  2005/12/22 02:29:22  csoutheren
- * Fixed PASNIPAddress constructor that accepts PIPSocket::Address
- *
- * Revision 1.14  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.13  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.12  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.11  1999/05/01 03:52:20  robertj
- * Fixed various egcs warnings.
- *
- * Revision 1.10  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.9  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.8  1998/11/30 02:50:54  robertj
- * New directory structure
- *
- * Revision 1.7  1998/09/23 06:19:44  robertj
- * Added open source copyright license.
- *
- * Revision 1.6  1997/08/20 08:48:56  craigs
- * Added GetString() to PASNNull
- *
- * Revision 1.5  1997/07/20 08:34:14  craigs
- * Added ASN NULL type
- *
- * Revision 1.4  1997/07/16 05:51:08  craigs
- * Added PASNString constructor with ptr and length
- *
- * Revision 1.3  1996/11/04 09:45:08  robertj
- * Fixed bug in IP number ASN type, should be binary not dot format string.
- *
- * Revision 1.2  1996/11/04 03:56:00  robertj
- * Added ASN types to class.
- *
- * Revision 1.1  1996/09/14 12:58:57  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifndef _PASN_H

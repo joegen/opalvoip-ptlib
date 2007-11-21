@@ -23,65 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pasn.cxx,v $
- * Revision 1.17  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.16  2004/04/03 06:54:25  rjongbloed
- * Many and various changes to support new Visual C++ 2003
- *
- * Revision 1.15  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.14  2000/05/05 10:08:29  robertj
- * Fixed some GNU compiler warnings
- *
- * Revision 1.13  1999/05/01 11:29:20  robertj
- * Alpha linux port changes.
- *
- * Revision 1.12  1999/05/01 03:52:20  robertj
- * Fixed various egcs warnings.
- *
- * Revision 1.11  1999/03/02 01:53:38  craigs
- * Fixed problem with creating IpAddress objects
- *
- * Revision 1.10  1999/02/16 08:08:06  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.9  1998/11/30 04:52:04  robertj
- * New directory structure
- *
- * Revision 1.8  1998/10/13 14:06:31  robertj
- * Complete rewrite of memory leak detection code.
- *
- * Revision 1.7  1998/09/23 06:22:27  robertj
- * Added open source copyright license.
- *
- * Revision 1.6  1998/02/16 06:57:05  robertj
- * Moved pragma implemenetation in here so do not need upasn.cxx file.
- *
- * Revision 1.7  1998/01/26 02:49:21  robertj
- * GNU support.
- *
- * Revision 1.6  1998/01/26 01:45:36  robertj
- * Removed unused variable.
- *
- * Revision 1.5  1997/08/20 09:00:37  craigs
- * Fixed problems with decoding of PASNNull
- *
- * Revision 1.4  1997/07/20 08:34:37  craigs
- * Added ASN NULL type
- *
- * Revision 1.3  1997/07/16 05:52:48  craigs
- * Changed ASN constructors to store value length separately so
- * ASNString consctructor will worki correctly
- *
- * Revision 1.2  1996/11/04 03:58:34  robertj
- * Added ASN types to class.
- *
- * Revision 1.1  1996/09/14 13:02:18  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

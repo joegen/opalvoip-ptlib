@@ -26,71 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: wincfg.cxx,v $
- * Revision 1.21  2007/10/03 01:18:47  rjongbloed
- * Fixed build for Windows Mobile 5 and added Windows Mobile 6
- *
- * Revision 1.20  2007/09/30 17:34:40  dsandras
- * Killed GCC 4.2 warnings.
- *
- * Revision 1.19  2007/09/17 04:15:40  rjongbloed
- * Tidy up of some traces.
- *
- * Revision 1.18  2006/06/21 04:20:07  csoutheren
- * Fixes for VS.net
- *
- * Revision 1.17  2006/04/09 11:04:00  csoutheren
- * Remove warnings on VS.net 2005
- *
- * Revision 1.16  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.15  2005/09/24 09:11:42  dominance
- * use unix-style slashes to not confuse mingw on win32
- *
- * Revision 1.14  2003/03/19 01:35:42  robertj
- * Fixed bug getting large private .ini file data, thanks Michal Zygmuntowicz
- *
- * Revision 1.13  2003/02/12 01:59:44  robertj
- * Changed to allow for very large private .INI files.
- *
- * Revision 1.12  2001/08/17 20:09:12  yurik
- * Fixed RegEnumValue name clash with system function
- *
- * Revision 1.11  2001/08/14 21:56:39  yurik
- * More CE Unicode Registry API bug fixes
- *
- * Revision 1.10  2001/08/14 15:41:13  yurik
- * Fixed bug in EnumKey for CE
- *
- * Revision 1.9  2001/03/15 23:41:22  robertj
- * Fixed bug just introduced so can access regisrtry directly again from PConfig.
- *
- * Revision 1.8  2001/03/09 05:50:48  robertj
- * Added ability to set default PConfig file or path to find it.
- *
- * Revision 1.7  2001/01/24 06:45:41  yurik
- * Windows CE port-related changes
- *
- * Revision 1.6  2000/09/05 02:28:38  robertj
- * Removed PAssert with registry access denied error, changed to PTRACE.
- *
- * Revision 1.5  2000/08/03 22:47:48  robertj
- * Removed assert for empty key name so can set registry default key for a section.
- *
- * Revision 1.4  2000/05/25 11:08:46  robertj
- * Added PConfig::HasKey() function to determine if value actually set.
- * Fixed "system" PConfig to use the win.ini file in correct directory.
- *
- * Revision 1.3  1999/12/30 00:32:48  robertj
- * Allowed absolute registry paths in PConfig::Application instances.
- *
- * Revision 1.2  1998/12/04 10:10:48  robertj
- * Added virtual for determining if process is a service. Fixes linkage problem.
- *
- * Revision 1.1  1998/11/30 05:35:28  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>

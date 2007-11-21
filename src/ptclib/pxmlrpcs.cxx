@@ -23,39 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pxmlrpcs.cxx,v $
- * Revision 1.10  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.9  2007/08/20 08:43:00  shorne
- * Fixed issue compiling without Expat
- *
- * Revision 1.8  2007/04/10 05:08:48  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.7  2006/11/27 11:37:25  csoutheren
- * Applied 1595552 - Fix for XMLRPC server
- * Thanks to Dave Parr
- *
- * Revision 1.6  2003/02/19 01:51:18  robertj
- * Change to make it easier to set a fault from the server function handler.
- *
- * Revision 1.5  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.4  2002/10/23 15:57:28  craigs
- * Fixed problem where no params specified
- *
- * Revision 1.3  2002/10/17 12:51:01  rogerh
- * Add a newline at the of the file to silence a gcc compiler warning.
- *
- * Revision 1.2  2002/10/10 04:43:44  robertj
- * VxWorks port, thanks Martijn Roest
- *
- * Revision 1.1  2002/10/02 08:54:01  craigs
- * Added support for XMLRPC server
- *
+ * $Id$
  */
 
 // This depends on the expat XML library by Jim Clark

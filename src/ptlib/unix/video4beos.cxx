@@ -24,35 +24,7 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  * Jac Goudsmit <jac@be.com>.
  *
- * $Log: video4beos.cxx,v $
- * Revision 1.6  2005/08/09 09:08:13  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.5.6.1  2005/07/17 09:27:08  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.5  2004/06/16 01:55:47  ykiryanov
- * Made video capture working
- *
- * Revision 1.4  2004/01/02 23:30:18  rjongbloed
- * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
- *
- * Revision 1.3  2002/04/10 08:40:36  rogerh
- * Simplify the SetVideoChannelFormat() code. Use the implementation in the
- * ancestor class.
- *
- * Revision 1.2  2002/04/05 21:54:58  rogerh
- * Add SetVideoChannelFormat - Reminded by Yuri
- *
- * Revision 1.1  2001/07/09 06:16:15  yurik
- * Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
- *
- *
+ * $Id$
  */
 
 #include <ptlib.h>
