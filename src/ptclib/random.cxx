@@ -141,7 +141,7 @@ void PRandom::SetSeed(DWORD seed)
 }
 
 
-static unsigned redistribute(unsigned value, unsigned maximum, unsigned minimum)
+static unsigned redistribute(unsigned value, unsigned minimum, unsigned maximum)
 {
   unsigned range = maximum - minimum;
   while (value > range)
@@ -150,7 +150,7 @@ static unsigned redistribute(unsigned value, unsigned maximum, unsigned minimum)
 }
 
 
-unsigned PRandom::Generate(unsigned maximum, unsigned minimum)
+unsigned PRandom::Generate()
 {
   if (randcnt-- == 0) {
     register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
@@ -175,7 +175,19 @@ unsigned PRandom::Generate(unsigned maximum, unsigned minimum)
     randcnt = RandSize-1;
   }
 
-  return redistribute(randrsl[randcnt], maximum, minimum);
+  return randrsl[randcnt];
+}
+
+
+unsigned PRandom::Generate(unsigned maximum)
+{
+  return redistribute(Generate(), 0, maximum);
+}
+
+
+unsigned PRandom::Generate(unsigned minimum, unsigned maximum)
+{
+  return redistribute(Generate(), minimum, maximum);
 }
 
 
@@ -194,9 +206,16 @@ unsigned PRandom::Number()
   return rand;
 }
 
-unsigned int PRandom::Number(unsigned int min, unsigned int max)
+unsigned int PRandom::Number(unsigned maximum)
 {
-  return redistribute(PRandom::Number(), max, min);
+  return redistribute(Number(), 0, maximum);
 }
+
+
+unsigned int PRandom::Number(unsigned minimum, unsigned maximum)
+{
+  return redistribute(Number(), minimum, maximum);
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
