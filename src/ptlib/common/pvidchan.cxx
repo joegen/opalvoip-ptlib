@@ -26,7 +26,9 @@
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

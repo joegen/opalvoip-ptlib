@@ -26,8 +26,10 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.46 2007/09/05 12:55:43 csoutheren Exp $
  * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 /* crypto/buffer/bss_sock.c */

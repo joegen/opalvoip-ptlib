@@ -5,7 +5,9 @@
  *
  * Copyright 2002 David Iodice.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PxmlTest_MAIN_H

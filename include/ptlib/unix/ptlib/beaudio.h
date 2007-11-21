@@ -28,7 +28,9 @@
  * Yuri Kiryanov, ykiryanov at users.sourceforge.net
  * Bits by Jac Goudsmit
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

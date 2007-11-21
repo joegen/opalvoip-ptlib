@@ -11,7 +11,9 @@
  * Originally written by Poul-Henning Kamp <phk@freebsd.org>
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
  
 #ifndef _DTMF_H

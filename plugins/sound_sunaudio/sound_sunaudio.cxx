@@ -26,7 +26,9 @@
  *
  * Contributor(s): brian.lu@sun.com
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef _GNUC_

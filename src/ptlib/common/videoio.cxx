@@ -23,7 +23,9 @@
  *
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

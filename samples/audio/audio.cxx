@@ -16,7 +16,9 @@
  * Copied by Derek Smithies, 1)Add soundtest code from ohphone.
  *                           2)Add headers.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

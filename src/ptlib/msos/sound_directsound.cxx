@@ -24,7 +24,9 @@
  *
  * Contributor(s): /
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound_directsound.h"

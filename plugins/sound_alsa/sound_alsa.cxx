@@ -27,7 +27,9 @@
  *
  * Contributor(s): /
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound_alsa.h"
