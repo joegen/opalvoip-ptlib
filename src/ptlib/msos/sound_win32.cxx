@@ -26,7 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #define P_FORCE_STATIC_PLUGIN

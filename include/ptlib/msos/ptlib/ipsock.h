@@ -26,7 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)

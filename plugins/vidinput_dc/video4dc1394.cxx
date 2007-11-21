@@ -136,7 +136,9 @@
  *
  *
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "videoio1394dc.h"

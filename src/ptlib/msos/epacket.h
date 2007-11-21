@@ -7,7 +7,9 @@
  *
  * Original code by William Ingle (address unknown)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef __EPACKET_H

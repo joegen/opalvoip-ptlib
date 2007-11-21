@@ -23,7 +23,9 @@
  *
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

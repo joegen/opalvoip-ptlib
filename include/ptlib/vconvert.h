@@ -25,7 +25,9 @@
  *                 Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PCONVERT

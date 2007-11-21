@@ -9,7 +9,9 @@
  *
  * Copyright 2004 Reitek S.p.A.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

@@ -23,7 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)

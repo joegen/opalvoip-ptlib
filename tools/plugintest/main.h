@@ -5,7 +5,9 @@
  *
  * Copyright 2003 Equivalence
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PluginTest_MAIN_H

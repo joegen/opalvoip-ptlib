@@ -7,7 +7,9 @@
  *
  * Contributor(s): Snark at GnomeMeeting
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PLUGINMGR_H

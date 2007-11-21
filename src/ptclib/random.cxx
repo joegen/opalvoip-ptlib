@@ -25,7 +25,9 @@
  *
  * Based on code originally by Bob Jenkins.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

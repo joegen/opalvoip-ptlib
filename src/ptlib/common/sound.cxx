@@ -24,7 +24,9 @@
  * Contributor(s): Craig Southeren
  *                 Snark at GnomeMeeting
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

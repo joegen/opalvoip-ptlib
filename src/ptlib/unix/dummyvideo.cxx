@@ -23,7 +23,9 @@
  *
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "videoio.h"

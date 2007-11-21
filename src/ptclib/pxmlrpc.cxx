@@ -23,7 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 // This depends on the expat XML library by Jim Clark

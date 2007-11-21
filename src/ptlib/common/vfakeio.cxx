@@ -23,7 +23,9 @@
  *
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 
