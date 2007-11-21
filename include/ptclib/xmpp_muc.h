@@ -24,22 +24,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: xmpp_muc.h,v $
- * Revision 1.4  2007/04/10 05:08:46  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.3  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2005/08/04 03:19:07  dereksmithies
- * Add xmpp_muc (XMPP multi user conference) to the compile process for unix.
- * Correct compile errors under unix.
- *
- * Revision 1.1  2004/05/09 07:23:46  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Id$
  */
 
 #ifndef _XMPP_MUC

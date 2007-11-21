@@ -23,51 +23,7 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
- * $Log: vidinput_v4l2.h,v $
- * Revision 1.9  2007/04/27 17:34:45  dsandras
- * Applied patch from Luc Saillard to fix things after the latest change
- * which broke all drivers. Thanks Luc <luc saillard org>.
- *
- * Revision 1.8  2007/02/19 22:26:15  dsandras
- * Fixed V4L2 OpenSolaris support thanks to Elaine Xiong <elaine xiong sun
- * com> (Ekiga report #407820). Thanks !
- *
- * Revision 1.7  2006/11/01 17:55:37  dsandras
- * Applied patch from Brian Lu <brian lu sun com> to fix V4L2 on OpenSolaris.
- *
- * Revision 1.6  2006/03/12 11:16:19  dsandras
- * Added multi-buffering support to V4L2 thanks to Luc Saillard. Thanks!
- *
- * Revision 1.5  2006/01/09 18:22:42  dsandras
- * Use memset before some ioctl() to make valgrind happy.
- * Create a common function to set and get control information.
- * Fix range values return by the driver.
- * Fix setting value to be in the range (>>16 is unsigned).
- * Add support for YUY2.
- * Patch from Luc Saillard <luc _AT___ saillard.org>. Many thanks!
- *
- * Revision 1.4  2005/08/09 09:08:10  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.3.4.2  2005/07/24 09:01:49  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.3.4.1  2005/07/17 11:30:42  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.3  2004/11/07 22:48:47  dominance
- * fixed copyright of v4l2 plugin. Last commit's credits go to Nicola Orru' <nigu@itadinanta.it> ...
- *
+ * $Id$
  */
 #ifndef _PVIDEOIOV4L2
 #define _PVIDEOIOV4L2

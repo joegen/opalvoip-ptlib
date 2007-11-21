@@ -26,43 +26,8 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pnat.h,v $
- * Revision 1.11  2007/08/22 05:04:39  rjongbloed
- * Added ability to set a specific local port for STUN created sockets.
- *
- * Revision 1.10  2007/07/22 03:07:30  rjongbloed
- * Added parameter so can bind STUN socket to specific interface.
- *
- * Revision 1.9  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.8  2007/02/11 13:07:37  shorne
- * Added GetName function
- *
- * Revision 1.7  2007/01/05 04:09:05  dereksmithies
- * Get it to compile on linux correctly.
- * Previous code failed, with message about pasting STUN and > together.
- *
- * Revision 1.6  2006/12/23 15:08:00  shorne
- * Now Factory loaded for ease of addition of new NAT Methods
- *
- * Revision 1.5  2006/02/26 09:29:10  shorne
- * Added GetMethodName and GetList functions
- *
- * Revision 1.4  2006/01/26 03:23:41  shorne
- * Fix compile error when merging code
- *
- * Revision 1.3  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2005/07/13 11:15:14  csoutheren
- * Backported NAT abstraction files from isvo branch
- *
- * Revision 1.1.2.1  2005/04/25 13:23:19  shorne
- * Initial version
- *
- *
-*/
+ * $Id$
+ */
 
 #ifndef _PTLIB_H
 #include <ptlib.h>

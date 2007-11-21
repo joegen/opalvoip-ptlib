@@ -23,25 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: modem.cxx,v $
- * Revision 1.6  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.5  2000/01/21 17:42:53  craigs
- * Added pragma to avoid problems when linking as Linux shared library
- *
- * Revision 1.4  1998/11/30 12:33:06  robertj
- * Split serial channel and modem, modem to components library.
- *
- * Revision 1.3  1998/09/23 06:22:38  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1996/04/15 10:57:59  robertj
- * Moved some functions from INL to serial.cxx so unix linker can make smaller executables.
- *
- * Revision 1.1  1996/04/14 02:54:14  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

@@ -20,9 +20,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: vidinput_app.h,v $
- *
- *
+ * $Id$
  */
 
 #ifdef P_APPSHARE

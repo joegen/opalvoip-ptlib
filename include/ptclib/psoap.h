@@ -23,22 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psoap.h,v $
- * Revision 1.5  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2003/03/31 06:21:19  craigs
- * Split the expat wrapper from the XML file handling to allow reuse of the parser
- *
- * Revision 1.3  2003/02/09 23:31:39  robertj
- * Added referention PString's for efficiency.
- *
- * Revision 1.2  2003/02/09 23:22:37  robertj
- * Fixed spelling errors, and setting return values, thanks Andreas Sikkema
- *
- * Revision 1.1  2003/02/04 22:46:48  robertj
- * Added basic SOAP support, thanks Andreas Sikkema
- *
+ * $Id$
  */
 
 

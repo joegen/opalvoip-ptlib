@@ -23,28 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psasl.cxx,v $
- * Revision 1.6  2006/10/31 05:16:26  csoutheren
- * Remove warning in opt mode on gcc
- *
- * Revision 1.5  2004/05/09 07:23:50  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.4  2004/04/28 11:26:43  csoutheren
- * Hopefully fixed SASL and SASL2 problems
- *
- * Revision 1.3  2004/04/24 06:27:56  rjongbloed
- * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
- *   NULL pointer usage in various bits of code.
- *
- * Revision 1.2  2004/04/18 12:34:22  csoutheren
- * Modified to compile under Unix
- *
- * Revision 1.1  2004/04/18 12:02:31  csoutheren
- * Added classes for SASL authentication
- * Thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

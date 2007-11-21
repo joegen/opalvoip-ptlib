@@ -5,19 +5,7 @@
  *
  * Copyright 2004 Reitek S.p.A.
  *
- * $Log: main.h,v $
- * Revision 1.4  2006/06/21 03:28:44  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.3  2005/08/08 08:15:59  rjongbloed
- * Fixed precompiled header usage
- *
- * Revision 1.2  2004/05/09 07:23:49  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.1  2004/04/26 01:51:58  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
+ * $Id$
  */
 
 #ifndef _XMPPTest_MAIN_H

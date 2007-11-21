@@ -23,76 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pxmlrpc.h,v $
- * Revision 1.20  2004/05/17 06:05:20  csoutheren
- * Changed "make docs" to use doxygen
- * Added new config file and main page
- *
- * Revision 1.19  2003/04/15 07:08:36  robertj
- * Changed read and write from streams for base array classes so operates in
- *   the same way for both PIntArray and PArray<int> etc
- *
- * Revision 1.18  2003/04/15 03:00:41  robertj
- * Added array support to XML/RPC
- * Fixed XML/RPC parsing when lots of white space in raw XML, caused by
- *   big fix to base XML parser not returning internal data elements.
- *
- * Revision 1.17  2003/01/28 05:08:07  robertj
- * Fixed copy constructor on function arguments and return value
- *
- * Revision 1.16  2002/12/16 06:57:15  robertj
- * Added ability to specify certain elemets (by name) that are exempt from
- *   the indent formatting. Useful for XML/RPC where leading white space is
- *   not ignored by all servers.
- * Improved the macros for defining RPC functions.
- *
- * Revision 1.15  2002/12/13 01:04:56  robertj
- * Added copy constructor and assignment operator to XML/RPC structs
- *
- * Revision 1.14  2002/12/10 04:44:43  robertj
- * Added support in PTime for ISO 8601 format.
- *
- * Revision 1.13  2002/12/09 04:06:18  robertj
- * Added macros for defining multi-argument functions
- *
- * Revision 1.12  2002/12/04 02:09:26  robertj
- * Changed macro name prefix to PXMLRPC
- *
- * Revision 1.11  2002/12/04 00:31:13  robertj
- * Fixed GNU compatibility
- *
- * Revision 1.10  2002/12/04 00:15:56  robertj
- * Large enhancement to create automatically encoding and decoding structures
- *   using macros to build a class.
- *
- * Revision 1.9  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.8  2002/10/02 08:54:34  craigs
- * Added support for XMLRPC server
- *
- * Revision 1.7  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.6  2002/08/13 03:02:07  robertj
- * Removed previous fix for memory leak, as object was already deleted.
- *
- * Revision 1.5  2002/08/13 01:55:00  craigs
- * Fixed memory leak on PXMLRPCRequest class
- *
- * Revision 1.4  2002/08/06 01:04:03  robertj
- * Fixed missing pragma interface/implementation
- *
- * Revision 1.3  2002/07/12 05:51:14  craigs
- * Added structs to XMLRPC response types
- *
- * Revision 1.2  2002/03/27 00:50:44  craigs
- * Fixed problems with parsing faults and creating structs
- *
- * Revision 1.1  2002/03/26 07:06:50  craigs
- * Initial version
- *
+ * $Id$
  */
 
 #ifndef _PXMLRPC_H

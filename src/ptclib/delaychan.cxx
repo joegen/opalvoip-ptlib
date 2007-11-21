@@ -23,39 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: delaychan.cxx,v $
- * Revision 1.9  2007/04/02 05:29:54  rjongbloed
- * Tidied some trace logs to assure all have a category (bit before a tab character) set.
- *
- * Revision 1.8  2006/07/21 01:03:12  csoutheren
- * Fixed to PAdaptiveDelay
- * Thanks to Paolo Amadini
- *
- * Revision 1.7  2006/07/19 06:03:35  csoutheren
- * Add extension PAdaptiveDelay to set maximum and minimum delay times
- * Thanks to Paolo Amadini
- *
- * Revision 1.6  2006/06/20 12:44:02  csoutheren
- * Added new constructor for PDelayChannel
- * Thanks to Frederic Heem
- *
- * Revision 1.5  2003/02/20 08:43:44  rogerh
- * On Mac OS X, the thread sleep() (which uses select) is not as fine grained
- * as usleep. So use usleep(). Tested by Shawn.
- *
- * Revision 1.4  2002/02/26 00:42:13  robertj
- * Fixed MSVC warning.
- *
- * Revision 1.3  2002/02/25 11:05:02  rogerh
- * New Delay code which solves the accumulated error problem. Based on ideas
- * by Tomasz Motylewski <T.Motylewski@bfad.de>, Roger and Craig.
- *
- * Revision 1.2  2002/01/15 03:56:03  craigs
- * Added PAdaptiveDelay class
- *
- * Revision 1.1  2001/07/10 03:07:07  robertj
- * Added queue channel and delay channel classes to ptclib.
- *
+ * $Id$
  */
 
 #ifdef __GNUC__

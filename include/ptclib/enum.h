@@ -23,25 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: enum.h,v $
- * Revision 1.6  2007/06/27 15:26:35  shorne
- * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
- *
- * Revision 1.5  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2005/08/31 23:55:48  csoutheren
- * Fixed typo
- *
- * Revision 1.3  2005/08/31 05:55:03  shorne
- * Reworked ENUM to craigs' exacting requirements
- *
- * Revision 1.2  2005/08/31 04:07:52  shorne
- * added ability to set ENUM Servers at runtime
- *
- * Revision 1.1  2004/05/31 13:56:37  csoutheren
- * Added implementation of ENUM resolution of E.164 numbers by DNS
- *
+ * $Id$
  */
 
 #if P_DNS

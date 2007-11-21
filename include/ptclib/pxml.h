@@ -23,57 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pxml.h,v $
- * Revision 1.28  2007/05/16 03:34:37  csoutheren
- * Add support for default expat installation on MacOSX
- *
- * Revision 1.27  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.26  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.25  2005/08/04 20:10:24  csoutheren
- * Apply patch #1217596
- * Fixed problems with MacOSX Tiger
- * Thanks to Hannes Friederich
- *
- * Revision 1.24  2004/10/12 23:28:07  csoutheren
- * Fixed problem with bogus DOCTYPE being output
- *
- * Revision 1.23  2004/04/21 00:35:02  csoutheren
- * Added a stream parser for protocols like XMPP where each child of the root is to be considered a separate document/message.
- * Thanks to Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.22  2003/04/27 23:54:13  craigs
- * Removed deprecated options
- *
- * Revision 1.21  2003/03/31 07:41:50  craigs
- * Fixed problem with accidental introduced dependency on expat.h
- *
- * Revision 1.20  2003/03/31 06:21:19  craigs
- * Split the expat wrapper from the XML file handling to allow reuse of the parser
- *
- * Revision 1.19  2003/01/13 02:14:02  robertj
- * Improved error logging for auto-loaded XML
- *
- * Revision 1.18  2002/12/16 06:38:24  robertj
- * Added ability to specify certain elemets (by name) that are exempt from
- *   the indent formatting. Useful for XML/RPC where leading white space is
- *   not ignored by all servers.
- *
- * Revision 1.17  2002/11/26 05:53:57  craigs
- * Added ability to auto-reload from URL
- *
- * Revision 1.16  2002/11/21 08:09:04  craigs
- * Changed to not overwrite XML data if load fails
- *
- * Revision 1.15  2002/11/19 07:37:38  craigs
- * Added locking functions and LoadURL function
- *
- * Revision 1.14  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
+ * $Id$
  */
 
 #ifndef _PXML_H

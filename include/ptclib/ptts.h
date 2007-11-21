@@ -23,36 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ptts.h,v $
- * Revision 1.9  2007/09/18 06:21:49  csoutheren
- * Add new texttospeech types
- *
- * Revision 1.8  2007/04/19 04:33:53  csoutheren
- * Fixed problems with pre-compiled headers
- *
- * Revision 1.7  2005/01/04 07:44:02  csoutheren
- * More changes to implement the new configuration methodology, and also to
- * attack the global static problem
- *
- * Revision 1.6  2004/07/07 07:18:43  csoutheren
- * Removed warnings on Linux from Windows static global hacks
- *
- * Revision 1.5  2004/07/06 10:12:51  csoutheren
- * Added static integer o factory template to assist in ensuring factories are instantiated
- *
- * Revision 1.4  2004/06/19 07:18:58  csoutheren
- * Change TTS engine registration to use abstract factory code
- *
- * Revision 1.3  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.2  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.1  2002/08/06 04:45:38  craigs
- * Initial version
- *
+ * $Id$
  */
 
 #ifndef _PTEXTTOSPEECH

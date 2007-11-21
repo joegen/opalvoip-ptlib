@@ -23,42 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: delaychan.h,v $
- * Revision 1.10  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.9  2006/07/21 01:03:12  csoutheren
- * Fixed to PAdaptiveDelay
- * Thanks to Paolo Amadini
- *
- * Revision 1.8  2006/07/19 06:03:34  csoutheren
- * Add extension PAdaptiveDelay to set maximum and minimum delay times
- * Thanks to Paolo Amadini
- *
- * Revision 1.7  2006/06/20 12:44:02  csoutheren
- * Added new constructor for PDelayChannel
- * Thanks to Frederic Heem
- *
- * Revision 1.6  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.5  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.4  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.3  2002/02/25 11:05:02  rogerh
- * New Delay code which solves the accumulated error problem. Based on ideas
- * by Tomasz Motylewski <T.Motylewski@bfad.de>, Roger and Craig.
- *
- * Revision 1.2  2002/01/15 03:55:43  craigs
- * Added PAdaptiveDelay class
- *
- * Revision 1.1  2001/07/10 03:07:07  robertj
- * Added queue channel and delay channel classes to ptclib.
- *
+ * $Id$
  */
 
 #ifndef _DELAYCHAN_H

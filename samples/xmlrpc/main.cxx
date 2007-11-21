@@ -7,38 +7,7 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: main.cxx,v $
- * Revision 1.9  2007/09/17 11:14:45  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.8  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.7  2003/09/26 13:41:32  rjongbloed
- * Added special test to give more indicative error if try to compile without Expat support.
- *
- * Revision 1.6  2003/04/15 03:00:41  robertj
- * Added array support to XML/RPC
- * Fixed XML/RPC parsing when lots of white space in raw XML, caused by
- *   big fix to base XML parser not returning internal data elements.
- *
- * Revision 1.5  2002/12/04 02:09:17  robertj
- * Changed macro name prefix to PXMLRPC
- *
- * Revision 1.4  2002/12/04 00:16:18  robertj
- * Large enhancement to create automatically encoding and decoding structures
- *   using macros to build a class.
- *
- * Revision 1.3  2002/10/04 05:16:44  craigs
- * Changed for new XMLRPC code
- *
- * Revision 1.2  2002/03/27 01:54:40  craigs
- * Added ability to send random struct as request
- * Added ability to preview request without sending
- *
- * Revision 1.1  2002/03/26 07:05:28  craigs
- * Initial version
- *
+ * $Id$
  */
 
 /*

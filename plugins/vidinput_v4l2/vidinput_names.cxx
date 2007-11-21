@@ -25,28 +25,7 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
- * $Log: vidinput_names.cxx,v $
- * Revision 1.7  2007/02/19 22:26:14  dsandras
- * Fixed V4L2 OpenSolaris support thanks to Elaine Xiong <elaine xiong sun
- * com> (Ekiga report #407820). Thanks !
- *
- * Revision 1.6  2007/01/03 22:35:50  dsandras
- * Fixed possible race condition while detecting available devices. (#376078, #328753).
- *
- * Revision 1.5  2006/11/28 21:06:12  dsandras
- * Added a few missing mutexes in order to prevent collection
- * corruption when the update is called from different threads.
- * Hopefully fixes Ekiga report #376078.
- *
- * Revision 1.4  2006/01/07 16:09:58  dsandras
- * Removed name duplication for now.
- *
- * Revision 1.3  2005/11/30 12:47:39  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2004/11/07 22:48:47  dominance
- * fixed copyright of v4l2 plugin. Last commit's credits go to Nicola Orru' <nigu@itadinanta.it> ...
- *
+ * $Id$
  */
 #include "vidinput_names.h"
 

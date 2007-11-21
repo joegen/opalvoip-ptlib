@@ -7,33 +7,7 @@
  *
  * Copyright 2003 Equivalence
  *
- * $Log: main.cxx,v $
- * Revision 1.8  2007/06/27 15:26:44  shorne
- * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
- *
- * Revision 1.7  2006/02/26 11:51:20  csoutheren
- * Extended DNS test program to include URL based SRV lookups
- * Re-arranged SRV lookup code to allow access to internal routine
- * Reformatted code
- *
- * Revision 1.6  2004/12/08 00:54:29  csoutheren
- * Added URL lookups
- *
- * Revision 1.5  2004/05/31 13:57:00  csoutheren
- * Added tests for ENUM resolution
- *
- * Revision 1.4  2003/09/26 13:42:16  rjongbloed
- * Added special test to give more indicative error if try to compile without DNS support.
- *
- * Revision 1.3  2003/04/22 23:25:13  craigs
- * Changed help message for SRV records
- *
- * Revision 1.2  2003/04/15 08:15:16  craigs
- * Added single string form of GetSRVRecords
- *
- * Revision 1.1  2003/04/15 04:12:38  craigs
- * Initial version
- *
+ * $Id$
  */
 
 #include <ptlib.h>

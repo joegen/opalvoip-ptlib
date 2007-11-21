@@ -26,25 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ptlib.inl,v $
- * Revision 1.2  2002/06/27 06:44:46  robertj
- * Changed "" to PString::Empty() where assigning to PString.
- *
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.18  1998/11/24 09:38:22  robertj
- * FreeBSD port.
- *
- * Revision 1.17  1998/11/10 12:59:18  robertj
- * Fixed strange problems with readdir_r usage.
- *
- * Revision 1.16  1998/10/18 10:02:47  robertj
- * Fixed program argument access functions.
- *
- * Revision 1.15  1998/09/24 04:11:49  robertj
- * Added open software license.
- *
+ * $Id$
  */
 
 #if defined(P_LINUX)

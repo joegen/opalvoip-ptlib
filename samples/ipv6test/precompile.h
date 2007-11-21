@@ -23,19 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.h,v $
- * Revision 1.1  2004/12/14 06:50:59  csoutheren
- * Initial version
- *
- * Revision 1.1  2004/09/10 01:59:35  dereksmithies
- * Initial release of program to test Dtmf creation and detection.
- *
- * Revision 1.1  2003/04/28 08:18:42  craigs
- * Initial version
- *
- * Revision 1.1  2003/02/20 01:10:52  robertj
- * Changed precompiled header so can precompile more than just ptlib.h
- *
+ * $Id$
  */
 
 #include <ptlib.h>

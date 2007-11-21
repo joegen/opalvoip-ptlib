@@ -26,17 +26,7 @@
  *
  * Contributor(s): 
  *
- * $Log: macosaudio.cxx,v $
- * Revision 1.3  2002/02/09 00:52:01  robertj
- * Slight adjustment to API and documentation for volume functions.
- *
- * Revision 1.2  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannel
- *
- * Revision 1.1  2001/08/11 15:38:43  rogerh
- * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
- *
- *
+ * $Id$
  */
 
 #pragma implementation "sound.h"

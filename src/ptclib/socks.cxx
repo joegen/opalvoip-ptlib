@@ -21,35 +21,7 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * $Log: socks.cxx,v $
- * Revision 1.9  2004/04/03 08:22:21  csoutheren
- * Remove pseudo-RTTI and replaced with real RTTI
- *
- * Revision 1.8  2003/09/08 01:42:48  dereksmithies
- * Add patch from Diego Tartara <dtartara@mens2.hq.novamens.com>. Many Thanks!
- *
- * Revision 1.7  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.6  2002/08/05 05:40:45  robertj
- * Fixed missing pragma interface/implementation
- *
- * Revision 1.5  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.4  1999/11/23 08:45:10  robertj
- * Fixed bug in user/pass authentication version, thanks Dmitry <dipa@linkline.com>
- *
- * Revision 1.3  1999/02/16 08:08:06  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.2  1998/12/23 00:35:28  robertj
- * UDP support.
- *
- * Revision 1.1  1998/12/22 10:30:24  robertj
- * Initial revision
- *
+ * $Id$
  */
 
 #include <ptlib.h>
