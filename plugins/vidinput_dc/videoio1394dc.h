@@ -18,7 +18,9 @@
  * Classes to support streaming video input from IEEE 1394 cameras.
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

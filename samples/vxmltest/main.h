@@ -5,7 +5,9 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _Vxmltest_MAIN_H

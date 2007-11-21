@@ -5,7 +5,9 @@
  *
  * Copyright 2004 Reitek S.p.A.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _XMPPTest_MAIN_H

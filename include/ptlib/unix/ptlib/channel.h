@@ -26,7 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #ifndef __PCHANNEL_UNIX__
 #define __PCHANNEL_UNIX__

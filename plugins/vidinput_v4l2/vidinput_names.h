@@ -25,7 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #ifndef _VIDINPUTNAMES_H
 #define _VIDINPUTNAMES_H

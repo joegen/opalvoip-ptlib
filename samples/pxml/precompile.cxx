@@ -7,7 +7,9 @@
  *
  * Copyright 2002 David Iodice.
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

@@ -7,7 +7,9 @@
  * Simple program to report the host name of this machine
  *                          the address of one network interface
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #include <ptlib.h>
 #include <ptlib/sockets.h>

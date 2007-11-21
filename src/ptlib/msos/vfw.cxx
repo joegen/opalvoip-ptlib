@@ -24,7 +24,9 @@
  * Contributor(s): ______________________________________.
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #define P_FORCE_STATIC_PLUGIN

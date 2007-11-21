@@ -24,7 +24,9 @@
  *
  * Contributor(s): /
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef __DIRECTSOUND_H__

@@ -10,7 +10,9 @@
  * type text in one, hit return.  See this text in the second computer.
  *
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

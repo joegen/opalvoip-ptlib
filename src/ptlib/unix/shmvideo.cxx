@@ -12,7 +12,9 @@
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
- * $Id$
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #define P_FORCE_STATIC_PLUGIN
