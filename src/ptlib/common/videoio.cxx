@@ -84,6 +84,9 @@ static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
 } colourFormatBPPTab[] = {
+  { "YUV420",  12 },
+  { "YUV420P", 12 },
+  { "I420",    12 },
   { "RGB32",   32 },
   { "BGR32",   32 },
   { "RGB24",   24 },
@@ -97,10 +100,7 @@ static struct {
   { "YUV411P", 12 },
   { "RGB565",  16 },
   { "RGB555",  16 },
-  { "YUV420",  12 },
-  { "YUV420P", 12 },
   { "IYUV",    12 },
-  { "I420",    12 },
   { "YUV410",  10 },
   { "YUV410P", 10 },
   { "Grey",     8 },
