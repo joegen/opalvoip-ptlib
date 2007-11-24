@@ -111,6 +111,15 @@ class PInterfaceMonitor : public PObject
       InterfaceEntry & info   /// Information on the interface
     );
     
+    /** Returns whether the descriptor string equals the interface entry.
+        Note that when searching the descriptor may be a partial match
+        e.g. "10.0.1.11" or "%eth0" may be used.
+      */
+    static BOOL IsMatchingInterface(
+      const PString & iface,        /// Interface descriptor
+      const InterfaceEntry & entry  /// Interface entry
+    );
+    
     /** Sets the monitor's interface filter. Note that the monitor instance
         handles deletion of the filter.
       */
@@ -125,10 +134,8 @@ class PInterfaceMonitor : public PObject
 
     void AddClient(PInterfaceMonitorClient *);
     void RemoveClient(PInterfaceMonitorClient *);
-
-    virtual void OnAddInterface(const InterfaceEntry & entry);
-    virtual void OnRemoveInterface(const InterfaceEntry & entry);
-
+    
+    virtual void OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces, const PIPSocket::InterfaceTable & removedInterfaces);
 
     typedef PSmartPtr<PInterfaceMonitorClient> ClientPtr;
 
@@ -159,7 +166,10 @@ class PInterfaceMonitorClient : public PSafeObject
 {
   PCLASSINFO(PInterfaceMonitorClient, PSafeObject);
   public:
-    PInterfaceMonitorClient();
+    enum {
+      DefaultPriority = 50,
+    };
+    PInterfaceMonitorClient(PINDEX priority = DefaultPriority);
     ~PInterfaceMonitorClient();
 
     typedef PIPSocket::InterfaceEntry InterfaceEntry;
@@ -188,7 +198,7 @@ class PInterfaceMonitorClient : public PSafeObject
        Higher priority clients get their callback functions called first. Clients
        with the same priority get called in the order of their insertion.
       */
-    virtual PINDEX GetPriority() const { return 50; }
+    PINDEX GetPriority() const { return priority; }
 
   protected:
     /// Call back function for when an interface has been added to the system
@@ -199,6 +209,8 @@ class PInterfaceMonitorClient : public PSafeObject
     
     /// Called when a PSTUNClient is about to be destroyed
     virtual void OnRemoveSTUNClient(const PSTUNClient * /*stun*/) { }
+    
+    PINDEX priority;
 
   friend class PInterfaceMonitor;
 };
