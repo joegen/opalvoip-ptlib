@@ -44,7 +44,8 @@
 
 //////////////////////////////////////////////////
 
-PInterfaceMonitorClient::PInterfaceMonitorClient()
+PInterfaceMonitorClient::PInterfaceMonitorClient(PINDEX _priority)
+: priority(_priority)
 {
   PInterfaceMonitor::GetInstance().AddClient(this);
 }
@@ -199,23 +200,30 @@ void PInterfaceMonitor::RefreshInterfaceList()
 
     PIPSocket::InterfaceTable oldInterfaces = currentInterfaces;
     currentInterfaces = newInterfaces;
-
+    
     PTRACE(4, "IfaceMon\tInterface change detected, new list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
-
-    // look for interfaces to add that are in new list that are not in the old list
+    
+    // calculate the set of interfaces to add / remove beforehand
+    PIPSocket::InterfaceTable interfacesToAdd;
+    PIPSocket::InterfaceTable interfacesToRemove;
+    interfacesToAdd.DisallowDeleteObjects();
+    interfacesToRemove.DisallowDeleteObjects();
+    
     PINDEX i;
+    // look for interfaces to add that are in new list that are not in the old list
     for (i = 0; i < newInterfaces.GetSize(); ++i) {
       PIPSocket::InterfaceEntry & newEntry = newInterfaces[i];
       if (!newEntry.GetAddress().IsLoopback() && !IsInterfaceInList(newEntry, oldInterfaces))
-        OnAddInterface(newEntry);
+        interfacesToAdd.Append(&newEntry);
     }
-
     // look for interfaces to remove that are in old list that are not in the new list
     for (i = 0; i < oldInterfaces.GetSize(); ++i) {
       PIPSocket::InterfaceEntry & oldEntry = oldInterfaces[i];
       if (!oldEntry.GetAddress().IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
-        OnRemoveInterface(oldEntry);
+        interfacesToRemove.Append(&oldEntry);
     }
+    
+    OnInterfacesChanged(interfacesToAdd, interfacesToRemove);
   }
 }
 
@@ -265,6 +273,18 @@ static BOOL SplitInterfaceDescription(const PString & iface,
     address = iface.Left(percent);
   name = iface.Mid(percent+1);
   return !name.IsEmpty();
+}
+
+
+static BOOL InterfaceMatches(const PIPSocket::Address & addr,
+                             const PString & name,
+                             const PIPSocket::InterfaceEntry & entry)
+{
+  if ((addr.IsAny()   || entry.GetAddress() == addr) &&
+      (name.IsEmpty() || entry.GetName().NumCompare(name) == PString::EqualTo)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 
@@ -325,14 +345,25 @@ BOOL PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::Inter
 
   for (PINDEX i = 0; i < currentInterfaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
-    if ((addr.IsAny()   || entry.GetAddress() == addr) &&
-        (name.IsEmpty() || entry.GetName().NumCompare(name) == EqualTo)) {
+    if (InterfaceMatches(addr, name, entry)) {
       info = entry;
       return TRUE;
     }
   }
 
   return FALSE;
+}
+
+
+BOOL PInterfaceMonitor::IsMatchingInterface(const PString & iface, 
+                                            const PIPSocket::InterfaceEntry & entry)
+{
+  PIPSocket::Address addr;
+  PString name;
+  if (!SplitInterfaceDescription(iface, addr, name))
+    return FALSE;
+  
+  return InterfaceMatches(addr, name, entry);
 }
 
 
@@ -374,29 +405,20 @@ void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
     Stop();
 }
 
-
-void PInterfaceMonitor::OnAddInterface(const PIPSocket::InterfaceEntry & entry)
+void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces,
+                                            const PIPSocket::InterfaceTable & removedInterfaces)
 {
   PWaitAndSignal m(mutex);
-
+  
   for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
     if (client->LockReadWrite()) {
-      client->OnAddInterface(entry);
-      client->UnlockReadWrite();
-    }
-  }
-}
-
-
-void PInterfaceMonitor::OnRemoveInterface(const PIPSocket::InterfaceEntry & entry)
-{
-  PWaitAndSignal m(mutex);
-
-  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
-    PInterfaceMonitorClient * client = *iter;
-    if (client->LockReadWrite()) {
-      client->OnRemoveInterface(entry);
+      for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++) {
+        client->OnAddInterface(addedInterfaces[i]);
+      }
+      for (PINDEX i = 0; i < removedInterfaces.GetSize(); i++) {
+        client->OnRemoveInterface(removedInterfaces[i]);
+      }
       client->UnlockReadWrite();
     }
   }
