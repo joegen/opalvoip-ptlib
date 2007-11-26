@@ -166,9 +166,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PVXMLSession(PTextToSpeech * tts = NULL, BOOL autoDelete = FALSE);
     virtual ~PVXMLSession();
 
-    void SetFinishWhenEmpty(BOOL v)
-    { finishWhenEmpty = v; }
-
     // new functions
     PTextToSpeech * SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete = FALSE);
     PTextToSpeech * SetTextToSpeech(const PString & ttsName);
@@ -211,6 +208,8 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     //virtual BOOL PlayMedia(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
     virtual BOOL PlaySilence(const PTimeInterval & timeout);
+
+    virtual BOOL PlayStop();
 
     virtual void SetPause(BOOL pause);
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
@@ -302,8 +301,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PSyncPoint    recordSync;
 
     BOOL loaded;
-    BOOL finishWhenEmpty;
-    BOOL allowFinish;
     PURL rootURL;
     BOOL emptyAction;
 
@@ -425,6 +422,16 @@ class PVXMLPlayable : public PObject
     unsigned sampleFrequency;
     BOOL autoDelete;
     BOOL delayDone; // very tacky flag used to indicate when the post-play delay has been done
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLPlayableStop : public PVXMLPlayable
+{
+  PCLASSINFO(PVXMLPlayableStop, PVXMLPlayable);
+  public:
+    virtual void Play(PVXMLChannel & outgoingChannel);
+    virtual BOOL ReadFrame(PVXMLChannel & channel, void *, PINDEX);
 };
 
 //////////////////////////////////////////////////////////////////

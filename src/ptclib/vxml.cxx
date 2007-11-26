@@ -137,6 +137,19 @@ BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLe
 
 ///////////////////////////////////////////////////////////////
 
+void PVXMLPlayableStop::Play(PVXMLChannel & channel)
+{
+  channel.Close(); 
+}
+
+BOOL PVXMLPlayableStop::ReadFrame(PVXMLChannel & channel, void *, PINDEX)
+{ 
+  channel.Close(); 
+  return FALSE; 
+}
+
+///////////////////////////////////////////////////////////////
+
 BOOL PVXMLPlayableFilename::Open(PVXMLChannel & chan, const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
 { 
   fn = _fn; 
@@ -538,7 +551,6 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   vxmlThread       = NULL;
   threadRunning    = FALSE;
   vxmlChannel      = NULL;
-  finishWhenEmpty  = TRUE;
   textToSpeech     = NULL;
   loaded           = FALSE;
   emptyAction      = FALSE;
@@ -555,7 +567,6 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 void PVXMLSession::Initialise()
 {
   recording        = FALSE;
-  allowFinish      = FALSE;
   listening        = FALSE;
   activeGrammar    = NULL;
   listening        = FALSE;
@@ -663,7 +674,6 @@ BOOL PVXMLSession::LoadVXML(const PString & xmlText)
 {
   PWaitAndSignal m(sessionMutex);
 
-  allowFinish = loaded = FALSE;
   rootURL = PString::Empty();
 
   // parse the XML
@@ -983,7 +993,7 @@ void PVXMLSession::ExecuteDialog()
   }
 
   // Determine if we should quit
-  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording() && allowFinish && finishWhenEmpty) {
+  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
     threadRunning = FALSE;
     waitForEvent.Signal();
   }
@@ -1326,8 +1336,6 @@ BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOO
   if (vxmlChannel == NULL || !vxmlChannel->QueueFile(fn, repeat, delay, autoDelete))
     return FALSE;
 
-  AllowClearCall();
-
   return TRUE;
 }
 
@@ -1335,8 +1343,6 @@ BOOL PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueueCommand(cmd, repeat, delay))
     return FALSE;
-
-  AllowClearCall();
 
   return TRUE;
 }
@@ -1346,8 +1352,6 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
   if (vxmlChannel == NULL || !vxmlChannel->QueueData(data, repeat, delay))
     return FALSE;
   
-  AllowClearCall();
-
   return TRUE;
 }
 
@@ -1355,8 +1359,6 @@ BOOL PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX dela
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable("Tone", toneSpec, repeat, delay, true))
     return FALSE;
-
-  AllowClearCall();
 
   return TRUE;
 }
@@ -1378,7 +1380,13 @@ BOOL PVXMLSession::PlaySilence(PINDEX msecs)
   if (vxmlChannel == NULL || !vxmlChannel->QueueData(nothing, 1, msecs))
     return FALSE;
 
-  AllowClearCall();
+  return TRUE;
+}
+
+BOOL PVXMLSession::PlayStop()
+{
+  if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable(new PVXMLPlayableStop()))
+    return FALSE;
 
   return TRUE;
 }
@@ -1387,8 +1395,6 @@ BOOL PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueueResource(url, repeat, delay))
     return FALSE;
-
-  AllowClearCall();
 
   return TRUE;
 }
@@ -1426,8 +1432,6 @@ BOOL PVXMLSession::PlayText(const PString & _text,
 
   if (!vxmlChannel->QueuePlayable(playable))
     return FALSE;
-
-  AllowClearCall();
 
   return TRUE;
 }
@@ -1548,11 +1552,6 @@ PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mod
     return new PWAVFile(fn, mode, opts, fmt);
 
   return new PWAVFile(mode, opts, fmt); 
-}
-
-void PVXMLSession::AllowClearCall()
-{
-  allowFinish = TRUE;
 }
 
 BOOL PVXMLSession::TraverseAudio()
