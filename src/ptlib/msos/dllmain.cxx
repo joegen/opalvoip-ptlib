@@ -37,7 +37,7 @@
 
 #include <ptbuildopts.h>
 
-#ifdef P_DIRECTSOUND
+#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
 #define INITGUID
 #include <dsound.h>
 #endif
