@@ -1409,10 +1409,6 @@ void PTimedMutex::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
-PSyncPoint::PSyncPoint(unsigned maxSignals)
-  : PSemaphore(::CreateEvent(NULL, FALSE, maxSignals, NULL))
-{
-}
 
 PSyncPoint::PSyncPoint()
   : PSemaphore(::CreateEvent(NULL, FALSE, FALSE, NULL))
