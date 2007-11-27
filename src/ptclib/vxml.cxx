@@ -1416,6 +1416,8 @@ BOOL PVXMLSession::PlayText(const PString & _text,
                                      PINDEX repeat, 
                                      PINDEX delay)
 {
+  PTRACE(2, "PVXML\tConverting " << _text << " to speech");
+
   PStringArray list;
   BOOL useCache = !(GetVar("caching") *= "safe");
   if (!ConvertTextToFilenameList(_text, type, list, useCache) || (list.GetSize() == 0)) {
@@ -1432,6 +1434,8 @@ BOOL PVXMLSession::PlayText(const PString & _text,
 
   if (!vxmlChannel->QueuePlayable(playable))
     return FALSE;
+
+  PTRACE(2, "PVXML\tQueued filename list for playing");
 
   return TRUE;
 }
@@ -1456,7 +1460,9 @@ BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeec
       spoken = PVXMLCache::GetResourceCache().Get(prefix, contentType + "\n" + text, "wav", contentType, dataFn);
 
     // if not cached, then use the text to speech converter
-    if (!spoken) {
+    if (spoken) {
+     PTRACE(3, "PVXML\tUsing cached WAV file for " << _text);
+    } else {
       PFilePath tmpfname;
       if (textToSpeech != NULL) {
         tmpfname = PVXMLCache::GetResourceCache().GetRandomFilename("tts", "wav");
@@ -1464,6 +1470,7 @@ BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeec
           PTRACE(2, "PVXML\tcannot open file " << tmpfname);
         } else {
           spoken = textToSpeech->Speak(text, type);
+          PTRACE(3, "PVXML\tCreated new WAV file for " << _text);
           if (!textToSpeech->Close()) {
             PTRACE(2, "PVXML\tcannot close TTS engine");
           }
@@ -2914,7 +2921,10 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (line.IsEmpty())
       continue;
 
+    PTRACE(3, "TTS\tAsked to speak " << text << " with type " << hint);
+
     if (hint == DateAndTime) {
+      PTRACE(3, "TTS\tSpeaking date and time");
       Speak(text, Date);
       Speak(text, Time);
       continue;
@@ -2923,6 +2933,7 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (hint == Date) {
       PTime time(line);
       if (time.IsValid()) {
+        PTRACE(4, "TTS\tSpeaking date " << time);
         SpeakFile(time.GetDayName(time.GetDayOfWeek(), PTime::FullName));
         SpeakNumber(time.GetDay());
         SpeakFile(time.GetMonthName(time.GetMonth(), PTime::FullName));
@@ -2934,6 +2945,7 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (hint == Time) {
       PTime time(line);
       if (time.IsValid()) {
+        PTRACE(4, "TTS\tSpeaking time " << time);
         int hour = time.GetHour();
         if (hour < 13) {
           SpeakNumber(hour);
@@ -2953,29 +2965,34 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       BOOL isTime = FALSE;
       BOOL isDate = FALSE;
 
-      for (i = 0; !isDate && i < 7; ++i)
-        isDate |= line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName));
-      for (i = 0; !isDate && i < 7; ++i)
-        isDate |= line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
-      for (i = 0; !isDate && i < 12; ++i)
-        isDate |= line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName));
-      for (i = 0; !isDate && i < 12; ++i)
-        isDate |= line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+      for (i = 0; !isDate && i < 7; ++i) {
+        isDate = isDate || (line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName)) != P_MAX_INDEX);
+        isDate = isDate || (line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated)) != P_MAX_INDEX);
+        PTRACE(4, "TTS\t " << isDate << " - " << PTime::GetDayName((PTime::Weekdays)i, PTime::FullName) << "," << PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
+      }
+      for (i = 1; !isDate && i <= 12; ++i) {
+        isDate = isDate || (line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName)) != P_MAX_INDEX);
+        isDate = isDate || (line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated)) != P_MAX_INDEX);
+        PTRACE(4, "TTS\t " << isDate << " - " << PTime::GetMonthName((PTime::Months)i, PTime::FullName) << "," << PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+      }
 
       if (!isTime)
-        isTime = line.Find(PTime::GetTimeSeparator());
+        isTime = line.Find(PTime::GetTimeSeparator()) != P_MAX_INDEX;
       if (!isDate)
-        isDate = line.Find(PTime::GetDateSeparator());
+        isDate = line.Find(PTime::GetDateSeparator()) != P_MAX_INDEX;
 
       if (isDate && isTime) {
+        PTRACE(4, "TTS\tDefault changed to DateAndTime");
         Speak(line, DateAndTime);
         continue;
       }
       if (isDate) {
+        PTRACE(4, "TTS\tDefault changed to Date");
         Speak(line, Date);
         continue;
       }
       else if (isTime) {
+        PTRACE(4, "TTS\tDefault changed to Time");
         Speak(line, Time);
         continue;
       }
@@ -2983,7 +3000,10 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       
     PStringArray tokens = line.Tokenise("\t ", FALSE);
     for (PINDEX j = 0; j < tokens.GetSize(); ++j) {
-      PString word = tokens[i].Trim();
+      PString word = tokens[j].Trim();
+      if (word.IsEmpty())
+        continue;
+      PTRACE(4, "TTS\tSpeaking word " << word << " as " << hint);
       switch (hint) {
 
         case Time:
@@ -2992,37 +3012,43 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
           PAssertAlways("Logic error");
           break;
 
-        case Literal:
+        default:
         case Default:
+        case Literal:
           {
-            // assume anything with a dot is an ip address
-            BOOL isIpAddress = TRUE;
             BOOL isDigits = TRUE;
+            BOOL isIpAddress = TRUE;
 
-            PINDEX i;
-            for (i = 0; i < word.GetLength(); ++i) {
-              if (word[i] == '.')
+            PINDEX k;
+            for (k = 0; k < word.GetLength(); ++k) {
+              if (word[k] == '.')
                 isDigits = FALSE;
-              else if (!isdigit(word[i]))
+              else if (!isdigit(word[k]))
                 isDigits = isIpAddress = FALSE;
             }
 
-            if (isIpAddress)
-              return Speak(word, IPAddress);
-            else if (isDigits)
-              return Speak(word, Number);
-            else
-              return Speak(word, Spell);
+            if (isIpAddress) {
+              PTRACE(4, "TTS\tDefault changed to IPAddress");
+              Speak(word, IPAddress);
+            } else if (isDigits) {
+              PTRACE(4, "TTS\tDefault changed to Number");
+              Speak(word, Number);
+            } else {
+              PTRACE(4, "TTS\tDefault changed to Spell");
+              Speak(word, Spell);
+            }
           }
           break;
 
         case Spell:
+          PTRACE(4, "TTS\tSpelling " << text);
           for (PINDEX i = 0; i < text.GetLength(); ++i) 
             SpeakFile(PString(text[i]));
           break;
 
         case Phone:
         case Digits:
+          PTRACE(4, "TTS\tSpeaking digits " << text);
           for (PINDEX i = 0; i < text.GetLength(); ++i) {
             if (isdigit(text[i]))
               SpeakFile(PString(text[i]));
@@ -3034,6 +3060,7 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         case Number:
           {
             int number = atoi(line);
+            PTRACE(4, "TTS\tSpeaking number " << number);
             if (number < 0) {
               SpeakFile("negative");
               number = -number;
@@ -3075,6 +3102,7 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         case IPAddress:
           {
             PIPSocket::Address addr(line);
+            PTRACE(4, "TTS\tSpeaking IP address " << addr);
             for (PINDEX i = 0; i < 4; ++i) {
               int octet = addr[i];
               if (octet < 100)
