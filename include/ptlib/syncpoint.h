@@ -67,8 +67,7 @@ class PSyncPoint : public PSemaphore
     /** Create a new sync point.
      */
     PSyncPoint();
-    PSyncPoint(unsigned maxSignals);
-    PSyncPoint(const PSyncPoint & syncPoint);
+    PSyncPoint(const PSyncPoint &);
 
 
 // Include platform dependent part of class
