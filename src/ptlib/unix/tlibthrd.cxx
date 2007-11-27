@@ -1387,20 +1387,31 @@ BOOL PTimedMutex::WillBlock() const
 }
 
 
+PSyncPoint::PSyncPoint(unsigned maxSignals)
+  : PSemaphore(PXSyncPoint)
+{
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+  signalCount = 0;
+  maxSignalCount = maxSignals; 
+}
+
 PSyncPoint::PSyncPoint()
   : PSemaphore(PXSyncPoint)
 {
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
   signalCount = 0;
+  maxSignalCount = 0; 
 }
 
-PSyncPoint::PSyncPoint(const PSyncPoint &)
+PSyncPoint::PSyncPoint(const PSyncPoint & syncPoint)
   : PSemaphore(PXSyncPoint)
 {
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
   signalCount = 0;
+  maxSignalCount = syncPoint.maxSignalCount; 
 }
 
 PSyncPoint::~PSyncPoint()
@@ -1450,7 +1461,8 @@ BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
 void PSyncPoint::Signal()
 {
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
-  signalCount++;
+  if ((maxSignalCount == 0) || (signalCount < maxSignalCount))
+    signalCount++;
   PAssertPTHREAD(pthread_cond_signal, (&condVar));
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
 }
