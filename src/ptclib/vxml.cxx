@@ -3095,9 +3095,11 @@ BOOL TextToSpeech_Sample::Speak(const PString & text, TextType hint)
 
 BOOL TextToSpeech_Sample::SpeakFile(const PString & text)
 {
-  PFilePath f = PDirectory(voice) + (text + ".wav");
-  if (!PFile::Exists(f))
+  PFilePath f = PDirectory(voice) + (text.ToLower() + ".wav");
+  if (!PFile::Exists(f)) {
+    PTRACE(2, "TTS\tUnable to find explicit file for " << text);
     return FALSE;
+  }
   filenames.push_back(f);
   return TRUE;
 }
