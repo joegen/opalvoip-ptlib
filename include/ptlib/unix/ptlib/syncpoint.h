@@ -47,7 +47,6 @@
     virtual BOOL WillBlock() const;
   private:
     unsigned signalCount;
-    unsigned maxSignalCount;
 #endif
 
 // End Of File ////////////////////////////////////////////////////////////////
