@@ -116,6 +116,21 @@ static PString GetContentType(const PFilePath & fn)
 
 ///////////////////////////////////////////////////////////////
 
+BOOL PVXMLPlayable::Open(PVXMLChannel & chan, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
+{ 
+  chan.SetReadChannel(NULL); 
+  delay = _delay; 
+  repeat = _repeat; 
+  autoDelete = _autoDelete; 
+  return TRUE; 
+}
+
+BOOL PVXMLPlayable::Open(PVXMLChannel & chan, const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v)
+{ 
+  arg = _arg; 
+  return Open(chan, _delay, _repeat, v); 
+}
+
 BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLen)
 {
   BYTE * buf = (BYTE *)_buf;
@@ -140,7 +155,6 @@ BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLe
 void PVXMLPlayableStop::Play(PVXMLChannel & channel)
 {
 	channel.SetSilentCount(20);
-  channel.Close(); 
 }
 
 BOOL PVXMLPlayableStop::ReadFrame(PVXMLChannel & channel, void *, PINDEX)
@@ -2431,12 +2445,9 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
       }
 
       // try and read data from the underlying channel
-      if (GetBaseReadChannel() != NULL) {
+      else if (currentPlayItem != NULL) {
 
         PWaitAndSignal m(queueMutex);
-
-        // see if the item needs to repeat
-        PAssert(currentPlayItem != NULL, "current VXML play item disappeared");
 
         // if the read succeeds, we are done
         if (currentPlayItem->ReadFrame(*this, buffer, amount)) {
@@ -2455,33 +2466,35 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
         PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
         PDelayChannel::Close();
 
-        // repeat the item if needed
-        if (currentPlayItem->GetRepeat() > 1) {
-          if (!currentPlayItem->Rewind(GetBaseReadChannel())) {
-            PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
-          } else {
-            currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
-            currentPlayItem->OnRepeat(*this);
-            continue;
-          }
-        } 
+        // if current item still active, check for trailing actions
+        if (currentPlayItem != NULL) {
+          if (currentPlayItem->GetRepeat() > 1) {
+            if (!currentPlayItem->Rewind(GetBaseReadChannel())) {
+              PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
+            } else {
+              currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
+              currentPlayItem->OnRepeat(*this);
+              continue;
+            }
+          } 
 
-        // see if end of queue delay specified
-        PINDEX delay = 0;
-        if (currentPlayItem->delayDone) {
-          delay = currentPlayItem->GetDelay();
-          if (delay != 0) {
-            PTRACE(3, "PVXML\tDelaying for " << delay);
-            delayTimer = delay;
-            currentPlayItem->delayDone = TRUE;
-            continue;
+          // see if end of queue delay specified
+          PINDEX delay = 0;
+          if (currentPlayItem->delayDone) {
+            delay = currentPlayItem->GetDelay();
+            if (delay != 0) {
+              PTRACE(3, "PVXML\tDelaying for " << delay);
+              delayTimer = delay;
+              currentPlayItem->delayDone = TRUE;
+              continue;
+            }
           }
+
+          // stop the current item
+          currentPlayItem->OnStop();
+          delete currentPlayItem;
+          currentPlayItem = NULL;
         }
-
-        // stop the current item
-        currentPlayItem->OnStop();
-        delete currentPlayItem;
-        currentPlayItem = NULL;
       }
 
       // check the queue for the next action
