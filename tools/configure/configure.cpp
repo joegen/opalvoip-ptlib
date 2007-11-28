@@ -178,7 +178,7 @@
 #include <io.h>
 
 
-#define VERSION "1.12"
+#define VERSION "1.13"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -439,8 +439,11 @@ bool FindFileInTree(const string & directory, string & filename)
 
       string subdir = GetFullPathNameString(directory + fileinfo.cFileName);
       if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
+		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) == 0 &&
+		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_SYSTEM) == 0 &&
            fileinfo.cFileName[0] != '.' &&
            stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
+           stricmp(fileinfo.cFileName, "$recycle.bin") != 0 &&
            !DirExcluded(subdir)) {
         subdir += '\\';
 
@@ -595,8 +598,11 @@ bool TreeWalk(const string & directory)
     do {
       string subdir = GetFullPathNameString(directory + fileinfo.cFileName);
       if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
+		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) == 0 &&
+		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_SYSTEM) == 0 &&
            fileinfo.cFileName[0] != '.' &&
            stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
+           stricmp(fileinfo.cFileName, "$recycle.bin") != 0 &&
            !DirExcluded(subdir)) {
         subdir += '\\';
 
