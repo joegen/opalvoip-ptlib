@@ -1392,7 +1392,7 @@ PSyncPoint::PSyncPoint()
 {
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
-  signalCount = 0;
+  signalled = false;
 }
 
 PSyncPoint::PSyncPoint(const PSyncPoint &)
@@ -1400,7 +1400,7 @@ PSyncPoint::PSyncPoint(const PSyncPoint &)
 {
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
-  signalCount = 0;
+  signalled = false;
 }
 
 PSyncPoint::~PSyncPoint()
@@ -1412,9 +1412,9 @@ PSyncPoint::~PSyncPoint()
 void PSyncPoint::Wait()
 {
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
-  while (signalCount == 0)
+  while (!signalled)
     pthread_cond_wait(&condVar, &mutex);
-  signalCount--;
+  signalled = false;
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
 }
 
@@ -1430,7 +1430,7 @@ BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
   int err = 0;
-  while (signalCount == 0) {
+  while (!signalled) {
     err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
     if (err == 0 || err == ETIMEDOUT)
       break;
@@ -1439,7 +1439,7 @@ BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
   }
 
   if (err == 0)
-    signalCount--;
+    signalled = false;
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
 
@@ -1450,7 +1450,7 @@ BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
 void PSyncPoint::Signal()
 {
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
-  signalCount++;
+  signalled = true;
   PAssertPTHREAD(pthread_cond_signal, (&condVar));
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
 }
@@ -1458,7 +1458,7 @@ void PSyncPoint::Signal()
 
 BOOL PSyncPoint::WillBlock() const
 {
-  return signalCount == 0;
+  return !signalled;
 }
 
 
