@@ -596,6 +596,8 @@ class PVXMLChannel : public PDelayChannel
     unsigned GetSampleFrequency() const
     { return sampleFrequency; }
 
+	  void SetSilentCount(int v) { silentCount = v; }
+
   protected:
     PVXMLChannelInterface * vxmlInterface;
 
