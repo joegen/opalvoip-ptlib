@@ -298,9 +298,14 @@
 
 #ifdef P_WINEXPAT
 
-#pragma include_alias(<expat.h>, <@WINEXPAT_DIR@/source/lib/expat.h>)
 
+#if P_WINEXPAT == 2
+#pragma include_alias(<expat.h>, <@WINEXPAT2_DIR@/source/lib/expat.h>)
+#define P_EXPAT_LIBRARY "@WINEXPAT2_DIR@/bin/libexpatMT.lib"
+#else 
+#pragma include_alias(<expat.h>, <@WINEXPAT_DIR@/source/lib/expat.h>)
 #define P_EXPAT_LIBRARY "@WINEXPAT_DIR@/libs/libexpat.lib"
+#endif
 
 #else
 
