@@ -43,7 +43,7 @@
 
 /** This class defines a thread synchonisation object.
   This form of semaphore is used to indicate an {\it event} has occurred. A
-  thread may block on theis sync point and wait until another thread signals
+  thread may block on the sync point and wait until another thread signals
   that it may continue. eg:
 \begin{verbatim}
     ... thread one
@@ -58,6 +58,12 @@
     do_yet_more();
 
 \end{verbatim}
+
+  Note that events are boolean in nature. If "thread one" is not waiting on the
+  event, multiple calls to Signal() are ignored, thread one will only exit the
+  Wait() call a sibngle time once it gets there. Similarly, if multiple threads
+  are waiting on the event, only one thread will be released. As you cannot know
+  which thread will be released this mode of use is not recommended.
  */
 class PSyncPoint : public PSemaphore
 {
