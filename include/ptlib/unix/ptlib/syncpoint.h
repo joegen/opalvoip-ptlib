@@ -46,7 +46,7 @@
     virtual void Signal();
     virtual BOOL WillBlock() const;
   private:
-    unsigned signalCount;
+    bool signalled;
 #endif
 
 // End Of File ////////////////////////////////////////////////////////////////
