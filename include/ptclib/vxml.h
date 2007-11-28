@@ -377,11 +377,9 @@ class PVXMLPlayable : public PObject
     PVXMLPlayable()
     { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = FALSE; delayDone = FALSE; }
 
-    virtual BOOL Open(PVXMLChannel & /*chan*/, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
-    { delay = _delay; repeat = _repeat; autoDelete = _autoDelete; return TRUE; }
+    virtual BOOL Open(PVXMLChannel & chan, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete);
 
-    virtual BOOL Open(PVXMLChannel & chan, const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v)
-    { arg = _arg; return Open(chan, _delay, _repeat, v); }
+    virtual BOOL Open(PVXMLChannel & chan, const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v);
 
     virtual void Play(PVXMLChannel & outgoingChannel) = 0;
 
