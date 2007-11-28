@@ -41,11 +41,13 @@
 
 #if P_EXPAT
 
+#if P_WINEXPAT == 2
+#define XML_STATIC 1
+#endif
+
 #include <expat.h>
 
-
 #define new PNEW
-
 
 #define CACHE_BUFFER_SIZE   1024
 #define XMLSETTINGS_OPTIONS (NewLineAfterElement)
