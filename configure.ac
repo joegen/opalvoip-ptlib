@@ -1394,6 +1394,13 @@ dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
 dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
 
+dnl MSWIN_DISPLAY    win_expat,Windows Expat XML2
+dnl MSWIN_IF_FEATURE win_expat,!expat
+dnl MSWIN_CHECK_FILE win_expat,bin\libexpatMT.lib,P_WINEXPAT=2
+dnl MSWIN_DIR_SYMBOL win_expat,WINEXPAT2_DIR
+dnl MSWIN_CHECK_DIR  win_expat,source\lib
+dnl MSWIN_CHECK_DIR  win_expat,\libs\expat\
+
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
 
