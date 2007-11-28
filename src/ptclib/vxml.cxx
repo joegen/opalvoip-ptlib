@@ -139,6 +139,7 @@ BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLe
 
 void PVXMLPlayableStop::Play(PVXMLChannel & channel)
 {
+	channel.SetSilentCount(20);
   channel.Close(); 
 }
 
