@@ -75,9 +75,9 @@ class PSPXSocket : public PIPXSocket
        #PIPSocket::SetPort()# function.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
@@ -95,15 +95,15 @@ class PSPXSocket : public PIPXSocket
        port number specified in the "listening" socket.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Accept(
+    virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
     );
   //@}
 
   protected:
-    virtual BOOL OpenSocket();
+    virtual PBoolean OpenSocket();
     virtual const char * GetProtocolName() const;
 
 

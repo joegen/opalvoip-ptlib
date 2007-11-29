@@ -83,7 +83,7 @@ void Emailtest::Main()
     cout << endl
          << "Product Name: " <<  (const char *)GetName() << endl
          << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
+         << "Version     : " <<  (const char *)GetVersion(PTrue) << endl
          << "System      : " <<  (const char *)GetOSName() << '-'
          <<  (const char *)GetOSHardware() << ' '
          <<  (const char *)GetOSVersion() << endl
@@ -155,9 +155,9 @@ void Emailtest::Main()
         PString fileType = filename.GetType();
         PString contentType = PMIMEInfo::GetContentType(fileType);
         if ((fileType *= "txt") || (fileType == "html"))
-          email.SetTransferEncoding("7bit", FALSE);
+          email.SetTransferEncoding("7bit", PFalse);
         else
-          email.SetTransferEncoding("base64", TRUE);
+          email.SetTransferEncoding("base64", PTrue);
         BYTE buffer[1024];
         for (;;) {
           if (!file.Read(buffer, sizeof(buffer)))

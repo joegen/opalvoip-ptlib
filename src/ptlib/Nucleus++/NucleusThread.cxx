@@ -84,7 +84,7 @@ void PThread::Terminate()
 
 // What a pfaff for something that's easy...
 // Still, at last I've written a function I'm pretty confident will work!
-BOOL PThread::IsTerminated() const
+PBoolean PThread::IsTerminated() const
   {
 #ifdef __NUCLEUS_MNT__
   cout << "q";
@@ -105,21 +105,21 @@ void PThread::WaitForTermination() const
     }
   }
 
-BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
   {
   PTimer timeout = maxWait;
   while (!IsTerminated())
     {
     if (timeout == 0)
       {
-      return FALSE;
+      return PFalse;
       }
     Current()->Sleep(10);
     }
-  return TRUE;
+  return PTrue;
   }
 
-void PThread::Suspend(BOOL susp)
+void PThread::Suspend(PBoolean susp)
   {
   STATUS stat;
   if (susp)
@@ -156,7 +156,7 @@ void PThread::Resume()
     }
   }
 
-BOOL PThread::IsSuspended() const
+PBoolean PThread::IsSuspended() const
   {
   return (n_suspendCount != 0);
   }
@@ -173,7 +173,7 @@ PThread::Priority PThread::GetPriority() const
   NucleusTaskInfo->Update();
   PAssert(stat == NU_SUCCESS, "Invalid Task Pointer on GetPriority Request");
 
-  BOOL FoundIt = FALSE;
+  PBoolean FoundIt = PFalse;
 
   for ( int i = LowestPriority;
         i < NumPriorities;
@@ -205,7 +205,7 @@ void PThread::InitialiseProcessThread()
 //#pragma message("Anything to do in InitialiseProcessThread()?  Or all in PProcess constructor?")
 // Certainly need to do some of the thready stuff that's normally done in the
 // (non-trivial) PThread constructor.  Like starting the Nucleus thread!
-  autoDelete          = FALSE;
+  autoDelete          = PFalse;
 
   NucleusTask = new pwNUTask( (UNSIGNED)2048, // Stack Size Requested
                               (OPTION)priorities[HighPriority],
@@ -224,7 +224,7 @@ void PThread::Sleep(const PTimeInterval & time)
 
 #if 0
 // Unnecessary as Nucleus has threads!
-BOOL PThread::IsNoLongerBlocked()
+PBoolean PThread::IsNoLongerBlocked()
   {
   STATUS stat = NucleusTaskInfo->Update();
   PAssert(stat == NU_SUCCESS, "Invalid Task Pointer on Blocking Check");

@@ -28,7 +28,7 @@ public:
 
     void Main();
     
-    BOOL Initialise(PConfigArgs & args);
+    PBoolean Initialise(PConfigArgs & args);
 
     void HandleConsoleInput();
 
@@ -48,7 +48,7 @@ protected:
     PINDEX baud;
     
     PString parity;
-    BOOL endNow;
+    PBoolean endNow;
 };
 
 
@@ -87,7 +87,7 @@ PCREATE_PROCESS(Serial)
 Serial::Serial()
   : PProcess("PwLib Example Factory", "serial", 1, 0, ReleaseCode, 0)
 {
-    endNow = FALSE;
+    endNow = PFalse;
 }
 
 
@@ -115,7 +115,7 @@ void Serial::Main()
              "-hardwareport:"
              "v-version."
              "h-help."
-          , FALSE);
+          , PFalse);
 
 #if PMEMORY_CHECK
   if (args.HasOption("setallocationbreakpoint"))
@@ -125,7 +125,7 @@ void Serial::Main()
   PStringStream progName;
   progName << "Product Name: " << GetName() << endl
            << "Manufacturer: " << GetManufacturer() << endl
-           << "Version     : " << GetVersion(TRUE) << endl
+           << "Version     : " << GetVersion(PTrue) << endl
            << "System      : " << GetOSName() << '-'
            << GetOSHardware() << ' '
            << GetOSVersion();
@@ -189,7 +189,7 @@ void Serial::HandleSerialInput()
 #define MAXM 1000
   char buffer[MAXM];
   PString str;
-  BOOL found = FALSE;
+  PBoolean found = PFalse;
 
   while(serial.IsOpen()) {
     memset(buffer, 0, MAXM);
@@ -206,7 +206,7 @@ void Serial::HandleSerialInput()
 	    PTRACE(1, "Read the string \"" << buffer << "\" from the serial port");
       str += PString(buffer);
 	    if (str.Find("\n") != P_MAX_INDEX)
-		    found = TRUE;
+		    found = PTrue;
     }
 
     PINDEX err = serial.GetErrorCode();
@@ -220,12 +220,12 @@ void Serial::HandleSerialInput()
       PTRACE(1, "Read the message \"" << str << "\"");
       cout << "have read the message \"" << str << "\" from the serial port" << endl;
       str = "";
-      found = FALSE;
+      found = PFalse;
     }
   }
 }
 
-BOOL Serial::Initialise(PConfigArgs & args)
+PBoolean Serial::Initialise(PConfigArgs & args)
 {
   if (!args.HasOption("baud")) {
     baud = 4800;
@@ -272,7 +272,7 @@ BOOL Serial::Initialise(PConfigArgs & args)
 	  flowControlString = flow;
   else {
 	  cout << "Valid args to flowcontrol are \"XonXoff\" or \"RtsCts\" or \"none\"" << endl;
-	  return FALSE;
+	  return PFalse;
   }
     
   if (!args.HasOption("hardwareport")) {
@@ -290,7 +290,7 @@ BOOL Serial::Initialise(PConfigArgs & args)
     PString portName;
     if (hardwarePort >= names.GetSize()) {
       cout << "hardware port is too large, list is only " << names.GetSize() << " long" << endl;
-	    return FALSE;
+	    return PFalse;
     }
     portName = names[hardwarePort];
     
@@ -303,7 +303,7 @@ BOOL Serial::Initialise(PConfigArgs & args)
       pValue = PSerialChannel::OddParity;
     if (pValue == PSerialChannel::DefaultParity) {
       cout << "Parity value of " << parity << " could not be interpreted" << endl;
-      return FALSE;
+      return PFalse;
     }
     
     PSerialChannel::FlowControl flowControl = PSerialChannel::DefaultFlowControl;
@@ -326,11 +326,11 @@ BOOL Serial::Initialise(PConfigArgs & args)
       cout << "Failed to open serial port " << endl;
       cout << "Error code is " << serial.GetErrorText() << endl;
       cout << "Failed in attempt to open port  /dev/" << portName << endl;
-      return FALSE;
+      return PFalse;
     }
     
     
-    return TRUE;
+    return PTrue;
 }
 
 void Serial::HandleConsoleInput()
@@ -358,18 +358,18 @@ void Serial::HandleConsoleInput()
     if (str.GetLength() < 1)
       continue;
 
-    BOOL helped = FALSE;
+    PBoolean helped = PFalse;
     if (str.GetLength() == 2) {
       char ch = str.ToLower()[0];
 
       if ((ch == '?') || (ch == 'h')) {
-        helped = TRUE;
+        helped = PTrue;
         PError << help << endl;
 	    }
 
       if ((ch == 'x') || (ch == 'q')) {
 	      PTRACE(3, "\nEnd of thread to read from keyboard ");
-        endNow = TRUE;
+        endNow = PTrue;
         return;
       }
     }

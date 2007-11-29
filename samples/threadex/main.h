@@ -45,7 +45,7 @@ class DelayThread : public PThread
 public:
   DelayThread(PINDEX _delay);
     
-  DelayThread(PINDEX _delay, BOOL);
+  DelayThread(PINDEX _delay, PBoolean);
   
   ~DelayThread();
 
@@ -85,13 +85,13 @@ class LauncherThread : public PThread
 public:
   LauncherThread()
     : PThread(10000, NoAutoDeleteThread)
-    { iteration = 0; keepGoing = TRUE; }
+    { iteration = 0; keepGoing = PTrue; }
   
   void Main();
     
   PINDEX GetIteration() { return iteration; }
 
-  virtual void Terminate() { keepGoing = FALSE; }
+  virtual void Terminate() { keepGoing = PFalse; }
 
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
 
@@ -100,7 +100,7 @@ public:
  protected:
   PINDEX iteration;
   PTime startTime;
-  BOOL  keepGoing;
+  PBoolean  keepGoing;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,11 +116,11 @@ class Threadex : public PProcess
 
     PINDEX Delay()    { return delay; }
 
-    BOOL AutoDelete() { return doAutoDelete; }
+    PBoolean AutoDelete() { return doAutoDelete; }
 
-    BOOL BusyWait()   { return doBusyWait; }
+    PBoolean BusyWait()   { return doBusyWait; }
 
-    BOOL Create()     { return doCreate; }
+    PBoolean Create()     { return doCreate; }
 
    static Threadex & Current()
       { return (Threadex &)PProcess::Current(); }
@@ -129,11 +129,11 @@ class Threadex : public PProcess
 
     PINDEX delay;
 
-    BOOL doAutoDelete;
+    PBoolean doAutoDelete;
 
-    BOOL doBusyWait;
+    PBoolean doBusyWait;
 
-    BOOL doCreate;
+    PBoolean doCreate;
 };
 
 

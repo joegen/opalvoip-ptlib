@@ -46,7 +46,7 @@
 
 #include "../../socket.h"
   public:
-    BOOL Read(void * ptr, PINDEX len);
+    PBoolean Read(void * ptr, PINDEX len);
     ~PSocket();
 };
 

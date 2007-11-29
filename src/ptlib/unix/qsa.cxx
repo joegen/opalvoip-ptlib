@@ -20,7 +20,7 @@ typedef struct _SoundHandleEntry {
 	unsigned sampleRate;
 	unsigned bitsPerSample;
 	unsigned fragmentValue;
-	BOOL isInitialised;
+	PBoolean isInitialised;
 	
 	snd_pcm_t   *pcm_handle;
 	int         card;
@@ -80,35 +80,35 @@ void PSound::SetFormat(unsigned channels,
 }
 
 
-BOOL PSound::Load(const PFilePath & /*filename*/)
+PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-	return FALSE;
+	return PFalse;
 }
 
 
-BOOL PSound::Save(const PFilePath & /*filename*/)
+PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-	return FALSE;
+	return PFalse;
 }
 
 
-BOOL PSound::Play()
+PBoolean PSound::Play()
 {
 	PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
 						  PSoundChannel::Player);
 	if (!channel.IsOpen())
-	  return FALSE;
+	  return PFalse;
 	
-	return channel.PlaySound(*this, TRUE);
+	return channel.PlaySound(*this, PTrue);
 }
 
 
-BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
+PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 {
 	PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
 						  PSoundChannel::Player);
 	if (!channel.IsOpen())
-	  return FALSE;
+	  return PFalse;
 	
 	return channel.PlayFile(file, wait);
 }
@@ -189,7 +189,7 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 }
 
 
-BOOL PSoundChannel::Open(const PString & _device,
+PBoolean PSoundChannel::Open(const PString & _device,
 						 Directions _dir,
 						 unsigned _numChannels,
 						 unsigned _sampleRate,
@@ -212,7 +212,7 @@ BOOL PSoundChannel::Open(const PString & _device,
 		// see if the sound channel is already open in this direction
 		if ((entry->direction & dir) != 0) {
 			pthread_rwlock_unlock(&SoundHandleLock);
-			return FALSE;
+			return PFalse;
 		}
 		
 		// flag this entry as open in this direction
@@ -226,7 +226,7 @@ BOOL PSoundChannel::Open(const PString & _device,
 		
 		if (!entry) {
 			pthread_rwlock_unlock(&SoundHandleLock);
-			return FALSE;
+			return PFalse;
 		}
 
 		// this is the first time this device has been used
@@ -250,7 +250,7 @@ BOOL PSoundChannel::Open(const PString & _device,
 		}
 
 		if (snd_pcm_plugin_set_disable(entry->pcm_handle, PLUGIN_DISABLE_MMAP) < 0)
-		  return FALSE;
+		  return PFalse;
 	
 		// save the information into the dictionary entry
 		os_handle            = snd_pcm_file_descriptor(entry->pcm_handle, snd_chnmode[_dir]);
@@ -259,7 +259,7 @@ BOOL PSoundChannel::Open(const PString & _device,
 		entry->numChannels   = mNumChannels     = _numChannels;
 		entry->sampleRate    = actualSampleRate = mSampleRate    = _sampleRate;
 		entry->bitsPerSample = mBitsPerSample   = _bitsPerSample;
-		entry->isInitialised = FALSE;
+		entry->isInitialised = PFalse;
 		entry->fragmentValue = 0x7fff0008;
 		entry->mixer_handle  = 0;
 		
@@ -271,21 +271,21 @@ BOOL PSoundChannel::Open(const PString & _device,
 	// save the direction and device
 	direction     = _dir;
 	device        = _device;
-	isInitialised = FALSE;
+	isInitialised = PFalse;
 	
-	return TRUE;
+	return PTrue;
 }
 
-BOOL PSoundChannel::Setup()
+PBoolean PSoundChannel::Setup()
 {
 	if (os_handle < 0) {
 		PTRACE(6, "OSS\tSkipping setup of " << device << " as not open");
-		return FALSE;
+		return PFalse;
 	}
 	
 	if (isInitialised) {
 		PTRACE(6, "OSS\tSkipping setup of " << device << " as instance already initialised");
-		return TRUE;
+		return PTrue;
 	}
 
 	SoundHandleEntry *entry;
@@ -294,7 +294,7 @@ BOOL PSoundChannel::Setup()
 		 entry = entry->next);
 	
 	// set default return status
-	BOOL stat = TRUE;
+	PBoolean stat = PTrue;
 	
 	// do not re-initialise initialised devices
 	if (entry->isInitialised) {
@@ -305,7 +305,7 @@ BOOL PSoundChannel::Setup()
 	
 	PTRACE(6, "OSS\tInitialising " << device << "(" << (void *)(&entry) << ")");
 
-    stat = FALSE;
+    stat = PFalse;
 	
 	mBitsPerSample = entry->bitsPerSample;
 	mNumChannels = entry->numChannels;
@@ -354,16 +354,16 @@ BOOL PSoundChannel::Setup()
 	
 	if (snd_pcm_plugin_setup(entry->pcm_handle, &setup) < 0) {
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return FALSE;
+		return PFalse;
 	}
 		
 	if (snd_mixer_open(&entry->mixer_handle, entry->card, setup.mixer_device) < 0) {
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return FALSE;
+		return PFalse;
 	}
 	
 	actualSampleRate = setup.format.rate;
-	stat = TRUE;
+	stat = PTrue;
 
 #if PTRACING
 	PTRACE(4, "QSA: Frag Size = " << setup.buf.block.frag_size
@@ -373,17 +373,17 @@ BOOL PSoundChannel::Setup()
 
 	pthread_rwlock_unlock(&SoundHandleLock);
 	// ensure device is marked as initialised
-	isInitialised        = TRUE;
-	entry->isInitialised = TRUE;
+	isInitialised        = PTrue;
+	entry->isInitialised = PTrue;
 	
 	return stat;
 }
 
-BOOL PSoundChannel::Close()
+PBoolean PSoundChannel::Close()
 {
 	// if the channel isn't open, do nothing
 	if (os_handle < 0)
-	  return TRUE;
+	  return PTrue;
 	
 	SoundHandleEntry *entry, **entryp;
 	
@@ -393,7 +393,7 @@ BOOL PSoundChannel::Close()
 	  
 	if (!entry) {
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return TRUE;
+		return PTrue;
 	}
 	
 	// modify the directions bit mask in the dictionary
@@ -413,16 +413,16 @@ BOOL PSoundChannel::Close()
 	
 	// flag this channel as closed
 	pthread_rwlock_unlock(&SoundHandleLock);
-	return TRUE;
+	return PTrue;
 }
 
-BOOL PSoundChannel::Write(const void * buf, PINDEX len)
+PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
 {
 	if (!Setup())
-	  return FALSE;
+	  return PFalse;
 	
 	if (os_handle < 0)
-	  return FALSE;
+	  return PFalse;
 	
 	SoundHandleEntry * entry;
 	pthread_rwlock_rdlock(&SoundHandleLock);
@@ -438,32 +438,32 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
 		status.channel = SND_PCM_CHANNEL_PLAYBACK;
 		if (snd_pcm_plugin_status(entry->pcm_handle, &status) < 0) {
 			pthread_rwlock_unlock(&SoundHandleLock);
-			return FALSE;
+			return PFalse;
 		}
 		if (status.status == SND_PCM_STATUS_READY ||
 			status.status == SND_PCM_STATUS_UNDERRUN)
 		{
 			if (snd_pcm_plugin_prepare(entry->pcm_handle, snd_chnmode[direction]) < 0) {
 				pthread_rwlock_unlock(&SoundHandleLock);				
-				return FALSE;
+				return PFalse;
 			}
 		}
 		if (written < 0)
 		  written = 0;
 	}	
 	pthread_rwlock_unlock(&SoundHandleLock);
-	return TRUE;
+	return PTrue;
 }
 
-BOOL PSoundChannel::Read(void * buf, PINDEX len)
+PBoolean PSoundChannel::Read(void * buf, PINDEX len)
 {
 	lastReadCount = 0;
 
 	if (!Setup())
-	  return FALSE;
+	  return PFalse;
 
 	if (os_handle < 0)
-	  return FALSE;
+	  return PFalse;
 
 	SoundHandleEntry * entry;
 	pthread_rwlock_rdlock(&SoundHandleLock);
@@ -482,7 +482,7 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 		if (snd_pcm_plugin_status(entry->pcm_handle, &status) < 0) {
 			pthread_rwlock_unlock(&SoundHandleLock);
 			PTRACE(6, "QSA\tRead failed");		  
-			return FALSE;
+			return PFalse;
 		}
 		
 		if (status.status == SND_PCM_STATUS_READY ||
@@ -490,7 +490,7 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 			if (snd_pcm_plugin_prepare(entry->pcm_handle, SND_PCM_CHANNEL_CAPTURE) < 0) {
 				pthread_rwlock_unlock(&SoundHandleLock);
 				PTRACE(6, "QSA\tRead failed");		  
-				return FALSE;
+				return PFalse;
 			}
 		}
 		PTRACE(6, "QSA\tRead completed short - " << lastReadCount << " vs " << len);
@@ -498,10 +498,10 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 		PTRACE(6, "QSA\tRead completed");
 	}
 	pthread_rwlock_unlock(&SoundHandleLock);
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PSoundChannel::SetFormat(unsigned numChannels,
+PBoolean PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
@@ -523,10 +523,10 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
 			(bitsPerSample != entry->bitsPerSample)) {
 			pthread_rwlock_unlock(&SoundHandleLock);
 			PTRACE(6, "OSS\tTried to change read/write format without stopping");
-			return FALSE;
+			return PFalse;
 		}
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return TRUE;
+		return PTrue;
 	}
 
 	if (direction == Player) {
@@ -536,13 +536,13 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
 	entry->numChannels   = numChannels;
 	entry->sampleRate    = sampleRate;
 	entry->bitsPerSample = bitsPerSample;
-	entry->isInitialised  = FALSE;
+	entry->isInitialised  = PFalse;
 	pthread_rwlock_unlock(&SoundHandleLock);
 	
 	// mark this channel as uninitialised
-	isInitialised = FALSE;
+	isInitialised = PFalse;
 	
-	return TRUE;
+	return PTrue;
 }
 
 // Get  the number of channels (mono/stereo) in the sound.
@@ -564,7 +564,7 @@ unsigned PSoundChannel::GetSampleSize() const
 }
 
 
-BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
+PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -590,10 +590,10 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 		if (entry->fragmentValue != (unsigned)arg) {
 			pthread_rwlock_unlock(&SoundHandleLock);
 			PTRACE(6, "OSS\tTried to change buffers without stopping");
-			return FALSE;
+			return PFalse;
 		}
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return TRUE;
+		return PTrue;
 	}
 	
 	if (direction == Player) {
@@ -602,17 +602,17 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 	
 	// set information in the common record
 	entry->fragmentValue = arg;
-	entry->isInitialised = FALSE;
+	entry->isInitialised = PFalse;
 	pthread_rwlock_unlock(&SoundHandleLock);
 	
 	// flag this channel as not initialised
-	isInitialised       = FALSE;
+	isInitialised       = PFalse;
 	
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
+PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -628,11 +628,11 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 	size = 1 << (arg&0xffff);
 	pthread_rwlock_unlock(&SoundHandleLock);
 	
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
+PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -640,23 +640,23 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 	Abort();
 	
 	if (!Write((const BYTE *)sound, sound.GetSize()))
-	  return FALSE;
+	  return PFalse;
 	
 	if (wait)
 	  return WaitForPlayCompletion();
 	
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
+PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
 	
 	PFile file(filename, PFile::ReadOnly);
 	if (!file.IsOpen())
-	  return FALSE;
+	  return PFalse;
 	
 	for (;;) {
 		BYTE buffer[256];
@@ -674,11 +674,11 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 	if (wait)
 	  return WaitForPlayCompletion();
 	
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::HasPlayCompleted()
+PBoolean PSoundChannel::HasPlayCompleted()
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -694,7 +694,7 @@ BOOL PSoundChannel::HasPlayCompleted()
 
 	if (snd_pcm_plugin_status(entry->pcm_handle, &status) < 0) {
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return FALSE;
+		return PFalse;
 	}
 
 	int ret = (abs(status.free) / (entry->bitsPerSample / 8));
@@ -702,7 +702,7 @@ BOOL PSoundChannel::HasPlayCompleted()
 	return ret;
 }
 
-BOOL PSoundChannel::WaitForPlayCompletion()
+PBoolean PSoundChannel::WaitForPlayCompletion()
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -714,33 +714,33 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 	
 	if (snd_pcm_playback_flush(entry->pcm_handle) < 0) {
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return FALSE;
+		return PFalse;
 	}
 	
 	pthread_rwlock_unlock(&SoundHandleLock);
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::RecordSound(PSound & sound)
+PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::RecordFile(const PFilePath & filename)
+PBoolean PSoundChannel::RecordFile(const PFilePath & filename)
 {
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::StartRecording()
+PBoolean PSoundChannel::StartRecording()
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -754,29 +754,29 @@ BOOL PSoundChannel::StartRecording()
 }
 
 
-BOOL PSoundChannel::IsRecordBufferFull()
+PBoolean PSoundChannel::IsRecordBufferFull()
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
 
 	PTRACE(1, "IsRecordBufferFull()\n");
 	/* do I suppose to get the status, and check sth ? */
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::AreAllRecordBuffersFull()
+PBoolean PSoundChannel::AreAllRecordBuffersFull()
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
 
 	PTRACE(1, "AreAllRecordBuffersFull()\n");
 	/* do I suppose to get the status, and check sth ? */
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::WaitForRecordBufferFull()
+PBoolean PSoundChannel::WaitForRecordBufferFull()
 {
 	if (os_handle < 0)
 	  return SetErrorValues(NotOpen, EBADF);
@@ -786,14 +786,14 @@ BOOL PSoundChannel::WaitForRecordBufferFull()
 }
 
 
-BOOL PSoundChannel::WaitForAllRecordBuffersFull()
+PBoolean PSoundChannel::WaitForAllRecordBuffersFull()
 {
 	PTRACE(1, "WaitForAllRecordBuffersFull()\n");
-	return FALSE;
+	return PFalse;
 }
 
 
-BOOL PSoundChannel::Abort()
+PBoolean PSoundChannel::Abort()
 {
 	if (direction == Player && os_handle != -1) {
 	SoundHandleEntry * entry;
@@ -804,15 +804,15 @@ BOOL PSoundChannel::Abort()
 		snd_pcm_plugin_playback_drain(entry->pcm_handle);
 		pthread_rwlock_unlock(&SoundHandleLock);
 	}
-	return TRUE;
+	return PTrue;
 }
 
 
-BOOL PSoundChannel::SetVolume(unsigned newVal)
+PBoolean PSoundChannel::SetVolume(unsigned newVal)
 {
 	if (os_handle < 0)
 	{
-		return FALSE;
+		return PFalse;
 	}
 
 	SoundHandleEntry *entry;
@@ -826,7 +826,7 @@ BOOL PSoundChannel::SetVolume(unsigned newVal)
 	{
 		pthread_rwlock_unlock(&SoundHandleLock);
 		cerr << "snd_mixer_group_read: " << strerror(-ret) << endl;
-		return FALSE;
+		return PFalse;
 	}
 
 	/* QSA treat the newVal as a percentage */
@@ -839,17 +839,17 @@ BOOL PSoundChannel::SetVolume(unsigned newVal)
 	{
 		pthread_rwlock_unlock(&SoundHandleLock);
 		cerr << "snd_mixer_group_write: " << strerror(-ret) << endl;
-		return FALSE;
+		return PFalse;
 	}
 	pthread_rwlock_unlock(&SoundHandleLock);	
-	return TRUE;
+	return PTrue;
 }
 
-BOOL  PSoundChannel::GetVolume(unsigned &devVol)
+PBoolean  PSoundChannel::GetVolume(unsigned &devVol)
 {
 	if (os_handle == 0)
 	{
-		return FALSE;
+		return PFalse;
 	}
   
 	SoundHandleEntry *entry;
@@ -862,7 +862,7 @@ BOOL  PSoundChannel::GetVolume(unsigned &devVol)
 	if ((ret = snd_mixer_group_read(entry->mixer_handle, &entry->group)) < 0)
 	{
 		pthread_rwlock_unlock(&SoundHandleLock);
-		return FALSE;
+		return PFalse;
 	}
 	pthread_rwlock_unlock(&SoundHandleLock);
 	
@@ -870,7 +870,7 @@ BOOL  PSoundChannel::GetVolume(unsigned &devVol)
 	devVol = (unsigned)(entry->group.volume.names.front_left - entry->group.min) * 100
 	  / (entry->group.max - entry->group.min);
 
-	return TRUE;
+	return PTrue;
 }
   
 

@@ -41,8 +41,8 @@
     void SignalTimerChange();
     // Signal to the timer thread that a change was made.
 
-    virtual BOOL IsServiceProcess() const;
-    virtual BOOL IsGUIProcess() const;
+    virtual PBoolean IsServiceProcess() const;
+    virtual PBoolean IsGUIProcess() const;
 
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);

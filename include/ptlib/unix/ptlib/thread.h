@@ -59,8 +59,8 @@
     pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
     int             PX_suspendCount;
-    BOOL            PX_firstTimeStart;
-    BOOL            ending;
+    PBoolean            PX_firstTimeStart;
+    PBoolean            ending;
 
 #ifndef P_HAS_SEMAPHORES
     PSemaphore    * PX_waitingSemaphore;
@@ -91,7 +91,7 @@
     MPTaskID    PX_GetThreadId() const;
 
   protected:
-    void PX_NewThread(BOOL startSuspended);
+    void PX_NewThread(PBoolean startSuspended);
 
     PINDEX     PX_origStackSize;
     int        PX_suspendCount;

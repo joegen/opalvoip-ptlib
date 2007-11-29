@@ -69,10 +69,10 @@ class PSharedPtr : public PContainer
     virtual ~PSharedPtr()
     { Destruct(); } 
 
-    virtual BOOL MakeUnique() 
-    { if (PContainer::MakeUnique()) return TRUE; CloneContents(this); return FALSE; } 
+    virtual PBoolean MakeUnique() 
+    { if (PContainer::MakeUnique()) return PTrue; CloneContents(this); return PFalse; } 
 
-    BOOL SetSize(PINDEX)
+    PBoolean SetSize(PINDEX)
     { return false; }
 
     T * Get() const

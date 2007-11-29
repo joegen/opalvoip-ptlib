@@ -50,35 +50,35 @@ PFTPClient::~PFTPClient()
 }
 
 
-BOOL PFTPClient::Close()
+PBoolean PFTPClient::Close()
 {
   if (!IsOpen())
-    return FALSE;
-  BOOL ok = ExecuteCommand(QUIT)/100 == 2;
+    return PFalse;
+  PBoolean ok = ExecuteCommand(QUIT)/100 == 2;
   return PFTP::Close() && ok;
 }
 
-BOOL PFTPClient::OnOpen()
+PBoolean PFTPClient::OnOpen()
 {
   if (!ReadResponse() || lastResponseCode != 220)
-    return FALSE;
+    return PFalse;
 
   // the default data port for a server is the adjacent port
   PIPSocket::Address remoteHost;
   PIPSocket * socket = GetSocket();
   if (socket == NULL)
-    return FALSE;
+    return PFalse;
 
   socket->GetPeerAddress(remoteHost, remotePort);
   remotePort--;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PFTPClient::LogIn(const PString & username, const PString & password)
+PBoolean PFTPClient::LogIn(const PString & username, const PString & password)
 {
   if (ExecuteCommand(USER, username)/100 != 3)
-    return FALSE;
+    return PFalse;
   return ExecuteCommand(PASS, password)/100 == 2;
 }
 
@@ -92,7 +92,7 @@ PString PFTPClient::GetSystemType()
 }
 
 
-BOOL PFTPClient::SetType(RepresentationType type)
+PBoolean PFTPClient::SetType(RepresentationType type)
 {
   static const char * const typeCode[] = { "A", "E", "I" };
   PAssert((PINDEX)type < PARRAYSIZE(typeCode), PInvalidParameter);
@@ -100,7 +100,7 @@ BOOL PFTPClient::SetType(RepresentationType type)
 }
 
 
-BOOL PFTPClient::ChangeDirectory(const PString & dirPath)
+PBoolean PFTPClient::ChangeDirectory(const PString & dirPath)
 {
   return ExecuteCommand(CWD, dirPath)/100 == 2;
 }

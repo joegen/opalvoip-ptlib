@@ -43,45 +43,45 @@ PSocket::PSocket()
 }
 
 
-BOOL PSocket::Read(void * buf, PINDEX len)
+PBoolean PSocket::Read(void * buf, PINDEX len)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSocket::Write(const void * buf, PINDEX len)
+PBoolean PSocket::Write(const void * buf, PINDEX len)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSocket::Close()
+PBoolean PSocket::Close()
 {
   if (IsOpen())
-    return FALSE;
+    return PFalse;
 //  return ConvertOSError(closesocket(os_handle));
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSocket::ConvertOSError(int error)
+PBoolean PSocket::ConvertOSError(int error)
 {
   if (error >= 0) {
     lastError = NoError;
     osError = 0;
-    return TRUE;
+    return PTrue;
   }
 
 //  osError = WSAGetLastError();
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return TRUE;
+      return PTrue;
     default :
       lastError = Miscellaneous;
       osError |= 0x20000000;
   }
-  return FALSE;
+  return PFalse;
 }
 
 

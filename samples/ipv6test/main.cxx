@@ -79,7 +79,7 @@ void IPV6Test::Main()
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
          << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(TRUE) << endl
+         << "Version     : " << GetVersion(PTrue) << endl
          << "System      : " << GetOSName() << '-'
          << GetOSHardware() << ' '
          << GetOSVersion() << endl;

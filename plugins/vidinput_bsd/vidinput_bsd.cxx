@@ -48,7 +48,7 @@ PVideoInputDevice_BSDCAPTURE::~PVideoInputDevice_BSDCAPTURE()
   Close();
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::Open(const PString & devName, BOOL startImmediate)
+PBoolean PVideoInputDevice_BSDCAPTURE::Open(const PString & devName, PBoolean startImmediate)
 {
   if (IsOpen())
   Close();
@@ -57,7 +57,7 @@ BOOL PVideoInputDevice_BSDCAPTURE::Open(const PString & devName, BOOL startImmed
   videoFd = ::open((const char *)devName, O_RDONLY);
   if (videoFd < 0) {
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   }
  
   // fill in a device capabilities structure
@@ -75,66 +75,66 @@ BOOL PVideoInputDevice_BSDCAPTURE::Open(const PString & devName, BOOL startImmed
   if (!SetChannel(channelNumber)) {
     ::close (videoFd);
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   } 
   
   // select the video format (eg PAL, NTSC)
   if (!SetVideoFormat(videoFormat)) {
     ::close (videoFd);
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   }
  
   // select the colpur format (eg YUV420, or RGB)
   if (!SetColourFormat(colourFormat)) {
     ::close (videoFd);
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   }
 
   // select the image size
   if (!SetFrameSize(frameWidth, frameHeight)) {
     ::close (videoFd);
     videoFd = -1;
-    return FALSE;
+    return PFalse;
   }
 
-  return TRUE;    
+  return PTrue;    
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::IsOpen() 
+PBoolean PVideoInputDevice_BSDCAPTURE::IsOpen() 
 {
     return videoFd >= 0;
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::Close()
+PBoolean PVideoInputDevice_BSDCAPTURE::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   ClearMapping();
   ::close(videoFd);
   videoFd = -1;
   canMap  = -1;
   
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::Start()
+PBoolean PVideoInputDevice_BSDCAPTURE::Start()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::Stop()
+PBoolean PVideoInputDevice_BSDCAPTURE::Stop()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::IsCapturing()
+PBoolean PVideoInputDevice_BSDCAPTURE::IsCapturing()
 {
   return IsOpen();
 }
@@ -157,10 +157,10 @@ PStringList PVideoInputDevice_BSDCAPTURE::GetInputDeviceNames()
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetVideoFormat(VideoFormat newFormat)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetVideoFormat(VideoFormat newFormat)
 {
   if (!PVideoDevice::SetVideoFormat(newFormat))
-    return FALSE;
+    return PFalse;
 
   // set channel information
   static int fmt[4] = { METEOR_FMT_PAL, METEOR_FMT_NTSC,
@@ -169,21 +169,21 @@ BOOL PVideoInputDevice_BSDCAPTURE::SetVideoFormat(VideoFormat newFormat)
 
   // set the information
   if (::ioctl(videoFd, METEORSFMT, &format) >= 0)
-    return TRUE;
+    return PTrue;
 
   // setting the format failed. Fall back trying other standard formats
 
   if (newFormat != Auto)
-    return FALSE;
+    return PFalse;
 
   if (SetVideoFormat(PAL))
-    return TRUE;
+    return PTrue;
   if (SetVideoFormat(NTSC))
-    return TRUE;
+    return PTrue;
   if (SetVideoFormat(SECAM))
-    return TRUE;
+    return PTrue;
 
-  return FALSE;  
+  return PFalse;  
 }
 
 
@@ -193,10 +193,10 @@ int PVideoInputDevice_BSDCAPTURE::GetNumChannels()
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetChannel(int newChannel)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetChannel(int newChannel)
 {
   if (!PVideoDevice::SetChannel(newChannel))
-    return FALSE;
+    return PFalse;
 
   // set channel information
   static int chnl[5] = { METEOR_INPUT_DEV0, METEOR_INPUT_DEV1,
@@ -206,62 +206,62 @@ BOOL PVideoInputDevice_BSDCAPTURE::SetChannel(int newChannel)
 
   // set the information
   if (::ioctl(videoFd, METEORSINPUT, &channel) < 0)
-    return FALSE;
+    return PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetColourFormat(const PString & newFormat)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetColourFormat(const PString & newFormat)
 {
   if (!PVideoDevice::SetColourFormat(newFormat))
-    return FALSE;
+    return PFalse;
 
   ClearMapping();
 
   frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
-  return TRUE;
+  return PTrue;
 
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetFrameRate(unsigned rate)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate))
-    return FALSE;
+    return PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::GetFrameSizeLimits(unsigned & minWidth,
+PBoolean PVideoInputDevice_BSDCAPTURE::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & minHeight,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   minWidth  = videoCapability.minwidth;
   minHeight = videoCapability.minheight;
   maxWidth  = videoCapability.maxwidth;
   maxHeight = videoCapability.maxheight;
-  return TRUE;
+  return PTrue;
 
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height))
-    return FALSE;
+    return PFalse;
   
   ClearMapping();
 
   frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -271,14 +271,14 @@ PINDEX PVideoInputDevice_BSDCAPTURE::GetMaxFrameBytes()
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+PBoolean PVideoInputDevice_BSDCAPTURE::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer,bytesReturned);
 }
 
 
-BOOL PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+PBoolean PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
 
   // Hack time. It seems that the Start() and Stop() functions are not
@@ -303,13 +303,13 @@ BOOL PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
 
     // set the new geometry
     if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
-      return FALSE;
+      return PFalse;
     }
 
     mmap_size = frameBytes;
     videoBuffer = (BYTE *)::mmap(0, mmap_size, PROT_READ, 0, videoFd, 0);
     if (videoBuffer < 0) {
-      return FALSE;
+      return PFalse;
     } else {
       canMap = 1;
     }
@@ -317,7 +317,7 @@ BOOL PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
     // put the grabber into continuous capture mode
     int mode =  METEOR_CAP_CONTINOUS;
     if (ioctl(videoFd, METEORCAPTUR, &mode) < 0 ) {
-      return FALSE;
+      return PFalse;
     }
   }
 
@@ -335,7 +335,7 @@ BOOL PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
     *bytesReturned = frameBytes;
 
   
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -358,11 +358,11 @@ void PVideoInputDevice_BSDCAPTURE::ClearMapping()
   }
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::VerifyHardwareFrameSize(unsigned width,
+PBoolean PVideoInputDevice_BSDCAPTURE::VerifyHardwareFrameSize(unsigned width,
                                                 unsigned height)
 {
 	// Assume the size is valid
-	return TRUE;
+	return PTrue;
 }
 
 
@@ -405,50 +405,50 @@ int PVideoInputDevice_BSDCAPTURE::GetHue()
   return frameHue;
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetBrightness(unsigned newBrightness)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetBrightness(unsigned newBrightness)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   unsigned char data = (newBrightness >> 8); // rescale for the ioctl
   if (::ioctl(videoFd, METEORSBRIG, &data) < 0)
-    return FALSE;
+    return PFalse;
 
   frameBrightness=newBrightness;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetContrast(unsigned newContrast)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetContrast(unsigned newContrast)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   unsigned char data = (newContrast >> 8); // rescale for the ioctl
   if (::ioctl(videoFd, METEORSCONT, &data) < 0)
-    return FALSE;
+    return PFalse;
 
   frameContrast = newContrast;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::SetHue(unsigned newHue)
+PBoolean PVideoInputDevice_BSDCAPTURE::SetHue(unsigned newHue)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   char data = (newHue >> 8) - 128; // ioctl takes a signed char
   if (::ioctl(videoFd, METEORSHUE, &data) < 0)
-    return FALSE;
+    return PFalse;
 
   frameHue=newHue;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::GetParameters (int *whiteness, int *brightness,
+PBoolean PVideoInputDevice_BSDCAPTURE::GetParameters (int *whiteness, int *brightness,
                                       int *colour, int *contrast, int *hue)
 {
   if (!IsOpen())
-    return FALSE;
+    return PFalse;
 
   unsigned char data;
   char signed_data;
@@ -475,11 +475,11 @@ BOOL PVideoInputDevice_BSDCAPTURE::GetParameters (int *whiteness, int *brightnes
   frameContrast   = *contrast;
   frameHue        = *hue;
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_BSDCAPTURE::TestAllFormats()
+PBoolean PVideoInputDevice_BSDCAPTURE::TestAllFormats()
 {
-  return TRUE;
+  return PTrue;
 }
 // End Of File ///////////////////////////////////////////////////////////////

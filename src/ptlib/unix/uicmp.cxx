@@ -100,23 +100,23 @@ PICMPSocket::PICMPSocket()
 }
 
 
-BOOL PICMPSocket::Ping(const PString & host)
+PBoolean PICMPSocket::Ping(const PString & host)
 {
   PingInfo info;
   return Ping(host, info);
 }
 
 
-BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
+PBoolean PICMPSocket::Ping(const PString & host, PingInfo & info)
 {
   if (!WritePing(host, info))
-    return FALSE;
+    return PFalse;
 
   return ReadPing(info);
 }
 
 
-BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
+PBoolean PICMPSocket::WritePing(const PString & host, PingInfo & info)
 {
   // find address of the host
   PIPSocket::Address addr;
@@ -137,7 +137,7 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
   if (info.ttl != 0) {
     char ttl = (char)info.ttl;
     if (::setsockopt(os_handle, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
-      return FALSE;
+      return PFalse;
   }
 #endif
 
@@ -152,7 +152,7 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
 }
 
 
-BOOL PICMPSocket::ReadPing(PingInfo & info)
+PBoolean PICMPSocket::ReadPing(PingInfo & info)
 {
   // receive a packet
   BYTE packet[RX_BUFFER_SIZE];
@@ -166,7 +166,7 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
     memset(&packet, 0, sizeof(packet));
 
     if (!ReadFrom(packet, sizeof(packet), info.remoteAddr, port))
-      return FALSE;
+      return PFalse;
 
     now  = PTimer::Tick().GetMilliSeconds();
     ipHdr      = (IPHdr *)packet;
@@ -184,7 +184,7 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
     }
 
     if (!timeout.IsRunning())
-      return FALSE;
+      return PFalse;
   }
 
   info.remoteAddr = Address(ipHdr->sourceAddr[0], ipHdr->sourceAddr[1],
@@ -206,11 +206,11 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 
   info.sequenceNum = icmpPacket->sequence;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PICMPSocket::OpenSocket()
+PBoolean PICMPSocket::OpenSocket()
 {
 #if !defined BE_BONELESS && !defined(P_VXWORKS)
   struct protoent * p = ::getprotobyname(GetProtocolName());

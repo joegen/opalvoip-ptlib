@@ -78,18 +78,18 @@ PMail::~PMail()
 
 void PMail::Construct()
 {
-  loggedOn = FALSE;
+  loggedOn = PFalse;
   hUserInterface = NULL;
 }
 
 
-BOOL PMail::LogOn(const PString & username, const PString & password)
+PBoolean PMail::LogOn(const PString & username, const PString & password)
 {
   return LogOnCommonInterface(username, password, NULL);
 }
 
 
-BOOL PMail::LogOn(const PString & username,
+PBoolean PMail::LogOn(const PString & username,
                   const PString & password,
                   const PString & service)
 {
@@ -97,12 +97,12 @@ BOOL PMail::LogOn(const PString & username,
 }
 
 
-BOOL PMail::LogOnCommonInterface(const char * username,
+PBoolean PMail::LogOnCommonInterface(const char * username,
                                  const char * password,
                                  const char * service)
 {
   if (!LogOff())
-    return FALSE;
+    return PFalse;
 
 #if P_HAS_CMC
   if (cmc.IsLoaded()) {
@@ -142,14 +142,14 @@ BOOL PMail::LogOnCommonInterface(const char * username,
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMail::LogOff()
+PBoolean PMail::LogOff()
 {
   if (!loggedOn)
-    return TRUE;
+    return PTrue;
 
 #if P_HAS_CMC
   if (cmc.IsLoaded()) {
@@ -162,7 +162,7 @@ BOOL PMail::LogOff()
       case CMC_SUCCESS :
       case CMC_E_INVALID_SESSION_ID :
       case CMC_E_USER_NOT_LOGGED_ON :
-        loggedOn = FALSE;
+        loggedOn = PFalse;
     }
     return lastError == CMC_SUCCESS;
   }
@@ -172,23 +172,23 @@ BOOL PMail::LogOff()
   if (mapi.IsLoaded()) {
     lastError = mapi.Logoff(sessionId, (HWND)hUserInterface, 0, 0);
     if (lastError == SUCCESS_SUCCESS || lastError == MAPI_E_INVALID_SESSION)
-      loggedOn = FALSE;
+      loggedOn = PFalse;
     return lastError == SUCCESS_SUCCESS;
   }
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMail::IsLoggedOn() const
+PBoolean PMail::IsLoggedOn() const
 {
   return loggedOn;
 }
 
 
-BOOL PMail::SendNote(const PString & recipient,
+PBoolean PMail::SendNote(const PString & recipient,
                      const PString & subject,
                      const char * body)
 {
@@ -197,7 +197,7 @@ BOOL PMail::SendNote(const PString & recipient,
 }
 
 
-BOOL PMail::SendNote(const PString & recipient,
+PBoolean PMail::SendNote(const PString & recipient,
                      const PString & subject,
                      const char * body,
                      const PStringList & attachments)
@@ -207,7 +207,7 @@ BOOL PMail::SendNote(const PString & recipient,
 }
 
 
-BOOL PMail::SendNote(const PString & recipient,
+PBoolean PMail::SendNote(const PString & recipient,
                      const PStringList & carbonCopies,
                      const PStringList & blindCarbons,
                      const PString & subject,
@@ -305,11 +305,11 @@ BOOL PMail::SendNote(const PString & recipient,
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
+PStringArray PMail::GetMessageIDs(PBoolean unreadOnly)
 {
   PStringArray msgIDs;
 
@@ -423,7 +423,7 @@ CMC_message_reference_ptr::CMC_message_reference_ptr(const PString & id)
 #endif
 
 
-BOOL PMail::GetMessageHeader(const PString & id,
+PBoolean PMail::GetMessageHeader(const PString & id,
                              Header & hdrInfo)
 {
 #if P_HAS_CMC
@@ -436,7 +436,7 @@ BOOL PMail::GetMessageHeader(const PString & id,
     lastError = cmc.list(sessionId,
                     NULL, flags, seed, &count, hUserInterface, &message, NULL);
     if (lastError != CMC_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     hdrInfo.subject = message->subject;
     hdrInfo.received = PTime(0, message->time_sent.minute,
@@ -451,7 +451,7 @@ BOOL PMail::GetMessageHeader(const PString & id,
       hdrInfo.originatorAddress = '"' + hdrInfo.originatorName + '"';
 
     cmc.free_buf(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
@@ -461,7 +461,7 @@ BOOL PMail::GetMessageHeader(const PString & id,
     lastError = mapi.ReadMail(sessionId,
                     (HWND)hUserInterface, id, MAPI_ENVELOPE_ONLY, 0, &message);
     if (lastError != SUCCESS_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     PStringStream str = message->lpszDateReceived;
     int min, hr, day, mon, yr;
@@ -477,16 +477,16 @@ BOOL PMail::GetMessageHeader(const PString & id,
       hdrInfo.originatorAddress = '"' + hdrInfo.originatorName + '"';
 
     mapi.FreeBuffer(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMail::GetMessageBody(const PString & id, PString & body, BOOL markAsRead)
+PBoolean PMail::GetMessageBody(const PString & id, PString & body, PBoolean markAsRead)
 {
   body = PString();
 
@@ -503,12 +503,12 @@ BOOL PMail::GetMessageBody(const PString & id, PString & body, BOOL markAsRead)
 
     lastError = cmc.read(sessionId,seed,flags,&message,hUserInterface,NULL);
     if (lastError != CMC_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     if (message->text_note != NULL)
       body = message->text_note;
 
-    BOOL ok = (message->message_flags&CMC_MSG_TEXT_NOTE_AS_FILE) == 0;
+    PBoolean ok = (message->message_flags&CMC_MSG_TEXT_NOTE_AS_FILE) == 0;
     cmc.free_buf(message);
 
     return ok;
@@ -526,23 +526,23 @@ BOOL PMail::GetMessageBody(const PString & id, PString & body, BOOL markAsRead)
     lastError = mapi.ReadMail(sessionId,
                                  (HWND)hUserInterface, id, flags, 0, &message);
     if (lastError != SUCCESS_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     body = message->lpszNoteText;
     mapi.FreeBuffer(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMail::GetMessageAttachments(const PString & id,
+PBoolean PMail::GetMessageAttachments(const PString & id,
                                   PStringArray & filenames,
-                                  BOOL includeBody,
-                                  BOOL markAsRead)
+                                  PBoolean includeBody,
+                                  PBoolean markAsRead)
 {
   filenames.SetSize(0);
 
@@ -559,7 +559,7 @@ BOOL PMail::GetMessageAttachments(const PString & id,
 
     lastError = cmc.read(sessionId,seed,flags,&message,hUserInterface,NULL);
     if (lastError != CMC_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     if (message->attachments != NULL) {
       PINDEX total = 1;
@@ -579,7 +579,7 @@ BOOL PMail::GetMessageAttachments(const PString & id,
     }
 
     cmc.free_buf(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
@@ -595,7 +595,7 @@ BOOL PMail::GetMessageAttachments(const PString & id,
     lastError = mapi.ReadMail(sessionId,
                                  (HWND)hUserInterface, id, flags, 0, &message);
     if (lastError != SUCCESS_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     filenames.SetSize(message->nFileCount);
     PINDEX i;
@@ -603,16 +603,16 @@ BOOL PMail::GetMessageAttachments(const PString & id,
       filenames[i] = message->lpFiles[i].lpszPathName;
 
     mapi.FreeBuffer(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMail::MarkMessageRead(const PString & id)
+PBoolean PMail::MarkMessageRead(const PString & id)
 {
 #if P_HAS_CMC
   if (cmc.IsLoaded()) {
@@ -625,10 +625,10 @@ BOOL PMail::MarkMessageRead(const PString & id)
 
     lastError = cmc.read(sessionId,seed,flags,&message,hUserInterface,NULL);
     if (lastError != CMC_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     cmc.free_buf(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
@@ -638,19 +638,19 @@ BOOL PMail::MarkMessageRead(const PString & id)
     lastError = mapi.ReadMail(sessionId,
                     (HWND)hUserInterface, id, MAPI_ENVELOPE_ONLY, 0, &message);
     if (lastError != SUCCESS_SUCCESS)
-      return FALSE;
+      return PFalse;
 
     mapi.FreeBuffer(message);
-    return TRUE;
+    return PTrue;
   }
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PMail::DeleteMessage(const PString & id)
+PBoolean PMail::DeleteMessage(const PString & id)
 {
 #if P_HAS_CMC
   if (cmc.IsLoaded()) {
@@ -671,7 +671,7 @@ BOOL PMail::DeleteMessage(const PString & id)
 #endif
 
   lastError = 1;
-  return FALSE;
+  return PFalse;
 }
 
 

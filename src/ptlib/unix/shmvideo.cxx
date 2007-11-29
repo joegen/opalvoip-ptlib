@@ -39,7 +39,7 @@ ShmKeyFileName()
   return "/dev/null";
 }
 
-BOOL
+PBoolean
 PVideoOutputDevice_Shm::shmInit()
 {
   semLock = sem_open(SEM_NAME_OF_OUTPUT_DEVICE,
@@ -52,7 +52,7 @@ PVideoOutputDevice_Shm::shmInit()
       if (shmId >= 0) {
         shmPtr = shmat(shmId, NULL, 0);
         if (shmPtr) {
-          return TRUE;
+          return PTrue;
         }
         else {
           PTRACE(1, "SHMV\t shmInit can not attach shared memory" << endl);
@@ -79,7 +79,7 @@ PVideoOutputDevice_Shm::shmInit()
   shmId = -1;
   shmPtr = NULL;
 
-  return FALSE;
+  return PFalse;
 }
 
 PVideoOutputDevice_Shm::PVideoOutputDevice_Shm()
@@ -96,7 +96,7 @@ PVideoOutputDevice_Shm::PVideoOutputDevice_Shm()
   PTRACE(6, "SHMV\t Constructor of PVideoOutputDevice_Shm");
 }
 
-BOOL PVideoOutputDevice_Shm::SetColourFormat(const PString & colourFormat)
+PBoolean PVideoOutputDevice_Shm::SetColourFormat(const PString & colourFormat)
 {
 	if( colourFormat == "RGB32")
 		bytesPerPixel = 4;
@@ -108,10 +108,10 @@ BOOL PVideoOutputDevice_Shm::SetColourFormat(const PString & colourFormat)
 	return PVideoOutputDevice::SetColourFormat(colourFormat) && SetFrameSize(frameWidth, frameHeight);
 }
 
-BOOL PVideoOutputDevice_Shm::SetFrameSize(unsigned width, unsigned height)
+PBoolean PVideoOutputDevice_Shm::SetFrameSize(unsigned width, unsigned height)
 {
 	if (!PVideoOutputDevice::SetFrameSize(width, height))
-		return FALSE;
+		return PFalse;
 	
 	return frameStore.SetSize(frameWidth*frameHeight*bytesPerPixel);
 }
@@ -121,13 +121,13 @@ PINDEX PVideoOutputDevice_Shm::GetMaxFrameBytes()
 	return frameStore.GetSize();
 }
 
-BOOL PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
+PBoolean PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
                                          unsigned width, unsigned height,
                                          const BYTE * data,
-                                         BOOL endFrame)
+                                         PBoolean endFrame)
 {
 	if (x+width > frameWidth || y+height > frameHeight)
-		return FALSE;
+		return PFalse;
 	
 	if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
 		if (converter != NULL)
@@ -138,7 +138,7 @@ BOOL PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
 	else {
 		if (converter != NULL) {
 			PAssertAlways("Converted output of partial RGB frame not supported");
-			return FALSE;
+			return PFalse;
 		}
 		
 		if (x == 0 && width == frameWidth)
@@ -153,38 +153,38 @@ BOOL PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
 	if (endFrame)
 		return EndFrame();
 	
-	return TRUE;
+	return PTrue;
 }
 
-BOOL
+PBoolean
 PVideoOutputDevice_Shm::Open(const PString & name,
-			   BOOL /*startImmediate*/)
+			   PBoolean /*startImmediate*/)
 {
   PTRACE(1, "SHMV\t Open of PVideoOutputDevice_Shm");
 
   Close();
 
-  if (shmInit() == TRUE) {
+  if (shmInit() == PTrue) {
     deviceName = name;
-    return TRUE;
+    return PTrue;
   }
   else {
-    return FALSE;
+    return PFalse;
   }
 }
 
-BOOL
+PBoolean
 PVideoOutputDevice_Shm::IsOpen()
 {
   if (semLock != (sem_t *)SEM_FAILED) {
-    return TRUE;
+    return PTrue;
   }
   else {
-    return FALSE;
+    return PFalse;
   }
 }
 
-BOOL
+PBoolean
 PVideoOutputDevice_Shm::Close()
 {
   if (semLock != (sem_t *)SEM_FAILED) {
@@ -192,7 +192,7 @@ PVideoOutputDevice_Shm::Close()
     sem_close(semLock);
     shmPtr = NULL;
   }
-  return TRUE;
+  return PTrue;
 }
 
 PStringList
@@ -203,22 +203,22 @@ PVideoOutputDevice_Shm::GetDeviceNames() const
   return list;
 }
 
-BOOL
+PBoolean
 PVideoOutputDevice_Shm::EndFrame()
 {
   long *ptr = (long *)shmPtr;
 
   if (semLock == (sem_t *)SEM_FAILED) {
-    return FALSE;
+    return PFalse;
   }
 
   if (bytesPerPixel != 3 && bytesPerPixel != 4) {
     PTRACE(1, "SHMV\t EndFrame() does not handle bytesPerPixel!={3,4}"<<endl);
-    return FALSE;
+    return PFalse;
   }
 
   if (frameWidth*frameHeight*bytesPerPixel > SHMVIDEO_FRAMESIZE) {
-    return FALSE;
+    return PFalse;
   }
 
   // write header info so the consumer knows what to expect
@@ -229,19 +229,19 @@ PVideoOutputDevice_Shm::EndFrame()
   PTRACE(1, "writing " << frameStore.GetSize() << " bytes" << endl);
   if (memcpy((char *)shmPtr+sizeof(long)*3,
              frameStore, frameStore.GetSize()) == NULL) {
-    return FALSE;
+    return PFalse;
   }
 
   sem_post(semLock);
 
-  return TRUE;
+  return PTrue;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PCREATE_VIDINPUT_PLUGIN(Shm);
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::shmInit()
 {
   semLock = sem_open(SEM_NAME_OF_INPUT_DEVICE,
@@ -254,7 +254,7 @@ PVideoInputDevice_Shm::shmInit()
       if (shmId >= 0) {
         shmPtr = shmat(shmId, NULL, 0);
         if (shmPtr) {
-          return TRUE;
+          return PTrue;
         }
         else {
           PTRACE(1, "SHMV\t shmInit can not attach shared memory" << endl);
@@ -281,7 +281,7 @@ PVideoInputDevice_Shm::shmInit()
   shmId = -1;
   shmPtr = NULL;
 
-  return FALSE;
+  return PFalse;
 }
 
 PVideoInputDevice_Shm::PVideoInputDevice_Shm()
@@ -294,35 +294,35 @@ PVideoInputDevice_Shm::PVideoInputDevice_Shm()
   PTRACE(4, "SHMV\t Constructor of PVideoInputDevice_Shm");
 }
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::Open(const PString & name,
-			  BOOL /*startImmediate*/)
+			  PBoolean /*startImmediate*/)
 {
   PTRACE(1, "SHMV\t Open of PVideoInputDevice_Shm");
 
   Close();
 
-  if (shmInit() == TRUE) {
+  if (shmInit() == PTrue) {
     deviceName = name;
-    return TRUE;
+    return PTrue;
   }
   else {
-    return FALSE;
+    return PFalse;
   }
 }
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::IsOpen()
 {
   if (semLock != (sem_t *)SEM_FAILED) {
-    return TRUE;
+    return PTrue;
   }
   else {
-    return FALSE;
+    return PFalse;
   }
 }
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::Close()
 {
   if (semLock != (sem_t *)SEM_FAILED) {
@@ -330,12 +330,12 @@ PVideoInputDevice_Shm::Close()
     sem_close(semLock);
     shmPtr = NULL;
   }
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PVideoInputDevice_Shm::IsCapturing()
+PBoolean PVideoInputDevice_Shm::IsCapturing()
 {
-	return TRUE;
+	return PTrue;
 }
 
 PINDEX PVideoInputDevice_Shm::GetMaxFrameBytes()
@@ -351,7 +351,7 @@ PVideoInputDevice_Shm::GetInputDeviceNames()
   return list;
 }
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::GetFrameSizeLimits(unsigned & minWidth,
 					unsigned & minHeight,
 					unsigned & maxWidth,
@@ -362,10 +362,10 @@ PVideoInputDevice_Shm::GetFrameSizeLimits(unsigned & minWidth,
   maxWidth  = 352;
   maxHeight =  288;
 
-  return TRUE;
+  return PTrue;
 }
 
-static void RGBtoYUV420PSameSize (const BYTE *, BYTE *, unsigned, BOOL, 
+static void RGBtoYUV420PSameSize (const BYTE *, BYTE *, unsigned, PBoolean, 
                                   int, int);
 
 
@@ -379,7 +379,7 @@ static void RGBtoYUV420PSameSize (const BYTE *, BYTE *, unsigned, BOOL,
 static void RGBtoYUV420PSameSize (const BYTE * rgb,
                                   BYTE * yuv,
                                   unsigned rgbIncrement,
-                                  BOOL flip, 
+                                  PBoolean flip, 
                                   int srcFrameWidth, int srcFrameHeight) 
 {
   const unsigned planeSize = srcFrameWidth*srcFrameHeight;
@@ -413,17 +413,17 @@ static void RGBtoYUV420PSameSize (const BYTE * rgb,
 }
 
 
-BOOL PVideoInputDevice_Shm::GetFrame(PBYTEArray & frame)
+PBoolean PVideoInputDevice_Shm::GetFrame(PBYTEArray & frame)
 {
 	PINDEX returned;
 	if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-		return FALSE;
+		return PFalse;
 	
 	frame.SetSize(returned);
-	return TRUE;
+	return PTrue;
 }
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
   m_pacing.Delay(1000/GetFrameRate());
@@ -431,7 +431,7 @@ PVideoInputDevice_Shm::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
-BOOL
+PBoolean
 PVideoInputDevice_Shm::GetFrameDataNoDelay (BYTE *buffer, PINDEX *bytesReturned)
 {
   long *bufPtr = (long *)shmPtr;
@@ -448,28 +448,28 @@ PVideoInputDevice_Shm::GetFrameDataNoDelay (BYTE *buffer, PINDEX *bytesReturned)
   if (semLock != (sem_t *)SEM_FAILED && sem_trywait(semLock) == 0) {
     if (bufPtr[0] == (long)width && bufPtr[1] == (long)height) {
       rgbIncrement = bufPtr[2];
-      RGBtoYUV420PSameSize ((BYTE *)(bufPtr+3), buffer, rgbIncrement, FALSE, 
+      RGBtoYUV420PSameSize ((BYTE *)(bufPtr+3), buffer, rgbIncrement, PFalse, 
 			    width, height);
 	  
 	  *bytesReturned = videoFrameSize;
-      return TRUE;
+      return PTrue;
     }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
-BOOL PVideoInputDevice_Shm::TestAllFormats()
+PBoolean PVideoInputDevice_Shm::TestAllFormats()
 {
-	return TRUE;
+	return PTrue;
 }
 
-BOOL PVideoInputDevice_Shm::Start()
+PBoolean PVideoInputDevice_Shm::Start()
 {
-	return TRUE;
+	return PTrue;
 }
 
-BOOL PVideoInputDevice_Shm::Stop()
+PBoolean PVideoInputDevice_Shm::Stop()
 {
-	return TRUE;
+	return PTrue;
 }

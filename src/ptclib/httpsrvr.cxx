@@ -99,7 +99,7 @@ PHTTPSpace::Node::~Node()
 }
 
 
-BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
+PBoolean PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 {
   PAssert(res != NULL, PInvalidParameter);
   const PStringArray & path = res->GetURL().GetPath();
@@ -110,7 +110,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 
     if (node->resource != NULL) {
       delete res;
-      return FALSE;   // Already a resource in tree in partial path
+      return PFalse;   // Already a resource in tree in partial path
     }
 
     PINDEX pos = node->children.GetValuesIndex(path[i]);
@@ -122,22 +122,22 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 
   if (!node->children.IsEmpty()) {
     delete res;
-    return FALSE;   // Already a resource in tree further down path.
+    return PFalse;   // Already a resource in tree further down path.
   }
 
   if (overwrite == ErrorOnExist && node->resource != NULL) {
     delete res;
-    return FALSE;   // Already a resource in tree at leaf
+    return PFalse;   // Already a resource in tree at leaf
   }
 
   delete node->resource;
   node->resource = res;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PHTTPSpace::DelResource(const PURL & url)
+PBoolean PHTTPSpace::DelResource(const PURL & url)
 {
   const PStringArray & path = url.GetPath();
   Node * node = root;
@@ -147,18 +147,18 @@ BOOL PHTTPSpace::DelResource(const PURL & url)
 
     PINDEX pos = node->children.GetValuesIndex(path[i]);
     if (pos == P_MAX_INDEX)
-      return FALSE;
+      return PFalse;
 
     node = &node->children[pos];
 
     // If have resource and not last node, then trying to remove something
     // further down the tree than a leaf node.
     if (node->resource != NULL && i < (path.GetSize()-1))
-      return FALSE;
+      return PFalse;
   }
 
   if (!node->children.IsEmpty())
-    return FALSE;   // Still a resource in tree further down path.
+    return PFalse;   // Still a resource in tree further down path.
 
   if (node->parent != NULL) {
     do {
@@ -168,7 +168,7 @@ BOOL PHTTPSpace::DelResource(const PURL & url)
     } while (node != NULL && node->children.IsEmpty());
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -263,8 +263,8 @@ void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PS
   PINDEX entityOffs = 0;
   PINDEX entityLen = entityBody.GetSize()-1;
 
-  BOOL ignore = TRUE;
-  BOOL last = FALSE;
+  PBoolean ignore = PTrue;
+  PBoolean last = PFalse;
 
   PMultipartFormInfo * info = NULL;
 
@@ -273,12 +273,12 @@ void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PS
     // find end of part
     PINDEX partStart = entityOffs;
     PINDEX partLen;
-    BOOL foundSep = FALSE;
+    PBoolean foundSep = PFalse;
 
     // collect length of part until seperator
     for (partLen = 0; (partStart + partLen) < entityLen; partLen++) {
       if ((partLen >= sepLen) && (memcmp(body + partStart + partLen - sepLen, sep, sepLen) == 0)) {
-        foundSep = TRUE;
+        foundSep = PTrue;
         break;
       }
     }
@@ -289,13 +289,13 @@ void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PS
     // if no seperator found, then this is the last part
     // otherwise, look for "--" trailer on seperator and remove CRLF
     if (!foundSep)
-      last = TRUE;
+      last = PTrue;
     else {
       partLen -= sepLen;
 
       // determine if this is the last block
       if (((entityOffs + 2) <= entityLen) && (body[entityOffs] == '-') && (body[entityOffs+1] == '-')) {
-        last = TRUE;
+        last = PTrue;
         entityOffs += 2;
       }
 
@@ -307,7 +307,7 @@ void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PS
     // ignore everything up to the first seperator, 
     // then adjust seperator to include leading CRLF
     if (ignore) {
-      ignore = FALSE;
+      ignore = PFalse;
       seperator = PString("\r\n") + seperator;
       sepLen = seperator.GetLength();
       sep = (const char *)seperator;
@@ -410,7 +410,7 @@ void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PS
 #endif
 }
 
-BOOL PHTTPServer::ProcessCommand()
+PBoolean PHTTPServer::ProcessCommand()
 {
   PString args;
   PINDEX cmd;
@@ -422,7 +422,7 @@ BOOL PHTTPServer::ProcessCommand()
 
   // this will only return false upon timeout or completely invalid command
   if (!ReadCommand(cmd, args))
-    return FALSE;
+    return PFalse;
 
   connectInfo.commandCode = (Commands)cmd;
   if (cmd < NumCommands)
@@ -436,11 +436,11 @@ BOOL PHTTPServer::ProcessCommand()
   // if no tokens, error
   if (args.IsEmpty()) {
     OnError(BadRequest, args, connectInfo);
-    return FALSE;
+    return PFalse;
   }
 
   if (!connectInfo.Initialise(*this, args))
-      return FALSE;
+      return PFalse;
 
   // now that we've decided we did receive a HTTP request, increment the
   // count of transactions
@@ -461,7 +461,7 @@ BOOL PHTTPServer::ProcessCommand()
       connectInfo.url.SetPort(myPort);
   }
 
-  BOOL persist;
+  PBoolean persist;
   
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
@@ -512,21 +512,21 @@ BOOL PHTTPServer::ProcessCommand()
   flush();
 
   // if the function just indicated that the connection is to persist,
-  // and so did the client, then return TRUE. Note that all of the OnXXXX
-  // routines above must make sure that their return value is FALSE if
+  // and so did the client, then return PTrue. Note that all of the OnXXXX
+  // routines above must make sure that their return value is PFalse if
   // if there was no ContentLength field in the response. This ensures that
   // we always close the socket so the client will get the correct end of file
   if (persist && connectInfo.IsPersistant()) {
     unsigned max = connectInfo.GetPersistenceMaximumTransations();
     if (max == 0 || transactionCount < max)
-      return TRUE;
+      return PTrue;
   }
 
   PTRACE(5, "HTTPServer\tConnection end: " << connectInfo.IsPersistant());
 
-  // close the output stream now and return FALSE
+  // close the output stream now and return PFalse
   Shutdown(ShutdownWrite);
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -544,7 +544,7 @@ PString PHTTPServer::ReadEntityBody()
   if (contentLength > 0) {
     entityBody = ReadString((PINDEX)contentLength);
   } else if (contentLength == -2) {
-    ReadLine(entityBody, FALSE);
+    ReadLine(entityBody, PFalse);
   } else if (contentLength < 0) {
     while (Read(entityBody.GetPointer(count+1000)+count, 1000))
       count += GetLastReadCount();
@@ -574,7 +574,7 @@ void PHTTPServer::SetURLSpace(const PHTTPSpace & space)
 }
 
 
-BOOL PHTTPServer::OnGET(const PURL & url,
+PBoolean PHTTPServer::OnGET(const PURL & url,
                    const PMIMEInfo & info,
          const PHTTPConnectionInfo & connectInfo)
 {
@@ -585,13 +585,13 @@ BOOL PHTTPServer::OnGET(const PURL & url,
     return OnError(NotFound, url.AsString(), connectInfo);
   }
 
-  BOOL retval = resource->OnGET(*this, url, info, connectInfo);
+  PBoolean retval = resource->OnGET(*this, url, info, connectInfo);
   urlSpace.EndRead();
   return retval;
 }
 
 
-BOOL PHTTPServer::OnHEAD(const PURL & url,
+PBoolean PHTTPServer::OnHEAD(const PURL & url,
                     const PMIMEInfo & info,
           const PHTTPConnectionInfo & connectInfo)
 {
@@ -602,13 +602,13 @@ BOOL PHTTPServer::OnHEAD(const PURL & url,
     return OnError(NotFound, url.AsString(), connectInfo);
   }
 
-  BOOL retval = resource->OnHEAD(*this, url, info, connectInfo);
+  PBoolean retval = resource->OnHEAD(*this, url, info, connectInfo);
   urlSpace.EndRead();
   return retval;
 }
 
 
-BOOL PHTTPServer::OnPOST(const PURL & url,
+PBoolean PHTTPServer::OnPOST(const PURL & url,
                     const PMIMEInfo & info,
               const PStringToString & data,
           const PHTTPConnectionInfo & connectInfo)
@@ -620,13 +620,13 @@ BOOL PHTTPServer::OnPOST(const PURL & url,
     return OnError(NotFound, url.AsString(), connectInfo);
   }
 
-  BOOL retval = resource->OnPOST(*this, url, info, data, connectInfo);
+  PBoolean retval = resource->OnPOST(*this, url, info, data, connectInfo);
   urlSpace.EndRead();
   return retval;
 }
 
 
-BOOL PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
+PBoolean PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
 {
   return OnError(BadGateway, "Proxy not implemented.", connectInfo) &&
          connectInfo.GetCommandCode() != CONNECT;
@@ -636,7 +636,7 @@ BOOL PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
 struct httpStatusCodeStruct {
   const char * text;
   int  code;
-  BOOL allowedBody;
+  PBoolean allowedBody;
   int  majorVersion;
   int  minorVersion;
 };
@@ -689,12 +689,12 @@ static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
 }
 
 
-BOOL PHTTPServer::StartResponse(StatusCode code,
+PBoolean PHTTPServer::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
   if (connectInfo.majorVersion < 1) 
-    return FALSE;
+    return PFalse;
 
   httpStatusCodeStruct dummyInfo;
   const httpStatusCodeStruct * statusInfo;
@@ -703,7 +703,7 @@ BOOL PHTTPServer::StartResponse(StatusCode code,
   else {
     dummyInfo.text = "";
     dummyInfo.code = code;
-    dummyInfo.allowedBody = TRUE;
+    dummyInfo.allowedBody = PTrue;
     dummyInfo.majorVersion = connectInfo.majorVersion;
     dummyInfo.minorVersion = connectInfo.minorVersion;
     statusInfo = &dummyInfo;
@@ -713,7 +713,7 @@ BOOL PHTTPServer::StartResponse(StatusCode code,
   *this << "HTTP/" << connectInfo.majorVersion << '.' << connectInfo.minorVersion
         << ' ' << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
-  BOOL chunked = FALSE;
+  PBoolean chunked = PFalse;
 
   // If do not have user set content length, decide if we should add one
   if (!headers.Contains(ContentLengthTag())) {
@@ -772,14 +772,14 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
 
 
 
-BOOL PHTTPServer::OnUnknown(const PCaselessString & cmd, 
+PBoolean PHTTPServer::OnUnknown(const PCaselessString & cmd, 
                         const PHTTPConnectionInfo & connectInfo)
 {
   return OnError(NotImplemented, cmd, connectInfo);
 }
 
 
-BOOL PHTTPServer::OnError(StatusCode code,
+PBoolean PHTTPServer::OnError(StatusCode code,
              const PCaselessString & extra,
          const PHTTPConnectionInfo & connectInfo)
 {
@@ -848,9 +848,9 @@ void PHTTPAuthority::DecodeBasicAuthority(const PString & authInfo,
 }
 
 
-BOOL PHTTPAuthority::IsActive() const
+PBoolean PHTTPAuthority::IsActive() const
 {
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -872,7 +872,7 @@ PObject * PHTTPSimpleAuth::Clone() const
 }
 
 
-BOOL PHTTPSimpleAuth::IsActive() const
+PBoolean PHTTPSimpleAuth::IsActive() const
 {
   return !username || !password;
 }
@@ -884,7 +884,7 @@ PString PHTTPSimpleAuth::GetRealm(const PHTTPRequest &) const
 }
 
 
-BOOL PHTTPSimpleAuth::Validate(const PHTTPRequest &,
+PBoolean PHTTPSimpleAuth::Validate(const PHTTPRequest &,
                                const PString & authInfo) const
 {
   PString user, pass;
@@ -917,7 +917,7 @@ PObject * PHTTPMultiSimpAuth::Clone() const
 }
 
 
-BOOL PHTTPMultiSimpAuth::IsActive() const
+PBoolean PHTTPMultiSimpAuth::IsActive() const
 {
   return !users.IsEmpty();
 }
@@ -929,7 +929,7 @@ PString PHTTPMultiSimpAuth::GetRealm(const PHTTPRequest &) const
 }
 
 
-BOOL PHTTPMultiSimpAuth::Validate(const PHTTPRequest &,
+PBoolean PHTTPMultiSimpAuth::Validate(const PHTTPRequest &,
                                   const PString & authInfo) const
 {
   PString user, pass;
@@ -984,9 +984,9 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
   majorVersion      = 0;
   minorVersion      = 9;
 
-  isPersistant      = FALSE;
-  wasPersistant     = FALSE;
-  isProxyConnection = FALSE;
+  isPersistant      = PFalse;
+  wasPersistant     = PFalse;
+  isProxyConnection = PFalse;
 
   entityBodyLength  = -1;
 
@@ -994,7 +994,7 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
 }
 
 
-BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
+PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 {
   // if only one argument, then it must be a version 0.9 simple request
   PINDEX lastSpacePos = args.FindLast(' ');
@@ -1002,7 +1002,7 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   if (lastSpacePos == P_MAX_INDEX || httpId != args(lastSpacePos+1, lastSpacePos+5)) {
     majorVersion = 0;
     minorVersion = 9;
-    return TRUE;
+    return PTrue;
   }
 
   // otherwise, attempt to extract a version number
@@ -1010,7 +1010,7 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   PINDEX dotPos = verStr.Find('.');
   if (dotPos == 0 || dotPos >= verStr.GetLength()) {
     server.OnError(PHTTP::BadRequest, "Malformed version number: " + verStr, *this);
-    return FALSE;
+    return PFalse;
   }
 
   // should actually check if the text contains only digits, but the
@@ -1023,10 +1023,10 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // build our connection info reading MIME info until an empty line is
   // received, or EOF
   if (!mimeInfo.Read(server))
-    return FALSE;
+    return PFalse;
 
   wasPersistant = isPersistant;
-  isPersistant = FALSE;
+  isPersistant = PFalse;
 
   PString str;
 
@@ -1039,7 +1039,7 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 
   // get any connection options
   if (!str) {
-    PStringArray tokens = str.Tokenise(", \r\n", FALSE);
+    PStringArray tokens = str.Tokenise(", \r\n", PFalse);
     for (PINDEX z = 0; !isPersistant && z < tokens.GetSize(); z++)
       isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag());
   }
@@ -1068,7 +1068,7 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1079,10 +1079,10 @@ void PHTTPConnectionInfo::SetMIME(const PString & tag, const PString & value)
 }
 
 
-BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
+PBoolean PHTTPConnectionInfo::IsCompatible(int major, int minor) const
 {
   if (minor == 0 && major == 0)
-    return TRUE;
+    return PTrue;
   else
     return (majorVersion > major) ||
            ((majorVersion == major) && (minorVersion >= minor));
@@ -1132,29 +1132,29 @@ PHTTPResource::~PHTTPResource()
 }
 
 
-BOOL PHTTPResource::OnGET(PHTTPServer & server,
+PBoolean PHTTPResource::OnGET(PHTTPServer & server,
                            const PURL & url,
                       const PMIMEInfo & info,
             const PHTTPConnectionInfo & connectInfo)
 {
-  return OnGETOrHEAD(server, url, info, connectInfo, TRUE);
+  return OnGETOrHEAD(server, url, info, connectInfo, PTrue);
 }
 
 
-BOOL PHTTPResource::OnHEAD(PHTTPServer & server,
+PBoolean PHTTPResource::OnHEAD(PHTTPServer & server,
                            const PURL & url,
                       const PMIMEInfo & info,
             const PHTTPConnectionInfo & connectInfo)
 {
-  return OnGETOrHEAD(server, url, info, connectInfo, FALSE);
+  return OnGETOrHEAD(server, url, info, connectInfo, PFalse);
 }
 
 
-BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
+PBoolean PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
                            const PURL & url,
                       const PMIMEInfo & info,
             const PHTTPConnectionInfo & connectInfo,
-                                   BOOL isGET)
+                                   PBoolean isGET)
 {
   // Nede to split songle if into 2 so the Tornado compiler won't end with
   // 'internal compiler error'
@@ -1167,9 +1167,9 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
                                          connectInfo.GetMultipartFormInfo(),
                                          server);
 
-  BOOL retVal = TRUE;
+  PBoolean retVal = PTrue;
   if (CheckAuthority(server, *request, connectInfo)) {
-    retVal = FALSE;
+    retVal = PFalse;
     server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
     PTime expiryDate;
@@ -1192,7 +1192,7 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
 }
 
 
-BOOL PHTTPResource::OnGETData(PHTTPServer & /*server*/,
+PBoolean PHTTPResource::OnGETData(PHTTPServer & /*server*/,
                                const PURL & /*url*/,
                 const PHTTPConnectionInfo & /*connectInfo*/,
                              PHTTPRequest & request)
@@ -1203,7 +1203,7 @@ BOOL PHTTPResource::OnGETData(PHTTPServer & /*server*/,
 }
 
 
-BOOL PHTTPResource::OnPOST(PHTTPServer & server,
+PBoolean PHTTPResource::OnPOST(PHTTPServer & server,
                             const PURL & url,
                        const PMIMEInfo & info,
                  const PStringToString & data,
@@ -1216,7 +1216,7 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
 
   request->entityBody = connectInfo.GetEntityBody();
 
-  BOOL persist = TRUE;
+  PBoolean persist = PTrue;
   if (CheckAuthority(server, *request, connectInfo)) {
     server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
     persist = OnPOSTData(*request, data);
@@ -1229,11 +1229,11 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
 }
 
 
-BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
+PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request,
                                const PStringToString & data)
 {
   PHTML msg;
-  BOOL persist = Post(request, data, msg);
+  PBoolean persist = Post(request, data, msg);
 
   if (msg.Is(PHTML::InBody))
     msg << PHTML::Body();
@@ -1254,30 +1254,30 @@ BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
 }
 
 
-BOOL PHTTPResource::CheckAuthority(PHTTPServer & server,
+PBoolean PHTTPResource::CheckAuthority(PHTTPServer & server,
                             const PHTTPRequest & request,
                      const PHTTPConnectionInfo & connectInfo)
 {
   if (authority == NULL)
-    return TRUE;
+    return PTrue;
 
   return CheckAuthority(*authority, server, request, connectInfo);
 }
     
     
-BOOL PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
+PBoolean PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
                                       PHTTPServer & server,
                                const PHTTPRequest & request,
                         const PHTTPConnectionInfo & connectInfo)
 {
   if (!authority.IsActive())
-    return TRUE;
+    return PTrue;
 
 
   // if this is an authorisation request...
   if (request.inMIME.Contains(PHTTP::AuthorizationTag()) &&
       authority.Validate(request, request.inMIME[PHTTP::AuthorizationTag()]))
-    return TRUE;
+    return PTrue;
 
   // it must be a request for authorisation
   PMIMEInfo headers;
@@ -1309,7 +1309,7 @@ BOOL PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
   server.StartResponse(PHTTP::UnAuthorised, headers, reply.GetLength());
   server.WriteString(reply);
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1327,15 +1327,15 @@ void PHTTPResource::ClearAuthority()
 }
 
 
-BOOL PHTTPResource::IsModifiedSince(const PTime &)
+PBoolean PHTTPResource::IsModifiedSince(const PTime &)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PHTTPResource::GetExpirationDate(PTime &)
+PBoolean PHTTPResource::GetExpirationDate(PTime &)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1391,13 +1391,13 @@ void PHTTPResource::SendData(PHTTPRequest & request)
 }
 
 
-BOOL PHTTPResource::LoadData(PHTTPRequest & request, PCharArray & data)
+PBoolean PHTTPResource::LoadData(PHTTPRequest & request, PCharArray & data)
 {
   PString text = LoadText(request);
   OnLoadedText(request, text);
   text.SetSize(text.GetLength());  // Lose the trailing '\0'
   data = text;
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1414,14 +1414,14 @@ void PHTTPResource::OnLoadedText(PHTTPRequest &, PString &)
 }
 
 
-BOOL PHTTPResource::Post(PHTTPRequest & request,
+PBoolean PHTTPResource::Post(PHTTPRequest & request,
                          const PStringToString &,
                          PHTML & msg)
 {
   request.code = PHTTP::MethodNotAllowed;
   msg = "Error in POST";
   msg << "Post to this resource is not allowed" << PHTML::Body();
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1472,10 +1472,10 @@ PHTTPString::PHTTPString(const PURL & url,
 }
 
 
-BOOL PHTTPString::LoadHeaders(PHTTPRequest & request)
+PBoolean PHTTPString::LoadHeaders(PHTTPRequest & request)
 {
   request.contentSize = string.GetLength();
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1558,21 +1558,21 @@ PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
 }
 
 
-BOOL PHTTPFile::LoadHeaders(PHTTPRequest & request)
+PBoolean PHTTPFile::LoadHeaders(PHTTPRequest & request)
 {
   PFile & file = ((PHTTPFileRequest&)request).file;
 
   if (!file.Open(filePath, PFile::ReadOnly)) {
     request.code = PHTTP::NotFound;
-    return FALSE;
+    return PFalse;
   }
 
   request.contentSize = file.GetLength();
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
+PBoolean PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
 {
   PFile & file = ((PHTTPFileRequest&)request).file;
 
@@ -1593,10 +1593,10 @@ BOOL PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
     PAssert(file.Read(data.GetPointer(count), count), PLogicError);
 
   if (!file.IsEndOfFile())
-    return TRUE;
+    return PTrue;
 
   file.Close();
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1661,17 +1661,17 @@ PHTTPTailFile::PHTTPTailFile(const PURL & url,
 }
 
 
-BOOL PHTTPTailFile::LoadHeaders(PHTTPRequest & request)
+PBoolean PHTTPTailFile::LoadHeaders(PHTTPRequest & request)
 {
   if (!PHTTPFile::LoadHeaders(request))
-    return FALSE;
+    return PFalse;
 
   request.contentSize = P_MAX_INDEX;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
+PBoolean PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
 {
   PFile & file = ((PHTTPFileRequest&)request).file;
 
@@ -1680,7 +1680,7 @@ BOOL PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
 
   while (file.GetPosition() >= file.GetLength()) {
     if (!request.server.Write(NULL, 0))
-      return FALSE;
+      return PFalse;
     PThread::Sleep(200);
   }
 
@@ -1693,7 +1693,7 @@ BOOL PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
 // PHTTPDirectory
 
 PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
-  : PHTTPFile(url, 0), basePath(dir), allowDirectoryListing(TRUE)
+  : PHTTPFile(url, 0), basePath(dir), allowDirectoryListing(PTrue)
 {
 }
 
@@ -1701,7 +1701,7 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
 PHTTPDirectory::PHTTPDirectory(const PURL & url,
                                const PDirectory & dir,
                                const PHTTPAuthority & auth)
-  : PHTTPFile(url, PString(), auth), basePath(dir), allowDirectoryListing(TRUE)
+  : PHTTPFile(url, PString(), auth), basePath(dir), allowDirectoryListing(PTrue)
 {
 }
 
@@ -1745,33 +1745,33 @@ void PHTTPDirectory::EnableAuthorisation(const PString & realm)
 }
 
 
-BOOL PHTTPDirectory::FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations)
+PBoolean PHTTPDirectory::FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations)
 {
   PFilePath fn = dir + accessFilename;
   PTextFile file;
-  BOOL first = TRUE;
+  PBoolean first = PTrue;
   if (file.Open(fn, PFile::ReadOnly)) {
     PString line;
     while (file.ReadLine(line)) {
       if (first) {
         realm = line.Trim();
-        first = FALSE;
+        first = PFalse;
       } else {
         PStringArray tokens = line.Tokenise(':');
         if (tokens.GetSize() > 1)
           authorisations.SetAt(tokens[0].Trim(), tokens[1].Trim());
       }
     }
-    return TRUE;
+    return PTrue;
   }
     
   if (dir.IsRoot() || (dir == basePath))
-    return FALSE;
+    return PFalse;
 
   return FindAuthorisations(dir.GetParent(), realm, authorisations);
 }
 
-BOOL PHTTPDirectory::CheckAuthority(PHTTPServer & server,
+PBoolean PHTTPDirectory::CheckAuthority(PHTTPServer & server,
                              const PHTTPRequest & request,
                       const PHTTPConnectionInfo & conInfo)
 {
@@ -1781,13 +1781,13 @@ BOOL PHTTPDirectory::CheckAuthority(PHTTPServer & server,
   if (authorisationRealm.IsEmpty() ||
       !FindAuthorisations(((PHTTPDirRequest&)request).realPath.GetDirectory(), newRealm, authorisations) ||
       authorisations.GetSize() == 0)
-    return TRUE;
+    return PTrue;
 
   PHTTPMultiSimpAuth authority(newRealm, authorisations);
   return PHTTPResource::CheckAuthority(authority, server, request, conInfo);
 }
 
-BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
+PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 {
   PFilePath & realPath = ((PHTTPDirRequest&)request).realPath;
     
@@ -1795,7 +1795,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   PFileInfo info;
   if (!PFile::GetInfo(realPath, info)) {
     request.code = PHTTP::NotFound;
-    return FALSE;
+    return PFalse;
   }
 
   // if the resource is a file, and the file can't be opened, then return "not found"
@@ -1804,14 +1804,14 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
     if (!file.Open(realPath, PFile::ReadOnly) ||
         (!authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
       request.code = PHTTP::NotFound;
-      return FALSE;
+      return PFalse;
     }
   } 
 
   // resource is a directory - if index files disabled, then return "not found"
   else if (!allowDirectoryListing) {
     request.code = PHTTP::NotFound;
-    return FALSE;
+    return PFalse;
   }
 
   // else look for index files
@@ -1830,7 +1830,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
                           PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
     request.contentSize = file.GetLength();
     fakeIndex = PString();
-    return TRUE;
+    return PTrue;
   }
 
   // construct a directory listing
@@ -1857,7 +1857,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   reply << PHTML::Body();
   fakeIndex = reply;
 
-  return TRUE;
+  return PTrue;
 }
 
 

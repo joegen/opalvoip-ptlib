@@ -38,7 +38,7 @@
     Address     macAddress;
     MediumTypes medium;
     unsigned    filterMask;
-    BOOL        fakeMacHeader;
-    BOOL        ipppInterface;
+    PBoolean        fakeMacHeader;
+    PBoolean        ipppInterface;
 
 // End Of File ////////////////////////////////////////////////////////////////

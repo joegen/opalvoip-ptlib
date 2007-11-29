@@ -60,7 +60,7 @@ class PWaveFormat : public PObject
     void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
     void SetFormat(const void * data, PINDEX size);
 
-    BOOL           SetSize   (PINDEX sz);
+    PBoolean           SetSize   (PINDEX sz);
     PINDEX         GetSize   () const { return  size;       }
     void         * GetPointer() const { return  waveFormat; }
     WAVEFORMATEX * operator->() const { return  waveFormat; }
@@ -109,38 +109,38 @@ class PSoundChannelWin32: public PSoundChannel
     ~PSoundChannelWin32();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);
-    BOOL Open(const PString & _device,
+    PBoolean Open(const PString & _device,
               Directions _dir,
               unsigned _numChannels,
               unsigned _sampleRate,
               unsigned _bitsPerSample);
-    BOOL Setup();
-    BOOL Close();
-    BOOL IsOpen() const;
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
-    BOOL SetFormat(unsigned numChannels,
+    PBoolean Setup();
+    PBoolean Close();
+    PBoolean IsOpen() const;
+    PBoolean Write(const void * buf, PINDEX len);
+    PBoolean Read(void * buf, PINDEX len);
+    PBoolean SetFormat(unsigned numChannels,
                    unsigned sampleRate,
                    unsigned bitsPerSample);
     unsigned GetChannels() const;
     unsigned GetSampleRate() const;
     unsigned GetSampleSize() const;
-    BOOL SetBuffers(PINDEX size, PINDEX count);
-    BOOL GetBuffers(PINDEX & size, PINDEX & count);
-    BOOL PlaySound(const PSound & sound, BOOL wait);
-    BOOL PlayFile(const PFilePath & filename, BOOL wait);
-    BOOL HasPlayCompleted();
-    BOOL WaitForPlayCompletion();
-    BOOL RecordSound(PSound & sound);
-    BOOL RecordFile(const PFilePath & filename);
-    BOOL StartRecording();
-    BOOL IsRecordBufferFull();
-    BOOL AreAllRecordBuffersFull();
-    BOOL WaitForRecordBufferFull();
-    BOOL WaitForAllRecordBuffersFull();
-    BOOL Abort();
-    BOOL SetVolume(unsigned newVal);
-    BOOL GetVolume(unsigned &devVol);
+    PBoolean SetBuffers(PINDEX size, PINDEX count);
+    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+    PBoolean PlaySound(const PSound & sound, PBoolean wait);
+    PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
+    PBoolean HasPlayCompleted();
+    PBoolean WaitForPlayCompletion();
+    PBoolean RecordSound(PSound & sound);
+    PBoolean RecordFile(const PFilePath & filename);
+    PBoolean StartRecording();
+    PBoolean IsRecordBufferFull();
+    PBoolean AreAllRecordBuffersFull();
+    PBoolean WaitForRecordBufferFull();
+    PBoolean WaitForAllRecordBuffersFull();
+    PBoolean Abort();
+    PBoolean SetVolume(unsigned newVal);
+    PBoolean GetVolume(unsigned &devVol);
 
   public:
     // Overrides from class PChannel
@@ -151,9 +151,9 @@ class PSoundChannelWin32: public PSoundChannel
     PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
     // Get a text form of the last error encountered.
 
-    BOOL SetFormat(const PWaveFormat & format);
+    PBoolean SetFormat(const PWaveFormat & format);
 
-    BOOL Open(const PString & device, Directions dir,const PWaveFormat & format);
+    PBoolean Open(const PString & device, Directions dir,const PWaveFormat & format);
     // Open with format other than PCM
 
   protected:
@@ -170,8 +170,8 @@ class PSoundChannelWin32: public PSoundChannel
     PMutex           bufferMutex;
 
   private:
-    BOOL OpenDevice(unsigned id);
-    BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
+    PBoolean OpenDevice(unsigned id);
+    PBoolean GetDeviceID(const PString & device, Directions dir, unsigned& id);
 };
 
 

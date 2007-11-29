@@ -169,13 +169,13 @@ class PServiceProcess : public PProcess
   /**@name Callback functions */
   //@{
     /** Called when the service is started. This typically initialises the
-       service and returns TRUE if the service is ready to run. The
+       service and returns PTrue if the service is ready to run. The
        #Main()# function is then executed.
 
        @return
-       TRUE if service may start, FALSE if an initialisation failure occurred.
+       PTrue if service may start, PFalse if an initialisation failure occurred.
      */
-    virtual BOOL OnStart() = 0;
+    virtual PBoolean OnStart() = 0;
 
     /** Called by the system when the service is stopped. One return from this
        function there is no guarentee that any more user code will be executed.
@@ -189,9 +189,9 @@ class PServiceProcess : public PProcess
        the service.
 
        @return
-       TRUE if the service was successfully paused.
+       PTrue if the service was successfully paused.
      */
-    virtual BOOL OnPause();
+    virtual PBoolean OnPause();
 
     /** Resume after the service was paused.
      */
@@ -243,7 +243,7 @@ class PServiceProcess : public PProcess
   protected:
   // Member variables
     /// Flag to indicate service is run in simulation mode.
-    BOOL debugMode;
+    PBoolean debugMode;
 
     /// Current log level for #PSYSTEMLOG# calls.
     PSystemLog::Level currentLogLevel;

@@ -80,9 +80,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    BOOL SetAt(
+    PBoolean SetAt(
       const char * key,
       const PString value
     ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
@@ -91,9 +91,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    BOOL SetAt(
+    PBoolean SetAt(
       const PString & key,
       const PString value
     ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
@@ -102,9 +102,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    BOOL SetAt(
+    PBoolean SetAt(
       const PCaselessString & key,
       const PString value
     ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
@@ -113,9 +113,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       TRUE if the MIME variable is present.
+       PTrue if the MIME variable is present.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const char * key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(PCaselessString(key)) != NULL; }
 
@@ -123,9 +123,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       TRUE if the MIME variable is present.
+       PTrue if the MIME variable is present.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const PString & key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(PCaselessString(key)) != NULL; }
 
@@ -133,9 +133,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       TRUE if the MIME variable is present.
+       PTrue if the MIME variable is present.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const PCaselessString & key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(key) != NULL; }
 
@@ -143,18 +143,18 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     /** Read MIME information from the socket.
 
        @return
-       TRUE if the MIME information was successfully read.
+       PTrue if the MIME information was successfully read.
      */
-    BOOL Read(
+    PBoolean Read(
       PInternetProtocol & socket   ///< Application socket to read MIME info.
     );
 
     /** Write MIME information to the socket.
 
        @return
-       TRUE if the MIME information was successfully read.
+       PTrue if the MIME information was successfully read.
      */
-    BOOL Write(
+    PBoolean Write(
       PInternetProtocol & socket   ///< Application socket to write MIME info.
     ) const;
 
@@ -164,12 +164,12 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        value.
 
        @return
-       TRUE is a field was added.
+       PTrue is a field was added.
       */
-    BOOL AddMIME(
+    PBoolean AddMIME(
       const PString & line
     );
-    BOOL AddMIME(
+    PBoolean AddMIME(
       const PString & fieldName, 
       const PString & _fieldValue
     );
@@ -210,7 +210,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        content type is then sent for any file in the directory sub-tree that
        has the same extension.
 
-       Note that if the #merge# parameter if TRUE then the
+       Note that if the #merge# parameter if PTrue then the
        dictionary is merged into the current association list and is not a
        simple replacement.
 
@@ -245,7 +245,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
      */
     static void SetAssociation(
       const PStringToString & allTypes,  ///< MIME content type associations.
-      BOOL merge = TRUE                  ///< Flag for merging associations.
+      PBoolean merge = PTrue                  ///< Flag for merging associations.
     );
     static void SetAssociation(
       const PString & fileType,         ///< File type (extension) to match.

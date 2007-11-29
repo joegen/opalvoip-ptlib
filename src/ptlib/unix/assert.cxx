@@ -42,7 +42,7 @@
 #ifndef __BEOS__
 #ifndef P_VXWORKS
 
-static BOOL PAssertAction(int c, const char * msg)
+static PBoolean PAssertAction(int c, const char * msg)
 {
   switch (c) {
     case 'a' :
@@ -56,7 +56,7 @@ static BOOL PAssertAction(int c, const char * msg)
     case 'T' :
       PError << "\nThrowing exception\n";
       throw std::runtime_error(msg);
-      return TRUE;
+      return PTrue;
 #endif
         
 #ifdef _DEBUG
@@ -79,9 +79,9 @@ static BOOL PAssertAction(int c, const char * msg)
     case 'I' :
     case EOF :
       PError << "\nIgnoring.\n";
-      return TRUE;
+      return PTrue;
   }
-  return FALSE;
+  return PFalse;
 }
 #endif
 #endif
@@ -99,10 +99,10 @@ void PAssertFunc(const char * msg)
   // start the Be Debugger.
   debugger(msg);
 #else
-  static BOOL inAssert;
+  static PBoolean inAssert;
   if (inAssert)
     return;
-  inAssert = TRUE;
+  inAssert = PTrue;
 
   ostream & trace = PTrace::Begin(0, __FILE__, __LINE__);
   trace << "PWLib\t" << msg << PTrace::End;
@@ -123,13 +123,13 @@ void PAssertFunc(const char * msg)
 #ifndef P_VXWORKS
   env = ::getenv("PWLIB_ASSERT_ACTION");
   if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
-    inAssert = FALSE;
+    inAssert = PFalse;
     return;
   }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (!isatty(STDIN_FILENO)) {
-    inAssert = FALSE;
+    inAssert = PFalse;
     return;
   }
 
@@ -148,7 +148,7 @@ void PAssertFunc(const char * msg)
     if (PAssertAction(c, msg))
       break;
    }
-   inAssert = FALSE;
+   inAssert = PFalse;
 
 #else // P_VXWORKS
 

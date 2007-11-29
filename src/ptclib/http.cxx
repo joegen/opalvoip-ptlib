@@ -101,26 +101,26 @@ class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
 }; \
   static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
-DEFINE_LEGACY_URL_SCHEME(http,      TRUE,  TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT )
-DEFINE_LEGACY_URL_SCHEME(file,      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0)
-DEFINE_LEGACY_URL_SCHEME(https,     FALSE, FALSE, TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT)
-DEFINE_LEGACY_URL_SCHEME(gopher,    FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT)
-DEFINE_LEGACY_URL_SCHEME(wais,      FALSE, FALSE, TRUE,  FALSE, FALSE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT)
-DEFINE_LEGACY_URL_SCHEME(nntp,      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT)
-DEFINE_LEGACY_URL_SCHEME(prospero,  FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT)
-DEFINE_LEGACY_URL_SCHEME(rtsp,      FALSE, FALSE, TRUE,  FALSE, TRUE,   TRUE,  FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT)
-DEFINE_LEGACY_URL_SCHEME(rtspu,     FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT)
-DEFINE_LEGACY_URL_SCHEME(ftp,       TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT)
-DEFINE_LEGACY_URL_SCHEME(telnet,    TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT)
-DEFINE_LEGACY_URL_SCHEME(mailto,    FALSE, FALSE, FALSE, FALSE, TRUE,   TRUE,  FALSE, FALSE, FALSE, FALSE, 0)
-DEFINE_LEGACY_URL_SCHEME(news,      FALSE, FALSE, FALSE, FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, 0)
-DEFINE_LEGACY_URL_SCHEME(h323,      TRUE,  FALSE, TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT)
-DEFINE_LEGACY_URL_SCHEME(h323s,     TRUE,  FALSE, TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323S_PORT)
-DEFINE_LEGACY_URL_SCHEME(sip,       TRUE,  TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT)
-DEFINE_LEGACY_URL_SCHEME(sips,      TRUE,  TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIPS_PORT)
-DEFINE_LEGACY_URL_SCHEME(tel,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
-DEFINE_LEGACY_URL_SCHEME(fax,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
-DEFINE_LEGACY_URL_SCHEME(callto,    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
+DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
+DEFINE_LEGACY_URL_SCHEME(file,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(https,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTPS_PORT)
+DEFINE_LEGACY_URL_SCHEME(gopher,    PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_GOPHER_PORT)
+DEFINE_LEGACY_URL_SCHEME(wais,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_WAIS_PORT)
+DEFINE_LEGACY_URL_SCHEME(nntp,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_NNTP_PORT)
+DEFINE_LEGACY_URL_SCHEME(prospero,  PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_PROSPERO_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtsp,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTSP_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtspu,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTSPU_PORT)
+DEFINE_LEGACY_URL_SCHEME(ftp,       PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_FTP_PORT)
+DEFINE_LEGACY_URL_SCHEME(telnet,    PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, DEFAULT_TELNET_PORT)
+DEFINE_LEGACY_URL_SCHEME(mailto,    PFalse, PFalse, PFalse, PFalse, PTrue,   PTrue,  PFalse, PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(news,      PFalse, PFalse, PFalse, PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(h323,      PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323_PORT)
+DEFINE_LEGACY_URL_SCHEME(h323s,     PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323S_PORT)
+DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
+DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
+DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 
 PINSTANTIATE_FACTORY(PURLScheme, PString)
 
@@ -134,8 +134,8 @@ PURL::PURL()
   : //scheme(SchemeTable[DEFAULT_SCHEME].name),
     scheme(DEFAULT_SCHEME),
     port(0),
-    portSupplied (FALSE),
-    relativePath(FALSE)
+    portSupplied (PFalse),
+    relativePath(PFalse)
 {
 }
 
@@ -156,8 +156,8 @@ PURL::PURL(const PFilePath & filePath)
   : //scheme(SchemeTable[FILE_SCHEME].name),
     scheme(FILE_SCHEME),
     port(0),
-    portSupplied (FALSE),
-    relativePath(FALSE)
+    portSupplied (PFalse),
+    relativePath(PFalse)
 {
   PStringArray pathArray = filePath.GetDirectory().GetPath();
   hostname = pathArray[0];
@@ -292,7 +292,7 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 }
 
 
-BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
+PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 {
   urlString = cstr;
 
@@ -301,8 +301,8 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   password.MakeEmpty();
   hostname.MakeEmpty();
   port = 0;
-  portSupplied = FALSE;
-  relativePath = FALSE;
+  portSupplied = PFalse;
+  relativePath = PFalse;
   pathStr.MakeEmpty();
   path.SetSize(0);
   paramVars.RemoveAll();
@@ -351,12 +351,12 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   PAssert(schemeInfo != NULL, "Default scheme not available");
   scheme = schemeInfo->GetName();
   if (!schemeInfo->Parse(url, *this))
-    return FALSE;
+    return PFalse;
 
   return !IsEmpty();
 }
 
-BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
+PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
 {
   PString url = _url;
   PINDEX pos;
@@ -417,12 +417,12 @@ BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo
     pos = hostname.Find(':', pos);
     if (pos != P_MAX_INDEX) {
       port = (WORD)hostname.Mid(pos+1).AsUnsigned();
-      portSupplied = TRUE;
+      portSupplied = PTrue;
       hostname.Delete(pos, P_MAX_INDEX);
     }
 
     password = paramVars("password");
-    return TRUE;
+    return PTrue;
   }
 
   // if the URL should have leading slash, then remove it if it has one
@@ -430,7 +430,7 @@ BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo
     if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
       url.Delete(0, 2);
     else
-      relativePath = TRUE;
+      relativePath = PTrue;
   }
 
   // parse user/password/host/port
@@ -505,7 +505,7 @@ BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo
       else {
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
         port = (WORD)uphp.Mid(pos+1).AsUnsigned();
-        portSupplied = TRUE;
+        portSupplied = PTrue;
       }
 
       if (hostname.IsEmpty() && schemeInfo->defaultHostToLocal)
@@ -557,7 +557,7 @@ BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo
     Recalculate();
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -719,7 +719,7 @@ void PURL::SetPathStr(const PString & p)
 {
   pathStr = p;
 
-  path = pathStr.Tokenise("/", TRUE);
+  path = pathStr.Tokenise("/", PTrue);
 
   if (path.GetSize() > 0 && path[0].IsEmpty()) 
     path.RemoveAt(0);
@@ -829,7 +829,7 @@ void PURL::SetQueryVar(const PString & key, const PString & data)
 }
 
 
-BOOL PURL::OpenBrowser(const PString & url)
+PBoolean PURL::OpenBrowser(const PString & url)
 {
 #ifdef WIN32
   SHELLEXECUTEINFO sei;
@@ -843,7 +843,7 @@ BOOL PURL::OpenBrowser(const PString & url)
  #endif // _WIN32_WCE
 
   if (ShellExecuteEx(&sei) != 0)
-    return TRUE;
+    return PTrue;
 
 #ifndef _WIN32_WCE
   MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
@@ -852,7 +852,7 @@ BOOL PURL::OpenBrowser(const PString & url)
 #endif // _WIN32_WCE
 
 #endif // WIN32
-  return FALSE;
+  return PFalse;
 }
 
 

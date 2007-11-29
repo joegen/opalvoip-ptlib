@@ -173,7 +173,7 @@ public:
 	  /** IsValid Checks to ensure a Handle has been allocated and
 			is effective.
 	  */
-	  BOOL IsValid();
+	  PBoolean IsValid();
 
 	  /** GetChangedRowCount retreives the number of rows updated/altered by
 			UPDATE/INSERT statements.
@@ -184,39 +184,39 @@ public:
 			add/Modify database data. It accepts generally acceptable SQL Statements.
 			  ie. Select * from [table-x]
 	  */
-	  BOOL Query(PString strSQL);
+	  PBoolean Query(PString strSQL);
   //@}
 
   /**@name Data Retrieval */
   //@{  
 	  /** Fetch General call to retreive the next row of data. 
 	  */
-	  BOOL Fetch();
+	  PBoolean Fetch();
 
 	  /** FetchRow More detailed fetching of Rows. This allows you to fetch an
 			Absolute row or a row relative to the current row fetched.
 	  */
-	  BOOL FetchRow(PINDEX nRow,BOOL Absolute=1);
+	  PBoolean FetchRow(PINDEX nRow,PBoolean Absolute=1);
 
 	  /** FetchPrevious Fetch the previous Row from current row.
 	  */
-	  BOOL FetchPrevious();
+	  PBoolean FetchPrevious();
 
 	  /** FetchNext: Fetch the Next row. 
 	  */
-	  BOOL FetchNext();
+	  PBoolean FetchNext();
 
 	  /** FetchFirst Fetch the First row in the RecordSet 
 	  */
-	  BOOL FetchFirst();
+	  PBoolean FetchFirst();
 
 	  /** FetchLast Fetch the Last row in the RecordSet
 	  */
-	  BOOL FetchLast();
+	  PBoolean FetchLast();
 
 	  /** Cancel the Current Statement
 	  */
-	  BOOL Cancel();
+	  PBoolean Cancel();
   //@}
 
   /**@name Utilities */
@@ -231,9 +231,9 @@ public:
 
 	  /** Is the SQL Instruction OK
 			If an Error is detected then GetLastError is called
-			to Retrieve the SQL Error Information and Returns FALSE
+			to Retrieve the SQL Error Information and Returns PFalse
 	  */
-	  BOOL SQL_OK(PTODBC::SQLRETURN res);
+	  PBoolean SQL_OK(PTODBC::SQLRETURN res);
 
 	  /** Get the Last Error 
 			This returns the Error ID & String to PODBC::OnSQLError
@@ -379,7 +379,7 @@ public:
 		  PString DefDir;	   /// Used with Paradox/DBase/Excel (& mySQL db)
 		  PString User;		   /// UserName
 		  PString Pass;		   /// Password
-		  BOOL Excl_Trust;	   /// Whether Datasource is locked or Trusted.
+		  PBoolean Excl_Trust;	   /// Whether Datasource is locked or Trusted.
 		  PString Host;		   /// URL for Host Datasouce xxSQL
 		  int Port;			   /// Port to connect to mySQL
 		  int opt;			   /// General Option Value.mySQL & Paradox
@@ -426,7 +426,7 @@ public:
 
 		/** Post the Changes back to the Database
 		*/
-		  BOOL Post();
+		  PBoolean Post();
 
 		/** Returns a String representation of the field.
 		*/
@@ -448,7 +448,7 @@ public:
 		/** DataFragment Data is broken into fragment to be passed
 			to the Database
 		*/
-		  BOOL DataFragment(PString & Buffer ,PINDEX & fragment, PTODBC::SQLINTEGER & size);
+		  PBoolean DataFragment(PString & Buffer ,PINDEX & fragment, PTODBC::SQLINTEGER & size);
 
 		/** Settings
 		*/
@@ -462,11 +462,11 @@ public:
 			  PINDEX col;			 /// Column Number (For Saving/Conversion)
 
          /// Column Attributes
-			  BOOL isReadOnly;		 /// Is Field Readonly
-			  BOOL isNullable;		 /// Allows Nulls
-			  BOOL isAutoInc;		 /// Field AutoIncrements
+			  PBoolean isReadOnly;		 /// Is Field Readonly
+			  PBoolean isNullable;		 /// Allows Nulls
+			  PBoolean isAutoInc;		 /// Field AutoIncrements
 			  int Decimals;			 /// Number of decimal places to Round
-			  BOOL LongData;		 /// LongData Length is Required
+			  PBoolean LongData;		 /// LongData Length is Required
 
 		 /// RecordHolder Reference
 			  Row * row;			 /// Back Reference to the Row
@@ -524,7 +524,7 @@ public:
 
 		/** Navigate to Specified Row
 		*/
-		  BOOL Navigate(PINDEX row);
+		  PBoolean Navigate(PINDEX row);
 
 		/** SetNewRow Set New Row for input
 		*/
@@ -536,17 +536,17 @@ public:
 			If Edit Invoked then releasea the
 			RowHandler for Navigation.
 		*/
-		  BOOL Post();
+		  PBoolean Post();
 
 		/** Delete the Current Record from the
 			RecordSet
 		*/
-		  BOOL Delete(PINDEX row =0);
+		  PBoolean Delete(PINDEX row =0);
 
 		  PODBCRecord * rec;      /// Record Structure
 
 		  PINDEX CurRow;          /// Current Row
-		  BOOL NewRow;			  /// Flag to Indicate New Row (requires either Post or Delete)
+		  PBoolean NewRow;			  /// Flag to Indicate New Row (requires either Post or Delete)
 		  PINDEX RowCount;		  /// Number of Rows.
 
 	  protected:
@@ -584,11 +584,11 @@ public:
 
 	/** Delete Row 0 indicates Current Row
 	*/
-	  BOOL DeleteRow(PINDEX row = 0);
+	  PBoolean DeleteRow(PINDEX row = 0);
 
 	/** Post Update back to Database
 	*/
-	  BOOL Post();
+	  PBoolean Post();
   //@}
 
    /**@name Utilities */
@@ -652,7 +652,7 @@ public:
 			to add data to a datasource without retreiving the
 			data itself. ie "UPDATE" "APPEND" "INSERT" queries.
 	  */
-	  BOOL Query(PString Query);
+	  PBoolean Query(PString Query);
   //@}
 
 
@@ -665,71 +665,71 @@ public:
 			connection information. You can choose to call this function
 			or use the specific Connection function.
 	  */
-	  BOOL DataSource(DataSources Source, ConnectData Data);
+	  PBoolean DataSource(DataSources Source, ConnectData Data);
   
 	  /** General Connect Function
 			Custom connection strings should call this 
 			to connect Don't ask why its LPCTSTR!
 	  */
-	  virtual BOOL Connect(PTODBC::LPCTSTR svSource);
+	  virtual PBoolean Connect(PTODBC::LPCTSTR svSource);
 
 	  /** Connect to IBM DB2 DataSource
 	  */
-	  BOOL Connect_DB2(PFilePath DBPath);
+	  PBoolean Connect_DB2(PFilePath DBPath);
 
 	  /** Connect to MS Office excel spreadsheet
 	  */
-	  BOOL Connect_XLS(PFilePath XLSPath,PString DefDir = "");
+	  PBoolean Connect_XLS(PFilePath XLSPath,PString DefDir = "");
 
 	  /** Connect to an ascii text or cvs file
 	  */
-	  BOOL Connect_TXT(PFilePath TXTPath);
+	  PBoolean Connect_TXT(PFilePath TXTPath);
 
 	  /** Connect to a Foxpro dataSource
 	  */
-	  BOOL Connect_FOX(PFilePath DBPath,PString User = "",
+	  PBoolean Connect_FOX(PFilePath DBPath,PString User = "",
 			  PString Pass = "",PString Type= "DBF",
-			  BOOL Exclusive=FALSE);
+			  PBoolean Exclusive=PFalse);
 
 	  /** Connect to a MS Access *.mdb DataSource.
 	  */
-	  BOOL Connect_MDB(PFilePath MDBPath,PString User ="",
-				PString Pass = "",BOOL Exclusive=FALSE);
+	  PBoolean Connect_MDB(PFilePath MDBPath,PString User ="",
+				PString Pass = "",PBoolean Exclusive=PFalse);
 
 	  /** Connect to a paradox database datastore
 	  */
-	  BOOL Connect_PDOX(PDirectory DBPath,PDirectory DefaultDir,
+	  PBoolean Connect_PDOX(PDirectory DBPath,PDirectory DefaultDir,
 				int version =5);
 
 	  /** Connect to an Oracle Datasource
 	  */
-	  BOOL Connect_Oracle(PString Server,PString User="", PString Pass="");
+	  PBoolean Connect_Oracle(PString Server,PString User="", PString Pass="");
 
 	  /** Connect to a DBase DataStore
 	  */
-	  BOOL Connect_DBASE(PDirectory DBPath);
+	  PBoolean Connect_DBASE(PDirectory DBPath);
 
 	  /** Connect to a MS SQL Server
 	  */
-	  BOOL Connect_MSSQL(PString User="",PString Pass="", 
-			 PString Host ="(local)",BOOL Trusted = TRUE, 
+	  PBoolean Connect_MSSQL(PString User="",PString Pass="", 
+			 PString Host ="(local)",PBoolean Trusted = PTrue, 
 			 MSSQLProtocols Proto=MSSQLNamedPipes);
 
 	  /** Connect to a mySQL Server
 	  */
-	  BOOL Connect_mySQL(PString User="",PString Pass="",
+	  PBoolean Connect_mySQL(PString User="",PString Pass="",
 			 PString Host= "localhost",
 			 int Port=3306,int Option=0);
 
 	  /** Connect to a mySQL Server's specified DataBase.
 	  */
-	  BOOL ConnectDB_mySQL(PString DB,PString User="",
+	  PBoolean ConnectDB_mySQL(PString DB,PString User="",
 			PString Pass="",PString Host= "localhost",
 			int Port=3306,int Option=0);
 
 	  /** Connect to a postgreSQL Server
 	  */
-	  BOOL Connect_postgreSQL(PString DB,PString User,
+	  PBoolean Connect_postgreSQL(PString DB,PString User,
         PString Pass,PString Host, int Port=5432,int Option=0);
 
 	  /** General Disconnect from DataSource.
@@ -748,7 +748,7 @@ public:
 	  /** Check whether their is a limit to Datalength
 			when obtaining Long Data
 	  */
-	  BOOL NeedLongDataLen();
+	  PBoolean NeedLongDataLen();
 
 	  /** OnSQL Error
 	  */
@@ -807,7 +807,7 @@ public:
 			This is different than calling PODBC::DataSource in that the 
 			Data Source is known defined externally within MDAC,
 	  */
-	  BOOL Connect( PString Source ,PString Username, PString Password);
+	  PBoolean Connect( PString Source ,PString Username, PString Password);
 
 };
 
@@ -847,9 +847,9 @@ public:
 
 	  /** InternalGetData is call when retrieving string or large binary 
 			data where the size is indetermined. The Function can be iteratively
-			called until the function returns FALSE.
+			called until the function returns PFalse.
 	  */
-	  BOOL InternalGetData(
+	  PBoolean InternalGetData(
                 PTODBC::USHORT Column,
                 PTODBC::LPVOID pBuffer, 
 		PTODBC::ULONG pBufLen,
@@ -864,24 +864,24 @@ public:
   
 	  /** Post the new record back to the RecordSet;
 	  */
-	  BOOL PostNew(PODBC::Row & rec);
+	  PBoolean PostNew(PODBC::Row & rec);
 
 	  /** Post the Updated record back to the RecordSet;
 	  */
-	  BOOL PostUpdate(PODBC::Row & rec);
+	  PBoolean PostUpdate(PODBC::Row & rec);
 
 	  /** Post a Delete command to the RecordSet; Default
 		  1 Row is deleted.
 	  */
-	  BOOL PostDelete(PINDEX row= 1);
+	  PBoolean PostDelete(PINDEX row= 1);
 
 	  /** Check for and Save Long Data
 	  */
-	  BOOL InternalSaveLongData(PTODBC::SQLRETURN nRet,PODBC::Row & rec);
+	  PBoolean InternalSaveLongData(PTODBC::SQLRETURN nRet,PODBC::Row & rec);
 
 	  /** InternalBindColumn for Data input.
 	  */
-	  BOOL InternalBindColumn(
+	  PBoolean InternalBindColumn(
             PTODBC::USHORT Column,PTODBC::LPVOID pBuffer,
 	    PTODBC::ULONG pBufferSize,
             PTODBC::LONG * pReturnedBufferSize=NULL,
@@ -924,15 +924,15 @@ public:
 
 	  /** IsColumn Nullable. Accepts NULL value
 	  */
-	  BOOL IsColumnNullable( PINDEX Column );
+	  PBoolean IsColumnNullable( PINDEX Column );
 
 	  /** IsColumn Updateable ie is not ReadOnly
 	  */
-	  BOOL IsColumnUpdatable( PINDEX Column );
+	  PBoolean IsColumnUpdatable( PINDEX Column );
 
 	  /** IsColumnAutoIndex (ie don't give default Value)
 	  */
-	  BOOL IsColumnAutoIndex( PINDEX Column );
+	  PBoolean IsColumnAutoIndex( PINDEX Column );
 
   //@}
 

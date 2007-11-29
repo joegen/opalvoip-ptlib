@@ -169,7 +169,7 @@ class PSNMP : public PIndirectChannel
                       const PSNMPVarBindingList & vars,
                        const PIPSocket::Address & agentAddress);
 
-    static BOOL DecodeTrap(const PBYTEArray & readBuffer,
+    static PBoolean DecodeTrap(const PBYTEArray & readBuffer,
                                        PINDEX & version,
                                       PString & community,
                                       PString & enterprise,
@@ -211,13 +211,13 @@ class PSNMPClient : public PSNMP
     void SetRequestID(PASNInt requestID);
     PASNInt GetRequestID() const;
 
-    BOOL WriteGetRequest (PSNMPVarBindingList & varsIn,
+    PBoolean WriteGetRequest (PSNMPVarBindingList & varsIn,
                           PSNMPVarBindingList & varsOut);
 
-    BOOL WriteGetNextRequest (PSNMPVarBindingList & varsIn,
+    PBoolean WriteGetNextRequest (PSNMPVarBindingList & varsIn,
                               PSNMPVarBindingList & varsOut);
 
-    BOOL WriteSetRequest (PSNMPVarBindingList & varsIn,
+    PBoolean WriteSetRequest (PSNMPVarBindingList & varsIn,
                           PSNMPVarBindingList & varsOut);
 
     ErrorType GetLastErrorCode() const;
@@ -225,12 +225,12 @@ class PSNMPClient : public PSNMP
     PString   GetLastErrorText() const;
 
   protected:
-    BOOL WriteRequest (PASNInt requestCode,
+    PBoolean WriteRequest (PASNInt requestCode,
                        PSNMPVarBindingList & varsIn,
                        PSNMPVarBindingList & varsOut);
 
 
-    BOOL ReadRequest(PBYTEArray & readBuffer);
+    PBoolean ReadRequest(PBYTEArray & readBuffer);
 
     PString   hostName;
     PString   community;
@@ -265,16 +265,16 @@ class PSNMPServer : public PSNMP, PThread
 	void Main();
 
 	void SetVersion(PASNInt newVersion);
-	BOOL HandleChannel();
+	PBoolean HandleChannel();
 	int ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & writeBuffer);
 
-	virtual BOOL Authorise(const PIPSocket::Address & received);
+	virtual PBoolean Authorise(const PIPSocket::Address & received);
 
-	virtual BOOL OnGetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
-	virtual BOOL OnGetNextRequest (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
-	virtual BOOL OnSetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+	virtual PBoolean OnGetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+	virtual PBoolean OnGetNextRequest (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+	virtual PBoolean OnSetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
 
-    BOOL SendGetResponse          (PSNMPVarBindingList & vars);
+    PSNMP::ErrorType SendGetResponse          (PSNMPVarBindingList & vars);
   
   protected:
     PString   community;

@@ -134,13 +134,13 @@ enum TrayIconRegistryCommand {
   CheckTrayIcon
 };
 
-static BOOL TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand cmd)
+static PBoolean TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand cmd)
 {
   HKEY key;
   if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
                    "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
                    0, KEY_ALL_ACCESS, &key) != ERROR_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   DWORD err = 1;
   DWORD type;
@@ -179,7 +179,7 @@ void PSystemLog::Output(Level level, const char * msg)
   DWORD err = ::GetLastError();
 
   if (process.isWin95 || process.controlWindow != NULL) {
-    static HANDLE mutex = CreateMutex(NULL, FALSE, NULL);
+    static HANDLE mutex = CreateMutex(NULL, PFalse, NULL);
     WaitForSingleObject(mutex, INFINITE);
 
     ostream * out;
@@ -371,20 +371,20 @@ const char * PServiceProcess::GetServiceDependencies() const
 }
 
 
-BOOL PServiceProcess::IsServiceProcess() const
+PBoolean PServiceProcess::IsServiceProcess() const
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-static BOOL IsServiceRunning(PServiceProcess * svc)
+static PBoolean IsServiceRunning(PServiceProcess * svc)
 {
-  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, svc->GetName());
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, PFalse, svc->GetName());
   if (hEvent == NULL)
     return ::GetLastError() == ERROR_ACCESS_DENIED;
 
   CloseHandle(hEvent);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -409,10 +409,10 @@ int PServiceProcess::_main(void * arg)
   GetVersionEx(&verinfo);
   switch (verinfo.dwPlatformId) {
     case VER_PLATFORM_WIN32_NT :
-      isWin95 = FALSE;
+      isWin95 = PFalse;
       break;
     case VER_PLATFORM_WIN32_WINDOWS :
-      isWin95 = TRUE;
+      isWin95 = PTrue;
       break;
     default :
       PError << "Unsupported Win32 platform type!" << endl;
@@ -472,11 +472,11 @@ int PServiceProcess::_main(void * arg)
 
   if (debugMode) {
     ::SetLastError(0);
-    PError << "Service simulation started for \"" << GetName() << "\" version " << GetVersion(TRUE) << "\n"
+    PError << "Service simulation started for \"" << GetName() << "\" version " << GetVersion(PTrue) << "\n"
               "Close window to terminate.\n" << endl;
   }
 
-  terminationEvent = CreateEvent(NULL, TRUE, FALSE, GetName());
+  terminationEvent = CreateEvent(NULL, PTrue, PFalse, GetName());
   PAssertOS(terminationEvent != NULL);
 
   threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
@@ -488,7 +488,7 @@ int PServiceProcess::_main(void * arg)
   msg.message = WM_QUIT+1; //Want somethingthat is not WM_QUIT
   do {
     switch (MsgWaitForMultipleObjects(1, &terminationEvent,
-                                      FALSE, INFINITE, QS_ALLINPUT)) {
+                                      PFalse, INFINITE, QS_ALLINPUT)) {
       case WAIT_OBJECT_0+1 :
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
           if (msg.message != WM_QUIT) {
@@ -561,10 +561,10 @@ static const char WindowBottomKey[] = "Window Bottom";
 static const char SystemLogFileNameKey[] = "System Log File Name";
 
 
-BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
+PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
 {
   if (controlWindow != NULL)
-    return TRUE;
+    return PTrue;
 
   WNDCLASS wclass;
   wclass.style = CS_HREDRAW|CS_VREDRAW;
@@ -578,7 +578,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
   wclass.lpszMenuName = NULL;
   wclass.lpszClassName = GetName();
   if (RegisterClass(&wclass) == 0)
-    return FALSE;
+    return PFalse;
 
   HMENU menubar = CreateMenu();
   HMENU menu = CreatePopupMenu();
@@ -637,7 +637,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
                    menubar,
                    hInstance,
                    NULL) == NULL)
-    return FALSE;
+    return PFalse;
 
   if (createDebugWindow && debugWindow == NULL) {
     PConfig cfg(ServiceSimulationSectionName);
@@ -678,7 +678,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -735,7 +735,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_SIZE :
       if (debugWindow != NULL && debugWindow != (HWND)-1) {
         SaveWindowPosition(hWnd);
-        MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+        MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), PTrue);
       }
       break;
 
@@ -846,7 +846,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
                 PConfig cfg(ServiceSimulationSectionName);
                 cfg.SetString(SystemLogFileNameKey, systemLogFileName);
                 DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
-                PError << "Logging started for \"" << GetName() << "\" version " << GetVersion(TRUE) << endl;
+                PError << "Logging started for \"" << GetName() << "\" version " << GetVersion(PTrue) << endl;
               }
             }
           }
@@ -925,7 +925,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             inf.cbSize = sizeof(inf);
             inf.fMask = MIIM_STATE;
             inf.fState = MFS_DEFAULT;
-            SetMenuItemInfo(menu, ControlMenuID, FALSE, &inf);
+            SetMenuItemInfo(menu, ControlMenuID, PFalse, &inf);
             AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "&Stop Service");
           }
           else {
@@ -991,14 +991,14 @@ void PServiceProcess::DebugOutput(const char * out)
   int len = strlen(out);
   int max = isWin95 ? 32000 : 128000;
   while (GetWindowTextLength(debugWindow)+len >= max) {
-    SendMessage(debugWindow, WM_SETREDRAW, FALSE, 0);
+    SendMessage(debugWindow, WM_SETREDRAW, PFalse, 0);
     DWORD start, finish;
     SendMessage(debugWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&finish);
     SendMessage(debugWindow, EM_SETSEL, 0,
                 SendMessage(debugWindow, EM_LINEINDEX, 1, 0));
-    SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"");
+    SendMessage(debugWindow, EM_REPLACESEL, PFalse, (DWORD)"");
     SendMessage(debugWindow, EM_SETSEL, start, finish);
-    SendMessage(debugWindow, WM_SETREDRAW, TRUE, 0);
+    SendMessage(debugWindow, WM_SETREDRAW, PTrue, 0);
   }
 
   SendMessage(debugWindow, EM_SETSEL, max, max);
@@ -1009,14 +1009,14 @@ void PServiceProcess::DebugOutput(const char * out)
       prev = lf+1;
     else {
       *lf++ = '\0';
-      SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
-      SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"\r\n");
+      SendMessage(debugWindow, EM_REPLACESEL, PFalse, (DWORD)out);
+      SendMessage(debugWindow, EM_REPLACESEL, PFalse, (DWORD)"\r\n");
       out = (const char *)lf;
       prev = lf;
     }
   }
   if (*out != '\0')
-    SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
+    SendMessage(debugWindow, EM_REPLACESEL, PFalse, (DWORD)out);
 }
 
 
@@ -1043,11 +1043,11 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 
   // create the stop event object. The control handler function signals
   // this event when it receives the "stop" control code.
-  terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
+  terminationEvent = CreateEvent(NULL, PTrue, PFalse, (const char *)GetName());
   if (terminationEvent == NULL)
     return;
 
-  startedEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  startedEvent = CreateEvent(NULL, PTrue, PFalse, NULL);
   if (startedEvent == NULL)
     return;
 
@@ -1085,7 +1085,7 @@ void PServiceProcess::ThreadEntry()
   activeThreadMutex.Signal();
 
   SetTerminationValue(1);
-  BOOL ok = OnStart();
+  PBoolean ok = OnStart();
 
   // signal the above function to stop reporting the "start pending" status
   // and start waiting for the termination event
@@ -1143,7 +1143,7 @@ void PServiceProcess::ControlEntry(DWORD code)
 }
 
 
-BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
+PBoolean PServiceProcess::ReportStatus(DWORD dwCurrentState,
                                    DWORD dwWin32ExitCode,
                                    DWORD dwCheckPoint,
                                    DWORD dwWaitHint)
@@ -1161,15 +1161,15 @@ BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
   status.dwWaitHint = dwWaitHint;
 
   if (debugMode || isWin95)
-    return TRUE;
+    return PTrue;
 
   // Report the status of the service to the service control manager.
   if (SetServiceStatus(statusHandle, &status))
-    return TRUE;
+    return PTrue;
 
   // If an error occurs, stop the service.
   PSystemLog::Output(PSystemLog::Error, "SetServiceStatus failed");
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1178,10 +1178,10 @@ void PServiceProcess::OnStop()
 }
 
 
-BOOL PServiceProcess::OnPause()
+PBoolean PServiceProcess::OnPause()
 {
   SuspendThread(threadHandle);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1202,12 +1202,12 @@ class ServiceManager
   public:
     ServiceManager()  { error = 0; }
 
-    virtual BOOL Create(PServiceProcess * svc) = 0;
-    virtual BOOL Delete(PServiceProcess * svc) = 0;
-    virtual BOOL Start(PServiceProcess * svc) = 0;
-    virtual BOOL Stop(PServiceProcess * svc) = 0;
-    virtual BOOL Pause(PServiceProcess * svc) = 0;
-    virtual BOOL Resume(PServiceProcess * svc) = 0;
+    virtual PBoolean Create(PServiceProcess * svc) = 0;
+    virtual PBoolean Delete(PServiceProcess * svc) = 0;
+    virtual PBoolean Start(PServiceProcess * svc) = 0;
+    virtual PBoolean Stop(PServiceProcess * svc) = 0;
+    virtual PBoolean Pause(PServiceProcess * svc) = 0;
+    virtual PBoolean Resume(PServiceProcess * svc) = 0;
 
     DWORD GetError() const { return error; }
 
@@ -1219,16 +1219,16 @@ class ServiceManager
 class Win95_ServiceManager : public ServiceManager
 {
   public:
-    virtual BOOL Create(PServiceProcess * svc);
-    virtual BOOL Delete(PServiceProcess * svc);
-    virtual BOOL Start(PServiceProcess * svc);
-    virtual BOOL Stop(PServiceProcess * svc);
-    virtual BOOL Pause(PServiceProcess * svc);
-    virtual BOOL Resume(PServiceProcess * svc);
+    virtual PBoolean Create(PServiceProcess * svc);
+    virtual PBoolean Delete(PServiceProcess * svc);
+    virtual PBoolean Start(PServiceProcess * svc);
+    virtual PBoolean Stop(PServiceProcess * svc);
+    virtual PBoolean Pause(PServiceProcess * svc);
+    virtual PBoolean Resume(PServiceProcess * svc);
 };
 
 
-BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
+PBoolean Win95_ServiceManager::Create(PServiceProcess * svc)
 {
   HKEY key;
   if (RegCreateKey(HKEY_LOCAL_MACHINE,
@@ -1241,7 +1241,7 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
                             "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunServices",
                             &key)) != ERROR_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   PString cmd = "\"" + svc->GetFile() + "\"";
   error = RegSetValueEx(key, svc->GetName(), 0, REG_SZ,
@@ -1253,7 +1253,7 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
 }
 
 
-BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
+PBoolean Win95_ServiceManager::Delete(PServiceProcess * svc)
 {
   HKEY key;
   if (RegCreateKey(HKEY_LOCAL_MACHINE,
@@ -1266,7 +1266,7 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
                             "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunServices",
                             &key)) != ERROR_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   error = RegDeleteValue(key, (char *)(const char *)svc->GetName());
 
@@ -1276,27 +1276,27 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 }
 
 
-BOOL Win95_ServiceManager::Start(PServiceProcess * service)
+PBoolean Win95_ServiceManager::Start(PServiceProcess * service)
 {
   if (IsServiceRunning(service)) {
     PError << "Service already running" << endl;
     error = 1;
-    return FALSE;
+    return PFalse;
   }
 
-  BOOL ok = _spawnl(_P_DETACH, service->GetFile(), service->GetFile(), NULL) >= 0;
+  PBoolean ok = _spawnl(_P_DETACH, service->GetFile(), service->GetFile(), NULL) >= 0;
   error = errno;
   return ok;
 }
 
 
-BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
+PBoolean Win95_ServiceManager::Stop(PServiceProcess * service)
 {
-  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, PFalse, service->GetName());
   if (hEvent == NULL) {
     error = ::GetLastError();
     PError << "Service is not running" << endl;
-    return FALSE;
+    return PFalse;
   }
 
   SetEvent(hEvent);
@@ -1304,31 +1304,31 @@ BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
 
   // Wait for process to go away.
   for (PINDEX i = 0; i < 20; i++) {
-    hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
+    hEvent = OpenEvent(EVENT_MODIFY_STATE, PFalse, service->GetName());
     if (hEvent == NULL)
-      return TRUE;
+      return PTrue;
     CloseHandle(hEvent);
     ::Sleep(500);
   }
 
   error = 0x10000000;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL Win95_ServiceManager::Pause(PServiceProcess *)
+PBoolean Win95_ServiceManager::Pause(PServiceProcess *)
 {
   PError << "Cannot pause service under Windows 95" << endl;
   error = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL Win95_ServiceManager::Resume(PServiceProcess *)
+PBoolean Win95_ServiceManager::Resume(PServiceProcess *)
 {
   PError << "Cannot resume service under Windows 95" << endl;
   error = 1;
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1339,22 +1339,22 @@ class NT_ServiceManager : public ServiceManager
     NT_ServiceManager()  { schSCManager = schService = NULL; }
     ~NT_ServiceManager();
 
-    BOOL Create(PServiceProcess * svc);
-    BOOL Delete(PServiceProcess * svc);
-    BOOL Start(PServiceProcess * svc);
-    BOOL Stop(PServiceProcess * svc)
+    PBoolean Create(PServiceProcess * svc);
+    PBoolean Delete(PServiceProcess * svc);
+    PBoolean Start(PServiceProcess * svc);
+    PBoolean Stop(PServiceProcess * svc)
       { return Control(svc, SERVICE_CONTROL_STOP); }
-    BOOL Pause(PServiceProcess * svc)
+    PBoolean Pause(PServiceProcess * svc)
       { return Control(svc, SERVICE_CONTROL_PAUSE); }
-    BOOL Resume(PServiceProcess * svc)
+    PBoolean Resume(PServiceProcess * svc)
       { return Control(svc, SERVICE_CONTROL_CONTINUE); }
 
     DWORD GetError() const { return error; }
 
   private:
-    BOOL OpenManager();
-    BOOL Open(PServiceProcess * svc);
-    BOOL Control(PServiceProcess * svc, DWORD command);
+    PBoolean OpenManager();
+    PBoolean Open(PServiceProcess * svc);
+    PBoolean Control(PServiceProcess * svc, DWORD command);
 
     SC_HANDLE schSCManager, schService;
 };
@@ -1369,42 +1369,42 @@ NT_ServiceManager::~NT_ServiceManager()
 }
 
 
-BOOL NT_ServiceManager::OpenManager()
+PBoolean NT_ServiceManager::OpenManager()
 {
   schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
   if (schSCManager != NULL)
-    return TRUE;
+    return PTrue;
 
   error = ::GetLastError();
   PError << "Could not open Service Manager." << endl;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL NT_ServiceManager::Open(PServiceProcess * svc)
+PBoolean NT_ServiceManager::Open(PServiceProcess * svc)
 {
   if (!OpenManager())
-    return FALSE;
+    return PFalse;
 
   schService = OpenService(schSCManager, svc->GetName(), SERVICE_ALL_ACCESS);
   if (schService != NULL)
-    return TRUE;
+    return PTrue;
 
   error = ::GetLastError();
   PError << "Service is not installed." << endl;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL NT_ServiceManager::Create(PServiceProcess * svc)
+PBoolean NT_ServiceManager::Create(PServiceProcess * svc)
 {
   if (!OpenManager())
-    return FALSE;
+    return PFalse;
 
   schService = OpenService(schSCManager, svc->GetName(), SERVICE_ALL_ACCESS);
   if (schService != NULL) {
     PError << "Service is already installed." << endl;
-    return FALSE;
+    return PFalse;
   }
 
   PString binaryFilename;
@@ -1425,14 +1425,14 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
                     NULL);                          // no password
   if (schService == NULL) {
     error = ::GetLastError();
-    return FALSE;
+    return PFalse;
   }
 
   HKEY key;
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
              "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" +
                                        svc->GetName(), &key)) != ERROR_SUCCESS)
-    return FALSE;
+    return PFalse;
 
   LPBYTE fn = (LPBYTE)(const char *)binaryFilename;
   PINDEX fnlen = binaryFilename.GetLength()+1;
@@ -1454,10 +1454,10 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
 }
 
 
-BOOL NT_ServiceManager::Delete(PServiceProcess * svc)
+PBoolean NT_ServiceManager::Delete(PServiceProcess * svc)
 {
   if (!Open(svc))
-    return FALSE;
+    return PFalse;
 
   PString name = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" + svc->GetName();
   error = ::RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
@@ -1469,22 +1469,22 @@ BOOL NT_ServiceManager::Delete(PServiceProcess * svc)
 }
 
 
-BOOL NT_ServiceManager::Start(PServiceProcess * svc)
+PBoolean NT_ServiceManager::Start(PServiceProcess * svc)
 {
   if (!Open(svc))
-    return FALSE;
+    return PFalse;
 
-  BOOL ok = ::StartService(schService, 0, NULL);
+  PBoolean ok = ::StartService(schService, 0, NULL);
   error = ::GetLastError();
 
   if (!ok)
-    return FALSE;
+    return PFalse;
 
   SERVICE_STATUS serviceStatus;
 
   // query the service status
   if (!QueryServiceStatus(schService, &serviceStatus))
-    return FALSE;
+    return PFalse;
 
   // if pending periodicaly re-query the status
   while (serviceStatus.dwCurrentState == SERVICE_START_PENDING) {
@@ -1495,33 +1495,33 @@ BOOL NT_ServiceManager::Start(PServiceProcess * svc)
   }
 
   if (serviceStatus.dwCurrentState == SERVICE_RUNNING) {
-    return TRUE;
+    return PTrue;
   } else {
     error = serviceStatus.dwWin32ExitCode;
-    return FALSE;
+    return PFalse;
   }
 }
 
 
-BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
+PBoolean NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
 {
   if (!Open(svc))
-    return FALSE;
+    return PFalse;
 
   SERVICE_STATUS status;
-  BOOL ok = ::ControlService(schService, command, &status);
+  PBoolean ok = ::ControlService(schService, command, &status);
   error = ::GetLastError();
   return ok;
 }
 
 
-BOOL PServiceProcess::ProcessCommand(const char * cmd)
+PBoolean PServiceProcess::ProcessCommand(const char * cmd)
 {
   PINDEX cmdNum = 0;
   while (strcasecmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
     if (++cmdNum >= NumSvcCmds) {
-      if (!CreateControlWindow(TRUE))
-        return FALSE;
+      if (!CreateControlWindow(PTrue))
+        return PFalse;
       if (*cmd != '\0')
         PError << "Unknown command \"" << cmd << "\".\n";
       else
@@ -1530,7 +1530,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       for (cmdNum = 0; cmdNum < NumSvcCmds-1; cmdNum++)
         PError << ServiceCommandNames[cmdNum] << " | ";
       PError << ServiceCommandNames[cmdNum] << " ]" << endl;
-      return FALSE;
+      return PFalse;
     }
   }
 
@@ -1543,7 +1543,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
   else
     svcManager = &nt;
 
-  BOOL good = FALSE;
+  PBoolean good = PFalse;
   switch (cmdNum) {
     case SvcCmdNoWindow :
       if (controlWindow == NULL)
@@ -1551,7 +1551,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       break;
 
     case SvcCmdTray :
-      if (CreateControlWindow(FALSE)) {
+      if (CreateControlWindow(PFalse)) {
         PNotifyIconData nid(controlWindow, NIF_MESSAGE|NIF_ICON, GetName());
         nid.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(ICON_RESID), IMAGE_ICON, // 16x16 icon
                                GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -1559,9 +1559,9 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
         nid.Add();    // This adds the icon
         debugWindow = (HWND)-1;
         systemLogFileName = DebuggerLogOutput;
-        return TRUE;
+        return PTrue;
       }
-      return FALSE;
+      return PFalse;
 
     case SvcCmdNoTray :
       if (TrayIconRegistry(this, CheckTrayIcon)) {
@@ -1572,15 +1572,15 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
         TrayIconRegistry(this, AddTrayIcon);
         PError << "Tray icon installed.";
       }
-      return TRUE;
+      return PTrue;
 
     case SvcCmdVersion : // Version command
       ::SetLastError(0);
-      PError << GetName() << " Version " << GetVersion(TRUE)
+      PError << GetName() << " Version " << GetVersion(PTrue)
              << " by " << GetManufacturer()
              << " on " << GetOSClass()   << ' ' << GetOSName()
              << " ("   << GetOSVersion() << '-' << GetOSHardware() << ')' << endl;
-      return TRUE;
+      return PTrue;
 
     case SvcCmdInstall : // install
       good = svcManager->Create(this);
@@ -1616,7 +1616,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       PINDEX i;
       for (i = 0; i < sections.GetSize(); i++)
         cfg.DeleteSection(sections[i]);
-      good = TRUE;
+      good = PTrue;
       break;
   }
 
@@ -1640,7 +1640,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
   }
   PError << endl;
 
-  return TRUE;
+  return PTrue;
 }
 
 

@@ -64,31 +64,31 @@ class PSoundChannel_WAVFile : public PSoundChannel
                      unsigned bitsPerSample);
     ~PSoundChannel_WAVFile();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    BOOL Open(const PString & _device,
+    PBoolean Open(const PString & _device,
               Directions _dir,
               unsigned _numChannels,
               unsigned _sampleRate,
               unsigned _bitsPerSample);
     virtual PString GetName() const;
-    BOOL Close();
-    BOOL IsOpen() const;
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
-    BOOL SetFormat(unsigned numChannels,
+    PBoolean Close();
+    PBoolean IsOpen() const;
+    PBoolean Write(const void * buf, PINDEX len);
+    PBoolean Read(void * buf, PINDEX len);
+    PBoolean SetFormat(unsigned numChannels,
                    unsigned sampleRate,
                    unsigned bitsPerSample);
     unsigned GetChannels() const;
     unsigned GetSampleRate() const;
     unsigned GetSampleSize() const;
-    BOOL SetBuffers(PINDEX size, PINDEX count);
-    BOOL GetBuffers(PINDEX & size, PINDEX & count);
-    BOOL HasPlayCompleted();
-    BOOL WaitForPlayCompletion();
-    BOOL StartRecording();
-    BOOL IsRecordBufferFull();
-    BOOL AreAllRecordBuffersFull();
-    BOOL WaitForRecordBufferFull();
-    BOOL WaitForAllRecordBuffersFull();
+    PBoolean SetBuffers(PINDEX size, PINDEX count);
+    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+    PBoolean HasPlayCompleted();
+    PBoolean WaitForPlayCompletion();
+    PBoolean StartRecording();
+    PBoolean IsRecordBufferFull();
+    PBoolean AreAllRecordBuffersFull();
+    PBoolean WaitForRecordBufferFull();
+    PBoolean WaitForAllRecordBuffersFull();
 
 protected:
     PWAVFile       m_WAVFile;

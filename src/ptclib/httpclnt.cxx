@@ -61,7 +61,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 PMIMEInfo & outMIME,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime,
-                                BOOL persist)
+                                PBoolean persist)
 {
   return ExecuteCommand(commandNames[cmd], url, outMIME, dataBody, replyMime, persist);
 }
@@ -72,7 +72,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
                                 PMIMEInfo & outMIME,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime,
-                                BOOL persist)
+                                PBoolean persist)
 {
   if (!outMIME.Contains(DateTag()))
     outMIME.SetAt(DateTag(), PTime().AsString());
@@ -118,7 +118,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 }
 
 
-BOOL PHTTPClient::WriteCommand(Commands cmd,
+PBoolean PHTTPClient::WriteCommand(Commands cmd,
                                const PString & url,
                                PMIMEInfo & outMIME,
                                const PString & dataBody)
@@ -127,7 +127,7 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 }
 
 
-BOOL PHTTPClient::WriteCommand(const PString & cmdName,
+PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
                                const PString & url,
                                PMIMEInfo & outMIME,
                                const PString & dataBody)
@@ -149,7 +149,7 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
 }
 
 
-BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
+PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
   PString http = ReadString(7);
   if (!http) {
@@ -158,7 +158,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     if (http.Find("HTTP/") == P_MAX_INDEX) {
       lastResponseCode = PHTTP::RequestOK;
       lastResponseInfo = "HTTP/0.9";
-      return TRUE;
+      return PTrue;
     }
 
     if (http[0] == '\n')
@@ -168,7 +168,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
     if (PHTTP::ReadResponse())
       if (replyMIME.Read(*this))
-        return TRUE;
+        return PTrue;
   }
  
   lastResponseCode = -1;
@@ -179,25 +179,25 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     SetErrorValues(ProtocolFailure, 0, LastReadError);
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
+PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
-  BOOL ok = InternalReadContentBody(replyMIME, body);
+  PBoolean ok = InternalReadContentBody(replyMIME, body);
   body.SetSize(body.GetSize()+1);
   return ok;
 }
 
 
-BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
+PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
   return InternalReadContentBody(replyMIME, body);
 }
 
 
-BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray & body)
+PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray & body)
 {
   PCaselessString encoding = replyMIME(TransferEncodingTag());
 
@@ -211,7 +211,7 @@ BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray 
     if (!(encoding.IsEmpty())) {
       lastResponseCode = -1;
       lastResponseInfo = "Unknown Transfer-Encoding extension";
-      return FALSE;
+      return PFalse;
     }
 
     // Must be raw, read to end file variety
@@ -230,7 +230,7 @@ BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray 
     // Read chunk length line
     PString chunkLengthLine;
     if (!ReadLine(chunkLengthLine))
-      return FALSE;
+      return PFalse;
 
     // A zero length chunk is end of output
     PINDEX chunkLength = chunkLengthLine.AsUnsigned(16);
@@ -239,41 +239,41 @@ BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray 
 
     // Read the chunk
     if (!ReadBlock((char *)body.GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
-      return FALSE;
+      return PFalse;
     bytesRead+= chunkLength;
 
     // Read the trailing CRLF
     if (!ReadLine(chunkLengthLine))
-      return FALSE;
+      return PFalse;
   }
 
   // Read the footer
   PString footer;
   do {
     if (!ReadLine(footer))
-      return FALSE;
+      return PFalse;
   } while (replyMIME.AddMIME(footer));
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PHTTPClient::GetTextDocument(const PURL & url,
+PBoolean PHTTPClient::GetTextDocument(const PURL & url,
                                   PString & document,
-                                  BOOL persist)
+                                  PBoolean persist)
 {
   PMIMEInfo outMIME, replyMIME;
   if (!GetDocument(url, outMIME, replyMIME, persist))
-    return FALSE;
+    return PFalse;
 
   return ReadContentBody(replyMIME, document);
 }
 
 
-BOOL PHTTPClient::GetDocument(const PURL & _url,
+PBoolean PHTTPClient::GetDocument(const PURL & _url,
                               PMIMEInfo & _outMIME,
                               PMIMEInfo & replyMIME,
-                              BOOL persist)
+                              PBoolean persist)
 {
   int count = 0;
   static const char locationTag[] = "Location";
@@ -285,43 +285,43 @@ BOOL PHTTPClient::GetDocument(const PURL & _url,
     int code = ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist);
     switch (code) {
       case RequestOK:
-        return TRUE;
+        return PTrue;
       case MovedPermanently:
       case MovedTemporarily:
         {
           if (count > 10)
-            return FALSE;
+            return PFalse;
           PString str = replyMIME(locationTag);
           if (str.IsEmpty())
-            return FALSE;
+            return PFalse;
           PString doc;
           if (!ReadContentBody(replyMIME, doc))
-            return FALSE;
+            return PFalse;
           url = str;
           count++;
         }
         break;
       default:
-        return FALSE;
+        return PFalse;
     }
   }
 }
 
 
-BOOL PHTTPClient::GetHeader(const PURL & url,
+PBoolean PHTTPClient::GetHeader(const PURL & url,
                             PMIMEInfo & outMIME,
                             PMIMEInfo & replyMIME,
-                            BOOL persist)
+                            PBoolean persist)
 {
   return ExecuteCommand(HEAD, url, outMIME, PString(), replyMIME, persist) == RequestOK;
 }
 
 
-BOOL PHTTPClient::PostData(const PURL & url,
+PBoolean PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & outMIME,
                            const PString & data,
                            PMIMEInfo & replyMIME,
-                           BOOL persist)
+                           PBoolean persist)
 {
   PString dataBody = data;
   if (!outMIME.Contains(ContentTypeTag())) {
@@ -333,21 +333,21 @@ BOOL PHTTPClient::PostData(const PURL & url,
 }
 
 
-BOOL PHTTPClient::PostData(const PURL & url,
+PBoolean PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & outMIME,
                            const PString & data,
                            PMIMEInfo & replyMIME,
                            PString & body,
-                           BOOL persist)
+                           PBoolean persist)
 {
   if (!PostData(url, outMIME, data, replyMIME, persist))
-    return FALSE;
+    return PFalse;
 
   return ReadContentBody(replyMIME, body);
 }
 
 
-BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
+PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 {
   PString host = url.GetHostName();
 
@@ -367,7 +367,7 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         lastResponseCode = -2;
         lastResponseInfo = tcp->GetErrorText();
         delete tcp;
-        return FALSE;
+        return PFalse;
       }
 
       PSSLChannel * ssl = new PSSLChannel;
@@ -375,13 +375,13 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         lastResponseCode = -2;
         lastResponseInfo = ssl->GetErrorText();
         delete ssl;
-        return FALSE;
+        return PFalse;
       }
 
       if (!Open(ssl)) {
         lastResponseCode = -2;
         lastResponseInfo = GetErrorText();
-        return FALSE;
+        return PFalse;
       }
     }
     else
@@ -390,7 +390,7 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
     if (!Connect(host, url.GetPort())) {
       lastResponseCode = -2;
       lastResponseInfo = GetErrorText();
-      return FALSE;
+      return PFalse;
     }
   }
 
@@ -406,7 +406,7 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 

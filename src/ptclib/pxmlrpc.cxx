@@ -93,15 +93,15 @@ PXMLRPCBlock::PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & dat
 }
 
 
-BOOL PXMLRPCBlock::Load(const PString & str)
+PBoolean PXMLRPCBlock::Load(const PString & str)
 {
   if (!PXML::Load(str))
-    return FALSE;
+    return PFalse;
 
   if (rootElement != NULL)
     params = rootElement->GetElement("params");
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -363,21 +363,21 @@ void PXMLRPCBlock::AddArray(const PArray<PStringToString> & array)
 
 /////////////////////////////////////////////
 
-BOOL PXMLRPCBlock::ValidateResponse()
+PBoolean PXMLRPCBlock::ValidateResponse()
 {
   // ensure root element exists and has correct name
   if ((rootElement == NULL) || 
       (rootElement->GetName() != "methodResponse")) {
     SetFault(PXMLRPC::ResponseRootNotMethodResponse, "Response root not methodResponse");
     PTRACE(2, "XMLRPC\t" << GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
   // determine if response returned
   if (params == NULL)
     params = rootElement->GetElement("params");
   if (params == NULL)
-    return TRUE;
+    return PTrue;
 
   // determine if fault
   if (params->GetName() == "fault") {
@@ -398,39 +398,39 @@ BOOL PXMLRPCBlock::ValidateResponse()
       txt << "Fault return is faulty:\n" << *this;
       SetFault(PXMLRPC::FaultyFault, txt);
       PTRACE(2, "XMLRPC\t" << GetFaultText());
-      return FALSE;
+      return PFalse;
     }
 
     // get fault code and string
     SetFault(faultInfo["faultCode"].AsInteger(), faultInfo["faultString"]);
 
-    return FALSE;
+    return PFalse;
   }
 
   // must be params
   else if (params->GetName() != "params") {
     SetFault(PXMLRPC::ResponseUnknownFormat, PString("Response contains unknown element") & params->GetName());
     PTRACE(2, "XMLRPC\t" << GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PXMLRPCBlock::ParseScalar(PXMLElement * valueElement, 
+PBoolean PXMLRPCBlock::ParseScalar(PXMLElement * valueElement, 
                                    PString & type, 
                                    PString & value)
 {
   if (valueElement == NULL)
-    return FALSE;
+    return PFalse;
 
   if (!valueElement->IsElement())
-    return FALSE;
+    return PFalse;
 
   if (valueElement->GetName() != "value") {
     SetFault(PXMLRPC::ParamNotValue, "Scalar value does not contain value element");
     PTRACE(2, "RPCXML\t" << GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
   for (PINDEX i = 0; i < valueElement->GetSize(); i++) {
@@ -438,39 +438,39 @@ BOOL PXMLRPCBlock::ParseScalar(PXMLElement * valueElement,
     if (element != NULL && element->IsElement()) {
       type = element->GetName();
       value = element->GetData();
-      return TRUE;
+      return PTrue;
     }
   }
 
   SetFault(PXMLRPC::ScalarWithoutElement, "Scalar without sub-element");
   PTRACE(2, "XMLRPC\t" << GetFaultText());
-  return FALSE;
+  return PFalse;
 }
 
 
-static BOOL ParseStructBase(PXMLRPCBlock & block, PXMLElement * & element)
+static PBoolean ParseStructBase(PXMLRPCBlock & block, PXMLElement * & element)
 {
   if (element == NULL)
-    return FALSE;
+    return PFalse;
 
   if (!element->IsElement())
-    return FALSE;
+    return PFalse;
 
   if (element->GetName() == "struct")
-    return TRUE;
+    return PTrue;
 
   if (element->GetName() != "value")
     block.SetFault(PXMLRPC::ParamNotStruct, "Param is not struct");
   else {
     element = element->GetElement("struct");
     if (element != NULL)
-      return TRUE;
+      return PTrue;
 
     block.SetFault(PXMLRPC::ParamNotStruct, "nested structure not present");
   }
 
   PTRACE(2, "XMLRPC\t" << block.GetFaultText());
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -520,11 +520,11 @@ static PXMLElement * ParseStructElement(PXMLRPCBlock & block,
 }
 
 
-BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement, 
+PBoolean PXMLRPCBlock::ParseStruct(PXMLElement * structElement, 
                                PStringToString & structDict)
 {
   if (!ParseStructBase(*this, structElement))
-    return FALSE;
+    return PFalse;
 
   for (PINDEX i = 0; i < structElement->GetSize(); i++) {
     PString name;
@@ -537,14 +537,14 @@ BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement,
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement, PXMLRPCStructBase & data)
+PBoolean PXMLRPCBlock::ParseStruct(PXMLElement * structElement, PXMLRPCStructBase & data)
 {
   if (!ParseStructBase(*this, structElement))
-    return FALSE;
+    return PFalse;
 
   for (PINDEX i = 0; i < structElement->GetSize(); i++) {
     PString name;
@@ -554,23 +554,23 @@ BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement, PXMLRPCStructBase & 
       if (variable != NULL) {
         if (variable->IsArray()) {
           if (!ParseArray(element, *variable))
-            return FALSE;
+            return PFalse;
         }
         else {
           PXMLRPCStructBase * nested = variable->GetStruct(0);
           if (nested != NULL) {
             if (!ParseStruct(element, *nested))
-              return FALSE;
+              return PFalse;
           }
           else {
             PString value;
             PCaselessString type;
             if (!ParseScalar(element, type, value))
-              return FALSE;
+              return PFalse;
 
             if (type != "string" && type != variable->GetType()) {
               PTRACE(2, "RPCXML\tMember " << i << " is not of expected type: " << variable->GetType());
-              return FALSE;
+              return PFalse;
             }
 
             variable->FromString(0, value);
@@ -580,7 +580,7 @@ BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement, PXMLRPCStructBase & 
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -613,11 +613,11 @@ static PXMLElement * ParseArrayBase(PXMLRPCBlock & block, PXMLElement * element)
 }
 
 
-BOOL PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PStringArray & array)
+PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PStringArray & array)
 {
   PXMLElement * dataElement = ParseArrayBase(*this, arrayElement);
   if (dataElement == NULL)
-    return FALSE;
+    return PFalse;
 
   array.SetSize(dataElement->GetSize());
 
@@ -630,15 +630,15 @@ BOOL PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PStringArray & array)
   }
 
   array.SetSize(count);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PArray<PStringToString> & array)
+PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PArray<PStringToString> & array)
 {
   PXMLElement * dataElement = ParseArrayBase(*this, arrayElement);
   if (dataElement == NULL)
-    return FALSE;
+    return PFalse;
 
   array.SetSize(dataElement->GetSize());
 
@@ -646,21 +646,21 @@ BOOL PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PArray<PStringToString
   for (PINDEX i = 0; i < dataElement->GetSize(); i++) {
     PStringToString values;
     if (!ParseStruct((PXMLElement *)dataElement->GetElement(i), values))
-      return FALSE;
+      return PFalse;
 
     array[count++] = values;
   }
 
   array.SetSize(count);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBase & array)
+PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBase & array)
 {
   PXMLElement * dataElement = ParseArrayBase(*this, arrayElement);
   if (dataElement == NULL)
-    return FALSE;
+    return PFalse;
 
   array.SetSize(dataElement->GetSize());
 
@@ -686,7 +686,7 @@ BOOL PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBase & 
   }
 
   array.SetSize(count);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -724,7 +724,7 @@ PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const
   }
 
   if (param == NULL)
-    return FALSE;
+    return PFalse;
 
   for (i = 0; i < param->GetSize(); i++) {
     PXMLObject * parm = param->GetElement(i);
@@ -736,10 +736,10 @@ PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const
 }
 
 
-BOOL PXMLRPCBlock::GetParams(PXMLRPCStructBase & data)
+PBoolean PXMLRPCBlock::GetParams(PXMLRPCStructBase & data)
 {
   if (params == NULL) 
-    return FALSE;
+    return PFalse;
 
   // Special case to allow for server implementations that always return
   // values as a struct rather than multiple parameters.
@@ -754,120 +754,120 @@ BOOL PXMLRPCBlock::GetParams(PXMLRPCStructBase & data)
     PXMLRPCVariableBase & variable = data.GetVariable(i);
     if (variable.IsArray()) {
       if (!ParseArray(GetParam(i), variable))
-        return FALSE;
+        return PFalse;
     }
     else {
       PXMLRPCStructBase * structure = variable.GetStruct(0);
       if (structure != NULL) {
         if (!GetParam(i, *structure))
-          return FALSE;
+          return PFalse;
       }
       else {
         PString value;
         if (!GetExpectedParam(i, variable.GetType(), value))
-          return FALSE;
+          return PFalse;
 
         variable.FromString(0, value);
       }
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & type, PString & value)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PString & type, PString & value)
 {
   // get the parameter
   if (!ParseScalar(GetParam(idx), type, value)) {
     PTRACE(2, "XMLRPC\tCannot get scalar parm " << idx);
-    return FALSE;
+    return PFalse;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXMLRPCBlock::GetExpectedParam(PINDEX idx, const PString & expectedType, PString & value)
+PBoolean PXMLRPCBlock::GetExpectedParam(PINDEX idx, const PString & expectedType, PString & value)
 {
   PString type;
 
   // get parameter
   if (!GetParam(idx, type, value))
-    return FALSE;
+    return PFalse;
 
   // see if correct type
   if (!expectedType.IsEmpty() && (type != expectedType)) {
     PTRACE(2, "XMLRPC\tExpected parm " << idx << " to be " << expectedType << ", was " << type);
-    return FALSE;
+    return PFalse;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & result)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PString & result)
 {
   return GetExpectedParam(idx, "string", result); 
 }
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, int & val)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, int & val)
 {
   PString type, result; 
   if (!GetParam(idx, type, result))
-    return FALSE;
+    return PFalse;
 
   if ((type != "i4") && 
       (type != "int") &&
       (type != "boolean")) {
     PTRACE(2, "XMLRPC\tExpected parm " << idx << " to be intger compatible, was " << type);
-    return FALSE;
+    return PFalse;
   }
 
   val = result.AsInteger();
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, double & val)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, double & val)
 {
   PString result; 
   if (!GetExpectedParam(idx, "double", result))
-    return FALSE;
+    return PFalse;
 
   val = result.AsReal();
-  return TRUE;
+  return PTrue;
 }
 
 // 01234567890123456
 // yyyyMMddThh:mm:ss
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PTime & val, int tz)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PTime & val, int tz)
 {
   PString result; 
   if (!GetExpectedParam(idx, "dateTime.iso8601", result))
-    return FALSE;
+    return PFalse;
 
   return PXMLRPC::ISO8601ToPTime(result, val, tz);
 }
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PStringArray & result)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PStringArray & result)
 {
   return ParseArray(GetParam(idx), result);
 }
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PArray<PStringToString> & result)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PArray<PStringToString> & result)
 {
   return ParseArray(GetParam(idx), result);
 }
 
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PStringToString & result)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PStringToString & result)
 {
   return ParseStruct(GetParam(idx), result);
 }
 
 
-BOOL PXMLRPCBlock::GetParam(PINDEX idx, PXMLRPCStructBase & data)
+PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PXMLRPCStructBase & data)
 {
   return ParseStruct(GetParam(idx), data);
 }
@@ -882,7 +882,7 @@ PXMLRPC::PXMLRPC(const PURL & _url, unsigned opts)
   options = opts;
 }
 
-BOOL PXMLRPC::MakeRequest(const PString & method)
+PBoolean PXMLRPC::MakeRequest(const PString & method)
 {
   PXMLRPCBlock request(method);
   PXMLRPCBlock response;
@@ -890,41 +890,41 @@ BOOL PXMLRPC::MakeRequest(const PString & method)
   return MakeRequest(request, response);
 }
 
-BOOL PXMLRPC::MakeRequest(const PString & method, PXMLRPCBlock & response)
+PBoolean PXMLRPC::MakeRequest(const PString & method, PXMLRPCBlock & response)
 {
   PXMLRPCBlock request(method);
 
   return MakeRequest(request, response);
 }
 
-BOOL PXMLRPC::MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
+PBoolean PXMLRPC::MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   if (PerformRequest(request, response))
-    return TRUE;
+    return PTrue;
 
   faultCode = response.GetFaultCode();
   faultText = response.GetFaultText();
 
-  return FALSE;
+  return PFalse;
 }
 
-BOOL PXMLRPC::MakeRequest(const PString & method, const PXMLRPCStructBase & args, PXMLRPCStructBase & reply)
+PBoolean PXMLRPC::MakeRequest(const PString & method, const PXMLRPCStructBase & args, PXMLRPCStructBase & reply)
 {
   PXMLRPCBlock request(method, args);
   PXMLRPCBlock response;
 
   if (!MakeRequest(request, response))
-    return FALSE;
+    return PFalse;
 
   if (response.GetParams(reply))
-    return TRUE;
+    return PTrue;
 
   PTRACE(1, "XMLRPC\tParsing response failed: " << response.GetFaultText());
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
+PBoolean PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   // create XML version of request
   PString requestXML;
@@ -936,7 +936,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
         << request.GetErrorString();
     response.SetFault(PXMLRPC::CannotCreateRequestXML, txt);
     PTRACE(2, "XMLRPC\t" << response.GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
   // make sure the request ends with a newline
@@ -956,7 +956,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
   PString replyXML;
 
   // do the request
-  BOOL ok = client.PostData(url, sendMIME, requestXML, replyMIME, replyXML);
+  PBoolean ok = client.PostData(url, sendMIME, requestXML, replyMIME, replyXML);
 
   PTRACE(5, "XMLRPC\tIncoming XML/RPC:\n" << replyMIME << replyXML);
 
@@ -970,7 +970,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
         << replyXML;
     response.SetFault(PXMLRPC::HTTPPostFailed, txt);
     PTRACE(2, "XMLRPC\t" << response.GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
   // parse the response
@@ -990,25 +990,25 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 
     response.SetFault(PXMLRPC::CannotParseResponseXML, txt);
     PTRACE(2, "XMLRPC\t" << response.GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
   // validate the response
   if (!response.ValidateResponse()) {
     PTRACE(2, "XMLRPC\tValidation of response failed: " << response.GetFaultText());
-    return FALSE;
+    return PFalse;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PXMLRPC::ISO8601ToPTime(const PString & iso8601, PTime & val, int tz)
+PBoolean PXMLRPC::ISO8601ToPTime(const PString & iso8601, PTime & val, int tz)
 {
   if ((iso8601.GetLength() != 17) ||
       (iso8601[8]  != 'T') ||
       (iso8601[11] != ':') ||
       (iso8601[14] != ':'))
-    return FALSE;
+    return PFalse;
 
   val = PTime(iso8601.Mid(15,2).AsInteger(),  // seconds
               iso8601.Mid(12,2).AsInteger(),  // minutes
@@ -1019,7 +1019,7 @@ BOOL PXMLRPC::ISO8601ToPTime(const PString & iso8601, PTime & val, int tz)
               tz
               );
 
-  return TRUE;
+  return PTrue;
 }
 
 PString PXMLRPC::PTimeToISO8601(const PTime & time)
@@ -1045,9 +1045,9 @@ PXMLRPCStructBase * PXMLRPCVariableBase::GetStruct(PINDEX) const
 }
 
 
-BOOL PXMLRPCVariableBase::IsArray() const
+PBoolean PXMLRPCVariableBase::IsArray() const
 {
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1057,9 +1057,9 @@ PINDEX PXMLRPCVariableBase::GetSize() const
 }
 
 
-BOOL PXMLRPCVariableBase::SetSize(PINDEX)
+PBoolean PXMLRPCVariableBase::SetSize(PINDEX)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1114,9 +1114,9 @@ void PXMLRPCArrayBase::Copy(const PXMLRPCVariableBase & other)
 }
 
 
-BOOL PXMLRPCArrayBase::IsArray() const
+PBoolean PXMLRPCArrayBase::IsArray() const
 {
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1126,7 +1126,7 @@ PINDEX PXMLRPCArrayBase::GetSize() const
 }
 
 
-BOOL PXMLRPCArrayBase::SetSize(PINDEX sz)
+PBoolean PXMLRPCArrayBase::SetSize(PINDEX sz)
 {
   return array.SetSize(sz);
 }
@@ -1141,21 +1141,21 @@ PXMLRPCArrayObjectsBase::PXMLRPCArrayObjectsBase(PArrayObjects & a, const char *
 }
 
 
-BOOL PXMLRPCArrayObjectsBase::SetSize(PINDEX sz)
+PBoolean PXMLRPCArrayObjectsBase::SetSize(PINDEX sz)
 {
   if (!array.SetSize(sz))
-    return FALSE;
+    return PFalse;
 
   for (PINDEX i = 0; i < sz; i++) {
     if (array.GetAt(i) == NULL) {
       PObject * object = CreateObject();
       if (object == NULL)
-        return FALSE;
+        return PFalse;
       array.SetAt(i, object);
     }
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
