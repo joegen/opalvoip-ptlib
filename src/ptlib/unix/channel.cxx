@@ -67,12 +67,12 @@ void PChannel::Construct()
 //
 // PChannel::PXSetIOBlock
 //   This function is used to perform IO blocks.
-//   If the return value is FALSE, then the select call either
+//   If the return value is PFalse, then the select call either
 //   returned an error or a timeout occurred. The member variable lastError
 //   can be used to determine which error occurred
 //
 
-BOOL PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
+PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
 {
   ErrorGroup group;
   switch (type) {
@@ -129,20 +129,20 @@ BOOL PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
   }
   px_threadMutex.Signal();
 
-  // if select returned < 0, then convert errno into lastError and return FALSE
+  // if select returned < 0, then convert errno into lastError and return PFalse
   if (stat < 0)
     return ConvertOSError(stat, group);
 
-  // if the select succeeded, then return TRUE
+  // if the select succeeded, then return PTrue
   if (stat > 0) 
-    return TRUE;
+    return PTrue;
 
-  // otherwise, a timeout occurred so return FALSE
+  // otherwise, a timeout occurred so return PFalse
   return SetErrorValues(Timeout, ETIMEDOUT, group);
 }
 
 
-BOOL PChannel::Read(void * buf, PINDEX len)
+PBoolean PChannel::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
@@ -150,17 +150,17 @@ BOOL PChannel::Read(void * buf, PINDEX len)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
-    return FALSE;
+    return PFalse;
 
   if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len), LastReadError))
     return lastReadCount > 0;
 
   lastReadCount = 0;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PChannel::Write(const void * buf, PINDEX len)
+PBoolean PChannel::Write(const void * buf, PINDEX len)
 {
   // if the os_handle isn't open, no can do
   if (os_handle < 0)
@@ -181,7 +181,7 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
         return ConvertOSError(-1, LastWriteError);
 
       if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-        return FALSE;
+        return PFalse;
     }
 
     lastWriteCount += result;
@@ -198,7 +198,7 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
 
 #ifdef P_HAS_RECVMSG
 
-BOOL PChannel::Read(const VectorOfSlice & slices)
+PBoolean PChannel::Read(const VectorOfSlice & slices)
 {
   lastReadCount = 0;
 
@@ -206,16 +206,16 @@ BOOL PChannel::Read(const VectorOfSlice & slices)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
-    return FALSE;
+    return PFalse;
 
   if (ConvertOSError(lastReadCount = ::readv(os_handle, &slices[0], slices.size()), LastReadError))
     return lastReadCount > 0;
 
   lastReadCount = 0;
-  return FALSE;
+  return PFalse;
 }
 
-BOOL PChannel::Write(const VectorOfSlice & slices)
+PBoolean PChannel::Write(const VectorOfSlice & slices)
 {
   // if the os_handle isn't open, no can do
   if (os_handle < 0)
@@ -232,7 +232,7 @@ BOOL PChannel::Write(const VectorOfSlice & slices)
       return ConvertOSError(-1, LastWriteError);
 
     if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-      return FALSE;
+      return PFalse;
   }
 
 #if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
@@ -245,7 +245,7 @@ BOOL PChannel::Write(const VectorOfSlice & slices)
 
 #endif
 
-BOOL PChannel::Close()
+PBoolean PChannel::Close()
 {
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
@@ -327,7 +327,7 @@ PString PChannel::GetErrorText(Errors normalisedError, int osError /* =0 */)
 }
 
 
-BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
+PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
 
 {
   osError = (err >= 0) ? 0 : errno;
@@ -335,7 +335,7 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return TRUE;
+      return PTrue;
 
     case EMSGSIZE:
       lastError = BufferTooSmall;
@@ -389,7 +389,7 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
       lastError = Miscellaneous;
       break;
   }
-  return FALSE;
+  return PFalse;
 }
 
 

@@ -67,14 +67,14 @@ ostream & operator << (ostream & strm, const LookupRecord & rec)
   return strm;
 }
 
-BOOL FindSRVRecords(std::vector<LookupRecord> & recs,
+PBoolean FindSRVRecords(std::vector<LookupRecord> & recs,
                     const PString & domain,
                     const PString & type,
                     const PString & srv)
 {
   PDNS::SRVRecordList srvRecords;
   PString srvLookupStr = srv + domain;
-  BOOL found = PDNS::GetRecords(srvLookupStr, srvRecords);
+  PBoolean found = PDNS::GetRecords(srvLookupStr, srvRecords);
   if (found) {
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
@@ -136,7 +136,7 @@ void DNSTest::Main()
 
       std::vector<LookupRecord> found;
 
-      BOOL hasGK = FindSRVRecords(found, domain, "LRQ",         "_h323ls._udp.");
+      PBoolean hasGK = FindSRVRecords(found, domain, "LRQ",         "_h323ls._udp.");
       hasGK = hasGK || FindSRVRecords(found, domain, "LRQ",         "_h323rs._udp.");
       FindSRVRecords(found, domain, "Call direct", "_h323cs._tcp.");
 

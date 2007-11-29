@@ -59,7 +59,7 @@ class PRFC1155_ObjectSyntax : public PASN_Choice
     operator const PRFC1155_ApplicationSyntax &() const;
 #endif
 
-    BOOL CreateObject();
+    PBoolean CreateObject();
     PObject * Clone() const;
 };
 
@@ -83,7 +83,7 @@ class PRFC1155_SimpleSyntax : public PASN_Choice
       e_empty = 5
     };
 
-    BOOL CreateObject();
+    PBoolean CreateObject();
     PObject * Clone() const;
 };
 
@@ -144,7 +144,7 @@ class PRFC1155_ApplicationSyntax : public PASN_Choice
     operator const PRFC1155_Opaque &() const;
 #endif
 
-    BOOL CreateObject();
+    PBoolean CreateObject();
     PObject * Clone() const;
 };
 
@@ -174,7 +174,7 @@ class PRFC1155_NetworkAddress : public PASN_Choice
     operator const PRFC1155_IpAddress &() const;
 #endif
 
-    BOOL CreateObject();
+    PBoolean CreateObject();
     PObject * Clone() const;
 };
 

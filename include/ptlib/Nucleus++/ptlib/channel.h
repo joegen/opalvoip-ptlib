@@ -50,8 +50,8 @@
     };
 
   protected:
-    BOOL PXSetIOBlock(int type, const PTimeInterval & timeout);
-    BOOL PXSetIOBlock(int type, int blockHandle, const PTimeInterval & timeout);
+    PBoolean PXSetIOBlock(int type, const PTimeInterval & timeout);
+    PBoolean PXSetIOBlock(int type, int blockHandle, const PTimeInterval & timeout);
 
     int  PXClose();
 

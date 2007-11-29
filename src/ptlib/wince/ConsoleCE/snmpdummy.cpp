@@ -9,7 +9,7 @@ SnmpExtensionInit(
     HANDLE *              phSubagentTrapEvent,  
     AsnObjectIdentifier * pFirstSupportedRegion 
     ) 
-{ return FALSE; }
+{ return PFalse; }
 
 BOOL
 SNMP_FUNC_TYPE
@@ -19,7 +19,7 @@ SnmpExtensionQuery(
     AsnInteger32 *    pErrorStatus, 
     AsnInteger32 *    pErrorIndex  
     )
-{ return FALSE; }
+{ return PFalse; }
 
 SNMPAPI
 SNMP_FUNC_TYPE
@@ -73,6 +73,6 @@ SNMP_FUNC_TYPE
 SnmpUtilMemAlloc(
      UINT nBytes
     )
-{ return  FALSE; }
+{ return  PFalse; }
 
 

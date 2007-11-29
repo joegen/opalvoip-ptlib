@@ -52,11 +52,11 @@ PAssertAlways("No PDirectories under Nucleus");
 #endif
 }
 
-BOOL PDirectory::Create(const PString & p, int perm)
+PBoolean PDirectory::Create(const PString & p, int perm)
 {
 #ifdef __NUCLEUS_PLUS__
 PAssertAlways("No PDirectories under Nucleus");
-return TRUE;
+return PTrue;
 #else
   PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
   PString str = p.Left(p.GetLength()-1);
@@ -64,11 +64,11 @@ return TRUE;
 #endif
 }
 
-BOOL PDirectory::Remove(const PString & p)
+PBoolean PDirectory::Remove(const PString & p)
 {
 #ifdef __NUCLEUS_PLUS__
 PAssertAlways("No PDirectories under Nucleus");
-return TRUE;
+return PTrue;
 #else
   PAssert(!p.IsEmpty(), "attempt to remove dir with empty name");
   PString str = p.Left(p.GetLength()-1);

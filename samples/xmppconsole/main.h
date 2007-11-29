@@ -52,13 +52,13 @@ public:
   PDECLARE_NOTIFIER(PTimer, XMPPFrame, OnReadyForUse);
   PTimer onReadyForUseTimer;
 
-  BOOL    LocalPartyIsEmpty() { return localParty.IsEmpty(); }
-  BOOL    OtherPartyIsEmpty() { return otherParty.IsEmpty(); }
+  PBoolean    LocalPartyIsEmpty() { return localParty.IsEmpty(); }
+  PBoolean    OtherPartyIsEmpty() { return otherParty.IsEmpty(); }
   PString GetOtherParty() { return otherParty; }
   PString GetLocalParty() { return localParty; }
-  BOOL    IsConnected() {  return isReadyForUse; }
+  PBoolean    IsConnected() {  return isReadyForUse; }
 
-  BOOL Send(XMPP::Stanza * stanza) { return m_Client->Send(stanza); }
+  PBoolean Send(XMPP::Stanza * stanza) { return m_Client->Send(stanza); }
 
   void OnConnect();
 
@@ -86,7 +86,7 @@ private:
 
   PString otherParty;
   PString localParty;
-  BOOL    isReadyForUse;
+  PBoolean    isReadyForUse;
 };
 
 

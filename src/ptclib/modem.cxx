@@ -147,22 +147,22 @@ PModem::Status PModem::GetStatus() const
 }
 
 
-BOOL PModem::Close()
+PBoolean PModem::Close()
 {
   status = Unopened;
   return PSerialChannel::Close();
 }
 
 
-BOOL PModem::Open(const PString & port, DWORD speed, BYTE data,
+PBoolean PModem::Open(const PString & port, DWORD speed, BYTE data,
       Parity parity, BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
   if (!PSerialChannel::Open(port,
                             speed, data, parity, stop, inputFlow, outputFlow))
-    return FALSE;
+    return PFalse;
 
   status = Uninitialised;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -175,7 +175,7 @@ static const char ModemNoCarrier[] = "ModemNoCarrier";
 static const char ModemConnect[] = "ModemConnect";
 static const char ModemHangUp[] = "ModemHangUp";
 
-BOOL PModem::Open(PConfig & cfg)
+PBoolean PModem::Open(PConfig & cfg)
 {
   initCmd = cfg.GetString(ModemInit, "ATZ\\r\\w2sOK\\w100m");
   deinitCmd = cfg.GetString(ModemDeinit, "\\d2s+++\\d2sATH0\\r");
@@ -187,10 +187,10 @@ BOOL PModem::Open(PConfig & cfg)
   hangUpCmd = cfg.GetString(ModemHangUp, "\\d2s+++\\d2sATH0\\r");
 
   if (!PSerialChannel::Open(cfg))
-    return FALSE;
+    return PFalse;
 
   status = Uninitialised;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -208,7 +208,7 @@ void PModem::SaveSettings(PConfig & cfg)
 }
 
 
-BOOL PModem::CanInitialise() const
+PBoolean PModem::CanInitialise() const
 {
   switch (status) {
     case Unopened :
@@ -218,29 +218,29 @@ BOOL PModem::CanInitialise() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return FALSE;
+      return PFalse;
 
     default :
-      return TRUE;
+      return PTrue;
   }
 }
 
 
-BOOL PModem::Initialise()
+PBoolean PModem::Initialise()
 {
   if (CanInitialise()) {
     status = Initialising;
     if (SendCommandString(initCmd)) {
       status = Initialised;
-      return TRUE;
+      return PTrue;
     }
     status = InitialiseFailed;
   }
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PModem::CanDeinitialise() const
+PBoolean PModem::CanDeinitialise() const
 {
   switch (status) {
     case Unopened :
@@ -251,29 +251,29 @@ BOOL PModem::CanDeinitialise() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return FALSE;
+      return PFalse;
 
     default :
-      return TRUE;
+      return PTrue;
   }
 }
 
 
-BOOL PModem::Deinitialise()
+PBoolean PModem::Deinitialise()
 {
   if (CanDeinitialise()) {
     status = Deinitialising;
     if (SendCommandString(deinitCmd)) {
       status = Uninitialised;
-      return TRUE;
+      return PTrue;
     }
     status = DeinitialiseFailed;
   }
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PModem::CanDial() const
+PBoolean PModem::CanDial() const
 {
   switch (status) {
     case Unopened :
@@ -287,23 +287,23 @@ BOOL PModem::CanDial() const
     case Deinitialising :
     case DeinitialiseFailed :
     case SendingUserCommand :
-      return FALSE;
+      return PFalse;
 
     default :
-      return TRUE;
+      return PTrue;
   }
 }
 
 
-BOOL PModem::Dial(const PString & number)
+PBoolean PModem::Dial(const PString & number)
 {
   if (!CanDial())
-    return FALSE;
+    return PFalse;
 
   status = Dialling;
   if (!SendCommandString(preDialCmd + "\\s" + number + postDialCmd)) {
     status = DialFailed;
-    return FALSE;
+    return PFalse;
   }
 
   status = AwaitingResponse;
@@ -316,28 +316,28 @@ BOOL PModem::Dial(const PString & number)
   for (;;) {
     int nextChar;
     if ((nextChar = ReadCharWithTimeout(timeout)) < 0)
-      return FALSE;
+      return PFalse;
 
     if (ReceiveCommandString(nextChar, connectReply, connectPosition, 0))
       break;
 
     if (ReceiveCommandString(nextChar, busyReply, busyPosition, 0)) {
       status = LineBusy;
-      return FALSE;
+      return PFalse;
     }
 
     if (ReceiveCommandString(nextChar, noCarrierReply, noCarrierPosition, 0)) {
       status = NoCarrier;
-      return FALSE;
+      return PFalse;
     }
   }
 
   status = Connected;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PModem::CanHangUp() const
+PBoolean PModem::CanHangUp() const
 {
   switch (status) {
     case Unopened :
@@ -349,29 +349,29 @@ BOOL PModem::CanHangUp() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return FALSE;
+      return PFalse;
 
     default :
-      return TRUE;
+      return PTrue;
   }
 }
 
 
-BOOL PModem::HangUp()
+PBoolean PModem::HangUp()
 {
   if (CanHangUp()) {
     status = HangingUp;
     if (SendCommandString(hangUpCmd)) {
       status = Initialised;
-      return TRUE;
+      return PTrue;
     }
     status = HangUpFailed;
   }
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PModem::CanSendUser() const
+PBoolean PModem::CanSendUser() const
 {
   switch (status) {
     case Unopened :
@@ -383,26 +383,26 @@ BOOL PModem::CanSendUser() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return FALSE;
+      return PFalse;
 
     default :
-      return TRUE;
+      return PTrue;
   }
 }
 
 
-BOOL PModem::SendUser(const PString & str)
+PBoolean PModem::SendUser(const PString & str)
 {
   if (CanSendUser()) {
     Status oldStatus = status;
     status = SendingUserCommand;
     if (SendCommandString(str)) {
       status = oldStatus;
-      return TRUE;
+      return PTrue;
     }
     status = oldStatus;
   }
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -428,7 +428,7 @@ void PModem::Abort()
 }
 
 
-BOOL PModem::CanRead() const
+PBoolean PModem::CanRead() const
 {
   switch (status) {
     case Unopened :
@@ -438,10 +438,10 @@ BOOL PModem::CanRead() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return FALSE;
+      return PFalse;
 
     default :
-      return TRUE;
+      return PTrue;
   }
 }
 

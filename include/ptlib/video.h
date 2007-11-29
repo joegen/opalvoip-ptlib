@@ -84,9 +84,9 @@ class PVideoChannel : public PChannel
        platform specific and is as returned in the GetDevices() function.
 
        @return
-       TRUE if the video device is valid for playing/recording.
+       PTrue if the video device is valid for playing/recording.
      */
-    BOOL Open(
+    PBoolean Open(
       const PString & device,       /// Name of video driver/device
       Directions dir               /// Video I/O direction
     );
@@ -95,7 +95,7 @@ class PVideoChannel : public PChannel
        is non NULL. If either pointer is non NULL, then a device is ready
        to be written to, which indicates this channel is open.
     */
-     BOOL IsOpen() const;
+     PBoolean IsOpen() const;
     
     /**Get all of the names for video devices/drivers that are available on
        this platform. Note that a named device may not necessarily do both
@@ -131,7 +131,7 @@ class PVideoChannel : public PChannel
      */
     virtual PINDEX  GetGrabHeight();
 
-    virtual BOOL Read(void * buf, PINDEX  len);
+    virtual PBoolean Read(void * buf, PINDEX  len);
       // Low level read from the video channel. This function will block until the
       // requested number of characters were read.
   
@@ -139,13 +139,13 @@ class PVideoChannel : public PChannel
     /**Low level write to the channel, which is data to be rendered to the 
        local video display device.
        */
-    BOOL Write(const void * buf,  //Pointer to the image data to be rendered
+    PBoolean Write(const void * buf,  //Pointer to the image data to be rendered
                PINDEX      len);
     
     /**Cause the referenced data to be drawn to the 
        previously defined media 
      */
-    virtual BOOL Redraw(const void * frame); 
+    virtual PBoolean Redraw(const void * frame); 
 
     /**Return the previously specified width.
      */
@@ -173,7 +173,7 @@ class PVideoChannel : public PChannel
        If keepCurrent is false, the existing video player is deleted before attaching
        the new player.
      */
-    virtual void AttachVideoPlayer(PVideoOutputDevice * device, BOOL keepCurrent = TRUE);
+    virtual void AttachVideoPlayer(PVideoOutputDevice * device, PBoolean keepCurrent = PTrue);
 
     /**Attach a user specific class for acquiring video 
 
@@ -183,7 +183,7 @@ class PVideoChannel : public PChannel
        If keepCurrent is false, the existing video reader is deleted before attaching
        the new reader.
      */
-    virtual void AttachVideoReader(PVideoInputDevice * device, BOOL keepCurrent = TRUE);
+    virtual void AttachVideoReader(PVideoInputDevice * device, PBoolean keepCurrent = PTrue);
 
     /**Return a pointer to the class for acquiring video 
      */
@@ -195,16 +195,16 @@ class PVideoChannel : public PChannel
 
     /**See if the grabber is open 
      */
-    virtual BOOL IsGrabberOpen();
+    virtual PBoolean IsGrabberOpen();
     
     /**See if the rendering device is open
      */
-    virtual BOOL IsRenderOpen();
+    virtual PBoolean IsRenderOpen();
 
     /**Get data from the attached inputDevice, and display on the
        attached ouptutDevice.
     */
-    BOOL DisplayRawData(void *videoBuffer);
+    PBoolean DisplayRawData(void *videoBuffer);
 
     /**Destroy the attached grabber class.
      */
@@ -224,7 +224,7 @@ class PVideoChannel : public PChannel
 
     /**Toggle the vertical flip state of the video grabber.
     */
-    BOOL ToggleVFlipInput();
+    PBoolean ToggleVFlipInput();
 
  protected:
 

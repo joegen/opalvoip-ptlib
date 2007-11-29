@@ -47,7 +47,7 @@ extern "C" {
 
 #include "../../serchan.h"
   public:
-    BOOL Close();
+    PBoolean Close();
 
   private:
     DWORD  baudRate;
@@ -58,14 +58,14 @@ extern "C" {
     UNSIGNED_CHAR smc;
     UART_INIT uart[2];
     
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   /// Pointer to a block of memory to receive the read bytes.
       PINDEX len    /// Maximum number of bytes to read into the buffer.
       );
 
     virtual int ReadChar();
 
-    virtual BOOL ReadAsync(
+    virtual PBoolean ReadAsync(
       void * buf,   /// Pointer to a block of memory to receive the read bytes.
       PINDEX len    /// Maximum number of bytes to read into the buffer.
       );
@@ -75,12 +75,12 @@ extern "C" {
       PINDEX len  /// Actual number of bytes to read into the buffer.
       );
 
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, /// Pointer to a block of memory to write.
       PINDEX len        /// Number of bytes to write.
       );
 
-    virtual BOOL WriteAsync(
+    virtual PBoolean WriteAsync(
       const void * buf, /// Pointer to a block of memory to write.
       PINDEX len        /// Number of bytes to write.
       );

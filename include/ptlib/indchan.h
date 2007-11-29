@@ -93,18 +93,18 @@ class PIndirectChannel : public PChannel
        channels and delete both of them if they are auto delete.
 
        @return
-       TRUE if the channel is closed.
+       PTrue if the channel is closed.
      */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Determine if the channel is currently open and read and write operations
        can be executed on it. For example, in the #PFile# class it returns
        if the file is currently open.
 
        @return
-       TRUE if the channel is open.
+       PTrue if the channel is open.
      */
-    virtual BOOL IsOpen() const;
+    virtual PBoolean IsOpen() const;
 
     /**Low level read from the channel. This function may block until the
        requested number of characters were read or the read timeout was
@@ -115,13 +115,13 @@ class PIndirectChannel : public PChannel
        read. If #readChannel# is null the this asserts.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -135,12 +135,12 @@ class PIndirectChannel : public PChannel
        write. If #writeChannel# is null the this asserts.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE if at least len bytes were written to the channel.
+       PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
@@ -151,9 +151,9 @@ class PIndirectChannel : public PChannel
        channels.
 
        @return
-       TRUE if the shutdown was successfully performed.
+       PTrue if the shutdown was successfully performed.
      */
-    virtual BOOL Shutdown(
+    virtual PBoolean Shutdown(
       ShutdownValue option   ///< Flag for shut down of read, write or both.
     );
 
@@ -192,46 +192,46 @@ class PIndirectChannel : public PChannel
   //@{
     /**Set the channel for both read and write operations. This then checks
        that they are open and then calls the OnOpen() virtual function. If
-       it in turn returns TRUE then the Open() function returns success.
+       it in turn returns PTrue then the Open() function returns success.
 
        @return
-       TRUE if both channels are set, open and OnOpen() returns TRUE.
+       PTrue if both channels are set, open and OnOpen() returns PTrue.
      */
-    BOOL Open(
+    PBoolean Open(
       PChannel & channel   ///< Channel to be used for both read and write operations.
     );
 
     /**Set the channel for both read and write operations. This then checks
        that they are open and then calls the OnOpen() virtual function. If
-       it in turn returns TRUE then the Open() function returns success.
+       it in turn returns PTrue then the Open() function returns success.
 
        The channel pointed to by #channel# may be automatically deleted
        when the PIndirectChannel is destroyed or a new subchannel opened.
 
        @return
-       TRUE if both channels are set, open and OnOpen() returns TRUE.
+       PTrue if both channels are set, open and OnOpen() returns PTrue.
      */
-    BOOL Open(
+    PBoolean Open(
       PChannel * channel,      ///< Channel to be used for both read and write operations.
-      BOOL autoDelete = TRUE   ///< Automatically delete the channel
+      PBoolean autoDelete = PTrue   ///< Automatically delete the channel
     );
 
     /**Set the channel for both read and write operations. This then checks
        that they are open and then calls the OnOpen() virtual function. If
-       it in turn returns TRUE then the Open() function returns success.
+       it in turn returns PTrue then the Open() function returns success.
 
        The channels pointed to by #readChannel# and #writeChannel# may be
        automatically deleted when the PIndirectChannel is destroyed or a
        new subchannel opened.
 
        @return
-       TRUE if both channels are set, open and OnOpen() returns TRUE.
+       PTrue if both channels are set, open and OnOpen() returns PTrue.
      */
-    BOOL Open(
+    PBoolean Open(
       PChannel * readChannel,      ///< Channel to be used for both read operations.
       PChannel * writeChannel,     ///< Channel to be used for both write operations.
-      BOOL autoDeleteRead = TRUE,  ///< Automatically delete the read channel
-      BOOL autoDeleteWrite = TRUE  ///< Automatically delete the write channel
+      PBoolean autoDeleteRead = PTrue,  ///< Automatically delete the read channel
+      PBoolean autoDeleteWrite = PTrue  ///< Automatically delete the write channel
     );
 
     /**Get the channel used for read operations.
@@ -244,11 +244,11 @@ class PIndirectChannel : public PChannel
     /**Set the channel for read operations.
 
        @return
-       Returns TRUE if both channels are set and are both open.
+       Returns PTrue if both channels are set and are both open.
      */
-    BOOL SetReadChannel(
+    PBoolean SetReadChannel(
       PChannel * channel,      ///< Channel to be used for both read operations.
-      BOOL autoDelete = TRUE   ///< Automatically delete the channel
+      PBoolean autoDelete = PTrue   ///< Automatically delete the channel
     );
 
     /**Get the channel used for write operations.
@@ -261,11 +261,11 @@ class PIndirectChannel : public PChannel
     /**Set the channel for read operations.
 
        @return
-       Returns TRUE if both channels are set and are both open.
+       Returns PTrue if both channels are set and are both open.
     */
-    BOOL SetWriteChannel(
+    PBoolean SetWriteChannel(
       PChannel * channel,      ///< Channel to be used for both write operations.
-      BOOL autoDelete = TRUE   ///< Automatically delete the channel
+      PBoolean autoDelete = PTrue   ///< Automatically delete the channel
     );
   //@}
 
@@ -275,12 +275,12 @@ class PIndirectChannel : public PChannel
        open channels. It may be used by descendent channels to do any
        handshaking required by the protocol that channel embodies.
 
-       The default behaviour is to simply return TRUE.
+       The default behaviour is to simply return PTrue.
 
        @return
-       Returns TRUE if the protocol handshaking is successful.
+       Returns PTrue if the protocol handshaking is successful.
      */
-    virtual BOOL OnOpen();
+    virtual PBoolean OnOpen();
 
 
   // Member variables
@@ -288,13 +288,13 @@ class PIndirectChannel : public PChannel
     PChannel * readChannel;
 
     /// Automatically delete read channel on destruction.
-    BOOL readAutoDelete;
+    PBoolean readAutoDelete;
 
     /// Channel for write operations.
     PChannel * writeChannel;
 
     /// Automatically delete write channel on destruction.
-    BOOL writeAutoDelete;
+    PBoolean writeAutoDelete;
 
     /// Race condition prevention on closing channel
     PReadWriteMutex channelPointerMutex;

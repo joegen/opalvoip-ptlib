@@ -54,7 +54,7 @@ PXMLRPC_STRUCT_END()
 PXMLRPC_STRUCT_BEGIN     (TestStruct)
     PXMLRPC_STRING_INIT  (TestStruct, PString, a_string, "A string!");
     PXMLRPC_INTEGER_INIT (TestStruct, int, an_integer, 12);
-    PXMLRPC_BOOLEAN_INIT (TestStruct, BOOL, a_boolean, TRUE);
+    PXMLRPC_BOOLEAN_INIT (TestStruct, PBoolean, a_boolean, PTrue);
     PXMLRPC_DOUBLE_INIT  (TestStruct, double, a_float, 3.14159);
     PXMLRPC_DATETIME     (TestStruct, PTime, a_date);
     PXMLRPC_BINARY       (TestStruct, PBYTEArray, a_binary);

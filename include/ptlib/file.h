@@ -176,13 +176,13 @@ class PFile : public PChannel
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -192,19 +192,19 @@ class PFile : public PChannel
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
-       @return TRUE if at least len bytes were written to the channel.
+       @return PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
 
     /** Close the file channel.
-        @return TRUE if close was OK.
+        @return PTrue if close was OK.
       */
-    virtual BOOL Close();
+    virtual PBoolean Close();
   //@}
 
 
@@ -215,9 +215,9 @@ class PFile : public PChannel
        file system.
 
        @return
-       TRUE if the file exists.
+       PTrue if the file exists.
      */
-    static BOOL Exists(
+    static PBoolean Exists(
       const PFilePath & name  ///< Name of file to see if exists.
     );
 
@@ -226,20 +226,20 @@ class PFile : public PChannel
        of the object actually exists within the platforms file system.
 
        @return
-       TRUE if the file exists.
+       PTrue if the file exists.
      */
-    BOOL Exists() const;
+    PBoolean Exists() const;
 
     /**Check for file access modes.
        Determine if the file specified may be opened in the specified mode. This would
        check the current access rights to the file for the mode. For example,
        for a file that is read only, using mode == ReadWrite would return
-       FALSE but mode == ReadOnly would return TRUE.
+       PFalse but mode == ReadOnly would return PTrue.
 
        @return
-       TRUE if a file open would succeed.
+       PTrue if a file open would succeed.
      */
-    static BOOL Access(
+    static PBoolean Access(
       const PFilePath & name, ///< Name of file to have its access checked.
       OpenMode mode         ///< Mode in which the file open would be done.
     );
@@ -249,18 +249,18 @@ class PFile : public PChannel
        instance of the object may be opened in the specified mode. This would
        check the current access rights to the file for the mode. For example,
        for a file that is read only, using mode == ReadWrite would return
-       FALSE but mode == ReadOnly would return TRUE.
+       PFalse but mode == ReadOnly would return PTrue.
 
        @return
-       TRUE if a file open would succeed.
+       PTrue if a file open would succeed.
      */
-    BOOL Access(
+    PBoolean Access(
       OpenMode mode         ///< Mode in which the file open would be done.
     );
 
-    /**Delete the specified file. If #force# is FALSE and the file
+    /**Delete the specified file. If #force# is PFalse and the file
        is protected against being deleted then the function fails. If
-       #force# is TRUE then the protection is ignored. What
+       #force# is PTrue then the protection is ignored. What
        constitutes file deletion protection is platform dependent, eg on DOS
        is the Read Only attribute and on a Novell network it is a Delete
        trustee right. Some protection may not be able to overridden with the
@@ -268,16 +268,20 @@ class PFile : public PChannel
        not the owner of the file.
 
        @return
-       TRUE if the file was deleted.
+       PTrue if the file was deleted.
      */
-    static BOOL Remove(
+    static PBoolean Remove(
       const PFilePath & name,   // Name of file to delete.
-      BOOL force = FALSE      // Force deletion even if file is protected.
+      PBoolean force = PFalse      // Force deletion even if file is protected.
+    );
+    static PBoolean Remove(
+      const PString & name,   // Name of file to delete.
+      PBoolean force = PFalse      // Force deletion even if file is protected.
     );
 
-    /**Delete the current file. If #force# is FALSE and the file
+    /**Delete the current file. If #force# is PFalse and the file
        is protected against being deleted then the function fails. If
-       #force# is TRUE then the protection is ignored. What
+       #force# is PTrue then the protection is ignored. What
        constitutes file deletion protection is platform dependent, eg on DOS
        is the Read Only attribute and on a Novell network it is a Delete
        trustee right. Some protection may not be able to overridden with the
@@ -285,10 +289,10 @@ class PFile : public PChannel
        not the owner of the file.
 
        @return
-       TRUE if the file was deleted.
+       PTrue if the file was deleted.
      */
-    BOOL Remove(
-      BOOL force = FALSE      // Force deletion even if file is protected.
+    PBoolean Remove(
+      PBoolean force = PFalse      // Force deletion even if file is protected.
     );
 
     /**Change the specified files name. This does not move the file in the
@@ -304,12 +308,12 @@ class PFile : public PChannel
        arbitrary file specified by name.
 
        @return
-       TRUE if the file was renamed.
+       PTrue if the file was renamed.
      */
-    static BOOL Rename(
+    static PBoolean Rename(
       const PFilePath & oldname,  ///< Old name of the file.
       const PString & newname,    ///< New name for the file.
-      BOOL force = FALSE
+      PBoolean force = PFalse
         ///< Delete file if a destination exists with the same name.
     );
 
@@ -327,34 +331,34 @@ class PFile : public PChannel
        arbitrary file specified by name.
 
        @return
-       TRUE if the file was renamed.
+       PTrue if the file was renamed.
      */
-    BOOL Rename(
+    PBoolean Rename(
       const PString & newname,  ///< New name for the file.
-      BOOL force = FALSE
+      PBoolean force = PFalse
         ///< Delete file if a destination exists with the same name.
     );
 
     /**Make a copy of the specified file.
 
        @return
-       TRUE if the file was renamed.
+       PTrue if the file was renamed.
      */
-    static BOOL Copy(
+    static PBoolean Copy(
       const PFilePath & oldname,  ///< Old name of the file.
       const PFilePath & newname,  ///< New name for the file.
-      BOOL force = FALSE
+      PBoolean force = PFalse
         ///< Delete file if a destination exists with the same name.
     );
 
     /**Make a copy of the current file.
 
        @return
-       TRUE if the file was renamed.
+       PTrue if the file was renamed.
      */
-    BOOL Copy(
+    PBoolean Copy(
       const PFilePath & newname,  ///< New name for the file.
-      BOOL force = FALSE
+      PBoolean force = PFalse
         ///< Delete file if a destination exists with the same name.
     );
 
@@ -365,12 +369,12 @@ class PFile : public PChannel
        it is across file systems then a copy and a delete is performed.
 
        @return
-       TRUE if the file was moved.
+       PTrue if the file was moved.
      */
-    static BOOL Move(
+    static PBoolean Move(
       const PFilePath & oldname,  ///< Old path and name of the file.
       const PFilePath & newname,  ///< New path and name for the file.
-      BOOL force = FALSE
+      PBoolean force = PFalse
         ///< Delete file if a destination exists with the same name.
     );
 
@@ -381,11 +385,11 @@ class PFile : public PChannel
        it is across file systems then a copy and a delete is performed.
 
        @return
-       TRUE if the file was moved.
+       PTrue if the file was moved.
      */
-    BOOL Move(
+    PBoolean Move(
       const PFilePath & newname,  ///< New path and name for the file.
-      BOOL force = FALSE
+      PBoolean force = PFalse
         ///< Delete file if a destination exists with the same name.
     );
   //@}
@@ -417,9 +421,9 @@ class PFile : public PChannel
        open) then a new unique temporary filename is generated.
 
        @return
-       TRUE if the file was successfully opened.
+       PTrue if the file was successfully opened.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       OpenMode mode = ReadWrite,  // Mode in which to open the file.
       int opts = ModeDefault      // Options for open operation.
     );
@@ -432,9 +436,9 @@ class PFile : public PChannel
        then the #name# parameter is ignored.
 
        @return
-       TRUE if the file was successfully opened.
+       PTrue if the file was successfully opened.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       OpenMode mode = ReadWrite, // Mode in which to open the file.
       int opts = ModeDefault     // #OpenOptions enum# for open operation.
@@ -451,9 +455,9 @@ class PFile : public PChannel
        expanding the file, or truncating it if being made shorter.
 
        @return
-       TRUE if the file size was changed to the length specified.
+       PTrue if the file size was changed to the length specified.
      */
-    virtual BOOL SetLength(
+    virtual PBoolean SetLength(
       off_t len   // New length of file.
     );
 
@@ -475,9 +479,9 @@ class PFile : public PChannel
        #pos# are meaningful.
 
        @return
-       TRUE if the new file position was set.
+       PTrue if the new file position was set.
      */
-    virtual BOOL SetPosition(
+    virtual PBoolean SetPosition(
       off_t pos,                         ///< New position to set.
       FilePositionOrigin origin = Start  ///< Origin for position change.
     );
@@ -491,19 +495,19 @@ class PFile : public PChannel
     virtual off_t GetPosition() const;
 
     /**Determine if the current file position is at the end of the file. If
-       this is TRUE then any read operation will fail.
+       this is PTrue then any read operation will fail.
 
        @return
-       TRUE if at end of file.
+       PTrue if at end of file.
      */
-    BOOL IsEndOfFile() const;
+    PBoolean IsEndOfFile() const;
       
     /**Get information (eg protection, timestamps) on the specified file.
 
        @return
-       TRUE if the file info was retrieved.
+       PTrue if the file info was retrieved.
      */
-    static BOOL GetInfo(
+    static PBoolean GetInfo(
       const PFilePath & name,  // Name of file to get the information on.
       PFileInfo & info
       // #PFileInfo# structure to receive the information.
@@ -512,9 +516,9 @@ class PFile : public PChannel
     /**Get information (eg protection, timestamps) on the current file.
 
        @return
-       TRUE if the file info was retrieved.
+       PTrue if the file info was retrieved.
      */
-    BOOL GetInfo(
+    PBoolean GetInfo(
       PFileInfo & info
       // #PFileInfo# structure to receive the information.
     );
@@ -522,18 +526,18 @@ class PFile : public PChannel
     /**Set permissions on the specified file.
 
        @return
-       TRUE if the file was renamed.
+       PTrue if the file was renamed.
      */
-    static BOOL SetPermissions(
+    static PBoolean SetPermissions(
       const PFilePath & name,   // Name of file to change the permission of.
       int permissions           // New permissions mask for the file.
     );
     /**Set permissions on the current file.
 
        @return
-       TRUE if the file was renamed.
+       PTrue if the file was renamed.
      */
-    BOOL SetPermissions(
+    PBoolean SetPermissions(
       int permissions           // New permissions mask for the file.
     );
   //@}
@@ -544,7 +548,7 @@ class PFile : public PChannel
     PFilePath path;
 
     /// File is to be removed when closed.
-    BOOL removeOnClose;
+    PBoolean removeOnClose;
 
 
 // Include platform dependent part of class

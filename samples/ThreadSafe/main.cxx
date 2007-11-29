@@ -75,9 +75,9 @@ ThreadSafe::ThreadSafe()
 
 ThreadSafe::~ThreadSafe()
 {
-  unsorted.RemoveAll(TRUE);
-  sorted.RemoveAll(TRUE);
-  sparse.RemoveAll(TRUE);
+  unsorted.RemoveAll(PTrue);
+  sorted.RemoveAll(PTrue);
+  sparse.RemoveAll(PTrue);
 }
 
 void ThreadSafe::Usage()

@@ -59,20 +59,20 @@ PINLINE unsigned PTimer::Resolution()
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
-PINLINE BOOL PDirectory::IsSeparator(char c)
+PINLINE PBoolean PDirectory::IsSeparator(char c)
   { return c == ':' || c == '/' || c == '\\'; }
 
-PINLINE BOOL PDirectory::Exists(const PString & p)
+PINLINE PBoolean PDirectory::Exists(const PString & p)
   { return _access(p+".", 0) == 0; }
 
-PINLINE BOOL PDirectory::Create(const PString & p, int)
+PINLINE PBoolean PDirectory::Create(const PString & p, int)
   { return _mkdir(p) == 0; }
 
-PINLINE BOOL PDirectory::Remove(const PString & p)
+PINLINE PBoolean PDirectory::Remove(const PString & p)
   { return _rmdir(p) == 0; }
 
 
-PINLINE BOOL PDirectory::Restart(int scanMask)
+PINLINE PBoolean PDirectory::Restart(int scanMask)
   { return Open(scanMask); }
 
 
@@ -80,8 +80,11 @@ PINLINE BOOL PDirectory::Restart(int scanMask)
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-PINLINE BOOL PFile::Exists(const PFilePath & name)
+PINLINE PBoolean PFile::Exists(const PFilePath & name)
   { return _access(name, 0) == 0; }
+
+PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean force)
+  { return PFile::Remove((const PString &)name, force); }
 
 
 ///////////////////////////////////////////////////////////////////////////////

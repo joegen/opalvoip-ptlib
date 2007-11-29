@@ -35,11 +35,11 @@ void unsetenv(const char *);
 
 PDECLARE_CLASS(Symbol, PCaselessString)
   public:
-    Symbol(const PString & sym, const PString & cpp, PINDEX ord = 0, BOOL ext = FALSE)
+    Symbol(const PString & sym, const PString & cpp, PINDEX ord = 0, PBoolean ext = PFalse)
       : PCaselessString(sym), unmangled(cpp) { ordinal = ord; external = ext; }
 
     void SetOrdinal(PINDEX ord) { ordinal = ord; }
-    BOOL IsExternal() const { return external; }
+    PBoolean IsExternal() const { return external; }
 
     void PrintOn(ostream & s) const
     { s << "    " << theArray << " @" << ordinal << " NONAME\n"; }
@@ -47,7 +47,7 @@ PDECLARE_CLASS(Symbol, PCaselessString)
   private:
     PString unmangled;
     PINDEX ordinal;
-    BOOL external;
+    PBoolean external;
 };
 
 PSORTED_LIST(SortedSymbolList, Symbol);
@@ -70,7 +70,7 @@ MergeSym::MergeSym()
 
 void MergeSym::Main()
 {
-  cout << GetName() << " version " << GetVersion(TRUE)
+  cout << GetName() << " version " << GetVersion(PTrue)
        << " on " << GetOSClass() << ' ' << GetOSName()
        << " by " << GetManufacturer() << endl;
 
@@ -125,9 +125,9 @@ void MergeSym::Main()
     if (args.HasOption('I')) {
       PString includes = args.GetOptionString('I');
       if (includes.Find(';') == P_MAX_INDEX)
-        include_path = includes.Tokenise(',', FALSE);
+        include_path = includes.Tokenise(',', PFalse);
       else
-        include_path = includes.Tokenise(';', FALSE);
+        include_path = includes.Tokenise(';', PFalse);
     }
     include_path.InsertAt(0, new PString());
     PStringArray file_list = args.GetOptionString('x').Lines();
@@ -147,7 +147,7 @@ void MergeSym::Main()
         if (ext.Open(trial_filename, PFile::ReadOnly)) {
           if (args.HasOption('v'))
             cout << "\nReading external symbols from " << ext.GetFilePath() << " ..." << flush;
-          BOOL prefix = TRUE;
+          PBoolean prefix = PTrue;
           while (!ext.eof()) {
             PCaselessString line;
             ext >> line;
@@ -160,7 +160,7 @@ void MergeSym::Main()
               PINDEX end = start;
               while (line[end] != '\0' && !isspace(line[end]))
                 end++;
-              def_symbols.Append(new Symbol(line(start, end-1), "", 0, TRUE));
+              def_symbols.Append(new Symbol(line(start, end-1), "", 0, PTrue));
               if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
                 cout << '.' << flush;
             }
@@ -184,14 +184,14 @@ void MergeSym::Main()
   if (def.Open(def_filename, PFile::ReadOnly)) {
     if (args.HasOption('v'))
       cout << "Reading existing ordinals..." << flush;
-    BOOL prefix = TRUE;
+    PBoolean prefix = PTrue;
     while (!def.eof()) {
       PCaselessString line;
       def >> line;
       if (prefix) {
         def_file_lines.AppendString(line);
         if (line.Find("EXPORTS") != P_MAX_INDEX)
-          prefix = FALSE;
+          prefix = PFalse;
       }
       else {
         PINDEX start = 0;

@@ -112,9 +112,9 @@ class PSemaphore : public PSync
        if is = 0 then wait (block) for the specified amount of time.
 
        @return
-       TRUE if semaphore was signalled, FALSE if timed out.
+       PTrue if semaphore was signalled, PFalse if timed out.
      */
-    virtual BOOL Wait(
+    virtual PBoolean Wait(
       const PTimeInterval & timeout // Amount of time to wait for semaphore.
     );
 
@@ -128,9 +128,9 @@ class PSemaphore : public PSync
        were called.
 
        @return
-       TRUE if semaphore will block when Wait() is called.
+       PTrue if semaphore will block when Wait() is called.
      */
-    virtual BOOL WillBlock() const;
+    virtual PBoolean WillBlock() const;
   //@}
 
   private:

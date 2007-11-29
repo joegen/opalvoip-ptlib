@@ -269,18 +269,18 @@ class PFilePath : public PFilePathString
     /**Test if the character is valid in a filename.
 
        @return
-       TRUE if the character is valid for a filename.
+       PTrue if the character is valid for a filename.
      */
-    static BOOL IsValid(
+    static PBoolean IsValid(
       char c    ///< Character to test for validity.
     );
 
     /**Test if all the characters are valid in a filename.
 
        @return
-       TRUE if the character is valid for a filename.
+       PTrue if the character is valid for a filename.
      */
-    static BOOL IsValid(
+    static PBoolean IsValid(
       const PString & str   ///< String to test for validity.
     );
   //@}

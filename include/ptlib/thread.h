@@ -101,7 +101,7 @@ class PThread : public PObject
     };
 
     /** Create a new thread instance. Unless the #startSuspended#
-       parameter is TRUE, the threads #Main()# function is called to
+       parameter is PTrue, the threads #Main()# function is called to
        execute the code for the thread.
        
        Note that the exact timing of the execution of code in threads can
@@ -176,38 +176,38 @@ class PThread : public PObject
     /** Determine if the thread has been terminated or ran to completion.
 
        @return
-       TRUE if the thread has been terminated.
+       PTrue if the thread has been terminated.
      */
-    virtual BOOL IsTerminated() const;
+    virtual PBoolean IsTerminated() const;
 
     /** Block and wait for the thread to terminate.
 
        @return
-       FALSE if the thread has not terminated and the timeout has expired.
+       PFalse if the thread has not terminated and the timeout has expired.
      */
     void WaitForTermination() const;
-    BOOL WaitForTermination(
+    PBoolean WaitForTermination(
       const PTimeInterval & maxWait  ///< Maximum time to wait for termination.
     ) const;
 
     /** Suspend or resume the thread.
     
-       If #susp# is TRUE this increments an internal count of
+       If #susp# is PTrue this increments an internal count of
        suspensions that must be matched by an equal number of calls to
-       #Resume()# or #Suspend(FALSE)# before the
+       #Resume()# or #Suspend(PFalse)# before the
        thread actually executes again.
 
-       If #susp# is FALSE then this decrements the internal count of
+       If #susp# is PFalse then this decrements the internal count of
        suspensions. If the count is <= 0 then the thread will run. Note that
        the thread will not be suspended until an equal number of
-       #Suspend(TRUE)# calls are made.
+       #Suspend(PTrue)# calls are made.
      */
     virtual void Suspend(
-      BOOL susp = TRUE    ///< Flag to suspend or resume a thread.
+      PBoolean susp = PTrue    ///< Flag to suspend or resume a thread.
     );
 
     /** Resume thread execution, this is identical to
-       #Suspend(FALSE)#.
+       #Suspend(PFalse)#.
 
       The Resume() method may be called from within the constructor of a
       PThread descendant.  However, the Resume() should be in the
@@ -228,13 +228,13 @@ class PThread : public PObject
     virtual void Resume();
 
     /** Determine if the thread is currently suspended. This checks the
-       suspension count and if greater than zero returns TRUE for a suspended
+       suspension count and if greater than zero returns PTrue for a suspended
        thread.
 
        @return
-       TRUE if thread is suspended.
+       PTrue if thread is suspended.
      */
-    virtual BOOL IsSuspended() const;
+    virtual PBoolean IsSuspended() const;
 
     /// Suspend the current thread for the specified amount of time.
     static void Sleep(
@@ -356,7 +356,7 @@ class PThread : public PObject
     PThread & operator=(const PThread &) { return *this; }
     // Empty assignment operator to prevent copying of thread instances.
 
-    BOOL autoDelete;
+    PBoolean autoDelete;
     // Automatically delete the thread on completion.
 
     // Give the thread a name for debugging purposes.
@@ -406,10 +406,10 @@ class PThreadMain : public PThread
   PCLASSINFO(PThreadMain, PThread);
   public:
     typedef void (*FnType)(); 
-    PThreadMain(FnType _fn, BOOL _autoDelete = FALSE)
+    PThreadMain(FnType _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn)
     { PThread::Resume(); }
-    PThreadMain(const char * _file, int _line, FnType _fn, BOOL _autoDelete = FALSE)
+    PThreadMain(const char * _file, int _line, FnType _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn)
     { PThread::Resume(); }
@@ -436,11 +436,11 @@ class PThread1Arg : public PThread
   PCLASSINFO(PThread1Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1); 
-    PThread1Arg(Arg1Type _arg1, FnType _fn, BOOL _autoDelete = FALSE)
+    PThread1Arg(Arg1Type _arg1, FnType _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1)
     { PThread::Resume(); }
-    PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, BOOL _autoDelete = FALSE)
+    PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
         arg1(_arg1)
@@ -470,11 +470,11 @@ class PThread2Arg : public PThread
   PCLASSINFO(PThread2Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2); 
-    PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, BOOL _autoDelete = FALSE)
+    PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
-    PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, BOOL _autoDelete = FALSE)
+    PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
         arg1(_arg1), arg2(_arg2)
@@ -509,11 +509,11 @@ class PThreadObj : public PThread
   PCLASSINFO(PThreadObj, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(); 
-    PThreadObj(ObjType & _obj, ObjTypeFn _fn, BOOL _autoDelete = FALSE)
+    PThreadObj(ObjType & _obj, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
         obj(_obj), fn(_fn)
     { PThread::Resume(); }
-    PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, BOOL _autoDelete = FALSE)
+    PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
         obj(_obj), fn(_fn)
@@ -549,11 +549,11 @@ class PThreadObj1Arg : public PThread
   PCLASSINFO(PThreadObj1Arg, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
-    PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL _autoDelete = FALSE)
+    PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
 				obj(_obj), fn(_fn), arg1(_arg1)
     { PThread::Resume(); }
-    PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL _autoDelete = FALSE)
+    PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
                                 psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
 				obj(_obj), fn(_fn), arg1(_arg1)

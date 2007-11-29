@@ -64,7 +64,7 @@ static const UNSIGNED NUTimeSlicesPermitted;
             stacksize*3,              // As Given
             priority,                 // As Given
             NUTimeSlicesPermitted,    // Er... Pass!
-            TRUE /* Preempt*/),       // Pre-emptable
+            PTrue /* Preempt*/),       // Pre-emptable
       AssociatedPThread(AssocPThread)
     {
     }

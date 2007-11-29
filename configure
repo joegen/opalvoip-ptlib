@@ -1332,6 +1332,7 @@ Optional Features:
   --enable-minsize        minimise the size of the lib by disabling least used options
   --enable-openh323       include only options needed with openh323
   --enable-opal           include only options needed with opal
+  --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool
   --enable-internalregex  force internal regex library
   --enable-plugins        enable plugin support
   --disable-resolver      disable DNS resolver support
@@ -4865,6 +4866,26 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_vidfile=no
   default_shmvideo=no
   default_vxml=no
+fi
+
+
+
+# Check whether --enable-ansi-bool or --disable-ansi-bool was given.
+if test "${enable_ansi_bool+set}" = set; then
+  enableval="$enable_ansi_bool"
+
+fi;
+
+if test "${enable_ansi_bool}x" = "x" ; then
+  { echo "$as_me:$LINENO: Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true)" >&5
+echo "$as_me: Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true)" >&6;}
+  cat >>confdefs.h <<\_ACEOF
+#define P_USE_STANDARD_CXX_BOOL 1
+_ACEOF
+
+else
+  { echo "$as_me:$LINENO: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&5
+echo "$as_me: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&6;}
 fi
 
 

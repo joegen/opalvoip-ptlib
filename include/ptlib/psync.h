@@ -97,7 +97,7 @@ class PWaitAndSignal {
       */
     inline PWaitAndSignal(
       const PSync & sem,   ///< Semaphore descendent to wait/signal.
-      BOOL wait = TRUE    ///< Wait for semaphore before returning.
+      PBoolean wait = PTrue    ///< Wait for semaphore before returning.
     ) : sync((PSync &)sem)
     { if (wait) sync.Wait(); }
 

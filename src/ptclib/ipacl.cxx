@@ -36,11 +36,11 @@
 
 PIpAccessControlEntry::PIpAccessControlEntry(PIPSocket::Address addr,
                                              PIPSocket::Address msk,
-                                             BOOL allow)
+                                             PBoolean allow)
   : address(addr), mask(msk)
 {
   allowed = allow;
-  hidden = FALSE;
+  hidden = PFalse;
 }
 
 
@@ -118,35 +118,35 @@ void PIpAccessControlEntry::ReadFrom(istream & strm)
 }
 
 
-BOOL PIpAccessControlEntry::Parse(const PString & description)
+PBoolean PIpAccessControlEntry::Parse(const PString & description)
 {
   domain = PString();
   address = 0;
 
   if (description.IsEmpty())
-    return FALSE;
+    return PFalse;
 
   // Check for the allow/deny indication in first character of description
-  BOOL offset = 1;
+  int offset = 1;
   if (description[0] == '-')
-    allowed = FALSE;
+    allowed = PFalse;
   else {
-    allowed = TRUE;
+    allowed = PTrue;
     if (description[0] != '+')
       offset = 0;
   }
 
   // Check for indication entry is from the hosts.allow/hosts.deny file
-  hidden = FALSE;
+  hidden = PFalse;
   if (description[offset] == '@') {
     offset++;
-    hidden = TRUE;
+    hidden = PTrue;
   }
 
   if (description.Mid(offset) *= "all") {
     domain = "\xff";
     mask = 0;
-    return TRUE;
+    return PTrue;
   }
 
   PINDEX slash = description.Find('/', offset);
@@ -156,7 +156,7 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
     // If has a leading dot then assume a domain, ignore anything after slash
     domain = preSlash;
     mask = 0;
-    return TRUE;
+    return PTrue;
   }
 
   if (preSlash.FindSpan("0123456789.") != P_MAX_INDEX) {
@@ -187,24 +187,24 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
     }
     else {
       // Has more than three dots!
-      return FALSE;
+      return PFalse;
     }
 
     address = preSlash;
-    return TRUE;
+    return PTrue;
   }
 
   if (slash == P_MAX_INDEX) {
     // No slash so assume a full mask
     mask = 0xffffffff;
-    return TRUE;
+    return PTrue;
   }
 
   PString postSlash = description.Mid(slash+1);
   if (postSlash.FindSpan("0123456789.") != P_MAX_INDEX) {
     domain = PString();
     address = 0;
-    return FALSE;
+    return PFalse;
   }
 
   if (postSlash.Find('.') != P_MAX_INDEX)
@@ -222,7 +222,7 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
 
   address = (DWORD)address & (DWORD)mask;
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -234,13 +234,13 @@ PString PIpAccessControlEntry::AsString() const
 }
 
 
-BOOL PIpAccessControlEntry::IsValid()
+PBoolean PIpAccessControlEntry::IsValid()
 {
   return address != 0 || !domain;
 }
 
 
-BOOL PIpAccessControlEntry::Match(PIPSocket::Address & addr)
+PBoolean PIpAccessControlEntry::Match(PIPSocket::Address & addr)
 {
   switch (domain[0]) {
     case '\0' : // Must have address field set
@@ -250,11 +250,11 @@ BOOL PIpAccessControlEntry::Match(PIPSocket::Address & addr)
       return PIPSocket::GetHostName(addr).Right(domain.GetLength()) *= domain;
 
     case '\xff' :  // Match all
-      return TRUE;
+      return PTrue;
 
     default : // All else must be a hostname
       if (!PIPSocket::GetHostAddress(domain, address))
-        return FALSE;
+        return PFalse;
   }
 
   return (address & mask) == (addr & mask);
@@ -263,31 +263,31 @@ BOOL PIpAccessControlEntry::Match(PIPSocket::Address & addr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PIpAccessControlList::PIpAccessControlList(BOOL defAllow)
+PIpAccessControlList::PIpAccessControlList(PBoolean defAllow)
   : defaultAllowance(defAllow)
 {
 }
 
 
-static BOOL ReadConfigFileLine(PTextFile & file, PString & line)
+static PBoolean ReadConfigFileLine(PTextFile & file, PString & line)
 {
   line = PString();
 
   do {
     if (!file.ReadLine(line))
-      return FALSE;
+      return PFalse;
   } while (line.IsEmpty() || line[0] == '#');
 
   PINDEX lastCharPos;
   while (line[lastCharPos = line.GetLength()-1] == '\\') {
     PString str;
     if (!file.ReadLine(str))
-      return FALSE;
+      return PFalse;
     line[lastCharPos] = ' ';
     line += str;
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -295,13 +295,13 @@ static void ParseConfigFileExcepts(const PString & str,
                                    PStringList & entries,
                                    PStringList & exceptions)
 {
-  PStringArray terms = str.Tokenise(' ', FALSE);
+  PStringArray terms = str.Tokenise(' ', PFalse);
 
-  BOOL hadExcept = FALSE;
+  PBoolean hadExcept = PFalse;
   PINDEX d;
   for (d = 0; d < terms.GetSize(); d++) {
     if (terms[d] == "EXCEPT")
-      hadExcept = TRUE;
+      hadExcept = PTrue;
     else if (hadExcept)
       exceptions.AppendString(terms[d]);
     else
@@ -310,22 +310,22 @@ static void ParseConfigFileExcepts(const PString & str,
 }
 
 
-static BOOL SplitConfigFileLine(const PString & line, PString & daemons, PString & clients)
+static PBoolean SplitConfigFileLine(const PString & line, PString & daemons, PString & clients)
 {
   PINDEX colon = line.Find(':');
   if (colon == P_MAX_INDEX)
-    return FALSE;
+    return PFalse;
 
   daemons = line.Left(colon).Trim();
 
   PINDEX other_colon = line.Find(':', ++colon);
   clients = line(colon, other_colon-1).Trim();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-static BOOL IsDaemonInConfigFileLine(const PString & daemon, const PString & daemons)
+static PBoolean IsDaemonInConfigFileLine(const PString & daemon, const PString & daemons)
 {
   PStringList daemonsIn, daemonsOut;
   ParseConfigFileExcepts(daemons, daemonsIn, daemonsOut);
@@ -338,15 +338,15 @@ static BOOL IsDaemonInConfigFileLine(const PString & daemon, const PString & dae
           break;
       }
       if (out >= daemonsOut.GetSize())
-        return TRUE;
+        return PTrue;
     }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-static BOOL ReadConfigFile(PTextFile & file,
+static PBoolean ReadConfigFile(PTextFile & file,
                            const PString & daemon,
                            PStringList & clientsIn,
                            PStringList & clientsOut)
@@ -357,23 +357,23 @@ static BOOL ReadConfigFile(PTextFile & file,
     if (SplitConfigFileLine(line, daemons, clients) &&
         IsDaemonInConfigFileLine(daemon, daemons)) {
       ParseConfigFileExcepts(clients, clientsIn, clientsOut);
-      return TRUE;
+      return PTrue;
     }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIpAccessControlList::InternalLoadHostsAccess(const PString & daemonName,
+PBoolean PIpAccessControlList::InternalLoadHostsAccess(const PString & daemonName,
                                                    const char * filename,
-                                                   BOOL allowance)
+                                                   PBoolean allowance)
 {
   PTextFile file;
   if (!file.Open(PProcess::GetOSConfigDir() + filename, PFile::ReadOnly))
-    return TRUE;
+    return PTrue;
 
-  BOOL ok = TRUE;
+  PBoolean ok = PTrue;
 
   PStringList clientsIn;
   PStringList clientsOut;
@@ -381,11 +381,11 @@ BOOL PIpAccessControlList::InternalLoadHostsAccess(const PString & daemonName,
     PINDEX i;
     for (i = 0; i < clientsOut.GetSize(); i++) {
       if (!Add((allowance ? "-@" : "+@") + clientsOut[i]))
-        ok = FALSE;
+        ok = PFalse;
     }
     for (i = 0; i < clientsIn.GetSize(); i++) {
       if (!Add((allowance ? "+@" : "-@") + clientsIn[i]))
-        ok = FALSE;
+        ok = PFalse;
     }
   }
 
@@ -393,7 +393,7 @@ BOOL PIpAccessControlList::InternalLoadHostsAccess(const PString & daemonName,
 }
 
 
-BOOL PIpAccessControlList::LoadHostsAccess(const char * daemonName)
+PBoolean PIpAccessControlList::LoadHostsAccess(const char * daemonName)
 {
   PString daemon;
   if (daemonName != NULL)
@@ -401,27 +401,27 @@ BOOL PIpAccessControlList::LoadHostsAccess(const char * daemonName)
   else
     daemon = PProcess::Current().GetName();
 
-  return InternalLoadHostsAccess(daemon, "hosts.allow", TRUE) &  // Really is a single &
-         InternalLoadHostsAccess(daemon, "hosts.deny", FALSE);
+  return InternalLoadHostsAccess(daemon, "hosts.allow", PTrue) &  // Really is a single &
+         InternalLoadHostsAccess(daemon, "hosts.deny", PFalse);
 }
 
 #ifdef P_CONFIG_LIST
 
 static const char DefaultConfigName[] = "IP Access Control List";
 
-BOOL PIpAccessControlList::Load(PConfig & cfg)
+PBoolean PIpAccessControlList::Load(PConfig & cfg)
 {
   return Load(cfg, DefaultConfigName);
 }
 
 
-BOOL PIpAccessControlList::Load(PConfig & cfg, const PString & baseName)
+PBoolean PIpAccessControlList::Load(PConfig & cfg, const PString & baseName)
 {
-  BOOL ok = TRUE;
+  PBoolean ok = PTrue;
   PINDEX count = cfg.GetInteger(baseName & "Array Size");
   for (PINDEX i = 1; i <= count; i++) {
     if (!Add(cfg.GetString(baseName & PString(PString::Unsigned, i))))
-      ok = FALSE;
+      ok = PFalse;
   }
 
   return ok;
@@ -452,22 +452,22 @@ void PIpAccessControlList::Save(PConfig & cfg, const PString & baseName)
 #endif // P_CONFIG_LIST
 
 
-BOOL PIpAccessControlList::Add(PIpAccessControlEntry * entry)
+PBoolean PIpAccessControlList::Add(PIpAccessControlEntry * entry)
 {
   if (!entry->IsValid()) {
     delete entry;
-    return FALSE;
+    return PFalse;
   }
 
   PINDEX idx = GetValuesIndex(*entry);
   if (idx == P_MAX_INDEX) {
     Append(entry);
-    return TRUE;
+    return PTrue;
   }
 
-  // Return TRUE if the newly added entry is identical to an existing one
+  // Return PTrue if the newly added entry is identical to an existing one
   PIpAccessControlEntry & existing = operator[](idx);
-  BOOL ok = existing.IsClass(PIpAccessControlEntry::Class()) &&
+  PBoolean ok = existing.IsClass(PIpAccessControlEntry::Class()) &&
             entry->IsClass(PIpAccessControlEntry::Class()) &&
             existing.IsAllowed() == entry->IsAllowed();
 
@@ -476,13 +476,13 @@ BOOL PIpAccessControlList::Add(PIpAccessControlEntry * entry)
 }
 
 
-BOOL PIpAccessControlList::Add(const PString & description)
+PBoolean PIpAccessControlList::Add(const PString & description)
 {
   return Add(CreateControlEntry(description));
 }
 
 
-BOOL PIpAccessControlList::Add(PIPSocket::Address addr, PIPSocket::Address mask, BOOL allow)
+PBoolean PIpAccessControlList::Add(PIPSocket::Address addr, PIPSocket::Address mask, PBoolean allow)
 {
   PStringStream description;
   description << (allow ? '+' : '-') << addr << '/' << mask;
@@ -490,32 +490,32 @@ BOOL PIpAccessControlList::Add(PIPSocket::Address addr, PIPSocket::Address mask,
 }
 
 
-BOOL PIpAccessControlList::Remove(const PString & description)
+PBoolean PIpAccessControlList::Remove(const PString & description)
 {
   PIpAccessControlEntry entry(description);
 
   if (!entry.IsValid())
-    return FALSE;
+    return PFalse;
 
   return InternalRemoveEntry(entry);
 }
 
 
-BOOL PIpAccessControlList::Remove(PIPSocket::Address addr, PIPSocket::Address mask)
+PBoolean PIpAccessControlList::Remove(PIPSocket::Address addr, PIPSocket::Address mask)
 {
-  PIpAccessControlEntry entry(addr, mask, TRUE);
+  PIpAccessControlEntry entry(addr, mask, PTrue);
   return InternalRemoveEntry(entry);
 }
 
 
-BOOL PIpAccessControlList::InternalRemoveEntry(PIpAccessControlEntry & entry)
+PBoolean PIpAccessControlList::InternalRemoveEntry(PIpAccessControlEntry & entry)
 {
   PINDEX idx = GetValuesIndex(entry);
   if (idx == P_MAX_INDEX)
-    return FALSE;
+    return PFalse;
 
   RemoveAt(idx);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -541,7 +541,7 @@ PIpAccessControlEntry * PIpAccessControlList::Find(PIPSocket::Address address) c
 }
 
 
-BOOL PIpAccessControlList::IsAllowed(PTCPSocket & socket) const
+PBoolean PIpAccessControlList::IsAllowed(PTCPSocket & socket) const
 {
   if (IsEmpty())
     return defaultAllowance;
@@ -550,18 +550,18 @@ BOOL PIpAccessControlList::IsAllowed(PTCPSocket & socket) const
   if (socket.GetPeerAddress(address))
     return IsAllowed(address);
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PIpAccessControlList::IsAllowed(PIPSocket::Address address) const
+PBoolean PIpAccessControlList::IsAllowed(PIPSocket::Address address) const
 {
   if (IsEmpty())
     return defaultAllowance;
 
   PIpAccessControlEntry * entry = Find(address);
   if (entry == NULL)
-    return FALSE;
+    return PFalse;
 
   return entry->IsAllowed();
 }

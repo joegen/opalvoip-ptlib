@@ -140,7 +140,7 @@ class PSerialChannel : public PChannel
        The channel is opened it on the specified port and with the specified
        attributes.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       /**The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
          #GetPortNames()# can be used to find the platforms serial ports.
@@ -175,7 +175,7 @@ class PSerialChannel : public PChannel
        in the configuration file. Note that it assumed that the correct
        configuration file section is already set.
      */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       PConfig & cfg  ///< Configuration file to read serial port attributes from.
     );
 
@@ -196,9 +196,9 @@ class PSerialChannel : public PChannel
     /**Set the speed (baud rate) of the serial channel.
 
        @return
-       TRUE if the change was successfully made.
+       PTrue if the change was successfully made.
      */
-    BOOL SetSpeed(
+    PBoolean SetSpeed(
       DWORD speed   ///< New speed for serial channel.
     );
 
@@ -212,9 +212,9 @@ class PSerialChannel : public PChannel
     /**Set the data bits (5, 6, 7 or 8) of the serial port.
 
        @return
-       TRUE if the change was successfully made.
+       PTrue if the change was successfully made.
      */
-    BOOL SetDataBits(
+    PBoolean SetDataBits(
       BYTE data   ///< New number of data bits for serial channel.
     );
 
@@ -228,9 +228,9 @@ class PSerialChannel : public PChannel
     /**Set the parity of the serial port.
 
        @return
-       TRUE if the change was successfully made.
+       PTrue if the change was successfully made.
      */
-    BOOL SetParity(
+    PBoolean SetParity(
       Parity parity   ///< New parity option for serial channel.
     );
 
@@ -244,9 +244,9 @@ class PSerialChannel : public PChannel
     /**Set the stop bits (1 or 2) of the serial port.
 
        @return
-       TRUE if the change was successfully made.
+       PTrue if the change was successfully made.
      */
-    BOOL SetStopBits(
+    PBoolean SetStopBits(
       BYTE stop   ///< New number of stop bits for serial channel.
     );
 
@@ -261,9 +261,9 @@ class PSerialChannel : public PChannel
        port.
 
        @return
-       TRUE if the change was successfully made.
+       PTrue if the change was successfully made.
      */
-    BOOL SetInputFlowControl(
+    PBoolean SetInputFlowControl(
       FlowControl flowControl   ///< New flow control for serial channel input.
     );
 
@@ -279,9 +279,9 @@ class PSerialChannel : public PChannel
        port.
 
        @return
-       TRUE if the change was successfully made.
+       PTrue if the change was successfully made.
      */
-    BOOL SetOutputFlowControl(
+    PBoolean SetOutputFlowControl(
       FlowControl flowControl   ///< New flow control for serial channel output.
     );
 
@@ -306,61 +306,61 @@ class PSerialChannel : public PChannel
   //@{
     /** Set the Data Terminal Ready signal of the serial port. */
     void SetDTR(
-      BOOL state = TRUE   ///< New state of the DTR signal.
+      PBoolean state = PTrue   ///< New state of the DTR signal.
     );
 
     /**Clear the Data Terminal Ready signal of the serial port. This is
-       equivalent to #SetDTR(FALSE)#.
+       equivalent to #SetDTR(PFalse)#.
      */
     void ClearDTR();
 
     /**Set the Request To Send signal of the serial port. */
     void SetRTS(
-      BOOL state = TRUE   ///< New state of the RTS signal.
+      PBoolean state = PTrue   ///< New state of the RTS signal.
     );
 
     /**Clear the Request To Send signal of the serial port. This is equivalent
-       to #SetRTS(FALSE)#.
+       to #SetRTS(PFalse)#.
      */
     void ClearRTS();
 
     /** Set the break condition of the serial port. */
     void SetBreak(
-      BOOL state = TRUE   ///< New state of the serial port break condition.
+      PBoolean state = PTrue   ///< New state of the serial port break condition.
     );
 
     /**Clear the break condition of the serial port. This is equivalent to
-       #SetBreak(FALSE)#.
+       #SetBreak(PFalse)#.
      */
     void ClearBreak();
 
     /**Get the Clear To Send signal of the serial port.
     
        @return
-       TRUE if the CTS signal is asserted.
+       PTrue if the CTS signal is asserted.
      */
-    BOOL GetCTS();
+    PBoolean GetCTS();
 
     /**Get the Data Set Ready signal of the serial port.
     
        @return
-       TRUE if the DSR signal is asserted.
+       PTrue if the DSR signal is asserted.
      */
-    BOOL GetDSR();
+    PBoolean GetDSR();
 
     /**Get the Data Carrier Detect signal of the serial port.
     
        @return
-       TRUE if the DCD signal is asserted.
+       PTrue if the DCD signal is asserted.
      */
-    BOOL GetDCD();
+    PBoolean GetDCD();
 
     /**Get the Ring Indicator signal of the serial port.
     
        @return
-       TRUE if the RI signal is asserted.
+       PTrue if the RI signal is asserted.
      */
-    BOOL GetRing();
+    PBoolean GetRing();
   //@}
 
 

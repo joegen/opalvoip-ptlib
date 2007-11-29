@@ -51,8 +51,8 @@ class PStructuredFile : public PFile
   PCLASSINFO(PStructuredFile, PFile);
 
   private:
-    BOOL Read(void * buf, PINDEX len) { return PFile::Read(buf, len); }
-    BOOL Write(const void * buf, PINDEX len) { return PFile::Write(buf, len); }
+    PBoolean Read(void * buf, PINDEX len) { return PFile::Read(buf, len); }
+    PBoolean Write(const void * buf, PINDEX len) { return PFile::Write(buf, len); }
 
   public:
   /**@name Construction */
@@ -99,9 +99,9 @@ class PStructuredFile : public PFile
        #SetStructure()# function.
 
        @return
-       TRUE if the structure was successfully read.
+       PTrue if the structure was successfully read.
      */
-    BOOL Read(
+    PBoolean Read(
       void * buffer   ///< Pointer to structure to receive data.
     );
       
@@ -110,9 +110,9 @@ class PStructuredFile : public PFile
        #SetStructure()# function.
 
        @return
-       TRUE if the structure was successfully written.
+       PTrue if the structure was successfully written.
      */
-    BOOL Write(
+    PBoolean Write(
       const void * buffer   ///< Pointer to structure to write data from.
     );
   //@}

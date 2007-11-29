@@ -168,27 +168,27 @@ const char * PEthSocket::GetProtocolName() const
 }
 
 
-BOOL PEthSocket::Listen(unsigned, WORD, Reusability)
+PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr)
+PBoolean PEthSocket::GetIpAddress(PIPSocket::Address & addr)
 {
   PIPSocket::Address net_mask;
   return EnumIpAddress(0, addr, net_mask);
 }
 
 
-BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
+PBoolean PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
 {
   return EnumIpAddress(0, addr, net_mask);
 }
 
 
-BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
+PBoolean PEthSocket::ReadPacket(PBYTEArray & buffer,
                             Address & dest,
                             Address & src,
                             WORD & type,
@@ -200,7 +200,7 @@ BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
 
   do {
     if (!Read(frame, sizeof(*frame)))
-      return FALSE;
+      return PFalse;
   } while (lastReadCount < MinFrameSize);
 
   dest = frame->dst_addr;
@@ -208,7 +208,7 @@ BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
   length = lastReadCount;
   frame->Parse(type, payload, length);
 
-  return TRUE;
+  return PTrue;
 }
 
 

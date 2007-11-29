@@ -143,7 +143,7 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::GetFirst(const char * service)
 
   currentPos   = 0;
   lastOrder = operator[](0).order;
-  orderLocked = FALSE;
+  orderLocked = PFalse;
 
   return GetNext(service);
 }
@@ -167,7 +167,7 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::GetNext(const char * service)
       lastOrder   = record.order;
       if (record.order == lastOrder) {
         if ((service == NULL) || (record.service *= service)) {
-          orderLocked = TRUE;
+          orderLocked = PTrue;
           return &record;
         }
       }
@@ -276,7 +276,7 @@ void PDNS::SetENUMServers(const PStringArray & servers)
      GetENUMServers() = servers;
 }
 
-BOOL PDNS::ENUMLookup(const PString & e164,
+PBoolean PDNS::ENUMLookup(const PString & e164,
       const PString & service,PString & dn)
 {
   PWaitAndSignal m(GetENUMServerMutex());
@@ -290,9 +290,9 @@ BOOL PDNS::ENUMLookup(const PString & e164,
   return PDNS::ENUMLookup(e164, service, domains, dn);
 }
 
-static BOOL InternalENUMLookup(const PString & e164, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
+static PBoolean InternalENUMLookup(const PString & e164, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
 {
-  BOOL result = FALSE;
+  PBoolean result = PFalse;
 
   // get the first record that matches the service. 
   PDNS::NAPTRRecord * rec = records.GetFirst(service);
@@ -304,39 +304,39 @@ static BOOL InternalENUMLookup(const PString & e164, const PString & service, PD
       break;
 
     // process the flags
-    BOOL handled  = FALSE;
-    BOOL terminal = TRUE;
+    PBoolean handled  = PFalse;
+    PBoolean terminal = PTrue;
 
     for (PINDEX f = 0; !handled && f < rec->flags.GetLength(); ++f) {
       switch (tolower(rec->flags[f])) {
 
         // do an SRV lookup
         case 's':
-          terminal = TRUE;
-          handled = FALSE;
+          terminal = PTrue;
+          handled = PFalse;
           break;
 
         // do an A lookup
         case 'a':
-          terminal = TRUE;
-          handled = FALSE;
+          terminal = PTrue;
+          handled = PFalse;
           break;
 
         // apply regex and do the lookup
         case 'u':
           returnStr = ApplyRegex(e164, rec->regex);
-          result   = TRUE;
-          terminal = TRUE;
-          handled  = TRUE;
+          result   = PTrue;
+          terminal = PTrue;
+          handled  = PTrue;
           break;
 
         // handle in a protocol specific way - not supported
         case 'p':
-          handled = FALSE;
+          handled = PFalse;
           break;
   
         default:
-          handled = FALSE;
+          handled = PFalse;
       }
     }
 
@@ -356,7 +356,7 @@ static BOOL InternalENUMLookup(const PString & e164, const PString & service, PD
   return result;
 }
 
-BOOL PDNS::ENUMLookup(
+PBoolean PDNS::ENUMLookup(
         const PString & _e164,
         const PString & service,
    const PStringArray & enumSpaces,
@@ -397,10 +397,10 @@ BOOL PDNS::ENUMLookup(
       continue;
 
     if (InternalENUMLookup(e164, service, records, returnStr))
-      return TRUE;
+      return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -417,9 +417,9 @@ static PStringArray & GetRDSServers()
   return servers;
 }
 
-static BOOL RewriteDomain(const PString & original, PDNS::NAPTRRecordList & records, PString & returnStr)
+static PBoolean RewriteDomain(const PString & original, PDNS::NAPTRRecordList & records, PString & returnStr)
 {
-   BOOL result = FALSE;
+   PBoolean result = PFalse;
 
   // get the first record that matches the service. 
   PDNS::NAPTRRecord * rec = records.GetFirst();
@@ -431,14 +431,14 @@ static BOOL RewriteDomain(const PString & original, PDNS::NAPTRRecordList & reco
       break;
 
     // process the flags
-    BOOL handled  = FALSE;
+    PBoolean handled  = PFalse;
 
 	// General domain rewrites has no flag
     if (rec->flags.IsEmpty()) {
         returnStr = ApplyRegex(original, rec->regex);
 		if (returnStr.GetLength() > 0) {
-            result   = TRUE;
-            handled  = TRUE;
+            result   = PTrue;
+            handled  = PTrue;
 			break;
 		}
 	} else {
@@ -457,9 +457,9 @@ static BOOL RewriteDomain(const PString & original, PDNS::NAPTRRecordList & reco
   return result;   
 }
 
-static BOOL InternalRDSLookup(const PString & rds, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
+static PBoolean InternalRDSLookup(const PString & rds, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
 {
-  BOOL result = FALSE;
+  PBoolean result = PFalse;
 
   // get the first record that matches the service. 
   PDNS::NAPTRRecord * rec = records.GetFirst(service);
@@ -471,8 +471,8 @@ static BOOL InternalRDSLookup(const PString & rds, const PString & service, PDNS
       break;
 
     // process the flags
-    BOOL handled  = FALSE;
-    BOOL terminal = TRUE;
+    PBoolean handled  = PFalse;
+    PBoolean terminal = PTrue;
 
     for (PINDEX f = 0; !handled && f < rec->flags.GetLength(); ++f) {
       switch (tolower(rec->flags[f])) {
@@ -481,20 +481,20 @@ static BOOL InternalRDSLookup(const PString & rds, const PString & service, PDNS
         case 's':
 		  // apply regex and do the lookup
           returnStr = ApplyRegex(rds, rec->regex);
-          result   = TRUE;
-          terminal = TRUE;
-          handled  = TRUE;
+          result   = PTrue;
+          terminal = PTrue;
+          handled  = PTrue;
           break;
  
         case 'a':            // A lookup
         case 'u':            // U Lookup
-          terminal = TRUE;
-          handled = FALSE;
+          terminal = PTrue;
+          handled = PFalse;
           break;
  
         case 'p':           // P specific
 		default:
-          handled = FALSE;
+          handled = PFalse;
           break;
       }
     }
@@ -528,7 +528,7 @@ void PDNS::SetRDSServers(const PStringArray & servers)
      GetRDSServers() = servers;
 }
 
-BOOL PDNS::RDSLookup(const PURL & url,
+PBoolean PDNS::RDSLookup(const PURL & url,
       const PString & service,PStringList & dn)
 {
   PWaitAndSignal m(GetRDSServerMutex());
@@ -542,7 +542,7 @@ BOOL PDNS::RDSLookup(const PURL & url,
   return PDNS::RDSLookup(url, service, domains, dn);
 }
 
-BOOL PDNS::RDSLookup(
+PBoolean PDNS::RDSLookup(
         const PURL & url,
         const PString & service,
    const PStringArray & naptrSpaces,
@@ -592,11 +592,11 @@ BOOL PDNS::RDSLookup(
 		
 	if (retStr.GetSize() > 0) {   // We have found records 
 		returnStr = retStr;
-	    return TRUE;
+	    return PTrue;
 	}
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 

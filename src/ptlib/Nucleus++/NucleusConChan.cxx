@@ -59,23 +59,23 @@ PConsoleChannel::PConsoleChannel(ConsoleType type)
 }
 
 
-BOOL PConsoleChannel::Open(ConsoleType type)
+PBoolean PConsoleChannel::Open(ConsoleType type)
 {
   switch (type) {
     case StandardInput :
       os_handle = 0;
-      return TRUE;
+      return PTrue;
 
     case StandardOutput :
       os_handle = 1;
-      return TRUE;
+      return PTrue;
 
     case StandardError :
       os_handle = 2;
-      return TRUE;
+      return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -85,7 +85,7 @@ PString PConsoleChannel::GetName() const
 }
 
 #ifdef __NUCLEUS_MNT__
-BOOL PConsoleChannel::Read(void * buffer, PINDEX length)
+PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
   {
   flush();
   cin >> (char *)buffer;
@@ -95,17 +95,17 @@ BOOL PConsoleChannel::Read(void * buffer, PINDEX length)
   }
 
 
-BOOL PConsoleChannel::Write(const void * buffer, PINDEX length)
+PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
   {
   flush();
   cout << PString((const char *)buffer, length) << "\n";
-  return TRUE;
+  return PTrue;
   }
 #endif
 
-BOOL PConsoleChannel::Close()
+PBoolean PConsoleChannel::Close()
   {
   os_handle = -1;
-  return TRUE;
+  return PTrue;
   }
 

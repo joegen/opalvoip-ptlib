@@ -155,15 +155,15 @@ PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
 
     PINDEX AppendElement(PObject * key, PObject * data);
     PObject * RemoveElement(const PObject & key);
-    BOOL SetLastElementAt(PINDEX index);
+    PBoolean SetLastElementAt(PINDEX index);
     PHashTableElement * GetElementAt(const PObject & key);
-    PINDEX GetElementsIndex(const PObject*obj,BOOL byVal,BOOL keys) const;
+    PINDEX GetElementsIndex(const PObject*obj,PBoolean byVal,PBoolean keys) const;
 
     PINDEX lastIndex;
     PINDEX lastBucket;
     PHashTableElement * lastElement;
 
-    BOOL deleteKeys;
+    PBoolean deleteKeys;
 
   typedef PHashTableElement Element;
   friend class PHashTable;
@@ -217,9 +217,9 @@ class PHashTable : public PCollection
        set in any other way.
 
        @return
-       Always TRUE.
+       Always PTrue.
      */
-    virtual BOOL SetSize(
+    virtual PBoolean SetSize(
       PINDEX newSize  ///< New size for the hash table, this is ignored.
     );
   //@}
@@ -233,9 +233,9 @@ class PHashTable : public PCollection
        function. The hash table is used to locate the entry.
 
        @return
-       TRUE if the object value is in the set.
+       PTrue if the object value is in the set.
      */
-    PINLINE BOOL AbstractContains(
+    PINLINE PBoolean AbstractContains(
       const PObject & key   ///< Key to look for in the set.
     ) const;
 
@@ -357,9 +357,9 @@ class PAbstractSet : public PHashTable
        same instance of the object that is in the collection.
 
        @return
-       TRUE if the object was in the collection.
+       PTrue if the object was in the collection.
      */
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     );
 
@@ -392,9 +392,9 @@ class PAbstractSet : public PHashTable
        #index# parameter is ignored.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -455,7 +455,7 @@ template <class T> class PSet : public PAbstractSet
        deleted when removed or when all references to the set are destroyed.
        This is different from the default on most collection classes.
      */
-    inline PSet(BOOL initialDeleteObjects = FALSE)
+    inline PSet(PBoolean initialDeleteObjects = PFalse)
       : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); }
   //@}
 
@@ -522,9 +522,9 @@ template <class T> class PSet : public PAbstractSet
        function. The hash table is used to locate the entry.
 
        @return
-       TRUE if the object value is in the set.
+       PTrue if the object value is in the set.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const T & key  ///< Key to look for in the set.
     ) const { return AbstractContains(key); }
 
@@ -534,9 +534,9 @@ template <class T> class PSet : public PAbstractSet
        function. The hash table is used to locate the entry.
 
        @return
-       TRUE if the object value is in the set.
+       PTrue if the object value is in the set.
      */
-    BOOL operator[](
+    PBoolean operator[](
       const T & key  ///< Key to look for in the set.
     ) const { return AbstractContains(key); }
 
@@ -597,7 +597,7 @@ template <class T> class PSet : public PAbstractSet
     cls(int dummy, const cls * c) \
       : cls##_PTemplate(dummy, c) { } \
   public: \
-    cls(BOOL initialDeleteObjects = initDelObj) \
+    cls(PBoolean initialDeleteObjects = initDelObj) \
       : cls##_PTemplate(initialDeleteObjects) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
@@ -614,7 +614,7 @@ template <class T> class PSet : public PAbstractSet
       : PAbstractSet(dummy, c) \
       { reference->deleteObjects = c->reference->deleteObjects; } \
   public: \
-    inline cls(BOOL initialDeleteObjects = FALSE) \
+    inline cls(PBoolean initialDeleteObjects = PFalse) \
       : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
@@ -622,9 +622,9 @@ template <class T> class PSet : public PAbstractSet
       { Append((PObject *)key); } \
     inline void Exclude(const PObject * key) \
       { Remove(key); } \
-    inline BOOL operator[](const K & key) const \
+    inline PBoolean operator[](const K & key) const \
         { return AbstractContains(key); } \
-    inline BOOL Contains(const K & key) const \
+    inline PBoolean Contains(const K & key) const \
         { return AbstractContains(key); } \
     virtual const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
@@ -637,7 +637,7 @@ template <class T> class PSet : public PAbstractSet
     inline cls(int dummy, const cls * c) \
       : cls##_PTemplate(dummy, c) { } \
   public: \
-    inline cls(BOOL initialDeleteObjects = initDelObj) \
+    inline cls(PBoolean initialDeleteObjects = initDelObj) \
       : cls##_PTemplate() { AllowDeleteObjects(initialDeleteObjects); } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
@@ -725,9 +725,9 @@ class PAbstractDictionary : public PHashTable
        object is also deleted.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -780,9 +780,9 @@ class PAbstractDictionary : public PHashTable
        of the keys and the order of insertion.
 
        @return
-       TRUE if the new object could be placed into the dictionary.
+       PTrue if the new object could be placed into the dictionary.
      */
-    virtual BOOL SetDataAt(
+    virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PObject * obj   ///< New object to put into the dictionary.
     );
@@ -796,9 +796,9 @@ class PAbstractDictionary : public PHashTable
        to the data item.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL AbstractSetAt(
+    virtual PBoolean AbstractSetAt(
       const PObject & key,  ///< Key for position in dictionary to add object.
       PObject * obj         ///< New object to put into the dictionary.
     );
@@ -840,7 +840,7 @@ class PAbstractDictionary : public PHashTable
        Always zero.
      */
 
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       const PObject * obj   // Existing object to remove from the collection.
     );
     /* Remove the object from the collection. If the AllowDeleteObjects option
@@ -851,7 +851,7 @@ class PAbstractDictionary : public PHashTable
        same instance of the object that is in the collection.
 
        @return
-       TRUE if the object was in the collection.
+       PTrue if the object was in the collection.
      */
 
 };
@@ -916,9 +916,9 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        function. The hash table is used to locate the entry.
 
        @return
-       TRUE if the object value is in the dictionary.
+       PTrue if the object value is in the dictionary.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const K & key   ///< Key to look for in the dictionary.
     ) const { return AbstractContains(key); }
 
@@ -949,9 +949,9 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        to the data item.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       const K & key,  // Key for position in dictionary to add object.
       D * obj         // New object to put into the dictionary.
     ) { return AbstractSetAt(key, obj); }
@@ -1102,9 +1102,9 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        function. The hash table is used to locate the entry.
 
        @return
-       TRUE if the object value is in the dictionary.
+       PTrue if the object value is in the dictionary.
      */
-    BOOL Contains(
+    PBoolean Contains(
       const K & key   ///< Key to look for in the dictionary.
     ) const { return AbstractContains(key); }
 
@@ -1124,9 +1124,9 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        of the keys and the order of insertion.
 
        @return
-       TRUE if the new object could be placed into the dictionary.
+       PTrue if the new object could be placed into the dictionary.
      */
-    virtual BOOL SetDataAt(
+    virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
       ) { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); }
@@ -1140,9 +1140,9 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        to the data item.
 
        @return
-       TRUE if the object was successfully added.
+       PTrue if the object was successfully added.
      */
-    virtual BOOL SetAt(
+    virtual PBoolean SetAt(
       const K & key,  ///< Key for position in dictionary to add object.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
     ) { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
@@ -1256,11 +1256,11 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
       { return PNEW cls(0, this); } \
     D & operator[](const K & key) const \
       { return (D &)GetRefAt(key); } \
-    virtual BOOL Contains(const K & key) const \
+    virtual PBoolean Contains(const K & key) const \
       { return AbstractContains(key); } \
     virtual D * RemoveAt(const K & key) \
       { D * obj = GetAt(key); AbstractSetAt(key, NULL); return obj; } \
-    virtual BOOL SetAt(const K & key, D * obj) \
+    virtual PBoolean SetAt(const K & key, D * obj) \
       { return AbstractSetAt(key, obj); } \
     virtual D * GetAt(const K & key) const \
       { return (D *)AbstractGetAt(key); } \
@@ -1296,13 +1296,13 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
       { return PNEW cls(0, this); } \
     inline PINDEX operator[](const K & key) const \
       { return (POrdinalKey &)GetRefAt(key); } \
-    virtual BOOL Contains(const K & key) const \
+    virtual PBoolean Contains(const K & key) const \
       { return AbstractContains(key); } \
     virtual POrdinalKey * GetAt(const K & key) const \
       { return (POrdinalKey *)AbstractGetAt(key); } \
-    virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
+    virtual PBoolean SetDataAt(PINDEX index, PINDEX ordinal) \
       { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); } \
-    virtual BOOL SetAt(const K & key, PINDEX ordinal) \
+    virtual PBoolean SetAt(const K & key, PINDEX ordinal) \
       { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); } \
     virtual PINDEX RemoveAt(const K & key) \
       { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; } \

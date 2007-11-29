@@ -78,21 +78,21 @@ class PUDPSocket : public PIPDatagramSocket
   //@{
     /** Override of PChannel functions to allow connectionless reads
      */
-    BOOL Read(
+    PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to read.
       PINDEX len    ///< Number of bytes to read.
     );
 
     /** Override of PChannel functions to allow connectionless writes
      */
-    BOOL Write(
+    PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
 
     /** Override of PSocket functions to allow connectionless writes
      */
-    BOOL Connect(
+    PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
     );
   //@}
@@ -116,7 +116,7 @@ class PUDPSocket : public PIPDatagramSocket
 
     /** Change the QOS spec for the socket and try to apply the changes
      */
-    virtual BOOL ModifyQoSSpec(
+    virtual PBoolean ModifyQoSSpec(
       PQoS * qos            ///< QoS specification to use
     );
 
@@ -136,7 +136,7 @@ class PUDPSocket : public PIPDatagramSocket
 
     /** Check to See if the socket will support QoS on the given local Address
      */
-    static BOOL SupportQoS(const PIPSocket::Address & address);
+    static PBoolean SupportQoS(const PIPSocket::Address & address);
 
     /** Manually Enable GQoS Support
      */
@@ -145,18 +145,18 @@ class PUDPSocket : public PIPDatagramSocket
 
   protected:
     // Open an IPv4 socket (for backward compatibility)
-    virtual BOOL OpenSocket();
+    virtual PBoolean OpenSocket();
 
     // Open an IPv4 or IPv6 socket
-    virtual BOOL OpenSocket(
+    virtual PBoolean OpenSocket(
       int ipAdressFamily
     );
 
     // Create a QOS-enabled socket
-    virtual int OpenSocketGQOS(int af, int type, int proto);
+    virtual PBoolean OpenSocketGQOS(int af, int type, int proto);
 
     // Modify the QOS settings
-    virtual BOOL ApplyQoS();
+    virtual PBoolean ApplyQoS();
 
     virtual const char * GetProtocolName() const;
 

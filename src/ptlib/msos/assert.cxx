@@ -49,12 +49,12 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   char wndClassName[100];
   GetClassName(hWnd, wndClassName, sizeof(wndClassName));
   if (strcmp(wndClassName, "ConsoleWindowClass") != 0)
-    return TRUE;
+    return PTrue;
 
   DWORD wndProcess;
   GetWindowThreadProcessId(hWnd, &wndProcess);
   if (wndProcess != (DWORD)thisProcess)
-    return TRUE;
+    return PTrue;
 
   cerr << "\nPress a key to continue . . .";
   cerr.flush();
@@ -65,7 +65,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   char dummy;
   DWORD readBytes;
   ReadConsole(in, &dummy, 1, &readBytes, NULL);
-  return FALSE;
+  return PFalse;
 }
 #endif // _WIN32_WCE
 
@@ -84,12 +84,12 @@ class PImageDLL : public PDynaLink
   public:
     PImageDLL();
 
-  BOOL (__stdcall *SymInitialize)(
+  PBoolean (__stdcall *SymInitialize)(
     IN HANDLE   hProcess,
     IN LPSTR    UserSearchPath,
-    IN BOOL     fInvadeProcess
+    IN PBoolean     fInvadeProcess
     );
-  BOOL (__stdcall *SymCleanup)(
+  PBoolean (__stdcall *SymCleanup)(
     IN HANDLE hProcess
     );
   DWORD (__stdcall *SymGetOptions)();
@@ -104,7 +104,7 @@ class PImageDLL : public PDynaLink
     DWORD  BaseOfDll,  
     DWORD  SizeOfDll   
     );
-  BOOL (__stdcall *StackWalk)(
+  PBoolean (__stdcall *StackWalk)(
     DWORD                             MachineType,
     HANDLE                            hProcess,
     HANDLE                            hThread,
@@ -115,7 +115,7 @@ class PImageDLL : public PDynaLink
     PGET_MODULE_BASE_ROUTINE          GetModuleBaseRoutine,
     PTRANSLATE_ADDRESS_ROUTINE        TranslateAddress
     );
-  BOOL (__stdcall *SymGetSymFromAddr)(
+  PBoolean (__stdcall *SymGetSymFromAddr)(
     IN  HANDLE              hProcess,
     IN  DWORD               dwAddr,
     OUT PDWORD              pdwDisplacement,
@@ -125,7 +125,7 @@ class PImageDLL : public PDynaLink
   PFUNCTION_TABLE_ACCESS_ROUTINE SymFunctionTableAccess;
   PGET_MODULE_BASE_ROUTINE       SymGetModuleBase;
 
-  BOOL (__stdcall *SymGetModuleInfo)(
+  PBoolean (__stdcall *SymGetModuleInfo)(
     IN  HANDLE              hProcess,
     IN  DWORD               dwAddr,
     OUT PIMAGEHLP_MODULE    ModuleInfo
@@ -171,7 +171,7 @@ void PAssertFunc(const char * msg)
       hProcess = GetCurrentProcess();
     else
       hProcess = (HANDLE)GetCurrentProcessId();
-    if (imagehlp.SymInitialize(hProcess, NULL, TRUE)) {
+    if (imagehlp.SymInitialize(hProcess, NULL, PTrue)) {
       HANDLE hThread = GetCurrentThread();
       // The thread information.
       CONTEXT threadContext;

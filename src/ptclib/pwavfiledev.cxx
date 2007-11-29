@@ -105,7 +105,7 @@ PStringArray PSoundChannel_WAVFile::GetDeviceNames(Directions)
 }
 
 
-BOOL PSoundChannel_WAVFile::Open(const PString & device,
+PBoolean PSoundChannel_WAVFile::Open(const PString & device,
                                  Directions dir,
                                  unsigned numChannels,
                                  unsigned sampleRate,
@@ -125,24 +125,24 @@ BOOL PSoundChannel_WAVFile::Open(const PString & device,
   }
 
   if (!m_WAVFile.Open(adjustedDevice, PFile::ReadOnly))
-    return FALSE;
+    return PFalse;
 
   if (m_WAVFile.GetChannels() == numChannels &&
       m_WAVFile.GetSampleRate() == sampleRate &&
       m_WAVFile.GetSampleSize() == bitsPerSample)
-    return TRUE;
+    return PTrue;
 
   Close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel_WAVFile::IsOpen() const
+PBoolean PSoundChannel_WAVFile::IsOpen() const
 { 
   return m_WAVFile.IsOpen();
 }
 
-BOOL PSoundChannel_WAVFile::SetFormat(unsigned numChannels,
+PBoolean PSoundChannel_WAVFile::SetFormat(unsigned numChannels,
                                       unsigned sampleRate,
                                       unsigned bitsPerSample)
 {
@@ -150,7 +150,7 @@ BOOL PSoundChannel_WAVFile::SetFormat(unsigned numChannels,
   m_WAVFile.SetSampleRate(sampleRate);
   m_WAVFile.SetSampleSize(bitsPerSample);
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -172,60 +172,60 @@ unsigned PSoundChannel_WAVFile::GetSampleSize() const
 }
 
 
-BOOL PSoundChannel_WAVFile::Close()
+PBoolean PSoundChannel_WAVFile::Close()
 {
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
   m_WAVFile.Close();
   os_handle = -1;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::SetBuffers(PINDEX, PINDEX)
+PBoolean PSoundChannel_WAVFile::SetBuffers(PINDEX, PINDEX)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
+PBoolean PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
 {
   size = count = 0;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
+PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 {
-  BOOL ok = m_WAVFile.Write(data, size);
+  PBoolean ok = m_WAVFile.Write(data, size);
   lastWriteCount = m_WAVFile.GetLastWriteCount();
   m_Pacing.Delay(lastWriteCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate());
   return ok;
 }
 
 
-BOOL PSoundChannel_WAVFile::HasPlayCompleted()
+PBoolean PSoundChannel_WAVFile::HasPlayCompleted()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::WaitForPlayCompletion()
+PBoolean PSoundChannel_WAVFile::WaitForPlayCompletion()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::StartRecording()
+PBoolean PSoundChannel_WAVFile::StartRecording()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::Read(void * data, PINDEX size)
+PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
-  BOOL ok = m_WAVFile.Read(data, size);
+  PBoolean ok = m_WAVFile.Read(data, size);
   if (!ok && m_autoRepeat) {
     m_WAVFile.SetPosition(0);
     ok = m_WAVFile.Read(data, size);
@@ -236,27 +236,27 @@ BOOL PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 }
 
 
-BOOL PSoundChannel_WAVFile::IsRecordBufferFull()
+PBoolean PSoundChannel_WAVFile::IsRecordBufferFull()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::AreAllRecordBuffersFull()
+PBoolean PSoundChannel_WAVFile::AreAllRecordBuffersFull()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::WaitForRecordBufferFull()
+PBoolean PSoundChannel_WAVFile::WaitForRecordBufferFull()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
+PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
 {
-  return TRUE;
+  return PTrue;
 }
 
 

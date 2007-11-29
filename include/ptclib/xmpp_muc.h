@@ -94,10 +94,10 @@ namespace XMPP
       const User&   GetUser() const         { return m_User; }
       const Users&  GetOtherUsers() const   { return m_OtherUsers; }
 
-      virtual BOOL  Enter();
-      virtual BOOL  Leave();
-      virtual BOOL  SendMessage(const PString& msg);
-      virtual BOOL  SendMessage(Message& msg);
+      virtual PBoolean  Enter();
+      virtual PBoolean  Leave();
+      virtual PBoolean  SendMessage(const PString& msg);
+      virtual PBoolean  SendMessage(Message& msg);
 
       // Event methods
       virtual void  OnMessage(Message& msg);

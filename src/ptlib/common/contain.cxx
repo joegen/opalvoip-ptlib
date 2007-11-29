@@ -170,7 +170,7 @@ void PContainer::Destruct()
 }
 
 
-BOOL PContainer::SetMinSize(PINDEX minSize)
+PBoolean PContainer::SetMinSize(PINDEX minSize)
 {
   PASSERTINDEX(minSize);
   if (minSize < 0)
@@ -181,20 +181,20 @@ BOOL PContainer::SetMinSize(PINDEX minSize)
 }
 
 
-BOOL PContainer::MakeUnique()
+PBoolean PContainer::MakeUnique()
 {
 #if PCONTAINER_USES_CRITSEC
   PEnterAndLeave m(reference->critSec);
 #endif
 
   if (IsUnique())
-    return TRUE;
+    return PTrue;
 
   PContainerReference * oldReference = reference;
   reference = new PContainerReference(*reference);
   --oldReference->count;
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -213,14 +213,14 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
     PAssert(theArray != NULL, POutOfMemory);
   }
 
-  allocatedDynamically = TRUE;
+  allocatedDynamically = PTrue;
 }
 
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
                                const void *buffer,
                                PINDEX bufferSizeInElements,
-                               BOOL dynamicAllocation)
+                               PBoolean dynamicAllocation)
   : PContainer(bufferSizeInElements)
 {
   elementSize = elementSizeInBytes;
@@ -269,7 +269,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
   else
     memcpy(newArray, array->theArray, sizebytes);
   theArray = newArray;
-  allocatedDynamically = TRUE;
+  allocatedDynamically = PTrue;
 }
 
 
@@ -336,13 +336,13 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 }
 
 
-BOOL PAbstractArray::SetSize(PINDEX newSize)
+PBoolean PAbstractArray::SetSize(PINDEX newSize)
 {
-  return InternalSetSize(newSize, FALSE);
+  return InternalSetSize(newSize, PFalse);
 }
 
 
-BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
+PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
 {
   if (newSize < 0)
     newSize = 0;
@@ -351,7 +351,7 @@ BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
   PINDEX oldsizebytes = elementSize*GetSize();
 
   if (!force && (newsizebytes == oldsizebytes))
-    return TRUE;
+    return PTrue;
 
   char * newArray;
 
@@ -365,7 +365,7 @@ BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
       newArray = NULL;
     else {
       if ((newArray = (char *)malloc(newsizebytes)) == NULL)
-        return FALSE;
+        return PFalse;
   
       if (theArray != NULL)
         memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
@@ -384,18 +384,18 @@ BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
       }
       else if (allocatedDynamically) {
         if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
-          return FALSE;
+          return PFalse;
       }
       else {
         if ((newArray = (char *)malloc(newsizebytes)) == NULL)
-          return FALSE;
+          return PFalse;
         memcpy(newArray, theArray, PMIN(newsizebytes, oldsizebytes));
-        allocatedDynamically = TRUE;
+        allocatedDynamically = PTrue;
       }
     }
     else if (newsizebytes != 0) {
       if ((newArray = (char *)malloc(newsizebytes)) == NULL)
-        return FALSE;
+        return PFalse;
     }
     else
       newArray = NULL;
@@ -407,7 +407,7 @@ BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
     memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
 
   theArray = newArray;
-  return TRUE;
+  return PTrue;
 }
 
 void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
@@ -421,7 +421,7 @@ void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
 
   theArray = (char *)buffer;
   reference->size = bufferSize;
-  allocatedDynamically = FALSE;
+  allocatedDynamically = PFalse;
 }
 
 
@@ -432,19 +432,19 @@ void * PAbstractArray::GetPointer(PINDEX minSize)
 }
 
 
-BOOL PAbstractArray::Concatenate(const PAbstractArray & array)
+PBoolean PAbstractArray::Concatenate(const PAbstractArray & array)
 {
   if (!allocatedDynamically || array.elementSize != elementSize)
-    return FALSE;
+    return PFalse;
 
   PINDEX oldLen = GetSize();
   PINDEX addLen = array.GetSize();
 
   if (!SetSize(oldLen + addLen))
-    return FALSE;
+    return PFalse;
 
   memcpy(theArray+oldLen*elementSize, array.theArray, addLen*elementSize);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -468,7 +468,7 @@ void PCharArray::PrintOn(ostream & strm) const
   else
     width = 0;
 
-  BOOL left = (strm.flags()&ios::adjustfield) == ios::left;
+  PBoolean left = (strm.flags()&ios::adjustfield) == ios::left;
   if (left)
     strm.write(theArray, GetSize());
 
@@ -572,7 +572,7 @@ PBitArray::PBitArray(PINDEX initialSize)
 
 PBitArray::PBitArray(const void * buffer,
                      PINDEX length,
-                     BOOL dynamic)
+                     PBoolean dynamic)
   : PBYTEArray((const BYTE *)buffer, (length+7)>>3, dynamic)
 {
 }
@@ -590,30 +590,30 @@ PINDEX PBitArray::GetSize() const
 }
 
 
-BOOL PBitArray::SetSize(PINDEX newSize)
+PBoolean PBitArray::SetSize(PINDEX newSize)
 {
   return PBYTEArray::SetSize((newSize+7)>>3);
 }
 
 
-BOOL PBitArray::SetAt(PINDEX index, BOOL val)
+PBoolean PBitArray::SetAt(PINDEX index, PBoolean val)
 {
   if (!SetMinSize(index+1))
-    return FALSE;
+    return PFalse;
 
   if (val)
     theArray[index>>3] |= (1 << (index&7));
   else
     theArray[index>>3] &= ~(1 << (index&7));
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PBitArray::GetAt(PINDEX index) const
+PBoolean PBitArray::GetAt(PINDEX index) const
 {
   PASSERTINDEX(index);
   if (index >= GetSize())
-    return FALSE;
+    return PFalse;
 
   return (theArray[index>>3]&(1 << (index&7))) != 0;
 }
@@ -631,7 +631,7 @@ BYTE * PBitArray::GetPointer(PINDEX minSize)
 }
 
 
-BOOL PBitArray::Concatenate(const PBitArray & array)
+PBoolean PBitArray::Concatenate(const PBitArray & array)
 {
   return PAbstractArray::Concatenate(array);
 }
@@ -1028,29 +1028,29 @@ PINDEX PString::HashFunction() const
 }
 
 
-BOOL PString::IsEmpty() const
+PBoolean PString::IsEmpty() const
 {
   return (theArray == NULL) || (*theArray == '\0');
 }
 
 
-BOOL PString::SetSize(PINDEX newSize)
+PBoolean PString::SetSize(PINDEX newSize)
 {
-  return InternalSetSize(newSize, TRUE);
+  return InternalSetSize(newSize, PTrue);
 }
 
 
-BOOL PString::MakeUnique()
+PBoolean PString::MakeUnique()
 {
 #if PCONTAINER_USES_CRITSEC
   PEnterAndLeave m(reference->critSec);
 #endif
 
   if (IsUnique())
-    return TRUE;
+    return PTrue;
 
-  InternalSetSize(GetSize(), TRUE);
-  return FALSE;
+  InternalSetSize(GetSize(), PTrue);
+  return PFalse;
 }
 
 
@@ -1246,12 +1246,12 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 bool PString::operator*=(const char * cstr) const
 {
   if (cstr == NULL)
-    return IsEmpty() != FALSE;
+    return IsEmpty() != PFalse;
 
   const char * pstr = theArray;
   while (*pstr != '\0' && *cstr != '\0') {
     if (toupper(*pstr & 0xff) != toupper(*cstr & 0xff))
-      return FALSE;
+      return PFalse;
     pstr++;
     cstr++;
   }
@@ -1481,29 +1481,29 @@ PINDEX PString::FindRegEx(const PRegularExpression & regex, PINDEX offset) const
 }
 
 
-BOOL PString::FindRegEx(const PRegularExpression & regex,
+PBoolean PString::FindRegEx(const PRegularExpression & regex,
                         PINDEX & pos,
                         PINDEX & len,
                         PINDEX offset,
                         PINDEX maxPos) const
 {
   if (offset < 0 || maxPos < 0 || offset >= GetLength())
-    return FALSE;
+    return PFalse;
 
   if (!regex.Execute(&theArray[offset], pos, len, 0))
-    return FALSE;
+    return PFalse;
 
   pos += offset;
   if (pos+len > maxPos)
-    return FALSE;
+    return PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
 void PString::Replace(const PString & target,
                       const PString & subs,
-                      BOOL all, PINDEX offset)
+                      PBoolean all, PINDEX offset)
 {
   if (offset < 0)
     return;
@@ -1546,7 +1546,7 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
 
 
 PStringArray
-        PString::Tokenise(const char * separators, BOOL onePerSeparator) const
+        PString::Tokenise(const char * separators, PBoolean onePerSeparator) const
 {
   PStringArray tokens;
   
@@ -2134,7 +2134,7 @@ void PStringStream::AssignContents(const PContainer & cont)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringArray::PStringArray(PINDEX count, char const * const * strarr, BOOL caseless)
+PStringArray::PStringArray(PINDEX count, char const * const * strarr, PBoolean caseless)
 {
   if (count == 0)
     return;
@@ -2252,7 +2252,7 @@ char ** PStringArray::ToCharArray(PCharArray * storage) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringList::PStringList(PINDEX count, char const * const * strarr, BOOL caseless)
+PStringList::PStringList(PINDEX count, char const * const * strarr, PBoolean caseless)
 {
   if (count == 0)
     return;
@@ -2314,7 +2314,7 @@ void PStringList::ReadFrom(istream & strm)
 
 PSortedStringList::PSortedStringList(PINDEX count,
                                      char const * const * strarr,
-                                     BOOL caseless)
+                                     PBoolean caseless)
 {
   if (count == 0)
     return;
@@ -2409,7 +2409,7 @@ PINDEX PSortedStringList::InternalStringSelect(const char * str,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringSet::PStringSet(PINDEX count, char const * const * strarr, BOOL caseless)
+PStringSet::PStringSet(PINDEX count, char const * const * strarr, PBoolean caseless)
 {
   if (count == 0)
     return;
@@ -2472,7 +2472,7 @@ void POrdinalToString::ReadFrom(istream & strm)
 
 PStringToOrdinal::PStringToOrdinal(PINDEX count,
                                    const Initialiser * init,
-                                   BOOL caseless)
+                                   PBoolean caseless)
 {
   while (count-- > 0) {
     if (caseless)
@@ -2502,8 +2502,8 @@ void PStringToOrdinal::ReadFrom(istream & strm)
 
 PStringToString::PStringToString(PINDEX count,
                                  const Initialiser * init,
-                                 BOOL caselessKeys,
-                                 BOOL caselessValues)
+                                 PBoolean caselessKeys,
+                                 PBoolean caselessValues)
 {
   while (count-- > 0) {
     if (caselessValues)
@@ -2637,13 +2637,13 @@ PString PRegularExpression::GetErrorText() const
 }
 
 
-BOOL PRegularExpression::Compile(const PString & pattern, int flags)
+PBoolean PRegularExpression::Compile(const PString & pattern, int flags)
 {
   return Compile((const char *)pattern, flags);
 }
 
 
-BOOL PRegularExpression::Compile(const char * pattern, int flags)
+PBoolean PRegularExpression::Compile(const char * pattern, int flags)
 {
   patternSaved = pattern;
   flagsSaved   = flags;
@@ -2663,56 +2663,56 @@ BOOL PRegularExpression::Compile(const char * pattern, int flags)
 }
 
 
-BOOL PRegularExpression::Execute(const PString & str, PINDEX & start, int flags) const
+PBoolean PRegularExpression::Execute(const PString & str, PINDEX & start, int flags) const
 {
   PINDEX dummy;
   return Execute((const char *)str, start, dummy, flags);
 }
 
 
-BOOL PRegularExpression::Execute(const PString & str, PINDEX & start, PINDEX & len, int flags) const
+PBoolean PRegularExpression::Execute(const PString & str, PINDEX & start, PINDEX & len, int flags) const
 {
   return Execute((const char *)str, start, len, flags);
 }
 
 
-BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, int flags) const
+PBoolean PRegularExpression::Execute(const char * cstr, PINDEX & start, int flags) const
 {
   PINDEX dummy;
   return Execute(cstr, start, dummy, flags);
 }
 
 
-BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len, int flags) const
+PBoolean PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len, int flags) const
 {
   if (expression == NULL) {
     lastError = NotCompiled;
-    return FALSE;
+    return PFalse;
   }
 
   if (lastError != NoError && lastError != NoMatch)
-    return FALSE;
+    return PFalse;
 
   regmatch_t match;
 
   lastError = (ErrorCodes)regexec(regexpression, cstr, 1, &match, flags);
   if (lastError != NoError)
-    return FALSE;
+    return PFalse;
 
   start = match.rm_so;
   len = match.rm_eo - start;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PRegularExpression::Execute(const PString & str, PIntArray & starts, int flags) const
+PBoolean PRegularExpression::Execute(const PString & str, PIntArray & starts, int flags) const
 {
   PIntArray dummy;
   return Execute((const char *)str, starts, dummy, flags);
 }
 
 
-BOOL PRegularExpression::Execute(const PString & str,
+PBoolean PRegularExpression::Execute(const PString & str,
                                  PIntArray & starts,
                                  PIntArray & ends,
                                  int flags) const
@@ -2721,21 +2721,21 @@ BOOL PRegularExpression::Execute(const PString & str,
 }
 
 
-BOOL PRegularExpression::Execute(const char * cstr, PIntArray & starts, int flags) const
+PBoolean PRegularExpression::Execute(const char * cstr, PIntArray & starts, int flags) const
 {
   PIntArray dummy;
   return Execute(cstr, starts, dummy, flags);
 }
 
 
-BOOL PRegularExpression::Execute(const char * cstr,
+PBoolean PRegularExpression::Execute(const char * cstr,
                                  PIntArray & starts,
                                  PIntArray & ends,
                                  int flags) const
 {
   if (expression == NULL) {
     lastError = NotCompiled;
-    return FALSE;
+    return PFalse;
   }
 
   regmatch_t single_match;

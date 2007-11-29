@@ -62,7 +62,7 @@ PInt64 PString::AsInt64(unsigned base) const
   while (isspace(*ptr))
     ptr++;
 
-  BOOL negative = *ptr == '-';
+  PBoolean negative = *ptr == '-';
   if (*ptr == '-' || *ptr == '+')
     ptr++;
 

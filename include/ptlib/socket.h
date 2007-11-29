@@ -73,9 +73,9 @@ class PSocket : public PChannel
        Use the SetReadTimeout function to set a maximum time for the Connect
 
        @return
-       TRUE if the channel was successfully connected to the remote host.
+       PTrue if the channel was successfully connected to the remote host.
      */
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
     );
 
@@ -97,9 +97,9 @@ class PSocket : public PChannel
        SetPort() or SetService() function.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
@@ -125,18 +125,18 @@ class PSocket : public PChannel
        The default behaviour is to assert.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Accept(
+    virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
     );
 
     /**Close one or both of the data streams associated with a socket 
 
        @return
-       TRUE if the shutdown was performed
+       PTrue if the shutdown was performed
      */
-    virtual BOOL Shutdown(
+    virtual PBoolean Shutdown(
       ShutdownValue option   ///< Flag for shutdown of read, write or both.
     );
   //@}
@@ -147,9 +147,9 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       TRUE if the option was successfully set.
+       PTrue if the option was successfully set.
      */
-    BOOL SetOption(
+    PBoolean SetOption(
       int option,             ///< Option to set.
       int value,              ///< New value for option.
       int level = SOL_SOCKET  ///< Level for option
@@ -159,9 +159,9 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       TRUE if the option was successfully set.
+       PTrue if the option was successfully set.
      */
-    BOOL SetOption(
+    PBoolean SetOption(
       int option,             ///< Option to set.
       const void * valuePtr,  ///< Pointer to new value for option.
       PINDEX valueSize,       ///< Size of new value.
@@ -172,9 +172,9 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       TRUE if the option was successfully retreived.
+       PTrue if the option was successfully retreived.
      */
-    BOOL GetOption(
+    PBoolean GetOption(
       int option,             ///< Option to get.
       int & value,            ///< Integer to receive value.
       int level = SOL_SOCKET  ///< Level for option
@@ -184,9 +184,9 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       TRUE if the option was successfully retreived.
+       PTrue if the option was successfully retreived.
      */
-    BOOL GetOption(
+    PBoolean GetOption(
       int option,             ///< Option to get.
       void * valuePtr,        ///< Pointer to buffer for value.
       PINDEX valueSize,       ///< Size of buffer to receive value.
@@ -372,7 +372,7 @@ class PSocket : public PChannel
        has data available.
 
        @return
-       TRUE if the select was successful or timed out, FALSE if an error
+       PTrue if the select was successful or timed out, PFalse if an error
        occurred. If a timeout occurred then the lists returned will be empty.
 
        For the versions taking sockets directly instead of lists the integer
@@ -405,7 +405,7 @@ class PSocket : public PChannel
     /*This function calls os_socket() with the correct parameters for the
        socket protocol type.
      */
-    virtual BOOL OpenSocket() = 0;
+    virtual PBoolean OpenSocket() = 0;
 
     /**This function returns the protocol name for the socket type.
      */
@@ -414,25 +414,25 @@ class PSocket : public PChannel
 
     int os_close();
     int os_socket(int af, int type, int proto);
-    BOOL os_connect(
+    PBoolean os_connect(
       struct sockaddr * sin,
       PINDEX size
     );
-    BOOL os_recvfrom(
+    PBoolean os_recvfrom(
       void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * from,
       PINDEX * fromlen
     );
-    BOOL os_sendto(
+    PBoolean os_sendto(
       const void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * to,
       PINDEX tolen
     );
-    BOOL os_accept(
+    PBoolean os_accept(
       PSocket & listener,
       struct sockaddr * addr,
       PINDEX * size
@@ -444,7 +444,7 @@ class PSocket : public PChannel
     WORD port;
 
 #if P_HAS_RECVMSG
-    BOOL catchReceiveToAddr;
+    PBoolean catchReceiveToAddr;
     virtual void SetLastReceiveAddr(void * /*addr*/, int /*addrLen*/)
     { }
 #endif
@@ -475,7 +475,7 @@ class P_fd_set {
 
     void Zero();
 
-    BOOL IsPresent(SOCKET fd) const
+    PBoolean IsPresent(SOCKET fd) const
       {
         return FD_ISSET(fd, set);
       }
@@ -520,7 +520,7 @@ class P_timeval {
 
   private:
     struct timeval tval;
-    BOOL infinite;
+    PBoolean infinite;
 };
 
 #ifdef _WIN32
@@ -532,7 +532,7 @@ class PWinSock : public PSocket
     PWinSock();
     ~PWinSock();
   private:
-    virtual BOOL OpenSocket();
+    virtual PBoolean OpenSocket();
     virtual const char * GetProtocolName() const;
 };
 #endif

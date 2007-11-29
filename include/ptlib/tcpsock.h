@@ -101,15 +101,15 @@ class PTCPSocket : public PIPSocket
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        This override repeatedly writes if there is no error until all of the
        requested bytes have been written.
 
        @return
-       TRUE if at least len bytes were written to the channel.
+       PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );
@@ -128,14 +128,14 @@ class PTCPSocket : public PIPSocket
        #PIPSocket::SetPort()# function.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
     );
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       const Address & bind,     ///< Local interface address to bind to.
       unsigned queueSize = 5,   ///< Number of pending accepts that may be queued.
       WORD port = 0,            ///< Port number to use for the connection.
@@ -154,9 +154,9 @@ class PTCPSocket : public PIPSocket
        port number specified in the "listening" socket.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Accept(
+    virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
     );
   //@}
@@ -172,9 +172,9 @@ class PTCPSocket : public PIPSocket
        #PChannel::Write()# function.
        
        @return
-       TRUE if all the bytes were sucessfully written.
+       PTrue if all the bytes were sucessfully written.
      */
-    virtual BOOL WriteOutOfBand(
+    virtual PBoolean WriteOutOfBand(
       const void * buf,   ///< Data to be written as URGENT TCP data.
       PINDEX len          ///< Number of bytes pointed to by #buf#.
     );
@@ -194,10 +194,10 @@ class PTCPSocket : public PIPSocket
 
   protected:
     // Open an IPv4 socket (for backward compatibility)
-    virtual BOOL OpenSocket();
+    virtual PBoolean OpenSocket();
 
     // Open an IPv4 or IPv6 socket
-    virtual BOOL OpenSocket(
+    virtual PBoolean OpenSocket(
       int ipAdressFamily
     );
 

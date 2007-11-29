@@ -170,12 +170,12 @@ class PTime : public PObject
   /**@name Access functions */
   //@{
     /**Determine if the timestamp is valid.
-       This will return TRUE if the timestamp can be represented as a time
+       This will return PTrue if the timestamp can be represented as a time
        in the epoch. The epoch is the 1st January 1970.
 
        In practice this means the time is > 13 hours to allow for time zones.
       */
-    BOOL IsValid() const;
+    PBoolean IsValid() const;
 
     /**Get the total microseconds since the epoch. The epoch is the 1st
        January 1970.
@@ -286,16 +286,16 @@ class PTime : public PObject
     /**Determine if the time is in the past or in the future.
 
        @return
-       TRUE if time is before the current real time.
+       PTrue if time is before the current real time.
      */
-    BOOL IsPast() const;
+    PBoolean IsPast() const;
 
     /**Determine if the time is in the past or in the future.
 
        @return
-       TRUE if time is after the current real time.
+       PTrue if time is after the current real time.
      */
-    BOOL IsFuture() const;
+    PBoolean IsFuture() const;
   //@}
 
   /**@name Time Zone configuration functions */
@@ -303,9 +303,9 @@ class PTime : public PObject
     /**Get flag indicating daylight savings is current.
     
        @return
-       TRUE if daylight savings time is active.
+       PTrue if daylight savings time is active.
      */
-    static BOOL IsDaylightSavings();
+    static PBoolean IsDaylightSavings();
 
     /// Flag for time zone adjustment on daylight savings.
     enum TimeZoneType {
@@ -476,9 +476,9 @@ class PTime : public PObject
     /**Get the internationalised time format: AM/PM or 24 hour.
     
        @return
-       TRUE is 12 hour, FALSE if 24 hour.
+       PTrue is 12 hour, PFalse if 24 hour.
      */
-    static BOOL GetTimeAMPM();
+    static PBoolean GetTimeAMPM();
 
     /**Get the internationalised time AM string.
     
