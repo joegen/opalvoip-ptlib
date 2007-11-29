@@ -62,33 +62,33 @@ class PArgList : public PObject
     PArgList(
       const char * theArgPtr = NULL,        ///< A string constituting the arguments 
       const char * argumentSpecPtr = NULL,  ///< The specification C string for argument options. See description for details.
-      BOOL optionsBeforeParams = TRUE       ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = PTrue       ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       const PString & theArgStr,             ///< A string constituting the arguments 
       const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
-      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       const PString & theArgStr,             ///< A string constituting the arguments 
       const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
-      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       int theArgc,                           ///< Count of argument strings in theArgv 
       char ** theArgv,                       ///< An array of strings constituting the arguments 
       const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
-      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       int theArgc,                           ///< Count of argument strings in theArgv 
       char ** theArgv,                       ///< An array of strings constituting the arguments 
       const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
-      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
     );
   //@}
 
@@ -128,7 +128,7 @@ class PArgList : public PObject
     /** Parse the arguments.
        Parse the standard C program arguments into an argument of options and
        parameters. Consecutive calls with #optionsBeforeParams# set
-       to TRUE will parse out different options and parameters. If SetArgs()
+       to PTrue will parse out different options and parameters. If SetArgs()
        function is called then the Parse() function will restart from the
        beginning of the argument list.
 
@@ -145,16 +145,16 @@ class PArgList : public PObject
        For example, "ab:c" allows for "-a -b arg -barg -c" and
        "a-an-arg.b-option:c;" allows for "-a --an-arg --option arg -c -copt".
 
-       @return TRUE if there is at least one parameter after parsing.
+       @return PTrue if there is at least one parameter after parsing.
      */
-    virtual BOOL Parse(
+    virtual PBoolean Parse(
       const char * theArgumentSpec,    ///< The specification string for argument options. See description for details.
-      BOOL optionsBeforeParams = TRUE  ///< Parse options only before parameters
+      PBoolean optionsBeforeParams = PTrue  ///< Parse options only before parameters
     );
     /** Parse the arguments. */
-    virtual BOOL Parse(
+    virtual PBoolean Parse(
       const PString & theArgumentStr,  ///< The specification string for argument options. See description for details.       
-      BOOL optionsBeforeParams = TRUE  ///< Parse options only before parameters
+      PBoolean optionsBeforeParams = PTrue  ///< Parse options only before parameters
     );
   //@}
 
@@ -180,17 +180,17 @@ class PArgList : public PObject
     /** Get if option present.
       Determines whether the option was specified on the command line.
 
-       @return TRUE if the option was present.
+       @return PTrue if the option was present.
      */
-    BOOL HasOption(
+    PBoolean HasOption(
       char optionChar             ///< Character letter code for the option 
     ) const;
     /** Get if option present. */
-    BOOL HasOption(
+    PBoolean HasOption(
       const char * optionStr     ///< String letter code for the option 
     ) const;
     /** Get if option present. */
-    BOOL HasOption(
+    PBoolean HasOption(
       const PString & optionName ///<  String code for the option 
     ) const;
 
@@ -319,7 +319,7 @@ class PArgList : public PObject
     int          shift;
 
   private:
-    BOOL ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg, const PIntArray & canHaveOptionString);
+    PBoolean ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg, const PIntArray & canHaveOptionString);
     PINDEX GetOptionCountByIndex(PINDEX idx) const;
     PString GetOptionStringByIndex(PINDEX idx, const char * dflt) const;
 };

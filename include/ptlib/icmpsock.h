@@ -114,18 +114,18 @@ class PICMPSocket : public PIPDatagramSocket
        to be sent back.
 
        @return
-       FALSE if host not found or no response.
+       PFalse if host not found or no response.
      */
-    BOOL Ping(
+    PBoolean Ping(
       const PString & host   ///< Host to send ping.
     );
     /**Send an ECHO_REPLY message to the specified host and wait for a reply
        to be sent back.
 
        @return
-       FALSE if host not found or no response.
+       PFalse if host not found or no response.
      */
-    BOOL Ping(
+    PBoolean Ping(
       const PString & host,   ///< Host to send ping.
       PingInfo & info         ///< Information on the ping and reply.
     );
@@ -133,8 +133,8 @@ class PICMPSocket : public PIPDatagramSocket
 
   protected:
     const char * GetProtocolName() const;
-    virtual BOOL OpenSocket();
-    virtual BOOL OpenSocket(int ipAdressFamily);
+    virtual PBoolean OpenSocket();
+    virtual PBoolean OpenSocket(int ipAdressFamily);
 
 
 // Include platform dependent part of class

@@ -56,30 +56,30 @@ class PVideoFile : public PVideoFrameInfo
     PVideoFile();
 
   public:
-    virtual BOOL SetFrameSize(
+    virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
     );
 
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
       int opts = PFile::ModeDefault     // #OpenOptions enum# for open operation.
     );
 
-    virtual BOOL IsOpen() const { return file.IsOpen(); }
-    virtual BOOL Close() { return file.Close(); }
+    virtual PBoolean IsOpen() const { return file.IsOpen(); }
+    virtual PBoolean Close() { return file.Close(); }
 
-    virtual BOOL WriteFrame(const void * frame);
-    virtual BOOL ReadFrame(void * frame);
+    virtual PBoolean WriteFrame(const void * frame);
+    virtual PBoolean ReadFrame(void * frame);
 
     virtual off_t GetLength() const;
-    virtual BOOL SetLength(
+    virtual PBoolean SetLength(
       off_t len   // New length of file in frames.
     );
 
     virtual off_t GetPosition() const;
-    virtual BOOL SetPosition(
+    virtual PBoolean SetPosition(
       off_t pos,                                       ///< New position to set.
       PFile::FilePositionOrigin origin = PFile::Start  ///< Origin for position change.
     );
@@ -88,7 +88,7 @@ class PVideoFile : public PVideoFrameInfo
     bool IsUnknownFrameSize() const { return unknownFrameSize; }
     PINDEX GetFrameBytes() const { return frameBytes; }
 
-    static BOOL ExtractHints(const PFilePath & fn, PVideoFrameInfo & info);
+    static PBoolean ExtractHints(const PFilePath & fn, PVideoFrameInfo & info);
 
   protected:
     bool   unknownFrameSize;
@@ -108,17 +108,17 @@ class PYUVFile : public PVideoFile
   public:
     PYUVFile();
 
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
       int opts = PFile::ModeDefault     // #OpenOptions enum# for open operation.
     );
 
-    virtual BOOL WriteFrame(const void * frame);
-    virtual BOOL ReadFrame(void * frame);
+    virtual PBoolean WriteFrame(const void * frame);
+    virtual PBoolean ReadFrame(void * frame);
 
   protected:
-    BOOL y4mMode;
+    PBoolean y4mMode;
 };
 
 #endif

@@ -33,30 +33,30 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
 
     /**Open the device given the device name.
       */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      PBoolean startImmediate = PTrue    /// Immediately start device
     );
 
     /**Determine if the device is currently open.
       */
-    virtual BOOL IsOpen();
+    virtual PBoolean IsOpen();
 
     /**Close the device.
       */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Start the video device I/O.
       */
-    virtual BOOL Start();
+    virtual PBoolean Start();
 
     /**Stop the video device I/O capture.
       */
-    virtual BOOL Stop();
+    virtual PBoolean Stop();
 
     /**Determine if the video device I/O capture is in progress.
       */
-    virtual BOOL IsCapturing();
+    virtual PBoolean IsCapturing();
 
     /**Get the maximum frame size in bytes.
 
@@ -67,20 +67,20 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
 
     /**Grab a frame.
       */
-    virtual BOOL GetFrame(
+    virtual PBoolean GetFrame(
       PBYTEArray & frame
     );
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */
-    virtual BOOL GetFrameData(
+    virtual PBoolean GetFrameData(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
-    virtual BOOL GetFrameDataNoDelay(
+    virtual PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
@@ -88,12 +88,12 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
 
     /**Try all known video formats & see which ones are accepted by the video driver
      */
-    virtual BOOL TestAllFormats();
+    virtual PBoolean TestAllFormats();
 
   public:
-    virtual BOOL SetColourFormat(const PString & colourFormat);
-    virtual BOOL SetFrameRate(unsigned rate);
-    virtual BOOL SetFrameSize(unsigned width, unsigned height);
+    virtual PBoolean SetColourFormat(const PString & colourFormat);
+    virtual PBoolean SetFrameRate(unsigned rate);
+    virtual PBoolean SetFrameSize(unsigned width, unsigned height);
 
     friend PVideoInputThread;
   private:
@@ -112,7 +112,7 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
 
     port_id fPort;
 
-    BOOL          isCapturingNow;
+    PBoolean          isCapturingNow;
     PVideoInputThread* captureThread;
     
 };

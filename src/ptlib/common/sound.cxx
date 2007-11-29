@@ -48,7 +48,7 @@ template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(
 }
 
 namespace PWLib {
-  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PSoundChannel> > soundChannelFactoryAdapter("PSoundChannel", TRUE);
+  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PSoundChannel> > soundChannelFactoryAdapter("PSoundChannel", PTrue);
 };
 
 
@@ -188,7 +188,7 @@ PSoundChannel::PSoundChannel(const PString & device,
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
-BOOL PSoundChannel::Open(const PString & device,
+PBoolean PSoundChannel::Open(const PString & device,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
@@ -210,13 +210,13 @@ PString PSoundChannel::GetName() const
 }
 
 
-BOOL PSoundChannel::IsOpen() const
+PBoolean PSoundChannel::IsOpen() const
 {
     return baseChannel == NULL || baseChannel->PChannel::IsOpen();
 }
 
 
-BOOL PSoundChannel::Close()
+PBoolean PSoundChannel::Close()
 {
     return baseChannel == NULL || baseChannel->Close();
 }
@@ -228,13 +228,13 @@ int PSoundChannel::GetHandle() const
 }
 
 
-BOOL PSoundChannel::Abort()
+PBoolean PSoundChannel::Abort()
 {
     return baseChannel == NULL || baseChannel->Abort();
 }
 
 
-BOOL PSoundChannel::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
+PBoolean PSoundChannel::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
 {
     return baseChannel != NULL && baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample);
 }
@@ -258,31 +258,31 @@ unsigned PSoundChannel::GetSampleSize() const
 }
 
 
-BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
+PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
     return baseChannel != NULL && baseChannel->SetBuffers(size, count);
 }
 
 
-BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
+PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
     return baseChannel != NULL && baseChannel->GetBuffers(size, count);
 }
 
 
-BOOL PSoundChannel::SetVolume(unsigned volume)
+PBoolean PSoundChannel::SetVolume(unsigned volume)
 {
     return baseChannel != NULL && baseChannel->SetVolume(volume);
 }
 
 
-BOOL PSoundChannel::GetVolume(unsigned & volume)
+PBoolean PSoundChannel::GetVolume(unsigned & volume)
 {
     return baseChannel != NULL && baseChannel->GetVolume(volume);
 }
 
 
-BOOL PSoundChannel::Write(const void * buf, PINDEX len)
+PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
 {
     return baseChannel != NULL && baseChannel->Write(buf, len);
 }
@@ -294,31 +294,31 @@ PINDEX PSoundChannel::GetLastWriteCount() const
 }
 
 
-BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
+PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
     return baseChannel != NULL && baseChannel->PlaySound(sound, wait);
 }
 
 
-BOOL PSoundChannel::PlayFile(const PFilePath & file, BOOL wait)
+PBoolean PSoundChannel::PlayFile(const PFilePath & file, PBoolean wait)
 {
     return baseChannel != NULL && baseChannel->PlayFile(file, wait);
 }
 
 
-BOOL PSoundChannel::HasPlayCompleted()
+PBoolean PSoundChannel::HasPlayCompleted()
 {
     return baseChannel == NULL || baseChannel->HasPlayCompleted();
 }
 
 
-BOOL PSoundChannel::WaitForPlayCompletion() 
+PBoolean PSoundChannel::WaitForPlayCompletion() 
 {
     return baseChannel == NULL || baseChannel->WaitForPlayCompletion();
 }
 
 
-BOOL PSoundChannel::Read(void * buf, PINDEX len)
+PBoolean PSoundChannel::Read(void * buf, PINDEX len)
 {
     return baseChannel != NULL && baseChannel->Read(buf, len);
 }
@@ -330,43 +330,43 @@ PINDEX PSoundChannel::GetLastReadCount() const
 }
 
 
-BOOL PSoundChannel::RecordSound(PSound & sound)
+PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
     return baseChannel != NULL && baseChannel->RecordSound(sound);
 }
 
 
-BOOL PSoundChannel::RecordFile(const PFilePath & file)
+PBoolean PSoundChannel::RecordFile(const PFilePath & file)
 {
     return baseChannel != NULL && baseChannel->RecordFile(file);
 }
 
 
-BOOL PSoundChannel::StartRecording()
+PBoolean PSoundChannel::StartRecording()
 {
     return baseChannel == NULL || baseChannel->StartRecording();
 }
 
 
-BOOL PSoundChannel::IsRecordBufferFull() 
+PBoolean PSoundChannel::IsRecordBufferFull() 
 {
     return baseChannel == NULL || baseChannel->IsRecordBufferFull();
 }
 
 
-BOOL PSoundChannel::AreAllRecordBuffersFull() 
+PBoolean PSoundChannel::AreAllRecordBuffersFull() 
 {
     return baseChannel == NULL || baseChannel->AreAllRecordBuffersFull();
 }
 
 
-BOOL PSoundChannel::WaitForRecordBufferFull() 
+PBoolean PSoundChannel::WaitForRecordBufferFull() 
 {
     return baseChannel == NULL || baseChannel->WaitForRecordBufferFull();
 }
 
 
-BOOL PSoundChannel::WaitForAllRecordBuffersFull() 
+PBoolean PSoundChannel::WaitForAllRecordBuffersFull() 
 {
     return baseChannel == NULL || baseChannel->WaitForAllRecordBuffersFull();
 }
@@ -421,41 +421,41 @@ void PSound::SetFormat(unsigned channels,
 }
 
 
-BOOL PSound::Load(const PFilePath & /*filename*/)
+PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSound::Save(const PFilePath & /*filename*/)
+PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSound::Play()
+PBoolean PSound::Play()
 {
   return Play(PSoundChannel::GetDefaultDevice(PSoundChannel::Player));
 }
 
 
-BOOL PSound::Play(const PString & device)
+PBoolean PSound::Play(const PString & device)
 {
 
   PSoundChannel channel(device, PSoundChannel::Player);
   if (!channel.IsOpen())
-    return FALSE;
+    return PFalse;
 
-  return channel.PlaySound(*this, TRUE);
+  return channel.PlaySound(*this, PTrue);
 }
 
 
-BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
+PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 {
   PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
                         PSoundChannel::Player);
   if (!channel.IsOpen())
-    return FALSE;
+    return PFalse;
 
   return channel.PlayFile(file, wait);
 }

@@ -49,7 +49,7 @@ class PIpAccessControlEntry : public PObject
     PIpAccessControlEntry(
       PIPSocket::Address addr,
       PIPSocket::Address msk,
-      BOOL allow
+      PBoolean allow
     );
     PIpAccessControlEntry(
       const PString & description
@@ -102,9 +102,9 @@ class PIpAccessControlEntry : public PObject
     /** Check the internal fields of the specification for validity.
 
        @return
-       TRUE if entry is valid.
+       PTrue if entry is valid.
      */
-    BOOL IsValid();
+    PBoolean IsValid();
 
     /** Parse the description string into this IP access control specification.
        The string may be of several forms:
@@ -123,9 +123,9 @@ class PIpAccessControlEntry : public PObject
                           domain.
 
        @return
-       TRUE if entry is valid.
+       PTrue if entry is valid.
      */
-    BOOL Parse(
+    PBoolean Parse(
       const PString & description   ///< Description of the specification
     );
 
@@ -134,9 +134,9 @@ class PIpAccessControlEntry : public PObject
        specifed in the Parse() function for this entry.
 
        @return
-       TRUE if entry can match the address.
+       PTrue if entry can match the address.
      */
-    BOOL Match(
+    PBoolean Match(
       PIPSocket::Address & address    ///< Address to search for
     );
 
@@ -154,18 +154,18 @@ class PIpAccessControlEntry : public PObject
 
     /**Get the allowed flag of entry.
       */
-    BOOL IsAllowed() const { return allowed; }
+    PBoolean IsAllowed() const { return allowed; }
 
     /**Get the hidden flag of entry.
       */
-    BOOL IsHidden()  const { return hidden; }
+    PBoolean IsHidden()  const { return hidden; }
 
   protected:
     PString            domain;
     PIPSocket::Address address;
     PIPSocket::Address mask;
-    BOOL               allowed;
-    BOOL               hidden;
+    PBoolean               allowed;
+    PBoolean               hidden;
 };
 
 PSORTED_LIST(PIpAccessControlList_base, PIpAccessControlEntry);
@@ -193,7 +193,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
     /** Create a new, empty, access control list.
      */
     PIpAccessControlList(
-      BOOL defaultAllowance = TRUE
+      PBoolean defaultAllowance = PTrue
     );
 
     /** Load the system wide files commonly use under Linux (hosts.allow and
@@ -207,10 +207,10 @@ class PIpAccessControlList : public PIpAccessControlList_base
        PProcess::GetName() function is used.
 
        @return
-       TRUE if all the entries in the file were added, if any failed then
-       FALSE is returned.
+       PTrue if all the entries in the file were added, if any failed then
+       PFalse is returned.
      */
-    BOOL LoadHostsAccess(
+    PBoolean LoadHostsAccess(
       const char * daemonName = NULL    ///< Name of "daemon" application
     );
 
@@ -220,10 +220,10 @@ class PIpAccessControlList : public PIpAccessControlList_base
        equivalent to Load(cfg, "IP Access Control List").
 
        @return
-       TRUE if all the entries in the file were added, if any failed then
-       FALSE is returned.
+       PTrue if all the entries in the file were added, if any failed then
+       PFalse is returned.
      */
-    BOOL Load(
+    PBoolean Load(
       PConfig & cfg   ///< Configuration file to load entries from.
     );
 
@@ -233,10 +233,10 @@ class PIpAccessControlList : public PIpAccessControlList_base
        PHTTPConfig classes.
 
        @return
-       TRUE if all the entries in the file were added, if any failed then
-       FALSE is returned.
+       PTrue if all the entries in the file were added, if any failed then
+       PFalse is returned.
      */
-    BOOL Load(
+    PBoolean Load(
       PConfig & cfg,            ///< Configuration file to load entries from.
       const PString & baseName  ///< Base name string for each entry in file.
     );
@@ -265,18 +265,18 @@ class PIpAccessControlList : public PIpAccessControlList_base
        field.
 
        @return
-       TRUE if the entries was successfully added.
+       PTrue if the entries was successfully added.
      */
-    BOOL Add(
+    PBoolean Add(
       PIpAccessControlEntry * entry ///< Entry for IP match parameters
     );
-    BOOL Add(
+    PBoolean Add(
       const PString & description   ///< Description of the IP match parameters
     );
-    BOOL Add(
+    PBoolean Add(
       PIPSocket::Address address,   ///< IP network address
       PIPSocket::Address mask,      ///< Mask for IP network
-      BOOL allow                    ///< Flag for if network is allowed or not
+      PBoolean allow                    ///< Flag for if network is allowed or not
     );
 
     /** Remove the specified entry into the list. See the PIpAccessControlEntry
@@ -284,12 +284,12 @@ class PIpAccessControlList : public PIpAccessControlList_base
        field.
 
        @return
-       TRUE if the entries was successfully removed.
+       PTrue if the entries was successfully removed.
      */
-    BOOL Remove(
+    PBoolean Remove(
       const PString & description   ///< Description of the IP match parameters
     );
-    BOOL Remove(
+    PBoolean Remove(
       PIPSocket::Address address,   ///< IP network address
       PIPSocket::Address mask       ///< Mask for IP network
     );
@@ -315,36 +315,36 @@ class PIpAccessControlList : public PIpAccessControlList_base
        control list. If the <CODE>socket</CODE> form is used the peer address
        of the connection is tested.
 
-       If the list is empty then TRUE is returned. If the list is not empty,
-       but the IP address does not match any entries in the list, then FALSE
+       If the list is empty then PTrue is returned. If the list is not empty,
+       but the IP address does not match any entries in the list, then PFalse
        is returned. If a match is made then the allow state of that entry is
        returned.
 
        @return
-       TRUE if the remote host address is allowed.
+       PTrue if the remote host address is allowed.
      */
-    BOOL IsAllowed(
+    PBoolean IsAllowed(
       PTCPSocket & socket           ///< Socket to test
     ) const;
-    BOOL IsAllowed(
+    PBoolean IsAllowed(
       PIPSocket::Address address    ///< IP Address to test
     ) const;
 
 
     /**Get the default state for allowed access if the list is empty.
       */
-    BOOL GetDefaultAllowance() const { return defaultAllowance; }
+    PBoolean GetDefaultAllowance() const { return defaultAllowance; }
 
     /**Set the default state for allowed access if the list is empty.
       */
-    void SetDefaultAllowance(BOOL defAllow) { defaultAllowance = defAllow; }
+    void SetDefaultAllowance(PBoolean defAllow) { defaultAllowance = defAllow; }
 
   private:
-    BOOL InternalLoadHostsAccess(const PString & daemon, const char * file, BOOL allow);
-    BOOL InternalRemoveEntry(PIpAccessControlEntry & entry);
+    PBoolean InternalLoadHostsAccess(const PString & daemon, const char * file, PBoolean allow);
+    PBoolean InternalRemoveEntry(PIpAccessControlEntry & entry);
 
   protected:
-    BOOL defaultAllowance;
+    PBoolean defaultAllowance;
 };
 
 

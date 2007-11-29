@@ -114,7 +114,7 @@ class PSafeObject : public PObject
        deallocated) as the caller thread is using the object, but not
        necessarily at this time locking it.
 
-       If the function returns FALSE, then the object has been flagged for
+       If the function returns PFalse, then the object has been flagged for
        deletion and the calling thread should immediately cease using the
        object.
 
@@ -127,7 +127,7 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to manage this
        rather than the application calling this function directly.
       */
-    BOOL SafeReference();
+    PBoolean SafeReference();
 
     /**Decrement the reference count for object.
        This indicates that the thread no longer has anything to do with the
@@ -136,10 +136,10 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to manage this
        rather than the application calling this function directly.
 
-       @return TRUE if reference count has reached zero and is not being
+       @return PTrue if reference count has reached zero and is not being
                safely deleted elsewhere ie SafeRemove() not called
       */
-    BOOL SafeDereference();
+    PBoolean SafeDereference();
 
     /**Lock the object for Read Only access.
        This will lock the object in read only mode. Multiple threads may lock
@@ -148,7 +148,7 @@ class PSafeObject : public PObject
        occur and no read/write lock can be present for any read only locks to
        occur.
 
-       If the function returns FALSE, then the object has been flagged for
+       If the function returns PFalse, then the object has been flagged for
        deletion and the calling thread should immediately cease use of the
        object, possibly executing the SafeDereference() function to remove
        any references it may have acquired.
@@ -158,7 +158,7 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    BOOL LockReadOnly() const;
+    PBoolean LockReadOnly() const;
 
     /**Release the read only lock on an object.
        Unlock the read only mutex that a thread had obtained. Multiple threads
@@ -179,7 +179,7 @@ class PSafeObject : public PObject
        occur and no read/write lock can be present for any read only locks to
        occur.
 
-       If the function returns FALSE, then the object has been flagged for
+       If the function returns PFalse, then the object has been flagged for
        deletion and the calling thread should immediately cease use of the
        object, possibly executing the SafeDereference() function to remove
        any references it may have acquired.
@@ -189,7 +189,7 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    BOOL LockReadWrite();
+    PBoolean LockReadWrite();
 
     /**Release the read/write lock on an object.
        Unlock the read/write mutex that a thread had obtained. Multiple threads
@@ -221,13 +221,13 @@ class PSafeObject : public PObject
        This is typically used by the PSafeCollection class and is not expected
        to be used directly by an application.
       */
-    BOOL SafelyCanBeDeleted() const;
+    PBoolean SafelyCanBeDeleted() const;
   //@}
 
   private:
     mutable PMutex    safetyMutex;
     unsigned          safeReferenceCount;
-    BOOL              safelyBeingRemoved;
+    PBoolean              safelyBeingRemoved;
     PReadWriteMutex   safeInUseMutex;
     PReadWriteMutex * safeInUse;
 };
@@ -240,14 +240,14 @@ class PSafeLockReadOnly
   public:
     PSafeLockReadOnly(const PSafeObject & object);
     ~PSafeLockReadOnly();
-    BOOL Lock();
+    PBoolean Lock();
     void Unlock();
-    BOOL IsLocked() const { return locked; }
+    PBoolean IsLocked() const { return locked; }
     bool operator!() const { return !locked; }
 
   protected:
     PSafeObject & safeObject;
-    BOOL          locked;
+    PBoolean          locked;
 };
 
 
@@ -259,14 +259,14 @@ class PSafeLockReadWrite
   public:
     PSafeLockReadWrite(const PSafeObject & object);
     ~PSafeLockReadWrite();
-    BOOL Lock();
+    PBoolean Lock();
     void Unlock();
-    BOOL IsLocked() const { return locked; }
+    PBoolean IsLocked() const { return locked; }
     bool operator!() const { return !locked; }
 
   protected:
     PSafeObject & safeObject;
-    BOOL          locked;
+    PBoolean          locked;
 };
 
 
@@ -313,7 +313,7 @@ class PSafeCollection : public PObject
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual BOOL SafeRemove(
+    virtual PBoolean SafeRemove(
       PSafeObject * obj   ///< Object to remove from collection
     );
 
@@ -325,7 +325,7 @@ class PSafeCollection : public PObject
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual BOOL SafeRemoveAt(
+    virtual PBoolean SafeRemoveAt(
       PINDEX idx    ///< Object index to remove
     );
 
@@ -333,7 +333,7 @@ class PSafeCollection : public PObject
     /**Remove all objects in collection.
       */
     virtual void RemoveAll(
-      BOOL synchronous = FALSE  ///< Wait till objects are deleted before returning
+      PBoolean synchronous = PFalse  ///< Wait till objects are deleted before returning
     );
 
     /**Disallow the automatic delete any objects that have been removed.
@@ -341,20 +341,20 @@ class PSafeCollection : public PObject
        deletion using PSafeObject::SafeRemove() and DeleteObject().
       */
     void AllowDeleteObjects(
-      BOOL yes = TRUE   ///< New value for flag for deleting objects
+      PBoolean yes = PTrue   ///< New value for flag for deleting objects
     ) { deleteObjects = yes; }
 
     /**Disallow the automatic delete any objects that have been removed.
        Objects are simply removed from the collection and not marked for
        deletion using PSafeObject::SafeRemove() and DeleteObject().
       */
-    void DisallowDeleteObjects() { deleteObjects = FALSE; }
+    void DisallowDeleteObjects() { deleteObjects = PFalse; }
 
     /**Delete any objects that have been removed.
-       Returns TRUE if all objects in the collection have been removed and
+       Returns PTrue if all objects in the collection have been removed and
        their pending deletions carried out.
       */
-    virtual BOOL DeleteObjectsToBeRemoved();
+    virtual PBoolean DeleteObjectsToBeRemoved();
 
     /**Delete an objects that has been removed.
       */
@@ -374,7 +374,7 @@ class PSafeCollection : public PObject
        Note that usefulness of this function is limited as it is merely an
        instantaneous snapshot of the state of the collection.
       */
-    BOOL IsEmpty() const { return GetSize() == 0; }
+    PBoolean IsEmpty() const { return GetSize() == 0; }
 
     /**Get the mutex for the collection.
       */
@@ -387,7 +387,7 @@ class PSafeCollection : public PObject
 
     PCollection  *     collection;
     mutable PMutex     collectionMutex;
-    BOOL               deleteObjects;
+    PBoolean               deleteObjects;
     PList<PSafeObject> toBeRemoved;
     PMutex             removalMutex;
     PTimer             deleteObjectsTimer;
@@ -490,7 +490,7 @@ class PSafePtrBase : public PObject
 
   /**@name Operations */
   //@{
-    /**Return TRUE if pointer is NULL.
+    /**Return PTrue if pointer is NULL.
       */
     bool operator!() const { return currentObject == NULL; }
 
@@ -500,7 +500,7 @@ class PSafePtrBase : public PObject
 
     /**Change the locking mode used by this pointer.
       */
-    BOOL SetSafetyMode(
+    PBoolean SetSafetyMode(
       PSafetyMode mode  ///< New locking mode
     );
 
@@ -522,7 +522,7 @@ class PSafePtrBase : public PObject
       WithReference,
       AlreadyReferenced
     };
-    BOOL EnterSafetyMode(EnterSafetyModeOption ref);
+    PBoolean EnterSafetyMode(EnterSafetyModeOption ref);
 
     enum ExitSafetyModeOption {
       WithDereference,
@@ -805,7 +805,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual BOOL Remove(
+    virtual PBoolean Remove(
       Base * obj          ///< Object to remove from safe collection
     ) {
         return SafeRemove(obj);
@@ -819,7 +819,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual BOOL RemoveAt(
+    virtual PBoolean RemoveAt(
       PINDEX idx     ///< Index to remove
     ) {
         return SafeRemoveAt(idx);
@@ -928,7 +928,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual BOOL RemoveAt(
+    virtual PBoolean RemoveAt(
       const Key & key   ///< Key to fund object to delete
     ) {
         PWaitAndSignal mutex(collectionMutex);
@@ -937,7 +937,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
 
     /**Determine of the dictionary contains an entry for the key.
       */
-    virtual BOOL Contains(
+    virtual PBoolean Contains(
       const Key & key
     ) {
         PWaitAndSignal lock(collectionMutex);

@@ -87,7 +87,7 @@ PString PSoundChannelESD::GetDefaultDevice(Directions /*dir*/)
   return "ESound";
 }
 
-BOOL PSoundChannelESD::Open(const PString & device,
+PBoolean PSoundChannelESD::Open(const PString & device,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
@@ -108,7 +108,7 @@ BOOL PSoundChannelESD::Open(const PString & device,
     bits = ESD_BITS8;
     break;
   default:
-    return (FALSE);
+    return (PFalse);
   }
 
   // make sure we have proper number of channels
@@ -120,7 +120,7 @@ BOOL PSoundChannelESD::Open(const PString & device,
     channels = ESD_MONO;
     break;
   default:
-    return (FALSE);
+    return (PFalse);
   }
 
   rate = sampleRate;
@@ -135,7 +135,7 @@ BOOL PSoundChannelESD::Open(const PString & device,
     func = ESD_PLAY;
     break;
   default:
-    return (FALSE);
+    return (PFalse);
   }
 
   format = bits | channels | mode | func;
@@ -145,31 +145,31 @@ BOOL PSoundChannelESD::Open(const PString & device,
     os_handle = esd_play_stream_fallback( format, rate, host, name );
 
   if ( os_handle <= 0 ) 
-    return (FALSE);
+    return (PFalse);
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
 
-BOOL PSoundChannelESD::SetVolume(unsigned newVal)
+PBoolean PSoundChannelESD::SetVolume(unsigned newVal)
 {
   if (os_handle <= 0)  //Cannot set volume in loop back mode.
-    return FALSE;
+    return PFalse;
   
-  return FALSE;
+  return PFalse;
 }
 
-BOOL  PSoundChannelESD::GetVolume(unsigned &devVol)
+PBoolean  PSoundChannelESD::GetVolume(unsigned &devVol)
 {
   if (os_handle <= 0)  //Cannot get volume in loop back mode.
-    return FALSE;
+    return PFalse;
   
   devVol = 0;
-  return FALSE;
+  return PFalse;
 }
   
 
 
-BOOL PSoundChannelESD::Close()
+PBoolean PSoundChannelESD::Close()
 {
   /* I think there is a bug here. We should be testing for loopback mode
    * and NOT calling PChannel::Close() when we are in loopback mode.
@@ -180,34 +180,34 @@ BOOL PSoundChannelESD::Close()
 }
 
 
-BOOL PSoundChannelESD::SetFormat(unsigned numChannels,
+PBoolean PSoundChannelESD::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
   PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::SetBuffers(PINDEX size, PINDEX count)
+PBoolean PSoundChannelESD::SetBuffers(PINDEX size, PINDEX count)
 {
   Abort();
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::GetBuffers(PINDEX & size, PINDEX & count)
+PBoolean PSoundChannelESD::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::Write(const void * buf, PINDEX len)
+PBoolean PSoundChannelESD::Write(const void * buf, PINDEX len)
 {
   int rval;
 
@@ -221,111 +221,111 @@ BOOL PSoundChannelESD::Write(const void * buf, PINDEX len)
       // writing data out at the correct rate.
       writeDelay.Delay(len/16);
 #endif
-      return (TRUE);
+      return (PTrue);
     }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannelESD::PlaySound(const PSound & sound, BOOL wait)
+PBoolean PSoundChannelESD::PlaySound(const PSound & sound, PBoolean wait)
 {
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return FALSE;
+    return PFalse;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::PlayFile(const PFilePath & filename, BOOL wait)
+PBoolean PSoundChannelESD::PlayFile(const PFilePath & filename, PBoolean wait)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::HasPlayCompleted()
+PBoolean PSoundChannelESD::HasPlayCompleted()
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannelESD::WaitForPlayCompletion()
+PBoolean PSoundChannelESD::WaitForPlayCompletion()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::Read(void * buf, PINDEX len)
+PBoolean PSoundChannelESD::Read(void * buf, PINDEX len)
 {
   if (os_handle < 0) 
-    return FALSE;
+    return PFalse;
 
   lastReadCount = 0;
   // keep looping until we have read 'len' bytes
   while (lastReadCount < len) {
     int retval = ::read(os_handle, ((char *)buf)+lastReadCount, len-lastReadCount);
-    if (retval <= 0) return FALSE;
+    if (retval <= 0) return PFalse;
     lastReadCount += retval;
   }
-  return (TRUE);
+  return (PTrue);
 }
 
 
-BOOL PSoundChannelESD::RecordSound(PSound & sound)
+PBoolean PSoundChannelESD::RecordSound(PSound & sound)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::RecordFile(const PFilePath & filename)
+PBoolean PSoundChannelESD::RecordFile(const PFilePath & filename)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::StartRecording()
+PBoolean PSoundChannelESD::StartRecording()
 {
-  return (TRUE);
+  return (PTrue);
 }
 
 
-BOOL PSoundChannelESD::IsRecordBufferFull()
+PBoolean PSoundChannelESD::IsRecordBufferFull()
 {
-  return (TRUE);
+  return (PTrue);
 }
 
 
-BOOL PSoundChannelESD::AreAllRecordBuffersFull()
+PBoolean PSoundChannelESD::AreAllRecordBuffersFull()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannelESD::WaitForRecordBufferFull()
+PBoolean PSoundChannelESD::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
-    return FALSE;
+    return PFalse;
   }
 
   return PXSetIOBlock(PXReadBlock, readTimeout);
 }
 
 
-BOOL PSoundChannelESD::WaitForAllRecordBuffersFull()
+PBoolean PSoundChannelESD::WaitForAllRecordBuffersFull()
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannelESD::Abort()
+PBoolean PSoundChannelESD::Abort()
 {
-  return TRUE;
+  return PTrue;
 }
 
 

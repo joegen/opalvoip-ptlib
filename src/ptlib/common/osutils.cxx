@@ -272,7 +272,7 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 
 #if PTRACING
   PProcess & process = PProcess::Current();
-  Begin(0, "", 0) << "\tVersion " << process.GetVersion(TRUE)
+  Begin(0, "", 0) << "\tVersion " << process.GetVersion(PTrue)
                   << " by " << process.GetManufacturer()
                   << " on " << process.GetOSClass() << ' ' << process.GetOSName()
                   << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
@@ -313,7 +313,7 @@ unsigned PTrace::GetLevel()
 }
 
 
-BOOL PTrace::CanTrace(unsigned level)
+PBoolean PTrace::CanTrace(unsigned level)
 {
   return level <= PTraceInfo::Instance().thresholdLevel;
 }
@@ -528,7 +528,7 @@ void PTimer::Construct()
   timerList->listMutex.Signal();
 
   timerList->processingMutex.Wait();
-  StartRunning(TRUE);
+  StartRunning(PTrue);
 }
 
 
@@ -554,7 +554,7 @@ PTimer::~PTimer()
 {
   timerList->listMutex.Wait();
   timerList->Remove(this);
-  BOOL isCurrentTimer = this == timerList->currentTimer;
+  PBoolean isCurrentTimer = this == timerList->currentTimer;
   timerList->listMutex.Signal();
 
   // Make sure that the OnTimeout for this timer has completed before
@@ -582,11 +582,11 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 {
   timerList->processingMutex.Wait();
   resetTime = time;
-  StartRunning(FALSE);
+  StartRunning(PFalse);
 }
 
 
-void PTimer::StartRunning(BOOL once)
+void PTimer::StartRunning(PBoolean once)
 {
   PTimeInterval::operator=(resetTime);
   oneshot = once;
@@ -605,7 +605,7 @@ void PTimer::Stop()
   timerList->processingMutex.Wait();
   state = Stopped;
   milliseconds = 0;
-  BOOL isCurrentTimer = this == timerList->currentTimer;
+  PBoolean isCurrentTimer = this == timerList->currentTimer;
   timerList->processingMutex.Signal();
 
   // Make sure that the OnTimeout for this timer has completed before
@@ -749,7 +749,7 @@ PTimeInterval PTimerList::Process()
 
 PArgList::PArgList(const char * theArgStr,
                    const char * theArgumentSpec,
-                   BOOL optionsBeforeParams)
+                   PBoolean optionsBeforeParams)
 {
   // get the program arguments
   if (theArgStr != NULL)
@@ -763,7 +763,7 @@ PArgList::PArgList(const char * theArgStr,
 
 PArgList::PArgList(const PString & theArgStr,
                    const char * argumentSpecPtr,
-                   BOOL optionsBeforeParams)
+                   PBoolean optionsBeforeParams)
 {
   // get the program arguments
   SetArgs(theArgStr);
@@ -776,7 +776,7 @@ PArgList::PArgList(const PString & theArgStr,
 
 PArgList::PArgList(const PString & theArgStr,
                    const PString & argumentSpecStr,
-                   BOOL optionsBeforeParams)
+                   PBoolean optionsBeforeParams)
 {
   // get the program arguments
   SetArgs(theArgStr);
@@ -788,7 +788,7 @@ PArgList::PArgList(const PString & theArgStr,
 
 PArgList::PArgList(int theArgc, char ** theArgv,
                    const char * theArgumentSpec,
-                   BOOL optionsBeforeParams)
+                   PBoolean optionsBeforeParams)
 {
   // get the program arguments
   SetArgs(theArgc, theArgv);
@@ -801,7 +801,7 @@ PArgList::PArgList(int theArgc, char ** theArgv,
 
 PArgList::PArgList(int theArgc, char ** theArgv,
                    const PString & theArgumentSpec,
-                   BOOL optionsBeforeParams)
+                   PBoolean optionsBeforeParams)
 {
   // get the program name and path
   SetArgs(theArgc, theArgv);
@@ -883,10 +883,10 @@ void PArgList::SetArgs(const PStringArray & theArgs)
 }
 
 
-BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
+PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
 {
   if (PAssertNULL(spec) == NULL)
-    return FALSE;
+    return PFalse;
 
   // Find starting point, start at shift if first Parse() call.
   PINDEX arg = optionLetters.IsEmpty() ? shift : 0;
@@ -935,7 +935,7 @@ BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 
   // Now work through the arguments and split out the options
   PINDEX param = 0;
-  BOOL hadMinusMinus = FALSE;
+  PBoolean hadMinusMinus = PFalse;
   while (arg < argumentArray.GetSize()) {
     const PString & argStr = argumentArray[arg];
     if (hadMinusMinus || argStr[0] != '-' || argStr[1] == '\0') {
@@ -946,7 +946,7 @@ BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
     else if (optionsBeforeParams && parameterIndex.GetSize() > 0)
       break;
     else if (argStr == "--") // ALL remaining args are parameters not options
-      hadMinusMinus = TRUE;
+      hadMinusMinus = PTrue;
     else if (argStr[1] == '-')
       ParseOption(optionNames.GetValuesIndex(argStr.Mid(2)), 0, arg, canHaveOptionString);
     else {
@@ -962,17 +962,17 @@ BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 }
 
 
-BOOL PArgList::ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg,
+PBoolean PArgList::ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg,
                            const PIntArray & canHaveOptionString)
 {
   if (idx == P_MAX_INDEX) {
     UnknownOption(argumentArray[arg]);
-    return FALSE;
+    return PFalse;
   }
 
   optionCount[idx]++;
   if (canHaveOptionString[idx] == 0)
-    return FALSE;
+    return PFalse;
 
   if (!optionString[idx])
     optionString[idx] += '\n';
@@ -980,14 +980,14 @@ BOOL PArgList::ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg,
   if (offset != 0 &&
         (canHaveOptionString[idx] == 1 || argumentArray[arg][offset] != '\0')) {
     optionString[idx] += argumentArray[arg].Mid(offset);
-    return TRUE;
+    return PTrue;
   }
 
   if (++arg >= argumentArray.GetSize())
-    return FALSE;
+    return PFalse;
 
   optionString[idx] += argumentArray[arg];
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1215,7 +1215,7 @@ void PConfigArgs::Save(const PString & saveOptionName)
       if (optionString.GetAt(i) != NULL)
         config.SetString(sectionName, optionName, optionString[i]);
       else
-        config.SetBoolean(sectionName, optionName, TRUE);
+        config.SetBoolean(sectionName, optionName, PTrue);
     }
   }
 }
@@ -1355,7 +1355,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #if PMEMORY_HEAP
   // Now we start looking for memory leaks!
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
+  PMemoryHeap::SetIgnoreAllocations(PFalse);
 #endif
 }
 
@@ -1402,7 +1402,7 @@ void PProcess::OnThreadEnded(PThread & /*thread*/)
 }
 
 
-BOOL PProcess::IsInitialised()
+PBoolean PProcess::IsInitialised()
 {
   return PProcessInstance != NULL;
 }
@@ -1440,7 +1440,7 @@ PTime PProcess::GetStartTime() const
   return programStartTime; 
 }
 
-PString PProcess::GetVersion(BOOL full) const
+PString PProcess::GetVersion(PBoolean full) const
 {
   const char * const statusLetter[NumCodeStatuses] =
     { "alpha", "beta", "." };
@@ -1451,7 +1451,7 @@ PString PProcess::GetVersion(BOOL full) const
 
 void PProcess::SetConfigurationPath(const PString & path)
 {
-  configurationPaths = path.Tokenise(";:", FALSE);
+  configurationPaths = path.Tokenise(";:", PFalse);
 }
 
 
@@ -1630,7 +1630,7 @@ void PIntCondMutex::PrintOn(ostream & strm) const
 }
 
 
-BOOL PIntCondMutex::Condition()
+PBoolean PIntCondMutex::Condition()
 {
   switch (operation) {
     case LT :
@@ -1897,7 +1897,7 @@ void PReadWriteMutex::EndWrite()
 
 /////////////////////////////////////////////////////////////////////////////
 
-PReadWaitAndSignal::PReadWaitAndSignal(const PReadWriteMutex & rw, BOOL start)
+PReadWaitAndSignal::PReadWaitAndSignal(const PReadWriteMutex & rw, PBoolean start)
   : mutex((PReadWriteMutex &)rw)
 {
   if (start)
@@ -1913,7 +1913,7 @@ PReadWaitAndSignal::~PReadWaitAndSignal()
 
 /////////////////////////////////////////////////////////////////////////////
 
-PWriteWaitAndSignal::PWriteWaitAndSignal(const PReadWriteMutex & rw, BOOL start)
+PWriteWaitAndSignal::PWriteWaitAndSignal(const PReadWriteMutex & rw, PBoolean start)
   : mutex((PReadWriteMutex &)rw)
 {
   if (start)

@@ -35,23 +35,23 @@
 // PICMPSocket
 
   protected:
-    BOOL WritePing(
+    PBoolean WritePing(
       const PString & host,   // Host to send ping.
       PingInfo & info         // Information on the ping and reply.
     );
     /* Send an ECHO_REPLY message to the specified host.
 
        <H2>Returns:</H2>
-       FALSE if host not found or no response.
+       PFalse if host not found or no response.
      */
 
-    BOOL ReadPing(
+    PBoolean ReadPing(
       PingInfo & info         // Information on the ping and reply.
     );
     /* Receive an ECHO_REPLY message from the host.
 
        <H2>Returns:</H2>
-       FALSE if an error occurred.
+       PFalse if an error occurred.
      */
 
 // End Of File ////////////////////////////////////////////////////////////////

@@ -116,7 +116,7 @@ PStringArray PPluginManager::GetPluginDirs()
     env = P_DEFAULT_PLUGIN_DIR;
 
   // split into directories on correct seperator
-  return env.Tokenise(DIR_SEP, TRUE);
+  return env.Tokenise(DIR_SEP, PTrue);
 }
 
 PPluginManager & PPluginManager::GetPluginManager()
@@ -125,7 +125,7 @@ PPluginManager & PPluginManager::GetPluginManager()
   return systemPluginMgr;
 }
 
-BOOL PPluginManager::LoadPlugin(const PString & fileName)
+PBoolean PPluginManager::LoadPlugin(const PString & fileName)
 {
   PWaitAndSignal m(pluginListMutex);
 
@@ -161,7 +161,7 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
 
           // add the plugin to the list of plugins
           pluginList.Append(dll);
-          return TRUE;
+          return PTrue;
 
         default:
           PTRACE(2, "PLUGIN\t" << fileName << " uses version " << version << " of the PWLIB PLUGIN API, which is not supported");
@@ -174,7 +174,7 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
   dll->Close();
   delete dll;
 
-  return FALSE;
+  return PFalse;
 }
 
 PStringList PPluginManager::GetPluginTypes() const
@@ -336,13 +336,14 @@ PStringList PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
   return allDevices;
 }
 
-BOOL PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceType,
+
+PBoolean PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceType,
 	                                              const PString & serviceName,
-												  const PString & deviceName,
-                                                  void * capabilities) const
+                                                      const PString & deviceName,
+                                                      void * capabilities) const
 {
     if (serviceType.IsEmpty() || deviceName.IsEmpty()) 
-        return FALSE;
+        return PFalse;
 
 	if (serviceName.IsEmpty() || serviceName == "*") {
 	  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
@@ -359,10 +360,11 @@ BOOL PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceType,
           return desc->GetDeviceCapabilities(deviceName,capabilities);
 	}
 
-    return FALSE;
+    return PFalse;
 }
 
-BOOL PPluginManager::RegisterService(const PString & serviceName,
+
+PBoolean PPluginManager::RegisterService(const PString & serviceName,
              const PString & serviceType,
              PPluginServiceDescriptor * descriptor)
 {
@@ -372,7 +374,7 @@ BOOL PPluginManager::RegisterService(const PString & serviceName,
   for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
     if (serviceList[i].serviceName == serviceName &&
         serviceList[i].serviceType == serviceType)
-      return FALSE;
+      return PFalse;
   }  
 
   PPluginService * service = new PPluginService(serviceName, serviceType, descriptor);
@@ -382,11 +384,11 @@ BOOL PPluginManager::RegisterService(const PString & serviceName,
   if (adapter != NULL)
     adapter->CreateFactory(serviceName);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-void PPluginManager::AddNotifier(const PNotifier & notifyFunction, BOOL existing)
+void PPluginManager::AddNotifier(const PNotifier & notifyFunction, PBoolean existing)
 {
   PWaitAndSignal m(notifierMutex);
   notifierList.Append(new PNotifier(notifyFunction));

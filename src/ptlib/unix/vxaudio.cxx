@@ -18,7 +18,7 @@ class SoundHandleEntry : public PObject {
     unsigned sampleRate;
     unsigned bitsPerSample;
     unsigned fragmentValue;
-    BOOL isInitialised;
+    PBoolean isInitialised;
 };
 
 PDICTIONARY(SoundHandleDict, PString, SoundHandleEntry);
@@ -83,15 +83,15 @@ void PSound::SetFormat(unsigned channels,
 }
 
 
-BOOL PSound::Load(const PFilePath & /*filename*/)
+PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSound::Save(const PFilePath & /*filename*/)
+PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-  return FALSE;
+  return PFalse;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
 }
 
 
-BOOL PSoundChannel::Open(const PString & _device,
+PBoolean PSoundChannel::Open(const PString & _device,
                               Directions _dir,
                                 unsigned _numChannels,
                                 unsigned _sampleRate,
@@ -171,7 +171,7 @@ BOOL PSoundChannel::Open(const PString & _device,
     // see if the sound channel is already open in this direction
     if ((entry.direction & dir) != 0) {
       dictMutex.Signal();
-      return FALSE;
+      return PFalse;
     }
 
     // flag this entry as open in this direction
@@ -188,7 +188,7 @@ BOOL PSoundChannel::Open(const PString & _device,
     }
     else  {
       PAssertAlways(PUnimplementedFunction);
-      return FALSE;
+      return PFalse;
     }
 
     // add the device to the dictionary
@@ -201,7 +201,7 @@ BOOL PSoundChannel::Open(const PString & _device,
     entry->numChannels   = _numChannels;
     entry->sampleRate    = _sampleRate;
     entry->bitsPerSample = _bitsPerSample;
-    entry->isInitialised = FALSE;
+    entry->isInitialised = PFalse;
     entry->fragmentValue = 0x7fff0008;
   }
    
@@ -212,18 +212,18 @@ BOOL PSoundChannel::Open(const PString & _device,
   // save the direction and device
   direction     = _dir;
   device        = _device;
-  isInitialised = FALSE;
+  isInitialised = PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PSoundChannel::Setup()
+PBoolean PSoundChannel::Setup()
 {
   if (os_handle < 0)
-    return FALSE;
+    return PFalse;
 
   if (isInitialised)
-    return TRUE;
+    return PTrue;
 
   // lock the dictionary
   dictMutex.Wait();
@@ -234,33 +234,33 @@ BOOL PSoundChannel::Setup()
   // get record for the device
   SoundHandleEntry & entry = handleDict()[device];
 
-  BOOL stat = FALSE;
+  PBoolean stat = PFalse;
   if (entry.isInitialised)  {
-    isInitialised = TRUE;
-    stat          = TRUE;
+    isInitialised = PTrue;
+    stat          = PTrue;
   } else if (device == "loopback")
-    stat = TRUE;
+    stat = PTrue;
   else {
     PAssertAlways(PUnimplementedFunction);
   }
 
-  entry.isInitialised = TRUE;
-  isInitialised       = TRUE;
+  entry.isInitialised = PTrue;
+  isInitialised       = PTrue;
 
   dictMutex.Signal();
 
   return stat;
 }
 
-BOOL PSoundChannel::Close()
+PBoolean PSoundChannel::Close()
 {
   // if the channel isn't open, do nothing
   if (os_handle < 0)
-    return TRUE;
+    return PTrue;
 
   if (os_handle == 0) {
     os_handle = -1;
-    return TRUE;
+    return PTrue;
   }
 
   // the device must be in the dictionary
@@ -281,23 +281,23 @@ BOOL PSoundChannel::Close()
   // flag this channel as closed
   dictMutex.Signal();
   os_handle = -1;
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PSoundChannel::Write(const void * buf, PINDEX len)
+PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
 {
   static struct timespec ts = {0, 5000000};
 
   if (!Setup()) {
-    return FALSE;
+    return PFalse;
 	}
 
   if (os_handle > 0) {
     while (!ConvertOSError(::write(os_handle, (char *)buf, len)))
       if (GetErrorCode() != Interrupted) {
-        return FALSE;
+        return PFalse;
 			}
-    return TRUE;
+    return PTrue;
   }
 
   int index = 0;
@@ -311,21 +311,21 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
       nanosleep(&ts, 0);
     }
   }
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PSoundChannel::Read(void * buf, PINDEX len)
+PBoolean PSoundChannel::Read(void * buf, PINDEX len)
 {
   static struct timespec ts = {0, 5000000};
 
   if (!Setup())
-    return FALSE;
+    return PFalse;
 
   if (os_handle > 0) {
     while (!ConvertOSError(::read(os_handle, (char *)buf, len)))
       if (GetErrorCode() != Interrupted)
-        return FALSE;
-    return TRUE;
+        return PFalse;
+    return PTrue;
   }
 
   int index = 0;
@@ -346,11 +346,11 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
       startptr = 0;
   } 
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel::SetFormat(unsigned numChannels,
+PBoolean PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
@@ -376,19 +376,19 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   entry.numChannels   = numChannels;
   entry.sampleRate    = sampleRate;
   entry.bitsPerSample = bitsPerSample;
-  entry.isInitialised  = FALSE;
+  entry.isInitialised  = PFalse;
 
   // unlock dictionary
   dictMutex.Signal();
 
   // mark this channel as uninitialised
-  isInitialised = FALSE;
+  isInitialised = PFalse;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
+PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -414,18 +414,18 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   // set information in the common record
   entry.fragmentValue = arg;
-  entry.isInitialised = FALSE;
+  entry.isInitialised = PFalse;
 
   // flag this channel as not initialised
-  isInitialised       = FALSE;
+  isInitialised       = PFalse;
 
   dictMutex.Signal();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
+PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -445,11 +445,11 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 
   count = arg >> 16;
   size = 1 << (arg&0xffff);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
+PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -458,26 +458,26 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return FALSE;
+    return PFalse;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
+PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::HasPlayCompleted()
+PBoolean PSoundChannel::HasPlayCompleted()
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -487,11 +487,11 @@ BOOL PSoundChannel::HasPlayCompleted()
     return BYTESINBUF <= 0;
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::WaitForPlayCompletion()
+PBoolean PSoundChannel::WaitForPlayCompletion()
 {
   static struct timespec ts = {0, 1000000};
 
@@ -502,42 +502,42 @@ BOOL PSoundChannel::WaitForPlayCompletion()
   if (os_handle == 0) {
     while (BYTESINBUF > 0)
       nanosleep(&ts, 0);
-    return TRUE;
+    return PTrue;
   }
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::RecordSound(PSound & sound)
+PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::RecordFile(const PFilePath & filename)
+PBoolean PSoundChannel::RecordFile(const PFilePath & filename)
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::StartRecording()
+PBoolean PSoundChannel::StartRecording()
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
   }
 
   if (os_handle == 0)
-    return TRUE;
+    return PTrue;
 
   fd_set fds;
   FD_ZERO(&fds);
@@ -550,7 +550,7 @@ BOOL PSoundChannel::StartRecording()
 }
 
 
-BOOL PSoundChannel::IsRecordBufferFull()
+PBoolean PSoundChannel::IsRecordBufferFull()
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -560,11 +560,11 @@ BOOL PSoundChannel::IsRecordBufferFull()
     return (BYTESINBUF > 0);
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::AreAllRecordBuffersFull()
+PBoolean PSoundChannel::AreAllRecordBuffersFull()
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -574,11 +574,11 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
     return (BYTESINBUF == LOOPBACK_BUFFER_SIZE);
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::WaitForRecordBufferFull()
+PBoolean PSoundChannel::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
     return SetErrorValues(NotOpen, EBADF);
@@ -588,21 +588,21 @@ BOOL PSoundChannel::WaitForRecordBufferFull()
 }
 
 
-BOOL PSoundChannel::WaitForAllRecordBuffersFull()
+PBoolean PSoundChannel::WaitForAllRecordBuffersFull()
 {
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PSoundChannel::Abort()
+PBoolean PSoundChannel::Abort()
 {
   if (os_handle == 0) {
     startptr = endptr = 0;
-    return TRUE;
+    return PTrue;
   }
 
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 

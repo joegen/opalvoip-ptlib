@@ -21,55 +21,55 @@ public:
   PStringList GetDeviceNames() const
   { return GetInputDeviceNames(); }
 
-  BOOL Open(const PString &deviceName, BOOL startImmediate);
+  PBoolean Open(const PString &deviceName, PBoolean startImmediate);
 
-  BOOL IsOpen();
+  PBoolean IsOpen();
 
-  BOOL Close();
+  PBoolean Close();
 
-  BOOL Start();
-  BOOL Stop();
+  PBoolean Start();
+  PBoolean Stop();
 
-  BOOL IsCapturing();
+  PBoolean IsCapturing();
 
   PINDEX GetMaxFrameBytes();
 
-  BOOL GetFrameData(BYTE*, PINDEX*);
-  BOOL GetFrameDataNoDelay(BYTE*, PINDEX*);
+  PBoolean GetFrameData(BYTE*, PINDEX*);
+  PBoolean GetFrameDataNoDelay(BYTE*, PINDEX*);
 
-  BOOL GetFrameSizeLimits(unsigned int&, unsigned int&,
+  PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
-  BOOL TestAllFormats();
+  PBoolean TestAllFormats();
 
-  BOOL SetFrameSize(unsigned int, unsigned int);
-  BOOL SetFrameRate(unsigned int);
-  BOOL VerifyHardwareFrameSize(unsigned int, unsigned int);
+  PBoolean SetFrameSize(unsigned int, unsigned int);
+  PBoolean SetFrameRate(unsigned int);
+  PBoolean VerifyHardwareFrameSize(unsigned int, unsigned int);
 
-  BOOL GetParameters(int*, int*, int*, int*, int*);
+  PBoolean GetParameters(int*, int*, int*, int*, int*);
 
-  BOOL SetColourFormat(const PString&);
+  PBoolean SetColourFormat(const PString&);
 
   int GetContrast();
-  BOOL SetContrast(unsigned int);
+  PBoolean SetContrast(unsigned int);
   int GetBrightness();
-  BOOL SetBrightness(unsigned int);
+  PBoolean SetBrightness(unsigned int);
   int GetWhiteness();
-  BOOL SetWhiteness(unsigned int);
+  PBoolean SetWhiteness(unsigned int);
   int GetColour();
-  BOOL SetColour(unsigned int);
+  PBoolean SetColour(unsigned int);
   int GetHue();
-  BOOL SetHue(unsigned int);
+  PBoolean SetHue(unsigned int);
 
-  BOOL SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
-  BOOL SetVideoFormat(PVideoDevice::VideoFormat);
+  PBoolean SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
+  PBoolean SetVideoFormat(PVideoDevice::VideoFormat);
   int GetNumChannels();
-  BOOL SetChannel(int);
+  PBoolean SetChannel(int);
 
-  BOOL NormalReadProcess(BYTE*, PINDEX*);
+  PBoolean NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
-  BOOL RefreshCapabilities();
+  PBoolean RefreshCapabilities();
 
   PAdaptiveDelay m_pacing;
 
@@ -81,7 +81,7 @@ public:
   BYTE *videoBuffer;
   PINDEX frameBytes;
   
-  BOOL   pendingSync[2];
+  PBoolean   pendingSync[2];
   
   int    currentFrame;
   struct video_mbuf frame;

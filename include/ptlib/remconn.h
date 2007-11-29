@@ -87,24 +87,24 @@ class PRemoteConnection : public PObject
   //@{
     /** Open the remote connection.
      */
-    BOOL Open(
-      BOOL existing = FALSE  ///< Flag for open only if already connected.
+    PBoolean Open(
+      PBoolean existing = PFalse  ///< Flag for open only if already connected.
     );
 
     /** Open the remote connection.
      */
-    BOOL Open(
+    PBoolean Open(
       const PString & name,   ///< RAS name of of connection to open.
-      BOOL existing = FALSE   ///< Flag for open only if already connected.
+      PBoolean existing = PFalse   ///< Flag for open only if already connected.
     );
 
     /** Open the remote connection.
      */
-    BOOL Open(
+    PBoolean Open(
       const PString & name,     ///< RAS name of of connection to open.
       const PString & username, ///< Username for remote log in.
       const PString & password, ///< password for remote log in.
-      BOOL existing = FALSE     ///< Flag for open only if already connected.
+      PBoolean existing = PFalse     ///< Flag for open only if already connected.
     );
 
     /** Close the remote connection.
@@ -204,7 +204,7 @@ class PRemoteConnection : public PObject
       /// Sub-entry number when Multi-link PPP is used.
       PINDEX  subEntries;
       /// Always establish maximum bandwidth when Multi-link PPP is used.
-      BOOL    dialAllSubEntries;
+      PBoolean    dialAllSubEntries;
     };
 
     /**Get the configuration of the specified remote access connection.
@@ -242,7 +242,7 @@ class PRemoteConnection : public PObject
      */
     Status SetConfiguration(
       const Configuration & config,  ///< Configuration of remote connection
-      BOOL create = FALSE            ///< Flag to create connection if not present
+      PBoolean create = PFalse            ///< Flag to create connection if not present
     );
 
     /**Set the configuration of the specified remote access connection.
@@ -256,7 +256,7 @@ class PRemoteConnection : public PObject
     static Status SetConfiguration(
       const PString & name,          ///< Remote connection name to configure
       const Configuration & config,  ///< Configuration of remote connection
-      BOOL create = FALSE            ///< Flag to create connection if not present
+      PBoolean create = PFalse            ///< Flag to create connection if not present
     );
 
     /**Remove the specified remote access connection.

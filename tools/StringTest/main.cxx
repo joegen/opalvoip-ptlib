@@ -112,7 +112,7 @@ void StringTest::Main()
   iterations = PMAX(1, PMIN(iterations, 100000));
   PError << "Will run the test for 1 million x " << iterations << " loops" << endl;
 
-  BOOL testPwlib = ! args.HasOption('s');
+  PBoolean testPwlib = ! args.HasOption('s');
 
   if (args.HasOption('s'))
     cerr << "examine std::string" << endl;

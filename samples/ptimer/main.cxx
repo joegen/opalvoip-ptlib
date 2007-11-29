@@ -74,7 +74,7 @@ void PTimerTest::Main()
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
          << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(TRUE) << endl
+         << "Version     : " << GetVersion(PTrue) << endl
          << "System      : " << GetOSName() << '-'
          << GetOSHardware() << ' '
          << GetOSVersion() << endl;
@@ -229,7 +229,7 @@ void MyTimer::OnTimeout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-DelayThread::DelayThread(PINDEX _delay, BOOL _checkTimer)
+DelayThread::DelayThread(PINDEX _delay, PBoolean _checkTimer)
   : PThread(10000, AutoDeleteThread), delay(_delay), checkTimer(_checkTimer)
 {
   PTRACE(5, "Constructor for a auto deleted PTimer test thread");
@@ -275,7 +275,7 @@ void LauncherThread::Main()
 {
   PINDEX delay      = PTimerTest::Current().Delay();
   PINDEX interval   = PTimerTest::Current().Interval();
-  BOOL   checkTimer = PTimerTest::Current().CheckTimer();
+  PBoolean   checkTimer = PTimerTest::Current().CheckTimer();
 
   while (keepGoing) {
 	PThread * thread = new DelayThread(delay, checkTimer);

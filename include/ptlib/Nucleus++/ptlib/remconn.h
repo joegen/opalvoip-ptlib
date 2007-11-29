@@ -43,7 +43,7 @@ class PXRemoteThread;
   protected:
     PString        pppDeviceName;
     PPipeChannel * pipeChannel;
-    BOOL           wasConnected;
+    PBoolean           wasConnected;
     Status         status;
     PString        deviceStr;
 };

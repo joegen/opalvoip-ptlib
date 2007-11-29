@@ -52,7 +52,7 @@ PAec::PAec(int _clock, int _sampletime)
   ref_buf = NULL;
   noise = NULL;
 
-  receiveReady = FALSE;
+  receiveReady = PFalse;
 
   bufferTime = sampleTime*2;  // Indicating it takes sampletime to play and sampletime to record
   minbuffer = bufferTime - sampleTime;
@@ -113,7 +113,7 @@ void PAec::Receive(BYTE * buffer, unsigned & length)
 	  rectime.Enqueue(new PTimeInterval(PTimer::Tick()));
 
   if (!receiveReady)
-     receiveReady = TRUE;
+     receiveReady = PTrue;
 
 }
 

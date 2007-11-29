@@ -83,7 +83,7 @@ int32 PThread::ThreadFunction(void * threadPtr)
 }
 
 PThread::PThread()
- : autoDelete(TRUE),
+ : autoDelete(PTrue),
    mId(B_BAD_THREAD_ID),
    mPriority(B_NORMAL_PRIORITY),
    mStackSize(0),
@@ -93,7 +93,7 @@ PThread::PThread()
 
 void PThread::InitialiseProcessThread()
 {
-  autoDelete = FALSE;
+  autoDelete = PFalse;
 
   mId = find_thread(NULL);
   mPriority = B_NORMAL_PRIORITY;
@@ -203,7 +203,7 @@ void PThread::Terminate()
    ::kill_thread(0);
 }
 
-BOOL PThread::IsTerminated() const
+PBoolean PThread::IsTerminated() const
 {
   return mId == B_BAD_THREAD_ID;
 }
@@ -215,32 +215,32 @@ void PThread::WaitForTermination() const
 }
 
 
-BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix timeout
+PBoolean PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix timeout
 {
   status_t result = B_NO_ERROR;
   status_t exit_value = B_NO_ERROR;
 
   result = ::wait_for_thread(mId, &exit_value);
   if ( result == B_INTERRUPTED ) { // thread was killed.
-    return TRUE;
+    return PTrue;
   }
 
   if ( result == B_OK ) { // thread is dead
     #ifdef DEBUG_THREADS
     PError << "B_OK" << endl;
     #endif
-    return TRUE;
+    return PTrue;
   }
 
   if ( result == B_BAD_THREAD_ID ) { // thread has invalid id
-    return TRUE;
+    return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-void PThread::Suspend(BOOL susp)
+void PThread::Suspend(PBoolean susp)
 {
 
   PAssert(!IsTerminated(), "Operation on terminated thread");
@@ -268,7 +268,7 @@ void PThread::Resume()
 }
 
 
-BOOL PThread::IsSuspended() const
+PBoolean PThread::IsSuspended() const
 {
   return (mSuspendCount > 0);
 }
@@ -434,13 +434,13 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
     PHouseKeepingThread()
       : PThread(1000, NoAutoDeleteThread, NormalPriority, "Housekeeper")
-      { closing = FALSE; Resume(); }
+      { closing = PFalse; Resume(); }
 
     void Main();
-    void SetClosing() { closing = TRUE; }
+    void SetClosing() { closing = PTrue; }
 
   protected:
-    BOOL closing;
+    PBoolean closing;
 };
 
 void PProcess::Construct()
@@ -477,9 +477,9 @@ void PProcess::SignalTimerChange()
   globalBreakBlock.Signal();
 }
 
-BOOL PProcess::SetMaxHandles(int newMax)
+PBoolean PProcess::SetMaxHandles(int newMax)
 {
-  return FALSE;
+  return PFalse;
 }
 
 PProcess::~PProcess()
@@ -499,7 +499,7 @@ PProcess::~PProcess()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
-PSemaphore::PSemaphore(BOOL fNested) : mfNested(fNested)
+PSemaphore::PSemaphore(PBoolean fNested) : mfNested(fNested)
 {
 }
 
@@ -593,7 +593,7 @@ void PSemaphore::Wait()
   }
 }
 
-BOOL PSemaphore::Wait(const PTimeInterval & timeout)
+PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 {
   PInt64 ms = timeout.GetMilliSeconds();
   bigtime_t microseconds = ms * 1000;
@@ -623,7 +623,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
     result = ((BLocker*)semId)->LockWithTimeout(microseconds); // Using BLocker class to support recursive locks 
   }
 
-  return ms == 0 ? FALSE : result == B_OK;
+  return ms == 0 ? PFalse : result == B_OK;
 }
 
 void PSemaphore::Signal()
@@ -645,7 +645,7 @@ void PSemaphore::Signal()
    }		
 }
 
-BOOL PSemaphore::WillBlock() const
+PBoolean PSemaphore::WillBlock() const
 {
   if(!mfNested)
   {
@@ -670,7 +670,7 @@ BOOL PSemaphore::WillBlock() const
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
- : PSemaphore(FALSE) // FALSE is semaphore based, TRUE means implemented through BLocker
+ : PSemaphore(PFalse) // PFalse is semaphore based, PTrue means implemented through BLocker
 {
    PSemaphore::Create(0);
 }
@@ -685,12 +685,12 @@ void PSyncPoint::Wait()
   PSemaphore::Wait();
 }
                                                                                                       
-BOOL PSyncPoint::Wait(const PTimeInterval & timeout)
+PBoolean PSyncPoint::Wait(const PTimeInterval & timeout)
 {
   return PSemaphore::Wait(timeout);
 }
                                                                                                       
-BOOL PSyncPoint::WillBlock() const
+PBoolean PSyncPoint::WillBlock() const
 {
   return PSemaphore::WillBlock();
 }
@@ -699,13 +699,13 @@ BOOL PSyncPoint::WillBlock() const
 // PMutex, derived from BLightNestedLocker  
 
 PMutex::PMutex() 
-  : PSemaphore(TRUE) // TRUE means implemented through BLocker
+  : PSemaphore(PTrue) // PTrue means implemented through BLocker
 {
   PSemaphore::Create(0);
 }
 
 PMutex::PMutex(const PMutex&) 
- : PSemaphore(TRUE)
+ : PSemaphore(PTrue)
 {
   PAssertAlways("PMutex copy constructor not supported");
 } 
@@ -720,12 +720,12 @@ void PMutex::Wait()
   PSemaphore::Wait();
 }
                                                                                                       
-BOOL PMutex::Wait(const PTimeInterval & timeout)
+PBoolean PMutex::Wait(const PTimeInterval & timeout)
 {
   return PSemaphore::Wait(timeout);
 }
                                                                                                       
-BOOL PMutex::WillBlock() const
+PBoolean PMutex::WillBlock() const
 {
   return PSemaphore::WillBlock();
 }

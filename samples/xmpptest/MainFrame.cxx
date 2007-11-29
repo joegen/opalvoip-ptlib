@@ -84,7 +84,7 @@ bool MainFrame::Create( wxWindow* parent, wxWindowID id, const wxString& caption
     CreateControls();
     Centre();
 ////@end MainFrame creation
-    return TRUE;
+    return PTrue;
 }
 
 /*!
@@ -105,7 +105,7 @@ void MainFrame::CreateControls()
 
     wxGridSizer* item10 = new wxGridSizer(1, 1, 0, 0);
     item9->SetSizer(item10);
-    item9->SetAutoLayout(TRUE);
+    item9->SetAutoLayout(PTrue);
 
     wxTreeCtrl* item11 = new wxTreeCtrl( item9, ID_TREECTRL, wxDefaultPosition, wxSize(100, 100), wxTR_HAS_BUTTONS |wxTR_HIDE_ROOT|wxTR_SINGLE );
     m_RosterTree = item11;
@@ -160,5 +160,5 @@ void MainFrame::OnQuit( wxCommandEvent& event )
 
 bool MainFrame::ShowToolTips()
 {
-    return TRUE;
+    return PTrue;
 }

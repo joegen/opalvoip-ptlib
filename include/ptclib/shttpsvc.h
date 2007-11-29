@@ -52,20 +52,20 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
 
     virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
 
-    BOOL SetServerCertificate(
+    PBoolean SetServerCertificate(
       const PFilePath & certFile,
-      BOOL create = FALSE,
+      PBoolean create = PFalse,
       const char * dn = NULL
     );
 
-    virtual BOOL OnDetectedNonSSLConnection(PChannel * chan, const PString & line);
+    virtual PBoolean OnDetectedNonSSLConnection(PChannel * chan, const PString & line);
 
     virtual PString CreateNonSSLMessage(const PString & url);
     virtual PString CreateRedirectMessage(const PString & url);
 
   protected:
     PSSLContext * sslContext;
-    BOOL          disableSSL;
+    PBoolean          disableSSL;
 };
 
 

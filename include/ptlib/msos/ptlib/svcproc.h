@@ -48,7 +48,7 @@
     virtual const char * GetServiceDependencies() const;
       // Get a set of null terminated strings terminated with double null.
 
-    virtual BOOL IsServiceProcess() const;
+    virtual PBoolean IsServiceProcess() const;
 
   protected:
     PCaselessString systemLogFileName;
@@ -93,7 +93,7 @@
        debug mode.
      */
 
-    BOOL ReportStatus(
+    PBoolean ReportStatus(
       DWORD dwCurrentState,
       DWORD dwWin32ExitCode = NO_ERROR,
       DWORD dwCheckPoint = 0,
@@ -104,15 +104,15 @@
      */
 
 
-    BOOL ProcessCommand(const char * cmd);
+    PBoolean ProcessCommand(const char * cmd);
     // Process command line argument for controlling the service.
 
-    BOOL CreateControlWindow(BOOL createDebugWindow);
+    PBoolean CreateControlWindow(PBoolean createDebugWindow);
     static LPARAM WINAPI StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LPARAM WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void DebugOutput(const char * out);
 
-    BOOL                  isWin95;
+    PBoolean                  isWin95;
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
     HANDLE                startedEvent;

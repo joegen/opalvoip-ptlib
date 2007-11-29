@@ -93,24 +93,24 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
     void Wait()   { mutex.Wait(); }
     void Signal() { mutex.Signal(); }
 
-    BOOL ReadFromFile (const PFilePath & filename);
+    PBoolean ReadFromFile (const PFilePath & filename);
     void ReadFromEnvironment (char **envp);
 
-    BOOL WriteToFile(const PFilePath & filename);
-    BOOL Flush(const PFilePath & filename);
+    PBoolean WriteToFile(const PFilePath & filename);
+    PBoolean Flush(const PFilePath & filename);
 
-    void SetDirty()   { dirty = TRUE; }
+    void SetDirty()   { dirty = PTrue; }
 
-    BOOL      AddInstance();
-    BOOL      RemoveInstance(const PFilePath & filename);
+    PBoolean      AddInstance();
+    PBoolean      RemoveInstance(const PFilePath & filename);
 
     PINDEX    GetSectionsIndex(const PString & theSection) const;
 
   protected:
     int       instanceCount;
     PMutex    mutex;
-    BOOL      dirty;
-    BOOL      canSave;
+    PBoolean      dirty;
+    PBoolean      canSave;
 };
 
 //
@@ -168,7 +168,7 @@ PXConfigWriteThread::~PXConfigWriteThread()
 
 void PXConfigWriteThread::Main()
 {
-  while (!stop.Wait(30000))  // if stop.Wait() returns TRUE, we are shutting down
+  while (!stop.Wait(30000))  // if stop.Wait() returns PTrue, we are shutting down
     configDict->WriteChangedInstances();   // check dictionary for items that need writing
 
   configDict->WriteChangedInstances();
@@ -187,43 +187,43 @@ PXConfig::PXConfig(int)
   instanceCount = 0;
 
   // we start off clean
-  dirty = FALSE;
+  dirty = PFalse;
 
   // normally save on exit (except for environment configs)
-  canSave = TRUE;
+  canSave = PTrue;
 }
 
-BOOL PXConfig::AddInstance()
+PBoolean PXConfig::AddInstance()
 {
   mutex.Wait();
-  BOOL stat = instanceCount++ == 0;
+  PBoolean stat = instanceCount++ == 0;
   mutex.Signal();
 
   return stat;
 }
 
-BOOL PXConfig::RemoveInstance(const PFilePath & /*filename*/)
+PBoolean PXConfig::RemoveInstance(const PFilePath & /*filename*/)
 {
   mutex.Wait();
 
   PAssert(instanceCount != 0, "PConfig instance count dec past zero");
 
-  BOOL stat = --instanceCount == 0;
+  PBoolean stat = --instanceCount == 0;
 
   mutex.Signal();
 
   return stat;
 }
 
-BOOL PXConfig::Flush(const PFilePath & filename)
+PBoolean PXConfig::Flush(const PFilePath & filename)
 {
   mutex.Wait();
 
-  BOOL stat = instanceCount == 0;
+  PBoolean stat = instanceCount == 0;
 
   if (canSave && dirty) {
     WriteToFile(filename);
-    dirty = FALSE;
+    dirty = PFalse;
   }
 
   mutex.Signal();
@@ -231,7 +231,7 @@ BOOL PXConfig::Flush(const PFilePath & filename)
   return stat;
 }
 
-BOOL PXConfig::WriteToFile(const PFilePath & filename)
+PBoolean PXConfig::WriteToFile(const PFilePath & filename)
 {
   // make sure the directory that the file is to be written into exists
   PDirectory dir = filename.GetDirectory();
@@ -240,7 +240,7 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
                                    PFileInfo::UserWrite |
                                    PFileInfo::UserRead)) {
     PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config directory");
-    return FALSE;
+    return PFalse;
   }
 
   PTextFile file;
@@ -249,7 +249,7 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
 
   if (!file.IsOpen()) {
     PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file: " + file.GetErrorText());
-    return FALSE;
+    return PFalse;
   }
 
   for (PINDEX i = 0; i < GetSize(); i++) {
@@ -257,7 +257,7 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
     file << "[" << (*this)[i] << "]" << endl;
     for (PINDEX j = 0; j < section.GetSize(); j++) {
       PXConfigValue & value = section[j];
-      PStringArray lines = value.GetValue().Tokenise('\n', TRUE);
+      PStringArray lines = value.GetValue().Tokenise('\n', PTrue);
       PINDEX k;
       for (k = 0; k < lines.GetSize(); k++) 
         file << value << "=" << lines[k] << endl;
@@ -270,18 +270,18 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
   file.Close();
 
   if (file.GetFilePath() != filename) {
-    if (!file.Rename(file.GetFilePath(), filename.GetFileName(), TRUE)) {
+    if (!file.Rename(file.GetFilePath(), filename.GetFileName(), PTrue)) {
       PProcess::PXShowSystemWarning(2001, "Cannot rename config file: " + file.GetErrorText());
-      return FALSE;
+      return PFalse;
     }
   }
 
   PTRACE(4, "PWLib\tSaved config file: " << filename);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PXConfig::ReadFromFile(const PFilePath & filename)
+PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
 {
   PINDEX len;
 
@@ -291,7 +291,7 @@ BOOL PXConfig::ReadFromFile(const PFilePath & filename)
   // attempt to open file
   PTextFile file;
   if (!file.Open(filename, PFile::ReadOnly))
-    return FALSE;
+    return PFalse;
 
   PXConfigSection * currentSection = NULL;
 
@@ -336,7 +336,7 @@ BOOL PXConfig::ReadFromFile(const PFilePath & filename)
   
   // close the file and return
   file.Close();
-  return TRUE;
+  return PTrue;
 }
 
 void PXConfig::ReadFromEnvironment (char **envp)
@@ -358,7 +358,7 @@ void PXConfig::ReadFromEnvironment (char **envp)
   }
 
   // can't save environment configs
-  canSave = FALSE;
+  canSave = PFalse;
 }
 
 PINDEX PXConfig::GetSectionsIndex(const PString & theSection) const
@@ -371,14 +371,14 @@ PINDEX PXConfig::GetSectionsIndex(const PString & theSection) const
 }
 
 
-static BOOL LocateFile(const PString & baseName,
+static PBoolean LocateFile(const PString & baseName,
                        PFilePath & readFilename,
                        PFilePath & filename)
 {
   // check the user's home directory first
   filename = readFilename = PProcess::Current().GetConfigurationFile();
   if (PFile::Exists(filename))
-    return TRUE;
+    return PTrue;
 
   // otherwise check the system directory for a file to read,
   // and then create 
@@ -665,12 +665,12 @@ void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
 //
 ////////////////////////////////////////////////////////////
 
-BOOL PConfig::HasKey(const PString & theSection, const PString & theKey) const
+PBoolean PConfig::HasKey(const PString & theSection, const PString & theKey) const
 {
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  BOOL present = FALSE;
+  PBoolean present = PFalse;
   PINDEX index;
   if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();

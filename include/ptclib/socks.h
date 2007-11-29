@@ -54,11 +54,11 @@ class PSocksProtocol
     enum {
       DefaultServerPort = 1080
     };
-    BOOL SetServer(
+    PBoolean SetServer(
       const PString & hostname,
       const char * service = "socks 1080"
     );
-    BOOL SetServer(
+    PBoolean SetServer(
       const PString & hostname,
       WORD port
     );
@@ -73,15 +73,15 @@ class PSocksProtocol
     );
 
   protected:
-    BOOL ConnectSocksServer(PTCPSocket & thisSocket);
+    PBoolean ConnectSocksServer(PTCPSocket & thisSocket);
 
     virtual void SetErrorCodes(PChannel::Errors errCode, int osErr) = 0;
 
-    virtual BOOL SendSocksCommand(PTCPSocket & socket,
+    virtual PBoolean SendSocksCommand(PTCPSocket & socket,
                                   BYTE command,
                                   const char * hostname,
                                   PIPSocket::Address addr);
-    virtual BOOL ReceiveSocksResponse(PTCPSocket & socket,
+    virtual PBoolean ReceiveSocksResponse(PTCPSocket & socket,
                                       PIPSocket::Address & addr,
                                       WORD & port);
 
@@ -118,12 +118,12 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        <A>PIPSocket::SetPort()</A> function.
 
        @return
-       TRUE if the channel was successfully connected to the remote host.
+       PTrue if the channel was successfully connected to the remote host.
      */
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
     );
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const Address & addr      ///< Address of remote machine to connect to.
     );
 
@@ -140,9 +140,9 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
@@ -165,10 +165,10 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        regardless of the return value of the function.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    BOOL Accept();
-    virtual BOOL Accept(
+    PBoolean Accept();
+    virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
     );
 
@@ -177,12 +177,12 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
     /** Get the Internet Protocol address for the local host.
 
        @return
-       TRUE if the IP number was returned.
+       PTrue if the IP number was returned.
      */
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -191,12 +191,12 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        connected to.
 
        @return
-       TRUE if the IP number was returned.
+       PTrue if the IP number was returned.
      */
-    virtual BOOL GetPeerAddress(
+    virtual PBoolean GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
-    virtual BOOL GetPeerAddress(
+    virtual PBoolean GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -207,7 +207,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
     int TransferHandle(PSocksSocket & destination);
 
   private:
-    virtual BOOL Connect(WORD localPort, const Address & addr);
+    virtual PBoolean Connect(WORD localPort, const Address & addr);
 };
 
 
@@ -243,11 +243,11 @@ class PSocks4Socket : public PSocksSocket
 
 
   protected:
-    virtual BOOL SendSocksCommand(PTCPSocket & socket,
+    virtual PBoolean SendSocksCommand(PTCPSocket & socket,
                                   BYTE command,
                                   const char * hostname,
                                   PIPSocket::Address addr);
-    virtual BOOL ReceiveSocksResponse(PTCPSocket & socket,
+    virtual PBoolean ReceiveSocksResponse(PTCPSocket & socket,
                                       PIPSocket::Address & addr,
                                       WORD & port);
 };
@@ -327,12 +327,12 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
        <A>PIPSocket::SetPort()</A> function.
 
        @return
-       TRUE if the channel was successfully connected to the remote host.
+       PTrue if the channel was successfully connected to the remote host.
      */
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const PString & address   // Address of remote machine to connect to.
     );
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const Address & addr      // Address of remote machine to connect to.
     );
 
@@ -349,9 +349,9 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
        For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
       WORD port = 0,           // Port number to use for the connection.
       Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
@@ -361,12 +361,12 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     /** Get the Internet Protocol address for the local host.
 
        @return
-       TRUE if the IP number was returned.
+       PTrue if the IP number was returned.
      */
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr    // Variable to receive hosts IP address
     );
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr,    // Variable to receive peer hosts IP address
       WORD & port        // Variable to receive peer hosts port number
     );
@@ -375,12 +375,12 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
        connected to.
 
        @return
-       TRUE if the IP number was returned.
+       PTrue if the IP number was returned.
      */
-    virtual BOOL GetPeerAddress(
+    virtual PBoolean GetPeerAddress(
       Address & addr    // Variable to receive hosts IP address
     );
-    virtual BOOL GetPeerAddress(
+    virtual PBoolean GetPeerAddress(
       Address & addr,    // Variable to receive peer hosts IP address
       WORD & port        // Variable to receive peer hosts port number
     );
@@ -390,9 +390,9 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     /** Read a datagram from a remote computer.
        
        @return
-       TRUE if any bytes were sucessfully read.
+       PTrue if any bytes were sucessfully read.
      */
-    virtual BOOL ReadFrom(
+    virtual PBoolean ReadFrom(
       void * buf,     // Data to be written as URGENT TCP data.
       PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
       Address & addr, // Address from which the datagram was received.
@@ -402,9 +402,9 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     /** Write a datagram to a remote computer.
 
        @return
-       TRUE if all the bytes were sucessfully written.
+       PTrue if all the bytes were sucessfully written.
      */
-    virtual BOOL WriteTo(
+    virtual PBoolean WriteTo(
       const void * buf,   // Data to be written as URGENT TCP data.
       PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
       const Address & addr, // Address to which the datagram is sent.
@@ -419,7 +419,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     Address    serverAddress;
 
   private:
-    virtual BOOL Connect(WORD localPort, const Address & addr);
+    virtual PBoolean Connect(WORD localPort, const Address & addr);
 };
 
 

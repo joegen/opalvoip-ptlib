@@ -47,25 +47,25 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 PVideoFile::PVideoFile()
-  : unknownFrameSize(TRUE)
+  : unknownFrameSize(PTrue)
   , frameBytes(CalculateFrameBytes())
   , headerOffset(0)
 {
 }
 
 
-BOOL PVideoFile::SetFrameSize(unsigned width, unsigned height)   
+PBoolean PVideoFile::SetFrameSize(unsigned width, unsigned height)   
 { 
   if (!PVideoFrameInfo::SetFrameSize(width, height))
-    return FALSE;
+    return PFalse;
 
-  unknownFrameSize = FALSE;
+  unknownFrameSize = PFalse;
   frameBytes = CalculateFrameBytes();
   return frameBytes > 0;
 }
 
 
-BOOL PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
+PBoolean PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 {
   if (unknownFrameSize)
     ExtractHints(name, *this);
@@ -73,19 +73,19 @@ BOOL PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 }
 
 
-BOOL PVideoFile::WriteFrame(const void * frame)
+PBoolean PVideoFile::WriteFrame(const void * frame)
 {
   return file.Write(frame, frameBytes);
 }
 
 
-BOOL PVideoFile::ReadFrame(void * frame)
+PBoolean PVideoFile::ReadFrame(void * frame)
 {
   if (file.Read(frame, frameBytes) && file.GetLastReadCount() == frameBytes)
-    return TRUE;
+    return PTrue;
 
   PTRACE(4, "YUVFILE\tError reading file " << file.GetErrorText(file.GetErrorCode(PFile::LastReadError)));
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -96,7 +96,7 @@ off_t PVideoFile::GetLength() const
 }
 
 
-BOOL PVideoFile::SetLength(off_t len)
+PBoolean PVideoFile::SetLength(off_t len)
 {
   return file.SetLength(len*frameBytes + headerOffset);
 }
@@ -109,7 +109,7 @@ off_t PVideoFile::GetPosition() const
 }
 
 
-BOOL PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
+PBoolean PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
 {
   pos *= frameBytes;
   if (origin == PFile::Start)
@@ -119,7 +119,7 @@ BOOL PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
 }
 
 
-BOOL PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
+PBoolean PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
 {
   static PRegularExpression  qcif  ("{qcif}|_qcif[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   static PRegularExpression   cif  ("{cif}|_cif[^a-z0-9]",                  PRegularExpression::Extended|PRegularExpression::IgnoreCase);
@@ -130,7 +130,7 @@ BOOL PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
   static PRegularExpression fps    ("_[0-9]+fps[^a-z]",                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
   PCaselessString str = fn;
-  BOOL foundHint = FALSE;
+  PBoolean foundHint = PFalse;
   PINDEX pos;
 
   if (str.FindRegEx(qcif) != P_MAX_INDEX)
@@ -166,15 +166,15 @@ static PFactory<PVideoFile>::Worker<PYUVFile> y4mFileFactory("y4m");
 
 
 PYUVFile::PYUVFile()
-  : y4mMode(FALSE)
+  : y4mMode(PFalse)
 {
 }
 
 
-BOOL PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
+PBoolean PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 {
   if (!PVideoFile::Open(name, mode, opts))
-    return FALSE;
+    return PFalse;
 
   y4mMode = name.GetType() *= ".y4m";
 
@@ -182,17 +182,17 @@ BOOL PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
     int ch;
     do {
       if ((ch = file.ReadChar()) < 0)
-        return FALSE;
+        return PFalse;
     }
     while (ch != '\n');
     headerOffset = file.GetPosition();
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PYUVFile::WriteFrame(const void * frame)
+PBoolean PYUVFile::WriteFrame(const void * frame)
 {
   if (y4mMode)
     file.WriteChar('\n');
@@ -201,13 +201,13 @@ BOOL PYUVFile::WriteFrame(const void * frame)
 }
 
 
-BOOL PYUVFile::ReadFrame(void * frame)
+PBoolean PYUVFile::ReadFrame(void * frame)
 {
   if (y4mMode) {
     int ch;
     do {
       if ((ch = file.ReadChar()) < 0)
-        return FALSE;
+        return PFalse;
     }
     while (ch != '\n');
   }

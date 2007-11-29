@@ -77,7 +77,7 @@ class PFTP : public PInternetProtocol
     /** Send the PORT command for a transfer.
      @return Boolean indicated PORT command was successful
     */
-    BOOL SendPORT(
+    PBoolean SendPORT(
       const PIPSocket::Address & addr, ///< Address for PORT connection. IP address to connect back to
       WORD port                        ///< Port number for PORT connection.
     );
@@ -108,9 +108,9 @@ class PFTPClient : public PFTP
     /** Close the socket, and if connected as a client, QUITs from server.
 
        @return
-       TRUE if the channel was closed and the QUIT accepted by the server.
+       PTrue if the channel was closed and the QUIT accepted by the server.
      */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
   //@}
 
@@ -119,9 +119,9 @@ class PFTPClient : public PFTP
     /** Log in to the remote host for FTP.
 
        @return
-       TRUE if the log in was successfull.
+       PTrue if the log in was successfull.
      */
-    BOOL LogIn(
+    PBoolean LogIn(
       const PString & username,   ///< User name for FTP log in.
       const PString & password    ///< Password for the specified user name.
     );
@@ -136,18 +136,18 @@ class PFTPClient : public PFTP
     /** Set the transfer type.
 
        @return
-       TRUE if transfer type set.
+       PTrue if transfer type set.
      */
-    BOOL SetType(
+    PBoolean SetType(
       RepresentationType type   ///< RepresentationTypeof file to transfer
     );
 
     /** Change the current directory on the remote FTP host.
 
        @return
-       TRUE if the log in was successfull.
+       PTrue if the log in was successfull.
      */
-    BOOL ChangeDirectory(
+    PBoolean ChangeDirectory(
       const PString & dirPath     ///< New directory
     );
 
@@ -220,7 +220,7 @@ class PFTPClient : public PFTP
 
   protected:
     /// Call back to verify open succeeded in an PInternetProtocol class
-    virtual BOOL OnOpen();
+    virtual PBoolean OnOpen();
 
     PTCPSocket * NormalClientTransfer(
       Commands cmd,
@@ -269,28 +269,28 @@ class PFTPServer : public PFTP
     virtual PString GetSystemTypeString() const;
 
     /// return the thirdPartyPort flag, allowing 3 host put and get.
-    BOOL GetAllowThirdPartyPort() const { return thirdPartyPort; }
+    PBoolean GetAllowThirdPartyPort() const { return thirdPartyPort; }
 
     /// Set the thirdPartyPort flag.
-    void SetAllowThirdPartyPort(BOOL state) { thirdPartyPort = state; }
+    void SetAllowThirdPartyPort(PBoolean state) { thirdPartyPort = state; }
 
     /** Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
 
        @return
-       TRUE if more processing may be done, FALSE if the QUIT command was
-       received or the #OnUnknown()# function returns FALSE.
+       PTrue if more processing may be done, PFalse if the QUIT command was
+       received or the #OnUnknown()# function returns PFalse.
      */
-    BOOL ProcessCommand();
+    PBoolean ProcessCommand();
 
     /** Dispatching to the appropriate virtual function. This is used when the
        socket is acting as a server.
 
        @return
-       TRUE if more processing may be done, FALSE if the QUIT command was
-       received or the #OnUnknown()# function returns FALSE.
+       PTrue if more processing may be done, PFalse if the QUIT command was
+       received or the #OnUnknown()# function returns PFalse.
      */
-    virtual BOOL DispatchCommand(
+    virtual PBoolean DispatchCommand(
       PINDEX code,          ///< Parsed command code.
       const PString & args  ///< Arguments to command.
     );
@@ -300,41 +300,41 @@ class PFTPServer : public PFTP
        it may be processed.
 
        @return
-       TRUE if the command required the user to be logged in.
+       PTrue if the command required the user to be logged in.
      */
-    virtual BOOL CheckLoginRequired(
+    virtual PBoolean CheckLoginRequired(
       PINDEX cmd    ///< Command to check if log in required.
     );
 
     /** Validate the user name and password for access. After three invalid
-       attempts, the socket will close and FALSE is returned.
+       attempts, the socket will close and PFalse is returned.
 
-       Default implementation returns TRUE for all strings.
+       Default implementation returns PTrue for all strings.
 
        @return
-       TRUE if user can access, otherwise FALSE
+       PTrue if user can access, otherwise PFalse
      */
-    virtual BOOL AuthoriseUser(
+    virtual PBoolean AuthoriseUser(
       const PString & user,     ///< User name to authorise.
       const PString & password, ///< Password supplied for the user.
-      BOOL & replied            ///< Indication that a reply was sent to client.
+      PBoolean & replied            ///< Indication that a reply was sent to client.
     );
 
     /** Handle an unknown command.
 
        @return
-       TRUE if more processing may be done, FALSE if the
-       #ProcessCommand()# function is to return FALSE.
+       PTrue if more processing may be done, PFalse if the
+       #ProcessCommand()# function is to return PFalse.
      */
-    virtual BOOL OnUnknown(
+    virtual PBoolean OnUnknown(
       const PCaselessString & command  ///< Complete command line received.
     );
 
     /** Handle an error in command.
 
        @return
-       TRUE if more processing may be done, FALSE if the
-       #ProcessCommand()# function is to return FALSE.
+       PTrue if more processing may be done, PFalse if the
+       #ProcessCommand()# function is to return PFalse.
      */
     virtual void OnError(
       PINDEX errorCode, ///< Error code to use
@@ -360,48 +360,48 @@ class PFTPServer : public PFTP
 
     // the following commands must be implemented by all servers
     // and can be performed without logging in
-    virtual BOOL OnUSER(const PCaselessString & args);
-    virtual BOOL OnPASS(const PCaselessString & args);  // officially optional, but should be done
-    virtual BOOL OnQUIT(const PCaselessString & args);
-    virtual BOOL OnPORT(const PCaselessString & args);
-    virtual BOOL OnSTRU(const PCaselessString & args);
-    virtual BOOL OnMODE(const PCaselessString & args);
-    virtual BOOL OnTYPE(const PCaselessString & args);
-    virtual BOOL OnNOOP(const PCaselessString & args);
-    virtual BOOL OnSYST(const PCaselessString & args);
-    virtual BOOL OnSTAT(const PCaselessString & args);
+    virtual PBoolean OnUSER(const PCaselessString & args);
+    virtual PBoolean OnPASS(const PCaselessString & args);  // officially optional, but should be done
+    virtual PBoolean OnQUIT(const PCaselessString & args);
+    virtual PBoolean OnPORT(const PCaselessString & args);
+    virtual PBoolean OnSTRU(const PCaselessString & args);
+    virtual PBoolean OnMODE(const PCaselessString & args);
+    virtual PBoolean OnTYPE(const PCaselessString & args);
+    virtual PBoolean OnNOOP(const PCaselessString & args);
+    virtual PBoolean OnSYST(const PCaselessString & args);
+    virtual PBoolean OnSTAT(const PCaselessString & args);
 
     // the following commands must be implemented by all servers
     // and cannot be performed without logging in
-    virtual BOOL OnRETR(const PCaselessString & args);
-    virtual BOOL OnSTOR(const PCaselessString & args);
-    virtual BOOL OnACCT(const PCaselessString & args);
-    virtual BOOL OnAPPE(const PCaselessString & args);
-    virtual BOOL OnRNFR(const PCaselessString & args);
-    virtual BOOL OnRNTO(const PCaselessString & args);
-    virtual BOOL OnDELE(const PCaselessString & args);
-    virtual BOOL OnCWD(const PCaselessString & args);
-    virtual BOOL OnCDUP(const PCaselessString & args);
-    virtual BOOL OnRMD(const PCaselessString & args);
-    virtual BOOL OnMKD(const PCaselessString & args);
-    virtual BOOL OnPWD(const PCaselessString & args);
-    virtual BOOL OnLIST(const PCaselessString & args);
-    virtual BOOL OnNLST(const PCaselessString & args);
-    virtual BOOL OnPASV(const PCaselessString & args);
+    virtual PBoolean OnRETR(const PCaselessString & args);
+    virtual PBoolean OnSTOR(const PCaselessString & args);
+    virtual PBoolean OnACCT(const PCaselessString & args);
+    virtual PBoolean OnAPPE(const PCaselessString & args);
+    virtual PBoolean OnRNFR(const PCaselessString & args);
+    virtual PBoolean OnRNTO(const PCaselessString & args);
+    virtual PBoolean OnDELE(const PCaselessString & args);
+    virtual PBoolean OnCWD(const PCaselessString & args);
+    virtual PBoolean OnCDUP(const PCaselessString & args);
+    virtual PBoolean OnRMD(const PCaselessString & args);
+    virtual PBoolean OnMKD(const PCaselessString & args);
+    virtual PBoolean OnPWD(const PCaselessString & args);
+    virtual PBoolean OnLIST(const PCaselessString & args);
+    virtual PBoolean OnNLST(const PCaselessString & args);
+    virtual PBoolean OnPASV(const PCaselessString & args);
 
     // the following commands are optional and can be performed without
     // logging in
-    virtual BOOL OnHELP(const PCaselessString & args);
-    virtual BOOL OnSITE(const PCaselessString & args);
-    virtual BOOL OnABOR(const PCaselessString & args);
+    virtual PBoolean OnHELP(const PCaselessString & args);
+    virtual PBoolean OnSITE(const PCaselessString & args);
+    virtual PBoolean OnABOR(const PCaselessString & args);
 
     // the following commands are optional and cannot be performed
     // without logging in
-    virtual BOOL OnSMNT(const PCaselessString & args);
-    virtual BOOL OnREIN(const PCaselessString & args);
-    virtual BOOL OnSTOU(const PCaselessString & args);
-    virtual BOOL OnALLO(const PCaselessString & args);
-    virtual BOOL OnREST(const PCaselessString & args);
+    virtual PBoolean OnSMNT(const PCaselessString & args);
+    virtual PBoolean OnREIN(const PCaselessString & args);
+    virtual PBoolean OnSTOU(const PCaselessString & args);
+    virtual PBoolean OnALLO(const PCaselessString & args);
+    virtual PBoolean OnREST(const PCaselessString & args);
 
 
     /// Send the specified file to the client.
@@ -412,11 +412,11 @@ class PFTPServer : public PFTP
 
   protected:
     /// Call back to verify open succeeded in an PInternetProtocol class
-    BOOL OnOpen();
+    PBoolean OnOpen();
     void Construct();
 
     PString readyString;
-    BOOL    thirdPartyPort;
+    PBoolean    thirdPartyPort;
 
     enum {
       NotConnected,

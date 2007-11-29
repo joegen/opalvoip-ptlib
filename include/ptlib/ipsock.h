@@ -153,7 +153,7 @@ class PIPSocket : public PSocket
         bool operator==(int i) const      { return  operator==((DWORD)i); }
         bool operator!=(int i) const      { return !operator==((DWORD)i); }
 
-        /// Compare two addresses for equivalence. This will return TRUE
+        /// Compare two addresses for equivalence. This will return PTrue
         /// if the two addresses are equivalent even if they are IPV6 and IPV4
 #if P_HAS_IPV6
         bool operator*=(const Address & addr) const;
@@ -164,8 +164,8 @@ class PIPSocket : public PSocket
         /// Format an address as a string
         PString AsString() const;
 
-        /// Convert string to IP address. Returns TRUE if was a valid address.
-        BOOL FromString(
+        /// Convert string to IP address. Returns PTrue if was a valid address.
+        PBoolean FromString(
           const PString & str
         );
 
@@ -208,14 +208,14 @@ class PIPSocket : public PSocket
         unsigned GetVersion() const { return version; }
 
         /// Check address 0.0.0.0 or :: 
-        BOOL IsValid() const;
-        BOOL IsAny() const;
+        PBoolean IsValid() const;
+        PBoolean IsAny() const;
 
         /// Check address 127.0.0.1 or ::1
-        BOOL IsLoopback() const;
+        PBoolean IsLoopback() const;
 
         /// Check for Broadcast address 255.255.255.255
-        BOOL IsBroadcast() const;
+        PBoolean IsBroadcast() const;
 
         // Check if the remote address is a private address.
         // For IPV4 this is specified RFC 1918 as the following ranges:
@@ -223,11 +223,11 @@ class PIPSocket : public PSocket
         //    172.16.0.0  - 172.31.255.255
         //    192.168.0.0 - 192.168.255.255
         // For IPV6 this is specified as any address having "1111 1110 1” for the first nine bits
-        BOOL IsRFC1918() const ;
+        PBoolean IsRFC1918() const ;
 
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
-        BOOL IsV4Mapped() const;
+        PBoolean IsV4Mapped() const;
 #endif
         
         static const Address & GetLoopback();
@@ -274,12 +274,12 @@ class PIPSocket : public PSocket
     static void SetDefaultIpAddressFamilyV4(); // PF_INET
 #if P_HAS_IPV6
     static void SetDefaultIpAddressFamilyV6(); // PF_INET6
-    static BOOL IsIpAddressFamilyV6Supported();
+    static PBoolean IsIpAddressFamilyV6Supported();
 #endif
     static PIPSocket::Address GetDefaultIpAny();
 
     // Open an IPv4 or IPv6 socket
-    virtual BOOL OpenSocket(
+    virtual PBoolean OpenSocket(
       int ipAdressFamily=PF_INET
     ) = 0;
 
@@ -294,23 +294,23 @@ class PIPSocket : public PSocket
        #PIPSocket::SetPort()# function.
 
        @return
-       TRUE if the channel was successfully connected to the remote host.
+       PTrue if the channel was successfully connected to the remote host.
      */
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
     );
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const Address & addr      ///< Address of remote machine to connect to.
     );
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       WORD localPort,           ///< Local port number for connection
       const Address & addr      ///< Address of remote machine to connect to.
     );
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const Address & iface,    ///< Address of local interface to us.
       const Address & addr      ///< Address of remote machine to connect to.
     );
-    virtual BOOL Connect(
+    virtual PBoolean Connect(
       const Address & iface,    ///< Address of local interface to us.
       WORD localPort,           ///< Local port number for connection
       const Address & addr      ///< Address of remote machine to connect to.
@@ -329,14 +329,14 @@ class PIPSocket : public PSocket
        For the UDP protocol, the #queueSize# parameter is ignored.
 
        @return
-       TRUE if the channel was successfully opened.
+       PTrue if the channel was successfully opened.
      */
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
-    virtual BOOL Listen(
+    virtual PBoolean Listen(
       const Address & bind,     ///< Local interface address to bind to.
       unsigned queueSize = 5,   ///< Number of pending accepts that may be queued.
       WORD port = 0,            ///< Port number to use for the connection.
@@ -364,12 +364,12 @@ class PIPSocket : public PSocket
        specified, for the host this process is running on.
 
        @return
-       TRUE if the IP number was returned.
+       PTrue if the IP number was returned.
      */
-    static BOOL GetHostAddress(
+    static PBoolean GetHostAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
-    static BOOL GetHostAddress(
+    static PBoolean GetHostAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
@@ -402,9 +402,9 @@ class PIPSocket : public PSocket
        the special number 127.0.0.1 for the loopback device.
 
        @return
-       TRUE if the host is the local machine.
+       PTrue if the host is the local machine.
      */
-    static BOOL IsLocalHost(
+    static PBoolean IsLocalHost(
       const PString & hostname
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
@@ -414,13 +414,13 @@ class PIPSocket : public PSocket
     /** Get the Internet Protocol address and port for the local host.
 
        @return
-       FALSE (or empty string) if the IP number was not available.
+       PFalse (or empty string) if the IP number was not available.
      */
     virtual PString GetLocalAddress();
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
-    virtual BOOL GetLocalAddress(
+    virtual PBoolean GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -429,13 +429,13 @@ class PIPSocket : public PSocket
        socket is connected to.
 
        @return
-       FALSE (or empty string) if the IP number was not available.
+       PFalse (or empty string) if the IP number was not available.
      */
     virtual PString GetPeerAddress();
-    virtual BOOL GetPeerAddress(
+    virtual PBoolean GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address
     );
-    virtual BOOL GetPeerAddress(
+    virtual PBoolean GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address
       WORD & port        ///< Variable to receive peer hosts port number
     );
@@ -467,9 +467,9 @@ class PIPSocket : public PSocket
        Note that the driver does not need to be open for this function to work.
 
        @return
-       TRUE if there was a gateway.
+       PTrue if there was a gateway.
      */
-    static BOOL GetGatewayAddress(
+    static PBoolean GetGatewayAddress(
       Address & addr     ///< Variable to receive the IP address.
     );
 
@@ -521,7 +521,7 @@ class PIPSocket : public PSocket
 
     /** Check if packets on Interface Address can reach the remote IP Address.
      */
-    static BOOL IsAddressReachable(PIPSocket::Address LocalIP,
+    static PBoolean IsAddressReachable(PIPSocket::Address LocalIP,
                                    PIPSocket::Address LocalMask, 
                                    PIPSocket::Address RemoteIP);
 
@@ -569,9 +569,9 @@ class PIPSocket : public PSocket
     /** Get the systems route table.
 
        @return
-       TRUE if the route table is returned, FALSE if an error occurs.
+       PTrue if the route table is returned, PFalse if an error occurs.
      */
-    static BOOL GetRouteTable(
+    static PBoolean GetRouteTable(
       RouteTable & table      ///< Route table
     );
 
@@ -607,9 +607,9 @@ class PIPSocket : public PSocket
         /// Get the address associated with the interface
         Address GetAddress() const { return ipAddr; }
 
-        BOOL HasIP6Address() const
+        PBoolean HasIP6Address() const
 #if ! P_HAS_IPV6
-        { return FALSE;}
+        { return PFalse;}
 #else
         { return !ip6Addr.IsEmpty();}
 
@@ -637,28 +637,28 @@ class PIPSocket : public PSocket
 
     /** Get a list of all interfaces
        @return
-       TRUE if the interface table is returned, FALSE if an error occurs.
+       PTrue if the interface table is returned, PFalse if an error occurs.
      */
-    static BOOL GetInterfaceTable(
+    static PBoolean GetInterfaceTable(
       InterfaceTable & table,      ///< interface table
-      BOOL includeDown = FALSE     ///< Include interfaces that are down
+      PBoolean includeDown = PFalse     ///< Include interfaces that are down
     );
 
     /** Get the address of an interface that corresponds to a real network
        @return
-       FALSE if only loopback interfaces could be found, else TRUE
+       PFalse if only loopback interfaces could be found, else PTrue
      */
-    static BOOL GetNetworkInterface(PIPSocket::Address & addr);
+    static PBoolean GetNetworkInterface(PIPSocket::Address & addr);
 
 #if P_HAS_RECVMSG
 
     /**
       * Set flag to capture destination address for incoming packets
       *
-      * @return TRUE if host is able to capture incoming address, else FALSE
+      * @return PTrue if host is able to capture incoming address, else PFalse
       */
-    BOOL SetCaptureReceiveToAddress()
-    { if (!SetOption(IP_PKTINFO, 1, SOL_IP)) return FALSE; catchReceiveToAddr = TRUE; return TRUE; }
+    PBoolean SetCaptureReceiveToAddress()
+    { if (!SetOption(IP_PKTINFO, 1, SOL_IP)) return PFalse; catchReceiveToAddr = PTrue; return PTrue; }
 
     /**
       * return the interface address of the last incoming packet
@@ -677,10 +677,10 @@ class PIPSocket : public PSocket
     /**
       * Set flag to capture interface address for incoming packets
       *
-      * @return TRUE if host is able to capture incoming address, else FALSE
+      * @return PTrue if host is able to capture incoming address, else PFalse
       */
-    BOOL SetCaptureReceiveToAddress()
-    { return FALSE; }
+    PBoolean SetCaptureReceiveToAddress()
+    { return PFalse; }
 
     /**
       * return the interface address of the last incoming packet
@@ -713,7 +713,7 @@ class PIPSocketAddressAndPort
       : port(defaultPort), sep(_sep)
     { Parse(str, defaultPort, sep); }
 
-    BOOL Parse(const PString & str, WORD defaultPort = 0, char sep = ':');
+    PBoolean Parse(const PString & str, WORD defaultPort = 0, char sep = ':');
 
     PString AsString(char _sep = 0) const
     { return address.AsString() + (_sep ? _sep : sep) + PString(PString::Unsigned, port); }

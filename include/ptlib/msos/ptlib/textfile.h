@@ -35,8 +35,8 @@
 // PTextFile
 
   protected:
-    virtual BOOL IsTextFile() const;
-      // Return TRUE if text file translation is required
+    virtual PBoolean IsTextFile() const;
+      // Return PTrue if text file translation is required
 
   private:
     char characterAfterCarriageReturn;

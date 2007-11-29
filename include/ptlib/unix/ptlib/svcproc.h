@@ -41,6 +41,6 @@
     void PXOnAsyncSignal(int);
     PString systemLogFileName;
     PString pidFileToRemove;
-    BOOL isTerminating;
+    PBoolean isTerminating;
 
 // End Of File ////////////////////////////////////////////////////////////////

@@ -131,7 +131,7 @@ void PThread::SwitchContext(PThread * from)
   }
 
   //  switch to the new thread
-  longjmp(context, TRUE);
+  longjmp(context, PTrue);
   PAssertAlways("Return from longjmp not allowed");
 
 #else

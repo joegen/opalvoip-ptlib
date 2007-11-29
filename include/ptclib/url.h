@@ -113,12 +113,12 @@ class PURL : public PObject
   /**@name New functions for class. */
   //@{
     /**Parse the URL string into the fields in the object instance. */
-    inline BOOL Parse(
+    inline PBoolean Parse(
       const char * cstr,   ///< URL as a string to parse.
       const char * defaultScheme = NULL ///< Default scheme for URL
     ) { return InternalParse(cstr, defaultScheme); }
     /**Parse the URL string into the fields in the object instance. */
-    inline BOOL Parse(
+    inline PBoolean Parse(
       const PString & str, ///< URL as a string to parse.
       const char * defaultScheme = NULL ///< Default scheme for URL
     ) { return InternalParse((const char *)str, defaultScheme); }
@@ -222,10 +222,10 @@ class PURL : public PObject
     void SetPort(WORD newPort);
     
     /// Get if explicit port is specified.
-    BOOL GetPortSupplied() const { return portSupplied; }
+    PBoolean GetPortSupplied() const { return portSupplied; }
 
     /// Get if path is relative or absolute
-    BOOL GetRelativePath() const { return relativePath; }
+    PBoolean GetRelativePath() const { return relativePath; }
 
     /// Get the path field of the URL as a string.
     const PString & GetPathStr() const { return pathStr; }
@@ -272,8 +272,8 @@ class PURL : public PObject
     /// Set the Query (?) field of the URL as a string dictionary.
     void SetQueryVar(const PString & key, const PString & data);
 
-    /// Return TRUE if the URL is an empty string.
-    BOOL IsEmpty() const { return urlString.IsEmpty(); }
+    /// Return PTrue if the URL is an empty string.
+    PBoolean IsEmpty() const { return urlString.IsEmpty(); }
 
 
     /**Open the URL in a browser.
@@ -282,16 +282,16 @@ class PURL : public PObject
        The browser was successfully opened. This does not mean the URL exists and was
        displayed.
      */
-    static BOOL OpenBrowser(
+    static PBoolean OpenBrowser(
       const PString & url   ///< URL to open
     );
   //@}
 
-    BOOL LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo);
+    PBoolean LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo);
     PString LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const;
 
   protected:
-    virtual BOOL InternalParse(
+    virtual PBoolean InternalParse(
       const char * cstr,         ///< URL as a string to parse.
       const char * defaultScheme ///< Default scheme for URL
     );
@@ -303,8 +303,8 @@ class PURL : public PObject
     PString password;
     PCaselessString hostname;
     WORD port;
-    BOOL portSupplied;          /// port was supplied in string input
-    BOOL relativePath;
+    PBoolean portSupplied;          /// port was supplied in string input
+    PBoolean relativePath;
     PString pathStr;
     PStringArray path;
     PStringToString paramVars;
@@ -321,7 +321,7 @@ class PURLScheme : public PObject
   PCLASSINFO(PURLScheme, PObject);
   public:
     virtual PString GetName() const = 0;
-    virtual BOOL Parse(const PString & url, PURL & purl) const = 0;
+    virtual PBoolean Parse(const PString & url, PURL & purl) const = 0;
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
 };
 
@@ -334,7 +334,7 @@ class PURLLegacyScheme : public PURLScheme
     PURLLegacyScheme(const char * _scheme)
       : scheme(_scheme) { }
 
-    BOOL Parse(const PString & url, PURL & purl) const
+    PBoolean Parse(const PString & url, PURL & purl) const
     { return purl.LegacyParse(url, this); }
 
     PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
@@ -344,16 +344,16 @@ class PURLLegacyScheme : public PURLScheme
     { return scheme; }
 
     PString scheme;
-    BOOL hasUsername;
-    BOOL hasPassword;
-    BOOL hasHostPort;
-    BOOL defaultToUserIfNoAt;
-    BOOL defaultHostToLocal;
-    BOOL hasQuery;
-    BOOL hasParameters;
-    BOOL hasFragments;
-    BOOL hasPath;
-    BOOL relativeImpliesScheme;
+    PBoolean hasUsername;
+    PBoolean hasPassword;
+    PBoolean hasHostPort;
+    PBoolean defaultToUserIfNoAt;
+    PBoolean defaultHostToLocal;
+    PBoolean hasQuery;
+    PBoolean hasParameters;
+    PBoolean hasFragments;
+    PBoolean hasPath;
+    PBoolean relativeImpliesScheme;
     WORD defaultPort;
 };
 

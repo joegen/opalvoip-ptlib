@@ -42,7 +42,7 @@
 #if P_EXPAT
 
 XMPP::Roster::Item::Item(PXMLElement * item)
-  : m_IsDirty(FALSE)
+  : m_IsDirty(PFalse)
 {
   if (item != NULL)
     operator=(*item);
@@ -50,7 +50,7 @@ XMPP::Roster::Item::Item(PXMLElement * item)
 
 
 XMPP::Roster::Item::Item(PXMLElement& item)
-  : m_IsDirty(FALSE)
+  : m_IsDirty(PFalse)
 {
   operator=(item);
 }
@@ -58,7 +58,7 @@ XMPP::Roster::Item::Item(PXMLElement& item)
 
 XMPP::Roster::Item::Item(const JID& jid, ItemType type, const PString& group, const PString& name)
   : m_JID(jid),
-    m_IsDirty(TRUE)
+    m_IsDirty(PTrue)
 {
   SetType(type);
   AddGroup(group);
@@ -66,7 +66,7 @@ XMPP::Roster::Item::Item(const JID& jid, ItemType type, const PString& group, co
 }
 
 
-void XMPP::Roster::Item::AddGroup(const PString& group, BOOL dirty)
+void XMPP::Roster::Item::AddGroup(const PString& group, PBoolean dirty)
 {
   if (group.IsEmpty())
     return;
@@ -78,7 +78,7 @@ void XMPP::Roster::Item::AddGroup(const PString& group, BOOL dirty)
 }
 
 
-void XMPP::Roster::Item::RemoveGroup(const PString& group, BOOL dirty)
+void XMPP::Roster::Item::RemoveGroup(const PString& group, PBoolean dirty)
 {
   if (m_Groups.Contains(group) && dirty)
     SetDirty();
@@ -192,10 +192,10 @@ XMPP::Roster::Item * XMPP::Roster::FindItem(const PString& jid)
 }
 
 
-BOOL XMPP::Roster::SetItem(Item * item, BOOL localOnly)
+PBoolean XMPP::Roster::SetItem(Item * item, PBoolean localOnly)
 {
   if (item == NULL)
-    return FALSE;
+    return PFalse;
 
   if (localOnly) {
     Item * existingItem = FindItem(item->GetJID());
@@ -206,10 +206,10 @@ BOOL XMPP::Roster::SetItem(Item * item, BOOL localOnly)
     if (m_Items.Append(item)) {
       m_ItemChangedHandlers.Fire(*item);
       m_RosterChangedHandlers.Fire(*this);
-      return TRUE;
+      return PTrue;
     }
     else
-      return FALSE;
+      return PFalse;
   }
 
   PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
@@ -221,17 +221,17 @@ BOOL XMPP::Roster::SetItem(Item * item, BOOL localOnly)
 }
 
 
-BOOL XMPP::Roster::RemoveItem(const PString& jid, BOOL localOnly)
+PBoolean XMPP::Roster::RemoveItem(const PString& jid, PBoolean localOnly)
 {
   Item * item = FindItem(jid);
 
   if (item == NULL)
-    return FALSE;
+    return PFalse;
 
   if (localOnly) {
     m_Items.Remove(item);
     m_RosterChangedHandlers.Fire(*this);
-    return TRUE;
+    return PTrue;
   }
 
   PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
@@ -244,10 +244,10 @@ BOOL XMPP::Roster::RemoveItem(const PString& jid, BOOL localOnly)
 }
 
 
-BOOL XMPP::Roster::RemoveItem(Item * item, BOOL localOnly)
+PBoolean XMPP::Roster::RemoveItem(Item * item, PBoolean localOnly)
 {
   if (item == NULL)
-    return FALSE;
+    return PFalse;
 
   return RemoveItem(item->GetJID(), localOnly);
 }
@@ -268,7 +268,7 @@ void XMPP::Roster::Attach(XMPP::C2S::StreamHandler * handler)
   m_Handler->IQNamespaceHandlers("jabber:iq:roster").Add(new PCREATE_NOTIFIER(OnIQ));
 
   if (m_Handler->IsEstablished())
-    Refresh(TRUE);
+    Refresh(PTrue);
 }
 
 
@@ -287,7 +287,7 @@ void XMPP::Roster::Detach()
 }
 
 
-void XMPP::Roster::Refresh(BOOL sendPresence)
+void XMPP::Roster::Refresh(PBoolean sendPresence)
 {
   if (m_Handler == NULL)
     return;
@@ -307,7 +307,7 @@ void XMPP::Roster::Refresh(BOOL sendPresence)
 
 void XMPP::Roster::OnSessionEstablished(XMPP::C2S::StreamHandler&, INT)
 {
-  Refresh(TRUE);
+  Refresh(PTrue);
 }
 
 
@@ -338,14 +338,14 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
 
   PINDEX i = 0;
   PXMLElement * item;
-  BOOL doUpdate = FALSE;
+  PBoolean doUpdate = PFalse;
 
   while ((item = query->GetElement("item", i++)) != 0) {
     if (item->GetAttribute("subscription") == "remove")
-      RemoveItem(item->GetAttribute("jid"), TRUE);
+      RemoveItem(item->GetAttribute("jid"), PTrue);
     else
-      SetItem(new XMPP::Roster::Item(item), TRUE);
-    doUpdate = TRUE;
+      SetItem(new XMPP::Roster::Item(item), PTrue);
+    doUpdate = PTrue;
   }
 
   if (iq.GetType() == XMPP::IQ::Set) {

@@ -34,7 +34,7 @@ Xmlrpcsrvr::Xmlrpcsrvr()
 }
 
 
-BOOL Xmlrpcsrvr::OnStart()
+PBoolean Xmlrpcsrvr::OnStart()
 {
   GetFile().GetDirectory().Change();
 
@@ -80,12 +80,12 @@ void Xmlrpcsrvr::AddUnregisteredText(PHTML &)
 }
 
 
-BOOL Xmlrpcsrvr::Initialise(const char * initMsg)
+PBoolean Xmlrpcsrvr::Initialise(const char * initMsg)
 {
   //  create the home page
   static const char welcomeHtml[] = "welcome.html";
   if (PFile::Exists(welcomeHtml))
-    httpNameSpace.AddResource(new PServiceHTTPFile(welcomeHtml, TRUE), PHTTPSpace::Overwrite);
+    httpNameSpace.AddResource(new PServiceHTTPFile(welcomeHtml, PTrue), PHTTPSpace::Overwrite);
   else {
     PHTML html;
     html << PHTML::Title("Welcome to "+GetName())
@@ -95,7 +95,7 @@ BOOL Xmlrpcsrvr::Initialise(const char * initMsg)
          << gifHTML
          << PHTML::Heading(1)
          << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
-         << " Version " << GetVersion(TRUE) << PHTML::BreakLine()
+         << " Version " << GetVersion(PTrue) << PHTML::BreakLine()
          << ' ' << compilationDate.AsString("d MMMM yy")
          << PHTML::BreakLine()
          << "by"
@@ -108,7 +108,7 @@ BOOL Xmlrpcsrvr::Initialise(const char * initMsg)
          << PHTML::HRule()
          << PHTML::Paragraph()
 
-         << PHTML::HotLink("http://www.equival.com.au/xmlrpcsrvr/relnotes/" + GetVersion(TRUE) + ".html")
+         << PHTML::HotLink("http://www.equival.com.au/xmlrpcsrvr/relnotes/" + GetVersion(PTrue) + ".html")
          << "Release notes" << PHTML::HotLink()
          << " on this version of " << GetProductName() << " are available."
          << PHTML::Paragraph()
@@ -126,11 +126,11 @@ BOOL Xmlrpcsrvr::Initialise(const char * initMsg)
     PSYSTEMLOG(Info, "Opened master socket for HTTP: " << httpListeningSocket->GetPort());
   else {
     PSYSTEMLOG(Fatal, "Cannot run without HTTP port: " << httpListeningSocket->GetErrorText());
-    return FALSE;
+    return PFalse;
   }
 
   PSYSTEMLOG(Info, "Service " << GetName() << ' ' << initMsg);
-  return TRUE;
+  return PTrue;
 }
 
 

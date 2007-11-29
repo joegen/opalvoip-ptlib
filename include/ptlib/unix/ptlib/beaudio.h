@@ -89,38 +89,38 @@ class PSoundChannelBeOS: public PSoundChannel
     ~PSoundChannelBeOS();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);
-    BOOL Open(const PString & _device,
+    PBoolean Open(const PString & _device,
               Directions _dir,
               unsigned _numChannels,
               unsigned _sampleRate,
               unsigned _bitsPerSample);
-    BOOL Setup();
-    BOOL Close();
-    BOOL IsOpen() const;
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
-    BOOL SetFormat(unsigned numChannels,
+    PBoolean Setup();
+    PBoolean Close();
+    PBoolean IsOpen() const;
+    PBoolean Write(const void * buf, PINDEX len);
+    PBoolean Read(void * buf, PINDEX len);
+    PBoolean SetFormat(unsigned numChannels,
                    unsigned sampleRate,
                    unsigned bitsPerSample);
     unsigned GetChannels() const;
     unsigned GetSampleRate() const;
     unsigned GetSampleSize() const;
-    BOOL SetBuffers(PINDEX size, PINDEX count);
-    BOOL GetBuffers(PINDEX & size, PINDEX & count);
-    BOOL PlaySound(const PSound & sound, BOOL wait);
-    BOOL PlayFile(const PFilePath & filename, BOOL wait);
-    BOOL HasPlayCompleted();
-    BOOL WaitForPlayCompletion();
-    BOOL RecordSound(PSound & sound);
-    BOOL RecordFile(const PFilePath & filename);
-    BOOL StartRecording();
-    BOOL IsRecordBufferFull();
-    BOOL AreAllRecordBuffersFull();
-    BOOL WaitForRecordBufferFull();
-    BOOL WaitForAllRecordBuffersFull();
-    BOOL Abort();
-    BOOL SetVolume(unsigned newVal);
-    BOOL GetVolume(unsigned &devVol);
+    PBoolean SetBuffers(PINDEX size, PINDEX count);
+    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+    PBoolean PlaySound(const PSound & sound, PBoolean wait);
+    PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
+    PBoolean HasPlayCompleted();
+    PBoolean WaitForPlayCompletion();
+    PBoolean RecordSound(PSound & sound);
+    PBoolean RecordFile(const PFilePath & filename);
+    PBoolean StartRecording();
+    PBoolean IsRecordBufferFull();
+    PBoolean AreAllRecordBuffersFull();
+    PBoolean WaitForRecordBufferFull();
+    PBoolean WaitForAllRecordBuffersFull();
+    PBoolean Abort();
+    PBoolean SetVolume(unsigned newVal);
+    PBoolean GetVolume(unsigned &devVol);
 
   public:
     // Overrides from class PChannel
@@ -150,14 +150,14 @@ class PSoundChannelBeOS: public PSoundChannel
     PINDEX mNumBuffers;       // for reference only!
 
     // Just some helpers so that the Open function doesn't get too big
-    BOOL OpenPlayer(void);
-    BOOL OpenRecorder(const PString &dev);
+    PBoolean OpenPlayer(void);
+    PBoolean OpenRecorder(const PString &dev);
 
     // internal buffer setting function so we can disable the SetBuffers
     // function for debug purposes
     // size is the total size, threshold is the fill/drain threshold on
     // the buffer
-    BOOL InternalSetBuffers(PINDEX size, PINDEX threshold);
+    PBoolean InternalSetBuffers(PINDEX size, PINDEX threshold);
 
     // Input resampler
     Resampler *mResampler;

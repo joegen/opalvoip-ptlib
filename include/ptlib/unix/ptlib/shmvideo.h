@@ -62,43 +62,43 @@ class PVideoOutputDevice_Shm : public PVideoOutputDevice
 
     /**Open the device given the device name.
       */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & deviceName,   /// Device name (filename base) to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      PBoolean startImmediate = PTrue    /// Immediately start device
     );
 
     /**Determine if the device is currently open.
       */
-    virtual BOOL IsOpen();
+    virtual PBoolean IsOpen();
 
     /**Close the device.
       */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Get a list of all of the drivers available.
       */
     virtual PStringList GetDeviceNames() const;
 	
-	virtual BOOL SetColourFormat(const PString & colourFormat);
+	virtual PBoolean SetColourFormat(const PString & colourFormat);
 	
-	virtual BOOL SetFrameSize(unsigned width,
+	virtual PBoolean SetFrameSize(unsigned width,
 							  unsigned height);
 	
 	virtual PINDEX GetMaxFrameBytes();
 	
-	virtual BOOL SetFrameData(unsigned x,
+	virtual PBoolean SetFrameData(unsigned x,
 							  unsigned y,
 							  unsigned width,
 							  unsigned height,
 							  const BYTE * data,
-							  BOOL endFrame = TRUE);
+							  PBoolean endFrame = PTrue);
 	
 	/**Indicate frame may be displayed.
 		*/
-	virtual BOOL EndFrame();
+	virtual PBoolean EndFrame();
 
   protected:
-    BOOL shmInit();
+    PBoolean shmInit();
 
     PINDEX bytesPerPixel;
     sem_t *semLock;
@@ -116,16 +116,16 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
   public:
     PVideoInputDevice_Shm();
 	
-    BOOL Start();
+    PBoolean Start();
 	
-    BOOL Stop();
+    PBoolean Stop();
 
-    BOOL Open(
+    PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      PBoolean startImmediate = PTrue    /// Immediately start device
       );
-    BOOL IsOpen();
-    BOOL Close();
+    PBoolean IsOpen();
+    PBoolean Close();
 
     /**Get a list of all of the drivers available.
      */
@@ -134,37 +134,37 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 	virtual PStringList GetDeviceNames() const
 	{ return GetInputDeviceNames(); }
 	
-	virtual BOOL GetFrame(PBYTEArray & frame);
+	virtual PBoolean GetFrame(PBYTEArray & frame);
 
-    virtual BOOL GetFrameData(
+    virtual PBoolean GetFrameData(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// Optional bytes returned.
       );
 
-    virtual BOOL GetFrameDataNoDelay (BYTE *, PINDEX *);
+    virtual PBoolean GetFrameDataNoDelay (BYTE *, PINDEX *);
 	
 
     /**Get the minimum & maximum size of a frame on the device.
 
     Default behaviour returns the value 1 to UINT_MAX for both and returns
-    FALSE.
+    PFalse.
     */
-    virtual BOOL GetFrameSizeLimits(
+    virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   /// Variable to receive minimum width
       unsigned & minHeight,  /// Variable to receive minimum height
       unsigned & maxWidth,   /// Variable to receive maximum width
       unsigned & maxHeight   /// Variable to receive maximum height
       ) ;
 	
-	virtual BOOL TestAllFormats();
+	virtual PBoolean TestAllFormats();
 	
-	virtual BOOL IsCapturing();
+	virtual PBoolean IsCapturing();
 	
 	virtual PINDEX GetMaxFrameBytes();
 
 
   protected:
-    BOOL shmInit();
+    PBoolean shmInit();
 
     PAdaptiveDelay m_pacing;
 
