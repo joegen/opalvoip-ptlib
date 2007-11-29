@@ -2418,6 +2418,7 @@ AC_PROG_INSTALL
 AC_CONFIG_FILES(make/ptbuildopts.mak)
 AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(ptlib_cfg.dxy)
 
 dnl ########################################################################
 dnl output header file
