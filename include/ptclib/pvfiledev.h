@@ -110,12 +110,12 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
     virtual PStringList GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
-	/**Retrieve a list of Device Capabilities
-	  */
-	static BOOL GetDeviceCapabilities(
+    /**Retrieve a list of Device Capabilities
+      */
+    static bool GetDeviceCapabilities(
       const PString & /*deviceName*/,           ///< Name of device
-	  InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
-	  )  { return FALSE; }
+      InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
+    )  { return false; }
 
     /**Get the maximum frame size in bytes.
 

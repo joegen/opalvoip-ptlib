@@ -200,12 +200,12 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     virtual PStringList GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
-	/**Retrieve a list of Device Capabilities
-	  */
-	static BOOL GetDeviceCapabilities(
+    /**Retrieve a list of Device Capabilities
+      */
+    static bool GetDeviceCapabilities(
       const PString & /*deviceName*/,           ///< Name of device
-	  InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
-	  )  { return FALSE; }
+      InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
+    )  { return false; }
 
     /**Open the device given the device name.
       */
@@ -1340,7 +1340,7 @@ PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height
     rect.left = 0;
     rect.bottom = frameHeight;
     rect.right = frameWidth;
-	::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), PFalse, 0L);
+    ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), PFalse, 0L);
     ::SetWindowPos(m_hWnd, NULL, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE|SWP_NOZORDER);
   }
 
@@ -1423,8 +1423,8 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
     WNDCLASS wndClass;
     memset(&wndClass, 0, sizeof(wndClass));
     wndClass.style = CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS;
-	wndClass.lpszClassName = wndClassName;
-	wndClass.lpszClassName = wndClassName;
+    wndClass.lpszClassName = wndClassName;
+    wndClass.lpszClassName = wndClassName;
     wndClass.lpfnWndProc = ::WndProc;
     wndClass.cbWndExtra = sizeof(this);
     PAssertOS(RegisterClass(&wndClass));
