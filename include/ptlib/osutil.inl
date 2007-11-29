@@ -131,7 +131,7 @@ PINLINE PObject * PTime::Clone() const
 PINLINE void PTime::PrintOn(ostream & strm) const
   { strm << AsString(); }
 
-PINLINE BOOL PTime::IsValid() const
+PINLINE PBoolean PTime::IsValid() const
   { return theTime > 46800; }
 
 PINLINE PInt64 PTime::GetTimestamp() const
@@ -167,10 +167,10 @@ PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
 PINLINE int PTime::GetDayOfYear() const
   { struct tm ts; return os_localtime(&theTime, &ts)->tm_yday; }
 
-PINLINE BOOL PTime::IsPast() const
+PINLINE PBoolean PTime::IsPast() const
   { return theTime < time(NULL); }
 
-PINLINE BOOL PTime::IsFuture() const
+PINLINE PBoolean PTime::IsFuture() const
   { return theTime > time(NULL); }
 
 
@@ -184,10 +184,10 @@ PINLINE int PTime::GetTimeZone()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-PINLINE BOOL PTimer::IsRunning() const
+PINLINE PBoolean PTimer::IsRunning() const
   { return state == Starting || state == Running; }
 
-PINLINE BOOL PTimer::IsPaused() const
+PINLINE PBoolean PTimer::IsPaused() const
   { return state == Paused; }
 
 PINLINE const PTimeInterval & PTimer::GetResetTime() const
@@ -237,7 +237,7 @@ PINLINE int PChannel::GetErrorNumber(ErrorGroup group) const
   { return lastErrorNumber[group]; }
 
 PINLINE void PChannel::AbortCommandString()
-  { abortCommandString = TRUE; }
+  { abortCommandString = PTrue; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -275,16 +275,16 @@ PINLINE PDirectory & PDirectory::operator=(const char * cstr)
 PINLINE void PDirectory::DestroyContents()
   { Close(); PFilePathString::DestroyContents(); }
 
-PINLINE BOOL PDirectory::Exists() const
+PINLINE PBoolean PDirectory::Exists() const
   { return Exists(*this); }
 
-PINLINE BOOL PDirectory::Change() const
+PINLINE PBoolean PDirectory::Change() const
   { return Change(*this); }
 
-PINLINE BOOL PDirectory::Create(int perm) const
+PINLINE PBoolean PDirectory::Create(int perm) const
   { return Create(*this, perm); }
 
-PINLINE BOOL PDirectory::Remove()
+PINLINE PBoolean PDirectory::Remove()
   { Close(); return Remove(*this); }
 
 
@@ -315,31 +315,31 @@ PINLINE PFilePath & PFilePath::operator+=(const char * cstr)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PFile::PFile()
-  { os_handle = -1; removeOnClose = FALSE; }
+  { os_handle = -1; removeOnClose = PFalse; }
 
 PINLINE PFile::PFile(OpenMode mode, int opts)
-  { os_handle = -1; removeOnClose = FALSE; Open(mode, opts); }
+  { os_handle = -1; removeOnClose = PFalse; Open(mode, opts); }
 
 PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
-  { os_handle = -1; removeOnClose = FALSE; Open(name, mode, opts); }
+  { os_handle = -1; removeOnClose = PFalse; Open(name, mode, opts); }
 
 
-PINLINE BOOL PFile::Exists() const
+PINLINE PBoolean PFile::Exists() const
   { return Exists(path); }
 
-PINLINE BOOL PFile::Access(OpenMode mode)
+PINLINE PBoolean PFile::Access(OpenMode mode)
   { return ConvertOSError(Access(path, mode) ? 0 : -1); }
 
-PINLINE BOOL PFile::Remove(BOOL force)
+PINLINE PBoolean PFile::Remove(PBoolean force)
   { Close(); return ConvertOSError(Remove(path, force) ? 0 : -1); }
 
-PINLINE BOOL PFile::Copy(const PFilePath & newname, BOOL force)
+PINLINE PBoolean PFile::Copy(const PFilePath & newname, PBoolean force)
   { return ConvertOSError(Copy(path, newname, force) ? 0 : -1); }
 
-PINLINE BOOL PFile::GetInfo(PFileInfo & info)
+PINLINE PBoolean PFile::GetInfo(PFileInfo & info)
   { return ConvertOSError(GetInfo(path, info) ? 0 : -1); }
 
-PINLINE BOOL PFile::SetPermissions(int permissions)
+PINLINE PBoolean PFile::SetPermissions(int permissions)
   { return ConvertOSError(SetPermissions(path, permissions) ? 0 : -1); }
 
 
@@ -413,7 +413,7 @@ PINLINE void PConfig::DeleteSection()
 PINLINE void PConfig::DeleteKey(const PString & key)
   { DeleteKey(defaultSection, key); }
 
-PINLINE BOOL PConfig::HasKey(const PString & key) const
+PINLINE PBoolean PConfig::HasKey(const PString & key) const
   { return HasKey(defaultSection, key); }
 
 PINLINE PString PConfig::GetString(const PString & key) const
@@ -425,10 +425,10 @@ PINLINE PString PConfig::GetString(const PString & key, const PString & dflt) co
 PINLINE void PConfig::SetString(const PString & key, const PString & value)
   { SetString(defaultSection, key, value); }
 
-PINLINE BOOL PConfig::GetBoolean(const PString & key, BOOL dflt) const
+PINLINE PBoolean PConfig::GetBoolean(const PString & key, PBoolean dflt) const
   { return GetBoolean(defaultSection, key, dflt); }
 
-PINLINE void PConfig::SetBoolean(const PString & key, BOOL value)
+PINLINE void PConfig::SetBoolean(const PString & key, PBoolean value)
   { SetBoolean(defaultSection, key, value); }
 
 PINLINE long PConfig::GetInteger(const PString & key, long dflt) const
@@ -468,16 +468,16 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 PINLINE void PArgList::SetArgs(int argc, char ** argv)
   { SetArgs(PStringArray(argc, argv)); }
 
-PINLINE BOOL PArgList::Parse(const PString & theArgumentSpec, BOOL optionsBeforeParams)
+PINLINE PBoolean PArgList::Parse(const PString & theArgumentSpec, PBoolean optionsBeforeParams)
   { return Parse((const char *)theArgumentSpec, optionsBeforeParams); }
 
-PINLINE BOOL PArgList::HasOption(char option) const
+PINLINE PBoolean PArgList::HasOption(char option) const
   { return GetOptionCount(option) != 0; }
 
-PINLINE BOOL PArgList::HasOption(const char * option) const
+PINLINE PBoolean PArgList::HasOption(const char * option) const
   { return GetOptionCount(option) != 0; }
 
-PINLINE BOOL PArgList::HasOption(const PString & option) const
+PINLINE PBoolean PArgList::HasOption(const PString & option) const
   { return GetOptionCount(option) != 0; }
 
 PINLINE PINDEX PArgList::GetCount() const

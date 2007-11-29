@@ -55,7 +55,7 @@ PString PSoundChannel::GetName() const
   }
 }
 
-BOOL PSoundChannel::Open(const PString & device,
+PBoolean PSoundChannel::Open(const PString & device,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
@@ -73,10 +73,10 @@ BOOL PSoundChannel::Open(const PString & device,
     m_sampleRate = sampleRate;
     m_bitsPerSample = bitsPerSample;
 
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PSoundChannel::Read(void *buf, PINDEX len)
+PBoolean PSoundChannel::Read(void *buf, PINDEX len)
 {
 // len should be 8 bytes. It if isnt, yell.
    if(len!=8) PTRACE(0, "Asked for "<<len<<" bytes.");
@@ -84,7 +84,7 @@ BOOL PSoundChannel::Read(void *buf, PINDEX len)
     if(m_Direction==Player)
     {
 //        PTRACE(0, "Tried to PSoundChannel::Read from a Player channel.");
-        return FALSE;
+        return PFalse;
     }
     if(soundbitesize%8) soundbitesize = (soundbitesize/8)*8;
     unsigned int *dest, *src;
@@ -111,59 +111,59 @@ BOOL PSoundChannel::Read(void *buf, PINDEX len)
     }
 
 #endif
-    return TRUE;
+    return PTrue;
 //    PTRACE(1, "PSoundChannel::Read(bye)");*/
 }
 
-BOOL PSoundChannel::Write(const void *buf, PINDEX len)
+PBoolean PSoundChannel::Write(const void *buf, PINDEX len)
 {
-    if(!len) return TRUE;
+    if(!len) return PTrue;
 //    PTRACE(9, "PSoundChannel::Write");
     if(m_Direction==Recorder)
     {
 //        PTRACE(0, "Tried to PSoundChannel::Write from a Recorder channel.");
-        return FALSE;
+        return PFalse;
     }
     PThread::Current()->Sleep(30);
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PSoundChannel::Close()
+PBoolean PSoundChannel::Close()
 {
     PTRACE(2, "PSoundChannel::Close");
     if(m_Direction==Recorder)
     {
     } else {
     }
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PSoundChannel::Abort()
+PBoolean PSoundChannel::Abort()
 {
-    return FALSE;
+    return PFalse;
 }
 
-BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
+PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
 //    PTRACE(1, "PSoundChannel::SetBuffers("<<size<<","<<count<<")");
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PSoundChannel::GetBuffers(PINDEX &size, PINDEX &count)
+PBoolean PSoundChannel::GetBuffers(PINDEX &size, PINDEX &count)
 {
 //    PTRACE(1, "PSoundChannel::GetBuffers");
-    return TRUE;
+    return PTrue;
 }
 
-BOOL PSoundChannel::SetVolume(int newVal)
+PBoolean PSoundChannel::SetVolume(int newVal)
 {
   cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
-  return FALSE;
+  return PFalse;
 }
 
-BOOL  PSoundChannel::GetVolume(int &devVol)
+PBoolean  PSoundChannel::GetVolume(int &devVol)
 {
  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
-  return FALSE;
+  return PFalse;
 }
 

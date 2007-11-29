@@ -95,10 +95,10 @@ class PAdaptiveDelay : public PObject
        than later" strategy).
 
        @return
-       TRUE if we are "too late" of @a time milliseconds (unrelated to
+       PTrue if we are "too late" of @a time milliseconds (unrelated to
        the maximum slip time).
       */
-    BOOL Delay(int time);
+    PBoolean Delay(int time);
 
     /**Invalidate the timer. The timing of this function call is not
        important, the timer will restart at the next call to Delay().
@@ -107,7 +107,7 @@ class PAdaptiveDelay : public PObject
   //@}
  
   protected:
-    BOOL   firstTime;
+    PBoolean   firstTime;
     PTime  targetTime;
 
     PTimeInterval  jitterLimit;
@@ -182,13 +182,13 @@ class PDelayChannel : public PIndirectChannel
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
        @return
-       TRUE indicates that at least one character was read from the channel.
-       FALSE means no bytes were read due to timeout or some other I/O error.
+       PTrue indicates that at least one character was read from the channel.
+       PFalse means no bytes were read due to timeout or some other I/O error.
      */
-    virtual BOOL Read(
+    virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
@@ -198,11 +198,11 @@ class PDelayChannel : public PIndirectChannel
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
+       PFalse to determine what caused the failure.
 
-       @return TRUE if at least len bytes were written to the channel.
+       @return PTrue if at least len bytes were written to the channel.
      */
-    virtual BOOL Write(
+    virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
       PINDEX len        ///< Number of bytes to write.
     );

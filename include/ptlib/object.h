@@ -95,6 +95,22 @@ typedef long _Ios_Fmtflags;
 #define _BADOFF -1
 #endif
 
+
+// P_USE_INTEGER_BOOL is the default and gives the old behaviour (it
+// is also used for C translation units).
+// without P_USE_INTEGER_BOOL, the ANSI C++ bool is used.
+
+#if defined(P_USE_INTEGER_BOOL) || !defined(__cplusplus)
+   typedef BOOL PBoolean;
+#  define PTrue TRUE
+#  define PFalse FALSE
+#else
+   typedef bool PBoolean;
+#  define PTrue true
+#  define PFalse false
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Disable inlines when debugging for faster compiles (the compiler doesn't
 // actually inline the function with debug on any way).
@@ -169,16 +185,16 @@ inline bool PAssertFuncInline(bool b, const char * file, int line, const char * 
   return b;
 }
 
-/** This macro is used to assert that a condition must be TRUE.
-If the condition is FALSE then an assert function is called with the source
+/** This macro is used to assert that a condition must be PTrue.
+If the condition is PFalse then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message described
 by the #msg# parameter. This parameter may be either a standard value
 from the #PStandardAssertMessage# enum or a literal string.
 */
 #define PAssert(b, m) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,(m))
 
-/** This macro is used to assert that a condition must be TRUE.
-If the condition is FALSE then an assert function is called with the source
+/** This macro is used to assert that a condition must be PTrue.
+If the condition is PFalse then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message described
 by the #msg# parameter. This parameter may be either a standard value
 from the #PStandardAssertMessage# enum or a literal string.
@@ -187,7 +203,7 @@ The #c# parameter specifies the class name that the error occurred in
 #define PAssert2(b, c, m) PAssertFuncInline((b), __FILE__,__LINE__,(c),(m))
 
 /** This macro is used to assert that an operating system call succeeds.
-If the condition is FALSE then an assert function is called with the source
+If the condition is PFalse then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message
 described by the #POperatingSystemError# value in the #PStandardAssertMessage#
 enum.
@@ -375,7 +391,7 @@ public:
   This checks against the current global trace level set by #PSetTraceLevel#
   for if the trace output may be emitted. This is used by the PTRACE macro.
   */
-  static BOOL CanTrace(unsigned level /** Trace level to check */);
+  static PBoolean CanTrace(unsigned level /** Trace level to check */);
 
   /** Set the stream to be used for trace output.
   This stream is used for all trace output using the various trace functions
@@ -482,7 +498,7 @@ output operators. The output is only made if the trace level set by the
 This macro outputs a trace of any information needed, using standard stream
 output operators. The output is only made if the trace level set by the
 #PSetTraceLevel# function is greater than or equal to the #level# argument
-and the conditional is TRUE. Note the conditional is only evaluated if the
+and the conditional is PTrue. Note the conditional is only evaluated if the
 trace level is sufficient.
 */
 #define PTRACE_IF(level, cond, args) \
@@ -588,9 +604,9 @@ class PMemoryHeap {
 
     /** Validate all objects in memory.
        This effectively calls Validate() on every object in the heap.
-        @return TRUE if every object in heap is Ok.
+        @return PTrue if every object in heap is Ok.
      */
-    static BOOL ValidateHeap(
+    static PBoolean ValidateHeap(
       ostream * error = NULL  ///< Stream to output, use default if NULL
     );
 
@@ -599,8 +615,8 @@ class PMemoryHeap {
        leak check on program termination.
        Returns the previous state.
      */
-    static BOOL SetIgnoreAllocations(
-      BOOL ignore  ///< New flag for allocation ignoring.
+    static PBoolean SetIgnoreAllocations(
+      PBoolean ignore  ///< New flag for allocation ignoring.
     );
 
     /** Get memory check system statistics.
@@ -724,7 +740,7 @@ class PMemoryHeap {
     };
 #pragma pack()
 
-    BOOL isDestroyed;
+    PBoolean isDestroyed;
 
     Header * listHead;
     Header * listTail;
@@ -889,10 +905,10 @@ inline void operator delete[](void * ptr, const char *, int)
 
 class PMemoryHeapIgnoreAllocationsForScope {
 public:
-  PMemoryHeapIgnoreAllocationsForScope() : previousIgnoreAllocations(PMemoryHeap::SetIgnoreAllocations(TRUE)) { }
+  PMemoryHeapIgnoreAllocationsForScope() : previousIgnoreAllocations(PMemoryHeap::SetIgnoreAllocations(PTrue)) { }
   ~PMemoryHeapIgnoreAllocationsForScope() { PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations); }
 private:
-  BOOL previousIgnoreAllocations;
+  PBoolean previousIgnoreAllocations;
 };
 
 #define PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE PMemoryHeapIgnoreAllocationsForScope instance_PMemoryHeapIgnoreAllocationsForScope
@@ -939,7 +955,7 @@ of compatibility with documentation systems.
   public: \
     static inline const char * Class() \
       { return #cls; } \
-    virtual BOOL InternalIsDescendant(const char * clsName) const \
+    virtual PBoolean InternalIsDescendant(const char * clsName) const \
       { return strcmp(clsName, cls::Class()) == 0 || par::InternalIsDescendant(clsName); } \
     virtual const char * GetClass(unsigned ancestor = 0) const \
       { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
@@ -974,7 +990,7 @@ template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const 
 
 #if P_USE_ASSERTS
 template<class BaseClass> inline BaseClass * PAssertCast(PObject * obj, const char * file, int line) 
-  { if (obj->InternalIsDescendant(BaseClass::Class()) return (BaseClass *)obj; PAssertFunc(file, line, BaseClass::Class(), PInvalidCast); return NULL; }
+  { if (obj->InternalIsDescendant(BaseClass::Class())) return (BaseClass *)obj; PAssertFunc(file, line, BaseClass::Class(), PInvalidCast); return NULL; }
 #define PDownCast(cls, ptr) PAssertCast<cls>((ptr),__FILE__,__LINE__)
 #else
 #define PDownCast(cls, ptr) ((cls*)(ptr))
@@ -1045,7 +1061,7 @@ class PObject {
      */
     virtual const char * GetClass(unsigned /*ancestor*/ = 0) const { return Class(); }
 
-    BOOL IsClass(const char * cls) const 
+    PBoolean IsClass(const char * cls) const 
     { return strcmp(cls, GetClass()) == 0; }
 
     /** Determine if the dynamic type of the current instance is a descendent of
@@ -1055,9 +1071,9 @@ class PObject {
        The #PCLASSINFO# macro declares an override of this function for
        the particular class. The user need not implement it.
 
-       @return TRUE if object is descended from the class.
+       @return PTrue if object is descended from the class.
      */
-    virtual BOOL InternalIsDescendant(
+    virtual PBoolean InternalIsDescendant(
       const char * clsName    // Ancestor class name to compare against.
     ) const
     { return IsClass(clsName); }
@@ -1108,7 +1124,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       TRUE if objects are equal.
+       PTrue if objects are equal.
      */
     bool operator==(
       const PObject & obj   // Object to compare against.
@@ -1117,7 +1133,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       TRUE if objects are not equal.
+       PTrue if objects are not equal.
      */
     bool operator!=(
       const PObject & obj   // Object to compare against.
@@ -1126,7 +1142,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       TRUE if objects are less than.
+       PTrue if objects are less than.
      */
     bool operator<(
       const PObject & obj   // Object to compare against.
@@ -1135,7 +1151,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       TRUE if objects are greater than.
+       PTrue if objects are greater than.
      */
     bool operator>(
       const PObject & obj   // Object to compare against.
@@ -1144,7 +1160,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       TRUE if objects are less than or equal.
+       PTrue if objects are less than or equal.
      */
     bool operator<=(
       const PObject & obj   // Object to compare against.
@@ -1153,7 +1169,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       TRUE if objects are greater than or equal.
+       PTrue if objects are greater than or equal.
      */
     bool operator>=(
       const PObject & obj   // Object to compare against.

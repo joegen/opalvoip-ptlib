@@ -161,7 +161,7 @@ class PHTTPField : public PObject
        @return
        String for field value.
      */
-    virtual PString GetValue(BOOL dflt = FALSE) const = 0;
+    virtual PString GetValue(PBoolean dflt = PFalse) const = 0;
 
     /** Set the value of the field.
      */
@@ -186,9 +186,9 @@ class PHTTPField : public PObject
     /** Validate the new field value before #SetValue()# is called.
 
        @return
-       BOOL if the new field value is OK.
+       PBoolean if the new field value is OK.
      */
-    virtual BOOL Validated(
+    virtual PBoolean Validated(
       const PString & newVal, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
@@ -210,23 +210,23 @@ class PHTTPField : public PObject
     /** Validate the new field value in a list before #SetValue()# is called.
 
        @return
-       BOOL if the all the new field values are OK.
+       PBoolean if the all the new field values are OK.
      */
-    virtual BOOL ValidateAll(
+    virtual PBoolean ValidateAll(
       const PStringToString & data, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
 
 
-    BOOL NotYetInHTML() const { return notInHTML; }
-    void SetInHTML() { notInHTML = FALSE; }
+    PBoolean NotYetInHTML() const { return notInHTML; }
+    void SetInHTML() { notInHTML = PFalse; }
 
   protected:
     PCaselessString baseName;
     PCaselessString fullName;
     PString title;
     PString help;
-    BOOL notInHTML;
+    PBoolean notInHTML;
 };
 
 
@@ -266,7 +266,7 @@ class PHTTPCompositeField : public PHTTPField
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newValue   // New value for the field.
@@ -284,7 +284,7 @@ class PHTTPCompositeField : public PHTTPField
       const PStringToString & data   // New value for the field.
     );
 
-    virtual BOOL ValidateAll(
+    virtual PBoolean ValidateAll(
       const PStringToString & data, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
@@ -338,7 +338,7 @@ class PHTTPFieldArray : public PHTTPCompositeField
   public:
     PHTTPFieldArray(
       PHTTPField * baseField,
-      BOOL ordered,
+      PBoolean ordered,
       PINDEX fixedSize = 0
     );
 
@@ -383,8 +383,8 @@ class PHTTPFieldArray : public PHTTPCompositeField
     void SetArrayFieldName(PINDEX idx) const;
 
     PHTTPField * baseField;
-    BOOL orderedArray;
-    BOOL canAddElements;
+    PBoolean orderedArray;
+    PBoolean canAddElements;
 };
 
 
@@ -412,7 +412,7 @@ class PHTTPStringField : public PHTTPField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -450,7 +450,7 @@ class PHTTPPasswordField : public PHTTPStringField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -486,7 +486,7 @@ class PHTTPIntegerField : public PHTTPField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -499,7 +499,7 @@ class PHTTPIntegerField : public PHTTPField
       PConfig & cfg   ///< Configuration for value transfer.
     ) const;
 
-    virtual BOOL Validated(
+    virtual PBoolean Validated(
       const PString & newVal,
       PStringStream & msg
     ) const;
@@ -518,13 +518,13 @@ class PHTTPBooleanField : public PHTTPField
   public:
     PHTTPBooleanField(
       const char * name,
-      BOOL initVal = FALSE,
+      PBoolean initVal = PFalse,
       const char * help = NULL
     );
     PHTTPBooleanField(
       const char * name,
       const char * title,
-      BOOL initVal = FALSE,
+      PBoolean initVal = PFalse,
       const char * help = NULL
     );
 
@@ -538,7 +538,7 @@ class PHTTPBooleanField : public PHTTPField
       const PString & input
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -553,7 +553,7 @@ class PHTTPBooleanField : public PHTTPField
 
 
   protected:
-    BOOL value, initialValue;
+    PBoolean value, initialValue;
 };
 
 
@@ -632,7 +632,7 @@ class PHTTPRadioField : public PHTTPField
       const PString & input
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -686,7 +686,7 @@ class PHTTPSelectField : public PHTTPField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(BOOL dflt = FALSE) const;
+    virtual PString GetValue(PBoolean dflt = PFalse) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -731,7 +731,7 @@ class PHTTPForm : public PHTTPString
       PHTTPRequest & request,    ///< Information on this request.
       PString & text             ///< Data used in reply.
     );
-    virtual BOOL Post(
+    virtual PBoolean Post(
       PHTTPRequest & request,       ///< Information on this request.
       const PStringToString & data, ///< Variables in the POST data.
       PHTML & replyMessage          ///< Reply message for post.
@@ -800,7 +800,7 @@ class PHTTPConfig : public PHTTPForm
       PHTTPRequest & request,    ///< Information on this request.
       PString & text             ///< Data used in reply.
     );
-    virtual BOOL Post(
+    virtual PBoolean Post(
       PHTTPRequest & request,       ///< Information on this request.
       const PStringToString & data, ///< Variables in the POST data.
       PHTML & replyMessage          ///< Reply message for post.
@@ -877,7 +877,7 @@ class PHTTPConfigSectionList : public PHTTPString
       PHTTPRequest & request,    ///< Information on this request.
       PString & text             ///< Data used in reply.
     );
-    virtual BOOL Post(
+    virtual PBoolean Post(
       PHTTPRequest & request,       ///< Information on this request.
       const PStringToString & data, ///< Variables in the POST data.
       PHTML & replyMessage          ///< Reply message for post.

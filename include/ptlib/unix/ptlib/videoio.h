@@ -47,35 +47,35 @@
 #endif
 
   public:
-    virtual BOOL SetVideoFormat(VideoFormat videoFormat);
+    virtual PBoolean SetVideoFormat(VideoFormat videoFormat);
     virtual int  GetNumChannels();
-    virtual BOOL SetChannel(int channelNumber);
-    virtual BOOL SetColourFormat(const PString & colourFormat);
-    virtual BOOL SetFrameRate(unsigned rate);
-    virtual BOOL GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight) ;
-    virtual BOOL SetFrameSize(unsigned width, unsigned height);
+    virtual PBoolean SetChannel(int channelNumber);
+    virtual PBoolean SetColourFormat(const PString & colourFormat);
+    virtual PBoolean SetFrameRate(unsigned rate);
+    virtual PBoolean GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight) ;
+    virtual PBoolean SetFrameSize(unsigned width, unsigned height);
     virtual int GetBrightness();
-    virtual BOOL SetBrightness(unsigned newBrightness) ;
+    virtual PBoolean SetBrightness(unsigned newBrightness) ;
     virtual int GetContrast();
-    virtual BOOL SetContrast(unsigned newContrast); 
+    virtual PBoolean SetContrast(unsigned newContrast); 
     virtual int GetHue();
-    virtual BOOL SetHue(unsigned newHue); 
+    virtual PBoolean SetHue(unsigned newHue); 
 
 
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
     // only override these methods in Linux. Other platforms will use the
     // default methods in PVideoDevice
     virtual int GetWhiteness();
-    virtual BOOL SetWhiteness(unsigned newWhiteness); 
+    virtual PBoolean SetWhiteness(unsigned newWhiteness); 
     virtual int GetColour();
-    virtual BOOL SetColour(unsigned newColour); 
-    virtual BOOL SetVideoChannelFormat(int channelNumber,
+    virtual PBoolean SetColour(unsigned newColour); 
+    virtual PBoolean SetVideoChannelFormat(int channelNumber,
 				       VideoFormat videoFormat);
 #endif
 
     /** from one ioctl call, get whiteness, brightness, colour, contrast and hue.
      */
-    virtual BOOL GetParameters (int *whiteness, int *brightness, 
+    virtual PBoolean GetParameters (int *whiteness, int *brightness, 
 				int *colour, int *contrast, int *hue);
 
   protected:
@@ -83,7 +83,7 @@
 
     /** Do not use memory mapping, access the data with a call to ::read();
      */
-    BOOL NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesReturned);
+    PBoolean NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesReturned);
 
 
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
@@ -97,7 +97,7 @@
 
    /** Ensure each ::ioctl(VIDIOMCAPTURE) is matched by a ::ioctl(VIDIOCSYNC).
     */
-    BOOL   pendingSync[2];
+    PBoolean   pendingSync[2];
 
     int    currentFrame;
     struct video_mbuf frame;

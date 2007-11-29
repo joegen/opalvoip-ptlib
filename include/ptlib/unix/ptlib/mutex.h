@@ -41,9 +41,9 @@
 
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
     virtual void Wait();
-    virtual BOOL Wait(const PTimeInterval & timeout);
+    virtual PBoolean Wait(const PTimeInterval & timeout);
     virtual void Signal();
-    virtual BOOL WillBlock() const;
+    virtual PBoolean WillBlock() const;
 
   protected:
 

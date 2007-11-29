@@ -24,13 +24,13 @@ class Xmlrpcsrvr : public PHTTPServiceProcess
   public:
     Xmlrpcsrvr();
     void Main();
-    BOOL OnStart();
+    PBoolean OnStart();
     void OnStop();
     void OnConfigChanged();
     void OnControl();
     PString GetPageGraphic();
     void AddUnregisteredText(PHTML & html);
-    BOOL Initialise(const char * initMsg);
+    PBoolean Initialise(const char * initMsg);
 
     PDECLARE_NOTIFIER(PXMLRPCServerParms, Xmlrpcsrvr, FunctionNotifier);
 

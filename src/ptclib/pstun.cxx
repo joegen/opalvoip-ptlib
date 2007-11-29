@@ -124,16 +124,16 @@ void PSTUNClient::GetServer(PIPSocket::Address & address, WORD & port) const
 }
 
 
-BOOL PSTUNClient::SetServer(const PString & server)
+PBoolean PSTUNClient::SetServer(const PString & server)
 {
   PINDEX colon = server.Find(':');
   if (colon == P_MAX_INDEX) {
     if (!PIPSocket::GetHostAddress(server, serverAddress))
-      return FALSE;
+      return PFalse;
   }
   else {
     if (!PIPSocket::GetHostAddress(server.Left(colon), serverAddress))
-      return FALSE;
+      return PFalse;
     serverPort = PIPSocket::GetPortByService("udp", server.Mid(colon+1));
   }
 
@@ -141,7 +141,7 @@ BOOL PSTUNClient::SetServer(const PString & server)
 }
 
 
-BOOL PSTUNClient::SetServer(const PIPSocket::Address & address, WORD port)
+PBoolean PSTUNClient::SetServer(const PIPSocket::Address & address, WORD port)
 {
   serverAddress = address;
   serverPort = port;
@@ -393,7 +393,7 @@ public:
   
   bool Write(PUDPSocket & socket) const
   {
-    return socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)) != FALSE;
+    return socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)) != PFalse;
   }
 
   bool Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
@@ -437,7 +437,7 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIP
 }
 
 
-PSTUNClient::NatTypes PSTUNClient::GetNatType(BOOL force)
+PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 {
   if (!force && natType != UnknownNat)
     return natType;
@@ -545,7 +545,7 @@ PString PSTUNClient::GetNatTypeString(NatTypes type)
 }
 
 
-PSTUNClient::RTPSupportTypes PSTUNClient::IsSupportingRTP(BOOL force)
+PSTUNClient::RTPSupportTypes PSTUNClient::IsSupportingRTP(PBoolean force)
 {
   switch (GetNatType(force)) {
 
@@ -575,12 +575,12 @@ PSTUNClient::RTPSupportTypes PSTUNClient::IsSupportingRTP(BOOL force)
   return RTPUnknown;
 }
 
-BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
+PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
                                      const PTimeInterval & maxAge)
 {
   if (cachedExternalAddress.IsValid() && (PTime() - timeAddressObtained < maxAge)) {
     externalAddress = cachedExternalAddress;
-    return TRUE;
+    return PTrue;
   }
 
   externalAddress = 0; // Set to invalid address
@@ -618,11 +618,11 @@ void PSTUNClient::InvalidateExternalAddressCache() {
 }
 
 
-BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort)
+PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort)
 {
   socket = NULL;
 
-  switch (GetNatType(FALSE)) {
+  switch (GetNatType(PFalse)) {
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
@@ -633,18 +633,18 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address &
       {
         PTRACE(1, "STUN\tInvalid local UDP port range "
                << singlePortInfo.currentPort << '-' << singlePortInfo.maxPort);
-        return FALSE;
+        return PFalse;
       }
       break;
 
     default : // UnknownNet, SymmetricFirewall, BlockedNat
       PTRACE(1, "STUN\tCannot create socket using NAT type " << GetNatTypeName());
-      return FALSE;
+      return PFalse;
   }
 
   PSTUNUDPSocket * stunSocket = new PSTUNUDPSocket;
 
-  BOOL opened;
+  PBoolean opened;
   if (localPort == 0)
     opened = OpenSocket(*stunSocket, singlePortInfo, binding);
   else {
@@ -664,7 +664,7 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address &
       if (mappedAddress != NULL)
       {
         stunSocket->externalIP = mappedAddress->GetIP();
-        if (GetNatType(FALSE) != SymmetricNat)
+        if (GetNatType(PFalse) != SymmetricNat)
           stunSocket->port = mappedAddress->port;
         stunSocket->SetSendAddress(0, 0);
         stunSocket->SetReadTimeout(PMaxTimeInterval);
@@ -683,14 +683,14 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address &
 }
 
 
-BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
+PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2,
                                    const PIPSocket::Address & binding)
 {
   socket1 = NULL;
   socket2 = NULL;
 
-  switch (GetNatType(FALSE)) {
+  switch (GetNatType(PFalse)) {
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
@@ -701,13 +701,13 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       {
         PTRACE(1, "STUN\tInvalid local UDP port range "
                << pairedPortInfo.currentPort << '-' << pairedPortInfo.maxPort);
-        return FALSE;
+        return PFalse;
       }
       break;
 
     default : // UnknownNet, SymmetricFirewall, BlockedNat
       PTRACE(1, "STUN\tCannot create socket pair using NAT type " << GetNatTypeName());
-      return FALSE;
+      return PFalse;
   }
 
   PINDEX i;
@@ -747,7 +747,7 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
       return false;
     }
-    if (GetNatType(FALSE) != SymmetricNat)
+    if (GetNatType(PFalse) != SymmetricNat)
       stunSocket[i].port = mappedAddress->port;
     stunSocket[i].externalIP = mappedAddress->GetIP();
   }
@@ -776,10 +776,10 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   return false;
 }
 
-BOOL PSTUNClient::IsAvailable() 
+PBoolean PSTUNClient::IsAvailable() 
 { 
 
-  switch (GetNatType(FALSE)) {
+  switch (GetNatType(PFalse)) {
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
@@ -787,15 +787,15 @@ BOOL PSTUNClient::IsAvailable()
 
     case SymmetricNat :
       if (pairedPortInfo.basePort == 0 || pairedPortInfo.basePort > pairedPortInfo.maxPort)
-         return FALSE;
+         return PFalse;
       
       break;
 
     default : // UnknownNet, SymmetricFirewall, BlockedNat
-      return FALSE;
+      return PFalse;
   }
 
-  return TRUE; 
+  return PTrue; 
 }
 
 ////////////////////////////////////////////////////////////////
@@ -806,7 +806,7 @@ PSTUNUDPSocket::PSTUNUDPSocket()
 }
 
 
-BOOL PSTUNUDPSocket::GetLocalAddress(Address & addr)
+PBoolean PSTUNUDPSocket::GetLocalAddress(Address & addr)
 {
   if (!externalIP.IsValid())
     return PUDPSocket::GetLocalAddress(addr);
@@ -816,7 +816,7 @@ BOOL PSTUNUDPSocket::GetLocalAddress(Address & addr)
 }
 
 
-BOOL PSTUNUDPSocket::GetLocalAddress(Address & addr, WORD & port)
+PBoolean PSTUNUDPSocket::GetLocalAddress(Address & addr, WORD & port)
 {
   if (!externalIP.IsValid())
     return PUDPSocket::GetLocalAddress(addr, port);

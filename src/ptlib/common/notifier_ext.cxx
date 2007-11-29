@@ -64,23 +64,23 @@ unsigned PSmartNotifieeRegistrar::RegisterNotifiee(void * obj)
 }
 
 
-BOOL PSmartNotifieeRegistrar::UnregisterNotifiee(unsigned id)
+PBoolean PSmartNotifieeRegistrar::UnregisterNotifiee(unsigned id)
 {
   PWaitAndSignal l(s_BrokerLock);
   if (s_Broker.Contains(id))
   {
     s_Broker.RemoveAt(id);
-    return TRUE;
+    return PTrue;
   }
   else
-    return FALSE;
+    return PFalse;
 }
 
 
-BOOL PSmartNotifieeRegistrar::UnregisterNotifiee(void * /*obj*/)
+PBoolean PSmartNotifieeRegistrar::UnregisterNotifiee(void * /*obj*/)
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -138,7 +138,7 @@ void * PSmartPtrInspector::GetTarget() const
 
 //////////////////////////////////////////////////////////////////////////////
 
-BOOL PNotifierList::RemoveTarget(PObject * obj)
+PBoolean PNotifierList::RemoveTarget(PObject * obj)
 {
   Cleanup();
 
@@ -151,11 +151,11 @@ BOOL PNotifierList::RemoveTarget(PObject * obj)
     if (target == obj)
     {
       m_TheList.RemoveAt(i);
-      return TRUE;
+      return PTrue;
     }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -192,9 +192,9 @@ void PNotifierList::Cleanup()
 }
 
 
-BOOL PNotifierList::Fire(PObject& obj, INT val)
+PBoolean PNotifierList::Fire(PObject& obj, INT val)
 {
-  if (!m_TheList.GetSize()) return FALSE;
+  if (!m_TheList.GetSize()) return PFalse;
 
   for (PINDEX i = 0 ; i < m_TheList.GetSize() ; i++)
   {
@@ -216,7 +216,7 @@ BOOL PNotifierList::Fire(PObject& obj, INT val)
     n(obj, val);
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 // End of File ///////////////////////////////////////////////////////////////

@@ -117,9 +117,9 @@ class PGloballyUniqueID : public PBYTEArray
 
     /**Test if the GUID is null, ie consists of all zeros.
       */
-    BOOL IsNULL() const;
+    PBoolean IsNULL() const;
 
-    BOOL operator!() const { return !IsNULL(); }
+    PBoolean operator!() const { return !IsNULL(); }
   //@}
 };
 

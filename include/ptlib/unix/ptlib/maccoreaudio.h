@@ -70,31 +70,31 @@ class PSoundChannelCoreAudio : public PSoundChannel
                 unsigned bitsPerSample);
    ~PSoundChannelCoreAudio();
    
-   virtual BOOL SetFormat(unsigned numChannels,
+   virtual PBoolean SetFormat(unsigned numChannels,
                 unsigned sampleRate,
                 unsigned bitsPerSample);
    virtual unsigned GetChannels() const;
    virtual unsigned GetSampleRate() const;
    virtual unsigned GetSampleSize() const;
-   virtual BOOL SetBuffers(PINDEX size, PINDEX count);
-   virtual BOOL GetBuffers(PINDEX & size, PINDEX & count);
-   virtual BOOL SetVolume(unsigned volume);
-   virtual BOOL GetVolume(unsigned & volume);
+   virtual PBoolean SetBuffers(PINDEX size, PINDEX count);
+   virtual PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+   virtual PBoolean SetVolume(unsigned volume);
+   virtual PBoolean GetVolume(unsigned & volume);
    
    /* Open functions */
-   virtual BOOL Open(const PString & device,
+   virtual PBoolean Open(const PString & device,
              Directions dir,
              unsigned numChannels,
              unsigned sampleRate,
              unsigned bitsPerSample);
    /* gets never called, see sound.h:
     * baseChannel->PChannel::IsOpen();  */
-   virtual BOOL IsOpen() const;
+   virtual PBoolean IsOpen() const;
    /* gets never called, see sound.h:
     * baseChannel->PChannel::GetHandle();*/
    virtual int GetHandle() const;
 
-   virtual BOOL Abort();
+   virtual PBoolean Abort();
    PSoundChannel *CreateOpenedChannel(const PString & driverName,
        const PString & deviceName,
        const PSoundChannel::Directions,
@@ -105,20 +105,20 @@ class PSoundChannelCoreAudio : public PSoundChannel
    static PString GetDefaultDevice(Directions dir);
    static PStringList GetDeviceNames(Directions dir);
    
-   virtual BOOL Write(const void *buf, PINDEX len);
-   virtual BOOL PlaySound(const PSound & sound, BOOL wait);
-   virtual BOOL PlayFile(const PFilePath & file, BOOL wait);
-   virtual BOOL HasPlayCompleted();
-   virtual BOOL WaitForPlayCompletion();
+   virtual PBoolean Write(const void *buf, PINDEX len);
+   virtual PBoolean PlaySound(const PSound & sound, PBoolean wait);
+   virtual PBoolean PlayFile(const PFilePath & file, PBoolean wait);
+   virtual PBoolean HasPlayCompleted();
+   virtual PBoolean WaitForPlayCompletion();
    
-   virtual BOOL Read(void *buf, PINDEX len);
-   virtual BOOL RecordSound(PSound & sound);
-   virtual BOOL RecordFile(const PFilePath & file);
-   virtual BOOL StartRecording();
-   virtual BOOL isRecordBufferFull();
-   virtual BOOL AreAllRecordBuffersFull();
-   virtual BOOL WaitForRecordBufferFull();
-   virtual BOOL WaitForAllRecordBuffersFull();
+   virtual PBoolean Read(void *buf, PINDEX len);
+   virtual PBoolean RecordSound(PSound & sound);
+   virtual PBoolean RecordFile(const PFilePath & file);
+   virtual PBoolean StartRecording();
+   virtual PBoolean isRecordBufferFull();
+   virtual PBoolean AreAllRecordBuffersFull();
+   virtual PBoolean WaitForRecordBufferFull();
+   virtual PBoolean WaitForAllRecordBuffersFull();
 
  protected:
    /**
@@ -201,14 +201,14 @@ class PSoundChannelCoreAudio : public PSoundChannel
 
    static pthread_mutex_t& GetReadMuteMutex();
    static pthread_mutex_t& GetWriteMuteMutex();
-   static BOOL& GetReadMute();
-   static BOOL& GetWriteMute();
+   static PBoolean& GetReadMute();
+   static PBoolean& GetWriteMute();
 
    /* These functions just return the right mutex/variable depending whehter
     * the channel is recorder/player
     */
    pthread_mutex_t& GetIsMuteMutex();
-   BOOL & isMute();
+   PBoolean & isMute();
 
    /** 
     * Devices

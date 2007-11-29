@@ -12,7 +12,7 @@
 BOOL VFWAPI capDefGetDriverDescription (UINT, LPSTR, int, LPSTR, int ) 
 { 
 	PTRACE(0, ">>> capDefGetDriverDescription called. Should it?" << endl );
-	return FALSE; 
+	return PFalse; 
 }
 
 HWND VFWAPI capDefCreateCaptureWindow(LPCSTR, DWORD, int, int, int, int, HWND, int) 

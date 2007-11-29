@@ -61,20 +61,20 @@ class PTextToSpeech : public PObject
     };
 
     virtual PStringArray GetVoiceList() = 0;
-    virtual BOOL SetVoice(const PString & voice) = 0;
+    virtual PBoolean SetVoice(const PString & voice) = 0;
 
-    virtual BOOL SetRate(unsigned rate) = 0;
+    virtual PBoolean SetRate(unsigned rate) = 0;
     virtual unsigned GetRate() = 0;
 
-    virtual BOOL SetVolume(unsigned volume) = 0;
+    virtual PBoolean SetVolume(unsigned volume) = 0;
     virtual unsigned GetVolume() = 0;
 
-    virtual BOOL OpenFile   (const PFilePath & fn) = 0;
-    virtual BOOL OpenChannel(PChannel * chanel) = 0;
-    virtual BOOL IsOpen() = 0;
+    virtual PBoolean OpenFile   (const PFilePath & fn) = 0;
+    virtual PBoolean OpenChannel(PChannel * chanel) = 0;
+    virtual PBoolean IsOpen() = 0;
 
-    virtual BOOL Close      () = 0;
-    virtual BOOL Speak      (const PString & text, TextType hint = Default) = 0;
+    virtual PBoolean Close      () = 0;
+    virtual PBoolean Speak      (const PString & text, TextType hint = Default) = 0;
 };
 
 #endif

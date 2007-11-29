@@ -81,7 +81,7 @@ public:
   /**  GetExternalAddress
     Get the acquired External IP Address.
   */
-   virtual BOOL GetExternalAddress(
+   virtual PBoolean GetExternalAddress(
       PIPSocket::Address & externalAddress, /// External address of router
       const PTimeInterval & maxAge = 1000   /// Maximum age for caching
    ) = 0;
@@ -89,7 +89,7 @@ public:
   /**  CreateSocketPair
     Create the UDP Socket pair
   */
-   virtual BOOL CreateSocketPair(
+   virtual PBoolean CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
@@ -102,7 +102,7 @@ public:
      The Order of adding to the PNstStrategy determines which method
      is used
   */
-   virtual BOOL IsAvailable() { return FALSE; };
+   virtual PBoolean IsAvailable() { return PFalse; };
 
     /**Set the port ranges to be used on local machine.
        Note that the ports used on the NAT router may not be the same unless
@@ -195,7 +195,7 @@ public :
   /** RemoveMethod
     This function removes a NAT method from the NATlist matching the supplied method name
    */
-  BOOL RemoveMethod(const PString & meth);
+  PBoolean RemoveMethod(const PString & meth);
 
     /**Set the port ranges to be used on local machine.
        Note that the ports used on the NAT router may not be the same unless

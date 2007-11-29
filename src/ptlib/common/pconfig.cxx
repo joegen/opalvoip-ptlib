@@ -53,14 +53,14 @@ PStringToString PConfig::GetAllKeyValues(const PString & section) const
 
 #if !defined(_WIN32) || defined (__NUCLEUS_MNT__)
 
-BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt) const
+PBoolean PConfig::GetBoolean(const PString & section, const PString & key, PBoolean dflt) const
 {
   PString str = GetString(section, key, dflt ? "T" : "F").ToUpper();
   return str[0] == 'T' || str[0] == 'Y' || str.AsInteger() != 0;
 }
 
 
-void PConfig::SetBoolean(const PString & section, const PString & key, BOOL value)
+void PConfig::SetBoolean(const PString & section, const PString & key, PBoolean value)
 {
   SetString(section, key, value ? "True" : "False");
 }

@@ -60,7 +60,7 @@ PObject::Comparison PMemoryFile::Compare(const PObject & obj) const
 }
 
 
-BOOL PMemoryFile::Read(void * buf, PINDEX len)
+PBoolean PMemoryFile::Read(void * buf, PINDEX len)
 {
   if ((position + len) > data.GetSize())
     len = data.GetSize() - position;
@@ -77,12 +77,12 @@ BOOL PMemoryFile::Read(void * buf, PINDEX len)
 }
 
 
-BOOL PMemoryFile::Write(const void * buf, PINDEX len)
+PBoolean PMemoryFile::Write(const void * buf, PINDEX len)
 {
   memcpy(data.GetPointer(position+len) + position, buf, len);
   position += len;
   lastWriteCount = len;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -92,34 +92,34 @@ off_t PMemoryFile::GetLength() const
 }
       
 
-BOOL PMemoryFile::SetLength(off_t len)
+PBoolean PMemoryFile::SetLength(off_t len)
 {
   return data.SetSize(len);
 }
 
 
-BOOL PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
+PBoolean PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
   switch (origin) {
     case Start:
       if (pos > data.GetSize())
-        return FALSE;
+        return PFalse;
       position = pos;
       break;
 
     case Current:
       if (pos < -position || pos > (data.GetSize() - position))
-        return FALSE;
+        return PFalse;
       position += pos;
       break;
 
     case End:
       if (pos < -data.GetSize())
-        return FALSE;
+        return PFalse;
       position = data.GetSize() - pos;
       break;
   }
-  return TRUE;
+  return PTrue;
 }
 
 

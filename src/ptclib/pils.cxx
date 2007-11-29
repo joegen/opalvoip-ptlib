@@ -82,34 +82,34 @@ PILSSession::PILSSession()
 }
 
 
-BOOL PILSSession::AddPerson(const RTPerson & person)
+PBoolean PILSSession::AddPerson(const RTPerson & person)
 {
   return Add(person.GetDN(), person);
 }
 
 
-BOOL PILSSession::ModifyPerson(const RTPerson & person)
+PBoolean PILSSession::ModifyPerson(const RTPerson & person)
 {
   return Modify(person.GetDN(), person);
 }
 
 
-BOOL PILSSession::DeletePerson(const RTPerson & person)
+PBoolean PILSSession::DeletePerson(const RTPerson & person)
 {
   return Delete(person.GetDN());
 }
 
 
-BOOL PILSSession::SearchPerson(const PString & canonicalName, RTPerson & person)
+PBoolean PILSSession::SearchPerson(const PString & canonicalName, RTPerson & person)
 {
   SearchContext context;
   if (!Search(context, "cn="+canonicalName))
-    return FALSE;
+    return PFalse;
 
   if (!GetSearchResult(context, person))
-    return FALSE;
+    return PFalse;
 
-  // Return FALSE if there is more than one match
+  // Return PFalse if there is more than one match
   return !GetNextSearchResult(context);
 }
 

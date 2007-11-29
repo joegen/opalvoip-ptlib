@@ -289,7 +289,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are equal.
+       PTrue if intervals are equal.
      */
     bool operator==(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -303,7 +303,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are not equal.
+       PTrue if intervals are not equal.
      */
     bool operator!=(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -317,7 +317,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are greater than.
+       PTrue if intervals are greater than.
      */
     bool operator> (
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -331,7 +331,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are greater than or equal.
+       PTrue if intervals are greater than or equal.
      */
     bool operator>=(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -345,7 +345,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are less than.
+       PTrue if intervals are less than.
      */
     bool operator< (
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -359,7 +359,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       TRUE if intervals are less than or equal.
+       PTrue if intervals are less than or equal.
      */
     bool operator<=(
       const PTimeInterval & interval   ///< Time interval to compare.

@@ -43,30 +43,30 @@
 
 PSafeObject::PSafeObject(PSafeObject * indirectLock)
     : safeReferenceCount(0)
-    , safelyBeingRemoved(FALSE)
+    , safelyBeingRemoved(PFalse)
     , safeInUse(indirectLock != NULL ? indirectLock->safeInUse : &safeInUseMutex)
 {
 }
 
 
-BOOL PSafeObject::SafeReference()
+PBoolean PSafeObject::SafeReference()
 {
   PStringStream str;
   {
     PWaitAndSignal mutex(safetyMutex);
     if (safelyBeingRemoved)
-      return FALSE;
+      return PFalse;
     safeReferenceCount++;
     str << "SafeColl\tIncrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this;
   }
   PTRACE(6, str);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSafeObject::SafeDereference()
+PBoolean PSafeObject::SafeDereference()
 {
-  BOOL mayBeDeleted = FALSE;
+  PBoolean mayBeDeleted = PFalse;
 
   PStringStream str;
   safetyMutex.Wait();
@@ -82,7 +82,7 @@ BOOL PSafeObject::SafeDereference()
 }
 
 
-BOOL PSafeObject::LockReadOnly() const
+PBoolean PSafeObject::LockReadOnly() const
 {
   PTRACE(6, "SafeColl\tWaiting read ("<<(void *)this<<")");
   safetyMutex.Wait();
@@ -90,13 +90,13 @@ BOOL PSafeObject::LockReadOnly() const
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
     PTRACE(6, "SafeColl\tBeing removed while waiting read ("<<(void *)this<<")");
-    return FALSE;
+    return PFalse;
   }
 
   safetyMutex.Signal();
   safeInUse->StartRead();
   PTRACE(6, "SafeColl\tLocked read ("<<(void *)this<<")");
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -107,7 +107,7 @@ void PSafeObject::UnlockReadOnly() const
 }
 
 
-BOOL PSafeObject::LockReadWrite()
+PBoolean PSafeObject::LockReadWrite()
 {
   PTRACE(6, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
   safetyMutex.Wait();
@@ -115,13 +115,13 @@ BOOL PSafeObject::LockReadWrite()
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
     PTRACE(6, "SafeColl\tBeing removed while waiting readWrite ("<<(void *)this<<")");
-    return FALSE;
+    return PFalse;
   }
 
   safetyMutex.Signal();
   safeInUse->StartWrite();
   PTRACE(6, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -135,12 +135,12 @@ void PSafeObject::UnlockReadWrite()
 void PSafeObject::SafeRemove()
 {
   safetyMutex.Wait();
-  safelyBeingRemoved = TRUE;
+  safelyBeingRemoved = PTrue;
   safetyMutex.Signal();
 }
 
 
-BOOL PSafeObject::SafelyCanBeDeleted() const
+PBoolean PSafeObject::SafelyCanBeDeleted() const
 {
   PWaitAndSignal mutex(safetyMutex);
   return safelyBeingRemoved && safeReferenceCount == 0;
@@ -163,7 +163,7 @@ PSafeLockReadOnly::~PSafeLockReadOnly()
 }
 
 
-BOOL PSafeLockReadOnly::Lock()
+PBoolean PSafeLockReadOnly::Lock()
 {
   locked = safeObject.LockReadOnly();
   return locked;
@@ -174,7 +174,7 @@ void PSafeLockReadOnly::Unlock()
 {
   if (locked) {
     safeObject.UnlockReadOnly();
-    locked = FALSE;
+    locked = PFalse;
   }
 }
 
@@ -196,7 +196,7 @@ PSafeLockReadWrite::~PSafeLockReadWrite()
 }
 
 
-BOOL PSafeLockReadWrite::Lock()
+PBoolean PSafeLockReadWrite::Lock()
 {
   locked = safeObject.LockReadWrite();
   return locked;
@@ -207,7 +207,7 @@ void PSafeLockReadWrite::Unlock()
 {
   if (locked) {
     safeObject.UnlockReadWrite();
-    locked = FALSE;
+    locked = PFalse;
   }
 }
 
@@ -219,7 +219,7 @@ PSafeCollection::PSafeCollection(PCollection * coll)
   collection = coll;
   collection->DisallowDeleteObjects();
   toBeRemoved.DisallowDeleteObjects();
-  deleteObjects = TRUE;
+  deleteObjects = PTrue;
 }
 
 
@@ -235,33 +235,33 @@ PSafeCollection::~PSafeCollection()
 }
 
 
-BOOL PSafeCollection::SafeRemove(PSafeObject * obj)
+PBoolean PSafeCollection::SafeRemove(PSafeObject * obj)
 {
   if (obj == NULL)
-    return FALSE;
+    return PFalse;
 
   PWaitAndSignal mutex(collectionMutex);
   if (!collection->Remove(obj))
-    return FALSE;
+    return PFalse;
 
   SafeRemoveObject(obj);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PSafeCollection::SafeRemoveAt(PINDEX idx)
+PBoolean PSafeCollection::SafeRemoveAt(PINDEX idx)
 {
   PWaitAndSignal mutex(collectionMutex);
   PSafeObject * obj = PDownCast(PSafeObject, collection->RemoveAt(idx));
   if (obj == NULL)
-    return FALSE;
+    return PFalse;
 
   SafeRemoveObject(obj);
-  return TRUE;
+  return PTrue;
 }
 
 
-void PSafeCollection::RemoveAll(BOOL synchronous)
+void PSafeCollection::RemoveAll(PBoolean synchronous)
 {
   collectionMutex.Wait();
 
@@ -297,7 +297,7 @@ void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
 }
 
 
-BOOL PSafeCollection::DeleteObjectsToBeRemoved()
+PBoolean PSafeCollection::DeleteObjectsToBeRemoved()
 {
   PWaitAndSignal lock(removalMutex);
 
@@ -565,10 +565,10 @@ void PSafePtrBase::Previous()
 }
 
 
-BOOL PSafePtrBase::SetSafetyMode(PSafetyMode mode)
+PBoolean PSafePtrBase::SetSafetyMode(PSafetyMode mode)
 {
   if (lockMode == mode)
-    return TRUE;
+    return PTrue;
 
   ExitSafetyMode(NoDereference);
   lockMode = mode;
@@ -576,34 +576,34 @@ BOOL PSafePtrBase::SetSafetyMode(PSafetyMode mode)
 }
 
 
-BOOL PSafePtrBase::EnterSafetyMode(EnterSafetyModeOption ref)
+PBoolean PSafePtrBase::EnterSafetyMode(EnterSafetyModeOption ref)
 {
   if (currentObject == NULL)
-    return FALSE;
+    return PFalse;
 
   if (ref == WithReference && !currentObject->SafeReference()) {
     currentObject = NULL;
-    return FALSE;
+    return PFalse;
   }
 
   switch (lockMode) {
     case PSafeReadOnly :
       if (currentObject->LockReadOnly())
-        return TRUE;
+        return PTrue;
       break;
 
     case PSafeReadWrite :
       if (currentObject->LockReadWrite())
-        return TRUE;
+        return PTrue;
       break;
 
     case PSafeReference :
-      return TRUE;
+      return PTrue;
   }
 
   currentObject->SafeDereference();
   currentObject = NULL;
-  return FALSE;
+  return PFalse;
 }
 
 

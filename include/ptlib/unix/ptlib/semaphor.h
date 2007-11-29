@@ -67,11 +67,11 @@
 #elif defined(__BEOS__)
 
   public:
-    PSemaphore(BOOL fNested); 
+    PSemaphore(PBoolean fNested); 
     void Create(unsigned initial);
 
   protected:
-    BOOL mfNested; // Does it support recursive locks?
+    PBoolean mfNested; // Does it support recursive locks?
     thread_id mOwner; // delete can be called by owner thread
     sem_id semId;
     volatile int32 mCount;

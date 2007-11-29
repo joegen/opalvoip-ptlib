@@ -592,12 +592,12 @@ DWORD GetPrivateProfileString(
 	return -1L;
 }
 
-BOOL WritePrivateProfileString(
+PBoolean WritePrivateProfileString(
   const char* lpAppName,  // pointer to section name
   const char* lpKeyName,  // pointer to key name
   const char* lpString,   // pointer to string to add
   const char* )  // pointer to initialization filename
 { 
-	return FALSE;
+	return PFalse;
 }
 

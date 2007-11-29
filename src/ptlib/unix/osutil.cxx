@@ -356,7 +356,7 @@ void PDirectory::Construct ()
   PString::AssignContents(CanonicaliseDirectory(*this));
 }
 
-BOOL PDirectory::Open(int ScanMask)
+PBoolean PDirectory::Open(int ScanMask)
 
 {
   if (directory != NULL)
@@ -365,23 +365,23 @@ BOOL PDirectory::Open(int ScanMask)
   scanMask = ScanMask;
 
   if ((directory = opendir(theArray)) == NULL)
-    return FALSE;
+    return PFalse;
 
   entryBuffer = (struct dirent *)malloc(sizeof(struct dirent) + P_MAX_PATH);
   entryInfo   = new PFileInfo;
 
   if (Next())
-    return TRUE;
+    return PTrue;
 
   Close();
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PDirectory::Next()
+PBoolean PDirectory::Next()
 {
   if (directory == NULL)
-    return FALSE;
+    return PFalse;
 
   do {
     do {
@@ -389,16 +389,16 @@ BOOL PDirectory::Next()
       entryBuffer->d_name[0] = '\0';
 #if P_HAS_POSIX_READDIR_R == 3
       if (::readdir_r(directory, entryBuffer, &entryPtr) != 0)
-        return FALSE;
+        return PFalse;
       if (entryPtr != entryBuffer)
-        return FALSE;
+        return PFalse;
 #elif P_HAS_POSIX_READDIR_R == 2
       entryPtr = ::readdir_r(directory, entryBuffer);
       if (entryPtr == NULL)
-        return FALSE;
+        return PFalse;
 #else
       if ((entryPtr = ::readdir(directory)) == NULL)
-        return FALSE;
+        return PFalse;
       *entryBuffer = *entryPtr;
       strcpy(entryBuffer->d_name, entryPtr->d_name);
 #endif
@@ -409,27 +409,27 @@ BOOL PDirectory::Next()
       continue;
     
     if (scanMask == PFileInfo::AllPermissions)
-      return TRUE;
+      return PTrue;
   } while ((entryInfo->type & scanMask) == 0);
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PDirectory::IsSubDir() const
+PBoolean PDirectory::IsSubDir() const
 {
   if (entryInfo == NULL)
-    return FALSE;
+    return PFalse;
 
   return entryInfo->type == PFileInfo::SubDirectory;
 }
 
-BOOL PDirectory::Restart(int newScanMask)
+PBoolean PDirectory::Restart(int newScanMask)
 {
   scanMask = newScanMask;
   if (directory != NULL)
     rewinddir(directory);
-  return TRUE;
+  return PTrue;
 }
 
 PString PDirectory::GetEntryName() const
@@ -441,27 +441,27 @@ PString PDirectory::GetEntryName() const
 }
 
 
-BOOL PDirectory::GetInfo(PFileInfo & info) const
+PBoolean PDirectory::GetInfo(PFileInfo & info) const
 {
   if (entryInfo == NULL)
-    return FALSE;
+    return PFalse;
 
   info = *entryInfo;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PDirectory::Exists(const PString & p)
+PBoolean PDirectory::Exists(const PString & p)
 {
   struct stat sbuf;
   if (stat((const char *)p, &sbuf) != 0)
-    return FALSE;
+    return PFalse;
 
   return S_ISDIR(sbuf.st_mode);
 }
 
 
-BOOL PDirectory::Create(const PString & p, int perm)
+PBoolean PDirectory::Create(const PString & p, int perm)
 {
   PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
   PINDEX last = p.GetLength()-1;
@@ -475,7 +475,7 @@ BOOL PDirectory::Create(const PString & p, int perm)
 #endif
 }
 
-BOOL PDirectory::Remove(const PString & p)
+PBoolean PDirectory::Remove(const PString & p)
 {
   PAssert(!p.IsEmpty(), "attempt to remove dir with empty name");
   PString str = p.Left(p.GetLength()-1);
@@ -568,71 +568,71 @@ PString PDirectory::GetVolume() const
   return volume;
 }
 
-BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
+PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
 #if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
 
   struct statfs fs;
 
   if (statfs(operator+("."), &fs) == -1)
-    return FALSE;
+    return PFalse;
 
   clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bavail*(PInt64)fs.f_bsize;
-  return TRUE;
+  return PTrue;
 
 #elif defined(P_AIX) || defined(P_VXWORKS)
 
   struct statfs fs;
   if (statfs((char *) ((const char *)operator+(".") ), &fs) == -1)
-    return FALSE;
+    return PFalse;
 
   clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bavail*(PInt64)fs.f_bsize;
-  return TRUE;
+  return PTrue;
 
 #elif defined(P_SOLARIS)
 
   struct statvfs buf;
   if (statvfs(operator+("."), &buf) != 0)
-    return FALSE;
+    return PFalse;
 
   clusterSize = buf.f_frsize;
   total = buf.f_blocks * buf.f_frsize;
   free  = buf.f_bfree  * buf.f_frsize;
 
-  return TRUE;
+  return PTrue;
   
 #elif defined(P_IRIX)
 
   struct statfs fs;
 
   if (statfs(operator+("."), &fs, sizeof(struct statfs), 0) == -1)
-    return FALSE;
+    return PFalse;
 
   clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bfree*(PInt64)fs.f_bsize;
-  return TRUE;
+  return PTrue;
 
 #elif defined(P_QNX)
 
   struct statvfs fs;
 
   if (statvfs(operator+("."), &fs) == -1)
-    return FALSE;
+    return PFalse;
 
   clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bavail*(PInt64)fs.f_bsize;
-  return TRUE;
+  return PTrue;
 
 #else
 
 #warning Platform requires implemetation of GetVolumeSpace()
-  return FALSE;
+  return PFalse;
 
 #endif
 }
@@ -684,7 +684,7 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
-BOOL PFile::Open(OpenMode mode, int opt)
+PBoolean PFile::Open(OpenMode mode, int opt)
 
 {
   Close();
@@ -705,7 +705,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
     os_handle = mkstemp(templateStr);
 #endif // P_RTEMS
     if (!ConvertOSError(os_handle))
-      return FALSE;
+      return PFalse;
     path = templateStr;
   } else {
 #else
@@ -745,72 +745,72 @@ BOOL PFile::Open(OpenMode mode, int opt)
 
 
     if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, DEFAULT_FILE_MODE))))
-      return FALSE;
+      return PFalse;
   }
 
 #ifndef P_VXWORKS
   return ConvertOSError(::fcntl(os_handle, F_SETFD, 1));
 #else
-  return TRUE;
+  return PTrue;
 #endif
 }
 
 
-BOOL PFile::SetLength(off_t len)
+PBoolean PFile::SetLength(off_t len)
 {
   return ConvertOSError(ftruncate(GetHandle(), len));
 }
 
 
-BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL force)
+PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBoolean force)
 {
   if (newname.Find('/') != P_MAX_INDEX) {
     errno = EINVAL;
-    return FALSE;
+    return PFalse;
   }
 
   if (rename(oldname, oldname.GetPath() + newname) == 0)
-    return TRUE;
+    return PTrue;
 
   if (!force || errno == ENOENT || !Exists(newname))
-    return FALSE;
+    return PFalse;
 
-  if (!Remove(newname, TRUE))
-    return FALSE;
+  if (!Remove(newname, PTrue))
+    return PFalse;
 
   return rename(oldname, oldname.GetPath() + newname) == 0;
 }
 
 
-BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL force)
+PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBoolean force)
 {
   PFilePath from = oldname.GetDirectory() + oldname.GetFileName();
   PFilePath to = newname.GetDirectory() + newname.GetFileName();
 
   if (rename(from, to) == 0)
-    return TRUE;
+    return PTrue;
 
   if (errno == EXDEV)
     return Copy(from, to, force) && Remove(from);
 
   if (force && errno == EEXIST)
-    if (Remove(to, TRUE))
+    if (Remove(to, PTrue))
       if (rename(from, to) == 0)
-  return TRUE;
+  return PTrue;
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PFile::Exists(const PFilePath & name)
+PBoolean PFile::Exists(const PFilePath & name)
 { 
 #ifdef P_VXWORKS
   // access function not defined for VxWorks
   // as workaround, open the file in read-only mode
   // if it succeeds, the file exists
   PFile file(name, ReadOnly, MustExist);
-  BOOL exists = file.IsOpen();
-  if(exists == TRUE)
+  PBoolean exists = file.IsOpen();
+  if(exists == PTrue)
     file.Close();
   return exists;
 #else
@@ -819,15 +819,15 @@ BOOL PFile::Exists(const PFilePath & name)
 }
 
 
-BOOL PFile::Access(const PFilePath & name, OpenMode mode)
+PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
 {
 #ifdef P_VXWORKS
   // access function not defined for VxWorks
   // as workaround, open the file in specified mode
   // if it succeeds, the access is allowed
   PFile file(name, mode, ModeDefault);
-  BOOL access = file.IsOpen();
-  if(access == TRUE)
+  PBoolean access = file.IsOpen();
+  if(access == PTrue)
     file.Close();
   return access;
 #else  
@@ -851,7 +851,7 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 }
 
 
-BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
+PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 {
   status.type = PFileInfo::UnknownFileType;
 
@@ -861,7 +861,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 #else  
   if (lstat(name, &s) != 0)
 #endif // P_VXWORKS
-    return FALSE;
+    return PFalse;
 
 #ifndef P_VXWORKS
   if (S_ISLNK(s.st_mode)) {
@@ -872,7 +872,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
       status.accessed    = 0;
       status.size        = 0;
       status.permissions = PFileInfo::AllPermissions;
-      return TRUE;
+      return PTrue;
     }
   } 
   else 
@@ -898,11 +898,11 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
   status.size        = s.st_size;
   status.permissions = s.st_mode & PFileInfo::AllPermissions;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
+PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
 
 {
   mode_t mode = 0;
@@ -936,7 +936,7 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
   if (file.IsOpen())
     return (::ioctl(file.GetHandle(), FIOATTRIBSET, mode) >= 0);
 
-  return FALSE;
+  return PFalse;
 #else  
   return chmod ((const char *)name, mode) == 0;
 #endif // P_VXWORKS
@@ -945,18 +945,18 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 ///////////////////////////////////////////////////////////////////////////////
 // PTextFile
 
-BOOL PTextFile::WriteLine (const PString & line)
+PBoolean PTextFile::WriteLine (const PString & line)
 
 {
   if (!Write((const char *)line, line.GetLength()))
-    return FALSE;
+    return PFalse;
 
   char ch = '\n';
   return Write(&ch, 1);
 }
 
 
-BOOL PTextFile::ReadLine (PString & line)
+PBoolean PTextFile::ReadLine (PString & line)
 
 {
   int len    = 0;
@@ -969,12 +969,12 @@ BOOL PTextFile::ReadLine (PString & line)
     while ((ptr - base) < LINE_SIZE_STEP-1) {
       if ((ch = ReadChar()) < 0) {
         ConvertOSError(errno);
-        return FALSE;
+        return PFalse;
       }
       if (ch == '\n') {
         *ptr = '\0';
         line.MakeMinimumSize();
-        return TRUE;
+        return PTrue;
       }
       *ptr++ = ch;
     }
@@ -1096,13 +1096,13 @@ PDirectory PFilePath::GetDirectory() const
 }
 
 
-BOOL PFilePath::IsValid(char c)
+PBoolean PFilePath::IsValid(char c)
 {
   return c != '/';
 }
 
 
-BOOL PFilePath::IsValid(const PString & str)
+PBoolean PFilePath::IsValid(const PString & str)
 {
   return str.Find('/') == P_MAX_INDEX;
 }
@@ -1122,23 +1122,23 @@ PConsoleChannel::PConsoleChannel(ConsoleType type)
 }
 
 
-BOOL PConsoleChannel::Open(ConsoleType type)
+PBoolean PConsoleChannel::Open(ConsoleType type)
 {
   switch (type) {
     case StandardInput :
       os_handle = 0;
-      return TRUE;
+      return PTrue;
 
     case StandardOutput :
       os_handle = 1;
-      return TRUE;
+      return PTrue;
 
     case StandardError :
       os_handle = 2;
-      return TRUE;
+      return PTrue;
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1153,10 +1153,10 @@ PString PConsoleChannel::GetName() const
 }
 
 
-BOOL PConsoleChannel::Close()
+PBoolean PConsoleChannel::Close()
 {
   os_handle = -1;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1181,7 +1181,7 @@ PTime::PTime()
 }
 
 
-BOOL PTime::GetTimeAMPM()
+PBoolean PTime::GetTimeAMPM()
 {
 #if defined(P_USE_LANGINFO)
   return strstr(nl_langinfo(T_FMT), "%p") != NULL;
@@ -1196,7 +1196,7 @@ BOOL PTime::GetTimeAMPM()
   return strstr(buf, "20") != NULL;
 #else
 #warning No AMPM implementation
-  return FALSE;
+  return PFalse;
 #endif
 }
 
@@ -1418,7 +1418,7 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
 }
 
 
-BOOL PTime::IsDaylightSavings()
+PBoolean PTime::IsDaylightSavings()
 {
   time_t theTime = ::time(NULL);
   struct tm ts;

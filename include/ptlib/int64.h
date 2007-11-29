@@ -43,11 +43,11 @@ class PInt64__ {
     void ShiftLeft(int bits);
     void ShiftRight(int bits);
 
-    BOOL Eq(unsigned long v) const { return low == v && high == 0; }
-    BOOL Ne(unsigned long v) const { return low != v || high != 0; }
+    PBoolean Eq(unsigned long v) const { return low == v && high == 0; }
+    PBoolean Ne(unsigned long v) const { return low != v || high != 0; }
 
-    BOOL Eq(const PInt64__ & v) const { return low == v.low && high == v.high; }
-    BOOL Ne(const PInt64__ & v) const { return low != v.low || high != v.high; }
+    PBoolean Eq(const PInt64__ & v) const { return low == v.low && high == v.high; }
+    PBoolean Ne(const PInt64__ & v) const { return low != v.low || high != v.high; }
 
     unsigned long low, high;
 };
@@ -74,12 +74,12 @@ class PInt64__ {
     const cls & operator^=(type v) { Xor(v); return *this; } \
     const cls & operator<<=(type v) { ShiftLeft((int)v); return *this; } \
     const cls & operator>>=(type v) { ShiftRight((int)v); return *this; } \
-    BOOL operator==(type v) const { return Eq(v); } \
-    BOOL operator!=(type v) const { return Ne(v); } \
-    BOOL operator< (type v) const { return Lt(v); } \
-    BOOL operator> (type v) const { return Gt(v); } \
-    BOOL operator>=(type v) const { return !Gt(v); } \
-    BOOL operator<=(type v) const { return !Lt(v); } \
+    PBoolean operator==(type v) const { return Eq(v); } \
+    PBoolean operator!=(type v) const { return Ne(v); } \
+    PBoolean operator< (type v) const { return Lt(v); } \
+    PBoolean operator> (type v) const { return Gt(v); } \
+    PBoolean operator>=(type v) const { return !Gt(v); } \
+    PBoolean operator<=(type v) const { return !Lt(v); } \
 
 
 class PInt64 : public PInt64__ {
@@ -117,10 +117,10 @@ class PInt64 : public PInt64__ {
     void Mul(long v) { Mul(PInt64(v)); }
     void Div(long v) { Div(PInt64(v)); }
     void Mod(long v) { Mod(PInt64(v)); }
-    BOOL Lt(long v) const { return Lt(PInt64(v)); }
-    BOOL Gt(long v) const { return Gt(PInt64(v)); }
-    BOOL Lt(const PInt64 &) const;
-    BOOL Gt(const PInt64 &) const;
+    PBoolean Lt(long v) const { return Lt(PInt64(v)); }
+    PBoolean Gt(long v) const { return Gt(PInt64(v)); }
+    PBoolean Lt(const PInt64 &) const;
+    PBoolean Gt(const PInt64 &) const;
 };
 
 
@@ -158,10 +158,10 @@ class PUInt64 : public PInt64__ {
     void Mul(long v) { Mul(PUInt64(v)); }
     void Div(long v) { Div(PUInt64(v)); }
     void Mod(long v) { Mod(PUInt64(v)); }
-    BOOL Lt(long v) const { return Lt(PUInt64(v)); }
-    BOOL Gt(long v) const { return Gt(PUInt64(v)); }
-    BOOL Lt(const PUInt64 &) const;
-    BOOL Gt(const PUInt64 &) const;
+    PBoolean Lt(long v) const { return Lt(PUInt64(v)); }
+    PBoolean Gt(long v) const { return Gt(PUInt64(v)); }
+    PBoolean Lt(const PUInt64 &) const;
+    PBoolean Gt(const PUInt64 &) const;
 };
 
 #undef DECL_OPS

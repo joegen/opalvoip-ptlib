@@ -36,7 +36,7 @@
 // PPipeChannel
 
   public:
-    virtual BOOL IsOpen() const;
+    virtual PBoolean IsOpen() const;
   protected:
     PROCESS_INFORMATION info;
     HANDLE hToChild, hFromChild, hStandardError;

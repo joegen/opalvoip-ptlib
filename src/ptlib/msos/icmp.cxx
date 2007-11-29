@@ -172,7 +172,7 @@ class PICMPDLL : public PDynaLink
     HANDLE (WINAPI *IcmpCreateFile)(void);
 
     // close a handle allocated by IcmpCreateFile
-    // returns FALSE on error
+    // returns PFalse on error
     BOOL (PASCAL *IcmpCloseHandle)(HANDLE handle);
 
     // Send the ICMP echo command for a "ping"
@@ -197,22 +197,22 @@ PICMPSocket::PICMPSocket()
   OpenSocket();
 }
 
-BOOL PICMPSocket::IsOpen() const
+PBoolean PICMPSocket::IsOpen() const
 {
   return icmpHandle != NULL;
 }
 
 
-BOOL PICMPSocket::OpenSocket()
+PBoolean PICMPSocket::OpenSocket()
 {
   return ICMP.IsLoaded() && (icmpHandle = ICMP.IcmpCreateFile()) != NULL;
 }
 
 
-BOOL PICMPSocket::Close()
+PBoolean PICMPSocket::Close()
 {
   if (icmpHandle == NULL) 
-    return TRUE;
+    return PTrue;
 
   PAssert(ICMP.IsLoaded(), PLogicError);
   return ICMP.IcmpCloseHandle(icmpHandle);
@@ -223,14 +223,14 @@ const char * PICMPSocket::GetProtocolName() const
   return "icmp";
 }
 
-BOOL PICMPSocket::Ping(const PString & host)
+PBoolean PICMPSocket::Ping(const PString & host)
 {
   PingInfo info;
   return Ping(host, info);
 }
 
 
-BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
+PBoolean PICMPSocket::Ping(const PString & host, PingInfo & info)
 {
   if (!ICMP.IsLoaded())
     return SetErrorValues(NotOpen, EBADF);

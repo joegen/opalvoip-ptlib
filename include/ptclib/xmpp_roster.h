@@ -73,19 +73,19 @@ namespace XMPP
       const PStringSet&   GetGroups() const     { return m_Groups; }
       const PresenceInfo& GetPresence() const   { return m_Presence; }
 
-      virtual void  SetJID(const JID& jid, BOOL dirty = TRUE)
+      virtual void  SetJID(const JID& jid, PBoolean dirty = PTrue)
                                                 { m_JID = jid; if (dirty) SetDirty(); }
-      virtual void  SetType(ItemType type, BOOL dirty = TRUE)
+      virtual void  SetType(ItemType type, PBoolean dirty = PTrue)
                                                 { m_Type = type; if (dirty) SetDirty(); }
-      virtual void  SetName(const PString& name, BOOL dirty = TRUE) 
+      virtual void  SetName(const PString& name, PBoolean dirty = PTrue) 
                                                 { m_Name = name; if (dirty) SetDirty(); }
 
-      virtual void  AddGroup(const PString& group, BOOL dirty = TRUE);
-      virtual void  RemoveGroup(const PString& group, BOOL dirty = TRUE);
+      virtual void  AddGroup(const PString& group, PBoolean dirty = PTrue);
+      virtual void  RemoveGroup(const PString& group, PBoolean dirty = PTrue);
 
       virtual void  SetPresence(const Presence& p);
 
-      void SetDirty(BOOL b = TRUE) { m_IsDirty = b; }
+      void SetDirty(PBoolean b = PTrue) { m_IsDirty = b; }
 
       /** This operator will set the dirty flag
        */
@@ -105,7 +105,7 @@ namespace XMPP
       // a presence stanza if kept.
       PDictionary<PString, Presence> m_Presence;
 
-      BOOL        m_IsDirty; // item modified locally, server needs to be updated
+      PBoolean        m_IsDirty; // item modified locally, server needs to be updated
     };
     PLIST(ItemList, Item);
 
@@ -117,13 +117,13 @@ namespace XMPP
 
     virtual Item * FindItem(const PString& jid);
 
-    virtual BOOL SetItem(Item * item, BOOL localOnly = FALSE);
-    virtual BOOL RemoveItem(const PString& jid, BOOL localOnly = FALSE);
-    virtual BOOL RemoveItem(Item * item, BOOL localOnly = FALSE);
+    virtual PBoolean SetItem(Item * item, PBoolean localOnly = PFalse);
+    virtual PBoolean RemoveItem(const PString& jid, PBoolean localOnly = PFalse);
+    virtual PBoolean RemoveItem(Item * item, PBoolean localOnly = PFalse);
 
     virtual void  Attach(XMPP::C2S::StreamHandler * handler);
     virtual void  Detach();
-    virtual void  Refresh(BOOL sendPresence = TRUE);
+    virtual void  Refresh(PBoolean sendPresence = PTrue);
 
     virtual PNotifierList& ItemChangedHandlers()    { return m_ItemChangedHandlers; }
     virtual PNotifierList& RosterChangedHandlers()  { return m_RosterChangedHandlers; }

@@ -23,7 +23,7 @@
 #include "../../tcpsock.h"
 
 public:
-  virtual BOOL Read(void * buf, PINDEX len);
+  virtual PBoolean Read(void * buf, PINDEX len);
 };
 
 #endif

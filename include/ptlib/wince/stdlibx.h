@@ -186,7 +186,7 @@ UINT GetWindowsDirectory( char* lpBuffer, UINT uSize );
 DWORD GetPrivateProfileString( const char* lpAppName, const char* lpKeyName,
   const char* lpDefault, char* lpReturned, DWORD nSize, const char*  );
 
-BOOL WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
+PBoolean WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
   const char* lpString, const char* );
 
 #endif // __cplusplus

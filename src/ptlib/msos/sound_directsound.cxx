@@ -129,7 +129,7 @@ PSoundChannelDirectSound::Construct()
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::Open (const PString & _device,
 				     Directions _dir,
 				     unsigned _numChannels,
@@ -157,7 +157,7 @@ PSoundChannelDirectSound::Open (const PString & _device,
              _sampleRate,
              _bitsPerSample);
 
-  BOOL result = (mDirection == Recorder) ? 
+  PBoolean result = (mDirection == Recorder) ? 
     				InitCaptureDevice (&deviceGUID) : 
 				InitPlaybackDevice (&deviceGUID);
 
@@ -211,7 +211,7 @@ PSoundChannelDirectSound::DevicesEnumerators (Directions dir)
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::GetDeviceID (PString deviceName, GUID *pGUID)
 {
 
@@ -264,11 +264,11 @@ DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR /*strDrvName*/,
 	  devices_array->names += strDesc;
 	  PTRACE (4, "dsound\tDevice -->  " << strDesc );
 	} else
-	  return TRUE;
+	  return PTrue;
 
     }
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -278,7 +278,7 @@ DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR /*strDrvName*/,
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::InitPlaybackDevice(GUID *pGUID) {
 
   HRESULT hr;
@@ -321,7 +321,7 @@ PSoundChannelDirectSound::InitPlaybackDevice(GUID *pGUID) {
       PTRACE (4, "dsound\tCould not create primary buffer " << DXGetErrorString9 (hr));
       return false;
     }
-  return TRUE;
+  return PTrue;
 }
 
 /*
@@ -329,7 +329,7 @@ PSoundChannelDirectSound::InitPlaybackDevice(GUID *pGUID) {
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::InitCaptureDevice(GUID *pGUID) {
 
   HRESULT hr;
@@ -341,7 +341,7 @@ PSoundChannelDirectSound::InitCaptureDevice(GUID *pGUID) {
       PTRACE (4, "dsound\tCould not create Capture device " << DXGetErrorString9 (hr));
       return false;
     }
-  return TRUE;
+  return PTrue;
 }
 
 /*
@@ -349,11 +349,11 @@ PSoundChannelDirectSound::InitCaptureDevice(GUID *pGUID) {
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::Setup()
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " Setup");
-  BOOL no_error = TRUE;
+  PBoolean no_error = PTrue;
 
   return no_error;
 }
@@ -365,7 +365,7 @@ PSoundChannelDirectSound::Setup()
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::Close()
 {
 
@@ -391,7 +391,7 @@ PSoundChannelDirectSound::Close()
       break;
     }
   isInitialised = false;
-  return TRUE;
+  return PTrue;
 }
 
 /*
@@ -422,10 +422,10 @@ PSoundChannelDirectSound::GetDXBufferFreeSpace ()
  * DESC : 	Write Method is called by the playback device
  * BEHAVIOUR: 	It writes (len) bytes of input data (*buf) into the device circular buffer.  
  * 		In case data to write are bigger than the free space left in the buffer, it writes them than sleep while directx cursor move forward to leave 
- * RETURN :	TRUE if successful and FALSE otherwise.	
+ * RETURN :	PTrue if successful and PFalse otherwise.	
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::Write (const void *buf, 
 				 PINDEX len)
 {
@@ -481,10 +481,10 @@ PSoundChannelDirectSound::Write (const void *buf,
 /* 
  * DESC : 	Read Method is called by the recording device
  * BEHAVIOUR: 	It reads (len) bytes from the device circular buffer to an input data (*buf).  
- * RETURN :	TRUE if successful and FALSE otherwise.	
+ * RETURN :	PTrue if successful and PFalse otherwise.	
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::Read (void * buf, PINDEX len)
 {
 
@@ -655,7 +655,7 @@ PSoundChannelDirectSound::FlushBuffer ()
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::SetFormat (unsigned numChannels,
 					  unsigned sampleRate,
 					  unsigned bitsPerSample)
@@ -680,7 +680,7 @@ PSoundChannelDirectSound::SetFormat (unsigned numChannels,
   mOutburst = mWFX.nBlockAlign*8;
 
   
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -732,7 +732,7 @@ PSoundChannelDirectSound::GetSampleSize() const
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count)
 {
 
@@ -747,7 +747,7 @@ PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count)
     InitPlaybackBuffer ();
   else
     InitCaptureBuffer ();
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -757,12 +757,12 @@ PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count)
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::GetBuffers(PINDEX & size, PINDEX & count)
 {
   count = mBufferCount;
   size = mBufferSize;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -772,7 +772,7 @@ PSoundChannelDirectSound::GetBuffers(PINDEX & size, PINDEX & count)
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::InitCaptureBuffer() 
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " InitCaptureBuffer");
@@ -815,7 +815,7 @@ PSoundChannelDirectSound::InitCaptureBuffer()
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::InitPlaybackBuffer() 
 {
 
@@ -864,16 +864,16 @@ PSoundChannelDirectSound::InitPlaybackBuffer()
  * RETURN :
  */
 
-BOOL 
-PSoundChannelDirectSound::PlaySound(const PSound & sound, BOOL wait)
+PBoolean 
+PSoundChannelDirectSound::PlaySound(const PSound & sound, PBoolean wait)
 {
   mStreaming = false;
   if (!Write((const void *)sound, sound.GetSize()))
-    return FALSE;
+    return PFalse;
 
   if (wait)
     return WaitForPlayCompletion();
-  return TRUE;
+  return PTrue;
 }
 
 /*
@@ -882,8 +882,8 @@ PSoundChannelDirectSound::PlaySound(const PSound & sound, BOOL wait)
  * RETURN :
  */
 
-BOOL 
-PSoundChannelDirectSound::PlayFile(const PFilePath & filename, BOOL wait)
+PBoolean 
+PSoundChannelDirectSound::PlayFile(const PFilePath & filename, PBoolean wait)
 {
   BYTE buffer [512];
   mStreaming = false;
@@ -891,7 +891,7 @@ PSoundChannelDirectSound::PlayFile(const PFilePath & filename, BOOL wait)
   PFile file (filename, PFile::ReadOnly);
 
   if (!file.IsOpen())
-    return FALSE;
+    return PFalse;
 
   for (;;) 
     {
@@ -911,7 +911,7 @@ PSoundChannelDirectSound::PlayFile(const PFilePath & filename, BOOL wait)
   if (wait)
     return WaitForPlayCompletion();
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -921,7 +921,7 @@ PSoundChannelDirectSound::PlayFile(const PFilePath & filename, BOOL wait)
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::HasPlayCompleted()
 {
 
@@ -931,10 +931,10 @@ PSoundChannelDirectSound::HasPlayCompleted()
 
       mAudioPlaybackBuffer->GetStatus (&dwStatus);
       if (dwStatus & DSBSTATUS_PLAYING)  
-	return FALSE;
+	return PFalse;
 
     }
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -944,13 +944,13 @@ PSoundChannelDirectSound::HasPlayCompleted()
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::WaitForPlayCompletion()
 {
   while (!HasPlayCompleted()) 
     Sleep (50);
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -959,11 +959,11 @@ PSoundChannelDirectSound::WaitForPlayCompletion()
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::RecordSound(PSound & /*sound*/)
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " RecordSound");
-  return FALSE;
+  return PFalse;
 }
 
 /*
@@ -972,11 +972,11 @@ PSoundChannelDirectSound::RecordSound(PSound & /*sound*/)
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::RecordFile(const PFilePath & /*filename*/)
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " RecordFile");
-  return FALSE;
+  return PFalse;
 }
 
 /*
@@ -984,11 +984,11 @@ PSoundChannelDirectSound::RecordFile(const PFilePath & /*filename*/)
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::StartRecording()
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " StartRecording");
-  return FALSE;
+  return PFalse;
 }
 
 /*
@@ -996,10 +996,10 @@ PSoundChannelDirectSound::StartRecording()
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL PSoundChannelDirectSound::IsRecordBufferFull()
+PBoolean PSoundChannelDirectSound::IsRecordBufferFull()
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " IsRecordBufferFull");
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1008,10 +1008,10 @@ BOOL PSoundChannelDirectSound::IsRecordBufferFull()
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL PSoundChannelDirectSound::AreAllRecordBuffersFull()
+PBoolean PSoundChannelDirectSound::AreAllRecordBuffersFull()
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " AreAllRecordBuffersFull");
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1020,10 +1020,10 @@ BOOL PSoundChannelDirectSound::AreAllRecordBuffersFull()
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL PSoundChannelDirectSound::WaitForRecordBufferFull()
+PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull()
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " WaitForRecordBufferFull");
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1032,11 +1032,11 @@ BOOL PSoundChannelDirectSound::WaitForRecordBufferFull()
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL PSoundChannelDirectSound::WaitForAllRecordBuffersFull()
+PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull()
 {
 
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " WaitForAllRecordBuffersFull");
-  return FALSE;
+  return PFalse;
 }
 
 
@@ -1045,11 +1045,11 @@ BOOL PSoundChannelDirectSound::WaitForAllRecordBuffersFull()
  * BEHAVIOUR :
  * RETURN :
  */
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::Abort()
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " Abort");
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1059,11 +1059,11 @@ PSoundChannelDirectSound::Abort()
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::SetVolume (unsigned newVal)
 {
 
-  BOOL no_error=TRUE;
+  PBoolean no_error=PTrue;
   HRESULT hr;
   
   long volume = (long) (log10((double)newVal) * 5000.0) - 10000;
@@ -1076,7 +1076,7 @@ PSoundChannelDirectSound::SetVolume (unsigned newVal)
 	if (FAILED (hr = mAudioPlaybackBuffer->SetVolume( volume ))) 
 	  {
 	    PTRACE (4, "PSoundChannelDirectSound::SetVolume Failed " << DXGetErrorString9 (hr));
-	    no_error = FALSE;
+	    no_error = PFalse;
 	  }
       }
     else
@@ -1099,11 +1099,11 @@ PSoundChannelDirectSound::SetVolume (unsigned newVal)
  * RETURN :
  */
 
-BOOL  
+PBoolean  
 PSoundChannelDirectSound::GetVolume(unsigned &devVol)
 {
 
-  BOOL no_error=TRUE;
+  PBoolean no_error=PTrue;
   HRESULT hr;
   long volume = 100;
   switch (mDirection) 
@@ -1117,7 +1117,7 @@ PSoundChannelDirectSound::GetVolume(unsigned &devVol)
 	  if (FAILED (hr = mAudioPlaybackBuffer->GetVolume( &volume ))) 
 	    {
 	      PTRACE (4, "PSoundChannelDirectSound::GetVolume Failed " << DXGetErrorString9 (hr));
-	      no_error = FALSE;
+	      no_error = PFalse;
 	    }
 	  devVol = (unsigned int) pow(10.0, (float)(volume+10000) / 5000.0);
 	}
@@ -1139,7 +1139,7 @@ PSoundChannelDirectSound::GetVolume(unsigned &devVol)
  * RETURN :
  */
 
-BOOL 
+PBoolean 
 PSoundChannelDirectSound::IsOpen () const
 {
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " IsOpen");

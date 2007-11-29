@@ -35,8 +35,8 @@
 // PICMPSocket
 
   public:
-    BOOL Close();
-    BOOL IsOpen() const;
+    PBoolean Close();
+    PBoolean IsOpen() const;
 
   protected:
     HANDLE icmpHandle;

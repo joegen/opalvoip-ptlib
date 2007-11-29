@@ -201,7 +201,7 @@ PSASLClient::~PSASLClient()
 }
 
 
-BOOL PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
+PBoolean PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
 {
     if (!m_CallBacks)
     {
@@ -233,7 +233,7 @@ BOOL PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
     int result = sasl_client_new(m_Service, fqdn, 0, 0, (const sasl_callback_t *)m_CallBacks, 0, &s);
 
     if (result != SASL_OK)
-        return FALSE;
+        return PFalse;
 
     const char * list;
     unsigned plen;
@@ -246,11 +246,11 @@ BOOL PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
     for (PINDEX i = 0, max = a.GetSize() ; i < max ; i++)
         supportedMechanisms.Include(a[i]);
 
-    return  TRUE;
+    return  PTrue;
 }
 
 
-BOOL PSASLClient::Start(const PString& mechanism, PString& output)
+PBoolean PSASLClient::Start(const PString& mechanism, PString& output)
 {
     const char * _output = 0;
     unsigned _len = 0;
@@ -263,27 +263,27 @@ BOOL PSASLClient::Start(const PString& mechanism, PString& output)
             b64.StartEncoding();
             b64.ProcessEncoding(_output, _len);
             output = b64.CompleteEncoding();
-            output.Replace("\r\n", PString::Empty(), TRUE);
+            output.Replace("\r\n", PString::Empty(), PTrue);
         }
 
-        return TRUE;
+        return PTrue;
     }
 
-    return FALSE;
+    return PFalse;
 }
 
 
-BOOL PSASLClient::Start(const PString& mechanism, const char ** output, unsigned& len)
+PBoolean PSASLClient::Start(const PString& mechanism, const char ** output, unsigned& len)
 {
     if (!m_ConnState)
-        return FALSE;
+        return PFalse;
 
     int result = sasl_client_start((sasl_conn_t *)m_ConnState, mechanism, 0, output, &len, 0);
 
     if (result == SASL_OK || result == SASL_CONTINUE)
-        return TRUE;
+        return PTrue;
 
-    return FALSE;
+    return PFalse;
 }
 
 
@@ -306,7 +306,7 @@ PSASLClient::PSASLResult PSASLClient::Negotiate(const PString& input, PString& o
         b64.StartEncoding();
         b64.ProcessEncoding(_output);
         output = b64.CompleteEncoding();
-        output.Replace("\r\n", PString::Empty(), TRUE);
+        output.Replace("\r\n", PString::Empty(), PTrue);
     }
 
     return result;
@@ -329,17 +329,17 @@ PSASLClient::PSASLResult PSASLClient::Negotiate(const char * input, const char *
 }
 
 
-BOOL PSASLClient::End()
+PBoolean PSASLClient::End()
 {
     if (m_ConnState)
     {
         sasl_conn_t * s = (sasl_conn_t *)m_ConnState;
         sasl_dispose(&s);
         m_ConnState = 0;
-        return TRUE;
+        return PTrue;
     }
 
-    return FALSE;
+    return PFalse;
 }
 
 #endif // P_SASL2

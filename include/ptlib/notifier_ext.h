@@ -53,8 +53,8 @@ class PSmartNotifieeRegistrar
     unsigned    GetID() const           { return m_ID; }
 
     static unsigned    RegisterNotifiee(void * obj);
-    static BOOL        UnregisterNotifiee(unsigned id);
-    static BOOL        UnregisterNotifiee(void * obj);
+    static PBoolean        UnregisterNotifiee(unsigned id);
+    static PBoolean        UnregisterNotifiee(void * obj);
     static void *      GetNotifiee(unsigned id);
 
   protected:
@@ -72,7 +72,7 @@ class PSmartNotifierFunction : public PNotifierFunction
     PSmartNotifierFunction(unsigned id) : PNotifierFunction(&id), m_NotifieeID(id) { }
     unsigned GetNotifieeID() const { return m_NotifieeID; }
     void * GetNotifiee() const { return PSmartNotifieeRegistrar::GetNotifiee(m_NotifieeID); }
-    BOOL IsValid() const { return GetNotifiee() != 0; }
+    PBoolean IsValid() const { return GetNotifiee() != 0; }
 };
 
 #define PDECLARE_SMART_NOTIFIEE \
@@ -115,8 +115,8 @@ class PNotifierList : public PObject
 
     void Add(PNotifier * handler)       { m_TheList.Append(handler); }
     void Remove(PNotifier * handler)    { m_TheList.Remove(handler); }
-    BOOL RemoveTarget(PObject * obj);
-    BOOL Fire(PObject& obj, INT val = 0);
+    PBoolean RemoveTarget(PObject * obj);
+    PBoolean Fire(PObject& obj, INT val = 0);
 
     // Moves all the notifiers in "that" to "this"
     void  Move(PNotifierList& that);

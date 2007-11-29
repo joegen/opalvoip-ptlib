@@ -64,30 +64,30 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
   
     /**Open the device given the device name.
     */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & /*deviceName*/,   ///< Device name to open
-      BOOL /*startImmediate*/ = TRUE    ///< Immediately start device
+      PBoolean /*startImmediate*/ = PTrue    ///< Immediately start device
     );
   
     /**Synonymous with the destructor.
     */
-    virtual BOOL Close();
+    virtual PBoolean Close();
   
     /**Global test function to determine if this video rendering
     class is open.*/
-    virtual BOOL IsOpen();
+    virtual PBoolean IsOpen();
   
     /**Set the colour format to be used.
-       Note that this function does not do any conversion. If it returns TRUE
+       Note that this function does not do any conversion. If it returns PTrue
        then the video device does the colour format in native mode.
 
        To utilise an internal converter use the SetColourFormatConverter()
        function.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetColourFormat(
+    virtual PBoolean SetColourFormat(
       const PString & colourFormat ///< New colour format for device.
     );
 
@@ -97,9 +97,9 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns TRUE.
+       returns PTrue.
     */
-    virtual BOOL SetFrameSize(
+    virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
     );
@@ -113,13 +113,13 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
 
     /**Set a section of the output frame buffer.
       */
-    virtual BOOL SetFrameData(
+    virtual PBoolean SetFrameData(
       unsigned x,
       unsigned y,
       unsigned width,
       unsigned height,
       const BYTE * data,
-      BOOL endFrame = TRUE
+      PBoolean endFrame = PTrue
     );
 
   protected:

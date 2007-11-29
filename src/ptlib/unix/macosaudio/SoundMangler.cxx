@@ -163,7 +163,7 @@ OSStatus SoundManagerSetPlayerFormat(unsigned long /*h*/, const soundParams *sp)
     theCommand.cmd    = reInitCmd;
     theCommand.param1 = 0;
     theCommand.param2 = gNumChannels == 2 ? initStereo : initMono;
-    err = SndDoCommand(&mySndChannel, &theCommand, FALSE /* wait */);
+    err = SndDoCommand(&mySndChannel, &theCommand, PFalse /* wait */);
     return err;
 }
 
@@ -232,14 +232,14 @@ OSStatus SoundManagerPlaySample(unsigned long /*h*/,
         theCommand.cmd    = bufferCmd;
         theCommand.param1 = 0;
         theCommand.param2 = (long)p;
-        err = SndDoCommand(&mySndChannel, &theCommand, FALSE);
+        err = SndDoCommand(&mySndChannel, &theCommand, PFalse);
         if (err) break;
         
         // And arrange for it to be picked up
         theCommand.cmd    = callBackCmd;
         theCommand.param1 = gNextBuffer; // we're single threaded, right???
         theCommand.param2 = 0;
-        err = SndDoCommand(&mySndChannel, &theCommand, FALSE);
+        err = SndDoCommand(&mySndChannel, &theCommand, PFalse);
         if (err) break;
         
         // now, attempt to reserve callback
@@ -272,7 +272,7 @@ OSStatus SoundManagerClosePlayer(unsigned long /*h*/)
 {
     if (mySndChannelPtr) {
         // XXX what about all of the waiting semaphores?
-        SndDisposeChannel(&mySndChannel, FALSE);
+        SndDisposeChannel(&mySndChannel, PFalse);
     }
     mySndChannelPtr = 0;
     return 0;
@@ -313,7 +313,7 @@ OSStatus SoundManagerWaitForPlayCompletion(unsigned long,
     theCommand.cmd    = callBackCmd;
     theCommand.param1 = -1; // special index value
     theCommand.param2 = (unsigned long)thunk;
-    OSStatus err = SndDoCommand(&mySndChannel, &theCommand, FALSE);
+    OSStatus err = SndDoCommand(&mySndChannel, &theCommand, PFalse);
     return err;
 }
 

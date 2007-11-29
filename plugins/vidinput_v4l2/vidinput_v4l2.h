@@ -66,67 +66,67 @@ public:
   PStringList GetDeviceNames() const
   { return GetInputDeviceNames(); }
 
-  BOOL Open(const PString &deviceName, BOOL startImmediate);
+  PBoolean Open(const PString &deviceName, PBoolean startImmediate);
 
-  BOOL IsOpen();
+  PBoolean IsOpen();
 
-  BOOL Close();
+  PBoolean Close();
 
-  BOOL Start();
-  BOOL Stop();
+  PBoolean Start();
+  PBoolean Stop();
 
-  BOOL IsCapturing();
+  PBoolean IsCapturing();
 
   PINDEX GetMaxFrameBytes();
 
-  BOOL GetFrameData(BYTE*, PINDEX*);
-  BOOL GetFrameDataNoDelay(BYTE*, PINDEX*);
+  PBoolean GetFrameData(BYTE*, PINDEX*);
+  PBoolean GetFrameDataNoDelay(BYTE*, PINDEX*);
 
-  BOOL GetFrameSizeLimits(unsigned int&, unsigned int&,
+  PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
-  BOOL TestAllFormats();
+  PBoolean TestAllFormats();
 
-  BOOL SetFrameSize(unsigned int, unsigned int);
-  BOOL SetFrameRate(unsigned int);
-  BOOL VerifyHardwareFrameSize(unsigned int, unsigned int);
+  PBoolean SetFrameSize(unsigned int, unsigned int);
+  PBoolean SetFrameRate(unsigned int);
+  PBoolean VerifyHardwareFrameSize(unsigned int, unsigned int);
 
-  BOOL GetParameters(int*, int*, int*, int*, int*);
+  PBoolean GetParameters(int*, int*, int*, int*, int*);
 
-  BOOL SetColourFormat(const PString&);
+  PBoolean SetColourFormat(const PString&);
 
   int GetControlCommon(unsigned int control, int *value);
-  BOOL SetControlCommon(unsigned int control, int newValue);
+  PBoolean SetControlCommon(unsigned int control, int newValue);
 
   int GetContrast();
-  BOOL SetContrast(unsigned int);
+  PBoolean SetContrast(unsigned int);
   int GetBrightness();
-  BOOL SetBrightness(unsigned int);
+  PBoolean SetBrightness(unsigned int);
   int GetWhiteness();
-  BOOL SetWhiteness(unsigned int);
+  PBoolean SetWhiteness(unsigned int);
   int GetColour();
-  BOOL SetColour(unsigned int);
+  PBoolean SetColour(unsigned int);
   int GetHue();
-  BOOL SetHue(unsigned int);
+  PBoolean SetHue(unsigned int);
 
-  BOOL SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
-  BOOL SetVideoFormat(PVideoDevice::VideoFormat);
+  PBoolean SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
+  PBoolean SetVideoFormat(PVideoDevice::VideoFormat);
   int GetNumChannels();
-  BOOL SetChannel(int);
+  PBoolean SetChannel(int);
 
-  BOOL NormalReadProcess(BYTE*, PINDEX*);
+  PBoolean NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
 
-  BOOL SetMapping();
+  PBoolean SetMapping();
 
   struct v4l2_capability videoCapability;
   struct v4l2_streamparm videoStreamParm;
-  BOOL   canRead;
-  BOOL   canStream;
-  BOOL   canSelect;
-  BOOL   canSetFrameRate;
-  BOOL   isMapped;
+  PBoolean   canRead;
+  PBoolean   canStream;
+  PBoolean   canSelect;
+  PBoolean   canSetFrameRate;
+  PBoolean   isMapped;
 #define NUM_VIDBUF 4
   BYTE * videoBuffer[NUM_VIDBUF];
   uint   videoBufferCount;
@@ -134,7 +134,7 @@ public:
 
   int    videoFd;
   int    frameBytes;
-  BOOL   started;
+  PBoolean   started;
   PAdaptiveDelay m_pacing;
 };
 

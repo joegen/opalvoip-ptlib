@@ -70,12 +70,12 @@ class PXMLRPCServerResource : public PHTTPResource
     );
 
     // overrides from PHTTPResource
-    BOOL LoadHeaders(PHTTPRequest & request);
-    BOOL OnPOSTData(PHTTPRequest & request, const PStringToString & data);
+    PBoolean LoadHeaders(PHTTPRequest & request);
+    PBoolean OnPOSTData(PHTTPRequest & request, const PStringToString & data);
 
     // new functions
     virtual void OnXMLRPCRequest(const PString & body, PString & reply);
-    virtual BOOL SetMethod(const PString & methodName, const PNotifier & func);
+    virtual PBoolean SetMethod(const PString & methodName, const PNotifier & func);
     void OnXMLRPCRequest(const PString & methodName, PXMLRPCBlock & request, PString & reply);
 
     virtual PString FormatFault(

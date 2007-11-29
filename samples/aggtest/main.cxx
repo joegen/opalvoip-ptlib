@@ -44,11 +44,11 @@ AggTest::AggTest()
 class MyUDPSocket : public PUDPSocket
 {
   public:
-    BOOL OnRead()
+    PBoolean OnRead()
     {
       BYTE buffer[1024];
       Read(buffer, 1024);
-      return TRUE;
+      return PTrue;
     }
 
 };

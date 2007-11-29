@@ -108,8 +108,8 @@ class PWin32AsnAny : public AsnAny
   public:
     PWin32AsnAny();
     ~PWin32AsnAny() { MemFree(); }
-    BOOL GetInteger(AsnInteger & i);
-    BOOL GetIpAddress(PIPSocket::Address & addr);
+    PBoolean GetInteger(AsnInteger & i);
+    PBoolean GetIpAddress(PIPSocket::Address & addr);
     void MemFree();
   private:
     PWin32AsnAny(const PWin32AsnAny &) { }
@@ -153,18 +153,18 @@ class PWin32SnmpLibrary
 {
   public:
     void Close();
-    BOOL IsLoaded() { return TRUE; }
+    PBoolean IsLoaded() { return PTrue; }
 #endif
 public:
     PWin32SnmpLibrary();
 
-    BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
-    BOOL GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & ip_address);
-    BOOL GetOid(AsnObjectIdentifier & oid, PString & str);
-    BOOL GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len = NULL);
-    BOOL GetOid(AsnObjectIdentifier & oid, PWin32AsnAny & value)     { return QueryOid(SNMP_PDU_GET, oid, value); }
+    PBoolean GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
+    PBoolean GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & ip_address);
+    PBoolean GetOid(AsnObjectIdentifier & oid, PString & str);
+    PBoolean GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len = NULL);
+    PBoolean GetOid(AsnObjectIdentifier & oid, PWin32AsnAny & value)     { return QueryOid(SNMP_PDU_GET, oid, value); }
 
-    BOOL GetNextOid(AsnObjectIdentifier & oid, PWin32AsnAny & value) { return QueryOid(SNMP_PDU_GETNEXT, oid, value); }
+    PBoolean GetNextOid(AsnObjectIdentifier & oid, PWin32AsnAny & value) { return QueryOid(SNMP_PDU_GETNEXT, oid, value); }
 
     PString GetInterfaceName(int ifNum);
     PString GetInterfaceName(PIPSocket::Address ipAddr);
@@ -179,13 +179,13 @@ public:
     BOOL (WINAPI *_Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
     BOOL (WINAPI *_Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
 
-    BOOL Init(DWORD upTime, HANDLE * trapEvent, AsnObjectIdentifier * firstSupportedRegion)
+    PBoolean Init(DWORD upTime, HANDLE * trapEvent, AsnObjectIdentifier * firstSupportedRegion)
     { return (*_Init)(upTime, trapEvent, firstSupportedRegion); }
 
-    BOOL Query(BYTE pduType, SnmpVarBindList * pVarBindList, AsnInteger32 * pErrorStatus, AsnInteger32 * pErrorIndex)
+    PBoolean Query(BYTE pduType, SnmpVarBindList * pVarBindList, AsnInteger32 * pErrorStatus, AsnInteger32 * pErrorIndex)
     { return _Query(pduType, pVarBindList, pErrorStatus, pErrorIndex); }
 
-    BOOL QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value);
+    PBoolean QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value);
 };
 
 class WinSNMPLoader : public PProcessStartup
@@ -261,28 +261,28 @@ class PWin32PacketDriver
 
     virtual ~PWin32PacketDriver();
 
-    BOOL IsOpen() const;
+    PBoolean IsOpen() const;
     void Close();
     DWORD GetLastError() const;
 
-    virtual BOOL EnumInterfaces(PINDEX idx, PString & name) = 0;
-    virtual BOOL BindInterface(const PString & interfaceName) = 0;
+    virtual PBoolean EnumInterfaces(PINDEX idx, PString & name) = 0;
+    virtual PBoolean BindInterface(const PString & interfaceName) = 0;
 
-    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask) = 0;
+    virtual PBoolean EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask) = 0;
 
-    virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap) = 0;
-    virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap) = 0;
-    BOOL CompleteIO(DWORD & received, PWin32Overlapped & overlap);
+    virtual PBoolean BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap) = 0;
+    virtual PBoolean BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap) = 0;
+    PBoolean CompleteIO(DWORD & received, PWin32Overlapped & overlap);
 
-    BOOL IoControl(UINT func,
+    PBoolean IoControl(UINT func,
                    const void * input, DWORD inSize,
                    void * output, DWORD outSize,
                    DWORD & received);
 
-    BOOL QueryOid(UINT oid, DWORD & data);
-    BOOL QueryOid(UINT oid, UINT len, BYTE * data);
-    BOOL SetOid(UINT oid, DWORD data);
-    BOOL SetOid(UINT oid, UINT len, const BYTE * data);
+    PBoolean QueryOid(UINT oid, DWORD & data);
+    PBoolean QueryOid(UINT oid, UINT len, BYTE * data);
+    PBoolean SetOid(UINT oid, DWORD data);
+    PBoolean SetOid(UINT oid, UINT len, const BYTE * data);
 #ifdef USE_VPACKET
     virtual UINT GetQueryOidCommand(DWORD oid) const = 0;
 #endif
@@ -299,13 +299,13 @@ class PWin32PacketDriver
 class PWin32PacketVxD : public PWin32PacketDriver
 {
   public:
-    virtual BOOL EnumInterfaces(PINDEX idx, PString & name);
-    virtual BOOL BindInterface(const PString & interfaceName);
+    virtual PBoolean EnumInterfaces(PINDEX idx, PString & name);
+    virtual PBoolean BindInterface(const PString & interfaceName);
 
-    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
+    virtual PBoolean EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
 
-    virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
-    virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+    virtual PBoolean BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
+    virtual PBoolean BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
 
 #ifdef USE_VPACKET
     virtual UINT GetQueryOidCommand(DWORD oid) const
@@ -324,13 +324,13 @@ class PWin32PacketSYS : public PWin32PacketDriver
   public:
     PWin32PacketSYS();
 
-    virtual BOOL EnumInterfaces(PINDEX idx, PString & name);
-    virtual BOOL BindInterface(const PString & interfaceName);
+    virtual PBoolean EnumInterfaces(PINDEX idx, PString & name);
+    virtual PBoolean BindInterface(const PString & interfaceName);
 
-    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
+    virtual PBoolean EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
 
-    virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
-    virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+    virtual PBoolean BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
+    virtual PBoolean BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
 
 #ifdef USE_VPACKET
     virtual UINT GetQueryOidCommand(DWORD) const
@@ -350,13 +350,13 @@ class PWin32PacketCe : public PWin32PacketDriver
   public:
     PWin32PacketCe();
 
-    virtual BOOL EnumInterfaces(PINDEX idx, PString & name);
-    virtual BOOL BindInterface(const PString & interfaceName);
+    virtual PBoolean EnumInterfaces(PINDEX idx, PString & name);
+    virtual PBoolean BindInterface(const PString & interfaceName);
 
-    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
+    virtual PBoolean EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
 
-    virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
-    virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+    virtual PBoolean BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
+    virtual PBoolean BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
 
 #ifdef USE_VPACKET
     virtual UINT GetQueryOidCommand(DWORD) const
@@ -388,14 +388,14 @@ class PWin32PacketBuffer : public PBYTEArray
     PINDEX PutData(const void * buf, PINDEX length);
     HANDLE GetEvent() const { return overlap.hEvent; }
 
-    BOOL ReadAsync(PWin32PacketDriver & pkt);
-    BOOL ReadComplete(PWin32PacketDriver & pkt);
-    BOOL WriteAsync(PWin32PacketDriver & pkt);
-    BOOL WriteComplete(PWin32PacketDriver & pkt);
+    PBoolean ReadAsync(PWin32PacketDriver & pkt);
+    PBoolean ReadComplete(PWin32PacketDriver & pkt);
+    PBoolean WriteAsync(PWin32PacketDriver & pkt);
+    PBoolean WriteComplete(PWin32PacketDriver & pkt);
 
-    BOOL InProgress() const { return status == Progressing; }
-    BOOL IsCompleted() const { return status == Completed; }
-    BOOL IsType(WORD type) const;
+    PBoolean InProgress() const { return status == Progressing; }
+    PBoolean IsCompleted() const { return status == Completed; }
+    PBoolean IsType(WORD type) const;
 
   protected:
     Statuses         status;
@@ -447,23 +447,23 @@ void PWin32AsnAny::MemFree()
 }
 
 
-BOOL PWin32AsnAny::GetInteger(AsnInteger & i)
+PBoolean PWin32AsnAny::GetInteger(AsnInteger & i)
 {
   if (asnType != ASN_INTEGER)
-    return FALSE;
+    return PFalse;
 
   i = asnValue.number;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32AsnAny::GetIpAddress(PIPSocket::Address & addr)
+PBoolean PWin32AsnAny::GetIpAddress(PIPSocket::Address & addr)
 {
   if (asnType != ASN_IPADDRESS || asnValue.address.stream == NULL)
-    return FALSE;
+    return PFalse;
 
   addr = PIPSocket::Address(asnValue.address.length, asnValue.address.stream);
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -542,78 +542,78 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
 #endif
 }
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
+PBoolean PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
 {
   //if (!IsLoaded())
-  //  return FALSE;
+  //  return PFalse;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
-    return FALSE;
+    return PFalse;
 
   return any.GetInteger(value);
 }
 
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & value)
+PBoolean PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & value)
 {
   //if (!IsLoaded())
-  //  return FALSE;
+  //  return PFalse;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
-    return FALSE;
+    return PFalse;
 
   return any.GetIpAddress(value);
 }
 
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PString & str)
+PBoolean PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PString & str)
 {
   //if (!IsLoaded())
-  //  return FALSE;
+  //  return PFalse;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
-    return FALSE;
+    return PFalse;
 
   if (any.asnType != ASN_OCTETSTRING)
-    return FALSE;
+    return PFalse;
 
   str = PString((char *)any.asnValue.string.stream, any.asnValue.string.length);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len)
+PBoolean PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len)
 {
   //if (!IsLoaded())
-  //  return FALSE;
+  //  return PFalse;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
-    return FALSE;
+    return PFalse;
 
   if (any.asnType != ASN_OCTETSTRING)
-    return FALSE;
+    return PFalse;
 
   if (len != NULL)
     *len = any.asnValue.string.length;
 
   if (any.asnValue.string.length > valSize)
-    return FALSE;
+    return PFalse;
 
   memcpy(value, any.asnValue.string.stream, any.asnValue.string.length);
   if (valSize > any.asnValue.string.length)
     ((char *)value)[any.asnValue.string.length] = '\0';
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value)
+PBoolean PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value)
 {
   //if (!IsLoaded())
-  //  return FALSE;
+  //  return PFalse;
 
   value.MemFree();
 
@@ -621,7 +621,7 @@ BOOL PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnA
   vars.len = 1;
   vars.list = (SnmpVarBind*)SnmpUtilMemAlloc(sizeof(SnmpVarBind));
   if (vars.list == NULL)
-    return FALSE;
+    return PFalse;
 
   vars.list->name = oid;
   vars.list->value = value;
@@ -777,7 +777,7 @@ void PWin32PacketDriver::Close()
 }
 
 
-BOOL PWin32PacketDriver::IsOpen() const
+PBoolean PWin32PacketDriver::IsOpen() const
 {
   return hDriver != INVALID_HANDLE_VALUE;
 }
@@ -789,7 +789,7 @@ DWORD PWin32PacketDriver::GetLastError() const
 }
 
 
-BOOL PWin32PacketDriver::IoControl(UINT func,
+PBoolean PWin32PacketDriver::IoControl(UINT func,
                               const void * input, DWORD inSize,
                               void * output, DWORD outSize, DWORD & received)
 {
@@ -799,51 +799,51 @@ BOOL PWin32PacketDriver::IoControl(UINT func,
                       (LPVOID)input, inSize, output, outSize,
                       &received, &overlap)) {
     dwError = ERROR_SUCCESS;
-    return TRUE;
+    return PTrue;
   }
 
   dwError = ::GetLastError();
   if (dwError != ERROR_IO_PENDING)
-    return FALSE;
+    return PFalse;
 
   return CompleteIO(received, overlap);
 }
 
 #ifdef _WIN32_WCE
-BOOL PWin32PacketDriver::CompleteIO(DWORD &, PWin32Overlapped &)
+PBoolean PWin32PacketDriver::CompleteIO(DWORD &, PWin32Overlapped &)
 {
-  return TRUE;
+  return PTrue;
 }
 #else
-BOOL PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap)
+PBoolean PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap)
 {
   received = 0;
-  if (GetOverlappedResult(hDriver, &overlap, &received, TRUE)) {
+  if (GetOverlappedResult(hDriver, &overlap, &received, PTrue)) {
     dwError = ERROR_SUCCESS;
-    return TRUE;
+    return PTrue;
   }
 
   dwError = ::GetLastError();
-  return FALSE;
+  return PFalse;
 }
 #endif
 
-BOOL PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
+PBoolean PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
 {
   PWin32OidBuffer buf(oid, len);
   DWORD rxsize = 0;
   if (!IoControl(GetQueryOidCommand(oid), buf, buf, buf, buf, rxsize))
-    return FALSE;
+    return PFalse;
 
   if (rxsize == 0)
-    return FALSE;
+    return PFalse;
 
   buf.Move(data, rxsize);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
+PBoolean PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
 {
   DWORD oidData[3];
   oidData[0] = oid;
@@ -855,17 +855,17 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
                  oidData, sizeof(oidData),
                  oidData, sizeof(oidData),
                  rxsize))
-    return FALSE;
+    return PFalse;
 
   if (rxsize == 0)
-    return FALSE;
+    return PFalse;
 
   data = oidData[2];
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketDriver::SetOid(UINT oid, UINT len, const BYTE * data)
+PBoolean PWin32PacketDriver::SetOid(UINT oid, UINT len, const BYTE * data)
 {
   DWORD rxsize = 0;
   PWin32OidBuffer buf(oid, len, data);
@@ -873,7 +873,7 @@ BOOL PWin32PacketDriver::SetOid(UINT oid, UINT len, const BYTE * data)
 }
 
 
-BOOL PWin32PacketDriver::SetOid(UINT oid, DWORD data)
+PBoolean PWin32PacketDriver::SetOid(UINT oid, DWORD data)
 {
   DWORD oidData[3];
   oidData[0] = oid;
@@ -884,37 +884,37 @@ BOOL PWin32PacketDriver::SetOid(UINT oid, DWORD data)
                    oidData, sizeof(oidData), oidData, sizeof(oidData), rxsize);
 }
 
-static BOOL RegistryQueryMultiSz(RegistryKey & registry,
+static PBoolean RegistryQueryMultiSz(RegistryKey & registry,
                                  const PString & variable,
                                  PINDEX idx,
                                  PString & value)
 {
   PString allValues;
   if (!registry.QueryValue(variable, allValues))
-    return FALSE;
+    return PFalse;
 
   const char * ptr = allValues;
   while (*ptr != '\0' && idx-- > 0)
     ptr += strlen(ptr)+1;
 
   if (*ptr == '\0')
-    return FALSE;
+    return PFalse;
 
   value = ptr;
-  return TRUE;
+  return PTrue;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-BOOL PWin32PacketVxD::EnumInterfaces(PINDEX idx, PString & name)
+PBoolean PWin32PacketVxD::EnumInterfaces(PINDEX idx, PString & name)
 {
   static const PString RegBase = SERVICES_REGISTRY_KEY "Class\\Net";
 
   PString keyName;
   RegistryKey registry(RegBase, RegistryKey::ReadOnly);
   if (!registry.EnumKey(idx, keyName))
-    return FALSE;
+    return PFalse;
 
   PString description;
   RegistryKey subkey(RegBase + "\\" + keyName, RegistryKey::ReadOnly);
@@ -923,7 +923,7 @@ BOOL PWin32PacketVxD::EnumInterfaces(PINDEX idx, PString & name)
   else
     name = keyName;
 
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -948,12 +948,12 @@ static PString SearchRegistryKeys(const PString & key,
 
 
 #ifdef _WIN32_WCE
-BOOL PWin32PacketVxD::BindInterface(const PString &)
+PBoolean PWin32PacketVxD::BindInterface(const PString &)
 {
-  return FALSE;
+  return PFalse;
 }
 #else
-BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
+PBoolean PWin32PacketVxD::BindInterface(const PString & interfaceName)
 {
   BYTE buf[20];
   DWORD rxsize;
@@ -970,20 +970,20 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
                          NULL);
     if (hDriver == INVALID_HANDLE_VALUE) {
       dwError = ::GetLastError();
-      return FALSE;
+      return PFalse;
     }
 
 #ifndef USE_VPACKET
     rxsize = 0;
     if (!IoControl(IOCTL_EPACKET_VERSION, NULL, 0, buf, sizeof(buf), rxsize)) {
       dwError = ::GetLastError();
-      return FALSE;
+      return PFalse;
     }
 
     if (rxsize != 2 || buf[0] < 1 || buf[1] < 1) {  // Require driver version 1.1
       Close();
       dwError = ERROR_BAD_DRIVER;
-      return FALSE;
+      return PFalse;
     }
 #endif
   }
@@ -1002,18 +1002,18 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
     dwError = ::GetLastError();
     if (dwError == 0)
       dwError = ERROR_BAD_DRIVER;
-    return FALSE;
+    return PFalse;
   }
 
   // Get a random OID to verify that the driver did actually open
   if (!QueryOid(OID_GEN_DRIVER_VERSION, 2, buf))
-    return FALSE;
+    return PFalse;
 
   dwError = ERROR_SUCCESS;    // Successful, even if may not be bound.
 
   PString devKey = SearchRegistryKeys("HKEY_LOCAL_MACHINE\\Enum\\", "Driver", "Net\\" + devName);
   if (devKey.IsEmpty())
-    return TRUE;
+    return PTrue;
 
   RegistryKey bindRegistry(devKey + "Bindings", RegistryKey::ReadOnly);
   PString binding;
@@ -1026,17 +1026,17 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
         transportBinding.AppendString(SERVICES_REGISTRY_KEY "Class\\" + str);
     }
   }
-  return TRUE;
+  return PTrue;
 }
 #endif // !_WIN32_WCE
 
 
-BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
+PBoolean PWin32PacketVxD::EnumIpAddress(PINDEX idx,
                                     PIPSocket::Address & addr,
                                     PIPSocket::Address & net_mask)
 {
   if (idx >= transportBinding.GetSize())
-    return FALSE;
+    return PFalse;
 
   RegistryKey transportRegistry(transportBinding[idx], RegistryKey::ReadOnly);
   PString str;
@@ -1063,12 +1063,12 @@ BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
           net_mask = 0;
       }
     }
-    return TRUE;
+    return PTrue;
   }
 
   PEthSocket::Address macAddress;
   if (!QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(macAddress), macAddress.b))
-    return FALSE;
+    return PFalse;
 
   PINDEX dhcpCount;
   for (dhcpCount = 0; dhcpCount < 8; dhcpCount++) {
@@ -1093,7 +1093,7 @@ BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
       if (dhcpInfo->macAddress == macAddress) {
         addr = dhcpInfo->ipAddress;
         net_mask = dhcpInfo->mask;
-        return TRUE;
+        return PTrue;
       }
     }
     else if (dhcpRegistry.QueryValue("HardwareAddress", str) &&
@@ -1107,24 +1107,24 @@ BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
           if (dhcpRegistry.QueryValue("DhcpSubnetMask", str) &&
               str.GetSize() >= sizeof(net_mask)) {
             memcpy(&net_mask, (const char *)str, sizeof(net_mask));
-            return TRUE;
+            return PTrue;
           }
         }
       }
     }
   }
 
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PWin32PacketVxD::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
+PBoolean PWin32PacketVxD::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
 {
   received = 0;
   if (DeviceIoControl(hDriver, IOCTL_EPACKET_READ,
                       buf, size, buf, size, &received, &overlap)) {
     dwError = ERROR_SUCCESS;
-    return TRUE;
+    return PTrue;
   }
 
   dwError = ::GetLastError();
@@ -1132,14 +1132,14 @@ BOOL PWin32PacketVxD::BeginRead(void * buf, DWORD size, DWORD & received, PWin32
 }
 
 
-BOOL PWin32PacketVxD::BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap)
+PBoolean PWin32PacketVxD::BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap)
 {
   DWORD rxsize = 0;
   BYTE dummy[2];
   if (DeviceIoControl(hDriver, IOCTL_EPACKET_WRITE,
                       (void *)buf, len, dummy, sizeof(dummy), &rxsize, &overlap)) {
     dwError = ERROR_SUCCESS;
-    return TRUE;
+    return PTrue;
   }
 
   dwError = ::GetLastError();
@@ -1170,35 +1170,35 @@ PWin32PacketSYS::PWin32PacketSYS()
 static const char PacketDeviceStr[] = "\\Device\\" PACKET_SERVICE_NAME "_";
 
 #ifdef _WIN32_WCE
-BOOL PWin32PacketSYS::EnumInterfaces(PINDEX, PString &)
+PBoolean PWin32PacketSYS::EnumInterfaces(PINDEX, PString &)
 {
-  return FALSE;
+  return PTrue;
 }
 #else
-BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
+PBoolean PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
 {
   RegistryKey registry(SERVICES_REGISTRY_KEY PACKET_SERVICE_NAME "\\Linkage",
                        RegistryKey::ReadOnly);
   if (!RegistryQueryMultiSz(registry, "Export", idx, name)) {
     dwError = ERROR_NO_MORE_ITEMS;
-    return FALSE;
+    return PFalse;
   }
 
   if (strncasecmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
     name.Delete(0, sizeof(PacketDeviceStr)-1);
 
-  return TRUE;
+  return PTrue;
 }
 #endif // !_WIN32_WCE
 
 
 #ifdef _WIN32_WCE
-BOOL PWin32PacketSYS::BindInterface(const PString &)
+PBoolean PWin32PacketSYS::BindInterface(const PString &)
 {
-  return FALSE;
+  return PFalse;
 }
 #else
-BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
+PBoolean PWin32PacketSYS::BindInterface(const PString & interfaceName)
 {
   Close();
 
@@ -1206,7 +1206,7 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
                        PACKET_SERVICE_NAME "_" + interfaceName,
                        PacketDeviceStr + interfaceName)) {
     dwError = ::GetLastError();
-    return FALSE;
+    return PFalse;
   }
 
   ::SetLastError(0);
@@ -1219,18 +1219,18 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
                        NULL);
   if (hDriver == INVALID_HANDLE_VALUE) {
     dwError = ::GetLastError();
-    return FALSE;
+    return PFalse;
   }
 
   registryKey = SERVICES_REGISTRY_KEY + interfaceName + "\\Parameters\\Tcpip";
   dwError = ERROR_SUCCESS;
 
-  return TRUE;
+  return PTrue;
 }
 #endif // !_WIN32_WCE
 
 
-BOOL PWin32PacketSYS::EnumIpAddress(PINDEX idx,
+PBoolean PWin32PacketSYS::EnumIpAddress(PINDEX idx,
                                     PIPSocket::Address & addr,
                                     PIPSocket::Address & net_mask)
 {
@@ -1239,41 +1239,41 @@ BOOL PWin32PacketSYS::EnumIpAddress(PINDEX idx,
 
   if (!RegistryQueryMultiSz(registry, "IPAddress", idx, str)) {
     dwError = ERROR_NO_MORE_ITEMS;
-    return FALSE;
+    return PFalse;
   }
   addr = str;
 
   if (!RegistryQueryMultiSz(registry, "SubnetMask", idx, str)) {
     dwError = ERROR_NO_MORE_ITEMS;
-    return FALSE;
+    return PFalse;
   }
   net_mask = str;
 
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketSYS::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
+PBoolean PWin32PacketSYS::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
 {
   overlap.Reset();
   received = 0;
 
   if (ReadFile(hDriver, buf, size, &received, &overlap)) {
     dwError = ERROR_SUCCESS;
-    return TRUE;
+    return PTrue;
   }
 
   return (dwError = ::GetLastError()) == ERROR_IO_PENDING;
 }
 
 
-BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap)
+PBoolean PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap)
 {
   overlap.Reset();
   DWORD sent = 0;
   if (WriteFile(hDriver, buf, len, &sent, &overlap)) {
     dwError = ERROR_SUCCESS;
-    return TRUE;
+    return PTrue;
   }
 
   dwError = ::GetLastError();
@@ -1333,8 +1333,8 @@ PWin32PacketCe::PWin32PacketCe()
 
             RegistryKey TcpIpKey( tcpipStr, RegistryKey::ReadOnly );
 
-            DWORD dwDHCPEnabled = FALSE;
-            TcpIpKey.QueryValue( "EnableDHCP", dwDHCPEnabled, TRUE );
+            DWORD dwDHCPEnabled = PFalse;
+            TcpIpKey.QueryValue( "EnableDHCP", dwDHCPEnabled, PTrue );
 
             /// Collect IP addresses and net masks
             PString ipAddress, netMask;
@@ -1369,44 +1369,44 @@ PWin32PacketCe::PWin32PacketCe()
   }
 }
 
-BOOL PWin32PacketCe::EnumInterfaces(PINDEX idx, PString & name)
+PBoolean PWin32PacketCe::EnumInterfaces(PINDEX idx, PString & name)
 {
   if( idx >= interfaces.GetSize() )
-    return FALSE;
+    return PFalse;
   
   name = interfaces[idx];
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketCe::BindInterface(const PString &)
+PBoolean PWin32PacketCe::BindInterface(const PString &)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketCe::EnumIpAddress(PINDEX idx,
+PBoolean PWin32PacketCe::EnumIpAddress(PINDEX idx,
                                     PIPSocket::Address & addr,
                                     PIPSocket::Address & net_mask)
 {
   if( idx >= interfaces.GetSize() )
-    return FALSE;
+    return PFalse;
 
   addr = ipAddresses[idx];
   net_mask = netMasks[idx];
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketCe::BeginRead(void *, DWORD, DWORD & , PWin32Overlapped &)
+PBoolean PWin32PacketCe::BeginRead(void *, DWORD, DWORD & , PWin32Overlapped &)
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketCe::BeginWrite(const void *, DWORD, PWin32Overlapped &)
+PBoolean PWin32PacketCe::BeginWrite(const void *, DWORD, PWin32Overlapped &)
 {
-  return TRUE;
+  return PTrue;
 }
 
 #endif // _WIN32_WCE
@@ -1436,18 +1436,18 @@ PEthSocket::~PEthSocket()
 }
 
 
-BOOL PEthSocket::OpenSocket()
+PBoolean PEthSocket::OpenSocket()
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PEthSocket::Close()
+PBoolean PEthSocket::Close()
 {
   driver->Close();
   os_handle = -1;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1457,7 +1457,7 @@ PString PEthSocket::GetName() const
 }
 
 
-BOOL PEthSocket::Connect(const PString & newName)
+PBoolean PEthSocket::Connect(const PString & newName)
 {
   Close();
 
@@ -1466,32 +1466,32 @@ BOOL PEthSocket::Connect(const PString & newName)
 
   interfaceName = newName;
   os_handle = 1;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
+PBoolean PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 {
   return driver->EnumInterfaces(idx, name);
 }
 
 
-BOOL PEthSocket::GetAddress(Address & addr)
+PBoolean PEthSocket::GetAddress(Address & addr)
 {
   if (driver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(addr), addr.b))
-    return TRUE;
+    return PTrue;
 
   return SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
 }
 
 
-BOOL PEthSocket::EnumIpAddress(PINDEX idx,
+PBoolean PEthSocket::EnumIpAddress(PINDEX idx,
                                PIPSocket::Address & addr,
                                PIPSocket::Address & net_mask)
 {
   if (IsOpen()) {
     if (driver->EnumIpAddress(idx, addr, net_mask))
-      return TRUE;
+      return PTrue;
 
     return SetErrorValues(NotFound, ENOENT);
   }
@@ -1512,7 +1512,7 @@ static const struct {
 };
 
 
-BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
+PBoolean PEthSocket::GetFilter(unsigned & mask, WORD & type)
 {
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
@@ -1531,11 +1531,11 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
   }
 
   type = (WORD)filterType;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
+PBoolean PEthSocket::SetFilter(unsigned filter, WORD type)
 {
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
@@ -1550,7 +1550,7 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
     return SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
 
   filterType = type;
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -1580,7 +1580,7 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
 }
 
 
-BOOL PEthSocket::Read(void * data, PINDEX length)
+PBoolean PEthSocket::Read(void * data, PINDEX length)
 {
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF, LastReadError);
@@ -1605,7 +1605,7 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
 
       if (buffer.IsCompleted() && buffer.IsType(filterType)) {
         lastReadCount = buffer.GetData(data, length);
-        return TRUE;
+        return PTrue;
       }
 
       handles[idx] = buffer.GetEvent();
@@ -1614,7 +1614,7 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
     DWORD result;
     PINDEX retries = 100;
     for (;;) {
-      result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
+      result = WaitForMultipleObjects(numBuffers, handles, PFalse, INFINITE);
       if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + (DWORD)numBuffers)
         break;
 
@@ -1631,11 +1631,11 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
   } while (!readBuffers[idx].IsType(filterType));
 
   lastReadCount = readBuffers[idx].GetData(data, length);
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PEthSocket::Write(const void * data, PINDEX length)
+PBoolean PEthSocket::Write(const void * data, PINDEX length)
 {
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
@@ -1660,7 +1660,7 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
     handles[idx] = buffer.GetEvent();
   }
 
-  DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
+  DWORD result = WaitForMultipleObjects(numBuffers, handles, PFalse, INFINITE);
   if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0 + (DWORD) numBuffers)
     return ConvertOSError(-1, LastWriteError);
 
@@ -1704,56 +1704,56 @@ PINDEX PWin32PacketBuffer::PutData(const void * buf, PINDEX length)
 }
 
 
-BOOL PWin32PacketBuffer::ReadAsync(PWin32PacketDriver & pkt)
+PBoolean PWin32PacketBuffer::ReadAsync(PWin32PacketDriver & pkt)
 {
   if (status == Progressing)
-    return FALSE;
+    return PFalse;
 
   status = Uninitialised;
   if (!pkt.BeginRead(theArray, GetSize(), count, overlap))
-    return FALSE;
+    return PFalse;
 
   if (pkt.GetLastError() == ERROR_SUCCESS)
     status = Completed;
   else
     status = Progressing;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketBuffer::ReadComplete(PWin32PacketDriver & pkt)
+PBoolean PWin32PacketBuffer::ReadComplete(PWin32PacketDriver & pkt)
 {
   if (status != Progressing)
     return status == Completed;
 
   if (!pkt.CompleteIO(count, overlap)) {
     status = Uninitialised;
-    return FALSE;
+    return PFalse;
   }
 
   status = Completed;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketBuffer::WriteAsync(PWin32PacketDriver & pkt)
+PBoolean PWin32PacketBuffer::WriteAsync(PWin32PacketDriver & pkt)
 {
   if (status == Progressing)
-    return FALSE;
+    return PFalse;
 
   status = Uninitialised;
   if (!pkt.BeginWrite(theArray, count, overlap))
-    return FALSE;
+    return PFalse;
 
   if (pkt.GetLastError() == ERROR_SUCCESS)
     status = Completed;
   else
     status = Progressing;
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PWin32PacketBuffer::WriteComplete(PWin32PacketDriver & pkt)
+PBoolean PWin32PacketBuffer::WriteComplete(PWin32PacketDriver & pkt)
 {
   if (status != Progressing)
     return status == Completed;
@@ -1761,18 +1761,18 @@ BOOL PWin32PacketBuffer::WriteComplete(PWin32PacketDriver & pkt)
   DWORD dummy;
   if (pkt.CompleteIO(dummy, overlap)) {
     status = Completed;
-    return TRUE;
+    return PTrue;
   }
 
   status = Uninitialised;
-  return FALSE;
+  return PFalse;
 }
 
 
-BOOL PWin32PacketBuffer::IsType(WORD filterType) const
+PBoolean PWin32PacketBuffer::IsType(WORD filterType) const
 {
   if (filterType == PEthSocket::TypeAll)
-    return TRUE;
+    return PTrue;
 
   const PEthSocket::Frame * frame = (const PEthSocket::Frame *)theArray;
 
@@ -1802,7 +1802,7 @@ static PMutex & GetSNMPMutex()
 }
 */
 
-BOOL PIPSocket::GetGatewayAddress(Address & addr)
+PBoolean PIPSocket::GetGatewayAddress(Address & addr)
 {
   PWaitAndSignal m(GetSNMPMutex());
   PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
@@ -1840,7 +1840,7 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress()
   return snmp.GetInterfaceAddress(ifNum);
 }
 
-BOOL PIPSocket::GetRouteTable(RouteTable & table)
+PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 {
   PWaitAndSignal m(GetSNMPMutex());
 
@@ -1868,7 +1868,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
         {
           Address addr;
           if (!value.GetIpAddress(addr))
-            return FALSE;  // Very confused route table
+            return PFalse;  // Very confused route table
 
           table.Append(new RouteEntry(addr));
           break;
@@ -1876,22 +1876,22 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
       case 2 : // device interface
         if (!value.GetInteger(ifNum[idx]))
-          return FALSE;
+          return PFalse;
         break;
 
       case 3 : // metric
         if (!value.GetInteger(table[idx].metric))
-          return FALSE;
+          return PFalse;
         break;
 
       case 7 : // Get destination (next hop)
         if (!value.GetIpAddress(table[idx].destination))
-          return FALSE;
+          return PFalse;
         break;
 
       case 11 : // Get mask
         if (!value.GetIpAddress(table[idx].net_mask))
-          return FALSE;
+          return PFalse;
         break;
     }
 
@@ -1901,7 +1901,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   for (idx = 0; idx < table.GetSize(); idx++)
     table[idx].interfaceName = snmp.GetInterfaceName(ifNum[idx]);
 
-  return TRUE;
+  return PTrue;
 }
 
 unsigned PIPSocket::AsNumeric(PIPSocket::Address addr)    
@@ -1938,7 +1938,7 @@ Address localaddr;
   return 0;
 }
 
-BOOL PIPSocket::IsAddressReachable(PIPSocket::Address LocalIP,
+PBoolean PIPSocket::IsAddressReachable(PIPSocket::Address LocalIP,
                    PIPSocket::Address LocalMask, 
                    PIPSocket::Address RemoteIP)
 {
@@ -1965,9 +1965,9 @@ BOOL PIPSocket::IsAddressReachable(PIPSocket::Address LocalIP,
 
   if (AsNumeric(RemoteIP) > AsNumeric(lb) && 
         AsNumeric(lt) > AsNumeric(RemoteIP))
-          return TRUE;
+          return PTrue;
 
-  return FALSE;
+  return PFalse;
 }
 
 PString PIPSocket::GetInterface(PIPSocket::Address addr)
@@ -1985,7 +1985,7 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
   return PString();
 }
 
-BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table, BOOL includeDown)
+PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDown)
 {
   PWin32SnmpLibrary & snmp = snmp.Current();
 
@@ -1998,10 +1998,10 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table, BOOL includeDown)
     // address of the local host is.
     Address ipAddr;
     if (!GetHostAddress(ipAddr))
-      return FALSE;
+      return PFalse;
     Address netMask(255,255,255,255);
     table.Append(new InterfaceEntry("FailSafe Interface", ipAddr, netMask, PString::Empty()));
-    return TRUE;
+    return PTrue;
   }
 
   // Sometime this returns no interfaces when one is going up or down
@@ -2055,12 +2055,12 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table, BOOL includeDown)
     }
 
     if (foundOne)
-      return TRUE;
+      return PTrue;
 
     Sleep(50);
   }
 
-  return TRUE;
+  return PTrue;
 }
 
 

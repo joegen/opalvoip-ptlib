@@ -70,16 +70,16 @@ PPipeChannel::PPipeChannel()
 }
 
 
-BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
+PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
                                 const PStringArray & argumentList,
                                 OpenMode mode,
-                                BOOL searchPath,
-                                BOOL stderrSeparate,
+                                PBoolean searchPath,
+                                PBoolean stderrSeparate,
                                 const PStringToString * environment)
 {
 #if defined(P_VXWORKS) || defined(P_RTEMS)
   PAssertAlways("PPipeChannel::PlatformOpen");
-  return FALSE;
+  return PFalse;
 #else
   subProgName = subProgram;
 
@@ -113,7 +113,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   childPid = vfork();
 #endif
   if (childPid < 0)
-    return FALSE;
+    return PFalse;
 
   if (childPid > 0) {
     // setup the pipe to the child
@@ -133,7 +133,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     }
  
     os_handle = 0;
-    return TRUE;
+    return PTrue;
   }
 
   // the following code is in the child process
@@ -220,12 +220,12 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     execv(subProgram, args);
 
   _exit(2);
-  return FALSE;
+  return PFalse;
 #endif // P_VXWORKS || P_RTEMS
 }
 
 
-BOOL PPipeChannel::Close()
+PBoolean PPipeChannel::Close()
 {
   // close pipe from child
   if (fromChildPipe[0] != -1) {
@@ -270,32 +270,32 @@ BOOL PPipeChannel::Close()
   os_handle = -1;
   childPid  = 0;
 
-  return TRUE;
+  return PTrue;
 }
 
-BOOL PPipeChannel::Read(void * buffer, PINDEX len)
+PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 {
   PAssert(IsOpen(), "Attempt to read from closed pipe");
   PAssert(fromChildPipe[0] != -1, "Attempt to read from write-only pipe");
 
   os_handle = fromChildPipe[0];
-  BOOL status = PChannel::Read(buffer, len);
+  PBoolean status = PChannel::Read(buffer, len);
   os_handle = 0;
   return status;
 }
 
-BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
+PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
 {
   PAssert(IsOpen(), "Attempt to write to closed pipe");
   PAssert(toChildPipe[1] != -1, "Attempt to write to read-only pipe");
 
   os_handle = toChildPipe[1];
-  BOOL status = PChannel::Write(buffer, len);
+  PBoolean status = PChannel::Write(buffer, len);
   os_handle = 0;
   return status;
 }
 
-BOOL PPipeChannel::Execute()
+PBoolean PPipeChannel::Execute()
 {
   flush();
   clear();
@@ -303,7 +303,7 @@ BOOL PPipeChannel::Execute()
     ::close(toChildPipe[1]);
     toChildPipe[1] = -1;
   }
-  return TRUE;
+  return PTrue;
 }
 
 
@@ -317,20 +317,20 @@ int PPipeChannel::GetReturnCode() const
   return retVal;
 }
 
-BOOL PPipeChannel::IsRunning() const
+PBoolean PPipeChannel::IsRunning() const
 {
   if (childPid == 0)
-    return FALSE;
+    return PFalse;
 
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
 
   int err;
   int status;
   if ((err = waitpid(childPid, &status, WNOHANG)) == 0)
-    return TRUE;
+    return PTrue;
 
   if (err != childPid)
-    return FALSE;
+    return PFalse;
 
   PPipeChannel * thisW = (PPipeChannel *)this;
   thisW->childPid = 0;
@@ -349,7 +349,7 @@ BOOL PPipeChannel::IsRunning() const
     thisW->retVal = -1;
   }
 
-  return FALSE;
+  return PFalse;
 
 #else
   return kill(childPid, 0) == 0;
@@ -433,25 +433,25 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
   return -1;
 }
 
-BOOL PPipeChannel::Kill(int killType)
+PBoolean PPipeChannel::Kill(int killType)
 {
   return ConvertOSError(kill (childPid, killType));
 }
 
-BOOL PPipeChannel::CanReadAndWrite()
+PBoolean PPipeChannel::CanReadAndWrite()
 {
-  return TRUE;
+  return PTrue;
 }
 
 
-BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
+PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 {
   PAssert(IsOpen(), "Attempt to read from closed pipe");
   PAssert(stderrChildPipe[0] != -1, "Attempt to read from write-only pipe");
 
   os_handle = stderrChildPipe[0];
   
-  BOOL status = FALSE;
+  PBoolean status = PFalse;
 #ifndef BE_BONELESS
   int available;
   if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {

@@ -44,10 +44,10 @@ PINLINE void PContainer::CopyContents(const PContainer &)
 PINLINE PINDEX PContainer::GetSize() const
   { return PAssertNULL(reference)->size; }
 
-PINLINE BOOL PContainer::IsEmpty() const
+PINLINE PBoolean PContainer::IsEmpty() const
   { return GetSize() == 0; }
 
-PINLINE BOOL PContainer::IsUnique() const
+PINLINE PBoolean PContainer::IsUnique() const
   { return PAssertNULL(reference)->count <= 1; }
 
 
@@ -80,7 +80,7 @@ PINLINE PString & PString::operator=(const char * cstr)
 PINLINE PString & PString::operator=(char ch)
   { AssignContents(PString(ch)); return *this; }
 
-PINLINE BOOL PString::MakeMinimumSize()
+PINLINE PBoolean PString::MakeMinimumSize()
   { return SetSize(GetLength()+1); }
 
 PINLINE PINDEX PString::GetLength() const
@@ -168,7 +168,7 @@ PINLINE void PString::Splice(const PString & str, PINDEX pos, PINDEX len)
   { Splice((const char *)str, pos, len); }
 
 PINLINE PStringArray
-      PString::Tokenise(const PString & separators, BOOL onePerSeparator) const
+      PString::Tokenise(const PString & separators, PBoolean onePerSeparator) const
   { return Tokenise((const char *)separators, onePerSeparator); }
 
 PINLINE PString::operator const unsigned char *() const
@@ -234,11 +234,11 @@ PINLINE PCollection::PCollection(PINDEX initialSize)
 PINLINE PCollection::PCollection(int dummy, const PCollection * c)
   : PContainer(dummy, c) { }
 
-PINLINE void PCollection::AllowDeleteObjects(BOOL yes)
+PINLINE void PCollection::AllowDeleteObjects(PBoolean yes)
   { reference->deleteObjects = yes; }
 
 PINLINE void PCollection::DisallowDeleteObjects()
-  { AllowDeleteObjects(FALSE); }
+  { AllowDeleteObjects(PFalse); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -335,7 +335,7 @@ PINLINE POrdinalKey & POrdinalKey::operator-=(PINDEX minus)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PHashTable::AbstractContains(const PObject & key) const
+PINLINE PBoolean PHashTable::AbstractContains(const PObject & key) const
   { return hashTable->GetElementAt(key) != NULL; }
 
 
@@ -361,7 +361,7 @@ PINLINE PStringSet & PStringSet::operator-=(const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractDictionary::PAbstractDictionary()
-  { hashTable->deleteKeys = TRUE; }
+  { hashTable->deleteKeys = PTrue; }
   
 PINLINE PAbstractDictionary::PAbstractDictionary(int dummy,
                                                  const PAbstractDictionary * c)
