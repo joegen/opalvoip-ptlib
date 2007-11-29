@@ -23,13 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.h,v $
- * Revision 1.1  2004/09/13 01:13:26  dereksmithies
- * Initial release of VERY simple program to test PThread::WaitForTermination
- *
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

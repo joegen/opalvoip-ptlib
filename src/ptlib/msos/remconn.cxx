@@ -26,73 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: remconn.cxx,v $
- * Revision 1.28  2004/04/03 08:22:22  csoutheren
- * Remove pseudo-RTTI and replaced with real RTTI
- *
- * Revision 1.27  2000/03/07 01:43:29  robertj
- * Removed double include of ras.h as no longer works with later versions.
- *
- * Revision 1.26  1999/06/27 04:21:59  robertj
- * Added more debugging to GetStatus() error reporting.
- *
- * Revision 1.25  1999/02/16 08:08:07  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.24  1998/11/30 04:50:16  robertj
- * New directory structure
- *
- * Revision 1.23  1998/10/15 05:41:51  robertj
- * New memory leak check code.
- *
- * Revision 1.22  1998/09/24 03:30:55  robertj
- * Added open software license.
- *
- * Revision 1.21  1998/07/24 06:51:56  robertj
- * Added ability to get IP number of RAS connection.
- *
- * Revision 1.20  1998/03/05 12:49:54  robertj
- * MemCheck fixes.
- *
- * Revision 1.19  1998/02/03 06:16:44  robertj
- * Added more error codes.
- *
- * Revision 1.18  1998/01/26 00:54:58  robertj
- * Added function to PRemoteConnection to get at OS error code.
- *
- * Revision 1.17  1997/04/06 07:45:28  robertj
- * Fixed bug in dialling already connected remotes.
- *
- * Revision 1.16  1997/04/01 06:00:06  robertj
- * Added Remove Configuration.
- *
- * Revision 1.15  1997/02/05 11:47:25  robertj
- * Fixed NT 3.51 support, again! (PAP compatibility)
- *
- * Revision 1.14  1997/01/25 02:22:47  robertj
- * Fixed backward compatibilty with NT3.51 and Win'95
- *
- * Revision 1.13  1997/01/12 04:14:39  robertj
- * Added ability to add/change new connections.
- *
- * Revision 1.12  1996/12/01 07:01:28  robertj
- * Changed debugging asserts to simple PError output.
- *
- * Revision 1.11  1996/11/16 10:53:17  robertj
- * Added missing SetlastError() so assert has correct error value.
- *
- * Revision 1.10  1996/11/10 21:02:46  robertj
- * Try doing double sample before flagging a RAS connection disconnected.
- *
- * Revision 1.9  1996/11/04 09:45:26  robertj
- * Yet more debugging.
- *
- * Revision 1.8  1996/11/04 03:37:23  robertj
- * Added more debugging for remote drop outs.
- *
- * Revision 1.7  1996/10/31 12:39:53  robertj
- * Added RCS keywords.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

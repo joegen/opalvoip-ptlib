@@ -21,15 +21,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.h,v $
- * Revision 1.2  2006/12/07 20:49:39  dereksmithies
- * Add doxygen comments to this program.
- * Add doxygen configure file.
- *
- * Revision 1.1  2006/12/07 08:46:17  dereksmithies
- * Initial cut of code to test the operation of PQueueChannel class.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _QUEUE_MAIN_H

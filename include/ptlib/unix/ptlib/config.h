@@ -26,25 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: config.h,v $
- * Revision 1.11  2003/09/17 01:18:03  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.10  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.9  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.8  1998/11/30 22:06:32  robertj
- * New directory structure.
- *
- * Revision 1.7  1998/09/24 04:11:30  robertj
- * Added open software license.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

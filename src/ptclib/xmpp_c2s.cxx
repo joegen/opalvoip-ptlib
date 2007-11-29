@@ -24,37 +24,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: xmpp_c2s.cxx,v $
- * Revision 1.9  2007/09/08 11:34:29  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.8  2007/04/10 05:08:48  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.7  2004/05/13 14:51:30  csoutheren
- * Fixed problems when comiling without SSL
- *
- * Revision 1.6  2004/05/09 07:23:50  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.5  2004/05/02 08:58:15  csoutheren
- * Removed warnings when compling without SASL
- *
- * Revision 1.4  2004/04/28 11:26:43  csoutheren
- * Hopefully fixed SASL and SASL2 problems
- *
- * Revision 1.3  2004/04/26 01:51:58  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
- * Revision 1.2  2004/04/23 06:07:25  csoutheren
- * Added #if P_SASL to allow operation without SASL
- *
- * Revision 1.1  2004/04/22 12:31:00  rjongbloed
- * Added PNotifier extensions and XMPP (Jabber) support,
- *   thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

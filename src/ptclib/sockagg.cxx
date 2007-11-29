@@ -26,75 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sockagg.cxx,v $
- * Revision 1.22  2007/10/03 01:18:46  rjongbloed
- * Fixed build for Windows Mobile 5 and added Windows Mobile 6
- *
- * Revision 1.21  2007/09/17 11:14:46  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.20  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.19  2006/11/20 03:17:24  csoutheren
- * Fixed incorrect check time on trace message
- *
- * Revision 1.18  2006/07/22 06:27:58  rjongbloed
- * Added auo-load of Winsock v2 library required by agreggated sockets.
- *
- * Revision 1.17  2006/03/13 23:34:21  csoutheren
- * Added log message when handle creates aggregator
- *
- * Revision 1.16  2006/03/09 05:32:59  csoutheren
- * Reverted to conservative locking strategy, with OnClose
- *
- * Revision 1.15  2006/03/07 11:04:56  csoutheren
- * Ensure socket aggregation not used on Linux
- *
- * Revision 1.14  2006/03/07 07:38:02  csoutheren
- * Refine timing windows on socket handling and cleanup unused code
- *
- * Revision 1.13  2006/03/06 02:37:26  csoutheren
- * Change handle locking to help prevent aggregation threads from hogging list
- *  access
- *
- * Revision 1.12  2006/03/02 07:50:38  csoutheren
- * Cleanup unused code
- * Add OnClose function
- *
- * Revision 1.11  2006/02/28 02:26:00  csoutheren
- * Renamed variable to be not same as member
- *
- * Revision 1.10  2006/02/28 02:08:02  csoutheren
- * Modified aggregation to load balance better
- *
- * Revision 1.9  2006/02/08 04:02:25  csoutheren
- * Added ability to enable and disable socket aggregation
- *
- * Revision 1.8  2006/01/23 05:57:39  csoutheren
- * More aggegator implementation
- *
- * Revision 1.7  2006/01/18 07:16:56  csoutheren
- * Latest version of socket aggregation code
- *
- * Revision 1.6  2006/01/05 11:39:32  rjongbloed
- * Fixed DevStudio warning
- *
- * Revision 1.5  2006/01/03 04:23:32  csoutheren
- * Fixed Unix implementation
- *
- * Revision 1.4  2005/12/23 07:49:27  csoutheren
- * Fixed Unix implementation
- *
- * Revision 1.3  2005/12/23 06:44:31  csoutheren
- * Working implementation
- *
- * Revision 1.2  2005/12/22 07:27:36  csoutheren
- * More implementation
- *
- * Revision 1.1  2005/12/22 03:55:52  csoutheren
- * Added initial version of socket aggregation classes
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

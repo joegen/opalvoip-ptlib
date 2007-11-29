@@ -26,26 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: assert.cxx,v $
- * Revision 1.2  2002/06/25 02:35:36  robertj
- * Improved assertion system to allow C++ class name to be displayed if
- *   desired, especially relevant to container classes.
- *
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.4  1999/06/23 14:19:46  robertj
- * Fixed core dump problem with SIGINT/SIGTERM terminating process.
- *
- * Revision 1.3  1998/09/24 04:12:08  robertj
- * Added open software license.
- *
- * Revision 1.2  1998/06/17 14:47:47  robertj
- * Fixed continuous display of assert if input is from /dev/null
- *
- * Revision 1.1  1996/01/26 11:09:15  craigs
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

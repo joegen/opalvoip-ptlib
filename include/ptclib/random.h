@@ -23,33 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: random.h,v $
- * Revision 1.8  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.7  2007/03/08 04:31:08  csoutheren
- * Applied 1613299 - add new function to the PRandom class
- * Thanks to Frederic Heem
- *
- * Revision 1.6  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.5  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.4  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.3  2001/03/03 05:12:47  robertj
- * Fixed yet another transcription error of random number generator code.
- *
- * Revision 1.2  2001/02/27 03:33:44  robertj
- * Changed random number generator due to licensing issues.
- *
- * Revision 1.1  2000/02/17 12:05:02  robertj
- * Added better random number generator after finding major flaws in MSVCRT version.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PRANDOM
@@ -110,6 +86,21 @@ class PRandom
     unsigned Generate();
 
     /**Get the next psuedo-random number in sequence.
+       This generates one pseudorandom unsigned integer from 0 to maximum.
+       Uses the Generate() function and scales accordingly.
+      */
+    unsigned Generate(unsigned maximum);
+
+    /**Get the next psuedo-random number in sequence.
+       This generates one pseudorandom unsigned integer from minimum to maximum.
+       Uses the Generate() function and scales and shifts accordingly.
+      */
+    unsigned Generate(unsigned minimum, unsigned maximum);
+
+    /**Get the next psuedo-random number in sequence.
+       This generates one pseudorandom unsigned integer which is
+       uniformly distributed among 0 to maximum for each call. Uses
+       Generate()
       */
     inline operator unsigned() { return Generate(); }
 
@@ -120,9 +111,13 @@ class PRandom
       */
     static unsigned Number();
 
-    /** Get a random number between min and max
+    /** Get a random number between zero and maximum
     */
-    static unsigned int Number(unsigned int min, unsigned int max);
+    static unsigned Number(unsigned maximum);
+
+    /** Get a random number between minimum and maximum
+    */
+    static unsigned Number(unsigned minimum, unsigned maximum);
 
   protected:
     enum {

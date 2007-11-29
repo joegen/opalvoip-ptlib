@@ -23,75 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.17  2007/09/30 18:26:11  dsandras
- * Reverted accidental commit. Sorry.
- *
- * Revision 1.16  2007/09/30 17:34:40  dsandras
- * Killed GCC 4.2 warnings.
- *
- * Revision 1.15  2007/04/16 01:59:48  rjongbloed
- * Added function to video info class to parse standard size strings
- *   to width/height, eg "CIF", "QCIF", "VGA" etc
- *
- * Revision 1.14  2007/04/13 07:14:05  rjongbloed
- * Added command line parameter to set video frame resizing mode.
- * Default size and frame rate to what grabbebr is using.
- *
- * Revision 1.13  2007/04/03 12:09:38  rjongbloed
- * Fixed various "file video device" issues:
- *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
- *   Added driverName to PVideoDevice::OpenArgs (so can select YUVFile)
- *   Added new statics to create correct video input/output device object
- *     given a PVideoDevice::OpenArgs structure.
- *   Fixed begin able to write to YUVFile when YUV420P colour format
- *     is not actually selected.
- *   Fixed truncating output video file if overwriting.
- *
- * Revision 1.12  2006/06/06 23:00:13  dereksmithies
- * Fix erroneous help message.
- *
- * Revision 1.11  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.10  2005/08/09 09:08:11  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.9.4.1  2005/07/17 09:25:30  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.9  2005/03/10 08:10:57  dereksmithies
- * Use a more descriptive name for the manufacturer.
- *
- * Revision 1.8  2004/04/20 00:19:31  dereksmithies
- * Add code to generate compile time error if SDL is not installed.
- *
- * Revision 1.7  2004/01/18 14:20:26  dereksmithies
- * Opening of video devices for plugins works now.
- *
- * Revision 1.6  2003/12/14 10:01:25  rjongbloed
- * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
- *
- * Revision 1.5  2003/12/08 01:28:52  dereksmithies
- * Compiles now with new video plugins.
- *
- * Revision 1.4  2003/11/04 03:21:26  dereksmithies
- * Fix compile on windows OS.
- *
- * Revision 1.3  2003/04/29 00:57:21  dereks
- * Add user interface, option setting for format/input/fake. Works on Linux.
- *
- * Revision 1.2  2003/04/28 14:30:21  craigs
- * Started rearranging code
- *
- * Revision 1.1  2003/04/28 08:18:42  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "precompile.h"

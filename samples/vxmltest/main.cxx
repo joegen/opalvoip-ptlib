@@ -7,23 +7,9 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: main.cxx,v $
- * Revision 1.5  2004/07/01 13:05:58  rjongbloed
- * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
- *   of issues with startup orders and Windows DLL multiple instances.
- *
- * Revision 1.4  2004/06/19 09:00:35  csoutheren
- * Updated for TTS changes
- *
- * Revision 1.3  2004/06/02 08:30:22  csoutheren
- * Tweaks to avoid some problems with reading single bytes from a PCM stream
- *
- * Revision 1.2  2003/09/26 13:41:31  rjongbloed
- * Added special test to give more indicative error if try to compile without Expat support.
- *
- * Revision 1.1  2002/08/06 05:26:33  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

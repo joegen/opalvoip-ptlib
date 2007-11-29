@@ -28,52 +28,9 @@
  * Yuri Kiryanov, ykiryanov at users.sourceforge.net,
  * Jac Goudsmit <jac@be.com>.
  *
- * $Log: beaudio.cxx,v $
- * Revision 1.16  2004/10/26 18:08:54  ykiryanov
- * Added code for old Media Kit, to be backwards compatible with R5, and Zeta ifdef
- *
- * Revision 1.15  2004/06/16 01:55:10  ykiryanov
- * Added usage of lastReadCount - sound capture now works
- *
- * Revision 1.14  2004/05/30 04:48:45  ykiryanov
- * Stable version
- *
- * Revision 1.12  2004/05/14 05:26:57  ykiryanov
- * Fixed dynamic cast bug
- *
- * Revision 1.11  2004/04/18 00:32:26  ykiryanov
- * Fized compiler choking on <dynamic_cast>.
- *
- * Revision 1.10  2004/04/02 03:29:07  ykiryanov
- * New improved code
- *
- * Revision 1.9  2002/02/09 00:52:01  robertj
- * Slight adjustment to API and documentation for volume functions.
- *
- * Revision 1.8  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannelBeOS
- *
- * Revision 1.7  2001/07/09 06:16:15  yurik
- * Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
- *
- * Revision 1.6  2000/12/16 13:08:56  rogerh
- * BeOS changes from Yuri Kiryanov <openh323@kiryanov.com>
- *
- * Revision 1.5  2000/04/19 00:13:52  robertj
- * BeOS port changes.
- *
- * Revision 1.4  1999/09/21 00:56:29  robertj
- * Added more sound support for BeOS (thanks again Yuri!)
- *
- * Revision 1.3  1999/06/28 09:28:02  robertj
- * Portability issues, especially n BeOS (thanks Yuri!)
- *
- * Revision 1.2  1999/03/05 07:03:27  robertj
- * Some more BeOS port changes.
- *
- * Revision 1.1  1999/03/02 05:41:59  robertj
- * More BeOS changes
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

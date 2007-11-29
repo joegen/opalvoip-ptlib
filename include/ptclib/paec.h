@@ -24,22 +24,9 @@
  *
  * Contributor(s): Miguel Rodriguez Perez
  *
- * $Log: paec.h,v $
- * Revision 1.5  2007/03/15 21:35:21  shorne
- * fix for buffer underrun
- *
- * Revision 1.4  2007/03/06 00:22:48  shorne
- * Changed to a buffering type arrangement
- *
- * Revision 1.3  2007/02/18 18:39:21  shorne
- * Added PWaitAndSignal
- *
- * Revision 1.2  2006/02/26 09:27:49  shorne
- * Renamed AEC class name, moved to seperate library
- *
- * Revision 1.1  2006/01/26 08:05:03  shorne
- * Added AEC support
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef __OPAL_ECHOCANCEL_H

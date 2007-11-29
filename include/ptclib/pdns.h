@@ -23,51 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pdns.h,v $
- * Revision 1.14  2007/09/11 13:38:56  hfriederich
- * Allow to do lookup SRV records using complete SRV query string
- *
- * Revision 1.13  2007/08/13 00:56:30  rjongbloed
- * Fixed compile on DevStudio 2003
- *
- * Revision 1.12  2007/08/10 10:07:29  dsandras
- * Fixed DNS support thanks to Vincent Luba <luba novacom be>.
- *
- * Revision 1.11  2006/02/26 11:51:20  csoutheren
- * Extended DNS test program to include URL based SRV lookups
- * Re-arranged SRV lookup code to allow access to internal routine
- * Reformatted code
- *
- * Revision 1.10  2006/02/26 09:26:17  shorne
- * Added DNS SRV record lookups
- *
- * Revision 1.9  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.8  2004/06/24 07:36:24  csoutheren
- * Added definitions of T_SRV and T_NAPTR for hosts that do not have these
- *
- * Revision 1.7  2004/05/31 12:49:47  csoutheren
- * Added handling of unknown DNS types
- *
- * Revision 1.6  2004/05/28 06:50:42  csoutheren
- * Reorganised DNS functions to use templates, and exposed more internals to allow new DNS lookup types to be added
- *
- * Revision 1.5  2003/07/22 23:52:20  dereksmithies
- * Fix from Fabrizio Ammollo to cope with when P_DNS is disabled. Thanks!
- *
- * Revision 1.4  2003/04/16 07:02:55  robertj
- * Cleaned up source.
- *
- * Revision 1.3  2003/04/15 08:14:06  craigs
- * Added single string form of GetSRVRecords
- *
- * Revision 1.2  2003/04/15 08:06:24  craigs
- * Added Unix implementation
- *
- * Revision 1.1  2003/04/15 04:06:56  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #if P_DNS

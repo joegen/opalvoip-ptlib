@@ -23,26 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.5  2007/05/10 00:37:35  rjongbloed
- * Fixed compiler warnings.
- *
- * Revision 1.4  2007/05/01 03:15:26  dereksmithies
- * Add a second test, to test the repeated initialisation of some PTimer instances.
- *
- * Revision 1.3  2006/07/22 07:27:26  rjongbloed
- * Fixed various compilation issues
- *
- * Revision 1.2  2006/05/24 02:28:18  dereksmithies
- * add separate thread to get the timer to start.
- * Add option to check if the timer has started.
- * Fix use of the parameters.
- *
- * Revision 1.1  2006/05/23 04:36:49  dereksmithies
- * Initial release of a test program to examine the operation of PTimer.
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "precompile.h"

@@ -23,90 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pstun.cxx,v $
- * Revision 1.27  2007/09/25 14:25:33  hfriederich
- * Allow to get STUN server address as PIPSocket::Address instance
- *
- * Revision 1.26  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.25  2007/08/22 05:04:39  rjongbloed
- * Added ability to set a specific local port for STUN created sockets.
- *
- * Revision 1.24  2007/07/22 03:07:31  rjongbloed
- * Added parameter so can bind STUN socket to specific interface.
- *
- * Revision 1.23  2007/02/11 13:13:07  shorne
- * Added message when stun server cannot be reached
- *
- * Revision 1.22  2006/12/23 15:08:11  shorne
- * Now Factory loaded for ease of addition of new NAT Methods
- *
- * Revision 1.21  2006/08/29 18:41:20  dsandras
- * Check validity of STUN messages.
- *
- * Revision 1.20  2005/12/05 21:58:36  dsandras
- * Fixed bug when looking if the cache is still valid.
- *
- * Revision 1.19  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.18  2005/07/13 11:15:26  csoutheren
- * Backported NAT abstraction files from isvo branch
- *
- * Revision 1.17  2005/06/20 10:55:17  rjongbloed
- * Changed the timeout and retries so if there is a blocking firewall it does not take 15 seconds to find out!
- * Added access functions so timeout and retries are application configurable.
- * Added function (and << operator) to get NAT type enum as string.
- *
- * Revision 1.16.4.1  2005/04/25 13:19:27  shorne
- * Add Support for other NAT methods
- *
- * Revision 1.16  2004/11/25 07:23:46  csoutheren
- * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
- *
- * Revision 1.15  2004/10/26 05:58:23  csoutheren
- * Increased timeout on STUN responses to avoid spurious STUN failures due
- * to network trsffic/congestion etc
- *
- * Revision 1.14  2004/08/18 13:16:07  rjongbloed
- * Fixed STUN CreateSocketPair so first socket is always even.
- *
- * Revision 1.13  2004/03/14 05:47:52  rjongbloed
- * Fixed incorrect detection of symmetric NAT (eg Linux masquerading) and also
- *   some NAT systems which are partially blocked due to firewall rules.
- *
- * Revision 1.12  2004/02/24 11:15:48  rjongbloed
- * Added function to get external router address, also did a bunch of documentation.
- *
- * Revision 1.11  2004/02/17 11:11:05  rjongbloed
- * Added missing #pragma pack() to turn off byte alignment for the last class, thanks Ted Szoczei
- *
- * Revision 1.10  2004/01/17 17:54:02  rjongbloed
- * Added function to get server name from STUN client.
- *
- * Revision 1.9  2003/10/08 22:00:18  dereksmithies
- * Fix unsigned/signed warning message. Thanks to Craig Southeren.
- *
- * Revision 1.8  2003/10/05 00:56:25  rjongbloed
- * Rewrite of STUN to not to use imported code with undesirable license.
- *
- * Revision 1.5  2003/02/05 06:26:49  robertj
- * More work in making the STUN usable for Symmetric NAT systems.
- *
- * Revision 1.4  2003/02/04 07:02:17  robertj
- * Added ip/port version of constructor.
- * Removed creating sockets for Open type.
- *
- * Revision 1.3  2003/02/04 05:55:04  craigs
- * Added socket pair function
- *
- * Revision 1.2  2003/02/04 05:06:24  craigs
- * Added new functions
- *
- * Revision 1.1  2003/02/04 03:31:04  robertj
- * Added STUN
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__
@@ -690,6 +609,12 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
   externalAddress = cachedExternalAddress = mappedAddress->GetIP();
   timeAddressObtained = PTime();
   return true;
+}
+
+
+void PSTUNClient::InvalidateExternalAddressCache() {
+  cachedExternalAddress = 0;
+  natType = UnknownNat;
 }
 
 

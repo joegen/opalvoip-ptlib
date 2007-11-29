@@ -23,41 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: telnet.cxx,v $
- * Revision 1.11  2003/11/13 21:14:57  csoutheren
- * Added fix for telnet NOP command thanks to Andrei Koulik
- *
- * Revision 1.10  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.9  2002/09/18 06:38:59  robertj
- * Fixed initialisation of debug flag, thanks wolfboy@netease.com
- *
- * Revision 1.8  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.7  1998/11/30 04:52:11  robertj
- * New directory structure
- *
- * Revision 1.6  1998/09/23 06:22:47  robertj
- * Added open source copyright license.
- *
- * Revision 1.5  1998/01/26 02:49:23  robertj
- * GNU support.
- *
- * Revision 1.4  1997/07/14 11:47:18  robertj
- * Added "const" to numerous variables.
- *
- * Revision 1.3  1996/08/08 10:08:48  robertj
- * Directory structure changes for common files.
- *
- * Revision 1.2  1996/05/26 03:47:08  robertj
- * Compatibility to GNU 2.7.x
- *
- * Revision 1.1  1996/03/04 12:12:51  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

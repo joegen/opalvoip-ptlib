@@ -7,21 +7,9 @@
  *
  * Copyright 2004 Reitek S.p.A.
  *
- * $Log: main.cxx,v $
- * Revision 1.4  2007/05/10 00:41:20  rjongbloed
- * Updated build for wxWidgets 2.8.x
- *
- * Revision 1.3  2006/07/23 03:39:49  dereksmithies
- * Modify main.cxx so it compiles under linux.
- * Add Makefile so it can be compiled under linux.
- *
- * Revision 1.2  2004/05/09 07:23:49  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.1  2004/04/26 01:51:58  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "main.h"

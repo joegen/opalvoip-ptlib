@@ -26,19 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: tlibmpthrd.cxx,v $
- * Revision 1.4  2002/06/27 06:38:58  robertj
- * Changes to remove memory leak display for things that aren't memory leaks.
- *
- * Revision 1.3  2002/02/19 07:40:59  rogerh
- * Remove PMutex destructor for Carbon.
- *
- * Revision 1.2  2002/02/19 07:28:02  rogerh
- * PXAbortIO -> PXAbortBlock. Submitted by Peter Johnson <paj@mac.com>
- *
- * Revision 1.1  2001/08/11 15:38:43  rogerh
- * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <sys/resource.h>

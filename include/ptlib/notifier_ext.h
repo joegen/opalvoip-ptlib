@@ -23,27 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: notifier_ext.h,v $
- * Revision 1.6  2007/04/02 05:29:54  rjongbloed
- * Tidied some trace logs to assure all have a category (bit before a tab character) set.
- *
- * Revision 1.5  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2004/05/17 11:02:39  csoutheren
- * Added extra documentation
- *
- * Revision 1.3  2004/05/09 07:23:48  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.2  2004/04/26 01:34:58  rjongbloed
- * Change nofier list to be able to used in containers, thanks Federico Pinna, Reitek S.p.A.
- *
- * Revision 1.1  2004/04/22 12:31:00  rjongbloed
- * Added PNotifier extensions and XMPP (Jabber) support,
- *   thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PNOTIFIER_EXT

@@ -21,43 +21,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: enum.cxx,v $
- * Revision 1.12  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.11  2007/06/27 15:26:52  shorne
- * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
- *
- * Revision 1.10  2007/04/02 05:29:54  rjongbloed
- * Tidied some trace logs to assure all have a category (bit before a tab character) set.
- *
- * Revision 1.9  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.8  2005/08/31 05:55:03  shorne
- * Reworked ENUM to craigs' exacting requirements
- *
- * Revision 1.7  2005/08/31 04:07:53  shorne
- * added ability to set ENUM Servers at runtime
- *
- * Revision 1.6  2004/08/04 10:26:39  csoutheren
- * Changed service to be case insignificant
- *
- * Revision 1.5  2004/08/03 13:37:45  csoutheren
- * Added ability to set ENUM search path from environment variable
- *
- * Revision 1.4  2004/07/19 13:55:41  csoutheren
- * Work-around for crash on gcc 3.5-20040704
- *
- * Revision 1.3  2004/06/05 01:58:37  rjongbloed
- * Fixed MSVC 6 compatibility
- *
- * Revision 1.2  2004/05/31 23:14:17  csoutheren
- * Fixed warnings under VS.net and fixed problem with SRV records when returning multiple records
- *
- * Revision 1.1  2004/05/31 13:56:37  csoutheren
- * Added implementation of ENUM resolution of E.164 numbers by DNS
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

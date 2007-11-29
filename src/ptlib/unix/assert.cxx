@@ -26,77 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: assert.cxx,v $
- * Revision 1.22  2007/06/02 12:50:05  dsandras
- * Removed redundant header.
- *
- * Revision 1.21  2007/02/12 23:46:34  csoutheren
- * Applied 1611486 - The environment variable PWLIB_ASSERT_ACTION
- * Thanks to Vyacheslav Frolov
- *
- * Revision 1.20  2007/02/01 05:04:20  csoutheren
- * Allow compilation without C++ exceptions enabled
- *
- * Revision 1.19  2006/12/08 05:02:24  csoutheren
- * Apply 1602184 - assert can also throw exception
- * Thanks to Frederic Heem
- *
- * Revision 1.18  2006/06/21 03:28:44  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.17  2004/07/11 07:56:36  csoutheren
- * Applied jumbo VxWorks patch, thanks to Eize Slange
- *
- * Revision 1.16  2002/06/25 04:05:19  robertj
- * Fixed new assert function that does not have file/line parameters.
- *
- * Revision 1.15  2002/06/25 02:26:05  robertj
- * Improved assertion system to allow C++ class name to be displayed if
- *   desired, especially relevant to container classes.
- *
- * Revision 1.14  2001/09/03 08:13:54  robertj
- * Changed "stack dump" option to "run debugger" when get assert.
- *
- * Revision 1.13  2001/08/30 08:58:09  robertj
- * Added explicit output to trace file if get assert.
- *
- * Revision 1.12  2001/07/03 04:41:25  yurik
- * Corrections to Jac's submission from 6/28
- *
- * Revision 1.11  2001/06/30 06:59:07  yurik
- * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
- *
- * Revision 1.10  2001/05/03 01:14:09  robertj
- * Put in check to ignore assert if stdin not TTY or not open.
- * Changed default action on assert to ignore if get EOF.
- *
- * Revision 1.9  2001/04/20 10:13:02  robertj
- * Made sure cannot have nested asserts.
- *
- * Revision 1.8  2000/03/27 18:20:09  craigs
- * Added the ability to get a stack dump on assert
- *
- * Revision 1.7  2000/03/21 03:09:54  craigs
- * Fixed the fix with EOF
- *
- * Revision 1.6  2000/03/20 22:59:18  craigs
- * Fixed problem with asserts generating unlimited output when input is redirected
- *
- * Revision 1.5  2000/02/18 01:49:18  craigs
- * Added VxWorks code
- *
- * Revision 1.4  1999/06/23 14:19:46  robertj
- * Fixed core dump problem with SIGINT/SIGTERM terminating process.
- *
- * Revision 1.3  1998/09/24 04:12:08  robertj
- * Added open software license.
- *
- * Revision 1.2  1998/06/17 14:47:47  robertj
- * Fixed continuous display of assert if input is from /dev/null
- *
- * Revision 1.1  1996/01/26 11:09:15  craigs
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

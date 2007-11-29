@@ -26,58 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: mail.cxx,v $
- * Revision 1.17  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.16  2005/11/19 01:17:37  csoutheren
- * Removed obsolete C++ construct
- *
- * Revision 1.15  2005/11/14 23:16:26  csoutheren
- * Removed obsolete constructs that cause compiler warnings in new compilers
- *
- * Revision 1.14  1999/02/10 13:20:53  robertj
- * Added ability to have attachments in mail messages.
- *
- * Revision 1.13  1998/11/30 04:48:40  robertj
- * New directory structure
- *
- * Revision 1.12  1998/10/15 05:41:49  robertj
- * New memory leak check code.
- *
- * Revision 1.11  1998/09/24 03:30:48  robertj
- * Added open software license.
- *
- * Revision 1.10  1997/07/14 11:47:19  robertj
- * Added "const" to numerous variables.
- *
- * Revision 1.9  1997/05/16 12:05:05  robertj
- * Added BCC capability to send mail.
- *
- * Revision 1.8  1997/02/05 11:48:08  robertj
- * Fixed compatibility with MSVC debug memory allocation macros.
- *
- * Revision 1.7  1996/11/18 11:30:15  robertj
- * Fixed support for new libraries.
- *
- * Revision 1.6  1996/07/15 10:26:31  robertj
- * MSVC 4.1 Support
- *
- * Revision 1.5  1996/02/15 14:55:01  robertj
- * Win16 compatibility
- *
- * Revision 1.4  1995/08/24 12:41:25  robertj
- * Implementation of mail for GUIs.
- *
- * Revision 1.3  1995/07/02 01:22:50  robertj
- * Changed mail to use CMC then MAPI if available.
- *
- * Revision 1.2  1995/04/01 08:05:04  robertj
- * Added GUI support.
- *
- * Revision 1.1  1995/03/14 12:45:14  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

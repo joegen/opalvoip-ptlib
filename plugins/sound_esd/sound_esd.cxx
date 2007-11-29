@@ -26,48 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sound_esd.cxx,v $
- * Revision 1.1  2003/11/14 05:51:39  csoutheren
- * Initial version
- *
- * Revision 1.11  2003/03/03 09:05:59  rogerh
- * Looks like a bug in the loopback Close code. Just document it for now.
- *
- * Revision 1.10  2003/02/20 08:56:55  rogerh
- * Updated code from Shawn following some Mac OS X and linux testing.
- *
- * Revision 1.9  2003/02/19 10:22:22  rogerh
- * Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
- *
- * Revision 1.8  2002/10/08 12:39:24  rogerh
- * Rearrange code to stop a type cast warning
- *
- * Revision 1.7  2002/02/26 21:19:55  rogerh
- * Return the correct number of bytes in the Read() method. This fixes
- * the bug where esound audio made you sound like a robot.
- *
- * Revision 1.6  2002/02/26 18:08:23  rogerh
- * Add dummy stubs for the volume settings
- *
- * Revision 1.5  2002/02/09 00:52:01  robertj
- * Slight adjustment to API and documentation for volume functions.
- *
- * Revision 1.4  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannel
- *
- * Revision 1.3  2002/01/28 08:01:06  rogerh
- * set lastReadCount during Reads
- *
- * Revision 1.2  2001/09/24 08:56:43  rogerh
- * Remove LastError, submitted by Andreas Wrede <awrede@mac.com>
- *
- * Revision 1.1  2001/07/19 09:27:12  rogerh
- * Add support for EsounD and esd (the Enlightenment Sound Daemon).
- * This allows OhPhone to run on platforms where EsounD and esd have been
- * ported which includes Mac OS X.
- * Code written by Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound.h"

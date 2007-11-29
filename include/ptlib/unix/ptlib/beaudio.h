@@ -28,23 +28,9 @@
  * Yuri Kiryanov, ykiryanov at users.sourceforge.net
  * Bits by Jac Goudsmit
  *
- * $Log: beaudio.h,v $
- * Revision 1.5  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2004/10/26 18:07:36  ykiryanov
- * Added ifdef for Zeta build
- *
- * Revision 1.3  2004/06/16 01:57:57  ykiryanov
- * Working capture code
- *
- * Revision 1.2  2004/05/30 04:55:57  ykiryanov
- * Added include files
- *
- * Revision 1.1  2004/05/14 08:36:44  ykiryanov
- * BeOS sound class declarations collected in separate file
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

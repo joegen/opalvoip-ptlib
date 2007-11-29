@@ -26,176 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: thread.h,v $
- * Revision 1.54  2007/09/17 11:14:42  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.53  2007/09/17 05:30:43  rjongbloed
- * Added thread local storage in tracing to avoid a certain class of deadlocks.
- *
- * Revision 1.52  2007/07/08 23:54:53  rjongbloed
- * Fixed MSVC warnings
- *
- * Revision 1.51  2007/07/06 02:11:48  csoutheren
- * Add extra memory leak debugging on Linux
- * Remove compile warnings
- *
- * Revision 1.50  2007/06/25 20:17:35  csoutheren
- * Add ability to specify thread name
- *
- * Revision 1.49  2007/02/20 04:37:22  csoutheren
- * Fix for gcc
- *
- * Revision 1.48  2007/02/20 04:24:46  csoutheren
- * More rationalisation of PThread templates
- *
- * Revision 1.47  2007/02/19 04:38:15  csoutheren
- * Rationalised and documented thread creation templates
- *
- * Revision 1.46  2006/10/03 06:30:31  csoutheren
- * Fix error in PThreadObj templates
- *
- * Revision 1.45  2006/07/05 09:14:29  csoutheren
- * Fixed startup problems with using Resume in PThread descendants
- *
- * Revision 1.44  2006/07/05 03:59:19  csoutheren
- * Fix PThreadMain2Arg template
- *
- * Revision 1.43  2006/06/28 11:28:21  csoutheren
- * Patch 1456858 - increase default thread stack size
- * Thanks to drosario
- *
- * Revision 1.42  2006/05/25 23:28:27  csoutheren
- * Fixed compilation under gcc 4.0
- *
- * Revision 1.41  2006/05/23 22:11:27  csoutheren
- * Fixed compilation under gcc
- *
- * Revision 1.40  2006/05/23 00:58:05  csoutheren
- * Add templates for creating threads
- *
- * Revision 1.39  2006/01/29 22:35:46  csoutheren
- * Added fix for thread termination problems on SMP machines
- * Thanks to Derek Smithies
- *
- * Revision 1.38  2006/01/11 22:27:44  dereksmithies
- * Add extra comments describing the usage of Resume() in the constructor of a
- * class descended of PThread
- *
- * Revision 1.37  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.36  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.35  2003/10/08 21:39:34  dereksmithies
- * Add a #define to cope with backward compatability issues for PThreadIdentifier
- * Thanks to Andrey S Pankov and Craig Southeren for their input.
- *
- * Revision 1.34  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.33  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.32  2002/10/04 04:33:27  robertj
- * Added functions for getting operating system thread identifier values.
- *
- * Revision 1.31  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.30  2002/06/27 06:44:28  robertj
- * Changed "" to PString::Empty() where assigning to PString.
- *
- * Revision 1.29  2002/04/24 01:49:22  robertj
- * Fixed error in PTRACE_BLOCk nesting level to now work when no tracing enabled.
- *
- * Revision 1.28  2002/04/24 01:09:56  robertj
- * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
- *
- * Revision 1.27  2001/09/10 02:51:22  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.26  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.25  2000/11/28 12:55:36  robertj
- * Added static function to create a new thread class and automatically
- *   run a function on another class in the context of that thread.
- *
- * Revision 1.24  2000/10/20 05:31:09  robertj
- * Added function to change auto delete flag on a thread.
- *
- * Revision 1.23  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.22  2000/02/29 12:26:14  robertj
- * Added named threads to tracing, thanks to Dave Harvey
- *
- * Revision 1.21  1999/06/06 05:07:17  robertj
- * Fixed documentation error.
- *
- * Revision 1.20  1999/03/09 02:59:51  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.19  1999/02/16 08:11:17  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.18  1998/11/20 03:18:33  robertj
- * Added thread WaitForTermination() function.
- *
- * Revision 1.17  1998/10/31 12:47:59  robertj
- * Removed ability to start threads immediately, race condition with vtable (Main() function).
- *
- * Revision 1.16  1998/09/23 06:21:41  robertj
- * Added open source copyright license.
- *
- * Revision 1.15  1996/03/02 03:15:51  robertj
- * Added automatic deletion of thread object instances on thread completion.
- *
- * Revision 1.14  1995/12/10 11:44:32  robertj
- * Fixed bug in non-platform threads and semaphore timeouts.
- *
- * Revision 1.13  1995/11/21 11:49:44  robertj
- * Added timeout on semaphore wait.
- *
- * Revision 1.12  1995/07/31 12:10:40  robertj
- * Added semaphore class.
- *
- * Revision 1.11  1995/06/17 11:13:35  robertj
- * Documentation update.
- *
- * Revision 1.10  1995/03/14 12:42:49  robertj
- * Updated documentation to use HTML codes.
- *
- * Revision 1.9  1995/01/16  09:42:13  robertj
- * Documentation.
- *
- * Revision 1.8  1994/09/25  10:45:22  robertj
- * Virtualised IsNoLongerBlocked for unix platform.
- *
- * Revision 1.6  1994/08/22  00:46:48  robertj
- * Added pragma fro GNU C++ compiler.
- *
- * Revision 1.5  1994/08/21  23:43:02  robertj
- * Added SuspendBlock state to cooperative multi-threading to fix logic fault.
- *
- * Revision 1.4  1994/08/04  12:32:22  robertj
- * Better name of thread block check function.
- *
- * Revision 1.3  1994/07/21  12:33:49  robertj
- * Moved cooperative threads to common.
- *
- * Revision 1.2  1994/07/02  03:03:49  robertj
- * Added restartable threads.
- *
- * Revision 1.1  1994/06/25  11:55:15  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PTHREAD
@@ -517,7 +350,7 @@ class PThread : public PObject
     friend class PProcess;
     // So a PProcess can get at PThread() constructor but nothing else.
 
-    PThread(const PThread &) { }
+    PThread(const PThread &) : PObject () { }
     // Empty constructor to prevent copying of thread instances.
 
     PThread & operator=(const PThread &) { return *this; }
@@ -573,11 +406,11 @@ class PThreadMain : public PThread
   PCLASSINFO(PThreadMain, PThread);
   public:
     typedef void (*FnType)(); 
-    PThreadMain(FnType _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn)
+    PThreadMain(FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn)
     { PThread::Resume(); }
-    PThreadMain(const char * _file, int _line, FnType _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
+    PThreadMain(const char * _file, int _line, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn)
     { PThread::Resume(); }
     virtual void Main()
@@ -603,12 +436,12 @@ class PThread1Arg : public PThread
   PCLASSINFO(PThread1Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1); 
-    PThread1Arg(Arg1Type _arg1, FnType _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
+    PThread1Arg(Arg1Type _arg1, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1)
     { PThread::Resume(); }
-    PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
+    PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
         arg1(_arg1)
     { PThread::Resume(); }
@@ -637,12 +470,12 @@ class PThread2Arg : public PThread
   PCLASSINFO(PThread2Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2); 
-    PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
+    PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
-    PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+    PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
         arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
@@ -676,12 +509,12 @@ class PThreadObj : public PThread
   PCLASSINFO(PThreadObj, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(); 
-    PThreadObj(ObjType & _obj, ObjTypeFn _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+    PThreadObj(ObjType & _obj, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
         obj(_obj), fn(_fn)
     { PThread::Resume(); }
-    PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+    PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
         psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
         obj(_obj), fn(_fn)
     { PThread::Resume(); }
@@ -716,12 +549,12 @@ class PThreadObj1Arg : public PThread
   PCLASSINFO(PThreadObj1Arg, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
-    PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+    PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
 				obj(_obj), fn(_fn), arg1(_arg1)
     { PThread::Resume(); }
-    PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean autoDelete = PFalse)
-      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+    PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
                                 psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
 				obj(_obj), fn(_fn), arg1(_arg1)
     { PThread::Resume(); }

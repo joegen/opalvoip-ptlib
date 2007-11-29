@@ -27,40 +27,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psync.h,v $
- * Revision 1.7  2007/08/17 07:29:21  csoutheren
- * Fix build on MacOSX
- *
- * Revision 1.6  2007/08/17 05:29:19  csoutheren
- * Add field to Linux showing locking thread to assist in debugging
- *
- * Revision 1.5  2007/05/07 14:05:09  csoutheren
- * Add PSyncNULL
- *
- * Revision 1.4  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.3  2005/11/14 22:29:13  csoutheren
- * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
- * descendant classes everywhere will be changed over, so we have to keep the
- * original  API
- *
- * Revision 1.2  2005/11/04 06:56:10  csoutheren
- * Added new class PSync as abstract base class for all mutex/sempahore classes
- * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
- * Changed Wait/Signal to be const member functions
- * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
- * This allows use of very efficient mutex primitives in 99% of cases where timed waits
- * are not needed
- *
- * Revision 1.1  2005/11/04 06:34:20  csoutheren
- * Added new class PSync as abstract base class for all mutex/sempahore classes
- * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
- * Changed Wait/Signal to be const member functions
- * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
- * This allows use of very efficient mutex primitives in 99% of cases where timed waits
- * are not needed
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSYNC

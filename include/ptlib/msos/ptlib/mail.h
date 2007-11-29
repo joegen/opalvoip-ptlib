@@ -26,45 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: mail.h,v $
- * Revision 1.12  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.11  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.10  1999/02/16 08:10:33  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.9  1998/11/30 02:55:18  robertj
- * New directory structure
- *
- * Revision 1.8  1998/09/24 03:30:11  robertj
- * Added open software license.
- *
- * Revision 1.7  1997/02/05 11:48:25  robertj
- * Fixed compatibility with MSVC debug memory allocation macros.
- *
- * Revision 1.6  1996/08/08 10:09:05  robertj
- * Directory structure changes for common files.
- *
- * Revision 1.5  1995/08/12 22:54:26  robertj
- * GUI interface additions for mail.
- *
- * Revision 1.4  1995/07/02 01:22:47  robertj
- * Changed mail to use CMC then MAPI if available.
- *
- * Revision 1.3  1995/06/17 00:49:16  robertj
- * Changed name to simply PMail.
- * Fixed types of MAPI calls.
- *
- * Revision 1.2  1995/04/01 08:04:40  robertj
- * Added GUI support.
- *
- * Revision 1.1  1995/03/14 12:44:51  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -23,45 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.11  2007/04/17 23:40:54  csoutheren
- * Add ptbuildopts.h
- *
- * Revision 1.10  2006/02/10 22:38:03  csoutheren
- * Added ability to do DNS lookups and force IPV4 mode
- *
- * Revision 1.9  2005/11/30 12:47:40  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.8  2005/02/13 23:04:18  csoutheren
- * Put isrfc1918 option handling before first test (doh!)
- *
- * Revision 1.7  2005/02/13 22:33:09  csoutheren
- * Added ability to test an IP address for RFC1918
- *
- * Revision 1.6  2005/02/07 12:12:34  csoutheren
- * Expanded interface list routines to include IPV6 addresses
- * Added IPV6 to GetLocalAddress
- *
- * Revision 1.5  2005/02/03 12:38:00  csoutheren
- * Added tests for URL parsing
- *
- * Revision 1.4  2005/01/15 19:27:07  csoutheren
- * Added test for GetInterfaceTable
- * Thanks to Jan Willamowius
- *
- * Revision 1.3  2004/12/14 14:24:20  csoutheren
- * Added PIPSocket::Address::operator*= to compare IPV4 addresses
- * to IPV4-compatible IPV6 addresses. More documentation needed
- * once this is tested as working
- *
- * Revision 1.2  2004/12/14 07:49:49  csoutheren
- * added some tests
- *
- * Revision 1.1  2004/12/14 06:50:59  csoutheren
- * Initial version
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "precompile.h"

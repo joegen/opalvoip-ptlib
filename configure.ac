@@ -1411,6 +1411,13 @@ dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
 dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
 
+dnl MSWIN_DISPLAY    win_expat,Windows Expat XML2
+dnl MSWIN_IF_FEATURE win_expat,!expat
+dnl MSWIN_CHECK_FILE win_expat,bin\libexpatMT.lib,P_WINEXPAT=2
+dnl MSWIN_DIR_SYMBOL win_expat,WINEXPAT2_DIR
+dnl MSWIN_CHECK_DIR  win_expat,source\lib
+dnl MSWIN_CHECK_DIR  win_expat,\libs\expat\
+
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
 
@@ -2278,6 +2285,7 @@ dnl look for Direct Sound
 
 dnl MSWIN_DISPLAY    dsound,Direct Sound Support
 dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
+dnl MSWIN_CHECK_FILE dsound,include\armmacros.s,P_DIRECTSOUND_WINCE=1
 dnl MSWIN_DIR_SYMBOL dsound,DIRECTX_DIR
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB64,dsound.lib,lib/x64
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib/x86

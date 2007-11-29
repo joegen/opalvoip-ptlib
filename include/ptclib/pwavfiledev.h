@@ -26,14 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pwavfiledev.h,v $
- * Revision 1.2  2007/10/09 02:35:39  rjongbloed
- * Added ability to make WAV file audio record device auto repeat the WAV file
- *   when reach end of file, signaled by appending an '*' to end of filename.
- *
- * Revision 1.1  2007/04/13 07:03:20  rjongbloed
- * Added WAV file audio device "plug in".
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PWAVFILEDEV

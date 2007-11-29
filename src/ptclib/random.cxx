@@ -25,26 +25,9 @@
  *
  * Based on code originally by Bob Jenkins.
  *
- * $Log: random.cxx,v $
- * Revision 1.6  2007/03/08 04:31:09  csoutheren
- * Applied 1613299 - add new function to the PRandom class
- * Thanks to Frederic Heem
- *
- * Revision 1.5  2003/02/20 23:32:00  robertj
- * More RTEMS support patches, thanks Sebastian Meyer.
- *
- * Revision 1.4  2001/03/03 05:12:47  robertj
- * Fixed yet another transcription error of random number generator code.
- *
- * Revision 1.3  2001/02/28 04:27:35  robertj
- * Fixed stupid error in random number seeding, infinite loop.
- *
- * Revision 1.2  2001/02/27 03:33:44  robertj
- * Changed random number generator due to licensing issues.
- *
- * Revision 1.1  2000/02/17 12:05:02  robertj
- * Added better random number generator after finding major flaws in MSVCRT version.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 
@@ -140,32 +123,54 @@ void PRandom::SetSeed(DWORD seed)
   *(r++) = b = ind(mm,y>>RandBits) + x; \
 }
 
+
+static unsigned redistribute(unsigned value, unsigned minimum, unsigned maximum)
+{
+  unsigned range = maximum - minimum;
+  while (value > range)
+    value = (value/range) ^ (value%range);
+  return value + minimum;
+}
+
+
 unsigned PRandom::Generate()
 {
-  if (randcnt--)
-    return randrsl[randcnt];
+  if (randcnt-- == 0) {
+    register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
+    mm=randmem; r=randrsl;
+    a = randa; b = randb + (++randc);
+    for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
+    {
+      rngstep( a<<13, a, b, mm, m, m2, r, x);
+      rngstep( a>>6 , a, b, mm, m, m2, r, x);
+      rngstep( a<<2 , a, b, mm, m, m2, r, x);
+      rngstep( a>>16, a, b, mm, m, m2, r, x);
+    }
+    for (m2 = mm; m2<mend; )
+    {
+      rngstep( a<<13, a, b, mm, m, m2, r, x);
+      rngstep( a>>6 , a, b, mm, m, m2, r, x);
+      rngstep( a<<2 , a, b, mm, m, m2, r, x);
+      rngstep( a>>16, a, b, mm, m, m2, r, x);
+    }
+    randb = b; randa = a;
 
-  register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
-  mm=randmem; r=randrsl;
-  a = randa; b = randb + (++randc);
-  for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
-  {
-    rngstep( a<<13, a, b, mm, m, m2, r, x);
-    rngstep( a>>6 , a, b, mm, m, m2, r, x);
-    rngstep( a<<2 , a, b, mm, m, m2, r, x);
-    rngstep( a>>16, a, b, mm, m, m2, r, x);
+    randcnt = RandSize-1;
   }
-  for (m2 = mm; m2<mend; )
-  {
-    rngstep( a<<13, a, b, mm, m, m2, r, x);
-    rngstep( a>>6 , a, b, mm, m, m2, r, x);
-    rngstep( a<<2 , a, b, mm, m, m2, r, x);
-    rngstep( a>>16, a, b, mm, m, m2, r, x);
-  }
-  randb = b; randa = a;
 
-  randcnt = RandSize-1;
   return randrsl[randcnt];
+}
+
+
+unsigned PRandom::Generate(unsigned maximum)
+{
+  return redistribute(Generate(), 0, maximum);
+}
+
+
+unsigned PRandom::Generate(unsigned minimum, unsigned maximum)
+{
+  return redistribute(Generate(), minimum, maximum);
 }
 
 
@@ -184,9 +189,16 @@ unsigned PRandom::Number()
   return rand;
 }
 
-unsigned int PRandom::Number(unsigned int min, unsigned int max)
+unsigned int PRandom::Number(unsigned maximum)
 {
-  return ((PRandom::Number() % (max - min + 1)) + min);
+  return redistribute(Number(), 0, maximum);
 }
+
+
+unsigned int PRandom::Number(unsigned minimum, unsigned maximum)
+{
+  return redistribute(Number(), minimum, maximum);
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -26,26 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: filepath.h,v $
- * Revision 1.6  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.5  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.4  1998/11/30 02:55:12  robertj
- * New directory structure
- *
- * Revision 1.3  1998/09/24 03:30:04  robertj
- * Added open software license.
- *
- * Revision 1.2  1996/08/08 10:09:01  robertj
- * Directory structure changes for common files.
- *
- * Revision 1.1  1994/06/25 12:13:01  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

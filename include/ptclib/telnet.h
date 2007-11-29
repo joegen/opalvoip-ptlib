@@ -23,81 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: telnet.h,v $
- * Revision 1.25  2007/09/18 06:20:57  csoutheren
- * Fix spelling mistakes
- *
- * Revision 1.24  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.23  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.22  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.21  1999/03/09 08:01:47  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.20  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.19  1998/11/30 02:50:56  robertj
- * New directory structure
- *
- * Revision 1.18  1998/09/23 06:20:04  robertj
- * Added open source copyright license.
- *
- * Revision 1.17  1996/08/08 10:08:54  robertj
- * Directory structure changes for common files.
- *
- * Revision 1.16  1995/06/17 11:13:32  robertj
- * Documentation update.
- *
- * Revision 1.15  1995/06/17 00:47:38  robertj
- * Changed overloaded Open() calls to 3 separate function names.
- * More logical design of port numbers and service names.
- *
- * Revision 1.14  1995/06/04 12:46:26  robertj
- * Slight redesign of port numbers on sockets.
- *
- * Revision 1.13  1995/04/25 11:12:30  robertj
- * Fixed functions hiding ancestor virtuals.
- *
- * Revision 1.12  1995/04/01 08:32:10  robertj
- * Finally got a working TELNET.
- *
- * Revision 1.11  1995/03/18 06:27:50  robertj
- * Rewrite of telnet socket protocol according to RFC1143.
- *
- * Revision 1.10  1995/03/14  12:42:47  robertj
- * Updated documentation to use HTML codes.
- *
- * Revision 1.9  1995/02/21  11:25:33  robertj
- * Further implementation of telnet socket, feature complete now.
- *
- * Revision 1.8  1995/01/03  09:36:23  robertj
- * Documentation.
- *
- * Revision 1.7  1995/01/01  01:07:33  robertj
- * More implementation.
- *
- * Revision 1.6  1994/11/28  12:38:59  robertj
- * Added DONT and WONT states.
- *
- * Revision 1.5  1994/08/23  11:32:52  robertj
- * Oops
- *
- * Revision 1.4  1994/08/22  00:46:48  robertj
- * Added pragma fro GNU C++ compiler.
- *
- * Revision 1.3  1994/08/21  23:43:02  robertj
- * Changed type of socket port number for better portability.
- *
- * Revision 1.2  1994/07/25  03:36:03  robertj
- * Added sockets to common, normalising to same comment standard.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PTELNETSOCKET

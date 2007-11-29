@@ -36,6 +36,9 @@
 #define __TINYJPEG_INTERNAL_H_
 
 #include <setjmp.h>
+#ifdef SOLARIS
+#include <ptbuildopts.h>
+#endif
 
 #define SANITY_CHECK 1
 
@@ -67,7 +70,11 @@ struct component
 {
   unsigned int Hfactor;
   unsigned int Vfactor;
+#ifndef P_MEDIALIB
   float *Q_table;		/* Pointer to the quantisation table to use */
+#else
+  uint16_t *Q_table;   /* Pointer to the quantisation table to use */
+#endif
   struct huffman_table *AC_table;
   struct huffman_table *DC_table;
   short int previous_DC;	/* Previous DC coefficient */
@@ -96,7 +103,11 @@ struct jdec_private
   unsigned int reservoir, nbits_in_reservoir;
 
   struct component component_infos[COMPONENTS];
+#ifndef P_MEDIALIB
   float Q_tables[COMPONENTS][64];		/* quantization tables */
+#else
+  uint16_t Q_tables[COMPONENTS][64];   /* quantization tables */
+#endif
   struct huffman_table HTDC[HUFFMAN_TABLES];	/* DC huffman tables   */
   struct huffman_table HTAC[HUFFMAN_TABLES];	/* AC huffman tables   */
   int default_huffman_table_initialized;

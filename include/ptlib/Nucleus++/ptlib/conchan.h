@@ -26,13 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: conchan.h,v $
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.1  1999/06/14 08:39:57  robertj
- * Added PConsoleChannel class for access to stdin/stdout/stderr
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PCONSOLECHANNEL

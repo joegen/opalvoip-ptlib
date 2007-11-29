@@ -23,33 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.8  2007/09/23 08:56:37  rjongbloed
- * Added generation of CNG tone for testing.
- *
- * Revision 1.7  2006/12/13 04:56:03  csoutheren
- * Applied 1613270 - fixed for dtmfEncoder
- * Thanks to Frederic Heem
- *
- * Revision 1.6  2006/10/25 08:18:21  rjongbloed
- * Major upgrade of tone generation subsystem.
- *
- * Revision 1.5  2005/11/30 12:47:40  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2005/07/21 13:09:43  rogerhardiman
- * Fix typo in help
- *
- * Revision 1.3  2004/09/10 22:33:31  dereksmithies
- * Calculate time required to do the decoding of the dtmf symbol.
- *
- * Revision 1.2  2004/09/10 04:31:57  dereksmithies
- * Add code to calculate the detection rate.
- *
- * Revision 1.1  2004/09/10 01:59:35  dereksmithies
- * Initial release of program to test Dtmf creation and detection.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "precompile.h"
@@ -146,6 +122,7 @@ void DtmfTest::Main()
   cout << "Sample section  is " << milliseconds << " ms long.\n";
 
 
+  PRandom random;
   PShortArray noiseSignal(milliseconds * samplesPerMillisecond);
   if (args.HasOption('n')) {
     unsigned noise = args.GetOptionString('n').AsUnsigned();
@@ -155,7 +132,7 @@ void DtmfTest::Main()
     }
     cout << "Peak noise magnitude is " << noise << '\n';
     for (i = 0; i < noiseSignal.GetSize(); i++)
-      noiseSignal[i] = (short)(PRandom::Number() % noise/2 - noise/2); 
+      noiseSignal[i] = (short)((int)random.Generate(noise/2) - noise/2); 
   }
 
 

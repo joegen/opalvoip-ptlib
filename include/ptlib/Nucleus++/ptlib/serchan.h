@@ -26,34 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: serchan.h,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.8  1998/11/30 22:07:08  robertj
- * New directory structure.
- *
- * Revision 1.7  1998/09/24 04:11:53  robertj
- * Added open software license.
- *
- * Revision 1.6  1996/08/03 12:08:19  craigs
- * Changed for new common directories
- *
- * Revision 1.5  1996/05/03 13:12:07  craigs
- * More Sun4 fixes
- *
- * Revision 1.4  1996/05/02 12:01:47  craigs
- * More Sun4 fixed
- *
- * Revision 1.3  1996/05/02 11:55:01  craigs
- * Fixed problem with compiling on Sun4
- *
- * Revision 1.2  1995/12/08 13:14:52  craigs
- * Added new function
- *
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSERIALCHANNEL

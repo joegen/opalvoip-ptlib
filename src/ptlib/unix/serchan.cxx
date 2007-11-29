@@ -26,88 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: serchan.cxx,v $
- * Revision 1.32  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.31  2005/03/10 03:27:30  dereksmithies
- * Fix an address typo.
- *
- * Revision 1.30  2005/01/03 02:52:52  csoutheren
- * Fixed problem with default speed of serial ports
- * Fixed problem with using obsolete lock directory for serial ports
- *
- * Revision 1.29  2004/07/11 07:56:36  csoutheren
- * Applied jumbo VxWorks patch, thanks to Eize Slange
- *
- * Revision 1.28  2004/02/22 04:06:47  ykiryanov
- * ifdef'd all functions because BeOS don't support it
- *
- * Revision 1.27  2002/11/02 00:32:21  robertj
- * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
- *
- * Revision 1.26  2002/10/17 13:44:27  robertj
- * Port to RTEMS, thanks Vladimir Nesic.
- *
- * Revision 1.25  2002/10/10 04:43:44  robertj
- * VxWorks port, thanks Martijn Roest
- *
- * Revision 1.24  2002/03/27 06:42:16  robertj
- * Implemented the DTR etc functions and ttya/ttyb strings for sunos,
- *    thanks tommi.korhonen@insta.fi & Raimo Ruokonen <rruokonen@koti.soon.fi>
- *
- * Revision 1.23  2001/09/10 03:03:36  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.22  2001/08/11 15:38:43  rogerh
- * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
- *
- * Revision 1.21  2001/01/04 17:57:41  rogerh
- * Fix a cut and past error in my previous commit
- *
- * Revision 1.20  2001/01/04 10:28:07  rogerh
- * FreeBSD does not set the Baud Rate with c_cflags. Add the 'BSD' way
- *
- * Revision 1.19  2001/01/03 10:56:01  rogerh
- * CBAUD is not defined on FreeBSD.
- *
- * Revision 1.18  2000/12/29 07:36:18  craigs
- * Finally got working correctly!
- *
- * Revision 1.17  2000/11/14 14:56:24  rogerh
- * Fix #define parameters (fd should be just f)
- *
- * Revision 1.16  2000/11/14 14:52:32  rogerh
- * Fix SET/GET typo error
- *
- * Revision 1.15  2000/11/12 23:30:41  craigs
- * Fixed problems with serial port configuration
- *
- * Revision 1.14  2000/06/21 01:01:22  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.13  2000/04/09 18:19:23  rogerh
- * Add my changes for NetBSD support.
- *
- * Revision 1.12  2000/04/06 12:11:32  rogerh
- * MacOS X support submitted by Kevin Packard
- *
- * Revision 1.11  2000/03/08 12:17:09  rogerh
- * Add OpenBSD support
- *
- * Revision 1.10  1998/12/21 06:08:08  robertj
- * Fixed warning on solaris x86 GNU system.
- *
- * Revision 1.9  1998/11/30 21:51:54  robertj
- * New directory structure.
- *
- * Revision 1.8  1998/11/24 09:39:14  robertj
- * FreeBSD port.
- *
- * Revision 1.7  1998/09/24 04:12:17  robertj
- * Added open software license.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
  
 #pragma implementation "serchan.h"

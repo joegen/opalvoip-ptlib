@@ -26,75 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: socket.cxx,v $
- * Revision 1.2  2002/04/12 01:42:41  robertj
- * Changed return value on os_connect() and os_accept() to make sure
- *   get the correct error codes propagated up under unix.
- *
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.41  1999/09/03 02:26:25  robertj
- * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
- *
- * Revision 1.40  1999/05/01 03:52:20  robertj
- * Fixed various egcs warnings.
- *
- * Revision 1.39  1999/03/02 05:41:59  robertj
- * More BeOS changes
- *
- * Revision 1.38  1999/02/26 04:10:39  robertj
- * More BeOS port changes
- *
- * Revision 1.37  1999/02/22 13:26:54  robertj
- * BeOS port changes.
- *
- * Revision 1.36  1998/11/30 21:51:58  robertj
- * New directory structure.
- *
- * Revision 1.35  1998/11/24 09:39:22  robertj
- * FreeBSD port.
- *
- * Revision 1.34  1998/11/22 08:11:37  craigs
- * *** empty log message ***
- *
- * Revision 1.33  1998/11/14 10:37:38  robertj
- * Changed semantics of os_sendto to return PTrue if ANY bytes are sent.
- *
- * Revision 1.32  1998/10/16 01:16:55  craigs
- * Added Yield to help with cooperative multithreading.
- *
- * Revision 1.31  1998/10/11 02:23:16  craigs
- * Fixed problem with socket writes not correctly detecting EOF
- *
- * Revision 1.30  1998/09/24 08:21:11  robertj
- * Fixed warning on GNU 6 library.
- *
- * Revision 1.29  1998/09/24 07:55:51  robertj
- * Fixed warning on solaris build.
- *
- * Revision 1.28  1998/09/24 04:13:49  robertj
- * Added open software license.
- *
- * Revision 1.27  1998/09/18 05:46:00  robertj
- * Fixed incorrectly returning success on a connect() error other than a timeout.
- *
- * Revision 1.26  1998/09/08 11:31:51  robertj
- * Fixed ippp bug on very full packets.
- *
- * Revision 1.25  1998/09/08 09:54:31  robertj
- * Fixed ppp and ippp compatibility.
- *
- * Revision 1.24  1998/09/08 05:15:14  robertj
- * Fixed problem in Windows requiring snmpapi.dll for PEthSocket class.
- *
- * Revision 1.23  1998/08/27 01:13:20  robertj
- * Changes to resolve signedness in GNU C library v6
- * Remove Linux EthSocket stuff from Sun build, still needs implementing.
- *
- * Revision 1.22  1998/08/21 05:30:59  robertj
- * Ethernet socket implementation.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

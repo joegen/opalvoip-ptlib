@@ -5,16 +5,9 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: main.h,v $
- * Revision 1.3  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.2  2004/06/02 08:30:22  csoutheren
- * Tweaks to avoid some problems with reading single bytes from a PCM stream
- *
- * Revision 1.1  2002/08/06 05:26:33  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _Vxmltest_MAIN_H

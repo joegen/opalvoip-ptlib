@@ -7,64 +7,9 @@
  *
  * Contributor(s): Snark at GnomeMeeting
  *
- * $Log: plugin.h,v $
- * Revision 1.16  2007/09/04 02:15:53  rjongbloed
- * Allow for API versions other than zero.
- *
- * Revision 1.15  2006/01/08 14:49:08  dsandras
- * Several fixes to allow compilation on Open Solaris thanks to Brian Lu <brian.lu _AT_____ sun.com>. Many thanks!
- *
- * Revision 1.14  2005/08/09 09:08:09  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.13.2.1  2005/07/17 09:27:04  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.13  2005/06/07 00:42:55  csoutheren
- * Apply patch 1214249 to fix crash with Suse 9.3. Thanks to Stefan Bruns
- *
- * Revision 1.12  2005/01/04 07:44:03  csoutheren
- * More changes to implement the new configuration methodology, and also to
- * attack the global static problem
- *
- * Revision 1.11  2004/08/16 11:57:47  csoutheren
- * More changes for VS.net
- *
- * Revision 1.10  2004/08/16 10:55:09  csoutheren
- * Fixed problems compiling under Linux
- *
- * Revision 1.9  2004/08/16 06:40:59  csoutheren
- * Added adapters template to make device plugins available via the abstract factory interface
- *
- * Revision 1.8  2004/06/21 10:40:02  csoutheren
- * Fixed problem with dynamic plugins
- *
- * Revision 1.7  2004/06/21 00:57:40  csoutheren
- * Changed service plugin static registration to use attribute (( constructor ))
- *
- * Revision 1.6  2003/12/19 00:34:27  csoutheren
- * Ensured that older compilers do not get confused about functions wth empty
- * parameter lists. Thanks to Kilian Krause
- *
- * Revision 1.5  2003/11/19 09:29:19  csoutheren
- * Added super hack to avoid problems with multiple plugins in a single file
- *
- * Revision 1.4  2003/11/12 10:24:35  csoutheren
- * Changes to allow operation of static plugins under Windows
- *
- * Revision 1.3  2003/11/12 06:58:21  csoutheren
- * Changes to help in making static plugins autoregister under Windows
- *
- * Revision 1.2  2003/11/12 03:26:17  csoutheren
- * Initial version of plugin code from Snark of GnomeMeeting with changes
- *    by Craig Southeren os Post Increment
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PLUGIN_H

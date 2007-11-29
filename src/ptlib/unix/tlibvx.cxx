@@ -26,23 +26,10 @@
  *
  * Contributor(s):  ______________________________________.
  *
- * $Log: tlibvx.cxx,v $
- * Revision 1.4  2004/07/11 07:56:36  csoutheren
- * Applied jumbo VxWorks patch, thanks to Eize Slange
- *
- * 
- * Revision 1.3  2003/05/21 00:49:16  csoutheren
- *  Added PreShutdown to ~PProcess
- * 
- * Revision 1.2  2003/02/26 01:14:27  robertj
- *  Fixed race condition where thread can terminatebefore an IsSuspeded() call
- *  occurs and cause an assert, thanks Sebastian Meyer
- * 
- * Revision 1.1  2002/11/05 01:43:39  robertj
- *  Added missing VxWorks files. Thanks Andreas Sikkema
- *
- * Revision 1.0 ?????????????
-*/
+ * $Revision$
+ * $Author$
+ * $Date$
+ */
 
 
 class PProcess;

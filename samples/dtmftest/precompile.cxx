@@ -23,11 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: precompile.cxx,v $
- * Revision 1.1  2004/09/10 01:59:35  dereksmithies
- * Initial release of program to test Dtmf creation and detection.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "precompile.h"

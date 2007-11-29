@@ -23,32 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: socks.h,v $
- * Revision 1.8  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.7  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.6  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.5  2002/08/05 05:40:45  robertj
- * Fixed missing pragma interface/implementation
- *
- * Revision 1.4  1999/05/01 03:52:20  robertj
- * Fixed various egcs warnings.
- *
- * Revision 1.3  1999/03/09 08:01:47  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.2  1998/12/23 00:33:05  robertj
- * UDP support
- *
- * Revision 1.1  1998/12/22 10:34:17  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _SOCKS_H

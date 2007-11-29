@@ -24,65 +24,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ftp.h,v $
- * Revision 1.18  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.17  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.16  2003/09/17 05:43:49  csoutheren
- * Removed recursive includes
- *
- * Revision 1.15  2002/11/06 22:47:23  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.14  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.13  2001/09/10 00:28:21  robertj
- * Fixed extra CR in comments.
- *
- * Revision 1.12  2000/06/21 01:01:21  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.11  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.10  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.9  1998/11/30 02:50:45  robertj
- * New directory structure
- *
- * Revision 1.8  1998/09/23 06:19:26  robertj
- * Added open source copyright license.
- *
- * Revision 1.7  1996/10/26 01:39:41  robertj
- * Added check for security breach using 3 way FTP transfer or use of privileged PORT.
- *
- * Revision 1.6  1996/09/14 13:09:08  robertj
- * Major upgrade:
- *   rearranged sockets to help support IPX.
- *   added indirect channel class and moved all protocols to descend from it,
- *   separating the protocol from the low level byte transport.
- *
- * Revision 1.5  1996/05/23 09:56:24  robertj
- * Changed FTP so can do passive/active mode on all data transfers.
- *
- * Revision 1.4  1996/03/31 08:45:57  robertj
- * Added QUIT command sent on FTP socket close.
- *
- * Revision 1.3  1996/03/26 00:50:28  robertj
- * FTP Client Implementation.
- *
- * Revision 1.2  1996/03/18 13:33:10  robertj
- * Fixed incompatibilities to GNU compiler where PINDEX != int.
- *
- * Revision 1.1  1996/03/04 12:14:18  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PFTPSOCKET

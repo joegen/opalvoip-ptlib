@@ -23,31 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: critsec.h,v $
- * Revision 1.6  2007/09/05 11:09:09  csoutheren
- * Removed misleading and incorrect code from Linux implementation of
- * PCriticalSection. Apologies to Hannes Friederich :(
- *
- * Revision 1.5  2007/09/05 08:03:25  hfriederich
- * Implement PCriticalSection with named semaphores
- *
- * Revision 1.4  2005/11/04 06:56:10  csoutheren
- * Added new class PSync as abstract base class for all mutex/sempahore classes
- * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
- * Changed Wait/Signal to be const member functions
- * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
- * This allows use of very efficient mutex primitives in 99% of cases where timed waits
- * are not needed
- *
- * Revision 1.3  2004/07/11 07:56:36  csoutheren
- * Applied jumbo VxWorks patch, thanks to Eize Slange
- *
- * Revision 1.2  2004/04/18 12:37:40  csoutheren
- * Modified to detect sem_wait etc on Linux systems
- *
- * Revision 1.1  2004/04/11 03:02:07  csoutheren
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
   // Unix specific critical section implementation

@@ -19,9 +19,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: vidinput_app.cxx,v $
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

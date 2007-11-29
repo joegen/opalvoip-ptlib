@@ -21,11 +21,9 @@
  *
  * The author of this code is Derek J Smithies
  * *
- * $Log: overview.cxx,v $
- * Revision 1.1  2006/02/12 21:42:07  dereksmithies
- * Add lots of doxygen style comments, and an introductory page.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 /*! \mainpage Thread safe test of PSafeXXX
@@ -44,7 +42,7 @@
 \author  Derek J Smithies
 
 
-$Date: 2006/02/12 21:42:07 $
+$Date$
 
 
 \section secContents Contents

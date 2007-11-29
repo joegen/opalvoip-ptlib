@@ -7,58 +7,9 @@
  *
  * Copyright 2003 Equivalence
  *
- * $Log: main.cxx,v $
- * Revision 1.9  2006/06/23 04:39:58  dereksmithies
- * Fixes, to get it to compile following the recent include file upgrade.
- *
- * Revision 1.8  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.7  2005/04/20 06:42:22  csoutheren
- * Added -S option to check bug 1031626
- *
- * Revision 1.6  2004/11/08 04:10:36  csoutheren
- * Fixed handling of sound driver and device names
- *
- * Revision 1.5  2004/08/17 04:59:28  csoutheren
- * Cleaned up help message and added factory based routines
- *
- * Revision 1.4  2004/08/16 06:41:57  csoutheren
- * Added options to get access to devices via the abstract factory interface
- *
- * Revision 1.3  2003/11/12 07:00:09  csoutheren
- * Changed make compile under Windows
- *
- * Revision 1.2  2003/11/12 06:35:12  csoutheren
- * Initial main version
- *
- * Revision 1.1.2.6  2003/10/20 21:15:33  dereksmithies
- * Tidy up text output. Fix calls to Usage() function.
- *
- * Revision 1.1.2.5  2003/10/20 03:22:46  dereksmithies
- * Add checks on validity of function returned.
- *
- * Revision 1.1.2.4  2003/10/13 02:46:02  dereksmithies
- * Now generates sound through dynamically loaded OSS sound channel.
- *
- * Revision 1.1.2.3  2003/10/12 21:22:12  dereksmithies
- * Add ability to play sample sound out PSoundChannel - illustrating operation of plugins.
- *
- * Revision 1.1.2.2  2003/10/08 03:55:54  dereksmithies
- * Add lots of debug statements, fix option parsing, improve Usage() function.
- *
- * Revision 1.1.2.1  2003/10/07 01:52:39  csoutheren
- * Test program for plugins
- *
- * Revision 1.3  2003/04/22 23:25:13  craigs
- * Changed help message for SRV records
- *
- * Revision 1.2  2003/04/15 08:15:16  craigs
- * Added single string form of GetSRVRecords
- *
- * Revision 1.1  2003/04/15 04:12:38  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>
@@ -200,12 +151,12 @@ void PluginTest::Main()
 
   if (args.HasOption('a') || args.HasOption('A')) {
     PString driver;
-    BOOL useFactory = FALSE;
+    PBoolean useFactory = PFalse;
     if (args.HasOption('a'))
       driver = args.GetOptionString('a');
     else {
       driver = args.GetOptionString('A');
-      useFactory = TRUE;
+      useFactory = PTrue;
     }
 
     PStringList driverList;

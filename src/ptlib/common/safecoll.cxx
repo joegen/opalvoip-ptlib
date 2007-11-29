@@ -23,85 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: safecoll.cxx,v $
- * Revision 1.18  2007/06/09 05:43:55  rjongbloed
- * Added ability for PSafePtr to be used as an garbage collecting pointer when not
- *   contained within a collection. Last PSafePtr reference to go out of scope deletes
- *   the object, provided it has never been in a PSafeCollection.
- *
- * Revision 1.17  2007/05/09 12:38:44  csoutheren
- * Applied 1705751 - Safer and better PSafeCollection logs (2nd patch)
- * Thanks to Fabrizio Ammollo
- *
- * Revision 1.16  2007/04/20 07:35:55  csoutheren
- * Applied 1703664 - Safer and better PSafeCollection logs
- * Thanks to Fabrizio Ammollo
- *
- * Revision 1.15  2007/04/20 02:31:14  rjongbloed
- * Added ability to share a single mutex amongst multiple PSafeObjects,
- *   this can help with certain deadlock scenarios.
- *
- * Revision 1.14  2004/10/14 23:01:31  csoutheren
- * Fiuxed problem with usage of Sleep
- *
- * Revision 1.13  2004/10/14 12:31:47  rjongbloed
- * Added synchronous mode for safe collection RemoveAll() to wait until all objects
- *   have actually been deleted before returning.
- *
- * Revision 1.12  2004/10/04 12:54:33  rjongbloed
- * Added functions for locking an unlocking to "auto-unlock" classes.
- *
- * Revision 1.11  2004/08/14 07:42:31  rjongbloed
- * Added trace log at level 6 for helping find PSafeObject reference/dereference errors.
- *
- * Revision 1.10  2004/08/12 12:37:41  rjongbloed
- * Fixed bug recently introduced so removes deleted object from deletion list.
- * Also changed removal list to be correct type.
- *
- * Revision 1.9  2004/08/05 12:15:56  rjongbloed
- * Added classes for auto unlocking read only and read write mutex on
- *   PSafeObject - similar to PWaitAndSIgnal.
- * Utilised mutable keyword for mutex and improved the constness of functions.
- * Added DisallowDeleteObjects to safe collections so can have a PSafeObject in
- *   multiple collections.
- * Added a tempalte function to do casting of PSafePtr to a PSafePtr of a derived
- *   class.
- * Assured that a PSafeObject present on a collection always increments its
- *   reference count so while in collection it is not deleted.
- *
- * Revision 1.8  2004/04/03 08:22:22  csoutheren
- * Remove pseudo-RTTI and replaced with real RTTI
- *
- * Revision 1.7  2002/12/10 07:37:34  robertj
- * optimised SetLockMode() so if doesn't change mode it doesn't do anything.
- *
- * Revision 1.6  2002/10/29 00:06:24  robertj
- * Changed template classes so things like PSafeList actually creates the
- *   base collection class as well.
- * Allowed for the PSafeList::Append() to return a locked pointer to the
- *   object just appended.
- *
- * Revision 1.5  2002/10/04 08:22:50  robertj
- * Changed read/write mutex so can be called by same thread without deadlock
- *   removing the need to a lock count in safe pointer.
- * Added asserts if try and dereference a NULL safe pointer.
- * Added more documentation on behaviour.
- *
- * Revision 1.4  2002/08/29 06:53:28  robertj
- * Added optimisiation, separate mutex for toBeRemoved list.
- * Added assert for reference count going below zero.
- * Fixed incorrect usage of lockCount if target of an assignment from another
- *   safe pointer. Would not unlock the safe object which could cause deadlock.
- *
- * Revision 1.3  2002/05/06 00:44:45  robertj
- * Made the lock/unlock read only const so can be used in const functions.
- *
- * Revision 1.2  2002/05/01 04:48:05  robertj
- * GNU compatibility.
- *
- * Revision 1.1  2002/05/01 04:16:44  robertj
- * Added thread safe collection classes.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

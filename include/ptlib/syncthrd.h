@@ -26,54 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: syncthrd.h,v $
- * Revision 1.14  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.13  2004/03/22 10:15:27  rjongbloed
- * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
- *   when goes out of scope.
- *
- * Revision 1.12  2002/12/11 03:21:28  robertj
- * Updated documentation for read/write mutex.
- *
- * Revision 1.11  2002/10/04 08:20:44  robertj
- * Changed read/write mutex so can be called by same thread without deadlock.
- *
- * Revision 1.10  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.9  2002/05/01 03:45:31  robertj
- * Added initialisation of PreadWriteMutex and changed slightly to agree
- *   with the text book definition of a semaphore for one of the mutexes.
- *
- * Revision 1.8  2002/04/30 06:21:54  robertj
- * Fixed PReadWriteMutex class to implement text book algorithm!
- *
- * Revision 1.7  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.6  1999/03/09 02:59:51  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.5  1999/02/16 08:11:17  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.4  1998/11/30 02:52:01  robertj
- * New directory structure
- *
- * Revision 1.3  1998/10/31 12:46:45  robertj
- * Renamed file for having general thread synchronisation objects.
- * Added conditional mutex and read/write mutex thread synchronisation objects.
- *
- * Revision 1.2  1998/09/23 06:21:35  robertj
- * Added open source copyright license.
- *
- * Revision 1.1  1998/05/30 13:26:15  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

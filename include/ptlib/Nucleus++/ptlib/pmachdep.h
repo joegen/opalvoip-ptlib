@@ -26,52 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pmachdep.h,v $
- * Revision 1.2  2001/03/07 06:52:23  yurik
- * Changed email to current one
- *
- * Revision 1.1  2000/06/26 11:17:19  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.28  1999/08/09 01:51:42  robertj
- * Added missing paths include (esp. for VARRUN in svcproc)
- *
- * Revision 1.27  1999/07/16 10:21:51  robertj
- * Added paths header file so _PATH_VARRUN is defined for svcprox.
- *
- * Revision 1.26  1999/03/02 05:41:58  robertj
- * More BeOS changes
- *
- * Revision 1.25  1999/02/26 04:10:39  robertj
- * More BeOS port changes
- *
- * Revision 1.24  1999/02/22 13:26:53  robertj
- * BeOS port changes.
- *
- * Revision 1.23  1999/02/06 05:49:44  robertj
- * BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
- *
- * Revision 1.22  1999/01/08 01:28:16  robertj
- * Added pthreads support for FreeBSD
- *
- * Revision 1.21  1999/01/07 03:37:15  robertj
- * dded default for pthreads, shortens command line in compile.
- *
- * Revision 1.20  1998/12/21 06:47:20  robertj
- * Solaris 5.7 support.
- *
- * Revision 1.19  1998/12/04 12:38:07  robertj
- * Fixed signal include
- *
- * Revision 1.18  1998/11/24 09:38:19  robertj
- * FreeBSD port.
- *
- * Revision 1.17  1998/11/14 01:08:25  robertj
- * PPC linux GNU compatibility.
- *
- * Revision 1.16  1998/09/24 04:11:45  robertj
- * Added open software license.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PMACHDEP_H

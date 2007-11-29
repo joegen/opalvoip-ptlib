@@ -24,83 +24,9 @@
  *
  * Contributor(s): Federico Pinna and Reitek S.p.A.
  *
- * $Log: inetmail.h,v $
- * Revision 1.21  2007/04/10 05:08:46  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.20  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.19  2004/04/21 00:29:55  csoutheren
- * Added SASL authentication to PPOP3Client and PSMTPClient
- * Thanks to Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.18  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.17  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.16  2000/11/10 01:08:11  robertj
- * Added content transfer encoding and automatic base64 translation.
- *
- * Revision 1.15  2000/11/09 06:01:58  robertj
- * Added MIME version and content disposition to RFC822 class.
- *
- * Revision 1.14  2000/11/09 05:50:23  robertj
- * Added RFC822 aware channel class for doing internet mail.
- *
- * Revision 1.13  2000/06/21 01:01:21  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.12  2000/06/19 11:33:53  robertj
- * Fixed incorrect comment documentation
- *
- * Revision 1.11  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.10  1999/02/16 08:07:10  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.9  1998/11/30 02:50:51  robertj
- * New directory structure
- *
- * Revision 1.8  1998/09/23 06:19:36  robertj
- * Added open source copyright license.
- *
- * Revision 1.7  1996/12/21 01:24:15  robertj
- * Added missing open message to pop server.
- *
- * Revision 1.6  1996/09/16 12:57:45  robertj
- * Removed redundant functions.
- *
- * Revision 1.5  1996/09/14 13:17:59  robertj
- * Renamed file and changed to be a protocol off new indirect channel to separate
- *   the protocol from the low level byte transport channel.
- *
- * Revision 1.4  1996/07/27 04:14:49  robertj
- * Redesign and reimplement of mail sockets.
- *
- * Revision 1.3  1996/06/28 13:16:32  robertj
- * Changed SMTP incoming message handler so can tell when started, processing or ended message.
- *
- * Revision 1.2  1996/03/16 04:38:24  robertj
- * Added ParseReponse() for splitting reponse line into code and info.
- *
- * Revision 1.1  1996/01/23 13:04:20  robertj
- * Initial revision
- *
- * Revision 1.3  1995/06/17 11:12:15  robertj
- * Documentation update.
- *
- * Revision 1.2  1995/06/17 00:39:53  robertj
- * More implementation.
- *
- * Revision 1.1  1995/06/04 13:17:16  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PMAILPROTOCOL

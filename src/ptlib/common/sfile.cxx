@@ -26,16 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sfile.cxx,v $
- * Revision 1.3  2005/01/03 12:48:42  csoutheren
- * Added new configure options and ability to disable/enable modules
- *
- * Revision 1.2  1999/03/09 08:18:24  robertj
- * Adjustment found during documentation frenzy.
- *
- * Revision 1.1  1998/09/24 07:25:49  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__
