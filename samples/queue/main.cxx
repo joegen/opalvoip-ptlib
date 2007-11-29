@@ -21,11 +21,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.1  2006/12/07 08:46:17  dereksmithies
- * Initial cut of code to test the operation of PQueueChannel class.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

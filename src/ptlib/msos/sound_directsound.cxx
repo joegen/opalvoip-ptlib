@@ -24,32 +24,16 @@
  *
  * Contributor(s): /
  *
- * $Log: sound_directsound.cxx,v $
- * Revision 1.5  2007/09/17 11:14:47  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.4  2007/08/21 10:33:32  rjongbloed
- * Improved build/configure of direct sound.
- *
- * Revision 1.3  2007/06/22 05:23:51  rjongbloed
- * Fixed logging to include "subsystem" name.
- *
- * Revision 1.2  2007/05/19 08:54:45  rjongbloed
- * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
- *
- * Revision 1.1  2007/05/15 21:39:26  dsandras
- * Added initial code for a DirectSound plugin thanks to Vincent Luba.
- * Code contributed by NOVACOM (http://www.novacom.be).
- *
- * Revision 1.1  2006/09/15 10:04:05  luba vincent
- * First implementation of DirectSound driver
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound_directsound.h"
 
 #include <ptlib.h>
 
-#ifdef P_DIRECTSOUND
+#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
 
 #include <ptlib/msos/ptlib/sound_directsound.h>
 

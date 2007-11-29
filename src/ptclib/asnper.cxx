@@ -5,28 +5,9 @@
  *
  * Portable Windows Library
  *
- * $Log: asnper.cxx,v $
- * Revision 1.10  2004/07/11 12:33:47  csoutheren
- * Added guards against illegal PDU values causing crashes
- *
- * Revision 1.9  2004/03/23 04:53:57  csoutheren
- * Fixed problem with incorrect encoding of ASN NULL under some circumstances
- * Thanks to Ed Day of Objective Systems
- *
- * Revision 1.8  2004/01/17 17:43:42  csoutheren
- * Fixed problem with the upper limit on various constrained types not being correctly enforced
- *
- * Revision 1.7  2004/01/17 09:23:43  csoutheren
- * Fixed problem with the upper limit on constrained unsigned integers not being correctly enforced
- *
- * Revision 1.6  2003/12/14 10:21:29  rjongbloed
- * Fixed bug in length incorrectlty decoded from ASN and (apparently) rare circumstances. Thanks pangxg@hotmail.com.
- * Cleaned up return values to be PBoolean rather than int for some functions.
- *
- * Revision 1.5  2003/12/03 03:50:03  csoutheren
- * Reversed last change as it broke decoding in some circumstances
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////

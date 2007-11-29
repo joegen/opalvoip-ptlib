@@ -23,84 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: html.cxx,v $
- * Revision 1.21  2004/04/12 05:42:25  csoutheren
- * Fixed problem with radio buttons
- *
- * Revision 1.20  2004/04/03 06:54:24  rjongbloed
- * Many and various changes to support new Visual C++ 2003
- *
- * Revision 1.19  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.18  2001/02/13 04:39:08  robertj
- * Fixed problem with operator= in container classes. Some containers will
- *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
- *   needed to add a new AssignContents() function to all containers.
- *
- * Revision 1.17  1998/11/30 04:51:51  robertj
- * New directory structure
- *
- * Revision 1.16  1998/09/23 06:22:04  robertj
- * Added open source copyright license.
- *
- * Revision 1.15  1998/01/26 02:49:15  robertj
- * GNU support.
- *
- * Revision 1.14  1997/06/16 13:18:03  robertj
- * Set Is() function to be const as it should have been.
- *
- * Revision 1.13  1996/08/19 13:40:31  robertj
- * Fixed incorrect formatting of HTML tags (cosmetic only).
- *
- * Revision 1.12  1996/06/28 13:08:55  robertj
- * Changed PHTML class so can create html fragments.
- * Fixed nesting problem in tables.
- *
- * Revision 1.11  1996/06/01 04:18:45  robertj
- * Fixed bug in RadioButton, having 2 VALUE fields
- *
- * Revision 1.10  1996/04/29 12:21:22  robertj
- * Fixed spelling error in assert.
- * Fixed check box HTML, should always have a value.
- * Added display of value of unclosed HTML element.
- *
- * Revision 1.9  1996/04/14 02:52:04  robertj
- * Added hidden fields to HTML.
- *
- * Revision 1.8  1996/03/31 09:03:07  robertj
- * Changed HTML token so doesn't have trailing CRLF.
- *
- * Revision 1.7  1996/03/16 04:54:06  robertj
- * Made the assert for unclosed HTML elements only on debug version.
- *
- * Revision 1.6  1996/03/12 11:30:33  robertj
- * Fixed resetting of HTML output using operator=.
- *
- * Revision 1.5  1996/03/10 13:14:55  robertj
- * Simplified some of the classes and added catch all string for attributes.
- *
- * Revision 1.4  1996/02/25 11:14:22  robertj
- * Radio button support for forms.
- *
- * Revision 1.3  1996/02/19 13:31:51  robertj
- * Removed MSC_VER test as now completely removed from WIN16 library.
- *
- * Revision 1.2  1996/02/08 12:24:30  robertj
- * Further implementation.
- *
- * Revision 1.1  1996/02/03 11:18:46  robertj
- * Initial revision
- *
- * Revision 1.3  1996/01/28 02:49:16  robertj
- * Further implementation.
- *
- * Revision 1.2  1996/01/26 02:24:30  robertj
- * Further implemetation.
- *
- * Revision 1.1  1996/01/23 13:04:32  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

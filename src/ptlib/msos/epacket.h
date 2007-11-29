@@ -7,20 +7,9 @@
  *
  * Original code by William Ingle (address unknown)
  *
- * $Log: epacket.h,v $
- * Revision 1.4  1998/10/23 04:09:07  robertj
- * Fixes for NT support.
- * Allowed both old and new driver by compilation option.
- *
- * Revision 1.3  1998/10/06 10:24:40  robertj
- * Fixed hang when using reset command, removed the command!
- *
- * Revision 1.2  1998/10/01 09:06:29  robertj
- * NT driver compatibility.
- *
- * Revision 1.1  1998/09/28 08:10:33  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef __EPACKET_H

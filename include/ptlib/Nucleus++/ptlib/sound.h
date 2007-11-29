@@ -26,22 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sound.h,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.5  1999/07/19 01:34:22  craigs
- * Rewite to compensate for linux OSS sensitivity to ioctl order.
- *
- * Revision 1.4  1999/06/30 13:50:21  craigs
- * Added code to allow full duplex audio
- *
- * Revision 1.3  1998/11/30 22:07:13  robertj
- * New directory structure.
- *
- * Revision 1.2  1998/09/24 04:11:57  robertj
- * Added open software license.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSOUND

@@ -23,85 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psockbun.cxx,v $
- * Revision 1.22  2007/10/12 11:11:58  csoutheren
- * Fix warning on gcc
- *
- * Revision 1.21  2007/10/12 03:52:15  rjongbloed
- * Fixed broken virtual by someone changing base class function signature,
- *   and the override is silently not called. pet hate #1 about C++!
- *
- * Revision 1.20  2007/10/12 00:27:22  rjongbloed
- * Added more logging
- *
- * Revision 1.19  2007/10/07 07:35:31  rjongbloed
- * Changed bundled sockets so does not return error if interface goes away it just
- *   blocks reads till the interface comes back, or is explicitly closed.
- * Also return error codes, rather than just a BOOL.
- *
- * Revision 1.18  2007/09/28 09:59:16  hfriederich
- * Allow to use PInterfaceMonitor without running monitor thread
- *
- * Revision 1.17  2007/09/25 14:27:51  hfriederich
- * Don't use STUN if interface filter is in use and STUN server is not
- * reachable through local binding. This avoids unnecessary timeouts.
- *
- * Revision 1.16  2007/09/22 04:32:03  rjongbloed
- * Fixed lock up on exit whena  gatekeeper is used.
- * Also fixed fatal "read error" (ECONNRESET) when send packet to a machine which
- *   is not listening on the specified port. No error is lgged but does not stop listener.
- *
- * Revision 1.15  2007/09/11 08:37:30  rjongbloed
- * Set thread name for Network Interface Monitor thread.
- *
- * Revision 1.14  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.13  2007/08/26 20:01:58  hfriederich
- * Allow to filter interfaces based on remote address
- *
- * Revision 1.12  2007/08/22 05:08:26  rjongbloed
- * Fixed issue where if a bundled socket using STUN to be on specific local address,
- *   eg sip an port 5060 can still accept calls from local network on that port.
- *
- * Revision 1.11  2007/07/22 04:03:32  rjongbloed
- * Fixed issues with STUN usage in socket bundling, now OpalTransport indicates
- *   if it wants local or NAT address/port for inclusion to outgoing PDUs.
- *
- * Revision 1.10  2007/07/03 08:55:18  rjongbloed
- * Fixed various issues with handling interfaces going up, eg not being added
- *   to currently active ReadFrom().
- * Added more logging.
- *
- * Revision 1.9  2007/07/01 15:23:00  dsandras
- * Removed accidental log message.
- *
- * Revision 1.7  2007/06/25 05:44:01  rjongbloed
- * Fixed numerous issues with "bound" managed socket, ie associating
- *   listeners to a specific named interface.
- *
- * Revision 1.6  2007/06/22 04:51:40  rjongbloed
- * Fixed missing mutex release in socket bundle interface monitor thread shut down.
- *
- * Revision 1.5  2007/06/17 03:17:52  rjongbloed
- * Added using empty interface string as "just use predefined fixed interface"
- *
- * Revision 1.4  2007/06/10 06:26:54  rjongbloed
- * Major enhancements to the "socket bundling" feature:
- *   singleton thread for monitoring network interfaces
- *   a generic API for anything to be informed of interface changes
- *   PChannel derived class for reading/writing to bundled sockets
- *   many new API functions
- *
- * Revision 1.3  2007/05/28 11:26:50  hfriederich
- * Fix compilation
- *
- * Revision 1.2  2007/05/22 11:50:57  csoutheren
- * Further implementation of socket bundle
- *
- * Revision 1.1  2007/05/21 06:07:17  csoutheren
- * Add new socket bundle code to be used to OpalUDPListener
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 //////////////////////////////////////////////////
@@ -120,7 +44,8 @@
 
 //////////////////////////////////////////////////
 
-PInterfaceMonitorClient::PInterfaceMonitorClient()
+PInterfaceMonitorClient::PInterfaceMonitorClient(PINDEX _priority)
+: priority(_priority)
 {
   PInterfaceMonitor::GetInstance().AddClient(this);
 }
@@ -275,23 +200,30 @@ void PInterfaceMonitor::RefreshInterfaceList()
 
     PIPSocket::InterfaceTable oldInterfaces = currentInterfaces;
     currentInterfaces = newInterfaces;
-
+    
     PTRACE(4, "IfaceMon\tInterface change detected, new list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
-
-    // look for interfaces to add that are in new list that are not in the old list
+    
+    // calculate the set of interfaces to add / remove beforehand
+    PIPSocket::InterfaceTable interfacesToAdd;
+    PIPSocket::InterfaceTable interfacesToRemove;
+    interfacesToAdd.DisallowDeleteObjects();
+    interfacesToRemove.DisallowDeleteObjects();
+    
     PINDEX i;
+    // look for interfaces to add that are in new list that are not in the old list
     for (i = 0; i < newInterfaces.GetSize(); ++i) {
       PIPSocket::InterfaceEntry & newEntry = newInterfaces[i];
       if (!newEntry.GetAddress().IsLoopback() && !IsInterfaceInList(newEntry, oldInterfaces))
-        OnAddInterface(newEntry);
+        interfacesToAdd.Append(&newEntry);
     }
-
     // look for interfaces to remove that are in old list that are not in the new list
     for (i = 0; i < oldInterfaces.GetSize(); ++i) {
       PIPSocket::InterfaceEntry & oldEntry = oldInterfaces[i];
       if (!oldEntry.GetAddress().IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
-        OnRemoveInterface(oldEntry);
+        interfacesToRemove.Append(&oldEntry);
     }
+    
+    OnInterfacesChanged(interfacesToAdd, interfacesToRemove);
   }
 }
 
@@ -341,6 +273,18 @@ static PBoolean SplitInterfaceDescription(const PString & iface,
     address = iface.Left(percent);
   name = iface.Mid(percent+1);
   return !name.IsEmpty();
+}
+
+
+static PBoolean InterfaceMatches(const PIPSocket::Address & addr,
+                             const PString & name,
+                             const PIPSocket::InterfaceEntry & entry)
+{
+  if ((addr.IsAny()   || entry.GetAddress() == addr) &&
+      (name.IsEmpty() || entry.GetName().NumCompare(name) == PString::EqualTo)) {
+    return PTrue;
+  }
+  return PFalse;
 }
 
 
@@ -401,14 +345,24 @@ PBoolean PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::I
 
   for (PINDEX i = 0; i < currentInterfaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
-    if ((addr.IsAny()   || entry.GetAddress() == addr) &&
-        (name.IsEmpty() || entry.GetName().NumCompare(name) == EqualTo)) {
+    if (InterfaceMatches(addr, name, entry)) {
       info = entry;
       return PTrue;
     }
   }
 
   return PFalse;
+}
+
+
+PBoolean PInterfaceMonitor::IsMatchingInterface(const PString & iface, const PIPSocket::InterfaceEntry & entry)
+{
+  PIPSocket::Address addr;
+  PString name;
+  if (!SplitInterfaceDescription(iface, addr, name))
+    return FALSE;
+  
+  return InterfaceMatches(addr, name, entry);
 }
 
 
@@ -425,9 +379,18 @@ void PInterfaceMonitor::AddClient(PInterfaceMonitorClient * client)
 {
   PWaitAndSignal m(mutex);
 
-  if (currentClients.empty())
+  if (currentClients.empty()) {
     Start();
-  currentClients.push_back(client);
+    currentClients.push_back(client);
+  } else {
+    for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
+      if ((*iter)->GetPriority() >= client->GetPriority()) {
+        currentClients.insert(iter, client);
+        return;
+      }
+    }
+    currentClients.push_back(client);
+  }
 }
 
 
@@ -441,29 +404,34 @@ void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
     Stop();
 }
 
-
-void PInterfaceMonitor::OnAddInterface(const PIPSocket::InterfaceEntry & entry)
+void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces,
+                                            const PIPSocket::InterfaceTable & removedInterfaces)
 {
   PWaitAndSignal m(mutex);
-
-  for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
+  
+  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
     if (client->LockReadWrite()) {
-      client->OnAddInterface(entry);
+      for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++) {
+        client->OnAddInterface(addedInterfaces[i]);
+      }
+      for (PINDEX i = 0; i < removedInterfaces.GetSize(); i++) {
+        client->OnRemoveInterface(removedInterfaces[i]);
+      }
       client->UnlockReadWrite();
     }
   }
 }
 
 
-void PInterfaceMonitor::OnRemoveInterface(const PIPSocket::InterfaceEntry & entry)
+void PInterfaceMonitor::OnRemoveSTUNClient(const PSTUNClient *stun)
 {
   PWaitAndSignal m(mutex);
-
-  for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
-    PInterfaceMonitorClient * client = *iter;
+  
+  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
+    PInterfaceMonitorClient *client = *iter;
     if (client->LockReadWrite()) {
-      client->OnRemoveInterface(entry);
+      client->OnRemoveSTUNClient(stun);
       client->UnlockReadWrite();
     }
   }
@@ -484,6 +452,7 @@ PMonitoredSockets::PMonitoredSockets(PBoolean reuseAddr, PSTUNClient * stunClien
 PBoolean PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
 {
   delete info.socket;
+  info.socket = NULL;
   
   if (stun != NULL) {
     PIPSocket::Address address;
@@ -506,6 +475,7 @@ PBoolean PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Add
   }
 
   delete info.socket;
+  info.socket = NULL;
   return false;
 }
 
@@ -585,6 +555,8 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
     PSocket::SelectList sockets;
     if (info.socket != NULL && info.socket->IsOpen())
       sockets += *info.socket;
+    else
+      info.inUse = false; // socket closed by monitor thread. release the inUse flag
     sockets += interfaceAddedSignal;
 
     UnlockReadWrite();
@@ -657,6 +629,13 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, PBoolean re
     return new PMonitoredSocketBundle(reuseAddr, stunClient);
   else
     return new PSingleMonitoredSocket(iface, reuseAddr, stunClient);
+}
+
+
+void PMonitoredSockets::OnRemoveSTUNClient(const PSTUNClient *_stun)
+{
+  if (stun == _stun)
+    stun = NULL;
 }
 
 

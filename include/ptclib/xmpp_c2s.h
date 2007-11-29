@@ -24,30 +24,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: xmpp_c2s.h,v $
- * Revision 1.7  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.6  2004/05/09 07:23:46  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.5  2004/04/28 11:26:42  csoutheren
- * Hopefully fixed SASL and SASL2 problems
- *
- * Revision 1.4  2004/04/26 19:44:30  dsandras
- * Fixes compilation with P_SASL = 0.
- *
- * Revision 1.3  2004/04/26 01:51:57  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
- * Revision 1.2  2004/04/23 06:07:24  csoutheren
- * Added #if P_SASL to allow operation without SASL
- *
- * Revision 1.1  2004/04/22 12:31:00  rjongbloed
- * Added PNotifier extensions and XMPP (Jabber) support,
- *   thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _XMPP_C2S

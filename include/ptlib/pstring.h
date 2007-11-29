@@ -26,336 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pstring.h,v $
- * Revision 1.94  2007/10/08 05:04:10  rjongbloed
- * Fixed bug introduced to prevent execution if had compiler error, did not allow
- *   for getting NoMatch error on execution and using an instance twice.
- * Also made lastError member mutable to clean up lots of cont casts.
- *
- * Revision 1.93  2007/06/29 02:47:28  rjongbloed
- * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
- *
- * Revision 1.92  2007/04/08 01:53:16  ykiryanov
- * Build to support ptlib dll creation
- *
- * Revision 1.91  2006/08/11 08:18:57  csoutheren
- * Add PCaselessString constructor for std::string
- *
- * Revision 1.90  2006/08/11 04:44:48  csoutheren
- * Add operator to convert PString to std::string
- *
- * Revision 1.89  2006/07/10 09:15:28  shorne
- * Corrected PString::Tokenize() documentation Thx. David Corrie
- *
- * Revision 1.88  2006/06/30 00:56:31  csoutheren
- * Applied 1494931 - various pwlib bug fixes and enhancement
- * Thanks to Frederich Heem
- *
- * Revision 1.87  2006/06/21 03:28:41  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.86  2006/04/09 07:05:40  rjongbloed
- * Moved output stream operator for PString from sockets code to string code and fixed
- *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
- *   a compiler issue, but it should not be in a random source file!
- *
- * Revision 1.85  2005/12/15 21:14:34  dsandras
- * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
- *
- * Revision 1.84  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.83  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.82  2005/09/18 11:05:36  dominance
- * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
- * src/ptlib/common/pchannel.cxx:
- *   correct the STL defined checking to use proper syntax.
- *
- * include/ptlib/object.h:
- *   re-add typedef to compile on mingw
- *
- * make/ptlib-config.in:
- *   import a long-standing fix from the Debian packs which allows usage of
- *   ptlib-config without manually adding -lpt for each of the subsequent
- *   projects
- *
- * Revision 1.81  2004/12/22 04:04:36  dereksmithies
- * Modify description of parameters for PString::Replace()
- *
- * Revision 1.80  2004/11/23 11:33:08  csoutheren
- * Fixed problem with RemoveAt returning invalid pointer in some cases,
- * and added extra documentation on this case.
- * Thanks to Diego Tartara for pointing out this potential problem
- *
- * Revision 1.79  2004/10/21 13:04:20  rjongbloed
- * Fixed possibility of const operator[] on PStringArray returning a NULL reference. This
- *   function should return a non-lvalue PString anyway as it is const!
- *
- * Revision 1.78  2004/08/16 08:49:59  csoutheren
- * Removed error when compiling with gcc
- *
- * Revision 1.77  2004/08/16 06:40:59  csoutheren
- * Added adapters template to make device plugins available via the abstract factory interface
- *
- * Revision 1.76  2004/06/01 05:54:18  csoutheren
- * Added <vector> and <string>
- *
- * Revision 1.75  2004/06/01 05:21:38  csoutheren
- * Added conversions between std::string and PString, and vector<PString> and PStringArray
- *
- * Revision 1.74  2004/05/04 11:10:36  rjongbloed
- * Fixed usage of MakeEmpty() with PStringStream.
- *
- * Revision 1.73  2004/04/18 04:33:36  rjongbloed
- * Changed all operators that return PBoolean to return standard type bool. This is primarily
- *   for improved compatibility with std STL usage removing many warnings.
- *
- * Revision 1.72  2004/04/11 13:26:25  csoutheren
- * Removed namespace problems and removed warnings for Windows <string>
- *
- * Revision 1.71  2004/04/09 06:38:10  rjongbloed
- * Fixed compatibility with STL based streams, eg as used by VC++2003
- *
- * Revision 1.70  2004/04/09 03:42:34  csoutheren
- * Removed all usages of "virtual inline" and "inline virtual"
- *
- * Revision 1.69  2004/04/03 06:54:22  rjongbloed
- * Many and various changes to support new Visual C++ 2003
- *
- * Revision 1.68  2004/02/23 00:44:38  csoutheren
- * A completely different, other regex include hack to avoid requiring
- * the sources when using a header-file only environment
- *
- * Revision 1.67  2004/02/23 00:26:05  csoutheren
- * Finally, a generic and elegant fix for the regex include hacks.  Thanks to Roger Hardiman
- *
- * Revision 1.66  2004/02/11 05:09:14  csoutheren
- * Fixed problems with regex libraries on Solaris, and with host OS numbering
- * being a quoted string rather than a number. Thanks to Chad Attermann
- * Fixed problems SSL detection problems thanks to Michal Zygmuntowicz
- *
- * Revision 1.65  2004/02/08 11:13:11  rjongbloed
- * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
- *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
- *
- * Revision 1.64  2004/01/18 13:43:48  rjongbloed
- * Fixed broken PString::MakeEmpty() function and moved implementations to .inl file.
- *
- * Revision 1.63  2004/01/17 18:15:24  csoutheren
- * Fixed multi-threading problem with PString::Empty
- * Created PString::MakeEmpty for efficient emptying of existing strings
- *
- * Revision 1.62  2004/01/16 13:24:37  csoutheren
- * Changed PString::Empty to be thread-safe
- * Fixed PContainer::SetMinSize and PAbstractArray::SetSize, thanks to 123@call2ua.com
- * Fixed PString::FindLast, thanks to Andreas Sikkema
- *
- * Revision 1.61  2003/12/13 23:08:46  csoutheren
- * Changed PRegularExpression to allow a copy constructor and operator =
- *
- * Revision 1.60  2003/12/10 03:28:50  csoutheren
- * Removed compile time warning under Linux
- *
- * Revision 1.59  2003/12/07 05:50:49  csoutheren
- * Blocked operator = for PRegularExpression
- *
- * Revision 1.58  2003/12/04 13:10:38  csoutheren
- * Made PRegularExpression copy constructor private to avoid accidental usage (and subsequent crash)
- *
- * Revision 1.57  2003/05/14 00:46:47  rjongbloed
- * Added constructor to string lists/arrays etc that takes a single PString.
- *
- * Revision 1.56  2003/03/31 01:23:56  robertj
- * Added ReadFrom functions for standard container classes such as
- *   PIntArray and PStringList etc
- *
- * Revision 1.55  2003/03/05 08:48:32  robertj
- * Added PStringArray::ToCharAray() function at suggestion of Ravelli Rossano
- *
- * Revision 1.54  2002/11/12 09:17:44  robertj
- * Added PString::NumCompare() as functional equivalent of strncmp().
- * Added PSortedStringList::GetNextStringsIndex() to do searches of binary
- *   tree on partal strings.
- *
- * Revision 1.53  2002/10/31 05:53:44  robertj
- * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
- *   there are far too many inheerent assumptions every to make it 16 bit.
- * Added UTF-8/UCS-2 conversion functions to PString.
- *
- * Revision 1.52  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.51  2002/08/14 00:43:39  robertj
- * Added ability to have fixed maximum length PStringStream's so does not do
- *   unwanted malloc()'s while outputing data.
- *
- * Revision 1.50  2002/04/09 02:30:18  robertj
- * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
- *
- * Revision 1.49  2002/02/15 04:29:31  robertj
- * Added PString::Empty() to return the primordial empty string. Saves on a
- *   couple of memory allocations for every empty string ever used.
- *
- * Revision 1.48  2002/01/26 23:55:55  craigs
- * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
- *
- * Revision 1.47  2002/01/22 01:03:57  craigs
- * Added operator += and operator + functions to PStringArray and PStringList
- * Added AppendString operator to PStringArray
- *
- * Revision 1.46  2001/10/17 05:09:22  robertj
- * Added contructors and assigmnent operators so integer types can be
- *   automatically converted to strings.
- *
- * Revision 1.45  2001/08/11 07:57:30  rogerh
- * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
- *
- * Revision 1.44  2001/04/18 04:10:15  robertj
- * Removed hash function for caseless strings as confuses mixed dictionaries.
- *
- * Revision 1.43  2001/04/18 01:20:58  robertj
- * Fixed problem with hash function for short strings, thanks Patrick Koorevaar.
- * Also fixed hash function for caseless strings.
- *
- * Revision 1.42  2001/02/21 03:38:37  robertj
- * Added ability to copy between various string lists/arrays etc during construction.
- *
- * Revision 1.41  2001/02/13 04:39:08  robertj
- * Fixed problem with operator= in container classes. Some containers will
- *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
- *   needed to add a new AssignContents() function to all containers.
- *
- * Revision 1.40  1999/08/22 12:13:43  robertj
- * Fixed warning when using inlines on older GNU compiler
- *
- * Revision 1.39  1999/05/28 14:01:22  robertj
- * Added initialisers to string containers (list, sorted list and set).
- *
- * Revision 1.38  1999/03/09 09:34:05  robertj
- * Fixed typo's.
- *
- * Revision 1.37  1999/03/09 02:59:50  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.36  1999/02/16 08:11:09  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.35  1998/09/23 06:21:12  robertj
- * Added open source copyright license.
- *
- * Revision 1.34  1998/01/26 00:33:46  robertj
- * Added FindRegEx function to PString that returns position and length.
- * Added Execute() functions to PRegularExpression that take PINDEX references instead of PIntArrays.
- * Added static function to PRegularExpression to escape all special operator characters in a string.
- *
- * Revision 1.33  1998/01/05 10:39:35  robertj
- * Fixed "typesafe" templates/macros for dictionaries, especially on GNU.
- *
- * Revision 1.32  1997/12/11 13:32:47  robertj
- * Added AsUnsigned() function to convert string to DWORD.
- *
- * Revision 1.31  1997/12/11 10:29:49  robertj
- * Added type correct Contains() function to dictionaries.
- *
- * Revision 1.30  1997/07/08 13:13:47  robertj
- * DLL support.
- *
- * Revision 1.29  1997/06/10 11:36:32  craigs
- * Added inline statements to allow compilation uder Unix
- *
- * Revision 1.28  1997/06/08 04:48:58  robertj
- * Added regular expressions.
- * Fixed non-template class descendent order.
- *
- * Revision 1.27  1997/05/16 12:10:12  robertj
- * Fixed G++ compatibility bug.
- *
- * Revision 1.26  1996/10/08 13:13:38  robertj
- * Added operator += and &= for char so no implicit PString construction.
- *
- * Revision 1.25  1996/09/14 12:52:39  robertj
- * Added operator! for !IsEmpty().
- *
- * Revision 1.24  1996/08/17 10:00:25  robertj
- * Changes for Windows DLL support.
- *
- * Revision 1.23  1996/05/26 03:27:02  robertj
- * Compatibility to GNU 2.7.x
- *
- * Revision 1.22  1996/03/31 08:51:22  robertj
- * Added RemoveAt() function to remove entries from dictionaries.
- *
- * Revision 1.21  1996/03/10 13:15:50  robertj
- * Added operator() to template version.
- *
- * Revision 1.20  1996/02/19 13:17:33  robertj
- * Removed PCaselessString hash function to fix dictionary match failure.
- * Added operator() to do string dictionary lookup with default value.
- *
- * Revision 1.19  1996/02/08 12:19:16  robertj
- * Added new operators to PString for case insensitive compare and spaced concatenate.
- *
- * Revision 1.18  1996/01/24 14:43:15  robertj
- * Added initialisers to string dictionaries.
- *
- * Revision 1.17  1996/01/23 13:15:17  robertj
- * Added Replace() function to strings.
- * Mac Metrowerks compiler support.
- * String searching algorithm rewrite.
- *
- * Revision 1.16  1996/01/02 12:04:31  robertj
- * Mac OS compatibility changes.
- * Removed requirement that PArray elements have parameterless constructor..
- *
- * Revision 1.15  1995/12/23 03:46:23  robertj
- * Added operators for include and exclude from string set.
- *
- * Revision 1.14  1995/10/14 15:02:56  robertj
- * Changed arrays to not break references, but strings still need to.
- *
- * Revision 1.13  1995/06/17 11:13:08  robertj
- * Documentation update.
- *
- * Revision 1.12  1995/06/17 00:43:40  robertj
- * Added flag for PStringArray constructor to create caseless strings.
- *
- * Revision 1.11  1995/06/04 12:34:57  robertj
- * Better C++ compatibility (with BC++)
- *
- * Revision 1.10  1995/04/02 09:27:23  robertj
- * Added "balloon" help.
- *
- * Revision 1.9  1995/03/14 12:42:16  robertj
- * Updated documentation to use HTML codes.
- *
- * Revision 1.8  1995/03/12  04:44:39  robertj
- * Fixed use of PCaselessString as dictionary key.
- *
- * Revision 1.7  1995/02/05  00:48:09  robertj
- * Fixed template version.
- *
- * Revision 1.6  1995/01/15  04:50:20  robertj
- * Added inlines on friend functions, required by GNU compiler.
- *
- * Revision 1.5  1995/01/10  11:43:41  robertj
- * Removed PString parameter in stdarg function for GNU C++ compatibility.
- *
- * Revision 1.4  1995/01/09  12:33:44  robertj
- * Removed unnecesary return value from I/O functions.
- * Changed function names due to Mac port.
- *
- * Revision 1.3  1994/12/21  11:53:21  robertj
- * Documentation and variable normalisation.
- *
- * Revision 1.2  1994/12/12  13:13:13  robertj
- * Fixed bugs in PString mods just made.
- *
- * Revision 1.1  1994/12/12  09:59:37  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #ifndef __PSTRING__
 #define __PSTRING__
@@ -2350,7 +2023,7 @@ class PStringArray : public PArray {
     PStringArray operator + (const PString & str);
 
     /**Create an array of C strings.
-       If storage is NULL then this returns a single pointer that may be
+       If storage is NULL then this returns a single pointer that must be
        disposed of using free(). Note that each of the strings are part of the
        same memory allocation so only one free() is required.
 
@@ -3045,6 +2718,23 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
       istream &strm   // Stream to read the objects contents from.
     );
   //@}
+
+    /**Create an array of C strings.
+       If withEqualSign is true then array is GetSize()+1 strings of the form
+       key=value. If false then the array is GetSize()*2+1 strings where
+       consecutive pointers are the key and option respecitively of each
+       entry in the dictionary.
+
+       If storage is NULL then this returns a single pointer that must be
+       disposed of using free(). Note that each of the strings are part of the
+       same memory allocation so only one free() is required.
+
+       If storage is not null then that is used to allocate the memory.
+      */
+    char ** ToCharArray(
+      bool withEqualSign,
+      PCharArray * storage = NULL
+    ) const;
 };
 
 

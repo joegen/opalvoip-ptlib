@@ -11,63 +11,9 @@
  * Originally written by Poul-Henning Kamp <phk@freebsd.org>
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
- * $Log: dtmf.cxx,v $
- * Revision 1.19  2007/09/23 08:58:22  rjongbloed
- * Fixed DTMF detecter after CNG added, always detected a CNG no matter what!
- * Added generation of CNG tone using 'X' code.
- *
- * Revision 1.18  2007/07/19 08:10:32  csoutheren
- * Add detection of CNG
- *
- * Revision 1.17  2006/12/13 04:56:03  csoutheren
- * Applied 1613270 - fixed for dtmfEncoder
- * Thanks to Frederic Heem
- *
- * Revision 1.16  2006/11/11 15:23:37  hfriederich
- * Use correct GetSize() to avoid allocation problems
- *
- * Revision 1.15  2006/10/25 08:18:22  rjongbloed
- * Major upgrade of tone generation subsystem.
- *
- * Revision 1.14  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.13  2005/01/25 06:35:27  csoutheren
- * Removed warnings under MSVC
- *
- * Revision 1.12  2004/11/17 10:13:14  csoutheren
- * Fixed compilation with gcc 4.0.0
- *
- * Revision 1.11  2004/09/09 23:50:49  csoutheren
- * Fixed problem with duplicate definition of sinetab causing problems
- *
- * Revision 1.10  2004/09/09 05:23:38  dereksmithies
- * Add utility function to report on dtmf characters used.
- *
- * Revision 1.9  2004/09/09 04:22:46  csoutheren
- * Added sine table for DTMF encoder
- *
- * Revision 1.8  2004/09/09 04:00:01  csoutheren
- * Added DTMF encoding functions
- *
- * Revision 1.7  2003/03/17 07:39:25  robertj
- * Fixed possible invalid value causing DTMF detector to crash.
- *
- * Revision 1.6  2002/02/20 02:59:34  yurik
- * Added end of line to trace statement
- *
- * Revision 1.5  2002/02/12 10:21:56  rogerh
- * Stop sending '?' when a bad DTMF tone is detected.
- *
- * Revision 1.4  2002/01/24 11:14:45  rogerh
- * Back out robert's change. It did not work (no sign extending)
- * and replace it with a better solution which should be happy on both big
- * endian and little endian systems.
- *
- * Revision 1.3  2002/01/24 10:40:17  rogerh
- * Add version log
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

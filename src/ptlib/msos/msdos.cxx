@@ -26,46 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: msdos.cxx,v $
- * Revision 1.13  1998/09/24 03:30:50  robertj
- * Added open software license.
- *
- * Revision 1.12  1996/01/28 02:55:32  robertj
- * WIN16 support.
- *
- * Revision 1.11  1995/08/24 12:41:00  robertj
- * Changed PChannel so not a PContainer.
- *
- * Revision 1.10  1995/06/17 00:59:21  robertj
- * Moved PPipeChannel::Execute from common dos/windows to individual files.
- *
- * Revision 1.9  1995/04/01 08:06:03  robertj
- * Fixed yield for straight DOS and QUICKWIN systems.
- *
- * Revision 1.8  1995/03/12 05:00:05  robertj
- * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
- * Used built-in equate for WIN32 API (_WIN32).
- *
- * Revision 1.7  1994/12/13  11:53:44  robertj
- * Added missing PConfig Construct() function for pure DOS.
- *
- * Revision 1.6  1994/10/30  11:25:36  robertj
- * Fixed DOS version of configuration files.
- *
- * Revision 1.5  1994/08/22  00:18:02  robertj
- * Added dummy socket function.
- *
- * Revision 1.4  1994/07/27  06:00:10  robertj
- * Backup
- *
- * Revision 1.3  1994/07/17  11:01:04  robertj
- * Ehancements, implementation, bug fixes etc.
- *
- * Revision 1.2  1994/07/02  03:18:09  robertj
- * Multi-threading implementation.
- *
- * Revision 1.1  1994/06/25  12:13:01  robertj
- * Initial revision
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "ptlib.h"

@@ -23,77 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ptts.cxx,v $
- * Revision 1.22  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.21  2007/04/04 01:51:38  rjongbloed
- * Reviewed and adjusted PTRACE log levels
- *   Now follows 1=error,2=warn,3=info,4+=debug
- *
- * Revision 1.20  2006/07/27 09:48:24  rjongbloed
- * Fixed DevStudio 2005 compiler compatibility
- *
- * Revision 1.19  2006/06/21 03:28:44  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.18  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.17  2005/01/04 08:09:42  csoutheren
- * Fixed Linux configure problems
- *
- * Revision 1.16  2005/01/04 07:44:03  csoutheren
- * More changes to implement the new configuration methodology, and also to
- * attack the global static problem
- *
- * Revision 1.15  2004/10/23 10:56:15  ykiryanov
- * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
- *
- * Revision 1.14  2004/07/12 09:17:20  csoutheren
- * Fixed warnings and errors under Linux
- *
- * Revision 1.13  2004/07/06 10:12:54  csoutheren
- * Added static integer o factory template to assist in ensuring factories are instantiated
- *
- * Revision 1.12  2004/06/30 12:17:05  rjongbloed
- * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
- *   of issues with startup orders and Windows DLL multiple instances.
- *
- * Revision 1.11  2004/06/19 09:02:32  csoutheren
- * Added rate and volume to keep Festival happy
- *
- * Revision 1.10  2004/06/19 07:18:59  csoutheren
- * Change TTS engine registration to use abstract factory code
- *
- * Revision 1.9  2004/04/09 06:52:17  rjongbloed
- * Removed #pargma linker command for /delayload of DLL as documentations sais that
- *   you cannot do this.
- *
- * Revision 1.8  2004/02/23 23:52:20  csoutheren
- * Added pragmas to avoid every Windows application needing to include libs explicitly
- *
- * Revision 1.7  2003/10/30 11:28:25  rjongbloed
- * Added dircetory name for Speech API under Windows.
- *
- * Revision 1.6  2003/09/17 06:02:13  csoutheren
- * Fixed windows header file problem caused by removing recursive headers
- *
- * Revision 1.5  2003/04/17 01:21:33  craigs
- * Added import of pybuildopts to correctly detect if P_SAPI is set
- *
- * Revision 1.4  2003/04/16 08:00:19  robertj
- * Windoes psuedo autoconf support
- *
- * Revision 1.3  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.2  2002/08/14 15:18:25  craigs
- * Fixed Festval implementation
- *
- * Revision 1.1  2002/08/06 04:45:58  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

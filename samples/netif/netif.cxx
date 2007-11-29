@@ -21,22 +21,9 @@
  *
  * The Initial Developer of the Original Code is Roger Hardiman
  *
- * $Log: netif.cxx,v $
- * Revision 1.4  2006/06/21 03:28:42  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.3  2002/09/05 11:56:49  rogerh
- * Fix some warnings by using PINDEX
- *
- * Revision 1.2  2002/01/09 14:08:57  rogerh
- * Fix incorrect error message.
- *
- * Revision 1.1  2001/10/03 10:31:27  rogerh
- * Add netif, a program to display detains of the network interfaces
- * and the routing table.
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 /*

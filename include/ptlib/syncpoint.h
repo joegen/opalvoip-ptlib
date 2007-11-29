@@ -26,42 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: syncpoint.h,v $
- * Revision 1.10  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.9  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.8  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.7  2002/01/23 04:26:36  craigs
- * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
- * use of default copy constructors for objects containing instances of
- * these classes
- *
- * Revision 1.6  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.5  1999/03/09 02:59:51  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.4  1999/02/16 08:11:17  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.3  1998/11/30 02:52:00  robertj
- * New directory structure
- *
- * Revision 1.2  1998/09/23 06:21:34  robertj
- * Added open source copyright license.
- *
- * Revision 1.1  1998/03/23 02:41:34  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSYNCPOINT
@@ -76,7 +43,7 @@
 
 /** This class defines a thread synchonisation object.
   This form of semaphore is used to indicate an {\it event} has occurred. A
-  thread may block on theis sync point and wait until another thread signals
+  thread may block on the sync point and wait until another thread signals
   that it may continue. eg:
 \begin{verbatim}
     ... thread one
@@ -91,6 +58,12 @@
     do_yet_more();
 
 \end{verbatim}
+
+  Note that events are boolean in nature. If "thread one" is not waiting on the
+  event, multiple calls to Signal() are ignored, thread one will only exit the
+  Wait() call a sibngle time once it gets there. Similarly, if multiple threads
+  are waiting on the event, only one thread will be released. As you cannot know
+  which thread will be released this mode of use is not recommended.
  */
 class PSyncPoint : public PSemaphore
 {

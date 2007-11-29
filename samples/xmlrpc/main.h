@@ -5,13 +5,9 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: main.h,v $
- * Revision 1.2  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.1  2002/03/26 07:05:28  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _XMLRPCApp_MAIN_H

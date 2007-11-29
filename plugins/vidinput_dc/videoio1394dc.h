@@ -18,58 +18,9 @@
  * Classes to support streaming video input from IEEE 1394 cameras.
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
- * $Log: videoio1394dc.h,v $
- * Revision 1.6  2007/04/27 17:34:45  dsandras
- * Applied patch from Luc Saillard to fix things after the latest change
- * which broke all drivers. Thanks Luc <luc saillard org>.
- *
- * Revision 1.5  2007/04/19 09:44:24  csoutheren
- * Fix compilation of avc driver
- *
- * Revision 1.4  2007/04/14 07:08:55  rjongbloed
- * Major update of video subsystem:
- *   Abstracted video frame info (width, height etc) into separate class.
- *   Changed devices, converter and video file to use above.
- *   Enhanced video file hint detection for frame rate and more
- *     flexible formats.
- *   Fixed issue if need to convert both colour format and size, had to do
- *     colour format first or it didn't convert size.
- *   Win32 video output device can be selected by "MSWIN" alone.
- *
- * Revision 1.3  2006/04/30 21:25:21  dsandras
- * Fixed resolution detection thanks to Luc Saillard <luc saillard org>.
- * Thanks a lot!
- *
- * Revision 1.2  2005/08/09 09:08:10  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.1.8.2  2005/07/24 09:01:48  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.1.8.1  2005/07/17 09:27:07  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.1  2003/12/17 15:40:56  dominance
- * Added DC Plugin as provided by Julien Puydt <julien.puydt@laposte.net>. Needs manual patching of plugins/configure for now though. (i.e. disabled by default, run autoconf in plugins/)
- *
- * Revision 1.2  2002/05/30 22:49:35  dereks
- * correct implementation of GetInputDeviceNames().
- *
- * Revision 1.1  2002/02/20 02:37:26  dereks
- * Initial release of Firewire camera support for linux.
- * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

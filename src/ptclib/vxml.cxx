@@ -21,288 +21,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: vxml.cxx,v $
- * Revision 1.78  2007/09/18 09:14:18  rjongbloed
- * Fixed some (likely benign) uninitialised members.
- *
- * Revision 1.77  2007/09/18 06:21:12  csoutheren
- * Fix spelling mistakes
- *
- * Revision 1.76  2007/09/17 11:14:46  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.75  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.74  2007/09/04 11:33:21  csoutheren
- * Add PlayTone
- * Add access to session variable table
- *
- * Revision 1.73  2007/04/10 05:08:48  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.72  2007/04/04 01:51:38  rjongbloed
- * Reviewed and adjusted PTRACE log levels
- *   Now follows 1=error,2=warn,3=info,4+=debug
- *
- * Revision 1.71  2007/04/02 05:29:54  rjongbloed
- * Tidied some trace logs to assure all have a category (bit before a tab character) set.
- *
- * Revision 1.70  2007/01/31 06:05:32  csoutheren
- * Allow disabling of VXML
- * Ensure VXML compiles when PPipeChannel not enabled
- *
- * Revision 1.69  2006/08/10 03:53:19  csoutheren
- * Apply 1532388 - Fix PVXML log message
- * Thanks to Stanislav Brabec
- *
- * Revision 1.68  2006/06/21 03:28:44  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.67  2006/06/20 09:01:51  csoutheren
- * Applied patch 1353851
- * VXML unitialized autoDeleteTextToSpeech
- * Thanks to Frederich
- *
- * Revision 1.66  2005/12/01 01:05:59  csoutheren
- * Fixed uninitialised variable
- *
- * Revision 1.65  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.64  2005/10/30 23:25:52  csoutheren
- * Fixed formatting
- * Removed throw() declarations (PWLib does not do exceptions)
- * Removed duplicate destructor declarations and definitions
- *
- * Revision 1.63  2005/10/30 19:41:53  dominance
- * fixed most of the warnings occuring during compilation
- *
- * Revision 1.62  2005/10/21 08:18:21  csoutheren
- * Fixed Close operator
- *
- * Revision 1.61  2005/08/13 06:38:22  rjongbloed
- * Fixed illegal code line, assigning to const object!
- *
- * Revision 1.60  2005/08/12 16:41:51  shorne
- * A couple more small fixes thx. Nickolay V. Shmyrev
- *
- * Revision 1.59  2005/08/11 08:48:10  shorne
- * Removed Close from PVXMLSession::Open method. Thanks Nickolay V. Shmyrev
- *
- * Revision 1.58  2005/05/12 13:40:45  csoutheren
- * Fixed locking problems with currentPLayItem optimisation
- *
- * Revision 1.57  2005/05/12 05:28:36  csoutheren
- * Optimised read loop and fixed problems with playing repeated continuous tones
- *
- * Revision 1.56  2005/04/21 05:28:58  csoutheren
- * Fixed assert if recordable does not queue properly
- *
- * Revision 1.55  2005/03/19 02:52:54  csoutheren
- * Fix warnings from gcc 4.1-20050313 shapshot
- *
- * Revision 1.54  2004/12/03 02:06:05  csoutheren
- * Ensure FlushQueue called OnStop for queued elements
- *
- * Revision 1.53  2004/08/09 11:10:34  csoutheren
- * Changed SetTextToSpeech to return ptr to new engine
- *
- * Revision 1.52  2004/07/28 02:01:51  csoutheren
- * Removed deadlock in some call shutdown scenarios
- *
- * Revision 1.51  2004/07/27 05:26:46  csoutheren
- * Fixed recording
- *
- * Revision 1.50  2004/07/27 00:00:41  csoutheren
- * Allowed Close to set closed flag before attepting lock of channels
- *
- * Revision 1.49  2004/07/26 07:25:02  csoutheren
- * Fixed another problem with thread starvation due to delaying inside a mutex lock
- *
- * Revision 1.48  2004/07/26 00:40:41  csoutheren
- * Fixed thread starvation problem under Linux by splitting channelMutex
- * into seperate read and write mutexes
- *
- * Revision 1.47  2004/07/23 00:59:26  csoutheren
- * Check in latest changes
- *
- * Revision 1.46  2004/07/17 09:44:12  rjongbloed
- * Fixed missing set of last write count if not actually writing frames.
- *
- * Revision 1.45  2004/07/15 03:12:42  csoutheren
- * Migrated changes from crs_vxnml_devel branch into main trunk
- *
- * Revision 1.42.2.7  2004/07/13 08:13:05  csoutheren
- * Lots of implementation of factory-based PWAVFile
- *
- * Revision 1.42.2.6  2004/07/12 08:30:17  csoutheren
- * More fixes for abstract factory implementation of PWAVFile
- *
- * Revision 1.42.2.5  2004/07/08 04:58:11  csoutheren
- * Exposed VXML playable classes to allow descendants
- *
- * Revision 1.42.2.4  2004/07/07 07:07:43  csoutheren
- * Changed PWAVFile to use abstract factories (extensively)
- * Removed redundant blocking/unblocking when using G.723.1
- * More support for call transfer
- *
- * Revision 1.42.2.3  2004/07/06 01:38:57  csoutheren
- * Changed PVXMLChannel to use PDelayChannel
- * Fixed bug where played files were deleted after playing
- *
- * Revision 1.42.2.2  2004/07/02 07:22:40  csoutheren
- * Updated for latest factory changes
- *
- * Revision 1.42.2.1  2004/06/20 11:18:03  csoutheren
- * Rewrite of resource cacheing to cache text-to-speech output
- *
- * Revision 1.42  2004/06/19 07:21:08  csoutheren
- * Change TTS engine registration to use abstract factory code
- * Started disentanglement of PVXMLChannel from PVXMLSession
- * Fixed problem with VXML session closing if played data file is not exact frame size multiple
- * Allowed PVXMLSession to be used without a VXML script
- * Changed PVXMLChannel to handle "file:" URLs
- * Numerous other small improvements and optimisations
- *
- * Revision 1.41  2004/06/02 08:29:28  csoutheren
- * Added new code from Andreas Sikkema to implement various VXML features
- *
- * Revision 1.40  2004/06/02 06:16:48  csoutheren
- * Removed unnecessary buffer copying and removed potential busy loop
- *
- * Revision 1.39  2004/05/02 05:14:43  rjongbloed
- * Fixed possible deadlock in shutdown of VXML channel/session.
- *
- * Revision 1.38  2004/04/24 06:27:56  rjongbloed
- * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
- *   NULL pointer usage in various bits of code.
- *
- * Revision 1.37  2004/03/23 04:48:42  csoutheren
- * Improved ability to start VXML scripts as needed
- *
- * Revision 1.36  2003/11/12 20:38:16  csoutheren
- * Fixed problem with incorrect sense of ContentLength header detection thanks to Andreas Sikkema
- *
- * Revision 1.35  2003/05/14 01:12:53  rjongbloed
- * Fixed test for SID frames in record silence detection on G.723.1A
- *
- * Revision 1.34  2003/04/23 11:54:53  craigs
- * Added ability to record audio
- *
- * Revision 1.33  2003/04/10 04:19:43  robertj
- * Fixed incorrect timing on G.723.1 (framed codec)
- * Fixed not using correct codec file suffix for non PCM/G.723.1 codecs.
- *
- * Revision 1.32  2003/04/08 05:09:14  craigs
- * Added ability to use commands as an audio source
- *
- * Revision 1.31  2003/03/17 08:03:07  robertj
- * Combined to the separate incoming and outgoing substream classes into
- *   a single class to make it easier to produce codec aware descendents.
- * Added G.729 substream class.
- *
- * Revision 1.30  2002/12/03 22:39:14  robertj
- * Removed get document that just returns a content length as the chunked
- *   transfer encoding makes this very dangerous.
- *
- * Revision 1.29  2002/11/19 10:36:30  robertj
- * Added functions to set anf get "file:" URL. as PFilePath and do the right
- *   things with platform dependent directory components.
- *
- * Revision 1.28  2002/11/08 03:39:27  craigs
- * Fixed problem with G.723.1 files
- *
- * Revision 1.27  2002/09/24 13:47:41  robertj
- * Added support for more vxml commands, thanks Alexander Kovatch
- *
- * Revision 1.26  2002/09/18 06:37:40  robertj
- * Added functions to load vxml directly, via file or URL. Old function
- *   intelligently picks which one to use.
- *
- * Revision 1.25  2002/09/03 04:38:14  craigs
- * Added VXML 2.0 time attribute to <break>
- *
- * Revision 1.24  2002/09/03 04:11:37  craigs
- * More changes from Alexander Kovatch
- *
- * Revision 1.23  2002/08/30 07:33:16  craigs
- * Added extra initialisations
- *
- * Revision 1.22  2002/08/30 05:05:54  craigs
- * Added changes for PVXMLGrammar from Alexander Kovatch
- *
- * Revision 1.21  2002/08/29 00:16:12  craigs
- * Fixed typo, thanks to Peter Robinson
- *
- * Revision 1.20  2002/08/28 08:05:16  craigs
- * Reorganised VXMLSession class as per code from Alexander Kovatch
- *
- * Revision 1.19  2002/08/28 05:10:57  craigs
- * Added ability to load resources via URI
- * Added cache
- *
- * Revision 1.18  2002/08/27 02:46:56  craigs
- * Removed need for application to call AllowClearCall
- *
- * Revision 1.17  2002/08/27 02:20:09  craigs
- * Added <break> command in prompt blocks
- * Fixed potential deadlock
- * Added <prompt> command in top level fields, thanks to Alexander Kovatch
- *
- * Revision 1.16  2002/08/15 04:11:16  robertj
- * Fixed shutdown problems with closing vxml session, leaks a thread.
- * Fixed potential problems with indirect channel Close() function.
- *
- * Revision 1.15  2002/08/15 02:13:10  craigs
- * Fixed problem with handle leak (maybe) and change tts files back to autodelete
- *
- * Revision 1.14  2002/08/14 15:18:07  craigs
- * Improved random filename generation
- *
- * Revision 1.13  2002/08/08 01:03:06  craigs
- * Added function to re-enable automatic call clearing on script end
- *
- * Revision 1.12  2002/08/07 13:38:14  craigs
- * Fixed bug in calculating lengths of G.723.1 packets
- *
- * Revision 1.11  2002/08/06 07:45:28  craigs
- * Added lots of stuff from OpalVXML
- *
- * Revision 1.10  2002/07/29 15:08:50  craigs
- * Added autodelete option to PlayFile
- *
- * Revision 1.9  2002/07/29 15:03:36  craigs
- * Added access to queue functions
- * Added autodelete option to AddFile
- *
- * Revision 1.8  2002/07/29 14:16:05  craigs
- * Added asynchronous VXML execution
- *
- * Revision 1.7  2002/07/17 08:34:25  craigs
- * Fixed deadlock problems
- *
- * Revision 1.6  2002/07/17 06:08:23  craigs
- * Added additional "sayas" classes
- *
- * Revision 1.5  2002/07/10 13:15:20  craigs
- * Moved some VXML classes from Opal back into PTCLib
- * Fixed various race conditions
- *
- * Revision 1.4  2002/07/05 06:28:07  craigs
- * Added OnEmptyAction callback
- *
- * Revision 1.3  2002/07/02 06:24:53  craigs
- * Added recording functions
- *
- * Revision 1.2  2002/06/28 01:30:29  robertj
- * Fixed ability to compile if do not have expat library.
- *
- * Revision 1.1  2002/06/27 05:27:49  craigs
- * Initial version
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__
@@ -395,6 +116,21 @@ static PString GetContentType(const PFilePath & fn)
 
 ///////////////////////////////////////////////////////////////
 
+PBoolean PVXMLPlayable::Open(PVXMLChannel & chan, PINDEX _delay, PINDEX _repeat, PBoolean _autoDelete)
+{ 
+  chan.SetReadChannel(NULL); 
+  delay = _delay; 
+  repeat = _repeat; 
+  autoDelete = _autoDelete; 
+  return PTrue; 
+}
+
+PBoolean PVXMLPlayable::Open(PVXMLChannel & chan, const PString & _arg, PINDEX _delay, PINDEX _repeat, PBoolean v)
+{ 
+  arg = _arg; 
+  return Open(chan, _delay, _repeat, v); 
+}
+
 PBoolean PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLen)
 {
   BYTE * buf = (BYTE *)_buf;
@@ -412,6 +148,19 @@ PBoolean PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX or
   }
 
   return PTrue;
+}
+
+///////////////////////////////////////////////////////////////
+
+void PVXMLPlayableStop::Play(PVXMLChannel & channel)
+{
+	channel.SetSilentCount(20);
+}
+
+PBoolean PVXMLPlayableStop::ReadFrame(PVXMLChannel & channel, void *, PINDEX)
+{ 
+  channel.Close(); 
+  return FALSE; 
 }
 
 ///////////////////////////////////////////////////////////////
@@ -817,7 +566,6 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, PBoolean autoDelete)
   vxmlThread       = NULL;
   threadRunning    = PFalse;
   vxmlChannel      = NULL;
-  finishWhenEmpty  = PTrue;
   textToSpeech     = NULL;
   loaded           = PFalse;
   emptyAction      = PFalse;
@@ -834,7 +582,6 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, PBoolean autoDelete)
 void PVXMLSession::Initialise()
 {
   recording        = PFalse;
-  allowFinish      = PFalse;
   listening        = PFalse;
   activeGrammar    = NULL;
   listening        = PFalse;
@@ -843,6 +590,7 @@ void PVXMLSession::Initialise()
   currentField     = NULL;
   currentNode      = NULL;
 }
+
 
 PVXMLSession::~PVXMLSession()
 {
@@ -942,7 +690,6 @@ PBoolean PVXMLSession::LoadVXML(const PString & xmlText)
 {
   PWaitAndSignal m(sessionMutex);
 
-  allowFinish = loaded = PFalse;
   rootURL = PString::Empty();
 
   // parse the XML
@@ -1093,6 +840,13 @@ PXMLElement * PVXMLSession::FindForm(const PString & id)
   return NULL;
 }
 
+PBoolean PVXMLSession::Open(PBoolean isPCM)
+{
+  if (isPCM)
+    return Open(VXML_PCM16);
+  else
+    return Open(VXML_G7231);
+}
 
 PBoolean PVXMLSession::Open(const PString & _mediaFormat)
 {
@@ -1242,7 +996,7 @@ void PVXMLSession::ExecuteDialog()
         currentNode = currentNode->GetParent();
         // if we are on the backwards traversal through a <field> then wait
         // for a grammar recognition and throw events if necessary
-        if (currentNode != NULL && (currentNode->IsElement() == PTrue) && (((PXMLElement*)currentNode)->GetName() *= "field")) {
+        if (currentNode != NULL && currentNode->IsElement() && (((PXMLElement*)currentNode)->GetName() *= "field")) {
           listening = PTrue;
           PlaySilence(timeout);
         }
@@ -1254,7 +1008,7 @@ void PVXMLSession::ExecuteDialog()
   }
 
   // Determine if we should quit
-  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording() && allowFinish && finishWhenEmpty) {
+  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
     threadRunning = PFalse;
     waitForEvent.Signal();
   }
@@ -1597,8 +1351,6 @@ PBoolean PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay,
   if (vxmlChannel == NULL || !vxmlChannel->QueueFile(fn, repeat, delay, autoDelete))
     return PFalse;
 
-  AllowClearCall();
-
   return PTrue;
 }
 
@@ -1606,8 +1358,6 @@ PBoolean PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX de
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueueCommand(cmd, repeat, delay))
     return PFalse;
-
-  AllowClearCall();
 
   return PTrue;
 }
@@ -1617,8 +1367,6 @@ PBoolean PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX d
   if (vxmlChannel == NULL || !vxmlChannel->QueueData(data, repeat, delay))
     return PFalse;
   
-  AllowClearCall();
-
   return PTrue;
 }
 
@@ -1626,8 +1374,6 @@ PBoolean PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX 
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable("Tone", toneSpec, repeat, delay, true))
     return PFalse;
-
-  AllowClearCall();
 
   return PTrue;
 }
@@ -1649,7 +1395,13 @@ PBoolean PVXMLSession::PlaySilence(PINDEX msecs)
   if (vxmlChannel == NULL || !vxmlChannel->QueueData(nothing, 1, msecs))
     return PFalse;
 
-  AllowClearCall();
+  return PTrue;
+}
+
+PBoolean PVXMLSession::PlayStop()
+{
+  if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable(new PVXMLPlayableStop()))
+    return PFalse;
 
   return PTrue;
 }
@@ -1658,8 +1410,6 @@ PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX dela
 {
   if (vxmlChannel == NULL || !vxmlChannel->QueueResource(url, repeat, delay))
     return PFalse;
-
-  AllowClearCall();
 
   return PTrue;
 }
@@ -1681,6 +1431,8 @@ PBoolean PVXMLSession::PlayText(const PString & _text,
                                      PINDEX repeat, 
                                      PINDEX delay)
 {
+  PTRACE(2, "PVXML\tConverting " << _text << " to speech");
+
   PStringArray list;
   PBoolean useCache = !(GetVar("caching") *= "safe");
   if (!ConvertTextToFilenameList(_text, type, list, useCache) || (list.GetSize() == 0)) {
@@ -1698,7 +1450,7 @@ PBoolean PVXMLSession::PlayText(const PString & _text,
   if (!vxmlChannel->QueuePlayable(playable))
     return PFalse;
 
-  AllowClearCall();
+  PTRACE(2, "PVXML\tQueued filename list for playing");
 
   return PTrue;
 }
@@ -1723,7 +1475,9 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
       spoken = PVXMLCache::GetResourceCache().Get(prefix, contentType + "\n" + text, "wav", contentType, dataFn);
 
     // if not cached, then use the text to speech converter
-    if (!spoken) {
+    if (spoken) {
+     PTRACE(3, "PVXML\tUsing cached WAV file for " << _text);
+    } else {
       PFilePath tmpfname;
       if (textToSpeech != NULL) {
         tmpfname = PVXMLCache::GetResourceCache().GetRandomFilename("tts", "wav");
@@ -1731,6 +1485,7 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
           PTRACE(2, "PVXML\tcannot open file " << tmpfname);
         } else {
           spoken = textToSpeech->Speak(text, type);
+          PTRACE(3, "PVXML\tCreated new WAV file for " << _text);
           if (!textToSpeech->Close()) {
             PTRACE(2, "PVXML\tcannot close TTS engine");
           }
@@ -1819,11 +1574,6 @@ PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mod
     return new PWAVFile(fn, mode, opts, fmt);
 
   return new PWAVFile(mode, opts, fmt); 
-}
-
-void PVXMLSession::AllowClearCall()
-{
-  allowFinish = PTrue;
 }
 
 PBoolean PVXMLSession::TraverseAudio()
@@ -2695,12 +2445,9 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
       }
 
       // try and read data from the underlying channel
-      if (GetBaseReadChannel() != NULL) {
+      else if (currentPlayItem != NULL) {
 
         PWaitAndSignal m(queueMutex);
-
-        // see if the item needs to repeat
-        PAssert(currentPlayItem != NULL, "current VXML play item disappeared");
 
         // if the read succeeds, we are done
         if (currentPlayItem->ReadFrame(*this, buffer, amount)) {
@@ -2719,33 +2466,35 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
         PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
         PDelayChannel::Close();
 
-        // repeat the item if needed
-        if (currentPlayItem->GetRepeat() > 1) {
-          if (!currentPlayItem->Rewind(GetBaseReadChannel())) {
-            PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
-          } else {
-            currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
-            currentPlayItem->OnRepeat(*this);
-            continue;
-          }
-        } 
+        // if current item still active, check for trailing actions
+        if (currentPlayItem != NULL) {
+          if (currentPlayItem->GetRepeat() > 1) {
+            if (!currentPlayItem->Rewind(GetBaseReadChannel())) {
+              PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
+            } else {
+              currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
+              currentPlayItem->OnRepeat(*this);
+              continue;
+            }
+          } 
 
-        // see if end of queue delay specified
-        PINDEX delay = 0;
-        if (currentPlayItem->delayDone) {
-          delay = currentPlayItem->GetDelay();
-          if (delay != 0) {
-            PTRACE(3, "PVXML\tDelaying for " << delay);
-            delayTimer = delay;
-            currentPlayItem->delayDone = PTrue;
-            continue;
+          // see if end of queue delay specified
+          PINDEX delay = 0;
+          if (currentPlayItem->delayDone) {
+            delay = currentPlayItem->GetDelay();
+            if (delay != 0) {
+              PTRACE(3, "PVXML\tDelaying for " << delay);
+              delayTimer = delay;
+              currentPlayItem->delayDone = PTrue;
+              continue;
+            }
           }
+
+          // stop the current item
+          currentPlayItem->OnStop();
+          delete currentPlayItem;
+          currentPlayItem = NULL;
         }
-
-        // stop the current item
-        currentPlayItem->OnStop();
-        delete currentPlayItem;
-        currentPlayItem = NULL;
       }
 
       // check the queue for the next action
@@ -3186,7 +2935,10 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (line.IsEmpty())
       continue;
 
+    PTRACE(3, "TTS\tAsked to speak " << text << " with type " << hint);
+
     if (hint == DateAndTime) {
+      PTRACE(3, "TTS\tSpeaking date and time");
       Speak(text, Date);
       Speak(text, Time);
       continue;
@@ -3195,6 +2947,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (hint == Date) {
       PTime time(line);
       if (time.IsValid()) {
+        PTRACE(4, "TTS\tSpeaking date " << time);
         SpeakFile(time.GetDayName(time.GetDayOfWeek(), PTime::FullName));
         SpeakNumber(time.GetDay());
         SpeakFile(time.GetMonthName(time.GetMonth(), PTime::FullName));
@@ -3206,6 +2959,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (hint == Time) {
       PTime time(line);
       if (time.IsValid()) {
+        PTRACE(4, "TTS\tSpeaking time " << time);
         int hour = time.GetHour();
         if (hour < 13) {
           SpeakNumber(hour);
@@ -3225,29 +2979,34 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       PBoolean isTime = PFalse;
       PBoolean isDate = PFalse;
 
-      for (i = 0; !isDate && i < 7; ++i)
-        isDate = line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName));
-      for (i = 0; !isDate && i < 7; ++i)
-        isDate = line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
-      for (i = 0; !isDate && i < 12; ++i)
-        isDate = line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName));
-      for (i = 0; !isDate && i < 12; ++i)
-        isDate = line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+      for (i = 0; !isDate && i < 7; ++i) {
+        isDate = isDate || (line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName)) != P_MAX_INDEX);
+        isDate = isDate || (line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated)) != P_MAX_INDEX);
+        PTRACE(4, "TTS\t " << isDate << " - " << PTime::GetDayName((PTime::Weekdays)i, PTime::FullName) << "," << PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
+      }
+      for (i = 1; !isDate && i <= 12; ++i) {
+        isDate = isDate || (line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName)) != P_MAX_INDEX);
+        isDate = isDate || (line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated)) != P_MAX_INDEX);
+        PTRACE(4, "TTS\t " << isDate << " - " << PTime::GetMonthName((PTime::Months)i, PTime::FullName) << "," << PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+      }
 
       if (!isTime)
-        isTime = line.Find(PTime::GetTimeSeparator());
+        isTime = line.Find(PTime::GetTimeSeparator()) != P_MAX_INDEX;
       if (!isDate)
-        isDate = line.Find(PTime::GetDateSeparator());
+        isDate = line.Find(PTime::GetDateSeparator()) != P_MAX_INDEX;
 
       if (isDate && isTime) {
+        PTRACE(4, "TTS\tDefault changed to DateAndTime");
         Speak(line, DateAndTime);
         continue;
       }
       if (isDate) {
+        PTRACE(4, "TTS\tDefault changed to Date");
         Speak(line, Date);
         continue;
       }
       else if (isTime) {
+        PTRACE(4, "TTS\tDefault changed to Time");
         Speak(line, Time);
         continue;
       }
@@ -3255,7 +3014,10 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       
     PStringArray tokens = line.Tokenise("\t ", PFalse);
     for (PINDEX j = 0; j < tokens.GetSize(); ++j) {
-      PString word = tokens[i].Trim();
+      PString word = tokens[j].Trim();
+      if (word.IsEmpty())
+        continue;
+      PTRACE(4, "TTS\tSpeaking word " << word << " as " << hint);
       switch (hint) {
 
         case Time:
@@ -3264,37 +3026,43 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
           PAssertAlways("Logic error");
           break;
 
-        case Literal:
+        default:
         case Default:
+        case Literal:
           {
-            // assume anything with a dot is an ip address
-            PBoolean isIpAddress = PTrue;
             PBoolean isDigits = PTrue;
+            PBoolean isIpAddress = PTrue;
 
-            PINDEX i;
-            for (i = 0; i < word.GetLength(); ++i) {
-              if (word[i] == '.')
+            PINDEX k;
+            for (k = 0; k < word.GetLength(); ++k) {
+              if (word[k] == '.')
                 isDigits = PFalse;
-              else if (!isdigit(word[i]))
+              else if (!isdigit(word[k]))
                 isDigits = isIpAddress = PFalse;
             }
 
-            if (isIpAddress)
-              return Speak(word, IPAddress);
-            else if (isDigits)
-              return Speak(word, Number);
-            else
-              return Speak(word, Spell);
+            if (isIpAddress) {
+              PTRACE(4, "TTS\tDefault changed to IPAddress");
+              Speak(word, IPAddress);
+            } else if (isDigits) {
+              PTRACE(4, "TTS\tDefault changed to Number");
+              Speak(word, Number);
+            } else {
+              PTRACE(4, "TTS\tDefault changed to Spell");
+              Speak(word, Spell);
+            }
           }
           break;
 
         case Spell:
+          PTRACE(4, "TTS\tSpelling " << text);
           for (PINDEX i = 0; i < text.GetLength(); ++i) 
             SpeakFile(PString(text[i]));
           break;
 
         case Phone:
         case Digits:
+          PTRACE(4, "TTS\tSpeaking digits " << text);
           for (PINDEX i = 0; i < text.GetLength(); ++i) {
             if (isdigit(text[i]))
               SpeakFile(PString(text[i]));
@@ -3306,6 +3074,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         case Number:
           {
             int number = atoi(line);
+            PTRACE(4, "TTS\tSpeaking number " << number);
             if (number < 0) {
               SpeakFile("negative");
               number = -number;
@@ -3347,6 +3116,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         case IPAddress:
           {
             PIPSocket::Address addr(line);
+            PTRACE(4, "TTS\tSpeaking IP address " << addr);
             for (PINDEX i = 0; i < 4; ++i) {
               int octet = addr[i];
               if (octet < 100)
@@ -3367,9 +3137,11 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
 
 PBoolean TextToSpeech_Sample::SpeakFile(const PString & text)
 {
-  PFilePath f = PDirectory(voice) + (text + ".wav");
-  if (!PFile::Exists(f))
+  PFilePath f = PDirectory(voice) + (text.ToLower() + ".wav");
+  if (!PFile::Exists(f)) {
+    PTRACE(2, "TTS\tUnable to find explicit file for " << text);
     return PFalse;
+  }
   filenames.push_back(f);
   return PTrue;
 }

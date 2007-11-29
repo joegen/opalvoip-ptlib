@@ -26,43 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipxsock.h,v $
- * Revision 1.12  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.11  2003/09/17 05:41:58  csoutheren
- * Removed recursive includes
- *
- * Revision 1.10  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.9  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.8  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.7  1999/03/09 02:59:50  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.6  1999/02/16 08:12:00  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.5  1998/11/30 02:50:58  robertj
- * New directory structure
- *
- * Revision 1.4  1998/09/23 06:20:47  robertj
- * Added open source copyright license.
- *
- * Revision 1.3  1996/10/08 13:21:04  robertj
- * More IPX implementation.
- *
- * Revision 1.1  1996/09/14 13:00:56  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PIPXSOCKET

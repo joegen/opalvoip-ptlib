@@ -23,46 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: shttpsvc.cxx,v $
- * Revision 1.12  2005/06/06 07:49:54  shorne
- * Added P_SSL directive to fix debug compile problem,
- *
- * Revision 1.11  2004/04/24 03:58:15  rjongbloed
- * Allow for run time enable/disable of secure web access to HTTP process,
- *   changed from old debug only hack to "correct" usager. Thanks Ben Lear
- *
- * Revision 1.10  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.9  2002/08/05 05:40:45  robertj
- * Fixed missing pragma interface/implementation
- *
- * Revision 1.8  2001/12/13 09:19:32  robertj
- * Added ability to create HTTP server certificate if one does not exist.
- *
- * Revision 1.7  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.6  2001/08/28 06:44:45  craigs
- * Added ability to override PHTTPServer creation
- *
- * Revision 1.5  2001/05/24 01:01:28  robertj
- * Fixed GNU C++ warning
- *
- * Revision 1.4  2001/05/16 06:02:37  craigs
- * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
- *
- * Revision 1.3  2001/05/07 23:27:06  robertj
- * Added SO_LINGER setting to HTTP sockets to help with clearing up sockets
- *   when the application exits, which prevents new run of app as "port in use".
- *
- * Revision 1.2  2001/03/27 03:55:48  craigs
- * Added hack to allow secure servers to act as non-secure servers
- *
- * Revision 1.1  2001/02/15 02:41:14  robertj
- * Added class to do secure HTTP based service process.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

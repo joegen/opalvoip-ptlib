@@ -26,17 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: conchan.h,v $
- * Revision 1.3  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.2  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.1  1999/06/13 13:54:07  robertj
- * Added PConsoleChannel class for access to stdin/stdout/stderr.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

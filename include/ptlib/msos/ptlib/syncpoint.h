@@ -26,23 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: syncpoint.h,v $
- * Revision 1.5  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.4  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.3  1998/11/30 02:55:37  robertj
- * New directory structure
- *
- * Revision 1.2  1998/09/24 03:30:30  robertj
- * Added open software license.
- *
- * Revision 1.1  1998/03/23 02:42:03  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

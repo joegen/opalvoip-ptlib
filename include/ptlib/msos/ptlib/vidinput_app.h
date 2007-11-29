@@ -20,9 +20,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: vidinput_app.h,v $
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef P_APPSHARE

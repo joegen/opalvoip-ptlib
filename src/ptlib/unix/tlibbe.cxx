@@ -26,88 +26,9 @@
  *
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
- * $Log: tlibbe.cxx,v $
- * Revision 1.34  2007/05/01 10:20:44  csoutheren
- * Applied 1703617 - Prevention of application deadlock caused by too many timers
- * Thanks to Fabrizio Ammollo
- *
- * Revision 1.33  2004/10/26 18:29:41  ykiryanov
- * Added ostream::write and istream::read with 2nd param as streamsize to please
- * New toolchain
- *
- * Revision 1.32  2004/07/11 07:56:36  csoutheren
- * Applied jumbo VxWorks patch, thanks to Eize Slange
- *
- * Revision 1.31  2004/05/30 04:48:15  ykiryanov
- * Sync point is better when semaphore based
- *
- * Revision 1.30  2004/05/24 04:17:16  ykiryanov
- * Made PSyncPoint::Wait to return PFalse if called with timeout 0
- *
- * Revision 1.29  2004/05/23 22:20:37  ykiryanov
- * Got rid of 2 housekeeper thread problem
- *
- * Revision 1.28  2004/05/21 00:49:16  csoutheren
- * Added PreShutdown to ~PProcess
- *
- * Revision 1.27  2004/05/02 18:00:54  ykiryanov
- * Renamed unblock pipe to make code compatible with socket code
- *
- * Revision 1.26  2004/05/02 16:59:09  ykiryanov
- * Fixed assert in setting priority to threads
- *
- * Revision 1.25  2004/04/30 16:10:20  ykiryanov
- * Added PMutex code based on BLocker to support recursive locks
- *
- * Revision 1.24  2004/04/25 21:51:37  ykiryanov
- * Cleaned up thread termination act. Very cool
- *
- * Revision 1.23  2004/04/25 04:32:37  ykiryanov
- * Fixed very old bug - no get thread id code in InitialiseProcessThread
- *
- * Revision 1.22  2004/04/18 00:23:40  ykiryanov
- * Rearranged code to be more reliable. We nearly there
- *
- * Revision 1.21  2004/04/02 03:17:19  ykiryanov
- * New version, improved
- *
- * Revision 1.20  2004/02/23 23:40:42  ykiryanov
- * Added missing constructor for PMutex
- *
- * Revision 1.19  2004/02/23 21:23:09  ykiryanov
- * Removed assert line to enable semaphore constructor
- *
- * Revision 1.18  2004/02/23 20:37:17  ykiryanov
- * Changed function definition PXBlockIO to prototype one
- *
- * Revision 1.17  2004/02/23 18:10:39  ykiryanov
- * Added a parameter to semaphore constructor to avoid ambiguity
- *
- * Revision 1.16  2004/02/23 00:02:20  ykiryanov
- * Changed my e-mail to ykiryanov at users.sourceforge.net. Just in case someone wants to collaborate
- *
- * Revision 1.15  2004/02/22 23:59:28  ykiryanov
- * Added missing functions: PProcess::SetMaxHandles(), PThread::GetCurrentThreadId(), 
- * PThread::PXAbortBlock(), PSyncPoint::Signal(), ::Wait(), ::Wait(timeout), ::WillBlock()
- *
- * Revision 1.14  2004/02/22 04:35:04  ykiryanov
- * Removed PMutex desctructor
- *
- * Revision 1.13  2003/02/26 01:13:18  robertj
- * Fixed race condition where thread can terminatebefore an IsSuspeded() call
- *   occurs and cause an assert, thanks Sebastian Meyer
- *
- * Revision 1.12  2001/06/30 06:59:07  yurik
- * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
- *
- * Revision 1.11  2001/03/07 06:57:32  yurik
- * Changed email to current one
- *
- * Revision 1.10  2001/01/16 12:32:06  rogerh
- * Remove duplicate SetAutoDelete() function. Submitted by
- * Jac Goudsmit <jac_goudsmit@yahoo.com>
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 class PThread;

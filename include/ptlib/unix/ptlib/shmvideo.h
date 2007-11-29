@@ -12,34 +12,9 @@
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
- * $Log: shmvideo.h,v $
- * Revision 1.3  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.2  2007/04/14 07:08:55  rjongbloed
- * Major update of video subsystem:
- *   Abstracted video frame info (width, height etc) into separate class.
- *   Changed devices, converter and video file to use above.
- *   Enhanced video file hint detection for frame rate and more
- *     flexible formats.
- *   Fixed issue if need to convert both colour format and size, had to do
- *     colour format first or it didn't convert size.
- *   Win32 video output device can be selected by "MSWIN" alone.
- *
- * Revision 1.1  2006/07/18 05:17:24  csoutheren
- * Added shared memory video devices
- * Thanks to Hannes Friederich
- *
- * Revision 1.2  2004/09/21 18:21:13  hfriederich
- * Moved into pwlib source. Updated api to be compatible with newest pwlib
- * releases.
- * 
- * Revision 1.1  2003/06/12 19:39:11  shawn
- * Added shared memory video input/output devices.  Video frames of these two
- * devices are stored in a named shared memory region and can be accessed by
- * other applications.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef __SHMVIDEO_H__

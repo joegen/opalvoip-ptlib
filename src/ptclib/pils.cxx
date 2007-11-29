@@ -23,26 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pils.cxx,v $
- * Revision 1.6  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.5  2003/06/05 23:19:52  rjongbloed
- * Changed LDAP version to be compatible with ILS servers.
- *
- * Revision 1.4  2003/04/11 00:07:56  robertj
- * More for Microsoft IP address specification wierdness (registration side).
- *
- * Revision 1.3  2003/04/07 13:05:20  robertj
- * Workaround for Microsoft IP address specification wierdness.
- *
- * Revision 1.2  2003/03/31 12:18:43  robertj
- * Fixed pragma implementation
- *
- * Revision 1.1  2003/03/31 03:35:20  robertj
- * Major addition of LDAP functionality.
- * Added ILS specialisation of LDAP.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

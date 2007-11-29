@@ -7,18 +7,9 @@
  * Simple program to report the host name of this machine
  *                          the address of one network interface
  *
- * $Log: local.cxx,v $
- * Revision 1.3  2005/11/30 12:47:39  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2005/03/10 09:27:42  dereksmithies
- * Improve text output.
- *
- * Revision 1.1  2005/03/10 09:19:01  dereksmithies
- * Initial release of code to illustrate the reading of the machines external ip address and hostname
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #include <ptlib.h>
 #include <ptlib/sockets.h>

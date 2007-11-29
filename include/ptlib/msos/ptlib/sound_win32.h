@@ -26,22 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sound_win32.h,v $
- * Revision 1.5  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2005/09/18 13:01:43  dominance
- * fixed pragma warnings when building with gcc.
- *
- * Revision 1.3  2004/10/23 11:32:27  ykiryanov
- * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
- *
- * Revision 1.2  2003/12/29 03:28:56  csoutheren
- * Allowed access to Windows sound channel declaration, just in case it is required
- *
- * Revision 1.1  2003/12/29 01:59:48  csoutheren
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

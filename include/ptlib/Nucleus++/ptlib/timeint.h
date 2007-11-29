@@ -26,34 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: timeint.h,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.7  1998/11/30 22:07:25  robertj
- * New directory structure.
- *
- * Revision 1.6  1998/09/24 04:12:04  robertj
- * Added open software license.
- *
- * Revision 1.5  1996/08/03 12:09:51  craigs
- * Changed for new common directories
- *
- * Revision 1.4  1996/06/10 11:03:33  craigs
- * Remove unneeded function declarations
- *
- * Revision 1.3  1995/07/09 00:35:00  craigs
- * Latest and greatest omnibus change
- *
- * Revision 1.2  1995/03/25 20:58:24  craigs
- * Removed unnecessary prefix on declaration of PTimerInterval::operator =
- *
- * Revision 1.1  1995/01/23  18:43:27  craigs
- * Initial revision
- *
- * Revision 1.1  1994/04/12  08:31:05  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PTIMEINTERVAL

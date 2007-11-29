@@ -23,37 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: snmpclnt.cxx,v $
- * Revision 1.10  2005/11/30 12:47:41  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.9  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.8  1998/11/30 04:52:07  robertj
- * New directory structure
- *
- * Revision 1.7  1998/10/13 14:06:34  robertj
- * Complete rewrite of memory leak detection code.
- *
- * Revision 1.6  1998/09/23 06:22:40  robertj
- * Added open source copyright license.
- *
- * Revision 1.5  1996/11/10 21:06:17  robertj
- * Fixed endless retry bug in SNMP get.
- *
- * Revision 1.4  1996/11/04 04:00:00  robertj
- * Added support for UDP packet truncation is reading SNMP reply.
- *
- * Revision 1.3  1996/10/08 13:06:24  robertj
- * Fixed SNMP timeout (GNU compatibility).
- *
- * Revision 1.2  1996/09/20 12:20:19  robertj
- * Used read timeout instead of member variable.
- *
- * Revision 1.1  1996/09/14 13:14:59  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

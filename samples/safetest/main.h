@@ -21,45 +21,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.h,v $
- * Revision 1.11  2006/10/14 22:55:50  dereksmithies
- * Remove garbage thread creation/deletion. use pwlib method instead.
- * Add a poor mechanism to wait for all threads to end.
- *
- * Revision 1.10  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.9  2006/03/25 09:01:44  dereksmithies
- * Add reporting options, and different methods for spawning threads. All stable and reliable.
- *
- * Revision 1.8  2006/03/23 05:07:28  dereksmithies
- * Fix threading issues - I think.
- *
- * Revision 1.7  2006/03/22 04:24:51  dereksmithies
- * Tidyups. Add Pragmas. make it slightly more friendly for 1 cpu boxes.
- *
- * Revision 1.6  2006/02/13 04:17:23  dereksmithies
- * Formatting fixes.
- *
- * Revision 1.5  2006/02/12 21:42:07  dereksmithies
- * Add lots of doxygen style comments, and an introductory page.
- *
- * Revision 1.4  2006/02/09 21:43:15  dereksmithies
- * Remove the notion of CleanerThread. This just confuses things.
- *
- * Revision 1.3  2006/02/09 21:07:23  dereksmithies
- * Add new (and temporary) thread to close down each DelayThread instance.
- * Now, it is less cpu intensive. No need for garbage thread to run.
- *
- * Revision 1.2  2006/02/07 02:02:00  dereksmithies
- * use a more sane method to keep track of the number of running DelayThread instances.
- *
- * Revision 1.1  2006/02/07 01:02:56  dereksmithies
- * Initial release of code to test the PSafeDictionary structure in pwlib.
- * Thanks to Indranet Technologies for supporting this work.
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _SafeTest_MAIN_H

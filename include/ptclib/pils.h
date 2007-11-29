@@ -23,20 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pils.h,v $
- * Revision 1.4  2004/02/20 16:27:52  ykiryanov
- * if'd LDAP code to enable non-LDAP builds
- *
- * Revision 1.3  2003/04/11 00:07:46  robertj
- * More for Microsoft IP address specification wierdness (registration side).
- *
- * Revision 1.2  2003/04/07 13:05:09  robertj
- * Workaround for Microsoft IP address specification wierdness.
- *
- * Revision 1.1  2003/03/31 03:35:20  robertj
- * Major addition of LDAP functionality.
- * Added ILS specialisation of LDAP.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PILS_H

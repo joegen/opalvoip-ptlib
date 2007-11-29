@@ -23,64 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: psockbun.h,v $
- * Revision 1.14  2007/10/12 03:52:15  rjongbloed
- * Fixed broken virtual by someone changing base class function signature,
- *   and the override is silently not called. pet hate #1 about C++!
- *
- * Revision 1.13  2007/10/07 07:35:30  rjongbloed
- * Changed bundled sockets so does not return error if interface goes away it just
- *   blocks reads till the interface comes back, or is explicitly closed.
- * Also return error codes, rather than just a BOOL.
- *
- * Revision 1.12  2007/09/28 09:59:16  hfriederich
- * Allow to use PInterfaceMonitor without running monitor thread
- *
- * Revision 1.11  2007/09/25 14:27:51  hfriederich
- * Don't use STUN if interface filter is in use and STUN server is not
- * reachable through local binding. This avoids unnecessary timeouts.
- *
- * Revision 1.10  2007/09/22 04:32:03  rjongbloed
- * Fixed lock up on exit whena  gatekeeper is used.
- * Also fixed fatal "read error" (ECONNRESET) when send packet to a machine which
- *   is not listening on the specified port. No error is lgged but does not stop listener.
- *
- * Revision 1.9  2007/08/26 20:01:58  hfriederich
- * Allow to filter interfaces based on remote address
- *
- * Revision 1.8  2007/07/22 04:03:32  rjongbloed
- * Fixed issues with STUN usage in socket bundling, now OpalTransport indicates
- *   if it wants local or NAT address/port for inclusion to outgoing PDUs.
- *
- * Revision 1.7  2007/07/03 08:55:17  rjongbloed
- * Fixed various issues with handling interfaces going up, eg not being added
- *   to currently active ReadFrom().
- * Added more logging.
- *
- * Revision 1.6  2007/06/25 05:44:01  rjongbloed
- * Fixed numerous issues with "bound" managed socket, ie associating
- *   listeners to a specific named interface.
- *
- * Revision 1.5  2007/06/14 00:43:04  csoutheren
- * Removed warnings on Linux
- * Fixed Makefiles for new socket bundle code
- *
- * Revision 1.4  2007/06/10 06:26:50  rjongbloed
- * Major enhancements to the "socket bundling" feature:
- *   singleton thread for monitoring network interfaces
- *   a generic API for anything to be informed of interface changes
- *   PChannel derived class for reading/writing to bundled sockets
- *   many new API functions
- *
- * Revision 1.3  2007/05/22 11:50:47  csoutheren
- * Further implementation of socket bundle
- *
- * Revision 1.2  2007/05/21 06:35:37  csoutheren
- * Changed to be descended off PSafeObject
- *
- * Revision 1.1  2007/05/21 06:06:56  csoutheren
- * Add new socket bundle code to be used to OpalUDPListener
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSOCKBUN_H
@@ -166,22 +111,31 @@ class PInterfaceMonitor : public PObject
       InterfaceEntry & info   /// Information on the interface
     );
     
+    /** Returns whether the descriptor string equals the interface entry.
+        Note that when searching the descriptor may be a partial match
+        e.g. "10.0.1.11" or "%eth0" may be used.
+      */
+    static PBoolean IsMatchingInterface(
+      const PString & iface,        /// Interface descriptor
+      const InterfaceEntry & entry  /// Interface entry
+    );
+    
     /** Sets the monitor's interface filter. Note that the monitor instance
         handles deletion of the filter.
       */
     void SetInterfaceFilter(PInterfaceFilter * filter);
     
     virtual void RefreshInterfaceList();
+    
+    void OnRemoveSTUNClient(const PSTUNClient *stun);
 
   protected:
     void UpdateThreadMain();
 
     void AddClient(PInterfaceMonitorClient *);
     void RemoveClient(PInterfaceMonitorClient *);
-
-    virtual void OnAddInterface(const InterfaceEntry & entry);
-    virtual void OnRemoveInterface(const InterfaceEntry & entry);
-
+    
+    virtual void OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces, const PIPSocket::InterfaceTable & removedInterfaces);
 
     typedef PSmartPtr<PInterfaceMonitorClient> ClientPtr;
 
@@ -212,7 +166,10 @@ class PInterfaceMonitorClient : public PSafeObject
 {
   PCLASSINFO(PInterfaceMonitorClient, PSafeObject);
   public:
-    PInterfaceMonitorClient();
+    enum {
+      DefaultPriority = 50,
+    };
+    PInterfaceMonitorClient(PINDEX priority = DefaultPriority);
     ~PInterfaceMonitorClient();
 
     typedef PIPSocket::InterfaceEntry InterfaceEntry;
@@ -236,6 +193,12 @@ class PInterfaceMonitorClient : public PSafeObject
       const PString & iface,  /// Interface desciptor name
       InterfaceEntry & info   /// Information on the interface
     );
+    
+    /**Returns the priority of this client. A higher value means higher priority.
+       Higher priority clients get their callback functions called first. Clients
+       with the same priority get called in the order of their insertion.
+      */
+    PINDEX GetPriority() const { return priority; }
 
   protected:
     /// Call back function for when an interface has been added to the system
@@ -243,6 +206,11 @@ class PInterfaceMonitorClient : public PSafeObject
 
     /// Call back function for when an interface has been removed from the system
     virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
+    
+    /// Called when a PSTUNClient is about to be destroyed
+    virtual void OnRemoveSTUNClient(const PSTUNClient * /*stun*/) { }
+    
+    PINDEX priority;
 
   friend class PInterfaceMonitor;
 };
@@ -352,6 +320,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     );
 
   protected:
+    virtual void OnRemoveSTUNClient(const PSTUNClient *stun);
     struct SocketInfo {
       SocketInfo()
         : socket(NULL)

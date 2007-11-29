@@ -23,44 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ftpclnt.cxx,v $
- * Revision 1.12  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.11  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.10  2002/10/10 04:43:44  robertj
- * VxWorks port, thanks Martijn Roest
- *
- * Revision 1.9  2000/06/21 01:14:23  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.8  2000/04/07 06:29:46  rogerh
- * Add a short term workaround for an Internal Compiler Error on MAC OS X when
- * returning certain types of PString. Submitted by Kevin Packard.
- *
- * Revision 1.7  1998/12/23 00:34:55  robertj
- * Fixed normal TCP socket support after adding SOCKS support.
- *
- * Revision 1.6  1998/12/22 10:29:42  robertj
- * Added support for SOCKS based channels.
- *
- * Revision 1.5  1998/12/18 03:48:32  robertj
- * Fixed wanring on PPC linux compile
- *
- * Revision 1.4  1998/11/30 04:50:47  robertj
- * New directory structure
- *
- * Revision 1.3  1998/09/23 06:22:00  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1997/03/28 13:06:58  robertj
- * made STAT command more robust for getting file info from weird FTP servers.
- *
- * Revision 1.1  1996/09/14 13:02:18  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

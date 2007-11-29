@@ -26,79 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: contain.h,v $
- * Revision 1.30  2007/04/25 09:21:20  csoutheren
- * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
- *
- * Revision 1.28  2006/03/20 00:24:56  csoutheren
- * Applied patch #1446482
- * Thanks to Adam Butcher
- *
- * Revision 1.27  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.26  2005/03/10 06:37:21  csoutheren
- * Removed use of typeid on WIndows to get class name because it is not threadsafe
- * In fact, lets just use #classname everywhere because that will always work
- * Thanks to Vyacheslav Frolov
- *
- * Revision 1.25  2004/05/12 04:36:18  csoutheren
- * Fixed problems with using sem_wait and friends on systems that do not
- * support atomic integers
- *
- * Revision 1.24  2004/04/11 13:34:51  csoutheren
- * Sigh. gcc needs a namespace directive in order to compile correctly :(
- *
- * Revision 1.23  2004/04/11 06:15:35  csoutheren
- * Modified to use Atomic_word if available
- *
- * Revision 1.22  2004/04/11 03:20:42  csoutheren
- * Added Unix implementation of PCriticalSection
- *
- * Revision 1.21  2004/04/09 11:54:47  csoutheren
- * Added configure.in check for STL streams, and tested with gcc 2.95.3,
- * gcc 3.3.1, and gcc 3.3.3
- *
- * Revision 1.20  2004/04/09 00:42:59  csoutheren
- * Changed Unix build to use slightly different method for
- * keep class names, as GCC does not use actual class names for typeinfo
- *
- * Revision 1.19  2004/04/03 08:57:41  csoutheren
- * Replaced pseudo-RTTI with real RTTI
- *
- * Revision 1.18  2004/04/03 07:14:51  csoutheren
- * Remove no-rtti compiler flag
- * Added __USE_STL__ to allow interopability with STL and iostreams
- *
- * Revision 1.17  2003/10/27 03:21:43  csoutheren
- * Added UINT type needed for QoS
- *
- * Revision 1.16  2003/09/17 01:18:03  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.15  2002/06/06 09:27:26  robertj
- * Fixed PINDEX macros for being signed no (gcc3 port).
- * iAdded limits.h for Solaris compatibility.
- *
- * Revision 1.14  2002/06/05 12:29:15  craigs
- * Changes for gcc 3.1
- *
- * Revision 1.13  1999/05/01 11:29:19  robertj
- * Alpha linux port changes.
- *
- * Revision 1.12  1999/01/08 01:27:43  robertj
- * Moved include of pmachdep to earlier in inclusions.
- *
- * Revision 1.11  1998/11/30 22:06:35  robertj
- * New directory structure.
- *
- * Revision 1.10  1998/11/03 10:56:33  robertj
- * Removed unused extern for PErrorStream
- *
- * Revision 1.9  1998/09/24 04:11:31  robertj
- * Added open software license.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "pmachdep.h"

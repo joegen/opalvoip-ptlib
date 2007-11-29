@@ -26,87 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: udll.cxx,v $
- * Revision 1.24  2007/07/06 02:12:14  csoutheren
- * Add extra memory leak debugging on Linux
- * Remove compile warnings
- *
- * Revision 1.23  2006/08/20 00:32:00  csoutheren
- * Fixed error reporting on DLL load error
- *
- * Revision 1.22  2006/07/18 05:15:58  csoutheren
- * Removed pre-emptive call to dlerror as this crashes RedHat 9
- *
- * Revision 1.21  2006/06/20 13:26:19  csoutheren
- * Only call dlerror if error occurs
- *
- * Revision 1.20  2006/06/20 05:36:38  csoutheren
- * Patch 1471705 rewritten to make threadsafe
- * Display error from dlopen if available
- * Thanks to Joerg Pulz
- *
- * Revision 1.19  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.18  2005/08/04 20:10:24  csoutheren
- * Apply patch #1217596
- * Fixed problems with MacOSX Tiger
- * Thanks to Hannes Friederich
- *
- * Revision 1.17  2004/05/11 01:15:53  csoutheren
- * Included name into Unix PDynaLink implementation
- *
- * Revision 1.16  2003/09/11 00:52:13  dereksmithies
- * Full dependancy check on dynamically loading a library.
- * Thanks to Snark on #gnomemeeting for pointing this out...
- *
- * Revision 1.15  2003/07/09 11:37:13  rjongbloed
- * Fixed corrct closing of DLL (setting handle to NULL) thanks Fabrizio Ammollo
- *
- * Revision 1.14  2003/05/14 10:50:30  dereksmithies
- * Quick hack to add the function: PDynaLink::GetName().  Fix me.
- *
- * Revision 1.13  2003/05/06 06:59:12  robertj
- * Dynamic library support for MacOSX, thanks Hugo Santos
- *
- * Revision 1.12  2003/04/16 07:17:35  craigs
- * CHanged to use new #define
- *
- * Revision 1.11  2001/06/30 06:59:07  yurik
- * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
- *
- * Revision 1.10  2001/03/07 06:57:52  yurik
- * Changed email to current one
- *
- * Revision 1.9  2000/03/10 08:21:17  rogerh
- * Add correct OpenBSD support
- *
- * Revision 1.8  2000/03/09 18:41:53  rogerh
- * Workaround for OpenBSD. This breaks the functionality on OpenBSD but
- * gains us a clean compilation. We can return to this problem later.
- *
- * Revision 1.7  1999/02/22 13:26:54  robertj
- * BeOS port changes.
- *
- * Revision 1.6  1999/02/06 05:49:44  robertj
- * BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
- *
- * Revision 1.5  1998/11/30 21:52:03  robertj
- * New directory structure.
- *
- * Revision 1.4  1998/09/24 04:12:26  robertj
- * Added open software license.
- *
- * Revision 1.3  1998/01/04 08:11:41  craigs
- * Remove Solarisism and made platform independent
- *
- * Revision 1.2  1997/10/30 12:41:22  craigs
- * Added GetExtension command
- *
- * Revision 1.1  1997/04/22 10:58:17  craigs
- * Initial revision
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "dynalink.h"

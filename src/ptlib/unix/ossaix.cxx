@@ -26,72 +26,9 @@
  *
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
- * $Log: ossaix.cxx,v $
- * Revision 1.3  2002/02/09 00:52:01  robertj
- * Slight adjustment to API and documentation for volume functions.
- *
- * Revision 1.2  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannel
- *
- * Revision 1.1  2000/06/21 01:01:22  robertj
- * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
- *
- * Revision 1.17  2000/05/11 02:05:54  craigs
- * Fixed problem with PLayFile not recognizing wait flag
- *
- * Revision 1.16  2000/05/10 02:10:44  craigs
- * Added implementation for PlayFile command
- *
- * Revision 1.15  2000/05/02 08:30:26  craigs
- * Removed "memory leaks" caused by brain-dead GNU linker
- *
- * Revision 1.14  2000/04/09 18:19:23  rogerh
- * Add my changes for NetBSD support.
- *
- * Revision 1.13  2000/03/08 12:17:09  rogerh
- * Add OpenBSD support
- *
- * Revision 1.12  2000/03/04 13:02:28  robertj
- * Added simple play functions for sound files.
- *
- * Revision 1.11  2000/02/15 23:11:34  robertj
- * Audio support for FreeBSD, thanks Roger Hardiman.
- *
- * Revision 1.10  2000/01/08 06:41:08  craigs
- * Fixed problem whereby failure to open sound device returns PTrue
- *
- * Revision 1.9  1999/08/24 13:40:26  craigs
- * Fixed problem with EINTR causing sound channel reads and write to fail
- * Thanks to phil@netroedge.com!
- *
- * Revision 1.8  1999/08/17 09:42:22  robertj
- * Fixed close of sound channel in loopback mode closing stdin!
- *
- * Revision 1.7  1999/08/17 09:28:47  robertj
- * Added audio loopback psuedo-device (thanks Philip Edelbrock)
- *
- * Revision 1.6  1999/07/19 01:31:49  craigs
- * Major rewrite to assure ioctls are all done in the correct order as OSS seems
- *    to be incredibly sensitive to this.
- *
- * Revision 1.5  1999/07/11 13:42:13  craigs
- * pthreads support for Linux
- *
- * Revision 1.4  1999/06/30 13:49:26  craigs
- * Added code to allow full duplex audio
- *
- * Revision 1.3  1999/05/28 14:14:29  robertj
- * Added function to get default audio device.
- *
- * Revision 1.2  1999/05/22 12:49:05  craigs
- * Finished implementation for Linux OSS interface
- *
- * Revision 1.1  1999/02/25 03:45:00  robertj
- * Sound driver implementation changes for various unix platforms.
- *
- * Revision 1.1  1999/02/22 13:24:47  robertj
- * Added first cut sound implmentation.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound.h"

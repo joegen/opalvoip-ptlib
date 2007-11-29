@@ -26,54 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: mail.h,v $
- * Revision 1.14  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.13  2003/09/17 05:41:58  csoutheren
- * Removed recursive includes
- *
- * Revision 1.12  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.11  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.10  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.9  1999/03/09 02:59:50  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.8  1999/02/16 08:12:00  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.7  1999/02/10 13:20:53  robertj
- * Added ability to have attachments in mail messages.
- *
- * Revision 1.6  1998/09/23 06:20:51  robertj
- * Added open source copyright license.
- *
- * Revision 1.5  1997/05/16 12:14:08  robertj
- * Added BCC capability to send mail.
- *
- * Revision 1.4  1995/07/02 01:19:46  robertj
- * Change GetMessageBidy to return PBoolean and have body string as
- *   parameter, due to slight change in semantics for large bodies.
- *
- * Revision 1.3  1995/06/17 00:42:22  robertj
- * Added mail reading interface.
- * Changed name to simply PMail
- *
- * Revision 1.2  1995/04/01 08:27:57  robertj
- * Added GUI support.
- *
- * Revision 1.1  1995/03/14  12:44:11  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PMAIL

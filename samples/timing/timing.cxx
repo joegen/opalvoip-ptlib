@@ -21,24 +21,9 @@
  *
  * The Initial Developer of the Original Code is Roger Hardiman
  *
- * $Log: timing.cxx,v $
- * Revision 1.5  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.4  2005/11/15 22:27:29  dereksmithies
- * Modify output format so it better shows the delay characteristics of PAdaptiveDelay
- *
- * Revision 1.3  2004/05/18 12:47:38  rjongbloed
- * Added time, time interval and timer test/demonstration code
- *
- * Revision 1.2  2004/05/18 12:25:18  rjongbloed
- * Added time, time interval and timer test/demonstration code
- *
- * Revision 1.1  2003/02/19 14:10:11  rogerh
- * Add a program to test PAdaptiveDelay
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

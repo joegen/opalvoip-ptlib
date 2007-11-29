@@ -17,27 +17,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: qos.h,v $
- * Revision 1.5  2006/02/26 09:30:26  shorne
- * renamed include file to lowercase
- *
- * Revision 1.4  2005/11/30 12:47:38  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.3  2005/07/13 11:48:53  csoutheren
- * Backported QOS changes from isvo branch
- *
- * Revision 1.2.10.1  2005/04/25 13:37:10  shorne
- * Added P_KNOCKOUT_WINSOCK32 to avoid compilation errors
- *
- * Revision 1.2  2003/10/27 03:51:38  csoutheren
- * Added ifdef to disable QoS code on systems that do not support it
- *
- * Revision 1.1  2003/10/27 03:20:10  csoutheren
- * Initial version of QoS implementation
- *   Thanks to Henry Harrison of AliceStreet
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PQOS

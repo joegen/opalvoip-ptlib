@@ -23,17 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.3  2003/09/26 13:43:49  rjongbloed
- * Added special test to give more indicative error if try to compile without LDAP support.
- *
- * Revision 1.2  2003/03/31 03:35:20  robertj
- * Major addition of LDAP functionality.
- * Added ILS specialisation of LDAP.
- *
- * Revision 1.1  2003/03/28 01:15:44  robertj
- * OpenLDAP support.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include "precompile.h"

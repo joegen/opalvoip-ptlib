@@ -23,51 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pldap.h,v $
- * Revision 1.13  2007/07/22 23:54:38  rjongbloed
- * Fixed MSVC compiler warning.
- *
- * Revision 1.12  2007/07/20 21:44:03  shorne
- * Removed virtual on PLDAPSchema::SchemaName
- *
- * Revision 1.11  2007/07/19 15:05:25  shorne
- * Added Factory loaded LDAP schemas
- *
- * Revision 1.10  2006/01/16 19:52:05  dsandras
- * Applied patch from Brian Lu <brian lu sun com> to allow compilation on
- * Solaris using SUN's LDAP. Thanks!!
- *
- * Revision 1.9  2004/05/24 12:02:49  csoutheren
- * Add function to permit setting a limit on the number of results returned
- * from an LDAP query. Change the default number of results to unlimited,
- * rather than MAX_INT which apparently is clamped to some arbitrary low value.
- * Thanks to Damien Sandras
- *
- * Revision 1.8  2004/02/20 16:28:27  ykiryanov
- * if'd LDAP code to enable non-LDAP builds
- *
- * Revision 1.7  2003/06/05 23:17:07  rjongbloed
- * Added functions to get and set LDAP operation timeout.
- *
- * Revision 1.6  2003/06/05 05:29:30  rjongbloed
- * Fixed LDAP bind authentication methods, thanks Ravelli Rossano
- *
- * Revision 1.5  2003/04/07 12:00:04  robertj
- * Fixed search function returning an error if can't find anything for filter.
- *
- * Revision 1.4  2003/04/01 07:05:29  robertj
- * Added ability to specify host:port in opening an LDAP server
- *
- * Revision 1.3  2003/03/31 09:02:43  robertj
- * Added missing return for error number.
- *
- * Revision 1.2  2003/03/31 03:32:41  robertj
- * Major addition of functionality.
- *
- * Revision 1.1  2003/03/28 01:15:44  robertj
- * OpenLDAP support.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PLDAP_H

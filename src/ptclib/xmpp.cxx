@@ -23,34 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: xmpp.cxx,v $
- * Revision 1.8  2007/09/17 11:14:46  rjongbloed
- * Added "No Trace" build configuration.
- *
- * Revision 1.7  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.6  2007/04/10 05:08:48  rjongbloed
- * Fixed issue with use of static C string variables in DLL environment,
- *   must use functional interface for correct initialisation.
- *
- * Revision 1.5  2004/05/09 07:23:50  rjongbloed
- * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
- *
- * Revision 1.4  2004/04/27 06:19:12  rjongbloed
- * Fixed GCC 3.4 warnings and improved crash avoidance with NULL pointers.
- *
- * Revision 1.3  2004/04/26 04:17:19  rjongbloed
- * Fixed GNU warnings
- *
- * Revision 1.2  2004/04/26 01:51:58  rjongbloed
- * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
- *
- * Revision 1.1  2004/04/22 12:31:00  rjongbloed
- * Added PNotifier extensions and XMPP (Jabber) support,
- *   thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

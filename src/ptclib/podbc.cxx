@@ -27,39 +27,10 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: podbc.cxx,v $
- * Revision 1.5  2007/09/08 11:34:28  rjongbloed
- * Improved memory checking (leaks etc), especially when using MSVC debug library.
- *
- * Revision 1.4  2007/08/25 06:37:39  csoutheren
- * Fixed compilation on 64bit Linux
- *
- * Revision 1.3  2007/04/30 00:07:38  csoutheren
- * Fix problems with PODBC on Windows
- *
- * Revision 1.2  2007/04/25 09:21:20  csoutheren
- * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
- *
- * Revision 1.1  2007/04/13 18:17:57  shorne
- * added ODBC support for linux thx Michal Z
- *
- * Revision 1.2  2006/06/25 11:20:24  csoutheren
- * Add detection of ODBC on Windows
- *
- * Revision 1.1  2006/01/27 06:38:11  shorne
- * Rename ODBC file to lower case
- *
- * Revision 1.3  2005/11/30 12:47:42  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.2  2005/08/09 09:08:12  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.1.2.1  2005/04/25 13:09:49  shorne
- * Initial version
- *
- *
-*/
+ * $Revision$
+ * $Author$
+ * $Date$
+ */
 
 #include <ptlib.h>
 

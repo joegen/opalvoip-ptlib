@@ -10,28 +10,9 @@
  * type text in one, hit return.  See this text in the second computer.
  *
  *
- * $Log: serial.cxx,v $
- * Revision 1.6  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.5  2005/11/30 12:47:40  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.4  2005/03/18 21:06:09  dereksmithies
- * Add help messages. Enable different flow control options.
- *
- * Revision 1.3  2005/03/14 07:33:51  dereksmithies
- * Fix console input handling.  Concatenate characters split by PSerialChannel reading.
- *
- * Revision 1.2  2005/03/12 06:44:22  dereksmithies
- * Fix typo in setting stopbits.  Program now reports all serial parameters that are used.
- *
- * Revision 1.1  2005/03/10 09:21:46  dereksmithies
- * Initial release of a program to illustrate the operation of the serial port.
- *
- *
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

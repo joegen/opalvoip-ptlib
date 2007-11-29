@@ -26,58 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: NucleusConChan.cxx,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.48  1999/08/17 07:37:36  robertj
- * Fixed inlines so are inlined for optimised version
- *
- * Revision 1.47  1999/06/28 09:28:02  robertj
- * Portability issues, especially n BeOS (thanks Yuri!)
- *
- * Revision 1.46  1999/06/26 08:21:12  robertj
- * Fixed bug in PFilePath::SetType finding dots outside of file name in path.
- *
- * Revision 1.45  1999/06/14 08:39:57  robertj
- * Added PConsoleChannel class for access to stdin/stdout/stderr
- *
- * Revision 1.44  1999/06/09 04:08:46  robertj
- * Added support for opening stdin/stdout/stderr as PFile objects.
- *
- * Revision 1.43  1999/02/22 13:26:53  robertj
- * BeOS port changes.
- *
- * Revision 1.42  1998/12/12 01:06:24  robertj
- * Fixed off by one error in month on FreeBSD platform
- *
- * Revision 1.41  1998/11/30 21:51:43  robertj
- * New directory structure.
- *
- * Revision 1.40  1998/11/26 11:54:16  robertj
- * Fixed error return on PFile::GetInfo
- *
- * Revision 1.39  1998/11/24 09:39:09  robertj
- * FreeBSD port.
- *
- * Revision 1.38  1998/11/10 13:00:52  robertj
- * Fixed strange problems with readdir_r usage.
- *
- * Revision 1.37  1998/11/06 04:44:46  robertj
- * Solaris compatibility
- *
- * Revision 1.36  1998/11/05 12:03:13  robertj
- * Fixed solaris compatibility and Linux warning on readdir_r function.
- *
- * Revision 1.35  1998/11/05 09:05:55  craigs
- * Changed directory routines to use reenttrant functions, and added PDirectory::GetParent
- *
- * Revision 1.34  1998/09/24 07:39:49  robertj
- * Removed file that only had #pragma implmentation for PTextFile and nothing else.
- *
- * Revision 1.33  1998/09/24 04:12:12  robertj
- * Added open software license.
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

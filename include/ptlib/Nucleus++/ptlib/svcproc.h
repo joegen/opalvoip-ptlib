@@ -26,37 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: svcproc.h,v $
- * Revision 1.1  2000/06/26 11:17:20  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.9  1998/11/30 22:07:15  robertj
- * New directory structure.
- *
- * Revision 1.8  1998/09/24 04:11:58  robertj
- * Added open software license.
- *
- * Revision 1.7  1998/05/30 13:30:11  robertj
- * Added ability to specify the log file as well as just console output.
- *
- * Revision 1.6  1996/09/21 05:42:12  craigs
- * Changes for new common files, PConfig changes and signal handling
- *
- * Revision 1.5  1996/09/03 11:56:56  craigs
- * Changed PSYSTEMLOG to user cerr
- *
- * Revision 1.4  1996/08/03 12:10:46  craigs
- * Changed for new common directories and added new PSystemLog macro
- *
- * Revision 1.3  1996/06/19 12:33:45  craigs
- * Added ^C handling
- *
- * Revision 1.2  1996/04/15 10:50:48  craigs
- * Last revision prior to release of MibMaster
- *
- * Revision 1.1  1996/01/26 11:06:31  craigs
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSERVICEPROCESS

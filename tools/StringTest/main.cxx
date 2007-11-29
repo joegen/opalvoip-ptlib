@@ -23,11 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: main.cxx,v $
- * Revision 1.1  2006/06/26 02:16:09  dereksmithies
- * Initial release of a program to test the speed and performance of the PString class.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 #include  <ptlib.h>
 #include <ptlib/pprocess.h>
@@ -114,7 +112,7 @@ void StringTest::Main()
   iterations = PMAX(1, PMIN(iterations, 100000));
   PError << "Will run the test for 1 million x " << iterations << " loops" << endl;
 
-  BOOL testPwlib = ! args.HasOption('s');
+  PBoolean testPwlib = ! args.HasOption('s');
 
   if (args.HasOption('s'))
     cerr << "examine std::string" << endl;

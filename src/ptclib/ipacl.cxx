@@ -23,65 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipacl.cxx,v $
- * Revision 1.18  2007/06/29 02:47:28  rjongbloed
- * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
- *
- * Revision 1.17  2007/04/24 14:15:35  shorne
- * Fix for DWORD definition variation with unixODBC
- *
- * Revision 1.16  2005/01/26 05:37:58  csoutheren
- * Added ability to remove config file support
- *
- * Revision 1.15  2004/04/03 08:22:20  csoutheren
- * Remove pseudo-RTTI and replaced with real RTTI
- *
- * Revision 1.14  2002/11/06 22:47:25  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.13  2002/07/16 10:05:01  robertj
- * Fixed GNU warning
- *
- * Revision 1.12  2002/07/16 10:02:49  robertj
- * Fixed MSVC warning
- *
- * Revision 1.11  2002/07/16 09:58:51  robertj
- * Fixed compatibility with unix htonl(), use platform independent function!
- * Allow number of bits of 32 to be a full mask, ie a single host ip.
- *
- * Revision 1.10  2002/07/16 08:00:49  robertj
- * Fixed correct endian-ness of mask when specifed in bits.
- *
- * Revision 1.9  2002/06/19 04:03:21  robertj
- * Added default allowance boolean if ACL empty.
- * Added ability to override the creation of ACL entry objects with descendents
- *   so an application can add information/functionality to each entry.
- *
- * Revision 1.8  2002/02/13 02:08:12  robertj
- * Added const to IsAllowed() function.
- * Added missing function that takes a socket.
- *
- * Revision 1.7  1999/02/25 13:01:11  robertj
- * Fixed subtle bug in GNU compiler not automatically casting IP address.
- *
- * Revision 1.6  1999/02/25 11:10:52  robertj
- * Fixed count of non-hidden entries in config file.
- *
- * Revision 1.5  1999/02/25 05:05:15  robertj
- * Added missing test for hidden entries not to be written to config file
- *
- * Revision 1.4  1999/02/08 08:05:39  robertj
- * Changed semantics of IP access control list for empty list.
- *
- * Revision 1.3  1999/01/31 10:14:07  robertj
- * Changed about dialog to be full company name
- *
- * Revision 1.2  1999/01/31 08:10:33  robertj
- * Fixed PConfig file save, out by one error in array subscript.
- *
- * Revision 1.1  1999/01/31 00:59:26  robertj
- * Added IP Access Control List class to PTLib Components
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

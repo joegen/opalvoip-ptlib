@@ -26,28 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sunaudio.cxx,v $
- * Revision 1.8  2002/03/27 06:53:47  robertj
- * iSome more implementation, thanks Raimo Ruokonen
- *
- * Revision 1.7  2002/02/09 00:52:01  robertj
- * Slight adjustment to API and documentation for volume functions.
- *
- * Revision 1.6  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannel
- *
- * Revision 1.5  2001/10/18 01:15:18  robertj
- * Fixed compile error.
- *
- * Revision 1.4  1999/09/03 02:01:34  robertj
- * Added missing functions so will at least link
- *
- * Revision 1.3  1999/06/28 09:28:02  robertj
- * Portability issues, especially n BeOS (thanks Yuri!)
- *
- * Revision 1.2  1999/03/02 04:34:10  robertj
- * Fixed header comments
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound.h"

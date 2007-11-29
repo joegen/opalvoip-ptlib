@@ -23,16 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: notifier_ext.cxx,v $
- * Revision 1.2  2007/04/20 07:20:46  csoutheren
- * Applied 1703639 - PNotifierList::Move() leaks memory
- * Thanks to Fabrizio Ammollo
- *
- * Revision 1.1  2004/04/22 12:31:01  rjongbloed
- * Added PNotifier extensions and XMPP (Jabber) support,
- *   thanks to Federico Pinna and Reitek S.p.A.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__

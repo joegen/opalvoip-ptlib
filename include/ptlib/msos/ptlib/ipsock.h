@@ -26,45 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipsock.h,v $
- * Revision 1.12  2007/10/03 01:18:44  rjongbloed
- * Fixed build for Windows Mobile 5 and added Windows Mobile 6
- *
- * Revision 1.11  2003/09/17 05:41:59  csoutheren
- * Removed recursive includes
- *
- * Revision 1.10  2003/02/04 22:28:19  robertj
- * Fixed use of NETDB_SUCCESS symbol in WinCE, thanks Joerg Schoemer
- *
- * Revision 1.9  2002/12/04 00:41:12  robertj
- * Added sockets symbol not in winsock for getXbyY functions.
- *
- * Revision 1.8  2001/09/10 02:51:23  robertj
- * Major change to fix problem with error codes being corrupted in a
- *   PChannel when have simultaneous reads and writes in threads.
- *
- * Revision 1.7  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.6  2001/01/24 06:06:34  yurik
- * Windows CE port-related changes - actually my first change of openh323 code
- *
- * Revision 1.5  1998/11/30 02:55:15  robertj
- * New directory structure
- *
- * Revision 1.4  1998/09/24 03:30:09  robertj
- * Added open software license.
- *
- * Revision 1.3  1997/01/10 13:15:39  robertj
- * Added unix style error codes for WinSock codes compatible with GetErrorNumber().
- *
- * Revision 1.2  1996/08/08 10:09:04  robertj
- * Directory structure changes for common files.
- *
- * Revision 1.1  1994/07/27 06:00:10  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)

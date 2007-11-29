@@ -26,29 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: memfile.h,v $
- * Revision 1.7  2007/04/18 23:49:50  csoutheren
- * Add usage of precompiled headers
- *
- * Revision 1.6  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.5  2004/11/11 07:34:50  csoutheren
- * Added #include <ptlib.h>
- *
- * Revision 1.4  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.3  2002/08/05 05:40:45  robertj
- * Fixed missing pragma interface/implementation
- *
- * Revision 1.2  2002/06/27 03:53:35  robertj
- * Cleaned up documentation and added Compare() function.
- *
- * Revision 1.1  2002/06/26 09:01:19  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PMEMFILE

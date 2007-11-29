@@ -23,42 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipacl.h,v $
- * Revision 1.11  2005/11/30 12:47:37  csoutheren
- * Removed tabs, reformatted some code, and changed tags for Doxygen
- *
- * Revision 1.10  2005/01/26 05:37:42  csoutheren
- * Added ability to remove config file support
- *
- * Revision 1.9  2002/11/06 22:47:24  robertj
- * Fixed header comment (copyright etc)
- *
- * Revision 1.8  2002/07/17 02:54:24  robertj
- * Added access functions for member variables.
- *
- * Revision 1.7  2002/06/19 05:43:17  robertj
- * Added missing return for getting default allowance flag
- *
- * Revision 1.6  2002/06/19 04:02:58  robertj
- * Added default allowance boolean if ACL empty.
- * Added ability to override the creation of ACL entry objects with descendents
- *   so an application can add information/functionality to each entry.
- *
- * Revision 1.5  2002/02/13 02:07:14  robertj
- * Added const to IsAllowed() function
- *
- * Revision 1.4  1999/03/09 08:01:46  robertj
- * Changed comments for doc++ support (more to come).
- *
- * Revision 1.3  1999/02/25 05:05:15  robertj
- * Added missing test for hidden entries not to be written to config file
- *
- * Revision 1.2  1999/02/08 08:05:39  robertj
- * Changed semantics of IP access control list for empty list.
- *
- * Revision 1.1  1999/01/31 00:59:26  robertj
- * Added IP Access Control List class to PTLib Components
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _IPACL_H

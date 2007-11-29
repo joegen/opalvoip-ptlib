@@ -26,13 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pconfig.cxx,v $
- * Revision 1.2  2000/06/26 11:17:21  robertj
- * Nucleus++ port (incomplete).
- *
- * Revision 1.1  1998/11/30 12:46:17  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>

@@ -7,10 +7,9 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Log: custom.h,v $
- * Revision 1.1  2002/10/02 08:58:20  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptclib/httpsvc.h>

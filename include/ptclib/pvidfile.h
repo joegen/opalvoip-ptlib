@@ -26,33 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: pvidfile.h,v $
- * Revision 1.6  2007/04/20 06:47:02  csoutheren
- * Really disable video code when video is turned off
- *
- * Revision 1.5  2007/04/13 07:13:13  rjongbloed
- * Major update of video subsystem:
- *   Abstracted video frame info (width, height etc) into separate class.
- *   Changed devices, converter and video file to use above.
- *   Enhanced video file hint detection for frame rate and more
- *     flexible formats.
- *   Fixed issue if need to convert both colour format and size, had to do
- *     colour format first or it didn't convert size.
- *   Win32 video output device can be selected by "MSWIN" alone.
- *
- * Revision 1.4  2006/10/31 04:10:40  csoutheren
- * Make sure PVidFileDev class is loaded, and make it work with OPAL
- *
- * Revision 1.3  2006/02/24 04:51:26  csoutheren
- * Fixed problem with using CIF from video files
- * Added support for video files in y4m format
- *
- * Revision 1.2  2006/02/20 06:49:45  csoutheren
- * Added video file and video file input device code
- *
- * Revision 1.1  2006/02/20 06:17:28  csoutheren
- * Added ability to read video from a file
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PVIDFILE

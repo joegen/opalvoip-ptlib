@@ -23,58 +23,9 @@
  *
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
- * $Log: vidinput_avc.h,v $
- * Revision 1.8  2007/04/27 17:34:44  dsandras
- * Applied patch from Luc Saillard to fix things after the latest change
- * which broke all drivers. Thanks Luc <luc saillard org>.
- *
- * Revision 1.7  2007/04/14 07:08:55  rjongbloed
- * Major update of video subsystem:
- *   Abstracted video frame info (width, height etc) into separate class.
- *   Changed devices, converter and video file to use above.
- *   Enhanced video file hint detection for frame rate and more
- *     flexible formats.
- *   Fixed issue if need to convert both colour format and size, had to do
- *     colour format first or it didn't convert size.
- *   Win32 video output device can be selected by "MSWIN" alone.
- *
- * Revision 1.6  2005/08/09 09:08:09  rjongbloed
- * Merged new video code from branch back to the trunk.
- *
- * Revision 1.5.8.2  2005/07/24 09:01:47  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.5.8.1  2005/07/17 09:27:04  rjongbloed
- * Major revisions of the PWLib video subsystem including:
- *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
- *   working through use of RGB and BGR formats so now consistent
- *   cleaning up the plug in system to use virtuals instead of pointers to functions.
- *   rewrite of SDL to be a plug in compatible video output device.
- *   extensive enhancement of video test program
- *
- * Revision 1.5  2003/12/14 13:30:10  csoutheren
- * Added new function required for recent video changes
- *
- * Revision 1.4  2003/11/25 10:49:31  dsandras
- * Removed double declaration.
- *
- * Revision 1.3  2003/11/24 08:25:27  csoutheren
- * Patches from Snark to fix compile problems
- *
- * Revision 1.2  2003/11/23 22:11:04  dsandras
- * Added missing variable in the .h.
- *
- * Revision 1.1  2003/11/14 06:16:13  csoutheren
- * Initial version thanks to Damien and Snark
- *
- * Revision 1.1  2003/01/11 05:30:13  robertj
- * Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 

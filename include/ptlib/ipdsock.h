@@ -26,46 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: ipdsock.h,v $
- * Revision 1.11  2005/11/25 03:43:47  csoutheren
- * Fixed function argument comments to be compatible with Doxygen
- *
- * Revision 1.10  2003/09/17 05:41:58  csoutheren
- * Removed recursive includes
- *
- * Revision 1.9  2003/09/17 01:18:02  csoutheren
- * Removed recursive include file system and removed all references
- * to deprecated coooperative threading support
- *
- * Revision 1.8  2002/09/16 01:08:59  robertj
- * Added #define so can select if #pragma interface/implementation is used on
- *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
- *
- * Revision 1.7  2001/05/22 12:49:32  robertj
- * Did some seriously wierd rewrite of platform headers to eliminate the
- *   stupid GNU compiler warning about braces not matching.
- *
- * Revision 1.6  1999/03/09 02:59:49  robertj
- * Changed comments to doc++ compatible documentation.
- *
- * Revision 1.5  1999/02/16 08:12:00  robertj
- * MSVC 6.0 compatibility changes.
- *
- * Revision 1.4  1998/11/14 06:28:09  robertj
- * Fixed error in documentation
- *
- * Revision 1.3  1998/09/23 06:20:43  robertj
- * Added open source copyright license.
- *
- * Revision 1.2  1996/09/14 13:09:20  robertj
- * Major upgrade:
- *   rearranged sockets to help support IPX.
- *   added indirect channel class and moved all protocols to descend from it,
- *   separating the protocol from the low level byte transport.
- *
- * Revision 1.1  1996/05/15 21:11:16  robertj
- * Initial revision
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PIPDATAGRAMSOCKET

@@ -5,10 +5,9 @@
  *
  * Copyright 2003 Equivalence
  *
- * $Log: main.h,v $
- * Revision 1.1  2003/04/15 04:12:38  craigs
- * Initial version
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _DNSTest_MAIN_H

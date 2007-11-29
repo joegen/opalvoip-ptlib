@@ -21,31 +21,9 @@
  *
  * The Initial Developer of the Original Code is Roger Hardiman
  *
- * $Log: thread.cxx,v $
- * Revision 1.7  2006/06/21 03:28:43  csoutheren
- * Various cleanups thanks for Frederic Heem
- *
- * Revision 1.6  2003/01/07 10:04:13  rogerh
- * Revert to 2 seconds per phase
- *
- * Revision 1.5  2002/11/04 22:46:23  rogerh
- * Implement a Stop() method to make the threads terminate.
- *
- * Revision 1.4  2002/11/04 18:11:22  rogerh
- * Terminate the threads prior to deletion.
- *
- * Revision 1.3  2002/11/04 16:24:21  rogerh
- * Delete the threads, fixing a memory leak.
- *
- * Revision 1.2  2001/09/27 08:22:48  rogerh
- * Doing a flush on cout does not work on Mac OS X. So you do not see any
- * results until the program stops. So replace the printing of the numbers with
- * good old printf and fflush.
- *
- * Revision 1.1  2001/09/21 09:18:28  rogerh
- * Add a thread test program which demonstrates thread, suspend and resume.
- *
- *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 /*
