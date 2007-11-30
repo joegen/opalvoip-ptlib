@@ -88,9 +88,6 @@ extern "C"
 // define some basic types and their limits
 //
 
-#ifdef __NUCLEUS_MNT__
-typedef int	           BOOL;
-#endif
 typedef unsigned char	   BYTE;	// 1 byte
 
 typedef	signed short	   PInt16;	// 16 bit
