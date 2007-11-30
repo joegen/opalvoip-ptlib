@@ -62,7 +62,6 @@
 // define some basic types and their limits
 //
 
-typedef int                BOOL;
 typedef unsigned char      BYTE;    // 1 byte
 typedef signed short       PInt16;  // 16 bit
 typedef unsigned short     WORD;
