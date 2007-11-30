@@ -157,12 +157,14 @@ class PSoundChannelWin32: public PSoundChannel
     // Open with format other than PCM
 
   protected:
-    PString     deviceName;
-    Directions  direction;
-    HWAVEIN     hWaveIn;
-    HWAVEOUT    hWaveOut;
-    HANDLE      hEventDone;
-    PWaveFormat waveFormat;
+    PString      deviceName;
+    Directions   direction;
+    HWAVEIN      hWaveIn;
+    HWAVEOUT     hWaveOut;
+    HMIXER       hMixer;
+    MIXERCONTROL volumeControl;
+    HANDLE       hEventDone;
+    PWaveFormat  waveFormat;
 
     PWaveBufferArray buffers;
     PINDEX           bufferIndex;
