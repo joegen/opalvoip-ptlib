@@ -44,42 +44,68 @@ class WAVFileTest : public PProcess
     WAVFileTest()
     : PProcess() { }
     void Main();
+    void Create(PArgList & args);
+    void Play(PArgList & args);
+    void Record(PArgList & args);
 };
 
 PCREATE_PROCESS(WAVFileTest)
 
+
 void WAVFileTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("p:  c: h. ");
+  args.Parse("p.r.c:d:D:v:h.");
 
-  if (args.HasOption('h')) {
-    cout << "usage: wavfile [-p device][-c fmt] fn" << endl;
-    return;
-  }
-
-  if (args.HasOption('c')) {
-    PString format = args.GetOptionString('c');
-    PWAVFile file(format, args[0], PFile::WriteOnly);
-    if (!file.IsOpen()) {
-      cout << "error: cannot create file " << args[0] << endl;
+  if (args.GetCount() > 0) {
+    if (args.HasOption('c')) {
+      Create(args);
       return;
     }
 
-    //BYTE buffer[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-    //file.Write(buffer, sizeof(buffer));
+    if (args.HasOption('p')) {
+      Play(args);
+      return;
+    }
 
-    PDTMFEncoder toneData;
-    toneData.GenerateDialTone();
-    PINDEX len = toneData.GetSize()*sizeof(short);
-    file.Write((const short *)toneData, len);
-
-    file.Close();
+    if (args.HasOption('r')) {
+      Record(args);
+      return;
+    }
   }
 
+  cout << "usage: wavfile { -r | -p | -c fmt } [ -d dev ] [ -D drv ] [ -v vol ] filename\n"
+          "   -r      Record wav file\n"
+          "   -p      Play wav file\n"
+          "   -c fmt  Create wav file\n"
+          "   -d dev  Use device name for sound channel record/playback\n"
+          "   -D drv  Use driver name for sound channel record/playback\n"
+          "   -v vol  Set sound device to vol (0..100)\n"
+       << endl;
+}
+
+
+void WAVFileTest::Create(PArgList & args)
+{
+  PString format = args.GetOptionString('c');
+  PWAVFile file(format, args[0], PFile::WriteOnly);
+  if (!file.IsOpen()) {
+    cout << "Cannot create " << format << " wav file " << args[0] << endl;
+    return;
+  }
+
+  PDTMFEncoder toneData;
+  toneData.GenerateDialTone();
+  PINDEX len = toneData.GetSize()*sizeof(short);
+  file.Write((const short *)toneData, len);
+}
+
+
+void WAVFileTest::Play(PArgList & args)
+{
   PWAVFile file(args[0], PFile::ReadOnly, PFile::MustExist, PWAVFile::fmt_NotKnown);
   if (!file.IsOpen()) {
-    cout << "error: cannot open " << args[0] << endl;
+    cout << "Cannot open " << args[0] << endl;
     return;
   }
 
@@ -105,61 +131,54 @@ void WAVFileTest::Main()
     return;
   }
 
-  if (args.HasOption('p')) {
-
-    PString service = args.GetOptionString('p');
-    PString device;
-    if (args.GetCount() > 0)
-      device  = args[0];
-    else if (service != "default") {
-      PStringList deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
-      if (deviceList.GetSize() == 0) {
-        cout << "error: No devices for sound service " << service << endl;
-        return;
-      }
-      device = deviceList[0];
-    }
-    
-    cout << "Using sound service " << service << " with device " << device << endl;
-
-    PSoundChannel * snd;
-    if (service == "default") {
-      snd = new PSoundChannel();
-      device = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
-    }
-    else {
-      snd = PSoundChannel::CreateChannel(service);
-      if (snd == NULL) {
-        cout << "Failed to create sound service " << service << " with device " << device << endl;
-        return;
-      }
-    }
-
-    cout << "Opening sound service " << service << " with device " << device << endl;
-
-    if (!snd->Open(device, PSoundChannel::Player)) {
-      cout << "Failed to open sound service " << service << " with device " << device << endl;
-      return;
-    }
-
-    if (!snd->IsOpen()) {
-      cout << "Sound device " << device << " not open" << endl;
-      return;
-    }
-
-    if (!snd->SetBuffers(SAMPLES, 2)) {
-      cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
-      return;
-    }
-
-    snd->SetVolume(50);
-
-    if (!snd->Write((const BYTE *)data, data.GetSize())) {
-      cout << "error: write to audio device failed" << endl;
-      return;
-    }
-
-    snd->WaitForPlayCompletion();
-
+  PSoundChannel * sound = PSoundChannel::CreateOpenedChannel(args.GetOptionString('D'),
+                                                             args.GetOptionString('d'),
+                                                             PSoundChannel::Player,
+                                                             file.GetChannels(),
+                                                             file.GetSampleRate(),
+                                                             file.GetSampleSize());
+  if (sound == NULL) {
+    cout << "Failed to create sound channel." << endl;
+    return;
   }
+
+  sound->SetVolume(args.GetOptionString('v', "50").AsUnsigned());
+
+  if (!sound->SetBuffers(SAMPLES, 2)) {
+    cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
+    return;
+  }
+
+  if (!sound->Write((const BYTE *)data, data.GetSize())) {
+    cout << "error: write to audio device failed" << endl;
+    return;
+  }
+
+  sound->WaitForPlayCompletion();
+  delete sound;
+}
+
+
+void WAVFileTest::Record(PArgList & args)
+{
+  PWAVFile file(args[0], PFile::WriteOnly);
+  if (!file.IsOpen()) {
+    cout << "Cannot open " << args[0] << endl;
+    return;
+  }
+
+  PSoundChannel * sound = PSoundChannel::CreateOpenedChannel(args.GetOptionString('D'),
+                                                             args.GetOptionString('d'),
+                                                             PSoundChannel::Player,
+                                                             file.GetChannels(),
+                                                             file.GetSampleRate(),
+                                                             file.GetSampleSize());
+  if (sound == NULL) {
+    cout << "Failed to create sound channel." << endl;
+    return;
+  }
+
+  sound->SetVolume(args.GetOptionString('v', "50").AsUnsigned());
+
+  delete sound;
 }
