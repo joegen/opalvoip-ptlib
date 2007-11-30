@@ -757,10 +757,10 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
 }
 
 PBoolean PSoundChannelWin32::Open(const PString & device,
-                         Directions dir,
-                         unsigned numChannels,
-                         unsigned sampleRate,
-                         unsigned bitsPerSample)
+                                  Directions dir,
+                                  unsigned numChannels,
+                                  unsigned sampleRate,
+                                  unsigned bitsPerSample)
 {
   Close();
   unsigned id = 0;
@@ -775,8 +775,8 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
 }
 
 PBoolean PSoundChannelWin32::Open(const PString & device,
-                         Directions dir,
-             const PWaveFormat& format)
+                                  Directions dir,
+                                  const PWaveFormat& format)
 {
   Close();
   unsigned id = 0;
@@ -790,6 +790,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
   return OpenDevice(id);
 }
 
+
 PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
 {
   Close();
@@ -801,21 +802,53 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
 
   WAVEFORMATEX* format = (WAVEFORMATEX*) waveFormat;
 
+  MIXERLINE line;
+
   DWORD osError = MMSYSERR_BADDEVICEID;
   switch (direction) {
     case Player :
-      osError = waveOutOpen(&hWaveOut, id, format,
-                            (DWORD)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveOutOpen(&hWaveOut, id, format, (DWORD)hEventDone, 0, CALLBACK_EVENT);
+      if (osError == MMSYSERR_NOERROR) {
+        mixerOpen(&hMixer, (UINT)hWaveOut, NULL, NULL, MIXER_OBJECTF_HWAVEOUT);
+        line.dwComponentType = MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT;
+      }
       break;
 
     case Recorder :
-      osError = waveInOpen(&hWaveIn, id, format,
-                           (DWORD)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveInOpen(&hWaveIn, id, format, (DWORD)hEventDone, 0, CALLBACK_EVENT);
+      if (osError == MMSYSERR_NOERROR) {
+        mixerOpen(&hMixer, (UINT)hWaveIn, NULL, NULL, MIXER_OBJECTF_HWAVEIN);
+        line.dwComponentType = MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
+      }
       break;
   }
 
   if (osError != MMSYSERR_NOERROR)
     return SetErrorValues(NotFound, osError|PWIN32ErrorFlag);
+
+  if (hMixer != NULL) {
+    line.cbStruct = sizeof(line);
+    if (mixerGetLineInfo((HMIXEROBJ)hMixer, &line, MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE) != MMSYSERR_NOERROR) {
+      mixerClose(hMixer);
+      hMixer = NULL;
+    }
+    else {
+      volumeControl.cbStruct = sizeof(volumeControl);
+
+      MIXERLINECONTROLS controls;
+      controls.cbStruct = sizeof(controls);
+      controls.dwLineID = line.dwLineID;
+      controls.dwControlType = MIXERCONTROL_CONTROLTYPE_VOLUME;
+      controls.cControls = 1;
+      controls.pamxctrl = &volumeControl;
+      controls.cbmxctrl = volumeControl.cbStruct;
+
+      if (mixerGetLineControls((HMIXEROBJ)hMixer, &controls, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE) != MMSYSERR_NOERROR) {
+        mixerClose(hMixer);
+        hMixer = NULL;
+      }
+    }
+  }
 
   os_handle = id;
   return PTrue;
@@ -886,6 +919,11 @@ PBoolean PSoundChannelWin32::Close()
   }
 
   Abort();
+
+  if (hMixer != NULL) {
+    mixerClose(hMixer);
+    hMixer = NULL;
+  }
 
   os_handle = -1;
   return PTrue;
@@ -1376,106 +1414,54 @@ PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
 
 PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
 {
-   if (!IsOpen())
-     return SetErrorValues(NotOpen, EBADF);
+  if (!IsOpen() || hMixer == NULL)
+    return SetErrorValues(NotOpen, EBADF);
 
-   DWORD rawVolume = newVolume*65536/100;
-   if (rawVolume > 65535)
-     rawVolume = 65535;
+  MIXERCONTROLDETAILS_UNSIGNED volume;
+  volume.dwValue = newVolume*(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum)/100 + volumeControl.Bounds.dwMinimum;
+  if (volume.dwValue > volumeControl.Bounds.dwMaximum)
+    volume.dwValue = volumeControl.Bounds.dwMaximum;
+  else if (volume.dwValue < volumeControl.Bounds.dwMinimum)
+    volume.dwValue = volumeControl.Bounds.dwMinimum;
 
-   WAVEOUTCAPS caps;
-   if (waveOutGetDevCaps((UINT) hWaveOut, &caps, sizeof(caps)) == MMSYSERR_NOERROR) {
-     // If the device does not support L/R volume only the low word matters
-     if ((caps.dwSupport & WAVECAPS_LRVOLUME) != 0) {
-       // Mantain balance
-       DWORD oldVolume = 0;
-       if (waveOutGetVolume(hWaveOut, &oldVolume) == MMSYSERR_NOERROR) {
-         // GetVolume() is supposed to return the value we intended to set.
-         // So do the proper calculations
-         // 1. (L + R) / 2 = rawVolume      -> GetVolume() formula
-         // 2. L / R       = oldL / oldR    -> Unmodified balance
-         // Being:
-         // oldL = LOWORD(oldVolume)
-         // oldR = HIWORD(oldVolume)
-         
-         DWORD rVol, lVol;
-         DWORD oldL, oldR;
-         
-         // Old volume values
-         oldL = LOWORD(oldVolume);
-         oldR = HIWORD(oldVolume);
-         
-         lVol = rVol = 0;
-         
-         // First sort out extreme cases
-         if ( oldL == oldR )
-           rVol = lVol = rawVolume;
-         else if ( oldL == 0 )
-           rVol = rawVolume;
-         else if ( oldR == 0 )
-           lVol = rawVolume;
-         else {
-#ifndef _WIN32_WCE
-           rVol = ::MulDiv( 2 * rawVolume, oldR, oldL + oldR );
-           lVol = ::MulDiv( rVol, oldL, oldR );
-#else
-           rVol = 2 * rawVolume * oldR / ( oldL + oldR );
-           lVol = rVol * oldL / oldR;
-#endif
-         }
-         
-         rawVolume = MAKELPARAM(lVol, rVol);
-       }
-       else {
-         // Couldn't get current volume. Assume centered balance
-         rawVolume = MAKELPARAM(rawVolume, rawVolume);
-       }
-     }
-   }
-   else {
-     // Couldn't get device caps. Assume centered balance
-     // If the device does not support independant L/R volume
-     // the high-order word (R) is ignored
-     rawVolume = MAKELPARAM(rawVolume, rawVolume);
-   }
+  MIXERCONTROLDETAILS details;
+  details.cbStruct = sizeof(details);
+  details.dwControlID = volumeControl.dwControlID;
+  details.cChannels = 1;
+  details.cMultipleItems = 0;
+  details.cbDetails = sizeof(volume);
+  details.paDetails = &volume;
 
-   if (direction == Recorder) {
-     // Does not appear to be an input volume!!
-   }
-   else {
-     DWORD osError = waveOutSetVolume(hWaveOut, rawVolume);
-     if (osError != MMSYSERR_NOERROR)
-       return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
-   }
+  MMRESULT result = mixerSetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_SETCONTROLDETAILSF_VALUE);
+  if (result != MMSYSERR_NOERROR)
+    return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
-   return PTrue;
+  return true;
 }
 
 
 
 PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
 {
-   if (!IsOpen())
-     return SetErrorValues(NotOpen, EBADF);
+  if (!IsOpen() || hMixer == NULL)
+    return SetErrorValues(NotOpen, EBADF);
 
-   DWORD rawVolume = 0;
+  MIXERCONTROLDETAILS_UNSIGNED volume;
 
-   if (direction == Recorder) {
-     // Does not appear to be an input volume!!
-   }
-   else {
-     DWORD osError = waveOutGetVolume(hWaveOut, &rawVolume);
-     if (osError != MMSYSERR_NOERROR)
-       return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
-   }
+  MIXERCONTROLDETAILS details;
+  details.cbStruct = sizeof(details);
+  details.dwControlID = volumeControl.dwControlID;
+  details.cChannels = 1;
+  details.cMultipleItems = 0;
+  details.cbDetails = sizeof(volume);
+  details.paDetails = &volume;
 
-   WAVEOUTCAPS caps;
-   if (waveOutGetDevCaps((UINT) hWaveOut, &caps, sizeof(caps)) == MMSYSERR_NOERROR &&
-                                               (caps.dwSupport & WAVECAPS_LRVOLUME) != 0)
-     rawVolume = (HIWORD(rawVolume) + LOWORD(rawVolume)) / 2;
+  MMRESULT result = mixerSetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_SETCONTROLDETAILSF_VALUE);
+  if (result != MMSYSERR_NOERROR)
+    return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
-   oldVolume = rawVolume*100/65536;
-   return PTrue;
+  oldVolume = 100*(volume.dwValue - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
+  return true;
 }
 
 // End of File ///////////////////////////////////////////////////////////////
