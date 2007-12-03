@@ -47,6 +47,7 @@
 #include <uuids.h>
 #include <control.h>
 
+
 static void DeleteMediaType(AM_MEDIA_TYPE *pmt);
 
 // 30323449-0000-0010-8000-00AA00389B71            MEDIASUBTYPE_None
@@ -56,28 +57,31 @@ static GUID MEDIASUBTYPE_I420 = {0x30323449, 0x0000, 0x0010, {0x80, 0x00, 0x00, 
 #define INTERFACE ISampleGrabberCB
 DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
 {
-    STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
-    STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
+  STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
+  STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
 };
 
 #undef INTERFACE
 #define INTERFACE ISampleGrabber
+
 DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
 {
-    STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
-    STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-    STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-    STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
-    STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
-    STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
-    STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
+  STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
+  STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+  STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+  STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
+  STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
+  STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
+  STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
 };
+
+
 extern "C" {
-    extern const CLSID CLSID_SampleGrabber;
-    extern const IID IID_ISampleGrabber;
-    extern const CLSID CLSID_SampleGrabberCB;
-    extern const IID IID_ISampleGrabberCB;
-    extern const CLSID CLSID_NullRenderer;
+  extern const CLSID CLSID_SampleGrabber;
+  extern const IID IID_ISampleGrabber;
+  extern const CLSID CLSID_SampleGrabberCB;
+  extern const IID IID_ISampleGrabberCB;
+  extern const CLSID CLSID_NullRenderer;
 };
 
 
