@@ -203,9 +203,9 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     /**Retrieve a list of Device Capabilities
       */
     static bool GetDeviceCapabilities(
-      const PString & /*deviceName*/,           ///< Name of device
-      InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
-    )  { return false; }
+      const PString & /*deviceName*/, ///< Name of device
+      Capabilities * /*caps*/         ///< List of supported capabilities
+    ) { return false; }
 
     /**Open the device given the device name.
       */
