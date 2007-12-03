@@ -1128,17 +1128,19 @@ PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & device
   return (PVideoInputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoInputPluginBaseClass,0,driverName);
 }
 
-PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName,InputDeviceCapabilities * caps, PPluginManager * pluginMgr)
+
+PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, Capabilities * caps, PPluginManager * pluginMgr)
 {
-	return GetDeviceCapabilities(deviceName, "*",caps,pluginMgr);
+  return GetDeviceCapabilities(deviceName, "*", caps, pluginMgr);
 }
 
-PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName,const PString & driverName, InputDeviceCapabilities * caps, PPluginManager * pluginMgr)
+
+PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, const PString & driverName, Capabilities * caps, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
 
-  return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, (void *)caps);
+  return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, caps);
 }
 
 

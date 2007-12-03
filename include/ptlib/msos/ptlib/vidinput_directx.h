@@ -47,7 +47,6 @@
 #include <uuids.h>
 #include <control.h>
 
-#ifdef __MINGW32__
 static void DeleteMediaType(AM_MEDIA_TYPE *pmt);
 
 // 30323449-0000-0010-8000-00AA00389B71            MEDIASUBTYPE_None
@@ -81,9 +80,6 @@ extern "C" {
     extern const CLSID CLSID_NullRenderer;
 };
 
-#else
-#include <Qedit.h>
-#endif
 
 /**This class defines a video input device.
  */
@@ -116,9 +112,9 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 
     /**Retrieve a list of Device Capabilities
      */
-    static BOOL GetDeviceCapabilities(
-          const PString & deviceName,           ///< Name of device
-	  InputDeviceCapabilities * caps        ///< List of supported capabilities
+    static PBoolean GetDeviceCapabilities(
+      const PString & deviceName, ///< Name of device
+      Capabilities * caps         ///< List of supported capabilities
     );
 
 

@@ -742,15 +742,6 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
 
 #endif // SHOULD_BE_MOVED_TO_PLUGIN
 
-typedef struct {
-public:
-	unsigned      height;
-	unsigned      width;
-	const char*   format;
-	double        fps;
-} InputDeviceCapability; 
-
-typedef std::list<InputDeviceCapability>  InputDeviceCapabilities;
 
 /**This class defines a video input device.
  */
@@ -823,11 +814,13 @@ class PVideoInputDevice : public PVideoDevice
       PBoolean startImmediate = PTrue          ///< Immediately start display
     );
 
+    typedef std::list<PVideoFrameInfo> Capabilities;
+
     /**Retrieve a list of Device Capabilities
       */
     static PBoolean GetDeviceCapabilities(
       const PString & deviceName,           ///< Name of device
-      InputDeviceCapabilities * caps,       ///< List of supported capabilities
+      Capabilities * capabilities,          ///< List of supported capabilities
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
 
@@ -836,7 +829,7 @@ class PVideoInputDevice : public PVideoDevice
     static PBoolean GetDeviceCapabilities(
       const PString & deviceName,           ///< Name of device
       const PString & driverName,           ///< Device Driver
-      InputDeviceCapabilities * caps,       ///< List of supported capabilities
+      Capabilities * caps,                  ///< List of supported capabilities
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
 
@@ -894,8 +887,8 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   public:
     virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
     virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
-	virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
-	                       { return className::GetDeviceCapabilities(deviceName,(InputDeviceCapabilities *)caps); }
+    virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
+      { return className::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
 };
 
 #define PCREATE_VIDINPUT_PLUGIN(name) \
