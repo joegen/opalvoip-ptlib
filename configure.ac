@@ -165,7 +165,9 @@ case "$target_cpu" in
                    LIB64=1 ;
 		   ;;
 
-   sparc )         MACHTYPE=sparc ;
+   sparc|sparc64 ) MACHTYPE=sparc ;
+		   P_64BIT=1 ;
+                   LIB64=1 ;
 		   ;;
 
    powerpc )       MACHTYPE=ppc ;
