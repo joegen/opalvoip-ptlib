@@ -32,4 +32,15 @@ EXPORTS
     __GUID_6c44df74_72b9_4992_a1ec_ef996e0422d4 @15873 NONAME
     ___pobjMapEntryFirst @15874 NONAME
     ___pobjMapEntryLast @15875 NONAME
-    
+    _!= @22906 NONAME
+    _== @22907 NONAME
+    _IID_IAMFilterGraphCallback @22906 NONAME
+    _IsEqualGUID @22907 NONAME
+    __CT??_R0?AVbad_alloc@std@@@8??0bad_alloc@std@@QAE@ABV01@@Z12 @15845 NONAME
+    __CT??_R0?AVexception@std@@@8??0exception@std@@QAE@ABV01@@Z12 @15846 NONAME
+    __CT??_R0?AVlength_error@std@@@8??0length_error@std@@QAE@ABV01@@Z44 @15847 NONAME
+    __CT??_R0?AVlogic_error@std@@@8??0logic_error@std@@QAE@ABV01@@Z44 @15848 NONAME
+    __CTA2?AVbad_alloc@std@@ @15849 NONAME
+    __CTA3?AVlength_error@std@@ @15850 NONAME
+    __TI2?AVbad_alloc@std@@ @15851 NONAME
+    __TI3?AVlength_error@std@@ @15852 NONAME
