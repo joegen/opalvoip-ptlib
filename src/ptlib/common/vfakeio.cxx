@@ -1344,9 +1344,9 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     /**Retrieve a list of Device Capabilities
       */
     static bool GetDeviceCapabilities(
-      const PString & /*deviceName*/,           ///< Name of device
-      InputDeviceCapabilities * /*caps*/        ///< List of supported capabilities
-    )  { return false; }
+      const PString & /*deviceName*/, ///< Name of device
+      Capabilities * /*caps*/         ///< List of supported capabilities
+    ) { return false; }
 
     /**Get the maximum frame size in bytes.
 

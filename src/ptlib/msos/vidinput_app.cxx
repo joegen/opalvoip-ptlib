@@ -46,7 +46,7 @@ class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePlug
     virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoInputDevice_Application; }
     virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
     virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
-	        { return PVideoInputDevice_Application::GetDeviceCapabilities(deviceName,(InputDeviceCapabilities *)caps); }
+      { return PVideoInputDevice_Application::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
 
 } PVideoInputDevice_Application_descriptor;
 
@@ -58,7 +58,7 @@ PCREATE_PLUGIN(Application, PVideoInputDevice, &PVideoInputDevice_Application_de
 
 PVideoInputDevice_Application::PVideoInputDevice_Application()
 {
-	m_client = TRUE;
+    m_client = true;
     preferredColourFormat = "BGR24";  
 }
 
@@ -68,25 +68,25 @@ PStringList PVideoInputDevice_Application::GetInputDeviceNames()
     return PString("Application");
 }
 
-BOOL PVideoInputDevice_Application::GetDeviceCapabilities(const PString & /*deviceName*/,InputDeviceCapabilities * /*caps*/)  
+PBoolean PVideoInputDevice_Application::GetDeviceCapabilities(const PString & /*deviceName*/, Capabilities * /*caps*/)  
 { 
-    return FALSE; 
+    return false; 
 }
 
 void CaptureScreenToBYTEArray(LPRECT lpRect, PBYTEArray & array)
 {
-	HDC         hScrDC, hMemDC;         // screen DC and memory DC     
-	int         nX, nY, nX2, nY2;       // coordinates of rectangle to grab     
-	int         nWidth, nHeight;        // DIB width and height     
-	int         xScrn, yScrn;           // screen resolution      
+    HDC         hScrDC, hMemDC;         // screen DC and memory DC     
+    int         nX, nY, nX2, nY2;       // coordinates of rectangle to grab     
+    int         nWidth, nHeight;        // DIB width and height     
+    int         xScrn, yScrn;           // screen resolution      
 
-	HGDIOBJ     hOldBitmap , hBitmap;
-		
-		// check for an empty rectangle 
+    HGDIOBJ     hOldBitmap , hBitmap;
+        
+        // check for an empty rectangle 
     if (IsRectEmpty(lpRect))       
-	   return;      
-	   // create a DC for the screen and create     
-	   // a memory DC compatible to screen DC          
+       return;      
+       // create a DC for the screen and create     
+       // a memory DC compatible to screen DC          
 
    hScrDC = CreateDC("DISPLAY", NULL, NULL, NULL);     
    hMemDC = CreateCompatibleDC(hScrDC);      // get points of rectangle to grab  
@@ -102,7 +102,7 @@ void CaptureScreenToBYTEArray(LPRECT lpRect, PBYTEArray & array)
    //make sure bitmap rectangle is visible      
    
    if (nX < 0)         
-	  nX = 0;     
+      nX = 0;     
    
    if (nY < 0)         
       nY = 0;     
@@ -134,7 +134,7 @@ void CaptureScreenToBYTEArray(LPRECT lpRect, PBYTEArray & array)
    hBitmap = SelectObject(hMemDC, hOldBitmap);    
 
    // now we have a screencapture to bitmap
-   BITMAPINFO	bmpInfo;
+   BITMAPINFO    bmpInfo;
    bmpInfo.bmiHeader.biBitCount=0;
    bmpInfo.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
    GetDIBits(hMemDC,(HBITMAP)hBitmap,0,0,NULL,&bmpInfo,DIB_RGB_COLORS);
@@ -148,80 +148,77 @@ void CaptureScreenToBYTEArray(LPRECT lpRect, PBYTEArray & array)
    DeleteDC(hMemDC);      
 }
 
-void PVideoInputDevice_Application::AttachCaptureWindow(HWND _hwnd,BOOL _client)
+void PVideoInputDevice_Application::AttachCaptureWindow(HWND _hwnd, bool _client)
 {
     m_hWnd = _hwnd;
-	m_client = _client;
+    m_client = _client;
 }
 
-BOOL PVideoInputDevice_Application::Open(
-      const PString & /*DeviceName*/, 
-      BOOL /*startImmediate*/     
-    )
+PBoolean PVideoInputDevice_Application::Open(const PString & /*DeviceName*/, PBoolean /*startImmediate*/)
 {
-	Close();
+    Close();
 
-	if (!m_hWnd) {
-		PTRACE(4,"APP/tOpen Fail no Window to capture specified!");
-		return FALSE;
-	}
+    if (!m_hWnd) {
+        PTRACE(4,"APP/tOpen Fail no Window to capture specified!");
+        return false;
+    }
 
-	RECT _rect;
+    RECT _rect;
     ::GetWindowRect(m_hWnd,&_rect);
-	 PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
+     PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
 
-	return TRUE;
+    return true;
 }
 
-BOOL PVideoInputDevice_Application::IsOpen()
+PBoolean PVideoInputDevice_Application::IsOpen()
 {
-	return FALSE;
+    return false;
 }
 
-BOOL PVideoInputDevice_Application::Close()
+PBoolean PVideoInputDevice_Application::Close()
 {
-	if (!IsOpen())
-		return FALSE;
+    if (!IsOpen())
+        return false;
 
-	return TRUE;
+    return true;
 }
 
-BOOL PVideoInputDevice_Application::Start()
+PBoolean PVideoInputDevice_Application::Start()
 {
-	return FALSE;
+    return false;
 }
 
-BOOL PVideoInputDevice_Application::Stop()
+PBoolean PVideoInputDevice_Application::Stop()
 {
-	return FALSE;
+    return false;
 }
 
-BOOL PVideoInputDevice_Application::IsCapturing()
+PBoolean PVideoInputDevice_Application::IsCapturing()
 {
-	return FALSE;
+    return false;
 }
 
-BOOL PVideoInputDevice_Application::SetColourFormat(
+PBoolean PVideoInputDevice_Application::SetColourFormat(
       const PString & /*ColourFormat*/ 
     )
 {
-     return TRUE;
+     return true;
 }
 
-BOOL PVideoInputDevice_Application::SetFrameRate(
+PBoolean PVideoInputDevice_Application::SetFrameRate(
       unsigned Rate 
     )
 {
-	return PVideoDevice::SetFrameRate(Rate);
+    return PVideoDevice::SetFrameRate(Rate);
 }
 
-BOOL PVideoInputDevice_Application::SetFrameSize(
+PBoolean PVideoInputDevice_Application::SetFrameSize(
       unsigned /*Width*/,   
       unsigned /*Height*/   
     )
 {
-	PTRACE(4,"APP/tFrame size cannot be set! Must be detected from Application!");
-	return TRUE;
+    PTRACE(4,"APP/tFrame size cannot be set! Must be detected from Application!");
+    return true;
 }
 
 PINDEX PVideoInputDevice_Application::GetMaxFrameBytes()
@@ -229,7 +226,7 @@ PINDEX PVideoInputDevice_Application::GetMaxFrameBytes()
   return GetMaxFrameBytesConverted(CalculateFrameBytes(frameWidth, frameHeight, colourFormat));
 }
 
-BOOL PVideoInputDevice_Application::GetFrameData(
+PBoolean PVideoInputDevice_Application::GetFrameData(
       BYTE * buffer,                 
       PINDEX * bytesReturned   
     )
@@ -238,7 +235,7 @@ BOOL PVideoInputDevice_Application::GetFrameData(
     return GetFrameDataNoDelay(buffer,bytesReturned);
 }
 
-BOOL PVideoInputDevice_Application::GetFrameDataNoDelay(
+PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(
       BYTE * buffer,                 
       PINDEX * bytesReturned  
     )
@@ -253,49 +250,49 @@ BOOL PVideoInputDevice_Application::GetFrameDataNoDelay(
    if (!m_client) {
      ::GetWindowRect(m_hWnd,&_rect);
      if ((_rect.right != (signed)frameWidth) ||
-	    (_rect.bottom != (signed)frameHeight))
-	      PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
+        (_rect.bottom != (signed)frameHeight))
+          PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
    } else {
      ::GetClientRect(m_hWnd,&_rect);
      if ((_rect.right != (signed)frameWidth) ||
-	    (_rect.bottom != (signed)frameHeight))
-	      PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
+        (_rect.bottom != (signed)frameHeight))
+          PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
 
-	   POINT pt1,pt2;
-	     pt1.x = _rect.left;             
-	     pt1.y = _rect.top;             
-	     pt2.x = _rect.right;             
-	     pt2.y = _rect.bottom;             
-		 ::ClientToScreen(m_hWnd,&pt1);             
-		 ::ClientToScreen(m_hWnd,&pt2);             
-	     _rect.left = pt1.x;             
-	     _rect.top = pt1.y;             
-	     _rect.right = pt2.x;             
-	     _rect.bottom = pt2.y;  
+       POINT pt1,pt2;
+         pt1.x = _rect.left;             
+         pt1.y = _rect.top;             
+         pt2.x = _rect.right;             
+         pt2.y = _rect.bottom;             
+         ::ClientToScreen(m_hWnd,&pt1);             
+         ::ClientToScreen(m_hWnd,&pt2);             
+         _rect.left = pt1.x;             
+         _rect.top = pt1.y;             
+         _rect.right = pt2.x;             
+         _rect.bottom = pt2.y;  
    }
 
     PBYTEArray frame;
     CaptureScreenToBYTEArray(&_rect,frame);
 
-	bool retval = false;
-	long pBufferSize = frame.GetSize();
-	BYTE * pBuffer = frame.GetPointer();
-	
+    bool retval = false;
+    long pBufferSize = frame.GetSize();
+    BYTE * pBuffer = frame.GetPointer();
+    
    PTRACE(6,"AppInput\tBuffer obtained." << pBufferSize );
    if (pBuffer != NULL) {
   
-	// Convert the image for output
-	  if (NULL != converter) {
+    // Convert the image for output
+      if (NULL != converter) {
          retval = converter->Convert(pBuffer,buffer, bytesReturned);
          PTRACE(6,"AppInput\tBuffer converted." << *bytesReturned );
-	  } else {
+      } else {
 
          PTRACE(6,"AppInput\tBuffer copied." << pBufferSize );
          memcpy(buffer, pBuffer, pBufferSize);
-	     if (buffer != NULL)
-		   *bytesReturned = pBufferSize;
-	    retval = true;
-	  }
+         if (buffer != NULL)
+           *bytesReturned = pBufferSize;
+        retval = true;
+      }
    }
 
   PTRACE(6,"App\tBuffer Transcoded "  << retval);
@@ -304,15 +301,15 @@ BOOL PVideoInputDevice_Application::GetFrameDataNoDelay(
 }
 
 
-BOOL PVideoInputDevice_Application::TestAllFormats()
+PBoolean PVideoInputDevice_Application::TestAllFormats()
 {
-	return TRUE;
+    return true;
 }
 
-BOOL PVideoInputDevice_Application::SetChannel(int /*newChannel*/)
+PBoolean PVideoInputDevice_Application::SetChannel(int /*newChannel*/)
 {
 
-  return TRUE;
+  return true;
 }
 
 #endif  // P_APPSHARE

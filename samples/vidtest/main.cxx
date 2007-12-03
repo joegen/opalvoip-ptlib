@@ -125,16 +125,15 @@ void VidTest::Main()
   if (inputDeviceName.IsEmpty())
     inputDeviceName = devices[0];
 
-  InputDeviceCapabilities caps;
-   if (PVideoInputDevice::GetDeviceCapabilities(inputDeviceName,inputDriverName,&caps)) {
-		  cout << "Grabber " << inputDeviceName << " capabilities." << endl;
-	  for (std::list<InputDeviceCapability>::const_iterator r = caps.begin(); r != caps.end(); ++r) {
-		  cout << "        w: " << r->width << " h: " << r->height << " fmt: " << r->format << " fps: " << r->fps << endl;
-	  }
-	  cout << endl;
-   } else {
-     cout << "InputDevice " << inputDeviceName << " capabilities not Available." << endl;
-   }
+  PVideoInputDevice::Capabilities caps;
+  if (PVideoInputDevice::GetDeviceCapabilities(inputDeviceName,inputDriverName,&caps)) {
+    cout << "Grabber " << inputDeviceName << " capabilities." << endl;
+    for (PVideoInputDevice::Capabilities::const_iterator r = caps.begin(); r != caps.end(); ++r)
+      cout << "    " << r->GetColourFormat() << ' ' << r->GetFrameWidth() << 'x' << r->GetFrameHeight() << ' ' << r->GetFrameRate() << "fps\n";
+    cout << endl;
+  }
+  else
+    cout << "Input device " << inputDeviceName << " capabilities not available." << endl;
     
   if (grabber == NULL)
     grabber = PVideoInputDevice::CreateDeviceByName(inputDeviceName);

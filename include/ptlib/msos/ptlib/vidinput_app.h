@@ -25,6 +25,8 @@
  * $Date$
  */
 
+#include <ptbuildopts.h>
+
 #ifdef P_APPSHARE
 
 #define P_FORCE_STATIC_PLUGIN
@@ -58,39 +60,39 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     virtual PStringList GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
-	/**Retrieve a list of Device Capabilities
-	  */
-	static BOOL GetDeviceCapabilities(
-      const PString & deviceName,           ///< Name of device
-	  InputDeviceCapabilities * caps        ///< List of supported capabilities
-	);
+    /**Retrieve a list of Device Capabilities
+    */
+    static PBoolean GetDeviceCapabilities(
+      const PString & deviceName, ///< Name of device
+      Capabilities * caps         ///< List of supported capabilities
+    );
 
     /**Open the device given the device name.
       */
-    virtual BOOL Open(
+    virtual PBoolean Open(
       const PString & DeviceName,   ///< Device name to open
-      BOOL startImmediate = TRUE    ///< Immediately start device
+      PBoolean startImmediate = TRUE    ///< Immediately start device
     );
 
     /**Determine if the device is currently open.
       */
-    virtual BOOL IsOpen();
+    virtual PBoolean IsOpen();
 
     /**Close the device.
       */
-    virtual BOOL Close();
+    virtual PBoolean Close();
 
     /**Start the video device I/O.
       */
-    virtual BOOL Start();
+    virtual PBoolean Start();
 
     /**Stop the video device I/O capture.
       */
-    virtual BOOL Stop();
+    virtual PBoolean Stop();
 
     /**Determine if the video device I/O capture is in progress.
       */
-    virtual BOOL IsCapturing();
+    virtual PBoolean IsCapturing();
 
     /**Set the colour format to be used.
        Note that this function does not do any conversion. If it returns TRUE
@@ -102,7 +104,7 @@ class PVideoInputDevice_Application : public PVideoInputDevice
        Default behaviour sets the value of the colourFormat variable and then
        returns TRUE.
     */
-    virtual BOOL SetColourFormat(
+    virtual PBoolean SetColourFormat(
       const PString & colourFormat ///< New colour format for device.
     );
 
@@ -111,7 +113,7 @@ class PVideoInputDevice_Application : public PVideoInputDevice
        Default behaviour sets the value of the frameRate variable and then
        returns TRUE.
     */
-    virtual BOOL SetFrameRate(
+    virtual PBoolean SetFrameRate(
       unsigned rate  ///< Frames  per second
     );
 
@@ -123,7 +125,7 @@ class PVideoInputDevice_Application : public PVideoInputDevice
        Default behaviour sets the frameWidth and frameHeight variables and
        returns TRUE.
     */
-    virtual BOOL SetFrameSize(
+    virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
     );
@@ -137,43 +139,43 @@ class PVideoInputDevice_Application : public PVideoInputDevice
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */
-    virtual BOOL GetFrameData(
+    virtual PBoolean GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned         ///< OPtional bytes returned.
     );
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
-    virtual BOOL GetFrameDataNoDelay(
+    virtual PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned         ///< OPtional bytes returned.
     );
 
     /**Try all known video formats & see which ones are accepted by the video driver
      */
-    virtual BOOL TestAllFormats();
+    virtual PBoolean TestAllFormats();
 
     /**Set the video channel (not used)
       */
-    virtual BOOL SetChannel(int newChannel);
+    virtual PBoolean SetChannel(int newChannel);
 
-	/**Set the Handle of the window you wish to capture
-	  */
-	void AttachCaptureWindow(
-		    HWND _hwnd,            ///< Handle of the window to capture
-			BOOL _client = TRUE    ///< Only capture Client area and not caption
-	);
+    /**Set the Handle of the window you wish to capture
+      */
+    void AttachCaptureWindow(
+      HWND _hwnd,            ///< Handle of the window to capture
+      bool _client = TRUE    ///< Only capture Client area and not caption
+    );
 
   protected:
-	  HWND m_hWnd;               ///< Handle of Window to Capture
-	  BOOL m_client;             ///< Capture the client area only
+      HWND m_hWnd;               ///< Handle of Window to Capture
+      bool m_client;             ///< Capture the client area only
 
-	  PMutex lastFrameMutex;     ///< Frame Grab Mutex
+      PMutex lastFrameMutex;     ///< Frame Grab Mutex
       PAdaptiveDelay grabDelay;  ///< Frame Grab delay
-
-
 };
 
+
 PWLIB_STATIC_LOAD_PLUGIN(Application, PVideoInputDevice);
+
 
 #endif // P_APPSHARE
