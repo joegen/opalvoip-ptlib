@@ -3941,6 +3941,14 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\vidinput_app.cxx"
+					>
+				</File>
+				<File
+					RelativePath=".\vidinput_directx.cxx"
+					>
+				</File>
+				<File
 					RelativePath="win32.cxx"
 					>
 					<FileConfiguration
@@ -5660,6 +5668,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\videoio.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\vidinput_app.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\vidinput_directx.h"
 					>
 				</File>
 			</Filter>
