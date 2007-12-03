@@ -37,22 +37,53 @@
 #endif
 
 #ifdef _MSC_VER
-#ifndef _WIN32_WCE
-#pragma comment(lib,"strmiids.lib")
-#pragma comment(lib,"quartz.lib")
-#endif
+#pragma comment(lib, P_DIRECTSHOW_LIBRARY1)
+#pragma comment(lib, P_DIRECTSHOW_LIBRARY2)
 #endif
 
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter);
-static const char *ErrorMessage(HRESULT hr);
 static char *BSTR_to_ANSI(BSTR pSrc);
 static GUID pwlib_format_to_media_format(const char *format);
 static const char *media_format_to_pwlib_format(const GUID guid);
 static char *guid_to_string(const GUID guid);
 
 PCREATE_VIDINPUT_PLUGIN(DirectShow);
+
+
+#if PTRACING
+static const char *ErrorMessage(HRESULT hr)
+{
+    static char string[1024];
+    DWORD dwMsgLen;
+
+    memset(string, 0, sizeof(string));
+    dwMsgLen = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+			      FORMAT_MESSAGE_IGNORE_INSERTS,
+			      NULL,
+			      hr,
+			      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			      (LPSTR)string,
+			      sizeof(string)-1,
+			      NULL);
+    if (dwMsgLen)
+	return string;
+
+    memset(string, 0, sizeof(string));
+    dwMsgLen = AMGetErrorTextA(hr, string, sizeof(string));
+    if (dwMsgLen)
+	return string;
+
+#ifdef __MINGW32__  // This function is not recognised in Windows
+    snprintf(string, sizeof(string), "0x%8.8x", hr);
+	return string;
+#else
+	return PString();
+#endif
+    
+}
+#endif // PTRACING
 
 
 static void MyDeleteMediaType(AM_MEDIA_TYPE *pmt)
@@ -692,7 +723,6 @@ PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, i
 
 	VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
 	BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
-	const char *current_format = media_format_to_pwlib_format(pMediaFormat->subtype);
 	const int maxfps = (int)(10000000.0/VideoInfo->AvgTimePerFrame);
 
 	if (!wanted_format.IsEmpty() && (wanted_guid_format != pMediaFormat->subtype))
@@ -709,7 +739,7 @@ PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, i
 
 	/* We have match a goo format, Use it to change the format */
 	PTRACE(1,"PVidDirectShow\tUsing setting ["<< i << "] = ("
-		<< current_format << ", "
+		<< media_format_to_pwlib_format(pMediaFormat->subtype) << ", "
 		<< BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
 		<< fps << "fps, max:" << maxfps << "fps)");
 
@@ -718,8 +748,7 @@ PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, i
         if (pMC)
         {
 	    hr = pMC->GetState(1000, &filterState);
-	    if (FAILED(hr))
-	        PTRACE(1, "PVidDirectShow\tGetState failed: " << ErrorMessage(hr));
+            PTRACE_IF(1, FAILED(hr), "PVidDirectShow\tGetState failed: " << ErrorMessage(hr));
 	    pMC->StopWhenReady();
         }
 
@@ -980,8 +1009,7 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
 	long ValScaled = Min + ((Max-Min) * newValue) / 65536;
 	hr = pVideoProcAmp->Set(control, ValScaled, VideoProcAmp_Flags_Manual);
     }
-    if (FAILED(hr))
-	PTRACE(4, "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
+    PTRACE_IF(4, FAILED(hr), "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
 
     pVideoProcAmp->Release();
     return PTrue;
@@ -1038,7 +1066,7 @@ PBoolean PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
 }
 
 
-BOOL PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & /*deviceName*/,InputDeviceCapabilities * /*caps*/)  
+PBoolean PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & /*deviceName*/, Capabilities * /*caps*/)  
 { 
     // To do!
     return FALSE; 
@@ -1093,6 +1121,7 @@ PBoolean PVideoInputDevice_DirectShow::ListSupportedFormats()
 	    continue;
 	}
 
+#if PTRACING
 	if ((pMediaFormat->formattype == FORMAT_VideoInfo)     &&
             (pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
 	    (pMediaFormat->pbFormat != NULL))
@@ -1105,6 +1134,7 @@ PBoolean PVideoInputDevice_DirectShow::ListSupportedFormats()
 		    << BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
 		    << (10000000.0/VideoInfo->AvgTimePerFrame) << "fps)");
 	}
+#endif
 
 	MyDeleteMediaType(pMediaFormat);
     }
@@ -1205,37 +1235,6 @@ static char *BSTR_to_ANSI(BSTR pSrc)
     return szOut;
 }
 
-
-static const char *ErrorMessage(HRESULT hr)
-{
-    static char string[1024];
-    DWORD dwMsgLen;
-
-    memset(string, 0, sizeof(string));
-    dwMsgLen = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-			      FORMAT_MESSAGE_IGNORE_INSERTS,
-			      NULL,
-			      hr,
-			      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			      (LPSTR)string,
-			      sizeof(string)-1,
-			      NULL);
-    if (dwMsgLen)
-	return string;
-
-    memset(string, 0, sizeof(string));
-    dwMsgLen = AMGetErrorTextA(hr, string, sizeof(string));
-    if (dwMsgLen)
-	return string;
-
-#ifdef __MINGW32__  // This function is not recognised in Windows
-    snprintf(string, sizeof(string), "0x%8.8x", hr);
-	return string;
-#else
-	return PString();
-#endif
-    
-}
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 {
