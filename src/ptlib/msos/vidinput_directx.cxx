@@ -46,8 +46,8 @@
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter);
 static char *BSTR_to_ANSI(BSTR pSrc);
 static GUID pwlib_format_to_media_format(const char *format);
-static const char *media_format_to_pwlib_format(const GUID guid);
-static char *guid_to_string(const GUID guid);
+static PString media_format_to_pwlib_format(const GUID guid);
+
 
 PCREATE_VIDINPUT_PLUGIN(DirectShow);
 
@@ -131,8 +131,11 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
 
 PVideoInputDevice_DirectShow::~PVideoInputDevice_DirectShow()
 {
-    Close();
-    ::CoUninitialize();
+  if (tempFrame != NULL)
+    free(tempFrame);
+
+  Close();
+  ::CoUninitialize();
 }
 
 HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
@@ -1179,7 +1182,7 @@ PBoolean PVideoInputDevice_DirectShow::GetDefaultFormat()
     {
 	VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
 	BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
-	const char *format = media_format_to_pwlib_format(pMediaFormat->subtype);
+	PString format = media_format_to_pwlib_format(pMediaFormat->subtype);
 	int fps = (int)(10000000.0/VideoInfo->AvgTimePerFrame);
 
 	PTRACE(1,"PVidDirectShow\tDefault format is: "
@@ -1337,24 +1340,24 @@ static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 }
 
 
-const static struct {
-    char *pwlib_format;
-    GUID  media_format;
-} formats[] =
+static struct {
+    const char * pwlib_format;
+    GUID         media_format;
+} const formats[] =
 {
-    {(char*) "Grey",    MEDIASUBTYPE_RGB8 },
-    {(char*) "BGR32",   MEDIASUBTYPE_RGB32}, /* Microsoft assumes that we are in little endian */
-    {(char*) "BGR24",   MEDIASUBTYPE_RGB24},
-    {(char*) "RGB565",  MEDIASUBTYPE_RGB565},
-    {(char*) "RGB555",  MEDIASUBTYPE_RGB555},
-    {(char*) "YUV420P", MEDIASUBTYPE_IYUV},  
-    {(char*) "YUV422P", MEDIASUBTYPE_YUYV},
-    {(char*) "YUV411",  MEDIASUBTYPE_Y411},
-    {(char*) "YUV411P", MEDIASUBTYPE_Y41P},
-    {(char*) "YUV410P", MEDIASUBTYPE_YVU9},
-    {(char*) "YUY2",    MEDIASUBTYPE_YUY2},
-    {(char*) "MJPEG",   MEDIASUBTYPE_MJPG},
-    {(char*) "UYVY422", MEDIASUBTYPE_UYVY},
+    { "Grey",    MEDIASUBTYPE_RGB8   },
+    { "BGR32",   MEDIASUBTYPE_RGB32  }, /* Microsoft assumes that we are in little endian */
+    { "BGR24",   MEDIASUBTYPE_RGB24  },
+    { "RGB565",  MEDIASUBTYPE_RGB565 },
+    { "RGB555",  MEDIASUBTYPE_RGB555 },
+    { "YUV420P", MEDIASUBTYPE_IYUV   },  
+    { "YUV422P", MEDIASUBTYPE_YUYV   },
+    { "YUV411",  MEDIASUBTYPE_Y411   },
+    { "YUV411P", MEDIASUBTYPE_Y41P   },
+    { "YUV410P", MEDIASUBTYPE_YVU9   },
+    { "YUY2",    MEDIASUBTYPE_YUY2   },
+    { "MJPEG",   MEDIASUBTYPE_MJPG   },
+    { "UYVY422", MEDIASUBTYPE_UYVY   },
 };
 
 static GUID pwlib_format_to_media_format(const char *format)
@@ -1369,7 +1372,7 @@ static GUID pwlib_format_to_media_format(const char *format)
     return MEDIATYPE_NULL;
 }
 
-static const char *media_format_to_pwlib_format(const GUID guid)
+static PString media_format_to_pwlib_format(const GUID guid)
 {
     unsigned int i;
 
@@ -1378,74 +1381,70 @@ static const char *media_format_to_pwlib_format(const GUID guid)
 	if (guid == formats[i].media_format)
 	    return formats[i].pwlib_format;
     }
+
     if (guid == MEDIASUBTYPE_CLPL)
 	return "CLPL";
-    else if (guid == MEDIASUBTYPE_YUYV)
+    if (guid == MEDIASUBTYPE_YUYV)
 	return "YUYV";
-    else if (guid == MEDIASUBTYPE_IYUV)
+    if (guid == MEDIASUBTYPE_IYUV)
 	return "IYUV";
-    else if (guid == MEDIASUBTYPE_YVU9)
+    if (guid == MEDIASUBTYPE_YVU9)
 	return "YVU9";
-    else if (guid == MEDIASUBTYPE_Y411)
+    if (guid == MEDIASUBTYPE_Y411)
 	return "Y411";
-    else if (guid == MEDIASUBTYPE_Y41P)
+    if (guid == MEDIASUBTYPE_Y41P)
 	return "Y41P";
-    else if (guid == MEDIASUBTYPE_YUY2)
+    if (guid == MEDIASUBTYPE_YUY2)
 	return "YUY2";
-    else if (guid == MEDIASUBTYPE_YVYU)
+    if (guid == MEDIASUBTYPE_YVYU)
 	return "YVYU";
-    else if (guid == MEDIASUBTYPE_UYVY)
+    if (guid == MEDIASUBTYPE_UYVY)
 	return "UYVY";
-    else if (guid == MEDIASUBTYPE_Y211)
+    if (guid == MEDIASUBTYPE_Y211)
 	return "Y211";
-    else if (guid == MEDIASUBTYPE_YV12)
+    if (guid == MEDIASUBTYPE_YV12)
 	return "YV12";
-    else if (guid == MEDIASUBTYPE_CLJR)
+    if (guid == MEDIASUBTYPE_CLJR)
 	return "CLJR";
-    else if (guid == MEDIASUBTYPE_IF09)
+    if (guid == MEDIASUBTYPE_IF09)
 	return "IF09";
-    else if (guid == MEDIASUBTYPE_CPLA)
+    if (guid == MEDIASUBTYPE_CPLA)
 	return "CPLA";
-    else if (guid == MEDIASUBTYPE_MJPG)
+    if (guid == MEDIASUBTYPE_MJPG)
 	return "MJPG";
-    else if (guid == MEDIASUBTYPE_TVMJ)
+    if (guid == MEDIASUBTYPE_TVMJ)
 	return "TVMJ";
-    else if (guid == MEDIASUBTYPE_WAKE)
+    if (guid == MEDIASUBTYPE_WAKE)
 	return "WAKE";
-    else if (guid == MEDIASUBTYPE_CFCC)
+    if (guid == MEDIASUBTYPE_CFCC)
 	return "CFCC";
-    else if (guid == MEDIASUBTYPE_IJPG)
+    if (guid == MEDIASUBTYPE_IJPG)
 	return "IJPG";
-    else if (guid == MEDIASUBTYPE_Plum)
+    if (guid == MEDIASUBTYPE_Plum)
 	return "Plum";
-    else if (guid == MEDIASUBTYPE_DVCS)
+    if (guid == MEDIASUBTYPE_DVCS)
 	return "DVCS";
-    else if (guid == MEDIASUBTYPE_DVSD)
+    if (guid == MEDIASUBTYPE_DVSD)
 	return "DVSD";
-    else if (guid == MEDIASUBTYPE_MDVF)
+    if (guid == MEDIASUBTYPE_MDVF)
 	return "MDVF";
-    else if (guid == MEDIASUBTYPE_RGB1)
+    if (guid == MEDIASUBTYPE_RGB1)
 	return "RGB1";
-    else if (guid == MEDIASUBTYPE_RGB4)
+    if (guid == MEDIASUBTYPE_RGB4)
 	return "RGB4";
-    else if (guid == MEDIASUBTYPE_RGB8)
+    if (guid == MEDIASUBTYPE_RGB8)
 	return "RGB8";
-    else if (guid == MEDIASUBTYPE_RGB565)
+    if (guid == MEDIASUBTYPE_RGB565)
 	return "RGB565";
-    else if (guid == MEDIASUBTYPE_RGB555)
+    if (guid == MEDIASUBTYPE_RGB555)
 	return "RGB555";
-    else if (guid == MEDIASUBTYPE_RGB24)
+    if (guid == MEDIASUBTYPE_RGB24)
 	return "BGR24";
-    else if (guid == MEDIASUBTYPE_RGB32)
+    if (guid == MEDIASUBTYPE_RGB32)
 	return "BGR32";
-    else if (guid == MEDIASUBTYPE_IYUV)
+    if (guid == MEDIASUBTYPE_IYUV)
 	return "I420";
-    else
-	return guid_to_string(guid); /* FIXME: memory leak */
-}
 
-static char *guid_to_string(const GUID guid)
-{
     wchar_t guid_wchar[256];
     char guid_string[256];
     int guid_wcharlen;
@@ -1456,7 +1455,7 @@ static char *guid_to_string(const GUID guid)
 			guid_string, sizeof(guid_string),
 			0, 0);
 
-    return strdup(guid_string);
+    return guid_string;
 }
 
 #endif /*P_DIRECTSHOW*/
