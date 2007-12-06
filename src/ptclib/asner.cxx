@@ -275,9 +275,9 @@ PObject * PASN_Boolean::Clone() const
 void PASN_Boolean::PrintOn(ostream & strm) const
 {
   if (value)
-    strm << "PTrue";
+    strm << "true";
   else
-    strm << "PFalse";
+    strm << "false";
 }
 
 
