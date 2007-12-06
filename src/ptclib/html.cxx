@@ -952,14 +952,14 @@ void PHTML::RadioButton::AddAttr(PHTML & html) const
 
 
 PHTML::CheckBox::CheckBox(const char * fname, const char * attr)
-  : RadioButton("checkbox", fname, "PTrue", UnChecked, Enabled, attr)
+  : RadioButton("checkbox", fname, "true", UnChecked, Enabled, attr)
 {
 }
 
 PHTML::CheckBox::CheckBox(const char * fname,
                           DisableCodes disabled,
                           const char * attr)
-  : RadioButton("checkbox", fname, "PTrue", UnChecked, disabled, attr)
+  : RadioButton("checkbox", fname, "true", UnChecked, disabled, attr)
 {
 }
 
@@ -967,7 +967,7 @@ PHTML::CheckBox::CheckBox(const char * fname,
                           CheckedCodes check,
                           DisableCodes disabled,
                           const char * attr)
-  : RadioButton("checkbox", fname, "PTrue", check, disabled, attr)
+  : RadioButton("checkbox", fname, "true", check, disabled, attr)
 {
 }
 
