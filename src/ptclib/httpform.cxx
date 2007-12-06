@@ -1235,7 +1235,7 @@ PHTTPField * PHTTPBooleanField::NewField() const
 
 void PHTTPBooleanField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::HiddenField(fullName, "PFalse")
+  html << PHTML::HiddenField(fullName, "false")
        << PHTML::CheckBox(fullName, value ? PHTML::Checked : PHTML::UnChecked);
 }
 
@@ -1268,9 +1268,9 @@ PString PHTTPBooleanField::GetHTMLInput(const PString & input) const
     PCaselessString text;
     PINDEX before, after;
     if (FindInputValue(input, before, after)) 
-      text = input(0, before) + "PTrue" + input.Mid(after);
+      text = input(0, before) + "true" + input.Mid(after);
     else
-      text = "<input value=\"PTrue\"" + input.Mid(6);
+      text = "<input value=\"true\"" + input.Mid(6);
     SpliceChecked(text, value);
     return "<input type=hidden name=\"" + fullName + "\">" + text;
   }
@@ -1282,7 +1282,7 @@ PString PHTTPBooleanField::GetHTMLInput(const PString & input) const
     if (FindInputValue(input, before, after)) {
       PCaselessString text = input;
       PString val = input(before+1, after-1);
-      SpliceChecked(text, (value && (val *= "PTrue")) || (!value && (val *= "PFalse")));
+      SpliceChecked(text, (value && (val *= "true")) || (!value && (val *= "false")));
       return text;
     }
     return input;
@@ -1295,7 +1295,7 @@ PString PHTTPBooleanField::GetHTMLInput(const PString & input) const
 void PHTTPBooleanField::SetValue(const PString & val)
 {
   value = toupper(val[0]) == 'T' || toupper(val[0]) == 'y' ||
-          val.AsInteger() != 0 || val.Find("PTrue") != P_MAX_INDEX;
+          val.AsInteger() != 0 || val.Find("true") != P_MAX_INDEX;
 }
 
 
