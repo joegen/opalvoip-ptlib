@@ -157,7 +157,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , startTick(PTimer::Tick())
     , rolloverPattern("yyyy_MM_dd")
     , lastDayOfYear(0)
-    , oldStreamFlags(0)
+    , oldStreamFlags(ios::left)
     , oldPrecision(0)
   {
     InitMutex();
