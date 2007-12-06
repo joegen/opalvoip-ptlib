@@ -102,14 +102,16 @@ class PTraceInfo
    */
 
 public:
-  unsigned      currentLevel;
-  unsigned      options;
-  unsigned      thresholdLevel;
-  const char  * filename;
-  ostream     * stream;
-  PTimeInterval startTick;
-  const char  * rolloverPattern;
-  unsigned      lastDayOfYear;
+  unsigned        currentLevel;
+  unsigned        options;
+  unsigned        thresholdLevel;
+  const char    * filename;
+  ostream       * stream;
+  PTimeInterval   startTick;
+  const char    * rolloverPattern;
+  unsigned        lastDayOfYear;
+  ios::fmtflags   oldStreamFlags;
+  std::streamsize oldPrecision;
 
 #if defined(_WIN32)
   CRITICAL_SECTION mutex;
@@ -155,6 +157,8 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , startTick(PTimer::Tick())
     , rolloverPattern("yyyy_MM_dd")
     , lastDayOfYear(0)
+    , oldStreamFlags(0)
+    , oldPrecision(0)
   {
     InitMutex();
 
@@ -342,6 +346,9 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   ostream & stream = thread != NULL ? (ostream &)thread->traceStream : *info.stream;
 
+  info.oldStreamFlags = stream.flags();
+  info.oldPrecision = stream.precision();
+
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
 
@@ -410,6 +417,9 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 ostream & PTrace::End(ostream & paramStream)
 {
   PTraceInfo & info = PTraceInfo::Instance();
+
+  paramStream.flags(info.oldStreamFlags);
+  paramStream.precision(info.oldPrecision);
 
   PThread * thread = PThread::Current();
 
