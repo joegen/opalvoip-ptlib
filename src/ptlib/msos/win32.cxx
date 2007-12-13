@@ -978,7 +978,7 @@ PThread * PThread::Current()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, NormalPriority, "PWLib Housekeeper")
+  : PThread(1000, NoAutoDeleteThread, NormalPriority, "PTLib Housekeeper")
 {
   Resume();
 }
