@@ -1187,7 +1187,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   PThread * thread = PThread::Current();
 
-  ostream & stream = thread != NULL ? (ostream &)thread->traceStream : *info.stream;
+  if (thread != NULL)
+    thread->traceStreams.Push(new PStringStream);
+
+  ostream & stream = thread != NULL ? (ostream &)thread->traceStreams.Top() : *info.stream;
 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
@@ -1261,10 +1264,10 @@ ostream & PTrace::End(ostream & paramStream)
   PThread * thread = PThread::Current();
 
   if (thread != NULL) {
-    PAssert(&paramStream == &thread->traceStream, PLogicError);
+    PAssert(&paramStream == &thread->traceStreams.Top(), PLogicError);
     info.Lock();
-    *info.stream << thread->traceStream;
-    thread->traceStream = PString::Empty();
+    *info.stream << thread->traceStreams.Top();
+    thread->traceStreams.Pop();
   }
   else {
     PAssert(&paramStream == info.stream, PLogicError);
