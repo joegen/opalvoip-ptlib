@@ -364,8 +364,8 @@ class PThread : public PObject
 
   private:
 #if PTRACING
-    PStringStream traceStream;
-    unsigned      traceLevel;
+    PStack<PStringStream> traceStreams;
+    unsigned traceLevel;
     friend class PTrace;
 
     unsigned traceBlockIndentLevel;
