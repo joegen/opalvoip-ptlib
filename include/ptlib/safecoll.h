@@ -490,6 +490,10 @@ class PSafePtrBase : public PObject
 
   /**@name Operations */
   //@{
+    /**Set the pointer to NULL, unlocking/dereferencing existing pointer value.
+      */
+    void SetNULL();
+
     /**Return PTrue if pointer is NULL.
       */
     bool operator!() const { return currentObject == NULL; }
