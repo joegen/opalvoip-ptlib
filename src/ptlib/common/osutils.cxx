@@ -427,10 +427,11 @@ ostream & PTrace::End(ostream & paramStream)
   PThread * thread = PThread::Current();
 
   if (thread != NULL) {
-    PAssert(&paramStream == &thread->traceStreams.Top(), PLogicError);
+    PStringStream * stackStream = thread->traceStreams.Pop();
+    PAssert(&paramStream == stackStream, PLogicError);
     info.Lock();
-    *info.stream << thread->traceStreams.Top();
-    thread->traceStreams.Pop();
+    *info.stream << *stackStream;
+    delete stackStream;
   }
   else {
     PAssert(&paramStream == info.stream, PLogicError);
