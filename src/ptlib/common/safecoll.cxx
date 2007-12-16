@@ -565,6 +565,17 @@ void PSafePtrBase::Previous()
 }
 
 
+void PSafePtrBase::SetNULL()
+{
+  // lockCount ends up zero after this
+  ExitSafetyMode(WithDereference);
+
+  collection = NULL;
+  currentObject = NULL;
+  lockMode = PSafeReference;
+}
+
+
 PBoolean PSafePtrBase::SetSafetyMode(PSafetyMode mode)
 {
   if (lockMode == mode)
