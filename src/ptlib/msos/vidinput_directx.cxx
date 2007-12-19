@@ -124,7 +124,6 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   pCapture = NULL;
   pGrabber = NULL;
 
-  flipVertical = PFalse;
   isCapturingNow = PFalse;
   capturing_duration = 10000; // arbitrary large value suffices
 }
@@ -514,28 +513,6 @@ PBoolean PVideoInputDevice_DirectShow::IsCapturing()
     return isCapturingNow;
 }
 
-/*
- * Flip an image vertically in place
- *
- */
-void PVideoInputDevice_DirectShow::FlipVertical(BYTE *buffer)
-{
-    unsigned int bytesPerLine = frameBytes / frameHeight;
-	BYTE  * templine = new BYTE[bytesPerLine];
-    BYTE *s = buffer;
-    BYTE *d = buffer + frameBytes - bytesPerLine;
-    unsigned int i;
-
-    for (i=0; i<frameHeight/2; i++)
-    {
-	memcpy(&templine, s, bytesPerLine);
-	memcpy(s, d, bytesPerLine);
-	memcpy(d, &templine, bytesPerLine);
-	s += bytesPerLine;
-	d -= bytesPerLine;
-    }
-    delete templine;
-}
 
 /*
  *
@@ -576,8 +553,6 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PIND
 	    return PFalse;
 	}
 
-	if (flipVertical)
-	    FlipVertical((BYTE *)tempFrame);
 	converter->Convert((BYTE *)tempFrame, destFrame, cbBuffer, bytesReturned);
     }
     else
@@ -588,9 +563,6 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PIND
 	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
 	    return PFalse;
 	}
-
-	if (flipVertical)
-	    FlipVertical(destFrame);
 
 	*bytesReturned = cbBuffer;
 
@@ -793,11 +765,11 @@ PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, i
 	    pMediaFormat->subtype == MEDIASUBTYPE_RGB565 ||
 	    pMediaFormat->subtype == MEDIASUBTYPE_RGB555)
 	{
-	    flipVertical = PTrue;
+	    nativeVerticalFlip = true;
 	}
 	else
 	{
-	    flipVertical = PFalse;
+	    nativeVerticalFlip = false;
 	}
 #endif
 

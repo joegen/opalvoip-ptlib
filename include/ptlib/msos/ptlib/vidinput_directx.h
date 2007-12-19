@@ -268,12 +268,10 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PBoolean GetDefaultFormat();
     PBoolean ListSupportedFormats();
     PBoolean InitialiseCapture();
-    void FlipVertical(BYTE *buffer);
 
     char *tempFrame;			/* Buffer used when a converter is needed */
     long frameBytes;		        /* Size of a frame in Bytes */
     int  capturing_duration;
-    PBoolean flipVertical;
     PAdaptiveDelay m_pacing;
     
     PBoolean          isCapturingNow;
