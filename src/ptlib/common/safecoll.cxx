@@ -147,6 +147,12 @@ PBoolean PSafeObject::SafelyCanBeDeleted() const
 }
 
 
+bool PSafeObject::GarbageCollection()
+{
+  return true;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 PSafeLockReadOnly::PSafeLockReadOnly(const PSafeObject & object)
@@ -303,7 +309,7 @@ PBoolean PSafeCollection::DeleteObjectsToBeRemoved()
 
   PINDEX i = 0;
   while (i < toBeRemoved.GetSize()) {
-    if (toBeRemoved[i].SafelyCanBeDeleted()) {
+    if (toBeRemoved[i].GarbageCollection() && toBeRemoved[i].SafelyCanBeDeleted()) {
       PObject * obj = toBeRemoved.RemoveAt(i);
       removalMutex.Signal();
       DeleteObject(obj);
