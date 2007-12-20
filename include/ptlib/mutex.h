@@ -87,6 +87,11 @@ class PTimedMutex : public PSync
     PTimedMutex();
     PTimedMutex(const PTimedMutex & mutex);
 
+    /** Try to enter the critical section for exlusive access. Does not wait.
+        @return true if cirical section entered, leave/Signal must be called.
+      */
+    PINLINE bool Try() { return Wait(0); }
+
 // Include platform dependent part of class
 #ifdef _WIN32
 #include "msos/ptlib/mutex.h"
