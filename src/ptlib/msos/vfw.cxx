@@ -316,12 +316,13 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     PSyncPoint    threadStarted;
 
     HWND          hCaptureWindow;
+    PMutex        operationMutex;
 
     PSyncPoint    frameAvailable;
     LPBYTE        lastFramePtr;
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
-    PBoolean          isCapturingNow;
+    bool          isCapturingNow;
     PAdaptiveDelay m_Pacing;
 };
 
@@ -504,12 +505,19 @@ PBoolean PVideoInputDevice_VideoForWindows::Open(const PString & devName, PBoole
 {
   Close();
 
+  operationMutex.Wait();
+
   deviceName = devName;
 
   captureThread = PThread::Create(PCREATE_NOTIFIER(HandleCapture), 0,
                                   PThread::NoAutoDeleteThread, PThread::NormalPriority,
                                   "VidIn:%x");
+
+  operationMutex.Signal();
   threadStarted.Wait();
+
+  PWaitAndSignal mutex(operationMutex);
+
   if (hCaptureWindow == NULL) {
     delete captureThread;
     captureThread = NULL;
@@ -531,6 +539,8 @@ PBoolean PVideoInputDevice_VideoForWindows::IsOpen()
 
 PBoolean PVideoInputDevice_VideoForWindows::Close()
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (!IsOpen())
     return PFalse;
  
@@ -561,6 +571,8 @@ PBoolean PVideoInputDevice_VideoForWindows::Close()
 
 PBoolean PVideoInputDevice_VideoForWindows::Start()
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (IsCapturing())
     return PTrue;
 
@@ -583,6 +595,8 @@ PBoolean PVideoInputDevice_VideoForWindows::Start()
 
 PBoolean PVideoInputDevice_VideoForWindows::Stop()
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (!IsCapturing())
     return PFalse;
   isCapturingNow = PFalse;
@@ -607,6 +621,8 @@ PBoolean PVideoInputDevice_VideoForWindows::IsCapturing()
 
 PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFmt)
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (!IsOpen())
     return PVideoDevice::SetColourFormat(colourFmt); // Not open yet, just set internal variables
 
@@ -656,6 +672,8 @@ PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colo
 
 PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (!PVideoDevice::SetFrameRate(rate))
     return PFalse;
 
@@ -700,6 +718,8 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 
 PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigned height)
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (!IsOpen())
     return PVideoDevice::SetFrameSize(width, height); // Not open yet, just set internal variables
 
@@ -806,6 +826,8 @@ PStringList PVideoInputDevice_VideoForWindows::GetInputDeviceNames()
 
 PINDEX PVideoInputDevice_VideoForWindows::GetMaxFrameBytes()
 {
+  PWaitAndSignal mutex(operationMutex);
+
   if (!IsOpen())
     return 0;
 
@@ -1136,6 +1158,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 
     HWND       m_hWnd;
     PThread  * m_thread;
+    PMutex     m_openCloseMutex;
     PSyncPoint m_started;
     BITMAPINFO m_bitmap;
     bool       m_flipped;
@@ -1239,13 +1262,18 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
 {
   Close();
 
+  m_openCloseMutex.Wait();
+
   deviceName = name;
 
   m_thread = PThread::Create(PCREATE_NOTIFIER(HandleDisplay), 0,
                              PThread::NoAutoDeleteThread, PThread::NormalPriority,
                              "VidOut:%x");
 
+  m_openCloseMutex.Signal();
   m_started.Wait();
+
+  PWaitAndSignal m(m_openCloseMutex);
 
   return startImmediate ? Start() : m_hWnd != NULL;
 }
@@ -1259,18 +1287,23 @@ PBoolean PVideoOutputDevice_Window::IsOpen()
 
 PBoolean PVideoOutputDevice_Window::Close()
 {
+  PWaitAndSignal m(m_openCloseMutex);
+
   if (m_hWnd == NULL)
       return PFalse;
 
   SendMessage(m_hWnd, WM_CLOSE, 0, 0);
   m_thread->WaitForTermination(3000);
   delete m_thread;
+  m_thread = NULL;
   return PTrue;
 }
 
 
 PBoolean PVideoOutputDevice_Window::Start()
 {
+  PWaitAndSignal m(m_openCloseMutex);
+
   if (m_hWnd == NULL)
     return PFalse;
   
@@ -1281,6 +1314,8 @@ PBoolean PVideoOutputDevice_Window::Start()
 
 PBoolean PVideoOutputDevice_Window::Stop()
 {
+  PWaitAndSignal m(m_openCloseMutex);
+
   if (m_hWnd != NULL)
     return ShowWindow(m_hWnd, SW_HIDE);
 
