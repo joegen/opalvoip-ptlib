@@ -130,4 +130,10 @@ PINLINE void PCriticalSection::Signal()
   ::LeaveCriticalSection(&criticalSection);
 }
 
+PINLINE bool PCriticalSection::Try()
+{
+  return TryEnterCriticalSection(&criticalSection) != 0;
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////

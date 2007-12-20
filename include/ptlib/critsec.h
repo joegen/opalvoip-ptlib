@@ -85,23 +85,27 @@ class PCriticalSection : public PSync
 
   /**@name Operations */
   //@{
+    /** Create a new PCriticalSection
+      */
+    PObject * Clone() const
+    {
+      return new PCriticalSection();
+    }
+
     /** Enter the critical section by waiting for exclusive access.
      */
     void Wait();
-    inline void Enter()
-    { Wait(); }
+    inline void Enter() { Wait(); }
 
     /** Leave the critical section by unlocking the mutex
      */
     void Signal();
-    inline void Leave()
-    { Signal(); }
+    inline void Leave() { Signal(); }
 
-    /** Create a new PCriticalSection
+    /** Try to enter the critical section for exlusive access. Does not wait.
+        @return true if cirical section entered, leave/Signal must be called.
       */
-    PObject * Clone() const
-    { return new PCriticalSection(); }
-
+    bool Try();
   //@}
 
 
