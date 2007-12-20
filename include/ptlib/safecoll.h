@@ -222,6 +222,19 @@ class PSafeObject : public PObject
        to be used directly by an application.
       */
     PBoolean SafelyCanBeDeleted() const;
+
+    /**Do any garbage collection that may be required by the object so that it
+       may be finally deleted. This is especially useful if there a references
+       back to this object which this object is in charge of disposing of. This
+       reference "glare" is to be resolved by this function being called every
+       time the owner collection is cleaning up, causing a cascade of clean ups
+       that might need to be required.
+
+       Default implementation simply returns true.
+
+       @return true if object may be deleted.
+      */
+    virtual bool GarbageCollection();
   //@}
 
   private:
