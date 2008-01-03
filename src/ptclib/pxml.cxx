@@ -110,6 +110,7 @@ static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
 
 PXMLParser::PXMLParser(int _options)
   : options(_options)
+  , rootOpen(true)
 {
   if (options < 0)
     options = 0;
@@ -139,13 +140,14 @@ PXMLParser::~PXMLParser()
 
 PXMLElement * PXMLParser::GetXMLTree() const
 { 
-  return rootElement; 
+  return rootOpen ? NULL : rootElement; 
 }
 
 PXMLElement * PXMLParser::SetXMLTree(PXMLElement * newRoot)
 { 
   PXMLElement * oldRoot = rootElement;
-  rootElement = newRoot; 
+  rootElement = newRoot;
+  rootOpen = false;
   return oldRoot;
 }
 
@@ -176,13 +178,20 @@ void PXMLParser::StartElement(const char * name, const char **attrs)
   currentElement = newElement;
   lastElement    = NULL;
 
-  if (rootElement == NULL)
+  if (rootElement == NULL) {
     rootElement = currentElement;
+    rootOpen = true;
+  }
 }
 
 void PXMLParser::EndElement(const char * /*name*/)
 {
-  currentElement = currentElement->GetParent();
+  if (currentElement != rootElement)
+    currentElement = currentElement->GetParent();
+  else {
+    currentElement = NULL;
+    rootOpen = false;
+  }
   lastElement    = NULL;
 }
 
@@ -655,6 +664,41 @@ void PXML::PrintOn(ostream & strm) const
   }
 }
 
+
+void PXML::ReadFrom(istream & strm)
+{
+  rootMutex.Wait();
+  delete rootElement;
+  rootElement = NULL;
+  rootMutex.Signal();
+
+  PXMLParser parser(options);
+  while (strm.good()) {
+    PString line;
+    strm >> line;
+
+    if (!parser.Parse(line, line.GetLength(), false)) {
+      parser.GetErrorInfo(errorString, errorCol, errorLine);
+      break;
+    }
+
+    if (parser.GetXMLTree() != NULL) {
+      rootMutex.Wait();
+
+      version    = parser.GetVersion();
+      encoding   = parser.GetEncoding();
+      standAlone = parser.GetStandAlone();
+      rootElement = parser.GetXMLTree();
+
+      rootMutex.Signal();
+
+      PTRACE(4, "XML\tRead XML " << rootElement->GetName());
+      break;
+    }
+  }
+}
+
+
 PString PXML::CreateStartTag(const PString & text)
 {
   return '<' + text + '>';
@@ -1044,8 +1088,7 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
 
 ///////////////////////////////////////////////////////
 
-PXMLStreamParser::PXMLStreamParser() :
-  rootOpen(PTrue)
+PXMLStreamParser::PXMLStreamParser()
 {
 }
 
@@ -1056,23 +1099,18 @@ void PXMLStreamParser::EndElement(const char * name)
 
   PXMLParser::EndElement(name);
 
-  if (currentElement == rootElement) {
-      if (element == rootElement) { // stream closed
-        rootOpen = PFalse;
-      }
-      else {
-        PINDEX i = rootElement->FindObject(element);
+  if (rootOpen) {
+    PINDEX i = rootElement->FindObject(element);
 
-        if (i != P_MAX_INDEX) {
-          PXML tmp;
-          element = (PXMLElement *)element->Clone(0);
-          rootElement->RemoveElement(i);
+    if (i != P_MAX_INDEX) {
+      PXML tmp;
+      element = (PXMLElement *)element->Clone(0);
+      rootElement->RemoveElement(i);
 
-          PXML * msg = new PXML;
-          msg->SetRootElement(element);
-          messages.Enqueue(msg);
-        }
-     }
+      PXML * msg = new PXML;
+      msg->SetRootElement(element);
+      messages.Enqueue(msg);
+    }
   }
 }
 

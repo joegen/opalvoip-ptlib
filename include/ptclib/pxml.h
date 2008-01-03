@@ -90,6 +90,7 @@ class PXMLParser : public PObject
     int options;
     void * expat;
     PXMLElement * rootElement;
+    bool rootOpen;
     PXMLElement * currentElement;
     PXMLData * lastElement;
     PString version, encoding;
@@ -144,6 +145,7 @@ class PXML : public PXMLBase
 
     ~PXML();
 
+    bool IsLoaded() const { return rootElement != NULL; }
     PBoolean IsDirty() const;
 
     PBoolean Load(const PString & data, int options = -1);
@@ -174,6 +176,7 @@ class PXML : public PXMLBase
     ) const;
 
     void PrintOn(ostream & strm) const;
+    void ReadFrom(istream & strm);
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLElement * GetElement(PINDEX idx) const;
@@ -385,7 +388,6 @@ class PXMLStreamParser : public PXMLParser
     virtual PXML * Read(PChannel * channel);
 
   protected:
-    PBoolean rootOpen;
     PQueue<PXML> messages;
 };
 
