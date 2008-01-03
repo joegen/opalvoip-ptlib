@@ -2695,22 +2695,22 @@ PBoolean PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
-PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD defaultPort, char _sep)
+PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD _port, char _sep)
 {
-  sep = _sep;
+  sep  = _sep;
+  port = _port;
+
   PINDEX pos = str.Find(sep);
   if (pos != P_MAX_INDEX) {
     port    = (WORD)str.Mid(pos+1).AsInteger();
     if (!PIPSocket::GetHostAddress(str.Left(pos), address))
       return PFalse;
   }
-  else if (port == 0)
+  else if (port == 0) 
     return PFalse;
-  else {
-    port = defaultPort;
-    if (!PIPSocket::GetHostAddress(str, address))
-      return PFalse;
-  }
+  else if (!PIPSocket::GetHostAddress(str, address))
+    return PFalse;
+
   return PTrue;
 }
 
