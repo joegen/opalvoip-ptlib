@@ -152,6 +152,16 @@ are the basics:
     line. Use ".\configure --help" to get information on options such as
     forcing a feature or library dependency.
 
+    The above will search the entire hard disk(s) for software packages to
+    configure. This may take some time, so a useful feature is to set the
+    environment variable:
+
+	PTLIB_CONFIGURE_OPTIONS = --no-search
+
+    which will only search some "standard" locations. Not ethat you could
+    also include arguments to set the paths of packages that are not in
+    standard locations.
+
     Note there are additional notes in the "Platform Specific Issues" on how
     to compile the various libraries in a manner suitable for use by PTLib
     under Windows.
