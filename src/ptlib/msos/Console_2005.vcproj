@@ -174,91 +174,6 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-			OutputDirectory="..\..\..\lib\wm6"
-			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="1"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				ExecutionBucket="7"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="_DEBUG;DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC;PTRACING=1"
-				RuntimeLibrary="3"
-				TreatWChar_tAsBuiltInType="true"
-				ForceConformanceInForLoopScope="true"
-				RuntimeTypeInfo="true"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="ptlib.h"
-				AssemblerListingLocation=""
-				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
-				BrowseInformation="1"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				Culture="3081"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\ptlibsd.lib"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-			<DeploymentTool
-				ForceDirty="-1"
-				RemoteDirectory=""
-				RegisterOutput="0"
-				AdditionalFiles=""
-			/>
-			<DebuggerTool
-			/>
-		</Configuration>
-		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\..\..\Lib"
 			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
@@ -370,93 +285,6 @@
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="ptlib.h"
-				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				Culture="3081"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\ptlibs.lib"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-			<DeploymentTool
-				ForceDirty="-1"
-				RemoteDirectory=""
-				RegisterOutput="0"
-				AdditionalFiles=""
-			/>
-			<DebuggerTool
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-			OutputDirectory="..\..\..\lib\wm6"
-			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="1"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				ExecutionBucket="7"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				TreatWChar_tAsBuiltInType="true"
-				ForceConformanceInForLoopScope="true"
-				RuntimeTypeInfo="true"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="ptlib.h"
-				AssemblerListingLocation=""
-				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
@@ -660,6 +488,178 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+			OutputDirectory="..\..\..\lib\wm6"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				ExecutionBucket="7"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\include"
+				PreprocessorDefinitions="_DEBUG;DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC;PTRACING=1"
+				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
+				ForceConformanceInForLoopScope="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="ptlib.h"
+				AssemblerListingLocation=""
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
+				BrowseInformation="1"
+				WarningLevel="4"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				Culture="3081"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\ptlibsd.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCCodeSignTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<DeploymentTool
+				ForceDirty="-1"
+				RemoteDirectory=""
+				RegisterOutput="0"
+				AdditionalFiles=""
+			/>
+			<DebuggerTool
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+			OutputDirectory="..\..\..\lib\wm6"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				ExecutionBucket="7"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				AdditionalIncludeDirectories="..\..\..\include"
+				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;$(ARCHFAM);$(_ARCHFAM_);UNICODE;_UNICODE;XML_STATIC"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				TreatWChar_tAsBuiltInType="true"
+				ForceConformanceInForLoopScope="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="ptlib.h"
+				AssemblerListingLocation=""
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
+				WarningLevel="4"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				Culture="3081"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\ptlibs.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCCodeSignTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<DeploymentTool
+				ForceDirty="-1"
+				RemoteDirectory=""
+				RegisterOutput="0"
+				AdditionalFiles=""
+			/>
+			<DebuggerTool
+			/>
+		</Configuration>
+		<Configuration
 			Name="No Trace|Windows Mobile 6 Professional SDK (ARMV4I)"
 			OutputDirectory="..\..\..\lib\wm6"
 			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
@@ -786,19 +786,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="1"
-							BrowseInformation="1"
-							ShowIncludes="false"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -821,17 +808,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -844,6 +820,30 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="1"
+							BrowseInformation="1"
+							ShowIncludes="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -891,17 +891,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -922,16 +911,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -943,6 +922,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -988,17 +988,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1019,16 +1008,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1040,6 +1019,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1085,17 +1085,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1116,16 +1105,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1137,6 +1116,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1178,15 +1178,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1205,15 +1196,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1224,6 +1206,24 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
@@ -1269,18 +1269,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1305,18 +1293,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1330,6 +1306,30 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1380,18 +1380,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1413,17 +1401,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1435,6 +1412,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1483,18 +1483,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1516,17 +1504,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1538,6 +1515,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1589,17 +1589,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1620,16 +1609,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1641,6 +1620,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1686,17 +1686,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1717,16 +1706,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1738,6 +1717,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1783,17 +1783,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1814,16 +1803,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1835,6 +1814,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1880,17 +1880,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -1911,16 +1900,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -1932,6 +1911,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1977,17 +1977,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2008,16 +1997,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2029,6 +2008,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2074,17 +2074,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2105,16 +2094,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2126,6 +2105,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2171,17 +2171,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2202,16 +2191,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2223,6 +2202,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2268,17 +2268,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2299,16 +2288,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2320,6 +2299,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2365,17 +2365,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2396,16 +2385,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2417,6 +2396,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2462,17 +2462,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2493,16 +2482,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2514,6 +2493,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2559,17 +2559,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2590,16 +2579,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2611,6 +2590,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2656,17 +2656,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2687,16 +2676,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2708,6 +2687,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2754,18 +2754,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2787,17 +2775,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2809,6 +2786,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2856,17 +2856,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2887,16 +2876,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -2908,6 +2887,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2954,18 +2954,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -2987,17 +2975,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3009,6 +2986,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -3056,17 +3056,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3087,16 +3076,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3108,6 +3087,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3153,17 +3153,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3184,16 +3173,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3205,6 +3184,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3250,17 +3250,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3281,16 +3270,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3302,6 +3281,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3353,18 +3353,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3387,17 +3375,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3410,6 +3387,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3458,18 +3458,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3491,17 +3479,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3513,6 +3490,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -3560,17 +3560,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3591,16 +3580,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3612,6 +3591,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3659,18 +3659,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3693,17 +3681,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3716,6 +3693,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3765,18 +3765,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3799,17 +3787,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3822,6 +3799,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3869,17 +3869,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -3900,16 +3889,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -3921,6 +3900,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -3974,17 +3974,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -4005,16 +3994,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -4026,6 +4005,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -4071,17 +4071,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -4102,16 +4091,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -4123,6 +4102,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -4169,18 +4169,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -4202,17 +4190,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -4224,6 +4201,29 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4271,17 +4271,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -4302,16 +4291,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -4323,6 +4302,27 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -4366,14 +4366,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -4390,14 +4382,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -4407,6 +4391,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4446,14 +4446,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -4470,14 +4462,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -4487,6 +4471,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4522,14 +4522,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -4546,14 +4538,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -4563,6 +4547,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4642,14 +4642,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
@@ -4658,7 +4650,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4666,7 +4658,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4710,14 +4710,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
@@ -4726,7 +4718,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4734,7 +4726,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4782,14 +4782,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
@@ -4798,7 +4790,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4806,7 +4798,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -4866,14 +4866,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
@@ -4890,14 +4882,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
@@ -4907,6 +4891,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -5156,14 +5156,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -5180,14 +5172,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="No Trace|Win32"
 					>
 					<Tool
@@ -5197,6 +5181,22 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -5221,13 +5221,57 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Configuring Build Options"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						AdditionalDependencies="$(SolutionDir)/configure.ac"
+						Outputs="$(InputDir)ptbuildopts.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Configuring Build Options"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						AdditionalDependencies="$(SolutionDir)/configure.ac"
+						Outputs="$(InputDir)ptbuildopts.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Configuring Build Options"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						AdditionalDependencies="$(SolutionDir)/configure.ac"
+						Outputs="$(InputDir)ptbuildopts.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Configuring Build Options"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						AdditionalDependencies="$(SolutionDir)/configure.ac"
+						Outputs="$(InputDir)ptbuildopts.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -5249,51 +5293,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
-						AdditionalDependencies="$(SolutionDir)/configure.ac"
-						Outputs="$(InputDir)ptbuildopts.h"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
-						AdditionalDependencies="$(SolutionDir)/configure.ac"
-						Outputs="$(InputDir)ptbuildopts.h"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
-						AdditionalDependencies="$(SolutionDir)/configure.ac"
-						Outputs="$(InputDir)ptbuildopts.h"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="No Trace|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
-						AdditionalDependencies="$(SolutionDir)/configure.ac"
-						Outputs="$(InputDir)ptbuildopts.h"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -6370,19 +6370,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						BrowseInformation="1"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -6407,18 +6394,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="No Trace|Win32"
 					>
 					<Tool
@@ -6432,6 +6407,31 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -6485,19 +6485,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						BrowseInformation="1"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -6522,18 +6509,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="No Trace|Win32"
 					>
 					<Tool
@@ -6547,6 +6522,31 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -6600,19 +6600,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						BrowseInformation="1"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -6637,18 +6624,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="No Trace|Win32"
 					>
 					<Tool
@@ -6662,6 +6637,31 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -6715,19 +6715,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						BrowseInformation="1"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -6752,18 +6739,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="0"
-						WarningLevel="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="No Trace|Win32"
 					>
 					<Tool
@@ -6777,6 +6752,31 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories="..\common\regex;..\..\..\include\ptlib\wm"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"
+						WarningLevel="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
