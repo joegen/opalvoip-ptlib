@@ -197,7 +197,7 @@ typedef long PInt32;
 #if defined(_MSC_VER) || defined(__MINGW32__)
 
   #define PINDEX int
-  #if defined(_WIN32)
+  #if defined(_WIN32) || defined(_WIN32_WCE)
     const PINDEX P_MAX_INDEX = 0x7fffffff;
   #else
     const PINDEX P_MAX_INDEX = 0x7fff;
