@@ -68,7 +68,7 @@ class PInterfaceMonitor : public PObject
 
     PInterfaceMonitor(
       unsigned refreshInterval = DefaultRefreshInterval,
-      PBoolean runMonitorThread = PTrue
+      bool runMonitorThread = true
     );
     virtual ~PInterfaceMonitor();
 
@@ -76,7 +76,7 @@ class PInterfaceMonitor : public PObject
     static PInterfaceMonitor & GetInstance();
 
     /// Start monitoring network interfaces
-    PBoolean Start();
+    bool Start();
 
     /// Stop monitoring network interfaces.
     void Stop();
@@ -88,16 +88,16 @@ class PInterfaceMonitor : public PObject
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
     PStringArray GetInterfaces(
-      PBoolean includeLoopBack = PFalse,  /// Flag for if loopback is to included in list
+      bool includeLoopBack = false,  /// Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
     );
 
     /** Returns whether destination is reachable through binding or not.
-        The default behaviour returns PTrue unless there is an interface
+        The default behaviour returns true unless there is an interface
         filter installed an the filter does not return 'binding' among
         it's interfaces.
       */
-    PBoolean IsValidBindingForDestination(
+    bool IsValidBindingForDestination(
       const PIPSocket::Address & binding,
       const PIPSocket::Address & destination
     );
@@ -106,7 +106,7 @@ class PInterfaceMonitor : public PObject
        string. Note that when searchin the descriptor may be a partial match
        e.g. "10.0.1.11" or "%eth0" may be used.
       */
-    PBoolean GetInterfaceInfo(
+    bool GetInterfaceInfo(
       const PString & iface,  /// Interface desciptor name
       InterfaceEntry & info   /// Information on the interface
     );
@@ -115,7 +115,7 @@ class PInterfaceMonitor : public PObject
         Note that when searching the descriptor may be a partial match
         e.g. "10.0.1.11" or "%eth0" may be used.
       */
-    static PBoolean IsMatchingInterface(
+    static bool IsMatchingInterface(
       const PString & iface,        /// Interface descriptor
       const InterfaceEntry & entry  /// Interface entry
     );
@@ -143,7 +143,7 @@ class PInterfaceMonitor : public PObject
     ClientList_T              currentClients;
     PIPSocket::InterfaceTable currentInterfaces;
 
-    PBoolean runMonitorThread;
+    bool           runMonitorThread;
     PTimeInterval  refreshInterval;
     PMutex         mutex;
     PThread      * updateThread;
@@ -181,7 +181,7 @@ class PInterfaceMonitorClient : public PSafeObject
         before returning it.
       */
     virtual PStringArray GetInterfaces(
-      PBoolean includeLoopBack = PFalse,  /// Flag for if loopback is to included in list
+      bool includeLoopBack = false,  /// Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny() /// destination
     );
 
@@ -239,7 +239,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
   PCLASSINFO(PMonitoredSockets, PInterfaceMonitorClient);
   protected:
     PMonitoredSockets(
-      PBoolean reuseAddr,
+      bool reuseAddr,
       PSTUNClient * stunClient
     );
 
@@ -248,7 +248,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         system allocated port is used. In this case and when multiple
         interfaces are supported, all sockets use the same dynamic port value.
 
-        Returns PTrue if all sockets are opened.
+        Returns true if all sockets are opened.
      */
     virtual PBoolean Open(
       WORD port
@@ -315,7 +315,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       */
     static PMonitoredSockets * Create(
       const PString & iface,            /// Interface name to create socket for
-      PBoolean reuseAddr = PFalse,           /// Re-use or exclusive port number
+      bool reuseAddr = false,           /// Re-use or exclusive port number
       PSTUNClient * stunClient = NULL   /// STUN client code
     );
 
@@ -330,16 +330,16 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       bool         inUse;
     };
 
-    PBoolean CreateSocket(
+    bool CreateSocket(
       SocketInfo & info,
       const PIPSocket::Address & binding
     );
-    PBoolean DestroySocket(SocketInfo & info);
-    PBoolean GetSocketAddress(
+    bool DestroySocket(SocketInfo & info);
+    bool GetSocketAddress(
       const SocketInfo & info,
       PIPSocket::Address & address,
       WORD & port,
-      PBoolean usingNAT
+      bool usingNAT
     ) const;
 
     PChannel::Errors WriteToSocket(
@@ -361,7 +361,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     );
 
     WORD          localPort;
-    PBoolean          reuseAddress;
+    bool          reuseAddress;
     PSTUNClient * stun;
 
     bool          opened;
@@ -385,7 +385,7 @@ class PMonitoredSocketChannel : public PChannel
     /// Construct a monitored socket bundle channel
     PMonitoredSocketChannel(
       const PMonitoredSocketsPtr & sockets,  /// Monitored socket bundle to use in channel
-      PBoolean shared                            /// Monitored socket is shared by other channels
+      bool shared                            /// Monitored socket is shared by other channels
     );
   //@}
 
@@ -423,10 +423,10 @@ class PMonitoredSocketChannel : public PChannel
 
     /** Get the local IP address and port for the currently selected interface.
       */
-    PBoolean GetLocal(
+    bool GetLocal(
       PIPSocket::Address & address, /// IP address of local interface
       WORD & port,                  /// Port listening on
-      PBoolean usingNAT                 /// Require NAT address/port
+      bool usingNAT                 /// Require NAT address/port
     );
 
     /// Set the remote address/port for all Write() functions
@@ -447,21 +447,24 @@ class PMonitoredSocketChannel : public PChannel
     ) const { addr = remoteAddress; port = remotePort; }
 
     /** Set flag for receiving UDP data from any remote address. If the flag
-        is PFalse then data received from anything other than the configured
+        is false then data received from anything other than the configured
         remote address and port is ignored.
       */
     void SetPromiscuous(
-      PBoolean flag   /// New flag
+      bool flag   /// New flag
     ) { promiscuousReads = flag; }
 
     /// Get flag for receiving UDP data from any remote address
     bool GetPromiscuous() { return promiscuousReads; }
 
-    // Get the IP address and port of the last received UDP data.
+    /// Get the IP address and port of the last received UDP data.
     void GetLastReceived(
       PIPSocket::Address & addr,  /// Remote IP address
       WORD & port                 /// Remote port number
     ) const { addr = lastReceivedAddress; port = lastReceivedPort; }
+
+    /// Get the interface the last received UDP data was recieved on.
+    PString GetLastReceivedInterface() const { return lastReceivedInterface; }
 
     /// Get the monitored socket bundle being used by this channel.
     const PMonitoredSocketsPtr & GetMonitoredSockets() const { return socketBundle; }
@@ -469,14 +472,15 @@ class PMonitoredSocketChannel : public PChannel
 
   protected:
     PMonitoredSocketsPtr socketBundle;
-    PBoolean                 sharedBundle;
+    bool                 sharedBundle;
     PString              currentInterface;
-    PBoolean                 promiscuousReads;
+    bool                 promiscuousReads;
     PIPSocket::Address   remoteAddress;
-    PBoolean                 closing;
+    bool                 closing;
     WORD                 remotePort;
     PIPSocket::Address   lastReceivedAddress;
     WORD                 lastReceivedPort;
+    PString              lastReceivedInterface;
 };
 
 
@@ -490,7 +494,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
   PCLASSINFO(PMonitoredSocketBundle, PMonitoredSockets);
   public:
     PMonitoredSocketBundle(
-      PBoolean reuseAddr = PFalse,
+      bool reuseAddr = false,
       PSTUNClient * stunClient = NULL
     );
     ~PMonitoredSocketBundle();
@@ -499,7 +503,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
         system allocated port is used. In this case and when multiple
         interfaces are supported, all sockets use the same dynamic port value.
 
-        Returns PTrue if all sockets are opened.
+        Returns true if all sockets are opened.
      */
     virtual PBoolean Open(
       WORD port
@@ -574,7 +578,7 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
   public:
     PSingleMonitoredSocket(
       const PString & theInterface,
-      PBoolean reuseAddr = PFalse,
+      bool reuseAddr = false,
       PSTUNClient * stunClient = NULL
     );
     ~PSingleMonitoredSocket();
@@ -584,7 +588,7 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
     virtual PStringArray GetInterfaces(
-      PBoolean includeLoopBack = PFalse,  /// Flag for if loopback is to included in list
+      PBoolean includeLoopBack = false,  /// Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
     );
 
@@ -592,7 +596,7 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
         system allocated port is used. In this case and when multiple
         interfaces are supported, all sockets use the same dynamic port value.
 
-        Returns PTrue if all sockets are opened.
+        Returns true if all sockets are opened.
      */
     virtual PBoolean Open(
       WORD port
@@ -647,7 +651,7 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
     /// Call back function for when an interface has been removed from the system
     virtual void OnRemoveInterface(const InterfaceEntry & entry);
 
-    PBoolean IsInterface(const PString & iface) const;
+    bool IsInterface(const PString & iface) const;
 
     PString        theInterface;
     InterfaceEntry theEntry;
