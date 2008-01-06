@@ -236,7 +236,8 @@ PSafeCollection::~PSafeCollection()
   toBeRemoved.AllowDeleteObjects();
   toBeRemoved.RemoveAll();
 
-  collection->AllowDeleteObjects();
+  if (deleteObjects)
+    collection->AllowDeleteObjects();
   delete collection;
 }
 
