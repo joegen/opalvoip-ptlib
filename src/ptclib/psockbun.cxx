@@ -57,7 +57,7 @@ PInterfaceMonitorClient::~PInterfaceMonitorClient()
 }
 
 
-PStringArray PInterfaceMonitorClient::GetInterfaces(PBoolean includeLoopBack, const PIPSocket::Address & destination)
+PStringArray PInterfaceMonitorClient::GetInterfaces(bool includeLoopBack, const PIPSocket::Address & destination)
 {
   return PInterfaceMonitor::GetInstance().GetInterfaces(includeLoopBack, destination);
 }
@@ -74,7 +74,7 @@ PBoolean PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, Interf
 static PMutex PInterfaceMonitorInstanceMutex;
 static PInterfaceMonitor * PInterfaceMonitorInstance;
 
-PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, PBoolean _runMonitorThread)
+PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, bool _runMonitorThread)
   : runMonitorThread(_runMonitorThread)
   , refreshInterval(refresh)
   , updateThread(NULL)
@@ -107,12 +107,12 @@ PInterfaceMonitor & PInterfaceMonitor::GetInstance()
 }
 
 
-PBoolean PInterfaceMonitor::Start()
+bool PInterfaceMonitor::Start()
 {
   PWaitAndSignal m(mutex);
   
   if (runMonitorThread && updateThread != NULL)
-    return PFalse; // Already running
+    return false; // Already running
 
   PIPSocket::GetInterfaceTable(currentInterfaces);
   PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
@@ -121,7 +121,7 @@ PBoolean PInterfaceMonitor::Start()
     updateThread = new PThreadObj<PInterfaceMonitor>(*this, &PInterfaceMonitor::UpdateThreadMain);
     updateThread->SetThreadName("Network Interface Monitor");
   }
-  return PTrue;
+  return true;
   
 }
 
@@ -152,9 +152,9 @@ static PBoolean IsInterfaceInList(const PIPSocket::InterfaceEntry & entry,
   for (PINDEX i = 0; i < list.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & listEntry = list[i];
     if ((entry.GetName() == listEntry.GetName()) && (entry.GetAddress() == listEntry.GetAddress()))
-      return PTrue;
+      return true;
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -164,10 +164,10 @@ static PBoolean InterfaceListIsSubsetOf(const PIPSocket::InterfaceTable & subset
   for (PINDEX i = 0; i < subset.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = subset[i];
     if (!IsInterfaceInList(entry, set))
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -176,11 +176,11 @@ static PBoolean CompareInterfaceLists(const PIPSocket::InterfaceTable & list1,
 {
   // if the sizes are different, then the list has changed. 
   if (list1.GetSize() != list2.GetSize())
-    return PFalse;
+    return false;
 
   // ensure every element in list1 is in list2
   if (!InterfaceListIsSubsetOf(list1, list2))
-    return PFalse;
+    return false;
 
   // ensure every element in list1 is in list2
   return InterfaceListIsSubsetOf(list2, list1);
@@ -252,7 +252,7 @@ static PBoolean SplitInterfaceDescription(const PString & iface,
                                       PString & name)
 {
   if (iface.IsEmpty())
-    return PFalse;
+    return false;
 
   PINDEX percent = iface.Find('%');
   switch (percent) {
@@ -282,13 +282,13 @@ static PBoolean InterfaceMatches(const PIPSocket::Address & addr,
 {
   if ((addr.IsAny()   || entry.GetAddress() == addr) &&
       (name.IsEmpty() || entry.GetName().NumCompare(name) == PString::EqualTo)) {
-    return PTrue;
+    return true;
   }
-  return PFalse;
+  return false;
 }
 
 
-PStringArray PInterfaceMonitor::GetInterfaces(PBoolean includeLoopBack, 
+PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack, 
                                               const PIPSocket::Address & destination)
 {
   PWaitAndSignal guard(mutex);
@@ -316,30 +316,30 @@ PStringArray PInterfaceMonitor::GetInterfaces(PBoolean includeLoopBack,
 }
 
 
-PBoolean PInterfaceMonitor::IsValidBindingForDestination(const PIPSocket::Address & binding,
+bool PInterfaceMonitor::IsValidBindingForDestination(const PIPSocket::Address & binding,
                                                      const PIPSocket::Address & destination)
 {
   PWaitAndSignal guard(mutex);
   
   if (interfaceFilter == NULL)
-    return PTrue;
+    return true;
   
   PIPSocket::InterfaceTable ifaces = currentInterfaces;
   ifaces = interfaceFilter->FilterInterfaces(destination, ifaces);
   for (PINDEX i = 0; i < ifaces.GetSize(); i++) {
     if (ifaces[i].GetAddress() == binding)
-      return PTrue;
+      return true;
   }
-  return PFalse;
+  return false;
 }
 
 
-PBoolean PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::InterfaceEntry & info)
+bool PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::InterfaceEntry & info)
 {
   PIPSocket::Address addr;
   PString name;
   if (!SplitInterfaceDescription(iface, addr, name))
-    return PFalse;
+    return false;
 
   PWaitAndSignal m(mutex);
 
@@ -347,15 +347,15 @@ PBoolean PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::I
     PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
     if (InterfaceMatches(addr, name, entry)) {
       info = entry;
-      return PTrue;
+      return true;
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
-PBoolean PInterfaceMonitor::IsMatchingInterface(const PString & iface, const PIPSocket::InterfaceEntry & entry)
+bool PInterfaceMonitor::IsMatchingInterface(const PString & iface, const PIPSocket::InterfaceEntry & entry)
 {
   PIPSocket::Address addr;
   PString name;
@@ -440,16 +440,16 @@ void PInterfaceMonitor::OnRemoveSTUNClient(const PSTUNClient *stun)
 
 //////////////////////////////////////////////////
 
-PMonitoredSockets::PMonitoredSockets(PBoolean reuseAddr, PSTUNClient * stunClient)
+PMonitoredSockets::PMonitoredSockets(bool reuseAddr, PSTUNClient * stunClient)
   : localPort(0)
   , reuseAddress(reuseAddr)
   , stun(stunClient)
-  , opened(PFalse)
+  , opened(false)
 {
 }
 
 
-PBoolean PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
+bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
 {
   delete info.socket;
   info.socket = NULL;
@@ -463,7 +463,7 @@ PBoolean PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Add
         PTRACE(4, "MonSock\tCreated bundled UDP socket via STUN internal="
                << binding << ':' << info.socket->PUDPSocket::GetPort()
                << " external=" << info.socket->GetLocalAddress());
-        return PTrue;
+        return true;
       }
     }
   }
@@ -480,10 +480,10 @@ PBoolean PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Add
 }
 
 
-PBoolean PMonitoredSockets::DestroySocket(SocketInfo & info)
+bool PMonitoredSockets::DestroySocket(SocketInfo & info)
 {
   if (info.socket == NULL)
-    return PFalse;
+    return false;
 
   PBoolean result = info.socket->Close();
   PTRACE_IF(4, result, "MonSock\tClosed bundled UDP socket " << info.socket);
@@ -494,7 +494,7 @@ PBoolean PMonitoredSockets::DestroySocket(SocketInfo & info)
     UnlockReadWrite();
     PThread::Sleep(20);
     if (!LockReadWrite())
-      return PFalse;
+      return false;
     if (--failSafe == 0) {
       PTRACE(1, "MonSock\tClose of bundled UDP socket " << info.socket << " taking too long.");
       break;
@@ -508,13 +508,13 @@ PBoolean PMonitoredSockets::DestroySocket(SocketInfo & info)
 }
 
 
-PBoolean PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
+bool PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
                                          PIPSocket::Address & address,
                                          WORD & port,
-                                         PBoolean usingNAT) const
+                                         bool usingNAT) const
 {
   if (info.socket == NULL)
-    return PFalse;
+    return false;
 
   return usingNAT ? info.socket->GetLocalAddress(address, port)
                   : info.socket->PUDPSocket::GetLocalAddress(address, port);
@@ -623,7 +623,7 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 }
 
 
-PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, PBoolean reuseAddr, PSTUNClient * stunClient)
+PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr, PSTUNClient * stunClient)
 {
   if (iface.IsEmpty() || iface == "*" || PIPSocket::Address(iface).IsAny())
     return new PMonitoredSocketBundle(reuseAddr, stunClient);
@@ -641,11 +641,11 @@ void PMonitoredSockets::OnRemoveSTUNClient(const PSTUNClient *_stun)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketChannel::PMonitoredSocketChannel(const PMonitoredSocketsPtr & sock, PBoolean shared)
+PMonitoredSocketChannel::PMonitoredSocketChannel(const PMonitoredSocketsPtr & sock, bool shared)
   : socketBundle(sock)
   , sharedBundle(shared)
   , promiscuousReads(false)
-  , closing(PFalse)
+  , closing(false)
   , remotePort(0)
   , lastReceivedAddress(PIPSocket::GetDefaultIpAny())
   , lastReceivedPort(0)
@@ -661,7 +661,7 @@ PBoolean PMonitoredSocketChannel::IsOpen() const
 
 PBoolean PMonitoredSocketChannel::Close()
 {
-  closing = PTrue;
+  closing = true;
   return sharedBundle || socketBundle == NULL || socketBundle->Close();
 }
 
@@ -669,18 +669,18 @@ PBoolean PMonitoredSocketChannel::Close()
 PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   do {
-    PString iface = GetInterface();
+    lastReceivedInterface = GetInterface();
     if (!SetErrorValues(socketBundle->ReadFromBundle(buffer, length,
                                                      lastReceivedAddress, lastReceivedPort,
-                                                     iface, lastReadCount, readTimeout),
+                                                     lastReceivedInterface, lastReadCount, readTimeout),
                         0, LastReadError))
-      return PFalse;
+      return false;
 
     if (promiscuousReads)
-      return PTrue;
+      return true;
 
     if (remoteAddress.IsAny())
       remoteAddress = lastReceivedAddress;
@@ -688,7 +688,7 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
       remotePort = lastReceivedPort;
 
   } while (remoteAddress != lastReceivedAddress || remotePort != lastReceivedPort);
-  return PTrue;
+  return true;
 }
 
 
@@ -709,6 +709,9 @@ void PMonitoredSocketChannel::SetInterface(const PString & iface)
     currentInterface = MakeInterfaceDescription(info);
   else
     currentInterface = iface;
+
+  if (lastReceivedInterface.IsEmpty())
+    lastReceivedInterface = currentInterface;
 }
 
 
@@ -721,7 +724,7 @@ const PString & PMonitoredSocketChannel::GetInterface()
 }
 
 
-PBoolean PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port, PBoolean usingNAT)
+bool PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port, bool usingNAT)
 {
   return socketBundle->GetAddress(GetInterface(), address, port, usingNAT);
 }
@@ -748,7 +751,7 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketBundle::PMonitoredSocketBundle(PBoolean reuseAddr, PSTUNClient * stunClient)
+PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr, PSTUNClient * stunClient)
   : PMonitoredSockets(reuseAddr, stunClient)
 {
 }
@@ -765,9 +768,9 @@ PBoolean PMonitoredSocketBundle::Open(WORD port)
   PSafeLockReadWrite guard(*this);
 
   if (IsOpen() && localPort != 0  && localPort == port)
-    return PTrue;
+    return true;
 
-  opened = PTrue;
+  opened = true;
 
   localPort = port;
 
@@ -779,16 +782,16 @@ PBoolean PMonitoredSocketBundle::Open(WORD port)
   for (PINDEX i = 0; i < interfaces.GetSize(); ++i)
     OpenSocket(interfaces[i]);
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PMonitoredSocketBundle::Close()
 {
   if (!LockReadWrite())
-    return PFalse;
+    return false;
 
-  opened = PFalse;
+  opened = false;
 
   while (!socketInfoMap.empty())
     CloseSocket(socketInfoMap.begin());
@@ -796,7 +799,7 @@ PBoolean PMonitoredSocketBundle::Close()
 
   UnlockReadWrite();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -808,12 +811,12 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
   if (iface.IsEmpty()) {
     address = PIPSocket::GetDefaultIpAny();
     port = localPort;
-    return PTrue;
+    return true;
   }
 
   PSafeLockReadOnly guard(*this);
   if (!guard.IsLocked())
-    return PFalse;
+    return false;
 
   SocketInfoMap_T::const_iterator iter = socketInfoMap.find(iface);
   return iter != socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
@@ -982,7 +985,7 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 
 //////////////////////////////////////////////////
 
-PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, PBoolean reuseAddr, PSTUNClient * stunClient)
+PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr, PSTUNClient * stunClient)
   : PMonitoredSocketBundle(reuseAddr, stunClient)
   , theInterface(_theInterface)
 {
@@ -1011,9 +1014,9 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
   PSafeLockReadWrite guard(*this);
 
   if (opened && theInfo.socket != NULL && theInfo.socket->IsOpen())
-    return PFalse;
+    return false;
 
-  opened = PTrue;
+  opened = true;
 
   localPort = port;
 
@@ -1021,13 +1024,13 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
     GetInterfaceInfo(theInterface, theEntry);
 
   if (theEntry.GetAddress().IsAny())
-    return PTrue;
+    return true;
 
   if (!CreateSocket(theInfo, theEntry.GetAddress()))
-    return PFalse;
+    return false;
 
   localPort = theInfo.socket->PUDPSocket::GetPort();
-  return PTrue;
+  return true;
 }
 
 
@@ -1035,7 +1038,7 @@ PBoolean PSingleMonitoredSocket::Close()
 {
   PSafeLockReadWrite guard(*this);
 
-  opened = PFalse;
+  opened = false;
   interfaceAddedSignal.Close(); // Fail safe break out of Select()
   return DestroySocket(theInfo);
 }
@@ -1125,10 +1128,10 @@ void PSingleMonitoredSocket::OnRemoveInterface(const InterfaceEntry & entry)
 }
 
 
-PBoolean PSingleMonitoredSocket::IsInterface(const PString & iface) const
+bool PSingleMonitoredSocket::IsInterface(const PString & iface) const
 {
   if (iface.IsEmpty())
-    return PTrue;
+    return true;
 
   PINDEX percent1 = iface.Find('%');
   PINDEX percent2 = theInterface.Find('%');
