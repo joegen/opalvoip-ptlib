@@ -372,12 +372,11 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
     operator=(tmpdir);
   }
   else {
-    PConfig cfg(PConfig::Environment);
-    PString path = cfg.GetString("TMPDIR");
+    PString path = getenv("TMPDIR");
     if (path.IsEmpty()) {
-      path = cfg.GetString("TMP");
+      path = getenv("TMP");
       if (path.IsEmpty())
-        path = cfg.GetString("TEMP");
+        path = getenv("TEMP");
     }
     if (path.IsEmpty() || path[path.GetLength()-1] != '\\')
       path += '\\';

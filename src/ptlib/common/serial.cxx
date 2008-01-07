@@ -54,11 +54,13 @@ PSerialChannel::PSerialChannel(const PString & port, DWORD speed, BYTE data,
 }
 
 
+#if P_CONFIG_FILE
 PSerialChannel::PSerialChannel(PConfig & cfg)
 {
   Construct();
   Open(cfg);
 }
+#endif // P_CONFIG_FILE
 
 
 PSerialChannel::~PSerialChannel()
@@ -66,6 +68,8 @@ PSerialChannel::~PSerialChannel()
   Close();
 }
 
+
+#if P_CONFIG_FILE
 
 static const char PortName[] = "PortName";
 static const char PortSpeed[] = "PortSpeed";
@@ -99,6 +103,8 @@ void PSerialChannel::SaveSettings(PConfig & cfg)
   cfg.SetInteger(PortInputFlow, GetInputFlowControl());
   cfg.SetInteger(PortOutputFlow, GetOutputFlowControl());
 }
+
+#endif // P_CONFIG_FILE
 
 
 void PSerialChannel::ClearDTR()

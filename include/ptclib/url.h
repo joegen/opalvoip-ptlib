@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PURL
-#define _PURL
+#ifndef _PURL_H
+#define _PURL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -38,6 +38,8 @@
 #ifndef _PTLIB_H
 #include <ptlib.h>
 #endif
+
+#if P_URL
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -357,6 +359,8 @@ class PURLLegacyScheme : public PURLScheme
     WORD defaultPort;
 };
 
-#endif
+#endif // P_URL
+
+#endif // _PURL_H
 
 // End Of File ///////////////////////////////////////////////////////////////

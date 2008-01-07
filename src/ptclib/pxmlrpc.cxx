@@ -37,7 +37,7 @@
 #pragma implementation "pxmlrpc.h"
 #endif
 
-#if P_EXPAT
+#if P_XMLRPC
 
 #include <ptclib/pxmlrpc.h>
 
@@ -1229,7 +1229,7 @@ void PXMLRPCStructBase::AddVariable(PXMLRPCVariableBase * var)
 }
 
 
-#endif 
+#endif // P_XMLRPC
 
 
 // End of file ///////////////////////////////////////////////////////////////

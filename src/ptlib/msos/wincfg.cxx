@@ -469,6 +469,10 @@ BOOL RegistryKey::SetValue(const PString & value, DWORD num)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+#if P_CONFIG_FILE
+
 static PBoolean IsRegistryPath(const PString & path)
 {
   return (path.Find(LocalMachineStr) == 0 && path != LocalMachineStr) ||
@@ -841,6 +845,8 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
     registry.SetValue(key, value);
   }
 }
+
+#endif // P_CONFIG_FILE
 
 
 // End Of File ///////////////////////////////////////////////////////////////

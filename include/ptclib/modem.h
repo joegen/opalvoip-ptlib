@@ -82,6 +82,7 @@ class PModem : public PSerialChannel
       FlowControl outputFlow = DefaultFlowControl   ///< Output flow control.
     );
 
+#if P_CONFIG_FILE
     /** Open the modem serial channel obtaining the parameters from standard
        variables in the configuration file. Note that it assumed that the
        correct configuration file section is already set.
@@ -89,6 +90,7 @@ class PModem : public PSerialChannel
     PModem(
       PConfig & cfg   ///< Configuration file to read parameters from.
     );
+#endif // P_CONFIG_FILE
 
 
   // Overrides from class PChannel
@@ -115,6 +117,7 @@ class PModem : public PSerialChannel
       FlowControl outputFlow = DefaultFlowControl   ///< Output flow control.
     );
 
+#if P_CONFIG_FILE
     /** Open the modem serial port obtaining the parameters from standard
        variables in the configuration file. Note that it assumed that the
        correct configuration file section is already set.
@@ -130,6 +133,7 @@ class PModem : public PSerialChannel
       PConfig & cfg   ///< Configuration file to write parameters to.
     );
     // Save the current modem serial port settings into the configuration file.
+#endif // P_CONFIG_FILE
 
 
   // New member functions

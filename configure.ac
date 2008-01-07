@@ -539,7 +539,9 @@ default_serial=yes
 default_pop3smtp=yes
 default_audio=yes
 default_video=yes
+default_url=yes
 default_http=yes
+default_httpforms=yes
 default_httpsvc=yes
 default_soap=yes
 default_xmlrpc=yes
@@ -577,7 +579,9 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_pop3smtp=no
   default_audio=yes
   default_video=yes
+  default_url=yes
   default_http=yes
+  default_httpforms=no
   default_httpsvc=no
   default_soap=no
   default_xmlrpc=no
@@ -614,7 +618,9 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_pop3smtp=no
   default_audio=yes
   default_video=yes
+  default_url=yes
   default_http=yes
+  default_httpforms=no
   default_httpsvc=no
   default_soap=no
   default_xmlrpc=no
@@ -1394,6 +1400,115 @@ AC_SUBST(HAS_OPENSSL)
 AC_SUBST(P_STATIC_ENDLDLIBS)
 AC_SUBST(P_STATIC_LDFLAGS)
 
+
+dnl ########################################################################
+dnl check for URL support
+
+dnl MSWIN_DISPLAY    url,URL Support
+dnl MSWIN_DEFINE     url,P_URL
+
+AC_ARG_ENABLE(url,
+       [  --disable-url          disable URL support])
+
+if test "${enable_url}z" = "z" ; then
+  enable_url=$default_url
+fi
+
+HAS_URL=
+if test "$enable_url" = "no" ; then
+  AC_MSG_NOTICE(URL protocol support disabled)
+else
+  HAS_URL=1
+  AC_DEFINE(P_URL, 1)
+fi
+AC_SUBST(HAS_URL)
+
+
+dnl ########################################################################
+dnl check for HTTP support
+
+dnl MSWIN_DISPLAY    http,HTTP Support
+dnl MSWIN_DEFINE     http,P_HTTP
+dnl MSWIN_IF_FEATURE http,url
+
+AC_ARG_ENABLE(http,
+       [  --disable-http          disable HTTP support])
+
+HAS_HTTP=
+if test "$enable_url" = "no" ; then
+  AC_MSG_NOTICE(HTTP disabled as URL is disabled)
+else
+  if test "${enable_http}z" = "z" ; then
+    enable_http=$default_http
+  fi
+
+  if test "$enable_http" = "no" ; then
+    AC_MSG_NOTICE(HTTP protocol support disabled)
+  else
+    HAS_HTTP=1
+    AC_DEFINE(P_HTTP, 1)
+  fi
+fi
+AC_SUBST(HAS_HTTP)
+
+
+dnl ########################################################################
+dnl check for HTTPFORMS support
+
+dnl MSWIN_DISPLAY    httpforms,HTTP forms Support
+dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
+dnl MSWIN_IF_FEATURE httpforms,http
+dnl MSWIN_IF_FEATURE httpforms,configfile
+
+AC_ARG_ENABLE(httpforms,
+       [  --disable-httpforms       disable HTTP forms support])
+
+HAS_HTTPFORMS=
+if test "$enable_url" = "no" ; then
+  AC_MSG_NOTICE(HTTP forms disabled as HTTP is disabled)
+else
+  if test "${enable_httpforms}z" = "z" ; then
+    enable_httpforms=$default_httpsvc
+  fi
+
+  if test "$enable_httpforms" = "no" ; then
+    AC_MSG_NOTICE(HTTP forms support disabled)
+  else
+    HAS_HTTPFORMS=1
+    AC_DEFINE(P_HTTPFORMS, 1)
+  fi
+fi
+AC_SUBST(HAS_HTTPFORMS)
+
+
+dnl ########################################################################
+dnl check for HTTPSVC support
+
+dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
+dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
+dnl MSWIN_IF_FEATURE httpsvc,httpforms
+
+AC_ARG_ENABLE(httpsvc,
+       [  --disable-httpsvc       disable HTTP service support])
+
+HAS_HTTPSVC=
+if test "$enable_url" = "no" ; then
+  AC_MSG_NOTICE(HTTP service disabled as HTTP forms is disabled)
+else
+  if test "${enable_httpsvc}z" = "z" ; then
+    enable_httpsvc=$default_httpsvc
+  fi
+
+  if test "$enable_httpsvc" = "no" ; then
+    AC_MSG_NOTICE(HTTP service support disabled)
+  else
+    HAS_HTTPSVC=1
+    AC_DEFINE(P_HTTPSVC, 1)
+  fi
+fi
+AC_SUBST(HAS_HTTPSVC)
+
+
 dnl ########################################################################
 dnl look for expat XML parser
 
@@ -1471,18 +1586,6 @@ dnl MSWIN_DISPLAY    vxml,VXML
 dnl MSWIN_DEFINE     vxml,P_VXML
 dnl MSWIN_IF_FEATURE vxml,expat|winexpat
 
-dnl MSWIN_DISPLAY    jabber,Jabber
-dnl MSWIN_DEFINE     jabber,P_JABBER
-dnl MSWIN_IF_FEATURE jabber,expat|winexpat
-
-dnl MSWIN_DISPLAY    xmlrpc,XMLRPC
-dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-dnl MSWIN_IF_FEATURE xmlrpc,expat|winexpat
-
-dnl MSWIN_DISPLAY    soap,SOAP
-dnl MSWIN_DEFINE     soap,P_SOAP
-dnl MSWIN_IF_FEATURE soap,expat|winexpat
-
 HAS_VXML=
 HAS_JABBER=
 HAS_XMLRPC=
@@ -1491,6 +1594,7 @@ if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(VXML disabled as Expat is disabled)
   AC_MSG_NOTICE(Jabber disabled as Expat is disabled)
   AC_MSG_NOTICE(XMLRPC disabled as Expat is disabled)
+  AC_MSG_NOTICE(SOAP disabled as Expat is disabled)
 else
 
   dnl ########################################################################
@@ -1512,6 +1616,10 @@ else
   dnl ########################################################################
   dnl Jabber
 
+  dnl MSWIN_DISPLAY    jabber,Jabber
+  dnl MSWIN_DEFINE     jabber,P_JABBER
+  dnl MSWIN_IF_FEATURE jabber,expat|winexpat
+
   AC_ARG_ENABLE(jabber,
          [  --disable-jabber        disable Jabber support])
 
@@ -1525,36 +1633,51 @@ else
     HAS_JABBER=1
   fi
 
-  dnl ########################################################################
-  dnl XMLRPC
-
-  AC_ARG_ENABLE(xmlrpc,
-         [  --disable-xmlrpc        disable XMLRPC support])
-
-  if test "${enable_xmlrpc}z" = "z" ; then
-    enable_xmlrpc=$default_xmlrpc
-  fi
-  if test "$enable_xmlrpc" = "no" ; then
-    AC_MSG_NOTICE(XMLRPC disabled)
+  if test "$enable_http" = "no" ; then
+    AC_MSG_NOTICE(XMLRPC disabled as HTTP is disabled)
+    AC_MSG_NOTICE(SOAP disabled as HTTP is disabled)
   else
-    AC_DEFINE(P_XMLRPC, 1)
-     HAS_XMLRPC=1
-  fi
-  
-  dnl ########################################################################
-  dnl SOAP
+    dnl ########################################################################
+    dnl XMLRPC
 
-  AC_ARG_ENABLE(soap,
-         [  --disable-soap          disable SOAP support])
+    dnl MSWIN_DISPLAY    xmlrpc,XMLRPC
+    dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
+    dnl MSWIN_IF_FEATURE xmlrpc,expat|winexpat
+    dnl MSWIN_IF_FEATURE xmlrpc,http
 
-  if test "${enable_soap}z" = "z" ; then
-    enable_soap=$default_soap
-  fi
-  if test "$enable_soap" = "no" ; then
-    AC_MSG_NOTICE(SOAP disabled)
-  else
-    AC_DEFINE(P_SOAP, 1)
-    HAS_SOAP=1
+    AC_ARG_ENABLE(xmlrpc,
+	 [  --disable-xmlrpc        disable XMLRPC support])
+
+    if test "${enable_xmlrpc}z" = "z" ; then
+      enable_xmlrpc=$default_xmlrpc
+    fi
+    if test "$enable_xmlrpc" = "no" ; then
+      AC_MSG_NOTICE(XMLRPC disabled)
+    else
+      AC_DEFINE(P_XMLRPC, 1)
+      HAS_XMLRPC=1
+    fi
+
+    dnl ########################################################################
+    dnl SOAP
+
+    dnl MSWIN_DISPLAY    soap,SOAP
+    dnl MSWIN_DEFINE     soap,P_SOAP
+    dnl MSWIN_IF_FEATURE soap,expat|winexpat
+    dnl MSWIN_IF_FEATURE soap,http
+
+    AC_ARG_ENABLE(soap,
+	 [  --disable-soap          disable SOAP support])
+
+    if test "${enable_soap}z" = "z" ; then
+      enable_soap=$default_soap
+    fi
+    if test "$enable_soap" = "no" ; then
+      AC_MSG_NOTICE(SOAP disabled)
+    else
+      AC_DEFINE(P_SOAP, 1)
+      HAS_SOAP=1
+    fi
   fi
 fi
 
@@ -2065,55 +2188,10 @@ fi
 AC_SUBST(HAS_POP3SMTP)
 
 dnl ########################################################################
-dnl check for HTTP support
-
-dnl MSWIN_DISPLAY    http,HTTP Support
-dnl MSWIN_DEFINE     http,P_HTTP
-
-AC_ARG_ENABLE(http,
-       [  --disable-http          disable HTTP support])
-
-if test "${enable_http}z" = "z" ; then
-  enable_http=$default_http
-fi
-
-HAS_HTTP=
-if test "$enable_http" = "no" ; then
-  AC_MSG_NOTICE(HTTP protocol support disabled)
-else
-  HAS_HTTP=1
-  AC_DEFINE(P_HTTP, 1)
-fi
-AC_SUBST(HAS_HTTP)
-
-dnl ########################################################################
-dnl check for HTTPSVC support
-
-dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
-dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
-dnl MSWIN_IF_FEATURE httpsvc,http
-
-AC_ARG_ENABLE(httpsvc,
-       [  --disable-httpsvc       disable HTTP service support])
-
-if test "${enable_httpsvc}z" = "z" ; then
-  enable_httpsvc=$default_httpsvc
-fi
-
-HAS_HTTPSVC=
-if test "$enable_httpsvc" = "no" ; then
-  AC_MSG_NOTICE(HTTP service support disabled)
-else
-  HAS_HTTPSVC=1
-  AC_DEFINE(P_HTTPSVC, 1)
-fi
-AC_SUBST(HAS_HTTPSVC)
-
-dnl ########################################################################
 dnl check for enabling config file support
 
-dnl MSWIN_DISPLAY    config_file,Config file protocol support
-dnl MSWIN_DEFINE     config_file,P_CONFIG_FILE
+dnl MSWIN_DISPLAY    configfile,Config file protocol support
+dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
 
 AC_ARG_ENABLE(configfile,
        [  --disable-configfile    disable config file support])

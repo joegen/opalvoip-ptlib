@@ -37,7 +37,7 @@
 #endif
 
 
-#if P_EXPAT
+#if P_SOAP
 
 #include <ptclib/pxml.h>
 #include <ptclib/http.h>
@@ -228,7 +228,7 @@ class PSOAPClient : public PObject
 };
 
 
-#endif // P_EXPAT
+#endif // P_SOAP
 
 
 #endif // _PSOAP_H

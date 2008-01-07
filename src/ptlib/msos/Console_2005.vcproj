@@ -4991,6 +4991,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\url.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\vsdl.cxx"
 					>
 				</File>
