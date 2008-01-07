@@ -257,7 +257,9 @@ PXML::PXML(const PString & data, int options, const char * noIndentElements)
 
 PXML::~PXML()
 {
+#if P_HTTP
   autoLoadTimer.Stop();
+#endif // P_HTTP
   RemoveAll();
 }
 
@@ -364,6 +366,9 @@ PBoolean PXML::LoadFile(const PFilePath & fn, int _options)
 
   return Load(data);
 }
+
+
+#if P_HTTP
 
 PBoolean PXML::LoadURL(const PURL & url)
 {
@@ -486,6 +491,8 @@ PBoolean PXML::StopAutoReloadURL()
   autoLoadTimer.Stop();
   return PTrue;
 }
+
+#endif // P_HTTP
 
 
 PBoolean PXML::Load(const PString & data, int _options)

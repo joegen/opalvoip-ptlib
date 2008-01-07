@@ -1457,8 +1457,7 @@ dnl check for HTTPFORMS support
 
 dnl MSWIN_DISPLAY    httpforms,HTTP forms Support
 dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
-dnl MSWIN_IF_FEATURE httpforms,http
-dnl MSWIN_IF_FEATURE httpforms,configfile
+dnl MSWIN_IF_FEATURE httpforms,http&configfile
 
 AC_ARG_ENABLE(httpforms,
        [  --disable-httpforms       disable HTTP forms support])
@@ -1582,10 +1581,6 @@ AC_SUBST(HAS_EXPAT)
 dnl ########################################################################
 dnl handle modules dependent on Expat
 
-dnl MSWIN_DISPLAY    vxml,VXML
-dnl MSWIN_DEFINE     vxml,P_VXML
-dnl MSWIN_IF_FEATURE vxml,expat|winexpat
-
 HAS_VXML=
 HAS_JABBER=
 HAS_XMLRPC=
@@ -1596,22 +1591,6 @@ if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(XMLRPC disabled as Expat is disabled)
   AC_MSG_NOTICE(SOAP disabled as Expat is disabled)
 else
-
-  dnl ########################################################################
-  dnl VXML 
-
-  AC_ARG_ENABLE(vxml,
-         [  --disable-vxml          disable VXML support])
-
-  if test "${enable_vxml}z" = "z" ; then
-    enable_vxml=$default_vxml
-  fi
-  if test "$enable_vxml" = "no" ; then
-    AC_MSG_NOTICE(VXML disabled)
-  else
-    AC_DEFINE(P_VXML, 1)
-    HAS_VXML=1
-  fi
 
   dnl ########################################################################
   dnl Jabber
@@ -1634,16 +1613,36 @@ else
   fi
 
   if test "$enable_http" = "no" ; then
+    AC_MSG_NOTICE(VXML disabled as HTTP is disabled)
     AC_MSG_NOTICE(XMLRPC disabled as HTTP is disabled)
     AC_MSG_NOTICE(SOAP disabled as HTTP is disabled)
   else
     dnl ########################################################################
+    dnl VXML 
+
+    dnl MSWIN_DISPLAY    vxml,VXML Support
+    dnl MSWIN_DEFINE     vxml,P_VXML
+    dnl MSWIN_IF_FEATURE vxml,http&expat|winexpat
+
+    AC_ARG_ENABLE(vxml,
+           [  --disable-vxml          disable VXML support])
+
+    if test "${enable_vxml}z" = "z" ; then
+      enable_vxml=$default_vxml
+    fi
+    if test "$enable_vxml" = "no" ; then
+      AC_MSG_NOTICE(VXML disabled)
+    else
+      AC_DEFINE(P_VXML, 1)
+      HAS_VXML=1
+    fi
+
+    dnl ########################################################################
     dnl XMLRPC
 
-    dnl MSWIN_DISPLAY    xmlrpc,XMLRPC
+    dnl MSWIN_DISPLAY    xmlrpc,XMLRPC Support
     dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-    dnl MSWIN_IF_FEATURE xmlrpc,expat|winexpat
-    dnl MSWIN_IF_FEATURE xmlrpc,http
+    dnl MSWIN_IF_FEATURE xmlrpc,http&expat|winexpat
 
     AC_ARG_ENABLE(xmlrpc,
 	 [  --disable-xmlrpc        disable XMLRPC support])
@@ -1661,10 +1660,9 @@ else
     dnl ########################################################################
     dnl SOAP
 
-    dnl MSWIN_DISPLAY    soap,SOAP
+    dnl MSWIN_DISPLAY    soap,SOAP Support
     dnl MSWIN_DEFINE     soap,P_SOAP
-    dnl MSWIN_IF_FEATURE soap,expat|winexpat
-    dnl MSWIN_IF_FEATURE soap,http
+    dnl MSWIN_IF_FEATURE soap,http&expat|winexpat
 
     AC_ARG_ENABLE(soap,
 	 [  --disable-soap          disable SOAP support])
