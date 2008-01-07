@@ -55,10 +55,12 @@ PModem::PModem(const PString & port, DWORD speed, BYTE data,
 }
 
 
+#if P_CONFIG_FILE
 PModem::PModem(PConfig & cfg)
 {
   status = Open(cfg) ? Uninitialised : Unopened;
 }
+#endif // P_CONFIG_FILE
 
 
 void PModem::SetInitString(const PString & str)
@@ -166,6 +168,8 @@ PBoolean PModem::Open(const PString & port, DWORD speed, BYTE data,
 }
 
 
+#if P_CONFIG_FILE
+
 static const char ModemInit[] = "ModemInit";
 static const char ModemDeinit[] = "ModemDeinit";
 static const char ModemPreDial[] = "ModemPreDial";
@@ -206,6 +210,7 @@ void PModem::SaveSettings(PConfig & cfg)
   cfg.SetString(ModemConnect, connectReply);
   cfg.SetString(ModemHangUp, hangUpCmd);
 }
+#endif // P_CONFIG_FILE
 
 
 PBoolean PModem::CanInitialise() const

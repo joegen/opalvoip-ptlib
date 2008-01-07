@@ -33,6 +33,8 @@
 
 #include <ptlib.h>
 
+#if P_CONFIG_FILE
+
 #include <ctype.h>
 
 
@@ -129,6 +131,8 @@ void PConfig::SetTime(const PString & section, const PString & key, const PTime 
 {
   SetString(section, key, value.AsString());
 }
+
+#endif // P_CONFIG_FILE
 
 
 // End Of File ///////////////////////////////////////////////////////////////

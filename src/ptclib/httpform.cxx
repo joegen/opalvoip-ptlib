@@ -34,6 +34,9 @@
 
 #include <ptlib.h>
 #include <ptclib/httpform.h>
+
+#if P_HTTPFORMS
+
 #include <ptclib/cypher.h>
 
 
@@ -2228,5 +2231,6 @@ PBoolean PHTTPConfigSectionList::Post(PHTTPRequest &,
 }
 
 
+#endif // P_HTTPFORMS
 
 // End Of File ///////////////////////////////////////////////////////////////

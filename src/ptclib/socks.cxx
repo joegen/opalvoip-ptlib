@@ -61,6 +61,7 @@ PSocksProtocol::PSocksProtocol(WORD port)
   remotePort = port;
   localPort = 0;
 
+#if P_CONFIG_FILE
   // get proxy information
   PConfig config(PConfig::System, "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\");
 
@@ -80,6 +81,7 @@ PSocksProtocol::PSocksProtocol(WORD port)
       }
     }
   }
+#endif // P_CONFIG_FILE
 }
 
 

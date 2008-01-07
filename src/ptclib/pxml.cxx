@@ -997,6 +997,8 @@ PXMLSettings::PXMLSettings(const PString & data, int options)
 {
 }
 
+
+#if P_CONFIG_FILE
 PXMLSettings::PXMLSettings(const PConfig & data, int options)
   : PXML(options) 
 {
@@ -1009,6 +1011,8 @@ PXMLSettings::PXMLSettings(const PConfig & data, int options)
     }
   }
 }
+#endif // P_CONFIG_FILE
+
 
 PBoolean PXMLSettings::Load(const PString & data)
 {
@@ -1072,6 +1076,8 @@ PBoolean PXMLSettings::HasAttribute(const PCaselessString & section, const PStri
   return element->HasAttribute(key);
 }
 
+
+#if P_CONFIG_FILE
 void PXMLSettings::ToConfig(PConfig & cfg) const
 {
   for (PINDEX i = 0;i < (PINDEX)GetNumElements();++i) {
@@ -1085,6 +1091,8 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
     }
   }
 }
+#endif // P_CONFIG_FILE
+
 
 ///////////////////////////////////////////////////////
 
