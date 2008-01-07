@@ -41,6 +41,7 @@
 #if P_DNS
 #include <ptclib/pdns.h>
 #endif
+#include <ptclib/cypher.h>
 
 
 #define new PNEW
