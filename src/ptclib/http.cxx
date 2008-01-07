@@ -34,6 +34,8 @@
 
 #include <ptlib.h>
 
+#if P_HTTP
+
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
 #include <ptclib/url.h>
@@ -108,6 +110,8 @@ PINDEX PHTTP::ParseResponse(const PString & line)
   lastResponseInfo &= line.Mid(endCode);
   return 0;
 }
+
+#endif // P_HTTP
 
 
 // End Of File ///////////////////////////////////////////////////////////////

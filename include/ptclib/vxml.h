@@ -36,7 +36,7 @@
 
 #include <ptclib/pxml.h>
 
-#if P_EXPAT
+#if P_VXML
 
 #include <ptlib/pipechan.h>
 #include <ptclib/delaychan.h>
@@ -631,8 +631,10 @@ class PVXMLChannel : public PDelayChannel
 
 //////////////////////////////////////////////////////////////////
 
-#endif // P_EXPAT
-#endif
+
+#endif // P_VXML
+
+#endif // _VXML_H
 
 
 // End of file ////////////////////////////////////////////////////////////////
