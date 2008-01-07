@@ -34,7 +34,7 @@
 
 #define P_DISABLE_FACTORY_INSTANCES
 
-#if P_EXPAT
+#if P_VXML
 
 #include <ptlib/pfactory.h>
 #include <ptclib/vxml.h>
@@ -3140,6 +3140,7 @@ PBoolean TextToSpeech_Sample::SpeakFile(const PString & text)
 
 PFactory<PTextToSpeech>::Worker<TextToSpeech_Sample> sampleTTSFactory("sampler", false);
 
-#endif   // P_EXPAT
+#endif   // P_VXML
+
 
 ///////////////////////////////////////////////////////////////

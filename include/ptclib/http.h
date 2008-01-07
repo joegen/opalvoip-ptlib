@@ -28,12 +28,14 @@
  * $Date$
  */
 
-#ifndef _PHTTP
-#define _PHTTP
+#ifndef _PHTTP_H
+#define _PHTTP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#if P_HTTP
 
 #include <ptclib/inetprot.h>
 #include <ptclib/mime.h>
@@ -1693,7 +1695,9 @@ class PHTTPDirRequest : public PHTTPFileRequest
     PFilePath realPath;
 };
 
-#endif // _PHTTP
+#endif // P_HTTP
+
+#endif // _PHTTP_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

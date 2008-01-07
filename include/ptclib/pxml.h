@@ -150,6 +150,7 @@ class PXML : public PXMLBase
 
     PBoolean Load(const PString & data, int options = -1);
 
+#if P_HTTP
     PBoolean StartAutoReloadURL(const PURL & url, 
                             const PTimeInterval & timeout, 
                             const PTimeInterval & refreshTime,
@@ -161,6 +162,8 @@ class PXML : public PXMLBase
 
     PBoolean LoadURL(const PURL & url);
     PBoolean LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
+#endif // P_HTTP
+
     PBoolean LoadFile(const PFilePath & fn, int options = -1);
 
     virtual void OnLoaded() { }
@@ -197,8 +200,10 @@ class PXML : public PXMLBase
 
     PMutex & GetMutex() { return rootMutex; }
 
+#if P_HTTP
     PDECLARE_NOTIFIER(PTimer,  PXML, AutoReloadTimeout);
     PDECLARE_NOTIFIER(PThread, PXML, AutoReloadThread);
+#endif // P_HTTP
 
     // static methods to create XML tags
     static PString CreateStartTag (const PString & text);
@@ -216,11 +221,13 @@ class PXML : public PXMLBase
     PString version, encoding;
     int standAlone;
 
+#if P_HTTP
     PTimer autoLoadTimer;
     PURL autoloadURL;
     PTimeInterval autoLoadWaitTime;
     PMutex autoLoadMutex;
     PString autoLoadError;
+#endif // P_HTTP
 
     PString errorString;
     PINDEX errorCol;

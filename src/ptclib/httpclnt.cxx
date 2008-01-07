@@ -29,6 +29,9 @@
  */
 
 #include <ptlib.h>
+
+#if P_HTTP
+
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
 
@@ -408,6 +411,8 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 
   return PTrue;
 }
+
+#endif // P_HTTP
 
 
 // End Of File ///////////////////////////////////////////////////////////////
