@@ -36,7 +36,7 @@
 #include <ptlib.h>
 
 
-#if P_EXPAT
+#if P_SOAP
 
 #include <ptclib/psoap.h>
 
@@ -673,7 +673,7 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
 }
 
 
-#endif // P_EXPAT
+#endif // P_SOAP
 
 
 // End of File ////////////////////////////////////////////////////////////////
