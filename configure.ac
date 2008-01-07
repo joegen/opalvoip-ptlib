@@ -1437,6 +1437,7 @@ AC_ARG_ENABLE(http,
 HAS_HTTP=
 if test "$enable_url" = "no" ; then
   AC_MSG_NOTICE(HTTP disabled as URL is disabled)
+  enable_http=no
 else
   if test "${enable_http}z" = "z" ; then
     enable_http=$default_http
@@ -1463,8 +1464,9 @@ AC_ARG_ENABLE(httpforms,
        [  --disable-httpforms       disable HTTP forms support])
 
 HAS_HTTPFORMS=
-if test "$enable_url" = "no" ; then
+if test "$enable_http" = "no" ; then
   AC_MSG_NOTICE(HTTP forms disabled as HTTP is disabled)
+  enable_httpforms=no
 else
   if test "${enable_httpforms}z" = "z" ; then
     enable_httpforms=$default_httpsvc
@@ -1491,8 +1493,9 @@ AC_ARG_ENABLE(httpsvc,
        [  --disable-httpsvc       disable HTTP service support])
 
 HAS_HTTPSVC=
-if test "$enable_url" = "no" ; then
+if test "$enable_httpforms" = "no" ; then
   AC_MSG_NOTICE(HTTP service disabled as HTTP forms is disabled)
+  enable_httpsvc=no
 else
   if test "${enable_httpsvc}z" = "z" ; then
     enable_httpsvc=$default_httpsvc
