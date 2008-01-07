@@ -28,12 +28,14 @@
  * $Date$
  */
 
-#ifndef _PHTTPFORM
-#define _PHTTPFORM
+#ifndef _PHTTPFORM_H
+#define _PHTTPFORM_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#if P_HTTPFORMS
 
 #include <ptclib/http.h>
 #include <ptclib/html.h>
@@ -892,7 +894,9 @@ class PHTTPConfigSectionList : public PHTTPString
 };
 
 
-#endif
+#endif // P_HTTPFORMS
+
+#endif // _HTTPFORM_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

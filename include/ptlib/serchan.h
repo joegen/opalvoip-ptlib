@@ -120,6 +120,7 @@ class PSerialChannel : public PChannel
       FlowControl outputFlow = DefaultFlowControl      
     );
 
+#if P_CONFIG_FILE
     /**Create a serial channal.
        The channel is opened using attributes obtained from standard variables
        in the configuration file. Note that it assumed that the correct
@@ -128,6 +129,7 @@ class PSerialChannel : public PChannel
     PSerialChannel(
       PConfig & cfg  ///< Configuration file to read serial port attributes from.
     );
+#endif // P_CONFIG_FILE
 
     /// Close the serial channel on destruction.
     ~PSerialChannel();
@@ -170,6 +172,7 @@ class PSerialChannel : public PChannel
       FlowControl outputFlow = DefaultFlowControl      
     );
 
+#if P_CONFIG_FILE
     /**Open a serial channal.
        The channel is opened using attributes obtained from standard variables
        in the configuration file. Note that it assumed that the correct
@@ -178,6 +181,7 @@ class PSerialChannel : public PChannel
     virtual PBoolean Open(
       PConfig & cfg  ///< Configuration file to read serial port attributes from.
     );
+#endif // P_CONFIG_FILE
 
     /**Get a list of the available serial ports. This returns a set of
        platform dependent strings which describe the serial ports of the
@@ -293,12 +297,14 @@ class PSerialChannel : public PChannel
      */
     FlowControl GetOutputFlowControl() const;
 
+#if P_CONFIG_FILE
     /**Save the current port settings into the configuration file. Note that
        it assumed that the correct configuration file section is already set.
      */
     virtual void SaveSettings(
       PConfig & cfg   ///< Configuration file to save setting into.
     );
+#endif // P_CONFIG_FILE
   //@}
 
 

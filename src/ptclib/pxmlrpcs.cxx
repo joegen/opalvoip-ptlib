@@ -39,7 +39,7 @@
 
 #define   DEFAULT_XMPRPC_URL  "/RPC2"
 
-#if P_EXPAT
+#if P_XMLRPC
 
 #include <ptclib/pxmlrpcs.h>
 
@@ -207,5 +207,5 @@ PString PXMLRPCServerResource::FormatFault(PINDEX code, const PString & str)
   return reply;
 }
 
-#endif
+#endif // P_XMLRPC
 

@@ -640,6 +640,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
     return PFalse;
 
   if (createDebugWindow && debugWindow == NULL) {
+#if P_CONFIG_FILE
     PConfig cfg(ServiceSimulationSectionName);
     int l = cfg.GetInteger(WindowLeftKey, -1);
     int t = cfg.GetInteger(WindowTopKey, -1);
@@ -647,6 +648,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
     int b = cfg.GetInteger(WindowBottomKey, -1);
     if (l > 0 && t > 0 && r > 0 && b > 0)
       SetWindowPos(controlWindow, NULL, l, t, r-l, b-t, 0);
+#endif // P_CONFIG_FILE
 
     debugWindow = CreateWindow("edit",
                                "",
@@ -668,7 +670,9 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
     };
     SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(TabStops), (LPARAM)(LPDWORD)TabStops);
 
+#if P_CONFIG_FILE
     systemLogFileName = cfg.GetString(SystemLogFileNameKey);
+#endif // P_CONFIG_FILE
     if (systemLogFileName.IsEmpty())
       systemLogFileName = WindowLogOutput;
     if (systemLogFileName != WindowLogOutput) {
@@ -688,6 +692,7 @@ LPARAM WINAPI PServiceProcess::StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam,
 }
 
 
+#if P_CONFIG_FILE
 static void SaveWindowPosition(HWND hWnd)
 {
   RECT r;
@@ -698,6 +703,7 @@ static void SaveWindowPosition(HWND hWnd)
   cfg.SetInteger(WindowRightKey, r.right);
   cfg.SetInteger(WindowBottomKey, r.bottom);
 }
+#endif // P_CONFIG_FILE
 
 
 LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -727,14 +733,18 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         OnStop();
       return 0;
 
+#if P_CONFIG_FILE
     case WM_MOVE :
       if (debugWindow != NULL)
         SaveWindowPosition(hWnd);
       break;
+#endif // P_CONFIG_FILE
 
     case WM_SIZE :
       if (debugWindow != NULL && debugWindow != (HWND)-1) {
+#if P_CONFIG_FILE
         SaveWindowPosition(hWnd);
+#endif // P_CONFIG_FILE
         MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), PTrue);
       }
       break;
@@ -843,8 +853,10 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
               if (systemLogFileName != fileBuffer) {
                 systemLogFileName = fileBuffer;
                 PFile::Remove(systemLogFileName);
+#if P_CONFIG_FILE
                 PConfig cfg(ServiceSimulationSectionName);
                 cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+#endif // P_CONFIG_FILE
                 DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
                 PError << "Logging started for \"" << GetName() << "\" version " << GetVersion(PTrue) << endl;
               }
@@ -857,8 +869,10 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             PError << "Logging stopped." << endl;
             DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
             systemLogFileName = WindowLogOutput;
+#if P_CONFIG_FILE
             PConfig cfg(ServiceSimulationSectionName);
             cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+#endif // P_CONFIG_FILE
           }
           break;
 
@@ -867,8 +881,10 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             PError << "Logging stopped." << endl;
             DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
             systemLogFileName = DebuggerLogOutput;
+#if P_CONFIG_FILE
             PConfig cfg(ServiceSimulationSectionName);
             cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+#endif // P_CONFIG_FILE
           }
           break;
 
@@ -1611,11 +1627,13 @@ PBoolean PServiceProcess::ProcessCommand(const char * cmd)
     case SvcCmdDeinstall : // deinstall
       svcManager->Delete(this);
       TrayIconRegistry(this, DelTrayIcon);
+#if P_CONFIG_FILE
       PConfig cfg;
       PStringList sections = cfg.GetSections();
       PINDEX i;
       for (i = 0; i < sections.GetSize(); i++)
         cfg.DeleteSection(sections[i]);
+#endif // P_CONFIG_FILE
       good = PTrue;
       break;
   }

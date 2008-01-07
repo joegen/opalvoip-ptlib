@@ -497,9 +497,11 @@
 #undef P_JABBER
 #undef P_XMLRPC
 #undef P_SOAP
-#undef P_HTTPSVC
-#undef P_HTTP
 #undef P_CONFIG_FILE
+#undef P_URL
+#undef P_HTTP
+#undef P_HTTPFORMS
+#undef P_HTTPSVC
 #undef P_SOCKAGG
 #undef P_VIDFILE
 #undef P_ODBC

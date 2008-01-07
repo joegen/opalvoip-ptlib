@@ -699,19 +699,28 @@ SOURCES += \
 	$(COMPONENT_SRC_DIR)/inetmail.cxx 
 endif
 
+ifdef HAS_URL
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/url.cxx 
+endif
+
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
 	$(COMPONENT_SRC_DIR)/httpclnt.cxx 
 endif
 
+ifdef HAS_HTTPFORMS
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/httpform.cxx \
+	$(COMPONENT_SRC_DIR)/html.cxx 
+endif #HAS_HTTPFORMS
+
 ifdef HAS_HTTPSVC
 SOURCES += \
 	svcproc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
-	$(COMPONENT_SRC_DIR)/httpform.cxx \
-	$(COMPONENT_SRC_DIR)/httpsrvr.cxx \
-	$(COMPONENT_SRC_DIR)/html.cxx 
+	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
 
 ifdef HAS_OPENSSL
 SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx

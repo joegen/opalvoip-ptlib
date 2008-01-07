@@ -36,6 +36,9 @@
 #endif
 
 #include <ptclib/pxml.h>
+
+#if P_XMLRPC
+
 #include <ptclib/url.h>
 
 
@@ -473,5 +476,6 @@ class PXMLRPCStructBase : public PObject {
 
 /////////////////////////////////////////////////////////////////
 
+#endif // P_XMLRPC
 
-#endif
+#endif // _PXMLRPC_H
