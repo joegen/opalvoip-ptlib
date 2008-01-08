@@ -47,7 +47,10 @@ SUBDIRS := src/ptlib/$(TARGETDIR)
 ifeq (1, $(HAS_PLUGINS))
 SUBDIRS += plugins
 endif
+
+ifeq (1, $(HAS_SAMPLES))
 SUBDIRS += samples/hello_world
+endif
 
 # override P_SHAREDLIB for specific targets
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
