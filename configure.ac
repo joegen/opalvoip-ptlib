@@ -1553,12 +1553,12 @@ dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
 dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
 
-dnl MSWIN_DISPLAY    win_expat,Windows Expat XML2
-dnl MSWIN_IF_FEATURE win_expat,!expat
-dnl MSWIN_CHECK_FILE win_expat,bin\libexpatMT.lib,P_WINEXPAT=2
-dnl MSWIN_DIR_SYMBOL win_expat,WINEXPAT2_DIR
-dnl MSWIN_CHECK_DIR  win_expat,source\lib
-dnl MSWIN_CHECK_DIR  win_expat,\libs\expat\
+dnl MSWIN_DISPLAY    winexpat2,Windows Expat XML2
+dnl MSWIN_IF_FEATURE winexpat2,!expat
+dnl MSWIN_CHECK_FILE winexpat2,bin\libexpatMT.lib,P_WINEXPAT=2
+dnl MSWIN_DIR_SYMBOL winexpat2,WINEXPAT2_DIR
+dnl MSWIN_CHECK_DIR  winexpat2,source\lib
+dnl MSWIN_CHECK_DIR  winexpat2,\libs\expat\
 
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
@@ -1574,35 +1574,23 @@ else
   if test "${EXPATDIR}z" != "z" ; then
     AC_CHECK_FILE(${EXPATDIR}/include/expat.h, HAS_EXPAT=1)
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      EXPATINCLUDEDIR=${EXPATDIR}/include
-      EXPATLIBDIR=${EXPATDIR}/lib
+      STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/include"
+      LDFLAGS="$LDFLAGS -L${EXPATDIR}/lib"
     fi
   else
     AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
       AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
-    else
-      AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
-      if test "${HAS_EXPAT:-unset}" != "unset" ; then
-        EXPATINCLUDEDIR=/usr/local/include
-        EXPATLIBDIR=/usr/local/lib
-      fi
     fi
   fi
 
   if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    HAS_EXPAT=1
     AC_DEFINE(P_EXPAT, 1, "expat found")
-    if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
-    fi
-    if test ${EXPATLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
-    fi
     ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
 fi
 AC_SUBST(HAS_EXPAT)
+
 
 dnl ########################################################################
 dnl handle modules dependent on Expat
