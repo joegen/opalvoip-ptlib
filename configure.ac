@@ -517,6 +517,7 @@ AC_ARG_ENABLE(opal,
        [  --enable-opal           include only options needed with opal])
 
 dnl these are the default configure settings
+default_samples=no
 default_resolver=yes
 default_openldap=yes
 default_openssl=yes
@@ -960,6 +961,27 @@ if test "x$LIB64" != "x" ; then
 else
   AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib/ptlib"], [Default plugin directory])
 fi
+
+dnl #########################################################################
+dnl check to see if samples are enabled
+
+AC_MSG_CHECKING(if sample support needs to be compiled)
+AC_ARG_ENABLE(samples,
+	[  --enable-samples        enable samples build])
+
+if test "${enable_samples}z" = "z" ; then
+  enable_samples=$default_samples
+fi
+
+HAS_SAMPLES=
+if test "${enable_samples}" = "no" ; then
+  AC_MSG_RESULT(no)
+else
+  AC_MSG_RESULT(samples enabled)
+  HAS_SAMPLES=1
+fi
+
+AC_SUBST(HAS_SAMPLES)
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
