@@ -8159,8 +8159,8 @@ if test `eval echo '${'$as_ac_File'}'` = yes; then
 fi
 
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      EXPATINCLUDEDIR=${EXPATDIR}/include
-      EXPATLIBDIR=${EXPATDIR}/lib
+      STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/include"
+      LDFLAGS="$LDFLAGS -L${EXPATDIR}/lib"
     fi
   else
 
@@ -8371,51 +8371,19 @@ else
   HAS_EXPAT=
 fi
 
-    else
-      { echo "$as_me:$LINENO: checking for /usr/local/include/expat.h" >&5
-echo $ECHO_N "checking for /usr/local/include/expat.h... $ECHO_C" >&6; }
-if test "${ac_cv_file__usr_local_include_expat_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "/usr/local/include/expat.h"; then
-  ac_cv_file__usr_local_include_expat_h=yes
-else
-  ac_cv_file__usr_local_include_expat_h=no
-fi
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_include_expat_h" >&5
-echo "${ECHO_T}$ac_cv_file__usr_local_include_expat_h" >&6; }
-if test $ac_cv_file__usr_local_include_expat_h = yes; then
-  HAS_EXPAT=1
-fi
-
-      if test "${HAS_EXPAT:-unset}" != "unset" ; then
-        EXPATINCLUDEDIR=/usr/local/include
-        EXPATLIBDIR=/usr/local/lib
-      fi
     fi
   fi
 
   if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    HAS_EXPAT=1
 
 cat >>confdefs.h <<\_ACEOF
 #define P_EXPAT 1
 _ACEOF
 
-    if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
-    fi
-    if test ${EXPATLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
-    fi
     ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
 fi
+
 
 
 
