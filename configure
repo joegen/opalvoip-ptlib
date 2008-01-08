@@ -694,6 +694,7 @@ AR
 BISON
 HAS_REGEX
 HAS_PLUGINS
+HAS_SAMPLES
 HAS_RESOLVER
 HAS_SASL
 HAS_SASL2
@@ -1337,6 +1338,7 @@ Optional Features:
   --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool
   --enable-internalregex  force internal regex library
   --enable-plugins        enable plugin support
+  --enable-samples        enable samples build
   --disable-resolver      disable DNS resolver support
   --disable-sasl          disable SASL support
   --disable-openldap      disable OpenLDAP support
@@ -4761,6 +4763,7 @@ if test "${enable_opal+set}" = set; then
 fi
 
 
+default_samples=no
 default_resolver=yes
 default_openldap=yes
 default_openssl=yes
@@ -6389,6 +6392,31 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
+
+
+{ echo "$as_me:$LINENO: checking if sample support needs to be compiled" >&5
+echo $ECHO_N "checking if sample support needs to be compiled... $ECHO_C" >&6; }
+# Check whether --enable-samples was given.
+if test "${enable_samples+set}" = set; then
+  enableval=$enable_samples;
+fi
+
+
+if test "${enable_samples}z" = "z" ; then
+  enable_samples=$default_samples
+fi
+
+HAS_SAMPLES=
+if test "${enable_samples}" = "no" ; then
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+else
+  { echo "$as_me:$LINENO: result: samples enabled" >&5
+echo "${ECHO_T}samples enabled" >&6; }
+  HAS_SAMPLES=1
+fi
+
+
 
 
 
@@ -11316,6 +11344,7 @@ AR!$AR$ac_delim
 BISON!$BISON$ac_delim
 HAS_REGEX!$HAS_REGEX$ac_delim
 HAS_PLUGINS!$HAS_PLUGINS$ac_delim
+HAS_SAMPLES!$HAS_SAMPLES$ac_delim
 HAS_RESOLVER!$HAS_RESOLVER$ac_delim
 HAS_SASL!$HAS_SASL$ac_delim
 HAS_SASL2!$HAS_SASL2$ac_delim
@@ -11331,7 +11360,6 @@ HAS_HTTPSVC!$HAS_HTTPSVC$ac_delim
 HAS_EXPAT!$HAS_EXPAT$ac_delim
 HAS_VXML!$HAS_VXML$ac_delim
 HAS_JABBER!$HAS_JABBER$ac_delim
-HAS_XMLRPC!$HAS_XMLRPC$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -11373,6 +11401,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+HAS_XMLRPC!$HAS_XMLRPC$ac_delim
 HAS_SOAP!$HAS_SOAP$ac_delim
 HAS_TTS!$HAS_TTS$ac_delim
 HAS_IPV6!$HAS_IPV6$ac_delim
@@ -11411,7 +11440,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 36; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 37; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
