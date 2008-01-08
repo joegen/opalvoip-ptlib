@@ -701,6 +701,7 @@ HAS_OPENLDAP
 HAS_OPENSSL
 P_STATIC_ENDLDLIBS
 P_STATIC_LDFLAGS
+HAS_CONFIG_FILE
 HAS_URL
 HAS_HTTP
 HAS_HTTPFORMS
@@ -728,7 +729,6 @@ HAS_TELNET
 HAS_REMCONN
 HAS_SERIAL
 HAS_POP3SMTP
-HAS_CONFIG_FILE
 HAS_SOCKAGG
 HAS_VIDFILE
 HAS_APPSHARE
@@ -1341,6 +1341,7 @@ Optional Features:
   --disable-sasl          disable SASL support
   --disable-openldap      disable OpenLDAP support
   --disable-openssl       disable OpenSSL support
+  --disable-configfile    disable config file support
   --disable-url          disable URL support
   --disable-http          disable HTTP support
   --disable-httpforms       disable HTTP forms support
@@ -1373,7 +1374,6 @@ Optional Features:
   --disable-remconn       disable remote connection support
   --disable-serial        disable serial port support
   --disable-pop3smtp      disable POP3/SMTP support
-  --disable-configfile    disable config file support
   --enable-sockagg        enable socket aggregation (experimental)
   --enable-vidfile        enable video file support
   --enable-appshare        enable Application share support
@@ -7969,6 +7969,32 @@ fi
 
 
 
+# Check whether --enable-configfile was given.
+if test "${enable_configfile+set}" = set; then
+  enableval=$enable_configfile;
+fi
+
+
+if test "${enable_configfile}z" = "z" ; then
+  enable_configfile=$default_configfile
+fi
+
+HAS_CONFIG_FILE=
+if test "$enable_configfile" = "no" ; then
+  { echo "$as_me:$LINENO: Config file support disabled" >&5
+echo "$as_me: Config file support disabled" >&6;}
+else
+  HAS_CONFIG_FILE=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_CONFIG_FILE 1
+_ACEOF
+
+fi
+
+
+
+
+
 # Check whether --enable-url was given.
 if test "${enable_url+set}" = set; then
   enableval=$enable_url;
@@ -9658,31 +9684,6 @@ fi
 
 
 
-# Check whether --enable-configfile was given.
-if test "${enable_configfile+set}" = set; then
-  enableval=$enable_configfile;
-fi
-
-
-if test "${enable_configfile}z" = "z" ; then
-  enable_configfile=$default_configfile
-fi
-
-HAS_CONFIG_FILE=
-if test "$enable_configfile" = "no" ; then
-  { echo "$as_me:$LINENO: Config file support disabled" >&5
-echo "$as_me: Config file support disabled" >&6;}
-else
-  HAS_CONFIG_FILE=1
-  cat >>confdefs.h <<\_ACEOF
-#define P_CONFIG_FILE 1
-_ACEOF
-
-fi
-
-
-
-
 # Check whether --enable-sockagg was given.
 if test "${enable_sockagg+set}" = set; then
   enableval=$enable_sockagg;
@@ -11354,6 +11355,7 @@ HAS_OPENLDAP!$HAS_OPENLDAP$ac_delim
 HAS_OPENSSL!$HAS_OPENSSL$ac_delim
 P_STATIC_ENDLDLIBS!$P_STATIC_ENDLDLIBS$ac_delim
 P_STATIC_LDFLAGS!$P_STATIC_LDFLAGS$ac_delim
+HAS_CONFIG_FILE!$HAS_CONFIG_FILE$ac_delim
 HAS_URL!$HAS_URL$ac_delim
 HAS_HTTP!$HAS_HTTP$ac_delim
 HAS_HTTPFORMS!$HAS_HTTPFORMS$ac_delim
@@ -11362,7 +11364,6 @@ HAS_EXPAT!$HAS_EXPAT$ac_delim
 HAS_VXML!$HAS_VXML$ac_delim
 HAS_JABBER!$HAS_JABBER$ac_delim
 HAS_XMLRPC!$HAS_XMLRPC$ac_delim
-HAS_SOAP!$HAS_SOAP$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -11404,6 +11405,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+HAS_SOAP!$HAS_SOAP$ac_delim
 HAS_TTS!$HAS_TTS$ac_delim
 HAS_IPV6!$HAS_IPV6$ac_delim
 HAS_SDL!$HAS_SDL$ac_delim
@@ -11422,7 +11424,6 @@ HAS_TELNET!$HAS_TELNET$ac_delim
 HAS_REMCONN!$HAS_REMCONN$ac_delim
 HAS_SERIAL!$HAS_SERIAL$ac_delim
 HAS_POP3SMTP!$HAS_POP3SMTP$ac_delim
-HAS_CONFIG_FILE!$HAS_CONFIG_FILE$ac_delim
 HAS_SOCKAGG!$HAS_SOCKAGG$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
