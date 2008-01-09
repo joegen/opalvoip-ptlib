@@ -639,33 +639,47 @@ PString PSoundChannelWin32::GetName() const
 }
 
 
+static PString GetWaveOutDeviceName(unsigned id)
+{
+  PString str;
+  WAVEOUTCAPS caps;
+  if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0)
+    str = caps.szPname;
+  return str.Trim();
+}
+
+
+static PString GetWaveInDeviceName(unsigned id)
+{
+  PString str;
+  WAVEINCAPS caps;
+  if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0)
+    str = caps.szPname;
+  return str.Trim();
+}
+
+
 PStringArray PSoundChannelWin32::GetDeviceNames(Directions dir)
 {
-  PStringArray array;
+  PStringArray devices;
 
   unsigned numDevs, id;
 
   switch (dir) {
     case Player :
       numDevs = waveOutGetNumDevs();
-      for (id = 0; id < numDevs; id++) {
-        WAVEOUTCAPS caps;
-        if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0)
-          array[array.GetSize()] = caps.szPname;
-      }
+      for (id = 0; id < numDevs; id++)
+        devices.AppendString(GetWaveOutDeviceName(id));
       break;
 
     case Recorder :
       numDevs = waveInGetNumDevs();
-      for (id = 0; id < numDevs; id++) {
-        WAVEINCAPS caps;
-        if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0)
-          array[array.GetSize()] = caps.szPname;
-      }
+      for (id = 0; id < numDevs; id++)
+        devices.AppendString(GetWaveInDeviceName(id));
       break;
   }
 
-  return array;
+  return devices;
 }
 
 
@@ -677,48 +691,30 @@ PString PSoundChannelWin32::GetDefaultDevice(Directions dir)
   PString str;
 
   if (dir == Player) {
-    if (!registry.QueryValue("Playback", str)) {
-      WAVEOUTCAPS caps;
-      if (waveOutGetDevCaps(0, &caps, sizeof(caps)) == 0)
-        str = caps.szPname;
-    }
+    if (!registry.QueryValue("Playback", str))
+      str = GetWaveOutDeviceName(0);
   }
   else {
-    if (!registry.QueryValue("Record", str)) {
-      WAVEINCAPS caps;
-      if (waveInGetDevCaps(0, &caps, sizeof(caps)) == 0)
-        str = caps.szPname;
-    }
+    if (!registry.QueryValue("Record", str))
+      str = GetWaveInDeviceName(0);
   }
 
-  return str;
+  return str.Trim();
 }
 
 PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir, unsigned& id)
 {
-  PBoolean bad = PTrue;
-
   if (device[0] == '#') {
     id = device.Mid(1).AsUnsigned();
     switch (dir) {
       case Player :
-        if (id < waveOutGetNumDevs()) {
-          WAVEOUTCAPS caps;
-          if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0) {
-            deviceName = caps.szPname;
-            bad = PFalse;
-          }
-        }
+        if (id < waveOutGetNumDevs())
+          deviceName = GetWaveOutDeviceName(id);
         break;
 
       case Recorder :
-        if (id < waveInGetNumDevs()) {
-          WAVEINCAPS caps;
-          if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0) {
-            deviceName = caps.szPname;
-            bad = PFalse;
-          }
-        }
+        if (id < waveInGetNumDevs())
+          deviceName = GetWaveInDeviceName(id);
         break;
     }
   }
@@ -726,11 +722,9 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
     switch (dir) {
       case Player :
         for (id = 0; id < waveOutGetNumDevs(); id++) {
-          WAVEOUTCAPS caps;
-          if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0 &&
-              strcasecmp(caps.szPname, device) == 0) {
-            deviceName = caps.szPname;
-            bad = PFalse;
+          PCaselessString str = GetWaveOutDeviceName(id);
+          if (str == device) {
+            deviceName = str;
             break;
           }
         }
@@ -738,11 +732,9 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
 
       case Recorder :
         for (id = 0; id < waveInGetNumDevs(); id++) {
-          WAVEINCAPS caps;
-          if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0 &&
-              strcasecmp(caps.szPname, device) == 0) {
-            deviceName = caps.szPname;
-            bad = PFalse;
+          PCaselessString str = GetWaveInDeviceName(id);
+          if (str == device) {
+            deviceName = str;
             break;
           }
         }
@@ -750,7 +742,7 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
     }
   }
 
-  if (bad)
+  if (deviceName.IsEmpty())
     return SetErrorValues(NotFound, MMSYSERR_BADDEVICEID|PWIN32ErrorFlag);
 
   return PTrue;
