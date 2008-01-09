@@ -499,8 +499,6 @@ class PVideoDevice : public PVideoFrameInfo
      */
     const PString & GetPreferredColourFormat() { return preferredColourFormat; }
     
-    int GetNumberOfFrames () { return numberOfFrames; }
-    
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
 
@@ -520,7 +518,6 @@ class PVideoDevice : public PVideoFrameInfo
     int          frameContrast;
     int          frameColour;
     int          frameHue;
-    int          numberOfFrames;
 };
 
 
