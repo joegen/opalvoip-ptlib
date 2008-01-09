@@ -1575,12 +1575,14 @@ dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
 dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
 
-dnl MSWIN_DISPLAY    winexpat2,Windows Expat XML2
-dnl MSWIN_IF_FEATURE winexpat2,!expat
-dnl MSWIN_CHECK_FILE winexpat2,bin\libexpatMT.lib,P_WINEXPAT=2
-dnl MSWIN_DIR_SYMBOL winexpat2,WINEXPAT2_DIR
-dnl MSWIN_CHECK_DIR  winexpat2,source\lib
-dnl MSWIN_CHECK_DIR  winexpat2,\libs\expat\
+dnl cannot use winexpat2 for the following option as configure.exe gets 
+dnl confused when one symbol is a prefix of another
+dnl MSWIN_DISPLAY    win_expat2,Windows Expat XML2
+dnl MSWIN_IF_FEATURE win_expat2,!expat
+dnl MSWIN_CHECK_FILE win_expat2,bin\libexpatMT.lib,P_WINEXPAT=2
+dnl MSWIN_DIR_SYMBOL win_expat2,WINEXPAT2_DIR
+dnl MSWIN_CHECK_DIR  win_expat2,source\lib
+dnl MSWIN_CHECK_DIR  win_expat2,\libs\expat\
 
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
@@ -1633,7 +1635,7 @@ else
 
   dnl MSWIN_DISPLAY    jabber,Jabber
   dnl MSWIN_DEFINE     jabber,P_JABBER
-  dnl MSWIN_IF_FEATURE jabber,expat|winexpat
+  dnl MSWIN_IF_FEATURE jabber,expat|winexpat|win_expat
 
   AC_ARG_ENABLE(jabber,
          [  --disable-jabber        disable Jabber support])
@@ -1658,7 +1660,7 @@ else
 
     dnl MSWIN_DISPLAY    vxml,VXML Support
     dnl MSWIN_DEFINE     vxml,P_VXML
-    dnl MSWIN_IF_FEATURE vxml,http&expat|winexpat
+    dnl MSWIN_IF_FEATURE vxml,http&expat|winexpat|win_expat2
 
     AC_ARG_ENABLE(vxml,
            [  --disable-vxml          disable VXML support])
@@ -1678,7 +1680,7 @@ else
 
     dnl MSWIN_DISPLAY    xmlrpc,XMLRPC Support
     dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-    dnl MSWIN_IF_FEATURE xmlrpc,http&expat|winexpat
+    dnl MSWIN_IF_FEATURE xmlrpc,http&expat|winexpat|win_expat2
 
     AC_ARG_ENABLE(xmlrpc,
 	 [  --disable-xmlrpc        disable XMLRPC support])
@@ -1698,7 +1700,7 @@ else
 
     dnl MSWIN_DISPLAY    soap,SOAP Support
     dnl MSWIN_DEFINE     soap,P_SOAP
-    dnl MSWIN_IF_FEATURE soap,http&expat|winexpat
+    dnl MSWIN_IF_FEATURE soap,http&expat|winexpat|win_expat2
 
     AC_ARG_ENABLE(soap,
 	 [  --disable-soap          disable SOAP support])
