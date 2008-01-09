@@ -157,7 +157,7 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
     }
   }
 
-  return str;
+  return str.Trim();
 #else
   PStringList devices = GetDeviceNames(dir);
   if (devices.GetSize() > 0)
