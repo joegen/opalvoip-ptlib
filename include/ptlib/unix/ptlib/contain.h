@@ -47,6 +47,10 @@
 #define FALSE   0
 #endif
 
+#ifdef P_USE_INTEGER_BOOL
+typedef int BOOL;
+#endif
+
 ///////////////////////////////////////////
 //
 //  define a macro for declaring classes so we can bolt
