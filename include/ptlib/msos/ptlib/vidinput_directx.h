@@ -47,6 +47,9 @@
 #include <uuids.h>
 #include <control.h>
 
+#ifdef _WIN32_WCE
+#include <amvideo.h>
+#endif
 
 static void DeleteMediaType(AM_MEDIA_TYPE *pmt);
 
@@ -75,7 +78,6 @@ DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
   STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
 };
 
-
 extern "C" {
   extern const CLSID CLSID_SampleGrabber;
   extern const IID IID_ISampleGrabber;
@@ -83,7 +85,6 @@ extern "C" {
   extern const IID IID_ISampleGrabberCB;
   extern const CLSID CLSID_NullRenderer;
 };
-
 
 /**This class defines a video input device.
  */
