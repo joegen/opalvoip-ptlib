@@ -48,6 +48,11 @@ static char *BSTR_to_ANSI(BSTR pSrc);
 static GUID pwlib_format_to_media_format(const char *format);
 static PString media_format_to_pwlib_format(const GUID guid);
 
+#ifdef _WIN32_WCE
+const IID IID_ISampleGrabber =		{ 0x6B652FFF, 0x11FE, 0x4fce, 0x92, 0xAD, 0x02, 0x66, 0xB5, 0xD7, 0xC7, 0x8F };
+const CLSID CLSID_SampleGrabber =	{ 0xC1F400A4, 0x3F08, 0x11d3, 0x9F, 0x0B, 0x00, 0x60, 0x08, 0x03, 0x9E, 0x37 };
+const CLSID CLSID_NullRenderer =	{ 0xC1F400A4, 0x3F08, 0x11d3, 0x9F, 0x0B, 0x00, 0x60, 0x08, 0x03, 0x9E, 0x37 };
+#endif // _WIN32_WCE
 
 PCREATE_VIDINPUT_PLUGIN(DirectShow);
 
@@ -55,7 +60,8 @@ PCREATE_VIDINPUT_PLUGIN(DirectShow);
 #if PTRACING
 static const char *ErrorMessage(HRESULT hr)
 {
-    static char string[1024];
+#ifndef _WIN32_WCE
+	static char string[1024];
     DWORD dwMsgLen;
 
     memset(string, 0, sizeof(string));
@@ -74,14 +80,15 @@ static const char *ErrorMessage(HRESULT hr)
     dwMsgLen = AMGetErrorTextA(hr, string, sizeof(string));
     if (dwMsgLen)
 	return string;
-
 #ifdef __MINGW32__  // This function is not recognised in Windows
     snprintf(string, sizeof(string), "0x%8.8x", hr);
 	return string;
 #else
 	return PString();
 #endif
-    
+#else // _WIN32_WCE
+	return PString("Error during video capture");
+#endif // !_WIN32_WCE 
 }
 #endif // PTRACING
 
@@ -111,7 +118,11 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
 {
   PTRACE(1,"PVidDirectShow\tPVideoInputDevice_DirectShow: constructor" );
 
-  ::CoInitialize(NULL);
+#ifndef _WIN32_WCE
+  CoInitialize(NULL);
+#else
+  CoInitializeEx(NULL,COINIT_MULTITHREADED);
+#endif
 
   tempFrame = NULL;
 
@@ -153,8 +164,13 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
     }
 
     // Create the capture graph builder
-    hr = CoCreateInstance (CLSID_CaptureGraphBuilder2 , NULL, CLSCTX_INPROC_SERVER,
+#ifndef _WIN32_WCE
+	hr = CoCreateInstance (CLSID_CaptureGraphBuilder2 , NULL, CLSCTX_INPROC_SERVER,
                            IID_ICaptureGraphBuilder2, (void **) &pCapture);
+#else
+	hr = CoCreateInstance (CLSID_CaptureGraphBuilder , NULL, CLSCTX_INPROC_SERVER,
+                           IID_ICaptureGraphBuilder, (void **) &pCapture);
+#endif
     if (FAILED(hr))
     {
         PTRACE(1,"PVidDirectShow\tFailed to create instance CaptureGraphBuilder2: " << ErrorMessage(hr));
@@ -282,26 +298,30 @@ PBoolean PVideoInputDevice_DirectShow::InitialiseCapture()
 
 PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
 {
-    HRESULT hr;
-    IMoniker *pMoniker =NULL;
-    ICreateDevEnum *pDevEnum =NULL;
-    IEnumMoniker *pClassEnum = NULL;
-    ULONG cFetched;
     PStringList list;
 
     PTRACE(1,"PVidDirectShow\tGetInputDeviceNames()");
 
-    ::CoInitialize(NULL);
+#ifndef _WIN32_WCE
+    HRESULT hr;
+    IMoniker *pMoniker =NULL;
+    IEnumMoniker *pClassEnum = NULL;
+    ULONG cFetched;
+
+    ICreateDevEnum *pDevEnum =NULL;
+	::CoInitialize(NULL);
 
     // Create the system device enumerator
     hr = CoCreateInstance (CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
                            IID_ICreateDevEnum, (void **) &pDevEnum);
-    if (FAILED(hr))
+
+	if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't create system enumerator. " << ErrorMessage(hr));
 	::CoUninitialize();
         return list;
     }
+
 
     // Create an enumerator for the video capture devices
     hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pClassEnum, 0);
@@ -354,6 +374,33 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
     }
 
     ::CoUninitialize();
+
+#else // !_WIN32_WCE
+	HANDLE	handle = NULL;
+	char szDeviceName[8];
+
+	DEVMGR_DEVICE_INFORMATION di;
+	GUID guidCamera = { 0xCB998A05, 0x122C, 0x4166, 0x84, 0x6A, 0x93, 0x3E, 0x4D, 0x7E, 0x3C, 0x86 };
+	// Note about the above: The driver material doesn't ship as part of the SDK. This GUID is hardcoded
+	// here to be able to enumerate the camera drivers and pass the name of the driver to the video capture filter
+
+	di.dwSize = sizeof(di);
+	ZeroMemory( szDeviceName, 8 );
+
+	handle = FindFirstDevice( DeviceSearchByGuid, &guidCamera, &di );
+	if(( handle == NULL ) || ( di.hDevice == NULL ))
+	{
+		PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() returns error: '"<< ::GetLastError() <<"'");
+	}
+	else
+		wcstombs( szDeviceName, di.szLegacyName, 8 );
+
+	FindClose( handle );
+
+	PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() Found this capture device '"<< szDeviceName <<"'");
+	list.AppendString(szDeviceName);
+#endif
+
     return list;
 }
 
@@ -1213,7 +1260,9 @@ static char *BSTR_to_ANSI(BSTR pSrc)
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 {
-    HRESULT hr;
+#ifndef _WIN32_WCE
+
+	HRESULT hr;
     IBaseFilter *pSrc = NULL;
     IMoniker *pMoniker = NULL;
     ICreateDevEnum *pDevEnum = NULL;
@@ -1309,6 +1358,9 @@ static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
     SAFE_RELEASE(pClassEnum);
 
     return hr;
+#else
+	return S_OK;
+#endif // !_WIN32_WCE
 }
 
 
@@ -1322,8 +1374,10 @@ static struct {
     { "BGR24",   MEDIASUBTYPE_RGB24  },
     { "RGB565",  MEDIASUBTYPE_RGB565 },
     { "RGB555",  MEDIASUBTYPE_RGB555 },
-    { "YUV420P", MEDIASUBTYPE_IYUV   },  
+#ifndef _WIN32_WCE
+	{ "YUV420P", MEDIASUBTYPE_IYUV   },  
     { "YUV422P", MEDIASUBTYPE_YUYV   },
+#endif
     { "YUV411",  MEDIASUBTYPE_Y411   },
     { "YUV411P", MEDIASUBTYPE_Y41P   },
     { "YUV410P", MEDIASUBTYPE_YVU9   },
@@ -1354,12 +1408,14 @@ static PString media_format_to_pwlib_format(const GUID guid)
 	    return formats[i].pwlib_format;
     }
 
-    if (guid == MEDIASUBTYPE_CLPL)
+#ifndef _WIN32_WCE
+	if (guid == MEDIASUBTYPE_CLPL)
 	return "CLPL";
     if (guid == MEDIASUBTYPE_YUYV)
 	return "YUYV";
     if (guid == MEDIASUBTYPE_IYUV)
 	return "IYUV";
+#endif
     if (guid == MEDIASUBTYPE_YVU9)
 	return "YVU9";
     if (guid == MEDIASUBTYPE_Y411)
@@ -1414,8 +1470,10 @@ static PString media_format_to_pwlib_format(const GUID guid)
 	return "BGR24";
     if (guid == MEDIASUBTYPE_RGB32)
 	return "BGR32";
+#ifndef _WIN32_WCE
     if (guid == MEDIASUBTYPE_IYUV)
 	return "I420";
+#endif
 
     wchar_t guid_wchar[256];
     char guid_string[256];
