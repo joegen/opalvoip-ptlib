@@ -493,15 +493,23 @@
 #undef P_VIDEO
 #undef NO_VIDEO_CAPTURE
 
+#ifdef P_EXPAT
 #undef P_VXML
 #undef P_JABBER
 #undef P_XMLRPC
 #undef P_SOAP
+#endif
+
 #undef P_CONFIG_FILE
 #undef P_URL
+#ifdef P_URL
 #undef P_HTTP
+#ifdef P_HTTP
 #undef P_HTTPFORMS
 #undef P_HTTPSVC
+#endif
+#endif
+
 #undef P_SOCKAGG
 #undef P_VIDFILE
 #undef P_ODBC
