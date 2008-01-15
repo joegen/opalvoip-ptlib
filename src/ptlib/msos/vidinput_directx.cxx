@@ -169,7 +169,7 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
                            IID_ICaptureGraphBuilder2, (void **) &pCapture);
 #else
 	hr = CoCreateInstance (CLSID_CaptureGraphBuilder , NULL, CLSCTX_INPROC_SERVER,
-                           IID_ICaptureGraphBuilder, (void **) &pCapture);
+                           IID_ICaptureGraphBuilder2, (void **) &pCapture);
 #endif
     if (FAILED(hr))
     {
