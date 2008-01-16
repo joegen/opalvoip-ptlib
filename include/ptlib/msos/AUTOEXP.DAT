@@ -131,13 +131,6 @@ PDWORDArray {
 }
 
 
-PArrayObjects {
-   preview
-   ( 
-      #( (PBaseArray<PObject *> *)&*($e.theArray) )
-   )
-}
-
 PArray<*> {
    children
    (
@@ -154,7 +147,7 @@ PArray<*> {
 
    preview
    ( 
-      #( (PBaseArray<$T1 *> *)&*($e.theArray) )
+      #( $e.theArray )
    )
 }
 
@@ -162,7 +155,7 @@ PStringArray {
    preview
    (
       #(
-         "[", $e.reference->size, ",", $e.reference->count, "] ",
+         "[", $e.theArray->reference->size, ",", $e.theArray->reference->count, "] ",
          "(",
          #array
          (
