@@ -1052,7 +1052,6 @@ class PArrayObjects : public PCollection
   //@}
 
   protected:
-    PBASEARRAY(ObjPtrArray, PObject *);
     // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
     PBaseArray<PObject *> * theArray;
 };
