@@ -734,6 +734,8 @@ BOOL WriteProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry,
 
 #endif // profiles
 
+#ifndef HAVE_CE_SNMP
+
 //
 // SNMP functions - faked
 //
@@ -820,5 +822,6 @@ SnmpExtensionQuery(
 	return FALSE;
 }
 
+#endif // HAVE_CE_SNMP
 
 #endif // _WIN32_WCE
