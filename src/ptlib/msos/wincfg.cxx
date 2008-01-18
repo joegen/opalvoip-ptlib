@@ -193,6 +193,7 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
   return RegCreateKeyEx(rootKey, subkey, 0, (char*) "", REG_OPTION_NON_VOLATILE,
                         KEY_ALL_ACCESS, &secattr, &key, &disposition);
 }
+
 #endif // _WIN32_WCE
 
 RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
@@ -224,28 +225,47 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
       PString keyname = subkey;
       keyname.Replace("CurrentVersion", proc.GetVersion(PFalse));
 
-      error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
+#ifndef _WIN32_WCE
+	  error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
+#else
+	  error = RegOpenKeyEx(HKEY_CURRENT_USER, (LPCWSTR) keyname.AsUCS2(), 0, access, &key);
+#endif
       if (error == ERROR_SUCCESS)
         return;
 
       PTRACE_IF(1, error == ERROR_ACCESS_DENIED, "PTLib\tAccess denied accessing registry entry HKEY_CURRENT_USER\\" << keyname);
 
+#ifndef _WIN32_WCE
       error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key);
+#else
+	  error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, (LPCWSTR) keyname.AsUCS2(), 0, access, &key);
+#endif
+
       if (error == ERROR_SUCCESS)
         return;
 
       PTRACE_IF(1, error == ERROR_ACCESS_DENIED, "PTLib\tAccess denied accessing registry entry HKEY_LOCAL_MACHINE\\" << keyname);
     }
 
+#ifndef _WIN32_WCE
     error = RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key);
-    if (error == ERROR_SUCCESS)
+#else
+    error = RegOpenKeyEx(HKEY_CURRENT_USER, (LPCWSTR) subkey.AsUCS2(), 0, access, &key);
+#endif
+
+	if (error == ERROR_SUCCESS)
       return;
 
     PTRACE_IF(1, error == ERROR_ACCESS_DENIED, "PTLib\tAccess denied accessing registry entry HKEY_CURRENT_USER\\" << subkey);
   }
 
+#ifndef _WIN32_WCE
   error = RegOpenKeyEx(basekey != NULL ? basekey : HKEY_LOCAL_MACHINE,
                        subkey, 0, access, &key);
+#else
+  error = RegOpenKeyEx(basekey != NULL ? basekey : HKEY_LOCAL_MACHINE,
+		(LPCWSTR) subkey.AsUCS2(), 0, access, &key);
+#endif
   if (error == ERROR_SUCCESS)
     return;
 
@@ -269,8 +289,13 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 #endif
 
     DWORD disposition;
+#ifndef _WIN32_WCE
     error = RegCreateKeyEx(basekey, subkey, 0, (char*) "", REG_OPTION_NON_VOLATILE,
                            KEY_ALL_ACCESS, NULL, &key, &disposition);
+#else
+	error = RegCreateKeyEx(basekey, (LPCWSTR) subkey.AsUCS2(), 0, L"", REG_OPTION_NON_VOLATILE,
+                           KEY_ALL_ACCESS, NULL, &key, &disposition);
+#endif
     if (error != ERROR_SUCCESS) {
       PTRACE(1, "PTLib\tCould not create registry entry "
              << (basekey != NULL ? "" : LocalMachineStr) << subkey);
@@ -298,10 +323,17 @@ BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
   if( RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
 
 #else // CE has only Unicode based API
-  USES_CONVERSION;
-  TCHAR tstr[MAX_PATH];
-  LONG lResult = RegEnumKey(key, idx, tstr, MAX_PATH);
-  str = T2A(tstr);
+  WCHAR wcsKey[MAX_PATH] = {0};
+
+  LONG lResult = RegEnumKey(key, idx, wcsKey, MAX_PATH);
+  int size = wcslen(wcsKey);
+  if( size )
+  {
+	wcstombs( (char*) str.GetPointer(size), wcsKey, size );
+	str.SetSize(size + 1);
+	str.SetAt(size, 0);
+  }
+
   if( lResult != ERROR_SUCCESS )
 #endif
     return PFalse;
@@ -322,11 +354,18 @@ BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
                          &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
 
 #else  // CE has only Unicode based API
-  USES_CONVERSION;
-  TCHAR tstr[MAX_PATH];
-  LONG lResult = RegEnumValueCe(key, idx, tstr,
-      &sizeofname, NULL, NULL, NULL, NULL);
-  str = T2A(tstr);
+  WCHAR wcsValue[MAX_PATH] = {0};
+
+  LONG lResult = RegEnumValue(key, idx, wcsValue,
+                         &sizeofname, NULL, NULL, NULL, NULL);
+  sizeofname = wcslen(wcsValue);
+  if( sizeofname )
+  {
+	wcstombs( (char*) str.GetPointer(sizeofname), wcsValue, sizeofname );
+	str.SetSize(sizeofname + 1);
+	str.SetAt(sizeofname, 0);
+  }
+
   if( lResult != ERROR_SUCCESS )
 #endif
     return PFalse;
@@ -341,7 +380,11 @@ BOOL RegistryKey::DeleteKey(const PString & subkey)
   if (key == NULL)
     return PTrue;
 
+#ifndef _WIN32_WCE
   return RegDeleteKey(key, subkey) == ERROR_SUCCESS;
+#else
+  return RegDeleteKey(key, (LPCWSTR) subkey.AsUCS2()) == ERROR_SUCCESS;
+#endif
 }
 
 
@@ -350,7 +393,11 @@ BOOL RegistryKey::DeleteValue(const PString & value)
   if (key == NULL)
     return PTrue;
 
+#ifndef _WIN32_WCE
   return RegDeleteValue(key, (char *)(const char *)value) == ERROR_SUCCESS;
+#else
+  return RegDeleteValue(key, (LPCWSTR) value.AsUCS2()) == ERROR_SUCCESS;
+#endif
 }
 
 
@@ -360,8 +407,20 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
     return PFalse;
 
   DWORD type, size;
+#ifndef _WIN32_WCE
   if (RegQueryValueEx(key, (char *)(const char *)value,
                                     NULL, &type, NULL, &size) != ERROR_SUCCESS)
+#else  
+    // WINCE has only Unicode based API
+    LONG lResult = ERROR_SUCCESS;
+    {   
+	  WCHAR wcsValue[MAX_PATH];
+	  mbstowcs(wcsValue, value, MAX_PATH);
+	  lResult = RegQueryValueEx(key, wcsValue, NULL,
+            &type, NULL, &size );
+    }
+  if( lResult != ERROR_SUCCESS )
+#endif
     return PFalse;
 
   switch (type) {
@@ -372,22 +431,52 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
 #ifndef _WIN32_WCE
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                   &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
-#else  // CE has only Unicode based API
-    {   USES_CONVERSION; TCHAR tstr[MAX_PATH];
-      if( RegQueryValueEx(key, (char *)(const char *)value, NULL,
-            &type, (LPBYTE) tstr, &size) == ERROR_SUCCESS )
-      {
-        str = T2A(tstr);
-        return PTrue; 
-      } 
-    }
-#endif
+#else  
+	{
+		// WINCE strings are Unicode
+		WCHAR wcsValue[MAX_PATH];
+		mbstowcs(wcsValue, value, MAX_PATH);
+
+		// Expand receiving buffer to accomodate wchars
+		str.SetSize( str.GetSize() * sizeof (short) );
+		if( RegQueryValueEx(key, wcsValue, NULL,
+			&type, (LPBYTE) str.GetPointer(size), &size ) != ERROR_SUCCESS )
+			return PFalse;
+		else
+		{
+			if( type != REG_BINARY )
+			{
+				// Convert to char* string
+				wcsncpy( wcsValue, (LPCWSTR) str.GetPointer(), MAX_PATH );
+				size = wcslen(wcsValue);
+				if( size )
+				{
+					wcstombs( (char*) str.GetPointer(size), wcsValue, size );
+					str.SetSize(size + 1);
+					str.SetAt(size, 0);
+				}
+			}
+			return PTrue;
+		}
+	}
+#endif // _WIN32_WCE
+
     case REG_DWORD : {
       DWORD num;
       size = sizeof(num);
+#ifndef _WIN32_WCE
       if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
                                 &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
         str = PString(PString::Signed, num);
+#else
+	  // WINCE strings are Unicode
+	  WCHAR wcsValue[MAX_PATH];
+	  mbstowcs(wcsValue, value, MAX_PATH);
+      if (RegQueryValueEx(key, wcsValue, NULL,
+             &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
+
+		str = PString(PString::Signed, num);
+#endif
         return PTrue;
       }
     }
@@ -404,8 +493,21 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
     return PFalse;
 
   DWORD type, size;
+
+#ifndef _WIN32_WCE
   if (RegQueryValueEx(key, (char *)(const char *)value,
                                     NULL, &type, NULL, &size) != ERROR_SUCCESS)
+#else  
+    // WINCE has only Unicode based API
+    LONG lResult = ERROR_SUCCESS;
+    {   
+	  WCHAR wcsValue[MAX_PATH];
+	  mbstowcs(wcsValue, value, MAX_PATH);
+	  lResult = RegQueryValueEx(key, wcsValue, NULL,
+            &type, NULL, &size );
+    }
+	if( lResult != ERROR_SUCCESS )
+#endif
     return PFalse;
 
   switch (type) {
@@ -417,14 +519,39 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
       // Do REG_DWORD case
 
     case REG_DWORD :
+#ifndef _WIN32_WCE
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                                   &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+#else
+	  return RegQueryValueEx(key, (LPCWSTR) value.AsUCS2(), NULL,
+                                  &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+#endif
 
     case REG_SZ : {
       PString str;
+#ifndef _WIN32_WCE
       if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) {
-        num = str.AsInteger();
+                &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) 
+#else
+	  if (RegQueryValueEx(key, (LPCWSTR) value.AsUCS2(), NULL,
+                &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) 
+#endif
+	  {
+#ifdef _WIN32_WCE
+		WCHAR wcsValue[MAX_PATH];
+		wcsncpy( wcsValue, (LPCWSTR) str.GetPointer(), MAX_PATH );
+		size = wcslen(wcsValue);
+		if( size == 0 )
+			str = PString();
+		else
+		{
+			wcstombs( (char*) str.GetPointer(size), wcsValue, size );
+			str.SetSize(size + 1);
+			str.SetAt(size, 0);
+		}
+#endif // _WIN32_WCE        
+		num = str.AsInteger();
+
         if (num == 0 && boolean) {
           int c = toupper(str[0]);
           num = c == 'T' || c == 'Y';
@@ -449,12 +576,13 @@ BOOL RegistryKey::SetValue(const PString & value, const PString & str)
 #ifndef _WIN32_WCE
   return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
                 (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
-#else  // CE has only Unicode based API
-  USES_CONVERSION; 
-  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
-                (LPBYTE) A2T((const char *)str), 
-          ( (str.GetLength()+1) * sizeof(TCHAR)/sizeof(char) )
-            ) == ERROR_SUCCESS;
+#else  
+  // CE has only Unicode based API
+  WCHAR wcsValue[MAX_PATH];
+  mbstowcs(wcsValue, (const char *) str, MAX_PATH);
+  
+  return RegSetValueEx( key, (LPCWSTR) value.AsUCS2(), 0, REG_SZ,
+                (LPBYTE) wcsValue, str.GetLength()+1 ) == ERROR_SUCCESS;
 #endif
 }
 
@@ -464,8 +592,13 @@ BOOL RegistryKey::SetValue(const PString & value, DWORD num)
   if (key == NULL)
     return PFalse;
 
+#ifndef _WIN32_WCE
   return RegSetValueEx(key, (char *)(const char *)value,
                      0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
+#else  
+  return RegSetValueEx(key, (LPCWSTR) value.AsUCS2(),
+          0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
+#endif
 }
 
 
