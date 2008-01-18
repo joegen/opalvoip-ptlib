@@ -437,8 +437,8 @@ PBoolean PVideoInputDevice_DirectShow::Close()
 {
     HRESULT hr;
 
-    if (!IsOpen())
-	return PFalse;
+    if (!IsOpen() || (NULL == pGrabber))
+		return PFalse;
 
     hr = pGrabber->SetCallback(NULL, 0);
     if (FAILED(hr))
