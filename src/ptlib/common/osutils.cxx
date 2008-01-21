@@ -163,19 +163,28 @@ PTHREAD_MUTEX_RECURSIVE_NP
     InitMutex();
 
     const char * env = getenv("PWLIB_TRACE_STARTUP"); // Backward compatibility test
+    if (env == NULL) 
+      env = getenv("PTLIB_TRACE_STARTUP"); // Backward compatibility test
     if (env != NULL) {
       thresholdLevel = atoi(env);
       options = PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine;
     }
     else {
       env = getenv("PWLIB_TRACE_LEVEL");
+      if (env == NULL)
+        env = getenv("PTLIB_TRACE_LEVEL");
       thresholdLevel = env != NULL ? atoi(env) : 0;
 
       env = getenv("PWLIB_TRACE_OPTIONS");
+      if (env == NULL)
+        env = getenv("PTLIB_TRACE_OPTIONS");
       options = env != NULL ? atoi(env) : PTrace::FileAndLine;
     }
+    env = getenv("PWLIB_TRACE_FILE");
+    if (env == NULL)
+      env = getenv("PTLIB_TRACE_FILE");
 
-    OpenTraceFile(getenv("PWLIB_TRACE_FILE"));
+    OpenTraceFile(env);
   }
 
   static PTraceInfo & Instance()
