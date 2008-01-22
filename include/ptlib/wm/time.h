@@ -38,19 +38,15 @@ struct tm {
         };
 #endif // _TM_DEFINED
 
-#ifndef _CLOCK_T_DEFINED
-typedef long clock_t;
+// Define time_t WINCE
+// If we won't, we'll stuck with longs
+typedef __int64 time_t;     
+#define _TIME_T_DEFINED
+typedef __int64 clock_t;
 #define _CLOCK_T_DEFINED
-#endif
 
 /* Clock ticks macro - ANSI version */
 #define CLOCKS_PER_SEC  1000
-
-#ifndef _TIME_T_DEFINED
-typedef long  time_t;
-#define _TIME_T_DEFINED 	/* avoid multiple def's of time_t */
-#endif
-
 
 #ifdef  __cplusplus
 extern "C" {
@@ -74,6 +70,9 @@ size_t wcsftime(
 
 #ifdef  __cplusplus
 };
+
+#pragma warning( disable : 4201 )
+#include <winbase.h>
 
 time_t	FileTimeToTime(const FILETIME FileTime);
 time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
