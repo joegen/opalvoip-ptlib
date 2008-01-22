@@ -526,6 +526,11 @@ endif
 
 ifdef HAS_SDL
 SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
+
+$(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+
 endif
 
 ifdef HAS_ODBC
@@ -548,6 +553,10 @@ SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
 ifdef USE_SHM_VIDEO_DEVICES
 SOURCES	+= shmvideo.cxx
 endif
+
+$(OBJDIR)/vfakeio.o: $(COMMON_SRC_DIR)/vfakeio.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
 
 ifndef HAS_PLUGINS
 
@@ -666,6 +675,11 @@ endif
 ifdef HAS_STUN
 SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
            $(COMPONENT_SRC_DIR)/pnat.cxx
+
+$(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+
 endif
 
 ifdef HAS_SOCKS
@@ -738,6 +752,11 @@ endif
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
+
+$(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
