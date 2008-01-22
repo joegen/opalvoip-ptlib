@@ -31,14 +31,8 @@
  * $Date$
  */
 
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
 #include <ptlib/sound.h>
-
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "sound_win32.cxx must be compiled without precompiled headers"
-#endif
 
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
