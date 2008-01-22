@@ -26,17 +26,12 @@
 
 
 #include <ptlib.h>
-#include <ptlib/videoio.h>
-#include <ptlib/vconvert.h>
 
 #ifdef P_APPSHARE
 
-#include <windows.h>
 #include <ptlib/vidinput_app.h>
+#include <ptlib/vconvert.h>
 
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "vidinput_app.cxx must be compiled without precompiled headers"
-#endif
 
 //////////////////////////////////////////////////////////////////////////////////////
 

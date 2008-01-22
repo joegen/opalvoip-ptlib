@@ -29,10 +29,10 @@
 
 #ifdef P_APPSHARE
 
-#define P_FORCE_STATIC_PLUGIN
-
+#include <ptlib/videoio.h>
 #include <ptlib/plugin.h>
 #include <ptclib/delaychan.h>
+
 
 //////////////////////////////////////////////////////////////////////
 // Video Input device
