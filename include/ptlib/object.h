@@ -38,7 +38,12 @@
 #pragma interface
 #endif
 
-#ifdef _WIN32
+// Define time types for WinCE
+#ifdef _WIN32_WCE
+#include <ptlib/wm/time.h>
+#endif // _WIN32_WCE
+
+#if defined(_WIN32) || defined(_WIN32_WCE)
 #include "msos/ptlib/contain.h"
 #else
 #include "unix/ptlib/contain.h"

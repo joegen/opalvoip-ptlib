@@ -45,7 +45,7 @@ clock_t __cdecl clock (void)
 
 struct tm * __cdecl gmtime (const time_t *timp)
 {
-	long caltim = *timp;            /* calendar time to convert */
+	time_t caltim = *timp;            /* calendar time to convert */
     int islpyr = 0;                 /* is-current-year-a-leap-year flag */
     int tmptim;
     int *mdays;                /* pointer to days or lpdays */
@@ -279,7 +279,7 @@ static tm SystemTimeToTm(SYSTEMTIME &s)
 	t.tm_mon   = s.wMonth-1;
 	t.tm_wday  = s.wDayOfWeek;
 	t.tm_mday  = s.wDay;
-	t.tm_yday  = SystemTimeToYDay(s);
+	t.tm_yday  = (int) SystemTimeToYDay(s);
 	t.tm_hour  = s.wHour;
 	t.tm_min   = s.wMinute;
 	t.tm_sec   = s.wSecond;
@@ -459,7 +459,7 @@ time_t mktime(struct tm* pt)
 
 	SYSTEMTIME s = TmToSystemTime(*pt);
 
-	pt->tm_yday = SystemTimeToYDay(s);
+	pt->tm_yday = (int) SystemTimeToYDay(s);
 
 	FILETIME f;
 	SystemTimeToFileTime( &s, &f );
