@@ -335,8 +335,8 @@ void PArrayObjects::RemoveAll()
 
 void PArrayObjects::CloneContents(const PArrayObjects * array)
 {
-  ObjPtrArray & oldArray = *array->theArray;
-  theArray = new ObjPtrArray(oldArray.GetSize());
+  PBaseArray<PObject *> & oldArray = *array->theArray;
+  theArray = new PBaseArray<PObject *>(oldArray.GetSize());
   for (PINDEX i = 0; i < GetSize(); i++) {
     PObject * ptr = oldArray[i];
     if (ptr != NULL)
