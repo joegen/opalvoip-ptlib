@@ -167,8 +167,10 @@ void PXMLParser::GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX &
 void PXMLParser::StartElement(const char * name, const char **attrs)
 {
   PXMLElement * newElement = new PXMLElement(currentElement, name);
-  if (currentElement != NULL)
+  if (currentElement != NULL) {
     currentElement->AddSubObject(newElement, PFalse);
+    newElement->SetFilePosition(XML_GetCurrentColumnNumber((XML_Parser)expat) , XML_GetCurrentLineNumber((XML_Parser)expat));
+  }
 
   while (attrs[0] != NULL) {
     newElement->SetAttribute(PString(attrs[0]), PString(attrs[1]));
@@ -803,6 +805,7 @@ PXMLObject * PXMLData::Clone(PXMLElement * _parent) const
 PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
  : PXMLObject(_parent)
 {
+  lineNumber = column = 0;
   dirty = PFalse;
   if (_name != NULL)
     name = _name;
@@ -811,6 +814,7 @@ PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
 PXMLElement::PXMLElement(PXMLElement * _parent, const PString & _name, const PString & data)
  : PXMLObject(_parent), name(_name)
 {
+  lineNumber = column = 0;
   dirty = PFalse;
   AddSubObject(new PXMLData(this, data));
 }
