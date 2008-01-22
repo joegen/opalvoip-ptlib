@@ -349,11 +349,16 @@ class PXMLElement : public PXMLObject {
 
     PXMLObject * Clone(PXMLElement * parent) const;
 
+    void GetFilePosition(unsigned & _col, unsigned & _line) const { _col = column; _line = lineNumber; }
+    void SetFilePosition(unsigned _col,   unsigned _line)         { column = _col; lineNumber = _line; }
+
   protected:
     PCaselessString name;
     PStringToString attributes;
     PXMLObjectArray subObjects;
     PBoolean dirty;
+    unsigned column;
+    unsigned lineNumber;
 };
 
 ////////////////////////////////////////////////////////////
