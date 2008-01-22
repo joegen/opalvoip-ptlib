@@ -57,8 +57,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmpptest", "samples\xmpptes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "threadex", "samples\threadex\threadex_2008.vcproj", "{89F7154A-47E5-47FE-88E3-E5E8EC516752}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmlrpcsrvr", "samples\xmlrpcsrvr\xmlrpcsrvr_2008.vcproj", "{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World DLL", "samples\hello_world\helloDLL_2008.vcproj", "{86680AA2-ACF3-4247-AF25-8E3D80855868}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sockbundle", "samples\sockbundle\sockbundle_2008.vcproj", "{EC59B5D7-67B6-4401-B00D-B1FA9DB3C406}"
@@ -228,12 +226,6 @@ Global
 		{89F7154A-47E5-47FE-88E3-E5E8EC516752}.No Trace|Win32.Build.0 = No Trace|Win32
 		{89F7154A-47E5-47FE-88E3-E5E8EC516752}.Release|Win32.ActiveCfg = Release|Win32
 		{89F7154A-47E5-47FE-88E3-E5E8EC516752}.Release|Win32.Build.0 = Release|Win32
-		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Debug|Win32.Build.0 = Debug|Win32
-		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.No Trace|Win32.ActiveCfg = No Trace|Win32
-		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.No Trace|Win32.Build.0 = No Trace|Win32
-		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Release|Win32.ActiveCfg = Release|Win32
-		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Release|Win32.Build.0 = Release|Win32
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Debug|Win32.ActiveCfg = Debug|Win32
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Debug|Win32.Build.0 = Debug|Win32
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.No Trace|Win32.ActiveCfg = No Trace|Win32

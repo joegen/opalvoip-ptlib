@@ -35,8 +35,6 @@
 #pragma implementation "pvfiledev.h"
 #endif
 
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
 
 #if P_VIDEO
