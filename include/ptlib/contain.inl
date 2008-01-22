@@ -425,7 +425,7 @@ PINLINE void PCollection::DisallowDeleteObjects()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
-  : theArray(PNEW ObjPtrArray(initialSize)) { }
+  : theArray(PNEW PBaseArray<PObject *>(initialSize)) { }
 
 
 ///////////////////////////////////////////////////////////////////////////////
