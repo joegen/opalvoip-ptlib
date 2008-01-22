@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="PTLib Static"
 	ProjectGUID="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
 	RootNamespace="PTLib Static"
@@ -4989,6 +4989,10 @@
 				</File>
 				<File
 					RelativePath="..\..\ptclib\telnet.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ptclib\url.cxx"
 					>
 				</File>
 				<File

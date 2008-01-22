@@ -54,7 +54,6 @@ PINSTANTIATE_FACTORY(PTextToSpeech, PString)
 
 #include <objbase.h>
 #include <atlbase.h>
-#include <objbase.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <sphelper.h>

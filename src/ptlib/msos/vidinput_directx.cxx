@@ -24,17 +24,11 @@
  * Contributor(s): Matthias Schneider <ma30002000@yahoo.de>
  */
 
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
 
 #ifdef P_DIRECTSHOW
 
 #include "ptlib/msos/ptlib/vidinput_directx.h"
-
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "vidinput_directx.cxx must be compiled without precompiled headers"
-#endif
 
 #ifdef _MSC_VER
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY1)

@@ -28,18 +28,12 @@
  * $Date$
  */
 
-
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
 
 #if P_VIDEO
 
 #include <ptlib/vconvert.h>
 
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "vfakeio.cxx must be compiled without precompiled headers"
-#endif
 #include <ptlib/pluginmgr.h>
 #include <ptlib/pprocess.h>
 #include <ptlib/videoio.h>

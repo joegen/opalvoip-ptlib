@@ -46,12 +46,6 @@
 #pragma comment(lib, P_DIRECTSOUND_LIBRARY)
 
 
-#define P_FORCE_STATIC_PLUGIN
-
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "sound_directsound.cxx must be compiled without precompiled headers"
-#endif
-
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
 #define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p);   (p)=NULL; } }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="PTLib DLL"
 	ProjectGUID="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
 	RootNamespace="PTLib DLL"
@@ -211,8 +211,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -311,8 +310,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -936,6 +934,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+			RelativePathToProject=".\src\ptlib\msos\Console_2008.vcproj"
 		/>
 	</References>
 	<Files>

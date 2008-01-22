@@ -32,8 +32,6 @@
 #pragma implementation "vsdl.h"
 #endif
 
-#define P_FORCE_STATIC_PLUGIN 
-
 #include <ptlib.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pluginmgr.h>

@@ -31,11 +31,6 @@
  * $Date$
  */
 
-#ifdef __NUCLEUS_PLUS__
-#include <ConfigurationClass.h>
-#endif
-
-
 #include <ptlib.h>
 
 #include <ptlib/sockets.h>
@@ -48,6 +43,10 @@
 #define INET_ADDR_LEN      18
 extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 #endif // P_VXWORKS
+
+#ifdef __NUCLEUS_PLUS__
+#include <ConfigurationClass.h>
+#endif
 
 #if P_HAS_QOS
 

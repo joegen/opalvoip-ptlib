@@ -29,15 +29,9 @@
  * $Date$
  */
 
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
 
 #if P_VIDEO
-
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "vfw.cxx must be compiled without precompiled headers"
-#endif
 
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>

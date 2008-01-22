@@ -32,18 +32,12 @@
 #pragma implementation "pstun.h"
 #endif
 
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
 #include <ptclib/pstun.h>
 #include <ptclib/random.h>
 
 #define new PNEW
 
-
-#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
-#error "pstun.cxx must be compiled without precompiled headers"
-#endif
 
 PCREATE_NAT_PLUGIN(STUN);
 
