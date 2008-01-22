@@ -285,10 +285,8 @@
 // EXPAT library for XML parsing
 //
 
-#ifndef _WIN32_WCE
 #undef P_EXPAT 
 #undef P_WINEXPAT 
-#endif
 
 #ifdef P_WINEXPAT 
 #define P_EXPAT 1
@@ -534,9 +532,10 @@
 
 #ifndef _WIN32_WCE
 #undef P_DIRECTSOUND
-#undef P_DIRECTSHOW
 #undef P_VFW_CAPTURE
 #endif
+
+#undef P_DIRECTSHOW
 
 #undef P_DIRECTSOUND_WINCE
 
