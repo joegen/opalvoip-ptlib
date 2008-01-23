@@ -1088,6 +1088,8 @@ PChannel::Errors PSingleMonitoredSocket::ReadFromBundle(void * buf,
   else
     errorCode = PChannel::NotFound;
 
+  iface = theInterface;
+
   UnlockReadWrite();
 
   return errorCode;
