@@ -129,13 +129,8 @@ char *			_i64toa (__int64 val,char *buf,int radix);
 char *			_ui64toa (unsigned __int64 val,char *buf,int radix);
 
 #if _WIN32_WCE < 0x502
-__int64			_atoi64(const char *nptr);
-
 int stricmp(const char* s1, const char* s2 ); 
-
 int stricmp(const wchar_t* s1, const char* s2 ); 
-
-
 #endif // _WIN32_WCE < 0x502
 char* strdup( const char* s );
 
