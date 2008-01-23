@@ -502,6 +502,14 @@ int stricmp(const wchar_t* s1, const char* s2 )
 
 #endif // _WIN32_WCE < 0x502
 
+char* strdup( const char* s ) 
+{ 
+	char* s1 = (char*) malloc(strlen(s) +1); 
+	if( s1 )
+		strcpy( s1, s ); 
+	return s1; 
+}
+
 int strcasecmp(const char* s1, const char* s2 ) { return _stricmp(s1, s2); }
 int strncasecmp(const char* s1, const char* s2, int n) { return _strnicmp(s1, s2, n); }
 

@@ -135,7 +135,9 @@ int stricmp(const char* s1, const char* s2 );
 
 int stricmp(const wchar_t* s1, const char* s2 ); 
 
+
 #endif // _WIN32_WCE < 0x502
+char* strdup( const char* s );
 
 int strcasecmp(const char* s1, const char* s2 ); 
 int strncasecmp(const char* s1, const char* s2, int n);
