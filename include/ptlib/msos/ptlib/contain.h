@@ -88,19 +88,19 @@
 
   // At least Windows 2000
   #ifndef WINVER
-  #define WINVER 0x0500
+    #define WINVER 0x0500
   #endif
 
-  #ifndef _WIN32_WINNT
-  #define _WIN32_WINNT 0x0500
+  #if !defined(_WIN32_WINNT) && !defined(_WIN32_WCE)
+    #define _WIN32_WINNT WINVER
   #endif
 
   #ifndef STRICT
-  #define STRICT
+    #define STRICT
   #endif
 
   #ifndef WIN32_LEAN_AND_MEAN
-  #define WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
   #endif
 
   #include <windows.h>
@@ -347,12 +347,17 @@ class RegistryKey
   #include <io.h>
   #include <fcntl.h>
   #include <direct.h>
+  #include <time.h>
   #include <vfw.h>
 #else
   #include <ptlib/wm/stdlibx.h>
   #include <ptlib/wm/errno.h>
   #include <ptlib/wm/sys/types.h>
-  #include <ptlib/wm/time.h>
+  #if _WIN32_WCE < 0x500
+    #include <ptlib/wm/time.h>
+  #else
+    #include <time.h>
+  #endif
   #include <ptlib/wm/cevfw.h>
 #endif
 
