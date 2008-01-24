@@ -23,6 +23,7 @@
 #include <ptlib/wm/stdlibx.h>
 #include <ptlib/wm/mmsystemx.h>
 
+
 ////////////////////////////////////////////////////////////////////
 // Chunks
 class ChunkFinder 
@@ -229,15 +230,13 @@ public:
 
 HMMIO WINAPI mmioOpen(LPSTR pszFileName, LPMMIOINFO pmmioinfo, DWORD fdwOpen)
 {
-  USES_CONVERSION;
- 
   DWORD dwAccess = fdwOpen & MMIO_READ ? GENERIC_READ : 0;
   dwAccess |= (fdwOpen & MMIO_WRITE) ? GENERIC_WRITE : 0xFFFF; 
 
   DWORD dwFlags = fdwOpen & MMIO_CREATE ? \
 			CREATE_ALWAYS : OPEN_EXISTING;
 
-  HANDLE hFile = CreateFile(A2T(pszFileName), 
+  HANDLE hFile = CreateFile(PString(pszFileName).AsUCS2(), 
 	  dwAccess, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, 
 	  dwFlags, FILE_ATTRIBUTE_NORMAL, NULL);
 	
@@ -333,9 +332,7 @@ MMRESULT WINAPI mmioCreateChunk(HMMIO hmmio, LPMMCKINFO pmmcki, UINT fuCreate)
 
 BOOL WINAPI PlaySound( LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
 {
-	// [YG] I have changed all A2W to A2T for normal
-	USES_CONVERSION;
-	return ::PlaySound( A2T(pszSound), hmod, fdwSound);
+  return ::PlaySound(PString(pszSound).AsUCS2(), hmod, fdwSound);
 }
 
 MMRESULT WINAPI waveInGetErrorText(MMRESULT mmrError, char* pszText, UINT cchText)
