@@ -280,16 +280,11 @@ PBoolean PDirectory::Change(const PString & p)
 
 PBoolean PDirectory::Filtered()
 {
-#if defined(_WIN32)
-#ifdef _WIN32_WCE
-  USES_CONVERSION;
-  char * name = T2A(fileinfo.cFileName);
+#ifdef UNICODE
+  PString name(fileinfo.cFileName);
 #else
   char * name = fileinfo.cFileName;
-#endif // _WIN32_WCE
-#else
-  char * name = fileinfo.name;
-#endif
+#endif // UNICODE
   if (strcmp(name, ".") == 0)
     return PTrue;
   if (strcmp(name, "..") == 0)
@@ -579,18 +574,18 @@ PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBool
 
 
 #ifdef _WIN32_WCE
+time_t	FileTimeToTime(const FILETIME FileTime);
+time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
 
 PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
-  USES_CONVERSION;
-  
   PString fn = name;
   PINDEX pos = fn.GetLength()-1;
   while (PDirectory::IsSeparator(fn[pos]))
     pos--;
   fn.Delete(pos+1, P_MAX_INDEX);
   
-  HANDLE hFile = CreateFile(A2T((const char*)fn),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+  HANDLE hFile = CreateFile(fn.AsUCS2(),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
   if (hFile==INVALID_HANDLE_VALUE) 
     return false;
   

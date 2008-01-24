@@ -269,12 +269,14 @@ void PDirectory::CopyContents(const PDirectory & dir)
 PBoolean PDirectory::Open(int newScanMask)
 {
   scanMask = newScanMask;
+  PString wildcard = *this + "*.*";
+
 #ifdef UNICODE
-  USES_CONVERSION;
-  hFindFile = FindFirstFile(A2T(operator+("*.*")), &fileinfo);
+  hFindFile = FindFirstFile(wildcard.AsUCS2(), &fileinfo);
 #else
-  hFindFile = FindFirstFile(operator+("*.*"), &fileinfo);
+  hFindFile = FindFirstFile(wildcard, &fileinfo);
 #endif
+
   if (hFindFile == INVALID_HANDLE_VALUE)
     return PFalse;
 
@@ -1231,8 +1233,7 @@ PString PProcess::GetUserName() const
       wcscat( wcsuser, _T(" user") ); // like "Pocket_PC User"
   }
   
-  USES_CONVERSION;
-  username = T2A(wcsuser);
+  username = wcsuser;
 #endif
   username.MakeMinimumSize();
   return username;
@@ -1456,8 +1457,7 @@ PString PDynaLink::GetExtension()
 PBoolean PDynaLink::Open(const PString & name)
 {
 #ifdef UNICODE
-  USES_CONVERSION;
-  _hDLL = LoadLibrary(A2T(name));
+  _hDLL = LoadLibrary(name.AsUCS2());
 #else
   _hDLL = LoadLibrary(name);
 #endif
@@ -1530,8 +1530,7 @@ PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
     return PFalse;
 
 #ifdef UNICODE
-  USES_CONVERSION;
-  FARPROC p = GetProcAddress(_hDLL, A2T(name));
+  FARPROC p = GetProcAddress(_hDLL, name.AsUCS2());
 #else
   FARPROC p = GetProcAddress(_hDLL, name);
 #endif
@@ -1574,8 +1573,7 @@ int PDebugStream::Buffer::overflow(int c)
     p[bufSize] = '\0';
 
 #ifdef UNICODE
-    USES_CONVERSION;
-    OutputDebugString(A2T(p));
+    OutputDebugString(PString(p).AsUCS2());
 #else
     OutputDebugString(p);
 #endif

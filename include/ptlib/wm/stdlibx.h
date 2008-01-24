@@ -19,8 +19,7 @@
 
 #include <stdlib.h>
 #include <winsock.h>
-#include <atlconv.h>
-#include <cmnintrin.h>
+
 
 #ifdef __cplusplus
 
