@@ -40,10 +40,16 @@ struct tm {
 
 // Define time_t WINCE
 // If we won't, we'll stuck with longs
-typedef __int64 time_t;     
+#ifndef _TIME_T_DEFINED
 #define _TIME_T_DEFINED
-typedef __int64 clock_t;
+typedef __int64 time_t;     
+#endif
+
+#ifndef _CLOCK_T_DEFINED
 #define _CLOCK_T_DEFINED
+typedef __int64 clock_t;
+#endif
+
 
 /* Clock ticks macro - ANSI version */
 #define CLOCKS_PER_SEC  1000

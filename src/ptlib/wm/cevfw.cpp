@@ -57,7 +57,6 @@ HWND VFWAPI capDefCreateCaptureWindow(LPCSTR szTitle,
 { 
 	PTRACE(2, "capDefCreateCaptureWindow() called." << endl );
 	
-	USES_CONVERSION;
 	WNDCLASS wc;
 	ATOM atom;
 
@@ -71,7 +70,7 @@ HWND VFWAPI capDefCreateCaptureWindow(LPCSTR szTitle,
 
 	if ((ghWndCapture = ::CreateWindowExW( 0L, 
 		(LPCTSTR) atom,
-		A2W(szTitle && *szTitle? szTitle : gszCEVideoCapDevName),
+		PString(szTitle && *szTitle ? szTitle : gszCEVideoCapDevName).AsUCS2(),
            dwStyle,
            x, y,
            width + GetSystemMetrics(SM_CXFIXEDFRAME),

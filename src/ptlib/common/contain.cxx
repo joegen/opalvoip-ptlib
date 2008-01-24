@@ -1732,6 +1732,14 @@ PWCharArray PString::AsUCS2() const
   g_free(g_ucs2)
   return ucs2;
 
+#elif defined(WIN32)
+
+  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, theArray, -1, NULL, 0);
+  PWCharArray ucs2(count+1);
+  MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
+
+  return ucs2;
+
 #else
 
   PWCharArray ucs2(GetSize()); // Always bigger than required
@@ -1791,9 +1799,15 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
     return;
   }
 
-  SetSize(&g_len);
-  memcpy(theArray, g_char, g_len);
+  if (SetSize(&g_len))
+    memcpy(theArray, g_char, g_len);
   g_free(g_utf8);
+
+#elif defined(WIN32)
+
+  PINDEX count = WideCharToMultiByte(CP_UTF8, 0, ptr, len, NULL, 0, NULL, NULL);
+  if (SetSize(count+1))
+    WideCharToMultiByte(CP_UTF8, 0, ptr, len, GetPointer(count+1), count+1, NULL, NULL);
 
 #else
 
@@ -1807,21 +1821,21 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
     else
       count += 3;
   }
-  SetSize(count);
-
-  count = 0;
-  for (i = 0; i < len; i++) {
-    unsigned v = *ptr++;
-    if (v < 0x80)
-      theArray[count++] = (char)v;
-    else if (v < 0x800) {
-      theArray[count++] = (char)(0xc0+(v>>6));
-      theArray[count++] = (char)(0x80+(v&0x3f));
-    }
-    else {
-      theArray[count++] = (char)(0xd0+(v>>12));
-      theArray[count++] = (char)(0x80+((v>>6)&0x3f));
-      theArray[count++] = (char)(0x80+(v&0x3f));
+  if (SetSize(count)) {
+    count = 0;
+    for (i = 0; i < len; i++) {
+      unsigned v = *ptr++;
+      if (v < 0x80)
+        theArray[count++] = (char)v;
+      else if (v < 0x800) {
+        theArray[count++] = (char)(0xc0+(v>>6));
+        theArray[count++] = (char)(0x80+(v&0x3f));
+      }
+      else {
+        theArray[count++] = (char)(0xd0+(v>>12));
+        theArray[count++] = (char)(0x80+((v>>6)&0x3f));
+        theArray[count++] = (char)(0x80+(v&0x3f));
+      }
     }
   }
 
