@@ -1188,6 +1188,42 @@ PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
   return PTrue;
 }
 
+PBoolean PVideoInputDevice::GetFrameData(
+  BYTE * buffer,
+  PINDEX * bytesReturned,
+  unsigned int & flags
+)
+{
+  flags = 0;
+  return GetFrameData(buffer, bytesReturned);
+}
+
+PBoolean PVideoInputDevice::GetFrameDataNoDelay(
+  BYTE * buffer,
+  PINDEX * bytesReturned,
+  unsigned & flags
+)
+{
+  flags = 0;
+  return GetFrameDataNoDelay(buffer, bytesReturned);
+}
+
+PBoolean PVideoOutputDevice::SetFrameData(
+      unsigned x,
+      unsigned y,
+      unsigned width,
+      unsigned height,
+      const BYTE * data,
+      PBoolean endFrame,
+      unsigned /*flags*/
+)
+{
+  return SetFrameData(x, y, width, height, data, endFrame);
+}
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
