@@ -165,7 +165,9 @@ case "$target_cpu" in
                    LIB64=1 ;
 		   ;;
 
-   sparc )         MACHTYPE=sparc ;
+   sparc|sparc64 ) MACHTYPE=sparc ;
+		   P_64BIT=1 ;
+                   LIB64=1 ;
 		   ;;
 
    powerpc )       MACHTYPE=ppc ;
@@ -1394,6 +1396,15 @@ dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
 dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
 
+dnl cannot use winexpat2 for the following option as configure.exe gets 
+dnl confused when one symbol is a prefix of another
+dnl MSWIN_DISPLAY    win_expat2,Windows Expat XML2
+dnl MSWIN_IF_FEATURE win_expat2,!expat
+dnl MSWIN_CHECK_FILE win_expat2,bin\libexpatMT.lib,P_WINEXPAT=2
+dnl MSWIN_DIR_SYMBOL win_expat2,WINEXPAT2_DIR
+dnl MSWIN_CHECK_DIR  win_expat2,source\lib
+dnl MSWIN_CHECK_DIR  win_expat2,\libs\expat\
+
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
 
@@ -1408,31 +1419,18 @@ else
   if test "${EXPATDIR}z" != "z" ; then
     AC_CHECK_FILE(${EXPATDIR}/include/expat.h, HAS_EXPAT=1)
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      EXPATINCLUDEDIR=${EXPATDIR}/include
-      EXPATLIBDIR=${EXPATDIR}/lib
+      STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/include"
+      LDFLAGS="$LDFLAGS -L${EXPATDIR}/lib"
     fi
   else
     AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
       AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
-    else
-      AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
-      if test "${HAS_EXPAT:-unset}" != "unset" ; then
-        EXPATINCLUDEDIR=/usr/local/include
-        EXPATLIBDIR=/usr/local/lib
-      fi
     fi
   fi
 
   if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    HAS_EXPAT=1
     AC_DEFINE(P_EXPAT, 1, "expat found")
-    if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
-    fi
-    if test ${EXPATLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
-    fi
     ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
 fi
@@ -1443,19 +1441,19 @@ dnl handle modules dependent on Expat
 
 dnl MSWIN_DISPLAY    vxml,VXML
 dnl MSWIN_DEFINE     vxml,P_VXML
-dnl MSWIN_IF_FEATURE vxml,expat|winexpat
+dnl MSWIN_IF_FEATURE vxml,expat|winexpat|win_expat2
 
 dnl MSWIN_DISPLAY    jabber,Jabber
 dnl MSWIN_DEFINE     jabber,P_JABBER
-dnl MSWIN_IF_FEATURE jabber,expat|winexpat
+dnl MSWIN_IF_FEATURE jabber,expat|winexpat|win_expat2
 
 dnl MSWIN_DISPLAY    xmlrpc,XMLRPC
 dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-dnl MSWIN_IF_FEATURE xmlrpc,expat|winexpat
+dnl MSWIN_IF_FEATURE xmlrpc,expat|winexpat|win_expat2
 
 dnl MSWIN_DISPLAY    soap,SOAP
 dnl MSWIN_DEFINE     soap,P_SOAP
-dnl MSWIN_IF_FEATURE soap,expat|winexpat
+dnl MSWIN_IF_FEATURE soap,expat|winexpat|win_expat2
 
 HAS_VXML=
 HAS_JABBER=
@@ -1465,6 +1463,7 @@ if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(VXML disabled as Expat is disabled)
   AC_MSG_NOTICE(Jabber disabled as Expat is disabled)
   AC_MSG_NOTICE(XMLRPC disabled as Expat is disabled)
+  AC_MSG_NOTICE(SOAP disabled as Expat is disabled)
 else
 
   dnl ########################################################################
@@ -2220,6 +2219,7 @@ dnl look for Direct Sound
 
 dnl MSWIN_DISPLAY    dsound,Direct Sound Support
 dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
+dnl MSWIN_CHECK_FILE dsound,include\armmacros.s,P_DIRECTSOUND_WINCE=1
 dnl MSWIN_DIR_SYMBOL dsound,DIRECTX_DIR
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB64,dsound.lib,lib/x64
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib/x86
