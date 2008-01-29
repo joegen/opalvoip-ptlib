@@ -615,6 +615,15 @@ class PVideoOutputDevice : public PVideoDevice
       const BYTE * data,
       PBoolean endFrame = PTrue
     ) = 0;
+    virtual PBoolean SetFrameData(
+      unsigned x,
+      unsigned y,
+      unsigned width,
+      unsigned height,
+      const BYTE * data,
+      PBoolean endFrame,
+      unsigned flags
+    );
 
     /**Get the position of the output device, where relevant. For devices such as
        files, this always returns zeros. For devices such as Windows, this is the
@@ -858,14 +867,24 @@ class PVideoInputDevice : public PVideoDevice
       */
     virtual PBoolean GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
-      PINDEX * bytesReturned = NULL  ///< OPtional bytes returned.
+      PINDEX * bytesReturned,        ///< Optional bytes returned.
+      unsigned int & flags           ///< optional flags returned
+    );
+    virtual PBoolean GetFrameData(
+      BYTE * buffer,                 ///< Buffer to receive frame
+      PINDEX * bytesReturned = NULL  ///< Optional bytes returned.
     ) = 0;
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
     virtual PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
-      PINDEX * bytesReturned = NULL  ///< OPtional bytes returned.
+      PINDEX * bytesReturned,       ///< Optional bytes returned.
+      unsigned int & flags           ///< optional flags returned
+    );
+    virtual PBoolean GetFrameDataNoDelay(
+      BYTE * buffer,                 ///< Buffer to receive frame
+      PINDEX * bytesReturned = NULL  ///< Optional bytes returned.
     ) = 0;
 
     /**Try all known video formats & see which ones are accepted by the video driver
