@@ -147,7 +147,7 @@ void DtmfTest::Main()
       tonesToPlay += args[i];
   }
   if (tonesToPlay.IsEmpty())
-    tonesToPlay = "0123456789ABCD*#X";
+    tonesToPlay = "0123456789ABCD*#XY";
 
 
   if (args.HasOption('s')) {
