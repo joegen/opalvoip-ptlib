@@ -1635,7 +1635,7 @@ else
 
   dnl MSWIN_DISPLAY    jabber,Jabber
   dnl MSWIN_DEFINE     jabber,P_JABBER
-  dnl MSWIN_IF_FEATURE jabber,expat|winexpat|win_expat
+  dnl MSWIN_IF_FEATURE jabber,expat|winexpat|win_expat2
 
   AC_ARG_ENABLE(jabber,
          [  --disable-jabber        disable Jabber support])
