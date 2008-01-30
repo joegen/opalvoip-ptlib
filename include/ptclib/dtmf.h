@@ -37,7 +37,7 @@ class PDTMFDecoder : public PObject
 
   protected:
     enum {
-      NumTones = 9
+      NumTones = 10
     };
 
     // key lookup table (initialised once)
