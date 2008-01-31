@@ -567,6 +567,31 @@ class PThreadObj1Arg : public PThread
     Arg1Type arg1;
 };
 
+template <class ObjType, typename Arg1Type, typename Arg2Type>
+class PThreadObj2Arg : public PThread
+{
+  PCLASSINFO(PThreadObj2Arg, PThread);
+  public:
+    typedef void (ObjType::*ObjTypeFn)(Arg1Type, Arg2Type); 
+    PThreadObj2Arg(ObjType & _obj, Arg1Type _arg1, Arg2Type _arg2, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+				obj(_obj), fn(_fn), arg1(_arg1), arg2(_arg2)
+    { PThread::Resume(); }
+    PThreadObj2Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, Arg2Type _arg2, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
+				obj(_obj), fn(_fn), arg1(_arg1), arg2(_arg2)
+    { PThread::Resume(); }
+    void Main()
+    { (obj.*fn)(arg1, arg2); }
+
+  protected:
+    ObjType & obj;
+    ObjTypeFn fn;
+    Arg1Type arg1;
+    Arg1Type arg2;
+};
+
 #ifdef _MSC_VER
 #pragma warning(default:4355)
 #endif
