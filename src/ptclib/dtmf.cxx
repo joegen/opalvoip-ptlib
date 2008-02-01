@@ -66,12 +66,23 @@ PDTMFDecoder::PDTMFDecoder()
   p1[8] = -2660; p1[9] = 321;
 }
 
-
-PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples)
+PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsigned mult, unsigned div)
 {
   int x;
   int s, kk;
   int c, d, f, n;
+
+#if 0
+  {
+    static int fd = -1;
+    if (fd < 0) {
+      fd = ::_open("dtmf.pcm", _O_BINARY | _O_CREAT | O_RDWR, 0777);
+      PTRACE(1, "DTMF\tdebug file opened");
+    }
+    if (fd >= 0) 
+      ::_write(fd, sampleData, numSamples*2);
+  }
+#endif
 
   PString keyString;
 
@@ -79,7 +90,8 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples)
   for (pos = 0; pos < numSamples; pos++) {
 
     /* Read (and scale) the next 16 bit sample */
-    x = ((int)(*sampleData++)) / (32768/FSC);
+    x = (int)(mult * (*sampleData++)) / div;
+    x = x / (32768/FSC);
 
     /* Input amplitude */
     if (x > 0)
