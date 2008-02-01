@@ -157,10 +157,19 @@ void DtmfTest::Main()
       return;
     }
 
-    PTones toneData;
-    if (!toneData.Generate(tonesToPlay))
-      cerr << "Error parsing tone descriptor \"" << tonesToPlay << "\"\n";
-    else if (!speaker.Write(toneData.GetPointer(), toneData.GetSize()*2))
+    PDTMFEncoder toneData;
+    if (args.HasOption('T')) {
+      if (!toneData.Generate(tonesToPlay)) {
+        cerr << "Error parsing tone descriptor \"" << tonesToPlay << "\"\n";
+        return;
+      }
+    }
+    else
+    {
+      toneData.AddTone(tonesToPlay, 1000);
+    }
+
+    if (!speaker.Write(toneData.GetPointer(), toneData.GetSize()*2))
       cerr << "Could not write tone data to sound card!\n";
     else {
       speaker.WaitForPlayCompletion();
