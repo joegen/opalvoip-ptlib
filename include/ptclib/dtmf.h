@@ -33,7 +33,7 @@ class PDTMFDecoder : public PObject
 
   public:
     PDTMFDecoder();
-    PString Decode(const short * sampleData, PINDEX numSamples);
+    PString Decode(const short * sampleData, PINDEX numSamples, unsigned mult = 1, unsigned div = 1);
 
   protected:
     enum {
