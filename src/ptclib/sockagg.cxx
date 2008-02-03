@@ -61,7 +61,7 @@ class LocalEvent : public PHandleAggregator::EventBase
     { CloseHandle(event); }
 
     PAggregatorFD::FD GetHandle()
-    { return event; }
+    { return (PAggregatorFD::FD)event; }
 
     void Set()
     { SetEvent(event);  }
