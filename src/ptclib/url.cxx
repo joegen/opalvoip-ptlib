@@ -44,7 +44,7 @@
 #include <ptlib/sockets.h>
 #include <ctype.h>
 
-#if defined(WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32) && !defined(_WIN32_WCE)
 #include <shellapi.h>
 #pragma comment(lib,"shell32.lib")
 #endif
@@ -832,7 +832,7 @@ void PURL::SetQueryVar(const PString & key, const PString & data)
 
 PBoolean PURL::OpenBrowser(const PString & url)
 {
-#ifdef WIN32
+#ifdef _WIN32
   SHELLEXECUTEINFO sei;
   ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
   sei.cbSize = sizeof(SHELLEXECUTEINFO);
