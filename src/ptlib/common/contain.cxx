@@ -1732,7 +1732,7 @@ PWCharArray PString::AsUCS2() const
   g_free(g_ucs2)
   return ucs2;
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 
   PINDEX count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, theArray, -1, NULL, 0);
   PWCharArray ucs2(count+1);
@@ -1803,7 +1803,7 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
     memcpy(theArray, g_char, g_len);
   g_free(g_utf8);
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 
   PINDEX count = WideCharToMultiByte(CP_UTF8, 0, ptr, len, NULL, 0, NULL, NULL);
   if (SetSize(count+1))

@@ -51,7 +51,7 @@
 enum { DnsSectionAdditional = DnsSectionAddtional };
 #endif
 
-#else /* WIN32 */
+#else /* _WIN32 */
 
 #  define  P_HAS_RESOLVER 1         // set if using Unix-style DNS routines
 #  include <arpa/nameser.h>
