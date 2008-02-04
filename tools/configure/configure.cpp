@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.13"
+#define VERSION "1.14"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -103,7 +103,7 @@ class Feature
     struct CheckFileInfo {
       CheckFileInfo() : found(false), defineName("1") { }
 
-      bool Locate(const string & testDir);
+      bool Locate(string & testDir);
 
       bool   found;
       string fileName;
@@ -246,9 +246,10 @@ static bool CompareName(const string & line, const string & name)
 
 void Feature::Adjust(string & line)
 {
-  if (state == Enabled && line.find("#undef") != string::npos) {
+  string::size_type undefPos = line.find("#undef");
+  if (state == Enabled && undefPos != string::npos) {
     if (!simpleDefineName.empty() && CompareName(line, simpleDefineName)) {
-      line = "#define " + simpleDefineName + ' ';
+      line.replace(undefPos, INT_MAX, "#define " + simpleDefineName + ' ');
       if (simpleDefineValue.empty())
         line += '1';
       else
@@ -260,20 +261,20 @@ void Feature::Adjust(string & line)
       if (CompareName(line, r->first)) {
         s = defineValues.find(r->second);
         if (s != defineValues.end())
-          line = "#define " + r->first + ' ' + s->second;
+          line.replace(undefPos, INT_MAX, "#define " + r->first + ' ' + s->second);
       }
     }
 
     for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
       if (file->found && CompareName(line, file->defineName)) {
-        line = "#define " + file->defineName + ' ' + file->defineValue;
+        line.replace(undefPos, INT_MAX, "#define " + file->defineName + ' ' + file->defineValue);
         break;
       }
     }
 
     for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
       if (!file->fullname.empty() && CompareName(line, file->symbol)) {
-        line = "#define " + file->symbol + " \"" + file->fullname + '"';
+        line.replace(undefPos, INT_MAX, "#define " + file->symbol + " \"" + file->fullname + '"');
         break;
       }
     }
@@ -284,6 +285,17 @@ void Feature::Adjust(string & line)
     if (pos != string::npos)
       line.replace(pos, directorySymbol.length(), directory);
   }
+}
+
+
+bool IsUsableDirectory(const WIN32_FIND_DATA & fileinfo)
+{
+  return (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
+         (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) == 0 &&
+         (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_SYSTEM) == 0 &&
+          fileinfo.cFileName[0] != '.' &&
+          stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
+          stricmp(fileinfo.cFileName, "$recycle.bin") != 0;
 }
 
 
@@ -304,13 +316,7 @@ bool FindFileInTree(const string & directory, string & filename)
       }
 
       string subdir = GetFullPathNameString(directory + fileinfo.cFileName);
-      if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
-		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) == 0 &&
-		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_SYSTEM) == 0 &&
-           fileinfo.cFileName[0] != '.' &&
-           stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
-           stricmp(fileinfo.cFileName, "$recycle.bin") != 0 &&
-           !DirExcluded(subdir)) {
+      if (IsUsableDirectory(fileinfo) && !DirExcluded(subdir)) {
         subdir += '\\';
 
         found = FindFileInTree(subdir, filename);
@@ -337,24 +343,23 @@ bool Feature::Locate(const char * testDir)
   if (checkFiles.empty())
     return true;
 
-  string testDirectory = testDir;
-  if (testDirectory[testDirectory.length()-1] != '\\')
-    testDirectory += '\\';
+  bool noneFound = true;
+  for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); ++file) {
+    string testDirectory = testDir;
+    if (file->Locate(testDirectory) && noneFound) {
+      char buf[_MAX_PATH];
+      _fullpath(buf, testDirectory.c_str(), _MAX_PATH);
+      if (!DirExcluded(buf)) {
+        directory = buf;
+        noneFound = false;
+        // No break as want to continue with other CHECK_FILE entries, setting defines
+      }
+    }
+  }
 
-  list<CheckFileInfo>::iterator file = checkFiles.begin();
-  if (!file->Locate(testDirectory)) 
+  if (noneFound)
     return false;
   
-  while (++file != checkFiles.end())
-    file->Locate(testDirectory);
-
-  char buf[_MAX_PATH];
-  _fullpath(buf, testDirectory.c_str(), _MAX_PATH);
-  directory = buf;
-
-  if (DirExcluded(directory))
-    return false;
-
   cout << "Located " << displayName << " at " << directory << endl;
 
   string::size_type pos;
@@ -387,8 +392,31 @@ bool Feature::Locate(const char * testDir)
 }
 
 
-bool Feature::CheckFileInfo::Locate(const string & testDirectory)
+bool Feature::CheckFileInfo::Locate(string & testDirectory)
 {
+  if (testDirectory.find_first_of("*?") != string::npos) {
+    WIN32_FIND_DATA fileinfo;
+    HANDLE hFindFile = FindFirstFile(testDirectory.c_str(), &fileinfo);
+    if (hFindFile == INVALID_HANDLE_VALUE)
+      return false;
+
+    testDirectory.erase(testDirectory.rfind('\\')+1);
+
+    do {
+      string subdir = GetFullPathNameString(testDirectory + fileinfo.cFileName);
+      if (IsUsableDirectory(fileinfo) && !DirExcluded(subdir) && Locate(subdir)) {
+        testDirectory = subdir;
+        return true;
+      }
+    } while (FindNextFile(hFindFile, &fileinfo));
+
+    FindClose(hFindFile);
+    return false;
+  }
+
+  if (testDirectory[testDirectory.length()-1] != '\\')
+    testDirectory += '\\';
+
   string filename = testDirectory + fileName;
   ifstream file(filename.c_str(), ios::in);
   if (!file.is_open())
@@ -463,13 +491,7 @@ bool TreeWalk(const string & directory)
   if (hFindFile != INVALID_HANDLE_VALUE) {
     do {
       string subdir = GetFullPathNameString(directory + fileinfo.cFileName);
-      if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
-		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_HIDDEN) == 0 &&
-		  (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_SYSTEM) == 0 &&
-           fileinfo.cFileName[0] != '.' &&
-           stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
-           stricmp(fileinfo.cFileName, "$recycle.bin") != 0 &&
-           !DirExcluded(subdir)) {
+      if (IsUsableDirectory(fileinfo) && !DirExcluded(subdir)) {
         subdir += '\\';
 
         foundAll = true;
@@ -851,10 +873,16 @@ int main(int argc, char* argv[])
   for (feature = features.begin(); feature != features.end(); feature++) {
     if (feature->state == Feature::Enabled && !AllFeaturesAre(true, feature->ifFeature, feature->breaker))
       feature->state = Feature::Dependency;
-    if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
+    else if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
       feature->state = Feature::Blocked;
-    if (feature->state == Feature::Enabled && !feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
-      feature->state = Feature::NotFound;
+    else if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
+      for (list<Feature::CheckFileInfo>::iterator file = feature->checkFiles.begin(); file != feature->checkFiles.end(); file++) {
+        if (feature->checkFiles.begin()->found) {
+          feature->state = Feature::Enabled;
+          break;
+        }
+      }
+    }
   }
 
   int longestNameWidth = 0;
