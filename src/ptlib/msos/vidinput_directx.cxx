@@ -30,15 +30,19 @@
 
 #include "ptlib/msos/ptlib/vidinput_directx.h"
 
-#ifdef _MSC_VER
+#ifdef P_DIRECTSHOW_LIBRARY1
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY1)
+#endif
+#ifdef P_DIRECTSHOW_LIBRARY2
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY2)
 #endif
 
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter);
+#ifndef _WIN32_WCE
 static char *BSTR_to_ANSI(BSTR pSrc);
+#endif
 static GUID pwlib_format_to_media_format(const char *format);
 static PString media_format_to_pwlib_format(const GUID guid);
 
@@ -1217,6 +1221,7 @@ PBoolean PVideoInputDevice_DirectShow::GetDefaultFormat()
 }
 
 
+#ifndef _WIN32_WCE
 /*
  *
  *
@@ -1250,6 +1255,7 @@ static char *BSTR_to_ANSI(BSTR pSrc)
 
     return szOut;
 }
+#endif
 
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)

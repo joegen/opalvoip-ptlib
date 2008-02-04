@@ -1560,29 +1560,24 @@ dnl ########################################################################
 dnl look for expat XML parser
 
 dnl MSWIN_DISPLAY    expat,Expat XML
-dnl MSWIN_CHECK_FILE expat,Release\expat.lib,P_EXPAT=1
+dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_WINEXPAT=1
+dnl MSWIN_CHECK_FILE expat,Source\lib\expat.h,P_WINEXPAT=2
 dnl MSWIN_DIR_SYMBOL expat,EXPAT_DIR
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_DEBUG,expat.lib,Debug
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_RELEASE,expat.lib,Release
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM5_DEBUG,expat.lib,wm5/Debug
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM5_RELEASE,expat.lib,wm5/Release
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_DEBUG,expat.lib,wm6/Debug
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_V1,libexpat.lib,lib
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_V2,libexpatMT.lib,bin
 dnl MSWIN_CHECK_DIR  expat,..\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\expat\
+dnl MSWIN_CHECK_DIR  expat,\Program Files\Expat 2.*
 
-dnl MSWIN_DISPLAY    winexpat,Windows Expat XML
-dnl MSWIN_IF_FEATURE winexpat,!expat
-dnl MSWIN_CHECK_FILE winexpat,libs\libexpat.lib,P_WINEXPAT=1
-dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
-dnl MSWIN_CHECK_DIR  winexpat,source\lib
-dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
-
-dnl cannot use winexpat2 for the following option as configure.exe gets 
-dnl confused when one symbol is a prefix of another
-dnl MSWIN_DISPLAY    win_expat2,Windows Expat XML2
-dnl MSWIN_IF_FEATURE win_expat2,!expat
-dnl MSWIN_CHECK_FILE win_expat2,bin\libexpatMT.lib,P_WINEXPAT=2
-dnl MSWIN_DIR_SYMBOL win_expat2,WINEXPAT2_DIR
-dnl MSWIN_CHECK_DIR  win_expat2,source\lib
-dnl MSWIN_CHECK_DIR  win_expat2,\libs\expat\
 
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
@@ -1635,7 +1630,7 @@ else
 
   dnl MSWIN_DISPLAY    jabber,Jabber
   dnl MSWIN_DEFINE     jabber,P_JABBER
-  dnl MSWIN_IF_FEATURE jabber,expat|winexpat|win_expat2
+  dnl MSWIN_IF_FEATURE jabber,expat
 
   AC_ARG_ENABLE(jabber,
          [  --disable-jabber        disable Jabber support])
@@ -1660,7 +1655,7 @@ else
 
     dnl MSWIN_DISPLAY    vxml,VXML Support
     dnl MSWIN_DEFINE     vxml,P_VXML
-    dnl MSWIN_IF_FEATURE vxml,http&expat|winexpat|win_expat2
+    dnl MSWIN_IF_FEATURE vxml,http&expat
 
     AC_ARG_ENABLE(vxml,
            [  --disable-vxml          disable VXML support])
@@ -1680,7 +1675,7 @@ else
 
     dnl MSWIN_DISPLAY    xmlrpc,XMLRPC Support
     dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-    dnl MSWIN_IF_FEATURE xmlrpc,http&expat|winexpat|win_expat2
+    dnl MSWIN_IF_FEATURE xmlrpc,http&expat
 
     AC_ARG_ENABLE(xmlrpc,
 	 [  --disable-xmlrpc        disable XMLRPC support])
@@ -1700,7 +1695,7 @@ else
 
     dnl MSWIN_DISPLAY    soap,SOAP Support
     dnl MSWIN_DEFINE     soap,P_SOAP
-    dnl MSWIN_IF_FEATURE soap,http&expat|winexpat|win_expat2
+    dnl MSWIN_IF_FEATURE soap,http&expat
 
     AC_ARG_ENABLE(soap,
 	 [  --disable-soap          disable SOAP support])
@@ -1834,10 +1829,10 @@ dnl look for SDL, but only if we have pthreads
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
 dnl MSWIN_CHECK_FILE libsdl,include\SDL_video.h,P_SDL=1
-dnl MSWIN_CHECK_FILE libsdl,lib\SDL.lib,P_SDL_LIBDIR="lib"
 dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
-dnl MSWIN_CHECK_DIR  libsdl,..\sdl\
-dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl\
+dnl MSWIN_FIND_FILE  libsdl,P_SDL_LIBRARY,SDL.lib,lib
+dnl MSWIN_CHECK_DIR  libsdl,..\sdl*
+dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
