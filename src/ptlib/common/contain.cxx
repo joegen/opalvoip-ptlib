@@ -1733,14 +1733,20 @@ PWCharArray PString::AsUCS2() const
   return ucs2;
 
 #elif defined(_WIN32)
-
-  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, theArray, -1, NULL, 0);
-  PWCharArray ucs2(count+1);
-  MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
-
-  return ucs2;
-
-#else
+  {
+    // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later: 
+    PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, strlen(theArray)+1, NULL, 0);
+    if (count == 0) {
+      DWORD error = ::GetLastError();
+      PTRACE(1, "MultiByteToWideChar failed with error " << error);
+    }
+    else {
+      PWCharArray ucs2(count+1);
+      MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
+      return ucs2;
+    }
+  }
+#endif
 
   PWCharArray ucs2(GetSize()); // Always bigger than required
 
@@ -1778,8 +1784,6 @@ PWCharArray PString::AsUCS2() const
 
   ucs2.SetSize(count);
   return ucs2;
-
-#endif
 }
 
 
