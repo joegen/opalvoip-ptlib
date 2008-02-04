@@ -41,9 +41,7 @@
 
 #if P_EXPAT
 
-#if P_WINEXPAT == 2
 #define XML_STATIC 1
-#endif
 
 #include <expat.h>
 
@@ -53,10 +51,8 @@
 #define XMLSETTINGS_OPTIONS (NewLineAfterElement)
 
 
-#ifdef _MSC_VER
-#ifndef _WIN32_WCE
+#ifdef P_EXPAT_LIBRARY
 #pragma comment(lib, P_EXPAT_LIBRARY)
-#endif // !_WIN32_WCE
 #endif
 
 
