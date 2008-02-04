@@ -285,39 +285,91 @@
 // EXPAT library for XML parsing
 //
 
-#undef P_EXPAT 
-#undef P_WINEXPAT 
+#undef P_EXPAT
+#undef P_WINEXPAT
 
-#ifdef P_WINEXPAT 
-#define P_EXPAT 1
-#endif
+#if defined(_MSC_VER) && defined(P_WINEXPAT)
 
-#if defined(_MSC_VER) && P_EXPAT
+  #if P_WINEXPAT==1
 
-#ifdef P_WINEXPAT
+    #ifndef _WIN32_WCE 
 
+      #if defined(_DEBUG)
+      
+        #undef P_EXPAT_LIBRARY_W32_DEBUG
+        #ifdef P_EXPAT_LIBRARY_W32_DEBUG
+          #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W32_DEBUG
+        #endif
+        
+      #else
+      
+        #undef P_EXPAT_LIBRARY_W32_RELEASE
+        #ifdef P_EXPAT_LIBRARY_W32_RELEASE
+          #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W32_RELEASE
+        #endif
+        
+      #endif
 
-#if P_WINEXPAT == 2
-#pragma include_alias(<expat.h>, <@WINEXPAT2_DIR@/source/lib/expat.h>)
-#define P_EXPAT_LIBRARY "@WINEXPAT2_DIR@/bin/libexpatMT.lib"
-#else 
-#pragma include_alias(<expat.h>, <@WINEXPAT_DIR@/source/lib/expat.h>)
-#define P_EXPAT_LIBRARY "@WINEXPAT_DIR@/libs/libexpat.lib"
-#endif
+    #elif _WIN32_WCE < 0x502
 
-#else
+      #if defined(_DEBUG)
+      
+        #undef P_EXPAT_LIBRARY_WM5_DEBUG
+        #ifdef P_EXPAT_LIBRARY_WM5_DEBUG
+          #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM5_DEBUG
+        #endif
+        
+      #else
+      
+        #undef P_EXPAT_LIBRARY_WM5_RELEASE
+        #ifdef P_EXPAT_LIBRARY_WM5_RELEASE
+          #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM5_RELEASE
+        #endif
+        
+      #endif
+        
+    #else
+      
+      #if defined(_DEBUG)
+      
+        #undef P_EXPAT_LIBRARY_WM6_DEBUG
+        #ifdef P_EXPAT_LIBRARY_WM6_DEBUG
+          #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM6_DEBUG
+        #endif
+        
+      #else
+      
+        #undef P_EXPAT_LIBRARY_WM6_RELEASE
+        #ifdef P_EXPAT_LIBRARY_WM6_RELEASE
+          #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM6_RELEASE
+        #endif
+        
+      #endif
+        
+    #endif
 
-#pragma include_alias(<expat.h>, <@EXPAT_DIR@/lib/expat.h>)
+    #ifdef P_EXPAT_LIBRARY
+      #pragma include_alias(<expat.h>, <@EXPAT_DIR@/lib/expat.h>)
+      #define P_EXPAT 1
+    #endif
 
-#ifdef _DEBUG
-#define P_EXPAT_LIBDIR "Debug"
-#else
-#define P_EXPAT_LIBDIR "Release"
-#endif
+  #elif P_WINEXPAT==2 && !defined(_WIN32_WCE)
 
-#define P_EXPAT_LIBRARY "@EXPAT_DIR@/" P_EXPAT_LIBDIR "/expat.lib"
+    #undef P_EXPAT_LIBRARY_V1
+    #undef P_EXPAT_LIBRARY_V2
 
-#endif
+    #ifdef P_EXPAT_LIBRARY_V1
+      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_V1
+    #elif defined (P_EXPAT_LIBRARY_V2)
+      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_V2
+    #endif
+
+    #ifdef P_EXPAT_LIBRARY
+      #pragma include_alias(<expat.h>, <@EXPAT_DIR@/source/lib/expat.h>)
+      #define P_EXPAT 1
+    #endif
+
+  #endif
 
 #endif
 
@@ -423,19 +475,17 @@
 #endif
 
 #if defined(_MSC_VER) && P_SDL
-#pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
+  #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
 
-#undef P_SDL_LIBDIR
+  #undef P_SDL_LIBRARY
 
-#ifndef P_SDL_LIBDIR
- #ifdef _DEBUG
-  #define P_SDL_LIBDIR "VisualC/SDL/Debug"
- #else
-  #define P_SDL_LIBDIR "VisualC/SDL/Release"
- #endif
-#endif
-
-#define P_SDL_LIBRARY "@SDL_DIR@/" P_SDL_LIBDIR "/SDL.lib"
+  #ifndef P_SDL_LIBRARY
+    #ifdef _DEBUG
+      #define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Debug/SDL.lib"
+    #else
+      #define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Release/SDL.lib"
+    #endif
+  #endif
 
 #endif
 
@@ -530,47 +580,58 @@
 // DirectX Support (Windows only)
 //
 
-#ifndef _WIN32_WCE
-#undef P_DIRECTSOUND
-#undef P_VFW_CAPTURE
-#endif
+#ifdef _WIN32_WCE
 
-#undef P_DIRECTSHOW
-
-#undef P_DIRECTSOUND_WINCE
-
-#if defined(_MSC_VER) && defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
-
-#pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
-#pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
-
-#undef P_DIRECTSOUND_LIB64
-#undef P_DIRECTSOUND_LIB32
-
-#if defined(_WIN64)
-#define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB64
+  //#define P_DIRECTSOUND 1
+  #define P_DIRECTSHOW 1
+  #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
+  #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
+  
 #else
-#define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
-#endif
 
-#endif
+  #undef P_DIRECTSOUND
+  #undef P_VFW_CAPTURE
+  #undef P_DIRECTSHOW
 
+  #undef P_DIRECTSOUND_WINCE
 
-#if defined(_MSC_VER) && defined(P_DIRECTSHOW)
+  #if defined(_MSC_VER)
 
-#undef P_DIRECTDRAW_H
+    #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
 
-#pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
-#pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
-#pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
-#pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
-#pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
-#pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
-#pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
-#pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
+      #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
+      #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
 
-#define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
-#define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
+      #undef P_DIRECTSOUND_LIB64
+      #undef P_DIRECTSOUND_LIB32
+
+      #if defined(_WIN64)
+        #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB64
+      #else
+        #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
+      #endif
+
+    #endif
+
+    #if defined(P_DIRECTSHOW)
+
+      #undef P_DIRECTDRAW_H
+
+      #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
+      #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
+      #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
+      #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
+      #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
+      #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
+      #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
+      #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
+
+      #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
+      #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
+
+    #endif
+
+  #endif
 
 #endif
 

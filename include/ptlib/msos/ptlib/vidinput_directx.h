@@ -51,7 +51,7 @@
 #include <amvideo.h>
 #endif
 
-static void DeleteMediaType(AM_MEDIA_TYPE *pmt);
+void DeleteMediaType(AM_MEDIA_TYPE *pmt);
 
 // 30323449-0000-0010-8000-00AA00389B71            MEDIASUBTYPE_None
 static GUID MEDIASUBTYPE_I420 = {0x30323449, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71}};
