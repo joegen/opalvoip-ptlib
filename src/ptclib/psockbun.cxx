@@ -923,6 +923,8 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
       if (errorCode != PChannel::NoError) {
         PTRACE(2, "MonSock\tMulti-interface read select failure: " << errorCode);
       }
+      else if (readers.IsEmpty())
+        errorCode = PChannel::Timeout;
       else {
         socket = (PUDPSocket *)&readers[0];
         if (socket->ReadFrom(buf, len, addr, port))
