@@ -801,7 +801,7 @@ PXMLObject * PXMLData::Clone(PXMLElement * _parent) const
 PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
  : PXMLObject(_parent)
 {
-  lineNumber = column = 0;
+  lineNumber = column = 1;
   dirty = PFalse;
   if (_name != NULL)
     name = _name;
@@ -810,7 +810,7 @@ PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
 PXMLElement::PXMLElement(PXMLElement * _parent, const PString & _name, const PString & data)
  : PXMLObject(_parent), name(_name)
 {
-  lineNumber = column = 0;
+  lineNumber = column = 1;
   dirty = PFalse;
   AddSubObject(new PXMLData(this, data));
 }
