@@ -25,14 +25,14 @@ static HWND ghWndCapture = NULL;
 
 BOOL VFWAPI capDefGetDriverDescription (UINT, LPSTR szName, int, LPSTR lpszVer, int ) 
 { 
-	PTRACE(2, "capDefGetDriverDescription() called." << endl );
-	if( szName )
-		strcpy(szName, gszCEVideoCapDevName);
-		
-	if( lpszVer )
-		strcpy(lpszVer, gszCEVideoCapDevVersion);
-	 
-	return TRUE; 
+    PTRACE(2, "capDefGetDriverDescription() called." << endl );
+    if( szName )
+        strcpy(szName, gszCEVideoCapDevName);
+        
+    if( lpszVer )
+        strcpy(lpszVer, gszCEVideoCapDevVersion);
+     
+    return TRUE; 
 }
 
 LRESULT WINAPI CapWindowProc(
@@ -41,52 +41,53 @@ LRESULT WINAPI CapWindowProc(
     WPARAM wParam,
     LPARAM lParam)
 {
-	if((Msg >= WM_CAP_START) && (Msg <= WM_CAP_GET_USER_DATA))
-	{
-		PTRACE(2, "CapWindowProc() called. Msg: " 
-			<< Msg << ". wParam: " << wParam << ". lParam: " << lParam << endl );
-	}
+    if((Msg >= WM_CAP_START) && (Msg <= WM_CAP_GET_USER_DATA))
+    {
+        PTRACE(2, "CapWindowProc() called. Msg: " 
+            << Msg << ". wParam: " << wParam << ". lParam: " << lParam << endl );
+    }
 
-	return ::DefWindowProc(hWnd, Msg, wParam, lParam );
+    return ::DefWindowProc(hWnd, Msg, wParam, lParam );
 }
 
 extern HANDLE hInstance;
 
 HWND VFWAPI capDefCreateCaptureWindow(LPCSTR szTitle, 
-	DWORD dwStyle, int x, int y, int width, int height, HWND hwndParent, int) 
+    DWORD dwStyle, int x, int y, int width, int height, HWND hwndParent, int) 
 { 
-	PTRACE(2, "capDefCreateCaptureWindow() called." << endl );
-	
-	WNDCLASS wc;
-	ATOM atom;
+    PTRACE(2, "capDefCreateCaptureWindow() called." << endl );
+    
+    WNDCLASS wc;
+    ATOM atom;
 
-	ZeroMemory(&wc, sizeof(wc));
+    ZeroMemory(&wc, sizeof(wc));
     wc.lpfnWndProc = CapWindowProc;
     wc.hInstance = (HINSTANCE) NULL; // Hope it would find one
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszClassName = gszCEVideoCapClassName;
 
-	atom = RegisterClass(&wc);
+    atom = RegisterClass(&wc);
 
-	if ((ghWndCapture = ::CreateWindowExW( 0L, 
-		(LPCTSTR) atom,
-		PString(szTitle && *szTitle ? szTitle : gszCEVideoCapDevName).AsUCS2(),
-           dwStyle,
-           x, y,
-           width + GetSystemMetrics(SM_CXFIXEDFRAME),
-           height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
-           (HWND) hwndParent,
-		   NULL, // hMenu
-		   NULL, // hInstance
-		   NULL // lParam
-		   )) == NULL) 
-	{ 
-		PTRACE(2, "capDefCreateCaptureWindow() failed. Last error: " << GetLastError() << endl );
-		return NULL; 
-	}
+    PVarString windowTitle = szTitle && *szTitle ? szTitle : gszCEVideoCapDevName;
+    if ((ghWndCapture = ::CreateWindowExW(0L,
+                                          (LPCTSTR) atom,
+                                          windowTitle,
+                                          dwStyle,
+                                          x, y,
+                                          width + GetSystemMetrics(SM_CXFIXEDFRAME),
+                                          height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
+                                          (HWND) hwndParent,
+                                          NULL, // hMenu
+                                          NULL, // hInstance
+                                          NULL // lParam
+                                          )) == NULL) 
+    { 
+          PTRACE(2, "capDefCreateCaptureWindow() failed. Last error: " << GetLastError() << endl );
+          return NULL; 
+    }
 
-	PTRACE(2, "capDefCreateCaptureWindow() created window. hWnd: " << ghWndCapture << endl );
-	return ghWndCapture; 
+    PTRACE(2, "capDefCreateCaptureWindow() created window. hWnd: " << ghWndCapture << endl );
+    return ghWndCapture; 
 }
 
 // Function declarations. 
@@ -94,24 +95,24 @@ HWND VFWAPI capDefCreateCaptureWindow(LPCSTR szTitle,
 // implement your functionality
 //
 CAPGETDRIVERDESCRIPTIONPROC capDriverGetDriverDescription = 
-	(CAPGETDRIVERDESCRIPTIONPROC) &capDefGetDriverDescription;
+    (CAPGETDRIVERDESCRIPTIONPROC) &capDefGetDriverDescription;
 CAPCREATECAPTUREWINDOWPROC capDriverCreateCaptureWindow = 
-	(CAPCREATECAPTUREWINDOWPROC) &capDefCreateCaptureWindow;
+    (CAPCREATECAPTUREWINDOWPROC) &capDefCreateCaptureWindow;
 
 BOOL VFWAPI capGetDriverDescription(UINT wDriverIndex,
-	LPSTR lpszName, int cbName, LPSTR lpszVer, int cbVer)
+    LPSTR lpszName, int cbName, LPSTR lpszVer, int cbVer)
 { 
-	return (capDriverGetDriverDescription != NULL) ? \
-		(*capDriverGetDriverDescription)(wDriverIndex, lpszName, cbName,lpszVer, cbVer) : \
-		capDefGetDriverDescription(wDriverIndex, lpszName, cbName, lpszVer, cbVer );
+    return (capDriverGetDriverDescription != NULL) ? \
+        (*capDriverGetDriverDescription)(wDriverIndex, lpszName, cbName,lpszVer, cbVer) : \
+        capDefGetDriverDescription(wDriverIndex, lpszName, cbName, lpszVer, cbVer );
 }
 
 HWND VFWAPI capCreateCaptureWindow(
-	LPCSTR lpszWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hwndParent, int nID)
+    LPCSTR lpszWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hwndParent, int nID)
 { 
-	return (capDriverCreateCaptureWindow != NULL) ? \
-		(*capDriverCreateCaptureWindow)(lpszWindowName, dwStyle, x, y, nWidth, nHeight, hwndParent, nID) : \
-		capDefCreateCaptureWindow(lpszWindowName, dwStyle, x, y, nWidth, nHeight, hwndParent, nID);
+    return (capDriverCreateCaptureWindow != NULL) ? \
+        (*capDriverCreateCaptureWindow)(lpszWindowName, dwStyle, x, y, nWidth, nHeight, hwndParent, nID) : \
+        capDefCreateCaptureWindow(lpszWindowName, dwStyle, x, y, nWidth, nHeight, hwndParent, nID);
 }
 
 #endif // _WIN32_WCE
