@@ -1478,19 +1478,12 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
     pos = deviceName.Find("Y=");
     m_lastY = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
 
-#ifndef _WIN32_WCE
+    PVarString windowTitle = title;
     m_hWnd = CreateWindow(wndClassName,
-                          title, 
+                          windowTitle, 
                           dwStyle,
                           m_lastX, m_lastY, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
-#else
-    m_hWnd = CreateWindow(wndClassName,
-                          (LPCWSTR) title.AsUCS2(),
-                          dwStyle,
-                          m_lastX, m_lastY, frameWidth, frameHeight,
-                          hParent, NULL, GetModuleHandle(NULL), this);
-#endif
   }
 
   m_started.Signal();

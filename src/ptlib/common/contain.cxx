@@ -1721,68 +1721,73 @@ double PString::AsReal() const
 
 PWCharArray PString::AsUCS2() const
 {
+  PWCharArray ucs2(1); // Null terminated empty string
+
+  if (IsEmpty())
+    return ucs2;
+
 #ifdef P_HAS_G_CONVERT
 
   gsize g_len = 0;
   gchar * g_ucs2 = g_convert(theArray, GetSize()-1, "UCS-2", "UTF-8", 0, &g_len, 0);
-  if (g_ucs2 == NULL)
-    return PWCharArray();
+  if (g_ucs2 != NULL) {
+    if (ucs2.SetSize(g_len))
+      memcpy(ucs2.GetPointer(), g_ucs2, g_len*2);
+    g_free(g_ucs2);
+    return ucs2;
+  }
 
-  PWCharArray ucs2((const WORD *)g_ucs2, (PINDEX)g_len);
-  g_free(g_ucs2)
-  return ucs2;
+  PTRACE(1, "g_convert failed with error " << errno);
 
 #elif defined(_WIN32)
-  {
-    // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later: 
-    PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, strlen(theArray)+1, NULL, 0);
-    if (count == 0) {
-      DWORD error = ::GetLastError();
-      PTRACE(1, "MultiByteToWideChar failed with error " << error);
-    }
-    else {
-      PWCharArray ucs2(count+1);
-      MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
-      return ucs2;
-    }
+
+  // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later: 
+  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, NULL, 0);
+  if (count > 0 && ucs2.SetSize(count)) {
+    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
+    return ucs2;
   }
+
+  PTRACE(1, "MultiByteToWideChar failed with error " << ::GetLastError());
+
 #endif
 
-  PWCharArray ucs2(GetSize()); // Always bigger than required
+  if (ucs2.SetSize(GetSize())) { // Always bigger than required
+    PINDEX count = 0;
+    PINDEX i = 0;
+    PINDEX length = GetSize()-1;
+    while (i < length) {
+      int c = theArray[i];
+      if ((c&0x80) == 0)
+        ucs2[count++] = (BYTE)theArray[i++];
+      else if ((c&0xe0) == 0xc0) {
+        if (i < length-1)
+          ucs2[count++] = (WORD)(((theArray[i  ]&0x1f)<<6)|
+                                  (theArray[i+1]&0x3f));
+        i += 2;
+      }
+      else if ((c&0xf0) == 0xe0) {
+        if (i < length-2)
+          ucs2[count++] = (WORD)(((theArray[i  ]&0x0f)<<12)|
+                                 ((theArray[i+1]&0x3f)<< 6)|
+                                  (theArray[i+2]&0x3f));
+        i += 3;
+      }
+      else {
+        if ((c&0xf8) == 0xf0)
+          i += 4;
+        else if ((c&0xfc) == 0xf8)
+          i += 5;
+        else
+          i += 6;
+        if (i <= length)
+          ucs2[count++] = 0xffff;
+      }
+    }
 
-  PINDEX count = 0;
-  PINDEX i = 0;
-  PINDEX length = GetSize()-1;
-  while (i < length) {
-    int c = theArray[i];
-    if ((c&0x80) == 0)
-      ucs2[count++] = (BYTE)theArray[i++];
-    else if ((c&0xe0) == 0xc0) {
-      if (i < length-1)
-        ucs2[count++] = (WORD)(((theArray[i  ]&0x1f)<<6)|
-                                (theArray[i+1]&0x3f));
-      i += 2;
-    }
-    else if ((c&0xf0) == 0xe0) {
-      if (i < length-2)
-        ucs2[count++] = (WORD)(((theArray[i  ]&0x0f)<<12)|
-                               ((theArray[i+1]&0x3f)<< 6)|
-                                (theArray[i+2]&0x3f));
-      i += 3;
-    }
-    else {
-      if ((c&0xf8) == 0xf0)
-        i += 4;
-      else if ((c&0xfc) == 0xf8)
-        i += 5;
-      else
-        i += 6;
-      if (i <= length)
-        ucs2[count++] = 0xffff;
-    }
+    ucs2.SetSize(count);
   }
 
-  ucs2.SetSize(count);
   return ucs2;
 }
 
@@ -1810,8 +1815,8 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
 #elif defined(_WIN32)
 
   PINDEX count = WideCharToMultiByte(CP_UTF8, 0, ptr, len, NULL, 0, NULL, NULL);
-  if (SetSize(count+1))
-    WideCharToMultiByte(CP_UTF8, 0, ptr, len, GetPointer(count+1), count+1, NULL, NULL);
+  if (SetSize(count))
+    WideCharToMultiByte(CP_UTF8, 0, ptr, len, GetPointer(), count, NULL, NULL);
 
 #else
 

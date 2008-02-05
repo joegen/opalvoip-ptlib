@@ -837,20 +837,15 @@ PBoolean PURL::OpenBrowser(const PString & url)
   ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
   sei.cbSize = sizeof(SHELLEXECUTEINFO);
   sei.lpVerb = TEXT("open");
- #ifndef _WIN32_WCE
-   sei.lpFile = url;
- #else
-  sei.lpFile = url.AsUCS2();
- #endif // _WIN32_WCE
+  PVarString file = url;
+  sei.lpFile = file;
 
   if (ShellExecuteEx(&sei) != 0)
     return PTrue;
 
-#ifndef _WIN32_WCE
-  MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
-#else
-  MessageBox(NULL, _T("Unable to open page"), PProcess::Current().GetName().AsUCS2(), MB_APPLMODAL);
-#endif // _WIN32_WCE
+  PVarString msg = "Unable to open page" & url;
+  PVarString name = PProcess::Current().GetName();
+  MessageBox(NULL, msg, name, MB_TASKMODAL);
 
 #endif // WIN32
   return PFalse;

@@ -269,14 +269,9 @@ void PDirectory::CopyContents(const PDirectory & dir)
 PBoolean PDirectory::Open(int newScanMask)
 {
   scanMask = newScanMask;
-  PString wildcard = *this + "*.*";
+  PVarString wildcard = *this + "*.*";
 
-#ifdef UNICODE
-  hFindFile = FindFirstFile(wildcard.AsUCS2(), &fileinfo);
-#else
   hFindFile = FindFirstFile(wildcard, &fileinfo);
-#endif
-
   if (hFindFile == INVALID_HANDLE_VALUE)
     return PFalse;
 
@@ -1456,11 +1451,8 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & name)
 {
-#ifdef UNICODE
-  _hDLL = LoadLibrary(name.AsUCS2());
-#else
-  _hDLL = LoadLibrary(name);
-#endif
+  PVarString filename = name;
+  _hDLL = LoadLibrary(filename);
   return _hDLL != NULL;
 }
 
@@ -1511,11 +1503,7 @@ PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
   if (_hDLL == NULL)
     return PFalse;
 
-#ifndef _WIN32_WCE 
-  FARPROC p = GetProcAddress(_hDLL, (LPSTR)(DWORD)LOWORD(index));
-#else
- FARPROC p = GetProcAddress(_hDLL, (LPTSTR)(DWORD)LOWORD(index));
-#endif
+  FARPROC p = GetProcAddress(_hDLL, (LPTSTR)(DWORD)LOWORD(index));
   if (p == NULL)
     return PFalse;
 
@@ -1529,11 +1517,8 @@ PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
   if (_hDLL == NULL)
     return PFalse;
 
-#ifdef UNICODE
-  FARPROC p = GetProcAddress(_hDLL, name.AsUCS2());
-#else
-  FARPROC p = GetProcAddress(_hDLL, name);
-#endif
+  PVarString funcname = name;
+  FARPROC p = GetProcAddress(_hDLL, funcname);
   if (p == NULL)
     return PFalse;
 
@@ -1573,7 +1558,7 @@ int PDebugStream::Buffer::overflow(int c)
     p[bufSize] = '\0';
 
 #ifdef UNICODE
-    OutputDebugString(PString(p).AsUCS2());
+    OutputDebugString(PWideString(p));
 #else
     OutputDebugString(p);
 #endif
