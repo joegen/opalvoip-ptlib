@@ -991,6 +991,16 @@ PString PXMLElement::GetData() const
   return str;
 }
 
+PCaselessString PXMLElement::GetPathName()
+{
+    PCaselessString s;
+
+    s = GetName();
+    PXMLElement* el = this;
+    while ((el = el->GetParent()) != NULL)
+        s = el->GetName() + ":" + s;
+    return s;
+}
 
 ///////////////////////////////////////////////////////
 
@@ -1156,4 +1166,5 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 ///////////////////////////////////////////////////////
 
 #endif 
+
 
