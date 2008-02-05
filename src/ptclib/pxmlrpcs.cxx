@@ -102,6 +102,8 @@ PBoolean PXMLRPCServerResource::OnPOSTData(PHTTPRequest & request,
 
   OnXMLRPCRequest(request.entityBody, reply);
 
+  PTRACE(4, "XMLRPC\tOnPOSTData() sending XML reply:" << reply);
+
   request.code = PHTTP::RequestOK;
   request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/xml");
 
@@ -116,7 +118,9 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & body, PString & repl
   // get body of message here
   PXMLRPCBlock request;
   PBoolean ok = request.Load(body);
-
+  
+  PTRACE(4, "XMLRPC\tOnXMLRPCRequest() received XML request:" << body);
+  
   // if cannot parse XML, set return
   if (!ok) {
     reply = FormatFault(PXMLRPC::CannotParseRequestXML, "XML error:" + request.GetErrorString());
