@@ -141,11 +141,21 @@ class PTimer : public PTimeInterval
       const PTimeInterval & time    // New time interval for timer.
     );
 
-    /** Stop a running timer. The imer will not call the notification function
+    /** Stop a running timer. The timer will not call the notification function
        and is reset back to the original timer value. Thus when the timer
        is restarted it begins again from the beginning.
+
+       The wait flag indicates that the function should wait for the timeout
+       callback to complete before returning. That way external logic can be
+       assured there is no race condition. However, under some circumstances
+       this can cause a deadlock if the timeout function tries to acquire a
+       mutex the calling thread already has, so an aysnchronouse version is
+       provided. It is then the responsibility of the caller to handle the
+       race condition with the timeout function.
      */
-    void Stop();
+    void Stop(
+      bool wait = true  
+    );
 
     /** Determine if the timer is currently running. This really is only useful
        for one shot timers as repeating timers are always running.
