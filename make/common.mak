@@ -291,6 +291,7 @@ OBJDIR	=	./$(PT_OBJBASE)
 endif
 
 vpath %.cxx $(VPATH_CXX)
+vpath %.cpp $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
 vpath %.dep $(DEPDIR)
@@ -321,9 +322,13 @@ endif
 SOURCES         := $(strip $(SOURCES))
 
 #
-# define rule for .cxx and .c files
+# define rule for .cxx, .cpp and .c files
 #
 $(OBJDIR)/%.o : %.cxx 
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -c $< -o $@
 
@@ -336,6 +341,7 @@ $(OBJDIR)/%.o : %.c
 #
 SRC_OBJS := $(SOURCES:.c=.o)
 SRC_OBJS := $(SRC_OBJS:.cxx=.o)
+SRC_OBJS := $(SRC_OBJS:.cpp=.o)
 OBJS	 := $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS)))
 
 #
@@ -344,12 +350,18 @@ OBJS	 := $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(O
 DEPDIR	 := $(OBJDIR)
 SRC_DEPS := $(SOURCES:.c=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
+SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
 DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 
 #
 # define rule for .dep files
 #
 $(DEPDIR)/%.dep : %.cxx 
+	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
+	@printf %s $(OBJDIR)/ > $@
+	$(CPLUS) $(STDCCFLAGS:-g=) -M $< >> $@
+
+$(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(CPLUS) $(STDCCFLAGS:-g=) -M $< >> $@
