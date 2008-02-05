@@ -311,6 +311,12 @@ class PXMLElement : public PXMLObject {
     PCaselessString GetName() const
       { return name; }
 
+    /**
+        Get the completely qualified name for the element inside the
+        XML tree, for example "root:trunk:branch:subbranch:leaf".
+     */
+    PCaselessString GetPathName();
+
     void SetName(const PString & v)
       { name = v; }
 
