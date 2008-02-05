@@ -623,7 +623,7 @@ void PTimer::StartRunning(PBoolean once)
 }
 
 
-void PTimer::Stop()
+void PTimer::Stop(bool wait)
 {
   timerList->processingMutex.Wait();
   state = Stopped;
@@ -633,7 +633,7 @@ void PTimer::Stop()
 
   // Make sure that the OnTimeout for this timer has completed before
   // retruning from Stop() function,
-  if (isCurrentTimer) {
+  if (wait && isCurrentTimer) {
     timerList->inTimeoutMutex.Wait();
     timerList->inTimeoutMutex.Signal();
   }
