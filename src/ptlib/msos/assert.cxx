@@ -292,16 +292,9 @@ void PAssertFunc(const char * msg)
 #endif
 
   if (PProcess::Current().IsGUIProcess()) {
-    switch (MessageBox(NULL, 
-#if !defined(_WIN32_WCE)
-		pstr, 
-		"Portable Tools Library",
-        MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
-#else
-		PString(pstr).AsUCS2(), 
-		L"Portable Tools Library",
-        MB_ABORTRETRYIGNORE|MB_ICONHAND)) {
-#endif // !_WIN32_WCE
+    PVarString msg = pstr;
+    PVarString name = PProcess::Current().GetName();
+    switch (MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
       case IDABORT :
 #if !defined(_WIN32_WCE)
 		  FatalExit(1);  // Never returns

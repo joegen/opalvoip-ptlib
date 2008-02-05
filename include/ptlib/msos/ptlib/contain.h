@@ -338,9 +338,10 @@ class RegistryKey
 
 
 #ifndef _WIN32_WCE
-#ifdef _MSC_VER
-  #include <crtdbg.h>
-#endif
+
+  #ifdef _MSC_VER
+    #include <crtdbg.h>
+  #endif
   #include <sys/types.h>
   #include <sys/stat.h>
   #include <errno.h>
@@ -350,6 +351,7 @@ class RegistryKey
   #include <time.h>
   #include <vfw.h>
 #else
+
   #include <ptlib/wm/stdlibx.h>
   #include <ptlib/wm/errno.h>
   #include <ptlib/wm/sys/types.h>
@@ -359,6 +361,9 @@ class RegistryKey
     #include <time.h>
   #endif
   #include <ptlib/wm/cevfw.h>
+
+  #define MB_TASKMODAL MB_APPLMODAL
+
 #endif
 
 #define   P_HAS_TYPEINFO  1

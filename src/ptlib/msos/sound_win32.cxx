@@ -491,11 +491,8 @@ PBoolean PSound::Play(const PString & device)
 
 PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 {
-#ifndef _WIN32_WCE
-  return ::PlaySound(file, NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
-#else
-  return ::PlaySound((LPCWSTR) file.AsUCS2(), NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
-#endif
+  PVarString filename = file;
+  return ::PlaySound(filename, NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
 }
 
 

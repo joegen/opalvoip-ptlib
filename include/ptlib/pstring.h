@@ -1580,13 +1580,6 @@ class PString : public PCharArray {
       */
     operator std::string () const
     { return std::string(theArray); }
-
-	/** Cast the PString to a wide char string
-      */
-#ifdef _WIN32_WCE
-	operator LPCWSTR() const
-    { return AsUCS2(); }
-#endif
   //@}
 
 
@@ -1620,6 +1613,29 @@ inline ostream & operator<<(ostream & stream, const PString & string)
   string.PrintOn(stream);
   return stream;
 }
+
+
+#ifdef _WIN32
+  class PWideString : public PWCharArray {
+    PCLASSINFO(PWideString, PWCharArray);
+
+    public:
+      PWideString() { }
+      PWideString(const PWCharArray & arr) : PWCharArray(arr) { }
+      PWideString(const PString     & str) : PWCharArray(str.AsUCS2()) { }
+      PWideString(const char        * str) : PWCharArray(PString(str).AsUCS2()) { }
+      PWideString & operator=(const PWideString & str) { PWCharArray::operator=(str); return *this; }
+      PWideString & operator=(const PString     & str) { PWCharArray::operator=(str.AsUCS2()); return *this; }
+      PWideString & operator=(const char        * str) { PWCharArray::operator=(PString(str).AsUCS2()); return *this; }
+      friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
+  };
+
+  #ifdef UNICODE
+    typedef PWideString PVarString;
+  #else
+    typedef PString PVarString;
+  #endif
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
