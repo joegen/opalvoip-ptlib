@@ -735,7 +735,6 @@ PTimerList::PTimerList()
 
 PTimeInterval PTimerList::Process()
 {
-  PINDEX i;
   PTimeInterval minTimeLeft = PMaxTimeInterval;
 
   listMutex.Wait();
@@ -751,8 +750,8 @@ PTimeInterval PTimerList::Process()
   }
   lastSample = now;
 
-  for (i = 0; i < GetSize(); i++) {
-    currentTimer = (PTimer *)GetAt(i);
+  for (iterator i = begin(); i != end(); i++) {
+    currentTimer = &*i;
     inTimeoutMutex.Wait();
     listMutex.Signal();
     currentTimer->Process(sampleTime, minTimeLeft);

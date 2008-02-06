@@ -2193,8 +2193,9 @@ PStringArray::PStringArray(const PString & str)
 PStringArray::PStringArray(const PStringList & list)
 {
   SetSize(list.GetSize());
-  for (PINDEX i = 0; i < list.GetSize(); i++)
-    (*theArray)[i] = new PString(list[i]);
+  PINDEX count = 0;
+  for (PStringList::const_iterator i = list.begin(); i != list.end(); i++)
+    (*theArray)[count++] = new PString(*i);
 }
 
 
@@ -2315,9 +2316,8 @@ PStringList::PStringList(const PSortedStringList & list)
 
 PStringList & PStringList::operator += (const PStringList & v)
 {
-  PINDEX i;
-  for (i = 0; i < v.GetSize(); i++)
-    AppendString(v[i]);
+  for (PStringList::const_iterator i = v.begin(); i != v.end(); i++)
+    AppendString(*i);
 
   return *this;
 }
@@ -2371,8 +2371,8 @@ PSortedStringList::PSortedStringList(const PStringArray & array)
 
 PSortedStringList::PSortedStringList(const PStringList & list)
 {
-  for (PINDEX i = 0; i < list.GetSize(); i++)
-    AppendString(list[i]);
+  for (PStringList::const_iterator i = list.begin(); i != list.end(); i++)
+    AppendString(*i);
 }
 
 
