@@ -364,8 +364,6 @@ class RegistryKey
 
 #define   P_HAS_TYPEINFO  1
 
-//#define   PCONTAINER_USES_CRITSEC   1
-
 // preload <string> and kill warnings
 #if defined(_MSC_VER)
   #pragma warning(push)
