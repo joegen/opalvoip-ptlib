@@ -46,8 +46,12 @@
 
 class PStringArray;
 class PRegularExpression;
-PBASEARRAY(PWCharArray, wchar_t);
 
+#ifdef _NATIVE_WCHAR_T_DEFINED
+PBASEARRAY(PWCharArray, wchar_t);
+#else
+PBASEARRAY(PWCharArray, unsigned short);
+#endif
 
 /**The character string class. It supports a wealth of additional functions
    for string processing and conversion. Operators are provided so that
