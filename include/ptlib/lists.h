@@ -303,8 +303,6 @@ class PAbstractList : public PCollection
 };
 
 
-#ifdef PHAS_TEMPLATES
-
 /**This template class maps the PAbstractList to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -611,103 +609,6 @@ template <class T> class PStack : public PAbstractList
       { return PNEW cls(0, this); } \
 
 
-#else // PHAS_TEMPLATES
-
-
-#define PLIST(cls, T) \
-  class cls : public PAbstractList { \
-  PCLASSINFO(cls, PAbstractList); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractList(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractList() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline T & operator[](PINDEX index) const \
-      { return (T &)GetReferenceAt(index); } \
-  }
-
-#define PDECLARE_LIST(cls, T) \
-  PLIST(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-#define PQUEUE(cls, T) \
-  class cls : public PAbstractList { \
-  PCLASSINFO(cls, PAbstractList); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractList(dummy, c) \
-      { reference->deleteObjects = c->reference->deleteObjects; } \
-  public: \
-    inline cls() \
-      : PAbstractList() { DisallowDeleteObjects(); } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    virtual void Enqueue(T * t) \
-      { PAbstractList::Append(t); } \
-    virtual T * Dequeue() \
-      { if (GetSize() == 0) return NULL; else return (T *)PAbstractList::RemoveAt(0);} \
-  }
-
-#define PDECLARE_QUEUE(cls, T) \
-  PQUEUE(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-#define PSTACK(cls, T) \
-  class cls : public PAbstractList { \
-  PCLASSINFO(cls, PAbstractList); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractList(dummy, c) \
-      { reference->deleteObjects = c->reference->deleteObjects; } \
-  public: \
-    inline cls() \
-      : PAbstractList() { DisallowDeleteObjects(); } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    virtual void Push(T * t) \
-      { PAbstractList::InsertAt(0, t); } \
-    virtual T * Pop() \
-      { PAssert(GetSize() > 0, PStackEmpty); return (T *)PAbstractList::RemoveAt(0); } \
-    virtual T & Top() \
-      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); } \
-  }
-
-#define PDECLARE_STACK(cls, T) \
-  PSTACK(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-#endif // PHAS_TEMPLATES
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Sorted List of PObjects
 
@@ -965,8 +866,6 @@ class PAbstractSortedList : public PCollection
 };
 
 
-#ifdef PHAS_TEMPLATES
-
 /**This template class maps the PAbstractSortedList to a specific object type.
    The functions in this class primarily do all the appropriate casting of
    types.
@@ -1058,40 +957,6 @@ template <class T> class PSortedList : public PAbstractSortedList
       : PSortedList<T>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
-
-
-#else // PHAS_TEMPLATES
-
-
-#define PSORTED_LIST(cls, T) \
-  class cls : public PAbstractSortedList { \
-  PCLASSINFO(cls, PAbstractSortedList); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractSortedList(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractSortedList() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline T & operator[](PINDEX index) const \
-      { return *(T *)GetAt(index); } \
-  }
-
-#define PDECLARE_SORTED_LIST(cls, T) \
-  PSORTED_LIST(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-#endif  // PHAS_TEMPLATES
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -2324,8 +2324,6 @@ PDECLARE_SET(PStringSet, PString, PTrue);
 };
 
 
-#ifdef PHAS_TEMPLATES
-
 /**This template class maps the PAbstractDictionary to a specific key type and
    a #PString# data type. The functions in this class primarily do all the
    appropriate casting of types.
@@ -2536,56 +2534,6 @@ template <class K> class PStringDictionary : public PAbstractDictionary
    macro for more information.
  */
 #define PSTRING_DICTIONARY(cls, K) typedef PStringDictionary<K> cls
-
-
-#else // PHAS_TEMPLATES
-
-
-#define PSTRING_DICTIONARY(cls, K) \
-  class cls : public PAbstractDictionary { \
-  PCLASSINFO(cls, PAbstractDictionary) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractDictionary(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractDictionary() { } \
-    inline PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline PString & operator[](const K & key) const \
-      { return (PString &)GetRefAt(key); } \
-    inline PString operator()(const K & key, const char * dflt = "") const \
-      { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
-    virtual PBoolean Contains(const K & key) const \
-      { return AbstractContains(key); } \
-    virtual PString * RemoveAt(const K & key) \
-      { PString * s = GetAt(key); AbstractSetAt(key, NULL); \
-        return reference->deleteObjects ? (s ? (PString *)-1 : NULL) : s; } \
-    virtual PString * GetAt(const K & key) const \
-      { return (PString *)AbstractGetAt(key); } \
-    virtual PBoolean SetDataAt(PINDEX index, const PString & str) \
-      { return PAbstractDictionary::SetDataAt(index,PNEW PString(str));} \
-    virtual PBoolean SetAt(const K & key, const PString & str) \
-      { return AbstractSetAt(key, PNEW PString(str)); } \
-    inline const K & GetKeyAt(PINDEX index) const \
-      { return (const K &)AbstractGetKeyAt(index); } \
-    inline PString & GetDataAt(PINDEX index) const \
-      { return (PString &)AbstractGetDataAt(index); } \
-  }
-
-#define PDECLARE_STRING_DICTIONARY(cls, K) \
-  PSTRING_DICTIONARY(cls##_PTemplate, K); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-#endif // PHAS_TEMPLATES
 
 
 /**This is a dictionary collection class of #PString# objects, keyed by an

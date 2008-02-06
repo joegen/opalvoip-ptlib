@@ -251,8 +251,6 @@ class PAbstractArray : public PContainer
 ///////////////////////////////////////////////////////////////////////////////
 // An array of some base type
 
-#ifdef PHAS_TEMPLATES
-
 /**This template class maps the #PAbstractArray# to a specific element type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -544,54 +542,6 @@ template <class T> class PScalarArray : public PBaseArray<T>
    of the #PBaseArray# template class.
  */
 #define PSCALAR_ARRAY(cls, T) typedef PScalarArray<T> cls
-
-#else // PHAS_TEMPLATES
-
-#define PBASEARRAY(cls, T) \
-  typedef T P_##cls##_Base_Type; \
-  class cls : public PAbstractArray { \
-    PCLASSINFO(cls, PAbstractArray) \
-  public: \
-    inline cls(PINDEX initialSize = 0) \
-      : PAbstractArray(sizeof(P_##cls##_Base_Type), initialSize) { } \
-    inline cls(P_##cls##_Base_Type const * buffer, PINDEX length, PBoolean dynamic = PTrue) \
-      : PAbstractArray(sizeof(P_##cls##_Base_Type), buffer, length, dynamic) { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(*this, GetSize()); } \
-    inline PBoolean SetAt(PINDEX index, P_##cls##_Base_Type val) \
-      { return SetMinSize(index+1) && \
-                     val==(((P_##cls##_Base_Type *)theArray)[index] = val); } \
-    inline P_##cls##_Base_Type GetAt(PINDEX index) const \
-      { PASSERTINDEX(index); return index < GetSize() ? \
-          ((P_##cls##_Base_Type*)theArray)[index] : (P_##cls##_Base_Type)0; } \
-    inline P_##cls##_Base_Type operator[](PINDEX index) const \
-      { PASSERTINDEX(index); return GetAt(index); } \
-    inline P_##cls##_Base_Type & operator[](PINDEX index) \
-      { PASSERTINDEX(index); PAssert(SetMinSize(index+1), POutOfMemory); \
-        return ((P_##cls##_Base_Type *)theArray)[index]; } \
-    inline void Attach(const P_##cls##_Base_Type * buffer, PINDEX bufferSize) \
-      { PAbstractArray::Attach(buffer, bufferSize); } \
-    inline P_##cls##_Base_Type * GetPointer(PINDEX minSize = 0) \
-      { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
-    inline operator P_##cls##_Base_Type const *() const \
-      { return (P_##cls##_Base_Type const *)theArray; } \
-    inline PBoolean Concatenate(cls const & array) \
-      { return PAbstractArray::Concatenate(array); } \
-  }
-
-#define PDECLARE_BASEARRAY(cls, T) \
-  PBASEARRAY(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-    cls(PINDEX initialSize = 0) \
-      : cls##_PTemplate(initialSize) { } \
-    cls(T const * buffer, PINDEX length, PBoolean dynamic = PTrue) \
-      : cls##_PTemplate(buffer, length, dynamic) { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(*this, GetSize()); } \
-
-#define PSCALAR_ARRAY(cls, T) PBASEARRAY(cls, T)
-
-#endif // PHAS_TEMPLATES
 
 
 /// Array of characters.
@@ -1057,8 +1007,6 @@ class PArrayObjects : public PCollection
 };
 
 
-#ifdef PHAS_TEMPLATES
-
 /**This template class maps the PArrayObjects to a specific object type.
 The functions in this class primarily do all the appropriate casting of types.
 
@@ -1152,41 +1100,6 @@ information.
       : cls##_PTemplate(initialSize) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
-
-#else // PHAS_TEMPLATES
-
-
-#define PARRAY(cls, T) \
-  class cls : public PArrayObjects { \
-  PCLASSINFO(cls, PArrayObjects); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PArrayObjects(dummy, c) { } \
-  public: \
-    inline cls(PINDEX initialSize = 0) \
-      : PArrayObjects(initialSize) { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline T & operator[](PINDEX index) const\
-      { PObject * obj = GetAt(index); \
-        PAssert(obj != NULL, PInvalidArrayElement); \
-        /* want to do to this, but gcc 3.0 complains --> return *(T *)obj; } */ \
-        return (T &)*obj; } \
-  }
-
-#define PDECLARE_ARRAY(cls, T) \
-  PARRAY(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    inline cls(PINDEX initialSize = 0) \
-      : cls##_PTemplate(initialSize) { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-#endif // PHAS_TEMPLATES
 
 
 /**This class represents a dynamic bit array.
