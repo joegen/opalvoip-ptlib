@@ -334,6 +334,58 @@ template <class T> class PList : public PAbstractList
       { return PNEW PList(0, this); }
   //@}
 
+  /**@name Iterators */
+  //@{
+    class iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+    public:
+      iterator(PListElement * e = NULL) : element(e) { }
+
+      void operator++()    { element = PAssertNULL(element)->next; }
+      void operator++(int) { element = PAssertNULL(element)->next; }
+      void operator--()    { element = PAssertNULL(element)->prev; }
+      void operator--(int) { element = PAssertNULL(element)->prev; }
+
+      bool operator==(const iterator & i) const { return element == i.element; }
+      bool operator!=(const iterator & i) const { return element != i.element; }
+
+      T * operator->() const { return  (T *)PAssertNULL(element)->data; }
+      T & operator* () const { return *(T *)PAssertNULL(element)->data; }
+
+    private:
+      PListElement * element;
+    };
+
+    iterator begin()  { return info->head; }
+    iterator end()    { return iterator(); }
+    iterator rbegin() { return iterator(); }
+    iterator rend()   { return info->tail; }
+
+
+    class const_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+    public:
+      const_iterator(PListElement * e = NULL) : element(e) { }
+
+      void operator++()    { element = PAssertNULL(element)->next; }
+      void operator++(int) { element = PAssertNULL(element)->next; }
+      void operator--()    { element = PAssertNULL(element)->prev; }
+      void operator--(int) { element = PAssertNULL(element)->prev; }
+
+      bool operator==(const const_iterator & i) const { return element == i.element; }
+      bool operator!=(const const_iterator & i) const { return element != i.element; }
+
+      const T * operator->() const { return  (T *)PAssertNULL(element)->data; }
+      const T & operator* () const { return *(T *)PAssertNULL(element)->data; }
+
+    private:
+      PListElement * element;
+    };
+
+    const_iterator begin()  const { return info->head; }
+    const_iterator end()    const { return const_iterator(); }
+    const_iterator rbegin() const { return const_iterator(); }
+    const_iterator rend()   const { return info->tail; }
+  //@}
+
   /**@name New functions for class */
   //@{
     /**Retrieve a reference  to the object in the list. If there was not an
