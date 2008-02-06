@@ -58,10 +58,6 @@
   #pragma warning(disable:4097)  // typedef synonym for class
   #pragma warning(disable:4800)  // forcing value to bool 'true' or 'false' (performance warning)
 
-  #if _MSC_VER>=800
-    #define PHAS_TEMPLATES
-  #endif
-
   #if !defined(__USE_STL__) && (_MSC_VER>=1300)
     #define __USE_STL__ 1
   #endif

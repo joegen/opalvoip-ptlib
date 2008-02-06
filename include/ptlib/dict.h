@@ -429,8 +429,6 @@ class PAbstractSet : public PHashTable
 };
 
 
-#ifdef PHAS_TEMPLATES
-
 /**This template class maps the PAbstractSet to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -602,48 +600,6 @@ template <class T> class PSet : public PAbstractSet
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
-
-#else // PHAS_TEMPLATES
-
-
-#define PSET(cls, K) \
-  class cls : public PAbstractSet { \
-  PCLASSINFO(cls, PAbstractSet); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractSet(dummy, c) \
-      { reference->deleteObjects = c->reference->deleteObjects; } \
-  public: \
-    inline cls(PBoolean initialDeleteObjects = PFalse) \
-      : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline void Include(const PObject * key) \
-      { Append((PObject *)key); } \
-    inline void Exclude(const PObject * key) \
-      { Remove(key); } \
-    inline PBoolean operator[](const K & key) const \
-        { return AbstractContains(key); } \
-    inline PBoolean Contains(const K & key) const \
-        { return AbstractContains(key); } \
-    virtual const K & GetKeyAt(PINDEX index) const \
-      { return (const K &)AbstractGetKeyAt(index); } \
-  }
-
-#define PDECLARE_SET(cls, K, initDelObj) \
- PSET(cls##_PTemplate, K); \
- PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    inline cls(PBoolean initialDeleteObjects = initDelObj) \
-      : cls##_PTemplate() { AllowDeleteObjects(initialDeleteObjects); } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-#endif  // PHAS_TEMPLATES
 
 
 PSET(POrdinalSet, POrdinalKey);
@@ -856,8 +812,6 @@ class PAbstractDictionary : public PHashTable
 
 };
 
-
-#ifdef PHAS_TEMPLATES
 
 /**This template class maps the PAbstractDictionary to a specific key and data
    types. The functions in this class primarily do all the appropriate casting
@@ -1239,93 +1193,6 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
-
-#else // PHAS_TEMPLATES
-
-
-#define PDICTIONARY(cls, K, D) \
-  class cls : public PAbstractDictionary { \
-  PCLASSINFO(cls, PAbstractDictionary); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractDictionary(dummy, c) { } \
-  public: \
-    cls() \
-      : PAbstractDictionary() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    D & operator[](const K & key) const \
-      { return (D &)GetRefAt(key); } \
-    virtual PBoolean Contains(const K & key) const \
-      { return AbstractContains(key); } \
-    virtual D * RemoveAt(const K & key) \
-      { D * obj = GetAt(key); AbstractSetAt(key, NULL); return obj; } \
-    virtual PBoolean SetAt(const K & key, D * obj) \
-      { return AbstractSetAt(key, obj); } \
-    virtual D * GetAt(const K & key) const \
-      { return (D *)AbstractGetAt(key); } \
-    const K & GetKeyAt(PINDEX index) const \
-      { return (const K &)AbstractGetKeyAt(index); } \
-    D & GetDataAt(PINDEX index) const \
-      { return (D &)AbstractGetDataAt(index); } \
-  }
-
-#define PDECLARE_DICTIONARY(cls, K, D) \
-  PDICTIONARY(cls##_PTemplate, K, D); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-#define PORDINAL_DICTIONARY(cls, K) \
-  class cls : public PAbstractDictionary { \
-  PCLASSINFO(cls, PAbstractDictionary); \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractDictionary(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractDictionary() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline PINDEX operator[](const K & key) const \
-      { return (POrdinalKey &)GetRefAt(key); } \
-    virtual PBoolean Contains(const K & key) const \
-      { return AbstractContains(key); } \
-    virtual POrdinalKey * GetAt(const K & key) const \
-      { return (POrdinalKey *)AbstractGetAt(key); } \
-    virtual PBoolean SetDataAt(PINDEX index, PINDEX ordinal) \
-      { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); } \
-    virtual PBoolean SetAt(const K & key, PINDEX ordinal) \
-      { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); } \
-    virtual PINDEX RemoveAt(const K & key) \
-      { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; } \
-    inline const K & GetKeyAt(PINDEX index) const \
-      { return (const K &)AbstractGetKeyAt(index); } \
-    inline PINDEX GetDataAt(PINDEX index) const \
-      { return (POrdinalKey &)AbstractGetDataAt(index); } \
-  }
-
-#define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
-  PORDINAL_DICTIONARY(cls##_PTemplate, K); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
-  public: \
-    cls() \
-      : cls##_PTemplate() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-#endif // PHAS_TEMPLATES
 
 #endif // #ifndef __DICT_H__
 
