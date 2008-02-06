@@ -47,10 +47,10 @@
 class PStringArray;
 class PRegularExpression;
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
-PBASEARRAY(PWCharArray, wchar_t);
-#else
+#if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED))
 PBASEARRAY(PWCharArray, unsigned short);
+#else
+PBASEARRAY(PWCharArray, wchar_t);
 #endif
 
 /**The character string class. It supports a wealth of additional functions
