@@ -213,8 +213,6 @@ AC_SUBST(TARGETDIR, $TARGETDIR)
 
 AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
 
-AC_DEFINE([PHAS_TEMPLATES], [1], [Templates found])
-
 if test "x$P_64BIT" != "x" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
 fi
