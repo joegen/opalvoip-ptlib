@@ -155,13 +155,9 @@ PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
 
     PINDEX AppendElement(PObject * key, PObject * data);
     PObject * RemoveElement(const PObject & key);
-    PBoolean SetLastElementAt(PINDEX index);
+    PBoolean SetLastElementAt(PINDEX index, PHashTableElement * & lastElement);
     PHashTableElement * GetElementAt(const PObject & key);
     PINDEX GetElementsIndex(const PObject*obj,PBoolean byVal,PBoolean keys) const;
-
-    PINDEX lastIndex;
-    PINDEX lastBucket;
-    PHashTableElement * lastElement;
 
     PBoolean deleteKeys;
 
