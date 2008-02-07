@@ -2252,7 +2252,8 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     PINDEX InternalStringSelect(
       const char * str,
       PINDEX len,
-      Element * thisElement
+      Element * thisElement,
+      Element * & lastElement
     ) const;
 };
 
