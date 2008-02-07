@@ -49,11 +49,9 @@ struct PListElement
 
 struct PListInfo
 {
-    PListInfo() { head = tail = lastElement = NULL; }
+    PListInfo() { head = tail = NULL; }
     PListElement * head;
     PListElement * tail;
-    PListElement * lastElement;
-    PINDEX    lastIndex;
 };
 
 /**This class is a collection of objects which are descendents of the
@@ -294,7 +292,8 @@ class PAbstractList : public PCollection
        PTrue if the index could be set as the current element.
      */
     PBoolean SetCurrent(
-      PINDEX index  ///< Ordinal index of the list element to set as current.
+      PINDEX index,           ///< Ordinal index of the list element to set as current.
+      PListElement * & lastElement ///< pointer to final element
     ) const;
 
     // The types below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
@@ -679,8 +678,8 @@ struct PSortedListInfo
   PSortedListInfo();
 
   PSortedListElement * root;
-  PSortedListElement * lastElement;
-  PINDEX               lastIndex;
+  //PSortedListElement * lastElement;
+  //PINDEX               lastIndex;
   PSortedListElement   nil;
 
   PSortedListElement * Successor(const PSortedListElement * node) const;
@@ -886,6 +885,10 @@ class PAbstractSortedList : public PCollection
      */
     virtual PINDEX GetObjectsIndex(
       const PObject * obj
+    ) const;
+    virtual PINDEX GetObjectsIndex(
+      const PObject * obj,
+      PSortedListElement * & lastElement
     ) const;
 
     /**Search the collection for the specified value of the object. The object
