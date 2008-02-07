@@ -2334,25 +2334,26 @@ void PSortedStringList::ReadFrom(istream & strm)
 PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 {
   PINDEX len = str.GetLength();
+  Element * lastElement;
+  PINDEX lastIndex = InternalStringSelect(str, len, info->root, lastElement);
 
-  info->lastIndex = InternalStringSelect(str, len, info->root);
-
-  if (info->lastIndex != 0) {
+  if (lastIndex != 0) {
     Element * prev;
-    while ((prev = info->Predecessor(info->lastElement)) != &info->nil &&
+    while ((prev = info->Predecessor(lastElement)) != &info->nil &&
                     ((PString *)prev->data)->NumCompare(str, len) >= EqualTo) {
-      info->lastElement = prev;
-      info->lastIndex--;
+      lastElement = prev;
+      lastIndex--;
     }
   }
 
-  return info->lastIndex;
+  return lastIndex;
 }
 
 
 PINDEX PSortedStringList::InternalStringSelect(const char * str,
                                                PINDEX len,
-                                               Element * thisElement) const
+                                               Element * thisElement,
+                                               Element * & lastElement) const
 {
   if (thisElement == &info->nil)
     return 0;
@@ -2360,15 +2361,15 @@ PINDEX PSortedStringList::InternalStringSelect(const char * str,
   switch (((PString *)thisElement->data)->NumCompare(str, len)) {
     case PObject::LessThan :
     {
-      PINDEX index = InternalStringSelect(str, len, thisElement->right);
+      PINDEX index = InternalStringSelect(str, len, thisElement->right, lastElement);
       return thisElement->left->subTreeSize + index + 1;
     }
 
     case PObject::GreaterThan :
-      return InternalStringSelect(str, len, thisElement->left);
+      return InternalStringSelect(str, len, thisElement->left, lastElement);
 
     default :
-      info->lastElement = thisElement;
+      lastElement = thisElement;
       return thisElement->left->subTreeSize;
   }
 }
