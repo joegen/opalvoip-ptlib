@@ -42,6 +42,105 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
+#include <list>
+
+
+/*
+ *  These classes and templates implement a generic thread pooling mechanism
+ */
+
+class PThreadPoolBase;
+
+class PThreadPoolWorkerBase : public PThread
+{
+  public:
+    PThreadPoolWorkerBase(PThreadPoolBase & threadPool);
+
+    virtual unsigned GetWorkSize() const = 0;
+    virtual void Shutdown() = 0;
+
+    //virtual void OnAddWork(work_base *);
+    //virtual void OnRemoveWork(work_base *);
+
+    PThreadPoolBase & pool;
+    PBoolean shutdown;
+    PMutex workerMutex;
+};
+
+class PThreadPoolBase : public PObject
+{
+  public:
+    PThreadPoolBase(unsigned _max = 10);
+    ~PThreadPoolBase();
+
+    virtual PThreadPoolWorkerBase * CreateWorkerThread() = 0;
+
+    virtual PThreadPoolWorkerBase * AllocateWorker();
+
+  protected:
+    virtual bool CheckWorker(PThreadPoolWorkerBase * worker);
+    void StopWorker(PThreadPoolWorkerBase * worker);
+    PMutex listMutex;
+    typedef std::vector<PThreadPoolWorkerBase *> WorkerList_t;
+    WorkerList_t workers;
+
+    unsigned maxWorkerSize;
+};
+
+template <class WorkUnit_T, class WorkerThread_T>
+class PThreadPool : public PThreadPoolBase
+{
+  PCLASSINFO(PThreadPool, PThreadPoolBase);
+  public:
+    PThreadPool(unsigned _max = 10)
+      : PThreadPoolBase(_max) { }
+
+    virtual PThreadPoolWorkerBase * CreateWorkerThread()
+    { return new WorkerThread_T(*this); }
+
+    bool AddWork(WorkUnit_T * workUnit)
+    {
+      PWaitAndSignal m(listMutex);
+
+      PThreadPoolWorkerBase * _worker = AllocateWorker();
+      if (_worker == NULL)
+        return false;
+
+      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(_worker);
+      workUnitMap.insert(WorkUnitMap_t::value_type(workUnit, worker));
+
+      worker->OnAddWork(workUnit);
+
+      return true;
+    }
+
+    bool RemoveWork(WorkUnit_T * workUnit)
+    {
+      PWaitAndSignal m(listMutex);
+
+      // find worker with work unit to remove
+      WorkUnitMap_t::iterator r = workUnitMap.find(workUnit);
+      if (r == workUnitMap.end())
+        return false;
+
+      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(r->second);
+
+      workUnitMap.erase(r);
+
+      worker->OnRemoveWork(workUnit);
+
+      CheckWorker(worker);
+
+      return true;
+    }
+
+  protected:
+    typedef std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_t;
+    WorkUnitMap_t workUnitMap;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 /*
 
 These classes implements a generalised method for aggregating sockets so that they can be handled by a single thread. It is
@@ -165,47 +264,70 @@ class PAggregatedHandle : public PObject
 // This class is the actual socket aggregator
 //
 
-class PHandleAggregator : public PObject
+#ifdef _WIN32
+
+class EventBase
 {
-  PCLASSINFO(PHandleAggregator, PObject)
   public:
-    class EventBase
-    {
-      public:
-        virtual PAggregatorFD::FD GetHandle() = 0;
-        virtual void Set() = 0;
-        virtual void Reset() = 0;
-    };
+    EventBase()
+    { 
+      event = ::CreateEvent(NULL, PTrue, PFalse,NULL); 
+      PAssert(event != NULL, "CreateEvent failed");
+    }
 
-    typedef std::vector<PAggregatedHandle *> PAggregatedHandleList_t;
+    ~EventBase()
+    { CloseHandle(event); }
 
-    class WorkerThreadBase : public PThread
-    {
-      public:
-        WorkerThreadBase(EventBase & _event);
+    PAggregatorFD::FD GetHandle()
+    { return (PAggregatorFD::FD)event; }
 
-        virtual void Trigger() = 0;
-        void Main();
+    void Set()
+    { SetEvent(event);  }
 
-        PMutex workerMutex;
+    void Reset()
+    { ResetEvent(event); }
 
-        EventBase & event;
-        PAggregatedHandleList_t handleList;
-        PBoolean listChanged;
-        PBoolean shutdown;
-    };
+  protected:
+    HANDLE event;
+};
 
-    typedef std::vector<WorkerThreadBase *> WorkerList_t;
+#endif
+
+typedef std::list<PAggregatedHandle *> PAggregatedHandleList_t;
+
+class PAggregatorWorker : public PThreadPoolWorkerBase
+{
+  public:
+    PAggregatorWorker(PThreadPoolBase & _pool);
+
+    unsigned GetWorkSize() const;
+    void Shutdown();
+
+    void OnAddWork(PAggregatedHandle *);
+    void OnRemoveWork(PAggregatedHandle *);
+
+    void Main();
+    PAggregatedHandleList_t handleList;
+
+    void Trigger()  { localEvent.Set(); }
+    
+    EventBase localEvent;
+    PBoolean listChanged;
+};
+
+typedef PThreadPool<PAggregatedHandle, PAggregatorWorker> PHandleAggregatorBase;
+
+class PHandleAggregator : public PHandleAggregatorBase
+{
+  PCLASSINFO(PHandleAggregator, PHandleAggregatorBase)
+  public:
+    typedef std::list<PAggregatedHandle *> PAggregatedHandleList_t;
 
     PHandleAggregator(unsigned _max = 10);
 
     PBoolean AddHandle(PAggregatedHandle * handle);
 
     PBoolean RemoveHandle(PAggregatedHandle * handle);
-
-    PMutex listMutex;
-    WorkerList_t workers;
-    unsigned maxWorkerSize;
 };
 
 
@@ -214,6 +336,8 @@ class PHandleAggregator : public PObject
 // This template class allows the creation of aggregators for sockets that are
 // descendants of PIPSocket
 //
+
+#if 0
 
 template <class PSocketType>
 class PSocketAggregator : public PHandleAggregator
@@ -269,5 +393,6 @@ class PSocketAggregator : public PHandleAggregator
       return PTrue;
     }
 };
+#endif  // #if 0
 
 #endif

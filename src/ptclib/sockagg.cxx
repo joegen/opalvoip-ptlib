@@ -42,129 +42,107 @@
 #define new PNEW
 
 
-////////////////////////////////////////////////////////////////
-
-#if _WIN32
-
-#pragma comment(lib, "Ws2_32.lib")
-
-class LocalEvent : public PHandleAggregator::EventBase
+PThreadPoolBase::PThreadPoolBase(unsigned _max)
+  : maxWorkerSize(_max)
 {
-  public:
-    LocalEvent()
-    { 
-      event = CreateEvent(NULL, PTrue, PFalse,NULL); 
-      PAssert(event != NULL, "CreateEvent failed");
+}
+
+PThreadPoolBase::~PThreadPoolBase()
+{
+  for (;;) {
+    PWaitAndSignal m(listMutex);
+    if (workers.size() == 0)
+      break;
+
+    PThreadPoolWorkerBase * worker = workers[0];
+    worker->Shutdown();
+    StopWorker(worker);
+  }
+}
+
+
+PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
+{
+  // if the maximum number of worker threads has been reached, then
+  // use the worker thread with the minimum number of handles
+  if (workers.size() >= maxWorkerSize) {
+
+    WorkerList_t::iterator minWorker = workers.end();
+    size_t minSizeFound = 0x7ffff;
+    WorkerList_t::iterator r;
+    for (r = workers.begin(); r != workers.end(); ++r) {
+      PThreadPoolWorkerBase & worker = **r;
+      PWaitAndSignal m2(worker.workerMutex);
+      if (!worker.shutdown && (worker.GetWorkSize() <= minSizeFound)) {
+        minSizeFound = worker.GetWorkSize();
+        minWorker     = r;
+      }
     }
 
-    ~LocalEvent()
-    { CloseHandle(event); }
+    // add the worker to the thread
+    PAssert(minWorker != workers.end(), "could not find minimum worker");
+    return *minWorker;
+  }
 
-    PAggregatorFD::FD GetHandle()
-    { return (PAggregatorFD::FD)event; }
+  PTRACE(4, "ThreadPool\tCreating new pool thread");
 
-    void Set()
-    { SetEvent(event);  }
+  // no worker threads usable, create a new one
+  PThreadPoolWorkerBase * worker = CreateWorkerThread();
+  worker->Resume();
+  workers.push_back(worker);
 
-    void Reset()
-    { ResetEvent(event); }
-
-  protected:
-    HANDLE event;
-};
-
-PAggregatorFD::PAggregatorFD(SOCKET v)
-  : socket(v) 
-{ 
-  fd = WSACreateEvent(); 
-  PAssert(WSAEventSelect(socket, fd, FD_READ | FD_CLOSE) == 0, "WSAEventSelect failed"); 
+  return worker;
 }
 
-PAggregatorFD::~PAggregatorFD()
-{ 
-  WSACloseEvent(fd); 
-}
-
-bool PAggregatorFD::IsValid()
-{ 
-  return socket != INVALID_SOCKET; 
-}
-
-#else // #if _WIN32
-
-#include <fcntl.h>
-
-class LocalEvent : public PHandleAggregator::EventBase
+bool PThreadPoolBase::CheckWorker(PThreadPoolWorkerBase * worker)
 {
-  public:
-    LocalEvent()
-    { ::pipe(fds); }
+  {
+    PWaitAndSignal m(listMutex);
 
-    virtual ~LocalEvent()
-    {
-      close(fds[0]);
-      close(fds[1]);
-    }
+    // find worker in list
+    WorkerList_t::iterator r = ::find(workers.begin(), workers.end(), worker);
+    if (r == workers.end())
+      return false;
 
-    PAggregatorFD::FD GetHandle()
-    { return fds[0]; }
+    // if the worker thread has enough work to keep running, leave it alone
+    if (worker->GetWorkSize() > 0) 
+      return true;
 
-    void Set()
-    { char ch; write(fds[1], &ch, 1); }
+    // but don't shut down the last thread, so we don't have the overhead of starting it up again
+    if (workers.size() == 1)
+      return true;
 
-    void Reset()
-    { char ch; read(fds[0], &ch, 1); }
+    worker->Shutdown();
+    workers.erase(r);
+  }
 
-  protected:
-    int fds[2];
-};
+  StopWorker(worker);
 
-PAggregatorFD::PAggregatorFD(int v)
-  : fd(v) 
-{ 
+  return true;
 }
 
-PAggregatorFD::~PAggregatorFD()
+void PThreadPoolBase::StopWorker(PThreadPoolWorkerBase * worker)
 {
+  // the worker is now finished
+  if (!worker->WaitForTermination(10000)) {
+    PTRACE(4, "SockAgg\tWorker did not terminate promptly");
+  }
+  PTRACE(4, "ThreadPool\tDestroying pool thread");
+  delete worker;
 }
-
-bool PAggregatorFD::IsValid()
-{ 
-  return fd >= 0; 
-}
-
-#endif // #endif _WIN32
-  
 
 ////////////////////////////////////////////////////////////////
 
-PHandleAggregator::WorkerThreadBase::WorkerThreadBase(EventBase & _event)
-  : PThread(100, NoAutoDeleteThread, NormalPriority, "Aggregator:%0x"), event(_event), listChanged(PTrue), shutdown(PFalse)
-{ 
+PThreadPoolWorkerBase::PThreadPoolWorkerBase(PThreadPoolBase & _pool)
+  : PThread(100, NoAutoDeleteThread, NormalPriority, "Aggregator:%0x"), pool(_pool), shutdown(PFalse)
+{
 }
 
-class WorkerThread : public PHandleAggregator::WorkerThreadBase
-{
-  public:
-    WorkerThread()
-      : WorkerThreadBase(localEvent)
-    { }
-
-    ~WorkerThread()
-    {
-    }
-
-    void Trigger()
-    { localEvent.Set(); }
-
-    LocalEvent localEvent;
-};
-
-
 ////////////////////////////////////////////////////////////////
+
 
 PHandleAggregator::PHandleAggregator(unsigned _max)
-  : maxWorkerSize(_max)
+  : PHandleAggregatorBase(_max)
 { 
 }
 
@@ -174,123 +152,14 @@ PBoolean PHandleAggregator::AddHandle(PAggregatedHandle * handle)
   if (!handle->Init())
     return PFalse;
 
-  PWaitAndSignal m(listMutex);
-
-  // if the maximum number of worker threads has been reached, then
-  // use the worker thread with the minimum number of handles
-  if (workers.size() >= maxWorkerSize) {
-    WorkerList_t::iterator minWorker = workers.end();
-    size_t minSizeFound = 0x7ffff;
-    WorkerList_t::iterator r;
-    for (r = workers.begin(); r != workers.end(); ++r) {
-      WorkerThreadBase & worker = **r;
-      PWaitAndSignal m2(worker.workerMutex);
-      if (!worker.shutdown && (worker.handleList.size() <= minSizeFound)) {
-        minSizeFound = worker.handleList.size();
-        minWorker     = r;
-      }
-    }
-
-    // add the worker to the thread
-    PAssert(minWorker != workers.end(), "could not find minimum worker");
-
-    WorkerThreadBase & worker = **minWorker;
-    PWaitAndSignal m2(worker.workerMutex);
-    worker.handleList.push_back(handle);
-    PTRACE(4, "SockAgg\tAdding handle " << (void *)handle << " to aggregator - " << worker.handleList.size() << " handles");
-    worker.listChanged = PTrue;
-    worker.Trigger();
-    return PTrue;
-  }
-
-  PTRACE(4, "SockAgg\tCreating new aggregator for " << (void *)handle);
-
-  // no worker threads usable, create a new one
-  WorkerThread * worker = new WorkerThread;
-  worker->handleList.push_back(handle);
-  worker->Resume();
-  workers.push_back(worker);
-
   PTRACE(4, "SockAgg\tAdding handle " << (void *)handle << " to new aggregator");
 
-  return PTrue;
+  return AddWork(handle);
 }
 
 PBoolean PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 {
-  listMutex.Wait();
-
-  // look for the thread containing the handle we need to delete
-  WorkerList_t::iterator r;
-  for (r = workers.begin(); r != workers.end(); ++r) {
-    WorkerThreadBase * worker = *r;
-
-    // lock the worker
-    worker->workerMutex.Wait();
-
-    PAggregatedHandleList_t & hList = worker->handleList;
-
-    // if handle is not in this thread, then continue searching
-    PAggregatedHandleList_t::iterator s = find(hList.begin(), hList.end(), handle);
-    if (s == hList.end()) {
-      worker->workerMutex.Signal();
-      continue;
-    }
-
-    PAssert(*s == handle, "Found handle is not correct!");
-
-    PAssert(!handle->beingProcessed, "trying to close handle that is in use");
-
-    // remove the handle from the worker's list of handles
-    worker->handleList.erase(s);
-
-    // do the de-init action
-    handle->DeInit();
-
-    // delete the handle if autodelete enabled
-    if (handle->autoDelete)
-      delete handle;
-
-    // if the worker thread has enough handles to keep running, trigger it to update
-    if (worker->handleList.size() > 0) {
-      PTRACE(4, "SockAgg\tRemoved handle " << (void *)handle << " from aggregator - " << worker->handleList.size() << " handles remaining");
-      worker->listChanged = PTrue;
-      worker->Trigger();
-      worker->workerMutex.Signal();
-
-      listMutex.Signal();
-
-      return PTrue;
-    }
-
-    PTRACE(4, "SockAgg\tworker thread empty - closing down");
-
-    // remove the worker thread from the list of workers
-    workers.erase(r);
-
-    // shutdown the thread
-    worker->shutdown = PTrue;
-    worker->Trigger();
-    worker->workerMutex.Signal();
-
-    // unlock the list
-    listMutex.Signal();
-
-    // the worker is now finished
-    if (!worker->WaitForTermination(10000)) {
-      PTRACE(4, "SockAgg\tWorker did not terminate promptly");
-    }
-
-    delete worker;
-
-    return PTrue;
-  }
-
-  listMutex.Signal();
-
-  PAssertAlways("Cannot find aggregator handle");
-
-  return PFalse;
+  return RemoveWork(handle);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -303,7 +172,63 @@ typedef std::vector<PAggregatorFD::FD> fdList_t;
 #define	FDLIST_SIZE	64
 #endif
 
-void PHandleAggregator::WorkerThreadBase::Main()
+
+PAggregatorWorker::PAggregatorWorker(PThreadPoolBase & _pool)
+  : PThreadPoolWorkerBase(_pool), listChanged(PTrue)
+{ 
+}
+
+void PAggregatorWorker::OnAddWork(PAggregatedHandle * handle)
+{
+  PWaitAndSignal m(workerMutex);
+
+  handleList.push_back(handle);
+  listChanged = PTrue;
+  Trigger();
+
+  PTRACE(4, "SockAgg\tAdding handle " << (void *)handle << " to aggregator - " << handleList.size() << " handles");
+}
+
+void PAggregatorWorker::OnRemoveWork(PAggregatedHandle * handle)
+{
+  PAssert(!handle->beingProcessed, "trying to close handle that is in use");
+
+  PWaitAndSignal m(workerMutex);
+
+  // do the de-init action
+  handle->DeInit();
+
+  // remove the handle from the worker's list of handles
+  PAggregatedHandleList_t::iterator s = ::find(handleList.begin(), handleList.end(), handle);
+  if (s != handleList.end())
+    handleList.erase(s);
+
+  // delete the handle if autodelete enabled
+  if (handle->autoDelete)
+    delete handle;
+
+  // if list still has items, trigger it to refresh
+  if (handleList.size() > 0) {
+    PTRACE(4, "SockAgg\tRemoved handle " << (void *)handle << " from aggregator - " << handleList.size() << " handles remaining");
+    listChanged = PTrue;
+    Trigger();
+  }
+}
+
+unsigned PAggregatorWorker::GetWorkSize() const
+{
+  PWaitAndSignal m(workerMutex);
+  return handleList.size();
+}
+
+void PAggregatorWorker::Shutdown()
+{
+  PWaitAndSignal m(workerMutex);
+  shutdown = PTrue;
+  Trigger();
+}
+
+void PAggregatorWorker::Main()
 {
   PTRACE(4, "SockAgg\taggregator started");
 
@@ -372,7 +297,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
       // add in the event fd
       if (listChanged) {
-        fdList.push_back(event.GetHandle());
+        fdList.push_back(localEvent.GetHandle());
         listChanged = PFalse;
       }
 
@@ -432,7 +357,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
         // if the event was triggered, redo the select
         if (index == nCount-1) {
-          event.Reset();
+          localEvent.Reset();
           continue;
         }
 
@@ -554,5 +479,103 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
   PTRACE(4, "SockAgg\taggregator finished");
 }
+
+
+////////////////////////////////////////////////////////////////
+
+#if _WIN32
+
+#pragma comment(lib, "Ws2_32.lib")
+
+#if 0
+
+class LocalEvent : public EventBase
+{
+  public:
+    LocalEvent()
+    { 
+      event = CreateEvent(NULL, PTrue, PFalse,NULL); 
+      PAssert(event != NULL, "CreateEvent failed");
+    }
+
+    ~LocalEvent()
+    { CloseHandle(event); }
+
+    PAggregatorFD::FD GetHandle()
+    { return (PAggregatorFD::FD)event; }
+
+    void Set()
+    { SetEvent(event);  }
+
+    void Reset()
+    { ResetEvent(event); }
+
+  protected:
+    HANDLE event;
+};
+
+#endif
+
+PAggregatorFD::PAggregatorFD(SOCKET v)
+  : socket(v) 
+{ 
+  fd = WSACreateEvent(); 
+  PAssert(WSAEventSelect(socket, fd, FD_READ | FD_CLOSE) == 0, "WSAEventSelect failed"); 
+}
+
+PAggregatorFD::~PAggregatorFD()
+{ 
+  WSACloseEvent(fd); 
+}
+
+bool PAggregatorFD::IsValid()
+{ 
+  return socket != INVALID_SOCKET; 
+}
+
+#else // #if _WIN32
+
+#include <fcntl.h>
+
+class LocalEvent : public PHandleAggregator::EventBase
+{
+  public:
+    LocalEvent()
+    { ::pipe(fds); }
+
+    virtual ~LocalEvent()
+    {
+      close(fds[0]);
+      close(fds[1]);
+    }
+
+    PAggregatorFD::FD GetHandle()
+    { return fds[0]; }
+
+    void Set()
+    { char ch; write(fds[1], &ch, 1); }
+
+    void Reset()
+    { char ch; read(fds[0], &ch, 1); }
+
+  protected:
+    int fds[2];
+};
+
+PAggregatorFD::PAggregatorFD(int v)
+  : fd(v) 
+{ 
+}
+
+PAggregatorFD::~PAggregatorFD()
+{
+}
+
+bool PAggregatorFD::IsValid()
+{ 
+  return fd >= 0; 
+}
+
+#endif // #endif _WIN32
 
 
