@@ -43,6 +43,7 @@
 #include <ptlib/sockets.h>
 
 #include <list>
+#include <map>
 
 
 /*
@@ -92,6 +93,8 @@ class PThreadPool : public PThreadPoolBase
 {
   PCLASSINFO(PThreadPool, PThreadPoolBase);
   public:
+    typedef typename std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_T;
+
     PThreadPool(unsigned _max = 10)
       : PThreadPoolBase(_max) { }
 
@@ -107,7 +110,7 @@ class PThreadPool : public PThreadPoolBase
         return false;
 
       WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(_worker);
-      workUnitMap.insert(WorkUnitMap_t::value_type(workUnit, worker));
+      workUnitMap.insert(typename WorkUnitMap_T::value_type(workUnit, worker));
 
       worker->OnAddWork(workUnit);
 
@@ -119,7 +122,7 @@ class PThreadPool : public PThreadPoolBase
       PWaitAndSignal m(listMutex);
 
       // find worker with work unit to remove
-      WorkUnitMap_t::iterator r = workUnitMap.find(workUnit);
+      typename WorkUnitMap_T::iterator r = workUnitMap.find(workUnit);
       if (r == workUnitMap.end())
         return false;
 
@@ -135,9 +138,12 @@ class PThreadPool : public PThreadPoolBase
     }
 
   protected:
-    typedef std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_t;
-    WorkUnitMap_t workUnitMap;
+    WorkUnitMap_T workUnitMap;
 };
+
+#if 0 
+
+// aggregator code disabled pending reimplementation
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -311,7 +317,6 @@ class PAggregatorWorker : public PThreadPoolWorkerBase
 
     void Trigger()  { localEvent.Set(); }
     
-    EventBase localEvent;
     PBoolean listChanged;
 };
 
@@ -396,3 +401,7 @@ class PSocketAggregator : public PHandleAggregator
 #endif  // #if 0
 
 #endif
+
+// aggregator code disabled pending reimplementation
+
+#endif // _SOCKAGG_H
