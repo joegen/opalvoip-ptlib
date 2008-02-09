@@ -337,30 +337,23 @@ template <class T> class PList : public PAbstractList
 
   /**@name Iterators */
   //@{
-    class iterator_base : public std::iterator<std::bidirectional_iterator_tag, T> {
-    protected:
-      PListElement * element;
-      iterator_base(PListElement * e) : element(e) { }
-
-      void Next() { element = PAssertNULL(element)->next; }
-      void Prev() { element = PAssertNULL(element)->prev; }
-
+    class iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
     public:
-      bool operator==(const iterator_base & it) const { return element == it.element; }
-      bool operator!=(const iterator_base & it) const { return element != it.element; }
-    };
+      iterator(PListElement * e = NULL) : element(e) { }
 
-    class iterator : public iterator_base {
-    public:
-      iterator(PListElement * e = NULL) : iterator_base(e) { }
+      iterator operator++()    {                      element = PAssertNULL(element)->next; return *this; }
+      iterator operator--()    {                      element = PAssertNULL(element)->prev; return *this; }
+      iterator operator++(int) { iterator it = *this; element = PAssertNULL(element)->next; return it;    }
+      iterator operator--(int) { iterator it = *this; element = PAssertNULL(element)->prev; return it;    }
 
-      iterator operator++()    { Next(); return *this; }
-      iterator operator--()    { Prev(); return *this; }
-      iterator operator++(int) { iterator it = *this; Next(); return it; }
-      iterator operator--(int) { iterator it = *this; Prev(); return it; }
+      bool operator==(const iterator & it) const { return element == it.element; }
+      bool operator!=(const iterator & it) const { return element != it.element; }
 
       T * operator->() const { return  (T *)PAssertNULL(element)->data; }
       T & operator* () const { return *(T *)PAssertNULL(element)->data; }
+
+    protected:
+      PListElement * element;
     };
 
     iterator begin()  { return info->head; }
@@ -369,17 +362,23 @@ template <class T> class PList : public PAbstractList
     iterator rend()   { return iterator(); }
 
 
-    class const_iterator : public iterator_base {
+    class const_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
     public:
-      const_iterator(PListElement * e = NULL) : iterator_base(e) { }
+      const_iterator(PListElement * e = NULL) : element(e) { }
 
-      const_iterator operator++()    { Next(); return *this; }
-      const_iterator operator--()    { Prev(); return *this; }
-      const_iterator operator++(int) { const_iterator it = *this; Next(); return it; }
-      const_iterator operator--(int) { const_iterator it = *this; Prev(); return it; }
+      const_iterator operator++()    {                            element = PAssertNULL(element)->next; return *this; }
+      const_iterator operator--()    {                            element = PAssertNULL(element)->prev; return *this; }
+      const_iterator operator++(int) { const_iterator it = *this; element = PAssertNULL(element)->next; return it;    }
+      const_iterator operator--(int) { const_iterator it = *this; element = PAssertNULL(element)->prev; return it;    }
+
+      bool operator==(const const_iterator & it) const { return element == it.element; }
+      bool operator!=(const const_iterator & it) const { return element != it.element; }
 
       const T * operator->() const { return  (T *)PAssertNULL(element)->data; }
       const T & operator* () const { return *(T *)PAssertNULL(element)->data; }
+
+    protected:
+      PListElement * element;
     };
 
     const_iterator begin()  const { return info->head; }
