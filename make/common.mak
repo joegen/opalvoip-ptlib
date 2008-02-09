@@ -287,7 +287,10 @@ LIBDIRS += $(PTLIBDIR)
 
 
 ifndef OBJDIR
-OBJDIR	=	./$(PT_OBJBASE)
+ifndef OBJDIR_PREFIX
+OBJDIR_PREFIX=.
+endif
+OBJDIR	=	$(OBJDIR_PREFIX)/$(PT_OBJBASE)
 endif
 
 vpath %.cxx $(VPATH_CXX)
