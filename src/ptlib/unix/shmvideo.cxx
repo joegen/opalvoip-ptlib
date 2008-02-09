@@ -195,12 +195,10 @@ PVideoOutputDevice_Shm::Close()
   return PTrue;
 }
 
-PStringList
+PStringArray
 PVideoOutputDevice_Shm::GetDeviceNames() const
 {
-  PStringList list;
-  list += "shm";
-  return list;
+  return PString("shm");
 }
 
 PBoolean
@@ -343,12 +341,10 @@ PINDEX PVideoInputDevice_Shm::GetMaxFrameBytes()
 	return videoFrameSize;
 }
 
-PStringList
+PStringArray
 PVideoInputDevice_Shm::GetInputDeviceNames()
 {
-  PStringList list;
-  list += "shm";
-  return list;
+  return PString("shm");
 }
 
 PBoolean

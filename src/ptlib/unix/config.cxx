@@ -557,19 +557,20 @@ PConfig::~PConfig()
 //
 ////////////////////////////////////////////////////////////
 
-PStringList PConfig::GetSections() const
+PStringArray PConfig::GetSections() const
 {
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PStringList list;
+  PINDEX sz = config->GetSize();
+  PStringArray sections(sz);
 
-  for (PINDEX i = 0; i < (*config).GetSize(); i++)
-    list.AppendString((*config)[i]);
+  for (PINDEX i = 0; i < sz; i++)
+    sections[i] = (*config)[i];
 
   config->Signal();
 
-  return list;
+  return sections;
 }
 
 
@@ -582,22 +583,23 @@ PStringList PConfig::GetSections() const
 //
 ////////////////////////////////////////////////////////////
 
-PStringList PConfig::GetKeys(const PString & theSection) const
+PStringArray PConfig::GetKeys(const PString & theSection) const
 {
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
   PINDEX index;
-  PStringList list;
+  PStringArray keys;
 
   if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();
+    keys.SetSize(section.GetSize());
     for (PINDEX i = 0; i < section.GetSize(); i++)
-      list.AppendString(section[i]);
+      keys[i] = section[i];
   }
 
   config->Signal();
-  return list;
+  return keys;
 }
 
 
@@ -612,12 +614,9 @@ PStringList PConfig::GetKeys(const PString & theSection) const
 ////////////////////////////////////////////////////////////
 
 void PConfig::DeleteSection(const PString & theSection)
-
 {
   PAssert(config != NULL, "config instance not set");
   config->Wait();
-
-  PStringList list;
 
   PINDEX index;
   if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {

@@ -77,7 +77,7 @@ class PVideoOutputDevice_Shm : public PVideoOutputDevice
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const;
+    virtual PStringArray GetDeviceNames() const;
 	
 	virtual PBoolean SetColourFormat(const PString & colourFormat);
 	
@@ -129,9 +129,9 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 
     /**Get a list of all of the drivers available.
      */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 	
-	virtual PStringList GetDeviceNames() const
+	virtual PStringArray GetDeviceNames() const
 	{ return GetInputDeviceNames(); }
 	
 	virtual PBoolean GetFrame(PBYTEArray & frame);
