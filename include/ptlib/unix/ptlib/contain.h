@@ -70,8 +70,8 @@ typedef unsigned char      BYTE;    // 1 byte
 typedef signed short       PInt16;  // 16 bit
 typedef unsigned short     WORD;
 
-typedef signed int         PInt32;  // 32 bit
-typedef unsigned int       DWORD;
+typedef long signed int    PInt32;  // 32 bit
+typedef long unsigned int  DWORD;
 
 #ifndef P_NEEDS_INT64
 typedef   signed long long int PInt64;
