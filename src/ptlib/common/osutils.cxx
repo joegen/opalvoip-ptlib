@@ -1505,6 +1505,7 @@ typedef struct tagTHREADNAME_INFO
 
 void SetWinDebugThreadName (THREADNAME_INFO * info)
 {
+#if 0
   __try
   {
     RaiseException (0x406D1388, 0, sizeof(THREADNAME_INFO)/sizeof(DWORD), (DWORD *) info) ;
@@ -1512,6 +1513,7 @@ void SetWinDebugThreadName (THREADNAME_INFO * info)
   __except(EXCEPTION_CONTINUE_EXECUTION)
   {                              // just keep on truckin'
   }
+#endif
 }
 #endif // defined(_DEBUG) && defined(_MSC_VER)
 
