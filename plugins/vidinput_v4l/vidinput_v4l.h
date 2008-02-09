@@ -18,7 +18,7 @@ public:
 
   static PStringList GetInputDeviceNames();
 
-  PStringList GetDeviceNames() const
+  PStringArray GetDeviceNames() const
   { return GetInputDeviceNames(); }
 
   PBoolean Open(const PString &deviceName, PBoolean startImmediate);

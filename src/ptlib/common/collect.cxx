@@ -363,7 +363,7 @@ PBoolean PAbstractList::Remove(const PObject * obj)
 {
   if (info == NULL){
     PAssertAlways("info is null");
-    return NULL;
+    return false;
   }
 
   Element * elmt = info->head;
