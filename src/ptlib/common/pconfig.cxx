@@ -45,7 +45,7 @@ PStringToString PConfig::GetAllKeyValues(const PString & section) const
 {
   PStringToString dict;
 
-  PStringList keys = GetKeys(section);
+  PStringArray keys = GetKeys(section);
   for (PINDEX i = 0; i < keys.GetSize(); i++)
     dict.SetAt(keys[i], GetString(section, keys[i], ""));
 

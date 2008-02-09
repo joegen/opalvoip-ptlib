@@ -55,9 +55,9 @@ class PVideoInputDevice_Application : public PVideoInputDevice
 
     /** Is the device a camera, and obtain video
      */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
     /**Retrieve a list of Device Capabilities

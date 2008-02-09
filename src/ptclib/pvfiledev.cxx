@@ -63,7 +63,7 @@ class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginSe
     {
       return new PVideoInputDevice_YUVFile;
     }
-    virtual PStringList GetDeviceNames(int /*userData*/) const
+    virtual PStringArray GetDeviceNames(int /*userData*/) const
     {
       return PVideoInputDevice_YUVFile::GetInputDeviceNames();
     }
@@ -182,11 +182,10 @@ PBoolean PVideoInputDevice_YUVFile::IsCapturing()
 }
 
 
-PStringList PVideoInputDevice_YUVFile::GetInputDeviceNames()
+PStringArray PVideoInputDevice_YUVFile::GetInputDeviceNames()
 {
-  PStringList list;
-  list.AppendString(DefaultYUVFileName);
-  return list;
+
+  return PString(DefaultYUVFileName);
 }
 
 
@@ -381,7 +380,7 @@ class PVideoOutputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginS
     {
         return new PVideoOutputDevice_YUVFile;
     }
-    virtual PStringList GetDeviceNames(int /*userData*/) const
+    virtual PStringArray GetDeviceNames(int /*userData*/) const
     {
         return PVideoOutputDevice_YUVFile::GetOutputDeviceNames();
     }
@@ -455,11 +454,9 @@ PBoolean PVideoOutputDevice_YUVFile::IsOpen()
 }
 
 
-PStringList PVideoOutputDevice_YUVFile::GetOutputDeviceNames()
+PStringArray PVideoOutputDevice_YUVFile::GetOutputDeviceNames()
 {
-  PStringList list;
-  list.AppendString(DefaultYUVFileName);
-  return list;
+  return PString(DefaultYUVFileName);
 }
 
 

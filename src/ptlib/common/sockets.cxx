@@ -236,12 +236,12 @@ class PIPCacheData : public PObject
 #endif
     const PString & GetHostName() const { return hostname; }
     const PIPSocket::Address & GetHostAddress() const { return address; }
-    const PStringList & GetHostAliases() const { return aliases; }
+    const PStringArray& GetHostAliases() const { return aliases; }
     PBoolean HasAged() const;
   private:
     PString            hostname;
     PIPSocket::Address address;
-    PStringList        aliases;
+    PStringArray       aliases;
     PTime              birthDate;
 };
 
@@ -466,12 +466,8 @@ PBoolean PHostByName::GetHostAliases(const PString & name, PStringArray & aliase
 {
   PIPCacheData * host = GetHost(name);
 
-  if (host != NULL) {
-    const PStringList & a = host->GetHostAliases();
-    aliases.SetSize(a.GetSize());
-    for (PINDEX i = 0; i < a.GetSize(); i++)
-      aliases[i] = a[i];
-  }
+  if (host != NULL)
+    aliases = host->GetHostAliases();
 
   mutex.Signal();
   return host != NULL;
@@ -624,12 +620,8 @@ PBoolean PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArr
 {
   PIPCacheData * host = GetHost(addr);
 
-  if (host != NULL) {
-    const PStringList & a = host->GetHostAliases();
-    aliases.SetSize(a.GetSize());
-    for (PINDEX i = 0; i < a.GetSize(); i++)
-      aliases[i] = a[i];
-  }
+  if (host != NULL)
+    aliases = host->GetHostAliases();
 
   mutex.Signal();
   return host != NULL;
@@ -1012,7 +1004,7 @@ int PSocket::Select(PSocket & sock1,
     case 2 :
       return -3;
     default :
-      return &read[0] == &sock1 ? -1 : -2;
+      return &read.front() == &sock1 ? -1 : -2;
   }
 }
 

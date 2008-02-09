@@ -926,7 +926,7 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
       else if (readers.IsEmpty())
         errorCode = PChannel::Timeout;
       else {
-        socket = (PUDPSocket *)&readers[0];
+        socket = (PUDPSocket *)&readers.front();
         if (socket->ReadFrom(buf, len, addr, port))
           lastReadCount = socket->GetLastReadCount();
         else {

@@ -59,9 +59,9 @@ extern "C" {
 class PVideoOutputDevice_SDL_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoOutputDevice_SDL; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return PStringList("SDL"); }
-    virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return deviceName.Find("SDL") == 0; }
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new PVideoOutputDevice_SDL; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return PString("SDL"); }
+    virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return deviceName.Find("SDL") == 0; }
 } PVideoOutputDevice_SDL_descriptor;
 
 PCREATE_PLUGIN(SDL, PVideoOutputDevice, &PVideoOutputDevice_SDL_descriptor);
@@ -86,9 +86,9 @@ PVideoOutputDevice_SDL::~PVideoOutputDevice_SDL()
 }
 
 
-PStringList PVideoOutputDevice_SDL::GetDeviceNames() const
+PStringArray PVideoOutputDevice_SDL::GetDeviceNames() const
 {
-  return PStringList("SDL");
+  return PString("SDL");
 }
 
 

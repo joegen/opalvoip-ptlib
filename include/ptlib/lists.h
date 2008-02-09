@@ -296,6 +296,8 @@ class PAbstractList : public PCollection
       PListElement * & lastElement ///< pointer to final element
     ) const;
 
+    PObject * RemoveElement(PListElement * element);
+
     // The types below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
     typedef PListElement Element;
     PListInfo * info;
@@ -335,54 +337,60 @@ template <class T> class PList : public PAbstractList
 
   /**@name Iterators */
   //@{
-    class iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+    class iterator_base : public std::iterator<std::bidirectional_iterator_tag, T> {
+    protected:
+      PListElement * element;
+      iterator_base(PListElement * e) : element(e) { }
+
+      void Next() { element = PAssertNULL(element)->next; }
+      void Prev() { element = PAssertNULL(element)->prev; }
+
     public:
-      iterator(PListElement * e = NULL) : element(e) { }
+      bool operator==(const iterator_base & it) const { return element == it.element; }
+      bool operator!=(const iterator_base & it) const { return element != it.element; }
+    };
 
-      void operator++()    { element = PAssertNULL(element)->next; }
-      void operator++(int) { element = PAssertNULL(element)->next; }
-      void operator--()    { element = PAssertNULL(element)->prev; }
-      void operator--(int) { element = PAssertNULL(element)->prev; }
+    class iterator : public iterator_base {
+    public:
+      iterator(PListElement * e = NULL) : iterator_base(e) { }
 
-      bool operator==(const iterator & i) const { return element == i.element; }
-      bool operator!=(const iterator & i) const { return element != i.element; }
+      iterator operator++()    { Next(); return *this; }
+      iterator operator--()    { Prev(); return *this; }
+      iterator operator++(int) { iterator it = *this; Next(); return it; }
+      iterator operator--(int) { iterator it = *this; Prev(); return it; }
 
       T * operator->() const { return  (T *)PAssertNULL(element)->data; }
       T & operator* () const { return *(T *)PAssertNULL(element)->data; }
-
-    private:
-      PListElement * element;
     };
 
     iterator begin()  { return info->head; }
     iterator end()    { return iterator(); }
-    iterator rbegin() { return iterator(); }
-    iterator rend()   { return info->tail; }
+    iterator rbegin() { return info->tail; }
+    iterator rend()   { return iterator(); }
 
 
-    class const_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+    class const_iterator : public iterator_base {
     public:
-      const_iterator(PListElement * e = NULL) : element(e) { }
+      const_iterator(PListElement * e = NULL) : iterator_base(e) { }
 
-      void operator++()    { element = PAssertNULL(element)->next; }
-      void operator++(int) { element = PAssertNULL(element)->next; }
-      void operator--()    { element = PAssertNULL(element)->prev; }
-      void operator--(int) { element = PAssertNULL(element)->prev; }
-
-      bool operator==(const const_iterator & i) const { return element == i.element; }
-      bool operator!=(const const_iterator & i) const { return element != i.element; }
+      const_iterator operator++()    { Next(); return *this; }
+      const_iterator operator--()    { Prev(); return *this; }
+      const_iterator operator++(int) { const_iterator it = *this; Next(); return it; }
+      const_iterator operator--(int) { const_iterator it = *this; Prev(); return it; }
 
       const T * operator->() const { return  (T *)PAssertNULL(element)->data; }
       const T & operator* () const { return *(T *)PAssertNULL(element)->data; }
-
-    private:
-      PListElement * element;
     };
 
     const_iterator begin()  const { return info->head; }
     const_iterator end()    const { return const_iterator(); }
-    const_iterator rbegin() const { return const_iterator(); }
-    const_iterator rend()   const { return info->tail; }
+    const_iterator rbegin() const { return info->tail; }
+    const_iterator rend()   const { return iterator(); }
+
+    T & front() const { return *(T *)PAssertNULL(info->head)->data; }
+    T & back() const { return *(T *)PAssertNULL(info->tail)->data; }
+    void erase(const iterator & it) { Remove(&*it); }
+    void erase(const const_iterator & it) { Remove(&*it); }
   //@}
 
   /**@name New functions for class */

@@ -812,9 +812,9 @@ void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
     PString id = pdu.GetID();
 
     m_PendingIQsLock.Wait();
-    for (PINDEX i = 0, max = m_PendingIQs.GetSize() ; i < max ; i++)
-      if (((XMPP::IQ&)(m_PendingIQs[i])).GetID() == id) {
-        origMsg = (XMPP::IQ *)m_PendingIQs.RemoveAt(i);
+    for (StanzaList::iterator i = m_PendingIQs.begin(); i != m_PendingIQs.end(); i++)
+      if (((XMPP::IQ&)(*i)).GetID() == id) {
+        origMsg = (XMPP::IQ *)m_PendingIQs.Remove(&*i);
         pdu.SetOriginalMessage(origMsg);
       }
     m_PendingIQsLock.Signal();

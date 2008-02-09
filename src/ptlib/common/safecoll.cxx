@@ -308,15 +308,16 @@ PBoolean PSafeCollection::DeleteObjectsToBeRemoved()
 {
   PWaitAndSignal lock(removalMutex);
 
-  PINDEX i = 0;
-  while (i < toBeRemoved.GetSize()) {
-    if (toBeRemoved[i].GarbageCollection() && toBeRemoved[i].SafelyCanBeDeleted()) {
-      PObject * obj = toBeRemoved.RemoveAt(i);
+  PList<PSafeObject>::iterator i = toBeRemoved.begin();
+  while (i != toBeRemoved.end()) {
+    if (i->GarbageCollection() && i->SafelyCanBeDeleted()) {
+      PObject * obj = &*i;
+      toBeRemoved.Remove(obj);
       removalMutex.Signal();
       DeleteObject(obj);
       removalMutex.Wait();
 
-      i = 0; // Restart looking through list
+      i = toBeRemoved.begin(); // Restart looking through list
     }
     else
       i++;

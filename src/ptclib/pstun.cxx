@@ -706,9 +706,9 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
   PINDEX i;
 
-  PList<PSTUNUDPSocket> stunSocket;
-  PList<PSTUNMessage> request;
-  PList<PSTUNMessage> response;
+  PArray<PSTUNUDPSocket> stunSocket;
+  PArray<PSTUNMessage> request;
+  PArray<PSTUNMessage> response;
 
   for (i = 0; i < numSocketsForPairing; i++)
   {
@@ -716,7 +716,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
     if (!OpenSocket(stunSocket[idx], pairedPortInfo, binding)) {
       PTRACE(1, "STUN\tUnable to open socket to server " << serverAddress);
       return false;
-	}
+    }
 
     idx = request.Append(new PSTUNMessage(PSTUNMessage::BindingRequest));
     request[idx].AddAttribute(PSTUNChangeRequest(false, false));

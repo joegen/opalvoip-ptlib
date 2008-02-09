@@ -313,7 +313,7 @@ class PWin32PacketVxD : public PWin32PacketDriver
 #endif
 
   protected:
-    PStringList transportBinding;
+    PStringArray transportBinding;
 };
 
 

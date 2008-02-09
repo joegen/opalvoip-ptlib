@@ -60,7 +60,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
   
     /**Get a list of all of the devices available.
     */
-    virtual PStringList GetDeviceNames() const;
+    virtual PStringArray GetDeviceNames() const;
   
     /**Open the device given the device name.
     */

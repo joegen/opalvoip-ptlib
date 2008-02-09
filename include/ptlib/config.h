@@ -173,16 +173,16 @@ class PConfig : public PObject
 
        @return list of all section names.
      */
-    virtual PStringList GetSections() const;
+    virtual PStringArray GetSections() const;
 
     /** Get a list of all the keys in the section. If the section name is not
        specified then use the default section.
 
        @return list of all key names.
      */
-    virtual PStringList GetKeys() const;
+    virtual PStringArray GetKeys() const;
     /** Get a list of all the keys in the section. */
-    virtual PStringList GetKeys(
+    virtual PStringArray GetKeys(
       const PString & section   ///< Section to use instead of the default.
     ) const;
 

@@ -199,9 +199,9 @@ class PHTTPField : public PObject
     /** Retrieve all the names in the field and subfields.
 
        @return
-       List of strings for each subfield.
+       Array of strings for each subfield.
      */
-    virtual void GetAllNames(PStringList & list) const;
+    virtual void GetAllNames(PStringArray & names) const;
 
     /** Set the value of the field in a list of fields.
      */
@@ -232,7 +232,7 @@ class PHTTPField : public PObject
 };
 
 
-PLIST(PHTTPFieldList, PHTTPField);
+PARRAY(PHTTPFields, PHTTPField);
 
 class PHTTPCompositeField : public PHTTPField
 {
@@ -281,7 +281,7 @@ class PHTTPCompositeField : public PHTTPField
       PConfig & cfg   // Configuration for value transfer.
     ) const;
 
-    virtual void GetAllNames(PStringList & list) const;
+    virtual void GetAllNames(PStringArray & names) const;
     virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
     );
@@ -307,7 +307,7 @@ class PHTTPCompositeField : public PHTTPField
     void RemoveAll() { fields.RemoveAll(); }
 
   protected:
-    PHTTPFieldList fields;
+    PHTTPFields fields;
 };
 
 
