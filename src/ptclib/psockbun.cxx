@@ -471,6 +471,19 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   info.socket = new PUDPSocket;
   if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
     PTRACE(4, "MonSock\tCreated bundled UDP socket " << binding << ':' << info.socket->GetPort());
+    {
+      int UDP_BUFFER_SIZE = 32767;
+      int sz = 0;
+      int buftype = SO_RCVBUF;
+      if (info.socket->GetOption(buftype, sz)) {
+        if (sz < UDP_BUFFER_SIZE) {
+          if (!info.socket->SetOption(buftype, UDP_BUFFER_SIZE)) {
+            PTRACE(1, "MonSock\tSetOption(" << buftype << ") failed: " << info.socket->GetErrorText());
+          }
+        }
+      }
+    }
+
     return true;
   }
 
