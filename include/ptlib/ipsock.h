@@ -564,7 +564,7 @@ class PIPSocket : public PSocket
       friend class PIPSocket;
     };
 
-    PLIST(RouteTable, RouteEntry);
+    PARRAY(RouteTable, RouteEntry);
 
     /** Get the systems route table.
 
@@ -633,7 +633,7 @@ class PIPSocket : public PSocket
 #endif
     };
 
-    PLIST(InterfaceTable, InterfaceEntry);
+    PARRAY(InterfaceTable, InterfaceEntry);
 
     /** Get a list of all interfaces
        @return

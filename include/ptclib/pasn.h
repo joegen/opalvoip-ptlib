@@ -47,7 +47,7 @@ typedef DWORD           PASNOid;
 class PASNObject;
 class PASNSequence;
 
-PLIST(PASNObjectList, PASNObject);
+PARRAY(PASNObjectArray, PASNObject);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -551,7 +551,7 @@ class PASNSequence : public PASNObject
     PBoolean Encode(PBYTEArray & buffer, PINDEX maxLen) ;
 
   private:
-    PASNObjectList sequence;
+    PASNObjectArray sequence;
     BYTE     type;
     ASNType  asnType;
     WORD     encodedLen;

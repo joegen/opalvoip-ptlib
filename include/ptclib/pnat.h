@@ -238,8 +238,8 @@ typedef PFactory<PNatMethod> NatFactory;
 template <class className> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetNatMethodName(); }
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetNatMethodName(); }
 };
 
 #define PCREATE_NAT_PLUGIN(name) \

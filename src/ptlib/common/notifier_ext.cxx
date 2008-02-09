@@ -142,20 +142,16 @@ PBoolean PNotifierList::RemoveTarget(PObject * obj)
 {
   Cleanup();
 
-  for (PINDEX i = 0 ; i < m_TheList.GetSize() ; i++)
-  {
-    PSmartPtrInspector sptr(m_TheList[i]);
+  for (_PNotifierList::iterator i = m_TheList.begin(); i != m_TheList.end() ; i++) {
+    PSmartPtrInspector sptr(*i);
 
-    void * target = sptr.GetTarget();
-
-    if (target == obj)
-    {
-      m_TheList.RemoveAt(i);
-      return PTrue;
+    if (sptr.GetTarget() == obj) {
+      m_TheList.erase(i);
+      return true;
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -175,18 +171,16 @@ void PNotifierList::Move(PNotifierList& that)
 
 void PNotifierList::Cleanup()
 {
-  for (PINDEX i = 0 ; i < m_TheList.GetSize() ; i++)
-  {
-    PNotifier& n = m_TheList[i];
-    PSmartPtrInspector sptr(n);
+  for (_PNotifierList::iterator i = m_TheList.begin(); i != m_TheList.end() ; i++) {
+    PSmartPtrInspector sptr(*i);
     PObject * ptr = (PObject *)sptr.GetObject();
 
     if (!ptr || (PIsDescendant(ptr, PSmartNotifierFunction) &&
       ((PSmartNotifierFunction *)ptr)->GetNotifiee() == 0))
     {
       PTRACE(2, "PNotifierList\tRemoving invalid notifier " << ((PSmartNotifierFunction *)ptr)->GetNotifieeID());
-      m_TheList.RemoveAt(i);
-      i--;
+      m_TheList.erase(i);
+      i = m_TheList.begin();
     }
   }
 }
@@ -196,9 +190,9 @@ PBoolean PNotifierList::Fire(PObject& obj, INT val)
 {
   if (!m_TheList.GetSize()) return PFalse;
 
-  for (PINDEX i = 0 ; i < m_TheList.GetSize() ; i++)
+  for (_PNotifierList::iterator i = m_TheList.begin(); i != m_TheList.end() ; i++)
   {
-    PNotifier& n = m_TheList[i];
+    PNotifier& n = *i;
 
 #ifdef _DEBUG
     if (PTrace::CanTrace(6)) // Debug only

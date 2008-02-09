@@ -993,13 +993,13 @@ void PProcess::HouseKeepingThread::Main()
     HANDLE handles[MAXIMUM_WAIT_OBJECTS];
     DWORD numHandles = 1;
     handles[0] = breakBlock.GetHandle();
-    for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
-      PThread & thread = process.autoDeleteThreads[i];
-      if (thread.IsTerminated())
-        process.autoDeleteThreads.RemoveAt(i--);
+    ThreadList::iterator thread = process.autoDeleteThreads.begin();
+    while (thread != process.autoDeleteThreads.end()) {
+      if (thread->IsTerminated())
+        process.autoDeleteThreads.erase(thread++);
 
       else {
-        handles[numHandles] = thread.GetHandle();
+        handles[numHandles] = thread->GetHandle();
 
         // make sure we don't put invalid handles into the list
 #ifndef _WIN32_WCE
@@ -1010,11 +1010,13 @@ void PProcess::HouseKeepingThread::Main()
         else
 #endif
         // don't put the handle for the current process in the list
-    if (handles[numHandles] != process.GetHandle()) {
+        if (handles[numHandles] != process.GetHandle()) {
           numHandles++;
           if (numHandles >= MAXIMUM_WAIT_OBJECTS)
             break;
         }
+
+        ++thread;
       }
     }
     process.deleteThreadMutex.Signal();

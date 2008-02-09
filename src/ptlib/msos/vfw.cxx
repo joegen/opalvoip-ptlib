@@ -189,9 +189,9 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
 
     /** Is the device a camera, and obtain video
      */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
     /**Retrieve a list of Device Capabilities
@@ -803,18 +803,18 @@ PBoolean PVideoInputDevice_VideoForWindows::VerifyHardwareFrameSize(unsigned wid
 }
 
 
-PStringList PVideoInputDevice_VideoForWindows::GetInputDeviceNames()
+PStringArray PVideoInputDevice_VideoForWindows::GetInputDeviceNames()
 {
-  PStringList list;
+  PStringArray devices;
 
   for (WORD devId = 0; devId < 10; devId++) {
     char name[100];
     char version[200];
     if (capGetDriverDescription(devId, name, sizeof(name), version, sizeof(version)))
-      list.AppendString(name);
+      devices.AppendString(name);
   }
 
-  return list;
+  return devices;
 }
 
 
@@ -1085,11 +1085,11 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 
     /**Get a list of all of the devices available.
       */
-    static PStringList GetOutputDeviceNames();
+    static PStringArray GetOutputDeviceNames();
 
     /**Get a list of all of the devices available.
       */
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
     { return GetOutputDeviceNames(); }
 
     /**Set the colour format to be used.
@@ -1205,9 +1205,9 @@ static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr
 class PVideoOutputDevice_Window_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
-    virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return ParseWindowDeviceName(deviceName); }
+    virtual PObject *    CreateInstance(int /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
+    virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return ParseWindowDeviceName(deviceName); }
 } PVideoOutputDevice_Window_descriptor;
 
 PCREATE_PLUGIN(Window, PVideoOutputDevice, &PVideoOutputDevice_Window_descriptor);
@@ -1244,11 +1244,9 @@ PVideoOutputDevice_Window::~PVideoOutputDevice_Window()
 }
 
 
-PStringList PVideoOutputDevice_Window::GetOutputDeviceNames()
+PStringArray PVideoOutputDevice_Window::GetOutputDeviceNames()
 {
-  PStringList deviceList;
-  deviceList.AppendString(psprintf("MSWIN STYLE=0x%08X TITLE=\"%s\"", DEFAULT_STYLE, DEFAULT_TITLE));
-  return deviceList;
+  return psprintf("MSWIN STYLE=0x%08X TITLE=\"%s\"", DEFAULT_STYLE, DEFAULT_TITLE);
 }
 
 

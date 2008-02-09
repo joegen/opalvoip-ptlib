@@ -208,8 +208,8 @@ void PHTTPServiceProcess::ShutdownListener()
   httpListeningSocket->Close();
 
   httpThreadsMutex.Wait();
-  for (PINDEX i = 0; i < httpThreads.GetSize(); i++)
-    httpThreads[i].Close();
+  for (ThreadList::iterator i = httpThreads.begin(); i != httpThreads.end(); i++)
+    i->Close();
 
   while (httpThreads.GetSize() > 0) {
     httpThreadsMutex.Signal();

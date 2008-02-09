@@ -752,7 +752,7 @@ PTimeInterval PTimerList::Process()
 
   PINDEX i;
   for (i = 0; i < GetSize(); ++i) {
-    currentTimer = &(*this)[i];
+    currentTimer = (PTimer *)GetAt(i);
     inTimeoutMutex.Wait();
     listMutex.Signal();
     currentTimer->Process(sampleTime, minTimeLeft);

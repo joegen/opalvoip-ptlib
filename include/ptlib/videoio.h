@@ -229,7 +229,7 @@ class PVideoDevice : public PVideoFrameInfo
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const = 0;
+    virtual PStringArray GetDeviceNames() const = 0;
 
     struct OpenArgs {
       OpenArgs();
@@ -538,7 +538,7 @@ class PVideoOutputDevice : public PVideoDevice
 
     /**Get the list of available video output drivers (plug-ins)
     */
-    static PStringList GetDriverNames(
+    static PStringArray GetDriverNames(
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -548,7 +548,7 @@ class PVideoOutputDevice : public PVideoDevice
        two drivers have identical names for devices, then the string returned
        will be of the form driver+'\t'+device.
     */
-    static PStringList GetDriversDeviceNames(
+    static PStringArray GetDriversDeviceNames(
       const PString & driverName,         ///< Name of driver
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
@@ -736,7 +736,7 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const;
+    virtual PStringArray GetDeviceNames() const;
 
     /**Indicate frame may be displayed.
       */
@@ -766,7 +766,7 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Get the list of available video input drivers (plug-ins)
     */
-    static PStringList GetDriverNames(
+    static PStringArray GetDriverNames(
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -776,7 +776,7 @@ class PVideoInputDevice : public PVideoDevice
        two drivers have identical names for devices, then the string returned
        will be of the form driver+'\t'+device.
     */
-    static PStringList GetDriversDeviceNames(
+    static PStringArray GetDriversDeviceNames(
       const PString & driverName,         ///< Name of driver
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
@@ -901,9 +901,9 @@ class PVideoInputDevice : public PVideoDevice
 template <class className> class PVideoInputPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
-    virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
+    virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
       { return className::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
 };
 
@@ -919,8 +919,8 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
 template <class className> class PVideoOutputPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetOutputDeviceNames(); }
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetOutputDeviceNames(); }
 };
 
 #define PCREATE_VIDOUTPUT_PLUGIN(name) \

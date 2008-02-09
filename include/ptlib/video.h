@@ -105,7 +105,7 @@ class PVideoChannel : public PChannel
        @return
        An array of platform dependent strings for each video player/recorder.
      */
-    static PStringList GetDeviceNames(
+    static PStringArray GetDeviceNames(
       Directions dir    // Video I/O direction
     )  ;
 

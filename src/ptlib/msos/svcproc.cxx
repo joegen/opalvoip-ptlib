@@ -1629,7 +1629,7 @@ PBoolean PServiceProcess::ProcessCommand(const char * cmd)
       TrayIconRegistry(this, DelTrayIcon);
 #if P_CONFIG_FILE
       PConfig cfg;
-      PStringList sections = cfg.GetSections();
+      PStringArray sections = cfg.GetSections();
       PINDEX i;
       for (i = 0; i < sections.GetSize(); i++)
         cfg.DeleteSection(sections[i]);

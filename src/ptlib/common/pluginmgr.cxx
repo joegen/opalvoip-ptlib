@@ -99,8 +99,8 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PS
       LoadPluginDirectory(entry, suffixes);
     else {
       PFilePath fn(entry);
-      for (PINDEX i = 0; i < suffixes.GetSize(); ++i) {
-        PString suffix = suffixes[i];
+      for (PStringList::const_iterator i = suffixes.begin(); i != suffixes.end(); ++i) {
+        PString suffix = *i;
         PTRACE(5, "PLUGIN\tChecking " << fn << " against suffix " << suffix);
         if ((fn.GetType() *= PDynaLink::GetExtension()) && (fn.GetTitle().Right(strlen(suffix)) *= suffix)) 
           LoadPlugin(entry);
@@ -129,7 +129,7 @@ PPluginManager & PPluginManager::GetPluginManager()
 
 PBoolean PPluginManager::LoadPlugin(const PString & fileName)
 {
-  PWaitAndSignal m(pluginListMutex);
+  PWaitAndSignal m(pluginsMutex);
 
   PDynaLink *dll = new PDynaLink(fileName);
   if (!dll->IsLoaded()) {
@@ -162,7 +162,7 @@ PBoolean PPluginManager::LoadPlugin(const PString & fileName)
           CallNotifier(*dll, 0);
 
           // add the plugin to the list of plugins
-          pluginList.Append(dll);
+          plugins.Append(dll);
           return PTrue;
 
         default:
@@ -179,40 +179,41 @@ PBoolean PPluginManager::LoadPlugin(const PString & fileName)
   return PFalse;
 }
 
-PStringList PPluginManager::GetPluginTypes() const
+PStringArray PPluginManager::GetPluginTypes() const
 {
-  PWaitAndSignal n(serviceListMutex);
+  PWaitAndSignal n(servicesMutex);
 
-  PStringList result;
-  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    PString serviceType = serviceList[i].serviceType;
+  PStringArray result;
+  for (PINDEX i = 0; i < services.GetSize(); i++) {
+    PString serviceType = services[i].serviceType;
     if (result.GetStringsIndex(serviceType) == P_MAX_INDEX)
-      result.AppendString(serviceList[i].serviceType);
+      result.AppendString(services[i].serviceType);
   }
   return result;
 }
 
-PStringList PPluginManager::GetPluginsProviding(const PString & serviceType) const
-{
-  PWaitAndSignal n(serviceListMutex);
 
-  PStringList result;
-  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    if (serviceList[i].serviceType *= serviceType)
-      result.AppendString(serviceList[i].serviceName);
+PStringArray PPluginManager::GetPluginsProviding(const PString & serviceType) const
+{
+  PWaitAndSignal n(servicesMutex);
+
+  PStringArray result;
+  for (PINDEX i = 0; i < services.GetSize(); i++) {
+    if (services[i].serviceType *= serviceType)
+      result.AppendString(services[i].serviceName);
   }
   return result;
 }
 
 PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor (const PString & serviceName,
-                                   const PString & serviceType) const
+                                                                 const PString & serviceType) const
 {
-  PWaitAndSignal n(serviceListMutex);
+  PWaitAndSignal n(servicesMutex);
 
-  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    if ((serviceList[i].serviceName *= serviceName) &&
-        (serviceList[i].serviceType *= serviceType))
-      return serviceList[i].descriptor;
+  for (PINDEX i = 0; i < services.GetSize(); i++) {
+    if ((services[i].serviceName *= serviceName) &&
+        (services[i].serviceType *= serviceType))
+      return services[i].descriptor;
   }
   return NULL;
 }
@@ -240,7 +241,7 @@ PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
   if (tab != P_MAX_INDEX)
     return CreatePluginsDevice(deviceName.Left(tab), serviceType, userData);
 
-  PWaitAndSignal m(serviceListMutex);
+  PWaitAndSignal m(servicesMutex);
 
   // If we know the service name of the device we want to create.
   if (!serviceName) {
@@ -249,8 +250,8 @@ PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
       return desc->CreateInstance(userData);
   }
 
-  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    const PPluginService & service = serviceList[i];
+  for (PINDEX i = 0; i < services.GetSize(); i++) {
+    const PPluginService & service = services[i];
     if (service.serviceType *= serviceType) {
       PDevicePluginServiceDescriptor * descriptor = (PDevicePluginServiceDescriptor *)service.descriptor;
       if (PAssertNULL(descriptor) != NULL && descriptor->ValidateDeviceName(deviceName, userData))
@@ -264,7 +265,7 @@ PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
 
 bool PDevicePluginServiceDescriptor::ValidateDeviceName(const PString & deviceName, int userData) const
 {
-  PStringList devices = GetDeviceNames(userData);
+  PStringArray devices = GetDeviceNames(userData);
   if (
       (deviceName.GetLength() == 2) && 
       (deviceName[0] == '#') && 
@@ -288,24 +289,24 @@ bool PDevicePluginServiceDescriptor::GetDeviceCapabilities(const PString & /*dev
 }
 
 
-PStringList PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
-                                                  const PString & serviceType,
-                                                  int userData) const
+PStringArray PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
+                                                   const PString & serviceType,
+                                                   int userData) const
 {
-  PStringList allDevices;
+  PStringArray allDevices;
 
   if (serviceName.IsEmpty() || serviceName == "*") {
-    PWaitAndSignal n(serviceListMutex);
+    PWaitAndSignal n(servicesMutex);
 
     PINDEX i;
     PStringToString deviceToPluginMap;  
 
     // First we run through all of the drivers and their lists of devices and
     // use the dictionary to assure all names are unique
-    for (i = 0; i < serviceList.GetSize(); i++) {
-      const PPluginService & service = serviceList[i];
+    for (i = 0; i < services.GetSize(); i++) {
+      const PPluginService & service = services[i];
       if (service.serviceType *= serviceType) {
-        PStringList devices = ((PDevicePluginServiceDescriptor *)service.descriptor)->GetDeviceNames(userData);
+        PStringArray devices = ((PDevicePluginServiceDescriptor *)service.descriptor)->GetDeviceNames(userData);
         for (PINDEX j = 0; j < devices.GetSize(); j++) {
           PCaselessString device = devices[j];
           if (deviceToPluginMap.Contains(device)) {
@@ -348,8 +349,8 @@ PBoolean PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceTyp
         return PFalse;
 
 	if (serviceName.IsEmpty() || serviceName == "*") {
-	  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-		const PPluginService & service = serviceList[i];
+	  for (PINDEX i = 0; i < services.GetSize(); i++) {
+		const PPluginService & service = services[i];
 		if (service.serviceType *= serviceType) { 
           PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)service.descriptor;
           if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
@@ -370,17 +371,17 @@ PBoolean PPluginManager::RegisterService(const PString & serviceName,
              const PString & serviceType,
              PPluginServiceDescriptor * descriptor)
 {
-  PWaitAndSignal m(serviceListMutex);
+  PWaitAndSignal m(servicesMutex);
 
   // first, check if it something didn't already register that name and type
-  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    if (serviceList[i].serviceName == serviceName &&
-        serviceList[i].serviceType == serviceType)
+  for (PINDEX i = 0; i < services.GetSize(); i++) {
+    if (services[i].serviceName == serviceName &&
+        services[i].serviceType == serviceType)
       return PFalse;
   }  
 
   PPluginService * service = new PPluginService(serviceName, serviceType, descriptor);
-  serviceList.Append(service);
+  services.Append(service);
 
   PDevicePluginAdapterBase * adapter = PFactory<PDevicePluginAdapterBase>::CreateInstance(serviceType);
   if (adapter != NULL)
@@ -392,31 +393,30 @@ PBoolean PPluginManager::RegisterService(const PString & serviceName,
 
 void PPluginManager::AddNotifier(const PNotifier & notifyFunction, PBoolean existing)
 {
-  PWaitAndSignal m(notifierMutex);
-  notifierList.Append(new PNotifier(notifyFunction));
+  PWaitAndSignal m(notifiersMutex);
+  notifiers.Append(new PNotifier(notifyFunction));
 
   if (existing)
-    for (PINDEX i = 0; i < pluginList.GetSize(); i++) 
-      CallNotifier(pluginList[i], 0);
+    for (PINDEX i = 0; i < plugins.GetSize(); i++) 
+      CallNotifier(plugins[i], 0);
 }
 
 void PPluginManager::RemoveNotifier(const PNotifier & notifyFunction)
 {
-  PWaitAndSignal m(notifierMutex);
-  for (PINDEX i = 0; i < notifierList.GetSize(); i++) {
-    if (notifierList[i] == notifyFunction) {
-      notifierList.RemoveAt(i);
-      i = 0;
-      continue;
+  PWaitAndSignal m(notifiersMutex);
+  for (PList<PNotifier>::iterator i = notifiers.begin(); i != notifiers.end(); i++) {
+    if (*i == notifyFunction) {
+      notifiers.Remove(&*i);
+      i = notifiers.begin();
     }
   }
 }
 
 void PPluginManager::CallNotifier(PDynaLink & dll, INT code)
 {
-  PWaitAndSignal m(notifierMutex);
-  for (PINDEX i = 0; i < notifierList.GetSize(); i++)
-    notifierList[i](dll, code);
+  PWaitAndSignal m(notifiersMutex);
+  for (PList<PNotifier>::iterator i = notifiers.begin(); i != notifiers.end(); i++)
+    (*i)(dll, code);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -424,7 +424,7 @@ void PPluginManager::CallNotifier(PDynaLink & dll, INT code)
 PPluginModuleManager::PPluginModuleManager(const char * _signatureFunctionName, PPluginManager * _pluginMgr)
   : signatureFunctionName(_signatureFunctionName)
 {
-  pluginList.DisallowDeleteObjects();
+  pluginDLLs.DisallowDeleteObjects();
   pluginMgr = _pluginMgr;;
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -438,15 +438,11 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
 
   switch (code) {
     case 0:
-      pluginList.SetAt(dll.GetName(), &dll); 
+      pluginDLLs.SetAt(dll.GetName(), &dll); 
       break;
 
     case 1: 
-      {
-        PINDEX idx = pluginList.GetValuesIndex(dll.GetName());
-        if (idx != P_MAX_INDEX)
-          pluginList.RemoveAt(idx);
-      }
+      pluginDLLs.RemoveAt(dll.GetName());
       break;
 
     default:

@@ -66,12 +66,12 @@ class PPluginManager : public PObject
     void LoadPluginDirectory (const PDirectory & dir);
   
     // functions to access the plugins' services 
-    PStringList GetPluginTypes() const;
-    PStringList GetPluginsProviding(const PString & serviceType) const;
+    PStringArray GetPluginTypes() const;
+    PStringArray GetPluginsProviding(const PString & serviceType) const;
     PPluginServiceDescriptor * GetServiceDescriptor(const PString & serviceName, const PString & serviceType) const;
     PObject * CreatePluginsDevice(const PString & serviceName, const PString & serviceType, int userData = 0) const;
     PObject * CreatePluginsDeviceByName(const PString & deviceName, const PString & serviceType, int userData = 0, const PString & serviceName = PString::Empty()) const;
-    PStringList GetPluginsDeviceNames(const PString & serviceName, const PString & serviceType, int userData = 0) const;
+    PStringArray GetPluginsDeviceNames(const PString & serviceName, const PString & serviceType, int userData = 0) const;
     PBoolean GetPluginsDeviceCapabilities(const PString & serviceType,const PString & serviceName,const PString & deviceName,void * capabilities) const;
 
     // function to register a service (used by the plugins themselves)
@@ -113,14 +113,14 @@ class PPluginManager : public PObject
     void LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes);
     void CallNotifier(PDynaLink & dll, INT code);
 
-    PMutex pluginListMutex;
-    PList<PDynaLink> pluginList;
+    PMutex pluginsMutex;
+    PArray<PDynaLink> plugins;
     
-    PMutex serviceListMutex;
-    PList<PPluginService> serviceList;
+    PMutex servicesMutex;
+    PArray<PPluginService> services;
 
-    PMutex notifierMutex;
-    PList<PNotifier> notifierList;
+    PMutex notifiersMutex;
+    PList<PNotifier> notifiers;
 };
 
 //////////////////////////////////////////////////////
@@ -145,13 +145,13 @@ class PPluginModuleManager : public PObject
     { }
 
     virtual PluginListType GetPluginList() const
-    { return pluginList; }
+    { return pluginDLLs; }
 
     virtual void OnShutdown()
     { }
 
   protected:
-    PluginListType pluginList;
+    PluginListType pluginDLLs;
     PDECLARE_NOTIFIER(PDynaLink, PPluginModuleManager, OnLoadModule);
 
   protected:

@@ -1021,11 +1021,10 @@ PXMLSettings::PXMLSettings(const PConfig & data, int options)
 {
   PStringList sects = data.GetSections();
 
-  for (PINDEX i = 0;i < (PINDEX)sects.GetSize();++i) {
-    PStringToString keyvals = data.GetAllKeyValues(sects[i]);
-    for (PINDEX j = 0; j < (PINDEX)keyvals.GetSize(); ++j) {
-      SetAttribute(sects[i],keyvals.GetKeyAt(j),keyvals.GetDataAt(j));
-    }
+  for (PStringList::iterator i = sects.begin(); i != sects.end(); ++i) {
+    PStringToString keyvals = data.GetAllKeyValues(*i);
+    for (PINDEX j = 0; j < keyvals.GetSize(); ++j)
+      SetAttribute(*i, keyvals.GetKeyAt(j),keyvals.GetDataAt(j));
   }
 }
 #endif // P_CONFIG_FILE

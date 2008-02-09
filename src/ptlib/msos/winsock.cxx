@@ -360,27 +360,26 @@ PChannel::Errors PSocket::Select(SelectList & read,
                                  SelectList & except,
                                  const PTimeInterval & timeout)
 {
-  PINDEX i;
-
+  SelectList::iterator sock;
   P_fd_set readfds;
-  for (i = 0; i < read.GetSize(); i++) {
-    if (!read[i].IsOpen())
+  for (sock = read.begin(); sock != read.end(); ++sock) {
+    if (!sock->IsOpen())
       return NotOpen;
-    readfds += read[i].GetHandle();
+    readfds += sock->GetHandle();
   }
 
   P_fd_set writefds;
-  for (i = 0; i < write.GetSize(); i++) {
-    if (!write[i].IsOpen())
+  for (sock = write.begin(); sock != write.end(); ++sock) {
+    if (!sock->IsOpen())
       return NotOpen;
-    writefds += write[i].GetHandle();
+    writefds += sock->GetHandle();
   }
 
   P_fd_set exceptfds;
-  for (i = 0; i < except.GetSize(); i++) {
-    if (!except[i].IsOpen())
+  for (sock = except.begin(); sock != except.end(); ++sock) {
+    if (!sock->IsOpen())
       return NotOpen;
-    exceptfds += except[i].GetHandle();
+    exceptfds += sock->GetHandle();
   }
 
   P_timeval tval = timeout;
@@ -392,26 +391,35 @@ PChannel::Errors PSocket::Select(SelectList & read,
     return lastError;
 
   if (retval > 0) {
-    for (i = 0; i < read.GetSize(); i++) {
-      int h = read[i].GetHandle();
+    sock = read.begin();
+    while (sock != read.end()) {
+      int h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
-      if (!readfds.IsPresent(h))
-        read.RemoveAt(i--);
+      if (readfds.IsPresent(h))
+        ++sock;
+      else
+        read.erase(sock++);
     }
-    for (i = 0; i < write.GetSize(); i++) {
-      int h = write[i].GetHandle();
+    sock = write.begin();
+    while ( sock != write.end()) {
+      int h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
-      if (!writefds.IsPresent(h))
-        write.RemoveAt(i--);
+      if (writefds.IsPresent(h))
+        ++sock;
+      else
+        write.erase(sock++);
     }
-    for (i = 0; i < except.GetSize(); i++) {
-      int h = except[i].GetHandle();
+    sock = except.begin();
+    while ( sock != except.end()) {
+      int h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
-      if (!exceptfds.IsPresent(h))
-        except.RemoveAt(i--);
+      if (exceptfds.IsPresent(h))
+        ++sock;
+      else
+        except.erase(sock++);
     }
   }
   else {

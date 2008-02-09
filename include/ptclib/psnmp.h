@@ -67,8 +67,8 @@ class PSNMPVarBindingList : public PObject
     void PrintOn(ostream & strm) const;
 
   protected:
-    PStringList     objectIds;
-    PASNObjectList  values;
+    PStringArray    objectIds;
+    PASNObjectArray values;
 };
 
 //////////////////////////////////////////////////////////////////////////

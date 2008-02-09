@@ -183,9 +183,9 @@ XMPP::Roster::~Roster()
 
 XMPP::Roster::Item * XMPP::Roster::FindItem(const PString& jid)
 {
-  for (PINDEX i = 0, max = m_Items.GetSize() ; i < max ; i++) {
-    if (m_Items[i].GetJID() == jid)
-      return &(m_Items[i]);
+  for (ItemList::iterator i = m_Items.begin(); i != m_Items.end(); i++) {
+    if (i->GetJID() == jid)
+      return &*i;
   }
 
   return NULL;
