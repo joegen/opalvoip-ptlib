@@ -83,7 +83,7 @@ static const char PortOutputFlow[] = "PortOutputFlow";
 PBoolean PSerialChannel::Open(PConfig & cfg)
 {
   PStringList ports = GetPortNames();
-  return Open(cfg.GetString(PortName, ports[0]),
+  return Open(cfg.GetString(PortName, ports.front()),
               cfg.GetInteger(PortSpeed, 9600),
               (BYTE)cfg.GetInteger(PortDataBits, 8),
               (PSerialChannel::Parity)cfg.GetInteger(PortParity, 1),

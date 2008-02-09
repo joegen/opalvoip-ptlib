@@ -241,7 +241,7 @@ PLDAPSession::BinaryModAttrib::BinaryModAttrib(const PString & name,
 
 
 PLDAPSession::BinaryModAttrib::BinaryModAttrib(const PString & name,
-                                               const PList<PBYTEArray> & vals,
+                                               const PArray<PBYTEArray> & vals,
                                                Operation op)
   : ModAttrib(name, op),
     values(vals)
@@ -284,7 +284,7 @@ void PLDAPSession::BinaryModAttrib::SetLDAPModVars(struct ldapmod & mod)
 }
 
 
-static LDAPMod ** CreateLDAPModArray(const PList<PLDAPSession::ModAttrib> & attributes,
+static LDAPMod ** CreateLDAPModArray(const PArray<PLDAPSession::ModAttrib> & attributes,
                                      PLDAPSession::ModAttrib::Operation defaultOp,
                                      PBYTEArray & storage)
 {
@@ -302,21 +302,21 @@ static LDAPMod ** CreateLDAPModArray(const PList<PLDAPSession::ModAttrib> & attr
 }
 
 
-static PList<PLDAPSession::ModAttrib> AttribsFromDict(const PStringToString & attributes)
+static PArray<PLDAPSession::ModAttrib> AttribsFromDict(const PStringToString & attributes)
 {
-  PList<PLDAPSession::ModAttrib> attrs;
+  PArray<PLDAPSession::ModAttrib> attrs(attributes.GetSize());
 
   for (PINDEX i = 0; i < attributes.GetSize(); i++)
-    attrs.Append(new PLDAPSession::StringModAttrib(attributes.GetKeyAt(i),
-                                                   attributes.GetDataAt(i).Lines()));
+    attrs.SetAt(i, new PLDAPSession::StringModAttrib(attributes.GetKeyAt(i),
+                                                     attributes.GetDataAt(i).Lines()));
 
   return attrs;
 }
 
 
-static PList<PLDAPSession::ModAttrib> AttribsFromArray(const PStringArray & attributes)
+static PArray<PLDAPSession::ModAttrib> AttribsFromArray(const PStringArray & attributes)
 {
-  PList<PLDAPSession::ModAttrib> attrs;
+  PArray<PLDAPSession::ModAttrib> attrs;
 
   for (PINDEX i = 0; i < attributes.GetSize(); i++) {
     PString attr = attributes[i];
@@ -330,9 +330,9 @@ static PList<PLDAPSession::ModAttrib> AttribsFromArray(const PStringArray & attr
 }
 
 
-static PList<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase & attributes)
+static PArray<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase & attributes)
 {
-  PList<PLDAPSession::ModAttrib> attrs;
+  PArray<PLDAPSession::ModAttrib> attrs;
 
   for (PINDEX i = 0; i < attributes.GetNumAttributes(); i++) {
     PLDAPAttributeBase & attr = attributes.GetAttribute(i);
@@ -349,7 +349,7 @@ static PList<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase & 
 }
 
 
-PBoolean PLDAPSession::Add(const PString & dn, const PList<ModAttrib> & attributes)
+PBoolean PLDAPSession::Add(const PString & dn, const PArray<ModAttrib> & attributes)
 {
   if (!IsOpen())
     return PFalse;
@@ -393,7 +393,7 @@ PBoolean PLDAPSession::Add(const PString & dn, const PLDAPStructBase & attribute
 }
 
 
-PBoolean PLDAPSession::Modify(const PString & dn, const PList<ModAttrib> & attributes)
+PBoolean PLDAPSession::Modify(const PString & dn, const PArray<ModAttrib> & attributes)
 {
   if (!IsOpen())
     return PFalse;

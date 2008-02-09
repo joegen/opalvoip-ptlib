@@ -38,9 +38,9 @@
 class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoInputDevice_Application; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
-    virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new PVideoInputDevice_Application; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
+    virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
       { return PVideoInputDevice_Application::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
 
 } PVideoInputDevice_Application_descriptor;
@@ -58,7 +58,7 @@ PVideoInputDevice_Application::PVideoInputDevice_Application()
 }
 
 
-PStringList PVideoInputDevice_Application::GetInputDeviceNames()
+PStringArray PVideoInputDevice_Application::GetInputDeviceNames()
 {
     return PString("Application");
 }

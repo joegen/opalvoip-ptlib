@@ -58,11 +58,9 @@ void PNatStrategy::AddMethod(PNatMethod * method)
 
 PNatMethod * PNatStrategy::GetMethod()
 {
-  for (PINDEX i=0; i < natlist.GetSize(); i++) {
-       PNatMethod * meth = (PNatMethod *)natlist.GetAt(i);
-
-     if (meth->IsAvailable())
-       return meth;
+  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
+    if (i->IsAvailable())
+      return &*i;
   }
 
   return NULL;
@@ -70,28 +68,21 @@ PNatMethod * PNatStrategy::GetMethod()
 
 PBoolean PNatStrategy::RemoveMethod(const PString & meth)
 {
-  for (PINDEX i=0; i < natlist.GetSize(); i++) {
-       PNatMethod * m = (PNatMethod *)natlist.GetAt(i);
-	   if (m != NULL) {
-	     PStringList methname = m->GetNatMethodName();
-	     if (methname[0] == meth) {
-            natlist.RemoveAt(i);
-            return PTrue;
-	     }
-	   }
+  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
+    if (i->GetNatMethodName().front() == meth) {
+      natlist.erase(i);
+      return true;
+    }
   }
 
-  return PFalse;
+  return false;
 }
 
 void PNatStrategy::SetPortRanges(
       WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
 {
-  for (PINDEX i=0; i < natlist.GetSize(); i++) {
-       PNatMethod * meth = (PNatMethod *)natlist.GetAt(i);
-
-     meth->SetPortRanges(portBase,portMax,portPairBase,portPairMax);
-  }
+  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++)
+    i->SetPortRanges(portBase, portMax, portPairBase, portPairMax);
 }
 
 

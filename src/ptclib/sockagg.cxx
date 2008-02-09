@@ -140,6 +140,7 @@ PThreadPoolWorkerBase::PThreadPoolWorkerBase(PThreadPoolBase & _pool)
 
 ////////////////////////////////////////////////////////////////
 
+#if 0 
 
 PHandleAggregator::PHandleAggregator(unsigned _max)
   : PHandleAggregatorBase(_max)
@@ -578,4 +579,4 @@ bool PAggregatorFD::IsValid()
 
 #endif // #endif _WIN32
 
-
+#endif

@@ -62,13 +62,9 @@ PVideoChannel::~PVideoChannel()
 }
 
 
-PStringList PVideoChannel::GetDeviceNames(Directions /*dir*/)
+PStringArray PVideoChannel::GetDeviceNames(Directions /*dir*/)
 {
-  PStringList list;
-
-  list.AppendString("Video Channel Base");
-
-  return list;
+  return PString("Video Channel Base");
 }
 
 

@@ -361,11 +361,21 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 
 PBoolean PAbstractList::Remove(const PObject * obj)
 {
-  PINDEX i = GetObjectsIndex(obj);
-  if (i == P_MAX_INDEX)
-    return PFalse;
-  RemoveAt(i);
-  return PTrue;
+  if (info == NULL){
+    PAssertAlways("info is null");
+    return NULL;
+  }
+
+  Element * elmt = info->head;
+  while (elmt != NULL) {
+    if (elmt->data == obj) {
+      RemoveElement(elmt);
+      return true;
+    }
+    elmt = elmt->next;
+  }
+  
+  return false;
 }
 
 
@@ -382,6 +392,12 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
     return NULL;
   }
 
+  return RemoveElement(elmt);
+}
+
+
+PObject * PAbstractList::RemoveElement(PListElement * elmt)
+{
   if (elmt == NULL){
     PAssertAlways("elmt is null");
     return NULL;

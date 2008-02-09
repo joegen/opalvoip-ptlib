@@ -180,7 +180,7 @@ class PLDAPSession : public PObject
         virtual PBoolean IsBinary() const;
         virtual void SetLDAPModVars(struct ldapmod & mod);
 
-        PStringList values;
+        PStringArray values;
         PBaseArray<char *> pointers;
     };
 
@@ -198,7 +198,7 @@ class PLDAPSession : public PObject
         );
         BinaryModAttrib(
           const PString & name,
-          const PList<PBYTEArray> & values,
+          const PArray<PBYTEArray> & values,
           Operation op = Add
         );
         void SetValue(
@@ -211,7 +211,7 @@ class PLDAPSession : public PObject
         virtual PBoolean IsBinary() const;
         virtual void SetLDAPModVars(struct ldapmod & mod);
 
-        PList<PBYTEArray> values;
+        PArray<PBYTEArray> values;
         PBaseArray<struct berval *> pointers;
         PBYTEArray bervals;
     };
@@ -220,7 +220,7 @@ class PLDAPSession : public PObject
       */
     PBoolean Add(
       const PString & dn,
-      const PList<ModAttrib> & attributes
+      const PArray<ModAttrib> & attributes
     );
 
     /**Add a new distringuished name to LDAP dirctory.
@@ -250,7 +250,7 @@ class PLDAPSession : public PObject
       */
     PBoolean Modify(
       const PString & dn,
-      const PList<ModAttrib> & attributes
+      const PArray<ModAttrib> & attributes
     );
 
     /**Add a new distringuished name to LDAP dirctory.
@@ -550,8 +550,8 @@ class PLDAPSchema : public PObject
 template <class className> class LDAPPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return className::SchemaName(); } 
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::SchemaName(); } 
 };
 
 #define LDAP_Schema(name)    \

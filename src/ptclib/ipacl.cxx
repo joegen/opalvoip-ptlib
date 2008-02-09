@@ -325,24 +325,24 @@ static PBoolean SplitConfigFileLine(const PString & line, PString & daemons, PSt
 }
 
 
-static PBoolean IsDaemonInConfigFileLine(const PString & daemon, const PString & daemons)
+static bool IsDaemonInConfigFileLine(const PString & daemon, const PString & daemons)
 {
   PStringList daemonsIn, daemonsOut;
   ParseConfigFileExcepts(daemons, daemonsIn, daemonsOut);
 
-  for (PINDEX in = 0; in < daemonsIn.GetSize(); in++) {
-    if (daemonsIn[in] == "ALL" || daemonsIn[in] == daemon) {
-      PINDEX out;
-      for (out = 0; out < daemonsOut.GetSize(); out++) {
-        if (daemonsOut[out] == daemon)
+  for (PStringList::iterator in = daemonsIn.begin(); in != daemonsIn.end(); in++) {
+    if (*in == "ALL" || *in == daemon) {
+      PStringList::iterator out;
+      for (out = daemonsOut.begin(); out != daemonsOut.end(); out++) {
+        if (*out == daemon)
           break;
       }
-      if (out >= daemonsOut.GetSize())
-        return PTrue;
+      if (out == daemonsOut.end())
+        return true;
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -371,21 +371,21 @@ PBoolean PIpAccessControlList::InternalLoadHostsAccess(const PString & daemonNam
 {
   PTextFile file;
   if (!file.Open(PProcess::GetOSConfigDir() + filename, PFile::ReadOnly))
-    return PTrue;
+    return true;
 
-  PBoolean ok = PTrue;
+  bool ok = true;
 
   PStringList clientsIn;
   PStringList clientsOut;
   while (ReadConfigFile(file, daemonName, clientsIn, clientsOut)) {
-    PINDEX i;
-    for (i = 0; i < clientsOut.GetSize(); i++) {
-      if (!Add((allowance ? "-@" : "+@") + clientsOut[i]))
-        ok = PFalse;
+    PStringList::iterator i;
+    for (i = clientsOut.begin(); i != clientsOut.end(); i++) {
+      if (!Add((allowance ? "-@" : "+@") + *i))
+        ok = false;
     }
-    for (i = 0; i < clientsIn.GetSize(); i++) {
-      if (!Add((allowance ? "+@" : "-@") + clientsIn[i]))
-        ok = PFalse;
+    for (i = clientsIn.begin(); i != clientsIn.end(); i++) {
+      if (!Add((allowance ? "+@" : "-@") + *i))
+        ok = false;
     }
   }
 

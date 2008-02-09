@@ -252,7 +252,7 @@ PString PHTTPField::GetHTMLInput(const PString & input) const
 
 
 static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
-                                const PString & myValue, PStringList & validValues,
+                                const PString & myValue, PStringArray & validValues,
                                 PINDEX & finishAdjust)
 {
   PINDEX start, finish;
@@ -327,7 +327,7 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
 PString PHTTPField::GetHTMLSelect(const PString & selection) const
 {
   PString text = selection;
-  PStringList dummy1;
+  PStringArray dummy1;
   PINDEX dummy2 = P_MAX_INDEX;
   AdjustSelectOptions(text, 0, P_MAX_INDEX, GetValue(PFalse), dummy1, dummy2);
   return text;
@@ -392,7 +392,7 @@ PBoolean PHTTPField::Validated(const PString &, PStringStream &) const
 }
 
 
-void PHTTPField::GetAllNames(PStringList & list) const
+void PHTTPField::GetAllNames(PStringArray & list) const
 {
   list.AppendString(fullName);
 }
@@ -551,7 +551,7 @@ void PHTTPCompositeField::SaveToConfig(PConfig & cfg) const
 }
 
 
-void PHTTPCompositeField::GetAllNames(PStringList & list) const
+void PHTTPCompositeField::GetAllNames(PStringArray & list) const
 {
   for (PINDEX i = 0; i < GetSize(); i++)
     fields[i].GetAllNames(list);
@@ -680,9 +680,9 @@ static const char ArrayControlAddTop[] = "Add Top";
 static const char ArrayControlAddBottom[] = "Add Bottom";
 static const char ArrayControlAdd[] = "Add";
 
-static PStringList GetArrayControlOptions(PINDEX fld, PINDEX size, PBoolean orderedArray)
+static PStringArray GetArrayControlOptions(PINDEX fld, PINDEX size, PBoolean orderedArray)
 {
-  PStringList options;
+  PStringArray options;
 
   if (fld >= size) {
     options.AppendString(ArrayControlIgnore);
@@ -713,7 +713,7 @@ static PStringList GetArrayControlOptions(PINDEX fld, PINDEX size, PBoolean orde
 
 void PHTTPFieldArray::AddArrayControlBox(PHTML & html, PINDEX fld) const
 {
-  PStringList options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
+  PStringArray options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
   html << PHTML::Select(fields[fld].GetName() + ArrayControlBox);
   for (PINDEX i = 0; i < options.GetSize(); i++)
     html << PHTML::Option(i == 0 ? PHTML::Selected : PHTML::NotSelected) << options[i];
@@ -803,7 +803,7 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX & fi
                                           PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     PINDEX begin, end;
     while (FindSpliceBlock(SelectRow, SelEndRegEx, text, 0, pos, len, begin, end)) {
-      PStringList options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
+      PStringArray options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
       AdjustSelectOptions(text, begin, end, options[0], options, finish);
       static PRegularExpression RowSelect("!--#form[ \t\r\n]+rowselect[ \t\r\n]*--",
                                           PRegularExpression::Extended|PRegularExpression::IgnoreCase);
@@ -882,11 +882,11 @@ void PHTTPFieldArray::SetArrayFieldName(PINDEX idx) const
 
 void PHTTPFieldArray::SetAllValues(const PStringToString & data)
 {
-  PHTTPFieldList newFields;
+  PHTTPFields newFields(fields.GetSize());
   newFields.DisallowDeleteObjects();
   PINDEX i;
   for (i = 0; i < fields.GetSize(); i++)
-    newFields.Append(fields.GetAt(i));
+    newFields.SetAt(i, fields.GetAt(i));
 
   PBoolean lastFieldIsSet = PFalse;
   PINDEX size = fields.GetSize();
@@ -2028,7 +2028,7 @@ PBoolean PHTTPConfig::Post(PHTTPRequest & request,
   for (fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (&field != keyField && &field != valField && &field != sectionField) {
-      PStringList names;
+      PStringArray names;
       field.GetAllNames(names);
       oldValues = names;
     }
@@ -2062,7 +2062,7 @@ PBoolean PHTTPConfig::Post(PHTTPRequest & request,
   for (fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (&field != keyField && &field != valField && &field != sectionField) {
-      PStringList names;
+      PStringArray names;
       field.GetAllNames(names);
       for (PINDEX i = 0; i < names.GetSize(); i++) {
         PINDEX idx = oldValues.GetStringsIndex(names[i]);
@@ -2147,7 +2147,7 @@ PHTTPConfigSectionList::PHTTPConfigSectionList(const PURL & url,
 void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
 {
   PConfig cfg;
-  PStringList nameList = cfg.GetSections();
+  PStringArray nameList = cfg.GetSections();
 
   PINDEX pos = text.Find(FormListInclude);
   if (pos != P_MAX_INDEX) {
@@ -2215,7 +2215,7 @@ PBoolean PHTTPConfigSectionList::Post(PHTTPRequest &,
                                   PHTML & replyMessage)
 {
   PConfig cfg;
-  PStringList nameList = cfg.GetSections();
+  PStringArray nameList = cfg.GetSections();
   PINDEX i; 
   for (i = 0; i < nameList.GetSize(); i++) {
     if (nameList[i].Find(sectionPrefix) == 0) {

@@ -566,7 +566,7 @@ class PProcess : public PThread
     PFilePath executableFile;
     // Application executable file from argv[0] (not open)
 
-    PStringList configurationPaths;
+    PStringArray configurationPaths;
     // Explicit file or set of directories to find default PConfig
 
     PArgList arguments;
