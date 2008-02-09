@@ -120,7 +120,7 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
 
   if (adjustedDeviceName.IsEmpty() || adjustedDeviceName == "*") {
     if (driverName.IsEmpty() || driverName == "*") {
-      PStringList drivers = VideoDevice::GetDriverNames(pluginMgr);
+      PStringArray drivers = VideoDevice::GetDriverNames(pluginMgr);
       if (drivers.IsEmpty())
         return NULL;
 
@@ -141,7 +141,7 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
       adjustedDriverName = drivers[driverIndex];
     }
 
-    PStringList devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
+    PStringArray devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
     if (!devices.IsEmpty())
       adjustedDeviceName = devices[0];
   }
@@ -877,9 +877,9 @@ PBoolean PVideoDevice::SetVideoChannelFormat (int newNumber, VideoFormat newForm
   return (err1 && err2);
 }
 
-PStringList PVideoDevice::GetDeviceNames() const
+PStringArray PVideoDevice::GetDeviceNames() const
 {
-  return PStringList();
+  return PStringArray();
 }
 
 
@@ -1051,11 +1051,9 @@ PBoolean PVideoOutputDevicePPM::Close()
 }
 
 
-PStringList PVideoOutputDevicePPM::GetDeviceNames() const
+PStringArray PVideoOutputDevicePPM::GetDeviceNames() const
 {
-  PStringList list;
-  list += PDirectory();
-  return list;
+  return PDirectory();
 }
 
 
@@ -1093,7 +1091,7 @@ PBoolean PVideoInputDevice::CanCaptureVideo() const
 static const char videoInputPluginBaseClass[] = "PVideoInputDevice";
 
 
-PStringList PVideoInputDevice::GetDriverNames(PPluginManager * pluginMgr)
+PStringArray PVideoInputDevice::GetDriverNames(PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -1102,7 +1100,7 @@ PStringList PVideoInputDevice::GetDriverNames(PPluginManager * pluginMgr)
 }
 
 
-PStringList PVideoInputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
+PStringArray PVideoInputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -1230,7 +1228,7 @@ PBoolean PVideoOutputDevice::SetFrameData(
 static const char videoOutputPluginBaseClass[] = "PVideoOutputDevice";
 
 
-PStringList PVideoOutputDevice::GetDriverNames(PPluginManager * pluginMgr)
+PStringArray PVideoOutputDevice::GetDriverNames(PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -1239,7 +1237,7 @@ PStringList PVideoOutputDevice::GetDriverNames(PPluginManager * pluginMgr)
 }
 
 
-PStringList PVideoOutputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
+PStringArray PVideoOutputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();

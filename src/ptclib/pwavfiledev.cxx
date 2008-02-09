@@ -42,7 +42,7 @@ class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServic
     {
         return new PSoundChannel_WAVFile;
     }
-    virtual PStringList GetDeviceNames(int userData) const
+    virtual PStringArray GetDeviceNames(int userData) const
     {
         return PSoundChannel_WAVFile::GetDeviceNames((PSoundChannel::Directions)userData);
     }

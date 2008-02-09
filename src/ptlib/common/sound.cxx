@@ -52,7 +52,7 @@ namespace PWLib {
 };
 
 
-PStringList PSoundChannel::GetDriverNames(PPluginManager * pluginMgr)
+PStringArray PSoundChannel::GetDriverNames(PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -61,9 +61,9 @@ PStringList PSoundChannel::GetDriverNames(PPluginManager * pluginMgr)
 }
 
 
-PStringList PSoundChannel::GetDriversDeviceNames(const PString & driverName,
-                                                 PSoundChannel::Directions dir,
-                                                 PPluginManager * pluginMgr)
+PStringArray PSoundChannel::GetDriversDeviceNames(const PString & driverName,
+                                                  PSoundChannel::Directions dir,
+                                                  PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -109,7 +109,7 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const PString & driverName,
   }
   else {
     if (deviceName.IsEmpty() || deviceName == "*") {
-      PStringList devices = PSoundChannel::GetDriversDeviceNames(driverName, PSoundChannel::Player);
+      PStringArray devices = PSoundChannel::GetDriversDeviceNames(driverName, PSoundChannel::Player);
       if (devices.IsEmpty())
         return NULL;
       adjustedDeviceName = devices[0];
@@ -125,7 +125,7 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const PString & driverName,
 }
 
 
-PStringList PSoundChannel::GetDeviceNames(PSoundChannel::Directions dir, PPluginManager * pluginMgr)
+PStringArray PSoundChannel::GetDeviceNames(PSoundChannel::Directions dir, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
@@ -159,7 +159,7 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
   return str.Trim();
 #else
-  PStringList devices = GetDeviceNames(dir);
+  PStringArray devices = GetDeviceNames(dir);
   if (devices.GetSize() > 0)
     return devices[0];
 

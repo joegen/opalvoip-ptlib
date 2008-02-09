@@ -111,11 +111,10 @@ class PDevicePluginServiceDescriptor : public PPluginServiceDescriptor
   public:
     static const char SeparatorChar;
 
-    virtual PObject *   CreateInstance(int userData) const = 0;
-    virtual PStringList GetDeviceNames(int userData) const = 0;
-    virtual bool        ValidateDeviceName(const PString & deviceName, int userData) const;
-	virtual bool        GetDeviceCapabilities(const PString & deviceName, 
-											         void * capabilities) const;
+    virtual PObject *    CreateInstance(int userData) const = 0;
+    virtual PStringArray GetDeviceNames(int userData) const = 0;
+    virtual bool         ValidateDeviceName(const PString & deviceName, int userData) const;
+    virtual bool         GetDeviceCapabilities(const PString & deviceName, void * capabilities) const;
 };
 
 

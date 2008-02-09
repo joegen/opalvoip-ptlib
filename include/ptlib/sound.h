@@ -250,7 +250,7 @@ class PSoundChannel : public PChannel
   //@{
     /**Get the list of available sound drivers (plug-ins)
      */
-    static PStringList GetDriverNames(
+    static PStringArray GetDriverNames(
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -258,14 +258,14 @@ class PSoundChannel : public PChannel
        If driverName is an empty string or the value "*" then GetAllDeviceNames()
        is used.
      */
-    static PStringList GetDriversDeviceNames(
+    static PStringArray GetDriversDeviceNames(
       const PString & driverName,         ///< Name of driver
       Directions direction,               ///< Direction for device (record or play)
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     // For backward compatibility
-    static inline PStringList GetDeviceNames(
+    static inline PStringArray GetDeviceNames(
       const PString & driverName,
       Directions direction,
       PPluginManager * pluginMgr = NULL
@@ -330,7 +330,7 @@ class PSoundChannel : public PChannel
        @return
        Platform dependent strings for the sound player/recorder.
      */
-    static PStringList GetDeviceNames(
+    static PStringArray GetDeviceNames(
       Directions direction,               ///< Direction for device (record or play)
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
@@ -647,8 +647,8 @@ class PSoundChannel : public PChannel
 template <class className> class PSoundChannelPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringList GetDeviceNames(int userData) const { return className::GetDeviceNames((PSoundChannel::Directions)userData); }
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(int userData) const { return className::GetDeviceNames((PSoundChannel::Directions)userData); }
 };
 
 #define PCREATE_SOUND_PLUGIN(name, className) \

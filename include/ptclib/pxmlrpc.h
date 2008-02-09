@@ -282,7 +282,7 @@ class PXMLRPCStructBase : public PObject {
   protected:
     void EndConstructor();
 
-    PList<PXMLRPCVariableBase>                variablesByOrder;
+    PArray<PXMLRPCVariableBase>               variablesByOrder;
     PDictionary<PString, PXMLRPCVariableBase> variablesByName;
 
     PXMLRPCStructBase        * initialiserStack;

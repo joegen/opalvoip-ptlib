@@ -105,9 +105,9 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 
     /**Get a list of all of the drivers available.
       */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
     /**Retrieve a list of Device Capabilities
@@ -252,9 +252,9 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
 
     /**Get a list of all of the drivers available.
       */
-    static PStringList GetOutputDeviceNames();
+    static PStringArray GetOutputDeviceNames();
 
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
       { return GetOutputDeviceNames(); }
 
     /**Open the device given the device name.

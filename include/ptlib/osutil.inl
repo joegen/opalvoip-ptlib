@@ -401,7 +401,7 @@ PINLINE void PConfig::SetDefaultSection(const PString & section)
 PINLINE PString PConfig::GetDefaultSection() const
   { return defaultSection; }
 
-PINLINE PStringList PConfig::GetKeys() const
+PINLINE PStringArray PConfig::GetKeys() const
   { return GetKeys(defaultSection); }
 
 PINLINE PStringToString PConfig::GetAllKeyValues() const

@@ -1185,8 +1185,8 @@ PXMLElement * XMPP::Disco::ItemList::AsXML(PXMLElement * parent) const
 
   items->SetAttribute(XMPP::NamespaceTag(), "http://jabber.org/protocol/disco#items");
 
-  for (PINDEX i = 0, max = GetSize() ; i < max ; i++)
-    (*this)[i].AsXML(items);
+  for (const_iterator i = begin(); i != end(); i++)
+    i->AsXML(items);
 
   return items;
 }
@@ -1243,8 +1243,8 @@ PXMLElement * XMPP::Disco::IdentityList::AsXML(PXMLElement * parent) const
 
   // Identity lists normally come as part of a full info, which we
   // assume here it's the parent
-  for (PINDEX i = 0, max = GetSize() ; i < max ; i++)
-    (*this)[i].AsXML(parent);
+  for (const_iterator i = begin(); i != end(); i++)
+    i->AsXML(parent);
 
   return parent;
 }

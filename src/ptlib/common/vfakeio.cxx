@@ -1330,9 +1330,9 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
 
     /**Get a list of all of the drivers available.
       */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
     /**Retrieve a list of Device Capabilities
@@ -1538,13 +1538,9 @@ PBoolean PVideoInputDevice_FakeVideo::IsCapturing()
 }
 
 
-PStringList PVideoInputDevice_FakeVideo::GetInputDeviceNames()
+PStringArray PVideoInputDevice_FakeVideo::GetInputDeviceNames()
 {
-  PStringList list;
-
-  list.AppendString("fake");
-
-  return list;
+  return PString("fake");
 }
 
 
@@ -2073,9 +2069,9 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
 
     /**Get a list of all of the drivers available.
       */
-    static PStringList GetOutputDeviceNames();
+    static PStringArray GetOutputDeviceNames();
 
-    virtual PStringList GetDeviceNames() const
+    virtual PStringArray GetDeviceNames() const
       { return GetOutputDeviceNames(); }
 
     /**Open the device given the device name.
@@ -2162,11 +2158,9 @@ PBoolean PVideoOutputDevice_NULLOutput::IsOpen()
 }
 
 
-PStringList PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
+PStringArray PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
 {
-  PStringList list;
-  list += "NULL";
-  return list;
+  return PString("NULL");
 }
 
 

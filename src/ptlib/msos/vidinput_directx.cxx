@@ -294,9 +294,9 @@ PBoolean PVideoInputDevice_DirectShow::InitialiseCapture()
 }
 
 
-PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
+PStringArray PVideoInputDevice_DirectShow::GetInputDeviceNames()
 {
-    PStringList list;
+    PStringArray devices;
 
     PTRACE(1,"PVidDirectShow\tGetInputDeviceNames()");
 
@@ -317,7 +317,7 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
     {
         PTRACE(1, "PVidDirectShow\tCouldn't create system enumerator. " << ErrorMessage(hr));
 	::CoUninitialize();
-        return list;
+        return devices;
     }
 
 
@@ -327,14 +327,14 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
     {
         PTRACE(1, "PVidDirectShow\tGetInputDeviceNames() Couldn't create class enumerator. " << ErrorMessage(hr));
 	::CoUninitialize();
-        return list;
+        return devices;
     }
 
     if (pClassEnum == NULL)
     {
         PTRACE(1, "PVidDirectShow\tGetInputDeviceNames() No video capture device was detected.");
 	::CoUninitialize();
-        return list;
+        return devices;
     }
 
     while (hr = pClassEnum->Next(1, &pMoniker, &cFetched), hr==S_OK)
@@ -361,7 +361,7 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
 	    if (pDeviceName)
 	    {
 		PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() Found this capture device '"<< pDeviceName <<"'");
-		list.AppendString(pDeviceName);
+		devices.AppendString(pDeviceName);
 		free(pDeviceName);
 	    }
 	}
@@ -396,10 +396,10 @@ PStringList PVideoInputDevice_DirectShow::GetInputDeviceNames()
 	FindClose( handle );
 
 	PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() Found this capture device '"<< szDeviceName <<"'");
-	list.AppendString(szDeviceName);
+	devices.AppendString(szDeviceName);
 #endif
 
-    return list;
+    return devices;
 }
 
 PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName, PBoolean startImmediate)

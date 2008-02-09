@@ -110,9 +110,9 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 
     /** Is the device a camera, and obtain video
      */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 
-    PStringList GetDeviceNames() const
+    PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
     /**Retrieve a list of Device Capabilities

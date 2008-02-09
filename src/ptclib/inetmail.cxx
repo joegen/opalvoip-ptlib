@@ -254,19 +254,19 @@ PBoolean PSMTPClient::_BeginMessage()
   if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>')/100 != 2)
     return PFalse;
 
-  for (PINDEX i = 0; i < toNames.GetSize(); i++) {
-    if (!peerHost && toNames[i].Find('@') == P_MAX_INDEX)
-      toNames[i] += '@' + peerHost;
-    if (ExecuteCommand(RCPT, "TO:<" + toNames[i] + '>')/100 != 2)
-      return PFalse;
+  for (PStringList::iterator i = toNames.begin(); i != toNames.end(); i++) {
+    if (!peerHost && i->Find('@') == P_MAX_INDEX)
+      *i += '@' + peerHost;
+    if (ExecuteCommand(RCPT, "TO:<" + *i + '>')/100 != 2)
+      return false;
   }
 
   if (ExecuteCommand(DATA, PString())/100 != 3)
-    return PFalse;
+    return false;
 
   stuffingState = StuffIdle;
   sendingData = PTrue;
-  return PTrue;
+  return true;
 }
 
 
@@ -1296,7 +1296,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
       headers.SetAt(DateTag(), PTime().AsString());
 
     if (writePartHeaders)
-      headers.SetAt(ContentTypeTag(), "multipart/mixed; boundary=\""+boundaries[0]+'"');
+      headers.SetAt(ContentTypeTag(), "multipart/mixed; boundary=\""+boundaries.front()+'"');
     else if (!headers.Contains(ContentTypeTag()))
       headers.SetAt(ContentTypeTag(), "text/plain");
 
@@ -1316,7 +1316,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
       partHeaders.SetAt(ContentTypeTag(), "text/plain");
 
     PStringStream hdr;
-    hdr << "\n--"  << boundaries[0] << '\n'
+    hdr << "\n--"  << boundaries.front() << '\n'
         << ::setfill('\r') << partHeaders;
     if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
       return PFalse;
@@ -1384,9 +1384,9 @@ PString PRFC822Channel::MultipartMessage()
 PBoolean PRFC822Channel::MultipartMessage(const PString & boundary)
 {
   writePartHeaders = PTrue;
-  for (PINDEX i = 0; i < boundaries.GetSize(); i++) {
-    if (boundaries[i] == boundary)
-      return PFalse;
+  for (PStringList::iterator i = boundaries.begin(); i != boundaries.end(); i++) {
+    if (*i == boundary)
+      return false;
   }
 
   if (boundaries.GetSize() > 0) {
@@ -1396,7 +1396,7 @@ PBoolean PRFC822Channel::MultipartMessage(const PString & boundary)
   }
 
   boundaries.InsertAt(0, new PString(boundary));
-  return PTrue;
+  return true;
 }
 
 
@@ -1410,9 +1410,9 @@ void PRFC822Channel::NextPart(const PString & boundary)
   }
 
   while (boundaries.GetSize() > 0) {
-    if (boundaries[0] == boundary)
+    if (boundaries.front() == boundary)
       break;
-    *this << "\n--" << boundaries[0] << "--\n";
+    *this << "\n--" << boundaries.front() << "--\n";
     boundaries.RemoveAt(0);
   }
 

@@ -651,7 +651,7 @@ static PString PGetPrivateProfileString(const char * lpAppName,
 }
 
 
-PStringList PConfig::GetSections() const
+PStringArray PConfig::GetSections() const
 {
   PStringList sections;
 
@@ -674,7 +674,7 @@ PStringList PConfig::GetSections() const
 }
 
 
-PStringList PConfig::GetKeys(const PString & section) const
+PStringArray PConfig::GetKeys(const PString & section) const
 {
   PStringList keys;
 
