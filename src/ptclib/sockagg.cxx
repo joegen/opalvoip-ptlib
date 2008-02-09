@@ -140,7 +140,7 @@ PThreadPoolWorkerBase::PThreadPoolWorkerBase(PThreadPoolBase & _pool)
 
 ////////////////////////////////////////////////////////////////
 
-#if 0 
+#if 0   // aggregation disabled pending reimplmentation
 
 PHandleAggregator::PHandleAggregator(unsigned _max)
   : PHandleAggregatorBase(_max)
@@ -577,6 +577,6 @@ bool PAggregatorFD::IsValid()
   return fd >= 0; 
 }
 
-#endif // #endif _WIN32
+#endif  // aggregation disabled pending reimplmeentation
 
-#endif
+#endif // #endif _WIN32
