@@ -358,7 +358,9 @@ class RegistryKey
   #endif
   #include <ptlib/wm/cevfw.h>
 
+#ifndef MB_TASKMODAL
   #define MB_TASKMODAL MB_APPLMODAL
+#endif
 
 #endif
 
