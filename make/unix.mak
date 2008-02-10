@@ -530,8 +530,6 @@ STDCCFLAGS += -DP_NO_CANCEL
 STDCCFLAGS += -I/usr/pkg/pthreads/include
 LDFLAGS	+= -L/usr/pkg/pthreads/lib
 LDLIBS	+= -lpthread
-CC              := /usr/pkg/pthreads/bin/pgcc
-CPLUS           := /usr/pkg/pthreads/bin/pg++
 endif
 endif
 endif
@@ -689,9 +687,6 @@ endif
 ARCHIVE			:= libtool -static -o
 P_USE_RANLIB	:= 0
 
-CC              := cc
-CPLUS           := c++
- 
 endif # Darwin
 
 ifeq ($(OSTYPE),Carbon)
@@ -712,9 +707,6 @@ LDLIBS		+= -prebind -framework CoreServices -framework QuickTime -framework Carb
 P_SHAREDLIB	:= 0 
 P_USE_RANLIB	:= 1
 
-CC              := cc
-CPLUS           := c++
- 
 endif # Carbon
 
 ####################################################
@@ -740,12 +732,6 @@ endif # VxWorks
 ####################################################
 
 ifeq ($(OSTYPE),rtems)
-
-CC              := $(MACHTYPE)-rtems-gcc --pipe
-CPLUS           := $(MACHTYPE)-rtems-g++
-#LD              := $(MACHTYPE)-rtems-ld
-#AR              := $(MACHTYPE)-rtems-ar
-#RUNLIB          := $(MACHTYPE)-rtems-runlib
 
 SYSLIBDIR	:= $(RTEMS_MAKEFILE_PATH)/lib
 SYSINCDIR	:= $(RTEMS_MAKEFILE_PATH)/lib/include
@@ -780,9 +766,6 @@ endif
 STDCCFLAGS	+= -DP_QNX -DP_HAS_RECURSIVE_MUTEX=1 -DFD_SETSIZE=1024
 LDLIBS		+= -lasound
 ENDLDLIBS       += -lsocket -lstdc++
-
-CC		:= qcc -Vgcc_ntox86
-CPLUS		:= qcc -Vgcc_ntox86_gpp
 
 P_USE_RANLIB	:= 1
 STDCCFLAGS      += -DP_USE_PRAGMA
@@ -845,18 +828,6 @@ endif # mingw
 #
 # Make sure some things are defined
 #
-
-ifndef	CC
-CC := gcc
-endif
-
-ifndef CPLUS
-ifndef CXX
-CPLUS := g++
-else
-CPLUS := $(CXX)
-endif
-endif
 
 ifndef INSTALL
 INSTALL := install

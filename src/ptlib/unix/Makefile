@@ -529,7 +529,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 
 $(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
 
 endif
 
@@ -556,7 +556,7 @@ endif
 
 $(OBJDIR)/vfakeio.o: $(COMMON_SRC_DIR)/vfakeio.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
 
 ifndef HAS_PLUGINS
 
@@ -678,7 +678,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
 
 $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
 
 endif
 
@@ -755,7 +755,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 
 $(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
 
 endif
 
@@ -825,7 +825,7 @@ $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
