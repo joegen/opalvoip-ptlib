@@ -21,6 +21,8 @@ ENDLDLIBS     += @ENDLDLIBS@
 DEBUG_FLAG    += @DEBUG_FLAG@
 
 AR		= @AR@
+CC		= @CC@
+CXX		= @CXX@
 
 USE_GCC         = @USE_GCC@
 USE_PCH		= @USE_PCH@

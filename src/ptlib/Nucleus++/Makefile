@@ -236,13 +236,13 @@ alllibs:
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE) $(GETDATE_SOURCE)
 
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
-	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
+	$(CXX) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@

@@ -2,6 +2,7 @@ AC_INIT(include/ptlib.h)
 
 AC_CONFIG_SUBDIRS(plugins)
 
+AC_PROG_CC
 AC_PROG_CXX
 
 AC_LANG(C++)
@@ -2507,6 +2508,8 @@ fi
 dnl ########################################################################
 dnl final declarations
 
+AC_SUBST(CC)
+AC_SUBST(CXX)
 AC_SUBST(STDCCFLAGS)
 AC_SUBST(STDCXXFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
