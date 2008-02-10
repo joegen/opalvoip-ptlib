@@ -28,7 +28,7 @@ endif
 
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	mkdir -p $(OBJDIR)
-	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) \
+	$(CXX) $(CFLAGS) $(STDCCFLAGS) \
 	$(LDFLAGS) \
 	$(PLUGIN_LIBS) \
 	-I. $(LDSOPTS) $< -o $@
