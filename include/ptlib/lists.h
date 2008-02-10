@@ -344,7 +344,7 @@ template <class T> class PList : public PAbstractList
 
       void Next() { element = PAssertNULL(element)->next; }
       void Prev() { element = PAssertNULL(element)->prev; }
-      T * Ptr() const { return  (T *)PAssertNULL(iterator_base::element)->data; }
+      T * Ptr() const { return  (T *)PAssertNULL(element)->data; }
 
     public:
       bool operator==(const iterator_base & it) const { return element == it.element; }
