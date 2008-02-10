@@ -195,7 +195,7 @@ ifeq ($(P_SHAREDLIB),1)
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
      LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
-     LD = $(CPLUS)
+     LD = $(CXX)
   else
     ifeq ($(OSTYPE),mingw)
       LDSOOPTS += -Wl,--kill-at
@@ -204,7 +204,7 @@ ifeq ($(P_SHAREDLIB),1)
       LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
     endif
     endif
-    LD = $(CPLUS)
+    LD = $(CXX)
   endif
 
   $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
