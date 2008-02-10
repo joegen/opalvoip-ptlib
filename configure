@@ -1376,7 +1376,7 @@ Optional Features:
   --disable-remconn       disable remote connection support
   --disable-serial        disable serial port support
   --disable-pop3smtp      disable POP3/SMTP support
-  --enable-sockagg        enable socket aggregation (experimental)
+  --disable-sockagg        disable socket aggregation
   --enable-vidfile        enable video file support
   --enable-appshare        enable Application share support
   --disable-audio         disable audio support
@@ -2813,12 +2813,6 @@ TARGETDIR=$TARGETDIR
 
 cat >>confdefs.h <<_ACEOF
 #define $OS_TAG $OSRELEASE
-_ACEOF
-
-
-
-cat >>confdefs.h <<\_ACEOF
-#define PHAS_TEMPLATES 1
 _ACEOF
 
 
@@ -4798,7 +4792,7 @@ default_alsa=yes
 default_oss=yes
 default_ipv6=yes
 default_qos=yes
-default_sockagg=no
+default_sockagg=yes
 default_vidfile=yes
 default_shmvideo=yes
 default_vxml=yes
@@ -4838,7 +4832,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_oss=yes
   default_ipv6=yes
   default_qos=yes
-  default_sockagg=no
+  default_sockagg=yes
   default_vidfile=yes
   default_shmvideo=no
   default_vxml=yes
@@ -4877,7 +4871,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_oss=no
   default_ipv6=no
   default_qos=no
-  default_sockagg=no
+  default_sockagg=yes
   default_vidfile=no
   default_shmvideo=no
   default_vxml=no
@@ -8146,7 +8140,6 @@ fi
 
 
 
-
 # Check whether --enable-expat was given.
 if test "${enable_expat+set}" = set; then
   enableval=$enable_expat;
@@ -9695,8 +9688,8 @@ if test "$enable_sockagg" = "no" ; then
   { echo "$as_me:$LINENO: Socket aggregation support disabled" >&5
 echo "$as_me: Socket aggregation support disabled" >&6;}
 else
-  { echo "$as_me:$LINENO: Socket aggregation support enabled (experimental)" >&5
-echo "$as_me: Socket aggregation support enabled (experimental)" >&6;}
+  { echo "$as_me:$LINENO: Socket aggregation support enabled" >&5
+echo "$as_me: Socket aggregation support enabled" >&6;}
   HAS_SOCKAGG=1
   cat >>confdefs.h <<\_ACEOF
 #define P_SOCKAGG 1
