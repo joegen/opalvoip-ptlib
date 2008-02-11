@@ -287,6 +287,10 @@ SYSINCDIR := /usr/include
 endif
 endif
 
+
+# Empty LD so getys set by appropriate platform below
+LD=
+
 ####################################################
 
 ifeq ($(OSTYPE),linux)
@@ -599,6 +603,9 @@ MEMORY_CHECK := 0
 
 STDCCFLAGS      += -DP_USE_PRAGMA
 
+LD		= ld
+LDFLAGS		+= --split-by-reloc 65535 -r 
+
 endif # VxWorks
 
  
@@ -704,6 +711,10 @@ endif # mingw
 
 ifndef INSTALL
 INSTALL := install
+endif
+
+ifndef LD
+LD = $(CXX)
 endif
 
 ifndef AR
