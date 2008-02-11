@@ -97,16 +97,14 @@ ifeq ($(P_SHAREDLIB),1)
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
      LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
-     LD = $(CXX)
   else
     ifeq ($(OSTYPE),mingw)
       LDSOOPTS += -Wl,--kill-at
     else
-    ifneq ($(OSTYPE),Darwin)
-      LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
+      ifneq ($(OSTYPE),Darwin)
+        LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
+      endif
     endif
-    endif
-    LD = $(CXX)
   endif
 
   $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
@@ -120,7 +118,7 @@ ifeq ($(P_SHAREDLIB),1)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
-  install: $(LIBDIR)/$(LIBNAME_PAT)
+  install :: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
 	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_FILENAME)
 	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
