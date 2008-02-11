@@ -117,17 +117,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CXX) $(STDCCFLAGS:-g=) -M $< >> $@
+	$(CXX) $(CPPFLAGS) $(STDCCFLAGS:-g=) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CXX) $(STDCCFLAGS:-g=) -M $< >> $@
+	$(CXX) $(CPPFLAGS) $(STDCCFLAGS:-g=) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CC) $(STDCCFLAGS:-g=) -M $< >> $@
+	$(CC) $(CPPFLAGS) $(STDCCFLAGS:-g=) -M $< >> $@
 
 #
 # add in good files to delete
