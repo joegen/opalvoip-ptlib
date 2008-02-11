@@ -164,10 +164,7 @@ ifeq ($(OSTYPE),beos)
 # directory
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PT_LIBDIR) lib; fi
 endif
-	$(CXX) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
-ifeq ($(OSTYPE),VxWorks)
-	$(LD)   --split-by-reloc 65535 -r   $(OBJS) -o $@ 
-endif
+	$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
 ifdef DEBUG
 
