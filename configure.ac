@@ -1590,10 +1590,16 @@ if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(Expat disabled)
 else
   if test "${EXPATDIR}z" != "z" ; then
-    AC_CHECK_FILE(${EXPATDIR}/include/expat.h, HAS_EXPAT=1)
+    AC_CHECK_HEADERS(${EXPATDIR}/lib/expat.h, HAS_EXPAT=1)
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/include"
-      LDFLAGS="$LDFLAGS -L${EXPATDIR}/lib"
+      STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/lib"
+      LDFLAGS="$LDFLAGS -L${EXPATDIR}/.libs"
+    else
+      AC_CHECK_HEADERS(${EXPATDIR}/include/expat.h, HAS_EXPAT=1)
+      if test "${HAS_EXPAT:-unset}" != "unset" ; then
+        STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/include"
+        LDFLAGS="$LDFLAGS -L${EXPATDIR}/lib"
+      fi
     fi
   else
     AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
