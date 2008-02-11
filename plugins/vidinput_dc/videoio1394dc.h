@@ -82,7 +82,7 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
       */
     static PStringList GetInputDeviceNames();
 
-    PStringList GetDeviceNames() const
+    PStringArray GetDeviceNames() const
     { return GetInputDeviceNames(); }
 
     /**Get the maximum frame size in bytes.
