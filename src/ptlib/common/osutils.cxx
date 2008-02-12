@@ -542,22 +542,16 @@ PTimer::PTimer(const PTimeInterval & time)
 
 void PTimer::Construct()
 {
+  timerList = PProcess::Current().GetTimerList();
+  timerId = timerList->GetNewTimerId();
   state = Stopped;
 
-  timerList = PProcess::Current().GetTimerList();
-
-  timerList->listMutex.Wait();
-  timerList->Append(this);
-  timerList->listMutex.Signal();
-
-  timerList->processingMutex.Wait();
   StartRunning(PTrue);
 }
 
 
 PTimer & PTimer::operator=(DWORD milliseconds)
 {
-  timerList->processingMutex.Wait();
   resetTime.SetInterval(milliseconds);
   StartRunning(oneshot);
   return *this;
@@ -566,7 +560,6 @@ PTimer & PTimer::operator=(DWORD milliseconds)
 
 PTimer & PTimer::operator=(const PTimeInterval & time)
 {
-  timerList->processingMutex.Wait();
   resetTime = time;
   StartRunning(oneshot);
   return *this;
@@ -575,17 +568,8 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 
 PTimer::~PTimer()
 {
-  timerList->listMutex.Wait();
-  timerList->Remove(this);
-  PBoolean isCurrentTimer = this == timerList->currentTimer;
-  timerList->listMutex.Signal();
-
-  // Make sure that the OnTimeout for this timer has completed before
-  // destroying the timer
-  if (isCurrentTimer) {
-    timerList->inTimeoutMutex.Wait();
-    timerList->inTimeoutMutex.Signal();
-  }
+  // queue a request to remove this timer, and always do it synchronously
+  timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
 }
 
 
@@ -595,7 +579,6 @@ void PTimer::SetInterval(PInt64 milliseconds,
                          long hours,
                          int days)
 {
-  timerList->processingMutex.Wait();
   resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
   StartRunning(oneshot);
 }
@@ -603,7 +586,6 @@ void PTimer::SetInterval(PInt64 milliseconds,
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  timerList->processingMutex.Wait();
   resetTime = time;
   StartRunning(PFalse);
 }
@@ -616,55 +598,45 @@ void PTimer::StartRunning(PBoolean once)
   state = (*this) != 0 ? Starting : Stopped;
 
   if (IsRunning())
-    PProcess::Current().SignalTimerChange();
-
-  // This must have been set by the caller
-  timerList->processingMutex.Signal();
+    timerList->QueueRequest(PTimerList::RequestType::Start, this);
+  else
+    timerList->QueueRequest(PTimerList::RequestType::Stop, this);
 }
 
 
 void PTimer::Stop(bool wait)
 {
-  timerList->processingMutex.Wait();
   state = Stopped;
   milliseconds = 0;
-  PBoolean isCurrentTimer = this == timerList->currentTimer;
-  timerList->processingMutex.Signal();
 
-  // Make sure that the OnTimeout for this timer has completed before
-  // retruning from Stop() function,
-  if (wait && isCurrentTimer) {
-    timerList->inTimeoutMutex.Wait();
-    timerList->inTimeoutMutex.Signal();
-  }
+  timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
 }
 
 
 void PTimer::Pause()
 {
-  timerList->processingMutex.Wait();
-  if (IsRunning())
+  if (IsRunning()) {
     state = Paused;
-  timerList->processingMutex.Signal();
+    timerList->QueueRequest(PTimerList::RequestType::Stop, this);
+  }
 }
 
 
 void PTimer::Resume()
 {
-  timerList->processingMutex.Wait();
-  if (state == Paused)
+  if (state == Paused) {
     state = Starting;
-  timerList->processingMutex.Signal();
+    timerList->QueueRequest(PTimerList::RequestType::Start, this);
+  }
 }
 
 
 void PTimer::Reset()
 {
-  timerList->processingMutex.Wait();
   StartRunning(oneshot);
 }
 
-
+// called only from the timer thread
 void PTimer::OnTimeout()
 {
   if (!callback.IsNULL())
@@ -674,12 +646,6 @@ void PTimer::OnTimeout()
 
 void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
-  /*Ideally there should be a processingMutex for each individual timer, but
-    that seems incredibly profligate of system resources as there  can be a
-    LOT of PTimer instances about. So use one one mutex for all.
-   */
-  timerList->processingMutex.Wait();
-
   switch (state) {
     case Starting :
       state = Running;
@@ -705,8 +671,6 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
             minTimeLeft = resetTime;
         }
 
-        timerList->processingMutex.Signal();
-
         /* This must be outside the mutex or if OnTimeout() changes the
            timer value (quite plausible) it deadlocks.
          */
@@ -718,8 +682,6 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
     default : // Stopped or Paused, do nothing.
       break;
   }
-
-  timerList->processingMutex.Signal();
 }
 
 
@@ -728,17 +690,84 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 
 PTimerList::PTimerList()
 {
-  DisallowDeleteObjects();
-  currentTimer = NULL;
+  timerThread = NULL;
 }
 
+void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool _isSync)
+{
+  // if this operation is occurring in the timer thread, then handle synchronoously
+  if (timerThread == PThread::Current()) {
+    switch (action) {
+      case PTimerList::RequestType::Start:
+        {
+          TimerInfoMapType::iterator r = timerInfoMap.find(timer->GetTimerId());
+          if (r == timerInfoMap.end())
+            timerInfoMap.insert(TimerInfoMapType::value_type(timer->GetTimerId(), TimerInfoType(timer)));
+        }
+        break;
+      case PTimerList::RequestType::Stop:
+        {
+          TimerInfoMapType::iterator r = timerInfoMap.find(timer->GetTimerId());
+          if (r != timerInfoMap.end())
+            r->second.removed = true;
+        }
+        break;
+    }
+    return;
+  }
+
+  // handle asynchronoously
+  RequestType request(action, timer);
+  PSyncPoint sync;
+  bool isSync = false;
+  if (_isSync) {
+    request.sync = &sync;
+    isSync = true;
+  }
+
+  {
+    PWaitAndSignal m(queueMutex);
+    requestQueue.push(request);
+  }
+
+  PProcess::Current().SignalTimerChange();
+
+  if (isSync)
+    sync.Wait();
+}
 
 PTimeInterval PTimerList::Process()
 {
-  PTimeInterval minTimeLeft = PMaxTimeInterval;
+  timerThread = PThread::Current();
 
-  listMutex.Wait();
+  PWaitAndSignal l(timerListMutex);
 
+  // process the requests in the timer request queue
+  {
+    PWaitAndSignal q(queueMutex);
+    while (requestQueue.size() > 0) {
+      RequestType request = requestQueue.front();
+      requestQueue.pop();
+      TimerInfoMapType::iterator r = timerInfoMap.find(request.id);
+      switch (request.action) {
+        case PTimerList::RequestType::Start:
+          if (r == timerInfoMap.end()) 
+            timerInfoMap.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
+          break;
+        case PTimerList::RequestType::Stop:
+          if (r != timerInfoMap.end()) 
+            timerInfoMap.erase(r);
+          break;
+        default:
+          PAssertAlways("unknown timer request code");
+          break;
+      }
+      if (request.sync != NULL)
+        request.sync->Signal();
+    }
+  }
+
+  // calculate interval since last processing, and update time of last processing to now
   PTimeInterval now = PTimer::Tick();
   PTimeInterval sampleTime;
   if (lastSample == 0 || lastSample > now)
@@ -750,22 +779,36 @@ PTimeInterval PTimerList::Process()
   }
   lastSample = now;
 
-  PINDEX i;
-  for (i = 0; i < GetSize(); ++i) {
-    currentTimer = (PTimer *)GetAt(i);
-    inTimeoutMutex.Wait();
-    listMutex.Signal();
-    currentTimer->Process(sampleTime, minTimeLeft);
-    listMutex.Wait();
-    inTimeoutMutex.Signal();
+  // process the timers and find the minimum amount of time remaining
+  // also remove any timer labelled as removed
+  PTimeInterval minTimeLeft = PMaxTimeInterval;
+  {
+    TimerInfoMapType::iterator r = timerInfoMap.begin();
+    while (r != timerInfoMap.end()) {
+      PTimeInterval oldMinTimeLeft(minTimeLeft);
+      if (!r->second.removed) 
+        r->second.timer->Process(sampleTime, minTimeLeft);
+      if (!r->second.removed) 
+        ++r;
+      else {
+        if (r == timerInfoMap.begin()) {
+          timerInfoMap.erase(r);
+          r = timerInfoMap.begin();
+        }
+        else
+        {
+          TimerInfoMapType::iterator s = r;
+          --s;
+          timerInfoMap.erase(r);
+          r = s;
+        }
+        minTimeLeft = oldMinTimeLeft;
+      }
+    }
   }
-  currentTimer = NULL;
-  
-  listMutex.Signal();
 
   return minTimeLeft;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
@@ -1505,6 +1548,7 @@ typedef struct tagTHREADNAME_INFO
 
 void SetWinDebugThreadName (THREADNAME_INFO * info)
 {
+#if 0
   __try
   {
     RaiseException (0x406D1388, 0, sizeof(THREADNAME_INFO)/sizeof(DWORD), (DWORD *) info) ;
@@ -1512,6 +1556,7 @@ void SetWinDebugThreadName (THREADNAME_INFO * info)
   __except(EXCEPTION_CONTINUE_EXECUTION)
   {                              // just keep on truckin'
   }
+#endif
 }
 #endif // defined(_DEBUG) && defined(_MSC_VER)
 
