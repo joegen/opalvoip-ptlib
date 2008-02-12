@@ -392,6 +392,8 @@ template <class T> class PList : public PAbstractList
     T & back() const { return *(T *)PAssertNULL(info->tail)->data; }
     void erase(const iterator & it) { Remove(&*it); }
     void erase(const const_iterator & it) { Remove(&*it); }
+
+    typedef T value_type;
   //@}
 
   /**@name New functions for class */
