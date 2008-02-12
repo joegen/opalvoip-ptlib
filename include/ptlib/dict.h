@@ -949,6 +949,8 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
       { return (D &)AbstractGetDataAt(index); }
   //@}
 
+    typedef std::pair<K, D *> value_type;
+
   protected:
     PDictionary(int dummy, const PDictionary * c)
       : PAbstractDictionary(dummy, c) { }
