@@ -98,8 +98,6 @@ extern "C" {\
   };
 
 
-//PLIST(PInternalTimerList, PTimer);
-
 class PTimerList : public PObject
 /* This class defines a list of #PTimer# objects. It is primarily used
    internally by the library and the user should never create an instance of
