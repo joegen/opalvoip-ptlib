@@ -745,9 +745,7 @@ ifdef HAS_CONFIG_FILE
 SOURCES += config.cxx 
 endif
 
-ifdef HAS_SOCKAGG
 SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
-endif
 
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
