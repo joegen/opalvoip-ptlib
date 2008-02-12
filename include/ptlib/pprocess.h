@@ -43,6 +43,8 @@
 #include <ptlib/thread.h>
 #include <ptlib/pfactory.h>
 
+#include <queue>
+
 /**Create a process.
    This macro is used to create the components necessary for a user PWLib
    process. For a PWLib program to work correctly on all platforms the
@@ -135,7 +137,7 @@ class PTimerList : public PObject
           Start
         } action;
 
-        RequestType(Action _action, PTimer * _timer) : action(_action), timer(_timer), sync(NULL), id(timer->GetTimerId()) { }
+        RequestType(Action _action, PTimer * _timer) : action(_action), timer(_timer), id(timer->GetTimerId()), sync(NULL) { }
 
         PTimer * timer;
         PTimer::IDType id;
@@ -166,8 +168,6 @@ class PTimerList : public PObject
 
     // The last system timer tick value that was used to process timers.
     PTimeInterval lastSample;
-
-    friend class PTimerList;
 };
 
 
