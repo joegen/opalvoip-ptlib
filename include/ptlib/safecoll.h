@@ -879,6 +879,8 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
  */
 template <class Base> class PSafeArray : public PSafeColl<PArray<Base>, Base>
 {
+  public:
+    typedef PSafePtr<Base> value_type;
 };
 
 
@@ -888,6 +890,8 @@ template <class Base> class PSafeArray : public PSafeColl<PArray<Base>, Base>
  */
 template <class Base> class PSafeList : public PSafeColl<PList<Base>, Base>
 {
+  public:
+    typedef PSafePtr<Base> value_type;
 };
 
 
@@ -897,6 +901,8 @@ template <class Base> class PSafeList : public PSafeColl<PList<Base>, Base>
  */
 template <class Base> class PSafeSortedList : public PSafeColl<PSortedList<Base>, Base>
 {
+  public:
+    typedef PSafePtr<Base> value_type;
 };
 
 
@@ -998,6 +1004,8 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
  */
 template <class Key, class Base> class PSafeDictionary : public PSafeDictionaryBase<PDictionary<Key, Base>, Key, Base>
 {
+  public:
+    typedef PSafePtr<Base> value_type;
 };
 
 
