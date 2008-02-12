@@ -48,6 +48,16 @@ PTimerTest::PTimerTest()
 {
 }
 
+class MyTimerTester : public PTimer
+{
+  public:
+    MyTimerTester(PSyncPoint & _sync)
+      : sync(_sync) { }
+    void OnTimeout()
+    { sync.Signal(); }
+    PSyncPoint & sync;
+};
+
 void PTimerTest::Main()
 {
   PArgList & args = GetArguments();
@@ -97,6 +107,29 @@ void PTimerTest::Main()
            << endl << endl;
     return;
   }
+
+  {
+    PTime then;
+    cout << "Starting 5 second timer for poll check..." << endl;
+    PTimer timer(5000);
+    while (timer.IsRunning())
+      Sleep(100);
+    PTime now;
+    cout << "Finished - duration = " << (now - then).GetMilliSeconds() << " ms" << endl;
+  }
+
+  {
+    PTime then;
+    cout << "Starting 5 second timer for callback check..." << endl;
+    PSyncPoint sync;
+    MyTimerTester timer(sync);
+    timer.SetInterval(5000);
+    sync.Wait();
+    PTime now;
+    cout << "Finished - duration = " << (now - then).GetMilliSeconds() << " ms" << endl;
+  }
+
+  return;
 
   if (args.HasOption('s')) {
       RunSecondTest();
@@ -278,11 +311,11 @@ void LauncherThread::Main()
   PBoolean   checkTimer = PTimerTest::Current().CheckTimer();
 
   while (keepGoing) {
-	PThread * thread = new DelayThread(delay, checkTimer);
-	thread->Resume();
-	PThread::Sleep(interval);
-	iteration++;
-      }
+	  PThread * thread = new DelayThread(delay, checkTimer);
+	  thread->Resume();
+	  PThread::Sleep(interval);
+	  iteration++;
+  }
 
   return;
 }
