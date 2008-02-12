@@ -63,7 +63,7 @@ class PInterfaceMonitor : public PObject
   PCLASSINFO(PInterfaceMonitor, PObject);
   public: 
     enum {
-      DefaultRefreshInterval = 5000
+      DefaultRefreshInterval = 60000
     };
 
     PInterfaceMonitor(
