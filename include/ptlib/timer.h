@@ -75,6 +75,8 @@ class PTimer : public PTimeInterval
   PCLASSINFO(PTimer, PTimeInterval);
 
   public:
+    typedef unsigned IDType;
+
   /**@name Construction */
   //@{
     /** Create a new timer object and start it in one shot mode for the
@@ -252,6 +254,8 @@ class PTimer : public PTimeInterval
     static unsigned Resolution();
   //@}
 
+    IDType GetTimerId() const { return timerId; }
+
   private:
     void Construct();
 
@@ -272,22 +276,23 @@ class PTimer : public PTimeInterval
     );
 
   // Member variables
-    PNotifier callback;
+
     // Callback function for expired timers.
+    PNotifier callback;
 
-    PTimeInterval resetTime;
     // The time to reset a timer to when RunContinuous() is called.
+    PTimeInterval resetTime;
 
-    PBoolean oneshot;
     // Timer operates once then stops.
+    PBoolean oneshot;
 
-    enum { Stopped, Starting, Running, Paused } state;
     // Timer state.
+    enum { Stopped, Starting, Running, Paused } state;
 
+    friend class PTimerList;              // needed for Process
+    class PTimerList * timerList;  
 
-  friend class PTimerList;
-    class PTimerList * timerList;
-
+    IDType timerId;
 
 // Include platform dependent part of class
 #ifdef _WIN32

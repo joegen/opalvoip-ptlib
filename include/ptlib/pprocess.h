@@ -98,9 +98,9 @@ extern "C" {\
   };
 
 
-PLIST(PInternalTimerList, PTimer);
+//PLIST(PInternalTimerList, PTimer);
 
-class PTimerList : PInternalTimerList // Want this to be private
+class PTimerList : public PObject
 /* This class defines a list of #PTimer# objects. It is primarily used
    internally by the library and the user should never create an instance of
    it. The #PProcess# instance for the application maintains an instance
@@ -108,13 +108,12 @@ class PTimerList : PInternalTimerList // Want this to be private
    intervals.
  */
 {
-  PCLASSINFO(PTimerList, PInternalTimerList);
+  PCLASSINFO(PTimerList, PObject);
 
   public:
-    PTimerList();
     // Create a new timer list
+    PTimerList();
 
-    PTimeInterval Process();
     /* Decrement all the created timers and dispatch to their callback
        functions if they have expired. The #PTimer::Tick()# function
        value is used to determine the time elapsed since the last call to
@@ -127,18 +126,50 @@ class PTimerList : PInternalTimerList // Want this to be private
        @return
        maximum time interval before function should be called again.
      */
+    PTimeInterval Process();
+
+    PTimer::IDType GetNewTimerId() const { return ++timerId; }
+
+    class RequestType {
+      public:
+        enum Action {
+          Stop,
+          Start
+        } action;
+
+        RequestType(Action _action, PTimer * _timer) : action(_action), timer(_timer), sync(NULL), id(timer->GetTimerId()) { }
+
+        PTimer * timer;
+        PTimer::IDType id;
+        PSyncPoint * sync;
+    };
+
+    typedef std::queue<RequestType> RequestQueueType;
+
+    void QueueRequest(RequestType::Action action, PTimer * timer, bool _isSync = true);
 
   private:
-    PMutex listMutex, processingMutex, inTimeoutMutex;
-    // Mutual exclusion for multi tasking
+    mutable PAtomicInteger timerId; 
 
-    PTimeInterval lastSample;
+    // map used to store timer information
+    PMutex timerListMutex;
+    struct TimerInfoType {
+      TimerInfoType(PTimer * _timer) : timer(_timer)  { removed = false; }
+      PTimer * timer;
+      bool removed;
+    };
+    typedef std::map<PTimer::IDType, TimerInfoType> TimerInfoMapType;
+    TimerInfoMapType timerInfoMap;
+    PThread * timerThread;
+
+    // queue of timer action requests
+    PMutex queueMutex;
+    RequestQueueType requestQueue;
+
     // The last system timer tick value that was used to process timers.
+    PTimeInterval lastSample;
 
-    PTimer * currentTimer;
-    // The timer which is currently being handled
-
-  friend class PTimer;
+    friend class PTimerList;
 };
 
 
