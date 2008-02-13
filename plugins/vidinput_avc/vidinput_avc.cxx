@@ -187,9 +187,9 @@ PBoolean PVideoInputDevice_1394AVC::IsCapturing()
   return is_capturing;
 }
 
-PStringList PVideoInputDevice_1394AVC::GetInputDeviceNames()
+PStringArray PVideoInputDevice_1394AVC::GetInputDeviceNames()
 {
-  PStringList Result;
+  PStringArray Result;
   raw1394handle_t hdl = NULL;
   
   hdl = raw1394_new_handle();

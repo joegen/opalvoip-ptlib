@@ -99,9 +99,9 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
 
     /**Get a list of all of the drivers available.
       */
-    static PStringList GetInputDeviceNames();
+    static PStringArray GetInputDeviceNames();
 
-    PStringList GetDeviceNames() const
+    PStringArray GetDeviceNames() const
     { return GetInputDeviceNames(); }
 
     /**Get the maximum frame size in bytes.
