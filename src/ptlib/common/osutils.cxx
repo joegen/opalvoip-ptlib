@@ -598,7 +598,7 @@ void PTimer::StartRunning(PBoolean once)
   state = (*this) != 0 ? Starting : Stopped;
 
   if (IsRunning())
-    timerList->QueueRequest(PTimerList::RequestType::Start, this);
+    timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
   else
     timerList->QueueRequest(PTimerList::RequestType::Stop, this);
 }
