@@ -756,8 +756,18 @@ static void PSSLAssert(const char * msg)
   PAssertAlways(buf);
 }
 
+PSSLContext::PSSLContext(Method method, const void * sessionId, PINDEX idSize)
+{
+  Construct(method, sessionId, idSize);
+}
+
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
+{
+  Construct(SSLv23, sessionId, idSize);
+}
+
+void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
 {
   static PMutex InitialisationMutex;
   InitialisationMutex.Wait();
@@ -782,7 +792,24 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
   InitialisationMutex.Signal();
 
   // create the new SSL context
-  SSL_METHOD * meth = SSLv23_method();
+  SSL_METHOD * meth;
+
+  switch (method) {
+    case SSLv2:
+      meth = SSLv2_method();
+      break;
+    case SSLv3:
+      meth = SSLv3_method();
+      break;
+    case TLSv1:
+      meth = TLSv1_method(); 
+      break;
+    case SSLv23:
+    default:
+      meth = SSLv23_method();
+      break;
+  }
+  
   context  = SSL_CTX_new(meth);
   if (context == NULL)
     PSSLAssert("Error creating context: ");
