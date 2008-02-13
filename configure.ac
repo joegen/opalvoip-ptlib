@@ -1258,35 +1258,37 @@ dnl As if that is not enough, autoconf gets very confused if configure.in
 dnl contains a AC_CHECK_HEADER directive that never gets used. So we have 
 dnl to ensure that it is always called
 
+dnl next two configs are for OpenSSL header files installed in inc32\openssl
 dnl MSWIN_DISPLAY    openssl,Open SSL
-dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_SSL=1
+dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_OSSL=1
 dnl MSWIN_DIR_SYMBOL openssl,SSL_DIR
-dnl MSWIN_CHECK_DIR  openssl,..\openssl\
-dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
+dnl MSWIN_CHECK_DIR  openssl,.\lib\VC\
 
 dnl MSWIN_DISPLAY    osslAES,Open SSL AES
 dnl MSWIN_IF_FEATURE osslAES,openssl
-dnl MSWIN_CHECK_FILE osslAES,inc32\openssl\aes.h,P_SSL_AES=1
-dnl MSWIN_CHECK_DIR  osslAES,..\openssl\
-dnl MSWIN_CHECK_DIR  osslAES,..\external\openssl\
+dnl MSWIN_CHECK_FILE osslAES,inc32\openssl\aes.h,P_OSSL_AES=1
 dnl MSWIN_CHECK_DIR  osslAES,\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,c:\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,\libs\openssl\
 
+dnl next two configs are for OpenSSL header files installed in include\openssl\
 dnl MSWIN_DISPLAY    winssl,Windows Open SSL
 dnl MSWIN_IF_FEATURE winssl,!openssl
 dnl MSWIN_CHECK_FILE winssl,include\openssl\ssl.h,P_WINSSL=1
 dnl MSWIN_DIR_SYMBOL winssl,WINSSL_DIR
-dnl MSWIN_CHECK_DIR  winssl,.\lib\VC\
+dnl MSWIN_CHECK_DIR  winssl,\openssl\
+dnl MSWIN_CHECK_DIR  winssl,c:\openssl\
 dnl MSWIN_CHECK_DIR  winssl,\libs\openssl\
+dnl MSWIN_CHECK_DIR  winssl,.\lib\VC\
 
 dnl MSWIN_DISPLAY    wsslAES,Windows Open SSL AES
 dnl MSWIN_IF_FEATURE wsslAES,winssl
 dnl MSWIN_CHECK_FILE wsslAES,include\openssl\aes.h,P_WINSSL_AES=1
-dnl MSWIN_CHECK_DIR  wsslAES,.\lib\VC\
+dnl MSWIN_CHECK_DIR  wsslAES,\openssl\
+dnl MSWIN_CHECK_DIR  wsslAES,c:\openssl\
 dnl MSWIN_CHECK_DIR  wsslAES,\libs\openssl\
 
 AC_ARG_ENABLE(openssl,
