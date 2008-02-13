@@ -820,7 +820,7 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
 
       MIXERLINECONTROLS controls;
       controls.cbStruct = sizeof(controls);
-      controls.dwLineID = line.dwLineID;
+      controls.dwLineID = line.dwLineID&0xffff;
       controls.dwControlType = MIXERCONTROL_CONTROLTYPE_VOLUME;
       controls.cControls = 1;
       controls.pamxctrl = &volumeControl;
