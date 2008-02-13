@@ -339,14 +339,27 @@ class PSSLDiffieHellman : public PObject
   */
 class PSSLContext {
   public:
+    enum Method {
+      SSLv23,
+      SSLv2,
+      SSLv3,
+      TLSv1
+    };
+
     /**Create a new context for SSL channels.
        An optional session ID may be provided in the context. This is used
        to identify sessions across multiple channels in this context. The
        session ID is a completely arbitrary block of data. If sessionId is
        non NULL and idSize is zero, then sessionId is assumed to be a pointer
        to a C string.
+       The default SSL method is SSLv23
       */
     PSSLContext(
+      const void * sessionId = NULL,  ///< Pointer to session ID
+      PINDEX idSize = 0               ///< Size of session ID
+    );
+    PSSLContext(
+      Method method,                  ///< SSL connection method
       const void * sessionId = NULL,  ///< Pointer to session ID
       PINDEX idSize = 0               ///< Size of session ID
     );
@@ -396,6 +409,7 @@ class PSSLContext {
     );
 
   protected:
+    void Construct(Method method, const void * sessionId, PINDEX idSize);
     ssl_ctx_st * context;
 };
 
