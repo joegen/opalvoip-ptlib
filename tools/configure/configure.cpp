@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.14"
+#define VERSION "1.15"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
