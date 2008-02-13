@@ -88,6 +88,8 @@
 #include <ptclib/pssl.h>
 #include <ptclib/mime.h>
 
+#include <ptbuildopts.h>
+
 #if P_SSL
 
 #define USE_SOCKETS
