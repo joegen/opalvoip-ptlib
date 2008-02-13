@@ -114,18 +114,18 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_SSL 
+#undef P_OSSL 
+#undef P_OSSL_AES
 #undef P_WINSSL 
-#undef P_SSL_AES
 #undef P_WINSSL_AES
 #undef P_SSL_USE_CONST
 #endif
 
-#ifdef P_WINSSL
+#if defined(P_WINSSL) || (P_OSSL)
 #define P_SSL 1
 #endif
 
-#ifdef P_WINSSL_AES
+#if defined (P_WINSSL_AES) || (P_OSSL_AES)
 #define P_SSL_AES 1
 #define P_SSL_USE_CONST 1
 #endif
