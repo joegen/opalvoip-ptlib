@@ -1389,7 +1389,7 @@ int main(int argc,char **argv){}]])
   fi
 
   if test ${SSLHDR:-unset} != "unset" ; then
-    AC_DEFINE(P_SSL, 1, "OpenSSL found")
+    AC_DEFINE(P_OSSL, 1, "OpenSSL found")
     HAS_OPENSSL=1
     if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
@@ -1402,7 +1402,7 @@ int main(int argc,char **argv){}]])
 
     AC_CHECK_HEADERS(openssl/aes.h, HAS_SSL_AES=yes, HAS_SSL_AES=no)
     if test "$HAS_SSL_AES" = yes ; then
-      AC_DEFINE(P_SSL_AES, 1, "openssl with AES yes")
+      AC_DEFINE(P_OSSL_AES, 1, "openssl with AES yes")
     fi
 
     AC_MSG_CHECKING(for const arg to d2i_AutoPrivateKey)

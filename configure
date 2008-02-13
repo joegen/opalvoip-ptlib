@@ -8444,7 +8444,7 @@ echo "${ECHO_T}no" >&6; }
   if test ${SSLHDR:-unset} != "unset" ; then
 
 cat >>confdefs.h <<\_ACEOF
-#define P_SSL 1
+#define P_OSSL 1
 _ACEOF
 
     HAS_OPENSSL=1
@@ -8602,7 +8602,7 @@ done
     if test "$HAS_SSL_AES" = yes ; then
 
 cat >>confdefs.h <<\_ACEOF
-#define P_SSL_AES 1
+#define P_OSSL_AES 1
 _ACEOF
 
     fi
