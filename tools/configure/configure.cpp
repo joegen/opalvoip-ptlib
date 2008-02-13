@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.15"
+#define VERSION "1.16"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -878,7 +878,7 @@ int main(int argc, char* argv[])
     else if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
       feature->state = Feature::NotFound;
       for (list<Feature::CheckFileInfo>::iterator file = feature->checkFiles.begin(); file != feature->checkFiles.end(); file++) {
-        if (feature->checkFiles.begin()->found) {
+        if (file->found) {
           feature->state = Feature::Enabled;
           break;
         }
