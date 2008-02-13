@@ -876,6 +876,7 @@ int main(int argc, char* argv[])
     else if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
       feature->state = Feature::Blocked;
     else if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
+      feature->state = Feature::NotFound;
       for (list<Feature::CheckFileInfo>::iterator file = feature->checkFiles.begin(); file != feature->checkFiles.end(); file++) {
         if (feature->checkFiles.begin()->found) {
           feature->state = Feature::Enabled;
