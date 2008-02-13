@@ -56,6 +56,7 @@ PThreadPoolBase::~PThreadPoolBase()
 
     PThreadPoolWorkerBase * worker = workers[0];
     worker->Shutdown();
+    workers.erase(workers.begin());
     StopWorker(worker);
   }
 }
