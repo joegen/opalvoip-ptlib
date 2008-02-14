@@ -155,11 +155,11 @@ class PFactory : PFactoryBase
             singletonInstance(NULL),
             deleteSingleton(false)
         { }
-        WorkerBase(Abstract_T * instance)
+        WorkerBase(Abstract_T * instance, bool _deleteSingleton = true)
           : isDynamic(true),
             isSingleton(true),
             singletonInstance(instance),
-            deleteSingleton(true)
+            deleteSingleton(_deleteSingleton)
         { }
 
         virtual ~WorkerBase()
@@ -222,9 +222,10 @@ class PFactory : PFactoryBase
       GetInstance().Register_Internal(key, worker);
     }
 
-    static void Register(const _Key_T & key, Abstract_T * instance)
+    static void Register(const _Key_T & key, Abstract_T * instance, bool autoDeleteInstance = true)
     {
-      GetInstance().Register_Internal(key, PNEW WorkerBase(instance));
+      WorkerBase * w = PNEW WorkerBase(instance, autoDeleteInstance);
+      GetInstance().Register_Internal(key, w);
     }
 
     static PBoolean RegisterAs(const _Key_T & newKey, const _Key_T & oldKey)
@@ -325,13 +326,19 @@ class PFactory : PFactoryBase
     void Unregister_Internal(const _Key_T & key)
     {
       PWaitAndSignal m(mutex);
-      keyMap.erase(key);
+      KeyMap_T::iterator r = keyMap.find(key);
+      if (r != keyMap.end()) {
+        if (r->second->isDynamic)
+          delete r->second;
+        keyMap.erase(r);
+      }
     }
 
     void UnregisterAll_Internal()
     {
       PWaitAndSignal m(mutex);
-      keyMap.erase(keyMap.begin(), keyMap.end());
+      while (keyMap.size() > 0)
+        keyMap.erase(keyMap.begin());
     }
 
     bool IsRegistered_Internal(const _Key_T & key)
