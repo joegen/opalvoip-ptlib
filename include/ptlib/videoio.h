@@ -71,6 +71,7 @@ class PVideoFrameInfo : public PObject
       CIF4Width  = 704,  CIF4Height  = 576,
       CIF16Width = 1408, CIF16Height = 1152,
       HDTVWidth  = 1920, HDTVHeight  = 1080,
+      MaxWidth   = 1920, MaxHeight   = 1152
     };
 
     /**Set the frame size to be used.
