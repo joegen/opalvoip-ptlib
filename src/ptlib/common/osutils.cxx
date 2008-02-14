@@ -1353,19 +1353,20 @@ PProcess::PProcess(const char * manuf, const char * name,
 #if defined(_WIN32) 
     // Try to get the real image path for this process
 #ifndef _WIN32_WCE
-	GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
+    GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
 #else
-	wchar_t wcsModuleName[1024];
-	if(GetModuleFileName(GetModuleHandle(NULL), wcsModuleName, 1024))
-		wcstombs(executableFile.GetPointer(1024), wcsModuleName, 1024);
-#endif
+    wchar_t wcsModuleName[1024];
+    if (GetModuleFileName(GetModuleHandle(NULL), wcsModuleName, 1024))
+      wcstombs(executableFile.GetPointer(1024), wcsModuleName, 1024);
+#endif // ifndef _WIN32_WCE
+
     executableFile.Replace("\\??\\","");
 
-    if(executableFile.IsEmpty()){
-	// Ok something went wrong, just use the default
-    executableFile = PString(p_argv[0]);
-    }
-#endif
+#endif // defined(_WIN32)
+
+    // Ok something went wrong, just use the default
+    if (executableFile.IsEmpty())
+      executableFile = PString(p_argv[0]);
 
     if (!PFile::Exists(executableFile)) {
       PString execFile = executableFile + ".exe";
@@ -1376,7 +1377,7 @@ PProcess::PProcess(const char * manuf, const char * name,
     if (productName.IsEmpty())
       productName = executableFile.GetTitle().ToLower();
   }
-#else
+#else  // #ifndef P_RTEMS
   cout << "Enter program arguments:\n";
   arguments.ReadFrom(cin);
 #endif
