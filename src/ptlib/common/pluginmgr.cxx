@@ -485,6 +485,7 @@ void PluginLoaderStartup::OnShutdown()
     PPluginModuleManager * mgr = *r;
     managers.erase(r);
     mgr->OnShutdown();
+    delete mgr;
   }
 }
 
