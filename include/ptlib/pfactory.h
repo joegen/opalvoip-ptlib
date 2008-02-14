@@ -326,7 +326,7 @@ class PFactory : PFactoryBase
     void Unregister_Internal(const _Key_T & key)
     {
       PWaitAndSignal m(mutex);
-      KeyMap_T::iterator r = keyMap.find(key);
+      typename KeyMap_T::iterator r = keyMap.find(key);
       if (r != keyMap.end()) {
         if (r->second->isDynamic)
           delete r->second;
