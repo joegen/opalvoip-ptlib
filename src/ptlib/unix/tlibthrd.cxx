@@ -208,6 +208,8 @@ PProcess::~PProcess()
   CommonDestruct();
 
   PTRACE(5, "PWLib\tDestroyed process " << this);
+
+  PostShutdown();
 }
 
 PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)

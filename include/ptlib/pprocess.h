@@ -558,6 +558,7 @@ class PProcess : public PThread
        #_main()#. The user should never call this function.
      */
     static void PreShutdown();
+    static void PostShutdown();
 
     /// Main function for process, called from real main after initialisation
     virtual int _main(void * arg = NULL);
