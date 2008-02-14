@@ -549,6 +549,8 @@ PProcess::~PProcess()
   deleteThreadMutex.Signal();
 
   delete configFiles;
+
+  PostShutdown();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

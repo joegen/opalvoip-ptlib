@@ -1429,19 +1429,18 @@ PProcess::PProcess(const char * manuf, const char * name,
 void PProcess::PreShutdown()
 {
   PProcessStartupList & startups = GetPProcessStartupList();
+  for (PProcessStartupList::iterator startup = startups.begin(); startup != startups.end(); ++startup)
+    startup->second->OnShutdown();
+}
 
-  // call OnShutfdown for the PProcessInstances previously created
-  // make sure we handle singletons correctly
-  {
-    while (startups.size() > 0) {
-      PProcessStartupList::iterator r = startups.begin();
-      PProcessStartup * instance = r->second;
-      instance->OnShutdown();
-      if (!PProcessStartupFactory::IsSingleton(r->first))
-        delete instance;
-      startups.erase(r);
-    }
-  }
+
+void PProcess::PostShutdown()
+{
+  PProcessStartupList & startups = GetPProcessStartupList();
+  for (PProcessStartupList::iterator startup = startups.begin(); startup != startups.end(); ++startup)
+    delete startup->second;
+
+  startups.clear();
 }
 
 

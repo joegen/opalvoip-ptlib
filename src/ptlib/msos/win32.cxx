@@ -1089,6 +1089,8 @@ PProcess::~PProcess()
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
+  PostShutdown();
+
 #if _DEBUG
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
