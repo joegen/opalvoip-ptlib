@@ -1598,8 +1598,8 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameSizeLimits(unsigned & minWidth,
 {
   minWidth  = 16;
   minHeight = 12;
-  maxWidth  = 1024;
-  maxHeight =  768;
+  maxWidth  = PVideoFrameInfo::MaxWidth;
+  maxHeight = PVideoFrameInfo::MaxHeight;
 
   return PTrue;
 }
