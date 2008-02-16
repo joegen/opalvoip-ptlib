@@ -253,6 +253,12 @@ class PFactory : PFactoryBase
       return GetInstance().CreateInstance_Internal(key);
     }
 
+    template <class Derived_T>
+    static Derived_T * CreateInstanceAs(const _Key_T & key)
+    {
+      return dynamic_cast<Derived_T *>(GetInstance().CreateInstance_Internal(key));
+    }
+
     static PBoolean IsSingleton(const _Key_T & key)
     {
       return GetInstance().IsSingleton_Internal(key);
