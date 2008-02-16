@@ -39,6 +39,10 @@
 #include <ptclib/pstun.h>
 
 
+static const char FactoryName[] = PINTERFACE_MONITOR_FACTORY_NAME;
+static PFactory<PProcessStartup>::Worker<PInterfaceMonitor> InterfaceMonitorFactory(FactoryName, true);
+
+
 #define new PNEW
 
 
@@ -71,39 +75,26 @@ PBoolean PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, Interf
 
 //////////////////////////////////////////////////
 
-static PMutex PInterfaceMonitorInstanceMutex;
-static PInterfaceMonitor * PInterfaceMonitorInstance;
-
 PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, bool _runMonitorThread)
   : runMonitorThread(_runMonitorThread)
   , refreshInterval(refresh)
   , updateThread(NULL)
   , interfaceFilter(NULL)
 {
-  PInterfaceMonitorInstanceMutex.Wait();
-  PAssert(PInterfaceMonitorInstance == NULL, PLogicError);
-  PInterfaceMonitorInstance = this;
-  PInterfaceMonitorInstanceMutex.Signal();
 }
 
 
 PInterfaceMonitor::~PInterfaceMonitor()
 {
   Stop();
-  
+
   delete interfaceFilter;
 }
 
 
 PInterfaceMonitor & PInterfaceMonitor::GetInstance()
 {
-  PInterfaceMonitorInstanceMutex.Wait();
-  if (PInterfaceMonitorInstance == NULL) {
-    static PInterfaceMonitor theInstance;
-  }
-  PInterfaceMonitorInstanceMutex.Signal();
-
-  return *PInterfaceMonitorInstance;
+  return *PFactory<PProcessStartup>::CreateInstanceAs<PInterfaceMonitor>(FactoryName);
 }
 
 
@@ -143,6 +134,12 @@ void PInterfaceMonitor::Stop()
   }
 
   mutex.Signal();
+}
+
+
+void PInterfaceMonitor::OnShutdown()
+{
+  Stop();
 }
 
 
