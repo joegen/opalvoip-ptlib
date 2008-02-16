@@ -48,6 +48,9 @@ class PInterfaceMonitorClient;
 class PInterfaceFilter;
 
 
+#define PINTERFACE_MONITOR_FACTORY_NAME "InterfaceMonitor"
+
+
 //////////////////////////////////////////////////
 
 /** This class is a singleton that will monitor the network interfaces on a
@@ -58,9 +61,9 @@ class PInterfaceFilter;
     a static instance of it before any monitor client classes are created.
     This would typically be done in the users main program.
   */
-class PInterfaceMonitor : public PObject
+class PInterfaceMonitor : public PProcessStartup
 {
-  PCLASSINFO(PInterfaceMonitor, PObject);
+  PCLASSINFO(PInterfaceMonitor, PProcessStartup);
   public: 
     enum {
       DefaultRefreshInterval = 60000
@@ -130,6 +133,8 @@ class PInterfaceMonitor : public PObject
     void OnRemoveSTUNClient(const PSTUNClient *stun);
 
   protected:
+    virtual void OnShutdown();
+
     void UpdateThreadMain();
 
     void AddClient(PInterfaceMonitorClient *);
