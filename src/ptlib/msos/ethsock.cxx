@@ -222,7 +222,7 @@ static PFactory<PProcessStartup>::Worker<WinSNMPLoader> winSNMPLoadedStartupFact
 
 PWin32SnmpLibrary & PWin32SnmpLibrary::Current()
 { 
-  return ((WinSNMPLoader *)PFactory<PProcessStartup>::CreateInstance("WinSNMPLoader"))->Current();
+  return (PFactory<PProcessStartup>::CreateInstanceAs<WinSNMPLoader>("WinSNMPLoader"))->Current();
 }
 
 PMutex & PWin32SnmpLibrary::GetMutex()

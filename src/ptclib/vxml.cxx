@@ -2570,7 +2570,7 @@ PBoolean PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX del
 PBoolean PVXMLChannel::QueueData(const PBYTEArray & PTRACE_PARAM(data), PINDEX repeat, PINDEX delay)
 {
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
-  PVXMLPlayableData * item = dynamic_cast<PVXMLPlayableData *>(PFactory<PVXMLPlayable>::CreateInstance("PCM Data"));
+  PVXMLPlayableData * item = PFactory<PVXMLPlayable>::CreateInstanceAs<PVXMLPlayableData>("PCM Data");
   if (item == NULL) {
     PTRACE(2, "VXML\tCannot find playable of type 'PCM Data'");
     delete item;
