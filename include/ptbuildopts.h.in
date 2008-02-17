@@ -282,8 +282,12 @@
 // EXPAT library for XML parsing
 //
 
-#undef P_EXPAT
+#undef P_OEXPAT
 #undef P_WINEXPAT
+
+#if P_OEXPAT
+  #define P_EXPAT
+#endif
 
 #if defined(_MSC_VER) && defined(P_WINEXPAT)
 
