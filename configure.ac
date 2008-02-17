@@ -1591,7 +1591,7 @@ else
   fi
 
   if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    AC_DEFINE(P_EXPAT, 1, "expat found")
+    AC_DEFINE(P_OEXPAT, 1, "expat found")
     ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
 fi
