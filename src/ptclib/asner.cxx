@@ -38,7 +38,7 @@
 
 #include <ptclib/asner.h>
 
-#if P_EXPAT
+#ifdef P_EXPAT
 #include <ptclib/pxml.h>
 #endif
 
