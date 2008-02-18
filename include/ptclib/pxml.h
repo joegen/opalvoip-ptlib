@@ -41,7 +41,7 @@
 
 #include <ptbuildopts.h>
 
-#if P_EXPAT
+#ifdef P_EXPAT
 
 #include <ptclib/http.h>
 
