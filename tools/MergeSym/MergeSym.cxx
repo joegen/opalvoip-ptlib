@@ -35,19 +35,30 @@ void unsetenv(const char *);
 
 PDECLARE_CLASS(Symbol, PCaselessString)
   public:
-    Symbol(const PString & sym, const PString & cpp, PINDEX ord = 0, PBoolean ext = PFalse)
-      : PCaselessString(sym), unmangled(cpp) { ordinal = ord; external = ext; }
+    Symbol(const PString & sym, const PString & cpp, PINDEX ord, bool ext, bool nonam)
+      : PCaselessString(sym)
+      , unmangled(cpp)
+      , ordinal(ord)
+      , external(ext)
+      , noname(nonam)
+    { }
 
     void SetOrdinal(PINDEX ord) { ordinal = ord; }
-    PBoolean IsExternal() const { return external; }
+    bool IsExternal() const { return external; }
 
     void PrintOn(ostream & s) const
-    { s << "    " << theArray << " @" << ordinal << " NONAME\n"; }
+    {
+      s << "    " << theArray << " @" << ordinal;
+      if (noname)
+        s << " NONAME";
+      s << '\n';
+    }
 
   private:
     PString unmangled;
     PINDEX ordinal;
-    PBoolean external;
+    bool external;
+    bool noname;
 };
 
 PSORTED_LIST(SortedSymbolList, Symbol);
@@ -63,14 +74,14 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 5, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 6, ReleaseCode, 0)
 {
 }
 
 
 void MergeSym::Main()
 {
-  cout << GetName() << " version " << GetVersion(PTrue)
+  cout << GetName() << " version " << GetVersion(true)
        << " on " << GetOSClass() << ' ' << GetOSName()
        << " by " << GetManufacturer() << endl;
 
@@ -125,9 +136,9 @@ void MergeSym::Main()
     if (args.HasOption('I')) {
       PString includes = args.GetOptionString('I');
       if (includes.Find(';') == P_MAX_INDEX)
-        include_path = includes.Tokenise(',', PFalse);
+        include_path = includes.Tokenise(',', false);
       else
-        include_path = includes.Tokenise(';', PFalse);
+        include_path = includes.Tokenise(';', false);
     }
     include_path.InsertAt(0, new PString());
     PStringArray file_list = args.GetOptionString('x').Lines();
@@ -147,7 +158,7 @@ void MergeSym::Main()
         if (ext.Open(trial_filename, PFile::ReadOnly)) {
           if (args.HasOption('v'))
             cout << "\nReading external symbols from " << ext.GetFilePath() << " ..." << flush;
-          PBoolean prefix = PTrue;
+          bool prefix = true;
           while (!ext.eof()) {
             PCaselessString line;
             ext >> line;
@@ -160,7 +171,7 @@ void MergeSym::Main()
               PINDEX end = start;
               while (line[end] != '\0' && !isspace(line[end]))
                 end++;
-              def_symbols.Append(new Symbol(line(start, end-1), "", 0, PTrue));
+              def_symbols.Append(new Symbol(line(start, end-1), "", 0, true, true));
               if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
                 cout << '.' << flush;
             }
@@ -184,14 +195,14 @@ void MergeSym::Main()
   if (def.Open(def_filename, PFile::ReadOnly)) {
     if (args.HasOption('v'))
       cout << "Reading existing ordinals..." << flush;
-    PBoolean prefix = PTrue;
+    bool prefix = true;
     while (!def.eof()) {
       PCaselessString line;
       def >> line;
       if (prefix) {
         def_file_lines.AppendString(line);
         if (line.Find("EXPORTS") != P_MAX_INDEX)
-          prefix = PFalse;
+          prefix = false;
       }
       else {
         PINDEX start = 0;
@@ -208,7 +219,7 @@ void MergeSym::Main()
           PINDEX unmanglepos = line.Find(';', ordpos);
           if (unmanglepos != P_MAX_INDEX)
             unmanglepos++;
-          Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal);
+          Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal, false, line.Find("NONAME", ordpos) < unmanglepos);
           if (def_symbols.GetValuesIndex(sym) == P_MAX_INDEX)
             def_symbols.Append(new Symbol(sym));
           removed++;
@@ -276,7 +287,7 @@ void MergeSym::Main()
             if (endunmangle != NULL)
               *endunmangle = '\0';
           }
-          lib_symbols.Append(new Symbol(name, unmangled));
+          lib_symbols.Append(new Symbol(name, unmangled, 0, false, true));
         }
       }
     }
