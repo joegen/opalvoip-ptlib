@@ -286,7 +286,7 @@
 #undef P_WINEXPAT
 
 #if P_OEXPAT
-  #define P_EXPAT
+  #define P_EXPAT 1
 #endif
 
 #if defined(_MSC_VER) && defined(P_WINEXPAT)
