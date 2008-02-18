@@ -1681,25 +1681,31 @@ PWCharArray PString::AsUCS2() const
     return ucs2;
   }
 
-  PTRACE(1, "g_convert failed with error " << errno);
+  PTRACE(1, "PTLib\tg_convert failed with error " << errno);
 
 #elif defined(_WIN32)
 
-  // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later: 
-  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, NULL, 0);
+  // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later.
+  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, GetSize(), NULL, 0);
   if (count > 0 && ucs2.SetSize(count)) {
+    // Note the trailing NULL is included in the "count" bytes.
     MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
     return ucs2;
   }
 
-  PTRACE(1, "MultiByteToWideChar failed with error " << ::GetLastError());
+#if PTRACING
+  if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
+    PTRACE(1, "PTLib\tMultiByteToWideChar failed on non legal UTF-8 \"" << theArray << '"');
+  else
+    PTRACE(1, "PTLib\tMultiByteToWideChar failed with error " << ::GetLastError());
+#endif
 
 #endif
 
-  if (ucs2.SetSize(GetSize())) { // Always bigger than required
+  if (ucs2.SetSize(GetSize())) { // Will be at least this big
     PINDEX count = 0;
     PINDEX i = 0;
-    PINDEX length = GetSize()-1;
+    PINDEX length = GetSize(); // Include the trailing '\0'
     while (i < length) {
       int c = theArray[i];
       if ((c&0x80) == 0)
@@ -1729,7 +1735,7 @@ PWCharArray PString::AsUCS2() const
       }
     }
 
-    ucs2.SetSize(count);
+    ucs2.SetSize(count);  // Final size
   }
 
   return ucs2;
