@@ -39,7 +39,7 @@
 
 #include <ptclib/pxml.h>
 
-#if P_EXPAT
+#ifdef P_EXPAT
 
 #define XML_STATIC 1
 
