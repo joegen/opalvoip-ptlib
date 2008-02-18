@@ -44,7 +44,7 @@ class PASN_Stream;
 class PBER_Stream;
 class PPER_Stream;
 
-#if P_EXPAT
+#ifdef P_EXPAT
 class PXER_Stream;
 class PXMLElement;
 #else
