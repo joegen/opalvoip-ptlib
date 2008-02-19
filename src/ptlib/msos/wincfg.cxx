@@ -504,7 +504,7 @@ BOOL RegistryKey::SetValue(const PString & value, const PString & str)
   if (key == NULL)
     return PFalse;
 
-  PVarString vstr;
+  PVarString vstr(str);
   return RegSetValueEx(key, PVarString(value), 0, REG_SZ,
                        (LPBYTE)(const TCHAR *)vstr, str.GetLength()+1) == ERROR_SUCCESS;
 }
