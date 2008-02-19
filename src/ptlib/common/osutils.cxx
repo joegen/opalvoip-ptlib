@@ -1535,27 +1535,31 @@ PString PThread::GetThreadName() const
   return threadName; 
 }
 
-#if defined(_DEBUG) && defined(_MSC_VER)
+#if defined(_DEBUG) && defined(_MSC_VER) && !defined(_WIN32_WCE)
 
-typedef struct tagTHREADNAME_INFO
+static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 {
-  DWORD dwType ;                       // must be 0x1000
-  LPCSTR szName ;                      // pointer to name (in user addr space)
-  DWORD dwThreadID ;                   // thread ID (-1=caller thread, but seems to set more than one thread's name)
-  DWORD dwFlags ;                      // reserved for future use, must be zero
-} THREADNAME_INFO ;
+  struct THREADNAME_INFO
+  {
+    DWORD dwType;      // must be 0x1000
+    LPCSTR szName;     // pointer to name (in user addr space)
+    DWORD dwThreadID;  // thread ID (-1=caller thread, but seems to set more than one thread's name)
+    DWORD dwFlags;     // reserved for future use, must be zero
+  } threadInfo = { 0x1000, threadName, threadId, 0 };
 
-
-void SetWinDebugThreadName (THREADNAME_INFO * info)
-{
   __try
   {
-    RaiseException (0x406D1388, 0, sizeof(THREADNAME_INFO)/sizeof(DWORD), (DWORD *) info) ;
-  }                              // if not running under debugger exception comes back
+    RaiseException(0x406D1388, 0, sizeof(threadInfo)/sizeof(DWORD), (DWORD *)&threadInfo) ;
+    // if not running under debugger exception comes back
+  }
   __except(EXCEPTION_CONTINUE_EXECUTION)
-  {                              // just keep on truckin'
+  {
+    // just keep on truckin'
   }
 }
+
+#else
+#define SetWinDebugThreadName(p1,p2)
 #endif // defined(_DEBUG) && defined(_MSC_VER)
 
 
@@ -1566,12 +1570,7 @@ void PThread::SetThreadName(const PString & name)
   else
     threadName = psprintf(name, (INT)this);
 
-#if defined(_DEBUG) && defined(_MSC_VER)
-  if (threadId) {       // make thread name known to debugger
-    THREADNAME_INFO Info = { 0x1000, (const char *) threadName, threadId, 0 } ;
-    SetWinDebugThreadName (&Info) ;
-  }
-#endif // defined(_DEBUG) && defined(_MSC_VER)
+  SetWinDebugThreadName(threadName, threadId);
 }
  
 PThread * PThread::Create(const PNotifier & notifier,
