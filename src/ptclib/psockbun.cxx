@@ -907,7 +907,7 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
     return PChannel::NotOpen;
 
   if (iface.IsEmpty()) {
-    for (;;) {
+    while (opened) {
       // If interface is empty, then grab the next datagram on any of the interfaces
       PSocket::SelectList readers;
 
