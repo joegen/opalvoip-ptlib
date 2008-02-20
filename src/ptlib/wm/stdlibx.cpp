@@ -25,7 +25,6 @@
 #include <winnt.h>
 
 #include <ptlib/sockets.h>
-#include <ptlib/wm/snmp.h>
 #include <ptclib/pdns.h>
 
 #define DELETE (0x00010000L) // defined in <winnt.h> and undef "msos/ptlib/contain.h"
@@ -802,95 +801,5 @@ BOOL WriteProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry,
 
 #endif // profiles
 
-
-#ifndef HAVE_CE_SNMP
-
-//
-// SNMP functions - faked
-//
-//
-VOID SNMP_FUNC_TYPE SnmpUtilMemFree(LPVOID pMem)
-{
-  UNREFERENCED_PARAMETER(pMem);
-}
-
-LPVOID SNMP_FUNC_TYPE SnmpUtilMemAlloc(UINT nBytes)
-{
-  UNREFERENCED_PARAMETER(nBytes);
-
-  return NULL;
-}
-
-SNMPAPI
-SNMP_FUNC_TYPE
-SnmpUtilOidCpy(
-               AsnObjectIdentifier * pOidDst,
-               AsnObjectIdentifier * pOidSrc
-               )
-{
-  UNREFERENCED_PARAMETER(pOidDst);
-  UNREFERENCED_PARAMETER(pOidSrc);
-
-  return (SNMPAPI) -1;
-}
-
-VOID
-SNMP_FUNC_TYPE
-SnmpUtilOidFree(
-                AsnObjectIdentifier * pOid
-                )
-{
-  UNREFERENCED_PARAMETER(pOid);
-}
-
-
-SNMPAPI
-SNMP_FUNC_TYPE
-SnmpUtilOidNCmp(
-                AsnObjectIdentifier * pOid1,
-                AsnObjectIdentifier * pOid2,
-                UINT                  nSubIds
-                )
-{
-  UNREFERENCED_PARAMETER(pOid1);
-  UNREFERENCED_PARAMETER(pOid2);
-  UNREFERENCED_PARAMETER(nSubIds);
-
-  return (SNMPAPI) -1;
-}
-
-BOOL
-SNMP_FUNC_TYPE
-SnmpExtensionInit(
-                  DWORD                 dwUptimeReference,
-                  HANDLE *              phSubagentTrapEvent,
-                  AsnObjectIdentifier * pFirstSupportedRegion
-                  )
-{
-  UNREFERENCED_PARAMETER(dwUptimeReference);
-  UNREFERENCED_PARAMETER(phSubagentTrapEvent);
-  UNREFERENCED_PARAMETER(pFirstSupportedRegion);
-
-  return FALSE;
-}
-
-BOOL
-SNMP_FUNC_TYPE
-SnmpExtensionQuery(
-                   BYTE              bPduType,
-                   SnmpVarBindList * pVarBindList,
-                   AsnInteger32 *    pErrorStatus,
-                   AsnInteger32 *    pErrorIndex
-                   )
-{
-  UNREFERENCED_PARAMETER(bPduType);
-  UNREFERENCED_PARAMETER(pVarBindList);
-  UNREFERENCED_PARAMETER(pErrorStatus);
-  UNREFERENCED_PARAMETER(pErrorIndex);
-
-  return FALSE;
-}
-
-#endif // HAVE_CE_SNMP
 
 #endif // _WIN32_WCE
