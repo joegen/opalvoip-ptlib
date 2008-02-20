@@ -31,10 +31,6 @@
 #ifndef _PGLOBALSTATIC_CXX
 #define _PGLOBALSTATIC_CXX
 
-static const char _revisionInformation[] = {
-  "PTLib rev $Revision$ date $Date$"
-};
-
 #include <ptbuildopts.h>
 #include <ptlib/plugin.h>
 #include <iostream>
