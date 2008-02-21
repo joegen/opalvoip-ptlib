@@ -67,7 +67,7 @@
 				BrowseInformation="1"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				CompileAs="0"
 			/>
 			<Tool
