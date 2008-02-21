@@ -625,7 +625,10 @@ PString::PString(const wchar_t * ustr, PINDEX len)
 
 PString::PString(const PWCharArray & ustr)
 {
-  InternalFromUCS2(ustr, ustr.GetSize());
+  PINDEX size = ustr.GetSize();
+  if (size > 0 && ustr[size-1] == 0) // Stip off trailing NULL if present
+    size--;
+  InternalFromUCS2(ustr, size);
 }
 
 
@@ -1686,10 +1689,10 @@ PWCharArray PString::AsUCS2() const
 #elif defined(_WIN32)
 
   // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later.
-  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, GetSize(), NULL, 0);
-  if (count > 0 && ucs2.SetSize(count)) {
-    // Note the trailing NULL is included in the "count" bytes.
-    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, -1, ucs2.GetPointer(), ucs2.GetSize());
+  PINDEX length = GetLength();
+  PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, length, NULL, 0);
+  if (count > 0 && ucs2.SetSize(count+1)) { // Allow for trailing NULL
+    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, length, ucs2.GetPointer(), ucs2.GetSize());
     return ucs2;
   }
 
@@ -1765,8 +1768,8 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
 #elif defined(_WIN32)
 
   PINDEX count = WideCharToMultiByte(CP_UTF8, 0, ptr, len, NULL, 0, NULL, NULL);
-  if (SetSize(count))
-    WideCharToMultiByte(CP_UTF8, 0, ptr, len, GetPointer(), count, NULL, NULL);
+  if (SetSize(count+1))
+    WideCharToMultiByte(CP_UTF8, 0, ptr, len, GetPointer(), GetSize(), NULL, NULL);
 
 #else
 
