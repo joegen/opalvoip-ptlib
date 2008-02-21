@@ -119,16 +119,23 @@ extern "C" {
 #endif
 
 
-///////////////////////////////////////////////////////////////////////////////
-
-PARRAY(PSSLMutexArrayBase, PMutex);
-class PSSLMutexArray : public PSSLMutexArrayBase
+class PSSLInitialiser : public PProcessStartup
 {
-    PCLASSINFO(PSSLMutexArray, PSSLMutexArrayBase);
+  PCLASSINFO(PSSLInitialiser, PProcessStartup)
   public:
-    PSSLMutexArray();
+    virtual void OnStartup();
+    virtual void OnShutdown();
+    void LockingCallback(int mode, int n);
+
+  private:
+    vector<PMutex> mutexes;
 };
 
+static const char SSLSubsystemName[] = "OpenSSL";
+static PFactory<PProcessStartup>::Worker<PSSLInitialiser> PSSLInitialiserInstance(SSLSubsystemName, true);
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 class PSSL_BIO
 {
@@ -157,17 +164,6 @@ class PSSL_BIO
 
 
 #define new PNEW
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-PSSLMutexArray::PSSLMutexArray()
-{
-  // Initialise all of the mutexes for multithreaded operation.
-  SetSize(CRYPTO_num_locks());
-  for (PINDEX i = 0; i < GetSize(); i++)
-    SetAt(i, new PMutex);
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -722,7 +718,37 @@ PBoolean PSSLDiffieHellman::Load(const PFilePath & dhFile,
 
 static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/)
 {
-  static PSSLMutexArray mutexes;
+  static PSSLInitialiser * instance = PFactory<PProcessStartup>::CreateInstanceAs<PSSLInitialiser>(SSLSubsystemName);
+  instance->LockingCallback(mode, n);
+}
+
+
+void PSSLInitialiser::OnStartup()
+{
+  SSL_library_init();
+  SSL_load_error_strings();
+
+  // Seed the random number generator
+  BYTE seed[128];
+  for (size_t i = 0; i < sizeof(seed); i++)
+    seed[i] = (BYTE)rand();
+  RAND_seed(seed, sizeof(seed));
+
+  // set up multithread stuff
+  mutexes.resize(CRYPTO_num_locks());
+  CRYPTO_set_locking_callback(::LockingCallback);
+}
+
+
+void PSSLInitialiser::OnShutdown()
+{
+  CRYPTO_set_locking_callback(NULL);
+  ERR_free_strings();
+}
+
+
+void PSSLInitialiser::LockingCallback(int mode, int n)
+{
   if ((mode & CRYPTO_LOCK) != 0)
     mutexes[n].Wait();
   else
@@ -756,6 +782,9 @@ static void PSSLAssert(const char * msg)
   PAssertAlways(buf);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
 PSSLContext::PSSLContext(Method method, const void * sessionId, PINDEX idSize)
 {
   Construct(method, sessionId, idSize);
@@ -769,28 +798,6 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 
 void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
 {
-  static PMutex InitialisationMutex;
-  InitialisationMutex.Wait();
-
-  static PBoolean needInitialisation = PTrue;
-  if (needInitialisation) {
-    SSL_load_error_strings();
-    OpenSSL_add_ssl_algorithms();
-
-    // Seed the random number generator
-    BYTE seed[128];
-    for (size_t i = 0; i < sizeof(seed); i++)
-      seed[i] = (BYTE)rand();
-    RAND_seed(seed, sizeof(seed));
-
-    // set up multithread stuff
-    CRYPTO_set_locking_callback(LockingCallback);
-
-    needInitialisation = PFalse;
-  }
-
-  InitialisationMutex.Signal();
-
   // create the new SSL context
   SSL_METHOD * meth;
 
@@ -809,7 +816,7 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
       meth = SSLv23_method();
       break;
   }
-  
+
   context  = SSL_CTX_new(meth);
   if (context == NULL)
     PSSLAssert("Error creating context: ");
