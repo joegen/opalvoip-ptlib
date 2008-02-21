@@ -1503,6 +1503,10 @@ PASN_BMPString & PASN_BMPString::operator=(const PWCharArray & array)
 {
   PINDEX paramSize = array.GetSize();
 
+  // Remove trailing NULL character, if present
+  if (paramSize > 0 && array[paramSize-1] == 0)
+    paramSize--;
+
   // Can't copy any more than the upper constraint
   if ((unsigned)paramSize > upperLimit)
     paramSize = upperLimit;
