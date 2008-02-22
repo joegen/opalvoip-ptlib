@@ -64,28 +64,25 @@ PThreadPoolBase::~PThreadPoolBase()
 
 PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
 {
-  // if the maximum number of worker threads has been reached, then
-  // use the worker thread with the minimum number of handles
-  if (workers.size() >= maxWorkerSize) {
-
-    WorkerList_t::iterator minWorker = workers.end();
-    size_t minSizeFound = 0x7ffff;
-    WorkerList_t::iterator r;
-    for (r = workers.begin(); r != workers.end(); ++r) {
-      PThreadPoolWorkerBase & worker = **r;
-      PWaitAndSignal m2(worker.workerMutex);
-      if (!worker.shutdown && (worker.GetWorkSize() <= minSizeFound)) {
-        minSizeFound = worker.GetWorkSize();
-        minWorker     = r;
-      }
+  // find the worker thread with the minimum number of handles
+  WorkerList_t::iterator minWorker = workers.end();
+  size_t minSizeFound = 0x7ffff;
+  WorkerList_t::iterator r;
+  for (r = workers.begin(); r != workers.end(); ++r) {
+    PThreadPoolWorkerBase & worker = **r;
+    PWaitAndSignal m2(worker.workerMutex);
+    if (!worker.shutdown && (worker.GetWorkSize() <= minSizeFound)) {
+      minSizeFound = worker.GetWorkSize();
+      minWorker     = r;
+      if (minSizeFound == 0)
+        break;
     }
-
-    // add the worker to the thread
-    PAssert(minWorker != workers.end(), "could not find minimum worker");
-    return *minWorker;
   }
 
-  PTRACE(4, "ThreadPool\tCreating new pool thread");
+  // if the number of workers is at the maximum, or the there is 
+  // an idle worker, then use the least busy worker thread
+  if ((workers.size() >= maxWorkerSize) || (r != workers.end())) 
+    return *minWorker;
 
   // no worker threads usable, create a new one
   PThreadPoolWorkerBase * worker = CreateWorkerThread();
