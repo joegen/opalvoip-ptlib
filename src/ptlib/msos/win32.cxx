@@ -1562,7 +1562,14 @@ int PDebugStream::Buffer::overflow(int c)
     p[bufSize] = '\0';
 
 #ifdef UNICODE
-    OutputDebugString(PWideString(p));
+    // Note we do NOT use PWideString here as it could cause infinitely
+    // recursive calls if there is an error!
+    PINDEX length = strlen(p);
+    wchar_t * unicode = new wchar_t[length+1];
+    unicode[length] = 0;
+    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, p, length, unicode, length+1);
+    OutputDebugString(unicode);
+    delete [] unicode;
 #else
     OutputDebugString(p);
 #endif
