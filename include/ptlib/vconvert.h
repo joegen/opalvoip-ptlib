@@ -388,6 +388,15 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
 #define PSYNONYM_COLOUR_CONVERTER(from,to) \
   static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
 
+
+class PVideoTools {
+  public:
+    static void GenerateYUV420NTSCTestFrame(BYTE *resFrame, unsigned frameWidth, unsigned frameHeight, unsigned bytesPerPixel, unsigned scanLineWidth);
+    static void FillYUV420Rect(BYTE * frame, unsigned bytesPerPixel, unsigned scanLineWidth,
+                               unsigned frameWidth, unsigned frameHeight, 
+                               int xPos, int initialYPos, int rectWidth, int rectHeight, int r, int g,  int b);
+};
+
 #endif // P_VIDEO
 
 
