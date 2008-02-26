@@ -1473,7 +1473,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
      */
     virtual PBoolean TestAllFormats()
       { return PTrue; }
-   
+
  protected:
    unsigned grabCount;
    PINDEX   videoFrameSize;
@@ -1677,54 +1677,7 @@ void PVideoInputDevice_FakeVideo::FillRect(BYTE * frame,
                    int rectWidth, int rectHeight,
                    int r, int g,  int b)
 {
-// PTRACE(0,"x,y is"<<xPos<<" "<<yPos<<" and size is "<<rectWidth<<" "<<rectHeight);
-
-  //This routine fills a region of the video image with data. It is used as the central
-  //point because one only has to add other image formats here.
-
-  if (bytesPerPixel > 2) {
-    for (int y = 0; y < rectHeight; y++) {
-      BYTE * ptr = frame + (initialYPos+y)*scanLineWidth + xPos*bytesPerPixel;
-      for (int x = 0; x < rectWidth; x++) {
-        *ptr++ = (BYTE)r;
-        *ptr++ = (BYTE)g;
-        *ptr++ = (BYTE)b;
-        if (bytesPerPixel > 3)
-          *ptr++ = 0;
-      }
-    }
-    return;
-  }
-
-  int yPos = initialYPos;
-
-  int offset       = ( yPos * frameWidth ) + xPos;
-  int colourOffset = ( (yPos * frameWidth) >> 2) + (xPos >> 1);
-
-  int Y  =  ( 257 * r + 504 * g +  98 * b)/1000 + 16;
-  int Cb =  (-148 * r - 291 * g + 439 * b)/1000 + 128;
-  int Cr =  ( 439 * r - 368 * g -  71 * b)/1000 + 128;
-
-  unsigned char * Yptr  = frame + offset;
-  unsigned char * CbPtr = frame + (frameWidth * frameHeight) + colourOffset;
-  unsigned char * CrPtr = frame + (frameWidth * frameHeight) + (frameWidth * frameHeight/4)  + colourOffset;
-
-  int rr ;
-  int halfRectWidth = rectWidth >> 1;
-  int halfWidth     = frameWidth >> 1;
-  
-  for (rr = 0; rr < rectHeight;rr+=2) {
-    memset(Yptr, Y, rectWidth);
-    Yptr += frameWidth;
-    memset(Yptr, Y, rectWidth);
-    Yptr += frameWidth;
-
-    memset(CbPtr, Cb, halfRectWidth);
-    memset(CrPtr, Cr, halfRectWidth);
-
-    CbPtr += halfWidth;
-    CrPtr += halfWidth;
-  }
+  PVideoTools::FillYUV420Rect(frame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth, xPos, initialYPos, rectWidth, rectHeight, r, g, b);
 }
 
 void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
@@ -1768,105 +1721,8 @@ void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
 
 void PVideoInputDevice_FakeVideo::GrabNTSCTestFrame(BYTE *resFrame)
 {
-  //  Test image # 1
-  //  A static image is generated, consisting of a series of coloured block.
-  //  Sample NTSC test frame is found at http://www.displaymate.com/patterns.html
-  //
-  static int row1[7][3] = {
-    { 204, 204, 204 },   // 80% grey
-    { 255, 255,   0 },   // yellow
-    {   0, 255, 255 },   // cyan
-    {   0, 255,   0 },   // green
-    { 255,   0, 255 },   // magenta
-    { 255,   0,   0 },   // red
-    {   0,   0, 255 },   // blue
-  };
-
-  static int row2[7][3] = {
-    {   0,   0, 255 },   // blue
-    {  19,  19,  19 },   // black
-    { 255,   0, 255 },   // magenta
-    {  19,  19,  19 },   // black
-    {   0, 255, 255 },   // cyan
-    {  19,  19,  19 },   // black
-    { 204, 204, 204 },   // grey
-  };
-
-  static int row3a[4][3] = {
-    {   8,  62,  89 },   // I
-    { 255, 255, 255 },   // white
-    {  58,   0, 126 },   // +Q
-    {  19,  19,  19 },   // black
-  };
-
-  static int row3b[3][3] = {
-    {   0,   0,   0 },   // 3.5
-    {  19,  19,  19 },   // 7.5
-    {  38,  38,  38 },   // 11.5
-  };
-
-  static int row3c[3] = { 19,  19,  19 };
-
-  int row1Height = (int)(0.66 * frameHeight);
-  int row2Height = (int)((0.75 * frameHeight) - row1Height);
-  row1Height = (row1Height>>1)*2;     //Require that height is even.
-  row2Height = (row2Height>>1)*2;     
-  int row3Height = frameHeight - row1Height - row2Height;
-
-  int columns[8];
-  PINDEX i;
-
-  for(i=0;i<7;i++) {    
-    columns[i]= i*frameWidth/7;
-    columns[i]= (columns[i]>>1)*2;  // require that columns[i] is even.
-  }
-  columns[7] = frameWidth;
-
-
-  // first row
-  for (i = 0; i < 6; i++) 
-    FillRect(resFrame,
-             columns[i], 0, columns[i+1]-columns[i], row1Height, //x,y,w,h
-             row1[i][0], row1[i][1], row1[i][2]); // rgb
-
-
-
-  // second row
-  for (i = 0; i < 7; i++) 
-    FillRect(resFrame,
-             columns[i], row1Height,  columns[i+1]-columns[i], row2Height, 
-             row2[i][0], row2[i][1], row2[i][2]);
-
-  // third row
-  int columnBot[5];
-
-  for (i=0; i<4; i++) {    
-    columnBot[i]= i*columns[5]/4;
-    columnBot[i] = 2 * (columnBot[i]>>1);
-  }
-  columnBot[4]= columns[5];
-
-  for (i = 0; i < 4; i++) 
-    FillRect(resFrame,
-             columnBot[i],row1Height + row2Height, columnBot[i+1]-columnBot[i], row3Height, 
-             row3a[i][0], row3a[i][1], row3a[i][2]);
-
-  for (i=0; i<3; i++) {
-    columnBot[i] = columns[4]+(i*frameWidth)/(7*3);
-    columnBot[i] = 2 * (columnBot[i]>>1);       //Force even.
-  }
-  columnBot[3]= columns[5];
-
-  for (i = 0; i < 3; i++) 
-    FillRect(resFrame,
-             columnBot[i], row1Height + row2Height, columnBot[i+1] - columnBot[i], row3Height,
-             row3b[i][0], row3b[i][1], row3b[i][2]);
-
-  FillRect(resFrame,
-           columns[6], row1Height + row2Height, columns[7] - columns[6], row3Height, 
-           row3c[0], row3c[1], row3c[2]);
+  PVideoTools::GenerateYUV420NTSCTestFrame(resFrame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth);
 }
-
 
 void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
 {
@@ -2182,6 +2038,162 @@ PBoolean PVideoOutputDevice_NULLOutput::SetFrameData(unsigned /*x*/, unsigned /*
 PBoolean PVideoOutputDevice_NULLOutput::EndFrame()
 {
   return PTrue;
+}
+
+void PVideoTools::GenerateYUV420NTSCTestFrame(BYTE *resFrame, unsigned frameWidth, unsigned frameHeight, unsigned bytesPerPixel, unsigned scanLineWidth)
+{
+  //  Test image # 1
+  //  A static image is generated, consisting of a series of coloured block.
+  //  Sample NTSC test frame is found at http://www.displaymate.com/patterns.html
+  //
+  static int row1[7][3] = {
+    { 204, 204, 204 },   // 80% grey
+    { 255, 255,   0 },   // yellow
+    {   0, 255, 255 },   // cyan
+    {   0, 255,   0 },   // green
+    { 255,   0, 255 },   // magenta
+    { 255,   0,   0 },   // red
+    {   0,   0, 255 },   // blue
+  };
+
+  static int row2[7][3] = {
+    {   0,   0, 255 },   // blue
+    {  19,  19,  19 },   // black
+    { 255,   0, 255 },   // magenta
+    {  19,  19,  19 },   // black
+    {   0, 255, 255 },   // cyan
+    {  19,  19,  19 },   // black
+    { 204, 204, 204 },   // grey
+  };
+
+  static int row3a[4][3] = {
+    {   8,  62,  89 },   // I
+    { 255, 255, 255 },   // white
+    {  58,   0, 126 },   // +Q
+    {  19,  19,  19 },   // black
+  };
+
+  static int row3b[3][3] = {
+    {   0,   0,   0 },   // 3.5
+    {  19,  19,  19 },   // 7.5
+    {  38,  38,  38 },   // 11.5
+  };
+
+  static int row3c[3] = { 19,  19,  19 };
+
+  int row1Height = (int)(0.66 * frameHeight);
+  int row2Height = (int)((0.75 * frameHeight) - row1Height);
+  row1Height = (row1Height>>1)*2;     //Require that height is even.
+  row2Height = (row2Height>>1)*2;     
+  int row3Height = frameHeight - row1Height - row2Height;
+
+  int columns[8];
+  PINDEX i;
+
+  for(i=0;i<7;i++) {    
+    columns[i]= i*frameWidth/7;
+    columns[i]= (columns[i]>>1)*2;  // require that columns[i] is even.
+  }
+  columns[7] = frameWidth;
+
+
+  // first row
+  for (i = 0; i < 6; i++) 
+    FillYUV420Rect(resFrame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth, 
+             columns[i], 0, columns[i+1]-columns[i], row1Height, //x,y,w,h
+             row1[i][0], row1[i][1], row1[i][2]); // rgb
+
+
+
+  // second row
+  for (i = 0; i < 7; i++) 
+    FillYUV420Rect(resFrame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth, 
+             columns[i], row1Height,  columns[i+1]-columns[i], row2Height, 
+             row2[i][0], row2[i][1], row2[i][2]);
+
+  // third row
+  int columnBot[5];
+
+  for (i=0; i<4; i++) {    
+    columnBot[i]= i*columns[5]/4;
+    columnBot[i] = 2 * (columnBot[i]>>1);
+  }
+  columnBot[4]= columns[5];
+
+  for (i = 0; i < 4; i++) 
+    FillYUV420Rect(resFrame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth, 
+             columnBot[i],row1Height + row2Height, columnBot[i+1]-columnBot[i], row3Height, 
+             row3a[i][0], row3a[i][1], row3a[i][2]);
+
+  for (i=0; i<3; i++) {
+    columnBot[i] = columns[4]+(i*frameWidth)/(7*3);
+    columnBot[i] = 2 * (columnBot[i]>>1);       //Force even.
+  }
+  columnBot[3]= columns[5];
+
+  for (i = 0; i < 3; i++) 
+    FillYUV420Rect(resFrame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth, 
+             columnBot[i], row1Height + row2Height, columnBot[i+1] - columnBot[i], row3Height,
+             row3b[i][0], row3b[i][1], row3b[i][2]);
+
+  FillYUV420Rect(resFrame, frameWidth, frameHeight, bytesPerPixel, scanLineWidth, 
+           columns[6], row1Height + row2Height, columns[7] - columns[6], row3Height, 
+           row3c[0], row3c[1], row3c[2]);
+}
+
+void PVideoTools::FillYUV420Rect(BYTE * frame, unsigned frameWidth, unsigned frameHeight, unsigned bytesPerPixel, unsigned scanLineWidth,
+                   int xPos, int initialYPos,
+                   int rectWidth, int rectHeight,
+                   int r, int g,  int b)
+{
+// PTRACE(0,"x,y is"<<xPos<<" "<<yPos<<" and size is "<<rectWidth<<" "<<rectHeight);
+
+  //This routine fills a region of the video image with data. It is used as the central
+  //point because one only has to add other image formats here.
+
+  if (bytesPerPixel > 2) {
+    for (int y = 0; y < rectHeight; y++) {
+      BYTE * ptr = frame + (initialYPos+y)*scanLineWidth + xPos*bytesPerPixel;
+      for (int x = 0; x < rectWidth; x++) {
+        *ptr++ = (BYTE)r;
+        *ptr++ = (BYTE)g;
+        *ptr++ = (BYTE)b;
+        if (bytesPerPixel > 3)
+          *ptr++ = 0;
+      }
+    }
+    return;
+  }
+
+  int yPos = initialYPos;
+
+  int offset       = ( yPos * frameWidth ) + xPos;
+  int colourOffset = ( (yPos * frameWidth) >> 2) + (xPos >> 1);
+
+  int Y  =  ( 257 * r + 504 * g +  98 * b)/1000 + 16;
+  int Cb =  (-148 * r - 291 * g + 439 * b)/1000 + 128;
+  int Cr =  ( 439 * r - 368 * g -  71 * b)/1000 + 128;
+
+  unsigned char * Yptr  = frame + offset;
+  unsigned char * CbPtr = frame + (frameWidth * frameHeight) + colourOffset;
+  unsigned char * CrPtr = frame + (frameWidth * frameHeight) + (frameWidth * frameHeight/4)  + colourOffset;
+
+  int rr ;
+  int halfRectWidth = rectWidth >> 1;
+  int halfWidth     = frameWidth >> 1;
+  
+  for (rr = 0; rr < rectHeight;rr+=2) {
+    memset(Yptr, Y, rectWidth);
+    Yptr += frameWidth;
+    memset(Yptr, Y, rectWidth);
+    Yptr += frameWidth;
+
+    memset(CbPtr, Cb, halfRectWidth);
+    memset(CrPtr, Cr, halfRectWidth);
+
+    CbPtr += halfWidth;
+    CrPtr += halfWidth;
+  }
 }
 
 #endif // P_VIDEO
