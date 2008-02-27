@@ -598,11 +598,11 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(PSocket::SelectList & readers
     case ECONNRESET :
     case ECONNREFUSED :
       PTRACE(2, "MonSock\tUDP Port on remote not ready.");
-      PChannel::NoError;
+      return PChannel::NoError;
 
     case EMSGSIZE :
       PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << len << " bytes.");
-      PChannel::NoError;
+      return PChannel::NoError;
 
     case EBADF : // Interface went down
     case EINTR :
