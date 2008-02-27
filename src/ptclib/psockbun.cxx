@@ -42,6 +42,8 @@
 static const char FactoryName[] = PINTERFACE_MONITOR_FACTORY_NAME;
 static PFactory<PProcessStartup>::Worker<PInterfaceMonitor> InterfaceMonitorFactory(FactoryName, true);
 
+static int UDP_BUFFER_SIZE = 32767;
+
 
 #define new PNEW
 
@@ -409,12 +411,10 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
   for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
     if (client->LockReadWrite()) {
-      for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++) {
+      for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++)
         client->OnAddInterface(addedInterfaces[i]);
-      }
-      for (PINDEX i = 0; i < removedInterfaces.GetSize(); i++) {
+      for (PINDEX i = 0; i < removedInterfaces.GetSize(); i++)
         client->OnRemoveInterface(removedInterfaces[i]);
-      }
       client->UnlockReadWrite();
     }
   }
@@ -468,16 +468,10 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   info.socket = new PUDPSocket;
   if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
     PTRACE(4, "MonSock\tCreated bundled UDP socket " << binding << ':' << info.socket->GetPort());
-    {
-      int UDP_BUFFER_SIZE = 32767;
-      int sz = 0;
-      int buftype = SO_RCVBUF;
-      if (info.socket->GetOption(buftype, sz)) {
-        if (sz < UDP_BUFFER_SIZE) {
-          if (!info.socket->SetOption(buftype, UDP_BUFFER_SIZE)) {
-            PTRACE(1, "MonSock\tSetOption(" << buftype << ") failed: " << info.socket->GetErrorText());
-          }
-        }
+    int sz = 0;
+    if (info.socket->GetOption(SO_RCVBUF, sz) && sz < UDP_BUFFER_SIZE) {
+      if (!info.socket->SetOption(SO_RCVBUF, UDP_BUFFER_SIZE)) {
+        PTRACE(1, "MonSock\tSetOption(SO_RCVBUF) failed: " << info.socket->GetErrorText());
       }
     }
 
@@ -496,7 +490,13 @@ bool PMonitoredSockets::DestroySocket(SocketInfo & info)
     return false;
 
   PBoolean result = info.socket->Close();
-  PTRACE_IF(4, result, "MonSock\tClosed bundled UDP socket " << info.socket);
+
+#if PTRACING
+  if (result)
+    PTRACE(4, "MonSock\tClosed UDP socket " << info.socket);
+  else
+    PTRACE(2, "MonSock\tClose failed for UDP socket " << info.socket);
+#endif
 
   // This is pretty ugly, but needed to make sure multi-threading doesn't crash
   unsigned failSafe = 100; // Approx. two seconds
@@ -506,11 +506,12 @@ bool PMonitoredSockets::DestroySocket(SocketInfo & info)
     if (!LockReadWrite())
       return false;
     if (--failSafe == 0) {
-      PTRACE(1, "MonSock\tClose of bundled UDP socket " << info.socket << " taking too long.");
+      PTRACE(1, "MonSock\tRead thread break for UDP socket " << info.socket << " taking too long.");
       break;
     }
   }
 
+  PTRACE(4, "MonSock\tDeleting UDP socket " << info.socket);
   delete info.socket;
   info.socket = NULL;
 
@@ -544,6 +545,78 @@ PChannel::Errors PMonitoredSockets::WriteToSocket(const void * buf,
 }
 
 
+PChannel::Errors PMonitoredSockets::ReadFromSocket(PSocket::SelectList & readers,
+                                                   PUDPSocket * & socket,
+                                                   void * buf,
+                                                   PINDEX len,
+                                                   PIPSocket::Address & addr,
+                                                   WORD & port,
+                                                   PINDEX & lastReadCount,
+                                                   const PTimeInterval & timeout)
+{
+  // Assume is already locked
+
+  socket = NULL;
+  lastReadCount = 0;
+
+  UnlockReadWrite();
+
+  PChannel::Errors errorCode = PSocket::Select(readers, timeout);
+
+  if (!LockReadWrite())
+    return PChannel::NotOpen;
+
+  if (!opened)
+    return PChannel::NotOpen; // Closed, break out
+
+  switch (errorCode) {
+    case PChannel::NoError :
+      break;
+
+    case PChannel::NotOpen : // Interface went down
+      if (!interfaceAddedSignal.IsOpen()) {
+        interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
+        return PChannel::Interrupted;
+      }
+      // Do next case
+
+    default :
+      return errorCode;
+  }
+
+  if (readers.IsEmpty())
+    return PChannel::Timeout;
+
+  socket = (PUDPSocket *)&readers.front();
+
+  if (socket->ReadFrom(buf, len, addr, port)) {
+    lastReadCount = socket->GetLastReadCount();
+    return PChannel::NoError;
+  }
+
+  switch (socket->GetErrorNumber(PChannel::LastReadError)) {
+    case ECONNRESET :
+    case ECONNREFUSED :
+      PTRACE(2, "MonSock\tUDP Port on remote not ready.");
+      PChannel::NoError;
+
+    case EMSGSIZE :
+      PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << len << " bytes.");
+      PChannel::NoError;
+
+    case EBADF : // Interface went down
+    case EINTR :
+    case EAGAIN : // Shouldn't happen, but it does.
+      return PChannel::Interrupted;
+  }
+
+  PTRACE(1, "MonSock\tSocket read UDP error ("
+         << socket->GetErrorNumber(PChannel::LastReadError) << "): "
+         << socket->GetErrorText(PChannel::LastReadError));
+  return socket->GetErrorCode(PChannel::LastReadError); // Exit loop
+}
+
+
 PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
                                                    void * buf,
                                                    PINDEX len,
@@ -559,77 +632,26 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
     return PChannel::DeviceInUse;
   }
 
-  info.inUse = true;
+  lastReadCount = 0;
 
-  while (opened) {
+  PChannel::Errors errorCode;
+
+  do {
     PSocket::SelectList sockets;
-    if (info.socket != NULL && info.socket->IsOpen())
-      sockets += *info.socket;
-    else
+    if (info.socket == NULL || !info.socket->IsOpen())
       info.inUse = false; // socket closed by monitor thread. release the inUse flag
+    else {
+      sockets += *info.socket;
+      info.inUse = true;
+    }
     sockets += interfaceAddedSignal;
 
-    UnlockReadWrite();
-
-    PChannel::Errors errorCode = PSocket::Select(sockets, timeout);
-
-    if (!LockReadWrite())
-      return PChannel::NotOpen;
-
-    switch (errorCode) {
-      default :
-        info.inUse = false;
-        return errorCode;
-
-      case PChannel::NotOpen : // Interface went down
-        break;
-
-      case PChannel::NoError :
-        if (sockets.IsEmpty()) { // Timeout
-          info.inUse = false;
-          return PChannel::Timeout;
-        }
-
-        if (info.socket == NULL) // Interface went down
-          break;
-
-        if (info.socket->ReadFrom(buf, len, addr, port)) {
-          lastReadCount = info.socket->GetLastReadCount();
-          info.inUse = false;
-          return PChannel::NoError;
-        }
-
-        switch (info.socket->GetErrorNumber(PChannel::LastReadError)) {
-          case ECONNRESET :
-          case ECONNREFUSED :
-            PTRACE(2, "MonSock\tUDP Port on remote not ready.");
-            break;
-
-          case EMSGSIZE :
-            PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << len << " bytes.");
-            break;
-
-          case EBADF : // Interface went down
-          case EINTR :
-          case EAGAIN : // Shouldn't happen, but it does.
-            break;
-
-          default:
-            PTRACE(1, "MonSock\tSocket read UDP error ("
-                   << info.socket->GetErrorNumber(PChannel::LastReadError) << "): "
-                   << info.socket->GetErrorText(PChannel::LastReadError));
-
-            info.inUse = false;
-            return info.socket->GetErrorCode(PChannel::LastReadError);
-        }
-    }
-
-    if (!interfaceAddedSignal.IsOpen())
-      interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
-  }
+    PUDPSocket * socket;
+    errorCode = ReadFromSocket(sockets, socket, buf, len, addr, port, lastReadCount, timeout);
+  } while (errorCode == PChannel::NoError && lastReadCount == 0);
 
   info.inUse = false;
-  return PChannel::NotOpen;
+  return errorCode;
 }
 
 
@@ -901,13 +923,16 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
                                                         PINDEX & lastReadCount,
                                                         const PTimeInterval & timeout)
 {
-  PChannel::Errors errorCode = PChannel::NoError;
+  if (!opened)
+    return PChannel::NotOpen;
 
   if (!LockReadWrite())
     return PChannel::NotOpen;
 
+  PChannel::Errors errorCode;
+
   if (iface.IsEmpty()) {
-    while (opened) {
+    do {
       // If interface is empty, then grab the next datagram on any of the interfaces
       PSocket::SelectList readers;
 
@@ -924,40 +949,15 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
       }
       readers += interfaceAddedSignal;
 
-      UnlockReadWrite();
-      errorCode = PSocket::Select(readers, timeout);
-      if (!LockReadWrite())
-        return PChannel::NotOpen;
-
-      PUDPSocket * socket = NULL;
-      if (errorCode != PChannel::NoError) {
-        PTRACE(2, "MonSock\tMulti-interface read select failure: " << errorCode);
-      }
-      else if (readers.IsEmpty())
-        errorCode = PChannel::Timeout;
-      else {
-        socket = (PUDPSocket *)&readers.front();
-        if (socket->ReadFrom(buf, len, addr, port))
-          lastReadCount = socket->GetLastReadCount();
-        else {
-          errorCode = socket->GetErrorCode(PChannel::LastReadError);
-          PTRACE(2, "MonSock\tUDP socket read failure: " << socket->GetErrorText(PChannel::LastReadError));
-          if (errorCode == PChannel::NotOpen)
-            socket->Close(); // If interface goes down, socket is not open to OS, but still is to us. Make them agree.
-        }
-      }
+      PUDPSocket * socket;
+      errorCode = ReadFromSocket(readers, socket, buf, len, addr, port, lastReadCount, timeout);
 
       for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
         if (iter->second.socket == socket)
           iface = iter->first;
         iter->second.inUse = false;
       }
-
-      if (interfaceAddedSignal.IsOpen())
-        break;
-
-      interfaceAddedSignal.Listen();
-    }
+    } while (errorCode == PChannel::NoError && lastReadCount == 0);
   }
   else {
     // if interface is not empty, use that specific interface
@@ -1006,7 +1006,7 @@ PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bo
 
 PSingleMonitoredSocket::~PSingleMonitoredSocket()
 {
-  DestroySocket(theInfo);
+  Close();
 }
 
 
@@ -1091,6 +1091,9 @@ PChannel::Errors PSingleMonitoredSocket::ReadFromBundle(void * buf,
                                                         PINDEX & lastReadCount,
                                                         const PTimeInterval & timeout)
 {
+  if (!opened)
+    return PChannel::NotOpen;
+
   if (!LockReadWrite())
     return PChannel::NotOpen;
 

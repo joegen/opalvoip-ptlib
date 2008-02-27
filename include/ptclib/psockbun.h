@@ -364,6 +364,16 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       PINDEX & lastReadCount,
       const PTimeInterval & timeout
     );
+    PChannel::Errors ReadFromSocket(
+      PSocket::SelectList & readers,
+      PUDPSocket * & socket,
+      void * buf,
+      PINDEX len,
+      PIPSocket::Address & addr,
+      WORD & port,
+      PINDEX & lastReadCount,
+      const PTimeInterval & timeout
+    );
 
     WORD          localPort;
     bool          reuseAddress;
