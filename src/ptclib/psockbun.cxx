@@ -998,7 +998,7 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 //////////////////////////////////////////////////
 
 PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr, PSTUNClient * stunClient)
-  : PMonitoredSocketBundle(reuseAddr, stunClient)
+  : PMonitoredSockets(reuseAddr, stunClient)
   , theInterface(_theInterface)
 {
 }
