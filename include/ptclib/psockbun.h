@@ -587,9 +587,9 @@ class PMonitoredSocketBundle : public PMonitoredSockets
    or address. The interface name may be a partial descriptor such as
    "%eth0".
   */
-class PSingleMonitoredSocket : public PMonitoredSocketBundle
+class PSingleMonitoredSocket : public PMonitoredSockets
 {
-  PCLASSINFO(PSingleMonitoredSocket, PMonitoredSocketBundle);
+  PCLASSINFO(PSingleMonitoredSocket, PMonitoredSockets);
   public:
     PSingleMonitoredSocket(
       const PString & theInterface,
