@@ -1389,7 +1389,7 @@ Optional Features:
   --enable-oss            enable OSS audio support
   --enable-memcheck       enable leak testing code (off by default)
   --disable-odbc          disable ODBC support
-  --exceptions            enable C++ exceptions
+  --enable-exceptions            enable C++ exceptions
 
 Some influential environment variables:
   CC          C compiler command
@@ -4594,7 +4594,7 @@ echo "${ECHO_T}yes" >&6; }
 else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
-  STDCXXFLAGS="$STDCCFLAGS -rtti"
+  STDCXXFLAGS="$STDCCFLAGS -frtti"
 fi
 
 GCSECTIONS=0

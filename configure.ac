@@ -381,7 +381,7 @@ if test "$DEFAULT_RTTI" = "1" ; then
   AC_MSG_RESULT(yes)
 else
   AC_MSG_RESULT(no)
-  STDCXXFLAGS="$STDCCFLAGS -rtti"
+  STDCXXFLAGS="$STDCCFLAGS -frtti"
 fi
 
 GCSECTIONS=0
@@ -2482,7 +2482,7 @@ dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
 AC_ARG_ENABLE(exceptions,
-       [  --exceptions            enable C++ exceptions])
+       [  --enable-exceptions            enable C++ exceptions])
 
 if test "${enable_exceptions}z" != "yesz" ; then
   AC_MSG_NOTICE(C++ exceptions disabled)
