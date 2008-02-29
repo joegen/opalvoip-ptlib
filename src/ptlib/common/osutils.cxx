@@ -1346,9 +1346,9 @@ PProcess::PProcess(const char * manuf, const char * name,
   buildNumber = build;
 
 #ifndef P_RTEMS
-  if (p_argv != 0 && p_argc > 0) {
+  if (p_argv != 0 && p_argc > 0) 
     arguments.SetArgs(p_argc-1, p_argv+1);
-
+  else {
     
 #if defined(_WIN32) 
     // Try to get the real image path for this process
@@ -1520,6 +1520,167 @@ void PProcess::SetConfigurationPath(const PString & path)
   configurationPaths = path.Tokenise(";:", PFalse);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+bool PProcess::HostSystemURLHandlerInfo::RegisterTypes(const PString & _types, bool force)
+{
+  PStringArray types(_types.Lines());
+
+  for (PINDEX i = 0; i < types.GetSize(); ++i) {
+    PString type = types[i];
+    HostSystemURLHandlerInfo handler(type);
+    handler.SetIcon("%base");
+    handler.SetCommand("open", "%exe %1");
+    if (!handler.CheckIfRegistered()) {
+      if (!force)
+        return false;
+      handler.Register();
+    }
+  }
+  return true;
+}
+
+void PProcess::HostSystemURLHandlerInfo::SetIcon(const PString & _icon)
+{
+#if _WIN32
+  PString icon(_icon);
+  PFilePath exe(PProcess::Current().GetFile());
+  icon.Replace("%exe",  exe, true);
+  icon.Replace("%base", exe.GetFileName(), true);
+  iconFileName = icon;
+#endif
+}
+
+PString PProcess::HostSystemURLHandlerInfo::GetIcon() const 
+{
+#if _WIN32
+  return iconFileName;
+#endif
+}
+
+void PProcess::HostSystemURLHandlerInfo::SetCommand(const PString & key, const PString & _cmd)
+{
+#if _WIN32
+  PString cmd(_cmd);
+
+  // do substitutions
+  PFilePath exe(PProcess::Current().GetFile());
+  cmd.Replace("%exe", "\"" + exe + "\"", true);
+  cmd.Replace("%1",   "\"%1\"", true);
+
+  // save command
+  cmds.SetAt(key, cmd);
+#endif
+}
+
+PString PProcess::HostSystemURLHandlerInfo::GetCommand(const PString & key) const
+{
+#if _WIN32
+  return cmds(key);
+#endif
+}
+
+bool PProcess::HostSystemURLHandlerInfo::GetFromSystem()
+{
+#if _WIN32
+  if (type.IsEmpty())
+    return false;
+
+  // get icon file
+  {
+    RegistryKey key("HKEY_CLASSES_ROOT\\" + type + "\\DefaultIcon", RegistryKey::ReadOnly);
+    key.QueryValue("", iconFileName);
+  }
+
+  // enumerate the commands
+  {
+    PString keyRoot("HKEY_CLASSES_ROOT\\" + type + "\\");
+    RegistryKey key(keyRoot + "shell", RegistryKey::ReadOnly);
+    PString str;
+    for (PINDEX idx = 0; key.EnumKey(idx, str); ++idx) {
+      RegistryKey cmd(keyRoot + "shell\\" + str + "\\command", RegistryKey::ReadOnly);
+      PString value;
+      if (cmd.QueryValue("", value)) 
+        cmds.SetAt(str, value);
+    }
+  }
+#endif
+
+  return true;
+}
+
+bool PProcess::HostSystemURLHandlerInfo::CheckIfRegistered()
+{
+#if _WIN32
+  // if no type information in system, definitely not registered
+  HostSystemURLHandlerInfo currentInfo(type);
+  if (!currentInfo.GetFromSystem()) 
+    return false;
+
+  // check icon file
+  if (!iconFileName.IsEmpty() && !(iconFileName *= currentInfo.GetIcon()))
+    return false;
+
+  // check all of the commands
+  return (currentInfo.cmds.GetSize() != 0) && (currentInfo.cmds == cmds);
+#else
+  return true;
+#endif
+}
+
+bool PProcess::HostSystemURLHandlerInfo::Register()
+{
+#if _WIN32
+  if (type.IsEmpty())
+    return false;
+
+  // delete any existing icon name
+  {
+    RegistryKey key("HKEY_CLASSES_ROOT\\" + type, RegistryKey::ReadOnly);
+    key.DeleteKey("DefaultIcon");
+  }
+
+  // set icon file
+  if (!iconFileName.IsEmpty()) {
+    RegistryKey key("HKEY_CLASSES_ROOT\\" + type + "\\DefaultIcon", RegistryKey::Create);
+    key.SetValue("", iconFileName);
+  }
+
+  // delete existing commands
+  PString keyRoot("HKEY_CLASSES_ROOT\\" + type);
+  {
+    RegistryKey key(keyRoot + "\\shell", RegistryKey::ReadOnly);
+    PString str;
+    for (PINDEX idx = 0; key.EnumKey(idx, str); ++idx) {
+      {
+        RegistryKey key(keyRoot + "\\shell\\" + str, RegistryKey::ReadOnly);
+        key.DeleteKey("command");
+      }
+      {
+        RegistryKey key(keyRoot + "\\shell", RegistryKey::ReadOnly);
+        key.DeleteKey(str);
+      }
+    }
+  }
+
+  // create new commands
+  {
+    RegistryKey key3(keyRoot,            RegistryKey::Create);
+    key3.SetValue("", type & "protocol");
+    key3.SetValue("URL Protocol", "");
+
+    RegistryKey key2(keyRoot + "\\shell",  RegistryKey::Create);
+
+    for (PINDEX i = 0; i < cmds.GetSize(); ++i) {
+      RegistryKey key1(keyRoot + "\\shell\\" + cmds.GetKeyAt(i),              RegistryKey::Create);
+      RegistryKey key(keyRoot + "\\shell\\" + cmds.GetKeyAt(i) + "\\command", RegistryKey::Create);
+      key.SetValue("", cmds.GetDataAt(i));
+    }
+  }
+#endif
+
+  return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread

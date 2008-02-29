@@ -563,6 +563,59 @@ class PProcess : public PThread
     /// Main function for process, called from real main after initialisation
     virtual int _main(void * arg = NULL);
 
+    /**@name Operating System URL manager functions */
+    /**
+        This class can be used to register various URL types with the host operating system
+        so that URLs will automatically launch the correct application.
+
+        The simplest way to use these functions is to add the code similar to the following
+        to the Main function of the PProcess descendant
+
+            PString urlTypes("sip\nh323\nsips\nh323s");
+            if (!PProcess::HostSystemURLHandlerInfo::RegisterTypes(urlTypes, false))
+              PProcess::HostSystemURLHandlerInfo::RegisterTypes(urlTypes, true);
+
+        This will check to see if the URL types sip, h323, sips and h323s are registered
+        with the operating system to launch the current application. If they are not, it
+        will rewrite the system configuraton so that they will.
+
+        For more information on the Windows implementation, see the following link:
+
+              http://msdn2.microsoft.com/en-us/library/aa767914.aspx
+      */
+    //@{
+    class HostSystemURLHandlerInfo 
+    {
+      public:
+        HostSystemURLHandlerInfo()
+        { }
+
+        HostSystemURLHandlerInfo(const PString & _type)
+          : type(_type)
+        { }
+
+        static bool RegisterTypes(const PString & _types, bool force = true);
+
+        void SetIcon(const PString & icon);
+        PString GetIcon() const;
+
+        void SetCommand(const PString & key, const PString & command);
+        PString GetCommand(const PString & key) const;
+
+        bool GetFromSystem();
+        bool CheckIfRegistered();
+
+        bool Register();
+
+        PString type;
+
+    #if _WIN32
+        PString iconFileName;
+        PStringToString cmds;
+    #endif
+    };
+  //@}
+
   private:
     void Construct();
 
