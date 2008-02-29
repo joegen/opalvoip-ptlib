@@ -41,7 +41,8 @@
 
 
 const char LocalMachineStr[] = "HKEY_LOCAL_MACHINE\\";
-const char CurrentUserStr[] = "HKEY_CURRENT_USER\\";
+const char CurrentUserStr[]  = "HKEY_CURRENT_USER\\";
+const char ClassesRootStr[]  = "HKEY_CLASSES_ROOT\\";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
@@ -213,6 +214,10 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
   else if (subkeyname.Find(CurrentUserStr) == 0) {
     subkey = subkeyname.Mid(18);
     basekey = HKEY_CURRENT_USER;
+  }
+  else if (subkeyname.Find(ClassesRootStr) == 0) {
+    subkey = subkeyname.Mid(18);
+    basekey = HKEY_CLASSES_ROOT;
   }
   else {
     PString adjustedSubkey = subkeyname;
