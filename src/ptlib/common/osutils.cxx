@@ -1555,6 +1555,8 @@ PString PProcess::HostSystemURLHandlerInfo::GetIcon() const
 {
 #if _WIN32
   return iconFileName;
+#else
+  return PString();
 #endif
 }
 
@@ -1577,6 +1579,8 @@ PString PProcess::HostSystemURLHandlerInfo::GetCommand(const PString & key) cons
 {
 #if _WIN32
   return cmds(key);
+#else
+  return PString();
 #endif
 }
 
