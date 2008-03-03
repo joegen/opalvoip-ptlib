@@ -33,8 +33,6 @@
 
 #define P2 ((int)(POLRAD*POLRAD*FSC))
 
-static char extraToneMap[2] = { 'X', 'Y' };
-
 PDTMFDecoder::PDTMFDecoder()
 {
   // Initialise the class
