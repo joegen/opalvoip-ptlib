@@ -66,12 +66,12 @@ typedef int BOOL;
 // define some basic types and their limits
 //
 
-typedef unsigned char      BYTE;    // 1 byte
-typedef signed short       PInt16;  // 16 bit
-typedef unsigned short     WORD;
+typedef uint8_t            BYTE;
+typedef int16_t            PInt16;  // 16 bit
+typedef uint16_t           WORD;
 
-typedef long signed int    PInt32;  // 32 bit
-typedef long unsigned int  DWORD;
+typedef int32_t            PInt32;  // 32 bit
+typedef uint32_t           DWORD;
 
 #ifndef P_NEEDS_INT64
 typedef   signed long long int PInt64;
