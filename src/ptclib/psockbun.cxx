@@ -929,7 +929,7 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
   if (!LockReadWrite())
     return PChannel::NotOpen;
 
-  PChannel::Errors errorCode;
+  PChannel::Errors errorCode = PChannel::NotFound;
 
   if (iface.IsEmpty()) {
     do {
