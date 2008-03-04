@@ -183,9 +183,9 @@ PBoolean PSoundChannel_WAVFile::Close()
 }
 
 
-PBoolean PSoundChannel_WAVFile::SetBuffers(PINDEX, PINDEX)
+PBoolean PSoundChannel_WAVFile::SetBuffers(PINDEX size, PINDEX count)
 {
-  return PFalse;
+  return size*count < m_WAVFile.GetLength();
 }
 
 
