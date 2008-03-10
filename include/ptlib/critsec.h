@@ -32,6 +32,7 @@
 #define _PCRITICALSECTION
 
 #include <ptlib/psync.h>
+#include <atomic.h>
 
 #if defined(__GNUC__)
 #  if __GNUC__ >= 4 && __GNUC_MINOR__ >= 2
@@ -184,6 +185,17 @@ class PAtomicInteger
       inline void SetValue(int v)        { value = v; }
     protected:
       __stl_atomic_t value;
+#elif defined(SOLARIS) && !defined(__GNUC__)
+    public:
+      inline PAtomicInteger(uint32_t v = 0)
+      : value(v) { }
+      PBoolean IsZero() const                { return value == 0; }
+      inline int operator++()            { return atomic_add_32_nv((&value), 1); }
+      inline int unsigned operator--()   { return atomic_add_32_nv((&value), -1); }
+      inline operator int () const       { return value; }
+      inline void SetValue(int v)        { value = v; }
+    protected:
+       uint32_t value;
 #elif defined(__GNUC__) && P_HAS_ATOMIC_INT
     public:
       inline PAtomicInteger(int v = 0)
