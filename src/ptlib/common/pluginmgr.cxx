@@ -22,9 +22,9 @@
 
 #ifndef P_DEFAULT_PLUGIN_DIR
 #  if defined (_WIN32_WCE)
-#    define P_DEFAULT_PLUGIN_DIR "\\Windows\\Plugins"
+#    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
 #  elif defined (_WIN32)
-#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PTLib_PlugIns;C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
 #  else
 #    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"
 #  endif
