@@ -919,6 +919,8 @@ PBoolean PSoundChannelWin32::SetBuffers(PINDEX size, PINDEX count)
 
   PAssert(size > 0 && count > 0, PInvalidParameter);
 
+  PTRACE(1, "WIN32\tSetting sounds buffers to " << count << " x " << size);
+
   PBoolean ok = PTrue;
 
   PWaitAndSignal mutex(bufferMutex);
