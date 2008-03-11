@@ -1127,7 +1127,7 @@ PBoolean PVideoInputDevice_V4L::VerifyHardwareFrameSize(unsigned width, unsigned
 {
   struct video_window vwin;
 
-  if (HINT(HINT_FORCE_LARGE_SIZE))
+  if (HINT(HINT_FORCE_LARGE_SIZE)) {
     if(  (width==352) && (height==288) ) {
       PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize USB OK  352x288 ");
       return PTrue;
@@ -1135,6 +1135,7 @@ PBoolean PVideoInputDevice_V4L::VerifyHardwareFrameSize(unsigned width, unsigned
       PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize USB FAIL "<<width<<"x"<<height);
       return PFalse;
     }
+  }
     
   if (HINT(HINT_ALWAYS_WORKS_320_240) &&  (width==320) && (height==240) ) {
     PTRACE(3,"PVideoInputDevice_V4L\t VerifyHardwareFrameSize OK  for  320x240 ");

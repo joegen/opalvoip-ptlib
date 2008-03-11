@@ -482,8 +482,8 @@ scope it is defined in.
 This macro outputs a trace of a source file line execution.
 */
 #define PTRACE_LINE() \
-    if (!PTrace::CanTrace(1)) ; else \
-      PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End
+    do { if (PTrace::CanTrace(1)) \
+      PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End; } while (0)
 
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
@@ -491,8 +491,8 @@ output operators. The output is only made if the trace level set by the
 #PSetTraceLevel# function is greater than or equal to the #level# argument.
 */
 #define PTRACE(level, args) \
-    if (!PTrace::CanTrace(level)) ; else \
-      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End
+    do { if (PTrace::CanTrace(level)) \
+      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End; } while (0)
 
 /** Output trace on condition.
 This macro outputs a trace of any information needed, using standard stream
@@ -502,8 +502,8 @@ and the conditional is PTrue. Note the conditional is only evaluated if the
 trace level is sufficient.
 */
 #define PTRACE_IF(level, cond, args) \
-    if (!(PTrace::CanTrace(level)  && (cond))) ; else \
-      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End
+    do { if ((PTrace::CanTrace(level) && (cond))) \
+      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End; } while (0)
 
 #else // PTRACING
 
