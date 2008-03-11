@@ -409,7 +409,7 @@ PBoolean PSoundChannelALSA::Write (const void *buf, PINDEX len)
   lastWriteCount = 0;
   PWaitAndSignal m(device_mutex);
 
-  if (!isInitialised && !Setup() || !len || !os_handle)
+  if ((!isInitialised && !Setup()) || !len || !os_handle)
     return PFalse;
 
   do {
@@ -457,7 +457,7 @@ PBoolean PSoundChannelALSA::Read (void * buf, PINDEX len)
   lastReadCount = 0;
   PWaitAndSignal m(device_mutex);
 
-  if (!isInitialised && !Setup() || !len || !os_handle)
+  if ((!isInitialised && !Setup()) || !len || !os_handle)
     return PFalse;
 
   memset ((char *) buf, 0, len);
