@@ -32,7 +32,10 @@
 #define _PCRITICALSECTION
 
 #include <ptlib/psync.h>
+
+#if defined(SOLARIS) && !defined(__GNUC__)
 #include <atomic.h>
+#endif
 
 #if defined(__GNUC__)
 #  if __GNUC__ >= 4 && __GNUC_MINOR__ >= 2
