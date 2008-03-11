@@ -379,7 +379,7 @@ void PSMTPServer::OnHELO(const PCaselessString & remoteHost)
   if (socket != NULL)
     peerHost = socket->GetPeerHostName();
 
-  PString response = PIPSocket::GetHostName() & "Hello" & peerHost + ", ";
+  PString response = PIPSocket::GetHostName() & "Hello" & (peerHost + ", ");
 
   if (remoteHost == peerHost)
     response += "pleased to meet you.";
@@ -402,7 +402,7 @@ void PSMTPServer::OnEHLO(const PCaselessString & remoteHost)
   if (socket != NULL)
     peerHost = socket->GetPeerHostName();
 
-  PString response = PIPSocket::GetHostName() & "Hello" & peerHost + ", ";
+  PString response = PIPSocket::GetHostName() & "Hello" & (peerHost + ", ");
 
   if (remoteHost == peerHost)
     response += ", pleased to meet you.";

@@ -299,8 +299,9 @@ PTCPSocket * PHTTPServiceProcess::AcceptHTTP()
   if (socket->Accept(*httpListeningSocket))
     return socket;
 
-  if (socket->GetErrorCode() != PChannel::Interrupted)
+  if (socket->GetErrorCode() != PChannel::Interrupted) {
     PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket->GetErrorText());
+  }
 
   if (httpListeningSocket != NULL && httpListeningSocket->IsOpen())
     return socket;
