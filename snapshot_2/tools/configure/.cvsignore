@@ -1,0 +1,3 @@
+Debug debug
+Release release
+*.plg *.opt *.ncb *.Tags.WW *.vcproj.*.user

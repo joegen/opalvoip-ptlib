@@ -1,0 +1,136 @@
+#
+# Makefile
+#
+# Make file for pwlib library
+#
+# Portable Windows Library
+#
+# Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+#
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.0 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+# the License for the specific language governing rights and limitations
+# under the License.
+#
+# The Original Code is Portable Windows Library.
+#
+# The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+#
+# Contributor(s): ______________________________________.
+#
+# $Revision$
+# $Author$
+# $Date$
+#
+
+PREFIX=@INSTALLPREFIX@
+exec_prefix = ${PREFIX}
+LIBDIR=@LIBDIR@
+export PTLIBDIR=@PTLIBDIR@
+
+INSTALL=@INSTALL@
+
+default :: optshared
+
+all :: 
+
+TARGETDIR=@TARGETDIR@
+
+include make/ptlib.mak
+
+SUBDIRS := src/ptlib/$(TARGETDIR)
+ifeq (1, $(HAS_PLUGINS))
+SUBDIRS += plugins
+endif
+
+ifeq (1, $(HAS_SAMPLES))
+SUBDIRS += samples/hello_world
+endif
+
+# override P_SHAREDLIB for specific targets
+optshared   debugshared   bothshared   :: P_SHAREDLIB=1
+optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
+
+# all these targets are just passed to all subdirectories
+$(subst tagbuild,,$(STANDARD_TARGETS)) ::
+	set -e; $(foreach dir,$(SUBDIRS),if test -e $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
+
+update:
+	svn update
+	$(MAKE) bothdepend both
+
+ptlib:
+	$(MAKE) -C src/ptlib/$(TARGETDIR) both
+
+docs: 
+	doxygen ptlib_cfg.dxy
+
+install:
+	( for dir in $(DESTDIR)$(LIBDIR) \
+		     $(DESTDIR)$(PREFIX)/bin \
+		     $(DESTDIR)$(PREFIX)/include/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptclib \
+                     $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
+		do mkdir -p $$dir ; chmod 755 $$dir ; \
+	done )
+	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
+	(cd $(DESTDIR)$(LIBDIR) ; \
+		rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
+		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ \
+	)
+	(cd $(DESTDIR)$(LIBDIR) ; \
+		rm -f  $(PTLIB_FILE).@MAJOR_VERSION@ ; \
+		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE).@MAJOR_VERSION@ \
+	)
+	(cd $(DESTDIR)$(LIBDIR) ; \
+		rm -f  $(PTLIB_FILE) ; \
+		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE) \
+	)
+	(cd $(DESTDIR)$(LIBDIR); \
+		rm -f  libpt.@SHAREDLIBEXT@ ; \
+		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
+	)
+ifeq (1, $(HAS_PLUGINS))
+	cd plugins/ptlib/device/ ; \
+	( for dir in ./* ;\
+		do mkdir -p $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
+		chmod 755 $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
+		(for fn in ./$$dir/*.so ; \
+			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir; \
+		done ); \
+	done )
+endif
+	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(PREFIX)/include
+	(for fn in include/ptlib/*.h include/ptlib/*.inl; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib; \
+	done)
+	(for fn in include/ptlib/unix/ptlib/*.h include/ptlib/unix/ptlib/*.inl ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib ; \
+	done)
+	(for fn in include/ptclib/*.h ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptclib; \
+	done)
+	(for fn in make/*.mak ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/ptlib/make; \
+	done)
+	$(INSTALL) -m 755 make/ptlib-config $(DESTDIR)$(PREFIX)/share/ptlib/make/
+	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; ln -snf ../share/ptlib/make/ptlib-config ptlib-config)
+
+uninstall:
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
+	       $(DESTDIR)$(PREFIX)/include/ptclib \
+	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
+	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
+	       $(DESTDIR)$(PREFIX)/share/ptlib \
+	       $(DESTDIR)$(LIBDIR)/ptlib/devices \
+	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* \
+              @libdir@/libpt.so 
+
+# End of Makefile.in

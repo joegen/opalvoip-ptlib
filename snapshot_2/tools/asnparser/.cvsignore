@@ -1,0 +1,14 @@
+obj_*_*_d Debug
+obj_*_*_r Release
+*.plg *.opt *.ncb *.Tags.WW
+asn_lex.cxx
+asn_grammar.output
+asn_grammar.out
+asn_grammar.h
+asn_grammar.cxx
+asn_grammar_tab.c
+asn_grammar_tab.h
+asnparser.ncb
+asnparser.opt
+asnparser.plg
+test.asn test.cxx test.h
