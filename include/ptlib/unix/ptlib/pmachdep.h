@@ -342,8 +342,12 @@ typedef int socklen_t;
 #endif
  
 #define HAS_IFREQ
- 
+
+#if defined (P_MACOSX) && (P_MACOSX < 900)
 #define PSETPGRP()  setpgrp(0, 0)
+#else
+#define PSETPGRP()  setpgrp()
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
