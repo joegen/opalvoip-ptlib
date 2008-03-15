@@ -1021,16 +1021,16 @@ sem_t * PSemaphore::CreateSem(unsigned initialValue)
   // Since sem_open and sem_unlink are two operations, there is a small
   // window of opportunity that two simultaneous accesses may return
   // the same semaphore. Therefore, the static mutex is used to
-  // prevent this, even if the chances are small
+  // prevent this.
   static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
   PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
   
-  sem_unlink("/pwlib_sem");
-  sem = sem_open("/pwlib_sem", (O_CREAT | O_EXCL), 700, initialValue);
+  sem_unlink("/ptlib_sem");
+  sem = sem_open("/ptlib_sem", (O_CREAT | O_EXCL), 700, initialValue);
   
   PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
   
-  PAssert(((int)sem != SEM_FAILED), "Couldn't create named semaphore");
+  PAssert(((int)sem != (int)SEM_FAILED), "Couldn't create named semaphore");
   return sem;
 }
 #endif

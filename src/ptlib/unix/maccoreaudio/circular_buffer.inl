@@ -23,6 +23,10 @@
 #ifndef CIRCULAR_BUFFER_H
 #define CIRCULAR_BUFFER_H
 
+#ifndef MIN
+#define MIN(a,b) (a < b ? a : b)
+#endif
+
 
 //#define PTRACE_CIRC(level, str) PTRACE(level, str) 
 #define PTRACE_CIRC(level, str) 
