@@ -108,7 +108,10 @@ case "$target_os" in
 
   darwin* )	   OSTYPE=Darwin ;
 		   OS_TAG="P_MACOSX" ;
-		   OSRELEASE="`uname -r | sed 's/\.//g'`" ;
+		   OS_MAJOR=`uname -r | sed 's/\..*$//'`
+		   OS_MAJOR=`expr $OS_MAJOR \* 100`
+		   OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
+		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
                    if test -e /Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include/expat.h ; then
                      EXPATDIR=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6
