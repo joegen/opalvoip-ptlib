@@ -1952,7 +1952,7 @@ PReadWriteMutex::~PReadWriteMutex()
      there so practicality wins out!
    */
   while (!nestedThreads.IsEmpty())
-    Sleep(10);
+    PThread::Sleep(10);
 }
 
 
