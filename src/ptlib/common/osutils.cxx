@@ -1934,6 +1934,28 @@ PReadWriteMutex::PReadWriteMutex()
 }
 
 
+PReadWriteMutex::~PReadWriteMutex()
+{
+  EndNest(); // Destruction while current thread has a lock is OK
+
+  /* There is a small window during destruction where another thread is on the
+     way out of EndRead() or EndWrite() where it checks for nested locks.
+     While the check is protected by mutex, there is a moment between one
+     check and the next where the object is unlocked. This is normally fine,
+     except for if a thread then goes and deletes the object out from under
+     the threads about to do the second check.
+
+     Note if this goes into an endless loop then there is a big problem with
+     the user of the PReadWriteMutex, as it must be CONTINUALLY trying to use
+     the object when someone wants it gone. Technically this fix should be
+     done by the user of the class too, but it is easier to fix here than
+     there so practicality wins out!
+   */
+  while (!nestedThreads.IsEmpty())
+    Sleep(10);
+}
+
+
 PReadWriteMutex::Nest * PReadWriteMutex::GetNest() const
 {
   PWaitAndSignal mutex(nestingMutex);
