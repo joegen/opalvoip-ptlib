@@ -253,6 +253,7 @@ class PReadWriteMutex : public PObject
   /**@name Construction */
   //@{
     PReadWriteMutex();
+    ~PReadWriteMutex();
   //@}
 
   /**@name Operations */
