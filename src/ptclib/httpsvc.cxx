@@ -408,7 +408,7 @@ PHTTPServer * PHTTPServiceProcess::OnCreateHTTPServer(const PHTTPSpace & httpNam
 
 PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
                                        PHTTPServiceProcess & app)
-  : PThread(stackSize, AutoDeleteThread, NormalPriority, "HTTP Service:%x"),
+  : PThread(stackSize, AutoDeleteThread, NormalPriority, "HTTP Service:%u"),
     process(app)
 {
   process.httpThreadsMutex.Wait();
