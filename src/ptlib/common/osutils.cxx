@@ -1729,9 +1729,9 @@ static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 void PThread::SetThreadName(const PString & name)
 {
   if (name.IsEmpty())
-    threadName = psprintf("%s:%u", GetClass(), threadId);
+    threadName = psprintf("%s:%u", GetClass(), GetThreadId());
   else
-    threadName = psprintf(name, threadId);
+    threadName = psprintf(name, GetThreadId());
 
   SetWinDebugThreadName(threadName, threadId);
 }
