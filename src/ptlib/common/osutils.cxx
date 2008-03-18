@@ -1345,42 +1345,40 @@ PProcess::PProcess(const char * manuf, const char * name,
   status = stat;
   buildNumber = build;
 
-#ifndef P_RTEMS
-  if (p_argv != 0 && p_argc > 0) 
+#ifdef P_RTEMS
+
+  cout << "Enter program arguments:\n";
+  arguments.ReadFrom(cin);
+
+#else // P_RTEMS
+
+  if (p_argv != 0 && p_argc > 0) {
+    executableFile = p_argv[0];
     arguments.SetArgs(p_argc-1, p_argv+1);
-  else {
-    
-#if defined(_WIN32) 
+  }
+
+#ifdef _WIN32
+  if (executableFile.IsEmpty()) {
     // Try to get the real image path for this process
-#ifndef _WIN32_WCE
-    GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
-#else
-    wchar_t wcsModuleName[1024];
-    if (GetModuleFileName(GetModuleHandle(NULL), wcsModuleName, 1024))
-      wcstombs(executableFile.GetPointer(1024), wcsModuleName, 1024);
-#endif // ifndef _WIN32_WCE
-
-    executableFile.Replace("\\??\\","");
-
-#endif // defined(_WIN32)
-
-    // Ok something went wrong, just use the default
-    if (executableFile.IsEmpty())
-      executableFile = PString(p_argv[0]);
-
+    PVarString moduleName;
+    if (GetModuleFileName(GetModuleHandle(NULL), moduleName.GetPointer(1024), 1024) > 0) {
+      executableFile = moduleName;
+      executableFile.Replace("\\??\\","");
+    }
+  }
+  else {
     if (!PFile::Exists(executableFile)) {
       PString execFile = executableFile + ".exe";
       if (PFile::Exists(execFile))
         executableFile = execFile;
     }
-
-    if (productName.IsEmpty())
-      productName = executableFile.GetTitle().ToLower();
   }
-#else  // #ifndef P_RTEMS
-  cout << "Enter program arguments:\n";
-  arguments.ReadFrom(cin);
-#endif
+#endif // _WIN32
+
+  if (productName.IsEmpty())
+    productName = executableFile.GetTitle().ToLower();
+
+#endif // P_RTEMS
 
   InitialiseProcessThread();
 
