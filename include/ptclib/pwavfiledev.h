@@ -91,9 +91,12 @@ class PSoundChannel_WAVFile : public PSoundChannel
     PBoolean WaitForAllRecordBuffersFull();
 
 protected:
+    bool ReadSamples(void * data, PINDEX size);
+
     PWAVFile       m_WAVFile;
     PAdaptiveDelay m_Pacing;
     bool           m_autoRepeat;
+    unsigned       m_sampleRate;
 };
 
 
