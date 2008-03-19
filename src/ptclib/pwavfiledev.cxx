@@ -70,6 +70,7 @@ PINSTANTIATE_FACTORY(PSoundChannel, WAVFile)
 
 PSoundChannel_WAVFile::PSoundChannel_WAVFile()
   : m_autoRepeat(false)
+  , m_sampleRate(8000)
 {
 }
 
@@ -112,9 +113,13 @@ PBoolean PSoundChannel_WAVFile::Open(const PString & device,
                                  unsigned bitsPerSample)
 {
   Close();
+
   if (dir == PSoundChannel::Player) {
     SetFormat(numChannels, sampleRate, bitsPerSample);
-    return m_WAVFile.Open(device, PFile::WriteOnly);
+    if (m_WAVFile.Open(device, PFile::WriteOnly))
+      return true;
+    SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
+    return false;
   }
 
   PString adjustedDevice = device;
@@ -124,16 +129,22 @@ PBoolean PSoundChannel_WAVFile::Open(const PString & device,
     m_autoRepeat = true;
   }
 
-  if (!m_WAVFile.Open(adjustedDevice, PFile::ReadOnly))
-    return PFalse;
+  if (!m_WAVFile.Open(adjustedDevice, PFile::ReadOnly)) {
+    SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
+    return false;
+  }
+
+  m_sampleRate = sampleRate;
 
   if (m_WAVFile.GetChannels() == numChannels &&
-      m_WAVFile.GetSampleRate() == sampleRate &&
+      m_sampleRate >= 8000 &&
       m_WAVFile.GetSampleSize() == bitsPerSample)
-    return PTrue;
+    return true;
 
   Close();
-  return PFalse;
+
+  SetErrorValues(BadParameter, EINVAL);
+  return false;
 }
 
 
@@ -225,14 +236,62 @@ PBoolean PSoundChannel_WAVFile::StartRecording()
 
 PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
-  PBoolean ok = m_WAVFile.Read(data, size);
-  if (!ok && m_autoRepeat) {
-    m_WAVFile.SetPosition(0);
-    ok = m_WAVFile.Read(data, size);
+  lastReadCount = 0;
+
+  unsigned wavSampleRate = m_WAVFile.GetSampleRate();
+  if (wavSampleRate < m_sampleRate) {
+    // File has less samples than we want, so we need to interpolate
+    unsigned iDutyCycle = m_sampleRate - wavSampleRate;
+    short iSample = 0;
+    short * pPCM = (short *)data;
+    for (PINDEX count = 0; count < size; count += sizeof(short)) {
+      iDutyCycle += wavSampleRate;
+      if (iDutyCycle >= m_sampleRate) {
+        iDutyCycle -= m_sampleRate;
+        if (!ReadSamples(&iSample, sizeof(short)))
+          return false;
+      }
+      *pPCM++ = iSample;
+      lastReadCount += sizeof(short);
+    }
   }
-  lastReadCount = m_WAVFile.GetLastReadCount();
-  m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate());
-  return ok;
+  else if (wavSampleRate > m_sampleRate) {
+    // File has more samples than we want, so we need to throw some away
+    unsigned iDutyCycle = 0;
+    short iSample;
+    short * pPCM = (short *)data;
+    for (PINDEX count = 0; count < size; count += sizeof(short)) {
+      do {
+        if (!ReadSamples(&iSample, sizeof(short)))
+          return false;
+        iDutyCycle += m_sampleRate;
+      } while (iDutyCycle < wavSampleRate);
+      iDutyCycle -= wavSampleRate;
+      *pPCM++ = iSample;
+      lastReadCount += sizeof(short);
+    }
+  }
+  else {
+    if (!ReadSamples(data, size))
+      return false;
+    lastReadCount = m_WAVFile.GetLastReadCount();
+  }
+
+  m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_sampleRate);
+  return true;
+}
+
+
+bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
+{
+  if (m_WAVFile.Read(data, size))
+    return true;
+
+  if (!m_autoRepeat)
+    return false;
+
+  m_WAVFile.SetPosition(0);
+  return m_WAVFile.Read(data, size);
 }
 
 
