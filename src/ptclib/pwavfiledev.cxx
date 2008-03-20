@@ -71,6 +71,7 @@ PINSTANTIATE_FACTORY(PSoundChannel, WAVFile)
 PSoundChannel_WAVFile::PSoundChannel_WAVFile()
   : m_autoRepeat(false)
   , m_sampleRate(8000)
+  , m_bufferSize(2)
 {
 }
 
@@ -194,16 +195,18 @@ PBoolean PSoundChannel_WAVFile::Close()
 }
 
 
-PBoolean PSoundChannel_WAVFile::SetBuffers(PINDEX size, PINDEX count)
+PBoolean PSoundChannel_WAVFile::SetBuffers(PINDEX size, PINDEX /*count*/)
 {
-  return size*count < m_WAVFile.GetLength();
+  m_bufferSize = size;
+  return true;
 }
 
 
 PBoolean PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  size = count = 0;
-  return PFalse;
+  size = m_bufferSize;
+  count = 1;
+  return true;
 }
 
 
@@ -252,7 +255,6 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
           return false;
       }
       *pPCM++ = iSample;
-      lastReadCount += sizeof(short);
     }
   }
   else if (wavSampleRate > m_sampleRate) {
@@ -268,13 +270,11 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
       } while (iDutyCycle < wavSampleRate);
       iDutyCycle -= wavSampleRate;
       *pPCM++ = iSample;
-      lastReadCount += sizeof(short);
     }
   }
   else {
     if (!ReadSamples(data, size))
       return false;
-    lastReadCount = m_WAVFile.GetLastReadCount();
   }
 
   m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_sampleRate);
@@ -284,14 +284,26 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 
 bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
 {
-  if (m_WAVFile.Read(data, size))
-    return true;
+  int repeat = m_autoRepeat ? 2 : 1;
+  while (repeat-- > 0) {
 
-  if (!m_autoRepeat)
-    return false;
+    if (m_WAVFile.Read(data, size)) {
+      PINDEX fileReadCount = m_WAVFile.GetLastReadCount();
+      lastReadCount += fileReadCount;
 
-  m_WAVFile.SetPosition(0);
-  return m_WAVFile.Read(data, size);
+      // Have we got the precise amount of data requested?
+      // Or at least a multiple of the buffer size?
+      if (fileReadCount == size || lastReadCount%m_bufferSize == 0)
+        return true;
+
+      // Nope, maybe do a wraparound depending on m_autoRepeat
+      lastReadCount -= fileReadCount;
+    }
+
+    m_WAVFile.SetPosition(0);
+  }
+
+  return false;
 }
 
 
