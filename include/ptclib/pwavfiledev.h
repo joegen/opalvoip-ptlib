@@ -97,6 +97,7 @@ protected:
     PAdaptiveDelay m_Pacing;
     bool           m_autoRepeat;
     unsigned       m_sampleRate;
+    PINDEX         m_bufferSize;
 };
 
 
