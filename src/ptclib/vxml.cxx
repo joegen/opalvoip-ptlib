@@ -872,7 +872,7 @@ PBoolean PVXMLSession::Execute()
   // cannot open if no data is loaded
   if (loaded && vxmlThread == NULL) {
     threadRunning = PTrue;
-    vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), 0, PThread::NoAutoDeleteThread);
+    vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), "VXML");
   }
 
   return PTrue;

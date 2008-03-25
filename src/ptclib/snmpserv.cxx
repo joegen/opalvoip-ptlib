@@ -43,7 +43,7 @@
 static const char defaultCommunity[] = "public";
 
 PSNMPServer::PSNMPServer(PIPSocket::Address binding, WORD localPort, PINDEX timeout, PINDEX rxSize, PINDEX txSize)
- : PThread(1000,AutoDeleteThread),
+ : PThread(1000, AutoDeleteThread, NormalPriority, "SNMP Server"),
    community(defaultCommunity),
    version(SNMP_VERSION),
    maxRxSize(rxSize),

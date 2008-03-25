@@ -503,9 +503,7 @@ PBoolean PVideoInputDevice_VideoForWindows::Open(const PString & devName, PBoole
 
   deviceName = devName;
 
-  captureThread = PThread::Create(PCREATE_NOTIFIER(HandleCapture), 0,
-                                  PThread::NoAutoDeleteThread, PThread::NormalPriority,
-                                  "VidIn:%u");
+  captureThread = PThread::Create(PCREATE_NOTIFIER(HandleCapture), "VidIn");
 
   operationMutex.Signal();
   threadStarted.Wait();
@@ -1258,9 +1256,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
 
   deviceName = name;
 
-  m_thread = PThread::Create(PCREATE_NOTIFIER(HandleDisplay), 0,
-                             PThread::NoAutoDeleteThread, PThread::NormalPriority,
-                             "VidOut:%u");
+  m_thread = PThread::Create(PCREATE_NOTIFIER(HandleDisplay), "VidOut");
 
   m_openCloseMutex.Signal();
   m_started.Wait();

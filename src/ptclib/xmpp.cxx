@@ -264,7 +264,7 @@ void XMPP::Stream::Reset()
 ///////////////////////////////////////////////////////
 
 XMPP::BaseStreamHandler::BaseStreamHandler()
-  : PThread(0x1000, PThread::NoAutoDeleteThread),
+  : PThread(0x1000, NoAutoDeleteThread, NormalPriority, "XMPP"),
     m_Stream(NULL),
     m_AutoReconnect(PTrue),
     m_ReconnectTimeout(1000)
