@@ -503,7 +503,7 @@ int PServiceProcess::InitialiseService()
   PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(PTrue));
 
   if (args.HasOption('i'))
-    SetConfigurationPath(args.GetOptionString('i'));
+    SetConfigurationPath(PFilePath(args.GetOptionString('i')));
 
   if (args.HasOption('H')) {
     int uid = geteuid();
