@@ -248,7 +248,7 @@ class PXMLObject : public PObject {
     PXMLObject(PXMLElement * _parent)
       : parent(_parent) { dirty = PFalse; }
 
-    PXMLElement * GetParent()
+    PXMLElement * GetParent() const
       { return parent; }
 
     PXMLObject * GetNextObject();
