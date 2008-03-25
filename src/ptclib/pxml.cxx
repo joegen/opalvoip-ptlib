@@ -458,7 +458,7 @@ PBoolean PXML::StartAutoReloadURL(const PURL & url,
 
 void PXML::AutoReloadTimeout(PTimer &, INT)
 {
-  PThread::Create(PCREATE_NOTIFIER(AutoReloadThread), PThread::AutoDeleteThread);
+  PThread::Create(PCREATE_NOTIFIER(AutoReloadThread), "XmlReload");
 }
 
 void PXML::AutoReloadThread(PThread &, INT)

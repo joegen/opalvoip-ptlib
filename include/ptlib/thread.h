@@ -335,6 +335,10 @@ class PThread : public PObject
       const PString & threadName = PString::Empty(), ///< The name of the thread (for Debug/Trace)
       PINDEX stackSize = 65536         ///< Stack size on some platforms
     );
+    static PThread * Create(
+      const PNotifier & notifier,     ///< Function to execute in thread.
+      const PString & threadName      ///< The name of the thread (for Debug/Trace)
+    ) { return Create(notifier, 0, NoAutoDeleteThread, NormalPriority, threadName); }
   //@}
 
   protected:
