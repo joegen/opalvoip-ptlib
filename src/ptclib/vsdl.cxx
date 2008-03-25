@@ -98,10 +98,7 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
 
   deviceName = name;
 
-  sdlThread = PThread::Create(PCREATE_NOTIFIER(SDLThreadMain), 0,
-                               PThread::NoAutoDeleteThread,
-                               PThread::LowPriority,
-                               "SDL:%u");
+  sdlThread = PThread::Create(PCREATE_NOTIFIER(SDLThreadMain), "SDL");
 
   sdlStarted.Wait();
 
