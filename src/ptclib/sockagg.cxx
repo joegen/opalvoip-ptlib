@@ -132,7 +132,9 @@ void PThreadPoolBase::StopWorker(PThreadPoolWorkerBase * worker)
 ////////////////////////////////////////////////////////////////
 
 PThreadPoolWorkerBase::PThreadPoolWorkerBase(PThreadPoolBase & _pool)
-  : PThread(100, NoAutoDeleteThread, NormalPriority, "Aggregator:%0x"), pool(_pool), shutdown(PFalse)
+  : PThread(100, NoAutoDeleteThread, NormalPriority, "Aggregator")
+  , pool(_pool)
+  , shutdown(PFalse)
 {
 }
 
