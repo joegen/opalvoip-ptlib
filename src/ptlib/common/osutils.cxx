@@ -1722,16 +1722,36 @@ static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 }
 
 #else
+
 #define SetWinDebugThreadName(p1,p2)
-#endif // defined(_DEBUG) && defined(_MSC_VER)
+
+#endif // defined(_DEBUG) && defined(_MSC_VER) && !defined(_WIN32_WCE)
+
+
+#if defined(_WIN32) && !defined(_WIN32_WCE)
+  #define THREAD_ID_FMT ":%u"
+#else
+  #define THREAD_ID_FMT ":0x%x"
+#endif
 
 
 void PThread::SetThreadName(const PString & name)
 {
-  if (name.IsEmpty())
-    threadName = psprintf("%s:%u", GetClass(), GetThreadId());
-  else
-    threadName = psprintf(name, GetThreadId());
+  PThreadIdentifier threadId = GetThreadId();
+  if (name.Find('%') != P_MAX_INDEX)
+    threadName = psprintf(name, threadId);
+  else if (name.IsEmpty()) {
+    threadName = GetClass();
+    threadName.sprintf(THREAD_ID_FMT, threadId);
+  }
+  else {
+    PString idStr;
+    idStr.sprintf(THREAD_ID_FMT, threadId);
+
+    threadName = name;
+    if (threadName.Find(idStr) == P_MAX_INDEX)
+      threadName += idStr;
+  }
 
   SetWinDebugThreadName(threadName, threadId);
 }
