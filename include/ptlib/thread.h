@@ -42,6 +42,8 @@
 #undef Priority
 #endif
 
+#include <ptlib/mutex.h>
+
 class PSemaphore;
 
 #define PThreadIdentifer PThreadIdentifier
@@ -365,6 +367,7 @@ class PThread : public PObject
 
     // Give the thread a name for debugging purposes.
     PString threadName;
+    PMutex threadNameMutex;
 
   private:
 #if PTRACING
