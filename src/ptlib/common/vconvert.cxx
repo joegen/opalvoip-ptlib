@@ -1350,7 +1350,8 @@ PBoolean PStandardColourConverter::SBGGR8toYUV420P(const BYTE * src, BYTE * dst,
 #define USE_SBGGR8_NATIVE 1 // set to 0 to use the double conversion algorithm (Bayer->RGB->YUV420P)
   
 #if USE_SBGGR8_NATIVE
-
+if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight))
+{
   // kernels for Y conversion, normalised by 2^16
   const int kR[]={1802,9667,1802,9667,19661,9667,1802,9667,1802}; 
   const int kG1[]={7733,9830,7733,3604,7733,3604,7733,9830,7733};
@@ -1433,17 +1434,17 @@ PBoolean PStandardColourConverter::SBGGR8toYUV420P(const BYTE * src, BYTE * dst,
     *bytesReturned = srcFrameHeight*srcFrameWidth+2*hSize*vSize;
 
   return true;
-
-#else //USE_SBGGR8_NATIVE
-
+}
+else
+#endif //USE_SBGGR8_NATIVE
+{
   // shortest but less efficient (one malloc per conversion!)
   BYTE * tempDest=(BYTE*)malloc(3*srcFrameWidth*srcFrameHeight);
   SBGGR8toRGB(src, tempDest, NULL);
-  PBoolean r = RGBtoYUV420P(tempDest, dst, bytesReturned, 3, 2, 0);
+  PBoolean r = RGBtoYUV420P(tempDest, dst, bytesReturned, 3, 0, 2);
   free(tempDest);
   return r;
-
-#endif //USE_SBGGR8_NATIVE
+}
 }
 
 PBoolean PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
