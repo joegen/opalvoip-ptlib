@@ -255,6 +255,7 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
           return false;
       }
       *pPCM++ = iSample;
+      lastReadCount += sizeof(short);
     }
   }
   else if (wavSampleRate > m_sampleRate) {
@@ -270,11 +271,13 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
       } while (iDutyCycle < wavSampleRate);
       iDutyCycle -= wavSampleRate;
       *pPCM++ = iSample;
+      lastReadCount += sizeof(short);
     }
   }
   else {
     if (!ReadSamples(data, size))
       return false;
+    lastReadCount = m_WAVFile.GetLastReadCount();
   }
 
   m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_sampleRate);
@@ -284,26 +287,14 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 
 bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
 {
-  int repeat = m_autoRepeat ? 2 : 1;
-  while (repeat-- > 0) {
+  if (m_WAVFile.Read(data, size) && m_WAVFile.GetLastReadCount() >= size)
+    return true;
 
-    if (m_WAVFile.Read(data, size)) {
-      PINDEX fileReadCount = m_WAVFile.GetLastReadCount();
-      lastReadCount += fileReadCount;
+  if (!m_autoRepeat)
+    return false;
 
-      // Have we got the precise amount of data requested?
-      // Or at least a multiple of the buffer size?
-      if (fileReadCount == size || lastReadCount%m_bufferSize == 0)
-        return true;
-
-      // Nope, maybe do a wraparound depending on m_autoRepeat
-      lastReadCount -= fileReadCount;
-    }
-
-    m_WAVFile.SetPosition(0);
-  }
-
-  return false;
+  m_WAVFile.SetPosition(0);
+  return m_WAVFile.Read(data, size);
 }
 
 
