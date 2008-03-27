@@ -398,6 +398,15 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
             PINDEX cardnum = numbers.AsInteger(); //dspN.M is truncated to dspN.
             // If we have not yet inserted something for this cardnum, insert it
             if (dsp.GetAt(cardnum+1) == NULL) {
+#if defined P_FREEBSD
+              // in FreeBSD the file name should be used via the devfs(5) and
+              // is just "/dev/dsp0" and devfs(5) takes care of virtual channels,
+              // like /dev/dsp0.0 /dev/dsp0.1 ...
+              // everything else would conflict with other KDE apps using the
+              // audio
+              devname = devdir + "dsp0";
+              PTRACE(1, "OSS\tCollectSoundDevices FreeBSD devname set to devfs(5) name:" << devname );
+#endif
               dsp.SetAt(cardnum+1, devname);
             }
           }
