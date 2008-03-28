@@ -798,7 +798,7 @@ void * PThread::PX_ThreadStart(void * arg)
   // make sure the cleanup routine is called when the thread exits
   pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
 
-  PTRACE(5, "PWLib\tStarted thread " << thread << ' ' << thread->threadName);
+  PTRACE(5, "PWLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
 
   PProcess::Current().OnThreadStart(*thread);
 
@@ -833,10 +833,11 @@ void PThread::PX_ThreadEnd(void * arg)
 
   // delete the thread if required, note this is done this way to avoid
   // a race condition, the thread ID cannot be zeroed before the if!
+  PString threadName = thread->GetThreadName();
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
     process.threadMutex.Signal();
-    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
+    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
 
     /* It is now safe to delete this thread. Note that this thread
        is deleted after the process.threadMutex.Signal(), which means
@@ -845,7 +846,6 @@ void PThread::PX_ThreadEnd(void * arg)
   }
   else {
     thread->PX_threadId = 0;
-    PString threadName = thread->threadName;
     process.threadMutex.Signal();
     PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
   }
