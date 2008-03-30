@@ -121,7 +121,7 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
           struct stat s;
           if (lstat(devname, &s) == 0) {
             // OSS compatible audio major device numbers (OSS, SAM9407, etc)
-            static const unsigned deviceNumbers[] = { 14, 145 };
+            static const unsigned deviceNumbers[] = { 14, 145, 246 };
             for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
               if ((s.st_rdev >> 8) == deviceNumbers[i]) {
                 PINDEX cardnum = (s.st_rdev >> 4) & 15;
