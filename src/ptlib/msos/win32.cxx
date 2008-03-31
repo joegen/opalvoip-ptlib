@@ -706,6 +706,8 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   ::CoUninitialize();
 #endif
 
+  PTrace::Cleanup();
+
   return 0;
 }
 
@@ -743,10 +745,6 @@ PThread::PThread(PINDEX stackSize,
   PAssertOS(threadHandle != NULL);
 
   SetPriority(priorityLevel);
-
-#if PTRACING
-  traceBlockIndentLevel = 0;
-#endif
 
   if (autoDelete) {
     PProcess & process = PProcess::Current();
@@ -955,9 +953,6 @@ void PThread::InitialiseProcessThread()
   threadId = GetCurrentThreadId();
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(threadId, this);
-#if PTRACING
-  traceBlockIndentLevel = 0;
-#endif
 }
 
 
@@ -1090,6 +1085,8 @@ PProcess::~PProcess()
   deleteThreadMutex.Signal();
 
   PostShutdown();
+
+  PTrace::Cleanup();
 
 #if _DEBUG
   extern void PWaitOnExitConsoleWindow();
