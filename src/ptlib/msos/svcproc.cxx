@@ -191,18 +191,15 @@ void PSystemLog::Output(Level level, const char * msg)
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
     PThread * thread = PThread::Current();
+    PString threadName;
     if (thread == NULL)
-      *out << "ThreadID=0x"
-           << setfill('0') << hex
-           << setw(8) << GetCurrentThreadId()
-           << setfill(' ') << dec;
-    else {
-      PString threadName = thread->GetThreadName();
-      if (threadName.GetLength() <= 23)
-        *out << setw(23) << threadName;
-      else
-        *out << threadName.Left(10) << "..." << threadName.Right(10);
-    }
+      threadName.sprintf("ThreadID" PTHREAD_ID_FMT, GetCurrentThreadId());
+    else
+      threadName = thread->GetThreadName();
+    if (threadName.GetLength() <= 23)
+      *out << setw(23) << threadName;
+    else
+      *out << threadName.Left(10) << "..." << threadName.Right(10);
 
     *out << '\t';
     if (level < 0)
