@@ -374,18 +374,15 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       stream << setprecision(3) << setw(10) << (PTimer::Tick()-info.startTick) << '\t';
 
     if ((info.options&Thread) != 0) {
+      PString name;
       if (thread == NULL)
-        stream << "ThreadID=0x"
-               << setfill('0') << hex << setw(8)
-               << PThread::GetCurrentThreadId()
-               << setfill(' ') << dec;
-      else {
-        PString name = thread->GetThreadName();
-        if (name.GetLength() <= 23)
-          stream << setw(23) << name;
-        else
-          stream << name.Left(10) << "..." << name.Right(10);
-      }
+        name.sprintf("ThreadID" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
+      else
+        name = thread->GetThreadName();
+      if (name.GetLength() <= 23)
+        stream << setw(23) << name;
+      else
+        stream << name.Left(10) << "..." << name.Right(10);
       stream << '\t';
     }
 
@@ -1731,13 +1728,6 @@ static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 #endif // defined(_DEBUG) && defined(_MSC_VER) && !defined(_WIN32_WCE)
 
 
-#if defined(_WIN32) && !defined(_WIN32_WCE)
-  #define THREAD_ID_FMT ":%u"
-#else
-  #define THREAD_ID_FMT ":0x%x"
-#endif
-
-
 void PThread::SetThreadName(const PString & name)
 {
   PWaitAndSignal m(threadNameMutex);
@@ -1747,11 +1737,11 @@ void PThread::SetThreadName(const PString & name)
     threadName = psprintf(name, threadId);
   else if (name.IsEmpty()) {
     threadName = GetClass();
-    threadName.sprintf(THREAD_ID_FMT, threadId);
+    threadName.sprintf(PTHREAD_ID_FMT, threadId);
   }
   else {
     PString idStr;
-    idStr.sprintf(THREAD_ID_FMT, threadId);
+    idStr.sprintf(PTHREAD_ID_FMT, threadId);
 
     threadName = name;
     if (threadName.Find(idStr) == P_MAX_INDEX)
