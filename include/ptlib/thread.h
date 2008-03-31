@@ -369,16 +369,23 @@ class PThread : public PObject
     PString threadName;
     PMutex threadNameMutex;
 
-  private:
 #if PTRACING
-    PStack<PStringStream> traceStreams;
-    unsigned traceLevel;
+  public:
+    struct TraceInfo {
+      TraceInfo()
+      { traceBlockIndentLevel = 0; }
+
+      PStack<PStringStream> traceStreams;
+      unsigned traceLevel;
+      unsigned traceBlockIndentLevel;
+    };
+
+#ifndef P_HAS_THREADLOCAL_STORAGE
+  private:
     friend class PTrace;
-
-    unsigned traceBlockIndentLevel;
-    friend class PTrace::Block;
-#endif
-
+    TraceInfo traceInfo;
+#endif // P_HAS_THREADLOCAL_STORAGE
+#endif // PTRACING
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -605,6 +612,80 @@ class PThreadObj2Arg : public PThread
     Arg1Type arg1;
     Arg1Type arg2;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// PThreadLocalStorage
+//
+
+#ifdef _WIN32
+
+#define P_HAS_THREADLOCAL_STORAGE 1
+
+template <class Storage_T>
+class PThreadLocalStorage
+{
+  public:
+    typedef DWORD Key_T;
+    typedef Storage_T value_type;
+
+    PThreadLocalStorage()
+    { key = TlsAlloc(); }
+
+    ~PThreadLocalStorage()
+    { TlsFree(key);  }
+
+    Key_T GetKey() const
+    { return key; }
+
+    value_type * Get()
+    { return (value_type *) TlsGetValue(key); }
+
+    void Set(value_type * v)
+    { TlsSetValue(key, (LPVOID)v); }
+
+  protected:
+    DWORD key;
+};
+
+#elif defined(P_PTHREADS)
+
+#define P_HAS_THREADLOCAL_STORAGE 1
+
+template <class Storage_T>
+class PThreadLocalStorage
+{
+  public:
+    typedef pthread_key Key_T;
+    typedef Storage_T value_type;
+
+    PThreadLocalStorage()
+    { pthread)key_create(&key, NULL); }
+
+    ~PThreadLocalStorage()
+    { pthread_key_delete(key); }
+
+    Key_T GetKey() const
+    { return key; }
+
+    value_type * Get()
+    { return (value_type *)pthread_getspecific(key); }
+
+    void Set(value_type * v)
+    { return pthread_setspecific(key, v); }
+
+  private:
+    pthread_key key;
+};
+
+#else
+
+#undef P_HAS_THREADLOCAL_STORAGE 1
+#warning("Thread local storage not supported");
+
+#endif
+
 
 #ifdef _MSC_VER
 #pragma warning(default:4355)

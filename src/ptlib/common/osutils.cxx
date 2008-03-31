@@ -113,6 +113,7 @@ public:
   ios::fmtflags   oldStreamFlags;
   std::streamsize oldPrecision;
 
+
 #if defined(_WIN32)
   CRITICAL_SECTION mutex;
   void InitMutex() { InitializeCriticalSection(&mutex); }
@@ -143,8 +144,10 @@ PTHREAD_MUTEX_RECURSIVE_NP
   void Lock()      { mutex->Wait(); }
   void Unlock()    { mutex->Signal(); }
 #endif
-
-
+  
+#if P_HAS_THREADLOCAL_STORAGE
+  PThreadLocalStorage<PThread::TraceInfo> traceStorageKey;
+#endif
 
   PTraceInfo()
     : currentLevel(0)
@@ -352,14 +355,29 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   }
 
   PThread * thread = PThread::Current();
+  PThread::TraceInfo * threadInfo = NULL;
 
-  if (thread != NULL)
-    thread->traceStreams.Push(new PStringStream);
+#if P_HAS_THREADLOCAL_STORAGE
+  {
+    if (info.traceStorageKey.Get() == NULL) 
+      info.traceStorageKey.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
 
-  ostream & stream = thread != NULL ? (ostream &)thread->traceStreams.Top() : *info.stream;
+    threadInfo = info.traceStorageKey.Get();
+    threadInfo->traceStreams.Push(new PStringStream);
+  }
+#else
+  {
+    if (thread != NULL) {
+      threadInfo = &thread->traceInfo;
+      threadInfo->traceStreams.Push(new PStringStream);
+    }
+  }
+#endif
+
+  ostream & stream = threadInfo != NULL ? (ostream &)threadInfo->traceStreams.Top() : *info.stream;
 
   info.oldStreamFlags = stream.flags();
-  info.oldPrecision = stream.precision();
+  info.oldPrecision   = stream.precision();
 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
@@ -412,12 +430,17 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local
+#if P_HAS_THREADLOCAL_STORAGE
+  threadInfo->traceLevel = level;
+  info.Unlock();
+#else
   if (thread == NULL)
     info.currentLevel = level;
   else {
-    thread->traceLevel = level;
+    thread->traceInfo.traceLevel = level;
     info.Unlock();
   }
+#endif
 
   return stream;
 }
@@ -427,13 +450,27 @@ ostream & PTrace::End(ostream & paramStream)
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
+  PThread::TraceInfo * threadInfo = NULL;
+
+#if P_HAS_THREADLOCAL_STORAGE
+  {
+    if (info.traceStorageKey.Get() == NULL) 
+      info.traceStorageKey.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
+    threadInfo = info.traceStorageKey.Get();
+  }
+#else
+  PThread * thread = PThread::Current();
+  {
+    if (thread != NULL) 
+      threadInfo = &thread->traceInfo;
+  }
+#endif
+
   paramStream.flags(info.oldStreamFlags);
   paramStream.precision(info.oldPrecision);
 
-  PThread * thread = PThread::Current();
-
-  if (thread != NULL) {
-    PStringStream * stackStream = thread->traceStreams.Pop();
+  if (threadInfo != NULL) {
+    PStringStream * stackStream = threadInfo->traceStreams.Pop();
     PAssert(&paramStream == stackStream, PLogicError);
     info.Lock();
     *info.stream << *stackStream;
@@ -448,7 +485,7 @@ ostream & PTrace::End(ostream & paramStream)
     // level so that the PSystemLog can extract the log level back out of the
     // ios structure. There could be portability issues with this though it
     // should work pretty universally.
-    info.stream->width((thread != NULL ? thread->traceLevel : info.currentLevel) + 1);
+    info.stream->width((threadInfo != NULL ? threadInfo->traceLevel : info.currentLevel) + 1);
     info.stream->flush();
   }
   else
@@ -466,12 +503,29 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
   name = traceName;
 
   if ((PTraceInfo::Instance().options&Blocks) != 0) {
-    PThread * thread = PThread::Current();
-    thread->traceBlockIndentLevel += 2;
+    PThread::TraceInfo * threadInfo = NULL;
+
+#if P_HAS_THREADLOCAL_STORAGE
+    {
+      PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
+      if (key.Get() == NULL) 
+        key.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
+      threadInfo = key.Get();
+    }
+#else
+    {
+      PThread * thread = PThread::Current();
+      if (thread != NULL) 
+        threadInfo = &thread->traceInfo;
+    }
+#endif
+
+    if (threadInfo != NULL)
+      threadInfo->traceBlockIndentLevel += 2;
 
     ostream & s = PTrace::Begin(1, file, line);
     s << "B-Entry\t";
-    for (unsigned i = 0; i < thread->traceBlockIndentLevel; i++)
+    for (unsigned i = 0; i < ((threadInfo != NULL) ? threadInfo->traceBlockIndentLevel : 20); i++)
       s << '=';
     s << "> " << name << PTrace::End;
   }
@@ -481,16 +535,43 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
 PTrace::Block::~Block()
 {
   if ((PTraceInfo::Instance().options&Blocks) != 0) {
-    PThread * thread = PThread::Current();
+    PThread::TraceInfo * threadInfo = NULL;
+
+#if P_HAS_THREADLOCAL_STORAGE
+    {
+      PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
+      if (key.Get() == NULL) 
+        key.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
+      threadInfo = key.Get();
+    }
+#else
+    {
+      PThread * thread = PThread::Current();
+      if (thread != NULL) 
+        threadInfo = &thread->traceInfo;
+    }
+#endif
 
     ostream & s = PTrace::Begin(1, file, line);
     s << "B-Exit\t<";
-    for (unsigned i = 0; i < thread->traceBlockIndentLevel; i++)
+    for (unsigned i = 0; i < ((threadInfo != NULL) ? threadInfo->traceBlockIndentLevel : 20); i++)
       s << '=';
     s << ' ' << name << PTrace::End;
 
-    thread->traceBlockIndentLevel -= 2;
+    if (threadInfo != NULL)
+      threadInfo->traceBlockIndentLevel -= 2;
   }
+}
+
+void PTrace::Cleanup()
+{
+#if P_HAS_THREADLOCAL_STORAGE
+  {
+    PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
+    delete key.Get();
+    key.Set(NULL);
+  }
+#endif
 }
 
 #endif // PTRACING
