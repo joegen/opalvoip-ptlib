@@ -651,17 +651,19 @@ class PThreadLocalStorage
 
 #elif defined(P_PTHREADS)
 
+#include <pthread.h>
+
 #define P_HAS_THREADLOCAL_STORAGE 1
 
 template <class Storage_T>
 class PThreadLocalStorage
 {
   public:
-    typedef pthread_key Key_T;
+    typedef pthread_key_t Key_T;
     typedef Storage_T value_type;
 
     PThreadLocalStorage()
-    { pthread)key_create(&key, NULL); }
+    { pthread_key_create(&key, NULL); }
 
     ~PThreadLocalStorage()
     { pthread_key_delete(key); }
@@ -673,10 +675,10 @@ class PThreadLocalStorage
     { return (value_type *)pthread_getspecific(key); }
 
     void Set(value_type * v)
-    { return pthread_setspecific(key, v); }
+    { pthread_setspecific(key, v); }
 
   private:
-    pthread_key key;
+    Key_T key;
 };
 
 #else
