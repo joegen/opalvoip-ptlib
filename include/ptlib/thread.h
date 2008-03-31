@@ -388,6 +388,13 @@ class PThread : public PObject
 #endif
 };
 
+// Include definition of platform dependent thread ID format
+#if defined(_WIN32) && !defined(_WIN32_WCE)
+  #define PTHREAD_ID_FMT ":%u"
+#else
+  #define PTHREAD_ID_FMT ":0x%x"
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
