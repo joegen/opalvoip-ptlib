@@ -706,7 +706,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   ::CoUninitialize();
 #endif
 
+#if PTRACING
   PTrace::Cleanup();
+#endif
 
   return 0;
 }
@@ -1086,7 +1088,9 @@ PProcess::~PProcess()
 
   PostShutdown();
 
+#if PTRACING
   PTrace::Cleanup();
+#endif
 
 #if _DEBUG
   extern void PWaitOnExitConsoleWindow();
