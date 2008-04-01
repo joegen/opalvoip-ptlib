@@ -1515,16 +1515,18 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
 
   PINDEX count = 0;
   for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
+    Address addr = byAddress->table[i].dwAddr;
+
     MIB_IFROW info;
     info.dwIndex = byAddress->table[i].dwIndex;
-    if (GetIfEntry(&info) == NO_ERROR && (includeDown || info.dwAdminStatus)) {
+    if (GetIfEntry(&info) == NO_ERROR && (includeDown || (addr.IsValid() && info.dwAdminStatus))) {
       PStringStream macAddr;
       macAddr << ::hex << ::setfill('0');
       for (unsigned b = 0; b < info.dwPhysAddrLen; ++b)
         macAddr << setw(2) << (unsigned)info.bPhysAddr[b];
 
       table.SetAt(count++, new InterfaceEntry(PString((const char *)info.bDescr, info.dwDescrLen),
-                                              byAddress->table[i].dwAddr,
+                                              addr,
                                               byAddress->table[i].dwMask,
                                               macAddr));
     }
