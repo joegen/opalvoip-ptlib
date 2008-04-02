@@ -66,7 +66,7 @@
         PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
         PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
       #endif /*P_VFW_CAPTURE*/
-      #if defined(P_DIRECTSHOW) 
+      #if defined(P_DIRECTSHOW) && defined(P_DIRECTX)
         PWLIB_STATIC_LOAD_PLUGIN(DirectShow, PVideoInputDevice)
       #endif /*P_DIRECTSHOW*/
     #endif
