@@ -26,7 +26,7 @@
 
 #include <ptlib.h>
 
-#ifdef P_DIRECTSHOW
+#if defined(P_DIRECTSHOW) && defined(P_DIRECTSOUND)
 
 #include "ptlib/msos/ptlib/vidinput_directx.h"
 
