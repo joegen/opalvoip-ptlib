@@ -737,7 +737,7 @@ void PXMLObject::SetDirty()
     parent->SetDirty();
 }
 
-PXMLObject * PXMLObject::GetNextObject()
+PXMLObject * PXMLObject::GetNextObject() const
 {
   if (parent == NULL)
     return NULL;
@@ -815,7 +815,7 @@ PXMLElement::PXMLElement(PXMLElement * _parent, const PString & _name, const PSt
   AddSubObject(new PXMLData(this, data));
 }
 
-PINDEX PXMLElement::FindObject(PXMLObject * ptr) const
+PINDEX PXMLElement::FindObject(const PXMLObject * ptr) const
 {
   return subObjects.GetObjectsIndex(ptr);
 }
@@ -991,12 +991,12 @@ PString PXMLElement::GetData() const
   return str;
 }
 
-PCaselessString PXMLElement::GetPathName()
+PCaselessString PXMLElement::GetPathName() const
 {
     PCaselessString s;
 
     s = GetName();
-    PXMLElement* el = this;
+    const PXMLElement* el = this;
     while ((el = el->GetParent()) != NULL)
         s = el->GetName() + ":" + s;
     return s;
@@ -1165,5 +1165,3 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 ///////////////////////////////////////////////////////
 
 #endif 
-
-
