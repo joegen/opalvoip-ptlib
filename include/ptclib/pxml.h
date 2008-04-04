@@ -251,7 +251,7 @@ class PXMLObject : public PObject {
     PXMLElement * GetParent() const
       { return parent; }
 
-    PXMLObject * GetNextObject();
+    PXMLObject * GetNextObject() const;
 
     void SetParent(PXMLElement * newParent)
     { 
@@ -315,7 +315,7 @@ class PXMLElement : public PXMLObject {
         Get the completely qualified name for the element inside the
         XML tree, for example "root:trunk:branch:subbranch:leaf".
      */
-    PCaselessString GetPathName();
+    PCaselessString GetPathName() const;
 
     void SetName(const PString & v)
       { name = v; }
@@ -343,7 +343,7 @@ class PXMLElement : public PXMLObject {
     PXMLObject  * GetElement(PINDEX idx = 0) const;
     PBoolean          RemoveElement(PINDEX idx);
 
-    PINDEX FindObject(PXMLObject * ptr) const;
+    PINDEX FindObject(const PXMLObject * ptr) const;
 
     PBoolean HasSubObjects() const
       { return subObjects.GetSize() != 0; }
