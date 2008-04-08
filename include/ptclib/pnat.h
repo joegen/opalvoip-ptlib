@@ -102,7 +102,9 @@ public:
      The Order of adding to the PNstStrategy determines which method
      is used
   */
-   virtual PBoolean IsAvailable() { return PFalse; };
+   virtual bool IsAvailable(
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
+   ) = 0;
 
     /**Set the port ranges to be used on local machine.
        Note that the ports used on the NAT router may not be the same unless
