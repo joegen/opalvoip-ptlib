@@ -169,16 +169,17 @@ class PSTUNClient : public PNatMethod
     );
 
     enum RTPSupportTypes {
-      RTPOK,
-      RTPUnknown,
+      RTPSupported,
+      RTPIfSendMedia,
       RTPUnsupported,
-      RTPIfSendMedia
+      RTPUnknown,
+      NumRTPSupportTypes
     };
 
     /**Return an indication if the current STUN type supports RTP
       Use the force variable to guarantee an up to date test
       */
-    RTPSupportTypes IsSupportingRTP(
+    RTPSupportTypes GetRTPSupport(
       PBoolean force = PFalse    ///< Force a new check
     );
 
@@ -193,7 +194,7 @@ class PSTUNClient : public PNatMethod
       PIPSocket::Address & externalAddress, ///< External address of router
       const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
     );
-    
+
     /**Invalidates the cached external address
        This allows to lazily update the external address cache at the next 
        attempt to get the external address.
@@ -280,7 +281,9 @@ class PSTUNClient : public PNatMethod
        The availablity of the STUN Method is dependant on the Type
        of NAT being used.
      */
-    virtual PBoolean IsAvailable();
+    virtual bool IsAvailable(
+      const PIPSocket::Address & binding  ///< Interface to see if NAT is available on
+    );
 
   protected:
     PIPSocket::Address serverAddress;
@@ -293,6 +296,7 @@ class PSTUNClient : public PNatMethod
 
     NatTypes           natType;
     PIPSocket::Address cachedExternalAddress;
+    PIPSocket::Address interfaceAddress;
     PTime              timeAddressObtained;
 };
 
