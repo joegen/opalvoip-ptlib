@@ -451,14 +451,19 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   PIPSocket::InterfaceTable interfaces;
   if (PIPSocket::GetInterfaceTable(interfaces)) {
     for (PINDEX i =0; i < interfaces.GetSize(); i++) {
-      PUDPSocket * socket = new PUDPSocket;
-      if (OpenSocket(*socket, singlePortInfo, interfaces[i].GetAddress()))
-        sockets.Append(socket);
-      else
-        delete socket;
+      PIPSocket::Address binding = interfaces[i].GetAddress();
+      if (!binding.IsLoopback()) {
+        PUDPSocket * socket = new PUDPSocket;
+        if (OpenSocket(*socket, singlePortInfo, binding))
+          sockets.Append(socket);
+        else
+          delete socket;
+      }
     }
-    if (interfaces.IsEmpty())
+    if (interfaces.IsEmpty()) {
+      PTRACE(1, "STUN\tNo interfaces available to find STUN server.");
       return natType = UnknownNat;
+    }
   }
   else {
     PUDPSocket * socket = new PUDPSocket;
@@ -482,14 +487,15 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   for (PINDEX retry = 0; retry < pollRetries; ++retry) {
     PSocket::SelectList selectList;
     for (PList<PUDPSocket>::iterator socket = sockets.begin(); socket != sockets.end(); ++socket) {
-      if (!requestI.Write(*socket)) {
-        if (socket->GetErrorCode(PChannel::LastWriteError) != PChannel::NoError) {
-          PTRACE(1, "STUN\tError writing to server " << serverAddress << ':' << serverPort << " - " << socket->GetErrorText(PChannel::LastWriteError));
-          return natType = UnknownNat; // No response usually means blocked
-        }
+      if (requestI.Write(*socket))
+        selectList += *socket;
+      else {
+        PTRACE(1, "STUN\tError writing to server " << serverAddress << ':' << serverPort << " - " << socket->GetErrorText(PChannel::LastWriteError));
       }
-      selectList += *socket;
     }
+
+    if (selectList.IsEmpty())
+      return natType = UnknownNat; // Could not send on any interface!
 
     if (PIPSocket::Select(selectList, replyTimeout) == PChannel::NoError) {
       PUDPSocket & udp = (PUDPSocket &)selectList.front();
