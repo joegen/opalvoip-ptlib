@@ -11580,6 +11580,8 @@ ac_config_files="$ac_config_files Makefile"
 
 ac_config_files="$ac_config_files ptlib_cfg.dxy"
 
+ac_config_files="$ac_config_files ptlib.pc"
+
 
 #AC_CONFIG_FILES(include/ptbuildopts.h.in)
 ac_config_headers="$ac_config_headers include/ptbuildopts.h"
@@ -12142,6 +12144,7 @@ do
     "make/ptlib-config") CONFIG_FILES="$CONFIG_FILES make/ptlib-config" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "ptlib_cfg.dxy") CONFIG_FILES="$CONFIG_FILES ptlib_cfg.dxy" ;;
+    "ptlib.pc") CONFIG_FILES="$CONFIG_FILES ptlib.pc" ;;
     "include/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS include/ptbuildopts.h" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
