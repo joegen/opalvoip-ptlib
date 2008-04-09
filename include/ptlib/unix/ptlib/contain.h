@@ -66,17 +66,16 @@ typedef int BOOL;
 // define some basic types and their limits
 //
 
-typedef uint8_t            BYTE;
-typedef int16_t            PInt16;  // 16 bit
-typedef uint16_t           WORD;
-
-typedef int32_t            PInt32;  // 32 bit
-typedef uint32_t           DWORD;
+typedef  int16_t  PInt16; // 16 bit
+typedef uint16_t PUInt16; // 16 bit
+typedef  int32_t  PInt32; // 32 bit
+typedef uint32_t PUInt32; // 32 bit
 
 #ifndef P_NEEDS_INT64
-typedef   signed long long int PInt64;
+typedef   signed long long int  PInt64; // 64 bit
 typedef unsigned long long int PUInt64; // 64 bit
 #endif
+
 
 // Integer type that is same size as a pointer type.
 #ifdef P_64BIT
@@ -86,6 +85,67 @@ typedef unsigned long UINT;
 typedef int           INT;
 typedef unsigned int  UINT;
 #endif
+
+// Create "Windows" style definitions.
+
+typedef uint8_t  BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+
+typedef void                    VOID;
+typedef char                    CHAR;
+typedef wchar_t                 WCHAR;
+typedef signed char             SCHAR;
+typedef unsigned char           UCHAR;
+typedef short                   SHORT;
+typedef signed short            SSHORT;
+typedef unsigned short          USHORT;
+typedef  int16_t                SWORD;
+typedef uint16_t                UWORD;
+typedef long                    LONG;
+typedef signed long             SLONG;
+typedef unsigned long           ULONG;
+typedef  int32_t                SDWORD;
+typedef uint32_t                UDWORD;
+typedef float                   SFLOAT;
+typedef double                  SDOUBLE;
+typedef double                  LDOUBLE;
+
+typedef void *                  PTR;
+typedef void *                  LPVOID;
+typedef CHAR *                  LPSTR;
+typedef WCHAR *                 LPWSTR;
+typedef const CHAR *            LPCSTR;
+typedef const WCHAR *           LPCWSTR;
+typedef DWORD *                 LPDWORD;
+#define FAR
+
+typedef signed short            RETCODE;
+typedef void *                  HWND;
+
+#ifdef UNICODE
+  typedef WCHAR                 TCHAR;
+  typedef LPWSTR                LPTSTR;
+  typedef LPCWSTR               LPCTSTR;
+  // Needs a definition one day ... #define _T(x)
+#else
+  typedef CHAR                  TCHAR;
+  typedef LPSTR                 LPTSTR;
+  typedef LPCSTR                LPCTSTR;
+  #define _T(x) x
+#endif
+
+
+// For sqltypes.h, prevent it from redefining the above
+#define ALLREADY_HAVE_WINDOWS_TYPE 1
+
+typedef SCHAR SQLSCHAR;
+typedef HWND SQLHWND;
+#define SQL_API
+
+
+///////////////////////////////////////////
+// Type used for array indexes and sizes
 
 typedef int PINDEX;
 #define P_MAX_INDEX INT_MAX
