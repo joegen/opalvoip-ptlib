@@ -37,7 +37,6 @@
 #ifdef P_ODBC
 
 #include <ptclib/podbc.h>
-using namespace PTODBC;
 
 #define new PNEW
 
@@ -88,7 +87,7 @@ static void Convert(unsigned char & data, PString field)
 }
 
 
-static void Convert(_int64 & data, PString field)
+static void Convert(PInt64 & data, PString field)
 {
 	data = field.AsInt64();
 }
@@ -198,7 +197,7 @@ PODBC::~PODBC()
 }
 
 
-PBoolean PODBC::Connect(PTODBC::LPCTSTR svSource)
+PBoolean PODBC::Connect(LPCTSTR svSource)
 {
    int nConnect = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_hEnv );
    if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
@@ -669,7 +668,7 @@ PString PODBC::Field::operator=(const PString & str)
 }
 
 
-PBoolean PODBC::Field::DataFragment(PString & Buffer,PINDEX & fragment, PTODBC::SQLINTEGER & size)
+PBoolean PODBC::Field::DataFragment(PString & Buffer,PINDEX & fragment, SQLINTEGER & size)
 {
   PINDEX fragcount = PINDEX(Data.sbinlong.GetLength()/size);
 // Value less than Buffer Size
@@ -802,7 +801,7 @@ PODBC::Row::Row(PODBCStmt * stmt)
          nfield->isNullable = PTrue;
          nfield->isAutoInc = PFalse;
          nfield->Decimals = 0;
-         nfield->LongData = stmt->odbclink->NeedLongDataLen();
+         nfield->LongData = stmt->GetLink()->NeedLongDataLen();
 
          rec->Data(i+1, *nfield);
 	    		
@@ -1026,7 +1025,7 @@ PBoolean PODBCStmt::IsValid()
 }
 
 
-PTODBC::DWORD PODBCStmt::GetChangedRowCount(void)
+DWORD PODBCStmt::GetChangedRowCount(void)
 {
    SQLINTEGER nRows=0;
    if(!SQL_OK(SQLRowCount(m_hStmt,&nRows)))
@@ -1153,7 +1152,7 @@ PODBCRecord::PODBCRecord(PODBCStmt * hStmt)
 	: Stmt(hStmt)
 {
 	m_hStmt=*hStmt;
-	dbase = (PODBC::DataSources)hStmt->dbase;  // Database name
+	dbase = (PODBC::DataSources)hStmt->GetDBase();  // Database name
 	if (!Precision) 
           Precision = 4;
 	if (!TimeFormat) 
@@ -1170,9 +1169,9 @@ PINDEX PODBCRecord::ColumnCount()
 }
 
 
-PBoolean PODBCRecord::InternalBindColumn(::USHORT Column,PTODBC::LPVOID pBuffer,
-        PTODBC::ULONG pBufferSize,PTODBC::LONG * pReturnedBufferSize,
-        PTODBC::USHORT nType)
+PBoolean PODBCRecord::InternalBindColumn(::USHORT Column,LPVOID pBuffer,
+        ULONG pBufferSize,LONG * pReturnedBufferSize,
+        USHORT nType)
 {
    SQLINTEGER pReturnedSize=0;
 
@@ -1195,8 +1194,8 @@ PINDEX PODBCRecord::ColumnByName(PString Column)
    return 0;
 }
 
-PBoolean PODBCRecord::InternalGetData(PTODBC::USHORT Column, PTODBC::LPVOID pBuffer, 
-    PTODBC::ULONG pBufLen, PTODBC::SQLINTEGER * dataLen, int Type)
+PBoolean PODBCRecord::InternalGetData(USHORT Column, LPVOID pBuffer, 
+    ULONG pBufLen, SQLINTEGER * dataLen, int Type)
 {
    SQLINTEGER od=0;
    int Err=SQLGetData(m_hStmt,Column,Type,pBuffer,pBufLen,&od);
@@ -1216,7 +1215,7 @@ PString PODBCRecord::GetLongData(PINDEX Column)
    SQLINTEGER len = MAX_DATA_LEN;
    SQLINTEGER cb =0;
 
-    while (InternalGetData((PTODBC::USHORT)Column,sbin.GetPointer(len + 1),len,&cb))
+    while (InternalGetData((USHORT)Column,sbin.GetPointer(len + 1),len,&cb))
 	{
 		if (sbin.Right(1) == '\0')			// Remove Null Char
 			Data = Data + sbin.Left(sbin.GetLength()-1);
@@ -1430,7 +1429,7 @@ PODBC::FieldTypes PODBCRecord::ColumnType( PINDEX Column )
    int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   UDWORD pcbColDef;
+   SQLUINTEGER pcbColDef;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1444,12 +1443,12 @@ PODBC::FieldTypes PODBCRecord::ColumnType( PINDEX Column )
    return( (PODBC::FieldTypes)nType );
 }
 
-PTODBC::DWORD PODBCRecord::ColumnSize( PINDEX Column )
+DWORD PODBCRecord::ColumnSize( PINDEX Column )
 {
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   PTODBC::DWORD pcbColDef=0;
+   SQLUINTEGER pcbColDef=0;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1462,12 +1461,12 @@ PTODBC::DWORD PODBCRecord::ColumnSize( PINDEX Column )
    return pcbColDef;
 }
 
-PTODBC::DWORD PODBCRecord::ColumnScale( PINDEX Column )
+DWORD PODBCRecord::ColumnScale( PINDEX Column )
 {
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   PTODBC::DWORD pcbColDef=0;
+   SQLUINTEGER pcbColDef=0;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1484,7 +1483,7 @@ PString PODBCRecord::ColumnName(PINDEX Column) //, PString Name, SHORT NameLen )
 {
 //   int nType=SQL_C_DEFAULT;
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   PTODBC::DWORD pcbColDef=0;
+   SQLUINTEGER pcbColDef=0;
    TCHAR Name[256]=_T("");
    SQLRETURN Ret=
     SQLDescribeCol( m_hStmt,            // Statement handle
@@ -1508,7 +1507,7 @@ PBoolean PODBCRecord::IsColumnNullable( PINDEX Column )
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   UDWORD pcbColDef;
+   SQLUINTEGER pcbColDef;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
