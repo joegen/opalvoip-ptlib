@@ -123,6 +123,10 @@ endif
 	$(INSTALL) -m 755 make/ptlib-config $(DESTDIR)$(PREFIX)/share/ptlib/make/
 	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; ln -snf ../share/ptlib/make/ptlib-config ptlib-config)
 
+	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
+	chmod 755 $(DESTDIR)$(LIBDIR)/pkgconfig
+	$(INSTALL) -m 444 ptlib.pc $(DESTDIR)$(LIBDIR)/pkgconfig/
+
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
 	       $(DESTDIR)$(PREFIX)/include/ptclib \
