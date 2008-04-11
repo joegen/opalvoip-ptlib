@@ -694,7 +694,7 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
 
   PBoolean opened;
   if (localPort == 0)
-    opened = OpenSocket(*stunSocket, singlePortInfo, binding);
+    opened = OpenSocket(*stunSocket, singlePortInfo, interfaceAddress);
   else {
     PortInfo portInfo = localPort;
     opened = OpenSocket(*stunSocket, portInfo, interfaceAddress);
