@@ -47,7 +47,7 @@
 class PStringArray;
 class PRegularExpression;
 
-#if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED))
+#if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
 PBASEARRAY(PWCharArray, unsigned short);
 #else
 PBASEARRAY(PWCharArray, wchar_t);
