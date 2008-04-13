@@ -64,8 +64,15 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
   int sleep_time = (int)delay.GetMilliSeconds();
 
   // Catch up if we are too late and the featue is enabled
-  if (jitterLimit > 0 && sleep_time < -jitterLimit.GetMilliSeconds())
-    targetTime = PTime();
+  if (jitterLimit > 0 && sleep_time < -jitterLimit.GetMilliSeconds()) {
+    unsigned i = 0;
+    while (sleep_time < -jitterLimit.GetMilliSeconds()) { 
+      targetTime += frameTime;
+      sleep_time += frameTime;
+      i++;
+    }
+    PTRACE (4, "AdaptiveDelay\tSkipped " << i << " frames");
+  }
 
   // Else sleep only if necessary
   if (sleep_time > minimumDelay.GetMilliSeconds())
