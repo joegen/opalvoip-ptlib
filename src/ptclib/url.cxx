@@ -263,6 +263,8 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 
 static void SplitVars(const PString & str, PStringToString & vars, char sep1, char sep2)
 {
+  vars.RemoveAll();
+
   PINDEX sep1prev = 0;
   do {
     PINDEX sep1next = str.Find(sep1, sep1prev);
