@@ -102,6 +102,7 @@ class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
 }; \
   static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
+//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags, path, rel, port
 DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
 DEFINE_LEGACY_URL_SCHEME(file,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(https,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTPS_PORT)
@@ -117,8 +118,8 @@ DEFINE_LEGACY_URL_SCHEME(mailto,    PFalse, PFalse, PFalse, PFalse, PTrue,   PTr
 DEFINE_LEGACY_URL_SCHEME(news,      PFalse, PFalse, PFalse, PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(h323,      PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323_PORT)
 DEFINE_LEGACY_URL_SCHEME(h323s,     PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323S_PORT)
-DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
-DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
+DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
+DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
 DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
