@@ -497,7 +497,13 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
     if (selectList.IsEmpty())
       return natType = UnknownNat; // Could not send on any interface!
 
-    if (PIPSocket::Select(selectList, replyTimeout) == PChannel::NoError) {
+    PChannel::Errors error = PIPSocket::Select(selectList, replyTimeout);
+    if (error != PChannel::NoError) {
+      PTRACE(1, "STUN\tError in select - " << PChannel::GetErrorText(error));
+      return natType = UnknownNat;
+    }
+
+    if (!selectList.IsEmpty()) {
       PUDPSocket & udp = (PUDPSocket &)selectList.front();
       if (responseI.Read(udp) && responseI.Validate(requestI)) {
         replySocket = &udp;
