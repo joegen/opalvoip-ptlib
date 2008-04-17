@@ -246,8 +246,10 @@ PServiceProcess::PServiceProcess(const char * manuf,
 PServiceProcess::~PServiceProcess()
 {
   PSetErrorStream(NULL);
+#if PTRACING
   PTrace::SetStream(NULL);
   PTrace::ClearOptions(PTrace::SystemLogStream);
+#endif
 
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
@@ -309,10 +311,12 @@ int PServiceProcess::InitialiseService()
   PMemoryHeap::SetIgnoreAllocations(PTrue);
 #endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+#if PTRACING
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
   PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
   PTrace::SetLevel(4);
+#endif
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(PFalse);
 #endif
