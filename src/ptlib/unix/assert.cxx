@@ -104,11 +104,13 @@ void PAssertFunc(const char * msg)
     return;
   inAssert = PTrue;
 
+#if PTRACING
   ostream & trace = PTrace::Begin(0, __FILE__, __LINE__);
   trace << "PWLib\t" << msg << PTrace::End;
 
   if (&trace != &PError)
     PError << msg << endl;
+#endif
 
   char *env;
 

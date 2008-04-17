@@ -1340,6 +1340,7 @@ Optional Features:
   --enable-minsize        minimise the size of the lib by disabling least used options
   --enable-openh323       include only options needed with openh323
   --enable-opal           include only options needed with opal
+  --disable-tracing     Remove PTRACE and all trace logging
   --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool
   --enable-internalregex  force internal regex library
   --enable-plugins        enable plugin support
@@ -5444,6 +5445,7 @@ fi
 
 
 default_samples=no
+default_tracing=yes
 default_resolver=yes
 default_openldap=yes
 default_openssl=yes
@@ -5561,6 +5563,24 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_vidfile=no
   default_shmvideo=no
   default_vxml=no
+fi
+
+
+
+# Check whether --enable-tracing was given.
+if test "${enable_tracing+set}" = set; then
+  enableval=$enable_tracing;
+fi
+
+
+if test "${enable_tracing}x" = "x" ; then
+  { echo "$as_me:$LINENO: PTRACE and all trace logging included" >&5
+echo "$as_me: PTRACE and all trace logging included" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+else
+  { echo "$as_me:$LINENO: PTRACE and all trace logging removed" >&5
+echo "$as_me: PTRACE and all trace logging removed" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 fi
 
 
