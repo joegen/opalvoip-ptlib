@@ -520,6 +520,7 @@ AC_ARG_ENABLE(opal,
 
 dnl these are the default configure settings
 default_samples=no
+default_tracing=yes
 default_resolver=yes
 default_openldap=yes
 default_openssl=yes
@@ -637,6 +638,22 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_vidfile=no
   default_shmvideo=no
   default_vxml=no
+fi
+
+
+dnl ########################################################################
+dnl check for tracing
+dnl
+
+AC_ARG_ENABLE(tracing,
+       [  --disable-tracing     Remove PTRACE and all trace logging])
+
+if test "${enable_tracing}x" = "x" ; then
+  AC_MSG_NOTICE(PTRACE and all trace logging included)
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+else
+  AC_MSG_NOTICE(PTRACE and all trace logging removed)
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 fi
 
 
