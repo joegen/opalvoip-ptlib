@@ -693,6 +693,8 @@ class PProcessStartup : public PObject
 
 typedef PFactory<PProcessStartup> PProcessStartupFactory;
 
+#if PTRACING
+
 // using an inline definition rather than a #define crashes gcc 2.95. Go figure
 #define P_DEFAULT_TRACE_OPTIONS ( PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine )
 
@@ -703,6 +705,8 @@ class PTraceLevelSetStartup : public PProcessStartup
     void OnStartup()
     { PTrace::Initialise(_level, NULL, _options); }
 };
+
+#endif // PTRACING
 
 #endif
 
