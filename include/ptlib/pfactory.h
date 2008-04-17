@@ -316,8 +316,11 @@ class PFactory : PFactoryBase
     void Register_Internal(const _Key_T & key, WorkerBase * worker)
     {
       PWaitAndSignal m(mutex);
-      if (keyMap.find(key) == keyMap.end())
+      if (keyMap.find(key) == keyMap.end()) {
         keyMap[key] = worker;
+        if (worker->isSingleton)
+          worker->CreateInstance(key);
+      }
     }
 
     PBoolean RegisterAs_Internal(const _Key_T & newKey, const _Key_T & oldKey)
