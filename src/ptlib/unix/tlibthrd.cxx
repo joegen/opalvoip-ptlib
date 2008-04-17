@@ -258,7 +258,9 @@ void PThread::InitialiseProcessThread()
 
   PX_firstTimeStart = PFalse;
 
+#if PTRACING
   traceBlockIndentLevel = 0;
+#endif
 }
 
 
@@ -293,7 +295,9 @@ PThread::PThread(PINDEX stackSize,
   // new thread is actually started the first time Resume() is called.
   PX_firstTimeStart = PTrue;
 
+#if PTRACING
   traceBlockIndentLevel = 0;
+#endif
 
   PTRACE(5, "PWLib\tCreated thread " << this << ' ' << threadName);
 }
