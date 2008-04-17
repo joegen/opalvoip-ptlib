@@ -804,8 +804,10 @@ void * PThread::PX_ThreadStart(void * arg)
   // execute the cleanup routine
   pthread_cleanup_pop(1);
 
+#if PTRACING
   // cleanup the thread-specific tracing
   PTrace::Cleanup();
+#endif
 
   return NULL;
 }
