@@ -587,9 +587,9 @@ void PDTMFEncoder::AddTone(char digit, unsigned milliseconds)
     { 'b', '+', 770,1633 }, 
     { 'c', '+', 852,1633 }, 
     { 'd', '+', 941,1633 }, 
-    { 'X', '-', 1100     }, // CNG
+    { 'X', '-', 1100     }, // CNG  1100 hz - sent by originating fax machine after dialing
     { 'x', '-', 1100     }, // CNG
-    { 'Y', '-', 2100     }, // CED
+    { 'Y', '-', 2100     }, // CED  2100 hz - sent by terminating fax machine after answer to disable echo cancellers
     { 'y', '-', 2100     }  // CED
   };
 
