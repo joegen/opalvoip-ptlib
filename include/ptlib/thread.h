@@ -483,7 +483,7 @@ class PThread1Arg : public PThread
 
    ...
    PString arg;
-   new PThread2Arg<PString, int>(arg, &GlobalFunction)
+   new PThread2Arg<PString, int>(arg1, arg2, &GlobalFunction)
  */
 template<typename Arg1Type, typename Arg2Type>
 class PThread2Arg : public PThread
@@ -505,6 +505,41 @@ class PThread2Arg : public PThread
     FnType fn;
     Arg1Type arg1;
     Arg2Type arg2;
+};
+
+/*
+   This template automates calling a global function with three arguments within it's own thread.
+   It is used as follows:
+
+   void GlobalFunction(PString arg1, int arg2, int arg3)
+   {
+   }
+
+   ...
+   PString arg;
+   new PThread3Arg<PString, int, int>(arg1, arg2, arg3, &GlobalFunction)
+ */
+template<typename Arg1Type, typename Arg2Type, typename Arg3Type>
+class PThread3Arg : public PThread
+{
+  PCLASSINFO(PThread3Arg, PThread);
+  public:
+    typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3); 
+    PThread3Arg(Arg1Type _arg1, Arg2Type _arg2, Arg3Type _arg3, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
+        arg1(_arg1), arg2(_arg2), arg3(_arg3)
+    { PThread::Resume(); }
+    PThread3Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, Arg3Type _arg3, FnType _fn, PBoolean _autoDelete = PFalse)
+      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
+        arg1(_arg1), arg2(_arg2), arg3(_arg3)
+    { PThread::Resume(); }
+    virtual void Main()
+    { (*fn)(arg1, arg2, arg3); }
+    FnType fn;
+    Arg1Type arg1;
+    Arg2Type arg2;
+    Arg2Type arg3;
 };
 
 /*
