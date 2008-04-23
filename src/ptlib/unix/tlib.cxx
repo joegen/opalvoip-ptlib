@@ -519,7 +519,8 @@ void PProcess::PXOnSignal(int sig)
   if (sig == 28) {
 #if PMEMORY_CHECK
     PBoolean oldIgnore = PMemoryHeap::SetIgnoreAllocations(PTrue);
-    static DWORD allocationIndex = 0;
+    static PMemoryHeap::State state;
+    PMemoryHeap::GetState(state);
 #endif
     PStringStream strm;
     threadMutex.Wait();
@@ -533,8 +534,8 @@ void PProcess::PXOnSignal(int sig)
     }
 #if PMEMORY_CHECK
     strm << "---------------\n";
-    PMemoryHeap::DumpObjectsSince(allocationIndex, strm);
-    allocationIndex = PMemoryHeap::GetAllocationRequest();
+    PMemoryHeap::DumpObjectsSince(state, strm);
+    PMemoryHeap::GetState(state);
 #endif
     strm << "===============\n";
     threadMutex.Signal();

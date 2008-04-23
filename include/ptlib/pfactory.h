@@ -204,7 +204,7 @@ class PFactory : PFactoryBase
         {
 #if PMEMORY_HEAP
           // Singletons are never deallocated, so make sure they arenot reported as a leak
-          PBoolean previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(isSingleton);
+          PBoolean previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(WorkerBase::isSingleton);
 #endif
           Abstract_T * instance = new _Concrete_T;
 #if PMEMORY_HEAP
