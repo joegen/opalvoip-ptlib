@@ -1,5 +1,0 @@
-lib html
-Lib Debug Release
-*.suo *.ncb *.opt *.plg *.Tags.WW
-obj_*
-
