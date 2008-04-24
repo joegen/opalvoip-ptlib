@@ -74,7 +74,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 6, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 7, ReleaseCode, 0)
 {
 }
 
@@ -130,6 +130,7 @@ void MergeSym::Main()
     out_filename.SetType(".def");
 
   SortedSymbolList def_symbols;
+  SortedSymbolList lib_symbols;
 
   if (args.HasOption('x')) {
     PStringArray include_path;
@@ -219,9 +220,12 @@ void MergeSym::Main()
           PINDEX unmanglepos = line.Find(';', ordpos);
           if (unmanglepos != P_MAX_INDEX)
             unmanglepos++;
-          Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal, false, line.Find("NONAME", ordpos) < unmanglepos);
+          bool noname = line.Find("NONAME", ordpos) < unmanglepos;
+          Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal, false, noname);
           if (def_symbols.GetValuesIndex(sym) == P_MAX_INDEX)
             def_symbols.Append(new Symbol(sym));
+          if (!noname && lib_symbols.GetValuesIndex(sym) == P_MAX_INDEX)
+            lib_symbols.Append(new Symbol(sym));
           removed++;
           if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
             cout << '.' << flush;
@@ -243,7 +247,6 @@ void MergeSym::Main()
   unsetenv("VS_UNICODE_OUTPUT");
 
   PINDEX linecount = 0;
-  SortedSymbolList lib_symbols;
   PString dumpbin = args.GetOptionString('d', "dumpbin");
   PPipeChannel pipe(dumpbin + " /symbols '" + lib_filename + "'", PPipeChannel::ReadOnly);
   if (!pipe.IsOpen()) {
