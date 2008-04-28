@@ -145,6 +145,7 @@ class PTimerList : public PObject
     };
 
     typedef std::queue<RequestType> RequestQueueType;
+    typedef std::vector<RequestType> RequestListType;
 
     void QueueRequest(RequestType::Action action, PTimer * timer, bool _isSync = true);
 
@@ -159,12 +160,13 @@ class PTimerList : public PObject
       bool removed;
     };
     typedef std::map<PTimer::IDType, TimerInfoType> TimerInfoMapType;
-    TimerInfoMapType timerInfoMap;
+    TimerInfoMapType activeTimers;
     PThread * timerThread;
 
     // queue of timer action requests
     PMutex queueMutex;
     RequestQueueType requestQueue;
+    RequestListType addQueue;
 
     // The last system timer tick value that was used to process timers.
     PTimeInterval lastSample;
