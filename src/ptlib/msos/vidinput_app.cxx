@@ -17,7 +17,7 @@
  *
  *
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Craig Southeren, Post Increment (C) 2008
  *
  * $Revision$
  * $Author$
@@ -39,181 +39,130 @@ class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePlug
 {
   public:
     virtual PObject *    CreateInstance(int /*userData*/) const { return new PVideoInputDevice_Application; }
+
     virtual PStringArray GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
+
     virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
       { return PVideoInputDevice_Application::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
+
+    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    {
+      return (deviceName.Left(10) *= "appwindow:") && (FindWindow(NULL, deviceName.Mid(10)) != NULL);
+    }
+
 
 } PVideoInputDevice_Application_descriptor;
 
 PCREATE_PLUGIN(Application, PVideoInputDevice, &PVideoInputDevice_Application_descriptor);
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Input device
 
 PVideoInputDevice_Application::PVideoInputDevice_Application()
 {
-    m_client = true;
-    preferredColourFormat = "BGR24";  
+  m_hWnd                = NULL;
+  m_client              = true;
+
+  SetColourFormat("BGR32");
+  SetFrameRate(10);
 }
 
+PVideoInputDevice_Application::~PVideoInputDevice_Application()
+{
+  Close();
+}
+
+PStringArray PVideoInputDevice_Application::GetDeviceNames() const
+{ 
+  return GetInputDeviceNames(); 
+}
 
 PStringArray PVideoInputDevice_Application::GetInputDeviceNames()
 {
-    return PString("Application");
+  return PString("Application");
 }
 
 PBoolean PVideoInputDevice_Application::GetDeviceCapabilities(const PString & /*deviceName*/, Capabilities * /*caps*/)  
 { 
-    return false; 
+  return false; 
 }
 
-void CaptureScreenToBYTEArray(LPRECT lpRect, PBYTEArray & array)
+PBoolean PVideoInputDevice_Application::Open(const PString & deviceName, PBoolean /*startImmediate*/)
 {
-    HDC         hScrDC, hMemDC;         // screen DC and memory DC     
-    int         nX, nY, nX2, nY2;       // coordinates of rectangle to grab     
-    int         nWidth, nHeight;        // DIB width and height     
-    int         xScrn, yScrn;           // screen resolution      
+  Close();
 
-    HGDIOBJ     hOldBitmap , hBitmap;
-        
-        // check for an empty rectangle 
-    if (IsRectEmpty(lpRect))       
-       return;      
-       // create a DC for the screen and create     
-       // a memory DC compatible to screen DC          
+  m_client = false;
 
-   hScrDC = CreateDC("DISPLAY", NULL, NULL, NULL);     
-   hMemDC = CreateCompatibleDC(hScrDC);      // get points of rectangle to grab  
-   
-   nX = lpRect->left;     
-   nY = lpRect->top;     
-   nX2 = lpRect->right;     
-   nY2 = lpRect->bottom;      // get screen resolution      
-   
-   xScrn = GetDeviceCaps(hScrDC, HORZRES);     
-   yScrn = GetDeviceCaps(hScrDC, VERTRES);      
-   
-   //make sure bitmap rectangle is visible      
-   
-   if (nX < 0)         
-      nX = 0;     
-   
-   if (nY < 0)         
-      nY = 0;     
-   
-   if (nX2 > xScrn)         
-      nX2 = xScrn;     
-   
-   if (nY2 > yScrn)         
-      nY2 = yScrn;      
+  RECT rect;
+  memset(&rect, 0, sizeof(rect));  // needed to avoid compiler warning
 
-   nWidth = nX2 - nX;     
-   nHeight = nY2 - nY;      
-   
-   // create a bitmap compatible with the screen DC     
-   
-   hBitmap = CreateCompatibleBitmap(hScrDC, nWidth, nHeight);      
-   
-   // select new bitmap into memory DC     
-   
-   hOldBitmap =   SelectObject (hMemDC, hBitmap);      
-   
-   // bitblt screen DC to memory DC     
-   
-   BitBlt(hMemDC, 0, 0, nWidth, nHeight, hScrDC, nX, nY, SRCCOPY);     
-   
-   // select old bitmap back into memory DC and get handle to     
-   // bitmap of the screen          
-   
-   hBitmap = SelectObject(hMemDC, hOldBitmap);    
-
-   // now we have a screencapture to bitmap
-   BITMAPINFO    bmpInfo;
-   bmpInfo.bmiHeader.biBitCount=0;
-   bmpInfo.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-   GetDIBits(hMemDC,(HBITMAP)hBitmap,0,0,NULL,&bmpInfo,DIB_RGB_COLORS);
-   bmpInfo.bmiHeader.biCompression=BI_RGB;
-
-   // Store the data
-   array = PBYTEArray((BYTE *)&bmpInfo, bmpInfo.bmiHeader.biSize);
-
-   // clean up      
-   DeleteDC(hScrDC);     
-   DeleteDC(hMemDC);      
-}
-
-void PVideoInputDevice_Application::AttachCaptureWindow(HWND _hwnd, bool _client)
-{
-    m_hWnd = _hwnd;
-    m_client = _client;
-}
-
-PBoolean PVideoInputDevice_Application::Open(const PString & /*DeviceName*/, PBoolean /*startImmediate*/)
-{
-    Close();
-
-    if (!m_hWnd) {
-        PTRACE(4,"APP/tOpen Fail no Window to capture specified!");
-        return false;
+  if (m_hWnd == NULL) {
+    if (deviceName.Left(10) *= "appwindow:") {
+      m_hWnd = FindWindow(NULL, deviceName.Mid(10));
+      if (m_hWnd != NULL) {
+        ::GetWindowRect(m_hWnd, &rect);
+        SetFrameSize(rect.right-rect.left, rect.bottom-rect.top);
+      }
     }
+  }
 
-    RECT _rect;
-    ::GetWindowRect(m_hWnd,&_rect);
-     PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
+  if (m_hWnd == NULL) {
+    PTRACE(4,"AppInput/tOpen Fail no Window to capture specified!");
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 PBoolean PVideoInputDevice_Application::IsOpen()
 {
-    return false;
+  return m_hWnd != NULL;
 }
 
 PBoolean PVideoInputDevice_Application::Close()
 {
-    if (!IsOpen())
-        return false;
+  if (!IsOpen())
+    return false;
 
-    return true;
+  return true;
 }
 
 PBoolean PVideoInputDevice_Application::Start()
 {
-    return false;
+  return true;
 }
 
 PBoolean PVideoInputDevice_Application::Stop()
 {
-    return false;
+  return true;
 }
 
 PBoolean PVideoInputDevice_Application::IsCapturing()
 {
-    return false;
+  return IsOpen();
 }
 
-PBoolean PVideoInputDevice_Application::SetColourFormat(
-      const PString & /*ColourFormat*/ 
-    )
+PBoolean PVideoInputDevice_Application::SetVideoFormat(VideoFormat newFormat)
 {
-     return true;
+  return PVideoDevice::SetVideoFormat(newFormat);
 }
 
-PBoolean PVideoInputDevice_Application::SetFrameRate(
-      unsigned Rate 
-    )
+PBoolean PVideoInputDevice_Application::SetColourFormat(const PString & colourFormat)
 {
-    return PVideoDevice::SetFrameRate(Rate);
+  if ((colourFormat *= "BGR32") || (colourFormat *= "BGR24"))
+    return PVideoDevice::SetColourFormat(colourFormat);
+
+  return PFalse;
 }
 
-PBoolean PVideoInputDevice_Application::SetFrameSize(
-      unsigned /*Width*/,   
-      unsigned /*Height*/   
-    )
+PBoolean PVideoInputDevice_Application::SetFrameRate(unsigned Rate)
 {
-    PTRACE(4,"APP/tFrame size cannot be set! Must be detected from Application!");
-    return true;
+  return PVideoDevice::SetFrameRate(Rate);
+}
+
+PBoolean PVideoInputDevice_Application::SetFrameSize(unsigned width, unsigned height)
+{
+  return PVideoDevice::SetFrameSize(width, height);
 }
 
 PINDEX PVideoInputDevice_Application::GetMaxFrameBytes()
@@ -230,69 +179,165 @@ PBoolean PVideoInputDevice_Application::GetFrameData(
     return GetFrameDataNoDelay(buffer,bytesReturned);
 }
 
-PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(
-      BYTE * buffer,                 
-      PINDEX * bytesReturned  
-    )
+static inline WORD GetNumberOfColours(WORD bitsPerPixel)
 {
+    // only 1, 4 and 8bpp bitmaps use palettes (well, they could be used with
+    // 24bpp ones too but we don't support this as I think it's quite uncommon)
+    return (WORD)(bitsPerPixel <= 8 ? 1 << bitsPerPixel : 0);
+}
 
-   PWaitAndSignal m(lastFrameMutex);
+PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+{
+  PWaitAndSignal m(lastFrameMutex);
 
-   PTRACE(6,"AppInput\tGrabbing Frame");
+  PTRACE(6,"AppInput\tGrabbing Frame");
 
-   // Get the current application window
-   RECT _rect;
-   if (!m_client) {
-     ::GetWindowRect(m_hWnd,&_rect);
-     if ((_rect.right != (signed)frameWidth) ||
-        (_rect.bottom != (signed)frameHeight))
-          PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
-   } else {
-     ::GetClientRect(m_hWnd,&_rect);
-     if ((_rect.right != (signed)frameWidth) ||
-        (_rect.bottom != (signed)frameHeight))
-          PVideoDevice::SetFrameSize(_rect.right,_rect.bottom);
+  RECT _rect;
 
-       POINT pt1,pt2;
-         pt1.x = _rect.left;             
-         pt1.y = _rect.top;             
-         pt2.x = _rect.right;             
-         pt2.y = _rect.bottom;             
-         ::ClientToScreen(m_hWnd,&pt1);             
-         ::ClientToScreen(m_hWnd,&pt2);             
-         _rect.left = pt1.x;             
-         _rect.top = pt1.y;             
-         _rect.right = pt2.x;             
-         _rect.bottom = pt2.y;  
-   }
+  // Get the client area of the window
+  if (m_client) {
 
-    PBYTEArray frame;
-    CaptureScreenToBYTEArray(&_rect,frame);
+    ::GetClientRect(m_hWnd, &_rect);
+    int width  = _rect.right - _rect.left;
+    int height = _rect.bottom - _rect.top;
+    if ((width != (int)frameWidth) || (height != (signed)frameHeight))
+      PVideoDevice::SetFrameSize(width, height);
 
-    bool retval = false;
-    long pBufferSize = frame.GetSize();
-    BYTE * pBuffer = frame.GetPointer();
-    
-   PTRACE(6,"AppInput\tBuffer obtained." << pBufferSize );
-   if (pBuffer != NULL) {
-  
-    // Convert the image for output
-      if (NULL != converter) {
-         retval = converter->Convert(pBuffer,buffer, bytesReturned);
-         PTRACE(6,"AppInput\tBuffer converted." << *bytesReturned );
+    POINT pt1;
+    pt1.x = _rect.left;
+    pt1.y = _rect.top;
+    ::ClientToScreen(m_hWnd, &pt1);
+
+    POINT pt2;
+    pt2.x = _rect.right;             
+    pt2.y = _rect.bottom;             
+    ::ClientToScreen(m_hWnd, &pt2);
+
+    _rect.left   = pt1.x;             
+    _rect.top    = pt1.y;             
+    _rect.right  = pt2.x;             
+    _rect.bottom = pt2.y;  
+  }
+  else
+  {
+    ::GetWindowRect(m_hWnd, &_rect);
+  }
+
+  bool retVal = true;
+
+  if (!IsRectEmpty(&_rect)) {
+
+    // create a DC for the screen and create
+    // a memory DC compatible to screen DC
+    HDC hScrDC = CreateDC("DISPLAY", NULL, NULL, NULL);
+    HDC hMemDC = CreateCompatibleDC(hScrDC);
+
+    // get borders of grab area in pixels
+    int left   = _rect.left;     
+    int top    = _rect.top;     
+    int right  = _rect.right;     
+    int bottom = _rect.bottom;
+
+    // get size of screen in pixels
+    //int xScrn = GetDeviceCaps(hScrDC, HORZRES);
+    //int yScrn = GetDeviceCaps(hScrDC, VERTRES);
+
+#if 0
+    // make sure bitmap rectangle is visible
+    if (left < 0)
+      nX = 0;
+    if (nY < 0)
+      nY = 0;
+    if (nX2 > xScrn)
+      nX2 = xScrn;
+    if (nY2 > yScrn)
+      nY2 = yScrn;
+#endif
+
+    // get width and height of grab region
+    int nWidth  = right - left;
+    int nHeight = bottom - top;
+
+    HBITMAP hBitMap;
+    {
+       // create a bitmap compatible with the screen DC
+      HGDIOBJ _hBitmap = CreateCompatibleBitmap(hScrDC, nWidth, nHeight);
+   
+      // select new bitmap into memory DC
+      HGDIOBJ _hOldBitmap = SelectObject(hMemDC, _hBitmap);
+   
+      // bitblt screen DC to memory DC     
+      BitBlt(hMemDC, 0, 0, nWidth, nHeight, hScrDC, left, top, SRCCOPY);
+   
+      // select old bitmap back into memory DC and get handle to     
+      // bitmap of the screen
+      hBitMap = (HBITMAP)SelectObject(hMemDC, _hOldBitmap);
+    }
+
+    // get the bitmap information
+    BITMAP bitmap;
+    if (GetObject(hBitMap, sizeof(BITMAP), (LPSTR)&bitmap) == 0) {
+      PTRACE(2, "AppInput\tCould not get bitmap information");
+      retVal = false;
+    }
+    else
+    {
+      // create a BITMAPINFO with enough room for the pixel data
+      unsigned pixelOffs = sizeof(BITMAPINFOHEADER) + GetNumberOfColours(bitmap.bmBitsPixel) * sizeof(RGBQUAD);
+      LPBITMAPINFO bitmapInfo = (LPBITMAPINFO)bitMapInfoStorage.GetPointer(pixelOffs + (bitmap.bmHeight * bitmap.bmWidthBytes));
+      BITMAPINFOHEADER & bi = bitmapInfo->bmiHeader;
+      memset(&bi, 0, sizeof(bi));
+
+      bi.biSize        = sizeof(BITMAPINFOHEADER);
+      bi.biWidth       = bitmap.bmWidth;
+      bi.biHeight      = bitmap.bmHeight;
+      bi.biPlanes      = 1;
+      bi.biBitCount    = bitmap.bmBitsPixel;
+      bi.biCompression = BI_RGB;
+
+      // get the pixel data
+      int scanLines = GetDIBits(hMemDC, 
+                                (HBITMAP)hBitMap, 
+                                0, bitmap.bmHeight, 
+                                (char *)bitmapInfo + pixelOffs,
+                                bitmapInfo,
+                                DIB_RGB_COLORS);
+
+      if (scanLines == 0) {
+        PTRACE(2, "AppInput\tFailed to convert image");
       } else {
+        int srcPixelSize  = bitmap.bmBitsPixel / 8;
+        int dstPixelSize  = (colourFormat == "BGR32") ? 4 : 3;
 
-         PTRACE(6,"AppInput\tBuffer copied." << pBufferSize );
-         memcpy(buffer, pBuffer, pBufferSize);
-         if (buffer != NULL)
-           *bytesReturned = pBufferSize;
-        retval = true;
+        // convert from 24/32 bit to 24/32 bit, and invert top to bottom
+        BYTE * src = (BYTE *)bitmapInfo + pixelOffs + (bitmap.bmHeight-1) * bitmap.bmWidthBytes;
+        BYTE * dst = (converter == NULL) ? buffer : tempPixelBuffer.GetPointer(bitmap.bmHeight*bitmap.bmWidth * dstPixelSize);
+        for (long y = 0; y < bitmap.bmHeight; ++y) {
+          for (long x = 0; x < bitmap.bmWidth; ++x) {
+            memcpy(dst, src, 3);
+            if (dstPixelSize == 4)
+              *dst++ = 0;
+            src += srcPixelSize;
+            dst += dstPixelSize;
+          }
+          src -= bitmap.bmWidth*srcPixelSize + bitmap.bmWidthBytes;
+        }
+        *bytesReturned = bitmap.bmHeight * bitmap.bmWidth * dstPixelSize;
+        if (converter != NULL && !converter->Convert(tempPixelBuffer.GetPointer(), buffer, bytesReturned)) {
+          PTRACE(2, "AppInput\tConverter failed");
+          retVal = false;
+        }
       }
-   }
+    }
 
-  PTRACE(6,"App\tBuffer Transcoded "  << retval);
-  
-  return retval;  
+    DeleteObject(hBitMap); 
+    DeleteDC(hScrDC);
+    DeleteDC(hMemDC);
+  }
+
+  /////////////////////////////////////////////////////////////////////
+
+  return retVal;
 }
 
 
@@ -303,8 +348,13 @@ PBoolean PVideoInputDevice_Application::TestAllFormats()
 
 PBoolean PVideoInputDevice_Application::SetChannel(int /*newChannel*/)
 {
-
   return true;
+}
+
+void PVideoInputDevice_Application::AttachCaptureWindow(HWND _hwnd, bool _client)
+{
+    m_hWnd = _hwnd;
+    m_client = _client;
 }
 
 #endif  // P_APPSHARE
