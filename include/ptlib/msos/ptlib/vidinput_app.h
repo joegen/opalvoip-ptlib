@@ -51,14 +51,13 @@ class PVideoInputDevice_Application : public PVideoInputDevice
 
     /**Close the video input device on destruction.
       */
-    ~PVideoInputDevice_Application() { Close(); }
+    ~PVideoInputDevice_Application();
 
     /** Is the device a camera, and obtain video
      */
     static PStringArray GetInputDeviceNames();
 
-    virtual PStringArray GetDeviceNames() const
-      { return GetInputDeviceNames(); }
+    virtual PStringArray GetDeviceNames() const;
 
     /**Retrieve a list of Device Capabilities
     */
@@ -93,6 +92,8 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     /**Determine if the video device I/O capture is in progress.
       */
     virtual PBoolean IsCapturing();
+
+    virtual PBoolean SetVideoFormat(VideoFormat newFormat);
 
     /**Set the colour format to be used.
        Note that this function does not do any conversion. If it returns TRUE
@@ -167,8 +168,10 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     );
 
   protected:
-      HWND m_hWnd;               ///< Handle of Window to Capture
-      bool m_client;             ///< Capture the client area only
+      HWND m_hWnd;                   ///< Handle of Window to Capture
+      bool m_client;                 ///< Capture the client area only
+      PBYTEArray bitMapInfoStorage;  ///< used for storing raw DIB
+      PBYTEArray tempPixelBuffer;    ///< used for storing temporary version of bitmap during convertion
 
       PMutex lastFrameMutex;     ///< Frame Grab Mutex
       PAdaptiveDelay grabDelay;  ///< Frame Grab delay
