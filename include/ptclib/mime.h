@@ -183,7 +183,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
      */
     PString GetString(
       const PString & key,       ///< Key into MIME dictionary to get info.
-      const PString & dflt       ///< Default value of field if not in MIME info.
+      const PString & dflt = PString::Empty() ///< Default value of field if not in MIME info.
     ) const;
 
     /** Get an integer value for the particular MIME info field with checking
