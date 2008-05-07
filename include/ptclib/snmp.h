@@ -18,33 +18,6 @@
 
 
 //
-// Message
-//
-
-class PSNMP_Message : public PASN_Sequence
-{
-#ifndef PASN_LEANANDMEAN
-    PCLASSINFO(PSNMP_Message, PASN_Sequence);
-#endif
-  public:
-    PSNMP_Message(unsigned tag = UniversalSequence, TagClass tagClass = UniversalTagClass);
-
-    PASN_Integer m_version;
-    PASN_OctetString m_community;
-    PASN_OctetString m_data;
-
-    PINDEX GetDataLength() const;
-    PBoolean Decode(PASN_Stream & strm);
-    void Encode(PASN_Stream & strm) const;
-#ifndef PASN_NOPRINTON
-    void PrintOn(ostream & strm) const;
-#endif
-    Comparison Compare(const PObject & obj) const;
-    PObject * Clone() const;
-};
-
-
-//
 // PDUs
 //
 
@@ -100,6 +73,9 @@ class PSNMP_PDUs : public PASN_Choice
     operator PSNMP_Trap_PDU &();
     operator const PSNMP_Trap_PDU &() const;
 #endif
+
+    virtual PBoolean Decode(PASN_Stream & strm);
+    virtual void Encode(PASN_Stream & strm) const;
 
     PBoolean CreateObject();
     PObject * Clone() const;
@@ -270,6 +246,34 @@ class PSNMP_SetRequest_PDU : public PSNMP_PDU
   public:
     PSNMP_SetRequest_PDU(unsigned tag = 3, TagClass tagClass = ContextSpecificTagClass);
 
+    PObject * Clone() const;
+};
+
+
+//
+// Message
+//
+
+class PSNMP_Message : public PASN_Sequence
+{
+#ifndef PASN_LEANANDMEAN
+    PCLASSINFO(PSNMP_Message, PASN_Sequence);
+#endif
+  public:
+    PSNMP_Message(unsigned tag = UniversalSequence, TagClass tagClass = UniversalTagClass);
+
+    PASN_Integer m_version;
+    PASN_OctetString m_community;
+    PSNMP_PDUs m_pdu;
+    PASN_OctetString m_data;
+
+    PINDEX GetDataLength() const;
+    PBoolean Decode(PASN_Stream & strm);
+    void Encode(PASN_Stream & strm) const;
+#ifndef PASN_NOPRINTON
+    void PrintOn(ostream & strm) const;
+#endif
+    Comparison Compare(const PObject & obj) const;
     PObject * Clone() const;
 };
 

@@ -23,7 +23,7 @@
 //
 
 PSNMP_Message::PSNMP_Message(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Sequence(tag, tagClass, 0, PFalse, 0)
+  :PASN_Sequence(tag, tagClass, 0, PFalse, 0)
 {
 }
 
@@ -35,7 +35,7 @@ void PSNMP_Message::PrintOn(ostream & strm) const
   strm << "{\n";
   strm << setw(indent+10) << "version = " << setprecision(indent) << m_version << '\n';
   strm << setw(indent+12) << "community = " << setprecision(indent) << m_community << '\n';
-  strm << setw(indent+7) << "data = " << setprecision(indent) << m_data << '\n';
+  strm << setw(indent+7) << "data = " << setprecision(indent) << m_pdu << '\n';
   strm << setw(indent-1) << setprecision(indent-2) << "}";
 }
 #endif
@@ -54,7 +54,7 @@ PObject::Comparison PSNMP_Message::Compare(const PObject & obj) const
     return result;
   if ((result = m_community.Compare(other.m_community)) != EqualTo)
     return result;
-  if ((result = m_data.Compare(other.m_data)) != EqualTo)
+  if ((result = m_pdu.Compare(other.m_pdu)) != EqualTo)
     return result;
 
   return PASN_Sequence::Compare(other);
@@ -66,36 +66,42 @@ PINDEX PSNMP_Message::GetDataLength() const
   PINDEX length = 0;
   length += m_version.GetObjectLength();
   length += m_community.GetObjectLength();
-  length += m_data.GetObjectLength();
+  length += m_pdu.GetObjectLength();
   return length;
 }
 
 
 PBoolean PSNMP_Message::Decode(PASN_Stream & strm)
 {
-  if (!PreambleDecode(strm))
-    return PFalse;
+  PBoolean rslt = PTrue;
+  PBER_Stream stm = strm;
 
-  if (!m_version.Decode(strm))
-    return PFalse;
-  if (!m_community.Decode(strm))
-    return PFalse;
-  if (!m_data.Decode(strm))
-    return PFalse;
+  if (!PreambleDecodeBER(stm))
+    rslt = PFalse;
+  if (!stm.IntegerDecode(m_version))
+    rslt = PFalse;
+  if (!stm.OctetStringDecode(m_community))
+    rslt = PFalse;
+  if (!stm.ChoiceDecode(m_pdu))
+    rslt = PFalse;
+  if (!UnknownExtensionsDecodeBER(stm))
+    rslt = PFalse;
 
-  return UnknownExtensionsDecode(strm);
+  return rslt;
 }
 
 
 void PSNMP_Message::Encode(PASN_Stream & strm) const
 {
-  PreambleEncode(strm);
+  PBER_Stream stm = strm;
 
-  m_version.Encode(strm);
-  m_community.Encode(strm);
-  m_data.Encode(strm);
+  PreambleEncodeBER(stm);
+  stm.IntegerEncode(m_version);
+  stm.OctetStringEncode(m_community);
+  stm.ChoiceEncode(m_pdu);
 
-  UnknownExtensionsEncode(strm);
+  UnknownExtensionsEncodeBER(stm);
+  strm.SetSize(stm.GetPosition());
 }
 
 
@@ -275,6 +281,21 @@ PObject * PSNMP_PDUs::Clone() const
   return new PSNMP_PDUs(*this);
 }
 
+PBoolean PSNMP_PDUs::Decode(PASN_Stream & strm)
+{
+  if (choice != NULL)
+	return choice->Decode(strm);
+
+  return PASN_Choice::Decode(strm);
+}
+
+void PSNMP_PDUs::Encode(PASN_Stream & strm) const
+{
+  if (choice != NULL)
+    return choice->Encode(strm);
+
+  return PASN_Choice::Encode(strm);
+}
 
 //
 // VarBind
@@ -469,9 +490,9 @@ void PSNMP_PDU::Encode(PASN_Stream & strm) const
 {
   PreambleEncode(strm);
 
-  m_request_id.Encode(strm);
-  m_error_status.Encode(strm);
-  m_error_index.Encode(strm);
+  strm.IntegerEncode(m_request_id);
+  strm.IntegerEncode(m_error_status);
+  strm.IntegerEncode(m_error_index);
   m_variable_bindings.Encode(strm);
 
   UnknownExtensionsEncode(strm);
