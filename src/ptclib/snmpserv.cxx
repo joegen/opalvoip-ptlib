@@ -223,7 +223,7 @@ PBoolean PSNMPServer::MIB_LocalMatch(PSNMP_PDU & pdu)
   return PTrue;
 }
 
-PBoolean PSNMPServer::ConfirmCommunity(PASN_OctetString & community)
+PBoolean PSNMPServer::ConfirmCommunity(PASN_OctetString & /*community*/)
 {
 	return PFalse;
 }
@@ -313,8 +313,9 @@ PBoolean PSNMPServer::ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & sen
       retval = PFalse;
   }
 
-  if (retval)
+  if (retval) {
     PTRACE(4, "SNMPSrv\tSNMP Response " << resp);
+  }
 
   return retval;
 }
