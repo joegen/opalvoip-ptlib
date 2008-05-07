@@ -105,6 +105,11 @@ PINDEX PSNMPVarBindingList::GetSize() const
   return objectIds.GetSize();
 }
 
+PINDEX PSNMPVarBindingList::GetIndex(const PString & objectID) const
+{
+  return objectIds.GetStringsIndex(objectID);
+}
+
 
 PASNObject & PSNMPVarBindingList::operator[](PINDEX idx) const
 {
