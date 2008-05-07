@@ -61,6 +61,7 @@ class PSNMPVarBindingList : public PObject
 
     PINDEX GetSize() const;
 
+	PINDEX GetIndex(const PString & objectID) const;
     PString GetObjectID(PINDEX idx) const;
     PASNObject & operator[](PINDEX idx) const;
 
@@ -266,25 +267,30 @@ class PSNMPServer : public PSNMP, PThread
 
 	void SetVersion(PASNInt newVersion);
 	PBoolean HandleChannel();
-	int ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & writeBuffer);
+	PBoolean ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & writeBuffer);
 
 	virtual PBoolean Authorise(const PIPSocket::Address & received);
+	virtual PBoolean ConfirmVersion(PASN_Integer vers);
+	virtual PBoolean ConfirmCommunity(PASN_OctetString & community);
+
+    virtual PBoolean MIB_LocalMatch(PSNMP_PDU & pdu);
 
 	virtual PBoolean OnGetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
 	virtual PBoolean OnGetNextRequest (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
 	virtual PBoolean OnSetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
 
-    PSNMP::ErrorType SendGetResponse          (PSNMPVarBindingList & vars);
+    PSNMP::ErrorType SendGetResponse  (PSNMPVarBindingList & vars);
   
   protected:
-    PString   community;
-    PASNInt   version;
-    PINDEX    lastErrorIndex;
-    ErrorType lastErrorCode;
-    PBYTEArray readBuffer;
-    PINDEX     maxRxSize;
-    PINDEX     maxTxSize;
-	PUDPSocket * baseSocket;
+    PString       community;
+    PASN_Integer  version;
+    PINDEX        lastErrorIndex;
+    ErrorType     lastErrorCode;
+    PBYTEArray    readBuffer;
+    PINDEX        maxRxSize;
+    PINDEX        maxTxSize;
+	PUDPSocket   *baseSocket;
+	PDictionary<PRFC1155_ObjectName, PRFC1155_ObjectSyntax>  objList;
 };
 
 #endif // P_SNMP
