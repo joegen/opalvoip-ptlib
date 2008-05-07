@@ -56,6 +56,15 @@ PCREATE_SOUND_PLUGIN(DirectSound, PSoundChannelDirectSound)
 INT_PTR CALLBACK DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR strDrvName,
 				     VOID* devices );
 
+
+#ifdef _WIN32_WCE
+#include <initguid.h>
+#define IID_IDirectSoundBuffer8 IID_IDirectSoundBuffer
+#define IID_IDirectSoundCaptureBuffer8 IID_IDirectSoundCaptureBuffer
+DEFINE_GUID(DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+DEFINE_GUID(DSDEVID_DefaultCapture, 0xdef00001, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
