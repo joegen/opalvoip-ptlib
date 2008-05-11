@@ -47,11 +47,7 @@
 #pragma comment(lib,"user32.lib")
 #pragma comment(lib,"comdlg32.lib")
 
-#ifdef __USE_STL__
 #include <fstream>
-#else
-#include <fstream.h>
-#endif
 
 #include <ptlib/svcproc.h>
 

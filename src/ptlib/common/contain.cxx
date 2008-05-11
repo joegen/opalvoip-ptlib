@@ -1942,7 +1942,7 @@ PStringStream::Buffer::Buffer(PStringStream & str, PINDEX size)
 }
 
 
-int PStringStream::Buffer::overflow(int c)
+streambuf::int_type PStringStream::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
     if (fixedBufferSize)
@@ -1965,13 +1965,13 @@ int PStringStream::Buffer::overflow(int c)
 }
 
 
-int PStringStream::Buffer::underflow()
+streambuf::int_type PStringStream::Buffer::underflow()
 {
   return gptr() >= egptr() ? EOF : *gptr();
 }
 
 
-int PStringStream::Buffer::sync()
+streambuf::int_type PStringStream::Buffer::sync()
 {
   char * base = string.GetPointer();
   PINDEX len = string.GetLength();
@@ -1981,11 +1981,7 @@ int PStringStream::Buffer::sync()
   return 0;
 }
 
-#ifdef __USE_STL__
 streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode mode)
-#else
-streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
-#endif
 {
   int len = string.GetLength();
   int gpos = gptr() - eback();
@@ -2042,12 +2038,10 @@ streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int m
 }
 
 
-#ifdef __USE_STL__
 streampos PStringStream::Buffer::seekpos(pos_type pos, ios_base::openmode mode)
 {
   return seekoff(pos, ios_base::beg, mode);
 }
-#endif
 
 
 #ifdef _MSC_VER
