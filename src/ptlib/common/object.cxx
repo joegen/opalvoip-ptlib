@@ -37,6 +37,7 @@
 
 #include <ptlib.h>
 #include <ptlib/pfactory.h>
+#include <sstream>
 #include <ctype.h>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
@@ -125,11 +126,7 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   int err = errno;
 #endif
 
-  #if (__GNUC__ >= 3) && defined (__USE_STL__)
   ostringstream str;
-  #else
-  ostrstream str;
-  #endif
   str << "Assertion fail: ";
   if (msg != NULL)
     str << msg << ", ";
@@ -140,14 +137,7 @@ void PAssertFunc(const char * file, int line, const char * className, const char
     str << ", Error=" << err;
   str << ends;
   
-  #if (__GNUC__ >= 3) && defined (__USE_STL__)
-  string sstr = str.str();
-  const char * s = sstr.c_str();
-  #else
-  const char * s = str.str();
-  #endif
-
-  PAssertFunc(s);
+  PAssertFunc(str.str().c_str());
 }
 
 PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject&obj) const
