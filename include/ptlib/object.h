@@ -54,37 +54,18 @@
 
 #include <string.h>
 
-#ifdef __USE_STL__
-  #include <string>
-  #include <iomanip>
-  #include <iostream>
-  #if (__GNUC__ >= 3)
-    #include <sstream>
-    typedef std::ostringstream ostrstream;
-  #else
-    #include <strstream>
-  #endif
-  //using namespace std;
-  #ifdef _STLP_IOS_BASE_H
-  typedef std::ios_base::fmtflags _Ios_Fmtflags;
-  #endif
+#include <string>
+#include <iomanip>
+#include <iostream>
+#if (__GNUC__ >= 3)
+  #include <sstream>
+  typedef std::ostringstream ostrstream;
 #else
-  #if (__GNUC__ >= 3)
-    #include <iosfwd>
-    #ifndef __MWERKS__
-      #include <iomanip>
-    #endif
-  #else
-    #include <iosfwd>
-    #ifdef __GNUC__
-      #include <strstream.h>
-    #else
-      #include <strstrea.h>
-    #endif
-    #ifndef __MWERKS__
-      #include <iomanip.h>
-    #endif
-  #endif
+  #include <strstream>
+#endif
+//using namespace std;
+#ifdef _STLP_IOS_BASE_H
+typedef std::ios_base::fmtflags _Ios_Fmtflags;
 #endif
 
 #if (__GNUC__ < 3) && !defined(_STLP_IOS_BASE_H)
