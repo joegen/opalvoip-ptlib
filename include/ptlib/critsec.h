@@ -147,7 +147,7 @@ class PAtomicInteger
         *
         * @return PTrue if the integer has a value of zero
         */
-      PBoolean IsZero() const                 { return value == 0; }
+      bool IsZero() const                 { return value == 0; }
 
       /**
         * atomically increment the integer value
@@ -181,7 +181,7 @@ class PAtomicInteger
     public:
       inline PAtomicInteger(__stl_atomic_t v = 0)
         : value(v) { }
-      PBoolean IsZero() const                { return value == 0; }
+      inline bool IsZero() const         { return value == 0; }
       inline int operator++()            { return _STLP_ATOMIC_INCREMENT(&value); }
       inline int unsigned operator--()   { return _STLP_ATOMIC_DECREMENT(&value); }
       inline operator int () const       { return value; }
@@ -192,7 +192,7 @@ class PAtomicInteger
     public:
       inline PAtomicInteger(uint32_t v = 0)
       : value(v) { }
-      PBoolean IsZero() const                { return value == 0; }
+      inline bool IsZero() const         { return value == 0; }
       inline int operator++()            { return atomic_add_32_nv((&value), 1); }
       inline int unsigned operator--()   { return atomic_add_32_nv((&value), -1); }
       inline operator int () const       { return value; }
@@ -203,7 +203,7 @@ class PAtomicInteger
     public:
       inline PAtomicInteger(int v = 0)
         : value(v) { }
-      PBoolean IsZero() const                { return value == 0; }
+      inline bool IsZero() const         { return value == 0; }
       inline int operator++()            { return EXCHANGE_AND_ADD(&value, 1) + 1; }
       inline int unsigned operator--()   { return EXCHANGE_AND_ADD(&value, -1) - 1; }
       inline operator int () const       { return value; }
@@ -211,17 +211,17 @@ class PAtomicInteger
     protected:
       _Atomic_word value;
 #else 
-    protected:
-      PCriticalSection critSec;
     public:
       inline PAtomicInteger(int v = 0)
-        : value(v) { }
-      PBoolean IsZero() const                { return value == 0; }
-      inline int operator++()            { PWaitAndSignal m(critSec); value++; return value;}
-      inline int operator--()            { PWaitAndSignal m(critSec); value--; return value;}
+        : value(v)                       { pthread_mutex_init(&mutex, NULL); }
+      inline ~PAtomicInteger()           { pthread_mutex_destroy(&mutex); }
+      inline bool IsZero() const         { return value == 0; }
+      inline int operator++()            { pthread_mutex_lock(&mutex); int retval = value++; pthread_mutex_unlock(&mutex); return retval; }
+      inline int operator--()            { pthread_mutex_lock(&mutex); int retval = value--; pthread_mutex_unlock(&mutex); return retval; }
       inline operator int () const       { return value; }
-      inline void SetValue(int v)        { value = v; }
+      inline void SetValue(int v)        { pthread_mutex_lock(&mutex); value = v; pthread_mutex_unlock(&mutex); }
     protected:
+      pthread_mutex_t mutex;
       int value;
 #endif
     private:
