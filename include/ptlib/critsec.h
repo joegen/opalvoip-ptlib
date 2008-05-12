@@ -37,6 +37,8 @@
 #include <atomic.h>
 #endif
 
+#if P_HAS_ATOMIC_INT
+
 #if defined(__GNUC__)
 #  if __GNUC__ >= 4 && __GNUC_MINOR__ >= 2
 #     include <ext/atomicity.h>
@@ -45,13 +47,14 @@
 #  endif
 #endif
 
-#if P_HAS_ATOMIC_INT
 #if P_NEEDS_GNU_CXX_NAMESPACE
 #define EXCHANGE_AND_ADD(v,i)   __gnu_cxx::__exchange_and_add(v,i)
 #else
 #define EXCHANGE_AND_ADD(v,i)   __exchange_and_add(v,i)
 #endif
-#endif
+
+#endif // P_HAS_ATOMIC_INT
+
 
 /** This class implements critical section mutexes using the most
   * efficient mechanism available on the host platform.
@@ -210,7 +213,7 @@ class PAtomicInteger
       inline void SetValue(int v)        { value = v; }
     protected:
       _Atomic_word value;
-#else 
+#else
     public:
       inline PAtomicInteger(int v = 0)
         : value(v)                       { pthread_mutex_init(&mutex, NULL); }
