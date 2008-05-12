@@ -1337,7 +1337,7 @@ class PStandardType
 PI_SAME(PChar8, char);
 #endif
 
-PI_SAME(PInt8, signed char);
+PI_SAME(PInt8, char);
 
 PI_SAME(PUInt8, unsigned char);
 
