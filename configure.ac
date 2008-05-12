@@ -707,34 +707,41 @@ AC_DEFINE_UNQUOTED(P_HAS_STL_STREAMS, ${P_HAS_STL_STREAMS})
 dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
+AC_ARG_ENABLE(atomicity,
+       [  --disable-atomicity     Do not use atomicity.h])
+
 P_HAS_ATOMIC_INT=0
 P_NEEDS_GNU_CXX_NAMESPACE=0
 AC_MSG_CHECKING(if atomic integer available)
-AC_TRY_COMPILE([#include <bits/atomicity.h>],
-               [_Atomic_word val;], P_HAS_ATOMIC_INT=1,
-    AC_TRY_COMPILE([#include <ext/atomicity.h>],
-		[_Atomic_word val;], P_HAS_ATOMIC_INT=2)
-)
-if test ${P_HAS_ATOMIC_INT} != 0 ; then
-  AC_MSG_RESULT(yes)
-  AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
-  if test ${P_HAS_ATOMIC_INT} = 1 ; then
-    AC_TRY_COMPILE([#include <bits/atomicity.h>],
-        [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
-        P_NEEDS_GNU_CXX_NAMESPACE=1)
-  else
-    P_HAS_ATOMIC_INT=1
-    AC_TRY_COMPILE([#include <ext/atomicity.h>],
-        [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
-        P_NEEDS_GNU_CXX_NAMESPACE=1)
-  fi
-  if test ${P_NEEDS_GNU_CXX_NAMESPACE} = 1 ; then
+if test "${enable_atomicity}" = "no" ; then
+  AC_MSG_RESULT(disabled)
+else
+  AC_TRY_COMPILE([#include <bits/atomicity.h>],
+                 [_Atomic_word val;], P_HAS_ATOMIC_INT=1,
+                 AC_TRY_COMPILE([#include <ext/atomicity.h>],
+                                [_Atomic_word val;], P_HAS_ATOMIC_INT=2)
+  )
+  if test ${P_HAS_ATOMIC_INT} != 0 ; then
     AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
+    if test ${P_HAS_ATOMIC_INT} = 1 ; then
+      AC_TRY_COMPILE([#include <bits/atomicity.h>],
+                     [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
+                     P_NEEDS_GNU_CXX_NAMESPACE=1)
+    else
+      P_HAS_ATOMIC_INT=1
+      AC_TRY_COMPILE([#include <ext/atomicity.h>],
+                     [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
+                     P_NEEDS_GNU_CXX_NAMESPACE=1)
+    fi
+    if test ${P_NEEDS_GNU_CXX_NAMESPACE} = 1 ; then
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
   else
     AC_MSG_RESULT(no)
   fi
-else
-  AC_MSG_RESULT(no)
 fi
 
 AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
