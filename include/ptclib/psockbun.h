@@ -575,7 +575,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     typedef std::map<std::string, SocketInfo> SocketInfoMap_T;
 
     void OpenSocket(const PString & iface);
-    void CloseSocket(const SocketInfoMap_T::iterator & iterSocket);
+    void CloseSocket(SocketInfoMap_T::iterator iterSocket);
 
     SocketInfoMap_T socketInfoMap;
 };

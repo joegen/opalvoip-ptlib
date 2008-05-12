@@ -1881,7 +1881,7 @@ class PStringStream : public PString, public iostream
         Buffer & operator=(const Buffer & sbuf);
         virtual int_type overflow(int=EOF);
         virtual int_type underflow();
-        virtual int_type sync();
+        virtual int sync();
         virtual pos_type seekoff(off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
         virtual pos_type seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out);
         PStringStream & string;

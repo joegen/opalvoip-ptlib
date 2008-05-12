@@ -1971,7 +1971,7 @@ streambuf::int_type PStringStream::Buffer::underflow()
 }
 
 
-streambuf::int_type PStringStream::Buffer::sync()
+int PStringStream::Buffer::sync()
 {
   char * base = string.GetPointer();
   PINDEX len = string.GetLength();
@@ -2038,7 +2038,7 @@ streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekd
 }
 
 
-streampos PStringStream::Buffer::seekpos(pos_type pos, ios_base::openmode mode)
+PStringStream::Buffer::pos_type PStringStream::Buffer::seekpos(pos_type pos, ios_base::openmode mode)
 {
   return seekoff(pos, ios_base::beg, mode);
 }

@@ -870,7 +870,7 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
 }
 
 
-void PMonitoredSocketBundle::CloseSocket(const SocketInfoMap_T::iterator & iterSocket)
+void PMonitoredSocketBundle::CloseSocket(SocketInfoMap_T::iterator iterSocket)
 {
   //Already locked by caller
 
