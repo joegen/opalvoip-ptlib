@@ -100,7 +100,7 @@ streambuf::int_type PChannelStreamBuffer::underflow()
 }
 
 
-streambuf::int_type PChannelStreamBuffer::sync()
+int PChannelStreamBuffer::sync()
 {
   int inAvail = egptr() - gptr();
   if (inAvail > 0) {
@@ -116,7 +116,7 @@ streambuf::int_type PChannelStreamBuffer::sync()
 }
 
 
-streampos PChannelStreamBuffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode)
+PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode)
 {
   sync();
   if (PIsDescendant(channel, PFile)) {
@@ -142,7 +142,7 @@ streampos PChannelStreamBuffer::seekoff(off_type off, ios_base::seekdir dir, ios
 }
 
 
-streampos PChannelStreamBuffer::seekpos(pos_type pos, ios_base::openmode mode)
+PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekpos(pos_type pos, ios_base::openmode mode)
 {
   return seekoff(pos, ios_base::beg, mode);
 }
