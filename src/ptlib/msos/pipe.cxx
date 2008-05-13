@@ -268,7 +268,7 @@ PBoolean PPipeChannel::Execute()
   if (hToChild != INVALID_HANDLE_VALUE)
     CloseHandle(hToChild);
   hToChild = INVALID_HANDLE_VALUE;
-  return PTrue;
+  return IsRunning();
 }
 
 
