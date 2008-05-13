@@ -289,7 +289,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
                           errors.GetPointer(available+1), available,
                           &bytesRead, NULL) ? 0 : -2, LastReadError);
 
-  if (wait)
+  if (!wait)
     return PFalse;
 
   char firstByte;
