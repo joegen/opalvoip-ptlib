@@ -155,7 +155,7 @@ PImageDLL::PImageDLL()
 
 void PAssertFunc(const char * msg)
 {
-  ostrstream str;
+  ostringstream str;
   str << msg;
 
 #if defined(_WIN32) && defined(_M_IX86)
@@ -264,20 +264,12 @@ void PAssertFunc(const char * msg)
 #endif
 
   str << ends;
-#ifdef _MSC_VER
-  const char * pstr = str.str();
-  // Unfreeze str so frees memory
-  str.rdbuf()->freeze(0);
-#else
   // Copy to local variable so char ptr does not become invalidated
   std::string sstr = str.str();
-  const char * pstr = sstr.c_str ();
-#endif
-  // Must do nothing to str after this or it invalidates pstr
 
   if (PProcess::Current().IsServiceProcess()) {
 #ifndef _WIN32_WCE
-	PSystemLog::Output(PSystemLog::Fatal, pstr);
+	PSystemLog::Output(PSystemLog::Fatal, sstr.c_str());
 #if defined(_MSC_VER) && defined(_DEBUG)
     if (PServiceProcess::Current().debugMode)
       __asm int 3;
@@ -292,7 +284,7 @@ void PAssertFunc(const char * msg)
 #endif
 
   if (PProcess::Current().IsGUIProcess()) {
-    PVarString msg = pstr;
+    PVarString msg = sstr.c_str();
     PVarString name = PProcess::Current().GetName();
     switch (MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
       case IDABORT :
@@ -311,7 +303,7 @@ void PAssertFunc(const char * msg)
   }
 
   for (;;) {
-    cerr << pstr << "\n<A>bort, <B>reak, <I>gnore? ";
+    cerr << sstr << "\n<A>bort, <B>reak, <I>gnore? ";
     cerr.flush();
     switch (cin.get()) {
       case 'A' :

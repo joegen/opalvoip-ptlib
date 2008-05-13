@@ -57,24 +57,7 @@
 #include <string>
 #include <iomanip>
 #include <iostream>
-#if (__GNUC__ >= 3)
-  #include <sstream>
-  typedef std::ostringstream ostrstream;
-#else
-  #include <strstream>
-#endif
-//using namespace std;
-#ifdef _STLP_IOS_BASE_H
-typedef std::ios_base::fmtflags _Ios_Fmtflags;
-#endif
-
-#if (__GNUC__ < 3) && !defined(_STLP_IOS_BASE_H)
-typedef long _Ios_Fmtflags;
-#endif
-
-#if _MSC_VER<1300
-#define _BADOFF -1
-#endif
+#include <sstream>
 
 
 // P_USE_INTEGER_BOOL is the default and gives the old behaviour (it
