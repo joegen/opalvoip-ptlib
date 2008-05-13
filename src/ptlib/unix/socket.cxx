@@ -1023,9 +1023,13 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
     char iface[20];
     unsigned long net_addr, dest_addr, net_mask;
     int flags, refcnt, use, metric;
-    procfile >> iface >> ::hex >> net_addr >> dest_addr >> flags 
-                      >> ::dec >> refcnt >> use >> metric 
-                      >> ::hex >> net_mask;
+    procfile >> iface;
+    procfile.setf(hex, dec);
+    procfile >> net_addr >> dest_addr >> flags;
+    procfile.setf(dec, hex);
+    procfile >> refcnt >> use >> metric;
+    procfile.setf(hex, dec);
+    procfile >> net_mask;
     if (procfile.bad())
       return PFalse;
 
