@@ -85,8 +85,9 @@ class PPipeChannel : public PChannel
       WriteOnly,  
       /// Pipe is bidirectional between current and sub-processes.
       ReadWrite,  
-      /**Pipe is bidirectional between current and sub-processes but the write
-         side goes to stdout and stderr */
+      /**Pipe is bidirectional between current and sub-processes but 
+         sub-processes stdout and stderr goes to current processes
+         stdout and stderr */
       ReadWriteStd
     };
 
