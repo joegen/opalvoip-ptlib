@@ -1108,6 +1108,13 @@ PBoolean PFilePath::IsValid(const PString & str)
 }
 
 
+bool PFilePath::IsAbsolutePath(const PString & path)
+{
+  return path[0] == '/';
+}
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PConsoleChannel
 
