@@ -498,6 +498,11 @@ PBoolean PFilePath::IsValid(const PString & str)
 }
 
 
+bool PFilePath::IsAbsolutePath(const PString & path)
+{
+  return path.GetLength() > 2 && (path[1] == ':' || (path[0] == '\\' && path[1] == '\\'));
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PChannel
