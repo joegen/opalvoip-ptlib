@@ -283,6 +283,12 @@ class PFilePath : public PFilePathString
     static PBoolean IsValid(
       const PString & str   ///< String to test for validity.
     );
+
+    /**Test if path is an absolute path or relative path.
+      */
+    static bool IsAbsolutePath(
+      const PString & path   ///< path name
+    );
   //@}
 
 
