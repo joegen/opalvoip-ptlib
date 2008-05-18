@@ -195,6 +195,10 @@ class PSTUNClient : public PNatMethod
       const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
     );
 
+    /**Return the interface NAT router is using.
+      */
+    const PIPSocket::Address & GetInterfaceAddress() const { return interfaceAddress; }
+
     /**Invalidates the cached external address
        This allows to lazily update the external address cache at the next 
        attempt to get the external address.
