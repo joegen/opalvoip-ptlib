@@ -455,7 +455,7 @@ PBoolean PDNS::LookupSRV(
   PIPSocketAddressAndPortVector info;
 
   if (!LookupSRV(url.GetHostName(), service, defaultPort, info)) {
-    PTRACE(6,"DNS\tSRV Lookup Fail no domain " << url );
+    PTRACE(2,"DNS\tSRV Lookup Fail no domain " << url );
     return PFalse;
   }
 
@@ -477,12 +477,12 @@ PBoolean PDNS::LookupSRV(
          PIPSocketAddressAndPortVector & addrList  ///< list of sockets and ports
 )
 {
-  if (domain.GetLength() == 0) {
-    PTRACE(6,"DNS\tSRV lookup failed - cannot resolve hostname " << domain);
+  if (domain.IsEmpty()) {
+    PTRACE(1,"DNS\tSRV lookup failed - no domain specified");
     return PFalse;
   }
 
-  PTRACE(6,"DNS\tSRV Lookup " << domain << " service " << service);
+  PTRACE(4,"DNS\tSRV Lookup " << domain << " service " << service);
   
   PString srvLookupStr = service;
   if (srvLookupStr.Right(1) != ".")
@@ -502,7 +502,7 @@ PBoolean PDNS::LookupSRV(
   PDNS::SRVRecordList srvRecords;
   PBoolean found = PDNS::GetRecords(srvLookupStr, srvRecords);
   if (found) {
-    PTRACE(6,"DNS\tSRV Record found " << srvLookupStr);
+    PTRACE(5,"DNS\tSRV Record found " << srvLookupStr);
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
       PIPSocketAddressAndPort addrAndPort;
