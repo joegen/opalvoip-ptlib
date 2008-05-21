@@ -23,9 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 19008 $
- * $Author: rjongbloed $
- * $Date: 2007-11-29 20:17:41 +1100 (Thu, 29 Nov 2007) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__
