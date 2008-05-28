@@ -286,7 +286,7 @@ class PSTUNClient : public PNatMethod
        of NAT being used.
      */
     virtual bool IsAvailable(
-      const PIPSocket::Address & binding  ///< Interface to see if NAT is available on
+	   const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
     );
 
   protected:
