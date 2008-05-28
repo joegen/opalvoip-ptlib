@@ -66,6 +66,7 @@ time_t      mktime(struct tm* t);
 time_t      time(time_t* t);
 
 #if _WIN32_WCE < 0x501
+#include <stdlib.h>
 size_t wcsftime(
    wchar_t *strDest,
    size_t maxsize,
