@@ -47,7 +47,7 @@
   #pragma comment(lib, "mpr.lib")
 #endif
 
-#if defined(_WIN32_DCOM) 
+#if defined(P_WIN_COM) 
   #include <objbase.h>
   #ifdef _MSC_VER
     #pragma comment(lib, _OLE_LIB)
@@ -699,7 +699,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   process.SignalTimerChange();
 
-#if defined(_WIN32_DCOM)
+#if defined(P_WIN_COM)
   ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 #endif
 
@@ -707,7 +707,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   thread->Main();
   process.OnThreadEnded(*thread);
 
-#if defined(_WIN32_DCOM)
+#if defined(P_WIN_COM)
   ::CoUninitialize();
 #endif
 
