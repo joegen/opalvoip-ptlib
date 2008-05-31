@@ -646,7 +646,9 @@
 
 #if defined(_WIN32)
   #define _WIN32_DCOM 1
-#elseif defined(_WIN32_WCE) && !defined(_CE_DCOM)
+#endif
+
+#if defined(_WIN32_WCE) && !defined(_CE_DCOM)
   #define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA  1
 #endif
 
