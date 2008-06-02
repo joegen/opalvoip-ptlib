@@ -3512,6 +3512,14 @@ _ACEOF
 
 fi
 
+if test "$target_os" = "linux-gnulp" ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_LPIA 1
+_ACEOF
+
+fi
+
 if test ${OSTYPE} != beos ; then
 
 cat >>confdefs.h <<\_ACEOF
