@@ -221,6 +221,10 @@ if test "x$P_64BIT" != "x" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
 fi
 
+if test "$target_os" = "linux-gnulp" ; then
+  AC_DEFINE([P_LPIA], [1], [Low Power Intel Architecture])
+fi
+
 dnl BeOS has it;s own threading system
 if test ${OSTYPE} != beos ; then
   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
