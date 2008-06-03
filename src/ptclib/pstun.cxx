@@ -103,18 +103,14 @@ void PSTUNClient::Initialise(const PString & server,
 }
 
 
-PString PSTUNClient::GetServer() const
+bool PSTUNClient::GetServerAddress(PIPSocket::Address & address, WORD & port) const
 {
-  PStringStream str;
-  str << serverAddress << ':' << serverPort;
-  return str;
-}
+  if (!serverAddress.IsValid() || serverPort == 0)
+    return false;
 
-
-void PSTUNClient::GetServer(PIPSocket::Address & address, WORD & port) const
-{
   address = serverAddress;
   port = serverPort;
+  return true;
 }
 
 
@@ -657,6 +653,16 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
   
   externalAddress = cachedExternalAddress = mappedAddress->GetIP();
   timeAddressObtained = PTime();
+  return true;
+}
+
+
+bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & internalAddress) const
+{
+  if (!interfaceAddress.IsValid())
+    return false;
+
+  internalAddress = interfaceAddress;
   return true;
 }
 

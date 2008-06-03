@@ -43,7 +43,7 @@
 #include <list>
 
 
-class PSTUNClient;
+class PNatMethod;
 class PInterfaceMonitorClient;
 class PInterfaceFilter;
 
@@ -130,7 +130,7 @@ class PInterfaceMonitor : public PProcessStartup
     
     virtual void RefreshInterfaceList();
     
-    void OnRemoveSTUNClient(const PSTUNClient *stun);
+    void OnRemoveNatMethod(const PNatMethod * natMethod);
 
   protected:
     virtual void OnShutdown();
@@ -212,8 +212,8 @@ class PInterfaceMonitorClient : public PSafeObject
     /// Call back function for when an interface has been removed from the system
     virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
     
-    /// Called when a PSTUNClient is about to be destroyed
-    virtual void OnRemoveSTUNClient(const PSTUNClient * /*stun*/) { }
+    /// Called when a NAT method is about to be destroyed
+    virtual void OnRemoveNatMethod(const PNatMethod * /*natMethod*/) { }
     
     PINDEX priority;
 
@@ -245,7 +245,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
   protected:
     PMonitoredSockets(
       bool reuseAddr,
-      PSTUNClient * stunClient
+      PNatMethod * natMethod
     );
 
   public:
@@ -306,13 +306,14 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       const PTimeInterval & timeout /// Time to wait for data
     ) = 0;
 
-    /// Set the STUN server
-    void SetSTUN(
-      PSTUNClient * stunClient
-    ) { stun = stunClient; }
+    /// Set the NAT method, eg STUN client pointer
+    void SetNatMethod(
+      PNatMethod * method
+    ) { natMethod = method; }
 
-    // Get the current STUN server
-    PSTUNClient * GetSTUN() const { return stun; }
+
+    // Get the current NAT method, eg STUN client pointer
+    PNatMethod * GetNatMethod() const { return natMethod; }
 
     /** Create a new monitored socket instance based on the interface
         descriptor. This will create a multiple or single socket derived class
@@ -321,11 +322,14 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     static PMonitoredSockets * Create(
       const PString & iface,            /// Interface name to create socket for
       bool reuseAddr = false,           /// Re-use or exclusive port number
-      PSTUNClient * stunClient = NULL   /// STUN client code
+      PNatMethod * natMethod = NULL     /// NAT method
     );
 
   protected:
-    virtual void OnRemoveSTUNClient(const PSTUNClient *stun);
+    virtual void OnRemoveNatMethod(
+      const PNatMethod * natMethod
+    );
+
     struct SocketInfo {
       SocketInfo()
         : socket(NULL)
@@ -377,7 +381,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
 
     WORD          localPort;
     bool          reuseAddress;
-    PSTUNClient * stun;
+    PNatMethod  * natMethod;
 
     bool          opened;
     PUDPSocket    interfaceAddedSignal;
@@ -510,7 +514,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
   public:
     PMonitoredSocketBundle(
       bool reuseAddr = false,
-      PSTUNClient * stunClient = NULL
+      PNatMethod  * natMethod = NULL
     );
     ~PMonitoredSocketBundle();
 
@@ -594,7 +598,7 @@ class PSingleMonitoredSocket : public PMonitoredSockets
     PSingleMonitoredSocket(
       const PString & theInterface,
       bool reuseAddr = false,
-      PSTUNClient * stunClient = NULL
+      PNatMethod  * natMethod = NULL
     );
     ~PSingleMonitoredSocket();
 
