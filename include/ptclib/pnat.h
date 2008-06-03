@@ -52,88 +52,144 @@
 */
 class PNatMethod  : public PObject
 {
-  PCLASSINFO(PNatMethod,PObject);
+    PCLASSINFO(PNatMethod,PObject);
 
-public:
-
+  public:
   /**@name Construction */
   //@{
-  /** Default Contructor
-  */
-  PNatMethod();
+    /** Default Contructor
+    */
+    PNatMethod();
 
-  /** Deconstructor
-  */
-  ~PNatMethod();
+    /** Deconstructor
+    */
+    ~PNatMethod();
   //@}
 
 
+  /**@name General Functions */
+  //@{
     /** Factory Create
-      */
+    */
     static PNatMethod * Create(
       const PString & name,        ///< Feature Name Expression
       PPluginManager * pluginMgr = NULL   ///< Plugin Manager
     );
 
-  /**@name General Functions */
-  //@{
+    /** Get the NAT traversal method Name
+    */
+    virtual PString GetName() const = 0;
 
-  /**  GetExternalAddress
+    /**Get the current server address name.
+       Defaults to be "address:port" string form.
+      */
+    virtual PString GetServer() const;
+
+    /**Get the current server address and port being used.
+      */
+    virtual bool GetServerAddress(
+      PIPSocket::Address & address,   ///< Address of server
+      WORD & port                     ///< Port server is using.
+    ) const = 0;
+
+    /**  GetExternalAddress
     Get the acquired External IP Address.
-  */
-   virtual PBoolean GetExternalAddress(
+    */
+    virtual PBoolean GetExternalAddress(
       PIPSocket::Address & externalAddress, /// External address of router
       const PTimeInterval & maxAge = 1000   /// Maximum age for caching
-   ) = 0;
+    ) = 0;
 
-  /**  CreateSocketPair
-    Create the UDP Socket pair
-  */
-   virtual PBoolean CreateSocketPair(
+    /**Return the interface NAT router is using.
+      */
+    virtual bool GetInterfaceAddress(
+      PIPSocket::Address & internalAddress
+    ) const = 0;
+
+    /**Create a single socket.
+       The NAT traversal protocol is used to create a socket for which the
+       external IP address and port numbers are known. A PUDPSocket descendant
+       is returned which will, in response to GetLocalAddress() return the
+       externally visible IP and port rather than the local machines IP and
+       socket.
+
+       The will create a new socket pointer. It is up to the caller to make
+       sure the socket is deleted to avoid memory leaks.
+
+       The socket pointer is set to NULL if the function fails and returns
+       PFalse.
+      */
+    virtual PBoolean CreateSocket(
+      PUDPSocket * & socket,
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      WORD localPort = 0
+    ) = 0;
+
+    /**Create a socket pair.
+       The NAT traversal protocol is used to create a pair of sockets with
+       adjacent port numbers for which the external IP address and port
+       numbers are known. PUDPSocket descendants are returned which will, in
+       response to GetLocalAddress() return the externally visible IP and port
+       rather than the local machines IP and socket.
+
+       The will create new socket pointers. It is up to the caller to make
+       sure the sockets are deleted to avoid memory leaks.
+
+       The socket pointers are set to NULL if the function fails and returns
+       PFalse.
+      */
+    virtual PBoolean CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
-   ) = 0;
+    ) = 0;
 
-  /**Returns whether the Nat Method is ready and available in
-     assisting in NAT Traversal. The principal is function is
-     to allow the EP to detect various methods and if a method
-     is detected then this method is available for NAT traversal
-     The Order of adding to the PNstStrategy determines which method
-     is used
-  */
-   virtual bool IsAvailable(
+    /**Returns whether the Nat Method is ready and available in
+    assisting in NAT Traversal. The principal is function is
+    to allow the EP to detect various methods and if a method
+    is detected then this method is available for NAT traversal
+    The Order of adding to the PNstStrategy determines which method
+    is used
+    */
+    virtual bool IsAvailable(
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
-   ) = 0;
+    ) = 0;
+
+    enum RTPSupportTypes {
+      RTPSupported,
+      RTPIfSendMedia,
+      RTPUnsupported,
+      RTPUnknown,
+      NumRTPSupportTypes
+    };
+
+    /**Return an indication if the current STUN type supports RTP
+    Use the force variable to guarantee an up to date test
+    */
+    virtual RTPSupportTypes GetRTPSupport(
+      PBoolean force = PFalse    ///< Force a new check
+    ) = 0;
 
     /**Set the port ranges to be used on local machine.
-       Note that the ports used on the NAT router may not be the same unless
-       some form of port forwarding is present.
+    Note that the ports used on the NAT router may not be the same unless
+    some form of port forwarding is present.
 
-       If the port base is zero then standard operating system port allocation
-       method is used.
+    If the port base is zero then standard operating system port allocation
+    method is used.
 
-       If the max port is zero then it will be automatically set to the port
-       base + 99.
-      */
-   virtual void SetPortRanges(
+    If the max port is zero then it will be automatically set to the port
+    base + 99.
+    */
+    virtual void SetPortRanges(
       WORD portBase,          /// Single socket port number base
       WORD portMax = 0,       /// Single socket port number max
       WORD portPairBase = 0,  /// Socket pair port number base
       WORD portPairMax = 0    /// Socket pair port number max
-   );
-
-   /** Get the Method String Name
-   */
-   static PStringList GetNatMethodName() { return PStringList(); };
-
-   virtual PStringList GetName() const
-      { return GetNatMethodName(); }
-
+    );
   //@}
 
-protected:
-  struct PortInfo {
+  protected:
+    struct PortInfo {
       PortInfo(WORD port = 0)
         : basePort(port)
         , maxPort(port)
@@ -146,7 +202,6 @@ protected:
       WORD   maxPort;
       WORD   currentPort;
     } singlePortInfo, pairedPortInfo;
-
 };
 
 /////////////////////////////////////////////////////////////
