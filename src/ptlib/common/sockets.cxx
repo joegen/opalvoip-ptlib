@@ -1942,7 +1942,7 @@ PBoolean PIPSocket::Address::IsLoopback() const
   if (version == 6)
     return IN6_IS_ADDR_LOOPBACK(&v.six);
 #endif
-  return *this == loopback4;
+  return Byte1() == 127;
 }
 
 
