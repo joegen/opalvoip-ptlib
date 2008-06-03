@@ -107,14 +107,16 @@ class PSTUNClient : public PNatMethod
      */
     static PStringList GetNatMethodName() { return PStringList("STUN"); }
 
-    virtual PStringList GetName() const
-      { return GetNatMethodName(); }
+    /** Get the NAT traversal method name
+    */
+    virtual PString GetName() const { return "STUN"; }
 
-    /**Get the current STUN server address and port being used.
+    /**Get the current server address and port being used.
       */
-    PString GetServer() const;
-    
-    void GetServer(PIPSocket::Address & address, WORD & port) const;
+    virtual bool GetServerAddress(
+      PIPSocket::Address & address,   ///< Address of server
+      WORD & port                     ///< Port server is using.
+    ) const;
 
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
@@ -168,14 +170,6 @@ class PSTUNClient : public PNatMethod
       NatTypes type   ///< NAT Type to get name of
     );
 
-    enum RTPSupportTypes {
-      RTPSupported,
-      RTPIfSendMedia,
-      RTPUnsupported,
-      RTPUnknown,
-      NumRTPSupportTypes
-    };
-
     /**Return an indication if the current STUN type supports RTP
       Use the force variable to guarantee an up to date test
       */
@@ -197,7 +191,9 @@ class PSTUNClient : public PNatMethod
 
     /**Return the interface NAT router is using.
       */
-    const PIPSocket::Address & GetInterfaceAddress() const { return interfaceAddress; }
+    virtual bool GetInterfaceAddress(
+      PIPSocket::Address & internalAddress
+    ) const;
 
     /**Invalidates the cached external address
        This allows to lazily update the external address cache at the next 
@@ -286,7 +282,7 @@ class PSTUNClient : public PNatMethod
        of NAT being used.
      */
     virtual bool IsAvailable(
-	   const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
     );
 
   protected:

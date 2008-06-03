@@ -69,7 +69,7 @@ PNatMethod * PNatStrategy::GetMethod()
 PBoolean PNatStrategy::RemoveMethod(const PString & meth)
 {
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
-    if (i->GetNatMethodName().front() == meth) {
+    if (i->GetName() == meth) {
       natlist.erase(i);
       return true;
     }
@@ -78,8 +78,7 @@ PBoolean PNatStrategy::RemoveMethod(const PString & meth)
   return false;
 }
 
-void PNatStrategy::SetPortRanges(
-      WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
+void PNatStrategy::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
 {
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++)
     i->SetPortRanges(portBase, portMax, portPairBase, portPairMax);
@@ -135,6 +134,18 @@ PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr
 
   return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass,0);
 }
+
+
+PString PNatMethod::GetServer() const
+{
+  PStringStream str;
+  PIPSocket::Address serverAddress;
+  WORD serverPort;
+  if (GetServerAddress(serverAddress, serverPort))
+    str << serverAddress << ':' << serverPort;
+  return str;
+}
+
 
 void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
 {
