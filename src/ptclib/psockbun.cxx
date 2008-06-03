@@ -421,14 +421,14 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 }
 
 
-void PInterfaceMonitor::OnRemoveSTUNClient(const PSTUNClient *stun)
+void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
 {
   PWaitAndSignal m(mutex);
   
   for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient *client = *iter;
     if (client->LockReadWrite()) {
-      client->OnRemoveSTUNClient(stun);
+      client->OnRemoveNatMethod(natMethod);
       client->UnlockReadWrite();
     }
   }
@@ -437,10 +437,10 @@ void PInterfaceMonitor::OnRemoveSTUNClient(const PSTUNClient *stun)
 
 //////////////////////////////////////////////////
 
-PMonitoredSockets::PMonitoredSockets(bool reuseAddr, PSTUNClient * stunClient)
+PMonitoredSockets::PMonitoredSockets(bool reuseAddr, PNatMethod  * nat)
   : localPort(0)
   , reuseAddress(reuseAddr)
-  , stun(stunClient)
+  , natMethod(nat)
   , opened(false)
 {
 }
@@ -451,13 +451,13 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   delete info.socket;
   info.socket = NULL;
   
-  if (stun != NULL) {
+  if (natMethod != NULL) {
     PIPSocket::Address address;
     WORD port;
-    stun->GetServer(address, port);
+    natMethod->GetServerAddress(address, port);
     if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
-      if (stun->CreateSocket(info.socket, binding, localPort)) {
-        PTRACE(4, "MonSock\tCreated bundled UDP socket via STUN internal="
+      if (natMethod->CreateSocket(info.socket, binding, localPort)) {
+        PTRACE(4, "MonSock\tCreated bundled UDP socket via " << natMethod->GetName() << " internal="
                << binding << ':' << info.socket->PUDPSocket::GetPort()
                << " external=" << info.socket->GetLocalAddress());
         return true;
@@ -655,19 +655,19 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 }
 
 
-PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr, PSTUNClient * stunClient)
+PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr, PNatMethod * natMethod)
 {
   if (iface.IsEmpty() || iface == "*" || PIPSocket::Address(iface).IsAny())
-    return new PMonitoredSocketBundle(reuseAddr, stunClient);
+    return new PMonitoredSocketBundle(reuseAddr, natMethod);
   else
-    return new PSingleMonitoredSocket(iface, reuseAddr, stunClient);
+    return new PSingleMonitoredSocket(iface, reuseAddr, natMethod);
 }
 
 
-void PMonitoredSockets::OnRemoveSTUNClient(const PSTUNClient *_stun)
+void PMonitoredSockets::OnRemoveNatMethod(const PNatMethod * nat)
 {
-  if (stun == _stun)
-    stun = NULL;
+  if (natMethod == nat)
+    natMethod = NULL;
 }
 
 
@@ -783,8 +783,8 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr, PSTUNClient * stunClient)
-  : PMonitoredSockets(reuseAddr, stunClient)
+PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr, PNatMethod * natMethod)
+  : PMonitoredSockets(reuseAddr, natMethod)
 {
 }
 
@@ -997,8 +997,8 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 
 //////////////////////////////////////////////////
 
-PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr, PSTUNClient * stunClient)
-  : PMonitoredSockets(reuseAddr, stunClient)
+PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr, PNatMethod * natMethod)
+  : PMonitoredSockets(reuseAddr, natMethod)
   , theInterface(_theInterface)
 {
 }
