@@ -652,12 +652,12 @@ dnl
 AC_ARG_ENABLE(tracing,
        [  --disable-tracing     Remove PTRACE and all trace logging])
 
-if test "${enable_tracing}x" = "x" ; then
-  AC_MSG_NOTICE(PTRACE and all trace logging included)
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
-else
+if test "${enable_tracing}" = "no" ; then
   AC_MSG_NOTICE(PTRACE and all trace logging removed)
   STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
+else
+  AC_MSG_NOTICE(PTRACE and all trace logging included)
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
 fi
 
 
