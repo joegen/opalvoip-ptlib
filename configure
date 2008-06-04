@@ -5582,14 +5582,14 @@ if test "${enable_tracing+set}" = set; then
 fi
 
 
-if test "${enable_tracing}x" = "x" ; then
-  { echo "$as_me:$LINENO: PTRACE and all trace logging included" >&5
-echo "$as_me: PTRACE and all trace logging included" >&6;}
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
-else
+if test "${enable_tracing}" = "no" ; then
   { echo "$as_me:$LINENO: PTRACE and all trace logging removed" >&5
 echo "$as_me: PTRACE and all trace logging removed" >&6;}
   STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
+else
+  { echo "$as_me:$LINENO: PTRACE and all trace logging included" >&5
+echo "$as_me: PTRACE and all trace logging included" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
 fi
 
 
