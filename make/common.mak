@@ -521,7 +521,9 @@ endif
 ######################################################################
 
 ifndef NODEPS
--include $(DEPDIR)/*.dep
+ifneq ($(wildcard $(DEPDIR)/*.dep),)
+include $(DEPDIR)/*.dep
+endif
 endif
 
 
