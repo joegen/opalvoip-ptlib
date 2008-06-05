@@ -402,7 +402,7 @@ class PODBC  : public PObject
             TIME_STRUCT      time;      /// Time Structure
             TIMESTAMP_STRUCT timestamp; /// TimeStamp Structure
             SQLGUID          guid;      /// GUID Structure (not Fully Supported)
-            SQLINTEGER       dataLen;   /// DataLength pointer (StrLen_or_Ind for Col Bind)
+            SQLLEN           dataLen;   /// DataLength pointer (StrLen_or_Ind for Col Bind)
         };
 
         /** Post the Changes back to the Database
