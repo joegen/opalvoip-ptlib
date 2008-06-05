@@ -96,11 +96,11 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
         /// Create an IPv6 address from an in_addr structure
         Address(const in6_addr & addr);
+#endif
 
         /// Create an IP (v4 or v6) address from a sockaddr (sockaddr_in,
         /// sockaddr_in6 or sockaddr_in6_old) structure
         Address(const int ai_family, const int ai_addrlen,struct sockaddr *ai_addr);
-#endif
 
 #ifdef __NUCLEUS_NET__
         Address(const struct id_struct & addr);
