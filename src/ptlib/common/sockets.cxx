@@ -66,6 +66,12 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 #endif  // _WIN32
 #endif // P_HAS_QOS
 
+
+#if P_HAS_IPV6 || defined(_WIN32)
+#define HAS_GETADDRINFO 1
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket::Address
 
@@ -230,7 +236,7 @@ class PIPCacheData : public PObject
   PCLASSINFO(PIPCacheData, PObject)
   public:
     PIPCacheData(struct hostent * ent, const char * original);
-#if P_HAS_IPV6
+#if HAS_GETADDRINFO
     PIPCacheData(struct addrinfo  * addr_info, const char * original);
     void AddEntry(struct addrinfo  * addr_info);
 #endif
@@ -350,7 +356,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 }
 
 
-#if P_HAS_IPV6
+#if HAS_GETADDRINFO
 
 PIPCacheData::PIPCacheData(struct addrinfo * addr_info, const char * original)
 {
@@ -414,7 +420,7 @@ void PIPCacheData::AddEntry(struct addrinfo * addr_info)
     aliases.AppendString(ip.AsString());
 }
 
-#endif
+#endif // HAS_GETADDRINFO
 
 
 static PTimeInterval GetConfigTime(const char * /*key*/, DWORD dflt)
@@ -488,7 +494,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     return NULL;
 
   PIPCacheData * host = GetAt(key);
-  int localErrNo = NETDB_SUCCESS;
+  int localErrNo = NO_DATA;
 
   if (host != NULL && host->HasAged()) {
     SetAt(key, NULL);
@@ -498,21 +504,15 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   if (host == NULL) {
     mutex.Signal();
 
-#if P_HAS_IPV6
+#if HAS_GETADDRINFO
+
     struct addrinfo *res = NULL;
-    struct addrinfo hints = { AI_CANONNAME, PF_UNSPEC };
-    hints.ai_family = defaultIpAddressFamily;
-
+    struct addrinfo hints = { AI_CANONNAME, defaultIpAddressFamily };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
-    mutex.Wait();
-
-    if (localErrNo != NETDB_SUCCESS) {
-      freeaddrinfo(res);
-      return NULL;
-    }
-    host = new PIPCacheData(res, name);
+    host = new PIPCacheData(localErrNo != NETDB_SUCCESS ? NULL : res, name);
     freeaddrinfo(res);
-#else // P_HAS_IPV6
+
+#else // HAS_GETADDRINFO
 
     int retry = 3;
     struct hostent * host_info;
@@ -572,19 +572,21 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
 #endif
 
-    mutex.Wait();
-
     if (localErrNo != NETDB_SUCCESS || retry == 0)
-      return NULL;
+      host_info = NULL;
     host = new PIPCacheData(host_info, name);
 
-#endif //P_HAS_IPV6
+#endif //HAS_GETADDRINFO
+
+    mutex.Wait();
 
     SetAt(key, host);
   }
 
-  if (host->GetHostAddress() == 0)
+  if (host->GetHostAddress() == 0) {
+    PTRACE(5, "Socket\tName lookup of \"" << name << "\" failed: errno=" << localErrNo);
     return NULL;
+  }
 
   return host;
 }
@@ -1613,14 +1615,19 @@ PIPSocket::Address::Address(const in6_addr & addr)
   v.six = addr;
 }
 
+#endif
+
+
 // Create an IP (v4 or v6) address from a sockaddr (sockaddr_in, sockaddr_in6 or sockaddr_in6_old) structure
 PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct sockaddr *ai_addr)
 {
   switch (ai_family) {
 #if P_HAS_IPV6
     case AF_INET6:
-      if (ai_addrlen < (int)sizeof(sockaddr_in6))
+      if (ai_addrlen < (int)sizeof(sockaddr_in6)) {
+        PTRACE(1, "Socket\tsockaddr size too small (" << ai_addrlen << ")  for family " << ai_family);
         break;
+      }
 
       version = 6;
       v.six = ((struct sockaddr_in6 *)ai_addr)->sin6_addr;
@@ -1628,17 +1635,21 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
       return;
 #endif
     case AF_INET: 
-      if (ai_addrlen < (int)sizeof(sockaddr_in))
+      if (ai_addrlen < (int)sizeof(sockaddr_in)) {
+        PTRACE(1, "Socket\tsockaddr size too small (" << ai_addrlen << ")  for family " << ai_family);
         break;
+      }
 
       version = 4;
       v.four = ((struct sockaddr_in  *)ai_addr)->sin_addr;
       return;
+
+    default :
+      PTRACE(1, "Socket\tIllegal family (" << ai_family << ") specified.");
   }
+
   version = 0;
 }
-
-#endif
 
 
 #ifdef __NUCLEUS_NET__
@@ -2067,7 +2078,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
 
   for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
     if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
-      PTRACE(5, "PWLib\tRoute packet for " << remoteAddress
+      PTRACE(5, "Socket\tRoute packet for " << remoteAddress
              << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
              << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
       return hostInterfaceTable[IfaceIdx].GetAddress();
@@ -2092,7 +2103,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
   if (route != NULL) {
     for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
       if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
-        PTRACE(5, "PWLib\tRoute packet for " << remoteAddress
+        PTRACE(5, "Socket\tRoute packet for " << remoteAddress
                << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
                << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
         return hostInterfaceTable[IfaceIdx].GetAddress();
