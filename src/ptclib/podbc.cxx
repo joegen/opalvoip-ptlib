@@ -1027,7 +1027,7 @@ PBoolean PODBCStmt::IsValid()
 
 DWORD PODBCStmt::GetChangedRowCount(void)
 {
-   SQLINTEGER nRows=0;
+   SQLLEN nRows=0;
    if(!SQL_OK(SQLRowCount(m_hStmt,&nRows)))
     return 0;
    return nRows;
@@ -1086,7 +1086,7 @@ PStringArray PODBCStmt::TableList(PString option)
     PString list;
     PString entry;
     SQLINTEGER len = 129;
-    SQLINTEGER cb = 0;
+    SQLLEN cb = 0;
     SQLRETURN nRet;
 
 /// This Statement will need reviewing as it
@@ -1173,7 +1173,7 @@ PBoolean PODBCRecord::InternalBindColumn(::USHORT Column,LPVOID pBuffer,
         ULONG pBufferSize,LONG * pReturnedBufferSize,
         USHORT nType)
 {
-   SQLINTEGER pReturnedSize=0;
+   SQLLEN pReturnedSize=0;
 
    SQLRETURN Ret=SQLBindCol(m_hStmt,Column,nType,
                pBuffer,pBufferSize,&pReturnedSize);
@@ -1197,7 +1197,7 @@ PINDEX PODBCRecord::ColumnByName(PString Column)
 PBoolean PODBCRecord::InternalGetData(USHORT Column, LPVOID pBuffer, 
     ULONG pBufLen, SQLINTEGER * dataLen, int Type)
 {
-   SQLINTEGER od=0;
+   SQLLEN od=0;
    int Err=SQLGetData(m_hStmt,Column,Type,pBuffer,pBufLen,&od);
 
    if (!Stmt->SQL_OK(Err))
@@ -1429,7 +1429,7 @@ PODBC::FieldTypes PODBCRecord::ColumnType( PINDEX Column )
    int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLUINTEGER pcbColDef;
+   SQLULEN pcbColDef;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1448,7 +1448,7 @@ DWORD PODBCRecord::ColumnSize( PINDEX Column )
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLUINTEGER pcbColDef=0;
+   SQLULEN pcbColDef=0;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1466,7 +1466,7 @@ DWORD PODBCRecord::ColumnScale( PINDEX Column )
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLUINTEGER pcbColDef=0;
+   SQLULEN pcbColDef=0;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1483,7 +1483,7 @@ PString PODBCRecord::ColumnName(PINDEX Column) //, PString Name, SHORT NameLen )
 {
 //   int nType=SQL_C_DEFAULT;
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLUINTEGER pcbColDef=0;
+   SQLULEN pcbColDef=0;
    TCHAR Name[256]=_T("");
    SQLRETURN Ret=
     SQLDescribeCol( m_hStmt,            // Statement handle
@@ -1507,7 +1507,7 @@ PBoolean PODBCRecord::IsColumnNullable( PINDEX Column )
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLUINTEGER pcbColDef;
+   SQLULEN pcbColDef;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
