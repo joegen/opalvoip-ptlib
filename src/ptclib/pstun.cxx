@@ -122,13 +122,22 @@ PBoolean PSTUNClient::SetServer(const PString & server)
 {
   PINDEX colon = server.Find(':');
   if (colon == P_MAX_INDEX) {
-    if (!PIPSocket::GetHostAddress(server, serverAddress))
-      return PFalse;
+    if (!PIPSocket::GetHostAddress(server, serverAddress)) {
+      PTRACE(2, "STUN\tCould not find host \"" << server << "\".");
+      return false;
+    }
   }
   else {
-    if (!PIPSocket::GetHostAddress(server.Left(colon), serverAddress))
-      return PFalse;
-    serverPort = PIPSocket::GetPortByService("udp", server.Mid(colon+1));
+    PString hostname = server.Left(colon);
+    if (!PIPSocket::GetHostAddress(hostname, serverAddress)) {
+      PTRACE(2, "STUN\tCould not find host \"" << hostname << "\".");
+      return false;
+    }
+    PString service = server.Mid(colon+1);
+    if ((serverPort = PIPSocket::GetPortByService("udp", service)) == 0) {
+      PTRACE(2, "STUN\tCould not find service \"" << service << "\".");
+      return false;
+    }
   }
 
   return serverAddress.IsValid() && serverPort != 0;
@@ -445,6 +454,9 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 {
   if (!force && natType != UnknownNat)
     return natType;
+
+  if (!serverAddress.IsValid() || serverPort == 0)
+    return natType = UnknownNat;
 
   PList<PUDPSocket> sockets;
 
