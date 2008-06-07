@@ -46,6 +46,7 @@
   private:
     PINDEX originalStackSize;
 
+    void CleanUp();
     static UINT __stdcall MainFunction(void * thread);
 
 // End Of File ///////////////////////////////////////////////////////////////
