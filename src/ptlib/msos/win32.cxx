@@ -767,6 +767,12 @@ PThread::~PThread()
   if (originalStackSize <= 0)
     return;
 
+  CleanUp();
+}
+
+
+void PThread::CleanUp()
+{
   PProcess & process = PProcess::Current();
   process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(threadId, NULL);
@@ -783,6 +789,8 @@ PThread::~PThread()
 void PThread::Restart()
 {
   PAssert(IsTerminated(), "Cannot restart running thread");
+
+  CleanUp();
 
 #ifndef _WIN32_WCE
   threadHandle = (HANDLE)_beginthreadex(NULL,
