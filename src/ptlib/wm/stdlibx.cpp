@@ -26,6 +26,7 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/pdns.h>
+#include <ptclib/httpsvc.h>
 
 #define DELETE (0x00010000L) // defined in <winnt.h> and undef "msos/ptlib/contain.h"
 
@@ -723,83 +724,24 @@ BOOL WritePrivateProfileString(
   return FALSE;
 }
 
+//
+// Functions to enable inclusion of windows service based code
+//
+int PServiceProcess::_main(void *) { return 0; };
+bool PServiceProcess::IsServiceProcess(void)const { return true; };
+PServiceProcess::PServiceProcess(char const *,
+	char const *, unsigned short, unsigned short,
+	enum PProcess::CodeStatus,unsigned short) {};
+PServiceProcess & PServiceProcess::Current(void) 
+{ return (PServiceProcess &) PProcess::Current(); }
+PBoolean PServiceProcess::OnStart() { return PTrue; }; 
+void PServiceProcess::OnStop() {}; 
+PBoolean PServiceProcess::OnPause() { return PTrue; }; 
+void PServiceProcess::OnContinue() {}; 
+char const * PServiceProcess::GetServiceDependencies(void)const { return NULL; }
 
-#pragma message ("Please don't forget to implement Get/SetProfileString!")
-
-#if 0
-PString GetProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry,
-                         LPCTSTR lpszDefault)
-{
-  ASSERT(lpszSection != NULL);
-  ASSERT(lpszEntry != NULL);
-  if (m_pszRegistryKey != NULL)
-  {
-    HKEY hSecKey = GetSectionKey(lpszSection);
-    if (hSecKey == NULL)
-      return lpszDefault;
-    CString strValue;
-    DWORD dwType=REG_NONE;
-    DWORD dwCount=0;
-    LONG lResult = RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
-      NULL, &dwCount);
-    if (lResult == ERROR_SUCCESS)
-    {
-      ASSERT(dwType == REG_SZ);
-      lResult = RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
-        (LPBYTE)strValue.GetBuffer(dwCount/sizeof(TCHAR)), &dwCount);
-      strValue.ReleaseBuffer();
-    }
-    RegCloseKey(hSecKey);
-    if (lResult == ERROR_SUCCESS)
-    {
-      ASSERT(dwType == REG_SZ);
-      return strValue;
-    }
-    return lpszDefault;
-  }
-
-  return lpszDefault;
-}
-
-BOOL WriteProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry,
-                        LPCTSTR lpszValue)
-{
-  ASSERT(lpszSection != NULL);
-  if (m_pszRegistryKey != NULL)
-  {
-    LONG lResult;
-    if (lpszEntry == NULL) //delete whole section
-    {
-      HKEY hAppKey = GetAppRegistryKey();
-      if (hAppKey == NULL)
-        return FALSE;
-      lResult = ::RegDeleteKey(hAppKey, lpszSection);
-      RegCloseKey(hAppKey);
-    }
-    else if (lpszValue == NULL)
-    {
-      HKEY hSecKey = GetSectionKey(lpszSection);
-      if (hSecKey == NULL)
-        return FALSE;
-      // necessary to cast away const below
-      lResult = ::RegDeleteValue(hSecKey, (LPTSTR)lpszEntry);
-      RegCloseKey(hSecKey);
-    }
-    else
-    {
-      HKEY hSecKey = GetSectionKey(lpszSection);
-      if (hSecKey == NULL)
-        return FALSE;
-      lResult = RegSetValueEx(hSecKey, lpszEntry, NULL, REG_SZ,
-        (LPBYTE)lpszValue, (ATL::lstrlen(lpszValue)+1)*sizeof(TCHAR));
-      RegCloseKey(hSecKey);
-    }
-    return lResult == ERROR_SUCCESS;
-  }
-  return FALSE;
-}
-
-#endif // profiles
-
+int PSystemLog::Buffer::overflow(int) { return 0; };
+int PSystemLog::Buffer::underflow(void){ return 0; };
+int PSystemLog::Buffer::sync(void){ return 0; };
 
 #endif // _WIN32_WCE
