@@ -33,6 +33,7 @@
 
 #include <ptlib.h>
 
+#ifndef _WIN32_WCE
 #include <winuser.h>
 #include <winnls.h>
 #include <shellapi.h>
@@ -1654,5 +1655,6 @@ PBoolean PServiceProcess::ProcessCommand(const char * cmd)
   return PTrue;
 }
 
+#endif // !_WIN32_WCE
 
 // End Of File ///////////////////////////////////////////////////////////////
