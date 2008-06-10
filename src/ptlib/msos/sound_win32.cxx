@@ -326,7 +326,7 @@ void PWaveFormat::SetFormat(unsigned numChannels,
   waveFormat->nChannels = (WORD)numChannels;
   waveFormat->nSamplesPerSec = sampleRate;
   waveFormat->wBitsPerSample = (WORD)bitsPerSample;
-  waveFormat->nBlockAlign = (WORD)(numChannels*(bitsPerSample+7)/8);
+  waveFormat->nBlockAlign = (WORD)(numChannels*bitsPerSample/8);
   waveFormat->nAvgBytesPerSec = waveFormat->nSamplesPerSec*waveFormat->nBlockAlign;
   waveFormat->cbSize = 0;
 }
