@@ -54,7 +54,7 @@ PBoolean PChannelStreamBuffer::SetBufferSize(PINDEX newSize)
 }
 
 
-streambuf::int_type PChannelStreamBuffer::overflow(int c)
+streambuf::int_type PChannelStreamBuffer::overflow(int_type c)
 {
   if (pbase() == NULL) {
     char * p = output.GetPointer(1024);
