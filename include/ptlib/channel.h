@@ -60,7 +60,7 @@ class PChannelStreamBuffer : public streambuf {
       PChannel * chan   // Channel the buffer operates on.
     );
 
-    virtual int_type overflow(int=EOF);
+    virtual int_type overflow(int_type = EOF);
     virtual int_type underflow();
     virtual int sync();
     virtual pos_type seekoff(off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
