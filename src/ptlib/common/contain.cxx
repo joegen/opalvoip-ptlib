@@ -1943,7 +1943,7 @@ PStringStream::Buffer::Buffer(PStringStream & str, PINDEX size)
 }
 
 
-streambuf::int_type PStringStream::Buffer::overflow(int c)
+streambuf::int_type PStringStream::Buffer::overflow(int_type c)
 {
   if (pptr() >= epptr()) {
     if (fixedBufferSize)
