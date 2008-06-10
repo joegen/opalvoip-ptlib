@@ -102,6 +102,8 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
 {
   PStringStream str;
 
+  str << right << setfill('0');
+
   if (precision > 3)
     precision = 3;
   else if (precision < 0)
@@ -136,8 +138,6 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
 
   PBoolean hadPrevious = PFalse;
   long tmp;
-
-  str.fill('0');
 
   if (format == IncludeDays) {
     tmp = (long)(ms/86400000);
