@@ -98,7 +98,7 @@
 #include <ptlib.h>
 #endif
 
-#ifdef P_ODBC
+#if defined(P_ODBC) && !defined(_WIN32_WCE)
 
 #include <sql.h> 
 #include <sqlext.h>
