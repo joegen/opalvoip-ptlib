@@ -34,7 +34,7 @@
 
 #include <ptlib.h>
 
-#ifdef P_ODBC
+#if defined(P_ODBC) && !defined(_WIN32_WCE)
 
 #include <ptclib/podbc.h>
 
