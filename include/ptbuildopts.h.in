@@ -649,7 +649,9 @@
 #endif
 
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM)
+#ifndef _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA
   #define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA  1
+#endif
 #endif
 
   #define P_WIN_COM
