@@ -98,7 +98,7 @@ bool PThreadPoolBase::CheckWorker(PThreadPoolWorkerBase * worker)
     PWaitAndSignal m(listMutex);
 
     // find worker in list
-    WorkerList_t::iterator r = ::find(workers.begin(), workers.end(), worker);
+    WorkerList_t::iterator r = std::find(workers.begin(), workers.end(), worker);
     if (r == workers.end())
       return false;
 
