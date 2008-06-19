@@ -630,8 +630,11 @@ PString PSoundChannelWin32::GetName() const
 }
 
 
-static PString GetWaveOutDeviceName(unsigned id)
+static PString GetWaveOutDeviceName(UINT id)
 {
+  if (id == WAVE_MAPPER)
+    return "Default";
+
   PString str;
   WAVEOUTCAPS caps;
   if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0)
@@ -640,8 +643,11 @@ static PString GetWaveOutDeviceName(unsigned id)
 }
 
 
-static PString GetWaveInDeviceName(unsigned id)
+static PCaselessString GetWaveInDeviceName(UINT id)
 {
+  if (id == WAVE_MAPPER)
+    return "Default";
+
   PString str;
   WAVEINCAPS caps;
   if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0)
@@ -654,19 +660,22 @@ PStringArray PSoundChannelWin32::GetDeviceNames(Directions dir)
 {
   PStringArray devices;
 
-  unsigned numDevs, id;
+  UINT numDevs;
+  UINT id = WAVE_MAPPER;
 
   switch (dir) {
     case Player :
       numDevs = waveOutGetNumDevs();
-      for (id = 0; id < numDevs; id++)
+      do {
         devices.AppendString(GetWaveOutDeviceName(id));
+      } while (++id < numDevs);
       break;
 
     case Recorder :
       numDevs = waveInGetNumDevs();
-      for (id = 0; id < numDevs; id++)
+      do {
         devices.AppendString(GetWaveInDeviceName(id));
+      } while (++id < numDevs);
       break;
   }
 
@@ -683,11 +692,11 @@ PString PSoundChannelWin32::GetDefaultDevice(Directions dir)
 
   if (dir == Player) {
     if (!registry.QueryValue("Playback", str))
-      str = GetWaveOutDeviceName(0);
+      return GetWaveOutDeviceName(WAVE_MAPPER);
   }
   else {
     if (!registry.QueryValue("Record", str))
-      str = GetWaveInDeviceName(0);
+      return GetWaveInDeviceName(WAVE_MAPPER);
   }
 
   return str.Trim();
@@ -695,8 +704,14 @@ PString PSoundChannelWin32::GetDefaultDevice(Directions dir)
 
 PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir, unsigned& id)
 {
-  if (device[0] == '#') {
-    id = device.Mid(1).AsUnsigned();
+  PINDEX offset = device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
+  if (offset == P_MAX_INDEX)
+    offset = 0;
+  else
+    offset++;
+
+  if (device[offset] == '#') {
+    id = device.Mid(offset+1).AsUnsigned();
     switch (dir) {
       case Player :
         if (id < waveOutGetNumDevs())
@@ -710,25 +725,29 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
     }
   }
   else {
+    id = WAVE_MAPPER;
+    UINT numDevs;
     switch (dir) {
       case Player :
-        for (id = 0; id < waveOutGetNumDevs(); id++) {
+        numDevs = waveOutGetNumDevs();
+        do {
           PCaselessString str = GetWaveOutDeviceName(id);
-          if (str == device) {
+          if (str == device.Mid(offset)) {
             deviceName = str;
             break;
           }
-        }
+        } while (++id < numDevs);
         break;
 
       case Recorder :
-        for (id = 0; id < waveInGetNumDevs(); id++) {
+        numDevs = waveInGetNumDevs();
+        do {
           PCaselessString str = GetWaveInDeviceName(id);
-          if (str == device) {
+          if (str == device.Mid(offset)) {
             deviceName = str;
             break;
           }
-        }
+        } while (++id < numDevs);
         break;
     }
   }
