@@ -43,14 +43,6 @@
 #include <dsound.h>
 
 
-typedef struct 
-{
-  GUID guids [20];
-  PStringArray names;
-
-} DirectSoundDevices;
-
-
 class PSoundChannelDirectSound: public PSoundChannel
 {
 public:
@@ -63,7 +55,6 @@ public:
 			     unsigned bitsPerSample);
     ~PSoundChannelDirectSound();
     static PStringArray GetDeviceNames(PSoundChannel::Directions);
-    static DirectSoundDevices DevicesEnumerators (PSoundChannel::Directions);
     static PString GetDefaultDevice(PSoundChannel::Directions);
     PBoolean Open(const PString & _device,
               Directions _dir,
@@ -143,8 +134,6 @@ private:
     WAVEFORMATEX mWFX;
     
     PMutex           bufferMutex;
-
-    //static PDirectSoundDevices mDevices;
 };
 
 #endif // P_DIRECTSOUND
