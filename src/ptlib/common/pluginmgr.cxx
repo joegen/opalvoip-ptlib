@@ -313,12 +313,12 @@ PStringArray PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
             PString oldPlugin = deviceToPluginMap[device];
             if (!oldPlugin.IsEmpty()) {
               // Make name unique by prepending driver name and a tab character
-              deviceToPluginMap.SetAt(oldPlugin+PDevicePluginServiceDescriptor::SeparatorChar+device, "");
+              deviceToPluginMap.SetAt(oldPlugin+PDevicePluginServiceDescriptor::SeparatorChar+device, service.serviceName);
               // Reset the original to empty string so we dont add it multiple times
               deviceToPluginMap.SetAt(device, "");
             }
             // Now add the new one
-            deviceToPluginMap.SetAt(service.serviceName+PDevicePluginServiceDescriptor::SeparatorChar+device, "");
+            deviceToPluginMap.SetAt(service.serviceName+PDevicePluginServiceDescriptor::SeparatorChar+device, service.serviceName);
           }
           else
             deviceToPluginMap.SetAt(device, service.serviceName);
@@ -326,8 +326,10 @@ PStringArray PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
       }
     }
 
-    for (i = 0; i < deviceToPluginMap.GetSize(); i++)
-      allDevices.AppendString(deviceToPluginMap.GetKeyAt(i));
+    for (i = 0; i < deviceToPluginMap.GetSize(); i++) {
+      if (!deviceToPluginMap.GetDataAt(i).IsEmpty())
+        allDevices.AppendString(deviceToPluginMap.GetKeyAt(i));
+    }
   }
   else {
     PDevicePluginServiceDescriptor * descr =
@@ -345,25 +347,26 @@ PBoolean PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceTyp
                                                       const PString & deviceName,
                                                       void * capabilities) const
 {
-    if (serviceType.IsEmpty() || deviceName.IsEmpty()) 
-        return PFalse;
-
-	if (serviceName.IsEmpty() || serviceName == "*") {
-	  for (PINDEX i = 0; i < services.GetSize(); i++) {
-		const PPluginService & service = services[i];
-		if (service.serviceType *= serviceType) { 
-          PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)service.descriptor;
-          if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
-            return desc->GetDeviceCapabilities(deviceName,capabilities);
-		}
-	  }
-	} else {
-      PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
-       if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
-          return desc->GetDeviceCapabilities(deviceName,capabilities);
-	}
-
+  if (serviceType.IsEmpty() || deviceName.IsEmpty()) 
     return PFalse;
+
+  if (serviceName.IsEmpty() || serviceName == "*") {
+    for (PINDEX i = 0; i < services.GetSize(); i++) {
+      const PPluginService & service = services[i];
+      if (service.serviceType *= serviceType) { 
+        PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)service.descriptor;
+        if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
+          return desc->GetDeviceCapabilities(deviceName,capabilities);
+      }
+    }
+  }
+  else {
+    PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+    if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
+      return desc->GetDeviceCapabilities(deviceName,capabilities);
+  }
+
+  return PFalse;
 }
 
 

@@ -52,9 +52,7 @@
 /* Instantiate the PWLIBsound plugin*/ 
 PCREATE_SOUND_PLUGIN(DirectSound, PSoundChannelDirectSound)
 
-/* Callback function used to collect data from enumerated DirectX devices */
-INT_PTR CALLBACK DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR strDrvName,
-				     VOID* devices );
+///////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef _WIN32_WCE
@@ -64,6 +62,47 @@ INT_PTR CALLBACK DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR strDrvNam
 DEFINE_GUID(DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
 DEFINE_GUID(DSDEVID_DefaultCapture, 0xdef00001, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
 #endif
+
+typedef struct 
+{
+  vector<GUID> guids;
+  PStringArray names;
+
+  void Append(const PString & name, const GUID & guid)
+  {
+    PINDEX size = names.GetSize();
+
+    names.SetSize(size+1);
+    names[size] = name.Left(MAXPNAMELEN-1).Trim(); // Do this so is compatible with MultiMedia version of name
+
+    guids.resize(size+1);
+    memcpy(&guids[size], &guid, sizeof(GUID));
+  }
+} DirectSoundDevices;
+
+
+INT_PTR CALLBACK DSoundEnumCallback(GUID* pGUID, LPSTR strDesc, LPSTR /*strDrvName*/, void* arg)
+{
+  DirectSoundDevices & devices = *(DirectSoundDevices *)arg;
+
+  if (pGUID != NULL)
+    devices.Append(strDesc, *pGUID);
+
+  return TRUE;
+}
+
+
+static void DevicesEnumerators(PSoundChannel::Directions dir, DirectSoundDevices & devices)
+{
+  if (dir == PSoundChannel::Recorder)
+    DirectSoundCaptureEnumerate((LPDSENUMCALLBACK)DSoundEnumCallback, &devices);
+  else
+    DirectSoundEnumerate((LPDSENUMCALLBACK)DSoundEnumCallback, &devices);
+
+  if (devices.names.GetSize () > 1)
+    devices.Append("Default", (dir == PSoundChannel::Player) ? DSDEVID_DefaultPlayback  : DSDEVID_DefaultCapture);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -187,33 +226,6 @@ PSoundChannelDirectSound::GetDefaultDevice (Directions /*dir*/)
  * BEHAVIOUR :
  * RETURN :
  */
-DirectSoundDevices 
-PSoundChannelDirectSound::DevicesEnumerators (Directions dir)
-{
-
-  DirectSoundDevices devices;
-  if (dir == Recorder)
-    DirectSoundCaptureEnumerate( (LPDSENUMCALLBACK)DSoundEnumCallback,
-				 (void*) &devices);
-  else
-    DirectSoundEnumerate( (LPDSENUMCALLBACK)DSoundEnumCallback,
-			  (void*) &devices);
-
-  if (devices.names.GetSize () > 1)
-    {
-      GUID pTemp  = (dir == Player) ? DSDEVID_DefaultPlayback  : DSDEVID_DefaultCapture;
-      devices.guids [devices.names.GetSize ()] = pTemp;
-      devices.names += "Default";
-    }
-  
-  return devices;
-}
-
-/*
- * DESC	:
- * BEHAVIOUR :
- * RETURN :
- */
 PBoolean 
 PSoundChannelDirectSound::GetDeviceID (PString deviceName, GUID *pGUID)
 {
@@ -221,7 +233,8 @@ PSoundChannelDirectSound::GetDeviceID (PString deviceName, GUID *pGUID)
   PTRACE (4, "dsound\tGet " << ((mDirection == Player) ? "Playback" : "Recording") << " Device ID for " << deviceName);
 
   *pGUID = (mDirection == Player) ? DSDEVID_DefaultPlayback  : DSDEVID_DefaultCapture;
-  DirectSoundDevices devices = DevicesEnumerators (mDirection);
+  DirectSoundDevices devices;
+  DevicesEnumerators(mDirection, devices);
   
   PINDEX idx = devices.names.GetStringsIndex (deviceName);
   
@@ -240,40 +253,10 @@ PSoundChannelDirectSound::GetDeviceID (PString deviceName, GUID *pGUID)
 PStringArray 
 PSoundChannelDirectSound::GetDeviceNames (Directions dir)
 {
- 
-  PTRACE (4, "dsound\tGetDeviceNames " << ((dir == Player) ? "Playback" : "Recording") << " device Name");
-  DirectSoundDevices devices = DevicesEnumerators (dir);
+  DirectSoundDevices devices;
+  DevicesEnumerators(dir, devices);
   return devices.names; 
 }
-
-/*
- * DESC	:
- * BEHAVIOUR :
- * RETURN :
- */
-INT_PTR CALLBACK 
-DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR /*strDrvName*/,
-				     void* device)
-{
-  DirectSoundDevices* devices_array = (DirectSoundDevices *) device;
-
-  if( pGUID )
-    {
-  
-      if (devices_array->names.GetSize () < 20)
-	{
-	  GUID *pTemp  = & (*devices_array).guids [devices_array->names.GetSize ()];
-	  memcpy( pTemp, pGUID, sizeof(GUID) );
-	  devices_array->names += strDesc;
-	  PTRACE (4, "dsound\tDevice -->  " << strDesc );
-	} else
-	  return PTrue;
-
-    }
-
-  return PTrue;
-}
-
 
 
 /*
