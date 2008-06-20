@@ -314,13 +314,15 @@ if test ${OSTYPE} != "Darwin" ; then
   AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
 fi
 
+AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
+
 dnl ########################################################################
 dnl look for compile flags
 AC_LANG_PUSH(C++)
 
 AC_MSG_CHECKING(if linker accepts -felide-constructors)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CXXFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
+$CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
   STDCXXFLAGS="$STDCXXFLAGS -felide-constructors"
@@ -330,7 +332,7 @@ fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CXXFLAGS -Wreorder conftest.cc > /dev/null 2>&1
+$CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
   STDCXXFLAGS="$STDCXXFLAGS -Wreorder"
@@ -344,7 +346,7 @@ dnl debug coredumps and macros.
 
 AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.cc > /dev/null 2>&1
+$CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
   DEBUG_FLAG="-g3 -ggdb -O0"
@@ -406,7 +408,7 @@ if test 0 = 1 ;  then
 
   AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
   AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  $CXX $CFLAGS -ffunction-sections -c conftest.cc > /dev/null 2>&1
+  $CXX $CFLAGS -ffunction-sections -c conftest.$ac_ext > /dev/null 2>&1
   if test $? = 0 ; then
     AC_MSG_RESULT(yes)
     STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
@@ -1364,7 +1366,7 @@ int main(int argc,char **argv){}]],SSLHDR=1)
       else
         AC_LANG_CONFTEST([[#include "${openssl_dir}/include/openssl/ssl.h"
 int main(int argc,char **argv){ return 0; }]])
-        $CXX $CXXFLAGS -I${openssl_dir}/include -c conftest.cc > /dev/null 2>&1
+        $CXX $CXXFLAGS -I${openssl_dir}/include -c conftest.$ac_ext > /dev/null 2>&1
         if test $? = 0 ; then
           AC_MSG_RESULT(yes)
           SSLHDR=1
@@ -1378,7 +1380,7 @@ int main(int argc,char **argv){ return 0; }]])
           AC_LANG_CONFTEST([[#define OPENSSL_NO_KRB5
 #include "${openssl_dir}/include/openssl/ssl.h"
 int main(int argc,char **argv){}]])
-          $CXX $CXXFLAGS -I${openssl_dir}/openssl/include -c conftest.cc > /dev/null 2>&1
+          $CXX $CXXFLAGS -I${openssl_dir}/openssl/include -c conftest.$ac_ext > /dev/null 2>&1
           if test $? = 0 ; then
             AC_MSG_RESULT(yes)
             SSLHDR=1
