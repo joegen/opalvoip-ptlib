@@ -481,9 +481,9 @@ fi
 
 dnl ########################################################################
 dnl most systems have "ar", but some use "gar"
-AC_PATH_PROG(AR, ar)
+AC_CHECK_TOOL(AR, ar)
 if test -z "$AR" ; then
-  AC_PATH_PROG(AR, gar)
+  AC_CHECK_TOOL(AR, gar)
 fi
 
 dnl ########################################################################
