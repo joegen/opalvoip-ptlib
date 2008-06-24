@@ -906,19 +906,7 @@ PBoolean PSoundChannelWin32::Close()
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-  Abort();
-
-  if (hWaveOut != NULL) {
-    while (waveOutClose(hWaveOut) == WAVERR_STILLPLAYING)
-      waveOutReset(hWaveOut);
-    hWaveOut = NULL;
-  }
-
-  if (hWaveIn != NULL) {
-    while (waveInClose(hWaveIn) == WAVERR_STILLPLAYING)
-      waveInReset(hWaveIn);
-    hWaveIn = NULL;
-  }
+  PWaitAndSignal mutex(bufferMutex);
 
   Abort();
 
@@ -1359,12 +1347,6 @@ PBoolean PSoundChannelWin32::WaitForAllRecordBuffersFull()
 PBoolean PSoundChannelWin32::Abort()
 {
   DWORD osError = MMSYSERR_NOERROR;
-
-  if (hWaveOut != NULL)
-    osError = waveOutReset(hWaveOut);
-
-  if (hWaveIn != NULL)
-    osError = waveInReset(hWaveIn);
 
   {
     PWaitAndSignal mutex(bufferMutex);
