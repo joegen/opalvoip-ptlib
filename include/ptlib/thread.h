@@ -3,7 +3,7 @@
  *
  * Executable thread encapsulation class (pre-emptive if OS allows).
  *
- * Portable Windows Library
+ * Portable Tools Library
  *
  * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
@@ -53,18 +53,18 @@ typedef P_THREADIDENTIFIER PThreadIdentifier;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-/** This class defines a thread of execution in the system. A {\it thread} is
+/** This class defines a thread of execution in the system. A \it thread is
    an independent flow of processor instructions. This differs from a
-   {\it process} which also embodies a program address space and resource
+   \it process which also embodies a program address space and resource
    allocation. So threads can share memory and resources as they run in the
    context of a given process. A process always contains at least one thread.
-   This is reflected in this library by the #PProcess# class being
-   descended from the PThread class.
+   This is reflected in this library by the #PProcess class being
+   descended from the #PThread class.
 
    The implementation of a thread is platform dependent, but it is
    assumed that the platform has some support for native threads.
-   Previous versions of PWLib has some support for co-operative
-   threads, but this has been removed
+   Previous versions of PTLib/PWLib have some support for co-operative
+   threads, but this has been removed.
  */
 class PThread : public PObject
 {
@@ -75,20 +75,15 @@ class PThread : public PObject
   //@{
     /// Codes for thread priorities.
     enum Priority {
-      /// Will only run if all other threads are blocked.
-      LowestPriority,   
+      LowestPriority,  ///< Will only run if all other threads are blocked.
 
-      /// Runs approximately half as often as normal.
-      LowPriority,      
+      LowPriority,     ///< Runs approximately half as often as normal.
 
-      /// Normal priority for a thread.
-      NormalPriority,   
+      NormalPriority,  ///< Normal priority for a thread.
 
-      /// Runs approximately twice as often as normal.
-      HighPriority,     
+      HighPriority,    ///< Runs approximately twice as often as normal.
 
-      /// Is only thread that will run, unless blocked.
-      HighestPriority,  
+      HighestPriority, ///< Is only thread that will run, unless blocked.
 
       NumPriorities
     };
@@ -102,21 +97,21 @@ class PThread : public PObject
       NoAutoDeleteThread  
     };
 
-    /** Create a new thread instance. Unless the #startSuspended#
-       parameter is PTrue, the threads #Main()# function is called to
+    /** Create a new thread instance. Unless the #startSuspended
+       parameter is #PTrue, the threads #Main() function is called to
        execute the code for the thread.
        
        Note that the exact timing of the execution of code in threads can
        never be predicted. Thus you you can get a race condition on
        intialising a descendent class. To avoid this problem a thread is
-       always started suspended. You must call the Resume() function after
+       always started suspended. You must call the #Resume() function after
        your descendent class construction is complete.
 
        If synchronisation is required between threads then the use of
        semaphores is essential.
 
-       If the #deletion# is set to #AutoDeleteThread#
-       then the PThread is assumed to be allocated with the new operator and
+       If the #deletion is set to #AutoDeleteThread
+       then the #PThread is assumed to be allocated with the new operator and
        may be freed using the delete operator as soon as the thread is
        terminated or executes to completion (usually the latter).
 
@@ -125,27 +120,27 @@ class PThread : public PObject
        may be removed in subsequent versions.
      */
     PThread(
-      PINDEX ,                 ///< Not used - previously stack size
+      PINDEX,                 ///< Not used - previously stack size
       AutoDeleteFlag deletion = AutoDeleteThread,
         ///< Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  ///< Initial priority of thread.
       const PString & threadName = PString::Empty() ///< The name of the thread (for Debug/Trace)
     );
 
-    /** Destroy the thread, this simply calls the #Terminate()# function
+    /** Destroy the thread, this simply calls the #Terminate() function
        with all its restrictions and penalties. See that function for more
        information.
 
        Note that the correct way for a thread to terminate is to return from
-       the #Main()# function.
+       the #Main() function.
      */
     ~PThread();
   //@}
 
-  /**@name Overrides from PObject */
+  /**@name Overrides from #PObject */
   //@{
     /**Standard stream print function.
-       The PObject class has a << operator defined that calls this function
+       The #PObject class has a << operator defined that calls this function
        polymorphically.
       */
     void PrintOn(
@@ -169,8 +164,8 @@ class PThread : public PObject
        called causing at the very least the possiblity of memory leaks.
 
        Note that the correct way for a thread to terminate is to return from
-       the #Main()# function or self terminate by calling
-       #Terminate()# within the context of the thread which can then
+       the #Main() function or self terminate by calling
+       #Terminate() within the context of the thread which can then
        assure that all resources are cleaned up.
      */
     virtual void Terminate();
@@ -178,14 +173,14 @@ class PThread : public PObject
     /** Determine if the thread has been terminated or ran to completion.
 
        @return
-       PTrue if the thread has been terminated.
+       #PTrue if the thread has been terminated.
      */
     virtual PBoolean IsTerminated() const;
 
     /** Block and wait for the thread to terminate.
 
        @return
-       PFalse if the thread has not terminated and the timeout has expired.
+       #PFalse if the thread has not terminated and the timeout has expired.
      */
     void WaitForTermination() const;
     PBoolean WaitForTermination(
@@ -194,35 +189,35 @@ class PThread : public PObject
 
     /** Suspend or resume the thread.
     
-       If #susp# is PTrue this increments an internal count of
+       If #susp is #PTrue this increments an internal count of
        suspensions that must be matched by an equal number of calls to
-       #Resume()# or #Suspend(PFalse)# before the
+       #Resume()# or #Suspend(PFalse) before the
        thread actually executes again.
 
-       If #susp# is PFalse then this decrements the internal count of
+       If #susp is #PFalse then this decrements the internal count of
        suspensions. If the count is <= 0 then the thread will run. Note that
        the thread will not be suspended until an equal number of
-       #Suspend(PTrue)# calls are made.
+       #Suspend(PTrue) calls are made.
      */
     virtual void Suspend(
       PBoolean susp = PTrue    ///< Flag to suspend or resume a thread.
     );
 
     /** Resume thread execution, this is identical to
-       #Suspend(PFalse)#.
+       #Suspend(PFalse).
 
       The Resume() method may be called from within the constructor of a
-      PThread descendant.  However, the Resume() should be in the
+      PThread descendant.  However, the #Resume() should be in the
       constructor of the most descendant class. So, if you have a
       class B (which is descended of PThread), and a class C (which is
-      descended of B), placing the call to Resume in the constructor of B is
+      descended of B), placing the call to #Resume() in the constructor of B is
       unwise.
 
-      If you do place a call to Resume in the constructor, it
+      If you do place a call to #Resume() in the constructor, it
       should be at the end of the constructor, after all the other
       initialisation in the constructor.
 
-      The reason the call to Resume() should be at the end of the
+      The reason the call to #Resume() should be at the end of the
       construction process is simple - you want the thread to start
       when all the variables in the class have been correctly
       initialised.
@@ -230,11 +225,11 @@ class PThread : public PObject
     virtual void Resume();
 
     /** Determine if the thread is currently suspended. This checks the
-       suspension count and if greater than zero returns PTrue for a suspended
+       suspension count and if greater than zero returns #PTrue for a suspended
        thread.
 
        @return
-       PTrue if thread is suspended.
+       #PTrue if thread is suspended.
      */
     virtual PBoolean IsSuspended() const;
 
@@ -325,8 +320,8 @@ class PThread : public PObject
     static void Yield();
 
     /**Create a simple thread executing the specified notifier.
-       This creates a simple PThread class that automatically executes the
-       function defined by the PNotifier in the context of a new thread.
+       This creates a simple #PThread class that automatically executes the
+       function defined by the #PNotifier in the context of a new thread.
       */
     static PThread * Create(
       const PNotifier & notifier,     ///< Function to execute in thread.
@@ -351,7 +346,7 @@ class PThread : public PObject
 
   private:
     PThread();
-    // Create a new thread instance as part of a PProcess class.
+    // Create a new thread instance as part of a #PProcess class.
 
     friend class PProcess;
     // So a PProcess can get at PThread() constructor but nothing else.
@@ -407,7 +402,7 @@ class PThread : public PObject
 #endif
 
 /** Define some templates to simplify the declaration
-  * of simple PThread descendants with one or two paramaters 
+  * of simple #PThread descendants with one or two paramaters 
   */
 
 /*
