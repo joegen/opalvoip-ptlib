@@ -1032,7 +1032,7 @@ PLDAPSchema::AttributeType PLDAPSchema::GetAttributeType(const PString & attribu
 	return AttibuteUnknown;
 }
 
-void PLDAPSchema::OnSendSchema(PList<PLDAPSession::ModAttrib> & attrib, PLDAPSession::ModAttrib::Operation op)
+void PLDAPSchema::OnSendSchema(PArray<PLDAPSession::ModAttrib> & attrib, PLDAPSession::ModAttrib::Operation op)
 {
 	for (ldapAttributes::const_iterator r = attributes.begin(); r != attributes.end(); ++r) 
         attrib.Append(new PLDAPSession::StringModAttrib(r->first,r->second,op));

@@ -35,7 +35,7 @@
 #pragma interface
 #endif
 
-#if P_LDAP
+#if defined(P_LDAP) && !defined(_WIN32_WCE)
 
 #include <ptlib/sockets.h>
 #include <ptlib/pluginmgr.h>
@@ -515,7 +515,7 @@ class PLDAPSchema : public PObject
 
     void OnReceivedAttribute(const PString & attribute, const PString & value);
 
-    void OnSendSchema(PList<PLDAPSession::ModAttrib> & attributes,
+    void OnSendSchema(PArray<PLDAPSession::ModAttrib> & attributes,
         PLDAPSession::ModAttrib::Operation op=PLDAPSession::ModAttrib::Add);
 
     void LoadSchema();
