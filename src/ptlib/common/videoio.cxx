@@ -882,6 +882,134 @@ PStringArray PVideoDevice::GetDeviceNames() const
   return PStringArray();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+
+PString PVideoControlInfo::AsString(const InputControlType & ctype)
+{
+	switch (ctype) {
+		case ControlPan:
+			return "Pan";
+		case ControlTilt:
+			return "Tilt";
+		case ControlZoom:
+			return "Zoom";
+	}
+	return PString();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+PVideoInputControl::~PVideoInputControl()  
+{ 
+	Reset(); 
+}
+
+PBoolean PVideoInputControl::Pan(long /*value*/, bool /*absolute*/)  
+{
+	return false; 
+}
+
+PBoolean PVideoInputControl::Tilt(long /*value*/, bool /*absolute*/)  
+{ 
+	return false; 
+}
+
+PBoolean PVideoInputControl::Zoom(long /*value*/, bool /*absolute*/)  
+{ 
+	return false; 
+}
+
+long PVideoInputControl::GetPan()
+{
+	long position;
+	if (GetCurrentPosition(ControlPan, position))
+		  return position;
+
+	return 0;
+}
+	
+long PVideoInputControl::GetTilt()
+{
+	long position;
+	if (GetCurrentPosition(ControlTilt, position))
+		   return position;
+
+    return 0;
+}
+	
+long PVideoInputControl::GetZoom()
+{
+	long position;
+	if (GetCurrentPosition(ControlZoom, position))
+		   return position;
+
+    return 0;
+}
+
+void PVideoInputControl::Reset()
+{
+	PTRACE(4,"CC\tResetting camera to default position.");
+
+	long position;
+
+	if (GetDefaultPosition(ControlPan, position))
+		   Pan(position,true);
+
+	if (GetDefaultPosition(ControlTilt, position))
+		   Tilt(position,true);
+
+	if (GetDefaultPosition(ControlZoom, position))
+		   Zoom(position,true);
+
+}
+
+PBoolean PVideoInputControl::GetVideoControlInfo(const InputControlType ctype, PVideoControlInfo & control)
+{
+	 for (std::list<PVideoControlInfo>::iterator r = m_info.begin(); r != m_info.end(); ++r) {
+		 if (r->type == ctype) {
+			 control = *r;
+			 return true;
+		 }
+	 }
+
+	 return false;
+}
+
+PBoolean PVideoInputControl::GetDefaultPosition(const InputControlType ctype, long & def)
+{
+	 for (std::list<PVideoControlInfo>::const_iterator r = m_info.begin(); r != m_info.end(); ++r) {
+		 if (r->type == ctype) {
+			 def = r->def;
+			 return true;
+		 }
+	 }
+	 return false;
+}
+
+PBoolean PVideoInputControl::GetCurrentPosition(const InputControlType ctype, long & current)
+{
+	 for (std::list<PVideoControlInfo>::const_iterator r = m_info.begin(); r != m_info.end(); ++r) {
+		 if (r->type == ctype) {
+			 current = r->current;
+			 return true;
+		 }
+	 }
+	 return false;
+}
+
+
+void PVideoInputControl::SetCurrentPosition(const InputControlType ctype, long current)
+{
+	 for (std::list<PVideoControlInfo>::iterator r = m_info.begin(); r != m_info.end(); ++r) {
+		 if (r->type == ctype) {
+			 r->current = current;
+			 break;
+		 }
+	 }
+}
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevice
