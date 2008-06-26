@@ -70,6 +70,9 @@ class PVideoFrameInfo : public PObject
       CIFWidth   = 352,  CIFHeight   = 288,
       CIF4Width  = 704,  CIF4Height  = 576,
       CIF16Width = 1408, CIF16Height = 1152,
+      i480Width  = 640,  i480Height  = 480,
+      p720Width  = 960,  p720Height  = 720,
+      i1080Width = 1920, i1080Height = 1080,
       HDTVWidth  = 1920, HDTVHeight  = 1080,
       MaxWidth   = 1920, MaxHeight   = 1152
     };
@@ -169,6 +172,64 @@ class PVideoFrameInfo : public PObject
     unsigned   frameRate;
     PString    colourFormat;
     ResizeMode resizeMode;
+};
+
+
+class PVideoControlInfo : public PObject
+{
+  PCLASSINFO(PVideoControlInfo, PObject);
+
+ public:
+
+	 typedef enum {
+        ControlPan,
+        ControlTilt,
+        ControlZoom
+     } InputControlType;
+
+ 	static PString AsString(const InputControlType & type);
+
+	  InputControlType type;
+	  long					  min;
+	  long					  max;
+	  long					  step;
+	  long					  def;
+	  long					  flags;
+	  long					  current;
+};
+
+
+/**This class defines a video Input device control
+*/
+
+class PVideoInputControl : public PVideoControlInfo
+{
+    PCLASSINFO(PVideoInputControl, PVideoControlInfo);
+
+public:
+	~PVideoInputControl();
+
+	virtual PBoolean Pan(long value, bool absolute = false );
+	virtual PBoolean Tilt(long value, bool absolute = false);
+	virtual PBoolean Zoom(long value, bool absolute = false);
+
+	long GetPan();
+	long GetTilt();
+	long GetZoom();
+
+	void Reset();
+	void SetCurrentPosition(const InputControlType ctype, long current);
+
+	typedef std::list<PVideoControlInfo> InputDeviceControls;
+
+protected:
+	PBoolean GetVideoControlInfo(const InputControlType ctype, PVideoControlInfo & control);
+	PBoolean GetDefaultPosition(const InputControlType ctype, long & def);
+	PBoolean GetCurrentPosition(const InputControlType ctype, long & current);
+
+	std::list<PVideoControlInfo> m_info;
+	PMutex ccmutex;
+
 };
 
 
@@ -821,7 +882,10 @@ class PVideoInputDevice : public PVideoDevice
       PBoolean startImmediate = PTrue          ///< Immediately start display
     );
 
-    typedef std::list<PVideoFrameInfo> Capabilities;
+	typedef struct {
+	   std::list<PVideoFrameInfo> framesizes;
+	   std::list<PVideoControlInfo> controls;
+	} Capabilities;
 
     /**Retrieve a list of Device Capabilities
       */
