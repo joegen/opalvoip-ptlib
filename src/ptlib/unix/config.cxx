@@ -477,9 +477,10 @@ void PXConfigDictionary::RemoveInstance(PXConfig * instance)
     PINDEX index = GetObjectsIndex(instance);
     PAssert(index != P_MAX_INDEX, "Cannot find PXConfig instance to remove");
 
-    // decrement the instance count, but don't remove it yet
+    // decrement the instance count and remove it if this was the last instance
     PFilePath key = GetKeyAt(index);
-    instance->RemoveInstance(key);
+    if (instance->RemoveInstance(key))
+          RemoveAt(key);
   }
 
   mutex.Signal();
