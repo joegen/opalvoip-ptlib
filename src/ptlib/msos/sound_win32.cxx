@@ -910,6 +910,18 @@ PBoolean PSoundChannelWin32::Close()
 
   Abort();
 
+  if (hWaveOut != NULL) {
+    while (waveOutClose(hWaveOut) == WAVERR_STILLPLAYING)
+      waveOutReset(hWaveOut);
+    hWaveOut = NULL;
+  }
+
+  if (hWaveIn != NULL) {
+    while (waveInClose(hWaveIn) == WAVERR_STILLPLAYING)
+      waveInReset(hWaveIn);
+    hWaveIn = NULL;
+  }
+
   if (hMixer != NULL) {
     mixerClose(hMixer);
     hMixer = NULL;
