@@ -128,7 +128,7 @@ void VidTest::Main()
   PVideoInputDevice::Capabilities caps;
   if (PVideoInputDevice::GetDeviceCapabilities(inputDeviceName,inputDriverName,&caps)) {
     cout << "Grabber " << inputDeviceName << " capabilities." << endl;
-    for (PVideoInputDevice::Capabilities::const_iterator r = caps.begin(); r != caps.end(); ++r)
+    for (std::list<PVideoFrameInfo>::const_iterator r = caps.framesizes.begin(); r != caps.framesizes.end(); ++r)
       cout << "    " << r->GetColourFormat() << ' ' << r->GetFrameWidth() << 'x' << r->GetFrameHeight() << ' ' << r->GetFrameRate() << "fps\n";
     cout << endl;
   }
