@@ -190,6 +190,12 @@ PTHREAD_MUTEX_RECURSIVE_NP
     OpenTraceFile(env);
   }
 
+  ~PTraceInfo()
+  {
+    if (stream != &cerr && stream != &cout)
+      delete stream;
+  }
+
   static PTraceInfo & Instance()
   {
     static PTraceInfo info;
@@ -251,7 +257,14 @@ PTHREAD_MUTEX_RECURSIVE_NP
       if (traceOutput->IsOpen())
         SetStream(traceOutput);
       else {
-        PTRACE(0, PProcess::Current().GetName() << "Could not open trace output file \"" << fn << '"');
+        PStringStream msgstrm;
+        msgstrm << PProcess::Current().GetName() << ": Could not open trace output file \"" << fn << '"';
+#ifdef WIN32
+        PVarString msg(msgstrm);
+        MessageBox(NULL, msg, NULL, MB_OK|MB_ICONERROR);
+#else
+        fputs(msgstrm, stderr);
+#endif
         delete traceOutput;
       }
     }
@@ -486,10 +499,15 @@ ostream & PTrace::End(ostream & paramStream)
     // ios structure. There could be portability issues with this though it
     // should work pretty universally.
     info.stream->width((threadInfo != NULL ? threadInfo->traceLevel : info.currentLevel) + 1);
-    info.stream->flush();
   }
-  else
-    *info.stream << endl;
+  else {
+#ifdef _WIN32_WCE
+    *info.stream << "\r\n";
+#else
+    *info.stream << '\n';
+#endif
+  }
+  info.stream->flush();
 
   info.Unlock();
   return paramStream;
