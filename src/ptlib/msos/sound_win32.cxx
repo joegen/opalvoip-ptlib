@@ -37,6 +37,9 @@
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
+#include <math.h>
+
+
 #ifndef _WIN32_WCE
 #ifdef _MSC_VER
 #pragma comment(lib, "winmm.lib")
@@ -938,7 +941,7 @@ PBoolean PSoundChannelWin32::SetBuffers(PINDEX size, PINDEX count)
 
   PAssert(size > 0 && count > 0, PInvalidParameter);
 
-  PTRACE(1, "WIN32\tSetting sounds buffers to " << count << " x " << size);
+  PTRACE(1, "WinSnd\tSetting sounds buffers to " << count << " x " << size);
 
   PBoolean ok = PTrue;
 
@@ -1416,11 +1419,13 @@ PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
     return SetErrorValues(NotOpen, EBADF);
 
   MIXERCONTROLDETAILS_UNSIGNED volume;
-  volume.dwValue = newVolume*(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum)/100 + volumeControl.Bounds.dwMinimum;
-  if (volume.dwValue > volumeControl.Bounds.dwMaximum)
+  if (newVolume >= MaxVolume)
     volume.dwValue = volumeControl.Bounds.dwMaximum;
-  else if (volume.dwValue < volumeControl.Bounds.dwMinimum)
-    volume.dwValue = volumeControl.Bounds.dwMinimum;
+  else
+    volume.dwValue = volumeControl.Bounds.dwMinimum +
+                    (volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum) *
+                                                   log10(9.0*newVolume/MaxVolume + 1.0);
+  PTRACE(5, "WinSnd\tVolume set to " << newVolume << " -> " << volume.dwValue);
 
   MIXERCONTROLDETAILS details;
   details.cbStruct = sizeof(details);

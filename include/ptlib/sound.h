@@ -434,7 +434,9 @@ class PSoundChannel : public PChannel
     };
 
     /**Set the volume of the play/read process.
-       The volume range is 0 == quiet.  100 == LOUD.
+       The volume range is 0 == quiet, 100 == LOUDEST. The volume is a
+       logarithmic scale mapped from the lowest gain possible on the device to
+       the highest gain.
         
        @return
        PTrue if there were no errors.
@@ -444,7 +446,9 @@ class PSoundChannel : public PChannel
     );
 
     /**Get the volume of the play/read process.
-       The volume range is 0 == quiet.  100 == LOUD.
+       The volume range is 0 == quiet, 100 == LOUDEST. The volume is a
+       logarithmic scale mapped from the lowest gain possible on the device to
+       the highest gain.
 
        @return
        PTrue if there were no errors.
