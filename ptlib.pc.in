@@ -2,9 +2,10 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+cxxflags=@STDCXXFLAGS@
 
 Name: ptlib
 Description: PT Library
 Version: @PTLIB_VERSION@
-Libs: -L${libdir} -lpt
-Cflags: -I${includedir}
+Libs: -L${libdir} @ENDLDLIBS@ -lpt 
+Cflags: -I${includedir} @STDCCFLAGS@
