@@ -1424,7 +1424,7 @@ PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
   else
     volume.dwValue = volumeControl.Bounds.dwMinimum +
                     (volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum) *
-                                                   log10(9.0*newVolume/MaxVolume + 1.0);
+                                                   (DWORD)log10(9.0*newVolume/MaxVolume + 1.0);
   PTRACE(5, "WinSnd\tVolume set to " << newVolume << " -> " << volume.dwValue);
 
   MIXERCONTROLDETAILS details;
