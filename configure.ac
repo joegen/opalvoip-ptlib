@@ -2412,7 +2412,7 @@ dnl look for Direct Show (video)
 dnl MSWIN_DISPLAY    dshow,Direct Show Support
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
 dnl MSWIN_DIR_SYMBOL dshow,DIRECTSHOW_DIR
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6.0
+dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6.*
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDK\
