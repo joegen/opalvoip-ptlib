@@ -22,7 +22,7 @@
 
 #ifndef P_DEFAULT_PLUGIN_DIR
 #  if defined (_WIN32_WCE)
-#    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
+#    define P_DEFAULT_PLUGIN_DIR ".;\\Program Files\\PTLib Plug Ins"
 #  elif defined (_WIN32)
 #    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
 #  else
@@ -31,9 +31,9 @@
 #endif
 
 #ifdef  _WIN32
-#define DIR_SEP   ";"
+#define PATH_SEP   ";"
 #else
-#define DIR_SEP   ":"
+#define PATH_SEP   ":"
 #endif
 
 #ifndef PDIR_SEPARATOR 
@@ -118,7 +118,7 @@ PStringArray PPluginManager::GetPluginDirs()
     env = P_DEFAULT_PLUGIN_DIR;
 
   // split into directories on correct seperator
-  return env.Tokenise(DIR_SEP, PTrue);
+  return env.Tokenise(PATH_SEP, PTrue);
 }
 
 PPluginManager & PPluginManager::GetPluginManager()
