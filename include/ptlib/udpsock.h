@@ -38,6 +38,7 @@
 #pragma interface
 #endif
 
+#include <ptlib/ipdsock.h>
 #include <ptlib/qos.h>
  
 /**

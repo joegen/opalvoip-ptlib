@@ -3,7 +3,7 @@
  *
  * Berkley Socket channel ancestor class.
  *
- * Portable Windows Library
+ * Portable Tools Library
  *
  * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
@@ -51,9 +51,9 @@ PLIST(PSocketList, PSocket);
 
 /**A network communications channel. This is based on the concepts in the
    Berkley Sockets library.
-   
-   A socket represents a bidirectional communications channel to a {\it port}
-   at a remote {\it host}.
+
+   A socket represents a bidirectional communications channel to a \it port
+   at a remote \it host.
  */
 class PSocket : public PChannel
 {
@@ -70,7 +70,7 @@ class PSocket : public PChannel
        This connects to a "listening" socket at the other end of the
        communications channel.
 
-       Use the SetReadTimeout function to set a maximum time for the Connect
+       Use the SetReadTimeout() function to set a maximum time for the Connect().
 
        @return
        PTrue if the channel was successfully connected to the remote host.
@@ -92,7 +92,7 @@ class PSocket : public PChannel
        of this type is then used to generate other "accepting" sockets which
        establish a two way communications channel with the "connecting" socket.
 
-       If the #port# parameter is zero then the port number as
+       If the \p port parameter is zero then the port number as
        defined by the object instance construction or the descendent classes
        SetPort() or SetService() function.
 
@@ -111,16 +111,16 @@ class PSocket : public PChannel
        to make, this will accept a connection made by the "connecting" socket
        created to establish a link.
 
-       The port that the socket uses is the one used in the #Listen()#
-       command of the #socket# parameter. Note an error occurs if
-       the #socket# parameter has not had the #Listen()#
+       The port that the socket uses is the one used in the Listen()
+       command of the \p socket parameter. Note an error occurs if
+       the \p socket parameter has not had the Listen()
        function called on it.
 
        Note that this function will block until a remote system connects to the
        port number specified in the "listening" socket. The time that the
        function will block is determined by the read timeout of the
-       #socket# parameter. This will normally be
-       #PMaxTimeInterval# which indicates an infinite time.
+       \p socket parameter. This will normally be
+       PMaxTimeInterval which indicates an infinite time.
 
        The default behaviour is to assert.
 
@@ -131,7 +131,7 @@ class PSocket : public PChannel
       PSocket & socket          ///< Listening socket making the connection.
     );
 
-    /**Close one or both of the data streams associated with a socket 
+    /**Close one or both of the data streams associated with a socket.
 
        @return
        PTrue if the shutdown was performed
@@ -152,7 +152,7 @@ class PSocket : public PChannel
     PBoolean SetOption(
       int option,             ///< Option to set.
       int value,              ///< New value for option.
-      int level = SOL_SOCKET  ///< Level for option
+      int level = SOL_SOCKET  ///< Level for option.
     );
 
     /**Set options on the socket. These options are defined as Berkeley socket
@@ -165,26 +165,26 @@ class PSocket : public PChannel
       int option,             ///< Option to set.
       const void * valuePtr,  ///< Pointer to new value for option.
       PINDEX valueSize,       ///< Size of new value.
-      int level = SOL_SOCKET  ///< Level for option
+      int level = SOL_SOCKET  ///< Level for option.
     );
 
     /**Get options on the socket. These options are defined as Berkeley socket
        options of the class SOL_SOCKET.
 
        @return
-       PTrue if the option was successfully retreived.
+       PTrue if the option was successfully retrieved.
      */
     PBoolean GetOption(
       int option,             ///< Option to get.
       int & value,            ///< Integer to receive value.
-      int level = SOL_SOCKET  ///< Level for option
+      int level = SOL_SOCKET  ///< Level for option.
     );
 
     /**Get options on the socket. These options are defined as Berkeley socket
        options of the class SOL_SOCKET.
 
        @return
-       PTrue if the option was successfully retreived.
+       PTrue if the option was successfully retrieved.
      */
     PBoolean GetOption(
       int option,             ///< Option to get.
@@ -202,7 +202,7 @@ class PSocket : public PChannel
        Number of protocol or 0 if the protocol was not found.
      */
     static WORD GetProtocolByName(
-      const PString & name      ///< Name of protocol
+      const PString & name      ///< Name of protocol.
     );
 
     /**Get the name of the protocol number specified.
@@ -211,7 +211,7 @@ class PSocket : public PChannel
        Name of protocol or the number if the protocol was not found.
      */
     static PString GetNameByProtocol(
-      WORD proto                ///< Number of protocol
+      WORD proto                ///< Number of protocol.
     );
 
 
@@ -220,24 +220,24 @@ class PSocket : public PChannel
       const PString & service   ///< Name of service to get port number for.
     ) const;
     /**Get the port number for the specified service name.
-    
+
        A name is a unique string contained in a system database. The parameter
        here may be either this unique name, an integer value or both separated
        by a space (name then integer). In the latter case the integer value is
        used if the name cannot be found in the database.
-    
+
        The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The #PTCPSocket# and #PUDPSocket#
+       transport is being used. The PTCPSocket and PUDPSocket
        classes will implement this function.
 
        The static version of the function is independent of the socket type as
-       its first parameter may be "tcp" or "udp", 
+       its first parameter may be "tcp" or "udp".
 
        @return
        Port number for service name, or 0 if service cannot be found.
      */
     static WORD GetPortByService(
-      const char * protocol,     ///< Protocol type for port lookup
+      const char * protocol,     ///< Protocol type for port lookup.
       const PString & service    ///< Name of service to get port number for.
     );
 
@@ -246,18 +246,18 @@ class PSocket : public PChannel
       WORD port   ///< Number for service to find name of.
     ) const;
     /**Get the service name from the port number.
-    
+
        A service name is a unique string contained in a system database. The
        parameter here may be either this unique name, an integer value or both
        separated by a space (name then integer). In the latter case the
        integer value is used if the name cannot be found in the database.
-    
+
        The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The #PTCPSocket# and #PUDPSocket#
+       transport is being used. The PTCPSocket and PUDPSocket
        classes will implement this function.
 
        The static version of the function is independent of the socket type as
-       its first parameter may be "tcp" or "udp", 
+       its first parameter may be "tcp" or "udp".
 
        @return
        Service name for port number.
@@ -280,7 +280,7 @@ class PSocket : public PChannel
        parameter here may be either this unique name, an integer value or both
        separated by a space (name then integer). In the latter case the
        integer value is used if the name cannot be found in the database.
-    
+
        The port number may not be changed while the port is open and the
        function will assert if an attempt is made to do so.
      */
@@ -299,7 +299,7 @@ class PSocket : public PChannel
        instance is using.
 
        @return
-       string service name or a string representation of the port number if no
+       String service name or a string representation of the port number if no
        service with that number can be found.
      */
     PString GetService() const;
@@ -307,7 +307,7 @@ class PSocket : public PChannel
 
   /**@name Multiple socket selection functions */
   //@{
-    /// List of sockets used for #Select()# function
+    /// List of sockets used for Select() function.
     class SelectList : public PSocketList
     {
       PCLASSINFO(SelectList, PSocketList)
@@ -363,7 +363,7 @@ class PSocket : public PChannel
        timeout or data is available to be read or written to the specified
        sockets.
 
-       The #read#, #write# and #except# lists
+       The read, write and except lists
        are modified by the call so that only the sockets that have data
        available are present. If the call timed out then all of these lists
        will be empty.
