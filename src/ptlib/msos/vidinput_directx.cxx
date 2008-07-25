@@ -22,6 +22,10 @@
  * The Initial Developer of the Original Code is Luc Saillard <luc@saillard.org>
  *
  * Contributor(s): Matthias Schneider <ma30002000@yahoo.de>
+ *
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #include <ptlib.h>
@@ -30,6 +34,7 @@
 
 #include "ptlib/msos/ptlib/vidinput_directx.h"
 
+
 #ifdef P_DIRECTSHOW_LIBRARY1
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY1)
 #endif
@@ -37,20 +42,20 @@
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY2)
 #endif
 
+
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter);
-#ifndef _WIN32_WCE
-static char *BSTR_to_ANSI(BSTR pSrc);
-#endif
+
 static GUID pwlib_format_to_media_format(const char *format);
 static PString media_format_to_pwlib_format(const GUID guid);
 
 #if defined(_WIN32_WCE) && !defined(HAVE_CE_SAMPLEGRABBER)
-const IID IID_ISampleGrabber =		{ 0x6B652FFF, 0x11FE, 0x4fce, 0x92, 0xAD, 0x02, 0x66, 0xB5, 0xD7, 0xC7, 0x8F };
-const CLSID CLSID_SampleGrabber =	{ 0xC1F400A4, 0x3F08, 0x11d3, 0x9F, 0x0B, 0x00, 0x60, 0x08, 0x03, 0x9E, 0x37 };
-const CLSID CLSID_NullRenderer =	{ 0xC1F400A4, 0x3F08, 0x11d3, 0x9F, 0x0B, 0x00, 0x60, 0x08, 0x03, 0x9E, 0x37 };
+const IID IID_ISampleGrabber    = { 0x6B652FFF, 0x11FE, 0x4fce, 0x92, 0xAD, 0x02, 0x66, 0xB5, 0xD7, 0xC7, 0x8F };
+const CLSID CLSID_SampleGrabber = { 0xC1F400A4, 0x3F08, 0x11d3, 0x9F, 0x0B, 0x00, 0x60, 0x08, 0x03, 0x9E, 0x37 };
+const CLSID CLSID_NullRenderer  = { 0xC1F400A4, 0x3F08, 0x11d3, 0x9F, 0x0B, 0x00, 0x60, 0x08, 0x03, 0x9E, 0x37 };
 #endif // _WIN32_WCE
+
 
 PCREATE_VIDINPUT_PLUGIN(DirectShow);
 
@@ -59,33 +64,33 @@ PCREATE_VIDINPUT_PLUGIN(DirectShow);
 static const char *ErrorMessage(HRESULT hr)
 {
 #ifndef _WIN32_WCE
-	static char string[1024];
+        static char string[1024];
     DWORD dwMsgLen;
 
     memset(string, 0, sizeof(string));
     dwMsgLen = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-			      FORMAT_MESSAGE_IGNORE_INSERTS,
-			      NULL,
-			      hr,
-			      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			      (LPSTR)string,
-			      sizeof(string)-1,
-			      NULL);
+                              FORMAT_MESSAGE_IGNORE_INSERTS,
+                              NULL,
+                              hr,
+                              MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                              (LPSTR)string,
+                              sizeof(string)-1,
+                              NULL);
     if (dwMsgLen)
-	return string;
+        return string;
 
     memset(string, 0, sizeof(string));
     dwMsgLen = AMGetErrorTextA(hr, string, sizeof(string));
     if (dwMsgLen)
-	return string;
+        return string;
 #ifdef __MINGW32__  // This function is not recognised in Windows
     snprintf(string, sizeof(string), "0x%8.8x", hr);
-	return string;
+        return string;
 #else
-	return PString();
+        return PString();
 #endif
 #else // _WIN32_WCE
-	return PString("Error during video capture");
+        return PString("Error during video capture");
 #endif // !_WIN32_WCE 
 }
 #endif // PTRACING
@@ -94,11 +99,11 @@ static const char *ErrorMessage(HRESULT hr)
 static void MyDeleteMediaType(AM_MEDIA_TYPE *pmt)
 {
     if (pmt == NULL)
-	return;
+        return;
 
     if (pmt->cbFormat != 0)
     {
-	CoTaskMemFree((PVOID)pmt->pbFormat);
+        CoTaskMemFree((PVOID)pmt->pbFormat);
         pmt->cbFormat = 0;
         pmt->pbFormat = NULL;
     }
@@ -163,10 +168,10 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
 
     // Create the capture graph builder
 #ifndef _WIN32_WCE
-	hr = CoCreateInstance (CLSID_CaptureGraphBuilder2 , NULL, CLSCTX_INPROC_SERVER,
+        hr = CoCreateInstance (CLSID_CaptureGraphBuilder2 , NULL, CLSCTX_INPROC_SERVER,
                            IID_ICaptureGraphBuilder2, (void **) &pCapture);
 #else
-	hr = CoCreateInstance (CLSID_CaptureGraphBuilder , NULL, CLSCTX_INPROC_SERVER,
+        hr = CoCreateInstance (CLSID_CaptureGraphBuilder , NULL, CLSCTX_INPROC_SERVER,
                            IID_ICaptureGraphBuilder2, (void **) &pCapture);
 #endif
     if (FAILED(hr))
@@ -177,7 +182,7 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
 
     // Create the Sample Grabber Filter.
     hr = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC_SERVER,
-			  IID_IBaseFilter, (void**) &pGrabberFilter);
+                          IID_IBaseFilter, (void**) &pGrabberFilter);
     if (FAILED(hr))
     {
         PTRACE(1,"PVidDirectShow\tFailed to create instance SampleGrabber: " << ErrorMessage(hr));
@@ -186,7 +191,7 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
 
     // Create the Null Renderer Filter.
     hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER,
-			  IID_IBaseFilter, (void**) &pNullFilter);
+                          IID_IBaseFilter, (void**) &pNullFilter);
     if (FAILED(hr))
     {
         PTRACE(1,"PVidDirectShow\tFailed to create instance SampleGrabber: " << ErrorMessage(hr));
@@ -221,7 +226,7 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't add the grabber filter to the graph: " << ErrorMessage(hr));
-	return hr;
+        return hr;
     }
 
     // Obtain interfaces for Sample Grabber
@@ -230,14 +235,14 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to SetBufferSamples: " << ErrorMessage(hr));
-	return hr;
+        return hr;
     }
 
     hr = pGrabber->SetOneShot(PFalse);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to SetOneShot: " << ErrorMessage(hr));
-	return hr;
+        return hr;
     }
 
     //Set the Sample Grabber callback
@@ -248,7 +253,7 @@ HRESULT PVideoInputDevice_DirectShow::Initialize_Interfaces()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to SetCallback: " << ErrorMessage(hr));
-	return hr;
+        return hr;
     }
 #endif
 
@@ -265,13 +270,13 @@ PBoolean PVideoInputDevice_DirectShow::InitialiseCapture()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to initialize interfaces: " << ErrorMessage(hr));
-	return PFalse;
+        return PFalse;
     }
     hr = SetDevice(deviceName, &pSrcFilter);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to select a device: " << ErrorMessage(hr));
-	return PFalse;
+        return PFalse;
     }
 
     // Add Capture filter to our graph.
@@ -287,7 +292,7 @@ PBoolean PVideoInputDevice_DirectShow::InitialiseCapture()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't add the grabber filter to the graph: " << ErrorMessage(hr));
-	return hr;
+        return hr;
     }
 
     return PTrue;
@@ -307,16 +312,16 @@ PStringArray PVideoInputDevice_DirectShow::GetInputDeviceNames()
     ULONG cFetched;
 
     ICreateDevEnum *pDevEnum =NULL;
-	::CoInitialize(NULL);
+        ::CoInitialize(NULL);
 
     // Create the system device enumerator
     hr = CoCreateInstance (CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
                            IID_ICreateDevEnum, (void **) &pDevEnum);
 
-	if (FAILED(hr))
+        if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't create system enumerator. " << ErrorMessage(hr));
-	::CoUninitialize();
+        ::CoUninitialize();
         return devices;
     }
 
@@ -326,77 +331,69 @@ PStringArray PVideoInputDevice_DirectShow::GetInputDeviceNames()
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tGetInputDeviceNames() Couldn't create class enumerator. " << ErrorMessage(hr));
-	::CoUninitialize();
+        ::CoUninitialize();
         return devices;
     }
 
     if (pClassEnum == NULL)
     {
         PTRACE(1, "PVidDirectShow\tGetInputDeviceNames() No video capture device was detected.");
-	::CoUninitialize();
+        ::CoUninitialize();
         return devices;
     }
 
     while (hr = pClassEnum->Next(1, &pMoniker, &cFetched), hr==S_OK)
     {
-	// Get the property bag
-	IPropertyBag *pPropBag;
+        // Get the property bag
+        IPropertyBag *pPropBag;
 
-	hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)(&pPropBag));
-	if (FAILED(hr))
-	{
-	    pMoniker->Release();
-	    continue;
-	}
+        hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)(&pPropBag));
+        if (FAILED(hr))
+        {
+            pMoniker->Release();
+            continue;
+        }
 
-	// Find the description or friendly name.
-	VARIANT DeviceName;
-	DeviceName.vt = VT_BSTR;
-	hr = pPropBag->Read(L"Description", &DeviceName, NULL);
-	if (FAILED(hr))
-	    hr = pPropBag->Read(L"FriendlyName", &DeviceName, NULL);
-	if (SUCCEEDED(hr))
-	{
-	    char *pDeviceName = BSTR_to_ANSI(DeviceName.bstrVal);
-	    if (pDeviceName)
-	    {
-		PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() Found this capture device '"<< pDeviceName <<"'");
-		devices.AppendString(pDeviceName);
-		free(pDeviceName);
-	    }
-	}
+        // Find the description or friendly name.
+        VARIANT DeviceName;
+        DeviceName.vt = VT_BSTR;
+        hr = pPropBag->Read(L"Description", &DeviceName, NULL);
+        if (FAILED(hr))
+            hr = pPropBag->Read(L"FriendlyName", &DeviceName, NULL);
+        if (SUCCEEDED(hr))
+            devices.AppendString(PString(DeviceName.bstrVal));
 
-	pPropBag->Release();
-	pMoniker->Release();
-	// Next Device
+        pPropBag->Release();
+        pMoniker->Release();
+        // Next Device
     }
 
     ::CoUninitialize();
 
 #else // !_WIN32_WCE
-	HANDLE	handle = NULL;
-	char szDeviceName[8];
+        HANDLE        handle = NULL;
+        char szDeviceName[8];
 
-	DEVMGR_DEVICE_INFORMATION di;
-	GUID guidCamera = { 0xCB998A05, 0x122C, 0x4166, 0x84, 0x6A, 0x93, 0x3E, 0x4D, 0x7E, 0x3C, 0x86 };
-	// Note about the above: The driver material doesn't ship as part of the SDK. This GUID is hardcoded
-	// here to be able to enumerate the camera drivers and pass the name of the driver to the video capture filter
+        DEVMGR_DEVICE_INFORMATION di;
+        GUID guidCamera = { 0xCB998A05, 0x122C, 0x4166, 0x84, 0x6A, 0x93, 0x3E, 0x4D, 0x7E, 0x3C, 0x86 };
+        // Note about the above: The driver material doesn't ship as part of the SDK. This GUID is hardcoded
+        // here to be able to enumerate the camera drivers and pass the name of the driver to the video capture filter
 
-	di.dwSize = sizeof(di);
-	ZeroMemory( szDeviceName, 8 );
+        di.dwSize = sizeof(di);
+        ZeroMemory( szDeviceName, 8 );
 
-	handle = FindFirstDevice( DeviceSearchByGuid, &guidCamera, &di );
-	if(( handle == NULL ) || ( di.hDevice == NULL ))
-	{
-		PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() returns error: '"<< ::GetLastError() <<"'");
-	}
-	else
-		wcstombs( szDeviceName, di.szLegacyName, 8 );
+        handle = FindFirstDevice( DeviceSearchByGuid, &guidCamera, &di );
+        if(( handle == NULL ) || ( di.hDevice == NULL ))
+        {
+                PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() returns error: '"<< ::GetLastError() <<"'");
+        }
+        else
+                wcstombs( szDeviceName, di.szLegacyName, 8 );
 
-	FindClose( handle );
+        FindClose( handle );
 
-	PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() Found this capture device '"<< szDeviceName <<"'");
-	devices.AppendString(szDeviceName);
+        PTRACE(4, "PVidDirectShow\tGetInputDeviceNames() Found this capture device '"<< szDeviceName <<"'");
+        devices.AppendString(szDeviceName);
 #endif
 
     return devices;
@@ -408,18 +405,18 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName, PBoolean st
 
     /* FIXME: If the device is already open, close it */
     if (IsOpen())
-	     return TRUE;
+             return TRUE;
 
     deviceName = devName;
 
     if (!InitialiseCapture())
-	return PFalse;
+        return PFalse;
 
     ListSupportedFormats();
     GetDefaultFormat();
 
     if (startImmediate)
-	return Start();
+        return Start();
 
     return PTrue;
 }
@@ -436,17 +433,17 @@ PBoolean PVideoInputDevice_DirectShow::Close()
     HRESULT hr;
 
     if (!IsOpen() || (NULL == pGrabber))
-		return PFalse;
+                return PFalse;
 
     hr = pGrabber->SetCallback(NULL, 0);
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tFailed to remove the callback: " << ErrorMessage(hr));
-	return hr;
+        return hr;
     }
 
     if (pMC)
-	pMC->StopWhenReady();
+        pMC->StopWhenReady();
 
     SAFE_RELEASE(pMC);
     SAFE_RELEASE(pME);
@@ -470,14 +467,14 @@ PBoolean PVideoInputDevice_DirectShow::Start()
     PTRACE(1,"PVidDirectShow\tStart()");
 
     if (IsCapturing())
-	return PTrue;
+        return PTrue;
 
     // http://msdn2.microsoft.com/en-us/library/ms784859.aspx
     hr = pCapture->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
-                                pSrcFilter,	/* Source Filter */
-				NULL,		/* Intermediate Filter */
-				pGrabberFilter	/* Sink Filter */
-				);
+                                pSrcFilter,        /* Source Filter */
+                                NULL,                /* Intermediate Filter */
+                                pGrabberFilter        /* Sink Filter */
+                                );
     if (FAILED(hr))
     {
         PTRACE(1, "PVidDirectShow\tCouldn't render the video capture stream: " << ErrorMessage(hr));
@@ -506,21 +503,21 @@ PBoolean PVideoInputDevice_DirectShow::Start()
     count = 0;
     while (count < 100)
     {
-	long cbBuffer;
-	hr = pGrabber->GetCurrentBuffer(&cbBuffer, NULL);
-	if (hr == S_OK && cbBuffer > 0)
-	    break;
-	else if (hr == VFW_E_WRONG_STATE)
-	{
-	    /* Not available */
-	    PThread::Current()->Sleep(100);
-	}
-	else
-	{
-	    PTRACE(1, "PVidDirectShow\tWhile waiting the webcam to be ready, we have got this error: " << ErrorMessage(hr));
-	    PThread::Current()->Sleep(10);
-	}
-	count++;
+        long cbBuffer;
+        hr = pGrabber->GetCurrentBuffer(&cbBuffer, NULL);
+        if (hr == S_OK && cbBuffer > 0)
+            break;
+        else if (hr == VFW_E_WRONG_STATE)
+        {
+            /* Not available */
+            PThread::Current()->Sleep(100);
+        }
+        else
+        {
+            PTRACE(1, "PVidDirectShow\tWhile waiting the webcam to be ready, we have got this error: " << ErrorMessage(hr));
+            PThread::Current()->Sleep(10);
+        }
+        count++;
     }
 
 #if 0
@@ -542,10 +539,10 @@ PBoolean PVideoInputDevice_DirectShow::Stop()
     PTRACE(1,"PVidDirectShow\tStop()");
 
     if (IsCapturing())
-	return PFalse;
+        return PFalse;
 
     if (pMC)
-	pMC->StopWhenReady();
+        pMC->StopWhenReady();
 
     isCapturingNow = PFalse;
 
@@ -576,40 +573,40 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PIND
 
     if (converter != NULL)
     {
-	if (tempFrame == NULL)
-	    return PFalse;
+        if (tempFrame == NULL)
+            return PFalse;
 
-	hr = pGrabber->GetCurrentBuffer(&cbBuffer, NULL);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer size: " << ErrorMessage(hr));
-	    return PFalse;
-	}
-	if (frameBytes < cbBuffer)
-	{
-	    PTRACE(1, "PVidDirectShow\tBuffer too short (needed "<< cbBuffer << "  got " << frameBytes);
-	    return PFalse;
-	}
+        hr = pGrabber->GetCurrentBuffer(&cbBuffer, NULL);
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to get the current buffer size: " << ErrorMessage(hr));
+            return PFalse;
+        }
+        if (frameBytes < cbBuffer)
+        {
+            PTRACE(1, "PVidDirectShow\tBuffer too short (needed "<< cbBuffer << "  got " << frameBytes);
+            return PFalse;
+        }
 
-	hr = pGrabber->GetCurrentBuffer(&cbBuffer, (long*)tempFrame);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
-	    return PFalse;
-	}
+        hr = pGrabber->GetCurrentBuffer(&cbBuffer, (long*)tempFrame);
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
+            return PFalse;
+        }
 
-	converter->Convert((BYTE *)tempFrame, destFrame, cbBuffer, bytesReturned);
+        converter->Convert((BYTE *)tempFrame, destFrame, cbBuffer, bytesReturned);
     }
     else
     {
-	hr = pGrabber->GetCurrentBuffer(&cbBuffer, (long*)destFrame);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
-	    return PFalse;
-	}
+        hr = pGrabber->GetCurrentBuffer(&cbBuffer, (long*)destFrame);
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to get the current buffer: " << ErrorMessage(hr));
+            return PFalse;
+        }
 
-	*bytesReturned = cbBuffer;
+        *bytesReturned = cbBuffer;
 
     }
 
@@ -690,108 +687,108 @@ PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, i
     OAFilterState filterState = State_Stopped;
 
     PTRACE(4, "PVidDirectShow\tSetFormat(\""
-	      << (wanted_format.IsEmpty()?"Not changed":wanted_format) <<"\", "
-	      << width<<"x"<<height <<", "
-	      << fps <<"fps)");
+              << (wanted_format.IsEmpty()?"Not changed":wanted_format) <<"\", "
+              << width<<"x"<<height <<", "
+              << fps <<"fps)");
 
     const GUID wanted_guid_format = pwlib_format_to_media_format(wanted_format);
     if (!wanted_format.IsEmpty() && wanted_guid_format == MEDIATYPE_NULL)
     {
-	PTRACE(4, "PVidDirectShow\tColorspace not supported ("<< wanted_format << ")");
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tColorspace not supported ("<< wanted_format << ")");
+        return PFalse;
     }
 
     hr = pCapture->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
-	    			 pSrcFilter, IID_IAMStreamConfig, (void **)&pStreamConfig);
+                                     pSrcFilter, IID_IAMStreamConfig, (void **)&pStreamConfig);
 
     if (FAILED(hr))
     {
-	PTRACE(1, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
-	return PFalse;
+        PTRACE(1, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
+        return PFalse;
     }
 
     hr = pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize);
     if (FAILED(hr))
     {
-	PTRACE(1, "PVidDirectShow\tFailed to GetNumberOfCapabilities: " << ErrorMessage(hr));
-	pStreamConfig->Release();
-	return PFalse;
+        PTRACE(1, "PVidDirectShow\tFailed to GetNumberOfCapabilities: " << ErrorMessage(hr));
+        pStreamConfig->Release();
+        return PFalse;
     }
 
     /* Sanity check: just to be sure that the Streamcaps is a VIDEOSTREAM and not AUDIOSTREAM */
     if (sizeof(scc) != iSize)
     {
-	PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
-	pStreamConfig->Release();
-	return PFalse;
+        PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
+        pStreamConfig->Release();
+        return PFalse;
     }
 
     for (i=0; i<iCount; i++, MyDeleteMediaType(pMediaFormat))
     {
-	pMediaFormat = NULL;
-	hr = pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to GetStreamCaps(" << i <<"): " << ErrorMessage(hr));
-	    continue;
-	}
+        pMediaFormat = NULL;
+        hr = pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc);
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to GetStreamCaps(" << i <<"): " << ErrorMessage(hr));
+            continue;
+        }
 
-	if (!((pMediaFormat->formattype == FORMAT_VideoInfo)     &&
+        if (!((pMediaFormat->formattype == FORMAT_VideoInfo)     &&
              (pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-	     (pMediaFormat->pbFormat != NULL)))
-	    continue;
+             (pMediaFormat->pbFormat != NULL)))
+            continue;
 
-	VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
-	BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
-	const int maxfps = (int)(10000000.0/VideoInfo->AvgTimePerFrame);
+        VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
+        BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
+        const int maxfps = (int)(10000000.0/VideoInfo->AvgTimePerFrame);
 
-	if (!wanted_format.IsEmpty() && (wanted_guid_format != pMediaFormat->subtype))
-	    continue;
+        if (!wanted_format.IsEmpty() && (wanted_guid_format != pMediaFormat->subtype))
+            continue;
 
-	if (width && BitmapInfo->biWidth != width)
-	    continue;
+        if (width && BitmapInfo->biWidth != width)
+            continue;
 
-	if (width && BitmapInfo->biHeight != height)
-	    continue;
+        if (width && BitmapInfo->biHeight != height)
+            continue;
 
-	if (fps && fps <= maxfps)
-	    VideoInfo->AvgTimePerFrame = (LONGLONG) (10000000.0 / (double)fps);
+        if (fps && fps <= maxfps)
+            VideoInfo->AvgTimePerFrame = (LONGLONG) (10000000.0 / (double)fps);
 
-	/* We have match a goo format, Use it to change the format */
-	PTRACE(1,"PVidDirectShow\tUsing setting ["<< i << "] = ("
-		<< media_format_to_pwlib_format(pMediaFormat->subtype) << ", "
-		<< BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
-		<< fps << "fps, max:" << maxfps << "fps)");
+        /* We have match a goo format, Use it to change the format */
+        PTRACE(1,"PVidDirectShow\tUsing setting ["<< i << "] = ("
+                << media_format_to_pwlib_format(pMediaFormat->subtype) << ", "
+                << BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
+                << fps << "fps, max:" << maxfps << "fps)");
 
 #if 1
 
         if (pMC)
         {
-	    hr = pMC->GetState(1000, &filterState);
+            hr = pMC->GetState(1000, &filterState);
             PTRACE_IF(1, FAILED(hr), "PVidDirectShow\tGetState failed: " << ErrorMessage(hr));
-	    pMC->StopWhenReady();
+            pMC->StopWhenReady();
         }
 
         hr = pStreamConfig->SetFormat(pMediaFormat);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to setFormat: " << ErrorMessage(hr));
-	    if (hr != VFW_E_INVALIDMEDIATYPE)
-		continue;
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to setFormat: " << ErrorMessage(hr));
+            if (hr != VFW_E_INVALIDMEDIATYPE)
+                continue;
 
-	    PTRACE(1, "PVidDirectShow\tRetrying ...");
-	    was_capturing = isCapturingNow;
-	    Close();
-	    Open(deviceName, PFalse);
-	    hr = pStreamConfig->SetFormat(pMediaFormat);
-	    if (FAILED(hr))
-	    {
-		PTRACE(1, "PVidDirectShow\tFailed to setFormat (Try #2 graph deconnected): " << ErrorMessage(hr));
-		continue;
-	    }
-	    if (was_capturing)
-		Start();
-	}
+            PTRACE(1, "PVidDirectShow\tRetrying ...");
+            was_capturing = isCapturingNow;
+            Close();
+            Open(deviceName, PFalse);
+            hr = pStreamConfig->SetFormat(pMediaFormat);
+            if (FAILED(hr))
+            {
+                PTRACE(1, "PVidDirectShow\tFailed to setFormat (Try #2 graph deconnected): " << ErrorMessage(hr));
+                continue;
+            }
+            if (was_capturing)
+                Start();
+        }
 
         if (pMC)  {
             if (filterState==State_Running)
@@ -804,31 +801,31 @@ PBoolean PVideoInputDevice_DirectShow::SetFormat(const PString &wanted_format, i
             }
         }
         PTRACE(1, "PVidDirectShow\tOk");
-	
+        
         if (pMediaFormat->subtype == MEDIASUBTYPE_RGB32 ||
-	    pMediaFormat->subtype == MEDIASUBTYPE_RGB24 ||
-	    pMediaFormat->subtype == MEDIASUBTYPE_RGB565 ||
-	    pMediaFormat->subtype == MEDIASUBTYPE_RGB555)
-	{
-	    nativeVerticalFlip = true;
-	}
-	else
-	{
-	    nativeVerticalFlip = false;
-	}
+            pMediaFormat->subtype == MEDIASUBTYPE_RGB24 ||
+            pMediaFormat->subtype == MEDIASUBTYPE_RGB565 ||
+            pMediaFormat->subtype == MEDIASUBTYPE_RGB555)
+        {
+            nativeVerticalFlip = true;
+        }
+        else
+        {
+            nativeVerticalFlip = false;
+        }
 #endif
 
 #if 0
-	hr = pGrabber->SetMediaType(pMediaFormat);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to setFormat on pGrabber: " << ErrorMessage(hr));
-	}
+        hr = pGrabber->SetMediaType(pMediaFormat);
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to setFormat on pGrabber: " << ErrorMessage(hr));
+        }
 #endif
 
-	MyDeleteMediaType(pMediaFormat);
-	pStreamConfig->Release();
-	return PTrue;
+        MyDeleteMediaType(pMediaFormat);
+        pStreamConfig->Release();
+        return PTrue;
     }
 
     pStreamConfig->Release();
@@ -841,22 +838,22 @@ PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned hei
     PTRACE(1,"PVidDirectShow\tSetFrameSize(" << width << ", " << height << ")");
 
     if (!SetFormat(colourFormat, width, height, frameRate))
-	return PFalse;
+        return PFalse;
 
     PTRACE(1,"PVidDirectShow\tSetFrameSize " << width << "x" << height << " is suported in hardware");
 
     if (!PVideoDevice::SetFrameSize(width, height))
-	return PFalse;
+        return PFalse;
 
     frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
     if (tempFrame)
-	free(tempFrame);
+        free(tempFrame);
     tempFrame = (char *)malloc(frameBytes);
     if (tempFrame == NULL)
     {
-	PTRACE(1,"PVidDirectShow\tNot enought memory to allocate tempFrame ("<<frameBytes<<")");
-	return PFalse;
+        PTRACE(1,"PVidDirectShow\tNot enought memory to allocate tempFrame ("<<frameBytes<<")");
+        return PFalse;
     }
 
     PTRACE(4,"PVidDirectShow\tset frame size " << width << "x" << height << "  frameBytes="<<frameBytes);
@@ -868,12 +865,12 @@ PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned rate)
     PTRACE(1,"PVidDirectShow\tSetFrameRate("<<rate<<"fps)");
 
     if (rate < 1)
-	rate = 1;
+        rate = 1;
     else if (rate > 50)
-	rate = 50;
+        rate = 50;
 
     if (!SetFormat(colourFormat, frameWidth, frameHeight, rate))
-	return PFalse;
+        return PFalse;
 
     return PVideoDevice::SetFrameRate(rate);
 }
@@ -883,10 +880,10 @@ PBoolean PVideoInputDevice_DirectShow::SetColourFormat(const PString & colourFmt
     PTRACE(1,"PVidDirectShow\tSetColourFormat("<<colourFmt<<")");
 
     if (!SetFormat(colourFmt, frameWidth, frameHeight, frameRate))
-	return PFalse;
+        return PFalse;
 
     if (!PVideoDevice::SetColourFormat(colourFmt))
-	return PFalse;
+        return PFalse;
 
     return PTrue;
 }
@@ -908,29 +905,29 @@ PBoolean PVideoInputDevice_DirectShow::GetControlCommon(long control, int *newVa
     hr = pSrcFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp);
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to find VideoProcAmp interface: " << ErrorMessage(hr));
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tFailed to find VideoProcAmp interface: " << ErrorMessage(hr));
+        return PFalse;
     }
 
     hr = pVideoProcAmp->GetRange(control, &Min, &Max, &Stepping, &Def, &CapsFlags);
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to getRange interface on " << control << " : " << ErrorMessage(hr));
-	pVideoProcAmp->Release();
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tFailed to getRange interface on " << control << " : " << ErrorMessage(hr));
+        pVideoProcAmp->Release();
+        return PFalse;
     }
 
     hr = pVideoProcAmp->Get(control, &Val, &CapsFlags);
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
-	Val = Def;
+        PTRACE(4, "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
+        Val = Def;
     }
 
     if (CapsFlags == VideoProcAmp_Flags_Auto)
-	*newValue = -1;
+        *newValue = -1;
     else
-	*newValue = ((Val - Min) * 65536) / ((Max-Min));
+        *newValue = ((Val - Min) * 65536) / ((Max-Min));
 
     pVideoProcAmp->Release();
     return PTrue;
@@ -1010,24 +1007,24 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
     hr = pSrcFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp);
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to find VideoProcAmp interface: " << ErrorMessage(hr));
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tFailed to find VideoProcAmp interface: " << ErrorMessage(hr));
+        return PFalse;
     }
 
     hr = pVideoProcAmp->GetRange(control, &Min, &Max, &Stepping, &Def, &CapsFlags);
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to getRange interface on " << control << " : " << ErrorMessage(hr));
-	pVideoProcAmp->Release();
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tFailed to getRange interface on " << control << " : " << ErrorMessage(hr));
+        pVideoProcAmp->Release();
+        return PFalse;
     }
 
     if (newValue == -1)
-	hr = pVideoProcAmp->Set(control, 0, VideoProcAmp_Flags_Auto);
+        hr = pVideoProcAmp->Set(control, 0, VideoProcAmp_Flags_Auto);
     else
     {
-	long ValScaled = Min + ((Max-Min) * newValue) / 65536;
-	hr = pVideoProcAmp->Set(control, ValScaled, VideoProcAmp_Flags_Manual);
+        long ValScaled = Min + ((Max-Min) * newValue) / 65536;
+        hr = pVideoProcAmp->Set(control, ValScaled, VideoProcAmp_Flags_Manual);
     }
     PTRACE_IF(4, FAILED(hr), "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
 
@@ -1038,7 +1035,7 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
 PBoolean PVideoInputDevice_DirectShow::SetBrightness(unsigned newBrightness)
 {
     if (!SetControlCommon(VideoProcAmp_Brightness, newBrightness))
-	return PFalse;
+        return PFalse;
 
     frameBrightness = newBrightness;
 
@@ -1048,7 +1045,7 @@ PBoolean PVideoInputDevice_DirectShow::SetBrightness(unsigned newBrightness)
 PBoolean PVideoInputDevice_DirectShow::SetColour(unsigned newColour)
 {
     if (!SetControlCommon(VideoProcAmp_Saturation, newColour))
-	return PFalse;
+        return PFalse;
 
     frameColour = newColour;
 
@@ -1058,7 +1055,7 @@ PBoolean PVideoInputDevice_DirectShow::SetColour(unsigned newColour)
 PBoolean PVideoInputDevice_DirectShow::SetContrast(unsigned newContrast)
 {
     if (!SetControlCommon(VideoProcAmp_Contrast, newContrast))
-	return PFalse;
+        return PFalse;
 
     frameContrast = newContrast;
 
@@ -1068,7 +1065,7 @@ PBoolean PVideoInputDevice_DirectShow::SetContrast(unsigned newContrast)
 PBoolean PVideoInputDevice_DirectShow::SetHue(unsigned newHue)
 {
     if (!SetControlCommon(VideoProcAmp_Hue, newHue))
-	return PFalse;
+        return PFalse;
 
     frameHue = newHue;
 
@@ -1078,7 +1075,7 @@ PBoolean PVideoInputDevice_DirectShow::SetHue(unsigned newHue)
 PBoolean PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
 {
     if (!SetControlCommon(VideoProcAmp_Gamma, newWhiteness))
-	return PFalse;
+        return PFalse;
 
     frameWhiteness = newWhiteness;
 
@@ -1108,55 +1105,55 @@ PBoolean PVideoInputDevice_DirectShow::ListSupportedFormats()
     PTRACE(1, "PVidDirectShow\tListSupportedFormats()");
 
     hr = pCapture->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
-	    			 pSrcFilter, IID_IAMStreamConfig, (void **)&pStreamConfig);
+                                     pSrcFilter, IID_IAMStreamConfig, (void **)&pStreamConfig);
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
+        return PFalse;
     }
 
     hr = pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize);
     if (FAILED(hr))
     {
-	PTRACE(1, "PVidDirectShow\tFailed to GetNumberOfCapabilities: " << ErrorMessage(hr));
-	pStreamConfig->Release();
-	return PFalse;
+        PTRACE(1, "PVidDirectShow\tFailed to GetNumberOfCapabilities: " << ErrorMessage(hr));
+        pStreamConfig->Release();
+        return PFalse;
     }
 
     /* Sanity check: just to be sure that the Streamcaps is a VIDEOSTREAM and not AUDIOSTREAM */
     if (sizeof(scc) != iSize)
     {
-	PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
-	pStreamConfig->Release();
-	return PFalse;
+        PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
+        pStreamConfig->Release();
+        return PFalse;
     }
 
     for (i=0; i<iCount; i++)
     {
-	pMediaFormat = NULL;
-	hr = pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc);
-	if (FAILED(hr))
-	{
-	    PTRACE(1, "PVidDirectShow\tFailed to GetStreamCaps(" << i <<"): " << ErrorMessage(hr));
-	    continue;
-	}
+        pMediaFormat = NULL;
+        hr = pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc);
+        if (FAILED(hr))
+        {
+            PTRACE(1, "PVidDirectShow\tFailed to GetStreamCaps(" << i <<"): " << ErrorMessage(hr));
+            continue;
+        }
 
 #if PTRACING
-	if ((pMediaFormat->formattype == FORMAT_VideoInfo)     &&
+        if ((pMediaFormat->formattype == FORMAT_VideoInfo)     &&
             (pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-	    (pMediaFormat->pbFormat != NULL))
-	{
-	    VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
-	    BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
+            (pMediaFormat->pbFormat != NULL))
+        {
+            VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
+            BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
 
-	    PTRACE(1,"PVidDirectShow\tFmt["<< i << "] = ("
-		    << media_format_to_pwlib_format(pMediaFormat->subtype) << ", "
-		    << BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
-		    << (10000000.0/VideoInfo->AvgTimePerFrame) << "fps)");
-	}
+            PTRACE(1,"PVidDirectShow\tFmt["<< i << "] = ("
+                    << media_format_to_pwlib_format(pMediaFormat->subtype) << ", "
+                    << BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
+                    << (10000000.0/VideoInfo->AvgTimePerFrame) << "fps)");
+        }
 #endif
 
-	MyDeleteMediaType(pMediaFormat);
+        MyDeleteMediaType(pMediaFormat);
     }
 
     pStreamConfig->Release();
@@ -1177,92 +1174,55 @@ PBoolean PVideoInputDevice_DirectShow::GetDefaultFormat()
     PTRACE(4, "PVidDirectShow\tGetDefaultFormat()");
 
     hr = pCapture->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
-	    			 pSrcFilter, IID_IAMStreamConfig, (void **)&pStreamConfig);
+                                     pSrcFilter, IID_IAMStreamConfig, (void **)&pStreamConfig);
 
     if (FAILED(hr))
     {
-	PTRACE(4, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
-	return PFalse;
+        PTRACE(4, "PVidDirectShow\tFailed to find StreamConfig Video interface: " << ErrorMessage(hr));
+        return PFalse;
     }
 
     hr = pStreamConfig->GetFormat(&pMediaFormat);
     if (FAILED(hr))
     {
-	PTRACE(1, "PVidDirectShow\tFailed to getFormat: " << ErrorMessage(hr));
-	pStreamConfig->Release();
-	return PFalse;
+        PTRACE(1, "PVidDirectShow\tFailed to getFormat: " << ErrorMessage(hr));
+        pStreamConfig->Release();
+        return PFalse;
     }
 
     if ((pMediaFormat->formattype == FORMAT_VideoInfo)     &&
         (pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-	(pMediaFormat->pbFormat != NULL))
+        (pMediaFormat->pbFormat != NULL))
     {
-	VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
-	BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
-	PString format = media_format_to_pwlib_format(pMediaFormat->subtype);
-	int fps = (int)(10000000.0/VideoInfo->AvgTimePerFrame);
+        VIDEOINFOHEADER *VideoInfo = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
+        BITMAPINFOHEADER *BitmapInfo = &(VideoInfo->bmiHeader);
+        PString format = media_format_to_pwlib_format(pMediaFormat->subtype);
+        int fps = (int)(10000000.0/VideoInfo->AvgTimePerFrame);
 
-	PTRACE(1,"PVidDirectShow\tDefault format is: "
-		<< format << ", "
-		<< BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
-		<< fps << "fps)");
+        PTRACE(1,"PVidDirectShow\tDefault format is: "
+                << format << ", "
+                << BitmapInfo->biWidth << "x" << BitmapInfo->biHeight << ", "
+                << fps << "fps)");
 
-	colourFormat = format;
-	frameWidth = BitmapInfo->biWidth;
-	frameHeight = BitmapInfo->biHeight;
-	frameRate = fps;
+        colourFormat = format;
+        frameWidth = BitmapInfo->biWidth;
+        frameHeight = BitmapInfo->biHeight;
+        frameRate = fps;
 
     }
 
     MyDeleteMediaType(pMediaFormat);
     pStreamConfig->Release();
 
-	return TRUE;
+        return TRUE;
 }
-
-
-#ifndef _WIN32_WCE
-/*
- *
- *
- *
- */
-static char *BSTR_to_ANSI(BSTR pSrc)
-{
-    unsigned int cb, cwch;
-    char *szOut = NULL;
-
-    if(!pSrc)
-	return NULL;
-
-    cwch = SysStringLen(pSrc);
-
-    /* Count the number of character needed to allocate */
-    cb = WideCharToMultiByte(CP_ACP, 0, pSrc, cwch + 1, NULL, 0, 0, 0);
-    if (cb == 0)
-	return NULL;
-
-    szOut = (char *)calloc(cb+1, 1);
-    if (szOut == NULL)
-	return NULL;
-
-    cb = WideCharToMultiByte(CP_ACP, 0, pSrc, cwch + 1, szOut, cb, 0, 0);
-    if (cb == 0)
-    {
-	free(szOut);
-	return NULL;
-    }
-
-    return szOut;
-}
-#endif
 
 
 static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 {
 #ifndef _WIN32_WCE
 
-	HRESULT hr;
+        HRESULT hr;
     IBaseFilter *pSrc = NULL;
     IMoniker *pMoniker = NULL;
     ICreateDevEnum *pDevEnum = NULL;
@@ -1301,56 +1261,54 @@ static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
     *ppSrcFilter = NULL;
     while (*ppSrcFilter == NULL)
     {
-	// Get the next device
-	hr = pClassEnum->Next(1, &pMoniker, &cFetched);
-	if (hr != S_OK)
-	{
-	    PTRACE(4, "PVidDirectShow\tSetDevice() No more video capture device");
-	    hr = ERROR_DEVICE_NOT_CONNECTED;
-	    break;
-	}
+        // Get the next device
+        hr = pClassEnum->Next(1, &pMoniker, &cFetched);
+        if (hr != S_OK)
+        {
+            PTRACE(4, "PVidDirectShow\tSetDevice() No more video capture device");
+            hr = ERROR_DEVICE_NOT_CONNECTED;
+            break;
+        }
 
-	// Get the property bag
-	IPropertyBag *pPropBag;
+        // Get the property bag
+        IPropertyBag *pPropBag;
 
-	hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)(&pPropBag));
-	if (FAILED(hr))
-	{
-	    pMoniker->Release();
-	    continue;
-	}
+        hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)(&pPropBag));
+        if (FAILED(hr))
+        {
+            pMoniker->Release();
+            continue;
+        }
 
-	// Find the description or friendly name.
-	VARIANT DeviceName;
-	DeviceName.vt = VT_BSTR;
+        // Find the description or friendly name.
+        VARIANT DeviceName;
+        DeviceName.vt = VT_BSTR;
 
-	hr = pPropBag->Read(L"Description", &DeviceName, 0);
-	if (FAILED(hr))
-	    hr = pPropBag->Read(L"FriendlyName", &DeviceName, 0);
-	if (SUCCEEDED(hr))
-	{
-	    char *pDeviceName = BSTR_to_ANSI(DeviceName.bstrVal);
-	    PTRACE(4, "PVidDirectShow\tSetDevice() current capture device '"<< pDeviceName << "'");
+        hr = pPropBag->Read(L"Description", &DeviceName, 0);
+        if (FAILED(hr))
+            hr = pPropBag->Read(L"FriendlyName", &DeviceName, 0);
+        if (SUCCEEDED(hr))
+        {
+            PString thisDevName(DeviceName.bstrVal);
+            PTRACE(4, "PVidDirectShow\tSetDevice() current capture device '"<< thisDevName << "'");
 
-	    if (pDeviceName && PString(pDeviceName) == devName)
-	    {
-		// Bind Moniker to a filter object
-		hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pSrc);
-		if (FAILED(hr))
-		{
-		    PTRACE(1, "PVidDirectShow\tSetDevice() Couldn't bind moniker to filter object: " << ErrorMessage(hr));
-		    break;
-		}
-		PTRACE(4, "PVidDirectShow\tSetDevice() This one is kept '"<< pDeviceName << "'");
-		*ppSrcFilter = pSrc;
-	    }
-	    if (pDeviceName)
-		free(pDeviceName);
-	}
+            if (thisDevName == devName)
+            {
+                // Bind Moniker to a filter object
+                hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pSrc);
+                if (FAILED(hr))
+                {
+                    PTRACE(1, "PVidDirectShow\tSetDevice() Couldn't bind moniker to filter object: " << ErrorMessage(hr));
+                    break;
+                }
+                PTRACE(4, "PVidDirectShow\tSetDevice() This one is kept '"<< thisDevName << "'");
+                *ppSrcFilter = pSrc;
+            }
+        }
 
-	pPropBag->Release();
-	pMoniker->Release();
-	// Next Device
+        pPropBag->Release();
+        pMoniker->Release();
+        // Next Device
     }
     /* If no device was found ppSrcFilter is NULL */
 
@@ -1359,7 +1317,7 @@ static HRESULT SetDevice(const PString & devName, IBaseFilter ** ppSrcFilter)
 
     return hr;
 #else
-	return S_OK;
+        return S_OK;
 #endif // !_WIN32_WCE
 }
 
@@ -1375,7 +1333,7 @@ static struct {
     { "RGB565",  MEDIASUBTYPE_RGB565 },
     { "RGB555",  MEDIASUBTYPE_RGB555 },
 #ifndef _WIN32_WCE
-	{ "YUV420P", MEDIASUBTYPE_IYUV   },  
+        { "YUV420P", MEDIASUBTYPE_IYUV   },  
     { "YUV422P", MEDIASUBTYPE_YUYV   },
 #endif
     { "YUV411",  MEDIASUBTYPE_Y411   },
@@ -1392,8 +1350,8 @@ static GUID pwlib_format_to_media_format(const char *format)
 
     for (i=0; i<sizeof(formats)/sizeof(formats[0]); i++)
     {
-	if (strcmp(formats[i].pwlib_format, format) == 0)
-	    return formats[i].media_format;
+        if (strcmp(formats[i].pwlib_format, format) == 0)
+            return formats[i].media_format;
     }
     return MEDIATYPE_NULL;
 }
@@ -1404,75 +1362,75 @@ static PString media_format_to_pwlib_format(const GUID guid)
 
     for (i=0; i<sizeof(formats)/sizeof(formats[0]); i++)
     {
-	if (guid == formats[i].media_format)
-	    return formats[i].pwlib_format;
+        if (guid == formats[i].media_format)
+            return formats[i].pwlib_format;
     }
 
 #ifndef _WIN32_WCE
-	if (guid == MEDIASUBTYPE_CLPL)
-	return "CLPL";
+        if (guid == MEDIASUBTYPE_CLPL)
+        return "CLPL";
     if (guid == MEDIASUBTYPE_YUYV)
-	return "YUYV";
+        return "YUYV";
     if (guid == MEDIASUBTYPE_IYUV)
-	return "IYUV";
+        return "IYUV";
 #endif
     if (guid == MEDIASUBTYPE_YVU9)
-	return "YVU9";
+        return "YVU9";
     if (guid == MEDIASUBTYPE_Y411)
-	return "Y411";
+        return "Y411";
     if (guid == MEDIASUBTYPE_Y41P)
-	return "Y41P";
+        return "Y41P";
     if (guid == MEDIASUBTYPE_YUY2)
-	return "YUY2";
+        return "YUY2";
     if (guid == MEDIASUBTYPE_YVYU)
-	return "YVYU";
+        return "YVYU";
     if (guid == MEDIASUBTYPE_UYVY)
-	return "UYVY";
+        return "UYVY";
     if (guid == MEDIASUBTYPE_Y211)
-	return "Y211";
+        return "Y211";
     if (guid == MEDIASUBTYPE_YV12)
-	return "YV12";
+        return "YV12";
     if (guid == MEDIASUBTYPE_CLJR)
-	return "CLJR";
+        return "CLJR";
     if (guid == MEDIASUBTYPE_IF09)
-	return "IF09";
+        return "IF09";
     if (guid == MEDIASUBTYPE_CPLA)
-	return "CPLA";
+        return "CPLA";
     if (guid == MEDIASUBTYPE_MJPG)
-	return "MJPG";
+        return "MJPG";
     if (guid == MEDIASUBTYPE_TVMJ)
-	return "TVMJ";
+        return "TVMJ";
     if (guid == MEDIASUBTYPE_WAKE)
-	return "WAKE";
+        return "WAKE";
     if (guid == MEDIASUBTYPE_CFCC)
-	return "CFCC";
+        return "CFCC";
     if (guid == MEDIASUBTYPE_IJPG)
-	return "IJPG";
+        return "IJPG";
     if (guid == MEDIASUBTYPE_Plum)
-	return "Plum";
+        return "Plum";
     if (guid == MEDIASUBTYPE_DVCS)
-	return "DVCS";
+        return "DVCS";
     if (guid == MEDIASUBTYPE_DVSD)
-	return "DVSD";
+        return "DVSD";
     if (guid == MEDIASUBTYPE_MDVF)
-	return "MDVF";
+        return "MDVF";
     if (guid == MEDIASUBTYPE_RGB1)
-	return "RGB1";
+        return "RGB1";
     if (guid == MEDIASUBTYPE_RGB4)
-	return "RGB4";
+        return "RGB4";
     if (guid == MEDIASUBTYPE_RGB8)
-	return "RGB8";
+        return "RGB8";
     if (guid == MEDIASUBTYPE_RGB565)
-	return "RGB565";
+        return "RGB565";
     if (guid == MEDIASUBTYPE_RGB555)
-	return "RGB555";
+        return "RGB555";
     if (guid == MEDIASUBTYPE_RGB24)
-	return "BGR24";
+        return "BGR24";
     if (guid == MEDIASUBTYPE_RGB32)
-	return "BGR32";
+        return "BGR32";
 #ifndef _WIN32_WCE
     if (guid == MEDIASUBTYPE_IYUV)
-	return "I420";
+        return "I420";
 #endif
 
     wchar_t guid_wchar[256];
@@ -1481,9 +1439,9 @@ static PString media_format_to_pwlib_format(const GUID guid)
 
     guid_wcharlen = StringFromGUID2(guid, guid_wchar, sizeof(guid_wchar));
     WideCharToMultiByte(CP_ACP, 0,
-	                guid_wchar, guid_wcharlen+1,
-			guid_string, sizeof(guid_string),
-			0, 0);
+                        guid_wchar, guid_wcharlen+1,
+                        guid_string, sizeof(guid_string),
+                        0, 0);
 
     return guid_string;
 }
