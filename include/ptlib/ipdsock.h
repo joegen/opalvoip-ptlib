@@ -38,6 +38,8 @@
 #pragma interface
 #endif
 
+#include <ptlib/ipsock.h>
+
 /** Internet Protocol Datagram Socket class.
 */
 class PIPDatagramSocket : public PIPSocket
