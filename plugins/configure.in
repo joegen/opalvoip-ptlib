@@ -185,6 +185,17 @@ if test "${enable_v4l2}z" = "yesz" ; then
   else
     AC_MSG_RESULT(no)
   fi
+  if test "${V4L2HDR}z" != "z"; then
+    AC_CHECK_HEADER(libv4l2.h, LIBV4L2HDR=1)
+    AC_CHECK_LIB(v4l2, v4l2_fd_open, LIBV4L2LIB=1)
+    AC_MSG_CHECKING(for libv4l2 support)
+    if test "${LIBV4L2HDR}z" != "z" -a "${LIBV4L2LIB}z" != "z"; then
+      AC_SUBST(HAS_LIBV4L, 1)
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
 fi
 
 dnl #########################################################################
@@ -281,6 +292,7 @@ dnl ########################################################################
 dnl output header file
 
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(vidinput_v4l2/Makefile)
 AC_CONFIG_FILES(vidinput_dc/Makefile)
 
 AC_OUTPUT()
