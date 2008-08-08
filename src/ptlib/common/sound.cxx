@@ -188,16 +188,27 @@ PSoundChannel::PSoundChannel(const PString & device,
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
-PBoolean PSoundChannel::Open(const PString & device,
+PBoolean PSoundChannel::Open(const PString & devSpec,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
                          unsigned bitsPerSample)
 {
-  if (baseChannel != NULL)
-    return baseChannel->Open(device, dir, numChannels, sampleRate, bitsPerSample);
+  PString driver, device;
+  PINDEX colon = devSpec.Find(':');
+  if (colon == P_MAX_INDEX)
+    device = devSpec;
+  else {
+    driver = devSpec.Left(colon);
+    device = devSpec.Mid(colon+1).Trim();
+  }
 
-  baseChannel = CreateOpenedChannel(PString::Empty(), device, dir, numChannels, sampleRate, bitsPerSample);
+  delete baseChannel;
+
+  baseChannel = CreateOpenedChannel(driver, device, dir, numChannels, sampleRate, bitsPerSample);
+  if (baseChannel == NULL && !driver.IsEmpty())
+    baseChannel = CreateOpenedChannel(PString::Empty(), devSpec, dir, numChannels, sampleRate, bitsPerSample);
+
   return baseChannel != NULL;
 }
 
