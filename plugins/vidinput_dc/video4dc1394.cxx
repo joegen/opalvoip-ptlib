@@ -11,20 +11,15 @@
  * There are two kind of the specifications of IEEE 1394 digital video
  * cameras, one is called "digital camera" and another is "AV/C camera".
  * A digital camera sends uncompressed video data while an AV/C camera
- * sends compressed data. Currently PWLib only supports digital
- * cameras. We can find a list of supported digital cameras by the Linux
+ * sends compressed data. This file is for digital cameras.
+ * We can find a list of supported digital cameras by the Linux
  * device driver at:
  * http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/
- * 
- * AV/C cameras seem able to be used for video phone. You are welcome to
- * write supporting codes for AV/C cameras!
  * 
  * 
  * Installation and Use:
  * 
- * To enable 1394 camera support, you have to define the "TRY_1394DC"
- * shell environment variable at compilation time of PWLib, OpenH323, and
- * ohphone. To select your 1394 camera for video input device instead of
+ * To select your 1394 camera for video input device instead of
  * usual Video4Linux devices, specify "/dev/raw1394" or "/dev/video1394"
  * as the filename of video input device. For example "ohphone
  * --videoinput /dev/raw1394" should use your 1394 camera as video input.
@@ -86,7 +81,7 @@
  *
  *
  * Internal Structure:
- * This module has been tested against the ohphone and GnomeMeeting
+ * This module has been tested against the ohphone and ekiga/GnomeMeeting
  * video phone programs. They use 352x288 and 176x144 resolutions in
  * YUV420P color format. So this module only supports these
  * resolutions and YUV420P.
