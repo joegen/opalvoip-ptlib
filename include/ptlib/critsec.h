@@ -153,18 +153,32 @@ class PAtomicInteger
       bool IsZero() const                 { return value == 0; }
 
       /**
-        * atomically increment the integer value
+        * atomically pre-increment the integer value
         *
         * @return Returns the value of the integer after the increment
         */
       inline long operator++()            { return InterlockedIncrement(&value); }
 
       /**
-        * atomically decrement the integer value
+        * atomically post-increment the integer value
+        *
+        * @return Returns the value of the integer after the increment
+        */
+      inline long operator++(int)         { return InterlockedExchangeAdd(&value, 1); }
+
+      /**
+        * atomically pre-decrement the integer value
         *
         * @return Returns the value of the integer after the decrement
         */
       inline long operator--()            { return InterlockedDecrement(&value); }
+
+      /**
+        * atomically post-decrement the integer value
+        *
+        * @return Returns the value of the integer after the decrement
+        */
+      inline long operator--(int)         { return InterlockedExchangeAdd(&value, -1); }
 
       /**
         * @return Returns the value of the integer
@@ -186,7 +200,9 @@ class PAtomicInteger
         : value(v) { }
       inline bool IsZero() const         { return value == 0; }
       inline int operator++()            { return _STLP_ATOMIC_INCREMENT(&value); }
-      inline int unsigned operator--()   { return _STLP_ATOMIC_DECREMENT(&value); }
+      inline int operator++(int)         { return _STLP_ATOMIC_INCREMENT(&value)-1; }
+      inline int operator--()            { return _STLP_ATOMIC_DECREMENT(&value); }
+      inline int operator--(int)         { return _STLP_ATOMIC_DECREMENT(&value)+1; }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
     protected:
@@ -197,7 +213,9 @@ class PAtomicInteger
       : value(v) { }
       inline bool IsZero() const         { return value == 0; }
       inline int operator++()            { return atomic_add_32_nv((&value), 1); }
-      inline int unsigned operator--()   { return atomic_add_32_nv((&value), -1); }
+      inline int operator++(int)         { return atomic_add_32_nv((&value), 1)-1; }
+      inline int operator--()            { return atomic_add_32_nv((&value), -1); }
+      inline int operator--(int)         { return atomic_add_32_nv((&value), -1)+1; }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
     protected:
@@ -207,8 +225,10 @@ class PAtomicInteger
       inline PAtomicInteger(int v = 0)
         : value(v) { }
       inline bool IsZero() const         { return value == 0; }
-      inline int operator++()            { return EXCHANGE_AND_ADD(&value, 1) + 1; }
-      inline int unsigned operator--()   { return EXCHANGE_AND_ADD(&value, -1) - 1; }
+      inline int operator++()            { return EXCHANGE_AND_ADD(&value, 1)+1; }
+      inline int operator++(int)         { return EXCHANGE_AND_ADD(&value, 1); }
+      inline int operator--()            { return EXCHANGE_AND_ADD(&value, -1)-1; }
+      inline int operator--(int)         { return EXCHANGE_AND_ADD(&value, -1); }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
     protected:
@@ -219,8 +239,10 @@ class PAtomicInteger
         : value(v)                       { pthread_mutex_init(&mutex, NULL); }
       inline ~PAtomicInteger()           { pthread_mutex_destroy(&mutex); }
       inline bool IsZero() const         { return value == 0; }
-      inline int operator++()            { pthread_mutex_lock(&mutex); int retval = value++; pthread_mutex_unlock(&mutex); return retval; }
-      inline int operator--()            { pthread_mutex_lock(&mutex); int retval = value--; pthread_mutex_unlock(&mutex); return retval; }
+      inline int operator++()            { pthread_mutex_lock(&mutex); int retval = ++value; pthread_mutex_unlock(&mutex); return retval; }
+      inline int operator++(int)         { pthread_mutex_lock(&mutex); int retval = value++; pthread_mutex_unlock(&mutex); return retval; }
+      inline int operator--()            { pthread_mutex_lock(&mutex); int retval = --value; pthread_mutex_unlock(&mutex); return retval; }
+      inline int operator--(int)         { pthread_mutex_lock(&mutex); int retval = value--; pthread_mutex_unlock(&mutex); return retval; }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { pthread_mutex_lock(&mutex); value = v; pthread_mutex_unlock(&mutex); }
     protected:
