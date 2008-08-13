@@ -1086,34 +1086,27 @@ PSoundChannelDirectSound::SetVolume (unsigned newVal)
 PBoolean  
 PSoundChannelDirectSound::GetVolume(unsigned &devVol)
 {
-
-  PBoolean no_error=PTrue;
-  HRESULT hr;
-  long volume = 100;
   switch (mDirection) 
   {
-
-  case Player:
-
-    if (mAudioPlaybackBuffer) 
-    {
-
-      if (FAILED (hr = mAudioPlaybackBuffer->GetVolume( &volume ))) 
-      {
+    case Player:
+      if (mAudioPlaybackBuffer) {
+        long volume;
+        HRESULT hr = mAudioPlaybackBuffer->GetVolume(&volume);
+        if (SUCCEEDED(hr)) {
+          devVol = (unsigned int)(MaxVolume - volume/100);
+          return true;
+        }
         PTRACE (4, "PSoundChannelDirectSound::GetVolume Failed " << DXGetErrorString9 (hr));
-        no_error = PFalse;
       }
-      devVol = (unsigned int) pow(10.0, (float)(volume+10000) / 5000.0);
-    }
-    break;
+      break;
 
-  case Recorder:
-    // DirectX does not let you change the capture buffer volume
-    devVol = mVolume;
-    break;
-
+    case Recorder:
+      // DirectX does not let you change the capture buffer volume
+      devVol = mVolume;
+      break;
   }
-  return no_error;
+
+  return false;
 }
 
 
