@@ -36,9 +36,7 @@
 #define __TINYJPEG_INTERNAL_H_
 
 #include <setjmp.h>
-#ifdef SOLARIS
 #include <ptbuildopts.h>
-#endif
 
 #define SANITY_CHECK 1
 
