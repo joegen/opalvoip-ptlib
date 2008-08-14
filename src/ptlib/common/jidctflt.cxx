@@ -101,7 +101,7 @@
 #define DEQUANTIZE(coef,quantval)  (((FAST_FLOAT) (coef)) * (quantval))
 
 
-#if defined(__GNUC__) && (__GNUC__ >= 3) && (defined(__i686__) || defined(__x86_64__)) && (!defined(__MACOSX__)) && (!defined(P_LPIA))
+#if defined(__GNUC__) && (__GNUC__ >= 3) && (defined(__i686__) || defined(__x86_64__)) && (!defined(P_64BIT)) && (!defined(__MACOSX__)) && (!defined(P_LPIA))
 
 static inline unsigned char descale_and_clamp(int x, int shift)
 {
