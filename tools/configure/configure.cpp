@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.16"
+#define VERSION "1.17"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -618,10 +618,11 @@ int main(int argc, char* argv[])
     string line;
     getline(conf, line);
     string::size_type pos;
-    if ((pos = line.find("AC_CONFIG_HEADERS")) != string::npos) {
+    if ((pos = line.find("AC_CONFIG_FILES")) != string::npos ||
+        (pos = line.find("AC_CONFIG_HEADERS")) != string::npos) {
       if ((pos = line.find('(', pos)) != string::npos) {
         string::size_type end = line.find(')', pos);
-        if (end != string::npos)
+        if (end != string::npos && line.find('[', pos) == string::npos)
           headers.push_back(line.substr(pos+1, end-pos-1));
       }
     }
