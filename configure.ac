@@ -7,11 +7,140 @@ AC_PROG_CXX
 
 AC_LANG(C++)
 
+dnl PTLIB_FIND_DIRECTX
+dnl Check for directX
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+dnl	       $DIRECTX_INCLUDES
+dnl	       $DIRECTX_LIBS
+AC_DEFUN([PTLIB_FIND_DIRECTX],
+         [
+	  ptlib_has_directx=yes
+	  DIRECTX_INCLUDES=
+	  DIRECTX_LIBS=
+
+	  AC_ARG_WITH([directx-includedir],
+	              AS_HELP_STRING([--with-directx-includedir=DIR],[Location of DirectX include files]),
+	              [with_directx_dir="$withval"],
+		      [with_directx_dir="include"]
+	  )
+	  
+	  AC_MSG_CHECKING(for DirectX includes in ${with_directx_dir})
+	  AC_MSG_RESULT()
+
+	  old_CPPFLAGS="$CPPFLAGS"
+	  CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
+	  AC_LANG(C++)
+	  
+	  AC_CHECK_HEADERS([mingw_dshow_port.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([dxerr9.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([ksuuids.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
+	  AC_CHECK_HEADERS([uuids.h], [], [ptlib_has_directx=no])
+	  CPPFLAGS="$old_CPPFLAGS"
+
+
+	  if test "x${ptlib_has_directx}" = "xyes" ; then
+	    AC_MSG_CHECKING([for DirectX libraries])
+	    AC_MSG_RESULT()
+	  fi
+	  
+	  if test "x${ptlib_has_directx}" = "xyes" ; then
+	    DIRECTX_INCLUDES="-I${with_directx_dir}"
+	    DIRECTX_LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+	  fi
+	  
+          AS_IF([test AS_VAR_GET([ptlib_has_directx]) = yes], [$1], [$2])[]
+         ])
+
+dnl PTLIB_FIND_RESOLVER
+dnl Check for dns resolver
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+dnl            $RESOLVER_LIBS
+dnl            $$HAS_RES_INIT
+AC_DEFUN([PTLIB_FIND_RESOLVER],
+         [
+          ptlib_has_resolver=no
+          HAS_RES_NINIT=
+
+          AC_CHECK_FUNC([res_ninit], 
+                        [
+                         HAS_RES_NINIT=1
+                         ptlib_has_resolver=yes
+                        ])
+
+          if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_MSG_CHECKING([for res_ninit in -lresolv])
+            old_LIBS="$LIBS"
+            LIBS="$LIBS -lresolv"
+            AC_LINK_IFELSE([[
+                            #include <netinet/in.h>
+                            #include <resolv.h>
+                            int main(int argc,char **argv) {
+                              res_state p; res_ninit(p);
+                            }
+                          ]],
+                          [
+                            HAS_RES_NINIT=1
+                            ptlib_has_resolver=yes
+                            RESOLVER_LIBS="-lresolv"
+                          ])
+            LIBS="${old_LIBS}"
+            AC_MSG_RESULT(${ptlib_has_resolver})
+          fi
+
+          if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_CHECK_FUNC([res_search], [ptlib_has_resolver=yes])
+          fi
+
+          if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_MSG_CHECKING([for res_search in -lresolv])
+            old_LIBS="$LIBS"
+            LIBS="$LIBS -lresolv"
+            AC_LINK_IFELSE([[
+                            #include <netinet/in.h>
+                            #include <resolv.h>
+                            int main(int argc,char **argv){
+                              res_search (NULL, 0, 0, NULL, 0);
+                            }
+                          ]],
+                          [
+                            ptlib_has_resolver=yes
+                            RESOLVER_LIBS="-lresolv"
+                          ])
+            LIBS="${old_LIBS}"
+            AC_MSG_RESULT(${ptlib_has_resolver})
+          fi
+
+          if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_SEARCH_LIBS([__res_search], [resolv], [ptlib_has_resolver=yes])
+          fi
+
+          if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_SEARCH_LIBS([__res_search], [resolv], [ptlib_has_resolver=yes])
+          fi
+
+          if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_CHECK_HEADERS([windns.h],
+                            [
+                              ptlib_has_resolver=yes
+                              RESOLVER_LIBS="-ldnsapi"
+                            ])
+          fi
+          AS_IF([test AS_VAR_GET([ptlib_has_resolver]) = yes], [$1], [$2])[]
+         ])
 dnl ########################################################################
 dnl set the PTLIB directory to the current directory
 
 PTLIBDIR=`pwd`
-AC_SUBST(PTLIBDIR)
+AC_SUBST(PTLIBDIR)9
 dnl set the PTLib installation dir for ptlib-config
 AC_SUBST(PTINSTDIR)
 
@@ -76,6 +205,7 @@ case "$target_os" in
                    OSRELEASE="\"`uname -r`\"";
 		   OS_TAG="P_LINUX" ;
                    need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
                    ;;
 
   freebsd* )       OSTYPE=FreeBSD ;
@@ -84,6 +214,7 @@ case "$target_os" in
                      OSRELEASE="`sysctl -n kern.osreldate`" ;
                    fi
                    need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
@@ -91,6 +222,7 @@ case "$target_os" in
                    OSRELEASE="`sysctl -n kern.osrevision`" ;
 		   ENDLDLIBS="-lossaudio" ;
                    need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   ;;
 
   netbsd* )        OSTYPE=NetBSD ;
@@ -98,12 +230,14 @@ case "$target_os" in
                    OSRELEASE="`/sbin/sysctl -n kern.osrevision`" ;
 		   ENDLDLIBS="-lossaudio" ;
                    need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   ;;
 
   solaris* | sunos* ) OSTYPE=solaris ;
 		   OS_TAG="P_SOLARIS" ;
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
                    need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   ;;
 
   darwin* )	   OSTYPE=Darwin ;
@@ -116,6 +250,7 @@ case "$target_os" in
                    if test -e /Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include/expat.h ; then
                      EXPATDIR=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6
                    fi
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   ;;
 
   beos*)           OSTYPE=beos ;
@@ -135,7 +270,7 @@ case "$target_os" in
 		   TARGETDIR=msos ;
 		   SHAREDLIBEXT="dll" ;
 		   STDCCFLAGS="$STDCCFLAGS -mms-bitfields" ;
-		   ENDLDLIBS="-lwinmm -lwsock32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32" ;
+		   ENDLDLIBS="-lwinmm -lwsock32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32" ;
 		   NEEDS_PTHREADS=no ;
 		   ;;
 
@@ -225,10 +360,6 @@ if test "$target_os" = "linux-gnulp" ; then
   AC_DEFINE([P_LPIA], [1], [Low Power Intel Architecture])
 fi
 
-dnl BeOS has it;s own threading system
-if test ${OSTYPE} != beos ; then
-  AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-fi
 
 dnl solaris has it's own ldap library
 if test ${OSTYPE} != solaris ; then
@@ -1027,79 +1158,26 @@ dnl MSWIN_CHECK_DIR  resolver,\program files\microsoft visual studio 8\vc\platfo
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2
 
-AC_ARG_ENABLE(resolver,
-       [  --disable-resolver      disable DNS resolver support])
-
-if test "${enable_resolver}z" = "z" ; then
-  enable_resolver=$default_resolver
-fi
+AC_ARG_ENABLE([resolver],
+	      AS_HELP_STRING([--disable-resolver],[disable DNS resolver support]),
+	      [enable_resolver=$enableval],
+	      [enable_resolver=$default_resolver]
+	     )
 
 HAS_RESOLVER=
 if test "$enable_resolver" = "no" ; then
   AC_MSG_NOTICE(DNS resolver disabled)
 else
+  PTLIB_FIND_RESOLVER([HAS_RESOLVER=1], [HAS_RESOLVER=])
 
-  AC_CHECK_FUNC(res_ninit, HAS_RES_NINIT)
-  if test "${HAS_RES_NINIT}z" != "z" ; then
-    AC_DEFINE(P_HAS_RES_NINIT)
-    HAS_RESOLVER=1
-    RESOLVER_LIBS=""
-  fi
-
-  if test "${HAS_RESOLVER}z" = "z" ; then
-    AC_MSG_CHECKING([for res_ninit in -lresolv])
-    LIBS="-lresolv"
-    AC_LINK_IFELSE([[
-#include <netinet/in.h>
-#include <resolv.h>
-int main(int argc,char **argv){
- res_state p; res_ninit(p);
-}]],HAS_RES_NINIT=1)
-    if test "${HAS_RES_NINIT}z" != "z" ; then
-      AC_MSG_RESULT(yes)
-      AC_DEFINE(P_HAS_RES_NINIT)
-      HAS_RESOLVER=1
-      RESOLVER_LIBS="-lresolv"
-    else
-      AC_MSG_RESULT(no)
-    fi
-    LIBS=""
-  fi
-
-  if test "${HAS_RESOLVER}z" = "z" ; then
-    AC_CHECK_FUNC(res_search, HAS_RESOLVER=1)
-    if test "${HAS_RESOLVER}z" != "z" ; then
-      RESOLVER_LIBS=""
-    fi
-  fi
-
-  if test "${HAS_RESOLVER}z" = "z" ; then
-    AC_MSG_CHECKING([for res_search in -lresolv])
-    LIBS="-lresolv"
-    AC_LINK_IFELSE([[
-#include <netinet/in.h>
-#include <resolv.h>
-int main(int argc,char **argv){
- res_search (NULL, 0, 0, NULL, 0);
-}]],HAS_RESOLVER=1)
-    if test "${HAS_RESOLVER:-unset}" != "unset" ; then
-      AC_MSG_RESULT(yes)
-      RESOLVER_LIBS="-lresolv"
-    else
-      AC_MSG_RESULT(no)
-    fi
-    LIBS=""
-  fi
-
-  if test "${HAS_RESOLVER}z" = "z" ; then
-    AC_SEARCH_LIBS(__res_search, resolv, HAS_RESOLVER=1)
-  fi
-
-  if test "${HAS_RESOLVER}z" != "z" ; then
+  if test "x${HAS_RESOLVER}" = "x1" ; then
     AC_DEFINE(P_DNS, 1, "resolver libraries found")
-    HAS_RESOLVER=1
+    if test "${HAS_RES_NINIT}z" != "z" ; then
+      AC_DEFINE(P_HAS_RES_NINIT)
+    fi
   fi
 fi
+
 AC_SUBST(HAS_RESOLVER)
 
 dnl ########################################################################
@@ -1253,7 +1331,7 @@ else
 
     dnl check also for lldap_r presence (required for thread safe OpenLDAP?)
     if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,$LDAP_LIBRARIES  $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
+      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,$LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
     else
       AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
       if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
@@ -1923,25 +2001,43 @@ if test "${enable_video}z" = "z" ; then
 fi
 
 HAS_VIDEO=
-HAS_VIDEO_CAPTURE=
 
-if test "$enable_video" = "no" ; then
+if test "x$enable_video" = "xno" ; then
   AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
 else
   AC_DEFINE(P_VIDEO, 1)
   HAS_VIDEO=1
-  if test "$enable_plugins" = "yes" ; then
+fi
+AC_SUBST(HAS_VIDEO)
+
+HAS_VIDEO_CAPTURE=
+if test "x$enable_video" != "xno" ; then
+  if test "x$enable_plugins" = "xyes" ; then
     HAS_VIDEO_CAPTURE=1
   else
-    AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=1)
     dnl AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
     dnl AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
     dnl AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=1)
-    if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
-      AC_MSG_NOTICE(No Video Capture support)
-      AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
-    fi
+    case "$target_os" in
+      cygwin* | mingw* )
+		PTLIB_FIND_DIRECTX([HAS_VIDEO_CAPTURE=1
+			            ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
+				    STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
+				    AC_DEFINE(P_DIRECTSHOW, 1)
+				    AC_DEFINE(P_DIRECTSOUND, 1)
+		                   ])
+		;;
+      * )	
+		AC_CHECK_HEADER([linux/videodev.h], [HAS_VIDEO_CAPTURE=1])
+		;;
+    esac
   fi
+
+  if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
+    AC_MSG_NOTICE(No Video Capture support)
+    AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
+  fi
+
   dnl these are needed to pass through to plugin configure
   AC_ARG_ENABLE(v4l,      [  --enable-v4l            enable V4L video support])
   AC_ARG_ENABLE(v4l2,     [  --enable-v4l2           enable V4L2 video support])
@@ -1950,7 +2046,6 @@ else
   AC_ARG_ENABLE(dc,       [  --enable-dc             enable IEEE1394/DC video support])
 fi
 
-AC_SUBST(HAS_VIDEO)
 AC_SUBST(HAS_VIDEO_CAPTURE)
 
 dnl ########################################################################

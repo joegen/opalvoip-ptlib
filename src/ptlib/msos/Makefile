@@ -625,6 +625,11 @@ SOURCES += \
 	$(COMPONENT_SRC_DIR)/inetmail.cxx 
 endif
 
+ifdef HAS_URL
+SOURCES += \
+        $(COMPONENT_SRC_DIR)/url.cxx
+endif
+        
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
