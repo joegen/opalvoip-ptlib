@@ -159,9 +159,10 @@ extern "C" {
 HWND VFWAPI capCreateCaptureWindowA (LPCSTR lpszWindowName, DWORD dwStyle,
              int x, int y, int nWidth, int nHeight,
              HWND hwndParent, int nID);
-
+#ifdef _MSC_VER
 BOOL VFWAPI capGetDriverDescriptionA (WORD wDriverIndex, LPSTR lpszName,
               int cbName, LPSTR lpszVer, int cbVer);
+#endif
 }
 
 #define capGetDriverDescription capGetDriverDescriptionA
