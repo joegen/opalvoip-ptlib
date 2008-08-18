@@ -1832,7 +1832,7 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-ENDLDLIBS="$ENDLDLIBS -lasound"
+
 
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
@@ -12662,7 +12662,7 @@ echo $ECHO_N "checking for ALSA sound support... $ECHO_C" >&6; }
       if test "${HAS_ALSA}z" != "z"; then
         { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
-
+        ENDLDLIBS="$ENDLDLIBS -lasound"
         HAS_ALSA=1
       else
         { echo "$as_me:$LINENO: result: no" >&5
@@ -14768,5 +14768,4 @@ echo "$as_me: error: $ac_sub_configure failed for $ac_dir" >&2;}
     cd "$ac_popdir"
   done
 fi
-
 
