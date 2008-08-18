@@ -1,11 +1,22 @@
 AC_INIT(include/ptlib.h)
 
+if test \! -e ./aclocal.m4 ; then
+  echo "ERROR: you must run 'aclocal' before 'autoconf'"
+  exit
+fi
+
 AC_CONFIG_SUBDIRS(plugins)
 
+dnl PKG_LIBS=
+dnl PKG_CFLAGS=
+dnl PKG_REQUIRES=
+PKG_PROG_PKG_CONFIG()
 AC_PROG_CC
 AC_PROG_CXX
 
 AC_LANG(C++)
+
+
 
 dnl PTLIB_FIND_DIRECTX
 dnl Check for directX
@@ -136,11 +147,101 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
           fi
           AS_IF([test AS_VAR_GET([ptlib_has_resolver]) = yes], [$1], [$2])[]
          ])
+
+dnl PTLIB_OPENSSL_CONST
+dnl Check for directX
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+AC_DEFUN([PTLIB_OPENSSL_CONST],
+         [
+          ptlib_openssl_const=no
+          old_CFLAGS="$CFLAGS"
+          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+          AC_LANG(C)
+          AC_MSG_CHECKING(for const arg to d2i_AutoPrivateKey)
+          AC_TRY_COMPILE([#include <openssl/evp.h>],
+                         [
+                           EVP_PKEY **a; const unsigned char **p; long l;
+                           d2i_AutoPrivateKey(a, p, l);
+                         ],
+                         [ptlib_openssl_const=yes]
+                        )
+          AC_MSG_RESULT(${ptlib_openssl_const})
+          AC_LANG(C++)
+          CFLAGS="${old_CFLAGS}"
+
+          AS_IF([test AS_VAR_GET([ptlib_openssl_const]) = yes], [$1], [$2])[]
+         ])
+
+dnl PTLIB_OPENSSL_AES
+dnl Check for directX
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+AC_DEFUN([PTLIB_OPENSSL_AES],
+         [
+          ptlib_openssl_aes=no
+          old_CFLAGS="$CFLAGS"
+          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+          AC_LANG(C)
+          AC_CHECK_HEADERS([openssl/aes.h], [ptlib_openssl_aes=yes])
+          AC_LANG(C++)
+          CFLAGS="${old_CFLAGS}"
+          AS_IF([test AS_VAR_GET([ptlib_openssl_aes]) = yes], [$1], [$2])[]
+         ])
+
+dnl ########################################################################
+dnl libdl
+dnl ########################################################################
+
+dnl PTLIB_FIND_LBDL
+dnl Try to find a library containing dlopen()
+dnl Arguments: $1 action if-found
+dnl            $2 action if-not-found
+dnl Return:    $DL_LIBS The libs for dlopen()
+AC_DEFUN([PTLIB_FIND_LIBDL],
+         [
+          ptlib_libdl=no
+          AC_CHECK_HEADERS([dlfcn.h], [ptlib_dlfcn=yes], [ptlib_dlfcn=no])
+          if test "$ptlib_dlfcn" = yes ; then
+            AC_MSG_CHECKING(if dlopen is available)
+            AC_LANG(C)
+            AC_TRY_COMPILE([#include <dlfcn.h>],
+                            [void * p = dlopen("lib", 0);], [ptlib_dlopen=yes], [ptlib_dlopen=no])
+            if test "$ptlib_dlopen" = no ; then
+              AC_MSG_RESULT(no)
+            else
+              AC_MSG_RESULT(yes)
+              case "$target_os" in
+                freebsd*|openbsd*|netbsd*|darwin*|beos*) 
+                  AC_CHECK_LIB([c],[dlopen],
+                              [
+                                ptlib_libdl=yes
+                                DL_LIBS="-lc"
+                              ],
+                              [ptlib_libdl=no])
+                ;;
+                *)
+                  AC_CHECK_LIB([dl],[dlopen],
+                              [
+                                ptlib_libdl=yes
+                                DL_LIBS="-ldl"
+                              ],
+                              [ptlib_libdl=no])
+                ;;
+               esac
+            fi
+          fi
+          AS_IF([test AS_VAR_GET([ptlib_libdl]) = yes], [$1], [$2])[]
+         ])
+
+
 dnl ########################################################################
 dnl set the PTLIB directory to the current directory
 
 PTLIBDIR=`pwd`
-AC_SUBST(PTLIBDIR)9
+AC_SUBST(PTLIBDIR)
 dnl set the PTLib installation dir for ptlib-config
 AC_SUBST(PTINSTDIR)
 
@@ -1066,30 +1167,10 @@ dnl check for dynamic library code (dlopen and friends)
 
 dnl MSWIN DLL Support,,P_DYNALINK
 
-LIBS=""
-HAS_LIBDL=no
-P_DYNALINK=0
-if test ${OSTYPE} = beos ; then
-  P_DYNALINK=1
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside PTLib in BeOS")
-elif test ${OSTYPE} = Darwin ; then
-  P_DYNALINK=1
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside PTLib in Darwin")
-else
-  AC_CHECK_HEADERS(dlfcn.h, HAS_DLFCN=yes, HAS_DLFCN=no)
-  if test "$HAS_DLFCN" = yes ; then
-    AC_MSG_CHECKING(if dlopen is available)
-    AC_TRY_COMPILE([#include <dlfcn.h>],
-                    [void * p = dlopen("lib", 0);], HAS_DLOPEN=yes, HAS_DLOPEN=no)
-    if test "$HAS_DLOPEN" = no ; then
-      AC_MSG_RESULT(no)
-    else
-      AC_MSG_RESULT(yes)
-      P_DYNALINK=1
-      AC_DEFINE(P_DYNALINK, 1, "dlopen found")
-      AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
-    fi
-  fi
+PTLIB_FIND_LIBDL([HAS_LIBDL=yes], [HAS_LIBDL=no])
+if test "x$HAS_LIBDL" = "xyes" ; then
+  AC_DEFINE(P_DYNALINK, 1, "dlopen found")
+  dnl The rest is done further down...
 fi
 
 dnl #########################################################################
@@ -1109,7 +1190,7 @@ fi
 HAS_PLUGINS=
 if test "${enable_plugins}" = "no" ; then
   AC_MSG_RESULT(no)
-elif test "${P_DYNALINK:-unset}" = "unset" ; then
+elif test "x${HAS_LIBDL}" != "xyes" ; then
   AC_MSG_RESULT(plugins disabled as dlopen not available)
 else
   AC_MSG_RESULT(plugins enabled)
@@ -1381,136 +1462,32 @@ dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\Program Files\OpenSSL\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
+AC_ARG_ENABLE([openssl],
+	      AS_HELP_STRING([--disable-openssl],[disable OpenSSL support]),
+	      [enable_openssl=$enableval],
+	      [enable_openssl=$default_openssl]
+	     )
 
-AC_ARG_ENABLE(openssl,
-       [  --disable-openssl       disable OpenSSL support])
-
-if test "${enable_openssl}z" = "z" ; then
-  enable_openssl=$default_openssl
-fi
-
-HAS_OPENSSL=
 if test "$enable_openssl" = "no" ; then
   AC_MSG_NOTICE(OpenSSL disabled)
 else
-
-  dnl check to see OPENSSLDIR is set
-  dnl if it is, we assume it correct - no further checking required
-  if test ${OPENSSLDIR:-unset} != "unset" ; then
-    AC_MSG_CHECKING([for ${OPENSSLDIR}/include/openssl/ssl.h])
-    if test -e ${OPENSSLDIR}/include/openssl/ssl.h ; then
-      AC_MSG_RESULT(yes)
-      SSLHDR=1
-      SSLINCLUDEDIR="${OPENSSLDIR}/include"
-      SSLLIBDIR="${OPENSSLDIR}/lib"
-    else
-      AC_MSG_RESULT(no)
-    fi
-  fi
-
-
-  dnl if OPENSSLDIR is not set, then check to see if OpenSSL
-  dnl is installed in the standard system dirs. And also see if
-  dnl if it works using crazy RedHat checks
-  if test "${SSLHDR:-unset}" = "unset" ; then
-    AC_CHECK_HEADERS(openssl/ssl.h,SSLHDR=1)
-    if test "${SSLHDR:-unset}" = "unset" ; then
-      AC_MSG_CHECKING([if openssl/ssl.h works with OPENSSL_NO_KRB5])
-      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
-#include <openssl/ssl.h>
-int main(int argc,char **argv){}]],SSLHDR=1)
-      if test "${SSLHDR:-unset}" != "unset" ; then
-        AC_MSG_RESULT(yes)
-        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-        P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
-        if test ${OSTYPE} = linux ; then
-          dnl Linux static libs
-          P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
-        fi
-      else
-        AC_MSG_RESULT(no)
-      fi
-    fi
-  fi
-
-  dnl if we have not found OpenSSL so far, then look for it in 
-  dnl several standard places, and check for crazy RedHat install too
-  if test "${SSLHDR:-unset}" = "unset" ; then
-
-    for openssl_dir in /usr/local/openssl /usr/local/ssl ; do
-      AC_MSG_CHECKING([for OpenSSL in $openssl_dir])
-      if test ! -f ${openssl_dir}/include/openssl/ssl.h ; then
-        AC_MSG_RESULT(no)
-      else
-        AC_LANG_CONFTEST([[#include "${openssl_dir}/include/openssl/ssl.h"
-int main(int argc,char **argv){ return 0; }]])
-        $CXX $CXXFLAGS -I${openssl_dir}/include -c conftest.$ac_ext > /dev/null 2>&1
-        if test $? = 0 ; then
-          AC_MSG_RESULT(yes)
-          SSLHDR=1
-          SSLCCFLAGS=""
-          SSLINCLUDEDIR="${openssl_dir}/include"
-          SSLLIBDIR="${openssl_dir}/lib"
-          break
-        else
-          AC_MSG_RESULT(no)
-          AC_MSG_CHECKING([if ${openssl_dir}/include/openssl/ssl.h works with OPENSSL_NO_KRB5...])
-          AC_LANG_CONFTEST([[#define OPENSSL_NO_KRB5
-#include "${openssl_dir}/include/openssl/ssl.h"
-int main(int argc,char **argv){}]])
-          $CXX $CXXFLAGS -I${openssl_dir}/openssl/include -c conftest.$ac_ext > /dev/null 2>&1
-          if test $? = 0 ; then
-            AC_MSG_RESULT(yes)
-            SSLHDR=1
-            SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-            SSLINCLUDEDIR="${openssl_dir}/include"
-            SSLLIBDIR="${openssl_dir}/lib"
-            P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
-            if test ${OSTYPE} = linux ; then
-              dnl Linux static libs
-              P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
-            fi
-            break
-          else
-            AC_MSG_RESULT(no)
-          fi
-        fi
-      fi
-    done
-  fi
-
-  if test ${SSLHDR:-unset} != "unset" ; then
-    AC_DEFINE(P_OSSL, 1, "OpenSSL found")
-    HAS_OPENSSL=1
-    if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
-    fi
-    if test ${SSLLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${SSLLIBDIR}"
-    fi
-    STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
-    ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
-
-    AC_CHECK_HEADERS(openssl/aes.h, HAS_SSL_AES=yes, HAS_SSL_AES=no)
-    if test "$HAS_SSL_AES" = yes ; then
-      AC_DEFINE(P_OSSL_AES, 1, "openssl with AES yes")
-    fi
-
-    AC_MSG_CHECKING(for const arg to d2i_AutoPrivateKey)
-    AC_TRY_COMPILE([#include <openssl/evp.h>],
-                    [ EVP_PKEY **a; const unsigned char **p; long l;
-                      d2i_AutoPrivateKey(a, p, l);
-                    ], P_SSL_USE_CONST=yes, )
-    if test "${P_SSL_USE_CONST}x" = "x" ; then
-      AC_MSG_RESULT(no)
-    else
-      AC_MSG_RESULT(yes)
-      AC_DEFINE(P_SSL_USE_CONST, 1, "SSL with const")
-    fi
-  fi
+  PKG_CHECK_MODULES([OPENSSL], 
+                    [openssl], 
+                    [
+                     HAS_OPENSSL=1
+                     AC_DEFINE(P_OSSL, 1, "OpenSSL found")
+                     PTLIB_OPENSSL_AES( [AC_DEFINE([P_OSSL_AES], [1],[openssl with AES yes])] )
+                     PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
+                     STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
+                     ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
+dnl                      PKG_REQUIRES="$PKG_REQUIRES sdl"
+                    ], 
+                    [HAS_OPENSSL=])
 fi
 
 AC_SUBST(HAS_OPENSSL)
+
+dnl For now...
 AC_SUBST(P_STATIC_ENDLDLIBS)
 AC_SUBST(P_STATIC_LDFLAGS)
 
@@ -1934,51 +1911,29 @@ dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
-AC_ARG_ENABLE(sdl,
-       [  --disable-sdl           disable SDL support])
-
-if test "${enable_sdl}z" = "z" ; then
-  enable_sdl=$default_sdl
-fi
+AC_ARG_ENABLE([sdl],
+	      AS_HELP_STRING([--disable-sdl],[disable SDL support]),
+	      [enable_sdl=$enableval],
+	      [enable_sdl=$default_sdl]
+	     )
 
 HAS_SDL=
 if test "$enable_sdl" = "no" ; then
   AC_MSG_NOTICE(SDL disabled)
-  AC_DEFINE(P_SDL, 0)
 else
-  dnl SDL checks
-  if test "${SDLLIB:-unset}" = "unset" ; then
-    SDLLIB=SDL
-  fi
 
-  dnl Linux check
-  AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
-  if test "${HAS_SDL:-unset}" != "unset" ; then
-    if test "${X11LIBDIR:-unset}" == "unset" ; then
-	X11LIBDIR=/usr/X11R6/lib
-    fi
-    AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext)
-  fi
+  PKG_CHECK_MODULES([SDL], 
+                    [sdl], 
+                    [
+                     HAS_SDL=1
+                     AC_DEFINE(P_SDL, 1, "SDL found")
+                     STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
+                     ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
+dnl                      PKG_REQUIRES="$PKG_REQUIRES sdl"
+                    ])
 
-  dnl FreeBSD SDL check
-  if test "${HAS_SDL:-unset}" = "unset" ; then
-    AC_CHECK_HEADER(SDL11/SDL.h, HAS_SDL=1)
-    if test "${HAS_SDL:-unset}" != "unset" ; then
-      SDLLIB=SDL-1.1
-    fi
-  fi
-
-  if test "${HAS_SDL:-unset}" != "unset" ; then
-    HAS_SDL=1
-    AC_DEFINE(P_SDL, 1, "SDL found")
-    if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
-    fi
-    if test ${SDLLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
-    fi
-    ENDLDLIBS="$ENDLDLIBS -l${SDLLIB}"
-  fi
+dnl to verify:
+dnl     AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext)
 fi
 AC_SUBST(HAS_SDL)
 
@@ -2022,7 +1977,9 @@ if test "x$enable_video" != "xno" ; then
       cygwin* | mingw* )
 		PTLIB_FIND_DIRECTX([HAS_VIDEO_CAPTURE=1
 			            ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
+dnl                                     PKG_LIBS="$PKG_LIBS ${DIRECTX_LIBS}"
 				    STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
+dnl                                     PKG_CFLAGS="$PKG_CFLAGS ${DIRECTX_INCLUDES}"
 				    AC_DEFINE(P_DIRECTSHOW, 1)
 				    AC_DEFINE(P_DIRECTSOUND, 1)
 		                   ])
@@ -2595,15 +2552,17 @@ dnl output make directives
 dnl resolver needs to be at the end
 if test "${HAS_RESOLVER:-unset}" != "unset" ; then
   if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
-    ENDLDLIBS="$ENDLDLIBS $RESOLVER_LIBS"
+    ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
+dnl     PKG_LIBS="$PKG_LIBS ${RESOLVER_LIBS}"
   fi
 fi
 
 dnl dl needs to be at the end
-if test "${OSTYPE}" != "Darwin" ; then
-  if test ${HAS_LIBDL} = yes ; then
-    ENDLDLIBS="$ENDLDLIBS -ldl"
-  fi
+if test "x${HAS_LIBDL}" = "xyes" ; then
+  ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+dnl   PKG_LIBS="$PKG_LIBS $DL_LIBS"
+  STDCCFLAGS="$STDCCFLAGS $DL_CFLAGS"
+dnl   PKG_CFLAGS="$PKG_CFLAGS $DL_CFLAGS"
 fi
 
 dnl ########################################################################
