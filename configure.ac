@@ -758,7 +758,7 @@ default_resolver=yes
 default_openldap=yes
 default_openssl=yes
 default_expat=yes
-default_sdl=no
+default_sdl=yes
 default_sasl=yes
 default_plugins=yes
 default_tts=yes
@@ -1475,7 +1475,7 @@ else
                      PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
                      STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
-dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
+dnl                      PKG_REQUIRES="$PKG_REQUIRES openssl"
                     ], 
                     [HAS_OPENSSL=])
 fi
@@ -1925,7 +1925,7 @@ else
                      STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
 dnl                      PKG_REQUIRES="$PKG_REQUIRES sdl"
-                    ])
+                    ], [HAS_SDL=])
 
 dnl to verify:
 dnl     AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext)
