@@ -32,11 +32,11 @@ ifndef PTLIBDIR
 PTLIBDIR=$(HOME)/ptlib
 endif
 
-include ../../make/unix.mak
+include $(PTLIBDIR)/make/unix.mak
 
 PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)
 
-OBJDIR = ../ptlib/$(PLUGIN_FAMILY)
+OBJDIR = $(PTLIBDIR)/lib/$(PLUGIN_FAMILY)
 
 TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
 
@@ -67,4 +67,4 @@ OBJS	 := $(patsubst %.c, $(OBJDIR)/%.o, $(patsubst %.cxx, $(OBJDIR)/%.o, $(notdi
 
 CLEAN_FILES += $(OBJDIR)/$(PLUGIN_FILENAME)
 
-include ../../make/common.mak
+include $(PTLIBDIR)/make/common.mak
