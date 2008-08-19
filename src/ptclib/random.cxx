@@ -174,15 +174,10 @@ unsigned PRandom::Generate(unsigned minimum, unsigned maximum)
 }
 
 
-#ifdef P_RTEMS
 static PMutex mutex;
-#endif
 
 unsigned PRandom::Number()
 {
-#ifndef P_RTEMS
-  static PMutex mutex;
-#endif
   PWaitAndSignal wait(mutex);
 
   static PRandom rand;
