@@ -5757,7 +5757,7 @@ default_resolver=yes
 default_openldap=yes
 default_openssl=yes
 default_expat=yes
-default_sdl=no
+default_sdl=yes
 default_sasl=yes
 default_plugins=yes
 default_tts=yes
@@ -10491,51 +10491,11 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$SDL_PKG_ERRORS" >&5
 
-	{ { echo "$as_me:$LINENO: error: Package requirements (sdl) were not met:
-
-$SDL_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables SDL_CFLAGS
-and SDL_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-" >&5
-echo "$as_me: error: Package requirements (sdl) were not met:
-
-$SDL_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables SDL_CFLAGS
-and SDL_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-" >&2;}
-   { (exit 1); exit 1; }; }
+	{ echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+                HAS_SDL=
 elif test $pkg_failed = untried; then
-	{ { echo "$as_me:$LINENO: error: The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables SDL_CFLAGS
-and SDL_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details." >&5
-echo "$as_me: error: The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables SDL_CFLAGS
-and SDL_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
+	HAS_SDL=
 else
 	SDL_CFLAGS=$pkg_cv_SDL_CFLAGS
 	SDL_LIBS=$pkg_cv_SDL_LIBS
