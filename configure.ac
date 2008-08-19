@@ -1,10 +1,5 @@
 AC_INIT(include/ptlib.h)
 
-if test \! -e ./aclocal.m4 ; then
-  echo "ERROR: you must run 'aclocal' before 'autoconf'"
-  exit
-fi
-
 AC_CONFIG_SUBDIRS(plugins)
 
 dnl PKG_LIBS=
@@ -1480,7 +1475,7 @@ else
                      PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
                      STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
-dnl                      PKG_REQUIRES="$PKG_REQUIRES sdl"
+dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
                     ], 
                     [HAS_OPENSSL=])
 fi
