@@ -36,6 +36,7 @@
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptlib/remconn.h>
+#include <ptlib/pprocess.h>
 
 #include <stdio.h>
 #include <sys/ioctl.h>

@@ -509,7 +509,7 @@
 //
 
 #undef P_DYNALINK
-#undef P_HAS_PLUGINS
+#undef P_PLUGINS
 #undef P_DEFAULT_PLUGIN_DIR
 
 /////////////////////////////////////////////////
