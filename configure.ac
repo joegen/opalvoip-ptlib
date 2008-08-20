@@ -11,7 +11,57 @@ AC_PROG_CXX
 
 AC_LANG(C++)
 
+dnl PTLIB_SIMPLE
+dnl Change a given variable according to arguments and subst and define it
+dnl Arguments: $1 name of configure option
+dnl            $2 the variable to change, subst and define
+dnl            $3 the configure argument description
+dnl            $4 dependency variable #1
+dnl            $5 dependency variable #2 
+dnl Return:    ${HAS_$2} The (possibly) changed variable
+AC_DEFUN([PTLIB_SIMPLE_OPTION],
+         [
+dnl          if test "x${HAS_$2}" = "x"; then
+dnl            AC_MSG_ERROR([No default specified for HAS_$2, please correct configure.ac])
+dnl	  fi
+          AC_MSG_CHECKING([$3])
+          AC_ARG_ENABLE([$1],
+                        [AC_HELP_STRING([--enable-$1],[$3])],
+                        [
+                         if test "x$enableval" = "xyes"; then
+                           HAS_$2=1
+                         else
+                           HAS_$2=
+                         fi
+                        ])
 
+          if test "x$4" != "x"; then
+            if test "x$$4" != "x1"; then
+              AC_MSG_NOTICE([$1 support disabled due to disabled dependency $4])
+	      HAS_$2=
+	    fi
+	  fi
+
+          if test "x$5" != "x"; then
+            if test "x$$5" != "x1"; then
+              AC_MSG_NOTICE([$1 support disabled due to disabled dependency $5])
+	      HAS_$2=
+	    fi
+	  fi
+
+
+          if test "x${HAS_$2}" = "x1"; then
+            AC_DEFINE([P_$2], [1], [$3])
+            HAS_$2=1
+            AC_MSG_RESULT([yes])
+          else
+            HAS_$2=
+            AC_MSG_RESULT([no])
+          fi
+          AC_SUBST(HAS_$2)
+          
+          
+         ])
 
 dnl PTLIB_FIND_DIRECTX
 dnl Check for directX
@@ -752,7 +802,7 @@ AC_ARG_ENABLE(opal,
        [  --enable-opal           include only options needed with opal])
 
 dnl these are the default configure settings
-default_samples=no
+HAS_SAMPLES=no
 default_tracing=yes
 default_resolver=yes
 default_openldap=yes
@@ -760,38 +810,39 @@ default_openssl=yes
 default_expat=yes
 default_sdl=yes
 default_sasl=yes
-default_plugins=yes
-default_tts=yes
-default_asn=yes
-default_stun=yes
-default_pipechan=yes
-default_dtmf=yes
-default_wavfile=yes
-default_socks=yes
-default_ftp=yes
-default_snmp=yes
-default_telnet=yes
-default_remconn=no
-default_serial=yes
-default_pop3smtp=yes
-default_audio=yes
-default_video=yes
-default_url=yes
-default_http=yes
-default_httpforms=yes
-default_httpsvc=yes
-default_soap=yes
-default_xmlrpc=yes
-default_jabber=yes
-default_configfile=yes
+HAS_PLUGINS=1
+HAS_TTS=1
+HAS_ASN=1
+HAS_STUN=1
+HAS_PIPECHAN=1
+HAS_DTMF=1
+HAS_WAVFILE=1
+HAS_SOCKS=1
+HAS_FTP=1
+HAS_SNMP=1
+HAS_TELNET=1
+HAS_REMCONN=1
+HAS_SERIAL=1
+HAS_POP3SMTP=1
+HAS_AUDIO=1
+HAS_VIDEO=1
+HAS_URL=1
+HAS_HTTP=1
+HAS_HTTPFORMS=1
+HAS_HTTPSVC=1
+HAS_SOAP=1
+HAS_XMLRPC=1
+HAS_JABBER=1
+HAS_CONFIG_FILE=1
 default_alsa=yes
 default_oss=yes
 default_ipv6=yes
 default_qos=yes
-default_sockagg=yes
-default_vidfile=yes
+HAS_SOCKAGG=1
+HAS_VIDFILE=1
+HAS_APPSHARE=
 default_shmvideo=yes
-default_vxml=yes
+HAS_VXML=1
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -800,38 +851,39 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_expat=no
   default_sdl=yes
   default_sasl=no
-  default_plugins=yes
-  default_tts=yes
-  default_asn=yes
-  default_stun=yes
-  default_pipechan=yes
-  default_dtmf=yes
-  default_wavfile=yes
-  default_socks=no
-  default_ftp=no
-  default_snmp=no
-  default_telnet=no
-  default_remconn=no
-  default_serial=no
-  default_pop3smtp=no
-  default_audio=yes
-  default_video=yes
-  default_url=yes
-  default_http=yes
-  default_httpforms=no
-  default_httpsvc=no
-  default_soap=no
-  default_xmlrpc=no
-  default_jabber=no
-  default_configfile=yes
+  HAS_PLUGINS=1
+  HAS_TTS=1
+  HAS_ASN=1
+  HAS_STUN=1
+  HAS_PIPECHAN=1
+  HAS_DTMF=1
+  HAS_WAVFILE=1
+  HAS_SOCKS=
+  HAS_FTP=
+  HAS_SNMP=
+  HAS_TELNET=
+  HAS_REMCONN=
+  HAS_SERIAL=
+  HAS_POP3SMTP=
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=
+  HAS_HTTPSVC=
+  HAS_SOAP=
+  HAS_XMLRPC=
+  HAS_JABBER=
+  HAS_CONFIG_FILE=1
   default_alsa=yes
   default_oss=yes
   default_ipv6=yes
   default_qos=yes
-  default_sockagg=yes
-  default_vidfile=yes
+  HAS_SOCKAGG=1
+  HAS_VIDFILE=1
+  HAS_APPSHARE=
   default_shmvideo=no
-  default_vxml=yes
+  HAS_VXML=1
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -839,38 +891,39 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_expat=no
   default_sdl=no
   default_sasl=no
-  default_plugins=yes
-  default_tts=no
-  default_asn=yes
-  default_stun=yes
-  default_pipechan=no
-  default_dtmf=no
-  default_wavfile=no
-  default_socks=no
-  default_ftp=no
-  default_snmp=no
-  default_telnet=no
-  default_remconn=no
-  default_serial=no
-  default_pop3smtp=no
-  default_audio=yes
-  default_video=yes
-  default_url=yes
-  default_http=yes
-  default_httpforms=no
-  default_httpsvc=no
-  default_soap=no
-  default_xmlrpc=no
-  default_jabber=no
-  default_configfile=no
+  HAS_PLUGINS=1
+  HAS_TTS=
+  HAS_ASN=1
+  HAS_STUN=1
+  HAS_PIPECHAN=
+  HAS_DTMF=
+  HAS_WAVFILE=
+  HAS_SOCKS=
+  HAS_FTP=
+  HAS_SNMP=
+  HAS_TELNET=
+  HAS_REMCONN=
+  HAS_SERIAL=
+  HAS_POP3SMTP=
+  HAS_AUDIO=1
+  HAS_VIDEO=!
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=
+  HAS_HTTPSVC=
+  HAS_SOAP=
+  HAS_XMLRPC=
+  HAS_JABBER=
+  HAS_CONFIG_FILE=0
   default_alsa=yes
   default_oss=no
   default_ipv6=no
   default_qos=no
-  default_sockagg=yes
-  default_vidfile=no
+  HAS_SOCKAGG=1
+  HAS_VIDFILE=1
+  HAS_APPSHARE=
   default_shmvideo=no
-  default_vxml=no
+  HAS_VXML=
 fi
 
 
@@ -1162,38 +1215,18 @@ dnl check for dynamic library code (dlopen and friends)
 
 dnl MSWIN DLL Support,,P_DYNALINK
 
-PTLIB_FIND_LIBDL([HAS_LIBDL=yes], [HAS_LIBDL=no])
-if test "x$HAS_LIBDL" = "xyes" ; then
+PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
+if test "x$HAS_LIBDL" = "x1" ; then
   AC_DEFINE(P_DYNALINK, 1, "dlopen found")
   dnl The rest is done further down...
 fi
 
 dnl #########################################################################
 dnl check to see if plugins enabled
-
 dnl MSWIN_DISPLAY plugins,Plugin Support
 dnl MSWIN_DEFINE  plugins,P_HAS_PLUGINS
 
-plugins="no"
-AC_MSG_CHECKING(if plugins support needs to be compiled)
-AC_ARG_ENABLE(plugins,
-       [  --enable-plugins        enable plugin support])
-if test "${enable_plugins}z" = "z" ; then
-  enable_plugins=default_plugins
-fi
-
-HAS_PLUGINS=
-if test "${enable_plugins}" = "no" ; then
-  AC_MSG_RESULT(no)
-elif test "x${HAS_LIBDL}" != "xyes" ; then
-  AC_MSG_RESULT(plugins disabled as dlopen not available)
-else
-  AC_MSG_RESULT(plugins enabled)
-  HAS_PLUGINS=1
-  AC_DEFINE(P_HAS_PLUGINS, 1, "plugins enabled")
-fi
-
-AC_SUBST(HAS_PLUGINS)
+PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
 
 if test "x$LIB64" != "x" ; then
   AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib64/ptlib"], [Default plugin directory])
@@ -1204,23 +1237,7 @@ fi
 dnl #########################################################################
 dnl check to see if samples are enabled
 
-AC_MSG_CHECKING(if sample support needs to be compiled)
-AC_ARG_ENABLE(samples,
-	[  --enable-samples        enable samples build])
-
-if test "${enable_samples}z" = "z" ; then
-  enable_samples=$default_samples
-fi
-
-HAS_SAMPLES=
-if test "${enable_samples}" = "no" ; then
-  AC_MSG_RESULT(no)
-else
-  AC_MSG_RESULT(samples enabled)
-  HAS_SAMPLES=1
-fi
-
-AC_SUBST(HAS_SAMPLES)
+PTLIB_SIMPLE_OPTION([samples], [SAMPLES], [enable samples build])
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
@@ -1475,7 +1492,7 @@ else
                      PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
                      STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
-dnl                      PKG_REQUIRES="$PKG_REQUIRES openssl"
+dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
                     ], 
                     [HAS_OPENSSL=])
 fi
@@ -1487,137 +1504,6 @@ AC_SUBST(P_STATIC_ENDLDLIBS)
 AC_SUBST(P_STATIC_LDFLAGS)
 
 
-dnl ########################################################################
-dnl check for enabling config file support
-
-dnl MSWIN_DISPLAY    configfile,Config file protocol support
-dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
-
-AC_ARG_ENABLE(configfile,
-       [  --disable-configfile    disable config file support])
-
-if test "${enable_configfile}z" = "z" ; then
-  enable_configfile=$default_configfile
-fi
-
-HAS_CONFIG_FILE=
-if test "$enable_configfile" = "no" ; then
-  AC_MSG_NOTICE(Config file support disabled)
-else
-  HAS_CONFIG_FILE=1
-  AC_DEFINE(P_CONFIG_FILE, 1)
-fi
-AC_SUBST(HAS_CONFIG_FILE)
-
-
-dnl ########################################################################
-dnl check for URL support
-
-dnl MSWIN_DISPLAY    url,URL Support
-dnl MSWIN_DEFINE     url,P_URL
-
-AC_ARG_ENABLE(url,
-       [  --disable-url          disable URL support])
-
-if test "${enable_url}z" = "z" ; then
-  enable_url=$default_url
-fi
-
-HAS_URL=
-if test "$enable_url" = "no" ; then
-  AC_MSG_NOTICE(URL protocol support disabled)
-else
-  HAS_URL=1
-  AC_DEFINE(P_URL, 1)
-fi
-AC_SUBST(HAS_URL)
-
-
-dnl ########################################################################
-dnl check for HTTP support
-
-dnl MSWIN_DISPLAY    http,HTTP Support
-dnl MSWIN_DEFINE     http,P_HTTP
-dnl MSWIN_IF_FEATURE http,url
-
-AC_ARG_ENABLE(http,
-       [  --disable-http          disable HTTP support])
-
-HAS_HTTP=
-if test "$enable_url" = "no" ; then
-  AC_MSG_NOTICE(HTTP disabled as URL is disabled)
-  enable_http=no
-else
-  if test "${enable_http}z" = "z" ; then
-    enable_http=$default_http
-  fi
-
-  if test "$enable_http" = "no" ; then
-    AC_MSG_NOTICE(HTTP protocol support disabled)
-  else
-    HAS_HTTP=1
-    AC_DEFINE(P_HTTP, 1)
-  fi
-fi
-AC_SUBST(HAS_HTTP)
-
-
-dnl ########################################################################
-dnl check for HTTPFORMS support
-
-dnl MSWIN_DISPLAY    httpforms,HTTP forms Support
-dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
-dnl MSWIN_IF_FEATURE httpforms,http&configfile
-
-AC_ARG_ENABLE(httpforms,
-       [  --disable-httpforms       disable HTTP forms support])
-
-HAS_HTTPFORMS=
-if test "$enable_http" = "no" ; then
-  AC_MSG_NOTICE(HTTP forms disabled as HTTP is disabled)
-  enable_httpforms=no
-else
-  if test "${enable_httpforms}z" = "z" ; then
-    enable_httpforms=$default_httpsvc
-  fi
-
-  if test "$enable_httpforms" = "no" ; then
-    AC_MSG_NOTICE(HTTP forms support disabled)
-  else
-    HAS_HTTPFORMS=1
-    AC_DEFINE(P_HTTPFORMS, 1)
-  fi
-fi
-AC_SUBST(HAS_HTTPFORMS)
-
-
-dnl ########################################################################
-dnl check for HTTPSVC support
-
-dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
-dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
-dnl MSWIN_IF_FEATURE httpsvc,httpforms
-
-AC_ARG_ENABLE(httpsvc,
-       [  --disable-httpsvc       disable HTTP service support])
-
-HAS_HTTPSVC=
-if test "$enable_httpforms" = "no" ; then
-  AC_MSG_NOTICE(HTTP service disabled as HTTP forms is disabled)
-  enable_httpsvc=no
-else
-  if test "${enable_httpsvc}z" = "z" ; then
-    enable_httpsvc=$default_httpsvc
-  fi
-
-  if test "$enable_httpsvc" = "no" ; then
-    AC_MSG_NOTICE(HTTP service support disabled)
-  else
-    HAS_HTTPSVC=1
-    AC_DEFINE(P_HTTPSVC, 1)
-  fi
-fi
-AC_SUBST(HAS_HTTPSVC)
 
 
 dnl ########################################################################
@@ -1680,138 +1566,6 @@ else
 fi
 AC_SUBST(HAS_EXPAT)
 
-
-dnl ########################################################################
-dnl handle modules dependent on Expat
-
-HAS_VXML=
-HAS_JABBER=
-HAS_XMLRPC=
-HAS_SOAP=
-if test "$enable_expat" = "no" ; then
-  AC_MSG_NOTICE(VXML disabled as Expat is disabled)
-  AC_MSG_NOTICE(Jabber disabled as Expat is disabled)
-  AC_MSG_NOTICE(XMLRPC disabled as Expat is disabled)
-  AC_MSG_NOTICE(SOAP disabled as Expat is disabled)
-else
-
-  dnl ########################################################################
-  dnl Jabber
-
-  dnl MSWIN_DISPLAY    jabber,Jabber
-  dnl MSWIN_DEFINE     jabber,P_JABBER
-  dnl MSWIN_IF_FEATURE jabber,expat
-
-  AC_ARG_ENABLE(jabber,
-         [  --disable-jabber        disable Jabber support])
-
-  if test "${enable_jabber}z" = "z" ; then
-    enable_jabber=$default_jabber
-  fi
-  if test "$enable_jabber" = "no" ; then
-    AC_MSG_NOTICE(Jabber disabled)
-  else
-    AC_DEFINE(P_JABBER, 1)
-    HAS_JABBER=1
-  fi
-
-  if test "$enable_http" = "no" ; then
-    AC_MSG_NOTICE(VXML disabled as HTTP is disabled)
-    AC_MSG_NOTICE(XMLRPC disabled as HTTP is disabled)
-    AC_MSG_NOTICE(SOAP disabled as HTTP is disabled)
-  else
-    dnl ########################################################################
-    dnl VXML 
-
-    dnl MSWIN_DISPLAY    vxml,VXML Support
-    dnl MSWIN_DEFINE     vxml,P_VXML
-    dnl MSWIN_IF_FEATURE vxml,http&expat
-
-    AC_ARG_ENABLE(vxml,
-           [  --disable-vxml          disable VXML support])
-
-    if test "${enable_vxml}z" = "z" ; then
-      enable_vxml=$default_vxml
-    fi
-    if test "$enable_vxml" = "no" ; then
-      AC_MSG_NOTICE(VXML disabled)
-    else
-      AC_DEFINE(P_VXML, 1)
-      HAS_VXML=1
-    fi
-
-    dnl ########################################################################
-    dnl XMLRPC
-
-    dnl MSWIN_DISPLAY    xmlrpc,XMLRPC Support
-    dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-    dnl MSWIN_IF_FEATURE xmlrpc,http&expat
-
-    AC_ARG_ENABLE(xmlrpc,
-	 [  --disable-xmlrpc        disable XMLRPC support])
-
-    if test "${enable_xmlrpc}z" = "z" ; then
-      enable_xmlrpc=$default_xmlrpc
-    fi
-    if test "$enable_xmlrpc" = "no" ; then
-      AC_MSG_NOTICE(XMLRPC disabled)
-    else
-      AC_DEFINE(P_XMLRPC, 1)
-      HAS_XMLRPC=1
-    fi
-
-    dnl ########################################################################
-    dnl SOAP
-
-    dnl MSWIN_DISPLAY    soap,SOAP Support
-    dnl MSWIN_DEFINE     soap,P_SOAP
-    dnl MSWIN_IF_FEATURE soap,http&expat
-
-    AC_ARG_ENABLE(soap,
-	 [  --disable-soap          disable SOAP support])
-
-    if test "${enable_soap}z" = "z" ; then
-      enable_soap=$default_soap
-    fi
-    if test "$enable_soap" = "no" ; then
-      AC_MSG_NOTICE(SOAP disabled)
-    else
-      AC_DEFINE(P_SOAP, 1)
-      HAS_SOAP=1
-    fi
-  fi
-fi
-
-AC_SUBST(HAS_VXML)
-AC_SUBST(HAS_JABBER)
-AC_SUBST(HAS_XMLRPC)
-AC_SUBST(HAS_SOAP)
-
-dnl ########################################################################
-dnl Speech
-
-dnl MSWIN_DISPLAY       sapi,Speech API
-dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
-dnl MSWIN_DEFINE        sapi,P_TTS
-dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
-dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK 5.1\
-
-AC_ARG_ENABLE(expat,
-       [  --disable-tts           disable Text-ToSpeech support (default enabled)])
-
-if test "${enable_tts}z" = "z" ; then
-  enable_tts=$default_tts
-fi
-
-HAS_TTS=
-if test "$enable_tts" = "no" ; then
-  AC_MSG_NOTICE(Text-to-speech disabled)
-else
-  AC_DEFINE(P_TTS, 1)
-  HAS_TTS=1
-fi
-AC_SUBST(HAS_TTS)
-
 dnl ########################################################################
 dnl look for IPV6 functions
 
@@ -1871,30 +1625,6 @@ else
 fi
 
 dnl ########################################################################
-dnl look for QoS functions
-
-dnl MSWIN_DISPLAY    qos,QoS Support
-dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
-dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
-
-AC_ARG_ENABLE(qos,
-       [  --disable-qos           disable QOS support])
-
-if test "${enable_qos}z" = "z" ; then
-  enable_qos=$default_qos
-fi
-
-if test "$enable_qos" != "no" ; then
-  AC_DEFINE([P_HAS_QOS], [1], [Have QOS])
-fi
-
-
-dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
@@ -1925,12 +1655,240 @@ else
                      STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
 dnl                      PKG_REQUIRES="$PKG_REQUIRES sdl"
-                    ], [HAS_SDL=])
+                    ],[HAS_SDL=])
 
 dnl to verify:
 dnl     AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext)
 fi
 AC_SUBST(HAS_SDL)
+
+
+dnl ########################################################################
+dnl check for enabling config file support
+dnl MSWIN_DISPLAY    configfile,Config file protocol support
+dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
+
+PTLIB_SIMPLE_OPTION([configfile], [CONFIG_FILE], [enable config file support])
+
+dnl ########################################################################
+dnl check for URL support
+dnl MSWIN_DISPLAY    url,URL Support
+dnl MSWIN_DEFINE     url,P_URL
+
+PTLIB_SIMPLE_OPTION([url], [URL], [enable URL support])
+
+dnl ########################################################################
+dnl check for HTTP support
+dnl MSWIN_DISPLAY    http,HTTP Support
+dnl MSWIN_DEFINE     http,P_HTTP
+dnl MSWIN_IF_FEATURE http,url
+
+PTLIB_SIMPLE_OPTION([http], [HTTP], [enable HTTP support], [HAS_URL])
+
+dnl ########################################################################
+dnl check for HTTPFORMS support
+dnl MSWIN_DISPLAY    httpforms,HTTP forms Support
+dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
+dnl MSWIN_IF_FEATURE httpforms,http&configfile
+
+PTLIB_SIMPLE_OPTION([httpforms], [HTTPFORMS], [enable HTTP forms support], [HAS_HTTP], [HAS_CONFIG_FILE])
+
+
+dnl ########################################################################
+dnl check for HTTPSVC support
+dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
+dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
+dnl MSWIN_IF_FEATURE httpsvc,httpforms
+
+PTLIB_SIMPLE_OPTION([httpsvc], [HTTPSVC], [enable HTTP server support], [HAS_HTTPFORMS])
+
+dnl ########################################################################
+dnl Jabber
+dnl MSWIN_DISPLAY    jabber,Jabber
+dnl MSWIN_DEFINE     jabber,P_JABBER
+dnl MSWIN_IF_FEATURE jabber,expat
+
+PTLIB_SIMPLE_OPTION([jabber], [JABBER], [enable Jabber support], [HAS_EXPAT])
+
+dnl ########################################################################
+dnl VXML 
+dnl MSWIN_DISPLAY    vxml,VXML Support
+dnl MSWIN_DEFINE     vxml,P_VXML
+dnl MSWIN_IF_FEATURE vxml,http&expat
+
+PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP])
+
+dnl ########################################################################
+dnl XMLRPC
+dnl MSWIN_DISPLAY    xmlrpc,XMLRPC Support
+dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
+dnl MSWIN_IF_FEATURE xmlrpc,http&expat
+
+PTLIB_SIMPLE_OPTION([xmlrpc], [XMLRPC], [enable XMLRPC support], [HAS_EXPAT], [HAS_HTTP])
+
+dnl ########################################################################
+dnl SOAP
+dnl MSWIN_DISPLAY    soap,SOAP Support
+dnl MSWIN_DEFINE     soap,P_SOAP
+dnl MSWIN_IF_FEATURE soap,http&expat
+
+PTLIB_SIMPLE_OPTION([soap], [SOAP], [enable SOAP support], [HAS_EXPAT], [HAS_HTTP])
+
+dnl ########################################################################
+dnl Speech
+dnl MSWIN_DISPLAY       sapi,Speech API
+dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
+dnl MSWIN_DEFINE        sapi,P_TTS
+dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
+dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK 5.1\
+
+PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
+
+dnl ########################################################################
+dnl check for enabling ASN support
+dnl MSWIN_DISPLAY    asn,ASN Support
+dnl MSWIN_DEFINE     asn,P_ASN
+
+PTLIB_SIMPLE_OPTION([asn], [ASN], [enable ASN decoding/encoding support])
+
+dnl ########################################################################
+dnl check for enabling STUN support
+dnl MSWIN_DISPLAY    stun,STUN Support
+dnl MSWIN_DEFINE     stun,P_STUN
+
+PTLIB_SIMPLE_OPTION([stun], [STUN], [enable STUN support])
+
+dnl ########################################################################
+dnl check for enabling PIPECHAN support
+dnl MSWIN_DISPLAY    pipechan,pipe channel Support
+dnl MSWIN_DEFINE     pipechan,P_PIPECHAN
+
+PTLIB_SIMPLE_OPTION([pipechan], [PIPECHAN], [enable pipechannel support])
+
+dnl ########################################################################
+dnl check for enabling DTMF support
+dnl MSWIN_DISPLAY  dtmf,DTMF encoding/decoding support
+dnl MSWIN_DEFINE   dtmf,P_DTMF
+
+PTLIB_SIMPLE_OPTION([dtmf], [DTMF], [enable DTMF protocol support])
+
+dnl ########################################################################
+dnl check for enabling WAVFILE support
+dnl MSWIN_DISPLAY    wavfile,WAV file support
+dnl MSWIN_DEFINE     wavfile,P_WAVFILE
+
+PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [enable WAVFILE support])
+
+dnl ########################################################################
+dnl check for enabling SOCKS support
+dnl MSWIN_DISPLAY    socks,SOCKS protocol support
+dnl MSWIN_DEFINE     socks,P_SOCKS
+
+PTLIB_SIMPLE_OPTION([socks], [SOCKS], [enable SOCKS protocol support])
+
+dnl ########################################################################
+dnl check for enabling FTP support
+dnl MSWIN_DISPLAY    ftp,FTP protocol support
+dnl MSWIN_DEFINE     ftp,P_FTP
+
+PTLIB_SIMPLE_OPTION([ftp], [FTP], [enable FTP protocol support])
+
+dnl ########################################################################
+dnl check for enabling SNMP support
+dnl MSWIN_DISPLAY    snmp,SNMP protocol support
+dnl MSWIN_DEFINE     snmp,P_SNMP
+
+PTLIB_SIMPLE_OPTION([snmp], [SNMP], [enable SNMP protocol support])
+
+dnl ########################################################################
+dnl check for enabling TELNET support
+dnl MSWIN_DISPLAY    telnet,Telnet protocol support
+dnl MSWIN_DEFINE     telnet,P_TELNET
+
+PTLIB_SIMPLE_OPTION([telnet], [TELNET], [enable TELNET protocol support])
+
+dnl ########################################################################
+dnl check for enabling REMCONN support
+dnl MSWIN_DISPLAY    remconn,remote connection support
+dnl MSWIN_DEFINE     remconn,P_REMCONN
+
+PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support])
+
+dnl ########################################################################
+dnl check for enabling serial port handling
+dnl MSWIN_DISPLAY    serial,Serial Support
+dnl MSWIN_DEFINE     serial,P_SERIAL
+
+PTLIB_SIMPLE_OPTION([serial], [SERIAL], [enable serial port support])
+
+dnl ########################################################################
+dnl check for POP3/SMTP support
+dnl MSWIN_DISPLAY    pop3smtp,POP3/SMTP Support
+dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
+
+PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [enable POP3/SMTP support])
+
+dnl ########################################################################
+dnl check for enabling socket aggregation
+dnl MSWIN_DISPLAY    sockagg,Socket aggregation support
+dnl MSWIN_DEFINE     sockagg,P_SOCKAGG
+
+PTLIB_SIMPLE_OPTION([sockagg], [SOCKAGG], [enable socket aggregation])
+
+dnl ########################################################################
+dnl check for sound support
+dnl MSWIN_DISPLAY audio,Sound support
+dnl MSWIN_DEFINE  audio,P_AUDIO
+
+PTLIB_SIMPLE_OPTION([audio], [AUDIO], [enable audio support])
+
+
+dnl ########################################################################
+dnl look for QoS functions
+
+dnl MSWIN_DISPLAY    qos,QoS Support
+dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
+dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
+
+AC_ARG_ENABLE(qos,
+       [  --disable-qos           disable QOS support])
+
+if test "${enable_qos}z" = "z" ; then
+  enable_qos=$default_qos
+fi
+
+if test "$enable_qos" != "no" ; then
+  AC_DEFINE([P_HAS_QOS], [1], [Have QOS])
+fi
+
+dnl ########################################################################
+dnl check for video support
+dnl MSWIN_DISPLAY    video,Video Support
+dnl MSWIN_DEFINE     video,P_VIDEO
+
+PTLIB_SIMPLE_OPTION([video], [VIDEO], [enable video device support])
+if test "x${HAS_VIDEO}" != "x1" ; then
+  AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
+fi
+
+dnl ########################################################################
+dnl check for enabling video file support
+dnl MSWIN_DISPLAY    vidfile,Video file support
+dnl MSWIN_DEFINE     vidfile,P_VIDFILE
+
+PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [enable video file support], [HAS_VIDEO])
+
+dnl ########################################################################
+dnl check for enabling app share support
+dnl MSWIN_DISPLAY    appshare,Application share support
+dnl MSWIN_DEFINE     appshare,P_APPSHARE
+
+PTLIB_SIMPLE_OPTION([appshare], [APPSHARE], [enable application sharing support], [HAS_VIDEO])
 
 
 dnl ########################################################################
@@ -1940,29 +1898,9 @@ dnl machine/ioctl_meteor on FreeBSD
 dnl i386/ioctl_meteor on OpenBSD
 dnl dev/ic/bt8xx on NetBSD
 
-dnl MSWIN_DISPLAY    video,Video Support
-dnl MSWIN_DEFINE     video,P_VIDEO
-
-AC_ARG_ENABLE(video,
-       [  --disable-video         disable video device support])
-
-if test "${enable_video}z" = "z" ; then
-  enable_video=$default_video
-fi
-
-HAS_VIDEO=
-
-if test "x$enable_video" = "xno" ; then
-  AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
-else
-  AC_DEFINE(P_VIDEO, 1)
-  HAS_VIDEO=1
-fi
-AC_SUBST(HAS_VIDEO)
-
 HAS_VIDEO_CAPTURE=
-if test "x$enable_video" != "xno" ; then
-  if test "x$enable_plugins" = "xyes" ; then
+if test "x${HAS_VIDEO}" = "x1" ; then
+  if test "x${HAS_PLUGINS}" = "x1" ; then
     HAS_VIDEO_CAPTURE=1
   else
     dnl AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
@@ -2020,369 +1958,6 @@ else
   AC_MSG_NOTICE(Shared memory video devices disabled)
 fi
 AC_SUBST(USE_SHM_VIDEO_DEVICES)
-
-dnl ########################################################################
-dnl check for enabling ASN support
-
-dnl MSWIN_DISPLAY    asn,ASN Support
-dnl MSWIN_DEFINE     asn,P_ASN
-
-AC_ARG_ENABLE(asn,
-       [  --disable-asn           disable ASN decoding/encoding support])
-
-if test "${enable_asn}z" = "z" ; then
-  enable_asn=$default_asn
-fi
-
-HAS_ASN=
-if test "$enable_asn" = "no" ; then
-  AC_MSG_NOTICE(ASN decoding/encoding support disabled)
-else
-  HAS_ASN=1
-  AC_DEFINE(P_ASN, 1)
-fi
-AC_SUBST(HAS_ASN)
-
-dnl ########################################################################
-dnl check for enabling STUN support
-
-dnl MSWIN_DISPLAY    stun,STUN Support
-dnl MSWIN_DEFINE     stun,P_STUN
-
-AC_ARG_ENABLE(stun,
-       [  --disable-stun          disable STUN protocol support])
-
-if test "${enable_stun}z" = "z" ; then
-  enable_stun=$default_stun
-fi
-
-HAS_STUN=
-if test "$enable_stun" = "no" ; then
-  AC_MSG_NOTICE(STUN decoding/encoding support disabled)
-else
-  HAS_STUN=1
-  AC_DEFINE(P_STUN, 1)
-fi
-AC_SUBST(HAS_STUN)
-
-dnl ########################################################################
-dnl check for enabling PIPECHAN support
-
-dnl MSWIN_DISPLAY    pipechan,pipe channel Support
-dnl MSWIN_DEFINE     pipechan,P_PIPECHAN
-
-AC_ARG_ENABLE(pipechan,
-       [  --disable-pipechan      disable pipechannel support])
-
-if test "${enable_pipechan}z" = "z" ; then
-  enable_pipechan=$default_pipechan
-fi
-
-HAS_PIPECHAN=
-if test "$enable_pipechan" = "no" ; then
-  AC_MSG_NOTICE(pipechannel support disabled)
-else
-  HAS_PIPECHAN=1
-  AC_DEFINE(P_PIPECHAN, 1)
-fi
-AC_SUBST(HAS_PIPECHAN)
-
-dnl ########################################################################
-dnl check for enabling DTMF support
-
-dnl MSWIN_DISPLAY  dtmf,DTMF encoding/decoding support
-dnl MSWIN_DEFINE   dtmf,P_DTMF
-
-AC_ARG_ENABLE(dtmf,
-       [  --disable-dtmf          disable DTMF protocol support])
-
-if test "${enable_dtmf}z" = "z" ; then
-  enable_dtmf=$default_dtmf
-fi
-
-HAS_DTMF=
-if test "$enable_dtmf" = "no" ; then
-  AC_MSG_NOTICE(DTMF decoding/encoding support disabled)
-else
-  HAS_DTMF=1
-  AC_DEFINE(P_DTMF, 1)
-fi
-AC_SUBST(HAS_DTMF)
-
-dnl ########################################################################
-dnl check for enabling WAVFILE support
-
-dnl MSWIN_DISPLAY    wavfile,WAV file support
-dnl MSWIN_DEFINE     wavfile,P_WAVFILE
-
-AC_ARG_ENABLE(wavfile,
-       [  --disable-wavfile       disable WAVFILE support])
-
-if test "${enable_wavfile}z" = "z" ; then
-  enable_wavfile=$default_wavfile
-fi
-
-HAS_WAVFILE=
-if test "$enable_wavfile" = "no" ; then
-  AC_MSG_NOTICE(WAV file support disabled)
-else
-  HAS_WAVFILE=1
-  AC_DEFINE(P_WAVFILE, 1)
-fi
-AC_SUBST(HAS_WAVFILE)
-
-dnl ########################################################################
-dnl check for enabling SOCKS support
-
-dnl MSWIN_DISPLAY    socks,SOCKS protocol support
-dnl MSWIN_DEFINE     socks,P_SOCKS
-
-AC_ARG_ENABLE(socks,
-       [  --disable-socks         disable SOCKS protocol support])
-
-if test "${enable_socks}z" = "z" ; then
-  enable_socks=$default_socks
-fi
-
-HAS_SOCKS=
-if test "$enable_socks" = "no" ; then
-  AC_MSG_NOTICE(SOCKS decoding/encoding support disabled)
-else
-  HAS_SOCKS=1
-  AC_DEFINE(P_SOCKS, 1)
-fi
-AC_SUBST(HAS_SOCKS)
-
-dnl ########################################################################
-dnl check for enabling FTP support
-
-dnl MSWIN_DISPLAY    ftp,FTP protocol support
-dnl MSWIN_DEFINE     ftp,P_FTP
-
-AC_ARG_ENABLE(rtp,
-       [  --disable-ftp           disable FTP support])
-
-if test "${enable_ftp}z" = "z" ; then
-  enable_ftp=$default_ftp
-fi
-
-HAS_FTP=
-if test "$enable_ftp" = "no" ; then
-  AC_MSG_NOTICE(FTP protocol support disabled)
-else
-  HAS_FTP=1
-  AC_DEFINE(P_FTP, 1)
-fi
-AC_SUBST(HAS_FTP)
-
-dnl ########################################################################
-dnl check for enabling SNMP support
-
-dnl MSWIN_DISPLAY    snmp,SNMP protocol support
-dnl MSWIN_DEFINE     snmp,P_SNMP
-
-AC_ARG_ENABLE(snmp,
-       [  --disable-snmp          disable SNMP protocol support])
-
-if test "${enable_snmp}z" = "z" ; then
-  enable_snmp=$default_snmp
-fi
-
-HAS_SNMP=
-if test "$enable_snmp" = "no" ; then
-  AC_MSG_NOTICE(SNMP protocol support disabled)
-else
-  HAS_SNMP=1
-  AC_DEFINE(P_SNMP, 1)
-fi
-AC_SUBST(HAS_SNMP)
-
-dnl ########################################################################
-dnl check for enabling TELNET support
-
-dnl MSWIN_DISPLAY    telnet,Telnet protocol support
-dnl MSWIN_DEFINE     telnet,P_TELNET
-
-AC_ARG_ENABLE(telnet,
-       [  --disable-telnet        disable Telnet protocol support])
-
-if test "${enable_telnet}z" = "z" ; then
-  enable_telnet=$default_telnet
-fi
-
-HAS_TELNET=
-if test "$enable_telnet" = "no" ; then
-  AC_MSG_NOTICE(Telnet protocol support disabled)
-else
-  HAS_TELNET=1
-  AC_DEFINE(P_TELNET, 1)
-fi
-AC_SUBST(HAS_TELNET)
-
-dnl ########################################################################
-dnl check for enabling REMCONN support
-
-dnl MSWIN_DISPLAY    remconn,remote connection support
-dnl MSWIN_DEFINE     remconn,P_REMCONN
-
-AC_ARG_ENABLE(remconn,
-       [  --disable-remconn       disable remote connection support])
-
-if test "${enable_remconn}z" = "z" ; then
-  enable_remconn=$default_remconn
-fi
-
-HAS_REMCONN=
-if test "$enable_remconn" = "no" ; then
-  AC_MSG_NOTICE(Remote connection support disabled)
-else
-  HAS_REMCONN=1
-  AC_DEFINE(P_REMCONN, 1)
-fi
-AC_SUBST(HAS_REMCONN)
-
-dnl ########################################################################
-dnl check for enabling serial port handling
-
-dnl MSWIN_DISPLAY    serial,Serial Support
-dnl MSWIN_DEFINE     serial,P_SERIAL
-
-AC_ARG_ENABLE(serial,
-       [  --disable-serial        disable serial port support])
-
-if test "${enable_serial}z" = "z" ; then
-  enable_serial=$default_serial
-fi
-
-HAS_SERIAL=
-if test "$enable_serial" = "no" ; then
-  AC_MSG_NOTICE(Serial port support disabled)
-else
-  HAS_SERIAL=1
-  AC_DEFINE(P_SERIAL, 1)
-fi
-AC_SUBST(HAS_SERIAL)
-
-dnl ########################################################################
-dnl check for POP3/SMTP support
-
-dnl MSWIN_DISPLAY    pop3smtp,POP3/SMTP Support
-dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
-
-AC_ARG_ENABLE(pop3smtp,
-       [  --disable-pop3smtp      disable POP3/SMTP support])
-
-if test "${enable_pop3smtp}z" = "z" ; then
-  enable_pop3smtp=$default_pop3smtp
-fi
-
-HAS_POP3SMTP=
-if test "$enable_pop3smtp" = "no" ; then
-  AC_MSG_NOTICE(POP3/SMTP protocol support disabled)
-else
-  HAS_POP3SMTP=1
-  AC_DEFINE(P_POP3SMTP, 1)
-fi
-AC_SUBST(HAS_POP3SMTP)
-
-dnl ########################################################################
-dnl check for enabling socket aggregation
-
-dnl MSWIN_DISPLAY    sockagg,Socket aggregation support
-dnl MSWIN_DEFINE     sockagg,P_SOCKAGG
-
-AC_ARG_ENABLE(sockagg,
-       [  --disable-sockagg        disable socket aggregation])
-
-if test "${enable_sockagg}z" = "z" ; then
-  enable_sockagg=$default_sockagg
-fi
-
-HAS_SOCKAGG=
-if test "$enable_sockagg" = "no" ; then
-  AC_MSG_NOTICE(Socket aggregation support disabled)
-else
-  AC_MSG_NOTICE(Socket aggregation support enabled)
-  HAS_SOCKAGG=1
-  AC_DEFINE(P_SOCKAGG, 1)
-fi
-AC_SUBST(HAS_SOCKAGG)
-
-dnl ########################################################################
-dnl check for enabling video file support
-
-dnl MSWIN_DISPLAY    vidfile,Video file support
-dnl MSWIN_DEFINE     vidfile,P_VIDFILE
-
-if test "$HAS_VIDEO" \!= "1" ; then
-  default_vidfile=no
-fi
-
-AC_ARG_ENABLE(vidfile,
-       [  --enable-vidfile        enable video file support])
-
-if test "${enable_vidfile}z" = "z" ; then
-  enable_vidfile=$default_vidfile
-fi
-
-HAS_VIDFILE=
-if test "$enable_vidfile" = "no" ; then
-  AC_MSG_NOTICE(Video file support disabled)
-else
-  AC_MSG_NOTICE(Video file support enabled)
-  HAS_VIDFILE=1
-  AC_DEFINE(P_VIDFILE, 1)
-fi
-AC_SUBST(HAS_VIDFILE)
-
-dnl ########################################################################
-dnl check for enabling app share support
-
-dnl MSWIN_DISPLAY    appshare,Application share support
-dnl MSWIN_DEFINE     appshare,P_APPSHARE
-
-if test "$HAS_VIDEO" \!= "1" ; then
-  default_appshare=no
-fi
-
-AC_ARG_ENABLE(vidfile,
-       [  --enable-appshare        enable Application share support])
-
-if test "${enable_appshare}z" = "z" ; then
-  enable_vidfile=$default_appshare
-fi
-
-HAS_APPSHARE=
-if test "$enable_appshare" = "no" ; then
-  AC_MSG_NOTICE(Application share support disabled)
-else
-  AC_MSG_NOTICE(Application share enabled)
-  HAS_APPSHARE=1
-  AC_DEFINE(P_APPSHARE, 1)
-fi
-AC_SUBST(HAS_APPSHARE)
-
-dnl ########################################################################
-dnl check for sound support
-
-dnl MSWIN_DISPLAY audio,Sound support
-dnl MSWIN_DEFINE  audio,P_AUDIO
-
-AC_ARG_ENABLE(audio,
-       [  --disable-audio         disable audio support])
-
-if test "${enable_audio}z" = "z" ; then
-  enable_audio=$default_audio
-fi
-
-HAS_AUDIO=
-if test "$enable_audio" = "no" ; then
-  AC_MSG_NOTICE(Audio support disabled)
-else
-  HAS_AUDIO=1
-  AC_DEFINE(P_AUDIO)
-fi
-AC_SUBST(HAS_AUDIO)
 
 dnl ########################################################################
 dnl check for for audio drivers
@@ -2546,14 +2121,12 @@ dnl output make directives
 
 dnl resolver needs to be at the end
 if test "${HAS_RESOLVER:-unset}" != "unset" ; then
-  if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
     ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
 dnl     PKG_LIBS="$PKG_LIBS ${RESOLVER_LIBS}"
-  fi
 fi
 
 dnl dl needs to be at the end
-if test "x${HAS_LIBDL}" = "xyes" ; then
+if test "x${HAS_LIBDL}" = "x1" ; then
   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
 dnl   PKG_LIBS="$PKG_LIBS $DL_LIBS"
   STDCCFLAGS="$STDCCFLAGS $DL_CFLAGS"
