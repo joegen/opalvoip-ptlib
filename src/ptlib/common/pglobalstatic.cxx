@@ -109,7 +109,7 @@
 //
 //  instantiate startup factory
 //
-#if defined(P_HAS_PLUGINS)
+#if defined(P_PLUGINS)
   PLOAD_FACTORY(PluginLoaderStartup, PString)
 #endif
 

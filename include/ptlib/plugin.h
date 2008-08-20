@@ -207,7 +207,7 @@ int PWLIB_gStaticLoader__##serviceName##_##serviceType =  PWLIB_StaticLoader_##s
 
 //////////////////////////////////////////////////////
 
-#if defined(P_HAS_PLUGINS) && ! defined(P_FORCE_STATIC_PLUGIN)
+#if defined(P_PLUGINS) && ! defined(P_FORCE_STATIC_PLUGIN)
 
 #  define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
     PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
