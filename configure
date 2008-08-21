@@ -3316,6 +3316,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
+
+
 PTLIBDIR=`pwd`
 
 
@@ -5655,40 +5657,6 @@ else
 echo "${ECHO_T}no" >&6; }
   STDCXXFLAGS="$STDCCFLAGS -frtti"
 fi
-
-GCSECTIONS=0
-
-
-if test 0 = 1 ;  then
-  { { echo "$as_me:$LINENO: error: error" >&5
-echo "$as_me: error: error" >&2;}
-   { (exit 1); exit 1; }; }
-
-  { echo "$as_me:$LINENO: checking if compiler accepts -ffunction-sections" >&5
-echo $ECHO_N "checking if compiler accepts -ffunction-sections... $ECHO_C" >&6; }
-  cat >conftest.$ac_ext <<_ACEOF
-int main(int ac,char **av) { return 0; }
-_ACEOF
-  $CXX $CFLAGS -ffunction-sections -c conftest.$ac_ext > /dev/null 2>&1
-  if test $? = 0 ; then
-    { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-    STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
-    GCSECTIONS=1
-  else
-    { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-  fi
-
-
-
-  if test $GCSECTIONS = 1; then
-    if test "${OSTYPE}" != "Darwin" ; then
-      P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -Wl,--gc-sections"
-    fi
-  fi
-fi
-
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
