@@ -287,3 +287,45 @@ AC_DEFUN([PTLIB_FIND_LIBDL],
          ])
 
 
+dnl PTLIB_OPENSSL_AES
+dnl Check for directX
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+AC_DEFUN([PTLIB_OPENSSL_AES],
+         [
+          ptlib_openssl_aes=no
+          old_CFLAGS="$CFLAGS"
+          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+          AC_LANG(C)
+          AC_CHECK_HEADERS([openssl/aes.h], [ptlib_openssl_aes=yes])
+          AC_LANG(C++)
+          CFLAGS="${old_CFLAGS}"
+          AS_IF([test AS_VAR_GET([ptlib_openssl_aes]) = yes], [$1], [$2])[]
+         ])
+
+dnl PTLIB_CHECK_FDSIZE
+dnl check for select_large_fdset (Solaris)
+dnl Arguments: $STDCCFLAGS
+dnl Return:    $STDCCFLAGS
+AC_DEFUN([PTLIB_CHECK_FDSIZE],
+         [
+          ptlib_fdsize_file=/etc/system
+          ptlib_fdsize=`cat ${ptlib_fdsize_file} | grep rlim_fd_max | cut -c1`
+
+          if test "x${ptlib_fdsize}" = "x#"; then
+            ptlib_fdsize=4098
+          else
+            ptlib_fdsize=`cat ${ptlib_fdsize_file} | grep rlim_fd_max | cut -f2 -d'='`
+            if test "x${ptlib_fdsize}" = "x"; then
+              ptlib_fdsize=4098
+            fi
+          fi
+
+          if test "x${ptlib_fdsize}" != "x4098"; then
+            STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
+          fi
+
+          AC_MSG_RESULT(${ptlib_fdsize})
+         ])
+

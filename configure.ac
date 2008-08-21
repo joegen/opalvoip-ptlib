@@ -122,6 +122,7 @@ case "$target_os" in
                    dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
                    dnl Solaris swab should not be used
                    PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
+                   PTLIB_CHECK_FDSIZE()
 		   ;;
 
   darwin* )	   OSTYPE=Darwin ;
@@ -714,30 +715,6 @@ fi
 
 AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
 AC_DEFINE_UNQUOTED(P_NEEDS_GNU_CXX_NAMESPACE, ${P_NEEDS_GNU_CXX_NAMESPACE})
-
-
-dnl ########################################################################
-dnl check for select_large_fdset (Solaris)
-
-if test "${OSTYPE:-unknown}" = "solaris"; then
-  AC_MSG_CHECKING(checking for FD_SETSIZE)
-  _FD_SYSTEM_FILE=/etc/system
-  _FD_SETSIZE=`cat $_FD_SYSTEM_FILE | grep rlim_fd_max | cut -c1`
-  if test "$_FD_SETSIZE" = "#"; then
-    _FD_SETSIZE=4098
-  else
-    _FD_SETSIZE=`cat $_FD_SYSTEM_FILE | grep rlim_fd_max | cut -f2 -d'='`
-    if test "x$_FD_SETSIZE" = "x"; then
-      _FD_SETSIZE=4098
-    else
-      STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=$_FD_SETSIZE"
-    fi
-  fi
-  AC_MSG_RESULT($_FD_SETSIZE)
-fi
-
-
-
 
 dnl ########################################################################
 dnl check for Unix semaphores
