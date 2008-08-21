@@ -219,6 +219,24 @@ AC_DEFUN([PTLIB_OPENSSL_CONST],
           AS_IF([test AS_VAR_GET([ptlib_openssl_const]) = yes], [$1], [$2])[]
          ])
 
+dnl PTLIB_CHECK_UPAD128
+dnl Check for upad128_t (solaris only)
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+AC_DEFUN([PTLIB_CHECK_UPAD128],
+         [
+           ptlib_upad128=no
+
+           AC_MSG_CHECKING(for upad128_t)
+           AC_TRY_COMPILE([#include <sys/types.h>],
+                          [upad128_t upad; upad._q = 0.0;],
+                          [ptlib_upad128=yes])
+           AC_MSG_RESULT(${ptlib_upad128})
+
+           AS_IF([test AS_VAR_GET([ptlib_upad128]) = yes], [$1], [$2])[]
+         ])
+
 dnl PTLIB_OPENSSL_AES
 dnl Check for directX
 dnl Arguments:
@@ -352,6 +370,7 @@ case "$target_os" in
 		   OS_TAG="P_LINUX" ;
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
                    ;;
 
   freebsd* )       OSTYPE=FreeBSD ;
@@ -361,6 +380,7 @@ case "$target_os" in
                    fi
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
@@ -369,6 +389,7 @@ case "$target_os" in
 		   ENDLDLIBS="-lossaudio" ;
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   netbsd* )        OSTYPE=NetBSD ;
@@ -377,6 +398,7 @@ case "$target_os" in
 		   ENDLDLIBS="-lossaudio" ;
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   solaris* | sunos* ) OSTYPE=solaris ;
@@ -384,6 +406,9 @@ case "$target_os" in
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+                   dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
+                   dnl Solaris swab should not be used
+                   PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
 		   ;;
 
   darwin* )	   OSTYPE=Darwin ;
@@ -397,17 +422,20 @@ case "$target_os" in
                      EXPATDIR=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6
                    fi
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   beos*)           OSTYPE=beos ;
                    OS_TAG="P_BEOS" ;
                    OSRELEASE=`uname -r` ;
                    STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
+                   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   cygwin*)         OSTYPE=cygwin ;
                    OS_TAG="P_CYGWIN" ;
                    OSRELEASE="`uname -r`";
+                   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   mingw*)	   OSTYPE=mingw ;
@@ -418,11 +446,13 @@ case "$target_os" in
 		   STDCCFLAGS="$STDCCFLAGS -mms-bitfields" ;
 		   ENDLDLIBS="-lwinmm -lwsock32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32" ;
 		   NEEDS_PTHREADS=no ;
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
 
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
   		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
+  		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   AC_MSG_WARN("OS $target_os not recognized - proceed with caution!") ;
 		   ;;
 esac
@@ -669,67 +699,6 @@ else
   AC_MSG_RESULT(no)
   STDCXXFLAGS="$STDCCFLAGS -frtti"
 fi
-
-GCSECTIONS=0
-
-dnl Remove --gc-sections as the linker crashes when linking
-dnl static executables with this option
-dnl AC_MSG_CHECKING(if linker accepts --gc-sections)
-dnl C_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-dnl CXX $CFLAGS -Wl,--gc-sections conftest.cc > /dev/null 2>&1
-dnl if test $? = 0 ; then
-
-if test 0 = 1 ;  then
-
-  dnl  AC_MSG_RESULT(yes)
-
-  AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
-  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  $CXX $CFLAGS -ffunction-sections -c conftest.$ac_ext > /dev/null 2>&1
-  if test $? = 0 ; then
-    AC_MSG_RESULT(yes)
-    STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
-    GCSECTIONS=1
-  else
-    AC_MSG_RESULT(no)
-  fi
-
-  dnl remove data-sections as not only does is case the linker to
-  dnl crash on some platforms, but seems to be broken w.r.t
-  dnl closure of templates with static member functions
-  dnl see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=8249
-  dnl
-  dnl AC_MSG_CHECKING(if compiler accepts -fdata-sections)
-  dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  dnl $CXX $CFLAGS -fdata-sections -c conftest.cc > /dev/null 2>&1
-  dnl if test $? = 0 ; then
-  dnl   AC_MSG_RESULT(yes)
-  dnl   STDCCFLAGS="$STDCCFLAGS -fdata-sections"
-  dnl   GCSECTIONS=1
-  dnl else
-  dnl   AC_MSG_RESULT(no)
-  dnl fi
-
-  dnl as much as this flag would help, there is no known linker
-  dnl that can handle PTLib when it has been compiled with it
-  dnl AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
-  dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  dnl $CXX $CFLAGS -fvtable-gc -c conftest.cc > /dev/null 2>&1
-  dnl if test $? = 0 ; then
-  dnl   AC_MSG_RESULT(yes)
-  dnl   STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
-  dnl   GCSECTIONS=1
-  dnl else
-  dnl   AC_MSG_RESULT(no)
-  dnl fi
-
-  if test $GCSECTIONS = 1; then
-    if test "${OSTYPE}" != "Darwin" ; then
-      P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -Wl,--gc-sections"
-    fi
-  fi
-fi
-
 
 AC_LANG_POP(C++)
 
@@ -1055,20 +1024,6 @@ if test "${OSTYPE:-unknown}" = "solaris"; then
 fi
 
 
-dnl ########################################################################
-dnl check if upad128_t is defined (Solaris)
-
-if test "${OSTYPE:-unknown}" = "solaris"; then
-  AC_MSG_CHECKING(for upad128_t)
-  AC_TRY_COMPILE([#include <sys/types.h>],
-                 [upad128_t upad; upad._q = 0.0;], has_upad128_t=y)
-  if test ${has_upad128_t} == "y"; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(P_HAS_UPAD128_T)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
 
 
 dnl ########################################################################
@@ -1120,10 +1075,6 @@ if test ${HAS_PTHREADS} = yes ; then
   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 else
   if test ${OSTYPE} = FreeBSD ; then
-    HAS_PTHREADS=yes
-    ENDLDLIBS="$ENDLDLIBS -pthread"
-    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
-  elif test ${OSTYPE} = FreeBSD ; then
     HAS_PTHREADS=yes
     ENDLDLIBS="$ENDLDLIBS -pthread"
     STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
@@ -2040,19 +1991,6 @@ dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio .NET 2003\VC7\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\
 
-
-dnl ########################################################################
-dnl check for various functions
-dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
-dnl Solaris swab should not be used
-if test "$OSTYPE" = "solaris" ; then
-  USE_SYSTEM_SWAB=
-else
-  AC_CHECK_FUNC(swab,USE_SYSTEM_SWAB=1)
-fi
-if test "x$ac_cv_func_swab" = "xyes" ; then
-  AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()])
-fi
 
 dnl ########################################################################
 dnl look for MEMORY_CHECK enabled.
