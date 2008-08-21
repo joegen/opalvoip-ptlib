@@ -3318,6 +3318,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
+
+
+
+
 PTLIBDIR=`pwd`
 
 
@@ -3981,6 +3985,26 @@ _ACEOF
 
 fi
 
+
+
+          ptlib_fdsize_file=/etc/system
+          ptlib_fdsize=`cat ${ptlib_fdsize_file} | grep rlim_fd_max | cut -c1`
+
+          if test "x${ptlib_fdsize}" = "x#"; then
+            ptlib_fdsize=4098
+          else
+            ptlib_fdsize=`cat ${ptlib_fdsize_file} | grep rlim_fd_max | cut -f2 -d'='`
+            if test "x${ptlib_fdsize}" = "x"; then
+              ptlib_fdsize=4098
+            fi
+          fi
+
+          if test "x${ptlib_fdsize}" != "x4098"; then
+            STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
+          fi
+
+          { echo "$as_me:$LINENO: result: ${ptlib_fdsize}" >&5
+echo "${ECHO_T}${ptlib_fdsize}" >&6; }
 
 		   ;;
 
@@ -7068,30 +7092,6 @@ _ACEOF
 cat >>confdefs.h <<_ACEOF
 #define P_NEEDS_GNU_CXX_NAMESPACE ${P_NEEDS_GNU_CXX_NAMESPACE}
 _ACEOF
-
-
-
-
-if test "${OSTYPE:-unknown}" = "solaris"; then
-  { echo "$as_me:$LINENO: checking checking for FD_SETSIZE" >&5
-echo $ECHO_N "checking checking for FD_SETSIZE... $ECHO_C" >&6; }
-  _FD_SYSTEM_FILE=/etc/system
-  _FD_SETSIZE=`cat $_FD_SYSTEM_FILE | grep rlim_fd_max | cut -c1`
-  if test "$_FD_SETSIZE" = "#"; then
-    _FD_SETSIZE=4098
-  else
-    _FD_SETSIZE=`cat $_FD_SYSTEM_FILE | grep rlim_fd_max | cut -f2 -d'='`
-    if test "x$_FD_SETSIZE" = "x"; then
-      _FD_SETSIZE=4098
-    else
-      STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=$_FD_SETSIZE"
-    fi
-  fi
-  { echo "$as_me:$LINENO: result: $_FD_SETSIZE" >&5
-echo "${ECHO_T}$_FD_SETSIZE" >&6; }
-fi
-
-
 
 
 
