@@ -97,7 +97,7 @@ install:
 		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ifeq (1, $(HAS_PLUGINS))
-	cd plugins/ptlib/device/ ; \
+	cd lib/device/ ; \
 	( for dir in ./* ;\
 		do mkdir -p $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
 		chmod 755 $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
