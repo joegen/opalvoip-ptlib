@@ -865,7 +865,7 @@ fi
 dnl #########################################################################
 dnl check to see if plugins enabled
 dnl MSWIN_DISPLAY plugins,Plugin Support
-dnl MSWIN_DEFINE  plugins,P_HAS_PLUGINS
+dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
 PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
 
