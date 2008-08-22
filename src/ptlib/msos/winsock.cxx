@@ -602,7 +602,7 @@ void PUDPSocket::EnableGQoS()
   disableGQoS = PFalse;
 }
 
-#if P_HAS_QOS
+#if P_QOS
 PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & address)
 {
   if (disableGQoS)
@@ -643,10 +643,10 @@ PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address &)
 {
   return PFalse;
 }
-#endif  // P_HAS_QOS
+#endif  // P_QOS
 
 
-#if P_HAS_QOS
+#if P_QOS
 
 #ifndef _WIN32_WCE
 
@@ -699,7 +699,7 @@ PWinQoS::PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen
 
 #endif // _WIN32_WCE
 
-#endif // P_HAS_QOS
+#endif // P_QOS
 
 #ifndef _WIN32_WCE
 //////////////////////////////////////////////////////////////////////////////
@@ -866,7 +866,7 @@ static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
 }
 
 
-#ifdef P_HAS_QOS
+#ifdef P_QOS
 PBoolean PIPXSocket::GetHostAddress(const PString & /*hostname*/, Address & /*addr*/)
 {
   return PFalse;
@@ -898,7 +898,7 @@ PBoolean PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
   AssignAddress(addr, *(sockaddr_ipx *)addr_info[0].RemoteAddr.lpSockaddr);
   return PTrue;
 }
-#endif
+#endif // P_QOS
 
 
 

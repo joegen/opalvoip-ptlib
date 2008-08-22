@@ -520,7 +520,7 @@ HAS_CONFIG_FILE=1
 default_alsa=yes
 default_oss=yes
 default_ipv6=yes
-default_qos=yes
+HAS_QOS=1
 HAS_SOCKAGG=1
 HAS_VIDFILE=1
 HAS_APPSHARE=
@@ -561,7 +561,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_alsa=yes
   default_oss=yes
   default_ipv6=yes
-  default_qos=yes
+  HAS_QOS=1
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
@@ -601,7 +601,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_alsa=yes
   default_oss=no
   default_ipv6=no
-  default_qos=no
+  HAS_QOS=
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
@@ -1488,7 +1488,7 @@ dnl ########################################################################
 dnl look for QoS functions
 
 dnl MSWIN_DISPLAY    qos,QoS Support
-dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
+dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_QOS=1
 dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
@@ -1496,16 +1496,7 @@ dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
-AC_ARG_ENABLE(qos,
-       [  --disable-qos           disable QOS support])
-
-if test "${enable_qos}z" = "z" ; then
-  enable_qos=$default_qos
-fi
-
-if test "$enable_qos" != "no" ; then
-  AC_DEFINE([P_HAS_QOS], [1], [Have QOS])
-fi
+PTLIB_SIMPLE_OPTION([qos], [QOS], [enable QOS support])
 
 dnl ########################################################################
 dnl check for video support
