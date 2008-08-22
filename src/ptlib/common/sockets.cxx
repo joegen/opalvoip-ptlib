@@ -1064,9 +1064,13 @@ PIPSocket::PIPSocket()
 void PIPSocket::ClearNameCache()
 {
   pHostByName().mutex.Wait();
-  pHostByAddr().mutex.Wait();
   pHostByName().RemoveAll();
+  pHostByName().mutex.Signal();
+
+  pHostByAddr().mutex.Wait();
   pHostByAddr().RemoveAll();
+  pHostByAddr().mutex.Signal();
+
 #if (defined(_WIN32) || defined(WINDOWS)) && !defined(__NUCLEUS_MNT__) // Kludge to avoid strange NT bug
   static PTimeInterval delay = GetConfigTime("NT Bug Delay", 0);
   if (delay != 0) {
@@ -1074,8 +1078,7 @@ void PIPSocket::ClearNameCache()
     ::gethostbyname("www.microsoft.com");
   }
 #endif
-  pHostByName().mutex.Signal();
-  pHostByAddr().mutex.Signal();
+  PTRACE(4, "Socket\tCleared DNS cache.");
 }
 
 

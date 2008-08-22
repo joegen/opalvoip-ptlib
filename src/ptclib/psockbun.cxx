@@ -221,7 +221,8 @@ void PInterfaceMonitor::RefreshInterfaceList()
       if (!oldEntry.GetAddress().IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
         interfacesToRemove.Append(&oldEntry);
     }
-    
+
+    PIPSocket::ClearNameCache();
     OnInterfacesChanged(interfacesToAdd, interfacesToRemove);
   }
 }
