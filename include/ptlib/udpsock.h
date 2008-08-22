@@ -121,7 +121,7 @@ class PUDPSocket : public PIPDatagramSocket
       PQoS * qos            ///< QoS specification to use
     );
 
-#if P_HAS_QOS
+#if P_QOS
     /** Get the QOS object for the socket.
     */
     virtual PQoS & GetQoSSpec();
@@ -177,7 +177,7 @@ class PUDPSocket : public PIPDatagramSocket
 #endif
 };
 
-#if P_HAS_QOS
+#if P_QOS
 
 #ifdef _WIN32
 #include <winbase.h>
@@ -201,7 +201,7 @@ protected:
 
 #endif  // _WIN32_WCE
 #endif  // _WIN32
-#endif // P_HAS_QOS
+#endif // P_QOS
 
 
 #endif
