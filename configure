@@ -738,6 +738,7 @@ HAS_SERIAL
 HAS_POP3SMTP
 HAS_SOCKAGG
 HAS_AUDIO
+HAS_QOS
 HAS_VIDEO
 HAS_VIDFILE
 HAS_APPSHARE
@@ -1389,7 +1390,7 @@ Optional Features:
   --enable-pop3smtp       enable POP3/SMTP support
   --enable-sockagg        enable socket aggregation
   --enable-audio          enable audio support
-  --disable-qos           disable QOS support
+  --enable-qos            enable QOS support
   --enable-video          enable video device support
   --enable-vidfile        enable video file support
   --enable-appshare       enable application sharing support
@@ -6640,7 +6641,7 @@ HAS_CONFIG_FILE=1
 default_alsa=yes
 default_oss=yes
 default_ipv6=yes
-default_qos=yes
+HAS_QOS=1
 HAS_SOCKAGG=1
 HAS_VIDFILE=1
 HAS_APPSHARE=
@@ -6681,7 +6682,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_alsa=yes
   default_oss=yes
   default_ipv6=yes
-  default_qos=yes
+  HAS_QOS=1
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
@@ -6721,7 +6722,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_alsa=yes
   default_oss=no
   default_ipv6=no
-  default_qos=no
+  HAS_QOS=
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
@@ -12274,23 +12275,56 @@ echo "${ECHO_T}no" >&6; }
 
 
 
-# Check whether --enable-qos was given.
+
+          { echo "$as_me:$LINENO: checking enable QOS support" >&5
+echo $ECHO_N "checking enable QOS support... $ECHO_C" >&6; }
+          # Check whether --enable-qos was given.
 if test "${enable_qos+set}" = set; then
   enableval=$enable_qos;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_QOS=1
+                         else
+                           HAS_QOS=
+                         fi
+
 fi
 
 
-if test "${enable_qos}z" = "z" ; then
-  enable_qos=$default_qos
-fi
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: qos support disabled due to disabled dependency " >&5
+echo "$as_me: qos support disabled due to disabled dependency " >&6;}
+	      HAS_QOS=
+	    fi
+	  fi
 
-if test "$enable_qos" != "no" ; then
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: qos support disabled due to disabled dependency " >&5
+echo "$as_me: qos support disabled due to disabled dependency " >&6;}
+	      HAS_QOS=
+	    fi
+	  fi
+
+
+          if test "x${HAS_QOS}" = "x1"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define P_HAS_QOS 1
+#define P_QOS 1
 _ACEOF
 
-fi
+            HAS_QOS=1
+            { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+          else
+            HAS_QOS=
+            { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+          fi
+
+
+
+
 
 
 
@@ -15541,6 +15575,7 @@ HAS_SERIAL!$HAS_SERIAL$ac_delim
 HAS_POP3SMTP!$HAS_POP3SMTP$ac_delim
 HAS_SOCKAGG!$HAS_SOCKAGG$ac_delim
 HAS_AUDIO!$HAS_AUDIO$ac_delim
+HAS_QOS!$HAS_QOS$ac_delim
 HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
@@ -15561,7 +15596,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 46; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 47; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

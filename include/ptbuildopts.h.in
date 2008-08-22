@@ -96,10 +96,10 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_HAS_QOS
+#undef P_QOS
 #endif //  _WIN32_WCE
 
-#if defined(_MSC_VER) && P_HAS_QOS
+#if defined(_MSC_VER) && P_QOS
 
 #pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
 
