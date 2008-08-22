@@ -29,7 +29,7 @@
 #pragma interface
 #endif
 
-#if P_HAS_QOS
+#if P_QOS
 #ifdef _WIN32
 #ifndef P_KNOCKOUT_WINSOCK2
 #include <winsock2.h>
@@ -40,7 +40,7 @@
 #endif  // KNOCKOUT_QOS
 #endif  // KNOCKOUT_WINSOCK2
 #endif  // _WIN32
-#endif  // P_HAS_QOS
+#endif  // P_QOS
 
 #ifndef QOS_NOT_SPECIFIED
 #define QOS_NOT_SPECIFIED 0xFFFFFFFF

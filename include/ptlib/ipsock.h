@@ -40,13 +40,13 @@
 
 #include <ptlib/socket.h>
 
-#ifdef P_HAS_QOS
+#if P_QOS
 #ifdef _WIN32
 #ifdef P_KNOCKOUT_WINSOCK2 
    #include "IPExport.h"
 #endif // KNOCKOUT_WINSOCK2
 #endif // _WIN32
-#endif // P_HAS_QOS
+#endif // P_QOS
 
 /** This class describes a type of socket that will communicate using the
    Internet Protocol.

@@ -48,7 +48,7 @@ extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 #include <ConfigurationClass.h>
 #endif
 
-#if P_HAS_QOS
+#if P_QOS
 
 #ifdef _WIN32
 #include <winbase.h>
@@ -64,7 +64,7 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 
 #endif  // _WIN32_WCE
 #endif  // _WIN32
-#endif // P_HAS_QOS
+#endif // P_QOS
 
 
 #if P_HAS_IPV6
@@ -2415,12 +2415,12 @@ PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
   return PTrue;
 }
 
-#if P_HAS_QOS
+#if P_QOS
 PQoS & PUDPSocket::GetQoSSpec()
 {
   return qosSpec;
 }
-#endif
+#endif //P_QOS
 
 PBoolean PUDPSocket::ApplyQoS()
 {
@@ -2452,7 +2452,7 @@ PBoolean PUDPSocket::ApplyQoS()
     DSCPval = (char)qosSpec.GetDSCP();
 
 #ifdef _WIN32
-#if P_HAS_QOS
+#if P_QOS
   if (disableGQoS)
     return PFalse;
 
@@ -2501,7 +2501,7 @@ PBoolean PUDPSocket::ApplyQoS()
   if (!usesetsockopt)
     return retval;
 
-#endif  // P_HAS_QOS
+#endif  // P_QOS
 #endif  // _WIN32
 
   unsigned int setDSCP = DSCPval<<2;
@@ -2536,7 +2536,7 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
   return ConvertOSError(os_handle = os_socket(af, type, proto));
 #endif
 
-#if defined(_WIN32) && defined(P_HAS_QOS)
+#if defined(_WIN32) && defined(P_QOS)
     
   DWORD bufferSize = 0;
   DWORD numProtocols, i;
@@ -2603,7 +2603,7 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 
 #ifdef _WIN32
 #ifndef _WIN32_WCE
-#ifdef P_HAS_QOS
+#if P_QOS
 
 #define COULD_HAVE_QOS
 
@@ -2622,9 +2622,9 @@ static PBoolean CheckOSVersion()
   return PFalse;
 }
 
-#endif
-#endif
-#endif
+#endif // P_QOS
+#endif // _WIN32_WCE
+#endif // _WIN32
 
 PBoolean PUDPSocket::OpenSocket()
 {
