@@ -134,7 +134,7 @@ uninstall:
 	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
 	       $(DESTDIR)$(PREFIX)/share/ptlib \
 	       $(DESTDIR)$(LIBDIR)/ptlib/devices \
-	       $(DESTDIR)$(LIBDIR)/pkgconfig/
+	       $(DESTDIR)$(LIBDIR)/pkgconfig/ptlib.pc
 	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* \
               @libdir@/libpt.so 
 
