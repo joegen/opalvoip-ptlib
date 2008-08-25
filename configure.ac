@@ -589,7 +589,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_SERIAL=
   HAS_POP3SMTP=
   HAS_AUDIO=1
-  HAS_VIDEO=!
+  HAS_VIDEO=1
   HAS_URL=1
   HAS_HTTP=1
   HAS_HTTPFORMS=
@@ -1596,13 +1596,13 @@ dnl check for for audio drivers
 
 HAS_ALSA=
 HAS_OSS=
-if test "$enable_audio" = "yes" ; then
+if test "x${HAS_AUDIO}" = "x1" ; then
 
   dnl these are needed to pass through to the plugin configure program
   AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],enable_alsa=$enableval)
   AC_ARG_ENABLE(oss,  [  --enable-oss            enable OSS audio support],enable_oss=$enableval)
 
-  if test "$enable_plugins" = "no" ; then
+  if test "x${HAS_PLUGINS}" = "x" ; then
 
     if test "${enable_alsa}z" = "z" ; then
       enable_alsa=$default_alsa
