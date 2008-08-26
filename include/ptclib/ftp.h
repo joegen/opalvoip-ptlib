@@ -180,6 +180,15 @@ class PFTPClient : public PFTP
       DataChannelType channel = Passive   ///< Data channel type.
     );
 
+    /** Create a directory on the remote FTP host.
+
+       @return
+       PTrue if the directory was created successfully.
+     */
+    PBoolean CreateDirectory(
+      const PString & path                ///< Name of the directory to create.
+    );
+
     /** Get status information for the file path specified.
 
        @return
