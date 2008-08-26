@@ -167,7 +167,7 @@ PStringArray PFTPClient::GetDirectoryNames(const PString & path,
 
 PBoolean PFTPClient::CreateDirectory(const PString & path)
 {
-  return ExecuteCommand (MKD, directory) / 100 == 2;
+  return ExecuteCommand (MKD, path) / 100 == 2;
 }
 
 
