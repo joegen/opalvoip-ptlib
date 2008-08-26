@@ -165,6 +165,12 @@ PStringArray PFTPClient::GetDirectoryNames(const PString & path,
 }
 
 
+PBoolean PTFPClient::CreateDirectory(const PString & path)
+{
+  return ExecuteCommand (MKD, directory) / 100 == 2;
+}
+
+
 PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
 {
   if (ExecuteCommand(STATcmd, path)/100 == 2 && lastResponseInfo.Find(path) != P_MAX_INDEX) {
