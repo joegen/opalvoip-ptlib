@@ -2335,21 +2335,66 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
       return PFalse;
 #endif
   }
-
+  
+#ifdef P_MACOSX
+  // Mac OS X does not treat 255.255.255.255 as a broadcast address (multihoming / ambiguity issues)
+  // and such packets aren't sent to the layer 2 - broadcast address (i.e. ethernet ff:ff:ff:ff:ff:ff)
+  // instead: send subnet broadcasts on all interfaces
+  
+  // TODO: Add IPv6 support
+  
+  PBoolean ok = PFalse;
+  if (broadcast) {
+    sockaddr_in sockAddr;
+    sockAddr.sin_family = AF_INET;
+    sockAddr.sin_port = htons(port);
+    
+    InterfaceTable interfaces;
+    if (GetInterfaceTable(interfaces)) {
+      for (int i = 0; i < interfaces.GetSize(); i++) {
+        InterfaceEntry & iface = interfaces[i];
+        if (iface.GetAddress().IsLoopback()) {
+          continue;
+        }
+        // create network address from address / netmask
+        DWORD ifAddr = iface.GetAddress();
+        DWORD netmask = iface.GetNetMask();
+        DWORD bcastAddr = (ifAddr & netmask) + ~netmask;
+        
+        sockAddr.sin_addr.s_addr = bcastAddr;
+        
+        PBoolean result = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+        
+        ok = ok || result;
+      }
+    }
+    
+  } else {
+    sockaddr_in sockAddr;
+    sockAddr.sin_family = AF_INET;
+    sockAddr.sin_addr = addr;
+    sockAddr.sin_port = htons(port);
+    ok = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+  }
+  
+#else
+  
 #if P_HAS_IPV6
-
+  
   Psockaddr sa(broadcast ? Address::GetBroadcast() : addr, port);
   PBoolean ok = os_sendto(buf, len, 0, sa, sa.GetSize()) != 0;
-
+  
 #else
-
+  
   sockaddr_in sockAddr;
   sockAddr.sin_family = AF_INET;
   sockAddr.sin_addr = (broadcast ? Address::GetBroadcast() : addr);
   sockAddr.sin_port = htons(port);
   PBoolean ok = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
-
-#endif
+  
+#endif // P_HAS_IPV6
+  
+#endif // P_MACOSX
 
 #ifndef __BEOS__
   if (broadcast)
