@@ -1323,19 +1323,20 @@ void PODBCRecord::Data(PINDEX Column, PODBC::Field & field)
       case PODBC::VarBinary:
       case PODBC::LongVarBinary:
       case PODBC::LongVarChar:
-        if (dbase == PODBC::MSAccess)   /// Stupid Access Stuff!
+        if (dbase == PODBC::MSAccess) {  /// Stupid Access Stuff!
           if (B) 
             SQLBindCol(m_hStmt, field.col, SQL_C_CHAR, b.sbinlong.GetPointer(len*MaxCharSize), len*MaxCharSize, &b.dataLen);
-         else {
+          else {
             if (B) 
               SQLBindCol(m_hStmt, Column, SQL_LONGVARCHAR, (SQLPOINTER)Column, 0, &b.dataLen);
             if (field.LongData) 
-               b.dataLen = SQL_LEN_DATA_AT_EXEC(0);
+              b.dataLen = SQL_LEN_DATA_AT_EXEC(0);
             else
-               b.dataLen = SQL_LEN_DATA_AT_EXEC(len);
-            } 	
-	    AddField(field,ColumnName(Column),ctype,PODBC::oPString);
-            break;
+              b.dataLen = SQL_LEN_DATA_AT_EXEC(len);
+          }
+        } 	
+	AddField(field,ColumnName(Column),ctype,PODBC::oPString);
+        break;
 			
       /// Character 
       case PODBC::DateTime:
