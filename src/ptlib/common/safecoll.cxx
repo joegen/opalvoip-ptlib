@@ -444,6 +444,7 @@ void PSafePtrBase::Assign(const PSafeCollection & safeCollection)
   ExitSafetyMode(WithDereference);
 
   collection = &safeCollection;
+  currentObject = NULL;
   lockMode = PSafeReadWrite;
 
   Assign((PINDEX)0);
