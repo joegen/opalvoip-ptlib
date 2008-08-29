@@ -51,8 +51,7 @@ PCREATE_NAT_PLUGIN(STUN);
 ///////////////////////////////////////////////////////////////////////
 
 PSTUNClient::PSTUNClient()
-  : serverAddress(0),
-    serverPort(DefaultPort),
+  : serverPort(DefaultPort),
     replyTimeout(DEFAULT_REPLY_TIMEOUT),
     pollRetries(DEFAULT_POLL_RETRIES),
     numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING),
@@ -65,8 +64,7 @@ PSTUNClient::PSTUNClient()
 PSTUNClient::PSTUNClient(const PString & server,
                          WORD portBase, WORD portMax,
                          WORD portPairBase, WORD portPairMax)
-  : serverAddress(0),
-    serverPort(DefaultPort),
+  : serverPort(DefaultPort),
     replyTimeout(DEFAULT_REPLY_TIMEOUT),
     pollRetries(DEFAULT_POLL_RETRIES),
     numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING),
@@ -82,7 +80,7 @@ PSTUNClient::PSTUNClient(const PString & server,
 PSTUNClient::PSTUNClient(const PIPSocket::Address & address, WORD port,
                          WORD portBase, WORD portMax,
                          WORD portPairBase, WORD portPairMax)
-  : serverAddress(address),
+  : serverHost(address.AsString()),
     serverPort(port),
     replyTimeout(DEFAULT_REPLY_TIMEOUT),
     pollRetries(DEFAULT_POLL_RETRIES),
@@ -94,9 +92,10 @@ PSTUNClient::PSTUNClient(const PIPSocket::Address & address, WORD port,
   SetPortRanges(portBase, portMax, portPairBase, portPairMax);
 }
 
+
 void PSTUNClient::Initialise(const PString & server,
-                         WORD portBase, WORD portMax,
-                         WORD portPairBase, WORD portPairMax)
+                             WORD portBase, WORD portMax,
+                             WORD portPairBase, WORD portPairMax)
 {
   SetServer(server);
   SetPortRanges(portBase, portMax, portPairBase, portPairMax);
@@ -105,46 +104,59 @@ void PSTUNClient::Initialise(const PString & server,
 
 bool PSTUNClient::GetServerAddress(PIPSocket::Address & address, WORD & port) const
 {
-  if (!serverAddress.IsValid() || serverPort == 0)
+  if (serverPort == 0)
     return false;
 
-  address = serverAddress;
   port = serverPort;
-  return true;
+
+  if (cachedServerAddress.IsValid()) {
+    address = cachedServerAddress;
+    return true;
+  }
+
+  return PIPSocket::GetHostAddress(serverHost, address);
 }
 
 
 PBoolean PSTUNClient::SetServer(const PString & server)
 {
+  PString host;
+  WORD port = serverPort;
+
   PINDEX colon = server.Find(':');
-  if (colon == P_MAX_INDEX) {
-    if (!PIPSocket::GetHostAddress(server, serverAddress)) {
-      PTRACE(2, "STUN\tCould not find host \"" << server << "\".");
-      return false;
-    }
-  }
+  if (colon == P_MAX_INDEX)
+    host = server;
   else {
-    PString hostname = server.Left(colon);
-    if (!PIPSocket::GetHostAddress(hostname, serverAddress)) {
-      PTRACE(2, "STUN\tCould not find host \"" << hostname << "\".");
-      return false;
-    }
+    host = server.Left(colon);
     PString service = server.Mid(colon+1);
-    if ((serverPort = PIPSocket::GetPortByService("udp", service)) == 0) {
+    if ((port = PIPSocket::GetPortByService("udp", service)) == 0) {
       PTRACE(2, "STUN\tCould not find service \"" << service << "\".");
       return false;
     }
   }
 
-  return serverAddress.IsValid() && serverPort != 0;
+  if (host.IsEmpty() || port == 0)
+    return false;
+
+  if (serverHost == host && serverPort == port)
+    return true;
+
+  serverHost = host;
+  serverPort = port;
+  InvalidateCache();
+  return true;
 }
 
 
 PBoolean PSTUNClient::SetServer(const PIPSocket::Address & address, WORD port)
 {
-  serverAddress = address;
+  if (!address.IsValid() || port == 0)
+    return false;
+
+  serverHost = address.AsString();
+  cachedServerAddress = address;
   serverPort = port;
-  return serverAddress.IsValid() && serverPort != 0;
+  return true;
 }
 
 #pragma pack(1)
@@ -421,8 +433,18 @@ public:
 };
 
 
-bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding) const
+bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding)
 {
+  if (serverPort == 0) {
+    PTRACE(1, "STUN\tServer port not set.");
+    return false;
+  }
+
+  if (!cachedServerAddress.IsValid() || !PIPSocket::GetHostAddress(serverHost, cachedServerAddress)) {
+    PTRACE(2, "STUN\tCould not find host \"" << serverHost << "\".");
+    return false;
+  }
+
   PWaitAndSignal mutex(portInfo.mutex);
 
   WORD startPort = portInfo.currentPort;
@@ -433,7 +455,7 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIP
       portInfo.currentPort = portInfo.basePort;
 
     if (socket.Listen(binding, 1, portInfo.currentPort)) {
-      socket.SetSendAddress(serverAddress, serverPort);
+      socket.SetSendAddress(cachedServerAddress, serverPort);
       socket.SetReadTimeout(replyTimeout);
       return true;
     }
@@ -450,9 +472,6 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 {
   if (!force && natType != UnknownNat)
     return natType;
-
-  if (!serverAddress.IsValid() || serverPort == 0)
-    return natType = UnknownNat;
 
   PList<PUDPSocket> sockets;
 
@@ -498,7 +517,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
       if (requestI.Write(*socket))
         selectList += *socket;
       else {
-        PTRACE(1, "STUN\tError writing to server " << serverAddress << ':' << serverPort << " - " << socket->GetErrorText(PChannel::LastWriteError));
+        PTRACE(1, "STUN\tError writing to " << *this << " - " << socket->GetErrorText(PChannel::LastWriteError));
       }
     }
 
@@ -521,7 +540,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   }
 
   if (replySocket == NULL) {
-    PTRACE(3, "STUN\tNo response to server " << serverAddress << ':' << serverPort);
+    PTRACE(3, "STUN\tNo response to " << *this);
     return natType = BlockedNat; // No response usually means blocked
   }
 
@@ -529,7 +548,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 
   PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
-    PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+    PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
     return natType = UnknownNat; // Protocol error
   }
 
@@ -571,14 +590,14 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 
   mappedAddress = (PSTUNMappedAddress *)responseI2.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
-    PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+    PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
     return UnknownNat; // Protocol error
   }
 
   if (mappedAddress->port != mappedPortI || mappedAddress->GetIP() != mappedAddressI)
     return natType = SymmetricNat;
 
-  replySocket->SetSendAddress(serverAddress, serverPort);
+  replySocket->SetSendAddress(cachedServerAddress, serverPort);
   PSTUNMessage requestIII(PSTUNMessage::BindingRequest);
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
@@ -651,14 +670,14 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
   PSTUNMessage response;
   if (!response.Poll(socket, request, pollRetries))
   {
-    PTRACE(1, "STUN\tServer " << serverAddress << ':' << serverPort << " unexpectedly went offline.");
+    PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
     return false;
   }
 
   PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)response.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
   if (mappedAddress == NULL)
   {
-    PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+    PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
     return false;
   }
 
@@ -679,8 +698,11 @@ bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & internalAddress) cons
 }
 
 
-void PSTUNClient::InvalidateExternalAddressCache() {
+void PSTUNClient::InvalidateCache()
+{
+  cachedServerAddress = 0;
   cachedExternalAddress = 0;
+  interfaceAddress = 0;
   natType = UnknownNat;
 }
 
@@ -744,10 +766,10 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
         return true;
       }
 
-      PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+      PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
     }
     else
-      PTRACE(1, "STUN\tServer " << serverAddress << ':' << serverPort << " unexpectedly went offline.");
+      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
   }
 
   delete stunSocket;
@@ -797,7 +819,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   {
     PINDEX idx = stunSocket.Append(new PSTUNUDPSocket);
     if (!OpenSocket(stunSocket[idx], pairedPortInfo, interfaceAddress)) {
-      PTRACE(1, "STUN\tUnable to open socket to server " << serverAddress);
+      PTRACE(1, "STUN\tUnable to open socket to " << *this);
       return false;
     }
 
@@ -811,7 +833,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   {
     if (!response[i].Poll(stunSocket[i], request[i], pollRetries))
     {
-      PTRACE(1, "STUN\tServer " << serverAddress << ':' << serverPort << " unexpectedly went offline.");
+      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
       return false;
     }
   }
@@ -821,7 +843,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
     PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)response[i].FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
     if (mappedAddress == NULL)
     {
-      PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+      PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
       return false;
     }
     if (GetNatType(PFalse) != SymmetricNat)

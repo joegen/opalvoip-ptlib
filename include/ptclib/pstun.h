@@ -195,11 +195,11 @@ class PSTUNClient : public PNatMethod
       PIPSocket::Address & internalAddress
     ) const;
 
-    /**Invalidates the cached external address
+    /**Invalidates the cached addresses and modes.
        This allows to lazily update the external address cache at the next 
        attempt to get the external address.
       */
-    void InvalidateExternalAddressCache();
+    void InvalidateCache();
 
     /**Create a single socket.
        The STUN protocol is used to create a socket for which the external IP
@@ -286,15 +286,16 @@ class PSTUNClient : public PNatMethod
     );
 
   protected:
-    PIPSocket::Address serverAddress;
+    PString            serverHost;
     WORD               serverPort;
     PTimeInterval      replyTimeout;
     PINDEX             pollRetries;
     PINDEX             numSocketsForPairing;
 
-    bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding) const;
+    bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding);
 
     NatTypes           natType;
+    PIPSocket::Address cachedServerAddress;
     PIPSocket::Address cachedExternalAddress;
     PIPSocket::Address interfaceAddress;
     PTime              timeAddressObtained;
