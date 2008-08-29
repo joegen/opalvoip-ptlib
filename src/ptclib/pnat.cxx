@@ -136,6 +136,12 @@ PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr
 }
 
 
+void PNatMethod::PrintOn(ostream & strm) const
+{
+  strm << GetName() << " server " << GetServer();
+}
+
+
 PString PNatMethod::GetServer() const
 {
   PStringStream str;
