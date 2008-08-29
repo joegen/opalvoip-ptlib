@@ -261,7 +261,7 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 }
 
 
-static void SplitVars(const PString & str, PStringToString & vars, char sep1, char sep2)
+void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, char sep2)
 {
   vars.RemoveAll();
 
@@ -287,12 +287,6 @@ static void SplitVars(const PString & str, PStringToString & vars, char sep1, ch
 
     sep1prev = sep1next+1;
   } while (sep1prev != P_MAX_INDEX);
-}
-
-
-void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
-{
-  SplitVars(queryStr, queryVars, '&', '=');
 }
 
 

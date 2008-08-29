@@ -186,11 +186,20 @@ class PURL : public PObject
       TranslationType type    ///< Type of translation.
     );
 
+    /** Split a string to a dictionary of names and values. */
+    static void SplitVars(
+      const PString & str,    ///< String to split into variables.
+      PStringToString & vars, ///< Dictionary of variable names and values.
+      char sep1,              ///< Separater between pairs
+      char sep2               ///< Separater between key and value
+    );
+
     /** Split a string in &= form to a dictionary of names and values. */
     static void SplitQueryVars(
       const PString & queryStr,   ///< String to split into variables.
       PStringToString & queryVars ///< Dictionary of variable names and values.
-    );
+    ) { SplitVars(queryStr, queryVars, '&', '='); }
+
 
 
     /// Get the scheme field of the URL.
