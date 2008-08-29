@@ -67,6 +67,14 @@ class PNatMethod  : public PObject
   //@}
 
 
+  /**@name Overrides from PObject */
+  //@{
+    virtual void PrintOn(
+      ostream & strm
+    ) const;
+  //@}
+
+
   /**@name General Functions */
   //@{
     /** Factory Create
