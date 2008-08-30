@@ -1501,16 +1501,16 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #ifdef __MACOSX__
   
-#ifdef HAS_VIDEO
+#ifdef P_VIDEO
   PWLibStupidOSXHacks::loadFakeVideoStuff = 1;
-#ifdef USE_SHM_VIDEO_DEVICES
+#ifdef P_SHM_VIDEO
   PWLibStupidOSXHacks::loadShmVideoStuff = 1;
-#endif // USE_SHM_VIDEO_DEVICES
-#endif // HAS_VIDEO
+#endif // P_SHM_VIDEO
+#endif // P_VIDEO
   
-#ifdef HAS_AUDIO
+#ifdef P_AUDIO
   PWLibStupidOSXHacks::loadCoreAudioStuff = 1;
-#endif // HAS_AUDIO
+#endif // P_AUDIO
   
 #endif // __MACOSX__
 
