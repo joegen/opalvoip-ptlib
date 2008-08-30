@@ -445,7 +445,7 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
           LIBS="$LIBS ${ptlib_expat_libs}"
           CFLAGS="$CFLAGS ${ptlib_expat_cflags}"
 
-          AC_CHECK_HEADERS([expat.h], [ptlib_expat=yes])
+          AC_CHECK_HEADERS([expat.h], [ptlib_expat=yes], [ptlib_expat=no])
           if test "x${ptlib_expat}" = "xyes" ; then
             AC_CHECK_LIB([expat], [XML_ParserCreate], [ptlib_expat=yes], [ptlib_expat=no])
           fi
