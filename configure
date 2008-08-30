@@ -662,6 +662,7 @@ OBJEXT
 CXX
 CXXFLAGS
 ac_ct_CXX
+HAS_EXPAT
 PTLIBDIR
 PTINSTDIR
 INSTALLPREFIX
@@ -709,7 +710,6 @@ OPENSSL_LIBS
 HAS_OPENSSL
 P_STATIC_ENDLDLIBS
 P_STATIC_LDFLAGS
-HAS_EXPAT
 HAS_IPV6
 SDL_CFLAGS
 SDL_LIBS
@@ -3298,6 +3298,12 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+
+
+
+
 
 
 
@@ -15458,6 +15464,7 @@ OBJEXT!$OBJEXT$ac_delim
 CXX!$CXX$ac_delim
 CXXFLAGS!$CXXFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
+HAS_EXPAT!$HAS_EXPAT$ac_delim
 PTLIBDIR!$PTLIBDIR$ac_delim
 PTINSTDIR!$PTINSTDIR$ac_delim
 INSTALLPREFIX!$INSTALLPREFIX$ac_delim
@@ -15505,7 +15512,6 @@ OPENSSL_LIBS!$OPENSSL_LIBS$ac_delim
 HAS_OPENSSL!$HAS_OPENSSL$ac_delim
 P_STATIC_ENDLDLIBS!$P_STATIC_ENDLDLIBS$ac_delim
 P_STATIC_LDFLAGS!$P_STATIC_LDFLAGS$ac_delim
-HAS_EXPAT!$HAS_EXPAT$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
