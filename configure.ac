@@ -521,7 +521,7 @@ HAS_QOS=1
 HAS_SOCKAGG=1
 HAS_VIDFILE=1
 HAS_APPSHARE=
-default_shmvideo=yes
+HAS_SHM_VIDEO=1
 HAS_VXML=1
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
@@ -562,8 +562,8 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
-  default_shmvideo=no
   HAS_VXML=1
+  HAS_SHM_VIDEO=
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -602,8 +602,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
-  default_shmvideo=no
   HAS_VXML=
+  HAS_SHM_VIDEO=
 fi
 
 
@@ -1551,23 +1551,8 @@ AC_SUBST(HAS_VIDEO_CAPTURE)
 dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
+PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
 
-AC_ARG_ENABLE(shm_video,
-		[  --enable-shmvideo       enable shared memory video devices],
-		shm_video=$enableval)
-
-if test "${enable_shmvideo}z" = "z" ; then
-  shm_video=$default_shmvideo
-fi
-
-USE_SHM_VIDEO_DEVICES=
-if test "$shm_video" = "yes" ; then
-  USE_SHM_VIDEO_DEVICES=1
-  AC_MSG_NOTICE(Shared memory video devices enabled)
-else
-  AC_MSG_NOTICE(Shared memory video devices disabled)
-fi
-AC_SUBST(USE_SHM_VIDEO_DEVICES)
 
 dnl ########################################################################
 dnl check for for audio drivers

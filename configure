@@ -743,7 +743,7 @@ HAS_VIDEO
 HAS_VIDFILE
 HAS_APPSHARE
 HAS_VIDEO_CAPTURE
-USE_SHM_VIDEO_DEVICES
+HAS_SHM_VIDEO
 HAS_OSS
 HAS_ALSA
 HAS_ODBC
@@ -6649,7 +6649,7 @@ HAS_QOS=1
 HAS_SOCKAGG=1
 HAS_VIDFILE=1
 HAS_APPSHARE=
-default_shmvideo=yes
+HAS_SHM_VIDEO=1
 HAS_VXML=1
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
@@ -6690,8 +6690,8 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
-  default_shmvideo=no
   HAS_VXML=1
+  HAS_SHM_VIDEO=
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -6730,8 +6730,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
   HAS_APPSHARE=
-  default_shmvideo=no
   HAS_VXML=
+  HAS_SHM_VIDEO=
 fi
 
 
@@ -13760,25 +13760,55 @@ fi
 
 
 
-# Check whether --enable-shm_video was given.
-if test "${enable_shm_video+set}" = set; then
-  enableval=$enable_shm_video; shm_video=$enableval
+          { echo "$as_me:$LINENO: checking enable shared memory video devices" >&5
+echo $ECHO_N "checking enable shared memory video devices... $ECHO_C" >&6; }
+          # Check whether --enable-shmvideo was given.
+if test "${enable_shmvideo+set}" = set; then
+  enableval=$enable_shmvideo;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_SHM_VIDEO=1
+                         else
+                           HAS_SHM_VIDEO=
+                         fi
+
 fi
 
 
-if test "${enable_shmvideo}z" = "z" ; then
-  shm_video=$default_shmvideo
-fi
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: shmvideo support disabled due to disabled dependency " >&5
+echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
+	      HAS_SHM_VIDEO=
+	    fi
+	  fi
 
-USE_SHM_VIDEO_DEVICES=
-if test "$shm_video" = "yes" ; then
-  USE_SHM_VIDEO_DEVICES=1
-  { echo "$as_me:$LINENO: Shared memory video devices enabled" >&5
-echo "$as_me: Shared memory video devices enabled" >&6;}
-else
-  { echo "$as_me:$LINENO: Shared memory video devices disabled" >&5
-echo "$as_me: Shared memory video devices disabled" >&6;}
-fi
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: shmvideo support disabled due to disabled dependency " >&5
+echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
+	      HAS_SHM_VIDEO=
+	    fi
+	  fi
+
+
+          if test "x${HAS_SHM_VIDEO}" = "x1"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_SHM_VIDEO 1
+_ACEOF
+
+            HAS_SHM_VIDEO=1
+            { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+          else
+            HAS_SHM_VIDEO=
+            { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+          fi
+
+
+
+
 
 
 
@@ -15327,7 +15357,7 @@ HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
 HAS_VIDEO_CAPTURE!$HAS_VIDEO_CAPTURE$ac_delim
-USE_SHM_VIDEO_DEVICES!$USE_SHM_VIDEO_DEVICES$ac_delim
+HAS_SHM_VIDEO!$HAS_SHM_VIDEO$ac_delim
 HAS_OSS!$HAS_OSS$ac_delim
 HAS_ALSA!$HAS_ALSA$ac_delim
 HAS_ODBC!$HAS_ODBC$ac_delim
