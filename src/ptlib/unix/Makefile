@@ -550,7 +550,7 @@ SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
 	    $(COMMON_SRC_DIR)/tinyjpeg.c \
 	    $(COMMON_SRC_DIR)/jidctflt.c
 	        
-ifdef USE_SHM_VIDEO_DEVICES
+ifdef HAS_SHM_VIDEO
 SOURCES	+= shmvideo.cxx
 endif
 
