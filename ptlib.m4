@@ -329,3 +329,133 @@ AC_DEFUN([PTLIB_CHECK_FDSIZE],
           AC_MSG_RESULT(${ptlib_fdsize})
          ])
 
+dnl PTLIB_CHECK_SASL_INCLUDE
+dnl Try to find a library containing dlopen()
+dnl Arguments: $1 action if-found
+dnl            $2 action if-not-found
+dnl Return:    $DL_LIBS The libs for dlopen()
+AC_DEFUN([PTLIB_CHECK_SASL_INCLUDE],
+         [
+          ptlib_sasl=no
+          AC_MSG_CHECKING([if <sasl.h> works])
+          AC_COMPILE_IFELSE([[
+                              #include <sasl.h>
+                              int main(int argc,char **argv)
+                              { int v = SASL_LOG_PASS; }
+                            ]],
+                            [
+                              AC_MSG_RESULT(yes)
+                              ptlib_sasl=yes
+                              SASL_HEADER=
+                            ],
+                            [
+                              AC_MSG_RESULT(no)
+                            ])
+
+          if test "x${HAS_INCLUDE_SASL_H}" != "xyes" ; then
+            AC_MSG_CHECKING([if <sasl/sasl.h> works])
+            AC_COMPILE_IFELSE([[
+                                #include <sasl/sasl.h>
+                                int main(int argc,char **argv){ int v = SASL_LOG_PASS; }
+                              ]],
+                              [
+                                AC_MSG_RESULT(yes)
+                                ptlib_sasl=yes
+                                SASL_HEADER=sasl
+                              ],
+                              [
+                                AC_MSG_RESULT(no)
+                              ])
+          fi
+          AS_IF([test AS_VAR_GET([ptlib_sasl]) = yes], [$1], [$2])[]
+         ])
+
+dnl PTLIB_FIND_OPENLDAP
+dnl Find OpenLDAP
+dnl Arguments: $STDCCFLAGS
+dnl Return:    $STDCCFLAGS
+AC_DEFUN([PTLIB_FIND_OPENLDAP],
+         [
+          AC_ARG_WITH([ldap-dir], 
+                      AS_HELP_STRING([--with-ldap-dir=PFX],[Location of LDAP]),
+                      [with_ldap_dir="$withval"])
+
+          ptlib_openldap=yes
+          if test "x${HAS_RESOLVER}" != "x1"; then
+            AC_MSG_NOTICE([OpenLDAP support disabled due to disabled dependency HAS_RESOLVER])
+            ptlib_openldap=no
+          fi
+
+          if test "x${ptlib_openldap}" = "xyes"; then  
+            case "$target_os" in
+            solaris* | sunos* )
+                            dnl posix4 is required by libldap_r on Solaris
+                            ptlib_openldap_libs="-lposix4"
+                            ;;
+                            * )
+                            ptlib_openldap_libs="-llber -lldap_r"
+            esac
+
+            if test "x${with_ldap_dir}" != "x"; then  
+              ptlib_openldap_libs="${ptlib_openldap_libs} -L${with_ldap_dir}/lib"
+              ptlib_openldap_cflags="${ptlib_openldap_cflags} -I${with_ldap_dir}/include"
+            fi
+
+            old_LIBS="$LIBS"
+            old_CFLAGS="$CFLAGS"
+            LIBS="$LIBS ${ptlib_openldap_libs} $RESOLVER_LIBS"
+            CFLAGS="$CFLAGS ${ptlib_openldap_cflags}"
+
+            AC_CHECK_HEADERS([ldap.h], [ptlib_openldap=yes], [ptlib_openldap=no])
+            if test "x${ptlib_openldap}" = "xyes" ; then
+              AC_CHECK_LIB([ldap], [ldap_open], [ptlib_openldap=yes], [ptlib_openldap=no])
+            fi
+
+            LIBS="$old_LIBS"
+            CFLAGS="$old_CFLAGS"
+
+            if test "x${ptlib_openldap}" = "xyes" ; then
+              OPENLDAP_LIBS="-lldap ${ptlib_openldap_libs}"
+              OPENLDAP_CFLAGS="${ptlib_openldap_cflags}"
+            fi
+          fi
+          AS_IF([test AS_VAR_GET([ptlib_openldap]) = yes], [$1], [$2])[]
+         ])
+
+AC_SUBST(HAS_EXPAT)
+dnl PTLIB_FIND_EXPAT
+dnl Find OpenLDAP
+dnl Arguments: $STDCCFLAGS
+dnl Return:    $STDCCFLAGS
+AC_DEFUN([PTLIB_FIND_EXPAT],
+         [
+          AC_ARG_WITH([expat-dir], 
+                      AS_HELP_STRING([--with-expat-dir=PFX],[Location of expat XML parser]),
+                      [with_expat_dir="$withval"])
+
+          ptlib_expat=no
+
+          if test "x${with_expat_dir}" != "x"; then  
+            ptlib_expat_cflags="-I${with_expat_dir}/include"
+            ptlib_expat_libs="-L${with_expat_dir}/lib"
+          fi
+
+          old_LIBS="$LIBS"
+          old_CFLAGS="$CFLAGS"
+          LIBS="$LIBS ${ptlib_expat_libs}"
+          CFLAGS="$CFLAGS ${ptlib_expat_cflags}"
+
+          AC_CHECK_HEADERS([expat.h], [ptlib_expat=yes])
+          if test "x${ptlib_expat}" = "xyes" ; then
+            AC_CHECK_LIB([expat], [XML_ParserCreate], [ptlib_expat=yes], [ptlib_expat=no])
+          fi
+
+          LIBS="$old_LIBS"
+          CFLAGS="$old_CFLAGS"
+
+          if test "x${ptlib_expat}" = "xyes" ; then
+            EXPAT_LIBS="-lexpat ${ptlib_expat_libs}"
+            EXPAT_CFLAGS="${ptlib_expat_cflags}"
+          fi
+          AS_IF([test AS_VAR_GET([ptlib_expat]) = yes], [$1], [$2])[]
+         ])
