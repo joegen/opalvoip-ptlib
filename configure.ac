@@ -132,9 +132,6 @@ case "$target_os" in
 		   OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
 		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
-                   if test -e /Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include/expat.h ; then
-                     EXPATDIR=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6
-                   fi
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;
@@ -1169,43 +1166,24 @@ dnl MSWIN_CHECK_DIR  expat,c:\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\expat\
 dnl MSWIN_CHECK_DIR  expat,\Program Files\Expat 2.*
 
+AC_ARG_ENABLE([expat],
+	      AS_HELP_STRING([--disable-expat],[disable expat XML support]),
+	      [enable_expat=$enableval],
+	      [enable_expat=$default_expat]
+	     )
 
-AC_ARG_ENABLE(expat,
-       [  --disable-expat         disable XML support])
 
-if test "${enable_expat}z" = "z" ; then
-  enable_expat=$default_expat
-fi
-
-HAS_EXPAT=
 if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(Expat disabled)
 else
-  if test "${EXPATDIR}z" != "z" ; then
-    AC_CHECK_HEADERS(${EXPATDIR}/lib/expat.h, HAS_EXPAT=1)
-    if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/lib"
-      LDFLAGS="$LDFLAGS -L${EXPATDIR}/.libs"
-    else
-      AC_CHECK_HEADERS(${EXPATDIR}/include/expat.h, HAS_EXPAT=1)
-      if test "${HAS_EXPAT:-unset}" != "unset" ; then
-        STDCCFLAGS="$STDCCFLAGS -I${EXPATDIR}/include"
-        LDFLAGS="$LDFLAGS -L${EXPATDIR}/lib"
-      fi
-    fi
-  else
-    AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
-    if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
-    fi
-  fi
+  PTLIB_FIND_EXPAT([HAS_EXPAT=1], [HAS_EXPAT=])
 
-  if test "${HAS_EXPAT:-unset}" != "unset" ; then
+  if test "x${HAS_EXPAT}" = "x1" ; then
     AC_DEFINE(P_OEXPAT, 1, "expat found")
-    ENDLDLIBS="$ENDLDLIBS -lexpat"
+    STDCCFLAGS="$STDCCFLAGS $EXPAT_CFLAGS"
+    ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
 fi
-AC_SUBST(HAS_EXPAT)
 
 dnl ########################################################################
 dnl look for IPV6 functions
