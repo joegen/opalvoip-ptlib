@@ -237,10 +237,10 @@ PBoolean PRemoteConnection::Open(const PString & name,
   //
   // setup the chat command
   //
-  PString chatCmd = chatErrs & modemInit & dialPrefix + phoneNumber & loginStr;
+  PString chatCmd = chatErrs & (modemInit & (dialPrefix + (phoneNumber & loginStr)));
   if (!chatCmd.IsEmpty()) {
     argArray[argCount++] = "connect";
-    argArray[argCount++] = chatStr & "-t" + timeoutStr & chatCmd;
+    argArray[argCount++] = chatStr & ("-t" + (timeoutStr & chatCmd));
   }
 
   if (!addressStr)
