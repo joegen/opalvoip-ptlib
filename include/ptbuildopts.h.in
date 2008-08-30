@@ -562,7 +562,7 @@
 #undef P_SOCKAGG
 #undef P_VIDFILE
 #undef P_ODBC
-#undef P_SHMVIDEO
+#undef P_SHM_VIDEO
 
 /////////////////////////////////////////////////
 //
