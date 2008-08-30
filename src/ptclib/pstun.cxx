@@ -440,7 +440,7 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIP
     return false;
   }
 
-  if (!cachedServerAddress.IsValid() || !PIPSocket::GetHostAddress(serverHost, cachedServerAddress)) {
+  if (!PIPSocket::GetHostAddress(serverHost, cachedServerAddress) || !cachedServerAddress.IsValid()) {
     PTRACE(2, "STUN\tCould not find host \"" << serverHost << "\".");
     return false;
   }
