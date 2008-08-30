@@ -3,6 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 cxxflags=@STDCXXFLAGS@
+machtype=@MACHTYPE@
+ostype=@OSTYPE@
 
 Name: ptlib
 Description: PT Library
