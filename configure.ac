@@ -1633,6 +1633,7 @@ dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6.*
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDK\
+dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_DDRAW_H,ddraw.h,include
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\
 
 

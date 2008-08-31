@@ -31,7 +31,7 @@
 #include <ptlib.h>
 #include <ptbuildopts.h>
 
-#if defined(P_DIRECTSHOW) && defined(P_DIRECTSOUND)
+#if defined(P_DIRECTSHOW) && defined(P_DIRECTSOUND) && defined(P_DIRECTSHOW_DDRAW_H)
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pluginmgr.h>
