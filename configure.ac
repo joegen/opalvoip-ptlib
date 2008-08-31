@@ -1616,11 +1616,12 @@ dnl MSWIN_DIR_SYMBOL dsound,DIRECTX_DIR
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB64,dsound.lib,lib/x64
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib/x86
 dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft DirectX SDK\
+dnl MSWIN_FIND_FILE  dsound,P_DIRECTX_DDRAW_H,ddraw.h,include
+dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\
+dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft DirectX SDK\
 
 
 dnl ########################################################################
@@ -1628,12 +1629,12 @@ dnl look for Direct Show (video)
 
 dnl MSWIN_DISPLAY    dshow,Direct Show Support
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
+dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_DDRAW_H,ddraw.h,include
 dnl MSWIN_DIR_SYMBOL dshow,DIRECTSHOW_DIR
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6.*
+dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDK\
-dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_DDRAW_H,ddraw.h,include
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\
 
 
