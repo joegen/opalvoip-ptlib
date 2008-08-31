@@ -30,7 +30,7 @@
 
 #include <ptlib.h>
 
-#if defined(P_DIRECTSHOW) && defined(P_DIRECTSOUND) && defined(P_DIRECTSHOW_DDRAW_H)
+#if defined(P_DIRECTSHOW)
 
 #include "ptlib/msos/ptlib/vidinput_directx.h"
 
