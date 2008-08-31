@@ -702,10 +702,11 @@ void PTimer::StartRunning(PBoolean once)
 
 void PTimer::Stop(bool wait)
 {
-  state = Stopped;
-  milliseconds = 0;
-
-  timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
+  if (state != Stopped) {
+    state = Stopped;
+    milliseconds = 0;
+    timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
+  }
 }
 
 
