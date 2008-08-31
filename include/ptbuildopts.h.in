@@ -598,7 +598,7 @@
 
   #if defined(_MSC_VER)
 
-    #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
+    #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE) && defined(P_DIRECTSHOW_DDRAW_H)
 
       #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
       #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
