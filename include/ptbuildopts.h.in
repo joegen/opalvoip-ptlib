@@ -591,17 +591,20 @@
 #else
 
   #undef P_DIRECTSOUND
-  #undef P_VFW_CAPTURE
-  #undef P_DIRECTSHOW
-
   #undef P_DIRECTSOUND_WINCE
+
+  #undef P_DIRECTX_DDRAW_H
+  #undef P_DIRECTSHOW_DDRAW_H
+
+  #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
+    #undef P_DIRECTSHOW
+  #endif
 
   #if defined(_MSC_VER)
 
-    #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE) && defined(P_DIRECTSHOW_DDRAW_H)
+    #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
 
       #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
-      #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
 
       #undef P_DIRECTSOUND_LIB64
       #undef P_DIRECTSOUND_LIB32
@@ -616,7 +619,11 @@
 
     #if defined(P_DIRECTSHOW)
 
-      #undef P_DIRECTDRAW_H
+      #ifdef P_DIRECTSHOW_DDRAW_H
+        #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
+      #else
+        #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
+      #endif
 
       #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
       #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
