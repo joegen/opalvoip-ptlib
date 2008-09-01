@@ -435,15 +435,20 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
 
           ptlib_expat=no
 
-          if test "x${with_expat_dir}" != "x"; then  
-            ptlib_expat_cflags="-I${with_expat_dir}/include"
-            ptlib_expat_libs="-L${with_expat_dir}/lib"
+          if test "x${with_expat_dir}" != "x"; then
+            AC_MSG_NOTICE(Using expat dir ${with_expat_dir})
+            if test -d ${with_expat_dir}/include; then
+	      ptlib_expat_cflags="-I${with_expat_dir}/include"
+	    else
+	      ptlib_expat_cflags="-I${with_expat_dir}/lib"
+	    fi
+	    ptlib_expat_libs="-L${with_expat_dir}/lib"
           fi
 
           old_LIBS="$LIBS"
-          old_CFLAGS="$CFLAGS"
+          old_CPPFLAGS="$CPPFLAGS"
           LIBS="$LIBS ${ptlib_expat_libs}"
-          CFLAGS="$CFLAGS ${ptlib_expat_cflags}"
+          CPPFLAGS="$CPPFLAGS ${ptlib_expat_cflags}"
 
           AC_CHECK_HEADERS([expat.h], [ptlib_expat=yes], [ptlib_expat=no])
           if test "x${ptlib_expat}" = "xyes" ; then
@@ -451,7 +456,7 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
           fi
 
           LIBS="$old_LIBS"
-          CFLAGS="$old_CFLAGS"
+          CPPFLAGS="$old_CPPFLAGS"
 
           if test "x${ptlib_expat}" = "xyes" ; then
             EXPAT_LIBS="-lexpat ${ptlib_expat_libs}"
