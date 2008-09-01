@@ -422,7 +422,6 @@ AC_DEFUN([PTLIB_FIND_OPENLDAP],
           AS_IF([test AS_VAR_GET([ptlib_openldap]) = yes], [$1], [$2])[]
          ])
 
-AC_SUBST(HAS_EXPAT)
 dnl PTLIB_FIND_EXPAT
 dnl Find OpenLDAP
 dnl Arguments: $STDCCFLAGS
