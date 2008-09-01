@@ -439,10 +439,11 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
             AC_MSG_NOTICE(Using expat dir ${with_expat_dir})
             if test -d ${with_expat_dir}/include; then
 	      ptlib_expat_cflags="-I${with_expat_dir}/include"
+	      ptlib_expat_libs="-L${with_expat_dir}/lib"
 	    else
 	      ptlib_expat_cflags="-I${with_expat_dir}/lib"
+	      ptlib_expat_libs="-L${with_expat_dir}/.libs"
 	    fi
-	    ptlib_expat_libs="-L${with_expat_dir}/lib"
           fi
 
           old_LIBS="$LIBS"
