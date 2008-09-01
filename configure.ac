@@ -1094,6 +1094,7 @@ else
     ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
 fi
+AC_SUBST(HAS_EXPAT)
 
 dnl ########################################################################
 dnl look for IPV6 functions
