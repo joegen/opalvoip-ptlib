@@ -922,98 +922,40 @@ dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
   
-AC_ARG_ENABLE(sasl,
-       [  --disable-sasl          disable SASL support])
-
-if test "${enable_sasl}z" = "z" ; then
-  enable_sasl=$default_sasl
-fi
-
-HAS_SASL=
-HAS_SASL2=
+AC_ARG_ENABLE([sasl],
+	      AS_HELP_STRING([--disable-sasl],[disable SASL support]),
+	      [enable_sasl=$enableval],
+	      [enable_sasl=$default_sasl]
+	     )
 
 if test "$enable_sasl" = "no" ; then
   AC_MSG_NOTICE(SASL disabled)
 else 
 
-  AC_MSG_CHECKING([for sasl_version in -lsasl2])
-  my_LIBS=$LIBS
-  LIBS="$LIBS -lsasl2"			
-  AC_LINK_IFELSE([#ifdef __cplusplus
- 				  extern "C"
-   				  #endif
- 				  char sasl_version ();
- 				  int
- 				  main ()
- 				  {
- 				   sasl_version ();
-   					;
-   				   return 0;
- 				  }], HAS_SASL2=1, HAS_SASL2= )
-  if test "${HAS_SASL2}x" = "x" ; then
-	  AC_MSG_RESULT(no)
-	  LIBS=$my_LIBS
-	  LIBS="$LIBS -lsasl"
-	  AC_MSG_CHECKING([for sasl_client_auth in sasl])
-      AC_LINK_IFELSE([#ifdef __cplusplus
-                  extern "C"
-                  #endif
-                  char sasl_client_out ();
-                  int
-                  main ()
-                  {
-                   sasl_client_out ();
-                    ;
-                   return 0;
-                  }], HAS_SASL=1, HAS_SASL= )
-	  if test "${HAS_SASL}x" = "x" ; then
-		AC_MSG_RESULT(no)
-	  else
-		AC_MSG_RESULT(yes)	
-	  fi	
+  AC_CHECK_LIB([sasl2], [sasl_version], [HAS_SASL2=1], [HAS_SASL2=])
+  AC_CHECK_LIB([sasl], [sasl_client_out], [HAS_SASL=1], [HAS_SASL=])
+
+  PTLIB_CHECK_SASL_INCLUDE([
+                            if test "x${SASL_HEADER}" = "xsasl" ; then
+                              AC_DEFINE(P_HAS_SASL_SASL_H)
+                            fi
+                           ],
+                           [
+                            HAS_SASL=
+                            HAS_SASL2=
+                           ])
+
+  if test "x${HAS_SASL2}" = "x1" ; then
+    ENDLDLIBS="$ENDLDLIBS -lsasl2"
+    AC_DEFINE(P_SASL2)
+  elif test "x${HAS_SASL}" = "x1" ; then
+    ENDLDLIBS="$ENDLDLIBS -lsasl"
+    AC_DEFINE(P_SASL)
   fi
-  AC_MSG_RESULT(yes)
-
-LIBS=$my_LIBS
-
-dnl we need to track down the correct sasl.h
-AC_MSG_CHECKING([if <sasl.h> works])
-AC_COMPILE_IFELSE([[#include <sasl.h>
-int main(int argc,char **argv){ int v = SASL_LOG_PASS; }]],HAS_INCLUDE_SASL_H=1)
-if test "${HAS_INCLUDE_SASL_H}x" != "x" ; then
-  AC_MSG_RESULT(yes)
-  SASL_INCLUDED=1
-else
-  AC_MSG_RESULT(no)
-  AC_MSG_CHECKING([if <sasl/sasl.h> works])
-  AC_COMPILE_IFELSE([[#include <sasl/sasl.h>
-  int main(int argc,char **argv){ int v = SASL_LOG_PASS; }]],P_HAS_SASL_SASL_H=1)
-  if test "${P_HAS_SASL_SASL_H}x" != "x" ; then
-    AC_MSG_RESULT(yes)
-    SASL_INCLUDED=1
-    AC_DEFINE(P_HAS_SASL_SASL_H)
-  else
-    AC_MSG_RESULT(no)
-    HAS_SASL2=
-  fi
-fi
-
-if test "${HAS_SASL2}x" != "x" ; then
-  HAS_SASL2=1
-  ENDLDLIBS="$ENDLDLIBS -lsasl2"
-  AC_DEFINE(P_SASL2)
-elif test "${HAS_SASL}x" != "x" ; then
-  HAS_SASL=1
-  ENDLDLIBS="$ENDLDLIBS -lsasl"
-  AC_DEFINE(P_SASL)
-else
-  HAS_SASL=0
-fi
-	
 fi dnl disable_Sasl
-
-AC_SUBST(HAS_SASL)
 AC_SUBST(HAS_SASL2)
+AC_SUBST(HAS_SASL)
+
 
 dnl ########################################################################
 dnl check for mediaLib library
