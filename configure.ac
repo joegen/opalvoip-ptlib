@@ -248,10 +248,6 @@ if test "$target_os" = "linux-gnulp" ; then
 fi
 
 
-dnl solaris has it's own ldap library
-if test ${OSTYPE} != solaris ; then
-   LDAP_LIBRARIES="-llber -lldap_r"
-fi
 
 dnl ########################################################################
 dnl get the gcc version
@@ -1041,53 +1037,25 @@ dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
 dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
-AC_ARG_ENABLE(openldap,
-       [  --disable-openldap      disable OpenLDAP support])
-
-if test "${enable_openldap}z" = "z" ; then
-  enable_openldap=$default_openldap
-fi
+AC_ARG_ENABLE([openldap],
+	      AS_HELP_STRING([--disable-openldap],[disable OpenLDAP support]),
+	      [enable_openldap=$enableval],
+	      [enable_openldap=$default_openldap]
+	     )
 
 HAS_OPENLDAP=
 if test "$enable_openldap" = "no" ; then
   AC_MSG_NOTICE(OpenLDAP disabled)
 else 
-  if test "${HAS_RESOLVER:-unset}" != "unset" -o "${OSTYPE}" = "mingw" ; then
-    AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
-  
-    dnl posix4 is required by libldap_r on Solaris
-    if test "${OSTYPE:-unknown}" = "solaris"; then
-      OPENLDAPSYSLIBS=-lposix4
-    fi
-
-    dnl check also for lldap_r presence (required for thread safe OpenLDAP?)
-    if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,$LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
-    else
-      AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
-      if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-        OPENLDAPINCLUDEDIR=/usr/local/include
-        OPENLDAPLIBDIR=/usr/local/lib
-        AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-L/usr/local/lib $LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
-      fi
-    fi
-  fi
-
-  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-    HAS_OPENLDAP=1
+  PTLIB_FIND_OPENLDAP([HAS_OPENLDAP=1], [HAS_OPENLDAP=])
+  if test "x${HAS_OPENLDAP}" = "x1" ; then
     AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
-    ENDLDLIBS="-lldap $LDAP_LIBRARIES $ENDLDLIBS"
-    if test "${OPENLDAPINCLUDEDIR}unset" != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
-    fi
-    if test "${OPENLDAPLIBDIR}unset" != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
-    fi
+    ENDLDLIBS="$ENDLDLIBS $OPENLDAP_LIBS"
+    STDCCFLAGS="$STDCCFLAGS $OPENLDAP_CFLAGS"
   fi
 fi
 
 AC_SUBST(HAS_OPENLDAP)
-
 
 dnl ########################################################################
 dnl look for OpenSSL

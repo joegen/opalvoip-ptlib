@@ -1409,6 +1409,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-ldap-dir=PFX     Location of LDAP
   --with-expat-dir=PFX    Location of expat XML parser
   --with-directx-includedir=DIR
                           Location of DirectX include files
@@ -4603,9 +4604,6 @@ _ACEOF
 fi
 
 
-if test ${OSTYPE} != solaris ; then
-   LDAP_LIBRARIES="-llber -lldap_r"
-fi
 
 
 USE_GCC=
@@ -9521,20 +9519,52 @@ fi
 
 # Check whether --enable-openldap was given.
 if test "${enable_openldap+set}" = set; then
-  enableval=$enable_openldap;
-fi
-
-
-if test "${enable_openldap}z" = "z" ; then
+  enableval=$enable_openldap; enable_openldap=$enableval
+else
   enable_openldap=$default_openldap
+
 fi
+
 
 HAS_OPENLDAP=
 if test "$enable_openldap" = "no" ; then
   { echo "$as_me:$LINENO: OpenLDAP disabled" >&5
 echo "$as_me: OpenLDAP disabled" >&6;}
 else
-  if test "${HAS_RESOLVER:-unset}" != "unset" -o "${OSTYPE}" = "mingw" ; then
+
+
+# Check whether --with-ldap-dir was given.
+if test "${with_ldap_dir+set}" = set; then
+  withval=$with_ldap_dir; with_ldap_dir="$withval"
+fi
+
+
+          ptlib_openldap=yes
+          if test "x${HAS_RESOLVER}" != "x1"; then
+            { echo "$as_me:$LINENO: OpenLDAP support disabled due to disabled dependency HAS_RESOLVER" >&5
+echo "$as_me: OpenLDAP support disabled due to disabled dependency HAS_RESOLVER" >&6;}
+            ptlib_openldap=no
+          fi
+
+          if test "x${ptlib_openldap}" = "xyes"; then
+            case "$target_os" in
+            solaris* | sunos* )
+                                                        ptlib_openldap_libs="-lposix4"
+                            ;;
+                            * )
+                            ptlib_openldap_libs="-llber -lldap_r"
+            esac
+
+            if test "x${with_ldap_dir}" != "x"; then
+              ptlib_openldap_libs="${ptlib_openldap_libs} -L${with_ldap_dir}/lib"
+              ptlib_openldap_cflags="${ptlib_openldap_cflags} -I${with_ldap_dir}/include"
+            fi
+
+            old_LIBS="$LIBS"
+            old_CFLAGS="$CFLAGS"
+            LIBS="$LIBS ${ptlib_openldap_libs} $RESOLVER_LIBS"
+            CFLAGS="$CFLAGS ${ptlib_openldap_cflags}"
+
 
 for ac_header in ldap.h
 do
@@ -9670,24 +9700,21 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- HAS_OPENLDAP=1
+ ptlib_openldap=yes
+else
+  ptlib_openldap=no
 fi
 
 done
 
-
-        if test "${OSTYPE:-unknown}" = "solaris"; then
-      OPENLDAPSYSLIBS=-lposix4
-    fi
-
-        if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-      { echo "$as_me:$LINENO: checking for ldap_open in -lldap" >&5
+            if test "x${ptlib_openldap}" = "xyes" ; then
+              { echo "$as_me:$LINENO: checking for ldap_open in -lldap" >&5
 echo $ECHO_N "checking for ldap_open in -lldap... $ECHO_C" >&6; }
 if test "${ac_cv_lib_ldap_ldap_open+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lldap $LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS $LIBS"
+LIBS="-lldap  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -9743,124 +9770,38 @@ fi
 { echo "$as_me:$LINENO: result: $ac_cv_lib_ldap_ldap_open" >&5
 echo "${ECHO_T}$ac_cv_lib_ldap_ldap_open" >&6; }
 if test $ac_cv_lib_ldap_ldap_open = yes; then
+  ptlib_openldap=yes
+else
+  ptlib_openldap=no
+fi
+
+            fi
+
+            LIBS="$old_LIBS"
+            CFLAGS="$old_CFLAGS"
+
+            if test "x${ptlib_openldap}" = "xyes" ; then
+              OPENLDAP_LIBS="-lldap ${ptlib_openldap_libs}"
+              OPENLDAP_CFLAGS="${ptlib_openldap_cflags}"
+            fi
+          fi
+          if test $ptlib_openldap = yes; then
   HAS_OPENLDAP=1
 else
   HAS_OPENLDAP=
 fi
 
-    else
-      { echo "$as_me:$LINENO: checking for /usr/local/include/ldap.h" >&5
-echo $ECHO_N "checking for /usr/local/include/ldap.h... $ECHO_C" >&6; }
-if test "${ac_cv_file__usr_local_include_ldap_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "/usr/local/include/ldap.h"; then
-  ac_cv_file__usr_local_include_ldap_h=yes
-else
-  ac_cv_file__usr_local_include_ldap_h=no
-fi
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_include_ldap_h" >&5
-echo "${ECHO_T}$ac_cv_file__usr_local_include_ldap_h" >&6; }
-if test $ac_cv_file__usr_local_include_ldap_h = yes; then
-  HAS_OPENLDAP=1
-fi
 
-      if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-        OPENLDAPINCLUDEDIR=/usr/local/include
-        OPENLDAPLIBDIR=/usr/local/lib
-        { echo "$as_me:$LINENO: checking for ldap_open in -lldap" >&5
-echo $ECHO_N "checking for ldap_open in -lldap... $ECHO_C" >&6; }
-if test "${ac_cv_lib_ldap_ldap_open+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lldap -L/usr/local/lib $LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char ldap_open ();
-int
-main ()
-{
-return ldap_open ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext &&
-       $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_ldap_ldap_open=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_lib_ldap_ldap_open=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_ldap_ldap_open" >&5
-echo "${ECHO_T}$ac_cv_lib_ldap_ldap_open" >&6; }
-if test $ac_cv_lib_ldap_ldap_open = yes; then
-  HAS_OPENLDAP=1
-else
-  HAS_OPENLDAP=
-fi
-
-      fi
-    fi
-  fi
-
-  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-    HAS_OPENLDAP=1
+  if test "x${HAS_OPENLDAP}" = "x1" ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_LDAP 1
 _ACEOF
 
-    ENDLDLIBS="-lldap $LDAP_LIBRARIES $ENDLDLIBS"
-    if test "${OPENLDAPINCLUDEDIR}unset" != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
-    fi
-    if test "${OPENLDAPLIBDIR}unset" != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
-    fi
+    ENDLDLIBS="$ENDLDLIBS $OPENLDAP_LIBS"
+    STDCCFLAGS="$STDCCFLAGS $OPENLDAP_CFLAGS"
   fi
 fi
-
 
 
 
@@ -9884,10 +9825,11 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for OPENSSL" >&5
 echo $ECHO_N "checking for OPENSSL... $ECHO_C" >&6; }
 
-if test -n "$OPENSSL_CFLAGS"; then
-    pkg_cv_OPENSSL_CFLAGS="$OPENSSL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$OPENSSL_CFLAGS"; then
+        pkg_cv_OPENSSL_CFLAGS="$OPENSSL_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"openssl\"") >&5
   ($PKG_CONFIG --exists --print-errors "openssl") 2>&5
   ac_status=$?
@@ -9897,13 +9839,15 @@ if test -n "$OPENSSL_CFLAGS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
-if test -n "$OPENSSL_LIBS"; then
-    pkg_cv_OPENSSL_LIBS="$OPENSSL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$OPENSSL_LIBS"; then
+        pkg_cv_OPENSSL_LIBS="$OPENSSL_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"openssl\"") >&5
   ($PKG_CONFIG --exists --print-errors "openssl") 2>&5
   ac_status=$?
@@ -9913,8 +9857,9 @@ if test -n "$OPENSSL_LIBS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
 
 
@@ -9927,9 +9872,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "openssl" 2>&1`
+	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "openssl"`
         else
-	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --print-errors "openssl" 2>&1`
+	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "openssl"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OPENSSL_PKG_ERRORS" >&5
@@ -10693,10 +10638,11 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for SDL" >&5
 echo $ECHO_N "checking for SDL... $ECHO_C" >&6; }
 
-if test -n "$SDL_CFLAGS"; then
-    pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$SDL_CFLAGS"; then
+        pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
   ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
   ac_status=$?
@@ -10706,13 +10652,15 @@ if test -n "$SDL_CFLAGS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
-if test -n "$SDL_LIBS"; then
-    pkg_cv_SDL_LIBS="$SDL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$SDL_LIBS"; then
+        pkg_cv_SDL_LIBS="$SDL_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
   ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
   ac_status=$?
@@ -10722,8 +10670,9 @@ if test -n "$SDL_LIBS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
 
 
@@ -10736,9 +10685,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "sdl" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "sdl"`
         else
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors "sdl" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "sdl"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$SDL_PKG_ERRORS" >&5
