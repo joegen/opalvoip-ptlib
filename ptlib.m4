@@ -464,3 +464,42 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
           fi
           AS_IF([test AS_VAR_GET([ptlib_expat]) = yes], [$1], [$2])[]
          ])
+
+dnl PTLIB_FIND_ODBC
+dnl Find OpenLDAP
+dnl Arguments: $STDCCFLAGS
+dnl Return:    $STDCCFLAGS
+AC_DEFUN([PTLIB_FIND_ODBC],
+         [
+          AC_ARG_WITH([odbc-dir], 
+                      AS_HELP_STRING([--with-odbc-dir=PFX],[Location of odbc XML parser]),
+                      [with_odbc_dir="$withval"])
+
+          ptlib_odbc=no
+
+          if test "x${with_odbc_dir}" != "x"; then
+            AC_MSG_NOTICE(Using odbc dir ${with_odbc_dir})
+            ptlib_odbc_cflags="-I${with_odbc_dir}/include"
+	    ptlib_odbc_libs="-L${with_odbc_dir}/lib"
+          fi
+
+          old_LIBS="$LIBS"
+          old_CPPFLAGS="$CPPFLAGS"
+          LIBS="$LIBS ${ptlib_odbc_libs}"
+          CPPFLAGS="$CPPFLAGS ${ptlib_odbc_cflags}"
+
+          AC_CHECK_HEADERS([sql.h], [ptlib_odbc=yes], [ptlib_odbc=no])
+          if test "x${ptlib_odbc}" = "xyes" ; then
+            AC_CHECK_LIB([odbc], [SQLAllocStmt], [ptlib_odbc=yes], [ptlib_odbc=no])
+          fi
+
+          LIBS="$old_LIBS"
+          CPPFLAGS="$old_CPPFLAGS"
+
+          if test "x${ptlib_odbc}" = "xyes" ; then
+            EXPAT_LIBS="-lodbc ${ptlib_odbc_libs}"
+            EXPAT_CFLAGS="${ptlib_odbc_cflags}"
+          fi
+          AS_IF([test AS_VAR_GET([ptlib_odbc]) = yes], [$1], [$2])[]
+         ])
+
