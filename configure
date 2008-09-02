@@ -1413,6 +1413,7 @@ Optional Packages:
   --with-expat-dir=PFX    Location of expat XML parser
   --with-directx-includedir=DIR
                           Location of DirectX include files
+  --with-odbc-dir=PFX     Location of odbc XML parser
 
 Some influential environment variables:
   PKG_CONFIG  path to pkg-config utility
@@ -3300,6 +3301,9 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+
 
 
 
@@ -14150,19 +14154,39 @@ fi
 
 # Check whether --enable-odbc was given.
 if test "${enable_odbc+set}" = set; then
-  enableval=$enable_odbc;
+  enableval=$enable_odbc; enable_odbc=$enableval
+else
+  enable_odbc=$default_odbc
+
 fi
 
 
- if test "${enable_odbc}z" = "z" ; then
-   enable_odbc=$default_odbc
- fi
+if test "$enable_odbc" = "no" ; then
+  { echo "$as_me:$LINENO: ODBC disabled" >&5
+echo "$as_me: ODBC disabled" >&6;}
+else
 
- HAS_ODBC=
- if test "$enable_odbc" = "no" ; then
-   { echo "$as_me:$LINENO: ODBC support disabled" >&5
-echo "$as_me: ODBC support disabled" >&6;}
- else
+
+# Check whether --with-odbc-dir was given.
+if test "${with_odbc_dir+set}" = set; then
+  withval=$with_odbc_dir; with_odbc_dir="$withval"
+fi
+
+
+          ptlib_odbc=no
+
+          if test "x${with_odbc_dir}" != "x"; then
+            { echo "$as_me:$LINENO: Using odbc dir ${with_odbc_dir}" >&5
+echo "$as_me: Using odbc dir ${with_odbc_dir}" >&6;}
+            ptlib_odbc_cflags="-I${with_odbc_dir}/include"
+	    ptlib_odbc_libs="-L${with_odbc_dir}/lib"
+          fi
+
+          old_LIBS="$LIBS"
+          old_CPPFLAGS="$CPPFLAGS"
+          LIBS="$LIBS ${ptlib_odbc_libs}"
+          CPPFLAGS="$CPPFLAGS ${ptlib_odbc_cflags}"
+
 
 for ac_header in sql.h
 do
@@ -14298,13 +14322,15 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- HAS_ODBC=1
+ ptlib_odbc=yes
+else
+  ptlib_odbc=no
 fi
 
 done
 
-   if test "${HAS_ODBC:-unset}" != "unset" ; then
-     { echo "$as_me:$LINENO: checking for SQLAllocStmt in -lodbc" >&5
+          if test "x${ptlib_odbc}" = "xyes" ; then
+            { echo "$as_me:$LINENO: checking for SQLAllocStmt in -lodbc" >&5
 echo $ECHO_N "checking for SQLAllocStmt in -lodbc... $ECHO_C" >&6; }
 if test "${ac_cv_lib_odbc_SQLAllocStmt+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -14366,59 +14392,40 @@ fi
 { echo "$as_me:$LINENO: result: $ac_cv_lib_odbc_SQLAllocStmt" >&5
 echo "${ECHO_T}$ac_cv_lib_odbc_SQLAllocStmt" >&6; }
 if test $ac_cv_lib_odbc_SQLAllocStmt = yes; then
+  ptlib_odbc=yes
+else
+  ptlib_odbc=no
+fi
+
+          fi
+
+          LIBS="$old_LIBS"
+          CPPFLAGS="$old_CPPFLAGS"
+
+          if test "x${ptlib_odbc}" = "xyes" ; then
+            EXPAT_LIBS="-lodbc ${ptlib_odbc_libs}"
+            EXPAT_CFLAGS="${ptlib_odbc_cflags}"
+          fi
+          if test $ptlib_odbc = yes; then
   HAS_ODBC=1
 else
   HAS_ODBC=
 fi
 
-   else
-     { echo "$as_me:$LINENO: checking for /usr/local/include/sql.h" >&5
-echo $ECHO_N "checking for /usr/local/include/sql.h... $ECHO_C" >&6; }
-if test "${ac_cv_file__usr_local_include_sql_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "/usr/local/include/sql.h"; then
-  ac_cv_file__usr_local_include_sql_h=yes
-else
-  ac_cv_file__usr_local_include_sql_h=no
-fi
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_include_sql_h" >&5
-echo "${ECHO_T}$ac_cv_file__usr_local_include_sql_h" >&6; }
-if test $ac_cv_file__usr_local_include_sql_h = yes; then
-  HAS_ODBC=1
-fi
 
-     if test "${HAS_ODBC:-unset}" != "unset" ; then
-       ODBCINCLUDEDIR=/usr/local/include
-       ODBCLIBDIR=/usr/local/lib
-     fi
-   fi
 
-   if test "${HAS_ODBC:-unset}" != "unset" ; then
-     HAS_ODBC=1
+  if test "x${HAS_ODBC}" = "x1" ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_ODBC 1
 _ACEOF
 
-     if test ${ODBCINCLUDEDIR:-unset} != "unset" ; then
-       STDCCFLAGS="$STDCCFLAGS -I${ODBCINCLUDEDIR}"
-     fi
-     if test ${ODBCLIBDIR:-unset} != "unset" ; then
-       LDFLAGS="$LDFLAGS -L${ODBCLIBDIR}"
-     fi
-     ENDLDLIBS="$ENDLDLIBS -lodbc"
-     { echo "$as_me:$LINENO: ODBC support enabled" >&5
+    STDCCFLAGS="$STDCCFLAGS $ODBC_CFLAGS"
+    ENDLDLIBS="$ENDLDLIBS $ODBC_LIBS"
+    { echo "$as_me:$LINENO: ODBC support enabled" >&5
 echo "$as_me: ODBC support enabled" >&6;}
-   fi
- fi
-
-
+  fi
+fi
 
 
 
