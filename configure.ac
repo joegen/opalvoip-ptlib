@@ -510,8 +510,6 @@ HAS_SOAP=1
 HAS_XMLRPC=1
 HAS_JABBER=1
 HAS_CONFIG_FILE=1
-default_alsa=yes
-default_oss=yes
 default_ipv6=yes
 HAS_QOS=1
 HAS_SOCKAGG=1
@@ -551,8 +549,6 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_XMLRPC=
   HAS_JABBER=
   HAS_CONFIG_FILE=1
-  default_alsa=yes
-  default_oss=yes
   default_ipv6=yes
   HAS_QOS=1
   HAS_SOCKAGG=1
@@ -591,8 +587,6 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_XMLRPC=
   HAS_JABBER=
   HAS_CONFIG_FILE=0
-  default_alsa=yes
-  default_oss=no
   default_ipv6=no
   HAS_QOS=
   HAS_SOCKAGG=1
@@ -1411,6 +1405,10 @@ dnl MSWIN_DEFINE     appshare,P_APPSHARE
 
 PTLIB_SIMPLE_OPTION([appshare], [APPSHARE], [enable application sharing support], [HAS_VIDEO])
 
+dnl ########################################################################
+dnl enable shared memory video devices (static video plugin)
+
+PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
 
 dnl ########################################################################
 dnl check for video capture support.
@@ -1459,62 +1457,13 @@ fi
 
 AC_SUBST(HAS_VIDEO_CAPTURE)
 
-dnl ########################################################################
-dnl enable shared memory video devices (static video plugin)
-
-PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
-
-
-dnl ########################################################################
-dnl check for for audio drivers
-
-HAS_ALSA=
-HAS_OSS=
 if test "x${HAS_AUDIO}" = "x1" ; then
 
   dnl these are needed to pass through to the plugin configure program
   AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],enable_alsa=$enableval)
   AC_ARG_ENABLE(oss,  [  --enable-oss            enable OSS audio support],enable_oss=$enableval)
-
-  if test "x${HAS_PLUGINS}" = "x" ; then
-
-    if test "${enable_alsa}z" = "z" ; then
-      enable_alsa=$default_alsa
-    fi
-
-    if test "${enable_oss}z" = "z" ; then
-      enable_oss=$default_oss
-    fi
-
-    if test "$enable_alsa" = "yes" ; then
-      AC_CHECK_HEADER(alsa/asoundlib.h, HAS_ALSA=1)
-      AC_MSG_CHECKING(for ALSA sound support)
-      if test "${HAS_ALSA}z" != "z"; then
-        AC_MSG_RESULT(yes)
-        ENDLDLIBS="$ENDLDLIBS -lasound"
-        HAS_ALSA=1
-      else
-        AC_MSG_RESULT(no)
-      fi
-    fi
-
-    if test "${HAS_ALSA}z" = "z" ; then
-      if test "$enable_oss" = "yes" ; then
-        AC_CHECK_HEADER(sys/soundcard.h, SNDCARDHDR=1)
-        AC_MSG_CHECKING(for OSS sound support)
-        if test "${SNDCARDHDR}z" != "z"; then
-          AC_SUBST(HAS_OSS, 1)
-          AC_MSG_RESULT(yes)
-        else
-          AC_MSG_RESULT(no)
-        fi
-      fi
-    fi
-  fi
 fi
 
-AC_SUBST(HAS_ALSA)
-AC_SUBST(HAS_OSS)
 
 
 dnl ########################################################################
