@@ -742,10 +742,8 @@ HAS_QOS
 HAS_VIDEO
 HAS_VIDFILE
 HAS_APPSHARE
-HAS_VIDEO_CAPTURE
 HAS_SHM_VIDEO
-HAS_OSS
-HAS_ALSA
+HAS_VIDEO_CAPTURE
 HAS_ODBC
 STDCCFLAGS
 STDCXXFLAGS
@@ -1394,12 +1392,12 @@ Optional Features:
   --enable-video          enable video device support
   --enable-vidfile        enable video file support
   --enable-appshare       enable application sharing support
+  --enable-shmvideo       enable shared memory video devices
   --enable-v4l            enable V4L video support
   --enable-v4l2           enable V4L2 video support
   --enable-bsdvideo       enable BSD video support
   --enable-avc            enable IEEE1394/AVC video support
   --enable-dc             enable IEEE1394/DC video support
-  --enable-shmvideo       enable shared memory video devices
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
   --enable-memcheck       enable leak testing code (off by default)
@@ -6643,8 +6641,6 @@ HAS_SOAP=1
 HAS_XMLRPC=1
 HAS_JABBER=1
 HAS_CONFIG_FILE=1
-default_alsa=yes
-default_oss=yes
 default_ipv6=yes
 HAS_QOS=1
 HAS_SOCKAGG=1
@@ -6684,8 +6680,6 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_XMLRPC=
   HAS_JABBER=
   HAS_CONFIG_FILE=1
-  default_alsa=yes
-  default_oss=yes
   default_ipv6=yes
   HAS_QOS=1
   HAS_SOCKAGG=1
@@ -6724,8 +6718,6 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_XMLRPC=
   HAS_JABBER=
   HAS_CONFIG_FILE=0
-  default_alsa=yes
-  default_oss=no
   default_ipv6=no
   HAS_QOS=
   HAS_SOCKAGG=1
@@ -12232,6 +12224,57 @@ echo "${ECHO_T}no" >&6; }
 
 
 
+          { echo "$as_me:$LINENO: checking enable shared memory video devices" >&5
+echo $ECHO_N "checking enable shared memory video devices... $ECHO_C" >&6; }
+          # Check whether --enable-shmvideo was given.
+if test "${enable_shmvideo+set}" = set; then
+  enableval=$enable_shmvideo;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_SHM_VIDEO=1
+                         else
+                           HAS_SHM_VIDEO=
+                         fi
+
+fi
+
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: shmvideo support disabled due to disabled dependency " >&5
+echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
+	      HAS_SHM_VIDEO=
+	    fi
+	  fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: shmvideo support disabled due to disabled dependency " >&5
+echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
+	      HAS_SHM_VIDEO=
+	    fi
+	  fi
+
+
+          if test "x${HAS_SHM_VIDEO}" = "x1"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_SHM_VIDEO 1
+_ACEOF
+
+            HAS_SHM_VIDEO=1
+            { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+          else
+            HAS_SHM_VIDEO=
+            { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+          fi
+
+
+
+
+
+
 HAS_VIDEO_CAPTURE=
 if test "x${HAS_VIDEO}" = "x1" ; then
   if test "x${HAS_PLUGINS}" = "x1" ; then
@@ -13752,62 +13795,6 @@ fi
 
 
 
-
-
-          { echo "$as_me:$LINENO: checking enable shared memory video devices" >&5
-echo $ECHO_N "checking enable shared memory video devices... $ECHO_C" >&6; }
-          # Check whether --enable-shmvideo was given.
-if test "${enable_shmvideo+set}" = set; then
-  enableval=$enable_shmvideo;
-                         if test "x$enableval" = "xyes"; then
-                           HAS_SHM_VIDEO=1
-                         else
-                           HAS_SHM_VIDEO=
-                         fi
-
-fi
-
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: shmvideo support disabled due to disabled dependency " >&5
-echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
-	      HAS_SHM_VIDEO=
-	    fi
-	  fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: shmvideo support disabled due to disabled dependency " >&5
-echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
-	      HAS_SHM_VIDEO=
-	    fi
-	  fi
-
-
-          if test "x${HAS_SHM_VIDEO}" = "x1"; then
-
-cat >>confdefs.h <<\_ACEOF
-#define P_SHM_VIDEO 1
-_ACEOF
-
-            HAS_SHM_VIDEO=1
-            { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-          else
-            HAS_SHM_VIDEO=
-            { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-          fi
-
-
-
-
-
-
-
-HAS_ALSA=
-HAS_OSS=
 if test "x${HAS_AUDIO}" = "x1" ; then
 
     # Check whether --enable-alsa was given.
@@ -13820,310 +13807,7 @@ if test "${enable_oss+set}" = set; then
   enableval=$enable_oss; enable_oss=$enableval
 fi
 
-
-  if test "x${HAS_PLUGINS}" = "x" ; then
-
-    if test "${enable_alsa}z" = "z" ; then
-      enable_alsa=$default_alsa
-    fi
-
-    if test "${enable_oss}z" = "z" ; then
-      enable_oss=$default_oss
-    fi
-
-    if test "$enable_alsa" = "yes" ; then
-      if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
-  { echo "$as_me:$LINENO: checking for alsa/asoundlib.h" >&5
-echo $ECHO_N "checking for alsa/asoundlib.h... $ECHO_C" >&6; }
-if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_header_alsa_asoundlib_h" >&5
-echo "${ECHO_T}$ac_cv_header_alsa_asoundlib_h" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking alsa/asoundlib.h usability" >&5
-echo $ECHO_N "checking alsa/asoundlib.h usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <alsa/asoundlib.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking alsa/asoundlib.h presence" >&5
-echo $ECHO_N "checking alsa/asoundlib.h presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <alsa/asoundlib.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_cxx_preproc_warn_flag$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: alsa/asoundlib.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: alsa/asoundlib.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for alsa/asoundlib.h" >&5
-echo $ECHO_N "checking for alsa/asoundlib.h... $ECHO_C" >&6; }
-if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_cv_header_alsa_asoundlib_h=$ac_header_preproc
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_header_alsa_asoundlib_h" >&5
-echo "${ECHO_T}$ac_cv_header_alsa_asoundlib_h" >&6; }
-
-fi
-if test $ac_cv_header_alsa_asoundlib_h = yes; then
-  HAS_ALSA=1
-fi
-
-
-      { echo "$as_me:$LINENO: checking for ALSA sound support" >&5
-echo $ECHO_N "checking for ALSA sound support... $ECHO_C" >&6; }
-      if test "${HAS_ALSA}z" != "z"; then
-        { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-        ENDLDLIBS="$ENDLDLIBS -lasound"
-        HAS_ALSA=1
-      else
-        { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-      fi
-    fi
-
-    if test "${HAS_ALSA}z" = "z" ; then
-      if test "$enable_oss" = "yes" ; then
-        if test "${ac_cv_header_sys_soundcard_h+set}" = set; then
-  { echo "$as_me:$LINENO: checking for sys/soundcard.h" >&5
-echo $ECHO_N "checking for sys/soundcard.h... $ECHO_C" >&6; }
-if test "${ac_cv_header_sys_soundcard_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_header_sys_soundcard_h" >&5
-echo "${ECHO_T}$ac_cv_header_sys_soundcard_h" >&6; }
-else
-  # Is the header compilable?
-{ echo "$as_me:$LINENO: checking sys/soundcard.h usability" >&5
-echo $ECHO_N "checking sys/soundcard.h usability... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <sys/soundcard.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ echo "$as_me:$LINENO: checking sys/soundcard.h presence" >&5
-echo $ECHO_N "checking sys/soundcard.h presence... $ECHO_C" >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <sys/soundcard.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_cxx_preproc_warn_flag$ac_cxx_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
-  yes:no: )
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: sys/soundcard.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: proceeding with the compiler's result" >&5
-echo "$as_me: WARNING: sys/soundcard.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: sys/soundcard.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h:     check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: sys/soundcard.h:     check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: see the Autoconf documentation" >&5
-echo "$as_me: WARNING: sys/soundcard.h: see the Autoconf documentation" >&2;}
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h:     section \"Present But Cannot Be Compiled\"" >&5
-echo "$as_me: WARNING: sys/soundcard.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: sys/soundcard.h: proceeding with the preprocessor's result" >&2;}
-    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: in the future, the compiler will take precedence" >&5
-echo "$as_me: WARNING: sys/soundcard.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ echo "$as_me:$LINENO: checking for sys/soundcard.h" >&5
-echo $ECHO_N "checking for sys/soundcard.h... $ECHO_C" >&6; }
-if test "${ac_cv_header_sys_soundcard_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_cv_header_sys_soundcard_h=$ac_header_preproc
-fi
-{ echo "$as_me:$LINENO: result: $ac_cv_header_sys_soundcard_h" >&5
-echo "${ECHO_T}$ac_cv_header_sys_soundcard_h" >&6; }
-
-fi
-if test $ac_cv_header_sys_soundcard_h = yes; then
-  SNDCARDHDR=1
-fi
-
-
-        { echo "$as_me:$LINENO: checking for OSS sound support" >&5
-echo $ECHO_N "checking for OSS sound support... $ECHO_C" >&6; }
-        if test "${SNDCARDHDR}z" != "z"; then
-          HAS_OSS=1
-
-          { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-        else
-          { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-        fi
-      fi
-    fi
-  fi
-fi
-
-
 
 
 
@@ -15353,10 +15037,8 @@ HAS_QOS!$HAS_QOS$ac_delim
 HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
-HAS_VIDEO_CAPTURE!$HAS_VIDEO_CAPTURE$ac_delim
 HAS_SHM_VIDEO!$HAS_SHM_VIDEO$ac_delim
-HAS_OSS!$HAS_OSS$ac_delim
-HAS_ALSA!$HAS_ALSA$ac_delim
+HAS_VIDEO_CAPTURE!$HAS_VIDEO_CAPTURE$ac_delim
 HAS_ODBC!$HAS_ODBC$ac_delim
 STDCCFLAGS!$STDCCFLAGS$ac_delim
 STDCXXFLAGS!$STDCXXFLAGS$ac_delim
@@ -15370,7 +15052,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 47; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 45; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

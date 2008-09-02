@@ -657,12 +657,12 @@ CPPFLAGS
 ac_ct_CXX
 EXEEXT
 OBJEXT
-INSTALLPREFIX
-LIBDIR
 CC
 CFLAGS
 ac_ct_CC
 CPP
+INSTALLPREFIX
+LIBDIR
 GREP
 EGREP
 HAS_ALSA
@@ -2314,54 +2314,7 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-
-if test "x$prefix" = "xNONE"; then
-   INSTALLPREFIX="/usr/local"
-else
-   INSTALLPREFIX="${prefix}"
-fi
-
-
-
-LIBDIR="${libdir}"
-
-
-# Check whether --enable-plugins was given.
-if test "${enable_plugins+set}" = set; then
-  enableval=$enable_plugins;
-fi
-
-if test "${enable_plugins}z" = "z" ; then
-  enable_plugins=yes
-fi
-if test "$enable_plugins" = "no" ; then
-  { echo "$as_me:$LINENO: Plugins disabled" >&5
-echo "$as_me: Plugins disabled" >&6;}
-else
-
-
-# Check whether --enable-audio was given.
-if test "${enable_audio+set}" = set; then
-  enableval=$enable_audio;
-fi
-
-if test "${enable_audio}z" = "z" ; then
-  enable_audio=yes
-fi
-
-if test "${enable_audio}" = "yes" ; then
-
-
-# Check whether --enable-alsa was given.
-if test "${enable_alsa+set}" = set; then
-  enableval=$enable_alsa;
-else
-  enable_alsa=yes
-fi
-
-
-if test "${enable_alsa}z" = "yesz" ; then
-  ac_ext=c
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -3037,7 +2990,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3267,6 +3219,54 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+if test "x$prefix" = "xNONE"; then
+   INSTALLPREFIX="/usr/local"
+else
+   INSTALLPREFIX="${prefix}"
+fi
+
+
+
+LIBDIR="${libdir}"
+
+
+# Check whether --enable-plugins was given.
+if test "${enable_plugins+set}" = set; then
+  enableval=$enable_plugins;
+fi
+
+if test "${enable_plugins}z" = "z" ; then
+  enable_plugins=yes
+fi
+if test "$enable_plugins" = "no" ; then
+  { echo "$as_me:$LINENO: Plugins disabled" >&5
+echo "$as_me: Plugins disabled" >&6;}
+else
+
+
+# Check whether --enable-audio was given.
+if test "${enable_audio+set}" = set; then
+  enableval=$enable_audio;
+fi
+
+if test "${enable_audio}z" = "z" ; then
+  enable_audio=yes
+fi
+
+if test "${enable_audio}" = "yes" ; then
+
+
+# Check whether --enable-alsa was given.
+if test "${enable_alsa+set}" = set; then
+  enableval=$enable_alsa;
+else
+  enable_alsa=yes
+fi
+
+
+if test "${enable_alsa}z" = "yesz" ; then
 
 
 { echo "$as_me:$LINENO: checking for grep that handles long lines and -e" >&5
@@ -4296,7 +4296,6 @@ if test "${enable_v4l+set}" = set; then
 else
   enable_v4l=yes
 fi
-
 
 if test "${enable_v4l}z" = "yesz" ; then
   if test "${ac_cv_header_linux_videodev_h+set}" = set; then
@@ -6660,12 +6659,12 @@ CPPFLAGS!$CPPFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
 EXEEXT!$EXEEXT$ac_delim
 OBJEXT!$OBJEXT$ac_delim
-INSTALLPREFIX!$INSTALLPREFIX$ac_delim
-LIBDIR!$LIBDIR$ac_delim
 CC!$CC$ac_delim
 CFLAGS!$CFLAGS$ac_delim
 ac_ct_CC!$ac_ct_CC$ac_delim
 CPP!$CPP$ac_delim
+INSTALLPREFIX!$INSTALLPREFIX$ac_delim
+LIBDIR!$LIBDIR$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 HAS_ALSA!$HAS_ALSA$ac_delim
