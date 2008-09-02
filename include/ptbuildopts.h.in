@@ -538,7 +538,6 @@
 #undef P_SERIAL
 #undef P_POP3SMTP
 #undef P_AUDIO
-#undef P_ALSA
 #undef P_VIDEO
 #undef NO_VIDEO_CAPTURE
 
