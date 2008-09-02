@@ -691,6 +691,12 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
            timer value (quite plausible) it deadlocks.
          */
         OnTimeout();
+
+        if (state == Starting) {
+          state = Running;
+          if (resetTime < minTimeLeft)
+            minTimeLeft = resetTime;
+        }
         return;
       }
       break;
@@ -716,15 +722,20 @@ void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool _
     switch (action) {
       case PTimerList::RequestType::Start:
         {
-          TimerInfoMapType::iterator r = timerInfoMap.find(timer->GetTimerId());
-          if (r == timerInfoMap.end())
-            timerInfoMap.insert(TimerInfoMapType::value_type(timer->GetTimerId(), TimerInfoType(timer)));
+          TimerInfoMapType::iterator r = activeTimers.find(timer->GetTimerId());
+
+          // if the timer is a new timer, then use special queue as asynchronous add won't work
+          if (r == activeTimers.end()) {
+            RequestType request(action, timer);
+            addQueue.push_back(request);
+          }
         }
         break;
       case PTimerList::RequestType::Stop:
         {
-          TimerInfoMapType::iterator r = timerInfoMap.find(timer->GetTimerId());
-          if (r != timerInfoMap.end())
+          // flag the timer as to-be-removed
+          TimerInfoMapType::iterator r = activeTimers.find(timer->GetTimerId());
+          if (r != activeTimers.end())
             r->second.removed = true;
         }
         break;
@@ -732,7 +743,7 @@ void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool _
     return;
   }
 
-  // handle asynchronoously
+  // submit asynchronous request
   RequestType request(action, timer);
   PSyncPoint sync;
   bool isSync = false;
@@ -764,15 +775,15 @@ PTimeInterval PTimerList::Process()
     while (requestQueue.size() > 0) {
       RequestType request = requestQueue.front();
       requestQueue.pop();
-      TimerInfoMapType::iterator r = timerInfoMap.find(request.id);
+      TimerInfoMapType::iterator r = activeTimers.find(request.id);
       switch (request.action) {
         case PTimerList::RequestType::Start:
-          if (r == timerInfoMap.end()) 
-            timerInfoMap.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
+          if (r == activeTimers.end()) 
+            activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
           break;
         case PTimerList::RequestType::Stop:
-          if (r != timerInfoMap.end()) 
-            timerInfoMap.erase(r);
+          if (r != activeTimers.end()) 
+            activeTimers.erase(r);
           break;
         default:
           PAssertAlways("unknown timer request code");
@@ -799,28 +810,36 @@ PTimeInterval PTimerList::Process()
   // also remove any timer labelled as removed
   PTimeInterval minTimeLeft = PMaxTimeInterval;
   {
-    TimerInfoMapType::iterator r = timerInfoMap.begin();
-    while (r != timerInfoMap.end()) {
+    TimerInfoMapType::iterator r = activeTimers.begin();
+    while (r != activeTimers.end()) {
       PTimeInterval oldMinTimeLeft(minTimeLeft);
       if (!r->second.removed) 
         r->second.timer->Process(sampleTime, minTimeLeft);
       if (!r->second.removed) 
         ++r;
       else {
-        if (r == timerInfoMap.begin()) {
-          timerInfoMap.erase(r);
-          r = timerInfoMap.begin();
+        if (r == activeTimers.begin()) {
+          activeTimers.erase(r);
+          r = activeTimers.begin();
         }
         else
         {
           TimerInfoMapType::iterator s = r;
           --s;
-          timerInfoMap.erase(r);
+          activeTimers.erase(r);
           r = s;
         }
         minTimeLeft = oldMinTimeLeft;
       }
     }
+  }
+
+  // add in an new timers created while timers were processed
+  while (addQueue.size() > 0) {
+    RequestType & request = addQueue[0];
+    activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
+    addQueue.erase(addQueue.begin());
+    request.timer->Process(sampleTime, minTimeLeft);
   }
 
   return minTimeLeft;
