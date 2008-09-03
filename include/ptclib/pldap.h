@@ -555,9 +555,9 @@ template <class className> class LDAPPluginServiceDescriptor : public PDevicePlu
 };
 
 #define LDAP_Schema(name)    \
-static LDAPPluginServiceDescriptor<##name##_schema> ##name##_schema_descriptor; \
-PCREATE_PLUGIN(##name##_schema, PLDAPSchema, &##name##_schema_descriptor); \
-PWLIB_STATIC_LOAD_PLUGIN(##name##_schema, PLDAPSchema); \
+  static LDAPPluginServiceDescriptor<name##_schema> name##_schema_descriptor; \
+  PCREATE_PLUGIN(name##_schema, PLDAPSchema, &name##_schema_descriptor); \
+  PWLIB_STATIC_LOAD_PLUGIN(name##_schema, PLDAPSchema); \
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
