@@ -1147,6 +1147,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 
   protected:
     PDECLARE_NOTIFIER(PThread, PVideoOutputDevice_Window, HandleDisplay);
+    void SetWindowSize();
     void Draw(HDC hDC);
 
     HWND       m_hWnd;
@@ -1358,17 +1359,24 @@ PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height
   }
 
   // Must be outside of mutex
-  if (m_hWnd != NULL) {
-    RECT rect;
-    rect.top = 0;
-    rect.left = 0;
-    rect.bottom = frameHeight;
-    rect.right = frameWidth;
-    ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), PFalse, 0L);
-    ::SetWindowPos(m_hWnd, NULL, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE|SWP_NOZORDER);
-  }
+  SetWindowSize();
 
-  return PTrue;
+  return true;
+}
+
+
+void PVideoOutputDevice_Window::SetWindowSize()
+{
+  if (m_hWnd == NULL)
+    return;
+
+  RECT rect;
+  rect.top = 0;
+  rect.left = 0;
+  rect.bottom = frameHeight;
+  rect.right = frameWidth;
+  ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), false, GetWindowLong(m_hWnd, GWL_EXSTYLE));
+  ::SetWindowPos(m_hWnd, NULL, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE|SWP_NOZORDER);
 }
 
 
@@ -1479,6 +1487,7 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
                           dwStyle,
                           m_lastX, m_lastY, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
+    SetWindowSize();
   }
 
   m_started.Signal();
