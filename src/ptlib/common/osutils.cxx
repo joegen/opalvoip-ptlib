@@ -839,7 +839,7 @@ PTimeInterval PTimerList::Process()
     RequestType & request = addQueue[0];
     activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
     addQueue.erase(addQueue.begin());
-    request.timer->Process(sampleTime, minTimeLeft);
+    request.timer->Process(0, minTimeLeft);
   }
 
   return minTimeLeft;
