@@ -497,8 +497,8 @@ AC_DEFUN([PTLIB_FIND_ODBC],
           CPPFLAGS="$old_CPPFLAGS"
 
           if test "x${ptlib_odbc}" = "xyes" ; then
-            EXPAT_LIBS="-lodbc ${ptlib_odbc_libs}"
-            EXPAT_CFLAGS="${ptlib_odbc_cflags}"
+            ODBC_LIBS="-lodbc ${ptlib_odbc_libs}"
+            ODBC_CFLAGS="${ptlib_odbc_cflags}"
           fi
           AS_IF([test AS_VAR_GET([ptlib_odbc]) = yes], [$1], [$2])[]
          ])
