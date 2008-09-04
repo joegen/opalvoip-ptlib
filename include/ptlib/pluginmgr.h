@@ -77,6 +77,9 @@ class PPluginManager : public PObject
     // function to register a service (used by the plugins themselves)
     PBoolean RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
 
+    // Add a directory to the list of plugin directories (used by OPAL)
+    static void AddPluginDirs(PString dirs);
+
     // Get the list of plugin directories
     static PStringArray GetPluginDirs();
 
@@ -109,6 +112,7 @@ class PPluginManager : public PObject
       const PNotifier & filterFunction
     );
 
+    static PString additionalPluginDirs;
   protected:
     void LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes);
     void CallNotifier(PDynaLink & dll, INT code);

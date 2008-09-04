@@ -856,11 +856,30 @@ dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
 PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
 
-if test "x$LIB64" != "x" ; then
-  AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib64/ptlib"], [Default plugin directory])
+AC_MSG_CHECKING(where plugins are being installed)
+AC_ARG_WITH([plugin-installdir],
+             AS_HELP_STRING([--with-plugin-installdir=DIR],[Location where plugins are installed, starting at the lib dir]),
+             [PLUGIN_DIR="$withval"],
+             [PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
+           )
+
+EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
+if test "x${exec_prefix}" = "xNONE" ; then
+  if test "x${prefix}" = "xNONE" ; then
+    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
+  else
+    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
+  fi
 else
-  AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib/ptlib"], [Default plugin directory])
+  EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
 fi
+
+AC_MSG_RESULT(${EXPANDED_PLUGIN_DIR})
+
+AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
+
+DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+AC_SUBST(DEV_PLUGIN_DIR)
 
 dnl #########################################################################
 dnl check to see if samples are enabled
