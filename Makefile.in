@@ -52,6 +52,12 @@ ifeq (1, $(HAS_SAMPLES))
 SUBDIRS += samples/hello_world
 endif
 
+ifeq ($(OSTYPE),mingw)
+ARCH_INCLUDE=msos
+else
+ARCH_INCLUDE=unix
+endif
+
 # override P_SHAREDLIB for specific targets
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
 optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
@@ -74,7 +80,7 @@ install:
 	( for dir in $(DESTDIR)$(LIBDIR) \
 		     $(DESTDIR)$(PREFIX)/bin \
 		     $(DESTDIR)$(PREFIX)/include/ptlib \
-                     $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptlib/$(ARCH_INCLUDE)/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptclib \
                      $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
@@ -111,8 +117,8 @@ endif
 	(for fn in include/ptlib/*.h include/ptlib/*.inl; \
 		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib; \
 	done)
-	(for fn in include/ptlib/unix/ptlib/*.h include/ptlib/unix/ptlib/*.inl ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib ; \
+	(for fn in include/ptlib/$(ARCH_INCLUDE)/ptlib/*.h include/ptlib/$(ARCH_INCLUDE)/ptlib/*.inl ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib/$(ARCH_INCLUDE)/ptlib ; \
 	done)
 	(for fn in include/ptclib/*.h ; \
 		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptclib; \
