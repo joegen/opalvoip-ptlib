@@ -99,10 +99,10 @@ install:
 ifeq (1, $(HAS_PLUGINS))
 	cd lib/device/ ; \
 	( for dir in ./* ;\
-		do mkdir -p $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
-		chmod 755 $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir ; \
+		do mkdir -p $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
+		chmod 755 $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
-			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/ptlib/devices/$$dir; \
+			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir; \
 		done ); \
 	done )
 endif
@@ -133,9 +133,9 @@ uninstall:
 	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
 	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
 	       $(DESTDIR)$(PREFIX)/share/ptlib \
-	       $(DESTDIR)$(LIBDIR)/ptlib/devices \
+	       $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR) \
 	       $(DESTDIR)$(LIBDIR)/pkgconfig/ptlib.pc
-	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* \
-              @libdir@/libpt.so 
+	rm -f $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE)* \
+              $(LIBDIR)/libpt.so 
 
 # End of Makefile.in
