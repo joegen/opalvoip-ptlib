@@ -499,6 +499,9 @@ ifdef HAS_SDL
 SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 endif
 
+ifdef HAS_ODBC
+SOURCES += $(COMPONENT_SRC_DIR)/podbc.cxx
+endif
 
 ## VIDEO DRIVERS
 ## Note this is mostly handled by the plugin system
@@ -544,14 +547,15 @@ ifdef HAS_VXML
 SOURCES	+= $(COMPONENT_SRC_DIR)/vxml.cxx 
 endif
 
-endif # HAS_EXPAT
-
-ifdef HAS_SASL2 # FIXME?
+ifdef HAS_SASL2
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/xmpp.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
+	$(COMPONENT_SRC_DIR)/xmpp_muc.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_roster.cxx
 endif
+endif # HAS_EXPAT
+
 
 ifdef HAS_RESOLVER
 SOURCES += \
@@ -575,7 +579,7 @@ SOURCES += \
 	$(COMPONENT_SRC_DIR)/snmpserv.cxx \
 	$(COMPONENT_SRC_DIR)/psnmp.cxx \
 	$(COMPONENT_SRC_DIR)/snmp.cxx \
-	$(COMPONENT_SRC_DIR)/rfc1155.cxx  
+	$(COMPONENT_SRC_DIR)/rfc1155.cxx 
 endif
 
 ifdef HAS_FTP
@@ -627,22 +631,26 @@ endif
 
 ifdef HAS_URL
 SOURCES += \
-        $(COMPONENT_SRC_DIR)/url.cxx
+	$(COMPONENT_SRC_DIR)/url.cxx 
 endif
-        
+
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
 	$(COMPONENT_SRC_DIR)/httpclnt.cxx 
 endif
 
+ifdef HAS_HTTPFORMS
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/httpform.cxx \
+	$(COMPONENT_SRC_DIR)/html.cxx 
+endif #HAS_HTTPFORMS
+
 ifdef HAS_HTTPSVC
 SOURCES += \
 	svcproc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
-	$(COMPONENT_SRC_DIR)/httpform.cxx \
-	$(COMPONENT_SRC_DIR)/httpsrvr.cxx \
-	$(COMPONENT_SRC_DIR)/html.cxx 
+	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
 
 ifdef HAS_OPENSSL
 SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx
@@ -651,6 +659,18 @@ endif #HAS_HTTPSVC
 
 ifdef HAS_CONFIG_FILE
 SOURCES += wincfg.cxx 
+endif
+
+SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
+
+ifdef HAS_VIDFILE
+SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
+	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
+
+$(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
@@ -664,6 +684,7 @@ SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/random.cxx \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
+	$(COMPONENT_SRC_DIR)/guid.cxx \
 	$(GETDATE_SOURCE) \
 	ptlib.cxx \
 	icmp.cxx \
@@ -675,6 +696,7 @@ SOURCES	+= \
 	$(COMMON_SRC_DIR)/pethsock.cxx \
         $(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
+	$(COMMON_SRC_DIR)/psockbun.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \
 	$(COMMON_SRC_DIR)/ptime.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
