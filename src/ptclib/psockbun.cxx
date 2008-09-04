@@ -787,6 +787,7 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr, PNatMethod * natMethod)
   : PMonitoredSockets(reuseAddr, natMethod)
 {
+  PTRACE(4, "MonSock\tCreated socket bundle for all interfaces.");
 }
 
 
@@ -1002,6 +1003,7 @@ PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bo
   : PMonitoredSockets(reuseAddr, natMethod)
   , theInterface(_theInterface)
 {
+  PTRACE(4, "MonSock\tCreated monitored socket for interfaces " << _theInterface);
 }
 
 

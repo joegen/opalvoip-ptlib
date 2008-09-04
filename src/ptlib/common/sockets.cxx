@@ -1760,58 +1760,7 @@ bool PIPSocket::Address::operator==(DWORD dw) const
 
 PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
-  version = 0;
-  memset(&v, 0, sizeof(v));
-
-#if P_HAS_IPV6
-
-  struct addrinfo *res = NULL;
-  struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
-
-  if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
-    if (res->ai_family == PF_INET6) {
-      // IPv6 addr
-      version = 6;
-      struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
-      v.six = addr_in6->sin6_addr;
-    } else {
-      // IPv4 addr
-      version = 4;
-      struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
-      v.four = addr_in->sin_addr;
-    }
-    freeaddrinfo(res);
-  }
-
-#else //P_HAS_IPV6
-
-  DWORD iaddr;
-  if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
-                    (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
-    version = 4;
-    v.four.s_addr = iaddr;
-  }
-
-#endif
-
-  else {
-    PINDEX percent = dotNotation.Find('%');
-    if (percent != P_MAX_INDEX) {
-      PString iface = dotNotation.Mid(percent+1);
-      if (!iface.IsEmpty()) {
-        PIPSocket::InterfaceTable interfaceTable;
-        if (PIPSocket::GetInterfaceTable(interfaceTable)) {
-          for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
-            if (interfaceTable[i].GetName().NumCompare(iface) == EqualTo) {
-              *this = interfaceTable[i].GetAddress();
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-
+  FromString(dotNotation);
   return *this;
 }
 
@@ -1852,8 +1801,62 @@ PString PIPSocket::Address::AsString() const
 
 PBoolean PIPSocket::Address::FromString(const PString & dotNotation)
 {
-  (*this) = dotNotation;
-  return IsValid();
+  version = 0;
+  memset(&v, 0, sizeof(v));
+
+#if P_HAS_IPV6
+
+  struct addrinfo *res = NULL;
+  struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
+
+  if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
+    if (res->ai_family == PF_INET6) {
+      // IPv6 addr
+      version = 6;
+      struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
+      v.six = addr_in6->sin6_addr;
+    } else {
+      // IPv4 addr
+      version = 4;
+      struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
+      v.four = addr_in->sin_addr;
+    }
+    freeaddrinfo(res);
+    return IsValid();
+  }
+
+#else //P_HAS_IPV6
+
+  DWORD iaddr;
+  if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
+                    (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
+    version = 4;
+    v.four.s_addr = iaddr;
+    return true;
+  }
+
+#endif
+
+  PINDEX percent = dotNotation.Find('%');
+  if (percent == P_MAX_INDEX)
+    return false;
+
+  PString iface = dotNotation.Mid(percent+1);
+  if (iface.IsEmpty())
+    return false;
+
+  PIPSocket::InterfaceTable interfaceTable;
+  if (!PIPSocket::GetInterfaceTable(interfaceTable))
+    return false;
+
+  for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+    if (interfaceTable[i].GetName().NumCompare(iface) == EqualTo) {
+      *this = interfaceTable[i].GetAddress();
+      return true;
+    }
+  }
+
+  return false;
 
 }
 
