@@ -50,6 +50,8 @@
 #define PTPLUGIN_SUFFIX       "_ptplugin"
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
+PString PPluginManager::additionalPluginDirs = "";
+
 const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
 
 
@@ -109,13 +111,18 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PS
   } while (dir.Next());
 }
 
+void PPluginManager::AddPluginDirs(PString dirs)
+{
+  additionalPluginDirs = PATH_SEP + dirs;
+}
+
 PStringArray PPluginManager::GetPluginDirs()
 {
   PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
   if (env.IsEmpty()) 
     env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
   if (env.IsEmpty()) 
-    env = P_DEFAULT_PLUGIN_DIR;
+    env = P_DEFAULT_PLUGIN_DIR + additionalPluginDirs;
 
   // split into directories on correct seperator
   return env.Tokenise(PATH_SEP, PTrue);

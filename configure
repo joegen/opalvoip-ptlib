@@ -698,6 +698,7 @@ AR
 BISON
 HAS_REGEX
 HAS_PLUGINS
+DEV_PLUGIN_DIR
 HAS_SAMPLES
 CPP
 HAS_RESOLVER
@@ -1407,6 +1408,9 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-plugin-installdir=DIR
+                          Location where plugins are installed, starting at
+                          the lib dir
   --with-ldap-dir=PFX     Location of LDAP
   --with-expat-dir=PFX    Location of expat XML parser
   --with-directx-includedir=DIR
@@ -8262,19 +8266,40 @@ echo "${ECHO_T}no" >&6; }
 
 
 
-if test "x$LIB64" != "x" ; then
+{ echo "$as_me:$LINENO: checking where plugins are being installed" >&5
+echo $ECHO_N "checking where plugins are being installed... $ECHO_C" >&6; }
 
-cat >>confdefs.h <<_ACEOF
-#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/lib64/ptlib"
-_ACEOF
-
+# Check whether --with-plugin-installdir was given.
+if test "${with_plugin_installdir+set}" = set; then
+  withval=$with_plugin_installdir; PLUGIN_DIR="$withval"
 else
-
-cat >>confdefs.h <<_ACEOF
-#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/lib/ptlib"
-_ACEOF
+  PLUGIN_DIR="ptlib-${PTLIB_VERSION}"
 
 fi
+
+
+EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
+if test "x${exec_prefix}" = "xNONE" ; then
+  if test "x${prefix}" = "xNONE" ; then
+    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
+  else
+    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
+  fi
+else
+  EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
+fi
+
+{ echo "$as_me:$LINENO: result: ${EXPANDED_PLUGIN_DIR}" >&5
+echo "${ECHO_T}${EXPANDED_PLUGIN_DIR}" >&6; }
+
+
+cat >>confdefs.h <<_ACEOF
+#define P_DEFAULT_PLUGIN_DIR "${EXPANDED_PLUGIN_DIR}"
+_ACEOF
+
+
+DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+
 
 
 
@@ -9862,10 +9887,11 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for OPENSSL" >&5
 echo $ECHO_N "checking for OPENSSL... $ECHO_C" >&6; }
 
-if test -n "$OPENSSL_CFLAGS"; then
-    pkg_cv_OPENSSL_CFLAGS="$OPENSSL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$OPENSSL_CFLAGS"; then
+        pkg_cv_OPENSSL_CFLAGS="$OPENSSL_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"openssl\"") >&5
   ($PKG_CONFIG --exists --print-errors "openssl") 2>&5
   ac_status=$?
@@ -9875,13 +9901,15 @@ if test -n "$OPENSSL_CFLAGS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
-if test -n "$OPENSSL_LIBS"; then
-    pkg_cv_OPENSSL_LIBS="$OPENSSL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$OPENSSL_LIBS"; then
+        pkg_cv_OPENSSL_LIBS="$OPENSSL_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"openssl\"") >&5
   ($PKG_CONFIG --exists --print-errors "openssl") 2>&5
   ac_status=$?
@@ -9891,8 +9919,9 @@ if test -n "$OPENSSL_LIBS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
 
 
@@ -9905,9 +9934,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "openssl" 2>&1`
+	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "openssl"`
         else
-	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --print-errors "openssl" 2>&1`
+	        OPENSSL_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "openssl"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OPENSSL_PKG_ERRORS" >&5
@@ -10672,10 +10701,11 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for SDL" >&5
 echo $ECHO_N "checking for SDL... $ECHO_C" >&6; }
 
-if test -n "$SDL_CFLAGS"; then
-    pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$SDL_CFLAGS"; then
+        pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
   ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
   ac_status=$?
@@ -10685,13 +10715,15 @@ if test -n "$SDL_CFLAGS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
-if test -n "$SDL_LIBS"; then
-    pkg_cv_SDL_LIBS="$SDL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$SDL_LIBS"; then
+        pkg_cv_SDL_LIBS="$SDL_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
   ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
   ac_status=$?
@@ -10701,8 +10733,9 @@ if test -n "$SDL_LIBS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
 
 
@@ -10715,9 +10748,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "sdl" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "sdl"`
         else
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors "sdl" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "sdl"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$SDL_PKG_ERRORS" >&5
@@ -14944,6 +14977,7 @@ AR!$AR$ac_delim
 BISON!$BISON$ac_delim
 HAS_REGEX!$HAS_REGEX$ac_delim
 HAS_PLUGINS!$HAS_PLUGINS$ac_delim
+DEV_PLUGIN_DIR!$DEV_PLUGIN_DIR$ac_delim
 HAS_SAMPLES!$HAS_SAMPLES$ac_delim
 CPP!$CPP$ac_delim
 HAS_RESOLVER!$HAS_RESOLVER$ac_delim
@@ -14955,7 +14989,6 @@ OPENSSL_LIBS!$OPENSSL_LIBS$ac_delim
 HAS_OPENSSL!$HAS_OPENSSL$ac_delim
 P_STATIC_ENDLDLIBS!$P_STATIC_ENDLDLIBS$ac_delim
 P_STATIC_LDFLAGS!$P_STATIC_LDFLAGS$ac_delim
-HAS_EXPAT!$HAS_EXPAT$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -14997,6 +15030,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+HAS_EXPAT!$HAS_EXPAT$ac_delim
 HAS_IPV6!$HAS_IPV6$ac_delim
 SDL_CFLAGS!$SDL_CFLAGS$ac_delim
 SDL_LIBS!$SDL_LIBS$ac_delim
@@ -15044,7 +15078,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 45; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 46; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
