@@ -737,6 +737,8 @@ PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
 
 void PMonitoredSocketChannel::SetInterface(const PString & iface)
 {
+  mutex.Wait();
+
   PIPSocket::InterfaceEntry info;
   if (socketBundle != NULL && socketBundle->GetInterfaceInfo(iface, info))
     currentInterface = MakeInterfaceDescription(info);
@@ -745,15 +747,26 @@ void PMonitoredSocketChannel::SetInterface(const PString & iface)
 
   if (lastReceivedInterface.IsEmpty())
     lastReceivedInterface = currentInterface;
+
+  mutex.Signal();
 }
 
 
-const PString & PMonitoredSocketChannel::GetInterface()
+PString PMonitoredSocketChannel::GetInterface()
 {
+  PString iface;
+
+  mutex.Wait();
+
   if (currentInterface.Find('%') == P_MAX_INDEX)
     SetInterface(currentInterface);
 
-  return currentInterface;
+  iface = currentInterface;
+  iface.MakeUnique();
+
+  mutex.Signal();
+
+  return iface;
 }
 
 
