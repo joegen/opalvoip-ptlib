@@ -879,7 +879,7 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   SocketInfo info;
   if (CreateSocket(info, binding)) {
     if (localPort == 0)
-      localPort = info.socket->GetPort();
+      info.socket->PUDPSocket::GetLocalAddress(binding, localPort);
     socketInfoMap[iface] = info;
   }
 }
