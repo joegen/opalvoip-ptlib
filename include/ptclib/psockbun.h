@@ -438,7 +438,7 @@ class PMonitoredSocketChannel : public PChannel
     );
 
     /// Get the current interface descriptor being used/
-    const PString & GetInterface();
+    PString GetInterface();
 
     /** Get the local IP address and port for the currently selected interface.
       */
@@ -500,6 +500,7 @@ class PMonitoredSocketChannel : public PChannel
     PIPSocket::Address   lastReceivedAddress;
     WORD                 lastReceivedPort;
     PString              lastReceivedInterface;
+    PMutex               mutex;
 };
 
 
