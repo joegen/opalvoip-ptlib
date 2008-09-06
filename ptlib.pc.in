@@ -9,5 +9,5 @@ ostype=@OSTYPE@
 Name: ptlib
 Description: PT Library
 Version: @PTLIB_VERSION@
-Libs: -L${libdir} @ENDLDLIBS@ -lpt 
+Libs: -L${libdir} -lpt @ENDLDLIBS@ 
 Cflags: -I${includedir} @STDCCFLAGS@
