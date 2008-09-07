@@ -86,6 +86,7 @@ install:
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
 	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 444 lib/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR)
 	(cd $(DESTDIR)$(LIBDIR) ; \
 		rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
 		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ \
@@ -142,6 +143,7 @@ uninstall:
 	       $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR) \
 	       $(DESTDIR)$(LIBDIR)/pkgconfig/ptlib.pc
 	rm -f $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE)* \
-              $(LIBDIR)/libpt.so 
+	      $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a \
+	      $(LIBDIR)/libpt.so 
 
 # End of Makefile.in
