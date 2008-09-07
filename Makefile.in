@@ -85,8 +85,8 @@ install:
                      $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
-	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 444 lib/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 444 $(PT_LIBDIR)/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 444 $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR)
 	(cd $(DESTDIR)$(LIBDIR) ; \
 		rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
 		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ \
@@ -99,12 +99,14 @@ install:
 		rm -f  $(PTLIB_FILE) ; \
 		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE) \
 	)
+ifdef DEBUG
 	(cd $(DESTDIR)$(LIBDIR); \
 		rm -f  libpt.@SHAREDLIBEXT@ ; \
 		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
+endif
 ifeq (1, $(HAS_PLUGINS))
-	cd lib/device/ ; \
+	cd $(PT_LIBDIR)/device/ ; \
 	( for dir in ./* ;\
 		do mkdir -p $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		chmod 755 $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
