@@ -582,9 +582,9 @@ endif
 
 ifndef OBJ_SUFFIX
 ifdef	DEBUG
-OBJ_SUFFIX	:= d
+OBJ_SUFFIX	:= _d
 else
-OBJ_SUFFIX	:= r
+OBJ_SUFFIX	:=
 endif # DEBUG
 endif # OBJ_SUFFIX
 
@@ -640,12 +640,12 @@ ifndef UNIX_SRC_DIR
 UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/unix
 endif
 
-PT_LIBDIR	= $(PTLIBDIR)/lib
+PT_LIBDIR	= $(PTLIBDIR)/lib_$(PLATFORM_TYPE)
 
 # set name of the PT library
-PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PTLIB_BASE	= pt$(OBJ_SUFFIX)
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
-PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
+PT_OBJBASE	= obj$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PT_LIBDIR)/$(PT_OBJBASE)
 
 ###############################################################################
