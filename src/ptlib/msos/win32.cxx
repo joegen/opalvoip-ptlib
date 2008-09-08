@@ -783,6 +783,10 @@ void PThread::CleanUp()
 
   if (threadHandle != NULL)
     CloseHandle(threadHandle);
+
+#if PTRACING
+  PTrace::Cleanup();
+#endif
 }
 
 

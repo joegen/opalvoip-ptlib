@@ -300,6 +300,10 @@ PThread::~PThread()
   if (PX_threadId != 0 && PX_threadId != pthread_self())
     Terminate();
 
+#if PTRACING
+  PTrace::Cleanup();
+#endif
+
   PAssertPTHREAD(::close, (unblockPipe[0]));
   PAssertPTHREAD(::close, (unblockPipe[1]));
 
