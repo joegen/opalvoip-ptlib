@@ -857,6 +857,7 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
 
 PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * className, ostream * /*strm*/)
 {
+  MemoryHeapInstance();
   if (!_CrtIsValidHeapPointer(ptr))
     return Bad;
 
@@ -870,12 +871,14 @@ PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * cla
 
 PBoolean PMemoryHeap::ValidateHeap(ostream * /*strm*/)
 {
+  MemoryHeapInstance();
   return _CrtCheckMemory();
 }
 
 
 PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 {
+  MemoryHeapInstance();
   int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   if (ignore)
     _CrtSetDbgFlag(flags & ~_CRTDBG_ALLOC_MEM_DF);
@@ -887,6 +890,7 @@ PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 
 void PMemoryHeap::DumpStatistics()
 {
+  MemoryHeapInstance();
   _CrtMemState state;
   _CrtMemCheckpoint(&state);
   _CrtMemDumpStatistics(&state);
@@ -901,24 +905,28 @@ void PMemoryHeap::DumpStatistics(ostream & /*strm*/)
 
 void PMemoryHeap::GetState(State & state)
 {
+  MemoryHeapInstance();
   _CrtMemCheckpoint(&state);
 }
 
 
 void PMemoryHeap::DumpObjectsSince(const State & state)
 {
+  MemoryHeapInstance();
   _CrtMemDumpAllObjectsSince(&state);
 }
 
 
 void PMemoryHeap::DumpObjectsSince(const State & state, ostream & /*strm*/)
 {
+  MemoryHeapInstance();
   DumpObjectsSince(state);
 }
 
 
 void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
 {
+  MemoryHeapInstance();
   _CrtSetBreakAlloc(objectNumber);
 }
 
