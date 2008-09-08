@@ -109,7 +109,7 @@ public:
   ostream       * stream;
   PTimeInterval   startTick;
   const char    * rolloverPattern;
-  unsigned        lastDayOfYear;
+  unsigned        lastRotate;
   ios::fmtflags   oldStreamFlags;
   std::streamsize oldPrecision;
 
@@ -158,8 +158,8 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , stream(&cerr)
 #endif
     , startTick(PTimer::Tick())
-    , rolloverPattern("yyyy_MM_dd")
-    , lastDayOfYear(0)
+    , rolloverPattern("yyyy_MM_dd_hh_hh")
+    , lastRotate(0)
     , oldStreamFlags(ios::left)
     , oldPrecision(0)
   {
@@ -240,7 +240,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       PFilePath fn(filename);
       fn.Replace("%P", PString((unsigned int) PProcess::Current().GetProcessID()));
      
-      if ((options & PTrace::RotateDaily) != 0)
+      if ((options & PTrace::RotateLogMask) != 0)
       {
           PTime now;
           fn = PFilePath(fn.GetDirectory() + fn.GetTitle() + now.AsString(rolloverPattern, ((options&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) + fn.GetType());
@@ -286,17 +286,28 @@ void PTrace::Initialise(
   Initialise(level, filename, NULL, options);
 }
 
+static int GetRotateVal(unsigned options)
+{
+  PTime now;
+  if (options & PTrace::RotateDaily)
+    return now.GetDayOfYear();
+  if (options & PTrace::RotateHourly) 
+    return now.GetHour();
+  if (options & PTrace::RotateMinutely)
+    return now.GetMinute();
+  return 0;
+}
+
 void PTrace::Initialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
   info.options = options;
   info.thresholdLevel = level;
-  info.rolloverPattern = rolloverPattern != NULL ? rolloverPattern : "yyyy_MM_dd";
+  info.rolloverPattern = rolloverPattern != NULL ? rolloverPattern : "yyyy_MM_dd_hh_mm";
   // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
   // between os_gmtime and os_localtime?
-  info.lastDayOfYear = (options & RotateDaily) != 0 ? PTime().GetDayOfYear() : 0;
-
+  info.lastRotate = GetRotateVal(options);
   info.OpenTraceFile(filename);
 
 #if PTRACING
@@ -357,11 +368,11 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   info.Lock();
 
-  if ((info.filename != NULL) && (info.options&RotateDaily) != 0) {
-    unsigned day = PTime().GetDayOfYear();
-    if (day != info.lastDayOfYear) {
+  if ((info.filename != NULL) && (info.options&RotateLogMask) != 0) {
+    int rotateVal = GetRotateVal(info.options);
+    if (rotateVal != info.lastRotate) {
       info.OpenTraceFile(NULL);
-      info.lastDayOfYear = day;
+      info.lastRotate = rotateVal;
       if (info.stream == NULL)
         info.SetStream(&cerr);
     }
