@@ -275,14 +275,18 @@ public:
     /** Output timestamps in GMT time rather than local time
       */
     GMTTime = 256,
-    /** If set, log file will be rotated daily
+    /** If set, log file will be rotated 
       */
     RotateDaily = 512,
+    RotateHourly = 1024,
+    RotateMinutely = 2048,
+    RotateLogMask = RotateDaily + RotateHourly + RotateMinutely,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
         be set in conjection with SetStream(new PSystemLog).
       */
     SystemLogStream = 32768
   };
+
 
   /**Set the most common trace options.
      If filename is not NULL then a PTextFile is created and attached the
