@@ -4,6 +4,9 @@
 # apparently shamelessly ripped from gtk's gtk-config.in
 #
 
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+
 VERSION="@PTLIB_VERSION@"
 CCFLAGS="@STDCCFLAGS@"
 LDFLAGS="@LDFLAGS@"
