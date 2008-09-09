@@ -162,8 +162,17 @@ static int SetNonBlocking(int fd)
 
 int PSocket::os_socket(int af, int type, int protocol)
 {
+  int fd = ::socket(af, type, protocol);
+
+#if P_HAS_RECVMSG
+  if ((fd != -1) && (type == SOCK_DGRAM)) {
+    int v = 1;
+    setsockopt(fd, IPPROTO_IP, IP_RECVERR, &v, sizeof(v));
+  }
+#endif
+
   // attempt to create a socket
-  return SetNonBlocking(PX_NewHandle(GetClass(), ::socket(af, type, protocol)));
+  return SetNonBlocking(PX_NewHandle(GetClass(), fd));
 }
 
 
@@ -547,16 +556,6 @@ PBoolean PSocket::os_recvfrom(
   if (!PXSetIOBlock(PXReadBlock, readTimeout))
     return PFalse;
 
-  // if we don't care what interface the packet arrives on, then don't bother getting the information
-  if (!catchReceiveToAddr) {
-    int r = ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen);
-    if (!ConvertOSError(r, LastReadError))
-      return PFalse;
-
-    lastReadCount = r;
-    return lastReadCount > 0;
-  }
-
   msghdr readData;
   memset(&readData, 0, sizeof(readData));
 
@@ -574,7 +573,12 @@ PBoolean PSocket::os_recvfrom(
   readData.msg_controllen = sizeof(auxdata);
 
   // read a packet 
-  int r = ::recvmsg(os_handle, &readData, 0);
+  int r = ::recvmsg(os_handle, &readData, flags);
+  if (r == -1) {
+    PTRACE(5, "PWLIB\trecvmsg returned error " << r);
+    ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
+  }
+
   if (!ConvertOSError(r, LastReadError))
     return PFalse;
 
@@ -586,7 +590,6 @@ PBoolean PSocket::os_recvfrom(
       if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO) {
         in_pktinfo * info = (in_pktinfo *)CMSG_DATA(cmsg);
         SetLastReceiveAddr(&info->ipi_spec_dst, sizeof(in_addr));
-        break;
       }
     }
   }
@@ -667,7 +670,9 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
     return PFalse;
 
-  if (ConvertOSError(lastReadCount = ::recv(os_handle, (char *)buf, len, 0)))
+  int lastReadCount = ::recv(os_handle, (char *)buf, len, 0);
+    return lastReadCount > 0;
+  if (ConvertOSError(lastReadCount))
     return lastReadCount > 0;
 
   lastReadCount = 0;
