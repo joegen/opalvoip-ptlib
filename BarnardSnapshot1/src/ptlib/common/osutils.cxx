@@ -34,6 +34,7 @@
 #include <ptlib.h>
 #include <vector>
 #include <map>
+#include <fstream>
 
 #include <ctype.h>
 #include <ptlib/pfactory.h>
@@ -240,15 +241,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
           fn = PFilePath(fn.GetDirectory() + fn.GetTitle() + now.AsString(rolloverPattern, ((options&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) + fn.GetType());
       }
 
-      PTextFile * traceOutput;
-      if (options & PTrace::AppendToFile) {
-        traceOutput = new PTextFile(fn, PFile::ReadWrite);
-        traceOutput->SetPosition(0, PFile::End);
-      }
+      ofstream * traceOutput;
+      if (options & PTrace::AppendToFile) 
+        traceOutput = new ofstream((const char *)fn, ios_base::out | ios_base::app);
       else 
-        traceOutput = new PTextFile(fn, PFile::WriteOnly);
+        traceOutput = new ofstream((const char *)fn, ios_base::out | ios_base::trunc);
 
-      if (traceOutput->IsOpen())
+      if (traceOutput->is_open())
         SetStream(traceOutput);
       else {
         PTRACE(0, PProcess::Current().GetName() << "Could not open trace output file \"" << fn << '"');
