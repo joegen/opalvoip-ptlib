@@ -190,7 +190,7 @@ AC_DEFUN([PTLIB_OPENSSL_CONST],
           ptlib_openssl_const=no
           old_CFLAGS="$CFLAGS"
           CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
-          AC_LANG(C)
+          AC_LANG(C++)
           AC_MSG_CHECKING(for const arg to d2i_AutoPrivateKey)
           AC_TRY_COMPILE([#include <openssl/evp.h>],
                          [
@@ -200,7 +200,6 @@ AC_DEFUN([PTLIB_OPENSSL_CONST],
                          [ptlib_openssl_const=yes]
                         )
           AC_MSG_RESULT(${ptlib_openssl_const})
-          AC_LANG(C++)
           CFLAGS="${old_CFLAGS}"
 
           AS_IF([test AS_VAR_GET([ptlib_openssl_const]) = yes], [$1], [$2])[]
