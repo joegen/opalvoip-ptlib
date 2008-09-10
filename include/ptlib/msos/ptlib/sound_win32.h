@@ -108,7 +108,6 @@ class PSoundChannelWin32: public PSoundChannel
                      unsigned bitsPerSample);
     ~PSoundChannelWin32();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    static PString GetDefaultDevice(PSoundChannel::Directions);
     PBoolean Open(const PString & _device,
               Directions _dir,
               unsigned _numChannels,
