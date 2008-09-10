@@ -285,7 +285,7 @@ void PTrace::Initialise(
   Initialise(level, filename, NULL, options);
 }
 
-static int GetRotateVal(unsigned options)
+static unsigned GetRotateVal(unsigned options)
 {
   PTime now;
   if (options & PTrace::RotateDaily)
@@ -368,7 +368,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   info.Lock();
 
   if ((info.filename != NULL) && (info.options&RotateLogMask) != 0) {
-    int rotateVal = GetRotateVal(info.options);
+    unsigned rotateVal = GetRotateVal(info.options);
     if (rotateVal != info.lastRotate) {
       info.OpenTraceFile(NULL);
       info.lastRotate = rotateVal;
