@@ -686,25 +686,6 @@ PStringArray PSoundChannelWin32::GetDeviceNames(Directions dir)
 }
 
 
-PString PSoundChannelWin32::GetDefaultDevice(Directions dir)
-{
-  RegistryKey registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Multimedia\\Sound Mapper",
-                       RegistryKey::ReadOnly);
-
-  PString str;
-
-  if (dir == Player) {
-    if (!registry.QueryValue("Playback", str))
-      return GetWaveOutDeviceName(WAVE_MAPPER);
-  }
-  else {
-    if (!registry.QueryValue("Record", str))
-      return GetWaveInDeviceName(WAVE_MAPPER);
-  }
-
-  return str.Trim();
-}
-
 PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir, unsigned& id)
 {
   PINDEX offset = device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
