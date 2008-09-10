@@ -7,6 +7,7 @@ PLUGIN_SOURCES	= vidinput_v4l2.cxx
 
 ifeq (1,$(HAS_LIBV4L))
 PLUGIN_LIBS += -lv4l2
+STDCCFLAGS += -DHAS_LIBV4L
 endif
 
 
