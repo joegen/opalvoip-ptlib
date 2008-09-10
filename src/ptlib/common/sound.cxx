@@ -143,28 +143,24 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
   PString str;
 
   if (dir == Player) {
-    if (!registry.QueryValue("ConsoleVoiceComPlayback", str) && !registry.QueryValue("Playback", str)) {
-      WAVEOUTCAPS caps;
-      if (waveOutGetDevCaps(0, &caps, sizeof(caps)) == 0)
-        str = caps.szPname;
-    }
+    if (registry.QueryValue("ConsoleVoiceComPlayback", str) )
+      return str;
+    if (registry.QueryValue("Playback", str))
+      return str;
   }
   else {
-    if (!registry.QueryValue("ConsoleVoiceComRecord", str) && !registry.QueryValue("Record", str)) {
-      WAVEINCAPS caps;
-      if (waveInGetDevCaps(0, &caps, sizeof(caps)) == 0)
-        str = caps.szPname;
-    }
+    if (registry.QueryValue("ConsoleVoiceComRecord", str))
+      return str;
+    if (registry.QueryValue("Record", str))
+      return str;
   }
+#endif
 
-  return str.Trim();
-#else
   PStringArray devices = GetDeviceNames(dir);
   if (devices.GetSize() > 0)
     return devices[0];
 
   return PString::Empty();
-#endif
 }
 
 

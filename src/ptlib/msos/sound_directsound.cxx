@@ -211,17 +211,6 @@ PSoundChannelDirectSound::Open (const PString & _device,
 }
 
 /*
- * DESC	:	Provides Default device names
- * BEHAVIOUR :  Defines 'Default' as the default interface's name
- * RETURN :	PString
- */
-PString 
-PSoundChannelDirectSound::GetDefaultDevice (Directions /*dir*/)
-{
-  return PString ("Default");
-}
-
-/*
  * DESC	:
  * BEHAVIOUR :
  * RETURN :
