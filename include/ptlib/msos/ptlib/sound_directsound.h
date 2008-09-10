@@ -65,7 +65,6 @@ public:
 			     unsigned bitsPerSample);
     ~PSoundChannelDirectSound();
     static PStringArray GetDeviceNames(PSoundChannel::Directions);
-    static PString GetDefaultDevice(PSoundChannel::Directions);
     PBoolean Open(const PString & _device,
               Directions _dir,
               unsigned _numChannels,
