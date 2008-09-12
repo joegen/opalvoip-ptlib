@@ -1206,13 +1206,11 @@ PTimedMutex::PTimedMutex()
   pthread_mutexattr_t attr;
   PAssertPTHREAD(pthread_mutexattr_init, (&attr));
 
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr,
-#if P_HAS_RECURSIVE_MUTEX == 2
-PTHREAD_MUTEX_RECURSIVE
+#if (P_HAS_RECURSIVE_MUTEX == 2)
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE));
 #else
-PTHREAD_MUTEX_RECURSIVE_NP
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
 #endif
-));
 
   PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
@@ -1227,13 +1225,11 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
   PAssertPTHREAD(pthread_mutexattr_init, (&attr));
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, 
 #if P_HAS_RECURSIVE_MUTEX == 2
-PTHREAD_MUTEX_RECURSIVE
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE));
 #else
-PTHREAD_MUTEX_RECURSIVE_NP
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
 #endif
-));
 
   PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
