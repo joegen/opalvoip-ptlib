@@ -188,8 +188,8 @@ dnl            $2 action if-not-found
 AC_DEFUN([PTLIB_OPENSSL_CONST],
          [
           ptlib_openssl_const=no
-          old_CFLAGS="$CFLAGS"
-          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+          old_CXXFLAGS="$CXXFLAGS"
+          CXXFLAGS="$CFLAGS $OPENSSL_CFLAGS"
           AC_LANG(C++)
           AC_MSG_CHECKING(for const arg to d2i_AutoPrivateKey)
           AC_TRY_COMPILE([#include <openssl/evp.h>],
@@ -200,7 +200,7 @@ AC_DEFUN([PTLIB_OPENSSL_CONST],
                          [ptlib_openssl_const=yes]
                         )
           AC_MSG_RESULT(${ptlib_openssl_const})
-          CFLAGS="${old_CFLAGS}"
+          CXXFLAGS="${old_CXXFLAGS}"
 
           AS_IF([test AS_VAR_GET([ptlib_openssl_const]) = yes], [$1], [$2])[]
          ])

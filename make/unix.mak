@@ -288,8 +288,8 @@ ifeq ($(OSTYPE),solaris)
 
 #  Solaris (Sunos 5.x)
 
-CFLAGS +=-DSOLARIS
-CXXFLAGS +=-DSOLARIS
+CFLAGS +=-DSOLARIS -D__inline=inline
+CXXFLAGS +=-DSOLARIS -D__inline=inline
 
 ifeq ($(MACHTYPE),x86)
 ifeq ($(USE_GCC),yes)
@@ -622,7 +622,11 @@ endif
 # define some common stuff
 #
 
+ifneq ($(OSTYPE),solaris)
 SHELL		:= /bin/sh
+else
+SHELL           := /bin/bash
+endif
 
 .SUFFIXES:	.cxx .prc 
 
@@ -668,7 +672,7 @@ STDCCFLAGS	+= -DNDEBUG
 
 ifneq ($(OSTYPE),Darwin)
   ifeq ($(OSTYPE),solaris)
-    OPTCCFLAGS	+= -O3 
+    OPTCCFLAGS	+= -xO3 
   else
     OPTCCFLAGS	+= -Os 
   endif
