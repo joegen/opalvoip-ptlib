@@ -77,6 +77,9 @@ class PInterfaceMonitor : public PProcessStartup
 
     /// Return the singleton interface for the network monitor
     static PInterfaceMonitor & GetInstance();
+    
+    /// Change the refresh interval
+    void SetRefreshInterval (unsigned refresh);
 
     /// Start monitoring network interfaces
     bool Start();
