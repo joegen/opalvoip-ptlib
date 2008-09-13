@@ -719,7 +719,7 @@ if test ${OSTYPE} != Darwin ; then
   fi
 fi
 
-if test "${P_HAS_SEMAPHORES}x" == "x" ; then
+if test "${P_HAS_SEMAPHORES}x" = "x" ; then
   
   AC_TRY_COMPILE([#include <semaphore.h>],
                  [sem_t *s = sem_open("test", O_CREAT)],
