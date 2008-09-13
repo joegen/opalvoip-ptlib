@@ -100,6 +100,12 @@ PInterfaceMonitor & PInterfaceMonitor::GetInstance()
 }
 
 
+void PInterfaceMonitor::SetRefreshInterval (unsigned refresh)
+{
+  refreshInterval = refresh;
+}
+
+
 bool PInterfaceMonitor::Start()
 {
   PWaitAndSignal m(mutex);
