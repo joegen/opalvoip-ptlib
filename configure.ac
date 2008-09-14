@@ -517,6 +517,7 @@ HAS_VIDFILE=1
 HAS_APPSHARE=
 HAS_SHM_VIDEO=1
 HAS_VXML=1
+HAS_EXCEPTIONS=
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -556,6 +557,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_APPSHARE=
   HAS_VXML=1
   HAS_SHM_VIDEO=
+  HAS_EXCEPTIONS=
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -594,6 +596,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_APPSHARE=
   HAS_VXML=
   HAS_SHM_VIDEO=
+  HAS_EXCEPTIONS=
 fi
 
 
@@ -1580,18 +1583,19 @@ fi
 dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
-AC_ARG_ENABLE(exceptions,
-       [  --enable-exceptions            enable C++ exceptions])
 
-if test "${enable_exceptions}z" != "yesz" ; then
-  AC_MSG_NOTICE(C++ exceptions disabled)
-  STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
-else
-  AC_DEFINE(P_EXCEPTIONS, 1)
-  AC_MSG_NOTICE(C++ exceptions enabled)
-  STDCCFLAGS="$STDCCFLAGS -fexceptions"
-fi
+case "$target_os" in
+  solaris* | sunos* ) ;;
+  *)
+    PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
 
+    if test "x${HAS_EXCEPTIONS}" = "x1" ; then
+      STDCCFLAGS="$STDCCFLAGS -fexceptions"
+    else
+      STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+    fi
+    ;;
+esac
 dnl ########################################################################
 dnl final declarations
 
