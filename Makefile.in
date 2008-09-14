@@ -134,8 +134,11 @@ endif
 
 	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
 	chmod 755 $(DESTDIR)$(LIBDIR)/pkgconfig
+ifdef DEBUG
+	$(INSTALL) -m 444 ptlib_debug.pc $(DESTDIR)$(LIBDIR)/pkgconfig/
+else
 	$(INSTALL) -m 444 ptlib.pc $(DESTDIR)$(LIBDIR)/pkgconfig/
-
+endif
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
 	       $(DESTDIR)$(PREFIX)/include/ptclib \

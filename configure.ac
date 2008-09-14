@@ -1672,6 +1672,7 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(ptlib_cfg.dxy)
+AC_CONFIG_FILES(ptlib_debug.pc)
 AC_CONFIG_FILES(ptlib.pc)
 
 dnl ########################################################################
