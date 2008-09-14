@@ -14744,6 +14744,8 @@ ac_config_files="$ac_config_files Makefile"
 
 ac_config_files="$ac_config_files ptlib_cfg.dxy"
 
+ac_config_files="$ac_config_files ptlib_debug.pc"
+
 ac_config_files="$ac_config_files ptlib.pc"
 
 
@@ -15307,6 +15309,7 @@ do
     "make/ptlib-config") CONFIG_FILES="$CONFIG_FILES make/ptlib-config" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "ptlib_cfg.dxy") CONFIG_FILES="$CONFIG_FILES ptlib_cfg.dxy" ;;
+    "ptlib_debug.pc") CONFIG_FILES="$CONFIG_FILES ptlib_debug.pc" ;;
     "ptlib.pc") CONFIG_FILES="$CONFIG_FILES ptlib.pc" ;;
     "include/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS include/ptbuildopts.h" ;;
 
