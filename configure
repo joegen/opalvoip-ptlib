@@ -747,6 +747,44 @@ HAS_SHM_VIDEO
 HAS_VIDEO_CAPTURE
 HAS_ODBC
 HAS_EXCEPTIONS
+PTLIB_IPV6
+PTLIB_RESOLVER
+PTLIB_OPENSSL
+PTLIB_OPENLDAP
+PTLIB_SASL
+PTLIB_SASL2
+PTLIB_EXPAT
+PTLIB_REGEX
+PTLIB_SDL
+PTLIB_VIDEO_CAPTURE
+PTLIB_TTS
+PTLIB_ASN
+PTLIB_STUN
+PTLIB_PIPECHAN
+PTLIB_DTMF
+PTLIB_WAVFILE
+PTLIB_SOCKS
+PTLIB_FTP
+PTLIB_SNMP
+PTLIB_TELNET
+PTLIB_REMCONN
+PTLIB_SERIAL
+PTLIB_POP3SMTP
+PTLIB_AUDIO
+PTLIB_VIDEO
+PTLIB_SHM_VIDEO
+PTLIB_VXML
+PTLIB_JABBER
+PTLIB_XMLRPC
+PTLIB_SOAP
+PTLIB_URL
+PTLIB_HTTP
+PTLIB_HTTPFORMS
+PTLIB_HTTPSVC
+PTLIB_CONFIG_FILE
+PTLIB_SOCKAGG
+PTLIB_VIDFILE
+PTLIB_ODBC
 STDCCFLAGS
 STDCXXFLAGS
 OPTSTDCCFLAGS
@@ -14211,6 +14249,392 @@ esac
 
 
 
+          if test "x${HAS_IPV6}" = "x1" ; then
+            PTLIB_IPV6=yes
+
+          else
+            PTLIB_IPV6=no
+
+          fi
+
+
+
+          if test "x${HAS_RESOLVER}" = "x1" ; then
+            PTLIB_RESOLVER=yes
+
+          else
+            PTLIB_RESOLVER=no
+
+          fi
+
+
+
+          if test "x${HAS_OPENSSL}" = "x1" ; then
+            PTLIB_OPENSSL=yes
+
+          else
+            PTLIB_OPENSSL=no
+
+          fi
+
+
+
+          if test "x${HAS_OPENLDAP}" = "x1" ; then
+            PTLIB_OPENLDAP=yes
+
+          else
+            PTLIB_OPENLDAP=no
+
+          fi
+
+
+
+          if test "x${HAS_SASL}" = "x1" ; then
+            PTLIB_SASL=yes
+
+          else
+            PTLIB_SASL=no
+
+          fi
+
+
+
+          if test "x${HAS_SASL2}" = "x1" ; then
+            PTLIB_SASL2=yes
+
+          else
+            PTLIB_SASL2=no
+
+          fi
+
+
+
+          if test "x${HAS_EXPAT}" = "x1" ; then
+            PTLIB_EXPAT=yes
+
+          else
+            PTLIB_EXPAT=no
+
+          fi
+
+
+
+          if test "x${HAS_REGEX}" = "x1" ; then
+            PTLIB_REGEX=yes
+
+          else
+            PTLIB_REGEX=no
+
+          fi
+
+
+
+          if test "x${HAS_SDL}" = "x1" ; then
+            PTLIB_SDL=yes
+
+          else
+            PTLIB_SDL=no
+
+          fi
+
+
+
+          if test "x${HAS_VIDEO_CAPTURE}" = "x1" ; then
+            PTLIB_VIDEO_CAPTURE=yes
+
+          else
+            PTLIB_VIDEO_CAPTURE=no
+
+          fi
+
+
+
+
+          if test "x${HAS_TTS}" = "x1" ; then
+            PTLIB_TTS=yes
+
+          else
+            PTLIB_TTS=no
+
+          fi
+
+
+
+          if test "x${HAS_ASN}" = "x1" ; then
+            PTLIB_ASN=yes
+
+          else
+            PTLIB_ASN=no
+
+          fi
+
+
+
+          if test "x${HAS_STUN}" = "x1" ; then
+            PTLIB_STUN=yes
+
+          else
+            PTLIB_STUN=no
+
+          fi
+
+
+
+          if test "x${HAS_PIPECHAN}" = "x1" ; then
+            PTLIB_PIPECHAN=yes
+
+          else
+            PTLIB_PIPECHAN=no
+
+          fi
+
+
+
+          if test "x${HAS_DTMF}" = "x1" ; then
+            PTLIB_DTMF=yes
+
+          else
+            PTLIB_DTMF=no
+
+          fi
+
+
+
+          if test "x${HAS_WAVFILE}" = "x1" ; then
+            PTLIB_WAVFILE=yes
+
+          else
+            PTLIB_WAVFILE=no
+
+          fi
+
+
+
+          if test "x${HAS_SOCKS}" = "x1" ; then
+            PTLIB_SOCKS=yes
+
+          else
+            PTLIB_SOCKS=no
+
+          fi
+
+
+
+          if test "x${HAS_FTP}" = "x1" ; then
+            PTLIB_FTP=yes
+
+          else
+            PTLIB_FTP=no
+
+          fi
+
+
+
+          if test "x${HAS_SNMP}" = "x1" ; then
+            PTLIB_SNMP=yes
+
+          else
+            PTLIB_SNMP=no
+
+          fi
+
+
+
+          if test "x${HAS_TELNET}" = "x1" ; then
+            PTLIB_TELNET=yes
+
+          else
+            PTLIB_TELNET=no
+
+          fi
+
+
+
+          if test "x${HAS_REMCONN}" = "x1" ; then
+            PTLIB_REMCONN=yes
+
+          else
+            PTLIB_REMCONN=no
+
+          fi
+
+
+
+          if test "x${HAS_SERIAL}" = "x1" ; then
+            PTLIB_SERIAL=yes
+
+          else
+            PTLIB_SERIAL=no
+
+          fi
+
+
+
+          if test "x${HAS_POP3SMTP}" = "x1" ; then
+            PTLIB_POP3SMTP=yes
+
+          else
+            PTLIB_POP3SMTP=no
+
+          fi
+
+
+
+          if test "x${HAS_AUDIO}" = "x1" ; then
+            PTLIB_AUDIO=yes
+
+          else
+            PTLIB_AUDIO=no
+
+          fi
+
+
+
+          if test "x${HAS_VIDEO}" = "x1" ; then
+            PTLIB_VIDEO=yes
+
+          else
+            PTLIB_VIDEO=no
+
+          fi
+
+
+
+          if test "x${HAS_SHM_VIDEO}" = "x1" ; then
+            PTLIB_SHM_VIDEO=yes
+
+          else
+            PTLIB_SHM_VIDEO=no
+
+          fi
+
+
+
+
+          if test "x${HAS_VXML}" = "x1" ; then
+            PTLIB_VXML=yes
+
+          else
+            PTLIB_VXML=no
+
+          fi
+
+
+
+          if test "x${HAS_JABBER}" = "x1" ; then
+            PTLIB_JABBER=yes
+
+          else
+            PTLIB_JABBER=no
+
+          fi
+
+
+
+          if test "x${HAS_XMLRPC}" = "x1" ; then
+            PTLIB_XMLRPC=yes
+
+          else
+            PTLIB_XMLRPC=no
+
+          fi
+
+
+
+          if test "x${HAS_SOAP}" = "x1" ; then
+            PTLIB_SOAP=yes
+
+          else
+            PTLIB_SOAP=no
+
+          fi
+
+
+
+          if test "x${HAS_URL}" = "x1" ; then
+            PTLIB_URL=yes
+
+          else
+            PTLIB_URL=no
+
+          fi
+
+
+
+          if test "x${HAS_HTTP}" = "x1" ; then
+            PTLIB_HTTP=yes
+
+          else
+            PTLIB_HTTP=no
+
+          fi
+
+
+
+          if test "x${HAS_HTTPFORMS}" = "x1" ; then
+            PTLIB_HTTPFORMS=yes
+
+          else
+            PTLIB_HTTPFORMS=no
+
+          fi
+
+
+
+          if test "x${HAS_HTTPSVC}" = "x1" ; then
+            PTLIB_HTTPSVC=yes
+
+          else
+            PTLIB_HTTPSVC=no
+
+          fi
+
+
+
+          if test "x${HAS_CONFIG_FILE}" = "x1" ; then
+            PTLIB_CONFIG_FILE=yes
+
+          else
+            PTLIB_CONFIG_FILE=no
+
+          fi
+
+
+
+          if test "x${HAS_SOCKAGG}" = "x1" ; then
+            PTLIB_SOCKAGG=yes
+
+          else
+            PTLIB_SOCKAGG=no
+
+          fi
+
+
+
+          if test "x${HAS_VIDFILE}" = "x1" ; then
+            PTLIB_VIDFILE=yes
+
+          else
+            PTLIB_VIDFILE=no
+
+          fi
+
+
+
+          if test "x${HAS_ODBC}" = "x1" ; then
+            PTLIB_ODBC=yes
+
+          else
+            PTLIB_ODBC=no
+
+          fi
+
+
+
+
+
+
+
 
 
 
@@ -15107,6 +15531,44 @@ HAS_SHM_VIDEO!$HAS_SHM_VIDEO$ac_delim
 HAS_VIDEO_CAPTURE!$HAS_VIDEO_CAPTURE$ac_delim
 HAS_ODBC!$HAS_ODBC$ac_delim
 HAS_EXCEPTIONS!$HAS_EXCEPTIONS$ac_delim
+PTLIB_IPV6!$PTLIB_IPV6$ac_delim
+PTLIB_RESOLVER!$PTLIB_RESOLVER$ac_delim
+PTLIB_OPENSSL!$PTLIB_OPENSSL$ac_delim
+PTLIB_OPENLDAP!$PTLIB_OPENLDAP$ac_delim
+PTLIB_SASL!$PTLIB_SASL$ac_delim
+PTLIB_SASL2!$PTLIB_SASL2$ac_delim
+PTLIB_EXPAT!$PTLIB_EXPAT$ac_delim
+PTLIB_REGEX!$PTLIB_REGEX$ac_delim
+PTLIB_SDL!$PTLIB_SDL$ac_delim
+PTLIB_VIDEO_CAPTURE!$PTLIB_VIDEO_CAPTURE$ac_delim
+PTLIB_TTS!$PTLIB_TTS$ac_delim
+PTLIB_ASN!$PTLIB_ASN$ac_delim
+PTLIB_STUN!$PTLIB_STUN$ac_delim
+PTLIB_PIPECHAN!$PTLIB_PIPECHAN$ac_delim
+PTLIB_DTMF!$PTLIB_DTMF$ac_delim
+PTLIB_WAVFILE!$PTLIB_WAVFILE$ac_delim
+PTLIB_SOCKS!$PTLIB_SOCKS$ac_delim
+PTLIB_FTP!$PTLIB_FTP$ac_delim
+PTLIB_SNMP!$PTLIB_SNMP$ac_delim
+PTLIB_TELNET!$PTLIB_TELNET$ac_delim
+PTLIB_REMCONN!$PTLIB_REMCONN$ac_delim
+PTLIB_SERIAL!$PTLIB_SERIAL$ac_delim
+PTLIB_POP3SMTP!$PTLIB_POP3SMTP$ac_delim
+PTLIB_AUDIO!$PTLIB_AUDIO$ac_delim
+PTLIB_VIDEO!$PTLIB_VIDEO$ac_delim
+PTLIB_SHM_VIDEO!$PTLIB_SHM_VIDEO$ac_delim
+PTLIB_VXML!$PTLIB_VXML$ac_delim
+PTLIB_JABBER!$PTLIB_JABBER$ac_delim
+PTLIB_XMLRPC!$PTLIB_XMLRPC$ac_delim
+PTLIB_SOAP!$PTLIB_SOAP$ac_delim
+PTLIB_URL!$PTLIB_URL$ac_delim
+PTLIB_HTTP!$PTLIB_HTTP$ac_delim
+PTLIB_HTTPFORMS!$PTLIB_HTTPFORMS$ac_delim
+PTLIB_HTTPSVC!$PTLIB_HTTPSVC$ac_delim
+PTLIB_CONFIG_FILE!$PTLIB_CONFIG_FILE$ac_delim
+PTLIB_SOCKAGG!$PTLIB_SOCKAGG$ac_delim
+PTLIB_VIDFILE!$PTLIB_VIDFILE$ac_delim
+PTLIB_ODBC!$PTLIB_ODBC$ac_delim
 STDCCFLAGS!$STDCCFLAGS$ac_delim
 STDCXXFLAGS!$STDCXXFLAGS$ac_delim
 OPTSTDCCFLAGS!$OPTSTDCCFLAGS$ac_delim
@@ -15119,7 +15581,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 47; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
