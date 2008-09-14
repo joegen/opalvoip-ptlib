@@ -205,6 +205,23 @@ AC_DEFUN([PTLIB_OPENSSL_CONST],
           AS_IF([test AS_VAR_GET([ptlib_openssl_const]) = yes], [$1], [$2])[]
          ])
 
+dnl PTLIB_OPENSSL_AES
+dnl Check for directX
+dnl Arguments:
+dnl Return:    $1 action if-found
+dnl            $2 action if-not-found
+AC_DEFUN([PTLIB_CHECK_OPENSSL_AES],
+         [
+          ptlib_openssl_aes=no
+          old_CFLAGS="$CFLAGS"
+          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+          AC_LANG(C)
+          AC_CHECK_HEADERS([openssl/aes.h], [ptlib_openssl_aes=yes])
+          AC_LANG(C++)
+          CFLAGS="${old_CFLAGS}"
+          AS_IF([test AS_VAR_GET([ptlib_openssl_aes]) = yes], [$1], [$2])[]
+         ])
+
 dnl PTLIB_CHECK_UPAD128
 dnl Check for upad128_t (solaris only)
 dnl Arguments:
@@ -223,22 +240,6 @@ AC_DEFUN([PTLIB_CHECK_UPAD128],
            AS_IF([test AS_VAR_GET([ptlib_upad128]) = yes], [$1], [$2])[]
          ])
 
-dnl PTLIB_OPENSSL_AES
-dnl Check for directX
-dnl Arguments:
-dnl Return:    $1 action if-found
-dnl            $2 action if-not-found
-AC_DEFUN([PTLIB_OPENSSL_AES],
-         [
-          ptlib_openssl_aes=no
-          old_CFLAGS="$CFLAGS"
-          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
-          AC_LANG(C)
-          AC_CHECK_HEADERS([openssl/aes.h], [ptlib_openssl_aes=yes])
-          AC_LANG(C++)
-          CFLAGS="${old_CFLAGS}"
-          AS_IF([test AS_VAR_GET([ptlib_openssl_aes]) = yes], [$1], [$2])[]
-         ])
 
 dnl ########################################################################
 dnl libdl
@@ -285,23 +286,6 @@ AC_DEFUN([PTLIB_FIND_LIBDL],
           AS_IF([test AS_VAR_GET([ptlib_libdl]) = yes], [$1], [$2])[]
          ])
 
-
-dnl PTLIB_OPENSSL_AES
-dnl Check for directX
-dnl Arguments:
-dnl Return:    $1 action if-found
-dnl            $2 action if-not-found
-AC_DEFUN([PTLIB_OPENSSL_AES],
-         [
-          ptlib_openssl_aes=no
-          old_CFLAGS="$CFLAGS"
-          CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
-          AC_LANG(C)
-          AC_CHECK_HEADERS([openssl/aes.h], [ptlib_openssl_aes=yes])
-          AC_LANG(C++)
-          CFLAGS="${old_CFLAGS}"
-          AS_IF([test AS_VAR_GET([ptlib_openssl_aes]) = yes], [$1], [$2])[]
-         ])
 
 dnl PTLIB_CHECK_FDSIZE
 dnl check for select_large_fdset (Solaris)
