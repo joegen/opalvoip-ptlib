@@ -1052,7 +1052,10 @@ else
                     [
                      HAS_OPENSSL=1
                      AC_DEFINE(P_OSSL, 1, "OpenSSL found")
-                     PTLIB_OPENSSL_AES( [AC_DEFINE([P_OSSL_AES], [1],[openssl with AES yes])] )
+                     PTLIB_CHECK_OPENSSL_AES([
+                                              AC_DEFINE([P_OSSL_AES], [1],[openssl with AES yes])
+                                              HAS_OPENSSL_AES=1
+                                            ])
                      PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
                      STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
@@ -1608,10 +1611,10 @@ AC_DEFUN([PTLIB_NEW_OPTION],
           fi
          ]
         )
-
 PTLIB_NEW_OPTION(IPV6)
 PTLIB_NEW_OPTION(RESOLVER)
 PTLIB_NEW_OPTION(OPENSSL)
+PTLIB_NEW_OPTION(OPENSSL_AES)
 PTLIB_NEW_OPTION(OPENLDAP)
 PTLIB_NEW_OPTION(SASL)
 PTLIB_NEW_OPTION(SASL2)
