@@ -750,6 +750,7 @@ HAS_EXCEPTIONS
 PTLIB_IPV6
 PTLIB_RESOLVER
 PTLIB_OPENSSL
+PTLIB_OPENSSL_AES
 PTLIB_OPENLDAP
 PTLIB_SASL
 PTLIB_SASL2
@@ -3342,7 +3343,6 @@ ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
 
 
 
@@ -10159,9 +10159,12 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
           CFLAGS="${old_CFLAGS}"
           if test $ptlib_openssl_aes = yes; then
 
+
 cat >>confdefs.h <<\_ACEOF
 #define P_OSSL_AES 1
 _ACEOF
+
+                                              HAS_OPENSSL_AES=1
 
 fi
 
@@ -14249,6 +14252,7 @@ esac
 
 
 
+
           if test "x${HAS_IPV6}" = "x1" ; then
             PTLIB_IPV6=yes
 
@@ -14274,6 +14278,16 @@ esac
 
           else
             PTLIB_OPENSSL=no
+
+          fi
+
+
+
+          if test "x${HAS_OPENSSL_AES}" = "x1" ; then
+            PTLIB_OPENSSL_AES=yes
+
+          else
+            PTLIB_OPENSSL_AES=no
 
           fi
 
@@ -15534,6 +15548,7 @@ HAS_EXCEPTIONS!$HAS_EXCEPTIONS$ac_delim
 PTLIB_IPV6!$PTLIB_IPV6$ac_delim
 PTLIB_RESOLVER!$PTLIB_RESOLVER$ac_delim
 PTLIB_OPENSSL!$PTLIB_OPENSSL$ac_delim
+PTLIB_OPENSSL_AES!$PTLIB_OPENSSL_AES$ac_delim
 PTLIB_OPENLDAP!$PTLIB_OPENLDAP$ac_delim
 PTLIB_SASL!$PTLIB_SASL$ac_delim
 PTLIB_SASL2!$PTLIB_SASL2$ac_delim
@@ -15581,7 +15596,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
