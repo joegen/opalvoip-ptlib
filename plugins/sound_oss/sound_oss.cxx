@@ -145,7 +145,20 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         // When adding these to the 'dsp' string array, only the first one
         // found is used.
 
-#if !defined P_NETBSD || !defined P_OPENBSD
+#if defined (P_NETBSD) || defined (P_OPENBSD)
+        // Look for audio on NetBSD 
+        if (filename == "audio") {
+          dsp.SetAt(0, devname);
+        }
+        // Look for audioN. Insert at position cardnum + 1
+        if ((filename.GetLength() > 5) && (filename.Left(5) == "audio")) {
+          PString numbers = filename.Mid(5); // get everything after 'audio'
+          if (IsNumericString(numbers)) {
+            PINDEX cardnum = numbers.AsInteger();
+            dsp.SetAt(cardnum+1, devname);
+          }
+        }
+#else /* defined (P_NETBSD) || defined (P_OPENBSD) */
         // Look for dsp
         if (filename == "dsp") {
           dsp.SetAt(0, devname);
@@ -160,7 +173,7 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
             PINDEX cardnum = numbers.AsInteger(); //dspN.M is truncated to dspN.
             // If we have not yet inserted something for this cardnum, insert it
             if (dsp.GetAt(cardnum+1) == NULL) {
-#if defined P_FREEBSD
+#if defined (P_FREEBSD)
               // in FreeBSD the file name should be used via the devfs(5) and
               // is just "/dev/dsp0" and devfs(5) takes care of virtual channels,
               // like /dev/dsp0.0 /dev/dsp0.1 ...
@@ -168,25 +181,13 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
               // audio
               devname = devdir + "dsp0";
               PTRACE(1, "OSS\tCollectSoundDevices FreeBSD devname set to devfs(5) name:" << devname );
-#endif
+#endif /* defined (P_FREEBSD) */
               dsp.SetAt(cardnum+1, devname);
             }
           }
         }
-#else
-        // Look for audio on NetBSD 
-        if (filename == "audio") {
-          dsp.SetAt(0, devname);
-        }
-        // Look for audioN. Insert at position cardnum + 1
-        if ((filename.GetLength() > 5) && (filename.Left(5) == "audio")) {
-          PString numbers = filename.Mid(5); // get everything after 'audio'
-          if (IsNumericString(numbers)) {
-            PINDEX cardnum = numbers.AsInteger();
-            dsp.SetAt(cardnum+1, devname);
-          }
-        }
-#endif
+#endif /* (P_NETBSD) || defined (P_OPENBSD) */
+
         // Look for mixer
         if (filename == "mixer") {
           mixer.SetAt(0, devname);

@@ -85,6 +85,11 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 
+#if defined(P_NETBSD)
+#include <sys/statvfs.h>
+#define statfs statvfs
+#endif
+
 #elif defined(P_HPUX9) 
 #define P_USE_LANGINFO
 

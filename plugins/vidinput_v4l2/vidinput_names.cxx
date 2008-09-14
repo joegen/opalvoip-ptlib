@@ -36,7 +36,7 @@ void  V4LXNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
   if (!devdir.Open())
     return;
 
-#ifdef SOLARIS
+#if defined (P_SOLARIS) || defined (P_NETBSD)
   int devnum = 0;
   do {
     PString filename = devdir.GetEntryName();
