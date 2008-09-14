@@ -682,6 +682,7 @@ HAS_ESD
 HAS_OSS
 HAS_SUNAUDIO
 HAS_V4L
+V4L2_CFLAGS
 HAS_V4L2
 HAS_LIBV4L
 HAS_BSDVIDEOCAP
@@ -4627,12 +4628,14 @@ fi
 
 if test "${enable_v4l2}z" = "yesz" ; then
   case "$target_os" in
-    netbsd* )        VIDEODEV="sys/videoio.h"     ; ;;
-          * )	     VIDEODEV="linux/videodev2.h" ; ;;
+    solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
+    netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
+          * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
   esac
-  as_ac_Header=`echo "ac_cv_header_$VIDEODEV" | $as_tr_sh`
-{ echo "$as_me:$LINENO: checking for $VIDEODEV" >&5
-echo $ECHO_N "checking for $VIDEODEV... $ECHO_C" >&6; }
+
+  as_ac_Header=`echo "ac_cv_header_$V4L2_HEADER" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for $V4L2_HEADER" >&5
+echo $ECHO_N "checking for $V4L2_HEADER... $ECHO_C" >&6; }
 if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -4648,7 +4651,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 		#endif
 
 
-#include <$VIDEODEV>
+#include <$V4L2_HEADER>
 _ACEOF
 rm -f conftest.$ac_objext
 if { (ac_try="$ac_compile"
@@ -4681,14 +4684,14 @@ ac_res=`eval echo '${'$as_ac_Header'}'`
 	       { echo "$as_me:$LINENO: result: $ac_res" >&5
 echo "${ECHO_T}$ac_res" >&6; }
 if test `eval echo '${'$as_ac_Header'}'` = yes; then
-  V4L2HDR=1
+  HAS_V4L2=1
 else
 
 		    # We can't use AC_CHECK_HEADER again because
                     # the value is cached, perhaps we have another
                     # method to do this more cleanly ?
-		    { echo "$as_me:$LINENO: checking for $VIDEODEV with sys/types.h" >&5
-echo $ECHO_N "checking for $VIDEODEV with sys/types.h... $ECHO_C" >&6; }
+		    { echo "$as_me:$LINENO: checking for $V4L2_HEADER with sys/types.h" >&5
+echo $ECHO_N "checking for $V4L2_HEADER with sys/types.h... $ECHO_C" >&6; }
 		    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -4707,7 +4710,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 					#error "not supported"
 					#endif
 					#endif
-					#include "$VIDEODEV"
+					#include "$V4L2_HEADER"
 
 int
 main ()
@@ -4737,7 +4740,7 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest.$ac_objext; then
 
-				        V4L2HDR=1
+				        HAS_V4L2=1
 				        { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
 
@@ -4746,6 +4749,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
 
+				        HAS_V4L2=
 				        { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 
@@ -4758,16 +4762,18 @@ fi
 
   { echo "$as_me:$LINENO: checking for V4L2 video support" >&5
 echo $ECHO_N "checking for V4L2 video support... $ECHO_C" >&6; }
-  if test "${V4L2HDR}z" != "z"; then
-    HAS_V4L2=1
-
+  if test "x${HAS_V4L2}" = "x1"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
+    V4L2_CFLAGS=-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'
+
   else
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
   fi
-  if test "${V4L2HDR}z" != "z"; then
+
+
+  if test "x${HAS_V4L2}" = "x1"; then
     if test "${ac_cv_header_libv4l2_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for libv4l2.h" >&5
 echo $ECHO_N "checking for libv4l2.h... $ECHO_C" >&6; }
@@ -4894,11 +4900,7 @@ echo "${ECHO_T}$ac_cv_header_libv4l2_h" >&6; }
 
 fi
 if test $ac_cv_header_libv4l2_h = yes; then
-  LIBV4L2HDR=1
-fi
-
-
-    { echo "$as_me:$LINENO: checking for v4l2_fd_open in -lv4l2" >&5
+  { echo "$as_me:$LINENO: checking for v4l2_fd_open in -lv4l2" >&5
 echo $ECHO_N "checking for v4l2_fd_open in -lv4l2... $ECHO_C" >&6; }
 if test "${ac_cv_lib_v4l2_v4l2_fd_open+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -4960,20 +4962,24 @@ fi
 { echo "$as_me:$LINENO: result: $ac_cv_lib_v4l2_v4l2_fd_open" >&5
 echo "${ECHO_T}$ac_cv_lib_v4l2_v4l2_fd_open" >&6; }
 if test $ac_cv_lib_v4l2_v4l2_fd_open = yes; then
-  LIBV4L2LIB=1
+  HAS_LIBV4L=1
 fi
+
+
+fi
+
+
 
     { echo "$as_me:$LINENO: checking for libv4l2 support" >&5
 echo $ECHO_N "checking for libv4l2 support... $ECHO_C" >&6; }
-    if test "${LIBV4L2HDR}z" != "z" -a "${LIBV4L2LIB}z" != "z"; then
-      HAS_LIBV4L=1
-
+    if test "x${HAS_LIBV4L}" = "x1"; then
       { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
     else
       { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     fi
+
   fi
 fi
 
@@ -6858,6 +6864,7 @@ HAS_ESD!$HAS_ESD$ac_delim
 HAS_OSS!$HAS_OSS$ac_delim
 HAS_SUNAUDIO!$HAS_SUNAUDIO$ac_delim
 HAS_V4L!$HAS_V4L$ac_delim
+V4L2_CFLAGS!$V4L2_CFLAGS$ac_delim
 HAS_V4L2!$HAS_V4L2$ac_delim
 HAS_LIBV4L!$HAS_LIBV4L$ac_delim
 HAS_BSDVIDEOCAP!$HAS_BSDVIDEOCAP$ac_delim
@@ -6868,7 +6875,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 77; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 78; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

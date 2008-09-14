@@ -39,11 +39,7 @@
 #include <ptlib/vconvert.h>
 #include <ptclib/delaychan.h>
 
-#ifdef SOLARIS
-#include <sys/videodev2.h>
-#else
-#include <linux/videodev.h>
-#endif
+#include V4L2_HEADER
 
 #ifndef V4L2_PIX_FMT_SBGGR8
 #define V4L2_PIX_FMT_SBGGR8  v4l2_fourcc('B','A','8','1') /*  8  BGBG.. GRGR.. */
