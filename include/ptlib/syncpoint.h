@@ -3,7 +3,7 @@
  *
  * Single thread synchronisation point (event) class.
  *
- * Portable Windows Library
+ * Portable Tools Library
  *
  * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
@@ -41,11 +41,11 @@
 #include <ptlib/semaphor.h>
 
 
-/** This class defines a thread synchonisation object.
-  This form of semaphore is used to indicate an {\it event} has occurred. A
+/** This class defines a thread synchronisation object.
+  This form of semaphore is used to indicate an \it event has occurred. A
   thread may block on the sync point and wait until another thread signals
   that it may continue. eg:
-\begin{verbatim}
+\verbatim
     ... thread one
     while (condition) {
       sync.Wait();
@@ -56,12 +56,11 @@
     do_something_else();
     sync.Signal();    // At this point thread 1 wake up and does something.
     do_yet_more();
-
-\end{verbatim}
+\endverbatim
 
   Note that events are boolean in nature. If "thread one" is not waiting on the
   event, multiple calls to Signal() are ignored, thread one will only exit the
-  Wait() call a sibngle time once it gets there. Similarly, if multiple threads
+  Wait() call a single time once it gets there. Similarly, if multiple threads
   are waiting on the event, only one thread will be released. As you cannot know
   which thread will be released this mode of use is not recommended.
  */
