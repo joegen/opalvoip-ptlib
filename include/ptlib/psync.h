@@ -3,7 +3,7 @@
  *
  * Abstract synchronisation semaphore class.
  *
- * Portable Windows Library
+ * Portable Tools Library
  *
  * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  * Copyright (c) 2005 Post Increment
@@ -46,11 +46,11 @@ class PSync : public PObject
   public:
   /**@name Operations */
   //@{
-    /**Block until the synchronisation object is available
+    /**Block until the synchronisation object is available.
      */
     virtual void Wait() = 0;
 
-    /**Signal that the synchronisation object is available
+    /**Signal that the synchronisation object is available.
      */
     virtual void Signal() = 0;
   //@}
@@ -74,8 +74,8 @@ class PSyncNULL : public PSync
    signals the semaphore on destruction. Any descendent of PSemaphore
    may be used.
 
-  This is very usefull for constructs such as:
-\begin{verbatim}
+  This is very useful for constructs such as:
+\verbatim
     void func()
     {
       PWaitAndSignal mutexWait(myMutex);
@@ -86,13 +86,13 @@ class PSyncNULL : public PSync
         return;
       do_something_else();
     }
-\end{verbatim}
+\endverbatim
  */
 
 class PWaitAndSignal {
   public:
     /**Create the semaphore wait instance.
-       This will wait on the specified semaphore using the #Wait()# function
+       This will wait on the specified semaphore using the Wait() function
        before returning.
       */
     inline PWaitAndSignal(
@@ -112,5 +112,5 @@ class PWaitAndSignal {
     PSync & sync;
 };
 
-#endif // PSYNC
+#endif // _PSYNC
 
