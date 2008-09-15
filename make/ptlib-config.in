@@ -12,12 +12,11 @@ CCFLAGS="@STDCCFLAGS@"
 LDFLAGS="@LDFLAGS@"
 LIBS="@ENDLDLIBS@ -lpt"
 LIBDIR="@LIBDIR@"
-PTINSTDIR="@INSTALLPREFIX@/share/ptlib"
+PTINSTDIR="@prefix@/share/ptlib"
 MACHTYPE="@MACHTYPE@"
 OSTYPE="@OSTYPE@"
 OSRELEASE="@OSRELEASE@"
 SHAREDLIBEXT="@SHAREDLIBEXT@"
-INSTALLPREFIX="@INSTALLPREFIX@"
 
 # usage="Usage: ptlib-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--libs] [--cflags]"
 usage="Usage: ptlib-config [--version] [--ptlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext] [--prefix] [--libdir]"
@@ -62,7 +61,7 @@ while test $# -gt 0; do
       echo $SHAREDLIBEXT
       ;;
     --prefix)
-      echo $INSTALLPREFIX
+      echo $prefix
       ;;
     --libdir)
       echo $LIBDIR
@@ -77,7 +76,7 @@ while test $# -gt 0; do
       echo OSTYPE       = $OSTYPE
       echo OSRELEASE    = $OSRELEASE
       echo SHAREDLIBEXT = $SHAREDLIBEXT
-      echo PREFIX       = $INSTALLPREFIX
+      echo PREFIX       = $prefix
       echo LIBDIR       = $LIBDIR
       ;;
 
