@@ -14,28 +14,28 @@ AC_LANG(C++)
 m4_include(ptlib.m4)
 
 dnl ########################################################################
-dnl set the PTLIB directory to the current directory
-
-PTLIBDIR=`pwd`
-AC_SUBST(PTLIBDIR)
-dnl set the PTLib installation dir for ptlib-config
-AC_SUBST(PTINSTDIR)
-
-dnl ########################################################################
 dnl set the PREFIX accordingly
 if test "x$prefix" = "xNONE"; then
-   INSTALLPREFIX="/usr/local"
-else
-   INSTALLPREFIX="${prefix}"
+   if test "x$PTLIBDIR" = "x"; then
+      prefix="/usr/local"
+   else
+      prefix="$PTLIBDIR"
+      AC_MSG_NOTICE(PTLIBDIR detected - setting install prefix to ${PTLIBDIR})
+   fi
 fi
-
-AC_SUBST(INSTALLPREFIX)
 
 
 dnl ########################################################################
-dnl set LIBDIR accordingly
-LIBDIR=${libdir}
-AC_SUBST(LIBDIR)
+dnl set the PTLIB directory to the current directory
+
+if test "x$PTLIBDIR" = "x"; then
+  PTLIBDIR=`pwd`
+fi
+
+AC_SUBST(PTLIBDIR)
+
+dnl set the PTLib installation dir for ptlib-config
+AC_SUBST(PTINSTDIR)
 
 
 dnl ########################################################################
@@ -247,6 +247,15 @@ if test "$target_os" = "linux-gnulp" ; then
   AC_DEFINE([P_LPIA], [1], [Low Power Intel Architecture])
 fi
 
+
+dnl ########################################################################
+dnl set LIBDIR accordingly
+if test "$prefix" = "$PTLIBDIR"; then
+   LIBDIR=${libdir}_${OSTYPE}_${MACHTYPE}
+else
+   LIBDIR=${libdir}
+fi
+AC_SUBST(LIBDIR)
 
 
 dnl ########################################################################
@@ -1674,7 +1683,6 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(ptlib_cfg.dxy)
-AC_CONFIG_FILES(ptlib_debug.pc)
 AC_CONFIG_FILES(ptlib.pc)
 
 dnl ########################################################################

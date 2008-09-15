@@ -28,7 +28,7 @@
 # $Date$
 #
 
-PREFIX=@INSTALLPREFIX@
+PREFIX=@prefix@
 exec_prefix = ${PREFIX}
 LIBDIR=@LIBDIR@
 export PTLIBDIR=@PTLIBDIR@
