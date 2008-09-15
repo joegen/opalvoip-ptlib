@@ -3,7 +3,7 @@
  *
  * Various thread synchronisation classes.
  *
- * Portable Windows Library
+ * Portable Tools Library
  *
  * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
@@ -41,12 +41,12 @@
 #include <ptlib/mutex.h>
 #include <ptlib/syncpoint.h>
 
-/** This class defines a thread synchonisation object.
+/** This class defines a thread synchronisation object.
 
    This may be used to send signals to a thread and await an acknowldegement
-   that the signal was processed. This can be be used to initate an action in
+   that the signal was processed. This can be be used to initiate an action in
    another thread and wait for the action to be completed.
-\begin{verbatim}
+\verbatim
     ... thread one
     while (condition) {
       sync.Wait();
@@ -57,10 +57,10 @@
     ... thread 2
     do_something_else();
     sync.Signal();    // At this point thread 1 wake up and does something.
-    do_yet_more();    // However, this does not get done until Acknowldege()
+    do_yet_more();    // However, this does not get done until Acknowledge()
                       // is called in the other thread.
 
-\end{verbatim}
+\endverbatim
  */
 class PSyncPointAck : public PSyncPoint
 {
@@ -75,14 +75,14 @@ class PSyncPointAck : public PSyncPoint
        target thread that was blocked by the Wait() function has resumed
        execution and called the Acknowledge() function.
 
-       The #waitTime# parameter is used as a maximum amount of time
+       The #waitTime parameter is used as a maximum amount of time
        to wait for the achnowledgement to be returned from the other thread.
      */
     virtual void Signal();
     void Signal(const PTimeInterval & waitTime);
 
     /** This indicates that the thread that was blocked in a Wait() on this
-       synchonrisation object has completed the operation the signal was
+       synchronisation object has completed the operation the signal was
        intended to initiate. This unblocks the thread that had called the
        Signal() function to initiate the action.
      */
@@ -93,7 +93,7 @@ class PSyncPointAck : public PSyncPoint
 };
 
 
-/**This class defines a thread synchonisation object.
+/**This class defines a thread synchronisation object.
 
    This is a special type of mutual exclusion, where a thread wishes to get
    exlusive use of a resource but only if a certain other condition is met.
@@ -239,7 +239,7 @@ class PIntCondMutex : public PCondMutex
 };
 
 
-/** This class defines a thread synchonisation object.
+/** This class defines a thread synchronisation object.
 
    This is a special type of mutual exclusion, where the excluded area may
    have multiple read threads but only one write thread and the read threads
@@ -331,7 +331,7 @@ class PReadWriteMutex : public PObject
    and automatically ends the read operation on destruction.
 
   This is very usefull for constructs such as:
-\begin{verbatim}
+\verbatim
     void func()
     {
       PReadWaitAndSignal mutexWait(myMutex);
@@ -342,12 +342,12 @@ class PReadWriteMutex : public PObject
         return;
       do_something_else();
     }
-\end{verbatim}
+\endverbatim
  */
 class PReadWaitAndSignal {
   public:
     /**Create the PReadWaitAndSignal wait instance.
-       This will wait on the specified PReadWriteMutex using the #StartRead()#
+       This will wait on the specified PReadWriteMutex using the StartRead()
        function before returning.
       */
     PReadWaitAndSignal(
@@ -368,8 +368,8 @@ class PReadWaitAndSignal {
 /**This class starts a write operation for the PReadWriteMutex on construction
    and automatically ends the write operation on destruction.
 
-  This is very usefull for constructs such as:
-\begin{verbatim}
+  This is very useful for constructs such as:
+\verbatim
     void func()
     {
       PWriteWaitAndSignal mutexWait(myMutex);
@@ -380,12 +380,12 @@ class PReadWaitAndSignal {
         return;
       do_something_else();
     }
-\end{verbatim}
+\endverbatim
  */
 class PWriteWaitAndSignal {
   public:
     /**Create the PWriteWaitAndSignal wait instance.
-       This will wait on the specified PReadWriteMutex using the #StartWrite()#
+       This will wait on the specified PReadWriteMutex using the StartWrite()
        function before returning.
       */
     PWriteWaitAndSignal(
