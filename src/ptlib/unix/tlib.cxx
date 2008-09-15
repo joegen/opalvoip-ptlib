@@ -513,6 +513,7 @@ void PProcess::PXOnAsyncSignal(int sig)
 
 void PProcess::PXOnSignal(int sig)
 {
+#ifdef _DEBUG
 #ifdef SIGNALS_DEBUG
   fprintf(stderr,"\nSYNCSIG<%u>\n",sig);
 #endif
@@ -544,6 +545,7 @@ void PProcess::PXOnSignal(int sig)
     PMemoryHeap::SetIgnoreAllocations(oldIgnore);
 #endif
   }
+#endif
 }
 
 void PProcess::CommonConstruct()
