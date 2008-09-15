@@ -1,15 +1,17 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-libdir=@libdir@
+libdir=@LIBDIR@
 includedir=@includedir@
 cxxflags=@STDCXXFLAGS@
+suffix=
 machtype=@MACHTYPE@
 ostype=@OSTYPE@
+objdir=obj_@OSTYPE@_@MACHTYPE@${suffix}
 
 Name: ptlib
 Description: PT Library
 Version: @PTLIB_VERSION@
-Libs: -L${libdir} -lpt @ENDLDLIBS@ 
+Libs: -L${libdir} -lpt${suffix} @ENDLDLIBS@ 
 Cflags: -I${includedir} @STDCCFLAGS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
@@ -54,5 +56,3 @@ PTLIB_SOCKAGG=@PTLIB_SOCKAGG@
 PTLIB_VIDFILE=@PTLIB_VIDFILE@
 PTLIB_ODBC=@PTLIB_ODBC@
 
-PTLIB_MACHTYPE=@MACHTYPE@
-PTLIB_OSTYPE=@OSTYPE@
