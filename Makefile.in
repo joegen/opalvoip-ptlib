@@ -138,7 +138,6 @@ uninstall:
 	       $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR) \
 	       $(DESTDIR)$(LIBDIR)/pkgconfig/ptlib.pc
 	rm -f $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE)* \
-	      $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a \
-	      $(LIBDIR)/libpt.so 
+	      $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a
 
 # End of Makefile.in
