@@ -80,6 +80,9 @@ class PInterfaceMonitor : public PProcessStartup
     
     /// Change the refresh interval
     void SetRefreshInterval (unsigned refresh);
+    
+    /// Change whether the monitor thread should run
+    void SetRunMonitorThread (bool runMonitorThread);
 
     /// Start monitoring network interfaces
     bool Start();
