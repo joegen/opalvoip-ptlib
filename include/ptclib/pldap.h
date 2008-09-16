@@ -563,10 +563,10 @@ template <class className> class LDAPPluginServiceDescriptor : public PDevicePlu
 
 #define PLDAP_STRUCT_BEGIN(name) \
   class name : public PLDAPStructBase { \
-    public: name() { EndConstructor(); } \
-    public: name(const name & other) { EndConstructor(); operator=(other); } \
-    public: name(const PStringArray & array) { EndConstructor(); operator=(array); } \
-    public: name(const PStringToString & dict) { EndConstructor(); operator=(dict); } \
+    public: name() : PLDAPStructBase() { EndConstructor(); } \
+    public: name(const name & other) : PLDAPStructBase() { EndConstructor(); operator=(other); } \
+    public: name(const PStringArray & array) : PLDAPStructBase() { EndConstructor(); operator=(array); } \
+    public: name(const PStringToString & dict) : PLDAPStructBase() { EndConstructor(); operator=(dict); } \
     public: name & operator=(const name & other) { PLDAPStructBase::operator=(other); return *this; } \
     public: name & operator=(const PStringArray & array) { PLDAPStructBase::operator=(array); return *this; } \
     public: name & operator=(const PStringToString & dict) { PLDAPStructBase::operator=(dict); return *this; } \
