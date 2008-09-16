@@ -106,13 +106,19 @@ void PInterfaceMonitor::SetRefreshInterval (unsigned refresh)
 }
 
 
+void PInterfaceMonitor::SetRunMonitorThread(bool _runMonitorThread)
+{
+  runMonitorThread = _runMonitorThread;
+}
+
+
 bool PInterfaceMonitor::Start()
 {
   PWaitAndSignal m(mutex);
   
   if (runMonitorThread && updateThread != NULL)
     return false; // Already running
-
+    
   PIPSocket::GetInterfaceTable(currentInterfaces);
   PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
 
