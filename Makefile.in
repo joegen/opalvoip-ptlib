@@ -99,12 +99,6 @@ install:
 		rm -f  $(PTLIB_FILE) ; \
 		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE) \
 	)
-ifdef DEBUG
-	(cd $(DESTDIR)$(LIBDIR); \
-		rm -f  libpt.@SHAREDLIBEXT@ ; \
-		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
-	)
-endif
 ifeq (1, $(HAS_PLUGINS))
 	cd $(PT_LIBDIR)/device/ ; \
 	( for dir in ./* ;\
