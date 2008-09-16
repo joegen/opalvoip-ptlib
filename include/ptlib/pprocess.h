@@ -144,9 +144,6 @@ class PTimerList : public PObject
         PSyncPoint * sync;
     };
 
-    typedef std::queue<RequestType> RequestQueueType;
-    typedef std::vector<RequestType> RequestListType;
-
     void QueueRequest(RequestType::Action action, PTimer * timer, bool _isSync = true);
 
   private:
@@ -165,8 +162,9 @@ class PTimerList : public PObject
 
     // queue of timer action requests
     PMutex queueMutex;
+    typedef std::queue<RequestType> RequestQueueType;
     RequestQueueType requestQueue;
-    RequestListType addQueue;
+    RequestQueueType addQueue;
 
     // The last system timer tick value that was used to process timers.
     PTimeInterval lastSample;

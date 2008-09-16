@@ -818,7 +818,9 @@ void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool _
           // if the timer is a new timer, then use special queue as asynchronous add won't work
           if (r == activeTimers.end()) {
             RequestType request(action, timer);
-            addQueue.push_back(request);
+            queueMutex.Wait();
+            addQueue.push(request);
+            queueMutex.Signal();
           }
         }
         break;
@@ -843,10 +845,9 @@ void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool _
     isSync = true;
   }
 
-  {
-    PWaitAndSignal m(queueMutex);
-    requestQueue.push(request);
-  }
+  queueMutex.Wait();
+  requestQueue.push(request);
+  queueMutex.Signal();
 
   PProcess::Current().SignalTimerChange();
 
@@ -861,28 +862,28 @@ PTimeInterval PTimerList::Process()
   PWaitAndSignal l(timerListMutex);
 
   // process the requests in the timer request queue
-  {
-    PWaitAndSignal q(queueMutex);
-    while (requestQueue.size() > 0) {
-      RequestType request = requestQueue.front();
-      requestQueue.pop();
-      TimerInfoMapType::iterator r = activeTimers.find(request.id);
-      switch (request.action) {
-        case PTimerList::RequestType::Start:
-          if (r == activeTimers.end()) 
-            activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
-          break;
-        case PTimerList::RequestType::Stop:
-          if (r != activeTimers.end()) 
-            activeTimers.erase(r);
-          break;
-        default:
-          PAssertAlways("unknown timer request code");
-          break;
-      }
-      if (request.sync != NULL)
-        request.sync->Signal();
+  while (!requestQueue.empty()) {
+    queueMutex.Wait();
+    RequestType request = requestQueue.front();
+    requestQueue.pop();
+    queueMutex.Signal();
+
+    TimerInfoMapType::iterator r = activeTimers.find(request.id);
+    switch (request.action) {
+      case PTimerList::RequestType::Start:
+        if (r == activeTimers.end()) 
+          activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
+        break;
+      case PTimerList::RequestType::Stop:
+        if (r != activeTimers.end()) 
+          activeTimers.erase(r);
+        break;
+      default:
+        PAssertAlways("unknown timer request code");
+        break;
     }
+    if (request.sync != NULL)
+      request.sync->Signal();
   }
 
   // calculate interval since last processing, and update time of last processing to now
@@ -926,10 +927,13 @@ PTimeInterval PTimerList::Process()
   }
 
   // add in an new timers created while timers were processed
-  while (addQueue.size() > 0) {
-    RequestType & request = addQueue[0];
+  while (!addQueue.empty()) {
+    queueMutex.Wait();
+    RequestType request = addQueue.front();
+    addQueue.pop();
+    queueMutex.Signal();
+
     activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
-    addQueue.erase(addQueue.begin());
     request.timer->Process(0, minTimeLeft);
   }
 
