@@ -123,6 +123,7 @@ typedef DWORD *                 LPDWORD;
 typedef signed short            RETCODE;
 typedef void *                  HWND;
 
+#if 0
 #ifdef UNICODE
   typedef WCHAR                 TCHAR;
   typedef LPWSTR                LPTSTR;
@@ -134,7 +135,7 @@ typedef void *                  HWND;
   typedef LPCSTR                LPCTSTR;
   #define _T(x) x
 #endif
-
+#endif
 
 // For sqltypes.h, prevent it from redefining the above
 #define ALLREADY_HAVE_WINDOWS_TYPE 1
