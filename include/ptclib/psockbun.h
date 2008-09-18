@@ -133,6 +133,7 @@ class PInterfaceMonitor : public PProcessStartup
         handles deletion of the filter.
       */
     void SetInterfaceFilter(PInterfaceFilter * filter);
+    bool HasInterfaceFilter() const { return interfaceFilter != NULL; }
     
     virtual void RefreshInterfaceList();
     
