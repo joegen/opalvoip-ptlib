@@ -178,11 +178,14 @@ class PThread : public PObject
     virtual PBoolean IsTerminated() const;
 
     /** Block and wait for the thread to terminate.
-
-       @return
-       #PFalse if the thread has not terminated and the timeout has expired.
      */
     void WaitForTermination() const;
+
+    /** Block and wait for the thread to terminate.
+
+       @return
+       #PFalse if the thread has not terminated and the timeout has expired, #PTrue otherwise.
+     */
     PBoolean WaitForTermination(
       const PTimeInterval & maxWait  ///< Maximum time to wait for termination.
     ) const;
