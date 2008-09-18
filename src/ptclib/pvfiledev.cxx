@@ -59,6 +59,8 @@ static const char DefaultYUVFileName[] = "*.yuv";
 class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
+    typedef PFactory<PVideoFile> FileTypeFactory_T;
+
     virtual PObject * CreateInstance(int /*userData*/) const
     {
       return new PVideoInputDevice_YUVFile;
@@ -70,13 +72,20 @@ class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginSe
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
       PCaselessString adjustedDevice = deviceName;
-      PINDEX length = adjustedDevice.GetLength();
-      if (length > 5 && adjustedDevice.NumCompare(".yuv*", 5, length-5) == PObject::EqualTo)
-        adjustedDevice.Delete(length-1, 1);
-      else if (length < 5 || adjustedDevice.NumCompare(".yuv", 4, length-4) != PObject::EqualTo)
-        return false;
 
-      return PFile::Access(adjustedDevice, PFile::ReadOnly);
+      FileTypeFactory_T::KeyList_T keyList = FileTypeFactory_T::GetKeyList();
+      FileTypeFactory_T::KeyList_T::iterator r;
+      for (r = keyList.begin(); r != keyList.end(); ++r) {
+        PString ext = *r;
+        PINDEX extLen = ext.GetLength();
+        PINDEX length = adjustedDevice.GetLength();
+        if (length > (2+extLen) && adjustedDevice.NumCompare(PString(".") + ext + "*", 2+extLen, length-(2+extLen)) == PObject::EqualTo)
+          adjustedDevice.Delete(length-1, 1);
+        else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo)
+          continue;
+        return PFile::Access(adjustedDevice, PFile::ReadOnly);
+      }
+      return false;
     }
 } PVideoInputDevice_YUVFile_descriptor;
 
