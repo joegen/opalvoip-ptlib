@@ -108,8 +108,21 @@
  #include <tchar.h>
  #pragma comment(lib,"odbc32.lib")
  #pragma comment(lib,"odbcCP32.lib")
-#endif // _MSC_VER
+#else
 
+  #ifdef UNICODE
+  typedef WCHAR                 TCHAR;
+  typedef LPWSTR                LPTSTR;
+  typedef LPCWSTR               LPCTSTR;
+  // Needs a definition one day ... #define _T(x)
+  #else
+  typedef CHAR                  TCHAR;
+  typedef LPSTR                 LPTSTR;
+  typedef LPCSTR                LPCTSTR;
+  #define _T(x) x
+  #endif
+
+#endif // _MSC_VER
 
 // Max SQL String Data Length
 #define MAX_DATA_LEN 1024
