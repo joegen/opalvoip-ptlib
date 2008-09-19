@@ -116,34 +116,46 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
                                               const PString & driverName,
                                               PPluginManager * pluginMgr)
 {
-  PString adjustedDriverName = driverName;
+  if (adjustedDeviceName == "*")
+    adjustedDeviceName.MakeEmpty();
 
-  if (adjustedDeviceName.IsEmpty() || adjustedDeviceName == "*") {
-    if (driverName.IsEmpty() || driverName == "*") {
+  PString adjustedDriverName = driverName;
+  if (adjustedDriverName == "*")
+    adjustedDriverName.MakeEmpty();
+
+  if (adjustedDeviceName.IsEmpty()) {
+    if (adjustedDriverName.IsEmpty()) {
       PStringArray drivers = VideoDevice::GetDriverNames(pluginMgr);
       if (drivers.IsEmpty())
         return NULL;
 
-      // Give precedence to drivers like camera grabbers, leave out the fail safe types such as NULL
-      PINDEX driverIndex;
-      for (driverIndex = drivers.GetSize()-1; driverIndex > 0; --driverIndex) {
-        static const char * lowPriorityDrivers[] = {
-          "YUVFile", "FakeVideo", "NULLOutput"
-        };
-        PINDEX i;
-        for (i = 0; i < PARRAYSIZE(lowPriorityDrivers); i++) {
-          if (drivers[driverIndex] == lowPriorityDrivers[i])
+      // Give precedence to drivers like camera grabbers, Window
+      static const char * prioritisedDrivers[] = {
+        "Window", "SDL", "DirectShow", "VideoForWindows", "V4L", "V4L2", "1394DC", "1394AVC", "BSDCAPTURE", "FakeVideo", "NULLOutput"
+      };
+      for (PINDEX i = 0; i < PARRAYSIZE(prioritisedDrivers); i++) {
+        PINDEX driverIndex = drivers.GetValuesIndex(PString(prioritisedDrivers[i]));
+        if (driverIndex != P_MAX_INDEX) {
+          PStringArray devices = VideoDevice::GetDriversDeviceNames(drivers[driverIndex]);
+          if (!devices.IsEmpty()) {
+            adjustedDeviceName = devices[0];
+            adjustedDriverName = drivers[driverIndex];
             break;
+          }
         }
-        if (i == PARRAYSIZE(lowPriorityDrivers))
-          break;
       }
-      adjustedDriverName = drivers[driverIndex];
+
+      if (adjustedDriverName.IsEmpty())
+        adjustedDriverName = drivers[0];
     }
 
-    PStringArray devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
-    if (!devices.IsEmpty())
+    if (adjustedDeviceName.IsEmpty()) {
+      PStringArray devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
+      if (devices.IsEmpty())
+        return NULL;
+
       adjustedDeviceName = devices[0];
+    }
   }
 
   return VideoDevice::CreateDeviceByName(adjustedDeviceName, adjustedDriverName, pluginMgr);
