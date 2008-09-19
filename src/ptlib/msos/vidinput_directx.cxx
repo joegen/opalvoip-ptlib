@@ -606,7 +606,8 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PIND
             return PFalse;
         }
 
-        *bytesReturned = cbBuffer;
+        if (bytesReturned != NULL)
+            *bytesReturned = cbBuffer;
 
     }
 
