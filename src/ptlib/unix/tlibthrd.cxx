@@ -1328,7 +1328,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 #else // P_PTHREADS_XPG6
 
-  do {
+  for (;;) {
     if (pthread_mutex_trylock(&mutex) == 0) {
 #if P_HAS_RECURSIVE_MUTEX == 0
       PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
@@ -1339,11 +1339,11 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
       return PTrue;
     }
 
+    if (PTime() >= finishTime)
+      return PFalse;
+
     PThread::Current()->Sleep(10); // sleep for 10ms
-  } while (PTime() < finishTime);
-
-  return PFalse;
-
+  }
 #endif // P_PTHREADS_XPG6
 }
 
