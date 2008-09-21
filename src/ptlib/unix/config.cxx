@@ -52,7 +52,7 @@
 //
 //  a single key/value pair
 //
-PDECLARE_CLASS (PXConfigValue, PCaselessString)
+PDECLARE_CLASS(PXConfigValue, PCaselessString)
   public:
     PXConfigValue(const PString & theKey, const PString & theValue = "") 
       : PCaselessString(theKey), value(theValue) { }
@@ -66,7 +66,7 @@ PDECLARE_CLASS (PXConfigValue, PCaselessString)
 //
 //  a list of key/value pairs
 //
-PLIST (PXConfigSectionList, PXConfigValue);
+PLIST(PXConfigSectionList, PXConfigValue);
 
 //
 //  a list of key value pairs, with a section name
@@ -86,9 +86,12 @@ PDECLARE_CLASS(PXConfigSection, PCaselessString)
 // a list of sections
 //
 
-PDECLARE_LIST(PXConfig, PXConfigSection)
+class PXConfig : public PList<PXConfigSection>
+{
+    PCLASSINFO(PXConfig, PList<PXConfigSection>);
   public:
-    PXConfig(int i = 0);
+    PXConfig();
+    ~PXConfig();
 
     void Wait()   { mutex.Wait(); }
     void Signal() { mutex.Signal(); }
@@ -99,7 +102,11 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
     PBoolean WriteToFile(const PFilePath & filename);
     PBoolean Flush(const PFilePath & filename);
 
-    void SetDirty()   { dirty = PTrue; }
+    void SetDirty()
+    {
+      PTRACE_IF(4, !dirty, "PTLib\tSetting PXConfig dirty.");
+      dirty = PTrue;
+    }
 
     PBoolean      AddInstance();
     PBoolean      RemoveInstance(const PFilePath & filename);
@@ -116,9 +123,12 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
 //
 // a dictionary of configurations, keyed by filename
 //
-PDECLARE_DICTIONARY(PXConfigDictionary, PFilePath, PXConfig)
+typedef PDictionary<PFilePath, PXConfig> PXConfigDictionaryBase;
+class PXConfigDictionary : public PXConfigDictionaryBase
+{
+    PCLASSINFO(PXConfigDictionary, PXConfigDictionaryBase)
   public:
-    PXConfigDictionary(int dummy);
+    PXConfigDictionary();
     ~PXConfigDictionary();
     PXConfig * GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey);
     PXConfig * GetEnvironmentInstance();
@@ -151,7 +161,7 @@ PXConfigDictionary * configDict;
 
 void PProcess::CreateConfigFilesDictionary()
 {
-  configFiles = new PXConfigDictionary(0);
+  configFiles = new PXConfigDictionary;
 }
 
 
@@ -168,6 +178,7 @@ PXConfigWriteThread::~PXConfigWriteThread()
 
 void PXConfigWriteThread::Main()
 {
+  PTRACE(4, "PTLib\tConfig file cache write back thread started.");
   while (!stop.Wait(30000))  // if stop.Wait() returns PTrue, we are shutting down
     configDict->WriteChangedInstances();   // check dictionary for items that need writing
 
@@ -178,7 +189,7 @@ void PXConfigWriteThread::Main()
 
 
 
-PXConfig::PXConfig(int)
+PXConfig::PXConfig()
 {
   // make sure content gets removed
   AllowDeleteObjects();
@@ -191,7 +202,15 @@ PXConfig::PXConfig(int)
 
   // normally save on exit (except for environment configs)
   canSave = PTrue;
+
+  PTRACE(4, "PTLib\tCreated PXConfig " << this);
 }
+
+PXConfig::~PXConfig()
+{
+  PTRACE(4, "PTLib\tDestroyed PXConfig " << this);
+}
+
 
 PBoolean PXConfig::AddInstance()
 {
@@ -276,7 +295,7 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
     }
   }
 
-  PTRACE(4, "PWLib\tSaved config file: " << filename);
+  PTRACE(4, "PTLib\tSaved config file: " << filename);
   return PTrue;
 }
 
@@ -287,6 +306,8 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
 
   // clear out all information
   RemoveAll();
+
+  PTRACE(4, "PTLib\tReading config file: " << filename);
 
   // attempt to open file
   PTextFile file;
@@ -416,7 +437,7 @@ PString PProcess::GetConfigurationFile()
 // PXConfigDictionary
 //
 
-PXConfigDictionary::PXConfigDictionary(int)
+PXConfigDictionary::PXConfigDictionary()
 {
   environmentInstance = NULL;
   writeThread = NULL;
@@ -439,7 +460,7 @@ PXConfig * PXConfigDictionary::GetEnvironmentInstance()
 {
   mutex.Wait();
   if (environmentInstance == NULL) {
-    environmentInstance = new PXConfig(0);
+    environmentInstance = new PXConfig;
     environmentInstance->ReadFromEnvironment(PProcess::Current().PXGetEnvp());
   }
   mutex.Signal();
@@ -459,7 +480,7 @@ PXConfig * PXConfigDictionary::GetFileConfigInstance(const PFilePath & key, cons
   if (config != NULL) 
     config->AddInstance();
   else {
-    config = new PXConfig(0);
+    config = new PXConfig;
     config->ReadFromFile(readKey);
     config->AddInstance();
     SetAt(key, config);
@@ -479,8 +500,10 @@ void PXConfigDictionary::RemoveInstance(PXConfig * instance)
 
     // decrement the instance count and remove it if this was the last instance
     PFilePath key = GetKeyAt(index);
-    if (instance->RemoveInstance(key))
-          RemoveAt(key);
+    if (instance->RemoveInstance(key)) {
+      instance->Flush(key);
+      RemoveAt(key);
+    }
   }
 
   mutex.Signal();
@@ -538,17 +561,18 @@ PConfig::PConfig(int, const PString & name)
   config = configDict->GetFileConfigInstance(filename, readFilename);
 }
 
-void PConfig::Construct(const PFilePath & theFilename)
 
+void PConfig::Construct(const PFilePath & theFilename)
 {
   config = configDict->GetFileConfigInstance(theFilename, theFilename);
 }
 
-PConfig::~PConfig()
 
+PConfig::~PConfig()
 {
   configDict->RemoveInstance(config);
 }
+
 
 ////////////////////////////////////////////////////////////
 //
