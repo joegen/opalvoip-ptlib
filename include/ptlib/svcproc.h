@@ -115,7 +115,7 @@ class PSystemLog : public PObject, public iostream {
   //@}
 
   private:
-    PSystemLog(const PSystemLog &) : iostream(cout.rdbuf()) { }
+    PSystemLog(const PSystemLog & other) : PObject(other), iostream(cout.rdbuf()) { }
     PSystemLog & operator=(const PSystemLog &) { return *this; }
 
     class Buffer : public streambuf {
