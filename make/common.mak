@@ -193,19 +193,28 @@ endif
 # ifdef PROG
 endif
 
+
+######################################################################
+#
+# Precompiled headers (experimental)
+#
+
+USE_PCH:=no
 $(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PTLIBDIR)/include/ptlib.h
 	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
 	$(CXX) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -x c++ -c $< -o $@
 
+ifeq ($(USE_PCH),yes)
 PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
+CLEAN_FILES  += $(PCH_FILES)
 
-#ifdef USE_PCH
-#PCH:		$(PCH_FILES)
-#
-#CLEAN_FILES  += $(PCH_FILES)
-#else
-PCH:		
-#endif
+precompile: $(PCH_FILES)
+	@true
+
+else
+precompile:
+	@true
+endif
 
 
 ######################################################################
@@ -214,7 +223,17 @@ PCH:
 #
 ######################################################################
 
-all :: debuglibs debugdepend debug optlibs optdepend opt
+default_target : precompile $(TARGET)
+
+default_clean :
+	rm -rf $(CLEAN_FILES)
+
+.DELETE_ON_ERROR : default_depend
+default_depend :: $(DEPS)
+	@echo Created dependencies.
+
+libs ::
+	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i default_depend default_target; done
 
 help:
 	@echo "The following targets are available:"
@@ -245,88 +264,51 @@ help:
 	@echo "  make release       Package up optimised version int tar.gz file"
 
 
-ifdef DEBUG
-
-debug :: PCH $(TARGET) 
-
-opt ::
-	@$(MAKE) DEBUG= PCH opt
-
-debugclean ::
-	rm -rf $(CLEAN_FILES)
-
-optclean ::
-	@$(MAKE) DEBUG= optclean
-
-.DELETE_ON_ERROR : debugdepend
-
-debugdepend :: $(DEPS)
-	@echo Created dependencies.
-
-optdepend ::
-	@$(MAKE) DEBUG= optdepend
-
-debuglibs :: libs
-
-optlibs ::
-	@$(MAKE) DEBUG= libs
-
-libs ::
-	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i debugdepend debug; done
-
-else
-
-debug :: 
-	@$(MAKE) DEBUG=1 PCH debug
-
-opt :: PCH $(TARGET)
-
-debugclean ::
-	@$(MAKE) DEBUG=1 debugclean
-
-optclean ::
-	rm -rf $(CLEAN_FILES)
-
-.DELETE_ON_ERROR : optdepend
-
-debugdepend ::
-	@$(MAKE) DEBUG=1 debugdepend
-
-optdepend :: $(DEPS)
-	@echo Created dependencies.
-
-debuglibs ::
-	@$(MAKE) DEBUG=1 libs
-
-optlibs :: libs
-
-libs ::
-	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i optdepend opt; done
-
-endif
+all :: debuglibs debugdepend debug optlibs optdepend opt
+clean :: optclean debugclean
 
 both :: opt debug
-clean :: optclean debugclean
+bothshared :: optshared debugshared
+bothnoshared :: optnoshared debugnoshared
 bothdepend :: optdepend debugdepend
 bothlibs :: optlibs debuglibs
 
+opt ::
+	$(MAKE) DEBUG= default_target
+
 optshared ::
-	$(MAKE) P_SHAREDLIB=1 opt
-
-debugshared ::
-	$(MAKE) P_SHAREDLIB=1 debug
-
-bothshared ::
-	$(MAKE) optshared debugshared
+	$(MAKE) DEBUG= P_SHAREDLIB=1 default_target
 
 optnoshared ::
-	$(MAKE) P_SHAREDLIB=0 opt
+	$(MAKE) DEBUG= P_SHAREDLIB=0 default_target
+
+optclean ::
+	$(MAKE) DEBUG= default_clean
+
+optdepend ::
+	$(MAKE) DEBUG= default_depend
+
+optlibs ::
+	$(MAKE) DEBUG= libs
+
+
+debug :: 
+	$(MAKE) DEBUG=1 default_target
+
+debugshared ::
+	$(MAKE) DEBUG=1 P_SHAREDLIB=1 default_target
 
 debugnoshared ::
-	$(MAKE) P_SHAREDLIB=0 debug
+	$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_target
 
-bothnoshared ::
-	$(MAKE) optnoshared debugnoshared
+debugclean ::
+	$(MAKE) DEBUG=1 default_clean
+
+debugdepend ::
+	$(MAKE) DEBUG=1 default_depend
+
+debuglibs ::
+	$(MAKE) DEBUG=1 libs
 
 
 
