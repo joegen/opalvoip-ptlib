@@ -2422,26 +2422,30 @@ bool PStandardColourConverter::MJPEGtoXXXSameSize(const BYTE *mjpeg, BYTE *rgb, 
 {
   BYTE *components[1];
 
+  struct jdec_private *jdec;
+ 
   components[0] = rgb;
+ 
+  jdec = tinyjpeg_init();
 
   if (jdec == NULL) {
-    jdec = tinyjpeg_init();
-    if (jdec == NULL) {
-      PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
-	    return PFalse;
-    }
-    tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
+     PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
+     return PFalse;
   }
+  tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   tinyjpeg_set_components(jdec, components, 1);
   if (tinyjpeg_parse_header(jdec, mjpeg, srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
+     free(jdec);
      return PFalse;
   }
   if (tinyjpeg_decode(jdec, format) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
+     free(jdec);
      return PFalse;
   }
 
+  free(jdec);
   return PTrue;
 }
 
@@ -2509,32 +2513,35 @@ PSTANDARD_COLOUR_CONVERTER(JPEG,Grey)
 bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *yuv420p)
 {
   BYTE *components[4];
+  struct jdec_private *jdec;
 
   int npixels = srcFrameWidth * srcFrameHeight;
 
   components[0] = yuv420p;
   components[1] = yuv420p + npixels;
   components[2] = yuv420p + npixels + npixels/4;
+  components[3] = NULL;
+ 
+  jdec = tinyjpeg_init();
 
   if (jdec == NULL) {
-    PTRACE(2, "PColCnv\tJpeg: Allocating Jpeg decoder private structure");
-    jdec = tinyjpeg_init();
-    if (jdec == NULL) {
-      PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
-      return PFalse;
-    }
-    tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
+    PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
+    return PFalse;
   }
+  tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   tinyjpeg_set_components(jdec, components, 4);
   if (tinyjpeg_parse_header(jdec, mjpeg, srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
+     free(jdec);
      return PFalse;
   }
   if (tinyjpeg_decode(jdec, TINYJPEG_FMT_YUV420P) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
+     free(jdec);
      return PFalse;
   }
 
+  free(jdec);
   return PTrue;
 }
 
