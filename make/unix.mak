@@ -89,10 +89,6 @@ default_target :
 
 $(STANDARD_TARGETS) :: default_target
 
-else
-
-default_target : help
-
 endif
 
 ####################################################
@@ -101,8 +97,6 @@ endif
 
 ifndef P_SHAREDLIB
 P_SHAREDLIB=1
-else
-P_SHAREDLIB=0
 endif
 
 # -Wall must be at the start of the options otherwise
@@ -313,8 +307,7 @@ SYSLIBDIR	:= /opt/openh323/lib
 
 # Rest added by jpd@louisiana.edu, to get .so libs created!
 ifndef DEBUG
-ifndef P_SHAREDLIB
-P_SHAREDLIB=1
+ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
 STDCCFLAGS	+= -fPIC -DPIC
 endif # PROG
