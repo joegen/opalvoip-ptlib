@@ -241,9 +241,9 @@ help:
 	@echo "  make opt           Make optimised version of application"
 	@echo "  make both          Make both versions of application"
 	@echo
-	@echo "  make debugnoshared Make static debug version of application"
-	@echo "  make optnoshared   Make static optimised version of application"
-	@echo "  make bothnoshared  Make static both versions of application"
+	@echo "  make debugstatic   Make static debug version of application"
+	@echo "  make optstatic     Make static optimised version of application"
+	@echo "  make bothstatic    Make static both versions of application"
 	@echo
 	@echo "  make debugclean    Remove debug files"
 	@echo "  make optclean      Remove optimised files"
@@ -269,6 +269,7 @@ clean :: optclean debugclean
 
 both :: opt debug
 bothshared :: optshared debugshared
+bothstatic :: optstatic debugstatic
 bothnoshared :: optnoshared debugnoshared
 bothdepend :: optdepend debugdepend
 bothlibs :: optlibs debuglibs
@@ -279,7 +280,7 @@ opt ::
 optshared ::
 	$(MAKE) DEBUG= P_SHAREDLIB=1 default_target
 
-optnoshared ::
+optstatic optnoshared ::
 	$(MAKE) DEBUG= P_SHAREDLIB=0 default_target
 
 optclean ::
@@ -298,7 +299,7 @@ debug ::
 debugshared ::
 	$(MAKE) DEBUG=1 P_SHAREDLIB=1 default_target
 
-debugnoshared ::
+debugstatic debugnoshared ::
 	$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_target
 
 debugclean ::
