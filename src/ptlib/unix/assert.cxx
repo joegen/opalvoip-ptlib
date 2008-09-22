@@ -39,7 +39,7 @@
 #include <stdexcept>
 #include <ptlib/pprocess.h>
 
-#ifndef __BEOS__
+#ifndef P_BEOS
 #ifndef P_VXWORKS
 
 static PBoolean PAssertAction(int c, const char * msg)
@@ -89,7 +89,7 @@ static PBoolean PAssertAction(int c, const char * msg)
 void PAssertFunc(const char * msg)
 
 {
-#ifdef __BEOS__
+#ifdef P_BEOS
   // Print location in Eddie-compatible format
   PError << msg << endl;
   // Pop up the debugger dialog that gives the user the necessary choices
@@ -159,7 +159,7 @@ void PAssertFunc(const char * msg)
   kill(taskIdSelf(), SIGABRT);
 
 #endif // P_VXWORKS
-#endif // __BEOS__
+#endif // P_BEOS
 }
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 #include <ptlib/vconvert.h>
 #include <ptlib/unix/ptlib/shmvideo.h>
 
-#ifdef __MACOSX__
+#ifdef P_MACOSX
 namespace PWLibStupidOSXHacks {
 	int loadShmVideoStuff;
 };
