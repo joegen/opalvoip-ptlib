@@ -70,7 +70,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__) || defined(P_IRIX) || defined(P_QNX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #elif defined(P_RTEMS)
@@ -97,7 +97,7 @@ extern "C" int select(int width,
       struct timeval *timeout);
 #endif
 
-#ifdef __BEOS__
+#ifdef P_BEOS
 #include "OS.h"
 #endif
 
@@ -106,7 +106,7 @@ extern "C" int select(int width,
 
 PString PProcess::GetOSClass()
 {
-#ifndef __BEOS__
+#ifndef P_BEOS
   return PString("Unix");
 #elif defined P_VXWORKS
   return PString("VxWorks");
