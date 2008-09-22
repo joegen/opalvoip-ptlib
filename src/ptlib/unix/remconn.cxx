@@ -49,7 +49,7 @@
 #include <signal.h>
 #endif
 
-#ifdef __BEOS__
+#ifdef P_BEOS
 #include <signal.h>
 #endif
 

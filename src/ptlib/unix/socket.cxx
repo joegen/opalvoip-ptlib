@@ -80,7 +80,7 @@
 #include <bsp.h>
 #endif
 
-#ifdef __BEOS__
+#ifdef P_BEOS
 #include <posix/sys/ioctl.h> // for FIONBIO
 #include <be/bone/net/if.h> // for ifconf
 #include <be/bone/sys/sockio.h> // for SIOCGI*
@@ -223,7 +223,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX *
 }
 
 
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS) && !defined(__BEOS__)
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS) && !defined(P_BEOS)
 
 PChannel::Errors PSocket::Select(SelectList & read,
                                  SelectList & write,
@@ -1602,11 +1602,11 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
             memcpy(&ifReq, ifName, sizeof(ifreq));
             if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) {
               PIPSocket::Address mask = 
-#ifndef __BEOS__
+#ifndef P_BEOS
     ((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
 #else
     ((sockaddr_in *)&ifReq.ifr_mask)->sin_addr;
-#endif // !__BEOS__
+#endif // !P_BEOS
               PINDEX i;
               for (i = 0; i < list.GetSize(); i++) {
 #ifdef P_TORNADO
