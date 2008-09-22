@@ -44,7 +44,7 @@
 #include <ptlib/msos/ptlib/debstrm.h>
 #endif
 
-#ifdef __MACOSX__
+#ifdef P_MACOSX
 namespace PWLibStupidOSXHacks {
   extern int loadShmVideoStuff;
   extern int loadCoreAudioStuff;
@@ -1514,7 +1514,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
-#ifdef __MACOSX__
+#ifdef P_MACOSX
   
 #ifdef P_VIDEO
   PWLibStupidOSXHacks::loadFakeVideoStuff = 1;
@@ -1527,7 +1527,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   PWLibStupidOSXHacks::loadCoreAudioStuff = 1;
 #endif // P_AUDIO
   
-#endif // __MACOSX__
+#endif // P_MACOSX
 
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory

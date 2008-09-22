@@ -62,7 +62,7 @@
 #endif
 #endif
 
-#ifdef __BEOS__
+#ifdef P_BEOS
 #define	SET_STACK	context[0].__jmpbuf[JB_SP] = (int)stackTop-16;
 #endif
 
