@@ -1472,7 +1472,7 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 #endif
   }
   
-#ifndef __BEOS__
+#ifndef P_BEOS
   // attempt to listen
   if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
     os_close();
@@ -2330,7 +2330,7 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 
   PBoolean broadcast = addr.IsAny() || addr.IsBroadcast();
   if (broadcast) {
-#ifdef __BEOS__
+#ifdef P_BEOS
     PAssertAlways("Broadcast option under BeOS is not implemented yet");
     return PFalse;
 #else
@@ -2399,7 +2399,7 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
   
 #endif // P_MACOSX
 
-#ifndef __BEOS__
+#ifndef P_BEOS
   if (broadcast)
     SetOption(SO_BROADCAST, 0);
 #endif
