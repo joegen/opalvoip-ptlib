@@ -39,7 +39,7 @@
 #include <ptlib/videoio.h>
 #include <ptclib/delaychan.h>
 
-#ifdef __MACOSX__
+#ifdef P_MACOSX
 namespace PWLibStupidOSXHacks {
   int loadFakeVideoStuff;
 };

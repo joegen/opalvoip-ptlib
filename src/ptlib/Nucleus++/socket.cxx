@@ -61,7 +61,7 @@ int PSocket::os_close()
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
 
-#ifdef __BEOS__
+#ifdef P_BEOS
 #ifndef BE_THREADS
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(os_handle);
@@ -82,7 +82,7 @@ int PSocket::os_socket(int af, int type, int protocol)
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
     // make the socket non-blocking and close on exec
-#ifndef __BEOS__
+#ifndef P_BEOS
 #ifndef P_PTHREADS
     DWORD cmd = 1;
 #endif
@@ -91,7 +91,7 @@ int PSocket::os_socket(int af, int type, int protocol)
 #endif
 
     if (
-#ifndef __BEOS__
+#ifndef P_BEOS
 #ifndef P_PTHREADS
         !ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
 #endif
@@ -269,7 +269,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
 
   PUDPSocket sock;
 
-#ifndef __BEOS__
+#ifndef P_BEOS
   // get number of interfaces
   int ifNum;
 #ifdef SIOCGIFNUM
@@ -304,7 +304,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
       }
     }
   }
-#endif //!__BEOS__
+#endif //!P_BEOS
 
   return PFalse;
 }
@@ -326,13 +326,13 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
     return PFalse;
   }
 
-#ifndef __BEOS__
+#ifndef P_BEOS
   // attempt to read out of band data
   char buffer[32];
   int ooblen;
   while ((ooblen = ::recv(os_handle, buffer, sizeof(buffer), MSG_OOB)) > 0) 
     OnOutOfBand(buffer, ooblen);
-#endif // !__BEOS__
+#endif // !P_BEOS
 
     // attempt to read non-out of band data
   if (ConvertOSError(lastReadCount = ::recv(os_handle, (char *)buf, maxLen, 0)))
@@ -527,7 +527,7 @@ PBoolean PEthSocket::Close()
 
 PBoolean PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 {
-#ifndef __BEOS__
+#ifndef P_BEOS
   PUDPSocket ifsock;
 
   ifreq ifreqs[20]; // Maximum of 20 interfaces
@@ -551,7 +551,7 @@ PBoolean PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
       }
     }
   }
-#endif //!__BEOS__
+#endif //!P_BEOS
 
   return PFalse;
 }
@@ -574,7 +574,7 @@ PBoolean PEthSocket::EnumIpAddress(PINDEX idx,
   if (!IsOpen())
     return PFalse;
 
-#ifndef __BEOS__
+#ifndef P_BEOS
   PUDPSocket ifsock;
   struct ifreq ifr;
   strstream str;
@@ -600,7 +600,7 @@ PBoolean PEthSocket::EnumIpAddress(PINDEX idx,
   return PTrue;
 #else
   return PFalse;
-#endif //!__BEOS__
+#endif //!P_BEOS
 }
 
 
@@ -609,7 +609,7 @@ PBoolean PEthSocket::GetFilter(unsigned & mask, WORD & type)
   if (!IsOpen())
     return PFalse;
 
-#ifndef __BEOS__
+#ifndef P_BEOS
   ifreq ifr;
   memset(&ifr, 0, sizeof(ifr));
   strcpy(ifr.ifr_name, channelName);
@@ -626,7 +626,7 @@ PBoolean PEthSocket::GetFilter(unsigned & mask, WORD & type)
   return PTrue;
 #else
   return PFalse;
-#endif //!__BEOS__
+#endif //!P_BEOS
 }
 
 
@@ -642,7 +642,7 @@ PBoolean PEthSocket::SetFilter(unsigned filter, WORD type)
       return PFalse;
   }
 
-#ifndef __BEOS__
+#ifndef P_BEOS
   ifreq ifr;
   memset(&ifr, 0, sizeof(ifr));
   strcpy(ifr.ifr_name, channelName);
@@ -662,7 +662,7 @@ PBoolean PEthSocket::SetFilter(unsigned filter, WORD type)
   return PTrue;
 #else
   return PFalse;
-#endif //!__BEOS__
+#endif //!P_BEOS
 }
 
 
