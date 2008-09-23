@@ -808,16 +808,16 @@ alllibs:
 
 
 $(OBJDIR)/regcomp.o: $(COMMON_SRC_DIR)/regex/regcomp.c
-	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
 
 $(OBJDIR)/regexec.o: $(COMMON_SRC_DIR)/regex/regexec.c
-	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
 
 $(OBJDIR)/regerror.o: $(COMMON_SRC_DIR)/regex/regerror.c
-	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
 
 $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
-	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
 
 
 ifdef REQUIRES_SEPARATE_SWITCH 
