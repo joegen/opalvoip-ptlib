@@ -665,12 +665,12 @@ STDCCFLAGS	+= -DNDEBUG
 
 ifneq ($(OSTYPE),Darwin)
   ifeq ($(OSTYPE),solaris)
-    OPTCCFLAGS	+= -xO3 
+    STDCCFLAGS	+= -xO3 
   else
-    OPTCCFLAGS	+= -Os 
+    STDCCFLAGS	+= -Os 
   endif
 else
-  OPTCCFLAGS	+= -O2
+  STDCCFLAGS	+= -O2
 endif
 
 endif # DEBUG
