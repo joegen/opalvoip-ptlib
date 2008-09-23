@@ -438,7 +438,7 @@
 #pragma include_alias(<SPError.h>, <@SAPI_DIR@/include/SPError.h>)
 #pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
 
-#define P_SAPI_LIBRARY "@SAPI_DIR@/Lib/i386/sapi.lib"
+#undef P_SAPI_LIBRARY
 
 #endif
 
