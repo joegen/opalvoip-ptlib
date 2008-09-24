@@ -74,7 +74,6 @@ EXPORTS
     ??$fill@PAVPCriticalSection@@V1@@std@@YAXPAVPCriticalSection@@0ABV1@@Z @23675 NONAME
     ??$fill@PAVPFilePath@@V1@@std@@YAXPAVPFilePath@@0ABV1@@Z @18584 NONAME
     ??$fill@PAVPIPSocketAddressAndPort@@V1@@std@@YAXPAVPIPSocketAddressAndPort@@0ABV1@@Z @45 NONAME
-    ??$fill@PAVRequestType@PTimerList@@V12@@std@@YAXPAVRequestType@PTimerList@@0ABV12@@Z @23852 NONAME
     ??$Lookup@$0CB@VSRVRecordList@PDNS@@VSRVRecord@2@@PDNS@@YA_NABVPString@@AAVSRVRecordList@0@@Z @20581 NONAME
     ??$Lookup@$0CD@VNAPTRRecordList@PDNS@@VNAPTRRecord@2@@PDNS@@YA_NABVPString@@AAVNAPTRRecordList@0@@Z @20582 NONAME
     ??$make_pair@VPString@@V1@@std@@YA?AU?$pair@VPString@@V1@@0@VPString@@0@Z @18585 NONAME
@@ -98,7 +97,6 @@ EXPORTS
     ??$unchecked_copy@PAU_GUID@@PAU1@@stdext@@YAPAU_GUID@@PAU1@00@Z @23853 NONAME
     ??$unchecked_copy@PAVPCriticalSection@@PAV1@@stdext@@YAPAVPCriticalSection@@PAV1@00@Z @23676 NONAME
     ??$unchecked_copy@PAVPFilePath@@PAV1@@stdext@@YAPAVPFilePath@@PAV1@00@Z @18587 NONAME
-    ??$unchecked_copy@PAVRequestType@PTimerList@@PAV12@@stdext@@YAPAVRequestType@PTimerList@@PAV12@00@Z @23854 NONAME
     ??$unchecked_fill_n@PAPADIPAD@stdext@@YAXPAPADIABQAD@Z @69 NONAME
     ??$unchecked_fill_n@PAPAVPPluginModuleManager@@IPAV1@@stdext@@YAXPAPAVPPluginModuleManager@@IABQAV1@@Z @72 NONAME
     ??$unchecked_fill_n@PAPAVPThreadPoolWorkerBase@@IPAV1@@stdext@@YAXPAPAVPThreadPoolWorkerBase@@IABQAV1@@Z @22796 NONAME
@@ -111,7 +109,6 @@ EXPORTS
     ??$unchecked_uninitialized_copy@PAVPCriticalSection@@PAV1@V?$allocator@VPCriticalSection@@@std@@@stdext@@YAPAVPCriticalSection@@PAV1@00AAV?$allocator@VPCriticalSection@@@std@@@Z @23677 NONAME
     ??$unchecked_uninitialized_copy@PAVPFilePath@@PAV1@V?$allocator@VPFilePath@@@std@@@stdext@@YAPAVPFilePath@@PAV1@00AAV?$allocator@VPFilePath@@@std@@@Z @18588 NONAME
     ??$unchecked_uninitialized_copy@PAVPIPSocketAddressAndPort@@PAV1@V?$allocator@VPIPSocketAddressAndPort@@@std@@@stdext@@YAPAVPIPSocketAddressAndPort@@PAV1@00AAV?$allocator@VPIPSocketAddressAndPort@@@std@@@Z @81 NONAME
-    ??$unchecked_uninitialized_copy@PAVRequestType@PTimerList@@PAV12@V?$allocator@VRequestType@PTimerList@@@std@@@stdext@@YAPAVRequestType@PTimerList@@PAV12@00AAV?$allocator@VRequestType@PTimerList@@@std@@@Z @23856 NONAME
     ??$unchecked_uninitialized_copy@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@stdext@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@0PAV12@AAV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@Z @16066 NONAME
     ??$unchecked_uninitialized_fill_n@PAPADIPADV?$allocator@PAD@std@@@stdext@@YAXPAPADIABQADAAV?$allocator@PAD@std@@@Z @86 NONAME
     ??$unchecked_uninitialized_fill_n@PAPAVPPluginModuleManager@@IPAV1@V?$allocator@PAVPPluginModuleManager@@@std@@@stdext@@YAXPAPAVPPluginModuleManager@@IABQAV1@AAV?$allocator@PAVPPluginModuleManager@@@std@@@Z @89 NONAME
@@ -122,7 +119,6 @@ EXPORTS
     ??$unchecked_uninitialized_fill_n@PAVPCriticalSection@@IV1@V?$allocator@VPCriticalSection@@@std@@@stdext@@YAXPAVPCriticalSection@@IABV1@AAV?$allocator@VPCriticalSection@@@std@@@Z @23678 NONAME
     ??$unchecked_uninitialized_fill_n@PAVPFilePath@@IV1@V?$allocator@VPFilePath@@@std@@@stdext@@YAXPAVPFilePath@@IABV1@AAV?$allocator@VPFilePath@@@std@@@Z @18589 NONAME
     ??$unchecked_uninitialized_fill_n@PAVPIPSocketAddressAndPort@@IV1@V?$allocator@VPIPSocketAddressAndPort@@@std@@@stdext@@YAXPAVPIPSocketAddressAndPort@@IABV1@AAV?$allocator@VPIPSocketAddressAndPort@@@std@@@Z @92 NONAME
-    ??$unchecked_uninitialized_fill_n@PAVRequestType@PTimerList@@IV12@V?$allocator@VRequestType@PTimerList@@@std@@@stdext@@YAXPAVRequestType@PTimerList@@IABV12@AAV?$allocator@VRequestType@PTimerList@@@std@@@Z @23858 NONAME
     ??$_Allocate@PAD@std@@YAPAPADIPAPAD@Z @94 NONAME
     ??$_Allocate@PAVPPluginModuleManager@@@std@@YAPAPAVPPluginModuleManager@@IPAPAV1@@Z @97 NONAME
     ??$_Allocate@PAVPThreadPoolWorkerBase@@@std@@YAPAPAVPThreadPoolWorkerBase@@IPAPAV1@@Z @22802 NONAME
@@ -177,8 +173,6 @@ EXPORTS
     ??$_Checked_base@PAVPFilePath@@@std@@YAPAVPFilePath@@AAPAV1@U_Unchanged_checked_iterator_base_type_tag@0@@Z @18597 NONAME
     ??$_Checked_base@PAVPIPSocketAddressAndPort@@@std@@YAPAVPIPSocketAddressAndPort@@AAPAV1@@Z @131 NONAME
     ??$_Checked_base@PAVPIPSocketAddressAndPort@@@std@@YAPAVPIPSocketAddressAndPort@@AAPAV1@U_Unchanged_checked_iterator_base_type_tag@0@@Z @132 NONAME
-    ??$_Checked_base@PAVRequestType@PTimerList@@@std@@YAPAVRequestType@PTimerList@@AAPAV12@@Z @23862 NONAME
-    ??$_Checked_base@PAVRequestType@PTimerList@@@std@@YAPAVRequestType@PTimerList@@AAPAV12@U_Unchanged_checked_iterator_base_type_tag@0@@Z @23863 NONAME
     ??$_Checked_base@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@YA?AV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@AAV10@@Z @16078 NONAME
     ??$_Checked_base@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@YA?AV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@AAV10@U_Unchanged_checked_iterator_base_type_tag@0@@Z @16079 NONAME
     ??$_Construct@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@PAU123@@std@@YAXPAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@ABQAU120@@Z @18159 NONAME
@@ -225,8 +219,6 @@ EXPORTS
     ??$_Copy_backward_opt@PAVPFilePath@@PAV1@Uforward_iterator_tag@std@@@std@@YAPAVPFilePath@@PAV1@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @18606 NONAME
     ??$_Copy_backward_opt@PAVPIPSocketAddressAndPort@@PAV1@@std@@YAPAVPIPSocketAddressAndPort@@PAV1@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @166 NONAME
     ??$_Copy_backward_opt@PAVPIPSocketAddressAndPort@@PAV1@Uforward_iterator_tag@std@@@std@@YAPAVPIPSocketAddressAndPort@@PAV1@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @167 NONAME
-    ??$_Copy_backward_opt@PAVRequestType@PTimerList@@PAV12@@std@@YAPAVRequestType@PTimerList@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23867 NONAME
-    ??$_Copy_backward_opt@PAVRequestType@PTimerList@@PAV12@Uforward_iterator_tag@std@@@std@@YAPAVRequestType@PTimerList@@PAV12@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23868 NONAME
     ??$_Copy_opt@PAPAVPPluginModuleManager@@PAPAV1@Urandom_access_iterator_tag@std@@@std@@YAPAPAVPPluginModuleManager@@PAPAV1@00Urandom_access_iterator_tag@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @172 NONAME
     ??$_Copy_opt@PAPAVPThreadPoolWorkerBase@@PAPAV1@Urandom_access_iterator_tag@std@@@std@@YAPAPAVPThreadPoolWorkerBase@@PAPAV1@00Urandom_access_iterator_tag@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @22816 NONAME
     ??$_Copy_opt@PAU_GUID@@PAU1@@std@@YAPAU_GUID@@PAU1@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23869 NONAME
@@ -235,8 +227,6 @@ EXPORTS
     ??$_Copy_opt@PAVPCriticalSection@@PAV1@Uforward_iterator_tag@std@@@std@@YAPAVPCriticalSection@@PAV1@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23686 NONAME
     ??$_Copy_opt@PAVPFilePath@@PAV1@@std@@YAPAVPFilePath@@PAV1@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @18607 NONAME
     ??$_Copy_opt@PAVPFilePath@@PAV1@Uforward_iterator_tag@std@@@std@@YAPAVPFilePath@@PAV1@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @18608 NONAME
-    ??$_Copy_opt@PAVRequestType@PTimerList@@PAV12@@std@@YAPAVRequestType@PTimerList@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23871 NONAME
-    ??$_Copy_opt@PAVRequestType@PTimerList@@PAV12@Uforward_iterator_tag@std@@@std@@YAPAVRequestType@PTimerList@@PAV12@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23872 NONAME
     ??$_Debug_lt_pred@U?$less@I@std@@II@std@@YA_NU?$less@I@0@ABI1PB_WI@Z @175 NONAME
     ??$_Debug_lt_pred@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@V32@@std@@YA_NU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@0@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@1PB_WI@Z @177 NONAME
     ??$_Debug_lt_pred@U?$less@VPCaselessString@@@std@@VPCaselessString@@V3@@std@@YA_NU?$less@VPCaselessString@@@0@ABVPCaselessString@@1PB_WI@Z @178 NONAME
@@ -251,7 +241,6 @@ EXPORTS
     ??$_Debug_pointer@VPCriticalSection@@@std@@YAXPAVPCriticalSection@@PB_WI@Z @23687 NONAME
     ??$_Debug_pointer@VPFilePath@@@std@@YAXPAVPFilePath@@PB_WI@Z @18609 NONAME
     ??$_Debug_pointer@VPIPSocketAddressAndPort@@@std@@YAXPAVPIPSocketAddressAndPort@@PB_WI@Z @190 NONAME
-    ??$_Debug_pointer@VRequestType@PTimerList@@@std@@YAXPAVRequestType@PTimerList@@PB_WI@Z @23874 NONAME
     ??$_Debug_range2@PAPAD@std@@YAXPAPAD0PB_WIUrandom_access_iterator_tag@0@@Z @192 NONAME
     ??$_Debug_range2@PAPAVPPluginModuleManager@@@std@@YAXPAPAVPPluginModuleManager@@0PB_WIUrandom_access_iterator_tag@0@@Z @195 NONAME
     ??$_Debug_range2@PAPAVPThreadPoolWorkerBase@@@std@@YAXPAPAVPThreadPoolWorkerBase@@0PB_WIUrandom_access_iterator_tag@0@@Z @22820 NONAME
@@ -261,7 +250,6 @@ EXPORTS
     ??$_Debug_range2@PAVPCriticalSection@@@std@@YAXPAVPCriticalSection@@0PB_WIUrandom_access_iterator_tag@0@@Z @23688 NONAME
     ??$_Debug_range2@PAVPFilePath@@@std@@YAXPAVPFilePath@@0PB_WIUrandom_access_iterator_tag@0@@Z @18610 NONAME
     ??$_Debug_range2@PAVPIPSocketAddressAndPort@@@std@@YAXPAVPIPSocketAddressAndPort@@0PB_WIUrandom_access_iterator_tag@0@@Z @198 NONAME
-    ??$_Debug_range2@PAVRequestType@PTimerList@@@std@@YAXPAVRequestType@PTimerList@@0PB_WIUrandom_access_iterator_tag@0@@Z @23876 NONAME
     ??$_Debug_range2@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@YAXV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@0PB_WIUrandom_access_iterator_tag@0@@Z @16091 NONAME
     ??$_Debug_range@PAPAD@std@@YAXPAPAD0PB_WI@Z @204 NONAME
     ??$_Debug_range@PAPAVPPluginModuleManager@@@std@@YAXPAPAVPPluginModuleManager@@0PB_WI@Z @207 NONAME
@@ -272,7 +260,6 @@ EXPORTS
     ??$_Debug_range@PAVPCriticalSection@@@std@@YAXPAVPCriticalSection@@0PB_WI@Z @23689 NONAME
     ??$_Debug_range@PAVPFilePath@@@std@@YAXPAVPFilePath@@0PB_WI@Z @18611 NONAME
     ??$_Debug_range@PAVPIPSocketAddressAndPort@@@std@@YAXPAVPIPSocketAddressAndPort@@0PB_WI@Z @210 NONAME
-    ??$_Debug_range@PAVRequestType@PTimerList@@@std@@YAXPAVRequestType@PTimerList@@0PB_WI@Z @23878 NONAME
     ??$_Debug_range@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@YAXV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@0PB_WI@Z @16093 NONAME
     ??$_Destroy@PAD@std@@YAXPAPAD@Z @216 NONAME
     ??$_Destroy@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@YAXPAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@@Z @18162 NONAME
@@ -354,8 +341,6 @@ EXPORTS
     ??$_Destroy_range@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@YAXPAVPFilePath@@0AAV?$allocator@VPFilePath@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @18624 NONAME
     ??$_Destroy_range@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@YAXPAVPIPSocketAddressAndPort@@0AAV?$allocator@VPIPSocketAddressAndPort@@@0@@Z @263 NONAME
     ??$_Destroy_range@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@YAXPAVPIPSocketAddressAndPort@@0AAV?$allocator@VPIPSocketAddressAndPort@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @264 NONAME
-    ??$_Destroy_range@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@YAXPAVRequestType@PTimerList@@0AAV?$allocator@VRequestType@PTimerList@@@0@@Z @23884 NONAME
-    ??$_Destroy_range@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@YAXPAVRequestType@PTimerList@@0AAV?$allocator@VRequestType@PTimerList@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @23885 NONAME
     ??$_Equal@V?$_Iterator@$00@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@?$reverse_iterator@V?$_Iterator@$00@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QBE_NABV01@@Z @20583 NONAME
     ??$_Fill@PAPAVPPluginModuleManager@@PAV1@@std@@YAXPAPAVPPluginModuleManager@@0ABQAV1@@Z @275 NONAME
     ??$_Fill@PAPAVPThreadPoolWorkerBase@@PAV1@@std@@YAXPAPAVPThreadPoolWorkerBase@@0ABQAV1@@Z @22834 NONAME
@@ -364,7 +349,6 @@ EXPORTS
     ??$_Fill@PAVPCriticalSection@@V1@@std@@YAXPAVPCriticalSection@@0ABV1@@Z @23693 NONAME
     ??$_Fill@PAVPFilePath@@V1@@std@@YAXPAVPFilePath@@0ABV1@@Z @18625 NONAME
     ??$_Fill@PAVPIPSocketAddressAndPort@@V1@@std@@YAXPAVPIPSocketAddressAndPort@@0ABV1@@Z @278 NONAME
-    ??$_Fill@PAVRequestType@PTimerList@@V12@@std@@YAXPAVRequestType@PTimerList@@0ABV12@@Z @23887 NONAME
     ??$_Fill_n@PAPADIPAD@std@@YAXPAPADIABQADUrandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @280 NONAME
     ??$_Fill_n@PAPADIPAD@std@@YAXPAPADIABQADU_Range_checked_iterator_tag@0@@Z @281 NONAME
     ??$_Fill_n@PAPAVPPluginModuleManager@@IPAV1@@std@@YAXPAPAVPPluginModuleManager@@IABQAV1@Urandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @286 NONAME
@@ -382,7 +366,6 @@ EXPORTS
     ??$_Iter_cat@PAVPCriticalSection@@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVPCriticalSection@@@Z @23694 NONAME
     ??$_Iter_cat@PAVPFilePath@@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVPFilePath@@@Z @18626 NONAME
     ??$_Iter_cat@PAVPIPSocketAddressAndPort@@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVPIPSocketAddressAndPort@@@Z @299 NONAME
-    ??$_Iter_cat@PAVRequestType@PTimerList@@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVRequestType@PTimerList@@@Z @23889 NONAME
     ??$_Iter_cat@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@YA?AUrandom_access_iterator_tag@0@ABV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@@Z @16113 NONAME
     ??$_Iter_random@PAPAVPPluginModuleManager@@PAPAV1@@std@@YA?AUrandom_access_iterator_tag@0@ABQAPAVPPluginModuleManager@@0@Z @310 NONAME
     ??$_Iter_random@PAPAVPThreadPoolWorkerBase@@PAPAV1@@std@@YA?AUrandom_access_iterator_tag@0@ABQAPAVPThreadPoolWorkerBase@@0@Z @22843 NONAME
@@ -391,7 +374,6 @@ EXPORTS
     ??$_Iter_random@PAVPCriticalSection@@PAV1@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVPCriticalSection@@0@Z @23695 NONAME
     ??$_Iter_random@PAVPFilePath@@PAV1@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVPFilePath@@0@Z @18627 NONAME
     ??$_Iter_random@PAVPIPSocketAddressAndPort@@PAV1@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVPIPSocketAddressAndPort@@0@Z @313 NONAME
-    ??$_Iter_random@PAVRequestType@PTimerList@@PAV12@@std@@YA?AUrandom_access_iterator_tag@0@ABQAVRequestType@PTimerList@@0@Z @23891 NONAME
     ??$_Move_backward_opt@PAPAVPPluginModuleManager@@PAPAV1@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@3@@std@@YAPAPAVPPluginModuleManager@@PAPAV1@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @317 NONAME
     ??$_Move_backward_opt@PAPAVPThreadPoolWorkerBase@@PAPAV1@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@3@@std@@YAPAPAVPThreadPoolWorkerBase@@PAPAV1@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @22844 NONAME
     ??$_Move_backward_opt@PAU_GUID@@PAU1@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@3@@std@@YAPAU_GUID@@PAU1@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @23892 NONAME
@@ -400,7 +382,6 @@ EXPORTS
     ??$_Move_backward_opt@PAVPCriticalSection@@PAV1@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@3@@std@@YAPAVPCriticalSection@@PAV1@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @23696 NONAME
     ??$_Move_backward_opt@PAVPFilePath@@PAV1@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@3@@std@@YAPAVPFilePath@@PAV1@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @18628 NONAME
     ??$_Move_backward_opt@PAVPIPSocketAddressAndPort@@PAV1@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@3@@std@@YAPAVPIPSocketAddressAndPort@@PAV1@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @320 NONAME
-    ??$_Move_backward_opt@PAVRequestType@PTimerList@@PAV12@Urandom_access_iterator_tag@std@@U_Undefined_move_tag@4@@std@@YAPAVRequestType@PTimerList@@PAV12@00Urandom_access_iterator_tag@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @23893 NONAME
     ??$_Move_cat@PAPAVPPluginModuleManager@@@std@@YA?AU_Undefined_move_tag@0@ABQAPAVPPluginModuleManager@@@Z @324 NONAME
     ??$_Move_cat@PAPAVPThreadPoolWorkerBase@@@std@@YA?AU_Undefined_move_tag@0@ABQAPAVPThreadPoolWorkerBase@@@Z @22845 NONAME
     ??$_Move_cat@PAU_GUID@@@std@@YA?AU_Undefined_move_tag@0@ABQAU_GUID@@@Z @23894 NONAME
@@ -408,7 +389,6 @@ EXPORTS
     ??$_Move_cat@PAVPCriticalSection@@@std@@YA?AU_Undefined_move_tag@0@ABQAVPCriticalSection@@@Z @23697 NONAME
     ??$_Move_cat@PAVPFilePath@@@std@@YA?AU_Undefined_move_tag@0@ABQAVPFilePath@@@Z @18629 NONAME
     ??$_Move_cat@PAVPIPSocketAddressAndPort@@@std@@YA?AU_Undefined_move_tag@0@ABQAVPIPSocketAddressAndPort@@@Z @327 NONAME
-    ??$_Move_cat@PAVRequestType@PTimerList@@@std@@YA?AU_Undefined_move_tag@0@ABQAVRequestType@PTimerList@@@Z @23895 NONAME
     ??$_Ptr_cat@PAPADPAPAD@std@@YA?AU_Scalar_ptr_iterator_tag@0@AAPAPAD0@Z @329 NONAME
     ??$_Ptr_cat@PAPAVPPluginModuleManager@@PAPAV1@@std@@YA?AU_Scalar_ptr_iterator_tag@0@AAPAPAVPPluginModuleManager@@0@Z @332 NONAME
     ??$_Ptr_cat@PAPAVPThreadPoolWorkerBase@@PAPAV1@@std@@YA?AU_Scalar_ptr_iterator_tag@0@AAPAPAVPThreadPoolWorkerBase@@0@Z @22846 NONAME
@@ -418,7 +398,6 @@ EXPORTS
     ??$_Ptr_cat@PAVPCriticalSection@@PAV1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAVPCriticalSection@@0@Z @23698 NONAME
     ??$_Ptr_cat@PAVPFilePath@@PAV1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAVPFilePath@@0@Z @18630 NONAME
     ??$_Ptr_cat@PAVPIPSocketAddressAndPort@@PAV1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAVPIPSocketAddressAndPort@@0@Z @335 NONAME
-    ??$_Ptr_cat@PAVRequestType@PTimerList@@PAV12@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAVRequestType@PTimerList@@0@Z @23897 NONAME
     ??$_Ptr_cat@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@AAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@@Z @16119 NONAME
     ??$_Ucopy@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@1@0PAV21@@Z @16120 NONAME
     ??$_Umove@PAPAVPPluginModuleManager@@@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@IAEPAPAVPPluginModuleManager@@PAPAV2@00@Z @343 NONAME
@@ -428,7 +407,6 @@ EXPORTS
     ??$_Umove@PAVPCriticalSection@@@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAEPAVPCriticalSection@@PAV2@00@Z @23699 NONAME
     ??$_Umove@PAVPFilePath@@@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAEPAVPFilePath@@PAV2@00@Z @18631 NONAME
     ??$_Umove@PAVPIPSocketAddressAndPort@@@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAEPAVPIPSocketAddressAndPort@@PAV2@00@Z @346 NONAME
-    ??$_Umove@PAVRequestType@PTimerList@@@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAEPAVRequestType@PTimerList@@PAV23@00@Z @23899 NONAME
     ??$_Unchecked_move_backward@PAPAVPPluginModuleManager@@PAPAV1@@stdext@@YAPAPAVPPluginModuleManager@@PAPAV1@00@Z @352 NONAME
     ??$_Unchecked_move_backward@PAPAVPThreadPoolWorkerBase@@PAPAV1@@stdext@@YAPAPAVPThreadPoolWorkerBase@@PAPAV1@00@Z @22849 NONAME
     ??$_Unchecked_move_backward@PAU_GUID@@PAU1@@stdext@@YAPAU_GUID@@PAU1@00@Z @23900 NONAME
@@ -436,7 +414,6 @@ EXPORTS
     ??$_Unchecked_move_backward@PAVPCriticalSection@@PAV1@@stdext@@YAPAVPCriticalSection@@PAV1@00@Z @23700 NONAME
     ??$_Unchecked_move_backward@PAVPFilePath@@PAV1@@stdext@@YAPAVPFilePath@@PAV1@00@Z @18632 NONAME
     ??$_Unchecked_move_backward@PAVPIPSocketAddressAndPort@@PAV1@@stdext@@YAPAVPIPSocketAddressAndPort@@PAV1@00@Z @355 NONAME
-    ??$_Unchecked_move_backward@PAVRequestType@PTimerList@@PAV12@@stdext@@YAPAVRequestType@PTimerList@@PAV12@00@Z @23901 NONAME
     ??$_Unchecked_uninitialized_move@PAPAVPPluginModuleManager@@PAPAV1@V?$allocator@PAVPPluginModuleManager@@@std@@@stdext@@YAPAPAVPPluginModuleManager@@PAPAV1@00AAV?$allocator@PAVPPluginModuleManager@@@std@@@Z @359 NONAME
     ??$_Unchecked_uninitialized_move@PAPAVPThreadPoolWorkerBase@@PAPAV1@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@stdext@@YAPAPAVPThreadPoolWorkerBase@@PAPAV1@00AAV?$allocator@PAVPThreadPoolWorkerBase@@@std@@@Z @22850 NONAME
     ??$_Unchecked_uninitialized_move@PAU_GUID@@PAU1@V?$allocator@U_GUID@@@std@@@stdext@@YAPAU_GUID@@PAU1@00AAV?$allocator@U_GUID@@@std@@@Z @23902 NONAME
@@ -444,7 +421,6 @@ EXPORTS
     ??$_Unchecked_uninitialized_move@PAVPCriticalSection@@PAV1@V?$allocator@VPCriticalSection@@@std@@@stdext@@YAPAVPCriticalSection@@PAV1@00AAV?$allocator@VPCriticalSection@@@std@@@Z @23701 NONAME
     ??$_Unchecked_uninitialized_move@PAVPFilePath@@PAV1@V?$allocator@VPFilePath@@@std@@@stdext@@YAPAVPFilePath@@PAV1@00AAV?$allocator@VPFilePath@@@std@@@Z @18633 NONAME
     ??$_Unchecked_uninitialized_move@PAVPIPSocketAddressAndPort@@PAV1@V?$allocator@VPIPSocketAddressAndPort@@@std@@@stdext@@YAPAVPIPSocketAddressAndPort@@PAV1@00AAV?$allocator@VPIPSocketAddressAndPort@@@std@@@Z @362 NONAME
-    ??$_Unchecked_uninitialized_move@PAVRequestType@PTimerList@@PAV12@V?$allocator@VRequestType@PTimerList@@@std@@@stdext@@YAPAVRequestType@PTimerList@@PAV12@00AAV?$allocator@VRequestType@PTimerList@@@std@@@Z @23903 NONAME
     ??$_Uninit_copy@PAPADPAPADV?$allocator@PAD@std@@@std@@YAPAPADPAPAD00AAV?$allocator@PAD@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @366 NONAME
     ??$_Uninit_copy@PAPAVPPluginModuleManager@@PAPAV1@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@YAPAPAVPPluginModuleManager@@PAPAV1@00AAV?$allocator@PAVPPluginModuleManager@@@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @369 NONAME
     ??$_Uninit_copy@PAPAVPThreadPoolWorkerBase@@PAPAV1@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@YAPAPAVPThreadPoolWorkerBase@@PAPAV1@00AAV?$allocator@PAVPThreadPoolWorkerBase@@@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @22851 NONAME
@@ -453,7 +429,6 @@ EXPORTS
     ??$_Uninit_copy@PAVPCriticalSection@@PAV1@V?$allocator@VPCriticalSection@@@std@@@std@@YAPAVPCriticalSection@@PAV1@00AAV?$allocator@VPCriticalSection@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23702 NONAME
     ??$_Uninit_copy@PAVPFilePath@@PAV1@V?$allocator@VPFilePath@@@std@@@std@@YAPAVPFilePath@@PAV1@00AAV?$allocator@VPFilePath@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @18634 NONAME
     ??$_Uninit_copy@PAVPIPSocketAddressAndPort@@PAV1@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@YAPAVPIPSocketAddressAndPort@@PAV1@00AAV?$allocator@VPIPSocketAddressAndPort@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @372 NONAME
-    ??$_Uninit_copy@PAVRequestType@PTimerList@@PAV12@V?$allocator@VRequestType@PTimerList@@@std@@@std@@YAPAVRequestType@PTimerList@@PAV12@00AAV?$allocator@VRequestType@PTimerList@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23905 NONAME
     ??$_Uninit_copy@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@0PAV10@AAV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @16124 NONAME
     ??$_Uninit_fill_n@PAPADIPADV?$allocator@PAD@std@@@std@@YAXPAPADIABQADAAV?$allocator@PAD@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @377 NONAME
     ??$_Uninit_fill_n@PAPAVPPluginModuleManager@@IPAV1@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@YAXPAPAVPPluginModuleManager@@IABQAV1@AAV?$allocator@PAVPPluginModuleManager@@@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @380 NONAME
@@ -464,7 +439,6 @@ EXPORTS
     ??$_Uninit_fill_n@PAVPCriticalSection@@IV1@V?$allocator@VPCriticalSection@@@std@@@std@@YAXPAVPCriticalSection@@IABV1@AAV?$allocator@VPCriticalSection@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23703 NONAME
     ??$_Uninit_fill_n@PAVPFilePath@@IV1@V?$allocator@VPFilePath@@@std@@@std@@YAXPAVPFilePath@@IABV1@AAV?$allocator@VPFilePath@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @18635 NONAME
     ??$_Uninit_fill_n@PAVPIPSocketAddressAndPort@@IV1@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@YAXPAVPIPSocketAddressAndPort@@IABV1@AAV?$allocator@VPIPSocketAddressAndPort@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @383 NONAME
-    ??$_Uninit_fill_n@PAVRequestType@PTimerList@@IV12@V?$allocator@VRequestType@PTimerList@@@std@@@std@@YAXPAVRequestType@PTimerList@@IABV12@AAV?$allocator@VRequestType@PTimerList@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @23907 NONAME
     ??$_Uninit_move@PAPAVPPluginModuleManager@@PAPAV1@V?$allocator@PAVPPluginModuleManager@@@std@@U_Undefined_move_tag@3@@std@@YAPAPAVPPluginModuleManager@@PAPAV1@00AAV?$allocator@PAVPPluginModuleManager@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @387 NONAME
     ??$_Uninit_move@PAPAVPThreadPoolWorkerBase@@PAPAV1@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@U_Undefined_move_tag@3@@std@@YAPAPAVPThreadPoolWorkerBase@@PAPAV1@00AAV?$allocator@PAVPThreadPoolWorkerBase@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @22855 NONAME
     ??$_Uninit_move@PAU_GUID@@PAU1@V?$allocator@U_GUID@@@std@@U_Undefined_move_tag@3@@std@@YAPAU_GUID@@PAU1@00AAV?$allocator@U_GUID@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @23908 NONAME
@@ -472,7 +446,6 @@ EXPORTS
     ??$_Uninit_move@PAVPCriticalSection@@PAV1@V?$allocator@VPCriticalSection@@@std@@U_Undefined_move_tag@3@@std@@YAPAVPCriticalSection@@PAV1@00AAV?$allocator@VPCriticalSection@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @23704 NONAME
     ??$_Uninit_move@PAVPFilePath@@PAV1@V?$allocator@VPFilePath@@@std@@U_Undefined_move_tag@3@@std@@YAPAVPFilePath@@PAV1@00AAV?$allocator@VPFilePath@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @18636 NONAME
     ??$_Uninit_move@PAVPIPSocketAddressAndPort@@PAV1@V?$allocator@VPIPSocketAddressAndPort@@@std@@U_Undefined_move_tag@3@@std@@YAPAVPIPSocketAddressAndPort@@PAV1@00AAV?$allocator@VPIPSocketAddressAndPort@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @390 NONAME
-    ??$_Uninit_move@PAVRequestType@PTimerList@@PAV12@V?$allocator@VRequestType@PTimerList@@@std@@U_Undefined_move_tag@4@@std@@YAPAVRequestType@PTimerList@@PAV12@00AAV?$allocator@VRequestType@PTimerList@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @23909 NONAME
     ??0?$allocator@PAVPInterfaceMonitorClient@@@std@@QAE@ABV01@@Z @18166 NONAME
     ??0?$allocator@PAVPInterfaceMonitorClient@@@std@@QAE@XZ @18167 NONAME
     ??0?$allocator@PAVPPluginModuleManager@@@std@@QAE@ABV01@@Z @398 NONAME
@@ -888,7 +861,6 @@ EXPORTS
     ??0?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE@XZ @23712 NONAME
     ??0?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE@XZ @18665 NONAME
     ??0?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@XZ @720 NONAME
-    ??0?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @23915 NONAME
     ??0?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @16177 NONAME
     ??0?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @16178 NONAME
     ??0?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @16179 NONAME
@@ -1033,7 +1005,6 @@ EXPORTS
     ??0?$_Ranit@VPFilePath@@HPBV1@ABV1@@std@@QAE@XZ @18689 NONAME
     ??0?$_Ranit@VPIPSocketAddressAndPort@@HPBV1@ABV1@@std@@QAE@ABU01@@Z @811 NONAME
     ??0?$_Ranit@VPIPSocketAddressAndPort@@HPBV1@ABV1@@std@@QAE@XZ @812 NONAME
-    ??0?$_Ranit@VRequestType@PTimerList@@HPBV12@ABV12@@std@@QAE@ABU01@@Z @23923 NONAME
     ??0?$_Ranit@VRequestType@PTimerList@@HPBV12@ABV12@@std@@QAE@XZ @22925 NONAME
     ??0?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@QAE@U?$less@I@1@@Z @815 NONAME
     ??0?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@QAE@U?$less@I@1@@Z @816 NONAME
@@ -1174,8 +1145,6 @@ EXPORTS
     ??0?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@ABV01@@Z @913 NONAME
     ??0?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@PAVPIPSocketAddressAndPort@@PBV_Container_base@1@@Z @914 NONAME
     ??0?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@XZ @915 NONAME
-    ??0?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@ABV01@@Z @23926 NONAME
-    ??0?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@PAVRequestType@PTimerList@@PBV_Container_base@1@@Z @23927 NONAME
     ??0?$_Vector_iterator@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@ABV01@@Z @925 NONAME
     ??0?$_Vector_iterator@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@PAPAVPPluginModuleManager@@PBV_Container_base@1@@Z @926 NONAME
     ??0?$_Vector_iterator@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@QAE@ABV01@@Z @22934 NONAME
@@ -1191,8 +1160,6 @@ EXPORTS
     ??0?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE@PAVPFilePath@@PBV_Container_base@1@@Z @18709 NONAME
     ??0?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@ABV01@@Z @932 NONAME
     ??0?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@PAVPIPSocketAddressAndPort@@PBV_Container_base@1@@Z @933 NONAME
-    ??0?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@ABV01@@Z @23930 NONAME
-    ??0?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@PAVRequestType@PTimerList@@PBV_Container_base@1@@Z @23931 NONAME
     ??0?$_Vector_val@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@IAE@V?$allocator@PAVPPluginModuleManager@@@1@@Z @938 NONAME
     ??0?$_Vector_val@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@IAE@V?$allocator@PAVPThreadPoolWorkerBase@@@1@@Z @22937 NONAME
     ??0?$_Vector_val@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@IAE@V?$allocator@U_GUID@@@1@@Z @23932 NONAME
@@ -1200,7 +1167,6 @@ EXPORTS
     ??0?$_Vector_val@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAE@V?$allocator@VPCriticalSection@@@1@@Z @23720 NONAME
     ??0?$_Vector_val@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAE@V?$allocator@VPFilePath@@@1@@Z @18710 NONAME
     ??0?$_Vector_val@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAE@V?$allocator@VPIPSocketAddressAndPort@@@1@@Z @941 NONAME
-    ??0?$_Vector_val@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAE@V?$allocator@VRequestType@PTimerList@@@1@@Z @23933 NONAME
     ??0Address@PEthSocket@@QAE@ABT01@@Z @943 NONAME
     ??0Address@PEthSocket@@QAE@ABVPString@@@Z @944 NONAME
     ??0Address@PEthSocket@@QAE@PBE@Z @945 NONAME
@@ -2804,7 +2770,6 @@ EXPORTS
     ??1?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE@XZ @23733 NONAME
     ??1?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE@XZ @18806 NONAME
     ??1?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@XZ @2321 NONAME
-    ??1?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @23940 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @16351 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @16352 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @16353 NONAME
@@ -3038,7 +3003,6 @@ EXPORTS
     ??1?$_Vector_const_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE@XZ @23736 NONAME
     ??1?$_Vector_const_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE@XZ @18840 NONAME
     ??1?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@XZ @2477 NONAME
-    ??1?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @23949 NONAME
     ??1?$_Vector_iterator@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@XZ @2481 NONAME
     ??1?$_Vector_iterator@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@QAE@XZ @23042 NONAME
     ??1?$_Vector_iterator@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@QAE@XZ @23950 NONAME
@@ -3046,7 +3010,6 @@ EXPORTS
     ??1?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE@XZ @23737 NONAME
     ??1?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE@XZ @18841 NONAME
     ??1?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@XZ @2484 NONAME
-    ??1?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @23951 NONAME
     ??1?$_Vector_val@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@XZ @2488 NONAME
     ??1?$_Vector_val@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@QAE@XZ @23043 NONAME
     ??1?$_Vector_val@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@QAE@XZ @23952 NONAME
@@ -3054,7 +3017,6 @@ EXPORTS
     ??1?$_Vector_val@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE@XZ @23738 NONAME
     ??1?$_Vector_val@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE@XZ @18842 NONAME
     ??1?$_Vector_val@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE@XZ @2491 NONAME
-    ??1?$_Vector_val@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @23953 NONAME
     ??1Address@PHTML@@UAE@XZ @2493 NONAME
     ??1Address@PIPSocket@@UAE@XZ @2494 NONAME
     ??1Attribute@PLDAPSchema@@QAE@XZ @18843 NONAME
@@ -5211,7 +5173,6 @@ EXPORTS
     ??A?$vector@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@QAEAAU_GUID@@I@Z @23968 NONAME
     ??A?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@I@Z @16503 NONAME
     ??A?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAEAAVPCriticalSection@@I@Z @23755 NONAME
-    ??A?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAEAAVRequestType@PTimerList@@I@Z @23969 NONAME
     ??AAddress@PIPSocket@@QBEEH@Z @3553 NONAME
     ??APArgList@@QBE?AVPString@@H@Z @3554 NONAME
     ??APASNSequence@@QBEAAVPASNObject@@H@Z @3555 NONAME
@@ -5620,13 +5581,11 @@ EXPORTS
     ??G?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBEHABV01@@Z @16560 NONAME
     ??G?$_Vector_const_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEHABV01@@Z @19885 NONAME
     ??G?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEHABV01@@Z @3820 NONAME
-    ??G?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEHABV01@@Z @23976 NONAME
     ??G?$_Vector_iterator@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QBEHABV?$_Vector_const_iterator@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@1@@Z @3824 NONAME
     ??G?$_Vector_iterator@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@QBEHABV?$_Vector_const_iterator@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@1@@Z @23213 NONAME
     ??G?$_Vector_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBEHABV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@1@@Z @16561 NONAME
     ??G?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEHABV?$_Vector_const_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@1@@Z @19886 NONAME
     ??G?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEHABV?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@1@@Z @3827 NONAME
-    ??G?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEHABV?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@1@@Z @23977 NONAME
     ??GPTime@@QBE?AV0@ABVPTimeInterval@@@Z @3829 NONAME
     ??GPTime@@QBE?AVPTimeInterval@@ABV0@@Z @3830 NONAME
     ??GPTimeInterval@@QBE?AV0@ABV0@@Z @3831 NONAME
@@ -5638,7 +5597,6 @@ EXPORTS
     ??H?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QBE?AV01@H@Z @23761 NONAME
     ??H?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBE?AV01@H@Z @19887 NONAME
     ??H?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBE?AV01@H@Z @3838 NONAME
-    ??H?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBE?AV01@H@Z @23979 NONAME
     ??H@YA?AVPString@@DABV0@@Z @3840 NONAME
     ??H@YA?AVPString@@PBDABV0@@Z @3841 NONAME
     ??HPString@@QBE?AV0@ABV0@@Z @3842 NONAME
@@ -5704,7 +5662,6 @@ EXPORTS
     ??Y?$_Vector_const_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAEAAV01@H@Z @23763 NONAME
     ??Y?$_Vector_const_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAEAAV01@H@Z @19889 NONAME
     ??Y?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAEAAV01@H@Z @3905 NONAME
-    ??Y?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAEAAV01@H@Z @23982 NONAME
     ??Y?$_Vector_iterator@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAEAAV01@H@Z @3909 NONAME
     ??Y?$_Vector_iterator@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@QAEAAV01@H@Z @23217 NONAME
     ??Y?$_Vector_iterator@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@QAEAAV01@H@Z @23983 NONAME
@@ -5712,7 +5669,6 @@ EXPORTS
     ??Y?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAEAAV01@H@Z @23764 NONAME
     ??Y?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAEAAV01@H@Z @19890 NONAME
     ??Y?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAEAAV01@H@Z @3912 NONAME
-    ??Y?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAEAAV01@H@Z @23984 NONAME
     ??YPFilePath@@QAEAAV0@ABVPString@@@Z @3914 NONAME
     ??YPFilePath@@QAEAAV0@PBD@Z @3915 NONAME
     ??YPIntCondMutex@@QAEAAV0@H@Z @3916 NONAME
@@ -11335,7 +11291,6 @@ EXPORTS
     ?begin@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE?AV?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@2@XZ @23785 NONAME
     ?begin@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE?AV?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@2@XZ @20091 NONAME
     ?begin@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE?AV?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@2@XZ @9106 NONAME
-    ?begin@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE?AV?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@2@XZ @24008 NONAME
     ?begin@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@XZ @9109 NONAME
     ?begin@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@XZ @9110 NONAME
     ?begin@?$_Tree@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@XZ @23351 NONAME
@@ -11454,7 +11409,6 @@ EXPORTS
     ?capacity@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QBEIXZ @23786 NONAME
     ?capacity@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEIXZ @20095 NONAME
     ?capacity@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEIXZ @9216 NONAME
-    ?capacity@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEIXZ @24010 NONAME
     ?cbNeverDelete@CRegParser@ATL@@1HB @9218 NONAME
     ?CCTag@PRFC822Channel@@SAABVPString@@XZ @17700 NONAME
     ?Change@PDirectory@@QBE_NXZ @20758 NONAME
@@ -13374,6 +13328,7 @@ EXPORTS
     ?empty@?$deque@DV?$allocator@D@std@@@std@@QBE_NXZ @10893 NONAME
     ?empty@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBE_NXZ @23410 NONAME
     ?empty@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QBE_NXZ @18374 NONAME
+    ?empty@?$queue@VRequestType@PTimerList@@V?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@@std@@QBE_NXZ @24118 NONAME
     ?empty@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@std@@@2@$0A@@std@@@std@@QBE_NXZ @18375 NONAME
     ?Empty@PString@@SA?AV1@XZ @10894 NONAME
     ?EnableAccess@PVideoChannel@@QAEXXZ @10895 NONAME
@@ -13486,7 +13441,6 @@ EXPORTS
     ?end@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE?AV?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@2@XZ @23804 NONAME
     ?end@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE?AV?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@2@XZ @20233 NONAME
     ?end@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE?AV?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@2@XZ @10979 NONAME
-    ?end@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE?AV?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@2@XZ @24035 NONAME
     ?end@?$_Iosb@H@std@@2W4_Seekdir@12@B @10982 NONAME
     ?end@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@XZ @10983 NONAME
     ?end@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@XZ @10984 NONAME
@@ -13560,7 +13514,6 @@ EXPORTS
     ?erase@?$vector@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@QAE?AV?$_Vector_iterator@U_GUID@@V?$allocator@U_GUID@@@std@@@2@V32@0@Z @24036 NONAME
     ?erase@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QAE?AV?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@2@V32@0@Z @23805 NONAME
     ?erase@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE?AV?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@2@V32@0@Z @20237 NONAME
-    ?erase@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE?AV?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@2@V32@@Z @24037 NONAME
     ?erase@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@V312@0@Z @11046 NONAME
     ?erase@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@V312@@Z @11047 NONAME
     ?erase@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@V312@0@Z @11048 NONAME
@@ -15350,7 +15303,6 @@ EXPORTS
     ?insert@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE?AV?$_Vector_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V32@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z @17024 NONAME
     ?insert@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAE?AV?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@2@V32@ABVPFilePath@@@Z @20301 NONAME
     ?insert@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAE?AV?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@2@V32@ABVPIPSocketAddressAndPort@@@Z @12633 NONAME
-    ?insert@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE?AV?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@2@V32@ABVRequestType@PTimerList@@@Z @24061 NONAME
     ?insert@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@@Z @12635 NONAME
     ?insert@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@V312@ABU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@@Z @12636 NONAME
     ?insert@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@2@@Z @12637 NONAME
@@ -16226,7 +16178,6 @@ EXPORTS
     ?max_size@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QBEIXZ @23827 NONAME
     ?max_size@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEIXZ @20343 NONAME
     ?max_size@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEIXZ @13421 NONAME
-    ?max_size@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEIXZ @24069 NONAME
     ?max_size@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QBEIXZ @13423 NONAME
     ?max_size@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QBEIXZ @13424 NONAME
     ?max_size@?$_Tree@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@std@@QBEIXZ @23560 NONAME
@@ -16978,7 +16929,6 @@ EXPORTS
     ?push_back@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z @17061 NONAME
     ?push_back@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAEXABVPFilePath@@@Z @20367 NONAME
     ?push_back@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QAEXABVPIPSocketAddressAndPort@@@Z @14086 NONAME
-    ?push_back@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAEXABVRequestType@PTimerList@@@Z @24079 NONAME
     ?Put@PVXMLCache@@QAEXABVPString@@000ABVPFilePath@@AAV3@@Z @14088 NONAME
     ?PutData@PWin32PacketBuffer@@QAEHPBXH@Z @14089 NONAME
     ?PutFile@PFTPClient@@QAEPAVPTCPSocket@@ABVPString@@W4DataChannelType@PFTP@@@Z @14090 NONAME
@@ -17748,6 +17698,7 @@ EXPORTS
     ?SetRootElement@PXML@@QAEPAVPXMLElement@@ABVPString@@@Z @14776 NONAME
     ?SetRootElement@PXML@@QAEPAVPXMLElement@@PAV2@@Z @14777 NONAME
     ?SetRTS@PSerialChannel@@QAEX_N@Z @22551 NONAME
+    ?SetRunMonitorThread@PInterfaceMonitor@@QAEX_N@Z @24119 NONAME
     ?SetSafetyMode@PSafePtrBase@@QAE_NW4PSafetyMode@@@Z @22552 NONAME
     ?SetSampleFrequency@PVXMLPlayable@@QAEXI@Z @14780 NONAME
     ?SetSampleRate@PWAVFile@@UAEXI@Z @14781 NONAME
@@ -17904,10 +17855,8 @@ EXPORTS
     ?SingleBitDecode@PPER_Stream@@QAE_NXZ @22609 NONAME
     ?SingleBitEncode@PPER_Stream@@QAEX_N@Z @22610 NONAME
     ?size@?$deque@DV?$allocator@D@std@@@std@@QBEIXZ @14925 NONAME
-    ?size@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEIXZ @23622 NONAME
     ?size@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBEIXZ @20390 NONAME
     ?size@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QBEIXZ @14926 NONAME
-    ?size@?$queue@VRequestType@PTimerList@@V?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@@std@@QBEIXZ @23623 NONAME
     ?size@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QBEIXZ @14929 NONAME
     ?size@?$vector@PAVPThreadPoolWorkerBase@@V?$allocator@PAVPThreadPoolWorkerBase@@@std@@@std@@QBEIXZ @23624 NONAME
     ?size@?$vector@U_GUID@@V?$allocator@U_GUID@@@std@@@std@@QBEIXZ @24090 NONAME
@@ -17915,7 +17864,6 @@ EXPORTS
     ?size@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QBEIXZ @23841 NONAME
     ?size@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEIXZ @20391 NONAME
     ?size@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEIXZ @14932 NONAME
-    ?size@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEIXZ @24091 NONAME
     ?size@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QBEIXZ @14934 NONAME
     ?size@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QBEIXZ @14935 NONAME
     ?size@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@@2@$0A@@std@@@std@@QBEIXZ @14936 NONAME
@@ -18362,7 +18310,6 @@ EXPORTS
     ?_Buy@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAE_NI@Z @23843 NONAME
     ?_Buy@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAE_NI@Z @20400 NONAME
     ?_Buy@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAE_NI@Z @15336 NONAME
-    ?_Buy@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAE_NI@Z @24097 NONAME
     ?_Buynode@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@IAEPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@PAU342@0ABQAVPInterfaceMonitorClient@@@Z @18454 NONAME
     ?_Buynode@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@IAEPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@XZ @18455 NONAME
     ?_Buynode@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@IAEPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@PAU342@0ABU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@2@@Z @20401 NONAME
@@ -18446,7 +18393,6 @@ EXPORTS
     ?_Compat@?$_Vector_const_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QBEXABV12@@Z @23844 NONAME
     ?_Compat@?$_Vector_const_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEXABV12@@Z @20414 NONAME
     ?_Compat@?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEXABV12@@Z @15391 NONAME
-    ?_Compat@?$_Vector_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEXABV12@@Z @24100 NONAME
     ?_Copy@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@2@PAU342@0@Z @17596 NONAME
     ?_Copy@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@std@@IAEXABV12@@Z @17597 NONAME
     ?_Copy@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@2@PAU342@0@Z @15393 NONAME
@@ -18482,7 +18428,6 @@ EXPORTS
     ?_Destroy@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAEXPAVPCriticalSection@@0@Z @23845 NONAME
     ?_Destroy@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAEXPAVPFilePath@@0@Z @20417 NONAME
     ?_Destroy@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAEXPAVPIPSocketAddressAndPort@@0@Z @15419 NONAME
-    ?_Destroy@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAEXPAVRequestType@PTimerList@@0@Z @24102 NONAME
     ?_EEM_DS@?$deque@DV?$allocator@D@std@@@std@@2HB @15421 NONAME
     ?_EEM_DS@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@2HB @23642 NONAME
     ?_Erase@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@@Z @15422 NONAME
@@ -18588,7 +18533,6 @@ EXPORTS
     ?_Insert_n@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAEXV?$_Vector_iterator@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@2@IABVPCriticalSection@@@Z @23846 NONAME
     ?_Insert_n@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAEXV?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@2@IABVPFilePath@@@Z @20431 NONAME
     ?_Insert_n@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAEXV?$_Vector_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@2@IABVPIPSocketAddressAndPort@@@Z @15492 NONAME
-    ?_Insert_n@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAEXV?$_Vector_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@2@IABVRequestType@PTimerList@@@Z @24104 NONAME
     ?_Isnil@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@KAAADPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@@Z @15494 NONAME
     ?_Isnil@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@KAAADPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@2@@Z @15495 NONAME
     ?_Isnil@?$_Tree@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@std@@KAAADPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@2@@Z @23649 NONAME
@@ -18899,7 +18843,6 @@ EXPORTS
     ?_Orphan_range@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IBEXPAVPCriticalSection@@0@Z @23847 NONAME
     ?_Orphan_range@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IBEXPAVPFilePath@@0@Z @20470 NONAME
     ?_Orphan_range@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IBEXPAVPIPSocketAddressAndPort@@0@Z @15708 NONAME
-    ?_Orphan_range@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IBEXPAVRequestType@PTimerList@@0@Z @24109 NONAME
     ?_Parent@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@KAAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@PAU342@@Z @15710 NONAME
     ?_Parent@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@KAAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@2@PAU342@@Z @15711 NONAME
     ?_Parent@?$_Tree@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@std@@KAAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@2@PAU342@@Z @23663 NONAME
@@ -19039,7 +18982,6 @@ EXPORTS
     ?_Tidy@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAEXXZ @23848 NONAME
     ?_Tidy@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAEXXZ @20490 NONAME
     ?_Tidy@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAEXXZ @15803 NONAME
-    ?_Tidy@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAEXXZ @24113 NONAME
     ?_Tidy@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@IAEXXZ @15805 NONAME
     ?_Tidy@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@IAEXXZ @15806 NONAME
     ?_Tidy@?$_Tree@V?$_Tmap_traits@IUTimerInfoType@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUTimerInfoType@PTimerList@@@std@@@4@$0A@@std@@@std@@IAEXXZ @23670 NONAME
@@ -19070,7 +19012,6 @@ EXPORTS
     ?_Ufill@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IAEPAVPCriticalSection@@PAV3@IABV3@@Z @23849 NONAME
     ?_Ufill@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAEPAVPFilePath@@PAV3@IABV3@@Z @20494 NONAME
     ?_Ufill@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@IAEPAVPIPSocketAddressAndPort@@PAV3@IABV3@@Z @15829 NONAME
-    ?_Ufill@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAEPAVRequestType@PTimerList@@PAV34@IABV34@@Z @24115 NONAME
     ?_Xlen@?$deque@DV?$allocator@D@std@@@std@@KAXXZ @15831 NONAME
     ?_Xlen@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@KAXXZ @23672 NONAME
     ?_Xlen@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@KAXXZ @15834 NONAME
@@ -19080,7 +19021,6 @@ EXPORTS
     ?_Xlen@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@KAXXZ @23850 NONAME
     ?_Xlen@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@KAXXZ @20495 NONAME
     ?_Xlen@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@KAXXZ @15837 NONAME
-    ?_Xlen@?$vector@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@KAXXZ @24117 NONAME
     _PTimeGetChar@4 @15839 NONAME
     _PTimeGetDateOrder@0 @15840 NONAME
     _PTimeIsDayName@12 @15841 NONAME
