@@ -2456,18 +2456,16 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
         }
 
         PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
-        PDelayChannel::Close();
 
         // if current item still active, check for trailing actions
         if (currentPlayItem != NULL) {
           if (currentPlayItem->GetRepeat() > 1) {
-            if (!currentPlayItem->Rewind(GetBaseReadChannel())) {
-              PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
-            } else {
+            if (currentPlayItem->Rewind(GetBaseReadChannel())) {
               currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
               currentPlayItem->OnRepeat(*this);
               continue;
             }
+            PTRACE(3, "PVXML\tCannot rewind item - cancelling repeat");
           } 
 
           // see if end of queue delay specified
@@ -2487,6 +2485,8 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
           delete currentPlayItem;
           currentPlayItem = NULL;
         }
+
+        PDelayChannel::Close();
       }
 
       // check the queue for the next action
