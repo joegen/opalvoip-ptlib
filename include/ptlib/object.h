@@ -1013,7 +1013,7 @@ class PObject {
     /** Get the name of the class as a C string. This is a static function which
        returns the type of a specific class. 
        
-       When comparing class names, always use the #strcmp()#
+       When comparing class names, always use the #strcmp()
        function rather than comparing pointers. The pointers are not
        necessarily the same over compilation units depending on the compiler,
        platform etc.
@@ -1024,7 +1024,7 @@ class PObject {
 
     /** Get the current dynamic type of the object instance.
 
-       When comparing class names, always use the #strcmp()#
+       When comparing class names, always use the #strcmp()
        function rather than comparing pointers. The pointers are not
        necessarily the same over compilation units depending on the compiler,
        platform etc.
@@ -1057,7 +1057,7 @@ class PObject {
 
   /**@name Comparison functions */
   //@{
-    /** Result of the comparison operation performed by the #Compare()#
+    /** Result of the comparison operation performed by the #Compare()
        function.
       */
     enum Comparison {
@@ -1083,14 +1083,14 @@ class PObject {
     
     /** Determine the byte wise comparison of two objects. This is the default
        comparison operation for objects that do not explicitly override the
-       #Compare()# function.
+       #Compare() function.
     
        The #PCLASSINFO macro declares an override of this function for
        the particular class. The user need not implement it.
 
        @return
        #LessThan, #EqualTo or #GreaterThan
-       according to the result #memcpy()# function.
+       according to the result #memcpy() function.
      */
     virtual Comparison CompareObjectMemoryDirect(
       const PObject & obj   // Object to compare against.
@@ -1155,7 +1155,7 @@ class PObject {
   //@{
     /** Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator<<# function.
+       primarily used by the standard #operator<< function.
 
        The default behaviour is to print the class name.
      */
@@ -1165,7 +1165,7 @@ class PObject {
 
     /** Input the contents of the object from the stream. The exact input is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator>># function.
+       primarily used by the standard #operator>> function.
 
        The default behaviour is to do nothing.
      */
@@ -1175,7 +1175,7 @@ class PObject {
 
 
     /** Global function for using the standard << operator on objects descended
-       from PObject. This simply calls the objects #PrintOn()# function.
+       from PObject. This simply calls the objects #PrintOn() function.
        
        @return the #strm parameter.
      */
@@ -1185,7 +1185,7 @@ class PObject {
     ) { obj.PrintOn(strm); return strm; }
 
     /** Global function for using the standard >> operator on objects descended
-       from PObject. This simply calls the objects #ReadFrom()# function.
+       from PObject. This simply calls the objects #ReadFrom() function.
 
        @return the #strm parameter.
      */
@@ -1199,7 +1199,7 @@ class PObject {
   //@{
     /** Create a copy of the class on the heap. The exact semantics of the
        descendent class determine what is required to make a duplicate of the
-       instance. Not all classes can even {\bf do} a clone operation.
+       instance. Not all classes can even \b do a clone operation.
        
        The main user of the clone function is the #PDictionary class as
        it requires copies of the dictionary keys.
