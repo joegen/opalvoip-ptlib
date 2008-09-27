@@ -100,14 +100,16 @@ install:
 		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(PTLIB_FILE) \
 	)
 ifeq (1, $(HAS_PLUGINS))
-	cd $(PT_LIBDIR)/device/ ; \
-	( for dir in ./* ;\
+	if test -e $(PT_LIBDIR)/device/; then \
+	cd $(PT_LIBDIR)/device/; \
+	(  for dir in ./* ;\
 		do mkdir -p $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		chmod 755 $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
 			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir; \
 		done ); \
-	done )
+	done ) ; \
+	fi
 endif
 	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
 	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(PREFIX)/include
