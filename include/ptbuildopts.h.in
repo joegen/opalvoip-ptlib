@@ -580,6 +580,8 @@
 // DirectX Support (Windows only)
 //
 
+#if defined(_MSC_VER)
+
 #ifdef _WIN32_WCE
 
   //#define P_DIRECTSOUND 1
@@ -641,6 +643,11 @@
   #endif
 
 #endif
+#else /* defined(_MSC_VER)*/
+  #undef P_DIRECTSHOW
+  #undef P_DIRECTX
+  #undef P_VFW_CAPTURE
+#endif /* defined(_MSC_VER)*/
 
 
 /////////////////////////////////////////////////
