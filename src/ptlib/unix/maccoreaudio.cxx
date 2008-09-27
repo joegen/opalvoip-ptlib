@@ -27,7 +27,7 @@
 
 PCREATE_SOUND_PLUGIN(CoreAudio, PSoundChannelCoreAudio);
  
-namespace PWLibStupidOSXHacks
+namespace PWLibStupidLinkerHacks
 {
 	int loadCoreAudioStuff;
 }

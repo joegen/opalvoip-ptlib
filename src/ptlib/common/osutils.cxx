@@ -44,11 +44,26 @@
 #include <ptlib/msos/ptlib/debstrm.h>
 #endif
 
+#if defined(P_MINGW)
+namespace PWLibStupidLinkerHacks {
+  extern int loadFakeVideoStuff;
+#if defined(P_AUDIO)
+  extern int loadWindowsMultimediaStuff;
+#endif
+#if defined(P_VIDEO) && defined(P_VFW_CAPTURE)
+  extern int loadVideoForWindowsStuff;
+#endif
+#if defined(P_VIDEO) && defined(P_DIRECTSHOW) && defined(P_DIRECTX)
+  extern int loadDirectShowStuff;
+#endif
+};
+#endif
+     
 #ifdef P_MACOSX
-namespace PWLibStupidOSXHacks {
+namespace PWLibStupidLinkerHacks {
+  extern int loadFakeVideoStuff;
   extern int loadShmVideoStuff;
   extern int loadCoreAudioStuff;
-  extern int loadFakeVideoStuff;
 };
 #endif
 
@@ -1514,17 +1529,37 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
-#ifdef P_MACOSX
-  
+#if defined(P_MINGW)
 #ifdef P_VIDEO
-  PWLibStupidOSXHacks::loadFakeVideoStuff = 1;
+  PWLibStupidLinkerHacks::loadFakeVideoStuff = 1;
+#endif
+#if defined(P_AUDIO)
+  PWLibStupidLinkerHacks::loadWindowsMultimediaStuff = 1;
+#endif
+#if defined(P_VIDEO) && defined(P_VFW_CAPTURE)
+  PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
+#endif
+#if defined(P_VIDEO) && defined(P_DIRECTSHOW) && defined(P_DIRECTX)
+  PWLibStupidLinkerHacks::loadDirectShowStuff = 1;
+#endif
+
+#endif
+
+
+#ifdef P_MACOSX
+
+#ifdef P_VIDEO
+
+  PWLibStupidLinkerHacks::loadFakeVideoStuff = 1;
+  
 #ifdef P_SHM_VIDEO
-  PWLibStupidOSXHacks::loadShmVideoStuff = 1;
+  PWLibStupidLinkerHacks::loadShmVideoStuff = 1;
 #endif // P_SHM_VIDEO
-#endif // P_VIDEO
+
+#endif
   
 #ifdef P_AUDIO
-  PWLibStupidOSXHacks::loadCoreAudioStuff = 1;
+  PWLibStupidLinkerHacks::loadCoreAudioStuff = 1;
 #endif // P_AUDIO
   
 #endif // P_MACOSX
