@@ -25,7 +25,7 @@
 #include <ptlib/unix/ptlib/shmvideo.h>
 
 #ifdef P_MACOSX
-namespace PWLibStupidOSXHacks {
+namespace PWLibStupidLinkerHacks {
 	int loadShmVideoStuff;
 };
 
