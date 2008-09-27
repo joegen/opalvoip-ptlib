@@ -47,6 +47,10 @@
 
 #ifdef __MINGW32__
 
+namespace PWLibStupidLinkerHacks {
+   int loadVideoForWindowsStuff;
+};
+    
 #define VHDR_DONE       0x00000001
 #define VHDR_KEYFRAME   0x00000008
 

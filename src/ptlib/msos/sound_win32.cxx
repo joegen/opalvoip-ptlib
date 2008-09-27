@@ -48,6 +48,12 @@
 #include <ptlib/wm/mmsystemx.h>
 #endif
 
+#if defined(P_MINGW)
+namespace PWLibStupidLinkerHacks {
+   int loadWindowsMultimediaStuff;
+};
+#endif
+     
 class PSound;
 
 PCREATE_SOUND_PLUGIN(WindowsMultimedia, PSoundChannelWin32);
