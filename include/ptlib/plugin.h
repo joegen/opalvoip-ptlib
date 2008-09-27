@@ -184,7 +184,9 @@ PPlugin_##serviceType##_##serviceName##_Registration \
   static PPlugin_##serviceType##_##serviceName##_Registration * PPlugin_##serviceType##_##serviceName##_Registration_Static_Library_Loader = &PPlugin_##serviceType##_##serviceName##_Registration_Instance;
 
 // Win32 only has static plugins at present, maybe one day ...
-#define P_FORCE_STATIC_PLUGIN 1
+#ifndef P_FORCE_STATIC_PLUGIN
+  #define P_FORCE_STATIC_PLUGIN 1
+#endif
 
 #else
 

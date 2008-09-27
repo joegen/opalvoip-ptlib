@@ -42,6 +42,11 @@
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY2)
 #endif
 
+#if defined(P_MINGW)
+namespace PWLibStupidLinkerHacks {
+  int loadDirectShowStuff;
+};
+#endif
 
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
 
