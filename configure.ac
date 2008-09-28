@@ -858,43 +858,51 @@ dnl check for dynamic library code (dlopen and friends)
 
 dnl MSWIN DLL Support,,P_DYNALINK
 
-PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
-if test "x$HAS_LIBDL" = "x1" ; then
-  AC_DEFINE(P_DYNALINK, 1, "dlopen found")
-  dnl The rest is done further down...
-fi
+case "$target_os" in
+  cygwin* | mingw* ) 
+    PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support])
+    AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
+    ;;
+  *)
+    PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
+    if test "x$HAS_LIBDL" = "x1" ; then
+      AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
+      dnl The rest is done further down...
+    fi
 
-dnl #########################################################################
-dnl check to see if plugins enabled
-dnl MSWIN_DISPLAY plugins,Plugin Support
-dnl MSWIN_DEFINE  plugins,P_PLUGINS
+    dnl #########################################################################
+    dnl check to see if plugins enabled
+    dnl MSWIN_DISPLAY plugins,Plugin Support
+    dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
-PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
+    PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
 
-AC_MSG_CHECKING(where plugins are being installed)
-AC_ARG_WITH([plugin-installdir],
-             AS_HELP_STRING([--with-plugin-installdir=DIR],[Location where plugins are installed, starting at the lib dir]),
-             [PLUGIN_DIR="$withval"],
-             [PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
-           )
+    AC_MSG_CHECKING(where plugins are being installed)
+    AC_ARG_WITH([plugin-installdir],
+                 AS_HELP_STRING([--with-plugin-installdir=DIR],[Location where plugins are installed, starting at the lib dir]),
+                 [PLUGIN_DIR="$withval"],
+                 [PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
+               )
 
-EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
-if test "x${exec_prefix}" = "xNONE" ; then
-  if test "x${prefix}" = "xNONE" ; then
-    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
-  else
-    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
-  fi
-else
-  EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
-fi
+    EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
+    if test "x${exec_prefix}" = "xNONE" ; then
+      if test "x${prefix}" = "xNONE" ; then
+        EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
+      else
+        EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
+      fi
+    else
+      EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
+    fi
 
-AC_MSG_RESULT(${EXPANDED_PLUGIN_DIR})
+    AC_MSG_RESULT(${EXPANDED_PLUGIN_DIR})
 
-AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
+    AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
 
-DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
-AC_SUBST(DEV_PLUGIN_DIR)
+    DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+    AC_SUBST(DEV_PLUGIN_DIR)
+    ;;
+    esac    
 
 dnl #########################################################################
 dnl check to see if samples are enabled
@@ -1459,26 +1467,24 @@ HAS_VIDEO_CAPTURE=
 if test "x${HAS_VIDEO}" = "x1" ; then
   if test "x${HAS_PLUGINS}" = "x1" ; then
     HAS_VIDEO_CAPTURE=1
-  else
-    dnl AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
-    dnl AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
-    dnl AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=1)
-    case "$target_os" in
-      cygwin* | mingw* )
-		PTLIB_FIND_DIRECTX([HAS_VIDEO_CAPTURE=1
-			            ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
-dnl                                     PKG_LIBS="$PKG_LIBS ${DIRECTX_LIBS}"
-				    STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
-dnl                                     PKG_CFLAGS="$PKG_CFLAGS ${DIRECTX_INCLUDES}"
-				    AC_DEFINE(P_DIRECTSHOW, 1)
-				    AC_DEFINE(P_DIRECTSOUND, 1)
-		                   ])
+  fi
+  case "$target_os" in
+    cygwin* | mingw* )
+  	  PTLIB_FIND_DIRECTX([HAS_VIDEO_CAPTURE=1
+	 	              ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
+			      STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
+                              HAS_DIRECTSHOW=1
+                              HAS_DIRECTSOUND=1
+			      AC_DEFINE(P_DIRECTSHOW, 1)
+			      AC_DEFINE(P_DIRECTX, 1)
+			      AC_DEFINE(P_DIRECTSOUND, 1)
+		             ])
+	        AC_DEFINE(P_VFW_CAPTURE, 1)
 		;;
-      * )	
+    * )	
 		AC_CHECK_HEADER([linux/videodev.h], [HAS_VIDEO_CAPTURE=1])
 		;;
-    esac
-  fi
+  esac
 
   if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
     AC_MSG_NOTICE(No Video Capture support)
@@ -1493,6 +1499,8 @@ dnl                                     PKG_CFLAGS="$PKG_CFLAGS ${DIRECTX_INCLUD
   AC_ARG_ENABLE(dc,       [  --enable-dc             enable IEEE1394/DC video support])
 fi
 
+AC_SUBST(HAS_DIRECTSHOW)
+AC_SUBST(HAS_DIRECTSOUND)
 AC_SUBST(HAS_VIDEO_CAPTURE)
 
 if test "x${HAS_AUDIO}" = "x1" ; then
