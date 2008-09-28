@@ -743,6 +743,8 @@ HAS_VIDEO
 HAS_VIDFILE
 HAS_APPSHARE
 HAS_SHM_VIDEO
+HAS_DIRECTSHOW
+HAS_DIRECTSOUND
 HAS_VIDEO_CAPTURE
 HAS_ODBC
 HAS_EXCEPTIONS
@@ -7904,6 +7906,65 @@ fi
 
 
 
+case "$target_os" in
+  cygwin* | mingw* )
+
+          { echo "$as_me:$LINENO: checking enable plugin support" >&5
+echo $ECHO_N "checking enable plugin support... $ECHO_C" >&6; }
+          # Check whether --enable-plugins was given.
+if test "${enable_plugins+set}" = set; then
+  enableval=$enable_plugins;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_PLUGINS=1
+                         else
+                           HAS_PLUGINS=
+                         fi
+
+fi
+
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: plugins support disabled due to disabled dependency " >&5
+echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
+	      HAS_PLUGINS=
+	    fi
+	  fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: plugins support disabled due to disabled dependency " >&5
+echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
+	      HAS_PLUGINS=
+	    fi
+	  fi
+
+
+          if test "x${HAS_PLUGINS}" = "x1"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_PLUGINS 1
+_ACEOF
+
+            HAS_PLUGINS=1
+            { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+          else
+            HAS_PLUGINS=
+            { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+          fi
+
+
+
+
+
+cat >>confdefs.h <<\_ACEOF
+#define P_DYNALINK 1
+_ACEOF
+
+    ;;
+  *)
 
 
           ptlib_libdl=no
@@ -8260,13 +8321,13 @@ else
 fi
 
 
-if test "x$HAS_LIBDL" = "x1" ; then
+    if test "x$HAS_LIBDL" = "x1" ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_DYNALINK 1
 _ACEOF
 
-  fi
+          fi
 
 
 
@@ -8320,7 +8381,7 @@ echo "${ECHO_T}no" >&6; }
 
 
 
-{ echo "$as_me:$LINENO: checking where plugins are being installed" >&5
+    { echo "$as_me:$LINENO: checking where plugins are being installed" >&5
 echo $ECHO_N "checking where plugins are being installed... $ECHO_C" >&6; }
 
 # Check whether --with-plugin-installdir was given.
@@ -8332,18 +8393,18 @@ else
 fi
 
 
-EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
-if test "x${exec_prefix}" = "xNONE" ; then
-  if test "x${prefix}" = "xNONE" ; then
-    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
-  else
-    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
-  fi
-else
-  EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
-fi
+    EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
+    if test "x${exec_prefix}" = "xNONE" ; then
+      if test "x${prefix}" = "xNONE" ; then
+        EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
+      else
+        EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
+      fi
+    else
+      EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
+    fi
 
-{ echo "$as_me:$LINENO: result: ${EXPANDED_PLUGIN_DIR}" >&5
+    { echo "$as_me:$LINENO: result: ${EXPANDED_PLUGIN_DIR}" >&5
 echo "${ECHO_T}${EXPANDED_PLUGIN_DIR}" >&6; }
 
 
@@ -8352,8 +8413,10 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+    DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
 
+    ;;
+    esac
 
 
 
@@ -12355,9 +12418,9 @@ HAS_VIDEO_CAPTURE=
 if test "x${HAS_VIDEO}" = "x1" ; then
   if test "x${HAS_PLUGINS}" = "x1" ; then
     HAS_VIDEO_CAPTURE=1
-  else
-                case "$target_os" in
-      cygwin* | mingw* )
+  fi
+  case "$target_os" in
+    cygwin* | mingw* )
 
 	  ptlib_has_directx=yes
 	  DIRECTX_INCLUDES=
@@ -13682,13 +13745,19 @@ echo "${ECHO_T}" >&6; }
 
           if test $ptlib_has_directx = yes; then
   HAS_VIDEO_CAPTURE=1
-			            ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
-				    STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
-				    cat >>confdefs.h <<\_ACEOF
+	 	              ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
+			      STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
+                              HAS_DIRECTSHOW=1
+                              HAS_DIRECTSOUND=1
+			      cat >>confdefs.h <<\_ACEOF
 #define P_DIRECTSHOW 1
 _ACEOF
 
-				    cat >>confdefs.h <<\_ACEOF
+			      cat >>confdefs.h <<\_ACEOF
+#define P_DIRECTX 1
+_ACEOF
+
+			      cat >>confdefs.h <<\_ACEOF
 #define P_DIRECTSOUND 1
 _ACEOF
 
@@ -13696,8 +13765,12 @@ _ACEOF
 fi
 
 
+	        cat >>confdefs.h <<\_ACEOF
+#define P_VFW_CAPTURE 1
+_ACEOF
+
 		;;
-      * )
+    * )
 		if test "${ac_cv_header_linux_videodev_h+set}" = set; then
   { echo "$as_me:$LINENO: checking for linux/videodev.h" >&5
 echo $ECHO_N "checking for linux/videodev.h... $ECHO_C" >&6; }
@@ -13829,8 +13902,7 @@ fi
 
 
 		;;
-    esac
-  fi
+  esac
 
   if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
     { echo "$as_me:$LINENO: No Video Capture support" >&5
@@ -13868,6 +13940,8 @@ if test "${enable_dc+set}" = set; then
 fi
 
 fi
+
+
 
 
 
@@ -15555,6 +15629,8 @@ HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
 HAS_SHM_VIDEO!$HAS_SHM_VIDEO$ac_delim
+HAS_DIRECTSHOW!$HAS_DIRECTSHOW$ac_delim
+HAS_DIRECTSOUND!$HAS_DIRECTSOUND$ac_delim
 HAS_VIDEO_CAPTURE!$HAS_VIDEO_CAPTURE$ac_delim
 HAS_ODBC!$HAS_ODBC$ac_delim
 HAS_EXCEPTIONS!$HAS_EXCEPTIONS$ac_delim
@@ -15609,7 +15685,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 87; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
