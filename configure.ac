@@ -69,6 +69,138 @@ AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER], [Build number])
 AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
 
 dnl ########################################################################
+dnl check for minimum sizing
+
+AC_ARG_ENABLE(minsize,
+       [  --enable-minsize        minimise the size of the lib by disabling least used options])
+AC_ARG_ENABLE(openh323,
+       [  --enable-openh323       include only options needed with openh323])
+AC_ARG_ENABLE(opal,
+       [  --enable-opal           include only options needed with opal])
+
+dnl these are the default configure settings
+HAS_SAMPLES=no
+default_tracing=yes
+default_resolver=yes
+default_openldap=yes
+default_openssl=yes
+default_expat=yes
+default_sdl=yes
+default_sasl=yes
+HAS_PLUGINS=1
+HAS_TTS=1
+HAS_ASN=1
+HAS_STUN=1
+HAS_PIPECHAN=1
+HAS_DTMF=1
+HAS_WAVFILE=1
+HAS_SOCKS=1
+HAS_FTP=1
+HAS_SNMP=1
+HAS_TELNET=1
+HAS_REMCONN=1
+HAS_SERIAL=1
+HAS_POP3SMTP=1
+HAS_AUDIO=1
+HAS_VIDEO=1
+HAS_URL=1
+HAS_HTTP=1
+HAS_HTTPFORMS=1
+HAS_HTTPSVC=1
+HAS_SOAP=1
+HAS_XMLRPC=1
+HAS_JABBER=1
+HAS_CONFIG_FILE=1
+default_ipv6=yes
+HAS_QOS=1
+HAS_SOCKAGG=1
+HAS_VIDFILE=1
+HAS_APPSHARE=
+HAS_SHM_VIDEO=1
+HAS_VXML=1
+HAS_EXCEPTIONS=
+
+if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
+  default_resolver=yes
+  default_openldap=no
+  default_openssl=yes
+  default_expat=no
+  default_sdl=yes
+  default_sasl=no
+  HAS_PLUGINS=1
+  HAS_TTS=1
+  HAS_ASN=1
+  HAS_STUN=1
+  HAS_PIPECHAN=1
+  HAS_DTMF=1
+  HAS_WAVFILE=1
+  HAS_SOCKS=
+  HAS_FTP=
+  HAS_SNMP=
+  HAS_TELNET=
+  HAS_REMCONN=
+  HAS_SERIAL=
+  HAS_POP3SMTP=
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=
+  HAS_HTTPSVC=
+  HAS_SOAP=
+  HAS_XMLRPC=
+  HAS_JABBER=
+  HAS_CONFIG_FILE=1
+  default_ipv6=yes
+  HAS_QOS=1
+  HAS_SOCKAGG=1
+  HAS_VIDFILE=1
+  HAS_APPSHARE=
+  HAS_VXML=1
+  HAS_SHM_VIDEO=
+  HAS_EXCEPTIONS=
+elif test "${enable_minsize}x" = "yesx" ; then
+  default_resolver=no
+  default_openldap=no
+  default_openssl=no
+  default_expat=no
+  default_sdl=no
+  default_sasl=no
+  HAS_PLUGINS=1
+  HAS_TTS=
+  HAS_ASN=1
+  HAS_STUN=1
+  HAS_PIPECHAN=
+  HAS_DTMF=
+  HAS_WAVFILE=
+  HAS_SOCKS=
+  HAS_FTP=
+  HAS_SNMP=
+  HAS_TELNET=
+  HAS_REMCONN=
+  HAS_SERIAL=
+  HAS_POP3SMTP=
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=
+  HAS_HTTPSVC=
+  HAS_SOAP=
+  HAS_XMLRPC=
+  HAS_JABBER=
+  HAS_CONFIG_FILE=0
+  default_ipv6=no
+  HAS_QOS=
+  HAS_SOCKAGG=1
+  HAS_VIDFILE=1
+  HAS_APPSHARE=
+  HAS_VXML=
+  HAS_SHM_VIDEO=
+  HAS_EXCEPTIONS=
+fi
+
+dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
 
 AC_CANONICAL_TARGET()
@@ -147,6 +279,7 @@ case "$target_os" in
                    OS_TAG="P_CYGWIN" ;
                    OSRELEASE="`uname -r`";
                    AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+                   HAS_SHM_VIDEO=
 		   ;;
 
   mingw*)	   OSTYPE=mingw ;
@@ -158,6 +291,7 @@ case "$target_os" in
 		   ENDLDLIBS="-lwinmm -lwsock32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32" ;
 		   NEEDS_PTHREADS=no ;
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+		   HAS_SHM_VIDEO=
 		   ;;
 
   * )		   OSTYPE="$target_os" ;
@@ -476,137 +610,6 @@ else
 fi
 AC_DEFINE_UNQUOTED(P_HAS_POSIX_READDIR_R, ${P_HAS_POSIX_READDIR_R})
 
-dnl ########################################################################
-dnl check for minimum sizing
-
-AC_ARG_ENABLE(minsize,
-       [  --enable-minsize        minimise the size of the lib by disabling least used options])
-AC_ARG_ENABLE(openh323,
-       [  --enable-openh323       include only options needed with openh323])
-AC_ARG_ENABLE(opal,
-       [  --enable-opal           include only options needed with opal])
-
-dnl these are the default configure settings
-HAS_SAMPLES=no
-default_tracing=yes
-default_resolver=yes
-default_openldap=yes
-default_openssl=yes
-default_expat=yes
-default_sdl=yes
-default_sasl=yes
-HAS_PLUGINS=1
-HAS_TTS=1
-HAS_ASN=1
-HAS_STUN=1
-HAS_PIPECHAN=1
-HAS_DTMF=1
-HAS_WAVFILE=1
-HAS_SOCKS=1
-HAS_FTP=1
-HAS_SNMP=1
-HAS_TELNET=1
-HAS_REMCONN=1
-HAS_SERIAL=1
-HAS_POP3SMTP=1
-HAS_AUDIO=1
-HAS_VIDEO=1
-HAS_URL=1
-HAS_HTTP=1
-HAS_HTTPFORMS=1
-HAS_HTTPSVC=1
-HAS_SOAP=1
-HAS_XMLRPC=1
-HAS_JABBER=1
-HAS_CONFIG_FILE=1
-default_ipv6=yes
-HAS_QOS=1
-HAS_SOCKAGG=1
-HAS_VIDFILE=1
-HAS_APPSHARE=
-HAS_SHM_VIDEO=1
-HAS_VXML=1
-HAS_EXCEPTIONS=
-
-if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
-  default_resolver=yes
-  default_openldap=no
-  default_openssl=yes
-  default_expat=no
-  default_sdl=yes
-  default_sasl=no
-  HAS_PLUGINS=1
-  HAS_TTS=1
-  HAS_ASN=1
-  HAS_STUN=1
-  HAS_PIPECHAN=1
-  HAS_DTMF=1
-  HAS_WAVFILE=1
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=1
-  default_ipv6=yes
-  HAS_QOS=1
-  HAS_SOCKAGG=1
-  HAS_VIDFILE=1
-  HAS_APPSHARE=
-  HAS_VXML=1
-  HAS_SHM_VIDEO=
-  HAS_EXCEPTIONS=
-elif test "${enable_minsize}x" = "yesx" ; then
-  default_resolver=no
-  default_openldap=no
-  default_openssl=no
-  default_expat=no
-  default_sdl=no
-  default_sasl=no
-  HAS_PLUGINS=1
-  HAS_TTS=
-  HAS_ASN=1
-  HAS_STUN=1
-  HAS_PIPECHAN=
-  HAS_DTMF=
-  HAS_WAVFILE=
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=0
-  default_ipv6=no
-  HAS_QOS=
-  HAS_SOCKAGG=1
-  HAS_VIDFILE=1
-  HAS_APPSHARE=
-  HAS_VXML=
-  HAS_SHM_VIDEO=
-  HAS_EXCEPTIONS=
-fi
 
 
 dnl ########################################################################
