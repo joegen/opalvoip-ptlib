@@ -43,7 +43,7 @@ TARGETDIR=@TARGETDIR@
 
 include make/ptlib.mak
 
-SUBDIRS := src/ptlib/$(TARGETDIR)
+SUBDIRS := src
 ifeq (1, $(HAS_PLUGINS))
 SUBDIRS += plugins
 endif
@@ -71,7 +71,7 @@ update:
 	$(MAKE) bothdepend both
 
 ptlib:
-	$(MAKE) -C src/ptlib/$(TARGETDIR) both
+	$(MAKE) -C src both
 
 docs: 
 	doxygen ptlib_cfg.dxy
