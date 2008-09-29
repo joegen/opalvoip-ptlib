@@ -1799,10 +1799,13 @@ PString PIPSocket::Address::AsString() const
 }
 
 
-PBoolean PIPSocket::Address::FromString(const PString & dotNotation)
+PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
 {
   version = 0;
   memset(&v, 0, sizeof(v));
+
+  PINDEX percent = ipAndInterface.Find('%');
+  PString dotNotation = ipAndInterface.Left(percent);
 
 #if P_HAS_IPV6
 
@@ -1837,11 +1840,10 @@ PBoolean PIPSocket::Address::FromString(const PString & dotNotation)
 
 #endif
 
-  PINDEX percent = dotNotation.Find('%');
   if (percent == P_MAX_INDEX)
     return false;
 
-  PString iface = dotNotation.Mid(percent+1);
+  PString iface = ipAndInterface.Mid(percent+1);
   if (iface.IsEmpty())
     return false;
 
