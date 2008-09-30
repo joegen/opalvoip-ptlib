@@ -161,7 +161,6 @@ PSoundChannelDirectSound::Construct()
 
   mDXBufferSize = 0;
   mStreaming = true;
-  mOutburst = 0;
   mVolume = 0;
 }
 
@@ -370,30 +369,6 @@ PSoundChannelDirectSound::Close()
 }
 
 /*
- * DESC	:	Compute the freeSpace in a DirectX Circular Buffer
- * BEHAVIOUR :
- * RETURN 	: the size
- */
-
-DWORD 
-PSoundChannelDirectSound::GetDXBufferFreeSpace ()
-{
-  DWORD dwCursor = 0;
-  PINDEX freeSpace;
-
-  if (mDirection == Player)
-    mAudioPlaybackBuffer->GetCurrentPosition (&dwCursor, NULL);
-  else
-    mAudioCaptureBuffer->GetCurrentPosition (&dwCursor, NULL);
-
-  freeSpace = mDXBufferSize - (mDXOffset - dwCursor);
-  if (freeSpace > mDXBufferSize) 
-    freeSpace -= mDXBufferSize; // write_offset < play_offset
-
-  return freeSpace;
-}
-
-/* 
  * DESC : 	Write Method is called by the playback device
  * BEHAVIOUR: 	It writes (len) bytes of input data (*buf) into the device circular buffer.  
  * 		In case data to write are bigger than the free space left in the buffer, it writes them than sleep while directx cursor move forward to leave 
@@ -411,49 +386,45 @@ PSoundChannelDirectSound::Write (const void *buf,
   if (!isInitialised)
   {
     PTRACE (4, "dsound\tWrite Failed: Device not initialised :");
-    return false;
+    return PFalse;
   }
 
   //Wait for Mutex signal
-  PWaitAndSignal mutex(bufferMutex);
+  PWaitAndSignal mutex(bufferMutex);    // prevent closing while active
 
   lastWriteCount = 0;
-
-  while (to_write > mOutburst)
+  // DXBuffer holds 1 second, wait for (len) space or do 10 ms worth each loop
+  while (to_write)
   {
-
-    /*
-    //Adjust to blockalign
-    if (mOutburst != 0)
-    write_in_cycle = (write_in_cycle / mOutburst ) * mOutburst;
-    */
-
-    /* Write data from buf to circular buffer */
-    written = WriteToDXBuffer (input_buffer, 
-      PMIN ((PINDEX)GetDXBufferFreeSpace (), to_write));
-
-    if (HasPlayCompleted ()) 
+	DWORD Tail;					        // byte offset from start of buffer to next byte directsound will play (end of where we can write)
+	DWORD Head;                         // byte offset from start of buffer to where we can write
+    mAudioPlaybackBuffer->GetCurrentPosition (&Tail, &Head);
+	LONG Space;					        // number of bytes space made available since last write
+	if (Tail < Head)                    // wrapped around
+	  Space = mDXBufferSize - Head + Tail;
+	else
+	  Space = Tail - Head;
+										// always write multiples of sample frames
+	Space -= (Space % mWFX.nBlockAlign);
+	if (Space)                          // something played out since last write
     {
+      // Write data from buf to circular buffer
+      written = WriteToDXBuffer (input_buffer, PMIN ((PINDEX)Space, to_write), Head);
+      input_buffer += written;          // Move the cursor into the data buffer
+      lastWriteCount += written;        // Update the written buffer count for PWLIB usage
+      to_write -= written;              // Set the count of buffers left to write
+    }                                   // tell DX to play
       mAudioPlaybackBuffer->Play (0, 0, mStreaming ? DSBPLAY_LOOPING : 0L);
-    }
-
-    //Move the cursor into the data buffer
-    input_buffer += written;
-    //Update the written buffer count for PWLIB usage
-    lastWriteCount += written;
-    //Set the count of buffers left to write
-    to_write -= written;
-
-    /* Wait as buffer is played */
-    FlushBuffer ();
+	if (to_write)                       // wait for output space to become available
+		Sleep (10);                     // unlike sound_win32, we have not set up notifications, so just wait
   }
-  return true;
-
+  return PTrue;
 }
 
 /* 
  * DESC : 	Read Method is called by the recording device
  * BEHAVIOUR: 	It reads (len) bytes from the device circular buffer to an input data (*buf).  
+ *            Sleeps in 10 ms intervals while waiting
  * RETURN :	PTrue if successful and PFalse otherwise.	
  */
 
@@ -464,35 +435,43 @@ PSoundChannelDirectSound::Read (void * buf, PINDEX len)
   PINDEX read = 0, to_read = len;
   BYTE * output_buffer = (BYTE*) buf;
 
-  PWaitAndSignal mutex(bufferMutex);
+  PWaitAndSignal mutex(bufferMutex);    // prevent closing while active
 
   if (!isInitialised) 
   {
     PTRACE (4, "dsound\tRead : Device not initialised ");
-    return false;
+    return PFalse;
   }
 
   lastReadCount = 0;
 
-  while (to_read > mOutburst) 
+  while (to_read) 
   {
-
-    /* Will read from device buffer minimum between the data left to read, and the available space */
-    read = ReadFromDXBuffer (output_buffer,
-      PMIN ((PINDEX)GetDXBufferFreeSpace (), to_read));
-    to_read -= read;
-    lastReadCount += read;
-    output_buffer += read; /* Increment the buffer pointer */
-
-    /* Wait as buffer is being played */
-    FlushBuffer ();
+	DWORD Tail;                         // byte offset from start of buffer to where we can read
+	DWORD Head;					        // byte offset from start of buffer to where directsound will write next (end of new data)
+    mAudioCaptureBuffer->GetCurrentPosition (&Tail, &Head);
+	LONG Available;					    // number of bytes made available since last read
+	if (Head < Tail)		            // wrapped around
+	  Available = mDXBufferSize - Tail + Head;
+	else
+	  Available = Head - Tail;
+										// always read multiples of sample frames
+	Available -= (Available % mWFX.nBlockAlign);
+	if (Available)                      // something received since last read
+	{
+      // Read from device buffer minimum between the data required and data available
+      read = ReadFromDXBuffer (output_buffer, PMIN((PINDEX)Available, to_read), Tail);
+      to_read -= read;
+      lastReadCount += read;
+	}
+	if (to_read)                        // wait for incoming audio to become available
+		Sleep (10);                     // unlike sound_win32, we have not set up notifications, so just wait
   }
-
-  return true;
+  return PTrue;
 }
 
 /*
- * DESC:   Writes (len) bytes from the buffer (*buf) to DirectX sound device buffer
+ * DESC:   Writes (len) bytes from the buffer (*buf) to (position) in DirectX sound device buffer
  * BEHAVIOUR :  Locks the buffer on the requested size; In case buffer was lost, tries to restore it.
  * 	  	Copies the data into the buffer
  * 	  	Unlock the buffer
@@ -501,7 +480,8 @@ PSoundChannelDirectSound::Read (void * buf, PINDEX len)
 
 PINDEX 
 PSoundChannelDirectSound::WriteToDXBuffer (const void *buf, 
-                                           PINDEX len) 
+                                           PINDEX len,
+										   DWORD position) 
 {
 
   HRESULT hr;
@@ -510,7 +490,7 @@ PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,
   PINDEX written = 0;
 
   /***  Lock the buffer   ***/
-  hr = mAudioPlaybackBuffer->Lock (mDXOffset,
+  hr = mAudioPlaybackBuffer->Lock (position,
     len,
     &lpvWrite1,
     &dwLength1,
@@ -523,7 +503,7 @@ PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,
     //Buffer was lost, need to restore it
     PTRACE (4, "dsound\tPlayback buffer was lost, Need to restore.");
     mAudioPlaybackBuffer->Restore ();
-    hr = mAudioPlaybackBuffer->Lock (mDXOffset,
+    hr = mAudioPlaybackBuffer->Lock (position,
       len,
       &lpvWrite1,
       &dwLength1,
@@ -546,9 +526,6 @@ PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,
       dwLength1,
       lpvWrite2,
       dwLength2);
-    //Move write cursor
-    mDXOffset += written;
-    mDXOffset %= mDXBufferSize;
   } 
   else 
     PTRACE (4, "dsound\tWriteToDXBuffer Failed : " << DXGetErrorString9 (hr));
@@ -557,7 +534,7 @@ PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,
 }
 
 /*
- * DESC:   Reads (len) bytes from the buffer (*buf) from DirectX sound capture device buffer
+ * DESC:   Reads (len) bytes from the buffer (*buf) from (position) in DirectX sound capture device buffer
  * BEHAVIOUR :  Locks the buffer on the requested size; In case buffer was lost, tries to restore it.
  * 	  	Copies the data into the buffer
  * 	  	Unlock the buffer
@@ -565,7 +542,8 @@ PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,
  */
 PINDEX 
 PSoundChannelDirectSound::ReadFromDXBuffer (const void * buf, 
-                                            PINDEX len)
+                                            PINDEX len,
+											DWORD position)
 {
   HRESULT hr;
   LPVOID lpvRead1, lpvRead2;
@@ -573,7 +551,7 @@ PSoundChannelDirectSound::ReadFromDXBuffer (const void * buf,
   PINDEX read = 0;
 
   /***  Lock the buffer   ***/
-  hr = mAudioCaptureBuffer->Lock (mDXOffset,
+  hr = mAudioCaptureBuffer->Lock (position,
     len,
     &lpvRead1,
     &dwLength1,
@@ -584,14 +562,12 @@ PSoundChannelDirectSound::ReadFromDXBuffer (const void * buf,
   if (!FAILED(hr)) 
   {
     /***  Copy memory into buffer  ***/
-    memcpy ((BYTE *)buf + lastReadCount, lpvRead1, dwLength1);
+    memcpy ((BYTE *)buf, lpvRead1, dwLength1);
 
     if (lpvRead2 != NULL)
-      memcpy ((BYTE *) buf + dwLength1 +  lastReadCount, lpvRead2, dwLength2);
+      memcpy ((BYTE *) buf + dwLength1, lpvRead2, dwLength2);
 
     read = dwLength1 + dwLength2;
-    mDXOffset += read;
-    mDXOffset %= mDXBufferSize;
 
     /***  Unlock the buffer   ***/
     mAudioCaptureBuffer->Unlock (lpvRead1,
@@ -608,21 +584,6 @@ PSoundChannelDirectSound::ReadFromDXBuffer (const void * buf,
 
 
 /*
- * DESC	: 	Suspend the treatment in order to let the buffer flush itself 
- * BEHAVIOUR :	Compute the time needed to play the remaining data in buffer. 
- * 		In case it exceed 600 ms, sleeps for 500 ms.
- * RETURN :	/
- */
-void 
-PSoundChannelDirectSound::FlushBuffer ()
-{
-  DWORD sleep_time = (mDXBufferSize - GetDXBufferFreeSpace ()) * 8000 / ( mWFX.wBitsPerSample * mWFX.nSamplesPerSec);
-
-  if (sleep_time > 600) 
-    Sleep((DWORD)(sleep_time-500));
-}
-
-/*
  * DESC	:	
  * BEHAVIOUR :
  * RETURN :
@@ -633,14 +594,6 @@ PSoundChannelDirectSound::SetFormat (unsigned numChannels,
                                      unsigned sampleRate,
                                      unsigned bitsPerSample)
 {
-  PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " SetFormat\n"
-    << "   -->  nChannels  :" << mWFX.nChannels << '\n'
-    << "   -->  nSamplesPerSec  :" << mWFX.nSamplesPerSec << '\n'
-    << "   -->  wBitsPerSample  :" << mWFX.wBitsPerSample << '\n'
-    << "   -->  nBlockAlign  :" << mWFX.nBlockAlign << '\n'
-    << "   -->  nAvgBytesPerSec  :" << mWFX.nAvgBytesPerSec << '\n'
-    << "   -->  mOutburst  :" << mOutburst);
-
   memset (&mWFX, 0, sizeof (mWFX)); 
   mWFX.wFormatTag = WAVE_FORMAT_PCM;
   mWFX.nChannels = (WORD)numChannels;
@@ -652,6 +605,12 @@ PSoundChannelDirectSound::SetFormat (unsigned numChannels,
 
   mOutburst = mWFX.nBlockAlign*8;
 
+  PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " SetFormat\n"
+    << "   -->  nChannels  :" << mWFX.nChannels << '\n'
+    << "   -->  nSamplesPerSec  :" << mWFX.nSamplesPerSec << '\n'
+    << "   -->  wBitsPerSample  :" << mWFX.wBitsPerSample << '\n'
+    << "   -->  nBlockAlign  :" << mWFX.nBlockAlign << '\n'
+    << "   -->  nAvgBytesPerSec  :" << mWFX.nAvgBytesPerSec);
 
   return PTrue;
 }
@@ -771,7 +730,6 @@ PSoundChannelDirectSound::InitCaptureBuffer()
 
     hr = pDscb->QueryInterface(IID_IDirectSoundCaptureBuffer8, (LPVOID*) &mAudioCaptureBuffer);
     pDscb->Release();
-    mDXOffset = 0;
     mAudioCaptureBuffer->Start (DSCBSTART_LOOPING);
     isInitialised = true;
   }
@@ -815,12 +773,11 @@ PSoundChannelDirectSound::InitPlaybackBuffer()
 
     hr = pDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &mAudioPlaybackBuffer);
     pDsb->Release();
-    mDXOffset = 0;
 
-    //fill buffer with silence
+    // fill buffer with silence
     PBYTEArray silence(mDXBufferSize);
     memset (silence.GetPointer(), (mWFX.wBitsPerSample == 8) ? 128 : 0, mDXBufferSize);
-    WriteToDXBuffer (silence, mDXBufferSize);
+    WriteToDXBuffer (silence, mDXBufferSize, 0);
 
     mAudioPlaybackBuffer->SetCurrentPosition (0);
     isInitialised = true;
