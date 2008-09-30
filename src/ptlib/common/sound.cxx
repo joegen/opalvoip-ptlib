@@ -41,6 +41,9 @@
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
 PINSTANTIATE_FACTORY(PSoundChannel, Win32)
+#ifdef P_DIRECTSOUND
+PINSTANTIATE_FACTORY(PSoundChannel, DirectSound)
+#endif
 
 template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
 {

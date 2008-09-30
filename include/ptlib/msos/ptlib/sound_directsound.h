@@ -124,10 +124,8 @@ private:
     
     PBoolean GetDeviceID (PString deviceName, GUID *pGUID);
 
-    PINDEX WriteToDXBuffer(const void * buf, PINDEX len);
-    PINDEX ReadFromDXBuffer(const void * buf, PINDEX len);
-    DWORD GetDXBufferFreeSpace ();
-    void FlushBuffer ();
+    PINDEX WriteToDXBuffer(const void * buf, PINDEX len, DWORD position);
+    PINDEX ReadFromDXBuffer(const void * buf, PINDEX len, DWORD position);
     
     PBoolean SetFormat ();
 
@@ -137,7 +135,6 @@ private:
     PINDEX mDXBufferSize;
     PINDEX mBufferCount;
 
-    PINDEX mDXOffset;
     PINDEX mVolume;
 
     WAVEFORMATEX mWFX;
