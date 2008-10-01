@@ -129,7 +129,6 @@ private:
     
     PBoolean SetFormat ();
 
-    PINDEX mOutburst;
     PBoolean mStreaming;
     PINDEX mBufferSize;
     PINDEX mDXBufferSize;
