@@ -603,8 +603,6 @@ PSoundChannelDirectSound::SetFormat (unsigned numChannels,
   mWFX.nAvgBytesPerSec = mWFX.nSamplesPerSec * mWFX.nBlockAlign;
   mWFX.cbSize = 0; //ignored
 
-  mOutburst = mWFX.nBlockAlign*8;
-
   PTRACE (4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " SetFormat\n"
     << "   -->  nChannels  :" << mWFX.nChannels << '\n'
     << "   -->  nSamplesPerSec  :" << mWFX.nSamplesPerSec << '\n'
