@@ -160,10 +160,25 @@ void PThread::Trace(PThreadIdentifer threadId)
 }
 
 PThread::PThread()
- : PX_threadId(ERROR),
-   priority(VX_NORMAL_PRIORITY),
-   originalStackSize(0)
+ : autoDelete(false)
+ , PX_threadId(::taskIdSelf())
+ , priority(VX_NORMAL_PRIORITY)
+ , originalStackSize(0)
 {
+  PAssertOS((PX_threadId != ERROR) && (PX_threadId != 0));
+
+  if (!PProcess::IsInitialised())
+    return;
+
+  autoDelete = true;
+
+  PProcess & process = PProcess::Current();
+
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(PX_threadId, this);
+  process.activeThreadMutex.Signal();
+
+  process.SignalTimerChange();
 }
 
 PThread::PThread(PINDEX stackSize,
@@ -399,30 +414,6 @@ void PThread::Yield()
 void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for in microsec.
 {
   ::taskDelay(delay.GetInterval()*sysClkRateGet()/1000);
-}
-
-void PThread::InitialiseProcessThread()
-{
-  originalStackSize = 0;
-  autoDelete = PFalse;
-
-  PX_threadId = ::taskIdSelf();
-  PAssertOS((PX_threadId != ERROR) && (PX_threadId != 0));
-
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(PX_threadId, this);
-}
-
-
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  
-  PThread * thread = process.activeThreads.GetAt(::taskIdSelf());
-
-  process.activeThreadMutex.Signal();
-  return thread;
 }
 
 int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/) // Fix timeout

@@ -85,7 +85,6 @@
 #elif defined(P_MAC_MPTHREADS)
   public:
     void PXSetWaitingSemaphore(PSemaphore * sem);
-    //void InitialiseProcessThread();
     static long PX_ThreadStart(void *);
     static void PX_ThreadEnd(void *);
     MPTaskID    PX_GetThreadId() const;
