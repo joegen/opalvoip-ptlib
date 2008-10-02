@@ -289,12 +289,6 @@ PProcess::~PProcess()
 
 PThread::PThread()
 {
-  // see InitialiseProcessThread()
-}
-
-
-void PThread::InitialiseProcessThread()
-{
   OSStatus err        = 0;
   PX_origStackSize    = 0;
   autoDelete          = PFalse;
@@ -313,8 +307,18 @@ void PThread::InitialiseProcessThread()
       throw std::bad_alloc();
   }
 
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
+  if (!PProcess::IsInitialised())
+    return;
+
+  autoDelete = true;
+
+  PProcess & process = PProcess::Current();
+
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(PX_threadId, this);
+  process.activeThreadMutex.Signal();
+
+  process.SignalTimerChange();
 }
 
 
@@ -408,9 +412,9 @@ long PThread::PX_ThreadStart(void * arg)
   PProcess & process = PProcess::Current();
 
   // add thread to thread list
-  process.threadMutex.Wait();
+  process.activeThreadMutex.Wait();
   process.activeThreads.SetAt((unsigned)threadId, thread);
-  process.threadMutex.Signal();
+  process.activeThreadMutex.Signal();
 
   // if we are not supposed to start suspended, then don't wait
   // if we are supposed to start suspended, then wait for a resume
@@ -461,9 +465,9 @@ void PThread::PX_ThreadEnd(void * arg)
   if (id != 0) {
 
     // remove this thread from the active thread list
-    process.threadMutex.Wait();
+    process.activeThreadMutex.Wait();
     process.activeThreads.SetAt((unsigned)id, NULL);
-    process.threadMutex.Signal();
+    process.activeThreadMutex.Signal();
   }
 
   // delete the thread if required, note this is done this way to avoid
@@ -630,16 +634,6 @@ PThread::Priority PThread::GetPriority() const
 void PThread::Yield()
 {
   ::sleep(0);
-}
-
-
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt((unsigned)MPCurrentTaskID());
-  process.threadMutex.Signal();
-  return PAssertNULL(thread);
 }
 
 

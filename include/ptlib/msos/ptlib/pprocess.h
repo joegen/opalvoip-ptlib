@@ -45,9 +45,6 @@
     virtual PBoolean IsGUIProcess() const;
 
   private:
-    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
-    ThreadDict activeThreads;
-    PMutex activeThreadMutex;
     PLIST(ThreadList, PThread);
     ThreadList autoDeleteThreads;
     PMutex deleteThreadMutex;

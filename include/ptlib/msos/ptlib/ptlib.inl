@@ -93,9 +93,6 @@ PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean force)
 PINLINE void PThread::Sleep(const PTimeInterval & delay)
   { ::Sleep(delay.GetInterval()); }
 
-PINLINE PThread::PThread()
-  { }
-
 PINLINE PThreadIdentifier PThread::GetThreadId() const
   { return threadId; }
 

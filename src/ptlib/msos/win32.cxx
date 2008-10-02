@@ -729,6 +729,30 @@ void PThread::Win32AttachThreadInput()
 }
 
 
+PThread::PThread()
+  : autoDelete(false)
+  , originalStackSize(0)
+  , threadHandle(GetCurrentThread())
+  , threadId(GetCurrentThreadId())
+{
+  if (!PProcess::IsInitialised())
+    return;
+
+  autoDelete = true;
+  DuplicateHandle(GetCurrentProcess(), threadHandle, GetCurrentProcess(), &threadHandle, 0, 0, DUPLICATE_SAME_ACCESS);
+
+  PProcess & process = PProcess::Current();
+
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(threadId, this);
+  process.activeThreadMutex.Signal();
+
+  process.deleteThreadMutex.Wait();
+  process.autoDeleteThreads.Append(this);
+  process.deleteThreadMutex.Signal();
+}
+
+
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
@@ -964,27 +988,6 @@ PThread::Priority PThread::GetPriority() const
 void PThread::Yield()
 {
   ::Sleep(0);
-}
-
-
-void PThread::InitialiseProcessThread()
-{
-  originalStackSize = 0;
-  autoDelete = PFalse;
-  threadHandle = GetCurrentThread();
-  threadId = GetCurrentThreadId();
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(threadId, this);
-}
-
-
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt(GetCurrentThreadId());
-  process.activeThreadMutex.Signal();
-  return thread;
 }
 
 

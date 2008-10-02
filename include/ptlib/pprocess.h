@@ -665,6 +665,9 @@ class PProcess : public PThread
     // Maximum number of file handles process can open.
 
 
+    PDictionary<POrdinalKey, PThread> activeThreads;
+    PMutex                            activeThreadMutex;
+    
   friend class PThread;
 
 

@@ -77,9 +77,6 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     PBoolean PThreadKill(pthread_t id, unsigned signal);
 
   protected:
-    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
-    ThreadDict activeThreads;
-    PMutex     threadMutex;
     PSyncPoint breakBlock;
     class PHouseKeepingThread * housekeepingThread;
 
@@ -89,9 +86,6 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     void SignalTimerChange();
 
   private:
-    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
-    ThreadDict activeThreads;
-    PMutex activeThreadMutex;
     PLIST(ThreadList, PThread);
     ThreadList autoDeleteThreads;
     PMutex deleteThreadMutex;
