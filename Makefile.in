@@ -142,4 +142,8 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE)* \
 	      $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a
 
+distclean: clean
+	rm -rf config.log config.err autom4te.cache config.status a.out
+	rm -rf lib*
+
 # End of Makefile.in
