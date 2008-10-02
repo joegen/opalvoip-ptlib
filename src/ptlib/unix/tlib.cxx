@@ -399,7 +399,7 @@ extern PProcess * PProcessInstance;;
 PString PX_GetThreadName(pthread_t id)
 {
   if (PProcessInstance != NULL) {
-    PWaitAndSignal m(PProcessInstance->threadMutex);
+    PWaitAndSignal m(PProcessInstance->activeThreadMutex);
     PThread & thread = PProcessInstance->activeThreads[(unsigned)id];
     return thread.GetThreadName();
   }
@@ -524,7 +524,7 @@ void PProcess::PXOnSignal(int sig)
     PMemoryHeap::GetState(state);
 #endif
     PStringStream strm;
-    threadMutex.Wait();
+    activeThreadMutex.Wait();
     PINDEX i;
     strm << "===============\n";
     strm << activeThreads.GetSize() << " active threads\n";
@@ -539,7 +539,7 @@ void PProcess::PXOnSignal(int sig)
     PMemoryHeap::GetState(state);
 #endif
     strm << "===============\n";
-    threadMutex.Signal();
+    activeThreadMutex.Signal();
     fprintf(stderr, "%s", strm.GetPointer());
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(oldIgnore);

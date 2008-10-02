@@ -341,17 +341,13 @@ class PThread : public PObject
     ) { return Create(notifier, 0, NoAutoDeleteThread, NormalPriority, threadName); }
   //@}
 
-  protected:
-    void InitialiseProcessThread();
-    /* Initialialise the primordial thread, the one in the PProcess. This is
-       required due to the bootstrap logic of processes and threads.
-     */
-
   private:
     PThread();
     // Create a new thread instance as part of a #PProcess class.
 
     friend class PProcess;
+    friend class PExternalThread;
+    friend class PHouseKeepingThread;
     // So a PProcess can get at PThread() constructor but nothing else.
 
     PThread(const PThread &) : PObject () { }

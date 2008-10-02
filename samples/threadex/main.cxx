@@ -38,6 +38,10 @@ PCREATE_PROCESS(Threadex);
 #include  <ptclib/dtmf.h>
 #include  <ptclib/random.h>
 
+#ifdef _WIN32
+#include <process.h>
+#endif
+
 
 
 Threadex::Threadex()
@@ -57,8 +61,8 @@ void Threadex::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
-	     "a-autodelete."         "-no-autodelete."
-	     "c-create."             "-no-create."
+             "a-autodelete."         "-no-autodelete."
+             "c-create."             "-no-create."
              "h-help."               "-no-help."
              "d-delay:"              "-no-delay."
              "b-busywait."           "-no-busywait."
@@ -91,7 +95,7 @@ void Threadex::Main()
            << "-v  or --version      print version info" << endl
            << "-d  or --delay ##     where ## specifies how many milliseconds the created thread waits for" << endl
            << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
-	   << "-a  or --autodelete   where the pwlib methods for auto deleting a thread are used" << endl
+           << "-a  or --autodelete   where the pwlib methods for auto deleting a thread are used" << endl
            << "-c  or --create       Use the pwlib PThread::Create method to create a thread of the reqired type" << endl
 #if PTRACING
            << "o-output              output file name for trace" << endl
@@ -125,28 +129,43 @@ void Threadex::Main()
 DelayThread::DelayThread(PINDEX _delay)
   : PThread(10000, NoAutoDeleteThread), delay(_delay)
 {
-  PTRACE(5, "Constructor for a non auto deleted delay thread");
+  PTRACE(5, "ThreadEx\tConstructor for a non auto deleted delay thread");
 }    
 
 DelayThread::DelayThread(PINDEX _delay, PBoolean)
   : PThread(10000, AutoDeleteThread), delay(_delay)
 {
-  PTRACE(5, "Constructor for an auto deleted  delay thread");
+  PTRACE(5, "ThreadEx\tConstructor for an auto deleted  delay thread");
 }
 
 
 DelayThread::~DelayThread()
 {
-  PTRACE(5, "Destructor for a delay thread");
+  PTRACE(5, "ThreadEx\tDestructor for a delay thread");
   //This thread must not have a PTRACE statement in the debugger, if it is an autodeleted thread.
   //If a PTRACE statement is here, the PTRACE will fail as the PThread::Current() returns empty.
 }
 
 void DelayThread::Main()  
 {
+  PTRACE(5, "ThreadEx\tDelayThread started");
   PThread::Sleep(delay);
-  PTRACE(5, "DelayThread\t all finished");
+  PTRACE(5, "ThreadEx\tDelayThread finished");
 }
+
+
+#ifdef _WIN32
+unsigned _stdcall ExternalThreadMain(void *)
+#else
+void * ExternalThreadMain(void *)
+#endif
+{
+  PTRACE(5, "ThreadEx\tExternal started");
+  PThread::Sleep(5000);
+  PTRACE(5, "ThreadEx\tExternal finished");
+  return 0;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -164,13 +183,13 @@ void LauncherThread::Main()
   if (Threadex::Current().AutoDelete()) {
     while (keepGoing) {
       if (doCreate) {
-	thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
+        thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
                                      PThread::AutoDeleteThread,
                                      PThread::NormalPriority,
                                      "auto deleted %X");
       } else {
-	thread = new DelayThread(delay, PTrue);
-	thread->Resume();
+        thread = new DelayThread(delay, PTrue);
+        thread->Resume();
       }
       //     PThread::Sleep(1);
       iteration++;
@@ -181,13 +200,13 @@ void LauncherThread::Main()
   if (Threadex::Current().BusyWait()) {
     while (keepGoing) {
       if (doCreate) {
-	thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
-				 PThread::NoAutoDeleteThread,
-				 PThread::NormalPriority,
-				 "auto BusyWaited %X");
+        thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
+                                 PThread::NoAutoDeleteThread,
+                                 PThread::NormalPriority,
+                                 "auto BusyWaited %X");
       } else {
-	thread = new DelayThread(delay);
-	thread->Resume();
+        thread = new DelayThread(delay);
+        thread->Resume();
       }
       
       while (!thread->IsTerminated());
@@ -200,9 +219,9 @@ void LauncherThread::Main()
   while (keepGoing) {
     if (doCreate) {
       thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
-			       PThread::NoAutoDeleteThread,
-			       PThread::NormalPriority,
-			       "auto WaitForTermination %X");
+                               PThread::NoAutoDeleteThread,
+                               PThread::NormalPriority,
+                               "auto WaitForTermination %X");
     } else {
       thread = new DelayThread(delay);
       thread->Resume();
@@ -215,27 +234,26 @@ void LauncherThread::Main()
 
 void UserInterfaceThread::Main()
 {
-  PConsoleChannel console(PConsoleChannel::StandardInput);
   cout << "This program will repeatedly create and destroy a thread until terminated from the console" << endl;
 
-  PStringStream help;
-  help << "Press : " << endl
-       << "         D      average Delay time of each thread" << endl
-       << "         H or ? help"                              << endl
-       << "         R      report count of threads done"      << endl
-       << "         T      time elapsed"                      << endl
-       << "         X or Q exit "                             << endl;
- 
+  static const char help[] = "Press : \n"
+                             "         D      average Delay time of each thread\n"
+                             "         H or ? help\n"
+                             "         R      report count of threads done\n"
+                             "         T      time elapsed\n"
+                             "         C      create non-PTLib thread\n"
+                             "         X or Q exit\n";
   cout << endl << help;
 
   LauncherThread launch;
   launch.Resume();
 
-  console.SetReadTimeout(P_MAX_INDEX);
-  for (;;) {
-    int ch = console.ReadChar();
+  while (!cin.eof()) {
+    cout << "Command ? " << flush;
+    PString cmd;
+    cin >> cmd;
 
-    switch (tolower(ch)) {
+    switch (tolower(cmd[0])) {
     case 'd' :
       {
         int i = launch.GetIteration();
@@ -245,16 +263,29 @@ void UserInterfaceThread::Main()
           cout << "Average time per iteration is " << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
                << " milliseconds" << endl;
         }
-        cout << "Command ? " << flush;
-        break;
       }
+      break;
+
     case 'r' :
       cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
-      cout << "Command ? " << flush;
       break;
+
     case 't' :
       cout << "\nElapsed time is " << launch.GetElapsedTime() << " (Hours:mins:seconds.millseconds)" << endl;
-      cout << "Command ? " << flush;
+      break;
+
+    case 'c' :
+      {
+#ifdef _WIN32
+        unsigned threadId;
+        _beginthreadex(NULL, 10000, ExternalThreadMain, NULL, 0, &threadId);
+#elif P_PTHREADS
+        pthread_t threadId;
+        pthread_create(&threadId, NULL, ExternalThreadMain, NULL);
+#else
+        cout << "\nCreate external thread unsupported" << endl;
+#endif
+      }
       break;
 
     case 'x' :
@@ -263,14 +294,13 @@ void UserInterfaceThread::Main()
       launch.Terminate();
       launch.WaitForTermination();
       return;
-      break;
+
     case '?' :
     case 'h' :
       cout << help << endl;
-      cout << "Command ? " << flush;
+
     default:
       break;
-                                                                                                                                            
     } // end switch
   } // end for
 }

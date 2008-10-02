@@ -67,6 +67,27 @@ namespace PWLibStupidLinkerHacks {
 };
 #endif
 
+class PExternalThread : public PThread
+{
+  PCLASSINFO(PExternalThread, PThread);
+  public:
+    PExternalThread()
+    {
+      SetThreadName(PString::Empty());
+      PTRACE(5, "PTLib\tCreated external thread 0x" << this << " for id " << GetCurrentThreadId());
+    }
+
+    ~PExternalThread()
+    {
+      PTRACE(5, "PTLib\tDestroyed external thread 0x" << this << " for id " << GetThreadId());
+    }
+
+    void Main()
+    {
+    }
+};
+
+
 class PSimpleThread : public PThread
 {
     PCLASSINFO(PSimpleThread, PThread);
@@ -1482,6 +1503,9 @@ PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : manufacturer(manuf), productName(name)
 {
+  activeThreads.DisallowDeleteObjects();
+  activeThreads.SetAt(GetCurrentThreadId(), this);
+
   PProcessInstance = this;
   terminationValue = 0;
 
@@ -1524,8 +1548,6 @@ PProcess::PProcess(const char * manuf, const char * name,
     productName = executableFile.GetTitle().ToLower();
 
 #endif // P_RTEMS
-
-  InitialiseProcessThread();
 
   Construct();
 
@@ -1851,6 +1873,24 @@ bool PProcess::HostSystemURLHandlerInfo::Register()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
+
+PThread * PThread::Current()
+{
+  if (!PProcess::IsInitialised())
+    return NULL;
+
+  PProcess & process = PProcess::Current();
+
+  process.activeThreadMutex.Wait();
+  PThread * thread = process.activeThreads.GetAt((unsigned)GetCurrentThreadId());
+  process.activeThreadMutex.Signal();
+
+  if (thread == NULL)
+    thread = new PExternalThread;
+
+  return thread;
+}
+
 
 void PThread::PrintOn(ostream & strm) const
 {
