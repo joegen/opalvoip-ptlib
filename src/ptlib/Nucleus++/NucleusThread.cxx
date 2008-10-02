@@ -200,22 +200,6 @@ void PThread::Yield()
   Task::Relinquish();
   }
 
-void PThread::InitialiseProcessThread()
-  {
-//#pragma message("Anything to do in InitialiseProcessThread()?  Or all in PProcess constructor?")
-// Certainly need to do some of the thready stuff that's normally done in the
-// (non-trivial) PThread constructor.  Like starting the Nucleus thread!
-  autoDelete          = PFalse;
-
-  NucleusTask = new pwNUTask( (UNSIGNED)2048, // Stack Size Requested
-                              (OPTION)priorities[HighPriority],
-                                    // Map from pwlib level to Nucleus level
-                              (PThread *)this,
-                              "PWLIB");// So it knows what to call back to!
-  NucleusTaskInfo = new TaskInfo();
-
-  }
-
 void PThread::Sleep(const PTimeInterval & time)
   {
     Task::Sleep(((time.GetInterval())/PTimer::Resolution()));
@@ -240,7 +224,14 @@ PBoolean PThread::IsNoLongerBlocked()
 PThread::PThread()
   : n_suspendCount(1)
   {
-//Should all be done in IsNoLongerBlocked - but may even be unnecessary there!
+  autoDelete = PFalse;
+
+  NucleusTask = new pwNUTask( (UNSIGNED)2048, // Stack Size Requested
+                              (OPTION)priorities[HighPriority],
+                                    // Map from pwlib level to Nucleus level
+                              (PThread *)this,
+                              "PWLIB");// So it knows what to call back to!
+  NucleusTaskInfo = new TaskInfo();
   }
 
 // Stolen out of tlib threads

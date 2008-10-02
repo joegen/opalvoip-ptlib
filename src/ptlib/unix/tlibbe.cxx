@@ -69,9 +69,9 @@ int32 PThread::ThreadFunction(void * threadPtr)
 
   PProcess & process = PProcess::Current();
 
-  process.threadMutex.Wait();
+  process.activeThreadMutex.Wait();
   process.activeThreads.SetAt((unsigned) thread->mId, thread);
-  process.threadMutex.Signal();
+  process.activeThreadMutex.Signal();
 
   process.OnThreadStart(*thread);
 
@@ -83,29 +83,28 @@ int32 PThread::ThreadFunction(void * threadPtr)
 }
 
 PThread::PThread()
- : autoDelete(PTrue),
-   mId(B_BAD_THREAD_ID),
-   mPriority(B_NORMAL_PRIORITY),
-   mStackSize(0),
-   mSuspendCount(0)
+ : autoDelete(false)
+ , mId(find_thread(NULL))
+ , mPriority(B_NORMAL_PRIORITY)
+ , mStackSize(0)
+ , mSuspendCount(1)
 {
-}
-
-void PThread::InitialiseProcessThread()
-{
-  autoDelete = PFalse;
-
-  mId = find_thread(NULL);
-  mPriority = B_NORMAL_PRIORITY;
-  mStackSize = 0;
-  mSuspendCount = 1;
-  
-  PAssert(::pipe(unblockPipe) == 0, "Pipe creation failed in InitialiseProcessThread!");
+  PAssert(::pipe(unblockPipe) == 0, "Pipe creation failed in PThread::PThread()!");
   PAssertOS(unblockPipe[0]);
   PAssertOS(unblockPipe[1]);
-  
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(mId, this);
+
+  if (!PProcess::IsInitialised())
+    return;
+
+  autoDelete = true;
+
+  PProcess & process = PProcess::Current();
+
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(PX_threadId, this);
+  process.activeThreadMutex.Signal();
+
+  process.SignalTimerChange();
 }
 
 PThread::PThread(PINDEX stackSize,
@@ -138,24 +137,15 @@ PThread::PThread(PINDEX stackSize,
   PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 }
 
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt((unsigned)find_thread(NULL));
-  process.threadMutex.Signal();
-  return thread;    
-}
-
 PThread::~PThread()
 {
   // if we are not process, remove this thread from the active thread list
   PProcess & process = PProcess::Current();
   if(process.GetThreadId() != GetThreadId())
   {
-    process.threadMutex.Wait();
+    process.activeThreadMutex.Wait();
     process.activeThreads.RemoveAt((unsigned) mId);
-    process.threadMutex.Signal();
+    process.activeThreadMutex.Signal();
   }
 
   if (!IsTerminated())

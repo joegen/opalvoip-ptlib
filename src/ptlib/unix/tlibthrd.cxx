@@ -121,8 +121,18 @@ void PHouseKeepingThread::Main()
 
   while (!closing) {
     PTimeInterval delay = process.timers.Process();
+    if (delay > 10000)
+      delay = 10000;
 
     process.breakBlock.Wait(delay);
+
+    process.activeThreadMutex.Wait();
+    for (PINDEX i = 0; i < process.activeThreads.GetSize(); ++i) {
+      PThread & thread = process.activeThreads.GetDataAt(i);
+      if (thread.autoDelete && thread.IsTerminated())
+        delete process.activeThreads.RemoveAt(process.activeThreads.GetKeyAt(i));
+    }
+    process.activeThreadMutex.Signal();
 
     process.PXCheckSignals();
   }
@@ -161,8 +171,8 @@ void PProcess::Construct()
   housekeepingThread = NULL;
 
 #ifdef P_MACOSX
-    // records the main thread for priority adjusting
-    baseThread = pthread_self();
+  // records the main thread for priority adjusting
+  baseThread = pthread_self();
 #endif
 
   CommonConstruct();
@@ -214,7 +224,7 @@ PProcess::~PProcess()
 
 PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 {
-  PWaitAndSignal m(threadMutex);
+  PWaitAndSignal m(activeThreadMutex);
 
   if (!activeThreads.Contains((unsigned)id)) 
     return PFalse;
@@ -226,12 +236,6 @@ PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 //////////////////////////////////////////////////////////////////////////////
 
 PThread::PThread()
-{
-  // see InitialiseProcessThread()
-}
-
-
-void PThread::InitialiseProcessThread()
 {
   autoDelete          = PFalse;
 
@@ -253,10 +257,20 @@ void PThread::InitialiseProcessThread()
   PAssertOS(::pipe(unblockPipe) == 0);
 #endif
 
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
-
   PX_firstTimeStart = PFalse;
+
+  if (!PProcess::IsInitialised())
+    return;
+
+  autoDelete = true;
+
+  PProcess & process = PProcess::Current();
+
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(PX_threadId, this);
+  process.activeThreadMutex.Signal();
+
+  process.SignalTimerChange();
 }
 
 
@@ -364,7 +378,7 @@ void PThread::Restart()
   static PINDEX highWaterMark = 0;
 
   // lock the thread list
-  process.threadMutex.Wait();
+  process.activeThreadMutex.Wait();
 
   // create the thread
   PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
@@ -375,7 +389,7 @@ void PThread::Restart()
     newHighWaterMark = highWaterMark = process.activeThreads.GetSize();
 
   // unlock the thread list
-  process.threadMutex.Signal();
+  process.activeThreadMutex.Signal();
 
   PTRACE_IF(4, newHighWaterMark > 0, "PWLib\tThread high water mark set: " << newHighWaterMark);
 
@@ -689,16 +703,6 @@ void PThread::Yield()
 }
 
 
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt((unsigned)pthread_self());
-  process.threadMutex.Signal();
-  return thread;
-}
-
-
 void PThread::Terminate()
 {
   if (PX_origStackSize <= 0)
@@ -822,37 +826,32 @@ void PThread::PX_ThreadEnd(void * arg)
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
   process.OnThreadEnded(*thread);
-  process.threadMutex.Wait();
+  process.activeThreadMutex.Wait();
 
   pthread_t id = thread->GetThreadId();
   if (id == 0) {
     // Don't know why, but pthreads under Linux at least can call this function
     // multiple times! Probably a bug, but we have to allow for it.
-    process.threadMutex.Signal();
+    process.activeThreadMutex.Signal();
     PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
     return;
   }  
 
- // remove this thread from the active thread list
+  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->GetThreadName());
+
+  // remove this thread from the active thread list
   process.activeThreads.SetAt((unsigned)id, NULL);
 
-  // delete the thread if required, note this is done this way to avoid
-  // a race condition, the thread ID cannot be zeroed before the if!
-  PString threadName = thread->GetThreadName();
-  if (thread->autoDelete) {
-    thread->PX_threadId = 0;  // Prevent terminating terminated thread
-    process.threadMutex.Signal();
-    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
+  bool deleteThread = thread->autoDelete; // Get flag before releasing lock
 
+  thread->PX_threadId = 0;  // Prevent terminating terminated thread
+  process.activeThreadMutex.Signal();
+
+  if (deleteThread) {
     /* It is now safe to delete this thread. Note that this thread
-       is deleted after the process.threadMutex.Signal(), which means
-       PWaitAndSignal(process.threadMutex) could not be used */
+       is deleted after the process.activeThreadMutex.Signal(), which means
+       PWaitAndSignal(process.activeThreadMutex) could not be used */
     delete thread;
-  }
-  else {
-    thread->PX_threadId = 0;
-    process.threadMutex.Signal();
-    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
   }
 }
 
