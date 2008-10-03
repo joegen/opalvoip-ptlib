@@ -488,14 +488,23 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 {
   mutex.Wait();
 
-  PCaselessString key = name;
+  PString key = name;
+  PINDEX len = key.GetLength();
 
   // Check for a legal hostname as per RFC952
   if (key.IsEmpty() ||
-      key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-.") != P_MAX_INDEX ||
-      key[key.GetLength()-1] == '-' ||
-      !isalpha(key[0]))
+      key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.") != P_MAX_INDEX ||
+      key[len-1] == '-' ||
+      !isalpha(key[0])) {
+    PTRACE(3, "Socket\tIllegal RFC952 characters in DNS name \"" << key << '"');
     return NULL;
+  }
+
+  // We lowercase this way rather than toupper() as that is locale dependent, and DNS names aren't.
+  for (PINDEX i = 0; i < len; i++) {
+    if (key[i] >= 'a')
+      key[i] &= 0x5f;
+  }
 
   PIPCacheData * host = GetAt(key);
   int localErrNo = NO_DATA;
@@ -588,7 +597,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   }
 
   if (host->GetHostAddress() == 0) {
-    PTRACE(5, "Socket\tName lookup of \"" << name << "\" failed: errno=" << localErrNo);
+    PTRACE(4, "Socket\tName lookup of \"" << name << "\" failed: errno=" << localErrNo);
     return NULL;
   }
 
