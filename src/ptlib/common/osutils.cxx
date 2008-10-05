@@ -1504,7 +1504,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   : manufacturer(manuf), productName(name)
 {
   activeThreads.DisallowDeleteObjects();
-  activeThreads.SetAt(GetCurrentThreadId(), this);
+  activeThreads.SetAt((PINDEX)GetCurrentThreadId(), this);
 
   PProcessInstance = this;
   terminationValue = 0;

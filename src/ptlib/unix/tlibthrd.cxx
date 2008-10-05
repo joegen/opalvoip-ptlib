@@ -267,7 +267,7 @@ PThread::PThread()
   PProcess & process = PProcess::Current();
 
   process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(PX_threadId, this);
+  process.activeThreads.SetAt((PINDEX)PX_threadId, this);
   process.activeThreadMutex.Signal();
 
   process.SignalTimerChange();
