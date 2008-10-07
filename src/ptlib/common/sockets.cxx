@@ -1753,8 +1753,18 @@ bool PIPSocket::Address::operator==(DWORD dw) const
 
 PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
+  FromString(dotNotation);
+  return *this;
+}
+
+
+PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
+{
   version = 0;
   memset(&v, 0, sizeof(v));
+
+  PINDEX percent = ipAndInterface.Find('%');
+  PString dotNotation = ipAndInterface.Left(percent);
 
 #if P_HAS_IPV6
 
@@ -1787,18 +1797,15 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 
 #endif
 
-  else {
-    PINDEX percent = dotNotation.Find('%');
-    if (percent != P_MAX_INDEX) {
-      PString iface = dotNotation.Mid(percent+1);
-      if (!iface.IsEmpty()) {
-        PIPSocket::InterfaceTable interfaceTable;
-        if (PIPSocket::GetInterfaceTable(interfaceTable)) {
-          for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
-            if (interfaceTable[i].GetName().NumCompare(iface) == EqualTo) {
-              *this = interfaceTable[i].GetAddress();
-              break;
-            }
+  if (percent != P_MAX_INDEX) {
+    PString iface = ipAndInterface.Mid(percent+1);
+    if (!iface.IsEmpty()) {
+      PIPSocket::InterfaceTable interfaceTable;
+      if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+        for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+          if (interfaceTable[i].GetName().NumCompare(iface) == EqualTo) {
+            *this = interfaceTable[i].GetAddress();
+            break;
           }
         }
       }
@@ -1840,14 +1847,6 @@ PString PIPSocket::Address::AsString() const
   return inet_ntoa(v.four);
 #endif // P_HAS_INET_NTOP
 #endif // P_VXWORKS
-}
-
-
-PBoolean PIPSocket::Address::FromString(const PString & dotNotation)
-{
-  (*this) = dotNotation;
-  return IsValid();
-
 }
 
 
