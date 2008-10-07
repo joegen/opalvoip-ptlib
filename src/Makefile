@@ -25,10 +25,6 @@
 # 
 # Contributor(s): Matthias Schneider____________________.
 
-#
-#  !!! In the  v2_4 branch this Makefile is not used yet but          !!!
-#  !!! rather the Makefiles in the msos and unix subdirs              !!!
-
 ifndef PTLIBDIR
 PTLIBDIR := $(HOME)/ptlib
 endif
