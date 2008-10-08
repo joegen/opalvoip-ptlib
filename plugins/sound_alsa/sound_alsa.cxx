@@ -427,8 +427,9 @@ PBoolean PSoundChannelALSA::Write (const void *buf, PINDEX len)
     else {
       if (r == -EPIPE) {    /* under-run */
         r = snd_pcm_prepare (os_handle);
-        if (r < 0)
+        if (r < 0) {
           PTRACE (1, "ALSA\tCould not prepare device: " << snd_strerror (r));
+        }
       } else if (r == -ESTRPIPE) {
 
         while ((r = snd_pcm_resume (os_handle)) == -EAGAIN)
