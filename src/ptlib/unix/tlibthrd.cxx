@@ -330,10 +330,14 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  if (this != &PProcess::Current())
-    PTRACE(1, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << PX_threadId << ::dec << ")");
-  else
-    PProcessInstance = NULL;
+  // PProcess is a subclass of PThread, if the PProcess instance is deleted,
+  // this destructor runs but PProcessInstance is already set to NULL
+  if (PProcessInstance != NULL) {
+    if (this != PProcessInstance)
+      PTRACE(1, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << PX_threadId << ::dec << ")");
+    else
+      PProcessInstance = NULL;
+  }
 }
 
 
