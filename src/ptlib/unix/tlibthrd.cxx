@@ -826,6 +826,13 @@ void PThread::PX_ThreadEnd(void * arg)
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
   process.OnThreadEnded(*thread);
+  
+  // Calls to PTRACE() MUST be made with activeThreadMutex unlocked, or deadlocks may occur.
+  // (PTRACE() itself calls PThread::Current()). Also, PTRACE must be done BEFORE removing the
+  // thread from the activeThreads dictionary, or PTrace::Current() will create a new 
+  // PExternalThread instance, causing the very same deadlock
+  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->GetThreadName());
+  
   process.activeThreadMutex.Wait();
 
   pthread_t id = thread->GetThreadId();
@@ -835,9 +842,7 @@ void PThread::PX_ThreadEnd(void * arg)
     process.activeThreadMutex.Signal();
     PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
     return;
-  }  
-
-  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->GetThreadName());
+  }
 
   // remove this thread from the active thread list
   process.activeThreads.SetAt((unsigned)id, NULL);
