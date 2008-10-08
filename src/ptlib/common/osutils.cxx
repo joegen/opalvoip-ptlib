@@ -1627,6 +1627,8 @@ void PProcess::PostShutdown()
     delete startup->second;
 
   startups.clear();
+
+  PProcessInstance = NULL;
 }
 
 
