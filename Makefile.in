@@ -136,7 +136,7 @@ uninstall:
 	      $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@
 
 distclean: clean
-	rm -rf config.log config.err autom4te.cache config.status a.out
+	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4
 	rm -rf lib*
 
 # End of Makefile.in
