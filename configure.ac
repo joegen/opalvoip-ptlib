@@ -1526,7 +1526,7 @@ dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft DirectX SDK\
+dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft DirectX SDK*
 
 
 dnl ########################################################################
