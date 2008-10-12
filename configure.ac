@@ -119,6 +119,7 @@ HAS_APPSHARE=
 HAS_SHM_VIDEO=1
 HAS_VXML=1
 HAS_EXCEPTIONS=
+HAS_VFW_CAPTURE=
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -159,6 +160,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_VXML=1
   HAS_SHM_VIDEO=
   HAS_EXCEPTIONS=
+  HAS_VFW_CAPTURE=
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -198,6 +200,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_VXML=
   HAS_SHM_VIDEO=
   HAS_EXCEPTIONS=
+  HAS_VFW_CAPTURE=
 fi
 
 dnl ########################################################################
@@ -1479,7 +1482,6 @@ if test "x${HAS_VIDEO}" = "x1" ; then
 			      AC_DEFINE(P_DIRECTX, 1)
 			      AC_DEFINE(P_DIRECTSOUND, 1)
 		             ])
-	        AC_DEFINE(P_VFW_CAPTURE, 1)
 		;;
     * )	
 		AC_CHECK_HEADER([linux/videodev.h], [HAS_VIDEO_CAPTURE=1])
@@ -1502,6 +1504,8 @@ fi
 AC_SUBST(HAS_DIRECTSHOW)
 AC_SUBST(HAS_DIRECTSOUND)
 AC_SUBST(HAS_VIDEO_CAPTURE)
+
+PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [HAS_VIDEO])
 
 if test "x${HAS_AUDIO}" = "x1" ; then
 
