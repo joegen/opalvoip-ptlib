@@ -108,7 +108,7 @@ endif
 
 endif  # HAS_PLUGINS
 
-ifeq ($(OSTYPE),mingw)
+ifdef HAS_VFW_CAPTURE
 SOURCES		+= $(PLATFORM_SRC_DIR)/vfw.cxx
 endif
 
