@@ -787,6 +787,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   socket2 = NULL;
 
   switch (GetNatType(PFalse)) {
+    case OpenNat :
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
