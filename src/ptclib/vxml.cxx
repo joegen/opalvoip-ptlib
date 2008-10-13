@@ -865,12 +865,12 @@ PBoolean PVXMLSession::Open(const PString & _mediaFormat)
   return Execute();
 }
 
+
 PBoolean PVXMLSession::Execute()
 {
   PWaitAndSignal m(sessionMutex);
 
-  // cannot open if no data is loaded
-  if (loaded && vxmlThread == NULL) {
+  if (vxmlThread == NULL) {
     threadRunning = PTrue;
     vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), "VXML");
   }
@@ -909,9 +909,10 @@ PBoolean PVXMLSession::Close()
 void PVXMLSession::VXMLExecute(PThread &, INT)
 {
   while (!forceEnd && threadRunning) {
-
-    // process current node in the VXML script
-    ExecuteDialog();
+      
+      // process current node in the VXML script
+      if (currentNode != NULL)            
+        ExecuteDialog();
 
     // wait for something to happen
     if (currentNode == NULL || IsPlaying())
@@ -935,6 +936,7 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 
   return;
 }
+
 
 void PVXMLSession::ProcessUserInput()
 {
