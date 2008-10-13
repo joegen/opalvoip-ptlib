@@ -712,6 +712,7 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
   socket = NULL;
 
   switch (GetNatType(PFalse)) {
+    case OpenNat :
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
