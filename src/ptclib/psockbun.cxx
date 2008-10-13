@@ -470,9 +470,9 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
     natMethod->GetServerAddress(address, port);
     if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
       if (natMethod->CreateSocket(info.socket, binding, localPort)) {
-        PTRACE(4, "MonSock\tCreated bundled UDP socket via " << natMethod->GetName() << " internal="
-               << binding << ':' << info.socket->PUDPSocket::GetPort()
-               << " external=" << info.socket->GetLocalAddress());
+        info.socket->PUDPSocket::GetLocalAddress(address, port);
+        PTRACE(4, "MonSock\tCreated bundled UDP socket via " << natMethod->GetName()
+               << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
         return true;
       }
     }
