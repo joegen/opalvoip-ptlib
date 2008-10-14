@@ -1815,39 +1815,40 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
 
   PINDEX percent = ipAndInterface.Find('%');
   PString dotNotation = ipAndInterface.Left(percent);
-
+  if (!dotNotation.IsEmpty()) {
 #if P_HAS_IPV6
 
-  struct addrinfo *res = NULL;
-  struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
+    struct addrinfo *res = NULL;
+    struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
 
-  if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
-    if (res->ai_family == PF_INET6) {
-      // IPv6 addr
-      version = 6;
-      struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
-      v.six = addr_in6->sin6_addr;
-    } else {
-      // IPv4 addr
-      version = 4;
-      struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
-      v.four = addr_in->sin_addr;
+    if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
+      if (res->ai_family == PF_INET6) {
+        // IPv6 addr
+        version = 6;
+        struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
+        v.six = addr_in6->sin6_addr;
+      } else {
+        // IPv4 addr
+        version = 4;
+        struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
+        v.four = addr_in->sin_addr;
+      }
+      freeaddrinfo(res);
+      return IsValid();
     }
-    freeaddrinfo(res);
-    return IsValid();
-  }
 
 #else //P_HAS_IPV6
 
-  DWORD iaddr;
-  if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
-                    (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
-    version = 4;
-    v.four.s_addr = iaddr;
-    return true;
-  }
+    DWORD iaddr;
+    if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
+                      (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
+      version = 4;
+      v.four.s_addr = iaddr;
+      return true;
+    }
 
 #endif
+  }
 
   if (percent == P_MAX_INDEX)
     return false;
