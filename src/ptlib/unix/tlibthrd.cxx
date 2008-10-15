@@ -127,11 +127,23 @@ void PHouseKeepingThread::Main()
     process.breakBlock.Wait(delay);
 
     process.activeThreadMutex.Wait();
-    for (PINDEX i = 0; i < process.activeThreads.GetSize(); ++i) {
-      PThread & thread = process.activeThreads.GetDataAt(i);
-      if (thread.autoDelete && thread.IsTerminated())
-        delete process.activeThreads.RemoveAt(process.activeThreads.GetKeyAt(i));
-    }
+    PBoolean found;
+    do {
+      found = PFalse;
+      for (PINDEX i = 0; i < process.activeThreads.GetSize(); ++i) {
+        PThread & thread = process.activeThreads.GetDataAt(i);
+        if (thread.autoDelete && thread.IsTerminated()) {
+          // unlock the activeThreadMutex to avoid deadlocks:
+          // if somewhere in the destructor a call to PTRACE() is made,
+          // which itself calls PThread::Current(), deadlocks are possible
+          process.activeThreadMutex.Signal();
+          delete process.activeThreads.RemoveAt(process.activeThreads.GetKeyAt(i));
+          process.activeThreadMutex.Wait();
+          found = PTrue;
+          break;
+        }
+      }
+    } while (found == PTrue); 
     process.activeThreadMutex.Signal();
 
     process.PXCheckSignals();
