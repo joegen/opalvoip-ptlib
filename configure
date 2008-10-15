@@ -10004,8 +10004,6 @@ if test "$enable_openssl" = "no" ; then
   { echo "$as_me:$LINENO: disabled" >&5
 echo "$as_me: disabled" >&6;}
 else
-  { echo "$as_me:$LINENO: found" >&5
-echo "$as_me: found" >&6;}
 
 pkg_failed=no
 { echo "$as_me:$LINENO: checking for OPENSSL" >&5
