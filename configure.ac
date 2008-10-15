@@ -1070,7 +1070,6 @@ AC_ARG_ENABLE([openssl],
 if test "$enable_openssl" = "no" ; then
   AC_MSG_NOTICE(disabled)
 else
-  AC_MSG_NOTICE(found)
   PKG_CHECK_MODULES([OPENSSL], 
                     [openssl], 
                     [
