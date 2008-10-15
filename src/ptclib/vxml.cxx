@@ -2561,7 +2561,7 @@ PBoolean PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX del
     return QueuePlayable("URL", url.AsString(), repeat, delay);
 }
 
-PBoolean PVXMLChannel::QueueData(const PBYTEArray & PTRACE_PARAM(data), PINDEX repeat, PINDEX delay)
+PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   PVXMLPlayableData * item = PFactory<PVXMLPlayable>::CreateInstanceAs<PVXMLPlayableData>("PCM Data");
