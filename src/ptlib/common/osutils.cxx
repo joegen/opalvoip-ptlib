@@ -42,6 +42,11 @@
 
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
+#if defined(P_VIDEO)
+namespace PWLibStupidLinkerHacks {
+  extern int loadVideoForWindowsStuff;
+};
+#endif
 #endif
 
 #if defined(P_MINGW)
@@ -50,7 +55,7 @@ namespace PWLibStupidLinkerHacks {
 #if defined(P_AUDIO)
   extern int loadWindowsMultimediaStuff;
 #endif
-#if defined(P_VIDEO) && defined(P_VFW_CAPTURE)
+#if defined(P_VIDEO)
   extern int loadVideoForWindowsStuff;
 #endif
 #if defined(P_VIDEO) && defined(P_DIRECTSHOW) && defined(P_DIRECTX)
@@ -1542,6 +1547,11 @@ PProcess::PProcess(const char * manuf, const char * name,
         executableFile = execFile;
     }
   }
+
+#if defined(P_VIDEO) 
+  PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
+#endif
+
 #endif // _WIN32
 
   if (productName.IsEmpty())
