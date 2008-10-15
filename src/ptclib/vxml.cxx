@@ -1251,7 +1251,6 @@ PBoolean PVXMLSession::TraverseRecord()
     
     // create a semaphore, and then wait for the recording to terminate
     StartRecording(file, dtmfTerm, maxTime, termTime);
-    recordSync.Wait(maxTime);
     
     if (!recordSync.Wait(maxTime)) {
       // The Wait() has timed out, to signal that the record timed out.
@@ -1513,30 +1512,23 @@ PBoolean PVXMLSession::IsPlaying() const
   return (vxmlChannel != NULL) && vxmlChannel->IsPlaying();
 }
 
-PBoolean PVXMLSession::StartRecording(const PFilePath & /*_recordFn*/, 
-                                               PBoolean /*_recordDTMFTerm*/, 
-                              const PTimeInterval & /*_recordMaxTime*/, 
-                              const PTimeInterval & /*_recordFinalSilence*/)
+PBoolean PVXMLSession::StartRecording(const PFilePath & p_recordFn, 
+                                               PBoolean p_recordDTMFTerm, 
+                                  const PTimeInterval & p_recordMaxTime, 
+                                  const PTimeInterval & p_recordFinalSilence)
 {
-  /*
-  recording          = PTrue;
-  recordFn           = _recordFn;
-  recordDTMFTerm     = _recordDTMFTerm;
-  recordMaxTime      = _recordMaxTime;
-  recordFinalSilence = _recordFinalSilence;
+  recording          = true;
+  recordFn           = p_recordFn;
+  recordDTMFTerm     = p_recordDTMFTerm;
+  recordMaxTime      = p_recordMaxTime;
+  recordFinalSilence = p_recordFinalSilence;
 
-  if (incomingChannel != NULL) {
-    PXMLElement* element = (PXMLElement*) currentNode;
-    if ( element->HasAttribute("name")) {
-      PString chanName = element->GetAttribute("name");
-      incomingChannel->SetName(chanName);
-    }
-    return incomingChannel->StartRecording(recordFn, (unsigned )recordFinalSilence.GetMilliSeconds());
-  }
+  if (vxmlChannel != NULL) 
+    return vxmlChannel->StartRecording(recordFn,
+                                       (unsigned)recordFinalSilence.GetMilliSeconds(), 
+                                       (unsigned)recordMaxTime.GetMilliSeconds());
 
-  */
-
-  return PFalse;
+  return false;
 }
 
 void PVXMLSession::RecordEnd()
@@ -2585,6 +2577,8 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & PTRACE_PARAM(data), PINDEX r
     return PFalse;
   }
 
+  item->SetData(data);
+
   if (QueuePlayable(item))
     return PTrue;
 
@@ -2674,7 +2668,7 @@ static short beepData[] = { 0, 18784, 30432, 30400, 18784, 0, -18784, -30432, -3
 void PVXMLChannelPCM::GetBeepData(PBYTEArray & data, unsigned ms)
 {
   data.SetSize(0);
-  while (data.GetSize() < (PINDEX)((ms * 8) / 2)) {
+  while (data.GetSize() < (PINDEX)(ms * 16)) {
     PINDEX len = data.GetSize();
     data.SetSize(len + sizeof(beepData));
     memcpy(len + data.GetPointer(), beepData, sizeof(beepData));
