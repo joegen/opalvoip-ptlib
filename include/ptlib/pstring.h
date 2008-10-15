@@ -1619,6 +1619,12 @@ inline ostream & operator<<(ostream & stream, const PString & string)
 }
 
 
+inline wostream & operator<<(wostream & stream, const PString & string)
+{
+  return stream << (const char *)string;
+}
+
+
 #ifdef _WIN32
   class PWideString : public PWCharArray {
     PCLASSINFO(PWideString, PWCharArray);
