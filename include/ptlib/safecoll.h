@@ -240,9 +240,11 @@ class PSafeObject : public PObject
   private:
     mutable PMutex    safetyMutex;
     unsigned          safeReferenceCount;
-    PBoolean              safelyBeingRemoved;
+    bool              safelyBeingRemoved;
     PReadWriteMutex   safeInUseMutex;
     PReadWriteMutex * safeInUse;
+
+  friend class PSafeCollection;
 };
 
 
