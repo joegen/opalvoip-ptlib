@@ -386,7 +386,7 @@ class PVideoOutputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginS
     }
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
-        return (deviceName.Right(4) *= ".yuv") && PFile::Access(deviceName, PFile::WriteOnly);
+      return (deviceName.Right(4) *= ".yuv") && (!PFile::Exists(deviceName) || PFile::Access(deviceName, PFile::WriteOnly));
     }
 } PVideoOutputDevice_YUVFile_descriptor;
 
