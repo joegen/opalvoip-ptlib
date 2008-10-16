@@ -45,12 +45,12 @@
 #endif
 #endif
 
-#ifdef __MINGW32__
-
 namespace PWLibStupidLinkerHacks {
    int loadVideoForWindowsStuff;
 };
     
+#ifdef __MINGW32__
+
 #define VHDR_DONE       0x00000001
 #define VHDR_KEYFRAME   0x00000008
 
@@ -1008,8 +1008,8 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   capPreview(hCaptureWindow, PFalse);
 
 #if PTRACING
-  if (PTrace::CanTrace(6))
-    TestAllFormats(); // list acceptable formats and frame resolutions for video capture driver
+  //if (PTrace::CanTrace(6))
+  //  TestAllFormats(); // list acceptable formats and frame resolutions for video capture driver
 #endif
   
   return SetFrameRate(frameRate) && SetColourFormatConverter(colourFormat.IsEmpty() ? PString("YUV420P") : colourFormat);
