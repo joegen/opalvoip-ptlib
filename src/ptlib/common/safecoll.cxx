@@ -42,9 +42,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 PSafeObject::PSafeObject(PSafeObject * indirectLock)
-    : safeReferenceCount(0)
+  : safeReferenceCount(0)
     , safelyBeingRemoved(PFalse)
-    , safeInUse(indirectLock != NULL ? indirectLock->safeInUse : &safeInUseMutex)
+  , safeInUse(indirectLock != NULL ? indirectLock->safeInUse : &safeInUseMutex)
 {
 }
 
@@ -233,11 +233,22 @@ PSafeCollection::~PSafeCollection()
 {
   deleteObjectsTimer.Stop();
 
-  toBeRemoved.AllowDeleteObjects();
-  toBeRemoved.RemoveAll();
+  RemoveAll();
 
-  if (deleteObjects)
-    collection->AllowDeleteObjects();
+  /* Delete objects moved to deleted list in RemoveAll(), we don't use
+     DeleteObjectsToBeRemoved() as that will do a garbage collection which might
+     prevent deletion. Need to be a bit more forceful here. */
+  for (PList<PSafeObject>::iterator i = toBeRemoved.begin(); i != toBeRemoved.end(); ++i) {
+    i->GarbageCollection();
+    if (i->SafelyCanBeDeleted())
+      delete &*i;
+    else {
+      // If anything still has a PSafePtr .. "detach" it from the collection so
+      // will be deleted whan that PSafePtr finally goes out of scope.
+      i->safelyBeingRemoved = false;
+    }
+  }
+
   delete collection;
 }
 
