@@ -121,24 +121,24 @@ PBoolean PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
 
 PBoolean PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
 {
-  static PRegularExpression  qcif  ("{qcif}|_qcif[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif  ("{cif}|_cif[^a-z0-9]",                  PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression sqcif  ("{sqcif}|_sqcif[^a-z0-9]",              PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif4 ("{cif4}|_cif4[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif16("{cif16}|_cif16[^a-z0-9]",              PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   XbyY ("{[0-9]+x[0-9]+}|_[0-9]+x[0-9]+[^a-z]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression fps    ("_[0-9]+fps[^a-z]",                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression  qcif  ("_qcif[^a-z0-9]",       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif  ("_cif[^a-z0-9]",        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression sqcif  ("_sqcif[^a-z0-9]",      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif4 ("_cif4[^a-z0-9]",       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif16("_cif16[^a-z0-9]",      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   XbyY ("_[0-9]+x[0-9]+[^a-z]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression fps    ("_[0-9]+fps[^a-z]",     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
   PCaselessString str = fn;
   PBoolean foundHint = PFalse;
   PINDEX pos;
 
-  if (str.FindRegEx(qcif) != P_MAX_INDEX)
+  if (str.FindRegEx(sqcif) != P_MAX_INDEX)
+    foundHint = info.SetFrameSize(SQCIFWidth, SQCIFHeight);
+  else if (str.FindRegEx(qcif) != P_MAX_INDEX)
     foundHint = info.SetFrameSize(QCIFWidth, QCIFHeight);
   else if (str.FindRegEx(cif) != P_MAX_INDEX)
     foundHint = info.SetFrameSize(CIFWidth, CIFHeight);
-  else if (str.FindRegEx(sqcif) != P_MAX_INDEX)
-    foundHint = info.SetFrameSize(SQCIFWidth, SQCIFHeight);
   else if (str.FindRegEx(cif4) != P_MAX_INDEX)
     foundHint = info.SetFrameSize(CIF4Width, CIF4Height);
   else if (str.FindRegEx(cif16) != P_MAX_INDEX)
