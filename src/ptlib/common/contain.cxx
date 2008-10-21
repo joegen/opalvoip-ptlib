@@ -2559,30 +2559,35 @@ PRegularExpression::PRegularExpression()
 PRegularExpression::PRegularExpression(const PString & pattern, int flags)
 {
   expression = NULL;
-  Compile(pattern, flags);
+  bool b = Compile(pattern, flags);
+  PAssert(b, PString("regular expression compile failed : " + GetErrorText()));
 }
 
 
 PRegularExpression::PRegularExpression(const char * pattern, int flags)
 {
   expression = NULL;
-  Compile(pattern, flags);
+  bool b = Compile(pattern, flags);
+  PAssert(b, PString("regular expression compile failed : " + GetErrorText()));
 }
 
 PRegularExpression::PRegularExpression(const PRegularExpression & from)
 {
   expression   = NULL;
-  patternSaved = from.patternSaved;
-  flagsSaved   = from.flagsSaved;
-  Compile(patternSaved, flagsSaved);
+  bool b = Compile(from.patternSaved, from.flagsSaved);
+  PAssert(b, PString("regular expression compile failed : " + GetErrorText()));
 }
 
 PRegularExpression & PRegularExpression::operator =(const PRegularExpression & from)
 {
-  expression   = NULL;
-  patternSaved = from.patternSaved;
-  flagsSaved   = from.flagsSaved;
-  Compile(patternSaved, flagsSaved);
+  if (expression != from.expression) {
+    if (expression != NULL && expression != from.expression) {
+      regfree(regexpression);
+      delete regexpression;
+    }
+    expression = NULL;
+  }
+  Compile(from.patternSaved, from.flagsSaved);
   return *this;
 }
 
