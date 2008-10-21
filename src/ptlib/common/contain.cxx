@@ -2559,30 +2559,29 @@ PRegularExpression::PRegularExpression()
 PRegularExpression::PRegularExpression(const PString & pattern, int flags)
 {
   expression = NULL;
-  Compile(pattern, flags);
+  bool b = Compile(pattern, flags);
+  PAssert(b, PString("cannot compile regex '") + pattern + "' " + psprintf("[%i %i]", lastError, flags) + " - " + GetErrorText());
 }
 
 
 PRegularExpression::PRegularExpression(const char * pattern, int flags)
 {
   expression = NULL;
-  Compile(pattern, flags);
+  bool b = Compile(pattern, flags);
+  PAssert(b, PString("cannot compile regex '") + pattern + "' " + psprintf("[%i %i]", lastError, flags) + " - " + GetErrorText());
 }
 
 PRegularExpression::PRegularExpression(const PRegularExpression & from)
 {
   expression   = NULL;
-  patternSaved = from.patternSaved;
-  flagsSaved   = from.flagsSaved;
-  Compile(patternSaved, flagsSaved);
+  bool b = Compile(from.patternSaved, from.flagsSaved);
+  PAssert(b, PString("cannot compile regex '") + patternSaved + "' " + psprintf("[%i %i]", lastError, flagsSaved) + " - " + GetErrorText());
 }
 
 PRegularExpression & PRegularExpression::operator =(const PRegularExpression & from)
 {
   expression   = NULL;
-  patternSaved = from.patternSaved;
-  flagsSaved   = from.flagsSaved;
-  Compile(patternSaved, flagsSaved);
+  Compile(from.patternSaved, from.flagsSaved);
   return *this;
 }
 
@@ -2631,6 +2630,9 @@ PBoolean PRegularExpression::Compile(const char * pattern, int flags)
     expression = new regex_t;
     lastError = (ErrorCodes)regcomp(regexpression, pattern, flags);
   }
+if (lastError != NoError) {
+  cout << "failed to compile regex " << pattern << "    " << lastError << endl;
+}
   return lastError == NoError;
 }
 
