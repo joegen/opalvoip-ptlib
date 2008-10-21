@@ -121,13 +121,13 @@ PBoolean PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
 
 PBoolean PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
 {
-  static PRegularExpression  qcif  ("{qcif}|_qcif[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif  ("{cif}|_cif[^a-z0-9]",                  PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression sqcif  ("{sqcif}|_sqcif[^a-z0-9]",              PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif4 ("{cif4}|_cif4[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif16("{cif16}|_cif16[^a-z0-9]",              PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   XbyY ("{[0-9]+x[0-9]+}|_[0-9]+x[0-9]+[^a-z]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression fps    ("_[0-9]+fps[^a-z]",                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression  qcif  ("_qcif[^a-z0-9]",       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif  ("_cif[^a-z0-9]",        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression sqcif  ("_sqcif[^a-z0-9]",      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif4 ("_cif4[^a-z0-9]",       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif16("_cif16[^a-z0-9]",      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   XbyY ("_[0-9]+x[0-9]+[^a-z]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression fps    ("_[0-9]+fps[^a-z]",     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
   PCaselessString str = fn;
   PBoolean foundHint = PFalse;
