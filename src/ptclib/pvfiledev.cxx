@@ -83,7 +83,10 @@ class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginSe
           adjustedDevice.Delete(length-1, 1);
         else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo)
           continue;
-        return PFile::Access(adjustedDevice, PFile::ReadOnly);
+        if (PFile::Access(adjustedDevice, PFile::ReadOnly)) 
+          return true;
+        PTRACE(1, "Unable to access file '" << adjustedDevice << "' for use as a video input device");
+        return false;
       }
       return false;
     }
@@ -227,7 +230,7 @@ PBoolean PVideoInputDevice_YUVFile::SetColourFormat(const PString & newFormat)
 PBoolean PVideoInputDevice_YUVFile::SetFrameRate(unsigned rate)
 {
   // if the file does not know what frame rate it is, then set it
-  if (file == NULL || (file->IsUnknownFrameSize() && !file->SetFrameRate(rate)))
+  if (file == NULL || file->IsUnknownFrameSize() || !file->SetFrameRate(rate))
     return PFalse;
 
   return PVideoDevice::SetFrameRate(file->GetFrameRate());
