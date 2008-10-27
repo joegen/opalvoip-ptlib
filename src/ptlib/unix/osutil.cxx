@@ -950,40 +950,25 @@ PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
 ///////////////////////////////////////////////////////////////////////////////
 // PTextFile
 
-PBoolean PTextFile::WriteLine (const PString & line)
-
+PBoolean PTextFile::WriteLine(const PString & str)
 {
-  if (!Write((const char *)line, line.GetLength()))
-    return PFalse;
-
-  char ch = '\n';
-  return Write(&ch, 1);
+  return WriteString(str) && WriteChar('\n');
 }
 
-
-PBoolean PTextFile::ReadLine (PString & line)
+PBoolean PTextFile::ReadLine (PString & str)
 
 {
-  int len    = 0;
-  int ch;
-  char * base, * ptr;
-
-  while (1) {
-    len += LINE_SIZE_STEP;
-    ptr = base = line.GetPointer(len) + len - LINE_SIZE_STEP;
-    while ((ptr - base) < LINE_SIZE_STEP-1) {
-      if ((ch = ReadChar()) < 0) {
-        ConvertOSError(errno);
-        return PFalse;
-      }
-      if (ch == '\n') {
-        *ptr = '\0';
-        line.MakeMinimumSize();
-        return PTrue;
-      }
-      *ptr++ = ch;
-    }
-  } 
+  char * ptr = str.GetPointer(100);
+  PINDEX len = 0;
+  int c;
+  while ((c = ReadChar()) >= 0 && c != '\n') {
+    *ptr++ = (char)c;
+    if (++len >= str.GetSize())
+      ptr = str.GetPointer(len + 100) + len;
+  }
+  *ptr = '\0';
+  PAssert(str.MakeMinimumSize(), POutOfMemory);
+  return c >= 0 || len > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
