@@ -611,6 +611,7 @@ PSoundChannelWin32::PSoundChannelWin32(const PString & device,
 
 void PSoundChannelWin32::Construct()
 {
+  opened = false;
   direction = Player;
   hWaveOut = NULL;
   hWaveIn = NULL;
@@ -842,13 +843,14 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
     }
   }
 
+  opened = true;
   os_handle = id;
   return PTrue;
 }
 
 PBoolean PSoundChannelWin32::IsOpen() const
 { 
-  return os_handle >= 0;
+  return opened ? PTrue : PFalse;
 }
 
 PBoolean PSoundChannelWin32::SetFormat(unsigned numChannels,
@@ -917,6 +919,7 @@ PBoolean PSoundChannelWin32::Close()
     hMixer = NULL;
   }
 
+  opened = false;
   os_handle = -1;
   return PTrue;
 }
