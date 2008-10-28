@@ -164,6 +164,7 @@ class PSoundChannelWin32: public PSoundChannel
     MIXERCONTROL volumeControl;
     HANDLE       hEventDone;
     PWaveFormat  waveFormat;
+    bool         opened;
 
     PWaveBufferArray buffers;
     PINDEX           bufferIndex;
