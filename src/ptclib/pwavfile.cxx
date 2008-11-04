@@ -97,7 +97,6 @@ PWAVFile * PWAVFile::format(const PString & format)
 {
   PWAVFile * file = new PWAVFile;
   file->origFmt = 0xffffffff;
-  file->Construct();
   file->SelectFormat(format);
   return file;
 }
@@ -117,7 +116,6 @@ PWAVFile * PWAVFile::format(
 {
   PWAVFile * file = new PWAVFile(mode, opts);
   file->origFmt = 0xffffffff;
-  file->Construct();
   file->SelectFormat(format);
   return file;
 }
@@ -245,9 +243,7 @@ PBoolean PWAVFile::Open(const PFilePath & name, OpenMode mode, int opts)
 
 PBoolean PWAVFile::Close()
 {
-  if (autoConverter != NULL) {
-    autoConverter = NULL;
-  }
+  autoConverter = NULL; // This is a pointer to a singleton, no need to delete
 
   if (!PFile::IsOpen())
     return PTrue;
@@ -516,10 +512,7 @@ static inline PBoolean NeedsConverter(const PWAV::FMTChunk & fmtChunk)
 
 PBoolean PWAVFile::ProcessHeader() 
 {
-  if (autoConverter != NULL) {
-    delete autoConverter;
-    autoConverter = NULL;
-  }
+  autoConverter = NULL; // This is a pointer to a singleton, no need to delete
 
   // Process the header information
   // This comes in 3 or 4 chunks, either RIFF, FORMAT and DATA
@@ -604,9 +597,7 @@ PBoolean PWAVFile::ProcessHeader()
   // get ptr to data handler if in autoconvert mode
   if (autoConvert && NeedsConverter(wavFmtChunk)) {
     autoConverter = PWAVFileConverterFactory::CreateInstance(wavFmtChunk.format);
-    if (autoConverter == NULL) {
-      PTRACE(1, "PWAVFile\tNo format converter for type " << (int)wavFmtChunk.format);
-    }
+    PTRACE_IF(1, autoConverter == NULL, "PWAVFile\tNo format converter for type " << (int)wavFmtChunk.format);
   }
 
   formatHandler->OnStart();
@@ -625,9 +616,7 @@ PBoolean PWAVFile::ProcessHeader()
 
 PBoolean PWAVFile::GenerateHeader()
 {
-  if (autoConverter != NULL) {
-    autoConverter = NULL;
-  }
+  autoConverter = NULL; // This is a pointer to a singleton, no need to delete
 
   if (!IsOpen()) {
     PTRACE(1, "WAV\tGenerateHeader: Not Open");
