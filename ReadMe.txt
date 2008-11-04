@@ -193,7 +193,7 @@ MSDevWizard will not build in VisualStudio v7 and so is not included as a projec
 --------------
 
 1.	If you have not put ptlib it into your home directory (~/ptlib) then
-	you will have to defined the environment variable PTLIBDIR to point to
+	you will have to define the environment variable PTLIBDIR to point to
 	the correct directory.
 
         Also make sure you have added the $PTLIBDIR/lib directory to your 
@@ -270,7 +270,7 @@ produces HTML help files, but this never got completed.
 -------------
 
 Detailed tutorials will almost certainly not be forthcoming. However, at least
-giving you an indication on how to start an application would be usefull, so
+giving you an indication on how to start an application would be useful, so
 here is the infamous "Hello world!" program.
 
 
