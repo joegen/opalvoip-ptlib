@@ -60,7 +60,7 @@ class PGloballyUniqueID : public PBYTEArray
 
     /**Create an ID from a C string of hex (as produced by AsString()).
        A useful construct is to construct a OpalGloballyUniqueID() with
-       NULL which produces an all zero GUID, etectable with the isNULL()
+       NULL which produces an all zero GUID, detectable with the IsNULL()
        function.
      */
     PGloballyUniqueID(
