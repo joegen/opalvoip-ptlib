@@ -35,9 +35,7 @@
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
 #include <ptlib.h>
-#endif
 
 #include <ptbuildopts.h>
 
