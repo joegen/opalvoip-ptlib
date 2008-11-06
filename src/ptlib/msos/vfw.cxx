@@ -843,8 +843,10 @@ PBoolean PVideoInputDevice_VideoForWindows::GetFrameData(BYTE * buffer, PINDEX *
 
 PBoolean PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
-  if (!frameAvailable.Wait(1000))
+  if (!frameAvailable.Wait(1000)) {
+    PTRACE(1, "PVidInp\tTimeout waiting for frame grab!");
     return PFalse;
+  }
 
   bool retval = false;
 
