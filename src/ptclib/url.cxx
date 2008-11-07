@@ -634,7 +634,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     }
 
     if (schemeInfo->hasHostPort) {
-      if (hostname.Find(':') != P_MAX_INDEX)
+      if (hostname.Find(':') != P_MAX_INDEX && hostname[0] != '[')
         str << '[' << hostname << ']';
       else
         str << hostname;
