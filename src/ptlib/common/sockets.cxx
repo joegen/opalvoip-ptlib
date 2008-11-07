@@ -1545,7 +1545,11 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 
 const PIPSocket::Address & PIPSocket::Address::GetLoopback(int version)
 {
-  return version == 4 ? loopback4 : loopback6;
+  return 
+#if P_HAS_IPV6
+	  version == 6 ? loopback6 : 
+#endif
+	  loopback4;
 }
 
 
@@ -1571,12 +1575,20 @@ PBoolean PIPSocket::Address::IsAny() const
 
 const PIPSocket::Address & PIPSocket::Address::GetAny(int version)
 {
-  return version == 4 ? any4 : any6;
+  return 
+#if P_HAS_IPV6
+	  version == 6 ? any6 : 
+#endif
+	  any4;
 }
 
 const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
 {
-	return version == 4 ? broadcast4 : broadcast6;
+	return 
+#if P_HAS_IPV6
+		version == 6 ? broadcast6 :
+#endif
+		broadcast4;
 }
 
 
@@ -2432,8 +2444,13 @@ PUDPSocket::PUDPSocket(WORD newPort, int iAddressFamily)
 }
 
 PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
+#if P_HAS_IPV6
   : sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
     lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
+#else
+  : sendAddress(loopback4),
+    lastReceiveAddress(loopback4)
+#endif
 {
   if (qos != NULL)
       qosSpec = *qos;
@@ -2444,8 +2461,13 @@ PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
 
 
 PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
+#if P_HAS_IPV6
   : sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
     lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
+#else
+  : sendAddress(loopback4),
+    lastReceiveAddress(loopback4)
+#endif
 {
   if (qos != NULL)
       qosSpec = *qos;
