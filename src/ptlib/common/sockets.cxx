@@ -87,6 +87,7 @@ static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
+static PIPSocket::Address broadcast6("FF02::1"); // IPV6 multicast address
 static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); 
 #endif
 
@@ -1542,9 +1543,9 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 }
 
 
-const PIPSocket::Address & PIPSocket::Address::GetLoopback()
+const PIPSocket::Address & PIPSocket::Address::GetLoopback(int version)
 {
-  return loopback4;
+  return version == 4 ? loopback4 : loopback6;
 }
 
 
@@ -1559,17 +1560,6 @@ PBoolean PIPSocket::Address::IsV4Mapped() const
 }
 
 
-const PIPSocket::Address & PIPSocket::Address::GetLoopback6()
-{
-  return loopback6;
-}
-
-
-const PIPSocket::Address & PIPSocket::Address::GetAny6()
-{
-  return any6;
-}
-
 #endif
 
 
@@ -1579,9 +1569,14 @@ PBoolean PIPSocket::Address::IsAny() const
 }
 
 
-const PIPSocket::Address & PIPSocket::Address::GetBroadcast()
+const PIPSocket::Address & PIPSocket::Address::GetAny(int version)
 {
-  return broadcast4;
+  return version == 4 ? any4 : any6;
+}
+
+const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
+{
+	return version == 4 ? broadcast4 : broadcast6;
 }
 
 
@@ -1817,6 +1812,12 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
   PString dotNotation = ipAndInterface.Left(percent);
   if (!dotNotation.IsEmpty()) {
 #if P_HAS_IPV6
+
+    // Find out if string is in brackets [], as in ipv6 address
+    PINDEX lbracket = dotNotation.Find('[');
+    PINDEX rbracket = dotNotation.Find(']', lbracket);
+    if (lbracket != P_MAX_INDEX && rbracket != P_MAX_INDEX)
+      dotNotation = dotNotation(lbracket+1, rbracket-1);
 
     struct addrinfo *res = NULL;
     struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
@@ -2396,7 +2397,7 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
   
 #if P_HAS_IPV6
   
-  Psockaddr sa(broadcast ? Address::GetBroadcast() : addr, port);
+  Psockaddr sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
   PBoolean ok = os_sendto(buf, len, 0, sa, sa.GetSize()) != 0;
   
 #else
@@ -2423,30 +2424,34 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-PUDPSocket::PUDPSocket(WORD newPort)
+PUDPSocket::PUDPSocket(WORD newPort, int iAddressFamily)
 {
   sendPort = 0;
   SetPort(newPort);
-  OpenSocket();
+  OpenSocket(iAddressFamily);
 }
 
-PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort)
+PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
+  : sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
+    lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
 {
   if (qos != NULL)
       qosSpec = *qos;
   sendPort = 0;
   SetPort(newPort);
-  OpenSocket();
+  OpenSocket(iAddressFamily);
 }
 
 
-PUDPSocket::PUDPSocket(const PString & service, PQoS * qos)
+PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
+  : sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
+    lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
 {
   if (qos != NULL)
       qosSpec = *qos;
   sendPort = 0;
   SetPort(service);
-  OpenSocket();
+  OpenSocket(iAddressFamily);
 }
 
 
@@ -2667,18 +2672,16 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 
 #define COULD_HAVE_QOS
 
-static PBoolean CheckOSVersion()
+static PBoolean CheckOSVersionFor(DWORD major, DWORD minor)
 {
-    OSVERSIONINFO versInfo;
-    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
-    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    if (GetVersionEx(&versInfo))
-    {
-        if (versInfo.dwMajorVersion > 5 ||
-           (versInfo.dwMajorVersion == 5 &&
-            versInfo.dwMinorVersion > 0))
-          return PTrue;
-    }
+  OSVERSIONINFO versInfo;
+  ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
+  versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  if (GetVersionEx(&versInfo)) {
+    if (versInfo.dwMajorVersion > major ||
+       (versInfo.dwMajorVersion == major && versInfo.dwMinorVersion >= minor))
+      return PTrue;
+  }
   return PFalse;
 }
 
@@ -2689,7 +2692,7 @@ static PBoolean CheckOSVersion()
 PBoolean PUDPSocket::OpenSocket()
 {
 #ifdef COULD_HAVE_QOS
-  if (CheckOSVersion()) 
+  if (CheckOSVersionFor(5,1)) 
     return OpenSocketGQOS(AF_INET, SOCK_DGRAM, 0);
 #endif
 
@@ -2699,7 +2702,7 @@ PBoolean PUDPSocket::OpenSocket()
 PBoolean PUDPSocket::OpenSocket(int ipAdressFamily)
 {
 #ifdef COULD_HAVE_QOS
-  if (CheckOSVersion()) 
+  if (CheckOSVersionFor(5,1)) 
     return OpenSocketGQOS(ipAdressFamily, SOCK_DGRAM, 0);
 #endif
 
