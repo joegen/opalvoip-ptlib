@@ -55,15 +55,18 @@ class PUDPSocket : public PIPDatagramSocket
        a "listening" socket is specified then the channel is also opened.
      */
     PUDPSocket(
-      WORD port = 0             ///< Port number to use for the connection.
+      WORD port = 0,             ///< Port number to use for the connection.
+	  int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
        PQoS * qos,              ///< Pointer to a QOS structure for the connection
-      WORD port = 0             ///< Port number to use for the connection.
+      WORD port = 0,            ///< Port number to use for the connection.
+	  int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
       const PString & service,   ///< Service name to use for the connection.
-      PQoS * qos = NULL          ///< Pointer to a QOS structure for the connection
+      PQoS * qos = NULL,         ///< Pointer to a QOS structure for the connection
+	  int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
       const PString & address,  ///< Address of remote machine to connect to.

@@ -231,12 +231,9 @@ class PIPSocket : public PSocket
         PBoolean IsV4Mapped() const;
 #endif
 
-        static const Address & GetLoopback();
-#if P_HAS_IPV6
-        static const Address & GetLoopback6();
-        static const Address & GetAny6();
-#endif
-        static const Address & GetBroadcast();
+        static const Address & GetLoopback(int version = 4);
+        static const Address & GetAny(int version = 4);
+        static const Address GetBroadcast(int version = 4);
 
       protected:
         /// Runtime test of IP addresse type.
@@ -476,7 +473,8 @@ class PIPSocket : public PSocket
        PTrue if there was a gateway.
      */
     static PBoolean GetGatewayAddress(
-      Address & addr     ///< Variable to receive the IP address.
+      Address & addr,     ///< Variable to receive the IP address.
+	  int version = 4
     );
 
     /**Get the name for the interface that is being used as the gateway,
@@ -490,7 +488,7 @@ class PIPSocket : public PSocket
        @return
        String name of the gateway device, or empty string if there is none.
      */
-    static PString GetGatewayInterface();
+    static PString GetGatewayInterface(int version = 4);
 
     /**Get the interface address that will be used to reach the specified
        remote address. Uses longest prefix match when multiple matching interfaces
@@ -513,7 +511,7 @@ class PIPSocket : public PSocket
        @return
        The Local Interface IP Address for Gatway Access.
      */
-    static PIPSocket::Address GetGatewayInterfaceAddress();
+    static PIPSocket::Address GetGatewayInterfaceAddress(int version = 4);
 
     /**Retrieve the Local IP Address for which packets would have be routed to the to reach the remote Address.
        @return Local Address.
@@ -578,7 +576,7 @@ class PIPSocket : public PSocket
      */
     static PBoolean GetRouteTable(
       RouteTable & table      ///< Route table
-    );
+	);
 
 
     /**Describe an interface table entry.
