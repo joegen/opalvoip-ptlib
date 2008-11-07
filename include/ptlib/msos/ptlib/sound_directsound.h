@@ -72,6 +72,7 @@ public:
               unsigned _bitsPerSample);
     PBoolean Setup();
     PBoolean Close();
+    PString GetName() const;
     PBoolean Write(const void * buf, PINDEX len);
     PBoolean Read(void * buf, PINDEX len);
     PBoolean SetFormat(unsigned numChannels,
@@ -107,6 +108,7 @@ private:
     PBoolean isInitialised;
     PBoolean isOpen;
 
+    PString deviceName;
     Directions mDirection;
 
     LPDIRECTSOUNDCAPTURE8 sAudioCaptureDevice;
