@@ -478,7 +478,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
     }
   }
 
-  info.socket = new PUDPSocket;
+  info.socket = new PUDPSocket(localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
   if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
     PTRACE(4, "MonSock\tCreated bundled UDP socket " << binding << ':' << info.socket->GetPort());
     int sz = 0;
@@ -1062,13 +1062,13 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 
   if (theEntry.GetAddress().IsAny())
     GetInterfaceInfo(theInterface, theEntry);
-
+    
   if (theEntry.GetAddress().IsAny())
     return true;
-
+    
   if (!CreateSocket(theInfo, theEntry.GetAddress()))
     return false;
-
+    
   localPort = theInfo.socket->PUDPSocket::GetPort();
   return true;
 }
