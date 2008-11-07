@@ -1402,10 +1402,10 @@ public:
   {
     buffer.SetSize(sizeof(MIB_IPFORWARD_TABLE2)); // So ->NumEntries returns zero
 
-	HINSTANCE hInst = LoadLibrary("iphlpapi.dll");
+	HINSTANCE hInst = LoadLibrary(_T("iphlpapi.dll"));
     if (hInst != NULL) {
-	  GETIPFORWARDTABLE2 pfGetIpForwardTable2 = (GETIPFORWARDTABLE2)GetProcAddress(hInst, "GetIpForwardTable2");
-      FREEMIBTABLE pfFreeMibTable = (FREEMIBTABLE)GetProcAddress(hInst, "FreeMibTable");
+	  GETIPFORWARDTABLE2 pfGetIpForwardTable2 = (GETIPFORWARDTABLE2)GetProcAddress(hInst, _T("GetIpForwardTable2"));
+      FREEMIBTABLE pfFreeMibTable = (FREEMIBTABLE)GetProcAddress(hInst, _T("FreeMibTable"));
 	  if (pfGetIpForwardTable2 != NULL && pfFreeMibTable != NULL) {
         PMIB_IPFORWARD_TABLE2 pt = NULL;
         DWORD dwError = (*pfGetIpForwardTable2)(AF_UNSPEC, &pt);
@@ -1421,6 +1421,7 @@ public:
 
   const MIB_IPFORWARD_TABLE2 * operator->() const { return  (const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
   const MIB_IPFORWARD_TABLE2 & operator *() const { return *(const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
+  const PBoolean operator!() const { return 0 == buffer.GetSize(); }
 
 private:
   PBYTEArray buffer;
