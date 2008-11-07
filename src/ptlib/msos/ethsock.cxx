@@ -1432,6 +1432,42 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 }
 
 
+bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoint * cancellation)
+{
+  HANDLE handle = NULL;
+  OVERLAPPED overlap;
+  memset(&overlap, 0, sizeof(overlap));
+
+  DWORD error = NotifyAddrChange(&handle, &overlap);
+  if (error != ERROR_IO_PENDING) {
+    PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
+    if (cancellation != NULL)
+      return cancellation->Wait(timeout);
+
+    PThread::Sleep(timeout);
+    return false;
+  }
+
+  if (cancellation == NULL)
+    return WaitForSingleObject(handle, timeout.GetInterval()) == WAIT_OBJECT_0;
+
+  HANDLE handles[2];
+  handles[0] = handle;
+  handles[1] = cancellation->GetHandle();
+  switch (WaitForMultipleObjects(2, handles, false, timeout.GetInterval())) {
+    case WAIT_OBJECT_0 :
+      return true;
+
+    case WAIT_OBJECT_0+1 :
+      CancelIPChangeNotify(&overlap);
+      // Do next case
+
+    default :
+      return false;
+  }
+}
+
+
 PIPSocket::Address PIPSocket::GetRouteAddress(PIPSocket::Address remoteAddress)
 {
   DWORD best;
