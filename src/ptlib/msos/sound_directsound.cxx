@@ -206,6 +206,7 @@ PSoundChannelDirectSound::Open (const PString & _device,
     PTRACE(4, "dsound\tCould not open device " << ((mDirection == Player) ? "Playback" : "Recording") << " failed");
   }
 
+  deviceName = _device;
   return result;
 }
 
@@ -367,6 +368,13 @@ PSoundChannelDirectSound::Close()
   isInitialised = false;
   return PTrue;
 }
+
+
+PString PSoundChannelDirectSound::GetName() const
+{
+  return deviceName;
+}
+
 
 /*
  * DESC : 	Write Method is called by the playback device
