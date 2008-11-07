@@ -1517,6 +1517,17 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 #endif
 
 
+bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoint * cancellation)
+{
+  if (cancellation != NULL)
+    return cancellation->Wait(timeout);
+
+  // Need an implementation here!!!!!!!
+  PThread::Sleep(timeout);
+  return false;
+}
+
+
 // fe800000000000000202e3fffe1ee330 02 40 20 80     eth0
 // 00000000000000000000000000000001 01 80 10 80       lo
 
