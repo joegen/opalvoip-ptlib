@@ -1,8 +1,9 @@
 /////////////////////////////////////////////////////////////////////////////
 //
-// addrv6.cpp : get local ip addresses, including ipv4 and ipv6
+// addrv6.h : Definitions for getting local IP addresses, both ipv4 and ipv6
 //
 // Copyright (c) 2008 Dinsk, dinsk.net
+// Developed for OPAL VoIP project, opalvoip.org
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -19,13 +20,10 @@ extern "C" {
 #endif
 
 #include <winsock2.h>
-#include <ifdef.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 
 typedef USHORT ADDRESS_FAMILY;
-
-#include <netioapi.h>
 
 typedef union _SOCKADDR_INET {
     SOCKADDR_IN Ipv4;
@@ -76,6 +74,17 @@ typedef enum _NL_ROUTE_ORIGIN {
     Nlro6to4,
 } NL_ROUTE_ORIGIN, *PNL_ROUTE_ORIGIN;
 
+typedef union _NET_LUID {
+  ULONG64 Value;
+  struct {
+    ULONG64 Reserved  :24;
+    ULONG64 NetLuidIndex  :24;
+    ULONG64 IfType  :16;
+  } Info;
+} NET_LUID, *PNET_LUID;
+
+typedef ULONG NET_IFINDEX;
+
 typedef struct _MIB_IPFORWARD_ROW2 {
     //
     // Key Structure.
@@ -111,12 +120,14 @@ typedef struct _MIB_IPFORWARD_TABLE2 {
     MIB_IPFORWARD_ROW2 Table[ANY_SIZE];
 } MIB_IPFORWARD_TABLE2, *PMIB_IPFORWARD_TABLE2;
 
-typedef NETIO_STATUS (NETIOAPI_API_ *GETIPFORWARDTABLE2)(
+typedef ULONG NETIO_STATUS;
+
+typedef NETIO_STATUS (WINAPI *GETIPFORWARDTABLE2)(
   __in   ADDRESS_FAMILY  Family,
   __out  PMIB_IPFORWARD_TABLE2 *Table
 );
 
-typedef void (NETIOAPI_API_ *FREEMIBTABLE)(
+typedef void (WINAPI *FREEMIBTABLE)(
     IN PVOID Memory
     ); 
 
