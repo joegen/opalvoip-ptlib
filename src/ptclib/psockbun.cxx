@@ -77,11 +77,12 @@ PBoolean PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, Interf
 
 //////////////////////////////////////////////////
 
-PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, bool _runMonitorThread)
-  : runMonitorThread(_runMonitorThread)
-  , refreshInterval(refresh)
-  , updateThread(NULL)
-  , interfaceFilter(NULL)
+PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, bool runMonitorThread)
+  : m_runMonitorThread(runMonitorThread)
+  , m_refreshInterval(refresh)
+  , m_updateThread(NULL)
+  , m_threadRunning(false)
+  , m_interfaceFilter(NULL)
 {
 }
 
@@ -90,7 +91,7 @@ PInterfaceMonitor::~PInterfaceMonitor()
 {
   Stop();
 
-  delete interfaceFilter;
+  delete m_interfaceFilter;
 }
 
 
@@ -100,54 +101,55 @@ PInterfaceMonitor & PInterfaceMonitor::GetInstance()
 }
 
 
-void PInterfaceMonitor::SetRefreshInterval (unsigned refresh)
+void PInterfaceMonitor::SetRefreshInterval(unsigned refresh)
 {
-  refreshInterval = refresh;
+  m_refreshInterval = refresh;
 }
 
 
-void PInterfaceMonitor::SetRunMonitorThread(bool _runMonitorThread)
+void PInterfaceMonitor::SetRunMonitorThread(bool runMonitorThread)
 {
-  runMonitorThread = _runMonitorThread;
+  m_runMonitorThread = runMonitorThread;
 }
 
 
-bool PInterfaceMonitor::Start()
+void PInterfaceMonitor::Start()
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
   
-  if (runMonitorThread && updateThread != NULL)
-    return false; // Already running
-    
-  PIPSocket::GetInterfaceTable(currentInterfaces);
-  PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
+  if (m_updateThread != NULL) // Already running
+    m_signalUpdate.Signal();
+  else {
+    PIPSocket::GetInterfaceTable(currentInterfaces);
+    PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
 
-  if (runMonitorThread) {
-    updateThread = new PThreadObj<PInterfaceMonitor>(*this, &PInterfaceMonitor::UpdateThreadMain);
-    updateThread->SetThreadName("Network Interface Monitor");
+    if (m_runMonitorThread) {
+      m_threadRunning = true;
+      m_updateThread = new PThreadObj<PInterfaceMonitor>(*this, &PInterfaceMonitor::UpdateThreadMain);
+      m_updateThread->SetThreadName("Network Interface Monitor");
+    }
   }
-  return true;
-  
 }
 
 
 void PInterfaceMonitor::Stop()
 {
-  mutex.Wait();
+  m_mutex.Wait();
 
   // shutdown the update thread
-  if (updateThread != NULL) {
-    threadRunning.Signal();
+  if (m_updateThread != NULL) {
+    m_threadRunning = false;
+    m_signalUpdate.Signal();
 
-    mutex.Signal();
-    updateThread->WaitForTermination();
-    mutex.Wait();
+    m_mutex.Signal();
+    m_updateThread->WaitForTermination();
+    m_mutex.Wait();
 
-    delete updateThread;
-    updateThread = NULL;
+    delete m_updateThread;
+    m_updateThread = NULL;
   }
 
-  mutex.Signal();
+  m_mutex.Signal();
 }
 
 
@@ -204,7 +206,7 @@ void PInterfaceMonitor::RefreshInterfaceList()
   PIPSocket::InterfaceTable newInterfaces;
   PIPSocket::GetInterfaceTable(newInterfaces);
 
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
 
   // if changed, then update the internal list
   if (!CompareInterfaceLists(currentInterfaces, newInterfaces)) {
@@ -245,9 +247,10 @@ void PInterfaceMonitor::UpdateThreadMain()
   PTRACE(4, "IfaceMon\tStarted interface monitor thread.");
 
   // check for interface changes periodically
-  do {
+  while (m_threadRunning) {
     RefreshInterfaceList();
-  } while (!threadRunning.Wait(refreshInterval));
+    PIPSocket::WaitForRouteTableChange(m_refreshInterval, &m_signalUpdate);
+  }
 
   PTRACE(4, "IfaceMon\tFinished interface monitor thread.");
 }
@@ -303,13 +306,12 @@ static PBoolean InterfaceMatches(const PIPSocket::Address & addr,
 PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack, 
                                               const PIPSocket::Address & destination)
 {
-  PWaitAndSignal guard(mutex);
+  PWaitAndSignal guard(m_mutex);
   
   PIPSocket::InterfaceTable ifaces = currentInterfaces;
   
-  if (interfaceFilter != NULL && !destination.IsAny()) {
-    ifaces = interfaceFilter->FilterInterfaces(destination, ifaces);
-  }
+  if (m_interfaceFilter != NULL && !destination.IsAny())
+    ifaces = m_interfaceFilter->FilterInterfaces(destination, ifaces);
 
   PStringArray names;
 
@@ -331,13 +333,13 @@ PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack,
 bool PInterfaceMonitor::IsValidBindingForDestination(const PIPSocket::Address & binding,
                                                      const PIPSocket::Address & destination)
 {
-  PWaitAndSignal guard(mutex);
+  PWaitAndSignal guard(m_mutex);
   
-  if (interfaceFilter == NULL)
+  if (m_interfaceFilter == NULL)
     return true;
   
   PIPSocket::InterfaceTable ifaces = currentInterfaces;
-  ifaces = interfaceFilter->FilterInterfaces(destination, ifaces);
+  ifaces = m_interfaceFilter->FilterInterfaces(destination, ifaces);
   for (PINDEX i = 0; i < ifaces.GetSize(); i++) {
     if (ifaces[i].GetAddress() == binding)
       return true;
@@ -353,7 +355,7 @@ bool PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::Inter
   if (!SplitInterfaceDescription(iface, addr, name))
     return false;
 
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
 
   for (PINDEX i = 0; i < currentInterfaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
@@ -380,16 +382,16 @@ bool PInterfaceMonitor::IsMatchingInterface(const PString & iface, const PIPSock
 
 void PInterfaceMonitor::SetInterfaceFilter(PInterfaceFilter * filter)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
   
-  delete interfaceFilter;
-  interfaceFilter = filter;
+  delete m_interfaceFilter;
+  m_interfaceFilter = filter;
 }
 
 
 void PInterfaceMonitor::AddClient(PInterfaceMonitorClient * client)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
 
   if (currentClients.empty()) {
     Start();
@@ -408,10 +410,10 @@ void PInterfaceMonitor::AddClient(PInterfaceMonitorClient * client)
 
 void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
 {
-  mutex.Wait();
+  m_mutex.Wait();
   currentClients.remove(client);
   bool stop = currentClients.empty();
-  mutex.Signal();
+  m_mutex.Signal();
   if (stop)
     Stop();
 }
@@ -419,7 +421,7 @@ void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
 void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces,
                                             const PIPSocket::InterfaceTable & removedInterfaces)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
   
   for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
@@ -436,7 +438,7 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 
 void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal guard(m_mutex);
   
   for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
     PInterfaceMonitorClient *client = *iter;
