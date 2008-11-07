@@ -1438,9 +1438,20 @@ bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoin
   OVERLAPPED overlap;
   memset(&overlap, 0, sizeof(overlap));
 
-  DWORD error = NotifyAddrChange(&handle, &overlap);
-  if (error != ERROR_IO_PENDING) {
-    PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
+  // Do this so compatible with older operating systems
+  PDynaLink dll("iphlpapi.dll");
+  BOOL (*pCancelIPChangeNotify)(LPOVERLAPPED) = NULL;
+  bool doNotify = dll.GetFunction("CancelIPChangeNotify", (PDynaLink::Function&)pCancelIPChangeNotify);
+
+  if (doNotify) {
+    DWORD error = NotifyAddrChange(&handle, &overlap);
+    if (error != ERROR_IO_PENDING) {
+      PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
+      doNotify = false;
+    }
+  }
+
+  if (!doNotify) {
     if (cancellation != NULL)
       return cancellation->Wait(timeout);
 
@@ -1459,7 +1470,7 @@ bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoin
       return true;
 
     case WAIT_OBJECT_0+1 :
-      CancelIPChangeNotify(&overlap);
+      pCancelIPChangeNotify(&overlap);
       // Do next case
 
     default :
