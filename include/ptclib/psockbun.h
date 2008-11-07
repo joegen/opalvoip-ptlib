@@ -84,8 +84,12 @@ class PInterfaceMonitor : public PProcessStartup
     /// Change whether the monitor thread should run
     void SetRunMonitorThread (bool runMonitorThread);
 
-    /// Start monitoring network interfaces
-    bool Start();
+    /** Start monitoring network interfaces.
+        If the monitoring thread is already running, then this will cause an
+        refresh of the interface list as soon as possible. Note that this will
+        happen asynchronously.
+      */
+    void Start();
 
     /// Stop monitoring network interfaces.
     void Stop();
@@ -133,7 +137,7 @@ class PInterfaceMonitor : public PProcessStartup
         handles deletion of the filter.
       */
     void SetInterfaceFilter(PInterfaceFilter * filter);
-    bool HasInterfaceFilter() const { return interfaceFilter != NULL; }
+    bool HasInterfaceFilter() const { return m_interfaceFilter != NULL; }
     
     virtual void RefreshInterfaceList();
     
@@ -155,13 +159,14 @@ class PInterfaceMonitor : public PProcessStartup
     ClientList_T              currentClients;
     PIPSocket::InterfaceTable currentInterfaces;
 
-    bool           runMonitorThread;
-    PTimeInterval  refreshInterval;
-    PMutex         mutex;
-    PThread      * updateThread;
-    PSyncPoint     threadRunning;
+    bool           m_runMonitorThread;
+    PTimeInterval  m_refreshInterval;
+    PMutex         m_mutex;
+    PThread      * m_updateThread;
+    PSyncPoint     m_signalUpdate;
+    bool           m_threadRunning;
     
-    PInterfaceFilter * interfaceFilter;
+    PInterfaceFilter * m_interfaceFilter;
 
   friend class PInterfaceMonitorClient;
 };

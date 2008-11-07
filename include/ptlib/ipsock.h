@@ -578,6 +578,14 @@ class PIPSocket : public PSocket
       RouteTable & table      ///< Route table
 	);
 
+    /** Wait for a change in the route table or network interfaces.
+
+        @return true if a change occurred, false if timed out or cancelled.
+      */
+    static bool WaitForRouteTableChange(
+      const PTimeInterval & timeout,    ///< Timeout for wait
+      PSyncPoint * cancellation = NULL  ///< if sync point is signalled, wait is immediately terminated
+    );
 
     /**Describe an interface table entry.
      */
