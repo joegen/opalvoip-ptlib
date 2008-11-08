@@ -983,7 +983,7 @@ PBoolean PEthSocket::Write(const void * buf, PINDEX len)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PBoolean PIPSocket::GetGatewayAddress(Address & addr)
+PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 {
   RouteTable table;
   if (GetRouteTable(table)) {
@@ -999,7 +999,7 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr)
 
 
 
-PString PIPSocket::GetGatewayInterface()
+PString PIPSocket::GetGatewayInterface(int version)
 {
   RouteTable table;
   if (GetRouteTable(table)) {
