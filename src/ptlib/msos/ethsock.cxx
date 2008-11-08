@@ -1394,6 +1394,8 @@ private:
 
 
 #if P_VISTA
+#include <tchar.h>
+
 class PIPRouteTableVista : public PIPRouteTable
 {
 public:
