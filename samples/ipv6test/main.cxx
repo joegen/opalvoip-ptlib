@@ -40,7 +40,7 @@ PCREATE_PROCESS(IPV6Test);
 
 
 IPV6Test::IPV6Test()
-  : PProcess("Post Increment", "dtmftest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Post Increment", "ipv6test", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
 {
 }
 
@@ -228,12 +228,12 @@ void IPV6Test::Main()
       PIPSocket::InterfaceEntry if_entry = if_table[i];
       cout << i << " " << if_entry << endl;
     }
-    cout << "manual check";
+    cout << "Please do manual check ...";
     cout << endl;
   }
   {
     // test #9 - see if URLs decode correctly
-    cout << "test #9: check if parsing IPV6 URLs works" << endl;
+    cout << "test #9: Please do manual check if parsing IPV6 URLs works" << endl;
 
     PURL url("h323:@[::ffff:220.244.81.10]:1234");
     PString addrStr = url.GetHostName();
