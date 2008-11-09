@@ -1148,6 +1148,11 @@ PString PIPSocket::GetHostName(const Address & addr)
   if (pHostByAddr().GetHostName(addr, hostname))
     return hostname;
 
+#if P_HAS_IPV6
+  if (addr.GetVersion() == 6)
+    return '[' + addr.AsString() + ']';
+#endif
+
   return addr.AsString();
 }
 
