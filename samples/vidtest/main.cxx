@@ -97,55 +97,22 @@ void VidTest::Main()
     return;
   }
 
-  PINDEX i;
-
   PString inputDriverName = args.GetOptionString("input-driver");
-  if (!inputDriverName.IsEmpty()) {
-    grabber = PVideoInputDevice::CreateDevice(inputDriverName);
-    if (grabber == NULL) {
-      cerr << "Cannot use input driver name \"" << inputDriverName << "\", must be one of:\n";
-      PStringList drivers = PVideoInputDevice::GetDriverNames();
-      for (i = 0; i < drivers.GetSize(); i++)
-        cerr << "  " << drivers[i] << '\n';
-      cerr << endl;
-      return;
-    }
-  }
-
-  PStringList devices = PVideoInputDevice::GetDriversDeviceNames(inputDriverName);
-  if (devices.IsEmpty()) {
-    cerr << "No video input devices present";
-    if (!inputDriverName.IsEmpty())
-      cerr << " for driver \"" << inputDriverName << '"';
-    cerr << endl;
-    return;
-  }
-
   PString inputDeviceName = args.GetOptionString("input-device");
-  if (inputDeviceName.IsEmpty())
-    inputDeviceName = devices[0];
-
-  PVideoInputDevice::Capabilities caps;
-  if (PVideoInputDevice::GetDeviceCapabilities(inputDeviceName,inputDriverName,&caps)) {
-    cout << "Grabber " << inputDeviceName << " capabilities." << endl;
-    for (std::list<PVideoFrameInfo>::const_iterator r = caps.framesizes.begin(); r != caps.framesizes.end(); ++r)
-      cout << "    " << r->GetColourFormat() << ' ' << r->GetFrameWidth() << 'x' << r->GetFrameHeight() << ' ' << r->GetFrameRate() << "fps\n";
-    cout << endl;
-  }
-  else
-    cout << "Input device " << inputDeviceName << " capabilities not available." << endl;
-    
-  if (grabber == NULL)
-    grabber = PVideoInputDevice::CreateDeviceByName(inputDeviceName);
-
-  if (grabber == NULL || !grabber->Open(inputDeviceName, false)) {
-    cerr << "Cannot use input device name \"" << inputDeviceName << "\", must be one of:\n";
-    PStringList drivers = PVideoInputDevice::GetDriverNames();
-    for (i = 0; i < drivers.GetSize(); i++) {
-      devices = PVideoInputDevice::GetDriversDeviceNames(drivers[i]);
-      for (PINDEX j = 0; j < devices.GetSize(); j++)
-        cerr << "  " << setw(20) << setiosflags(ios::left) << drivers[i] << devices[j] << '\n';
-    }
+  grabber = PVideoInputDevice::CreateOpenedDevice(inputDriverName, inputDeviceName, FALSE);
+  if (grabber == NULL) {
+    cerr << "Cannot use ";
+    if (inputDriverName.IsEmpty() && inputDriverName.IsEmpty())
+      cerr << "default ";
+    cerr << "video grab";
+    if (!inputDriverName)
+      cerr << ", driver \"" << inputDriverName << '"';
+    if (!inputDeviceName)
+      cerr << ", device \"" << inputDeviceName << '"';
+    cerr << ", must be one of:\n";
+    PStringList devices = PVideoInputDevice::GetDriversDeviceNames("*");
+    for (PINDEX i = 0; i < devices.GetSize(); i++)
+      cerr << "   " << devices[i] << '\n';
     cerr << endl;
     return;
   }
@@ -155,6 +122,16 @@ void VidTest::Main()
     cout << "driver \"" << inputDriverName << "\" and ";
   cout << "device \"" << grabber->GetDeviceName() << "\" opened." << endl;
 
+  PVideoInputDevice::Capabilities caps;
+  if (grabber->GetDeviceCapabilities(&caps)) {
+    cout << "Grabber " << inputDeviceName << " capabilities." << endl;
+    for (std::list<PVideoFrameInfo>::const_iterator r = caps.framesizes.begin(); r != caps.framesizes.end(); ++r)
+      cout << "    " << r->GetColourFormat() << ' ' << r->GetFrameWidth() << 'x' << r->GetFrameHeight() << ' ' << r->GetFrameRate() << "fps\n";
+    cout << endl;
+  }
+  else
+    cout << "Input device " << inputDeviceName << " capabilities not available." << endl;
+    
   if (args.HasOption("input-format")) {
     PVideoDevice::VideoFormat format;
     PCaselessString formatString = args.GetOptionString("input-format");
@@ -201,45 +178,21 @@ void VidTest::Main()
 
 
   PString outputDriverName = args.GetOptionString("output-driver");
-  if (!outputDriverName.IsEmpty()) {
-    display = PVideoOutputDevice::CreateDevice(outputDriverName);
-    if (display == NULL) {
-      cerr << "Cannot use output driver name \"" << inputDriverName << "\", must be one of:\n";
-      PStringList drivers = PVideoOutputDevice::GetDriverNames();
-      for (i = 0; i < drivers.GetSize(); i++)
-        cerr << "  " << drivers[i] << '\n';
-      cerr << endl;
-    return;
-    }
-  }
-
-  devices = PVideoOutputDevice::GetDriversDeviceNames(outputDriverName);
-  if (devices.IsEmpty()) {
-    cerr << "No video output devices present";
-    if (!outputDriverName.IsEmpty())
-      cerr << " for driver \"" << outputDriverName << '"';
-    cerr << endl;
-    return;
-  }
-
   PString outputDeviceName = args.GetOptionString("output-device");
-  if (outputDeviceName.IsEmpty()) {
-    outputDeviceName = devices[0];
-    if (outputDeviceName == "NULL" && devices.GetSize() > 1)
-      outputDeviceName = devices[1];
-  }
-
-  if (display == NULL)
-    display = PVideoOutputDevice::CreateDeviceByName(outputDeviceName);
-
-  if (display == NULL || !display->Open(outputDeviceName, false)) {
-    cerr << "Cannot use output device name \"" << outputDeviceName << "\", must be one of:\n";
-    PStringList drivers = PVideoOutputDevice::GetDriverNames();
-    for (i = 0; i < drivers.GetSize(); i++) {
-      devices = PVideoOutputDevice::GetDriversDeviceNames(drivers[i]);
-      for (PINDEX j = 0; j < devices.GetSize(); j++)
-        cerr << "  " << setw(20) << setiosflags(ios::left) << drivers[i] << devices[j] << '\n';
-    }
+  display = PVideoOutputDevice::CreateOpenedDevice(outputDriverName, outputDeviceName, FALSE);
+  if (display == NULL) {
+    cerr << "Cannot use ";
+    if (outputDriverName.IsEmpty() && outputDriverName.IsEmpty())
+      cerr << "default ";
+    cerr << "video display";
+    if (!outputDriverName)
+      cerr << ", driver \"" << outputDriverName << '"';
+    if (!outputDeviceName)
+      cerr << ", device \"" << outputDeviceName << '"';
+    cerr << ", must be one of:\n";
+    PStringList devices = PVideoOutputDevice::GetDriversDeviceNames("*");
+    for (PINDEX i = 0; i < devices.GetSize(); i++)
+      cerr << "   " << devices[i] << '\n';
     cerr << endl;
     return;
   }
@@ -276,11 +229,7 @@ void VidTest::Main()
 
   cout << "Display frame size set to " << display->GetFrameWidth() << 'x' << display->GetFrameHeight() << endl;
 
-#ifdef _WIN32  // Must be BGR for the colour to appear correct
-  PCaselessString colourFormat = args.GetOptionString("colour-format", "BGR24").ToUpper();
-#else
-  PCaselessString colourFormat = args.GetOptionString("colour-format", "RGB24").ToUpper();
-#endif
+  PCaselessString colourFormat = args.GetOptionString("colour-format", "YUV420P").ToUpper();
   if (!grabber->SetColourFormatConverter(colourFormat) ) {
     cerr << "Video input device could not be set to colour format \"" << colourFormat << '"' << endl;
     return;
@@ -365,8 +314,15 @@ void VidTest::GrabAndDisplay(PThread &, INT)
   bool oldGrabberState = true;
   bool oldDisplayState = true;
 
-  grabber->Start();
-  display->Start();
+  if (!grabber->Start()) {
+    cout << "Could not start video grabber!" << endl;
+    return;
+  }
+
+  if (!display->Start()) {
+    cout << "Could not start video display!" << endl;
+    return;
+  }
 
   PTimeInterval startTick = PTimer::Tick();
   while (!exitGrabAndDisplay.Wait(0)) {
