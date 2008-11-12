@@ -532,10 +532,11 @@ ostream & PTrace::End(ostream & paramStream)
   }
   else {
 #ifdef _WIN32_WCE
-    *info.stream << "\r\n";
-#else
-    *info.stream << '\n';
+    if (!PIsDescendant(info.stream, PDebugStream) && info.stream != &cerr)
+      *info.stream << "\r\n";
+    else
 #endif
+    *info.stream << '\n';
   }
   info.stream->flush();
 
