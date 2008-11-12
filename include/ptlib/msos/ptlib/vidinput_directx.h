@@ -32,6 +32,7 @@
 #include <ptbuildopts.h>
 
 #if defined(P_DIRECTSHOW)
+
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pluginmgr.h>
@@ -41,20 +42,23 @@
 #include <mingw_dshow_port.h>
 #endif
 
-#include <windows.h>
-#include <ddraw.h>
-#include <dshow.h>
-#include <uuids.h>
-#include <control.h>
 
 #ifdef _WIN32_WCE
-#include <amvideo.h>
+
+#ifdef DEBUG
+/* Only the release version is provided as a .lib file, so we need to
+   make sure that the compilation does NOT have the extra fields/functions
+   that are added when DEBUG version. */
+#undef DEBUG
+#include <streams.h>
+#define DEBUG
+#else
+#include <streams.h>
 #endif
 
-void DeleteMediaType(AM_MEDIA_TYPE *pmt);
+#else // _WIN32_WCE
 
-// 30323449-0000-0010-8000-00AA00389B71            MEDIASUBTYPE_None
-static GUID MEDIASUBTYPE_I420 = {0x30323449, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71}};
+#include <dshow.h>
 
 #undef INTERFACE
 #define INTERFACE ISampleGrabberCB
@@ -81,10 +85,52 @@ DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
 extern "C" {
   extern const CLSID CLSID_SampleGrabber;
   extern const IID IID_ISampleGrabber;
-  extern const CLSID CLSID_SampleGrabberCB;
-  extern const IID IID_ISampleGrabberCB;
   extern const CLSID CLSID_NullRenderer;
 };
+
+#endif // _WIN32_WCE
+
+
+template <class T> class PComPtr
+{
+    T * pointer;
+  public:
+    PComPtr() : pointer(NULL) { }
+    ~PComPtr() { Release(); }
+
+    PComPtr & operator=(T * p)
+    {
+      Release();
+      if (p != NULL)
+        p->AddRef();
+      pointer = p;
+      return *this;
+    }
+
+    operator T *()        const { return  pointer; }
+    T & operator*()       const { return *pointer; }
+    T** operator&()             { return &pointer; }
+	T* operator->()       const { return  pointer; }
+	bool operator!()      const { return  pointer == NULL; }
+	bool operator<(T* p)  const { return  pointer < p; }
+	bool operator==(T* p) const { return  pointer == p; }
+	bool operator!=(T* p) const { return  pointer != p; }
+
+    void Release()
+    {
+      T * p = pointer;
+      if (p != NULL) {
+        pointer = NULL;
+        p->Release();
+      }
+    }
+
+  private:
+    PComPtr(const PComPtr &) {}
+    void operator=(const PComPtr &) { }
+};
+
+
 
 /**This class defines a video input device.
  */
@@ -117,6 +163,12 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 
     /**Retrieve a list of Device Capabilities
      */
+    virtual bool GetDeviceCapabilities(
+      Capabilities * capabilities          ///< List of supported capabilities
+    ) const;
+
+    /**Retrieve a list of Device Capabilities for particular device
+      */
     static PBoolean GetDeviceCapabilities(
       const PString & deviceName, ///< Name of device
       Capabilities * caps         ///< List of supported capabilities
@@ -258,34 +310,46 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
      */
     PBoolean TestAllFormats() { return PTrue; }
 
-
-
   protected:
+    bool EnumerateDeviceNames(PStringArray & devices);
+    bool CreateCaptureDevice(const PString & devName);
+    bool CreateGrabberHandler();
 
-    HRESULT Initialize_Interfaces();
     PBoolean SetControlCommon(long control, int newValue);
-    PBoolean GetControlCommon(long control, int *newValue);
-    PBoolean SetFormat(const PString &format, int width, int height, int fps);
-    PBoolean GetDefaultFormat();
-    PBoolean ListSupportedFormats();
-    PBoolean InitialiseCapture();
+    int GetControlCommon(long control);
+    PBoolean SetAllParameters(const PString &format, int width, int height, int fps);
 
-    char *tempFrame;			/* Buffer used when a converter is needed */
-    long frameBytes;		        /* Size of a frame in Bytes */
-    int  capturing_duration;
-    PAdaptiveDelay m_pacing;
-    
-    PBoolean          isCapturingNow;
+    PComPtr<IGraphBuilder>         m_pGraph;
+    PComPtr<ICaptureGraphBuilder2> m_pBuilder;
+    PComPtr<IBaseFilter>           m_pCapture;
+    PComPtr<IMediaControl>         m_pMediaControl;
+    PComPtr<IMediaEventEx>         m_pMediaEvent;
 
-    IBaseFilter   * pSrcFilter;
-    IBaseFilter   * pGrabberFilter;
-    IBaseFilter   * pNullFilter;
-    IGraphBuilder * pGraph;
-    IMediaControl * pMC;
-    IMediaEventEx * pME;
-    ICaptureGraphBuilder2 * pCapture;
-    ISampleGrabber * pGrabber;
+    bool            m_isCapturing;
+    PINDEX          m_maxFrameBytes;
+    PBYTEArray      m_tempFrame;
+    PAdaptiveDelay  m_pacing;
 
+#ifdef _WIN32_WCE
+    class MySampleGrabber : public CBaseVideoRenderer
+    {
+      public:
+        MySampleGrabber(HRESULT * hr);
+
+        virtual HRESULT CheckMediaType(const CMediaType *media);
+        virtual HRESULT DoRenderSample(IMediaSample *sample);
+        virtual HRESULT ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop);
+
+        HRESULT GetCurrentBuffer(long *, long *);
+    };
+
+    PComPtr<MySampleGrabber> m_pSampleGrabber;
+#else
+
+    PComPtr<ISampleGrabber> m_pSampleGrabber;
+    PComPtr<IBaseFilter>    m_pGrabberFilter;
+
+#endif
 };
 
 #endif /*P_DIRECTSHOW*/
