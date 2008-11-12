@@ -79,20 +79,20 @@ ostream & operator<<(ostream & strm, PVideoDevice::VideoFormat fmt)
 
 
 //Colour format bit per pixel table.
-// These are in rough order of colour gamut size
+// These are in rough order of colour gamut size and "popularity"
 static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
 } colourFormatBPPTab[] = {
-  { "YUV420",  12 },
   { "YUV420P", 12 },
+  { "YVU420P", 12 },
   { "I420",    12 },
+  { "IYUV",    12 },
+  { "YUV420",  12 },
   { "RGB32",   32 },
   { "BGR32",   32 },
   { "RGB24",   24 },
   { "BGR24",   24 },
-  { "MJPEG",   16 },
-  { "JPEG",    16 },
   { "YUY2",    16 },
   { "YUV422",  16 },
   { "YUV422P", 16 },
@@ -100,7 +100,6 @@ static struct {
   { "YUV411P", 12 },
   { "RGB565",  16 },
   { "RGB555",  16 },
-  { "IYUV",    12 },
   { "YUV410",  10 },
   { "YUV410P", 10 },
   { "Grey",     8 },
