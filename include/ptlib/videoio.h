@@ -889,6 +889,12 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Retrieve a list of Device Capabilities
       */
+    virtual bool GetDeviceCapabilities(
+      Capabilities * capabilities          ///< List of supported capabilities
+    ) const { return GetDeviceCapabilities(GetDeviceName(), capabilities); }
+
+    /**Retrieve a list of Device Capabilities for particular device
+      */
     static PBoolean GetDeviceCapabilities(
       const PString & deviceName,           ///< Name of device
       Capabilities * capabilities,          ///< List of supported capabilities
