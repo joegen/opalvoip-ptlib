@@ -311,7 +311,15 @@ void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
     removalMutex.Signal();
   }
 
-  obj->SafeDereference();
+  /* Even though we are marked as not to delete objects, we still need to obey
+     the rule that if there are no references left the object is deleted. If
+     the object is still "owned" by a PSafeCollection that has NOT got
+     deleteObjects false, then SafeDereference returns false so we don't delete
+     is here. If there are no PSafePtr()s or PSafeCollections()'s anywhere we
+     need to delete it.
+     */
+  if (obj->SafeDereference() && !deleteObjects)
+    delete obj;
 }
 
 
