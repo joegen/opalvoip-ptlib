@@ -1666,6 +1666,12 @@ void PProcess::OnThreadEnded(PThread & /*thread*/)
 }
 
 
+bool PProcess::OnInterrupt(bool)
+{
+  return false;
+}
+
+
 PBoolean PProcess::IsInitialised()
 {
   return PProcessInstance != NULL;

@@ -88,11 +88,6 @@
        ControlService in reference to our service.
      */
 
-    static void Control_C(int);
-    /* This function is called on a SIGINTR (Control-C) signal for use in
-       debug mode.
-     */
-
     PBoolean ReportStatus(
       DWORD dwCurrentState,
       DWORD dwWin32ExitCode = NO_ERROR,
