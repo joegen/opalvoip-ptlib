@@ -40,6 +40,8 @@
 #include <ptlib/msos/ptlib/ptlib.inl>
 #endif
 
+#include <signal.h>
+
 #ifndef _WIN32_WCE
 #include <share.h>
 #endif
@@ -980,6 +982,18 @@ PBoolean PConsoleChannel::Close()
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
+static void (__cdecl * PreviousSigIntHandler)(int);
+static void (__cdecl * PreviousSigTermHandler)(int);
+
+void SignalHandler(int sig)
+{
+  if (PProcess::Current().OnInterrupt(sig == SIGTERM))
+    return;
+
+  (sig == SIGTERM ? PreviousSigTermHandler : PreviousSigIntHandler)(sig);
+}
+
+
 void PProcess::Construct()
 {
   PSetErrorStream(&cerr);
@@ -993,6 +1007,9 @@ void PProcess::Construct()
 #endif
 
   houseKeeper = NULL;
+
+  PreviousSigIntHandler = signal(SIGINT, SignalHandler);
+  PreviousSigTermHandler = signal(SIGTERM, SignalHandler);
 }
 
 
