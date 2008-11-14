@@ -276,6 +276,22 @@ class PProcess : public PThread
       PThread & thread
     );
 
+    /**Callback for when a ^C (SIGINT) or termination request (SIGTERM) is
+       received by process.
+
+       Note this function is called asynchronously and there may be many
+       limitations on what can and cannot be done depending on the underlying
+       operating system. It is recommeneded that this does no more than set
+       flags and return.
+
+       Default behaviour returns false and the process is killed.
+
+       @Return true if the process is to be allowed to continue, false otherwise.
+      */
+    virtual bool OnInterrupt(
+      bool terminating ///< true if process terminating.
+    );
+
     /**Determine if the current processes object instance has been initialised.
        If this returns PTrue it is safe to use the PProcess::Current() function.
        
