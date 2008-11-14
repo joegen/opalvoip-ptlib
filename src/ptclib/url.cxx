@@ -179,6 +179,38 @@ PObject::Comparison PURL::Compare(const PObject & obj) const
   return urlString.Compare(((const PURL &)obj).urlString);
 }
 
+PURL::PURL(const PURL & other)
+{
+  CopyContents(other);
+}
+
+PURL & PURL::operator=(const PURL & other)
+{
+  CopyContents(other);
+  return *this;
+}
+
+void PURL::CopyContents(const PURL & other)
+{
+  urlString    = other.urlString;
+  scheme       = other.scheme;
+  username     = other.username;
+  password     = other.password;
+  hostname     = other.hostname;
+  port         = other.port;
+  portSupplied = other.portSupplied;
+  relativePath = other.relativePath;
+  pathStr      = other.pathStr;
+  path         = other.path;
+  fragment     = other.fragment;
+
+  paramVars    = other.paramVars;
+  paramVars.MakeUnique();
+
+  queryVars    = other.queryVars;
+  queryVars.MakeUnique();
+
+}
 
 PINDEX PURL::HashFunction() const
 {
