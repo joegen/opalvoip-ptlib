@@ -1688,11 +1688,10 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDown)
 {
 #if P_VISTA
-  // Adding IPv6 addresses
-  PIPRouteTableVista routes;
-  if (routes->NumEntries > 0) {
-    PIPAdaptersAddressTable interfaces;
-    PIPInterfaceAddressTable byAddress;
+	// Adding IPv6 addresses
+	PIPRouteTableVista routes;
+	PIPAdaptersAddressTable interfaces;
+	PIPInterfaceAddressTable byAddress;
 
     PINDEX count = 0; // address count
 
@@ -1707,69 +1706,69 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
 
       while( Unicast )
       {
-        PStringStream macAddr;
-        macAddr << ::hex << ::setfill('0');
-        for (unsigned b = 0; b < Current->PhysicalAddressLength; ++b)
-          macAddr << setw(2) << (unsigned)Current->PhysicalAddress[b];
+		  bool bValidated;
+		  if(!routes)
+			bValidated = true;
+		  else
+		  {
+			const MIB_IPFORWARD_TABLE2& t = *routes;
+			bValidated = ValidateAddressIn(t,  
+			  Current->IfIndex, 
+			  Unicast->Address.lpSockaddr);
+		  }
 
-        if(Unicast->Address.lpSockaddr->sa_family == AF_INET)
-        {
-          sockaddr_in sin_addr;
-          ZeroMemory(&sin_addr, sizeof(sin_addr));
-          CopyMemory(&sin_addr,  Unicast->Address.lpSockaddr, sizeof(sin_addr));
+		  if(bValidated)
+		  {
+			PStringStream macAddr;
+			macAddr << ::hex << ::setfill('0');
+			for (unsigned b = 0; b < Current->PhysicalAddressLength; ++b)
+			  macAddr << setw(2) << (unsigned)Current->PhysicalAddress[b];
 
-          bool bValidated;
-          if(!routes)
-            bValidated = true;
-          else
-          {
-            const MIB_IPFORWARD_TABLE2& t = *routes;
-            bValidated = ValidateAddressIn(t,  
-              Current->IfIndex, 
-              Unicast->Address.lpSockaddr);
-          }
+			if(Unicast->Address.lpSockaddr->sa_family == AF_INET)
+			{
+			  sockaddr_in sin_addr;
+			  ZeroMemory(&sin_addr, sizeof(sin_addr));
+			  CopyMemory(&sin_addr,  Unicast->Address.lpSockaddr, sizeof(sin_addr));
 
-          if(bValidated)
-          {
-            // Find out address index in byAddress table for the mask
-            DWORD dwMask = 0L;
-            for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
-              if(Current->IfIndex == byAddress->table[i].dwIndex)
-              {
-                dwMask = byAddress->table[i].dwMask;
-                break;
-              }
-            }
+				// Find out address index in byAddress table for the mask
+				DWORD dwMask = 0L;
+				for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
+				  if(Current->IfIndex == byAddress->table[i].dwIndex)
+				  {
+					dwMask = byAddress->table[i].dwMask;
+					break;
+				  }
 
-            table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-              sin_addr.sin_addr,
-              dwMask,
-              macAddr));
-          }
-        }
-        else
-          if(Unicast->Address.lpSockaddr->sa_family == AF_INET6)
-          {
-            sockaddr_in6 sin6_addr;
-            ZeroMemory(&sin6_addr, sizeof(sin6_addr));
-            CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
+				} // find mask for the address
 
-            const MIB_IPFORWARD_TABLE2& t = *routes;
-            if (ValidateAddressIn(t, Current->IfIndex, Unicast->Address.lpSockaddr)) {
-              table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-                          sin6_addr.sin6_addr,
-                          0L, // mask is irrelevant for ipv6
-                          macAddr));
-            }
-          }
+				table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
+				  sin_addr.sin_addr,
+				  dwMask,
+				  macAddr));
+
+			} // ipv4
+			else
+			  if(Unicast->Address.lpSockaddr->sa_family == AF_INET6)
+			  {
+				sockaddr_in6 sin6_addr;
+				ZeroMemory(&sin6_addr, sizeof(sin6_addr));
+				CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
+
+			    table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
+						  sin6_addr.sin6_addr,
+						  0L, // mask is irrelevant for ipv6
+						  macAddr));
+
+			  } // ipv6
+
+		  } // validated
+
           Unicast = Unicast->Next;
       }
       Current = Current->Next;
     }
 
-    return true;
-  }
-#endif
+#else
 
   PIPInterfaceAddressTable byAddress;
 
@@ -1799,6 +1798,8 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
   }
 
   table.SetSize(count); // May shrink due to "down" interfaces.
+
+#endif
 
   return true;
 }
