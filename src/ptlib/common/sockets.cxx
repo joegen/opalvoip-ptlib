@@ -1784,7 +1784,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 }
 
 
-PString PIPSocket::Address::AsString() const
+PString PIPSocket::Address::AsString(bool bracketIPv6) const
 {
 #if defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];
@@ -1800,6 +1800,8 @@ PString PIPSocket::Address::AsString() const
     if (percent != P_MAX_INDEX)
       str[percent] = '\0';
     str.MakeMinimumSize();
+    if (bracketIPv6)
+      return '[' + str + ']';
 	return str;
   }
 #endif // P_HAS_IPV6
