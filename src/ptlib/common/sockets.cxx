@@ -1594,7 +1594,10 @@ const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
 
 PIPSocket::Address::Address()
 {
-  *this = loopback4;
+	if(defaultIpAddressFamily == AF_INET6)
+		*this = loopback6;
+	else
+		*this = loopback4;
 }
 
 
@@ -1797,7 +1800,7 @@ PString PIPSocket::Address::AsString() const
     if (percent != P_MAX_INDEX)
       str[percent] = '\0';
     str.MakeMinimumSize();
-    return str;
+	return str;
   }
 #endif // P_HAS_IPV6
 # if defined(P_HAS_INET_NTOP)
