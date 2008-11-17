@@ -1469,11 +1469,6 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 #if P_HAS_IPV6
   Psockaddr bind_sa(bindAddr, port); 
 
-  if (IsOpen()) {
-    int socketType;
-    if (!GetOption(SO_TYPE, socketType, SOL_SOCKET) || bind_sa->sa_family != socketType)
-      Close();
-  }
 #endif
 
   if (!IsOpen()) {
