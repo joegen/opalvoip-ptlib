@@ -161,7 +161,9 @@ class PIPSocket : public PSocket
 #endif
 
         /// Format an address as a string.
-        PString AsString() const;
+        PString AsString(
+          bool bracketIPv6 = false ///< An IPv6 address is enclosed in []'s
+        ) const;
 
         /// Convert string to IP address. Returns PTrue if was a valid address.
         PBoolean FromString(
