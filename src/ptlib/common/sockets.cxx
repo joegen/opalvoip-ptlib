@@ -1594,9 +1594,11 @@ const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
 
 PIPSocket::Address::Address()
 {
+#if P_HAS_IPV6
 	if(defaultIpAddressFamily == AF_INET6)
 		*this = loopback6;
 	else
+#endif
 		*this = loopback4;
 }
 
