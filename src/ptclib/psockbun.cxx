@@ -465,6 +465,7 @@ PMonitoredSockets::PMonitoredSockets(bool reuseAddr, PNatMethod  * nat)
   , reuseAddress(reuseAddr)
   , natMethod(nat)
   , opened(false)
+  , interfaceAddedSignal(localPort, PIPSocket::GetDefaultIpAddressFamily())
 {
 }
 
