@@ -1702,70 +1702,76 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
     IP_ADAPTER_ADDRESSES* Current = &addresses;
     while( Current )		
     {
-      PIP_ADAPTER_UNICAST_ADDRESS Unicast = Current->FirstUnicastAddress;
+	  if(!includeDown && (Current->OperStatus == IfOperStatusUp))
+	  {
+		  PIP_ADAPTER_UNICAST_ADDRESS Unicast = Current->FirstUnicastAddress;
 
-      while( Unicast )
-      {
-		  bool bValidated;
-		  if(!routes)
-			bValidated = true;
-		  else
+		  while( Unicast )
 		  {
-			const MIB_IPFORWARD_TABLE2& t = *routes;
-			bValidated = ValidateAddressIn(t,  
-			  Current->IfIndex, 
-			  Unicast->Address.lpSockaddr);
-		  }
-
-		  if(bValidated)
-		  {
-			PStringStream macAddr;
-			macAddr << ::hex << ::setfill('0');
-			for (unsigned b = 0; b < Current->PhysicalAddressLength; ++b)
-			  macAddr << setw(2) << (unsigned)Current->PhysicalAddress[b];
-
-			if(Unicast->Address.lpSockaddr->sa_family == AF_INET)
-			{
-			  sockaddr_in sin_addr;
-			  ZeroMemory(&sin_addr, sizeof(sin_addr));
-			  CopyMemory(&sin_addr,  Unicast->Address.lpSockaddr, sizeof(sin_addr));
-
-				// Find out address index in byAddress table for the mask
-				DWORD dwMask = 0L;
-				for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
-				  if(Current->IfIndex == byAddress->table[i].dwIndex)
-				  {
-					dwMask = byAddress->table[i].dwMask;
-					break;
-				  }
-
-				} // find mask for the address
-
-				table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-				  sin_addr.sin_addr,
-				  dwMask,
-				  macAddr));
-
-			} // ipv4
-			else
-			  if(Unicast->Address.lpSockaddr->sa_family == AF_INET6)
+			  bool bValidated;
+			  if(!routes)
+				bValidated = true;
+			  else
 			  {
-				sockaddr_in6 sin6_addr;
-				ZeroMemory(&sin6_addr, sizeof(sin6_addr));
-				CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
+				const MIB_IPFORWARD_TABLE2& t = *routes;
+				bValidated = ValidateAddressIn(t,  
+				  Current->IfIndex, 
+				  Unicast->Address.lpSockaddr);
+			  }
 
-			    table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-						  sin6_addr.sin6_addr,
-						  0L, // mask is irrelevant for ipv6
-						  macAddr));
+			  if(bValidated)
+			  {
+				PStringStream macAddr;
+				macAddr << ::hex << ::setfill('0');
+				for (unsigned b = 0; b < Current->PhysicalAddressLength; ++b)
+				  macAddr << setw(2) << (unsigned)Current->PhysicalAddress[b];
 
-			  } // ipv6
+				if((Unicast->Address.lpSockaddr->sa_family == AF_INET) 
+					&& (PIPSocket::GetDefaultIpAddressFamily() == AF_INET))
+				{
+				  sockaddr_in sin_addr;
+				  ZeroMemory(&sin_addr, sizeof(sin_addr));
+				  CopyMemory(&sin_addr,  Unicast->Address.lpSockaddr, sizeof(sin_addr));
 
-		  } // validated
+					// Find out address index in byAddress table for the mask
+					DWORD dwMask = 0L;
+					for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
+					  if(Current->IfIndex == byAddress->table[i].dwIndex)
+					  {
+						dwMask = byAddress->table[i].dwMask;
+						break;
+					  }
 
-          Unicast = Unicast->Next;
-      }
-      Current = Current->Next;
+					} // find mask for the address
+
+					table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
+					  sin_addr.sin_addr,
+					  dwMask,
+					  macAddr));
+
+				} // ipv4
+				else
+				if( (Unicast->Address.lpSockaddr->sa_family == AF_INET6)  
+					&& (PIPSocket::GetDefaultIpAddressFamily() == AF_INET6))
+				{
+					sockaddr_in6 sin6_addr;
+					ZeroMemory(&sin6_addr, sizeof(sin6_addr));
+					CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
+
+					table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
+							  sin6_addr.sin6_addr,
+							  0L, // mask is irrelevant for ipv6
+							  macAddr));
+
+				} // ipv6
+
+			  } // validated
+
+			  Unicast = Unicast->Next;
+		  }
+	  }
+
+	  Current = Current->Next;
     }
 
 #else
