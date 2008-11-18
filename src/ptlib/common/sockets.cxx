@@ -87,7 +87,7 @@ static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static PIPSocket::Address broadcast6("FF02::1"); // IPV6 multicast address
+static PIPSocket::Address broadcast6(16,(const BYTE *)"\377\002\0\0\0\0\0\0\0\0\0\0\0\0\0\001"); // IPV6 multicast address
 static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); 
 #endif
 
