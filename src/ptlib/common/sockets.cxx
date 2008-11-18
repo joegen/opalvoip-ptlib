@@ -597,12 +597,11 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     SetAt(key, host);
   }
 
-  if (host->GetHostAddress() == 0) {
-    PTRACE(4, "Socket\tName lookup of \"" << name << "\" failed: errno=" << localErrNo);
-    return NULL;
-  }
+  if (host->GetHostAddress().IsValid())
+    return host;
 
-  return host;
+  PTRACE(4, "Socket\tName lookup of \"" << name << "\" failed: errno=" << localErrNo);
+  return NULL;
 }
 
 
@@ -733,10 +732,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     SetAt(key, host);
   }
 
-  if (host->GetHostAddress() == 0)
-    return NULL;
-
-  return host;
+  return host->GetHostAddress().IsValid() ? host : NULL;
 }
 
 
@@ -1128,7 +1124,7 @@ PString PIPSocket::GetHostName(const PString & hostname)
 {
   // lookup the host address using inet_addr, assuming it is a "." address
   Address temp = hostname;
-  if (temp != 0)
+  if (temp.IsValid())
     return GetHostName(temp);
 
   PString canonicalname;
@@ -1141,7 +1137,7 @@ PString PIPSocket::GetHostName(const PString & hostname)
 
 PString PIPSocket::GetHostName(const Address & addr)
 {
-  if (addr == 0)
+  if (!addr.IsValid())
     return addr.AsString();
 
   PString hostname;
@@ -1192,7 +1188,7 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 
   // lookup the host address using inet_addr, assuming it is a "." address
   Address addr = hostname;
-  if (addr != 0)
+  if (addr.IsValid())
     pHostByAddr().GetHostAliases(addr, aliases);
   else
     pHostByName().GetHostAliases(hostname, aliases);
@@ -1772,10 +1768,13 @@ bool PIPSocket::Address::operator==(in_addr & addr) const
 
 bool PIPSocket::Address::operator==(DWORD dw) const
 {
-  if (dw != 0)
+  if (dw == 0)
+    return !IsValid();
+
+  if (version == 4)
     return (DWORD)*this == dw;
 
-  return !IsValid();
+  return *this == Address(dw);
 }
 
 
