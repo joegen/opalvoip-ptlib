@@ -2002,7 +2002,7 @@ PBoolean PIPSocket::Address::IsBroadcast() const
 {
 #if P_HAS_IPV6
   if (version == 6) // In IPv6, no broadcast exist. Only multicast
-    return PFalse;
+    return *this == broadcast6; // multicast address as as substitute
 #endif
 
   return *this == broadcast4;
