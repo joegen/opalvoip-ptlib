@@ -1762,7 +1762,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
 
   static PRegularExpression HTMLRegEx("<!--#form[ \t\r\n]+html[ \t\r\n]+(-?[^-])+-->",
                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  while (FindSpliceField(HTMLRegEx, "", text, 0, fields, pos, len, start, finish, field)) {
+  while (FindSpliceField(HTMLRegEx, PRegularExpression(), text, 0, fields, pos, len, start, finish, field)) {
     if (field != NULL) {
       PHTML html(PHTML::InForm);
       field->GetHTMLTag(html);
@@ -1773,7 +1773,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   pos = len = 0;
   static PRegularExpression ValueRegEx("<!--#form[ \t\r\n]+value[ \t\r\n]+(-?[^-])+-->",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  while (FindSpliceField(ValueRegEx, "", text, pos+len, fields, pos, len, start, finish, field)) {
+  while (FindSpliceField(ValueRegEx, PRegularExpression(), text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL)
       text.Splice(field->GetValue(), pos, len);
   }
@@ -1781,7 +1781,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   pos = len = 0;
   static PRegularExpression InputRegEx("<input[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  while (FindSpliceField(InputRegEx, "", text, pos+len, fields, pos, len, start, finish, field)) {
+  while (FindSpliceField(InputRegEx, PRegularExpression(), text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL) {
       static PRegularExpression HiddenRegEx("type[ \t\r\n]*=[ \t\r\n]*\"?hidden\"?",
                                             PRegularExpression::Extended|PRegularExpression::IgnoreCase);
