@@ -169,6 +169,9 @@ static PBoolean TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand 
 
 void PSystemLog::Output(Level level, const char * msg)
 {
+  if (msg == NULL || *msg == '\0')
+    return;
+
   PServiceProcess & process = PServiceProcess::Current();
   if (level > process.GetLogLevel())
     return;
