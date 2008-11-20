@@ -73,6 +73,9 @@ class PURL : public PObject
       const PFilePath & path   ///< File path to turn into a "file:" URL.
     );
 
+    PURL(const PURL & other);
+    PURL & operator=(const PURL & other);
+
   /**@name Overrides from class PObject */
   //@{
     /**Compare the two URLs and return their relative rank.
@@ -302,6 +305,7 @@ class PURL : public PObject
     PString LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const;
 
   protected:
+    void CopyContents(const PURL & other);
     virtual PBoolean InternalParse(
       const char * cstr,         ///< URL as a string to parse.
       const char * defaultScheme ///< Default scheme for URL
