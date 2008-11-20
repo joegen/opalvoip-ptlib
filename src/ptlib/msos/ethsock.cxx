@@ -1432,6 +1432,10 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 }
 
 
+#ifdef _MSC_VER
+#pragma optimize("g", off)
+#endif
+
 bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoint * cancellation)
 {
   HANDLE handle = NULL;
@@ -1477,6 +1481,10 @@ bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoin
       return false;
   }
 }
+
+#ifdef _MSC_VER
+#pragma optimize("", on)
+#endif
 
 
 PIPSocket::Address PIPSocket::GetRouteAddress(PIPSocket::Address remoteAddress)
