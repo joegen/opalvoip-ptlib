@@ -283,7 +283,7 @@ void PSystemLog::Output(Level level, const char * msg)
 }
 
 
-int PSystemLog::Buffer::overflow(int c)
+streambuf::int_type PSystemLog::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
@@ -302,7 +302,7 @@ int PSystemLog::Buffer::overflow(int c)
 }
 
 
-int PSystemLog::Buffer::underflow()
+streambuf::int_type PSystemLog::Buffer::underflow()
 {
   return EOF;
 }
