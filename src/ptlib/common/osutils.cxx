@@ -39,6 +39,7 @@
 #include <ctype.h>
 #include <ptlib/pfactory.h>
 #include <ptlib/pprocess.h>
+#include <ptlib/svcproc.h>
 
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
@@ -2370,5 +2371,24 @@ PWriteWaitAndSignal::~PWriteWaitAndSignal()
   mutex.EndWrite();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
+PSystemLog::PSystemLog(Level level)   ///< only messages at this level or higher will be logged
+  : iostream(cout.rdbuf()) 
+{ 
+  logLevel = level; 
+  buffer.log = this; 
+  init(&buffer); 
+}
+
+PSystemLog::PSystemLog(const PSystemLog & other)
+  : PObject(other), iostream(cout.rdbuf()) 
+{
+}
+
+PSystemLog & PSystemLog::operator=(const PSystemLog &)
+{ 
+  return *this; 
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
