@@ -1423,7 +1423,7 @@ public:
 
   const MIB_IPFORWARD_TABLE2 * operator->() const { return  (const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
   const MIB_IPFORWARD_TABLE2 & operator *() const { return *(const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
-  const PBoolean operator!() const { return ((const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer)->NumEntries; }
+  const PBoolean operator!() const { return 0 == ((const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer)->NumEntries; }
 
 private:
   PBYTEArray buffer;
