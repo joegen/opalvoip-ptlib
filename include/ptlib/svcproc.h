@@ -120,8 +120,8 @@ class PSystemLog : public PObject, public iostream {
 
     class Buffer : public streambuf {
       public:
-        virtual int overflow(int=EOF);
-        virtual int underflow();
+        virtual int_type overflow(int=EOF);
+        virtual int_type underflow();
         virtual int sync();
         PSystemLog * log;
         PString string;
