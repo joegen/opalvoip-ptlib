@@ -495,7 +495,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   // Check for a legal hostname as per RFC952
   // but drop the requirement for leading alpha as per RFC 1123
   if (key.IsEmpty() ||
-      key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.") != P_MAX_INDEX ||
+	  key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.:[]") != P_MAX_INDEX ||
       key[len-1] == '-') {
     PTRACE(3, "Socket\tIllegal RFC952 characters in DNS name \"" << key << '"');
     return NULL;
