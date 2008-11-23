@@ -1550,16 +1550,6 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 }
 
 
-const PIPSocket::Address & PIPSocket::Address::GetLoopback(int version)
-{
-  return 
-#if P_HAS_IPV6
-	  version == 6 ? loopback6 : 
-#endif
-	  loopback4;
-}
-
-
 #if P_HAS_IPV6
 
 /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
@@ -1571,31 +1561,44 @@ PBoolean PIPSocket::Address::IsV4Mapped() const
 }
 
 
+const PIPSocket::Address & PIPSocket::Address::GetLoopback(int version)
+{
+  return version == 6 ? loopback6 : loopback4;
+}
+
+const PIPSocket::Address & PIPSocket::Address::GetAny(int version)
+{
+  return version == 6 ? any6 : any4;
+}
+
+const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
+{
+  return version == 6 ? broadcast6 : broadcast4;
+}
+
+#else
+
+const PIPSocket::Address & PIPSocket::Address::GetLoopback(int)
+{
+  return loopback4;
+}
+
+const PIPSocket::Address & PIPSocket::Address::GetAny(int)
+{
+  return any4;
+}
+
+const PIPSocket::Address PIPSocket::Address::GetBroadcast(int)
+{
+  return broadcast4;
+}
+
 #endif
 
 
 PBoolean PIPSocket::Address::IsAny() const
 {
   return (!IsValid());
-}
-
-
-const PIPSocket::Address & PIPSocket::Address::GetAny(int version)
-{
-  return 
-#if P_HAS_IPV6
-	  version == 6 ? any6 : 
-#endif
-	  any4;
-}
-
-const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
-{
-	return 
-#if P_HAS_IPV6
-		version == 6 ? broadcast6 :
-#endif
-		broadcast4;
 }
 
 

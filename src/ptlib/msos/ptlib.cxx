@@ -40,9 +40,8 @@
 #include <ptlib/msos/ptlib/ptlib.inl>
 #endif
 
-#include <signal.h>
-
 #ifndef _WIN32_WCE
+#include <signal.h>
 #include <share.h>
 #endif
 
