@@ -1513,9 +1513,13 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
             if (!routes)
               return (const in6_addr &) sin6_addr.sin6_addr;
 
-            const MIB_IPFORWARD_TABLE2& t = *routes;
-            if (ValidateAddressIn(t, current->IfIndex, unicast->Address.lpSockaddr))
-              return (const in6_addr &) sin6_addr.sin6_addr;
+			// Check if local-link addresses supported (scope_id != 0)
+			if(PIPSocket::GetDefaultV6ScopeId() || sin6_addr.sin6_addr.u.Byte[0] != 0xFE)
+			{
+				const MIB_IPFORWARD_TABLE2& t = *routes;
+				if (ValidateAddressIn(t, current->IfIndex, unicast->Address.lpSockaddr))
+				  return (const in6_addr &) sin6_addr.sin6_addr;
+			}
           }
           unicast = unicast->Next;
         }
@@ -1766,10 +1770,14 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
 					ZeroMemory(&sin6_addr, sizeof(sin6_addr));
 					CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
 
-					table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-							  (const in6_addr &) sin6_addr.sin6_addr,
-							  0L, // mask is irrelevant for ipv6
-							  macAddr));
+					// Check if local-link addresses supported (scope_id != 0)
+					if(PIPSocket::GetDefaultV6ScopeId() || sin6_addr.sin6_addr.u.Byte[0] != 0xFE)
+					{
+						table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
+								  (const in6_addr &) sin6_addr.sin6_addr,
+								  0L, // mask is irrelevant for ipv6
+								  macAddr));
+					}
 
 				} // ipv6
 
