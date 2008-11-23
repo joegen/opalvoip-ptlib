@@ -264,7 +264,7 @@ void PInterfaceMonitor::UpdateThreadMain()
 
 static PString MakeInterfaceDescription(const PIPSocket::InterfaceEntry & entry)
 {
-  return entry.GetAddress().AsString() + '%' + entry.GetName();
+  return entry.GetAddress().AsString(PTrue) + '%' + entry.GetName();
 }
 
 
