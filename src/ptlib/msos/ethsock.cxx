@@ -1442,7 +1442,7 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
       in6_addr sin6_addr;
       ZeroMemory(&sin6_addr, sizeof(sockaddr_in6));
       if (GetFirstIPV6AddressIn(*routes, &sin6_addr)) {
-        addr = sin6_addr;
+        addr = (const in_addr &) sin6_addr;
         return true;
       }
     }
@@ -1511,11 +1511,11 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
             CopyMemory(&sin6_addr, unicast->Address.lpSockaddr, sizeof(sin6_addr));
 
             if (!routes)
-              return sin6_addr.sin6_addr;
+              return (const in_addr &) sin6_addr.sin6_addr;
 
             const MIB_IPFORWARD_TABLE2& t = *routes;
             if (ValidateAddressIn(t, current->IfIndex, unicast->Address.lpSockaddr))
-              return sin6_addr.sin6_addr;
+              return (const in_addr &) sin6_addr.sin6_addr;
           }
           unicast = unicast->Next;
         }
@@ -1767,7 +1767,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
 					CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
 
 					table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-							  sin6_addr.sin6_addr,
+							  (const in_addr &) sin6_addr.sin6_addr,
 							  0L, // mask is irrelevant for ipv6
 							  macAddr));
 
