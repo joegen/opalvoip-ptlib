@@ -985,6 +985,7 @@ PBoolean PConsoleChannel::Close()
 static void (__cdecl * PreviousSigIntHandler)(int);
 static void (__cdecl * PreviousSigTermHandler)(int);
 
+#ifndef _WIN32_WCE 
 void SignalHandler(int sig)
 {
   if (PProcess::Current().OnInterrupt(sig == SIGTERM))
@@ -992,7 +993,7 @@ void SignalHandler(int sig)
 
   (sig == SIGTERM ? PreviousSigTermHandler : PreviousSigIntHandler)(sig);
 }
-
+#endif
 
 void PProcess::Construct()
 {
@@ -1008,8 +1009,10 @@ void PProcess::Construct()
 
   houseKeeper = NULL;
 
+#ifndef _WIN32_WCE 
   PreviousSigIntHandler = signal(SIGINT, SignalHandler);
   PreviousSigTermHandler = signal(SIGTERM, SignalHandler);
+#endif
 }
 
 
