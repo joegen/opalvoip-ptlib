@@ -6,6 +6,10 @@ dnl PKG_LIBS=
 dnl PKG_CFLAGS=
 dnl PKG_REQUIRES=
 PKG_PROG_PKG_CONFIG()
+if test -z "$PKG_CONFIG" ; then
+  AC_MSG_ERROR(PTLib must have pkg-config installed, 1)
+fi
+
 AC_PROG_CC
 AC_PROG_CXX
 
