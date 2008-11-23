@@ -277,6 +277,9 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
     static void SetDefaultIpAddressFamilyV6(); // PF_INET6
     static PBoolean IsIpAddressFamilyV6Supported();
+
+	static void SetDefaultV6ScopeId(int scopeId); // local-link adresses require one
+    static int GetDefaultV6ScopeId(); 
 #endif
     static PIPSocket::Address GetDefaultIpAny();
 

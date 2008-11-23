@@ -86,6 +86,8 @@ static PIPSocket::Address broadcast4(INADDR_BROADCAST);
 static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
+static int defaultIPv6ScopeId = 0; 
+
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
 static PIPSocket::Address broadcast6(16,(const BYTE *)"\377\002\0\0\0\0\0\0\0\0\0\0\0\0\0\001"); // IPV6 multicast address
 static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); 
@@ -117,6 +119,15 @@ void PIPSocket::SetDefaultIpAddressFamilyV6()
   SetDefaultIpAddressFamily(PF_INET6);
 }
 
+void PIPSocket::SetDefaultV6ScopeId(int scopeId) 
+{
+  defaultIPv6ScopeId = scopeId;
+}; 
+
+int PIPSocket::GetDefaultV6ScopeId()
+{
+  return defaultIPv6ScopeId;
+}
 
 PBoolean PIPSocket::IsIpAddressFamilyV6Supported()
 {
@@ -173,7 +184,7 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
     addr6->sin6_addr = ip;
     addr6->sin6_port = htons(port);
     addr6->sin6_flowinfo = 0;
-    addr6->sin6_scope_id = 0; // Should be set to the right interface....
+	addr6->sin6_scope_id = PIPSocket::GetDefaultV6ScopeId(); // Should be set to the right interface....
   }
   else {
     sockaddr_in * addr4 = (sockaddr_in *)&storage;
