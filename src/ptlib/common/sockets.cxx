@@ -1475,7 +1475,6 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 
 #if P_HAS_IPV6
   Psockaddr bind_sa(bindAddr, port); 
-
 #endif
 
   if (!IsOpen()) {
@@ -1490,6 +1489,7 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
   }
   
 #ifndef P_BEOS
+#if P_HAS_IPV6
   if(bind_sa->sa_family != AF_INET6)
   {
 	 // attempt to listen
@@ -1498,6 +1498,7 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 	   return PFalse;
 	 }
   }
+#endif
 #else
   // attempt to listen
   int value = reuse == CanReuseAddress ? 1 : 0;
