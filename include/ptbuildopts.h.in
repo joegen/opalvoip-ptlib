@@ -289,6 +289,8 @@
   #define P_EXPAT 1
 #endif
 
+#define P_EXPAT_LIBRARY 1
+    
 #if defined(_MSC_VER) && defined(P_WINEXPAT)
 
   #if P_WINEXPAT==1
@@ -699,6 +701,13 @@
 #if !defined(P_USE_STANDARD_CXX_BOOL)
 #  define P_USE_INTEGER_BOOL
 #endif
+
+#define P_VISTA 1
+#define P_HAS_IPV6 1
+#define P_EXPAT 1
+#define P_XMLRPC 1
+#undef P_IVR
+#undef P_VXML
 
 #endif // _PT_BUILDOPTS_H
 
