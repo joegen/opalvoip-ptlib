@@ -1362,7 +1362,7 @@ bool Win95_ServiceManager::IsInstalled(PServiceProcess * svc)
     return false;
 
   DWORD type;
-  error = RegGetValue(key, svc->GetName(), 0, 0, &type, NULL, NULL);
+  error = RegQueryValueEx(key, svc->GetName(), NULL, &type, NULL, NULL);
   RegCloseKey(key);
   return error == ERROR_SUCCESS && type == REG_SZ;
 }
