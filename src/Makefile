@@ -299,7 +299,6 @@ endif #HAS_HTTPFORMS
 
 ifdef HAS_HTTPSVC
 SOURCES += \
-	$(PLATFORM_SRC_DIR)/svcproc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
 
@@ -345,6 +344,7 @@ SOURCES	+= \
 	$(PLATFORM_SRC_DIR)/socket.cxx \
 	$(PLATFORM_SRC_DIR)/udll.cxx \
 	$(PLATFORM_SRC_DIR)/channel.cxx \
+	$(PLATFORM_SRC_DIR)/svcproc.cxx \
 	$(PLATFORM_SRC_DIR)/osutil.cxx \
 	$(PLATFORM_SRC_DIR)/tlib.cxx \
 	$(PLATFORM_SRC_DIR)/switch.cxx

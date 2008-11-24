@@ -197,7 +197,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
 }
 
 
-int PSystemLog::Buffer::overflow(int c)
+streambuf::int_type PSystemLog::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
     int ppos = pptr() - pbase();
@@ -213,7 +213,7 @@ int PSystemLog::Buffer::overflow(int c)
 }
 
 
-int PSystemLog::Buffer::underflow()
+streambuf::int_type PSystemLog::Buffer::underflow()
 {
   return EOF;
 }
