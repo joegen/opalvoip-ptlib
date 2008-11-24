@@ -1490,10 +1490,13 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
   }
   
 #ifndef P_BEOS
-  // attempt to listen
-  if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
-    os_close();
-    return PFalse;
+  if(bind_sa->sa_family != AF_INET6)
+  {
+	 // attempt to listen
+	 if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
+	   os_close();
+	   return PFalse;
+	 }
   }
 #else
   // attempt to listen
