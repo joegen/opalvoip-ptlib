@@ -636,24 +636,6 @@ char * _mktemp (char *temp)
 }
 
 
-void WINAPI DnsRecordListFree(PDNS_RECORD /*pRecordList*/, DNS_FREE_TYPE /*FreeType*/)
-{
-}
-
-
-DNS_STATUS WINAPI DnsQuery_A(
-                             const char* /*pszName*/,
-                             WORD /*wType*/,
-                             DWORD /*fOptions*/,
-                             PIP4_ARRAY /*aipServers*/,
-                             PDNS_RECORD* /*ppQueryResultsSet*/,
-                             PVOID* /*pReserved*/
-                             )
-{
-  return 0;
-}
-
-
 LONG RegDeleteValue( HKEY hKey, const char* lpValueName )
 {
   return RegDeleteValue(hKey, PString(lpValueName).AsUCS2());
