@@ -154,12 +154,23 @@ class DnsRecord {
 
 typedef DnsRecord * PDNS_RECORD;
 
+
+typedef DWORD   IP4_ADDRESS, *PIP4_ADDRESS;
+
+typedef struct  _IP4_ARRAY
+{
+    DWORD           AddrCount;
+    IP4_ADDRESS     AddrArray[1];
+}
+IP4_ARRAY, *PIP4_ARRAY;
+
+
 extern void DnsRecordListFree(PDNS_RECORD rec, int FreeType);
 
 extern DNS_STATUS DnsQuery_A(const char * service,
           WORD requestType,
           DWORD options,
-          void *,
+          PIP4_ARRAY,
           PDNS_RECORD * results,
           void *);
 
@@ -186,7 +197,7 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
   DNS_STATUS status = DnsQuery_A((const char *)name, 
                                  type,
                                  DNS_QUERY_STANDARD, 
-								 (PIP4_ARRAY)NULL, 
+                                 (PIP4_ARRAY)NULL, 
                                  &results, 
                                  NULL);
   if (status != 0)
