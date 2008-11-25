@@ -191,7 +191,7 @@ static PMutex & GetDNSMutex()
 DNS_STATUS DnsQuery_A(const char * service,
                               WORD requestType,
                              DWORD options,
-                            void *,
+                            PIP4_ARRAY,
                      PDNS_RECORD * results,
                             void *)
 {
