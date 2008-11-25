@@ -186,10 +186,7 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
   DNS_STATUS status = DnsQuery_A((const char *)name, 
                                  type,
                                  DNS_QUERY_STANDARD, 
-#ifdef _WIN32_WCE
-								 (PIP4_ARRAY)
-#endif
-								 NULL, 
+								 (PIP4_ARRAY)NULL, 
                                  &results, 
                                  NULL);
   if (status != 0)

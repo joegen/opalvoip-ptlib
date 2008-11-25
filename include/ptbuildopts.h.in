@@ -408,8 +408,10 @@
 // DNS resolver
 //
 
+#ifndef _WIN32_WCE
 #undef P_DNS 
 #undef P_HAS_RES_NINIT
+#endif
 
 #if defined(_MSC_VER) && P_DNS
 
