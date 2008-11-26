@@ -1029,11 +1029,11 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
     unsigned long net_addr, dest_addr, net_mask;
     int flags, refcnt, use, metric;
     procfile >> iface;
-    procfile.setf(hex, dec);
+    procfile.setf(hex, ios::basefield);
     procfile >> net_addr >> dest_addr >> flags;
-    procfile.setf(dec, hex);
+    procfile.setf(dec, ios::basefield);
     procfile >> refcnt >> use >> metric;
-    procfile.setf(hex, dec);
+    procfile.setf(hex, ios::basefield);
     procfile >> net_mask;
     if (procfile.bad())
       return PFalse;
