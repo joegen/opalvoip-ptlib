@@ -345,10 +345,11 @@ PThread::~PThread()
   // PProcess is a subclass of PThread, if the PProcess instance is deleted,
   // this destructor runs but PProcessInstance is already set to NULL
   if (PProcessInstance != NULL) {
-    if (this != PProcessInstance)
-      PTRACE(1, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << PX_threadId << ::dec << ")");
-    else
+    if (this == PProcessInstance)
       PProcessInstance = NULL;
+    else {
+      PTRACE_IF(1, !autoDelete, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << PX_threadId << ::dec << ")");
+    }
   }
 }
 
