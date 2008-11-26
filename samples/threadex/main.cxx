@@ -141,7 +141,6 @@ DelayThread::DelayThread(PINDEX _delay, PBoolean)
 
 DelayThread::~DelayThread()
 {
-  PTRACE(5, "ThreadEx\tDestructor for a delay thread");
   //This thread must not have a PTRACE statement in the debugger, if it is an autodeleted thread.
   //If a PTRACE statement is here, the PTRACE will fail as the PThread::Current() returns empty.
 }
