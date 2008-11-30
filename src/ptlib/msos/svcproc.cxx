@@ -80,6 +80,8 @@ enum {
   SvcCmdPause,
   SvcCmdResume,
   SvcCmdDeinstall,
+  SvcCmdAutoRestart,
+  SvcCmdNoRestart,
   SvcCmdNoWindow,
   NumSvcCmds
 };
@@ -96,6 +98,8 @@ static const char * const ServiceCommandNames[NumSvcCmds] = {
   "Pause",
   "Resume",
   "Deinstall",
+  "AutoRestart",
+  "NoRestart",
   "NoWin"
 };
 
@@ -1221,11 +1225,12 @@ class ServiceManager
     ServiceManager()  { error = 0; }
 
     virtual bool Create(PServiceProcess * svc) = 0;
-    virtual bool Delete(PServiceProcess * svc) = 0;
+    virtual bool Remove(PServiceProcess * svc) = 0;
     virtual bool Start(PServiceProcess * svc) = 0;
     virtual bool Stop(PServiceProcess * svc) = 0;
     virtual bool Pause(PServiceProcess * svc) = 0;
     virtual bool Resume(PServiceProcess * svc) = 0;
+    virtual bool SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action) = 0;
     virtual bool IsInstalled(PServiceProcess * svc) = 0;
     virtual bool IsRunning(PServiceProcess * svc) { return IsServiceRunning(svc); }
 
@@ -1240,11 +1245,12 @@ class Win95_ServiceManager : public ServiceManager
 {
   public:
     virtual bool Create(PServiceProcess * svc);
-    virtual bool Delete(PServiceProcess * svc);
+    virtual bool Remove(PServiceProcess * svc);
     virtual bool Start(PServiceProcess * svc);
     virtual bool Stop(PServiceProcess * svc);
     virtual bool Pause(PServiceProcess * svc);
     virtual bool Resume(PServiceProcess * svc);
+    virtual bool SetConfig(PServiceProcess *, SC_ACTION_TYPE) { return false; }
     virtual bool IsInstalled(PServiceProcess * svc);
 };
 
@@ -1274,7 +1280,7 @@ bool Win95_ServiceManager::Create(PServiceProcess * svc)
 }
 
 
-bool Win95_ServiceManager::Delete(PServiceProcess * svc)
+bool Win95_ServiceManager::Remove(PServiceProcess * svc)
 {
   HKEY key;
   if (RegCreateKey(HKEY_LOCAL_MACHINE,
@@ -1376,14 +1382,12 @@ class NT_ServiceManager : public ServiceManager
     ~NT_ServiceManager();
 
     virtual bool Create(PServiceProcess * svc);
-    virtual bool Delete(PServiceProcess * svc);
+    virtual bool Remove(PServiceProcess * svc);
     virtual bool Start(PServiceProcess * svc);
-    virtual bool Stop(PServiceProcess * svc)
-      { return Control(svc, SERVICE_CONTROL_STOP); }
-    virtual bool Pause(PServiceProcess * svc)
-      { return Control(svc, SERVICE_CONTROL_PAUSE); }
-    virtual bool Resume(PServiceProcess * svc)
-      { return Control(svc, SERVICE_CONTROL_CONTINUE); }
+    virtual bool Stop(PServiceProcess * svc)   { return Control(svc, SERVICE_CONTROL_STOP); }
+    virtual bool Pause(PServiceProcess * svc)  { return Control(svc, SERVICE_CONTROL_PAUSE); }
+    virtual bool Resume(PServiceProcess * svc) { return Control(svc, SERVICE_CONTROL_CONTINUE); }
+    virtual bool SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action);
     virtual bool IsInstalled(PServiceProcess * svc);
     virtual bool IsRunning(PServiceProcess * svc);
 
@@ -1492,7 +1496,7 @@ bool NT_ServiceManager::Create(PServiceProcess * svc)
 }
 
 
-bool NT_ServiceManager::Delete(PServiceProcess * svc)
+bool NT_ServiceManager::Remove(PServiceProcess * svc)
 {
   if (!Open(svc))
     return false;
@@ -1528,6 +1532,26 @@ bool NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
   bool ok = ::ControlService(schService, command, &status);
   error = ::GetLastError();
   return ok;
+}
+
+
+bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
+{
+  if (!Open(svc))
+    return false;
+
+  SC_ACTION scAction;
+  scAction.Type = action;
+  scAction.Delay = 1000;
+
+  SERVICE_FAILURE_ACTIONS sfActions;
+  sfActions.dwResetPeriod = INFINITE;
+  sfActions.lpRebootMsg = "";
+  sfActions.lpCommand = "";
+  sfActions.cActions = 1;
+  sfActions.lpsaActions = &scAction;
+
+  return ChangeServiceConfig2(schService, SERVICE_CONFIG_FAILURE_ACTIONS, &sfActions);
 }
 
 
@@ -1655,7 +1679,7 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
               break;
 
             case IDNO :
-              good = svcManager->Delete(this);
+              good = svcManager->Remove(this);
               TrayIconRegistry(this, DelTrayIcon);
               break;
 
@@ -1687,7 +1711,7 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       break;
 
     case SvcCmdRemove : // remove
-      good = svcManager->Delete(this);
+      good = svcManager->Remove(this);
       TrayIconRegistry(this, DelTrayIcon);
       break;
 
@@ -1707,8 +1731,16 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       good = svcManager->Resume(this);
       break;
 
+    case SvcCmdAutoRestart :
+      good = svcManager->SetConfig(this, SC_ACTION_RESTART);
+      break;
+
+    case SvcCmdNoRestart :
+      good = svcManager->SetConfig(this, SC_ACTION_NONE);
+      break;
+
     case SvcCmdDeinstall : // deinstall
-      svcManager->Delete(this);
+      svcManager->Remove(this);
       TrayIconRegistry(this, DelTrayIcon);
 #if P_CONFIG_FILE
       PConfig cfg;
