@@ -333,7 +333,7 @@ class PXMLElement : public PXMLObject {
     PString GetAttribute(const PCaselessString & key) const;
     PString GetKeyAttribute(PINDEX idx) const;
     PString GetDataAttribute(PINDEX idx) const;
-    PBoolean HasAttribute(const PCaselessString & key);
+    PBoolean HasAttribute(const PCaselessString & key) const;
     PBoolean HasAttributes() const      { return attributes.GetSize() > 0; }
     PINDEX GetNumAttributes() const { return attributes.GetSize(); }
 
