@@ -42,7 +42,14 @@ PCREATE_PROCESS(Threadex);
 #include <process.h>
 #endif
 
+#include <set>
 
+PAtomicInteger autoDeleteThreadsStarted = 0;
+PAtomicInteger autoDeleteThreadsFinished = 0;
+
+PMutex setMutex;
+typedef std::set<pthread_t> ThreadSet;
+ThreadSet threadSet;
 
 Threadex::Threadex()
   : PProcess("Derek Smithies code factory", "threadex", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
@@ -126,6 +133,28 @@ void Threadex::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
+void AddToThreadSet(pthread_t id)
+{
+  PWaitAndSignal m(setMutex);
+  if (threadSet.find(id) != threadSet.end()) {
+    cout << "WARNING: duplicate thread id " << id << " in use" << endl;
+    PTRACE(1, "Duplicate thread id " << id);
+  }
+  threadSet.insert(id);
+}
+
+void RemoveFromThreadSet(pthread_t id)
+{
+  PWaitAndSignal m(setMutex);
+  if (threadSet.find(id) == threadSet.end()) {
+    cout << "WARNING: unknown thread id " << id << " in use" << endl;
+    PTRACE(1, "Unknown thread id " << id);
+  }
+  else {
+    threadSet.erase(id);
+  }
+}
+
 DelayThread::DelayThread(PINDEX _delay)
   : PThread(10000, NoAutoDeleteThread), delay(_delay)
 {
@@ -136,17 +165,25 @@ DelayThread::DelayThread(PINDEX _delay, PBoolean)
   : PThread(10000, AutoDeleteThread), delay(_delay)
 {
   PTRACE(5, "ThreadEx\tConstructor for an auto deleted  delay thread");
+
+  ++autoDeleteThreadsStarted;
 }
 
 
 DelayThread::~DelayThread()
 {
+  RemoveFromThreadSet(id);
+  if (IsAutoDelete())
+    ++autoDeleteThreadsFinished;
   //This thread must not have a PTRACE statement in the debugger, if it is an autodeleted thread.
   //If a PTRACE statement is here, the PTRACE will fail as the PThread::Current() returns empty.
 }
 
 void DelayThread::Main()  
 {
+  id = GetThreadId();
+  AddToThreadSet(id);
+
   PTRACE(5, "ThreadEx\tDelayThread started");
   PThread::Sleep(delay);
   PTRACE(5, "ThreadEx\tDelayThread finished");
@@ -267,6 +304,11 @@ void UserInterfaceThread::Main()
 
     case 'r' :
       cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
+      {
+        int a = autoDeleteThreadsStarted;
+        int b = autoDeleteThreadsFinished;
+        cout << "Auto-delete threads : " << a << " - " << b << " = " << a-b << endl;
+      }
       break;
 
     case 't' :

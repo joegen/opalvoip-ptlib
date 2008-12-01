@@ -340,6 +340,8 @@ class PThread : public PObject
       const PString & threadName      ///< The name of the thread (for Debug/Trace)
     ) { return Create(notifier, 0, NoAutoDeleteThread, NormalPriority, threadName); }
   //@}
+  
+    bool IsAutoDelete() const { return autoDelete; }
 
   private:
     PThread();
