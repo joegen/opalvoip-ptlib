@@ -886,7 +886,7 @@ void PXMLElement::SetAttribute(const PCaselessString & key,
     SetDirty();
 }
 
-PBoolean PXMLElement::HasAttribute(const PCaselessString & key)
+PBoolean PXMLElement::HasAttribute(const PCaselessString & key) const
 {
   return attributes.Contains(key);
 }
