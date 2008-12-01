@@ -1312,6 +1312,7 @@ dnl MSWIN_DISPLAY       sapi,Speech API
 dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
 dnl MSWIN_DEFINE        sapi,P_TTS
 dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
+dnl MSWIN_FIND_FILE     sapi,P_SAPI_LIBRARY,sapi.lib,...
 dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK 5.1\
 
 PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
