@@ -1508,18 +1508,20 @@ static PProcessStartupList & GetPProcessStartupList()
 
 PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
-  : manufacturer(manuf), productName(name)
+  : terminationValue(0)
+  , manufacturer(manuf)
+  , productName(name)
+  , majorVersion(major)
+  , minorVersion(minor)
+  , status(stat)
+  , buildNumber(build)
+  , maxHandles(INT_MAX)
+  , m_library(false)
 {
   activeThreads.DisallowDeleteObjects();
   activeThreads.SetAt((PINDEX)GetCurrentThreadId(), this);
 
   PProcessInstance = this;
-  terminationValue = 0;
-
-  majorVersion = major;
-  minorVersion = minor;
-  status = stat;
-  buildNumber = build;
 
 #ifdef P_RTEMS
 
