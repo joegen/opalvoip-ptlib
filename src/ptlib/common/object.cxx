@@ -37,6 +37,7 @@
 
 #include <ptlib.h>
 #include <ptlib/pfactory.h>
+#include <ptlib/pprocess.h>
 #include <sstream>
 #include <ctype.h>
 #ifdef _WIN32
@@ -372,8 +373,7 @@ PMemoryHeap::~PMemoryHeap()
 
 #if defined(_WIN32)
   DeleteCriticalSection(&mutex);
-  extern void PWaitOnExitConsoleWindow();
-  PWaitOnExitConsoleWindow();
+  PProcess::Current().WaitOnExitConsoleWindow();
 #elif defined(P_PTHREADS)
   pthread_mutex_destroy(&mutex);
 #elif defined(P_VXWORKS)
@@ -812,10 +812,8 @@ PMemoryHeap::~PMemoryHeap()
 {
   _CrtMemDumpAllObjectsSince(&initialState);
 
-  if (hadCrtDumpLeak) {
-    extern void PWaitOnExitConsoleWindow();
-    PWaitOnExitConsoleWindow();
-  }
+  if (hadCrtDumpLeak)
+    PProcess::Current().WaitOnExitConsoleWindow();
 
   _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) & ~_CRTDBG_LEAK_CHECK_DF);
 }

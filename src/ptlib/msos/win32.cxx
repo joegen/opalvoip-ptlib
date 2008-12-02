@@ -1116,8 +1116,7 @@ PProcess::~PProcess()
 #endif
 
 #if _DEBUG
-  extern void PWaitOnExitConsoleWindow();
-  PWaitOnExitConsoleWindow();
+  WaitOnExitConsoleWindow();
 #endif
 }
 
