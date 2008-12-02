@@ -632,7 +632,7 @@ class PProcess : public PThread
     };
   //@}
 
-  private:
+  protected:
     void Construct();
 
   // Member variables
@@ -680,6 +680,7 @@ class PProcess : public PThread
     int maxHandles;
     // Maximum number of file handles process can open.
 
+    bool m_library;
 
     PDictionary<POrdinalKey, PThread> activeThreads;
     PMutex                            activeThreadMutex;
@@ -694,6 +695,33 @@ class PProcess : public PThread
 #include "unix/ptlib/pprocess.h"
 #endif
 };
+
+
+/** Class for a process that is a dynamically loaded library.
+ */
+ class PLibraryProcess : public PProcess
+ {
+  PCLASSINFO(PLibraryProcess, PProcess);
+
+  public:
+  /**@name Construction */
+  //@{
+    /** Create a new process instance.
+     */
+    PLibraryProcess(
+      const char * manuf = "",         ///< Name of manufacturer
+      const char * name = "",          ///< Name of product
+      WORD majorVersion = 1,           ///< Major version number of the product
+      WORD minorVersion = 0,           ///< Minor version number of the product
+      CodeStatus status = ReleaseCode, ///< Development status of the product
+      WORD buildNumber = 1             ///< Build number of the product
+    ) : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
+    {
+      m_library = true;
+    }
+  //@}
+ };
+
 
 /*
  *  one instance of this class (or any descendants) will be instantiated
