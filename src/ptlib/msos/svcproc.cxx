@@ -1540,16 +1540,21 @@ bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
   if (!Open(svc))
     return false;
 
-  SC_ACTION scAction;
-  scAction.Type = action;
-  scAction.Delay = 1000;
+  SC_ACTION scAction[4];
+  PINDEX count;
+  for (count = 0; count < sizeof(scAction)/sizeof(scAction[0])-1; ++count) {
+    scAction[count].Type = action;
+    scAction[count].Delay = 1000;
+  }
+  scAction[count].Type = SC_ACTION_NONE;
+  scAction[count].Delay = 1000;
 
   SERVICE_FAILURE_ACTIONS sfActions;
-  sfActions.dwResetPeriod = INFINITE;
+  sfActions.dwResetPeriod = 300; // 5 minutes
   sfActions.lpRebootMsg = "";
   sfActions.lpCommand = "";
-  sfActions.cActions = 1;
-  sfActions.lpsaActions = &scAction;
+  sfActions.cActions = ++count;
+  sfActions.lpsaActions = scAction;
 
   return ChangeServiceConfig2(schService, SERVICE_CONFIG_FAILURE_ACTIONS, &sfActions);
 }
