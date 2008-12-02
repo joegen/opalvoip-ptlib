@@ -43,6 +43,7 @@
 
     virtual PBoolean IsServiceProcess() const;
     virtual PBoolean IsGUIProcess() const;
+    void WaitOnExitConsoleWindow();
 
   private:
     PLIST(ThreadList, PThread);

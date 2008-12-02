@@ -69,13 +69,15 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 }
 #endif // _WIN32_WCE
 
-void PWaitOnExitConsoleWindow()
+
+void PProcess::WaitOnExitConsoleWindow()
 {
 #ifndef _WIN32_WCE
-  EnumWindows(EnumWindowsProc, GetCurrentProcessId());
-#else
+  if (!m_library)
+    EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 #endif // _WIN32_WCE
 }
+
 
 #ifndef _WIN32_WCE
 class PImageDLL : public PDynaLink
