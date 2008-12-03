@@ -37,10 +37,13 @@
 
 #undef PCREATE_PROCESS
 #define PCREATE_PROCESS(cls) \
-  extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) \
-    { PProcess::PreInitialise(__argc, __argv, _environ); \
-      static cls instance; \
-      return instance._main(hInst); \
+  extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPTSTR, int) \
+    { \
+      cls *pInstance = new cls(); \
+      pInstance->PreInitialise(__argc, __argv, _environ); \
+      int terminationValue = pInstance->_main(hInst); \
+      delete pInstance; \
+      return terminationValue; \
     }
 
 
