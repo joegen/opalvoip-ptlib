@@ -38,11 +38,11 @@
 #include <ptlib/pluginmgr.h>
 #include <ptclib/delaychan.h>
 
+#if P_VFW_CAPTURE
+
 #ifdef _MSC_VER
-#ifndef _WIN32_WCE
 #pragma comment(lib, "vfw32.lib")
 #pragma comment(lib, "gdi32.lib")
-#endif
 #endif
 
 namespace PWLibStupidLinkerHacks {
@@ -171,6 +171,10 @@ BOOL VFWAPI capGetDriverDescriptionA (WORD wDriverIndex, LPSTR lpszName,
 
 #define capGetDriverDescription capGetDriverDescriptionA
 #define capCreateCaptureWindow capCreateCaptureWindowA
+
+#else // __MINGW32
+
+  #include <vfw.h>
 
 #endif // __MINGW32
 
@@ -1045,6 +1049,8 @@ void PVideoInputDevice_VideoForWindows::HandleCapture(PThread &, INT)
   if (!initSucceeded)
     threadStarted.Signal();
 }
+
+#endif // P_VFW_CAPTURE
 
 
 ///////////////////////////////////////////////////////////////////////////////
