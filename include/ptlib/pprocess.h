@@ -53,31 +53,33 @@
  */
 #ifdef P_VXWORKS
 #define PCREATE_PROCESS(cls) \
-  PProcess::PreInitialise(0, NULL, NULL); \
   cls instance; \
   instance._main();
 #elif defined(P_RTEMS)
 #define PCREATE_PROCESS(cls) \
 extern "C" {\
    void* POSIX_Init( void* argument) \
-     { PProcess::PreInitialise(0, 0, 0); \
+     { \
        static cls instance; \
        exit( instance._main() ); \
      } \
 }
 #elif defined(_WIN32_WCE)
 #define PCREATE_PROCESS(cls) \
-  int WinMain(HINSTANCE, HINSTANCE, LPWSTR, int) \
-    { cls *pInstance = new cls(); \
-      int terminationValue = pInstance->_main(); \
+  int WinMain(HINSTANCE hInst, HINSTANCE, LPWSTR cmdLine, int) \
+    { \
+      cls *pInstance = new cls(); \
+      pInstance->GetArguments().SetArgs(cmdLine); \
+      int terminationValue = pInstance->_main(hInst); \
       delete pInstance; \
       return terminationValue; \
     }
 #else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
-    { PProcess::PreInitialise(argc, argv, envp); \
+    { \
       cls *pInstance = new cls(); \
+      pInstance->PreInitialise(argc, argv, envp); \
       int terminationValue = pInstance->_main(); \
       delete pInstance; \
       return terminationValue; \
@@ -564,7 +566,7 @@ class PProcess : public PThread
     /**Internal initialisation function called directly from
        #_main()#. The user should never call this function.
      */
-    static void PreInitialise(
+    void PreInitialise(
       int argc,     // Number of program arguments.
       char ** argv, // Array of strings for program arguments.
       char ** envp  // Array of string for the system environment
@@ -636,11 +638,6 @@ class PProcess : public PThread
     void Construct();
 
   // Member variables
-    static int p_argc;
-    static char ** p_argv;
-    static char ** p_envp;
-    // main arguments
-
     int terminationValue;
     // Application return value
 
