@@ -720,7 +720,10 @@ class PProcess : public PThread
       m_library = true;
     }
   //@}
- };
+
+    ///< Dummy Main() as libraries do not have one.
+    virtual void Main() { }
+};
 
 
 /*
