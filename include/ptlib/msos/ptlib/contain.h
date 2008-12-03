@@ -345,7 +345,7 @@ class RegistryKey
   #include <fcntl.h>
   #include <direct.h>
   #include <time.h>
-  #include <vfw.h>
+
 #else
 
   #include <ptlib/wm/stdlibx.h>
@@ -356,7 +356,6 @@ class RegistryKey
   #else
     #include <time.h>
   #endif
-  #include <ptlib/wm/cevfw.h>
 
 #ifndef MB_TASKMODAL
   #define MB_TASKMODAL MB_APPLMODAL
