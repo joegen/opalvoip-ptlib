@@ -461,7 +461,7 @@ PXConfig * PXConfigDictionary::GetEnvironmentInstance()
   mutex.Wait();
   if (environmentInstance == NULL) {
     environmentInstance = new PXConfig;
-    environmentInstance->ReadFromEnvironment(PProcess::Current().PXGetEnvp());
+    environmentInstance->ReadFromEnvironment(environ);
   }
   mutex.Signal();
   return environmentInstance;
