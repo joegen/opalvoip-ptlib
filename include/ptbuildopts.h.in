@@ -584,26 +584,26 @@
 
 #if defined(_MSC_VER)
 
-#ifdef _WIN32_WCE
+  #ifdef _WIN32_WCE
 
-  //#define P_DIRECTSOUND 1
-  #define P_DIRECTSHOW 1
-  #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
-  #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
-  
-#else
+    //#define P_DIRECTSOUND 1
+    #define P_DIRECTSHOW 1
+    #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
+    #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
 
-  #undef P_DIRECTSOUND
-  #undef P_DIRECTSOUND_WINCE
+    #undef P_VFW_CAPTURE
+    
+  #else // _WIN32_WCE
 
-  #undef P_DIRECTX_DDRAW_H
-  #undef P_DIRECTSHOW_DDRAW_H
+    #undef P_DIRECTSOUND
+    #undef P_DIRECTSOUND_WINCE
 
-  #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
-    #undef P_DIRECTSHOW
-  #endif
+    #undef P_DIRECTX_DDRAW_H
+    #undef P_DIRECTSHOW_DDRAW_H
 
-  #if defined(_MSC_VER)
+    #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
+      #undef P_DIRECTSHOW
+    #endif
 
     #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
 
@@ -640,15 +640,16 @@
       #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
       #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
 
-    #endif
+    #endif // P_DIRECTSHOW
 
-  #endif
+  #endif // _WIN32_WCE
 
-#endif
 #else /* defined(_MSC_VER)*/
+
   #undef P_DIRECTSHOW
   #undef P_DIRECTX
   #undef P_VFW_CAPTURE
+
 #endif /* defined(_MSC_VER)*/
 
 
