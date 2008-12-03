@@ -1478,9 +1478,6 @@ PString PConfigArgs::CharToString(char ch) const
 // PProcess
 
 PProcess * PProcessInstance;
-int PProcess::p_argc;
-char ** PProcess::p_argv;
-char ** PProcess::p_envp;
 
 typedef std::map<PString, PProcessStartup *> PProcessStartupList;
 
@@ -1491,11 +1488,23 @@ int PProcess::_main(void *)
 }
 
 
-void PProcess::PreInitialise(int c, char ** v, char ** e)
+void PProcess::PreInitialise(int c, char ** v, char **)
 {
-  p_argc = c;
-  p_argv = v;
-  p_envp = e;
+  if (executableFile.IsEmpty()) {
+    PString execFile = v[0];
+    if (PFile::Exists(execFile))
+      executableFile = execFile;
+    else {
+      execFile += ".exe";
+      if (PFile::Exists(execFile))
+        executableFile = execFile;
+    }
+  }
+
+  if (productName.IsEmpty())
+    productName = executableFile.GetTitle().ToLower();
+
+  arguments.SetArgs(c-1, v+1);
 }
 
 
@@ -1530,26 +1539,12 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #else // P_RTEMS
 
-  if (p_argv != 0 && p_argc > 0) {
-    executableFile = p_argv[0];
-    arguments.SetArgs(p_argc-1, p_argv+1);
-  }
-
 #ifdef _WIN32
-  if (executableFile.IsEmpty()) {
-    // Try to get the real image path for this process
-    PVarString moduleName;
-    if (GetModuleFileName(GetModuleHandle(NULL), moduleName.GetPointer(1024), 1024) > 0) {
-      executableFile = moduleName;
-      executableFile.Replace("\\??\\","");
-    }
-  }
-  else {
-    if (!PFile::Exists(executableFile)) {
-      PString execFile = executableFile + ".exe";
-      if (PFile::Exists(execFile))
-        executableFile = execFile;
-    }
+  // Try to get the real image path for this process
+  PVarString moduleName;
+  if (GetModuleFileName(GetModuleHandle(NULL), moduleName.GetPointer(1024), 1024) > 0) {
+    executableFile = moduleName;
+    executableFile.Replace("\\??\\","");
   }
 
 #if defined(P_VIDEO)  && defined(P_VFW_CAPTURE)
