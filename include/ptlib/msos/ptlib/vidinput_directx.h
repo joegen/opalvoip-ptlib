@@ -323,7 +323,6 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PComPtr<ICaptureGraphBuilder2> m_pBuilder;
     PComPtr<IBaseFilter>           m_pCapture;
     PComPtr<IMediaControl>         m_pMediaControl;
-    PComPtr<IMediaEventEx>         m_pMediaEvent;
 
     bool            m_isCapturing;
     PINDEX          m_maxFrameBytes;
@@ -337,10 +336,15 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
         MySampleGrabber(HRESULT * hr);
 
         virtual HRESULT CheckMediaType(const CMediaType *media);
-        virtual HRESULT DoRenderSample(IMediaSample *sample);
         virtual HRESULT ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop);
+        virtual HRESULT DoRenderSample(IMediaSample *sample);
 
         HRESULT GetCurrentBuffer(long *, long *);
+
+      private:
+        PMutex m_sampleMutex;
+        long   m_sampleSize;
+        BYTE * m_sampleData;
     };
 
     PComPtr<MySampleGrabber> m_pSampleGrabber;
