@@ -156,12 +156,15 @@ class PInterfaceMonitor : public PProcessStartup
     typedef PSmartPtr<PInterfaceMonitorClient> ClientPtr;
 
     typedef std::list<PInterfaceMonitorClient *> ClientList_T;
-    ClientList_T              currentClients;
-    PIPSocket::InterfaceTable currentInterfaces;
+    ClientList_T m_clients;
+    PMutex       m_clientsMutex;
+
+    PIPSocket::InterfaceTable m_interfaces;
+    PMutex                    m_interfacesMutex;
 
     bool           m_runMonitorThread;
     PTimeInterval  m_refreshInterval;
-    PMutex         m_mutex;
+    PMutex         m_threadMutex;
     PThread      * m_updateThread;
     PSyncPoint     m_signalUpdate;
     bool           m_threadRunning;
