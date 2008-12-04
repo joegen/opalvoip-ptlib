@@ -62,6 +62,7 @@ void VidTest::Main()
              "S-frame-size:"
              "R-frame-rate:"
              "C-crop."
+             "T-time:"
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -88,6 +89,7 @@ void VidTest::Main()
            <<    "-S --frame-size size   : video frame size (\"qcif\", \"cif\", WxH)\n"
            <<    "-R --frame-rate size   : video frame rate (frames/second)\n"
            <<    "-C --crop              : crop rather than scale if resizing\n"
+           <<    "-T --time              : time in seconds to run test, no command line\n"
 #if PTRACING
            <<    "-o or --output file   : file name for output of log messages\n"       
            <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
@@ -259,51 +261,58 @@ void VidTest::Main()
                   PThread::NoAutoDeleteThread, PThread::NormalPriority,
                   "GrabAndDisplay");
 
-  // command line
-  for (;;) {
+  if (args.HasOption('T'))
+    PThread::Sleep(args.GetOptionString('T').AsUnsigned()*1000);
+  else {
+    // command line
+    for (;;) {
 
-    // display the prompt
-    cout << "vidtest> " << flush;
-    PCaselessString cmd;
-    cin >> cmd;
+      // display the prompt
+      cout << "vidtest> " << flush;
+      PCaselessString cmd;
+      cin >> cmd;
 
-    if (cmd == "q" || cmd == "x" || cmd == "quit" || cmd == "exit")
-      break;
+      if (cin.eof() || cmd == "q" || cmd == "x" || cmd == "quit" || cmd == "exit")
+        break;
 
-    if (cmd == "fg") {
-      if (!grabber->SetVFlipState(!grabber->GetVFlipState()))
-        cout << "\nCould not toggle Vflip state of video input device" << endl;
-      continue;
-    }
+      if (cmd == "fg") {
+        if (!grabber->SetVFlipState(!grabber->GetVFlipState()))
+          cout << "\nCould not toggle Vflip state of video input device" << endl;
+        continue;
+      }
 
-    if (cmd == "fd") {
-      if (!display->SetVFlipState(!display->GetVFlipState()))
-        cout << "\nCould not toggle Vflip state of video output device" << endl;
-      continue;
-    }
+      if (cmd == "fd") {
+        if (!display->SetVFlipState(!display->GetVFlipState()))
+          cout << "\nCould not toggle Vflip state of video output device" << endl;
+        continue;
+      }
 
-    unsigned width, height;
-    if (PVideoFrameInfo::ParseSize(cmd, width, height)) {
-      pauseGrabAndDisplay.Signal();
-      if  (!grabber->SetFrameSizeConverter(width, height))
-        cout << "Video input device could not be set to size " << width << 'x' << height << endl;
-      if  (!display->SetFrameSizeConverter(width, height))
-        cout << "Video output device could not be set to size " << width << 'x' << height << endl;
-      resumeGrabAndDisplay.Signal();
-      continue;
-    }
+      unsigned width, height;
+      if (PVideoFrameInfo::ParseSize(cmd, width, height)) {
+        pauseGrabAndDisplay.Signal();
+        if  (!grabber->SetFrameSizeConverter(width, height))
+          cout << "Video input device could not be set to size " << width << 'x' << height << endl;
+        if  (!display->SetFrameSizeConverter(width, height))
+          cout << "Video output device could not be set to size " << width << 'x' << height << endl;
+        resumeGrabAndDisplay.Signal();
+        continue;
+      }
 
-    cout << "Select:\n"
-            "  fg     : Flip video input top to bottom\n"
-            "  fd     : Flip video output top to bottom\n"
-            "  qcif   : Set size of grab & display to qcif\n"
-            "  cif    : Set size of grab & display to cif\n"
-            "  WxH    : Set size of grab & display W by H\n"
-            "  Q or X : Exit program\n" << endl;
-  } // end for
+      cout << "Select:\n"
+              "  fg     : Flip video input top to bottom\n"
+              "  fd     : Flip video output top to bottom\n"
+              "  qcif   : Set size of grab & display to qcif\n"
+              "  cif    : Set size of grab & display to cif\n"
+              "  WxH    : Set size of grab & display W by H\n"
+              "  Q or X : Exit program\n" << endl;
+    } // end for
+  }
 
   cout << "Exiting." << endl;
   exitGrabAndDisplay.Signal();
+
+  delete display;
+  delete grabber;
 }
 
 
