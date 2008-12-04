@@ -115,13 +115,15 @@ void PInterfaceMonitor::SetRunMonitorThread(bool runMonitorThread)
 
 void PInterfaceMonitor::Start()
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_threadMutex);
   
   if (m_updateThread != NULL) // Already running
     m_signalUpdate.Signal();
   else {
-    PIPSocket::GetInterfaceTable(currentInterfaces);
-    PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
+    m_interfacesMutex.Wait();
+    PIPSocket::GetInterfaceTable(m_interfaces);
+    PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << m_interfaces << setfill(' '));
+    m_interfacesMutex.Signal();
 
     if (m_runMonitorThread) {
       m_threadRunning = true;
@@ -134,22 +136,22 @@ void PInterfaceMonitor::Start()
 
 void PInterfaceMonitor::Stop()
 {
-  m_mutex.Wait();
+  m_threadMutex.Wait();
 
   // shutdown the update thread
   if (m_updateThread != NULL) {
     m_threadRunning = false;
     m_signalUpdate.Signal();
 
-    m_mutex.Signal();
+    m_threadMutex.Signal();
     m_updateThread->WaitForTermination();
-    m_mutex.Wait();
+    m_threadMutex.Wait();
 
     delete m_updateThread;
     m_updateThread = NULL;
   }
 
-  m_mutex.Signal();
+  m_threadMutex.Signal();
 }
 
 
@@ -206,39 +208,43 @@ void PInterfaceMonitor::RefreshInterfaceList()
   PIPSocket::InterfaceTable newInterfaces;
   PIPSocket::GetInterfaceTable(newInterfaces);
 
-  PWaitAndSignal guard(m_mutex);
+  m_interfacesMutex.Wait();
 
   // if changed, then update the internal list
-  if (!CompareInterfaceLists(currentInterfaces, newInterfaces)) {
-
-    PIPSocket::InterfaceTable oldInterfaces = currentInterfaces;
-    currentInterfaces = newInterfaces;
-    
-    PTRACE(4, "IfaceMon\tInterface change detected, new list:\n" << setfill('\n') << currentInterfaces << setfill(' '));
-    
-    // calculate the set of interfaces to add / remove beforehand
-    PIPSocket::InterfaceTable interfacesToAdd;
-    PIPSocket::InterfaceTable interfacesToRemove;
-    interfacesToAdd.DisallowDeleteObjects();
-    interfacesToRemove.DisallowDeleteObjects();
-    
-    PINDEX i;
-    // look for interfaces to add that are in new list that are not in the old list
-    for (i = 0; i < newInterfaces.GetSize(); ++i) {
-      PIPSocket::InterfaceEntry & newEntry = newInterfaces[i];
-      if (!newEntry.GetAddress().IsLoopback() && !IsInterfaceInList(newEntry, oldInterfaces))
-        interfacesToAdd.Append(&newEntry);
-    }
-    // look for interfaces to remove that are in old list that are not in the new list
-    for (i = 0; i < oldInterfaces.GetSize(); ++i) {
-      PIPSocket::InterfaceEntry & oldEntry = oldInterfaces[i];
-      if (!oldEntry.GetAddress().IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
-        interfacesToRemove.Append(&oldEntry);
-    }
-
-    PIPSocket::ClearNameCache();
-    OnInterfacesChanged(interfacesToAdd, interfacesToRemove);
+  if (CompareInterfaceLists(m_interfaces, newInterfaces)) {
+    m_interfacesMutex.Signal();
+    return;
   }
+
+  PIPSocket::InterfaceTable oldInterfaces = m_interfaces;
+  m_interfaces = newInterfaces;
+
+  PTRACE(4, "IfaceMon\tInterface change detected, new list:\n" << setfill('\n') << newInterfaces << setfill(' '));
+  
+  m_interfacesMutex.Signal();
+
+  // calculate the set of interfaces to add / remove beforehand
+  PIPSocket::InterfaceTable interfacesToAdd;
+  PIPSocket::InterfaceTable interfacesToRemove;
+  interfacesToAdd.DisallowDeleteObjects();
+  interfacesToRemove.DisallowDeleteObjects();
+  
+  PINDEX i;
+  // look for interfaces to add that are in new list that are not in the old list
+  for (i = 0; i < newInterfaces.GetSize(); ++i) {
+    PIPSocket::InterfaceEntry & newEntry = newInterfaces[i];
+    if (!newEntry.GetAddress().IsLoopback() && !IsInterfaceInList(newEntry, oldInterfaces))
+      interfacesToAdd.Append(&newEntry);
+  }
+  // look for interfaces to remove that are in old list that are not in the new list
+  for (i = 0; i < oldInterfaces.GetSize(); ++i) {
+    PIPSocket::InterfaceEntry & oldEntry = oldInterfaces[i];
+    if (!oldEntry.GetAddress().IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
+      interfacesToRemove.Append(&oldEntry);
+  }
+
+  PIPSocket::ClearNameCache();
+  OnInterfacesChanged(interfacesToAdd, interfacesToRemove);
 }
 
 
@@ -306,9 +312,9 @@ static PBoolean InterfaceMatches(const PIPSocket::Address & addr,
 PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack, 
                                               const PIPSocket::Address & destination)
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_interfacesMutex);
   
-  PIPSocket::InterfaceTable ifaces = currentInterfaces;
+  PIPSocket::InterfaceTable ifaces = m_interfaces;
   
   if (m_interfaceFilter != NULL && !destination.IsAny())
     ifaces = m_interfaceFilter->FilterInterfaces(destination, ifaces);
@@ -333,12 +339,12 @@ PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack,
 bool PInterfaceMonitor::IsValidBindingForDestination(const PIPSocket::Address & binding,
                                                      const PIPSocket::Address & destination)
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_interfacesMutex);
   
   if (m_interfaceFilter == NULL)
     return true;
   
-  PIPSocket::InterfaceTable ifaces = currentInterfaces;
+  PIPSocket::InterfaceTable ifaces = m_interfaces;
   ifaces = m_interfaceFilter->FilterInterfaces(destination, ifaces);
   for (PINDEX i = 0; i < ifaces.GetSize(); i++) {
     if (ifaces[i].GetAddress() == binding)
@@ -355,10 +361,10 @@ bool PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::Inter
   if (!SplitInterfaceDescription(iface, addr, name))
     return false;
 
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_interfacesMutex);
 
-  for (PINDEX i = 0; i < currentInterfaces.GetSize(); ++i) {
-    PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
+  for (PINDEX i = 0; i < m_interfaces.GetSize(); ++i) {
+    PIPSocket::InterfaceEntry & entry = m_interfaces[i];
     if (InterfaceMatches(addr, name, entry)) {
       info = entry;
       return true;
@@ -382,7 +388,7 @@ bool PInterfaceMonitor::IsMatchingInterface(const PString & iface, const PIPSock
 
 void PInterfaceMonitor::SetInterfaceFilter(PInterfaceFilter * filter)
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_interfacesMutex);
   
   delete m_interfaceFilter;
   m_interfaceFilter = filter;
@@ -391,29 +397,31 @@ void PInterfaceMonitor::SetInterfaceFilter(PInterfaceFilter * filter)
 
 void PInterfaceMonitor::AddClient(PInterfaceMonitorClient * client)
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_clientsMutex);
 
-  if (currentClients.empty()) {
+  if (m_clients.empty()) {
     Start();
-    currentClients.push_back(client);
-  } else {
-    for (ClientList_T::iterator iter = currentClients.begin(); iter != currentClients.end(); ++iter) {
+    m_clients.push_back(client);
+  }
+  else {
+    for (ClientList_T::iterator iter = m_clients.begin(); iter != m_clients.end(); ++iter) {
       if ((*iter)->GetPriority() >= client->GetPriority()) {
-        currentClients.insert(iter, client);
+        m_clients.insert(iter, client);
         return;
       }
     }
-    currentClients.push_back(client);
+    m_clients.push_back(client);
   }
 }
 
 
 void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
 {
-  m_mutex.Wait();
-  currentClients.remove(client);
-  bool stop = currentClients.empty();
-  m_mutex.Signal();
+  m_clientsMutex.Wait();
+  m_clients.remove(client);
+  bool stop = m_clients.empty();
+  m_clientsMutex.Signal();
+
   if (stop)
     Stop();
 }
@@ -421,9 +429,9 @@ void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
 void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces,
                                             const PIPSocket::InterfaceTable & removedInterfaces)
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_clientsMutex);
   
-  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
+  for (ClientList_T::reverse_iterator iter = m_clients.rbegin(); iter != m_clients.rend(); ++iter) {
     PInterfaceMonitorClient * client = *iter;
     if (client->LockReadWrite()) {
       for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++)
@@ -438,9 +446,9 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 
 void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
 {
-  PWaitAndSignal guard(m_mutex);
+  PWaitAndSignal guard(m_clientsMutex);
   
-  for (ClientList_T::reverse_iterator iter = currentClients.rbegin(); iter != currentClients.rend(); ++iter) {
+  for (ClientList_T::reverse_iterator iter = m_clients.rbegin(); iter != m_clients.rend(); ++iter) {
     PInterfaceMonitorClient *client = *iter;
     if (client->LockReadWrite()) {
       client->OnRemoveNatMethod(natMethod);
@@ -466,7 +474,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   delete info.socket;
   info.socket = NULL;
   
-  if (natMethod != NULL) {
+  if (natMethod != NULL && natMethod->IsAvailable(binding)) {
     PIPSocket::Address address;
     WORD port;
     natMethod->GetServerAddress(address, port);
@@ -672,7 +680,7 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
 PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr, PNatMethod * natMethod)
 {
-  if (iface.IsEmpty() || iface == "*" || PIPSocket::Address(iface).IsAny())
+  if (iface.IsEmpty() || iface == "*" || (iface[0] != '%' && PIPSocket::Address(iface).IsAny()))
     return new PMonitoredSocketBundle(reuseAddr, natMethod);
   else
     return new PSingleMonitoredSocket(iface, reuseAddr, natMethod);
@@ -1055,8 +1063,10 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (opened && theInfo.socket != NULL && theInfo.socket->IsOpen())
-    return false;
+  if (opened && localPort == port && theInfo.socket != NULL && theInfo.socket->IsOpen())
+    return true;
+
+  Close();
 
   opened = true;
 
@@ -1065,8 +1075,10 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
   if (theEntry.GetAddress().IsAny())
     GetInterfaceInfo(theInterface, theEntry);
 
-  if (theEntry.GetAddress().IsAny())
-    return true;
+  if (theEntry.GetAddress().IsAny()) {
+    PTRACE(3, "MonSock\tNot creating socket as interface \"" << theEntry.GetName() << "\" is  not up.");
+    return true; // Still say successful though
+  }
 
   if (!CreateSocket(theInfo, theEntry.GetAddress()))
     return false;
@@ -1079,6 +1091,9 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 PBoolean PSingleMonitoredSocket::Close()
 {
   PSafeLockReadWrite guard(*this);
+
+  if (!opened)
+    return true;
 
   opened = false;
   interfaceAddedSignal.Close(); // Fail safe break out of Select()
@@ -1150,7 +1165,7 @@ void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
   if (!SplitInterfaceDescription(theInterface, addr, name))
     return;
 
-  if (entry.GetAddress() == addr && entry.GetName().NumCompare(name) == EqualTo) {
+  if ((!addr.IsValid() || entry.GetAddress() == addr) && entry.GetName().NumCompare(name) == EqualTo) {
     theEntry = entry;
     if (!Open(localPort))
       theEntry = InterfaceEntry();
