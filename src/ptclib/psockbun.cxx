@@ -475,7 +475,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   delete info.socket;
   info.socket = NULL;
   
-  if (natMethod != NULL) {
+  if (natMethod != NULL && natMethod->IsAvailable(binding)) {
     PIPSocket::Address address;
     WORD port;
     natMethod->GetServerAddress(address, port);
@@ -681,7 +681,7 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
 PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr, PNatMethod * natMethod)
 {
-  if (iface.IsEmpty() || iface == "*" || PIPSocket::Address(iface).IsAny())
+  if (iface.IsEmpty() || iface == "*" || (iface[0] != '%' && PIPSocket::Address(iface).IsAny()))
     return new PMonitoredSocketBundle(reuseAddr, natMethod);
   else
     return new PSingleMonitoredSocket(iface, reuseAddr, natMethod);
@@ -1064,8 +1064,10 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (opened && theInfo.socket != NULL && theInfo.socket->IsOpen())
-    return false;
+  if (opened && localPort == port && theInfo.socket != NULL && theInfo.socket->IsOpen())
+    return true;
+
+  Close();
 
   opened = true;
 
@@ -1074,8 +1076,10 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
   if (theEntry.GetAddress().IsAny())
     GetInterfaceInfo(theInterface, theEntry);
     
-  if (theEntry.GetAddress().IsAny())
-    return true;
+  if (theEntry.GetAddress().IsAny()) {
+    PTRACE(3, "MonSock\tNot creating socket as interface \"" << theEntry.GetName() << "\" is  not up.");
+    return true; // Still say successful though
+  }
     
   if (!CreateSocket(theInfo, theEntry.GetAddress()))
     return false;
@@ -1088,6 +1092,9 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 PBoolean PSingleMonitoredSocket::Close()
 {
   PSafeLockReadWrite guard(*this);
+
+  if (!opened)
+    return true;
 
   opened = false;
   interfaceAddedSignal.Close(); // Fail safe break out of Select()
@@ -1159,7 +1166,7 @@ void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
   if (!SplitInterfaceDescription(theInterface, addr, name))
     return;
 
-  if (entry.GetAddress() == addr && entry.GetName().NumCompare(name) == EqualTo) {
+  if ((!addr.IsValid() || entry.GetAddress() == addr) && entry.GetName().NumCompare(name) == EqualTo) {
     theEntry = entry;
     if (!Open(localPort))
       theEntry = InterfaceEntry();
