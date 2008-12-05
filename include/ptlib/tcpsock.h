@@ -123,6 +123,10 @@ class PTCPSocket : public PIPSocket
        of this type is then used to generate other "accepting" sockets which
        establish a two way communications channel with the "connecting" socket.
 
+       The Listen() method is only used once in the entire lifetime of
+       the socket. In contract, the Accept() may be used many more
+       times.
+
        If the #port# parameter is zero then the port number as
        defined by the object instance construction or the
        #PIPSocket::SetPort()# function.
