@@ -124,8 +124,11 @@ class PTCPSocket : public PIPSocket
        establish a two way communications channel with the "connecting" socket.
 
        The Listen() method is only used once in the entire lifetime of
-       the socket. In contract, the Accept() may be used many more
-       times.
+       the socket. In contrast, the Accept() may be used many more
+       times. Thus, if you have a socket to collect incoming
+       connections, do a Listen() on it to get things ready, and then
+       Accept(). With each incoming connection, you will do Accept
+       again.
 
        If the #port# parameter is zero then the port number as
        defined by the object instance construction or the
