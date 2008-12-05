@@ -210,23 +210,11 @@ bool ValidateAddressIn(const MIB_IPFORWARD_TABLE2& t,  DWORD IfIndex, LPSOCKADDR
 		{
 			if(IfIndex == t.Table[ul].InterfaceIndex)
 			{
-				if(t.Table[ul].NextHop.si_family == AF_INET6 &&
-				( t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[0]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[1]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[2]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[3]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[4]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[5]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[6]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[7]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[8]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[9]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[10]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[11]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[12]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[13]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[14]
-				|| t.Table[ul].NextHop.Ipv6.sin6_addr.u.Byte[15] ))
+				if(t.Table[ul].NextHop.si_family == AF_INET &&
+				( t.Table[ul].NextHop.Ipv4.sin_addr.S_un.S_un_b.s_b1
+				|| t.Table[ul].NextHop.Ipv4.sin_addr.S_un.S_un_b.s_b1
+				|| t.Table[ul].NextHop.Ipv4.sin_addr.S_un.S_un_b.s_b1
+				|| t.Table[ul].NextHop.Ipv4.sin_addr.S_un.S_un_b.s_b1))
 				{
 					return true;
 				}
