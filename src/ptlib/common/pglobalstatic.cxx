@@ -62,8 +62,8 @@
 
   #if defined(_WIN32) 
     #if ! defined(NO_VIDEO_CAPTURE)
-      #if defined(P_VFW_CAPTURE) 
         PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
+      #if defined(P_VFW_CAPTURE) 
         PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
       #endif /*P_VFW_CAPTURE*/
       #if defined(P_DIRECTSHOW) && defined(P_DIRECTX)
