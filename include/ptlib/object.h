@@ -107,8 +107,8 @@
 #define PAssert2(b, c, m) (b)
 #define PAssertOS(b) (b)
 #define PAssertNULL(p) (p)
-#define PAssertAlways(m)
-#define PAssertAlways2(c, m)
+#define PAssertAlways(m) {}
+#define PAssertAlways2(c, m) {}
 
 #else // P_USE_ASSERTS
 
