@@ -90,7 +90,9 @@ static PBoolean PAssertThreadOp(int retval,
     // Give up and assert
   }
 
+#if P_USE_ASSERTS
   PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
+#endif
   return PFalse;
 }
 
