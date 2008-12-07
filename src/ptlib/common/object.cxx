@@ -76,6 +76,12 @@ PFactoryBase::FactoryMap::~FactoryMap()
   }  
 }
 
+#if !P_USE_ASSERTS
+
+#define PAssertFunc(a, b, c, d) { }
+
+#else
+
 void PAssertFunc(const char * file,
                  int line,
                  const char * className,
@@ -140,6 +146,8 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   
   PAssertFunc(str.str().c_str());
 }
+
+#endif // !P_USE_ASSERTS
 
 PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject&obj) const
 {
