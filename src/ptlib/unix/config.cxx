@@ -49,6 +49,10 @@
 #define	EXTENSION		".ini"
 #define	ENVIRONMENT_CONFIG_STR	"/\~~environment~~\/"
 
+#ifdef P_MACOSX
+#define environ (NULL)
+#endif
+
 //
 //  a single key/value pair
 //
