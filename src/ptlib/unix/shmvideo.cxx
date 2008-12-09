@@ -24,6 +24,8 @@
 #include <ptlib/vconvert.h>
 #include <ptlib/unix/ptlib/shmvideo.h>
 
+#if P_SHM_VIDEO
+
 #ifdef P_MACOSX
 namespace PWLibStupidLinkerHacks {
 	int loadShmVideoStuff;
@@ -469,3 +471,5 @@ PBoolean PVideoInputDevice_Shm::Stop()
 {
 	return PTrue;
 }
+
+#endif
