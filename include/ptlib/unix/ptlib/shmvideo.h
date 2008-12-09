@@ -26,6 +26,8 @@
 #include <ptlib.h>
 #endif
 
+#if P_SHM_VIDEO
+
 #include <ptclib/delaychan.h>
 
 #include <sys/types.h>
@@ -176,5 +178,6 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
     void *shmPtr;
 };
 
+#endif
 
 #endif /* __SHMVIDEO_H__ */
