@@ -595,6 +595,8 @@
     
   #else // _WIN32_WCE
 
+    #define P_VFW_CAPTURE 1
+
     #undef P_DIRECTSOUND
     #undef P_DIRECTSOUND_WINCE
 
