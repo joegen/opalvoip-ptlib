@@ -10691,6 +10691,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <sys/socket.h>
                      #include <netdb.h>
+#define NULL 0
 int
 main ()
 {
