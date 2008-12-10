@@ -10691,11 +10691,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <sys/socket.h>
                      #include <netdb.h>
-#define NULL 0
 int
 main ()
 {
-getnameinfo(NULL, 0, NULL, 0, NULL, 0, 0);
+getnameinfo(0, 0, 0, 0, 0, 0, 0);
   ;
   return 0;
 }
