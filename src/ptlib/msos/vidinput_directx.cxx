@@ -65,7 +65,7 @@ static const GUID MEDIASUBTYPE_IYUV = { 0x56555949, 0x0000, 0x0010, 0x80, 0x00, 
 
 
 static struct {
-    const char * colourFormat;
+    const char * m_colourFormat;
     GUID         m_guid;
 } const ColourFormat2GUID[] =
 {
@@ -75,7 +75,7 @@ static struct {
     { "RGB565",  MEDIASUBTYPE_RGB565 },
     { "RGB555",  MEDIASUBTYPE_RGB555 },
     { "YUV420P", MEDIASUBTYPE_IYUV   },  // aka I420
-    { "YVU420P", MEDIASUBTYPE_YV12   },
+    { "YUV420P", MEDIASUBTYPE_YV12   },
     { "YUV411",  MEDIASUBTYPE_Y411   },
     { "YUV411P", MEDIASUBTYPE_Y41P   },
     { "YUV410P", MEDIASUBTYPE_YVU9   },
@@ -183,7 +183,7 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   : m_isCapturing(false)
   , m_maxFrameBytes(0)
 {
-  PTRACE(4,"PVidDirectShow\tPVideoInputDevice_DirectShow: constructor" );
+  PTRACE(4,"PVidDirectShow\tPVideoInputDevice_DirectShow: constructor");
 
   CoInitializeEx(NULL, COINIT_MULTITHREADED);
 }
@@ -193,6 +193,8 @@ PVideoInputDevice_DirectShow::~PVideoInputDevice_DirectShow()
 {
   Close();
   ::CoUninitialize();
+  PTRACE(4,"PVidDirectShow\tPVideoInputDevice_DirectShow: destructor");
+
 }
 
 
@@ -288,17 +290,18 @@ PBoolean PVideoInputDevice_DirectShow::Start()
   for (unsigned retry = 0; retry < 100; ++retry) {
     long cbBuffer;
     HRESULT hr = m_pSampleGrabber->GetCurrentBuffer(&cbBuffer, NULL);
-    if (SUCCEEDED(hr) && cbBuffer > 0)
-      break;
+    if (SUCCEEDED(hr) && cbBuffer > 0) {
+      m_isCapturing = true;
+      return true;
+    }
 
-    PTRACE_IF(2, hr != VFW_E_WRONG_STATE, "PVidDirectShow\tError waiting for camera: " << ErrorMessage(hr));
+    PTRACE_IF(2, FAILED(hr) && hr != VFW_E_WRONG_STATE, "PVidDirectShow\tError waiting for camera: " << ErrorMessage(hr));
 
     PThread::Current()->Sleep(100); /* Not available */
   }
 
-  m_isCapturing = true;
-
-  return true;
+  PTRACE(2, "PVidDirectShow\tTime out waiting for first frame.");
+  return false;
 }
 
 PBoolean PVideoInputDevice_DirectShow::Stop()
@@ -334,12 +337,13 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE *destFrame, PIND
 {
   long cbBuffer = m_maxFrameBytes;
 
+  CHECK_ERROR_RETURN(m_pSampleGrabber->GetCurrentBuffer(&cbBuffer, NULL));
   if (converter != NULL) {
-    CHECK_ERROR_RETURN(m_pSampleGrabber->GetCurrentBuffer(&cbBuffer, NULL));
-    CHECK_ERROR_RETURN(m_pSampleGrabber->GetCurrentBuffer(&cbBuffer, (long*)m_tempFrame.GetPointer(m_maxFrameBytes)));
+    CHECK_ERROR_RETURN(m_pSampleGrabber->GetCurrentBuffer(&cbBuffer, (long*)m_tempFrame.GetPointer(cbBuffer)));
     converter->Convert(m_tempFrame, destFrame, cbBuffer, bytesReturned);
   }
   else {
+    PAssert(cbBuffer <= m_maxFrameBytes, PLogicError);
     CHECK_ERROR_RETURN(m_pSampleGrabber->GetCurrentBuffer(&cbBuffer, (long*)destFrame));
     if (bytesReturned != NULL)
       *bytesReturned = cbBuffer;
@@ -416,19 +420,6 @@ PBoolean PVideoInputDevice_DirectShow::SetAllParameters(const PString & newColou
          << newWidth << 'x' << newHeight << ", "
          << fps <<"fps)");
 
-  GUID newFormatGUID = MEDIATYPE_NULL;
-  for (int i = 0; i < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); i++) {
-    if (newColourFormat == ColourFormat2GUID[i].colourFormat) {
-      newFormatGUID = ColourFormat2GUID[i].m_guid;
-      break;
-    }
-  }
-
-  if (newFormatGUID == MEDIATYPE_NULL) {
-    PTRACE(1, "PVidDirectShow\tColorspace not supported ("<< newColourFormat << ")");
-    return false;
-  }
-
   PComPtr<IAMStreamConfig> pStreamConfig;
   CHECK_ERROR_RETURN(m_pBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
                                                &MEDIATYPE_Video,
@@ -455,8 +446,22 @@ PBoolean PVideoInputDevice_DirectShow::SetAllParameters(const PString & newColou
           (pMediaFormat->pbFormat != NULL)))
       continue;
 
-    if (newFormatGUID != pMediaFormat->subtype)
-      continue;
+    bool notInTable = true;
+    for (int j = 0; j < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); j++) {
+      if (pMediaFormat->subtype == ColourFormat2GUID[j].m_guid &&
+           newColourFormat == ColourFormat2GUID[j].m_colourFormat) {
+        notInTable = false;
+        break;
+      }
+    }
+
+    if (notInTable) {
+      wchar_t guidName[256];
+      if (StringFromGUID2(pMediaFormat->subtype, guidName, sizeof(guidName)) <= 0)
+        continue; // Can't use this entry!
+      if (newColourFormat != PString(guidName))
+        continue;
+    }
 
     VIDEOINFOHEADER & videoInfo = *(VIDEOINFOHEADER *)pMediaFormat->pbFormat;
 
@@ -722,7 +727,7 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
       bool notInTable = true;
       for (int j = 0; j < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); j++) {
         if (pMediaFormat->subtype == ColourFormat2GUID[j].m_guid) {
-          frameInfo.SetColourFormat(ColourFormat2GUID[j].colourFormat);
+          frameInfo.SetColourFormat(ColourFormat2GUID[j].m_colourFormat);
           notInTable = false;
           break;
         }
