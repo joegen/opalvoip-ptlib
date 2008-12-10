@@ -246,6 +246,16 @@ PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
   return pthread_kill(id, sig) == 0;
 }
 
+void PProcess::PXSetThread(pthread_t id, PThread * thread)
+{
+  activeThreadMutex.Wait();
+  PThread * currentThread = activeThreads.GetAt((PINDEX)id);
+  activeThreads.SetAt((PINDEX)id, thread);
+  activeThreadMutex.Signal();
+
+  if (currentThread != NULL) 
+    delete currentThread;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -280,9 +290,7 @@ PThread::PThread()
 
   PProcess & process = PProcess::Current();
 
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt((PINDEX)PX_threadId, this);
-  process.activeThreadMutex.Signal();
+  process.PXSetThread(PX_threadId, this);
 
   process.SignalTimerChange();
 }
@@ -325,6 +333,8 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
+  pthread_t id = PX_threadId;
+
   if (PX_threadId != 0 && PX_threadId != pthread_self())
     Terminate();
 
@@ -350,7 +360,7 @@ PThread::~PThread()
     if (this == PProcessInstance)
       PProcessInstance = NULL;
     else {
-      PTRACE_IF(1, !autoDelete, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << PX_threadId << ::dec << ")");
+      PTRACE_IF(1, !autoDelete, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << id << ::dec << ")");
     }
   }
 }
@@ -403,7 +413,7 @@ void PThread::Restart()
   PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
 
   // put the thread into the thread list
-  process.activeThreads.SetAt((unsigned)PX_threadId, this);
+  process.PXSetThread(PX_threadId, this);
   if (process.activeThreads.GetSize() > highWaterMark)
     newHighWaterMark = highWaterMark = process.activeThreads.GetSize();
 
