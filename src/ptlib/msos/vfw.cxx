@@ -1168,8 +1168,8 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     PSyncPoint m_started;
     BITMAPINFO m_bitmap;
     bool       m_flipped;
-    int        m_lastX;
-    int        m_lastY;
+    POINT      m_lastPosition;
+    SIZE       m_fixedSize;
 };
 
 
@@ -1233,8 +1233,10 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   m_hWnd = NULL;
   m_thread = NULL;
   m_flipped = PFalse;
-  m_lastX = 0;
-  m_lastY = 0;
+  m_lastPosition.x = 0;
+  m_lastPosition.y = 0;
+  m_fixedSize.cx = 0;
+  m_fixedSize.cy = 0;
 
   m_bitmap.bmiHeader.biSize = sizeof(m_bitmap.bmiHeader);
   m_bitmap.bmiHeader.biWidth = frameWidth;
@@ -1385,10 +1387,10 @@ void PVideoOutputDevice_Window::SetWindowSize()
   RECT rect;
   rect.top = 0;
   rect.left = 0;
-  rect.bottom = frameHeight;
-  rect.right = frameWidth;
+  rect.bottom = m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight;
+  rect.right = m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth;
   ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), false, GetWindowLong(m_hWnd, GWL_EXSTYLE));
-  ::SetWindowPos(m_hWnd, NULL, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE|SWP_NOZORDER);
+  ::SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE);
 }
 
 
@@ -1409,8 +1411,8 @@ PBoolean PVideoOutputDevice_Window::FrameComplete()
 
 PBoolean PVideoOutputDevice_Window::GetPosition(int & x, int & y) const
 {
-  x = m_lastX;
-  y = m_lastY;
+  x = m_lastPosition.x;
+  y = m_lastPosition.y;
   return PTrue;
 }
 
@@ -1452,6 +1454,17 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
+static int GetTokenValue(const PString & deviceName, const char * token, int defaultValue)
+{
+  PINDEX pos = deviceName.Find(token);
+  if (pos == P_MAX_INDEX)
+    return defaultValue;
+
+  pos += strlen(token);
+  return deviceName.Mid(pos).AsInteger();
+}
+
+
 void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
 {
 #ifndef _WIN32_WCE
@@ -1487,17 +1500,16 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
       title = PString(PString::Literal, quotedTitle);
     }
 
-    pos = deviceName.Find("X=");
-    m_lastX = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
-
-    pos = deviceName.Find("Y=");
-    m_lastY = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : CW_USEDEFAULT;
+    m_lastPosition.x = GetTokenValue(deviceName, "X=", CW_USEDEFAULT);
+    m_lastPosition.y = GetTokenValue(deviceName, "Y=", CW_USEDEFAULT);
+    m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
+    m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
 
     PVarString windowTitle = title;
     m_hWnd = CreateWindow(wndClassName,
                           windowTitle, 
                           dwStyle,
-                          m_lastX, m_lastY, frameWidth, frameHeight,
+                          m_lastPosition.x, m_lastPosition.y, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
     SetWindowSize();
   }
@@ -1530,8 +1542,8 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       if (m_hWnd != NULL) {
         RECT rect;
         GetWindowRect(m_hWnd, &rect);
-        m_lastX = rect.left;
-        m_lastY = rect.top;
+        m_lastPosition.x = rect.left;
+        m_lastPosition.y = rect.top;
       }
       break;
 
