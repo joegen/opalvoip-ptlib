@@ -1505,6 +1505,19 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
     m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
     m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
 
+    if (m_lastPosition.x == CW_USEDEFAULT && m_lastPosition.y == CW_USEDEFAULT) {
+      if (hParent != NULL) {
+        RECT rect;
+        GetWindowRect(hParent, &rect);
+        m_lastPosition.x = (rect.right + rect.left - frameWidth)/2;
+        m_lastPosition.y = (rect.bottom + rect.top - frameHeight)/2;
+      }
+      else {
+        m_lastPosition.x = (GetSystemMetrics(SM_CXSCREEN) - frameWidth)/2;
+        m_lastPosition.y = (GetSystemMetrics(SM_CYSCREEN) - frameHeight)/2;
+      }
+    }
+
     PVarString windowTitle = title;
     m_hWnd = CreateWindow(wndClassName,
                           windowTitle, 
