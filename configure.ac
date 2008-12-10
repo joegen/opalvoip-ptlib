@@ -1175,7 +1175,7 @@ else
   else
     AC_TRY_COMPILE([#include <sys/socket.h>
                      #include <netdb.h>],
-                     [getnameinfo(NULL, 0, NULL, 0, NULL, 0, 0);], HAS_IPV6=yes, HAS_IPV6=no)
+                     [getnameinfo(0, 0, 0, 0, 0, 0, 0);], HAS_IPV6=yes, HAS_IPV6=no)
     if test $HAS_IPV6 = no ; then
       AC_MSG_RESULT(no)
     else
