@@ -85,7 +85,6 @@ static struct {
   unsigned     bitsPerPixel;
 } colourFormatBPPTab[] = {
   { "YUV420P", 12 },
-  { "YVU420P", 12 },
   { "I420",    12 },
   { "IYUV",    12 },
   { "YUV420",  12 },
