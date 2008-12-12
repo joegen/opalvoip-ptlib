@@ -157,12 +157,14 @@ PGloballyUniqueID::PGloballyUniqueID(const PString & str)
 }
 
 
+#if P_ASN
 PGloballyUniqueID::PGloballyUniqueID(const PASN_OctetString & newId)
   : PBYTEArray(newId)
 {
   PAssert(GetSize() == GUID_SIZE, PInvalidParameter);
   SetSize(GUID_SIZE);
 }
+#endif
 
 
 PObject * PGloballyUniqueID::Clone() const

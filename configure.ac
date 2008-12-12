@@ -1201,45 +1201,6 @@ else
 fi
 
 dnl ########################################################################
-dnl look for SDL, but only if we have pthreads
-
-dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
-dnl MSWIN_CHECK_FILE libsdl,include\SDL_video.h,P_SDL=1
-dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
-dnl MSWIN_FIND_FILE  libsdl,P_SDL_LIBRARY,SDL.lib,lib
-dnl MSWIN_CHECK_DIR  libsdl,..\sdl*
-dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
-dnl MSWIN_CHECK_DIR  libsdl,\sdl\
-dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
-
-AC_ARG_ENABLE([sdl],
-	      AS_HELP_STRING([--disable-sdl],[disable SDL support]),
-	      [enable_sdl=$enableval],
-	      [enable_sdl=$default_sdl]
-	     )
-
-HAS_SDL=
-if test "$enable_sdl" = "no" ; then
-  AC_MSG_NOTICE(SDL disabled)
-else
-
-  PKG_CHECK_MODULES([SDL], 
-                    [sdl], 
-                    [
-                     HAS_SDL=1
-                     AC_DEFINE(P_SDL, 1, "SDL found")
-                     STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
-                     ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
-dnl                      PKG_REQUIRES="$PKG_REQUIRES sdl"
-                    ],[HAS_SDL=])
-
-dnl to verify:
-dnl     AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext)
-fi
-AC_SUBST(HAS_SDL)
-
-
-dnl ########################################################################
 dnl check for enabling config file support
 dnl MSWIN_DISPLAY    configfile,Config file protocol support
 dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
@@ -1462,6 +1423,44 @@ dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
 PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
+
+dnl ########################################################################
+dnl look for SDL, but only if we have pthreads
+
+dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
+dnl MSWIN_CHECK_FILE libsdl,include\SDL_video.h,P_SDL=1
+dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
+dnl MSWIN_FIND_FILE  libsdl,P_SDL_LIBRARY,SDL.lib,lib
+dnl MSWIN_CHECK_DIR  libsdl,..\sdl*
+dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
+dnl MSWIN_CHECK_DIR  libsdl,\sdl\
+dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
+
+AC_ARG_ENABLE([sdl],
+	      AS_HELP_STRING([--disable-sdl],[disable SDL support]),
+	      [enable_sdl=$enableval],
+	      [enable_sdl=$default_sdl]
+	     )
+
+HAS_SDL=
+if test "x${HAS_VIDEO}" != "x1" ; then
+    AC_MSG_NOTICE(SDL disabled due to disabled dependency HAS_VIDEO)
+else
+  if test "$enable_sdl" = "no" ; then
+    AC_MSG_NOTICE(SDL disabled)
+  else
+    PKG_CHECK_MODULES([SDL], 
+                      [sdl], 
+                      [
+                       HAS_SDL=1
+                       AC_DEFINE(P_SDL, 1, "SDL found")
+                       STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
+                       ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
+                      ],[HAS_SDL=])
+  fi
+fi
+AC_SUBST(HAS_SDL)
+
 
 dnl ########################################################################
 dnl check for video capture support.
