@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PSERIALCHANNEL
-#define _PSERIALCHANNEL
+#ifndef PTLIB_SERIALCHANNEL_H
+#define PTLIB_SERIALCHANNEL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -383,6 +383,8 @@ class PSerialChannel : public PChannel
 #endif
 };
 
-#endif
+
+#endif // PTLIB_SERIALCHANNEL_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

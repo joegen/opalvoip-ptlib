@@ -28,16 +28,13 @@
  * $Date$
  */
 
-#ifndef _PURL_H
-#define _PURL_H
+#ifndef PTLIB_PURL_H
+#define PTLIB_PURL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 #if P_URL
 
@@ -301,7 +298,7 @@ class PURL : public PObject
     );
   //@}
 
-    PBoolean LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo);
+    PBoolean LegacyParse(const PString & url, const PURLLegacyScheme * schemeInfo);
     PString LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const;
 
   protected:
@@ -346,8 +343,8 @@ class PURLScheme : public PObject
 class PURLLegacyScheme : public PURLScheme
 {
   public:
-    PURLLegacyScheme(const char * _scheme)
-      : scheme(_scheme) { }
+    PURLLegacyScheme(const char * s)
+      : scheme(s) { }
 
     PBoolean Parse(const PString & url, PURL & purl) const
     { return purl.LegacyParse(url, this); }
@@ -374,6 +371,7 @@ class PURLLegacyScheme : public PURLScheme
 
 #endif // P_URL
 
-#endif // _PURL_H
+#endif // PTLIB_PURL_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PUDPSOCKET
-#define _PUDPSOCKET
+#ifndef PTLIB_UDPSOCKET_H
+#define PTLIB_UDPSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -207,7 +207,7 @@ protected:
 #endif // P_QOS
 
 
-#endif
+#endif // PTLIB_UDPSOCKET_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

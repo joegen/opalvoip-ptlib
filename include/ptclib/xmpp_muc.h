@@ -29,8 +29,8 @@
  * $Date$
  */
 
-#ifndef _XMPP_MUC
-#define _XMPP_MUC
+#ifndef PTLIB_XMPP_MUC_H
+#define PTLIB_XMPP_MUC_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -131,9 +131,6 @@ namespace XMPP
 
 #endif  // P_EXPAT
 
-#endif  // _XMPP_MUC
+#endif  // PTLIB_XMPP_MUC_H
 
 // End of File ///////////////////////////////////////////////////////////////
-
-
-

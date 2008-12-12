@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PCHANNEL
-#define _PCHANNEL
+#ifndef PTLIB_CHANNEL_H
+#define PTLIB_CHANNEL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -711,6 +711,8 @@ class PChannel : public PObject, public iostream {
 
 };
 
-#endif
+
+#endif // PTLIB_CHANNEL_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -709,7 +709,7 @@ BOOL WritePrivateProfileString(
 //
 // Functions to enable inclusion of windows service based code
 //
-int PServiceProcess::_main(void *) { return 0; };
+int PServiceProcess::InternalMain(void *) { return 0; };
 bool PServiceProcess::IsServiceProcess(void)const { return true; };
 PServiceProcess::PServiceProcess(char const *,
 	char const *, unsigned short, unsigned short,

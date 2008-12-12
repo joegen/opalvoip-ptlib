@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PSNMP_H
-#define _PSNMP_H
+#ifndef PTLIB_PSNMP_H
+#define PTLIB_PSNMP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -295,7 +295,7 @@ class PSNMPServer : public PSNMP, PThread
 
 #endif // P_SNMP
 
-#endif
+#endif // PTLIB_PSNMP_H
 
 
-// End of File.
+// End Of File ///////////////////////////////////////////////////////////////

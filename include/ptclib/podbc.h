@@ -87,16 +87,13 @@
 */
 //--
 
-#if !defined(PODBC_H)
-#define PODBC_H
+#ifndef PTLIB_PODBC_H
+#define PTLIB_PODBC_H
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 #if defined(P_ODBC) && !defined(_WIN32_WCE)
 
@@ -943,5 +940,7 @@ class PODBCRecord : public PObject
 
 #endif // P_ODBC
 
-#endif // !defined(PODBC_H)
+#endif // PTLIB_PODBC_H
 
+
+// End Of File ///////////////////////////////////////////////////////////////

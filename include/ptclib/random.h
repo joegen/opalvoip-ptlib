@@ -28,17 +28,14 @@
  * $Date$
  */
 
-#ifndef _PRANDOM
-#define _PRANDOM
+#ifndef PTLIB_RANDOM_H
+#define PTLIB_RANDOM_H
 
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 /**Mersenne Twister random number generator.
    An application would create a static instance of this class, and then use
@@ -134,7 +131,7 @@ class PRandom
 };
 
 
-#endif  // _PRANDOM
+#endif  // PTLIB_RANDOM_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

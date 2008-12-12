@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PHTML
-#define _PHTML
+#ifndef PTLIB_HTML_H
+#define PTLIB_HTML_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1012,7 +1012,7 @@ class PHTML : public PStringStream
 };
 
 
-#endif
+#endif // PTLIB_HTML_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

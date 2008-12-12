@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTHREAD
-#define _PTHREAD
+#ifndef PTLIB_THREAD_H
+#define PTLIB_THREAD_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -423,16 +423,20 @@ class PThreadMain : public PThread
   PCLASSINFO(PThreadMain, PThread);
   public:
     typedef void (*FnType)(); 
-    PThreadMain(FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn)
-    { PThread::Resume(); }
-    PThreadMain(const char * _file, int _line, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
-        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn)
-    { PThread::Resume(); }
+    PThreadMain(FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_function(function)
+      { PThread::Resume(); }
+    PThreadMain(const char * file, int line, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
+      , m_function(function)
+      { PThread::Resume(); }
     virtual void Main()
-    { (*fn)(); }
-    FnType fn;
+      { (*m_function)(); }
+
+  protected:
+    FnType m_function;
 };
 
 /*
@@ -452,20 +456,25 @@ class PThread1Arg : public PThread
 {
   PCLASSINFO(PThread1Arg, PThread);
   public:
-    typedef void (*FnType)(Arg1Type arg1); 
-    PThread1Arg(Arg1Type _arg1, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
-        arg1(_arg1)
+    typedef void (*FnType)(Arg1Type arg1);
+
+    PThread1Arg(Arg1Type arg1, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_function(function)
+      , m_arg1(arg1)
     { PThread::Resume(); }
-    PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
-        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
-        arg1(_arg1)
-    { PThread::Resume(); }
+    PThread1Arg(const char * file, int line, Arg1Type arg1, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line))
+      , m_function(function)
+      , m_arg1(_arg1)
+      { PThread::Resume(); }
     virtual void Main()
-    { (*fn)(arg1); }
-    FnType fn;
-    Arg1Type arg1;
+      { (*m_function)(m_arg1); }
+
+  protected:
+    FnType   m_function;
+    Arg1Type m_arg1;
 };
 
 
@@ -487,20 +496,26 @@ class PThread2Arg : public PThread
   PCLASSINFO(PThread2Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2); 
-    PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
-        arg1(_arg1), arg2(_arg2)
-    { PThread::Resume(); }
-    PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
-        arg1(_arg1), arg2(_arg2)
-    { PThread::Resume(); }
+    PThread2Arg(Arg1Type arg1, Arg2Type arg2, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      { PThread::Resume(); }
+    PThread2Arg(const char * file, int line, Arg1Type arg1, Arg2Type arg2, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line))
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      { PThread::Resume(); }
     virtual void Main()
-    { (*fn)(arg1, arg2); }
-    FnType fn;
-    Arg1Type arg1;
-    Arg2Type arg2;
+      { (*m_function)(m_arg1, m_arg2); }
+
+  protected:
+    FnType   m_function;
+    Arg1Type m_arg1;
+    Arg2Type m_arg2;
 };
 
 /*
@@ -521,21 +536,29 @@ class PThread3Arg : public PThread
   PCLASSINFO(PThread3Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3); 
-    PThread3Arg(Arg1Type _arg1, Arg2Type _arg2, Arg3Type _arg3, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
-        arg1(_arg1), arg2(_arg2), arg3(_arg3)
-    { PThread::Resume(); }
-    PThread3Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, Arg3Type _arg3, FnType _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
-        arg1(_arg1), arg2(_arg2), arg3(_arg3)
-    { PThread::Resume(); }
+    PThread3Arg(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , fn(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      , m_arg3(arg3)
+      { PThread::Resume(); }
+    PThread3Arg(const char * file, int line, Arg1Type arg1, Arg2Type arg2, Arg3Type arg3, FnType function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line))
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      , m_arg3(arg3)
+      { PThread::Resume(); }
     virtual void Main()
-    { (*fn)(arg1, arg2, arg3); }
-    FnType fn;
-    Arg1Type arg1;
-    Arg2Type arg2;
-    Arg2Type arg3;
+      { (*m_function)(m_arg1, m_arg2, m_arg3); }
+
+  protected:
+    FnType   m_function;
+    Arg1Type m_arg1;
+    Arg2Type m_arg2;
+    Arg2Type m_arg3;
 };
 
 /*
@@ -561,21 +584,23 @@ class PThreadObj : public PThread
   PCLASSINFO(PThreadObj, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(); 
-    PThreadObj(ObjType & _obj, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
-        obj(_obj), fn(_fn)
-    { PThread::Resume(); }
-    PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+    PThreadObj(ObjType & obj, ObjTypeFn function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_object(obj)
+      , m_function(function)
+      { PThread::Resume(); }
+    PThreadObj(const char * file, int line, ObjType & obj, ObjTypeFn function, bool autoDelete = false)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
-        obj(_obj), fn(_fn)
-    { PThread::Resume(); }
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
+      , m_object(obj)
+      , m_function(function)
+      { PThread::Resume(); }
     void Main()
-    { (obj.*fn)(); }
+      { (m_object.*m_function)(); }
 
   protected:
-    ObjType & obj;
-    ObjTypeFn fn;
+    ObjType & m_object;
+    ObjTypeFn m_function;
 };
 
 
@@ -601,22 +626,26 @@ class PThreadObj1Arg : public PThread
   PCLASSINFO(PThreadObj1Arg, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
-    PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
-				obj(_obj), fn(_fn), arg1(_arg1)
-    { PThread::Resume(); }
-    PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
-				obj(_obj), fn(_fn), arg1(_arg1)
-    { PThread::Resume(); }
+    PThreadObj1Arg(ObjType & _ob, Arg1Type arg1, ObjTypeFn function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_object(obj)
+      , m_function(function)
+      , m_arg1(arg1)
+      { PThread::Resume(); }
+    PThreadObj1Arg(const char * file, int line, ObjType & obj, Arg1Type arg1, ObjTypeFn function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
+      , m_object(obj)
+      , m_function(function)
+      , m_arg1(arg1)
+      { PThread::Resume(); }
     void Main()
-    { (obj.*fn)(arg1); }
+    { (m_object.*m_function)(m_arg1); }
 
   protected:
-    ObjType & obj;
-    ObjTypeFn fn;
-    Arg1Type arg1;
+    ObjType & m_object;
+    ObjTypeFn m_function;
+    Arg1Type  m_arg1;
 };
 
 template <class ObjType, typename Arg1Type, typename Arg2Type>
@@ -625,23 +654,29 @@ class PThreadObj2Arg : public PThread
   PCLASSINFO(PThreadObj2Arg, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type, Arg2Type); 
-    PThreadObj2Arg(ObjType & _obj, Arg1Type _arg1, Arg2Type _arg2, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
-      : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
-				obj(_obj), fn(_fn), arg1(_arg1), arg2(_arg2)
-    { PThread::Resume(); }
-    PThreadObj2Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, Arg2Type _arg2, ObjTypeFn _fn, PBoolean _autoDelete = PFalse)
+    PThreadObj2Arg(ObjType & obj, Arg1Type arg1, Arg2Type arg2, ObjTypeFn function, bool autoDelete = false)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_object(obj)
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      { PThread::Resume(); }
+    PThreadObj2Arg(const char * file, int line, ObjType & obj, Arg1Type arg1, Arg2Type arg2, ObjTypeFn function, bool autoDelete = false)
       : PThread(10000, _autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
-				obj(_obj), fn(_fn), arg1(_arg1), arg2(_arg2)
-    { PThread::Resume(); }
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
+      , m_object(obj)
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      { PThread::Resume(); }
     void Main()
-    { (obj.*fn)(arg1, arg2); }
+      { (m_object.*m_function)(m_arg1, m_arg2); }
 
   protected:
-    ObjType & obj;
-    ObjTypeFn fn;
-    Arg1Type arg1;
-    Arg1Type arg2;
+    ObjType & m_object;
+    ObjTypeFn m_function;
+    Arg1Type  m_arg1;
+    Arg1Type  m_arg2;
 };
 
 
@@ -724,6 +759,6 @@ class PThreadLocalStorage
 #pragma warning(default:4355)
 #endif
 
-#endif // _PTHREAD
+#endif // PTLIB_THREAD_H
 
 // End Of File ///////////////////////////////////////////////////////////////

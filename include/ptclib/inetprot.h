@@ -28,16 +28,13 @@
  * $Date$
  */
 
-#ifndef _PINTERNETPROTOCOL
-#define _PINTERNETPROTOCOL
+#ifndef PTLIB_INETPROT_H
+#define PTLIB_INETPROT_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 class PSocket;
 class PIPSocket;
@@ -387,7 +384,7 @@ class PInternetProtocol : public PIndirectChannel
 
 
 
-#endif
+#endif // PTLIB_INETPROT_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

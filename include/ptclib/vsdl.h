@@ -26,8 +26,8 @@
  * $Date$
  */
 
-#ifndef _PVSDL
-#define _PVSDL
+#ifndef PTLIB_VSDL_H
+#define PTLIB_VSDL_H
 
 #if P_SDL
 
@@ -146,5 +146,7 @@ PWLIB_STATIC_LOAD_PLUGIN(SDL, PVideoOutputDevice);
 
 #endif    // P_SDL
 
-#endif
+#endif // PTLIB_VSDL_H
 
+
+// End Of File ///////////////////////////////////////////////////////////////

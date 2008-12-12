@@ -24,8 +24,8 @@
  * Contributor(s): Matthias Schneider <ma30002000@yahoo.de>
  */
 
-#ifndef __DIRECTSHOW_H__
-#define __DIRECTSHOW_H__
+#ifndef PTLIB_DIRECTSHOW_H
+#define PTLIB_DIRECTSHOW_H
 
 
 #include <ptlib.h>
@@ -358,4 +358,4 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 
 #endif /*P_DIRECTSHOW*/
 
-#endif  /* __DIRECTSHOW_H__ */
+#endif  // PTLIB_DIRECTSHOW_H

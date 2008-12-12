@@ -16,16 +16,13 @@
  * $Date$
  */
  
-#ifndef _DTMF_H
-#define _DTMF_H
+#ifndef PTLIB_DTMF_H
+#define PTLIB_DTMF_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 class PDTMFDecoder : public PObject
 {
@@ -254,4 +251,8 @@ class PDTMFEncoder : public PTones
     // Overiding GetSize() screws up the SetSize()
 };
 
-#endif /* _DTMF_H */
+
+#endif // PTLIB_DTMF_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _SOCKS_H
-#define _SOCKS_H
+#ifndef PTLIB_SOCKS_H
+#define PTLIB_SOCKS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -423,7 +423,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
 };
 
 
-#endif  // _SOCKS_H
+#endif  // PTLIB_SOCKS_H
 
 
 // End of File ///////////////////////////////////////////////////////////////

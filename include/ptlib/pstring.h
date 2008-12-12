@@ -30,8 +30,9 @@
  * $Author$
  * $Date$
  */
-#ifndef __PSTRING__
-#define __PSTRING__
+
+#ifndef PTLIB_STRING_H
+#define PTLIB_STRING_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -2963,7 +2964,8 @@ class PRegularExpression : public PObject
     mutable ErrorCodes lastError;
 };
 
-PString psprintf(const char * cfmt, ...);
 
-#endif // #ifndef __PSTRING__
+#endif // #ifndef PTLIB_STRING_H
+
+
 // End Of File ///////////////////////////////////////////////////////////////

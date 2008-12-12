@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PPROCESS
-#define _PPROCESS
+#ifndef PTLIB_PROCESS_H
+#define PTLIB_PROCESS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -54,14 +54,14 @@
 #ifdef P_VXWORKS
 #define PCREATE_PROCESS(cls) \
   cls instance; \
-  instance._main();
+  instance.InternalMain();
 #elif defined(P_RTEMS)
 #define PCREATE_PROCESS(cls) \
 extern "C" {\
    void* POSIX_Init( void* argument) \
      { \
        static cls instance; \
-       exit( instance._main() ); \
+       exit( instance.InternalMain() ); \
      } \
 }
 #elif defined(_WIN32_WCE)
@@ -70,7 +70,7 @@ extern "C" {\
     { \
       cls *pInstance = new cls(); \
       pInstance->GetArguments().SetArgs(cmdLine); \
-      int terminationValue = pInstance->_main(hInst); \
+      int terminationValue = pInstance->InternalMain(hInst); \
       delete pInstance; \
       return terminationValue; \
     }
@@ -80,7 +80,7 @@ extern "C" {\
     { \
       cls *pInstance = new cls(); \
       pInstance->PreInitialise(argc, argv, envp); \
-      int terminationValue = pInstance->_main(); \
+      int terminationValue = pInstance->InternalMain(); \
       delete pInstance; \
       return terminationValue; \
     }
@@ -139,14 +139,19 @@ class PTimerList : public PObject
           Start
         } action;
 
-        RequestType(Action _action, PTimer * _timer) : action(_action), timer(_timer), id(timer->GetTimerId()), sync(NULL) { }
+        RequestType(Action act, PTimer * t)
+          : action(act)
+          , timer(t)
+          , id(timer->GetTimerId())
+          , sync(NULL)
+        { }
 
         PTimer * timer;
         PTimer::IDType id;
         PSyncPoint * sync;
     };
 
-    void QueueRequest(RequestType::Action action, PTimer * timer, bool _isSync = true);
+    void QueueRequest(RequestType::Action action, PTimer * timer, bool isSync = true);
 
   private:
     mutable PAtomicInteger timerId; 
@@ -154,7 +159,7 @@ class PTimerList : public PObject
     // map used to store timer information
     PMutex timerListMutex;
     struct TimerInfoType {
-      TimerInfoType(PTimer * _timer) : timer(_timer)  { removed = false; }
+      TimerInfoType(PTimer * t) : timer(t)  { removed = false; }
       PTimer * timer;
       bool removed;
     };
@@ -564,7 +569,7 @@ class PProcess : public PThread
     PTimerList * GetTimerList();
 
     /**Internal initialisation function called directly from
-       #_main()#. The user should never call this function.
+       #InternalMain()#. The user should never call this function.
      */
     void PreInitialise(
       int argc,     // Number of program arguments.
@@ -573,13 +578,13 @@ class PProcess : public PThread
     );
 
     /**Internal shutdown function called directly from the ~PProcess
-       #_main()#. The user should never call this function.
+       #InternalMain()#. The user should never call this function.
      */
     static void PreShutdown();
     static void PostShutdown();
 
     /// Main function for process, called from real main after initialisation
-    virtual int _main(void * arg = NULL);
+    virtual int InternalMain(void * arg = NULL);
 
     /**@name Operating System URL manager functions */
     /**
@@ -608,11 +613,11 @@ class PProcess : public PThread
         HostSystemURLHandlerInfo()
         { }
 
-        HostSystemURLHandlerInfo(const PString & _type)
-          : type(_type)
+        HostSystemURLHandlerInfo(const PString & t)
+          : type(t)
         { }
 
-        static bool RegisterTypes(const PString & _types, bool force = true);
+        static bool RegisterTypes(const PString & types, bool force = true);
 
         void SetIcon(const PString & icon);
         PString GetIcon() const;
@@ -745,16 +750,18 @@ typedef PFactory<PProcessStartup> PProcessStartupFactory;
 // using an inline definition rather than a #define crashes gcc 2.95. Go figure
 #define P_DEFAULT_TRACE_OPTIONS ( PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine )
 
-template <unsigned _level, unsigned _options = P_DEFAULT_TRACE_OPTIONS >
+template <unsigned level, unsigned options = P_DEFAULT_TRACE_OPTIONS >
 class PTraceLevelSetStartup : public PProcessStartup
 {
   public:
     void OnStartup()
-    { PTrace::Initialise(_level, NULL, _options); }
+    { PTrace::Initialise(level, NULL, options); }
 };
 
 #endif // PTRACING
 
-#endif
+
+#endif // PTLIB_PROCESS_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

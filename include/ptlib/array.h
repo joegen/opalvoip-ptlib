@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _ARRAY_H_
-#define _ARRAY_H_
+#ifndef PTLIB_ARRAY_H
+#define PTLIB_ARRAY_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1250,5 +1250,7 @@ class PBitArray : public PBYTEArray
 };
 
 
-#endif
+#endif // PTLIB_ARRAY_H
+
+
 // End Of File ///////////////////////////////////////////////////////////////

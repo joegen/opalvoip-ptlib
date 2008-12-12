@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PVFILEDEV
-#define _PVFILEDEV
+#ifndef PTLIB_PVFILEDEV_H
+#define PTLIB_PVFILEDEV_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -315,5 +315,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
 #endif // P_VIDFILE
 #endif
 
-#endif // _PVFILEDEV
+#endif // PTLIB_PVFILEDEV_H
 
+
+// End Of File ///////////////////////////////////////////////////////////////

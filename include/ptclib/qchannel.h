@@ -28,17 +28,14 @@
  * $Date$
  */
 
-#ifndef _QCHANNEL_H
-#define _QCHANNEL_H
+#ifndef PTLIB_QCHANNEL_H
+#define PTLIB_QCHANNEL_H
 
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 /** Class for implementing a serial queue channel in memory.
     This implements a simple memory based First In First Out queue. Data
@@ -134,7 +131,7 @@ class PQueueChannel : public PChannel
 };
 
 
-#endif // _QCHANNEL_H
+#endif // PTLIB_QCHANNEL_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -29,8 +29,8 @@
  * $Date$
  */
 
-#ifndef _PFTPSOCKET
-#define _PFTPSOCKET
+#ifndef PTLIB_FTP_H
+#define PTLIB_FTP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -448,7 +448,7 @@ class PFTPServer : public PFTP
 };
 
 
-#endif
+#endif // PTLIB_FTP_H
 
 
 // End of File ///////////////////////////////////////////////////////////////

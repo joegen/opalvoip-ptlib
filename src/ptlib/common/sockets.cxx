@@ -2813,23 +2813,23 @@ PBoolean PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
-PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD _port, char _sep)
+PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char separator)
 {
-  sep  = _sep;
-  port = _port;
+  m_separator= separator;
+  m_port = port;
 
-  PINDEX pos = str.Find(sep);
+  PINDEX pos = str.Find(separator);
   if (pos != P_MAX_INDEX) {
-    port    = (WORD)str.Mid(pos+1).AsInteger();
-    if (!PIPSocket::GetHostAddress(str.Left(pos), address))
-      return PFalse;
+    m_port    = (WORD)str.Mid(pos+1).AsInteger();
+    if (!PIPSocket::GetHostAddress(str.Left(pos), m_address))
+      return false;
   }
-  else if (port == 0) 
-    return PFalse;
-  else if (!PIPSocket::GetHostAddress(str, address))
-    return PFalse;
+  else if (m_port == 0) 
+    return false;
+  else if (!PIPSocket::GetHostAddress(str, m_address))
+    return false;
 
-  return PTrue;
+  return true;
 }
 
 

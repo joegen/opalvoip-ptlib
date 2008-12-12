@@ -28,9 +28,10 @@
  * $Date$
  */
 
+#ifndef PTLIB_PSASL_H
+#define PTLIB_PSASL_H
+
 #if P_SASL2
-#ifndef _PSASL
-#define _PSASL
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -84,7 +85,9 @@ public:
     PBoolean            End();
 };
 
-#endif  // _PSASL
 #endif  // P_SASL2
+
+#endif  // PTLIB_PSASL_H
+
 
 // End of File ///////////////////////////////////////////////////////////////

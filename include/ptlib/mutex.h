@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PMUTEX
-#define _PMUTEX
+#ifndef PTLIB_MUTEX_H
+#define PTLIB_MUTEX_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -109,6 +109,8 @@ typedef PTimedMutex PMutex;
 #define	PCriticalSection PTimedMutex
 #endif
 
-#endif
+
+#endif // PTLIB_MUTEX_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

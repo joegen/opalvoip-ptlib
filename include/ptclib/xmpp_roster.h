@@ -29,8 +29,8 @@
  * $Date$
  */
 
-#ifndef _XMPP_ROSTER
-#define _XMPP_ROSTER
+#ifndef PTLIB_XMPP_ROSTER_H
+#define PTLIB_XMPP_ROSTER_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -145,7 +145,6 @@ namespace XMPP
 
 #endif  // P_EXPAT
 
-#endif  // _XMPP_ROSTER
+#endif  // PTLIB_XMPP_ROSTER_H
 
 // End of File ///////////////////////////////////////////////////////////////
-

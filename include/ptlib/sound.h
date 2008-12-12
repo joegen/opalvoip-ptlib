@@ -32,8 +32,8 @@
  */
 
 
-#ifndef _PSOUND
-#define _PSOUND
+#ifndef PTLIB_SOUND_H
+#define PTLIB_SOUND_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -659,6 +659,8 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
   static PSoundChannelPluginServiceDescriptor<className> className##_descriptor; \
   PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
-#endif
+
+#endif // PTLIB_SOUND_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

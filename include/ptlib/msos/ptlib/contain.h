@@ -31,15 +31,15 @@
  * $Date$
  */
 
-#ifndef _CONTAIN_H
+#ifndef PTLIB_CONTAIN_H
 #ifndef _WIN32_WCE
 #error "Please remove pwlib\include\ptlib\msos from the tool include path" \
 "and from the pre-processor options for this project"
 #endif // !_WIN32_WCE
 #endif
 
-#ifndef _OBJECT_H
-#define _OBJECT_H
+#ifndef PTLIB_MSOS_CONTAIN_H
+#define PTLIB_MSOS_CONTAIN_H
 
 
 #ifdef _MSC_VER
@@ -457,7 +457,7 @@ class RegistryKey
 #endif
 
 
-#endif // _OBJECT_H
+#endif // PTLIB_MSOS_CONTAIN_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

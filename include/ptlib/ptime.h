@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTIME
-#define _PTIME
+#ifndef PTLIB_TIME_H
+#define PTLIB_TIME_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -563,6 +563,8 @@ class PTime : public PObject
 #endif
 };
 
-#endif
+
+#endif // PTLIB_TIME_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////
