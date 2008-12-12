@@ -33,16 +33,11 @@
 
 ifndef PTLIBDIR
 
-ifdef PWLIBDIR
-PTLIBDIR=$(PWLIBDIR)
-else
-
 $(error No PTLIBDIR environment variable defined! \
 You need to define PTLIBDIR! \
 Try something like: \
 PTLIBDIR = $(HOME)/ptlib)
 
-endif
 endif
 
 include $(PTLIBDIR)/make/unix.mak
