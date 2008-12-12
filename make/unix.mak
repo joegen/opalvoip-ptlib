@@ -203,35 +203,8 @@ endif # OpenBSD
 ifeq ($(OSTYPE),NetBSD)
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	+= -m486
-endif
-
-LDLIBS		+= -lossaudio
-
-STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PTLIBDIR)/include
-
-# enable the USE_PTH line to compile using pth
-# enable the USE_NATIVE_THREADS line to compile using native threads
-# enable the USE_UNPROVEN_THREADS line to compile using unproven threads
-#USE_PTH_THREADS := 1
-#USE_UNPROVEN_THREADS := 1
-USE_NATIVE_THREADS := 1
-
-ifdef P_PTHREADS
-ifdef USE_NATIVE_THREADS
-LDLIBS  += -lpthread
-else
-ifdef USE_PTH_THREADS
-STDCCFLAGS += -DP_GNU_PTH
-STDCCFLAGS += -I/usr/pkg/include
-LDFLAGS += -L/usr/pkg/lib
-LDLIBS  += -lpthread
-else
-STDCCFLAGS += -DP_NO_CANCEL
-STDCCFLAGS += -I/usr/pkg/pthreads/include
-LDFLAGS	+= -L/usr/pkg/pthreads/lib
-LDLIBS	+= -lpthread
-endif
+ifdef CPUTYPE
+STDCCFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
