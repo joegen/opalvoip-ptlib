@@ -29,7 +29,7 @@ class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
     class Worker : public PFactory<AbstractClass, KeyType>::WorkerBase 
     {
       public:
-        Worker(const Key_T & key, bool singleton = false)
+        Worker(const KeyType & key, bool singleton = false)
           : PFactory<AbstractClass, KeyType>::WorkerBase(singleton)
         {
           PFactory<AbstractClass, KeyType>::Register(key, this);
@@ -37,9 +37,9 @@ class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
 
         ~Worker()
         {
-          typedef typename PFactory<Abstract_T, KeyType>::WorkerBase WorkerBase_T;
-          typedef std::map<Key_T, WorkerBase_T *> KeyMap_T;
-          Key_T key;
+          typedef typename PFactory<AbstractClass, KeyType>::WorkerBase WorkerBase_T;
+          typedef std::map<KeyType, WorkerBase_T *> KeyMap_T;
+          KeyType key;
 
           KeyMap_T km = PFactory<AbstractClass, KeyType>::GetKeyMap();
 
@@ -55,7 +55,7 @@ class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
         }
 
       protected:
-        virtual Abstract_T * Create(const Key_T & key) const;
+        virtual AbstractClass * Create(const KeyType & key) const;
     };
 };
 
