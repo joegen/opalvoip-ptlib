@@ -71,11 +71,13 @@ class PGloballyUniqueID : public PBYTEArray
     PGloballyUniqueID(
       const PString & str  ///<  String of hex to convert
     );
+#if P_ASN
     /**Create an ID from an octet string in an ASN PDU.
      */
     PGloballyUniqueID(
       const PASN_OctetString & ostr  ///<  Octet string from ASN to convert
     );
+#endif
   //@}
 
   /**@name Overrides from PObject */

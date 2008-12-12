@@ -126,6 +126,8 @@ void PRandom::SetSeed(DWORD seed)
 
 static unsigned redistribute(unsigned value, unsigned minimum, unsigned maximum)
 {
+  if (minimum >= maximum)
+    return maximum;
   unsigned range = maximum - minimum;
   while (value > range)
     value = (value/range) ^ (value%range);

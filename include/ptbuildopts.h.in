@@ -32,6 +32,11 @@
 #define _PT_BUILDOPTS_H
 
 
+#undef    PTLIB_MAJOR
+#undef    PTLIB_MINOR
+#undef    PTLIB_BUILD
+#undef    PTLIB_VERSION
+
 /////////////////////////////////////////////////
 //
 // host type
@@ -54,6 +59,8 @@
 //
 
 #undef SIZEOF_INT
+#undef    P_64BIT
+#undef    PNO_LONG_DOUBLE
 
 /////////////////////////////////////////////////
 //
@@ -61,14 +68,87 @@
 //
 
 #if !defined(P_MACOSX)
-#undef PBYTE_ORDER
+  #undef PBYTE_ORDER
 #else
-#if defined(__BIG_ENDIAN__)
-#define PBYTE_ORDER PBIG_ENDIAN
-#else
-#define PBYTE_ORDER PLITTLE_ENDIAN
+  #if defined(__BIG_ENDIAN__)
+    #define PBYTE_ORDER PBIG_ENDIAN
+  #else
+    #define PBYTE_ORDER PLITTLE_ENDIAN
+  #endif
 #endif
+
+/////////////////////////////////////////////////
+//
+// Runtime dynamic link libraries
+//
+
+#undef P_DYNALINK
+#undef P_PLUGINS
+#undef P_DEFAULT_PLUGIN_DIR
+
+/////////////////////////////////////////////////
+//
+// PThreads and related vars
+//
+
+#undef P_PTHREADS
+#undef P_HAS_SEMAPHORES
+#undef P_HAS_NAMED_SEMAPHORES
+#undef P_PTHREADS_XPG6      
+#undef P_HAS_SEMAPHORES_XPG6
+#undef P_EXCEPTIONS
+
+
+/////////////////////////////////////////////////
+//
+// various non-core functions
+//
+
+#undef P_AUDIO
+#undef P_VIDEO
+#undef NO_VIDEO_CAPTURE
+
+#undef P_REGEX
+#undef P_TTS
+#undef P_ASN
+#undef P_STUN
+#undef P_PIPECHAN
+#undef P_DTMF
+#undef P_WAVFILE
+#undef P_SOCKS
+#undef P_FTP
+#undef P_SNMP
+#undef P_TELNET
+#undef P_REMCONN
+#undef P_SERIAL
+#undef P_POP3SMTP
+
+#undef P_CONFIG_FILE
+#undef P_URL
+#ifdef P_URL
+  #undef P_HTTP
+  #ifdef P_HTTP
+    #undef P_HTTPFORMS
+    #undef P_HTTPSVC
+  #endif
 #endif
+
+#undef P_SOCKAGG
+#undef P_VIDFILE
+#undef P_ODBC
+#undef P_SHM_VIDEO
+
+#undef P_LPIA
+#undef P_HAS_POSIX_READDIR_R
+#undef P_HAS_STL_STREAMS
+#undef P_HAS_ATOMIC_INT
+#undef P_HAS_RECURSIVE_MUTEX
+#undef P_NEEDS_GNU_CXX_NAMESPACE
+#undef PMEMORY_CHECK
+#undef P_HAS_RECVMSG
+#undef P_HAS_UPAD128_T
+#undef P_HAS_INET_NTOP
+
 
 /////////////////////////////////////////////////
 //
@@ -76,15 +156,15 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_HAS_IPV6
+  #undef P_HAS_IPV6
 #endif //  _WIN32_WCE
 
 #if defined(_MSC_VER) && P_HAS_IPV6
 
-#pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
-#pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
+  #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
+  #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
 
-#define P_WINSOCK2_LIBRARY "ws2_32.lib"
+  #define P_WINSOCK2_LIBRARY "ws2_32.lib"
 
 #endif
 
@@ -96,14 +176,14 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_QOS
+  #undef P_QOS
 #endif //  _WIN32_WCE
 
 #if defined(_MSC_VER) && P_QOS
 
-#pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
+  #pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
 
-#define P_WINSOCK2_LIBRARY "ws2_32.lib"
+  #define P_WINSOCK2_LIBRARY "ws2_32.lib"
 
 #endif
 
@@ -374,6 +454,13 @@
 
 #endif
 
+#ifdef P_EXPAT
+  #undef P_VXML
+  #undef P_JABBER
+  #undef P_XMLRPC
+  #undef P_SOAP
+#endif
+
 
 /////////////////////////////////////////////////
 //
@@ -381,27 +468,27 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_LDAP 
+  #undef P_LDAP 
 #endif
 
 #if defined(_MSC_VER) && P_LDAP
 
-#pragma include_alias(<ldap.h>,          <@LDAP_DIR@/include/ldap.h>)
-#pragma include_alias(<lber.h>,          <@LDAP_DIR@/include/lber.h>)
-#pragma include_alias(<lber_types.h>,    <@LDAP_DIR@/include/lber_types.h>)
-#pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
-#pragma include_alias(<ldap_cdefs.h>,    <@LDAP_DIR@/include/ldap_cdefs.h>)
+  #pragma include_alias(<ldap.h>,          <@LDAP_DIR@/include/ldap.h>)
+  #pragma include_alias(<lber.h>,          <@LDAP_DIR@/include/lber.h>)
+  #pragma include_alias(<lber_types.h>,    <@LDAP_DIR@/include/lber_types.h>)
+  #pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
+  #pragma include_alias(<ldap_cdefs.h>,    <@LDAP_DIR@/include/ldap_cdefs.h>)
 
-#ifdef _DEBUG
-#define P_LDAP_LIBRARY "@LDAP_DIR@/DLLDebug/openldapd.lib"
-#else
-#define P_LDAP_LIBRARY "@LDAP_DIR@/DLLRelease/openldap.lib"
+  #ifdef _DEBUG
+    #define P_LDAP_LIBRARY "@LDAP_DIR@/DLLDebug/openldapd.lib"
+  #else
+    #define P_LDAP_LIBRARY "@LDAP_DIR@/DLLRelease/openldap.lib"
+  #endif
+
 #endif
-
-#endif
-
 
 #undef P_MEDIALIB
+
 
 /////////////////////////////////////////////////
 //
@@ -409,15 +496,15 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_DNS 
-#undef P_HAS_RES_NINIT
+  #undef P_DNS 
+  #undef P_HAS_RES_NINIT
 #endif
 
 #if defined(_MSC_VER) && P_DNS
 
-#pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
+  #pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
 
-#define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
+  #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 
 #endif
 
@@ -436,13 +523,13 @@
 
 #if defined(_MSC_VER) && P_SAPI
 
-#pragma include_alias(<sphelper.h>, <@SAPI_DIR@/include/sphelper.h>)
-#pragma include_alias(<sapi.h>, <@SAPI_DIR@/include/sapi.h>)
-#pragma include_alias(<sapiddk.h>, <@SAPI_DIR@/include/sapiddk.h>)
-#pragma include_alias(<SPError.h>, <@SAPI_DIR@/include/SPError.h>)
-#pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
+  #pragma include_alias(<sphelper.h>, <@SAPI_DIR@/include/sphelper.h>)
+  #pragma include_alias(<sapi.h>, <@SAPI_DIR@/include/sapi.h>)
+  #pragma include_alias(<sapiddk.h>, <@SAPI_DIR@/include/sapiddk.h>)
+  #pragma include_alias(<SPError.h>, <@SAPI_DIR@/include/SPError.h>)
+  #pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
 
-#undef P_SAPI_LIBRARY
+  #undef P_SAPI_LIBRARY
 
 #endif
 
@@ -454,17 +541,17 @@
 //
 
 #ifndef _WIN32_WCE
-#undef P_SASL 
-#undef P_SASL2
-#undef P_HAS_SASL_SASL_H 
+  #undef P_SASL 
+  #undef P_SASL2
+  #undef P_HAS_SASL_SASL_H 
 #endif
 
 #if defined(_MSC_VER) && (defined(P_SASL) || defined(P_SASL2))
 
-#pragma include_alias(<sasl/sasl.h>, <@SASL_DIR@/include/sasl.h>)
+  #pragma include_alias(<sasl/sasl.h>, <@SASL_DIR@/include/sasl.h>)
 
-#define P_SASL_LIBRARY "@SASL_DIR@/lib/libsasl.lib"
-#define P_HAS_SASL_SASL_H 1
+  #define P_SASL_LIBRARY "@SASL_DIR@/lib/libsasl.lib"
+  #define P_HAS_SASL_SASL_H 1
 
 #endif
 
@@ -475,8 +562,10 @@
 // SDL toolkit
 //
 
-#ifndef _WIN32_WCE
-#undef P_SDL
+#if P_VIDEO
+  #ifndef _WIN32_WCE
+    #undef P_SDL
+  #endif
 #endif
 
 #if defined(_MSC_VER) && P_SDL
@@ -499,85 +588,15 @@
 // APP Share Input 
 //
 
-#ifndef _WIN32_WCE
-#undef P_APPSHARE
+#if P_VIDEO
+  #ifndef _WIN32_WCE
+    #undef P_APPSHARE
+  #endif
 #endif
 
 #if defined(_MSC_VER) && P_APPSHARE
-#pragma include_alias(<ptlib/vidinput_app.h>, <ptlib/msos/ptlib/vidinput_app.h>)
+  #pragma include_alias(<ptlib/vidinput_app.h>, <ptlib/msos/ptlib/vidinput_app.h>)
 #endif
-
-/////////////////////////////////////////////////
-//
-// Runtime dynamic link libraries
-//
-
-#undef P_DYNALINK
-#undef P_PLUGINS
-#undef P_DEFAULT_PLUGIN_DIR
-
-/////////////////////////////////////////////////
-//
-// Regex library
-//
-
-#undef P_REGEX
-
-/////////////////////////////////////////////////
-//
-// various non-core functions
-//
-
-#undef P_TTS
-#undef P_ASN
-#undef P_STUN
-#undef P_PIPECHAN
-#undef P_DTMF
-#undef P_WAVFILE
-#undef P_SOCKS
-#undef P_FTP
-#undef P_SNMP
-#undef P_TELNET
-#undef P_REMCONN
-#undef P_SERIAL
-#undef P_POP3SMTP
-#undef P_AUDIO
-#undef P_VIDEO
-#undef NO_VIDEO_CAPTURE
-
-#ifdef P_EXPAT
-#undef P_VXML
-#undef P_JABBER
-#undef P_XMLRPC
-#undef P_SOAP
-#endif
-
-#undef P_CONFIG_FILE
-#undef P_URL
-#ifdef P_URL
-#undef P_HTTP
-#ifdef P_HTTP
-#undef P_HTTPFORMS
-#undef P_HTTPSVC
-#endif
-#endif
-
-#undef P_SOCKAGG
-#undef P_VIDFILE
-#undef P_ODBC
-#undef P_SHM_VIDEO
-
-/////////////////////////////////////////////////
-//
-// PThreads and related vars
-//
-
-#undef P_PTHREADS
-#undef P_HAS_SEMAPHORES
-#undef P_HAS_NAMED_SEMAPHORES
-#undef P_PTHREADS_XPG6      
-#undef P_HAS_SEMAPHORES_XPG6
-#undef P_EXCEPTIONS
 
 /////////////////////////////////////////////////
 //
@@ -588,22 +607,28 @@
 
   #ifdef _WIN32_WCE
 
-    //#define P_DIRECTSOUND 1
-    #define P_DIRECTSHOW 1
-    #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
-    #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
+    #if P_VIDEO
+      //#define P_DIRECTSOUND 1
+      #define P_DIRECTSHOW 1
+      #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
+      #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
+    #endif
 
     #undef P_VFW_CAPTURE
     
   #else // _WIN32_WCE
 
-    #define P_VFW_CAPTURE 1
+    #if P_AUDIO
+      #undef P_DIRECTSOUND
+      #undef P_DIRECTSOUND_WINCE
+    #endif
 
-    #undef P_DIRECTSOUND
-    #undef P_DIRECTSOUND_WINCE
+    #if P_VIDEO
+      #define P_VFW_CAPTURE 1
 
-    #undef P_DIRECTX_DDRAW_H
-    #undef P_DIRECTSHOW_DDRAW_H
+      #undef P_DIRECTX_DDRAW_H
+      #undef P_DIRECTSHOW_DDRAW_H
+    #endif
 
     #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
       #undef P_DIRECTSHOW
@@ -664,18 +689,19 @@
 
 #if defined(_WIN32) || (_WIN32_WCE > 0x500)
 
-#if defined(_WIN32)
-  #define _WIN32_DCOM 1
-#endif
+  #if defined(_WIN32)
+    #define _WIN32_DCOM 1
+  #endif
 
-#if defined(_WIN32_WCE) && !defined(_CE_DCOM)
-#ifndef _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA
-  #define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA  1
-#endif
-#endif
+  #if defined(_WIN32_WCE) && !defined(_CE_DCOM)
+    #ifndef _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA
+      #define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA  1
+    #endif
+  #endif
 
   #define P_WIN_COM
   #define _OLE_LIB "ole32.lib"
+
 #endif 
 
 /////////////////////////////////////////////////
@@ -683,24 +709,6 @@
 // various functions
 //
 #undef USE_SYSTEM_SWAB
-
-#undef    PTLIB_MAJOR
-#undef    PTLIB_MINOR
-#undef    PTLIB_BUILD
-#undef    PTLIB_VERSION
-
-#undef    P_64BIT
-#undef    P_LPIA
-#undef    PNO_LONG_DOUBLE
-#undef    P_HAS_POSIX_READDIR_R
-#undef  P_HAS_STL_STREAMS
-#undef  P_HAS_ATOMIC_INT
-#undef  P_HAS_RECURSIVE_MUTEX
-#undef  P_NEEDS_GNU_CXX_NAMESPACE
-#undef  PMEMORY_CHECK
-#undef  P_HAS_RECVMSG
-#undef  P_HAS_UPAD128_T
-#undef  P_HAS_INET_NTOP
 
 #undef  P_USE_STANDARD_CXX_BOOL
 #if !defined(P_USE_STANDARD_CXX_BOOL)
