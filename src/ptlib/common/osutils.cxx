@@ -80,12 +80,12 @@ class PExternalThread : public PThread
     PExternalThread()
     {
       SetThreadName(PString::Empty());
-      PTRACE(5, "PTLib\tCreated external thread 0x" << this << " for id " << GetCurrentThreadId());
+      PTRACE(5, "PTLib\tCreated external thread " << this << " for id " << GetCurrentThreadId());
     }
 
     ~PExternalThread()
     {
-      PTRACE(5, "PTLib\tDestroyed external thread 0x" << this << " for id " << GetThreadId());
+      PTRACE(5, "PTLib\tDestroyed external thread " << this << " for id " << GetThreadId());
     }
 
     void Main()
