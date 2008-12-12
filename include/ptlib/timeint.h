@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTIMEINTERVAL
-#define _PTIMEINTERVAL
+#ifndef PTLIB_TIMEINTERVAL_H
+#define PTLIB_TIMEINTERVAL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -383,7 +383,7 @@ class PTimeInterval : public PObject
 #endif
 };
 
-#endif
+#endif // PTLIB_TIMEINTERVAL_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

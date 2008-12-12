@@ -28,8 +28,8 @@
  * $Date$
  */
  
-#ifndef _SAFE_COLLECTION_H
-#define _SAFE_COLLECTION_H
+#ifndef PTLIB_SAFE_COLLECTION_H
+#define PTLIB_SAFE_COLLECTION_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1011,7 +1011,7 @@ template <class Key, class Base> class PSafeDictionary : public PSafeDictionaryB
 };
 
 
-#endif // _SAFE_COLLECTION_H
+#endif // PTLIB_SAFE_COLLECTION_H
 
 
-/////////////////////////////////////////////////////////////////////////////
+// End Of File ///////////////////////////////////////////////////////////////

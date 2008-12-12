@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PIPDATAGRAMSOCKET
-#define _PIPDATAGRAMSOCKET
+#ifndef PTLIB_IPDATAGRAMSOCKET_H
+#define PTLIB_IPDATAGRAMSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -85,6 +85,8 @@ class PIPDatagramSocket : public PIPSocket
 #endif
 };
 
-#endif
+
+#endif // PTLIB_IPDATAGRAMSOCKET_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -29,16 +29,13 @@
  */
 
 
-#ifndef _PCYPHER
-#define _PCYPHER
+#ifndef PTLIB_CYPHER_H
+#define PTLIB_CYPHER_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 /** This class is used to encode/decode data using the MIME standard base64
    encoding mechanism as defined in RFC1521.
@@ -810,7 +807,7 @@ class PSecureConfig : public PConfig
 
 #endif // P_CONFIG_FILE
 
-#endif // _PCYPHER
+#endif // PTLIB_CYPHER_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

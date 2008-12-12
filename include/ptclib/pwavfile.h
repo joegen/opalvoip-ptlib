@@ -32,16 +32,13 @@
  * $Date$
  */
 
-#ifndef _PWAVFILE
-#define _PWAVFILE
+#ifndef PTLIB_PWAVFILE_H
+#define PTLIB_PWAVFILE_H
 
 //#ifdef P_USE_PRAGMA
 //#pragma interface
 //#endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 #include <ptlib/pfactory.h>
 
@@ -467,6 +464,6 @@ protected:
   PBoolean     header_needs_updating;
 };
 
-#endif
+#endif // PTLIB_PWAVFILE_H
 
 // End Of File ///////////////////////////////////////////////////////////////

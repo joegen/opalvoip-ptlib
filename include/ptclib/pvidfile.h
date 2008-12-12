@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PVIDFILE
-#define _PVIDFILE
+#ifndef PTLIB_PVIDFILE_H
+#define PTLIB_PVIDFILE_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -124,4 +124,7 @@ class PYUVFile : public PVideoFile
 #endif
 #endif
 
-#endif // P_VIDFILE
+#endif // PTLIB_PVIDFILE_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PASN_H
-#define _PASN_H
+#ifndef PTLIB_PASN_H
+#define PTLIB_PASN_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -558,8 +558,8 @@ class PASNSequence : public PASNObject
     WORD     seqLen;
 };
 
-#endif
+
+#endif // PTLIB_PASN_H
 
 
-// End of File.
-
+// End Of File ///////////////////////////////////////////////////////////////

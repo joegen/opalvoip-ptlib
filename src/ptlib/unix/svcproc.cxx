@@ -605,7 +605,7 @@ int PServiceProcess::InitialiseService()
   return -1;
 }
 
-int PServiceProcess::_main(void *)
+int PServiceProcess::InternalMain(void *)
 {
   if ((terminationValue = InitialiseService()) < 0) {
     // Make sure housekeeping thread is going so signals are handled.

@@ -29,8 +29,8 @@
  */
 
 
-#ifndef _PSOAP_H
-#define _PSOAP_H
+#ifndef PTLIB_PSOAP_H
+#define PTLIB_PSOAP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -129,8 +129,8 @@ class PSOAPServerRequestResponse : public PObject
 {
   PCLASSINFO( PSOAPServerRequestResponse, PObject );
   public:
-    PSOAPServerRequestResponse( PSOAPMessage & _request )
-      : request( _request ) { }
+    PSOAPServerRequestResponse( PSOAPMessage & req )
+      : request( req ) { }
 
     PSOAPMessage & request;
     PSOAPMessage response;
@@ -231,7 +231,7 @@ class PSOAPClient : public PObject
 #endif // P_SOAP
 
 
-#endif // _PSOAP_H
+#endif // PTLIB_PSOAP_H
 
 
 // End of file ////////////////////////////////////////////////////////////////

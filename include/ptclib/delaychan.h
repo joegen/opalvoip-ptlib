@@ -28,17 +28,14 @@
  * $Date$
  */
 
-#ifndef _DELAYCHAN_H
-#define _DELAYCHAN_H
+#ifndef PTLIB_DELAYCHAN_H
+#define PTLIB_DELAYCHAN_H
 
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 /** Class for implementing an "adaptive" delay.
     This class will cause the the caller to, on average, delay
@@ -223,7 +220,7 @@ class PDelayChannel : public PIndirectChannel
 };
 
 
-#endif // _DELAYCHAN_H
+#endif // PTLIB_DELAYCHAN_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

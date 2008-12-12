@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PSTRUCTUREDFILE
-#define _PSTRUCTUREDFILE
+#ifndef PTLIB_STRUCTUREDFILE_H
+#define PTLIB_STRUCTUREDFILE_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -180,6 +180,8 @@ class PStructuredFile : public PFile
 #endif
 };
 
-#endif
+
+#endif // PTLIB_STRUCTUREDFILE_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

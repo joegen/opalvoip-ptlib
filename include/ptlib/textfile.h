@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTEXTFILE
-#define _PTEXTFILE
+#ifndef PTLIB_TEXTFILE_H
+#define PTLIB_TEXTFILE_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -123,7 +123,7 @@ class PTextFile : public PFile
 #endif
 };
 
-#endif
+#endif // PTLIB_TEXTFILE_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

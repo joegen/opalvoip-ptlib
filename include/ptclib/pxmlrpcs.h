@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PXMLRPCSRVR_H
-#define _PXMLRPCSRVR_H
+#ifndef PTLIB_XMLRPCSRVR_H
+#define PTLIB_XMLRPCSRVR_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -94,9 +94,9 @@ class PXMLRPCServerParms : public PObject
   PCLASSINFO(PXMLRPCServerParms, PObject);
   public:
     PXMLRPCServerParms(
-      PXMLRPCServerResource & _resource,
-      PXMLRPCBlock & _request
-    ) : resource(_resource), request(_request) { }
+      PXMLRPCServerResource & res,
+      PXMLRPCBlock & req
+    ) : resource(res), request(req) { }
 
     void SetFault(
       PINDEX code,
@@ -109,6 +109,7 @@ class PXMLRPCServerParms : public PObject
 };
 
 
-#endif
+#endif // PTLIB_XMLRPCSRVR_H
 
 
+// End Of File ///////////////////////////////////////////////////////////////

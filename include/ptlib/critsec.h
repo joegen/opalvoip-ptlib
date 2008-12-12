@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PCRITICALSECTION
-#define _PCRITICALSECTION
+#ifndef PTLIB_CRITICALSECTION_H
+#define PTLIB_CRITICALSECTION_H
 
 #include <ptlib/psync.h>
 
@@ -253,6 +253,8 @@ class PAtomicInteger
       PAtomicInteger & operator=(const PAtomicInteger & ref) { value = (int)ref; return *this; }
 };
 
-#endif
+
+#endif // PTLIB_CRITICALSECTION_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PWAVFILEDEV
-#define _PWAVFILEDEV
+#ifndef PTLIB_PWAVFILEDEV_H
+#define PTLIB_PWAVFILEDEV_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -64,11 +64,13 @@ class PSoundChannel_WAVFile : public PSoundChannel
                      unsigned bitsPerSample);
     ~PSoundChannel_WAVFile();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    PBoolean Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
+    PBoolean Open(
+      const PString & device,
+      Directions dir,
+      unsigned numChannels,
+      unsigned sampleRate,
+      unsigned bitsPerSample
+    );
     virtual PString GetName() const;
     PBoolean Close();
     PBoolean IsOpen() const;
@@ -103,5 +105,7 @@ protected:
 
 #endif // defined(P_WAVFILE)
 
-#endif // _PWAVFILEDEV
+#endif // PTLIB_PWAVFILEDEV_H
 
+
+// End Of File ///////////////////////////////////////////////////////////////

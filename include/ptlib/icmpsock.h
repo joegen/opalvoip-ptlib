@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PICMPSOCKET
-#define _PICMPSOCKET
+#ifndef PTLIB_ICMPSOCKET_H
+#define PTLIB_ICMPSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -145,6 +145,8 @@ class PICMPSocket : public PIPDatagramSocket
 #endif
 };
 
-#endif
+
+#endif // PTLIB_ICMPSOCKET_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

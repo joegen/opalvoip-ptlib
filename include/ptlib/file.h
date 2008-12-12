@@ -32,8 +32,8 @@
  */
 
 
-#ifndef _PFILE
-#define _PFILE
+#ifndef PTLIB_FILE_H
+#define PTLIB_FILE_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -559,6 +559,8 @@ class PFile : public PChannel
 #endif
 };
 
-#endif
+
+#endif // PTLIB_FILE_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

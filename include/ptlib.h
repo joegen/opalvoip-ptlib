@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTLIB_H
-#define _PTLIB_H
+#ifndef PTLIB_PTLIB_H
+#define PTLIB_PTLIB_H
 
 #ifdef __GNUC__
 
@@ -217,7 +217,7 @@
 
 #endif
 
-#endif // _PTLIB_H
+#endif // PTLIB_PTLIB_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

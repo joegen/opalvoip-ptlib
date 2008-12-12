@@ -22,8 +22,8 @@
  * $Date$
  */
 
-#ifndef _PQOS
-#define _PQOS
+#ifndef PTLIB_QOS_H
+#define PTLIB_QOS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -104,4 +104,8 @@ public:
 
 };
 
-#endif // _PQOS
+
+#endif // PTLIB_QOS_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

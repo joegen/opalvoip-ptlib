@@ -1481,7 +1481,7 @@ PProcess * PProcessInstance;
 
 typedef std::map<PString, PProcessStartup *> PProcessStartupList;
 
-int PProcess::_main(void *)
+int PProcess::InternalMain(void *)
 {
   Main();
   return terminationValue;

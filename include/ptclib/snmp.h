@@ -6,8 +6,8 @@
 
 #ifdef P_SNMP
 
-#ifndef __PSNMP_H
-#define __PSNMP_H
+#ifndef PTLIB_SNMP_H
+#define PTLIB_SNMP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -278,9 +278,9 @@ class PSNMP_Message : public PASN_Sequence
 };
 
 
-#endif // __PSNMP_H
+#endif // PTLIB_SNMP_H
 
 #endif // if ! H323_DISABLE_PSNMP
 
 
-// End of snmp.h
+// End Of File ///////////////////////////////////////////////////////////////

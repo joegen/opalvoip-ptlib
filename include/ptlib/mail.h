@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PMAIL
-#define _PMAIL
+#ifndef PTLIB_MAIL_H
+#define PTLIB_MAIL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -337,6 +337,8 @@ class PMail : public PObject
 #endif
 };
 
-#endif
+
+#endif // PTLIB_MAIL_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

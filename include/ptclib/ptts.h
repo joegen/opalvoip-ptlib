@@ -28,16 +28,15 @@
  * $Date$
  */
 
-#ifndef _PTEXTTOSPEECH
-#define _PTEXTTOSPEECH
+#ifndef PTLIB_PTTS_H
+#define PTLIB_PTTS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
 #include <ptlib.h>
-#endif
+
 
 #include <ptclib/ptts.h>
 
@@ -77,4 +76,8 @@ class PTextToSpeech : public PObject
     virtual PBoolean Speak      (const PString & text, TextType hint = Default) = 0;
 };
 
-#endif
+
+#endif // PTLIB_PTTS_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

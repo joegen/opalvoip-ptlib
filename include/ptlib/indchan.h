@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PINDIRECTCHANNEL
-#define _PINDIRECTCHANNEL
+#ifndef PTLIB_INDIRECTCHANNEL_H
+#define PTLIB_INDIRECTCHANNEL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -301,7 +301,7 @@ class PIndirectChannel : public PChannel
 };
 
 
-#endif // _PINDIRECTCHANNEL
+#endif // PTLIB_INDIRECTCHANNEL_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

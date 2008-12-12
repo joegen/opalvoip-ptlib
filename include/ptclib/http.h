@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PHTTP_H
-#define _PHTTP_H
+#ifndef PTLIB_HTTP_H
+#define PTLIB_HTTP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1697,7 +1697,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
 
 #endif // P_HTTP
 
-#endif // _PHTTP_H
+#endif // PTLIB_HTTP_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

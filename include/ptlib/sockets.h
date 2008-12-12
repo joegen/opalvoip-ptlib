@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _SOCKETS_H
-#define _SOCKETS_H
+#ifndef PTLIB_SOCKETS_H
+#define PTLIB_SOCKETS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -97,7 +97,7 @@
 #include <ptlib/ethsock.h>
 
 
-#endif // _SOCKETS_H
+#endif // PTLIB_SOCKETS_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////
