@@ -29,8 +29,8 @@
  * $Date$
  */
 
-#ifndef __OPAL_ECHOCANCEL_H
-#define __OPAL_ECHOCANCEL_H
+#ifndef PTLIB_PAEC_H
+#define PTLIB_PAEC_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -93,6 +93,6 @@ protected:
 
 };
 
-#endif // __OPAL_ECHOCANCEL_H
+#endif // PTLIB_PAEC_H
 
-/////////////////////////////////////////////////////////////////////////////
+// End Of File ///////////////////////////////////////////////////////////////

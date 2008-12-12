@@ -28,9 +28,10 @@
  * $Date$
  */
 
+#ifndef PTLIB_PDNS_H
+#define PTLIB_PDNS_H
+
 #if P_DNS
-#ifndef _PDNS_H
-#define _PDNS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -357,7 +358,9 @@ inline PBoolean GetMXRecords(
 
 }; // namespace PDNS
 
-#endif // _PDNS_H
 #endif // P_DNS
+
+#endif // PTLIB_PDNS_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

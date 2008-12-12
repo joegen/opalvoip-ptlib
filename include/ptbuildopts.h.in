@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PT_BUILDOPTS_H
-#define _PT_BUILDOPTS_H
+#ifndef PTLIB_BUILDOPTS_H
+#define PTLIB_BUILDOPTS_H
 
 
 #undef    PTLIB_MAJOR
@@ -715,7 +715,8 @@
 #  define P_USE_INTEGER_BOOL
 #endif
 
-#endif // _PT_BUILDOPTS_H
+
+#endif // PTLIB_BUILDOPTS_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

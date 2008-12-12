@@ -28,16 +28,16 @@
  * $Date$
  */
 
-#if P_DNS
-
-#ifndef _PENUM_H
-#define _PENUM_H
+#ifndef PTLIB_ENUM_H
+#define PTLIB_ENUM_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
 #include <ptclib/pdns.h>
+
+#if P_DNS
 
 namespace PDNS {
 
@@ -167,7 +167,9 @@ PBoolean RDSLookup(const PURL & url,            ///< URL to lookup
 
 }; // namespace PDNS
 
-#endif // _PENUM_H
 #endif // P_DNS
+
+#endif // PTLIB_ENUM_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

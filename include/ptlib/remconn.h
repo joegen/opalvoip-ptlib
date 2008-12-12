@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PREMOTECONNECTION
-#define _PREMOTECONNECTION
+#ifndef PTLIB_REMOTECONNECTION_H
+#define PTLIB_REMOTECONNECTION_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -292,6 +292,8 @@ class PRemoteConnection : public PObject
 #endif
 };
 
-#endif
+
+#endif // PTLIB_REMOTECONNECTION_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

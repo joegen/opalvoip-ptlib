@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PTELNETSOCKET
-#define _PTELNETSOCKET
+#ifndef PTLIB_TELNET_H
+#define PTLIB_TELNET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -469,8 +469,7 @@ class PTelnetSocket : public PTCPSocket
 };
 
 
-#endif
+#endif // PTLIB_TELNET_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////
-

@@ -28,16 +28,14 @@
  * $Date$
  */
 
-#ifndef _PFACTORY_H
-#define _PFACTORY_H
+#ifndef PTLIB_FACTORY_H
+#define PTLIB_FACTORY_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
 #include <ptlib.h>
-#endif
 
 #include <string>
 #include <map>
@@ -139,12 +137,12 @@ class PFactoryBase
 
 /** Template class for generic factories of an abstract class.
   */
-template <class _Abstract_T, typename _Key_T = PDefaultPFactoryKey>
+template <class AbstractClass, typename KeyType = PDefaultPFactoryKey>
 class PFactory : PFactoryBase
 {
   public:
-    typedef _Key_T      Key_T;
-    typedef _Abstract_T Abstract_T;
+    typedef KeyType       Key_T;
+    typedef AbstractClass Abstract_T;
 
     class WorkerBase
     {
@@ -155,11 +153,11 @@ class PFactory : PFactoryBase
             singletonInstance(NULL),
             deleteSingleton(false)
         { }
-        WorkerBase(Abstract_T * instance, bool _deleteSingleton = true)
+        WorkerBase(Abstract_T * instance, bool delSingleton = true)
           : isDynamic(true),
             isSingleton(true),
             singletonInstance(instance),
-            deleteSingleton(_deleteSingleton)
+            deleteSingleton(delSingleton)
         { }
 
         virtual ~WorkerBase()
@@ -185,10 +183,10 @@ class PFactory : PFactoryBase
         Abstract_T * singletonInstance;
         bool         deleteSingleton;
 
-      friend class PFactory<_Abstract_T, _Key_T>;
+      friend class PFactory<Abstract_T, Key_T>;
     };
 
-    template <class _Concrete_T>
+    template <class ConcreteClass>
     class Worker : WorkerBase
     {
       public:
@@ -196,7 +194,7 @@ class PFactory : PFactoryBase
           : WorkerBase(singleton)
         {
           PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-          PFactory<_Abstract_T, _Key_T>::Register(key, this);   // here
+          PFactory<Abstract_T, Key_T>::Register(key, this);   // here
         }
 
       protected:
@@ -206,7 +204,7 @@ class PFactory : PFactoryBase
           // Singletons are never deallocated, so make sure they arenot reported as a leak
           PBoolean previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(WorkerBase::isSingleton);
 #endif
-          Abstract_T * instance = new _Concrete_T;
+          Abstract_T * instance = new ConcreteClass;
 #if PMEMORY_HEAP
           PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
 #endif
@@ -214,26 +212,26 @@ class PFactory : PFactoryBase
         }
     };
 
-    typedef std::map<_Key_T, WorkerBase *> KeyMap_T;
-    typedef std::vector<_Key_T> KeyList_T;
+    typedef std::map<Key_T, WorkerBase *> KeyMap_T;
+    typedef std::vector<Key_T> KeyList_T;
 
-    static void Register(const _Key_T & key, WorkerBase * worker)
+    static void Register(const Key_T & key, WorkerBase * worker)
     {
       GetInstance().Register_Internal(key, worker);
     }
 
-    static void Register(const _Key_T & key, Abstract_T * instance, bool autoDeleteInstance = true)
+    static void Register(const Key_T & key, Abstract_T * instance, bool autoDeleteInstance = true)
     {
       WorkerBase * w = PNEW WorkerBase(instance, autoDeleteInstance);
       GetInstance().Register_Internal(key, w);
     }
 
-    static PBoolean RegisterAs(const _Key_T & newKey, const _Key_T & oldKey)
+    static PBoolean RegisterAs(const Key_T & newKey, const Key_T & oldKey)
     {
       return GetInstance().RegisterAs_Internal(newKey, oldKey);
     }
 
-    static void Unregister(const _Key_T & key)
+    static void Unregister(const Key_T & key)
     {
       GetInstance().Unregister_Internal(key);
     }
@@ -243,23 +241,23 @@ class PFactory : PFactoryBase
       GetInstance().UnregisterAll_Internal();
     }
 
-    static bool IsRegistered(const _Key_T & key)
+    static bool IsRegistered(const Key_T & key)
     {
       return GetInstance().IsRegistered_Internal(key);
     }
 
-    static _Abstract_T * CreateInstance(const _Key_T & key)
+    static Abstract_T * CreateInstance(const Key_T & key)
     {
       return GetInstance().CreateInstance_Internal(key);
     }
 
     template <class Derived_T>
-    static Derived_T * CreateInstanceAs(const _Key_T & key)
+    static Derived_T * CreateInstanceAs(const Key_T & key)
     {
       return dynamic_cast<Derived_T *>(GetInstance().CreateInstance_Internal(key));
     }
 
-    static PBoolean IsSingleton(const _Key_T & key)
+    static PBoolean IsSingleton(const Key_T & key)
     {
       return GetInstance().IsSingleton_Internal(key);
     }
@@ -313,7 +311,7 @@ class PFactory : PFactoryBase
     }
 
 
-    void Register_Internal(const _Key_T & key, WorkerBase * worker)
+    void Register_Internal(const Key_T & key, WorkerBase * worker)
     {
       PWaitAndSignal m(mutex);
       if (keyMap.find(key) == keyMap.end()) {
@@ -323,7 +321,7 @@ class PFactory : PFactoryBase
       }
     }
 
-    PBoolean RegisterAs_Internal(const _Key_T & newKey, const _Key_T & oldKey)
+    PBoolean RegisterAs_Internal(const Key_T & newKey, const Key_T & oldKey)
     {
       PWaitAndSignal m(mutex);
       if (keyMap.find(oldKey) == keyMap.end())
@@ -332,7 +330,7 @@ class PFactory : PFactoryBase
       return PTrue;
     }
 
-    void Unregister_Internal(const _Key_T & key)
+    void Unregister_Internal(const Key_T & key)
     {
       PWaitAndSignal m(mutex);
       typename KeyMap_T::iterator r = keyMap.find(key);
@@ -350,13 +348,13 @@ class PFactory : PFactoryBase
         keyMap.erase(keyMap.begin());
     }
 
-    bool IsRegistered_Internal(const _Key_T & key)
+    bool IsRegistered_Internal(const Key_T & key)
     {
       PWaitAndSignal m(mutex);
       return keyMap.find(key) != keyMap.end();
     }
 
-    _Abstract_T * CreateInstance_Internal(const _Key_T & key)
+    Abstract_T * CreateInstance_Internal(const Key_T & key)
     {
       PWaitAndSignal m(mutex);
       typename KeyMap_T::const_iterator entry = keyMap.find(key);
@@ -365,7 +363,7 @@ class PFactory : PFactoryBase
       return NULL;
     }
 
-    bool IsSingleton_Internal(const _Key_T & key)
+    bool IsSingleton_Internal(const Key_T & key)
     {
       PWaitAndSignal m(mutex);
       if (keyMap.find(key) == keyMap.end())
@@ -408,4 +406,7 @@ class PFactory : PFactoryBase
   namespace PWLibFactoryLoader { int AbstractType##_##KeyType##_loader; }
 
 
-#endif // _PFACTORY_H
+#endif // PTLIB_FACTORY_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

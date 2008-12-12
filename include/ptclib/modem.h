@@ -28,8 +28,8 @@
  * $Date$
  */
 
-
-#define _PMODEM
+#ifndef PTLIB_MODEM_H
+#define PTLIB_MODEM_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -37,9 +37,7 @@
 
 #include <ptlib.h>
 
-#ifndef _PSERIALCHANNEL
 #include <ptlib/serchan.h>
-#endif
 
 
 /** A class representing a modem attached to a serial port. This adds the usual
@@ -458,6 +456,9 @@ class PModem : public PSerialChannel
     Status status;
       // Current modem status
 };
+
+
+#endif // PTLIB_MODEM_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

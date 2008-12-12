@@ -17,14 +17,11 @@
  * $Date$
  */
 
-#ifndef __SHMVIDEO_H__
-#define __SHMVIDEO_H__
+#ifndef PTLIB_SHMVIDEO_H
+#define PTLIB_SHMVIDEO_H
 
 #define P_FORCE_STATIC_PLUGIN
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 #if P_SHM_VIDEO
 
@@ -180,4 +177,4 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 
 #endif
 
-#endif /* __SHMVIDEO_H__ */
+#endif // PTLIB_SHMVIDEO_H

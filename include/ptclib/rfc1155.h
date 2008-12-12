@@ -6,8 +6,8 @@
 
 #ifdef P_SNMP
 
-#ifndef __PRFC1155_H
-#define __PRFC1155_H
+#ifndef PTLIB_RFC1155_H
+#define PTLIB_RFC1155_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -279,9 +279,9 @@ class PRFC1155_Opaque : public PASN_OctetString
 };
 
 
-#endif // __PRFC1155_H
+#endif // PTLIB_RFC1155_H
 
 #endif // if ! H323_DISABLE_PRFC1155
 
 
-// End of rfc1155.h
+// End Of File ///////////////////////////////////////////////////////////////

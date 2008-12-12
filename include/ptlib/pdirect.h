@@ -32,8 +32,8 @@
  */
 
 
-#ifndef _PDIRECTORY
-#define _PDIRECTORY
+#ifndef PTLIB_DIRECTORY_H
+#define PTLIB_DIRECTORY_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -469,6 +469,8 @@ class PDirectory : public PFilePathString
 
 };
 
-#endif
+
+#endif // PTLIB_DIRECTORY_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

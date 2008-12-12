@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _ASNER_H
-#define _ASNER_H
+#ifndef PTLIB_ASNER_H
+#define PTLIB_ASNER_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -51,9 +51,6 @@ class PXMLElement;
 #undef      P_INCLUDE_XER
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -996,4 +993,7 @@ class PASN_Stream : public PBYTEArray
 #include "asnxer.h"
 #endif
 
-#endif // _ASNER_H
+#endif // PTLIB_ASNER_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

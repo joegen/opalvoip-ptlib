@@ -65,11 +65,11 @@ public:
 			     unsigned bitsPerSample);
     ~PSoundChannelDirectSound();
     static PStringArray GetDeviceNames(PSoundChannel::Directions);
-    PBoolean Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
+    PBoolean Open(const PString & device,
+              Directions dir,
+              unsigned numChannels,
+              unsigned sampleRate,
+              unsigned bitsPerSample);
     PBoolean Setup();
     PBoolean Close();
     PString GetName() const;

@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PSSL_H
-#define _PSSL_H
+#ifndef PTLIB_PSSL_H
+#define PTLIB_PSSL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -527,4 +527,7 @@ class PSSLChannel : public PIndirectChannel
     ssl_st      * ssl;
 };
 
-#endif // _PSSL_H
+#endif // PTLIB_PSSL_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

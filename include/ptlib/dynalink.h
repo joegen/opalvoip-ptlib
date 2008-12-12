@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PDYNALINK
-#define _PDYNALINK
+#ifndef PTLIB_DYNALINK_H
+#define PTLIB_DYNALINK_H
 
 #if !defined(P_RTEMS)
 
@@ -149,6 +149,8 @@ class PDynaLink : public PObject
 
 #endif // !defined(P_RTEMS)
 
-#endif
+
+#endif //PTLIB_DYNALINK_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

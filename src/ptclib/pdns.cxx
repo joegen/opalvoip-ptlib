@@ -465,7 +465,7 @@ PBoolean PDNS::LookupSRV(
 
   PIPSocketAddressAndPortVector::const_iterator r;
   for (r = info.begin(); r != info.end(); ++r) 
-    returnList.AppendString(user + r->address.AsString() + ":" + PString(PString::Unsigned, r->port));
+    returnList.AppendString(user + r->AsString(':'));
 
   return returnList.GetSize() != 0;;
 }
@@ -505,15 +505,7 @@ PBoolean PDNS::LookupSRV(
     PTRACE(5,"DNS\tSRV Record found " << srvLookupStr);
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
-      PIPSocketAddressAndPort addrAndPort;
-
-      addrAndPort.address = recPtr->hostAddress;
-
-      if (recPtr->port > 0)
-        addrAndPort.port = recPtr->port;
-      else
-        addrAndPort.port = defaultPort;
-
+      PIPSocketAddressAndPort addrAndPort(recPtr->hostAddress, recPtr->port > 0 ? recPtr->port : defaultPort);
       addrList.push_back(addrAndPort);
 
       recPtr = srvRecords.GetNext();

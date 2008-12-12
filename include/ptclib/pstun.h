@@ -28,16 +28,13 @@
  * $Date$
  */
 
-#ifndef _PSTUN_H
-#define _PSTUN_H
+#ifndef PTLIB_PSTUN_H
+#define PTLIB_PSTUN_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 #include <ptclib/pnat.h>
 #include <ptlib/sockets.h>
@@ -309,7 +306,7 @@ typedef PSTUNClient PNatMethod_STUN;
 PWLIB_STATIC_LOAD_PLUGIN(STUN, PNatMethod);
 
 
-#endif // _PSTUN_H
+#endif // PTLIB_PSTUN_H
 
 
 // End of file ////////////////////////////////////////////////////////////////

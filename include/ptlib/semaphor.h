@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PSEMAPHORE
-#define _PSEMAPHORE
+#ifndef PTLIB_SEMAPHORE_H
+#define PTLIB_SEMAPHORE_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -145,6 +145,8 @@ class PSemaphore : public PSync
 #endif
 };
 
-#endif
+
+#endif // PTLIB_SEMAPHORE_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -29,16 +29,13 @@
  */
 
 
-#ifndef _PVIDEOIO
-#define _PVIDEOIO
+#ifndef PTLIB_PVIDEOIO_H
+#define PTLIB_PVIDEOIO_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 #if P_VIDEO
 
@@ -1020,6 +1017,6 @@ class PVideoFont : public PObject
 
 #endif // P_VIDEO
 
-#endif   // _PVIDEOIO
+#endif   // PTLIB_PVIDEOIO_H
 
 // End Of File ///////////////////////////////////////////////////////////////

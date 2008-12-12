@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef SHTTPSVC_H
-#define SHTTPSVC_H
+#ifndef PTLIB_SHTTPSVC_H
+#define PTLIB_SHTTPSVC_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -69,4 +69,7 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
 };
 
 
-#endif // SHTTPSVC_H
+#endif // PTLIB_SHTTPSVC_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -29,8 +29,8 @@
  * $Date$
  */
 
-#ifndef _PMAILPROTOCOL
-#define _PMAILPROTOCOL
+#ifndef PTLIB_INETMAIL_H
+#define PTLIB_INETMAIL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -184,7 +184,7 @@ class PSMTPClient : public PSMTP
     PBoolean    sendingData;
 
   private:
-    PBoolean _BeginMessage();
+    bool InternalBeginMessage();
 };
 
 
@@ -1019,7 +1019,7 @@ class PRFC822Channel : public PIndirectChannel
 };
 
 
-#endif  // _PMAILPROTOCOL
+#endif  // PTLIB_INETMAIL_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

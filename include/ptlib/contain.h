@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _CONTAIN_H
-#define _CONTAIN_H
+#ifndef PTLIB_CONTAIN_H
+#define PTLIB_CONTAIN_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -612,7 +612,8 @@ class PCollection : public PContainer
 #include <ptlib/contain.inl>
 #endif
 
-#endif // _CONTAIN_H
+
+#endif // PTLIB_CONTAIN_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

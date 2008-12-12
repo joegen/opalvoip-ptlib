@@ -31,8 +31,8 @@
  * $Date$
  */
 
-
-#define _PSYNCPOINTACK
+#ifndef PTLIB_SYNCTHRD_H
+#define PTLIB_SYNCTHRD_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -401,6 +401,9 @@ class PWriteWaitAndSignal {
   protected:
     PReadWriteMutex & mutex;
 };
+
+
+#endif // PTLIB_SYNCTHRD_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

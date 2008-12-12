@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PSYNCPOINT
-#define _PSYNCPOINT
+#ifndef PTLIB_SYNCPOINT_H
+#define PTLIB_SYNCPOINT_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -83,7 +83,8 @@ class PSyncPoint : public PSemaphore
 #endif
 };
 
-#endif
+
+#endif // PTLIB_SYNCPOINT_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

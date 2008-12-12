@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PGUID_H
-#define _PGUID_H
+#ifndef PTLIB_GUID_H
+#define PTLIB_GUID_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -126,7 +126,7 @@ class PGloballyUniqueID : public PBYTEArray
 };
 
 
-#endif // _PGUID_H
+#endif // PTLIB_GUID_H
 
 
-/////////////////////////////////////////////////////////////////////////////
+// End Of File ///////////////////////////////////////////////////////////////

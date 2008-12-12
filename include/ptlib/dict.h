@@ -32,8 +32,8 @@
  */
 
 
-#ifndef __DICT_H__
-#define __DICT_H__
+#ifndef PTLIB_DICT_H
+#define PTLIB_DICT_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1192,6 +1192,6 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
       { return PNEW cls(0, this); } \
 
 
-#endif // #ifndef __DICT_H__
+#endif // PTLIB_DICT_H
 
 // End Of File ///////////////////////////////////////////////////////////////

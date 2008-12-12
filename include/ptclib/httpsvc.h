@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef APPCOMM_H
-#define APPCOMM_H
+#ifndef PTLIB_HTTPSVC_H
+#define PTLIB_HTTPSVC_H
 
 #include <ptlib/svcproc.h>
 #include <ptlib/sockets.h>
@@ -461,4 +461,7 @@ class PServiceHTTPDirectory : public PHTTPDirectory
 };
 
 
-#endif
+#endif // PTLIB_HTTPSVC_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

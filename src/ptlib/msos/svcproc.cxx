@@ -393,7 +393,7 @@ static bool IsServiceRunning(PServiceProcess * svc)
 }
 
 
-int PServiceProcess::_main(void * arg)
+int PServiceProcess::InternalMain(void * arg)
 {
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;

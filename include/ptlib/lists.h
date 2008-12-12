@@ -31,6 +31,9 @@
  * $Date$
  */
 
+#ifndef PTLIB_LISTS_H
+#define PTLIB_LISTS_H
+
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
@@ -1023,6 +1026,9 @@ template <class T> class PSortedList : public PAbstractSortedList
       : PSortedList<T>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
+
+
+#endif // PTLIB_LISTS_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

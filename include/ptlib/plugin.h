@@ -12,8 +12,8 @@
  * $Date$
  */
 
-#ifndef _PLUGIN_H
-#define _PLUGIN_H
+#ifndef PTLIB_PLUGIN_H
+#define PTLIB_PLUGIN_H
 
 //////////////////////////////////////////////////////
 //
@@ -22,26 +22,26 @@
 
 #include <ptlib/pfactory.h>
 
-template <class _Abstract_T, typename _Key_T = PString>
-class PDevicePluginFactory : public PFactory<_Abstract_T, _Key_T>
+template <class AbstractClass, typename KeyType = PString>
+class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
 {
   public:
-    class Worker : public PFactory<_Abstract_T, _Key_T>::WorkerBase 
+    class Worker : public PFactory<AbstractClass, KeyType>::WorkerBase 
     {
       public:
-        Worker(const _Key_T & key, bool singleton = false)
-          : PFactory<_Abstract_T, _Key_T>::WorkerBase(singleton)
+        Worker(const Key_T & key, bool singleton = false)
+          : PFactory<AbstractClass, KeyType>::WorkerBase(singleton)
         {
-          PFactory<_Abstract_T, _Key_T>::Register(key, this);
+          PFactory<AbstractClass, KeyType>::Register(key, this);
         }
 
         ~Worker()
         {
-          typedef typename PFactory<_Abstract_T, _Key_T>::WorkerBase WorkerBase_T;
-          typedef std::map<_Key_T, WorkerBase_T *> KeyMap_T;
-          _Key_T key;
+          typedef typename PFactory<Abstract_T, KeyType>::WorkerBase WorkerBase_T;
+          typedef std::map<Key_T, WorkerBase_T *> KeyMap_T;
+          Key_T key;
 
-          KeyMap_T km = PFactory<_Abstract_T, _Key_T>::GetKeyMap();
+          KeyMap_T km = PFactory<AbstractClass, KeyType>::GetKeyMap();
 
           typename KeyMap_T::const_iterator entry;
           for (entry = km.begin(); entry != km.end(); ++entry) {
@@ -51,11 +51,11 @@ class PDevicePluginFactory : public PFactory<_Abstract_T, _Key_T>
             }
           }
           if (key != NULL)
-            PFactory<_Abstract_T, _Key_T>::Unregister(key);
+            PFactory<AbstractClass, KeyType>::Unregister(key);
         }
 
       protected:
-        virtual _Abstract_T * Create(const _Key_T & key) const;
+        virtual Abstract_T * Create(const Key_T & key) const;
     };
 };
 
@@ -137,13 +137,13 @@ class PDevicePluginServiceDescriptor : public PPluginServiceDescriptor
 class PPluginService: public PObject
 {
   public:
-    PPluginService(const PString & _serviceName,
-                   const PString & _serviceType,
-                   PPluginServiceDescriptor *_descriptor)
+    PPluginService(const PString & name,
+                   const PString & type,
+                   PPluginServiceDescriptor * desc)
+      : serviceName(name)
+      , serviceType(type)
+      , descriptor(desc)
     {
-      serviceName = _serviceName;
-      serviceType = _serviceType;
-      descriptor  = _descriptor;
     }
 
     PString serviceName;
@@ -230,4 +230,8 @@ int PWLIB_gStaticLoader__##serviceName##_##serviceType =  PWLIB_StaticLoader_##s
 
 //////////////////////////////////////////////////////
 
-#endif
+
+#endif // PTLIB_PLUGIN_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

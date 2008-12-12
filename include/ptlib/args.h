@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PARGLIST
-#define _PARGLIST
+#ifndef PTLIB_ARGLIST_H
+#define PTLIB_ARGLIST_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -431,6 +431,8 @@ class PConfigArgs : public PArgList
 
 #endif // P_CONFIG_FILE
 
-#endif
+
+#endif // PTLIB_ARGLIST_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////
