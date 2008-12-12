@@ -30,8 +30,8 @@
  * $Date$
  */
 
-#ifndef _PCONVERT
-#define _PCONVERT
+#ifndef PTLIB_CONVERT_H
+#define PTLIB_CONVERT_H
 
 #ifdef P_USE_PRAGMA
 #ifndef P_MACOSX
@@ -335,8 +335,8 @@ static class cls##_Registration : public PColourConverterRegistration { \
 } p_##cls##_registration_instance; \
 PColourConverter * cls##_Registration::Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const \
   { return new cls(src, dst); } \
-PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int __srcFrameBytes, PINDEX * bytesReturned) \
-  { srcFrameBytes = __srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
+PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int p_srcFrameBytes, PINDEX * bytesReturned) \
+  { srcFrameBytes = p_srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
 PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
 
 
@@ -400,6 +400,7 @@ class PVideoTools {
 #endif // P_VIDEO
 
 
-#endif // _PCONVERT
+#endif // PTLIB_CONVERT_H
+
 
 // End of file ///////////////////////////////////////////////////////////////

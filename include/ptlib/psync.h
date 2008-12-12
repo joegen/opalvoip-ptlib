@@ -32,8 +32,8 @@
  * $Date$
  */
 
-#ifndef _PSYNC
-#define _PSYNC
+#ifndef PTLIB_SYNC_H
+#define PTLIB_SYNC_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -112,5 +112,8 @@ class PWaitAndSignal {
     PSync & sync;
 };
 
-#endif // _PSYNC
 
+#endif // PTLIB_SYNC_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -41,7 +41,7 @@
     { \
       cls *pInstance = new cls(); \
       pInstance->PreInitialise(__argc, __argv, _environ); \
-      int terminationValue = pInstance->_main(hInst); \
+      int terminationValue = pInstance->InternalMain(hInst); \
       delete pInstance; \
       return terminationValue; \
     }

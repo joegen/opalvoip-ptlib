@@ -1,5 +1,38 @@
-#ifndef _PSMARTPTR_H
-#define _PSMARTPTR_H
+/*
+ * smartptr.h
+ *
+ * Smart pointer template class.
+ *
+ * Portable Tools Library
+ *
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * $Revision$
+ * $Author$
+ * $Date$
+ */
+
+#ifndef PTLIB_SMARTPTR_H
+#define PTLIB_SMARTPTR_H
 
 #include <ptlib.h>
 #include <ptlib/object.h>
@@ -160,5 +193,7 @@ template <class T> class PSmartPtr : public PSmartPointer
 };
 
 
-#endif
+#endif // PTLIB_SMARTPTR_H
 
+
+// End Of File ///////////////////////////////////////////////////////////////

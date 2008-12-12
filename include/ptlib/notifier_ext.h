@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PNOTIFIER_EXT
-#define _PNOTIFIER_EXT
+#ifndef PTLIB_NOTIFIER_EXT_H
+#define PTLIB_NOTIFIER_EXT_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -123,9 +123,7 @@ class PNotifierList : public PObject
 };
 
 
-#endif  // _PNOTIFIER_EXT
+#endif  // PTLIB_NOTIFIER_EXT_H
+
 
 // End of File ///////////////////////////////////////////////////////////////
-
-
-

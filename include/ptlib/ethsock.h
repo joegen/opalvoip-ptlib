@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PETHSOCKET
-#define _PETHSOCKET
+#ifndef PTLIB_ETHSOCKET_H
+#define PTLIB_ETHSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -399,6 +399,8 @@ class PEthSocket : public PSocket
 #endif
 };
 
-#endif
+
+#endif // PTLIB_ETHSOCKET_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PCONSOLECHANNEL
-#define _PCONSOLECHANNEL
+#ifndef PTLIB_CONSOLECHANNEL_H
+#define PTLIB_CONSOLECHANNEL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -87,6 +87,8 @@ class PConsoleChannel : public PChannel
 
 };
 
-#endif
+
+#endif // PTLIB_CONSOLECHANNEL_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

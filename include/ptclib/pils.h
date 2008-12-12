@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PILS_H
-#define _PILS_H
+#ifndef PTLIB_PILS_H
+#define PTLIB_PILS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -132,7 +132,7 @@ class PILSSession : public PLDAPSession
 
 #endif // P_LDAP
 
-#endif // _PILS_H
+#endif // PTLIB_PILS_H
 
 
 // End of file ////////////////////////////////////////////////////////////////

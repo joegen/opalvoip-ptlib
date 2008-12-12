@@ -163,8 +163,8 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     /**Set the Handle of the window you wish to capture
       */
     void AttachCaptureWindow(
-      HWND _hwnd,            ///< Handle of the window to capture
-      bool _client = TRUE    ///< Only capture Client area and not caption
+      HWND hwnd,            ///< Handle of the window to capture
+      bool client = TRUE    ///< Only capture Client area and not caption
     );
 
   protected:

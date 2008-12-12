@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PIPSOCKET
-#define _PIPSOCKET
+#ifndef PTLIB_IPSOCKET_H
+#define PTLIB_IPSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -602,12 +602,12 @@ class PIPSocket : public PSocket
         /// Create an interface entry from a name, IP addr and MAC addr.
         InterfaceEntry();
         InterfaceEntry(
-          const PString & _name,
-          const Address & _addr,
-          const Address & _mask,
-          const PString & _macAddr
+          const PString & name,
+          const Address & addr,
+          const Address & mask,
+          const PString & macAddr
 #if P_HAS_IPV6
-          , const PString & _ip6Addr = PString::Empty()
+          , const PString & ip6Addr = PString::Empty()
 #endif
         );
 
@@ -713,30 +713,35 @@ class PIPSocketAddressAndPort
 {
   public:
     PIPSocketAddressAndPort()
-      : port(0), sep(':')
-    { }
+      : m_port(0), m_separator(':')
+      { }
 
-    PIPSocketAddressAndPort(char _sep)
-      : port(0), sep(_sep)
-    { }
+    PIPSocketAddressAndPort(char separator)
+      : m_port(0), m_separator(separator)
+      { }
 
-    PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char _sep = ':')
-      : port(defaultPort), sep(_sep)
-    { Parse(str, defaultPort, sep); }
+    PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char separator = ':')
+      : m_port(defaultPort), m_separator(separator)
+      { Parse(str, defaultPort, m_separator); }
 
-    PBoolean Parse(const PString & str, WORD defaultPort = 0, char sep = ':');
+    PBoolean Parse(const PString & str, WORD defaultPort = 0, char separator = ':');
 
-    PString AsString(char _sep = 0) const
-    { return address.AsString() + (_sep ? _sep : sep) + PString(PString::Unsigned, port); }
+    PString AsString(char separator = 0) const
+      { return m_address.AsString() + (separator ? separator : m_separator) + PString(PString::Unsigned, m_port); }
 
-    PIPSocket::Address address;
-    WORD port;
-    char sep;
+    const PIPSocket::Address & GetAddress() const { return m_address; }
+    WORD GetPort() const { return m_port; }
+
+  protected:
+    PIPSocket::Address m_address;
+    WORD               m_port;
+    char               m_separator;
 };
 
 typedef std::vector<PIPSocketAddressAndPort> PIPSocketAddressAndPortVector;
 
-#endif
+
+#endif // PTLIB_IPSOCKET_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

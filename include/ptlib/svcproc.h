@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PSERVICEPROCESS
-#define _PSERVICEPROCESS
+#ifndef PTLIB_SERVICEPROCESS_H
+#define PTLIB_SERVICEPROCESS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -237,7 +237,7 @@ class PServiceProcess : public PProcess
     /* Internal initialisation function called directly from
        #main()#. The user should never call this function.
      */
-    virtual int _main(void * arg = NULL);
+    virtual int InternalMain(void * arg = NULL);
 
 
   protected:
@@ -259,7 +259,8 @@ class PServiceProcess : public PProcess
 #endif
 };
 
-#endif
+
+#endif // PTLIB_SERVICEPROCESS_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

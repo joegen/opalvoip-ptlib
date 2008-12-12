@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _IPACL_H
-#define _IPACL_H
+#ifndef PTLIB_IPACL_H
+#define PTLIB_IPACL_H
 
 
 #include <ptlib/sockets.h>
@@ -348,7 +348,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
 };
 
 
-#endif  // _IPACL_H
+#endif  // PTLIB_IPACL_H
 
 
 // End of File ///////////////////////////////////////////////////////////////

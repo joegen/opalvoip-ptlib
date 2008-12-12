@@ -24,9 +24,8 @@
  */
 
 
-#ifndef _PVIDEOIO1394DC
-
-#define _PVIDEOIO1394DC
+#ifndef PTLIB_VIDEOIO1394DC_H
+#define PTLIB_VIDEOIO1394DC_H
 
 #ifdef __GNUC__
 #pragma interface
@@ -222,7 +221,8 @@ class PVideoInput1394DcDevice : public PVideoInputDevice
     unsigned     desiredFrameHeight;
 };
 
-#endif
+
+#endif // PTLIB_VIDEOIO1394DC_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

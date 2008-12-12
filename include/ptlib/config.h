@@ -32,8 +32,8 @@
  */
 
 
-#ifndef _PCONFIG
-#define _PCONFIG
+#ifndef PTLIB_CONFIG_H
+#define PTLIB_CONFIG_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -519,6 +519,6 @@ class PConfig : public PObject
 
 #endif // P_CONFIG_FILE
 
-#endif
+#endif // PTLIB_CONFIG_H
 
 // End Of File ///////////////////////////////////////////////////////////////

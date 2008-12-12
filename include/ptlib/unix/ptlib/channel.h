@@ -30,8 +30,6 @@
  * $Author$
  * $Date$
  */
-#ifndef __PCHANNEL_UNIX__
-#define __PCHANNEL_UNIX__
 
   public:
     enum PXBlockType {
@@ -54,6 +52,5 @@
     PThread   * px_selectThread[3];
     PMutex      px_selectMutex[3];
 
-#endif //#ifndef __PCHANNEL_UNIX__ 
 
 // End Of File ////////////////////////////////////////////////////////////////

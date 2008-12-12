@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PLDAP_H
-#define _PLDAP_H
+#ifndef PTLIB_PLDAP_H
+#define PTLIB_PLDAP_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -600,7 +600,7 @@ template <class className> class LDAPPluginServiceDescriptor : public PDevicePlu
 
 #endif // P_LDAP
 
-#endif // _PLDAP_H
+#endif // PTLIB_PLDAP_H
 
 
 // End of file ////////////////////////////////////////////////////////////////

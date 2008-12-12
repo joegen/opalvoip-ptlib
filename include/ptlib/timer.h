@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTIMER
-#define _PTIMER
+#ifndef PTLIB_TIMER_H
+#define PTLIB_TIMER_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -302,7 +302,7 @@ class PTimer : public PTimeInterval
 #endif
 };
 
-#endif
+#endif // PTLIB_TIMER_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

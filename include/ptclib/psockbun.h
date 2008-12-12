@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PSOCKBUN_H
-#define _PSOCKBUN_H
+#ifndef PTLIB_PSOCKBUN_H
+#define PTLIB_PSOCKBUN_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -693,4 +693,8 @@ class PSingleMonitoredSocket : public PMonitoredSockets
     SocketInfo     theInfo;
 };
 
-#endif
+
+#endif // PTLIB_PSOCKBUN_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

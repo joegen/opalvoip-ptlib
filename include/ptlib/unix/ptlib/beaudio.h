@@ -89,11 +89,13 @@ class PSoundChannelBeOS: public PSoundChannel
     ~PSoundChannelBeOS();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);
-    PBoolean Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
+    PBoolean Open(
+      const PString & device,
+      Directions dir,
+      unsigned numChannels,
+      unsigned sampleRate,
+      unsigned bitsPerSample
+    );
     PBoolean Setup();
     PBoolean Close();
     PBoolean IsOpen() const;

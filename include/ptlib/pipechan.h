@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PPIPECHANNEL
-#define _PPIPECHANNEL
+#ifndef PTLIB_PIPECHANNEL_H
+#define PTLIB_PIPECHANNEL_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -407,6 +407,8 @@ class PPipeChannel : public PChannel
 #endif
 };
 
-#endif
+
+#endif // PTLIB_PIPECHANNEL_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

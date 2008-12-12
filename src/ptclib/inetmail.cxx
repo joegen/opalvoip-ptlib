@@ -208,7 +208,7 @@ PBoolean PSMTPClient::BeginMessage(const PString & from,
   toNames.RemoveAll();
   toNames.AppendString(to);
   eightBitMIME = useEightBitMIME;
-  return _BeginMessage();
+  return InternalBeginMessage();
 }
 
 
@@ -219,11 +219,11 @@ PBoolean PSMTPClient::BeginMessage(const PString & from,
   fromAddress = from;
   toNames = toList;
   eightBitMIME = useEightBitMIME;
-  return _BeginMessage();
+  return InternalBeginMessage();
 }
 
 
-PBoolean PSMTPClient::_BeginMessage()
+PBoolean PSMTPClient::InternalBeginMessage()
 {
   PString localHost;
   PString peerHost;

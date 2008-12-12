@@ -29,8 +29,8 @@
  * $Date$
  */
 
-#ifndef _XMPP_C2S
-#define _XMPP_C2S
+#ifndef PTLIB_XMPP_C2S_H
+#define PTLIB_XMPP_C2S_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -231,9 +231,6 @@ namespace XMPP
 
 #endif  // P_EXPAT
 
-#endif  // _XMPP_C2S
+#endif  // PTLIB_XMPP_C2S_H
 
 // End of File ///////////////////////////////////////////////////////////////
-
-
-

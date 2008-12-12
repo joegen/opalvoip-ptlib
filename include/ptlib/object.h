@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _POBJECT_H
-#define _POBJECT_H
+#ifndef PTLIB_OBJECT_H
+#define PTLIB_OBJECT_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1473,6 +1473,8 @@ PI_SAME(PFloat80b, long double);
  */
 #define PABS(v) ((v) < 0 ? -(v) : (v))
 
-#endif // _POBJECT_H
+
+#endif // PTLIB_OBJECT_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

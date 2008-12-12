@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PHTTPFORM_H
-#define _PHTTPFORM_H
+#ifndef PTLIB_HTTPFORM_H
+#define PTLIB_HTTPFORM_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -896,7 +896,7 @@ class PHTTPConfigSectionList : public PHTTPString
 
 #endif // P_HTTPFORMS
 
-#endif // _HTTPFORM_H
+#endif // PTLIB_HTTPFORM_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

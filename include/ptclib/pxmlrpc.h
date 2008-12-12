@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PXMLRPC_H
-#define _PXMLRPC_H
+#ifndef PTLIB_PXMLRPC_H
+#define PTLIB_PXMLRPC_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -83,7 +83,7 @@ class PXMLRPC : public PObject
       unsigned options = 0
     );
 
-    void SetTimeout(const PTimeInterval & _timeout) { timeout = _timeout; }
+    void SetTimeout(const PTimeInterval & t) { timeout = t; }
 
     PBoolean MakeRequest(const PString & method);
     PBoolean MakeRequest(const PString & method,  PXMLRPCBlock & response);
@@ -478,4 +478,7 @@ class PXMLRPCStructBase : public PObject {
 
 #endif // P_XMLRPC
 
-#endif // _PXMLRPC_H
+#endif // PTLIB_PXMLRPC_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

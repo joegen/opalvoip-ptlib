@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PTCPSOCKET
-#define _PTCPSOCKET
+#ifndef PTLIB_TCPSOCKET_H
+#define PTLIB_TCPSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -219,6 +219,7 @@ class PTCPSocket : public PIPSocket
 #endif
 };
 
-#endif
+#endif // PTLIB_TCPSOCKET_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

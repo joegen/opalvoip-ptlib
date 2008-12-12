@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PXML_H
-#define _PXML_H
+#ifndef PTLIB_PXML_H
+#define PTLIB_PXML_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -104,11 +104,11 @@ class PXMLData;
 class PXMLBase : public PObject
 {
   public:
-    PXMLBase(int _options = -1)
-      : options(_options) { if (options < 0) options = 0; }
+    PXMLBase(int opts = -1)
+      : options(opts) { if (options < 0) options = 0; }
 
-    void SetOptions(int _options)
-      { options = _options; }
+    void SetOptions(int opts)
+      { options = opts; }
 
     int GetOptions() const { return options; }
 
@@ -149,17 +149,19 @@ class PXML : public PXMLBase
     PBoolean Load(const PString & data, int options = -1);
 
 #if P_HTTP
-    PBoolean StartAutoReloadURL(const PURL & url, 
-                            const PTimeInterval & timeout, 
-                            const PTimeInterval & refreshTime,
-                            int _options = -1);
+    PBoolean StartAutoReloadURL(
+      const PURL & url, 
+      const PTimeInterval & timeout, 
+      const PTimeInterval & refreshTime,
+      int options = -1
+    );
     PBoolean StopAutoReloadURL();
     PString GetAutoReloadStatus() { PWaitAndSignal m(autoLoadMutex); PString str = autoLoadError; return str; }
     PBoolean AutoLoadURL();
     virtual void OnAutoLoad(PBoolean ok);
 
     PBoolean LoadURL(const PURL & url);
-    PBoolean LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
+    PBoolean LoadURL(const PURL & url, const PTimeInterval & timeout, int options = -1);
 #endif // P_HTTP
 
     PBoolean LoadFile(const PFilePath & fn, int options = -1);
@@ -243,8 +245,8 @@ PARRAY(PXMLObjectArray, PXMLObject);
 class PXMLObject : public PObject {
   PCLASSINFO(PXMLObject, PObject);
   public:
-    PXMLObject(PXMLElement * _parent)
-      : parent(_parent) { dirty = PFalse; }
+    PXMLObject(PXMLElement * par)
+      : parent(par) { dirty = false; }
 
     PXMLElement * GetParent() const
       { return parent; }
@@ -276,8 +278,8 @@ class PXMLObject : public PObject {
 class PXMLData : public PXMLObject {
   PCLASSINFO(PXMLData, PXMLObject);
   public:
-    PXMLData(PXMLElement * _parent, const PString & data);
-    PXMLData(PXMLElement * _parent, const char * data, int len);
+    PXMLData(PXMLElement * parent, const PString & data);
+    PXMLData(PXMLElement * parent, const char * data, int len);
 
     PBoolean IsElement() const    { return PFalse; }
 
@@ -298,8 +300,8 @@ class PXMLData : public PXMLObject {
 class PXMLElement : public PXMLObject {
   PCLASSINFO(PXMLElement, PXMLObject);
   public:
-    PXMLElement(PXMLElement * _parent, const char * name = NULL);
-    PXMLElement(PXMLElement * _parent, const PString & name, const PString & data);
+    PXMLElement(PXMLElement * parent, const char * name = NULL);
+    PXMLElement(PXMLElement * parent, const PString & name, const PString & data);
 
     PBoolean IsElement() const { return PTrue; }
 
@@ -353,8 +355,8 @@ class PXMLElement : public PXMLObject {
 
     PXMLObject * Clone(PXMLElement * parent) const;
 
-    void GetFilePosition(unsigned & _col, unsigned & _line) const { _col = column; _line = lineNumber; }
-    void SetFilePosition(unsigned _col,   unsigned _line)         { column = _col; lineNumber = _line; }
+    void GetFilePosition(unsigned & col, unsigned & line) const { col = column; line = lineNumber; }
+    void SetFilePosition(unsigned col,   unsigned line)         { column = col; lineNumber = line; }
 
   protected:
     PCaselessString name;
@@ -409,4 +411,7 @@ class PXMLStreamParser : public PXMLParser
 
 #endif // P_EXPAT
 
-#endif
+#endif // PTLIB_PXML_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

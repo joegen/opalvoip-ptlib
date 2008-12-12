@@ -1,5 +1,5 @@
-#ifndef _P_INT64_H
-#define _P_INT64_H
+#ifndef PTLIB_INT64_H
+#define PTLIB_INT64_H
 
 ///////////////////////////////////////////////////////////////////////////////
 // Really big integer class for architectures without
@@ -168,5 +168,7 @@ class PUInt64 : public PInt64__ {
 
 #endif  // P_NEEDS_INT64
 
-#endif  // P_INT64_H
+#endif  // PTLIB_INT64_H
 
+
+// End Of File ///////////////////////////////////////////////////////////////

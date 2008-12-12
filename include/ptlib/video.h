@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PVIDEO
-#define _PVIDEO
+#ifndef PTLIB_VIDEO_H
+#define PTLIB_VIDEO_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -158,12 +158,12 @@ class PVideoChannel : public PChannel
     /**Specifiy the width and height of the video stream, which is to be
        rendered onto the previously specified device.
      */
-    virtual void SetRenderFrameSize(int _width, int _height); 
+    virtual void SetRenderFrameSize(int width, int height); 
 
     /**Specifiy the width and height of the video stream, which is to be
        extracted from the previously specified device.
      */
-    virtual void SetGrabberFrameSize(int _width, int _height); 
+    virtual void SetGrabberFrameSize(int width, int height); 
 
     /**Attach a user specific class for rendering video 
 
@@ -250,7 +250,7 @@ class PVideoChannel : public PChannel
 
 #endif // P_VIDEO
 
-#endif // _PVIDEO
+#endif // PTLIB_VIDEO_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

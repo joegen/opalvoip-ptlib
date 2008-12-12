@@ -31,16 +31,13 @@
  * $Date$
  */
 
-#ifndef _PMEMFILE
-#define _PMEMFILE
+#ifndef PTLIB_PMEMFILE_H
+#define PTLIB_PMEMFILE_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#ifndef _PTLIB_H
-#include <ptlib.h>
-#endif
 
 /**This class is used to allow a block of memory to substitute for a disk file.
  */
@@ -169,8 +166,7 @@ class PMemoryFile : public PFile
 };
 
 
-#endif // _PMEMFILE
+#endif // PTLIB_PMEMFILE_H
 
 
 // End of File ///////////////////////////////////////////////////////////////
-

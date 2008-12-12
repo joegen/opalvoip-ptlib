@@ -32,8 +32,8 @@
  */
 
 
-#ifndef _SOCKAGG_H
-#define _SOCKAGG_H
+#ifndef PTLIB_SOCKAGG_H
+#define PTLIB_SOCKAGG_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -71,7 +71,7 @@ class PThreadPoolWorkerBase : public PThread
 class PThreadPoolBase : public PObject
 {
   public:
-    PThreadPoolBase(unsigned _max = 10);
+    PThreadPoolBase(unsigned maximum = 10);
     ~PThreadPoolBase();
 
     virtual PThreadPoolWorkerBase * CreateWorkerThread() = 0;
@@ -95,8 +95,8 @@ class PThreadPool : public PThreadPoolBase
   public:
     typedef typename std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_T;
 
-    PThreadPool(unsigned _max = 10)
-      : PThreadPoolBase(_max) { }
+    PThreadPool(unsigned maximum = 10)
+      : PThreadPoolBase(maximum) { }
 
     virtual PThreadPoolWorkerBase * CreateWorkerThread()
     { return new WorkerThread_T(*this); }
@@ -105,11 +105,11 @@ class PThreadPool : public PThreadPoolBase
     {
       PWaitAndSignal m(listMutex);
 
-      PThreadPoolWorkerBase * _worker = AllocateWorker();
-      if (_worker == NULL)
+      PThreadPoolWorkerBase * a_worker = AllocateWorker();
+      if (a_worker == NULL)
         return false;
 
-      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(_worker);
+      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(a_worker);
       workUnitMap.insert(typename WorkUnitMap_T::value_type(workUnit, worker));
 
       worker->OnAddWork(workUnit);
@@ -231,8 +231,11 @@ class PAggregatedHandle : public PObject
 {
   PCLASSINFO(PAggregatedHandle, PObject);
   public:
-    PAggregatedHandle(PBoolean _autoDelete = PFalse)
-      : autoDelete(_autoDelete), closed(PFalse), beingProcessed(PFalse), preReadDone(PFalse)
+    PAggregatedHandle(PBoolean auto = false)
+      : autoDelete(auto)
+      , closed(false)
+      , beingProcessed(false)
+      , preReadDone(false)
     { }
 
     virtual PAggregatorFDList_t GetFDs() = 0;
@@ -304,7 +307,7 @@ typedef std::list<PAggregatedHandle *> PAggregatedHandleList_t;
 class PAggregatorWorker : public PThreadPoolWorkerBase
 {
   public:
-    PAggregatorWorker(PThreadPoolBase & _pool);
+    PAggregatorWorker(PThreadPoolBase & pool);
 
     unsigned GetWorkSize() const;
     void Shutdown();
@@ -328,7 +331,7 @@ class PHandleAggregator : public PHandleAggregatorBase
   public:
     typedef std::list<PAggregatedHandle *> PAggregatedHandleList_t;
 
-    PHandleAggregator(unsigned _max = 10);
+    PHandleAggregator(unsigned maximum = 10);
 
     PBoolean AddHandle(PAggregatedHandle * handle);
 
@@ -352,8 +355,8 @@ class PSocketAggregator : public PHandleAggregator
     class AggregatedPSocket : public PAggregatedHandle
     {
       public:
-        AggregatedPSocket(PSocketType * _s)
-          : psocket(_s), fd(_s->GetHandle()) { }
+        AggregatedPSocket(PSocketType * s)
+          : psocket(s), fd(s->GetHandle()) { }
 
         PBoolean OnRead()
         { return psocket->OnRead(); }
@@ -404,4 +407,7 @@ class PSocketAggregator : public PHandleAggregator
 
 // aggregator code disabled pending reimplementation
 
-#endif // _SOCKAGG_H
+#endif // PTLIB_SOCKAGG_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

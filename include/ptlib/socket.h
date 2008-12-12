@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PSOCKETS
-#define _PSOCKETS
+#ifndef PTLIB_SOCKET_H
+#define PTLIB_SOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -537,6 +537,8 @@ class PWinSock : public PSocket
 };
 #endif
 
-#endif
+
+#endif // PTLIB_SOCKET_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

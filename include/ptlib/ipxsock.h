@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PIPXSOCKET
-#define _PIPXSOCKET
+#ifndef PTLIB_IPXSOCKET_H
+#define PTLIB_IPXSOCKET_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -300,6 +300,8 @@ class PIPXSocket : public PSocket
 #endif
 };
 
-#endif
+
+#endif // PTLIB_IPXSOCKET_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PMIME
-#define _PMIME
+#ifndef PTLIB_PMIME_H
+#define PTLIB_PMIME_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -268,8 +268,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
 };
 
 
-
-#endif
+#endif // PTLIB_PMIME_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////

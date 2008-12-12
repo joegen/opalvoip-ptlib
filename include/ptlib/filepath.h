@@ -31,8 +31,8 @@
  * $Date$
  */
 
-#ifndef _PFILEPATH
-#define _PFILEPATH
+#ifndef PTLIB_FILEPATH_H
+#define PTLIB_FILEPATH_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -304,6 +304,8 @@ class PFilePath : public PFilePathString
 #endif
 };
 
-#endif
+
+#endif // PTLIB_FILEPATH_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

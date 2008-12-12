@@ -12,8 +12,8 @@
  * $Date$
  */
 
-#ifndef _PLUGINMGR_H
-#define _PLUGINMGR_H
+#ifndef PTLIB_PLUGINMGR_H
+#define PTLIB_PLUGINMGR_H
 
 #define DEFAULT_PLUGINDIR "/usr/lib/pwlib"
 
@@ -137,7 +137,7 @@ class PPluginModuleManager : public PObject
   public:
     typedef PDictionary<PString, PDynaLink> PluginListType;
 
-    PPluginModuleManager(const char * _signatureFunctionName, PPluginManager * pluginMgr = NULL);
+    PPluginModuleManager(const char * signatureFunctionName, PPluginManager * pluginMgr = NULL);
 
     PBoolean LoadPlugin(const PString & fileName)
     { if (pluginMgr == NULL) return PFalse; else return pluginMgr->LoadPlugin(fileName); }
@@ -163,4 +163,8 @@ class PPluginModuleManager : public PObject
     PPluginManager * pluginMgr;
 };
 
-#endif // ifndef _PLUGINMGR_H
+
+#endif // PTLIB_PLUGINMGR_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

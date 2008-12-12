@@ -28,8 +28,8 @@
  * $Date$
  */
 
-#ifndef _PSHAREDPTR_H
-#define _PSHAREDPTR_H
+#ifndef PTLIB_SHAREDPTR_H
+#define PTLIB_SHAREDPTR_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -53,8 +53,8 @@ class PSharedPtr : public PContainer
   public:
     typedef T element_type;
 
-    PSharedPtr(element_type * _ptr = NULL)
-    { ptr = _ptr; }
+    PSharedPtr(element_type * p = NULL)
+    { ptr = p; }
 
     PSharedPtr(const PSharedPtr & c)
       : PContainer(c)
@@ -109,5 +109,8 @@ class PSharedPtr : public PContainer
     T * ptr;
 };
 
-#endif // _PSHAREDPTR_H
 
+#endif // PTLIB_SHAREDPTR_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////
