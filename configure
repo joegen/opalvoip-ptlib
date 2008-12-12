@@ -711,9 +711,6 @@ P_STATIC_ENDLDLIBS
 P_STATIC_LDFLAGS
 HAS_EXPAT
 HAS_IPV6
-SDL_CFLAGS
-SDL_LIBS
-HAS_SDL
 HAS_CONFIG_FILE
 HAS_URL
 HAS_HTTP
@@ -743,6 +740,9 @@ HAS_VIDEO
 HAS_VIDFILE
 HAS_APPSHARE
 HAS_SHM_VIDEO
+SDL_CFLAGS
+SDL_LIBS
+HAS_SDL
 HAS_DIRECTSHOW
 HAS_DIRECTSOUND
 HAS_VIDEO_CAPTURE
@@ -1406,7 +1406,6 @@ Optional Features:
   --disable-openssl       disable OpenSSL support
   --disable-expat         disable expat XML support
   --disable-ipv6          disable IPV6 support
-  --disable-sdl           disable SDL support
   --enable-configfile     enable config file support
   --enable-url            enable URL support
   --enable-http           enable HTTP support
@@ -1436,6 +1435,7 @@ Optional Features:
   --enable-vidfile        enable video file support
   --enable-appshare       enable application sharing support
   --enable-shmvideo       enable shared memory video devices
+  --disable-sdl           disable SDL support
   --enable-v4l            enable V4L video support
   --enable-v4l2           enable V4L2 video support
   --enable-bsdvideo       enable BSD video support
@@ -10802,104 +10802,6 @@ fi
 
 
 
-# Check whether --enable-sdl was given.
-if test "${enable_sdl+set}" = set; then
-  enableval=$enable_sdl; enable_sdl=$enableval
-else
-  enable_sdl=$default_sdl
-
-fi
-
-
-HAS_SDL=
-if test "$enable_sdl" = "no" ; then
-  { echo "$as_me:$LINENO: SDL disabled" >&5
-echo "$as_me: SDL disabled" >&6;}
-else
-
-
-pkg_failed=no
-{ echo "$as_me:$LINENO: checking for SDL" >&5
-echo $ECHO_N "checking for SDL... $ECHO_C" >&6; }
-
-if test -n "$SDL_CFLAGS"; then
-    pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
-  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; then
-  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$SDL_LIBS"; then
-    pkg_cv_SDL_LIBS="$SDL_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
-  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; then
-  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "sdl" 2>&1`
-        else
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors "sdl" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$SDL_PKG_ERRORS" >&5
-
-	{ echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-                HAS_SDL=
-elif test $pkg_failed = untried; then
-	HAS_SDL=
-else
-	SDL_CFLAGS=$pkg_cv_SDL_CFLAGS
-	SDL_LIBS=$pkg_cv_SDL_LIBS
-        { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-
-                     HAS_SDL=1
-
-cat >>confdefs.h <<\_ACEOF
-#define P_SDL 1
-_ACEOF
-
-                     STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
-                     ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
-
-fi
-
-fi
-
-
-
-
-
           { echo "$as_me:$LINENO: checking enable config file support" >&5
 echo $ECHO_N "checking enable config file support... $ECHO_C" >&6; }
           # Check whether --enable-configfile was given.
@@ -12413,6 +12315,107 @@ echo "${ECHO_T}no" >&6; }
           fi
 
 
+
+
+
+
+
+# Check whether --enable-sdl was given.
+if test "${enable_sdl+set}" = set; then
+  enableval=$enable_sdl; enable_sdl=$enableval
+else
+  enable_sdl=$default_sdl
+
+fi
+
+
+HAS_SDL=
+if test "x${HAS_VIDEO}" != "x1" ; then
+    { echo "$as_me:$LINENO: SDL disabled due to disabled dependency HAS_VIDEO" >&5
+echo "$as_me: SDL disabled due to disabled dependency HAS_VIDEO" >&6;}
+else
+  if test "$enable_sdl" = "no" ; then
+    { echo "$as_me:$LINENO: SDL disabled" >&5
+echo "$as_me: SDL disabled" >&6;}
+  else
+
+pkg_failed=no
+{ echo "$as_me:$LINENO: checking for SDL" >&5
+echo $ECHO_N "checking for SDL... $ECHO_C" >&6; }
+
+if test -n "$SDL_CFLAGS"; then
+    pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
+  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; then
+  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$SDL_LIBS"; then
+    pkg_cv_SDL_LIBS="$SDL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"sdl\"") >&5
+  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; then
+  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "sdl" 2>&1`
+        else
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors "sdl" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$SDL_PKG_ERRORS" >&5
+
+	{ echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+                HAS_SDL=
+elif test $pkg_failed = untried; then
+	HAS_SDL=
+else
+	SDL_CFLAGS=$pkg_cv_SDL_CFLAGS
+	SDL_LIBS=$pkg_cv_SDL_LIBS
+        { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+
+                       HAS_SDL=1
+
+cat >>confdefs.h <<\_ACEOF
+#define P_SDL 1
+_ACEOF
+
+                       STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
+                       ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
+
+fi
+  fi
+fi
 
 
 
@@ -15647,9 +15650,6 @@ ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
 HAS_IPV6!$HAS_IPV6$ac_delim
-SDL_CFLAGS!$SDL_CFLAGS$ac_delim
-SDL_LIBS!$SDL_LIBS$ac_delim
-HAS_SDL!$HAS_SDL$ac_delim
 HAS_CONFIG_FILE!$HAS_CONFIG_FILE$ac_delim
 HAS_URL!$HAS_URL$ac_delim
 HAS_HTTP!$HAS_HTTP$ac_delim
@@ -15679,6 +15679,9 @@ HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
 HAS_SHM_VIDEO!$HAS_SHM_VIDEO$ac_delim
+SDL_CFLAGS!$SDL_CFLAGS$ac_delim
+SDL_LIBS!$SDL_LIBS$ac_delim
+HAS_SDL!$HAS_SDL$ac_delim
 HAS_DIRECTSHOW!$HAS_DIRECTSHOW$ac_delim
 HAS_DIRECTSOUND!$HAS_DIRECTSOUND$ac_delim
 HAS_VIDEO_CAPTURE!$HAS_VIDEO_CAPTURE$ac_delim
