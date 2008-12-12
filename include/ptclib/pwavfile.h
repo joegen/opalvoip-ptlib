@@ -112,18 +112,18 @@ public:
 
   /**Populate the header with the correct values after initial parameters are set.
    */
-  virtual void UpdateHeader(PWAV::FMTChunk & header, PBYTEArray & extendedHeader)
+  virtual void UpdateHeader(PWAV::FMTChunk & /*header*/, PBYTEArray & /*extendedHeader*/)
   { }
 
   /**Write any extra headers after the FORMAT chunk.
    */
-  virtual PBoolean WriteExtraChunks(PWAVFile & file)
-  { return PTrue; }
+  virtual PBoolean WriteExtraChunks(PWAVFile & /*file*/)
+  { return true; }
 
   /**Read any extra headers after the FORMAT chunk.
    */
-  virtual PBoolean ReadExtraChunks(PWAVFile & file)
-  { return PTrue; }
+  virtual PBoolean ReadExtraChunks(PWAVFile & /*file*/)
+  { return true; }
 
   /**Called before the reading/writing starts.
    */
