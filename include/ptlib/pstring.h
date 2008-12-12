@@ -46,6 +46,17 @@
 
 class PStringArray;
 class PRegularExpression;
+class PString;
+
+/**The same as the standard C snprintf(fmt, 1000, ...), but returns a
+   PString instead of a const char *.
+ */
+PString psprintf(const char * fmt, ...);
+
+/**The same as the standard C vsnprintf(fmt, 1000, va_list arg), but
+   returns a PString instead of a const char *.
+ */
+PString pvsprintf(const char * fmt, va_list arg);
 
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
 PBASEARRAY(PWCharArray, unsigned short);
