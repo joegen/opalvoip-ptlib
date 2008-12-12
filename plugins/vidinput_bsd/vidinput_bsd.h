@@ -62,7 +62,7 @@ public:
 
   static PStringList GetInputDeviceNames();
 
-  PStringList GetDeviceNames() const
+  PStringArray GetDeviceNames() const
   { return GetInputDeviceNames(); }
 
   PINDEX GetMaxFrameBytes();
