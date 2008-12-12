@@ -196,9 +196,9 @@ MSDevWizard will not build in VisualStudio v7 and so is not included as a projec
 	you will have to define the environment variable PTLIBDIR to point to
 	the correct directory.
 
-        Also make sure you have added the $PTLIBDIR/lib directory to your 
-        LD_LIBRARY_PATH environment variable if you intend to use shared 
-        libraries (the default).
+        Also make sure you have added the PTLib lib directory (e.g.
+        $PTLIBDIR/lib_linux_x86) to your LD_LIBRARY_PATH environment variable
+        if you intend to use shared libraries (the default).
 
 2.	Build the debug and release versions of the PTLib library as follows:
 		cd ~/ptlib
