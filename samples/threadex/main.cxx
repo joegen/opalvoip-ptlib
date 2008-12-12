@@ -48,7 +48,7 @@ PAtomicInteger autoDeleteThreadsStarted = 0;
 PAtomicInteger autoDeleteThreadsFinished = 0;
 
 PMutex setMutex;
-typedef std::set<pthread_t> ThreadSet;
+typedef std::set<PThreadIdentifer> ThreadSet;
 ThreadSet threadSet;
 
 Threadex::Threadex()
@@ -133,7 +133,7 @@ void Threadex::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void AddToThreadSet(pthread_t id)
+void AddToThreadSet(PThreadIdentifer id)
 {
   PWaitAndSignal m(setMutex);
   if (threadSet.find(id) != threadSet.end()) {
@@ -143,7 +143,7 @@ void AddToThreadSet(pthread_t id)
   threadSet.insert(id);
 }
 
-void RemoveFromThreadSet(pthread_t id)
+void RemoveFromThreadSet(PThreadIdentifer id)
 {
   PWaitAndSignal m(setMutex);
   if (threadSet.find(id) == threadSet.end()) {
