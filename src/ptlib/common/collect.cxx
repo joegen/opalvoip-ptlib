@@ -1273,6 +1273,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
 
   hashTable = new PHashTable::Table(original->GetSize());
   PAssert(hashTable != NULL, POutOfMemory);
+  hashTable->deleteKeys = original->deleteKeys;
 
   for (PINDEX i = 0; i < sz; i++) {
     Element * lastElement = NULL;
