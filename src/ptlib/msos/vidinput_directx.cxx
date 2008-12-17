@@ -60,7 +60,67 @@ static const GUID MEDIASUBTYPE_IYUV = { 0x56555949, 0x0000, 0x0010, 0x80, 0x00, 
 #pragma comment(lib, "strmbase.lib")
 #pragma comment(lib, "mmtimer.lib")
 
+#ifdef DEBUG
+/* Only the release version is provided as a .lib file, so we need to
+   make sure that the compilation does NOT have the extra fields/functions
+   that are added when DEBUG version. */
+#undef DEBUG
+#include <streams.h>
+#define DEBUG
+#else
+#include <streams.h>
 #endif
+
+class PSampleGrabber : public CBaseVideoRenderer
+{
+  public:
+    PSampleGrabber(HRESULT * hr);
+
+    virtual HRESULT CheckMediaType(const CMediaType *media);
+    virtual HRESULT ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop);
+    virtual HRESULT DoRenderSample(IMediaSample *sample);
+
+    HRESULT GetCurrentBuffer(long *, long *);
+
+  private:
+    PMutex m_sampleMutex;
+    long   m_sampleSize;
+    BYTE * m_sampleData;
+};
+
+#else // _WIN32_WCE
+
+#include <dshow.h>
+
+#undef INTERFACE
+#define INTERFACE ISampleGrabberCB
+DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
+{
+  STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
+  STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
+};
+
+#undef INTERFACE
+#define INTERFACE ISampleGrabber
+
+DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
+{
+  STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
+  STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+  STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+  STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
+  STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
+  STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
+  STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
+};
+
+extern "C" {
+  extern const CLSID CLSID_SampleGrabber;
+  extern const IID IID_ISampleGrabber;
+  extern const CLSID CLSID_NullRenderer;
+};
+
+#endif // _WIN32_WCE
 
 
 
@@ -903,7 +963,7 @@ bool PVideoInputDevice_DirectShow::CreateCaptureDevice(const PString & devName)
 struct __declspec(  uuid("{71771540-2017-11cf-ae26-0020afd79767}")  ) CLSID_MySampleGrabber;
 
 
-PVideoInputDevice_DirectShow::MySampleGrabber::MySampleGrabber(HRESULT * hr)
+PSampleGrabber::PSampleGrabber(HRESULT * hr)
   : CBaseVideoRenderer(__uuidof(CLSID_MySampleGrabber), NAME("Frame Sample Grabber"), NULL, hr)
   , m_sampleSize(0)
   , m_sampleData(NULL)
@@ -911,19 +971,19 @@ PVideoInputDevice_DirectShow::MySampleGrabber::MySampleGrabber(HRESULT * hr)
 }
 
 
-HRESULT PVideoInputDevice_DirectShow::MySampleGrabber::CheckMediaType(const CMediaType *media)
+HRESULT PSampleGrabber::CheckMediaType(const CMediaType *media)
 {
   return *media->FormatType() == FORMAT_VideoInfo && IsEqualGUID(*media->Type(), MEDIATYPE_Video) ? S_OK : E_FAIL;
 }
 
 
-HRESULT PVideoInputDevice_DirectShow::MySampleGrabber::ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop)
+HRESULT PSampleGrabber::ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop)
 {
   return S_OK; // disable dropping of frames
 }
 
 
-HRESULT PVideoInputDevice_DirectShow::MySampleGrabber::DoRenderSample(IMediaSample *sample)
+HRESULT PSampleGrabber::DoRenderSample(IMediaSample *sample)
 {
   m_sampleMutex.Wait();
 
@@ -936,7 +996,7 @@ HRESULT PVideoInputDevice_DirectShow::MySampleGrabber::DoRenderSample(IMediaSamp
 }
 
 
-HRESULT PVideoInputDevice_DirectShow::MySampleGrabber::GetCurrentBuffer(long * pSize, long * pData)
+HRESULT PSampleGrabber::GetCurrentBuffer(long * pSize, long * pData)
 {
   m_sampleMutex.Wait();
 
@@ -955,7 +1015,7 @@ HRESULT PVideoInputDevice_DirectShow::MySampleGrabber::GetCurrentBuffer(long * p
 bool PVideoInputDevice_DirectShow::CreateGrabberHandler()
 {
   HRESULT hr = S_OK;
-  MySampleGrabber * grabber = new MySampleGrabber(&hr);
+  PSampleGrabber * grabber = new PSampleGrabber(&hr);
   if (FAILED(hr)) {
     delete grabber;
     return false;

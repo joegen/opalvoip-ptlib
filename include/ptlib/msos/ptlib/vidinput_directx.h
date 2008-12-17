@@ -43,52 +43,12 @@
 #endif
 
 
-#ifdef _WIN32_WCE
-
-#ifdef DEBUG
-/* Only the release version is provided as a .lib file, so we need to
-   make sure that the compilation does NOT have the extra fields/functions
-   that are added when DEBUG version. */
-#undef DEBUG
-#include <streams.h>
-#define DEBUG
-#else
-#include <streams.h>
-#endif
-
-#else // _WIN32_WCE
-
-#include <dshow.h>
-
-#undef INTERFACE
-#define INTERFACE ISampleGrabberCB
-DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
-{
-  STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
-  STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
-};
-
-#undef INTERFACE
-#define INTERFACE ISampleGrabber
-
-DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
-{
-  STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
-  STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-  STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-  STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
-  STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
-  STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
-  STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
-};
-
-extern "C" {
-  extern const CLSID CLSID_SampleGrabber;
-  extern const IID IID_ISampleGrabber;
-  extern const CLSID CLSID_NullRenderer;
-};
-
-#endif // _WIN32_WCE
+struct IGraphBuilder;
+struct ICaptureGraphBuilder2;
+struct IBaseFilter;
+struct IMediaControl;
+struct ISampleGrabber;
+class  PSampleGrabber;
 
 
 template <class T> class PComPtr
@@ -330,29 +290,10 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PAdaptiveDelay  m_pacing;
 
 #ifdef _WIN32_WCE
-    class MySampleGrabber : public CBaseVideoRenderer
-    {
-      public:
-        MySampleGrabber(HRESULT * hr);
-
-        virtual HRESULT CheckMediaType(const CMediaType *media);
-        virtual HRESULT ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop);
-        virtual HRESULT DoRenderSample(IMediaSample *sample);
-
-        HRESULT GetCurrentBuffer(long *, long *);
-
-      private:
-        PMutex m_sampleMutex;
-        long   m_sampleSize;
-        BYTE * m_sampleData;
-    };
-
-    PComPtr<MySampleGrabber> m_pSampleGrabber;
+    PComPtr<PSampleGrabber> m_pSampleGrabber;
 #else
-
     PComPtr<ISampleGrabber> m_pSampleGrabber;
     PComPtr<IBaseFilter>    m_pGrabberFilter;
-
 #endif
 };
 
