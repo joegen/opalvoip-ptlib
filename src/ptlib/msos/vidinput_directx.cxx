@@ -186,7 +186,7 @@ static bool CheckError(HRESULT hr, const char * fn)
 
 #define CHECK_ERROR(fn, action) if (CheckError(fn, #fn)) action
 #else
-#define CHECK_ERROR(fn, args, action) if (FAILED(fn)) action
+#define CHECK_ERROR(fn, action) if (FAILED(fn)) action
 #endif
 
 #define CHECK_ERROR_RETURN(fn) CHECK_ERROR(fn, return false)
