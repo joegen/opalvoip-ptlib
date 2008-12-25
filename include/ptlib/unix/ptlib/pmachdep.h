@@ -343,11 +343,10 @@ typedef int socklen_t;
  
 #define HAS_IFREQ
 
-#if defined (P_MACOSX) && (P_MACOSX < 900)
+// hf, 2008-12-25: apparently, earlier versions of 10.5.x needed a version 
+// without parameters. however, something changed such that the 'old' version
+// is required again. (OS X 10.5.6)
 #define PSETPGRP()  setpgrp(0, 0)
-#else
-#define PSETPGRP()  setpgrp()
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
