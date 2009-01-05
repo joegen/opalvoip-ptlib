@@ -126,7 +126,7 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
   m_ffmpegFrameWidth = m_ffmpegFrameHeight = 0;
   m_ffmpegFrameRate = 25;
 
-  PString cmd = PString(ffmpegExe) & "-i" & _deviceName & "-f rawvideo -";
+  PString cmd = PString(ffmpegExe) & "-i" & _deviceName & "-re -f rawvideo -";
 
   // file information comes in on stderr
   if (!m_command.Open(cmd, PPipeChannel::ReadOnly, true, true)) {
