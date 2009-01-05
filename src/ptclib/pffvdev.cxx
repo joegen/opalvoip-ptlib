@@ -161,12 +161,13 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
           // Stream #0.0: Video: mpeg4, yuv420p, 640x352 [PAR 1:1 DAR 20:11], 25.00 tb(r)
           if (line.Left(8) *= "Stream #") {
             PStringArray tokens = line.Tokenise(' ', false);
-            if ((tokens.GetSize() >= 3 && (tokens[2] *= "Video:")) && (tokens.GetSize() >= 6)) {
+            if (tokens.GetSize() >= 6 && (tokens[2] *= "Video:")) {
               PString size = tokens[5];
               PINDEX x = size.Find('x');
               if (x != P_MAX_INDEX) {
                 m_ffmpegFrameWidth = size.Left(x).AsUnsigned();
-                m_ffmpegFrameHeight = size.Right(x+1).AsUnsigned();
+                m_ffmpegFrameHeight = size.Mid(x+1).AsUnsigned();
+                PTRACE(1, "FFVDev\tVideo size parsed as " << m_ffmpegFrameWidth << "x" << m_ffmpegFrameHeight);
                 state = -1;
               }
             }
@@ -178,9 +179,6 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
       }
     }
   }
-
-  m_ffmpegFrameWidth = 608;
-  m_ffmpegFrameHeight = 336;
 
   // file is now open
   m_ffmpegFrameSize = CalculateFrameBytes(m_ffmpegFrameWidth, m_ffmpegFrameHeight, "yuv420p");
