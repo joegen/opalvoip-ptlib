@@ -91,6 +91,9 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     envStr = envBuf.GetPointer();
   }
 
+  //
+  // this code comes from http://msdn.microsoft.com/en-us/library/ms682499(VS.85).aspx
+  //
   STARTUPINFO startup;
   memset(&startup, 0, sizeof(startup));
   startup.cb = sizeof(startup);
@@ -103,18 +106,21 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   SECURITY_ATTRIBUTES security;
   security.nLength = sizeof(security);
   security.lpSecurityDescriptor = NULL;
-  security.bInheritHandle = PTrue;
+  security.bInheritHandle = TRUE;
 
+  // ReadOnly means child has no stdin
+  // otherwise create a pipe for us to send data to child
   if (mode == ReadOnly)
     hToChild = INVALID_HANDLE_VALUE;
   else {
     HANDLE writeEnd;
     PAssertOS(CreatePipe(&startup.hStdInput, &writeEnd, &security, 0));
-    PAssertOS(DuplicateHandle(GetCurrentProcess(), writeEnd,
-                              GetCurrentProcess(), &hToChild, 0, PFalse,
-                              DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS));
+    PAssertOS(SetHandleInformation(writeEnd, HANDLE_FLAG_INHERIT, 0));
   }
 
+  // WriteOnly means child has no stdout
+  // ReadWriteStd means child uses our stdout and stderr
+  // otherwise, create a pipe to read stdout from child, and perhaps a seperate one for stderr too
   if (mode == WriteOnly)
     hFromChild = INVALID_HANDLE_VALUE;
   else if (mode == ReadWriteStd) {
@@ -123,12 +129,13 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   }
   else {
-    PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 0));
-    if (stderrSeparate)
-      PAssertOS(CreatePipe(&hStandardError, &startup.hStdError, &security, 0));
-    else {
-      startup.hStdError = startup.hStdOutput;
-      hStandardError = INVALID_HANDLE_VALUE;
+    PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 128000));
+    PAssertOS(SetNamedPipeHandleState(&hFromChild, PIPE_READMODE_BYTE, NULL, NULL));
+    PAssertOS(SetHandleInformation(hFromChild, HANDLE_FLAG_INHERIT, 0));
+    if (stderrSeparate) {
+      PAssertOS(CreatePipe(&hStandardError, &startup.hStdError, &security, 128000));
+      PAssertOS(SetNamedPipeHandleState(&hStandardError, PIPE_READMODE_BYTE, NULL, NULL));
+      PAssertOS(SetHandleInformation(hStandardError, HANDLE_FLAG_INHERIT, 0));
     }
   }
 
@@ -143,16 +150,6 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
       CloseHandle(hFromChild);
     if (hStandardError != INVALID_HANDLE_VALUE)
       CloseHandle(hStandardError);
-  }
-
-  if (startup.hStdInput != INVALID_HANDLE_VALUE)
-    CloseHandle(startup.hStdInput);
-
-  if (mode != ReadWriteStd) {
-    if (startup.hStdOutput != INVALID_HANDLE_VALUE)
-      CloseHandle(startup.hStdOutput);
-    if (startup.hStdOutput != startup.hStdError)
-      CloseHandle(startup.hStdError);
   }
 
   return IsOpen();
