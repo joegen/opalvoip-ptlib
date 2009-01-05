@@ -52,6 +52,9 @@ static const char DefaultYUVFileName[] = "*.yuv";
 
 #define new PNEW
 
+namespace PWLibStupidLinkerHacks {
+int loadVideoFileStuff;
+}; 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_YUVFile
