@@ -43,35 +43,42 @@
 
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
-#if defined(P_VIDEO) && defined(P_VFW_CAPTURE)
-namespace PWLibStupidLinkerHacks {
-  extern int loadVideoForWindowsStuff;
-};
-#endif
 #endif
 
-#if defined(P_MINGW)
 namespace PWLibStupidLinkerHacks {
-  extern int loadFakeVideoStuff;
-#if defined(P_AUDIO)
-  extern int loadWindowsMultimediaStuff;
-#endif
-#if defined(P_VIDEO) && defined(P_VFW_CAPTURE)
-  extern int loadVideoForWindowsStuff;
-#endif
-#if defined(P_VIDEO) && defined(P_DIRECTSHOW) && defined(P_DIRECTX)
-  extern int loadDirectShowStuff;
-#endif
-};
-#endif
-     
-#ifdef P_MACOSX
-namespace PWLibStupidLinkerHacks {
-  extern int loadFakeVideoStuff;
-  extern int loadShmVideoStuff;
-  extern int loadCoreAudioStuff;
-};
-#endif
+
+#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
+
+#  ifdef P_VIDEO
+     extern int loadFakeVideoStuff;
+#    if defined(P_MINGW) || defined(_WIN32)
+#      ifdef P_VFW_CAPTURE
+         extern int loadVideoForWindowsStuff;
+#      endif
+#      if defined(P_DIRECTSHOW) && defined(P_DIRECTX)
+         extern int loadDirectShowStuff;
+#      endif
+#    endif
+#    ifdef P_FFVDEV
+       extern int loadFFVideoFileStuff;
+#    endif
+#    ifdef P_VIDFILE
+       extern int loadVideoFileStuff;
+#    endif
+#  endif 
+
+#  ifdef P_AUDIO
+#    if defined(P_MINGW) || defined(_WIN32)
+       extern int loadWindowsMultimediaStuff;
+#    endif
+#    ifdef P_MACOSX
+       extern int loadCoreAudioStuff;
+#    endif
+#  endif
+
+#endif // defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
+
+}; // namespace PWLibStupidLinkerHacks {
 
 class PExternalThread : public PThread
 {
@@ -1537,7 +1544,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   cout << "Enter program arguments:\n";
   arguments.ReadFrom(cin);
 
-#else // P_RTEMS
+#endif // P_RTEMS
 
 #ifdef _WIN32
   // Try to get the real image path for this process
@@ -1546,54 +1553,43 @@ PProcess::PProcess(const char * manuf, const char * name,
     executableFile = moduleName;
     executableFile.Replace("\\??\\","");
   }
-
-#if defined(P_VIDEO)  && defined(P_VFW_CAPTURE)
-  PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
 #endif
 
-#endif // _WIN32
+#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
+
+#  ifdef P_VIDEO
+     PWLibStupidLinkerHacks::loadFakeVideoStuff = 1;
+#    if defined(P_MINGW) || defined(_WIN32)
+#      ifdef P_VFW_CAPTURE
+         PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
+#      endif
+#      if defined(P_DIRECTSHOW) && defined(P_DIRECTX)
+         PWLibStupidLinkerHacks::loadDirectShowStuff  =1;
+#      endif
+#    endif
+#    ifdef P_FFVDEV
+       PWLibStupidLinkerHacks::loadFFVideoFileStuff = 1;
+#    endif
+#    ifdef P_VIDFILE
+       PWLibStupidLinkerHacks::loadVideoFileStuff = 1;
+#    endif
+#  endif 
+
+#  ifdef P_AUDIO
+#    if defined(P_MINGW) || defined(_WIN32)
+       PWLibStupidLinkerHacks::loadWindowsMultimediaStuff = 1;
+#    endif
+#    ifdef P_MACOSX
+       PWLibStupidLinkerHacks::loadCoreAudioStuff = 1;
+#    endif
+#  endif
+
+#endif // defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
 
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
 
-#endif // P_RTEMS
-
   Construct();
-
-#if defined(P_MINGW)
-#ifdef P_VIDEO
-  PWLibStupidLinkerHacks::loadFakeVideoStuff = 1;
-#endif
-#if defined(P_AUDIO)
-  PWLibStupidLinkerHacks::loadWindowsMultimediaStuff = 1;
-#endif
-#if defined(P_VIDEO) && defined(P_VFW_CAPTURE)
-  PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
-#endif
-#if defined(P_VIDEO) && defined(P_DIRECTSHOW) && defined(P_DIRECTX)
-  PWLibStupidLinkerHacks::loadDirectShowStuff = 1;
-#endif
-
-#endif
-
-
-#ifdef P_MACOSX
-
-#ifdef P_VIDEO
-
-  PWLibStupidLinkerHacks::loadFakeVideoStuff = 1;
-  
-#ifdef P_SHM_VIDEO
-  PWLibStupidLinkerHacks::loadShmVideoStuff = 1;
-#endif // P_SHM_VIDEO
-
-#endif
-  
-#ifdef P_AUDIO
-  PWLibStupidLinkerHacks::loadCoreAudioStuff = 1;
-#endif // P_AUDIO
-  
-#endif // P_MACOSX
 
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory

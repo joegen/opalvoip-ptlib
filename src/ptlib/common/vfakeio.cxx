@@ -39,11 +39,9 @@
 #include <ptlib/videoio.h>
 #include <ptclib/delaychan.h>
 
-#if defined(P_MACOSX) || defined(P_MINGW)
 namespace PWLibStupidLinkerHacks {
   int loadFakeVideoStuff;
 };
-#endif
 
 enum {
   eMovingBlocks,
