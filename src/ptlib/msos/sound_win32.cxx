@@ -48,11 +48,9 @@
 #include <ptlib/wm/mmsystemx.h>
 #endif
 
-#if defined(P_MINGW)
 namespace PWLibStupidLinkerHacks {
    int loadWindowsMultimediaStuff;
 };
-#endif
      
 class PSound;
 
@@ -1449,7 +1447,7 @@ PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
   details.cbDetails = sizeof(volume);
   details.paDetails = &volume;
 
-  MMRESULT result = mixerSetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_SETCONTROLDETAILSF_VALUE);
+  MMRESULT result = mixerSetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_VALUE);
   if (result != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
