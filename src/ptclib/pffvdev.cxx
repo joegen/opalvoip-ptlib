@@ -77,7 +77,7 @@ class PVideoInputDevice_FFMPEG_PluginServiceDescriptor : public PDevicePluginSer
     }
     virtual PStringArray GetDeviceNames(int /*userData*/) const
     {
-      return DefaultAVIFileName;
+       return PVideoInputDevice_FFMPEG::GetInputDeviceNames();
     }
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {

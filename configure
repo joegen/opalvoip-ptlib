@@ -738,6 +738,7 @@ HAS_AUDIO
 HAS_QOS
 HAS_VIDEO
 HAS_VIDFILE
+HAS_FFVDEV
 HAS_APPSHARE
 HAS_SHM_VIDEO
 SDL_CFLAGS
@@ -787,6 +788,7 @@ PTLIB_HTTPSVC
 PTLIB_CONFIG_FILE
 PTLIB_SOCKAGG
 PTLIB_VIDFILE
+PTLIB_FFVDEV
 PTLIB_ODBC
 STDCCFLAGS
 STDCXXFLAGS
@@ -1433,6 +1435,7 @@ Optional Features:
   --enable-qos            enable QOS support
   --enable-video          enable video device support
   --enable-vidfile        enable video file support
+  --enable-ffvdev         enable FFMpeg video file support
   --enable-appshare       enable application sharing support
   --enable-shmvideo       enable shared memory video devices
   --disable-sdl           disable SDL support
@@ -3500,6 +3503,7 @@ default_ipv6=yes
 HAS_QOS=1
 HAS_SOCKAGG=1
 HAS_VIDFILE=1
+HAS_FFVDEV=1
 HAS_APPSHARE=
 HAS_SHM_VIDEO=1
 HAS_VXML=1
@@ -3541,6 +3545,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_QOS=1
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
+  HAS_FFVDEV=1
   HAS_APPSHARE=
   HAS_VXML=1
   HAS_SHM_VIDEO=
@@ -3580,7 +3585,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_ipv6=no
   HAS_QOS=
   HAS_SOCKAGG=1
-  HAS_VIDFILE=1
+  HAS_VIDFILE=
+  HAS_FFVDEV=
   HAS_APPSHARE=
   HAS_VXML=
   HAS_SHM_VIDEO=
@@ -12216,6 +12222,58 @@ echo "${ECHO_T}no" >&6; }
 
 
 
+          { echo "$as_me:$LINENO: checking enable FFMpeg video file support" >&5
+echo $ECHO_N "checking enable FFMpeg video file support... $ECHO_C" >&6; }
+          # Check whether --enable-ffvdev was given.
+if test "${enable_ffvdev+set}" = set; then
+  enableval=$enable_ffvdev;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_FFVDEV=1
+                         else
+                           HAS_FFVDEV=
+                         fi
+
+fi
+
+
+          if test "xHAS_FFVDEV" != "x"; then
+            if test "x$HAS_FFVDEV" != "x1"; then
+              { echo "$as_me:$LINENO: ffvdev support disabled due to disabled dependency HAS_FFVDEV" >&5
+echo "$as_me: ffvdev support disabled due to disabled dependency HAS_FFVDEV" >&6;}
+	      HAS_FFVDEV=
+	    fi
+	  fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: ffvdev support disabled due to disabled dependency " >&5
+echo "$as_me: ffvdev support disabled due to disabled dependency " >&6;}
+	      HAS_FFVDEV=
+	    fi
+	  fi
+
+
+          if test "x${HAS_FFVDEV}" = "x1"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_FFVDEV 1
+_ACEOF
+
+            HAS_FFVDEV=1
+            { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+          else
+            HAS_FFVDEV=
+            { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+          fi
+
+
+
+
+
+
+
           { echo "$as_me:$LINENO: checking enable application sharing support" >&5
 echo $ECHO_N "checking enable application sharing support... $ECHO_C" >&6; }
           # Check whether --enable-appshare was given.
@@ -14774,6 +14832,16 @@ esac
 
 
 
+          if test "x${HAS_FFVDEV}" = "x1" ; then
+            PTLIB_FFVDEV=yes
+
+          else
+            PTLIB_FFVDEV=no
+
+          fi
+
+
+
           if test "x${HAS_ODBC}" = "x1" ; then
             PTLIB_ODBC=yes
 
@@ -15677,6 +15745,7 @@ HAS_AUDIO!$HAS_AUDIO$ac_delim
 HAS_QOS!$HAS_QOS$ac_delim
 HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
+HAS_FFVDEV!$HAS_FFVDEV$ac_delim
 HAS_APPSHARE!$HAS_APPSHARE$ac_delim
 HAS_SHM_VIDEO!$HAS_SHM_VIDEO$ac_delim
 SDL_CFLAGS!$SDL_CFLAGS$ac_delim
@@ -15726,6 +15795,7 @@ PTLIB_HTTPSVC!$PTLIB_HTTPSVC$ac_delim
 PTLIB_CONFIG_FILE!$PTLIB_CONFIG_FILE$ac_delim
 PTLIB_SOCKAGG!$PTLIB_SOCKAGG$ac_delim
 PTLIB_VIDFILE!$PTLIB_VIDFILE$ac_delim
+PTLIB_FFVDEV!$PTLIB_FFVDEV$ac_delim
 PTLIB_ODBC!$PTLIB_ODBC$ac_delim
 STDCCFLAGS!$STDCCFLAGS$ac_delim
 STDCXXFLAGS!$STDCXXFLAGS$ac_delim
@@ -15739,7 +15809,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 88; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 90; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

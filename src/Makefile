@@ -328,6 +328,15 @@ $(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
 
 endif
 
+ifdef HAS_FFVDEV
+SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
+
+$(OBJDIR)/pffvdev.o: $(COMPONENT_SRC_DIR)/pffvdev.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
+
+endif
+
 ifeq ($(OSTYPE),mingw)
 SOURCES	+= \
         $(PLATFORM_SRC_DIR)/ptlib.cxx \
