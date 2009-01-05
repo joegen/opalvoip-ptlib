@@ -301,6 +301,13 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
   if (!m_command.IsOpen())
     return PFalse;
 
+  // make sure that stderr is emptied, as too much unread data 
+  // will cause ffmpeg to silently stop 
+  {
+    PString text;
+    m_command.ReadStandardError(text, false);
+  }
+
   grabCount++;
 
   BYTE * readBuffer = destFrame;
