@@ -135,6 +135,7 @@
 
 #undef P_SOCKAGG
 #undef P_VIDFILE
+#undef P_FFVDEV
 #undef P_ODBC
 #undef P_SHM_VIDEO
 

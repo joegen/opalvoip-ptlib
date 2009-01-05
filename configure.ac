@@ -119,6 +119,7 @@ default_ipv6=yes
 HAS_QOS=1
 HAS_SOCKAGG=1
 HAS_VIDFILE=1
+HAS_FFVDEV=1
 HAS_APPSHARE=
 HAS_SHM_VIDEO=1
 HAS_VXML=1
@@ -160,6 +161,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_QOS=1
   HAS_SOCKAGG=1
   HAS_VIDFILE=1
+  HAS_FFVDEV=1
   HAS_APPSHARE=
   HAS_VXML=1
   HAS_SHM_VIDEO=
@@ -199,7 +201,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_ipv6=no
   HAS_QOS=
   HAS_SOCKAGG=1
-  HAS_VIDFILE=1
+  HAS_VIDFILE=
+  HAS_FFVDEV=
   HAS_APPSHARE=
   HAS_VXML=
   HAS_SHM_VIDEO=
@@ -1411,6 +1414,13 @@ dnl MSWIN_DISPLAY    vidfile,Video file support
 dnl MSWIN_DEFINE     vidfile,P_VIDFILE
 
 PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [enable video file support], [HAS_VIDEO])
+
+dnl ########################################################################
+dnl check for enabling FFMpeg video file support
+dnl MSWIN_DISPLAY    ffvdev,FFMpeg video file support
+dnl MSWIN_DEFINE     ffvdev,P_FFVDEV
+
+PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [enable FFMpeg video file support], [HAS_FFVDEV])
 
 dnl ########################################################################
 dnl check for enabling app share support
