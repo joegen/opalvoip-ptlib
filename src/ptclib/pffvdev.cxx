@@ -58,7 +58,7 @@ static const char DefaultAVIFileName[] = "*.avi";
 // PVideoInputDevice_FFMPEG
 
 static const char * ffmpegExtensions[] = {
-  "avi", "mpg", "wmv",
+  "avi", "mpg", "wmv", "mov",
   NULL
 };
 
@@ -90,8 +90,10 @@ class PVideoInputDevice_FFMPEG_PluginServiceDescriptor : public PDevicePluginSer
         PINDEX length = adjustedDevice.GetLength();
         if (length > (2+extLen) && adjustedDevice.NumCompare(PString(".") + ext + "*", 2+extLen, length-(2+extLen)) == PObject::EqualTo)
           adjustedDevice.Delete(length-1, 1);
-        else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo)
+        else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo) {
+          ++r;
           continue;
+        }
         if (PFile::Access(adjustedDevice, PFile::ReadOnly)) 
           return true;
         PTRACE(1, "FFVDev\tUnable to access file '" << adjustedDevice << "' for use as a video input device");
@@ -134,10 +136,10 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
     return false;
   }
 
-  if (!m_command.Execute()) {
-    PTRACE(1, "VidFFMPEG\tCannot execute command " << cmd);
-    return false;
-  }
+  //if (!m_command.Execute()) {
+  //  PTRACE(1, "VidFFMPEG\tCannot execute command " << cmd);
+  //  return false;
+  //}
 
   // parse out file size information
   {
