@@ -4760,6 +4760,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\pffvdev.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\pils.cxx"
 					>
 				</File>
@@ -5769,6 +5773,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pdns.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pffvdev.h"
 					>
 				</File>
 				<File
