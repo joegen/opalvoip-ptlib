@@ -641,6 +641,10 @@
 			<File
 				RelativePath="..\..\ptclib\pdns.cxx">
 			</File>
+				<File
+					RelativePath="..\..\ptclib\pffvdev.cxx"
+					>
+				</File>
 			<File
 				RelativePath="..\common\pethsock.cxx">
 				<FileConfiguration
@@ -1651,6 +1655,10 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pdns.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pffvdev.h"
+					>
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\pfactory.h">
