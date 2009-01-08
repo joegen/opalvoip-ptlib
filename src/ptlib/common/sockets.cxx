@@ -1236,6 +1236,18 @@ PBoolean PIPSocket::GetLocalAddress(Address & addr)
 }
 
 
+PBoolean PIPSocket::GetLocalAddress(PIPSocketAddressAndPort & addr)
+{
+  Address ip;
+  WORD port;
+  if (!GetLocalAddress(ip, port))
+    return false;
+
+  addr.SetAddress(ip, port);
+  return true;
+}
+
+
 PBoolean PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 {
 #if P_HAS_IPV6
@@ -1291,6 +1303,19 @@ PBoolean PIPSocket::GetPeerAddress(Address & addr)
   WORD portNum;
   return GetPeerAddress(addr, portNum);
 }
+
+
+PBoolean PIPSocket::GetPeerAddress(PIPSocketAddressAndPort & addr)
+{
+  Address ip;
+  WORD port;
+  if (!GetPeerAddress(ip, port))
+    return false;
+
+  addr.SetAddress(ip, port);
+  return true;
+}
+
 
 PBoolean PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 {
@@ -2830,6 +2855,14 @@ PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char sep
     return false;
 
   return true;
+}
+
+
+void PIPSocketAddressAndPort::SetAddress(const PIPSocket::Address & addr, WORD port)
+{
+  m_address = addr;
+  if (port != 0)
+    m_port = port;
 }
 
 

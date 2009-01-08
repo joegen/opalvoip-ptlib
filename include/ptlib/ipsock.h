@@ -48,6 +48,11 @@
 #endif // _WIN32
 #endif // P_QOS
 
+
+class PIPSocketAddressAndPort;
+
+
+
 /**This class describes a type of socket that will communicate using the
    Internet Protocol.
    If P_HAS_IPV6 is not set, IPv4 only is supported.
@@ -429,6 +434,9 @@ class PIPSocket : public PSocket
       Address & addr    ///< Variable to receive hosts IP address.
     );
     virtual PBoolean GetLocalAddress(
+      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
+    );
+    virtual PBoolean GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
     );
@@ -442,6 +450,9 @@ class PIPSocket : public PSocket
     virtual PString GetPeerAddress();
     virtual PBoolean GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address.
+    );
+    virtual PBoolean GetPeerAddress(
+      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
     );
     virtual PBoolean GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
@@ -729,6 +740,10 @@ class PIPSocketAddressAndPort
     PString AsString(char separator = 0) const
       { return m_address.AsString() + (separator ? separator : m_separator) + PString(PString::Unsigned, m_port); }
 
+    void SetAddress(
+      const PIPSocket::Address & addr,
+      WORD port = 0
+    );
     const PIPSocket::Address & GetAddress() const { return m_address; }
     WORD GetPort() const { return m_port; }
 
