@@ -468,6 +468,9 @@ int PServiceProcess::InternalMain(void * arg)
     return 1;
   }
 
+  // Skip past the first argument
+  arguments.Shift(1);
+
   if (!CreateControlWindow(debugMode))
     return 1;
 
