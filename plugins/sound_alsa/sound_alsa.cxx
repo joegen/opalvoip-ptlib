@@ -90,72 +90,60 @@ PSoundChannelALSA::~PSoundChannelALSA()
 
 void PSoundChannelALSA::UpdateDictionary (Directions dir)
 {
-  int card = -1, dev = -1;
-  
-  snd_ctl_t *handle = NULL;
-  snd_ctl_card_info_t *info = NULL;
-  snd_pcm_info_t *pcminfo = NULL;
-  snd_pcm_stream_t stream;
+  PWaitAndSignal mutex(dictionaryMutex);
 
-  char *name = NULL;
-  char card_id [32];
+  PStringToOrdinal & devices = dir == Recorder ? capture_devices : playback_devices;
+  devices.RemoveAll();
 
-  PWaitAndSignal m(dictionaryMutex);
+  int cardNum = -1;
+  if (snd_card_next(&cardNum) < 0 || cardNum < 0)
+    return;  // No sound card found
 
-  if (dir == Recorder) {
+  snd_ctl_card_info_t * info = NULL;
+  snd_ctl_card_info_alloca(&info);
 
-    stream = SND_PCM_STREAM_CAPTURE;
-    capture_devices = PStringToOrdinal ();
-  }
-  else {
+  snd_pcm_info_t * pcminfo = NULL;
+  snd_pcm_info_alloca(&pcminfo);
 
-    stream = SND_PCM_STREAM_PLAYBACK;
-    playback_devices = PStringToOrdinal ();
-  }
+  do {
+    char card_id[32];
+    snprintf(card_id, sizeof(card_id), "hw:%d", cardNum);
 
-  snd_ctl_card_info_alloca (&info);
-  snd_pcm_info_alloca (&pcminfo);
+    snd_ctl_t * handle = NULL;
+    if (snd_ctl_open(&handle, card_id, 0) == 0) {
+      snd_ctl_card_info(handle, info);
 
-  /* No sound card found */
-  if (snd_card_next (&card) < 0 || card < 0) {
-
-    return;
-  }
-
-  while (card >= 0) {
-
-    snprintf (card_id, 32, "hw:%d", card);
-    
-    if (snd_ctl_open (&handle, card_id, 0) == 0) {
-
-      snd_ctl_card_info (handle, info);
-
-      while (1) {
-
-        snd_ctl_pcm_next_device (handle, &dev);
-
+      for (;;) {
+        int dev = -1;
+        snd_ctl_pcm_next_device(handle, &dev);
         if (dev < 0)
           break;
 
-        snd_pcm_info_set_device (pcminfo, dev);
-        snd_pcm_info_set_subdevice (pcminfo, 0);
-        snd_pcm_info_set_stream (pcminfo, stream);
+        snd_pcm_info_set_device(pcminfo, dev);
+        snd_pcm_info_set_subdevice(pcminfo, 0);
+        snd_pcm_info_set_stream(pcminfo, dir == Recorder ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK);
 
         if (snd_ctl_pcm_info (handle, pcminfo) >= 0) {
+          char * rawName = NULL;
+          snd_card_get_name(cardNum, &rawName);
+          if (rawName != NULL) {
+            int disambiguator = 1;
+            PString uniqueName = rawName;
+            while (devices.Contains(uniqueName)) {
+              uniqueName = rawName;
+              uniqueName.sprintf(" (%d)", disambiguator++);
+            }
 
-          snd_card_get_name (card, &name);
-          if (dir == Recorder) 
-            capture_devices.SetAt (name, card);
-          else 
-            playback_devices.SetAt (name, card);
-          free (name);
+            devices.SetAt(uniqueName, cardNum);
+            free(rawName);
+          }
         }
       }
       snd_ctl_close(handle);
     }
 
-    snd_card_next (&card);
-  }
+    snd_card_next (&cardNum);
+  } while (cardNum >= 0);
 }
 
 
