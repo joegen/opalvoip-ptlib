@@ -113,8 +113,8 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
     if (snd_ctl_open(&handle, card_id, 0) == 0) {
       snd_ctl_card_info(handle, info);
 
+      int dev = -1;
       for (;;) {
-        int dev = -1;
         snd_ctl_pcm_next_device(handle, &dev);
         if (dev < 0)
           break;
@@ -123,7 +123,7 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
         snd_pcm_info_set_subdevice(pcminfo, 0);
         snd_pcm_info_set_stream(pcminfo, dir == Recorder ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK);
 
-        if (snd_ctl_pcm_info (handle, pcminfo) >= 0) {
+        if (snd_ctl_pcm_info(handle, pcminfo) >= 0) {
           char * rawName = NULL;
           snd_card_get_name(cardNum, &rawName);
           if (rawName != NULL) {
@@ -142,7 +142,7 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
       snd_ctl_close(handle);
     }
 
-    snd_card_next (&cardNum);
+    snd_card_next(&cardNum);
   } while (cardNum >= 0);
 }
 
