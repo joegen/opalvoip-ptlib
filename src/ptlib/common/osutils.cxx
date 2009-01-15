@@ -1000,6 +1000,8 @@ PArgList::PArgList(const char * theArgStr,
   // get the program arguments
   if (theArgStr != NULL)
     SetArgs(theArgStr);
+  else
+    SetArgs(PStringArray());
 
   // if we got an argument spec - so process them
   if (theArgumentSpec != NULL)
@@ -1126,6 +1128,7 @@ void PArgList::SetArgs(const PStringArray & theArgs)
   parameterIndex.SetSize(argumentArray.GetSize());
   for (PINDEX i = 0; i < argumentArray.GetSize(); i++)
     parameterIndex[i] = i;
+  m_argsParsed = 0;
 }
 
 
@@ -1139,8 +1142,8 @@ PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
 
   // If not in parse all mode, have been parsed before, and had some parameters
   // from last time, then start argument parsing somewhere along instead of start.
-  if (optionsBeforeParams && !optionLetters && parameterIndex.GetSize() > 0)
-    arg = parameterIndex[parameterIndex.GetSize()-1] + 1;
+  if (optionsBeforeParams && !optionLetters && m_argsParsed > 0)
+    arg = m_argsParsed;
 
   // Parse the option specification
   optionLetters = "";
@@ -1189,10 +1192,18 @@ PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
       parameterIndex.SetSize(param+1);
       parameterIndex[param++] = arg;
     }
-    else if (optionsBeforeParams && parameterIndex.GetSize() > 0)
+    else if (optionsBeforeParams && parameterIndex.GetSize() > 0) {
+      m_argsParsed = arg;
       break;
-    else if (argStr == "--") // ALL remaining args are parameters not options
-      hadMinusMinus = PTrue;
+    }
+    else if (argStr == "--") {
+      if (optionsBeforeParams)
+        hadMinusMinus = PTrue; // ALL remaining args are parameters not options
+      else {
+        m_argsParsed = arg+1;
+        break;
+      }
+    }
     else if (argStr[1] == '-')
       ParseOption(optionNames.GetValuesIndex(argStr.Mid(2)), 0, arg, canHaveOptionString);
     else {
