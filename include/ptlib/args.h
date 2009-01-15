@@ -322,6 +322,7 @@ class PArgList : public PObject
     PBoolean ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg, const PIntArray & canHaveOptionString);
     PINDEX GetOptionCountByIndex(PINDEX idx) const;
     PString GetOptionStringByIndex(PINDEX idx, const char * dflt) const;
+    int m_argsParsed;
 };
 
 
