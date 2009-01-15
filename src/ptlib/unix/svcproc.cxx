@@ -339,7 +339,8 @@ int PServiceProcess::InitialiseService()
              "l-log-file:"
              "u-uid:"
              "g-gid:"
-             "C-core-size:");
+             "C-core-size:"
+           , false);
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
