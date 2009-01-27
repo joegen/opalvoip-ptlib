@@ -566,14 +566,8 @@ ostream & PTrace::End(ostream & paramStream)
     // should work pretty universally.
     info.stream->width((threadInfo != NULL ? threadInfo->traceLevel : info.currentLevel) + 1);
   }
-  else {
-#ifdef _WIN32_WCE
-    if (!PIsDescendant(info.stream, PDebugStream) && info.stream != &cerr)
-      *info.stream << "\r\n";
-    else
-#endif
+  else
     *info.stream << '\n';
-  }
   info.stream->flush();
 
   info.Unlock();
