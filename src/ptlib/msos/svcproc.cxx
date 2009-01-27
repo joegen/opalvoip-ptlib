@@ -481,8 +481,14 @@ int PServiceProcess::InternalMain(void * arg)
 
   if (debugMode) {
     ::SetLastError(0);
-    PError << "Service simulation started for \"" << GetName() << "\" version " << GetVersion(true) << "\n"
-              "Close window to terminate.\n" << endl;
+    PError << "Service simulation started for \"" << GetName()
+           << "\" version " << GetVersion(true)
+           << " by " << GetManufacturer()
+           << " on " << GetOSClass() << ' ' << GetOSName()
+           << " (" << GetOSVersion() << '-' << GetOSHardware()
+           << ") with PTLib (v" << GetLibVersion()
+           << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
+           << "\nClose window to terminate.\n" << endl;
   }
 
   terminationEvent = CreateEvent(NULL, true, false, GetName());
