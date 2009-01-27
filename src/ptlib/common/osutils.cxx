@@ -40,12 +40,14 @@
 #include <ptlib/pfactory.h>
 #include <ptlib/pprocess.h>
 #include <ptlib/svcproc.h>
+#include "../../../version.h"
 
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
 #endif
 
 namespace PWLibStupidLinkerHacks {
+
 
 #if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
 
@@ -79,6 +81,10 @@ namespace PWLibStupidLinkerHacks {
 #endif // defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
 
 }; // namespace PWLibStupidLinkerHacks {
+
+
+static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
+
 
 class PExternalThread : public PThread
 {
@@ -364,6 +370,7 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
                   << " by " << process.GetManufacturer()
                   << " on " << process.GetOSClass() << ' ' << process.GetOSName()
                   << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
+                  << ") with PTLib (v" << process.GetLibVersion()
                   << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
                   << End;
 #endif
@@ -1717,10 +1724,14 @@ PTime PProcess::GetStartTime() const
 
 PString PProcess::GetVersion(PBoolean full) const
 {
-  const char * const statusLetter[NumCodeStatuses] =
-    { "alpha", "beta", "." };
   return psprintf(full ? "%u.%u%s%u" : "%u.%u",
-                  majorVersion, minorVersion, statusLetter[status], buildNumber);
+                  majorVersion, minorVersion, VersionStatus[status], buildNumber);
+}
+
+
+PString PProcess::GetLibVersion()
+{
+  return psprintf("%u.%u%s%u", MAJOR_VERSION, MINOR_VERSION, VersionStatus[BUILD_TYPE], BUILD_NUMBER);
 }
 
 
