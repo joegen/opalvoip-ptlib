@@ -795,6 +795,80 @@ PThread::~PThread()
 }
 
 
+#if PTRACING
+static ULONGLONG ConvertTo64(const FILETIME & ft)
+{
+  ULARGE_INTEGER i;
+  i.HighPart = ft.dwHighDateTime;
+  i.LowPart = ft.dwLowDateTime;
+  return i.QuadPart;
+}
+
+static void OutputTime(ostream & str, ULONGLONG time)
+{
+  ULONGLONG upperbound = 10000;
+  ULONGLONG scale1 = 10;
+  ULONGLONG scale2 = 1;
+  int units = 0;
+  int decimals = 1;
+
+  while (time >= upperbound) {
+    if (--decimals == 0) {
+      if (units == 2) {
+        str << time/scale1 << 's';
+        return;
+      }
+
+      scale1 *= 1000;
+      decimals = 3;
+      ++units;
+    }
+    upperbound *= 10;
+    scale2 *= 10;
+  }
+
+  static const char * const UnitNames[] = { "us", "ms", "s" };
+  str << time/scale1
+      << '.' << setfill('0') << setw(decimals)
+      << (time%scale1)/scale2
+      << UnitNames[units];
+}
+
+static void OutputThreadTimes(const PThread & thread)
+{
+  if (!PTrace::CanTrace(3))
+    return;
+
+  FILETIME created_f, exit_f, kernel_f, user_f;
+  exit_f.dwHighDateTime = exit_f.dwLowDateTime = 0;
+  if (!GetThreadTimes(thread.GetHandle(), &created_f, &exit_f, &kernel_f, &user_f))
+    return;
+
+  ULONGLONG created = ConvertTo64(created_f);
+  ULONGLONG exit    = ConvertTo64(exit_f);
+  ULONGLONG kernel  = ConvertTo64(kernel_f);
+  ULONGLONG user    = ConvertTo64(user_f);
+
+  ostream & output = PTrace::Begin(3, __FILE__, __LINE__);
+  output << "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", kernel=";
+  OutputTime(output, kernel);
+  output << ", user=";
+  OutputTime(output, user);
+  output << ", elapsed=";
+  OutputTime(output, exit-created);
+  if (exit > created) {
+    ULONGLONG percent = 1000*(kernel+user)/(exit-created);
+    if (percent > 0)
+      output << " (" << percent/10 << '.' << percent%10 << "%)";
+    else
+      output << " (<0.1%)";
+  }
+  output << PTrace::End;
+}
+#else
+#define OutputThreadTimes(t)
+#endif
+
 void PThread::CleanUp()
 {
   PProcess & process = PProcess::Current();
@@ -805,8 +879,10 @@ void PThread::CleanUp()
   if (!IsTerminated())
     Terminate();
 
-  if (threadHandle != NULL)
+  if (threadHandle != NULL) {
+    OutputThreadTimes(*this);
     CloseHandle(threadHandle);
+  }
 
 #if PTRACING
   PTrace::Cleanup();
