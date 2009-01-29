@@ -223,6 +223,9 @@ class PIPSocket : public PSocket
         /// Check for Broadcast address 255.255.255.255.
         PBoolean IsBroadcast() const;
 
+        /// Check if address is multicast group
+        PBoolean IsMulticast() const;
+
         /** Check if the remote address is a private address.
             For IPV4 this is specified RFC 1918 as the following ranges:
             \li    10.0.0.0 - 10.255.255.255.255

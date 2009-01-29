@@ -1542,7 +1542,26 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
       return PFalse;
 
     port = sa.GetPort();
-    return PTrue;
+
+    if (!bindAddr.IsMulticast())
+      return true;
+
+    // Probably move this stuff into a separate method
+    if (bindAddr.GetVersion() == 4) {
+      struct ip_mreq  mreq;
+      mreq.imr_multiaddr = in_addr(bindAddr);
+      mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+      if (SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IP)) {
+        PTRACE(4, "Socket\tJoined multicast group");
+        return true;
+      }
+      PTRACE(1, "Socket\tFailed to join multicast group");
+    }
+    else {
+      PTRACE(1, "Socket\tIPV6 Multicast join not implemented yet");
+    }
+
+    return false;
   }
 
 #else
@@ -1568,7 +1587,18 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
     socklen_t size = sizeof(sin);
     if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
       port = ntohs(sin.sin_port);
-      return PTrue;
+
+	  if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr))
+        return true;
+
+      struct ip_mreq  mreq;
+      mreq.imr_multiaddr.saddr = sin.sin_addr.s_addr;
+      mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+      if (SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))) {
+        PTRACE(4, "Socket\tJoined multicast group");
+        return true;
+      }
+      PTRACE(1, "Socket\tFailed to join multicast group");
     }
   }
 
@@ -2050,6 +2080,18 @@ PBoolean PIPSocket::Address::IsBroadcast() const
 
   return *this == broadcast4;
 }
+
+
+PBoolean PIPSocket::Address::IsMulticast() const
+{
+#if P_HAS_IPV6
+  if (version == 6)
+    return IN6_IS_ADDR_MULTICAST(&v.six);
+#endif
+
+  return IN_MULTICAST(ntohl(v.four.s_addr));
+}
+
 
 PBoolean PIPSocket::Address::IsRFC1918() const 
 { 
