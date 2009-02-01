@@ -130,7 +130,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
   default_openldap=no
   default_openssl=yes
-  default_expat=no
+  default_expat=yes
   default_sdl=yes
   default_sasl=no
   HAS_PLUGINS=1
