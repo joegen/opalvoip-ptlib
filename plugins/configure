@@ -4768,6 +4768,7 @@ echo "${ECHO_T}yes" >&6; }
     V4L2_CFLAGS=-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'
 
   else
+    HAS_V4L2=
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
   fi
@@ -4976,6 +4977,7 @@ echo $ECHO_N "checking for libv4l2 support... $ECHO_C" >&6; }
       { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
     else
+      HAS_V4L2=
       { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     fi
