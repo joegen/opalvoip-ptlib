@@ -128,7 +128,7 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
   m_ffmpegFrameWidth = m_ffmpegFrameHeight = 0;
   m_ffmpegFrameRate = 25;
 
-  PString cmd = PString(ffmpegExe) & "-i" & _deviceName & "-re -f rawvideo -";
+  PString cmd = PString(ffmpegExe) & "-i" & _deviceName & "-f rawvideo -";
 
   // file information comes in on stderr
   if (!m_command.Open(cmd, PPipeChannel::ReadOnly, true, true)) {
@@ -293,7 +293,7 @@ PINDEX PVideoInputDevice_FFMPEG::GetMaxFrameBytes()
 
 PBoolean PVideoInputDevice_FFMPEG::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
-  pacing.Delay(1000/GetFrameRate());
+  pacing.Delay(1000/m_ffmpegFrameRate);    
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
@@ -308,6 +308,7 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
   {
     PString text;
     m_command.ReadStandardError(text, false);
+    PTRACE(5, "FFVDev\t" << text);
   }
 
   grabCount++;
