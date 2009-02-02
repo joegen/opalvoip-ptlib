@@ -1496,9 +1496,6 @@ if test "x${HAS_VIDEO}" = "x1" ; then
 			      AC_DEFINE(P_DIRECTSOUND, 1)
 		             ])
 		;;
-    * )	
-		AC_CHECK_HEADER([linux/videodev.h], [HAS_VIDEO_CAPTURE=1])
-		;;
   esac
 
   if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then

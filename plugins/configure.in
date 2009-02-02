@@ -187,6 +187,7 @@ if test "${enable_v4l2}z" = "yesz" ; then
     AC_MSG_RESULT(yes)
     AC_SUBST([V4L2_CFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
   else
+    HAS_V4L2=
     AC_MSG_RESULT(no)
   fi
   AC_SUBST(HAS_V4L2)
@@ -200,6 +201,7 @@ if test "${enable_v4l2}z" = "yesz" ; then
     if test "x${HAS_LIBV4L}" = "x1"; then
       AC_MSG_RESULT(yes)
     else
+      HAS_V4L2=
       AC_MSG_RESULT(no)
     fi
     AC_SUBST(HAS_LIBV4L)
