@@ -106,7 +106,6 @@
 
 #undef P_AUDIO
 #undef P_VIDEO
-#undef NO_VIDEO_CAPTURE
 
 #undef P_REGEX
 #undef P_TTS
