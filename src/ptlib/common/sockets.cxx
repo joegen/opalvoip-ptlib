@@ -1588,11 +1588,11 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
     if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
       port = ntohs(sin.sin_port);
 
-	  if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr))
+	  if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr)))
         return true;
 
       struct ip_mreq  mreq;
-      mreq.imr_multiaddr.saddr = sin.sin_addr.s_addr;
+      mreq.imr_multiaddr.s_addr = sin.sin_addr.s_addr;
       mreq.imr_interface.s_addr = htonl(INADDR_ANY);
       if (SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))) {
         PTRACE(4, "Socket\tJoined multicast group");
