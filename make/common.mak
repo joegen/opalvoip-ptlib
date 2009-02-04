@@ -266,6 +266,7 @@ help:
 
 all :: debuglibs debugdepend debug optlibs optdepend opt
 clean :: optclean debugclean
+depend :: default_depend
 
 both :: opt debug
 bothshared :: optshared debugshared
