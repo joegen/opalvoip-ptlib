@@ -281,7 +281,7 @@ PObject::Comparison PAbstractList::Compare(const PObject & obj) const
   PAssert(PIsDescendant(&obj, PAbstractList), PInvalidCast);
   Element * elmt1 = info->head;
   Element * elmt2 = ((const PAbstractList &)obj).info->head;
-  while (elmt1 != NULL && elmt2 != NULL) {
+  while (elmt1 != NULL || elmt2 != NULL) {
     if (elmt1 == NULL)
       return LessThan;
     if (elmt2 == NULL)
