@@ -48,7 +48,8 @@ PMutex dictionaryMutex;
 
 PSoundChannelALSA::PSoundChannelALSA()
 {
-  PSoundChannelALSA::Construct();
+  card_nr = 0;
+  os_handle = NULL;
 }
 
 
@@ -58,7 +59,8 @@ PSoundChannelALSA::PSoundChannelALSA (const PString &device,
                                             unsigned sampleRate,
                                             unsigned bitsPerSample)
 {
-  Construct();
+  card_nr = 0;
+  os_handle = NULL;
   Open (device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
@@ -79,6 +81,7 @@ void PSoundChannelALSA::Construct()
 
   card_nr = 0;
   os_handle = NULL;
+  isInitialised = PFalse;
 }
 
 
@@ -197,9 +200,8 @@ PBoolean PSoundChannelALSA::Open (const PString & _device,
   mNumChannels = _numChannels;
   mSampleRate = _sampleRate;
   mBitsPerSample = _bitsPerSample;
-  isInitialised = PFalse;
 
-  os_handle = NULL;
+  Construct();
 
   PWaitAndSignal m(device_mutex);
 
