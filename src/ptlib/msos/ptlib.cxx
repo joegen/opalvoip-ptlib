@@ -990,7 +990,12 @@ void SignalHandler(int sig)
   if (PProcess::Current().OnInterrupt(sig == SIGTERM))
     return;
 
-  (sig == SIGTERM ? PreviousSigTermHandler : PreviousSigIntHandler)(sig);
+  void (__cdecl * previous)(int) = (sig == SIGTERM ? PreviousSigTermHandler : PreviousSigIntHandler);
+ 
+  if (previous == SIG_DFL)
+    raise(sig);
+  else if (previous != SIG_IGN)
+    previous(sig);
 }
 #endif
 
