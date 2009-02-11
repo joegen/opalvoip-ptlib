@@ -549,7 +549,10 @@ extern "C" {
 #define STDAPICALLTYPE
 #endif
 
-time_t STDAPICALLTYPE PTimeParse(void *, struct tm *, int);
+time_t STDAPICALLTYPE PTimeParse(void *, struct tm *, int)
+{
+  return 0;
+}
 
 int STDAPICALLTYPE PTimeGetChar(void * stream)
 {
