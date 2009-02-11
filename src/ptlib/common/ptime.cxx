@@ -549,10 +549,10 @@ extern "C" {
 #define STDAPICALLTYPE
 #endif
 
-time_t STDAPICALLTYPE PTimeParse(void *, struct tm *, int)
-{
-  return 0;
-}
+// This funcctions implementation is in getdate_tab.c
+// Which in turn is generated from getdate.y by yacc/bison
+extern time_t STDAPICALLTYPE PTimeParse(void *, struct tm *, int);
+
 
 int STDAPICALLTYPE PTimeGetChar(void * stream)
 {
