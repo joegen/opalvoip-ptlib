@@ -30,7 +30,7 @@
 
 PREFIX=@prefix@
 exec_prefix = ${PREFIX}
-LIBDIR=@LIBDIR@
+export LIBDIR=@LIBDIR@
 export PTLIBDIR=@PTLIBDIR@
 
 INSTALL=@INSTALL@
