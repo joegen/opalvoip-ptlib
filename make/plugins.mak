@@ -41,7 +41,7 @@ OBJDIR = $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/$(PLUGIN_FAMILY)
 TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
 
 ifeq ($(OSTYPE),solaris)
-  LDSOPTS += -G
+  LDSOPTS += -R$(LIBDIR) -G
 else
   ifneq ($(OSTYPE),Darwin)
     LDSOPTS += -shared
