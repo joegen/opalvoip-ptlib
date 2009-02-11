@@ -233,7 +233,7 @@ PBoolean PVideoInputDevice_YUVFile::SetColourFormat(const PString & newFormat)
 PBoolean PVideoInputDevice_YUVFile::SetFrameRate(unsigned rate)
 {
   // if the file does not know what frame rate it is, then set it
-  if (file == NULL || file->IsUnknownFrameSize() || !file->SetFrameRate(rate))
+  if (file == NULL || !file->SetFrameRate(rate))
     return PFalse;
 
   return PVideoDevice::SetFrameRate(file->GetFrameRate());
