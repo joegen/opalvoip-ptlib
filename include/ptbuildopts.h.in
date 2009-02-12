@@ -676,7 +676,6 @@
 #else /* defined(_MSC_VER)*/
 
   #undef P_DIRECTSHOW
-  #undef P_DIRECTX
   #undef P_VFW_CAPTURE
 
 #endif /* defined(_MSC_VER)*/
