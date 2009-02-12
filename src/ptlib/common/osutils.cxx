@@ -57,7 +57,7 @@ namespace PWLibStupidLinkerHacks {
 #      ifdef P_VFW_CAPTURE
          extern int loadVideoForWindowsStuff;
 #      endif
-#      if defined(P_DIRECTSHOW) && defined(P_DIRECTX)
+#      if defined(P_DIRECTSHOW)
          extern int loadDirectShowStuff;
 #      endif
 #    endif
@@ -1575,7 +1575,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 #      ifdef P_VFW_CAPTURE
          PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
 #      endif
-#      if defined(P_DIRECTSHOW) && defined(P_DIRECTX)
+#      if defined(P_DIRECTSHOW)
          PWLibStupidLinkerHacks::loadDirectShowStuff  =1;
 #      endif
 #    endif

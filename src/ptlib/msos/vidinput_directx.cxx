@@ -42,7 +42,7 @@
 #pragma comment(lib, P_DIRECTSHOW_LIBRARY2)
 #endif
 
-#if defined(P_MINGW)
+#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
 namespace PWLibStupidLinkerHacks {
   int loadDirectShowStuff;
 };
