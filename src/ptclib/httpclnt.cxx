@@ -101,8 +101,12 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
       Shutdown(ShutdownWrite);
 
     // Await a response, if all OK exit loop
-    if (ReadResponse(replyMime))
-      break;
+    if (ReadResponse(replyMime)) {
+      if (lastResponseCode != Continue)
+        break;
+      if (ReadResponse(replyMime))
+        break;
+    }
 
     // If not persisting, we have no oppurtunity to write again, just error out
     if (!persist)
