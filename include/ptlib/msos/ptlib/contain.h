@@ -88,7 +88,7 @@
 
   // At least Windows 2000
   #ifndef WINVER
-    #define WINVER 0x0500
+    #define WINVER 0x0501
   #endif
 
   #if !defined(_WIN32_WINNT) && !defined(_WIN32_WCE)
