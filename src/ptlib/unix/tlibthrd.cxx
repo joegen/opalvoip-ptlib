@@ -373,7 +373,6 @@ void PThread::Restart()
 
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
-  pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
 #if defined(P_LINUX)
 
@@ -792,7 +791,14 @@ void PThread::WaitForTermination() const
   while (!IsTerminated()) {
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
                // CPU usage and also yeilds so other threads can run.
-  } 
+  }
+
+  if (PX_threadId != 0) {
+    // Calling pthread_join with PX_threadId=0 => bang!
+    // Inform the helgrind finite state machine that this thread can reclaim memory ownership 
+    pthread_join(PX_threadId, NULL);
+    PX_threadId = 0;
+  }
 }
 
 
@@ -813,6 +819,14 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
                // CPU usage and also yeilds so other threads can run.
   }
+
+  if (PX_threadId != 0) {
+    // Calling pthread_join with 0 => bang!
+    // Inform the helgrind finite state machine that this thread can reclaim memory ownership 
+    pthread_join(PX_threadId, NULL);
+    PX_threadId = 0;
+  }
+
   return PTrue;
 }
 
@@ -846,6 +860,9 @@ void * PThread::PX_ThreadStart(void * arg)
   PTrace::Cleanup();
 #endif
 
+  // Inform the helgrind finite state machine that this thread has finished
+  pthread_exit(0);
+
   return NULL;
 }
 
@@ -878,7 +895,6 @@ void PThread::PX_ThreadEnd(void * arg)
 
   bool deleteThread = thread->autoDelete; // Get flag before releasing lock
 
-  thread->PX_threadId = 0;  // Prevent terminating terminated thread
   process.activeThreadMutex.Signal();
 
   if (deleteThread) {

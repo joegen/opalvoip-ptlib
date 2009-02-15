@@ -56,7 +56,7 @@
 
     PINDEX          PX_origStackSize;
     Priority        PX_priority;
-    pthread_t       PX_threadId;
+    mutable pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
     int             PX_suspendCount;
     PBoolean            PX_firstTimeStart;
