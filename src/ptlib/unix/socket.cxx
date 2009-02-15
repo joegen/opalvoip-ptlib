@@ -1017,34 +1017,38 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 {
   PTextFile procfile;
   if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
-    return PFalse;
+    return false;
 
-  for (;;) {
+  PString strLine;
+  bool ok = procfile.ReadLine(strLine);
+  if (ok)
+    ok = procfile.ReadLine(strLine);
+
+  int nTime = 0;
+  while (ok) {
     // Ignore heading line or remainder of route line
-    procfile.ignore(1000, '\n');
-    if (procfile.eof())
-      return PTrue;
+    strLine.RightTrim();
+    PStringArray strList = strLine.Tokenise("\t");
+    if (strList.GetSize() < 8)
+      return nTime > 0 ? true : false;
 
-    char iface[20];
-    unsigned long net_addr, dest_addr, net_mask;
-    int flags, refcnt, use, metric;
-    procfile >> iface;
-    procfile.setf(hex, ios::basefield);
-    procfile >> net_addr >> dest_addr >> flags;
-    procfile.setf(dec, ios::basefield);
-    procfile >> refcnt >> use >> metric;
-    procfile.setf(hex, ios::basefield);
-    procfile >> net_mask;
-    if (procfile.bad())
-      return PFalse;
+    PString iface = strList[0];
+    unsigned net_addr = strList[1].AsUnsigned(16);
+    unsigned dest_addr = strList[2].AsUnsigned(16);
+    int metric= strList[6].AsInteger(10);
+    unsigned net_mask = strList[7].AsUnsigned(16);
 
+    nTime ++;
     RouteEntry * entry = new RouteEntry(net_addr);
     entry->net_mask = net_mask;
     entry->destination = dest_addr;
     entry->interfaceName = iface;
     entry->metric = metric;
     table.Append(entry);
+    ok = procfile.ReadLine(strLine);
   }
+
+  return nTime > 0;
 }
 
 #elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX) 
