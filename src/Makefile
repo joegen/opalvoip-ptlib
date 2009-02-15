@@ -255,7 +255,12 @@ SOURCES += $(PLATFORM_SRC_DIR)/remconn.cxx
 endif
 
 ifdef HAS_WAVFILE
-SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx 
+SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx \
+           $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
+
+$(OBJDIR)/pwavfiledev.o: $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CXX) $(CFLAGS) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) -c $< -o $@
 endif
 
 ifdef HAS_DTMF
