@@ -891,30 +891,17 @@ void PThread::SetAutoDelete(AutoDeleteFlag deletion)
   autoDelete = deletion == AutoDeleteThread;
 }
 
-#if !defined(_WIN32_WCE) || (_WIN32_WCE < 300)
-#define PTHREAD_PRIORITY_LOWEST THREAD_PRIORITY_LOWEST
-#define PTHREAD_PRIORITY_BELOW_NORMAL THREAD_PRIORITY_BELOW_NORMAL
-#define PTHREAD_PRIORITY_NORMAL THREAD_PRIORITY_NORMAL
-#define PTHREAD_PRIORITY_ABOVE_NORMAL THREAD_PRIORITY_ABOVE_NORMAL
-#define PTHREAD_PRIORITY_HIGHEST THREAD_PRIORITY_HIGHEST
-#else
-#define PTHREAD_PRIORITY_LOWEST 243
-#define PTHREAD_PRIORITY_BELOW_NORMAL 245
-#define PTHREAD_PRIORITY_NORMAL 247
-#define PTHREAD_PRIORITY_ABOVE_NORMAL 249
-#define PTHREAD_PRIORITY_HIGHEST 251
-#endif
 
 void PThread::SetPriority(Priority priorityLevel)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
   static int const priorities[NumPriorities] = {
-    PTHREAD_PRIORITY_LOWEST,
-    PTHREAD_PRIORITY_BELOW_NORMAL,
-    PTHREAD_PRIORITY_NORMAL,
-    PTHREAD_PRIORITY_ABOVE_NORMAL,
-    PTHREAD_PRIORITY_HIGHEST
+    THREAD_PRIORITY_LOWEST,
+    THREAD_PRIORITY_BELOW_NORMAL,
+    THREAD_PRIORITY_NORMAL,
+    THREAD_PRIORITY_ABOVE_NORMAL,
+    THREAD_PRIORITY_HIGHEST
   };
   SetThreadPriority(threadHandle, priorities[priorityLevel]);
 }
@@ -925,15 +912,15 @@ PThread::Priority PThread::GetPriority() const
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
   switch (GetThreadPriority(threadHandle)) {
-    case PTHREAD_PRIORITY_LOWEST :
+    case THREAD_PRIORITY_LOWEST :
       return LowestPriority;
-    case PTHREAD_PRIORITY_BELOW_NORMAL :
+    case THREAD_PRIORITY_BELOW_NORMAL :
       return LowPriority;
-    case PTHREAD_PRIORITY_NORMAL :
+    case THREAD_PRIORITY_NORMAL :
       return NormalPriority;
-    case PTHREAD_PRIORITY_ABOVE_NORMAL :
+    case THREAD_PRIORITY_ABOVE_NORMAL :
       return HighPriority;
-    case PTHREAD_PRIORITY_HIGHEST :
+    case THREAD_PRIORITY_HIGHEST :
       return HighestPriority;
   }
   PAssertAlways(POperatingSystemError);
