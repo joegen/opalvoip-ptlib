@@ -86,9 +86,9 @@
 
 #if defined(_WINDOWS) || defined(_WIN32)
 
-  // At least Windows 2000
+  // At least Windows 2000, configure.ac will generally uprate this
   #ifndef WINVER
-    #define WINVER 0x0501
+    #define WINVER 0x0500
   #endif
 
   #if !defined(_WIN32_WINNT) && !defined(_WIN32_WCE)
