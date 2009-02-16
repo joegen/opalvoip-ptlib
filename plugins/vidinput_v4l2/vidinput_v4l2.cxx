@@ -830,7 +830,7 @@ int PVideoInputDevice_V4L2::GetControlCommon(unsigned int control, int *value)
   if (v4l2_ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
     return -1;
 
-  *value = ((float)(c.value - q.minimum) / (q.maximum-q.minimum) * (1<<16));
+  *value = (int)((float)(c.value - q.minimum) / (q.maximum-q.minimum) * (1<<16));
 
   return *value;
 }
@@ -890,7 +890,7 @@ PBoolean PVideoInputDevice_V4L2::SetControlCommon(unsigned int control, int newV
   if (newValue < 0)
     c.value = q.default_value;
   else
-    c.value = q.minimum + ((q.maximum-q.minimum) * ((float)newValue) / (1<<16));
+    c.value = (float)(q.minimum + ((q.maximum-q.minimum) * ((float)newValue) / (1<<16)));
 
   if (v4l2_ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return PFalse;
