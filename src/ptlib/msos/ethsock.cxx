@@ -73,7 +73,7 @@ typedef enum _NDIS_MEDIUM {
 #define USE_VPACKET
 #include <ptlib/msos/ptlib/epacket.h>
 
-#if P_VISTA
+#if (WINVER>=0x501)
 #include <ptlib/msos/ptlib/addrv6.h>
 #endif
 
@@ -1393,7 +1393,7 @@ private:
 };
 
 
-#if P_VISTA
+#if (WINVER>=0x501)
 #include <tchar.h>
 
 class PIPRouteTableVista : public PIPRouteTable
@@ -1428,7 +1428,7 @@ public:
 private:
   PBYTEArray buffer;
 };
-#endif // P_VISTA
+#endif // (WINVER>=0x501)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1436,11 +1436,11 @@ private:
 PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 {
   if (version == 6) {
-#if P_VISTA
+#if (WINVER>=0x501)
     PIPRouteTableVista routes;
     if (routes->NumEntries > 0) {
       in6_addr sin6_addr;
-      ZeroMemory(&sin6_addr, sizeof(sockaddr_in6));
+      ZeroMemory(&sin6_addr, sizeof(sin6_addr));
       if (GetFirstIPV6AddressIn(*routes, &sin6_addr)) {
         addr = (const in6_addr &) sin6_addr;
         return true;
@@ -1464,7 +1464,7 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 PString PIPSocket::GetGatewayInterface(int version)
 {
   if (version == 6) {
-#if P_VISTA
+#if (WINVER>=0x501)
     PIPRouteTableVista routes;
     if (routes->NumEntries > 0) {
       ULONG ulIfIndex = 0L;
@@ -1494,7 +1494,7 @@ PString PIPSocket::GetGatewayInterface(int version)
 PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
 {
   if (version == 6) {
-#if P_VISTA
+#if (WINVER>=0x501)
     PIPRouteTableVista routes;
     if (routes->NumEntries > 0) {
       PIPAdaptersAddressTable interfaces;
@@ -1702,7 +1702,7 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDown)
 {
-#if P_VISTA
+#if (WINVER>=0x501)
 	// Adding IPv6 addresses
 	PIPRouteTableVista routes;
 	PIPAdaptersAddressTable interfaces;

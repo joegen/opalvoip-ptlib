@@ -213,6 +213,10 @@ fi
 dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
 
+dnl MSWIN_DISPLAY winver,Advanced Windows API
+dnl MSWIN_DEFINE  winver,WINVER=0x502
+
+
 AC_CANONICAL_TARGET()
 
 TARGETDIR=unix
@@ -1618,9 +1622,9 @@ dnl   PKG_LIBS="$PKG_LIBS $DL_LIBS"
 dnl   PKG_CFLAGS="$PKG_CFLAGS $DL_CFLAGS"
 fi
 
+
 dnl ########################################################################
 dnl this reduces the size of all executables and libraries
-
 
 case "$target_os" in
   solaris* | sunos* ) ;;
@@ -1646,6 +1650,7 @@ AC_DEFUN([PTLIB_NEW_OPTION],
           fi
          ]
         )
+
 PTLIB_NEW_OPTION(IPV6)
 PTLIB_NEW_OPTION(RESOLVER)
 PTLIB_NEW_OPTION(OPENSSL)
