@@ -36,6 +36,8 @@ typedef struct _IP_ADDRESS_PREFIX {
     UINT8 PrefixLength;
 } IP_ADDRESS_PREFIX, *PIP_ADDRESS_PREFIX;    
 
+
+#ifndef _NLDEF_
 //
 // Routing protocol values from RFC.
 //
@@ -82,6 +84,8 @@ typedef union _NET_LUID {
     ULONG64 IfType  :16;
   } Info;
 } NET_LUID, *PNET_LUID;
+
+#endif // _NLDEF_
 
 typedef ULONG NET_IFINDEX;
 
