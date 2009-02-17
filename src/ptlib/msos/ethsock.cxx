@@ -73,7 +73,9 @@ typedef enum _NDIS_MEDIUM {
 #define USE_VPACKET
 #include <ptlib/msos/ptlib/epacket.h>
 
-#if (WINVER>=0x501)
+#define IPv6_ENABLED (P_HAS_IPV6 && (WINVER>=0x501))
+
+#if IPv6_ENABLED
 #include <ptlib/msos/ptlib/addrv6.h>
 #endif
 
@@ -1393,14 +1395,14 @@ private:
 };
 
 
-#if (WINVER>=0x501)
+#if IPv6_ENABLED
 #include <tchar.h>
 
-class PIPRouteTableVista : public PIPRouteTable
+class PIPRouteTableIPv6 : public PIPRouteTable
 {
 public:
 
-  PIPRouteTableVista()
+  PIPRouteTableIPv6()
   {
     buffer.SetSize(sizeof(MIB_IPFORWARD_TABLE2)); // So ->NumEntries returns zero
 
@@ -1428,7 +1430,7 @@ public:
 private:
   PBYTEArray buffer;
 };
-#endif // (WINVER>=0x501)
+#endif // IPv6_ENABLED
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1436,8 +1438,8 @@ private:
 PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 {
   if (version == 6) {
-#if (WINVER>=0x501)
-    PIPRouteTableVista routes;
+#if IPv6_ENABLED
+    PIPRouteTableIPv6 routes;
     if (routes->NumEntries > 0) {
       in6_addr sin6_addr;
       ZeroMemory(&sin6_addr, sizeof(sin6_addr));
@@ -1464,8 +1466,8 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 PString PIPSocket::GetGatewayInterface(int version)
 {
   if (version == 6) {
-#if (WINVER>=0x501)
-    PIPRouteTableVista routes;
+#if IPv6_ENABLED
+    PIPRouteTableIPv6 routes;
     if (routes->NumEntries > 0) {
       ULONG ulIfIndex = 0L;
       if (GetFirstIPV6AddressIn(*routes, NULL, &ulIfIndex)) {
@@ -1494,8 +1496,8 @@ PString PIPSocket::GetGatewayInterface(int version)
 PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
 {
   if (version == 6) {
-#if (WINVER>=0x501)
-    PIPRouteTableVista routes;
+#if IPv6_ENABLED
+    PIPRouteTableIPv6 routes;
     if (routes->NumEntries > 0) {
       PIPAdaptersAddressTable interfaces;
 
@@ -1702,9 +1704,9 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDown)
 {
-#if (WINVER>=0x501)
+#if IPv6_ENABLED
 	// Adding IPv6 addresses
-	PIPRouteTableVista routes;
+	PIPRouteTableIPv6 routes;
 	PIPAdaptersAddressTable interfaces;
 	PIPInterfaceAddressTable byAddress;
 
