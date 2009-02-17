@@ -52,11 +52,13 @@
 
     class HouseKeepingThread : public PThread
     {
-      PCLASSINFO(HouseKeepingThread, PThread)
-        public:
+        PCLASSINFO(HouseKeepingThread, PThread)
+      public:
         HouseKeepingThread();
+        ~HouseKeepingThread();
         void Main();
-        PSyncPoint breakBlock;
+        PSyncPoint m_breakBlock;
+        bool       m_running;
     };
     HouseKeepingThread * houseKeeper;
     // Thread for doing timers, thread clean up etc.

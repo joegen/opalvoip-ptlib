@@ -883,10 +883,6 @@ void PThread::CleanUp()
     OutputThreadTimes(*this);
     CloseHandle(threadHandle);
   }
-
-#if PTRACING
-  PTrace::Cleanup();
-#endif
 }
 
 
@@ -1059,8 +1055,17 @@ void PThread::Yield()
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
   : PThread(1000, NoAutoDeleteThread, NormalPriority, "PTLib Housekeeper")
+  , m_running(true)
 {
   Resume();
+}
+
+
+PProcess::HouseKeepingThread::~HouseKeepingThread()
+{
+  m_running = false;
+  m_breakBlock.Signal();
+  WaitForTermination(500);
 }
 
 
@@ -1068,14 +1073,14 @@ void PProcess::HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
-  for (;;) {
+  while (m_running) {
 
     // collect a list of thread handles to check, and clean up 
     // handles for threads that disappeared without telling us
     process.deleteThreadMutex.Wait();
     HANDLE handles[MAXIMUM_WAIT_OBJECTS];
     DWORD numHandles = 1;
-    handles[0] = breakBlock.GetHandle();
+    handles[0] = m_breakBlock.GetHandle();
     ThreadList::iterator thread = process.autoDeleteThreads.begin();
     while (thread != process.autoDeleteThreads.end()) {
       if (thread->IsTerminated())
@@ -1141,7 +1146,7 @@ void PProcess::SignalTimerChange()
   if (houseKeeper == NULL)
     houseKeeper = new HouseKeepingThread;
   else
-    houseKeeper->breakBlock.Signal();
+    houseKeeper->m_breakBlock.Signal();
   deleteThreadMutex.Signal();
 }
 
