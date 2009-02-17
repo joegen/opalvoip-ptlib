@@ -1334,8 +1334,10 @@ public:
     }
   }
 
-  const MIB_IPFORWARDTABLE * operator->() const { return  (const MIB_IPFORWARDTABLE *)(const BYTE *)buffer; }
-  const MIB_IPFORWARDTABLE & operator *() const { return *(const MIB_IPFORWARDTABLE *)(const BYTE *)buffer; }
+  const MIB_IPFORWARDTABLE * Ptr() const { return (const MIB_IPFORWARDTABLE *)(const BYTE *)buffer; }
+  const MIB_IPFORWARDTABLE * operator->() const { return  Ptr(); }
+  const MIB_IPFORWARDTABLE & operator *() const { return *Ptr(); }
+  operator const MIB_IPFORWARDTABLE *  () const { return  Ptr(); }
 
   private:
     PBYTEArray buffer;
@@ -1357,8 +1359,10 @@ public:
     }
   }
 
-  const MIB_IPADDRTABLE * operator->() const { return  (const MIB_IPADDRTABLE *)(const BYTE *)buffer; }
-  const MIB_IPADDRTABLE & operator *() const { return *(const MIB_IPADDRTABLE *)(const BYTE *)buffer; }
+  const MIB_IPADDRTABLE * Ptr() const { return (const MIB_IPADDRTABLE *)(const BYTE *)buffer; }
+  const MIB_IPADDRTABLE * operator->() const { return  Ptr(); }
+  const MIB_IPADDRTABLE & operator *() const { return *Ptr(); }
+  operator const MIB_IPADDRTABLE *  () const { return  Ptr(); }
 
   private:
     PBYTEArray buffer;
@@ -1369,17 +1373,15 @@ class PIPAdaptersAddressTable
 {
 public:
 
-  PIPAdaptersAddressTable(
-	DWORD dwFlags = 
-			GAA_FLAG_INCLUDE_PREFIX
-			|GAA_FLAG_SKIP_ANYCAST
-			|GAA_FLAG_SKIP_DNS_SERVER
-			|GAA_FLAG_SKIP_MULTICAST) 
+  PIPAdaptersAddressTable(DWORD dwFlags = GAA_FLAG_INCLUDE_PREFIX
+                                        | GAA_FLAG_SKIP_ANYCAST
+                                        | GAA_FLAG_SKIP_DNS_SERVER
+                                        | GAA_FLAG_SKIP_MULTICAST) 
   {
     ULONG size = 0;
-	DWORD error = GetAdaptersAddresses(AF_UNSPEC, dwFlags, NULL, NULL, &size);
+    DWORD error = GetAdaptersAddresses(AF_UNSPEC, dwFlags, NULL, NULL, &size);
     if (buffer.SetSize(size))
-		error = GetAdaptersAddresses(AF_UNSPEC, dwFlags, NULL, (IP_ADAPTER_ADDRESSES *)buffer.GetPointer(), &size);
+      error = GetAdaptersAddresses(AF_UNSPEC, dwFlags, NULL, (IP_ADAPTER_ADDRESSES *)buffer.GetPointer(), &size);
 
     if (error != NO_ERROR) {
       buffer.SetSize(0);
@@ -1387,8 +1389,10 @@ public:
     }
   }
 
-  const IP_ADAPTER_ADDRESSES * operator->() const { return  (const IP_ADAPTER_ADDRESSES *)(const BYTE *)buffer; }
-  const IP_ADAPTER_ADDRESSES & operator *() const { return *(const IP_ADAPTER_ADDRESSES *)(const BYTE *)buffer; }
+  const IP_ADAPTER_ADDRESSES * Ptr() const { return  (const IP_ADAPTER_ADDRESSES *)(const BYTE *)buffer; }
+  const IP_ADAPTER_ADDRESSES * operator->() const { return  Ptr(); }
+  const IP_ADAPTER_ADDRESSES & operator *() const { return *Ptr(); }
+  operator const IP_ADAPTER_ADDRESSES *  () const { return  Ptr(); }
 
 private:
   PBYTEArray buffer;
@@ -1406,11 +1410,11 @@ public:
   {
     buffer.SetSize(sizeof(MIB_IPFORWARD_TABLE2)); // So ->NumEntries returns zero
 
-	HINSTANCE hInst = LoadLibrary(_T("iphlpapi.dll"));
+    HINSTANCE hInst = LoadLibrary(_T("iphlpapi.dll"));
     if (hInst != NULL) {
-	  GETIPFORWARDTABLE2 pfGetIpForwardTable2 = (GETIPFORWARDTABLE2)GetProcAddress(hInst, _T("GetIpForwardTable2"));
+      GETIPFORWARDTABLE2 pfGetIpForwardTable2 = (GETIPFORWARDTABLE2)GetProcAddress(hInst, _T("GetIpForwardTable2"));
       FREEMIBTABLE pfFreeMibTable = (FREEMIBTABLE)GetProcAddress(hInst, _T("FreeMibTable"));
-	  if (pfGetIpForwardTable2 != NULL && pfFreeMibTable != NULL) {
+      if (pfGetIpForwardTable2 != NULL && pfFreeMibTable != NULL) {
         PMIB_IPFORWARD_TABLE2 pt = NULL;
         DWORD dwError = (*pfGetIpForwardTable2)(AF_UNSPEC, &pt);
         if (dwError == NO_ERROR) {
@@ -1418,14 +1422,46 @@ public:
           memcpy(buffer.GetPointer(), pt, buffer.GetSize());
           (*pfFreeMibTable)(pt);
         }
-	  }
+      }
       FreeLibrary(hInst);
     }
   }
 
-  const MIB_IPFORWARD_TABLE2 * operator->() const { return  (const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
-  const MIB_IPFORWARD_TABLE2 & operator *() const { return *(const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
-  const PBoolean operator!() const { return 0 == ((const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer)->NumEntries; }
+  const MIB_IPFORWARD_TABLE2 * Ptr() const { return  (const MIB_IPFORWARD_TABLE2 *)(const BYTE *)buffer; }
+  const MIB_IPFORWARD_TABLE2 * operator->() const { return  Ptr(); }
+  const MIB_IPFORWARD_TABLE2 & operator *() const { return *Ptr(); }
+  operator const MIB_IPFORWARD_TABLE2 *  () const { return  Ptr(); }
+
+
+  bool ValidateAddress(DWORD ifIndex, LPSOCKADDR lpSockAddr)
+  {
+    int numEntries = Ptr()->NumEntries;
+    if (numEntries == 0)
+      return true;
+
+    if (lpSockAddr == NULL)
+      return false;
+
+    const MIB_IPFORWARD_ROW2 * row = Ptr()->Table;
+    for (int i = 0; i < numEntries; i++, row++) {
+      if (row->InterfaceIndex == ifIndex &&
+          row->DestinationPrefix.Prefix.si_family == lpSockAddr->sa_family) {
+        switch (lpSockAddr->sa_family) {
+          case AF_INET :
+            if (row->DestinationPrefix.Prefix.Ipv4.sin_addr.S_un.S_addr == ((sockaddr_in *)lpSockAddr)->sin_addr.S_un.S_addr)
+              return true;
+            break;
+
+          case AF_INET6 :
+            if (memcmp(row->DestinationPrefix.Prefix.Ipv6.sin6_addr.u.Byte,
+                ((sockaddr_in6 *)lpSockAddr)->sin6_addr.u.Byte, sizeof(in6_addr)) == 0)
+              return true;
+        }
+      }
+    }
+
+    return false;
+  }
 
 private:
   PBYTEArray buffer;
@@ -1440,12 +1476,17 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
   if (version == 6) {
 #if IPv6_ENABLED
     PIPRouteTableIPv6 routes;
-    if (routes->NumEntries > 0) {
-      in6_addr sin6_addr;
-      ZeroMemory(&sin6_addr, sizeof(sin6_addr));
-      if (GetFirstIPV6AddressIn(*routes, &sin6_addr)) {
-        addr = (const in6_addr &) sin6_addr;
-        return true;
+    int numEntries = routes->NumEntries;
+    if (numEntries > 0) {
+      const MIB_IPFORWARD_ROW2 * row = routes->Table;
+      for (int i = 0; i < numEntries; i++, row++) {
+        if (row->NextHop.si_family == AF_INET6) {
+          PIPSocket::Address hop(row->NextHop.Ipv6.sin6_addr);
+          if (hop.IsValid()) {
+            addr = hop;
+            return true;
+          }
+        }
       }
     }
 #endif
@@ -1468,12 +1509,17 @@ PString PIPSocket::GetGatewayInterface(int version)
   if (version == 6) {
 #if IPv6_ENABLED
     PIPRouteTableIPv6 routes;
-    if (routes->NumEntries > 0) {
-      ULONG ulIfIndex = 0L;
-      if (GetFirstIPV6AddressIn(*routes, NULL, &ulIfIndex)) {
-        PString ifFriendlyName, ifDescr, ifName;
-        if (GetInterfaceDescrByIndex(ulIfIndex,  ifFriendlyName, ifDescr, ifName))
-          return ifDescr;
+    int numEntries = routes->NumEntries;
+    if (numEntries > 0) {
+      const MIB_IPFORWARD_ROW2 * row = routes->Table;
+      for (int i = 0; i < numEntries; i++, row++) {
+        if (row->NextHop.si_family == AF_INET6 && PIPSocket::Address(row->NextHop.Ipv6.sin6_addr).IsValid()) {
+          PIPAdaptersAddressTable adapters;
+          for (const IP_ADAPTER_ADDRESSES * adapter = &*adapters; adapter != NULL; adapter = adapter->Next) {
+            if (adapter->IfIndex == row->InterfaceIndex)
+              return adapter->Description;
+          }
+        }
       }
     }
 #endif
@@ -1495,44 +1541,32 @@ PString PIPSocket::GetGatewayInterface(int version)
 
 PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
 {
-  if (version == 6) {
 #if IPv6_ENABLED
+  if (version == 6) {
     PIPRouteTableIPv6 routes;
     if (routes->NumEntries > 0) {
       PIPAdaptersAddressTable interfaces;
 
-      IP_ADAPTER_ADDRESSES& addresses = (IP_ADAPTER_ADDRESSES&) *interfaces;
-      IP_ADAPTER_ADDRESSES* current = &addresses;
-      while (current) {
-        PIP_ADAPTER_UNICAST_ADDRESS unicast = current->FirstUnicastAddress;
+      for (const IP_ADAPTER_ADDRESSES * adapter = &*interfaces; adapter != NULL; adapter = adapter->Next) {
+        for (PIP_ADAPTER_UNICAST_ADDRESS unicast = adapter->FirstUnicastAddress; unicast != NULL; unicast = unicast->Next) {
+          if (unicast->Address.lpSockaddr->sa_family != AF_INET6)
+            continue;
 
-        while (unicast) {
-          if (unicast->Address.lpSockaddr->sa_family == AF_INET6) {
-            sockaddr_in6 sin6_addr;
-            ZeroMemory(&sin6_addr, sizeof(sin6_addr));
-            CopyMemory(&sin6_addr, unicast->Address.lpSockaddr, sizeof(sin6_addr));
+          PIPSocket::Address ip(((sockaddr_in6 *)unicast->Address.lpSockaddr)->sin6_addr);
 
-            if (!routes)
-              return (const in6_addr &) sin6_addr.sin6_addr;
+          if (routes->NumEntries == 0)
+            return ip;
 
-			// Check if local-link addresses supported (scope_id != 0)
-			if(PIPSocket::GetDefaultV6ScopeId() 
-				|| (sin6_addr.sin6_addr.u.Byte[0] != 0xFE 
-				   && sin6_addr.sin6_addr.u.Byte[1] != 0x80)
-				)
-			{
-				const MIB_IPFORWARD_TABLE2& t = *routes;
-				if (ValidateAddressIn(t, current->IfIndex, unicast->Address.lpSockaddr))
-				  return (const in6_addr &) sin6_addr.sin6_addr;
-			}
-          }
-          unicast = unicast->Next;
+          // Check if local-link addresses supported (scope_id != 0)
+          if ((PIPSocket::GetDefaultV6ScopeId() || (ip[0] != 0xFE && ip[1] != 0x80))
+              &&
+              routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
+            return ip;
         }
-        current = current->Next;
       }
     }
-#endif
   }
+#endif
 
   PIPRouteTable routes;
   for (unsigned i = 0; i < routes->dwNumEntries; ++i) {
@@ -1554,22 +1588,22 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   PIPRouteTable routes;
 
   if (!table.SetSize(routes->dwNumEntries))
-	return false;
+    return false;
 
   if (table.IsEmpty())
-	return false;
+    return false;
 
   for (unsigned i = 0; i < routes->dwNumEntries; ++i) {
-	RouteEntry * entry = new RouteEntry(routes->table[i].dwForwardDest);
-	entry->net_mask = routes->table[i].dwForwardMask;
-	entry->destination = routes->table[i].dwForwardNextHop;
-	entry->metric = routes->table[i].dwForwardMetric1;
+    RouteEntry * entry = new RouteEntry(routes->table[i].dwForwardDest);
+    entry->net_mask = routes->table[i].dwForwardMask;
+    entry->destination = routes->table[i].dwForwardNextHop;
+    entry->metric = routes->table[i].dwForwardMetric1;
 
-	MIB_IFROW info;
-	info.dwIndex = routes->table[i].dwForwardIfIndex;
-	if (GetIfEntry(&info) == NO_ERROR)
-	  entry->interfaceName = PString((const char *)info.bDescr, info.dwDescrLen);
-	table.SetAt(i, entry);
+    MIB_IFROW info;
+    info.dwIndex = routes->table[i].dwForwardIfIndex;
+    if (GetIfEntry(&info) == NO_ERROR)
+      entry->interfaceName = PString((const char *)info.bDescr, info.dwDescrLen);
+    table.SetAt(i, entry);
   }
 
   return true;
@@ -1654,7 +1688,6 @@ PBoolean PIPSocket::IsAddressReachable(PIPSocket::Address localIP,
                                        PIPSocket::Address localMask, 
                                        PIPSocket::Address remoteIP)
 {
-
   BYTE t = 255;
   int t1=t,t2=t,t3 =t,t4=t;
   int b1=0,b2=0,b3=0,b4=0;
@@ -1705,98 +1738,53 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDown)
 {
 #if IPv6_ENABLED
-	// Adding IPv6 addresses
-	PIPRouteTableIPv6 routes;
-	PIPAdaptersAddressTable interfaces;
-	PIPInterfaceAddressTable byAddress;
+  // Adding IPv6 addresses
+  PIPRouteTableIPv6 routes;
+  PIPAdaptersAddressTable interfaces;
+  PIPInterfaceAddressTable byAddress;
 
-    PINDEX count = 0; // address count
+  PINDEX count = 0; // address count
 
-    if (!table.SetSize(0))
-      return false;
+  if (!table.SetSize(0))
+    return false;
 
-    IP_ADAPTER_ADDRESSES& addresses = (IP_ADAPTER_ADDRESSES&) *interfaces;
-    IP_ADAPTER_ADDRESSES* Current = &addresses;
-    while( Current )		
-    {
-	  if(!includeDown && (Current->OperStatus == IfOperStatusUp))
-	  {
-		  PIP_ADAPTER_UNICAST_ADDRESS Unicast = Current->FirstUnicastAddress;
+  for (const IP_ADAPTER_ADDRESSES * adapter = &*interfaces; adapter != NULL; adapter = adapter->Next) {
+    if (!includeDown && (adapter->OperStatus != IfOperStatusUp))
+      continue;
 
-		  while( Unicast )
-		  {
-			  bool bValidated;
-			  if(!routes)
-				bValidated = true;
-			  else
-			  {
-				const MIB_IPFORWARD_TABLE2& t = *routes;
-				bValidated = ValidateAddressIn(t,  
-				  Current->IfIndex, 
-				  Unicast->Address.lpSockaddr);
-			  }
+    for (PIP_ADAPTER_UNICAST_ADDRESS unicast = adapter->FirstUnicastAddress; unicast != NULL; unicast = unicast->Next) {
+      if (!routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
+        continue;
 
-			  if(bValidated)
-			  {
-				PStringStream macAddr;
-				macAddr << ::hex << ::setfill('0');
-				for (unsigned b = 0; b < Current->PhysicalAddressLength; ++b)
-				  macAddr << setw(2) << (unsigned)Current->PhysicalAddress[b];
+      PStringStream macAddr;
+      macAddr << ::hex << ::setfill('0');
+      for (unsigned b = 0; b < adapter->PhysicalAddressLength; ++b)
+        macAddr << setw(2) << (unsigned)adapter->PhysicalAddress[b];
 
-				if((Unicast->Address.lpSockaddr->sa_family == AF_INET) 
-					&& (PIPSocket::GetDefaultIpAddressFamily() == AF_INET))
-				{
-				  sockaddr_in sin_addr;
-				  ZeroMemory(&sin_addr, sizeof(sin_addr));
-				  CopyMemory(&sin_addr,  Unicast->Address.lpSockaddr, sizeof(sin_addr));
+      if (unicast->Address.lpSockaddr->sa_family == AF_INET && PIPSocket::GetDefaultIpAddressFamily() == AF_INET) {
+        PIPSocket::Address ip(((sockaddr_in *)unicast->Address.lpSockaddr)->sin_addr);
 
-					// Find out address index in byAddress table for the mask
-					DWORD dwMask = 0L;
-					for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
-					  if(Current->IfIndex == byAddress->table[i].dwIndex)
-					  {
-						dwMask = byAddress->table[i].dwMask;
-						break;
-					  }
+        // Find out address index in byAddress table for the mask
+        DWORD dwMask = 0L;
+        for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
+          if (adapter->IfIndex == byAddress->table[i].dwIndex) {
+            dwMask = byAddress->table[i].dwMask;
+            break;
+          }
+        } // find mask for the address
 
-					} // find mask for the address
+        table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, dwMask, macAddr));
 
-					table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-					  sin_addr.sin_addr,
-					  dwMask,
-					  macAddr));
+      } // ipv4
+      else if (unicast->Address.lpSockaddr->sa_family == AF_INET6 && PIPSocket::GetDefaultIpAddressFamily() == AF_INET6) {
+        PIPSocket::Address ip(((sockaddr_in6 *)unicast->Address.lpSockaddr)->sin6_addr);
 
-				} // ipv4
-				else
-				if( (Unicast->Address.lpSockaddr->sa_family == AF_INET6)  
-					&& (PIPSocket::GetDefaultIpAddressFamily() == AF_INET6))
-				{
-					sockaddr_in6 sin6_addr;
-					ZeroMemory(&sin6_addr, sizeof(sin6_addr));
-					CopyMemory(&sin6_addr, Unicast->Address.lpSockaddr, sizeof(sin6_addr));
-
-					// Check if local-link addresses supported (scope_id != 0)
-					if(PIPSocket::GetDefaultV6ScopeId() 
-						|| (sin6_addr.sin6_addr.u.Byte[0] != 0xFE 
-						   && sin6_addr.sin6_addr.u.Byte[1] != 0x80)
-						)
-					{
-						table.SetAt(count++, new InterfaceEntry(PString(Current->Description),
-								  (const in6_addr &) sin6_addr.sin6_addr,
-								  0L, // mask is irrelevant for ipv6
-								  macAddr));
-					}
-
-				} // ipv6
-
-			  } // validated
-
-			  Unicast = Unicast->Next;
-		  }
-	  }
-
-	  Current = Current->Next;
+        // Check if local-link addresses supported (scope_id != 0)
+        if (PIPSocket::GetDefaultV6ScopeId() || (ip[0] != 0xFE && ip[1] != 0x80))
+          table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, 0L, macAddr));
+      } // ipv6
     }
+  }
 
 #else
 
