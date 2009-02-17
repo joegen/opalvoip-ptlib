@@ -126,6 +126,9 @@ class PSimpleThread : public PThread
 };
 
 
+#define new PNEW
+
+
 #ifndef __NUCLEUS_PLUS__
 static ostream * PErrorStream = &cerr;
 #else
