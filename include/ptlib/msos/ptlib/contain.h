@@ -76,8 +76,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Machine & Compiler dependent declarations
 
-#if (defined(WIN32) || defined(_WIN32_WCE)) && !defined(_WIN32)
+#if (defined(_WINDOWS) || defined(WIN32) || defined(_WIN32_WCE)) && !defined(_WIN32)
   #define _WIN32  1
+#endif
+
+#if defined(_WIN32) && !defined(WIN32)
+  #define WIN32  1
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
