@@ -584,13 +584,16 @@
 
   #ifdef _WIN32_WCE
 
-    //#define P_DIRECTSOUND 1
-    #define P_DIRECTSHOW 1
-    #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
-    #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
+    // Currently only works in WM6 Pro, others maybe later
+    #if _WIN32_WCE>=0x502 && defined(WIN32_PLATFORM_PSPC)
+      //#define P_DIRECTSOUND 1
+      #define P_DIRECTSHOW 1
+      #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
+      #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
+    #endif
 
     #undef P_VFW_CAPTURE
-    
+
   #else // _WIN32_WCE
 
     #undef P_DIRECTSOUND
