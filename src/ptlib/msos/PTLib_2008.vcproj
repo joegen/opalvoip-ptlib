@@ -1010,7 +1010,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlib_2005.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlib_2008.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1173,7 +1173,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlibd_2005.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlibd_2008.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1333,7 +1333,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlibn_2005.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlibn_2008.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1491,7 +1491,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlib_2005_wm.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlib_2008_wm.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1645,7 +1645,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlibd_2005_wm.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlibd_2008_wm.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1799,7 +1799,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlibn_2005_wm.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlibn_2008_wm.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1957,7 +1957,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlib_2005_wm6.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlib_2008_wm6.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2111,7 +2111,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlibd_2005_wm6.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlibd_2008_wm6.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2265,7 +2265,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptlib\msos\ptlibn_2005_wm6.dtf"
+				RelativePath="..\..\..\include\ptlib\msos\ptlibn_2008_wm6.dtf"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
