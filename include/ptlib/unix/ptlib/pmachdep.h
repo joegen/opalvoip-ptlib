@@ -374,8 +374,6 @@ typedef int socklen_t;
 
 #define HAS_IFREQ
 
-#define PSETPGRP()  setpgrp()
-
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_IRIX)
 
@@ -401,8 +399,6 @@ typedef int socklen_t;
 #include <sys/sockio.h>
 
 typedef int socklen_t;
-
-#define PSETPGRP()  setpgrp()
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_VXWORKS)
@@ -504,7 +500,6 @@ extern "C" {
 #include <netinet/tcp.h>
 
 #define HAS_IFREQ
-#define PSETPGRP()  setpgrp()
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_CYGWIN)
@@ -540,6 +535,14 @@ extern "C" {
 #endif
 
 typedef int SOCKET;
+
+#ifndef PSETPGRP
+#ifdef P_SETPGRP_NOPARM
+#define PSETPGRP()  setpgrp()
+else
+#define PSETPGRP()  setpgrp(0, 0)
+#endif
+#endif
 
 #ifdef P_PTHREADS
 
