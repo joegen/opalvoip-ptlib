@@ -841,6 +841,20 @@ AC_DEFINE_UNQUOTED(P_HAS_RECURSIVE_MUTEX, ${P_HAS_RECURSIVE_MUTEX})
 
 
 dnl ########################################################################
+dnl check if setpgrp takes non or two arguments
+P_SETPGRP_SYSTEMV=0
+AC_MSG_CHECKING(if setpgrp takes no paramaters)
+AC_TRY_COMPILE([#include <unistd.h.h>],
+               [pid_t p = setgrp();], P_SETPGRP_NOPARM=1)
+if test ${P_SETPGRP_NOPARM} = 1 ; then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
+AC_DEFINE_UNQUOTED(P_SETPGRP_NOPARM, ${P_SETPGRP_NOPARM})
+
+
+dnl ########################################################################
 dnl check for regex library
 
 dnl yes this test needs to be outside the if below
