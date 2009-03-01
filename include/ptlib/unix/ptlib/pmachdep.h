@@ -50,7 +50,6 @@
 #include <dlfcn.h>
 
 #define HAS_IFREQ
-#define PSETPGRP()  setpgrp()
 
 #if __GNU_LIBRARY__ < 6
 #define P_LINUX_LIB_OLD
@@ -92,8 +91,6 @@ typedef int socklen_t;
 
 #define HAS_IFREQ
 
-#define PSETPGRP()  setpgrp(0, 0)
-
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_OPENBSD)
 
@@ -118,8 +115,6 @@ typedef int socklen_t;
 #include <netinet/tcp.h>
 
 #define HAS_IFREQ
-
-#define PSETPGRP()  setpgrp(0, 0)
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_NETBSD)
@@ -147,8 +142,6 @@ typedef int socklen_t;
 #include <netinet/tcp.h>
 
 #define HAS_IFREQ
-
-#define PSETPGRP()  setpgrp(0, 0)
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
@@ -181,8 +174,6 @@ typedef union {
 } upad128_t;
 #endif
 
-#define PSETPGRP()  setpgrp()
-
 #define INADDR_NONE     -1
 #if P_SOLARIS < 7
 typedef int socklen_t;
@@ -212,7 +203,6 @@ int gethostname(char *, int);
 #include <sys/sockio.h>
 
 #define HAS_IFREQ
-#define PSETPGRP()  setpgrp(0, 0)
 #define raise(s)    kill(getpid(),s)
 
 extern "C" {
@@ -290,7 +280,6 @@ typedef int socklen_t;
 #include <bone/arpa/inet.h>
 
 #define wait3(s, o, r) waitpid(-1, s, o)
-#define PSETPGRP()  setpgid(0,0)
 int seteuid(uid_t euid);
 int setegid(gid_t gid);
 
@@ -342,12 +331,6 @@ typedef int socklen_t;
 #endif
  
 #define HAS_IFREQ
-
-// hf, 2008-12-25: apparently, earlier versions of 10.5.x needed a version 
-// without parameters. however, something changed such that the 'old' version
-// is required again. (OS X 10.5.6)
-#define PSETPGRP()  setpgrp(0, 0)
-
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_AIX)
@@ -539,7 +522,7 @@ typedef int SOCKET;
 #ifndef PSETPGRP
 #ifdef P_SETPGRP_NOPARM
 #define PSETPGRP()  setpgrp()
-else
+#else
 #define PSETPGRP()  setpgrp(0, 0)
 #endif
 #endif

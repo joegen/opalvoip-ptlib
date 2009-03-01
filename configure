@@ -7683,7 +7683,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-pid_t p = setgrp();
+pid_t p = setpgrp();
   ;
   return 0;
 }
