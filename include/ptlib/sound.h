@@ -186,16 +186,50 @@ class PSound : public PBYTEArray
 
 
 /**
-   This class is both an abstract class for a generalised sound channel, 
+
+   Abstract class for a generalised sound channel, 
    and an implementation of PSoundChannel for old code that is not plugin-aware.
-   When instantiated, it selects the first plugin of the base class "PSoundChannel"
+   When instantiated, it selects the first plugin of the base class 
+   "PSoundChannel"
 
-   As an abstract class, this represents a sound schannel. Drivers for real, platform
-   dependent sound hardware will be ancestors of this class and can be found
-   in the plugins section of PWLib.
+   As an abstract class, this represents a sound schannel. Drivers for real, 
+   platform dependent sound hardware will be ancestors of this class and 
+   can be found in the plugins section of PTLib.
 
-   A sound driver is either playing or recording. If simultaneous playing and
-   recording is desired, two instances of PSoundChannel must be created.
+   A sound channel is either playing or recording. If simultaneous
+   playing and recording is desired, two instances of PSoundChannel
+   must be created. It is an error for the same thread to attempt to
+   both read and write audio data to once instance of a PSoundChannel
+   class.
+
+   PSoundChanel instances are designed to be reentrant. The actual
+   usage model employed is left to the developer. One model could be
+   where one thread is responsible for 
+   construction, setup, opening and read/write operations. After creating and
+   eventually opening the channel this thread is responsible for
+   handling read/writes fast enough to avoid gaps in the generated  audio
+   stream.
+
+   Remaining operations may beinvoked from other threads.
+   This includes Close() and actually gathering the necessary data to
+   be sent to the device.
+
+   Besides the basic I/O task, the Read()/Write(() functions have well
+   defined timing characteristics. When a PSoundChannel instance is
+   used from Opal, the read/write operations are designed to also act
+   as timers so as to nicely space the generated network packets of
+   audio/ sound packets to the speaker.
+
+
+   Read and Writes of audio data to a PSoundChannel are blocking. The
+   length of time required to read/write a block of audio from/to a
+   PSoundChannel instance is equal to the time required for that block
+   of audio to record/play. So for a sound rate of 8khz, 240 samples,
+   it is going to take 30ms to do a read/write.
+
+   Since the Read()/Write(() functions have well defined
+   timing characteristics; they are designed to also act as timers in a loop
+   involving data transfers to/from the codecs.
 
    The sound is buffered and the size and number of buffers should be set
    before playing/recording. Each call to Write() will use one buffer, so care
@@ -214,6 +248,7 @@ class PSound : public PBYTEArray
 
    Note that this sound channel is implicitly a linear PCM channel. No data
    conversion is performed on data to/from the channel.
+
  */
 class PSoundChannel : public PChannel
 {
@@ -356,7 +391,7 @@ class PSoundChannel : public PChannel
      */
     virtual PBoolean IsOpen() const;
 
-    /** Close the channel, shutting down the link to the data source.
+    /** Close the channel, shutting down the link to the data source. 
 
        @return PTrue if the channel successfully closed.
      */
@@ -372,7 +407,7 @@ class PSoundChannel : public PChannel
     /// Get the name of the open channel
     virtual PString GetName() const;
 
-    /**Abort the background playing/recording of the sound channel.
+    /** Abort the background playing/recording of the sound channel.
 
        @return
        PTrue if the sound has successfully been aborted.
@@ -406,10 +441,10 @@ class PSoundChannel : public PChannel
     /// Get the sample size in bits per sample.
     virtual unsigned GetSampleSize() const;
 
-    /**Set the internal buffers for the sound channel I/O.
+    /**Set the internal buffers for the sound channel I/O. 
 
        Note that with Linux OSS, the size is always rounded up to the nearest
-       power of two, so 20000 => 32768.
+       power of two, so 20000 => 32768. 
 
        @return
        PTrue if the sound device is valid for playing/recording.
@@ -436,7 +471,7 @@ class PSoundChannel : public PChannel
     /**Set the volume of the play/read process.
        The volume range is 0 == quiet, 100 == LOUDEST. The volume is a
        logarithmic scale mapped from the lowest gain possible on the device to
-       the highest gain.
+       the highest gain
         
        @return
        PTrue if there were no errors.
@@ -461,19 +496,26 @@ class PSoundChannel : public PChannel
   /**@name Play functions */
   //@{
 
-    /** Low level write (or play) to the channel. This function will block until the
-       requested number of characters are written or the write timeout is
-       reached. The GetLastWriteCount() function returns the actual number
-       of bytes written.
-                                                                                                                                            
-       The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+    /** Low level write (or play) to the channel. 
+
+       @param buf is a pointer to the data to be written to the channel.
+       It is an error for this pointer to be NULL.
+
+       @param len Nr of bytes to send. If len equals the buffer size
+        set by SetBuffers() it will block for
+        (1000*len)/(samplesize*samplerate) ms. Typically, the sample
+        size is 2 bytes.  If len == 0, this is an error and will to a
+        PFalse being return.
  
-       @return
-       PTrue if at least len bytes were written to the channel.
+       @return PTrue if len bytes were written to the channel,
+         otherwise PFalse. The GetErrorCode() function should be 
+        consulted after Write() returns PFalse to determine what 
+        caused the failure.
+
      */
     virtual PBoolean Write(const void * buf, PINDEX len);
 
+    /** Get number of bytes written in last Write() operation. */
     virtual PINDEX GetLastWriteCount() const;
 
     /**Play a sound to the open device. If the #wait# parameter is
@@ -481,8 +523,8 @@ class PSoundChannel : public PChannel
        If PFalse then the sound play is begun asynchronously and the function
        returns immediately.
 
-       Note if the driver is closed of the object destroyed then the sound
-       play is aborted.
+       Note:  if the driver is closed while playing the sound, the play 
+       operation stops immediately.
 
        Also note that not all possible sounds and sound files are playable by
        this library. No format conversions between sound object and driver are
@@ -496,6 +538,7 @@ class PSoundChannel : public PChannel
       const PSound & sound,   ///< Sound to play.
       PBoolean wait = PTrue        ///< Flag to play sound synchronously.
     );
+
     /**Play a sound file to the open device. If the #wait#
        parameter is PTrue then the function does not return until the file has
        been played. If PFalse then the sound play is begun asynchronously and
@@ -524,8 +567,8 @@ class PSoundChannel : public PChannel
      */
     virtual PBoolean HasPlayCompleted();
 
-    /**Block the thread until the sound play begun with PlayBuffer() or
-       PlayFile() has completed.
+    /**Block calling thread until the sound play begun with PlaySound() or
+       PlayFile() has completed. 
 
        @return
        PTrue if the sound has successfully completed playing.
@@ -544,15 +587,17 @@ class PSoundChannel : public PChannel
        The GetErrorCode() function should be consulted after Read() returns
        PFalse to determine what caused the failure.
 
-       @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       @return PTrue indicates that at least one character was read
+       from the channel.  PFalse means no bytes were read due to some
+       I/O error, (which includes timeout or some other thread closed
+       the device).
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
+    /** Return number of bytes read in last Read() call. */
     PINDEX GetLastReadCount() const;
 
     /**Record into the sound object all of the buffer's of sound data. Use the
