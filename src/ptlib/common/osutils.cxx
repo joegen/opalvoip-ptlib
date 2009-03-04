@@ -279,7 +279,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   void OpenTraceFile(const char * newFilename)
   {
-    if (newFilename != NULL)
+    if (newFilename != NULL && *newFilename != '\0')
       filename = newFilename;
 
     if (filename == NULL)
