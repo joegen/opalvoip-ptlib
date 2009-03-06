@@ -518,6 +518,10 @@ class PSafePtrBase : public PObject
     PSafetyMode GetSafetyMode() const { return lockMode; }
 
     /**Change the locking mode used by this pointer.
+
+       If the function returns false, then the object has been flagged for
+       deletion and the calling thread should immediately cease use of the
+       object. This instance pointer will be set to NULL.
       */
     PBoolean SetSafetyMode(
       PSafetyMode mode  ///< New locking mode
