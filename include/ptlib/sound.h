@@ -186,7 +186,6 @@ class PSound : public PBYTEArray
 
 
 /**
-
    Abstract class for a generalised sound channel, 
    and an implementation of PSoundChannel for old code that is not plugin-aware.
    When instantiated, it selects the first plugin of the base class 
@@ -408,6 +407,8 @@ class PSoundChannel : public PChannel
     virtual PString GetName() const;
 
     /** Abort the background playing/recording of the sound channel.
+	There will be a logic assertion if you attempt to Abort a
+	sound channel operation, when the device is currently closed.
 
        @return
        PTrue if the sound has successfully been aborted.
@@ -498,14 +499,18 @@ class PSoundChannel : public PChannel
 
     /** Low level write (or play) to the channel. 
 
-       @param buf is a pointer to the data to be written to the channel.
-       It is an error for this pointer to be NULL.
+	It will generate a logical assertion if you attempt write to a
+	channel set up for recording.
+
+       @param buf is a pointer to the data to be written to the
+       channel.  It is an error for this pointer to be NULL. A logical
+       assert will be generated when buf is NULL.
 
        @param len Nr of bytes to send. If len equals the buffer size
         set by SetBuffers() it will block for
         (1000*len)/(samplesize*samplerate) ms. Typically, the sample
-        size is 2 bytes.  If len == 0, this is an error and will to a
-        PFalse being return.
+        size is 2 bytes.  If len == 0, this will return immediately,
+        where the return value is equal to the value of IsOpen().
  
        @return PTrue if len bytes were written to the channel,
          otherwise PFalse. The GetErrorCode() function should be 
@@ -584,8 +589,23 @@ class PSoundChannel : public PChannel
        reached. The GetLastReadCount() function returns the actual number
        of bytes read.
 
+	It will generate a logical assertion if you attempt to read
+	from a PSoundChannel that is setup for playing.
+
        The GetErrorCode() function should be consulted after Read() returns
        PFalse to determine what caused the failure.
+
+        @param len Nr of bytes to endeaveour to read from the sound
+        device. If len equals the buffer size set by SetBuffers() it
+        will block for (1000*len)/(samplesize*samplerate)
+        ms. Typically, the sample size is 2 bytes.  If len == 0, this
+        will return immediately, where the return value is equal to
+        the value of IsOpen().
+
+       @param buf is a pointer to the empty data area, which will
+       contain the data collected from the sound device.  It is an
+       error for this pointer to be NULL. A logical assert will be
+       generated when buf is NULL.
 
        @return PTrue indicates that at least one character was read
        from the channel.  PFalse means no bytes were read due to some
@@ -686,6 +706,12 @@ class PSoundChannel : public PChannel
 
   protected:
     PSoundChannel * baseChannel;
+
+    /**This is the direction that this sound channel is opened for use
+       in.  Should the user attempt to used this opened class instance
+       in a direction opposite to that specified in activeDirection,
+       an assert happens. */
+    Directions      activeDirection;
 };
 
 
