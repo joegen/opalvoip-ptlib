@@ -1547,7 +1547,11 @@ PString PDynaLink::GetExtension()
 PBoolean PDynaLink::Open(const PString & name)
 {
   PVarString filename = name;
+#ifndef _WIN32_WCE
   _hDLL = LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+#else
+  _hDLL = LoadLibrary(filename);
+#endif
   return _hDLL != NULL;
 }
 
