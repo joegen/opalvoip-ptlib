@@ -154,9 +154,15 @@ void PHouseKeepingThread::Main()
   PTRACE(5, "Housekeeping thread ended");
 }
 
+static PMutex & GetHouseKeeperThreadMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
 
 void PProcess::SignalTimerChange()
 {
+  PWaitAndSignal m(GetHouseKeeperThreadMutex());
   if (housekeepingThread == NULL) {
 #if PMEMORY_CHECK
     PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(PTrue);
@@ -224,22 +230,18 @@ PProcess::~PProcess()
 {
   PreShutdown();
 
-  PTRACE(5, "PTLib\tAbout to shutdown housekeeping thread");
-
   // Don't wait for housekeeper to stop if Terminate() is called from it.
-  if ((housekeepingThread != NULL) && (PThread::Current() != housekeepingThread)) {
-    housekeepingThread->SetClosing();
-  PTRACE(5, "PTLib\tSetClosing");
-    SignalTimerChange();
-  PTRACE(5, "PTLib\tSignalTimerChange");
-    housekeepingThread->WaitForTermination();
-  PTRACE(5, "PTLib\tWaitForTermination");
-    delete housekeepingThread;
-  PTRACE(5, "PTLib\tdelete housekeepingThread");
+  {
+    PWaitAndSignal m(GetHouseKeeperThreadMutex());
+    if ((housekeepingThread != NULL) && (PThread::Current() != housekeepingThread)) {
+      housekeepingThread->SetClosing();
+      SignalTimerChange();
+      housekeepingThread->WaitForTermination();
+      delete housekeepingThread;
+    }
   }
-  CommonDestruct();
 
-  PTRACE(5, "PTLib\tCommonDestruct");
+  CommonDestruct();
 
   PostShutdown();
 }
@@ -386,10 +388,6 @@ PThread::~PThread()
     // last gasp tracing
     PTRACE(1, "PTLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << id << ::dec << ")");
 
-  // clean up tracing now, because it depends on the PThread::Current which depends on the activeThreads list
-#if PTRACING
-    PTrace::Cleanup();
-#endif
 
     // if thread was started, remove it from the active thread list and detach it to release thread resources
     if (id != 0) {
@@ -404,8 +402,8 @@ PThread::~PThread()
   }
 
   // close I/O unblock pipes
-  PAssertPTHREAD(::close, (unblockPipe[0]));
-  PAssertPTHREAD(::close, (unblockPipe[1]));
+  ::close(unblockPipe[0]);
+  ::close(unblockPipe[1]);
 
 #ifndef P_HAS_SEMAPHORES
   pthread_mutex_destroy(&PX_WaitSemMutex);
@@ -440,6 +438,11 @@ void * PThread::PX_ThreadStart(void * arg)
 
   // execute the cleanup routine
   pthread_cleanup_pop(1);
+
+  // clean up tracing 
+#if PTRACING
+  PTrace::Cleanup();
+#endif
 
   // Inform the helgrind finite state machine that this thread has finished
   pthread_exit(0);
