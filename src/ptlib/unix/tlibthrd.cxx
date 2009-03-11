@@ -150,6 +150,8 @@ void PHouseKeepingThread::Main()
 
     process.PXCheckSignals();
   }
+
+  PTRACE(5, "Housekeeping thread ended");
 }
 
 
@@ -225,7 +227,7 @@ PProcess::~PProcess()
   PTRACE(5, "PTLib\tAbout to shutdown housekeeping thread");
 
   // Don't wait for housekeeper to stop if Terminate() is called from it.
-  if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
+  if ((housekeepingThread != NULL) && (PThread::Current() != housekeepingThread)) {
     housekeepingThread->SetClosing();
   PTRACE(5, "PTLib\tSetClosing");
     SignalTimerChange();
@@ -240,8 +242,6 @@ PProcess::~PProcess()
   PTRACE(5, "PTLib\tCommonDestruct");
 
   PostShutdown();
-
-  PTRACE(5, "PTLib\tDestroyed process " << this);
 }
 
 PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
@@ -368,7 +368,11 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (PProcessInstance != NULL) {
+  if (PProcessInstance == NULL) {
+#if PTRACING
+    PTrace::Cleanup();
+#endif
+  } else {
     pthread_t id = PX_threadId;
     PProcess & process = PProcess::Current();
 
@@ -411,6 +415,49 @@ PThread::~PThread()
   pthread_mutex_trylock(&PX_suspendMutex);
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
+}
+
+
+void * PThread::PX_ThreadStart(void * arg)
+{ 
+  PThread * thread = (PThread *)arg;
+  // Added this to guarantee that the thread creation (PThread::Restart)
+  // has completed before we start the thread. Then the PX_threadId has
+  // been set.
+  pthread_mutex_lock(&thread->PX_suspendMutex);
+  thread->SetThreadName(thread->GetThreadName());
+  pthread_mutex_unlock(&thread->PX_suspendMutex);
+
+  // make sure the cleanup routine is called when the thread exits
+  pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
+
+  PTRACE(5, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
+
+  PProcess::Current().OnThreadStart(*thread);
+
+  // now call the the thread main routine
+  thread->Main();
+
+  // execute the cleanup routine
+  pthread_cleanup_pop(1);
+
+  // Inform the helgrind finite state machine that this thread has finished
+  pthread_exit(0);
+
+  return NULL;
+}
+
+
+void PThread::PX_ThreadEnd(void * arg)
+{
+  PThread * thread = (PThread *)arg;
+  PProcess & process = PProcess::Current();
+PTRACE(1, "Called PX_ThreadEnd with " << thread->autoDelete);
+  process.OnThreadEnded(*thread);
+  
+  bool deleteThread = thread->autoDelete; // make copy of the flag before perhaps deleting the thread
+  if (deleteThread)
+    delete thread;
 }
 
 
@@ -859,6 +906,8 @@ void PThread::WaitForTermination() const
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
                // CPU usage and also yeilds so other threads can run.
   }
+
+  PTRACE(2, "WaitForTermination on " << id << " finished");
 }
 
 
@@ -883,48 +932,6 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
   return PTrue;
 }
 
-
-void * PThread::PX_ThreadStart(void * arg)
-{ 
-  PThread * thread = (PThread *)arg;
-  // Added this to guarantee that the thread creation (PThread::Restart)
-  // has completed before we start the thread. Then the PX_threadId has
-  // been set.
-  pthread_mutex_lock(&thread->PX_suspendMutex);
-  thread->SetThreadName(thread->GetThreadName());
-  pthread_mutex_unlock(&thread->PX_suspendMutex);
-
-  // make sure the cleanup routine is called when the thread exits
-  pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
-
-  PTRACE(5, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
-
-  PProcess::Current().OnThreadStart(*thread);
-
-  // now call the the thread main routine
-  thread->Main();
-
-  // execute the cleanup routine
-  pthread_cleanup_pop(1);
-
-  // Inform the helgrind finite state machine that this thread has finished
-  pthread_exit(0);
-
-  return NULL;
-}
-
-
-void PThread::PX_ThreadEnd(void * arg)
-{
-  PThread * thread = (PThread *)arg;
-  PProcess & process = PProcess::Current();
-PTRACE(1, "Called PX_ThreadEnd with " << thread->autoDelete);
-  process.OnThreadEnded(*thread);
-  
-  bool deleteThread = thread->autoDelete; // make copy of the flag before releasing lock
-  if (deleteThread)
-    delete thread;
-}
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
