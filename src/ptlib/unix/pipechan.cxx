@@ -200,9 +200,10 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   // Set up new environment if one specified.
   if (environment != NULL) {
 #if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
-    extern char ** environ;
 #  if defined(P_MACOSX)
 #    define environ (*_NSGetEnviron())
+#  else
+     extern char ** environ;
 #  endif
 #  define __environ environ
 #endif

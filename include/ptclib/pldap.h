@@ -462,7 +462,7 @@ class PLDAPStructBase : public PObject {
     PLDAPStructBase & operator=(const PStringArray & array);
     PLDAPStructBase & operator=(const PStringToString & dict);
   private:
-    PLDAPStructBase(const PLDAPStructBase &) { }
+    PLDAPStructBase(const PLDAPStructBase & obj) : PObject(obj) { }
 
   public:
     void PrintOn(ostream & strm) const;
