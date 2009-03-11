@@ -52,9 +52,12 @@
 #undef    P_MINGW
 #undef    P_UNKNOWN_OS 
 
+#ifndef _WIN32_WCE
+
 // Windows API version for compile
 #undef    WINVER
 
+#endif
 
 /////////////////////////////////////////////////
 //
