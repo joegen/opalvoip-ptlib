@@ -122,7 +122,7 @@ class PInterfaceMonitor : public PProcessStartup
     bool GetInterfaceInfo(
       const PString & iface,  /// Interface desciptor name
       InterfaceEntry & info   /// Information on the interface
-    );
+    ) const;
     
     /** Returns whether the descriptor string equals the interface entry.
         Note that when searching the descriptor may be a partial match
@@ -212,7 +212,7 @@ class PInterfaceMonitorClient : public PSafeObject
     virtual PBoolean GetInterfaceInfo(
       const PString & iface,  /// Interface desciptor name
       InterfaceEntry & info   /// Information on the interface
-    );
+    ) const;
     
     /**Returns the priority of this client. A higher value means higher priority.
        Higher priority clients get their callback functions called first. Clients
