@@ -69,7 +69,7 @@ PStringArray PInterfaceMonitorClient::GetInterfaces(bool includeLoopBack, const 
 }
 
 
-PBoolean PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, InterfaceEntry & info)
+PBoolean PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, InterfaceEntry & info) const
 {
   return PInterfaceMonitor::GetInstance().GetInterfaceInfo(iface, info);
 }
@@ -354,7 +354,7 @@ bool PInterfaceMonitor::IsValidBindingForDestination(const PIPSocket::Address & 
 }
 
 
-bool PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::InterfaceEntry & info)
+bool PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::InterfaceEntry & info) const
 {
   PIPSocket::Address addr;
   PString name;
@@ -878,7 +878,8 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
                                         WORD & port,
                                         PBoolean usingNAT) const
 {
-  if (iface.IsEmpty()) {
+  PIPSocket::InterfaceEntry info;
+  if (!GetInterfaceInfo(iface, info)) {
     address = PIPSocket::GetDefaultIpAny();
     port = localPort;
     return true;
@@ -888,7 +889,7 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
   if (!guard.IsLocked())
     return false;
 
-  SocketInfoMap_T::const_iterator iter = socketInfoMap.find(iface);
+  SocketInfoMap_T::const_iterator iter = socketInfoMap.find(MakeInterfaceDescription(info));
   return iter != socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
 }
 
