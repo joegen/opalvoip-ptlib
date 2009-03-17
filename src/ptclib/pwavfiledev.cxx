@@ -31,6 +31,10 @@
  * $Date$
  */
 
+#ifdef __GNUC__
+#pragma implementation "pwavfiledev.h"
+#endif
+
 #include <ptlib.h>
 #include <ptclib/pwavfiledev.h>
 
