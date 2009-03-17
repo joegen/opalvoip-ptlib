@@ -32,7 +32,7 @@
  */
 
 #ifdef __GNUC__
-#pragma implementation "pvfiledev.h"
+#pragma implementation "pffdev.h"
 #endif
 
 #include <ptlib.h>
