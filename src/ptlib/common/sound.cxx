@@ -214,237 +214,191 @@ PBoolean PSoundChannel::Open(const PString & devSpec,
 
 PString PSoundChannel::GetName() const
 {
-  if (baseChannel == NULL)
-    return PString::Empty();
-
-  return baseChannel->GetName();
+  return baseChannel != NULL ? baseChannel->GetName() : PString::Empty();
 }
 
 
 PBoolean PSoundChannel::IsOpen() const
 {
-  if (baseChannel == NULL)
-    return PFalse;
-
-  return baseChannel->PChannel::IsOpen();
+  return baseChannel != NULL && baseChannel->PChannel::IsOpen();
 }
 
 
 PBoolean PSoundChannel::Close()
 {
-    return baseChannel == NULL || baseChannel->Close();
+  return baseChannel == NULL || baseChannel->Close();
 }
 
 
 int PSoundChannel::GetHandle() const
 {
-    return baseChannel == NULL ? -1 : baseChannel->PChannel::GetHandle();
+  return baseChannel == NULL ? -1 : baseChannel->PChannel::GetHandle();
 }
 
 
 PBoolean PSoundChannel::Abort()
 {
-    PAssert(IsOpen(), PLogicError); 
-
-    return baseChannel->Abort();
+  PAssert(IsOpen(), PLogicError); 
+  return baseChannel->Abort();
 }
 
 
 PBoolean PSoundChannel::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
 {
-    if (baseChannel == NULL)
-	return PFalse;
-
-    return baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample);
+  return baseChannel != NULL && baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample);
 }
 
 
 unsigned PSoundChannel::GetChannels() const
 {
-    return baseChannel == NULL ? 0 : baseChannel->GetChannels();
+  return baseChannel == NULL ? 0 : baseChannel->GetChannels();
 }
 
 
 unsigned PSoundChannel::GetSampleRate() const
 {
-    return baseChannel == NULL ? 0 : baseChannel->GetSampleRate();
+  return baseChannel == NULL ? 0 : baseChannel->GetSampleRate();
 }
 
 
 unsigned PSoundChannel::GetSampleSize() const 
 {
-    return baseChannel == NULL ? 0 : baseChannel->GetSampleSize();
+  return baseChannel == NULL ? 0 : baseChannel->GetSampleSize();
 }
 
 
 PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
-    return baseChannel != NULL && baseChannel->SetBuffers(size, count);
+  return baseChannel != NULL && baseChannel->SetBuffers(size, count);
 }
 
 
 PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-    return baseChannel != NULL && baseChannel->GetBuffers(size, count);
+  return baseChannel != NULL && baseChannel->GetBuffers(size, count);
 }
 
 
 PBoolean PSoundChannel::SetVolume(unsigned volume)
 {
-    return baseChannel != NULL && baseChannel->SetVolume(volume);
+  return baseChannel != NULL && baseChannel->SetVolume(volume);
 }
 
 
 PBoolean PSoundChannel::GetVolume(unsigned & volume)
 {
-    return baseChannel != NULL && baseChannel->GetVolume(volume);
+  return baseChannel != NULL && baseChannel->GetVolume(volume);
 }
 
 
 PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Player, PLogicError);
+  PAssert(activeDirection == Player, PLogicError);
 
-    if (len == 0)
-	return IsOpen();
+  if (len == 0)
+    return IsOpen();
 
-    return baseChannel != NULL && baseChannel->Write(buf, len);
+  return baseChannel != NULL && baseChannel->Write(buf, len);
 }
 
 
 PINDEX PSoundChannel::GetLastWriteCount() const
 {
-    if (baseChannel == NULL)
-	return PFalse;
-
-    PAssert(activeDirection == Player,  PLogicError);
-
-    return baseChannel->GetLastWriteCount();
+  return baseChannel != NULL ? baseChannel->GetLastWriteCount() : PChannel::GetLastWriteCount();
 }
 
 
 PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
-    if (baseChannel == NULL)
-        return PFalse;
-    PAssert(activeDirection == Player, PLogicError);
-
-    return baseChannel->PlaySound(sound, wait);
+  PAssert(activeDirection == Player, PLogicError);
+  return baseChannel != NULL && baseChannel->PlaySound(sound, wait);
 }
 
 
 PBoolean PSoundChannel::PlayFile(const PFilePath & file, PBoolean wait)
 {
-    if (baseChannel == NULL)
-        return PFalse;
-    PAssert(activeDirection == Player, PLogicError);
-
-    return baseChannel->PlayFile(file, wait);
+  PAssert(activeDirection == Player, PLogicError);
+  return baseChannel != NULL && baseChannel->PlayFile(file, wait);
 }
 
 
 PBoolean PSoundChannel::HasPlayCompleted()
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Player, PLogicError);
-    return baseChannel->HasPlayCompleted();
+  PAssert(activeDirection == Player, PLogicError);
+  return baseChannel != NULL && baseChannel->HasPlayCompleted();
 }
 
 
 PBoolean PSoundChannel::WaitForPlayCompletion() 
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Player, PLogicError);
-    return baseChannel->WaitForPlayCompletion();
+  PAssert(activeDirection == Player, PLogicError);
+  return baseChannel != NULL && baseChannel->WaitForPlayCompletion();
 }
 
 
 PBoolean PSoundChannel::Read(void * buf, PINDEX len)
 {
-    if (baseChannel == NULL)
-        return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
+  PAssert(activeDirection == Recorder, PLogicError);
 
-    if (len == 0)
-        return IsOpen();
+  if (len == 0)
+    return IsOpen();
 
-    return baseChannel->Read(buf, len);
+  return baseChannel != NULL && baseChannel->Read(buf, len);
 }
 
 
 PINDEX PSoundChannel::GetLastReadCount() const
 {
-    return baseChannel == NULL ? lastReadCount : baseChannel->GetLastReadCount();
+  return baseChannel != NULL ? baseChannel->GetLastReadCount() : PChannel::GetLastReadCount();
 }
 
 
 PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-    return baseChannel->RecordSound(sound);
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->RecordSound(sound);
 }
 
 
 PBoolean PSoundChannel::RecordFile(const PFilePath & file)
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-    return baseChannel->RecordFile(file);
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->RecordFile(file);
 }
 
 
 PBoolean PSoundChannel::StartRecording()
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-
-    return baseChannel->StartRecording();
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->StartRecording();
 }
 
 
 PBoolean PSoundChannel::IsRecordBufferFull() 
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-
-    return baseChannel->IsRecordBufferFull();
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->IsRecordBufferFull();
 }
 
 
 PBoolean PSoundChannel::AreAllRecordBuffersFull() 
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-    return baseChannel->AreAllRecordBuffersFull();
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->AreAllRecordBuffersFull();
 }
 
 
 PBoolean PSoundChannel::WaitForRecordBufferFull() 
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-    return baseChannel->WaitForRecordBufferFull();
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->WaitForRecordBufferFull();
 }
 
 
 PBoolean PSoundChannel::WaitForAllRecordBuffersFull() 
 {
-    if (baseChannel == NULL)
-	return PFalse;
-    PAssert(activeDirection == Recorder, PLogicError);
-
-    return baseChannel->WaitForAllRecordBuffersFull();
+  PAssert(activeDirection == Recorder, PLogicError);
+  return baseChannel != NULL && baseChannel->WaitForAllRecordBuffersFull();
 }
 
 
