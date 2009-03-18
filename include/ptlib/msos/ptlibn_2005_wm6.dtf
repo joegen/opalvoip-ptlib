@@ -11846,8 +11846,8 @@ EXPORTS
     ?GetInterface@PMonitoredSocketChannel@@QAA?AVPString@@XZ @18051 NONAME
     ?GetInterface@RouteEntry@PIPSocket@@QBAABVPString@@XZ @12805 NONAME
     ?GetInterfaceAddress@PSTUNClient@@UBA_NAAVAddress@PIPSocket@@@Z @18052 NONAME
-    ?GetInterfaceInfo@PInterfaceMonitor@@QAA_NABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @13293 NONAME
-    ?GetInterfaceInfo@PInterfaceMonitorClient@@UAA_NABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @13294 NONAME
+    ?GetInterfaceInfo@PInterfaceMonitor@@QBA_NABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @18611 NONAME
+    ?GetInterfaceInfo@PInterfaceMonitorClient@@UBA_NABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @18612 NONAME
     ?GetInterfaces@PInterfaceMonitor@@QAA?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @13295 NONAME
     ?GetInterfaces@PInterfaceMonitorClient@@UAA?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @13296 NONAME
     ?GetInterfaces@PSingleMonitoredSocket@@UAA?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @13297 NONAME
