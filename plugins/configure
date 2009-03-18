@@ -4284,13 +4284,13 @@ echo "${ECHO_T}$ac_cv_header_sys_soundcard_h" >&6; }
 
 fi
 if test $ac_cv_header_sys_soundcard_h = yes; then
-  SNDCARDHDR=1
+  OSSSNDCARDHDR=1
 fi
 
 
   { echo "$as_me:$LINENO: checking for OSS sound support" >&5
 echo $ECHO_N "checking for OSS sound support... $ECHO_C" >&6; }
-  if test "${SNDCARDHDR}z" != "z"; then
+  if test "${OSSSNDCARDHDR}z" != "z"; then
     HAS_OSS=1
 
     { echo "$as_me:$LINENO: result: yes" >&5
@@ -4437,13 +4437,13 @@ echo "${ECHO_T}$ac_cv_header_pulse_simple_h" >&6; }
 
 fi
 if test $ac_cv_header_pulse_simple_h = yes; then
-  SNDCARDHDR=1
+  PULSESNDCARDHDR=1
 fi
 
 
   { echo "$as_me:$LINENO: checking for Pulse sound support" >&5
 echo $ECHO_N "checking for Pulse sound support... $ECHO_C" >&6; }
-  if test "${SNDCARDHDR}z" != "z"; then
+  if test "${PULSESNDCARDHDR}z" != "z"; then
     HAS_PULSE=1
 
     { echo "$as_me:$LINENO: result: yes" >&5
@@ -4590,13 +4590,13 @@ echo "${ECHO_T}$ac_cv_header_sys_conf_h" >&6; }
 
 fi
 if test $ac_cv_header_sys_conf_h = yes; then
-  SNDCARDHDR=1
+  SUNSNDCARDHDR=1
 fi
 
 
   { echo "$as_me:$LINENO: checking for Sun audio sound support" >&5
 echo $ECHO_N "checking for Sun audio sound support... $ECHO_C" >&6; }
-  if test "${SNDCARDHDR}z" != "z"; then
+  if test "${SUNSNDCARDHDR}z" != "z"; then
     HAS_SUNAUDIO=1
 
     { echo "$as_me:$LINENO: result: yes" >&5
