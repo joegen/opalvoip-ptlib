@@ -38,7 +38,8 @@
 #include <pulse/error.h>
 //#include <pulse/gccmacro.h>
 #include <pulse/sample.h>
-
+#include <ptlib.h>
+#include <ptclib/random.h>
 
 #include "sound_pulse.h"
 
@@ -120,13 +121,24 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
   Close();
   PWaitAndSignal m(deviceMutex);
   int error;
+  PStringStream appName, streamName;
+  appName << "PTLib plugin ";
   if (_dir == Player) {
-    s = pa_simple_new(NULL, "pulseplay", PA_STREAM_PLAYBACK, NULL, 
-		      "playback", &ss, NULL, NULL, &error);
+    appName << "play";
+    streamName << ::hex << PRandom::Number();
   } else {
-    s = pa_simple_new(NULL, "pulserec", PA_STREAM_RECORD, NULL, 
-		      "record", &ss, NULL, NULL, &error);
+    appName << "record";
+    streamName << ::hex << PRandom::Number();
   }
+
+  if (_dir == Player) {
+    s = pa_simple_new(NULL, appName.GetPointer(), PA_STREAM_PLAYBACK, NULL, 
+		      streamName.GetPointer(), &ss, NULL, NULL, &error);
+  } else {
+    s = pa_simple_new(NULL, appName.GetPointer(), PA_STREAM_RECORD, NULL, 
+		      streamName.GetPointer(), &ss, NULL, NULL, &error);
+  }
+
   if (s == NULL) {
     PTRACE(4, ": pa_simple_new() failed: " << pa_strerror(error));
     return PFalse;
@@ -327,3 +339,4 @@ PBoolean  PSoundChannelPulse::GetVolume(unsigned &devVol)
 
 
 // End of file
+
