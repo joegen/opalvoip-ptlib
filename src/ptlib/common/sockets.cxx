@@ -2706,10 +2706,6 @@ PBoolean PUDPSocket::ApplyQoS()
 
 PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 {
-#ifdef _WIN32_WCE   //QOS not supported
-  return ConvertOSError(os_handle = os_socket(af, type, proto));
-#endif
-
 #if defined(_WIN32) && defined(P_QOS)
     
   DWORD bufferSize = 0;
@@ -2776,7 +2772,6 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 }
 
 #ifdef _WIN32
-#ifndef _WIN32_WCE
 #if P_QOS
 
 #define COULD_HAVE_QOS
@@ -2795,7 +2790,6 @@ static PBoolean CheckOSVersionFor(DWORD major, DWORD minor)
 }
 
 #endif // P_QOS
-#endif // _WIN32_WCE
 #endif // _WIN32
 
 PBoolean PUDPSocket::OpenSocket()
