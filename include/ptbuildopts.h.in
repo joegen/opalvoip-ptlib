@@ -182,9 +182,7 @@
 //
 //
 
-#ifndef _WIN32_WCE
-  #undef P_QOS
-#endif //  _WIN32_WCE
+#undef P_QOS
 
 #if defined(_MSC_VER) && P_QOS
 
@@ -457,6 +455,10 @@
       #define P_EXPAT 1
     #endif
 
+  #else
+      #pragma include_alias(<expat.h>, <@EXPAT_DIR@/source/lib/expat.h>)
+      #define P_EXPAT 1
+      
   #endif
 
 #endif
@@ -724,6 +726,7 @@
 
 #endif // PTLIB_BUILDOPTS_H
 
+#define P_USE_ASSERTS	1
 
 // End Of File ///////////////////////////////////////////////////////////////
 
