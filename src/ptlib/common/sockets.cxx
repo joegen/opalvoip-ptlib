@@ -2603,6 +2603,7 @@ PQoS & PUDPSocket::GetQoSSpec()
 PBoolean PUDPSocket::ApplyQoS()
 {
   char DSCPval = 0;
+#ifndef _WIN32_WCE
   if (qosSpec.GetDSCP() < 0 ||
       qosSpec.GetDSCP() > 63) {
     if (qosSpec.GetServiceType() == SERVICETYPE_PNOTDEFINED)
@@ -2624,12 +2625,17 @@ PBoolean PUDPSocket::ApplyQoS()
   }
   else
     DSCPval = (char)qosSpec.GetDSCP();
+#else
+	DSCPval = 0x38;
+	disableGQoS = PFalse;
+#endif
 
 #ifdef _WIN32
 #if P_QOS
   if (disableGQoS)
     return PFalse;
 
+#ifndef _WIN32_WCE
   PBoolean usesetsockopt = PFalse;
 
   OSVERSIONINFO versInfo;
@@ -2650,6 +2656,9 @@ PBoolean PUDPSocket::ApplyQoS()
         versInfo.dwMinorVersion == 0)
       usesetsockopt = PTrue;         //Windows 2000 does not always support QOS_DESTADDR
   }
+#else
+  PBoolean usesetsockopt = PTrue;
+#endif
 
   PBoolean retval = PFalse;
   if (!usesetsockopt && sendAddress.IsValid() && sendPort != 0) {
