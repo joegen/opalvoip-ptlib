@@ -648,8 +648,6 @@ PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address &)
 
 #if P_QOS
 
-#ifndef _WIN32_WCE
-
 PWinQoS::~PWinQoS()
 {
     delete sa;
@@ -696,8 +694,6 @@ PWinQoS::PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen
   memcpy(inBuf+sizeof(*qos),&qosdestaddr,sizeof(qosdestaddr));
   bufLen = sizeof(*qos)+sizeof(qosdestaddr);
 }
-
-#endif // _WIN32_WCE
 
 #endif // P_QOS
 

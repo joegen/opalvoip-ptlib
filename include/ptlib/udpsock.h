@@ -186,8 +186,6 @@ class PUDPSocket : public PIPDatagramSocket
 #include <winbase.h>
 #include <winreg.h>
 
-#ifndef _WIN32_WCE
-
 class PWinQoS : public PObject
 {
     PCLASSINFO(PWinQoS,PObject);
@@ -202,7 +200,6 @@ protected:
     sockaddr * sa;
 };
 
-#endif  // _WIN32_WCE
 #endif  // _WIN32
 #endif // P_QOS
 
