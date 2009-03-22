@@ -2602,10 +2602,6 @@ PQoS & PUDPSocket::GetQoSSpec()
 
 PBoolean PUDPSocket::ApplyQoS()
 {
-#ifdef _WIN32_WCE
-  return PFalse;   //QoS not supported
-#endif
-
   char DSCPval = 0;
   if (qosSpec.GetDSCP() < 0 ||
       qosSpec.GetDSCP() > 63) {
