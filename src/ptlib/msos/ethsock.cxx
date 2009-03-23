@@ -1369,6 +1369,7 @@ public:
 };
 
 
+#if IPv6_ENABLED
 class PIPAdaptersAddressTable
 {
 public:
@@ -1399,7 +1400,6 @@ private:
 };
 
 
-#if IPv6_ENABLED
 #include <tchar.h>
 
 class PIPRouteTableIPv6 : public PIPRouteTable
