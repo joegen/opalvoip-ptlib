@@ -97,9 +97,9 @@
 
 #if defined(P_ODBC) && !defined(_WIN32_WCE)
 
+#include <odbcinst.h>
 #include <sql.h> 
 #include <sqlext.h>
-#include <odbcinst.h>
 
 #ifdef _MSC_VER
  #include <tchar.h>
