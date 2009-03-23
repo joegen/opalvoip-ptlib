@@ -1524,7 +1524,7 @@ PBoolean PODBCRecord::IsColumnNullable( PINDEX Column )
 PBoolean PODBCRecord::IsColumnUpdatable(PINDEX Column )
 {
 
-   SWORD colUpdate=0;
+   SQLLEN colUpdate=0;
    SQLColAttribute(m_hStmt,     // StatementHandle
         (SQLSMALLINT)(Column),  // ColumnNumber
         SQL_DESC_UPDATABLE,	// FieldIdentifier
@@ -1538,7 +1538,7 @@ PBoolean PODBCRecord::IsColumnUpdatable(PINDEX Column )
 PBoolean PODBCRecord::IsColumnAutoIndex(PINDEX Column )
 {
 
-   SWORD colIndex=0;
+   SQLLEN colIndex=0;
    SQLColAttribute(m_hStmt,	// StatementHandle
         (SQLSMALLINT)(Column),  // ColumnNumber
         SQL_DESC_AUTO_UNIQUE_VALUE,  // FieldIdentifier
@@ -1551,7 +1551,7 @@ PBoolean PODBCRecord::IsColumnAutoIndex(PINDEX Column )
 
 unsigned int PODBCRecord::ColumnPrecision(PINDEX Column )
 {
-   SWORD coldigits=0;
+   SQLLEN coldigits=0;
    SQLColAttribute(m_hStmt,      // StatementHandle
         (SQLSMALLINT)(Column),   // ColumnNumber
         SQL_DESC_PRECISION,      // FieldIdentifier
