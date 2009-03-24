@@ -658,7 +658,7 @@ PSSLDiffieHellman::~PSSLDiffieHellman()
     DH_free(dh);
 }
 
-#if defined(__BEOS__) || (defined(__APPLE__) && P_MACOSX < 900) || defined(__OpenBSD__)
+#ifndef P_d2i_DHparams_bio_NEW
 // 2/21/04 Yuri Kiryanov - fix for compiler choke on BeOS for usage of
 // SSL function d2i_DHparams_bio below in PSSLDiffieHellman::Load
 // 5/26/06 Hannes Friederich - Mac OS X seems to need that fix too...
