@@ -46,102 +46,7 @@
 #include <map>
 
 
-/*
- *  These classes and templates implement a generic thread pooling mechanism
- */
-
-class PThreadPoolBase;
-
-class PThreadPoolWorkerBase : public PThread
-{
-  public:
-    PThreadPoolWorkerBase(PThreadPoolBase & threadPool);
-
-    virtual unsigned GetWorkSize() const = 0;
-    virtual void Shutdown() = 0;
-
-    //virtual void OnAddWork(work_base *);
-    //virtual void OnRemoveWork(work_base *);
-
-    PThreadPoolBase & pool;
-    PBoolean shutdown;
-    PMutex workerMutex;
-};
-
-class PThreadPoolBase : public PObject
-{
-  public:
-    PThreadPoolBase(unsigned maximum = 10);
-    ~PThreadPoolBase();
-
-    virtual PThreadPoolWorkerBase * CreateWorkerThread() = 0;
-
-    virtual PThreadPoolWorkerBase * AllocateWorker();
-
-  protected:
-    virtual bool CheckWorker(PThreadPoolWorkerBase * worker);
-    void StopWorker(PThreadPoolWorkerBase * worker);
-    PMutex listMutex;
-    typedef std::vector<PThreadPoolWorkerBase *> WorkerList_t;
-    WorkerList_t workers;
-
-    unsigned maxWorkerSize;
-};
-
-template <class WorkUnit_T, class WorkerThread_T>
-class PThreadPool : public PThreadPoolBase
-{
-  PCLASSINFO(PThreadPool, PThreadPoolBase);
-  public:
-    typedef typename std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_T;
-
-    PThreadPool(unsigned maximum = 10)
-      : PThreadPoolBase(maximum) { }
-
-    virtual PThreadPoolWorkerBase * CreateWorkerThread()
-    { return new WorkerThread_T(*this); }
-
-    bool AddWork(WorkUnit_T * workUnit)
-    {
-      PWaitAndSignal m(listMutex);
-
-      PThreadPoolWorkerBase * a_worker = AllocateWorker();
-      if (a_worker == NULL)
-        return false;
-
-      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(a_worker);
-      workUnitMap.insert(typename WorkUnitMap_T::value_type(workUnit, worker));
-
-      worker->OnAddWork(workUnit);
-
-      return true;
-    }
-
-    bool RemoveWork(WorkUnit_T * workUnit)
-    {
-      PWaitAndSignal m(listMutex);
-
-      // find worker with work unit to remove
-      typename WorkUnitMap_T::iterator r = workUnitMap.find(workUnit);
-      if (r == workUnitMap.end())
-        return false;
-
-      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(r->second);
-
-      workUnitMap.erase(r);
-
-      worker->OnRemoveWork(workUnit);
-
-      CheckWorker(worker);
-
-      return true;
-    }
-
-  protected:
-    WorkUnitMap_T workUnitMap;
-};
-
-#if 0 
+#if P_SOCKAGG
 
 // aggregator code disabled pending reimplementation
 
@@ -345,8 +250,6 @@ class PHandleAggregator : public PHandleAggregatorBase
 // descendants of PIPSocket
 //
 
-#if 0
-
 template <class PSocketType>
 class PSocketAggregator : public PHandleAggregator
 {
@@ -401,11 +304,8 @@ class PSocketAggregator : public PHandleAggregator
       return PTrue;
     }
 };
-#endif  // #if 0
 
-#endif
-
-// aggregator code disabled pending reimplementation
+#endif  // P_SOCKAGG
 
 #endif // PTLIB_SOCKAGG_H
 
