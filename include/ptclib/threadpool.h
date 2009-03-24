@@ -60,6 +60,8 @@ class PThreadPoolWorkerBase : public PThread
     PThreadPoolBase & pool;
     PBoolean shutdown;
     PMutex workerMutex;
+
+  friend class PThreadPoolBase;
 };
 
 
