@@ -117,7 +117,7 @@ HAS_JABBER=1
 HAS_CONFIG_FILE=1
 default_ipv6=yes
 HAS_QOS=1
-HAS_SOCKAGG=1
+HAS_SOCKAGG=
 HAS_VIDFILE=1
 HAS_FFVDEV=1
 HAS_APPSHARE=
@@ -159,7 +159,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_CONFIG_FILE=1
   default_ipv6=yes
   HAS_QOS=1
-  HAS_SOCKAGG=1
+  HAS_SOCKAGG=
   HAS_VIDFILE=1
   HAS_FFVDEV=1
   HAS_APPSHARE=
@@ -200,7 +200,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_CONFIG_FILE=0
   default_ipv6=no
   HAS_QOS=
-  HAS_SOCKAGG=1
+  HAS_SOCKAGG=
   HAS_VIDFILE=
   HAS_FFVDEV=
   HAS_APPSHARE=
@@ -1405,8 +1405,8 @@ PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [enable POP3/SMTP support])
 
 dnl ########################################################################
 dnl check for enabling socket aggregation
-dnl MSWIN_DISPLAY    sockagg,Socket aggregation support
-dnl MSWIN_DEFINE     sockagg,P_SOCKAGG
+dnl MSWIN_DISPLAY    sockagg,Socket aggregation suppression
+dnl MSWIN_DEFINE     sockagg,!P_SOCKAGG
 
 PTLIB_SIMPLE_OPTION([sockagg], [SOCKAGG], [enable socket aggregation])
 
