@@ -10436,25 +10436,25 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test -z "$ac_cxx_werror_flag" ||
 	 test ! -s conftest.err
        } && test -s conftest.$ac_objext; then
-  P_d2i_DHparams_bio_NEW=1
+  :
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-
+	P_d2i_DHparams_bio_OLD=1
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-if test "x$P_d2i_DHparams_bio_NEW" = "x" ; then
+if test "x$P_d2i_DHparams_bio_OLD" = "x1" ; then
   { echo "$as_me:$LINENO: result: old" >&5
 echo "${ECHO_T}old" >&6; }
+  cat >>confdefs.h <<\_ACEOF
+#define P_d2i_DHparams_bio_OLD 1
+_ACEOF
+
 else
   { echo "$as_me:$LINENO: result: new" >&5
 echo "${ECHO_T}new" >&6; }
-  cat >>confdefs.h <<\_ACEOF
-#define P_d2i_DHparams_bio_NEW 1
-_ACEOF
-
 fi
 
 
