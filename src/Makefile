@@ -321,7 +321,9 @@ SOURCES += $(PLATFORM_SRC_DIR)/config.cxx
 endif
 endif
 
+ifdef HAS_SOCKAGG
 SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
+endif
 
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
@@ -367,6 +369,7 @@ endif
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	+= \
+	$(COMPONENT_SRC_DIR)/threadpool.cxx \
 	$(COMPONENT_SRC_DIR)/ipacl.cxx \
 	$(COMPONENT_SRC_DIR)/qchannel.cxx \
 	$(COMPONENT_SRC_DIR)/delaychan.cxx \
@@ -378,7 +381,7 @@ SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/guid.cxx \
 	$(GETDATE_SOURCE) \
 	$(PLATFORM_SRC_DIR)/assert.cxx \
-        $(COMMON_SRC_DIR)/pluginmgr.cxx \
+	$(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
 	$(COMMON_SRC_DIR)/psockbun.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \

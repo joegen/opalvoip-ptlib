@@ -42,108 +42,9 @@
 #define new PNEW
 
 
-PThreadPoolBase::PThreadPoolBase(unsigned _max)
-  : maxWorkerSize(_max)
-{
-}
-
-PThreadPoolBase::~PThreadPoolBase()
-{
-  for (;;) {
-    PWaitAndSignal m(listMutex);
-    if (workers.size() == 0)
-      break;
-
-    PThreadPoolWorkerBase * worker = workers[0];
-    worker->Shutdown();
-    workers.erase(workers.begin());
-    StopWorker(worker);
-  }
-}
-
-
-PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
-{
-  // find the worker thread with the minimum number of handles
-  WorkerList_t::iterator minWorker = workers.end();
-  size_t minSizeFound = 0x7ffff;
-  WorkerList_t::iterator r;
-  for (r = workers.begin(); r != workers.end(); ++r) {
-    PThreadPoolWorkerBase & worker = **r;
-    PWaitAndSignal m2(worker.workerMutex);
-    if (!worker.shutdown && (worker.GetWorkSize() <= minSizeFound)) {
-      minSizeFound = worker.GetWorkSize();
-      minWorker     = r;
-      if (minSizeFound == 0)
-        break;
-    }
-  }
-
-  // if the number of workers is at the maximum, or the there is 
-  // an idle worker, then use the least busy worker thread
-  if ((workers.size() >= maxWorkerSize) || (r != workers.end())) 
-    return *minWorker;
-
-  // no worker threads usable, create a new one
-  PThreadPoolWorkerBase * worker = CreateWorkerThread();
-  worker->Resume();
-  workers.push_back(worker);
-
-  return worker;
-}
-
-bool PThreadPoolBase::CheckWorker(PThreadPoolWorkerBase * worker)
-{
-  {
-    PWaitAndSignal m(listMutex);
-
-    // find worker in list
-    WorkerList_t::iterator r;
-    for (r = workers.begin(); r != workers.end(); ++r)
-      if (*r == worker)
-        break;
-    if (r == workers.end())
-      return false;
-
-    // if the worker thread has enough work to keep running, leave it alone
-    if (worker->GetWorkSize() > 0) 
-      return true;
-
-    // but don't shut down the last thread, so we don't have the overhead of starting it up again
-    if (workers.size() == 1)
-      return true;
-
-    worker->Shutdown();
-    workers.erase(r);
-  }
-
-  StopWorker(worker);
-
-  return true;
-}
-
-void PThreadPoolBase::StopWorker(PThreadPoolWorkerBase * worker)
-{
-  // the worker is now finished
-  if (!worker->WaitForTermination(10000)) {
-    PTRACE(4, "SockAgg\tWorker did not terminate promptly");
-  }
-  PTRACE(4, "ThreadPool\tDestroying pool thread");
-  delete worker;
-}
-
 ////////////////////////////////////////////////////////////////
 
-PThreadPoolWorkerBase::PThreadPoolWorkerBase(PThreadPoolBase & _pool)
-  : PThread(100, NoAutoDeleteThread, NormalPriority, "Aggregator")
-  , pool(_pool)
-  , shutdown(PFalse)
-{
-}
-
-////////////////////////////////////////////////////////////////
-
-#if 0   // aggregation disabled pending reimplmentation
+#if P_SOCKAGG
 
 PHandleAggregator::PHandleAggregator(unsigned _max)
   : PHandleAggregatorBase(_max)
@@ -580,6 +481,7 @@ bool PAggregatorFD::IsValid()
   return fd >= 0; 
 }
 
-#endif  // aggregation disabled pending reimplmeentation
 
 #endif // #endif _WIN32
+
+#endif // P_SOCKAGG
