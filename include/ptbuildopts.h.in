@@ -361,7 +361,7 @@
 
 #endif
 
-#undef P_d2i_DHparams_bio_NEW
+#undef P_d2i_DHparams_bio_OLD
 
 
 /////////////////////////////////////////////////
