@@ -6832,16 +6832,16 @@ if test "${enable_ansi_bool+set}" = set; then
 fi
 
 
-if test "${enable_ansi_bool}x" = "x" ; then
+if test "${enable_ansi_bool}" = "no" ; then
+  { echo "$as_me:$LINENO: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&5
+echo "$as_me: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&6;}
+else
   { echo "$as_me:$LINENO: Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true)" >&5
 echo "$as_me: Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true)" >&6;}
   cat >>confdefs.h <<\_ACEOF
 #define P_USE_STANDARD_CXX_BOOL 1
 _ACEOF
 
-else
-  { echo "$as_me:$LINENO: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&5
-echo "$as_me: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&6;}
 fi
 
 
@@ -10397,6 +10397,65 @@ fi
 
 
 
+
+
+
+
+{ echo "$as_me:$LINENO: checking for d2i_DHparams_bio variants" >&5
+echo $ECHO_N "checking for d2i_DHparams_bio variants... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <openssl/dh.h>
+                #include <openssl/asn1.h>
+int
+main ()
+{
+ BIO * in; d2i_DHparams_bio(in, NULL);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_cxx_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  P_d2i_DHparams_bio_NEW=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+if test "x$P_d2i_DHparams_bio_NEW" = "x" ; then
+  { echo "$as_me:$LINENO: result: old" >&5
+echo "${ECHO_T}old" >&6; }
+else
+  { echo "$as_me:$LINENO: result: new" >&5
+echo "${ECHO_T}new" >&6; }
+  cat >>confdefs.h <<\_ACEOF
+#define P_d2i_DHparams_bio_NEW 1
+_ACEOF
+
+fi
 
 
 
