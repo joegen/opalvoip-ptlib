@@ -1127,12 +1127,12 @@ dnl check for variants of d2i_DHparams_bio from OpenSSL
 AC_MSG_CHECKING(for d2i_DHparams_bio variants)
 AC_TRY_COMPILE([#include <openssl/dh.h>
                 #include <openssl/asn1.h>],
-               [ BIO * in; d2i_DHparams_bio(in, NULL);], P_d2i_DHparams_bio_NEW=1)
-if test "x$P_d2i_DHparams_bio_NEW" = "x" ; then
+               [ BIO * in; d2i_DHparams_bio(in, NULL);],,P_d2i_DHparams_bio_OLD=1)
+if test "x$P_d2i_DHparams_bio_OLD" = "x1" ; then
   AC_MSG_RESULT(old)
+  AC_DEFINE(P_d2i_DHparams_bio_OLD, 1)
 else
   AC_MSG_RESULT(new)
-  AC_DEFINE(P_d2i_DHparams_bio_NEW, 1)
 fi
 
 
