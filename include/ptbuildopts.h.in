@@ -65,8 +65,7 @@
 //
 
 #undef SIZEOF_INT
-#undef    P_64BIT
-#undef    PNO_LONG_DOUBLE
+#undef PNO_LONG_DOUBLE
 
 /////////////////////////////////////////////////
 //
