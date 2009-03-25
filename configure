@@ -4800,6 +4800,7 @@ cat >>confdefs.h <<\_ACEOF
 #define P_64BIT 1
 _ACEOF
 
+  STDCCFLAGS="$STDCCFLAGS -DP_64BIT"
 fi
 
 if test "$target_os" = "linux-gnulp" ; then
