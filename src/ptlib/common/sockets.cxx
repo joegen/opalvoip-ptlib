@@ -535,7 +535,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct addrinfo hints = { AI_CANONNAME, defaultIpAddressFamily };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     host = new PIPCacheData(localErrNo != NETDB_SUCCESS ? NULL : res, name);
-    freeaddrinfo(res);
+    if (res != NULL)
+      freeaddrinfo(res);
 
 #else // HAS_GETADDRINFO
 
@@ -1925,7 +1926,8 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
         struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
         v.four = addr_in->sin_addr;
       }
-      freeaddrinfo(res);
+      if (res != NULL)
+        freeaddrinfo(res);
       return IsValid();
     }
 
