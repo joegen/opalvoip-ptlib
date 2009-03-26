@@ -195,13 +195,20 @@ DNS_STATUS DnsQuery_A(const char * service,
                      PDNS_RECORD * results,
                             void *)
 {
+#if defined(P_NETBSD)
+  struct __res_state myRes;
+#endif
   if (results == NULL)
     return -1;
 
   *results = NULL;
 
 #if P_HAS_RES_NINIT
+#if defined(P_NETBSD)
+  res_ninit(&myRes);
+#else
   res_ninit(&_res);
+#endif
 #else
   res_init();
   GetDNSMutex().Wait();
@@ -213,7 +220,13 @@ DNS_STATUS DnsQuery_A(const char * service,
   } reply;
 
 #if P_HAS_RES_NINIT
-  int replyLen = res_nsearch(&_res, service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
+  int replyLen = res_nsearch(
+#if defined(P_NETBSD)
+      &myRes,
+#else
+      &_res,
+#endif
+      service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
 #else
   int replyLen = res_search(service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
   GetDNSMutex().Signal();
