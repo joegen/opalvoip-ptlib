@@ -85,7 +85,9 @@ install:
                      $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
-	$(INSTALL) -m 444 $(PT_LIBDIR)/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
+	( if test -e $(PT_LIBDIR)/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ ; then ; \
+            $(INSTALL) -m 444 $(PT_LIBDIR)/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR) ; \
+          fi )
 	$(INSTALL) -m 444 $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR)
 	(cd $(DESTDIR)$(LIBDIR) ; \
 		rm -f  $(PTLIB_FILE) ; \
