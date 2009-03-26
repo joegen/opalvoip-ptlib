@@ -53,6 +53,10 @@
 #define environ (NULL)
 #endif
 
+#if defined(__NetBSD__)
+extern char **environ;
+#endif
+
 //
 //  a single key/value pair
 //
