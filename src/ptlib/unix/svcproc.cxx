@@ -165,7 +165,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
 #elif defined(BE_THREADS)
       thread_id tid = ::find_thread(NULL);
 #else
-      unsigned tid = (unsigned) pthread_self();
+      unsigned tid = (uintptr_t) pthread_self();
 #endif
       *out << "ThreadID=0x"
            << setfill('0') << ::hex
@@ -720,7 +720,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 #elif defined(BE_THREADS)
   thread_id tid = ::find_thread(NULL);
 #else
-  unsigned tid = (unsigned) pthread_self();
+  unsigned tid = (uintptr_t) pthread_self();
 #endif
   PThread * thread_ptr = activeThreads.GetAt(tid);
 
