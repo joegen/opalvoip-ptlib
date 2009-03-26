@@ -1548,7 +1548,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   , m_library(false)
 {
   activeThreads.DisallowDeleteObjects();
-  activeThreads.SetAt((PINDEX)GetCurrentThreadId(), this);
+  activeThreads.SetAt((uintptr_t)GetCurrentThreadId(), this);
 
   PProcessInstance = this;
 
@@ -1912,7 +1912,7 @@ PThread * PThread::Current()
   PProcess & process = PProcess::Current();
 
   process.activeThreadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt((unsigned)GetCurrentThreadId());
+  PThread * thread = process.activeThreads.GetAt((uintptr_t)GetCurrentThreadId());
   process.activeThreadMutex.Signal();
 
   if (thread == NULL)
@@ -2210,21 +2210,21 @@ PReadWriteMutex::~PReadWriteMutex()
 PReadWriteMutex::Nest * PReadWriteMutex::GetNest() const
 {
   PWaitAndSignal mutex(nestingMutex);
-  return nestedThreads.GetAt(POrdinalKey((PINDEX)PThread::GetCurrentThreadId()));
+  return nestedThreads.GetAt(POrdinalKey((INT)PThread::GetCurrentThreadId()));
 }
 
 
 void PReadWriteMutex::EndNest()
 {
   nestingMutex.Wait();
-  nestedThreads.RemoveAt(POrdinalKey((PINDEX)PThread::GetCurrentThreadId()));
+  nestedThreads.RemoveAt(POrdinalKey((INT)PThread::GetCurrentThreadId()));
   nestingMutex.Signal();
 }
 
 
 PReadWriteMutex::Nest & PReadWriteMutex::StartNest()
 {
-  POrdinalKey threadId = (PINDEX)PThread::GetCurrentThreadId();
+  POrdinalKey threadId = (INT)PThread::GetCurrentThreadId();
 
   nestingMutex.Wait();
 
