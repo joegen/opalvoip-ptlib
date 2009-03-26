@@ -240,7 +240,7 @@ PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 {
   PWaitAndSignal m(activeThreadMutex);
 
-  if (!activeThreads.Contains((unsigned)id)) 
+  if (!activeThreads.Contains((uintptr_t)id)) 
     return PFalse;
 
   return pthread_kill(id, sig) == 0;
@@ -249,8 +249,8 @@ PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 void PProcess::PXSetThread(pthread_t id, PThread * thread)
 {
   activeThreadMutex.Wait();
-  PThread * currentThread = activeThreads.GetAt((PINDEX)id);
-  activeThreads.SetAt((PINDEX)id, thread);
+  PThread * currentThread = activeThreads.GetAt((uintptr_t)id);
+  activeThreads.SetAt((uintptr_t)id, thread);
   activeThreadMutex.Signal();
 
   if (currentThread != NULL) 
@@ -891,7 +891,7 @@ void PThread::PX_ThreadEnd(void * arg)
   }
 
   // remove this thread from the active thread list
-  process.activeThreads.SetAt((unsigned)id, NULL);
+  process.activeThreads.SetAt((uintptr_t)id, NULL);
 
   bool deleteThread = thread->autoDelete; // Get flag before releasing lock
 
