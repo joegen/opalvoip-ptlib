@@ -256,7 +256,65 @@ PINDEX PVideoFrameInfo::CalculateFrameBytes(unsigned width, unsigned height,
 }
  
 
-PBoolean PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
+bool PVideoFrameInfo::Parse(const PString & str)
+{
+  PString newFormat = colourFormat;
+  PINDEX formatOffset = str.Find(':');
+  if (formatOffset == 0)
+    return false;
+
+  if (formatOffset == P_MAX_INDEX)
+    formatOffset = 0;
+  else
+    newFormat = str.Left(formatOffset++);
+
+
+  ResizeMode newMode = resizeMode;
+  PINDEX resizeOffset = str.Find('/', formatOffset);
+  if (resizeOffset != P_MAX_INDEX) {
+    static struct {
+      const char * name;
+      ResizeMode   mode;
+    } const ResizeNames[] = {
+      { "scale",   eScale },
+      { "resize",  eScale },
+      { "centre",  eCropCentre },
+      { "center",  eCropCentre },
+      { "crop",    eCropTopLeft },
+      { "topleft", eCropTopLeft }
+    };
+
+    PCaselessString crop = str.Mid(resizeOffset+1);
+    PINDEX resizeIndex = 0;
+    while (crop != ResizeNames[resizeIndex].name) {
+      if (++resizeIndex >= PARRAYSIZE(ResizeNames))
+        return false;
+    }
+    newMode = ResizeNames[resizeIndex].mode;
+  }
+
+
+  int newRate = frameRate;
+  PINDEX rateOffset = str.Find('@', formatOffset);
+  if (rateOffset == P_MAX_INDEX)
+    rateOffset = resizeOffset;
+  else {
+    newRate = str.Mid(rateOffset+1).AsInteger();
+    if (newRate < 1 || newRate > 100)
+      return false;
+  }
+
+  if (!ParseSize(str(formatOffset, rateOffset-1), frameWidth, frameHeight))
+    return false;
+
+  colourFormat = newFormat;
+  frameRate = newRate;
+  resizeMode = newMode;
+  return true;
+}
+
+
+bool PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
 {
   static struct {
     const char * name;
@@ -299,7 +357,7 @@ PBoolean PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsig
     if (str *= sizeTable[i].name) {
       width = sizeTable[i].width;
       height = sizeTable[i].height;
-      return PTrue;
+      return true;
     }
   }
 
