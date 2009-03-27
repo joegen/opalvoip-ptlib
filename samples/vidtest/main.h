@@ -43,11 +43,12 @@ class VidTest : public PProcess
  protected:
    PDECLARE_NOTIFIER(PThread, VidTest, GrabAndDisplay);
 
-  PVideoInputDevice  * grabber;
-  PVideoOutputDevice * display;
-  PSyncPointAck        exitGrabAndDisplay;
-  PSyncPointAck        pauseGrabAndDisplay;
-  PSyncPoint           resumeGrabAndDisplay;
+  PVideoInputDevice     * m_grabber;
+  PVideoOutputDevice    * m_display;
+  PList<PColourConverter> m_converters;
+  PSyncPointAck           m_exitGrabAndDisplay;
+  PSyncPointAck           m_pauseGrabAndDisplay;
+  PSyncPoint              m_resumeGrabAndDisplay;
 };
 
 
