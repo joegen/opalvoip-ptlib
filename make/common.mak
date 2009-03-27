@@ -84,11 +84,11 @@ SOURCES         := $(strip $(SOURCES))
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CXX) $(STDCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -c $< -o $@
+	$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CXX) $(STDCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -c $< -o $@
+	$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
@@ -117,17 +117,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CXX) $(CFLAGS) $(STDCCFLAGS:-g=) -M $< >> $@
+	$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CXX) $(CFLAGS) $(STDCCFLAGS:-g=) -M $< >> $@
+	$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CC) $(CFLAGS) $(STDCCFLAGS:-g=) -M $< >> $@
+	$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
@@ -202,7 +202,7 @@ endif
 USE_PCH:=no
 $(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PTLIBDIR)/include/ptlib.h
 	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
-	$(CXX) $(STDCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -x c++ -c $< -o $@
+	$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -x c++ -c $< -o $@
 
 ifeq ($(USE_PCH),yes)
 PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)

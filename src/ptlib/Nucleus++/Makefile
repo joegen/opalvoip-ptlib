@@ -236,23 +236,23 @@ alllibs:
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-	$(CXX) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+	$(CXX) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE) $(GETDATE_SOURCE)
 
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
-	$(CXX) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
+	$(CXX) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(STDCCFLAGS) $(CFLAGS) -c -w $< -o $@
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
-	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+	$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(CC) $(STDCCFLAGS) -M $< >> $@
 
 ifeq ($(OSTYPE),beos)
 $(OBJDIR)/resample.o: $(BEAUDIO_SRC_DIR)/resample.c
-	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+	$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
