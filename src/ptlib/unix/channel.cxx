@@ -105,7 +105,8 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
 
       case PXReadBlock :
         PAssert(px_readThread == NULL || px_lastBlockType != PXReadBlock,
-                "Attempt to do simultaneous reads from multiple threads.");
+                psprintf("Attempt to do simultaneous reads from multiple threads:"
+                         " os_handle=%i, thread ID=%X", os_handle, px_readThread->GetThreadId()));
         // Fall into default case
 
       default :
