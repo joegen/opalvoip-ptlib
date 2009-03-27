@@ -166,7 +166,11 @@ class PStandardColourConverter : public PColourConverter
       const BYTE *yuy2,
       BYTE *yuv420p
     ) const;
-    void YUY2toYUV420PWithResize(
+    void YUY2toYUV420PWithGrow(
+      const BYTE *yuy2,
+      BYTE *yuv420p
+    ) const;
+    void YUY2toYUV420PWithShrink(
       const BYTE *yuy2,
       BYTE *yuv420p
     ) const;
@@ -177,9 +181,9 @@ class PStandardColourConverter : public PColourConverter
 #if defined (__GNUC__) || defined (__sun)
     bool MJPEGtoXXX(
       const BYTE *mjpeg,
-	    BYTE *output_data,
-	    PINDEX *bytesReturned,
-	    int format
+            BYTE *output_data,
+            PINDEX *bytesReturned,
+            int format
     );
     bool MJPEGtoYUV420P(
       const BYTE *mjpeg,
@@ -455,7 +459,7 @@ PColourConverter * PSynonymColourRegistration::Create(const PVideoFrameInfo & sr
 
 PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
                              BYTE *dstFrameBuffer,
-			     unsigned int __srcFrameBytes,
+                             unsigned int __srcFrameBytes,
                              PINDEX * bytesReturned)
 {
   srcFrameBytes = __srcFrameBytes;
@@ -833,17 +837,17 @@ void  PStandardColourConverter::YUY2toYUV420PSameSize(const BYTE *yuy2, BYTE *yu
 
      /* Copy the first line keeping all information */
      for (x=0; x<srcFrameWidth; x+=2) {
-	*y++ = *s++;
-	*u++ = *s++;
-	*y++ = *s++;
-	*v++ = *s++;
+        *y++ = *s++;
+        *u++ = *s++;
+        *y++ = *s++;
+        *v++ = *s++;
      }
      /* Copy the second line discarding u and v information */
      for (x=0; x<srcFrameWidth; x+=2) {
-	*y++ = *s++;
-	s++;
-	*y++ = *s++;
-	s++;
+        *y++ = *s++;
+        s++;
+        *y++ = *s++;
+        s++;
      }
   }
 }
@@ -867,141 +871,164 @@ void  PStandardColourConverter::YUY2toYUV420PSameSize(const BYTE *yuy2, BYTE *yu
  * 
  * So, we loose some bit of information when converting YUY2 to YUV420 
  *
- * NOTE: This algorithm works only if the width and the height is pair.
+ * NOTE: This algorithm works only if the width and the height are even numbers.
  */
-void PStandardColourConverter::YUY2toYUV420PWithResize(const BYTE *yuy2, BYTE *yuv420p) const
+void PStandardColourConverter::YUY2toYUV420PWithGrow(const BYTE *yuy2, BYTE *yuv420p) const
 {
   const BYTE *s;
   BYTE *y, *u, *v;
   unsigned int x, h;  
-  unsigned int npixels = srcFrameWidth * srcFrameHeight;
+  unsigned int npixels = dstFrameWidth * dstFrameHeight;
 
   s = yuy2;
   y = yuv420p;
   u = yuv420p + npixels;
   v = u + npixels/4;
 
-  if ( (dstFrameWidth * dstFrameHeight) > npixels ) {
+  // dest is bigger than the source. No subsampling.
+  // Place the src in the middle of the destination.
+  unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
+  unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+  unsigned int bpixels = yOffset * dstFrameWidth;
 
-     // dest is bigger than the source. No subsampling.
-     // Place the src in the middle of the destination.
-     unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
-     unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
-     unsigned int bpixels = yOffset * dstFrameWidth;
+  /* Top border */
+  memset(y, BLACK_Y, bpixels);   y += bpixels;
+  memset(u, BLACK_U, bpixels/4); u += bpixels/4;
+  memset(v, BLACK_V, bpixels/4); v += bpixels/4;
 
-     /* Top border */
-     memset(y, BLACK_Y, bpixels);	y += bpixels;
-     memset(u, BLACK_U, bpixels/4);	u += bpixels/4;
-     memset(v, BLACK_V, bpixels/4);	v += bpixels/4;
+  for (h=0; h<srcFrameHeight; h+=2)
+  {
+    /* Left border */
+    memset(y, BLACK_Y, xOffset);   y += xOffset;
+    memset(u, BLACK_U, xOffset/2); u += xOffset/2;
+    memset(v, BLACK_V, xOffset/2); v += xOffset/2;
 
-     for (h=0; h<srcFrameHeight; h+=2)
-      {
-        /* Left border */
-        memset(y, BLACK_Y, xOffset);	y += xOffset;
-        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
-        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+    /* Copy the first line keeping all information */
+    for (x=0; x<srcFrameWidth; x+=2)
+    {
+      *y++ = *s++;
+      *u++ = *s++;
+      *y++ = *s++;
+      *v++ = *s++;
+    }
+    /* Right and Left border */
+    for (x=0; x<xOffset*2; x++)
+      *y++ = BLACK_Y;
 
-        /* Copy the first line keeping all information */
-        for (x=0; x<srcFrameWidth; x+=2)
-         {
-           *y++ = *s++;
-           *u++ = *s++;
-           *y++ = *s++;
-           *v++ = *s++;
-         }
-        /* Right and Left border */
-        for (x=0; x<xOffset*2; x++)
-          *y++ = BLACK_Y;
-
-        /* Copy the second line discarding u and v information */
-        for (x=0; x<srcFrameWidth; x+=2)
-         {
-           *y++ = *s++;
-           s++;
-           *y++ = *s++;
-           s++;
-         }
-        /* Fill the border with black (right side) */
-        memset(y, BLACK_Y, xOffset);	y += xOffset;
-        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
-        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
-      }
-     memset(y, BLACK_Y, bpixels);
-     memset(u, BLACK_U, bpixels/4);
-     memset(v, BLACK_V, bpixels/4);
+    /* Copy the second line discarding u and v information */
+    for (x=0; x<srcFrameWidth; x+=2)
+    {
+      *y++ = *s++;
+      s++;
+      *y++ = *s++;
+      s++;
+    }
+    /* Fill the border with black (right side) */
+    memset(y, BLACK_Y, xOffset);        y += xOffset;
+    memset(u, BLACK_U, xOffset/2);        u += xOffset/2;
+    memset(v, BLACK_V, xOffset/2);        v += xOffset/2;
+  }
+  memset(y, BLACK_Y, bpixels);
+  memset(u, BLACK_U, bpixels/4);
+  memset(v, BLACK_V, bpixels/4);
+}
 
 
-  } else {
+void PStandardColourConverter::YUY2toYUV420PWithShrink(const BYTE *yuy2, BYTE *yuv420p) const
+{
+  const BYTE *s;
+  BYTE *y, *u, *v;
+  unsigned int x, h;  
+  unsigned int npixels = dstFrameWidth * dstFrameHeight;
 
-     // source is bigger than the destination
-     // We are doing linear interpolation to find value.
+  s = yuy2;
+  y = yuv420p;
+  u = yuv420p + npixels;
+  v = u + npixels/4;
+
+  // source is bigger than the destination
+  // We are doing linear interpolation to find value.
 #define FIX_FLOAT       12
-     unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
-     unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
-     unsigned int fy, fx;
+  unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
+  unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
+  unsigned int fy, fx;
 
-     for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2)
+  for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2)
+  {
+    /* Copy the first line with U&V */
+    unsigned int yy = fy>>FIX_FLOAT;
+    unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
+    const unsigned char *line1, *line2;
+    unsigned char lastU, lastV;
+
+    line1 = s + (yy*2*srcFrameWidth);
+    line2 = s + (yy2*2*srcFrameWidth);
+    lastU = line1[0];
+    lastV = line1[2];
+    for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
+    {
+      unsigned int xx = (fx>>FIX_FLOAT)*2;
+      *y++ = line1[xx+1];
+      if ( (xx&2) == 0)
       {
-	/* Copy the first line with U&V */
-	unsigned int yy = fy>>FIX_FLOAT;
-	unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
-	const unsigned char *line1, *line2;
-	unsigned char lastU, lastV;
+        *u++ = lastU = (line1[xx+1] + line2[xx+1])/2;
+        *v++ = lastV = (line1[xx+3] + line2[xx+3])/2;
+      }
+      else
+      {
+        *u++ = lastU;
+        *v++ = lastV = (line1[xx+1] + line2[xx+1])/2;
+      }
+      xx = ((fx+dx)>>FIX_FLOAT)*2;
+      *y++ = line1[xx+1];
+      if ( (xx&2) == 0)
+        lastU = (line1[xx+1] + line2[xx+1])/2;
+      else
+        lastV = (line1[xx+1] + line2[xx+1])/2;
+    }
 
-	line1 = s + (yy*2*srcFrameWidth);
-	line2 = s + (yy2*2*srcFrameWidth);
-	lastU = line1[0];
-	lastV = line1[2];
-	for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
-	 {
-	   unsigned int xx = (fx>>FIX_FLOAT)*2;
-	   *y++ = line1[xx+1];
-	   if ( (xx&2) == 0)
-	    {
-	      *u++ = lastU = (line1[xx+1] + line2[xx+1])/2;
-	      *v++ = lastV = (line1[xx+3] + line2[xx+3])/2;
-	    }
-	   else
-	    {
-	      *u++ = lastU;
-	      *v++ = lastV = (line1[xx+1] + line2[xx+1])/2;
-	    }
-	   xx = ((fx+dx)>>FIX_FLOAT)*2;
-	   *y++ = line1[xx+1];
-	   if ( (xx&2) == 0)
-	     lastU = (line1[xx+1] + line2[xx+1])/2;
-	   else
-	     lastV = (line1[xx+1] + line2[xx+1])/2;
-	 }
+    /* Copy the second line without U&V */
+    for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx)
+    {
+      unsigned int xx = (fx>>FIX_FLOAT)*2;
+      *y++ = line2[xx];
+    }
+  } /* end of for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2) */
+}
 
-	/* Copy the second line without U&V */
-        for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx)
-         {
-           unsigned int xx = (fx>>FIX_FLOAT)*2;
-           *y++ = line2[xx];
-         }
-      } /* end of for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2) */
 
-   }
+static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight, unsigned dstFrameWidth, unsigned dstFrameHeight)
+{
+  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
+    PTRACE(2,"PColCnv\tError in YUY2 to YUV420P converter, dimensions must be even.");
+    return false;
+  }
 
+  if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight)
+    return true;
+
+  if (srcFrameWidth < dstFrameWidth && srcFrameHeight < dstFrameHeight)
+    return true;
+
+  if (srcFrameWidth > dstFrameWidth && srcFrameHeight > dstFrameHeight)
+    return true;
+
+  PTRACE(2,"PColCnv\tCannot do one dimension shrinking and the other one growing.");
+  return false;
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
 {
-  const BYTE *yuy2 = srcFrameBuffer;
-  BYTE *yuv420p = dstFrameBuffer;
+  if (!ValidateDimensions(srcFrameWidth, srcFrameHeight, dstFrameWidth, dstFrameHeight))
+    return false;
 
-  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
-    PTRACE(2,"PColCnv\tError in YUY2 to YUV420P converter, All size need to be pair.");
-    return PFalse;
-  }
-
-  if ((srcFrameWidth == dstFrameWidth) || (srcFrameHeight == dstFrameHeight)) {
-     YUY2toYUV420PSameSize(yuy2, yuv420p);
-  } else {
-     YUY2toYUV420PWithResize(yuy2, yuv420p);
-  }
+  if (dstFrameWidth == srcFrameWidth)
+    YUY2toYUV420PSameSize(srcFrameBuffer, dstFrameBuffer);
+  else if (dstFrameWidth < srcFrameWidth)
+    YUY2toYUV420PWithShrink(srcFrameBuffer, dstFrameBuffer);
+  else
+    YUY2toYUV420PWithGrow(srcFrameBuffer, dstFrameBuffer);
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
@@ -1158,12 +1185,12 @@ static void ConvertQCIFToCIF(const void * _src, void * _dst)
 //                        M N O P
 //
 // A plane of U values    1 . 2 . 
-// 			  . . . .
-// 			  3 . 4 .
+//                           . . . .
+//                           3 . 4 .
 //                        . . . .
 //
 // A plane of V values    1 . 2 .
-// 			  . . . .
+//                           . . . .
 //                        3 . 4 .
 //                        . . . .
 // 
@@ -1233,7 +1260,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
   } else {  
     // source is bigger than the destination.
     //
-#define FIX_FLOAT	12
+#define FIX_FLOAT        12
     unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
     unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
     unsigned int fy, fx;
@@ -1245,7 +1272,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
     for (fy=0, y=0; y<dstFrameHeight; y++, fy+=dy) {
        s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
        for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx) {
-	  *d++ = s[fx>>FIX_FLOAT];
+          *d++ = s[fx>>FIX_FLOAT];
        }
     }
 
@@ -1254,7 +1281,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
     for (fy=0, y=0; y<dstFrameHeight/2; y++, fy+=dy) {
        s = src + (fy>>FIX_FLOAT) * srcFrameWidth/2;
        for (fx=0, x=0; x<dstFrameWidth/2; x++, fx+=dx) {
-	  *d++ = s[fx>>FIX_FLOAT];
+          *d++ = s[fx>>FIX_FLOAT];
        }
     }
 
@@ -1263,7 +1290,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
     for (fy=0, y=0; y<dstFrameHeight/2; y++, fy+=dy) {
        s = src + (fy>>FIX_FLOAT) * srcFrameWidth/2;
        for (fx=0, x=0; x<dstFrameWidth/2; x++, fx+=dx) {
-	  *d++ = s[fx>>FIX_FLOAT];
+          *d++ = s[fx>>FIX_FLOAT];
        }
     }
 
@@ -1323,15 +1350,15 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
  */
 PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 {
-  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
-    PTRACE(2,"PColCnv\tError in YUV422 to YUV420P converter, All size need to be pair.");
-    return PFalse;
-  }
+  if (!ValidateDimensions(srcFrameWidth, srcFrameHeight, dstFrameWidth, dstFrameHeight))
+    return false;
 
-  if ((srcFrameWidth==dstFrameWidth) && (srcFrameHeight==dstFrameHeight))
+  if (dstFrameWidth == srcFrameWidth)
     YUY2toYUV420PSameSize(srcFrameBuffer, dstFrameBuffer);
+  else if (dstFrameWidth < srcFrameWidth)
+    YUY2toYUV420PWithShrink(srcFrameBuffer, dstFrameBuffer);
   else
-    YUY2toYUV420PWithResize(srcFrameBuffer, dstFrameBuffer);
+    YUY2toYUV420PWithGrow(srcFrameBuffer, dstFrameBuffer);
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
@@ -2040,10 +2067,10 @@ PSTANDARD_COLOUR_CONVERTER(UYVY422, UYVY422)
     *bytesReturned = dstFrameBytes;
   
   if (srcFrameBuffer == dstFrameBuffer) {
-	if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
-		return PTrue;
-	else if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
-		return PFalse;
+        if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
+                return PTrue;
+        else if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
+                return PFalse;
   }
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
@@ -2085,47 +2112,47 @@ void PStandardColourConverter::ResizeUYVY422(const BYTE *src_uyvy, BYTE *dst_uyv
      /* Top border */
      for (h=0; h<yOffset; h++)
       {
-	for (x=0; x<dstFrameWidth/2; x++)
-	 {
-	   *d++ = BLACK_U;
-	   *d++ = BLACK_Y;
-	   *d++ = BLACK_V;
-	   *d++ = BLACK_Y;
-	 }
+        for (x=0; x<dstFrameWidth/2; x++)
+         {
+           *d++ = BLACK_U;
+           *d++ = BLACK_Y;
+           *d++ = BLACK_V;
+           *d++ = BLACK_Y;
+         }
       }
 
      for (h=0; h<srcFrameHeight; h+=2)
       {
         /* Left border */
-       	for (x=0; x<xOffset/2; x++)
-	 {
-	   *d++ = BLACK_U;
-	   *d++ = BLACK_Y;
-	   *d++ = BLACK_V;
-	   *d++ = BLACK_Y;
-	 }
+               for (x=0; x<xOffset/2; x++)
+         {
+           *d++ = BLACK_U;
+           *d++ = BLACK_Y;
+           *d++ = BLACK_V;
+           *d++ = BLACK_Y;
+         }
 
         /* Copy the first line keeping all information */
-	memcpy(d, s, srcFrameWidth*2);
-	d += srcFrameWidth*2;
+        memcpy(d, s, srcFrameWidth*2);
+        d += srcFrameWidth*2;
         /* Right and Left border */
-       	for (x=0; x<xOffset/2; x++)
-	 {
-	   *d++ = BLACK_U;
-	   *d++ = BLACK_Y;
-	   *d++ = BLACK_V;
-	   *d++ = BLACK_Y;
-	 }
+               for (x=0; x<xOffset/2; x++)
+         {
+           *d++ = BLACK_U;
+           *d++ = BLACK_Y;
+           *d++ = BLACK_V;
+           *d++ = BLACK_Y;
+         }
       }
      for (h=0; h<yOffset; h++)
       {
-	for (x=0; x<dstFrameWidth/2; x++)
-	 {
-	   *d++ = BLACK_U;
-	   *d++ = BLACK_Y;
-	   *d++ = BLACK_V;
-	   *d++ = BLACK_Y;
-	 }
+        for (x=0; x<dstFrameWidth/2; x++)
+         {
+           *d++ = BLACK_U;
+           *d++ = BLACK_Y;
+           *d++ = BLACK_V;
+           *d++ = BLACK_Y;
+         }
       }
 
   } else {
@@ -2174,17 +2201,17 @@ void  PStandardColourConverter::UYVY422toYUV420PSameSize(const BYTE *uyvy, BYTE 
 
      /* Copy the first line keeping all information */
      for (x=0; x<srcFrameWidth; x+=2) {
-	*u++ = *s++;
-	*y++ = *s++;
-	*v++ = *s++;
-	*y++ = *s++;
+        *u++ = *s++;
+        *y++ = *s++;
+        *v++ = *s++;
+        *y++ = *s++;
      }
      /* Copy the second line discarding u and v information */
      for (x=0; x<srcFrameWidth; x+=2) {
-	s++;
-	*y++ = *s++;
-	s++;
-	*y++ = *s++;
+        s++;
+        *y++ = *s++;
+        s++;
+        *y++ = *s++;
      }
   }
 }
@@ -2232,16 +2259,16 @@ void PStandardColourConverter::UYVY422toYUV420PWithResize(const BYTE *uyvy, BYTE
      unsigned int bpixels = yOffset * dstFrameWidth;
 
      /* Top border */
-     memset(y, BLACK_Y, bpixels);	y += bpixels;
-     memset(u, BLACK_U, bpixels/4);	u += bpixels/4;
-     memset(v, BLACK_V, bpixels/4);	v += bpixels/4;
+     memset(y, BLACK_Y, bpixels);        y += bpixels;
+     memset(u, BLACK_U, bpixels/4);        u += bpixels/4;
+     memset(v, BLACK_V, bpixels/4);        v += bpixels/4;
 
      for (h=0; h<srcFrameHeight; h+=2)
       {
         /* Left border */
-        memset(y, BLACK_Y, xOffset);	y += xOffset;
-        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
-        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+        memset(y, BLACK_Y, xOffset);        y += xOffset;
+        memset(u, BLACK_U, xOffset/2);        u += xOffset/2;
+        memset(v, BLACK_V, xOffset/2);        v += xOffset/2;
 
         /* Copy the first line keeping all information */
         for (x=0; x<srcFrameWidth; x+=2)
@@ -2264,9 +2291,9 @@ void PStandardColourConverter::UYVY422toYUV420PWithResize(const BYTE *uyvy, BYTE
            *y++ = *s++;
          }
         /* Fill the border with black (right side) */
-        memset(y, BLACK_Y, xOffset);	y += xOffset;
-        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
-        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+        memset(y, BLACK_Y, xOffset);        y += xOffset;
+        memset(u, BLACK_U, xOffset/2);        u += xOffset/2;
+        memset(v, BLACK_V, xOffset/2);        v += xOffset/2;
       }
      memset(y, BLACK_Y, bpixels);
      memset(u, BLACK_U, bpixels/4);
@@ -2284,39 +2311,39 @@ void PStandardColourConverter::UYVY422toYUV420PWithResize(const BYTE *uyvy, BYTE
 
      for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2)
       {
-	/* Copy the first line with U&V */
-	unsigned int yy = fy>>FIX_FLOAT;
-	unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
-	const unsigned char *line1, *line2;
-	unsigned char lastU, lastV;
+        /* Copy the first line with U&V */
+        unsigned int yy = fy>>FIX_FLOAT;
+        unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
+        const unsigned char *line1, *line2;
+        unsigned char lastU, lastV;
 
-	line1 = s + (yy*2*srcFrameWidth);
-	line2 = s + (yy2*2*srcFrameWidth);
-	lastU = line1[0];
-	lastV = line1[2];
-	for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
-	 {
-	   unsigned int xx = (fx>>FIX_FLOAT)*2;
-	   if ( (xx&2) == 0)
-	    {
-	      *u++ = lastU = (line1[xx+0] + line2[xx+0])/2;
-	      *v++ = lastV = (line1[xx+2] + line2[xx+2])/2;
-	    }
-	   else
-	    {
-	      *u++ = lastU;
-	      *v++ = lastV = (line1[xx+0] + line2[xx+0])/2;
-	    }
-	   *y++ = line1[xx+1];
-	   xx = ((fx+dx)>>FIX_FLOAT)*2;
-	   if ( (xx&2) == 0)
-	     lastU = (line1[xx+0] + line2[xx+0])/2;
-	   else
-	     lastV = (line1[xx+0] + line2[xx+0])/2;
-	   *y++ = line1[xx+1];
-	 }
+        line1 = s + (yy*2*srcFrameWidth);
+        line2 = s + (yy2*2*srcFrameWidth);
+        lastU = line1[0];
+        lastV = line1[2];
+        for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
+         {
+           unsigned int xx = (fx>>FIX_FLOAT)*2;
+           if ( (xx&2) == 0)
+            {
+              *u++ = lastU = (line1[xx+0] + line2[xx+0])/2;
+              *v++ = lastV = (line1[xx+2] + line2[xx+2])/2;
+            }
+           else
+            {
+              *u++ = lastU;
+              *v++ = lastV = (line1[xx+0] + line2[xx+0])/2;
+            }
+           *y++ = line1[xx+1];
+           xx = ((fx+dx)>>FIX_FLOAT)*2;
+           if ( (xx&2) == 0)
+             lastU = (line1[xx+0] + line2[xx+0])/2;
+           else
+             lastV = (line1[xx+0] + line2[xx+0])/2;
+           *y++ = line1[xx+1];
+         }
 
-	/* Copy the second line without U&V */
+        /* Copy the second line without U&V */
         for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx)
          {
            unsigned int xx = (fx>>FIX_FLOAT)*2;
@@ -2453,7 +2480,7 @@ bool PStandardColourConverter::MJPEGtoXXXSameSize(const BYTE *mjpeg, BYTE *rgb, 
 bool PStandardColourConverter::MJPEGtoXXX(const BYTE *mjpeg,
                                           BYTE *output_data,
                                           PINDEX *bytesReturned,
-					  int format)
+                                          int format)
 {
   if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 0xf) {
     PTRACE(2,"PColCnv\tError MJPEG decoder need width and height to be a multiple of 16");
@@ -2551,7 +2578,7 @@ bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *y
  */
 bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
                                               BYTE *yuv420p,
-					      PINDEX *bytesReturned)
+                                              PINDEX *bytesReturned)
 {
   if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 0xf) {
     PTRACE(2,"PColCnv\tError in MJPEG to YUV420P converter, All size need to be a multiple of 16.");

@@ -155,9 +155,28 @@ class PVideoFrameInfo : public PObject
       const PString & colourFormat  ///< Colour format of frame
     );
 
-    /** Parse the standard size string names ("qcif", "cif" etc)
+    /** Parse a descriptor string for the video format.
+        This is of the form [fmt ':' ] size [ '@' rate][ '/' crop ]. The size component
+        is as for the ParseSize() function.
+
+        The fmt string is the colour format such as "RGB32", "YUV420P" etc.
+
+        The rate field is a simple integer from 1 to 100.
+
+        The crop field is one of "scale", "resize" (synonym for "scale"),
+        "centre", "center", "topleft" or "crop" (synonym for "topleft").
+
+        Note no spaces are allowed in the descriptor.
       */
-    static PBoolean ParseSize(
+    bool Parse(
+      const PString & str   ///< String to parse
+    );
+
+    /** Parse the standard size string names.
+        This will parse a size desciption using either standard names: "qcif",
+        "cif", "vga", "hd1080" etc or WxY form e.g. "640x480".
+      */
+    static bool ParseSize(
       const PString & str,  ///< String to parse
       unsigned & width,     ///< Resultant width
       unsigned & height     ///< Resulatant height
