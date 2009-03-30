@@ -59,9 +59,9 @@ endif
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	mkdir -p $(OBJDIR)
 	$(CXX) $(STDCCFLAGS) $(CFLAGS) \
-	$(LDFLAGS) \
-	-I. $(LDSOPTS) $< \
+	$(LDSOPTS) $< \
 	$(PLUGIN_LIBS) \
+	$(LDFLAGS) \
 	-o $@
 
 OBJS	 := $(patsubst %.c, $(OBJDIR)/%.o, $(patsubst %.cxx, $(OBJDIR)/%.o, $(notdir $(PLUGIN_SOURCES))))
