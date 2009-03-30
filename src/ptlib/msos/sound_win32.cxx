@@ -638,29 +638,35 @@ PString PSoundChannelWin32::GetName() const
 }
 
 
-static PString GetWaveOutDeviceName(UINT id)
+static bool GetWaveOutDeviceName(UINT id, PString & name)
 {
-  if (id == WAVE_MAPPER)
-    return "Default";
+  if (id == WAVE_MAPPER) {
+    name = "Default";
+    return true;
+  }
 
-  PString str;
   WAVEOUTCAPS caps;
-  if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0)
-    str = caps.szPname;
-  return str.Trim();
+  if (waveOutGetDevCaps(id, &caps, sizeof(caps)) != 0)
+    return false;
+
+  name = PString(caps.szPname).Trim();
+  return true;
 }
 
 
-static PCaselessString GetWaveInDeviceName(UINT id)
+static bool GetWaveInDeviceName(UINT id, PString & name)
 {
-  if (id == WAVE_MAPPER)
-    return "Default";
+  if (id == WAVE_MAPPER) {
+    name = "Default";
+    return true;
+  }
 
-  PString str;
   WAVEINCAPS caps;
-  if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0)
-    str = caps.szPname;
-  return str.Trim();
+  if (waveInGetDevCaps(id, &caps, sizeof(caps)) != 0)
+    return false;
+
+  name = PString(caps.szPname).Trim();
+  return true;
 }
 
 
@@ -675,14 +681,18 @@ PStringArray PSoundChannelWin32::GetDeviceNames(Directions dir)
     case Player :
       numDevs = waveOutGetNumDevs();
       do {
-        devices.AppendString(GetWaveOutDeviceName(id));
+        PCaselessString dev;
+        if (GetWaveOutDeviceName(id, dev))
+          devices.AppendString(dev);
       } while (++id < numDevs);
       break;
 
     case Recorder :
       numDevs = waveInGetNumDevs();
       do {
-        devices.AppendString(GetWaveInDeviceName(id));
+        PCaselessString dev;
+        if (GetWaveInDeviceName(id, dev))
+          devices.AppendString(dev);
       } while (++id < numDevs);
       break;
   }
@@ -704,12 +714,12 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
     switch (dir) {
       case Player :
         if (id < waveOutGetNumDevs())
-          deviceName = GetWaveOutDeviceName(id);
+          GetWaveOutDeviceName(id, deviceName);
         break;
 
       case Recorder :
         if (id < waveInGetNumDevs())
-          deviceName = GetWaveInDeviceName(id);
+          GetWaveInDeviceName(id, deviceName);
         break;
     }
   }
@@ -720,8 +730,8 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
       case Player :
         numDevs = waveOutGetNumDevs();
         do {
-          PCaselessString str = GetWaveOutDeviceName(id);
-          if (str == device.Mid(offset)) {
+          PCaselessString str;
+          if (GetWaveOutDeviceName(id, str) && str == device.Mid(offset)) {
             deviceName = str;
             break;
           }
@@ -731,8 +741,8 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
       case Recorder :
         numDevs = waveInGetNumDevs();
         do {
-          PCaselessString str = GetWaveInDeviceName(id);
-          if (str == device.Mid(offset)) {
+          PCaselessString str;
+          if (GetWaveInDeviceName(id, str) && str == device.Mid(offset)) {
             deviceName = str;
             break;
           }
