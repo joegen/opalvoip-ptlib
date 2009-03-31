@@ -58,7 +58,7 @@ vpath %.gch $(PTLIBDIR)/include
 #
 # add common directory to include path - must be after PT directories
 #
-STDCCFLAGS	+= -I$(PTLIBDIR)/include
+STDCCFLAGS	:= -I$(PTLIBDIR)/include $(STDCCFLAGS)
 
 ifneq ($(P_SHAREDLIB),1)
 
