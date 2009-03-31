@@ -427,7 +427,7 @@ void * PThread::PX_ThreadStart(void * arg)
   pthread_mutex_unlock(&thread->PX_suspendMutex);
 
   // make sure the cleanup routine is called when the thread exits
-  pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
+  //pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
 
   PTRACE(5, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
 
@@ -437,7 +437,8 @@ void * PThread::PX_ThreadStart(void * arg)
   thread->Main();
 
   // execute the cleanup routine
-  pthread_cleanup_pop(1);
+  //pthread_cleanup_pop(1);
+  PX_ThreadEnd(arg);
 
   // clean up tracing 
 #if PTRACING
@@ -455,7 +456,6 @@ void PThread::PX_ThreadEnd(void * arg)
 {
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
-PTRACE(1, "Called PX_ThreadEnd with " << thread->autoDelete);
   process.OnThreadEnded(*thread);
   
   bool deleteThread = thread->autoDelete; // make copy of the flag before perhaps deleting the thread
