@@ -644,7 +644,6 @@ void PTrace::Cleanup()
 {
 #if P_HAS_THREADLOCAL_STORAGE
   PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
-  PThread::TraceInfo * info = key.Get();
   delete key.Get();
   key.Set(NULL);
 #endif
