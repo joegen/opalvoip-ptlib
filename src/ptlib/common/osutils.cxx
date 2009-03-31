@@ -416,6 +416,18 @@ PBoolean PTrace::CanTrace(unsigned level)
   return level <= PTraceInfo::Instance().thresholdLevel;
 }
 
+static PThread::TraceInfo * AllocateTraceInfo()
+{
+  PTraceInfo & info = PTraceInfo::Instance();
+
+  PThread::TraceInfo * threadInfo = info.traceStorageKey.Get();
+  if (threadInfo == NULL) {
+    threadInfo = new PThread::TraceInfo;
+    info.traceStorageKey.Set(threadInfo);
+  }
+  return threadInfo;
+}
+
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
@@ -441,10 +453,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
 #if P_HAS_THREADLOCAL_STORAGE
   {
-    if (info.traceStorageKey.Get() == NULL) 
-      info.traceStorageKey.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
-
-    threadInfo = info.traceStorageKey.Get();
+    threadInfo = AllocateTraceInfo();
     threadInfo->traceStreams.Push(new PStringStream);
   }
 #else
@@ -535,11 +544,7 @@ ostream & PTrace::End(ostream & paramStream)
   PThread::TraceInfo * threadInfo = NULL;
 
 #if P_HAS_THREADLOCAL_STORAGE
-  {
-    if (info.traceStorageKey.Get() == NULL) 
-      info.traceStorageKey.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
-    threadInfo = info.traceStorageKey.Get();
-  }
+  threadInfo = AllocateTraceInfo();
 #else
   PThread * thread = PThread::Current();
   {
@@ -588,12 +593,7 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
     PThread::TraceInfo * threadInfo = NULL;
 
 #if P_HAS_THREADLOCAL_STORAGE
-    {
-      PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
-      if (key.Get() == NULL) 
-        key.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
-      threadInfo = key.Get();
-    }
+    threadInfo = AllocateTraceInfo();
 #else
     {
       PThread * thread = PThread::Current();
@@ -620,12 +620,7 @@ PTrace::Block::~Block()
     PThread::TraceInfo * threadInfo = NULL;
 
 #if P_HAS_THREADLOCAL_STORAGE
-    {
-      PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
-      if (key.Get() == NULL) 
-        key.Set(new PThreadLocalStorage<PThread::TraceInfo>::value_type());
-      threadInfo = key.Get();
-    }
+    threadInfo = AllocateTraceInfo();
 #else
     {
       PThread * thread = PThread::Current();
@@ -649,6 +644,7 @@ void PTrace::Cleanup()
 {
 #if P_HAS_THREADLOCAL_STORAGE
   PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
+  PThread::TraceInfo * info = key.Get();
   delete key.Get();
   key.Set(NULL);
 #endif
