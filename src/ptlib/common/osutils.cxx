@@ -1531,7 +1531,8 @@ static PProcessStartupList & GetPProcessStartupList()
 
 
 PProcess::PProcess(const char * manuf, const char * name,
-                           WORD major, WORD minor, CodeStatus stat, WORD build)
+                   WORD major, WORD minor, CodeStatus stat, WORD build,
+                   bool library)
   : terminationValue(0)
   , manufacturer(manuf)
   , productName(name)
@@ -1540,7 +1541,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   , status(stat)
   , buildNumber(build)
   , maxHandles(INT_MAX)
-  , m_library(false)
+  , m_library(library)
 {
   activeThreads.DisallowDeleteObjects();
   activeThreads.SetAt((uintptr_t)GetCurrentThreadId(), this);
