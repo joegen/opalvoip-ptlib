@@ -557,7 +557,8 @@ void PProcess::CommonConstruct()
   // Setup signal handlers
   pxSignals = 0;
 
-  SetSignals(&PXSignalHandler);
+  if (!m_library)
+    SetSignals(&PXSignalHandler);
 
 #if !defined(P_VXWORKS) && !defined(P_RTEMS)
   // initialise the timezone information
@@ -575,7 +576,9 @@ void PProcess::CommonDestruct()
   delete configFiles;
 #endif
   configFiles = NULL;
-  SetSignals(NULL);
+
+  if (!m_library)
+    SetSignals(NULL);
 }
 
 // rtems fixes
