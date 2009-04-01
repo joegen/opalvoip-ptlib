@@ -219,7 +219,8 @@ class PProcess : public PThread
       WORD majorVersion = 1,           ///< Major version number of the product
       WORD minorVersion = 0,           ///< Minor version number of the product
       CodeStatus status = ReleaseCode, ///< Development status of the product
-      WORD buildNumber = 1             ///< Build number of the product
+      WORD buildNumber = 1,            ///< Build number of the product
+      bool library = false             ///< PProcess is a library rather than an application
     );
   //@}
 
@@ -725,10 +726,7 @@ class PProcess : public PThread
       WORD minorVersion = 0,           ///< Minor version number of the product
       CodeStatus status = ReleaseCode, ///< Development status of the product
       WORD buildNumber = 1             ///< Build number of the product
-    ) : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
-    {
-      m_library = true;
-    }
+    ) : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber, true) { }
   //@}
 
     ///< Dummy Main() as libraries do not have one.
