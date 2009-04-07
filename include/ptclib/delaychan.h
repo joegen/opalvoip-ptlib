@@ -30,7 +30,11 @@
 
 #ifndef PTLIB_DELAYCHAN_H
 #define PTLIB_DELAYCHAN_H
-
+#include <ptlib/contain.h>
+#include <ptlib/object.h>
+#include <ptlib/timeint.h>
+#include <ptlib/ptime.h>
+#include <ptlib/indchan.h>
 
 #ifdef P_USE_PRAGMA
 #pragma interface
