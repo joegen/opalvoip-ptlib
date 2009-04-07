@@ -35,7 +35,7 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
+#include <ptbuildopts.h>
 
 #if P_VIDEO
 
