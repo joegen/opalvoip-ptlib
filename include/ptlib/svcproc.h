@@ -81,7 +81,12 @@ class PSystemLog : public PObject, public iostream {
     /// Create a system log stream
     PSystemLog(
      Level level   ///< only messages at this level or higher will be logged
-    );
+    ) : iostream(cout.rdbuf())
+      , logLevel(level)
+    { 
+      buffer.log = this; 
+      init(&buffer); 
+    }
 
     /// Destroy the string stream, deleting the stream buffer
     ~PSystemLog() { flush(); }
@@ -115,8 +120,8 @@ class PSystemLog : public PObject, public iostream {
   //@}
 
   private:
-    PSystemLog(const PSystemLog & other);
-    PSystemLog & operator=(const PSystemLog &);
+    PSystemLog(const PSystemLog & other) : PObject(other), iostream(cout.rdbuf()) { }
+    PSystemLog & operator=(const PSystemLog &) { return *this; }
 
     class Buffer : public streambuf {
       public:
