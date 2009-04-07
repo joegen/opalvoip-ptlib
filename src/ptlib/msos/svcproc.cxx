@@ -173,6 +173,24 @@ static bool TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand cmd)
 ///////////////////////////////////////////////////////////////////////////////
 // PSystemLog
 
+PSystemLog::PSystemLog(Level level)   ///< only messages at this level or higher will be logged
+: iostream(cout.rdbuf()) 
+{ 
+    logLevel = level; 
+    buffer.log = this; 
+    init(&buffer); 
+}
+
+PSystemLog::PSystemLog(const PSystemLog & other)
+: PObject(other), iostream(cout.rdbuf()) 
+{
+}
+
+PSystemLog & PSystemLog::operator=(const PSystemLog &)
+{ 
+    return *this; 
+}
+
 void PSystemLog::Output(Level level, const char * msg)
 {
   if (msg == NULL || *msg == '\0')

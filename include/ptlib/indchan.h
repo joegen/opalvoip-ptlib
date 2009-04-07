@@ -39,7 +39,7 @@
 #endif
 
 #include <ptlib/channel.h>
-
+#include <ptlib/syncthrd.h>
 
 /**This is a channel that operates indirectly through another channel(s). This
    allows for a protocol to operate through a "channel" mechanism and for its
