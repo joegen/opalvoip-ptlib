@@ -42,8 +42,8 @@
 #define new PNEW
 
 
-PThreadPoolBase::PThreadPoolBase(unsigned maxSize)
-  : maxWorkerSize(maxSize)
+PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount, unsigned int maxWorkUnitCount)
+  : m_maxWorkerCount(maxWorkerCount), m_maxWorkUnitCount(maxWorkUnitCount)
 {
 }
 
@@ -64,7 +64,8 @@ PThreadPoolBase::~PThreadPoolBase()
 
 PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
 {
-  // find the worker thread with the minimum number of handles
+  // find the worker thread with the minimum number of work units
+  // shortcut the search if we find an empty one
   WorkerList_t::iterator minWorker = workers.end();
   size_t minSizeFound = 0x7ffff;
   WorkerList_t::iterator iter;
@@ -79,12 +80,20 @@ PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
     }
   }
 
-  // if the number of workers is at the maximum, or the there is 
-  // an idle worker, then use the least busy worker thread
-  if ((workers.size() >= maxWorkerSize) || (iter != workers.end())) 
+  // if there is an idle worker, use it
+  if (iter != workers.end())
     return *minWorker;
 
-  // no worker threads usable, create a new one
+  // if there is a per-worker limit, increase workers in quanta of the max worker count
+  // otherwise only allow maximum number of workers
+  if (m_maxWorkUnitCount > 0) {
+    if (((workers.size() % m_maxWorkerCount) == 0) && (minSizeFound < m_maxWorkUnitCount)) 
+      return *minWorker;
+  }
+  else if ((workers.size() > 0) && (workers.size() <= m_maxWorkerCount))
+    return *minWorker;
+
+  // create a new worker thread
   PThreadPoolWorkerBase * worker = CreateWorkerThread();
   worker->Resume();
   workers.push_back(worker);
@@ -129,7 +138,7 @@ void PThreadPoolBase::StopWorker(PThreadPoolWorkerBase * worker)
 {
   // the worker is now finished
   if (!worker->WaitForTermination(10000)) {
-    PTRACE(4, "SockAgg\tWorker did not terminate promptly");
+    PTRACE(4, "ThreadPool\tWorker did not terminate promptly");
   }
   PTRACE(4, "ThreadPool\tDestroying pool thread");
   delete worker;

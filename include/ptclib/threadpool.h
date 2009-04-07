@@ -42,8 +42,87 @@
 #include <map>
 
 
-/*
- *  These classes and templates implement a generic thread pooling mechanism
+/**
+
+   These classes and templates implement a generic thread pooling mechanism
+ 
+   To use them, declare the following:
+      - A class that describes a "unit" of work to be performed. This class must use the PThreadPool
+        as an ancestor and define the CreateWorkerThread member function
+ 
+      - A class that described a worker thread within the pool. This class must be a descendant of 
+        PThreadPoolWorkerBase and must define the following member functions:
+ 
+            Constructor with one parameter declared as "PThreadPoolBase & threadPool"
+            unsigned GetWorkSize() const;
+            void OnAddWork(work_unit *);
+            void OnRemoveWork(work_unit *);
+            void Shutdown();
+            void Main();
+ 
+      - A class that describes the thread pool itself. This is defined using PThreadPool template
+
+ 
+   Example declarations:
+
+      struct MyWorkUnit {
+        PString work;
+      };
+
+      class MyWorkerThread : public PThreadPoolWorkerBase
+      {
+        public:
+          MyWorkerThread(PThreadPoolBase & threadPool)
+            : PThreadPoolWorkerBase(threadPool) { }
+
+          void Main();
+          void Shutdown();
+          unsigned GetWorkSize() const;
+          void OnAddWork(MyWorkUnit * work);
+          void OnRemoveWork(MyWorkUnit * work);
+      };
+
+      
+      class SIPMainThreadPool : public PThreadPool<MyWorkUnit, MyWorkerThread>
+      {
+        public:
+          virtual PThreadPoolWorkerBase * CreateWorkerThread()
+          { return new MyWorkerThread(*this); }
+      };
+
+    The worker thread member functions operate as follows:
+
+       Constructor 
+          Called whenever a new worker thread is required
+
+       void Main()
+          Called when the worker thread starts up
+
+       GetWorkSize()
+          Called whenever the thread pool wants to know how "busy" the
+          thread is. This is used when deciding how to allocate new work units
+             
+       OnAddWork(work_unit *)
+          Called to add a new work unit to the thread
+
+       void OnRemoveWork(work_unit *);
+          Called to remove a work unit from the thread
+
+       void Shutdown();
+          Called to close down the worker thread
+
+    The thread pool is used simply by instantiation as shown below. 
+
+        MyThreadPool myThreadPool(10, 30);
+
+    If the second parameter is zero, the first paramater sets the maximum number of worker threads that will be created.
+    If the second parameter is not zero, this is the maximum number of work units each thread can handle. The first parameter
+    is then the "quanta" in which worker threads will be allocated
+
+    Once instantiated, the AddWork and RemoveWork member functions can be used to add and remove
+    work units as required. The thread pool code will take care of starting, stopping and load balancing 
+    worker threads as required.
+   
  */
 
 class PThreadPoolBase;
@@ -68,7 +147,7 @@ class PThreadPoolWorkerBase : public PThread
 class PThreadPoolBase : public PObject
 {
   public:
-    PThreadPoolBase(unsigned maximum = 10);
+    PThreadPoolBase(unsigned maxWorkerCount = 10, unsigned maxWorkUnitCount = 0);
     ~PThreadPoolBase();
 
     virtual PThreadPoolWorkerBase * CreateWorkerThread() = 0;
@@ -82,7 +161,8 @@ class PThreadPoolBase : public PObject
     typedef std::vector<PThreadPoolWorkerBase *> WorkerList_t;
     WorkerList_t workers;
 
-    unsigned maxWorkerSize;
+    unsigned m_maxWorkerCount;
+    unsigned m_maxWorkUnitCount;
 };
 
 
@@ -93,11 +173,11 @@ class PThreadPool : public PThreadPoolBase
   public:
     typedef typename std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_T;
 
-    PThreadPool(unsigned maximum = 10)
-      : PThreadPoolBase(maximum) { }
+    PThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
+      : PThreadPoolBase(maxWorkers, maxWorkUnits) { }
 
-    virtual PThreadPoolWorkerBase * CreateWorkerThread()
-    { return new WorkerThread_T(*this); }
+    //virtual PThreadPoolWorkerBase * CreateWorkerThread()
+    //{ return new WorkerThread_T(*this); }
 
     bool AddWork(WorkUnit_T * workUnit)
     {
