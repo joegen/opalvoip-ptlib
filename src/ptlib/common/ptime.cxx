@@ -545,7 +545,9 @@ PString PTime::AsString(const char * format, int zone) const
 
 extern "C" {
 
-#ifndef STDAPICALLTYPE
+#ifdef _WIN32
+#define STDAPICALLTYPE __stdcall
+#else
 #define STDAPICALLTYPE
 #endif
 
