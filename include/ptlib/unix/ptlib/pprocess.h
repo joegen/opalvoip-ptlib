@@ -77,6 +77,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
   protected:
     PSyncPoint breakBlock;
     class PHouseKeepingThread * housekeepingThread;
+    PMutex housekeepingMutex;
 
 #elif defined(VX_TASKS)
 

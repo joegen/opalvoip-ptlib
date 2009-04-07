@@ -154,15 +154,10 @@ void PHouseKeepingThread::Main()
   PTRACE(5, "Housekeeping thread ended");
 }
 
-static PMutex & GetHouseKeeperThreadMutex()
-{
-  static PMutex mutex;
-  return mutex;
-}
 
 void PProcess::SignalTimerChange()
 {
-  PWaitAndSignal m(GetHouseKeeperThreadMutex());
+  PWaitAndSignal m(housekeepingMutex);
   if (housekeepingThread == NULL) {
 #if PMEMORY_CHECK
     PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(PTrue);
@@ -232,7 +227,7 @@ PProcess::~PProcess()
 
   // Don't wait for housekeeper to stop if Terminate() is called from it.
   {
-    PWaitAndSignal m(GetHouseKeeperThreadMutex());
+    PWaitAndSignal m(housekeepingMutex);
     if ((housekeepingThread != NULL) && (PThread::Current() != housekeepingThread)) {
       housekeepingThread->SetClosing();
       SignalTimerChange();
