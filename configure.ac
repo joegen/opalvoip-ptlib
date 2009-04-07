@@ -1313,6 +1313,7 @@ dnl ########################################################################
 dnl Speech
 dnl MSWIN_DISPLAY       sapi,Speech API
 dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
+dnl MSWIN_CHECK_FILE    sapi,atlbase.h,P_ATL=1
 dnl MSWIN_DEFINE        sapi,P_TTS
 dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
 dnl MSWIN_FIND_FILE     sapi,P_SAPI_LIBRARY,sapi.lib,...
