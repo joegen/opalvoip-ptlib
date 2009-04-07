@@ -38,8 +38,11 @@
 #pragma interface
 #endif
 
-#include <ptlib/object.h>
+
 #include <ptlib/critsec.h>
+#include <ptlib/object.h>
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract container class
