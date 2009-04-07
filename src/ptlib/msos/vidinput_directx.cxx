@@ -139,10 +139,10 @@ static struct {
     { "YUV411",  MEDIASUBTYPE_Y411   },
     { "YUV411P", MEDIASUBTYPE_Y41P   },
     { "YUV410P", MEDIASUBTYPE_YVU9   },
+    { "YUY2",    MEDIASUBTYPE_YUY2   },
     { "MJPEG",   MEDIASUBTYPE_MJPG   },
     { "UYVY422", MEDIASUBTYPE_UYVY   },
 };
-
 
 // Some support functions/macros
 
