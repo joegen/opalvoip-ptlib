@@ -520,8 +520,11 @@
 // It will need to stay disabled until someone adds a compile-time test for Vista
 //
 
+#undef P_ATL
+#ifdef P_ATL
 #ifndef _WIN32_WCE
 // #undef P_SAPI
+#endif
 #endif
 
 #if defined(_MSC_VER) && P_SAPI
