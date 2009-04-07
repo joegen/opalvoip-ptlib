@@ -40,6 +40,7 @@
 #endif
 
 #include <ptlib/contain.h>
+#include <ptlib/object.h>
 
 class PSync : public PObject
 {
