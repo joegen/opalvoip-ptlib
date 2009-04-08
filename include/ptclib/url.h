@@ -343,10 +343,35 @@ class PURLScheme : public PObject
 class PURLLegacyScheme : public PURLScheme
 {
   public:
-    PURLLegacyScheme(const char * s)
-      : scheme(s) { }
+    PURLLegacyScheme(
+      const char * s,
+      bool user    = false,
+      bool pass    = false,
+      bool host    = false,
+      bool def     = false,
+      bool defhost = false,
+      bool query   = false,
+      bool params  = false,
+      bool frags   = false,
+      bool path    = false,
+      bool rel     = false,
+      WORD port    = 0
+    )
+      : scheme(s)
+      , hasUsername           (user)
+      , hasPassword           (pass)
+      , hasHostPort           (host)
+      , defaultToUserIfNoAt   (def)
+      , defaultHostToLocal    (defhost)
+      , hasQuery              (query)
+      , hasParameters         (params)
+      , hasFragments          (frags)
+      , hasPath               (path)
+      , relativeImpliesScheme (rel)
+      , defaultPort           (port)
+    { }
 
-    PBoolean Parse(const PString & url, PURL & purl) const
+    bool Parse(const PString & url, PURL & purl) const
     { return purl.LegacyParse(url, this); }
 
     PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
@@ -356,16 +381,16 @@ class PURLLegacyScheme : public PURLScheme
     { return scheme; }
 
     PString scheme;
-    PBoolean hasUsername;
-    PBoolean hasPassword;
-    PBoolean hasHostPort;
-    PBoolean defaultToUserIfNoAt;
-    PBoolean defaultHostToLocal;
-    PBoolean hasQuery;
-    PBoolean hasParameters;
-    PBoolean hasFragments;
-    PBoolean hasPath;
-    PBoolean relativeImpliesScheme;
+    bool hasUsername;
+    bool hasPassword;
+    bool hasHostPort;
+    bool defaultToUserIfNoAt;
+    bool defaultHostToLocal;
+    bool hasQuery;
+    bool hasParameters;
+    bool hasFragments;
+    bool hasPath;
+    bool relativeImpliesScheme;
     WORD defaultPort;
 };
 

@@ -81,25 +81,13 @@
 #define DEFAULT_SIPS_PORT     5061
 
 #define DEFINE_LEGACY_URL_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
-class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
-{ \
-  public: \
-    PURLLegacyScheme_##schemeName() \
-    : PURLLegacyScheme(#schemeName )  \
-    { \
-      hasUsername           = user; \
-      hasPassword           = pass; \
-      hasHostPort           = host; \
-      defaultToUserIfNoAt   = def; \
-      defaultHostToLocal    = defhost; \
-      hasQuery              = query; \
-      hasParameters         = params; \
-      hasFragments          = frags; \
-      hasPath               = path; \
-      relativeImpliesScheme = rel; \
-      defaultPort           = port; \
-    } \
-}; \
+  class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
+  { \
+    public: \
+      PURLLegacyScheme_##schemeName() \
+        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+        { } \
+  }; \
   static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
 //                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags, path, rel, port
