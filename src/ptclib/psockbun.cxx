@@ -42,8 +42,11 @@
 static const char FactoryName[] = PINTERFACE_MONITOR_FACTORY_NAME;
 static PFactory<PProcessStartup>::Worker<PInterfaceMonitor> InterfaceMonitorFactory(FactoryName, true);
 
-static int UDP_BUFFER_SIZE = 32767;
-
+#ifndef _WIN32_WCE
+#define UDP_BUFFER_SIZE 32768
+#else
+#define UDP_BUFFER_SIZE 8192
+#endif
 
 #define new PNEW
 
