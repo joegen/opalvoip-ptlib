@@ -32,6 +32,11 @@
 #include <ptlib/vidinput_app.h>
 #include <ptlib/vconvert.h>
 
+#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
+namespace PWLibStupidLinkerHacks {
+  int loadAppVidStuff;
+};
+#endif
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +52,14 @@ class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePlug
 
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
-      return (deviceName.Left(10) *= "appwindow:") && (FindWindow(NULL, deviceName.Mid(10)) != NULL);
+      return ((deviceName.Left(10) *= "TopWindow:") && (FindWindow(NULL, deviceName.Mid(10)) != NULL)) 
+#if 0
+             ||
+             (deviceName *= "Desktop") ||
+             (deviceName *= "Region") ||
+             (deviceName *= "Screen")
+#endif
+             ;
     }
 
 
@@ -60,8 +72,9 @@ PCREATE_PLUGIN(Application, PVideoInputDevice, &PVideoInputDevice_Application_de
 
 PVideoInputDevice_Application::PVideoInputDevice_Application()
 {
-  m_hWnd                = NULL;
-  m_client              = true;
+  m_captureType = CaptureClosed;
+  m_hWnd        = NULL;
+  m_client      = true;
 
   SetColourFormat("BGR32");
   SetFrameRate(10);
@@ -72,14 +85,49 @@ PVideoInputDevice_Application::~PVideoInputDevice_Application()
   Close();
 }
 
+PBoolean PVideoInputDevice_Application::Close()
+{
+  if (!IsOpen())
+    return false;
+
+  m_captureType = CaptureClosed;
+
+  return true;
+}
+
 PStringArray PVideoInputDevice_Application::GetDeviceNames() const
 { 
   return GetInputDeviceNames(); 
 }
 
+extern "C" {
+
+static BOOL AddWindowName(HWND hWnd, LPARAM userData)
+{
+  PStringArray * names = (PStringArray *)userData;
+
+  char name[100];
+  if (GetWindowText(hWnd, name, 100))
+    names->AppendString(PString("TopWindow:") + name);
+  return TRUE;
+}
+
+};
+
+
 PStringArray PVideoInputDevice_Application::GetInputDeviceNames()
 {
-  return PString("Application");
+  PStringArray names;
+
+#if 0
+  names += "Desktop";
+  names += "Screen";
+  names += "Region";
+#endif
+
+  ::EnumWindows((WNDENUMPROC)&AddWindowName, (LPARAM)&names);
+
+  return names;
 }
 
 PBoolean PVideoInputDevice_Application::GetDeviceCapabilities(const PString & /*deviceName*/, Capabilities * /*caps*/)  
@@ -96,18 +144,35 @@ PBoolean PVideoInputDevice_Application::Open(const PString & deviceName, PBoolea
   RECT rect;
   memset(&rect, 0, sizeof(rect));  // needed to avoid compiler warning
 
-  if (m_hWnd == NULL) {
-    if (deviceName.Left(10) *= "appwindow:") {
+  if (m_captureType == CaptureClosed) {
+    if (deviceName.Left(10) *= "TopWindow:") {
       m_hWnd = FindWindow(NULL, deviceName.Mid(10));
       if (m_hWnd != NULL) {
         ::GetWindowRect(m_hWnd, &rect);
         SetFrameSize(rect.right-rect.left, rect.bottom-rect.top);
       }
+      m_captureType = CaptureTopWindow;
     }
+#if 0
+    else if (deviceName *= "desktop") {
+      m_hWnd = GetDesktopWindow();
+      if (m_hWnd != NULL) {
+        ::GetWindowRect(m_hWnd, &rect);
+        SetFrameSize(rect.right-rect.left, rect.bottom-rect.top);
+      }
+    }
+    else if (deviceName *= "screen") {
+      m_hWnd = GetDesktopWindow();
+      if (m_hWnd != NULL) {
+        ::GetWindowRect(m_hWnd, &rect);
+        SetFrameSize(rect.right-rect.left, rect.bottom-rect.top);
+      }
+    }
+#endif
   }
 
-  if (m_hWnd == NULL) {
-    PTRACE(4,"AppInput/tOpen Fail no Window to capture specified!");
+  if (m_captureType == CaptureClosed) {
+    PTRACE(4,"AppInput/tCannot open specified window");
     return false;
   }
 
@@ -116,15 +181,7 @@ PBoolean PVideoInputDevice_Application::Open(const PString & deviceName, PBoolea
 
 PBoolean PVideoInputDevice_Application::IsOpen()
 {
-  return m_hWnd != NULL;
-}
-
-PBoolean PVideoInputDevice_Application::Close()
-{
-  if (!IsOpen())
-    return false;
-
-  return true;
+  return m_captureType != CaptureClosed;
 }
 
 PBoolean PVideoInputDevice_Application::Start()
@@ -188,6 +245,9 @@ static inline WORD GetNumberOfColours(WORD bitsPerPixel)
 
 PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
+  if (m_captureType != CaptureTopWindow)
+    return false;
+
   PWaitAndSignal m(lastFrameMutex);
 
   PTRACE(6,"AppInput\tGrabbing Frame");
@@ -323,9 +383,12 @@ PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDE
           src -= bitmap.bmWidth*srcPixelSize + bitmap.bmWidthBytes;
         }
         *bytesReturned = bitmap.bmHeight * bitmap.bmWidth * dstPixelSize;
-        if (converter != NULL && !converter->Convert(tempPixelBuffer.GetPointer(), buffer, bytesReturned)) {
-          PTRACE(2, "AppInput\tConverter failed");
-          retVal = false;
+        if (converter != NULL) {
+          converter->SetSrcFrameSize(bitmap.bmWidth, bitmap.bmHeight);
+          if (!converter->Convert(tempPixelBuffer.GetPointer(), buffer, bytesReturned)) {
+            PTRACE(2, "AppInput\tConverter failed");
+            retVal = false;
+          }
         }
       }
     }
@@ -343,7 +406,7 @@ PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDE
 
 PBoolean PVideoInputDevice_Application::TestAllFormats()
 {
-    return true;
+  return true;
 }
 
 PBoolean PVideoInputDevice_Application::SetChannel(int /*newChannel*/)
@@ -353,8 +416,8 @@ PBoolean PVideoInputDevice_Application::SetChannel(int /*newChannel*/)
 
 void PVideoInputDevice_Application::AttachCaptureWindow(HWND _hwnd, bool _client)
 {
-    m_hWnd = _hwnd;
-    m_client = _client;
+  m_hWnd = _hwnd;
+  m_client = _client;
 }
 
 #endif  // P_APPSHARE

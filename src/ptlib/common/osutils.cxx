@@ -60,6 +60,9 @@ namespace PWLibStupidLinkerHacks {
 #      if defined(P_DIRECTSHOW)
          extern int loadDirectShowStuff;
 #      endif
+#      ifdef P_APPSHARE
+         extern int loadAppVidStuff;
+#      endif
 #    endif
 #    ifdef P_FFVDEV
        extern int loadFFVideoFileStuff;
@@ -1573,7 +1576,10 @@ PProcess::PProcess(const char * manuf, const char * name,
          PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
 #      endif
 #      if defined(P_DIRECTSHOW)
-         PWLibStupidLinkerHacks::loadDirectShowStuff  =1;
+         PWLibStupidLinkerHacks::loadDirectShowStuff = 1;
+#      endif
+#      ifdef P_APPSHARE
+         PWLibStupidLinkerHacks::loadAppVidStuff = 1;
 #      endif
 #    endif
 #    ifdef P_FFVDEV
