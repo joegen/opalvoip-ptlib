@@ -610,6 +610,24 @@ PBoolean PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
     PTRACE(3, "PVidDev\tSetColourFormatConverter success for native " << colourFmt);    
     return PTrue;
   }
+
+  // check to see if we have detected this device before, and try the same combination worked last time
+  if (CanCaptureVideo()) {
+    PString previousColourFormat       = "BGR24";
+
+    PTRACE(4,"PVidDev\tSetColourFormatConverter trying, want " << colourFmt << " trying " << previousColourFormat);
+    if (SetColourFormat(previousColourFormat)) {
+      src.SetColourFormat(previousColourFormat);
+      dst.SetColourFormat(colourFmt);
+      converter = PColourConverter::Create(src, dst);
+      if (converter != NULL) {
+        PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " and device using " << previousColourFormat);
+        converter->SetVFlipState(nativeVerticalFlip);
+        return PTrue;
+      }
+    }
+    PTRACE(4,"PVidDev\tSetColourFormatConverter " << previousColourFormat << " did not work");
+  }
   
   /************************
     Eventually, need something more sophisticated than this, but for the
