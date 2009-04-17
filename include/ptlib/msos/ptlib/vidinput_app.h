@@ -168,13 +168,22 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     );
 
   protected:
-      HWND m_hWnd;                   ///< Handle of Window to Capture
-      bool m_client;                 ///< Capture the client area only
-      PBYTEArray bitMapInfoStorage;  ///< used for storing raw DIB
-      PBYTEArray tempPixelBuffer;    ///< used for storing temporary version of bitmap during convertion
+    enum {
+      CaptureClosed,
+      CaptureTopWindow,
+      CaptureScreen,
+      CaptureDesktop,
+      CaptureRect,
+    } m_captureType;
 
-      PMutex lastFrameMutex;     ///< Frame Grab Mutex
-      PAdaptiveDelay grabDelay;  ///< Frame Grab delay
+    HWND m_hWnd;                   ///< Handle of Window to Capture
+    bool m_screenCap;              ///< true if to capture screen
+    bool m_client;                 ///< Capture the client area only
+    PBYTEArray bitMapInfoStorage;  ///< used for storing raw DIB
+    PBYTEArray tempPixelBuffer;    ///< used for storing temporary version of bitmap during convertion
+
+    PMutex lastFrameMutex;     ///< Frame Grab Mutex
+    PAdaptiveDelay grabDelay;  ///< Frame Grab delay
 };
 
 
