@@ -237,6 +237,29 @@ class MediaTypePtr
 };
 
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if 0
+
+struct DirectShowInputDeviceInfo {
+  Capabilities * capabilities;
+  PThread * thread;
+  PVideoInputDevice_DirectShow * device;
+};
+
+typedef std::map<std::string, DirectShowInputDeviceInfo> DirectShowInputDeviceInfoMap;
+
+static DirectShowInputDeviceInfoMap directShowInputDeviceInfoMap;
+
+static void InitialiseCache()
+{
+  bool PVideoInputDevice_DirectShow::EnumerateDeviceNames(PStringArray & devices)
+
+}
+
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
@@ -294,9 +317,13 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName, PBoolean st
   if (!CreateGrabberHandler())
     return false;
 
+  PTRACE(4,"PVidDirectShow\tStart of GetDeviceCapabilities for c(\"" << devName << "\"");
+
   Capabilities caps;
   if (GetDeviceCapabilities(&caps))
     *(PVideoFrameInfo *)this = caps.framesizes.front();
+
+  PTRACE(4,"PVidDirectShow\tEnd of GetDeviceCapabilities for c(\"" << devName << "\"");
 
   if (startImmediate)
     return Start();
