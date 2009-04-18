@@ -815,9 +815,10 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
       PSafetyMode mode = PSafeReference
     ) {
         PWaitAndSignal mutex(collectionMutex);
-        if (!obj->SafeReference())
-          return NULL;
-        return PSafePtr<Base>(*this, mode, collection->Append(obj));
+        if (PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") &&
+            obj->SafeReference())
+          return PSafePtr<Base>(*this, mode, collection->Append(obj));
+        return NULL;
       }
 
     /**Remove an object to the collection.
@@ -944,7 +945,8 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       {
         collectionMutex.Wait();
         SafeRemove(((Coll *)collection)->GetAt(key));
-        if (obj->SafeReference())
+        if (PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") &&
+            obj->SafeReference())
           ((Coll *)collection)->SetAt(key, obj);
         collectionMutex.Signal();
       }
