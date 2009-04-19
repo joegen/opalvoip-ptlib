@@ -44,6 +44,30 @@ namespace PWLibStupidLinkerHacks {
 };
 
 
+// Device names for fake output
+
+enum {
+  eMovingBlocks,
+  eMovingLine,
+  eBouncingBoxes,
+  eSolidColour,
+  eOriginalMovingBlocks,
+  eText,
+  eNTSCTest,
+  eNumTestPatterns
+};
+
+static const char * const FakeDeviceNames[] = {
+  "Fake/MovingBlocks",
+  "Fake/MovingLine",
+  "Fake/BouncingBoxes",
+  "Fake/SolidColour",
+  "Fake/OriginalMovingBlocks",
+  "Fake/Text",
+  "Fake/NTSCTest",
+  "fake" // Always last
+};
+
 /****
  * The fonts for these letters were written by  Sverre H. Huseby, and have been included
  * in vfakeio by Derek Smithies.
@@ -1277,6 +1301,7 @@ const PVideoFont::LetterData * PVideoFont::GetLetterData(char ascii)
   return NULL;
 }
 
+
 /** This class defines a video input device that
     generates fictitous image data.
 */
@@ -1374,7 +1399,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     
     /**Generate a static image, containing a constant field of grey.
      */
-    void GrabBlankImage(BYTE *resFrame);
+    void GrabSolidColour(BYTE *resFrame);
 
     /**Generate the original form of the moving blocks test frame.
      */
@@ -1470,17 +1495,6 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       eYUV422
     } m_internalColourFormat;
 
-    enum {
-      eMovingBlocks,
-      eMovingLine,
-      eBouncingBoxes,
-      eBlankImage,
-      eOriginalMovingBlocks,
-      eText,
-      eNTSCTest,
-      eNumTestPatterns
-    };
-
    unsigned       m_grabCount;
    PINDEX         m_videoFrameSize;
    PINDEX         m_scanLineWidth;
@@ -1506,10 +1520,18 @@ PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
 
 
 
-PBoolean PVideoInputDevice_FakeVideo::Open(const PString & /*devName*/, PBoolean /*startImmediate*/)
+PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*startImmediate*/)
 {
-  deviceName = "fake";
-  return PTrue;    
+  PINDEX i;
+  for (i = 0; i < PARRAYSIZE(FakeDeviceNames)-1; ++i) {
+    if (devName *= FakeDeviceNames[i]) {
+      SetChannel(i);
+      break;
+    }
+  }
+
+  deviceName = FakeDeviceNames[i];
+  return true;
 }
 
 
@@ -1545,7 +1567,7 @@ PBoolean PVideoInputDevice_FakeVideo::IsCapturing()
 
 PStringArray PVideoInputDevice_FakeVideo::GetInputDeviceNames()
 {
-  return PString("fake");
+  return PStringArray(PARRAYSIZE(FakeDeviceNames), FakeDeviceNames);
 }
 
 
@@ -1563,6 +1585,9 @@ int PVideoInputDevice_FakeVideo::GetNumChannels()
 
 PBoolean PVideoInputDevice_FakeVideo::SetChannel(int newChannel)
 {
+  if (newChannel < 0)
+    return true; // No change for -1
+
   return PVideoDevice::SetChannel(newChannel);
 }
 
@@ -1651,8 +1676,8 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
      case eBouncingBoxes :
        GrabBouncingBoxes(destFrame);
        break;
-     case eBlankImage :
-       GrabBlankImage(destFrame);
+     case eSolidColour :
+       GrabSolidColour(destFrame);
        break;
      case eOriginalMovingBlocks :
        GrabOriginalMovingBlocksFrame(destFrame);
@@ -1911,7 +1936,7 @@ void PVideoInputDevice_FakeVideo::GrabMovingLineTestFrame(BYTE *resFrame)
 }
 
 
-void PVideoInputDevice_FakeVideo::GrabBlankImage(BYTE *resFrame)
+void PVideoInputDevice_FakeVideo::GrabSolidColour(BYTE *resFrame)
 {
   // Change colour every second, cycle is:
   // black, red, green, yellow, blue, magenta, cyan, white
