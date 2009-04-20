@@ -39,10 +39,6 @@
 #include <ptlib/videoio.h>
 #include <ptclib/delaychan.h>
 
-namespace PWLibStupidLinkerHacks {
-  int loadFakeVideoStuff;
-};
-
 
 // Device names for fake output
 

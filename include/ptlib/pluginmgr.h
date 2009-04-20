@@ -164,6 +164,9 @@ class PPluginModuleManager : public PObject
 };
 
 
+PFACTORY_LOAD(PluginLoaderStartup);
+
+
 #endif // PTLIB_PLUGINMGR_H
 
 

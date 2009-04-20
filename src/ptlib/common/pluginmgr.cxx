@@ -507,8 +507,5 @@ void PluginLoaderStartup::OnShutdown()
   }
 }
 
-static PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
-
-PINSTANTIATE_FACTORY(PluginLoaderStartup, PString)
-
+PFACTORY_CREATE(PFactory<PProcessStartup>, PluginLoaderStartup, "PluginLoader", true);
 

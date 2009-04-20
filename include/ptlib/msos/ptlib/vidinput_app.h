@@ -187,7 +187,4 @@ class PVideoInputDevice_Application : public PVideoInputDevice
 };
 
 
-PWLIB_STATIC_LOAD_PLUGIN(Application, PVideoInputDevice);
-
-
 #endif // P_APPSHARE

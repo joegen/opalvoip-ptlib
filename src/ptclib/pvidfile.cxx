@@ -160,8 +160,7 @@ PBoolean PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINSTANTIATE_FACTORY(PVideoFile, PDefaultPFactoryKey)
-static PFactory<PVideoFile>::Worker<PYUVFile> yuvFileFactory("yuv");
+PFACTORY_CREATE(PFactory<PVideoFile>, PYUVFile, "yuv", false);
 static PFactory<PVideoFile>::Worker<PYUVFile> y4mFileFactory("y4m");
 
 

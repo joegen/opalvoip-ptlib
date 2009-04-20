@@ -32,11 +32,6 @@
 #include <ptlib/vidinput_app.h>
 #include <ptlib/vconvert.h>
 
-#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
-namespace PWLibStupidLinkerHacks {
-  int loadAppVidStuff;
-};
-#endif
 
 //////////////////////////////////////////////////////////////////////////////////////
 
