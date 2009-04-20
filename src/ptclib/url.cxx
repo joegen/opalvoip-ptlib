@@ -112,8 +112,6 @@ DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFa
 DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 
-PINSTANTIATE_FACTORY(PURLScheme, PString)
-
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
 

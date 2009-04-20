@@ -37,12 +37,19 @@
 
 #include <ptbuildopts.h>
 
+// Include header files for everything that uses factories or plugins
+#include <ptlib.h>
+#include <ptlib/plugin.h>
+#include <ptlib/sound.h>
+#include <ptlib/videoio.h>
+#include <ptclib/pwavfile.h>
+#include <ptclib/pvidfile.h>
+#include <ptclib/ptts.h>
+
 #if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
 #define INITGUID
 #include <dsound.h>
 #endif
-
-#include <windows.h>
 
 
 #ifndef _WIN32_WCE

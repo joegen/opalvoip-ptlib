@@ -40,19 +40,14 @@
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
-PINSTANTIATE_FACTORY(PSoundChannel, Win32)
-#ifdef P_DIRECTSOUND
-PINSTANTIATE_FACTORY(PSoundChannel, DirectSound)
-#endif
 
 template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
 {
   return PSoundChannel::CreateChannel(type);
 }
 
-namespace PWLib {
-  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PSoundChannel> > soundChannelFactoryAdapter("PSoundChannel", PTrue);
-};
+typedef PDevicePluginAdapter<PSoundChannel> PDevicePluginSoundChannel;
+PFACTORY_CREATE(PFactory<PDevicePluginAdapterBase>, PDevicePluginSoundChannel, "PSoundChannel", true);
 
 
 PStringArray PSoundChannel::GetDriverNames(PPluginManager * pluginMgr)

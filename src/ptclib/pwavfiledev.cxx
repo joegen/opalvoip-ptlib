@@ -64,7 +64,6 @@ class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServic
 } PSoundChannel_WAVFile_descriptor;
 
 PCREATE_PLUGIN(WAVFile, PSoundChannel, &PSoundChannel_WAVFile_descriptor);
-PINSTANTIATE_FACTORY(PSoundChannel, WAVFile)
 
 
 #define new PNEW

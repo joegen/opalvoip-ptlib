@@ -49,8 +49,6 @@ const char WAVLabelFMT_[4] = { 'f', 'm', 't', ' ' };
 const char WAVLabelFACT[4] = { 'F', 'A', 'C', 'T' };
 const char WAVLabelDATA[4] = { 'd', 'a', 't', 'a' };
 
-PINSTANTIATE_FACTORY(PWAVFileFormat, unsigned)
-PINSTANTIATE_FACTORY(PWAVFileConverter, unsigned)
 
 inline PBoolean ReadAndCheck(PWAVFile & file, void * buf, PINDEX len)
 {
@@ -785,7 +783,7 @@ class PWAVFileFormatPCM : public PWAVFileFormat
     PBoolean Write(PWAVFile & file, const void * buf, PINDEX & len);
 };
 
-PWAVFileFormatByIDFactory::Worker<PWAVFileFormatPCM> pcmIDWAVFormat(PWAVFile::fmt_PCM);
+PFACTORY_CREATE(PWAVFileFormatByIDFactory, PWAVFileFormatPCM, PWAVFile::fmt_PCM, false);
 PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatPCM> pcmFormatWAVFormat("PCM-16");
 
 void PWAVFileFormatPCM::CreateHeader(PWAV::FMTChunk & wavFmtChunk, 

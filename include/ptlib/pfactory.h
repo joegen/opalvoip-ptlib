@@ -388,22 +388,33 @@ class PFactory : PFactoryBase
     void operator=(const PFactory &) {}
 };
 
-//
-//  this macro is used to initialise the static member variable used to force factories to instantiate
-//
-#define PLOAD_FACTORY(AbstractType, KeyType) \
-  namespace PWLibFactoryLoader { \
-    extern int AbstractType##_##KeyType##_loader; \
-    static int AbstractType##_##KeyType##_loader_instance = AbstractType##_##KeyType##_loader; \
-  };
+
+/** This macro is used to create a factory.
+    This is mainly used for factories that exist inside a library and works in
+    conjunction with the PFACTORY_LOAD() macro.
+
+    When a factory is contained wholly within a single compilation module of
+    a library, it is typical that a linker does not include ANY of the code in
+    that module. To avoid this the header file that declares the abstract type
+    should include a PFACTORY_LOAD() macro call for all concrete classes that
+    are in the library. Then whan an application includes the abstract types
+    header, it will force the load of all the possible concrete classes.
+  */
+#define PFACTORY_CREATE(factory, ConcreteType, keyValue, singleton) \
+  namespace PFactoryLoader { \
+    int ConcreteType##_link() { return 0; } \
+    factory::Worker<ConcreteType> ConcreteType##_instance(keyValue, singleton); \
+  }
 
 
-//
-//  this macro is used to instantiate a static variable that accesses the static member variable 
-//  in a factory forcing it to load
-//
-#define PINSTANTIATE_FACTORY(AbstractType, KeyType) \
-  namespace PWLibFactoryLoader { int AbstractType##_##KeyType##_loader; }
+/* This macro is used to force linking of factories.
+   See PFACTORY_CREATE() for more information
+ */
+#define PFACTORY_LOAD(ConcreteType) \
+  namespace PFactoryLoader { \
+    extern int ConcreteType##_link(); \
+    int const ConcreteType##_loader = ConcreteType##_link(); \
+  }
 
 
 #endif // PTLIB_FACTORY_H

@@ -38,7 +38,6 @@
 #include <ptlib/pfactory.h>
 #include <ptclib/ptts.h>
 
-PINSTANTIATE_FACTORY(PTextToSpeech, PString)
 
 // WIN32 COM stuff must be first in file to compile properly
 
@@ -119,7 +118,7 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     PString voice;
 };
 
-PFactory<PTextToSpeech>::Worker<PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SAPI", false);
+PFACTORY_CREATE(PTextToSpeech, PTextToSpeech_SAPI, "Microsoft SAPI", false);
 
 int * PTextToSpeech_SAPI::refCount;
 PMutex PTextToSpeech_SAPI::refMutex;
@@ -367,7 +366,7 @@ class PTextToSpeech_Festival : public PTextToSpeech
 
 #define new PNEW
 
-PFactory<PTextToSpeech>::Worker<PTextToSpeech_Festival> festivalTTSFactory("Festival", false);
+PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_Festival, "Festival", false);
 
 PTextToSpeech_Festival::PTextToSpeech_Festival()
 {

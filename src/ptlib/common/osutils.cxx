@@ -46,45 +46,6 @@
 #include <ptlib/msos/ptlib/debstrm.h>
 #endif
 
-namespace PWLibStupidLinkerHacks {
-
-
-#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
-
-#  ifdef P_VIDEO
-     extern int loadFakeVideoStuff;
-#    if defined(P_MINGW) || defined(_WIN32)
-#      ifdef P_VFW_CAPTURE
-         extern int loadVideoForWindowsStuff;
-#      endif
-#      if defined(P_DIRECTSHOW)
-         extern int loadDirectShowStuff;
-#      endif
-#      ifdef P_APPSHARE
-         extern int loadAppVidStuff;
-#      endif
-#    endif
-#    ifdef P_FFVDEV
-       extern int loadFFVideoFileStuff;
-#    endif
-#    ifdef P_VIDFILE
-       extern int loadVideoFileStuff;
-#    endif
-#  endif 
-
-#  ifdef P_AUDIO
-#    if defined(P_MINGW) || defined(_WIN32)
-       extern int loadWindowsMultimediaStuff;
-#    endif
-#    ifdef P_MACOSX
-       extern int loadCoreAudioStuff;
-#    endif
-#  endif
-
-#endif // defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
-
-}; // namespace PWLibStupidLinkerHacks {
-
 
 static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
 
@@ -1566,40 +1527,6 @@ PProcess::PProcess(const char * manuf, const char * name,
     executableFile.Replace("\\??\\","");
   }
 #endif
-
-#if defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
-
-#  ifdef P_VIDEO
-     PWLibStupidLinkerHacks::loadFakeVideoStuff = 1;
-#    if defined(P_MINGW) || defined(_WIN32)
-#      ifdef P_VFW_CAPTURE
-         PWLibStupidLinkerHacks::loadVideoForWindowsStuff = 1;
-#      endif
-#      if defined(P_DIRECTSHOW)
-         PWLibStupidLinkerHacks::loadDirectShowStuff = 1;
-#      endif
-#      ifdef P_APPSHARE
-         PWLibStupidLinkerHacks::loadAppVidStuff = 1;
-#      endif
-#    endif
-#    ifdef P_FFVDEV
-       PWLibStupidLinkerHacks::loadFFVideoFileStuff = 1;
-#    endif
-#    ifdef P_VIDFILE
-       PWLibStupidLinkerHacks::loadVideoFileStuff = 1;
-#    endif
-#  endif 
-
-#  ifdef P_AUDIO
-#    if defined(P_MINGW) || defined(_WIN32)
-       PWLibStupidLinkerHacks::loadWindowsMultimediaStuff = 1;
-#    endif
-#    ifdef P_MACOSX
-       PWLibStupidLinkerHacks::loadCoreAudioStuff = 1;
-#    endif
-#  endif
-
-#endif // defined(P_MINGW) || defined(_WIN32) || defined(P_MACOSX)
 
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
