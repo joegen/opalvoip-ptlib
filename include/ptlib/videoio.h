@@ -998,6 +998,18 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   static PVideoInputPluginServiceDescriptor<PVideoInputDevice_##name> PVideoInputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoInputDevice, &PVideoInputDevice_##name##_descriptor)
 
+PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
+PPLUGIN_STATIC_LOAD(Application, PVideoInputDevice);
+
+#if P_FFVDEV
+  PPLUGIN_STATIC_LOAD(FFMPEG, PVideoInputDevice);
+#endif
+
+#if P_VIDFILE
+  PPLUGIN_STATIC_LOAD(YUVFile, PVideoInputDevice);
+#endif
+
+
 ////////////////////////////////////////////////////////
 //
 // declare macros and structures needed for video output plugins
@@ -1013,6 +1025,10 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
 #define PCREATE_VIDOUTPUT_PLUGIN(name) \
   static PVideoOutputPluginServiceDescriptor<PVideoOutputDevice_##name> PVideoOutputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoOutputDevice, &PVideoOutputDevice_##name##_descriptor)
+
+// Link in static plug ins
+PPLUGIN_STATIC_LOAD(SDL, PVideoOutputDevice);
+
 
 ////////////////////////////////////////////////////////
 //

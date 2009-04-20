@@ -101,8 +101,6 @@ extern "C" int select(int width,
 #include "OS.h"
 #endif
 
-#include "../common/pglobalstatic.cxx"
-
 
 PString PProcess::GetOSClass()
 {

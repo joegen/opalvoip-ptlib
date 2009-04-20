@@ -730,6 +730,20 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
   static PSoundChannelPluginServiceDescriptor<className> className##_descriptor; \
   PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
+#ifdef _WIN32
+  PPLUGIN_STATIC_LOAD(WindowsMultimedia, PSoundChannelWin32);
+#elif defined(__BEOS__)
+  PPLUGIN_STATIC_LOAD(BeOS, PSoundChannel);
+#endif
+
+#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
+  PPLUGIN_STATIC_LOAD(DirectSound, PSoundChannelDirectSound);
+#endif
+
+#if defined(P_WAVFILE)
+  PPLUGIN_STATIC_LOAD(WAVFile, PSoundChannel)
+#endif
+
 
 #endif // PTLIB_SOUND_H
 

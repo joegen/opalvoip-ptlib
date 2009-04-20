@@ -39,8 +39,6 @@
 #define new PNEW
 
 
-PCREATE_NAT_PLUGIN(STUN);
-
 // Sample server is at larry.gloo.net
 
 #define DEFAULT_REPLY_TIMEOUT 800

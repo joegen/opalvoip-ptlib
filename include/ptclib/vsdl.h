@@ -142,8 +142,6 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
 typedef PVideoOutputDevice_SDL PSDLVideoDevice; // Backward compatibility
 
 
-PWLIB_STATIC_LOAD_PLUGIN(SDL, PVideoOutputDevice);
-
 #endif    // P_SDL
 
 #endif // PTLIB_VSDL_H

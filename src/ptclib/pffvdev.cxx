@@ -46,9 +46,6 @@
 #include <ptlib/pluginmgr.h>
 #include <ptlib/videoio.h>
 
-namespace PWLibStupidLinkerHacks {
-int loadFFVideoFileStuff;
-}; 
 
 #define new PNEW
 

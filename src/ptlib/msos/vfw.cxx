@@ -45,9 +45,6 @@
 #pragma comment(lib, "gdi32.lib")
 #endif
 
-namespace PWLibStupidLinkerHacks {
-   int loadVideoForWindowsStuff;
-};
     
 #include <vfw.h>
 

@@ -121,6 +121,8 @@ class PYUVFile : public PVideoFile
     PBoolean y4mMode;
 };
 
+PFACTORY_LOAD(PYUVFile);
+
 #endif
 #endif
 
