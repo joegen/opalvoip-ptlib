@@ -301,10 +301,6 @@ class PSTUNClient : public PNatMethod
 
 inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUNClient::GetNatTypeString(type); }
 
-/// Factory loader
-typedef PSTUNClient PNatMethod_STUN;
-PWLIB_STATIC_LOAD_PLUGIN(STUN, PNatMethod);
-
 
 #endif // PTLIB_PSTUN_H
 

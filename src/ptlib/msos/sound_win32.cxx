@@ -48,10 +48,7 @@
 #include <ptlib/wm/mmsystemx.h>
 #endif
 
-namespace PWLibStupidLinkerHacks {
-   int loadWindowsMultimediaStuff;
-};
-     
+
 class PSound;
 
 PCREATE_SOUND_PLUGIN(WindowsMultimedia, PSoundChannelWin32);

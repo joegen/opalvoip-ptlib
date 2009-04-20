@@ -76,6 +76,11 @@ class PTextToSpeech : public PObject
     virtual PBoolean Speak      (const PString & text, TextType hint = Default) = 0;
 };
 
+#if P_SAPI
+PFACTORY_LOAD(PTextToSpeech_SAPI);
+#endif
+PFACTORY_LOAD(PTextToSpeech_Festival);
+
 
 #endif // PTLIB_PTTS_H
 
