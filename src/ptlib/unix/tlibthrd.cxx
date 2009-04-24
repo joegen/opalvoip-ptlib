@@ -135,11 +135,16 @@ void PHouseKeepingThread::Main()
       for (PINDEX i = 0; i < process.activeThreads.GetSize(); ++i) {
         PThread & thread = process.activeThreads.GetDataAt(i);
         if (thread.autoDelete && thread.IsTerminated()) {
+
+          // make sure the thread is removed from the list inside the mutex
+          // this means no other new thread can sneak in and reuse the ID 
+          PThread * toDelete = process.activeThreads.RemoveAt(process.activeThreads.GetKeyAt(i));
+
           // unlock the activeThreadMutex to avoid deadlocks:
           // if somewhere in the destructor a call to PTRACE() is made,
           // which itself calls PThread::Current(), deadlocks are possible
           process.activeThreadMutex.Signal();
-          delete process.activeThreads.RemoveAt(process.activeThreads.GetKeyAt(i));
+          delete toDelete;
           process.activeThreadMutex.Wait();
           found = PTrue;
           break;
