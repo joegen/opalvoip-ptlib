@@ -948,27 +948,27 @@ void PStandardColourConverter::YUY2toYUV420PWithShrink(const BYTE *yuy2, BYTE *y
 
   // source is bigger than the destination
   // We are doing linear interpolation to find value.
-#define FIX_FLOAT       12
-  unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
-  unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
+  // Note this algorithm only works if dst is an even multple of src
+  unsigned int dx = srcFrameWidth/dstFrameWidth;
+  unsigned int dy = srcFrameHeight/dstFrameHeight;
   unsigned int fy, fx;
 
   for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2)
   {
     /* Copy the first line with U&V */
-    unsigned int yy = fy>>FIX_FLOAT;
-    unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
+    unsigned int yy = fy;
+    unsigned int yy2 = (fy+dy);
     const unsigned char *line1, *line2;
     unsigned char lastU, lastV;
 
     line1 = s + (yy*2*srcFrameWidth);
     line2 = s + (yy2*2*srcFrameWidth);
-    lastU = line1[0];
-    lastV = line1[2];
+    lastU = line1[1];
+    lastV = line1[3];
     for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
     {
-      unsigned int xx = (fx>>FIX_FLOAT)*2;
-      *y++ = line1[xx+1];
+      unsigned int xx = fx*2;
+      *y++ = line1[xx];
       if ( (xx&2) == 0)
       {
         *u++ = lastU = (line1[xx+1] + line2[xx+1])/2;
@@ -979,18 +979,19 @@ void PStandardColourConverter::YUY2toYUV420PWithShrink(const BYTE *yuy2, BYTE *y
         *u++ = lastU;
         *v++ = lastV = (line1[xx+1] + line2[xx+1])/2;
       }
-      xx = ((fx+dx)>>FIX_FLOAT)*2;
-      *y++ = line1[xx+1];
+      
+      xx = (fx+dx);
+      *y++ = line1[xx];
       if ( (xx&2) == 0)
         lastU = (line1[xx+1] + line2[xx+1])/2;
       else
-        lastV = (line1[xx+1] + line2[xx+1])/2;
+        lastV = (line1[xx+3] + line2[xx+3])/2;
     }
 
     /* Copy the second line without U&V */
     for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx)
     {
-      unsigned int xx = (fx>>FIX_FLOAT)*2;
+      unsigned int xx = fx*2;
       *y++ = line2[xx];
     }
   } /* end of for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2) */
