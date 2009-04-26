@@ -525,7 +525,28 @@ PStringToOrdinal {
 }
 
 
-PSafePtr<*> {
+PSafePtr<*, PSafePtrBase> {
+   children
+   (
+      #(
+         currentObject: ($T1 *)$e.currentObject,
+         collection: $e.collection,
+         lockMode: $e.lockMode,
+         references: $e.currentObject->safeReferenceCount,
+         deleted: $e.currentObject->safelyBeingRemoved,
+         threads: $e.currentObject->safeInUse->nestedThreads
+      )
+   )
+   
+   preview
+   (
+      #(
+          "[", $e.currentObject->safeReferenceCount, "] ", ($T1 *)$e.currentObject
+      )
+   )
+}
+
+PSafePtr<*, PSafePtrMultiThreaded> {
    children
    (
       #(
