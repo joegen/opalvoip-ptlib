@@ -761,7 +761,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     PSafePtr & operator=(const PSafeCollection & safeCollection)
       {
-        Assign(safeCollection);
+        BaseClass::Assign(safeCollection);
         return *this;
       }
 
@@ -797,7 +797,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
      */
     PSafePtr & operator=(PINDEX idx)
       {
-        Assign(idx);
+        BaseClass::Assign(idx);
         return *this;
       }
   //@}
@@ -806,15 +806,15 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
   //@{
     /**Return the physical pointer to the object.
       */
-    operator T*()    const { return  (T *)currentObject; }
+    operator T*()    const { return  (T *)BaseClass::currentObject; }
 
     /**Return the physical pointer to the object.
       */
-    T & operator*()  const { return *(T *)PAssertNULL(currentObject); }
+    T & operator*()  const { return *(T *)PAssertNULL(BaseClass::currentObject); }
 
     /**Allow access to the physical object the pointer is pointing to.
       */
-    T * operator->() const { return  (T *)PAssertNULL(currentObject); }
+    T * operator->() const { return  (T *)PAssertNULL(BaseClass::currentObject); }
 
     /**Post-increment the pointer.
        This requires that the pointer has been created with a PSafeCollection
@@ -822,8 +822,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator++(int)
       {
-        T * previous = (T *)currentObject;
-        Next();
+        T * previous = (T *)BaseClass::currentObject;
+        BaseClass::Next();
         return previous;
       }
 
@@ -833,8 +833,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator++()
       {
-        Next();
-        return (T *)currentObject;
+        BaseClass::Next();
+        return (T *)BaseClass::currentObject;
       }
 
     /**Post-decrement the pointer.
@@ -843,8 +843,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator--(int)
       {
-        T * previous = (T *)currentObject;
-        Previous();
+        T * previous = (T *)BaseClass::currentObject;
+        BaseClass::Previous();
         return previous;
       }
 
@@ -854,8 +854,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator--()
       {
-        Previous();
-        return (T *)currentObject;
+        BaseClass::Previous();
+        return (T *)BaseClass::currentObject;
       }
   //@}
 
