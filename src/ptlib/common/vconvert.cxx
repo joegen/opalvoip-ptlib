@@ -664,6 +664,10 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
         srcWidth = dstWidth;
         srcHeight = dstHeight;
       }
+      break;
+
+    default :
+      return false;
   }
 
   // Copy plane Y
@@ -2674,7 +2678,9 @@ bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
      unsigned int frameBytes = srcFrameWidth * srcFrameHeight * 3 / 2;
      BYTE *intermed = intermediateFrameStore.GetPointer(frameBytes);
      MJPEGtoYUV420PSameSize(mjpeg, intermed);
-     ResizeYUV420P(intermed, yuv420p);
+     CopyYUV420P(0, 0, srcFrameWidth, srcFrameHeight, srcFrameWidth, srcFrameHeight, intermed,
+                 0, 0, dstFrameWidth, dstFrameHeight, dstFrameWidth, dstFrameHeight, yuv420p,
+                     resizeMode);
   }
 
   if (bytesReturned != NULL)
