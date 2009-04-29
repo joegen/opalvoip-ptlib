@@ -50,29 +50,28 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount, unsigned int maxWo
 PThreadPoolBase::~PThreadPoolBase()
 {
   for (;;) {
-    PWaitAndSignal mutex(listMutex);
-    if (workers.size() == 0)
+    PWaitAndSignal mutex(m_listMutex);
+    if (m_workers.size() == 0)
       break;
 
-    PThreadPoolWorkerBase * worker = workers[0];
+    WorkerThreadBase * worker = m_workers[0];
     worker->Shutdown();
-    workers.erase(workers.begin());
+    m_workers.erase(m_workers.begin());
     StopWorker(worker);
   }
 }
 
-
-PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
+PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
 {
   // find the worker thread with the minimum number of work units
   // shortcut the search if we find an empty one
-  WorkerList_t::iterator minWorker = workers.end();
+  WorkerList_t::iterator minWorker = m_workers.end();
   size_t minSizeFound = 0x7ffff;
   WorkerList_t::iterator iter;
-  for (iter = workers.begin(); iter != workers.end(); ++iter) {
-    PThreadPoolWorkerBase & worker = **iter;
-    PWaitAndSignal m2(worker.workerMutex);
-    if (!worker.shutdown && (worker.GetWorkSize() <= minSizeFound)) {
+  for (iter = m_workers.begin(); iter != m_workers.end(); ++iter) {
+    WorkerThreadBase & worker = **iter;
+    PWaitAndSignal m2(worker.m_workerMutex);
+    if (!worker.m_shutdown && (worker.GetWorkSize() <= minSizeFound)) {
       minSizeFound = worker.GetWorkSize();
       minWorker = iter;
       if (minSizeFound == 0)
@@ -81,51 +80,54 @@ PThreadPoolWorkerBase * PThreadPoolBase::AllocateWorker()
   }
 
   // if there is an idle worker, use it
-  if (iter != workers.end())
+  if (iter != m_workers.end())
     return *minWorker;
 
   // if there is a per-worker limit, increase workers in quanta of the max worker count
   // otherwise only allow maximum number of workers
   if (m_maxWorkUnitCount > 0) {
-    if (((workers.size() % m_maxWorkerCount) == 0) && (minSizeFound < m_maxWorkUnitCount)) 
+    if (((m_workers.size() % m_maxWorkerCount) == 0) && (minSizeFound < m_maxWorkUnitCount)) 
       return *minWorker;
   }
-  else if ((workers.size() > 0) && (workers.size() <= m_maxWorkerCount))
+  else if ((m_workers.size() > 0) && (m_workers.size() <= m_maxWorkerCount))
     return *minWorker;
 
   // create a new worker thread
-  PThreadPoolWorkerBase * worker = CreateWorkerThread();
+  WorkerThreadBase * worker = CreateWorkerThread();
   worker->Resume();
-  workers.push_back(worker);
+  m_workers.push_back(worker);
 
   return worker;
 }
 
 
-bool PThreadPoolBase::CheckWorker(PThreadPoolWorkerBase * worker)
+bool PThreadPoolBase::CheckWorker(WorkerThreadBase * worker)
 {
   {
-    PWaitAndSignal mutex(listMutex);
+    PWaitAndSignal mutex(m_listMutex);
 
     // find worker in list
     WorkerList_t::iterator iter;
-    for (iter = workers.begin(); iter != workers.end(); ++iter) {
+    for (iter = m_workers.begin(); iter != m_workers.end(); ++iter) {
       if (*iter == worker)
         break;
     }
-    if (iter == workers.end())
-      return false;
+    PAssert(iter != m_workers.end(), "cannot find thread pool worker");
 
-    // if the worker thread has enough work to keep running, leave it alone
+    // if the worker thread has work, leave it alone
     if (worker->GetWorkSize() > 0) 
       return true;
 
-    // but don't shut down the last thread, so we don't have the overhead of starting it up again
-    if (workers.size() == 1)
+    // don't shut down the last thread, so we don't have the overhead of starting it up again
+    // don't try and kill ourselves - just leave the thread for someone else to use
+    if ((m_workers.size() == 1) || (worker == PThread::Current()))
       return true;
 
+    // remove the thread from the list or workers
+    m_workers.erase(iter);
+
+    // shutdown the thread
     worker->Shutdown();
-    workers.erase(iter);
   }
 
   StopWorker(worker);
@@ -134,8 +136,10 @@ bool PThreadPoolBase::CheckWorker(PThreadPoolWorkerBase * worker)
 }
 
 
-void PThreadPoolBase::StopWorker(PThreadPoolWorkerBase * worker)
+void PThreadPoolBase::StopWorker(WorkerThreadBase * worker)
 {
+  worker->Shutdown();
+
   // the worker is now finished
   if (!worker->WaitForTermination(10000)) {
     PTRACE(4, "ThreadPool\tWorker did not terminate promptly");
@@ -143,14 +147,3 @@ void PThreadPoolBase::StopWorker(PThreadPoolWorkerBase * worker)
   PTRACE(4, "ThreadPool\tDestroying pool thread");
   delete worker;
 }
-
-
-////////////////////////////////////////////////////////////////
-
-PThreadPoolWorkerBase::PThreadPoolWorkerBase(PThreadPoolBase & _pool)
-  : PThread(100, NoAutoDeleteThread, NormalPriority, "Pool")
-  , pool(_pool)
-  , shutdown(PFalse)
-{
-}
-

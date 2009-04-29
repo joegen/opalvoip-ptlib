@@ -47,8 +47,8 @@
    These classes and templates implement a generic thread pooling mechanism
  
    To use them, declare the following:
-      - A class that describes a "unit" of work to be performed. This class must use the PThreadPool
-        as an ancestor and define the CreateWorkerThread member function
+
+      - A class that describes a "unit" of work to be performed. 
  
       - A class that described a worker thread within the pool. This class must be a descendant of 
         PThreadPoolWorkerBase and must define the following member functions:
@@ -57,6 +57,7 @@
             unsigned GetWorkSize() const;
             void OnAddWork(work_unit *);
             void OnRemoveWork(work_unit *);
+
             void Shutdown();
             void Main();
  
@@ -98,11 +99,11 @@
        void Main()
           Called when the worker thread starts up
 
-       GetWorkSize()
+       unsigned GetWorkSize()
           Called whenever the thread pool wants to know how "busy" the
           thread is. This is used when deciding how to allocate new work units
              
-       OnAddWork(work_unit *)
+       void OnAddWork(work_unit *)
           Called to add a new work unit to the thread
 
        void OnRemoveWork(work_unit *);
@@ -125,98 +126,214 @@
    
  */
 
-class PThreadPoolBase;
-
-class PThreadPoolWorkerBase : public PThread
-{
-  public:
-    PThreadPoolWorkerBase(PThreadPoolBase & threadPool);
-
-    virtual unsigned GetWorkSize() const = 0;
-    virtual void Shutdown() = 0;
-
-  protected:
-    PThreadPoolBase & pool;
-    PBoolean shutdown;
-    PMutex workerMutex;
-
-  friend class PThreadPoolBase;
-};
-
-
 class PThreadPoolBase : public PObject
 {
   public:
+    class WorkerThreadBase : public PThread
+    {
+      public:
+        WorkerThreadBase()
+          : PThread(100, NoAutoDeleteThread, NormalPriority, "Pool")
+          , m_shutdown(false)
+        { }
+
+        virtual void Shutdown() = 0;
+        virtual unsigned GetWorkSize() const = 0;
+
+        bool m_shutdown;
+        PMutex m_workerMutex;
+    };
+
+    class InternalWorkBase
+    {
+      public:
+        InternalWorkBase(const char * group)
+        { 
+          if (group != NULL)
+            m_group = group;
+        }
+        std::string m_group;
+    };
+
     PThreadPoolBase(unsigned maxWorkerCount = 10, unsigned maxWorkUnitCount = 0);
     ~PThreadPoolBase();
 
-    virtual PThreadPoolWorkerBase * CreateWorkerThread() = 0;
-
-    virtual PThreadPoolWorkerBase * AllocateWorker();
+    virtual WorkerThreadBase * CreateWorkerThread() = 0;
+    virtual WorkerThreadBase * AllocateWorker();
 
   protected:
-    virtual bool CheckWorker(PThreadPoolWorkerBase * worker);
-    void StopWorker(PThreadPoolWorkerBase * worker);
-    PMutex listMutex;
-    typedef std::vector<PThreadPoolWorkerBase *> WorkerList_t;
-    WorkerList_t workers;
+    virtual bool CheckWorker(WorkerThreadBase * worker);
+    void StopWorker(WorkerThreadBase * worker);
+    PMutex m_listMutex;
+
+    typedef std::vector<WorkerThreadBase *> WorkerList_t;
+    WorkerList_t m_workers;
 
     unsigned m_maxWorkerCount;
     unsigned m_maxWorkUnitCount;
 };
 
 
-template <class WorkUnit_T, class WorkerThread_T>
+template <class Work_T>
 class PThreadPool : public PThreadPoolBase
 {
   PCLASSINFO(PThreadPool, PThreadPoolBase);
   public:
-    typedef typename std::map<WorkUnit_T *, WorkerThread_T *> WorkUnitMap_T;
-
-    PThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
-      : PThreadPoolBase(maxWorkers, maxWorkUnits) { }
-
-    //virtual PThreadPoolWorkerBase * CreateWorkerThread()
-    //{ return new WorkerThread_T(*this); }
-
-    bool AddWork(WorkUnit_T * workUnit)
+    //
+    // define the ancestor of the worker thread
+    //
+    class WorkerThread : public WorkerThreadBase
     {
-      PWaitAndSignal m(listMutex);
+      public:
+        WorkerThread(PThreadPool & pool_)
+          : m_pool(pool_)
+        {
+        }
 
-      PThreadPoolWorkerBase * a_worker = AllocateWorker();
-      if (a_worker == NULL)
+        virtual void AddWork(Work_T * work) = 0;
+        virtual void RemoveWork(Work_T * work) = 0;
+        virtual void Main() = 0;
+  
+      protected:
+        PThreadPool & m_pool;
+    };
+
+    //
+    // define internal worker wrapper class
+    //
+    class InternalWork : public InternalWorkBase
+    {
+      public:
+        InternalWork(WorkerThread * worker, Work_T * work, const char * group)
+          : InternalWorkBase(group)
+          , m_worker(worker)
+          , m_work(work)
+        { 
+        }
+
+        WorkerThread * m_worker;
+        Work_T * m_work;
+    };
+
+    //
+    // define map for external work units to internal work
+    //
+    typedef std::map<Work_T *, InternalWork> ExternalToInternalWorkMap_T;
+    ExternalToInternalWorkMap_T m_externalToInternalWorkMap;
+
+
+    //
+    // define class for storing group informationm
+    //
+    struct GroupInfo {
+      unsigned m_count;
+      WorkerThread * m_worker;
+    };
+
+
+    //
+    //  define map for group ID to group information
+    //
+    typedef std::map<std::string, GroupInfo> GroupInfoMap_t;
+    GroupInfoMap_t m_groupInfoMap;
+
+
+    //
+    //  constructor
+    //
+    PThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
+      : PThreadPoolBase(maxWorkers, maxWorkUnits) 
+    { }
+
+
+    //
+    //  add a new unit of work to a worker thread
+    //
+    bool AddWork(Work_T * work, const char * group = NULL)
+    {
+      // allocate by group if specified
+      // else allocate to least busy
+      WorkerThread * worker;
+      if ((group == NULL) || (strlen(group) == 0)) {
+        worker = (WorkerThread *)AllocateWorker();
+      }
+      else {
+
+        // find the worker thread with the matching group ID
+        GroupInfoMap_t::iterator g = m_groupInfoMap.find(group);
+        if (g == m_groupInfoMap.end()) 
+          worker = (WorkerThread *)AllocateWorker();
+        else {
+          worker = g->second.m_worker;
+          PTRACE(4, "ThreadPool\tAllocated worker thread by group Id " << group);
+        }
+      }
+
+      // if cannot allocate worker, return
+      if (worker == NULL) 
         return false;
 
-      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(a_worker);
-      workUnitMap.insert(typename WorkUnitMap_T::value_type(workUnit, worker));
+      // create internal work structure
+      InternalWork internalWork(worker, work, group);
 
-      worker->OnAddWork(workUnit);
+      // add work to external to internal map
+      m_externalToInternalWorkMap.insert(typename ExternalToInternalWorkMap_T::value_type(work, internalWork));
 
+      // add group ID to map
+      if (!internalWork.m_group.empty()) {
+        GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
+        if (r != m_groupInfoMap.end())
+          ++r->second.m_count;
+        else {
+          GroupInfo info;
+          info.m_count  = 1;
+          info.m_worker = worker;
+          m_groupInfoMap.insert(GroupInfoMap_t::value_type(internalWork.m_group, info));
+        }
+      }
+      
+      // give the work to the worker
+      worker->AddWork(work);
+    
       return true;
     }
 
-    bool RemoveWork(WorkUnit_T * workUnit)
+    //
+    //  remove a unit of work from a worker thread
+    //
+    bool RemoveWork(Work_T * work, bool removeFromWorker = true)
     {
-      PWaitAndSignal m(listMutex);
+      PWaitAndSignal m(m_listMutex);
 
       // find worker with work unit to remove
-      typename WorkUnitMap_T::iterator r = workUnitMap.find(workUnit);
-      if (r == workUnitMap.end())
+      typename ExternalToInternalWorkMap_T::iterator r = m_externalToInternalWorkMap.find(work);
+      if (r == m_externalToInternalWorkMap.end())
         return false;
 
-      WorkerThread_T * worker = dynamic_cast<WorkerThread_T *>(r->second);
+      InternalWork & internalWork = r->second;
 
-      workUnitMap.erase(r);
+      // tell worker to stop processing work
+      if (removeFromWorker)
+        internalWork.m_worker->RemoveWork(work);
 
-      worker->OnRemoveWork(workUnit);
+      // update group information
+      if (!internalWork.m_group.empty()) {
+        GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
+        PAssert(r != m_groupInfoMap.end(), "Attempt to find thread from unknown work group");
+        if (r != m_groupInfoMap.end()) {
+          if (--r->second.m_count == 0)
+            m_groupInfoMap.erase(r);
+        }
+      }
 
-      CheckWorker(worker);
+      // see if workers need reorganising
+      CheckWorker(internalWork.m_worker);
+
+      // remove element from work unit map
+      m_externalToInternalWorkMap.erase(r);
 
       return true;
     }
-
-  protected:
-    WorkUnitMap_T workUnitMap;
 };
 
 
