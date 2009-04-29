@@ -90,7 +90,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\..\include\ptlib\msos,..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="NDEBUG;PTRACING"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -161,7 +161,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\..\include\ptlib\msos,..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="NDEBUG;PTRACING"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -245,7 +245,7 @@
 					Optimization="2"
 					AdditionalIncludeDirectories=""
 					PreprocessorDefinitions="NDEBUG;PTRACING;$(NoInherit)"
-					UsePrecompiledHeader="0"/>
+					PrecompiledHeaderThrough=""/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="No Trace|Win32">
@@ -254,7 +254,7 @@
 					Optimization="2"
 					AdditionalIncludeDirectories=""
 					PreprocessorDefinitions="NDEBUG;PTRACING;$(NoInherit)"
-					UsePrecompiledHeader="0"/>
+					PrecompiledHeaderThrough=""/>
 			</FileConfiguration>
 		</File>
 		<File
@@ -329,7 +329,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Merging symbols ..."
-					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot; &quot;$(IntDir)\$(TargetName).def&quot;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot; &quot;$(IntDir)\$(TargetName).def&quot;
+"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibs.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
 			</FileConfiguration>
@@ -367,7 +368,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Merging symbols ..."
-					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibsd.lib&quot; &quot;$(InputPath)&quot; &quot;$(IntDir)\$(TargetName).def&quot;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibsd.lib&quot; &quot;$(InputPath)&quot; &quot;$(IntDir)\$(TargetName).def&quot;
+"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibsd.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
 			</FileConfiguration>
@@ -391,7 +393,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Merging symbols ..."
-					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibsn.lib&quot; &quot;$(InputPath)&quot; &quot;$(IntDir)\$(TargetName).def&quot;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibsn.lib&quot; &quot;$(InputPath)&quot; &quot;$(IntDir)\$(TargetName).def&quot;
+"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibsn.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
 			</FileConfiguration>
