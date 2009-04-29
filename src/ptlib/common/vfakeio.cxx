@@ -1706,7 +1706,7 @@ void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
            0, 0, frameWidth, frameHeight, //Fill the whole frame with the colour.
            200,200,200); //a light grey colour.
 
-  double t= (m_grabCount%50) -25 ;
+  double t= ((int)(m_grabCount%50)) -25 ;
   double h=  t*t*frameHeight*0.85/625;
   int    yBox = (int)h;
   yBox= (yBox>>1) * 2;  //yBox is even.
@@ -1720,7 +1720,7 @@ void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
            frameWidth >> 2, yBox,  boxWidth, boxHeight,
            255, 0, 0); // Red Box.
 
-  t= (m_grabCount%40) -20 ;
+  t= ((int)(m_grabCount%40)) -20 ;
   h= t*t*frameHeight*0.85/400 ;
   yBox = (int)h;
   yBox= (yBox>>1) * 2;  //yBox is even.
@@ -1729,7 +1729,7 @@ void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
            frameWidth>>1, yBox, boxWidth, boxHeight,
            0, 255, 0); // Green
 
-  t= (m_grabCount%100) -50 ;
+  t= ((int)(m_grabCount%100)) -50 ;
   h= t*t*frameHeight*0.85/2500;      
   yBox = (int)h;
   yBox= (yBox>>1) * 2;  //yBox is even.
