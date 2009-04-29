@@ -173,6 +173,20 @@ PVideoFrameInfo::PVideoFrameInfo()
 }
 
 
+PVideoFrameInfo::PVideoFrameInfo(unsigned        width,
+                                 unsigned        height,
+                                 const PString & format,
+                                 unsigned        rate,
+                                 ResizeMode      resize)
+  : frameWidth(width)
+  , frameHeight(height)
+  , frameRate(rate)
+  , colourFormat(format)
+  , resizeMode(resize)
+{
+}
+
+
 PBoolean PVideoFrameInfo::SetFrameSize(unsigned width, unsigned height)
 {
   if (width < 8 || height < 8)
@@ -314,54 +328,65 @@ bool PVideoFrameInfo::Parse(const PString & str)
 }
 
 
+static struct {
+  const char * name;
+  unsigned width;
+  unsigned height;
+} const SizeTable[] = {
+    { "CIF",    PVideoDevice::CIFWidth,   PVideoDevice::CIFHeight   },
+    { "QCIF",   PVideoDevice::QCIFWidth,  PVideoDevice::QCIFHeight  },
+    { "SQCIF",  PVideoDevice::SQCIFWidth, PVideoDevice::SQCIFHeight },
+    { "CIF4",   PVideoDevice::CIF4Width,  PVideoDevice::CIF4Height  },
+    { "4CIF",   PVideoDevice::CIF4Width,  PVideoDevice::CIF4Height  },
+    { "CIF16",  PVideoDevice::CIF16Width, PVideoDevice::CIF16Height },
+    { "16CIF",  PVideoDevice::CIF16Width, PVideoDevice::CIF16Height },
+
+    { "CCIR601",720,                      486                       },
+    { "NTSC",   720,                      480                       },
+    { "PAL",    768,                      576                       },
+    { "HDTVP",  1280,                     720                       },
+    { "HD720",  1280,                     720                       },
+    { "HDTVI",  1920,                     1080                      },
+    { "HD1080", 1920,                     1080                      },
+
+    { "CGA",    320,                      240                       },
+    { "VGA",    640,                      480                       },
+    { "WVGA",   854,                      480                       },
+    { "SVGA",   800,                      600                       },
+    { "XGA",    1024,                     768                       },
+    { "SXGA",   1280,                     1024                      },
+    { "WSXGA",  1440,                     900                       },
+    { "SXGA+",  1400,                     1050                      },
+    { "WSXGA+", 1680,                     1050                      },
+    { "UXGA",   1600,                     1200                      },
+    { "WUXGA",  1920,                     1200                      },
+    { "QXGA",   2048,                     1536                      },
+    { "WQXGA",  2560,                     1600                      },
+    { }
+};
+
 bool PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
 {
-  static struct {
-    const char * name;
-    unsigned width;
-    unsigned height;
-  } const sizeTable[] = {
-      { "cif",    PVideoDevice::CIFWidth,   PVideoDevice::CIFHeight   },
-      { "qcif",   PVideoDevice::QCIFWidth,  PVideoDevice::QCIFHeight  },
-      { "sqcif",  PVideoDevice::SQCIFWidth, PVideoDevice::SQCIFHeight },
-      { "cif4",   PVideoDevice::CIF4Width,  PVideoDevice::CIF4Height  },
-      { "4cif",   PVideoDevice::CIF4Width,  PVideoDevice::CIF4Height  },
-      { "cif16",  PVideoDevice::CIF16Width, PVideoDevice::CIF16Height },
-      { "16cif",  PVideoDevice::CIF16Width, PVideoDevice::CIF16Height },
-
-      { "ccir601",720,                      486                       },
-      { "ntsc",   720,                      480                       },
-      { "pal",    768,                      576                       },
-      { "hdtvp",  1280,                     720                       },
-      { "hd720",  1280,                     720                       },
-      { "hdtvi",  1920,                     1080                      },
-      { "hd1080", 1920,                     1080                      },
-
-      { "cga",    320,                      240                       },
-      { "vga",    640,                      480                       },
-      { "wvga",   854,                      480                       },
-      { "svga",   800,                      600                       },
-      { "xga",    1024,                     768                       },
-      { "sxga",   1280,                     1024                      },
-      { "wsxga",  1440,                     900                       },
-      { "sxga+",  1400,                     1050                      },
-      { "wsxga+", 1680,                     1050                      },
-      { "uxga",   1600,                     1200                      },
-      { "wuxga",  1920,                     1200                      },
-      { "qxga",   2048,                     1536                      },
-      { "wqxga",  2560,                     1600                      },
-      { }
-  };
-
-  for (int i = 0; sizeTable[i].name != NULL; i++) {
-    if (str *= sizeTable[i].name) {
-      width = sizeTable[i].width;
-      height = sizeTable[i].height;
+  for (int i = 0; SizeTable[i].name != NULL; i++) {
+    if (str *= SizeTable[i].name) {
+      width = SizeTable[i].width;
+      height = SizeTable[i].height;
       return true;
     }
   }
 
   return sscanf(str, "%ux%u", &width, &height) == 2 && width > 0 && height > 0;
+}
+
+
+PString PVideoFrameInfo::AsString(unsigned width, unsigned height)
+{
+  for (int i = 0; SizeTable[i].name != NULL; i++) {
+    if (SizeTable[i].width == width && SizeTable[i].height == height)
+      return SizeTable[i].name;
+  }
+
+  return psprintf("%ux%u", width, height);
 }
 
 

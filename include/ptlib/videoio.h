@@ -51,8 +51,6 @@ class PVideoFrameInfo : public PObject
   PCLASSINFO(PVideoFrameInfo, PObject);
 
   public:
-      PVideoFrameInfo();
-
     enum ResizeMode
     {
         eScale,
@@ -73,6 +71,16 @@ class PVideoFrameInfo : public PObject
       HDTVWidth  = 1920, HDTVHeight  = 1080,
       MaxWidth   = 1920, MaxHeight   = 1152
     };
+
+    /// Construct video frame information
+    PVideoFrameInfo();
+    PVideoFrameInfo(
+      unsigned        frameWidth,
+      unsigned        frameHeight,
+      const PString & colourFormat = "YUV420P",
+      unsigned        frameRate = 15,
+      ResizeMode      resizeMode = eScale
+    );
 
     /**Set the frame size to be used.
 
@@ -180,6 +188,13 @@ class PVideoFrameInfo : public PObject
       const PString & str,  ///< String to parse
       unsigned & width,     ///< Resultant width
       unsigned & height     ///< Resulatant height
+    );
+
+    /**Get a width/height as a standard size string name.
+      */
+    static PString AsString(
+      unsigned width,     ///< Width to convert
+      unsigned height     ///< Height to convert
     );
 
   protected:
