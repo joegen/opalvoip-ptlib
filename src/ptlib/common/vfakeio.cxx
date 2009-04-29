@@ -2047,49 +2047,6 @@ static void FillRGBRect(BYTE * frame,
 }
 
 
-static void ConvertRGBtoYUV(int r, int g, int b, int & Y, int & Cb, int & Cr)
-{
-  Y  =  ( 257 * r + 504 * g +  98 * b)/1000 + 16;
-  Cb =  (-148 * r - 291 * g + 439 * b)/1000 + 128;
-  Cr =  ( 439 * r - 368 * g -  71 * b)/1000 + 128;
-}
-
-
-static void FillYUV420Rect(BYTE * frame,
-                           int x, int y,
-                           int width, int height,
-                           int r, int g, int b,
-                           PINDEX frameWidth, PINDEX frameHeight)
-{
-  int Y, Cb, Cr;
-  ConvertRGBtoYUV(r, g, b, Y, Cb, Cr);
-
-  x &= 0xfffffffe; // Make sure is even
-
-  int offset       = ( y * frameWidth ) + x;
-  int colourOffset = ( (y * frameWidth) >> 2) + (x >> 1);
-
-  unsigned char * Yptr  = frame + offset;
-  unsigned char * CbPtr = frame + (frameWidth * frameHeight) + colourOffset;
-  unsigned char * CrPtr = frame + (frameWidth * frameHeight) + (frameWidth * frameHeight/4)  + colourOffset;
-
-  int halfRectWidth  = width >> 1;
-  int halfFrameWidth = frameWidth >> 1;
-  
-  for (int dy = 0; dy < height; dy += 2) {
-    memset(Yptr, Y, width);
-    Yptr += frameWidth;
-    memset(Yptr, Y, width);
-    Yptr += frameWidth;
-
-    memset(CbPtr, Cb, halfRectWidth);
-    memset(CrPtr, Cr, halfRectWidth);
-
-    CbPtr += halfFrameWidth;
-    CrPtr += halfFrameWidth;
-  }
-}
-
 
 static void FillYUV422Rect(BYTE * frame,
                            int x, int y,
@@ -2097,8 +2054,8 @@ static void FillYUV422Rect(BYTE * frame,
                            int r, int g, int b,
                            PINDEX scanLineWidth)
 {
-  int Y, Cb, Cr;
-  ConvertRGBtoYUV(r, g, b, Y, Cb, Cr);
+  unsigned Y, Cb, Cr;
+  PColourConverter::RGBtoYUV(r, g, b, Y, Cb, Cr);
 
   x &= 0xfffffffe; // Make sure is even
 
@@ -2133,7 +2090,7 @@ void PVideoInputDevice_FakeVideo::FillRect(BYTE * frame,
       break;
 
     case eYUV420P :
-      FillYUV420Rect(frame, x, y, width, height, r, g, b, frameWidth, frameHeight);
+      PColourConverter::FillYUV420P(x, y, width, height, frameWidth, frameHeight, frame, r, g, b);
       break;
 
     case eYUV422 :

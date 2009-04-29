@@ -288,6 +288,34 @@ class PColourConverter : public PObject
     */
     PVideoFrameInfo::ResizeMode GetResizeMode() const { return resizeMode; }
 
+    /**Convert RGB to YUV.
+      */
+    static void RGBtoYUV(
+      unsigned   r, unsigned   g, unsigned   b,
+      unsigned & y, unsigned & u, unsigned & v
+    );
+    static void RGBtoYUV(
+      unsigned r, unsigned g, unsigned b,
+      BYTE   & y, BYTE   & u, BYTE   & v
+    );
+
+    /**Copy a section of the source frame to a section of the destination
+       frame with scaling/cropping as required.
+      */
+    static bool CopyYUV420P(
+      unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
+      unsigned srcFrameWidth, unsigned srcFrameHeight, const BYTE * srcYUV,
+      unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
+      unsigned dstFrameWidth, unsigned dstFrameHeight, BYTE * dstYUV,
+      PVideoFrameInfo::ResizeMode resizeMode
+    );
+
+    static bool FillYUV420P(
+      unsigned x, unsigned y, int width, int height,
+      unsigned frameWidth, unsigned frameHeight, BYTE * yuv,
+      unsigned r, unsigned g, unsigned b
+    );
+
   protected:
     PString  srcColourFormat;
     PString  dstColourFormat;
