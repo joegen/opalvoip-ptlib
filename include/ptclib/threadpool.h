@@ -260,7 +260,7 @@ class PThreadPool : public PThreadPoolBase
       else {
 
         // find the worker thread with the matching group ID
-        GroupInfoMap_t::iterator g = m_groupInfoMap.find(group);
+        typename GroupInfoMap_t::iterator g = m_groupInfoMap.find(group);
         if (g == m_groupInfoMap.end()) 
           worker = (WorkerThread *)AllocateWorker();
         else {
@@ -281,14 +281,14 @@ class PThreadPool : public PThreadPoolBase
 
       // add group ID to map
       if (!internalWork.m_group.empty()) {
-        GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
+        typename GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
         if (r != m_groupInfoMap.end())
           ++r->second.m_count;
         else {
           GroupInfo info;
           info.m_count  = 1;
           info.m_worker = worker;
-          m_groupInfoMap.insert(GroupInfoMap_t::value_type(internalWork.m_group, info));
+          m_groupInfoMap.insert(typename GroupInfoMap_t::value_type(internalWork.m_group, info));
         }
       }
       
@@ -318,7 +318,7 @@ class PThreadPool : public PThreadPoolBase
 
       // update group information
       if (!internalWork.m_group.empty()) {
-        GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
+        typename GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
         PAssert(r != m_groupInfoMap.end(), "Attempt to find thread from unknown work group");
         if (r != m_groupInfoMap.end()) {
           if (--r->second.m_count == 0)
