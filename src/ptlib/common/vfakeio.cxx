@@ -1521,7 +1521,7 @@ PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*s
   PINDEX i;
   for (i = 0; i < PARRAYSIZE(FakeDeviceNames)-1; ++i) {
     if (devName *= FakeDeviceNames[i]) {
-      SetChannel(i);
+      PVideoDevice::SetChannel(i);
       break;
     }
   }
@@ -1581,8 +1581,8 @@ int PVideoInputDevice_FakeVideo::GetNumChannels()
 
 PBoolean PVideoInputDevice_FakeVideo::SetChannel(int newChannel)
 {
-  if (newChannel < 0)
-    return true; // No change for -1
+  if (newChannel < 0 || deviceName != FakeDeviceNames[PARRAYSIZE(FakeDeviceNames)-1])
+    return true; // No change for -1 or explicit channel in device name
 
   return PVideoDevice::SetChannel(newChannel);
 }
