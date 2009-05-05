@@ -328,7 +328,9 @@ class PPipeChannel : public PChannel
     /**Get the return code from the most recent Close;
 
        @return
-       Return code from the closing process
+       Return code from the closing process, if the process is still running
+              then -2 is returned. If the process never started due to some
+              error then -1 is returned.
      */
     int GetReturnCode() const;
 
