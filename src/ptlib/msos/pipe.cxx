@@ -132,12 +132,10 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   }
   else {
-    PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 128000));
-    PAssertOS(SetNamedPipeHandleState(&hFromChild, PIPE_READMODE_BYTE, NULL, NULL));
+    PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 1));
     PAssertOS(SetHandleInformation(hFromChild, HANDLE_FLAG_INHERIT, 0));
     if (stderrSeparate) {
-      PAssertOS(CreatePipe(&hStandardError, &startup.hStdError, &security, 128000));
-      PAssertOS(SetNamedPipeHandleState(&hStandardError, PIPE_READMODE_BYTE, NULL, NULL));
+      PAssertOS(CreatePipe(&hStandardError, &startup.hStdError, &security, 1));
       PAssertOS(SetHandleInformation(hStandardError, HANDLE_FLAG_INHERIT, 0));
     }
     else {
@@ -190,8 +188,8 @@ PBoolean PPipeChannel::IsOpen() const
 int PPipeChannel::GetReturnCode() const
 {
   DWORD code;
-  if (GetExitCodeProcess(info.hProcess, &code) && (code != STILL_ACTIVE))
-    return code;
+  if (GetExitCodeProcess(info.hProcess, &code))
+    return code != STILL_ACTIVE ? code : -2;
 
   ((PPipeChannel*)this)->ConvertOSError(-2);
   return -1;
@@ -205,8 +203,7 @@ PBoolean PPipeChannel::CanReadAndWrite()
 
 PBoolean PPipeChannel::IsRunning() const
 {
-  DWORD code;
-  return GetExitCodeProcess(info.hProcess, &code) && (code == STILL_ACTIVE);
+  return GetReturnCode() == -2;
 }
 
 
@@ -239,10 +236,54 @@ PBoolean PPipeChannel::Kill(int signal)
 PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 {
   lastReadCount = 0;
-  DWORD count;
-  if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 :-2, LastReadError))
-    return PFalse;
-  lastReadCount = count;
+
+  DWORD count = 0;
+
+  // Cannot use overlapped I/O with anonymous pipe.
+  // So have all this hideous code. :-(
+
+  if (readTimeout == PMaxTimeInterval) {
+    if (!ConvertOSError(ReadFile(hFromChild, buffer, 1, &count, NULL) ? 0 : -2, LastReadError))
+      return false;
+
+    lastReadCount = 1;
+    if (len == 1)
+      return true;
+
+    if (!PeekNamedPipe(hFromChild, NULL, 0, NULL, &count, NULL))
+      return ConvertOSError(-2, LastReadError);
+
+    if (count == 0)
+      return true;
+
+    ++((BYTE * &)buffer);
+    --len;
+  }
+  else {
+    PTimeInterval startTick = PTimer::Tick();
+    for (;;) {
+      if (!PeekNamedPipe(hFromChild, NULL, 0, NULL, &count, NULL))
+        return ConvertOSError(-2, LastReadError);
+
+      if (count > 0)
+        break;
+
+      if ((PTimer::Tick() - startTick) > readTimeout) {
+        SetErrorValues(Timeout, EAGAIN, LastReadError);
+        return false;
+      }
+
+      Sleep(10);
+    }
+  }
+
+  if (len > (PINDEX)count)
+    len = count;
+
+  if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 : -2, LastReadError))
+    return false;
+
+  lastReadCount += count;
   return lastReadCount > 0;
 }
       
