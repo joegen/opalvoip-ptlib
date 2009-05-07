@@ -251,6 +251,8 @@ class PThreadPool : public PThreadPoolBase
     //
     bool AddWork(Work_T * work, const char * group = NULL)
     {
+      PWaitAndSignal m(m_listMutex);
+
       // allocate by group if specified
       // else allocate to least busy
       WorkerThread * worker;
