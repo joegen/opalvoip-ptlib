@@ -321,7 +321,7 @@ SOURCES += $(PLATFORM_SRC_DIR)/config.cxx
 endif
 endif
 
-SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
+SOURCES += $(COMPONENT_SRC_DIR)/threadpool.cxx
 
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
