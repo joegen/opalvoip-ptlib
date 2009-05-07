@@ -426,9 +426,6 @@ enum PSafetyMode {
 
   NOTE: the PSafePtr will allow safe and mutexed access to objects but is not
   thread safe itself! You should not share PSafePtr instances across threads.
-  You can assign a PSafePtr to another instance across a thread boundary
-  provided it is on a reference and no read only or read/write locks are
-  present.
 
   See the PSafeObject class for more details.
  */
@@ -498,7 +495,7 @@ class PSafePtrBase : public PObject
        Note this is not a value comparison and will only return EqualTo if the
        two PSafePtrBase instances are pointing to the same instance.
       */
-    Comparison Compare(
+    virtual Comparison Compare(
       const PObject & obj   ///< Other instance to compare against
     ) const;
   //@}
@@ -507,7 +504,7 @@ class PSafePtrBase : public PObject
   //@{
     /**Set the pointer to NULL, unlocking/dereferencing existing pointer value.
       */
-    void SetNULL();
+    virtual void SetNULL();
 
     /**Return PTrue if pointer is NULL.
       */
@@ -523,7 +520,7 @@ class PSafePtrBase : public PObject
        deletion and the calling thread should immediately cease use of the
        object. This instance pointer will be set to NULL.
       */
-    PBoolean SetSafetyMode(
+    virtual PBoolean SetSafetyMode(
       PSafetyMode mode  ///< New locking mode
     );
 
@@ -532,14 +529,14 @@ class PSafePtrBase : public PObject
     const PSafeCollection * GetCollection() const { return collection; }
   //@}
 
-    void Assign(const PSafePtrBase & ptr);
-    void Assign(const PSafeCollection & safeCollection);
-    void Assign(PSafeObject * obj);
-    void Assign(PINDEX idx);
+    virtual void Assign(const PSafePtrBase & ptr);
+    virtual void Assign(const PSafeCollection & safeCollection);
+    virtual void Assign(PSafeObject * obj);
+    virtual void Assign(PINDEX idx);
 
   protected:
-    void Next();
-    void Previous();
+    virtual void Next();
+    virtual void Previous();
 
     enum EnterSafetyModeOption {
       WithReference,
@@ -560,6 +557,121 @@ class PSafePtrBase : public PObject
 };
 
 
+/** This class defines a base class for thread-safe pointer to an object.
+
+  This is part of a set of classes to solve the general problem of a
+  collection (eg a PList or PDictionary) of objects that needs to be a made
+  thread safe. Any thread can add, read, write or remove an object with both
+  the object and the database of objects itself kept thread safe.
+
+  NOTE: unlikel PSafePtrBase, pointers based on this class are thread safe
+  themseleves, at the expense of performance on every operation.
+
+  See the PSafeObject class for more details.
+ */
+class PSafePtrMultiThreaded : public PSafePtrBase
+{
+    PCLASSINFO(PSafePtrMultiThreaded, PSafePtrBase);
+
+  /**@name Construction */
+  //@{
+  protected:
+    /**Create a new pointer to a PSafeObject.
+       An optional locking mode may be provided to lock the object for reading
+       or writing and automatically unlock it on destruction.
+
+       Note that this version is not associated with a collection so the ++
+       and -- operators will not work.
+     */
+    PSafePtrMultiThreaded(
+      PSafeObject * obj = NULL,         ///< Physical object to point to.
+      PSafetyMode mode = PSafeReference ///< Locking mode for the object
+    );
+
+    /**Create a new pointer to a PSafeObject.
+       An optional locking mode may be provided to lock the object for reading
+       or writing and automatically unlock it on destruction.
+
+       The idx'th entry of the collection is pointed to by this object. If the
+       idx is beyond the size of the collection, the pointer is NULL.
+     */
+    PSafePtrMultiThreaded(
+      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
+      PSafetyMode mode,                       ///< Locking mode for the object
+      PINDEX idx                              ///< Index into collection to point to
+    );
+
+    /**Create a new pointer to a PSafeObject.
+       An optional locking mode may be provided to lock the object for reading
+       or writing and automatically unlock it on destruction.
+
+       The obj parameter is only set if it contained in the collection,
+       otherwise the pointer is NULL.
+     */
+    PSafePtrMultiThreaded(
+      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
+      PSafetyMode mode,                       ///< Locking mode for the object
+      PSafeObject * obj                       ///< Inital object in collection to point to
+    );
+
+    /**Copy the pointer to the PSafeObject.
+       This will create a copy of the pointer with the same locking mode and
+       lock on the PSafeObject. It will also increment the reference count on
+       the PSafeObject as well.
+      */
+    PSafePtrMultiThreaded(
+      const PSafePtrMultiThreaded & enumerator   ///< Pointer to copy
+    );
+
+  public:
+    /**Unlock and dereference the PSafeObject this is pointing to.
+      */
+    ~PSafePtrMultiThreaded();
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /**Compare the pointers.
+       Note this is not a value comparison and will only return EqualTo if the
+       two PSafePtrBase instances are pointing to the same instance.
+      */
+    virtual Comparison Compare(
+      const PObject & obj   ///< Other instance to compare against
+    ) const;
+  //@}
+
+  /**@name Operations */
+  //@{
+    /**Set the pointer to NULL, unlocking/dereferencing existing pointer value.
+      */
+    virtual void SetNULL();
+
+    /**Change the locking mode used by this pointer.
+
+       If the function returns false, then the object has been flagged for
+       deletion and the calling thread should immediately cease use of the
+       object. This instance pointer will be set to NULL.
+      */
+    virtual PBoolean SetSafetyMode(
+      PSafetyMode mode  ///< New locking mode
+    );
+  //@}
+
+    virtual void Assign(const PSafePtrMultiThreaded & ptr);
+    virtual void Assign(const PSafePtrBase & ptr);
+    virtual void Assign(const PSafeCollection & safeCollection);
+    virtual void Assign(PSafeObject * obj);
+    virtual void Assign(PINDEX idx);
+
+  protected:
+    virtual void Next();
+    virtual void Previous();
+
+  protected:
+    mutable PMutex m_mutex;
+};
+
+
 /** This class defines a thread-safe enumeration of object in a collection.
 
   This is part of a set of classes to solve the general problem of a
@@ -572,18 +684,16 @@ class PSafePtrBase : public PObject
   There are some subtle semantics that must be observed in each of these two
   modes especially when switching from one to the other.
 
-  NOTE: the PSafePtr will allow safe and mutexed access to objects but is not
-  thread safe itself! You should not share PSafePtr instances across threads.
-  You can assign a PSafePtr to another instance across a thread boundary
-  provided it is on a reference and no read only or read/write locks are
-  present.
+  NOTE: the PSafePtr will allow safe and mutexed access to objects but may not
+  thread safe itself! This depends on the base calass being used. If the more
+  efficiant PSafePtrBase class is used you should not share PSafePtr instances
+  across threads.
 
   See the PSafeObject class for more details. Especially in regard to
   enumeration of collections.
  */
-template <class T> class PSafePtr : public PSafePtrBase
+template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseClass
 {
-    PCLASSINFO(PSafePtr, PSafePtrBase);
   public:
   /**@name Construction */
   //@{
@@ -597,7 +707,7 @@ template <class T> class PSafePtr : public PSafePtrBase
     PSafePtr(
       T * obj = NULL,                   ///< Physical object to point to.
       PSafetyMode mode = PSafeReference ///< Locking mode for the object
-    ) : PSafePtrBase(obj, mode) { }
+    ) : BaseClass(obj, mode) { }
 
     /**Create a new pointer to a PSafeObject.
        An optional locking mode may be provided to lock the object for reading
@@ -610,7 +720,7 @@ template <class T> class PSafePtr : public PSafePtrBase
       const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
       PSafetyMode mode = PSafeReadWrite,      ///< Locking mode for the object
       PINDEX idx = 0                          ///< Index into collection to point to
-    ) : PSafePtrBase(safeCollection, mode, idx) { }
+    ) : BaseClass(safeCollection, mode, idx) { }
 
     /**Create a new pointer to a PSafeObject.
        An optional locking mode may be provided to lock the object for reading
@@ -623,7 +733,7 @@ template <class T> class PSafePtr : public PSafePtrBase
       const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
       PSafetyMode mode,                       ///< Locking mode for the object
       PSafeObject * obj                       ///< Inital object in collection to point to
-    ) : PSafePtrBase(safeCollection, mode, obj) { }
+    ) : BaseClass(safeCollection, mode, obj) { }
 
     /**Copy the pointer to the PSafeObject.
        This will create a copy of the pointer with the same locking mode and
@@ -632,7 +742,7 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     PSafePtr(
       const PSafePtr & ptr   ///< Pointer to copy
-    ) : PSafePtrBase(ptr) { }
+    ) : BaseClass(ptr) { }
 
     /**Copy the pointer to the PSafeObject.
        This will create a copy of the pointer with the same locking mode and
@@ -641,7 +751,7 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     PSafePtr & operator=(const PSafePtr & ptr)
       {
-        Assign(ptr);
+        BaseClass::Assign(ptr);
         return *this;
       }
 
@@ -651,7 +761,7 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     PSafePtr & operator=(const PSafeCollection & safeCollection)
       {
-        Assign(safeCollection);
+        BaseClass::Assign(safeCollection);
         return *this;
       }
 
@@ -687,7 +797,7 @@ template <class T> class PSafePtr : public PSafePtrBase
      */
     PSafePtr & operator=(PINDEX idx)
       {
-        Assign(idx);
+        BaseClass::Assign(idx);
         return *this;
       }
   //@}
@@ -696,15 +806,15 @@ template <class T> class PSafePtr : public PSafePtrBase
   //@{
     /**Return the physical pointer to the object.
       */
-    operator T*()    const { return  (T *)currentObject; }
+    operator T*()    const { return  (T *)BaseClass::currentObject; }
 
     /**Return the physical pointer to the object.
       */
-    T & operator*()  const { return *(T *)PAssertNULL(currentObject); }
+    T & operator*()  const { return *(T *)PAssertNULL(BaseClass::currentObject); }
 
     /**Allow access to the physical object the pointer is pointing to.
       */
-    T * operator->() const { return  (T *)PAssertNULL(currentObject); }
+    T * operator->() const { return  (T *)PAssertNULL(BaseClass::currentObject); }
 
     /**Post-increment the pointer.
        This requires that the pointer has been created with a PSafeCollection
@@ -712,8 +822,8 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     T * operator++(int)
       {
-        T * previous = (T *)currentObject;
-        Next();
+        T * previous = (T *)BaseClass::currentObject;
+        BaseClass::Next();
         return previous;
       }
 
@@ -723,8 +833,8 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     T * operator++()
       {
-        Next();
-        return (T *)currentObject;
+        BaseClass::Next();
+        return (T *)BaseClass::currentObject;
       }
 
     /**Post-decrement the pointer.
@@ -733,8 +843,8 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     T * operator--(int)
       {
-        T * previous = (T *)currentObject;
-        Previous();
+        T * previous = (T *)BaseClass::currentObject;
+        BaseClass::Previous();
         return previous;
       }
 
@@ -744,8 +854,8 @@ template <class T> class PSafePtr : public PSafePtrBase
       */
     T * operator--()
       {
-        Previous();
-        return (T *)currentObject;
+        BaseClass::Previous();
+        return (T *)BaseClass::currentObject;
       }
   //@}
 
