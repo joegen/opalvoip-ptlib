@@ -43,7 +43,7 @@
 
 PSafeObject::PSafeObject(PSafeObject * indirectLock)
   : safeReferenceCount(0)
-    , safelyBeingRemoved(PFalse)
+  , safelyBeingRemoved(PFalse)
   , safeInUse(indirectLock != NULL ? indirectLock->safeInUse : &safeInUseMutex)
 {
 }
@@ -51,15 +51,21 @@ PSafeObject::PSafeObject(PSafeObject * indirectLock)
 
 PBoolean PSafeObject::SafeReference()
 {
-  PStringStream str;
+#if PTRACING
+  unsigned tracedReferenceCount;
+#endif
+
   {
     PWaitAndSignal mutex(safetyMutex);
     if (safelyBeingRemoved)
       return PFalse;
     safeReferenceCount++;
-    str << "SafeColl\tIncrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this;
+#if PTRACING
+    tracedReferenceCount = safeReferenceCount;
+#endif
   }
-  PTRACE(6, str);
+
+  PTRACE(6, "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
   return PTrue;
 }
 
@@ -67,16 +73,21 @@ PBoolean PSafeObject::SafeReference()
 PBoolean PSafeObject::SafeDereference()
 {
   PBoolean mayBeDeleted = PFalse;
+#if PTRACING
+  unsigned tracedReferenceCount;
+#endif
 
-  PStringStream str;
   safetyMutex.Wait();
   if (PAssert(safeReferenceCount > 0, PLogicError)) {
     safeReferenceCount--;
     mayBeDeleted = safeReferenceCount == 0 && !safelyBeingRemoved;
-    str << "SafeColl\tDecrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this;
   }
+#if PTRACING
+  tracedReferenceCount = safeReferenceCount;
+#endif
   safetyMutex.Signal();
-  PTRACE(6, str);
+
+  PTRACE(6, "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
 
   return mayBeDeleted;
 }
@@ -669,6 +680,153 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
     delete currentObject;
     currentObject = NULL;
   }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj, PSafetyMode mode)
+  : PSafePtrBase(NULL, mode)
+{
+  m_mutex.Wait();
+
+  currentObject = obj;
+  EnterSafetyMode(WithReference);
+
+  m_mutex.Signal();
+}
+
+
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollection,
+                                             PSafetyMode mode,
+                                             PINDEX idx)
+  : PSafePtrBase(NULL, mode)
+{
+  m_mutex.Wait();
+
+  collection = &safeCollection;
+  Assign(idx);
+
+  m_mutex.Signal();
+}
+
+
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollection,
+                                             PSafetyMode mode,
+                                             PSafeObject * obj)
+  : PSafePtrBase(NULL, mode)
+{
+  m_mutex.Wait();
+
+  collection = &safeCollection;
+  Assign(obj);
+
+  m_mutex.Signal();
+}
+
+
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
+{
+  enumerator.m_mutex.Wait();
+  m_mutex.Wait();
+
+  collection = enumerator.collection;
+  currentObject = enumerator.currentObject;
+  lockMode = enumerator.lockMode;
+
+  EnterSafetyMode(WithReference);
+
+  m_mutex.Signal();
+  enumerator.m_mutex.Signal();
+}
+
+
+PSafePtrMultiThreaded::~PSafePtrMultiThreaded()
+{
+  m_mutex.Wait();
+  ExitSafetyMode(WithDereference);
+  currentObject = NULL;
+  m_mutex.Signal();
+}
+
+
+PObject::Comparison PSafePtrMultiThreaded::Compare(const PObject & obj) const
+{
+  PWaitAndSignal mutex(m_mutex);
+  return PSafePtrBase::Compare(obj);
+}
+
+
+void PSafePtrMultiThreaded::SetNULL()
+{
+  m_mutex.Wait();
+  PSafePtrBase::SetNULL();
+  m_mutex.Signal();
+}
+
+
+PBoolean PSafePtrMultiThreaded::SetSafetyMode(PSafetyMode mode)
+{
+  PWaitAndSignal mutex(m_mutex);
+  return PSafePtrBase::SetSafetyMode(mode);
+}
+
+
+void PSafePtrMultiThreaded::Assign(const PSafePtrMultiThreaded & ptr)
+{
+  ptr.m_mutex.Wait();
+  m_mutex.Wait();
+  PSafePtrBase::Assign(ptr);
+  m_mutex.Signal();
+  ptr.m_mutex.Signal();
+}
+
+
+void PSafePtrMultiThreaded::Assign(const PSafePtrBase & ptr)
+{
+  m_mutex.Wait();
+  PSafePtrBase::Assign(ptr);
+  m_mutex.Signal();
+}
+
+
+void PSafePtrMultiThreaded::Assign(const PSafeCollection & safeCollection)
+{
+  m_mutex.Wait();
+  PSafePtrBase::Assign(safeCollection);
+  m_mutex.Signal();
+}
+
+
+void PSafePtrMultiThreaded::Assign(PSafeObject * obj)
+{
+  m_mutex.Wait();
+  PSafePtrBase::Assign(obj);
+  m_mutex.Signal();
+}
+
+
+void PSafePtrMultiThreaded::Assign(PINDEX idx)
+{
+  m_mutex.Wait();
+  PSafePtrBase::Assign(idx);
+  m_mutex.Signal();
+}
+
+
+void PSafePtrMultiThreaded::Next()
+{
+  m_mutex.Wait();
+  PSafePtrBase::Next();
+  m_mutex.Signal();
+}
+
+
+void PSafePtrMultiThreaded::Previous()
+{
+  m_mutex.Wait();
+  PSafePtrBase::Previous();
+  m_mutex.Signal();
 }
 
 
