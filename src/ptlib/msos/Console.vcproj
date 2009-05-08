@@ -641,10 +641,6 @@
 			<File
 				RelativePath="..\..\ptclib\pdns.cxx">
 			</File>
-				<File
-					RelativePath="..\..\ptclib\pffvdev.cxx"
-					>
-				</File>
 			<File
 				RelativePath="..\common\pethsock.cxx">
 				<FileConfiguration
@@ -672,6 +668,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pffvdev.cxx">
 			</File>
 			<File
 				RelativePath="..\..\ptclib\pils.cxx">
@@ -1073,9 +1072,6 @@
 			</File>
 			<File
 				RelativePath="..\..\ptclib\snmpserv.cxx">
-			</File>
-			<File
-				RelativePath="..\..\ptclib\sockagg.cxx">
 			</File>
 			<File
 				RelativePath="..\common\sockets.cxx">
@@ -1660,11 +1656,10 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 					RelativePath="..\..\..\include\ptclib\pdns.h">
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptclib\pffvdev.h"
-					>
+					RelativePath="..\..\..\include\ptlib\pfactory.h">
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptlib\pfactory.h">
+					RelativePath="..\..\..\include\ptclib\pffvdev.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pils.h">
@@ -1769,9 +1764,6 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 					RelativePath="..\..\..\include\ptclib\snmp.h">
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptclib\sockagg.h">
-				</File>
-				<File
 					RelativePath="..\..\..\Include\PtLib\socket.h">
 				</File>
 				<File
@@ -1802,13 +1794,13 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 					RelativePath="..\..\..\include\ptclib\telnet.h">
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptclib\threadpool.h">
-				</File>
-				<File
 					RelativePath="..\..\..\Include\PtLib\Textfile.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\thread.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\threadpool.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Timeint.h">
