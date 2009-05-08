@@ -378,7 +378,7 @@ PBoolean PVideoInputDevice_DirectShow::Start()
 
     PTRACE_IF(2, FAILED(hr) && hr != VFW_E_WRONG_STATE, "PVidDirectShow\tError waiting for camera: " << ErrorMessage(hr));
 
-    PThread::Current()->Sleep(100); /* Not available */
+    PThread::Sleep(100); /* Not available */
   }
 
   PTRACE(2, "PVidDirectShow\tTime out waiting for first frame.");
