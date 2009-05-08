@@ -486,7 +486,7 @@ PBoolean PChannel::SendCommandString(const PString & command)
         break;
 
       case NextCharDelay : // Delay in send
-        PThread::Current()->Sleep(timeout);
+        PThread::Sleep(timeout);
         break;
 
       case NextCharWait : // Wait for reply
