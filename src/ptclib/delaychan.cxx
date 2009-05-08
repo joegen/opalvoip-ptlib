@@ -79,7 +79,7 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
 #if defined(P_LINUX) || defined(P_MACOSX)
     usleep(sleep_time * 1000);
 #else
-    PThread::Current()->Sleep(sleep_time);
+    PThread::Sleep(sleep_time);
 #endif
 
   return sleep_time <= -frameTime;
@@ -156,7 +156,7 @@ void PDelayChannel::Wait(PINDEX count, PTimeInterval & nextTick)
     nextTick += frameDelay;
 
   if (delay > minimumDelay)
-    PThread::Current()->Sleep(delay);
+    PThread::Sleep(delay);
 }
 
 
