@@ -641,7 +641,7 @@
 			<File
 				RelativePath="..\..\ptclib\pdns.cxx">
 			</File>
-				<File
+			<File
 					RelativePath="..\..\ptclib\pffvdev.cxx"
 					>
 				</File>
@@ -1073,9 +1073,6 @@
 			</File>
 			<File
 				RelativePath="..\..\ptclib\snmpserv.cxx">
-			</File>
-			<File
-				RelativePath="..\..\ptclib\sockagg.cxx">
 			</File>
 			<File
 				RelativePath="..\common\sockets.cxx">
@@ -1766,9 +1763,6 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 					RelativePath="..\..\..\include\ptclib\snmp.h">
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptclib\sockagg.h">
-				</File>
-				<File
 					RelativePath="..\..\..\Include\PtLib\socket.h">
 				</File>
 				<File
@@ -1803,6 +1797,9 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\thread.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\threadpool.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Timeint.h">
