@@ -1199,6 +1199,9 @@
 				RelativePath="..\..\ptclib\telnet.cxx">
 			</File>
 			<File
+				RelativePath="..\..\ptclib\threadpool.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\url.cxx">
 			</File>
 			<File
@@ -1791,6 +1794,9 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\telnet.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\threadpool.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Textfile.h">
