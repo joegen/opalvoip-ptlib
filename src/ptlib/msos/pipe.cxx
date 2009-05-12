@@ -239,6 +239,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 
   DWORD count = 0;
 
+#ifndef _WIN32_WCE
   // Cannot use overlapped I/O with anonymous pipe.
   // So have all this hideous code. :-(
 
@@ -279,6 +280,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 
   if (len > (PINDEX)count)
     len = count;
+#endif
 
   if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 : -2, LastReadError))
     return false;
