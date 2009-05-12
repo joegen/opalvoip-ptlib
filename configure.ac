@@ -389,6 +389,7 @@ AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
 
 if test "x$P_64BIT" != "x" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
+  STDCCFLAGS="$STDCCFLAGS -DP_64BIT=1"
 fi
 
 if test "$target_os" = "linux-gnulp" ; then
