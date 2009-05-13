@@ -56,11 +56,67 @@ extern "C" int vsprintf(char *, const char *, va_list);
 #define __CLASS__ GetClass()
 
 
+#ifdef __GNUC__
+
+#include <ext/pool_allocator.h>
+#include <ext/mt_allocator.h>
+
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Use a custom allocator for PContainer references
+//
+
+template <class Type, class Allocator = std::allocator<Type> >
+class CustomAllocator 
+{
+  public:
+    Type * Allocate(size_t n)
+    { return a.allocate(n); }
+
+    void Deallocate(Type * p, size_t n)
+    { a.deallocate(p, n); }
+
+    Allocator a;
+};
+
+#if __GNUCC__
+static CustomAllocator<PContainerReference, __gnu_cxx::pool_allocator> PContainerReference_allocator;
+#else
+static CustomAllocator<PContainerReference> PContainerReference_allocator;
+#endif
+
+static PContainerReference * PContainerReference_new(PINDEX initialSize)
+{
+  PContainerReference * ref = PContainerReference_allocator.Allocate(1);
+  if (ref != NULL) {
+    ref->size = initialSize;
+    ref->count.SetValue(1);
+    ref->deleteObjects = true;
+  }
+  return ref;
+}
+
+static PContainerReference * PContainerReference_new(const PContainerReference & r)
+{
+  PContainerReference * ref = PContainerReference_allocator.Allocate(1);
+  if (ref != NULL) {
+    ref->size = r.size;
+    ref->count.SetValue(1);
+    ref->deleteObjects = r.deleteObjects;
+  }
+  return ref;
+}
+
+static void PContainerReference_delete(PContainerReference * p)
+{ PContainerReference_allocator.Deallocate(p, 1); }
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PContainer::PContainer(PINDEX initialSize)
 {
-  reference = new PContainerReference(initialSize);
+  reference = PContainerReference_new(initialSize);
   PAssert(reference != NULL, POutOfMemory);
 }
 
@@ -72,7 +128,7 @@ PContainer::PContainer(int, const PContainer * cont)
   PAssert(cont != NULL, PInvalidParameter);
   PAssert2(cont->reference != NULL, cont->GetClass(), "Clone of deleted container");
 
-  reference = new PContainerReference(*cont->reference);   // create a new reference
+  reference = PContainerReference_new(*cont->reference);
   PAssert(reference != NULL, POutOfMemory);
 }
 
@@ -104,13 +160,12 @@ void PContainer::AssignContents(const PContainer & cont)
 
   if (--reference->count == 0) {
     DestroyContents();
-    delete reference;
+    PContainerReference_delete(reference);
     reference = NULL;
   }
 
   ++cont.reference->count;
   reference = cont.reference;
-
 }
 
 
@@ -123,7 +178,7 @@ void PContainer::Destruct()
     
     else {
       DestroyContents();
-      delete reference;
+      PContainerReference_delete(reference);
       reference = NULL;
     }
   }
@@ -147,7 +202,7 @@ PBoolean PContainer::MakeUnique()
     return PTrue;
 
   PContainerReference * oldReference = reference;
-  reference = new PContainerReference(*reference);
+  reference = PContainerReference_new(*reference);
   --oldReference->count;
 
   return PFalse;
@@ -155,6 +210,14 @@ PBoolean PContainer::MakeUnique()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#if __GNUCC__
+static CustomAllocator<char, __gnu_cxx::mt_allocator> PAbstractArray_allocator;
+#else
+static CustomAllocator<char> PAbstractArray_allocator;
+#endif
+
+
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
   : PContainer(initialSize)
@@ -165,8 +228,10 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
   if (GetSize() == 0)
     theArray = NULL;
   else {
-    theArray = (char *)calloc(GetSize(), elementSize);
+    //theArray = (char *)calloc(GetSize(), elementSize);
+    theArray = PAbstractArray_allocator.Allocate(GetSize() * elementSize);
     PAssert(theArray != NULL, POutOfMemory);
+    memset(theArray, 0, GetSize() * elementSize);
   }
 
   allocatedDynamically = PTrue;
@@ -188,7 +253,8 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
     theArray = NULL;
   else if (dynamicAllocation) {
     PINDEX sizebytes = elementSize*GetSize();
-    theArray = (char *)malloc(sizebytes);
+    //theArray = (char *)malloc(sizebytes);
+    theArray = PAbstractArray_allocator.Allocate(sizebytes);
     PAssert(theArray != NULL, POutOfMemory);
     memcpy(theArray, PAssertNULL(buffer), sizebytes);
   }
@@ -200,8 +266,10 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
 void PAbstractArray::DestroyContents()
 {
   if (theArray != NULL) {
-    if (allocatedDynamically)
-      free(theArray);
+    if (allocatedDynamically) {
+      PAbstractArray_allocator.Deallocate(theArray, elementSize*GetSize());
+      //free(theArray);
+    }
     theArray = NULL;
   }
 }
@@ -219,7 +287,8 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 {
   elementSize = array->elementSize;
   PINDEX sizebytes = elementSize*GetSize();
-  char * newArray = (char *)malloc(sizebytes);
+  //char * newArray = (char *)malloc(sizebytes);
+  char * newArray = PAbstractArray_allocator.Allocate(sizebytes);
   if (newArray == NULL)
     reference->size = 0;
   else
@@ -324,7 +393,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
     }
 
     --reference->count;
-    reference = new PContainerReference(newSize);
+    reference = PContainerReference_new(newSize);
 
   } else {
 
