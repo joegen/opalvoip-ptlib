@@ -872,6 +872,8 @@ PTimeInterval PTimerList::Process()
 
   PWaitAndSignal l(timerListMutex);
 
+  PTRACE(1, "PTLib\tMONITOR:timers=" << activeTimers.size());
+
   // process the requests in the timer request queue
   while (!requestQueue.empty()) {
     queueMutex.Wait();
