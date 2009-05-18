@@ -155,8 +155,7 @@ PURL::PURL(const PString & str, const char * defaultScheme)
 
 
 PURL::PURL(const PFilePath & filePath)
-  : //scheme(SchemeTable[FILE_SCHEME].name),
-    scheme(FILE_SCHEME),
+  : scheme(FILE_SCHEME),
     port(0),
     portSupplied (PFalse),
     relativePath(PFalse)
@@ -593,26 +592,25 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
 
 PFilePath PURL::AsFilePath() const
 {
-  //if (scheme != SchemeTable[FILE_SCHEME].name)
-  //  return PString::Empty();
-  if (scheme != FILE_SCHEME)
+  /* While it is never explicitly stated anywhere in RFC1798, there is an
+     implication RFC 1808 that the path is absolute unless the relative
+     path rules of that RFC apply. We follow that logic. */
+
+  if (path.IsEmpty() || scheme != FILE_SCHEME || (!hostname.IsEmpty() && hostname != "localhost"))
     return PString::Empty();
 
   PStringStream str;
 
-  if (relativePath) {
-    for (PINDEX i = 0; i < path.GetSize(); i++) {
-      if (i > 0)
-        str << PDIR_SEPARATOR;
-      str << path[i];
-    }
-  }
+  if (path[0].GetLength() == 2 && path[0][1] == '|')
+    str << path[0][0] << ':' << PDIR_SEPARATOR; // Special case for Windows paths with drive letter
   else {
-    if (hostname != "localhost")
-      str << PDIR_SEPARATOR << hostname;
-    for (PINDEX i = 0; i < path.GetSize(); i++)
-      str << PDIR_SEPARATOR << path[i];
+    if (!relativePath)
+      str << PDIR_SEPARATOR;
+    str << path[0];
   }
+
+  for (PINDEX i = 1; i < path.GetSize(); i++)
+    str << PDIR_SEPARATOR << path[i];
 
   return str;
 }
@@ -626,9 +624,6 @@ PString PURL::AsString(UrlFormat fmt) const
   if (scheme.IsEmpty())
     return PString::Empty();
 
-  //const schemeStruct * schemeInfo = GetSchemeInfo(scheme);
-  //if (schemeInfo == NULL)
-  //  schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
   const PURLScheme * schemeInfo = PFactory<PURLScheme>::CreateInstance(scheme);
   if (schemeInfo == NULL)
     schemeInfo = PFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
@@ -883,8 +878,6 @@ PBoolean PURL::OpenBrowser(const PString & url)
 
 void PURL::Recalculate()
 {
-  //if (scheme.IsEmpty())
-  //  scheme = SchemeTable[DEFAULT_SCHEME].name;
   if (scheme.IsEmpty())
     scheme = DEFAULT_SCHEME;
 
