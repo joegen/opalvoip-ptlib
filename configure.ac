@@ -844,6 +844,7 @@ AC_DEFINE_UNQUOTED(P_HAS_RECURSIVE_MUTEX, ${P_HAS_RECURSIVE_MUTEX})
 dnl ########################################################################
 dnl check if setpgrp takes non or two arguments
 P_SETPGRP_SYSTEMV=0
+P_SETPGRP_NOPARM=0
 AC_MSG_CHECKING(if setpgrp takes no paramaters)
 AC_TRY_COMPILE([#include <unistd.h>],
                [pid_t p = setpgrp();], P_SETPGRP_NOPARM=1)
