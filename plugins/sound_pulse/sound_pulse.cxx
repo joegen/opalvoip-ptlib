@@ -63,7 +63,11 @@ PSoundChannelPulse::PSoundChannelPulse(const PString & device,
 				       unsigned bitsPerSample)
 {
   PTRACE(6, "Pulse\tConstructor with many args\n");
+
+  PAssert((bitsPerSample == 16), PInvalidParameter);
   Construct();
+  ss.rate = sampleRate;
+  ss.channels = numChannels;
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
@@ -74,8 +78,6 @@ void PSoundChannelPulse::Construct()
   os_handle = -1;
   s = NULL;
   ss.format =  PA_SAMPLE_S16LE;
-  ss.rate = 8000;
-  ss.channels = 1;
 }
 
 
@@ -112,13 +114,19 @@ PString PSoundChannelPulse::GetDefaultDevice(Directions dir)
 }
 
 PBoolean PSoundChannelPulse::Open(const PString & _device,
-                              Directions _dir,
-                                unsigned _numChannels,
-                                unsigned _sampleRate,
-                                unsigned _bitsPerSample)
+				  Directions _dir,
+				  unsigned _numChannels,
+				  unsigned _sampleRate,
+				  unsigned _bitsPerSample)
 {
   PTRACE(6, "Pulse\t Open on device name of " << _device);
   Close();
+  direction = _dir;
+  mNumChannels = _numChannels;
+  mSampleRate = _sampleRate;
+  mBitsPerSample = _bitsPerSample;
+  Construct();
+
   PWaitAndSignal m(deviceMutex);
   int error;
   PStringStream appName, streamName;
@@ -131,6 +139,10 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
     streamName << ::hex << PRandom::Number();
   }
 
+  ss.rate = _sampleRate;
+  ss.channels = _numChannels;
+  ss.format =  PA_SAMPLE_S16LE;  
+
   if (_dir == Player) {
     s = pa_simple_new(NULL, appName.GetPointer(), PA_STREAM_PLAYBACK, NULL, 
 		      streamName.GetPointer(), &ss, NULL, NULL, &error);
@@ -140,7 +152,10 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
   }
 
   if (s == NULL) {
-    PTRACE(4, ": pa_simple_new() failed: " << pa_strerror(error));
+    PTRACE(2, ": pa_simple_new() failed: " << pa_strerror(error));
+    PTRACE(2, ": pa_simple_new() uses stream " << streamName);
+    PTRACE(2, ": pa_simple_new() uses rate " << PINDEX(ss.rate));
+    PTRACE(2, ": pa_simple_new() uses channels " << PINDEX(ss.channels));
     return PFalse;
   }
  
@@ -188,6 +203,8 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
     return PFalse;   
   }
 
+  lastWriteCount = len;
+
   PTRACE(6, "Pulse\tWrite completed");
   return PTrue;
 }
@@ -203,9 +220,9 @@ PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
     return PFalse;   
   }
 
-  return PTrue;
+  lastReadCount = len;
 
-  PTRACE(6, "Pulse\tRead completed");
+  PTRACE(6, "Pulse\tRead completed of " <<len << " bytes");
   return PTrue;
 }
 
@@ -215,21 +232,28 @@ PBoolean PSoundChannelPulse::SetFormat(unsigned numChannels,
                               unsigned bitsPerSample)
 {
   PTRACE(6, "Pulse\tSet format");
+
+  ss.rate = sampleRate;
+  ss.channels = numChannels;
+  PAssert((bitsPerSample == 16), PInvalidParameter);
+
   return PTrue;
 }
 
 // Get  the number of channels (mono/stereo) in the sound.
 unsigned PSoundChannelPulse::GetChannels()   const
 {
-  PTRACE(6, "Pulse\tGetChannels return 1");
-  return 1;
+  PTRACE(6, "Pulse\tGetChannels return " 
+	 << ss.channels << " channel(s)");
+  return ss.channels;
 }
 
 // Get the sample rate in samples per second.
 unsigned PSoundChannelPulse::GetSampleRate() const
 {
-  PTRACE(6, "Pulse\tGet sample rate return 8000");
-  return 8000;
+  PTRACE(6, "Pulse\tGet sample rate return " 
+	 << ss.rate << " samples per second");
+  return ss.rate;
 }
 
 // Get the sample size in bits per sample.
