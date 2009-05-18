@@ -7672,6 +7672,7 @@ _ACEOF
 
 
 P_SETPGRP_SYSTEMV=0
+P_SETPGRP_NOPARM=0
 { echo "$as_me:$LINENO: checking if setpgrp takes no paramaters" >&5
 echo $ECHO_N "checking if setpgrp takes no paramaters... $ECHO_C" >&6; }
 cat >conftest.$ac_ext <<_ACEOF
@@ -12363,10 +12364,10 @@ echo "$as_me: ffvdev support disabled due to disabled dependency HAS_FFVDEV" >&6
 	    fi
 	  fi
 
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: ffvdev support disabled due to disabled dependency " >&5
-echo "$as_me: ffvdev support disabled due to disabled dependency " >&6;}
+          if test "xHAS_PIPECHAN" != "x"; then
+            if test "x$HAS_PIPECHAN" != "x1"; then
+              { echo "$as_me:$LINENO: ffvdev support disabled due to disabled dependency HAS_PIPECHAN" >&5
+echo "$as_me: ffvdev support disabled due to disabled dependency HAS_PIPECHAN" >&6;}
 	      HAS_FFVDEV=
 	    fi
 	  fi

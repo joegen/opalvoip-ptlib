@@ -520,7 +520,7 @@ extern "C" {
 typedef int SOCKET;
 
 #ifndef PSETPGRP
-#ifdef P_SETPGRP_NOPARM
+#if P_SETPGRP_NOPARM
 #define PSETPGRP()  setpgrp()
 #else
 #define PSETPGRP()  setpgrp(0, 0)
