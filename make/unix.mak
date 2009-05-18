@@ -174,6 +174,10 @@ STDCCFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
+ifeq ($(MACHTYPE),amd64)
+STDCCFLAGS     += -DP_64BIT
+endif
+
 P_USE_RANLIB		:= 1
 #STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
