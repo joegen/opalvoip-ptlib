@@ -144,6 +144,7 @@ EXPORTS
     ??$_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@0@IPAU120@@Z @134 NONAME
     ??$_Allocate@U_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@0@IPAU120@@Z @135 NONAME
     ??$_Allocate@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@IPAV10@@Z @136 NONAME
+    ??$_Allocate@VPContainerReference@@@std@@YAPAVPContainerReference@@IPAV1@@Z @18727 NONAME
     ??$_Allocate@VPFilePath@@@std@@YAPAVPFilePath@@IPAV1@@Z @14421 NONAME
     ??$_Allocate@VRequestType@PTimerList@@@std@@YAPAVRequestType@PTimerList@@IPAV12@@Z @14422 NONAME
     ??$_Char_traits_cat@U?$char_traits@D@std@@@std@@YA?AU_Secure_char_traits_tag@0@XZ @138 NONAME
@@ -393,6 +394,7 @@ EXPORTS
     ??0?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@QAA@XZ @426 NONAME
     ??0?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAA@ABV01@@Z @427 NONAME
     ??0?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAA@XZ @428 NONAME
+    ??0?$allocator@VPContainerReference@@@std@@QAA@XZ @18728 NONAME
     ??0?$allocator@VPFilePath@@@std@@QAA@ABV01@@Z @14511 NONAME
     ??0?$allocator@VPFilePath@@@std@@QAA@XZ @14512 NONAME
     ??0?$allocator@VPVideoControlInfo@@@std@@QAA@ABV01@@Z @18260 NONAME
@@ -413,6 +415,8 @@ EXPORTS
     ??0?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAA@PBDI@Z @17357 NONAME
     ??0?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAA@XZ @439 NONAME
     ??0?$basic_stringbuf@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAA@H@Z @17358 NONAME
+    ??0?$CustomAllocator@DV?$allocator@D@std@@@@QAA@XZ @18729 NONAME
+    ??0?$CustomAllocator@VPContainerReference@@V?$allocator@VPContainerReference@@@std@@@@QAA@XZ @18730 NONAME
     ??0?$deque@DV?$allocator@D@std@@@std@@QAA@XZ @14515 NONAME
     ??0?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAA@XZ @14516 NONAME
     ??0?$fpos@H@std@@QAA@J@Z @440 NONAME
@@ -1355,8 +1359,6 @@ EXPORTS
     ??0PContainer@@IAA@HPBV0@@Z @1212 NONAME
     ??0PContainer@@QAA@ABV0@@Z @1213 NONAME
     ??0PContainer@@QAA@H@Z @1214 NONAME
-    ??0PContainerReference@@QAA@ABV0@@Z @1215 NONAME
-    ??0PContainerReference@@QAA@H@Z @1216 NONAME
     ??0PCriticalSection@@QAA@ABV0@@Z @1217 NONAME
     ??0PCriticalSection@@QAA@XZ @1218 NONAME
     ??0PCypher@@IAA@HW4BlockChainMode@0@@Z @1219 NONAME
@@ -2504,7 +2506,6 @@ EXPORTS
     ??1PConfigSectionsPage@@UAA@XZ @17456 NONAME
     ??1PConsoleChannel@@UAA@XZ @2152 NONAME
     ??1PContainer@@UAA@XZ @2153 NONAME
-    ??1PContainerReference@@QAA@XZ @18313 NONAME
     ??1PCriticalSection@@UAA@XZ @2154 NONAME
     ??1PCypher@@UAA@XZ @2155 NONAME
     ??1PDebugStream@@UAA@XZ @2156 NONAME
@@ -8779,8 +8780,11 @@ EXPORTS
     ?allocate@?$allocator@U_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@@std@@QAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@2@I@Z @7093 NONAME
     ?allocate@?$allocator@U_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@@std@@QAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@2@I@Z @7094 NONAME
     ?allocate@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@I@Z @7095 NONAME
+    ?allocate@?$allocator@VPContainerReference@@@std@@QAAPAVPContainerReference@@I@Z @18731 NONAME
     ?allocate@?$allocator@VPFilePath@@@std@@QAAPAVPFilePath@@I@Z @15879 NONAME
     ?allocate@?$allocator@VRequestType@PTimerList@@@std@@QAAPAVRequestType@PTimerList@@I@Z @15880 NONAME
+    ?Allocate@?$CustomAllocator@DV?$allocator@D@std@@@@QAAPADI@Z @18732 NONAME
+    ?Allocate@?$CustomAllocator@VPContainerReference@@V?$allocator@VPContainerReference@@@std@@@@QAAPAVPContainerReference@@I@Z @18733 NONAME
     ?AllocateWorker@PThreadPoolBase@@UAAPAVWorkerThreadBase@1@XZ @18686 NONAME
     ?AllowDeleteObjects@PCollection@@QAAX_N@Z @12948 NONAME
     ?AllowTag@PHTTP@@SAABVPString@@XZ @7098 NONAME
@@ -10534,8 +10538,11 @@ EXPORTS
     ?deallocate@?$allocator@U_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@@std@@QAAXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@2@I@Z @8510 NONAME
     ?deallocate@?$allocator@U_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@@std@@QAAXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@2@I@Z @8511 NONAME
     ?deallocate@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@I@Z @8512 NONAME
+    ?deallocate@?$allocator@VPContainerReference@@@std@@QAAXPAVPContainerReference@@I@Z @18734 NONAME
     ?deallocate@?$allocator@VPFilePath@@@std@@QAAXPAVPFilePath@@I@Z @16226 NONAME
     ?deallocate@?$allocator@VRequestType@PTimerList@@@std@@QAAXPAVRequestType@PTimerList@@I@Z @16227 NONAME
+    ?Deallocate@?$CustomAllocator@DV?$allocator@D@std@@@@QAAXPADI@Z @18735 NONAME
+    ?Deallocate@?$CustomAllocator@VPContainerReference@@V?$allocator@VPContainerReference@@@std@@@@QAAXPAVPContainerReference@@I@Z @18736 NONAME
     ?dec@?$_Iosb@H@std@@2W4_Fmtflags@12@B @8514 NONAME
     ?dec@std@@YAAAVios_base@1@AAV21@@Z @8515 NONAME
     ?decimal_point@?$numpunct@D@std@@QBADXZ @8516 NONAME
@@ -14659,6 +14666,7 @@ EXPORTS
     ?SetValue@PASN_OctetString@@QAAXABVPString@@@Z @11775 NONAME
     ?SetValue@PASN_OctetString@@QAAXPBD@Z @11776 NONAME
     ?SetValue@PASN_OctetString@@QAAXPBEH@Z @11777 NONAME
+    ?SetValue@PAtomicInteger@@QAAXJ@Z @18737 NONAME
     ?SetValue@PHTTPBooleanField@@UAAXABVPString@@@Z @11778 NONAME
     ?SetValue@PHTTPCompositeField@@UAAXABVPString@@@Z @11779 NONAME
     ?SetValue@PHTTPIntegerField@@UAAXABVPString@@@Z @11780 NONAME
