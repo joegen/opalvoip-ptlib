@@ -158,7 +158,8 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
     PTRACE(2, ": pa_simple_new() uses channels " << PINDEX(ss.channels));
     return PFalse;
   }
- 
+  
+  os_handle = 1;
   return PTrue;
 }
 
@@ -198,6 +199,11 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
   int error;
   PWaitAndSignal m(deviceMutex);
 
+  if (!IsOpen()) {
+    PTRACE(4, ": Pulse audio Write() failed as device closed");
+    return PFalse;
+  }
+
   if (pa_simple_write(s, buf, (size_t) len, &error) < 0) {
     PTRACE(4, ": pa_simple_write() failed: " << pa_strerror(error));
     return PFalse;   
@@ -214,6 +220,11 @@ PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
   PTRACE(6, "Pulse\tRead " << len << " bytes");
   int error;
   PWaitAndSignal m(deviceMutex);
+
+  if (!IsOpen()) {
+    PTRACE(4, ": Pulse audio Read() failed as device closed");
+    return PFalse;
+  }
 
   if (pa_simple_read(s, buf, (size_t) len, &error) < 0) {
     PTRACE(4, ": pa_simple_read() failed: " << pa_strerror(error));
