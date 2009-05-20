@@ -26,7 +26,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id$
+ * $Id: ptlib.inl 19008 2007-11-29 09:17:41Z rjongbloed $
  */
 
 #if defined(P_LINUX)
