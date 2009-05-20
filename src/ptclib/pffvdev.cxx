@@ -26,9 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 21390 $
- * $Author: csoutheren $
- * $Date: 2008-10-21 15:42:44 +1100 (Tue, 21 Oct 2008) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__
