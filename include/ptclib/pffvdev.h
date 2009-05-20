@@ -26,9 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 21788 $
- * $Author: rjongbloed $
- * $Date: 2008-12-12 16:42:13 +1100 (Fri, 12 Dec 2008) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef PTLIB_PFFVDEV_H
