@@ -320,7 +320,7 @@ class PThreadPool : public PThreadPoolBase
 
       // update group information
       if (!internalWork.m_group.empty()) {
-        typename GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
+        r = m_groupInfoMap.find(internalWork.m_group);
         PAssert(r != m_groupInfoMap.end(), "Attempt to find thread from unknown work group");
         if (r != m_groupInfoMap.end()) {
           if (--r->second.m_count == 0)

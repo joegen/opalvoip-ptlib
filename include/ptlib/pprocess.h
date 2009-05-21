@@ -722,11 +722,11 @@ class PProcess : public PThread
     PLibraryProcess(
       const char * manuf = "",         ///< Name of manufacturer
       const char * name = "",          ///< Name of product
-      WORD majorVersion = 1,           ///< Major version number of the product
-      WORD minorVersion = 0,           ///< Minor version number of the product
-      CodeStatus status = ReleaseCode, ///< Development status of the product
-      WORD buildNumber = 1             ///< Build number of the product
-    ) : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber, true) { }
+      WORD majorVersionNum = 1,           ///< Major version number of the product
+      WORD minorVersionNum = 0,           ///< Minor version number of the product
+      CodeStatus statusCode = ReleaseCode, ///< Development status of the product
+      WORD buildNum = 1             ///< Build number of the product
+    ) : PProcess(manuf, name, majorVersionNum, minorVersionNum, statusCode, buildNum, true) { }
   //@}
 
     ///< Dummy Main() as libraries do not have one.
