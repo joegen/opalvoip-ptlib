@@ -642,8 +642,8 @@ class PASN_GeneralisedTime : public PASN_VisibleString
       : PASN_VisibleString(UniversalGeneralisedTime, UniversalTagClass) { }
     PASN_GeneralisedTime(const PTime & time)
       : PASN_VisibleString(UniversalGeneralisedTime, UniversalTagClass) { SetValue(time); }
-    PASN_GeneralisedTime(unsigned tag, TagClass tagClass)
-      : PASN_VisibleString(tag, tagClass) { }
+    PASN_GeneralisedTime(unsigned theTag, TagClass theTagClass)
+      : PASN_VisibleString(theTag, theTagClass) { }
 
     PASN_GeneralisedTime & operator=(const PTime & time);
     void SetValue(const PTime & time) { operator=(time); }
@@ -659,8 +659,8 @@ class PASN_UniversalTime : public PASN_VisibleString
       : PASN_VisibleString(UniversalUTCTime, UniversalTagClass) { }
     PASN_UniversalTime(const PTime & time)
       : PASN_VisibleString(UniversalUTCTime, UniversalTagClass) { SetValue(time); }
-    PASN_UniversalTime(unsigned tag, TagClass tagClass)
-      : PASN_VisibleString(tag, tagClass) { }
+    PASN_UniversalTime(unsigned theTag, TagClass theTagClass)
+      : PASN_VisibleString(theTag, theTagClass) { }
 
     PASN_UniversalTime & operator=(const PTime & time);
     void SetValue(const PTime & time) { operator=(time); }
