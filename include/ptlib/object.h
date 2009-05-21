@@ -60,7 +60,7 @@
 #include <sstream>
 
 
-#define P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_deprecation ****** fn { return 0; }
+#define P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_deprecated ****** fn { return 0; }
 
 #if defined(_MSC_VER)
   #if _MSC_VER < 1310
