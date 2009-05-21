@@ -308,11 +308,11 @@ class PThreadPool : public PThreadPoolBase
       PWaitAndSignal m(m_listMutex);
 
       // find worker with work unit to remove
-      typename ExternalToInternalWorkMap_T::iterator r = m_externalToInternalWorkMap.find(work);
-      if (r == m_externalToInternalWorkMap.end())
+      typename ExternalToInternalWorkMap_T::iterator iterWork = m_externalToInternalWorkMap.find(work);
+      if (iterWork == m_externalToInternalWorkMap.end())
         return false;
 
-      InternalWork & internalWork = r->second;
+      InternalWork & internalWork = iterWork->second;
 
       // tell worker to stop processing work
       if (removeFromWorker)
@@ -320,11 +320,11 @@ class PThreadPool : public PThreadPoolBase
 
       // update group information
       if (!internalWork.m_group.empty()) {
-        r = m_groupInfoMap.find(internalWork.m_group);
-        PAssert(r != m_groupInfoMap.end(), "Attempt to find thread from unknown work group");
-        if (r != m_groupInfoMap.end()) {
-          if (--r->second.m_count == 0)
-            m_groupInfoMap.erase(r);
+        typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.find(internalWork.m_group);
+        PAssert(iterGroup != m_groupInfoMap.end(), "Attempt to find thread from unknown work group");
+        if (iterGroup != m_groupInfoMap.end()) {
+          if (--iterGroup->second.m_count == 0)
+            m_groupInfoMap.erase(iterGroup);
         }
       }
 
@@ -332,7 +332,7 @@ class PThreadPool : public PThreadPoolBase
       CheckWorker(internalWork.m_worker);
 
       // remove element from work unit map
-      m_externalToInternalWorkMap.erase(r);
+      m_externalToInternalWorkMap.erase(iterWork);
 
       return true;
     }
