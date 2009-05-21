@@ -60,6 +60,14 @@
 #include <sstream>
 
 
+#if defined(_MSC_VER)
+#define P_DEPRECATED __declspec(deprecated)
+#elif defined(__GNUC__)
+#define P_DEPRECATED __attribute__((deprecated))
+#else
+#define P_DEPRECATED
+#endif
+
 // P_USE_INTEGER_BOOL is the default and gives the old behaviour (it
 // is also used for C translation units).
 // without P_USE_INTEGER_BOOL, the ANSI C++ bool is used.
