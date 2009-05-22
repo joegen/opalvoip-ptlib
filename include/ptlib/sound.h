@@ -731,13 +731,13 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
   PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
 #ifdef _WIN32
-  PPLUGIN_STATIC_LOAD(WindowsMultimedia, PSoundChannelWin32);
+  PPLUGIN_STATIC_LOAD(WindowsMultimedia, PSoundChannel);
 #elif defined(__BEOS__)
   PPLUGIN_STATIC_LOAD(BeOS, PSoundChannel);
 #endif
 
 #if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
-  PPLUGIN_STATIC_LOAD(DirectSound, PSoundChannelDirectSound);
+  PPLUGIN_STATIC_LOAD(DirectSound, PSoundChannel);
 #endif
 
 #if defined(P_WAVFILE)

@@ -177,11 +177,11 @@ class PPlugin_##serviceType##_##serviceName##_Registration { \
 PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
 PPlugin_##serviceType##_##serviceName##_Registration \
   PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); \
+  int PPlugin_##serviceType##_##serviceName##_link() { return 0; }
 
 #define PPLUGIN_STATIC_LOAD(serviceName, serviceType) \
-  class PPlugin_##serviceType##_##serviceName##_Registration; \
-  extern PPlugin_##serviceType##_##serviceName##_Registration PPlugin_##serviceType##_##serviceName##_Registration_Instance; \
-  PPlugin_##serviceType##_##serviceName##_Registration * const PPlugin_##serviceType##_##serviceName##_Registration_Static_Library_Loader = &PPlugin_##serviceType##_##serviceName##_Registration_Instance;
+  extern int PPlugin_##serviceType##_##serviceName##_link(); \
+  int const PPlugin_##serviceType##_##serviceName##_loader = PPlugin_##serviceType##_##serviceName##_link();
 
 // Win32 only has static plugins at present, maybe one day ...
 #ifndef P_FORCE_STATIC_PLUGIN
