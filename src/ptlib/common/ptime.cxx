@@ -54,13 +54,23 @@ PTimeInterval::PTimeInterval(const PString & str)
 }
 
 
+PInt64 PTimeInterval::GetMilliSeconds() const
+{ 
+  return m_milliseconds; 
+}
+
+void PTimeInterval::SetMilliSeconds(PInt64 msecs)
+{ 
+  m_milliseconds = msecs;
+}
+
 PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PTimeInterval), PInvalidCast);
   const PTimeInterval & other = (const PTimeInterval &)obj;
-  return milliseconds < other.milliseconds ? LessThan :
-         milliseconds > other.milliseconds ? GreaterThan : EqualTo;
-}
+
+  return GetMilliSeconds() < other.GetMilliSeconds() ? LessThan :
+         GetMilliSeconds() > other.GetMilliSeconds() ? GreaterThan : EqualTo;}
 
 
 void PTimeInterval::PrintOn(ostream & stream) const
@@ -109,7 +119,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
   else if (precision < 0)
     precision = 0;
 
-  PInt64 ms = milliseconds;
+  PInt64 ms = GetMilliSeconds();
   if (ms < 0) {
     str << '-';
     ms = -ms;
@@ -187,12 +197,28 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
 }
 
 
+DWORD PTimeInterval::GetInterval() const
+{
+  PInt64 msecs = GetMilliSeconds();
+
+  if (msecs <= 0)
+    return 0;
+
+  if (msecs >= UINT_MAX)
+    return UINT_MAX;
+
+  return (DWORD)msecs;
+}
+
+
 void PTimeInterval::SetInterval(PInt64 millisecs,
                                 long seconds,
                                 long minutes,
                                 long hours,
                                 int days)
 {
+  PInt64 milliseconds;
+
   milliseconds = days;
   milliseconds *= 24;
   milliseconds += hours;
@@ -202,6 +228,8 @@ void PTimeInterval::SetInterval(PInt64 millisecs,
   milliseconds += seconds;
   milliseconds *= 1000;
   milliseconds += millisecs;
+
+  SetMilliSeconds(milliseconds);
 }
 
 
