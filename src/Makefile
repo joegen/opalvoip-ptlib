@@ -321,10 +321,6 @@ SOURCES += $(PLATFORM_SRC_DIR)/config.cxx
 endif
 endif
 
-ifdef HAS_SOCKAGG
-SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
-endif
-
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
