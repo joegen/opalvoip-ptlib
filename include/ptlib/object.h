@@ -60,13 +60,29 @@
 #include <sstream>
 
 
+#define P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_deprecated ****** fn { return 0; }
+
 #if defined(_MSC_VER)
-#define P_DEPRECATED __declspec(deprecated)
+  #if _MSC_VER < 1310
+    #define P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, body) P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn)
+  #elif _MSC_VER < 1400
+    #define P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, body) __inline virtual __declspec(deprecated) type fn body
+  #else
+    #define P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, body) __inline virtual __declspec(deprecated("Virtual function signature changed or function deprecated")) type fn body
+  #endif
 #elif defined(__GNUC__)
-#define P_DEPRECATED __attribute__((deprecated))
+  #if __GNUC__ < 4
+    #define P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, body) P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn)
+  #else
+#define P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, body) __attribute__((warn_unused_result)) __attribute__((deprecated)) P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn)
+  #endif
 #else
-#define P_DEPRECATED
+    #define P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, body) P_DEPRECATED_VIRTUAL_INTERNAL_BASE(fn)
 #endif
+
+#define P_DEPRECATED_VIRTUAL_VOID(fn)       P_DEPRECATED_VIRTUAL_INTERNAL(void, fn, {})
+#define P_DEPRECATED_VIRTUAL(type, fn, ret) P_DEPRECATED_VIRTUAL_INTERNAL(type, fn, { return ret; })
+
 
 // P_USE_INTEGER_BOOL is the default and gives the old behaviour (it
 // is also used for C translation units).
