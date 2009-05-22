@@ -95,24 +95,15 @@ class PTimer : public PTimeInterval
       const PTimeInterval & time    ///< New time interval for timer.
     );
 
-    /** Restart the timer in one shot mode using the specified time value. If
-       the timer was already running, the "time left" is simply reset.
-
-       @return
-       reference to the timer.
-     */
-    PTimer & operator=(
-      DWORD milliseconds            ///< New time interval for timer.
-    );
-    PTimer & operator=(
-      const PTimeInterval & time    ///< New time interval for timer.
-    );
-
     /** Destroy the timer object, removing it from the applications timer list
        if it was running.
      */
     virtual ~PTimer();
   //@}
+
+    PInt64 GetMilliSeconds() const;
+
+    void SetMilliSeconds(PInt64 msecs);
 
   /**@name Control functions */
   //@{
@@ -254,7 +245,9 @@ class PTimer : public PTimeInterval
     static unsigned Resolution();
   //@}
 
-    IDType GetTimerId() const { return timerId; }
+    IDType GetTimerId() const { return m_timerId; }
+
+    PInt64 GetAbsoluteTime() const { return m_absoluteTime; }
 
   private:
     void Construct();
@@ -271,28 +264,29 @@ class PTimer : public PTimeInterval
        #PTimerList::Process()# function.
      */
     void Process(
-      const PTimeInterval & delta,    // Time interval since last call.
-      PTimeInterval & minTimeLeft     // Minimum time left till next timeout.
+      PInt64 now             // time consider as "now"
     );
 
-  // Member variables
+    // Member variables
 
     // Callback function for expired timers.
-    PNotifier callback;
+    PNotifier m_callback;
 
     // The time to reset a timer to when RunContinuous() is called.
-    PTimeInterval resetTime;
+    PTimeInterval m_resetTime;
 
     // Timer operates once then stops.
-    PBoolean oneshot;
+    PBoolean m_oneshot;
 
     // Timer state.
-    enum { Stopped, Starting, Running, Paused } state;
+    enum { Stopped, Running, Paused } m_state;
 
     friend class PTimerList;              // needed for Process
-    class PTimerList * timerList;  
+    class PTimerList * m_timerList;  
 
-    IDType timerId;
+    IDType m_timerId;
+    PAtomicInteger m_serialNumber;
+    PInt64 m_absoluteTime;
 
 // Include platform dependent part of class
 #ifdef _WIN32

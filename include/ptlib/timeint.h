@@ -143,7 +143,11 @@ class PTimeInterval : public PObject
        @return
        very long integer number of milliseconds.
      */
-    PInt64 GetMilliSeconds() const;
+    virtual PInt64 GetMilliSeconds() const;
+
+    /** Set the number of milliseconds for the time interval.
+     */
+    virtual void SetMilliSeconds(PInt64 msecs);
 
     /** Get the number of whole seconds for the time interval.
     
@@ -369,10 +373,10 @@ class PTimeInterval : public PObject
     ) const;
   //@}
 
-  protected:
+  private:
   // Member variables
     /// Number of milliseconds in time interval.
-    PInt64 milliseconds;
+    PInt64 m_milliseconds;
 
 
 // Include platform dependent part of class

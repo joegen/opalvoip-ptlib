@@ -44,6 +44,7 @@
 #include <ptlib/pfactory.h>
 
 #include <queue>
+#include <set>
 
 /**Create a process.
    This macro is used to create the components necessary for a user PWLib
@@ -137,44 +138,74 @@ class PTimerList : public PObject
         enum Action {
           Stop,
           Start
-        } action;
+        } m_action;
 
         RequestType(Action act, PTimer * t)
-          : action(act)
-          , timer(t)
-          , id(timer->GetTimerId())
-          , sync(NULL)
+          : m_action(act)
+          , m_timer(t)
+          , m_id(t->GetTimerId())
+          , m_absoluteTime(t->GetAbsoluteTime())
+          , m_serialNumber(++(t->m_serialNumber))
+          , m_sync(NULL)
         { }
 
-        PTimer * timer;
-        PTimer::IDType id;
-        PSyncPoint * sync;
+        PTimer *                    m_timer;
+        PTimer::IDType              m_id;
+        PInt64                      m_absoluteTime;
+        PAtomicInteger::IntegerType m_serialNumber;
+        PSyncPoint *                m_sync;
     };
 
     void QueueRequest(RequestType::Action action, PTimer * timer, bool isSync = true);
 
+    void ProcessTimerQueue();
+
   private:
+    // queue of timer action requests
+    PMutex m_queueMutex;
+    typedef std::queue<RequestType> RequestQueueType;
+    RequestQueueType m_requestQueue;
+
+    // add an active timer to the lists
+    void AddActiveTimer(const RequestType & request);
+
+    //  counter to keep track of timer IDs
     mutable PAtomicInteger timerId; 
 
-    // map used to store timer information
-    PMutex timerListMutex;
-    struct TimerInfoType {
-      TimerInfoType(PTimer * t) : timer(t)  { removed = false; }
-      PTimer * timer;
-      bool removed;
+    // map used to store active timer information
+    struct ActiveTimerInfo {
+      ActiveTimerInfo(PTimer * t, PAtomicInteger::IntegerType serialNumber) 
+        : m_timer(t), m_serialNumber(serialNumber) { }
+      PTimer * m_timer;
+      PAtomicInteger::IntegerType m_serialNumber;
     };
-    typedef std::map<PTimer::IDType, TimerInfoType> TimerInfoMapType;
-    TimerInfoMapType activeTimers;
-    PThread * timerThread;
+    typedef std::map<PTimer::IDType, ActiveTimerInfo> ActiveTimerInfoMap;
+    ActiveTimerInfoMap m_activeTimers;
 
-    // queue of timer action requests
-    PMutex queueMutex;
-    typedef std::queue<RequestType> RequestQueueType;
-    RequestQueueType requestQueue;
-    RequestQueueType addQueue;
+    // set used to store timer expiry times, in order
+    struct TimerExpiryInfo {
+      TimerExpiryInfo(PTimer::IDType id, PInt64 expireTime, PAtomicInteger::IntegerType serialNumber)
+        : m_timerId(id), m_expireTime(expireTime), m_serialNumber(serialNumber) { }
+      PTimer::IDType m_timerId;
+      PInt64 m_expireTime;
+      PAtomicInteger::IntegerType m_serialNumber;
+    };
+
+	  struct TimerExpiryInfo_compare
+		  : public binary_function<TimerExpiryInfo, TimerExpiryInfo, bool>
+	  {	
+	    bool operator()(const TimerExpiryInfo & _Left, const TimerExpiryInfo & _Right) const
+		  {	return (_Left.m_expireTime < _Right.m_expireTime); }
+	  };
+
+    typedef std::multiset<TimerExpiryInfo, TimerExpiryInfo_compare> TimerExpiryInfoList;
+    TimerExpiryInfoList m_expiryList;
 
     // The last system timer tick value that was used to process timers.
-    PTimeInterval lastSample;
+    PTimeInterval m_lastSample;
+
+    // thread that handles the timer stuff
+    PThread * m_timerThread;
 };
 
 
@@ -692,6 +723,8 @@ class PProcess : public PThread
     // Maximum number of file handles process can open.
 
     bool m_library;
+
+    bool m_shuttingDown;
 
     PDictionary<POrdinalKey, PThread> activeThreads;
     PMutex                            activeThreadMutex;

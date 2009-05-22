@@ -626,32 +626,18 @@ void PDirectory::CloneContents(const PDirectory * d)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTimeInterval
-
-DWORD PTimeInterval::GetInterval() const
-{
-  if (milliseconds <= 0)
-    return 0;
-
-  if (milliseconds >= UINT_MAX)
-    return UINT_MAX;
-
-  return (DWORD)milliseconds;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
+
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
-  : resetTime(millisecs, seconds, minutes, hours, days)
+  : m_resetTime(millisecs, seconds, minutes, hours, days)
 {
   Construct();
 }
 
 
 PTimer::PTimer(const PTimeInterval & time)
-  : resetTime(time)
+  : m_resetTime(time)
 {
   Construct();
 }
@@ -659,34 +645,33 @@ PTimer::PTimer(const PTimeInterval & time)
 
 void PTimer::Construct()
 {
-  timerList = PProcess::Current().GetTimerList();
-  timerId = timerList->GetNewTimerId();
-  state = Stopped;
+  m_timerList = PProcess::Current().GetTimerList();
+  m_timerId = m_timerList->GetNewTimerId();
+  m_state = Stopped;
 
   StartRunning(PTrue);
 }
 
 
-PTimer & PTimer::operator=(DWORD milliseconds)
+PInt64 PTimer::GetMilliSeconds() const
 {
-  resetTime.SetInterval(milliseconds);
-  StartRunning(oneshot);
-  return *this;
+  PInt64 diff = m_absoluteTime - Tick().GetMilliSeconds();
+  if (diff < 0)
+    diff = 0;
+  return diff;
 }
 
-
-PTimer & PTimer::operator=(const PTimeInterval & time)
+void PTimer::SetMilliSeconds(PInt64 msecs)
 {
-  resetTime = time;
-  StartRunning(oneshot);
-  return *this;
+  m_resetTime.SetInterval(msecs);
+  StartRunning(m_oneshot);
 }
 
 
 PTimer::~PTimer()
 {
   // queue a request to remove this timer, and always do it synchronously
-  timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
+  m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
 }
 
 
@@ -696,37 +681,39 @@ void PTimer::SetInterval(PInt64 milliseconds,
                          long hours,
                          int days)
 {
-  resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
-  StartRunning(oneshot);
+  m_resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
+  StartRunning(m_oneshot);
 }
 
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  resetTime = time;
+  m_resetTime = time;
   StartRunning(PFalse);
 }
 
 
 void PTimer::StartRunning(PBoolean once)
 {
-  PTimeInterval::operator=(resetTime);
-  oneshot = once;
-  state = (*this) != 0 ? Starting : Stopped;
+  PTimeInterval::operator=(m_resetTime);
+  m_oneshot = once;
+  int oldState = m_state;
+  m_state = (m_resetTime == 0 ? Stopped : Running);
 
-  if (IsRunning())
-    timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
-  else if (state != Stopped)
-    timerList->QueueRequest(PTimerList::RequestType::Stop, this);
+  if (!IsRunning() && (oldState != Stopped)) 
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
+  else if (IsRunning() && (oldState == Stopped)) {
+    m_absoluteTime = Tick().GetMilliSeconds() + m_resetTime.GetMilliSeconds();
+    m_timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
+  }
 }
 
 
 void PTimer::Stop(bool wait)
 {
-  if (state != Stopped) {
-    state = Stopped;
-    milliseconds = 0;
-    timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
+  if (m_state != Stopped) {
+    m_state = Stopped;
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
   }
 }
 
@@ -734,72 +721,42 @@ void PTimer::Stop(bool wait)
 void PTimer::Pause()
 {
   if (IsRunning()) {
-    state = Paused;
-    timerList->QueueRequest(PTimerList::RequestType::Stop, this);
+    m_state = Paused;
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
   }
 }
 
 
 void PTimer::Resume()
 {
-  if (state == Paused) {
-    state = Starting;
-    timerList->QueueRequest(PTimerList::RequestType::Start, this);
+  if (m_state == Stopped || m_state == Paused) {
+    m_state = Running;
+    m_timerList->QueueRequest(PTimerList::RequestType::Start, this);
   }
 }
 
 
 void PTimer::Reset()
 {
-  StartRunning(oneshot);
+  StartRunning(m_oneshot);
 }
 
 // called only from the timer thread
 void PTimer::OnTimeout()
 {
-  if (!callback.IsNULL())
-    callback(*this, IsRunning());
+  if (!m_callback.IsNULL())
+    m_callback(*this, IsRunning());
 }
 
 
-void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
+void PTimer::Process(PInt64 now)
 {
-  switch (state) {
-    case Starting :
-      state = Running;
-      if (resetTime < minTimeLeft)
-        minTimeLeft = resetTime;
-      break;
-
+  switch (m_state) {
     case Running :
-      operator-=(delta);
-
-      if (milliseconds > 0) {
-        if (milliseconds < minTimeLeft.GetMilliSeconds())
-          minTimeLeft = *this;
-      }
-      else {
-        if (oneshot) {
-          milliseconds = 0;
-          state = Stopped;
-        }
-        else {
-          PTimeInterval::operator=(resetTime);
-          if (resetTime < minTimeLeft)
-            minTimeLeft = resetTime;
-        }
-
-        /* This must be outside the mutex or if OnTimeout() changes the
-           timer value (quite plausible) it deadlocks.
-         */
+      if (m_absoluteTime <= now) {
+        if (m_oneshot) 
+          m_state = Stopped;
         OnTimeout();
-
-        if (state == Starting) {
-          state = Running;
-          if (resetTime < minTimeLeft)
-            minTimeLeft = resetTime;
-        }
-        return;
       }
       break;
 
@@ -814,144 +771,129 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 
 PTimerList::PTimerList()
 {
-  timerThread = NULL;
+  m_timerThread = NULL;
 }
 
-void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool _isSync)
+void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool isSync)
 {
-  // if this operation is occurring in the timer thread, then handle synchronoously
-  if (timerThread == PThread::Current()) {
-    switch (action) {
-      case PTimerList::RequestType::Start:
-        {
-          TimerInfoMapType::iterator r = activeTimers.find(timer->GetTimerId());
+  bool inTimerThread = m_timerThread == PThread::Current();
 
-          // if the timer is a new timer, then use special queue as asynchronous add won't work
-          if (r == activeTimers.end()) {
-            RequestType request(action, timer);
-            queueMutex.Wait();
-            addQueue.push(request);
-            queueMutex.Signal();
-          }
-        }
-        break;
-      case PTimerList::RequestType::Stop:
-        {
-          // flag the timer as to-be-removed
-          TimerInfoMapType::iterator r = activeTimers.find(timer->GetTimerId());
-          if (r != activeTimers.end())
-            r->second.removed = true;
-        }
-        break;
-    }
-    return;
-  }
-
-  // submit asynchronous request
   RequestType request(action, timer);
   PSyncPoint sync;
-  bool isSync = false;
-  if (_isSync) {
-    request.sync = &sync;
-    isSync = true;
-  }
 
-  queueMutex.Wait();
-  requestQueue.push(request);
-  queueMutex.Signal();
+  // set synchronisation point
+  if (!inTimerThread) 
+    request.m_sync = isSync ? &sync : NULL;
 
-  PProcess::Current().SignalTimerChange();
+  // queue the request
+  m_queueMutex.Wait();
+  m_requestQueue.push(request);
+  m_queueMutex.Signal();
 
-  if (isSync)
+  // wait for synchronisation point
+  if (!inTimerThread && PProcess::Current().SignalTimerChange() && isSync)
     sync.Wait();
 }
 
-PTimeInterval PTimerList::Process()
+
+void PTimerList::AddActiveTimer(const RequestType & request)
 {
-  timerThread = PThread::Current();
+  ActiveTimerInfoMap::iterator r = m_activeTimers.find(request.m_id);
+  if (r == m_activeTimers.end()) {
+    m_activeTimers.insert(ActiveTimerInfoMap::value_type(request.m_id, ActiveTimerInfo(request.m_timer, request.m_serialNumber)));
+  }
+  else {
+    r->second.m_serialNumber = request.m_serialNumber;
+    r->second.m_timer        = request.m_timer;
+  }
+  m_expiryList.insert(TimerExpiryInfo(request.m_id, request.m_absoluteTime, request.m_serialNumber));
+}
 
-  PWaitAndSignal l(timerListMutex);
 
-  PTRACE(5, "PTLib\tMONITOR:timers=" << activeTimers.size());
+void PTimerList::ProcessTimerQueue()
+{
+  m_queueMutex.Wait();
 
   // process the requests in the timer request queue
-  while (!requestQueue.empty()) {
-    queueMutex.Wait();
-    RequestType request = requestQueue.front();
-    requestQueue.pop();
-    queueMutex.Signal();
+  while (!m_requestQueue.empty()) {
 
-    TimerInfoMapType::iterator r = activeTimers.find(request.id);
-    switch (request.action) {
+    RequestType request(m_requestQueue.front());
+    m_requestQueue.pop();
+    m_queueMutex.Signal();
+
+    switch (request.m_action) {
       case PTimerList::RequestType::Start:
-        if (r == activeTimers.end()) 
-          activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
+        AddActiveTimer(request);
         break;
       case PTimerList::RequestType::Stop:
-        if (r != activeTimers.end()) 
-          activeTimers.erase(r);
+        {
+          ActiveTimerInfoMap::iterator r = m_activeTimers.find(request.m_id);
+          if (r != m_activeTimers.end()) 
+            m_activeTimers.erase(r);
+          else {
+            PTRACE(1, "Warning - request to delete timer that does not exist");
+          }
+        }
         break;
       default:
         PAssertAlways("unknown timer request code");
         break;
     }
-    if (request.sync != NULL)
-      request.sync->Signal();
+    if (request.m_sync != NULL)
+      request.m_sync->Signal();
+
+    m_queueMutex.Wait();
   }
 
-  // calculate interval since last processing, and update time of last processing to now
-  PTimeInterval now = PTimer::Tick();
-  PTimeInterval sampleTime;
-  if (lastSample == 0 || lastSample > now)
-    sampleTime = 0;
-  else {
-    sampleTime = now - lastSample;
-    if (now < lastSample)
-      sampleTime += PMaxTimeInterval;
-  }
-  lastSample = now;
+  m_queueMutex.Signal();
+}
 
-  // process the timers and find the minimum amount of time remaining
-  // also remove any timer labelled as removed
-  PTimeInterval minTimeLeft = PMaxTimeInterval;
-  {
-    TimerInfoMapType::iterator r = activeTimers.begin();
-    while (r != activeTimers.end()) {
-      PTimeInterval oldMinTimeLeft(minTimeLeft);
-      if (!r->second.removed) 
-        r->second.timer->Process(sampleTime, minTimeLeft);
-      if (!r->second.removed) 
-        ++r;
-      else {
-        if (r == activeTimers.begin()) {
-          activeTimers.erase(r);
-          r = activeTimers.begin();
-        }
-        else
-        {
-          TimerInfoMapType::iterator s = r;
-          --s;
-          activeTimers.erase(r);
-          r = s;
-        }
-        minTimeLeft = oldMinTimeLeft;
+PTimeInterval PTimerList::Process()
+{
+  m_timerThread = PThread::Current();
+
+  PTRACE(5, "PTLib\tMONITOR:timers=" << m_activeTimers.size() << ",expiries=" << m_expiryList.size());
+
+  // process the timer queue
+  ProcessTimerQueue();
+
+  // process timers that have expired
+  PInt64 now = PTimer::Tick().GetMilliSeconds();
+  while ((m_expiryList.size() > 0) && (m_expiryList.begin()->m_expireTime <= now)) {
+    TimerExpiryInfo expiry = *m_expiryList.begin();
+    m_expiryList.erase(m_expiryList.begin());
+
+    m_queueMutex.Wait();
+    ActiveTimerInfoMap::iterator t = m_activeTimers.find(expiry.m_timerId);
+    if (t != m_activeTimers.end()) {
+      ActiveTimerInfo & timer = t->second;
+      if (expiry.m_serialNumber == timer.m_serialNumber) {
+        timer.m_timer->Process(now);
+        if (timer.m_timer->m_state != PTimer::Stopped)
+          m_expiryList.insert(TimerExpiryInfo(expiry.m_timerId, now + timer.m_timer->m_resetTime.GetMilliSeconds(), timer.m_serialNumber));
       }
     }
+    m_queueMutex.Signal();
   }
 
-  // add in an new timers created while timers were processed
-  while (!addQueue.empty()) {
-    queueMutex.Wait();
-    RequestType request = addQueue.front();
-    addQueue.pop();
-    queueMutex.Signal();
+  // process the timer queue again
+  ProcessTimerQueue();
 
-    activeTimers.insert(TimerInfoMapType::value_type(request.id, TimerInfoType(request.timer)));
-    request.timer->Process(0, minTimeLeft);
+  // use oldest timer to calculate minimum time left
+  PTimeInterval minTimeLeft;
+  if (m_expiryList.size() == 0) 
+    minTimeLeft = 1000;
+  else {
+    minTimeLeft = m_expiryList.begin()->m_expireTime - now;
+    if (minTimeLeft.GetMilliSeconds() < PTimer::Resolution())
+      minTimeLeft = PTimer::Resolution();
+    if (minTimeLeft < 25)
+      minTimeLeft = 25;
   }
 
   return minTimeLeft;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
@@ -1508,6 +1450,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   , buildNumber(build)
   , maxHandles(INT_MAX)
   , m_library(library)
+  , m_shuttingDown(false)
 {
   activeThreads.DisallowDeleteObjects();
   activeThreads.SetAt((uintptr_t)GetCurrentThreadId(), this);
@@ -1563,6 +1506,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 void PProcess::PreShutdown()
 {
+  PProcessInstance->m_shuttingDown = true;
   PProcessStartupList & startups = GetPProcessStartupList();
   for (PProcessStartupList::iterator startup = startups.begin(); startup != startups.end(); ++startup)
     startup->second->OnShutdown();
