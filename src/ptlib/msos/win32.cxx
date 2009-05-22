@@ -1138,14 +1138,20 @@ void PProcess::HouseKeepingThread::Main()
 }
 
 
-void PProcess::SignalTimerChange()
+bool PProcess::SignalTimerChange()
 {
+  if (m_shuttingDown) 
+    return false;
+
   deleteThreadMutex.Wait();
+
   if (houseKeeper == NULL)
     houseKeeper = new HouseKeepingThread;
   else
     houseKeeper->m_breakBlock.Signal();
+
   deleteThreadMutex.Signal();
+  return true;
 }
 
 
@@ -1161,6 +1167,7 @@ PProcess::~PProcess()
 
   // Get rid of the house keeper (majordomocide)
   delete houseKeeper;
+  houseKeeper = NULL;
 
   // OK, if there are any left we get really insistent...
   activeThreadMutex.Wait();

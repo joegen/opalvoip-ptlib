@@ -35,91 +35,88 @@
 // PTimeInterval
 
 PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
-  : milliseconds(millisecs) { }
+  : m_milliseconds(millisecs) { }
 
 
 PINLINE PObject * PTimeInterval::Clone() const
-  { return PNEW PTimeInterval(milliseconds); }
-
-PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
-  { return milliseconds; }
+  { return PNEW PTimeInterval(GetMilliSeconds()); }
 
 PINLINE long PTimeInterval::GetSeconds() const
-  { return (long)(milliseconds/1000); }
+  { return (long)(GetMilliSeconds()/1000); }
 
 PINLINE long PTimeInterval::GetMinutes() const
-  { return (long)(milliseconds/60000); }
+  { return (long)(GetMilliSeconds()/60000); }
 
 PINLINE int PTimeInterval::GetHours() const
-  { return (int)(milliseconds/3600000); }
+  { return (int)(GetMilliSeconds()/3600000); }
 
 PINLINE int PTimeInterval::GetDays() const
-  { return (int)(milliseconds/86400000); }
+  { return (int)(GetMilliSeconds()/86400000); }
 
 
 PINLINE PTimeInterval PTimeInterval::operator-() const
-  { return PTimeInterval(-milliseconds); }
+  { return PTimeInterval(-GetMilliSeconds()); }
 
 PINLINE PTimeInterval PTimeInterval::operator+(const PTimeInterval & t) const
-  { return PTimeInterval(milliseconds + t.milliseconds); }
+  { return PTimeInterval(GetMilliSeconds() + t.GetMilliSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator+=(const PTimeInterval & t)
-  { milliseconds += t.milliseconds; return *this; }
+  { SetMilliSeconds(GetMilliSeconds() + t.GetMilliSeconds()); return *this; }
 
 PINLINE PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
-  { return PTimeInterval(milliseconds - t.milliseconds); }
+  { return PTimeInterval(GetMilliSeconds() - t.GetMilliSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
-  { milliseconds -= t.milliseconds; return *this; }
+  { SetMilliSeconds(GetMilliSeconds() - t.GetMilliSeconds()); return *this; }
 
 PINLINE PTimeInterval PTimeInterval::operator*(int f) const
-  { return PTimeInterval(milliseconds * f); }
+  { return PTimeInterval(GetMilliSeconds() * f); }
 
 PINLINE PTimeInterval & PTimeInterval::operator*=(int f)
-  { milliseconds *= f; return *this; }
+  { SetMilliSeconds(GetMilliSeconds() * f); return *this; }
 
 PINLINE PTimeInterval PTimeInterval::operator/(int f) const
-  { return PTimeInterval(milliseconds / f); }
+  { return PTimeInterval(GetMilliSeconds() / f); }
 
 PINLINE PTimeInterval & PTimeInterval::operator/=(int f)
-  { milliseconds /= f; return *this; }
+  { SetMilliSeconds(GetMilliSeconds() / f); return *this; }
 
 
 PINLINE bool PTimeInterval::operator==(const PTimeInterval & t) const
-  { return milliseconds == t.milliseconds; }
+  { return GetMilliSeconds() == t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator!=(const PTimeInterval & t) const
-  { return milliseconds != t.milliseconds; }
+  { return GetMilliSeconds() != t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator> (const PTimeInterval & t) const
-  { return milliseconds > t.milliseconds; }
+  { return GetMilliSeconds() > t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator>=(const PTimeInterval & t) const
-  { return milliseconds >= t.milliseconds; }
+  { return GetMilliSeconds() >= t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator< (const PTimeInterval & t) const
-  { return milliseconds < t.milliseconds; }
+  { return GetMilliSeconds() < t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator<=(const PTimeInterval & t) const
-  { return milliseconds <= t.milliseconds; }
+  { return GetMilliSeconds() <= t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator==(long msecs) const
-  { return (long)milliseconds == msecs; }
+  { return (long)GetMilliSeconds() == msecs; }
 
 PINLINE bool PTimeInterval::operator!=(long msecs) const
-  { return (long)milliseconds != msecs; }
+  { return (long)GetMilliSeconds() != msecs; }
 
 PINLINE bool PTimeInterval::operator> (long msecs) const
-  { return (long)milliseconds > msecs; }
+  { return (long)GetMilliSeconds() > msecs; }
 
 PINLINE bool PTimeInterval::operator>=(long msecs) const
-  { return (long)milliseconds >= msecs; }
+  { return (long)GetMilliSeconds() >= msecs; }
 
 PINLINE bool PTimeInterval::operator< (long msecs) const
-  { return (long)milliseconds < msecs; }
+  { return (long)GetMilliSeconds() < msecs; }
 
 PINLINE bool PTimeInterval::operator<=(long msecs) const
-  { return (long)milliseconds <= msecs; }
+  { return (long)GetMilliSeconds() <= msecs; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,19 +182,19 @@ PINLINE int PTime::GetTimeZone()
 // PTimer
 
 PINLINE PBoolean PTimer::IsRunning() const
-  { return state == Starting || state == Running; }
+  { return m_state == Running; }
 
 PINLINE PBoolean PTimer::IsPaused() const
-  { return state == Paused; }
+  { return m_state == Paused; }
 
 PINLINE const PTimeInterval & PTimer::GetResetTime() const
-  { return resetTime; }
+  { return m_resetTime; }
 
 PINLINE const PNotifier & PTimer::GetNotifier() const
-  { return callback; }
+  { return m_callback; }
 
 PINLINE void PTimer::SetNotifier(const PNotifier & func)
-  { callback = func; }
+  { m_callback = func; }
 
 
 ///////////////////////////////////////////////////////////////////////////////

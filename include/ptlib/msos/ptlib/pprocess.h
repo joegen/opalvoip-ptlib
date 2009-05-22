@@ -38,7 +38,7 @@
   public:
     ~PProcess();
 
-    void SignalTimerChange();
+    bool SignalTimerChange();
     // Signal to the timer thread that a change was made.
 
     virtual PBoolean IsServiceProcess() const;
