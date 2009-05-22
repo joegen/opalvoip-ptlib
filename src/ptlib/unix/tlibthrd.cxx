@@ -155,8 +155,11 @@ void PHouseKeepingThread::Main()
 }
 
 
-void PProcess::SignalTimerChange()
+bool PProcess::SignalTimerChange()
 {
+  if (m_shuttingDown)
+    return false;
+
   PWaitAndSignal m(housekeepingMutex);
   if (housekeepingThread == NULL) {
 #if PMEMORY_CHECK
@@ -169,6 +172,7 @@ void PProcess::SignalTimerChange()
   }
 
   breakBlock.Signal();
+  return true;
 }
 
 
