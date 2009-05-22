@@ -70,7 +70,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS) || defined (__BEOS__)
 
   public:
-    void SignalTimerChange();
+    bool SignalTimerChange();
     PBoolean PThreadKill(pthread_t id, unsigned signal);
     void PXSetThread(pthread_t id, PThread * thread);
 
@@ -82,7 +82,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 #elif defined(VX_TASKS)
 
   public:
-    void SignalTimerChange();
+    bool SignalTimerChange();
 
   private:
     PLIST(ThreadList, PThread);
