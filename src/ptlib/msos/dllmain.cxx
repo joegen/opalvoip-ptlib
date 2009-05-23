@@ -46,11 +46,6 @@
 #include <ptclib/pvidfile.h>
 #include <ptclib/ptts.h>
 
-#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
-#define INITGUID
-#include <dsound.h>
-#endif
-
 
 #ifndef _WIN32_WCE
 HINSTANCE PDllInstance;
