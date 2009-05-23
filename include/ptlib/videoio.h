@@ -1014,7 +1014,10 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   PCREATE_PLUGIN(name, PVideoInputDevice, &PVideoInputDevice_##name##_descriptor)
 
 PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
-PPLUGIN_STATIC_LOAD(Application, PVideoInputDevice);
+
+#ifdef P_APPSHARE
+  PPLUGIN_STATIC_LOAD(Application, PVideoInputDevice);
+#endif
 
 #if P_FFVDEV
   PPLUGIN_STATIC_LOAD(FFMPEG, PVideoInputDevice);
@@ -1041,8 +1044,13 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
   static PVideoOutputPluginServiceDescriptor<PVideoOutputDevice_##name> PVideoOutputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoOutputDevice, &PVideoOutputDevice_##name##_descriptor)
 
-// Link in static plug ins
-PPLUGIN_STATIC_LOAD(SDL, PVideoOutputDevice);
+#if _WIN32
+  PPLUGIN_STATIC_LOAD(Window, PVideoOutputDevice);
+#endif
+
+#if P_SDL
+  PPLUGIN_STATIC_LOAD(SDL, PVideoOutputDevice);
+#endif
 
 
 ////////////////////////////////////////////////////////
