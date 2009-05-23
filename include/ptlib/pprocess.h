@@ -145,7 +145,7 @@ class PTimerList : public PObject
           , m_timer(t)
           , m_id(t->GetTimerId())
           , m_absoluteTime(t->GetAbsoluteTime())
-          , m_serialNumber(++(t->m_serialNumber))
+          , m_serialNumber(t->GetNextSerialNumber())
           , m_sync(NULL)
         { }
 

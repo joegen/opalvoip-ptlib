@@ -249,6 +249,8 @@ class PTimer : public PTimeInterval
 
     PInt64 GetAbsoluteTime() const { return m_absoluteTime; }
 
+    PAtomicInteger::IntegerType GetNextSerialNumber() { return ++m_serialNumber; }
+
   private:
     void Construct();
 
