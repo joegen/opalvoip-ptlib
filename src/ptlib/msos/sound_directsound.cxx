@@ -35,6 +35,7 @@
 
 #if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
 
+#define INITGUID
 #include <ptlib/msos/ptlib/sound_directsound.h>
 
 #include <math.h>
