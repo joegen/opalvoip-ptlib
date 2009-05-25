@@ -1557,8 +1557,9 @@ PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [H
 if test "x${HAS_AUDIO}" = "x1" ; then
 
   dnl these are needed to pass through to the plugin configure program
-  AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],enable_alsa=$enableval)
-  AC_ARG_ENABLE(oss,  [  --enable-oss            enable OSS audio support],enable_oss=$enableval)
+  AC_ARG_ENABLE(alsa,  [  --enable-alsa           enable ALSA audio support],enable_alsa=$enableval)
+  AC_ARG_ENABLE(oss,   [  --enable-oss            enable OSS audio support],enable_oss=$enableval)
+  AC_ARG_ENABLE(pulse, [  --enable-pule           enable PULSE audio support],enable_pulse=$enableval)
 fi
 
 
