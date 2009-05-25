@@ -67,12 +67,8 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 #endif // P_QOS
 
 
-#if P_HAS_IPV6
-#define HAS_GETADDRINFO 1
-#endif
-
-#if (defined(_WIN32) && defined (_MSC_VER))
-#define HAS_GETADDRINFO 1
+#if P_HAS_IPV6 || defined(AI_NUMERICHOST)
+  #define HAS_GETADDRINFO 1
 #endif
 
 
