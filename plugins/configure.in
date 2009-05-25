@@ -92,7 +92,7 @@ dnl #########################################################################
 dnl check for Pulse sound support
 dnl ########################################################################
 
-AC_ARG_ENABLE(pulse, [  --enable-pulse            enable Pulse audio support],,enable_pulse=yes)
+AC_ARG_ENABLE(pulse, [  --enable-pulse       enable Pulse audio support],,enable_pulse=yes)
 
 if test "${enable_pulse}z" = "yesz" ; then
   AC_CHECK_HEADER(pulse/simple.h, PULSESNDCARDHDR=1)
