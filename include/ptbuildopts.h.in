@@ -167,10 +167,10 @@
 
 #if defined(_MSC_VER) && P_HAS_IPV6
 
-  #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
-  #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
+  #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/include/winsock2.h>)
+  #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/include/ws2tcpip.h>)
 
-  #define P_WINSOCK2_LIBRARY "ws2_32.lib"
+  #define P_WINSOCK2_LIBRARY "@IPV6_DIR@\lib\ws2_32.lib"
 
 #endif
 
@@ -185,9 +185,7 @@
 
 #if defined(_MSC_VER) && P_QOS
 
-  #pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
-
-  #define P_WINSOCK2_LIBRARY "ws2_32.lib"
+  #pragma include_alias(<qossp.h>, <@QOS_DIR@/include/qossp.h>)
 
 #endif
 
@@ -512,7 +510,7 @@
 
 #if defined(_MSC_VER) && P_DNS
 
-  #pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
+  #pragma include_alias(<windns.h>, <@DNS_DIR@/include/windns.h>)
 
   #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 
@@ -636,17 +634,6 @@
       #undef P_DIRECTSOUND_WINCE
     #endif
 
-    #if P_VIDEO
-      #define P_VFW_CAPTURE 1
-
-      #undef P_DIRECTX_DDRAW_H
-      #undef P_DIRECTSHOW_DDRAW_H
-    #endif
-
-    #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
-      #undef P_DIRECTSHOW
-    #endif
-
     #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
 
       #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
@@ -660,6 +647,17 @@
         #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
       #endif
 
+    #endif
+
+    #if P_VIDEO
+      #define P_VFW_CAPTURE 1
+
+      #undef P_DIRECTX_DDRAW_H
+      #undef P_DIRECTSHOW_DDRAW_H
+    #endif
+
+    #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
+      #undef P_DIRECTSHOW
     #endif
 
     #if defined(P_DIRECTSHOW)
