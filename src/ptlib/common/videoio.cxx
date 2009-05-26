@@ -1194,6 +1194,9 @@ PBoolean PVideoOutputDeviceRGB::SetFrameSize(unsigned width, unsigned height)
 {
   PWaitAndSignal m(mutex);
 
+  if (frameWidth == width && frameHeight == height)
+    return true;
+
   if (!PVideoOutputDevice::SetFrameSize(width, height))
     return PFalse;
 

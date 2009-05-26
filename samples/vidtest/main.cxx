@@ -214,7 +214,9 @@ void VidTest::Main()
   PVideoFrameInfo grabberInfo = *m_grabber;
   PVideoFrameInfo displayInfo = *m_display;
 
-  if (args.GetCount() > 0) {
+  if (args.GetCount() == 0)
+    displayInfo.SetColourFormat(grabberInfo.GetColourFormat());
+  else {
     if (!grabberInfo.Parse(args[0])) {
       cerr << "Could not parse argument \"" << args[0] << '"' << endl;
       return;
@@ -399,6 +401,8 @@ void VidTest::GrabAndDisplay(PThread &, INT)
         cerr << "Frame conversion failed!" << endl;
       }
     }
+
+    m_display->SetFrameSize(width, height);
 
     bool displayState = m_display->SetFrameData(0, 0, width, height, frames.back());
     if (oldDisplayState != displayState)
