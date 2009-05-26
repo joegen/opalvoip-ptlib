@@ -93,8 +93,6 @@ class PVideoInputDevice_Application : public PVideoInputDevice
       */
     virtual PBoolean IsCapturing();
 
-    virtual PBoolean SetVideoFormat(VideoFormat newFormat);
-
     /**Set the colour format to be used.
        Note that this function does not do any conversion. If it returns TRUE
        then the video device does the colour format in native mode.
@@ -107,28 +105,6 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     */
     virtual PBoolean SetColourFormat(
       const PString & colourFormat ///< New colour format for device.
-    );
-
-    /**Set the video frame rate to be used on the device.
-
-       Default behaviour sets the value of the frameRate variable and then
-       returns TRUE.
-    */
-    virtual PBoolean SetFrameRate(
-      unsigned rate  ///< Frames  per second
-    );
-
-    /**Set the frame size to be used.
-
-       Note that devices may not be able to produce the requested size, and
-       this function will fail.  See SetFrameSizeConverter().
-
-       Default behaviour sets the frameWidth and frameHeight variables and
-       returns TRUE.
-    */
-    virtual PBoolean SetFrameSize(
-      unsigned width,   ///< New width of frame
-      unsigned height   ///< New height of frame
     );
 
     /**Get the maximum frame size in bytes.
@@ -156,10 +132,6 @@ class PVideoInputDevice_Application : public PVideoInputDevice
      */
     virtual PBoolean TestAllFormats();
 
-    /**Set the video channel (not used)
-      */
-    virtual PBoolean SetChannel(int newChannel);
-
     /**Set the Handle of the window you wish to capture
       */
     void AttachCaptureWindow(
@@ -168,22 +140,14 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     );
 
   protected:
-    enum {
-      CaptureClosed,
-      CaptureTopWindow,
-      CaptureScreen,
-      CaptureDesktop,
-      CaptureRect,
-    } m_captureType;
+    bool GetWindowBitmap(BITMAP & bitmapInfo, BYTE * pixels = NULL, bool useTemp = false);
 
-    HWND m_hWnd;                   ///< Handle of Window to Capture
-    bool m_screenCap;              ///< true if to capture screen
-    bool m_client;                 ///< Capture the client area only
-    PBYTEArray bitMapInfoStorage;  ///< used for storing raw DIB
-    PBYTEArray tempPixelBuffer;    ///< used for storing temporary version of bitmap during convertion
+    HWND       m_hWnd;               ///< Handle of Window to Capture
+    bool       m_client;             ///< Capture the client area only
+    PBYTEArray m_tempPixelBuffer;    ///< used for storing temporary version of bitmap during convertion
 
-    PMutex lastFrameMutex;     ///< Frame Grab Mutex
-    PAdaptiveDelay grabDelay;  ///< Frame Grab delay
+    PMutex         m_lastFrameMutex; ///< Frame Grab Mutex
+    PAdaptiveDelay m_grabDelay;      ///< Frame Grab delay
 };
 
 
