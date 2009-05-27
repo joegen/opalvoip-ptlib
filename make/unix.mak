@@ -645,7 +645,11 @@ STDCCFLAGS	+= -DNDEBUG
 
 ifneq ($(OSTYPE),Darwin)
   ifeq ($(OSTYPE),solaris)
-    STDCCFLAGS	+= -xO3 
+    ifeq ($(USE_GCC),yes)
+      STDCCFLAGS	+= -O3
+    else
+      STDCCFLAGS	+= -xO3
+    endif
   else
     STDCCFLAGS	+= -Os 
   endif
