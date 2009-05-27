@@ -94,16 +94,31 @@ class PTimer : public PTimeInterval
     PTimer(
       const PTimeInterval & time    ///< New time interval for timer.
     );
+    PTimer(
+      const PTimer & timer    ///< Timer to copy.
+    );
+
+    /** Restart the timer in one shot mode using the specified time value. If
+       the timer was already running, the "time left" is simply reset.
+
+       @return
+       reference to the timer.
+     */
+    PTimer & operator=(
+      DWORD milliseconds            ///< New time interval for timer.
+    );
+    PTimer & operator=(
+      const PTimeInterval & time    ///< New time interval for timer.
+    );
+    PTimer & operator=(
+      const PTimer & timer          ///< New time interval for timer.
+    );
 
     /** Destroy the timer object, removing it from the applications timer list
        if it was running.
      */
     virtual ~PTimer();
   //@}
-
-    PInt64 GetMilliSeconds() const;
-
-    void SetMilliSeconds(PInt64 msecs);
 
   /**@name Control functions */
   //@{
@@ -245,10 +260,19 @@ class PTimer : public PTimeInterval
     static unsigned Resolution();
   //@}
 
-    IDType GetTimerId() const { return m_timerId; }
+  /**@name Member access */
+  //@{
+    /**Return number of milliseconds left in timer.
+      */
+    PInt64 GetMilliSeconds() const;
 
+    /**Return absolute time timer will expire.
+      */
     PInt64 GetAbsoluteTime() const { return m_absoluteTime; }
+  //@}
 
+    // Internal functions.
+    IDType GetTimerId() const { return m_timerId; }
     PAtomicInteger::IntegerType GetNextSerialNumber() { return ++m_serialNumber; }
 
   private:
