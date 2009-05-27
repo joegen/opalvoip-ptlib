@@ -1411,13 +1411,6 @@ dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
 PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [enable POP3/SMTP support])
 
 dnl ########################################################################
-dnl check for enabling socket aggregation
-dnl MSWIN_DISPLAY    sockagg,Socket aggregation suppression
-dnl MSWIN_DEFINE     sockagg,!P_SOCKAGG
-
-PTLIB_SIMPLE_OPTION([sockagg], [SOCKAGG], [enable socket aggregation])
-
-dnl ########################################################################
 dnl check for sound support
 dnl MSWIN_DISPLAY audio,Sound support
 dnl MSWIN_DEFINE  audio,P_AUDIO
