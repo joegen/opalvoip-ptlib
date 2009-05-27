@@ -4,71 +4,33 @@
 #define ALSA_PCM_NEW_HW_PARAMS_API 1
 #include <alsa/asoundlib.h>
 
-class PAudioDelay : public PObject
-{
-  PCLASSINFO(PAudioDelay, PObject);
-
-  public:
-    PAudioDelay();
-    PBoolean Delay(int time);
-    void Restart();
-    int  GetError();
-
-  protected:
-    PTime  previousTime;
-    PBoolean   firstTime;
-    int    error;
-};
-
-#define MIN_HEADROOM    30
-#define MAX_HEADROOM    60
-
-class SoundHandleEntry : public PObject {
-
-  PCLASSINFO(SoundHandleEntry, PObject)
-
-  public:
-    SoundHandleEntry();
-
-    int handle;
-    int direction;
-
-    unsigned numChannels;
-    unsigned sampleRate;
-    unsigned bitsPerSample;
-    unsigned fragmentValue;
-    PBoolean isInitialised;
-};
-
-#define LOOPBACK_BUFFER_SIZE 5000
-#define BYTESINBUF ((startptr<endptr)?(endptr-startptr):(LOOPBACK_BUFFER_SIZE+endptr-startptr))
-
-
 
 class PSoundChannelALSA : public PSoundChannel {
  public:
   PSoundChannelALSA();
   void Construct();
-  PSoundChannelALSA(const PString &device,
-		   PSoundChannel::Directions dir,
-		   unsigned numChannels,
-		   unsigned sampleRate,
-		   unsigned bitsPerSample);
+  PSoundChannelALSA(
+    const PString &device,
+    PSoundChannel::Directions dir,
+    unsigned numChannels,
+    unsigned sampleRate,
+    unsigned bitsPerSample
+  );
   ~PSoundChannelALSA();
   static PStringArray GetDeviceNames(PSoundChannel::Directions);
   static PString GetDefaultDevice(PSoundChannel::Directions);
-  PBoolean Open(const PString & _device,
-       Directions _dir,
-       unsigned _numChannels,
-       unsigned _sampleRate,
-       unsigned _bitsPerSample);
+  PBoolean Open(
+    const PString & device,
+    Directions dir,
+    unsigned numChannels,
+    unsigned sampleRate,
+    unsigned bitsPerSample
+  );
   PBoolean Setup();
   PBoolean Close();
   PBoolean Write(const void * buf, PINDEX len);
   PBoolean Read(void * buf, PINDEX len);
-  PBoolean SetFormat(unsigned numChannels,
-	    unsigned sampleRate,
-	    unsigned bitsPerSample);
+  PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
   unsigned GetChannels() const;
   unsigned GetSampleRate() const;
   unsigned GetSampleSize() const;
@@ -86,14 +48,14 @@ class PSoundChannelALSA : public PSoundChannel {
   PBoolean WaitForRecordBufferFull();
   PBoolean WaitForAllRecordBuffersFull();
   PBoolean Abort();
-  PBoolean SetVolume (unsigned);
-  PBoolean GetVolume (unsigned &);
+  PBoolean SetVolume(unsigned);
+  PBoolean GetVolume(unsigned &);
   PBoolean IsOpen() const;
 
  private:
-
   static void UpdateDictionary(PSoundChannel::Directions);
-  PBoolean Volume (PBoolean, unsigned, unsigned &);
+  PBoolean Volume(PBoolean, unsigned, unsigned &);
+
   PSoundChannel::Directions direction;
   PString device;
   unsigned mNumChannels;
@@ -106,11 +68,8 @@ class PSoundChannelALSA : public PSoundChannel {
 
   PMutex device_mutex;
 
-  /**number of 30 (or 20) ms long sound intervals stored by ALSA. Typically, 2.*/
-  PINDEX storedPeriods;
-
-  /**Total number of bytes of audio stored by ALSA.  Typically, 2*480 or 960.*/
-  PINDEX storedSize;
+  PINDEX m_bufferSize;
+  PINDEX m_bufferCount;
 
   /** Number of bytes in a ALSA frame. a frame may only be 4ms long*/
   int frameBytes; 
