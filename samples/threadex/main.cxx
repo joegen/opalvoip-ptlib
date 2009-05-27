@@ -44,8 +44,8 @@ PCREATE_PROCESS(Threadex);
 
 #include <set>
 
-PAtomicInteger autoDeleteThreadsStarted = 0;
-PAtomicInteger autoDeleteThreadsFinished = 0;
+PAtomicInteger autoDeleteThreadsStarted;
+PAtomicInteger autoDeleteThreadsFinished;
 
 PMutex setMutex;
 typedef std::set<PThreadIdentifer> ThreadSet;
