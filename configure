@@ -733,7 +733,6 @@ HAS_TELNET
 HAS_REMCONN
 HAS_SERIAL
 HAS_POP3SMTP
-HAS_SOCKAGG
 HAS_AUDIO
 HAS_QOS
 HAS_VIDEO
@@ -1430,7 +1429,6 @@ Optional Features:
   --enable-remconn        enable remote connection support
   --enable-serial         enable serial port support
   --enable-pop3smtp       enable POP3/SMTP support
-  --enable-sockagg        enable socket aggregation
   --enable-audio          enable audio support
   --enable-qos            enable QOS support
   --enable-video          enable video device support
@@ -1447,6 +1445,7 @@ Optional Features:
   --enable-vfw            enable video for windows capture
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
+  --enable-pule           enable PULSE audio support
   --enable-memcheck       enable leak testing code (off by default)
   --disable-odbc          disable ODBC support
   --enable-exceptions     enable C++ exceptions
@@ -12073,58 +12072,6 @@ echo "${ECHO_T}no" >&6; }
 
 
 
-          { echo "$as_me:$LINENO: checking enable socket aggregation" >&5
-echo $ECHO_N "checking enable socket aggregation... $ECHO_C" >&6; }
-          # Check whether --enable-sockagg was given.
-if test "${enable_sockagg+set}" = set; then
-  enableval=$enable_sockagg;
-                         if test "x$enableval" = "xyes"; then
-                           HAS_SOCKAGG=1
-                         else
-                           HAS_SOCKAGG=
-                         fi
-
-fi
-
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: sockagg support disabled due to disabled dependency " >&5
-echo "$as_me: sockagg support disabled due to disabled dependency " >&6;}
-	      HAS_SOCKAGG=
-	    fi
-	  fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: sockagg support disabled due to disabled dependency " >&5
-echo "$as_me: sockagg support disabled due to disabled dependency " >&6;}
-	      HAS_SOCKAGG=
-	    fi
-	  fi
-
-
-          if test "x${HAS_SOCKAGG}" = "x1"; then
-
-cat >>confdefs.h <<\_ACEOF
-#define P_SOCKAGG 1
-_ACEOF
-
-            HAS_SOCKAGG=1
-            { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-          else
-            HAS_SOCKAGG=
-            { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-          fi
-
-
-
-
-
-
-
           { echo "$as_me:$LINENO: checking enable audio support" >&5
 echo $ECHO_N "checking enable audio support... $ECHO_C" >&6; }
           # Check whether --enable-audio was given.
@@ -14056,6 +14003,11 @@ if test "${enable_oss+set}" = set; then
   enableval=$enable_oss; enable_oss=$enableval
 fi
 
+  # Check whether --enable-pulse was given.
+if test "${enable_pulse+set}" = set; then
+  enableval=$enable_pulse; enable_pulse=$enableval
+fi
+
 fi
 
 
@@ -15729,7 +15681,6 @@ HAS_TELNET!$HAS_TELNET$ac_delim
 HAS_REMCONN!$HAS_REMCONN$ac_delim
 HAS_SERIAL!$HAS_SERIAL$ac_delim
 HAS_POP3SMTP!$HAS_POP3SMTP$ac_delim
-HAS_SOCKAGG!$HAS_SOCKAGG$ac_delim
 HAS_AUDIO!$HAS_AUDIO$ac_delim
 HAS_QOS!$HAS_QOS$ac_delim
 HAS_VIDEO!$HAS_VIDEO$ac_delim
@@ -15798,7 +15749,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 90; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 89; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
