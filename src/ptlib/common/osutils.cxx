@@ -643,6 +643,13 @@ PTimer::PTimer(const PTimeInterval & time)
 }
 
 
+PTimer::PTimer(const PTimer & timer)
+  : m_resetTime(timer.GetMilliSeconds())
+{
+  Construct();
+}
+
+
 void PTimer::Construct()
 {
   m_timerList = PProcess::Current().GetTimerList();
@@ -661,13 +668,31 @@ PInt64 PTimer::GetMilliSeconds() const
   return diff;
 }
 
-void PTimer::SetMilliSeconds(PInt64 msecs)
+
+PTimer & PTimer::operator=(DWORD milliseconds)
 {
-  m_resetTime.SetInterval(msecs);
+  m_resetTime.SetInterval(milliseconds);
   StartRunning(m_oneshot);
+  return *this;
+}
+ 
+
+PTimer & PTimer::operator=(const PTimeInterval & time)
+{
+  m_resetTime = time;
+  StartRunning(m_oneshot);
+  return *this;
 }
 
 
+PTimer & PTimer::operator=(const PTimer & timer)
+{
+  m_resetTime.SetInterval(timer.GetMilliSeconds());
+  StartRunning(m_oneshot);
+  return *this;
+}
+ 
+ 
 PTimer::~PTimer()
 {
   // queue a request to remove this timer, and always do it synchronously
@@ -863,7 +888,6 @@ PTimeInterval PTimerList::Process()
     TimerExpiryInfo expiry = *m_expiryList.begin();
     m_expiryList.erase(m_expiryList.begin());
 
-    m_queueMutex.Wait();
     ActiveTimerInfoMap::iterator t = m_activeTimers.find(expiry.m_timerId);
     if (t != m_activeTimers.end()) {
       ActiveTimerInfo & timer = t->second;
@@ -873,7 +897,6 @@ PTimeInterval PTimerList::Process()
           m_expiryList.insert(TimerExpiryInfo(expiry.m_timerId, now + timer.m_timer->m_resetTime.GetMilliSeconds(), timer.m_serialNumber));
       }
     }
-    m_queueMutex.Signal();
   }
 
   // process the timer queue again
