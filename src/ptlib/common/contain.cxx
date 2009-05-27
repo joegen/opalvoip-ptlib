@@ -56,12 +56,6 @@ extern "C" int vsprintf(char *, const char *, va_list);
 #define __CLASS__ GetClass()
 
 
-#ifdef __GNUC__
-
-#include <ext/pool_allocator.h>
-#include <ext/mt_allocator.h>
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
