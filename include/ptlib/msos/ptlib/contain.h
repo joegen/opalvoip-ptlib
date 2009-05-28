@@ -288,28 +288,12 @@ class RegistryKey
     #pragma warning(disable:4127 4706)
   #endif
 
-  #if defined(P_WINSOCKv1)
-
-    #include <winsock.h>
-
-  #else // P_WINSOCKv1
-
-    ///IPv6 support
-    // Needed for for IPv6 socket API. Must be included before "windows.h"
-    #include <winsock2.h> // Version 2 of windows socket
-    #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
-
-    #if P_HAS_IPV6 && !defined IPPROTO_IPV6
-      #include "tpipv6.h"  // For IPv6 Tech Preview.
-    #endif
-
-  #endif // P_WINSOCKv1
+  #include <winsock2.h> // Version 2 of windows socket
+  #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
 
   #if defined(_MSC_VER)
     #pragma warning(pop)
   #endif
-
-  #define PIPX
 
   typedef int socklen_t;
 
