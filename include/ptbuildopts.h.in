@@ -167,7 +167,7 @@
   #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/include/winsock2.h>)
   #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/include/ws2tcpip.h>)
 
-  #define P_WINSOCK2_LIBRARY "@IPV6_DIR@\lib\ws2_32.lib"
+  #define P_WINSOCK2_LIBRARY "@IPV6_DIR@/lib/ws2_32.lib"
 
 #endif
 
