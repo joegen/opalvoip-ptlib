@@ -64,19 +64,25 @@
 
 #if defined(_MSC_VER)
   #if _MSC_VER < 1310
+    #define P_DEPRECATED
     #define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) P_REMOVE_VIRTUAL_INTERNAL_BASE(fn)
   #elif _MSC_VER < 1400
+    #define P_DEPRECATED __declspec(deprecated)
     #define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) __inline virtual __declspec(deprecated) type fn body
   #else
+    #define P_DEPRECATED __declspec(deprecated)
     #define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) __inline virtual __declspec(deprecated("Virtual function signature changed or function deprecated")) type fn body
   #endif
 #elif defined(__GNUC__)
   #if __GNUC__ < 4
+    #define P_DEPRECATED
     #define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) P_REMOVE_VIRTUAL_INTERNAL_BASE(fn)
   #else
-#define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) __attribute__((warn_unused_result)) __attribute__((deprecated)) P_REMOVE_VIRTUAL_INTERNAL_BASE(fn)
+    #define P_DEPRECATED __attribute__((deprecated))
+    #define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) __attribute__((warn_unused_result)) __attribute__((deprecated)) P_REMOVE_VIRTUAL_INTERNAL_BASE(fn)
   #endif
 #else
+    #define P_DEPRECATED
     #define P_REMOVE_VIRTUAL_INTERNAL(type, fn, body) P_REMOVE_VIRTUAL_INTERNAL_BASE(fn)
 #endif
 
