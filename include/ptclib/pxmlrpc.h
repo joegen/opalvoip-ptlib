@@ -221,7 +221,7 @@ class PXMLRPCVariableBase : public PObject {
     const char * type;
 
   private:
-    PXMLRPCVariableBase(const PXMLRPCVariableBase &) { }
+    PXMLRPCVariableBase(const PXMLRPCVariableBase &) : PObject() { }
 };
 
 
@@ -267,7 +267,7 @@ class PXMLRPCStructBase : public PObject {
     PXMLRPCStructBase();
     PXMLRPCStructBase & operator=(const PXMLRPCStructBase &);
   private:
-    PXMLRPCStructBase(const PXMLRPCStructBase &) { }
+    PXMLRPCStructBase(const PXMLRPCStructBase &) : PObject() { }
 
   public:
     void PrintOn(ostream & strm) const;
