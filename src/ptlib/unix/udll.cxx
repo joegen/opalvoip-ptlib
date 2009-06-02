@@ -362,12 +362,14 @@ PString PDynaLink::GetName(PBoolean full) const
     return "";
 
   PString str = name;
-  PINDEX pos = str.FindLast('/');
-  if (pos != P_MAX_INDEX)
-    str = str.Mid(pos+1);
-  pos = str.FindLast(".so");
-  if (pos != P_MAX_INDEX)
-    str = str.Left(pos);
+  if (!full) {
+    PINDEX pos = str.FindLast('/');
+    if (pos != P_MAX_INDEX)
+      str = str.Mid(pos+1);
+    pos = str.FindLast(".so");
+    if (pos != P_MAX_INDEX)
+      str = str.Left(pos);
+  }
 
   return str;
 }
