@@ -168,17 +168,17 @@ class PNotifier : public PSmartPointer
   If the instance to be called is the current instance, ie if \p obj is
   \p this then the #PCREATE_NOTIFIER macro should be used.
  */
-#define PCREATE_NOTIFIER2(obj, func) PNotifier(new func##_PNotifier(obj))
+#define PCREATE_NOTIFIER_EXT(obj, notifiee, func) PNotifier(new notifiee::func##_PNotifier(obj))
 
 /** Create a notifier object instance.
   This macro creates an instance of the particular #PNotifier class using
   the \p func parameter as the member function to call.
 
   The \p this object is used as the instance to call the function
-  against. The #PCREATE_NOTIFIER2 macro may be used if the instance to be
+  against. The #PCREATE_NOTIFIER_EXT macro may be used if the instance to be
   called is not the current object instance.
  */
-#define PCREATE_NOTIFIER(func) PCREATE_NOTIFIER2(this, func)
+#define PCREATE_NOTIFIER(func) PNotifier(new func##_PNotifier(this))
 
 
 #endif // PTLIB_NOTIFIER_H
