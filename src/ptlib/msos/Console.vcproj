@@ -320,6 +320,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\cli.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\cypher.cxx">
 			</File>
 			<File
@@ -1549,6 +1552,9 @@ configure --disable-winver --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWL
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\critsec.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\cli.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\cypher.h">

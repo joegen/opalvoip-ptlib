@@ -7536,6 +7536,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\cli.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\cypher.cxx"
 					>
 				</File>
@@ -8915,6 +8919,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\asnxer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\cli.h"
 					>
 				</File>
 				<File
