@@ -274,8 +274,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     PXMLElement * FindForm(const PString & id);
 
-    //friend class PVXMLChannel;
-
     PSyncPoint waitForEvent;
 
     PMutex sessionMutex;
@@ -308,7 +306,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PBoolean forceEnd;
 
     PString mediaFormat;
-    PVXMLChannel * vxmlChannel;
+    PVXMLChannel * & vxmlChannel;
 
     PTextToSpeech * textToSpeech;
     PBoolean autoDeleteTextToSpeech;
