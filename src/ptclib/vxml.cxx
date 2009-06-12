@@ -562,10 +562,10 @@ PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & 
 //////////////////////////////////////////////////////////
 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, PBoolean autoDelete)
+  : vxmlChannel((PVXMLChannel * &)readChannel)
 {
   vxmlThread       = NULL;
   threadRunning    = false;
-  vxmlChannel      = NULL;
   textToSpeech     = NULL;
   loaded           = false;
   emptyAction      = false;
@@ -850,17 +850,14 @@ PBoolean PVXMLSession::Open(const PString & _mediaFormat)
     return false;
   }
 
+  if (!chan->Open(this)) {
+    delete chan;
+    return false;
+  }
+
   // set the underlying channel
   if (!PIndirectChannel::Open(chan, chan))
     return false;
-
-  // start the VXML session in another thread
-  {
-    PWaitAndSignal m(sessionMutex);
-    if (!chan->Open(this))
-      return false;
-    vxmlChannel = chan;
-  }
 
   return Execute();
 }
@@ -881,26 +878,28 @@ PBoolean PVXMLSession::Execute()
 
 PBoolean PVXMLSession::Close()
 {
-  if (vxmlChannel != NULL) {
-    PWaitAndSignal m(sessionMutex);
-    if (vxmlThread != NULL && PThread::Current() != vxmlThread) {
-      PTRACE(3, "VXML\tClosing session");
+  PThread * thread = NULL;
 
-      // Stop condition for thread
-      threadRunning = false;
-      forceEnd      = true;
-      waitForEvent.Signal();
+  sessionMutex.Wait();
+  if (PThread::Current() != vxmlThread) {
+    thread = vxmlThread;
+    vxmlThread = NULL;
+  }
+  sessionMutex.Signal();
 
-      // Signal all syncpoints that could be waiting for things
-      answerSync.Signal();
-      vxmlChannel->Close();
+  if (thread != NULL) {
+    PTRACE(3, "VXML\tClosing session");
 
-      vxmlThread->WaitForTermination();
-      delete vxmlThread;
-      vxmlThread = NULL;
-    }
+    // Stop condition for thread
+    threadRunning = false;
+    forceEnd      = true;
+    waitForEvent.Signal();
 
-    vxmlChannel = NULL;
+    // Signal all syncpoints that could be waiting for things
+    answerSync.Signal();
+
+    PAssert(thread->WaitForTermination(10000), "VXML thread did not exit in time.");
+    delete thread;
   }
 
   return PIndirectChannel::Close();
@@ -932,10 +931,6 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
   }
 
   OnEndSession();
-
-  //PWaitAndSignal m(sessionMutex);
-  if (vxmlChannel != NULL)
-    vxmlChannel->Close();
 
   PTRACE(4, "VXML\tExecution thread ended");
 }
@@ -1041,7 +1036,7 @@ void PVXMLSession::ProcessGrammar()
     listening = false;
 
     // Stop any playback
-    if (vxmlChannel != NULL) {
+    if (IsOpen()) {
       vxmlChannel->FlushQueue();
       vxmlChannel->EndRecording();
     }
@@ -1344,39 +1339,27 @@ void PVXMLSession::SetVar(const PString & ostr, const PString & val)
 
 PBoolean PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, PBoolean autoDelete)
 {
-  if (vxmlChannel == NULL || !vxmlChannel->QueueFile(fn, repeat, delay, autoDelete))
-    return false;
-
-  return true;
+  return IsOpen() && vxmlChannel->QueueFile(fn, repeat, delay, autoDelete);
 }
 
 PBoolean PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 {
-  if (vxmlChannel == NULL || !vxmlChannel->QueueCommand(cmd, repeat, delay))
-    return false;
-
-  return true;
+  return IsOpen() && vxmlChannel->QueueCommand(cmd, repeat, delay);
 }
 
 PBoolean PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  if (vxmlChannel == NULL || !vxmlChannel->QueueData(data, repeat, delay))
-    return false;
-  
-  return true;
+  return IsOpen() && vxmlChannel->QueueData(data, repeat, delay);
 }
 
 PBoolean PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX delay)
 {
-  if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable("Tone", toneSpec, repeat, delay, true))
-    return false;
-
-  return true;
+  return IsOpen() && vxmlChannel->QueuePlayable("Tone", toneSpec, repeat, delay, true);
 }
 
 void PVXMLSession::GetBeepData(PBYTEArray & data, unsigned ms)
 {
-  if (vxmlChannel != NULL)
+  if (IsOpen())
     vxmlChannel->GetBeepData(data, ms);
 }
 
@@ -1388,26 +1371,17 @@ PBoolean PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 PBoolean PVXMLSession::PlaySilence(PINDEX msecs)
 {
   PBYTEArray nothing;
-  if (vxmlChannel == NULL || !vxmlChannel->QueueData(nothing, 1, msecs))
-    return false;
-
-  return true;
+  return IsOpen() && vxmlChannel->QueueData(nothing, 1, msecs);
 }
 
 PBoolean PVXMLSession::PlayStop()
 {
-  if (vxmlChannel == NULL || !vxmlChannel->QueuePlayable(new PVXMLPlayableStop()))
-    return false;
-
-  return true;
+  return IsOpen() && vxmlChannel->QueuePlayable(new PVXMLPlayableStop());
 }
 
 PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  if (vxmlChannel == NULL || !vxmlChannel->QueueResource(url, repeat, delay))
-    return false;
-
-  return true;
+  return IsOpen() && vxmlChannel->QueueResource(url, repeat, delay);
 }
 
 PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
@@ -1427,6 +1401,9 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
                                      PINDEX repeat, 
                                      PINDEX delay)
 {
+  if (!IsOpen())
+    return false;
+
   PTRACE(2, "VXML\tConverting \"" << textToPlay.Trim() << "\" to speech");
 
   PStringArray list;
@@ -1503,16 +1480,16 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
   return filenameList.GetSize() > 0;
 }
 
-void PVXMLSession::SetPause(PBoolean _pause)
+void PVXMLSession::SetPause(PBoolean pause)
 {
-  if (vxmlChannel != NULL)
-    vxmlChannel->SetPause(_pause);
+  if (IsOpen())
+    vxmlChannel->SetPause(pause);
 }
 
 
 PBoolean PVXMLSession::IsPlaying() const
 {
-  return (vxmlChannel != NULL) && vxmlChannel->IsPlaying();
+  return IsOpen() && vxmlChannel->IsPlaying();
 }
 
 PBoolean PVXMLSession::StartRecording(const PFilePath & p_recordFn, 
@@ -1526,12 +1503,9 @@ PBoolean PVXMLSession::StartRecording(const PFilePath & p_recordFn,
   recordMaxTime      = p_recordMaxTime;
   recordFinalSilence = p_recordFinalSilence;
 
-  if (vxmlChannel != NULL) 
-    return vxmlChannel->StartRecording(recordFn,
-                                       (unsigned)recordFinalSilence.GetMilliSeconds(), 
-                                       (unsigned)recordMaxTime.GetMilliSeconds());
-
-  return false;
+  return IsOpen() && vxmlChannel->StartRecording(recordFn,
+                                                 (unsigned)recordFinalSilence.GetMilliSeconds(), 
+                                                 (unsigned)recordMaxTime.GetMilliSeconds());
 }
 
 void PVXMLSession::RecordEnd()
@@ -1544,7 +1518,7 @@ PBoolean PVXMLSession::EndRecording()
 {
   if (recording) {
     recording = false;
-    if (vxmlChannel != NULL)
+    if (IsOpen())
       return vxmlChannel->EndRecording();
   }
 
@@ -1554,7 +1528,7 @@ PBoolean PVXMLSession::EndRecording()
 
 PBoolean PVXMLSession::IsRecording() const
 {
-  return (vxmlChannel != NULL) && vxmlChannel->IsRecording();
+  return IsOpen() && vxmlChannel->IsRecording();
 }
 
 PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt)
