@@ -580,23 +580,30 @@ class PThread3Arg : public PThread
 template <typename ObjType>
 class PThreadObj : public PThread
 {
-  public:
-  PCLASSINFO(PThreadObj, PThread);
+    PCLASSINFO(PThreadObj, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(); 
-    PThreadObj(ObjType & obj, ObjTypeFn function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+
+    PThreadObj(
+      ObjType & obj,
+      ObjTypeFn function,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThread(10000,
+                autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,
+                priority,
+                name)
       , m_object(obj)
       , m_function(function)
-      { PThread::Resume(); }
-    PThreadObj(const char * file, int line, ObjType & obj, ObjTypeFn function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_object(obj)
-      , m_function(function)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+
     void Main()
-      { (m_object.*m_function)(); }
+    {
+      (m_object.*m_function)();
+    }
 
   protected:
     ObjType & m_object;
@@ -623,24 +630,32 @@ class PThreadObj : public PThread
 template <class ObjType, typename Arg1Type>
 class PThreadObj1Arg : public PThread
 {
-  PCLASSINFO(PThreadObj1Arg, PThread);
+    PCLASSINFO(PThreadObj1Arg, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
-    PThreadObj1Arg(ObjType & obj, Arg1Type arg1, ObjTypeFn function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+
+    PThreadObj1Arg(
+      ObjType & obj,
+      Arg1Type arg1,
+      ObjTypeFn function,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThread(10000,
+                autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,
+                priority,
+                name)
       , m_object(obj)
       , m_function(function)
       , m_arg1(arg1)
-      { PThread::Resume(); }
-    PThreadObj1Arg(const char * file, int line, ObjType & obj, Arg1Type arg1, ObjTypeFn function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_object(obj)
-      , m_function(function)
-      , m_arg1(arg1)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+
     void Main()
-    { (m_object.*m_function)(m_arg1); }
+    {
+      (m_object.*m_function)(m_arg1);
+    }
 
   protected:
     ObjType & m_object;
@@ -651,26 +666,34 @@ class PThreadObj1Arg : public PThread
 template <class ObjType, typename Arg1Type, typename Arg2Type>
 class PThreadObj2Arg : public PThread
 {
-  PCLASSINFO(PThreadObj2Arg, PThread);
+    PCLASSINFO(PThreadObj2Arg, PThread);
   public:
-    typedef void (ObjType::*ObjTypeFn)(Arg1Type, Arg2Type); 
-    PThreadObj2Arg(ObjType & obj, Arg1Type arg1, Arg2Type arg2, ObjTypeFn function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+    typedef void (ObjType::*ObjTypeFn)(Arg1Type, Arg2Type);
+
+    PThreadObj2Arg(
+      ObjType & obj,
+      Arg1Type arg1,
+      Arg2Type arg2,
+      ObjTypeFn function,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThread(10000,
+                autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,
+                priority,
+                name)
       , m_object(obj)
       , m_function(function)
       , m_arg1(arg1)
       , m_arg2(arg2)
-      { PThread::Resume(); }
-    PThreadObj2Arg(const char * file, int line, ObjType & obj, Arg1Type arg1, Arg2Type arg2, ObjTypeFn function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_object(obj)
-      , m_function(function)
-      , m_arg1(arg1)
-      , m_arg2(arg2)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+
     void Main()
-      { (m_object.*m_function)(m_arg1, m_arg2); }
+    {
+      (m_object.*m_function)(m_arg1, m_arg2);
+    }
 
   protected:
     ObjType & m_object;
