@@ -40,7 +40,6 @@
 #pragma implementation "ethsock.h"
 #pragma implementation "qos.h"
 
-
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
@@ -219,7 +218,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX *
     if (errno != EPROTO)
       return ConvertOSError(-1);
 
-    PTRACE(3, "PWLib\tAccept on " << sock << " failed with EPROTO - retrying");
+    PTRACE(3, "PTLib\tAccept on " << sock << " failed with EPROTO - retrying");
   }
 #else
   return ConvertOSError(os_handle = SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size)));
@@ -593,7 +592,7 @@ PBoolean PSocket::os_recvfrom(
   // read a packet 
   int r = ::recvmsg(os_handle, &readData, flags);
   if (r == -1) {
-    PTRACE(5, "PWLIB\trecvmsg returned error " << r);
+    PTRACE(5, "PTLIB\trecvmsg returned error " << r);
     ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
   }
 
@@ -1539,13 +1538,110 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 #endif
 
 
+
+#ifdef P_HAS_NETLINK
+
+#include <asm/types.h>
+#include <sys/socket.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
+#include <linux/genetlink.h>
+
+#include <memory.h>
+#include <errno.h>
+
+class WaitForNetLinkEvent
+{
+  public:
+    struct sockaddr_nl m_sa;
+    int m_fd ;
+    int m_event1, m_event2;
+
+    WaitForNetLinkEvent(int event1, int event2)
+      : m_fd(-1), m_event1(event1), m_event2(event2)
+    { }
+
+    void Open()
+    {
+      if (m_fd != -1)
+        return;
+
+      PTRACE(3, "PTLIB\tOpened NetLink socket");
+
+      memset(&m_sa, 0, sizeof(m_sa));
+      m_sa.nl_family = AF_NETLINK;
+      m_sa.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
+
+      m_fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+      bind(m_fd, (struct sockaddr*)&m_sa, sizeof(m_sa));
+    }
+
+    bool MsgHandler(struct sockaddr_nl *nl, struct nlmsghdr *msg)
+    {
+      if (msg->nlmsg_len < sizeof(struct nlmsghdr))
+        return false;
+
+      //void * payload = (unsigned char *)msg + sizeof(struct nlmsghdr);
+      //int len = msg->nlmsg_len - sizeof(struct nlmsghdr);
+
+      return (msg->nlmsg_type == m_event1 || msg->nlmsg_type == m_event2);
+    }
+
+    bool ReadEvent(const PTimeInterval & timeout)
+    {
+      fd_set fds;
+      FD_ZERO(&fds);
+      FD_SET(m_fd, &fds);
+      struct timeval t;
+      t.tv_sec  = timeout.GetMilliSeconds() / 1000;
+      t.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
+      int r = select(m_fd+1, &fds, NULL, NULL, &t);
+      if (r <= 0) 
+        return false;
+
+      struct sockaddr_nl snl;
+      char buf[4096];
+      struct iovec iov = { buf, sizeof buf };
+      struct msghdr msg = { (void*)&snl, sizeof snl, &iov, 1, NULL, 0, 0};
+
+      int status = recvmsg(m_fd, &msg, 0);
+      if (status < 0)
+        return false;
+        
+      /* We need to handle more than one message per 'recvmsg' */
+      bool addressChanged = false;
+
+      struct nlmsghdr *h;
+      for (h = (struct nlmsghdr *) buf; NLMSG_OK (h, (unsigned int)status); h = NLMSG_NEXT (h, status)) {
+        if ((h->nlmsg_type == NLMSG_DONE) || (h->nlmsg_type == NLMSG_ERROR))
+          return false;
+        addressChanged = addressChanged || MsgHandler(&snl, h);
+        PTRACE(3, "PTLIB\tInterface table change detected via NetLink");
+      }
+
+      return false;
+    }
+};
+
+#endif
+
+
 bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoint * cancellation)
 {
+#ifdef P_HAS_NETLINK
+  static WaitForNetLinkEvent waiter(RTM_NEWADDR, RTM_DELADDR);
+  waiter.Open();
+  if (waiter.ReadEvent(timeout))
+    return true;
   if (cancellation != NULL)
-    return cancellation->Wait(timeout);
-
+    return cancellation->Wait(1);
+#else
   // Need an implementation here!!!!!!!
   PThread::Sleep(timeout);
+  if (cancellation != NULL)
+    return cancellation->Wait(timeout);
+#endif
+
   return false;
 }
 
