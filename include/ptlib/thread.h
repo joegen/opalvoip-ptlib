@@ -676,7 +676,7 @@ class PThreadObj2Arg : public PThread
     ObjType & m_object;
     ObjTypeFn m_function;
     Arg1Type  m_arg1;
-    Arg1Type  m_arg2;
+    Arg2Type  m_arg2;
 };
 
 
