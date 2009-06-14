@@ -24,6 +24,21 @@ SockBundleProcess::SockBundleProcess()
 
 void SockBundleProcess::Main()
 {
+  PArgList & args = GetArguments();
+
+  args.Parse(
+#if PTRACING
+             "o-output:"             "-no-output."
+             "t-trace."              "-no-trace."
+#endif
+  );
+
+#if PTRACING
+  PTrace::Initialise(args.GetOptionCount('t'),
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+#endif
+
   PMonitoredSocketBundle bundle;
   if (!bundle.Open(5080)) {
     cout << "Cannot open monitored socket bundle" << endl;
