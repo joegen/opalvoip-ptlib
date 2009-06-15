@@ -749,6 +749,7 @@ class PIPSocketAddressAndPort
     );
     const PIPSocket::Address & GetAddress() const { return m_address; }
     WORD GetPort() const { return m_port; }
+    void SetPort(WORD v) { m_port = v; }
 
   protected:
     PIPSocket::Address m_address;

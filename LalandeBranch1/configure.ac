@@ -677,6 +677,27 @@ else
 fi
 
 dnl ########################################################################
+dnl check for NetLink support
+
+P_HAS_NETLINK=0
+AC_MSG_CHECKING(for NetLink support)
+AC_TRY_COMPILE([#include <asm/types.h>
+                #include <sys/socket.h>
+                #include <linux/netlink.h>
+                #include <linux/rtnetlink.h>
+                #include <linux/genetlink.h>
+                #include <memory.h>],
+               [struct sockaddr_nl sa; memset(&sa, 0, sizeof(sa));
+                sa.nl_family = AF_NETLINK; sa.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
+                int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);], P_HAS_NETLINK=1)
+if test "${P_HAS_NETLINK}" = "1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_HAS_NETLINK, 1)
+else
+  AC_MSG_RESULT(no)
+fi
+
+dnl ########################################################################
 dnl check for streams types
 
 P_HAS_STL_STREAMS=0
