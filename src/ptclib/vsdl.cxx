@@ -219,10 +219,10 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
   ::SDL_WM_SetCaption(title, NULL);
 
   pos = deviceName.Find("X=");
-  int x = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 0;
+  int x = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 100;
 
   pos = deviceName.Find("Y=");
-  int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 0;
+  int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 100;
 
   PString winpos(PString::Printf, "SDL_VIDEO_WINDOW_POS=%i,%i", x, y);
   putenv(winpos.GetPointer());
