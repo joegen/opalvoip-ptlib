@@ -72,6 +72,9 @@ class PSimpleThread : public PThread
 };
 
 
+static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
+
+
 #ifndef __NUCLEUS_PLUS__
 static ostream * PErrorStream = &cerr;
 #else
@@ -305,8 +308,8 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
                   << " by " << process.GetManufacturer()
                   << " on " << process.GetOSClass() << ' ' << process.GetOSName()
                   << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
+                  << ") with PTLib (v" << process.GetLibVersion()
                   << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
-                  << " using PTLib version " << process.GetLibraryVersion()
                   << End;
 #endif
 
@@ -1544,23 +1547,21 @@ PTime PProcess::GetStartTime() const
 }
 
 
-const char * const StatusLetter[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
-
 PString PProcess::GetVersion(PBoolean full) const
 {
-  return psprintf(full ? "%u.%u%s%u" : "%u.%u", majorVersion, minorVersion, StatusLetter[status], buildNumber);
+  return psprintf(full ? "%u.%u%s%u" : "%u.%u", majorVersion, minorVersion, VersionStatus[status], buildNumber);
+}
+
+
+PString PProcess::GetLibVersion()
+{
+  return psprintf("%u.%u%s%u", MAJOR_VERSION, MINOR_VERSION, VersionStatus[BUILD_TYPE], BUILD_NUMBER);
 }
 
 
 void PProcess::SetConfigurationPath(const PString & path)
 {
   configurationPaths = path.Tokenise(";:", PFalse);
-}
-
-
-PString PProcess::GetLibraryVersion()
-{
-  return psprintf("%u.%u%s%u", MAJOR_VERSION, MINOR_VERSION, StatusLetter[BUILD_TYPE], BUILD_NUMBER);
 }
 
 
