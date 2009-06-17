@@ -536,13 +536,13 @@ class PProcess : public PThread
      */
     static PDirectory GetOSConfigDir();
 
-    /**Get the version of the PTLib the process is running on, eg
-       "2.0.33".
+    /**Get the version of the PTLib library the process is running on, eg
+       "2.5beta3".
        
        @return
-       String for PTLib version.
+       String for library version.
      */
-    static PString GetLibraryVersion();
+    static PString GetLibVersion();
   //@}
 
     /**Get the list of timers handled by the application. This is an internal
