@@ -537,6 +537,14 @@ class PProcess : public PThread
        Directory for OS configuration files.
      */
     static PDirectory GetOSConfigDir();
+
+    /**Get the version of the PTLib the process is running on, eg
+       "2.0.33".
+       
+       @return
+       String for PTLib version.
+     */
+    static PString GetLibraryVersion();
   //@}
 
     /**Get the list of timers handled by the application. This is an internal

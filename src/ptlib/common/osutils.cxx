@@ -39,6 +39,8 @@
 #include <ptlib/pfactory.h>
 #include <ptlib/pprocess.h>
 
+#include "../../../version.h"
+
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
 #endif
@@ -298,11 +300,13 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 
 #if PTRACING
   PProcess & process = PProcess::Current();
-  Begin(0, "", 0) << "\tVersion " << process.GetVersion(PTrue)
+  Begin(0, "", 0) << '\t' << process.GetName()
+                  << " version " << process.GetVersion(PTrue)
                   << " by " << process.GetManufacturer()
                   << " on " << process.GetOSClass() << ' ' << process.GetOSName()
                   << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
                   << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
+                  << " using PTLib version " << process.GetLibraryVersion()
                   << End;
 #endif
 
@@ -1539,12 +1543,12 @@ PTime PProcess::GetStartTime() const
   return programStartTime; 
 }
 
+
+const char * const StatusLetter[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
+
 PString PProcess::GetVersion(PBoolean full) const
 {
-  const char * const statusLetter[NumCodeStatuses] =
-    { "alpha", "beta", "." };
-  return psprintf(full ? "%u.%u%s%u" : "%u.%u",
-                  majorVersion, minorVersion, statusLetter[status], buildNumber);
+  return psprintf(full ? "%u.%u%s%u" : "%u.%u", majorVersion, minorVersion, StatusLetter[status], buildNumber);
 }
 
 
@@ -1552,6 +1556,13 @@ void PProcess::SetConfigurationPath(const PString & path)
 {
   configurationPaths = path.Tokenise(";:", PFalse);
 }
+
+
+PString PProcess::GetLibraryVersion()
+{
+  return psprintf("%u.%u%s%u", MAJOR_VERSION, MINOR_VERSION, StatusLetter[BUILD_TYPE], BUILD_NUMBER);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
