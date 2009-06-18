@@ -950,18 +950,19 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 PHTTPRequest::PHTTPRequest(const PURL & _url,
                       const PMIMEInfo & _mime,
         const PMultipartFormInfoArray & _multipartFormInfo,
+                        PHTTPResource * resource,
                           PHTTPServer & _server)
-  : server(_server),
-    url(_url),
-    inMIME(_mime),
-    multipartFormInfo(_multipartFormInfo),
-    origin(0),
-    localAddr(0),
-    localPort(0)
+  : server(_server)
+  , url(_url)
+  , inMIME(_mime)
+  , multipartFormInfo(_multipartFormInfo)
+  , code(PHTTP::RequestOK)
+  , contentSize(P_MAX_INDEX)
+  , origin(0)
+  , localAddr(0)
+  , localPort(0)
+  , m_resource(resource)
 {
-  code        = PHTTP::RequestOK;
-  contentSize = P_MAX_INDEX;
-
   PIPSocket * socket = server.GetSocket();
   if (socket != NULL) {
     socket->GetPeerAddress(origin);
@@ -1344,7 +1345,7 @@ PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
                                             const PMultipartFormInfoArray & multipartFormInfo,
                                             PHTTPServer & socket)
 {
-  return new PHTTPRequest(url, inMIME, multipartFormInfo, socket);
+  return new PHTTPRequest(url, inMIME, multipartFormInfo, this, socket);
 }
 
 
@@ -1543,8 +1544,9 @@ PHTTPFile::PHTTPFile(const PURL & url,
 PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
                                    const PMIMEInfo & inMIME,
                                    const PMultipartFormInfoArray & multipartFormInfo,
+                                   PHTTPResource * resource,
                                    PHTTPServer & server)
-  : PHTTPRequest(url, inMIME, multipartFormInfo, server)
+  : PHTTPRequest(url, inMIME, multipartFormInfo, resource, server)
 {
 }
 
@@ -1554,7 +1556,7 @@ PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
                           const PMultipartFormInfoArray & multipartFormInfo,
                 PHTTPServer & server)
 {
-  return new PHTTPFileRequest(url, inMIME, multipartFormInfo, server);
+  return new PHTTPFileRequest(url, inMIME, multipartFormInfo, this, server);
 }
 
 
@@ -1709,8 +1711,9 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
                                  const PMIMEInfo & inMIME,
                                  const PMultipartFormInfoArray & multipartFormInfo,
+                                 PHTTPResource * resource,
                                  PHTTPServer & server)
-  : PHTTPFileRequest(url, inMIME, multipartFormInfo, server)
+  : PHTTPFileRequest(url, inMIME, multipartFormInfo, resource, server)
 {
 }
 
@@ -1720,7 +1723,7 @@ PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
                           const PMultipartFormInfoArray & multipartFormInfo,
                           PHTTPServer & socket)
 {
-  PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, socket);
+  PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, this, socket);
 
   const PStringArray & path = url.GetPath();
   request->realPath = basePath;

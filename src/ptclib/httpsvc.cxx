@@ -1638,15 +1638,16 @@ PBoolean PServiceHTML::ProcessMacros(PHTTPRequest & request,
       PCaselessString cmd;
       PString args;
       SplitCmdAndArgs(text, pos, cmd, args);
-      PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, PTrue));
-      if (idx != P_MAX_INDEX) {
-        PRegularExpression EndBlockRegEx("<?!--#(equival|" + process.GetMacroKeyword() + ")"
-                                         "end[ \t\r\n]+" + cmd + "(-?[^-])*-->?",
-                                         PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-        PINDEX endpos, endlen;
-        if (text.FindRegEx(EndBlockRegEx, endpos, endlen, pos+len)) {
-          PINDEX startpos = pos+len;
-          len = endpos-pos + endlen;
+
+      PRegularExpression EndBlockRegEx("<?!--#(equival|" + process.GetMacroKeyword() + ")"
+                                       "end[ \t\r\n]+" + cmd + "(-?[^-])*-->?",
+                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+      PINDEX endpos, endlen;
+      if (text.FindRegEx(EndBlockRegEx, endpos, endlen, pos+len)) {
+        PINDEX startpos = pos+len;
+        len = endpos-pos + endlen;
+        PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, PTrue));
+        if (idx != P_MAX_INDEX) {
           substitution = ServiceMacros[idx].Translate(request, args, text(startpos, endpos-1));
           substitedMacro = PTrue;
         }
@@ -1675,6 +1676,25 @@ PBoolean PServiceHTML::ProcessMacros(PHTTPRequest & request,
   } while (substitedMacro);
 
   return PTrue;
+}
+
+
+bool PServiceHTML::SpliceMacro(PString & text, const PString & tokens, const PString & value)
+{
+  PString adjustedTokens = tokens;
+  adjustedTokens.Replace(" ", "[ \t\r\n]+");
+  PRegularExpression RegEx("<?!--#" + adjustedTokens + "[ \t\r\n]*-->?",
+                           PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+
+  bool foundOne = false;
+
+  PINDEX pos, len;
+  while (text.FindRegEx(RegEx, pos, len)) {
+    text.Splice(value, pos, len);
+    foundOne = true;
+  }
+
+  return foundOne;
 }
 
 
