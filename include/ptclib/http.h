@@ -756,6 +756,7 @@ class PHTTPRequest : public PObject
       const PURL & url,             ///< Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     ///< Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo, ///< multipart form information (if any)
+      PHTTPResource * resource,     ///< Resource associated with request
       PHTTPServer & server          ///< Server channel that request initiated on
     );
 
@@ -770,6 +771,7 @@ class PHTTPRequest : public PObject
     PIPSocket::Address origin;      ///< IP address of origin host for request
     PIPSocket::Address localAddr;   ///< IP address of local interface for request
     WORD               localPort;   ///< Port number of local server for request
+    PHTTPResource    * m_resource;  ///< HTTP resource found for the request
 };
 
 
@@ -1501,6 +1503,7 @@ class PHTTPFileRequest : public PHTTPRequest
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo,
+      PHTTPResource * resource,
       PHTTPServer & server
     );
 
@@ -1688,6 +1691,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo, 
+      PHTTPResource * resource,
       PHTTPServer & server
     );
 

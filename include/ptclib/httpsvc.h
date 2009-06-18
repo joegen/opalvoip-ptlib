@@ -332,10 +332,17 @@ class PServiceHTML : public PHTML
       NoURLOverride       = 4,
       NoSignatureForFile  = 8
     };
-    static PBoolean ProcessMacros(PHTTPRequest & request,
-                              PString & text,
-                              const PString & filename,
-                              unsigned options);
+    static bool ProcessMacros(
+      PHTTPRequest & request,
+      PString & text,
+      const PString & filename,
+      unsigned options
+    );
+    static bool SpliceMacro(
+      PString & text,
+      const PString & tokens,
+      const PString & value
+    );
 };
 
 
