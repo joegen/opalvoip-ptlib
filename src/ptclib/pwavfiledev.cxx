@@ -52,14 +52,24 @@ class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServic
     }
     virtual bool ValidateDeviceName(const PString & deviceName, int userData) const
     {
-      PCaselessString adjustedDevice = deviceName;
-      PINDEX length = adjustedDevice.GetLength();
-      if (userData == PSoundChannel::Recorder && length > 5 && adjustedDevice.NumCompare(".wav*", 5, length-5) == PObject::EqualTo)
-        adjustedDevice.Delete(length-1, 1);
-      else if (length < 5 || adjustedDevice.NumCompare(".wav", 4, length-4) != PObject::EqualTo)
+      PFilePath pathname = deviceName;
+      if (pathname.GetTitle().IsEmpty())
         return false;
 
-      return PFile::Access(adjustedDevice, userData == PSoundChannel::Recorder ? PFile::ReadOnly : PFile::WriteOnly);
+      PINDEX last = pathname.GetLength()-1;
+      if (userData == PSoundChannel::Recorder && pathname[last] == '*')
+        pathname.Delete(last, 1);
+
+      if (pathname.GetType() != ".wav")
+        return false;
+
+      if (userData == PSoundChannel::Recorder)
+        return PFile::Access(pathname, PFile::ReadOnly);
+
+      if (PFile::Exists(pathname))
+        return PFile::Access(pathname, PFile::WriteOnly);
+
+      return PFile::Access(pathname.GetDirectory(), PFile::WriteOnly);
     }
 } PSoundChannel_WAVFile_descriptor;
 
