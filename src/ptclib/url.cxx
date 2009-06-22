@@ -236,30 +236,30 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 {
   PString xlat = str;
 
-  PString safeChars = "abcdefghijklmnopqrstuvwxyz"
-                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                      "0123456789$-_.!*'(),";
+  /* Characters sets are from RFC2396.
+     The EBNF defines lowalpha, upalpha, digit and mark which are always
+     allowed. The reserved list consisting of ";/?:@&=+$," may or may not be
+     allowed depending on the syntatic element being encoded.
+   */
+  PString safeChars = "abcdefghijklmnopqrstuvwxyz"  // lowalpha
+                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // upalpha
+                      "0123456789"                  // digit
+                      "-_.!~*'()";                  // mark
   switch (type) {
     case LoginTranslation :
-      safeChars += "+;?&=";
+      safeChars += ";&=+$,";  // Section 3.2.2
       break;
 
     case PathTranslation :
-      safeChars += "+:@&=";
+      safeChars += ":@&=+$,";   // Section 3.3
       break;
 
     case QueryTranslation :
-      safeChars += ":@";
+      break;    // Section 3.4, no reserved characters may be used
   }
   PINDEX pos = (PINDEX)-1;
   while ((pos = xlat.FindSpan(safeChars, pos+1)) != P_MAX_INDEX)
     xlat.Splice(psprintf("%%%02X", (BYTE)xlat[pos]), pos, 1);
-
-  if (type == QueryTranslation) {
-    PINDEX space = (PINDEX)-1;
-    while ((space = xlat.Find(' ', space+1)) != P_MAX_INDEX)
-      xlat[space] = '+';
-  }
 
   return xlat;
 }
@@ -272,6 +272,8 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 
   PINDEX pos;
   if (type == PURL::QueryTranslation) {
+    /* Even though RFC2396 never mentions this, and RFC1630 is quite vague
+       about it, a lot of things do it so we have to do it too */
     pos = (PINDEX)-1;
     while ((pos = xlat.Find('+', pos+1)) != P_MAX_INDEX)
       xlat[pos] = ' ';
