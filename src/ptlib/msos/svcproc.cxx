@@ -531,7 +531,7 @@ int PServiceProcess::InternalMain(void * arg)
     }
   } while (msg.message != WM_QUIT);
 
-  if (controlWindow != NULL)
+  if (controlWindow != NULL && controlWindow != (HWND)-1)
     DestroyWindow(controlWindow);
 
   // Set thread ID for process to this thread
@@ -542,6 +542,8 @@ int PServiceProcess::InternalMain(void * arg)
   activeThreads.SetAt(threadId, this);
   activeThreadMutex.Signal();
   OnStop();
+
+  controlWindow = NULL; // This stops the logging
 
   return GetTerminationValue();
 }
@@ -738,7 +740,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         nid.Delete(); // This removes the systray icon
       }
 
-      controlWindow = debugWindow = NULL;
+      controlWindow = debugWindow = (HWND)-1;
 
       PostQuitMessage(0);
       break;
