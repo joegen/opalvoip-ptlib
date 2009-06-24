@@ -302,19 +302,18 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
 
 
 PTimeInterval PTimer::Tick()
-
 {
-#ifdef P_VXWORKS
+#ifdef _POSIX_MONOTONIC_CLOCK
   struct timespec ts;
-  clock_gettime(0,&ts);
-  return (int)(ts.tv_sec*10000) + ts.tv_nsec/100000L;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec*1000LL + ts.tv_nsec/1000000LL;
 #else
+  #warning System does not have clock_gettime with CLOCK_MONOTONIC, using gettimeofday
   struct timeval tv;
-  ::gettimeofday (&tv, NULL);
-  return (PInt64)(tv.tv_sec) * 1000 + tv.tv_usec/1000L;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec*1000LL + tv.tv_usec/1000LL;
 #endif // P_VXWORKS
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
