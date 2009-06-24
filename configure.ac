@@ -794,6 +794,19 @@ if test ${HAS_PTHREADS} != yes -a ${NEEDS_PTHREADS} = yes; then
 fi
 
 dnl ########################################################################
+dnl check for rt library
+
+AC_CHECK_LIB(rt, clock_gettime, HAS_RT=yes, HAS_RT=no)
+if test ${HAS_RT} = yes ; then
+  ENDLDLIBS="$ENDLDLIBS -lrt"
+fi
+
+
+if test ${HAS_PTHREADS} != yes -a ${NEEDS_PTHREADS} = yes; then
+  AC_MSG_ERROR(must have pthreads!)
+fi
+
+dnl ########################################################################
 dnl check for XPG6 compliant pthreads (timed spinlocks)
 
 if test ${HAS_PTHREADS} = yes ; then
