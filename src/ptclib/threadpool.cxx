@@ -92,6 +92,11 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
   else if ((m_workers.size() > 0) && (m_workers.size() == m_maxWorkerCount))
     return *minWorker;
 
+  return NewWorker();
+}
+
+PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
+{
   // create a new worker thread
   WorkerThreadBase * worker = CreateWorkerThread();
   worker->Resume();
