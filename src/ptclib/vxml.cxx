@@ -1182,6 +1182,9 @@ void PVXMLSession::ProcessNode()
 
     else if (nodeType *= "property")
       TraverseProperty();
+
+    else if (nodeType *= "transfer")
+      TraverseTransfer();
   }
 }
 
@@ -1209,11 +1212,6 @@ PBoolean PVXMLSession::TraverseRecord()
     else if (element->HasAttribute("id"))
       strName = element->GetAttribute("id");
     
-    // Get the destination filename (dest)
-    PString strDest;
-    if (element->HasAttribute("dest")) 
-      strDest = element->GetAttribute("dest");
-    
     // see if we need a beep
     if (element->GetAttribute("beep").ToLower() *= "true") {
       PBYTEArray beepData;
@@ -1222,15 +1220,20 @@ PBoolean PVXMLSession::TraverseRecord()
         PlayData(beepData);
     }
 
-    if (strDest.IsEmpty()) {
+    // Get the destination filename (dest)
+    PURL destURL;
+    if (element->HasAttribute("dest")) 
+      destURL = element->GetAttribute("dest");
+
+    if (destURL.IsEmpty()) {
       PTime now;
-      strDest = GetVar("session.telephone.dnis" ) + "_" + GetVar( "session.telephone.ani" ) + "_" + now.AsString( "yyyyMMdd_hhmmss") + ".wav";
+      destURL = GetVar("session.telephone.dnis" ) + "_" + GetVar( "session.telephone.ani" ) + "_" + now.AsString( "yyyyMMdd_hhmmss") + ".wav";
     }
-    
+
     // For some reason, if the file is there the create 
     // seems to fail. 
-    PFile::Remove(strDest);
-    PFilePath file(strDest);
+    PFilePath file = destURL.AsFilePath();
+    PFile::Remove(file);
     
     // Get max record time (maxtime)
     PTimeInterval maxTime = PMaxTimeInterval;
@@ -2047,6 +2050,24 @@ PBoolean PVXMLSession::TraverseProperty()
 }
 
 
+PBoolean PVXMLSession::TraverseTransfer()
+{
+  PXMLElement* element = (PXMLElement *) currentNode;
+  if (element->HasSubObjects()) {
+    currentNode = element->GetElement(element->GetSize() - 1);
+    ProcessNode();
+    // If queued up something to play, wait for it finish before we do the transfer.
+    while (IsPlaying() && !forceEnd)
+      waitForEvent.Wait();
+  }
+
+  if (element->HasAttribute("dest"))
+    OnTransfer(element->GetAttribute("dest"), element->GetAttribute("bridge") *= "true");
+
+  return true;
+}
+
+
 PBoolean PVXMLSession::TraverseMenu()
 {
   PBoolean result = false;
@@ -2195,7 +2216,6 @@ PVXMLChannel::PVXMLChannel(unsigned _frameDelay, PINDEX frameSize)
   recording       = false;
   recordable      = NULL;
 
-  playing         = false;
   silentCount     = 20;         // wait 20 frames before playing the OGM
   paused          = false;
 

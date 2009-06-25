@@ -223,6 +223,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PString GetXMLError() const;
 
     virtual void OnEndSession()         { }
+    virtual void OnTransfer(const PString & /*destination*/, bool /*bridged*/) { }
 
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
@@ -264,6 +265,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PBoolean TraverseMenu();
     PBoolean TraverseChoice(const PString & grammarResult);
     PBoolean TraverseProperty();
+    PBoolean TraverseTransfer();
 
     void SayAs(const PString & className, const PString & text);
     void SayAs(const PString & className, const PString & text, const PString & voice);
@@ -582,7 +584,7 @@ class PVXMLChannel : public PDelayChannel
     { return QueuePlayable("Command", cmd, repeat, delay, PTrue); }
 
     virtual void FlushQueue();
-    virtual PBoolean IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
+    virtual PBoolean IsPlaying() const { return currentPlayItem != NULL || playQueue.GetSize() > 0; }
 
     void SetPause(PBoolean pause) { paused = pause; }
 
@@ -611,7 +613,6 @@ class PVXMLChannel : public PDelayChannel
     unsigned silenceRun;
 
     // Outgoing audio variables
-    PBoolean playing;
     PMutex queueMutex;
     PVXMLQueue playQueue;
     PVXMLPlayable * currentPlayItem;
