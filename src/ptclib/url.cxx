@@ -90,7 +90,7 @@
   }; \
   static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
-//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags, path, rel, port
+//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags,  path,   rel,    port
 DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
 DEFINE_LEGACY_URL_SCHEME(file,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(https,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTPS_PORT)
@@ -147,12 +147,13 @@ PURL::PURL(const PFilePath & filePath)
     relativePath(PFalse)
 {
   PStringArray pathArray = filePath.GetDirectory().GetPath();
-  hostname = pathArray[0];
+  if (pathArray.IsEmpty())
+    return;
 
-  PINDEX i;
-  for (i = 1; i < pathArray.GetSize(); i++)
-    pathArray[i-1] = pathArray[i];
-  pathArray[i-1] = filePath.GetFileName();
+  if (pathArray[0].GetLength() == 2 && pathArray[0][1] == ':')
+    pathArray[0][1] = '|';
+
+  pathArray.AppendString(filePath.GetFileName());
 
   SetPath(pathArray);
 }
@@ -236,7 +237,7 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
       break;
 
     case PathTranslation :
-      safeChars += ":@&=+$,";   // Section 3.3
+      safeChars += ":@&=+$,|";   // Section 3.3
       break;
 
     case QueryTranslation :
@@ -625,9 +626,6 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   PINDEX i;
 
   if (fmt == HostPortOnly) {
-    if (schemeInfo->hasHostPort && hostname.IsEmpty())
-      return str;
-
     str << scheme << ':';
 
     if (relativePath) {
