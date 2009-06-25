@@ -658,7 +658,11 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << ':' << port;
     }
 
-    return str;
+    if (str.GetLength() > scheme.GetLength()+1)
+      return str;
+
+    // Cannot JUST have the scheme: ....
+    return PString::Empty();
   }
 
   // URIOnly and PathOnly
