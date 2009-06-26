@@ -877,7 +877,7 @@ PTimeInterval PTimerList::Process()
 {
   m_timerThread = PThread::Current();
 
-  PTRACE(5, "PTLib\tMONITOR:timers=" << m_activeTimers.size() << ",expiries=" << m_expiryList.size());
+  PTRACE(6, "PTLib\tMONITOR: timers=" << m_activeTimers.size() << ", expiries=" << m_expiryList.size());
 
   // process the timer queue
   ProcessTimerQueue();
