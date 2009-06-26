@@ -266,7 +266,7 @@ class PThreadPool : public PThreadPoolBase
         // if no matching Id, then create a new thread
         typename GroupInfoMap_t::iterator g = m_groupInfoMap.find(group);
         if (g == m_groupInfoMap.end()) 
-          worker = (WorkerThread *)NewWorker();
+          worker = (WorkerThread *)AllocateWorker();
         else {
           worker = g->second.m_worker;
           PTRACE(4, "ThreadPool\tAllocated worker thread by group Id " << group);
