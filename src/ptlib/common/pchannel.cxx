@@ -909,6 +909,9 @@ PBoolean PFile::Close()
 
 PBoolean PFile::Read(void * buffer, PINDEX amount)
 {
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
   flush();
 #ifdef WOT_NO_FILESYSTEM
   lastReadCount = 0;
@@ -921,6 +924,9 @@ PBoolean PFile::Read(void * buffer, PINDEX amount)
 
 PBoolean PFile::Write(const void * buffer, PINDEX amount)
 {
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
   flush();
 #ifdef WOT_NO_FILESYSTEM
   lastWriteCount = amount;
@@ -941,6 +947,9 @@ PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 
 off_t PFile::GetLength() const
 {
+  if (!IsOpen())
+    return -1;
+
 #ifdef WOT_NO_FILESYSTEM
   return 0;
 #else
@@ -954,6 +963,9 @@ off_t PFile::GetLength() const
 
 PBoolean PFile::IsEndOfFile() const
 {
+  if (!IsOpen())
+    return true;
+
   ((PFile *)this)->flush();
   return GetPosition() >= GetLength();
 }
@@ -964,6 +976,9 @@ PBoolean PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 #ifdef WOT_NO_FILESYSTEM
   return PTrue;
 #else
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
   return _lseek(GetHandle(), pos, origin) != (off_t)-1;
 #endif
 }
