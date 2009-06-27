@@ -281,12 +281,13 @@ public :
 
 	PNatMethod * LoadNatMethod(const PString & name);
 
-    PStringList GetRegisteredList();
+    static PStringArray GetRegisteredList();
 
   //@}
 
 private:
   PNatList natlist;
+  PPluginManager * pluginMgr;
 };
 
 ////////////////////////////////////////////////////////
@@ -294,19 +295,19 @@ private:
 // declare macros and structures needed for NAT plugins
 //
 
-typedef PFactory<PNatMethod> NatFactory;
-
 template <class className> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
     virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
     virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetNatMethodName(); }
+    virtual bool  ValidateDeviceName(const PString & deviceName, int /*userData*/) const { 
+	      return (deviceName == GetDeviceNames(0)[0]); 
+	} 
 };
 
 #define PCREATE_NAT_PLUGIN(name) \
   static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
-  PCREATE_PLUGIN(name, PNatMethod, &PNatMethod_##name##_descriptor)
-
+  PCREATE_PLUGIN_STATIC(name, PNatMethod, &PNatMethod_##name##_descriptor)
 
 #endif // PTLIB_PNAT_H
 
