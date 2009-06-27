@@ -43,7 +43,7 @@ template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const 
 
 PNatStrategy::PNatStrategy()
 {
-
+   pluginMgr = NULL;
 }
 
 PNatStrategy::~PNatStrategy()
@@ -87,32 +87,16 @@ void PNatStrategy::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase,
 
 PNatMethod * PNatStrategy::LoadNatMethod(const PString & name)
 {
-  NatFactory::KeyList_T keyList = NatFactory::GetKeyList();
-  NatFactory::KeyList_T::const_iterator r;
+   if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
 
-   PNatMethod * dev = NULL;
-   for (r = keyList.begin(); r != keyList.end(); ++r) {
-     PString capName = *r;
-     if (name == capName) {
-       dev = NatFactory::CreateInstance(*r);
-	   AddMethod(dev);
-     }
-   }
-	
-  return dev;
+  return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass);
 }
 
-PStringList PNatStrategy::GetRegisteredList()
+PStringArray PNatStrategy::GetRegisteredList()
 {
-  NatFactory::KeyList_T keyList = NatFactory::GetKeyList();
-  NatFactory::KeyList_T::const_iterator r;
-  PStringList methods;
-
-   for (r = keyList.begin(); r != keyList.end(); ++r) {
-        methods.AppendString(*r);
-   }
-
-   return methods;
+  PPluginManager * plugMgr = &PPluginManager::GetPluginManager();
+  return plugMgr->GetPluginsProviding(PNatMethodBaseClass);
 }
 
 ///////////////////////////////////////////////////////////////////////
