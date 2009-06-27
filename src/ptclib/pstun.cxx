@@ -46,6 +46,9 @@
 #define DEFAULT_NUM_SOCKETS_FOR_PAIRING 4
 
 
+typedef PSTUNClient PNatMethod_STUN;
+PCREATE_NAT_PLUGIN(STUN);
+
 ///////////////////////////////////////////////////////////////////////
 
 PSTUNClient::PSTUNClient()
