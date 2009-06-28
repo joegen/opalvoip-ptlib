@@ -250,7 +250,7 @@ public :
     Traversal Method. If no available NAT Method is found
     then NULL is returned. 
   */
-  PNatMethod * GetMethod();
+  PNatMethod * GetMethod(const PIPSocket::Address & address = PIPSocket::GetDefaultIpAny());
 
 
   /** RemoveMethod
@@ -277,7 +277,7 @@ public :
 
     /** Get Loaded NAT Method List
      */
-    PNatList GetNATList() {  return natlist; };
+    PNatList & GetNATList() {  return natlist; };
 
 	PNatMethod * LoadNatMethod(const PString & name);
 

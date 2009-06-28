@@ -56,10 +56,10 @@ void PNatStrategy::AddMethod(PNatMethod * method)
   natlist.Append(method);
 }
 
-PNatMethod * PNatStrategy::GetMethod()
+PNatMethod * PNatStrategy::GetMethod(const PIPSocket::Address & address)
 {
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
-    if (i->IsAvailable())
+    if (i->IsAvailable(address))
       return &*i;
   }
 
