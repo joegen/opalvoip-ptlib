@@ -73,6 +73,28 @@ class PCLI : public PObject
         virtual ~Context();
       //@}
 
+      /**@name Overrides from PChannel */
+      //@{
+        /**Low level write to the channel. This function will block until the
+           requested number of characters are written or the write timeout is
+           reached. The GetLastWriteCount() function returns the actual number
+           of bytes written.
+
+           This translate new line character ('\n') to be the text string in
+           PCLI::m_newLine.
+
+           The GetErrorCode() function should be consulted after Write() returns
+           PFalse to determine what caused the failure.
+
+           @return
+           PTrue if at least len bytes were written to the channel.
+         */
+        virtual PBoolean Write(
+          const void * buf, ///< Pointer to a block of memory to write.
+          PINDEX len        ///< Number of bytes to write.
+        );
+      //@}
+
       /**@name Operations */
       //@{
         /**Start a command line interpreter thread.
@@ -98,12 +120,6 @@ class PCLI : public PObject
           */
         virtual void OnStop();
 
-        /**Write a string following by a new line.
-          */
-        void WriteLine(
-          const PString & str
-        );
-
         /**Read a character from the attached channel an process.
            If the character was successfully read then ProcessInput() is called.
           */
@@ -124,21 +140,24 @@ class PCLI : public PObject
 
       /**@name Member access */
       //@{
-        /**Get the string being used for end of line.
+        /**Get the CLI.
           */
-        const PString & GetNewLine() const { return m_newLine; }
+        PCLI & GetCLI() const { return m_cli; }
+
+        /**Indicate is currently processing a command.
+          */
+        bool IsProcessingCommand() const { return m_processingCommand; }
       //@}
 
       protected:
         PDECLARE_NOTIFIER(PThread, Context, ThreadMain);
 
-        PCLI   & m_cli;
-        PString  m_newLine;
-
+        PCLI      & m_cli;
         PString     m_commandLine;
         bool        m_ignoreNextLF;
         PStringList m_commandHistory;
         PThread   * m_thread;
+        bool        m_processingCommand;
     };
 
     /**This class is an enhancement to PArgList to add context.
@@ -158,12 +177,12 @@ class PCLI : public PObject
       //@{
         /**Write to the CLI output channel the usage for the current command.
           */
-        void WriteUsage();
+        Context & WriteUsage();
 
         /**Write an error to the CLI output channel.
           */
-        void WriteError(
-          const PString & error   /// Error message
+        Context & WriteError(
+          const PString & error = PString::Empty()  /// Error message
         );
       //@}
 
@@ -176,8 +195,8 @@ class PCLI : public PObject
 
       protected:
         Context & m_context;
+        PString   m_command;
         PString   m_usage;
-        PString   m_error;
 
       friend class PCLI;
     };
@@ -250,6 +269,10 @@ class PCLI : public PObject
     virtual void RemoveContext(
       Context * context   ///< Context to remove
     );
+
+    /**Remove any closed command line interpreter contexts.
+      */
+    virtual void GarbageCollection();
 
     /**Received a completed command line.
        The completed command line is parsed into arguments by the PArgList
@@ -448,8 +471,8 @@ class PCLISocket : public PCLI
   /**@name Construction */
   //@{
     PCLISocket(
-      const char * prompt = NULL,
       WORD port = 0,
+      const char * prompt = NULL,
       bool singleThreadForAll = false
     );
     ~PCLISocket();
