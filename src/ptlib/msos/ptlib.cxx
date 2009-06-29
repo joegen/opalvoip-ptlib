@@ -919,33 +919,37 @@ PBoolean PTextFile::WriteLine(const PString & str)
 // PConsoleChannel
 
 PConsoleChannel::PConsoleChannel()
+  : m_hConsole(INVALID_HANDLE_VALUE)
 {
 }
 
 
 PConsoleChannel::PConsoleChannel(ConsoleType type)
+  : m_hConsole(INVALID_HANDLE_VALUE)
 {
   Open(type);
 }
 
 
+PConsoleChannel::~PConsoleChannel()
+{
+  Close();
+}
+
+
 PBoolean PConsoleChannel::Open(ConsoleType type)
 {
-  switch (type) {
-    case StandardInput :
-      os_handle = 0;
-      return PTrue;
+  if (!PAssert(type >= StandardInput && type <= StandardError, PInvalidParameter))
+    return false;
 
-    case StandardOutput :
-      os_handle = 1;
-      return PTrue;
+  static DWORD HandleNames[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
+  if (!DuplicateHandle(GetCurrentProcess(), GetStdHandle(HandleNames[type]),
+                       GetCurrentProcess(), &m_hConsole,
+                       NULL, FALSE, DUPLICATE_SAME_ACCESS))
+    return ConvertOSError(-2);
 
-    case StandardError :
-      os_handle = 2;
-      return PTrue;
-  }
-
-  return PFalse;
+  os_handle = type;
+  return true;
 }
 
 
@@ -957,24 +961,47 @@ PString PConsoleChannel::GetName() const
 
 PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 {
+  if (m_hConsole == INVALID_HANDLE_VALUE)
+    return ConvertOSError(-2, LastReadError);
+
   flush();
-  lastReadCount = _read(os_handle, buffer, length);
-  return ConvertOSError(lastReadCount, LastReadError) && lastReadCount > 0;
+
+  DWORD readBytes;
+  if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL)) {
+    lastReadCount = readBytes;
+    return lastReadCount > 0;
+  }
+
+  return ConvertOSError(-2, LastWriteError);
 }
 
 
 PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
+  if (m_hConsole == INVALID_HANDLE_VALUE)
+    return ConvertOSError(-2, LastReadError);
+
   flush();
-  lastWriteCount = _write(os_handle, buffer, length);
-  return ConvertOSError(lastWriteCount, LastWriteError) && lastWriteCount >= length;
+
+  DWORD written;
+  if (WriteFile(m_hConsole, buffer, length, &written, NULL)) {
+    lastWriteCount = written;
+    return lastWriteCount >= length;
+  }
+
+  return ConvertOSError(-2, LastWriteError);
 }
 
 
 PBoolean PConsoleChannel::Close()
 {
+  if (m_hConsole == INVALID_HANDLE_VALUE)
+    return false;
+
+  CloseHandle(m_hConsole);
+  m_hConsole = INVALID_HANDLE_VALUE;
   os_handle = -1;
-  return PTrue;
+  return true;
 }
 
 

@@ -35,6 +35,8 @@
 // PConsoleChannel
 
   public:
+    ~PConsoleChannel();
+
     // Overrides from class PChannel
     virtual PString GetName() const;
       // Return the name of the channel.
@@ -50,5 +52,8 @@
 
     virtual PBoolean Close();
       // Close the channel.
+
+  protected:
+    HANDLE m_hConsole;
 
 // End Of File ///////////////////////////////////////////////////////////////
