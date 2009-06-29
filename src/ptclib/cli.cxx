@@ -39,9 +39,9 @@
 
 PCLI::Context::Context(PCLI & cli)
   : m_cli(cli)
-  , m_newLine(cli.GetNewLine())
   , m_ignoreNextLF(false)
   , m_thread(NULL)
+  , m_processingCommand(false)
 {
 }
 
@@ -49,6 +49,44 @@ PCLI::Context::Context(PCLI & cli)
 PCLI::Context::~Context()
 {
   Stop();
+  delete m_thread;
+}
+
+
+PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
+{
+  if (m_cli.GetNewLine().IsEmpty())
+    return PIndirectChannel::Write(buf, len);
+
+  const char * newLinePtr = m_cli.GetNewLine();
+  PINDEX newLineLen = m_cli.GetNewLine().GetLength();
+
+  PINDEX written = 0;
+
+  const char * str = (const char *)buf;
+  const char * nextline;
+  while (len > 0 && (nextline = strchr(str, '\n')) != NULL) {
+    PINDEX lineLen = nextline - str;
+
+    if (!PIndirectChannel::Write(str, lineLen))
+      return false;
+
+    written += GetLastWriteCount();
+
+    if (!PIndirectChannel::Write(newLinePtr, newLineLen))
+      return false;
+
+    written += GetLastWriteCount();
+
+    len -= lineLen+1;
+    str = nextline+1;
+  }
+
+  if (!PIndirectChannel::Write(str, len))
+    return false;
+
+  lastWriteCount = written + GetLastWriteCount();
+  return true;
 }
 
 
@@ -70,7 +108,7 @@ void PCLI::Context::Stop()
 {
   Close();
 
-  if (m_thread != NULL) {
+  if (m_thread != NULL && PThread::Current() != m_thread) {
     m_thread->WaitForTermination(10000);
     delete m_thread;
     m_thread = NULL;
@@ -86,12 +124,6 @@ void PCLI::Context::OnStart()
 
 void PCLI::Context::OnStop()
 {
-}
-
-
-void PCLI::Context::WriteLine(const PString & str)
-{
-  *this << str << m_newLine << ::flush;
 }
 
 
@@ -156,7 +188,7 @@ void PCLI::Context::OnCompletedLine()
 
   if (line.NumCompare(m_cli.GetRepeatCommand()) == EqualTo) {
     if (m_commandHistory.IsEmpty()) {
-      *this << m_cli.GetNoHistoryError() << m_newLine << ::flush;
+      *this << m_cli.GetNoHistoryError() << endl;
       return;
     }
 
@@ -166,7 +198,7 @@ void PCLI::Context::OnCompletedLine()
   if (line == m_cli.GetHistoryCommand()) {
     unsigned cmdNum = 1;
     for (PStringList::iterator cmd = m_commandHistory.begin(); cmd != m_commandHistory.end(); ++cmd)
-      *this << cmdNum++ << ' ' << *cmd << m_newLine;
+      *this << cmdNum++ << ' ' << *cmd << '\n';
     flush();
     return;
   }
@@ -174,7 +206,7 @@ void PCLI::Context::OnCompletedLine()
   if (line.NumCompare(m_cli.GetHistoryCommand()) == EqualTo) {
     PINDEX cmdNum = line.Mid(m_cli.GetHistoryCommand().GetLength()).AsUnsigned();
     if (cmdNum <= 0 || cmdNum > m_commandHistory.GetSize()) {
-      *this << m_cli.GetNoHistoryError() << m_newLine << ::flush;
+      *this << m_cli.GetNoHistoryError() << endl;
       return;
     }
 
@@ -185,7 +217,9 @@ void PCLI::Context::OnCompletedLine()
     m_cli.ShowHelp(*this);
   else {
     Arguments args(*this, line);
+    m_processingCommand = true;
     m_cli.OnReceivedLine(args);
+    m_processingCommand = false;
   }
 
   m_commandHistory += line;
@@ -216,24 +250,20 @@ PCLI::Arguments::Arguments(Context & context, const PString & rawLine)
 }
 
 
-void PCLI::Arguments::WriteUsage()
+PCLI::Context & PCLI::Arguments::WriteUsage()
 {
-  if (m_usage.IsEmpty())
-    return;
-
-  PStringArray lines = m_usage.Lines();
-  for (PINDEX i = 0; i < lines.GetSize(); ++i)
-    m_context << lines[i] << m_context.GetNewLine();
-  m_context.flush();
+  if (!m_usage.IsEmpty())
+    m_context << m_context.GetCLI().GetCommandUsagePrefix() << m_usage << endl;
+  return m_context;
 }
 
 
-void PCLI::Arguments::WriteError(const PString & error)
+PCLI::Context & PCLI::Arguments::WriteError(const PString & error)
 {
-  PStringArray lines = (m_error&error).Lines();
-  for (PINDEX i = 0; i < lines.GetSize(); ++i)
-    m_context << lines[i] << m_context.GetNewLine();
-  m_context.flush();
+  m_context << m_command << m_context.GetCLI().GetCommandErrorPrefix();
+  if (!error.IsEmpty())
+    m_context << error << endl;
+  return m_context;
 }
 
 
@@ -241,7 +271,7 @@ void PCLI::Arguments::WriteError(const PString & error)
 
 PCLI::PCLI(const char * prompt)
   : m_prompt(prompt != NULL ? prompt : "CLI> ")
-  , m_newLine('\n')
+  , m_newLine("\r\n")
   , m_helpCommand("?")
   , m_helpOnHelp("Use ? to display help\n"
                  "Use ! to list history of commands\n"
@@ -297,11 +327,11 @@ bool PCLI::Start(bool runInBackground)
 void PCLI::Stop()
 {
   m_contextMutex.Wait();
-  for (ContextList_t::iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter) {
+  for (ContextList_t::iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
     (*iter)->Stop();
-    delete *iter;
-  }
   m_contextMutex.Signal();
+
+  GarbageCollection();
 }
 
 
@@ -390,6 +420,25 @@ void PCLI::RemoveContext(Context * context)
 }
 
 
+void PCLI::GarbageCollection()
+{
+  m_contextMutex.Wait();
+
+  ContextList_t::iterator iter = m_contextList.begin();
+  while (iter != m_contextList.end()) {
+    Context * context = *iter;
+    if (context->IsProcessingCommand() || context->IsOpen())
+      ++iter;
+    else {
+      RemoveContext(context);
+      iter = m_contextList.begin();
+    }
+  }
+
+  m_contextMutex.Signal();
+}
+
+
 void PCLI::OnReceivedLine(Arguments & args)
 {
   for (PINDEX nesting = 1; nesting <= args.GetCount(); ++nesting) {
@@ -400,21 +449,21 @@ void PCLI::OnReceivedLine(Arguments & args)
     CommandMap_t::iterator cmd = m_commands.find(names);
     if (cmd != m_commands.end()) {
       args.Shift(nesting);
-      args.m_usage = GetCommandUsagePrefix() & cmd->second.m_usage;
-      args.m_error = cmd->first & GetCommandErrorPrefix();
+      args.m_command = cmd->first;
+      args.m_usage = cmd->second.m_usage;
       cmd->second.m_notifier(args, 0);
       return;
     }
   }
 
-  args.GetContext().WriteLine(GetUnknownCommandError());
+  args.GetContext() << GetUnknownCommandError() << endl;
 }
 
 
 void PCLI::Broadcast(const PString & message) const
 {
   for (ContextList_t::const_iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
-    (*iter)->WriteLine(message);
+    **iter << message << endl;
 }
 
 
@@ -463,7 +512,7 @@ void PCLI::ShowHelp(Context & context)
 
   PStringArray lines = GetHelpOnHelp().Lines();
   for (i = 0; i < lines.GetSize(); ++i)
-    context << lines[i] << context.GetNewLine();
+    context << lines[i] << '\n';
 
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
     if (cmd->second.m_help.IsEmpty() && cmd->second.m_usage.IsEmpty())
@@ -477,14 +526,14 @@ void PCLI::ShowHelp(Context & context)
         lines = cmd->second.m_help.Lines();
         context << lines[0];
         for (i = 1; i < lines.GetSize(); ++i)
-          context << context.GetNewLine() << setw(maxCommandLength+3) << ' ' << lines[i];
+          context << '\n' << setw(maxCommandLength+3) << ' ' << lines[i];
       }
 
       lines = cmd->second.m_usage.Lines();
       for (i = 0; i < lines.GetSize(); ++i)
-        context << context.GetNewLine() << setw(maxCommandLength+5) << ' ' << lines[i];
+        context << '\n' << setw(maxCommandLength+5) << ' ' << lines[i];
     }
-    context << context.GetNewLine();
+    context << '\n';
   }
 
   context.flush();
@@ -511,10 +560,11 @@ bool PCLIStandard::Start(bool runInBackground)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PCLISocket::PCLISocket(const char * prompt, WORD port, bool singleThreadForAll)
+PCLISocket::PCLISocket(WORD port, const char * prompt, bool singleThreadForAll)
   : PCLI(prompt)
   , m_singleThreadForAll(singleThreadForAll)
   , m_listenSocket(port)
+  , m_thread(NULL)
 {
 }
 
@@ -522,6 +572,7 @@ PCLISocket::PCLISocket(const char * prompt, WORD port, bool singleThreadForAll)
 PCLISocket::~PCLISocket()
 {
   Stop();
+  delete m_thread;
 }
 
 
@@ -531,23 +582,23 @@ bool PCLISocket::Start(bool runInBackground)
     return false;
 
   if (runInBackground) {
+    if (m_thread != NULL)
+      return true;
     m_thread = PThread::Create(PCREATE_NOTIFIER(ThreadMain), "CLI Server");
     return m_thread != NULL;
   }
 
-  if (!m_contextList.empty())
-    return false;
-
   while (m_singleThreadForAll ? HandleSingleThreadForAll() : HandleIncoming())
-    ;
+    GarbageCollection();
   return true;
 }
 
 
 void PCLISocket::Stop()
 {
-  if (m_thread != NULL) {
-    m_listenSocket.Close();
+  m_listenSocket.Close();
+
+  if (m_thread != NULL && PThread::Current() != m_thread) {
     m_thread->WaitForTermination(10000);
     delete m_thread;
     m_thread = NULL;
@@ -600,7 +651,7 @@ bool PCLISocket::Listen(WORD port)
     return false;
   }
 
-  PTRACE(4, "PCLI\tCLI socket opened on port " << port);
+  PTRACE(4, "PCLI\tCLI socket opened on port " << m_listenSocket.GetPort());
   return true;
 }
 
@@ -610,7 +661,7 @@ void PCLISocket::ThreadMain(PThread &, INT)
   PTRACE(4, "PCLI\tServer thread started on port " << GetPort());
 
   while (m_singleThreadForAll ? HandleSingleThreadForAll() : HandleIncoming())
-    ;
+    GarbageCollection();
 
   PTRACE(4, "PCLI\tServer thread ended for port " << GetPort());
 }
@@ -648,13 +699,6 @@ bool PCLISocket::HandleSingleThreadForAll()
     }
   }
 
-  m_contextMutex.Wait();
-  for (ContextMap_t::iterator iter = m_contextBySocket.begin(); iter != m_contextBySocket.end(); ++iter) {
-    if (!iter->first->IsOpen())
-      RemoveContext(iter->second);
-  }
-  m_contextMutex.Signal();
-
   return m_listenSocket.IsOpen();
 }
 
@@ -662,7 +706,7 @@ bool PCLISocket::HandleSingleThreadForAll()
 bool PCLISocket::HandleIncoming()
 {
   PTCPSocket * socket = new PTCPSocket;
-  if (m_listenSocket.Accept(*socket)) {
+  if (socket->Accept(m_listenSocket)) {
     PTRACE(3, "PCLI\tIncoming connection from " << socket->GetPeerHostName());
     Context * context = CreateContext();
     if (context != NULL && context->Open(socket, true)) {
@@ -670,10 +714,12 @@ bool PCLISocket::HandleIncoming()
         context->OnStart();
       else
         context->Start();
+      AddContext(context);
       return true;
     }
   }
 
+  PTRACE(2, "PCLI\tError accepting connection: " << m_listenSocket.GetErrorText());
   delete socket;
   return false;
 }
