@@ -855,9 +855,6 @@ void PTimerList::ProcessTimerQueue()
           ActiveTimerInfoMap::iterator r = m_activeTimers.find(request.m_id);
           if (r != m_activeTimers.end()) 
             m_activeTimers.erase(r);
-          else {
-            PTRACE(1, "Warning - request to delete timer that does not exist");
-          }
         }
         break;
       default:
