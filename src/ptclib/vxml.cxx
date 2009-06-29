@@ -714,6 +714,8 @@ PBoolean PVXMLSession::LoadVXML(const PString & xmlText)
   currentNode = currentForm;
 
   loaded = true;
+
+  Trigger();
   return true;
 }
 
@@ -1001,6 +1003,7 @@ void PVXMLSession::ExecuteDialog()
 
   // Determine if we should quit
   if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
+    PTRACE(3, "VXML\tEnd of VoiceXML elements, exiting.");
     threadRunning = false;
     waitForEvent.Signal();
   }
