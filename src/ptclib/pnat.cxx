@@ -41,6 +41,10 @@ template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const 
    return PNatMethod::Create(method);
 }
 
+typedef PDevicePluginAdapter<PNatMethod> PDevicePluginPNatMethod;
+PFACTORY_CREATE(PFactory<PDevicePluginAdapterBase>, PDevicePluginPNatMethod, PNatMethodBaseClass, true);
+
+
 PNatStrategy::PNatStrategy()
 {
    pluginMgr = NULL;
