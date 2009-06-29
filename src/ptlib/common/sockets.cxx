@@ -1513,20 +1513,13 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 #ifndef P_BEOS
 #if P_HAS_IPV6
   if(bind_sa->sa_family != AF_INET6)
+#endif
   {
 	 // attempt to listen
 	 if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
 	   os_close();
 	   return PFalse;
 	 }
-  }
-#endif
-#else
-  // attempt to listen
-  int value = reuse == CanReuseAddress ? 1 : 0;
-  if (!SetOption(SO_REUSEADDR, &value, sizeof(int))) {
-    os_close();
-    return PFalse;
   }
 #endif // BEOS
 
