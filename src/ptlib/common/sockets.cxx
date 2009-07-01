@@ -279,7 +279,7 @@ class PHostByName : PHostByName_private
   friend void PIPSocket::ClearNameCache();
 };
 
-PMutex creationMutex;
+static PMutex creationMutex;
 static PHostByName & pHostByName()
 {
   PWaitAndSignal m(creationMutex);
