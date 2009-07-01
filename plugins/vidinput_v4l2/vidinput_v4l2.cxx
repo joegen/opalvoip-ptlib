@@ -79,7 +79,7 @@ protected:
 };
 
 
-PMutex creationMutex;
+static PMutex creationMutex;
 static 
 V4L2Names & GetNames()
 {
