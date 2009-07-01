@@ -263,7 +263,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PBoolean TraverseVar();
     PBoolean TraverseSubmit();
     PBoolean TraverseMenu();
-    PBoolean TraverseChoice(const PString & grammarResult);
+    PBoolean TraverseChoice();
     PBoolean TraverseProperty();
     PBoolean TraverseTransfer();
 
@@ -316,6 +316,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PXMLElement * currentForm;
     PXMLElement * currentField;
     PXMLObject  * currentNode;
+    bool          m_speakNodeData;
 
   private:
     void      ExecuteDialog();
