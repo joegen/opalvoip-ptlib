@@ -58,12 +58,12 @@ class PURL : public PObject
     /**Construct a new URL object from the URL string. */
     PURL(
       const char * cstr,    ///< C string representation of the URL.
-      const char * defaultScheme = NULL ///< Default scheme for URL
+      const char * defaultScheme = "http" ///< Default scheme for URL
     );
     /**Construct a new URL object from the URL string. */
     PURL(
       const PString & str,  ///< String representation of the URL.
-      const char * defaultScheme = NULL ///< Default scheme for URL
+      const char * defaultScheme = "http" ///< Default scheme for URL
     );
     /**Construct a new URL object from the file path. */
     PURL(
