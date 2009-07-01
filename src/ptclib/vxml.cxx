@@ -589,6 +589,7 @@ void PVXMLSession::Initialise()
   currentForm      = NULL;
   currentField     = NULL;
   currentNode      = NULL;
+  m_speakNodeData  = true;
 }
 
 
@@ -1035,6 +1036,11 @@ void PVXMLSession::ProcessGrammar()
   {
     PVXMLGrammar::GrammarState state = activeGrammar->GetState();
     grammarResult = activeGrammar->GetValue();
+
+    PXMLElement * field = activeGrammar->GetField();
+    if (field != NULL && field->HasAttribute("name"))
+      SetVar(field->GetAttribute("name"), grammarResult);
+
     LoadGrammar(NULL);
     listening = false;
 
@@ -1078,117 +1084,121 @@ void PVXMLSession::ProcessNode()
     return;
 
   if (!currentNode->IsElement()) {
+    if (m_speakNodeData) {
+      if (forceEnd)
+        currentNode = NULL;
+      else
+        TraverseAudio();
+    }
+    return;
+  }
+
+  m_speakNodeData = true;
+
+  PXMLElement * element = (PXMLElement*)currentNode;
+  PCaselessString nodeType = element->GetName();
+  PTRACE(3, "VXML\t**** Processing VoiceXML element: <" << nodeType << "> ***");
+
+  if (nodeType *= "audio") {
     if (!forceEnd)
       TraverseAudio();
-    else
-      currentNode = NULL;
   }
 
-  else {
-    PXMLElement * element = (PXMLElement*)currentNode;
-    PCaselessString nodeType = element->GetName();
-    PTRACE(3, "VXML\t**** Processing VoiceXML element: <" << nodeType << "> ***");
+  else if (nodeType *= "block") {
+    // check 'cond' attribute to see if this element's children are to be skipped
+    // go on and process the children
+  }
 
-    if (nodeType *= "audio") {
-      if (!forceEnd)
-        TraverseAudio();
+  else if (nodeType *= "break")
+    TraverseAudio();
+
+  else if (nodeType *= "disconnect")
+    currentNode = NULL;
+
+  else if (nodeType *= "field") {
+    currentField = (PXMLElement*)currentNode;
+    timeout = DEFAULT_TIMEOUT;
+  }
+
+  else if (nodeType *= "form") {
+    // this is now the current element - go on
+    currentForm = element;
+    currentField = NULL;  // no active field in a new form
+  }
+
+  else if (nodeType *= "goto")
+    TraverseGoto();
+
+  else if (nodeType *= "grammar") {
+    TraverseGrammar();  // this will set activeGrammar
+    m_speakNodeData = false;
+  }
+
+  else if (nodeType *= "record") {
+    if (!forceEnd)
+      TraverseRecord();
+  }
+
+  else if (nodeType *= "prompt") {
+    if (!forceEnd) {
+      // LATER:
+      // check 'cond' attribute to see if the children of this node should be processed
+      // check 'count' attribute to see if this node should be processed
+      // flush all prompts if 'bargein' attribute is set to false
+
+      // Update timeout of current recognition (if 'timeout' attribute is set)
+      if (element->HasAttribute("timeout")) {
+        PTimeInterval timeout = StringToTime(element->GetAttribute("timeout"));
+      }
     }
+  }
 
-    else if (nodeType *= "block") {
-      // check 'cond' attribute to see if this element's children are to be skipped
-      // go on and process the children
+  else if (nodeType *= "say-as") {
+    if (!forceEnd) {
     }
+  }
 
-    else if (nodeType *= "break")
+  else if (nodeType *= "value") {
+    if (!forceEnd)
       TraverseAudio();
-
-    else if (nodeType *= "disconnect")
-      currentNode = NULL;
-
-    else if (nodeType *= "field") {
-      currentField = (PXMLElement*)currentNode;
-      timeout = DEFAULT_TIMEOUT;
-      TraverseGrammar();  // this will set activeGrammar
-    }
-
-    else if (nodeType *= "form") {
-      // this is now the current element - go on
-      currentForm = element;
-      currentField = NULL;  // no active field in a new form
-    }
-
-    else if (nodeType *= "goto")
-      TraverseGoto();
-
-    else if (nodeType *= "grammar")
-      TraverseGrammar();  // this will set activeGrammar
-
-    else if (nodeType *= "record") {
-      if (!forceEnd)
-        TraverseRecord();
-    }
-
-    else if (nodeType *= "prompt") {
-      if (!forceEnd) {
-        // LATER:
-        // check 'cond' attribute to see if the children of this node should be processed
-        // check 'count' attribute to see if this node should be processed
-        // flush all prompts if 'bargein' attribute is set to false
-
-        // Update timeout of current recognition (if 'timeout' attribute is set)
-        if (element->HasAttribute("timeout")) {
-          PTimeInterval timeout = StringToTime(element->GetAttribute("timeout"));
-        }
-      }
-    }
-
-    else if (nodeType *= "say-as") {
-      if (!forceEnd) {
-      }
-    }
-
-    else if (nodeType *= "value") {
-      if (!forceEnd)
-        TraverseAudio();
-    }
-
-    else if (nodeType *= "var")
-      TraverseVar();
-
-    else if (nodeType *= "if") 
-      TraverseIf();
-
-    else if (nodeType *= "exit") 
-      TraverseExit();
-
-    else if (nodeType *= "menu")  {
-      if (!forceEnd) {
-        TraverseMenu();
-        eventName = "menu";
-      }
-    }
-
-    else if (nodeType *= "choice") {
-      if (!TraverseChoice(grammarResult))
-        defaultDTMF++;
-      else {
-        // If the correct choice has been found, 
-        /// make sure everything is reset correctly
-        eventName.MakeEmpty();
-        grammarResult.MakeEmpty();
-        defaultDTMF = 1;
-      }
-    }
-
-    else if (nodeType *= "submit")
-      TraverseSubmit();
-
-    else if (nodeType *= "property")
-      TraverseProperty();
-
-    else if (nodeType *= "transfer")
-      TraverseTransfer();
   }
+
+  else if (nodeType *= "var")
+    TraverseVar();
+
+  else if (nodeType *= "if") 
+    TraverseIf();
+
+  else if (nodeType *= "exit") 
+    TraverseExit();
+
+  else if (nodeType *= "menu")  {
+    if (!forceEnd) {
+      TraverseMenu();
+      eventName = "menu";
+    }
+  }
+
+  else if (nodeType *= "choice") {
+    if (!TraverseChoice())
+      defaultDTMF++;
+    else {
+      // If the correct choice has been found, 
+      /// make sure everything is reset correctly
+      eventName.MakeEmpty();
+      grammarResult.MakeEmpty();
+      defaultDTMF = 1;
+    }
+  }
+
+  else if (nodeType *= "submit")
+    TraverseSubmit();
+
+  else if (nodeType *= "property")
+    TraverseProperty();
+
+  else if (nodeType *= "transfer")
+    TraverseTransfer();
 }
 
 PBoolean PVXMLSession::OnUserInput(const PString & str)
@@ -1280,21 +1290,40 @@ PString PVXMLSession::GetXMLError() const
   return psprintf("(%i:%i) ", xmlFile.GetErrorLine(), xmlFile.GetErrorColumn()) + xmlFile.GetErrorString();
 }
 
-PString PVXMLSession::EvaluateExpr(const PString & oexpr)
+PString PVXMLSession::EvaluateExpr(const PString & expr)
 {
-  PString expr = oexpr.Trim();
+  // Should be full ECMAScript but ...
+  // We only support expressions of the form 'literal'+variable or all digits
 
-  // see if all digits
-  PINDEX i;
-  PBoolean allDigits = true;
-  for (i = 0; i < expr.GetLength(); i++) {
-    allDigits = allDigits && isdigit(expr[i]);
+  PString result;
+
+  PINDEX pos = 0;
+  while (pos < expr.GetLength()) {
+    if (expr[pos] == '\'') {
+      PINDEX quote = expr.Find('\'', ++pos);
+      PTRACE_IF(2, quote == P_MAX_INDEX, "VXML\tMismatched quote, ignoring transfer");
+      result += expr(pos, quote-1);
+      pos = quote+1;
+    }
+    else if (isalpha(expr[pos])) {
+      PINDEX span = expr.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.$", pos);
+      result += GetVar(expr(pos, span-1));
+      pos = span;
+    }
+    else if (isdigit(expr[pos])) {
+      PINDEX span = expr.FindSpan("0123456789", pos);
+      result += GetVar(expr(pos, span-1));
+      pos = span;
+    }
+    else if (expr[pos] == '+' || isspace(expr[pos]))
+      pos++;
+    else {
+      PTRACE(2, "VXML\tOnly '+' operator supported.");
+      break;
+    }
   }
 
-  if (allDigits)
-    return expr;
-
-  return GetVar(expr);
+  return result;
 }
 
 PString PVXMLSession::GetVar(const PString & ostr) const
@@ -1407,10 +1436,10 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
                                      PINDEX repeat, 
                                      PINDEX delay)
 {
-  if (!IsOpen())
+  if (!IsOpen() || textToPlay.IsEmpty())
     return false;
 
-  PTRACE(2, "VXML\tConverting \"" << textToPlay.Trim() << "\" to speech");
+  PTRACE(2, "VXML\tConverting \"" << textToPlay << "\" to speech");
 
   PStringArray list;
   PBoolean useCache = !(GetVar("caching") *= "safe");
@@ -1548,7 +1577,7 @@ PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mod
 PBoolean PVXMLSession::TraverseAudio()
 {
   if (!currentNode->IsElement()) {
-    PlayText(((PXMLData *)currentNode)->GetString());
+    PlayText(((PXMLData *)currentNode)->GetString().Trim());
   }
 
   else {
@@ -1705,55 +1734,29 @@ PBoolean PVXMLSession::TraverseGrammar()   // <grammar>
   // Right now we only support one active grammar.
   if (activeGrammar != NULL) {
     PTRACE(2, "VXML\tWarning: can only process one grammar at a time, ignoring previous grammar");
-    delete activeGrammar;
-    activeGrammar = NULL;
+    LoadGrammar(NULL);
   }
 
-  PVXMLGrammar * newGrammar = NULL;
-
-  // Is this a built-in type?
-  PString type = ((PXMLElement*)currentNode)->GetAttribute("type");
-  if (!type.IsEmpty()) {
-    PStringArray tokens = type.Tokenise("?;", true);
-    PString builtintype;
-    if (tokens.GetSize() > 0)
-      builtintype = tokens[0];
-
-    if (builtintype *= "digits") {
-      PINDEX minDigits(1);
-      PINDEX maxDigits(100);
-
-      // look at each parameter
-      for (PINDEX i(1); i < tokens.GetSize(); i++) {
-        PStringArray params = tokens[i].Tokenise("=", true);
-        if (params.GetSize() == 2) {
-          if (params[0] *= "minlength") {
-            minDigits = params[1].AsInteger();
-          }
-          else if (params[0] *= "maxlength") {
-            maxDigits = params[1].AsInteger();
-          }
-          else if (params[0] *= "length") {
-            minDigits = maxDigits = params[1].AsInteger();
-          }
-        }
-        else {
-          // Invalid parameter skipped
-          // LATER: throw 'error.semantic'
-        }
-      }
-      newGrammar = new PVXMLDigitsGrammar((PXMLElement*)currentNode, minDigits, maxDigits, "");
-    }
-    else {
-      // LATER: throw 'error.unsupported'
-      return false;
-    }
+  PXMLElement * element = (PXMLElement*)currentNode;
+  PCaselessString attrib = element->GetAttribute("mode");
+  if (!attrib.IsEmpty() && attrib != "dtmf") {
+    PTRACE(2, "VXML\tOnly DTMF mode supported for grammar");
+    return false;
   }
 
-  if (newGrammar != NULL)
-    return LoadGrammar(newGrammar);
+  attrib = element->GetAttribute("type");
+  if (!attrib.IsEmpty() && attrib != "X-OPAL/digits") {
+    PTRACE(2, "VXML\tOnly \"digits\" type supported for grammar");
+    return false;
+  }
 
-  return true;
+  PTRACE(4, "VXML\tLoading new grammar");
+  PStringToString tokens;
+  PURL::SplitVars(element->GetData(), tokens, ';', '=');
+  return LoadGrammar(new PVXMLDigitsGrammar(element->GetParent(),
+                                            tokens("minDigits", "1").AsUnsigned(),
+                                            tokens("maxDigits", "10").AsUnsigned(),
+                                            tokens("terminators", "#")));
 }
 
 // Finds the proper event hander for 'noinput', 'filled', 'nomatch' and 'error'
@@ -2064,8 +2067,12 @@ PBoolean PVXMLSession::TraverseTransfer()
       waitForEvent.Wait();
   }
 
+  bool bridged = (element->GetAttribute("bridge") *= "true");
+
   if (element->HasAttribute("dest"))
-    OnTransfer(element->GetAttribute("dest"), element->GetAttribute("bridge") *= "true");
+    OnTransfer(element->GetAttribute("dest"), bridged);
+  else if (element->HasAttribute("destexpr"))
+    OnTransfer(EvaluateExpr(element->GetAttribute("destexpr")), bridged);
 
   return true;
 }
@@ -2080,7 +2087,7 @@ PBoolean PVXMLSession::TraverseMenu()
   return result;
 }
 
-PBoolean PVXMLSession::TraverseChoice(const PString & grammarResult)
+PBoolean PVXMLSession::TraverseChoice()
 {
   // Iterate over all choice elements starting at currentnode
   PBoolean result = false;
@@ -2124,7 +2131,7 @@ PBoolean PVXMLSession::TraverseVar()
     PTRACE( 1, "VXMLSess\t<var> has a problem with its parameters, name=\"" << name << "\", expr=\"" << expr << "\"" );
   }
   else {
-    SetVar(name, expr);
+    SetVar(name, EvaluateExpr(expr));
     result = true;
   }
 
