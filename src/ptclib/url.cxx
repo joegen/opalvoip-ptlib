@@ -312,8 +312,6 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
 
 PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 {
-  urlString = cstr;
-
   scheme.MakeEmpty();
   username.MakeEmpty();
   password.MakeEmpty();
@@ -345,33 +343,24 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 
   // Determine if the URL has an explicit scheme
   if (url[pos] == ':') {
-
-    // get the scheme information, or get the default scheme
+    // get the scheme information
     schemeInfo = PFactory<PURLScheme>::CreateInstance(url.Left(pos));
-    if (schemeInfo == NULL && defaultScheme == NULL) {
-      PFactory<PURLScheme>::KeyList_T keyList = PFactory<PURLScheme>::GetKeyList();
-      if (keyList.size() != 0)
-        schemeInfo = PFactory<PURLScheme>::CreateInstance(keyList[0]);
-    }
     if (schemeInfo != NULL)
       url.Delete(0, pos+1);
   }
 
   // if we could not match a scheme, then use the specified default scheme
-  if (schemeInfo == NULL && defaultScheme != NULL)
+  if (schemeInfo == NULL && defaultScheme != NULL) {
     schemeInfo = PFactory<PURLScheme>::CreateInstance(defaultScheme);
+    PAssert(schemeInfo != NULL, "Default scheme " + PString(defaultScheme) + " not available");
+  }
 
-  // if that still fails, then use the global default scheme
+  // if that still fails, then there is nowehere to go
   if (schemeInfo == NULL)
-    schemeInfo = PFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
+    return false;
 
-  // if that fails, then there is nowehere to go
-  PAssert(schemeInfo != NULL, "Default scheme not available");
   scheme = schemeInfo->GetName();
-  if (!schemeInfo->Parse(url, *this))
-    return PFalse;
-
-  return !IsEmpty();
+  return schemeInfo->Parse(url, *this) && !IsEmpty();
 }
 
 PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
