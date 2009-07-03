@@ -39,113 +39,7 @@
 #endif
 
 #include <ptlib/pprocess.h>
-
-/** This class abstracts the operating system dependent error logging facility.
-To send messages to the system error log, the PSYSTEMLOG macro should be used. 
-  */
-
-class PSystemLog : public PObject, public iostream {
-  PCLASSINFO(PSystemLog, PObject);
-
-  public:
-  /**@name Construction */
-  //@{
-    /// define the different error log levels
-    enum Level {
-      /// Log from standard error stream
-      StdError = -1,
-      /// Log a fatal error
-      Fatal,   
-      /// Log a non-fatal error
-      Error,    
-      /// Log a warning
-      Warning,  
-      /// Log general information
-      Info,     
-      /// Log debugging information
-      Debug,    
-      /// Log more debugging information
-      Debug2,   
-      /// Log even more debugging information
-      Debug3,   
-      /// Log a lot of debugging information
-      Debug4,   
-      /// Log a real lot of debugging information
-      Debug5,   
-      /// Log a bucket load of debugging information
-      Debug6,   
-
-      NumLogLevels
-    };
-
-    /// Create a system log stream
-    PSystemLog(
-     Level level   ///< only messages at this level or higher will be logged
-    ) : iostream(cout.rdbuf())
-      , logLevel(level)
-    { 
-      buffer.log = this; 
-      init(&buffer); 
-    }
-
-    /// Destroy the string stream, deleting the stream buffer
-    ~PSystemLog() { flush(); }
-  //@}
-
-  /**@name Output functions */
-  //@{
-    /** Log an error into the system log.
-     */
-    static void Output(
-      Level level,      ///< Log level for this log message.
-      const char * msg  ///< Message to be logged
-    );
-  //@}
-
-  /**@name Miscellaneous functions */
-  //@{
-    /** Set the level at which errors are logged. Only messages higher than or
-       equal to the specified level will be logged.
-      */
-    void SetLevel(
-      Level level  ///< New log level
-    ) { logLevel = level; }
-
-    /** Get the current level for logging.
-
-       @return
-       Log level.
-     */
-    Level GetLevel() const { return logLevel; }
-  //@}
-
-  private:
-    PSystemLog(const PSystemLog & other) : PObject(other), iostream(cout.rdbuf()) { }
-    PSystemLog & operator=(const PSystemLog &) { return *this; }
-
-    class Buffer : public streambuf {
-      public:
-        virtual int_type overflow(int=EOF);
-        virtual int_type underflow();
-        virtual int sync();
-        PSystemLog * log;
-        PString string;
-    } buffer;
-    friend class Buffer;
-
-    Level logLevel;
-};
-
-
-/** Log a message to the system log.
-The current log level is checked and if allowed, the second argument is evaluated
-as a stream output sequence which is them output to the system log.
-*/
-#define PSYSTEMLOG(level, variables) \
-  if (PServiceProcess::Current().GetLogLevel() >= PSystemLog::level) { \
-    PSystemLog P_systemlog(PSystemLog::level); \
-    P_systemlog << variables; \
-  } else (void)0
+#include <ptlib/syslog.h>
 
 
 
@@ -228,14 +122,14 @@ class PServiceProcess : public PProcess
      */
     void SetLogLevel(
       PSystemLog::Level level  ///< New log level
-    ) { currentLogLevel = level; }
+    ) { PSystemLog::GetTarget().SetThresholdLevel(level); }
 
     /** Get the current level for logging.
 
        @return
        Log level.
      */
-    PSystemLog::Level GetLogLevel() const { return currentLogLevel; }
+    PSystemLog::Level GetLogLevel() const { return PSystemLog::GetTarget().GetThresholdLevel(); }
   //@}
 
 
@@ -249,12 +143,6 @@ class PServiceProcess : public PProcess
   // Member variables
     /// Flag to indicate service is run in simulation mode.
     PBoolean debugMode;
-
-    /// Current log level for #PSYSTEMLOG# calls.
-    PSystemLog::Level currentLogLevel;
-
-    friend void PSystemLog::Output(PSystemLog::Level, const char *);
-
 
 // Include platform dependent part of class
 #ifdef _WIN32
