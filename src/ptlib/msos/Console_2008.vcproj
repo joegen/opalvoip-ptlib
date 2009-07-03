@@ -3536,6 +3536,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\common\syslog.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\common\vconvert.cxx"
 					>
 					<FileConfiguration
@@ -5501,6 +5505,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\syncthrd.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\syslog.h"
 					>
 				</File>
 				<File

@@ -383,6 +383,7 @@ SOURCES	+= \
 	$(COMMON_SRC_DIR)/psockbun.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \
 	$(COMMON_SRC_DIR)/ptime.cxx \
+	$(COMMON_SRC_DIR)/syslog.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
 	$(COMMON_SRC_DIR)/safecoll.cxx \
 	$(COMMON_SRC_DIR)/collect.cxx \
