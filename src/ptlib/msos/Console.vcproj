@@ -1200,6 +1200,10 @@
 			<File
 				RelativePath="..\..\ptclib\url.cxx">
 			</File>
+				<File
+					RelativePath="..\common\syslog.cxx"
+					>
+				</File>
 			<File
 				RelativePath="..\common\vconvert.cxx">
 				<FileConfiguration
@@ -1783,6 +1787,10 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\syncthrd.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\syslog.h"
+					>
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Tcpsock.h">
