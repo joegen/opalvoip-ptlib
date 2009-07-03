@@ -54,7 +54,6 @@
     virtual PBoolean IsServiceProcess() const;
 
   protected:
-    PCaselessString systemLogFileName;
     BOOL debugHidden; /// Flag to indicate service is run in simulation mode without showing the control window 
 
   private:
@@ -110,7 +109,13 @@
     LPARAM WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void DebugOutput(const char * out);
 
-    PBoolean                  isWin95;
+    class LogToWindow : public PSystemLogTarget
+    {
+      virtual void Output(PSystemLog::Level level, const char * msg);
+    };
+    friend class LogToWindow;
+
+    bool                  isWin95;
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
     HANDLE                startedEvent;
