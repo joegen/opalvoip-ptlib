@@ -165,73 +165,33 @@ static PBoolean TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PSystemLog
+// Logging
 
-void PSystemLog::Output(Level level, const char * msg)
+void PServiceProcess::LogToWindow::Output(PSystemLog::Level level, const char * msg)
 {
   PServiceProcess & process = PServiceProcess::Current();
-  if (level > process.GetLogLevel())
-    return;
-
-  DWORD err = ::GetLastError();
-
   if (process.isWin95 || process.controlWindow != NULL) {
     static HANDLE mutex = CreateMutex(NULL, PFalse, NULL);
     WaitForSingleObject(mutex, INFINITE);
 
-    ostream * out;
-    if (process.systemLogFileName == WindowLogOutput || process.systemLogFileName == DebuggerLogOutput)
-      out = new PStringStream;
-    else
-      out = new ofstream(process.systemLogFileName, ios::app);
+    PStringStream str;
+    OutputToStream(str, level, msg);
+    process.DebugOutput(str);
 
-    PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
-    PThread * thread = PThread::Current();
-    PString threadName;
-    if (thread == NULL)
-      threadName.sprintf("ThreadID" PTHREAD_ID_FMT, GetCurrentThreadId());
-    else
-      threadName = thread->GetThreadName();
-    if (threadName.GetLength() <= 23)
-      *out << setw(23) << threadName;
-    else
-      *out << threadName.Left(10) << "..." << threadName.Right(10);
-
-    *out << '\t';
-    if (level < 0)
-      *out << "Message";
-    else {
-      static const char * const levelName[4] = {
-        "Fatal error",
-        "Error",
-        "Warning",
-        "Info"
-      };
-      if (level < PARRAYSIZE(levelName))
-        *out << levelName[level];
-      else
-        *out << "Debug" << (level-Info);
-    }
-
-    *out << '\t' << msg;
-    if (level < Info && err != 0)
-      *out << " - error = " << err << endl;
-    else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
-      *out << endl;
-
-    if (process.systemLogFileName == WindowLogOutput)
-      process.DebugOutput(*(PStringStream*)out);
-    else if (process.systemLogFileName == DebuggerLogOutput)
-      OutputDebugStringA(*(PStringStream*)out);
-
-    delete out;
     ReleaseMutex(mutex);
     SetLastError(0);
   }
-  else {
+}
+
+
+class PSystemLogToEvent : public PSystemLogTarget
+{
+  virtual void Output(PSystemLog::Level level, const char * msg)
+  {
+    DWORD err = GetLastError();
+
     // Use event logging to log the error.
-    HANDLE hEventSource = RegisterEventSource(NULL, process.GetName());
+    HANDLE hEventSource = RegisterEventSource(NULL, PProcess::Current().GetName());
     if (hEventSource == NULL)
       return;
 
@@ -251,7 +211,7 @@ void PSystemLog::Output(Level level, const char * msg)
     }
 
     char errbuf[25];
-    if (level > StdError && level < Info && err != 0)
+    if (level > PSystemLog::StdError && level < PSystemLog::Info && err != 0)
       ::sprintf(errbuf, "Error code = %d", err);
     else
       errbuf[0] = '\0';
@@ -260,17 +220,16 @@ void PSystemLog::Output(Level level, const char * msg)
     strings[0] = thrdbuf;
     strings[1] = msg;
     strings[2] = errbuf;
-    strings[3] = level != Fatal ? "" : " Program aborted.";
+    strings[3] = level != PSystemLog::Fatal ? "" : " Program aborted.";
 
-    static const WORD levelType[Info+1] = {
+    static const WORD levelType[PSystemLog::Info+1] = {
       EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_WARNING_TYPE
     };
     ReportEvent(hEventSource, // handle of event source
-                (WORD)(level < Info ? levelType[level+1]
-                                    : EVENTLOG_INFORMATION_TYPE), // event type
+      (WORD)(level < PSystemLog::Info ? levelType[level+1] : EVENTLOG_INFORMATION_TYPE), // event type
                 (WORD)(level+1),      // event category
                 0x1000,               // event ID
                 NULL,                 // current user's SID
@@ -280,62 +239,7 @@ void PSystemLog::Output(Level level, const char * msg)
                 NULL);                // no raw data
     DeregisterEventSource(hEventSource);
   }
-}
-
-
-streambuf::int_type PSystemLog::Buffer::overflow(int c)
-{
-  if (pptr() >= epptr()) {
-    PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-
-    int ppos = pptr() - pbase();
-    char * newptr = string.GetPointer(string.GetSize() + 10);
-    setp(newptr, newptr + string.GetSize() - 1);
-    pbump(ppos);
-  }
-  if (c != EOF) {
-    *pptr() = (char)c;
-    pbump(1);
-  }
-
-  return 0;
-}
-
-
-streambuf::int_type PSystemLog::Buffer::underflow()
-{
-  return EOF;
-}
-
-
-int PSystemLog::Buffer::sync()
-{
-  Level logLevel = log->logLevel;
-
-#if PTRACING
-  if (log->width() != 0 &&(PTrace::GetOptions()&PTrace::SystemLogStream) != 0) {
-    // Trace system sets the ios stream width as the last thing it does before
-    // doing a flush, which gets us here. SO now we can get a PTRACE looking
-    // exactly like a PSYSTEMLOG of appropriate level.
-    unsigned traceLevel = log->width() -1 + PSystemLog::Warning;
-    log->width(0);
-    if (traceLevel >= PSystemLog::NumLogLevels)
-      traceLevel = PSystemLog::NumLogLevels-1;
-    logLevel = (Level)traceLevel;
-  }
-#endif
-
-  PSystemLog::Output(logLevel, string);
-
-  PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-
-  string.SetSize(10);
-  char * base = string.GetPointer();
-  *base = '\0';
-  setp(base, base + string.GetSize() - 1);
- 
-  return 0;
-}
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -343,11 +247,9 @@ int PSystemLog::Buffer::sync()
 
 PServiceProcess::PServiceProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
-  : PProcess(manuf, name, major, minor, stat, build),
-    systemLogFileName(GetFile().GetDirectory() + GetName() + " Log.TXT")
+  : PProcess(manuf, name, major, minor, stat, build)
 {
   controlWindow = debugWindow = NULL;
-  currentLogLevel = PSystemLog::Warning;
 }
 
 
@@ -418,7 +320,7 @@ int PServiceProcess::_main(void * arg)
   debugHidden = arguments.GetCount() > 0 && strcasecmp(arguments[0], "DebugHidden") == 0;
   if (debugHidden)
     debugMode=TRUE;
-  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
+  SetLogLevel(debugMode ? PSystemLog::Info : PSystemLog::Warning);
 
   if (!debugMode && arguments.GetCount() > 0) {
     for (PINDEX a = 0; a < arguments.GetCount(); a++)
@@ -448,10 +350,12 @@ int PServiceProcess::_main(void * arg)
     };
     dispatchTable[0].lpServiceName = (char *)(const char *)GetName();
 
+    PSystemLog::SetTarget(new PSystemLogToEvent());
+
     if (StartServiceCtrlDispatcher(dispatchTable))
       return GetTerminationValue();
 
-    PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
+    PSYSTEMLOG(Fatal, "StartServiceCtrlDispatcher failed.");
     MessageBox(NULL, "Not run as a service!", GetName(), MB_TASKMODAL);
     return 1;
   }
@@ -665,13 +569,17 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
     SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(TabStops), (LPARAM)(LPDWORD)TabStops);
 
 #if P_CONFIG_FILE
-    systemLogFileName = cfg.GetString(SystemLogFileNameKey);
+    PString systemLogFileName = cfg.GetString(SystemLogFileNameKey);
 #endif // P_CONFIG_FILE
-    if (systemLogFileName.IsEmpty())
-      systemLogFileName = WindowLogOutput;
-    if (systemLogFileName != WindowLogOutput) {
-      if (systemLogFileName != DebuggerLogOutput)
+    if (systemLogFileName.IsEmpty() || systemLogFileName == WindowLogOutput)
+      PSystemLog::SetTarget(new LogToWindow());
+    else {
+      if (systemLogFileName == DebuggerLogOutput)
+        PSystemLog::SetTarget(new PSystemLogToDebug());
+      else {
         PFile::Remove(systemLogFileName);
+        PSystemLog::SetTarget(new PSystemLogToFile(systemLogFileName));
+      }
       DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
     }
   }
@@ -844,14 +752,15 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             fileDlgInfo.Flags = OFN_ENABLEHOOK|OFN_HIDEREADONLY|OFN_NOVALIDATE|OFN_EXPLORER|OFN_CREATEPROMPT;
             fileDlgInfo.lCustData = (DWORD)this;
             if (GetSaveFileName(&fileDlgInfo)) {
-              if (systemLogFileName != fileBuffer) {
-                systemLogFileName = fileBuffer;
-                PFile::Remove(systemLogFileName);
+              PFilePath newLogFile = fileBuffer;
+              if (!PIsDescendant(&PSystemLog::GetTarget(), PSystemLogToFile) ||
+                    ((PSystemLogToFile &)PSystemLog::GetTarget()).GetFilePath() != newLogFile) {
+                PSystemLog::SetTarget(new PSystemLogToFile(newLogFile));
 #if P_CONFIG_FILE
                 PConfig cfg(ServiceSimulationSectionName);
-                cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+                cfg.SetString(SystemLogFileNameKey, newLogFile);
 #endif // P_CONFIG_FILE
-                DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
+                DebugOutput("Sending all system log output to \"" + newLogFile + "\".\n");
                 PError << "Logging started for \"" << GetName() << "\" version " << GetVersion(PTrue) << endl;
               }
             }
@@ -859,25 +768,23 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           break;
 
         case WindowOutputMenuID :
-          if (systemLogFileName != WindowLogOutput) {
+          if (!PIsDescendant(&PSystemLog::GetTarget(), LogToWindow)) {
             PError << "Logging stopped." << endl;
-            DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
-            systemLogFileName = WindowLogOutput;
+            PSystemLog::SetTarget(new LogToWindow());
 #if P_CONFIG_FILE
             PConfig cfg(ServiceSimulationSectionName);
-            cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+            cfg.SetString(SystemLogFileNameKey, WindowLogOutput);
 #endif // P_CONFIG_FILE
           }
           break;
 
         case DebuggerOutputMenuID :
-          if (systemLogFileName != DebuggerLogOutput) {
+          if (!PIsDescendant(&PSystemLog::GetTarget(), PSystemLogToDebug)) {
             PError << "Logging stopped." << endl;
-            DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
-            systemLogFileName = DebuggerLogOutput;
+            PSystemLog::SetTarget(new PSystemLogToDebug());
 #if P_CONFIG_FILE
             PConfig cfg(ServiceSimulationSectionName);
-            cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+            cfg.SetString(SystemLogFileNameKey, DebuggerLogOutput);
 #endif // P_CONFIG_FILE
           }
           break;
@@ -1178,7 +1085,7 @@ PBoolean PServiceProcess::ReportStatus(DWORD dwCurrentState,
     return PTrue;
 
   // If an error occurs, stop the service.
-  PSystemLog::Output(PSystemLog::Error, "SetServiceStatus failed");
+  PSYSTEMLOG(Error, "SetServiceStatus failed");
   return PFalse;
 }
 
@@ -1568,7 +1475,6 @@ PBoolean PServiceProcess::ProcessCommand(const char * cmd)
         nid.uCallbackMessage = UWM_SYSTRAY; // message sent to nid.hWnd
         nid.Add();    // This adds the icon
         debugWindow = (HWND)-1;
-        systemLogFileName = DebuggerLogOutput;
         return PTrue;
       }
       return PFalse;

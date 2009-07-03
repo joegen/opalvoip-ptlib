@@ -39,7 +39,6 @@
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
     void PXOnAsyncSignal(int);
-    PString systemLogFileName;
     PString pidFileToRemove;
     PBoolean isTerminating;
 
