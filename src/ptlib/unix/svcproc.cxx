@@ -573,7 +573,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   strcat(msg, ", aborting.\n");
 
-  PSystemLog::GetTarget().Output(PSystemLog::Fatal, msg);
+  PSYSTEMLOG(Fatal, msg);
 
   raise(SIGQUIT); // Dump core
   _exit(-1); // Fail safe if raise() didn't dump core and exit
