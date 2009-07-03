@@ -72,21 +72,6 @@ extern void PXSignalHandler(int);
 
 #define  MAX_LOG_LINE_LEN  1024
 
-#ifndef P_VXWORKS
-static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
-  LOG_CRIT,    // LogFatal,   
-  LOG_ERR,     // LogError,   
-  LOG_WARNING, // LogWarning, 
-  LOG_INFO,    // LogInfo,    
-  LOG_DEBUG,   // LogDebug
-  LOG_DEBUG,
-  LOG_DEBUG,
-  LOG_DEBUG,
-  LOG_DEBUG,
-  LOG_DEBUG
-};
-#endif // !P_VXWORKS
-
 static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
   "Message",
   "Fatal error",
@@ -101,135 +86,6 @@ static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
   "Debug6",
 };
 
-#ifdef P_MAC_MPTHREADS
-// alas, this can't be statically initialized
-// XXX This ought to be an MPCriticalRegionID, but they're broken in
-// XXX Mac OS X 10.0.x!
-static MPSemaphoreID logMutex;
-
-// yuck.
-static void SetUpLogMutex()
-{
-    if (logMutex == 0) {
-        MPSemaphoreID tempCrit;
-        long err = MPCreateSemaphore(1, 1, &tempCrit);
-        PAssertOS(err == 0);
-        if (!OTCompareAndSwap32(0, (UInt32)tempCrit, (UInt32*)&logMutex)) {
-            // lost the race
-            MPDeleteSemaphore(tempCrit);
-        }
-    }
-}
-#endif
-#ifdef P_PTHREADS
-
-static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
-
-#endif
-
-void PSystemLog::Output(Level level, const char * cmsg)
-{
-  PString systemLogFileName = PServiceProcess::Current().systemLogFileName;
-  if (systemLogFileName.IsEmpty()) {
-#ifdef P_VXWORKS
-    printf("%s\n",cmsg);
-    logMsg((char *)(const char)cmsg,0,0,0,0,0,0);
-#else
-    syslog(PwlibLogToUnixLog[level], "%s", cmsg);
-#endif
-  }
-  else {
-#ifdef P_PTHREADS
-    pthread_mutex_lock(&logMutex);
-#endif
-#ifdef P_MAC_MPTHREADS
-    SetUpLogMutex();
-    (void)MPWaitOnSemaphore(logMutex, kDurationForever);
-#endif
-
-    ostream * out;
-    if (systemLogFileName == "-")
-      out = &cerr;
-    else
-      out = new ofstream(systemLogFileName, ios::app);
-
-    PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
-
-    PThread * thread = PThread::Current();
-    if (thread == NULL) {
-#ifdef P_MAC_MPTHREADS
-      unsigned tid = (unsigned)MPCurrentTaskID();
-#elif defined(P_VXWORKS)
-      unsigned tid = ::taskIdSelf();
-#elif defined(BE_THREADS)
-      thread_id tid = ::find_thread(NULL);
-#else
-      unsigned tid = (unsigned) pthread_self();
-#endif
-      *out << "ThreadID=0x"
-           << setfill('0') << ::hex
-           << setw(8) << tid
-           << setfill(' ') << ::dec;
-    } else {
-      PString threadName = thread->GetThreadName();
-      if (threadName.GetLength() <= 23)
-        *out << setw(23) << threadName;
-      else
-        *out << threadName.Left(10) << "..." << threadName.Right(10);
-    }
-
-    *out << '\t'
-         << PLevelName[level+1]
-         << '\t'
-         << cmsg << endl;
-
-    if (out != &cerr)
-      delete out;
-
-#ifdef P_PTHREADS
-    pthread_mutex_unlock(&logMutex);
-#endif
-#ifdef P_MAC_MPTHREADS
-    MPSignalSemaphore(logMutex);
-#endif
-  }
-}
-
-
-streambuf::int_type PSystemLog::Buffer::overflow(int c)
-{
-  if (pptr() >= epptr()) {
-    int ppos = pptr() - pbase();
-    char * newptr = string.GetPointer(string.GetSize() + 10);
-    setp(newptr, newptr + string.GetSize() - 1);
-    pbump(ppos);
-  }
-  if (c != EOF) {
-    *pptr() = (char)c;
-    pbump(1);
-  }
-  return 0;
-}
-
-
-streambuf::int_type PSystemLog::Buffer::underflow()
-{
-  return EOF;
-}
-
-
-int PSystemLog::Buffer::sync()
-{
-  PSystemLog::Output(log->logLevel, string);
-
-  string = PString();
-  char * base = string.GetPointer(10);
-  setp(base, base + string.GetSize() - 1);
-  return 0;
-}
-
-
 PServiceProcess::PServiceProcess(const char * manuf,
                                  const char * name,
                                          WORD majorVersion,
@@ -238,7 +94,6 @@ PServiceProcess::PServiceProcess(const char * manuf,
                                          WORD buildNumber)
   : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
 {
-  currentLogLevel = PSystemLog::Warning;
   isTerminating = PFalse;
 }
 
@@ -253,12 +108,6 @@ PServiceProcess::~PServiceProcess()
 
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
-
-#ifndef P_VXWORKS
-  // close the system log
-  if (systemLogFileName.IsEmpty())
-    closelog();
-#endif // !P_VXWORKS
 }
 
 
@@ -451,18 +300,19 @@ int PServiceProcess::InitialiseService()
 
   // set flag for console messages
   if (args.HasOption('c')) {
-    systemLogFileName = '-';
+    PSystemLog::SetTarget(new PSystemLogToStderr());
     debugMode = PTrue;
   }
 
   if (args.HasOption('l')) {
-    systemLogFileName = args.GetOptionString('l');
-    if (systemLogFileName.IsEmpty()) {
+    PFilePath fileName = args.GetOptionString('l');
+    if (fileName.IsEmpty()) {
       cout << "error: must specify file name for -l" << endl;
       helpAndExit = PTrue;
     }
-    else if (PDirectory::Exists(systemLogFileName))
-      systemLogFileName = PDirectory(systemLogFileName) + PProcess::Current().GetFile().GetFileName() + ".log";
+    else if (PDirectory::Exists(fileName))
+      fileName = PDirectory(fileName) + PProcess::Current().GetFile().GetFileName() + ".log";
+    PSystemLog::SetTarget(new PSystemLogToFile(fileName));
   }
 
   if (helpAndExit) {
@@ -492,18 +342,6 @@ int PServiceProcess::InitialiseService()
   }
 
   // open the system logger for this program
-  if (systemLogFileName.IsEmpty())
-    openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
-  else if (systemLogFileName == "-")
-    cout << "All output for " << GetName() << " is to console." << endl;
-  else {
-    ofstream logfile(systemLogFileName, ios::app);
-    if (!logfile.is_open()) {
-      cout << "Could not open log file \"" << systemLogFileName << "\""
-              " - " << strerror(errno) << endl;
-      return 1;
-    }
-  }
   PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(PTrue));
 
   if (args.HasOption('i'))
@@ -659,11 +497,7 @@ void PServiceProcess::Terminate()
   // Do the services stop code
   OnStop();
 
-#ifndef P_VXWORKS
-  // close the system log
-  if (systemLogFileName.IsEmpty())
-    closelog();
-#endif // !P_VXWORKS
+  PSystemLog::SetTarget(NULL);
 
   // Now end the program
   exit(terminationValue);
@@ -738,25 +572,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   strcat(msg, ", aborting.\n");
 
-  if (systemLogFileName.IsEmpty()) {
-#ifdef P_VXWORKS
-  logMsg((char *)msg,0,0,0,0,0,0);
-#else
-    syslog(LOG_CRIT, msg); 
-    closelog();
-#endif // !P_VXWORKS
-  }
-  else {
-#ifdef P_VXWORKS
-    int fd = open(systemLogFileName, O_WRONLY|O_APPEND, FWRITE|FAPPEND);
-#else
-    int fd = open(systemLogFileName, O_WRONLY|O_APPEND);
-#endif // !P_VXWORKS
-    if (fd >= 0) {
-      write(fd, msg, strlen(msg));
-      close(fd);
-    }
-  }
+  PSystemLog::GetTarget().Output(PSystemLog::Fatal, msg);
 
   raise(SIGQUIT); // Dump core
   _exit(-1); // Fail safe if raise() didn't dump core and exit
