@@ -29,6 +29,11 @@
  */
 
 #include <ptlib.h>
+
+#ifdef __GNUC__
+#pragma implementation "syslog.h"
+#endif
+
 #include <ptlib/syslog.h>
 #include <ptlib/pprocess.h>
 
