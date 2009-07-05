@@ -107,7 +107,8 @@ class PSystemLog : public PObject, public iostream
 
     class Buffer : public streambuf {
       public:
-        virtual int_type overflow(int=EOF);
+        Buffer();
+        virtual int_type overflow(int_type=EOF);
         virtual int_type underflow();
         virtual int sync();
         PSystemLog * m_log;
@@ -330,7 +331,7 @@ The current log level is checked and if allowed, the second argument is evaluate
 as a stream output sequence which is them output to the system log.
 */
 #define PSYSTEMLOG(level, variables) \
-  if (PServiceProcess::Current().GetLogLevel() >= PSystemLog::level) { \
+  if (PSystemLog::GetTarget().GetThresholdLevel() >= PSystemLog::level) { \
     PSystemLog P_systemlog(PSystemLog::level); \
     P_systemlog << variables; \
   } else (void)0

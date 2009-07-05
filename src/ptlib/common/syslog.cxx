@@ -29,6 +29,11 @@
  */
 
 #include <ptlib.h>
+
+#ifdef __GNUC__
+#pragma implementation "syslog.h"
+#endif
+
 #include <ptlib/syslog.h>
 #include <ptlib/pprocess.h>
 
@@ -99,16 +104,25 @@ PSystemLog & PSystemLog::operator=(const PSystemLog &)
 
 ///////////////////////////////////////////////////////////////
 
-streambuf::int_type PSystemLog::Buffer::overflow(int c)
+PSystemLog::Buffer::Buffer()
+{
+  PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+  char * newptr = m_string.GetPointer(32);
+  setp(newptr, newptr + m_string.GetSize() - 1);
+}
+
+
+streambuf::int_type PSystemLog::Buffer::overflow(int_type c)
 {
   if (pptr() >= epptr()) {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
     int ppos = pptr() - pbase();
-    char * newptr = m_string.GetPointer(m_string.GetSize() + 10);
+    char * newptr = m_string.GetPointer(m_string.GetSize() + 32);
     setp(newptr, newptr + m_string.GetSize() - 1);
     pbump(ppos);
   }
+
   if (c != EOF) {
     *pptr() = (char)c;
     pbump(1);
@@ -293,7 +307,7 @@ void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
     << PIPSocket::GetHostName() << ' '
     << PProcess::Current().GetName() << ' '
     << msg;
-  m_socket.WriteTo(str, str.GetLength(), m_host, m_port);
+  m_socket.WriteTo((const char *)str, str.GetLength(), m_host, m_port);
 }
 
 
