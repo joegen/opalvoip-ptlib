@@ -23,9 +23,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 21583 $
- * $Author: rjongbloed $
- * $Date: 2008-11-20 23:56:31 +1100 (Thu, 20 Nov 2008) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _PSYSTEMLOG
