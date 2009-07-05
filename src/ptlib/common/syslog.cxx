@@ -104,16 +104,25 @@ PSystemLog & PSystemLog::operator=(const PSystemLog &)
 
 ///////////////////////////////////////////////////////////////
 
-streambuf::int_type PSystemLog::Buffer::overflow(int c)
+PSystemLog::Buffer::Buffer()
+{
+  PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+  char * newptr = m_string.GetPointer(32);
+  setp(newptr, newptr + m_string.GetSize() - 1);
+}
+
+
+streambuf::int_type PSystemLog::Buffer::overflow(int_type c)
 {
   if (pptr() >= epptr()) {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
     int ppos = pptr() - pbase();
-    char * newptr = m_string.GetPointer(m_string.GetSize() + 10);
+    char * newptr = m_string.GetPointer(m_string.GetSize() + 32);
     setp(newptr, newptr + m_string.GetSize() - 1);
     pbump(ppos);
   }
+
   if (c != EOF) {
     *pptr() = (char)c;
     pbump(1);
