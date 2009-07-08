@@ -307,7 +307,8 @@ void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
     << PIPSocket::GetHostName() << ' '
     << PProcess::Current().GetName() << ' '
     << msg;
-  m_socket.WriteTo(str, str.GetLength(), m_host, m_port);
+  
+  m_socket.WriteTo((const char *)str, str.GetLength(), m_host, m_port);
 }
 
 
