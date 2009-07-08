@@ -270,6 +270,7 @@
     #pragma include_alias(<openssl/pq_compat.h>,  <@SSL_DIR@/include/openssl/pq_compat.h>)
     #pragma include_alias(<openssl/dtls1.h>,      <@SSL_DIR@/include/openssl/dtls1.h>)
     #pragma include_alias(<openssl/pqueue.h>,     <@SSL_DIR@/include/openssl/pqueue.h>)
+    #pragma include_alias(<openssl/hmac.h>,     <@SSL_DIR@/include/openssl/hmac.h>)
 
     #ifdef P_OSSL_AES
       #pragma include_alias(<openssl/aes.h>,      <@SSL_DIR@/include/openssl/aes.h>)
