@@ -106,8 +106,13 @@ void PBase64::ProcessEncoding(const void * dataPtr, PINDEX length)
   const BYTE * data = (const BYTE *)dataPtr;
   while (saveCount < 3) {
     saveTriple[saveCount++] = *data++;
-    if (--length == 0)
+    if (--length == 0) {
+      if (saveCount == 3) {
+        OutputBase64(saveTriple);
+        saveCount = 0;
+      }
       return;
+    }
   }
 
   OutputBase64(saveTriple);
