@@ -148,6 +148,26 @@ class PNatMethod  : public PObject
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
     ) = 0;
 
+    /**Create a socket pair.
+       The NAT traversal protocol is used to create a pair of sockets with
+       adjacent port numbers for which the external IP address and port
+       numbers are known. PUDPSocket descendants are returned which will, in
+       response to GetLocalAddress() return the externally visible IP and port
+       rather than the local machines IP and socket.
+
+       The will create new socket pointers. It is up to the caller to make
+       sure the sockets are deleted to avoid memory leaks.
+
+       The socket pointers are set to NULL if the function fails and returns
+       PFalse.
+      */
+    virtual PBoolean CreateSocketPair(
+      PUDPSocket * & socket1,
+      PUDPSocket * & socket2,
+      const PIPSocket::Address & binding,
+      void * userData
+    );
+
     /**Returns whether the Nat Method is ready and available in
     assisting in NAT Traversal. The principal is function is
     to allow the EP to detect various methods and if a method
@@ -158,6 +178,19 @@ class PNatMethod  : public PObject
     virtual bool IsAvailable(
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
     ) = 0;
+
+..../**Acrivate
+     Activate/DeActivate the NAT Method on a call by call basis
+     Default does notthing
+      */
+    virtual void Activate(bool active);
+
+    /**Set Alternate Candidate (ICE) or probe (H.460.24A) addresses
+       Default does notthing
+      */
+    virtual void SetAlternateAddresses(const PStringArray & addresses,   ///< List of probe/candidates
+                                       void * userData = NULL
+                                      );
 
     enum RTPSupportTypes {
       RTPSupported,
@@ -206,6 +239,14 @@ class PNatMethod  : public PObject
       WORD   maxPort;
       WORD   currentPort;
     } singlePortInfo, pairedPortInfo;
+
+	/** RandomPortPair
+		This function returns a random port pair base number in the specified range for
+		the creation of the RTP port pairs (this used to avoid issues with multiple
+		NATed devices opening the same local ports and experiencing issues with
+		the behaviour of the NAT device Refer: draft-jennings-behave-test-results-04 sect 3
+	*/
+	WORD RandomPortPair(unsigned int start, unsigned int end);
 };
 
 /////////////////////////////////////////////////////////////
@@ -252,6 +293,11 @@ public :
   */
   PNatMethod * GetMethod(const PIPSocket::Address & address = PIPSocket::GetDefaultIpAny());
 
+  /** GetMethodByName
+    This function retrieves the NAT Traversal Method with the given name. 
+    If it is not found then NULL is returned. 
+  */
+  PNatMethod * GetMethodByName(const PString & name);
 
   /** RemoveMethod
     This function removes a NAT method from the NATlist matching the supplied method name
@@ -298,7 +344,7 @@ private:
 template <class className> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
+    virtual PObject *    CreateInstance(int /*userData*/) const { return (PNatMethod *)new className; }
     virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetNatMethodName(); }
     virtual bool  ValidateDeviceName(const PString & deviceName, int /*userData*/) const { 
 	      return (deviceName == GetDeviceNames(0)[0]); 
