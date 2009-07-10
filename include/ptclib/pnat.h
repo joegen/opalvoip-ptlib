@@ -179,7 +179,7 @@ class PNatMethod  : public PObject
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
     ) = 0;
 
-..../**Acrivate
+    /**Acrivate
      Activate/DeActivate the NAT Method on a call by call basis
      Default does notthing
       */
