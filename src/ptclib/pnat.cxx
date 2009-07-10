@@ -33,6 +33,7 @@
 
 #include <ptlib.h>
 #include <ptclib/pnat.h>
+#include <ptclib/random.h>
 
 
 static const char PNatMethodBaseClass[] = "PNatMethod";
@@ -65,6 +66,17 @@ PNatMethod * PNatStrategy::GetMethod(const PIPSocket::Address & address)
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
     if (i->IsAvailable(address))
       return &*i;
+  }
+
+  return NULL;
+}
+
+PNatMethod * PNatStrategy::GetMethodByName(const PString & name)
+{
+  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
+    if (i->GetName() == name) {
+      return &*i;
+	}
   }
 
   return NULL;
@@ -123,12 +135,16 @@ PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr
   return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass,0);
 }
 
+PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,PUDPSocket * & socket2,
+      const PIPSocket::Address & binding, void * /*userData*/)
+{
+	return CreateSocketPair(socket1,socket2,binding);
+}
 
 void PNatMethod::PrintOn(ostream & strm) const
 {
   strm << GetName() << " server " << GetServer();
 }
-
 
 PString PNatMethod::GetServer() const
 {
@@ -177,3 +193,25 @@ void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, W
 
   pairedPortInfo.mutex.Signal();
 }
+
+void PNatMethod::Activate(bool /*active*/)
+{
+
+}
+
+void PNatMethod::SetAlternateAddresses(const PStringArray & /*addresses*/, void * /*userData*/)
+{
+
+}
+
+WORD PNatMethod::RandomPortPair(unsigned int start, unsigned int end)
+{
+	WORD num;
+	PRandom rand;
+	num = (WORD)rand.Generate(start,end);
+	if (PString(num).Right(1).FindOneOf("13579") != P_MAX_INDEX) 
+			num++;  // Make sure the number is even
+
+	return num;
+}
+
