@@ -1925,11 +1925,13 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
   PAssert(SetSize(2000), POutOfMemory);
   ::vsprintf(theArray+len, fmt, arg);
 #else
-  PINDEX size = len;
+  PINDEX providedSpace = 0;
+  int requiredSpace;
   do {
-    size += 1000;
-    PAssert(SetSize(size), POutOfMemory);
-  } while (_vsnprintf(theArray+len, size-len, fmt, arg) == -1);
+    providedSpace += 1000;
+    PAssert(SetSize(providedSpace+len), POutOfMemory);
+    requiredSpace = _vsnprintf(theArray+len, providedSpace, fmt, arg);
+  } while (requiredSpace == -1 || requiredSpace >= providedSpace);
 #endif // P_VXWORKS
 
   PAssert(MakeMinimumSize(), POutOfMemory);
