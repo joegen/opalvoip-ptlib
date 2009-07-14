@@ -727,7 +727,10 @@ void PTimer::StartRunning(PBoolean once)
 
   if (!IsRunning() && (oldState != Stopped)) 
     m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
-  else if (IsRunning() && (oldState == Stopped)) {
+  else if (IsRunning()) {
+    if (oldState != Stopped)
+      m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, false);
+
     m_absoluteTime = Tick().GetMilliSeconds() + m_resetTime.GetMilliSeconds();
     m_timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
   }
