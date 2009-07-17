@@ -331,6 +331,8 @@ typedef int socklen_t;
 #endif
  
 #define HAS_IFREQ
+#define _POSIX_MONOTONIC_CLOCK
+
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_AIX)
