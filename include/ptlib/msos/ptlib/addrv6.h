@@ -25,17 +25,18 @@ extern "C" {
 
 typedef USHORT ADDRESS_FAMILY;
 
+#ifndef _WS2IPDEF_
 typedef union _SOCKADDR_INET {
     SOCKADDR_IN Ipv4;
     SOCKADDR_IN6 Ipv6;
     ADDRESS_FAMILY si_family;    
 } SOCKADDR_INET, *PSOCKADDR_INET;
+#endif // _WS2IPDEF_
 
 typedef struct _IP_ADDRESS_PREFIX {
     SOCKADDR_INET Prefix;
     UINT8 PrefixLength;
 } IP_ADDRESS_PREFIX, *PIP_ADDRESS_PREFIX;    
-
 
 #ifndef _NLDEF_
 //
