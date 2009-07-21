@@ -342,6 +342,7 @@ typedef int socklen_t;
 #endif
  
 #define HAS_IFREQ
+#define _POSIX_MONOTONIC_CLOCK
 
 // hf, 2008-12-25: apparently, earlier versions of 10.5.x needed a version 
 // without parameters. however, something changed such that the 'old' version

@@ -719,7 +719,7 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
       break;
 
     case SymmetricNat :
-      if (singlePortInfo.basePort == 0 || singlePortInfo.basePort > singlePortInfo.maxPort)
+      if (localPort == 0 && (singlePortInfo.basePort == 0 || singlePortInfo.basePort > singlePortInfo.maxPort))
       {
         PTRACE(1, "STUN\tInvalid local UDP port range "
                << singlePortInfo.currentPort << '-' << singlePortInfo.maxPort);
