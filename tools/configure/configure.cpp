@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.17"
+#define VERSION "1.18"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -85,7 +85,6 @@ class Feature
       Dependency
     };
 
-    Feature() : state(Enabled) { }
     Feature(const string & featureName, const string & optionName, const string & optionValue);
 
     void Parse(const string & optionName, const string & optionValue);
@@ -144,6 +143,24 @@ Feature::Feature(const string & featureNameParam,
     state(Enabled)
 {
   Parse(optionName, optionValue);
+
+  char * includes = strdup(getenv("INCLUDE"));
+  char * dir = strtok(includes, ";");
+  do {
+    if (*dir != '\0') {
+      checkDirectories.push_back(GetFullPathNameString(dir));
+
+      char * end = &dir[strlen(dir)-1];
+      if (*end == '\\')
+        end--;
+      end -= 7;
+      if (*end == '\\' && strnicmp(end+1, "include", 7) == 0) {
+        *end = '\0';
+        checkDirectories.push_back(GetFullPathNameString(dir));
+      }
+    }
+  } while ((dir = strtok(NULL, ";")) != NULL);
+  free(includes);
 }
 
 
