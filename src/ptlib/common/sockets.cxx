@@ -32,7 +32,7 @@
  */
 
 #include <ptlib.h>
-
+#include <ptbuildopts.h>
 #include <ptlib/sockets.h>
 
 #include <ctype.h>
@@ -2859,6 +2859,11 @@ void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
 {
   address = lastReceiveAddress;
   port    = lastReceivePort;
+}
+
+PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
+{
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////

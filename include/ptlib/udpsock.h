@@ -138,6 +138,15 @@ class PUDPSocket : public PIPDatagramSocket
       WORD & port           ///< Port to send packets.
     );
 
+    /** CallBack to check if the detected address of the connectionless Read()
+		is an alternate address. Use this to switch the target to send and
+		receive the connectionless read/write.
+     */
+	virtual PBoolean IsAlternateAddress(
+		const Address & address,    ///< Detected IP Address.
+		WORD port					///< Detected Port.
+		);
+
     /** Check to See if the socket will support QoS on the given local Address
      */
     static PBoolean SupportQoS(const PIPSocket::Address & address);
