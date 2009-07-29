@@ -1408,13 +1408,6 @@ dnl MSWIN_DEFINE   dtmf,P_DTMF
 PTLIB_SIMPLE_OPTION([dtmf], [DTMF], [enable DTMF protocol support])
 
 dnl ########################################################################
-dnl check for enabling WAVFILE support
-dnl MSWIN_DISPLAY    wavfile,WAV file support
-dnl MSWIN_DEFINE     wavfile,P_WAVFILE
-
-PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [enable WAVFILE support])
-
-dnl ########################################################################
 dnl check for enabling SOCKS support
 dnl MSWIN_DISPLAY    socks,SOCKS protocol support
 dnl MSWIN_DEFINE     socks,P_SOCKS
@@ -1469,6 +1462,13 @@ dnl MSWIN_DISPLAY audio,Sound support
 dnl MSWIN_DEFINE  audio,P_AUDIO
 
 PTLIB_SIMPLE_OPTION([audio], [AUDIO], [enable audio support])
+
+dnl ########################################################################
+dnl check for enabling WAVFILE support
+dnl MSWIN_DISPLAY    wavfile,WAV file support
+dnl MSWIN_DEFINE     wavfile,P_WAVFILE
+
+PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [enable WAVFILE support], [HAS_AUDIO])
 
 
 dnl ########################################################################
