@@ -19,7 +19,7 @@
  *
  * The Original Code is Portable Windows Library.
  *
- * The Initial Developer of the Original ALSA Code is 
+ * The Initial Developer of the Original ALSA Code is
  * Damien Sandras <dsandras@seconix.com>
  *
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
@@ -35,7 +35,7 @@
 #pragma implementation "sound_alsa.h"
 
 #include "sound_alsa.h"
-
+#include <ptclib/pwavfile.h>
 
 PCREATE_SOUND_PLUGIN(ALSA, PSoundChannelALSA)
 
@@ -148,7 +148,7 @@ void PSoundChannelALSA::UpdateDictionary(Directions dir)
               not in heap!" errors being output to stderr, we take it out and
               suffer the memory leak, if there is one ....
              */
-            free(rawName); 
+            free(rawName);
 #endif
           }
         }
@@ -164,22 +164,22 @@ void PSoundChannelALSA::UpdateDictionary(Directions dir)
 PStringArray PSoundChannelALSA::GetDeviceNames(Directions dir)
 {
   PStringArray devices;
- 
+
   UpdateDictionary(dir);
-  
+
   if (dir == Recorder) {
     if (capture_devices.GetSize() > 0)
       devices += "Default";
-    for (PINDEX i = 0 ; i < capture_devices.GetSize() ; i++) 
+    for (PINDEX i = 0 ; i < capture_devices.GetSize() ; i++)
       devices += capture_devices.GetKeyAt(i);
   }
   else {
     if (playback_devices.GetSize() > 0)
       devices += "Default";
-    for (PINDEX i = 0 ; i < playback_devices.GetSize() ; i++) 
+    for (PINDEX i = 0 ; i < playback_devices.GetSize() ; i++)
       devices += playback_devices.GetKeyAt(i);
   }
-  
+
   return devices;
 }
 
@@ -250,18 +250,13 @@ PBoolean PSoundChannelALSA::Open(const PString & devName,
   return true;
 }
 
-
-PBoolean PSoundChannelALSA::Setup()
+bool PSoundChannelALSA::SetHardwareParams()
 {
-  if (os_handle == NULL) {
-    PTRACE(6, "ALSA\tSkipping setup of " << device << " as not open");
-    return false;
-  }
+  PTRACE(4,"ALSA\tSetHardwareParams " << ((direction == Player) ? "Player" : "Recorder") << " channels=" << mNumChannels
+	   << " sample rate=" << mSampleRate);
 
-  if (isInitialised) {
-    PTRACE(6, "ALSA\tSkipping setup of " << device << " as instance already initialised");
-    return true;
-  }
+  if (!os_handle)
+    return SetErrorValues(NotOpen, EBADF);
 
   enum _snd_pcm_format sndFormat;
 #if PBYTE_ORDER == PLITTLE_ENDIAN
@@ -271,9 +266,9 @@ PBoolean PSoundChannelALSA::Setup()
 #endif
 
   frameBytes = (mNumChannels * (snd_pcm_format_width(sndFormat) / 8));
+
   if (frameBytes == 0)
     frameBytes = 2;
-
   int err;
 
   // Finally set the hardware parameters
@@ -309,47 +304,35 @@ PBoolean PSoundChannelALSA::Setup()
       return false;
     }
 
-    // Ignore errors from here ...
-
-
+    int dir = 0;
+    int totalBufferSize = m_bufferSize*m_bufferCount;
     snd_pcm_uframes_t desiredPeriodSize = m_bufferSize/frameBytes;
-    if ((err = snd_pcm_hw_params_set_period_size_near(os_handle, hw_params, &desiredPeriodSize, 0)) < 0) { 
-      PTRACE(1, "ALSA\tCannot set period size: " << snd_strerror(err));
-    }
 
-    snd_pcm_uframes_t actualPeriodSize;
-    if ((err = snd_pcm_hw_params_get_period_size(hw_params, &actualPeriodSize, 0)) < 0) {
-      PTRACE(1, "ALSA\tCannot get period size: " << snd_strerror(err));
-      return false;
-    }
+    /* use of get function (ie. snd_pcm_hw_params_get_period_size) and the check as done before was, in my opinion, was pretty unuseful
+       because actually the set function (ie.snd_pcm_hw_params_set_period_size_near) returns the real set value
+       in the argument passed (ie. desiredPeriodSize) */
 
-    if (desiredPeriodSize != actualPeriodSize) {
-      PTRACE(2, "ALSA\tPeriod size set to " << actualPeriodSize << ", should be " << desiredPeriodSize);
+    if ((err = snd_pcm_hw_params_set_period_size_near(os_handle, hw_params, &desiredPeriodSize, &dir)) < 0) {
+       PTRACE(1, "ALSA\tCannot set period size: " << snd_strerror(err));
     }
     else {
-      PTRACE(4, "ALSA\tSuccessfully set period size to " << actualPeriodSize);
+       PTRACE(4, "ALSA\tSuccessfully set period size to " << desiredPeriodSize);
     }
 
-    unsigned desiredPeriods = m_bufferCount*m_bufferSize/(actualPeriodSize*frameBytes);
-    if ((err = (int) snd_pcm_hw_params_set_periods_near(os_handle, hw_params, &desiredPeriods, 0)) < 0) {
-      PTRACE(1, "ALSA\tCannot set periods to: " << snd_strerror(err)); 
-    }
+    /* i experimented (3 different sound cards) that is better to rounds value to the nearest integer to avoid buffer underrun/overrun */
+    unsigned desiredPeriods = (unsigned)(((float)totalBufferSize / (float)(desiredPeriodSize*frameBytes))+0.5);
 
-    unsigned actualPeriods;
-    if ((err = snd_pcm_hw_params_get_periods(hw_params, &actualPeriods, 0)) < 0) {
-      PTRACE(1, "ALSA\tCannot get periods: " << snd_strerror(err));
-      return false;
-    }
+    if (desiredPeriods < 2) desiredPeriods = 2;
 
-    if (actualPeriods != desiredPeriods) {
-      PTRACE(2, "ALSA\tPeriods set to " << actualPeriods << ", should be " << desiredPeriods);
+    if ((err = (int) snd_pcm_hw_params_set_periods_near(os_handle, hw_params, &desiredPeriods, &dir)) < 0) {
+      PTRACE(1, "ALSA\tCannot set periods to: " << snd_strerror(err));
     }
     else {
-      PTRACE(4, "ALSA\tSuccessfully set periods to " << actualPeriods);
+      PTRACE(4, "ALSA\tSuccessfully set periods to " << desiredPeriods);
     }
 
     if ((err = snd_pcm_hw_params(os_handle, hw_params)) >= 0) {
-      PTRACE(4, "ALSA\tSet parameters");
+      PTRACE(4, "ALSA\tparameters set ok");
       isInitialised = true;
       return true;
     }
@@ -360,15 +343,29 @@ PBoolean PSoundChannelALSA::Setup()
     PTRACE(4, "ALSA\tRetrying after temporary error: " << snd_strerror(err));
     usleep(1000);
   }
-  
+
   PTRACE(1, "ALSA\tCannot set parameters: " << snd_strerror(err));
   return false;
+}
+
+PBoolean PSoundChannelALSA::Setup()
+{
+  if (os_handle == NULL) {
+    PTRACE(6, "ALSA\tSkipping setup of " << device << " as not open");
+    return false;
+  }
+
+  if (isInitialised) {
+    PTRACE(6, "ALSA\tSkipping setup of " << device << " as instance already initialised");
+    return true;
+  }
+
+  return SetHardwareParams();
 }
 
 
 PBoolean PSoundChannelALSA::Close()
 {
-  PStringStream msg;
   PWaitAndSignal m(device_mutex);
 
   /* if the channel isn't open, do nothing */
@@ -379,7 +376,7 @@ PBoolean PSoundChannelALSA::Close()
   snd_pcm_close(os_handle);
   os_handle = NULL;
   isInitialised = false;
-  
+
   return true;
 }
 
@@ -396,11 +393,11 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
   int pos = 0, max_try = 0;
   const char * buf2 = (const char *)buf;
   do {
-    /* the number of frames to read is the buffer length 
+    /* the number of frames to read is the buffer length
     divided by the size of one frame */
     long r = snd_pcm_writei(os_handle, (char *) &buf2 [pos], len / frameBytes);
 
-    if (r > 0) {
+    if (r >= 0) {
       pos += r * frameBytes;
       len -= r * frameBytes;
       lastWriteCount += r * frameBytes;
@@ -416,7 +413,7 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
         while ((r = snd_pcm_resume(os_handle)) == -EAGAIN)
           sleep(1);       /* wait until the suspend flag is released */
 
-        if (r < 0) 
+        if (r < 0)
           snd_pcm_prepare(os_handle);
       }
 
@@ -424,7 +421,7 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
       max_try++;
       if (max_try > 5)
         return false;
-    }  
+    }
   } while (len > 0);
 
   return true;
@@ -444,39 +441,37 @@ PBoolean PSoundChannelALSA::Read(void * buf, PINDEX len)
 
   int pos = 0, max_try = 0;
   char * buf2 = (char *)buf;
+
   do {
-    /* the number of frames to read is the buffer length 
+    /* the number of frames to read is the buffer length
     divided by the size of one frame */
-    long r = snd_pcm_readi(os_handle, &buf2[pos], len / frameBytes);
-    if (r > 0) {
+    long r = snd_pcm_readi(os_handle, &buf2[pos],len/frameBytes);
+
+    if (r >= 0) {
       pos += r * frameBytes;
       len -= r * frameBytes;
       lastReadCount += r * frameBytes;
     }
     else {
       if (r == -EPIPE) {    /* under-run */
-        snd_pcm_prepare(os_handle);
-      } 
+	  snd_pcm_prepare(os_handle);
+      }
       else if (r == -ESTRPIPE) {
         while ((r = snd_pcm_resume(os_handle)) == -EAGAIN)
           sleep(1);       /* wait until the suspend flag is released */
 
-        if (r < 0) 
+        if (r < 0)
           snd_pcm_prepare(os_handle);
       }
 
-      PTRACE(1, "ALSA\tCould not read");
+      PTRACE(1, "ALSA\tCould not read " << max_try << " " << len << " " << snd_strerror(r));
+
       max_try++;
+
+      if (max_try > 5)
+        return false;
     }
-  } while (len > 0 && max_try < 5);
-
-
-  if (len != 0) {
-    memset((char *) &buf2 [pos], 0, len);
-    lastReadCount += len;
-
-    PTRACE(1, "ALSA\tRead Error, filling with zeros");
-  }
+  } while (len > 0);
 
   return true;
 }
@@ -524,12 +519,14 @@ unsigned PSoundChannelALSA::GetSampleSize() const
 
 PBoolean PSoundChannelALSA::SetBuffers(PINDEX size, PINDEX count)
 {
+  PTRACE(4,"ALSA\tSetBuffers direction=" <<
+	         ((direction == Player) ? "Player" : "Recorder") << " size=" << size << " count=" << count);
+
   m_bufferSize = size;
   m_bufferCount = count;
 
-  isInitialised = false;
-
-  return true;
+  /* set actually new parameters */
+  return SetHardwareParams();
 }
 
 
@@ -559,11 +556,15 @@ PBoolean PSoundChannelALSA::PlaySound(const PSound & sound, PBoolean wait)
 PBoolean PSoundChannelALSA::PlayFile(const PFilePath & filename, PBoolean wait)
 {
   BYTE buffer [512];
+  PTRACE(1, "ALSA\tPlayFile " << filename);
 
   if (!os_handle)
     return SetErrorValues(NotOpen, EBADF);
 
-  PFile file(filename, PFile::ReadOnly);
+  /* use PWAVFile instead of PFile -> skips wav header bytes */
+
+  PWAVFile file(filename, PFile::ReadOnly,PWAVFile::fmt_NotKnown);
+  snd_pcm_prepare(os_handle);
 
   if (!file.IsOpen())
     return false;
@@ -573,6 +574,7 @@ PBoolean PSoundChannelALSA::PlayFile(const PFilePath & filename, PBoolean wait)
       break;
 
     PINDEX len = file.GetLastReadCount();
+
     if (len == 0)
       break;
 
@@ -773,7 +775,7 @@ PBoolean PSoundChannelALSA::Volume(PBoolean set, unsigned set_vol, unsigned &get
     }
     else {
       snd_mixer_selem_get_capture_volume_range(elem, &pmin, &pmax);
-      snd_mixer_selem_get_capture_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &vol); 
+      snd_mixer_selem_get_capture_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &vol);
     }
 
     get_vol = (vol * 100) / (pmax?pmax:31);
