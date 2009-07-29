@@ -91,6 +91,7 @@ default_openssl=yes
 default_expat=yes
 default_sdl=yes
 default_sasl=yes
+default_mlib=no
 HAS_PLUGINS=1
 HAS_TTS=1
 HAS_ASN=1
@@ -133,6 +134,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_expat=yes
   default_sdl=yes
   default_sasl=no
+  default_mlib=no
   HAS_PLUGINS=1
   HAS_TTS=1
   HAS_ASN=1
@@ -174,6 +176,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_expat=no
   default_sdl=no
   default_sasl=no
+  default_mlib=no
   HAS_PLUGINS=1
   HAS_TTS=
   HAS_ASN=1
@@ -1061,13 +1064,25 @@ AC_SUBST(HAS_SASL)
 
 
 dnl ########################################################################
-dnl check for mediaLib library
+dnl check for SUN mediaLib library
 
-HAS_MEDIALIB=no
-AC_CHECK_LIB(mlib, mlib_VideoColorJFIFYCC2RGB420_Nearest, HAS_MEDIALIB=yes, HAS_MEDIALIB=no)
-if test $HAS_MEDIALIB = yes; then
+AC_ARG_ENABLE([mlib],
+	      AS_HELP_STRING([--enable-mlib],[enable SUN mlib support]),
+	      [enable_mlib=$enableval],
+	      [enable_mlib=$default_mlib]
+	     )
+if test "$enable_mlib" = "no" ; then
+  AC_MSG_NOTICE(SUN mlib disabled)
+else 
+  HAS_MEDIALIB=no
+  AC_CHECK_LIB(mlib, mlib_VideoColorJFIFYCC2RGB420_Nearest, HAS_MEDIALIB=yes, HAS_MEDIALIB=no)
+  if test $HAS_MEDIALIB = yes; then
+    AC_MSG_NOTICE(SUN mlib enabled)
     AC_DEFINE(P_MEDIALIB)
     ENDLDLIBS="-lmlib $ENDLDLIBS"
+  else
+    AC_MSG_ERROR(SUN mlib not found, 1)
+  fi
 fi
 
 dnl ########################################################################
