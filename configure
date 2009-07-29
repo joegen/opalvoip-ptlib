@@ -1403,6 +1403,7 @@ Optional Features:
   --enable-samples        enable samples build
   --disable-resolver      disable DNS resolver support
   --disable-sasl          disable SASL support
+  --enable-mlib           enable SUN mlib support
   --disable-openldap      disable OpenLDAP support
   --disable-openssl       disable OpenSSL support
   --disable-expat         disable expat XML support
@@ -3474,6 +3475,7 @@ default_openssl=yes
 default_expat=yes
 default_sdl=yes
 default_sasl=yes
+default_mlib=no
 HAS_PLUGINS=1
 HAS_TTS=1
 HAS_ASN=1
@@ -3516,6 +3518,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_expat=yes
   default_sdl=yes
   default_sasl=no
+  default_mlib=no
   HAS_PLUGINS=1
   HAS_TTS=1
   HAS_ASN=1
@@ -3557,6 +3560,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_expat=no
   default_sdl=no
   default_sasl=no
+  default_mlib=no
   HAS_PLUGINS=1
   HAS_TTS=
   HAS_ASN=1
@@ -9838,8 +9842,20 @@ fi
 
 
 
-HAS_MEDIALIB=no
-{ echo "$as_me:$LINENO: checking for mlib_VideoColorJFIFYCC2RGB420_Nearest in -lmlib" >&5
+# Check whether --enable-mlib was given.
+if test "${enable_mlib+set}" = set; then
+  enableval=$enable_mlib; enable_mlib=$enableval
+else
+  enable_mlib=$default_mlib
+
+fi
+
+if test "$enable_mlib" = "no" ; then
+  { echo "$as_me:$LINENO: SUN mlib disabled" >&5
+echo "$as_me: SUN mlib disabled" >&6;}
+else
+  HAS_MEDIALIB=no
+  { echo "$as_me:$LINENO: checking for mlib_VideoColorJFIFYCC2RGB420_Nearest in -lmlib" >&5
 echo $ECHO_N "checking for mlib_VideoColorJFIFYCC2RGB420_Nearest in -lmlib... $ECHO_C" >&6; }
 if test "${ac_cv_lib_mlib_mlib_VideoColorJFIFYCC2RGB420_Nearest+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -9906,12 +9922,19 @@ else
   HAS_MEDIALIB=no
 fi
 
-if test $HAS_MEDIALIB = yes; then
+  if test $HAS_MEDIALIB = yes; then
+    { echo "$as_me:$LINENO: SUN mlib enabled" >&5
+echo "$as_me: SUN mlib enabled" >&6;}
     cat >>confdefs.h <<\_ACEOF
 #define P_MEDIALIB 1
 _ACEOF
 
     ENDLDLIBS="-lmlib $ENDLDLIBS"
+  else
+    { { echo "$as_me:$LINENO: error: SUN mlib not found" >&5
+echo "$as_me: error: SUN mlib not found" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
 fi
 
 
@@ -11532,6 +11555,7 @@ echo "${ECHO_T}yes" >&6; }
             { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
           fi
+
 
 
 
