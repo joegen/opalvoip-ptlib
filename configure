@@ -12045,10 +12045,10 @@ if test "${enable_remconn+set}" = set; then
 fi
 
 
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: remconn support disabled due to disabled dependency " >&5
-echo "$as_me: remconn support disabled due to disabled dependency " >&6;}
+          if test "xHAS_CONFIG_FILE" != "x"; then
+            if test "x$HAS_CONFIG_FILE" != "x1"; then
+              { echo "$as_me:$LINENO: remconn support disabled due to disabled dependency HAS_CONFIG_FILE" >&5
+echo "$as_me: remconn support disabled due to disabled dependency HAS_CONFIG_FILE" >&6;}
 	      HAS_REMCONN=
 	    fi
 	  fi
