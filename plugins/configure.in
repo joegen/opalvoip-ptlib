@@ -247,7 +247,7 @@ dnl #########################################################################
 dnl check for AVC video support
 dnl ########################################################################
 
-AC_ARG_ENABLE(avc, [  --enable-avc            enable IEEE1394/AVC video support],,enable_avc=yes)
+AC_ARG_ENABLE(avc, [  --enable-avc            enable IEEE1394/AVC video support],,enable_avc=no)
 
 if test "${enable_avc}z" = "yesz" ; then
   AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
