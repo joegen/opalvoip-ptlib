@@ -999,7 +999,7 @@ PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
     return PFalse;
   }
 
-  if ((srcFrameWidth == dstFrameWidth) || (srcFrameHeight == dstFrameHeight)) {
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) {
      YUY2toYUV420PSameSize(yuy2, yuv420p);
   } else {
      YUY2toYUV420PWithResize(yuy2, yuv420p);
