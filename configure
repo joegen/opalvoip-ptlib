@@ -725,7 +725,6 @@ HAS_ASN
 HAS_STUN
 HAS_PIPECHAN
 HAS_DTMF
-HAS_WAVFILE
 HAS_SOCKS
 HAS_FTP
 HAS_SNMP
@@ -734,6 +733,7 @@ HAS_REMCONN
 HAS_SERIAL
 HAS_POP3SMTP
 HAS_AUDIO
+HAS_WAVFILE
 HAS_QOS
 HAS_VIDEO
 HAS_VIDFILE
@@ -1422,7 +1422,6 @@ Optional Features:
   --enable-stun           enable STUN support
   --enable-pipechan       enable pipechannel support
   --enable-dtmf           enable DTMF protocol support
-  --enable-wavfile        enable WAVFILE support
   --enable-socks          enable SOCKS protocol support
   --enable-ftp            enable FTP protocol support
   --enable-snmp           enable SNMP protocol support
@@ -1431,6 +1430,7 @@ Optional Features:
   --enable-serial         enable serial port support
   --enable-pop3smtp       enable POP3/SMTP support
   --enable-audio          enable audio support
+  --enable-wavfile        enable WAVFILE support
   --enable-qos            enable QOS support
   --enable-video          enable video device support
   --enable-vidfile        enable video file support
@@ -11823,58 +11823,6 @@ echo "${ECHO_T}no" >&6; }
 
 
 
-          { echo "$as_me:$LINENO: checking enable WAVFILE support" >&5
-echo $ECHO_N "checking enable WAVFILE support... $ECHO_C" >&6; }
-          # Check whether --enable-wavfile was given.
-if test "${enable_wavfile+set}" = set; then
-  enableval=$enable_wavfile;
-                         if test "x$enableval" = "xyes"; then
-                           HAS_WAVFILE=1
-                         else
-                           HAS_WAVFILE=
-                         fi
-
-fi
-
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: wavfile support disabled due to disabled dependency " >&5
-echo "$as_me: wavfile support disabled due to disabled dependency " >&6;}
-	      HAS_WAVFILE=
-	    fi
-	  fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { echo "$as_me:$LINENO: wavfile support disabled due to disabled dependency " >&5
-echo "$as_me: wavfile support disabled due to disabled dependency " >&6;}
-	      HAS_WAVFILE=
-	    fi
-	  fi
-
-
-          if test "x${HAS_WAVFILE}" = "x1"; then
-
-cat >>confdefs.h <<\_ACEOF
-#define P_WAVFILE 1
-_ACEOF
-
-            HAS_WAVFILE=1
-            { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-          else
-            HAS_WAVFILE=
-            { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-          fi
-
-
-
-
-
-
-
           { echo "$as_me:$LINENO: checking enable SOCKS protocol support" >&5
 echo $ECHO_N "checking enable SOCKS protocol support... $ECHO_C" >&6; }
           # Check whether --enable-socks was given.
@@ -12281,6 +12229,58 @@ _ACEOF
 echo "${ECHO_T}yes" >&6; }
           else
             HAS_AUDIO=
+            { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+          fi
+
+
+
+
+
+
+
+          { echo "$as_me:$LINENO: checking enable WAVFILE support" >&5
+echo $ECHO_N "checking enable WAVFILE support... $ECHO_C" >&6; }
+          # Check whether --enable-wavfile was given.
+if test "${enable_wavfile+set}" = set; then
+  enableval=$enable_wavfile;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_WAVFILE=1
+                         else
+                           HAS_WAVFILE=
+                         fi
+
+fi
+
+
+          if test "xHAS_AUDIO" != "x"; then
+            if test "x$HAS_AUDIO" != "x1"; then
+              { echo "$as_me:$LINENO: wavfile support disabled due to disabled dependency HAS_AUDIO" >&5
+echo "$as_me: wavfile support disabled due to disabled dependency HAS_AUDIO" >&6;}
+	      HAS_WAVFILE=
+	    fi
+	  fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { echo "$as_me:$LINENO: wavfile support disabled due to disabled dependency " >&5
+echo "$as_me: wavfile support disabled due to disabled dependency " >&6;}
+	      HAS_WAVFILE=
+	    fi
+	  fi
+
+
+          if test "x${HAS_WAVFILE}" = "x1"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_WAVFILE 1
+_ACEOF
+
+            HAS_WAVFILE=1
+            { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+          else
+            HAS_WAVFILE=
             { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
           fi
@@ -15840,7 +15840,6 @@ HAS_ASN!$HAS_ASN$ac_delim
 HAS_STUN!$HAS_STUN$ac_delim
 HAS_PIPECHAN!$HAS_PIPECHAN$ac_delim
 HAS_DTMF!$HAS_DTMF$ac_delim
-HAS_WAVFILE!$HAS_WAVFILE$ac_delim
 HAS_SOCKS!$HAS_SOCKS$ac_delim
 HAS_FTP!$HAS_FTP$ac_delim
 HAS_SNMP!$HAS_SNMP$ac_delim
@@ -15849,6 +15848,7 @@ HAS_REMCONN!$HAS_REMCONN$ac_delim
 HAS_SERIAL!$HAS_SERIAL$ac_delim
 HAS_POP3SMTP!$HAS_POP3SMTP$ac_delim
 HAS_AUDIO!$HAS_AUDIO$ac_delim
+HAS_WAVFILE!$HAS_WAVFILE$ac_delim
 HAS_QOS!$HAS_QOS$ac_delim
 HAS_VIDEO!$HAS_VIDEO$ac_delim
 HAS_VIDFILE!$HAS_VIDFILE$ac_delim
