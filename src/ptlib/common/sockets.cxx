@@ -67,8 +67,14 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 #endif // P_QOS
 
 
-#if P_HAS_IPV6 || defined(AI_NUMERICHOST)
-  #define HAS_GETADDRINFO 1
+#if !defined(P_MINGW) && !defined(P_CYGWIN)
+  #if P_HAS_IPV6 || defined(AI_NUMERICHOST)
+    #define HAS_GETADDRINFO 1
+  #endif
+#else
+  #if WINVER > 0x500
+    #define HAS_GETADDRINFO 1
+  #endif
 #endif
 
 
