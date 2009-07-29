@@ -1376,7 +1376,7 @@ dnl check for enabling REMCONN support
 dnl MSWIN_DISPLAY    remconn,remote connection support
 dnl MSWIN_DEFINE     remconn,P_REMCONN
 
-PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support])
+PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support], [HAS_CONFIG_FILE])
 
 dnl ########################################################################
 dnl check for enabling serial port handling
