@@ -72,11 +72,17 @@ template <class DeviceType>
 void DisplayPluginTypes(const PString & type)
 {
   cout << "   " << type << " : ";
-  std::vector<PString> services = PFactory<DeviceType>::GetKeyList();
+  std::vector<std::string> services = PFactory<DeviceType>::GetKeyList();
   if (services.size() == 0)
     cout << "None available" << endl;
-  else
-    cout << setfill(',') << services << setfill(' ') << endl;
+  else {
+    for (size_t i = 0; i < services.size(); ++i) {
+      if (i > 0)
+        cout << ',';
+      cout << services[i];
+    }
+    cout << endl;
+  }
 }
 
 
@@ -161,7 +167,7 @@ void PluginTest::Main()
 
     PStringList driverList;
     if (useFactory)
-      driverList = PStringList::container<std::vector<PString> >(PFactory<PSoundChannel>::GetKeyList());
+      driverList = PStringList::container<std::vector<std::string> >(PFactory<PSoundChannel>::GetKeyList());
     else
       driverList = PSoundChannel::GetDriverNames();
 
