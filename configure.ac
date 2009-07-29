@@ -305,7 +305,7 @@ case "$target_os" in
 		   TARGETDIR=msos ;
 		   SHAREDLIBEXT="dll" ;
 		   STDCCFLAGS="$STDCCFLAGS -mms-bitfields" ;
-		   ENDLDLIBS="-lwinmm -lwsock32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32" ;
+		   ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32" ;
 		   NEEDS_PTHREADS=no ;
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   HAS_SHM_VIDEO=
