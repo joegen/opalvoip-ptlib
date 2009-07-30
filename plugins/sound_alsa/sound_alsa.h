@@ -54,6 +54,7 @@ class PSoundChannelALSA : public PSoundChannel {
 
  private:
   static void UpdateDictionary(PSoundChannel::Directions);
+  bool SetHardwareParams();
   PBoolean Volume(PBoolean, unsigned, unsigned &);
 
   PSoundChannel::Directions direction;
