@@ -1,5 +1,5 @@
- // This embarassing hack exists purely because EMACS' electric-c indentation
-// mode is too clever by half...test
+// This embarassing hack exists purely because EMACS' electric-c indentation
+// mode is too clever by half...
 #ifdef __cplusplus
 #define BEGIN_EXTERN_C extern "C" {
 #define END_EXTERN_C };
