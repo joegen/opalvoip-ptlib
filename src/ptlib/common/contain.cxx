@@ -72,6 +72,18 @@ class CustomAllocator
     void Deallocate(Type * p, size_t n)
     { a.deallocate(p, n); }
 
+    Type * Reallocate(Type * p, size_t old_n, size_t new_n)
+    { 
+      if (new_n == old_n)
+        return p;
+
+      Type * np = a.allocate(new_n);
+      memcpy(np, p, new_n);
+
+      a.deallocate(p, old_n); 
+      return np;
+    }
+
     Allocator a;
 };
 
@@ -247,7 +259,6 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
     theArray = NULL;
   else if (dynamicAllocation) {
     PINDEX sizebytes = elementSize*GetSize();
-    //theArray = (char *)malloc(sizebytes);
     theArray = PAbstractArray_allocator.Allocate(sizebytes);
     PAssert(theArray != NULL, POutOfMemory);
     memcpy(theArray, PAssertNULL(buffer), sizebytes);
@@ -281,7 +292,6 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 {
   elementSize = array->elementSize;
   PINDEX sizebytes = elementSize*GetSize();
-  //char * newArray = (char *)malloc(sizebytes);
   char * newArray = PAbstractArray_allocator.Allocate(sizebytes);
   if (newArray == NULL)
     reference->size = 0;
@@ -379,7 +389,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
     if (newsizebytes == 0)
       newArray = NULL;
     else {
-      if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+      if ((newArray = PAbstractArray_allocator.Allocate(newsizebytes)) == NULL)
         return PFalse;
   
       if (theArray != NULL)
@@ -394,22 +404,22 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
     if (theArray != NULL) {
       if (newsizebytes == 0) {
         if (allocatedDynamically)
-          free(theArray);
+          PAbstractArray_allocator.Deallocate(theArray, oldsizebytes);
         newArray = NULL;
       }
       else if (allocatedDynamically) {
-        if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
+        if ((newArray = (char *)PAbstractArray_allocator.Reallocate(theArray, oldsizebytes, newsizebytes)) == NULL)
           return PFalse;
       }
       else {
-        if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+        if ((newArray = PAbstractArray_allocator.Allocate(newsizebytes)) == NULL)
           return PFalse;
         memcpy(newArray, theArray, PMIN(newsizebytes, oldsizebytes));
         allocatedDynamically = PTrue;
       }
     }
     else if (newsizebytes != 0) {
-      if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+      if ((newArray = PAbstractArray_allocator.Allocate(newsizebytes)) == NULL)
         return PFalse;
     }
     else
@@ -428,7 +438,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
 void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
 {
   if (allocatedDynamically && theArray != NULL)
-    free(theArray);
+    PAbstractArray_allocator.Deallocate(theArray, elementSize*GetSize());
 
   theArray = (char *)buffer;
   reference->size = bufferSize;
