@@ -598,6 +598,7 @@ class PASN_BMPString : public PASN_ConstrainedObject
     void SetValue(const PString & v) { operator=(v.AsUCS2()); }
     void SetValue(const PWCharArray & v) { operator=(v); }
     void SetValue(const PASN_BMPString & v) { operator=(v.value); }
+	void SetValueRaw(const PWCharArray & v);
 
     void SetCharacterSet(ConstraintType ctype, const char * charSet);
     void SetCharacterSet(ConstraintType ctype, const PWCharArray & charSet);
