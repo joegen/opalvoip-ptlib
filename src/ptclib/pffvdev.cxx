@@ -166,8 +166,12 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
               if (x != P_MAX_INDEX) {
                 m_ffmpegFrameWidth = size.Left(x).AsUnsigned();
                 m_ffmpegFrameHeight = size.Mid(x+1).AsUnsigned();
-                PTRACE(1, "FFVDev\tVideo size parsed as " << m_ffmpegFrameWidth << "x" << m_ffmpegFrameHeight);
+                PTRACE(3, "FFVDev\tVideo size parsed as " << m_ffmpegFrameWidth << "x" << m_ffmpegFrameHeight);
                 state = -1;
+              }
+              if (tokens.GetSize() >= 11) {
+                m_ffmpegFrameRate = tokens[10].AsUnsigned();
+                PTRACE(3, "FFVDev\tVideo frame rate parsed as " << m_ffmpegFrameRate);
               }
             }
           }
