@@ -453,6 +453,15 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
       endHostChars += '#';
     if (endHostChars.IsEmpty())
       pos = P_MAX_INDEX;
+    else if (schemeInfo->hasUsername) {
+      //';' showing in the username field should be valid.
+      // Looking for ';' after the '@' for the parameters.
+      PINDEX posAt = url.Find('@');
+      if (posAt != P_MAX_INDEX)
+        pos = url.FindOneOf(endHostChars, posAt);
+      else 
+        pos = url.FindOneOf(endHostChars);
+    }
     else
       pos = url.FindOneOf(endHostChars);
 
@@ -646,6 +655,13 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
       if (port != schemeInfo->defaultPort || portSupplied)
         str << ':' << port;
     }
+
+    // Problem was fixed for handling legacy schema like tel URI.
+    // HostPortOnly format: if there is no default user and host fields, only the schema itself is being returned.
+    // URIOnly only format: the pathStr will be retruned.
+    // The Recalculate() will merge both HostPortOnly and URIOnly formats for the completed uri string creation.
+    if (schemeInfo->defaultToUserIfNoAt)
+      return str;
 
     if (str.GetLength() > scheme.GetLength()+1)
       return str;
