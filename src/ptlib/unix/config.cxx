@@ -128,6 +128,13 @@ class PXConfig : public PList<PXConfigSection>
     PBoolean      canSave;
 };
 
+
+static PBoolean IsComment(const PString& str)
+{
+  return str.GetLength() && strchr(";#", str[0]);
+}
+
+
 //
 // a dictionary of configurations, keyed by filename
 //
@@ -281,13 +288,24 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
 
   for (PINDEX i = 0; i < GetSize(); i++) {
     PXConfigSectionList & section = (*this)[i].GetList();
+
+    // If the line is a comment, output it as is
+    if (IsComment((*this)[i])) {
+      file << (*this)[i] << endl;
+      continue;
+    }
+
     file << "[" << (*this)[i] << "]" << endl;
     for (PINDEX j = 0; j < section.GetSize(); j++) {
       PXConfigValue & value = section[j];
       PStringArray lines = value.GetValue().Tokenise('\n', PTrue);
-      PINDEX k;
-      for (k = 0; k < lines.GetSize(); k++) 
-        file << value << "=" << lines[k] << endl;
+      // Preserve name/value pairs with no value, i.e. of the form "name="
+      if (lines.IsEmpty())
+	    file << value << "=" << endl;
+      else {
+        for (PINDEX k = 0; k < lines.GetSize(); k++) 
+          file << value << "=" << lines[k] << endl;
+      }
     }
     file << endl;
   }
@@ -330,11 +348,11 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
     file >> line;
     line = line.Trim();
     if ((len = line.GetLength()) > 0) {
-
-      // ignore comments and blank lines 
-      char ch = line[0];
-      if ((len > 0) && (ch != ';') && (ch != '#')) {
-        if (ch == '[') {
+      // Preserve comments
+      if (IsComment(line))
+        Append(new PXConfigSection(line));
+      else {
+        if (line[0] == '[') {
           PCaselessString sectionName = (line.Mid(1,len-(line[len-1]==']'?2:1))).Trim();
           PINDEX  index;
           if ((index = GetValuesIndex(sectionName)) != P_MAX_INDEX)
