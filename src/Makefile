@@ -293,7 +293,8 @@ endif
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
-	$(COMPONENT_SRC_DIR)/httpclnt.cxx 
+	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
 endif
 
 ifdef HAS_HTTPFORMS
@@ -305,8 +306,7 @@ endif #HAS_HTTPFORMS
 ifdef HAS_HTTPSVC
 SOURCES += \
 	$(PLATFORM_SRC_DIR)/svcproc.cxx \
-	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
-	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
+	$(COMPONENT_SRC_DIR)/httpsvc.cxx
 
 ifdef HAS_OPENSSL
 SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx
