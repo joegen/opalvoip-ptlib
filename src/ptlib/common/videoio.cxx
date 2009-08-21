@@ -1008,6 +1008,25 @@ PString PVideoControlInfo::AsString(const InputControlType & ctype)
 	return PString();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+
+PString PVideoInteractionInfo::AsString(const InputInteractType & ctype)
+{
+	switch (ctype) {
+		case InteractKey:
+			return "Remote Key Press";
+		case InteractMouse:
+			return "Remote Mouse Move/Click";
+		case InteractNavigate:
+			return "Remote Navigation";
+		case InteractRTSP:
+			return "Remote RTSP Commands";
+		case InteractOther:
+			return "Custom/Other";
+	}
+	return PString();
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 PVideoInputControl::~PVideoInputControl()  
