@@ -1230,7 +1230,12 @@ PString PProcess::GetOSName()
           return "Server 2003";
 
         case 6 :
-          return "Vista";
+          switch (info.dwMinorVersion) {
+            case 0 :
+              return "Vista";
+            case 1 :
+              return "7";
+          }
       }
   }
   return "?";
