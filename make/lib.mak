@@ -28,7 +28,7 @@
 # $Date$
 #
 
-ifneq ($(OSTYPE),Darwin)
+ifeq (,$(findstring $(OSTYPE),Darwin cygwin mingw))
   ifeq ($(BUILD_TYPE),.)
     LIBNAME_PAT	= $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_NUMBER)
   else
