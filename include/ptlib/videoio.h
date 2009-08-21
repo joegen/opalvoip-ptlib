@@ -230,7 +230,7 @@ class PVideoControlInfo : public PObject
 };
 
 
-/**This class defines a video Input device control
+/**This class defines a video Input device control (Camera controls PTZ)
 */
 
 class PVideoInputControl : public PVideoControlInfo
@@ -261,6 +261,27 @@ protected:
 	std::list<PVideoControlInfo> m_info;
 	PMutex ccmutex;
 
+};
+
+/**This class defines a video Input device Interactions (Remote Inputs/Controls)
+*/
+class PVideoInteractionInfo : public PObject
+{
+  PCLASSINFO(PVideoInteractionInfo, PObject);
+
+ public:
+
+	 typedef enum {
+        InteractKey,		/// Register remote KeyPresses
+        InteractMouse,		/// Register remote Mouse Movements\Clicks
+        InteractNavigate,	/// Register remote Navigation commands
+		InteractRTSP,		/// Register remote RTSP (Real Time Streaming Protocol) Inputs
+		InteractOther		/// Register remote application specific Inputs
+     } InputInteractType;
+
+ 	static PString AsString(const InputInteractType & type);
+
+	InputInteractType type;
 };
 
 
@@ -916,6 +937,7 @@ class PVideoInputDevice : public PVideoDevice
 	typedef struct {
 	   std::list<PVideoFrameInfo> framesizes;
 	   std::list<PVideoControlInfo> controls;
+	   std::list<PVideoInteractionInfo> interactions;
 	} Capabilities;
 
     /**Retrieve a list of Device Capabilities
@@ -1027,6 +1049,9 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
   PPLUGIN_STATIC_LOAD(YUVFile, PVideoInputDevice);
 #endif
 
+#ifdef P_DIRECTSHOW
+  PPLUGIN_STATIC_LOAD(DirectShow, PVideoInputDevice);
+#endif
 
 ////////////////////////////////////////////////////////
 //
