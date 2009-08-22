@@ -1454,7 +1454,7 @@ PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
   details.cbDetails = sizeof(volume);
   details.paDetails = &volume;
 
-  MMRESULT result = mixerSetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_VALUE);
+  MMRESULT result = mixerGetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_VALUE);
   if (result != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
