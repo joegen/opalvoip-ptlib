@@ -93,7 +93,7 @@ install:
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
 	( if test -e $(PT_LIBDIR)/$(LIB_SONAME) ; then \
-		$(INSTALL) -m 444 $(PT_LIBDIR)/$(LIB_SONAME) $(DESTDIR)$(LIBDIR)
+		$(INSTALL) -m 444 $(PT_LIBDIR)/$(LIB_SONAME) $(DESTDIR)$(LIBDIR); \
 	fi )
 	$(INSTALL) -m 444 $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR)
 	(cd $(DESTDIR)$(LIBDIR) ; \
