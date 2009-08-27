@@ -932,6 +932,9 @@ PBoolean PSoundChannelWin32::Close()
 
 PBoolean PSoundChannelWin32::SetBuffers(PINDEX size, PINDEX count)
 {
+  if (count == buffers.GetSize() && size == buffers[0].GetSize())
+	  return true;
+
   Abort();
 
   PAssert(size > 0 && count > 0, PInvalidParameter);
