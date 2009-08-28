@@ -349,8 +349,6 @@ void PVideoInputDevice_YUVFile::FillRect(BYTE * frame,
                    int rectWidth, int rectHeight,
                    int r, int g,  int b)
 {
-// PTRACE(0,"x,y is"<<xPos<<" "<<yPos<<" and size is "<<rectWidth<<" "<<rectHeight);
-
   //This routine fills a region of the video image with data. It is used as the central
   //point because one only has to add other image formats here.
 
