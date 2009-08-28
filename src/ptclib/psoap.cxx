@@ -409,7 +409,7 @@ PBoolean PSOAPServerResource::LoadHeaders( PHTTPRequest& /* request */ )    // I
 PBoolean PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
                                 const PStringToString & /*data*/)
 {
-  PTRACE( 2, "PSOAPServerResource\tReceived post data, request: " << request.entityBody );
+  PTRACE(4, "PSOAPServerResource\tReceived post data, request: " << request.entityBody );
 
   PString reply;
 
@@ -484,7 +484,7 @@ PBoolean PSOAPServerResource::OnSOAPRequest( const PString & body, PString & rep
   // Retrieve the method from the SOAP messsage
   request.GetMethod( method, nameSpace );
 
-  PTRACE( 3, "PSOAPServerResource\tReceived SOAP message for method " << method);
+  PTRACE(4, "PSOAPServerResource\tReceived SOAP message for method " << method);
 
   return OnSOAPRequest( method, request, reply );
 }
