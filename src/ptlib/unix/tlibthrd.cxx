@@ -385,7 +385,7 @@ PThread::~PThread()
     process.SignalTimerChange();
 
     // last gasp tracing
-    PTRACE(1, "PTLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << id << ::dec << ")");
+    PTRACE(5, "PTLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << id << ::dec << ")");
 
 
     // if thread was started, remove it from the active thread list and detach it to release thread resources
@@ -727,7 +727,7 @@ void PThread::SetPriority(Priority priorityLevel)
       // spawning thread's priority
       
       relativePriority = 62 - GetThreadBasePriority();
-      PTRACE(1,  "relativePriority is " << relativePriority << " base priority is " << GetThreadBasePriority());
+      PTRACE(3,  "relativePriority is " << relativePriority << " base priority is " << GetThreadBasePriority());
       
       thePrecedencePolicy.importance = relativePriority;
       result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
@@ -909,7 +909,7 @@ void PThread::WaitForTermination() const
                // CPU usage and also yeilds so other threads can run.
   }
 
-  PTRACE(2, "WaitForTermination on " << id << " finished");
+  PTRACE(5, "WaitForTermination on " << id << " finished");
 }
 
 
