@@ -939,7 +939,7 @@ PBoolean PSoundChannelWin32::SetBuffers(PINDEX size, PINDEX count)
 
   PAssert(size > 0 && count > 0, PInvalidParameter);
 
-  PTRACE(1, "WinSnd\tSetting sounds buffers to " << count << " x " << size);
+  PTRACE(3, "WinSnd\tSetting sounds buffers to " << count << " x " << size);
 
   PBoolean ok = PTrue;
 
