@@ -151,7 +151,7 @@ class PHTTPSpace : public PContainer
     PBoolean SetSize(PINDEX) { return PFalse; }
 };
 
-#ifdef _WIN32_WCE
+#ifdef TRACE
 #undef TRACE
 #endif
 
