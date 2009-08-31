@@ -569,7 +569,7 @@ PObject::Comparison PHTTPClientBasicAuthentication::Compare(const PObject & othe
   return PHTTPClientAuthentication::Compare(other);
 }
 
-PBoolean PHTTPClientBasicAuthentication::Parse(const PString & auth, PBoolean proxy)
+PBoolean PHTTPClientBasicAuthentication::Parse(const PString & /*auth*/, PBoolean /*proxy*/)
 {
   return true;
 }
