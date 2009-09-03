@@ -143,6 +143,8 @@ struct PHashTableElement
     PObject * data;
     PHashTableElement * next;
     PHashTableElement * prev;
+
+    PDECLARE_POOL_ALLOCATOR();
 };
 
 PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
