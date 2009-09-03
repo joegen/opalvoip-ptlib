@@ -947,7 +947,7 @@ public:
 
 
 // Memory pooling allocators
-#if __GNUCC__
+#if __GNUC__
 #include <ext/bitmap_allocator.h>
 template <class Type> class PFixedPoolAllocator    : public __gnu_cxx::bitmap_allocator<Type> { };
 #include <ext/mt_allocator.h>
