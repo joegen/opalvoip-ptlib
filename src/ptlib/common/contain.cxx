@@ -87,10 +87,19 @@ class CustomAllocator
     Allocator a;
 };
 
-#if __GNUCC__
+#if defined(__GNUCC__)
+
 static CustomAllocator<PContainerReference, __gnu_cxx::pool_allocator> PContainerReference_allocator;
+
+#elif defined(__GNUC__)
+
+#include <ext/pool_allocator.h>
+static CustomAllocator<PContainerReference, __gnu_cxx::__pool_alloc<PContainerReference> > PContainerReference_allocator;
+
 #else
+
 static CustomAllocator<PContainerReference> PContainerReference_allocator;
+
 #endif
 
 static PContainerReference * PContainerReference_new(PINDEX initialSize)
@@ -217,10 +226,18 @@ PBoolean PContainer::MakeUnique()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __GNUCC__
+#if defined(__GNUCC__)
+
 static CustomAllocator<char, __gnu_cxx::mt_allocator> PAbstractArray_allocator;
+
+#elif defined(__GNUC)
+
+static CustomAllocator<char, __gnu_cxx::__mt_alloc<char> > PAbstractArray_allocator;
+
 #else
+
 static CustomAllocator<char> PAbstractArray_allocator;
+
 #endif
 
 
