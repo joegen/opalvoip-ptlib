@@ -916,6 +916,32 @@ public:
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
 
+// Memory pooling allocators
+#if __GNUC__
+#include <ext/bitmap_allocator.h>
+template <class Type> class PFixedPoolAllocator    : public __gnu_cxx::bitmap_allocator<Type> { };
+#include <ext/mt_allocator.h>
+template <class Type> class PVariablePoolAllocator : public __gnu_cxx::__mt_alloc<Type>   { };
+#else
+template <class Type> class PFixedPoolAllocator    : public std::allocator<Type> { };
+template <class Type> class PVariablePoolAllocator : public std::allocator<Type> { };
+#endif
+
+#define PDECLARE_POOL_ALLOCATOR() \
+    void * operator new(size_t nSize); \
+    void * operator new(size_t nSize, const char * file, int line); \
+    void operator delete(void * ptr); \
+    void operator delete(void * ptr, const char *, int)
+
+#define PDEFINE_POOL_ALLOCATOR(cls) \
+  static PFixedPoolAllocator<cls> cls##_allocator; \
+  void * cls::operator new(size_t)                           { return cls##_allocator.allocate(1);               } \
+  void * cls::operator new(size_t, const char *, int)        { return cls##_allocator.allocate(1);               } \
+  void   cls::operator delete(void * ptr)                    {        cls##_allocator.deallocate((cls *)ptr, 1); } \
+  void   cls::operator delete(void * ptr, const char *, int) {        cls##_allocator.deallocate((cls *)ptr, 1); }
+
+
+
 /** Declare all the standard PWlib class information.
 This macro is used to provide the basic run-time typing capability needed
 by the library. All descendent classes from the #PObject class require
