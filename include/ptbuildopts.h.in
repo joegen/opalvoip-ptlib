@@ -270,7 +270,7 @@
     #pragma include_alias(<openssl/pq_compat.h>,  <@SSL_DIR@/include/openssl/pq_compat.h>)
     #pragma include_alias(<openssl/dtls1.h>,      <@SSL_DIR@/include/openssl/dtls1.h>)
     #pragma include_alias(<openssl/pqueue.h>,     <@SSL_DIR@/include/openssl/pqueue.h>)
-    #pragma include_alias(<openssl/hmac.h>,     <@SSL_DIR@/include/openssl/hmac.h>)
+    #pragma include_alias(<openssl/hmac.h>,       <@SSL_DIR@/include/openssl/hmac.h>)
 
     #ifdef P_OSSL_AES
       #pragma include_alias(<openssl/aes.h>,      <@SSL_DIR@/include/openssl/aes.h>)
@@ -342,6 +342,7 @@
     #pragma include_alias(<openssl/pq_compat.h>,  <@SSL_DIR@/inc32/openssl/pq_compat.h>)
     #pragma include_alias(<openssl/dtls1.h>,      <@SSL_DIR@/inc32/openssl/dtls1.h>)
     #pragma include_alias(<openssl/pqueue.h>,     <@SSL_DIR@/inc32/openssl/pqueue.h>)
+    #pragma include_alias(<openssl/hmac.h>,       <@SSL_DIR@/inc32/openssl/hmac.h>)
 
     #ifdef P_OSSL_AES
       #pragma include_alias(<openssl/aes.h>,      <@SSL_DIR@/inc32/openssl/aes.h>)
@@ -653,31 +654,37 @@
 
     #if P_VIDEO
       #define P_VFW_CAPTURE 1
-
-      #undef P_DIRECTX_DDRAW_H
-      #undef P_DIRECTSHOW_DDRAW_H
-    #endif
-
-    #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
-      #undef P_DIRECTSHOW
-    #endif
-
-    #if defined(P_DIRECTSHOW)
-
-      #ifdef P_DIRECTSHOW_DDRAW_H
-        #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
-      #else
-        #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
+      #if defined(_MSC_VER)
+		#undef P_DIRECTSHOW2 
+	  #else
+		#undef P_DIRECTX_DDRAW_H
+		#undef P_DIRECTSHOW_DDRAW_H
+			#if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
+			  #undef P_DIRECTSHOW
+			#endif
       #endif
+    #endif
 
-      #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
-      #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
-      #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
-      #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
-      #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
-      #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
-      #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
-      #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
+    #if defined(P_DIRECTSHOW) || defined(P_DIRECTSHOW2)
+    
+       #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
+      
+       #if defined(P_DIRECTSHOW) 
+		  #ifdef P_DIRECTSHOW_DDRAW_H
+			#pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
+		  #else
+			#pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
+		  #endif
+
+	      
+		  #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
+		  #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
+		  #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
+		  #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
+		  #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
+		  #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
+		  #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
+	   #endif
 
       #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
       #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
