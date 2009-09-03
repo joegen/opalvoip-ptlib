@@ -64,6 +64,8 @@ class PContainerReference {
     PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
     PBoolean deleteObjects;    // Used by PCollection but put here for efficiency
 
+    PDECLARE_POOL_ALLOCATOR();
+
   private:
     PContainerReference & operator=(const PContainerReference &) 
     { return *this; }
