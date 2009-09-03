@@ -1053,6 +1053,10 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
   PPLUGIN_STATIC_LOAD(DirectShow, PVideoInputDevice);
 #endif
 
+#ifdef P_DIRECTSHOW2
+  PPLUGIN_STATIC_LOAD(DirectShow2, PVideoInputDevice);
+#endif
+
 ////////////////////////////////////////////////////////
 //
 // declare macros and structures needed for video output plugins
