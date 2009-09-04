@@ -1666,27 +1666,42 @@ void PProcess::OnThreadStart(PThread & /*thread*/)
 }
 
 
-#if PTRACING
-static unsigned Percent(const PTimeInterval & cpu, const PTimeInterval & real)
+static void OutputTime(ostream & strm, const char * name, const PTimeInterval & cpu, const PTimeInterval & real)
 {
-  return real != 0 ? (unsigned)((cpu.GetMilliSeconds()*100)/real.GetMilliSeconds()) : 0;
+  strm << ", " << name << '=' << cpu << " (";
+
+  if (real == 0)
+    strm << '0';
+  else {
+    unsigned percent = (unsigned)((cpu.GetMilliSeconds()*100)/real.GetMilliSeconds());
+    if (percent == 0)
+      strm << '0';
+    else
+      strm << (percent/10) << '.' << (percent%10);
+  }
+
+  strm << "%)";
 }
-#endif
+
+
+ostream & operator<<(ostream & strm, const PThread::Times & times)
+{
+  strm << "real=" << scientific << times.m_real;
+  OutputTime(strm, "kernel", times.m_kernel, times.m_real);
+  OutputTime(strm, "user", times.m_user, times.m_real);
+  OutputTime(strm, "both", times.m_kernel + times.m_user, times.m_real);
+  return strm;
+}
 
 
 void PProcess::OnThreadEnded(PThread & PTRACE_PARAM(thread))
 {
 #if PTRACING
-  if (PTrace::CanTrace(3)) {
+  const int LogLevel = 3;
+  if (PTrace::CanTrace(LogLevel)) {
     PThread::Times times;
-    if (thread.GetTimes(times)) {
-      PTimeInterval both = times.m_kernel + times.m_user;
-      PTRACE(3, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\","
-                " real=" << times.m_real << ","
-                " kernel=" << times.m_kernel << " (" << Percent(times.m_kernel, times.m_real) << "%),"
-                " user=" << times.m_user << " (" << Percent(times.m_user, times.m_real) << "%),"
-                " both=" << both << " (" << Percent(both, times.m_real) << "%)");
-    }
+    if (thread.GetTimes(times))
+      PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
   }
 #endif
 }
