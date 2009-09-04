@@ -419,6 +419,7 @@ class PXMLValidator
       DocType    = 1,
       ElementName,
       RequiredAttribute,
+      RequiredNonEmptyAttribute,
       RequiredAttributeWithValue,
       RequiredElement,
       Subtree,
