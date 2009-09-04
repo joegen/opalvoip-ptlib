@@ -966,8 +966,10 @@ bool PThread::GetTimes(Times & times)
   PStringStream procname;
   procname << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
   PTextFile statfile(procname, PFile::ReadOnly);
-  if (!statfile.IsOpen())
+  if (!statfile.IsOpen()) {
+    PTRACE(2, "PTLib\tCould not find thread stat file " << procname);
     return false;
+  }
 
   statfile.ignore(10000, ')'); // Skip pid & filename of executable
 
@@ -985,16 +987,11 @@ bool PThread::GetTimes(Times & times)
            >> dummy // majflt
            >> dummy // cmajflt
            >> utime
-           >> stime
-           >> dummy // cutime
-           >> dummy // cstime
-           >> dummy // priority
-           >> dummy // nice
-           >> dummy // removed field
-           >> dummy // itrealvalue
-           >> starttime;
-  if (!statfile.good())
+           >> stime;
+  if (!statfile.good()) {
+    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname);
     return false;
+  }
 
   times.m_kernel = jiffies_to_msecs(stime);
   times.m_user = jiffies_to_msecs(utime);
