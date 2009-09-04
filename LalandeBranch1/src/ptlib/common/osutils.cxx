@@ -1666,8 +1666,29 @@ void PProcess::OnThreadStart(PThread & /*thread*/)
 }
 
 
-void PProcess::OnThreadEnded(PThread & /*thread*/)
+#if PTRACING
+static unsigned Percent(const PTimeInterval & cpu, const PTimeInterval & real)
 {
+  return (unsigned)((cpu.GetMilliSeconds()*100)/real.GetMilliSeconds());
+}
+#endif
+
+
+void PProcess::OnThreadEnded(PThread & PTRACE_PARAM(thread))
+{
+#if PTRACING
+  if (PTrace::CanTrace(3)) {
+    PThread::Times times;
+    if (thread.GetTimes(times)) {
+      PTimeInterval both = times.m_kernel + times.m_user;
+      PTRACE(3, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\","
+                " real=" << times.m_real << ","
+                " kernel=" << times.m_kernel << " (" << Percent(times.m_kernel, times.m_real) << "%),"
+                " user=" << times.m_user << " (" << Percent(times.m_user, times.m_real) << "%),"
+                " both=" << both << " (" << Percent(both, times.m_real) << "%)");
+    }
+  }
+#endif
 }
 
 
