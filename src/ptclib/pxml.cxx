@@ -1164,4 +1164,123 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 
 ///////////////////////////////////////////////////////
 
+bool PXMLValidator::Elements(PXML * xml, ElementInfo * elements, PString & errorString)
+{
+  PXMLElement * rootElement = xml->GetRootElement();
+  if (rootElement == NULL) {
+    strm << "No outermost element";
+    errorString = strm;
+    return false;
+  }
+
+  return Elements(rootElement, elements, errorString);
+}
+
+bool PXMLValidator::Elements(PXMLElement * baseElement, ElementInfo * elements, PString & errorString)
+{
+  while (elements->m_op != 0) {
+    if (!ValidateElement(baseElement, elements, errorString))
+      return false;
+    ++elements;
+  }
+  return true;
+}
+
+bool PXMLValidator::ValidateElement(PXMLElement * baseElement, ElementInfo * elements, PString & errorString)
+{
+  switch (elements->m_op) {
+    case ElementName:
+      {
+        PString name = baseElement->GetName();
+        if (name != elements->m_name) {
+          baseElement->GetFilePosition(col, line);
+          strm << "Expected element with name '" << elements->m_name << "' on line '" << line << ", but got '" << baseElement->GetName() << "'";
+          errorString = strm;
+          return false;
+        }
+      }
+      break;
+
+    case Subtree:
+      {
+        // optional means it does not have to be there
+        PString bounds((const char *)elements->m_val2);
+        unsigned min, max;
+        PINDEX pos;
+        if ((pos = bounds.Find(',')) == P_MAX_INDEX) {
+          min = bounds.AsUnsigned();
+          max = 0x7ff;
+        }
+        else {
+          min = bounds.Left(pos).AsUnsigned();
+          max = bounds.Mid(pos+1).AsUnsigned();
+        }
+        if (baseElement->GetElement(elements->m_name) == NULL) {
+          if (min == 0)
+            break;
+          strm << "Must have at least " << min << " instances of '" << baseElement->GetName() << "'";
+          errorString = strm;
+          return false;
+        }
+
+        // verify each matching element
+        PINDEX index = 0;
+        PXMLElement * subElement;
+        while ((subElement = baseElement->GetElement(elements->m_name, index)) != NULL) {
+          ElementInfo * subElementInfo = (ElementInfo *)(elements->m_val1);
+          if (!ValidateElement(subElement, subElementInfo, errorString))
+            return false;
+          ++index;
+        }
+      }
+      break;
+
+    case RequiredElement:
+      if (baseElement->GetElement(elements->m_name) == NULL) {
+        baseElement->GetFilePosition(col, line);
+        strm << "Element '" << baseElement->GetName() << "' missing required subelement '" << elements->m_name << "' on line " << line;
+        errorString = strm;
+        return false;
+      }
+      break;
+
+    case RequiredAttribute:
+    case RequiredAttributeWithValue:
+      if (!baseElement->HasAttribute(elements->m_name)) {
+        baseElement->GetFilePosition(col, line);
+        strm << "Element '" << baseElement->GetName() << "' missing required attribute '" << elements->m_name << "' on line " << line;
+        errorString = strm;
+        return false;
+      }
+      if (elements->m_op == RequiredAttributeWithValue) {
+        PString toMatch(baseElement->GetAttribute(elements->m_name));
+        PStringArray values = PString((const char *)elements->m_val1).Lines();
+        PINDEX i = 0;
+        for (i = 0; i < values.GetSize(); ++i) {
+          if (toMatch *= values[i])
+            break;
+        }
+        if (i == values.GetSize()) {
+          baseElement->GetFilePosition(col, line);
+          strm << "Element '" << baseElement->GetName() << "' has attribute '" << elements->m_name << "' which is not one of required values ";
+          for (i = 0; i < values.GetSize(); ++i) {
+            if (i != 0)
+              strm << " | ";
+            strm << "'" << values[i] << "'";
+          }
+          strm << " on line " << line;
+          errorString = strm;
+          return false;
+        }
+      }
+      break;
+
+    default:
+      break;
+  }
+  return true;
+}
+
+///////////////////////////////////////////////////////
+
 #endif 
