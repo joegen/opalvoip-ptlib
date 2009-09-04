@@ -56,7 +56,12 @@
 
     PINDEX          PX_origStackSize;
     Priority        PX_priority;
-    mutable pthread_t       PX_threadId;
+    mutable pthread_t PX_threadId;
+#if defined(P_LINUX)
+    mutable pid_t     PX_linuxId;
+    PTimeInterval     PX_startTick;
+    PTimeInterval     PX_endTick;
+#endif
     pthread_mutex_t PX_suspendMutex;
     int             PX_suspendCount;
     PBoolean            PX_firstTimeStart;
