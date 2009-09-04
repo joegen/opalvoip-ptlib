@@ -1246,13 +1246,21 @@ bool PXMLValidator::ValidateElement(PXMLElement * baseElement, ElementInfo * ele
 
     case RequiredAttribute:
     case RequiredAttributeWithValue:
+    case RequiredNonEmptyAttribute:
       if (!baseElement->HasAttribute(elements->m_name)) {
         baseElement->GetFilePosition(col, line);
         strm << "Element '" << baseElement->GetName() << "' missing required attribute '" << elements->m_name << "' on line " << line;
         errorString = strm;
         return false;
       }
-      if (elements->m_op == RequiredAttributeWithValue) {
+      if (elements->m_op == RequiredNonEmptyAttribute) {
+        if (baseElement->GetAttribute(elements->m_name).IsEmpty()) {
+          strm << "Element '" << baseElement->GetName() << "' has attribute '" << elements->m_name << "' which cannot be empty on line " << line;
+          errorString = strm;
+          return false;
+        }
+      }
+      else if (elements->m_op == RequiredAttributeWithValue) {
         PString toMatch(baseElement->GetAttribute(elements->m_name));
         PStringArray values = PString((const char *)elements->m_val1).Lines();
         PINDEX i = 0;
