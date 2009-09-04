@@ -1669,7 +1669,7 @@ void PProcess::OnThreadStart(PThread & /*thread*/)
 #if PTRACING
 static unsigned Percent(const PTimeInterval & cpu, const PTimeInterval & real)
 {
-  return (unsigned)((cpu.GetMilliSeconds()*100)/real.GetMilliSeconds());
+  return real != 0 ? (unsigned)((cpu.GetMilliSeconds()*100)/real.GetMilliSeconds()) : 0;
 }
 #endif
 
