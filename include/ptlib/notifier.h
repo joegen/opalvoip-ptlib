@@ -59,13 +59,15 @@
    This is most often used as the notification of actions being take by
    interactors in the PTLib library.
  */
-class PNotifierFunction : public PSmartObject
+template <typename ParmType>
+
+class PNotifierFunctionTemplate : public PSmartObject
 {
-  PCLASSINFO(PNotifierFunction, PSmartObject);
+  PCLASSINFO(PNotifierFunctionTemplate, PSmartObject);
 
   public:
     /// Create a notification function instance.
-    PNotifierFunction(
+    PNotifierFunctionTemplate(
       void * obj    ///< Object instance on which the function will be called on.
     ) { object = PAssertNULL(obj); }
 
@@ -74,7 +76,7 @@ class PNotifierFunction : public PSmartObject
      */
     virtual void Call(
       PObject & notifier,  ///< Object that is making the notification.
-      INT extra            ///< Extra information that may be passed to function.
+      ParmType extra       ///< Extra information that may be passed to function.
     ) const = 0;
 
   protected:
@@ -82,6 +84,9 @@ class PNotifierFunction : public PSmartObject
     /** Object instance to receive the notification function call. */
     void * object;
 };
+
+typedef PNotifierFunctionTemplate<INT> PNotifierFunction;
+typedef PNotifierFunctionTemplate<void *> PNotifierFunction2;
 
 
 /**
@@ -102,14 +107,15 @@ class PNotifierFunction : public PSmartObject
    This is most often used as the notification of actions being take by
    interactors in the PTLib library.
  */
-class PNotifier : public PSmartPointer
+template <typename ParmType>
+class PNotifierTemplate : public PSmartPointer
 {
-  PCLASSINFO(PNotifier, PSmartPointer);
+  PCLASSINFO(PNotifierTemplate, PSmartPointer);
 
   public:
     /** Create a new notification function smart pointer. */
-    PNotifier(
-      PNotifierFunction * func = NULL   ///< Notifier function to call.
+    PNotifierTemplate(
+      PNotifierFunctionTemplate<ParmType> * func = NULL   ///< Notifier function to call.
     ) : PSmartPointer(func) { }
 
     /**Execute the call to the actual notification function on the object
@@ -119,12 +125,15 @@ class PNotifier : public PSmartPointer
      */
     virtual void operator()(
       PObject & notifier,  ///< Object that is making the notification.
-      INT extra            ///< Extra information that may be passed to function.
+      ParmType extra       ///< Extra information that may be passed to function.
     ) const {
       if (PAssertNULL(object) != NULL)
-        ((PNotifierFunction*)object)->Call(notifier,extra);
+        ((PNotifierFunctionTemplate<ParmType>*)object)->Call(notifier,extra);
     }
 };
+
+typedef PNotifierTemplate<INT> PNotifier;
+typedef PNotifierTemplate<void *> PNotifier2;
 
 
 /** Declare a notifier object class.
@@ -145,20 +154,28 @@ class PNotifier : public PSmartPointer
 
   This macro will also declare the member function itself. This will be:
 \verbatim
-      void func(notifier & n, INT extra)
+      void func(notifier & n, INT extra)     // for PNOTIFIER
+      void func(notifier & n, void * extra)  // for PNOTIFIER2
 \endverbatim
 
   The implementation of the function is left for the user.
  */
-#define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-  class func##_PNotifier : public PNotifierFunction { \
+#define PDECLARE_NOTIFIER_BASE(notifier, notifiee, func, type) \
+  class func##_PNotifier : public PNotifierFunctionTemplate<type> { \
     public: \
-      func##_PNotifier(notifiee * obj) : PNotifierFunction(obj) { } \
-      virtual void Call(PObject & note, INT extra) const \
+      func##_PNotifier(notifiee * obj) : PNotifierFunctionTemplate<type>(obj) { } \
+      virtual void Call(PObject & note, type extra) const \
         { ((notifiee*)object)->func((notifier &)note, extra); } \
   }; \
   friend class func##_PNotifier; \
-  virtual void func(notifier & note, INT extra)
+  virtual void func(notifier & note, type extra)
+
+#define PDECLARE_NOTIFIER(notifier, notifiee, func) \
+  PDECLARE_NOTIFIER_BASE(notifier, notifiee, func, INT)
+
+#define PDECLARE_NOTIFIER2(notifier, notifiee, func) \
+  PDECLARE_NOTIFIER_BASE(notifier, notifiee, func, void *)
+
 
 /** Create a notifier object instance.
   This macro creates an instance of the particular #PNotifier class using
@@ -169,6 +186,7 @@ class PNotifier : public PSmartPointer
   \p this then the #PCREATE_NOTIFIER macro should be used.
  */
 #define PCREATE_NOTIFIER_EXT(obj, notifiee, func) PNotifier(new notifiee::func##_PNotifier(obj))
+#define PCREATE_NOTIFIER2_EXT(obj, notifiee, func) PNotifier2(new notifiee::func##_PNotifier(obj))
 
 /** Create a notifier object instance.
   This macro creates an instance of the particular #PNotifier class using
@@ -179,6 +197,7 @@ class PNotifier : public PSmartPointer
   called is not the current object instance.
  */
 #define PCREATE_NOTIFIER(func) PNotifier(new func##_PNotifier(this))
+#define PCREATE_NOTIFIER2(func) PNotifier2(new func##_PNotifier(this))
 
 
 #endif // PTLIB_NOTIFIER_H
