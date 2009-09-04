@@ -50,6 +50,8 @@
 #include <sys/sysctl.h>
 // going to need the main thread for adjusting relative priority
 static pthread_t baseThread;
+#elif defined(P_LINUX)
+#include <sys/syscall.h>
 #endif
 
 #ifdef P_HAS_SEMAPHORES_XPG6
@@ -285,6 +287,9 @@ PThread::PThread()
   // PX_origStackSize = 0 indicates external thread
   PX_origStackSize    = 0;
   PX_threadId         = pthread_self();
+#if defined(P_LINUX)
+  PX_linuxId          = syscall(SYS_gettid);
+#endif
   PX_priority         = NormalPriority;
   PX_suspendCount     = 0;
 
@@ -339,6 +344,9 @@ PThread::PThread(PINDEX stackSize,
 
   // PX_threadId = 0 indicates thread has not started
   PX_threadId = 0;                          
+#if defined(P_LINUX)
+  PX_linuxId = 0;
+#endif
 
 #ifndef P_HAS_SEMAPHORES
   PX_waitingSemaphore = NULL;
@@ -423,6 +431,10 @@ void * PThread::PX_ThreadStart(void * arg)
   // been set.
   pthread_mutex_lock(&thread->PX_suspendMutex);
   thread->SetThreadName(thread->GetThreadName());
+#if defined(P_LINUX)
+  thread->PX_linuxId = syscall(SYS_gettid);
+  thread->PX_startTick = PTimer::Tick();
+#endif
   pthread_mutex_unlock(&thread->PX_suspendMutex);
 
   // make sure the cleanup routine is called when the thread exits
@@ -455,6 +467,11 @@ void PThread::PX_ThreadEnd(void * arg)
 {
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
+
+#if defined(P_LINUX)
+  thread->PX_endTick = PTimer::Tick();
+#endif
+
   process.OnThreadEnded(*thread);
   
   bool deleteThread = thread->autoDelete; // make copy of the flag before perhaps deleting the thread
@@ -932,6 +949,61 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
   }
 
   return PTrue;
+}
+
+
+static inline unsigned long long jiffies_to_msecs(const unsigned long j)
+{
+  static long HZ = sysconf(_SC_CLK_TCK);
+  return (j * 1000LL) / HZ;
+}
+
+
+bool PThread::GetTimes(Times & times)
+{
+#if defined(P_LINUX)
+  PStringStream procname;
+  procname << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
+  PTextFile statfile(procname, PFile::ReadOnly);
+  if (!statfile.IsOpen()) {
+    PTRACE(2, "PTLib\tCould not find thread stat file " << procname);
+    return false;
+  }
+
+  statfile.ignore(10000, ')'); // Skip pid & filename of executable
+
+  char state;
+  unsigned long dummy, utime, stime, starttime;
+  statfile >> state
+           >> dummy // ppid
+           >> dummy // pgrp
+           >> dummy // session
+           >> dummy // tty_nr
+           >> dummy // tpgid
+           >> dummy // flags
+           >> dummy // minflt
+           >> dummy // cminflt
+           >> dummy // majflt
+           >> dummy // cmajflt
+           >> utime
+           >> stime;
+  if (!statfile.good()) {
+    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname);
+    return false;
+  }
+
+  times.m_kernel = jiffies_to_msecs(stime);
+  times.m_user = jiffies_to_msecs(utime);
+
+  if (PX_endTick != 0)
+    times.m_real = PX_endTick - PX_startTick;
+  else
+    times.m_real = PTimer::Tick() - PX_startTick;
+
+  return true;
+#else
+  return false;
+#endif
 }
 
 

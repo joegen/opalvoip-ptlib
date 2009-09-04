@@ -63,22 +63,39 @@
 
 PTime::PTime()
 {
-  // Magic constant to convert epoch from 1601 to 1970
-  static const PInt64 delta = ((PInt64)369*365+(369/4)-3)*24*60*60U;
-  static const PInt64 scale = 10000000;
-
-  PInt64 timestamp;
+  FILETIME timestamp;
 
 #ifndef _WIN32_WCE
-  GetSystemTimeAsFileTime((LPFILETIME)&timestamp);
+  GetSystemTimeAsFileTime(&timestamp);
 #else
   SYSTEMTIME SystemTime;
   GetSystemTime(&SystemTime);
-  SystemTimeToFileTime(&SystemTime, (LPFILETIME)&timestamp);
+  SystemTimeToFileTime(&SystemTime, &timestamp);
 #endif
 
-  theTime = (time_t)(timestamp/scale - delta);
-  microseconds = (long)(timestamp%scale/10);
+  SetFromFileTime(timestamp);
+}
+
+
+PTime::PTime(const FILETIME & timestamp)
+{
+  SetFromFileTime(timestamp);
+}
+
+
+void PTime::SetFromFileTime(const FILETIME & timestamp)
+{
+  // Magic constant to convert epoch from 1601 to 1970
+  static const ULONGLONG delta = ((PInt64)369*365+(369/4)-3)*24*60*60U;
+  static const ULONGLONG scale = 10000000;
+
+  ULARGE_INTEGER i;
+  i.HighPart = timestamp.dwHighDateTime;
+  i.LowPart = timestamp.dwLowDateTime;
+  i.QuadPart;
+
+  theTime = (time_t)(i.QuadPart/scale - delta);
+  microseconds = (long)(i.QuadPart%scale/10);
 }
 
 #ifdef UNICODE
@@ -793,79 +810,32 @@ PThread::~PThread()
 }
 
 
-#if PTRACING
-static ULONGLONG ConvertTo64(const FILETIME & ft)
+static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
 {
   ULARGE_INTEGER i;
   i.HighPart = ft.dwHighDateTime;
   i.LowPart = ft.dwLowDateTime;
-  return i.QuadPart;
+  return (i.QuadPart+9999)/10000;
 }
 
-static void OutputTime(ostream & str, ULONGLONG time)
+
+bool PThread::GetTimes(Times & times)
 {
-  ULONGLONG upperbound = 10000;
-  ULONGLONG scale1 = 10;
-  ULONGLONG scale2 = 1;
-  int units = 0;
-  int decimals = 1;
+  FILETIME created, exit, kernel, user;
+  exit.dwHighDateTime = exit.dwLowDateTime = 0;
+  if (!GetThreadTimes(GetHandle(), &created, &exit, &kernel, &user))
+    return false;
 
-  while (time >= upperbound) {
-    if (--decimals == 0) {
-      if (units == 2) {
-        str << time/scale1 << 's';
-        return;
-      }
+  times.m_kernel.SetInterval(GetMillisecondFromFileTime(kernel));
+  times.m_user.SetInterval(GetMillisecondFromFileTime(user));
+  if (exit.dwHighDateTime == 0 && exit.dwLowDateTime == 0)
+    times.m_real = PTime() - PTime(created);
+  else
+    times.m_real = PTime(exit) - PTime(created);
 
-      scale1 *= 1000;
-      decimals = 3;
-      ++units;
-    }
-    upperbound *= 10;
-    scale2 *= 10;
-  }
-
-  static const char * const UnitNames[] = { "us", "ms", "s" };
-  str << time/scale1
-      << '.' << setfill('0') << setw(decimals)
-      << (time%scale1)/scale2
-      << UnitNames[units];
+  return true;
 }
 
-static void OutputThreadTimes(const PThread & thread)
-{
-  if (!PTrace::CanTrace(3))
-    return;
-
-  FILETIME created_f, exit_f, kernel_f, user_f;
-  exit_f.dwHighDateTime = exit_f.dwLowDateTime = 0;
-  if (!GetThreadTimes(thread.GetHandle(), &created_f, &exit_f, &kernel_f, &user_f))
-    return;
-
-  ULONGLONG created = ConvertTo64(created_f);
-  ULONGLONG exit    = ConvertTo64(exit_f);
-  ULONGLONG kernel  = ConvertTo64(kernel_f);
-  ULONGLONG user    = ConvertTo64(user_f);
-
-  ostream & output = PTrace::Begin(3, __FILE__, __LINE__);
-  output << "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", kernel=";
-  OutputTime(output, kernel);
-  output << ", user=";
-  OutputTime(output, user);
-  output << ", elapsed=";
-  OutputTime(output, exit-created);
-  if (exit > created) {
-    ULONGLONG percent = 1000*(kernel+user)/(exit-created);
-    if (percent > 0)
-      output << " (" << percent/10 << '.' << percent%10 << "%)";
-    else
-      output << " (<0.1%)";
-  }
-  output << PTrace::End;
-}
-#else
-#define OutputThreadTimes(t)
-#endif
 
 void PThread::CleanUp()
 {
@@ -877,10 +847,8 @@ void PThread::CleanUp()
   if (!IsTerminated())
     Terminate();
 
-  if (threadHandle != NULL) {
-    OutputThreadTimes(*this);
+  if (threadHandle != NULL)
     CloseHandle(threadHandle);
-  }
 }
 
 
