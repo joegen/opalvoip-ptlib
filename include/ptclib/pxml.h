@@ -409,6 +409,37 @@ class PXMLStreamParser : public PXMLParser
     PQueue<PXML> messages;
 };
 
+
+////////////////////////////////////////////////////////////
+
+class PXMLValidator
+{
+  public:
+    enum {
+      DocType    = 1,
+      ElementName,
+      RequiredAttribute,
+      RequiredAttributeWithValue,
+      RequiredElement,
+      Subtree,
+    };
+
+    struct ElementInfo {
+      int m_op;
+      const char * m_name;
+      void * m_val1;
+      void * m_val2;
+    };
+
+    bool Elements(PXML * xml, ElementInfo * elements, PString & errorString);
+    bool Elements(PXMLElement * baseElement, ElementInfo * elements, PString & errorString);
+    bool ValidateElement(PXMLElement * baseElement, ElementInfo * elements, PString & errorString);
+
+    PStringStream strm;
+    unsigned col, line;
+};
+
+
 #endif // P_EXPAT
 
 #endif // PTLIB_PXML_H
