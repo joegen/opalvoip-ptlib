@@ -693,8 +693,9 @@ class PProcess : public PThread
 
     bool m_library;
 
-    PDictionary<POrdinalKey, PThread> activeThreads;
-    PMutex                            activeThreadMutex;
+    typedef std::map<PThreadIdentifier, PThread *> ThreadMap;
+    ThreadMap m_activeThreads;
+    PMutex    m_activeThreadMutex;
     
   friend class PThread;
 

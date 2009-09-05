@@ -535,12 +535,12 @@ int PServiceProcess::InternalMain(void * arg)
     DestroyWindow(controlWindow);
 
   // Set thread ID for process to this thread
-  activeThreadMutex.Wait();
-  activeThreads.SetAt(threadId, NULL);
+  m_activeThreadMutex.Wait();
+  m_activeThreads.erase(threadId);
   threadId = GetCurrentThreadId();
   threadHandle = GetCurrentThread();
-  activeThreads.SetAt(threadId, this);
-  activeThreadMutex.Signal();
+  m_activeThreads[threadId] = this;
+  m_activeThreadMutex.Signal();
   OnStop();
 
   return GetTerminationValue();
@@ -1109,11 +1109,11 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 
 void PServiceProcess::ThreadEntry()
 {
-  activeThreadMutex.Wait();
+  m_activeThreadMutex.Wait();
   threadId = GetCurrentThreadId();
   threadHandle = GetCurrentThread();
-  activeThreads.SetAt(threadId, this);
-  activeThreadMutex.Signal();
+  m_activeThreads[threadId] = this;
+  m_activeThreadMutex.Signal();
 
   SetTerminationValue(1);
   bool ok = OnStart();

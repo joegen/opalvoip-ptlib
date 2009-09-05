@@ -710,9 +710,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #endif
 */
 
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(thread->threadId, thread);
-  process.activeThreadMutex.Signal();
+  process.m_activeThreadMutex.Wait();
+  process.m_activeThreads[thread->threadId] = thread;
+  process.m_activeThreadMutex.Signal();
 
   process.SignalTimerChange();
 
@@ -760,9 +760,9 @@ PThread::PThread()
 
   PProcess & process = PProcess::Current();
 
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(threadId, this);
-  process.activeThreadMutex.Signal();
+  process.m_activeThreadMutex.Wait();
+  process.m_activeThreads[threadId] = this;
+  process.m_activeThreadMutex.Signal();
 
   process.deleteThreadMutex.Wait();
   process.autoDeleteThreads.Append(this);
@@ -842,9 +842,9 @@ bool PThread::GetTimes(Times & times)
 void PThread::CleanUp()
 {
   PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(threadId, NULL);
-  process.activeThreadMutex.Signal();
+  process.m_activeThreadMutex.Wait();
+  process.m_activeThreads.erase(threadId);
+  process.m_activeThreadMutex.Signal();
 
   if (!IsTerminated())
     Terminate();
@@ -1133,13 +1133,13 @@ PProcess::~PProcess()
   delete houseKeeper;
 
   // OK, if there are any left we get really insistent...
-  activeThreadMutex.Wait();
-  for (PINDEX i = 0; i < activeThreads.GetSize(); i++) {
-    PThread & thread = activeThreads.GetDataAt(i);
+  m_activeThreadMutex.Wait();
+  for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it) {
+    PThread & thread = *it->second;
     if (this != &thread && !thread.IsTerminated())
       TerminateThread(thread.GetHandle(), 1);  // With extreme prejudice
   }
-  activeThreadMutex.Signal();
+  m_activeThreadMutex.Signal();
 
   deleteThreadMutex.Wait();
   autoDeleteThreads.RemoveAll();

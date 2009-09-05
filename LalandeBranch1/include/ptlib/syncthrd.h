@@ -40,6 +40,8 @@
 
 #include <ptlib/mutex.h>
 #include <ptlib/syncpoint.h>
+#include <map>
+
 
 /** This class defines a thread synchronisation object.
 
@@ -316,10 +318,11 @@ class PReadWriteMutex : public PObject
       unsigned readerCount;
       unsigned writerCount;
     };
-    PDictionary<POrdinalKey, Nest> nestedThreads;
-    PMutex                         nestingMutex;
+    typedef std::map<PThreadIdentifier, Nest> NestMap;
+    NestMap m_nestedThreads;
+    PMutex  m_nestingMutex;
 
-    Nest * GetNest() const;
+    Nest * GetNest();
     Nest & StartNest();
     void EndNest();
     void InternalStartRead();
