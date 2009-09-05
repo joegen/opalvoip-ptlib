@@ -236,6 +236,8 @@ typedef long PInt32;
 
 #endif // !_WIN32_WCE 
 
+#define _hptr(x) (PINDEX)(x)
+
 
 class PWin32Overlapped : public OVERLAPPED
 {
