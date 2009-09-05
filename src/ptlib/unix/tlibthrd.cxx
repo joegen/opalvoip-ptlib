@@ -130,25 +130,26 @@ void PHouseKeepingThread::Main()
 
     process.breakBlock.Wait(delay);
 
-    process.activeThreadMutex.Wait();
+    process.m_activeThreadMutex.Wait();
     PBoolean found;
     do {
       found = PFalse;
-      for (PINDEX i = 0; i < process.activeThreads.GetSize(); ++i) {
-        PThread & thread = process.activeThreads.GetDataAt(i);
+      for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
+        PThread & thread = *it->second;
         if (thread.autoDelete && thread.IsTerminated()) {
-          // unlock the activeThreadMutex to avoid deadlocks:
+          // unlock the m_activeThreadMutex to avoid deadlocks:
           // if somewhere in the destructor a call to PTRACE() is made,
           // which itself calls PThread::Current(), deadlocks are possible
-          process.activeThreadMutex.Signal();
-          delete process.activeThreads.RemoveAt(process.activeThreads.GetKeyAt(i));
-          process.activeThreadMutex.Wait();
+          process.m_activeThreadMutex.Signal();
+          delete it->second;
+          process.m_activeThreads.erase(it);
+          process.m_activeThreadMutex.Wait();
           found = PTrue;
           break;
         }
       }
     } while (found == PTrue); 
-    process.activeThreadMutex.Signal();
+    process.m_activeThreadMutex.Signal();
 
     process.PXCheckSignals();
   }
@@ -249,20 +250,27 @@ PProcess::~PProcess()
 
 PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 {
-  PWaitAndSignal m(activeThreadMutex);
+  PWaitAndSignal m(m_activeThreadMutex);
 
-  if (!activeThreads.Contains(_hptr(id))) 
-    return PFalse;
+  if (m_activeThreads.find(id) == m_activeThreads.end()) 
+    return false;
 
   return pthread_kill(id, sig) == 0;
 }
 
 void PProcess::PXSetThread(pthread_t id, PThread * thread)
 {
-  activeThreadMutex.Wait();
-  PThread * currentThread = activeThreads.GetAt(_hptr(id));
-  activeThreads.SetAt(_hptr(id), thread);
-  activeThreadMutex.Signal();
+  PThread * currentThread = NULL;
+
+  m_activeThreadMutex.Wait();
+
+  ThreadMap::iterator it = m_activeThreads.find(id);
+  if (it != m_activeThreads.end())
+    currentThread = it->second;
+
+  m_activeThreads[id] = thread;
+
+  m_activeThreadMutex.Signal();
 
   if (currentThread != NULL) 
     delete currentThread;
@@ -398,10 +406,10 @@ PThread::~PThread()
 
     // if thread was started, remove it from the active thread list and detach it to release thread resources
     if (id != 0) {
-      process.activeThreadMutex.Wait();
+      process.m_activeThreadMutex.Wait();
       pthread_detach(id);
-      process.activeThreads.SetAt(_hptr(id), NULL);
-      process.activeThreadMutex.Signal();
+      process.m_activeThreads.erase(id);
+      process.m_activeThreadMutex.Signal();
     }
 
     // cause the housekeeping thread to wake up (we know it must be running)
@@ -516,22 +524,22 @@ void PThread::Restart()
 #endif
 
   PProcess & process = PProcess::Current();
-  PINDEX newHighWaterMark = 0;
-  static PINDEX highWaterMark = 0;
+  size_t newHighWaterMark = 0;
+  static size_t highWaterMark = 0;
 
   // lock the thread list
-  process.activeThreadMutex.Wait();
+  process.m_activeThreadMutex.Wait();
 
   // create the thread
   PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
 
   // put the thread into the thread list
   process.PXSetThread(PX_threadId, this);
-  if (process.activeThreads.GetSize() > highWaterMark)
-    newHighWaterMark = highWaterMark = process.activeThreads.GetSize();
+  if (process.m_activeThreads.size() > highWaterMark)
+    newHighWaterMark = highWaterMark = process.m_activeThreads.size();
 
   // unlock the thread list
-  process.activeThreadMutex.Signal();
+  process.m_activeThreadMutex.Signal();
 
   PTRACE_IF(4, newHighWaterMark > 0, "PTLib\tThread high water mark set: " << newHighWaterMark);
 
@@ -973,7 +981,7 @@ bool PThread::GetTimes(Times & times)
   statfile.ignore(10000, ')'); // Skip pid & filename of executable
 
   char state;
-  unsigned long dummy, utime, stime, starttime;
+  unsigned long dummy, utime, stime;
   statfile >> state
            >> dummy // ppid
            >> dummy // pgrp
