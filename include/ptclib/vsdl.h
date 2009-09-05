@@ -32,11 +32,7 @@
 #if P_SDL
 
 #include <ptlib.h>
-#if defined(P_FREEBSD)
-#include <SDL11/SDL.h>
-#else
 #include <SDL/SDL.h>
-#endif
 
 #include <ptlib/videoio.h>
 
