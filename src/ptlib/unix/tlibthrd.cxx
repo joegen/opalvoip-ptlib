@@ -251,7 +251,7 @@ PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 {
   PWaitAndSignal m(activeThreadMutex);
 
-  if (!activeThreads.Contains((uintptr_t)id)) 
+  if (!activeThreads.Contains(_hptr(id))) 
     return PFalse;
 
   return pthread_kill(id, sig) == 0;
@@ -260,8 +260,8 @@ PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
 void PProcess::PXSetThread(pthread_t id, PThread * thread)
 {
   activeThreadMutex.Wait();
-  PThread * currentThread = activeThreads.GetAt((uintptr_t)id);
-  activeThreads.SetAt((uintptr_t)id, thread);
+  PThread * currentThread = activeThreads.GetAt(_hptr(id));
+  activeThreads.SetAt(_hptr(id), thread);
   activeThreadMutex.Signal();
 
   if (currentThread != NULL) 
@@ -400,7 +400,7 @@ PThread::~PThread()
     if (id != 0) {
       process.activeThreadMutex.Wait();
       pthread_detach(id);
-      process.activeThreads.SetAt((uintptr_t)id, NULL);
+      process.activeThreads.SetAt(_hptr(id), NULL);
       process.activeThreadMutex.Signal();
     }
 
