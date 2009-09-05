@@ -81,9 +81,11 @@ typedef unsigned long long int PUInt64; // 64 bit
 #ifdef P_64BIT
 typedef long          INT;
 typedef unsigned long UINT;
+#define _hptr(x)        (PINDEX)(unsigned long)(x)
 #else
 typedef int           INT;
 typedef unsigned int  UINT;
+#define _hptr(x)        (unsigned)(x)
 #endif
 
 // Create "Windows" style definitions.

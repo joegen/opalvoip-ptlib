@@ -400,7 +400,7 @@ PString PX_GetThreadName(pthread_t id)
 {
   if (PProcessInstance != NULL) {
     PWaitAndSignal m(PProcessInstance->activeThreadMutex);
-    PThread & thread = PProcessInstance->activeThreads[(uintptr_t)id];
+    PThread & thread = PProcessInstance->activeThreads[_hptr(id)];
     return thread.GetThreadName();
   }
   return psprintf("%08x", id);
