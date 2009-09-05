@@ -49,7 +49,7 @@
 #define	EXTENSION		".ini"
 #define	ENVIRONMENT_CONFIG_STR	"/\~~environment~~\/"
 
-#if defined(P_MACOSX) || defined(P_SOLARIS)
+#if defined(P_MACOSX) || defined(P_SOLARIS) || defined(P_FREEBSD)
 #define environ (NULL)
 #endif
 

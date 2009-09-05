@@ -43,11 +43,7 @@
 
 extern "C" {
 
-#if defined(P_FREEBSD)
-#include <SDL11/SDL.h>
-#else
 #include <SDL/SDL.h>
-#endif
 
 };
 
