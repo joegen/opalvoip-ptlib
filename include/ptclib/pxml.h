@@ -428,8 +428,8 @@ class PXMLValidator
     struct ElementInfo {
       int m_op;
       const char * m_name;
-      void * m_val1;
-      void * m_val2;
+      const void * m_val1;
+      const void * m_val2;
     };
 
     bool Elements(PXML * xml, ElementInfo * elements, PString & errorString);
