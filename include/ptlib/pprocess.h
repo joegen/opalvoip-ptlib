@@ -726,8 +726,9 @@ class PProcess : public PThread
 
     bool m_shuttingDown;
 
-    PDictionary<POrdinalKey, PThread> activeThreads;
-    PMutex                            activeThreadMutex;
+    typedef std::map<PThreadIdentifier, PThread *> ThreadMap;
+    ThreadMap m_activeThreads;
+    PMutex    m_activeThreadMutex;
     
   friend class PThread;
 
