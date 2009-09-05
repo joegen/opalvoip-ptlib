@@ -1475,8 +1475,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   , m_library(library)
   , m_shuttingDown(false)
 {
-  activeThreads.DisallowDeleteObjects();
-  activeThreads.SetAt(_hptr(GetCurrentThreadId()), this);
+  m_activeThreads[GetCurrentThreadId()] = this;
 
   PProcessInstance = this;
 
@@ -1845,14 +1844,14 @@ PThread * PThread::Current()
 
   PProcess & process = PProcess::Current();
 
-  process.activeThreadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt(_hptr(GetCurrentThreadId()));
-  process.activeThreadMutex.Signal();
+  {
+    PWaitAndSignal mutex(process.m_activeThreadMutex);
+    PProcess::ThreadMap::iterator it = process.m_activeThreads.find(GetCurrentThreadId());
+    if (it != process.m_activeThreads.end())
+      return it->second;
+  }
 
-  if (thread == NULL)
-    thread = new PExternalThread;
-
-  return thread;
+  return new PExternalThread;
 }
 
 
@@ -2136,42 +2135,32 @@ PReadWriteMutex::~PReadWriteMutex()
      done by the user of the class too, but it is easier to fix here than
      there so practicality wins out!
    */
-  while (!nestedThreads.IsEmpty())
+  while (!m_nestedThreads.empty())
     PThread::Sleep(10);
 }
 
 
-PReadWriteMutex::Nest * PReadWriteMutex::GetNest() const
+PReadWriteMutex::Nest * PReadWriteMutex::GetNest()
 {
-  PWaitAndSignal mutex(nestingMutex);
-  return nestedThreads.GetAt(POrdinalKey(_hptr(PThread::GetCurrentThreadId())));
+  PWaitAndSignal mutex(m_nestingMutex);
+  NestMap::iterator it = m_nestedThreads.find(PThread::GetCurrentThreadId());
+  return it != m_nestedThreads.end() ? &it->second : NULL;
 }
 
 
 void PReadWriteMutex::EndNest()
 {
-  nestingMutex.Wait();
-  nestedThreads.RemoveAt(POrdinalKey(_hptr(PThread::GetCurrentThreadId())));
-  nestingMutex.Signal();
+  m_nestingMutex.Wait();
+  m_nestedThreads.erase(PThread::GetCurrentThreadId());
+  m_nestingMutex.Signal();
 }
 
 
 PReadWriteMutex::Nest & PReadWriteMutex::StartNest()
 {
-  POrdinalKey threadId = _hptr(PThread::GetCurrentThreadId());
-
-  nestingMutex.Wait();
-
-  Nest * nest = nestedThreads.GetAt(threadId);
-
-  if (nest == NULL) {
-    nest = new Nest;
-    nestedThreads.SetAt(threadId, nest);
-  }
-
-  nestingMutex.Signal();
-
-  return *nest;
+  PWaitAndSignal mutex(m_nestingMutex);
+  // The std::map will create the entry if it doesn't exist
+  return m_nestedThreads[PThread::GetCurrentThreadId()];
 }
 
 

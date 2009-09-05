@@ -547,24 +547,16 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   inHandler = PTrue;
 
-#ifdef P_MAC_MPTHREADS
-  unsigned tid = (unsigned)MPCurrentTaskID();
-#elif defined(P_VXWORKS)
-  unsigned tid = ::taskIdSelf();
-#elif defined(BE_THREADS)
-  thread_id tid = ::find_thread(NULL);
-#else
-  unsigned tid = (uintptr_t) pthread_self();
-#endif
-  PThread * thread_ptr = activeThreads.GetAt(tid);
+  PThreadIdentifier tid = GetCurrentThreadId();
+  ThreadMap::iterator thread = m_activeThreads.find(tid);
 
   char msg[200];
-  sprintf(msg, "\nCaught %s, thread_id=%u", sigmsg, tid);
+  sprintf(msg, "\nCaught %s, thread_id=%08lx", sigmsg, (long)tid);
 
-  if (thread_ptr != NULL) {
-    PString thread_name = thread_ptr->GetThreadName();
+  if (thread != m_activeThreads.end()) {
+    PString thread_name = thread->second->GetThreadName();
     if (thread_name.IsEmpty())
-      sprintf(&msg[strlen(msg)], " obj_ptr=%p", thread_ptr);
+      sprintf(&msg[strlen(msg)], " obj_ptr=%p", thread->second);
     else {
       strcat(msg, " name=");
       strcat(msg, thread_name);

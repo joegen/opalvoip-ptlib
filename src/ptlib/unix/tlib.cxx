@@ -397,9 +397,9 @@ extern PProcess * PProcessInstance;;
 PString PX_GetThreadName(pthread_t id)
 {
   if (PProcessInstance != NULL) {
-    PWaitAndSignal m(PProcessInstance->activeThreadMutex);
-    PThread & thread = PProcessInstance->activeThreads[_hptr(id)];
-    return thread.GetThreadName();
+    PWaitAndSignal m(PProcessInstance->m_activeThreadMutex);
+    PThread * thread = PProcessInstance->m_activeThreads[id];
+    return thread->GetThreadName();
   }
   return psprintf("%08x", id);
 }
@@ -526,22 +526,18 @@ void PProcess::PXOnSignal(int sig)
     PMemoryHeap::GetState(state);
 #endif
     PStringStream strm;
-    activeThreadMutex.Wait();
-    PINDEX i;
-    strm << "===============\n";
-    strm << activeThreads.GetSize() << " active threads\n";
-    for (i = 0; i < activeThreads.GetSize(); ++i) {
-      POrdinalKey key = activeThreads.GetKeyAt(i);
-      PThread & thread = activeThreads[key];
-      strm << "  " << thread << "\n";
-    }
+    m_activeThreadMutex.Wait();
+    strm << "===============\n"
+         << m_activeThreads.size() << " active threads\n";
+    for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it)
+      strm << "  " << *it->second << "\n";
 #if PMEMORY_CHECK
     strm << "---------------\n";
     PMemoryHeap::DumpObjectsSince(state, strm);
     PMemoryHeap::GetState(state);
 #endif
     strm << "===============\n";
-    activeThreadMutex.Signal();
+    m_activeThreadMutex.Signal();
     fprintf(stderr, "%s", strm.GetPointer());
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(oldIgnore);
