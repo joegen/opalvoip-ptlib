@@ -142,8 +142,8 @@ void PHouseKeepingThread::Main()
           // which itself calls PThread::Current(), deadlocks are possible
           process.m_activeThreadMutex.Signal();
           delete it->second;
-          process.m_activeThreads.erase(it);
           process.m_activeThreadMutex.Wait();
+          process.m_activeThreads.erase(it);
           found = PTrue;
           break;
         }
