@@ -133,22 +133,24 @@ void PHouseKeepingThread::Main()
     process.m_activeThreadMutex.Wait();
     PBoolean found;
     do {
-      found = PFalse;
+      found = false;
       for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
-        PThread & thread = *it->second;
-        if (thread.autoDelete && thread.IsTerminated()) {
+        PThread * thread = it->second;
+        if (thread->autoDelete && thread->IsTerminated()) {
+          process.m_activeThreads.erase(it);
+
           // unlock the m_activeThreadMutex to avoid deadlocks:
           // if somewhere in the destructor a call to PTRACE() is made,
           // which itself calls PThread::Current(), deadlocks are possible
           process.m_activeThreadMutex.Signal();
-          delete it->second;
+          delete thread;
           process.m_activeThreadMutex.Wait();
-          process.m_activeThreads.erase(it);
-          found = PTrue;
+
+          found = true;
           break;
         }
       }
-    } while (found == PTrue); 
+    } while (found);
     process.m_activeThreadMutex.Signal();
 
     process.PXCheckSignals();
