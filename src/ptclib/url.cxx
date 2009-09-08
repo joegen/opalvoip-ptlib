@@ -77,6 +77,7 @@
 #define DEFAULT_H323_PORT     1720
 #define DEFAULT_H323S_PORT    1300
 #define DEFAULT_H323RAS_PORT  1719
+#define DEFAULT_MSRP_PORT     2855
 #define DEFAULT_SIP_PORT      5060
 #define DEFAULT_SIPS_PORT     5061
 
@@ -111,6 +112,7 @@ DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTr
 DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   true,   true,   false,  true,   false,  DEFAULT_MSRP_PORT)
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
