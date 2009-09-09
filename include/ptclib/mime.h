@@ -263,6 +263,12 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       const PString & fileType   ///< File type (extension) to look up.
     );
 
+    /** Output the contents without the trailing CRLF
+     */
+    virtual ostream & PrintContents(
+      ostream & strm
+    ) const;
+
   private:
     static PStringToString & GetContentTypes();
 };

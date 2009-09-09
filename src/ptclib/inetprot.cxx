@@ -519,6 +519,14 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
+  PrintContents(strm);
+  if (strm.fill() == '\r')
+    strm << '\r';
+  strm << '\n';
+}
+
+ostream & PMIMEInfo::PrintContents(ostream &strm) const
+{
   PBoolean output_cr = strm.fill() == '\r';
   strm.fill(' ');
   for (PINDEX i = 0; i < GetSize(); i++) {
@@ -540,9 +548,7 @@ void PMIMEInfo::PrintOn(ostream &strm) const
       strm << '\n';
     }
   }
-  if (output_cr)
-    strm << '\r';
-  strm << '\n';
+  return strm;
 }
 
 
