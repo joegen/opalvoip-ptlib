@@ -160,6 +160,7 @@ class PThreadPoolBase : public PObject
 
     virtual WorkerThreadBase * CreateWorkerThread() = 0;
     virtual WorkerThreadBase * AllocateWorker();
+    virtual WorkerThreadBase * NewWorker();
 
   protected:
     virtual bool CheckWorker(WorkerThreadBase * worker);
@@ -262,6 +263,7 @@ class PThreadPool : public PThreadPoolBase
       else {
 
         // find the worker thread with the matching group ID
+        // if no matching Id, then create a new thread
         typename GroupInfoMap_t::iterator g = m_groupInfoMap.find(group);
         if (g == m_groupInfoMap.end()) 
           worker = (WorkerThread *)AllocateWorker();
