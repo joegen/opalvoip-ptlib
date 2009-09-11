@@ -145,7 +145,7 @@ Runner::Runner(SyncPoints & _app, Runner * _nextThread, PINDEX _id)
 
 void Runner::Main()
 {
-  while (1) {
+  for (;;) {
     syncPoint.Wait();
 
     //    cerr << id << endl;
