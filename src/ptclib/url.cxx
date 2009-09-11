@@ -777,10 +777,10 @@ PString PURL::GetParameters() const
   for (PINDEX i = 0; i < paramVars.GetSize(); i++) {
     if (i > 0)
       str << ';';
-    str << paramVars.GetKeyAt(i);
+    str << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
     PString data = paramVars.GetDataAt(i);
     if (!data)
-      str << '=' << data;
+      str << '=' << TranslateString(data, QueryTranslation);
   }
 
   return str;
@@ -801,9 +801,9 @@ void PURL::SetParamVars(const PStringToString & p)
 }
 
 
-void PURL::SetParamVar(const PString & key, const PString & data)
+void PURL::SetParamVar(const PString & key, const PString & data, bool emptyDataDeletes)
 {
-  if (data.IsEmpty())
+  if (emptyDataDeletes && data.IsEmpty())
     paramVars.RemoveAt(key);
   else
     paramVars.SetAt(key, data);
