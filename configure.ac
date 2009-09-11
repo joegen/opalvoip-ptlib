@@ -235,7 +235,7 @@ case "$target_os" in
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
                    ;;
 
-  freebsd* )       OSTYPE=FreeBSD ;
+  freebsd*|kfreebsd*)       OSTYPE=FreeBSD ;
 		   OS_TAG="P_FREEBSD" ;
                    if test "x$OSRELEASE" = "x"; then
                      OSRELEASE="`sysctl -n kern.osreldate`" ;

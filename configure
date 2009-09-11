@@ -3833,7 +3833,7 @@ fi
 
                    ;;
 
-  freebsd* )       OSTYPE=FreeBSD ;
+  freebsd*|kfreebsd*)       OSTYPE=FreeBSD ;
 		   OS_TAG="P_FREEBSD" ;
                    if test "x$OSRELEASE" = "x"; then
                      OSRELEASE="`sysctl -n kern.osreldate`" ;
