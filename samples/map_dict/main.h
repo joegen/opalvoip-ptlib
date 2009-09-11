@@ -5,9 +5,9 @@
  *
  * Copyright 2009 Derek J Smithies
  *
- * $Revision: 2038 $
- * $Author: rjongbloed $
- * $Date: 2008-06-04 22:40:38 +1200 (Wed, 04 Jun 2008) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _MapDictionary_MAIN_H

@@ -6512,6 +6512,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\vidinput_directx2.cxx"
+					>
+				</File>
+				<File
 					RelativePath="win32.cxx"
 					>
 					<FileConfiguration
