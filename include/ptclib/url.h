@@ -257,13 +257,20 @@ class PURL : public PObject
     void SetParameters(const PString & parameters);
 
     /// Get the parameter (;) field(s) of the URL as a string dictionary.
+    /// Note the values have already been translated using UntranslateString
     const PStringToString & GetParamVars() const { return paramVars; }
 
     /// Set the parameter (;) field(s) of the URL as a string dictionary.
+    /// Note the values will be translated using TranslateString
     void SetParamVars(const PStringToString & paramVars);
 
     /// Set the parameter (;) field of the URL as a string dictionary.
-    void SetParamVar(const PString & key, const PString & data);
+    /// Note the values will be translated using TranslateString
+    void SetParamVar(
+      const PString & key,          ///< Key to add/delete
+      const PString & data,         ///< Vlaue to add at key, if empty string may be removed
+      bool emptyDataDeletes = true  ///< If true, and data empty string, key is removed
+    );
 
     /// Get the fragment (##) field of the URL.
     const PString & GetFragment() const { return fragment; }
@@ -272,15 +279,19 @@ class PURL : public PObject
     PString GetQuery() const;
 
     /// Set the Query (?) field of the URL as a string.
+    /// Note the values will be translated using UntranslateString
     void SetQuery(const PString & query);
 
     /// Get the Query (?) field of the URL as a string dictionary.
+    /// Note the values have already been translated using UntranslateString
     const PStringToString & GetQueryVars() const { return queryVars; }
 
     /// Set the Query (?) field(s) of the URL as a string dictionary.
+    /// Note the values will be translated using TranslateString
     void SetQueryVars(const PStringToString & queryVars);
 
     /// Set the Query (?) field of the URL as a string dictionary.
+    /// Note the values will be translated using TranslateString
     void SetQueryVar(const PString & key, const PString & data);
 
     /// Return PTrue if the URL is an empty string.
