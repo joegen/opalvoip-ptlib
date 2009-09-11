@@ -5,9 +5,9 @@
  *
  * Copyright 2009 Derek J Smithies
  *
- * $Revision: 2038 $
- * $Author:  $
- * $Date: $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifndef _SyncPoints_MAIN_H

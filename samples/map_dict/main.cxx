@@ -7,7 +7,7 @@
  *
  * Copyright 2009 Derek J Smithies
  *
- * $Revision: 20385 $
+ * $Revision$
  * 
  *  You can read the comments to this program in the file main.h
  *
