@@ -181,6 +181,11 @@ endif
 P_USE_RANLIB		:= 1
 #STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
+ifeq ($(P_SHAREDLIB),1)
+ifndef PROG
+STDCCFLAGS	+= -fPIC -DPIC
+endif # PROG
+endif # P_SHAREDLIB
 
 endif # FreeBSD
 
