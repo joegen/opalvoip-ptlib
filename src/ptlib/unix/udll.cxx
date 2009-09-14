@@ -361,6 +361,9 @@ PString PDynaLink::GetName(PBoolean full) const
   if (!IsLoaded())
     return "";
 
+  if (full)
+    return name;
+
   PString str = name;
   if (!full) {
     PINDEX pos = str.FindLast('/');
