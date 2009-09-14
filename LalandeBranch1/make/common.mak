@@ -79,20 +79,26 @@ endif
 #  clean whitespace out of source file list
 SOURCES         := $(strip $(SOURCES))
 
+
+ifeq ($(V)$(VERBOSE),)
+Q = @echo $@ ; 
+endif
+
+
 #
 # define rule for .cxx, .cpp and .c files
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q)$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 #
 # create list of object files 
@@ -117,17 +123,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q)$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
@@ -164,7 +170,7 @@ ifeq ($(OSTYPE),beos)
 # directory
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PT_LIBDIR) lib; fi
 endif
-	$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
+	$(Q)$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
 ifdef DEBUG
 

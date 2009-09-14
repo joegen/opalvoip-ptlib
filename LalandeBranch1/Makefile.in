@@ -64,7 +64,7 @@ optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # all these targets are just passed to all subdirectories
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
-	set -e; $(foreach dir,$(SUBDIRS),if test -e $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
+	@set -e; $(foreach dir,$(SUBDIRS),if test -e $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
 
 update:
 	svn update
