@@ -60,7 +60,6 @@
    interactors in the PTLib library.
  */
 template <typename ParmType>
-
 class PNotifierFunctionTemplate : public PSmartObject
 {
   PCLASSINFO(PNotifierFunctionTemplate, PSmartObject);
@@ -86,7 +85,6 @@ class PNotifierFunctionTemplate : public PSmartObject
 };
 
 typedef PNotifierFunctionTemplate<INT> PNotifierFunction;
-typedef PNotifierFunctionTemplate<void *> PNotifierFunction2;
 
 
 /**
@@ -133,7 +131,6 @@ class PNotifierTemplate : public PSmartPointer
 };
 
 typedef PNotifierTemplate<INT> PNotifier;
-typedef PNotifierTemplate<void *> PNotifier2;
 
 
 /** Declare a notifier object class.
@@ -160,7 +157,7 @@ typedef PNotifierTemplate<void *> PNotifier2;
 
   The implementation of the function is left for the user.
  */
-#define PDECLARE_NOTIFIER_BASE(notifier, notifiee, func, type) \
+#define PDECLARE_NOTIFIER2(notifier, notifiee, func, type) \
   class func##_PNotifier : public PNotifierFunctionTemplate<type> { \
     public: \
       func##_PNotifier(notifiee * obj) : PNotifierFunctionTemplate<type>(obj) { } \
@@ -170,14 +167,12 @@ typedef PNotifierTemplate<void *> PNotifier2;
   friend class func##_PNotifier; \
   virtual void func(notifier & note, type extra)
 
+/// Declare PNotifier derived class with INT parameter. Uses PDECLARE_NOTIFIER2 macro.
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-  PDECLARE_NOTIFIER_BASE(notifier, notifiee, func, INT)
-
-#define PDECLARE_NOTIFIER2(notifier, notifiee, func) \
-  PDECLARE_NOTIFIER_BASE(notifier, notifiee, func, void *)
+  PDECLARE_NOTIFIER2(notifier, notifiee, func, INT)
 
 
-/** Create a notifier object instance.
+/** Create a PNotifier object instance.
   This macro creates an instance of the particular #PNotifier class using
   the \p func parameter as the member function to call.
 
@@ -185,10 +180,13 @@ typedef PNotifierTemplate<void *> PNotifier2;
   If the instance to be called is the current instance, ie if \p obj is
   \p this then the #PCREATE_NOTIFIER macro should be used.
  */
-#define PCREATE_NOTIFIER_EXT(obj, notifiee, func) PNotifier(new notifiee::func##_PNotifier(obj))
-#define PCREATE_NOTIFIER2_EXT(obj, notifiee, func) PNotifier2(new notifiee::func##_PNotifier(obj))
+#define PCREATE_NOTIFIER2_EXT(obj, notifiee, func, type) PNotifierTemplate<type>(new notifiee::func##_PNotifier(obj))
 
-/** Create a notifier object instance.
+/// Create PNotifier object instance with INT parameter. Uses PCREATE_NOTIFIER2_EXT macro.
+#define PCREATE_NOTIFIER_EXT( obj, notifiee, func) PCREATE_NOTIFIER2_EXT(obj, notifiee, func, INT)
+
+
+/** Create a PNotifier object instance.
   This macro creates an instance of the particular #PNotifier class using
   the \p func parameter as the member function to call.
 
@@ -196,8 +194,10 @@ typedef PNotifierTemplate<void *> PNotifier2;
   against. The #PCREATE_NOTIFIER_EXT macro may be used if the instance to be
   called is not the current object instance.
  */
-#define PCREATE_NOTIFIER(func) PNotifier(new func##_PNotifier(this))
-#define PCREATE_NOTIFIER2(func) PNotifier2(new func##_PNotifier(this))
+#define PCREATE_NOTIFIER2(func, type) PNotifierTemplate<type>(new func##_PNotifier(this))
+
+/// Create PNotifier object instance with INT parameter. Uses PCREATE_NOTIFIER2 macro.
+#define PCREATE_NOTIFIER(func) PCREATE_NOTIFIER2(func, INT)
 
 
 #endif // PTLIB_NOTIFIER_H
