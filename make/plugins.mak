@@ -48,6 +48,11 @@ else
   endif
 endif
 
+ifeq ($(VERBOSE),)
+Q = @echo $@ ;
+endif
+
+
 ifeq ($(MACHTYPE),x86_64)
   STDCCFLAGS += -fPIC
 endif
@@ -58,7 +63,7 @@ endif
 
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	mkdir -p $(OBJDIR)
-	$(CXX) $(STDCCFLAGS) $(CFLAGS) \
+	$(Q)$(CXX) $(STDCCFLAGS) $(CFLAGS) \
 	$(LDSOPTS) $< \
 	$(PLUGIN_LIBS) \
 	$(LDFLAGS) \
