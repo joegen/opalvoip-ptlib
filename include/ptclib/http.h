@@ -272,6 +272,7 @@ class PHTTPClientAuthentication : public PObject
   public:
     class AuthObject {
       public:
+        virtual ~AuthObject() { }
         virtual PMIMEInfo & GetMIME() = 0;
         virtual PString GetURI() = 0;
         virtual PString GetEntityBody() = 0;
