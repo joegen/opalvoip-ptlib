@@ -104,19 +104,17 @@ ifeq ($(P_SHAREDLIB),1)
   endif
 
   $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
-	cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
+	@cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
 
   $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
-	@echo EXTLIBS = $(EXTLIBS)
-	@echo SYSLIBS = $(SYSLIBS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	$(Q)$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
+	$(Q_LD)$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
 endif # P_SHAREDLIB
 
 $(STATIC_LIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	$(Q)$(ARCHIVE) $(STATIC_LIB_FILE) $(OBJS)
+	$(Q_AR)$(ARCHIVE) $(STATIC_LIB_FILE) $(OBJS)
 ifeq ($(P_USE_RANLIB),1)
 	$(RANLIB) $(STATIC_LIB_FILE)
 endif
