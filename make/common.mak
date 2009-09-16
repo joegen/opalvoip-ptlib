@@ -82,6 +82,7 @@ SOURCES         := $(strip $(SOURCES))
 
 ifeq ($(V)$(VERBOSE),)
 Q_CC = @echo [CC] `echo $< | sed s/$PWD//` ; 
+Q_DEP= @echo [DEP] `echo $< | sed s/$PWD//` ; 
 Q_AR = @echo [AR] `echo $(TARGET) | sed s/$PWD//` ; 
 Q_LD = @echo [LD] `echo $(TARGET) | sed s/$PWD//` ; 
 endif
@@ -125,17 +126,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_CC)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_CC)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_CC)$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
