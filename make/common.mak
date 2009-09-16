@@ -81,7 +81,9 @@ SOURCES         := $(strip $(SOURCES))
 
 
 ifeq ($(V)$(VERBOSE),)
-Q = @echo $@ ; 
+Q_CC = @echo [CC] `echo $< | sed s/$PWD//` ; 
+Q_AR = @echo [AR] `echo $(TARGET) | sed s/$PWD//` ; 
+Q_LD = @echo [LD] `echo $(TARGET) | sed s/$PWD//` ; 
 endif
 
 
@@ -90,15 +92,15 @@ endif
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 #
 # create list of object files 
@@ -123,17 +125,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_CC)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_CC)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q)$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_CC)$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
@@ -170,7 +172,7 @@ ifeq ($(OSTYPE),beos)
 # directory
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PT_LIBDIR) lib; fi
 endif
-	$(Q)$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
+	$(Q_LD)$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
 ifdef DEBUG
 
