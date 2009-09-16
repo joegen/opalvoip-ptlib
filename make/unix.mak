@@ -117,6 +117,8 @@ LD=
 
 ####################################################
 
+STDCCFLAGS += -Wformat -Wformat-security -D_FORTIFY_SOURCE=2 -fstack-protector
+
 ifeq ($(OSTYPE),linux)
 
 ifeq ($(MACHTYPE),x86)

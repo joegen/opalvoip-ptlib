@@ -71,7 +71,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 
 $(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -93,7 +93,7 @@ SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
 
 $(OBJDIR)/vfakeio.o: $(COMMON_SRC_DIR)/vfakeio.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 ifdef HAS_SHM_VIDEO
 SOURCES	+= $(PLATFORM_SRC_DIR)/shmvideo.cxx
@@ -116,7 +116,7 @@ ifdef HAS_DIRECTSHOW
 SOURCES	+= $(PLATFORM_SRC_DIR)/vidinput_directx.cxx
 $(OBJDIR)/vidinput_directx.o: $(PLATFORM_SRC_DIR)/vidinput_directx.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 endif # HAS_VIDEO
@@ -132,7 +132,7 @@ ifeq ($(OSTYPE),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/sound_win32.cxx
 $(OBJDIR)/sound_win32.o: $(PLATFORM_SRC_DIR)/sound_win32.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 ifndef HAS_PLUGINS
@@ -233,7 +233,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
 
 $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -260,7 +260,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx \
 
 $(OBJDIR)/pwavfiledev.o: $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 ifdef HAS_DTMF
@@ -327,7 +327,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 
 $(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -336,7 +336,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
 
 $(OBJDIR)/pffvdev.o: $(COMPONENT_SRC_DIR)/pffvdev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -409,29 +409,29 @@ alllibs:
 
 
 $(OBJDIR)/regcomp.o: $(COMMON_SRC_DIR)/regex/regcomp.c
-	$(Q)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/regexec.o: $(COMMON_SRC_DIR)/regex/regexec.c
-	$(Q)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/regerror.o: $(COMMON_SRC_DIR)/regex/regerror.c
-	$(Q)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
-	$(Q)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: $(PLATFORM_SRC_DIR)/switch.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q)$(CXX) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
-	$(Q)$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
-	$(Q)$(CC) $(STDCCFLAGS) -M $< >> $@
+	$(Q_CC)$(CC) $(STDCCFLAGS) -M $< >> $@
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
