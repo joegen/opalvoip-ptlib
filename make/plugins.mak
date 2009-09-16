@@ -62,8 +62,8 @@ ifeq ($(MACHTYPE),hppa)
 endif
 
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
-	mkdir -p $(OBJDIR)
-	$(Q)$(CXX) $(STDCCFLAGS) $(CFLAGS) \
+	@mkdir -p $(OBJDIR)
+	$(Q_CC)$(CXX) $(STDCCFLAGS) $(CFLAGS) \
 	$(LDSOPTS) $< \
 	$(PLUGIN_LIBS) \
 	$(LDFLAGS) \
