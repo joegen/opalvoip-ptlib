@@ -1672,7 +1672,7 @@ static void OutputTime(ostream & strm, const char * name, const PTimeInterval & 
   if (real == 0)
     strm << '0';
   else {
-    unsigned percent = (unsigned)((cpu.GetMilliSeconds()*100)/real.GetMilliSeconds());
+    unsigned percent = (unsigned)((cpu.GetMilliSeconds()*1000)/real.GetMilliSeconds());
     if (percent == 0)
       strm << '0';
     else
