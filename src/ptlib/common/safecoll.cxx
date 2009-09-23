@@ -676,9 +676,10 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
   }
 
   if (ref == WithDereference && currentObject->SafeDereference()) {
-    PTRACE(6, "SafeColl\tDeleting object ("<<(void *)currentObject<<")");
-    delete currentObject;
+    PSafeObject * objectToDelete = currentObject;
     currentObject = NULL;
+    PTRACE(6, "SafeColl\tDeleting object (" << objectToDelete << ')');
+    delete objectToDelete;
   }
 }
 
