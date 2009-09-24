@@ -1599,8 +1599,9 @@ void PProcess::OnThreadEnded(PThread & PTRACE_PARAM(thread))
   const int LogLevel = 3;
   if (PTrace::CanTrace(LogLevel)) {
     PThread::Times times;
-    if (thread.GetTimes(times))
+    if (thread.GetTimes(times)) {
       PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
+    }
   }
 #endif
 }
