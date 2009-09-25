@@ -53,6 +53,7 @@ PSoundChannelPulse::PSoundChannelPulse()
   PTRACE(6, "Pulse\tConstructor for no args");
   PSoundChannelPulse::Construct();
   s = NULL;
+  setenv ("PULSE_PROP_media.role", "phone", true);
 }
 
 
