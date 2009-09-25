@@ -77,32 +77,21 @@
 #define DEFAULT_H323_PORT     1720
 #define DEFAULT_H323S_PORT    1300
 #define DEFAULT_H323RAS_PORT  1719
+#define DEFAULT_MSRP_PORT     2855
 #define DEFAULT_SIP_PORT      5060
 #define DEFAULT_SIPS_PORT     5061
 
 #define DEFINE_LEGACY_URL_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
-class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
-{ \
-  public: \
-    PURLLegacyScheme_##schemeName() \
-    : PURLLegacyScheme(#schemeName )  \
-    { \
-      hasUsername           = user; \
-      hasPassword           = pass; \
-      hasHostPort           = host; \
-      defaultToUserIfNoAt   = def; \
-      defaultHostToLocal    = defhost; \
-      hasQuery              = query; \
-      hasParameters         = params; \
-      hasFragments          = frags; \
-      hasPath               = path; \
-      relativeImpliesScheme = rel; \
-      defaultPort           = port; \
-    } \
-}; \
+  class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
+  { \
+    public: \
+      PURLLegacyScheme_##schemeName() \
+        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+        { } \
+  }; \
   static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
-//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags, path, rel, port
+//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags,  path,   rel,    port
 DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
 DEFINE_LEGACY_URL_SCHEME(file,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(https,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTPS_PORT)
@@ -123,8 +112,7 @@ DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTr
 DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
-
-PINSTANTIATE_FACTORY(PURLScheme, PString)
+DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   true,   true,   false,  true,   false,  DEFAULT_MSRP_PORT)
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
@@ -161,12 +149,13 @@ PURL::PURL(const PFilePath & filePath)
     relativePath(PFalse)
 {
   PStringArray pathArray = filePath.GetDirectory().GetPath();
-  hostname = pathArray[0];
+  if (pathArray.IsEmpty())
+    return;
 
-  PINDEX i;
-  for (i = 1; i < pathArray.GetSize(); i++)
-    pathArray[i-1] = pathArray[i];
-  pathArray[i-1] = filePath.GetFileName();
+  if (pathArray[0].GetLength() == 2 && pathArray[0][1] == ':')
+    pathArray[0][1] = '|';
+
+  pathArray.AppendString(filePath.GetFileName());
 
   SetPath(pathArray);
 }
@@ -235,30 +224,30 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 {
   PString xlat = str;
 
-  PString safeChars = "abcdefghijklmnopqrstuvwxyz"
-                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                      "0123456789$-_.!*'(),";
+  /* Characters sets are from RFC2396.
+     The EBNF defines lowalpha, upalpha, digit and mark which are always
+     allowed. The reserved list consisting of ";/?:@&=+$," may or may not be
+     allowed depending on the syntatic element being encoded.
+   */
+  PString safeChars = "abcdefghijklmnopqrstuvwxyz"  // lowalpha
+                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // upalpha
+                      "0123456789"                  // digit
+                      "-_.!~*'()";                  // mark
   switch (type) {
     case LoginTranslation :
-      safeChars += "+;?&=";
+      safeChars += ";&=+$,";  // Section 3.2.2
       break;
 
     case PathTranslation :
-      safeChars += "+:@&=";
+      safeChars += ":@&=+$,|";   // Section 3.3
       break;
 
     case QueryTranslation :
-      safeChars += ":@";
+      break;    // Section 3.4, no reserved characters may be used
   }
   PINDEX pos = (PINDEX)-1;
   while ((pos = xlat.FindSpan(safeChars, pos+1)) != P_MAX_INDEX)
     xlat.Splice(psprintf("%%%02X", (BYTE)xlat[pos]), pos, 1);
-
-  if (type == QueryTranslation) {
-    PINDEX space = (PINDEX)-1;
-    while ((space = xlat.Find(' ', space+1)) != P_MAX_INDEX)
-      xlat[space] = '+';
-  }
 
   return xlat;
 }
@@ -271,6 +260,8 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 
   PINDEX pos;
   if (type == PURL::QueryTranslation) {
+    /* Even though RFC2396 never mentions this, and RFC1630 is quite vague
+       about it, a lot of things do it so we have to do it too */
     pos = (PINDEX)-1;
     while ((pos = xlat.Find('+', pos+1)) != P_MAX_INDEX)
       xlat[pos] = ' ';
@@ -323,8 +314,6 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
 
 PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 {
-  urlString = cstr;
-
   scheme.MakeEmpty();
   username.MakeEmpty();
   password.MakeEmpty();
@@ -356,33 +345,24 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 
   // Determine if the URL has an explicit scheme
   if (url[pos] == ':') {
-
-    // get the scheme information, or get the default scheme
+    // get the scheme information
     schemeInfo = PFactory<PURLScheme>::CreateInstance(url.Left(pos));
-    if (schemeInfo == NULL && defaultScheme == NULL) {
-      PFactory<PURLScheme>::KeyList_T keyList = PFactory<PURLScheme>::GetKeyList();
-      if (keyList.size() != 0)
-        schemeInfo = PFactory<PURLScheme>::CreateInstance(keyList[0]);
-    }
     if (schemeInfo != NULL)
       url.Delete(0, pos+1);
   }
 
   // if we could not match a scheme, then use the specified default scheme
-  if (schemeInfo == NULL && defaultScheme != NULL)
+  if (schemeInfo == NULL && defaultScheme != NULL) {
     schemeInfo = PFactory<PURLScheme>::CreateInstance(defaultScheme);
+    PAssert(schemeInfo != NULL, "Default scheme " + PString(defaultScheme) + " not available");
+  }
 
-  // if that still fails, then use the global default scheme
+  // if that still fails, then there is nowehere to go
   if (schemeInfo == NULL)
-    schemeInfo = PFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
+    return false;
 
-  // if that fails, then there is nowehere to go
-  PAssert(schemeInfo != NULL, "Default scheme not available");
   scheme = schemeInfo->GetName();
-  if (!schemeInfo->Parse(url, *this))
-    return PFalse;
-
-  return !IsEmpty();
+  return schemeInfo->Parse(url, *this) && !IsEmpty();
 }
 
 PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
@@ -475,6 +455,15 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
       endHostChars += '#';
     if (endHostChars.IsEmpty())
       pos = P_MAX_INDEX;
+    else if (schemeInfo->hasUsername) {
+      //';' showing in the username field should be valid.
+      // Looking for ';' after the '@' for the parameters.
+      PINDEX posAt = url.Find('@');
+      if (posAt != P_MAX_INDEX)
+        pos = url.FindOneOf(endHostChars, posAt);
+      else 
+        pos = url.FindOneOf(endHostChars);
+    }
     else
       pos = url.FindOneOf(endHostChars);
 
@@ -637,9 +626,6 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   PINDEX i;
 
   if (fmt == HostPortOnly) {
-    if (schemeInfo->hasHostPort && hostname.IsEmpty())
-      return str;
-
     str << scheme << ':';
 
     if (relativePath) {
@@ -672,7 +658,18 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << ':' << port;
     }
 
-    return str;
+    // Problem was fixed for handling legacy schema like tel URI.
+    // HostPortOnly format: if there is no default user and host fields, only the schema itself is being returned.
+    // URIOnly only format: the pathStr will be retruned.
+    // The Recalculate() will merge both HostPortOnly and URIOnly formats for the completed uri string creation.
+    if (schemeInfo->defaultToUserIfNoAt)
+      return str;
+
+    if (str.GetLength() > scheme.GetLength()+1)
+      return str;
+
+    // Cannot JUST have the scheme: ....
+    return PString::Empty();
   }
 
   // URIOnly and PathOnly
@@ -780,10 +777,10 @@ PString PURL::GetParameters() const
   for (PINDEX i = 0; i < paramVars.GetSize(); i++) {
     if (i > 0)
       str << ';';
-    str << paramVars.GetKeyAt(i);
+    str << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
     PString data = paramVars.GetDataAt(i);
     if (!data)
-      str << '=' << data;
+      str << '=' << TranslateString(data, QueryTranslation);
   }
 
   return str;
@@ -804,9 +801,9 @@ void PURL::SetParamVars(const PStringToString & p)
 }
 
 
-void PURL::SetParamVar(const PString & key, const PString & data)
+void PURL::SetParamVar(const PString & key, const PString & data, bool emptyDataDeletes)
 {
-  if (data.IsEmpty())
+  if (emptyDataDeletes && data.IsEmpty())
     paramVars.RemoveAt(key);
   else
     paramVars.SetAt(key, data);

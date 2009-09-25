@@ -41,6 +41,7 @@
 #include <ptclib/mime.h>
 #include <ptclib/url.h>
 #include <ptlib/ipsock.h>
+#include <ptlib/pfactory.h>
 
 
 #include <ptclib/html.h>
@@ -150,7 +151,7 @@ class PHTTPSpace : public PContainer
     PBoolean SetSize(PINDEX) { return PFalse; }
 };
 
-#ifdef _WIN32_WCE
+#ifdef TRACE
 #undef TRACE
 #endif
 
@@ -261,6 +262,151 @@ class PHTTP : public PInternetProtocol
     virtual PINDEX ParseResponse(
       const PString & line    ///< Input response line to be parsed
     );
+};
+
+
+
+class PHTTPClientAuthentication : public PObject
+{
+  PCLASSINFO(PHTTPClientAuthentication, PObject);
+  public:
+    class AuthObject {
+      public:
+        virtual ~AuthObject() { }
+        virtual PMIMEInfo & GetMIME() = 0;
+        virtual PString GetURI() = 0;
+        virtual PString GetEntityBody() = 0;
+        virtual PString GetMethod() = 0;
+    };
+
+    PHTTPClientAuthentication();
+
+    virtual Comparison Compare(
+      const PObject & other
+    ) const;
+
+    virtual PBoolean Parse(
+      const PString & auth,
+      PBoolean proxy
+    ) = 0;
+
+    virtual PBoolean Authorise(
+      AuthObject & pdu
+    ) const =  0;
+
+    virtual PBoolean IsProxy() const               { return isProxy; }
+
+    virtual PString GetUsername() const   { return username; }
+    virtual PString GetPassword() const   { return password; }
+    virtual PString GetAuthRealm() const  { return PString::Empty(); }
+
+    virtual void SetUsername(const PString & user) { username = user; }
+    virtual void SetPassword(const PString & pass) { password = pass; }
+    virtual void SetAuthRealm(const PString &)     { }
+
+    PString GetAuthParam(const PString & auth, const char * name) const;
+    PString AsHex(PMessageDigest5::Code & digest) const;
+    PString AsHex(const PBYTEArray & data) const;
+
+    static PHTTPClientAuthentication * ParseAuthenticationRequired(bool isProxy, const PMIMEInfo & line, PString & errorMsg);
+
+
+  protected:
+    PBoolean  isProxy;
+    PString   username;
+    PString   password;
+};
+
+typedef PFactory<PHTTPClientAuthentication> PHTTPClientAuthenticationFactory;
+
+class PHTTPClientAuthenticator : public PHTTPClientAuthentication::AuthObject
+{
+  public:
+    PHTTPClientAuthenticator(
+      const PString & cmdName, 
+      const PString & uri, 
+      PMIMEInfo & mime, 
+      const PString & body
+    );
+    virtual PMIMEInfo & GetMIME();
+    virtual PString GetURI();
+    virtual PString GetEntityBody();
+    virtual PString GetMethod();
+  protected:
+    PString m_method;
+    PString m_uri;
+    PMIMEInfo & m_mime;
+    PString m_body;
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class PHTTPClientBasicAuthentication : public PHTTPClientAuthentication
+{
+  PCLASSINFO(PHTTPClientBasicAuthentication, PHTTPClientAuthentication);
+  public:
+    PHTTPClientBasicAuthentication();
+
+    virtual Comparison Compare(
+      const PObject & other
+    ) const;
+
+    virtual PBoolean Parse(
+      const PString & auth,
+      PBoolean proxy
+    );
+
+    virtual PBoolean Authorise(
+      AuthObject & pdu
+    ) const;
+};
+
+///////////////////////////////////////////////////////////////////////
+
+class PHTTPClientDigestAuthentication : public PHTTPClientAuthentication
+{
+  PCLASSINFO(PHTTPClientDigestAuthentication, PHTTPClientAuthentication);
+  public:
+    PHTTPClientDigestAuthentication();
+
+    PHTTPClientDigestAuthentication & operator =(
+      const PHTTPClientDigestAuthentication & auth
+    );
+
+    virtual Comparison Compare(
+      const PObject & other
+    ) const;
+
+    virtual PBoolean Parse(
+      const PString & auth,
+      PBoolean proxy
+    );
+
+    virtual PBoolean Authorise(
+      AuthObject & pdu
+    ) const;
+
+    virtual PString GetAuthRealm() const         { return authRealm; }
+    virtual void SetAuthRealm(const PString & r) { authRealm = r; }
+
+    enum Algorithm {
+      Algorithm_MD5,
+      NumAlgorithms
+    };
+    const PString & GetNonce() const       { return nonce; }
+    Algorithm GetAlgorithm() const         { return algorithm; }
+    const PString & GetOpaque() const      { return opaque; }
+
+  protected:
+    PString   authRealm;
+    PString   nonce;
+    Algorithm algorithm;
+    PString   opaque;
+
+    PBoolean qopAuth;
+    PBoolean qopAuthInt;
+    PString cnonce;
+    mutable PAtomicInteger nonceCount;
 };
 
 
@@ -417,6 +563,13 @@ class PHTTPClient : public PHTTP
       PBoolean persist = PTrue     ///< if PTrue, enable HTTP persistence
     );
 
+    /** Set authentication paramaters to be use for retreiving documents
+    */
+    void SetAuthenticationInfo(
+      const PString & userName,
+      const PString & password
+    );
+
   protected:
     PBoolean AssureConnect(const PURL & url, PMIMEInfo & outMIME);
     PBoolean InternalReadContentBody(
@@ -425,6 +578,9 @@ class PHTTPClient : public PHTTP
     );
 
     PString userAgentName;
+    PHTTPClientAuthentication * m_authentication;
+    PString m_userName;
+    PString m_password;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -756,6 +912,7 @@ class PHTTPRequest : public PObject
       const PURL & url,             ///< Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     ///< Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo, ///< multipart form information (if any)
+      PHTTPResource * resource,     ///< Resource associated with request
       PHTTPServer & server          ///< Server channel that request initiated on
     );
 
@@ -770,6 +927,7 @@ class PHTTPRequest : public PObject
     PIPSocket::Address origin;      ///< IP address of origin host for request
     PIPSocket::Address localAddr;   ///< IP address of local interface for request
     WORD               localPort;   ///< Port number of local server for request
+    PHTTPResource    * m_resource;  ///< HTTP resource found for the request
 };
 
 
@@ -1501,6 +1659,7 @@ class PHTTPFileRequest : public PHTTPRequest
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo,
+      PHTTPResource * resource,
       PHTTPServer & server
     );
 
@@ -1688,6 +1847,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo, 
+      PHTTPResource * resource,
       PHTTPServer & server
     );
 

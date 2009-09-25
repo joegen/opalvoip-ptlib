@@ -58,12 +58,12 @@ class PURL : public PObject
     /**Construct a new URL object from the URL string. */
     PURL(
       const char * cstr,    ///< C string representation of the URL.
-      const char * defaultScheme = NULL ///< Default scheme for URL
+      const char * defaultScheme = "http" ///< Default scheme for URL
     );
     /**Construct a new URL object from the URL string. */
     PURL(
       const PString & str,  ///< String representation of the URL.
-      const char * defaultScheme = NULL ///< Default scheme for URL
+      const char * defaultScheme = "http" ///< Default scheme for URL
     );
     /**Construct a new URL object from the file path. */
     PURL(
@@ -257,13 +257,20 @@ class PURL : public PObject
     void SetParameters(const PString & parameters);
 
     /// Get the parameter (;) field(s) of the URL as a string dictionary.
+    /// Note the values have already been translated using UntranslateString
     const PStringToString & GetParamVars() const { return paramVars; }
 
     /// Set the parameter (;) field(s) of the URL as a string dictionary.
+    /// Note the values will be translated using TranslateString
     void SetParamVars(const PStringToString & paramVars);
 
     /// Set the parameter (;) field of the URL as a string dictionary.
-    void SetParamVar(const PString & key, const PString & data);
+    /// Note the values will be translated using TranslateString
+    void SetParamVar(
+      const PString & key,          ///< Key to add/delete
+      const PString & data,         ///< Vlaue to add at key, if empty string may be removed
+      bool emptyDataDeletes = true  ///< If true, and data empty string, key is removed
+    );
 
     /// Get the fragment (##) field of the URL.
     const PString & GetFragment() const { return fragment; }
@@ -272,15 +279,19 @@ class PURL : public PObject
     PString GetQuery() const;
 
     /// Set the Query (?) field of the URL as a string.
+    /// Note the values will be translated using UntranslateString
     void SetQuery(const PString & query);
 
     /// Get the Query (?) field of the URL as a string dictionary.
+    /// Note the values have already been translated using UntranslateString
     const PStringToString & GetQueryVars() const { return queryVars; }
 
     /// Set the Query (?) field(s) of the URL as a string dictionary.
+    /// Note the values will be translated using TranslateString
     void SetQueryVars(const PStringToString & queryVars);
 
     /// Set the Query (?) field of the URL as a string dictionary.
+    /// Note the values will be translated using TranslateString
     void SetQueryVar(const PString & key, const PString & data);
 
     /// Return PTrue if the URL is an empty string.
@@ -343,10 +354,35 @@ class PURLScheme : public PObject
 class PURLLegacyScheme : public PURLScheme
 {
   public:
-    PURLLegacyScheme(const char * s)
-      : scheme(s) { }
+    PURLLegacyScheme(
+      const char * s,
+      bool user    = false,
+      bool pass    = false,
+      bool host    = false,
+      bool def     = false,
+      bool defhost = false,
+      bool query   = false,
+      bool params  = false,
+      bool frags   = false,
+      bool path    = false,
+      bool rel     = false,
+      WORD port    = 0
+    )
+      : scheme(s)
+      , hasUsername           (user)
+      , hasPassword           (pass)
+      , hasHostPort           (host)
+      , defaultToUserIfNoAt   (def)
+      , defaultHostToLocal    (defhost)
+      , hasQuery              (query)
+      , hasParameters         (params)
+      , hasFragments          (frags)
+      , hasPath               (path)
+      , relativeImpliesScheme (rel)
+      , defaultPort           (port)
+    { }
 
-    PBoolean Parse(const PString & url, PURL & purl) const
+    bool Parse(const PString & url, PURL & purl) const
     { return purl.LegacyParse(url, this); }
 
     PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
@@ -356,16 +392,16 @@ class PURLLegacyScheme : public PURLScheme
     { return scheme; }
 
     PString scheme;
-    PBoolean hasUsername;
-    PBoolean hasPassword;
-    PBoolean hasHostPort;
-    PBoolean defaultToUserIfNoAt;
-    PBoolean defaultHostToLocal;
-    PBoolean hasQuery;
-    PBoolean hasParameters;
-    PBoolean hasFragments;
-    PBoolean hasPath;
-    PBoolean relativeImpliesScheme;
+    bool hasUsername;
+    bool hasPassword;
+    bool hasHostPort;
+    bool defaultToUserIfNoAt;
+    bool defaultHostToLocal;
+    bool hasQuery;
+    bool hasParameters;
+    bool hasFragments;
+    bool hasPath;
+    bool relativeImpliesScheme;
     WORD defaultPort;
 };
 
