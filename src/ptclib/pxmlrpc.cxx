@@ -712,7 +712,8 @@ PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const
 
   PXMLElement * param = NULL;
   PINDEX i;
-  for (i = 0; i < params->GetSize(); i++) {
+  PINDEX s = params->GetSize();
+  for (i = 0; i < s; i++) {
     PXMLElement * element = (PXMLElement *)params->GetElement(i);
     if (element != NULL && element->IsElement() && element->GetName() == "param") {
       if (idx <= 0) {
