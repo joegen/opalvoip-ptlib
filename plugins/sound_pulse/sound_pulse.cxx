@@ -130,15 +130,16 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
 
   PWaitAndSignal m(deviceMutex);
   int error;
+  char *app = getenv ("PULSE_PROP_application.name");
   PStringStream appName, streamName;
-  appName << "PTLib plugin ";
-  if (_dir == Player) {
-    appName << "play";
+  if (app != NULL)
+    appName << app;
+  else
+    appName << "PTLib plugin ";
+  if (_dir == Player) 
     streamName << ::hex << PRandom::Number();
-  } else {
-    appName << "record";
+  else
     streamName << ::hex << PRandom::Number();
-  }
 
   ss.rate = _sampleRate;
   ss.channels = _numChannels;
