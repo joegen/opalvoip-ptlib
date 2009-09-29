@@ -98,26 +98,27 @@ class PTones : public PShortArray
 
   public:
     enum {
-        MaxVolume = 100,
-        SampleRate = 8000,
-        MaxFrequency = (SampleRate/4),
-        MinFrequency = 30,
-        MinModulation = 5,
-        SineScale = 1000
+      MaxVolume = 100,
+      DefaultSampleRate = 8000,
+      MinFrequency = 30,
+      MinModulation = 5,
+      SineScale = 1000
     };
 
     /** Create an empty tone buffer. Tones added will use the specified
         master volume.
       */
     PTones(
-        unsigned masterVolume = MaxVolume ///< Percentage volume
+      unsigned masterVolume = MaxVolume,      ///< Percentage volume
+      unsigned sampleRate = DefaultSampleRate ///< Sample rate of generated data
     );
 
     /** Create a filled tone buffer using the specified descriptor.
       */
     PTones(
-      const PString & descriptor,    ///< Descriptor string for tone(s). See class notes.
-      unsigned masterVolume = MaxVolume ///< Percentage volume
+      const PString & descriptor,             ///< Descriptor string for tone(s). See class notes.
+      unsigned masterVolume = MaxVolume,      ///< Percentage volume
+      unsigned sampleRate = DefaultSampleRate ///< Sample rate of generated data
     );
 
     /** Generate a tone using the specified descriptor.
@@ -142,6 +143,8 @@ class PTones : public PShortArray
     );
 
   protected:
+    void Construct();
+
     bool Juxtapose(unsigned frequency1, unsigned frequency2, unsigned milliseconds, unsigned volume);
     bool Modulate (unsigned frequency, unsigned modulate, unsigned milliseconds, unsigned volume);
     bool PureTone (unsigned frequency, unsigned milliseconds, unsigned volume);
@@ -151,10 +154,12 @@ class PTones : public PShortArray
 
     void AddSample(int sample, unsigned volume);
 
-    unsigned masterVolume;
-    char     lastOperation;
-    unsigned lastFrequency1, lastFrequency2;
-    int      angle1, angle2;
+    unsigned m_sampleRate;
+    unsigned m_maxFrequency;
+    unsigned m_masterVolume;
+    char     m_lastOperation;
+    unsigned m_lastFrequency1, m_lastFrequency2;
+    int      m_angle1, m_angle2;
 };
 
 
