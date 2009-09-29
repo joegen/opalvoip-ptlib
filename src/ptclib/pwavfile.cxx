@@ -55,10 +55,6 @@ inline PBoolean ReadAndCheck(PWAVFile & file, void * buf, PINDEX len)
   return file.FileRead(buf, len) && (file.PFile::GetLastReadCount() == len);
 }
 
-inline PBoolean WriteAndCheck(PWAVFile & file, void * buf, PINDEX len)
-{
-  return file.FileWrite(buf, len) && (file.GetLastWriteCount() == len);
-}
 
 #if PBYTE_ORDER==PBIG_ENDIAN
 #  if defined(USE_SYSTEM_SWAB)
@@ -142,8 +138,9 @@ PWAVFile::PWAVFile(
 PWAVFile::~PWAVFile()
 { 
   Close(); 
-  if (formatHandler != NULL)
-    delete formatHandler;
+
+  delete formatHandler;
+  delete autoConverter;
 }
 
 
@@ -160,31 +157,38 @@ void PWAVFile::Construct()
   wavFmtChunk.hdr.len     = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);
 }
 
-void PWAVFile::SelectFormat(unsigned fmt)
+bool PWAVFile::SelectFormat(unsigned fmt)
 {
-  if (formatHandler != NULL) {
-    delete formatHandler;
-    formatHandler = NULL;
-  }
-  if (fmt != fmt_NotKnown) {
-    formatHandler       = PWAVFileFormatByIDFactory::CreateInstance(fmt);
-    wavFmtChunk.format  = (WORD)fmt;
-  }
+  delete formatHandler;
+  formatHandler = NULL;
+
+  if (fmt == fmt_NotKnown)
+    return true;
+
+  formatHandler = PWAVFileFormatByIDFactory::CreateInstance(fmt);
+  if (formatHandler == NULL)
+    return false;
+
+  wavFmtChunk.format  = (WORD)fmt;
+  return true;
 }
 
-void PWAVFile::SelectFormat(const PString & format)
+bool PWAVFile::SelectFormat(const PString & format)
 {
-  if (formatHandler != NULL) {
-    delete formatHandler;
-    formatHandler = NULL;
-  }
-  if (!format.IsEmpty())
-    formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
-  if (formatHandler != NULL) {
-    wavFmtChunk.format = (WORD)formatHandler->GetFormat();
-    if (origFmt == 0xffffffff)
-      origFmt = wavFmtChunk.format;
-  }
+  delete formatHandler;
+  formatHandler = NULL;
+
+  if (format.IsEmpty())
+    return false;
+
+  formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
+  if (formatHandler == NULL)
+    return SelectFormat(format.AsUnsigned());
+
+  wavFmtChunk.format = (WORD)formatHandler->GetFormat();
+  if (origFmt == 0xffffffff)
+    origFmt = wavFmtChunk.format;
+  return true;
 }
 
 PBoolean PWAVFile::Open(OpenMode mode, int opts)
@@ -241,7 +245,8 @@ PBoolean PWAVFile::Open(const PFilePath & name, OpenMode mode, int opts)
 
 PBoolean PWAVFile::Close()
 {
-  autoConverter = NULL; // This is a pointer to a singleton, no need to delete
+  delete autoConverter;
+  autoConverter = NULL;
 
   if (!PFile::IsOpen())
     return PTrue;
@@ -254,6 +259,7 @@ PBoolean PWAVFile::Close()
 
   delete formatHandler;
   formatHandler = NULL;
+
   if (origFmt != 0xffffffff)
     SelectFormat(origFmt);
 
@@ -269,8 +275,8 @@ void PWAVFile::SetAutoconvert()
 // Performs necessary byte-order swapping on for big-endian platforms.
 PBoolean PWAVFile::Read(void * buf, PINDEX len)
 {
-	if (!IsOpen())
-		return PFalse;
+  if (!IsOpen())
+    return PFalse;
 
   if (autoConverter != NULL)
     return autoConverter->Read(*this, buf, len);
@@ -305,8 +311,8 @@ PBoolean PWAVFile::FileRead(void * buf, PINDEX len)
 // Performs necessary byte-order swapping on for big-endian platforms.
 PBoolean PWAVFile::Write(const void * buf, PINDEX len)
 {
-	if (!IsOpen())
-		return PFalse;
+  if (!IsOpen())
+    return PFalse;
 
   // Needs to update header on close.
   header_needs_updating = PTrue;
@@ -498,9 +504,7 @@ PBoolean PWAVFile::SetFormat(const PString & format)
   if (IsOpen() || isValidWAV)
     return PFalse;
 
-  SelectFormat(format);
-
-  return PTrue;
+  return SelectFormat(format);
 }
 
 static inline PBoolean NeedsConverter(const PWAV::FMTChunk & fmtChunk)
@@ -510,7 +514,8 @@ static inline PBoolean NeedsConverter(const PWAV::FMTChunk & fmtChunk)
 
 PBoolean PWAVFile::ProcessHeader() 
 {
-  autoConverter = NULL; // This is a pointer to a singleton, no need to delete
+  delete autoConverter;
+  autoConverter = NULL;
 
   // Process the header information
   // This comes in 3 or 4 chunks, either RIFF, FORMAT and DATA
@@ -614,7 +619,8 @@ PBoolean PWAVFile::ProcessHeader()
 
 PBoolean PWAVFile::GenerateHeader()
 {
-  autoConverter = NULL; // This is a pointer to a singleton, no need to delete
+  delete autoConverter;
+  autoConverter = NULL;
 
   if (!IsOpen()) {
     PTRACE(1, "WAV\tGenerateHeader: Not Open");
@@ -644,7 +650,7 @@ PBoolean PWAVFile::GenerateHeader()
   memcpy(riffChunk.tag,     WAVLabelWAVE, sizeof(WAVLabelWAVE));
   riffChunk.hdr.len = lenHeader + audioDataLen - sizeof(riffChunk.hdr);
 
-  if (!WriteAndCheck(*this, &riffChunk, sizeof(riffChunk)))
+  if (!FileWrite(&riffChunk, sizeof(riffChunk)))
     return PFalse;
 
   // populate and write the WAV header with the default data
@@ -659,11 +665,11 @@ PBoolean PWAVFile::GenerateHeader()
   formatHandler->CreateHeader(wavFmtChunk, extendedHeader);
 
   // write the basic WAV header
-  if (
-      !WriteAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)) ||
-      ((extendedHeader.GetSize() > 0) && !WriteAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize()))
-     )
-    return PFalse;
+  if (!FileWrite(&wavFmtChunk, sizeof(wavFmtChunk)))
+    return false;
+
+  if (extendedHeader.GetSize() > 0 && !FileWrite(extendedHeader.GetPointer(), extendedHeader.GetSize()))
+    return false;
 
   // allow the format handler to write additional chunks
   if (!formatHandler->WriteExtraChunks(*this))
@@ -673,7 +679,7 @@ PBoolean PWAVFile::GenerateHeader()
   PWAV::ChunkHeader dataChunk;
   memcpy(dataChunk.tag, WAVLabelDATA, sizeof(WAVLabelDATA));
   dataChunk.len = audioDataLen;
-  if (!WriteAndCheck(*this, &dataChunk, sizeof(dataChunk)))
+  if (!FileWrite(&dataChunk, sizeof(dataChunk)))
     return PFalse;
 
   isValidWAV = PTrue;
@@ -714,13 +720,13 @@ PBoolean PWAVFile::UpdateHeader()
   // rewrite the length in the RIFF chunk
   PInt32l riffChunkLen = (lenHeader - 8) + lenData; // size does not include first 8 bytes
   PFile::SetPosition(4);
-  if (!WriteAndCheck(*this, &riffChunkLen, sizeof(riffChunkLen)))
+  if (!FileWrite(&riffChunkLen, sizeof(riffChunkLen)))
     return PFalse;
 
   // rewrite the data length field in the data chunk
   PInt32l dataChunkLen = lenData;
   PFile::SetPosition(lenHeader - 4);
-  if (!WriteAndCheck(*this, &dataChunkLen, sizeof(dataChunkLen)))
+  if (!FileWrite(&dataChunkLen, sizeof(dataChunkLen)))
     return PFalse;
 
   if(formatHandler == NULL){
@@ -730,10 +736,10 @@ PBoolean PWAVFile::UpdateHeader()
   formatHandler->UpdateHeader(wavFmtChunk, extendedHeader);
 
   PFile::SetPosition(12);
-  if (!WriteAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)))
+  if (!FileWrite(&wavFmtChunk, sizeof(wavFmtChunk)))
     return PFalse;
 
-  if (!WriteAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize()))
+  if (!FileWrite(extendedHeader.GetPointer(), extendedHeader.GetSize()))
     return PFalse;
 
   header_needs_updating = PFalse;
@@ -1113,6 +1119,6 @@ PBoolean PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX l
   return PFalse;
 }
 
-PWAVFileConverterFactory::Worker<PWAVFileConverterPCM> pcmConverter(PWAVFile::fmt_PCM, true);
+PWAVFileConverterFactory::Worker<PWAVFileConverterPCM> pcmConverter(PWAVFile::fmt_PCM);
 
 //////////////////////////////////////////////////////////////////

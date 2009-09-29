@@ -438,14 +438,15 @@ public:
   off_t RawGetDataLength();
 
   void SetLastReadCount(PINDEX v) { lastReadCount = v; }
+  void SetLastWriteCount(PINDEX v) { lastWriteCount = v; }
 
   PWAV::FMTChunk wavFmtChunk;
   PBYTEArray extendedHeader;
 
 protected:
   void Construct();
-  void SelectFormat(unsigned fmt);
-  void SelectFormat(const PString & format);
+  bool SelectFormat(unsigned fmt);
+  bool SelectFormat(const PString & format);
 
   PBYTEArray wavHeaderData;
 
