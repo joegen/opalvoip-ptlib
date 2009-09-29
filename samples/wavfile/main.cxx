@@ -55,7 +55,7 @@ PCREATE_PROCESS(WAVFileTest)
 void WAVFileTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("p.r.c:d:D:v:h.");
+  args.Parse("p.r.c:F:C:R:d:D:v:h.");
 
   if (args.GetCount() > 0) {
     if (args.HasOption('c')) {
@@ -74,30 +74,41 @@ void WAVFileTest::Main()
     }
   }
 
-  cout << "usage: wavfile { -r | -p | -c fmt } [ -d dev ] [ -D drv ] [ -v vol ] filename\n"
-          "   -r      Record wav file\n"
-          "   -p      Play wav file\n"
-          "   -c fmt  Create wav file\n"
-          "   -d dev  Use device name for sound channel record/playback\n"
-          "   -D drv  Use driver name for sound channel record/playback\n"
-          "   -v vol  Set sound device to vol (0..100)\n"
+  cout << "usage: wavfile { -r | -p | -c tones } [ options ] filename\n"
+          "   -p          Play wav file\n"
+          "   -r          Record wav file\n"
+          "   -c tones    Create wav file from generated tones\n"
+          "\n"
+          "Options:\n"
+          "   -F format   File format, e.g. \"PCM-16\" (create/record only)\n"
+          "   -C channels Number of channels (record only)\n"
+          "   -R rate     Sample rate (record only)\n"
+          "   -d dev      Use device name for sound channel record/playback\n"
+          "   -D drv      Use driver name for sound channel record/playback\n"
+          "   -v vol      Set sound device to vol (0..100)\n"
        << endl;
 }
 
 
 void WAVFileTest::Create(PArgList & args)
 {
-  PString format = args.GetOptionString('c');
-  PWAVFile file(format, args[0], PFile::WriteOnly);
+  PWAVFile file(args[0], PFile::WriteOnly);
   if (!file.IsOpen()) {
-    cout << "Cannot create " << format << " wav file " << args[0] << endl;
+    cout << "Cannot create wav file " << args[0] << endl;
     return;
   }
 
-  PDTMFEncoder toneData;
-  toneData.GenerateDialTone();
-  PINDEX len = toneData.GetSize()*sizeof(short);
-  file.Write((const short *)toneData, len);
+  if (args.HasOption('F'))
+    file.SetFormat(args.GetOptionString('F'));
+
+  if (args.HasOption('C'))
+    file.SetChannels(args.GetOptionString('C').AsUnsigned());
+
+  if (args.HasOption('R'))
+    file.SetSampleRate(args.GetOptionString('R').AsUnsigned());
+
+  PTones toneData(args.GetOptionString('c'), PTones::MaxVolume, file.GetSampleRate());
+  file.Write((const short *)toneData, toneData.GetSize()*sizeof(short));
 }
 
 
@@ -166,6 +177,15 @@ void WAVFileTest::Record(PArgList & args)
     cout << "Cannot open " << args[0] << endl;
     return;
   }
+
+  if (args.HasOption('F'))
+    file.SetFormat(args.GetOptionString('F'));
+
+  if (args.HasOption('C'))
+    file.SetChannels(args.GetOptionString('C').AsUnsigned());
+
+  if (args.HasOption('R'))
+    file.SetSampleRate(args.GetOptionString('R').AsUnsigned());
 
   PSoundChannel * sound = PSoundChannel::CreateOpenedChannel(args.GetOptionString('D'),
                                                              args.GetOptionString('d'),

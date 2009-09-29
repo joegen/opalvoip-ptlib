@@ -150,9 +150,9 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsign
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-static int sine(int angle)
+static int sine(int angle, int freq)
 {
-  static int sinArray[PTones::MaxFrequency] = {
+  static int const sinArray[2000] = {
     0,0,1,2,3,3,4,5,6,7,7,8,9,10,10,11,12,13,14,14,15,16,17,18,18,19,20,21,21,22,
     23,24,25,25,26,27,28,29,29,30,31,32,32,33,34,35,36,36,37,38,39,40,40,41,42,43,43,44,45,46,
     47,47,48,49,50,51,51,52,53,54,54,55,56,57,58,58,59,60,61,62,62,63,64,65,65,66,67,68,69,69,
@@ -221,19 +221,21 @@ static int sine(int angle)
     999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,
     999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999
   };
+  static int const sinArraySize = sizeof(sinArray)/sizeof(sinArray[0]);
 
-  int quadrant = angle / PTones::MaxFrequency;
-  int offset   = angle % PTones::MaxFrequency;
+  int adjustedAngle = (int)(angle*sinArraySize*4LL/freq);
+  int quadrant = adjustedAngle / sinArraySize;
+  int offset   = adjustedAngle % sinArraySize;
 
   switch (quadrant) {
     case 0:
       return sinArray[offset];
     case 1:
-      return sinArray[PTones::MaxFrequency-1-offset];
+      return sinArray[sinArraySize-1-offset];
     case 2: 
       return -sinArray[offset];
     default:
-      return -sinArray[PTones::MaxFrequency-1-offset];
+      return -sinArray[sinArraySize-1-offset];
   }
 }
 
@@ -241,24 +243,45 @@ static int sine(int angle)
 ////////////////////////////////////////////////////////////////////////
 
     
-PTones::PTones(unsigned volume): 
-  PShortArray(),
-  masterVolume(volume),
-  lastOperation(0),
-  lastFrequency1(0),
-  lastFrequency2(0),
-  angle1(0),
-  angle2(0)
+PTones::PTones(unsigned volume, unsigned sampleRate)
+  : m_sampleRate(sampleRate)
+  , m_masterVolume(volume)
 {
+  Construct();
 }
 
 
-PTones::PTones(const PString & descriptor, unsigned volume)
-  : masterVolume(volume)
+PTones::PTones(const PString & descriptor, unsigned volume, unsigned sampleRate)
+  : m_sampleRate(sampleRate)
+  , m_masterVolume(volume)
 {
+  Construct();
+
   if (!Generate(descriptor)) {
     PTRACE(1,"DTMF\tCannot encode tone \"" << descriptor << '"');
   }
+}
+
+
+void PTones::Construct()
+{
+  m_lastOperation = 0;
+  m_lastFrequency1 = 0;
+  m_lastFrequency2 = 0;
+  m_angle1 = 0;
+  m_angle2 = 0;
+
+  if (m_sampleRate < 8000)
+    m_sampleRate = 8000;
+  else if (m_sampleRate > 96000)
+    m_sampleRate = 96000;
+
+  m_maxFrequency = m_sampleRate/4;
+
+  if (m_masterVolume < 1)
+    m_masterVolume = 1;
+  else if (m_masterVolume > 100)
+    m_masterVolume = 100;
 }
 
 
@@ -335,15 +358,15 @@ bool PTones::Generate(const PString & descriptor)
 
 bool PTones::Generate(char operation, unsigned frequency1, unsigned frequency2, unsigned milliseconds, unsigned volume)
 {
-  if (lastOperation  != operation  ||
-      lastFrequency1 != frequency1 ||
-      lastFrequency2 != frequency2) {
-    lastOperation  = operation;
-    lastFrequency1 = frequency1;
-    lastFrequency2 = frequency2;
+  if (m_lastOperation  != operation  ||
+      m_lastFrequency1 != frequency1 ||
+      m_lastFrequency2 != frequency2) {
+    m_lastOperation  = operation;
+    m_lastFrequency1 = frequency1;
+    m_lastFrequency2 = frequency2;
 
-    angle1 = 0;
-    angle2 = 0;
+    m_angle1 = 0;
+    m_angle2 = 0;
   }
 
   switch (operation) {
@@ -366,26 +389,26 @@ bool PTones::Generate(char operation, unsigned frequency1, unsigned frequency2, 
 
 bool PTones::Juxtapose(unsigned frequency1, unsigned frequency2, unsigned milliseconds, unsigned volume)
 {
-  if (frequency1 < MinFrequency || frequency1 > MaxFrequency ||
-      frequency2 < MinFrequency || frequency2 > MaxFrequency)
+  if (frequency1 < MinFrequency || frequency1 > m_maxFrequency ||
+      frequency2 < MinFrequency || frequency2 > m_maxFrequency)
     return false;
 
   // TODO this gived 8000 samples for 100 ms !!!
   //unsigned samples = CalcSamples(milliseconds, frequency1, frequency2);
-  unsigned samples = milliseconds * SampleRate / 1000;
+  unsigned samples = milliseconds * m_sampleRate / 1000;
   while (samples-- > 0) {
-    int a1 = sine(angle1);
-    int a2 = sine(angle2);
+    int a1 = sine(m_angle1, m_sampleRate);
+    int a2 = sine(m_angle2, m_sampleRate);
 
     AddSample((a1 + a2) / 2, volume);
 
-    angle1 += frequency1;
-    if (angle1 >= SampleRate) 
-      angle1 -= SampleRate;
+    m_angle1 += frequency1;
+    if (m_angle1 >= (int)m_sampleRate) 
+      m_angle1 -= m_sampleRate;
 
-    angle2 += frequency2;
-    if (angle2 >= SampleRate) 
-      angle2 -= SampleRate;
+    m_angle2 += frequency2;
+    if (m_angle2 >= (int)m_sampleRate) 
+      m_angle2 -= m_sampleRate;
   }
   return true;
 }
@@ -393,24 +416,24 @@ bool PTones::Juxtapose(unsigned frequency1, unsigned frequency2, unsigned millis
 
 bool PTones::Modulate(unsigned frequency1, unsigned modulator, unsigned milliseconds, unsigned volume)
 {
-  if (frequency1 < MinFrequency || frequency1 > MaxFrequency || modulator < MinModulation || modulator >= frequency1/2)
+  if (frequency1 > m_maxFrequency || frequency1 > m_maxFrequency || modulator < MinModulation || modulator >= frequency1/2)
     return false;
 
   unsigned samples = CalcSamples(milliseconds, frequency1, modulator);
 
   while (samples-- > 0) {
-    int a1 = sine(angle1);   // -999 to 999
-    int a2 = sine(angle2);   // -999 to 999
+    int a1 = sine(m_angle1, m_sampleRate);   // -999 to 999
+    int a2 = sine(m_angle2, m_sampleRate);   // -999 to 999
 
     AddSample((a1 * (a2 + SineScale)) / SineScale / 2, volume);
 
-    angle1 += frequency1;
-    if (angle1 >= SampleRate) 
-      angle1 -= SampleRate;
+    m_angle1 += frequency1;
+    if (m_angle1 >= (int)m_sampleRate) 
+      m_angle1 -= m_sampleRate;
 
-    angle2 += modulator;
-    if (angle2 >= SampleRate) 
-      angle2 -= SampleRate;
+    m_angle2 += modulator;
+    if (m_angle2 >= (int)m_sampleRate) 
+      m_angle2 -= m_sampleRate;
   }
   return true;
 }
@@ -458,16 +481,16 @@ bool PTones::PureTone(unsigned frequency1, unsigned milliseconds, unsigned volum
     return true;
   }
 
-  if (frequency1 < MinFrequency || frequency1 > MaxFrequency)
+  if (frequency1 < MinFrequency || frequency1 > m_maxFrequency)
     return false;
 
   unsigned samples = CalcSamples(milliseconds, frequency1);
   while (samples-- > 0) {
-    AddSample(sine(angle1), volume);
+    AddSample(sine(m_angle1, m_sampleRate), volume);
 
-    angle1 += frequency1;
-    if (angle1 >= SampleRate) 
-      angle1 -= SampleRate;
+    m_angle1 += frequency1;
+    if (m_angle1 >= (int)m_sampleRate) 
+      m_angle1 -= m_sampleRate;
   }
   return true;
 }
@@ -475,7 +498,7 @@ bool PTones::PureTone(unsigned frequency1, unsigned milliseconds, unsigned volum
 
 bool PTones::Silence(unsigned milliseconds)
 {
-  unsigned samples = milliseconds * SampleRate/1000;
+  unsigned samples = milliseconds * m_sampleRate/1000;
   while (samples-- > 0) 
     AddSample(0, 0);
   return true;
@@ -504,8 +527,8 @@ unsigned PTones::CalcSamples(unsigned ms, unsigned f1, unsigned f2)
   // now find the number of times we need to repeat this to match the sampling rate
   unsigned n1 = 1;
   unsigned n2 = 1;
-  while (n1*SampleRate*v1 != n2*f1) {
-    if (n1*SampleRate*v1 < n2*f1) 
+  while (n1*m_sampleRate*v1 != n2*f1) {
+    if (n1*m_sampleRate*v1 < n2*f1) 
       n1++;
     else
       n2++;
@@ -514,10 +537,10 @@ unsigned PTones::CalcSamples(unsigned ms, unsigned f1, unsigned f2)
   // v1 repetitions of t == v2 repetitions sample frequency
   //cout << n1*v1 << " cycles at " << f1 << "hz = "
   //     << n1*v2 << " cycles at " << f2 << "hz = "
-  //     << n2    << " samples at " << SampleRate << "hz" << endl;
+  //     << n2    << " samples at " << m_sampleRate << "hz" << endl;
 
   // Make sure we round up the number of milliseconds to even multiple of cycles
-  return ms == 0 ? n2 : ((ms * SampleRate/1000 + n2 - 1)/n2*n2);
+  return ms == 0 ? n2 : ((ms * m_sampleRate/1000 + n2 - 1)/n2*n2);
 }
 
 
@@ -527,7 +550,7 @@ void PTones::AddSample(int sample, unsigned volume)
   PINDEX length = GetSize();
   SetSize(length + 1);
   sample *= volume;
-  sample *= masterVolume;
+  sample *= m_masterVolume;
   sample /= SineScale*100*100/SHRT_MAX;
   SetAt(length, (short)sample);
 }
@@ -604,7 +627,7 @@ void PDTMFEncoder::AddTone(char digit, unsigned milliseconds)
 
 void PDTMFEncoder::AddTone(double f1, double f2, unsigned milliseconds)
 {
-  if (f1 > 0 && f1 < MaxFrequency && f2 > 0 && f2 < MaxFrequency){
+  if (f1 > 0 && f1 < m_maxFrequency && f2 > 0 && f2 < m_maxFrequency){
     Generate('+', (unsigned)f1, (unsigned)f2, milliseconds);
   } else {
     PAssertAlways(PInvalidParameter);
