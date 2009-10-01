@@ -495,7 +495,17 @@ dnl ########################################################################
 dnl look for compile flags
 AC_LANG_PUSH(C++)
 
-AC_MSG_CHECKING(if linker accepts -felide-constructors)
+AC_MSG_CHECKING(if compiler accepts -fstack-protector)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CXX $CXXFLAGS -fstack-protector conftest.$ac_ext > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCXXFLAGS="$STDCXXFLAGS -fstack-protector"
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(if compiler accepts -felide-constructors)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
@@ -882,7 +892,7 @@ dnl ########################################################################
 dnl check if setpgrp takes non or two arguments
 P_SETPGRP_SYSTEMV=0
 P_SETPGRP_NOPARM=0
-AC_MSG_CHECKING(if setpgrp takes no paramaters)
+AC_MSG_CHECKING(if setpgrp takes no parameters)
 AC_TRY_COMPILE([#include <unistd.h>],
                [pid_t p = setpgrp();], P_SETPGRP_NOPARM=1)
 if test ${P_SETPGRP_NOPARM} = 1 ; then
