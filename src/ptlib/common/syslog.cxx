@@ -319,9 +319,10 @@ void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
   if (level > m_thresholdLevel)
     return;
 
-  PStringStream str;
-  OutputToStream(str, level, msg);
-  ::OutputDebugStringA(str);
+  PStringStream strm;
+  OutputToStream(strm, level, msg);
+  PVarString str = strm;
+  OutputDebugString(str);
 }
 #else
 
