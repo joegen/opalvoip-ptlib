@@ -1845,12 +1845,10 @@ PThread * PThread::Current()
 
   PProcess & process = PProcess::Current();
 
-  {
-    PWaitAndSignal mutex(process.m_activeThreadMutex);
-    PProcess::ThreadMap::iterator it = process.m_activeThreads.find(GetCurrentThreadId());
-    if (it != process.m_activeThreads.end())
-      return it->second;
-  }
+  PWaitAndSignal mutex(process.m_activeThreadMutex);
+  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(GetCurrentThreadId());
+  if (it != process.m_activeThreads.end())
+    return it->second;
 
   return new PExternalThread;
 }
