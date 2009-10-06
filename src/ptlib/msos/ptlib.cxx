@@ -942,6 +942,9 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
   if (!PAssert(type >= StandardInput && type <= StandardError, PInvalidParameter))
     return false;
 
+#ifdef _WIN32_WCE
+  return false;
+#else
   static DWORD HandleNames[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
   if (!DuplicateHandle(GetCurrentProcess(), GetStdHandle(HandleNames[type]),
                        GetCurrentProcess(), &m_hConsole,
@@ -950,6 +953,7 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
 
   os_handle = type;
   return true;
+#endif
 }
 
 

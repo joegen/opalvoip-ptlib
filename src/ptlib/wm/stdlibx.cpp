@@ -722,8 +722,5 @@ PBoolean PServiceProcess::OnPause() { return PTrue; };
 void PServiceProcess::OnContinue() {}; 
 char const * PServiceProcess::GetServiceDependencies(void)const { return NULL; }
 
-int PSystemLog::Buffer::overflow(int) { return 0; };
-int PSystemLog::Buffer::underflow(void){ return 0; };
-int PSystemLog::Buffer::sync(void){ return 0; };
 
 #endif // _WIN32_WCE
