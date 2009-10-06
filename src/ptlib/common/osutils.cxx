@@ -1911,10 +1911,9 @@ PThread * PThread::Current()
 
   process.activeThreadMutex.Wait();
   PThread * thread = process.activeThreads.GetAt(_hptr(GetCurrentThreadId()));
-  process.activeThreadMutex.Signal();
-
   if (thread == NULL)
     thread = new PExternalThread;
+  process.activeThreadMutex.Signal();
 
   return thread;
 }
