@@ -336,8 +336,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
       if (fds[0].IsPresent(unblockPipe)) {
         PTRACE(6, "PWLib\tSelect unblocked fd=" << unblockPipe);
         BYTE ch;
-        ::read(unblockPipe, &ch, 1);
-        lastError = Interrupted;
+        if (ConvertOSError(::read(unblockPipe, &ch, 1), lastError, osError))
+          lastError = Interrupted;
       }
     }
   }

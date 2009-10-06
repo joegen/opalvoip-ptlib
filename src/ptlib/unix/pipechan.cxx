@@ -142,14 +142,16 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   // is redirected
   if (toChildPipe[0] != -1) {
     ::close(STDIN_FILENO);
-    ::dup(toChildPipe[0]);
+    if (::dup(toChildPipe[0]) == -1)
+      return false;
     ::close(toChildPipe[0]);
     ::close(toChildPipe[1]);  
   } else {
     int fd = open("/dev/null", O_RDONLY);
     PAssertOS(fd >= 0);
     ::close(STDIN_FILENO);
-    ::dup(fd);
+    if (::dup(fd) == -1)
+      return false;
     ::close(fd);
   }
 
@@ -157,25 +159,30 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   // and stderr is redirected
   if (fromChildPipe[1] != -1) {
     ::close(STDOUT_FILENO);
-    ::dup(fromChildPipe[1]);
+    if (::dup(fromChildPipe[1]) == -1)
+      return false;
     ::close(STDERR_FILENO);
     if (!stderrSeparate)
-      ::dup(fromChildPipe[1]);
+      if (::dup(fromChildPipe[1]) == -1)
+        return false;
     ::close(fromChildPipe[1]);
     ::close(fromChildPipe[0]); 
   } else if (mode != ReadWriteStd) {
     int fd = ::open("/dev/null", O_WRONLY);
     PAssertOS(fd >= 0);
     ::close(STDOUT_FILENO);
-    ::dup(fd);
+    if (::dup(fd) == -1)
+      return false;
     ::close(STDERR_FILENO);
     if (!stderrSeparate)
-      ::dup(fd);
+      if (::dup(fd) == -1)
+        return false;
     ::close(fd);
   }
 
   if (stderrSeparate) {
-    ::dup(stderrChildPipe[1]);
+    if (::dup(stderrChildPipe[1]) == -1)
+      return false;
     ::close(stderrChildPipe[1]);
     ::close(stderrChildPipe[0]); 
   }
