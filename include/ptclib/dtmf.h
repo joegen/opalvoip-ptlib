@@ -19,6 +19,8 @@
 #ifndef PTLIB_DTMF_H
 #define PTLIB_DTMF_H
 
+#if P_DTMF
+
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
@@ -256,6 +258,8 @@ class PDTMFEncoder : public PTones
     // Overiding GetSize() screws up the SetSize()
 };
 
+
+#endif // P_DTMF
 
 #endif // PTLIB_DTMF_H
 
