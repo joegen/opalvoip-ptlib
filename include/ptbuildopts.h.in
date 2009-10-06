@@ -466,7 +466,9 @@
 #endif
 
 #ifdef P_EXPAT
-  #undef P_VXML
+  #if P_DTMF
+    #undef P_VXML
+  #endif
   #undef P_JABBER
   #undef P_XMLRPC
   #undef P_SOAP
