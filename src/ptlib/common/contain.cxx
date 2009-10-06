@@ -77,7 +77,7 @@ class CustomAllocator
       if (new_n == old_n)
         return p;
 
-      Type * np = a.allocate(new_n);
+      Type * np = (Type *)a.allocate(new_n);
       memcpy(np, p, (new_n < old_n) ? new_n : old_n );
       a.deallocate(p, old_n); 
 
