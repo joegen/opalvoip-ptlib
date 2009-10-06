@@ -92,7 +92,11 @@ typedef int socklen_t;
 
 #define HAS_IFREQ
 
+#if defined(__GLIBC__)
+#define PSETPGRP()  setpgrp()
+#else
 #define PSETPGRP()  setpgrp(0, 0)
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_OPENBSD)
