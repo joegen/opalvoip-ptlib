@@ -409,7 +409,8 @@ PThread::~PThread()
     // if thread was started, remove it from the active thread list and detach it to release thread resources
     if (id != 0) {
       process.m_activeThreadMutex.Wait();
-      pthread_detach(id);
+      if (PX_origStackSize != 0)
+        pthread_detach(id);
       process.m_activeThreads.erase(id);
       process.m_activeThreadMutex.Signal();
     }
@@ -910,7 +911,7 @@ void PThread::Terminate()
 PBoolean PThread::IsTerminated() const
 {
   pthread_t id = PX_threadId;
-  return (id == 0) || (pthread_kill(id, 0) != 0);
+  return (id == 0) || (PX_origStackSize <= 0) || (pthread_kill(id, 0) != 0);
 }
 
 
