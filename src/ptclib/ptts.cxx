@@ -321,6 +321,9 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 #endif
 // P_SAPI
 
+
+#ifndef _WIN32_WCE
+
 ////////////////////////////////////////////////////////////
 //
 //  Generic text to speech using Festival
@@ -509,11 +512,7 @@ PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath &
 
 #if 1
 
-#ifndef _WIN32_WCE
-  system(cmdLine);
-#endif
-
-  return PTrue;
+  return system(cmdLine) != -1;
 
 #else
 
@@ -536,5 +535,9 @@ PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath &
 
 #endif
 }
+
+
+#endif
+
 
 // End Of File ///////////////////////////////////////////////////////////////
