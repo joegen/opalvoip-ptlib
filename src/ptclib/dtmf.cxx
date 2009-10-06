@@ -23,6 +23,8 @@
 #include <ptlib.h>
 #include <ptclib/dtmf.h>
 
+#if P_DTMF
+
 #include <math.h>
 
 /* Integer math scaling factor */
@@ -643,5 +645,7 @@ char PDTMFEncoder::DtmfChar(PINDEX i)
   return dtmfSymbols[i];
 }
 
+
+#endif // P_DTMF
 
 ////////////////////////////////////////////////////////////////////////////
