@@ -55,14 +55,9 @@ static const char * const AlgorithmNames[PHTTPClientDigestAuthentication::NumAlg
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPClient
 
-PHTTPClient::PHTTPClient()
-  : m_authentication(NULL)
-{
-}
-
-
 PHTTPClient::PHTTPClient(const PString & userAgent)
-  : userAgentName(userAgent)
+  : m_userAgentName(userAgent)
+  , m_persist(true)
   , m_authentication(NULL)
 {
 }
@@ -72,10 +67,9 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PURL & url,
                                 PMIMEInfo & outMIME,
                                 const PString & dataBody,
-                                PMIMEInfo & replyMime,
-                                PBoolean persist)
+                                PMIMEInfo & replyMime)
 {
-  return ExecuteCommand(commandNames[cmd], url, outMIME, dataBody, replyMime, persist);
+  return ExecuteCommand(commandNames[cmd], url, outMIME, dataBody, replyMime);
 }
 
 
@@ -83,20 +77,21 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
                                 const PURL & url,
                                 PMIMEInfo & outMIME,
                                 const PString & dataBody,
-                                PMIMEInfo & replyMime,
-                                PBoolean persist)
+                                PMIMEInfo & replyMIME)
 {
   if (!outMIME.Contains(DateTag()))
     outMIME.SetAt(DateTag(), PTime().AsString());
 
-  if (!userAgentName && !outMIME.Contains(UserAgentTag()))
-    outMIME.SetAt(UserAgentTag(), userAgentName);
+  if (!m_userAgentName && !outMIME.Contains(UserAgentTag()))
+    outMIME.SetAt(UserAgentTag(), m_userAgentName);
 
-  if (persist)
+  if (m_persist)
     outMIME.SetAt(ConnectionTag(), KeepAliveTag());
 
+  bool triedAuthentication = false;
+  PURL adjustableURL = url;
   for (PINDEX retry = 0; retry < 3; retry++) {
-    if (!AssureConnect(url, outMIME))
+    if (!AssureConnect(adjustableURL, outMIME))
       break;
 
     if (!WriteCommand(cmdName, url.AsString(PURL::URIOnly), outMIME, dataBody)) {
@@ -106,28 +101,67 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
     }
 
     // If not persisting need to shut down write so other end stops reading
-    if (!persist)
+    if (!m_persist)
       Shutdown(ShutdownWrite);
 
     // Await a response, if all OK exit loop
-    if (ReadResponse(replyMime)) {
-      if (lastResponseCode != Continue)
-        break;
-      if (ReadResponse(replyMime))
-        break;
+    if (ReadResponse(replyMIME) && (lastResponseCode != Continue || ReadResponse(replyMIME))) {
+      switch (lastResponseCode) {
+        case RequestOK:
+          return lastResponseCode;
+
+        case MovedPermanently:
+        case MovedTemporarily:
+          adjustableURL = replyMIME("Location");
+          if (!adjustableURL.IsEmpty())
+            return lastResponseCode;
+          else {
+            PString dummy;
+            if (!ReadContentBody(replyMIME, dummy))
+              return lastResponseCode;
+          }
+          break;
+
+        case UnAuthorised:
+          if (triedAuthentication || !replyMIME.Contains("WWW-Authenticate") || (m_userName.IsEmpty() && m_password.IsEmpty()))
+            return lastResponseCode;
+          else {
+            triedAuthentication = true;
+
+            PBYTEArray body;
+            ReadContentBody(replyMIME, body);
+
+            // authenticate 
+            PString errorMsg;
+            PHTTPClientAuthentication * newAuth = PHTTPClientAuthentication::ParseAuthenticationRequired(false, replyMIME, errorMsg);
+            if (newAuth == NULL)
+              return false;
+
+            newAuth->SetUsername(m_userName);
+            newAuth->SetPassword(m_password);
+
+            delete m_authentication;
+            m_authentication = newAuth;
+          }
+          break;
+
+        default:
+          return lastResponseCode;
+      }
     }
+    else {
+      // If not persisting, we have no oppurtunity to write again, just error out
+      if (!m_persist)
+        break;
 
-    // If not persisting, we have no oppurtunity to write again, just error out
-    if (!persist)
-      break;
+      // If have had a failure to read a response but there was no error then
+      // we have a shutdown socket probably due to a lack of persistence so ...
+      if (GetErrorCode(LastReadError) != NoError)
+        break;
 
-    // If have had a failure to read a response but there was no error then
-    // we have a shutdown socket probably due to a lack of persistence so ...
-    if (GetErrorCode(LastReadError) != NoError)
-      break;
-
-    // ... we close the channel and allow AssureConnet() to reopen it.
-    Close();
+      // ... we close the channel and allow AssureConnet() to reopen it.
+      Close();
+    }
   }
 
   return lastResponseCode;
@@ -299,93 +333,42 @@ PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractAr
 
 
 PBoolean PHTTPClient::GetTextDocument(const PURL & url,
-                                  PString & document,
-                                  PBoolean persist)
+                                      PString & document,
+                                      const PString & requiredContentType)
 {
   PMIMEInfo outMIME, replyMIME;
-  if (!GetDocument(url, outMIME, replyMIME, persist))
+  if (!GetDocument(url, outMIME, replyMIME))
     return PFalse;
 
-  return ReadContentBody(replyMIME, document);
+  PCaselessString actualContentType = replyMIME(ContentTypeTag());
+  if (requiredContentType.IsEmpty() || actualContentType == requiredContentType)
+    return ReadContentBody(replyMIME, document);
+
+  PTRACE(2, "HTTP\tIncorrect Content-Type for document, expecting " << requiredContentType << ", got " << actualContentType);
+  return false;
 }
 
 
-PBoolean PHTTPClient::GetDocument(const PURL & _url,
-                              PMIMEInfo & _outMIME,
-                              PMIMEInfo & replyMIME,
-                              PBoolean persist)
+bool PHTTPClient::GetDocument(const PURL & url,
+                              PMIMEInfo & outMIME,
+                              PMIMEInfo & replyMIME)
 {
-  bool triedAuthentication = false;
-  int count = 0;
-  static const char locationTag[] = "Location";
-  PURL url = _url;
-  for (;;) {
-    PMIMEInfo outMIME = _outMIME;
-    replyMIME.RemoveAll();
-    PString u = url.AsString();
-    int code = ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist);
-    switch (code) {
-      case RequestOK:
-        return PTrue;
-      case MovedPermanently:
-      case MovedTemporarily:
-        {
-          if (count > 10)
-            return PFalse;
-          PString str = replyMIME(locationTag);
-          if (str.IsEmpty())
-            return PFalse;
-          PString doc;
-          if (!ReadContentBody(replyMIME, doc))
-            return PFalse;
-          url = str;
-          count++;
-        }
-        break;
-      case UnAuthorised:
-        if (triedAuthentication || !replyMIME.Contains("WWW-Authenticate") || (m_userName.IsEmpty() && m_password.IsEmpty()))
-          return false;
-        else {
-          triedAuthentication = true;
-
-          PBYTEArray body;
-          ReadContentBody(replyMIME, body);
-
-          // authenticate 
-          PString errorMsg;
-          PHTTPClientAuthentication * newAuth = PHTTPClientAuthentication::ParseAuthenticationRequired(false, replyMIME, errorMsg);
-          if (newAuth == NULL)
-            return false;
-
-          newAuth->SetUsername(m_userName);
-          newAuth->SetPassword(m_password);
-
-          delete m_authentication;
-          m_authentication = newAuth;
-        }
-        break;;
-
-      default:
-        return PFalse;
-    }
-  }
+  return ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
 }
 
 
 PBoolean PHTTPClient::GetHeader(const PURL & url,
                             PMIMEInfo & outMIME,
-                            PMIMEInfo & replyMIME,
-                            PBoolean persist)
+                            PMIMEInfo & replyMIME)
 {
-  return ExecuteCommand(HEAD, url, outMIME, PString(), replyMIME, persist) == RequestOK;
+  return ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
 }
 
 
 PBoolean PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & outMIME,
                            const PString & data,
-                           PMIMEInfo & replyMIME,
-                           PBoolean persist)
+                           PMIMEInfo & replyMIME)
 {
   PString dataBody = data;
   if (!outMIME.Contains(ContentTypeTag())) {
@@ -393,7 +376,7 @@ PBoolean PHTTPClient::PostData(const PURL & url,
     dataBody += "\r\n"; // Add CRLF for compatibility with some CGI servers.
   }
 
-  return ExecuteCommand(POST, url, outMIME, data, replyMIME, persist) == RequestOK;
+  return ExecuteCommand(POST, url, outMIME, data, replyMIME) == RequestOK;
 }
 
 
@@ -401,13 +384,37 @@ PBoolean PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & outMIME,
                            const PString & data,
                            PMIMEInfo & replyMIME,
-                           PString & body,
-                           PBoolean persist)
+                           PString & body)
 {
-  if (!PostData(url, outMIME, data, replyMIME, persist))
+  if (!PostData(url, outMIME, data, replyMIME))
     return PFalse;
 
   return ReadContentBody(replyMIME, body);
+}
+
+
+bool PHTTPClient::PutTextDocument(const PURL & url,
+                                  const PString & document,
+                                  const PString & contentType)
+{
+  PMIMEInfo outMIME, replyMIME;
+  outMIME.SetAt(ContentTypeTag(), contentType);
+  return ExecuteCommand(PUT, url, outMIME, document, replyMIME) == RequestOK;
+}
+
+
+bool PHTTPClient::PutDocument(const PURL & url,
+                              PMIMEInfo & outMIME,
+                              PMIMEInfo & replyMIME)
+{
+  return ExecuteCommand(PUT, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
+}
+
+
+bool PHTTPClient::DeleteDocument(const PURL & url)
+{
+  PMIMEInfo outMIME, replyMIME;
+  return ExecuteCommand(DELETE, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
 }
 
 

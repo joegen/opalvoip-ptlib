@@ -376,8 +376,9 @@ void PVXMLPlayableURL::Play(PVXMLChannel & outgoingChannel)
 {
   // open the resource
   PHTTPClient * client = new PHTTPClient;
+  client->SetPersistent(false);
   PMIMEInfo outMIME, replyMIME;
-  int code = client->GetDocument(url, outMIME, replyMIME, false);
+  int code = client->GetDocument(url, outMIME, replyMIME);
   if ((code != 200) || (replyMIME(PHTTP::TransferEncodingTag()) *= PHTTP::ChunkedTag()))
     delete client;
   else {
