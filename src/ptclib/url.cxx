@@ -188,7 +188,6 @@ void PURL::CopyContents(const PURL & other)
   port         = other.port;
   portSupplied = other.portSupplied;
   relativePath = other.relativePath;
-  pathStr      = other.pathStr;
   path         = other.path;
   fragment     = other.fragment;
 
@@ -198,6 +197,7 @@ void PURL::CopyContents(const PURL & other)
   queryVars    = other.queryVars;
   queryVars.MakeUnique();
 
+  m_contents   = other.m_contents;
 }
 
 PINDEX PURL::HashFunction() const
@@ -321,11 +321,11 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   port = 0;
   portSupplied = PFalse;
   relativePath = PFalse;
-  pathStr.MakeEmpty();
   path.SetSize(0);
   paramVars.RemoveAll();
   fragment.MakeEmpty();
   queryVars.RemoveAll();
+  m_contents.MakeEmpty();
 
   // copy the string so we can take bits off it
   while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
@@ -561,8 +561,8 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
   if (schemeInfo->hasPath)
     SetPathStr(url);   // the hierarchy is what is left
   else {
-  // if the rest of the URL isn't a path, then we are finished!
-    pathStr = UntranslateString(url, PathTranslation);
+    // if the rest of the URL isn't a path, then we are finished!
+    m_contents = UntranslateString(url, PathTranslation);
     Recalculate();
   }
 
@@ -673,15 +673,10 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   }
 
   // URIOnly and PathOnly
-  if (schemeInfo->hasPath) {
-    for (i = 0; i < path.GetSize(); i++) {
-      if (i > 0 || !relativePath)
-        str << '/';
-      str << TranslateString(path[i], PathTranslation);
-    }
-  }
+  if (schemeInfo->hasPath)
+    str << GetPathStr();
   else
-    str << TranslateString(pathStr, PathTranslation);
+    str << TranslateString(m_contents, PathTranslation);
 
   if (fmt == URIOnly) {
     if (!fragment)
@@ -737,10 +732,8 @@ void PURL::SetPort(WORD newPort)
 }
 
 
-void PURL::SetPathStr(const PString & p)
+void PURL::SetPathStr(const PString & pathStr)
 {
-  pathStr = p;
-
   path = pathStr.Tokenise("/", PTrue);
 
   if (path.GetSize() > 0 && path[0].IsEmpty()) 
@@ -758,14 +751,28 @@ void PURL::SetPathStr(const PString & p)
 }
 
 
+PString PURL::GetPathStr() const
+{
+  PStringStream strm;
+  for (PINDEX i = 0; i < path.GetSize(); i++) {
+    if (i > 0 || !relativePath)
+      strm << '/';
+    strm << TranslateString(path[i], PathTranslation);
+  }
+  return strm;
+}
+
+
 void PURL::SetPath(const PStringArray & p)
 {
   path = p;
+  Recalculate();
+}
 
-  pathStr.MakeEmpty();
-  for (PINDEX i = 0; i < path.GetSize(); i++)
-    pathStr += '/' + path[i];
 
+void PURL::AppendPath(const PString & segment)
+{
+  path.AppendString(segment);
   Recalculate();
 }
 
@@ -847,6 +854,13 @@ void PURL::SetQueryVar(const PString & key, const PString & data)
     queryVars.RemoveAt(key);
   else
     queryVars.SetAt(key, data);
+  Recalculate();
+}
+
+
+void PURL::SetContents(const PString & str)
+{
+  m_contents = str;
   Recalculate();
 }
 
