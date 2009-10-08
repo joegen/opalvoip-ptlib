@@ -439,9 +439,8 @@ class PHTTPClient : public PHTTP
 
   public:
     /// Create a new HTTP client channel.
-    PHTTPClient();
     PHTTPClient(
-      const PString & userAgentName
+      const PString & userAgentName = PString::Empty()
     );
 
 
@@ -458,16 +457,14 @@ class PHTTPClient : public PHTTP
       const PURL & url,
       PMIMEInfo & outMIME,
       const PString & dataBody,
-      PMIMEInfo & replyMime,
-      PBoolean persist = PTrue
+      PMIMEInfo & replyMime
     );
     int ExecuteCommand(
       const PString & cmdName,
       const PURL & url,
       PMIMEInfo & outMIME,
       const PString & dataBody,
-      PMIMEInfo & replyMime,
-      PBoolean persist = PTrue
+      PMIMEInfo & replyMime
     );
 
     /// Write a HTTP command to server
@@ -502,13 +499,16 @@ class PHTTPClient : public PHTTP
 
     /** Get the document specified by the URL.
 
+        An empty string for the contentType parameter means that any content
+        type is acceptable.
+
        @return
        PTrue if document is being transferred.
      */
     PBoolean GetTextDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       PString & document,       ///< Body read
-      PBoolean persist = PTrue       ///< if PTrue, enable HTTP persistence
+      const PString & contentType = PString::Empty() ///< Content-Type header to expect
     );
 
     /** Get the document specified by the URL.
@@ -519,8 +519,7 @@ class PHTTPClient : public PHTTP
     PBoolean GetDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
-      PMIMEInfo & replyMIME,    ///< MIME info in response
-      PBoolean persist = PTrue       ///< if PTrue, enable HTTP persistence
+      PMIMEInfo & replyMIME     ///< MIME info in response
     );
 
     /** Get the header for the document specified by the URL.
@@ -531,8 +530,7 @@ class PHTTPClient : public PHTTP
     PBoolean GetHeader(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
-      PMIMEInfo & replyMIME,    ///< MIME info in response
-      PBoolean persist = PTrue       ///< if PTrue, enable HTTP persistence
+      PMIMEInfo & replyMIME     ///< MIME info in response
     );
 
 
@@ -545,8 +543,7 @@ class PHTTPClient : public PHTTP
       const PURL & url,       ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,    ///< MIME info in request
       const PString & data,   ///< Information posted to the HTTP server.
-      PMIMEInfo & replyMIME,  ///< MIME info in response
-      PBoolean persist = PTrue     ///< if PTrue, enable HTTP persistence
+      PMIMEInfo & replyMIME   ///< MIME info in response
     );
 
     /** Post the data specified to the URL.
@@ -559,8 +556,38 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & outMIME,    ///< MIME info in request
       const PString & data,   ///< Information posted to the HTTP server.
       PMIMEInfo & replyMIME,  ///< MIME info in response
-      PString & replyBody,    ///< Body of response
-      PBoolean persist = PTrue     ///< if PTrue, enable HTTP persistence
+      PString & replyBody     ///< Body of response
+    );
+
+    /** Put the document specified by the URL.
+
+       @return
+       true if document is being transferred.
+     */
+    bool PutTextDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      const PString & document,       ///< Body read
+      const PString & contentType = "text/plain" ///< Content-Type header to use
+    );
+
+    /** Put the document specified by the URL.
+
+       @return
+       true if document is being transferred.
+     */
+    bool PutDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      ///< MIME info in request
+      PMIMEInfo & replyMIME     ///< MIME info in response
+    );
+
+    /** Delete the document specified by the URL.
+
+       @return
+       true if document is deleted.
+     */
+    bool DeleteDocument(
+      const PURL & url        ///< Universal Resource Locator for document.
     );
 
     /** Set authentication paramaters to be use for retreiving documents
@@ -570,6 +597,14 @@ class PHTTPClient : public PHTTP
       const PString & password
     );
 
+    /// Set persistent connection mode
+    void SetPersistent(
+      bool persist = true
+    ) { m_persist = persist; }
+
+    /// Get persistent connection mode
+    bool GetPersistent() const { return m_persist; }
+
   protected:
     PBoolean AssureConnect(const PURL & url, PMIMEInfo & outMIME);
     PBoolean InternalReadContentBody(
@@ -577,10 +612,11 @@ class PHTTPClient : public PHTTP
       PAbstractArray & body
     );
 
-    PString userAgentName;
-    PHTTPClientAuthentication * m_authentication;
+    PString m_userAgentName;
+    bool    m_persist;
     PString m_userName;
     PString m_password;
+    PHTTPClientAuthentication * m_authentication;
 };
 
 //////////////////////////////////////////////////////////////////////////////
