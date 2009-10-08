@@ -239,7 +239,7 @@ class PURL : public PObject
     PBoolean GetRelativePath() const { return relativePath; }
 
     /// Get the path field of the URL as a string.
-    const PString & GetPathStr() const { return pathStr; }
+    PString GetPathStr() const;
 
     /// Set the path field of the URL as a string.
     void SetPathStr(const PString & pathStr);
@@ -249,6 +249,9 @@ class PURL : public PObject
 
     /// Set the path field of the URL as a string array.
     void SetPath(const PStringArray & path);
+
+    /// Append segment to the path field of the URL.
+    void AppendPath(const PString & segment);
 
     /// Get the parameter (;) field of the URL.
     PString GetParameters() const;
@@ -294,6 +297,12 @@ class PURL : public PObject
     /// Note the values will be translated using TranslateString
     void SetQueryVar(const PString & key, const PString & data);
 
+    /// Get the contents of URL, data left after all elemetns are parsed out
+    const PString & GetContents() const { return m_contents; }
+
+    /// Set the contents of URL, data left after all elemetns are parsed out
+    void SetContents(const PString & str);
+
     /// Return PTrue if the URL is an empty string.
     PBoolean IsEmpty() const { return urlString.IsEmpty(); }
 
@@ -328,11 +337,11 @@ class PURL : public PObject
     WORD port;
     PBoolean portSupplied;          /// port was supplied in string input
     PBoolean relativePath;
-    PString pathStr;
     PStringArray path;
     PStringToString paramVars;
     PString fragment;
     PStringToString queryVars;
+    PString m_contents;  // Anything left after parsing other elements
 };
 
 
