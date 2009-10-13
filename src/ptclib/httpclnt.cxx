@@ -377,8 +377,9 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
   if (!GetDocument(url, outMIME, replyMIME))
     return PFalse;
 
-  PCaselessString actualContentType = replyMIME(ContentTypeTag());
-  if (requiredContentType.IsEmpty() || actualContentType.IsEmpty() || actualContentType == requiredContentType)
+  PString actualContentType = replyMIME(ContentTypeTag());
+  if (requiredContentType.IsEmpty() || actualContentType.IsEmpty() ||
+        (actualContentType.Left(actualContentType.Find(';')) *= requiredContentType.Left(requiredContentType.Find(';'))))
     return ReadContentBody(replyMIME, document);
 
   InternalReadContentBody(replyMIME, NULL); // Waste body
