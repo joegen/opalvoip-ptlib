@@ -352,6 +352,8 @@ class PXMLElement : public PXMLObject {
       { return subObjects; }
 
     PString GetData() const;
+    void SetData(const PString & data);
+    void AddData(const PString & data);
 
     PXMLObject * Clone(PXMLElement * parent) const;
 
