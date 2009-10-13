@@ -991,6 +991,20 @@ PString PXMLElement::GetData() const
   return str;
 }
 
+void PXMLElement::SetData(const PString & data)
+{
+  for (PINDEX idx = 0; idx < subObjects.GetSize(); idx++) {
+    if (!subObjects[idx].IsElement())
+      subObjects.RemoveAt(idx--);
+  }
+  AddData(data);
+}
+
+void PXMLElement::AddData(const PString & data)
+{
+  AddSubObject(new PXMLData(this, data));
+}
+
 PCaselessString PXMLElement::GetPathName() const
 {
     PCaselessString s;
