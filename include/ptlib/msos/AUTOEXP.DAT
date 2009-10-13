@@ -1,19 +1,20 @@
 ; Add the contents of this file to 
 ;   C:\Program Files\Microsoft Visual Studio 8\Common7\Packages\Debugger\AUTOEXP.DAT
+;   C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\Packages\Debugger\AUTOEXP.DAT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; from PTLib
 
 PObject=<,t>
 PString=<theArray,s>
 PContainer=<,t> size=<reference->size> ref=<reference->count>
-;PAbstractArray=<,t> size=<reference->size> ref=<reference->count>
-;PArrayObjects=<,t> size=<theArray->reference->size> ref=<reference->count>
 PIPSocket::Address=<v.four.S_un.S_un_b.s_b1,u>.<v.four.S_un.S_un_b.s_b2,u>.<v.four.S_un.S_un_b.s_b3,u>.<v.four.S_un.S_un_b.s_b4,u>
 PTimeInterval=<milliseconds>
 PTime=<theTime>
 PAtomicInteger=<value>
 POrdinalKey=<theKey>
+PURL=<urlString.theArray,s>
 
 ; from wxWindows
 wxString =<m_pchData,s>
@@ -22,12 +23,17 @@ wxSize =w=<x> h=<y>
 wxRect =x=<x> y=<y> w=<width> h=<height>
 wxWindow =<,t> hWnd=<m_hWnd>
 
+; from OPAL
+OpalMediaFormat=<info->name.theArray,s>
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ; For DevStudio 2005 you can also add after the [Visualizer] keyword
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; from PTLib
 
 PBaseArray<*> {
@@ -525,7 +531,7 @@ PStringToOrdinal {
 }
 
 
-PSafePtr<*, PSafePtrBase> {
+PSafePtr<*,*> {
    children
    (
       #(
@@ -534,28 +540,7 @@ PSafePtr<*, PSafePtrBase> {
          lockMode: $e.lockMode,
          references: $e.currentObject->safeReferenceCount,
          deleted: $e.currentObject->safelyBeingRemoved,
-         threads: $e.currentObject->safeInUse->nestedThreads
-      )
-   )
-   
-   preview
-   (
-      #(
-          "[", $e.currentObject->safeReferenceCount, "] ", ($T1 *)$e.currentObject
-      )
-   )
-}
-
-PSafePtr<*, PSafePtrMultiThreaded> {
-   children
-   (
-      #(
-         currentObject: ($T1 *)$e.currentObject,
-         collection: $e.collection,
-         lockMode: $e.lockMode,
-         references: $e.currentObject->safeReferenceCount,
-         deleted: $e.currentObject->safelyBeingRemoved,
-         threads: $e.currentObject->safeInUse->nestedThreads
+         threads: $e.currentObject->safeInUse->m_nestedThreads
       )
    )
    
