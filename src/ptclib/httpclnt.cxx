@@ -88,7 +88,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
   if (m_persist)
     outMIME.SetAt(ConnectionTag(), KeepAliveTag());
 
-  bool triedAuthentication = false;
+  bool needAuthentication = true;
   PURL adjustableURL = url;
   for (PINDEX retry = 0; retry < 3; retry++) {
     if (!AssureConnect(adjustableURL, outMIME))
@@ -107,29 +107,16 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
     // Await a response, if all OK exit loop
     if (ReadResponse(replyMIME) && (lastResponseCode != Continue || ReadResponse(replyMIME))) {
       switch (lastResponseCode) {
-        case RequestOK:
-          return lastResponseCode;
-
         case MovedPermanently:
         case MovedTemporarily:
           adjustableURL = replyMIME("Location");
           if (!adjustableURL.IsEmpty())
             return lastResponseCode;
-          else {
-            PString dummy;
-            if (!ReadContentBody(replyMIME, dummy))
-              return lastResponseCode;
-          }
           break;
 
         case UnAuthorised:
-          if (triedAuthentication || !replyMIME.Contains("WWW-Authenticate") || (m_userName.IsEmpty() && m_password.IsEmpty()))
-            return lastResponseCode;
-          else {
-            triedAuthentication = true;
-
-            PBYTEArray body;
-            ReadContentBody(replyMIME, body);
+          if (needAuthentication && replyMIME.Contains("WWW-Authenticate") && !(m_userName.IsEmpty() && m_password.IsEmpty())) {
+            needAuthentication = false;
 
             // authenticate 
             PString errorMsg;
@@ -142,8 +129,9 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 
             delete m_authentication;
             m_authentication = newAuth;
+            break;
           }
-          break;
+          // Do next case
 
         default:
           return lastResponseCode;
@@ -152,11 +140,6 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
     else {
       // If not persisting, we have no oppurtunity to write again, just error out
       if (!m_persist)
-        break;
-
-      // If have had a failure to read a response but there was no error then
-      // we have a shutdown socket probably due to a lack of persistence so ...
-      if (GetErrorCode(LastReadError) != NoError)
         break;
 
       // ... we close the channel and allow AssureConnet() to reopen it.
@@ -197,9 +180,23 @@ PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
 #if PTRACING
   if (PTrace::CanTrace(3)) {
     ostream & strm = PTrace::Begin(3, __FILE__, __LINE__);
-    strm << "HTTPCLIENT\tSending '" << cmdName << " " << (url.IsEmpty() ? "/" :  (const char*) url);
-    if (PTrace::CanTrace(4)) 
-      strm << "\n" << outMIME;
+    strm << "HTTPCLIENT\tSending ";
+    if (PTrace::CanTrace(4))
+      strm << '\n';
+    strm << cmdName << ' ';
+    if (url.IsEmpty())
+      strm << '/';
+    else
+      strm << url;
+    if (PTrace::CanTrace(4)) {
+      strm << '\n' << outMIME;
+      if (!dataBody.IsEmpty()) {
+        int amt = PTrace::CanTrace(5) ? 10000 : 100;
+        strm << dataBody.Left(amt);
+        if (len > amt)
+          strm << "\n....";
+      }
+    }
     strm << PTrace::End;
   } 
 #endif
@@ -230,17 +227,36 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       ReadString(2);
 
     if (PHTTP::ReadResponse()) {
-      bool r = replyMIME.Read(*this);
+      bool readOK = replyMIME.Read(*this);
+
+      PString body;
+      if (lastResponseCode >= 300) {
+        if (replyMIME.GetInteger(ContentLengthTag(), INT_MAX) > 1000)
+          InternalReadContentBody(replyMIME, NULL); // Waste body
+        else
+          ReadContentBody(replyMIME, body);
+      }
+
 #if PTRACING
       if (PTrace::CanTrace(3)) {
         ostream & strm = PTrace::Begin(3, __FILE__, __LINE__);
-        strm << "HTTPCLIENT\tRead response " << lastResponseCode << " " << lastResponseInfo;
-        if (r && PTrace::CanTrace(4)) 
-          strm << "\n" << replyMIME;
+        strm << "HTTPCLIENT\tResponse ";
+        if (PTrace::CanTrace(4))
+          strm << '\n';
+        strm << lastResponseCode << ' ' << lastResponseInfo;
+        if (PTrace::CanTrace(4)) {
+          strm << '\n' << replyMIME;
+          if (!body.IsEmpty())
+            strm << body;
+        }
         strm << PTrace::End;
       }
 #endif
-      if (r)
+
+      if (!body.IsEmpty())
+        lastResponseInfo += '\n' + body;
+
+      if (readOK)
         return PTrue;
     }
   }
@@ -259,7 +275,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
 PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
-  PBoolean ok = InternalReadContentBody(replyMIME, body);
+  PBoolean ok = InternalReadContentBody(replyMIME, &body);
   body.SetSize(body.GetSize()+1);
   return ok;
 }
@@ -267,19 +283,26 @@ PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 
 PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
-  return InternalReadContentBody(replyMIME, body);
+  return InternalReadContentBody(replyMIME, &body);
 }
 
 
-PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray & body)
+PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray * body)
 {
   PCaselessString encoding = replyMIME(TransferEncodingTag());
 
   if (encoding != ChunkedTag()) {
     if (replyMIME.Contains(ContentLengthTag())) {
       PINDEX length = replyMIME.GetInteger(ContentLengthTag());
-      body.SetSize(length);
-      return ReadBlock(body.GetPointer(), length);
+      if (body != NULL) {
+        body->SetSize(length);
+        return ReadBlock(body->GetPointer(), length);
+      }
+      while (length-- > 0) {
+        if (ReadChar() < 0)
+          return false;
+      }
+      return true;
     }
 
     if (!(encoding.IsEmpty())) {
@@ -288,13 +311,19 @@ PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractAr
       return PFalse;
     }
 
-    // Must be raw, read to end file variety
-    static const PINDEX ChunkSize = 2048;
-    PINDEX bytesRead = 0;
-    while (ReadBlock((char *)body.GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
-      bytesRead += GetLastReadCount();
+    if (body != NULL) {
+      // Must be raw, read to end file variety
+      static const PINDEX ChunkSize = 2048;
+      PINDEX bytesRead = 0;
+      while (ReadBlock((char *)body->GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
+        bytesRead += GetLastReadCount();
 
-    body.SetSize(bytesRead + GetLastReadCount());
+      body->SetSize(bytesRead + GetLastReadCount());
+    }
+    else {
+      while (ReadChar() >= 0)
+        ;
+    }
     return GetErrorCode(LastReadError) == NoError;
   }
 
@@ -311,10 +340,18 @@ PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractAr
     if (chunkLength == 0)
       break;
 
-    // Read the chunk
-    if (!ReadBlock((char *)body.GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
-      return PFalse;
-    bytesRead+= chunkLength;
+    if (body != NULL) {
+      // Read the chunk
+      if (!ReadBlock((char *)body->GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
+        return PFalse;
+      bytesRead+= chunkLength;
+    }
+    else {
+      while (chunkLength-- > 0) {
+        if (ReadChar() < 0)
+          return false;
+      }
+    }
 
     // Read the trailing CRLF
     if (!ReadLine(chunkLengthLine))
@@ -341,10 +378,11 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
     return PFalse;
 
   PCaselessString actualContentType = replyMIME(ContentTypeTag());
-  if (requiredContentType.IsEmpty() || actualContentType == requiredContentType)
+  if (requiredContentType.IsEmpty() || actualContentType.IsEmpty() || actualContentType == requiredContentType)
     return ReadContentBody(replyMIME, document);
 
-  PTRACE(2, "HTTP\tIncorrect Content-Type for document, expecting " << requiredContentType << ", got " << actualContentType);
+  InternalReadContentBody(replyMIME, NULL); // Waste body
+  PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << requiredContentType << ", got " << actualContentType);
   return false;
 }
 
@@ -386,10 +424,7 @@ PBoolean PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & replyMIME,
                            PString & body)
 {
-  if (!PostData(url, outMIME, data, replyMIME))
-    return PFalse;
-
-  return ReadContentBody(replyMIME, body);
+  return PostData(url, outMIME, data, replyMIME) && ReadContentBody(replyMIME, body);
 }
 
 
