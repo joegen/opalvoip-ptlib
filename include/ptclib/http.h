@@ -607,9 +607,9 @@ class PHTTPClient : public PHTTP
 
   protected:
     PBoolean AssureConnect(const PURL & url, PMIMEInfo & outMIME);
-    PBoolean InternalReadContentBody(
+    bool InternalReadContentBody(
       PMIMEInfo & replyMIME,
-      PAbstractArray & body
+      PAbstractArray * body
     );
 
     PString m_userAgentName;
