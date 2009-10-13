@@ -166,7 +166,7 @@ PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
                                    const PString & dataBody)
 {
   ostream & this_stream = *this;
-  PINDEX len = dataBody.GetSize()-1;
+  PINDEX len = dataBody.GetLength();
   if (!outMIME.Contains(ContentLengthTag()))
     outMIME.SetInteger(ContentLengthTag(), len);
 
