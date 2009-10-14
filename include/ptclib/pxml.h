@@ -79,7 +79,7 @@ class PXMLParser : public PObject
 
     PString GetVersion() const  { return version; }
     PString GetEncoding() const { return encoding; }
-    PBoolean GetStandAlone() const  { return standAlone; }
+    int GetStandAlone() const  { return standAlone; }
 
     PXMLElement * GetXMLTree() const;
     PXMLElement * SetXMLTree(PXMLElement * newRoot);
