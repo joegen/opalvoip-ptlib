@@ -495,15 +495,15 @@ dnl ########################################################################
 dnl look for compile flags
 AC_LANG_PUSH(C++)
 
-AC_MSG_CHECKING(if compiler accepts -fstack-protector)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CXXFLAGS -fstack-protector conftest.$ac_ext > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  STDCXXFLAGS="$STDCXXFLAGS -fstack-protector"
-else
-  AC_MSG_RESULT(no)
-fi
+dnl AC_MSG_CHECKING(if compiler accepts -fstack-protector)
+dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+dnl $CXX $CXXFLAGS -fstack-protector conftest.$ac_ext > /dev/null 2>&1
+dnl if test $? = 0 ; then
+dnl   AC_MSG_RESULT(yes)
+dnl   STDCXXFLAGS="$STDCXXFLAGS -fstack-protector"
+dnl else
+dnl   AC_MSG_RESULT(no)
+dnl fi
 
 AC_MSG_CHECKING(if compiler accepts -felide-constructors)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
