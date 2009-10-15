@@ -10,7 +10,7 @@ PObject=<,t>
 PString=<theArray,s>
 PContainer=<,t> size=<reference->size> ref=<reference->count>
 PIPSocket::Address=<v.four.S_un.S_un_b.s_b1,u>.<v.four.S_un.S_un_b.s_b2,u>.<v.four.S_un.S_un_b.s_b3,u>.<v.four.S_un.S_un_b.s_b4,u>
-PTimeInterval=<milliseconds>
+PTimeInterval=<m_milliseconds>
 PTime=<theTime>
 PAtomicInteger=<value>
 POrdinalKey=<theKey>
