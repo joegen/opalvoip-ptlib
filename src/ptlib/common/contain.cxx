@@ -45,7 +45,7 @@ extern "C" int vsprintf(char *, const char *, va_list);
 #include "regex/regex.h"
 #endif
 
-#define regexpression  ((regex_t *)expression)
+#define regexpression()  ((regex_t *)expression)
 
 #if !P_USE_INLINES
 #include "ptlib/contain.inl"
@@ -2588,8 +2588,8 @@ PRegularExpression & PRegularExpression::operator =(const PRegularExpression & f
 {
   if (expression != from.expression) {
     if (expression != NULL && expression != from.expression) {
-      regfree(regexpression);
-      delete regexpression;
+      regfree(regexpression());
+      delete regexpression();
     }
     expression = NULL;
   }
@@ -2600,8 +2600,8 @@ PRegularExpression & PRegularExpression::operator =(const PRegularExpression & f
 PRegularExpression::~PRegularExpression()
 {
   if (expression != NULL) {
-    regfree(regexpression);
-    delete regexpression;
+    regfree(regexpression());
+    delete regexpression();
   }
 }
 
@@ -2615,7 +2615,7 @@ PRegularExpression::ErrorCodes PRegularExpression::GetErrorCode() const
 PString PRegularExpression::GetErrorText() const
 {
   PString str;
-  regerror(lastError, regexpression, str.GetPointer(256), 256);
+  regerror(lastError, regexpression(), str.GetPointer(256), 256);
   return str;
 }
 
@@ -2632,15 +2632,15 @@ PBoolean PRegularExpression::Compile(const char * pattern, int flags)
   flagsSaved   = flags;
 
   if (expression != NULL) {
-    regfree(regexpression);
-    delete regexpression;
+    regfree(regexpression());
+    delete regexpression();
     expression = NULL;
   }
   if (pattern == NULL || *pattern == '\0')
     lastError = BadPattern;
   else {
     expression = new regex_t;
-    lastError = (ErrorCodes)regcomp(regexpression, pattern, flags);
+    lastError = (ErrorCodes)regcomp(regexpression(), pattern, flags);
   }
   return lastError == NoError;
 }
@@ -2678,7 +2678,7 @@ PBoolean PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX &
 
   regmatch_t match;
 
-  lastError = (ErrorCodes)regexec(regexpression, cstr, 1, &match, flags);
+  lastError = (ErrorCodes)regexec(regexpression(), cstr, 1, &match, flags);
   if (lastError != NoError)
     return PFalse;
 
@@ -2730,7 +2730,7 @@ PBoolean PRegularExpression::Execute(const char * cstr,
   else
     count = 1;
 
-  lastError = (ErrorCodes)regexec(regexpression, cstr, count, matches, flags);
+  lastError = (ErrorCodes)regexec(regexpression(), cstr, count, matches, flags);
   if (lastError == NoError) {
     starts.SetMinSize(count);
     ends.SetMinSize(count);
