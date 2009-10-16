@@ -318,6 +318,8 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & _name)
 {
+  m_lastError.MakeEmpty();
+
   Close();
 
   name = _name;
@@ -325,18 +327,17 @@ PBoolean PDynaLink::Open(const PString & _name)
   {
     PWaitAndSignal m(GetDLLMutex());
 
-    const char *err; //= dlerror();
-
 #if defined(P_OPENBSD)
     dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
 #else
     dllHandle = dlopen((const char *)name, RTLD_NOW);
 #endif
 
-    if (dllHandle == NULL) {
-      err = dlerror();
-      PTRACE_IF(1, err != NULL, "DLL\tError loading DLL - " << err);
-    }
+    if (dllHandle != NULL)
+      return true;
+
+    m_lastError = dlerror();
+    PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
   }
 
   return IsLoaded();
@@ -385,20 +386,22 @@ PBoolean PDynaLink::GetFunction(PINDEX, Function &)
 
 PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
 {
+  m_lastError.MakeEmpty();
+
   if (dllHandle == NULL)
     return PFalse;
 
 #if defined(P_OPENBSD)
-  void * p = dlsym(dllHandle, (char *)(const char *)fn);
+  func = (Function)dlsym(dllHandle, (char *)(const char *)fn);
 #else
-  void * p = dlsym(dllHandle, (const char *)fn);
+  func = (Function)dlsym(dllHandle, (const char *)fn);
 #endif
 
-  if (p == NULL)
-    return PFalse;
+  if (func != NULL)
+    return true;
 
-  func = (Function)p;
-  return PTrue;
+  m_lastError = dlerror();
+  return false;
 }
 
 #endif

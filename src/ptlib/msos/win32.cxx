@@ -1500,7 +1500,7 @@ void PSyncPoint::Signal()
 
 PDynaLink::PDynaLink()
 {
-  _hDLL = NULL;
+  m_hDLL = NULL;
 }
 
 
@@ -1524,83 +1524,91 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & name)
 {
+  m_lastError.MakeEmpty();
+
   PVarString filename = name;
 #ifndef _WIN32_WCE
-  _hDLL = LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+  m_hDLL = LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 #else
-  _hDLL = LoadLibrary(filename);
+  m_hDLL = LoadLibrary(filename);
 #endif
-  return _hDLL != NULL;
+  if (m_hDLL != NULL)
+    return true;
+
+  m_lastError.sprintf("0x%x", ::GetLastError());
+  PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
+  return false;
 }
 
 
 void PDynaLink::Close()
 {
-  if (_hDLL != NULL) {
-    FreeLibrary(_hDLL);
-    _hDLL = NULL;
+  if (m_hDLL != NULL) {
+    FreeLibrary(m_hDLL);
+    m_hDLL = NULL;
   }
 }
 
 
 PBoolean PDynaLink::IsLoaded() const
 {
-  return _hDLL != NULL;
+  return m_hDLL != NULL;
 }
 
 
 PString PDynaLink::GetName(PBoolean full) const
 {
   PFilePathString str;
-  if (_hDLL != NULL) 
-{
-
+  if (m_hDLL != NULL) {
 #ifdef UNICODE
-  TCHAR path[_MAX_PATH];
+    TCHAR path[_MAX_PATH];
     GetModuleFileName(_hDLL, path, _MAX_PATH-1);
-    str=PString(path);
+    str = PString(path);
 #else
-    GetModuleFileName(_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
+    GetModuleFileName(m_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
 #endif
-    if (!full) 
-    {
+    if (!full) {
       str.Delete(0, str.FindLast('\\')+1);
       PINDEX pos = str.Find(".DLL");
       if (pos != P_MAX_INDEX)
         str.Delete(pos, P_MAX_INDEX);
     }
+    str.MakeMinimumSize();
   }
-  str.MakeMinimumSize();
   return str;
 }
 
 
 PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
 {
-  if (_hDLL == NULL)
-    return PFalse;
+  m_lastError.MakeEmpty();
 
-  FARPROC p = GetProcAddress(_hDLL, (LPTSTR)(DWORD)LOWORD(index));
-  if (p == NULL)
-    return PFalse;
+  if (m_hDLL == NULL)
+    return false;
 
-  func = (Function)p;
-  return PTrue;
+  func = (Function)GetProcAddress(m_hDLL, (LPTSTR)(DWORD)LOWORD(index));
+  if (func != NULL)
+    return true;
+
+  m_lastError.sprintf("0x%x", GetLastError());
+  return false;
 }
 
 
 PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
 {
-  if (_hDLL == NULL)
+  m_lastError.MakeEmpty();
+
+  if (m_hDLL == NULL)
     return PFalse;
 
   PVarString funcname = name;
-  FARPROC p = GetProcAddress(_hDLL, funcname);
-  if (p == NULL)
-    return PFalse;
+  func = (Function)GetProcAddress(m_hDLL, funcname);
+  if (func != NULL)
+    return true;
 
-  func = (Function)p;
-  return PTrue;
+  m_lastError.sprintf("0x%x", GetLastError());
+  return false;
 }
 
 
