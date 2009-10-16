@@ -36,7 +36,7 @@
 
   protected:
 #if defined(_WINDOWS) || defined(_WIN32)
-    HINSTANCE _hDLL;
+    HINSTANCE m_hDLL;
 #endif
 
 // End Of File ///////////////////////////////////////////////////////////////

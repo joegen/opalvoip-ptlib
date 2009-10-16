@@ -136,8 +136,13 @@ class PDynaLink : public PObject
       const PString & name,  ///< Name of the function to get.
       Function & func        ///< Refrence to point to function to get.
     );
+
+    ///< Return OS error code for last operation
+    const PString & GetLastError() const { return m_lastError; }
   //@}
 
+  protected:
+    PString m_lastError;
 
 // Include platform dependent part of class
 #ifdef _WIN32
