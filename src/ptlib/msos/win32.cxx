@@ -248,14 +248,14 @@ unsigned PTimer::Resolution()
     return 1;
 
 #ifndef _WIN32_WCE
-  DWORD err = GetLastError();
+  DWORD err = ::GetLastError();
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
   if (GetSystemTimeAdjustment(&timeAdjustment, &timeIncrement, &timeAdjustmentDisabled))
     return timeIncrement/10000;
 
-  err = GetLastError();
+  err = ::GetLastError();
 #endif
 
   return 55;
@@ -447,7 +447,7 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
 
     PString drive = "A:";
     while (WNetAddConnection(root, NULL, drive) != NO_ERROR) {
-      if (GetLastError() != ERROR_ALREADY_ASSIGNED)
+      if (::GetLastError() != ERROR_ALREADY_ASSIGNED)
         return PFalse;
       drive[0]++;
     }
@@ -589,7 +589,7 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
   if (status != -2)
     osError = errno;
   else {
-    osError = GetLastError();
+    osError = ::GetLastError();
     switch (osError) {
       case ERROR_INVALID_HANDLE :
       case WSAEBADF :
@@ -1441,7 +1441,7 @@ PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 void PSemaphore::Signal()
 {
   if (!ReleaseSemaphore(handle, 1, NULL))
-    PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
+    PAssertOS(::GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
 }
 
@@ -1590,7 +1590,7 @@ PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
   if (func != NULL)
     return true;
 
-  m_lastError.sprintf("0x%x", GetLastError());
+  m_lastError.sprintf("0x%x", ::GetLastError());
   return false;
 }
 
@@ -1607,7 +1607,7 @@ PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
   if (func != NULL)
     return true;
 
-  m_lastError.sprintf("0x%x", GetLastError());
+  m_lastError.sprintf("0x%x", ::GetLastError());
   return false;
 }
 
