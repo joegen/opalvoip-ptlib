@@ -274,7 +274,7 @@ help:
 
 
 all :: debuglibs debugdepend debug optlibs optdepend opt
-clean :: optclean debugclean
+clean :: optclean debugclean optnosharedclean debugnosharedclean
 depend :: default_depend
 
 both :: opt debug
@@ -296,6 +296,9 @@ optstatic optnoshared ::
 optclean ::
 	$(MAKE) DEBUG= default_clean
 
+optstaticclean optnosharedclean ::
+	$(MAKE) DEBUG= P_SHAREDLIB=0 default_clean
+
 optdepend ::
 	$(MAKE) DEBUG= default_depend
 
@@ -314,6 +317,9 @@ debugstatic debugnoshared ::
 
 debugclean ::
 	$(MAKE) DEBUG=1 default_clean
+
+debugstaticclean debugnosharedclean ::
+	$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_clean
 
 debugdepend ::
 	$(MAKE) DEBUG=1 default_depend
