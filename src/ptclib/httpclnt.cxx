@@ -52,6 +52,10 @@ static const char * const AlgorithmNames[PHTTPClientDigestAuthentication::NumAlg
 
 #define new PNEW
 
+
+static __inline bool IsOK(int response) { return (response/100) == 2; }
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPClient
 
@@ -392,7 +396,7 @@ bool PHTTPClient::GetDocument(const PURL & url,
                               PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {
-  return ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
+  return IsOK(ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
@@ -400,7 +404,7 @@ PBoolean PHTTPClient::GetHeader(const PURL & url,
                             PMIMEInfo & outMIME,
                             PMIMEInfo & replyMIME)
 {
-  return ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
+  return IsOK(ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
@@ -415,7 +419,7 @@ PBoolean PHTTPClient::PostData(const PURL & url,
     dataBody += "\r\n"; // Add CRLF for compatibility with some CGI servers.
   }
 
-  return ExecuteCommand(POST, url, outMIME, data, replyMIME) == RequestOK;
+  return IsOK(ExecuteCommand(POST, url, outMIME, data, replyMIME));
 }
 
 
@@ -435,7 +439,7 @@ bool PHTTPClient::PutTextDocument(const PURL & url,
 {
   PMIMEInfo outMIME, replyMIME;
   outMIME.SetAt(ContentTypeTag(), contentType);
-  return ExecuteCommand(PUT, url, outMIME, document, replyMIME) == RequestOK;
+  return IsOK(ExecuteCommand(PUT, url, outMIME, document, replyMIME));
 }
 
 
@@ -443,14 +447,14 @@ bool PHTTPClient::PutDocument(const PURL & url,
                               PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {
-  return ExecuteCommand(PUT, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
+  return IsOK(ExecuteCommand(PUT, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
 bool PHTTPClient::DeleteDocument(const PURL & url)
 {
   PMIMEInfo outMIME, replyMIME;
-  return ExecuteCommand(DELETE, url, outMIME, PString::Empty(), replyMIME) == RequestOK;
+  return IsOK(ExecuteCommand(DELETE, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
