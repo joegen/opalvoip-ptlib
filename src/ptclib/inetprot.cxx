@@ -562,7 +562,7 @@ void PMIMEInfo::ReadFrom(istream &strm)
     strm >> line;
     if (line.IsEmpty())
       break;
-    if (line[0] == ' ') 
+    if (line[0] == ' ' || line[0] == '\t') // RFC 2822 section 2.2.2 & 2.2.3
       lastLine += line;
     else {
       AddMIME(lastLine);
