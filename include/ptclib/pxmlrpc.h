@@ -80,7 +80,7 @@ class PXMLRPC : public PObject
 
     PXMLRPC(
       const PURL & url,
-      unsigned options = 0
+      PXML::Options options = PXML::NoOptions
     );
 
     void SetTimeout(const PTimeInterval & t) { timeout = t; }
@@ -103,7 +103,7 @@ class PXMLRPC : public PObject
     PINDEX        faultCode;
     PString       faultText;
     PTimeInterval timeout;
-    unsigned      options;
+    PXML::Options m_options;
 };
 
 /////////////////////////////////////////////////////////////////

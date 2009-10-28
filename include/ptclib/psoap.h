@@ -84,12 +84,6 @@ public:
   //! Get parameter "name"
   PXMLElement* GetParameter( const PString & name );
 
-  //! Print the contents of this SOAP message on an ostream
-  void PrintOn(ostream & strm) const;
-
-  //! Output the SOAP message to a string
-  PString AsString( void );
-  
   //! Parse a string for a valid SOAP message
   PBoolean Load(const PString & str);
 

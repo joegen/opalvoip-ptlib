@@ -54,7 +54,7 @@ static const char NoIndentElements[] = "methodName name string int boolean doubl
 /////////////////////////////////////////////////////////////////
 
 PXMLRPCBlock::PXMLRPCBlock()
-  : PXML(-1, NoIndentElements)
+  : PXML(PXMLParser::NoOptions, NoIndentElements)
 {
   faultCode = P_MAX_INDEX;
   SetRootElement("methodResponse");
@@ -62,7 +62,7 @@ PXMLRPCBlock::PXMLRPCBlock()
 }
 
 PXMLRPCBlock::PXMLRPCBlock(const PString & method)
-  : PXML(-1, NoIndentElements)
+  : PXML(PXMLParser::NoOptions, NoIndentElements)
 {
   faultCode = P_MAX_INDEX;
   SetRootElement("methodCall");
@@ -71,7 +71,7 @@ PXMLRPCBlock::PXMLRPCBlock(const PString & method)
 }
 
 PXMLRPCBlock::PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & data)
-  : PXML(-1, NoIndentElements)
+  : PXML(PXMLParser::NoOptions, NoIndentElements)
 {
   faultCode = P_MAX_INDEX;
   SetRootElement("methodCall");
@@ -876,11 +876,11 @@ PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PXMLRPCStructBase & data)
 
 ////////////////////////////////////////////////////////
 
-PXMLRPC::PXMLRPC(const PURL & _url, unsigned opts)
+PXMLRPC::PXMLRPC(const PURL & _url, PXMLParser::Options opts)
   : url(_url)
+  , timeout(0, 10) // Seconds
+  , m_options(opts)
 {
-  timeout = 10000;
-  options = opts;
 }
 
 PBoolean PXMLRPC::MakeRequest(const PString & method)
@@ -929,7 +929,7 @@ PBoolean PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response
 {
   // create XML version of request
   PString requestXML;
-  if (!request.Save(requestXML, options)) {
+  if (!request.Save(requestXML, m_options)) {
     PStringStream txt;
     txt << "Error creating request XML ("
         << request.GetErrorLine() 

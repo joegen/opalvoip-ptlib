@@ -144,52 +144,6 @@ void PSOAPMessage::AddParameter( PXMLElement* parameter, PBoolean dirty )
   }
 }
 
-void PSOAPMessage::PrintOn(ostream & strm) const
-{
-  PBoolean newLine = ( options & PXMLParser::NewLineAfterElement ) != 0;
-
-  PString ver = version;
-  PString enc = encoding;
-  int salone = standAlone;
-
-  if ( ver.IsEmpty() )
-    ver= "1.0";
-  if ( enc.IsEmpty() )
-    enc = "UTF-8";
-  if ( salone == -2 )
-    salone = -1;
-
-  strm << "<?xml version=\"" << ver << "\" encoding=\"" << enc << "\"";
-  switch ( salone ) {
-    case 0:
-      strm << " standalone=\"no\"";
-      break;
-    case 1:
-      strm << " standalone=\"yes\"";
-      break;
-    default:
-      break;
-  }
-
-  strm << "?>";
-  if ( newLine )
-    strm << endl;
-
-  if ( rootElement != NULL ) {
-    rootElement->Output(strm, *(this), 2 );
-  }
-}
-
-PString PSOAPMessage::AsString( void )
-{
-  PStringStream stringStream;
-  PrintOn( stringStream );
-
-  PString SOAPString = stringStream;
-
-  return SOAPString;
-}
-
 
 PString faultCodeToString( PINDEX faultCode )
 {
