@@ -31,6 +31,11 @@ class PDTMFDecoder : public PObject
   PCLASSINFO(PDTMFDecoder, PObject)
 
   public:
+    enum {
+      DetectSamples = 520,
+      DetectTime = DetectSamples/8  // Milliseconds
+    };
+
     PDTMFDecoder();
     PString Decode(const short * sampleData, PINDEX numSamples, unsigned mult = 1, unsigned div = 1);
 
@@ -47,7 +52,7 @@ class PDTMFDecoder : public PObject
 
     // variables to be retained on each cycle of the decode function
     int h[NumTones], k[NumTones], y[NumTones];
-    int nn, so, ia;
+    int sampleCount, tonesDetected, inputAmplitude;
 };
 
 
