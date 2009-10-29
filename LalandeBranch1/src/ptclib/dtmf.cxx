@@ -34,20 +34,17 @@
 #define P2 ((int)(POLRAD*POLRAD*FSC))
 
 PDTMFDecoder::PDTMFDecoder()
+  : sampleCount(0)
+  , tonesDetected(0)
+  , inputAmplitude(0)
 {
   // Initialise the class
-  int i,kk;
-  for (kk = 0; kk < NumTones; kk++) {
-    y[kk] = h[kk] = k[kk] = 0;
-  }
+  int i;
+  for (i = 0; i < NumTones; i++)
+    y[i] = h[i] = k[i] = 0;
 
-  nn = 0;
-  ia = 0;
-  so = 0;
-
-  for (i = 0; i < 256; i++) {
+  for (i = 0; i < 256; i++)
     key[i] = '?';
-  }
 
   /* We encode the tones in 8 bits, translate those to symbol */
   key[0x11] = '1'; key[0x12] = '4'; key[0x14] = '7'; key[0x18] = '*';
@@ -58,7 +55,7 @@ PDTMFDecoder::PDTMFDecoder()
   /* The frequencies we're trying to detect */
   /* These are precalculated to save processing power */
   /* static int dtmf[9] = {697, 770, 852, 941, 1209, 1336, 1477, 1633, 1100, 2100}; */
-  /* p1[kk] = (-cos(2 * 3.141592 * dtmf[kk] / 8000.0) * FSC) */
+  /* p1[tone] = (-cos(2 * 3.141592 * dtmf[tone] / 8000.0) * FSC) */
   p1[0] = -3497; p1[1] = -3369; p1[2] = -3212; p1[3] = -3027;
   p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
   p1[8] = -2660; p1[9] = 321;
@@ -66,10 +63,6 @@ PDTMFDecoder::PDTMFDecoder()
 
 PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsigned mult, unsigned div)
 {
-  int x;
-  int s, kk;
-  int c, d, f, n;
-
 #if 0
   {
     static int fd = -1;
@@ -88,54 +81,55 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsign
   for (pos = 0; pos < numSamples; pos++) {
 
     /* Read (and scale) the next 16 bit sample */
-    x = (int)(mult * (*sampleData++)) / div;
+    int x = (int)(mult * (*sampleData++)) / div;
     x = x / (32768/FSC);
 
     /* Input amplitude */
     if (x > 0)
-      ia += (x - ia) / 128;
+      inputAmplitude += (x - inputAmplitude) / 128;
     else
-      ia += (-x - ia) / 128;
+      inputAmplitude += (-x - inputAmplitude) / 128;
 
     /* For each tone */
-    s = 0;
-    for(kk = 0; kk < NumTones; kk++) {
+    int newTones = 0;
+    for (int tone = 0; tone < NumTones; tone++) {
 
       /* Turn the crank */
-      c = (P2 * (x - k[kk])) / FSC;
-      d = x + c;
-      f = (p1[kk] * (d - h[kk])) / FSC;
-      n = x - k[kk] - c;
-      k[kk] = h[kk] + f;
-      h[kk] = f + d;
+      int c = (P2 * (x - k[tone])) / FSC;
+      int d = x + c;
+      int f = (p1[tone] * (d - h[tone])) / FSC;
+      int n = x - k[tone] - c;
+      k[tone] = h[tone] + f;
+      h[tone] = f + d;
 
       /* Detect and Average */
       if (n > 0)
-        y[kk] += (n - y[kk]) / 64;
+        y[tone] += (n - y[tone]) / 64;
       else
-        y[kk] += (-n - y[kk]) / 64;
+        y[tone] += (-n - y[tone]) / 64;
 
       /* Threshold */
-      if (y[kk] > FSC/10 && y[kk] > ia) 
-        s |= 1 << kk;
+      if (y[tone] > FSC/10 && y[tone] > inputAmplitude) 
+        newTones |= 1 << tone;
     }
 
     /* Hysteresis and noise supressor */
-    if (s != so) {
-      nn = 0;
-      so = s;
-    } else if (nn++ == 520) {
-      if (s < 256) {
-        if (key[s] != '?') {
-          PTRACE(3,"DTMF\tDetected '" << key[s] << "' in PCM-16 stream");
-          keyString += key[s];
+    if (newTones != tonesDetected) {
+      sampleCount = 0;
+      tonesDetected = newTones;
+    }
+    else if (sampleCount++ == DetectSamples) {
+      if (tonesDetected < 256) {
+        if (key[tonesDetected] != '?') {
+          PTRACE(3,"DTMF\tDetected '" << key[tonesDetected] << "' in PCM-16 stream");
+          keyString += key[tonesDetected];
         }
       }
       else {
         char ch = 0;
-        if ((s & 0x100) != 0)
+        if ((tonesDetected & 0x100) != 0)
           ch = 'X';
-        else if ((s & 0x200) != 0)
+        else if ((tonesDetected & 0x200) != 0)
           ch = 'Y';
 
         if (ch != 0) {
