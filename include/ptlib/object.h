@@ -1090,7 +1090,7 @@ class PObject {
 
        @return pointer to C string literal.
      */
-    virtual const char * GetClass(unsigned /*ancestor*/ = 0) const { return Class(); }
+    virtual const char * GetClass(unsigned ancestor = 0) const { return ancestor > 0 ? "" : Class(); }
 
     PBoolean IsClass(const char * cls) const 
     { return strcmp(cls, GetClass()) == 0; }
