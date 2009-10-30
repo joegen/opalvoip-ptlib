@@ -825,9 +825,14 @@ PString PURL::GetQuery() const
   for (PINDEX i = 0; i < queryVars.GetSize(); i++) {
     if (i > 0)
       str << '&';
-    str << TranslateString(queryVars.GetKeyAt(i), QueryTranslation)
-        << '='
-        << TranslateString(queryVars.GetDataAt(i), QueryTranslation);
+    PString key  = TranslateString(queryVars.GetKeyAt (i), QueryTranslation);
+    PString data = TranslateString(queryVars.GetDataAt(i), QueryTranslation);
+    if (key.IsEmpty())
+      str << data;
+    else if (data.IsEmpty())
+      str << key;
+    else
+      str << key << '=' << data;
   }
 
   return str;
