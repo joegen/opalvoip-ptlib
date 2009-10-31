@@ -234,6 +234,8 @@ class PXMLObject : public PObject {
       parent = newParent;
     }
 
+    PString AsString() const;
+
     virtual void Output(ostream & strm, const PXMLBase & xml, int indent) const = 0;
 
     virtual PBoolean IsElement() const = 0;
