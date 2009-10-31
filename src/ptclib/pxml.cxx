@@ -762,6 +762,15 @@ PXMLObject * PXMLObject::GetNextObject() const
   return (*parent).GetElement(idx);
 }
 
+
+PString PXMLObject::AsString() const
+{
+  PStringStream strm;
+  PrintOn(strm);
+  return strm;
+}
+
+
 ///////////////////////////////////////////////////////
 
 PXMLData::PXMLData(PXMLElement * _parent, const PString & _value)
