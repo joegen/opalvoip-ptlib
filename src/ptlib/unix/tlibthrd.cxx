@@ -142,6 +142,7 @@ void PHouseKeepingThread::Main()
           // unlock the m_activeThreadMutex to avoid deadlocks:
           // if somewhere in the destructor a call to PTRACE() is made,
           // which itself calls PThread::Current(), deadlocks are possible
+          thread->PX_threadId = 0;
           process.m_activeThreadMutex.Signal();
           delete thread;
           process.m_activeThreadMutex.Wait();
@@ -267,7 +268,7 @@ void PProcess::PXSetThread(pthread_t id, PThread * thread)
   m_activeThreadMutex.Wait();
 
   ThreadMap::iterator it = m_activeThreads.find(id);
-  if (it != m_activeThreads.end())
+  if (it != m_activeThreads.end() && it->second->autoDelete)
     currentThread = it->second;
 
   m_activeThreads[id] = thread;
