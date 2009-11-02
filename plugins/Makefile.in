@@ -14,6 +14,13 @@ DEFAULT_SOUND	= sound_alsa
 endif
 endif
 
+###############################audioSHM
+HAS_AUDIOSHM        = 1
+
+ifeq (1,$(HAS_AUDIOSHM))
+SUBDIRS         += sound_shm
+endif
+
 ################################OSS
 HAS_OSS		= @HAS_OSS@
 
