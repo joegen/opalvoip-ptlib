@@ -149,7 +149,7 @@ bool PXMLParser::Parse(const char * data, int dataLen, bool final)
   return XML_Parse((XML_Parser)expat, data, dataLen, final) != 0;  
 }
 
-void PXMLParser::GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX & errorLine)
+void PXMLParser::GetErrorInfo(PString & errorString, unsigned & errorCol, unsigned & errorLine)
 {
   XML_Error err = XML_GetErrorCode((XML_Parser)expat);
   errorString = PString(XML_ErrorString(err));
@@ -282,8 +282,8 @@ void PXML::Construct(PXMLParser::Options options, const char * _noIndentElements
   m_options      = options;
   loadFromFile   = false;
   m_standAlone   = UninitialisedStandAlone;
-  errorCol       = 0;
-  errorLine      = 0;
+  m_errorLine    = 0;
+  m_errorColumn  = 0;
 
   if (_noIndentElements != NULL)
     noIndentElements = PString(_noIndentElements).Tokenise(' ', false);
@@ -291,14 +291,7 @@ void PXML::Construct(PXMLParser::Options options, const char * _noIndentElements
 
 PXMLElement * PXML::SetRootElement(const PString & documentType)
 {
-  PWaitAndSignal m(rootMutex);
-
-  if (rootElement != NULL)
-    delete rootElement;
-
-  rootElement = new PXMLElement(rootElement, documentType);
-
-  return rootElement;
+  return SetRootElement(new PXMLElement(NULL, documentType));
 }
 
 PXMLElement * PXML::SetRootElement(PXMLElement * element)
@@ -309,6 +302,8 @@ PXMLElement * PXML::SetRootElement(PXMLElement * element)
     delete rootElement;
 
   rootElement = element;
+  m_errorString.MakeEmpty();
+  m_errorLine = m_errorColumn = 0;
 
   return rootElement;
 }
@@ -323,6 +318,7 @@ bool PXML::IsDirty() const
   return rootElement->IsDirty();
 }
 
+
 PCaselessString PXML::GetDocumentType() const
 { 
   PWaitAndSignal m(rootMutex);
@@ -331,6 +327,7 @@ PCaselessString PXML::GetDocumentType() const
     return PCaselessString();
   return rootElement->GetName();
 }
+
 
 bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
 {
@@ -345,14 +342,14 @@ bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
 
   PFile file;
   if (!file.Open(fn, PFile::ReadOnly)) {
-    errorString = "File open error" & file.GetErrorText();
+    m_errorString << "File open error " << file.GetErrorText();
     return false;
   }
 
   off_t len = file.GetLength();
   PString data;
   if (!file.Read(data.GetPointer(len + 1), len)) {
-    errorString = "File read error" & file.GetErrorText();
+    m_errorString << "File read error " << file.GetErrorText();
     return false;
   }
 
@@ -373,8 +370,8 @@ bool PXML::LoadURL(const PURL & url)
 bool PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, PXMLParser::Options options)
 {
   if (url.IsEmpty()) {
-    errorString = "Cannot load empty URL";
-    errorCol = errorLine = 0;
+    m_errorString = "Cannot load empty URL";
+    m_errorLine = m_errorColumn = 0;
     return false;
   }
 
@@ -393,13 +390,14 @@ bool PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, PXMLParser::
 
   // get the resource header information
   if (!client.GetDocument(url, outMIME, replyMIME)) {
-    errorString = PString("Cannot load URL") & url.AsString();
-    errorCol = errorLine = 0;
+    m_errorString = "Cannot load URL ";
+    m_errorLine = m_errorColumn = 0;
+    m_errorString << '"' << url << '"';
     return false;
   }
 
   // get the length of the data
-  if (!replyMIME.Contains(PHTTPClient::ContentLengthTag()))
+  if (replyMIME.Contains(PHTTPClient::ContentLengthTag()))
     contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag()].AsUnsigned();
   else
     contentLength = P_MAX_INDEX;
@@ -425,6 +423,7 @@ bool PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, PXMLParser::
 
   return Load(data, options);
 }
+
 
 bool PXML::StartAutoReloadURL(const PURL & url, 
                               const PTimeInterval & timeout, 
@@ -452,10 +451,12 @@ bool PXML::StartAutoReloadURL(const PURL & url,
   return stat;
 }
 
+
 void PXML::AutoReloadTimeout(PTimer &, INT)
 {
   PThread::Create(PCREATE_NOTIFIER(AutoReloadThread), "XmlReload");
 }
+
 
 void PXML::AutoReloadThread(PThread &, INT)
 {
@@ -464,10 +465,12 @@ void PXML::AutoReloadThread(PThread &, INT)
   autoLoadTimer.Reset();
 }
 
+
 void PXML::OnAutoLoad(bool PTRACE_PARAM(ok))
 {
   PTRACE_IF(3, !ok, "XML\tFailed to load XML: " << GetErrorString());
 }
+
 
 bool PXML::AutoLoadURL()
 {
@@ -478,6 +481,7 @@ bool PXML::AutoLoadURL()
     autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
   return stat;
 }
+
 
 bool PXML::StopAutoReloadURL()
 {
@@ -492,6 +496,8 @@ bool PXML::StopAutoReloadURL()
 bool PXML::Load(const PString & data, PXMLParser::Options options)
 {
   m_options = options;
+  m_errorString.MakeEmpty();
+  m_errorLine = m_errorColumn = 0;
 
   bool stat = false;
   PXMLElement * loadingRootElement = NULL;
@@ -502,7 +508,7 @@ bool PXML::Load(const PString & data, PXMLParser::Options options)
     stat = parser.Parse(data, data.GetLength(), done) != 0;
   
     if (!stat)
-      parser.GetErrorInfo(errorString, errorCol, errorLine);
+      parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
 
     version    = parser.GetVersion();
     encoding   = parser.GetEncoding();
@@ -511,24 +517,25 @@ bool PXML::Load(const PString & data, PXMLParser::Options options)
     loadingRootElement = parser.GetXMLTree();
   }
 
-  if (stat) {
-    if (loadingRootElement == NULL) {
-      errorString = "XML\tFailed to create root node in XML!";
-      return false;
-    }
-    else {
-      PWaitAndSignal m(rootMutex);
-      if (rootElement != NULL) {
-        delete rootElement;
-        rootElement = NULL;
-      }
-      rootElement = loadingRootElement;
-      PTRACE(4, "XML\tLoaded XML " << rootElement->GetName());
-    }
-    OnLoaded();
+  if (!stat)
+    return false;
+
+  if (loadingRootElement == NULL) {
+    m_errorString << "Failed to create root node in XML!";
+    return false;
   }
 
-  return stat;
+  PWaitAndSignal m(rootMutex);
+  if (rootElement != NULL) {
+    delete rootElement;
+    rootElement = NULL;
+  }
+  rootElement = loadingRootElement;
+  PTRACE(4, "XML\tLoaded XML " << rootElement->GetName());
+
+  OnLoaded();
+
+  return true;
 }
 
 bool PXML::Save(PXMLParser::Options options)
@@ -540,6 +547,7 @@ bool PXML::Save(PXMLParser::Options options)
 
   return SaveFile(loadFilename);
 }
+
 
 bool PXML::SaveFile(const PFilePath & fn, PXMLParser::Options options)
 {
@@ -556,6 +564,7 @@ bool PXML::SaveFile(const PFilePath & fn, PXMLParser::Options options)
   return file.Write((const char *)data, data.GetLength());
 }
 
+
 bool PXML::Save(PString & data, PXMLParser::Options options)
 {
   PWaitAndSignal m(rootMutex);
@@ -568,6 +577,7 @@ bool PXML::Save(PString & data, PXMLParser::Options options)
   return true;
 }
 
+
 void PXML::RemoveAll()
 {
   PWaitAndSignal m(rootMutex);
@@ -578,6 +588,7 @@ void PXML::RemoveAll()
   }
 }
 
+
 PXMLElement * PXML::GetElement(const PCaselessString & name, PINDEX idx) const
 {
   if (rootElement == NULL)
@@ -585,6 +596,7 @@ PXMLElement * PXML::GetElement(const PCaselessString & name, PINDEX idx) const
 
   return rootElement->GetElement(name, idx);
 }
+
 
 PXMLElement * PXML::GetElement(PINDEX idx) const
 {
@@ -595,6 +607,7 @@ PXMLElement * PXML::GetElement(PINDEX idx) const
 
   return (PXMLElement *)(rootElement->GetElement(idx));
 }
+
 
 bool PXML::RemoveElement(PINDEX idx)
 {
@@ -616,6 +629,7 @@ PINDEX PXML::GetNumElements() const
   else 
     return rootElement->GetSize();
 }
+
 
 PBoolean PXML::IsNoIndentElement(const PString & elementName) const
 {
@@ -690,7 +704,7 @@ void PXML::ReadFrom(istream & strm)
     strm >> line;
 
     if (!parser.Parse(line, line.GetLength(), false)) {
-      parser.GetErrorInfo(errorString, errorCol, errorLine);
+      parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
       break;
     }
 
@@ -732,6 +746,136 @@ PString PXML::CreateTagNoData(const PString & text)
 PString PXML::CreateTag(const PString & text, const PString & data)
 {
   return CreateStartTag(text) + data + CreateEndTag(text);
+}
+
+
+bool PXML::Validate(const ValidationInfo * validator)
+{
+  if (PAssertNULL(validator) == NULL)
+    return false;
+
+  m_errorString.MakeEmpty();
+
+  if (rootElement != NULL)
+    return ValidateElements(rootElement, validator);
+
+  m_errorString << "No root element";
+  return false;
+}
+
+
+bool PXML::ValidateElements(PXMLElement * baseElement, const ValidationInfo * validator)
+{
+  if (PAssertNULL(validator) == NULL)
+    return false;
+
+  while (validator->m_op != EndOfValidationList) {
+    if (!ValidateElement(baseElement, validator))
+      return false;
+    ++validator;
+  }
+  return true;
+}
+
+
+bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * validator)
+{
+  if (PAssertNULL(validator) == NULL)
+    return false;
+
+  switch (validator->m_op) {
+    case ElementName:
+      {
+        PCaselessString name = baseElement->GetName();
+        if (name != validator->m_name) {
+          m_errorString << "Expected element with name \"" << validator->m_name << '"';
+          baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+          return false;
+        }
+      }
+      break;
+
+    case Subtree:
+      {
+        if (baseElement->GetElement(validator->m_name) == NULL) {
+          if (validator->m_minCount == 0)
+            break;
+
+          m_errorString << "Must have at least " << validator->m_minCount << " instances of '" << validator->m_name << "'";
+          baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+          return false;
+        }
+
+        // verify each matching element
+        PINDEX index = 0;
+        PXMLElement * subElement;
+        while ((subElement = baseElement->GetElement(validator->m_name, index)) != NULL) {
+          if (validator->m_maxCount > 0 && index > validator->m_maxCount) {
+            m_errorString << "Must have at no more than " << validator->m_maxCount << " instances of '" << validator->m_name << "'";
+            baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+            return false;
+          }
+
+          if (!ValidateElement(subElement, validator->m_subElement))
+            return false;
+
+          ++index;
+        }
+      }
+      break;
+
+    case RequiredElement:
+      if (baseElement->GetElement(validator->m_name) == NULL) {
+        m_errorString << "Element \"" << baseElement->GetName() << "\" missing required subelement \"" << validator->m_name << '"';
+        baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+        return false;
+      }
+      break;
+
+    case RequiredAttribute:
+    case RequiredAttributeWithValue:
+    case RequiredNonEmptyAttribute:
+      if (!baseElement->HasAttribute(validator->m_name)) {
+        m_errorString << "Element \"" << baseElement->GetName() << "\" missing required attribute \"" << validator->m_name << '"';
+        baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+        return false;
+      }
+
+      switch (validator->m_op) {
+        case RequiredNonEmptyAttribute:
+          if (baseElement->GetAttribute(validator->m_name).IsEmpty()) {
+            m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "\" which cannot be empty";
+            baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+            return false;
+          }
+          break;
+
+        case RequiredAttributeWithValue :
+          PString toMatch(baseElement->GetAttribute(validator->m_name));
+          PStringArray values = PString(validator->m_attributeValues).Lines();
+          PINDEX i = 0;
+          for (i = 0; i < values.GetSize(); ++i) {
+            if (toMatch *= values[i])
+              break;
+          }
+          if (i == values.GetSize()) {
+            m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "' which is not one of required values ";
+            for (i = 0; i < values.GetSize(); ++i) {
+              if (i != 0)
+                m_errorString << " | ";
+              m_errorString << "'" << values[i] << "'";
+            }
+            baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+            return false;
+          }
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return true;
 }
 
 
@@ -1190,133 +1334,6 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 
   channel->Close();
   return 0;
-}
-
-///////////////////////////////////////////////////////
-
-bool PXMLValidator::Elements(PXML * xml, ElementInfo * elements, PString & errorString)
-{
-  PXMLElement * rootElement = xml->GetRootElement();
-  if (rootElement == NULL) {
-    strm << "No outermost element";
-    errorString = strm;
-    return false;
-  }
-
-  return Elements(rootElement, elements, errorString);
-}
-
-bool PXMLValidator::Elements(PXMLElement * baseElement, ElementInfo * elements, PString & errorString)
-{
-  while (elements->m_op != 0) {
-    if (!ValidateElement(baseElement, elements, errorString))
-      return false;
-    ++elements;
-  }
-  return true;
-}
-
-bool PXMLValidator::ValidateElement(PXMLElement * baseElement, ElementInfo * elements, PString & errorString)
-{
-  switch (elements->m_op) {
-    case ElementName:
-      {
-        PString name = baseElement->GetName();
-        if (name != elements->m_name) {
-          baseElement->GetFilePosition(col, line);
-          strm << "Expected element with name '" << elements->m_name << "' on line '" << line << ", but got '" << baseElement->GetName() << "'";
-          errorString = strm;
-          return false;
-        }
-      }
-      break;
-
-    case Subtree:
-      {
-        // optional means it does not have to be there
-        PString bounds((const char *)elements->m_val2);
-        unsigned min, max;
-        PINDEX pos;
-        if ((pos = bounds.Find(',')) == P_MAX_INDEX) {
-          min = bounds.AsUnsigned();
-          max = 0x7ff;
-        }
-        else {
-          min = bounds.Left(pos).AsUnsigned();
-          max = bounds.Mid(pos+1).AsUnsigned();
-        }
-        if (baseElement->GetElement(elements->m_name) == NULL) {
-          if (min == 0)
-            break;
-          strm << "Must have at least " << min << " instances of '" << baseElement->GetName() << "'";
-          errorString = strm;
-          return false;
-        }
-
-        // verify each matching element
-        PINDEX index = 0;
-        PXMLElement * subElement;
-        while ((subElement = baseElement->GetElement(elements->m_name, index)) != NULL) {
-          ElementInfo * subElementInfo = (ElementInfo *)(elements->m_val1);
-          if (!ValidateElement(subElement, subElementInfo, errorString))
-            return false;
-          ++index;
-        }
-      }
-      break;
-
-    case RequiredElement:
-      if (baseElement->GetElement(elements->m_name) == NULL) {
-        baseElement->GetFilePosition(col, line);
-        strm << "Element '" << baseElement->GetName() << "' missing required subelement '" << elements->m_name << "' on line " << line;
-        errorString = strm;
-        return false;
-      }
-      break;
-
-    case RequiredAttribute:
-    case RequiredAttributeWithValue:
-    case RequiredNonEmptyAttribute:
-      if (!baseElement->HasAttribute(elements->m_name)) {
-        baseElement->GetFilePosition(col, line);
-        strm << "Element '" << baseElement->GetName() << "' missing required attribute '" << elements->m_name << "' on line " << line;
-        errorString = strm;
-        return false;
-      }
-      if (elements->m_op == RequiredNonEmptyAttribute) {
-        if (baseElement->GetAttribute(elements->m_name).IsEmpty()) {
-          strm << "Element '" << baseElement->GetName() << "' has attribute '" << elements->m_name << "' which cannot be empty on line " << line;
-          errorString = strm;
-          return false;
-        }
-      }
-      else if (elements->m_op == RequiredAttributeWithValue) {
-        PString toMatch(baseElement->GetAttribute(elements->m_name));
-        PStringArray values = PString((const char *)elements->m_val1).Lines();
-        PINDEX i = 0;
-        for (i = 0; i < values.GetSize(); ++i) {
-          if (toMatch *= values[i])
-            break;
-        }
-        if (i == values.GetSize()) {
-          baseElement->GetFilePosition(col, line);
-          strm << "Element '" << baseElement->GetName() << "' has attribute '" << elements->m_name << "' which is not one of required values ";
-          for (i = 0; i < values.GetSize(); ++i) {
-            if (i != 0)
-              strm << " | ";
-            strm << "'" << values[i] << "'";
-          }
-          strm << " on line " << line;
-          errorString = strm;
-          return false;
-        }
-      }
-      break;
-
-    default:
-      break;
-  }
-  return true;
 }
 
 ///////////////////////////////////////////////////////
