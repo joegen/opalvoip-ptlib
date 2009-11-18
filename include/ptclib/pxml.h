@@ -156,6 +156,7 @@ class PXML : public PXMLBase
     void PrintOn(ostream & strm) const;
     void ReadFrom(istream & strm);
 
+
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLElement * GetElement(PINDEX idx) const;
     PINDEX        GetNumElements() const; 
@@ -166,9 +167,40 @@ class PXML : public PXMLBase
 
     PCaselessString GetDocumentType() const;
 
-    PString GetErrorString() const { return errorString; }
-    PINDEX  GetErrorColumn() const { return errorCol; }
-    PINDEX  GetErrorLine() const   { return errorLine; }
+
+    enum ValidationOp {
+      EndOfValidationList,
+      DocType,
+      ElementName,
+      RequiredAttribute,
+      RequiredNonEmptyAttribute,
+      RequiredAttributeWithValue,
+      RequiredElement,
+      Subtree,
+    };
+
+    struct ValidationInfo {
+      ValidationOp m_op;
+      const char * m_name;
+
+      union {
+        const void     * m_placeHolder;
+        const char     * m_attributeValues;
+        ValidationInfo * m_subElement;
+      };
+
+      PINDEX m_minCount;
+      PINDEX m_maxCount;
+    };
+
+    bool Validate(const ValidationInfo * validator);
+    bool ValidateElements(PXMLElement * baseElement, const ValidationInfo * elements);
+    bool ValidateElement(PXMLElement * element, const ValidationInfo * elements);
+
+
+    PString  GetErrorString() const { return m_errorString; }
+    unsigned GetErrorColumn() const { return m_errorColumn; }
+    unsigned GetErrorLine() const   { return m_errorLine; }
 
     PString GetDocType() const         { return docType; }
     void SetDocType(const PString & v) { docType = v; }
@@ -204,9 +236,9 @@ class PXML : public PXMLBase
     PString autoLoadError;
 #endif // P_HTTP
 
-    PString errorString;
-    PINDEX errorCol;
-    PINDEX errorLine;
+    PStringStream m_errorString;
+    unsigned      m_errorLine;
+    unsigned      m_errorColumn;
 
     PSortedStringList noIndentElements;
 
@@ -383,7 +415,7 @@ class PXMLParser : public PXMLBase
     PXMLParser(Options options = NoOptions);
     ~PXMLParser();
     bool Parse(const char * data, int dataLen, bool final);
-    void GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX & errorLine);
+    void GetErrorInfo(PString & errorString, unsigned & errorCol, unsigned & errorLine);
 
     virtual void StartElement(const char * name, const char **attrs);
     virtual void EndElement(const char * name);
@@ -428,37 +460,6 @@ class PXMLStreamParser : public PXMLParser
 
   protected:
     PQueue<PXML> messages;
-};
-
-
-////////////////////////////////////////////////////////////
-
-class PXMLValidator
-{
-  public:
-    enum {
-      DocType    = 1,
-      ElementName,
-      RequiredAttribute,
-      RequiredNonEmptyAttribute,
-      RequiredAttributeWithValue,
-      RequiredElement,
-      Subtree,
-    };
-
-    struct ElementInfo {
-      int m_op;
-      const char * m_name;
-      const void * m_val1;
-      const void * m_val2;
-    };
-
-    bool Elements(PXML * xml, ElementInfo * elements, PString & errorString);
-    bool Elements(PXMLElement * baseElement, ElementInfo * elements, PString & errorString);
-    bool ValidateElement(PXMLElement * baseElement, ElementInfo * elements, PString & errorString);
-
-    PStringStream strm;
-    unsigned col, line;
 };
 
 
