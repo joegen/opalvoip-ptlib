@@ -1439,11 +1439,17 @@ PBoolean PString::FindRegEx(const PRegularExpression & regex,
                         PINDEX offset,
                         PINDEX maxPos) const
 {
-  if (offset < 0 || maxPos < 0 || offset >= GetLength())
-    return PFalse;
+  if (offset < 0 || maxPos < 0 || offset > GetLength())
+    return false;
 
-  if (!regex.Execute(&theArray[offset], pos, len, 0))
-    return PFalse;
+  if (offset == GetLength()) {
+    if (!regex.Execute("", pos, len, 0))
+      return false;
+  }
+  else {
+    if (!regex.Execute(&theArray[offset], pos, len, 0))
+      return PFalse;
+  }
 
   pos += offset;
   if (pos+len > maxPos)
@@ -1452,6 +1458,16 @@ PBoolean PString::FindRegEx(const PRegularExpression & regex,
   return PTrue;
 }
 
+PBoolean PString::MatchesRegEx(const PRegularExpression & regex) const
+{
+  PINDEX pos = 0;
+  PINDEX len = 0;
+
+  if (!regex.Execute(theArray, pos, len, 0))
+    return PFalse;
+
+  return (pos == 0) && (len == GetLength());
+}
 
 void PString::Replace(const PString & target,
                       const PString & subs,
