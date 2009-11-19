@@ -825,16 +825,41 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
       break;
 
     case RequiredElement:
-      if (baseElement->GetElement(validator->m_name) == NULL) {
-        m_errorString << "Element \"" << baseElement->GetName() << "\" missing required subelement \"" << validator->m_name << '"';
-        baseElement->GetFilePosition(m_errorColumn, m_errorLine);
-        return false;
+    case RequiredElementWithBodyMatching:
+      {
+        if (baseElement->GetElement(validator->m_name) == NULL) {
+          if (validator->m_minCount == 0)
+            break;
+          m_errorString << "Element \"" << baseElement->GetName() << "\" missing required subelement \"" << validator->m_name << '"';
+          baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+          return false;
+        }
+        // verify each matching element
+        PINDEX index = 0;
+        PXMLElement * subElement;
+        while ((subElement = baseElement->GetElement(validator->m_name, index)) != NULL) {
+          if (validator->m_maxCount > 0 && index > validator->m_maxCount) {
+            m_errorString << "Must have at no more than " << validator->m_maxCount << " instances of '" << validator->m_name << "'";
+            baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+            return false;
+          }
+          if (validator->m_op == RequiredElementWithBodyMatching) {
+            PString toMatch(subElement->GetData());
+            PRegularExpression regex(PString(validator->m_attributeValues));
+            if (!toMatch.MatchesRegEx(regex)) {
+              m_errorString << "Element \"" << subElement->GetName() << "\" has body with value \"" << toMatch.Trim() << "\" that does not match regex \"" << PString(validator->m_attributeValues) << '"';
+              return false;
+            }
+          }
+          ++index;
+        }
       }
       break;
 
     case RequiredAttribute:
     case RequiredAttributeWithValue:
     case RequiredNonEmptyAttribute:
+    case RequiredAttributeWithValueMatching:
       if (!baseElement->HasAttribute(validator->m_name)) {
         m_errorString << "Element \"" << baseElement->GetName() << "\" missing required attribute \"" << validator->m_name << '"';
         baseElement->GetFilePosition(m_errorColumn, m_errorLine);
@@ -851,23 +876,37 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
           break;
 
         case RequiredAttributeWithValue :
-          PString toMatch(baseElement->GetAttribute(validator->m_name));
-          PStringArray values = PString(validator->m_attributeValues).Lines();
-          PINDEX i = 0;
-          for (i = 0; i < values.GetSize(); ++i) {
-            if (toMatch *= values[i])
-              break;
-          }
-          if (i == values.GetSize()) {
-            m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "' which is not one of required values ";
+          {
+            PString toMatch(baseElement->GetAttribute(validator->m_name));
+            PStringArray values = PString(validator->m_attributeValues).Lines();
+            PINDEX i = 0;
             for (i = 0; i < values.GetSize(); ++i) {
-              if (i != 0)
-                m_errorString << " | ";
-              m_errorString << "'" << values[i] << "'";
+              if (toMatch *= values[i])
+                break;
             }
-            baseElement->GetFilePosition(m_errorColumn, m_errorLine);
-            return false;
+            if (i == values.GetSize()) {
+              m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "\" which is not one of required values ";
+              for (i = 0; i < values.GetSize(); ++i) {
+                if (i != 0)
+                  m_errorString << " | ";
+                m_errorString << "'" << values[i] << "'";
+              }
+              baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+              return false;
+            }
           }
+          break;
+
+        case RequiredAttributeWithValueMatching :
+          {
+            PString toMatch(baseElement->GetAttribute(validator->m_name));
+            PRegularExpression regex(PString(validator->m_attributeValues));
+            if (!toMatch.MatchesRegEx(regex)) {
+              m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "\" with value \"" << baseElement->GetAttribute(validator->m_name) << "\" that does not match regex \"" << PString(validator->m_attributeValues) << '"';
+              return false;
+            }
+          }
+          break;
       }
       break;
 
