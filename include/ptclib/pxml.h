@@ -177,6 +177,8 @@ class PXML : public PXMLBase
       RequiredAttributeWithValue,
       RequiredElement,
       Subtree,
+      RequiredAttributeWithValueMatching,
+      RequiredElementWithBodyMatching,
     };
 
     struct ValidationInfo {
