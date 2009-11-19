@@ -1150,6 +1150,12 @@ class PString : public PCharArray {
     ) const;
 
 
+    /**Return true if the entire string matches the regular expression
+     */
+    PBoolean MatchesRegEx(
+      const PRegularExpression & regex ///< regular expression to match
+    ) const;
+
     /**Locate the substring within the string and replace it with the specifed
        substring. The search will begin at the character offset provided.
 
