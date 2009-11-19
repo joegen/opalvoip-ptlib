@@ -907,6 +907,8 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
             }
           }
           break;
+        default:
+          break;
       }
       break;
 
