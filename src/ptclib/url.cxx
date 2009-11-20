@@ -78,6 +78,7 @@
 #define DEFAULT_H323S_PORT    1300
 #define DEFAULT_H323RAS_PORT  1719
 #define DEFAULT_MSRP_PORT     2855
+#define DEFAULT_RTMP_PORT     1935
 #define DEFAULT_SIP_PORT      5060
 #define DEFAULT_SIPS_PORT     5061
 
@@ -107,6 +108,7 @@ DEFINE_LEGACY_URL_SCHEME(mailto,    PFalse, PFalse, PFalse, PFalse, PTrue,   PTr
 DEFINE_LEGACY_URL_SCHEME(news,      PFalse, PFalse, PFalse, PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(h323,      PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323_PORT)
 DEFINE_LEGACY_URL_SCHEME(h323s,     PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323S_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtmp,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTMP_PORT)
 DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
 DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
 DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
