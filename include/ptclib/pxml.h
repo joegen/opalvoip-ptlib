@@ -220,6 +220,8 @@ class PXML : public PXMLBase
     static PString CreateTagNoData (const PString & text);
     static PString CreateTag (const PString & text, const PString & data);
 
+    static PString EscapeSpecialChars(const PString & string);
+
   protected:
     void Construct(Options options, const char * noIndentElements);
     PXMLElement * rootElement;
