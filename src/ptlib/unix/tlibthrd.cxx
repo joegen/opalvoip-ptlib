@@ -966,8 +966,8 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
 static inline unsigned long long jiffies_to_msecs(const unsigned long j)
 {
-  static long HZ = sysconf(_SC_CLK_TCK);
-  return (j * 1000LL) / HZ;
+  static long sysconf_HZ = sysconf(_SC_CLK_TCK);
+  return (j * 1000LL) / sysconf_HZ;
 }
 
 
