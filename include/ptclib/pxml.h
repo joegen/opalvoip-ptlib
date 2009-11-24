@@ -157,6 +157,7 @@ class PXML : public PXMLBase
     void ReadFrom(istream & strm);
 
 
+    PXMLElement * GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const;
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLElement * GetElement(PINDEX idx) const;
     PINDEX        GetNumElements() const; 
@@ -352,6 +353,7 @@ class PXMLElement : public PXMLObject {
     bool HasAttributes() const      { return attributes.GetSize() > 0; }
     PINDEX GetNumAttributes() const { return attributes.GetSize(); }
 
+    PXMLElement * GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const;
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLObject  * GetElement(PINDEX idx = 0) const;
     bool          RemoveElement(PINDEX idx);

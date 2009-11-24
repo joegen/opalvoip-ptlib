@@ -589,36 +589,27 @@ void PXML::RemoveAll()
 }
 
 
+PXMLElement * PXML::GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const
+{
+  return rootElement != NULL ? rootElement->GetElement(name, attr, attrval) : NULL;
+}
+
+
 PXMLElement * PXML::GetElement(const PCaselessString & name, PINDEX idx) const
 {
-  if (rootElement == NULL)
-    return NULL;
-
-  return rootElement->GetElement(name, idx);
+  return rootElement != NULL ? rootElement->GetElement(name, idx) : NULL;
 }
 
 
 PXMLElement * PXML::GetElement(PINDEX idx) const
 {
-  if (rootElement == NULL)
-    return NULL;
-  if (idx >= rootElement->GetSize())
-    return NULL;
-
-  return (PXMLElement *)(rootElement->GetElement(idx));
+  return rootElement != NULL ? (PXMLElement *)rootElement->GetElement(idx) : NULL;
 }
 
 
 bool PXML::RemoveElement(PINDEX idx)
 {
-  if (rootElement == NULL)
-    return false;
-
-  if (idx >= rootElement->GetSize())
-    return false;
-
-  rootElement->RemoveElement(idx);
-  return true;
+  return rootElement != NULL && rootElement->RemoveElement(idx);
 }
 
 
@@ -1089,30 +1080,40 @@ PINDEX PXMLElement::FindObject(const PXMLObject * ptr) const
 }
 
 
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX start) const
+PXMLElement * PXMLElement::GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const
 {
-  PINDEX idx;
-  PINDEX size = subObjects.GetSize();
-  PINDEX count = 0;
-  for (idx = 0; idx < size; idx++) {
-    if (subObjects[idx].IsElement()) {
-      PXMLElement & subElement = ((PXMLElement &)subObjects[idx]);
-      if (subElement.GetName() *= name) {
-        if (count++ == start)
-          return (PXMLElement *)&subObjects[idx];
+  for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
+    if (subObjects[i].IsElement()) {
+      PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
+      if (name == subElement.GetName() && attrval == subElement.GetAttribute(attr))
+        return &subElement;
+    }
+  }
+  return NULL;
+}
+
+
+PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX index) const
+{
+  for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
+    if (subObjects[i].IsElement()) {
+      PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
+      if (name == subElement.GetName()) {
+        if (index == 0)
+          return &subElement;
+        --index;
       }
     }
   }
   return NULL;
 }
 
+
 PXMLObject * PXMLElement::GetElement(PINDEX idx) const
 {
-  if (idx >= subObjects.GetSize())
-    return NULL;
-
-  return &subObjects[idx];
+  return idx < subObjects.GetSize() ? &subObjects[idx] : NULL;
 }
+
 
 bool PXMLElement::RemoveElement(PINDEX idx)
 {
