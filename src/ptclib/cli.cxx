@@ -282,8 +282,8 @@ PCLI::PCLI(const char * prompt)
   , m_repeatCommand("!!")
   , m_historyCommand("!")
   , m_noHistoryError("No command history")
-  , m_commandUsagePrefix("Usage:")
-  , m_commandErrorPrefix(": error:")
+  , m_commandUsagePrefix("Usage: ")
+  , m_commandErrorPrefix(": error: ")
   , m_unknownCommandError("Unknown command")
 {
 }
