@@ -1229,6 +1229,23 @@ PXMLData * PXMLElement::AddChild(PXMLData * elem, bool dirty)
   return (PXMLData *)AddSubObject(elem, dirty);
 }
 
+PXMLElement * PXMLElement::AddElement(const char * name)
+{
+  return (PXMLElement *)AddSubObject(new PXMLElement(this, name));
+}
+
+PXMLElement * PXMLElement::AddElement(const PString & name, const PString & data)
+{
+  return (PXMLElement *)AddSubObject(new PXMLElement(this, name, data));
+}
+
+PXMLElement * PXMLElement::AddElement(const PString & name, const PString & attrName, const PString & attrVal)
+{
+  PXMLElement * element = (PXMLElement *)AddSubObject(new PXMLElement(this, name));
+  element->SetAttribute(attrName, attrVal);
+  return element;
+}
+
 PXMLObject * PXMLElement::Clone(PXMLElement * _parent) const
 {
   PXMLElement * elem = new PXMLElement(_parent);
