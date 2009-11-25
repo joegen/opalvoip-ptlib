@@ -53,7 +53,7 @@
 #define environ (NULL)
 #endif
 
-#if defined(__NetBSD__)
+#if defined(P_NETBSD) || defined(P_OPENBSD)
 extern char **environ;
 #endif
 
