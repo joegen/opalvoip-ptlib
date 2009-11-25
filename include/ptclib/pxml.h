@@ -342,6 +342,10 @@ class PXMLElement : public PXMLObject {
     PXMLElement * AddChild    (PXMLElement * elem, bool dirty = true);
     PXMLData    * AddChild    (PXMLData    * elem, bool dirty = true);
 
+    PXMLElement * AddElement(const char * name);
+    PXMLElement * AddElement(const PString & name, const PString & data);
+    PXMLElement * AddElement(const PString & name, const PString & attrName, const PString & attrVal);
+
     void SetAttribute(const PCaselessString & key,
                       const PString & value,
                       bool setDirty = true);
