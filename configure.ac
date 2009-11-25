@@ -1222,6 +1222,7 @@ dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\expat\
 dnl MSWIN_CHECK_DIR  expat,\Program Files\Expat 2.*
+dnl MSWIN_CHECK_DIR  expat,\Program Files (x86)\Expat 2.*
 
 AC_ARG_ENABLE([expat],
 	      AS_HELP_STRING([--disable-expat],[disable expat XML support]),
