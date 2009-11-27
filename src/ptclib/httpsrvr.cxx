@@ -229,186 +229,6 @@ void PHTTPServer::Construct()
   SetReadLineTimeout(PTimeInterval(0, READLINE_TIMEOUT));
 }
 
-void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PString & entityBody)
-{
-  // remove trailing ","
-  PINDEX pos = type.Find(",");
-  if (pos == P_MAX_INDEX) {
-    pos = type.Find(";");
-    if (pos == P_MAX_INDEX) 
-      return;
-  }
-  PString seperator = type.Mid(pos+1).Trim();
-
-  // remove "boundary"
-  pos = seperator.Find("boundary");
-  if (pos == P_MAX_INDEX)
-    return;
-  seperator = seperator.Mid(8).Trim();
-
-  // remove "="
-  pos = seperator.Find("=");
-  if (pos == P_MAX_INDEX)
-    return;
-  seperator = seperator.Mid(1).Trim();
-
-  // seperators have a "--" according to RFC 1521
-  seperator = PString("--") + seperator;
-
-  PINDEX sepLen = seperator.GetLength();
-  const char * sep = (const char *)seperator;
-
-  // split body into parts, assuming binary data
-  const char * body = (const char *)entityBody;
-  PINDEX entityOffs = 0;
-  PINDEX entityLen = entityBody.GetSize()-1;
-
-  PBoolean ignore = PTrue;
-  PBoolean last = PFalse;
-
-  PMultipartFormInfo * info = NULL;
-
-  while (!last && (entityOffs < entityLen)) {
-
-    // find end of part
-    PINDEX partStart = entityOffs;
-    PINDEX partLen;
-    PBoolean foundSep = PFalse;
-
-    // collect length of part until seperator
-    for (partLen = 0; (partStart + partLen) < entityLen; partLen++) {
-      if ((partLen >= sepLen) && (memcmp(body + partStart + partLen - sepLen, sep, sepLen) == 0)) {
-        foundSep = PTrue;
-        break;
-      }
-    }
-
-    // move entity ptr to the end of the part
-    entityOffs = partStart + partLen;
-
-    // if no seperator found, then this is the last part
-    // otherwise, look for "--" trailer on seperator and remove CRLF
-    if (!foundSep)
-      last = PTrue;
-    else {
-      partLen -= sepLen;
-
-      // determine if this is the last block
-      if (((entityOffs + 2) <= entityLen) && (body[entityOffs] == '-') && (body[entityOffs+1] == '-')) {
-        last = PTrue;
-        entityOffs += 2;
-      }
-
-      // remove crlf
-      if (((entityOffs + 2) <= entityLen) && (body[entityOffs] == '\r') && (body[entityOffs+1] == '\n')) 
-        entityOffs += 2;
-    }
-
-    // ignore everything up to the first seperator, 
-    // then adjust seperator to include leading CRLF
-    if (ignore) {
-      ignore = PFalse;
-      seperator = PString("\r\n") + seperator;
-      sepLen = seperator.GetLength();
-      sep = (const char *)seperator;
-      continue;
-    }
-
-    // extract the MIME header, by looking for a double CRLF
-    PINDEX ptr;
-    PINDEX nlCount = 0;
-    for (ptr = partStart;(ptr < (partStart + partLen)) && (nlCount < 2); ptr++) {
-      if (body[ptr] == '\r') {
-        nlCount++;
-        if ((ptr < entityLen-1) && (body[ptr+1] == '\n'))
-          ptr++;
-      } else
-        nlCount = 0;
-    }
-
-    // create the new part info
-    info = new PMultipartFormInfo;
-
-    // read MIME information
-    PStringStream strm(PString(body + partStart, ptr - partStart));
-    info->mime.ReadFrom(strm);
-
-    // save the entity body, being careful of binary files
-    int savedLen = partStart + partLen - ptr;
-    char * saved = info->body.GetPointer(savedLen + 1);
-    memcpy(saved, body + ptr, savedLen);
-    saved[savedLen] = '\0';
-
-    // add the data to the array
-    multipartFormInfoArray.Append(info);
-    info = NULL;
-  }
-  
-#if 0
-  // ignore until first separator
-  do {
-    data >> line;
-    if (line.IsEmpty())
-      return;
-  } while (line.Find(sep) != 0);
-
-  PMultipartFormInfo * info = NULL;
-
-  // read form parts
-  while (data.good() && (line.Right(2) != "--")) {
-
-    info = new PMultipartFormInfo;
-
-    // read MIME information
-    info->mime.ReadFrom(data);
-
-    // get the content type
-    PString type = info->mime(PHTTP::ContentTypeTag);
-
-    // check the encoding
-    PString encoding = info->mime("Content-Transfer-Encoding");
-
-    // accumulate text until another seperator or end of data
-    PString & buf = info->body;
-    PINDEX len = 0;
-    buf.SetSize(len+1);
-    buf[0] = '\0';
-    PINDEX sepLen = sep.GetLength();
-    const char * sepPtr = (const char *)sep;
-    while (data.good()) {
-      buf.SetSize(len);
-      data >> buf[len++];
-      if ((len >= sepLen) && (memcmp(((const char *)buf) + len - sepLen, sepPtr, sepLen) == 0)) {
-        char ch;
-        data >> ch;
-        if (ch != 0x0d)
-          data.putback(ch); 
-        else {
-          data >> ch;
-          if (ch != 0x0a)
-            data.putback(ch); 
-        }
-        len -= sepLen;
-        break;
-      }
-    }
-    buf.SetSize(len+1);
-    buf[len] = '\0';
-
-    /*
-    while (data.good()) {
-      data >> line;
-      if (line.Find(sep) == 0)
-        break;
-      info->body += line + "\n";
-    } 
-    */
-
-    multipartFormInfoArray.Append(info);
-    info = NULL;
-  }
-#endif
-}
 
 PBoolean PHTTPServer::ProcessCommand()
 {
@@ -492,14 +312,8 @@ PBoolean PHTTPServer::ProcessCommand()
         break;
 
       case POST :
-        {
-          // check for multi-part form POSTs
-          PString postType = (connectInfo.GetMIME())(ContentTypeTag());
-          if (postType.Find("multipart/form-data") == 0)
-            connectInfo.DecodeMultipartFormInfo(postType, connectInfo.entityBody);
-          else  // if (postType *= "x-www-form-urlencoded)
-            PURL::SplitQueryVars(connectInfo.entityBody, postData);
-        }
+        if (!connectInfo.DecodeMultipartFormInfo())
+          PURL::SplitQueryVars(connectInfo.entityBody, postData); // x-www-form-urlencoded
         persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
         break;
 
@@ -949,7 +763,7 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 
 PHTTPRequest::PHTTPRequest(const PURL & _url,
                       const PMIMEInfo & _mime,
-        const PMultipartFormInfoArray & _multipartFormInfo,
+                 const PMultiPartList & _multipartFormInfo,
                         PHTTPResource * resource,
                           PHTTPServer & _server)
   : server(_server)
@@ -990,8 +804,6 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
   isProxyConnection = PFalse;
 
   entityBodyLength  = -1;
-
-  multipartFormInfoArray.AllowDeleteObjects();
 }
 
 
@@ -1342,7 +1154,7 @@ PBoolean PHTTPResource::GetExpirationDate(PTime &)
 
 PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
                                             const PMIMEInfo & inMIME,
-                                            const PMultipartFormInfoArray & multipartFormInfo,
+                                            const PMultiPartList & multipartFormInfo,
                                             PHTTPServer & socket)
 {
   return new PHTTPRequest(url, inMIME, multipartFormInfo, this, socket);
@@ -1542,19 +1354,19 @@ PHTTPFile::PHTTPFile(const PURL & url,
 
 
 PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME,
-                                   const PMultipartFormInfoArray & multipartFormInfo,
-                                   PHTTPResource * resource,
-                                   PHTTPServer & server)
+                              const PMIMEInfo & inMIME,
+                         const PMultiPartList & multipartFormInfo,
+                                PHTTPResource * resource,
+                                  PHTTPServer & server)
   : PHTTPRequest(url, inMIME, multipartFormInfo, resource, server)
 {
 }
 
 
 PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
-                                        const PMIMEInfo & inMIME,
-                          const PMultipartFormInfoArray & multipartFormInfo,
-                PHTTPServer & server)
+                                   const PMIMEInfo & inMIME,
+                              const PMultiPartList & multipartFormInfo,
+                                       PHTTPServer & server)
 {
   return new PHTTPFileRequest(url, inMIME, multipartFormInfo, this, server);
 }
@@ -1709,10 +1521,10 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 
 
 PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
-                                 const PMIMEInfo & inMIME,
-                                 const PMultipartFormInfoArray & multipartFormInfo,
-                                 PHTTPResource * resource,
-                                 PHTTPServer & server)
+                            const PMIMEInfo & inMIME,
+                       const PMultiPartList & multipartFormInfo,
+                              PHTTPResource * resource,
+                                PHTTPServer & server)
   : PHTTPFileRequest(url, inMIME, multipartFormInfo, resource, server)
 {
 }
@@ -1720,8 +1532,8 @@ PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
 
 PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
-                          const PMultipartFormInfoArray & multipartFormInfo,
-                          PHTTPServer & socket)
+                                   const PMultiPartList & multipartFormInfo,
+                                            PHTTPServer & socket)
 {
   PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, this, socket);
 

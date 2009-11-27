@@ -60,7 +60,6 @@ const PString & PHTTP::AllowTag           () { static PString s = "Allow"; retur
 const PString & PHTTP::AuthorizationTag   () { static PString s = "Authorization"; return s; }
 const PString & PHTTP::ContentEncodingTag () { static PString s = "Content-Encoding"; return s; }
 const PString & PHTTP::ContentLengthTag   () { static PString s = "Content-Length"; return s; }
-const PString & PHTTP::ContentTypeTag     () { static PString s = "Content-Type"; return s; }
 const PString & PHTTP::DateTag            () { static PString s = "Date"; return s; }
 const PString & PHTTP::ExpiresTag         () { static PString s = "Expires"; return s; }
 const PString & PHTTP::FromTag            () { static PString s = "From"; return s; }
