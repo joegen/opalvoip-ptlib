@@ -1252,9 +1252,6 @@ const PString & PRFC822Channel::ReturnPathTag() { static PString s = "Return-Pat
 const PString & PRFC822Channel::ReceivedTag() { static PString s = "Received"; return s; }
 const PString & PRFC822Channel::MessageIDTag() { static PString s = "Message-ID"; return s; }
 const PString & PRFC822Channel::MailerTag() { static PString s = "X-Mailer"; return s; }
-const PString & PRFC822Channel::ContentTypeTag() { static PString s = "Content-Type"; return s; }
-const PString & PRFC822Channel::ContentDispositionTag() { static PString s = "Content-Disposition"; return s; }
-const PString & PRFC822Channel::ContentTransferEncodingTag() { static PString s = "Content-Transfer-Encoding"; return s; }
 
 
 
