@@ -55,6 +55,8 @@ static const char * const AlgorithmNames[PHTTPClientDigestAuthentication::NumAlg
 
 static __inline bool IsOK(int response) { return (response/100) == 2; }
 
+static PINDEX MaxTraceContentSize = 1000;
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPClient
@@ -184,7 +186,7 @@ PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
 #if PTRACING
   if (PTrace::CanTrace(3)) {
     ostream & strm = PTrace::Begin(3, __FILE__, __LINE__);
-    strm << "HTTPCLIENT\tSending ";
+    strm << "HTTP\tSending ";
     if (PTrace::CanTrace(4))
       strm << '\n';
     strm << cmdName << ' ';
@@ -221,7 +223,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     if (http.Find("HTTP/") == P_MAX_INDEX) {
       lastResponseCode = PHTTP::RequestOK;
       lastResponseInfo = "HTTP/0.9";
-      PTRACE(3, "HTTPCLIENT\tRead HTTP/0.9 OK");
+      PTRACE(3, "HTTP\tRead HTTP/0.9 OK");
       return PTrue;
     }
 
@@ -235,7 +237,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
       PString body;
       if (lastResponseCode >= 300) {
-        if (replyMIME.GetInteger(ContentLengthTag(), INT_MAX) > 1000)
+        if (replyMIME.GetInteger(ContentLengthTag(), INT_MAX) > MaxTraceContentSize)
           InternalReadContentBody(replyMIME, NULL); // Waste body
         else
           ReadContentBody(replyMIME, body);
@@ -244,7 +246,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 #if PTRACING
       if (PTrace::CanTrace(3)) {
         ostream & strm = PTrace::Begin(3, __FILE__, __LINE__);
-        strm << "HTTPCLIENT\tResponse ";
+        strm << "HTTP\tResponse ";
         if (PTrace::CanTrace(4))
           strm << '\n';
         strm << lastResponseCode << ' ' << lastResponseInfo;
@@ -381,14 +383,22 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
   if (!GetDocument(url, outMIME, replyMIME))
     return PFalse;
 
-  PString actualContentType = replyMIME(ContentTypeTag());
-  if (requiredContentType.IsEmpty() || actualContentType.IsEmpty() ||
-        (actualContentType.Left(actualContentType.Find(';')) *= requiredContentType.Left(requiredContentType.Find(';'))))
-    return ReadContentBody(replyMIME, document);
+  PCaselessString actualContentType = replyMIME(ContentTypeTag());
+  if (!requiredContentType.IsEmpty() && !actualContentType.IsEmpty() &&
+        actualContentType.NumCompare(requiredContentType, requiredContentType.Find(';')) != EqualTo) {
+    PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << requiredContentType << ", got " << actualContentType);
+    InternalReadContentBody(replyMIME, NULL); // Waste body
+    return false;
+  }
 
-  InternalReadContentBody(replyMIME, NULL); // Waste body
-  PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << requiredContentType << ", got " << actualContentType);
-  return false;
+  if (!ReadContentBody(replyMIME, document)) {
+    PTRACE(2, "HTTP\tRead of body failed");
+    return false;
+  }
+
+  PTRACE_IF(4, !document.IsEmpty(), "HTTP\tReceived body:\n"
+            << document.Left(MaxTraceContentSize) << (document.GetLength() > MaxTraceContentSize ? "\n...." : ""));
+  return true;
 }
 
 
@@ -695,7 +705,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & _auth, PBoolean 
   nonceCount.SetValue(1);
 
   if (auth.Find("digest") == P_MAX_INDEX) {
-    PTRACE(1, "HTTPCLIENT\tDigest auth does not contian digest keyword");
+    PTRACE(1, "HTTP\tDigest auth does not contian digest keyword");
     return false;
   }
 
@@ -705,7 +715,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & _auth, PBoolean 
     while (str != AlgorithmNames[algorithm]) {
       algorithm = (Algorithm)(algorithm+1);
       if (algorithm >= PHTTPClientDigestAuthentication::NumAlgorithms) {
-        PTRACE(1, "HTTPCLIENT\tUnknown digest algorithm " << str);
+        PTRACE(1, "HTTP\tUnknown digest algorithm " << str);
         return PFalse;
       }
     }
@@ -713,24 +723,24 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & _auth, PBoolean 
 
   authRealm = GetAuthParam(auth, "realm");
   if (authRealm.IsEmpty()) {
-    PTRACE(1, "HTTPCLIENT\tNo realm in authentication");
+    PTRACE(1, "HTTP\tNo realm in authentication");
     return PFalse;
   }
 
   nonce = GetAuthParam(auth, "nonce");
   if (nonce.IsEmpty()) {
-    PTRACE(1, "HTTPCLIENT\tNo nonce in authentication");
+    PTRACE(1, "HTTP\tNo nonce in authentication");
     return PFalse;
   }
 
   opaque = GetAuthParam(auth, "opaque");
   if (!opaque.IsEmpty()) {
-    PTRACE(2, "HTTPCLIENT\tAuthentication contains opaque data");
+    PTRACE(2, "HTTP\tAuthentication contains opaque data");
   }
 
   PString qopStr = GetAuthParam(auth, "qop");
   if (!qopStr.IsEmpty()) {
-    PTRACE(3, "HTTPCLIENT\tAuthentication contains qop-options " << qopStr);
+    PTRACE(3, "HTTP\tAuthentication contains qop-options " << qopStr);
     PStringList options = qopStr.Tokenise(',', PTrue);
     qopAuth    = options.GetStringsIndex("auth") != P_MAX_INDEX;
     qopAuthInt = options.GetStringsIndex("auth-int") != P_MAX_INDEX;
@@ -744,7 +754,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & _auth, PBoolean 
 
 PBoolean PHTTPClientDigestAuthentication::Authorise(AuthObject & authObject) const
 {
-  PTRACE(3, "HTTPCLIENT\tAdding authentication information");
+  PTRACE(3, "HTTP\tAdding authentication information");
 
   PMessageDigest5 digestor;
   PMessageDigest5::Code a1, a2, entityBodyCode, response;

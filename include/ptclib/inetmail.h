@@ -986,9 +986,9 @@ class PRFC822Channel : public PIndirectChannel
     static const PString & ReceivedTag();
     static const PString & MessageIDTag();
     static const PString & MailerTag();
-    static const PString & ContentTypeTag();
-    static const PString & ContentDispositionTag();
-    static const PString & ContentTransferEncodingTag();
+    static const PString & ContentTypeTag() { return PMIMEInfo::ContentTypeTag(); }
+    static const PString & ContentDispositionTag() { return PMIMEInfo::ContentDispositionTag(); }
+    static const PString & ContentTransferEncodingTag() { return PMIMEInfo::ContentTransferEncodingTag(); }
 
     /**Send this message using an SMTP socket.
        This will create a PSMTPClient and connect to the specified host then

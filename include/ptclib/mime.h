@@ -38,6 +38,10 @@
 #include <ptclib/inetprot.h>
 #include <ptclib/cypher.h>
 
+
+class PMultiPartList;
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PMIMEInfo
 
@@ -107,7 +111,18 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     PBoolean SetAt(
       const PCaselessString & key,
       const PString value
-    ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
+    ) { return AbstractSetAt(key, PNEW PString(value)); }
+
+    /**Add a new value to the MIME info. If the value is already in the
+       dictionary then this overrides the previous value.
+
+       @return
+       PTrue if the object was successfully added.
+     */
+    PBoolean SetAt(
+      const PString & (*key)(),
+      const PString value
+    ) { return AbstractSetAt(PCaselessString(key()), PNEW PString(value)); }
 
     /** Determine if the specified key is present in the MIME information
        set.
@@ -139,6 +154,16 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       const PCaselessString & key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(key) != NULL; }
 
+    /** Determine if the specified key is present in the MIME information
+       set.
+
+       @return
+       PTrue if the MIME variable is present.
+     */
+    PBoolean Contains(
+      const PString & (*key)()       ///< Key into MIME dictionary to get info.
+    ) const { return GetAt(PCaselessString(key())) != NULL; }
+
   // New functions for class.
     /** Read MIME information from the socket.
 
@@ -166,12 +191,15 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        @return
        PTrue is a field was added.
       */
-    PBoolean AddMIME(
+    bool AddMIME(
       const PString & line
     );
-    PBoolean AddMIME(
-      const PString & fieldName, 
-      const PString & _fieldValue
+    bool AddMIME(
+      const PString & fieldName, ///< MIME field name
+      const PString & fieldValue ///< MIME field value
+    );
+    bool AddMIME(
+      const PMIMEInfo & mime
     );
 
     /** Get a string for the particular MIME info field with checking for
@@ -186,6 +214,18 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       const PString & dflt = PString::Empty() ///< Default value of field if not in MIME info.
     ) const;
 
+    /** Get a string for the particular MIME info field with checking for
+       existance. The #dflt# parameter is substituted if the field
+       does not exist in the MIME information read in.
+
+       @return
+       String for the value of the MIME variable.
+     */
+    PString GetString(
+      const PString & (*key)(),               ///< Key into MIME dictionary to get info.
+      const PString & dflt = PString::Empty() ///< Default value of field if not in MIME info.
+    ) const { return GetString(key(), dflt); }
+
     /** Get an integer value for the particular MIME info field with checking
        for existance. The #dflt# parameter is substituted if the
        field does not exist in the MIME information read in.
@@ -198,6 +238,18 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       long dflt = 0           ///< Default value of field if not in MIME info.
     ) const;
 
+    /** Get an integer value for the particular MIME info field with checking
+       for existance. The #dflt# parameter is substituted if the
+       field does not exist in the MIME information read in.
+
+       @return
+       Integer value for the MIME variable.
+     */
+    long GetInteger(
+      const PString & (*key)(), ///< Key into MIME dictionary to get info.
+      long dflt = 0             ///< Default value of field if not in MIME info.
+    ) const { return GetInteger(key(), dflt); }
+
     /** Set an integer value for the particular MIME info field.
      */
     void SetInteger(
@@ -205,6 +257,59 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       long value                    ///< New value of field.
     );
 
+    /** Get a complex MIME field.
+        This will parse a complex MIME field of the general form:
+           key: base-value;tag1=token;tag2="string";tag3
+
+        The basevalue will be placed in the dictionary where the key is the
+        empty string. Each tag will be the key for it's entry, if that tag has
+        no '=' sign then it will have an empty string as its value. If the tag
+        value is quoted then teh RFC822 rules are applied.
+
+        Returns true if the field exists and base-value is non-empty.
+      */
+    bool GetComplex(
+      const PString & key,    ///< Key into MIME dictionary to get info.
+      PStringToString & info  ///< Dictionary of information from field
+    ) const;
+
+    /** Get a complex MIME field.
+        This will parse a complex MIME field of the general form:
+           key: base-value;tag1=token;tag2="string";tag3
+
+        The basevalue will be placed in the dictionary where the key is the
+        empty string. Each tag will be the key for it's entry, if that tag has
+        no '=' sign then it will have an empty string as its value. If the tag
+        value is quoted then teh RFC822 rules are applied.
+
+        Returns true if the field exists and base-value is non-empty.
+      */
+    bool GetComplex(
+      const PString & (*key)(), ///< Key into MIME dictionary to get info.
+      PStringToString & info    ///< Dictionary of information from field
+    ) const { return GetComplex(key(), info); }
+
+    /** Decode parts from a multipart body using the field value.
+      */
+    bool DecodeMultiPartList(
+      PMultiPartList & parts,   ///< Extracted parts.
+      const PString & body,     ///< Body to decode
+      const PString & key       ///< MIME key for multipart info
+    ) const;
+
+    static const PString & ContentTypeTag();
+    static const PString & ContentDispositionTag();
+    static const PString & ContentTransferEncodingTag();
+    static const PString & ContentDescriptionTag();
+    static const PString & ContentIdTag();
+
+    /** Decode parts from a multipart body using the field value.
+      */
+    bool DecodeMultiPartList(
+      PMultiPartList & parts,   ///< Extracted parts.
+      const PString & body,     ///< Body to decode
+      const PString & (*key)() = ContentTypeTag ///< MIME key for multipart info
+    ) const { return DecodeMultiPartList(parts, body, key()); }
 
     /** Set an association between a file type and a MIME content type. The
        content type is then sent for any file in the directory sub-tree that
@@ -271,6 +376,33 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
 
   private:
     static PStringToString & GetContentTypes();
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PMultiPartInfo
+
+/** This object describes the information associated with a multi-part bodies.
+  */
+class PMultiPartInfo : public PObject
+{
+    PCLASSINFO(PMultiPartInfo, PObject);
+  public:
+    PMIMEInfo  m_mime;
+    PString    m_textBody;
+    PBYTEArray m_binaryBody;
+};
+
+class PMultiPartList : public PList<PMultiPartInfo>
+{
+    PCLASSINFO(PMultiPartList, PList<PMultiPartInfo>);
+  public:
+    PMultiPartList() { }
+
+    bool Decode(
+      const PString & body,               ///< Body to extract parts from
+      const PStringToString & contentInfo ///< Content-Type info as decoded from PMIMEInfo::GetComplex()
+    );
 };
 
 
