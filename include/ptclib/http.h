@@ -218,7 +218,7 @@ class PHTTP : public PInternetProtocol
     static const PString & AuthorizationTag();
     static const PString & ContentEncodingTag();
     static const PString & ContentLengthTag();
-    static const PString & ContentTypeTag();
+    static const PString & ContentTypeTag() { return PMIMEInfo::ContentTypeTag(); }
     static const PString & DateTag();
     static const PString & ExpiresTag();
     static const PString & FromTag();
@@ -619,22 +619,6 @@ class PHTTPClient : public PHTTP
     PHTTPClientAuthentication * m_authentication;
 };
 
-//////////////////////////////////////////////////////////////////////////////
-// PMultipartFormInfo
-
-/** This object describes the information associated with a multi-part
-    form entry
-  */
-
-class PMultipartFormInfo : public PObject
-{
-  PCLASSINFO(PMultipartFormInfo, PObject);
-  public:
-    PMIMEInfo mime;
-    PString body;
-};
-
-PARRAY(PMultipartFormInfoArray, PMultipartFormInfo);
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
@@ -687,17 +671,17 @@ class PHTTPConnectionInfo : public PObject
       */
     void SetPersistenceMaximumTransations(unsigned m) { persistenceMaximum = m; }
 
-    const PMultipartFormInfoArray & GetMultipartFormInfo() const
-      { return multipartFormInfoArray; }
+    const PMultiPartList & GetMultipartFormInfo() const
+      { return m_multipartFormInfo; }
 
     void ResetMultipartFormInfo()
-      { multipartFormInfoArray.RemoveAll(); }
+      { m_multipartFormInfo.RemoveAll(); }
 
     PString GetEntityBody() const   { return entityBody; }
 
   protected:
     PBoolean Initialise(PHTTPServer & server, PString & args);
-    void DecodeMultipartFormInfo(const PString & type, const PString & entityBody);
+    bool DecodeMultipartFormInfo() { return mimeInfo.DecodeMultiPartList(m_multipartFormInfo, entityBody); }
 
     PHTTP::Commands commandCode;
     PString         commandName;
@@ -712,7 +696,7 @@ class PHTTPConnectionInfo : public PObject
     long            entityBodyLength;
     PTimeInterval   persistenceTimeout;
     unsigned        persistenceMaximum;
-    PMultipartFormInfoArray multipartFormInfoArray;
+    PMultiPartList  m_multipartFormInfo;
 
   friend class PHTTPServer;
 };
@@ -947,7 +931,7 @@ class PHTTPRequest : public PObject
     PHTTPRequest(
       const PURL & url,             ///< Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     ///< Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo, ///< multipart form information (if any)
+      const PMultiPartList & multipartFormInfo, ///< multipart form information (if any)
       PHTTPResource * resource,     ///< Resource associated with request
       PHTTPServer & server          ///< Server channel that request initiated on
     );
@@ -955,7 +939,7 @@ class PHTTPRequest : public PObject
     PHTTPServer & server;           ///< Server channel that request initiated on
     const PURL & url;               ///< Universal Resource Locator for document.
     const PMIMEInfo & inMIME;       ///< Extra MIME information in command.
-    const PMultipartFormInfoArray & multipartFormInfo; ///< multipart form information, if any
+    const PMultiPartList & multipartFormInfo; ///< multipart form information, if any
     PHTTP::StatusCode code;         ///< Status code for OnError() reply.
     PMIMEInfo outMIME;              ///< MIME information used in reply.
     PString entityBody;             ///< original entity body (POST only)
@@ -1381,7 +1365,7 @@ class PHTTPResource : public PObject
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                   ///< Universal Resource Locator for document.
       const PMIMEInfo & inMIME,           ///< Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo,  ///< additional information for multi-part posts
+      const PMultiPartList & multipartFormInfo,  ///< additional information for multi-part posts
       PHTTPServer & socket                                ///< socket used for request
     );
 
@@ -1637,7 +1621,7 @@ class PHTTPFile : public PHTTPResource
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                  // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,          // Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo,
+      const PMultiPartList & multipartFormInfo,
       PHTTPServer & socket
     );
 
@@ -1694,7 +1678,7 @@ class PHTTPFileRequest : public PHTTPRequest
     PHTTPFileRequest(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo,
+      const PMultiPartList & multipartFormInfo,
       PHTTPResource * resource,
       PHTTPServer & server
     );
@@ -1819,7 +1803,7 @@ class PHTTPDirectory : public PHTTPFile
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                  // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,          // Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo,
+      const PMultiPartList & multipartFormInfo,
       PHTTPServer & socket
     );
 
@@ -1882,7 +1866,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
     PHTTPDirRequest(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo, 
+      const PMultiPartList & multipartFormInfo, 
       PHTTPResource * resource,
       PHTTPServer & server
     );
