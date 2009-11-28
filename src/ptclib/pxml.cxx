@@ -910,74 +910,6 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
   return true;
 }
 
-PString PXML::EscapeSpecialChars(const PString & str)
-{
-  // code based on appendix from http://www.hdfgroup.org/HDF5/XML/xml_escape_chars.htm
-  static const char * quote = "&quot;";
-  static const char * apos  = "&apos;";
-  static const char * amp   = "&amp;";
-  static const char * lt    = "&lt;";
-  static const char * gt    = "&gt;";
-
-  if (str.IsEmpty())
-    return str;
-
-  // calculate the extra length needed for the returned strng
-  int len = str.GetLength();
-  const char * cp = (const char *)str;
-  int extra = 0;
-  int i;
-  for (i = 0; i < len; i++) {
-    if (*cp == '\"')
-      extra += (strlen(quote) - 1);
-    else if (*cp == '\'')
-      extra += (strlen(apos) - 1);
-    else if (*cp == '<')
-      extra += (strlen(lt) - 1);
-    else if (*cp == '>')
-      extra += (strlen(gt) - 1);
-    else if (*cp == '&')
-      extra += (strlen(amp) - 1);
-    cp++;
-  }
-
-  if (extra == 0)
-    return str;
-
-  PString rstring;
-  char * ncp = rstring.GetPointer(len+extra+1);
-
-  cp = (const char *)str;
-  for (i = 0; i < len; i++) {
-    if (*cp == '\'') {
-      strncpy(ncp,apos,strlen(apos));
-      ncp += strlen(apos);
-      cp++;
-    } else if (*cp == '<') {
-      strncpy(ncp,lt,strlen(lt));
-      ncp += strlen(lt);
-      cp++;
-    } else if (*cp == '>') {
-      strncpy(ncp,gt,strlen(gt));
-      ncp += strlen(gt);
-      cp++;
-    } else if (*cp == '\"') {
-      strncpy(ncp,quote,strlen(quote));
-      ncp += strlen(quote);
-      cp++;
-    } else if (*cp == '&') {
-      strncpy(ncp,amp,strlen(amp));
-      ncp += strlen(amp);
-      cp++;
-    } else {
-      *ncp++ = *cp++;
-    }
-  }
-  *ncp = '\0';
-
-  return rstring;
-}
-
 ///////////////////////////////////////////////////////
 //
 void PXMLObject::SetDirty()
@@ -1465,3 +1397,81 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 ///////////////////////////////////////////////////////
 
 #endif 
+
+
+#ifdef P_EXPAT
+PString PXML::EscapeSpecialChars(const PString & str)
+#else
+namespace PXML {
+PString EscapeSpecialChars(const PString & str)
+#endif
+{
+  // code based on appendix from http://www.hdfgroup.org/HDF5/XML/xml_escape_chars.htm
+  static const char * quote = "&quot;";
+  static const char * apos  = "&apos;";
+  static const char * amp   = "&amp;";
+  static const char * lt    = "&lt;";
+  static const char * gt    = "&gt;";
+
+  if (str.IsEmpty())
+    return str;
+
+  // calculate the extra length needed for the returned strng
+  int len = str.GetLength();
+  const char * cp = (const char *)str;
+  int extra = 0;
+  int i;
+  for (i = 0; i < len; i++) {
+    if (*cp == '\"')
+      extra += (strlen(quote) - 1);
+    else if (*cp == '\'')
+      extra += (strlen(apos) - 1);
+    else if (*cp == '<')
+      extra += (strlen(lt) - 1);
+    else if (*cp == '>')
+      extra += (strlen(gt) - 1);
+    else if (*cp == '&')
+      extra += (strlen(amp) - 1);
+    cp++;
+  }
+
+  if (extra == 0)
+    return str;
+
+  PString rstring;
+  char * ncp = rstring.GetPointer(len+extra+1);
+
+  cp = (const char *)str;
+  for (i = 0; i < len; i++) {
+    if (*cp == '\'') {
+      strncpy(ncp,apos,strlen(apos));
+      ncp += strlen(apos);
+      cp++;
+    } else if (*cp == '<') {
+      strncpy(ncp,lt,strlen(lt));
+      ncp += strlen(lt);
+      cp++;
+    } else if (*cp == '>') {
+      strncpy(ncp,gt,strlen(gt));
+      ncp += strlen(gt);
+      cp++;
+    } else if (*cp == '\"') {
+      strncpy(ncp,quote,strlen(quote));
+      ncp += strlen(quote);
+      cp++;
+    } else if (*cp == '&') {
+      strncpy(ncp,amp,strlen(amp));
+      ncp += strlen(amp);
+      cp++;
+    } else {
+      *ncp++ = *cp++;
+    }
+  }
+  *ncp = '\0';
+
+  return rstring;
+}
+
+#ifndef P_EXPAT
+}; // namespace PXML {
+#endif
