@@ -39,7 +39,13 @@
 
 #include <ptbuildopts.h>
 
-#ifdef P_EXPAT
+#ifndef P_EXPAT
+
+namespace PXML {
+extern PString EscapeSpecialChars(const PString & str);
+};
+
+#else
 
 #include <ptclib/http.h>
 
