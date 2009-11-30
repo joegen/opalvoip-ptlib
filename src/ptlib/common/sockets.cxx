@@ -164,33 +164,37 @@ PIPSocket::Address PIPSocket::GetDefaultIpAny()
 class Psockaddr
 {
   public:
-    Psockaddr() : pointer((sockaddr *)&storage) { memset(&storage, 0, sizeof(storage)); }
+    Psockaddr() : ptr(&storage) { memset(&storage, 0, sizeof(storage)); }
     Psockaddr(const PIPSocket::Address & ip, WORD port);
-    sockaddr* operator->() const { return pointer; }
-    operator sockaddr*()   const { return pointer; }
+    sockaddr* operator->() const { return addr; }
+    operator sockaddr*()   const { return addr; }
     socklen_t GetSize() const;
     PIPSocket::Address GetIP() const;
     WORD GetPort() const;
   private:
     sockaddr_storage storage;
-    sockaddr       * pointer;
+    union {
+      sockaddr_storage * ptr;
+      sockaddr         * addr;
+      sockaddr_in      * addr4;
+      sockaddr_in6     * addr6;
+    };
 };
 
 
 Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
+ : ptr(&storage) 
 {
   memset(&storage, 0, sizeof(storage));
 
   if (ip.GetVersion() == 6) {
-    sockaddr_in6 * addr6 = (sockaddr_in6 *)&storage;
     addr6->sin6_family = AF_INET6;
     addr6->sin6_addr = ip;
     addr6->sin6_port = htons(port);
     addr6->sin6_flowinfo = 0;
-	addr6->sin6_scope_id = PIPSocket::GetDefaultV6ScopeId(); // Should be set to the right interface....
+    addr6->sin6_scope_id = PIPSocket::GetDefaultV6ScopeId(); // Should be set to the right interface....
   }
   else {
-    sockaddr_in * addr4 = (sockaddr_in *)&storage;
     addr4->sin_family = AF_INET;
     addr4->sin_addr = ip;
     addr4->sin_port = htons(port);
@@ -200,7 +204,7 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
 
 socklen_t Psockaddr::GetSize() const
 {
-  switch (((sockaddr *)&storage)->sa_family) {
+  switch (addr->sa_family) {
     case AF_INET :
       return sizeof(sockaddr_in);
     case AF_INET6 :
@@ -215,11 +219,11 @@ socklen_t Psockaddr::GetSize() const
 
 PIPSocket::Address Psockaddr::GetIP() const
 {
-  switch (((sockaddr *)&storage)->sa_family) {
+  switch (addr->sa_family) {
     case AF_INET :
-      return ((sockaddr_in *)&storage)->sin_addr;
+      return addr4->sin_addr;
     case AF_INET6 :
-      return ((sockaddr_in6 *)&storage)->sin6_addr;
+      return addr6->sin6_addr;
     default :
       return 0;
   }
@@ -228,11 +232,11 @@ PIPSocket::Address Psockaddr::GetIP() const
 
 WORD Psockaddr::GetPort() const
 {
-  switch (((sockaddr *)&storage)->sa_family) {
+  switch (addr->sa_family) {
     case AF_INET :
-      return ntohs(((sockaddr_in *)&storage)->sin_port);
+      return ntohs(addr4->sin_port);
     case AF_INET6 :
-      return ntohs(((sockaddr_in6 *)&storage)->sin6_port);
+      return ntohs(addr6->sin6_port);
     default :
       return 0;
   }
