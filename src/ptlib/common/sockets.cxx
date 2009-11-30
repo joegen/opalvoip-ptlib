@@ -164,15 +164,16 @@ PIPSocket::Address PIPSocket::GetDefaultIpAny()
 class Psockaddr
 {
   public:
-    Psockaddr() { memset(&storage, 0, sizeof(storage)); }
+    Psockaddr() : pointer((sockaddr *)&storage) { memset(&storage, 0, sizeof(storage)); }
     Psockaddr(const PIPSocket::Address & ip, WORD port);
-    sockaddr* operator->() const { return (sockaddr *)&storage; }
-    operator sockaddr*()   const { return (sockaddr *)&storage; }
+    sockaddr* operator->() const { return pointer; }
+    operator sockaddr*()   const { return pointer; }
     socklen_t GetSize() const;
     PIPSocket::Address GetIP() const;
     WORD GetPort() const;
   private:
     sockaddr_storage storage;
+    sockaddr       * pointer;
 };
 
 
