@@ -1295,208 +1295,165 @@ class PObject {
 #define PBIG_ENDIAN 3
 
 
-#if 0
-class PStandardType
-/* Encapsulate a standard 8 bit character into a portable format. This would
-   rarely need to do translation, only if the target platform uses EBCDIC
-   would it do anything.
-
-   The platform independent form here is always 8 bit ANSI.
- */
-{
-  public:
-    PStandardType(
-      type newVal   // Value to initialise data in platform dependent form.
-    ) { data = newVal; }
-    /* Create a new instance of the platform independent type using platform
-       dependent data, or platform independent streams.
-     */
-
-    operator type() { return data; }
-    /* Get the platform dependent value for the type.
-
-       @return
-       data for instance.
-     */
-
-    friend ostream & operator<<(ostream & strm, const PStandardType & val)
-      { return strm << (type)val; }
-    /* Output the platform dependent value for the type to the stream.
-
-       @return
-       the stream output was made to.
-     */
-
-    friend istream & operator>>(istream & strm, PStandardType & val)
-      { type data; strm >> data; val = PStandardType(data); return strm; }
-    /* Input the platform dependent value for the type from the stream.
-
-       @return
-       the stream input was made from.
-     */
-
+template <typename type>
+struct PIntSameOrder {
+  __inline PIntSameOrder()                            : data(0)              { }
+  __inline PIntSameOrder(type value)                  : data(value)          { }
+  __inline PIntSameOrder(const PIntSameOrder & value) : data(value.data)     { }
+  __inline PIntSameOrder & operator=(type value)                             { data = value; return *this; }
+  __inline PIntSameOrder & operator=(const PIntSameOrder & value)            { data = value.data; return *this; }
+  __inline operator type() const                                             { return data; }
+  __inline friend ostream & operator<<(ostream & s, const PIntSameOrder & v) { return s << v.data; }
+  __inline friend istream & operator>>(istream & s, PIntSameOrder & v)       { return s >> v.data; }
 
   private:
     type data;
 };
-#endif
 
 
-#define PI_SAME(name, type) \
-  struct name { \
-    name() : data(0) { } \
-    name(type value) : data(value) { } \
-    name(const name & value) : data(value.data) { } \
-    name & operator =(type value) { data = value; return *this; } \
-    name & operator =(const name & value) { data = value.data; return *this; } \
-    operator type() const { return data; } \
-    friend ostream & operator<<(ostream & s, const name & v) { return s << v.data; } \
-    friend istream & operator>>(istream & s, name & v) { return s >> v.data; } \
-    private: type data; \
+template <typename type>
+struct PIntReversedOrder {
+  __inline PIntReversedOrder()                                : data(0)              { }
+  __inline PIntReversedOrder(type value)                                             { ReverseBytes(value, data); }
+  __inline PIntReversedOrder(const PIntReversedOrder & value) : data(value.data)     { }
+  __inline PIntReversedOrder & operator=(type value)                                 { ReverseBytes(value, data); return *this; }
+  __inline PIntReversedOrder & operator=(const PIntReversedOrder & value)            { data = value.data; return *this; }
+  __inline operator type() const                                                     { type value; ReverseBytes(data, value); return value; }
+  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value) { return s << (type)value; }
+  __inline friend istream & operator>>(istream & s, PIntReversedOrder & v)           { type val; s >> val; v = val; return s; }
+
+  private:
+    type data;
+
+  static __inline void ReverseBytes(const type & src, type & dst)
+  {
+    size_t s = sizeof(type)-1;
+    for (size_t d = 0; d < sizeof(type); ++d,--s)
+      ((BYTE *)&dst)[d] = ((const BYTE *)&src)[s];
   }
-
-#define PI_LOOP(src, dst) \
-    BYTE *s = ((BYTE *)&src)+sizeof(src); BYTE *d = (BYTE *)&dst; \
-    while (s != (BYTE *)&src) *d++ = *--s;
-
-#define PI_DIFF(name, type) \
-  struct name { \
-    name() : data(0) { } \
-    name(type value) : data(0) { operator=(value); } \
-    name(const name & value) : data(value.data) { } \
-    name & operator =(type value) { PI_LOOP(value, data); return *this; } \
-    name & operator =(const name & value) { data = value.data; return *this; } \
-    operator type() const { type value; PI_LOOP(data, value); return value; } \
-    friend ostream & operator<<(ostream & s, const name & value) { return s << (type)value; } \
-    friend istream & operator>>(istream & s, name & v) { type val; s >> val; v = val; return s; } \
-    private: type data; \
-  }
+};
 
 #ifndef PCHAR8
 #define PCHAR8 PANSI_CHAR
 #endif
 
 #if PCHAR8==PANSI_CHAR
-PI_SAME(PChar8, char);
+typedef PIntSameOrder<char> PChar8;
 #endif
 
-PI_SAME(PInt8, char);
+typedef PIntSameOrder<char> PInt8;
 
-PI_SAME(PUInt8, unsigned char);
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt16l, PInt16);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt16l, PInt16);
-#endif
+typedef PIntSameOrder<unsigned char> PUInt8;
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt16b, PInt16);
+typedef PIntSameOrder<PInt16> PInt16l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt16b, PInt16);
+typedef PIntReversedOrder<PInt16> PInt16l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt16l, WORD);
+typedef PIntReversedOrder<PInt16> PInt16b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt16l, WORD);
+typedef PIntSameOrder<PInt16> PInt16b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt16b, WORD);
+typedef PIntSameOrder<WORD> PUInt16l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt16b, WORD);
+typedef PIntReversedOrder<WORD> PUInt16l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt32l, PInt32);
+typedef PIntReversedOrder<WORD> PUInt16b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt32l, PInt32);
+typedef PIntSameOrder<WORD> PUInt16b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt32b, PInt32);
+typedef PIntSameOrder<PInt32> PInt32l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt32b, PInt32);
+typedef PIntReversedOrder<PInt32> PInt32l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt32l, DWORD);
+typedef PIntReversedOrder<PInt32> PInt32b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt32l, DWORD);
+typedef PIntSameOrder<PInt32> PInt32b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt32b, DWORD);
+typedef PIntSameOrder<DWORD> PUInt32l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt32b, DWORD);
+typedef PIntReversedOrder<DWORD> PUInt32l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt64l, PInt64);
+typedef PIntReversedOrder<DWORD> PUInt32b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt64l, PInt64);
+typedef PIntSameOrder<DWORD> PUInt32b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt64b, PInt64);
+typedef PIntSameOrder<PInt64> PInt64l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt64b, PInt64);
+typedef PIntReversedOrder<PInt64> PInt64l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt64l, PUInt64);
+typedef PIntReversedOrder<PInt64> PInt64b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt64l, PUInt64);
+typedef PIntSameOrder<PInt64> PInt64b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt64b, PUInt64);
+typedef PIntSameOrder<PUInt64> PUInt64l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt64b, PUInt64);
+typedef PIntReversedOrder<PUInt64> PUInt64l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat32l, float);
+typedef PIntReversedOrder<PUInt64> PUInt64b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat32l, float);
+typedef PIntSameOrder<PUInt64> PUInt64b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat32b, float);
+typedef PIntSameOrder<float> PFloat32l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat32b, float);
+typedef PIntReversedOrder<float> PFloat32l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat64l, double);
+typedef PIntReversedOrder<float> PFloat32b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat64l, double);
+typedef PIntSameOrder<float> PFloat32b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat64b, double);
+typedef PIntSameOrder<double> PFloat64l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat64b, double);
+typedef PIntReversedOrder<double> PFloat64l;
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+typedef PIntReversedOrder<double> PFloat64b;
+#elif PBYTE_ORDER==PBIG_ENDIAN
+typedef PIntSameOrder<double> PFloat64b;
 #endif
 
 #ifndef NO_LONG_DOUBLE // stupid OSX compiler
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat80l, long double);
+typedef PIntSameOrder<long double> PFloat80l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat80l, long double);
+typedef PIntReversedOrder<long double> PFloat80l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat80b, long double);
+typedef PIntReversedOrder<long double> PFloat80b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat80b, long double);
+typedef PIntSameOrder<long double> PFloat80b;
 #endif
 #endif
-
-#undef PI_LOOP
-#undef PI_SAME
-#undef PI_DIFF
 
 
 ///////////////////////////////////////////////////////////////////////////////
