@@ -693,8 +693,9 @@ bool PMIMEInfo::GetComplex(const PString & key, PStringToString & info) const
   }
 
   while (semi != P_MAX_INDEX) {
+    ++semi;
     PINDEX pos = field.FindOneOf("=;", semi);
-    PCaselessString tag = field(semi+1, pos-1).Trim();
+    PCaselessString tag = field(semi, pos-1).Trim();
 
     if (pos == P_MAX_INDEX) {
       info.SetAt(tag, PString::Empty());
@@ -711,14 +712,14 @@ bool PMIMEInfo::GetComplex(const PString & key, PStringToString & info) const
       ++pos;
     } while (isspace(field[pos]));
 
-    if (pos != '"') {
+    if (field[pos] != '"') {
       PINDEX end = field.Find(';', pos);
       info.SetAt(tag, PCaselessString(field(pos, end-1).RightTrim()));
 
       if (end == P_MAX_INDEX)
         return true;
 
-      semi = pos + 1;
+      semi = end;
       continue;
     }
 
@@ -810,6 +811,44 @@ const PString & PMIMEInfo::ContentIdTag()               { static PString s = "Co
 
 //////////////////////////////////////////////////////////////////////////////
 
+static PINDEX FindBoundary(const PString & boundary, const char * & bodyPtr, PINDEX & bodyLen)
+{
+  PINDEX boundaryLen = boundary.GetLength();
+  const char * base = bodyPtr;
+  const char * found;
+  while (bodyLen >= boundaryLen && (found = (const char *)memchr(bodyPtr, boundary[0], bodyLen)) != NULL) {
+    PINDEX skip = found - bodyPtr + 1;
+    bodyPtr += skip;
+    bodyLen -= skip;
+
+    if (bodyLen >= boundaryLen && memcmp(found, (const char *)boundary, boundaryLen) == 0) {
+      bodyPtr += boundaryLen;
+      bodyLen -= boundaryLen;
+      if (bodyLen < 2)
+        return P_MAX_INDEX;
+
+      if (bodyPtr[0] == '\r') {
+        ++bodyPtr;
+        --bodyLen;
+      }
+      if (bodyPtr[0] == '\n') {
+        ++bodyPtr;
+        --bodyLen;
+      }
+
+      PINDEX len = found - base;
+      if (len > 0 && *(found-1) == '\n') {
+        --len;
+        if (len > 0 && *(found-2) == '\r')
+          --len;
+      }
+      return len;
+    }
+  }
+
+  return P_MAX_INDEX;
+}
+
 bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & contentInfo)
 {
   RemoveAll();
@@ -832,97 +871,49 @@ bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & 
     startContentType = contentInfo("type");
   }
 
-  PString seperator = "--" + contentInfo["boundary"];
-
-  PINDEX sepLen = seperator.GetLength();
-  const char * sep = (const char *)seperator;
+  PString boundary = "--" + contentInfo["boundary"];
 
   // split body into parts, assuming binary data
-  const char * body = (const char *)entityBody;
-  PINDEX entityOffs = 0;
-  PINDEX entityLen = entityBody.GetSize()-1;
+  const char * bodyPtr = (const char *)entityBody;
+  PINDEX bodyLen = entityBody.GetSize()-1;
 
-  bool ignore = true;
-  bool last = false;
+  // Find first boundary
+  if (FindBoundary(boundary, bodyPtr, bodyLen) == P_MAX_INDEX) {
+    PTRACE(2, "MIME\tNo boundary found in multipart body");
+    return false;
+  }
 
-  while (!last && (entityOffs < entityLen)) {
-
-    // find end of part
-    PINDEX partStart = entityOffs;
-    PINDEX partLen;
-    PBoolean foundSep = false;
-
-    // collect length of part until seperator
-    for (partLen = 0; (partStart + partLen) < entityLen; partLen++) {
-      if ((partLen >= sepLen) && (memcmp(body + partStart + partLen - sepLen, sep, sepLen) == 0)) {
-        foundSep = true;
-        break;
-      }
-    }
-
-    // move entity ptr to the end of the part
-    entityOffs = partStart + partLen;
-
-    // if no seperator found, then this is the last part
-    // otherwise, look for "--" trailer on seperator and remove CRLF
-    if (!foundSep)
-      last = true;
-    else {
-      partLen -= sepLen;
-
-      // determine if this is the last block
-      if (((entityOffs + 2) <= entityLen) && (body[entityOffs] == '-') && (body[entityOffs+1] == '-')) {
-        last = true;
-        entityOffs += 2;
-      }
-
-      // remove crlf
-      if (((entityOffs + 2) <= entityLen) && (body[entityOffs] == '\r') && (body[entityOffs+1] == '\n')) 
-        entityOffs += 2;
-    }
-
-    // ignore everything up to the first seperator, 
-    // then adjust seperator to include leading CRLF
-    if (ignore) {
-      ignore = false;
-      seperator = PString("\r\n") + seperator;
-      sepLen = seperator.GetLength();
-      sep = (const char *)seperator;
-      continue;
-    }
-
-    // extract the MIME header, by looking for a double CRLF
-    PINDEX ptr;
-    PINDEX nlCount = 0;
-    for (ptr = partStart;(ptr < (partStart + partLen)) && (nlCount < 2); ptr++) {
-      if (body[ptr] == '\r') {
-        nlCount++;
-        if ((ptr < entityLen-1) && (body[ptr+1] == '\n'))
-          ptr++;
-      } else
-        nlCount = 0;
-    }
+  for (;;) {
+    const char * partPtr = bodyPtr;
+    PINDEX partLen = FindBoundary(boundary, bodyPtr, bodyLen);
+    if (partLen == P_MAX_INDEX)
+      break;
 
     // create the new part info
     PMultiPartInfo * info = new PMultiPartInfo;
 
     // read MIME information
-    PStringStream strm(PString(body + partStart, ptr - partStart));
+    PStringStream strm(PString(partPtr, partLen));
     info->m_mime.ReadFrom(strm);
 
+    // Skip over MIME
+    partPtr += strm.tellp();
+    partLen -= strm.tellp();
+
+    // Check transfer encoding
     PStringToString typeInfo;
     info->m_mime.GetComplex(PMIMEInfo::ContentTypeTag, typeInfo);
     PCaselessString encoding = info->m_mime.GetString(PMIMEInfo::ContentTransferEncodingTag);
 
     // save the entity body, being careful of binary files
-    if (encoding == "7bit" || encoding == "8bit" || (typeInfo("charset") *= "UTF-8"))
-      info->m_textBody = PString(body + ptr, partStart + partLen - ptr);
-    else if (encoding == "base64")
-      PBase64::Decode(PString(body + ptr, partStart + partLen - ptr), info->m_binaryBody);
+    if (encoding == "base64")
+      PBase64::Decode(PString(partPtr, partLen), info->m_binaryBody);
     else if (typeInfo("charset") *= "UCS-2")
-      info->m_textBody = PString((const wchar_t *)(body + ptr), (partStart + partLen - ptr)/2);
+      info->m_textBody = PString((const wchar_t *)partPtr, partLen/2);
+    else if (encoding == "7bit" || encoding == "8bit" || (typeInfo("charset") *= "UTF-8") || memchr(partPtr, 0, partLen) == NULL)
+      info->m_textBody = PString(partPtr, partLen);
     else
-      info->m_binaryBody = PBYTEArray((BYTE *)body + ptr, partStart + partLen - ptr);
+      info->m_binaryBody = PBYTEArray((const BYTE *)partPtr, partLen);
 
     // add the data to the array
     if (startContentId.IsEmpty() || startContentId != info->m_mime.GetString(PMIMEInfo::ContentIdTag))
