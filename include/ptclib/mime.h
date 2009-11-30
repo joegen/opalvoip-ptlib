@@ -213,14 +213,6 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       const PString & key,       ///< Key into MIME dictionary to get info.
       const PString & dflt = PString::Empty() ///< Default value of field if not in MIME info.
     ) const;
-
-    /** Get a string for the particular MIME info field with checking for
-       existance. The #dflt# parameter is substituted if the field
-       does not exist in the MIME information read in.
-
-       @return
-       String for the value of the MIME variable.
-     */
     PString GetString(
       const PString & (*key)(),               ///< Key into MIME dictionary to get info.
       const PString & dflt = PString::Empty() ///< Default value of field if not in MIME info.
@@ -237,14 +229,6 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       const PString & key,    ///< Key into MIME dictionary to get info.
       long dflt = 0           ///< Default value of field if not in MIME info.
     ) const;
-
-    /** Get an integer value for the particular MIME info field with checking
-       for existance. The #dflt# parameter is substituted if the
-       field does not exist in the MIME information read in.
-
-       @return
-       Integer value for the MIME variable.
-     */
     long GetInteger(
       const PString & (*key)(), ///< Key into MIME dictionary to get info.
       long dflt = 0             ///< Default value of field if not in MIME info.
@@ -256,34 +240,33 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       const PCaselessString & key,  ///< Key into MIME dictionary to get info.
       long value                    ///< New value of field.
     );
+    void SetInteger(
+      const PString & (*key)(), ///< Key into MIME dictionary to get info.
+      long value                    ///< New value of field.
+    ) { SetInteger(PCaselessString(key()), value); }
 
     /** Get a complex MIME field.
         This will parse a complex MIME field of the general form:
            key: base-value;tag1=token;tag2="string";tag3
+           key: <base-value>;tag1=token;tag2="string";tag3
 
         The basevalue will be placed in the dictionary where the key is the
-        empty string. Each tag will be the key for it's entry, if that tag has
-        no '=' sign then it will have an empty string as its value. If the tag
-        value is quoted then teh RFC822 rules are applied.
+        empty string. If the base value is quoted with '<, '>' brackets then
+        the brackets are removed. Note that the string "<>" can be used to have
+        an mepty base value but a field starting with a ';' is illegal and this
+        function will return false.
+        
+        Each tag will be the key for it's entry in teh dictionary, if that tag
+        has no '=' sign then it will have an empty string as its value. If the
+        tag value is quoted using '"', then the RFC822 rules are applied and
+        the quotes and '\' charcters removed.
 
-        Returns true if the field exists and base-value is non-empty.
+        Returns true if the field exists and base-value is non-empty or quoted.
       */
     bool GetComplex(
       const PString & key,    ///< Key into MIME dictionary to get info.
       PStringToString & info  ///< Dictionary of information from field
     ) const;
-
-    /** Get a complex MIME field.
-        This will parse a complex MIME field of the general form:
-           key: base-value;tag1=token;tag2="string";tag3
-
-        The basevalue will be placed in the dictionary where the key is the
-        empty string. Each tag will be the key for it's entry, if that tag has
-        no '=' sign then it will have an empty string as its value. If the tag
-        value is quoted then teh RFC822 rules are applied.
-
-        Returns true if the field exists and base-value is non-empty.
-      */
     bool GetComplex(
       const PString & (*key)(), ///< Key into MIME dictionary to get info.
       PStringToString & info    ///< Dictionary of information from field
