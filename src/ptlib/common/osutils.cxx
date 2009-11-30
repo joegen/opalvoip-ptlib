@@ -696,7 +696,7 @@ PTimer & PTimer::operator=(const PTimer & timer)
 PTimer::~PTimer()
 {
   // queue a request to remove this timer, and always do it synchronously
-  m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
+  Stop(true);
 }
 
 
