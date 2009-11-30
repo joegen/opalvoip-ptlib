@@ -2057,7 +2057,7 @@ streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekd
   if ((mode&ios::out) != 0)
     setp(newpptr, epptr());
 
-  return 0;
+  return gptr() - eback();
 }
 
 
