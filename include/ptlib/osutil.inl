@@ -75,6 +75,9 @@ PINLINE PTimeInterval PTimeInterval::operator*(int f) const
 PINLINE PTimeInterval & PTimeInterval::operator*=(int f)
   { SetMilliSeconds(GetMilliSeconds() * f); return *this; }
 
+PINLINE int PTimeInterval::operator/(const PTimeInterval & t) const
+  { return (int)(GetMilliSeconds() / t.GetMilliSeconds()); }
+
 PINLINE PTimeInterval PTimeInterval::operator/(int f) const
   { return PTimeInterval(GetMilliSeconds() / f); }
 

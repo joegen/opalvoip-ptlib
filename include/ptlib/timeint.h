@@ -267,6 +267,15 @@ class PTimeInterval : public PObject
       int factor   ///< factor to multiply.
     );
 
+    /** Divide the time interval by another interval yielding a count.
+    
+       @return
+       the number of times the second interval occurs in the larger.
+     */
+    int operator/(
+      const PTimeInterval & smaller   ///< factor to divide.
+    ) const;
+
     /** Divide the time interval by a factor yielding a third time interval.
     
        @return
