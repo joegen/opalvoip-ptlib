@@ -32,7 +32,7 @@
  */
 
 #include <ptlib/socket.h>
-#include <sched.h>  // for sched_yield
+#include <sched.h>
 #include <pthread.h>
 #include <sys/resource.h>
 
@@ -97,6 +97,48 @@ static PBoolean PAssertThreadOp(int retval,
 #endif
   return PFalse;
 }
+
+
+#if defined(P_LINUX)
+static int GetSchedParam(PThread::Priority priority, sched_param & param)
+{
+  /*
+    Set realtime scheduling if our effective user id is root (only then is this
+    allowed) AND our priority is Highest.
+      I don't know if other UNIX OSs have SCHED_FIFO and SCHED_RR as well.
+
+    WARNING: a misbehaving thread (one that never blocks) started with Highest
+    priority can hang the entire machine. That is why root permission is 
+    neccessary.
+  */
+
+  memset(&param, 0, sizeof(sched_param));
+
+  switch (priority) {
+    case PThread::HighestPriority :
+      param.sched_priority = sched_get_priority_max(SCHED_RR);
+      break;
+
+    case PThread::HighPriority :
+      param.sched_priority = sched_get_priority_min(SCHED_RR);
+      break;
+
+    case PThread::LowestPriority :
+    case PThread::LowPriority :
+      return SCHED_BATCH;
+
+    default : // PThread::NormalPriority :
+      return SCHED_OTHER;
+  }
+
+  if (geteuid() == 0)
+    return SCHED_RR;
+
+  param.sched_priority = 0;
+  PTRACE(2, "PTLib\tNo permission to set priority level " << priority);
+  return SCHED_OTHER;
+}
+#endif
 
 
 PDECLARE_CLASS(PHouseKeepingThread, PThread)
@@ -505,19 +547,10 @@ void PThread::Restart()
   // Set a decent (256K) stack size that won't eat all virtual memory
   pthread_attr_setstacksize(&threadAttr, 16*PTHREAD_STACK_MIN);
 
-  /*
-    Set realtime scheduling if our effective user id is root (only then is this
-    allowed) AND our priority is Highest.
-      As far as I can see, we could use either SCHED_FIFO or SCHED_RR here, it
-    doesn't matter.
-      I don't know if other UNIX OSs have SCHED_FIFO and SCHED_RR as well.
+  struct sched_param sched_params;
+  PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, GetSchedParam(PX_priority, sched_params)));
+  PAssertPTHREAD(pthread_attr_setschedparam,  (&threadAttr, &sched_params));
 
-    WARNING: a misbehaving thread (one that never blocks) started with Highest
-    priority can hang the entire machine. That is why root permission is 
-    neccessary.
-  */
-  if ((geteuid() == 0) && (PX_priority == HighestPriority))
-    PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, SCHED_FIFO));
 #elif defined(P_RTEMS)
   pthread_attr_setstacksize(&threadAttr, 2*PTHREAD_MINIMUM_STACK_SIZE);
   pthread_attr_setinheritsched(&threadAttr, PTHREAD_EXPLICIT_SCHED);
@@ -709,29 +742,14 @@ void PThread::SetPriority(Priority priorityLevel)
 {
   PX_priority = priorityLevel;
 
+  if (IsTerminated())
+    return;
+
 #if defined(P_LINUX)
-  if (IsTerminated())
-    return;
+  struct sched_param params;
+  PAssertPTHREAD(pthread_setschedparam, (PX_threadId, GetSchedParam(priorityLevel, params), &params));
 
-  struct sched_param sched_param;
-  
-  if ((priorityLevel == HighestPriority) && (geteuid() == 0) ) {
-    sched_param.sched_priority = sched_get_priority_min( SCHED_FIFO );
-    
-    PAssertPTHREAD(pthread_setschedparam, (PX_threadId, SCHED_FIFO, &sched_param));
-  }
-  else if (priorityLevel != HighestPriority) {
-    /* priority 0 is the only permitted value for the SCHED_OTHER scheduler */ 
-    sched_param.sched_priority = 0;
-    
-    PAssertPTHREAD(pthread_setschedparam, (PX_threadId, SCHED_OTHER, &sched_param));
-  }
-#endif
-
-#if defined(P_MACOSX)
-  if (IsTerminated())
-    return;
-
+#elif defined(P_MACOSX)
   if (priorityLevel == HighestPriority) {
     /* get fixed priority */
     {
@@ -775,23 +793,26 @@ void PThread::SetPriority(Priority priorityLevel)
 PThread::Priority PThread::GetPriority() const
 {
 #if defined(LINUX)
-  int schedulingPolicy;
-  struct sched_param schedParams;
+  int policy;
+  struct sched_param params;
   
-  PAssertPTHREAD(pthread_getschedparam, (PX_threadId, &schedulingPolicy, &schedParams));
+  PAssertPTHREAD(pthread_getschedparam, (PX_threadId, &policy, &params));
   
-  switch( schedulingPolicy )
+  switch (policy)
   {
     case SCHED_OTHER:
       break;
-      
+
     case SCHED_FIFO:
     case SCHED_RR:
-      return HighestPriority;
-      
+      return params.sched_priority > sched_get_priority_min(policy) ? HighestPriority : HighPriority;
+
+    case SCHED_BATCH :
+      return LowPriority;
+
     default:
       /* Unknown scheduler. We don't know what priority this thread has. */
-      PTRACE(1, "PTLib\tPThread::GetPriority: unknown scheduling policy #" << schedulingPolicy);
+      PTRACE(1, "PTLib\tPThread::GetPriority: unknown scheduling policy #" << policy);
   }
 #endif
 
