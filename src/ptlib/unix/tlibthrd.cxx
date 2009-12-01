@@ -121,9 +121,11 @@ static int GetSchedParam(PThread::Priority priority, sched_param & param)
       param.sched_priority = sched_get_priority_min(SCHED_RR);
       break;
 
+#ifdef SCHED_BATCH
     case PThread::LowestPriority :
     case PThread::LowPriority :
       return SCHED_BATCH;
+#endif
 
     default : // PThread::NormalPriority :
       return SCHED_OTHER;
@@ -780,8 +782,10 @@ PThread::Priority PThread::GetPriority() const
     case SCHED_RR:
       return params.sched_priority > sched_get_priority_min(policy) ? HighestPriority : HighPriority;
 
+#ifdef SCHED_BATCH
     case SCHED_BATCH :
       return LowPriority;
+#endif
 
     default:
       /* Unknown scheduler. We don't know what priority this thread has. */
