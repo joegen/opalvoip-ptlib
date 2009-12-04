@@ -485,11 +485,15 @@ class P_fd_set {
         return set;
       }
 
-  private:
+  protected:
     void Construct();
 
     SOCKET max_fd;
     fd_set * set;
+
+  private:
+    P_fd_set(const P_fd_set &) {}
+    void operator=(const P_fd_set &) {}
 };
 
 
