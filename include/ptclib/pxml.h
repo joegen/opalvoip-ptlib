@@ -477,8 +477,6 @@ class PXMLParser : public PXMLBase
     PXMLElement * GetXMLTree() const;
     PXMLElement * SetXMLTree(PXMLElement * newRoot);
 
-    PString GetDefaultNamespace() const { return m_defaultNamespace; }
-
   protected:
     void * expat;
     PXMLElement * rootElement;
@@ -487,7 +485,7 @@ class PXMLParser : public PXMLBase
     PXMLData * lastElement;
     PString version, encoding;
     StandAloneType m_standAlone;
-    PString m_defaultNamespace;
+    PStringToString m_tempNamespaceList;
 };
 
 ////////////////////////////////////////////////////////////
