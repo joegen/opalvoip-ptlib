@@ -186,6 +186,19 @@ class PXML : public PXMLBase
       Subtree,
       RequiredAttributeWithValueMatching,
       RequiredElementWithBodyMatching,
+      OptionalElement,
+      OptionalAttribute,
+      OptionalNonEmptyAttribute,
+      OptionalAttributeWithValue,
+      OptionalAttributeWithValueMatching,
+      OptionalElementWithBodyMatching,
+      SetDefaultNamespace,
+      SetNamespace
+    };
+
+    struct ValidationContext {
+      PString m_defaultNameSpace;
+      PStringToString m_nameSpaces;
     };
 
     struct ValidationInfo {
@@ -196,6 +209,7 @@ class PXML : public PXMLBase
         const void     * m_placeHolder;
         const char     * m_attributeValues;
         ValidationInfo * m_subElement;
+        const char     * m_namespace;
       };
 
       PINDEX m_minCount;
@@ -203,9 +217,8 @@ class PXML : public PXMLBase
     };
 
     bool Validate(const ValidationInfo * validator);
-    bool ValidateElements(PXMLElement * baseElement, const ValidationInfo * elements);
-    bool ValidateElement(PXMLElement * element, const ValidationInfo * elements);
-
+    bool ValidateElements(ValidationContext & context, PXMLElement * baseElement, const ValidationInfo * elements);
+    bool ValidateElement(ValidationContext & context, PXMLElement * element, const ValidationInfo * elements);
 
     PString  GetErrorString() const { return m_errorString; }
     unsigned GetErrorColumn() const { return m_errorColumn; }
@@ -254,6 +267,7 @@ class PXML : public PXMLBase
     PSortedStringList noIndentElements;
 
     PString docType;
+    PString m_defaultNameSpace;
 };
 
 ////////////////////////////////////////////////////////////
@@ -385,6 +399,14 @@ class PXMLElement : public PXMLObject {
     void GetFilePosition(unsigned & col, unsigned & line) const { col = column; line = lineNumber; }
     void SetFilePosition(unsigned col,   unsigned line)         { column = col; lineNumber = line; }
 
+    void AddNamespace(const PString & prefix, const PString & uri);
+    void RemoveNamespace(const PString & prefix);
+
+    bool GetDefaultNamespace(PCaselessString & str) const;
+    bool GetNamespace(const PCaselessString & prefix, PCaselessString & str) const;
+    PCaselessString PrependNamespace(const PCaselessString & name) const;
+    bool GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri);
+
   protected:
     PCaselessString name;
     PStringToString attributes;
@@ -392,6 +414,8 @@ class PXMLElement : public PXMLObject {
     bool dirty;
     unsigned column;
     unsigned lineNumber;
+    PStringToString m_nameSpaces;
+    PCaselessString m_defaultNamespace;
 };
 
 ////////////////////////////////////////////////////////////
@@ -453,6 +477,8 @@ class PXMLParser : public PXMLBase
     PXMLElement * GetXMLTree() const;
     PXMLElement * SetXMLTree(PXMLElement * newRoot);
 
+    PString GetDefaultNamespace() const { return m_defaultNamespace; }
+
   protected:
     void * expat;
     PXMLElement * rootElement;
@@ -461,6 +487,7 @@ class PXMLParser : public PXMLBase
     PXMLData * lastElement;
     PString version, encoding;
     StandAloneType m_standAlone;
+    PString m_defaultNamespace;
 };
 
 ////////////////////////////////////////////////////////////

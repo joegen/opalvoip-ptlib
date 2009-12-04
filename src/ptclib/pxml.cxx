@@ -224,9 +224,11 @@ void PXMLParser::EndDocTypeDecl()
 {
 }
 
-void PXMLParser::StartNamespaceDeclHandler(const XML_Char * /*prefix*/, 
-                                           const XML_Char * /*uri*/)
+void PXMLParser::StartNamespaceDeclHandler(const XML_Char * prefix, 
+                                           const XML_Char * uri)
 {
+  if (currentElement != NULL) 
+    currentElement->AddNamespace((prefix == NULL ? "" : prefix), uri);
 }
 
 void PXMLParser::EndNamespaceDeclHandler(const XML_Char * /*prefix*/)
@@ -263,11 +265,12 @@ PXML::PXML(const PXML & xml)
 {
   Construct(xml.m_options, NULL);
 
-  loadFromFile = xml.loadFromFile;
-  loadFilename = xml.loadFilename;
-  version      = xml.version;
-  encoding     = xml.encoding;
-  m_standAlone = xml.m_standAlone;
+  loadFromFile       = xml.loadFromFile;
+  loadFilename       = xml.loadFilename;
+  version            = xml.version;
+  encoding           = xml.encoding;
+  m_standAlone       = xml.m_standAlone;
+  m_defaultNameSpace = xml.m_defaultNameSpace;
 
   PWaitAndSignal m(xml.rootMutex);
 
@@ -510,9 +513,10 @@ bool PXML::Load(const PString & data, PXMLParser::Options options)
     if (!stat)
       parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
 
-    version    = parser.GetVersion();
-    encoding   = parser.GetEncoding();
+    version      = parser.GetVersion();
+    encoding     = parser.GetEncoding();
     m_standAlone = parser.GetStandAlone();
+    m_defaultNameSpace = parser.GetDefaultNamespace();
 
     loadingRootElement = parser.GetXMLTree();
   }
@@ -702,10 +706,11 @@ void PXML::ReadFrom(istream & strm)
     if (parser.GetXMLTree() != NULL) {
       rootMutex.Wait();
 
-      version      = parser.GetVersion();
-      encoding     = parser.GetEncoding();
-      m_standAlone = parser.GetStandAlone();
-      rootElement  = parser.GetXMLTree();
+      version            = parser.GetVersion();
+      encoding           = parser.GetEncoding();
+      m_standAlone       = parser.GetStandAlone();
+      rootElement        = parser.GetXMLTree();
+      m_defaultNameSpace = parser.GetDefaultNamespace();
 
       rootMutex.Signal();
 
@@ -747,39 +752,66 @@ bool PXML::Validate(const ValidationInfo * validator)
 
   m_errorString.MakeEmpty();
 
-  if (rootElement != NULL)
-    return ValidateElements(rootElement, validator);
+  ValidationContext context;
 
-  m_errorString << "No root element";
-  return false;
+  bool s;
+  if (rootElement != NULL)
+    s = ValidateElements(context, rootElement, validator);
+  else {
+    m_errorString << "No root element";
+    s = false;
+  }
+
+  return s;
 }
 
 
-bool PXML::ValidateElements(PXMLElement * baseElement, const ValidationInfo * validator)
+bool PXML::ValidateElements(ValidationContext & context, PXMLElement * baseElement, const ValidationInfo * validator)
 {
   if (PAssertNULL(validator) == NULL)
     return false;
 
   while (validator->m_op != EndOfValidationList) {
-    if (!ValidateElement(baseElement, validator))
+    if (!ValidateElement(context, baseElement, validator))
       return false;
     ++validator;
   }
   return true;
 }
 
-
-bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * validator)
+bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElement, const ValidationInfo * validator)
 {
   if (PAssertNULL(validator) == NULL)
     return false;
 
+  PCaselessString elementNameWithNs(validator->m_name);
+  {
+    PINDEX pos;
+    if ((pos = elementNameWithNs.FindLast(':')) == P_MAX_INDEX) {
+      if (!context.m_defaultNameSpace.IsEmpty())
+        elementNameWithNs = context.m_defaultNameSpace + "|" + elementNameWithNs.Right(pos);
+    }
+    else {
+      PString * uri = context.m_nameSpaces.GetAt(elementNameWithNs.Left(pos));
+      if (uri != NULL)
+        elementNameWithNs = *uri + "|" + elementNameWithNs.Right(pos);
+    }
+  }
+
   switch (validator->m_op) {
+
+    case SetDefaultNamespace:
+      context.m_defaultNameSpace = validator->m_name;
+      break;
+
+    case SetNamespace:
+      context.m_nameSpaces.SetAt(validator->m_name, validator->m_namespace);;
+      break;
+
     case ElementName:
       {
-        PCaselessString name = baseElement->GetName();
-        if (name != validator->m_name) {
-          m_errorString << "Expected element with name \"" << validator->m_name << '"';
+        if (elementNameWithNs != baseElement->GetName()) {
+          m_errorString << "Expected element with name \"" << elementNameWithNs << '"';
           baseElement->GetFilePosition(m_errorColumn, m_errorLine);
           return false;
         }
@@ -788,11 +820,11 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
 
     case Subtree:
       {
-        if (baseElement->GetElement(validator->m_name) == NULL) {
+        if (baseElement->GetElement(elementNameWithNs) == NULL) {
           if (validator->m_minCount == 0)
             break;
 
-          m_errorString << "Must have at least " << validator->m_minCount << " instances of '" << validator->m_name << "'";
+          m_errorString << "Must have at least " << validator->m_minCount << " instances of '" << elementNameWithNs << "'";
           baseElement->GetFilePosition(m_errorColumn, m_errorLine);
           return false;
         }
@@ -800,14 +832,14 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
         // verify each matching element
         PINDEX index = 0;
         PXMLElement * subElement;
-        while ((subElement = baseElement->GetElement(validator->m_name, index)) != NULL) {
+        while ((subElement = baseElement->GetElement(elementNameWithNs, index)) != NULL) {
           if (validator->m_maxCount > 0 && index > validator->m_maxCount) {
-            m_errorString << "Must have at no more than " << validator->m_maxCount << " instances of '" << validator->m_name << "'";
+            m_errorString << "Must have at no more than " << validator->m_maxCount << " instances of '" << elementNameWithNs << "'";
             baseElement->GetFilePosition(m_errorColumn, m_errorLine);
             return false;
           }
 
-          if (!ValidateElement(subElement, validator->m_subElement))
+          if (!ValidateElement(context, subElement, validator->m_subElement))
             return false;
 
           ++index;
@@ -817,20 +849,25 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
 
     case RequiredElement:
     case RequiredElementWithBodyMatching:
+      if (baseElement->GetElement(elementNameWithNs) == NULL) {
+        m_errorString << "Element \"" << baseElement->GetName() << "\" missing required subelement \"" << elementNameWithNs << '"';
+        baseElement->GetFilePosition(m_errorColumn, m_errorLine);
+        return false;
+      }
+      // fall through
+
+    case OptionalElement:
+    case OptionalElementWithBodyMatching:
       {
-        if (baseElement->GetElement(validator->m_name) == NULL) {
-          if (validator->m_minCount == 0)
-            break;
-          m_errorString << "Element \"" << baseElement->GetName() << "\" missing required subelement \"" << validator->m_name << '"';
-          baseElement->GetFilePosition(m_errorColumn, m_errorLine);
-          return false;
-        }
+        if (baseElement->GetElement(validator->m_name) == NULL) 
+          break;
+
         // verify each matching element
         PINDEX index = 0;
         PXMLElement * subElement;
-        while ((subElement = baseElement->GetElement(validator->m_name, index)) != NULL) {
+        while ((subElement = baseElement->GetElement(elementNameWithNs, index)) != NULL) {
           if (validator->m_maxCount > 0 && index > validator->m_maxCount) {
-            m_errorString << "Must have at no more than " << validator->m_maxCount << " instances of '" << validator->m_name << "'";
+            m_errorString << "Must have at no more than " << validator->m_maxCount << " instances of '" << elementNameWithNs << "'";
             baseElement->GetFilePosition(m_errorColumn, m_errorLine);
             return false;
           }
@@ -847,6 +884,13 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
       }
       break;
 
+    case OptionalAttribute:
+    case OptionalAttributeWithValue:
+    case OptionalNonEmptyAttribute:
+    case OptionalAttributeWithValueMatching:
+      if (!baseElement->HasAttribute(validator->m_name)) 
+        break;
+      // fall through
     case RequiredAttribute:
     case RequiredAttributeWithValue:
     case RequiredNonEmptyAttribute:
@@ -859,6 +903,7 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
 
       switch (validator->m_op) {
         case RequiredNonEmptyAttribute:
+        case OptionalNonEmptyAttribute:
           if (baseElement->GetAttribute(validator->m_name).IsEmpty()) {
             m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "\" which cannot be empty";
             baseElement->GetFilePosition(m_errorColumn, m_errorLine);
@@ -866,7 +911,8 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
           }
           break;
 
-        case RequiredAttributeWithValue :
+        case RequiredAttributeWithValue:
+        case OptionalAttributeWithValue:
           {
             PString toMatch(baseElement->GetAttribute(validator->m_name));
             PStringArray values = PString(validator->m_attributeValues).Lines();
@@ -888,7 +934,8 @@ bool PXML::ValidateElement(PXMLElement * baseElement, const ValidationInfo * val
           }
           break;
 
-        case RequiredAttributeWithValueMatching :
+        case RequiredAttributeWithValueMatching:
+        case OptionalAttributeWithValueMatching:
           {
             PString toMatch(baseElement->GetAttribute(validator->m_name));
             PRegularExpression regex(PString(validator->m_attributeValues));
@@ -1011,9 +1058,74 @@ PINDEX PXMLElement::FindObject(const PXMLObject * ptr) const
   return subObjects.GetObjectsIndex(ptr);
 }
 
-
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const
+bool PXMLElement::GetDefaultNamespace(PCaselessString & str) const
 {
+  if (!m_defaultNamespace.IsEmpty()) {
+    str = m_defaultNamespace;
+    return true;
+  }
+
+  if (parent != NULL)
+    return parent->GetDefaultNamespace(str);
+
+  return false;
+}
+
+bool PXMLElement::GetNamespace(const PCaselessString & prefix, PCaselessString & str) const
+{
+  if (m_nameSpaces.GetValuesIndex(prefix) != P_MAX_INDEX) {
+    str = m_nameSpaces[prefix];
+    return true;
+  }
+
+  if (parent != NULL)
+    return parent->GetNamespace(prefix, str);
+
+  return false;
+}
+
+bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri)
+{
+  if (prefix.IsEmpty()) {
+    if (!m_defaultNamespace.IsEmpty()) {
+      uri = m_defaultNamespace + "|"; 
+      return true;
+    }
+  }
+  else {
+    PINDEX i = m_nameSpaces.GetValuesIndex(prefix);
+    if (i != P_MAX_INDEX) {
+      uri = m_nameSpaces.GetKeyAt(i) + "|";
+      return true;
+    }
+  }
+
+  if (parent != NULL)
+    return parent->GetNamespace(prefix, uri);
+
+  uri = prefix + ":";
+
+  return false;
+}
+
+PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) const
+{
+  PCaselessString name(name_);
+  PCaselessString newPrefix;
+  PINDEX pos;
+  if ((pos = name.FindLast(':')) != P_MAX_INDEX) {
+    if (GetDefaultNamespace(newPrefix))
+      name = newPrefix + "|" + name.Right(pos);
+  }
+  else if (GetNamespace(name.Left(pos), newPrefix))
+    name = newPrefix + "|" + name.Right(pos);
+
+  return name;
+}
+
+PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, const PCaselessString & attr, const PString & attrval) const
+{
+  PCaselessString name(PrependNamespace(name_));
   for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
     if (subObjects[i].IsElement()) {
       PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
@@ -1025,8 +1137,9 @@ PXMLElement * PXMLElement::GetElement(const PCaselessString & name, const PCasel
 }
 
 
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX index) const
+PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, PINDEX index) const
 {
+  PCaselessString name(PrependNamespace(name_));
   for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
     if (subObjects[i].IsElement()) {
       PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
@@ -1232,6 +1345,22 @@ PCaselessString PXMLElement::GetPathName() const
     while ((el = el->GetParent()) != NULL)
         s = el->GetName() + ":" + s;
     return s;
+}
+
+void PXMLElement::AddNamespace(const PString & prefix, const PString & uri)
+{
+  if (prefix.IsEmpty())
+    m_defaultNamespace = uri;
+  else
+    m_nameSpaces.SetAt(prefix, uri);
+}
+
+void PXMLElement::RemoveNamespace(const PString & prefix)
+{
+  if (prefix.IsEmpty())
+    m_defaultNamespace.MakeEmpty();
+  else
+    m_nameSpaces.RemoveAt(prefix);
 }
 
 ///////////////////////////////////////////////////////
