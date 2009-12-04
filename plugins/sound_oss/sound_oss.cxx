@@ -556,8 +556,9 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
         PTRACE(6, "OSS\tRead interrupted");
       }
       total += bytes;
-      if (total != len)
+      if (total != len) {
         PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
+      }
     }
     lastReadCount = total;
   }
@@ -836,7 +837,7 @@ PBoolean PSoundChannelOSS::StartRecording()
   if (os_handle == 0)
     return PTrue;
 
-  P_fd_set fds = os_handle;
+  P_fd_set fds(os_handle);
   P_timeval instant;
   return ConvertOSError(::select(1, fds, NULL, NULL, instant));
 }
