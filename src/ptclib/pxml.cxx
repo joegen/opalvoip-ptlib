@@ -177,6 +177,11 @@ void PXMLParser::StartElement(const char * name, const char **attrs)
     rootElement = currentElement;
     rootOpen = true;
   }
+
+  for (PINDEX i = 0; i < m_tempNamespaceList.GetSize(); ++i) 
+    currentElement->AddNamespace(m_tempNamespaceList.GetKeyAt(i), m_tempNamespaceList.GetDataAt(i));
+
+  m_tempNamespaceList.RemoveAll();
 }
 
 void PXMLParser::EndElement(const char * /*name*/)
@@ -227,8 +232,7 @@ void PXMLParser::EndDocTypeDecl()
 void PXMLParser::StartNamespaceDeclHandler(const XML_Char * prefix, 
                                            const XML_Char * uri)
 {
-  if (currentElement != NULL) 
-    currentElement->AddNamespace((prefix == NULL ? "" : prefix), uri);
+  m_tempNamespaceList.SetAt(PString(prefix == NULL ? "" : prefix), uri);
 }
 
 void PXMLParser::EndNamespaceDeclHandler(const XML_Char * /*prefix*/)
@@ -516,7 +520,6 @@ bool PXML::Load(const PString & data, PXMLParser::Options options)
     version      = parser.GetVersion();
     encoding     = parser.GetEncoding();
     m_standAlone = parser.GetStandAlone();
-    m_defaultNameSpace = parser.GetDefaultNamespace();
 
     loadingRootElement = parser.GetXMLTree();
   }
@@ -710,7 +713,6 @@ void PXML::ReadFrom(istream & strm)
       encoding           = parser.GetEncoding();
       m_standAlone       = parser.GetStandAlone();
       rootElement        = parser.GetXMLTree();
-      m_defaultNameSpace = parser.GetDefaultNamespace();
 
       rootMutex.Signal();
 
@@ -1113,7 +1115,7 @@ PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) con
   PCaselessString name(name_);
   PCaselessString newPrefix;
   PINDEX pos;
-  if ((pos = name.FindLast(':')) != P_MAX_INDEX) {
+  if ((pos = name.FindLast(':')) == P_MAX_INDEX) {
     if (GetDefaultNamespace(newPrefix))
       name = newPrefix + "|" + name.Right(pos);
   }
