@@ -31,6 +31,7 @@
  * $Date$
  */
 
+#ifndef EINPROGRESS
 #define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)
 #define ENOTSOCK                (WSAENOTSOCK|PWIN32ErrorFlag)
 #define EMSGSIZE                (WSAEMSGSIZE|PWIN32ErrorFlag)
@@ -54,6 +55,7 @@
 #define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
 #define EHOSTDOWN               (WSAEHOSTDOWN|PWIN32ErrorFlag)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
+#endif
 
 
 #define NETDB_SUCCESS 0
