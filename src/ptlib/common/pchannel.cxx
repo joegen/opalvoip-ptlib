@@ -121,7 +121,7 @@ PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekoff(off_type off, ios_b
   sync();
   if (PIsDescendant(channel, PFile)) {
     PFile * file = (PFile *)channel;
-    file->SetPosition(off, (PFile::FilePositionOrigin)dir);
+    file->SetPosition((off_t)off, (PFile::FilePositionOrigin)dir);
     return file->GetPosition();
   }
 
