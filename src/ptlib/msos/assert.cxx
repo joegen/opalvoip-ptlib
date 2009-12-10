@@ -271,7 +271,7 @@ void PAssertFunc(const char * msg)
 
   if (PProcess::Current().IsServiceProcess()) {
 #ifndef _WIN32_WCE
-    PSYSTEMLOG(Fatal, sstr.c_str());
+    PSYSTEMLOG(Fatal, sstr);
 #if defined(_MSC_VER) && defined(_DEBUG)
     if (PServiceProcess::Current().debugMode)
       __asm int 3;
@@ -279,6 +279,8 @@ void PAssertFunc(const char * msg)
 #endif // !_WIN32_WCE
     return;
   }
+
+  PTRACE(0, sstr);
 
 #if defined(_WIN32)
   static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
