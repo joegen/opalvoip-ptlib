@@ -227,6 +227,7 @@ PBoolean PWAVFile::Open(OpenMode mode, int opts)
   // if we did not know the format when we opened, then we had better know it now
   if (formatHandler == NULL) {
     Close();
+    SetErrorValues(BadParameter, EINVAL);
     return PFalse;
   }
 
