@@ -79,7 +79,10 @@ class PTextToSpeech : public PObject
 #if P_SAPI
 PFACTORY_LOAD(PTextToSpeech_SAPI);
 #endif
+
+#ifndef _WIN32_WCE
 PFACTORY_LOAD(PTextToSpeech_Festival);
+#endif
 
 
 #endif // PTLIB_PTTS_H
