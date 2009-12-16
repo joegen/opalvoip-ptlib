@@ -1562,7 +1562,7 @@ PString PDynaLink::GetName(PBoolean full) const
   if (m_hDLL != NULL) {
 #ifdef UNICODE
     TCHAR path[_MAX_PATH];
-    GetModuleFileName(_hDLL, path, _MAX_PATH-1);
+    GetModuleFileName(m_hDLL, path, _MAX_PATH-1);
     str = PString(path);
 #else
     GetModuleFileName(m_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
