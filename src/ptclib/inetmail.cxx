@@ -1371,7 +1371,7 @@ PString PRFC822Channel::MultipartMessage()
   PString boundary;
 
   do {
-    boundary.sprintf("PWLib.%lu.%u", time(NULL), rand());
+    boundary.sprintf("PWLib.%lu.%u", PTime().GetTimeInSeconds(), rand());
   } while (!MultipartMessage(boundary));
 
   return boundary;
