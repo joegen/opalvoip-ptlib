@@ -45,7 +45,7 @@
 
 PRandom::PRandom()
 {
-  SetSeed((DWORD)(time(NULL)+clock()));
+  SetSeed(PTimer::Tick().GetInterval());
 }
 
 

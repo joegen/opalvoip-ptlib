@@ -38,6 +38,7 @@
 #include <ptlib/pprocess.h>
 #include <ptlib/videoio.h>
 #include <ptclib/delaychan.h>
+#include <ptclib/random.h>
 
 
 // Device names for fake output
@@ -1878,7 +1879,7 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
   heights[8] = frameHeight;
 
   m_grabCount++;
-  colourIndex = (unsigned int)time(NULL);//time in seconds since last epoch.
+  colourIndex = PRandom::Number();
   // Provides a difference if run on two ohphone sessions.
   colNo = (colourIndex / 10) % 7;   //Every 10 seconds, coloured background blocks move.
 
