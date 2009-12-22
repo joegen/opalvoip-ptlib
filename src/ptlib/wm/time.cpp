@@ -18,8 +18,8 @@
 
 #ifdef _WIN32_WCE
 
+#include <time.h>
 #include <ptlib/wm/stdlibx.h>
-#include <ptlib/wm/time.h>
 
 static tm tb;
 static int _lpdays[] = { -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
@@ -147,13 +147,6 @@ struct tm * __cdecl gmtime (const time_t *timp)
 
 }
 
-time_t	FileTimeToTime(const FILETIME FileTime)
-{
-	SYSTEMTIME SystemTime;
-	FileTimeToSystemTime(&FileTime,&SystemTime);
-	return SystemTimeToTime(&SystemTime);
-}
-
 time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime)
 {	
 	tm aTm;
@@ -173,6 +166,13 @@ time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime)
         aTm.tm_yday = _days[aTm.tm_mon] + aTm.tm_mday;
 
 	return mktime(&aTm);
+}
+
+time_t	FileTimeToTime(const FILETIME FileTime)
+{
+	SYSTEMTIME SystemTime;
+	FileTimeToSystemTime(&FileTime,&SystemTime);
+	return SystemTimeToTime(&SystemTime);
 }
 
 const __int64 n1SecIn100NS = (__int64)10000000;

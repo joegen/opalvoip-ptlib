@@ -168,10 +168,10 @@ PINLINE int PTime::GetDayOfYear() const
   { struct tm ts; return os_localtime(&theTime, &ts)->tm_yday; }
 
 PINLINE PBoolean PTime::IsPast() const
-  { return theTime < time(NULL); }
+  { return GetTimeInSeconds() < PTime().GetTimeInSeconds(); }
 
 PINLINE PBoolean PTime::IsFuture() const
-  { return theTime > time(NULL); }
+  { return GetTimeInSeconds() > PTime().GetTimeInSeconds(); }
 
 
 PINLINE PString PTime::AsString(const PString & format, int zone) const
