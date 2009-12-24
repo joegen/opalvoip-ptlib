@@ -172,7 +172,7 @@ class PFileInfo : public PObject
    used to determine if a character is a possible separator.
 
    The directory may be opened to gain access to the list of files that it
-   contains. Note that the directory does {\bf not} contain the "." and ".."
+   contains. Note that the directory does {\b not} contain the "." and ".."
    entries that some platforms support.
 
    The ancestor class is dependent on the platform. For file systems that are
@@ -367,7 +367,7 @@ class PDirectory : public PFilePathString
        Only files that are of a type that is specified in the mask will be
        returned.
        
-       Note that the directory scan will {\bf not} return the "." and ".."
+       Note that the directory scan will {\b not} return the "." and ".."
        entries that some platforms support.
 
        @return
@@ -385,7 +385,7 @@ class PDirectory : public PFilePathString
        Only files that are of a type that is specified in the mask will be
        returned.
 
-       Note that the directory scan will {\bf not} return the "." and ".."
+       Note that the directory scan will {\b not} return the "." and ".."
        entries that some platforms support.
 
        @return
@@ -401,7 +401,7 @@ class PDirectory : public PFilePathString
        Only files that are of a type that is specified in the mask passed to
        the #Open()# or #Restart()# functions will be returned.
 
-       Note that the directory scan will {\bf not} return the "." and ".."
+       Note that the directory scan will {\b not} return the "." and ".."
        entries that some platforms support.
 
        @return
@@ -420,7 +420,7 @@ class PDirectory : public PFilePathString
        To get a full path name concatenate the PDirectory object itself with
        the entry name.
        
-       Note that the directory scan will {\bf not} return the "." and ".."
+       Note that the directory scan will {\b not} return the "." and ".."
        entries that some platforms support.
 
        @return
@@ -431,7 +431,7 @@ class PDirectory : public PFilePathString
     /**Determine if the directory entry currently being scanned is itself
        another directory entry.
        
-       Note that the directory scan will {\bf not} return the "." and ".."
+       Note that the directory scan will {\b not} return the "." and ".."
        entries that some platforms support.
 
        @return

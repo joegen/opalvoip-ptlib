@@ -92,7 +92,7 @@ typedef PNotifierFunctionTemplate<INT> PNotifierFunction;
    safe mechanism for calling arbitrary member functions on classes. The
    "pointer to a member function" capability built into C++ makes the
    assumption that the function name exists in an ancestor class. If you wish
-   to call a member function name that does {\bf not} exist in any ancestor
+   to call a member function name that does {\b not} exist in any ancestor
    class, very type unsafe casting of the member functions must be made. Some
    compilers will even refuse to do it at all!
 

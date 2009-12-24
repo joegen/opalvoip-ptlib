@@ -42,7 +42,7 @@
 
 
 /** This class defines a thread synchronisation object.
-  This form of semaphore is used to indicate an \it event has occurred. A
+  This form of semaphore is used to indicate an <i>event</i> has occurred. A
   thread may block on the sync point and wait until another thread signals
   that it may continue. eg:
 \verbatim

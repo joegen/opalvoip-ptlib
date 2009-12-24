@@ -293,7 +293,7 @@ class PProcess : public PThread
 
   /**@name Process information functions */
   //@{
-    /**Get the current processes object instance. The {\it current process}
+    /**Get the current processes object instance. The <i>current process</i>
        is the one the application is running in.
        
        @return
@@ -325,7 +325,7 @@ class PProcess : public PThread
 
        Default behaviour returns false and the process is killed.
 
-       @Return true if the process is to be allowed to continue, false otherwise.
+       @return true if the process is to be allowed to continue, false otherwise.
       */
     virtual bool OnInterrupt(
       bool terminating ///< true if process terminating.

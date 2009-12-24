@@ -89,14 +89,9 @@ class PFile : public PChannel
        #Open()# function to set the options.
 
        The #ModeDefault# option will use the following values:
-\begin{tabular}{rr}
-          Mode  & Options   \\
-\hline
-          #ReadOnly#  &    #MustExist# \\
-          #WriteOnly# &    #Create | Truncate# \\
-          #ReadWrite# &    #Create# \\
-\hline
-\end{tabular}
+          \arg \c ReadOnly  #MustExist#
+          \arg \c WriteOnly #Create | Truncate#
+          \arg \c ReadWrite #Create#
      */
     enum OpenOptions {
       /// File options depend on the OpenMode parameter.

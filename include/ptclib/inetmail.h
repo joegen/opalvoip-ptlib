@@ -49,7 +49,7 @@ class PSocket;
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
-      <PRE><CODE>
+      <CODE>
       PSMTPClient mail("mailserver");
       if (mail.IsOpen()) {
         mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com");
@@ -59,7 +59,7 @@ class PSocket;
       }
       else
          PError << "Mail conection failed." << endl;
-      </PRE></CODE>
+      </CODE>
 
     When acting as a server, a descendant class would be created to override
     at least the <A>LookUpName()</A> and <A>HandleMessage()</A> functions.
@@ -93,7 +93,7 @@ class PSMTP : public PInternetProtocol
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
-      <PRE><CODE>
+      <CODE>
       PSMTPSocket mail("mailserver");
       if (mail.IsOpen()) {
         mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com");
@@ -103,7 +103,7 @@ class PSMTP : public PInternetProtocol
       }
       else
          PError << "Mail conection failed." << endl;
-      </PRE></CODE>
+      </CODE>
 */
 class PSMTPClient : public PSMTP
 {
@@ -192,7 +192,7 @@ class PSMTPClient : public PSMTP
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
-      <PRE><CODE>
+      <CODE>
       PSMTPSocket mail("mailserver");
       if (mail.IsOpen()) {
         mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com");
@@ -202,7 +202,7 @@ class PSMTPClient : public PSMTP
       }
       else
          PError << "Mail conection failed." << endl;
-      </PRE></CODE>
+      </CODE>
 
     When acting as a server, a descendant class would be created to override
     at least the <A>LookUpName()</A> and <A>HandleMessage()</A> functions.
@@ -423,7 +423,7 @@ class PSMTPServer : public PSMTP
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to retrieve a message using the following procedure:
-      <PRE><CODE>
+      <CODE>
       PPOP3Client mail("popserver");
       if (mail.IsOpen()) {
         if (mail.LogIn("Me", "password")) {
@@ -444,7 +444,7 @@ class PSMTPServer : public PSMTP
       }
       else
          PError << "Mail conection failed." << endl;
-      </PRE></CODE>
+      </CODE>
 
     When acting as a server, a descendant class would be created to override
     at least the <A>HandleOpenMailbox()</A>, <A>HandleSendMessage()</A> and
@@ -496,7 +496,7 @@ class PPOP3 : public PInternetProtocol
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to retrieve a message using the following procedure:
-      <PRE><CODE>
+      <CODE>
       PPOP3Client mail;
       if (mail.Connect("popserver")) {
         if (mail.LogIn("Me", "password")) {
@@ -517,7 +517,7 @@ class PPOP3 : public PInternetProtocol
       }
       else
          PError << "Mail conection failed." << endl;
-      </PRE></CODE>
+      </CODE>
  */
 class PPOP3Client : public PPOP3
 {
@@ -788,7 +788,7 @@ class PPOP3Server : public PPOP3
    the stream so the Read() and Write() functions only deal with the message
    body.
    For example to send a message using the SMTP classes:
-      <PRE><CODE>
+      <CODE>
       PSMTPClient mail("mailserver");
       if (mail.IsOpen()) {
         PRFC822Channel message;
@@ -805,7 +805,7 @@ class PPOP3Server : public PPOP3
       }
       else
          PError << "Mail conection failed." << endl;
-      </PRE></CODE>
+      </CODE>
   */
 class PRFC822Channel : public PIndirectChannel
 {
