@@ -163,9 +163,9 @@ class PFilePath : public PFilePathString
 
     /**Concatenate a C string to a path, modifiying that path. The
        #cstr# parameter is typically a literal string, eg:
-\begin{verbatim}
+<code>
         myStr += "fred";
-\end{verbatim}
+</code>
 
        @return
        reference to string that was concatenated to.
@@ -176,9 +176,9 @@ class PFilePath : public PFilePathString
 
     /**Concatenate a single character to a path. The #ch#
        parameter is typically a literal, eg:
-\begin{verbatim}
+<code>
         myStr += '!';
-\end{verbatim}
+</code>
 
        @return
        new string with concatenation of the object and parameter.
@@ -247,7 +247,7 @@ class PFilePath : public PFilePathString
        platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this would be 
        "C:\SRC\PWLIB\".
 
-       Note that for Unix platforms, this returns the {\bf physical} path
+       Note that for Unix platforms, this returns the {\b physical} path
        of the directory. That is all symlinks are resolved. Thus the directory
        returned may not be the same as the value of #GetPath()#.
 

@@ -44,7 +44,7 @@
 /**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
-\begin{verbatim}
+<code>
       PMutex mutex;
 
       ...
@@ -56,7 +56,7 @@
       mutex.Signal();
 
       ...
-\end{verbatim}
+</code>
     The first thread will pass through the #Wait()# function, a second
     thread will block on that function until the first calls the
     #Signal()# function, releasing the second thread.

@@ -42,7 +42,7 @@
 
 
 /**A channel that uses a operating system pipe between the current process and
-   a sub-process. On platforms that support {\it multi-processing}, the
+   a sub-process. On platforms that support <i>multi-processing</i>, the
    sub-program is executed concurrently with the calling process.
    
    Where full multi-processing is not supported then the sub-program is run
@@ -64,7 +64,7 @@
    
    The #CanReadAndWrite()# function effectively determines whether full
    multi-processing is supported by the platform. Note that this is different
-   to whether {\it multi-threading} is supported.
+   to whether <i>multi-threading</i> is supported.
  */
  
 class PChannel;

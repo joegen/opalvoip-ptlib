@@ -52,12 +52,18 @@ class PString;
 /**The same as the standard C snprintf(fmt, 1000, ...), but returns a
    PString instead of a const char *.
  */
-PString psprintf(const char * fmt, ...);
+PString psprintf(
+  const char * fmt, ///< printf style format string
+  ...
+);
 
 /**The same as the standard C vsnprintf(fmt, 1000, va_list arg), but
    returns a PString instead of a const char *.
  */
-PString pvsprintf(const char * fmt, va_list arg);
+PString pvsprintf(
+  const char * fmt, ///< printf style format string
+  va_list arg       ///< Arguments for formatting
+);
 
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
 PBASEARRAY(PWCharArray, unsigned short);
@@ -75,19 +81,19 @@ PBASEARRAY(PWCharArray, wchar_t);
    made of its contents. That is this instance of the array is disconnected
    from all other references to the string data, if any, and a new string array
    contents created. For example consider the following:
-\begin{verbatim}
+<code>
           PString s1 = "String"; // New array allocated and set to "String"
           PString s2 = s1;       // s2 has pointer to same array as s1
                                  // and reference count is 2 for both
           s1[0] = 's';           // Breaks references into different strings
-\end{verbatim}
+</code>
    at the end s1 is "string" and s2 is "String" both with reference count of 1.
 
    The functions that will "break" a reference are #SetSize()#,
    #SetMinSize()#, #GetPointer()#, #SetAt()# and
    #operator[]#.
 
-   Note that the array is a '\0' terminated string as in C strings. Thus the
+   Note that the array is a '\\0' terminated string as in C strings. Thus the
    memory allocated, and the length of the string may be different values.
 
    Also note that the PString is inherently an 8 bit string. The character set
@@ -108,7 +114,7 @@ class PString : public PCharArray {
   /**@name Construction */
   //@{
     /**Construct an empty string. This will have one character in it which is
-       the '\0' character.
+       the '\\0' character.
      */
     PINLINE PString();
 
@@ -128,18 +134,18 @@ class PString : public PCharArray {
     /**Create a string from the C string array. This is most commonly used with
        a literal string, eg "hello". A new memory block is allocated of a size
        sufficient to take the length of the string and its terminating
-       '\0' character.
+       '\\0' character.
 
        If UCS-2 is used then each char from the char pointer is mapped to a
        single UCS-2 character.
      */
     PString(
-      const char * cstr ///< Standard '\0' terminated C string.
+      const char * cstr ///< Standard '\\0' terminated C string.
     );
 
     /**Create a string from the UCS-2 string array.
        A new memory block is allocated of a size sufficient to take the length
-       of the string and its terminating '\0' character.
+       of the string and its terminating '\\0' character.
      */
     PString(
       const wchar_t * ustr ///< UCS-2 null terminated string.
@@ -147,16 +153,16 @@ class PString : public PCharArray {
 
     /**Create a string from the array. A new memory block is allocated of
        a size equal to #len# plus one which is sufficient to take
-       the string and a terminating '\0' character.
+       the string and a terminating '\\0' character.
 
        If UCS-2 is used then each char from the char pointer is mapped to a
        single UCS-2 character.
 
-       Note that this function will allow a string with embedded '\0'
+       Note that this function will allow a string with embedded '\\0'
        characters to be created, but most of the functions here will be unable
-       to access characters beyond the first '\0'. Furthermore, if the
+       to access characters beyond the first '\\0'. Furthermore, if the
        #MakeMinimumSize()# function is called, all data beyond that first
-       #'\0'# character will be lost.
+       #'\\0'# character will be lost.
      */
     PString(
       const char * cstr,  ///< Pointer to a string of characters.
@@ -165,13 +171,13 @@ class PString : public PCharArray {
 
     /**Create a string from the UCS-2 array. A new memory block is allocated
        of a size equal to #len# plus one which is sufficient to take
-       the string and a terminating '\0' character.
+       the string and a terminating '\\0' character.
 
-       Note that this function will allow a string with embedded '\0'
+       Note that this function will allow a string with embedded '\\0'
        characters to be created, but most of the functions here will be unable
-       to access characters beyond the first '\0'. Furthermore, if the
+       to access characters beyond the first '\\0'. Furthermore, if the
        #MakeMinimumSize()# function is called, all data beyond that first
-       #'\0'# character will be lost.
+       #'\\0'# character will be lost.
      */
     PString(
       const wchar_t * ustr,  ///< Pointer to a string of UCS-2 characters.
@@ -180,13 +186,13 @@ class PString : public PCharArray {
 
     /**Create a string from the UCS-2 array. A new memory block is allocated
        of a size equal to #len# plus one which is sufficient to take
-       the string and a terminating '\0' character.
+       the string and a terminating '\\0' character.
 
-       Note that this function will allow a string with embedded '\0'
+       Note that this function will allow a string with embedded '\\0'
        characters to be created, but most of the functions here will be unable
-       to access characters beyond the first '\0'. Furthermore, if the
+       to access characters beyond the first '\\0'. Furthermore, if the
        #MakeMinimumSize()# function is called, all data beyond that first
-       #'\0'# character will be lost.
+       #'\\0'# character will be lost.
      */
     PString(
       const PWCharArray & ustr ///< UCS-2 null terminated string.
@@ -195,7 +201,7 @@ class PString : public PCharArray {
     /**Create a string from the single character. This is most commonly used
        as a type conversion constructor when a literal character, eg 'A' is
        used in a string expression. A new memory block is allocated of two
-       characters to take the char and its terminating '\0' character.
+       characters to take the char and its terminating '\\0' character.
 
        If UCS-2 is used then the char is mapped to a single UCS-2
        character.
@@ -272,7 +278,7 @@ class PString : public PCharArray {
     enum ConversionType {
       Pascal,   // Data is a length byte followed by characters.
       Basic,    // Data is two length bytes followed by characters.
-      Literal,  // Data is C language style string with \ escape codes.
+      Literal,  // Data is C language style string with \\ escape codes.
       Signed,   // Convert a signed integer to a string.
       Unsigned, // Convert an unsigned integer to a string.
       Decimal,  // Convert a real number to a string in decimal format.
@@ -316,9 +322,9 @@ class PString : public PCharArray {
     /**Assign the C string to the current object. The current instance then
        becomes a unique reference to a copy of the #cstr# parameter.
        The #cstr# parameter is typically a literal string, eg:
-\begin{verbatim}
+<code>
           myStr = "fred";
-\end{verbatim}
+</code>
        @return
        reference to the current PString object.
      */
@@ -328,9 +334,9 @@ class PString : public PCharArray {
 
     /**Assign the character to the current object. The current instance then
        becomes a unique reference to a copy of the character parameter. eg:
-\begin{verbatim}
+<code>
           myStr = 'A';
-\end{verbatim}
+</code>
        @return
        reference to the current PString object.
      */
@@ -440,7 +446,7 @@ class PString : public PCharArray {
 
     /**Input the string from the specified stream. This will read all
        characters until a end of line is reached. The end of line itself is
-       {\bf not} placed in the string, however it {\bf is} removed from
+       <b>not</b> placed in the string, however it <b>is</b> removed from
        the stream.
      */
     virtual void ReadFrom(
@@ -552,9 +558,9 @@ class PString : public PCharArray {
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           myStr = aStr + "fred";
-\end{verbatim}
+</code>
 
        @return
        new string with concatenation of the object and parameter.
@@ -567,9 +573,9 @@ class PString : public PCharArray {
        original string is not modified, an entirely new unique reference to a
        string is created. The #ch# parameter is typically a
        literal, eg:
-\begin{verbatim}
+<code>
           myStr = aStr + '!';
-\end{verbatim}
+</code>
 
        @return
        new string with concatenation of the object and parameter.
@@ -582,9 +588,9 @@ class PString : public PCharArray {
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           myStr = "fred" + aStr;
-\end{verbatim}
+</code>
 
        @return
        new string with concatenation of the object and parameter.
@@ -598,9 +604,9 @@ class PString : public PCharArray {
        original string is not modified, an entirely new unique reference to a
        string is created. The #c# parameter is typically a literal,
        eg:
-\begin{verbatim}
+<code>
           myStr = '!' + aStr;
-\end{verbatim}
+</code>
 
        @return
        new string with concatenation of the object and parameter.
@@ -621,9 +627,9 @@ class PString : public PCharArray {
 
     /**Concatenate a C string to a PString, modifiying that string. The
        #cstr# parameter is typically a literal string, eg:
-\begin{verbatim}
+<code>
           myStr += "fred";
-\end{verbatim}
+</code>
 
        @return
        reference to string that was concatenated to.
@@ -634,9 +640,9 @@ class PString : public PCharArray {
 
     /**Concatenate a single character to a PString. The #ch#
        parameter is typically a literal, eg:
-\begin{verbatim}
+<code>
           myStr += '!';
-\end{verbatim}
+</code>
 
        @return
        new string with concatenation of the object and parameter.
@@ -660,9 +666,9 @@ class PString : public PCharArray {
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           myStr = aStr & "fred";
-\end{verbatim}
+</code>
 
        This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
@@ -680,9 +686,9 @@ class PString : public PCharArray {
        original string is not modified, an entirely new unique reference to a
        string is created. The #ch# parameter is typically a
        literal, eg:
-\begin{verbatim}
+<code>
           myStr = aStr & '!';
-\end{verbatim}
+</code>
 
        This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
@@ -700,9 +706,9 @@ class PString : public PCharArray {
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           myStr = "fred" & aStr;
-\end{verbatim}
+</code>
 
        This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
@@ -721,9 +727,9 @@ class PString : public PCharArray {
        original string is not modified, an entirely new unique reference to a
        string is created. The #c# parameter is typically a literal,
        eg:
-\begin{verbatim}
+<code>
           myStr = '!' & aStr;
-\end{verbatim}
+</code>
 
        This function differes from #operator+# in that it assures there is at
        least one space between the strings. Exactly one space is added if
@@ -749,9 +755,9 @@ class PString : public PCharArray {
 
     /**Concatenate a C string to a PString, modifiying that string. The
        #cstr# parameter is typically a literal string, eg:
-\begin{verbatim}
+<code>
           myStr &= "fred";
-\end{verbatim}
+</code>
 
        This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
@@ -768,9 +774,9 @@ class PString : public PCharArray {
 
     /**Concatenate a character to a PString, modifiying that string. The
        #ch# parameter is typically a literal string, eg:
-\begin{verbatim}
+<code>
           myStr &= '!';
-\end{verbatim}
+</code>
 
        This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
@@ -867,9 +873,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using a case insensitive compare
        function. The #cstr# parameter is typically a literal string,
        eg:
-\begin{verbatim}
+<code>
           if (myStr == "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if equal.
@@ -881,9 +887,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using the ##Compare()##
        function. The #cstr# parameter is typically a literal string,
        eg:
-\begin{verbatim}
+<code>
           if (myStr == "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if equal.
@@ -895,9 +901,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           if (myStr != "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if not equal.
@@ -909,9 +915,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           if (myStr < "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if less than.
@@ -923,9 +929,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           if (myStr > "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if greater than.
@@ -937,9 +943,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           if (myStr <= "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if less than or equal.
@@ -951,9 +957,9 @@ class PString : public PCharArray {
     /**Compare a PString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           if (myStr >= "fred")
-\end{verbatim}
+</code>
 
        @return
        PTrue if greater than or equal.
@@ -1383,12 +1389,12 @@ class PString : public PCharArray {
     ) const;
 
     /**Split the string into individual lines. The line delimiters may be a
-       carriage return ('\r'), a line feed ('\n') or a carriage return and
-       line feed pair ("\r\n"). A line feed and carriage return pair ("\n\r")
+       carriage return ('\\r'), a line feed ('\\n') or a carriage return and
+       line feed pair ("\\r\\n"). A line feed and carriage return pair ("\\n\\r")
        would yield a blank line. between the characters.
 
        The #Tokenise()# function should not be used to split a string
-       into lines as a #"\r\n"# pair consitutes a single line
+       into lines as a #"\\r\\n"# pair consitutes a single line
        ending. The #Tokenise()# function would produce a blank line in
        between them.
 
@@ -1580,9 +1586,9 @@ class PString : public PCharArray {
     PBYTEArray ToPascal() const;
 
     /**Convert the string to C literal string format. This will convert non
-       printable characters to the \nnn form or for standard control characters
-       such as line feed, to \n form. Any '"' characters are also escaped with
-       a \ character and the entire string is enclosed in '"' characters.
+       printable characters to the \\nnn form or for standard control characters
+       such as line feed, to \\n form. Any '"' characters are also escaped with
+       a \\ character and the entire string is enclosed in '"' characters.
        
        @return
        string converted to a C language literal form.
@@ -1723,9 +1729,9 @@ class PCaselessString : public PString
     /**Assign the C string to the current object. The current instance then
        becomes a unique reference to a copy of the #cstr# parameter.
        The #cstr# parameter is typically a literal string, eg:
-\begin{verbatim}
+<code>
           myStr = "fred";
-\end{verbatim}
+</code>
        @return
        reference to the current PString object.
      */
@@ -1735,9 +1741,9 @@ class PCaselessString : public PString
 
     /**Assign the character to the current object. The current instance then
        becomes a unique reference to a copy of the character parameter. eg:
-\begin{verbatim}
+<code>
           myStr = 'A';
-\end{verbatim}
+</code>
        @return
        reference to the current PString object.
      */
@@ -1860,9 +1866,9 @@ class PStringStream : public PString, public iostream
        becomes a unique reference to a copy of the #cstr#
        parameter. The #cstr# parameter is typically a literal
        string, eg:
-\begin{verbatim}
+<code>
           myStr = "fred";
-\end{verbatim}
+</code>
 
        This will reset the read pointer for input to the beginning of the
        string. Also, any data output to the string up until the asasignement
@@ -1877,9 +1883,9 @@ class PStringStream : public PString, public iostream
 
     /**Assign the character to the current object. The current instance then
        becomes a unique reference to a copy of the character parameter. eg:
-\begin{verbatim}
+<code>
           myStr = 'A';
-\end{verbatim}
+</code>
        @return
        reference to the current PString object.
      */
@@ -2004,7 +2010,7 @@ class PStringArray : public PArray {
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2124,7 +2130,7 @@ PDECLARE_LIST(PStringList, PString);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2236,7 +2242,7 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2320,7 +2326,7 @@ PDECLARE_SET(PStringSet, PString, PTrue);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   ///< Stream to read the objects contents from.
@@ -2522,7 +2528,7 @@ template <class K> class PStringDictionary : public PAbstractDictionary
 
 /**Begin declaration of a dictionary of strings class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular key type {\bf K} and data object type
+   customised for a particular key type <b>K</b> and data object type
    #PString#.
 
    If the compilation is using templates then this macro produces a descendent
@@ -2548,7 +2554,7 @@ template <class K> class PStringDictionary : public PAbstractDictionary
 
 /**Declare a dictionary of strings class.
    This macro is used to declare a descendent of PAbstractDictionary class,
-   customised for a particular key type {\bf K} and data object type
+   customised for a particular key type <b>K</b> and data object type
    #PString#. This macro closes the class declaration off so no additional
    members can be added.
 
@@ -2602,7 +2608,7 @@ PDECLARE_STRING_DICTIONARY(POrdinalToString, POrdinalKey);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2650,7 +2656,7 @@ PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2701,7 +2707,7 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard #operator>># function.
 
-       The default behaviour reads '\n' separated strings until !strm.good().
+       The default behaviour reads '\\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2823,9 +2829,9 @@ class PRegularExpression : public PObject
       UnmatchedBracket, 
       /// Parenthesis imbalance.
       UnmatchedParen,
-      /// Unmatched #\{\}#.
+      /// Unmatched <b>\\</b>.
       UnmatchedBrace,
-      /// Invalid contents of #\{\}#.
+      /// Invalid contents of <b>\\</b>.
       BadBR,        
       /// Invalid range end.
       RangeError,  
@@ -2839,7 +2845,7 @@ class PRegularExpression : public PObject
       PrematureEnd,
       /// Compiled pattern bigger than 2^16 bytes.
       TooBig,
-      /// Unmatched ) or \); not returned from regcomp.
+      /// Unmatched ) or \\); not returned from regcomp.
       UnmatchedRParen,
       /// Miscellaneous error
       NotCompiled
@@ -2955,7 +2961,7 @@ class PRegularExpression : public PObject
        special meaning within a regular expression.
 
        @return
-       String with additional escape ('\') characters.
+       String with additional escape ('\\') characters.
      */
     static PString EscapeString(
       const PString & str     ///< String to add esacpes to.

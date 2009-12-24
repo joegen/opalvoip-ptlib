@@ -80,8 +80,9 @@ update:
 ptlib:
 	$(MAKE) -C src both
 
-docs: 
-	doxygen ptlib_cfg.dxy
+docs:
+	rm -rf html
+	doxygen ptlib_cfg.dxy > doxygen.out 2>&1
 
 install:
 	( for dir in $(DESTDIR)$(LIBDIR) \

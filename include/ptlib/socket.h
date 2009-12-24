@@ -52,8 +52,8 @@ PLIST(PSocketList, PSocket);
 /**A network communications channel. This is based on the concepts in the
    Berkley Sockets library.
 
-   A socket represents a bidirectional communications channel to a \it port
-   at a remote \it host.
+   A socket represents a bidirectional communications channel to a <i>port</i>
+   at a remote <i>host</i>.
  */
 class PSocket : public PChannel
 {

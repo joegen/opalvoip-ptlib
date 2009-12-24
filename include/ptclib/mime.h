@@ -185,7 +185,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
 
     /**Add a MIME field given a "name: value" format string.
        Note that if the field name was already in the MIME dictionary then
-       this will append the new value after a '\n' character to the previous
+       this will append the new value after a '\\n' character to the previous
        value.
 
        @return
@@ -259,7 +259,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
         Each tag will be the key for it's entry in teh dictionary, if that tag
         has no '=' sign then it will have an empty string as its value. If the
         tag value is quoted using '"', then the RFC822 rules are applied and
-        the quotes and '\' charcters removed.
+        the quotes and '\\' charcters removed.
 
         Returns true if the field exists and base-value is non-empty or quoted.
       */
@@ -303,7 +303,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        simple replacement.
 
        The default values placed in this dictionary are:
-\begin{verbatim}
+<code>
 
           ".txt", "text/plain"
           ".text", "text/plain"
@@ -326,7 +326,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
           ".mpeg", "video/mpeg"
           ".qt", "video/quicktime"
           ".mov", "video/quicktime"
-\end{verbatim}
+</code>
 
 
        The default content type will be "application/octet-stream".

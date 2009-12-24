@@ -100,7 +100,7 @@ class PInternetProtocol : public PIndirectChannel
        <CODE>stuffingState</CODE> has been set to some value other than
        <CODE>DontStuff</CODE>, usually <CODE>StuffIdle</CODE>. Also, if the
        <CODE>newLineToCRLF</CODE> member variable is PTrue then all occurrences
-       of a '\n' character will be translated to a CR/LF pair.
+       of a '\\n' character will be translated to a CR/LF pair.
 
        @return
        PTrue if at least len bytes were written to the channel.
@@ -282,7 +282,7 @@ class PInternetProtocol : public PIndirectChannel
        The response may have multiple lines in it. A '-' character separates
        the code from the text on all lines but the last where a ' ' character
        is used. The <CODE>info</CODE> parameter will have placed in it all of
-       the response lines separated by a single '\n' character.
+       the response lines separated by a single '\\n' character.
 
        The first form places the response code and info into the protected
        member variables <CODE>lastResponseCode</CODE> and
@@ -308,7 +308,7 @@ class PInternetProtocol : public PIndirectChannel
        This function is typically used by client forms of the socket.
 
        @return
-       First character of response string or '\0' if a socket error occurred.
+       First character of response string or '\\0' if a socket error occurred.
      */
     virtual int ExecuteCommand(
       PINDEX cmdNumber       ///< Number of command to write.
@@ -372,7 +372,7 @@ class PInternetProtocol : public PIndirectChannel
     // Do byte stuffing of '.' characters in output to the socket channel.
 
     PBoolean newLineToCRLF;
-    // Translate \n characters to CR/LF pairs.
+    // Translate \\n characters to CR/LF pairs.
 
     int     lastResponseCode;
     PString lastResponseInfo;

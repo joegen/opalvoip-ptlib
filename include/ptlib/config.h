@@ -49,20 +49,20 @@ There are four sources of configuration information. The system environment,
 a system wide configuration file, an application specific configuration file
 or an explicit configuration file.
 
-Configuration information follows a three level hierarchy: {\it file},
-{\it section} and {\it variable}. Thus, a configuration file consists of
+Configuration information follows a three level hierarchy: <i>file</i>,
+<i>section</i> and <i>variable</i>. Thus, a configuration file consists of
 a number of sections each with a number of variables selected by a
-{\it key}. Each variable has an associated value.
+<i>key</i>. Each variable has an associated value.
 
 Note that the evironment source for configuration information does not have
 sections. The section is ignored and the same set of keys are available.
 
 The configuration file is a standard text file for the platform with its
 internals appearing in the form:
-\begin{verbatim}
+<code>
      [Section String]
      Key Name=Value String
-\end{verbatim}
+</code>
 */
 class PConfig : public PObject
 {
@@ -75,7 +75,7 @@ class PConfig : public PObject
      */
     enum Source {
       /** The platform specific environment. For Unix, MSDOS, NT etc this is
-         {\bf the} environment current when the program was run. For the
+         {\b the} environment current when the program was run. For the
          MacOS this is a subset of the Gestalt and SysEnviron information.
        */
       Environment,

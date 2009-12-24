@@ -71,7 +71,7 @@ class PContainerReference {
     { return *this; }
 };
 
-/** Abstract class to embody the base functionality of a {\it container}.
+/** Abstract class to embody the base functionality of a <i>container</i>.
 
 Fundamentally, a container is an object that contains other objects. There
 are two main areas of support for tha that are provided by this class. The
@@ -83,7 +83,7 @@ and so is a pure function.
 The second area of support is for reference integrity. When an instance of
 a container is copied to another instance, the two instance contain the
 same thing. There can therefore be multiple references to the same things.
-When one reference is destroyed this must {\bf not} destroy the contained
+When one reference is destroyed this must {\b not} destroy the contained
 object as it may be referenced by another instance of a container class.
 To this end a reference count is provided by the PContainer class. This
 assures that the container only destroys the objects it contains when there
@@ -199,7 +199,7 @@ class PContainer : public PObject
 
   protected:
     /**Constructor used in support of the Clone() function. This creates a
-       new unique reference of a copy of the contents. It does {\bf not}
+       new unique reference of a copy of the contents. It does {\b not}
        create another reference.
 
        The dummy parameter is there to prevent the contructor from being
@@ -245,7 +245,7 @@ class PContainer : public PObject
        block itself.
 
        This function will get called once for every class in the heirarchy, so
-       the ancestor function should {\bf not} be called.
+       the ancestor function should {\b not} be called.
      */
     void CopyContents(const PContainer & c);
 
@@ -259,9 +259,9 @@ class PContainer : public PObject
        they too should also be cloned and not simply copied.
 
        This function will get called once for every class in the heirarchy, so
-       the ancestor function should {\bf not} be called.
+       the ancestor function should {\b not} be called.
        
-       {\it {\bf Note well}}, the logic of the function must be able to
+       <i><b>Note well</b></i>, the logic of the function must be able to
        accept the passed in parameter to clone being the same instance as the
        destination object, ie during execution #this == src#.
      */
@@ -289,7 +289,7 @@ class PContainer : public PObject
 
    The default implementation for contructors, destructor, the assignment
    operator and the MakeUnique() function is as follows:
-\begin{verbatim}
+<code>
         cls(const cls & c)
           : par(c)
         {
@@ -320,7 +320,7 @@ class PContainer : public PObject
           CloneContents(c);
           return PFalse;
         }
-\end{verbatim}
+</code>
     Then the #DestroyContents()#, #CloneContents()# and #CopyContents()# functions
     are declared and must be implemented by the programmer. See the
     #PContainer# class for more information on these functions.
@@ -551,10 +551,10 @@ class PCollection : public PContainer
        object is deleted.
 
        For example:
-\begin{verbatim}
+<code>
               coll.SetAt(2, new PString("one"));
               coll.SetAt(2, new PString("Two"));
-\end{verbatim}
+</code>
        would automatically delete the string containing "one" on the second
        call to SetAt().
      */
@@ -570,7 +570,7 @@ class PCollection : public PContainer
 
   protected:
     /**Constructor used in support of the Clone() function. This creates a
-       new unique reference of a copy of the contents. It does {\bf not}
+       new unique reference of a copy of the contents. It does {\b not}
        create another reference.
 
        The dummy parameter is there to prevent the contructor from being

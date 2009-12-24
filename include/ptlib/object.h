@@ -248,7 +248,7 @@ void PSetErrorStream(ostream * strm /** New stream for error output */ );
 
 /** This macro is used to access the platform specific error output stream.
 This is to be used in preference to assuming #cerr is always available. On
-Unix platforms this {\bfis} #cerr but for MS-Windows this is another stream
+Unix platforms this {\b is} #cerr but for MS-Windows this is another stream
 that uses the OutputDebugString() Windows API function. Note that a MS-DOS or
 Windows NT console application would still use #cerr.
 

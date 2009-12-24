@@ -347,7 +347,7 @@ class PSoundChannel : public PChannel
 
        This will return a list of uniqie device names across all of the available
        drivers. If two drivers have identical names for devices, then the string
-       returned will be of the form driver+'\t'+device.
+       returned will be of the form driver+'\\t'+device.
 
        @return
        A platform dependent string for the sound player/recorder.

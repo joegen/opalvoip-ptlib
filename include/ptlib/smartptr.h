@@ -40,7 +40,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // "Smart" pointers.
 
-/** This is the base class for objects that use the {\it smart pointer} system.
+/** This is the base class for objects that use the <i>smart pointer</i> system.
    In conjunction with the #PSmartPointer# class, this class creates
    objects that can have the automatic deletion of the object instance when
    there are no more smart pointer instances pointing to it.
@@ -71,7 +71,7 @@ class PSmartObject : public PObject
 };
 
 
-/** This is the class for pointers to objects that use the {\it smart pointer}
+/** This is the class for pointers to objects that use the <i>smart pointer</i>
    system. In conjunction with the #PSmartObject# class, this class
    references objects that can have the automatic deletion of the object
    instance when there are no more smart pointer instances pointing to it.
