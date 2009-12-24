@@ -48,14 +48,14 @@
    operations are the exchange of strings in "chat" script.
    
    The following defaults are used for command strings:
-       initialise         <CODE>ATZ\r\w2sOK\w100m</CODE>
-       deinitialise       <CODE>\d2s+++\d2sATH0\r</CODE>
+       initialise         <CODE>ATZ\\r\\w2sOK\\w100m</CODE>
+       deinitialise       <CODE>\\d2s+++\\d2sATH0\\r</CODE>
        pre-dial           <CODE>ATDT</CODE>
-       post-dial          <CODE>\r</CODE>
+       post-dial          <CODE>\\r</CODE>
        busy reply         <CODE>BUSY</CODE>
        no carrier reply   <CODE>NO CARRIER</CODE>
        connect reply      <CODE>CONNECT</CODE>
-       hang up            <CODE>\d2s+++\d2sATH0\r</CODE>
+       hang up            <CODE>\\d2s+++\\d2sATH0\\r</CODE>
 
  */
 class PModem : public PSerialChannel
@@ -140,7 +140,7 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\s</CODE> before the string.
+       Note there is an implied <CODE>\\s</CODE> before the string.
      */
     void SetInitString(
       const PString & str   ///< New initialisation command string.
@@ -179,7 +179,7 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\s</CODE> before the string.
+       Note there is an implied <CODE>\\s</CODE> before the string.
      */
     void SetDeinitString(
       const PString & str   ///< New de-initialisation command string.
@@ -218,7 +218,7 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\s</CODE> before the string.
+       Note there is an implied <CODE>\\s</CODE> before the string.
      */
     void SetPreDialString(
       const PString & str   ///< New pre-dial command string.
@@ -239,7 +239,7 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is <EM>not</EM> an implied <CODE>\s</CODE> before the
+       Note there is <EM>not</EM> an implied <CODE>\\s</CODE> before the
        string, unlike the pre-dial string.
      */
     void SetPostDialString(
@@ -261,8 +261,8 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\w120s</CODE> before the string. Also
-       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       Note there is an implied <CODE>\\w120s</CODE> before the string. Also
+       the <CODE>\\s</CODE> and <CODE>\\d</CODE> commands do not operate and
        will simply terminate the string match.
      */
     void SetBusyString(
@@ -284,8 +284,8 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\w120s</CODE> before the string. Also
-       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       Note there is an implied <CODE>\\w120s</CODE> before the string. Also
+       the <CODE>\\s</CODE> and <CODE>\\d</CODE> commands do not operate and
        will simply terminate the string match.
      */
     void SetNoCarrierString(
@@ -307,8 +307,8 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\w120s</CODE> before the string. Also
-       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       Note there is an implied <CODE>\\w120s</CODE> before the string. Also
+       the <CODE>\\s</CODE> and <CODE>\\d</CODE> commands do not operate and
        will simply terminate the string match.
      */
     void SetConnectString(
@@ -338,7 +338,7 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        The string sent to the modem is the concatenation of the pre-dial
-       string, a <CODE>\s</CODE>, the <CODE>number</CODE> parameter and the
+       string, a <CODE>\\s</CODE>, the <CODE>number</CODE> parameter and the
        post-dial string.
 
        @return
@@ -352,7 +352,7 @@ class PModem : public PSerialChannel
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied <CODE>\s</CODE> before the string.
+       Note there is an implied <CODE>\\s</CODE> before the string.
      */
     void SetHangUpString(
       const PString & str   ///< New hang up command string.

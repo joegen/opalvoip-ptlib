@@ -41,7 +41,7 @@
    encoding mechanism as defined in RFC1521.
 
    To encode a large block of data use the following seqeunce:
-\begin{verbatim}
+<code>
       PBase64 base;
       base.StartEncoding();
       while (Read(dataChunk)) {
@@ -49,20 +49,20 @@
         out << base.GetEncodedString();
       }
       out << base.CompleteEncoding();
-\end{verbatim}
+</code>
 
     if smaller blocks that fit easily in memory are to be encoded the
     #Encode()# functions can be used to everything in one go.
 
     To decode a large block of data use the following sequence:
-\begin{verbatim}
+<code>
 
       PBase64 base;
       base.StartDecoding();
       while (Read(str) && ProcessDecoding(str))
         Write(base.GetDecodedData());
       Write(base.GetDecodedData());
-\end{verbatim}
+</code>
 
     if smaller blocks that fit easily in memory are to be decoded the
     #Decode()# functions can be used to everything in one go.

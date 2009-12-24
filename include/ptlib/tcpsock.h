@@ -80,7 +80,7 @@ class PTCPSocket : public PIPSocket
   //@{
     /** Create a copy of the class on the heap. The exact semantics of the
        descendent class determine what is required to make a duplicate of the
-       instance. Not all classes can even {\bf do} a clone operation.
+       instance. Not all classes can even {\b do} a clone operation.
        
        The main user of the clone function is the #PDictionary# class as
        it requires copies of the dictionary keys.

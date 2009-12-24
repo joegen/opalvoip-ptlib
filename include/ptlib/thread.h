@@ -53,9 +53,9 @@ typedef P_THREADIDENTIFIER PThreadIdentifier;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-/** This class defines a thread of execution in the system. A \it thread is
+/** This class defines a thread of execution in the system. A <i>thread</i> is
    an independent flow of processor instructions. This differs from a
-   \it process which also embodies a program address space and resource
+   <i>process</i> which also embodies a program address space and resource
    allocation. So threads can share memory and resources as they run in the
    context of a given process. A process always contains at least one thread.
    This is reflected in this library by the #PProcess class being
