@@ -425,30 +425,30 @@ class PTime : public PObject
     /* Convert the time to a string using the format code or string as a
        formatting template. The special characters in the formatting string
        are:
-\begin{description}
-       \item[h]         hour without leading zero
-       \item[hh]        hour with leading zero
-       \item[m]         minute without leading zero
-       \item[mm]        minute with leading zero
-       \item[s]         second without leading zero
-       \item[ss]        second with leading zero
-       \item[u]         tenths of second
-       \item[uu]        hundedths of second with leading zero
-       \item[uuu]       millisecond with leading zeros
-       \item[uuuu]      microsecond with leading zeros
-       \item[a]         the am/pm string
-       \item[w/ww/www]  abbreviated day of week name
-       \item[wwww]      full day of week name
-       \item[d]         day of month without leading zero
-       \item[dd]        day of month with leading zero
-       \item[M]         month of year without leading zero
-       \item[MM]        month of year with leading zero
-       \item[MMM]       month of year as abbreviated text
-       \item[MMMM]      month of year as full text
-       \item[y/yy]      year without century
-       \item[yyy/yyyy]  year with century
-       \item[z]         the time zone description
-\end{description}
+       <table border=0>
+       <tr><td>h         <td>hour without leading zero
+       <tr><td>hh        <td>hour with leading zero
+       <tr><td>m         <td>minute without leading zero
+       <tr><td>mm        <td>minute with leading zero
+       <tr><td>s         <td>second without leading zero
+       <tr><td>ss        <td>second with leading zero
+       <tr><td>u         <td>tenths of second
+       <tr><td>uu        <td>hundedths of second with leading zero
+       <tr><td>uuu       <td>millisecond with leading zeros
+       <tr><td>uuuu      <td>microsecond with leading zeros
+       <tr><td>a         <td>the am/pm string
+       <tr><td>w/ww/www  <td>abbreviated day of week name
+       <tr><td>wwww      <td>full day of week name
+       <tr><td>d         <td>day of month without leading zero
+       <tr><td>dd        <td>day of month with leading zero
+       <tr><td>M         <td>month of year without leading zero
+       <tr><td>MM        <td>month of year with leading zero
+       <tr><td>MMM       <td>month of year as abbreviated text
+       <tr><td>MMMM      <td>month of year as full text
+       <tr><td>y/yy      <td>year without century
+       <tr><td>yyy/yyyy  <td>year with century
+       <tr><td>z         <td>the time zone description
+       </table>
 
        All other characters are copied to the output string unchanged.
        

@@ -46,7 +46,7 @@
    PODBCStmt      :  Wrapper for RecordSet (Internal)
    PODBCRecord    :  Handle Retrieve/Post/Bind Data from RecordSet (Internal)
 
-\begin{verbatim}
+<code>
   Example of Use
 
   PODBC link;
@@ -83,7 +83,7 @@
 // Disconnect from ODBC Source
   link.Disconnect();
 
-\end{verbatim}
+</code>
 */
 //--
 

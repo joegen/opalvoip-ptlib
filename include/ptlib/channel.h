@@ -97,8 +97,8 @@ class PChannelStreamBuffer : public streambuf {
    functions that allow certain types of transfer. These include direct
    transfers, buffered transfers (via iostream) or asynchronous transfers.
 
-   The model also has the fundamental state of the channel being {\it open}
-   or {\it closed}. A channel instance that is closed contains sufficient
+   The model also has the fundamental state of the channel being <i>open</i>
+   or <i>closed</i>. A channel instance that is closed contains sufficient
    information to describe the channel but does not allocate or lock any
    system resources. An open channel allocates or locks the particular system
    resource. The act of opening a channel is a key event that may fail. In this
@@ -441,37 +441,36 @@ class PChannel : public PObject, public iostream {
        the C language.
 
        The escape commands are:
-\begin{description}
-          \item[#\a#]    alert (ascii value 7)
-          \item[#\b#]    backspace (ascii value 8)
-          \item[#\f#]    formfeed (ascii value 12)
-          \item[#\n#]    newline (ascii value 10)
-          \item[#\r#]    return (ascii value 13)
-          \item[#\t#]    horizontal tab (ascii value 9)
-          \item[#\v#]    vertical tab (ascii value 11)
-          \item[#\\#]    backslash
-          \item[#\ooo#]  where ooo is octal number, ascii value ooo
-          \item[#\xhh#]  where hh is hex number (ascii value 0xhh)
-          \item[#\0#]    null character (ascii zero)
-          \item[#\dns#]  delay for n seconds
-          \item[#\dnm#]  delay for n milliseconds
-          \item[#\s#]    characters following this, up to a \w
-                                     command or the end of string, are to be
-                                     sent to modem
-          \item[#\wns#]  characters following this, up to a \s, \d
-                                     or another \w or the end of the string are
-                                     expected back from the modem. If the
-                                     string is not received within n seconds,
-                                     a failed command is registered. The
-                                     exception to this is if the command is at
-                                     the end of the string or the next
-                                     character in the string is the \s, \d or
-                                     \w in which case all characters are
-                                     ignored from the modem until n seconds of
-                                     no data.
-          \item[#\wnm#]  as for above but timeout is in
-                                     milliseconds.
-\end{description}
+          <table border=0>
+          <tr><td>\\a    <td>alert (ascii value 7)
+          <tr><td>\\b    <td>backspace (ascii value 8)
+          <tr><td>\\f    <td>formfeed (ascii value 12)
+          <tr><td>\\n    <td>newline (ascii value 10)
+          <tr><td>\\r    <td>return (ascii value 13)
+          <tr><td>\\t    <td>horizontal tab (ascii value 9)
+          <tr><td>\\v    <td>vertical tab (ascii value 11)
+          <tr><td>\\\\   <td> backslash
+          <tr><td>\\ooo  <td>where ooo is octal number, ascii value ooo
+          <tr><td>\\xhh  <td>where hh is hex number (ascii value 0xhh)
+          <tr><td>\\0    <td>null character (ascii zero)
+          <tr><td>\\dns  <td>delay for n seconds
+          <tr><td>\\dnm  <td>delay for n milliseconds
+          <tr><td>\\s    <td>characters following this, up to a \\w
+                          command or the end of string, are to be
+                          sent to modem
+          <tr><td>\\wns  <td>characters following this, up to a \\s, \\d
+                          or another \\w or the end of the string are
+                          expected back from the modem. If the
+                          string is not received within n seconds,
+                          a failed command is registered. The
+                          exception to this is if the command is at
+                          the end of the string or the next
+                          character in the string is the \\s, \\d or
+                          \\w in which case all characters are
+                          ignored from the modem until n seconds of
+                          no data.
+          <tr><td>\\wnm  <td>as for above but timeout is in milliseconds.
+          </table>
        @return
        PTrue if the command string was completely processed.
      */
@@ -639,7 +638,7 @@ class PChannel : public PObject, public iostream {
        @return PTrue if there was no error.
      */
     virtual PBoolean ConvertOSError(
-      int libcReturnValue,
+      int libcReturnValue,                ///< Return value from standard library
       ErrorGroup group = LastGeneralError ///< Error group to set
     );
 

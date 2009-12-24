@@ -99,24 +99,23 @@ class PAbstractList : public PCollection
   // Overrides from class PObject
     /**Get the relative rank of the two lists. The following algorithm is
        employed for the comparison:
-\begin{description}
-       \item[#EqualTo#] if the two lists are identical in length
+
+       \arg \c EqualTo if the two lists are identical in length
        and each objects values, not pointer, are equal.
 
-       \item[#LessThan#] if the instances object value at an
+       \arg \c LessThan if the instances object value at an
        ordinal position is less than the corresponding objects value in the
        #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
        length is less than the #obj# parameters list length.
 
-       \item[#GreaterThan#] if the instances object value at an
+       \arg \c GreaterThan if the instances object value at an
        ordinal position is greater than the corresponding objects value in the
        #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
        length is greater than the #obj# parameters list length.
-\end{description}
 
        @return
        comparison of the two objects, #EqualTo# for same,
@@ -428,7 +427,7 @@ template <class T> class PList : public PAbstractList
 
 /**Declare a list class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type {\bf T}. This macro closes the
+   customised for a particular object type <b>T</b>. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
@@ -441,7 +440,7 @@ template <class T> class PList : public PAbstractList
 
 /**Begin declaration of list class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type {\bf T}.
+   customised for a particular object type <b>T</b>.
 
    If the compilation is using templates then this macro produces a descendent
    of the #PList# template class. If templates are not being used then the
@@ -468,7 +467,7 @@ template <class T> class PList : public PAbstractList
    queue. The functions in this class primarily do all the appropriate casting
    of types.
 
-   By default, objects placed into the set will {\bf not} be deleted when
+   By default, objects placed into the set will <b>T</b> be deleted when
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
@@ -484,7 +483,7 @@ template <class T> class PQueue : public PAbstractList
   //@{
     /**Create a new, empty, queue.
 
-       Note that by default, objects placed into the queue will {\bf not} be
+       Note that by default, objects placed into the queue will <b>not</b> be
        deleted when removed or when all references to the queue are destroyed.
        This is different from the default on most collection classes.
      */
@@ -527,7 +526,7 @@ template <class T> class PQueue : public PAbstractList
 
 /**Declare a queue class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type {\bf T}, and adds functionality
+   customised for a particular object type <b>T</b>, and adds functionality
    that allows the list to be used as a first in first out queue. This macro
    closes the class declaration off so no additional members can be added.
 
@@ -542,7 +541,7 @@ template <class T> class PQueue : public PAbstractList
 
 /**Begin declataion of a queue class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type {\bf T}, and adds functionality
+   customised for a particular object type <b>T</b>, and adds functionality
    that allows the list to be used as a first in first out queue.
 
    If the compilation is using templates then this macro produces a descendent
@@ -570,7 +569,7 @@ template <class T> class PQueue : public PAbstractList
    stack. The functions in this class primarily do all the appropriate casting
    of types.
 
-   By default, objects placed into the set will {\bf not} be deleted when
+   By default, objects placed into the set will <b>not</b> be deleted when
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
@@ -586,7 +585,7 @@ template <class T> class PStack : public PAbstractList
   //@{
     /**Create a new, empty, stack.
 
-       Note that by default, objects placed into the stack will {\bf not} be
+       Note that by default, objects placed into the stack will <b>not</b> be
        deleted when removed or when all references to the stack are destroyed.
        This is different from the default on most collection classes.
      */
@@ -640,7 +639,7 @@ template <class T> class PStack : public PAbstractList
 
 /**Declare a stack class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type {\bf T}, and adds functionality
+   customised for a particular object type <b>T</b>, and adds functionality
    that allows the list to be used as a last in first out stack. This macro
    closes the class declaration off so no additional members can be added.
 
@@ -655,7 +654,7 @@ template <class T> class PStack : public PAbstractList
 
 /**Begin declaration of a stack class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type {\bf T}, and adds functionality
+   customised for a particular object type <b>T</b>, and adds functionality
    that allows the list to be used as a last in first out stack.
 
    If the compilation is using templates then this macro produces a descendent
@@ -756,24 +755,23 @@ class PAbstractSortedList : public PCollection
   //@{
     /**Get the relative rank of the two lists. The following algorithm is
        employed for the comparison:
-\begin{descriptions}
-       \item[#EqualTo#] if the two lists are identical in length
+
+       \arg \c EqualTo if the two lists are identical in length
        and each objects values, not pointer, are equal.
 
-       \item[#LessThan#] if the instances object value at an
+       \arg \c LessThan if the instances object value at an
        ordinal position is less than the corresponding objects value in the
        #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
        length is less than the #obj# parameters list length.
 
-       \item[#GreaterThan#] if the instances object value at an
+       \arg \c GreaterThan if the instances object value at an
        ordinal position is greater than the corresponding objects value in the
        #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
        length is greater than the #obj# parameters list length.
-\end{descriptions}
 
        @return
        comparison of the two objects, #EqualTo# for same,
@@ -999,7 +997,7 @@ template <class T> class PSortedList : public PAbstractSortedList
 
 /**Declare a sorted list class.
    This macro is used to declare a descendent of PAbstractSortedList class,
-   customised for a particular object type {\bf T}. This macro closes the
+   customised for a particular object type <b>T</b>. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
@@ -1013,7 +1011,7 @@ template <class T> class PSortedList : public PAbstractSortedList
 
 /**Begin declaration of a sorted list class.
    This macro is used to declare a descendent of PAbstractSortedList class,
-   customised for a particular object type {\bf T}.
+   customised for a particular object type <b>T</b>.
 
    If the compilation is using templates then this macro produces a descendent
    of the #PSortedList# template class. If templates are not being used

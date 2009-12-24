@@ -62,13 +62,13 @@ class PTimeInterval : public PObject
     /** Create a new time interval object. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-\begin{verbatim}
+<code>
               PTimeInterval(120000)
               PTimeInterval(60000, 60)
               PTimeInterval(60000, 0, 1)
               PTimeInterval(0, 60, 1)
               PTimeInterval(0, 0, 2)
-\end{verbatim}
+</code>
      */
     PTimeInterval(
       PInt64 millisecs = 0   ///< Number of milliseconds for interval.
@@ -187,13 +187,13 @@ class PTimeInterval : public PObject
     /** Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-\begin{verbatim}
+<code>
               SetInterval(120000)
               SetInterval(60000, 60)
               SetInterval(60000, 0, 1)
               SetInterval(0, 60, 1)
               SetInterval(0, 0, 2)
-\end{verbatim}
+</code>
      */
     virtual void SetInterval(
       PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.

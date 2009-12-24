@@ -147,7 +147,7 @@ class PMail : public PObject
 
        @return
        PTrue if the mail message was successfully queued. Note that this does
-       {\bf not} mean that it has been delivered.
+       {\b not} mean that it has been delivered.
      */
     PBoolean SendNote(
       const PString & recipient,  ///< Name of recipient of the mail message.
@@ -159,7 +159,7 @@ class PMail : public PObject
 
        @return
        PTrue if the mail message was successfully queued. Note that this does
-       {\bf not} mean that it has been delivered.
+       {\b not} mean that it has been delivered.
      */
     PBoolean SendNote(
       const PString & recipient,  ///< Name of recipient of the mail message.
@@ -173,7 +173,7 @@ class PMail : public PObject
 
        @return
        PTrue if the mail message was successfully queued. Note that this does
-       {\bf not} mean that it has been delivered.
+       {\b not} mean that it has been delivered.
      */
     PBoolean SendNote(
       const PString & recipient,  ///< Name of recipient of the mail message.
@@ -296,7 +296,7 @@ class PMail : public PObject
       const PString & name,  ///< Name to look up.
       PString * fullName = NULL
       /**String to receive full name of user passed in #name#. If
-         NULL then the full name is {\bf not} returned.
+         NULL then the full name is {\b not} returned.
        */
     );
   //@}

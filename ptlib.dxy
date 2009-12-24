@@ -20,6 +20,7 @@ Last updated 17 May, 2004
 Copyright (C) 1999-2003 Equivalence Pty Ltd, All right reserved 
 
 Portions Copyright (C) 2004 Post Increment, All Rights Reserved
+Portions Copyright (C) 2009 Vox Lucida Pty, Ltd., All Rights Reserved
 
 
 \section overview Overview
@@ -110,13 +111,18 @@ everything into your PProcess descedent rather than globals.
 
 \section base Base Classes
 
-\subsection object_h Base Object Classes
- \li PObject - the base class for all other classes in the PTLib
- \li PContainer - the base class for all reference-counted classes in PTLib
- \li PAbstractArray - base class for array of objects. Equivalent to the STL vector template class
- \li PAbstractList - base class for lists of objects. Equivalent to the STL list template class
- \li PAbstractDictionary - base class for dictionaries. Equivalent to the STL map template class
- \li PString - base class for the string abstraction. Equivalent to the STL string class.
+\subsection object_h Base Object and Container Classes
+  \li PObject - the base class for all other classes in the PTLib.
+  \li PContainer - the base class for all reference-counted classes in PTLib.
+  \li PArray - base class for array of objects. Equivalent to the STL vector template class.
+  \li PList - base class for lists of objects. Equivalent to the STL list template class.
+  \li PDictionary - base class for dictionaries. Equivalent to the STL map template class.
+  \li PSet - base class for sets. Equivalent to the STL set template class.
+  \li PString - base class for the string abstraction. Equivalent to the STL string class.
+  \li PCaselessString - class for a string that ignores case.
+  \li PSmartPointer - a reference counted pointer
+  \li PSmartNotifierFunction - a smart notifier function that uses object IDs rather than pointers
+  \li PNotifier - a notifier function that allows any class to call a member function on any other class
 
 \subsection channel I/O Channel Classes
 Classes that perform general I/O using the PChannel abstraction
@@ -124,18 +130,21 @@ Classes that perform general I/O using the PChannel abstraction
   \li PIndirectChannel - a channel that encapsulates another channel
   \li PConsoleChannel - channel for accessing the system console
   \li PPipeChannel - execute a program and access input and output as a PChannel
+  \li PQueueChannel - pure memory version of a pipe PChannel
   \li PSerialChannel - access a serial communications port as a PChannel
+  \li PModem - a descendant of PSerialChannel that is customised for modems that obey the AT command set
   \li PFile - access files on the host operating system using PChannels
-  \li PTextFile - access text files on the host operating system as PChannels
+  \li PTextFile - access text files on the host operating system as PChannel
   \li PStructuredFile - access files on the host operating system as arrays of structured records
+  \li PMemoryFile - implements a PFile descendant that stores data in memory
   \li PFilePath - access directories on the host operating system
-  \li PVideoChannel - read or write data to a video device as a PChannel. See also PVideoDevice and PColourConverter
   \li PSoundChannel - read or write data to sound device as a PChannel
-  
+
 \subsection socket Socket Classes
 Implementation of a network sockets abstraction (roughly based on Berkeley sockets)
   \li PSocket - base class for all network sockets
   \li PIPSocket - base class for all sockets using the IP protocol
+  \li PIPSocket::Address - representation of an IP address
   \li PUDPSocket - IP socket using the UDP protocol
   \li PTCPSocket - IP socket using the TCP/IP protocol
   \li PICMPSocket - IP socket using the ICMP protocl
@@ -146,36 +155,29 @@ Implementation of a network sockets abstraction (roughly based on Berkeley socke
 Classes that handle processes, multi-threading and synchronsiation.
   \li PProcess - implements the primary thread of control for a running program
   \li PServiceProcess - implements a "daemon" or "system process"
+  \li PDynaLink - abstraction for dynaic or sharabel libraries, loadable at run-time.
   \li PThread - abstracts a thread of control or execution context
+  \li PThreadPool - manage a pool of threads for execution.
   \li PSemaphore - synchronisation primitive based on a counter
   \li PMutex - synchronisation primitive based on mutual exclusion
   \li PCriticalSection - synchronisation primitive implementing exclusive access to a critical code section
   \li PSyncPoint - allows multiple threads to sychronise to a specific code point. See also PSyncPointAck
+  \li PReadWriteMutex - mutex that allows multiple readers, single writer model.
   \li PAtomicInteger - implements an integer counter with atomic increment and decrement operations
+  \li PSafeObject - base class for objects used by the PSafeCollection system.
 
-\subsection misc Miscellaneous Classes
-  \li PArgList - parse a command line passed to a console program
+\subsection thread Operating System Classes
+Classes that normalise other opeating system functions.
   \li PConfig - provide persistent storage for program settings using a platform-appropriate mechanism
   \li PTime - abstracts the notion of a wall-clock time and date
   \li PTimeInterval - abstracts the notion of a time interval as the difference between two PTime values
-  \li PDynaLink - implements a dynamically loadable code module
-  \li PRemoteConnection - controls for a dialup network connection
+  \li PTimer - one shot or continuous timers with optional execution of a function on expiry.
   \li PMail - send an email using a platform-appropriate mechanism
-  \li PPluginManager - manage plugin code modules
-  \li PAbstractFactory - an implementation of the "Abstract Factory" paradigm using templates
-  \li PSmartPointer - a reference counted pointer
-  \li PNotifier - a notifier function that allows any class to call a member function on any other class
-  \li PSmartNotifierFunction - a smart notifier function that uses object IDs rather than pointers
+  \li PTextToSpeech - Implement a Text to Speech converter
+  \li PRemoteConnection - controls for a dialup network connection
+  \li PSDLVideoDevice - implement a vide display device using the SDL library
 
 \section components Console Components
-
-\subsection http HTTP Classes
-Implementation of the HTTP protocol
-  \li PHTTP - base class for HTTP protocol. See also PHTTPClient and PHTTPServer
-  \li PURL - parse and maniulate uniform resource locations
-  \li PHTML - a string stream that formats HTML information
-  \li PHTTPForm - allows the creation of HTTP forms
-  \li PHTTPServiceProcess - a PServiceProcess descendant that contains a HTTP server
 
 \subsection protocol Protocol Classes
 Implementation of various Internet-related protocols. Some of these are implemented within PTLib - some require external libraries for support
@@ -196,39 +198,29 @@ Implementation of various Internet-related protocols. Some of these are implemen
   \li PILSSession - implements a ILS client via the OpenLDAP library
   \li XMPP::Stream - implements a XMPP (Jabber) stream as a PChannel.
   
+\subsection http HTTP Classes
+Implementation of the HTTP protocol
+  \li PHTTP - base class for HTTP protocol. See also PHTTPClient and PHTTPServer
+  \li PURL - parse and maniulate uniform resource locations
+  \li PHTML - a string stream that formats HTML information
+  \li PHTTPForm - allows the creation of HTTP forms
+  \li PHTTPServiceProcess - a PServiceProcess descendant that contains a HTTP server
+
 \subsection misccomponents Miscellaneous Classes
-  \li PModem - a descendant of PSerialChannel that is customised for modems that obey the AT command set
-  \li PIpAccessControlList - a list of entries that allow specification of a range of IP addresses or networks
+  \li PPluginManager - manage plugin code modules
+  \li PArgList - parse a command line passed to a console program
   \li PRandom - a random number generator
+  \li PAdaptiveDelay - class to make delays as constant as possible despite operating system errors.
+  \li PAbstractFactory - an implementation of the "Abstract Factory" paradigm using templates
+  \li PRegularExpression - class for handling regular expression parsing.
+  \li PIpAccessControlList - a list of entries that allow specification of a range of IP addresses or networks
   \li PCypher - implementation of various code cyphers such as PMessageDigest5, PTEACypher, and PMessageDigestSHA1
+  \li PBase64 - Base 64 encoder/decoder.
   \li PWAVFile - implements a AIFF format WAV file
   \li PDTMFDecoder - decodes DTMF digits from a stream of PCM data
-  \li PMemoryFile - implements a PFile descendant that stores data in memory
-  \li PSDLVideoDevice - implement a vide display device using the SDL library
   \li PXML - Implements a parser for XML using the Expat library
   \li PVXMLChannel - Implements a parser for the VXML language
-  \li PTextToSpeech - Implement a Text to Speech converter
-
-\subsection asn ASN.1 Support Classes
-  \li PASN_Array 
-  \li PASN_BitString 
-  \li PASN_BMPString 
-  \li PASN_Boolean 
-  \li PASN_Choice 
-  \li PASN_ConstrainedObject 
-  \li PASN_ConstrainedString 
-  \li PASN_Enumeration 
-  \li PASN_GeneralisedTime 
-  \li PASN_Integer 
-  \li PASN_Null 
-  \li PASN_Object 
-  \li PASN_ObjectId 
-  \li PASN_OctetString 
-  \li PASN_Real 
-  \li PASN_Sequence 
-  \li PASN_Set 
-  \li PASN_Stream 
-  \li PASN_UniversalTime 
+  \li PCLI - command line interpreter.
 
 \subsection history History
 

@@ -1,7 +1,7 @@
 /*
- * timeint.h
+ * mail.h
  *
- * Time interval (64 bit milliseconds)
+ * Electronic Mail abstraction class.
  *
  * Portable Windows Library
  *
@@ -28,14 +28,11 @@
  *
  * $Revision$
  * $Author$
- * $Date$
+ * $Date: 2008-12-12 16:42:13 +1100 (Fri, 12 Dec 2008) $
  */
 
-#define PMaxTimeInterval PTimeInterval((long)0x7fffffff)
+  protected:
+    PString m_mailProgram;
 
-///////////////////////////////////////////////////////////////////////////////
-// PTimeInterval
 
-// nothing to do
-
-// End Of File ////////////////////////////////////////////////////////////////
+// End Of File ///////////////////////////////////////////////////////////////
