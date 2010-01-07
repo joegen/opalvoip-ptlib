@@ -247,30 +247,47 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
 
     /** Get a complex MIME field.
         This will parse a complex MIME field of the general form:
+
            key: base-value;tag1=token;tag2="string";tag3
            key: <base-value>;tag1=token;tag2="string";tag3
 
-        The basevalue will be placed in the dictionary where the key is the
-        empty string. If the base value is quoted with '<, '>' brackets then
+        The base-value will be placed in the dictionary where the key is the
+        empty string. If the base-value is quoted with '<, '>' brackets then
         the brackets are removed. Note that the string "<>" can be used to have
-        an mepty base value but a field starting with a ';' is illegal and this
+        an empty base-value but a field starting with a ';' is illegal and this
         function will return false.
         
-        Each tag will be the key for it's entry in teh dictionary, if that tag
+        Each tag will be the key for it's entry in the dictionary, if that tag
         has no '=' sign then it will have an empty string as its value. If the
         tag value is quoted using '"', then the RFC822 rules are applied and
         the quotes and '\\' charcters removed.
+
+        IF there are multiple "key" entries in the MIME, or there is an entry
+        of the form:
+
+           key: <base-value>;tag=token, <base-value1>, <base-value2>;tag=token
+
+        then the first entry wil be as described above. All subsequent entries
+        are includedin the dictionary with the key names having the string
+        "n:" prepended, e.g. "1:" would be "base-value1", "2:tag" would be the
+        tag value on the third entry.
 
         Returns true if the field exists and base-value is non-empty or quoted.
       */
     bool GetComplex(
       const PString & key,    ///< Key into MIME dictionary to get info.
       PStringToString & info  ///< Dictionary of information from field
-    ) const;
+    ) const { return ParseComplex(GetString(key), info); }
     bool GetComplex(
       const PString & (*key)(), ///< Key into MIME dictionary to get info.
       PStringToString & info    ///< Dictionary of information from field
-    ) const { return GetComplex(key(), info); }
+    ) const { return ParseComplex(GetString(key), info); }
+
+    /// Parse the string as a complex field, see GetComplex()
+    static bool ParseComplex(
+      const PString & str,      ///< String value from MIME field.
+      PStringToString & info    ///< Dictionary of information from field
+    );
 
     /** Decode parts from a multipart body using the field value.
       */
