@@ -669,73 +669,87 @@ void PMIMEInfo::SetInteger(const PCaselessString & key, long value)
 }
 
 
-bool PMIMEInfo::GetComplex(const PString & key, PStringToString & info) const
+bool PMIMEInfo::ParseComplex(const PString & fieldValue, PStringToString & info)
 {
-  PString * ptr = GetAt(PCaselessString(key));
-  if (ptr == NULL)
-    return false;
-
-  PString field = *ptr;
-  if (field[0] == ';')
-    return false;
-
   info.RemoveAll();
 
-  PINDEX semi;
-  if (field[0] != '<') {
-    semi = field.Find(';');
-    info.SetAt(PString::Empty(), field.Left(semi).Trim());
-  }
-  else {
-    PINDEX endtoken = field.Find('>');
-    info.SetAt(PString::Empty(), field(1, endtoken-1));
-    semi = field.Find(';', endtoken);
-  }
+  PStringArray fields = fieldValue.Lines();
+  for (PINDEX f = 0; f < fields.GetSize(); ++f) {
+    PString field = fields[f];
 
-  while (semi != P_MAX_INDEX) {
-    ++semi;
-    PINDEX pos = field.FindOneOf("=;", semi);
-    PCaselessString tag = field(semi, pos-1).Trim();
+    PINDEX tagSep = 0;
+    while (tagSep != P_MAX_INDEX) {
+      if (field[tagSep] == ',') {
+        while (isspace(field[tagSep]) || field[tagSep] == ',')
+          tagSep++;
+        if (field[tagSep] == '\0')
+          break;
+      }
 
-    if (pos == P_MAX_INDEX) {
-      info.SetAt(tag, PString::Empty());
-      return true;
+      if (field[tagSep] == ';')
+        continue;
+
+      PString keyPrefix;
+
+      if (!info.IsEmpty()) {
+        unsigned count = 0;
+        do {
+          keyPrefix = psprintf("%u:", ++count);
+        } while (info.Contains(keyPrefix));
+      }
+
+      if (field[tagSep] != '<') {
+        PINDEX nextSep = field.FindOneOf(";,", tagSep);
+        info.SetAt(keyPrefix, field(tagSep, nextSep-1).Trim());
+        tagSep = nextSep;
+      }
+      else {
+        PINDEX endtoken = field.Find('>', tagSep);
+        info.SetAt(keyPrefix, field(tagSep+1, endtoken-1));
+        tagSep = field.FindOneOf(";,", endtoken);
+      }
+
+      while (tagSep != P_MAX_INDEX && field[tagSep] != ',') {
+        ++tagSep; // Skip past ';'
+        PINDEX pos = field.FindOneOf("=;,", tagSep);
+        PCaselessString tag = field(tagSep, pos-1).Trim();
+
+        if (pos == P_MAX_INDEX || field[pos] == ',') {
+          info.SetAt(keyPrefix+tag, PString::Empty());
+          break;
+        }
+
+        if (field[pos] == ';') {
+          info.SetAt(keyPrefix+tag, PString::Empty());
+          tagSep = pos;
+          continue;
+        }
+
+        do {
+          ++pos;
+        } while (isspace(field[pos]));
+
+        if (field[pos] != '"') {
+          tagSep = field.FindOneOf(";,", pos);
+          info.SetAt(keyPrefix+tag, PCaselessString(field(pos, tagSep-1).RightTrim()));
+          continue;
+        }
+
+        ++pos;
+        PINDEX quote = pos;
+        while ((quote = field.Find('"', quote)) != P_MAX_INDEX && field[quote-1] == '\\')
+          ++quote;
+
+        PString value = field(pos, quote-1);
+        value.Replace("\\", "", true);
+        info.SetAt(keyPrefix+tag, value);
+
+        tagSep = field.FindOneOf(";,", quote);
+      }
     }
-
-    if (field[pos] == ';') {
-      info.SetAt(tag, PString::Empty());
-      semi = pos + 1;
-      continue;
-    }
-
-    do {
-      ++pos;
-    } while (isspace(field[pos]));
-
-    if (field[pos] != '"') {
-      PINDEX end = field.Find(';', pos);
-      info.SetAt(tag, PCaselessString(field(pos, end-1).RightTrim()));
-
-      if (end == P_MAX_INDEX)
-        return true;
-
-      semi = end;
-      continue;
-    }
-
-    ++pos;
-    PINDEX quote = pos;
-    while ((quote = field.Find('"', quote)) != P_MAX_INDEX && field[quote-1] == '\\')
-      ++quote;
-
-    PString value = field(pos, quote-1);
-    value.Replace("\\", "", true);
-    info.SetAt(tag, value);
-
-    semi = field.Find(';', quote);
   }
 
-  return true;
+  return !info.IsEmpty();
 }
 
 
