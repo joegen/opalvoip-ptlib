@@ -8,11 +8,11 @@
 
 PObject=<,t>
 PString=<theArray,s>
-PContainer=<,t> size=<reference->size> ref=<reference->count>
+PContainer=<,t> size=<reference->size> ref=<reference->count.m_value>
 PIPSocket::Address=<v.four.S_un.S_un_b.s_b1,u>.<v.four.S_un.S_un_b.s_b2,u>.<v.four.S_un.S_un_b.s_b3,u>.<v.four.S_un.S_un_b.s_b4,u>
 PTimeInterval=<m_milliseconds>
 PTime=<theTime>
-PAtomicInteger=<value>
+PAtomicInteger=<m_value>
 POrdinalKey=<theKey>
 PURL=<urlString.theArray,s>
 
@@ -24,7 +24,8 @@ wxRect =x=<x> y=<y> w=<width> h=<height>
 wxWindow =<,t> hWnd=<m_hWnd>
 
 ; from OPAL
-OpalMediaFormat=<info->name.theArray,s>
+OpalMediaFormat=<m_info->formatName.theArray,s>
+OpalMediaType=<_Bx._Buf,s>
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -141,32 +142,45 @@ PArray<*> {
    children
    (
       #(
-         [members]: [$c,!],
+         [members]: [$e,!],
+         [sub members]: [(PContainer *)$e.theArray,!],
          #array
          (
-            expr : (($T1 **)$c.theArray->theArray)[$i],
-            size : $c.theArray->reference->size,
+            expr : (($T1 **)((PAbstractArray *)$c.theArray)->theArray)[$i],
+            size : ((PContainer *)$e.theArray)->reference->size,
             base : 0
          )
       )
    )
 
    preview
-   ( 
-      #( $e.theArray )
+   (
+      #(
+         "[", ((PContainer *)$e.theArray)->reference->size, ",", ((PContainer *)$e.theArray)->reference->count, "] ",
+         "(",
+         #array
+         (
+            expr : (($T1 **)((PAbstractArray *)$c.theArray)->theArray)[$i],
+            size : ((PContainer *)$e.theArray)->reference->size,
+            base : 0
+         ), 
+         ")"
+       )
    )
 }
+
 
 PStringArray {
    preview
    (
       #(
-         "[", $e.theArray->reference->size, ",", $e.theArray->reference->count, "] ",
+         "[", ((PContainer *)$e.theArray)->reference->size, ",", ((PContainer *)$e.theArray)->reference->count, "] ",
          "(",
          #array
          (
-            expr : [((PString * *)($c.theArray->theArray))[$i]->theArray,s],
-            size : $c.theArray->reference->size
+            expr : [((PString **)((PAbstractArray *)$c.theArray)->theArray)[$i]->theArray,s],
+            size : ((PContainer *)$e.theArray)->reference->size,
+            base : 0
          ), 
          ")"
        )
