@@ -17,7 +17,8 @@ POrdinalKey=<theKey>
 PURL=<urlString.theArray,s>
 
 ; from wxWindows
-wxString =<m_pchData,s>
+PwxString=<m_pchData,su>
+wxString =<m_pchData,su>
 wxPoint =x=<x> y=<y>
 wxSize =w=<x> h=<y>
 wxRect =x=<x> y=<y> w=<width> h=<height>
