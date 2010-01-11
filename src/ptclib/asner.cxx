@@ -1498,11 +1498,8 @@ PBoolean PASN_BMPString::IsLegalCharacter(WORD ch)
   return PFalse;
 }
 
-void PASN_BMPString::SetValueRaw(const PWCharArray & array)
+void PASN_BMPString::SetValueRaw(const wchar_t * array, PINDEX paramSize)
 {
-
- PINDEX paramSize = array.GetSize();
-
   // Can't copy any more than the upper constraint
   if ((unsigned)paramSize > upperLimit)
     paramSize = upperLimit;
@@ -1532,7 +1529,7 @@ PASN_BMPString & PASN_BMPString::operator=(const PWCharArray & array)
   if (paramSize > 0 && array[paramSize-1] == 0)
     paramSize--;
 
-  SetValueRaw(array);
+  SetValueRaw(array, paramSize);
  
   return *this;
 }
