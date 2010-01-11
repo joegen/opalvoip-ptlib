@@ -895,6 +895,8 @@ PTimeInterval PTimerList::Process()
         timer.m_timer->Process(now);
         if (timer.m_timer->m_state != PTimer::Stopped)
           m_expiryList.insert(TimerExpiryInfo(expiry.m_timerId, now + timer.m_timer->m_resetTime.GetMilliSeconds(), timer.m_serialNumber));
+        else
+          m_activeTimers.erase(t);
       }
     }
   }
