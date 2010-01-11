@@ -730,6 +730,7 @@ void PURL::SetHostName(const PString & h)
 void PURL::SetPort(WORD newPort)
 {
   port = newPort;
+  portSupplied = true;
   Recalculate();
 }
 
