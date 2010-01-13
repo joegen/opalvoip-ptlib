@@ -1550,100 +1550,134 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 #include <memory.h>
 #include <errno.h>
 
-class WaitForNetLinkEvent
+class NetLinkRouteTableDetector : public PIPSocket::RouteTableDetector
 {
   public:
-    struct sockaddr_nl m_sa;
-    int m_fd ;
-    int m_event1, m_event2;
+    int m_fdLink;
+    int m_fdCancel[2];
 
-    WaitForNetLinkEvent(int event1, int event2)
-      : m_fd(-1), m_event1(event1), m_event2(event2)
-    { }
-
-    void Open()
+    NetLinkRouteTableDetector()
     {
-      if (m_fd != -1)
-        return;
+      m_fdLink = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 
-      PTRACE(3, "PTLIB\tOpened NetLink socket");
+      if (m_fdLink != -1) {
+        struct sockaddr_nl sanl;
+        memset(&sanl, 0, sizeof(sanl));
+        sanl.nl_family = AF_NETLINK;
+        sanl.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
 
-      memset(&m_sa, 0, sizeof(m_sa));
-      m_sa.nl_family = AF_NETLINK;
-      m_sa.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
-
-      m_fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-      bind(m_fd, (struct sockaddr*)&m_sa, sizeof(m_sa));
-    }
-
-    bool MsgHandler(struct sockaddr_nl *nl, struct nlmsghdr *msg)
-    {
-      if (msg->nlmsg_len < sizeof(struct nlmsghdr))
-        return false;
-
-      //void * payload = (unsigned char *)msg + sizeof(struct nlmsghdr);
-      //int len = msg->nlmsg_len - sizeof(struct nlmsghdr);
-
-      return (msg->nlmsg_type == m_event1 || msg->nlmsg_type == m_event2);
-    }
-
-    bool ReadEvent(const PTimeInterval & timeout)
-    {
-      fd_set fds;
-      FD_ZERO(&fds);
-      FD_SET(m_fd, &fds);
-      struct timeval t;
-      t.tv_sec  = timeout.GetMilliSeconds() / 1000;
-      t.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      int r = select(m_fd+1, &fds, NULL, NULL, &t);
-      if (r <= 0) 
-        return false;
-
-      struct sockaddr_nl snl;
-      char buf[4096];
-      struct iovec iov = { buf, sizeof buf };
-      struct msghdr msg = { (void*)&snl, sizeof snl, &iov, 1, NULL, 0, 0};
-
-      int status = recvmsg(m_fd, &msg, 0);
-      if (status < 0)
-        return false;
-        
-      /* We need to handle more than one message per 'recvmsg' */
-      bool addressChanged = false;
-
-      struct nlmsghdr *h;
-      for (h = (struct nlmsghdr *) buf; NLMSG_OK (h, (unsigned int)status); h = NLMSG_NEXT (h, status)) {
-        if ((h->nlmsg_type == NLMSG_DONE) || (h->nlmsg_type == NLMSG_ERROR))
-          return false;
-        addressChanged = addressChanged || MsgHandler(&snl, h);
-        PTRACE(3, "PTLIB\tInterface table change detected via NetLink");
+        bind(m_fdLink, (struct sockaddr *)&sanl, sizeof(sanl));
       }
 
+      if (pipe(m_fdCancel) == -1)
+        m_fdCancel[0] = m_fdCancel[1] = -1;
+
+      PTRACE(3, "PTLIB\tOpened NetLink socket");
+    }
+
+    ~NetLinkRouteTableDetector()
+    {
+      if (m_fdLink != -1)
+        close(m_fdLink);
+      if (m_fdCancel[0] != -1)
+        close(m_fdCancel[0]);
+      if (m_fdCancel[1] != -1)
+        close(m_fdCancel[1]);
+    }
+
+    bool Wait(const PTimeInterval & timeout)
+    {
+      if (m_fdCancel[0] == -1)
+        return false;
+
+      bool ok = true;
+      while (ok) {
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(m_fdCancel[0], &fds);
+
+        struct timeval tval;
+        struct timeval * ptval = NULL;
+        if (m_fdLink != -1) {
+          tval.tv_sec  = timeout.GetMilliSeconds() / 1000;
+          tval.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
+          ptval = &tval;
+
+          FD_SET(m_fdLink, &fds);
+        }
+
+        int result = select(std::max(m_fdLink, m_fdCancel[0])+1, &fds, NULL, NULL, ptval);
+        if (result < 0)
+          return false;
+        if (result == 0)
+          return true;
+
+        if (FD_ISSET(m_fdCancel[0], &fds))
+          return false;
+
+        struct sockaddr_nl snl;
+        char buf[4096];
+        struct iovec iov = { buf, sizeof buf };
+        struct msghdr msg = { (void*)&snl, sizeof snl, &iov, 1, NULL, 0, 0};
+
+        int status = recvmsg(m_fdLink, &msg, 0);
+        if (status < 0)
+          return false;
+
+        for (struct nlmsghdr * nlmsg = (struct nlmsghdr *)buf;
+             NLMSG_OK(nlmsg, (unsigned)status);
+             nlmsg = NLMSG_NEXT(nlmsg, status)) {
+          if (nlmsg->nlmsg_len < sizeof(struct nlmsghdr))
+            break;
+
+          switch (nlmsg->nlmsg_type) {
+            case RTM_NEWADDR :
+            case RTM_DELADDR :
+              PTRACE(3, "PTLIB\tInterface table change detected via NetLink");
+              return true;
+          }
+        }
+      }
       return false;
+    }
+
+    void Cancel()
+    {
+      PAssert(write(m_fdCancel[1], "", 1) == 1, POperatingSystemError);
     }
 };
 
-#endif
-
-
-bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoint * cancellation)
+PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 {
-#ifdef P_HAS_NETLINK
-  static WaitForNetLinkEvent waiter(RTM_NEWADDR, RTM_DELADDR);
-  waiter.Open();
-  if (waiter.ReadEvent(timeout))
-    return true;
-  if (cancellation != NULL)
-    return cancellation->Wait(1);
-#else
-  // Need an implementation here!!!!!!!
-  PThread::Sleep(timeout);
-  if (cancellation != NULL)
-    return cancellation->Wait(timeout);
-#endif
-
-  return false;
+  return new NetLinkRouteTableDetector();
 }
+
+#else
+
+class DummyRouteTableDetector : public PIPSocket::RouteTableDetector
+{
+  public:
+    bool Wait(const PTimeInterval & timeout)
+    {
+      return !m_cancel.Wait(timeout);
+    }
+
+    void Cancel()
+    {
+      m_cancel.Signal();
+    }
+
+  private:
+    PSyncPoint m_cancel;
+};
+
+
+PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
+{
+  return new DummyRouteTableDetector();
+}
+
+#endif
 
 
 // fe800000000000000202e3fffe1ee330 02 40 20 80     eth0

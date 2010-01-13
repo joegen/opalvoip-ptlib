@@ -1614,55 +1614,73 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 #pragma optimize("g", off)
 #endif
 
-bool PIPSocket::WaitForRouteTableChange(const PTimeInterval & timeout, PSyncPoint * cancellation)
+class Win32RouteTableDetector : public PIPSocket::RouteTableDetector
 {
-  HANDLE handle = NULL;
-  OVERLAPPED overlap;
-  memset(&overlap, 0, sizeof(overlap));
+    PDynaLink  m_dll;
+    BOOL    (* m_pCancelIPChangeNotify )(LPOVERLAPPED);
+    HANDLE     m_hNotify;
+    HANDLE     m_hCancel;
+    OVERLAPPED m_overlap;
 
-  // Do this so compatible with older operating systems
-  PDynaLink dll("iphlpapi.dll");
-  BOOL (*pCancelIPChangeNotify)(LPOVERLAPPED) = NULL;
-  bool doNotify = dll.GetFunction("CancelIPChangeNotify", (PDynaLink::Function&)pCancelIPChangeNotify);
+  public:
+    Win32RouteTableDetector()
+      : m_dll("iphlpapi.dll")
+      , m_pCancelIPChangeNotify(NULL)
+      , m_hNotify(NULL)
+      , m_hCancel(CreateEvent(NULL, TRUE, FALSE, NULL))
+    {
+      memset(&m_overlap, 0, sizeof(m_overlap));
 
-  if (doNotify) {
-    DWORD error = NotifyAddrChange(&handle, &overlap);
-    if (error != ERROR_IO_PENDING) {
-      PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
-      doNotify = false;
+      if (m_dll.GetFunction("CancelIPChangeNotify", (PDynaLink::Function&)m_pCancelIPChangeNotify)) {
+        DWORD error = NotifyAddrChange(&m_hNotify, &m_overlap);
+        if (error != ERROR_IO_PENDING) {
+          PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
+        }
+      }
     }
-  }
 
-  if (!doNotify) {
-    if (cancellation != NULL)
-      return cancellation->Wait(timeout);
+    ~Win32RouteTableDetector()
+    {
+      if (m_hCancel != NULL)
+        CloseHandle(m_hCancel);
+    }
 
-    PThread::Sleep(timeout);
-    return false;
-  }
+    virtual bool Wait(const PTimeInterval & timeout)
+    {
+      if (m_hNotify == NULL)
+        return WaitForSingleObject(m_hCancel, timeout.GetInterval()) == WAIT_TIMEOUT;
 
-  if (cancellation == NULL)
-    return WaitForSingleObject(handle, timeout.GetInterval()) == WAIT_OBJECT_0;
+      HANDLE handles[2];
+      handles[0] = m_hNotify;
+      handles[1] = m_hCancel;
+      switch (WaitForMultipleObjects(2, handles, false, INFINITE)) {
+        case WAIT_OBJECT_0 :
+          return true;
 
-  HANDLE handles[2];
-  handles[0] = handle;
-  handles[1] = cancellation->GetHandle();
-  switch (WaitForMultipleObjects(2, handles, false, timeout.GetInterval())) {
-    case WAIT_OBJECT_0 :
-      return true;
+        case WAIT_OBJECT_0+1 :
+          m_pCancelIPChangeNotify(&m_overlap);
+          // Do next case
 
-    case WAIT_OBJECT_0+1 :
-      pCancelIPChangeNotify(&overlap);
-      // Do next case
+        default :
+          return false;
+      }
+    }
 
-    default :
-      return false;
-  }
-}
+    virtual void Cancel()
+    {
+      SetEvent(m_hCancel);
+    }
+};
 
 #ifdef _MSC_VER
 #pragma optimize("", on)
 #endif
+
+
+PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
+{
+  return new Win32RouteTableDetector();
+}
 
 
 PIPSocket::Address PIPSocket::GetRouteAddress(PIPSocket::Address remoteAddress)
