@@ -597,14 +597,26 @@ class PIPSocket : public PSocket
       RouteTable & table      ///< Route table
 	);
 
-    /** Wait for a change in the route table or network interfaces.
+    /// Class for detector of Route Table changes
+    class RouteTableDetector
+    {
+      public:
+        virtual ~RouteTableDetector() { }
+        virtual bool Wait(
+          const PTimeInterval & timeout ///< Time to wait for refresh (may be ignored)
+        ) = 0;
+        virtual void Cancel() = 0;
+    };
 
-        @return true if a change occurred, false if timed out or cancelled.
+    /** Create an object that can wait for a change in the route table or
+        active network interfaces.
+
+        If the platform does not support this mechanism then a fake class is
+        created using PSyncPoint to wait for the specified amount of time.
+
+        @return Pointer to some object, never returns NULL.
       */
-    static bool WaitForRouteTableChange(
-      const PTimeInterval & timeout,    ///< Timeout for wait
-      PSyncPoint * cancellation = NULL  ///< if sync point is signalled, wait is immediately terminated
-    );
+    static RouteTableDetector * CreateRouteTableDetector();
 
     /**Describe an interface table entry.
      */

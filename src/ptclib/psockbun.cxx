@@ -54,7 +54,7 @@ static PFactory<PProcessStartup>::Worker<PInterfaceMonitor> InterfaceMonitorFact
 //////////////////////////////////////////////////
 
 PInterfaceMonitorClient::PInterfaceMonitorClient(PINDEX _priority)
-: priority(_priority)
+  : priority(_priority)
 {
   PInterfaceMonitor::GetInstance().AddClient(this);
 }
@@ -84,8 +84,8 @@ PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, bool runMonitorThread)
   : m_runMonitorThread(runMonitorThread)
   , m_refreshInterval(refresh)
   , m_updateThread(NULL)
-  , m_threadRunning(false)
   , m_interfaceFilter(NULL)
+  , m_changedDetector(NULL)
 {
 }
 
@@ -94,6 +94,7 @@ PInterfaceMonitor::~PInterfaceMonitor()
 {
   Stop();
 
+  delete m_changedDetector;
   delete m_interfaceFilter;
 }
 
@@ -119,17 +120,15 @@ void PInterfaceMonitor::SetRunMonitorThread(bool runMonitorThread)
 void PInterfaceMonitor::Start()
 {
   PWaitAndSignal guard(m_threadMutex);
-  
-  if (m_updateThread != NULL) // Already running
-    m_signalUpdate.Signal();
-  else {
+
+  if (m_changedDetector == NULL) {
     m_interfacesMutex.Wait();
     PIPSocket::GetInterfaceTable(m_interfaces);
     PTRACE(4, "IfaceMon\tInitial interface list:\n" << setfill('\n') << m_interfaces << setfill(' '));
     m_interfacesMutex.Signal();
 
     if (m_runMonitorThread) {
-      m_threadRunning = true;
+      m_changedDetector = PIPSocket::CreateRouteTableDetector();
       m_updateThread = new PThreadObj<PInterfaceMonitor>(*this, &PInterfaceMonitor::UpdateThreadMain);
       m_updateThread->SetThreadName("Network Interface Monitor");
     }
@@ -142,9 +141,10 @@ void PInterfaceMonitor::Stop()
   m_threadMutex.Wait();
 
   // shutdown the update thread
-  if (m_updateThread != NULL) {
-    m_threadRunning = false;
-    m_signalUpdate.Signal();
+  if (m_changedDetector != NULL) {
+    PTRACE(4, "IfaceMon\tAwaiting thread termination");
+
+    m_changedDetector->Cancel();
 
     m_threadMutex.Signal();
     m_updateThread->WaitForTermination();
@@ -152,6 +152,9 @@ void PInterfaceMonitor::Stop()
 
     delete m_updateThread;
     m_updateThread = NULL;
+
+    delete m_changedDetector;
+    m_changedDetector = NULL;
   }
 
   m_threadMutex.Signal();
@@ -256,10 +259,8 @@ void PInterfaceMonitor::UpdateThreadMain()
   PTRACE(4, "IfaceMon\tStarted interface monitor thread.");
 
   // check for interface changes periodically
-  while (m_threadRunning) {
+  while (m_changedDetector->Wait(m_refreshInterval))
     RefreshInterfaceList();
-    PIPSocket::WaitForRouteTableChange(m_refreshInterval, &m_signalUpdate);
-  }
 
   PTRACE(4, "IfaceMon\tFinished interface monitor thread.");
 }
