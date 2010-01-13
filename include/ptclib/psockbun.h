@@ -166,10 +166,9 @@ class PInterfaceMonitor : public PProcessStartup
     PTimeInterval  m_refreshInterval;
     PMutex         m_threadMutex;
     PThread      * m_updateThread;
-    PSyncPoint     m_signalUpdate;
-    bool           m_threadRunning;
-    
+
     PInterfaceFilter * m_interfaceFilter;
+    PIPSocket::RouteTableDetector * m_changedDetector;
 
   friend class PInterfaceMonitorClient;
 };
