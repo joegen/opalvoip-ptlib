@@ -102,3 +102,18 @@ EXPORTS
     _IN6_IS_ADDR_SITELOCAL @25758 NONAME
     _IN6_IS_ADDR_V4COMPAT @25759 NONAME
     _IN6_IS_ADDR_V4MAPPED @25760 NONAME
+    GetCurrentProcess @26726 NONAME
+    GetCurrentProcessId @26727 NONAME
+    GetCurrentThread @26728 NONAME
+    GetCurrentThreadId @26729 NONAME
+    ResetEvent @26744 NONAME
+    SetEvent @26745 NONAME
+    TlsAlloc @31582 NONAME
+    TlsFree @31583 NONAME
+    abort @26721 NONAME
+    clock @26722 NONAME
+    gmtime @26730 NONAME
+    localtime @26731 NONAME
+    mktime @26732 NONAME
+    perror @26733 NONAME
+    time @26754 NONAME
