@@ -92,7 +92,11 @@ static int defaultIPv6ScopeId = 0;
 
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
 static PIPSocket::Address broadcast6(16,(const BYTE *)"\377\002\0\0\0\0\0\0\0\0\0\0\0\0\0\001"); // IPV6 multicast address
-static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); 
+static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+
+#define IPV6_PARAM(p) p
+#else
+#define IPV6_PARAM(p)
 #endif
 
 
@@ -1526,11 +1530,11 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
   if(bind_sa->sa_family != AF_INET6)
 #endif
   {
-	 // attempt to listen
-	 if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
-	   os_close();
-	   return PFalse;
-	 }
+   // attempt to listen
+   if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
+     os_close();
+     return PFalse;
+   }
   }
 #endif // BEOS
 
@@ -1589,7 +1593,7 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
     if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
       port = ntohs(sin.sin_port);
 
-	  if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr)))
+    if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr)))
         return true;
 
       struct ip_mreq  mreq;
@@ -1620,40 +1624,34 @@ PBoolean PIPSocket::Address::IsV4Mapped() const
   return IN6_IS_ADDR_V4MAPPED(&v.six) || IN6_IS_ADDR_V4COMPAT(&v.six);
 }
 
+#endif
 
-const PIPSocket::Address & PIPSocket::Address::GetLoopback(int version)
+const PIPSocket::Address & PIPSocket::Address::GetLoopback(int IPV6_PARAM(version))
 {
-  return version == 6 ? loopback6 : loopback4;
-}
-
-const PIPSocket::Address & PIPSocket::Address::GetAny(int version)
-{
-  return version == 6 ? any6 : any4;
-}
-
-const PIPSocket::Address PIPSocket::Address::GetBroadcast(int version)
-{
-  return version == 6 ? broadcast6 : broadcast4;
-}
-
-#else
-
-const PIPSocket::Address & PIPSocket::Address::GetLoopback(int)
-{
+#if P_HAS_IPV6
+  if (version == 6)
+    return loopback6;
+#endif
   return loopback4;
 }
 
-const PIPSocket::Address & PIPSocket::Address::GetAny(int)
+const PIPSocket::Address & PIPSocket::Address::GetAny(int IPV6_PARAM(version))
 {
+#if P_HAS_IPV6
+  if (version == 6)
+    return any6;
+#endif
   return any4;
 }
 
-const PIPSocket::Address PIPSocket::Address::GetBroadcast(int)
+const PIPSocket::Address PIPSocket::Address::GetBroadcast(int IPV6_PARAM(version))
 {
+#if P_HAS_IPV6
+  if (version == 6)
+    return broadcast6;
+#endif
   return broadcast4;
 }
-
-#endif
 
 
 PBoolean PIPSocket::Address::IsAny() const
@@ -1665,11 +1663,11 @@ PBoolean PIPSocket::Address::IsAny() const
 PIPSocket::Address::Address()
 {
 #if P_HAS_IPV6
-	if(defaultIpAddressFamily == AF_INET6)
-		*this = loopback6;
-	else
+  if(defaultIpAddressFamily == AF_INET6)
+    *this = loopback6;
+  else
 #endif
-		*this = loopback4;
+    *this = loopback4;
 }
 
 
@@ -1859,7 +1857,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 }
 
 
-PString PIPSocket::Address::AsString(bool bracketIPv6) const
+PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 {
 #if defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];
@@ -1877,7 +1875,7 @@ PString PIPSocket::Address::AsString(bool bracketIPv6) const
     str.MakeMinimumSize();
     if (bracketIPv6)
       return '[' + str + ']';
-	return str;
+    return str;
   }
 #endif // P_HAS_IPV6
 # if defined(P_HAS_INET_NTOP)
@@ -2628,8 +2626,8 @@ PBoolean PUDPSocket::ApplyQoS()
   else
     DSCPval = (char)qosSpec.GetDSCP();
 #else
-	DSCPval = 0x38;
-	disableGQoS = PFalse;
+  DSCPval = 0x38;
+  disableGQoS = PFalse;
 #endif
 
 #ifdef _WIN32
@@ -2874,7 +2872,7 @@ void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
 
 PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
 {
-	return false;
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
