@@ -1541,8 +1541,8 @@ PString PIPSocket::GetGatewayInterface(int version)
 
 PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
 {
-#if IPv6_ENABLED
   if (version == 6) {
+#if IPv6_ENABLED
     PIPRouteTableIPv6 routes;
     if (routes->NumEntries > 0) {
       PIPAdaptersAddressTable interfaces;
@@ -1565,8 +1565,10 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
         }
       }
     }
-  }
+#else
+    return GetDefaultIpAny();
 #endif
+  }
 
   PIPRouteTable routes;
   for (unsigned i = 0; i < routes->dwNumEntries; ++i) {
