@@ -1620,25 +1620,15 @@ class Win32RouteTableDetector : public PIPSocket::RouteTableDetector
 {
     PDynaLink  m_dll;
     BOOL    (* m_pCancelIPChangeNotify )(LPOVERLAPPED);
-    HANDLE     m_hNotify;
     HANDLE     m_hCancel;
-    OVERLAPPED m_overlap;
 
   public:
     Win32RouteTableDetector()
       : m_dll("iphlpapi.dll")
-      , m_pCancelIPChangeNotify(NULL)
-      , m_hNotify(NULL)
       , m_hCancel(CreateEvent(NULL, TRUE, FALSE, NULL))
     {
-      memset(&m_overlap, 0, sizeof(m_overlap));
-
-      if (m_dll.GetFunction("CancelIPChangeNotify", (PDynaLink::Function&)m_pCancelIPChangeNotify)) {
-        DWORD error = NotifyAddrChange(&m_hNotify, &m_overlap);
-        if (error != ERROR_IO_PENDING) {
-          PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
-        }
-      }
+      if (!m_dll.GetFunction("CancelIPChangeNotify", (PDynaLink::Function&)m_pCancelIPChangeNotify))
+        m_pCancelIPChangeNotify = NULL;
     }
 
     ~Win32RouteTableDetector()
@@ -1649,18 +1639,30 @@ class Win32RouteTableDetector : public PIPSocket::RouteTableDetector
 
     virtual bool Wait(const PTimeInterval & timeout)
     {
-      if (m_hNotify == NULL)
+      HANDLE hNotify = NULL;
+      OVERLAPPED overlap;
+
+      if (m_pCancelIPChangeNotify != NULL) {
+        memset(&overlap, 0, sizeof(overlap));
+        DWORD error = NotifyAddrChange(&hNotify, &overlap);
+        if (error != ERROR_IO_PENDING) {
+          PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
+          hNotify = NULL;
+        }
+      }
+
+      if (hNotify == NULL)
         return WaitForSingleObject(m_hCancel, timeout.GetInterval()) == WAIT_TIMEOUT;
 
       HANDLE handles[2];
-      handles[0] = m_hNotify;
+      handles[0] = hNotify;
       handles[1] = m_hCancel;
       switch (WaitForMultipleObjects(2, handles, false, INFINITE)) {
         case WAIT_OBJECT_0 :
           return true;
 
         case WAIT_OBJECT_0+1 :
-          m_pCancelIPChangeNotify(&m_overlap);
+          m_pCancelIPChangeNotify(&overlap);
           // Do next case
 
         default :
