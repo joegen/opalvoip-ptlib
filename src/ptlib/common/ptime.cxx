@@ -424,6 +424,9 @@ PString PTime::AsString(TimeFormat format, int zone) const
 
 PString PTime::AsString(const char * format, int zone) const
 {
+  if (!IsValid())
+    return PString::Empty();
+
   PAssert(format != NULL, PInvalidParameter);
 
   PBoolean is12hour = strchr(format, 'a') != NULL;

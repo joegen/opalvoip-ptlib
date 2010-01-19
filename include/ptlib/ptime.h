@@ -454,6 +454,8 @@ class PTime : public PObject
        
        Note if there is an 'a' character in the string, the hour will be in 12
        hour format, otherwise in 24 hour format.
+
+       @return empty string if time is invalid.
      */
     PString AsString(
       const char * formatPtr,    ///< Arbitrary format C string pointer for time.
