@@ -462,6 +462,32 @@ class PHTTPPasswordField : public PHTTPStringField
 };
 
 
+class PHTTPDateField : public PHTTPStringField
+{
+  PCLASSINFO(PHTTPDateField, PHTTPStringField)
+  public:
+    PHTTPDateField(
+      const char * name,
+      const PTime & initVal = PTime(0),
+      PTime::TimeFormat fmt = PTime::ShortDate
+    );
+
+    virtual PHTTPField * NewField() const;
+
+    virtual void SetValue(
+      const PString & newValue
+    );
+
+    virtual PBoolean Validated(
+      const PString & newValue,
+      PStringStream & msg
+    ) const;
+
+  protected:
+    PTime::TimeFormat m_format;
+};
+
+
 class PHTTPIntegerField : public PHTTPField
 {
   PCLASSINFO(PHTTPIntegerField, PHTTPField)
