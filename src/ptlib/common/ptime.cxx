@@ -630,7 +630,7 @@ void PTime::ReadFrom(istream & strm)
   time(&now);
   microseconds = 0;
   strm >> ws;
-  theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone());
+  theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone(StandardTime));
 }
 
 
