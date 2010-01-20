@@ -901,7 +901,32 @@ class PHTML : public PStringStream
     };
 
 
-    class InputRange : public InputField {
+    class InputNumber : public InputField {
+      public:
+        InputNumber(
+          const char * fname,
+          int min, int max,
+          int value = 0,
+          DisableCodes disabled = Enabled,
+          const char * attr = NULL
+        );
+        virtual ~InputNumber() {}
+      protected:
+        InputNumber(
+          const char * type,
+          const char * fname,
+          int min, int max,
+          int value,
+          DisableCodes disabled,
+          const char * attr
+        );
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        void Construct(int min, int max, int value);
+        int minValue, maxValue, initValue;
+    };
+
+    class InputRange : public InputNumber {
       public:
         InputRange(
           const char * fname,
@@ -911,10 +936,6 @@ class PHTML : public PStringStream
           const char * attr = NULL
         );
         virtual ~InputRange() {}
-      protected:
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        int minValue, maxValue, initValue;
     };
 
     class InputFile : public InputField {

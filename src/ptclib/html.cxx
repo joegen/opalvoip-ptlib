@@ -972,11 +972,27 @@ PHTML::CheckBox::CheckBox(const char * fname,
 }
 
 
-PHTML::InputRange::InputRange(const char * fname,
-                              int min, int max, int value,
-                              DisableCodes disabled,
-                              const char * attr)
-  : InputField("range", fname, disabled, attr)
+PHTML::InputNumber::InputNumber(const char * fname,
+                                int min, int max, int value,
+                                DisableCodes disabled,
+                                const char * attr)
+  : InputField("number", fname, disabled, attr)
+{
+  Construct(min, max, value);
+}
+
+PHTML::InputNumber::InputNumber(const char * type,
+                                const char * fname,
+                                int min, int max,
+                                int value,
+                                DisableCodes disabled,
+                                const char * attr)
+  : InputField(type, fname, disabled, attr)
+{
+  Construct(min, max, value);
+}
+
+void PHTML::InputNumber::Construct(int min, int max, int value)
 {
   PAssert(min <= max, PInvalidParameter);
   minValue = min;
@@ -989,7 +1005,7 @@ PHTML::InputRange::InputRange(const char * fname,
     initValue = value;
 }
 
-void PHTML::InputRange::AddAttr(PHTML & html) const
+void PHTML::InputNumber::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   PINDEX max = PMAX(-minValue, maxValue);
@@ -1002,6 +1018,15 @@ void PHTML::InputRange::AddAttr(PHTML & html) const
        << " MIN=" << minValue
        << " MAX=" << maxValue
        << " VALUE=\"" << initValue << "\"";
+}
+
+
+PHTML::InputRange::InputRange(const char * fname,
+                              int min, int max, int value,
+                              DisableCodes disabled,
+                              const char * attr)
+  : InputNumber("range", fname, min, max, value, disabled, attr)
+{
 }
 
 
