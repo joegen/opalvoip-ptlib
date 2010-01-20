@@ -1118,6 +1118,46 @@ PString PHTTPPasswordField::Decrypt(const PString & pword)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PHTTPDateField
+
+PHTTPDateField::PHTTPDateField(const char * name, const PTime & initVal, PTime::TimeFormat fmt)
+  : PHTTPStringField(name, 30, initVal.AsString(fmt))
+  , m_format(fmt)
+{
+}
+
+
+PHTTPField * PHTTPDateField::NewField() const
+{
+  return new PHTTPDateField(baseName, value);
+}
+
+
+void PHTTPDateField::SetValue(const PString & newValue)
+{
+  PTime test(newValue);
+  if (test.IsValid())
+    value = test.AsString(m_format);
+  else
+    value = newValue;
+}
+
+
+PBoolean PHTTPDateField::Validated(const PString & newValue, PStringStream & msg) const
+{
+  if (newValue.IsEmpty())
+    return true;
+
+  PTime test(newValue);
+  if (test.IsValid())
+    return true;
+
+  msg << "Invalid time specification.";
+  return false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPIntegerField
 
 PHTTPIntegerField::PHTTPIntegerField(const char * nam,
@@ -1154,7 +1194,7 @@ PHTTPField * PHTTPIntegerField::NewField() const
 
 void PHTTPIntegerField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::InputRange(fullName, low, high, value) << "  " << units;
+  html << PHTML::InputNumber(fullName, low, high, value) << "  " << units;
 }
 
 
