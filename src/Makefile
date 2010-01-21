@@ -164,8 +164,9 @@ endif  # HAS_AUDIO
 
 ## Various modules
 
-ifdef HAS_EXPAT
 SOURCES	+= $(COMPONENT_SRC_DIR)/pxml.cxx 
+
+ifdef HAS_EXPAT
 
 ifdef HAS_XMLRPC
 SOURCES	+= \
