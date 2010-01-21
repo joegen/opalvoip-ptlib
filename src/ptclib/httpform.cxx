@@ -418,8 +418,10 @@ PBoolean PHTTPField::ValidateAll(const PStringToString & data, PStringStream & m
 
 PHTTPCompositeField::PHTTPCompositeField(const char * nam,
                                          const char * titl,
-                                         const char * hlp)
+                                         const char * hlp,
+                                         bool includeHeaders)
   : PHTTPField(nam, titl, hlp)
+  , m_includeHeaders(includeHeaders)
 {
 }
 
@@ -476,11 +478,20 @@ PHTTPField * PHTTPCompositeField::NewField() const
 
 void PHTTPCompositeField::GetHTMLTag(PHTML & html) const
 {
+  if (m_includeHeaders) {
+    html << PHTML::TableStart("border=1 cellspacing=0 cellpadding=8");
+    GetHTMLHeading(html);
+    html << PHTML::TableRow();
+  }
+
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
-    if (i != 0 && html.Is(PHTML::InTable))
+    if (m_includeHeaders || (i != 0 && html.Is(PHTML::InTable)))
       html << PHTML::TableData("NOWRAP ALIGN=CENTER");
     fields[i].GetHTMLTag(html);
   }
+
+  if (m_includeHeaders)
+    html << PHTML::TableEnd();
 }
 
 
