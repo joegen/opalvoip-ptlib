@@ -241,7 +241,8 @@ class PHTTPCompositeField : public PHTTPField
     PHTTPCompositeField(
       const char * name,          // Name (identifier) for the field.
       const char * title = NULL,  // Title text for field (defaults to name).
-      const char * help = NULL    // Help text for the field.
+      const char * help = NULL,   // Help text for the field.
+      bool includeHeaders = false // Make a sub-table and put headers on HTML fields.
     );
 
     virtual void SetName(
@@ -308,6 +309,7 @@ class PHTTPCompositeField : public PHTTPField
 
   protected:
     PHTTPFields fields;
+    bool        m_includeHeaders;
 };
 
 
