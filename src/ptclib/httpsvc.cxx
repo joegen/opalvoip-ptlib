@@ -246,14 +246,16 @@ PString PHTTPServiceProcess::GetPageGraphic()
   PHTML html(PHTML::InBody);
   html << PHTML::TableStart()
        << PHTML::TableRow()
-       << PHTML::TableData();
+       << PHTML::TableData()
 
+       << PHTML::HotLink("/");
   if (gifHTML.IsEmpty())
     html << PHTML::Heading(1) << productNameHTML << "&nbsp;" << PHTML::Heading(1);
   else
     html << gifHTML;
+  html << PHTML::HotLink()
 
-  html << PHTML::TableData()
+       << PHTML::TableData()
        << GetOSClass() << ' ' << GetOSName()
        << " Version " << GetVersion(PTrue) << PHTML::BreakLine()
        << ' ' << GetCompilationDate().AsString("d MMMM yyyy")
