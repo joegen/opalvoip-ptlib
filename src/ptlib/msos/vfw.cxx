@@ -1059,6 +1059,17 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
       int & y   // Y position of device surface
     ) const;
 
+    /**Set the position of the output device, where relevant. For devices such as
+       files, this does nothing. For devices such as Windows, this sets the
+       position of the window on the screen.
+       
+       Returns: TRUE if the position can be set.
+      */
+    virtual bool SetPosition(
+      int x,  // X position of device surface
+      int y   // Y position of device surface
+    );
+
     LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
   protected:
@@ -1318,6 +1329,22 @@ PBoolean PVideoOutputDevice_Window::GetPosition(int & x, int & y) const
   x = m_lastPosition.x;
   y = m_lastPosition.y;
   return PTrue;
+}
+
+
+bool PVideoOutputDevice_Window::SetPosition(int x, int y)
+{
+  if (m_hWnd != NULL) {
+    RECT rect;
+    rect.top = y;
+    rect.left = x;
+    rect.bottom = y;
+    rect.right = x;
+    ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), false, GetWindowLong(m_hWnd, GWL_EXSTYLE));
+    ::SetWindowPos(m_hWnd, HWND_TOP, x+(x-rect.left), y, 0, 0, SWP_NOSIZE);
+  }
+
+  return true;
 }
 
 
