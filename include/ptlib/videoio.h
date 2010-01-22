@@ -749,6 +749,17 @@ class PVideoOutputDevice : public PVideoDevice
       int & x,  // X position of device surface
       int & y   // Y position of device surface
     ) const;
+
+    /**Set the position of the output device, where relevant. For devices such as
+       files, this does nothing. For devices such as Windows, this sets the
+       position of the window on the screen.
+       
+       Returns: TRUE if the position can be set.
+      */
+    virtual bool SetPosition(
+      int x,  // X position of device surface
+      int y   // Y position of device surface
+    );
 };
 
 
