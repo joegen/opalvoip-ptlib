@@ -1161,6 +1161,12 @@ PBoolean PVideoOutputDevice::GetPosition(int &, int &) const
 }
 
 
+bool PVideoOutputDevice::SetPosition(int, int)
+{
+  return false;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDeviceRGB
 
