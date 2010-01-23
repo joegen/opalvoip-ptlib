@@ -25,8 +25,13 @@ wxRect =x=<x> y=<y> w=<width> h=<height>
 wxWindow =<,t> hWnd=<m_hWnd>
 
 ; from OPAL
-OpalMediaFormat=<m_info->formatName.theArray,s>
 OpalMediaType=<_Bx._Buf,s>
+OpalMediaFormat=<m_info->formatName.theArray,s>
+OpalMediaOptionValue<*>=<m_name.theArray,s>=<m_value>
+OpalMediaOptionString=<m_name.theArray,s>=<m_value.theArray,s>
+OpalMediaOptionEnum=<m_name.theArray,s>=<m_value>
+OpalMediaOptionOctets=<m_name.theArray,s>=<m_value>
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -640,6 +645,19 @@ PSafeDictionary<*,*> {
       #(
           (PDictionary<$T1,$T2> *)$e.collection
       )
+   )
+}
+
+
+; from OPAL
+
+OpalMediaOptionEnum {
+   preview
+   ( 
+       #(
+            [$e.m_name.theArray,s], "=", $e.m_value, "->",
+            [((PString **)((PAbstractArray *)$e.m_enumerations.theArray)->theArray)[$e.m_value]->theArray,s]
+        )
    )
 }
 
