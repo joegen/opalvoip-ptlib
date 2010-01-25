@@ -313,7 +313,11 @@ PDynaLink::~PDynaLink()
 
 PString PDynaLink::GetExtension()
 {
+#ifdef P_MACOSX
+  return PString(".dylib");
+#else
   return PString(".so");
+#endif
 }
 
 PBoolean PDynaLink::Open(const PString & _name)
