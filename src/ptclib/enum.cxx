@@ -115,6 +115,16 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord
       ) {
     record = new NAPTRRecord();
 
+#ifdef _WIN32
+	DNS_NAPTR_DATA * naptr = &dnsRecord->Data.Naptr;
+
+    record->order       = naptr->wOrder;
+    record->preference  = naptr->wPreference;
+    record->flags       = naptr->pFlags;
+    record->service     = naptr->pService;
+    record->regex       = naptr->pRegularExpression;
+    record->replacement = naptr->pReplacement;
+#else
     NAPTR_DNS * naptr = (NAPTR_DNS *)&dnsRecord->Data;
 
     record->order       = naptr->order;
@@ -123,6 +133,7 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord
     record->service     = naptr->GetService();
     record->regex       = naptr->GetRegex();
     record->replacement = naptr->GetReplacement();
+#endif
   }
 
   return record;
@@ -256,7 +267,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
 
 static PStringArray & GetENUMServers()
 {
-  static const char * defaultDomains[] = { "e164.voxgratia.net","e164.org","e164.arpa"};
+  static const char * defaultDomains[] = { "87840.com","e164.voxgratia.net","e164.org","e164.arpa"};
   static PStringArray servers(
           sizeof(defaultDomains)/sizeof(defaultDomains[0]),
           defaultDomains
