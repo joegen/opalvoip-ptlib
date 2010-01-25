@@ -48,7 +48,6 @@
 
 /**
  SOAP Message classes
- ####################
  */
 
 //! SOAP message according to http://www.w3.org/TR/SOAP/
@@ -64,7 +63,7 @@ public:
   PSOAPMessage( const PString & method, const PString & nameSpace );
 
   //! Set the method name and namespace
-  void SetMethod( const PString & name, const PString & nameSpace );
+  void SetMethod( const PString & name, const PString & nameSpace, const PString & methodPrefix = "m:" );
 
   //! Get the method name and namespace
   void GetMethod( PString & name, PString & nameSpace );
@@ -116,7 +115,6 @@ private:
 
 /**
  SOAP Server classes
- ####################
  */
 
 class PSOAPServerRequestResponse : public PObject 
@@ -189,7 +187,6 @@ class PSOAPServerResource : public PHTTPResource
 
 /**
  SOAP client classes
- ####################
  */
 
 class PSOAPClient : public PObject

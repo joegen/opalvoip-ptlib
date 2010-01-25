@@ -70,7 +70,7 @@ PSOAPMessage::PSOAPMessage( const PString & method, const PString & nameSpace ) 
 
 
 
-void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace )
+void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace, const PString & methodPrefix )
 {
   PXMLElement* rtElement = 0;
   
@@ -94,10 +94,13 @@ void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace )
   {
     rtElement = GetRootElement();
 
-    pSOAPMethod = new PXMLElement( rtElement, PString( "m:") + name );
-    if ( nameSpace != "" )
+    pSOAPMethod = new PXMLElement(rtElement, methodPrefix + name);
+    if (!nameSpace.IsEmpty())
     {
-      pSOAPMethod->SetAttribute("xmlns:m", nameSpace, PTrue );
+      if (methodPrefix.IsEmpty())
+        pSOAPMethod->SetAttribute("xmlns", nameSpace, true);
+      else
+        pSOAPMethod->SetAttribute("xmlns:m", nameSpace, true);
     }
     pSOAPBody->AddChild( pSOAPMethod, PTrue );
   }
