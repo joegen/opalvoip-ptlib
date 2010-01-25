@@ -1265,7 +1265,8 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = DOCPLUSLUS \
-                         DOC_PLUS_PLUS
+                         DOC_PLUS_PLUS \
+                         P_AUDIO P_DNS P_DTMF P_EXPAT P_FTP P_HTTP P_JABBER P_LDAP P_ODBC P_QOS P_SNMP P_SOAP P_STUN P_URL P_VIDEO P_VXML P_XMLRPC
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.
