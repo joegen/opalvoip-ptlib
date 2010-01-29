@@ -115,8 +115,8 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord
       ) {
     record = new NAPTRRecord();
 
-#if WINVER > 0x501  // Windows Vista/7
-	DNS_NAPTR_DATA * naptr = &dnsRecord->Data.Naptr;
+#if WINVER >= 0x600  // Windows Vista/7
+    DNS_NAPTR_DATA * naptr = &dnsRecord->Data.Naptr;
 
     record->order       = naptr->wOrder;
     record->preference  = naptr->wPreference;
