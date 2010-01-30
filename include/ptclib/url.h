@@ -146,6 +146,7 @@ class PURL : public PObject
     PString AsString(
       UrlFormat fmt = FullURL   ///< The type of string to be returned.
     ) const;
+    operator PString() const { return AsString(); }
 
     /**Get the "file:" URL as a file path.
        If the URL is not a "file:" URL then returns an empty string.
