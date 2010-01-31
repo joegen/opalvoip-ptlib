@@ -121,6 +121,24 @@ if test "${enable_sunaudio}z" = "yesz" ; then
     AC_MSG_RESULT(no)
   fi
 fi
+
+dnl #########################################################################
+dnl check for shm sound support
+dnl ########################################################################
+
+AC_ARG_ENABLE(shmaudio, [  --enable-shmaudio       enable shm audio support],,enable_shmaudio=no)
+
+if test "${enable_shmaudio}z" = "yesz" ; then
+  AC_CHECK_FUNC(sem_timedwait, SNDSHMHDR=1)
+  AC_MSG_CHECKING(for shm audio sound support)
+  if test "${SNDSHMHDR}z" != "z"; then
+    AC_SUBST(HAS_AUDIOSHM, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
 fi # enable_audio
 
 AC_ARG_ENABLE(video,
