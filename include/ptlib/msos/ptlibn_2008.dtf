@@ -1198,6 +1198,7 @@ EXPORTS
     ??0Address@PEthSocket@@QAE@PBE@Z @1075 NONAME
     ??0Address@PEthSocket@@QAE@XZ @1076 NONAME
     ??0Address@PHTML@@QAE@PBD@Z @1077 NONAME
+    ??0Address@PIPSocket@@QAE@ABUin6_addr@@@Z @21401 NONAME
     ??0Address@PIPSocket@@QAE@ABUin_addr@@@Z @1079 NONAME
     ??0Address@PIPSocket@@QAE@ABV01@@Z @1080 NONAME
     ??0Address@PIPSocket@@QAE@ABVPString@@@Z @1081 NONAME
@@ -1334,7 +1335,7 @@ EXPORTS
     ??0InputText@PHTML@@QAE@PBDH0HW4DisableCodes@1@0@Z @1214 NONAME
     ??0InputText@PHTML@@QAE@PBDHHW4DisableCodes@1@0@Z @1215 NONAME
     ??0InputText@PHTML@@QAE@PBDHW4DisableCodes@1@0@Z @1216 NONAME
-    ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@10@Z @21399 NONAME
+    ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@100@Z @21402 NONAME
     ??0InterfaceEntry@PIPSocket@@QAE@XZ @1219 NONAME
     ??0IQ@XMPP@@QAE@AAVPXML@@@Z @1220 NONAME
     ??0IQ@XMPP@@QAE@PAVPXML@@@Z @1221 NONAME
@@ -1748,6 +1749,7 @@ EXPORTS
     ??0PIpAccessControlEntry@@QAE@ABVPString@@@Z @1624 NONAME
     ??0PIpAccessControlEntry@@QAE@VAddress@PIPSocket@@0_N@Z @17282 NONAME
     ??0PIpAccessControlList@@QAE@_N@Z @17283 NONAME
+    ??0PIPAdaptersAddressTable@@QAE@K@Z @21403 NONAME
     ??0PIPCacheData@@QAE@PAUaddrinfo@@PBD@Z @1627 NONAME
     ??0PIPCacheData@@QAE@PAUhostent@@PBD@Z @1628 NONAME
     ??0PIPCacheKey@@QAE@ABV0@@Z @1629 NONAME
@@ -1755,6 +1757,7 @@ EXPORTS
     ??0PIPDatagramSocket@@IAE@XZ @1631 NONAME
     ??0PIPInterfaceAddressTable@@QAE@XZ @20183 NONAME
     ??0PIPRouteTable@@QAE@XZ @20184 NONAME
+    ??0PIPRouteTableIPv6@@QAE@XZ @21404 NONAME
     ??0PIPSocket@@IAE@XZ @1632 NONAME
     ??0PIPSocketAddressAndPort@@QAE@ABV0@@Z @1633 NONAME
     ??0PIPSocketAddressAndPort@@QAE@ABVPString@@GD@Z @20734 NONAME
@@ -2023,6 +2026,8 @@ EXPORTS
     ??0PSOAPServerResource@@QAE@ABVPURL@@@Z @1891 NONAME
     ??0PSOAPServerResource@@QAE@ABVPURL@@ABVPHTTPAuthority@@@Z @1892 NONAME
     ??0PSOAPServerResource@@QAE@XZ @1893 NONAME
+    ??0Psockaddr@@QAE@ABVAddress@PIPSocket@@G@Z @21405 NONAME
+    ??0Psockaddr@@QAE@XZ @21406 NONAME
     ??0PSocket@@IAE@XZ @1896 NONAME
     ??0PSocks4Socket@@QAE@ABVPString@@G@Z @1897 NONAME
     ??0PSocks4Socket@@QAE@G@Z @1898 NONAME
@@ -3117,11 +3122,13 @@ EXPORTS
     ??1PInternetProtocol@@UAE@XZ @2823 NONAME
     ??1PIpAccessControlEntry@@UAE@XZ @2824 NONAME
     ??1PIpAccessControlList@@UAE@XZ @2825 NONAME
+    ??1PIPAdaptersAddressTable@@QAE@XZ @21407 NONAME
     ??1PIPCacheData@@UAE@XZ @2826 NONAME
     ??1PIPCacheKey@@UAE@XZ @2827 NONAME
     ??1PIPDatagramSocket@@UAE@XZ @2828 NONAME
     ??1PIPInterfaceAddressTable@@QAE@XZ @20190 NONAME
     ??1PIPRouteTable@@QAE@XZ @20191 NONAME
+    ??1PIPRouteTableIPv6@@QAE@XZ @21408 NONAME
     ??1PIPSocket@@UAE@XZ @2829 NONAME
     ??1PIPSocketAddressAndPort@@QAE@XZ @2830 NONAME
     ??1PLDAPAttributeBase@@UAE@XZ @2832 NONAME
@@ -3629,6 +3636,7 @@ EXPORTS
     ??4?$PStringDictionary@VPString@@@@QAEAAV0@ABV0@@Z @3328 NONAME
     ??4Address@PEthSocket@@QAEAAT01@ABT01@@Z @3329 NONAME
     ??4Address@PEthSocket@@QAEAAT01@ABVPString@@@Z @3330 NONAME
+    ??4Address@PIPSocket@@QAEAAV01@ABUin6_addr@@@Z @21409 NONAME
     ??4Address@PIPSocket@@QAEAAV01@ABUin_addr@@@Z @3332 NONAME
     ??4Address@PIPSocket@@QAEAAV01@ABV01@@Z @3333 NONAME
     ??4Address@PIPSocket@@QAEAAV01@ABVPString@@@Z @3334 NONAME
@@ -3805,6 +3813,7 @@ EXPORTS
     ??8?$_Vector_const_iterator@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBE_NABV01@@Z @3502 NONAME
     ??8Address@PEthSocket@@QBE_NABT01@@Z @3503 NONAME
     ??8Address@PEthSocket@@QBE_NPBE@Z @3504 NONAME
+    ??8Address@PIPSocket@@QBE_NAAUin6_addr@@@Z @21410 NONAME
     ??8Address@PIPSocket@@QBE_NAAUin_addr@@@Z @3506 NONAME
     ??8Address@PIPSocket@@QBE_NABV01@@Z @3507 NONAME
     ??8Address@PIPSocket@@QBE_NH@Z @3508 NONAME
@@ -4001,6 +4010,7 @@ EXPORTS
     ??B?$PComPtr@UIMoniker@@@@QBEPAUIMoniker@@XZ @20931 NONAME
     ??B?$PSafePtr@VPMonitoredSockets@@VPSafePtrBase@@@@QBEPAVPMonitoredSockets@@XZ @21323 NONAME
     ??BAddress@PEthSocket@@QBE?AVPString@@XZ @3693 NONAME
+    ??BAddress@PIPSocket@@QBE?AUin6_addr@@XZ @21411 NONAME
     ??BAddress@PIPSocket@@QBE?AUin_addr@@XZ @3695 NONAME
     ??BAddress@PIPSocket@@QBE?AVPString@@XZ @3696 NONAME
     ??BAddress@PIPSocket@@QBEKXZ @3697 NONAME
@@ -4074,6 +4084,7 @@ EXPORTS
     ??BPSNMP_PDUs@@QBEABVPSNMP_GetResponse_PDU@@XZ @3765 NONAME
     ??BPSNMP_PDUs@@QBEABVPSNMP_SetRequest_PDU@@XZ @3766 NONAME
     ??BPSNMP_PDUs@@QBEABVPSNMP_Trap_PDU@@XZ @3767 NONAME
+    ??BPsockaddr@@QBEPAUsockaddr@@XZ @21412 NONAME
     ??BPSSLCertificate@@QBEPAUx509_st@@XZ @3769 NONAME
     ??BPSSLContext@@QBEPAUssl_ctx_st@@XZ @3770 NONAME
     ??BPSSLDiffieHellman@@QBEPAUdh_st@@XZ @3771 NONAME
@@ -4152,6 +4163,8 @@ EXPORTS
     ??CMediaTypePtr@@QBEPAU_AMMediaType@@XZ @20944 NONAME
     ??CPIPInterfaceAddressTable@@QBEPBU_MIB_IPADDRTABLE@@XZ @20198 NONAME
     ??CPIPRouteTable@@QBEPBU_MIB_IPFORWARDTABLE@@XZ @20199 NONAME
+    ??CPIPRouteTableIPv6@@QBEPBU_MIB_IPFORWARD_TABLE2@@XZ @21413 NONAME
+    ??CPsockaddr@@QBEPAUsockaddr@@XZ @21414 NONAME
     ??CPSTUNMessage@@QBEPBUPSTUNMessageHeader@@XZ @3822 NONAME
     ??CPVideoDeviceBitmap@@QBEPAUtagBITMAPINFO@@XZ @3823 NONAME
     ??CPWaveFormat@@QBEPAUtWAVEFORMATEX@@XZ @3824 NONAME
@@ -4229,6 +4242,7 @@ EXPORTS
     ??Diterator@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBEAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@2@XZ @3882 NONAME
     ??Diterator@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBEAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@2@XZ @3883 NONAME
     ??Diterator@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBEAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@2@XZ @3884 NONAME
+    ??DPIPAdaptersAddressTable@@QBEABU_IP_ADAPTER_ADDRESSES_XP@@XZ @21415 NONAME
     ??DPTimeInterval@@QBE?AV0@H@Z @3885 NONAME
     ??E?$reverse_iterator@V?$_Iterator@$00@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAEAAV01@XZ @17316 NONAME
     ??E?$_Const_iterator@$00@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE?AV012@H@Z @20951 NONAME
@@ -4439,6 +4453,7 @@ EXPORTS
     ??RPNotifier@@UBEXAAVPObject@@H@Z @4095 NONAME
     ??RPString@@QBE?AV0@HH@Z @4096 NONAME
     ??RTable@PODBC@@QAEAAVField@1@HH@Z @4097 NONAME
+    ??XAddress@PIPSocket@@QBE_NABV01@@Z @21416 NONAME
     ??XPString@@QBE_NABV0@@Z @4099 NONAME
     ??XPString@@QBE_NPBD@Z @4100 NONAME
     ??XPTimeInterval@@QAEAAV0@H@Z @4101 NONAME
@@ -7235,8 +7250,8 @@ EXPORTS
     ??_R1BE@?0A@EA@?$basic_istream@DU?$char_traits@D@std@@@std@@8 @6902 NONAME
     ??_R1BM@?0A@EA@?$basic_ostream@DU?$char_traits@D@std@@@std@@8 @6903 NONAME
     ??_R1HA@?0A@EA@PSocksProtocol@@8 @6904 NONAME
-    ??_R1KI@?0A@EA@PSocksProtocol@@8 @21400 NONAME
     ??_R1M@?0A@EA@?$basic_ostream@DU?$char_traits@D@std@@@std@@8 @6905 NONAME
+    ??_R1MA@?0A@EA@PSocksProtocol@@8 @21417 NONAME
     ??_R2?$basic_ios@DU?$char_traits@D@std@@@std@@8 @6907 NONAME
     ??_R2?$basic_iostream@DU?$char_traits@D@std@@@std@@8 @6908 NONAME
     ??_R2?$basic_istream@DU?$char_traits@D@std@@@std@@8 @6909 NONAME
@@ -11853,7 +11868,6 @@ EXPORTS
     ?CreateWaveFile@PMultiMediaFile@@QAE_NABVPFilePath@@ABVPWaveFormat@@K@Z @17620 NONAME
     ?CreateWAVFile@PVXMLChannel@@UAEPAVPWAVFile@@ABVPFilePath@@_N@Z @17621 NONAME
     ?CreateWAVFile@PVXMLSession@@UAEPAVPWAVFile@@ABVPFilePath@@W4OpenMode@PFile@@HI@Z @11474 NONAME
-    ?creationMutex@@3VPCriticalSection@@A @11475 NONAME
     ?ctype@?$_Locbase@H@std@@2HB @11476 NONAME
     ?cur@?$_Iosb@H@std@@2W4_Seekdir@12@B @11477 NONAME
     ?Current@PHTTPServiceProcess@@SAAAV1@XZ @11478 NONAME
@@ -13056,6 +13070,7 @@ EXPORTS
     ?GetDefaultPosition@PVideoInputControl@@IAE_NW4InputControlType@PVideoControlInfo@@AAJ@Z @20444 NONAME
     ?GetDefaultSection@PConfig@@UBE?AVPString@@XZ @12636 NONAME
     ?GetDefaultService@PInternetProtocol@@QBEABVPString@@XZ @12637 NONAME
+    ?GetDefaultV6ScopeId@PIPSocket@@SAHXZ @21418 NONAME
     ?GetDeinitString@PModem@@QBE?AVPString@@XZ @12638 NONAME
     ?GetDelay@PVXMLPlayable@@UBEHXZ @12639 NONAME
     ?GetDescription@PWAVFileFormatG7231_ms@@UBE?AVPString@@XZ @12640 NONAME
@@ -13342,6 +13357,7 @@ EXPORTS
     ?GetInterfaces@PSingleMonitoredSocket@@UAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @17813 NONAME
     ?GetInterfaceTable@PIPSocket@@SA_NAAV?$PArray@VInterfaceEntry@PIPSocket@@@@_N@Z @19986 NONAME
     ?GetInterval@PTimeInterval@@QBEKXZ @12894 NONAME
+    ?GetIP@Psockaddr@@QBE?AVAddress@PIPSocket@@XZ @21419 NONAME
     ?GetIP@PSTUNAddressAttribute@@QBE?AVAddress@PIPSocket@@XZ @12896 NONAME
     ?GetIPAddress@PASNIPAddress@@UBE?AVAddress@PIPSocket@@XZ @12897 NONAME
     ?GetIPAddress@PASNObject@@UBE?AVAddress@PIPSocket@@XZ @12898 NONAME
@@ -13612,6 +13628,7 @@ EXPORTS
     ?GetPointer@PPointer@@QBEPAXXZ @13159 NONAME
     ?GetPointer@PWaveFormat@@QBEPAXXZ @13160 NONAME
     ?GetPointer@Result@PMessageDigest@@QBEPBEXZ @13161 NONAME
+    ?GetPort@Psockaddr@@QBEGXZ @21420 NONAME
     ?GetPort@PSocket@@QBEGXZ @13163 NONAME
     ?GetPort@PURL@@QBEGXZ @13164 NONAME
     ?GetPortByService@PSocket@@SAGPBDABVPString@@@Z @13165 NONAME
@@ -13742,6 +13759,7 @@ EXPORTS
     ?GetSize@PNotifierList@@QBEHXZ @13287 NONAME
     ?GetSize@PSafeCollection@@QBEHXZ @13288 NONAME
     ?GetSize@PSNMPVarBindingList@@QBEHXZ @13289 NONAME
+    ?GetSize@Psockaddr@@QBEHXZ @21421 NONAME
     ?GetSize@PWaveFormat@@QBEHXZ @13291 NONAME
     ?GetSize@PXMLElement@@QBEHXZ @13292 NONAME
     ?GetSize@PXMLRPCArrayBase@@UBEHXZ @13293 NONAME
@@ -13997,6 +14015,12 @@ EXPORTS
     ?IDTag@Stanza@XMPP@@SAABVPString@@XZ @13540 NONAME
     ?IfModifiedSinceTag@PHTTP@@SAABVPString@@XZ @13541 NONAME
     ?IllegalArgumentIndex@PArgList@@UBEXH@Z @13542 NONAME
+    ?IN6_IS_ADDR_LINKLOCAL@@YAHPBUin6_addr@@@Z @21422 NONAME
+    ?IN6_IS_ADDR_LOOPBACK@@YAHPBUin6_addr@@@Z @21423 NONAME
+    ?IN6_IS_ADDR_MULTICAST@@YAHPBUin6_addr@@@Z @21424 NONAME
+    ?IN6_IS_ADDR_SITELOCAL@@YAHPBUin6_addr@@@Z @21425 NONAME
+    ?IN6_IS_ADDR_V4COMPAT@@YAHPBUin6_addr@@@Z @21426 NONAME
+    ?IN6_IS_ADDR_V4MAPPED@@YAHPBUin6_addr@@@Z @21427 NONAME
     ?in@?$_Iosb@H@std@@2W4_Openmode@12@B @13548 NONAME
     ?Include@PStringSet@@QAEXABVPString@@@Z @13549 NONAME
     ?IncludeOptionalField@PASN_Sequence@@QAEXH@Z @13550 NONAME
@@ -14593,6 +14617,7 @@ EXPORTS
     ?IsInstalled@NT_ServiceManager@@UAE_NPAVPServiceProcess@@@Z @21151 NONAME
     ?IsInstalled@Win95_ServiceManager@@UAE_NPAVPServiceProcess@@@Z @21152 NONAME
     ?IsInterface@PSingleMonitoredSocket@@IBE_NABVPString@@@Z @18429 NONAME
+    ?IsIpAddressFamilyV6Supported@PIPSocket@@SA_NXZ @21428 NONAME
     ?IsLegalCharacter@PASN_BMPString@@IAE_NG@Z @18431 NONAME
     ?IsLoaded@PDynaLink@@UBE_NXZ @18432 NONAME
     ?IsLoaded@PVXMLSession@@UBE_NXZ @18433 NONAME
@@ -14684,6 +14709,7 @@ EXPORTS
     ?IsUnique@PContainer@@QBE_NXZ @18510 NONAME
     ?IsUnknownFrameSize@PVideoFile@@QBE_NXZ @14225 NONAME
     ?IsUnsigned@PASN_Integer@@QBE_NXZ @18511 NONAME
+    ?IsV4Mapped@Address@PIPSocket@@QBE_NXZ @21429 NONAME
     ?IsValid@Address@PIPSocket@@QBE_NXZ @18513 NONAME
     ?IsValid@IQ@XMPP@@SA_NPBVPXML@@@Z @18515 NONAME
     ?IsValid@IQ@XMPP@@UBE_NXZ @18516 NONAME
@@ -14968,6 +14994,7 @@ EXPORTS
     ?NewField@PHTTPSubForm@@UBEPAVPHTTPField@@XZ @14507 NONAME
     ?NewMessage@PRFC822Channel@@QAEXW4Direction@1@@Z @14508 NONAME
     ?NewRow@Table@PODBC@@QAE?AVRow@2@XZ @14509 NONAME
+    ?NewWorker@PThreadPoolBase@@UAEPAVWorkerThreadBase@1@XZ @21430 NONAME
     ?Next@iterator_base@?$PList@VIdentity@Disco@XMPP@@@@IAEXXZ @20035 NONAME
     ?Next@iterator_base@?$PList@VItem@Disco@XMPP@@@@IAEXXZ @20036 NONAME
     ?Next@iterator_base@?$PList@VItem@Roster@XMPP@@@@IAEXXZ @20037 NONAME
@@ -15603,8 +15630,10 @@ EXPORTS
     ?Ptr@iterator_base@?$PList@VPThread@@@@IBEPAVPThread@@XZ @20065 NONAME
     ?Ptr@iterator_base@?$PList@VPUDPSocket@@@@IBEPAVPUDPSocket@@XZ @20269 NONAME
     ?Ptr@iterator_base@?$PList@VStanza@XMPP@@@@IBEPAVStanza@XMPP@@XZ @20066 NONAME
+    ?Ptr@PIPAdaptersAddressTable@@QBEPBU_IP_ADAPTER_ADDRESSES_XP@@XZ @21431 NONAME
     ?Ptr@PIPInterfaceAddressTable@@QBEPBU_MIB_IPADDRTABLE@@XZ @21174 NONAME
     ?Ptr@PIPRouteTable@@QBEPBU_MIB_IPFORWARDTABLE@@XZ @21175 NONAME
+    ?Ptr@PIPRouteTableIPv6@@QBEPBU_MIB_IPFORWARD_TABLE2@@XZ @21432 NONAME
     ?PureTone@PTones@@IAE_NIII@Z @15136 NONAME
     ?PURLScheme_PString_loader@PWLibFactoryLoader@@3HA @15137 NONAME
     ?push@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEXABD@Z @15138 NONAME
@@ -15793,6 +15822,7 @@ EXPORTS
     ?RealEncode@PBER_Stream@@UAEXABVPASN_Real@@@Z @15321 NONAME
     ?RealEncode@PPER_Stream@@UAEXABVPASN_Real@@@Z @15322 NONAME
     ?RealEncode@PXER_Stream@@UAEXABVPASN_Real@@@Z @15323 NONAME
+    ?Reallocate@?$CustomAllocator@DV?$allocator@D@std@@@@QAEPADPADII@Z @21433 NONAME
     ?Recalculate@PURL@@IAEXXZ @15324 NONAME
     ?ReceiveCommandString@PChannel@@IAE_NHABVPString@@AAHH@Z @18959 NONAME
     ?ReceivedTag@PRFC822Channel@@SAABVPString@@XZ @15326 NONAME
@@ -16205,8 +16235,10 @@ EXPORTS
     ?SetDataBits@PSerialChannel@@QAE_NE@Z @19127 NONAME
     ?SetDefaultIpAddressFamily@PIPSocket@@SAXH@Z @15705 NONAME
     ?SetDefaultIpAddressFamilyV4@PIPSocket@@SAXXZ @15706 NONAME
+    ?SetDefaultIpAddressFamilyV6@PIPSocket@@SAXXZ @21434 NONAME
     ?SetDefaultMIMEInfo@PHTTPServer@@QAEXAAVPMIMEInfo@@ABVPHTTPConnectionInfo@@@Z @15708 NONAME
     ?SetDefaultSection@PConfig@@UAEXABVPString@@@Z @15709 NONAME
+    ?SetDefaultV6ScopeId@PIPSocket@@SAXH@Z @21435 NONAME
     ?SetDefaultValues@Field@PODBC@@QAEXXZ @15710 NONAME
     ?SetDeinitString@PModem@@QAEXABVPString@@@Z @15711 NONAME
     ?SetDirty@Item@Roster@XMPP@@QAEX_N@Z @19128 NONAME
@@ -16809,6 +16841,7 @@ EXPORTS
     ?Validate@PHTTPMultiSimpAuth@@UBE_NABVPHTTPRequest@@ABVPString@@@Z @19336 NONAME
     ?Validate@PHTTPSimpleAuth@@UBE_NABVPHTTPRequest@@ABVPString@@@Z @19337 NONAME
     ?Validate@PSTUNMessage@@QAE_NABV1@@Z @20279 NONAME
+    ?ValidateAddress@PIPRouteTableIPv6@@QAE_NKPAUsockaddr@@@Z @21436 NONAME
     ?ValidateAll@PHTTPCompositeField@@UBE_NABVPStringToString@@AAVPStringStream@@@Z @19338 NONAME
     ?ValidateAll@PHTTPField@@UBE_NABVPStringToString@@AAVPStringStream@@@Z @19339 NONAME
     ?Validated@PHTTPField@@UBE_NABVPString@@AAVPStringStream@@@Z @19340 NONAME
