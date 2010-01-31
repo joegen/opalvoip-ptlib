@@ -11059,7 +11059,6 @@ EXPORTS
     ?CreateWaveFile@PMultiMediaFile@@QAA_NABVPFilePath@@ABVPWaveFormat@@K@Z @27194 NONAME
     ?CreateWAVFile@PVXMLChannel@@UAAPAVPWAVFile@@ABVPFilePath@@_N@Z @30443 NONAME
     ?CreateWAVFile@PVXMLSession@@UAAPAVPWAVFile@@ABVPFilePath@@W4OpenMode@PFile@@HI@Z @30444 NONAME
-    ?creationMutex@@3VPCriticalSection@@A @17522 NONAME
     ?cur@?$_Iosb@H@std@@2W4_Seekdir@12@B @10717 NONAME
     ?Current@PHTTPServiceProcess@@SAAAV1@XZ @32326 NONAME
     ?Current@PProcess@@SAAAV1@XZ @10719 NONAME
@@ -13889,6 +13888,7 @@ EXPORTS
     ?NewField@PHTTPStringField@@UBAPAVPHTTPField@@XZ @25057 NONAME
     ?NewField@PHTTPSubForm@@UBAPAVPHTTPField@@XZ @25058 NONAME
     ?NewMessage@PRFC822Channel@@QAAXW4Direction@1@@Z @25059 NONAME
+    ?NewWorker@PThreadPoolBase@@UAAPAVWorkerThreadBase@1@XZ @33120 NONAME
     ?Next@iterator_base@?$PList@VIdentity@Disco@XMPP@@@@IAAXXZ @31018 NONAME
     ?Next@iterator_base@?$PList@VItem@Disco@XMPP@@@@IAAXXZ @31019 NONAME
     ?Next@iterator_base@?$PList@VItem@Roster@XMPP@@@@IAAXXZ @31020 NONAME
@@ -14634,6 +14634,7 @@ EXPORTS
     ?RealEncode@PBER_Stream@@UAAXABVPASN_Real@@@Z @25531 NONAME
     ?RealEncode@PPER_Stream@@UAAXABVPASN_Real@@@Z @25532 NONAME
     ?RealEncode@PXER_Stream@@UAAXABVPASN_Real@@@Z @31193 NONAME
+    ?Reallocate@?$CustomAllocator@DV?$allocator@D@std@@@@QAAPADPADII@Z @33121 NONAME
     ?Recalculate@PURL@@IAAXXZ @25533 NONAME
     ?ReceiveCommandString@PChannel@@IAA_NHABVPString@@AAHH@Z @28107 NONAME
     ?ReceivedTag@PRFC822Channel@@SAABVPString@@XZ @17740 NONAME
