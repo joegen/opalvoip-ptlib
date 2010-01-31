@@ -303,7 +303,7 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
 
 PTimeInterval PTimer::Tick()
 {
-#ifdef _POSIX_MONOTONIC_CLOCK
+#if defined(_POSIX_MONOTONIC_CLOCK) && !defined(P_MACOSX)
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return ts.tv_sec*1000LL + ts.tv_nsec/1000000LL;
