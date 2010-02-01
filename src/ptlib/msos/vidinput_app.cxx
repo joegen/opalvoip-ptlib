@@ -311,8 +311,12 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
   // create a DC for the screen and create
   PWrapHDC hScrDC = CreateDC("DISPLAY", NULL, NULL, NULL);
 
+  // Get the frame size;
+  unsigned framewidth, frameheight;
+  GetFrameSize(framewidth, frameheight);
+
    // create a bitmap compatible with the screen DC
-  PWrapHGDIOBJ hBitMap = CreateCompatibleBitmap(hScrDC, width, height);
+  PWrapHGDIOBJ hBitMap = CreateCompatibleBitmap(hScrDC, framewidth, frameheight);
 
   // a memory DC compatible to screen DC
   PWrapHDC hMemDC = CreateCompatibleDC(hScrDC);
@@ -320,8 +324,11 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
   // select new bitmap into memory DC
   SelectObject(hMemDC, hBitMap);
 
-  // bitblt screen DC to memory DC     
-  BitBlt(hMemDC, 0, 0, width, height, hScrDC, rect.left, rect.top, SRCCOPY);
+  // bitblt or stretchblt screen DC to memory DC depending on frame size
+  if (width == framewidth && height == frameheight)
+    BitBlt(hMemDC, 0, 0, width, height, hScrDC, rect.left, rect.top, SRCCOPY);
+  else
+    StretchBlt(hMemDC, 0, 0, framewidth, frameheight, hScrDC, rect.left, rect.top, width, height, SRCCOPY);
 
   // get the bitmap information
   if (GetObject(hBitMap, sizeof(BITMAP), (LPSTR)&bitmap) == 0) {
