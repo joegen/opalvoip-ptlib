@@ -1699,7 +1699,7 @@ PWCharArray PString::AsUCS2() const
   gsize g_len = 0;
   gchar * g_ucs2 = g_convert(theArray, GetSize()-1, "UCS-2", "UTF-8", 0, &g_len, 0);
   if (g_ucs2 != NULL) {
-    if (ucs2.SetSize(g_len))
+    if (ucs2.SetSize(g_len+1))
       memcpy(ucs2.GetPointer(), g_ucs2, g_len*2);
     g_free(g_ucs2);
     return ucs2;
