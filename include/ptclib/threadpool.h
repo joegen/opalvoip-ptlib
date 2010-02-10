@@ -40,6 +40,7 @@
 #endif
 
 #include <map>
+#include <queue>
 
 
 /**
@@ -233,7 +234,7 @@ class PThreadPool : public PThreadPoolBase
         {
           for (;;) {
             m_available.Wait();
-            if (m_shutdown)
+            if (WorkerThread::m_shutdown)
               break;
 
             m_mutex.Wait();
@@ -242,7 +243,7 @@ class PThreadPool : public PThreadPoolBase
               Work_T * work = m_queue.front();
               if (work != NULL) {
                 work->Work();
-                m_pool.RemoveWork(work);
+                WorkerThread::m_pool.RemoveWork(work);
               }
             }
 
@@ -252,7 +253,7 @@ class PThreadPool : public PThreadPoolBase
 
         void Shutdown()
         {
-          m_shutdown = true;
+          WorkerThread::m_shutdown = true;
           m_available.Signal();
         }
 
