@@ -140,7 +140,7 @@ class PThreadPoolBase : public PObject
         virtual void Shutdown() = 0;
         virtual unsigned GetWorkSize() const = 0;
 
-        bool m_shutdown;
+        bool   m_shutdown;
         PMutex m_workerMutex;
     };
 
@@ -197,6 +197,70 @@ class PThreadPool : public PThreadPoolBase
   
       protected:
         PThreadPool & m_pool;
+    };
+
+    class QueuedWorkerThread : public WorkerThread
+    {
+      public:
+        QueuedWorkerThread(PThreadPool & pool)
+          : WorkerThread(pool)
+          , m_available(0, INT_MAX)
+        {
+        }
+
+        void AddWork(Work_T * work)
+        {
+          m_mutex.Wait();
+          m_queue.push(work);
+          m_available.Signal();
+          m_mutex.Signal();
+        }
+
+        void RemoveWork(Work_T * )
+        {
+          m_mutex.Wait();
+          delete m_queue.front();
+          m_queue.pop();
+          m_mutex.Signal();
+        }
+
+        unsigned GetWorkSize() const
+        {
+          return m_queue.size();
+        }
+
+        void Main()
+        {
+          for (;;) {
+            m_available.Wait();
+            if (m_shutdown)
+              break;
+
+            m_mutex.Wait();
+
+            if (!m_queue.empty()) {
+              Work_T * work = m_queue.front();
+              if (work != NULL) {
+                work->Work();
+                m_pool.RemoveWork(work);
+              }
+            }
+
+            m_mutex.Signal();
+          }
+        }
+
+        void Shutdown()
+        {
+          m_shutdown = true;
+          m_available.Signal();
+        }
+
+      protected:
+        typedef std::queue<Work_T *> Queue;
+        Queue      m_queue;
+        PMutex     m_mutex;
+        PSemaphore m_available;
     };
 
     //
