@@ -2765,19 +2765,16 @@ PBoolean PRegularExpression::Execute(const char * cstr,
 
 PString PRegularExpression::EscapeString(const PString & str)
 {
-  PString translated;
+  PString translated = str;
 
   PINDEX lastPos = 0;
   PINDEX nextPos;
-  while ((nextPos = str.FindOneOf("\\^$+?*.[]()|{}", lastPos+1)) != P_MAX_INDEX) {
-    translated += str(lastPos, nextPos-1) + "\\";
-    lastPos = nextPos;
+  while ((nextPos = translated.FindOneOf("\\^$+?*.[]()|{}", lastPos)) != P_MAX_INDEX) {
+    translated.Splice("\\", nextPos);
+    lastPos = nextPos+2;
   }
 
-  if (lastPos == 0)
-    return str;
-
-  return translated + str.Mid(lastPos);
+  return translated;
 }
 
 
