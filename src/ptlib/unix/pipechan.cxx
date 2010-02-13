@@ -106,6 +106,19 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     PX_NewHandle("PPipeChannel stderrChildPipe", PMAX(stderrChildPipe[0], stderrChildPipe[1]));
   }
 
+  // Set up new environment if one specified.
+  char ** exec_environ = environ;
+  if (environment != NULL || !searchPath) {
+    exec_environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
+    for (PINDEX i = 0; i < environment->GetSize(); i++) {
+      PString key(environment->GetKeyAt(i));
+      if (searchPath || (key != "PATH")) {
+        PString str = key + '=' + environment->GetDataAt(i);
+        exec_environ[i] = strdup(str);
+      }
+    }
+  }
+
   // fork to allow us to execute the child
 #if defined(__BEOS__) || defined(P_IRIX)
   childPid = fork();
@@ -131,6 +144,9 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
       ::close(stderrChildPipe[1]);
       stderrChildPipe[1] = -1;
     }
+
+    if (exec_environ != environ)
+      free(exec_environ);
  
     os_handle = 0;
     return PTrue;
@@ -204,28 +220,14 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   for (i = 0; i < argumentList.GetSize(); i++) 
     args[i+1] = strdup(argumentList[i].GetPointer());
 
-  // Set up new environment if one specified.
-  if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
-#  if defined(P_MACOSX)
-#    define environ (*_NSGetEnviron())
-#  else
-     extern char ** environ;
-#  endif
-#  define __environ environ
+#if defined(P_MACOSX)
+#  define environ (*_NSGetEnviron())
+#elif defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
+#  extern char ** environ;
 #endif
-    __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
-    for (i = 0; i < environment->GetSize(); i++) {
-      PString str = environment->GetKeyAt(i) + '=' + environment->GetDataAt(i);
-      __environ[i] = strdup(str);
-    }
-  }
 
-  // execute the child as required
-  if (searchPath)
-    execvp(subProgram, args);
-  else
-    execv(subProgram, args);
+  // run the program
+  execve(subProgram, args, exec_environ);
 
   _exit(2);
   return PFalse;
