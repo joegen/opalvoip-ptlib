@@ -1500,6 +1500,8 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
     operator+=(cstr);
   else {
     MakeUnique();
+    if (len > slen-pos)
+      len = slen-pos;
     PINDEX clen = cstr != NULL ? strlen(cstr) : 0;
     PINDEX newlen = slen-len+clen;
     if (clen > len)
