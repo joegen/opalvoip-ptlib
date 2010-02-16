@@ -95,6 +95,10 @@
     #define _WIN32_WINNT WINVER
   #endif
 
+  #if !defined(_WIN32_WCE) && defined(_WIN32_WINNT) && (_WIN32_WINNT == 0x0500) && P_HAS_IPV6 && !defined(NTDDI_VERSION)
+    #define NTDDI_VERSION NTDDI_WIN2KSP1
+  #endif
+
   #ifndef STRICT
     #define STRICT
   #endif
