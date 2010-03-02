@@ -997,6 +997,9 @@ dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR  resolver,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR  resolver,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR  resolver,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR  resolver,\program files\microsoft visual studio 9.0\vc\platformsdk\
 dnl MSWIN_CHECK_DIR  resolver,\program files\microsoft visual studio 8\vc\platformsdk\
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2
@@ -1253,6 +1256,9 @@ dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
@@ -1385,6 +1391,9 @@ dnl MSWIN_FIND_FILE     sapi,P_SAPI_LIBRARY,sapi.lib,...
 dnl MSWIN_CHECK_DIR	sapi,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR	sapi,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR	sapi,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR     sapi,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR     sapi,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR     sapi,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK*
 
 
@@ -1491,6 +1500,9 @@ dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR  qos,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR  qos,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR  qos,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
@@ -1640,6 +1652,9 @@ dnl MSWIN_FIND_FILE  dsound,P_DIRECTX_DDRAW_H,ddraw.h,include
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR  dsound,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR  dsound,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR  dsound,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
@@ -1656,6 +1671,9 @@ dnl MSWIN_DIR_SYMBOL dshow,DIRECTSHOW_DIR
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR  dshow,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR  dshow,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR  dshow,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
@@ -1682,6 +1700,9 @@ dnl MSWIN_CHECK_FILE odbc,include\odbcinst.h,P_ODBC=1
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDKs\Windows\v6*
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDKs\Windows\v*
+dnl MSWIN_CHECK_DIR  odbc,\Program Files (x86)\Microsoft SDKs\Windows\v7*
+dnl MSWIN_CHECK_DIR  odbc,\Program Files (x86)\Microsoft SDKs\Windows\v6*
+dnl MSWIN_CHECK_DIR  odbc,\Program Files (x86)\Microsoft SDKs\Windows\v*
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
