@@ -15,7 +15,7 @@ endif
 endif
 
 ###############################audioSHM
-HAS_AUDIOSHM        = @@HAS_AUDIOSHM@
+HAS_AUDIOSHM        = @HAS_AUDIOSHM@
 
 ifeq (1,$(HAS_AUDIOSHM))
 SUBDIRS         += sound_shm
