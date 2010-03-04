@@ -454,10 +454,7 @@ releasefiles ::
 
 
 version:
-	@echo v$(VERSION) "  CVS tag:" `cvs status Makefile | grep "Sticky Tag" | sed -e "s/(none)/HEAD/" -e "s/(.*)//" -e "s/^.*://"`
-
-print-version:
-	@echo $(VERSION)
+	@echo v$(VERSION)
 
 ifndef VERSION_FILE
 
