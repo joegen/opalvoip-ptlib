@@ -2805,6 +2805,16 @@ class PRegularExpression : public PObject
     ~PRegularExpression();
   //@}
 
+
+  /**@name Overrides from class PObject */
+  //@{
+    /**Output the regular expression to the specified stream.
+     */
+    virtual void PrintOn(
+      ostream & strm  ///< I/O stream to output to.
+    ) const;
+  //@}
+
   /**@name Status functions */
   //@{
     /// Error codes.
@@ -2865,6 +2875,9 @@ class PRegularExpression : public PObject
        Error text string.
      */
     PString GetErrorText() const;
+
+    /** Return the string which represents the pattern matched by the regular expression. */
+    const PString & GetPattern() const { return patternSaved; }
   //@}
 
   /**@name Compile & Execute functions */
