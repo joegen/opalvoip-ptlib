@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.18"
+#define VERSION "1.19"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -462,11 +462,15 @@ string ExcludeDir(const string & _dir)
 
   string dir(GetFullPathNameString(_dir));
 
-  if (dir[dir.length()-1] != '\\')
+  size_t last = dir.length()-1;
+  if (dir[last] == '*')
+    dir.erase(last, 1);
+  else if (dir[last] != '\\')
     dir += '\\';
 
   excludeDirList.push_back(dir);
-  
+
+  dir += '*'; // For cosmetic display
   return dir;
 }
 
