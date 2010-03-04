@@ -2624,6 +2624,12 @@ PRegularExpression::~PRegularExpression()
 }
 
 
+void PRegularExpression::PrintOn(ostream &strm) const
+{
+  strm << patternSaved;
+}
+
+
 PRegularExpression::ErrorCodes PRegularExpression::GetErrorCode() const
 {
   return lastError;

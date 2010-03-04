@@ -96,7 +96,9 @@ install:
 	( if test -e $(PT_LIBDIR)/$(LIB_SONAME) ; then \
 		$(INSTALL) -m 444 $(PT_LIBDIR)/$(LIB_SONAME) $(DESTDIR)$(LIBDIR); \
 	fi )
-	$(INSTALL) -m 444 $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR)
+	( if test -e $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a ; then \
+		$(INSTALL) -m 444 $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR); \
+	fi )
 	(cd $(DESTDIR)$(LIBDIR) ; \
 		rm -f  $(PTLIB_FILE) ; \
 		ln -sf $(LIB_SONAME) $(PTLIB_FILE) \
