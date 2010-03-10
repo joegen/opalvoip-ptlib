@@ -678,9 +678,15 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
   if (ref == WithDereference && currentObject->SafeDereference()) {
     PSafeObject * objectToDelete = currentObject;
     currentObject = NULL;
-    PTRACE(6, "SafeColl\tDeleting object (" << objectToDelete << ')');
-    delete objectToDelete;
+    DeleteObject(objectToDelete);
   }
+}
+
+
+void PSafePtrBase::DeleteObject(PSafeObject * obj)
+{
+  PTRACE(6, "SafeColl\tDeleting object (" << obj << ')');
+  delete obj;
 }
 
 
@@ -688,13 +694,14 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj, PSafetyMode mode)
   : PSafePtrBase(NULL, mode)
+  , m_objectToDelete(NULL)
 {
-  m_mutex.Wait();
+  Lock();
 
   currentObject = obj;
   EnterSafetyMode(WithReference);
 
-  m_mutex.Signal();
+  Unlock();
 }
 
 
@@ -702,13 +709,14 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
                                              PSafetyMode mode,
                                              PINDEX idx)
   : PSafePtrBase(NULL, mode)
+  , m_objectToDelete(NULL)
 {
-  m_mutex.Wait();
+  Lock();
 
   collection = &safeCollection;
   Assign(idx);
 
-  m_mutex.Signal();
+  Unlock();
 }
 
 
@@ -716,20 +724,22 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
                                              PSafetyMode mode,
                                              PSafeObject * obj)
   : PSafePtrBase(NULL, mode)
+  , m_objectToDelete(NULL)
 {
-  m_mutex.Wait();
+  Lock();
 
   collection = &safeCollection;
   Assign(obj);
 
-  m_mutex.Signal();
+  Unlock();
 }
 
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
+  : m_objectToDelete(NULL)
 {
+  Lock();
   enumerator.m_mutex.Wait();
-  m_mutex.Wait();
 
   collection = enumerator.collection;
   currentObject = enumerator.currentObject;
@@ -737,17 +747,17 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enume
 
   EnterSafetyMode(WithReference);
 
-  m_mutex.Signal();
   enumerator.m_mutex.Signal();
+  Unlock();
 }
 
 
 PSafePtrMultiThreaded::~PSafePtrMultiThreaded()
 {
-  m_mutex.Wait();
+  Lock();
   ExitSafetyMode(WithDereference);
   currentObject = NULL;
-  m_mutex.Signal();
+  Unlock();
 }
 
 
@@ -760,9 +770,9 @@ PObject::Comparison PSafePtrMultiThreaded::Compare(const PObject & obj) const
 
 void PSafePtrMultiThreaded::SetNULL()
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::SetNULL();
-  m_mutex.Signal();
+  Unlock();
 }
 
 
@@ -775,59 +785,76 @@ PBoolean PSafePtrMultiThreaded::SetSafetyMode(PSafetyMode mode)
 
 void PSafePtrMultiThreaded::Assign(const PSafePtrMultiThreaded & ptr)
 {
+  Lock();
   ptr.m_mutex.Wait();
-  m_mutex.Wait();
   PSafePtrBase::Assign(ptr);
-  m_mutex.Signal();
   ptr.m_mutex.Signal();
+  Unlock();
 }
 
 
 void PSafePtrMultiThreaded::Assign(const PSafePtrBase & ptr)
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::Assign(ptr);
-  m_mutex.Signal();
+  Unlock();
 }
 
 
 void PSafePtrMultiThreaded::Assign(const PSafeCollection & safeCollection)
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::Assign(safeCollection);
-  m_mutex.Signal();
+  Unlock();
 }
 
 
 void PSafePtrMultiThreaded::Assign(PSafeObject * obj)
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::Assign(obj);
-  m_mutex.Signal();
+  Unlock();
 }
 
 
 void PSafePtrMultiThreaded::Assign(PINDEX idx)
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::Assign(idx);
-  m_mutex.Signal();
+  Unlock();
 }
 
 
 void PSafePtrMultiThreaded::Next()
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::Next();
-  m_mutex.Signal();
+  Unlock();
 }
 
 
 void PSafePtrMultiThreaded::Previous()
 {
-  m_mutex.Wait();
+  Lock();
   PSafePtrBase::Previous();
+  Unlock();
+}
+
+
+void PSafePtrMultiThreaded::DeleteObject(PSafeObject * obj)
+{
+  m_objectToDelete = obj;
+}
+
+
+void PSafePtrMultiThreaded::Unlock()
+{
   m_mutex.Signal();
+
+  if (m_objectToDelete != NULL) {
+    PSafePtrBase::DeleteObject(m_objectToDelete);
+    m_objectToDelete = NULL;
+  }
 }
 
 
