@@ -537,6 +537,7 @@ class PSafePtrBase : public PObject
   protected:
     virtual void Next();
     virtual void Previous();
+    virtual void DeleteObject(PSafeObject * obj);
 
     enum EnterSafetyModeOption {
       WithReference,
@@ -666,9 +667,14 @@ class PSafePtrMultiThreaded : public PSafePtrBase
   protected:
     virtual void Next();
     virtual void Previous();
+    virtual void DeleteObject(PSafeObject * obj);
+
+    void Lock() { m_mutex.Wait(); }
+    void Unlock();
 
   protected:
     mutable PMutex m_mutex;
+    PSafeObject  * m_objectToDelete;
 };
 
 
