@@ -294,14 +294,14 @@ endif
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
-	$(COMPONENT_SRC_DIR)/httpclnt.cxx
+	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/html.cxx \
+	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
 endif
 
 ifdef HAS_HTTPFORMS
 SOURCES += \
-	$(COMPONENT_SRC_DIR)/httpform.cxx \
-	$(COMPONENT_SRC_DIR)/html.cxx \
-	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
+	$(COMPONENT_SRC_DIR)/httpform.cxx
 endif #HAS_HTTPFORMS
 
 ifdef HAS_HTTPSVC
