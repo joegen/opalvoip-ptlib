@@ -685,6 +685,9 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
 
 void PSafePtrBase::DeleteObject(PSafeObject * obj)
 {
+  if (obj == NULL)
+    return;
+
   PTRACE(6, "SafeColl\tDeleting object (" << obj << ')');
   delete obj;
 }
@@ -849,12 +852,10 @@ void PSafePtrMultiThreaded::DeleteObject(PSafeObject * obj)
 
 void PSafePtrMultiThreaded::Unlock()
 {
+  PSafeObject * obj = m_objectToDelete;
+  m_objectToDelete = NULL;
   m_mutex.Signal();
-
-  if (m_objectToDelete != NULL) {
-    PSafePtrBase::DeleteObject(m_objectToDelete);
-    m_objectToDelete = NULL;
-  }
+  PSafePtrBase::DeleteObject(obj);
 }
 
 
