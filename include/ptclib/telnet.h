@@ -93,6 +93,17 @@ class PTelnetSocket : public PTCPSocket
       PINDEX len        ///< Number of bytes to write.
     );
 
+    /**Set local echo mode.
+       For some classes of channel, e.g. PConsoleChannel, data read by this
+       channel is automatically echoed. This disables the function so things
+       like password entry can work.
+
+       Default behaviour does nothing and return true if the channel is open.
+      */
+    virtual bool SetLocalEcho(
+      bool localEcho
+    );
+
 
     /** Connect a socket to a remote host on the specified port number. This is
        typically used by the client or initiator of a communications channel.
@@ -439,9 +450,6 @@ class PTelnetSocket : public PTCPSocket
     WORD windowWidth, windowHeight;
     // Size of the "window" used by the NVT.
 
-    PBoolean debug;
-    // Debug socket, output messages to PError stream.
-
 
   private:
     enum State {
@@ -464,8 +472,6 @@ class PTelnetSocket : public PTCPSocket
     // Storage for sub-negotiated options
 
     unsigned synchronising;
-
-    PBoolean StartSend(const char * which, BYTE code);
 };
 
 

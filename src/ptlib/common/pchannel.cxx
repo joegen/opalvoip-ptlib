@@ -522,6 +522,12 @@ PBoolean PChannel::Shutdown(ShutdownValue)
 }
 
 
+bool PChannel::SetLocalEcho(bool /*localEcho*/)
+{
+  return IsOpen();
+}
+
+
 PChannel * PChannel::GetBaseReadChannel() const
 {
   return (PChannel *)this;
@@ -745,6 +751,13 @@ PBoolean PIndirectChannel::Shutdown(ShutdownValue value)
     returnValue = writeChannel->Shutdown(value) || returnValue;
 
   return returnValue;
+}
+
+
+bool PIndirectChannel::SetLocalEcho(bool localEcho)
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return readChannel != NULL && readChannel->SetLocalEcho(localEcho);
 }
 
 

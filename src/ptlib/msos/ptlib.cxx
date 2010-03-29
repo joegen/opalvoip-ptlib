@@ -1009,6 +1009,24 @@ PBoolean PConsoleChannel::Close()
 }
 
 
+bool PConsoleChannel::SetLocalEcho(bool localEcho)
+{
+  if (m_hConsole == INVALID_HANDLE_VALUE)
+    return ConvertOSError(-2, LastReadError);
+
+  DWORD mode;
+  if (!GetConsoleMode(m_hConsole, &mode))
+    return false;
+
+  if (localEcho)
+    mode |= ENABLE_ECHO_INPUT;
+  else
+    mode &= ~ENABLE_ECHO_INPUT;
+
+  return SetConsoleMode(m_hConsole, mode);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
