@@ -26,10 +26,15 @@
  * with the assistance of funding from US Joint Forces Command Joint Concept Development &
  * Experimentation (J9) http://www.jfcom.mil/about/abt_j9.htm
  *
+ * Further assistance for enhancements from Imagicle spa
+ *
  * $Revision$
  * $Author$
  * $Date$
  */
+
+#ifndef PTLIB_CLI_H
+#define PTLIB_CLI_H
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
@@ -120,14 +125,19 @@ class PCLI : public PObject
           */
         virtual void OnStop();
 
+        /**Write prompt (depending on state) to channel.
+          */
+        virtual bool WritePrompt();
+
         /**Read a character from the attached channel an process.
            If the character was successfully read then ProcessInput() is called.
           */
         virtual bool ReadAndProcessInput();
 
         /**Process a character read from the channel.
+           Returns false if have error and processing is to cease.
           */
-        virtual void ProcessInput(char ch);
+        virtual bool ProcessInput(int ch);
 
         /**Call back for a command line was completed and ENTER pressed.
            The default behaviour processes the line into a PArgList and deals
@@ -146,7 +156,7 @@ class PCLI : public PObject
 
         /**Indicate is currently processing a command.
           */
-        bool IsProcessingCommand() const { return m_processingCommand; }
+        bool IsProcessingCommand() const { return m_state == e_ProcessingCommand; }
       //@}
 
       protected:
@@ -154,10 +164,17 @@ class PCLI : public PObject
 
         PCLI      & m_cli;
         PString     m_commandLine;
-        bool        m_ignoreNextLF;
+        bool        m_ignoreNextEOL;
         PStringList m_commandHistory;
         PThread   * m_thread;
-        bool        m_processingCommand;
+
+        enum State {
+          e_Username,
+          e_Password,
+          e_CommandEntry,
+          e_ProcessingCommand
+        } m_state;
+        PString m_enteredUsername;
     };
 
     /**This class is an enhancement to PArgList to add context.
@@ -285,6 +302,23 @@ class PCLI : public PObject
       Arguments & line
     );
 
+    /**Received a login name/pasword to be verified.
+       Note that the m_username or m_password field must be non-empty for a
+       log in sequence to occur, even if this function is overridden and the
+       memnbers not actually used for validation.
+
+       If the m_username is an empty string, but m_password is not, then it
+       the username not prompted for, just the password is required. The
+       reverse is also poassible and only a username entry required.
+
+       Default returns true if parameters are equal to m_username, m_password
+       respectively.
+      */
+    virtual bool OnLogIn(
+      const PString & username,
+      const PString & password
+    );
+
     /**Set a string to all command line interpreter contexts.
       */
     void Broadcast(
@@ -317,16 +351,6 @@ class PCLI : public PObject
 
   /**@name Member access */
   //@{
-    /**Get prompt used for command line interpreter.
-       Default is "CLI> ".
-      */
-    const PString & GetPrompt() const { return m_prompt; }
-
-    /**Set prompt used for command line interpreter.
-       Default is "CLI> ".
-      */
-    void SetPrompt(const PString & prompt) { m_prompt = prompt; }
-
     /**Get new line string output at the end of every line.
        Default is "\n".
       */
@@ -337,21 +361,105 @@ class PCLI : public PObject
       */
     void SetNewLine(const PString & newLine) { m_newLine = newLine; }
 
+    /**Get flag for echo is required for entered characters.
+       Default is false.
+      */
+    bool GetRequireEcho() const { return m_requireEcho; }
+
+    /**Set flag for echo is required for entered characters.
+       Default is false.
+      */
+    void SetRequireEcho(bool requireEcho) { m_requireEcho = requireEcho; }
+
+    /**Get characters used for editing (backspace/delete) command lines.
+       Default is "\b\x7f".
+      */
+    const PString & GetEditCharacters() const { return m_editCharacters; }
+
+    /**Set characters used for editing (backspace/delete) command lines.
+       Default is "\b\x7f".
+      */
+    void SetEditCharacters(const PString & editCharacters) { m_editCharacters = editCharacters; }
+
+    /**Get prompt used for command line interpreter.
+       Default is "CLI> ".
+      */
+    const PString & GetPrompt() const { return m_prompt; }
+
+    /**Set prompt used for command line interpreter.
+       Default is "CLI> ".
+      */
+    void SetPrompt(const PString & prompt) { m_prompt = prompt; }
+
+    /**Get prompt used for login (if enabled).
+       Default is "Username: ".
+      */
+    const PString & GetUsernamePrompt() const { return m_usernamePrompt; }
+
+    /**Set prompt used for login (if enabled).
+       Default is "Username: ".
+      */
+    void SetUsernamePrompt(const PString & prompt) { m_usernamePrompt = prompt; }
+
+    /**Get prompt used for password (if enabled).
+       Default is "Password: ".
+      */
+    const PString & GetPasswordPrompt() const { return m_passwordPrompt; }
+
+    /**Set prompt used for password (if enabled).
+       Default is "Password: ".
+      */
+    void SetPasswordPrompt(const PString & prompt) { m_passwordPrompt = prompt; }
+
+    /**Get username for log in validation.
+       Default is empty string, disabling entry of username/password.
+      */
+    const PString & GetUsername() const { return m_username; }
+
+    /**Set username for log in validation.
+       Default is empty string, disabling entry of username/password.
+      */
+    void SetUsername(const PString & username) { m_username = username; }
+
+    /**Get password for log in validation.
+       Default is empty string, disabling entry of password.
+      */
+    const PString & GetPassword() const { return m_password; }
+
+    /**Set password for log in validation.
+       Default is empty string, disabling entry of password.
+      */
+    void SetPassword(const PString & password) { m_password = password; }
+
+    /**Get command to be used to exit session.
+       Default is "exit\nquit".
+      */
+    const PCaselessString & GetExitCommand() const { return m_exitCommand; }
+
+    /**Set command to be used to exit session.
+       Default is "exit\nquit".
+      */
+    void SetExitCommand(const PCaselessString & exitCommand) { m_exitCommand = exitCommand; }
+
     /**Get command to be used to display help.
-       Default is "?".
+       Default is "?\nhelp".
       */
     const PCaselessString & GetHelpCommand() const { return m_helpCommand; }
 
     /**Set command to be used to display help.
-       Default is "?".
+       Default is "?\nhelp".
       */
     void SetHelpCommand(const PCaselessString & helpCommand) { m_helpCommand = helpCommand; }
 
     /**Get help on help.
+       This string is output before the individual help is output for each command.
+       Default describes ?, !, !n, !! followed by "Command available are:".
       */
     const PString & GetHelpOnHelp() const { return m_helpOnHelp; }
 
     /**Set help on help.
+       This string is output before the individual help is output for each command.
+       Default describes ?, !, !n, !! followed by "Command available are:".
       */
     void SetHelpOnHelp(const PCaselessString & helpOnHelp) { m_helpOnHelp = helpOnHelp; }
 
@@ -376,41 +484,56 @@ class PCLI : public PObject
     void SetHistoryCommand(const PCaselessString & historyCommand) { m_historyCommand = historyCommand; }
 
     /**Get error message for if there is no history.
+       Default is "No command history".
       */
     const PString & GetNoHistoryError() const { return m_noHistoryError; }
 
     /**Set error message for if there is no history.
+       Default is "No command history".
       */
     void SetNoHistoryError(const PString & noHistoryError) { m_noHistoryError = noHistoryError; }
 
-    /**Get usage prefix for if Arguments::WriteError() called.
+    /**Get usage prefix for if Arguments::WriteUsage() called.
+       Default is "Usage: ".
       */
     const PString & GetCommandUsagePrefix() const { return m_commandUsagePrefix; }
 
-    /**Set usage prefix for if Arguments::WriteError() called.
+    /**Set usage prefix for if Arguments::WriteUsage() called.
+       Default is "Usage: ".
       */
     void SetCommandUsagePrefix(const PString & commandUsagePrefix) { m_commandUsagePrefix = commandUsagePrefix; }
 
     /**Get error prefix for if Arguments::WriteError() called.
+       Default is ": error: ", always prefixed by command name.
       */
     const PString & GetCommandErrorPrefix() const { return m_commandErrorPrefix; }
 
     /**Set error prefix for if Arguments::WriteError() called.
+       Default is ": error: ", always prefixed by command name.
       */
     void SetCommandErrorPrefix(const PString & commandErrorPrefix) { m_commandErrorPrefix = commandErrorPrefix; }
 
     /**Get error message for if unknown command is entered.
+       Default is "Unknown command".
       */
     const PString & GetUnknownCommandError() const { return m_unknownCommandError; }
 
     /**Set error message for if unknown command is entered.
+       Default is "Unknown command".
       */
     void SetUnknownCommandError(const PString & unknownCommandError) { m_unknownCommandError = unknownCommandError; }
   //@}
 
   protected:
-    PString         m_prompt;
     PString         m_newLine;
+    bool            m_requireEcho;
+    PString         m_editCharacters;
+    PString         m_prompt;
+    PString         m_usernamePrompt;
+    PString         m_passwordPrompt;
+    PString         m_username;
+    PString         m_password;
+    PCaselessString m_exitCommand;
     PCaselessString m_helpCommand;
     PString         m_helpOnHelp;
     PCaselessString m_repeatCommand;
@@ -523,11 +646,13 @@ class PCLISocket : public PCLI
     /**Get the port we are listing on.
       */
     WORD GetPort() const { return m_listenSocket.GetPort(); }
+  //@}
 
   protected:
     PDECLARE_NOTIFIER(PThread, PCLISocket, ThreadMain);
     bool HandleSingleThreadForAll();
     bool HandleIncoming();
+    virtual PTCPSocket * CreateSocket();
 
     bool m_singleThreadForAll;
 
@@ -537,3 +662,30 @@ class PCLISocket : public PCLI
     typedef std::map<PSocket *, Context *> ContextMap_t;
     ContextMap_t m_contextBySocket;
 };
+
+
+/**Command Line Interpreter over Telnet sockets.
+   This class allows for access and automatic creation of command line
+   interpreter contexts from incoming Telnet connections on a listening port.
+  */
+class PCLITelnet : public PCLISocket
+{
+  public:
+  /**@name Construction */
+  //@{
+    PCLITelnet(
+      WORD port = 0,
+      const char * prompt = NULL,
+      bool singleThreadForAll = false
+    );
+  //@}
+
+  protected:
+    virtual PTCPSocket * CreateSocket();
+};
+
+
+#endif // PTLIB_CLI_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////

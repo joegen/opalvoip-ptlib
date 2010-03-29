@@ -8946,6 +8946,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptlib\conchan.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Config.h"
 					>
 				</File>
@@ -9147,6 +9151,10 @@
 				>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\channel.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\conchan.h"
 					>
 				</File>
 				<File
