@@ -427,6 +427,17 @@ class PChannel : public PObject, public iostream {
       ShutdownValue option
     );
 
+    /**Set local echo mode.
+       For some classes of channel, e.g. PConsoleChannel, data read by this
+       channel is automatically echoed. This disables the function so things
+       like password entry can work.
+
+       Default behaviour does nothing and return true if the channel is open.
+      */
+    virtual bool SetLocalEcho(
+      bool localEcho
+    );
+
     /**Set the iostream buffer size for reads and writes.
 
        @return
