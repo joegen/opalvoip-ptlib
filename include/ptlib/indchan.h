@@ -157,6 +157,17 @@ class PIndirectChannel : public PChannel
       ShutdownValue option   ///< Flag for shut down of read, write or both.
     );
 
+    /**Set local echo mode.
+       For some classes of channel, e.g. PConsoleChannel, data read by this
+       channel is automatically echoed. This disables the function so things
+       like password entry can work.
+
+       Default behaviour does nothing and return true if the channel is open.
+      */
+    virtual bool SetLocalEcho(
+      bool localEcho
+    );
+
 
     /**This function returns the eventual base channel for reading of a series
        of indirect channels provided by descendents of #PIndirectChannel#.

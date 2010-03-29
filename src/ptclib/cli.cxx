@@ -26,6 +26,8 @@
  * with the assistance of funding from US Joint Forces Command Joint Concept Development &
  * Experimentation (J9) http://www.jfcom.mil/about/abt_j9.htm
  *
+ * Further assistance for enhancements from Imagicle spa
+ *
  * $Revision$
  * $Author$
  * $Date$
@@ -33,15 +35,16 @@
 
 #include <ptlib.h>
 #include <ptclib/cli.h>
+#include <ptclib/telnet.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PCLI::Context::Context(PCLI & cli)
   : m_cli(cli)
-  , m_ignoreNextLF(false)
+  , m_ignoreNextEOL(false)
   , m_thread(NULL)
-  , m_processingCommand(false)
+  , m_state(cli.GetUsername().IsEmpty() ? (cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username)
 {
 }
 
@@ -118,12 +121,32 @@ void PCLI::Context::Stop()
 
 void PCLI::Context::OnStart()
 {
-  *this << m_cli.GetPrompt() << ::flush;
+  WritePrompt();
 }
 
 
 void PCLI::Context::OnStop()
 {
+}
+
+
+bool PCLI::Context::WritePrompt()
+{
+  switch (m_state) {
+    case e_Username :
+      if (!m_cli.GetUsername().IsEmpty())
+        return WriteString(m_cli.GetUsernamePrompt());
+      // Do next case
+
+    case e_Password :
+      SetLocalEcho(false);
+      if (!m_cli.GetPassword().IsEmpty())
+        return WriteString(m_cli.GetPasswordPrompt());
+      // Do next case
+
+    default :
+      return WriteString(m_cli.GetPrompt());
+  }
 }
 
 
@@ -138,43 +161,83 @@ bool PCLI::Context::ReadAndProcessInput()
     return false;
   }
   
-  ProcessInput((char)ch);
-  return true;
+  return ProcessInput(ch);
 }
 
 
-void PCLI::Context::ProcessInput(char ch)
+bool PCLI::Context::ProcessInput(int ch)
 {
-  switch (ch) {
-    case '\n' :
-      if (m_ignoreNextLF) {
-        m_ignoreNextLF = false;
-        return;
-      }
-      break;
-
-    case '\r' :
-      m_ignoreNextLF = true;
-      break;
-
-    case '\b' : // Backspace
-    case '\x7f' : // Delete
+  if (ch != '\n' && ch != '\r') {
+    if (m_cli.GetEditCharacters().Find((char)ch) != P_MAX_INDEX) {
       if (!m_commandLine.IsEmpty()) {
         m_commandLine.Delete(m_commandLine.GetLength()-1, 1);
-        WriteString("\b \b");
+        if (m_cli.GetRequireEcho() && m_state != e_Password) {
+          if (!WriteString("\b \b"))
+            return false;
+        }
       }
-      // Do next case
+    }
+    else if (ch > 0 && ch < 256 && isprint(ch)) {
+      m_commandLine += (char)ch;
 
-    default :
-      if (isprint(ch))
-        m_commandLine += ch;
-      m_ignoreNextLF = false;
-      return;
+      if (m_cli.GetRequireEcho() && m_state != e_Password) {
+        if (!WriteChar(ch))
+          return false;
+      }
+    }
+
+    m_ignoreNextEOL = false;
+    return true;
   }
 
-  OnCompletedLine();
+  if (m_ignoreNextEOL) {
+    m_ignoreNextEOL = false;
+    return true;
+  }
+
+  m_ignoreNextEOL = true;
+
+  switch (m_state) {
+    case e_Username :
+      if (m_cli.GetPassword().IsEmpty()) {
+        if (m_cli.OnLogIn(m_commandLine, PString::Empty()))
+          m_state = e_CommandEntry;
+      }
+      else {
+        m_enteredUsername = m_commandLine;
+        m_state = e_Password;
+      }
+      break;
+
+    case e_Password :
+      if (!WriteString(m_cli.GetNewLine()))
+        return false;
+
+      if (m_cli.OnLogIn(m_enteredUsername, m_commandLine))
+        m_state = e_CommandEntry;
+      else
+        m_state = m_cli.GetUsername().IsEmpty() ? (m_cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username;
+
+      SetLocalEcho(m_state != e_Password);
+      m_enteredUsername.MakeEmpty();
+      break;
+
+    default :
+      OnCompletedLine();
+  }
+
   m_commandLine.MakeEmpty();
-  WriteString(m_cli.GetPrompt());
+  return WritePrompt();
+}
+
+
+static bool CheckInternalCommand(const PCaselessString & line, const PCaselessString & cmds)
+{
+  PINDEX pos = cmds.Find(line);
+  if (pos == P_MAX_INDEX)
+    return false;
+  char terminator = cmds[pos + line.GetLength()];
+  return terminator == '\n' || terminator == '\0';
 }
 
 
@@ -186,6 +249,11 @@ void PCLI::Context::OnCompletedLine()
 
   PTRACE(4, "PCLI\tProcessing command line \"" << line << '"');
 
+  if (CheckInternalCommand(line, m_cli.GetExitCommand())) {
+    Stop();
+    return;
+  }
+
   if (line.NumCompare(m_cli.GetRepeatCommand()) == EqualTo) {
     if (m_commandHistory.IsEmpty()) {
       *this << m_cli.GetNoHistoryError() << endl;
@@ -195,7 +263,7 @@ void PCLI::Context::OnCompletedLine()
     line = m_commandHistory.back();
   }
 
-  if (line == m_cli.GetHistoryCommand()) {
+  if (CheckInternalCommand(line, m_cli.GetHistoryCommand())) {
     unsigned cmdNum = 1;
     for (PStringList::iterator cmd = m_commandHistory.begin(); cmd != m_commandHistory.end(); ++cmd)
       *this << cmdNum++ << ' ' << *cmd << '\n';
@@ -213,13 +281,13 @@ void PCLI::Context::OnCompletedLine()
     line = m_commandHistory[cmdNum-1];
   }
 
-  if (line == m_cli.GetHelpCommand())
+  if (CheckInternalCommand(line, m_cli.GetHelpCommand()))
     m_cli.ShowHelp(*this);
   else {
     Arguments args(*this, line);
-    m_processingCommand = true;
+    m_state = e_ProcessingCommand;
     m_cli.OnReceivedLine(args);
-    m_processingCommand = false;
+    m_state = e_CommandEntry;
   }
 
   m_commandHistory += line;
@@ -270,10 +338,15 @@ PCLI::Context & PCLI::Arguments::WriteError(const PString & error)
 ///////////////////////////////////////////////////////////////////////////////
 
 PCLI::PCLI(const char * prompt)
-  : m_prompt(prompt != NULL ? prompt : "CLI> ")
-  , m_newLine("\r\n")
-  , m_helpCommand("?")
-  , m_helpOnHelp("Use ? to display help\n"
+  : m_newLine("\r\n")
+  , m_requireEcho(false)
+  , m_editCharacters("\b\x7f")
+  , m_prompt(prompt != NULL ? prompt : "CLI> ")
+  , m_usernamePrompt("Username: ")
+  , m_passwordPrompt("Password: ")
+  , m_exitCommand("exit\nquit")
+  , m_helpCommand("?\nhelp")
+  , m_helpOnHelp("Use ? or 'help' to display help\n"
                  "Use ! to list history of commands\n"
                  "Use !n to repeat the n'th command\n"
                  "Use !! to repeat last command\n"
@@ -460,6 +533,12 @@ void PCLI::OnReceivedLine(Arguments & args)
 }
 
 
+bool PCLI::OnLogIn(const PString & username, const PString & password)
+{
+  return m_username == username && m_password == password;
+}
+
+
 void PCLI::Broadcast(const PString & message) const
 {
   for (ContextList_t::const_iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
@@ -521,7 +600,7 @@ void PCLI::ShowHelp(Context & context)
       context << left << setw(maxCommandLength) << cmd->first << "   ";
 
       if (cmd->second.m_help.IsEmpty())
-        context << GetCommandUsagePrefix(); // Earlier condiiton says must have usage
+        context << GetCommandUsagePrefix(); // Earlier conditon says must have usage
       else {
         lines = cmd->second.m_help.Lines();
         context << lines[0];
@@ -689,8 +768,11 @@ bool PCLISocket::HandleSingleThreadForAll()
         if (iterContext != m_contextBySocket.end()) {
           char buffer[1024];
           if (socket->Read(buffer, sizeof(buffer)-1)) {
-            for (PINDEX i = 0; i < socket->GetLastReadCount(); ++i)
-              iterContext->second->ProcessInput(buffer[i]);
+            PINDEX count = socket->GetLastReadCount();
+            for (PINDEX i = 0; i < count; ++i) {
+              if (!iterContext->second->ProcessInput(buffer[i]))
+                socket->Close();
+            }
           }
           else
             socket->Close();
@@ -705,7 +787,7 @@ bool PCLISocket::HandleSingleThreadForAll()
 
 bool PCLISocket::HandleIncoming()
 {
-  PTCPSocket * socket = new PTCPSocket;
+  PTCPSocket * socket = CreateSocket();
   if (socket->Accept(m_listenSocket)) {
     PTRACE(3, "PCLI\tIncoming connection from " << socket->GetPeerHostName());
     Context * context = CreateContext();
@@ -723,3 +805,26 @@ bool PCLISocket::HandleIncoming()
   delete socket;
   return false;
 }
+
+
+PTCPSocket * PCLISocket::CreateSocket()
+{
+  return new PTCPSocket();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PCLITelnet::PCLITelnet(WORD port, const char * prompt, bool singleThreadForAll)
+  : PCLISocket(port, prompt, singleThreadForAll)
+{
+}
+
+
+PTCPSocket * PCLITelnet::CreateSocket()
+{
+  return new PTelnetSocket();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////

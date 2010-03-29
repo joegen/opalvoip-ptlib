@@ -65,6 +65,19 @@ class PConsoleChannel : public PChannel
     );
   //@}
 
+  /**@name Overrides from PChannel */
+  //@{
+    /**Set local echo mode.
+       For some classes of channel, e.g. PConsoleChannel, data read by this
+       channel is automatically echoed. This disables the function so things
+       like password entry can work.
+
+       Default behaviour does nothing and return true if the channel is open.
+      */
+    virtual bool SetLocalEcho(
+      bool localEcho
+    );
+  //@}
 
   /**@name Open functions */
   //@{
