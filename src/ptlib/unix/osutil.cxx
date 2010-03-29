@@ -65,6 +65,7 @@
 #else
 #include <time.h>
 #include <sys/time.h>
+#include <termios.h>
 #endif
 #include <ctype.h>
 
@@ -84,6 +85,7 @@
 
 #include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/timeb.h>
 
 #if defined(P_NETBSD)
 #include <sys/statvfs.h>
@@ -98,7 +100,6 @@
 
 #include <fstab.h>
 #include <sys/stat.h>
-#include <sys/statfs.h>
 
 #elif defined(P_SOLARIS) 
 #define P_USE_LANGINFO
@@ -1153,6 +1154,28 @@ PBoolean PConsoleChannel::Close()
 {
   os_handle = -1;
   return PTrue;
+}
+
+
+bool PConsoleChannel::SetLocalEcho(bool localEcho)
+{
+  if (!IsOpen())
+    return ConvertOSError(-2, LastReadError);
+
+#ifdef P_VXWORKS
+  PAssertAlways("PConsoleChannel::GetName - Not implemented for VxWorks");
+  return PString("Not Implemented");
+#else
+  struct termios ios;
+  if (!ConvertOSError(tcgetattr(os_handle, &ios)))
+    return false;
+
+  if (localEcho)
+    ios.c_lflag |= ECHO;
+  else
+    ios.c_lflag &= ~ECHO;
+  return ConvertOSError(tcsetattr(os_handle, TCSANOW, &ios));
+#endif
 }
 
 
