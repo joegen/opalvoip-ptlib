@@ -20,7 +20,7 @@ void Hello::Main()
 {
   cout << "Hello world!\n\n"
           "From " << GetOSClass() << ' ' << GetOSName() << " (" << GetOSVersion() << ")"
-          " on " << GetOSHardware() << endl;
+          " on " << GetOSHardware() << ", PTLib version " << GetLibVersion() << endl;
 }
 
 // End of hello.cxx

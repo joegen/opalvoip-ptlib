@@ -35,6 +35,7 @@ OBJDIR	= $(PT_OBJDIR)
 LIBDIR  = $(PT_LIBDIR)
 TARGET  = $(LIBDIR)/$(PTLIB_FILE)
 VERSION_FILE = $(PTLIBDIR)/version.h
+REVISION_FILE = $(PTLIBDIR)/revision.h
 
 ##########################################
 
@@ -397,6 +398,23 @@ endif
 
 CLEAN_FILES = $(GETDATE_SOURCE)
 
+
+$(COMMON_SRC_DIR)/osutils.cxx: $(REVISION_FILE)
+
+$(REVISION_FILE) : $(REVISION_FILE).in
+ifeq ($(shell which svn 2> /dev/null),)
+	cp $< $@
+else ifeq ($(wildcard .svn),)
+	cp $< $@
+else
+	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `svn info | sed -n 's/Revision: //p'`/" $< > $@.tmp
+	$(Q)if diff -q $@ $@.tmp >/dev/null 2>&1; then \
+	  rm $@.tmp; \
+	else \
+	  mv -f $@.tmp $@; \
+	  echo "Revision file updated to `sed -rn 's/.*SVN_REVISION(.*)/\1/p' $@`" ; \
+	fi
+endif
 
 #######################################################
 
