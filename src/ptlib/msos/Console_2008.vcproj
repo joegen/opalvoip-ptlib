@@ -5304,6 +5304,168 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\..\revision.h.in"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Windows Mobile 6 Standard SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Windows Mobile 6 Standard SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Windows Mobile 6 Professional SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="No Trace|Windows Mobile 6 Standard SDK (ARMV4I)"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Setting SVN revision include file."
+						CommandLine="cp $(InputPath) $(InputDir)revision.h"
+						Outputs="$(InputDir)revision.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\revision.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\version.h"
+				>
+			</File>
 			<Filter
 				Name="Common"
 				>
