@@ -41,6 +41,7 @@
 #include <ptlib/pprocess.h>
 #include <ptlib/svcproc.h>
 #include "../../../version.h"
+#include "../../../revision.h"
 
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
@@ -1663,7 +1664,12 @@ PString PProcess::GetVersion(PBoolean full) const
 
 PString PProcess::GetLibVersion()
 {
-  return psprintf("%u.%u%s%u", MAJOR_VERSION, MINOR_VERSION, VersionStatus[BUILD_TYPE], BUILD_NUMBER);
+  return psprintf("%u.%u%s%u (svn:%u)",
+                  MAJOR_VERSION,
+                  MINOR_VERSION,
+                  VersionStatus[BUILD_TYPE],
+                  BUILD_NUMBER,
+                  SVN_REVISION);
 }
 
 

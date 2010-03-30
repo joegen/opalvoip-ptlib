@@ -81,6 +81,7 @@ SOURCES         := $(strip $(SOURCES))
 
 
 ifeq ($(V)$(VERBOSE),)
+Q    = @
 Q_CC = @echo [CC] `echo $< | sed s/$PWD//` ; 
 Q_DEP= @echo [DEP] `echo $< | sed s/$PWD//` ; 
 Q_AR = @echo [AR] `echo $@ | sed s/$PWD//` ; 
