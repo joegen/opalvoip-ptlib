@@ -404,7 +404,8 @@ $(COMMON_SRC_DIR)/osutils.cxx: $(REVISION_FILE)
 $(REVISION_FILE) : $(REVISION_FILE).in
 ifeq ($(shell which svn 2> /dev/null),)
 	cp $< $@
-else ifeq ($(wildcard .svn),)
+else
+ifeq ($(wildcard .svn),)
 	cp $< $@
 else
 	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `svn info | sed -n 's/Revision: //p'`/" $< > $@.tmp
@@ -414,6 +415,7 @@ else
 	  mv -f $@.tmp $@; \
 	  echo "Revision file updated to `sed -rn 's/.*SVN_REVISION(.*)/\1/p' $@`" ; \
 	fi
+endif
 endif
 
 #######################################################
