@@ -83,7 +83,7 @@ class PInternetProtocol : public PIndirectChannel
        not support the level of timeout control required by the protocols.
 
        @return
-       PTrue if at least len bytes were written to the channel.
+       true if at least len bytes were written to the channel.
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -99,11 +99,11 @@ class PInternetProtocol : public PIndirectChannel
        Note that this only occurs if the member variable
        <CODE>stuffingState</CODE> has been set to some value other than
        <CODE>DontStuff</CODE>, usually <CODE>StuffIdle</CODE>. Also, if the
-       <CODE>newLineToCRLF</CODE> member variable is PTrue then all occurrences
+       <CODE>newLineToCRLF</CODE> member variable is true then all occurrences
        of a '\\n' character will be translated to a CR/LF pair.
 
        @return
-       PTrue if at least len bytes were written to the channel.
+       true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -121,7 +121,7 @@ class PInternetProtocol : public PIndirectChannel
     /** Connect a socket to a remote host for the internet protocol.
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Connect(
       const PString & address,    ///< Address of remote machine to connect to.
@@ -135,7 +135,7 @@ class PInternetProtocol : public PIndirectChannel
     /** Accept a server socket to a remote host for the internet protocol.
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Accept(
       PSocket & listener    ///< Address of remote machine to connect to.
@@ -155,7 +155,7 @@ class PInternetProtocol : public PIndirectChannel
        This will assert if the I/O channel is not an IP socket.
 
        @return
-       PTrue if the string and CR/LF were completely written.
+       true if the string and CR/LF were completely written.
      */
     PIPSocket * GetSocket() const;
 
@@ -164,7 +164,7 @@ class PInternetProtocol : public PIndirectChannel
        string, then these are translated into CR/LF pairs.
 
        @return
-       PTrue if the string and CR/LF were completely written.
+       true if the string and CR/LF were completely written.
      */
     virtual PBoolean WriteLine(
       const PString & line ///< String to write as a command line.
@@ -175,7 +175,7 @@ class PInternetProtocol : public PIndirectChannel
        If the <CODE>unstuffLine</CODE> parameter is set then the function will
        remove the '.' character from the start of any line that begins with
        two consecutive '.' characters. A line that has is exclusively a '.'
-       character will make the function return PFalse.
+       character will make the function return false.
 
        Note this function will block for the time specified by the
        <A>PChannel::SetReadTimeout()</A> function for only the first character
@@ -184,11 +184,11 @@ class PInternetProtocol : public PIndirectChannel
        set back to the original setting when the function returns.
 
        @return
-       PTrue if a CR/LF pair was received, PFalse if a timeout or error occurred.
+       true if a CR/LF pair was received, false if a timeout or error occurred.
      */
     virtual PBoolean ReadLine(
       PString & line,             ///< String to receive a CR/LF terminated line.
-      PBoolean allowContinuation = PFalse  ///< Flag to handle continued lines.
+      PBoolean allowContinuation = false  ///< Flag to handle continued lines.
     );
 
     /** Put back the characters into the data stream so that the next
@@ -211,12 +211,12 @@ class PInternetProtocol : public PIndirectChannel
 
        If the <CODE>cmdNumber</CODE> parameter is outside of the range of
        valid command names, then the function does not send anything and
-       returns PFalse.
+       returns false.
 
        This function is typically used by client forms of the socket.
 
        @return
-       PTrue if the command was completely written.
+       true if the command was completely written.
      */
     virtual PBoolean WriteCommand(
       PINDEX cmdNumber       ///< Number of command to write.
@@ -241,7 +241,7 @@ class PInternetProtocol : public PIndirectChannel
        This function is typically used by server forms of the socket.
 
        @return
-       PTrue if something was read, otherwise an I/O error occurred.
+       true if something was read, otherwise an I/O error occurred.
      */
     virtual PBoolean ReadCommand(
       PINDEX & num,
@@ -264,7 +264,7 @@ class PInternetProtocol : public PIndirectChannel
        This function is typically used by server forms of the socket.
 
        @return
-       PTrue if the response was completely written.
+       true if the response was completely written.
      */
     virtual PBoolean WriteResponse(
       unsigned numericCode, ///< Response code for command response.
@@ -291,7 +291,7 @@ class PInternetProtocol : public PIndirectChannel
        This function is typically used by client forms of the socket.
 
        @return
-       PTrue if the response was completely read without a socket error.
+       true if the response was completely read without a socket error.
      */
     virtual PBoolean ReadResponse();
     virtual PBoolean ReadResponse(
@@ -340,7 +340,7 @@ class PInternetProtocol : public PIndirectChannel
        <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
 
        The default bahaviour looks for a space or a '-' and splits the code
-       and info either side of that character, then returns PFalse.
+       and info either side of that character, then returns false.
 
        @return
        Position of continuation character in response, 0 if no continuation

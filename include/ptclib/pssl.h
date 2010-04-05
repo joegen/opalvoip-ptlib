@@ -147,7 +147,7 @@ class PSSLPrivateKey : public PObject
       */
     PBoolean Save(
       const PFilePath & keyFile,  ///< Private key file
-      PBoolean append = PFalse,        ///< Append to file
+      PBoolean append = false,        ///< Append to file
       PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to write
     );
 
@@ -256,7 +256,7 @@ class PSSLCertificate : public PObject
       */
     PBoolean Save(
       const PFilePath & keyFile,  ///< Certificate key file
-      PBoolean append = PFalse,        ///< Append to file
+      PBoolean append = false,        ///< Append to file
       PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to write
     );
 
@@ -425,7 +425,7 @@ class PSSLChannel : public PIndirectChannel
       */
     PSSLChannel(
       PSSLContext * context = NULL,   ///< Context for SSL channel
-      PBoolean autoDeleteContext = PFalse  ///< Flag for context to be automatically deleted.
+      PBoolean autoDeleteContext = false  ///< Flag for context to be automatically deleted.
     );
     PSSLChannel(
       PSSLContext & context           ///< Context for SSL channel
@@ -439,7 +439,7 @@ class PSSLChannel : public PIndirectChannel
     virtual PBoolean Read(void * buf, PINDEX len);
     virtual PBoolean Write(const void * buf, PINDEX len);
     virtual PBoolean Close();
-    virtual PBoolean Shutdown(ShutdownValue) { return PTrue; }
+    virtual PBoolean Shutdown(ShutdownValue) { return true; }
     virtual PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
     virtual PBoolean ConvertOSError(int error, ErrorGroup group = LastGeneralError);
 
@@ -460,7 +460,7 @@ class PSSLChannel : public PIndirectChannel
       */
     PBoolean Accept(
       PChannel * channel,     ///< Channel to attach to.
-      PBoolean autoDelete = PTrue  ///< Flag for if channel should be automatically deleted.
+      PBoolean autoDelete = true  ///< Flag for if channel should be automatically deleted.
     );
 
 
@@ -480,7 +480,7 @@ class PSSLChannel : public PIndirectChannel
       */
     PBoolean Connect(
       PChannel * channel,     ///< Channel to attach to.
-      PBoolean autoDelete = PTrue  ///< Flag for if channel should be automatically deleted.
+      PBoolean autoDelete = true  ///< Flag for if channel should be automatically deleted.
     );
 
     /**Use the certificate specified.
@@ -517,7 +517,7 @@ class PSSLChannel : public PIndirectChannel
        The default behaviour "connects" the channel to the OpenSSL library.
 
        @return
-       Returns PTrue if the protocol handshaking is successful.
+       Returns true if the protocol handshaking is successful.
      */
     virtual PBoolean OnOpen();
 

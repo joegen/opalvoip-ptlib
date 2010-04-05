@@ -82,7 +82,7 @@ class PTCPSocket : public PIPSocket
        descendent class determine what is required to make a duplicate of the
        instance. Not all classes can even {\b do} a clone operation.
        
-       The main user of the clone function is the #PDictionary# class as
+       The main user of the clone function is the <code>PDictionary</code> class as
        it requires copies of the dictionary keys.
 
        The default behaviour is for this function to assert.
@@ -101,13 +101,13 @@ class PTCPSocket : public PIPSocket
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        This override repeatedly writes if there is no error until all of the
        requested bytes have been written.
 
        @return
-       PTrue if at least len bytes were written to the channel.
+       true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -130,12 +130,12 @@ class PTCPSocket : public PIPSocket
        Accept(). With each incoming connection, you will do Accept
        again.
 
-       If the #port# parameter is zero then the port number as
+       If the <code>port</code> parameter is zero then the port number as
        defined by the object instance construction or the
-       #PIPSocket::SetPort()# function.
+       <code>PIPSocket::SetPort()</code> function.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
@@ -154,14 +154,14 @@ class PTCPSocket : public PIPSocket
        to make, this will accept a connection made by the "connecting" socket
        created to establish a link.
 
-       The port that the socket uses is the one used in the #Listen()#
-       command of the #socket# parameter.
+       The port that the socket uses is the one used in the <code>Listen()</code>
+       command of the <code>socket</code> parameter.
 
        Note that this function will block until a remote system connects to the
        port number specified in the "listening" socket.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
@@ -175,15 +175,15 @@ class PTCPSocket : public PIPSocket
        normal channel data.
 
        This is subject to the write timeout and sets the
-       #lastWriteCount# member variable in the same way as usual
-       #PChannel::Write()# function.
+       <code>lastWriteCount</code> member variable in the same way as usual
+       <code>PChannel::Write()</code> function.
        
        @return
-       PTrue if all the bytes were sucessfully written.
+       true if all the bytes were sucessfully written.
      */
     virtual PBoolean WriteOutOfBand(
       const void * buf,   ///< Data to be written as URGENT TCP data.
-      PINDEX len          ///< Number of bytes pointed to by #buf#.
+      PINDEX len          ///< Number of bytes pointed to by <code>buf</code>.
     );
 
     /** This is callback function called by the system whenever out of band data
@@ -194,7 +194,7 @@ class PTCPSocket : public PIPSocket
      */
     virtual void OnOutOfBand(
       const void * buf,   ///< Data to be received as URGENT TCP data.
-      PINDEX len          ///< Number of bytes pointed to by #buf#.
+      PINDEX len          ///< Number of bytes pointed to by <code>buf</code>.
     );
   //@}
 

@@ -103,7 +103,7 @@ class PModem : public PSerialChannel
        parameters.
        
        @return
-       PTrue if the modem serial port was successfully opened.
+       true if the modem serial port was successfully opened.
      */
     virtual PBoolean Open(
       const PString & port,   ///< Serial port name to open.
@@ -121,7 +121,7 @@ class PModem : public PSerialChannel
        correct configuration file section is already set.
 
        @return
-       PTrue if the modem serial port was successfully opened.
+       true if the modem serial port was successfully opened.
      */
     virtual PBoolean Open(
       PConfig & cfg   ///< Configuration file to read parameters from.
@@ -159,7 +159,7 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the initialise to start.
     
        @return
-       PTrue if the <A>Initialise()</A> function may proceeed.
+       true if the <A>Initialise()</A> function may proceeed.
      */
     PBoolean CanInitialise() const;
 
@@ -169,7 +169,7 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       PTrue if command string sent successfully and the objects state has
+       true if command string sent successfully and the objects state has
        changed.
      */
     PBoolean Initialise();
@@ -198,7 +198,7 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the de-initialise to start.
     
        @return
-       PTrue if the <A>Deinitialise()</A> function may proceeed.
+       true if the <A>Deinitialise()</A> function may proceeed.
      */
     PBoolean CanDeinitialise() const;
 
@@ -208,7 +208,7 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       PTrue if command string sent successfully and the objects state has
+       true if command string sent successfully and the objects state has
        changed.
      */
     PBoolean Deinitialise();
@@ -328,7 +328,7 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the dial to start.
     
        @return
-       PTrue if the <A>Dial()</A> function may proceeed.
+       true if the <A>Dial()</A> function may proceeed.
      */
     PBoolean CanDial() const;
 
@@ -342,7 +342,7 @@ class PModem : public PSerialChannel
        post-dial string.
 
        @return
-       PTrue if command string sent successfully and the objects state has
+       true if command string sent successfully and the objects state has
        changed.
      */
     PBoolean Dial(const PString & number);
@@ -371,7 +371,7 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the hang up to start.
     
        @return
-       PTrue if the <A>HangUp()</A> function may proceeed.
+       true if the <A>HangUp()</A> function may proceeed.
      */
     PBoolean CanHangUp() const;
 
@@ -381,7 +381,7 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       PTrue if command string sent successfully and the objects state has
+       true if command string sent successfully and the objects state has
        changed.
      */
     PBoolean HangUp();
@@ -389,7 +389,7 @@ class PModem : public PSerialChannel
     /** The modem is in a state that allows the user command to start.
     
        @return
-       PTrue if the <A>SendUser()</A> function may proceeed.
+       true if the <A>SendUser()</A> function may proceeed.
      */
     PBoolean CanSendUser() const;
 
@@ -399,7 +399,7 @@ class PModem : public PSerialChannel
        sent with all replies met.
 
        @return
-       PTrue if command string sent successfully.
+       true if command string sent successfully.
      */
     PBoolean SendUser(
       const PString & str   ///< User command string to send.
@@ -409,12 +409,12 @@ class PModem : public PSerialChannel
     // Abort the current meta-string command operation eg dial, hang up etc.
 
     /** The modem is in a state that allows the user application to read from
-       the channel. Reading while this is PTrue can interfere with the operation
+       the channel. Reading while this is true can interfere with the operation
        of the meta-string processing. This function is only usefull when
        multi-threading is used.
 
        @return
-       PTrue if <A>Read()</A> operations are "safe".
+       true if <A>Read()</A> operations are "safe".
      */
     PBoolean CanRead() const;
 

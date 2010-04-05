@@ -41,11 +41,11 @@
 // "Smart" pointers.
 
 /** This is the base class for objects that use the <i>smart pointer</i> system.
-   In conjunction with the #PSmartPointer# class, this class creates
+   In conjunction with the <code>PSmartPointer</code> class, this class creates
    objects that can have the automatic deletion of the object instance when
    there are no more smart pointer instances pointing to it.
 
-   A #PSmartObject# carries the reference count that the #PSmartPointer# 
+   A <code>PSmartObject</code> carries the reference count that the <code>PSmartPointer</code> 
    requires to determine if the pointer is needed any more and should be
    deleted.
  */
@@ -54,14 +54,14 @@ class PSmartObject : public PObject
   PCLASSINFO(PSmartObject, PObject);
 
   public:
-    /** Construct a new smart object, subject to a #PSmartPointer# instance
+    /** Construct a new smart object, subject to a <code>PSmartPointer</code> instance
        referencing it.
      */
     PSmartObject()
       :referenceCount(1) { }
 
   protected:
-    /** Count of number of instances of #PSmartPointer# that currently
+    /** Count of number of instances of <code>PSmartPointer</code> that currently
        reference the object instance.
      */
     PAtomicInteger referenceCount;
@@ -72,18 +72,18 @@ class PSmartObject : public PObject
 
 
 /** This is the class for pointers to objects that use the <i>smart pointer</i>
-   system. In conjunction with the #PSmartObject# class, this class
+   system. In conjunction with the <code>PSmartObject</code> class, this class
    references objects that can have the automatic deletion of the object
    instance when there are no more smart pointer instances pointing to it.
 
-   A PSmartPointer carries the pointer to a #PSmartObject# instance which
+   A PSmartPointer carries the pointer to a <code>PSmartObject</code> instance which
    contains a reference count. Assigning or copying instances of smart pointers
    will automatically increment and decrement the reference count. When the
-   last instance that references a #PSmartObject# instance is destroyed or
-   overwritten, the #PSmartObject# is deleted.
+   last instance that references a <code>PSmartObject</code> instance is destroyed or
+   overwritten, the <code>PSmartObject</code> is deleted.
 
    A NULL value is possible for a smart pointer. It can be detected via the
-   #IsNULL()# function.
+   <code>IsNULL()</code> function.
  */
 class PSmartPointer : public PObject
 {
@@ -93,18 +93,18 @@ class PSmartPointer : public PObject
   /**@name Construction */
   //@{
     /** Create a new smart pointer instance and have it point to the specified
-       #PSmartObject# instance.
+       <code>PSmartObject</code> instance.
      */
     PSmartPointer(
-      PSmartObject * obj = NULL   /// Smart object to point to.
+      PSmartObject * obj = NULL   ///< Smart object to point to.
     ) { object = obj; }
 
     /** Create a new smart pointer and point it at the data pointed to by the
-       #ptr# parameter. The reference count for the object being
+       <code>ptr</code> parameter. The reference count for the object being
        pointed at is incremented.
      */
     PSmartPointer(
-      const PSmartPointer & ptr  /// Smart pointer to make a copy of.
+      const PSmartPointer & ptr  ///< Smart pointer to make a copy of.
     );
 
     /** Destroy the smart pointer and decrement the reference count on the
@@ -113,7 +113,7 @@ class PSmartPointer : public PObject
      */
     virtual ~PSmartPointer();
 
-    /** Assign this pointer to the value specified in the #ptr#
+    /** Assign this pointer to the value specified in the <code>ptr</code>
        parameter.
 
        The previous object being pointed to has its reference count
@@ -124,7 +124,7 @@ class PSmartPointer : public PObject
        count incremented.
      */
     PSmartPointer & operator=(
-      const PSmartPointer & ptr  /// Smart pointer to assign.
+      const PSmartPointer & ptr  ///< Smart pointer to assign.
     );
   //@}
 
@@ -135,12 +135,12 @@ class PSmartPointer : public PObject
        memory pointers.
 
        @return
-       #EqualTo# if objects point to the same object instance,
-       otherwise #LessThan# and #GreaterThan# may be
+       <code>EqualTo</code> if objects point to the same object instance,
+       otherwise <code>LessThan</code> and <code>GreaterThan</code> may be
        returned depending on the relative values of the memory pointers.
      */
     virtual Comparison Compare(
-      const PObject & obj   // Other smart pointer to compare against.
+      const PObject & obj   ///< Other smart pointer to compare against.
     ) const;
   //@}
 
@@ -150,7 +150,7 @@ class PSmartPointer : public PObject
        object instance.
 
        @return
-       PTrue if the pointer is NULL.
+       true if the pointer is NULL.
      */
     PBoolean IsNULL() const { return object == NULL; }
 

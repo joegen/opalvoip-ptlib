@@ -46,9 +46,9 @@
    PODBCStmt      :  Wrapper for RecordSet (Internal)
    PODBCRecord    :  Handle Retrieve/Post/Bind Data from RecordSet (Internal)
 
-<code>
   Example of Use
 
+<pre><code>
   PODBC link;
   PODBC::ConnectData data;
   data.DBPath = "test.mdb";
@@ -83,7 +83,7 @@
 // Disconnect from ODBC Source
   link.Disconnect();
 
-</code>
+</code></pre>
 */
 //--
 
@@ -225,7 +225,7 @@ class PODBCStmt : public PObject
 
     /** Is the SQL Instruction OK
     If an Error is detected then GetLastError is called
-    to Retrieve the SQL Error Information and Returns PFalse
+    to Retrieve the SQL Error Information and Returns false
     */
     PBoolean SQL_OK(SQLRETURN res);
 
@@ -680,12 +680,12 @@ class PODBC  : public PObject
     */
     PBoolean Connect_FOX(PFilePath DBPath,PString User = "",
       PString Pass = "",PString Type= "DBF",
-      PBoolean Exclusive=PFalse);
+      PBoolean Exclusive=false);
 
     /** Connect to a MS Access *.mdb DataSource.
     */
     PBoolean Connect_MDB(PFilePath MDBPath,PString User ="",
-      PString Pass = "",PBoolean Exclusive=PFalse);
+      PString Pass = "",PBoolean Exclusive=false);
 
     /** Connect to a paradox database datastore
     */
@@ -703,7 +703,7 @@ class PODBC  : public PObject
     /** Connect to a MS SQL Server
     */
     PBoolean Connect_MSSQL(PString User="",PString Pass="", 
-      PString Host ="(local)",PBoolean Trusted = PTrue, 
+      PString Host ="(local)",PBoolean Trusted = true, 
       MSSQLProtocols Proto=MSSQLNamedPipes);
 
     /** Connect to a mySQL Server
@@ -831,7 +831,7 @@ class PODBCRecord : public PObject
 
     /** InternalGetData is call when retrieving string or large binary 
     data where the size is indetermined. The Function can be iteratively
-    called until the function returns PFalse.
+    called until the function returns false.
     */
     PBoolean InternalGetData(
       USHORT Column,

@@ -42,8 +42,8 @@
 #ifdef DOC_PLUS_PLUS
 /** Base string type for a file path.
     For platforms where filenames are case significant (eg Unix) this class
-    is a synonym for #PString#. If it is for a platform where case is not
-    significant (eg Win32, Mac) then this is a synonym for #PCaselessString#.
+    is a synonym for <code>PString</code>. If it is for a platform where case is not
+    significant (eg Win32, Mac) then this is a synonym for <code>PCaselessString</code>.
  */
 class PFilePathString : public PString { };
 #endif
@@ -59,8 +59,8 @@ class PFilePathString : public PString { };
    An empty string for a PFilePath indicates an illegal path.
 
    The ancestor class is dependent on the platform. For file systems that are
-   case sensitive, eg Unix, the ancestor is #PString#. For other
-   platforms, the ancestor class is #PCaselessString#.
+   case sensitive, eg Unix, the ancestor is <code>PString</code>. For other
+   platforms, the ancestor class is <code>PCaselessString</code>.
  */
 class PFilePath : public PFilePathString
 {
@@ -162,10 +162,10 @@ class PFilePath : public PFilePathString
     );
 
     /**Concatenate a C string to a path, modifiying that path. The
-       #cstr# parameter is typically a literal string, eg:
-<code>
+       <code>cstr</code> parameter is typically a literal string, eg:
+<pre><code>
         myStr += "fred";
-</code>
+</code></pre>
 
        @return
        reference to string that was concatenated to.
@@ -174,11 +174,11 @@ class PFilePath : public PFilePathString
       const char * cstr  ///< C string to concatenate.
     );
 
-    /**Concatenate a single character to a path. The #ch#
+    /**Concatenate a single character to a path. The <code>ch</code>
        parameter is typically a literal, eg:
-<code>
+<pre><code>
         myStr += '!';
-</code>
+</code></pre>
 
        @return
        new string with concatenation of the object and parameter.
@@ -233,7 +233,7 @@ class PFilePath : public PFilePathString
 
     /**Get the actual directory entry name component of the full file
        specification. This may be identical to
-       #GetTitle() + GetType()# or simply #GetTitle()#
+       <code>GetTitle() + GetType()</code> or simply <code>GetTitle()</code>
        depending on the platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this
        would be "FRED.TXT".
 
@@ -243,13 +243,13 @@ class PFilePath : public PFilePathString
     PFilePathString GetFileName() const;
 
     /**Get the the directory that the file is contained in.  This may be 
-       identical to #GetVolume() + GetPath()# depending on the 
+       identical to <code>GetVolume() + GetPath()</code> depending on the 
        platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this would be 
        "C:\SRC\PWLIB\".
 
        Note that for Unix platforms, this returns the {\b physical} path
        of the directory. That is all symlinks are resolved. Thus the directory
-       returned may not be the same as the value of #GetPath()#.
+       returned may not be the same as the value of <code>GetPath()</code>.
 
        @return
        Directory that the file is contained in.
@@ -269,7 +269,7 @@ class PFilePath : public PFilePathString
     /**Test if the character is valid in a filename.
 
        @return
-       PTrue if the character is valid for a filename.
+       true if the character is valid for a filename.
      */
     static PBoolean IsValid(
       char c    ///< Character to test for validity.
@@ -278,7 +278,7 @@ class PFilePath : public PFilePathString
     /**Test if all the characters are valid in a filename.
 
        @return
-       PTrue if the character is valid for a filename.
+       true if the character is valid for a filename.
      */
     static PBoolean IsValid(
       const PString & str   ///< String to test for validity.

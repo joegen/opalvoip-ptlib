@@ -62,7 +62,7 @@ struct PListInfo
 };
 
 /**This class is a collection of objects which are descendents of the
-   #PObject# class. It is implemeted as a doubly linked list.
+   <code>PObject</code> class. It is implemeted as a doubly linked list.
 
    The implementation of a list allows very fast inserting and deleting of
    objects in the collection, but has severe penalties for random access. All
@@ -73,13 +73,13 @@ struct PListInfo
    access via ordinal index is made sequentially there is little overhead.
 
    The PAbstractList class would very rarely be descended from directly by
-   the user. The #PDECLARE_LIST# and #PLIST# macros would normally
+   the user. The <code>PDECLARE_LIST</code> and <code>PLIST</code> macros would normally
    be used to create descendent classes. They will instantiate the template
-   based on #PList# or directly declare and define the class (using
+   based on <code>PList</code> or directly declare and define the class (using
    inline functions) if templates are not being used.
 
-   The #PList# class or #PDECLARE_LIST# macro will define the
-   correctly typed operators for subscript access (#operator[]#).
+   The <code>PList</code> class or <code>PDECLARE_LIST</code> macro will define the
+   correctly typed operators for subscript access (operator[]).
  */
 class PAbstractList : public PCollection
 {
@@ -105,25 +105,27 @@ class PAbstractList : public PCollection
 
        \arg \c LessThan if the instances object value at an
        ordinal position is less than the corresponding objects value in the
-       #obj# parameters list.
+       <code>obj</code> parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is less than the #obj# parameters list length.
+       length is less than the <code>obj</code> parameters list length.
 
        \arg \c GreaterThan if the instances object value at an
        ordinal position is greater than the corresponding objects value in the
-       #obj# parameters list.
+       <code>obj</code> parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is greater than the #obj# parameters list length.
+       length is greater than the <code>obj</code> parameters list length.
 
        @return
-       comparison of the two objects, #EqualTo# for same,
-       #LessThan# for #obj# logically less than the
-       object and #GreaterThan# for #obj# logically
+       comparison of the two objects, <code>EqualTo</code> for same,
+       <code>LessThan</code> for <code>obj</code> logically less than the
+       object and <code>GreaterThan</code> for <code>obj</code> logically
        greater than the object.
      */
-    virtual Comparison Compare(const PObject & obj) const;
+    virtual Comparison Compare(
+      const PObject & obj   ///< Object being compared to
+    ) const;
 
   /**@name Overrides from class PContainer */
   //@{
@@ -132,7 +134,7 @@ class PAbstractList : public PCollection
        set in any other way.
 
        @return
-       Always PTrue.
+       Always true.
      */
     virtual PBoolean SetSize(
       PINDEX newSize  ///< New size for the list, this is ignored.
@@ -153,11 +155,11 @@ class PAbstractList : public PCollection
 
     /**Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the #Append()# function is performed.
+       the <code>Append()</code> function is performed.
        
        Note that the object values are compared for the search of the
-       #before# parameter, not the pointers. So the objects in the
-       collection must correctly implement the #PObject::Compare()#
+       <code>before</code> parameter, not the pointers. So the objects in the
+       collection must correctly implement the <code>PObject::Compare()</code>
        function.
 
        @return
@@ -170,7 +172,7 @@ class PAbstractList : public PCollection
 
     /**Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the #Append()# function is performed.
+       equivalent of the <code>Append()</code> function is performed.
 
        @return
        index of the newly inserted object.
@@ -184,7 +186,7 @@ class PAbstractList : public PCollection
        is set then the object is also deleted.
 
        @return
-       PTrue if the object was in the collection.
+       true if the object was in the collection.
      */
     virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
@@ -206,13 +208,13 @@ class PAbstractList : public PCollection
     /**Set the object at the specified ordinal position to the new value. This
        will overwrite the existing entry. 
        This method will NOT delete the old object independently of the 
-       AllowDeleteObjects option. Use #ReplaceAt()# instead.
+       AllowDeleteObjects option. Use <code>ReplaceAt()</code> instead.
 
        Note if the index is beyond the size of the collection then the
        function will assert.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
@@ -227,7 +229,7 @@ class PAbstractList : public PCollection
        function will assert.
        
        @return
-       PTrue if the object was successfully replaced.
+       true if the object was successfully replaced.
      */   
     virtual PBoolean ReplaceAt(
       PINDEX index,   ///< Index position in collection to set.
@@ -261,7 +263,7 @@ class PAbstractList : public PCollection
 
     /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()#
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. A simple linear search from "head" of the list is performed.
 
        @return
@@ -295,7 +297,7 @@ class PAbstractList : public PCollection
        point for a sequential move to the required index.
 
        @return
-       PTrue if the index could be set as the current element.
+       true if the index could be set as the current element.
      */
     PBoolean SetCurrent(
       PINDEX index,           ///< Ordinal index of the list element to set as current.
@@ -313,7 +315,7 @@ class PAbstractList : public PCollection
 /**This template class maps the PAbstractList to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the #PDECLARE_LIST# macro will
+   Note that if templates are not used the <code>PDECLARE_LIST</code> macro will
    simulate the template instantiation.
  */
 template <class T> class PList : public PAbstractList
@@ -413,10 +415,11 @@ template <class T> class PList : public PAbstractList
        element, and the head and tail of the list, will always be fast.
 
        @return
-       reference to the object at #index# position.
+       reference to the object at <code>index</code> position.
      */
-    T & operator[](PINDEX index) const
-      { return (T &)GetReferenceAt(index); }
+    T & operator[](
+      PINDEX index  ///< Index for entry
+    ) const { return (T &)GetReferenceAt(index); }
   //@}
 
   protected:
@@ -431,9 +434,9 @@ template <class T> class PList : public PAbstractList
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PList# template class.
+   of the <code>PList</code> template class.
 
-   See the #PList# class and #PDECLARE_LIST# macro for more
+   See the <code>PList</code> class and <code>PDECLARE_LIST</code> macro for more
    information.
  */
 #define PLIST(cls, T) typedef PList<T> cls
@@ -443,11 +446,11 @@ template <class T> class PList : public PAbstractList
    customised for a particular object type <b>T</b>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PList# template class. If templates are not being used then the
+   of the <code>PList</code> template class. If templates are not being used then the
    macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the #PList# and #PAbstractList# classes for more information.
+   See the <code>PList</code> and <code>PAbstractList</code> classes for more information.
  */
 #define PDECLARE_LIST(cls, T) \
   PLIST(cls##_PTemplate, T); \
@@ -471,7 +474,7 @@ template <class T> class PList : public PAbstractList
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
-   Note that if templates are not used the #PDECLARE_QUEUE# macro will
+   Note that if templates are not used the <code>PDECLARE_QUEUE</code> macro will
    simulate the template instantiation.
  */
 template <class T> class PQueue : public PAbstractList
@@ -531,9 +534,9 @@ template <class T> class PQueue : public PAbstractList
    closes the class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PQueue# template class.
+   of the <code>PQueue</code> template class.
 
-   See the #PList# class and #PDECLARE_QUEUE# macro for more
+   See the <code>PList</code> class and <code>PDECLARE_QUEUE</code> macro for more
    information.
  */
 #define PQUEUE(cls, T) typedef PQueue<T> cls
@@ -545,11 +548,11 @@ template <class T> class PQueue : public PAbstractList
    that allows the list to be used as a first in first out queue.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PQueue# template class. If templates are not being used then
+   of the <code>PQueue</code> template class. If templates are not being used then
    the macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the #PQueue# and #PAbstractList# classes for more information.
+   See the <code>PQueue</code> and <code>PAbstractList</code> classes for more information.
  */
 #define PDECLARE_QUEUE(cls, T) \
   PQUEUE(cls##_PTemplate, T); \
@@ -573,7 +576,7 @@ template <class T> class PQueue : public PAbstractList
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
-   Note that if templates are not used the #PDECLARE_STACK# macro will
+   Note that if templates are not used the <code>PDECLARE_STACK</code> macro will
    simulate the template instantiation.
  */
 template <class T> class PStack : public PAbstractList
@@ -605,7 +608,7 @@ template <class T> class PStack : public PAbstractList
   /**@name New functions for class */
   //@{
     /**Add an object to the stack. This object will be on "top" of the stack
-       and will be the object returned by the #Pop()#
+       and will be the object returned by the <code>Pop()</code>
        function.
      */
     virtual void Push(
@@ -644,9 +647,9 @@ template <class T> class PStack : public PAbstractList
    closes the class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PStack# template class.
+   of the <code>PStack</code> template class.
 
-   See the #PStack# class and #PDECLARE_STACK# macro for more
+   See the <code>PStack</code> class and <code>PDECLARE_STACK</code> macro for more
    information.
  */
 #define PSTACK(cls, T) typedef PStack<T> cls
@@ -658,11 +661,11 @@ template <class T> class PStack : public PAbstractList
    that allows the list to be used as a last in first out stack.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PStack# template class. If templates are not being used then
+   of the <code>PStack</code> template class. If templates are not being used then
    the macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the #PStack# and #PAbstractList# classes for more information.
+   See the <code>PStack</code> and <code>PAbstractList</code> classes for more information.
  */
 #define PDECLARE_STACK(cls, T) \
   PSTACK(cls##_PTemplate, T); \
@@ -711,9 +714,9 @@ struct PSortedListInfo
 };
 
 /**This class is a collection of objects which are descendents of the
-   #PObject# class. It is implemeted as a Red-Black binary tree to
+   <code>PObject</code> class. It is implemeted as a Red-Black binary tree to
    maintain the objects in rank order. Note that this requires that the
-   #PObject::Compare()# function be fully implemented oin objects
+   <code>PObject::Compare()</code> function be fully implemented oin objects
    contained in the collection.
 
    The implementation of a sorted list allows fast inserting and deleting as
@@ -727,14 +730,14 @@ struct PSortedListInfo
    other access incurs a minimum overhead, but not insignificant.
 
    The PAbstractSortedList class would very rarely be descended from directly
-   by the user. The #PDECLARE_LIST# and #PLIST# macros would normally
+   by the user. The <code>PDECLARE_LIST</code> and <code>PLIST</code> macros would normally
    be used to create descendent classes. They will instantiate the template
-   based on #PSortedList# or directly declare and define the class (using
+   based on <code>PSortedList</code> or directly declare and define the class (using
    inline functions) if templates are not being used.
 
-   The #PSortedList# class or #PDECLARE_SORTED_LIST# macro will
+   The <code>PSortedList</code> class or <code>PDECLARE_SORTED_LIST</code> macro will
    define the correctly typed operators for subscript access
-   (#operator[]#).
+   (operator[]).
  */
 class PAbstractSortedList : public PCollection
 {
@@ -761,22 +764,22 @@ class PAbstractSortedList : public PCollection
 
        \arg \c LessThan if the instances object value at an
        ordinal position is less than the corresponding objects value in the
-       #obj# parameters list.
+       <code>obj</code> parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is less than the #obj# parameters list length.
+       length is less than the <code>obj</code> parameters list length.
 
        \arg \c GreaterThan if the instances object value at an
        ordinal position is greater than the corresponding objects value in the
-       #obj# parameters list.
+       <code>obj</code> parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is greater than the #obj# parameters list length.
+       length is greater than the <code>obj</code> parameters list length.
 
        @return
-       comparison of the two objects, #EqualTo# for same,
-       #LessThan# for #obj# logically less than the
-       object and #GreaterThan# for #obj# logically
+       comparison of the two objects, <code>EqualTo</code> for same,
+       <code>LessThan</code> for <code>obj</code> logically less than the
+       object and <code>GreaterThan</code> for <code>obj</code> logically
        greater than the object.
      */
     virtual Comparison Compare(const PObject & obj) const;
@@ -789,7 +792,7 @@ class PAbstractSortedList : public PCollection
        set in any other way.
 
        @return
-       Always PTrue.
+       Always true.
      */
     virtual PBoolean SetSize(
       PINDEX newSize  // New size for the sorted list, this is ignored.
@@ -811,7 +814,7 @@ class PAbstractSortedList : public PCollection
     /**Add a new object to the collection.
     
        The object is always placed in the correct ordinal position in the list.
-       It is not placed at the specified position. The #before#
+       It is not placed at the specified position. The <code>before</code>
        parameter is ignored.
 
        @return
@@ -825,7 +828,7 @@ class PAbstractSortedList : public PCollection
     /**Add a new object to the collection.
     
        The object is always placed in the correct ordinal position in the list.
-       It is not placed at the specified position. The #index#
+       It is not placed at the specified position. The <code>index</code>
        parameter is ignored.
 
        @return
@@ -844,7 +847,7 @@ class PAbstractSortedList : public PCollection
        same instance of the object that is in the collection.
 
        @return
-       PTrue if the object was in the collection.
+       true if the object was in the collection.
      */
     virtual PBoolean Remove(
       const PObject * obj   // Existing object to remove from the collection.
@@ -864,18 +867,18 @@ class PAbstractSortedList : public PCollection
     );
 
     /**Remove all of the elements in the collection. This operates by
-       continually calling #RemoveAt()# until there are no objects left.
+       continually calling <code>RemoveAt()</code> until there are no objects left.
 
        The objects are removed from the last, at index
-       #(GetSize()-1)# toward the first at index zero.
+       <code>(GetSize()-1)</code> toward the first at index zero.
      */
     virtual void RemoveAll();
 
-    /**This method simply returns PFalse as the list order is mantained by the 
-       class. Kept to mimic #PAbstractList# interface.
+    /**This method simply returns false as the list order is mantained by the 
+       class. Kept to mimic <code>PAbstractList</code> interface.
        
        @return
-       PFalse allways
+       false allways
      */
     virtual PBoolean SetAt(
       PINDEX index,   // Index position in collection to set.
@@ -913,7 +916,7 @@ class PAbstractSortedList : public PCollection
 
     /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()#
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. A binary search is employed to locate the entry.
 
        @return
@@ -945,7 +948,7 @@ class PAbstractSortedList : public PCollection
    The functions in this class primarily do all the appropriate casting of
    types.
 
-   Note that if templates are not used the #PDECLARE_SORTED_LIST# macro
+   Note that if templates are not used the <code>PDECLARE_SORTED_LIST</code> macro
    will simulate the template instantiation.
  */
 template <class T> class PSortedList : public PAbstractSortedList
@@ -983,10 +986,11 @@ template <class T> class PSortedList : public PAbstractSortedList
        access will be fast.
 
        @return
-       reference to the object at #index# position.
+       reference to the object at <code>index</code> position.
      */
-    T & operator[](PINDEX index) const
-      { return *(T *)GetAt(index); }
+    T & operator[](
+      PINDEX index  ///< Index for entry
+    ) const { return *(T *)GetAt(index); }
   //@}
 
   protected:
@@ -1001,9 +1005,9 @@ template <class T> class PSortedList : public PAbstractSortedList
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PSortedList# template class.
+   of the <code>PSortedList</code> template class.
 
-   See the #PSortedList# class and #PDECLARE_SORTED_LIST# macro for
+   See the <code>PSortedList</code> class and <code>PDECLARE_SORTED_LIST</code> macro for
    more information.
  */
 #define PSORTED_LIST(cls, T) typedef PSortedList<T> cls
@@ -1014,11 +1018,11 @@ template <class T> class PSortedList : public PAbstractSortedList
    customised for a particular object type <b>T</b>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PSortedList# template class. If templates are not being used
+   of the <code>PSortedList</code> template class. If templates are not being used
    then the macro defines a set of inline functions to do all casting of types.
    The resultant classes have an identical set of functions in either case.
 
-   See the #PSortedList# and #PAbstractSortedList# classes for more
+   See the <code>PSortedList</code> and <code>PAbstractSortedList</code> classes for more
    information.
  */
 #define PDECLARE_SORTED_LIST(cls, T) \

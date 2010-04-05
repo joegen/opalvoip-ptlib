@@ -56,24 +56,24 @@ class PIPDatagramSocket : public PIPSocket
   // New functions for class
     /**Read a datagram from a remote computer.
        
-       @return PTrue if any bytes were sucessfully read.
+       @return true if any bytes were sucessfully read.
      */
     virtual PBoolean ReadFrom(
       void * buf,     ///< Data to be written as URGENT TCP data.
-      PINDEX len,     ///< Number of bytes pointed to by #buf#.
+      PINDEX len,     ///< Number of bytes pointed to by <code>buf</code>.
       Address & addr, ///< Address from which the datagram was received.
       WORD & port     ///< Port from which the datagram was received.
     );
 
     /**Write a datagram to a remote computer.
 
-       @return PTrue if all the bytes were sucessfully written.
+       @return true if all the bytes were sucessfully written.
      */
     virtual PBoolean WriteTo(
-      const void * buf,   ///< Data to be written as URGENT TCP data.
-      PINDEX len,         ///< Number of bytes pointed to by #buf#.
+      const void * buf,     ///< Data to be written as URGENT TCP data.
+      PINDEX len,           ///< Number of bytes pointed to by <code>buf</code>.
       const Address & addr, ///< Address to which the datagram is sent.
-      WORD port           ///< Port to which the datagram is sent.
+      WORD port             ///< Port to which the datagram is sent.
     );
 
 

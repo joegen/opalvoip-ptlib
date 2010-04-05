@@ -31,7 +31,7 @@ PROJECT_NAME           = PTLib
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = Version @PTLIB_VERSION@
+PROJECT_NUMBER         = Version&nbsp;@PTLIB_VERSION@
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -587,7 +587,7 @@ INPUT_ENCODING         = UTF-8
 # *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
 
-FILE_PATTERNS          =
+FILE_PATTERNS          = *.h
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.
@@ -599,7 +599,7 @@ RECURSIVE              = NO
 # excluded from the INPUT source files. This way you can easily exclude a
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                =
+EXCLUDE                = videoio1394dc.h
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded
@@ -1266,7 +1266,9 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = DOCPLUSLUS \
                          DOC_PLUS_PLUS \
-                         P_AUDIO P_DNS P_DTMF P_EXPAT P_FTP P_HTTP P_JABBER P_LDAP P_ODBC P_QOS P_SNMP P_SOAP P_STUN P_URL P_VIDEO P_VXML P_XMLRPC
+                         P_AUDIO P_DNS P_DTMF P_EXPAT P_FTP P_HTTP P_JABBER \
+                         P_LDAP P_ODBC P_QOS P_SNMP P_SOAP P_STUN P_URL P_VIDEO \
+                         P_VXML P_XMLRPC P_CONFIG_FILE P_SASL2 P_HTTPFORMS
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.

@@ -65,13 +65,13 @@ class PASN_Object : public PObject
 
     PINDEX GetObjectLength() const;
     virtual PINDEX GetDataLength() const = 0;
-    virtual PBoolean IsPrimitive() const { return PTrue; }
+    virtual PBoolean IsPrimitive() const { return true; }
 
     virtual PBoolean Decode(PASN_Stream &) = 0;
     virtual void Encode(PASN_Stream &) const = 0;
 
     PBoolean IsExtendable() const { return extendable; }
-    void SetExtendable(PBoolean ext = PTrue) { extendable = ext; }
+    void SetExtendable(PBoolean ext = true) { extendable = ext; }
 
     enum TagClass {
       UniversalTagClass,
@@ -145,7 +145,7 @@ class PASN_Object : public PObject
     static void SetMaximumStringSize(PINDEX sz);
 
   protected:
-    PASN_Object(unsigned tag, TagClass tagClass, PBoolean extend = PFalse);
+    PASN_Object(unsigned tag, TagClass tagClass, PBoolean extend = false);
 
     /// PER extension capability
     PBoolean extendable;
@@ -207,8 +207,8 @@ class PASN_Boolean : public PASN_Object
 {
     PCLASSINFO(PASN_Boolean, PASN_Object);
   public:
-    PASN_Boolean(PBoolean val = PFalse);
-    PASN_Boolean(unsigned tag, TagClass tagClass, PBoolean val = PFalse);
+    PASN_Boolean(PBoolean val = false);
+    PASN_Boolean(unsigned tag, TagClass tagClass, PBoolean val = false);
 
     PASN_Boolean & operator=(PBoolean v) { value = v; return *this; }
     operator PBoolean() const { return value; }
@@ -279,7 +279,7 @@ class PASN_Enumeration : public PASN_Object
     PASN_Enumeration(unsigned tag,
                      TagClass tagClass,
                      unsigned nEnums = P_MAX_INDEX,
-                     PBoolean extendable = PFalse,
+                     PBoolean extendable = false,
                      unsigned val = 0);
     PASN_Enumeration(unsigned tag,
                      TagClass tagClass,
@@ -764,7 +764,7 @@ class PASN_Choice : public PASN_Object
 
     PINDEX GetValueByName(PString name) const;
   protected:
-    PASN_Choice(unsigned nChoices = 0, PBoolean extend = PFalse);
+    PASN_Choice(unsigned nChoices = 0, PBoolean extend = false);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, PBoolean extend);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, PBoolean extend, const PASN_Names * nameSpec,unsigned namesCnt);
 
@@ -790,7 +790,7 @@ class PASN_Sequence : public PASN_Object
   public:
     PASN_Sequence(unsigned tag = UniversalSequence,
                   TagClass tagClass = UniversalTagClass,
-                  unsigned nOpts = 0, PBoolean extend = PFalse, unsigned nExtend = 0);
+                  unsigned nOpts = 0, PBoolean extend = false, unsigned nExtend = 0);
 
     PASN_Sequence(const PASN_Sequence & other);
     PASN_Sequence & operator=(const PASN_Sequence & other);
@@ -868,7 +868,7 @@ class PASN_Set : public PASN_Sequence
   public:
     PASN_Set(unsigned tag = UniversalSet,
              TagClass tagClass = UniversalTagClass,
-             unsigned nOpts = 0, PBoolean extend = PFalse, unsigned nExtend = 0);
+             unsigned nOpts = 0, PBoolean extend = false, unsigned nExtend = 0);
 
     virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;

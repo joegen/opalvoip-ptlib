@@ -85,7 +85,7 @@ class PVideoFrameInfo : public PObject
     /**Set the frame size to be used.
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
@@ -95,7 +95,7 @@ class PVideoFrameInfo : public PObject
     /**Get the frame size being used.
 
        Default behaviour returns the value of the frameWidth and frameHeight
-       variable and returns PTrue.
+       variable and returns true.
     */
     virtual PBoolean GetFrameSize(
       unsigned & width,
@@ -117,7 +117,7 @@ class PVideoFrameInfo : public PObject
     /**Set the video frame rate to be used on the device.
 
        Default behaviour sets the value of the frameRate variable and then
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetFrameRate(
       unsigned rate  ///< Frames  per second
@@ -132,7 +132,7 @@ class PVideoFrameInfo : public PObject
     /**Set the colour format to be used.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns PTrue if not an empty string.
+       returns true if not an empty string.
     */
     virtual PBoolean SetColourFormat(
       const PString & colourFormat // New colour format for device.
@@ -273,7 +273,7 @@ class PVideoInteractionInfo : public PObject
 
 	 typedef enum {
         InteractKey,		/// Register remote KeyPresses
-        InteractMouse,		/// Register remote Mouse Movements\Clicks
+        InteractMouse,		/// Register remote Mouse Movement Clicks
         InteractNavigate,	/// Register remote Navigation commands
 		InteractRTSP,		/// Register remote RTSP (Real Time Streaming Protocol) Inputs
 		InteractOther		/// Register remote application specific Inputs
@@ -307,7 +307,7 @@ class PVideoInteractionInfo : public PObject
      "YUV410P"  YUV 4:1:0 planar
      "MJPEG"    Motion JPEG
      "UYVY422"  YUV 4:2:2 packed as U Y V Y U Y V Y ...
-     "UYV444    YUV 4:4:4 packed as U Y V   U Y V   ...
+     "UYV444"   YUV 4:4:4 packed as U Y V   U Y V   ...
                 They are used in IEEE 1394 digital cameras. The specification
                 is found at
 http://www.1394ta.org/Download/Technology/Specifications/2000/IIDC_Spec_v1_30.pdf
@@ -372,14 +372,14 @@ class PVideoDevice : public PVideoFrameInfo
       */
     virtual PBoolean OpenFull(
       const OpenArgs & args,      ///< Parameters to set on opened device
-      PBoolean startImmediate = PTrue  ///< Immediately start device
+      PBoolean startImmediate = true  ///< Immediately start device
     );
 
     /**Open the device given the device name.
       */
     virtual PBoolean Open(
       const PString & deviceName,   ///< Device name to open
-      PBoolean startImmediate = PTrue    ///< Immediately start device
+      PBoolean startImmediate = true    ///< Immediately start device
     ) = 0;
 
     /**Determine if the device is currently open.
@@ -406,7 +406,7 @@ class PVideoDevice : public PVideoFrameInfo
     /**Set the video format to be used.
 
        Default behaviour sets the value of the videoFormat variable and then
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetVideoFormat(
       VideoFormat videoFormat   ///< New video format
@@ -429,7 +429,7 @@ class PVideoDevice : public PVideoFrameInfo
        special value of -1 will find the first working channel number.
 
        Default behaviour sets the value of the channelNumber variable and then
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetChannel(
       int channelNumber  ///< New channel number for device.
@@ -452,12 +452,12 @@ class PVideoDevice : public PVideoFrameInfo
     );
 
     /**Get the video conversion vertical flip state.
-       Default action is to return PFalse.
+       Default action is to return false.
      */
     virtual PBoolean GetVFlipState();
 
     /**Set the video conversion vertical flip state.
-       Default action is to return PFalse.
+       Default action is to return false.
      */
     virtual PBoolean SetVFlipState(
       PBoolean newVFlipState    ///< New vertical flip state
@@ -466,7 +466,7 @@ class PVideoDevice : public PVideoFrameInfo
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
-       PFalse.
+       false.
     */
     virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   ///< Variable to receive minimum width
@@ -505,7 +505,7 @@ class PVideoDevice : public PVideoFrameInfo
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
@@ -515,7 +515,7 @@ class PVideoDevice : public PVideoFrameInfo
     /**Get the frame size being used.
 
        Default behaviour returns the value of the frameWidth and frameHeight
-       variable and returns PTrue.
+       variable and returns true.
     */
     virtual PBoolean GetFrameSize(
       unsigned & width,
@@ -660,7 +660,7 @@ class PVideoOutputDevice : public PVideoDevice
        If driverName is an empty string or the value "*" then this will return
        a list of unique device names across all of the available drivers. If
        two drivers have identical names for devices, then the string returned
-       will be of the form driver+'\t'+device.
+       will be of the form driver+'\\t'+device.
     */
     static PStringArray GetDriversDeviceNames(
       const PString & driverName,         ///< Name of driver
@@ -692,7 +692,7 @@ class PVideoOutputDevice : public PVideoDevice
     static PVideoOutputDevice *CreateOpenedDevice(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
-      PBoolean startImmediate = PTrue,         ///< Immediately start display
+      PBoolean startImmediate = true,         ///< Immediately start display
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -700,20 +700,20 @@ class PVideoOutputDevice : public PVideoDevice
     */
     static PVideoOutputDevice *CreateOpenedDevice(
       const OpenArgs & args,              ///< Parameters to set on opened device
-      PBoolean startImmediate = PTrue          ///< Immediately start display
+      PBoolean startImmediate = true          ///< Immediately start display
     );
 
     /**Close the device.
       */
-    virtual PBoolean Close() { return PTrue; }
+    virtual PBoolean Close() { return true; }
 
     /**Start the video device I/O display.
       */
-    virtual PBoolean Start() { return PTrue; }
+    virtual PBoolean Start() { return true; }
 
     /**Stop the video device I/O display.
       */
-    virtual PBoolean Stop() { return PTrue; }
+    virtual PBoolean Stop() { return true; }
 
     /** Is the device a camera, and obtain video
      */
@@ -727,7 +727,7 @@ class PVideoOutputDevice : public PVideoDevice
       unsigned width,
       unsigned height,
       const BYTE * data,
-      PBoolean endFrame = PTrue
+      PBoolean endFrame = true
     ) = 0;
     virtual PBoolean SetFrameData(
       unsigned x,
@@ -775,14 +775,14 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
     PVideoOutputDeviceRGB();
 
     /**Set the colour format to be used.
-       Note that this function does not do any conversion. If it returns PTrue
+       Note that this function does not do any conversion. If it returns true
        then the video device does the colour format in native mode.
 
        To utilise an internal converter use the SetColourFormatConverter()
        function.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetColourFormat(
       const PString & colourFormat // New colour format for device.
@@ -794,7 +794,7 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
@@ -816,7 +816,7 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
       unsigned width,
       unsigned height,
       const BYTE * data,
-      PBoolean endFrame = PTrue
+      PBoolean endFrame = true
     );
 
     /**Indicate frame may be displayed.
@@ -848,7 +848,7 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
       */
     virtual PBoolean Open(
       const PString & deviceName,   ///< Device name (filename base) to open
-      PBoolean startImmediate = PTrue    ///< Immediately start device
+      PBoolean startImmediate = true    ///< Immediately start device
     );
 
     /**Determine if the device is currently open.
@@ -899,7 +899,7 @@ class PVideoInputDevice : public PVideoDevice
        If driverName is an empty string or the value "*" then this will return
        a list of unique device names across all of the available drivers. If
        two drivers have identical names for devices, then the string returned
-       will be of the form driver+'\t'+device.
+       will be of the form driver+'\\t'+device.
     */
     static PStringArray GetDriversDeviceNames(
       const PString & driverName,         ///< Name of driver
@@ -934,7 +934,7 @@ class PVideoInputDevice : public PVideoDevice
     static PVideoInputDevice *CreateOpenedDevice(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
-      PBoolean startImmediate = PTrue,         ///< Immediately start grabbing
+      PBoolean startImmediate = true,         ///< Immediately start grabbing
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -942,7 +942,7 @@ class PVideoInputDevice : public PVideoDevice
     */
     static PVideoInputDevice *CreateOpenedDevice(
       const OpenArgs & args,              ///< Parameters to set on opened device
-      PBoolean startImmediate = PTrue          ///< Immediately start display
+      PBoolean startImmediate = true          ///< Immediately start display
     );
 
 	typedef struct {
@@ -978,11 +978,11 @@ class PVideoInputDevice : public PVideoDevice
       */
     virtual PBoolean Open(
       const PString & deviceName,   ///< Device name to open
-      PBoolean startImmediate = PTrue    ///< Immediately start device
+      PBoolean startImmediate = true    ///< Immediately start device
     ) = 0;
 
     virtual PBoolean Close(
-    ) { return PTrue; }
+    ) { return true; }
 
     /** Is the device a camera, and obtain video
      */

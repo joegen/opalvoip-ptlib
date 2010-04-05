@@ -104,7 +104,7 @@ class PMail : public PObject
     /**Attempt to log on to the mail system using the parameters provided.
 
        @return
-       PTrue if successfully logged on.
+       true if successfully logged on.
      */
     PBoolean LogOn(
       const PString & username,  ///< User withing mail system to use.
@@ -114,7 +114,7 @@ class PMail : public PObject
     /**Attempt to log on to the mail system using the parameters provided.
 
        @return
-       PTrue if successfully logged on.
+       true if successfully logged on.
      */
     PBoolean LogOn(
       const PString & username,  ///< User withing mail system to use.
@@ -129,14 +129,14 @@ class PMail : public PObject
     /**Log off from the mail system.
 
        @return
-       PTrue if successfully logged off.
+       true if successfully logged off.
      */
     virtual PBoolean LogOff();
 
     /**Determine if the mail session is active and logged into the mail system.
 
        @return
-       PTrue if logged into the mail system.
+       true if logged into the mail system.
      */
     PBoolean IsLoggedOn() const;
   //@}
@@ -146,7 +146,7 @@ class PMail : public PObject
     /**Send a new simple mail message.
 
        @return
-       PTrue if the mail message was successfully queued. Note that this does
+       true if the mail message was successfully queued. Note that this does
        {\b not} mean that it has been delivered.
      */
     PBoolean SendNote(
@@ -158,7 +158,7 @@ class PMail : public PObject
     /**Send a new simple mail message.
 
        @return
-       PTrue if the mail message was successfully queued. Note that this does
+       true if the mail message was successfully queued. Note that this does
        {\b not} mean that it has been delivered.
      */
     PBoolean SendNote(
@@ -172,7 +172,7 @@ class PMail : public PObject
     /**Send a new simple mail message.
 
        @return
-       PTrue if the mail message was successfully queued. Note that this does
+       true if the mail message was successfully queued. Note that this does
        {\b not} mean that it has been delivered.
      */
     PBoolean SendNote(
@@ -194,7 +194,7 @@ class PMail : public PObject
        An array of ID strings.
      */
     PStringArray GetMessageIDs(
-      PBoolean unreadOnly = PTrue    ///< Only get the IDs for unread messages.
+      PBoolean unreadOnly = true    ///< Only get the IDs for unread messages.
     );
 
     /// Message header for each mail item.
@@ -212,51 +212,51 @@ class PMail : public PObject
     /**Get the header information for a message.
 
        @return
-       PTrue if header information was successfully obtained.
+       true if header information was successfully obtained.
      */
     PBoolean GetMessageHeader(
       const PString & id,      ///< Identifier of message to get header.
       Header & hdrInfo         ///< Header info for the message.
     );
 
-    /**Get the body text for a message into the #body# string
+    /**Get the body text for a message into the <code>body</code> string
        parameter.
 
        Note that if the body text for the mail message is very large, the
-       function will return PFalse. To tell between an error getting the message
-       body and having a large message body the #GetErrorCode()# function
+       function will return false. To tell between an error getting the message
+       body and having a large message body the <code>GetErrorCode()</code> function
        must be used.
 
-       To get a large message body, the #GetMessageAttachments()# should
-       be used with the #includeBody# parameter set to PTrue so that
+       To get a large message body, the <code>GetMessageAttachments()</code> should
+       be used with the <code>includeBody</code> parameter set to true so that
        the message body is placed into a disk file.
 
        @return
-       PTrue if the body text was retrieved, PFalse if the body was too large or
+       true if the body text was retrieved, false if the body was too large or
        some other error occurred.
      */
     PBoolean GetMessageBody(
       const PString & id,      ///< Identifier of message to get body.
       PString & body,          ///< Body text of mail message.
-      PBoolean markAsRead = PFalse  ///< Mark the message as read.
+      PBoolean markAsRead = false  ///< Mark the message as read.
     );
 
     /**Get all of the attachments for a message as disk files.
 
        @return
-       PTrue if attachments were successfully obtained.
+       true if attachments were successfully obtained.
      */
     PBoolean GetMessageAttachments(
       const PString & id,       ///< Identifier of message to get attachments.
       PStringArray & filenames, ///< File names for each attachment.
-      PBoolean includeBody = PFalse, ///< Include the message body as first attachment
-      PBoolean markAsRead = PFalse   ///< Mark the message as read
+      PBoolean includeBody = false, ///< Include the message body as first attachment
+      PBoolean markAsRead = false   ///< Mark the message as read
     );
 
     /**Mark the message as read.
 
        @return
-       PTrue if message was successfully marked as read.
+       true if message was successfully marked as read.
      */
     PBoolean MarkMessageRead(
       const PString & id      ///< Identifier of message to get header.
@@ -265,7 +265,7 @@ class PMail : public PObject
     /**Delete the message from the system.
 
        @return
-       PTrue if message was successfully deleted.
+       true if message was successfully deleted.
      */
     PBoolean DeleteMessage(
       const PString & id      ///< Identifier of message to get header.
@@ -274,7 +274,7 @@ class PMail : public PObject
 
   /**@name User look up functions */
   //@{
-    /// Result of a lookup operation with the #LookUp()# function.
+    /// Result of a lookup operation with the <code>LookUp()</code> function.
     enum LookUpResult {
       /// User name is unknown in mail system.
       UnknownUser,    
@@ -295,8 +295,8 @@ class PMail : public PObject
     LookUpResult LookUp(
       const PString & name,  ///< Name to look up.
       PString * fullName = NULL
-      /**String to receive full name of user passed in #name#. If
-         NULL then the full name is {\b not} returned.
+      /**<String to receive full name of user passed in <code>name</code>. If
+         NULL then the full name is <b>not</b> returned.
        */
     );
   //@}

@@ -108,7 +108,7 @@ class PFTPClient : public PFTP
     /** Close the socket, and if connected as a client, QUITs from server.
 
        @return
-       PTrue if the channel was closed and the QUIT accepted by the server.
+       true if the channel was closed and the QUIT accepted by the server.
      */
     virtual PBoolean Close();
 
@@ -119,7 +119,7 @@ class PFTPClient : public PFTP
     /** Log in to the remote host for FTP.
 
        @return
-       PTrue if the log in was successfull.
+       true if the log in was successfull.
      */
     PBoolean LogIn(
       const PString & username,   ///< User name for FTP log in.
@@ -136,7 +136,7 @@ class PFTPClient : public PFTP
     /** Set the transfer type.
 
        @return
-       PTrue if transfer type set.
+       true if transfer type set.
      */
     PBoolean SetType(
       RepresentationType type   ///< RepresentationTypeof file to transfer
@@ -145,7 +145,7 @@ class PFTPClient : public PFTP
     /** Change the current directory on the remote FTP host.
 
        @return
-       PTrue if the log in was successfull.
+       true if the log in was successfull.
      */
     PBoolean ChangeDirectory(
       const PString & dirPath     ///< New directory
@@ -183,7 +183,7 @@ class PFTPClient : public PFTP
     /** Create a directory on the remote FTP host.
 
        @return
-       PTrue if the directory was created successfully.
+       true if the directory was created successfully.
      */
     PBoolean CreateDirectory(
       const PString & path                ///< Name of the directory to create.
@@ -287,8 +287,8 @@ class PFTPServer : public PFTP
        is used when the socket is acting as a server.
 
        @return
-       PTrue if more processing may be done, PFalse if the QUIT command was
-       received or the #OnUnknown()# function returns PFalse.
+       true if more processing may be done, false if the QUIT command was
+       received or the <code>OnUnknown()</code> function returns false.
      */
     PBoolean ProcessCommand();
 
@@ -296,8 +296,8 @@ class PFTPServer : public PFTP
        socket is acting as a server.
 
        @return
-       PTrue if more processing may be done, PFalse if the QUIT command was
-       received or the #OnUnknown()# function returns PFalse.
+       true if more processing may be done, false if the QUIT command was
+       received or the <code>OnUnknown()</code> function returns false.
      */
     virtual PBoolean DispatchCommand(
       PINDEX code,          ///< Parsed command code.
@@ -309,19 +309,19 @@ class PFTPServer : public PFTP
        it may be processed.
 
        @return
-       PTrue if the command required the user to be logged in.
+       true if the command required the user to be logged in.
      */
     virtual PBoolean CheckLoginRequired(
       PINDEX cmd    ///< Command to check if log in required.
     );
 
     /** Validate the user name and password for access. After three invalid
-       attempts, the socket will close and PFalse is returned.
+       attempts, the socket will close and false is returned.
 
-       Default implementation returns PTrue for all strings.
+       Default implementation returns true for all strings.
 
        @return
-       PTrue if user can access, otherwise PFalse
+       true if user can access, otherwise false
      */
     virtual PBoolean AuthoriseUser(
       const PString & user,     ///< User name to authorise.
@@ -332,8 +332,8 @@ class PFTPServer : public PFTP
     /** Handle an unknown command.
 
        @return
-       PTrue if more processing may be done, PFalse if the
-       #ProcessCommand()# function is to return PFalse.
+       true if more processing may be done, false if the
+       <code>ProcessCommand()</code> function is to return false.
      */
     virtual PBoolean OnUnknown(
       const PCaselessString & command  ///< Complete command line received.
@@ -342,8 +342,8 @@ class PFTPServer : public PFTP
     /** Handle an error in command.
 
        @return
-       PTrue if more processing may be done, PFalse if the
-       #ProcessCommand()# function is to return PFalse.
+       true if more processing may be done, false if the
+       <code>ProcessCommand()</code> function is to return false.
      */
     virtual void OnError(
       PINDEX errorCode, ///< Error code to use
