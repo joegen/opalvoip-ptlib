@@ -114,7 +114,7 @@ class PICMPSocket : public PIPDatagramSocket
        to be sent back.
 
        @return
-       PFalse if host not found or no response.
+       false if host not found or no response.
      */
     PBoolean Ping(
       const PString & host   ///< Host to send ping.
@@ -123,7 +123,7 @@ class PICMPSocket : public PIPDatagramSocket
        to be sent back.
 
        @return
-       PFalse if host not found or no response.
+       false if host not found or no response.
      */
     PBoolean Ping(
       const PString & host,   ///< Host to send ping.

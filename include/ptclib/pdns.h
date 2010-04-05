@@ -190,7 +190,7 @@ template <unsigned type, class RecordListType, class RecordType>
 PBoolean Lookup(const PString & name, RecordListType & recordList)
 {
   if (name.IsEmpty())
-    return PFalse;
+    return false;
 
   recordList.RemoveAll();
 
@@ -202,7 +202,7 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
                                  &results, 
                                  NULL);
   if (status != 0)
-    return PFalse;
+    return false;
 
   // find records matching the correct type
   PDNS_RECORD dnsRecord = results;
@@ -226,7 +226,7 @@ class SRVRecord : public PObject
   PCLASSINFO(SRVRecord, PObject);
   public:
     SRVRecord()
-    { used = PFalse; }
+    { used = false; }
 
     Comparison Compare(const PObject & obj) const;
     void PrintOn(ostream & strm) const;
@@ -282,7 +282,7 @@ PBoolean GetSRVRecords(
 
 /**
   * Perform a DNS lookup of the specified service
-  * @return PTrue if the service could be resolved, else PFalse
+  * @return true if the service could be resolved, else false
   */
 
 PBoolean LookupSRV(
@@ -301,7 +301,7 @@ PBoolean LookupSRV(
 PBoolean LookupSRV( 
          const PURL & url,          ///< URL to lookup
          const PString & service,   ///< service to use
-         PStringList & returnStr    ///< resolved addresses, if return value is PTrue
+         PStringList & returnStr    ///< resolved addresses, if return value is true
 );  
 
 ////////////////////////////////////////////////////////////////
@@ -311,7 +311,7 @@ class MXRecord : public PObject
   PCLASSINFO(MXRecord, PObject);
   public:
     MXRecord()
-    { used = PFalse; }
+    { used = false; }
     Comparison Compare(const PObject & obj) const;
     void PrintOn(ostream & strm) const;
 

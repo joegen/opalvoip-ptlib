@@ -96,18 +96,17 @@ class PNatMethod  : public PObject
       WORD & port                     ///< Port server is using.
     ) const = 0;
 
-    /**  GetExternalAddress
-    Get the acquired External IP Address.
+    /** Get the acquired External IP Address.
     */
     virtual PBoolean GetExternalAddress(
-      PIPSocket::Address & externalAddress, /// External address of router
-      const PTimeInterval & maxAge = 1000   /// Maximum age for caching
+      PIPSocket::Address & externalAddress, ///< External address of router
+      const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
     ) = 0;
 
     /**Return the interface NAT router is using.
       */
     virtual bool GetInterfaceAddress(
-      PIPSocket::Address & internalAddress
+      PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
     ) const = 0;
 
     /**Create a single socket.
@@ -121,7 +120,7 @@ class PNatMethod  : public PObject
        sure the socket is deleted to avoid memory leaks.
 
        The socket pointer is set to NULL if the function fails and returns
-       PFalse.
+       false.
       */
     virtual PBoolean CreateSocket(
       PUDPSocket * & socket,
@@ -140,7 +139,7 @@ class PNatMethod  : public PObject
        sure the sockets are deleted to avoid memory leaks.
 
        The socket pointers are set to NULL if the function fails and returns
-       PFalse.
+       false.
       */
     virtual PBoolean CreateSocketPair(
       PUDPSocket * & socket1,
@@ -159,7 +158,7 @@ class PNatMethod  : public PObject
        sure the sockets are deleted to avoid memory leaks.
 
        The socket pointers are set to NULL if the function fails and returns
-       PFalse.
+       false.
       */
     virtual PBoolean CreateSocketPair(
       PUDPSocket * & socket1,
@@ -185,12 +184,13 @@ class PNatMethod  : public PObject
       */
     virtual void Activate(bool active);
 
-    /**Set Alternate Candidate (ICE) or probe (H.460.24A) addresses
-       Default does notthing
+    /**Set Alternate Candidate (ICE) or probe (H.460.24A) addresses.
+       Default does nothing.
       */
-    virtual void SetAlternateAddresses(const PStringArray & addresses,   ///< List of probe/candidates
-                                       void * userData = NULL
-                                      );
+    virtual void SetAlternateAddresses(
+      const PStringArray & addresses,   ///< List of probe/candidates
+      void * userData = NULL            ///< User data to link to NAT handler.
+    );
 
     enum RTPSupportTypes {
       RTPSupported,
@@ -204,7 +204,7 @@ class PNatMethod  : public PObject
     Use the force variable to guarantee an up to date test
     */
     virtual RTPSupportTypes GetRTPSupport(
-      PBoolean force = PFalse    ///< Force a new check
+      PBoolean force = false    ///< Force a new check
     ) = 0;
 
     /**Set the port ranges to be used on local machine.
@@ -218,10 +218,10 @@ class PNatMethod  : public PObject
     base + 99.
     */
     virtual void SetPortRanges(
-      WORD portBase,          /// Single socket port number base
-      WORD portMax = 0,       /// Single socket port number max
-      WORD portPairBase = 0,  /// Socket pair port number base
-      WORD portPairMax = 0    /// Socket pair port number max
+      WORD portBase,          ///< Single socket port number base
+      WORD portMax = 0,       ///< Single socket port number max
+      WORD portPairBase = 0,  ///< Socket pair port number base
+      WORD portPairMax = 0    ///< Socket pair port number max
     );
   //@}
 
@@ -315,10 +315,10 @@ public :
        base + 99.
       */
     void SetPortRanges(
-      WORD portBase,          /// Single socket port number base
-      WORD portMax = 0,       /// Single socket port number max
-      WORD portPairBase = 0,  /// Socket pair port number base
-      WORD portPairMax = 0    /// Socket pair port number max
+      WORD portBase,          ///< Single socket port number base
+      WORD portMax = 0,       ///< Single socket port number max
+      WORD portPairBase = 0,  ///< Socket pair port number base
+      WORD portPairMax = 0    ///< Socket pair port number max
     );
 
     /** Get Loaded NAT Method List

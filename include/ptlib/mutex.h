@@ -44,7 +44,7 @@
 /**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
-<code>
+<pre><code>
       PMutex mutex;
 
       ...
@@ -56,10 +56,10 @@
       mutex.Signal();
 
       ...
-</code>
-    The first thread will pass through the #Wait()# function, a second
+</code></pre>
+    The first thread will pass through the <code>Wait()</code> function, a second
     thread will block on that function until the first calls the
-    #Signal()# function, releasing the second thread.
+    <code>Signal()</code> function, releasing the second thread.
  */
 
 /*
@@ -103,8 +103,14 @@ class PTimedMutex : public PSync
 // On Windows, critical sections are recursive and so we can use them for mutexes
 // The only Posix mutex that is recursive is pthread_mutex, so we have to use that
 #ifdef _WIN32
+/** \class PMutex
+    Synonym for PCriticalSection
+  */
 typedef PCriticalSection PMutex;
 #else
+/** \class PMutex
+    Synonym for PTimedMutex
+  */
 typedef PTimedMutex PMutex;
 #define	PCriticalSection PTimedMutex
 #endif

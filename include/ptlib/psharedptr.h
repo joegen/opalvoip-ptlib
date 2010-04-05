@@ -70,7 +70,7 @@ class PSharedPtr : public PContainer
     { Destruct(); } 
 
     virtual PBoolean MakeUnique() 
-    { if (PContainer::MakeUnique()) return PTrue; CloneContents(this); return PFalse; } 
+    { if (PContainer::MakeUnique()) return true; CloneContents(this); return false; } 
 
     PBoolean SetSize(PINDEX)
     { return false; }

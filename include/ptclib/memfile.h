@@ -62,7 +62,7 @@ class PMemoryFile : public PFile
   /**@name Overrides from class PObject */
   //@{
     /**Determine the relative rank of the two objects. This is essentially the
-       string comparison of the #PFilePath# names of the files.
+       string comparison of the <code>PFilePath</code> names of the files.
 
        @return
        relative rank of the file paths.
@@ -80,11 +80,11 @@ class PMemoryFile : public PFile
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -96,9 +96,9 @@ class PMemoryFile : public PFile
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
-       @return PTrue if at least len bytes were written to the channel.
+       @return true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -121,21 +121,21 @@ class PMemoryFile : public PFile
        expanding the file, or truncating it if being made shorter.
 
        @return
-       PTrue if the file size was changed to the length specified.
+       true if the file size was changed to the length specified.
      */
     PBoolean SetLength(
       off_t len   ///< New length of file.
     );
 
     /**Set the current active position in the file for the next read or write
-       operation. The #pos# variable is a signed number which is
-       added to the specified origin. For #origin == PFile::Start#
-       only positive values for #pos# are meaningful. For
-       #origin == PFile::End# only negative values for
-       #pos# are meaningful.
+       operation. The <code>pos</code> variable is a signed number which is
+       added to the specified origin. For <code>origin == PFile::Start</code>
+       only positive values for <code>pos</code> are meaningful. For
+       <code>origin == PFile::End</code> only negative values for
+       <code>pos</code> are meaningful.
 
        @return
-       PTrue if the new file position was set.
+       true if the new file position was set.
      */
     PBoolean SetPosition(
       off_t pos,                         ///< New position to set.

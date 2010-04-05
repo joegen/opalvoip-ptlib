@@ -46,11 +46,11 @@ class PThread;
    A class representing a system timer. The time interval ancestor value is
    the amount of time left in the timer.
 
-   A timer on completion calls the virtual function #OnTimeout()#. This
+   A timer on completion calls the virtual function <code>OnTimeout()</code>. This
    will in turn call the callback function provided by the instance. The user
    may either override the virtual function or set a callback as desired.
    
-   A list of active timers is maintained by the applications #PProcess# 
+   A list of active timers is maintained by the applications <code>PProcess</code> 
    instance and the timeout functions are executed in the context of a single
    thread of execution. There are many consequences of this: only one timeout
    function can be executed at a time and thus a user should not execute a
@@ -125,13 +125,13 @@ class PTimer : public PTimeInterval
     /** Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-<code>
+<pre><code>
               SetInterval(120000)
               SetInterval(60000, 60)
               SetInterval(60000, 0, 1)
               SetInterval(0, 60, 1)
               SetInterval(0, 0, 2)
-</code>
+</code></pre>
      */
     virtual void SetInterval(
       PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
@@ -169,11 +169,11 @@ class PTimer : public PTimeInterval
        for one shot timers as repeating timers are always running.
        
        @return
-       PTrue if timer is still counting.
+       true if timer is still counting.
      */
     PBoolean IsRunning() const;
 
-    /** Pause a running timer. This differs from the #Stop()# function in
+    /** Pause a running timer. This differs from the <code>Stop()</code> function in
        that the timer may be resumed at the point that it left off. That is
        time is "frozen" while the timer is paused.
      */
@@ -188,7 +188,7 @@ class PTimer : public PTimeInterval
     /** Determine if the timer is currently paused.
 
        @return
-       PTrue if timer paused.
+       true if timer paused.
      */
     PBoolean IsPaused() const;
 
@@ -212,13 +212,13 @@ class PTimer : public PTimeInterval
        code in this call back or the accuracy of ALL timers can be severely
        impacted.
 
-       The default behaviour of this function is to call the #PNotifier# 
+       The default behaviour of this function is to call the <code>PNotifier</code> 
        callback function.
      */
     virtual void OnTimeout();
 
     /** Get the current call back function that is called whenever the timer
-       expires. This is called by the #OnTimeout()# function.
+       expires. This is called by the <code>OnTimeout()</code> function.
 
        @return
        current notifier for the timer.
@@ -226,7 +226,7 @@ class PTimer : public PTimeInterval
     const PNotifier & GetNotifier() const;
 
     /** Set the call back function that is called whenever the timer expires.
-       This is called by the #OnTimeout()# function.
+       This is called by the <code>OnTimeout()</code> function.
      */
     void SetNotifier(
       const PNotifier & func  // New notifier function for the timer.
@@ -241,7 +241,7 @@ class PTimer : public PTimeInterval
        Note that even though this function returns milliseconds, the value may
        jump in minimum quanta according the platforms timer system, eg under
        MS-DOS and MS-Windows the values jump by 55 every 55 milliseconds. The
-       #Resolution()# function may be used to determine what the minimum
+       <code>Resolution()</code> function may be used to determine what the minimum
        time interval is.
     
        @return
@@ -251,7 +251,7 @@ class PTimer : public PTimeInterval
 
     /** Get the smallest number of milliseconds that the timer can be set to.
        All actual timing events will be rounded up to the next value. This is
-       typically the platforms internal timing units used in the #Tick()#
+       typically the platforms internal timing units used in the <code>Tick()</code>
        function.
        
        @return
@@ -278,7 +278,7 @@ class PTimer : public PTimeInterval
   private:
     void Construct();
 
-    /* Start or restart the timer from the #resetTime# variable.
+    /* Start or restart the timer from the <code>resetTime</code> variable.
        This is an internal function.
      */
     void StartRunning(
@@ -286,8 +286,8 @@ class PTimer : public PTimeInterval
     );
 
     /* Process the timer decrementing it by the delta amount and calling the
-       #OnTimeout()# when zero. This is used internally by the
-       #PTimerList::Process()# function.
+       <code>OnTimeout()</code> when zero. This is used internally by the
+       <code>PTimerList::Process()</code> function.
      */
     void Process(
       PInt64 now             // time consider as "now"

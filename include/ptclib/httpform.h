@@ -44,7 +44,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PHTTPField
 
-/** This class is the abstract base class for fields in a #PHTTPForm#
+/** This class is the abstract base class for fields in a <code>PHTTPForm</code>
    resource type.
  */
 class PHTTPField : public PObject
@@ -163,7 +163,7 @@ class PHTTPField : public PObject
        @return
        String for field value.
      */
-    virtual PString GetValue(PBoolean dflt = PFalse) const = 0;
+    virtual PString GetValue(PBoolean dflt = false) const = 0;
 
     /** Set the value of the field.
      */
@@ -185,7 +185,7 @@ class PHTTPField : public PObject
       PConfig & cfg   // Configuration for value transfer.
     ) const;
 
-    /** Validate the new field value before #SetValue()# is called.
+    /** Validate the new field value before <code>SetValue()</code> is called.
 
        @return
        PBoolean if the new field value is OK.
@@ -209,7 +209,7 @@ class PHTTPField : public PObject
       const PStringToString & data   // New value for the field.
     );
 
-    /** Validate the new field value in a list before #SetValue()# is called.
+    /** Validate the new field value in a list before <code>SetValue()</code> is called.
 
        @return
        PBoolean if the all the new field values are OK.
@@ -221,7 +221,7 @@ class PHTTPField : public PObject
 
 
     PBoolean NotYetInHTML() const { return notInHTML; }
-    void SetInHTML() { notInHTML = PFalse; }
+    void SetInHTML() { notInHTML = false; }
 
   protected:
     PCaselessString baseName;
@@ -269,7 +269,7 @@ class PHTTPCompositeField : public PHTTPField
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newValue   // New value for the field.
@@ -416,7 +416,7 @@ class PHTTPStringField : public PHTTPField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -454,7 +454,7 @@ class PHTTPPasswordField : public PHTTPStringField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -516,7 +516,7 @@ class PHTTPIntegerField : public PHTTPField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -548,13 +548,13 @@ class PHTTPBooleanField : public PHTTPField
   public:
     PHTTPBooleanField(
       const char * name,
-      PBoolean initVal = PFalse,
+      PBoolean initVal = false,
       const char * help = NULL
     );
     PHTTPBooleanField(
       const char * name,
       const char * title,
-      PBoolean initVal = PFalse,
+      PBoolean initVal = false,
       const char * help = NULL
     );
 
@@ -568,7 +568,7 @@ class PHTTPBooleanField : public PHTTPField
       const PString & input
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -662,7 +662,7 @@ class PHTTPRadioField : public PHTTPField
       const PString & input
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -716,7 +716,7 @@ class PHTTPSelectField : public PHTTPField
       PHTML & html    ///< HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue(PBoolean dflt = PFalse) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
 
     virtual void SetValue(
       const PString & newVal

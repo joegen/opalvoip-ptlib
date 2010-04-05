@@ -88,14 +88,14 @@ class PRemoteConnection : public PObject
     /** Open the remote connection.
      */
     PBoolean Open(
-      PBoolean existing = PFalse  ///< Flag for open only if already connected.
+      PBoolean existing = false  ///< Flag for open only if already connected.
     );
 
     /** Open the remote connection.
      */
     PBoolean Open(
       const PString & name,   ///< RAS name of of connection to open.
-      PBoolean existing = PFalse   ///< Flag for open only if already connected.
+      PBoolean existing = false   ///< Flag for open only if already connected.
     );
 
     /** Open the remote connection.
@@ -104,7 +104,7 @@ class PRemoteConnection : public PObject
       const PString & name,     ///< RAS name of of connection to open.
       const PString & username, ///< Username for remote log in.
       const PString & password, ///< password for remote log in.
-      PBoolean existing = PFalse     ///< Flag for open only if already connected.
+      PBoolean existing = false     ///< Flag for open only if already connected.
     );
 
     /** Close the remote connection.
@@ -210,10 +210,10 @@ class PRemoteConnection : public PObject
     /**Get the configuration of the specified remote access connection.
 
        @return
-       #Connected# if the configuration information was obtained,
-       #NoNameOrNumber# if the particular RAS name does not exist,
-       #NotInstalled# if there is no RAS support in the operating system,
-       #GeneralFailure# on any other error.
+       <code>Connected</code> if the configuration information was obtained,
+       <code>NoNameOrNumber</code> if the particular RAS name does not exist,
+       <code>NotInstalled</code> if there is no RAS support in the operating system,
+       <code>GeneralFailure</code> on any other error.
      */
     Status GetConfiguration(
       Configuration & config  ///< Configuration of remote connection
@@ -222,10 +222,10 @@ class PRemoteConnection : public PObject
     /**Get the configuration of the specified remote access connection.
 
        @return
-       #Connected# if the configuration information was obtained,
-       #NoNameOrNumber# if the particular RAS name does not exist,
-       #NotInstalled# if there is no RAS support in the operating system,
-       #GeneralFailure# on any other error.
+       <code>Connected</code> if the configuration information was obtained,
+       <code>NoNameOrNumber</code> if the particular RAS name does not exist,
+       <code>NotInstalled</code> if there is no RAS support in the operating system,
+       <code>GeneralFailure</code> on any other error.
      */
     static Status GetConfiguration(
       const PString & name,   ///< Remote connection name to get configuration
@@ -235,37 +235,37 @@ class PRemoteConnection : public PObject
     /**Set the configuration of the specified remote access connection.
 
        @return
-       #Connected# if the configuration information was set,
-       #NoNameOrNumber# if the particular RAS name does not exist,
-       #NotInstalled# if there is no RAS support in the operating system,
-       #GeneralFailure# on any other error.
+       <code>Connected</code> if the configuration information was set,
+       <code>NoNameOrNumber</code> if the particular RAS name does not exist,
+       <code>NotInstalled</code> if there is no RAS support in the operating system,
+       <code>GeneralFailure</code> on any other error.
      */
     Status SetConfiguration(
       const Configuration & config,  ///< Configuration of remote connection
-      PBoolean create = PFalse            ///< Flag to create connection if not present
+      PBoolean create = false            ///< Flag to create connection if not present
     );
 
     /**Set the configuration of the specified remote access connection.
 
        @return
-       #Connected# if the configuration information was set,
-       #NoNameOrNumber# if the particular RAS name does not exist,
-       #NotInstalled# if there is no RAS support in the operating system,
-       #GeneralFailure# on any other error.
+       <code>Connected</code> if the configuration information was set,
+       <code>NoNameOrNumber</code> if the particular RAS name does not exist,
+       <code>NotInstalled</code> if there is no RAS support in the operating system,
+       <code>GeneralFailure</code> on any other error.
      */
     static Status SetConfiguration(
       const PString & name,          ///< Remote connection name to configure
       const Configuration & config,  ///< Configuration of remote connection
-      PBoolean create = PFalse            ///< Flag to create connection if not present
+      PBoolean create = false            ///< Flag to create connection if not present
     );
 
     /**Remove the specified remote access connection.
 
        @return
-       #Connected# if the configuration information was removed,
-       #NoNameOrNumber# if the particular RAS name does not exist,
-       #NotInstalled# if there is no RAS support in the operating system,
-       #GeneralFailure# on any other error.
+       <code>Connected</code> if the configuration information was removed,
+       <code>NoNameOrNumber</code> if the particular RAS name does not exist,
+       <code>NotInstalled</code> if there is no RAS support in the operating system,
+       <code>GeneralFailure</code> on any other error.
      */
     static Status RemoveConfiguration(
       const PString & name          ///< Remote connection name to configure

@@ -41,7 +41,7 @@
 // PHTML
 
 /** This class describes a HyperText markup Language string as used by the
-   World Wide Web and the #PURL# and #PHTTPSocket# class.
+   World Wide Web and the <code>PURL</code> and <code>PHTTP</code> class.
    
    All of the standard stream I/O operators, manipulators etc will operate on
    the PString class.

@@ -72,7 +72,7 @@ public:
   void AddParameter( PString name, PString type, PString value );
 
   //! Add a parameter using a PXMLElement
-  void AddParameter( PXMLElement* parameter, PBoolean dirty = PTrue );
+  void AddParameter( PXMLElement* parameter, PBoolean dirty = true );
 
   //! Get parameter "name" with type "string"
   PBoolean GetParameter( const PString & name, PString & value );

@@ -65,10 +65,8 @@ class PHTTPSpace : public PContainer
 
   // New functions for class.
     enum AddOptions {
-      /// Generate error if resource already exists
-      ErrorOnExist,
-      /// Overwrite the existing resource at URL location
-      Overwrite
+      ErrorOnExist, ///< Generate error if resource already exists
+      Overwrite     ///< Overwrite the existing resource at URL location
     };
 
 
@@ -81,7 +79,7 @@ class PHTTPSpace : public PContainer
        path to another resource but not if it is a leaf node.
 
        @return
-       PTrue if resource added, PFalse if failed.
+       true if resource added, false if failed.
      */
     PBoolean AddResource(
       PHTTPResource * resource, ///< Resource to add to the name space.
@@ -94,7 +92,7 @@ class PHTTPSpace : public PContainer
        path to another resource then the function will fail.
 
        @return
-       PTrue if resource deleted, PFalse if failed.
+       true if resource deleted, false if failed.
      */
     PBoolean DelResource(
       const PURL & url          ///< URL to search for in the name space.
@@ -148,7 +146,7 @@ class PHTTPSpace : public PContainer
     } * root;
 
   private:
-    PBoolean SetSize(PINDEX) { return PFalse; }
+    PBoolean SetSize(PINDEX) { return false; }
 };
 
 #ifdef TRACE
@@ -205,7 +203,7 @@ class PHTTP : public PInternetProtocol
       Conflict,                    ///< 409 - resource conflict on action
       Gone,                        ///< 410 - resource gone away
       LengthRequired,              ///< 411 - no Content-Length
-      UnlessTrue,                  ///< 412 - no Range header for PTrue Unless
+      UnlessTrue,                  ///< 412 - no Range header for true Unless
       InternalServerError = 500,   ///< 500 - server has encountered an unexpected error
       NotImplemented,              ///< 501 - server does not implement request
       BadGateway,                  ///< 502 - error whilst acting as gateway
@@ -253,7 +251,7 @@ class PHTTP : public PInternetProtocol
        <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
 
        The default bahaviour looks for a space or a '-' and splits the code
-       and info either side of that character, then returns PFalse.
+       and info either side of that character, then returns false.
 
        @return
        Position of continuation character in response, 0 if no continuation
@@ -431,7 +429,7 @@ class PHTTPClientDigestAuthentication : public PHTTPClientAuthentication
       }
       else
          PError << "HTTP conection failed." << endl;
-      </PRE></CODE>
+      </CODE></PRE>
  */
 class PHTTPClient : public PHTTP
 {
@@ -450,7 +448,7 @@ class PHTTPClient : public PHTTP
        200!
 
        @return
-       PTrue if all of header returned and ready to receive body.
+       true if all of header returned and ready to receive body.
      */
     int ExecuteCommand(
       Commands cmd,
@@ -503,7 +501,7 @@ class PHTTPClient : public PHTTP
         type is acceptable.
 
        @return
-       PTrue if document is being transferred.
+       true if document is being transferred.
      */
     PBoolean GetTextDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
@@ -514,7 +512,7 @@ class PHTTPClient : public PHTTP
     /** Get the document specified by the URL.
 
        @return
-       PTrue if document is being transferred.
+       true if document is being transferred.
      */
     PBoolean GetDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
@@ -525,7 +523,7 @@ class PHTTPClient : public PHTTP
     /** Get the header for the document specified by the URL.
 
        @return
-       PTrue if document header is being transferred.
+       true if document header is being transferred.
      */
     PBoolean GetHeader(
       const PURL & url,         ///< Universal Resource Locator for document.
@@ -537,7 +535,7 @@ class PHTTPClient : public PHTTP
     /** Post the data specified to the URL.
 
        @return
-       PTrue if document is being transferred.
+       true if document is being transferred.
      */
     PBoolean PostData(
       const PURL & url,       ///< Universal Resource Locator for document.
@@ -549,7 +547,7 @@ class PHTTPClient : public PHTTP
     /** Post the data specified to the URL.
 
        @return
-       PTrue if document is being transferred.
+       true if document is being transferred.
      */
     PBoolean PostData(
       const PURL & url,       ///< Universal Resource Locator for document.
@@ -627,7 +625,7 @@ class PHTTPServer;
 
 /** This object describes the connectiono associated with a HyperText Transport
    Protocol request. This information is required by handler functions on
-   #PHTTPResource# descendant classes to manage the connection correctly.
+   <code>PHTTPResource</code> descendant classes to manage the connection correctly.
 */
 class PHTTPConnectionInfo : public PObject
 {
@@ -707,15 +705,9 @@ class PHTTPConnectionInfo : public PObject
 
 /** A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
 
-    When acting as a server, a descendant class would be created to override
-    at least the #HandleOpenMailbox()#, #HandleSendMessage()# and
-    #HandleDeleteMessage()# functions. Other functions may be overridden
-    for further enhancement to the sockets capabilities, but these will give a
-    basic POP3 server functionality.
-
     The server socket thread would continuously call the
-    #ProcessMessage()# function until it returns PFalse. This will then
-    call the appropriate virtual function on parsing the POP3 protocol.
+    ProcessCommand() function until it returns false. This will then
+    call the appropriate virtual function on parsing the HTTP protocol.
  */
 class PHTTPServer : public PHTTP
 {
@@ -760,8 +752,8 @@ class PHTTPServer : public PHTTP
        is used when the socket is acting as a server.
 
        @return
-       PTrue if the request specified persistant mode and the request version
-       allows it, PFalse if the socket closed, timed out, the protocol does not
+       true if the request specified persistant mode and the request version
+       allows it, false if the socket closed, timed out, the protocol does not
        allow persistant mode, or the client did not request it
        timed out
      */
@@ -770,13 +762,13 @@ class PHTTPServer : public PHTTP
     /** Handle a GET command from a client.
 
        The default implementation looks up the URL in the name space declared by
-       the #PHTTPSpace# class tree and despatches to the
-       #PHTTPResource# object contained therein.
+       the <code>PHTTPSpace</code> class tree and despatches to the
+       <code>PHTTPResource</code> object contained therein.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnGET(
       const PURL & url,                    ///< Universal Resource Locator for document.
@@ -789,13 +781,13 @@ class PHTTPServer : public PHTTP
     /** Handle a HEAD command from a client.
 
        The default implemetation looks up the URL in the name space declared by
-       the #PHTTPSpace# class tree and despatches to the
-       #PHTTPResource# object contained therein.
+       the <code>PHTTPSpace</code> class tree and despatches to the
+       <code>PHTTPResource</code> object contained therein.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnHEAD(
       const PURL & url,                   ///< Universal Resource Locator for document.
@@ -806,13 +798,13 @@ class PHTTPServer : public PHTTP
     /** Handle a POST command from a client.
 
        The default implementation looks up the URL in the name space declared by
-       the #PHTTPSpace# class tree and despatches to the
-       #PHTTPResource# object contained therein.
+       the <code>PHTTPSpace</code> class tree and despatches to the
+       <code>PHTTPResource</code> object contained therein.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnPOST(
       const PURL & url,                   ///< Universal Resource Locator for document.
@@ -824,14 +816,14 @@ class PHTTPServer : public PHTTP
     /** Handle a proxy command request from a client. This will only get called
        if the request was not for this particular server. If it was a proxy
        request for this server (host and port number) then the appropriate
-       #OnGET()#, #OnHEAD()# or #OnPOST()# command is called.
+       <code>OnGET()</code>, <code>OnHEAD()</code> or <code>OnPOST()</code> command is called.
 
        The default implementation returns OnError(BadGateway).
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnProxy(
       const PHTTPConnectionInfo & conInfo   ///<  HTTP connection information
@@ -849,7 +841,7 @@ class PHTTPServer : public PHTTP
     /** Handle an unknown command.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
      */
     virtual PBoolean OnUnknown(
       const PCaselessString & command,         ///< Complete command line received.
@@ -872,7 +864,7 @@ class PHTTPServer : public PHTTP
        nothing.
 
        @return
-       PTrue if requires v1.1 chunked transfer encoding.
+       true if requires v1.1 chunked transfer encoding.
      */
     PBoolean StartResponse(
       StatusCode code,      ///< Status code for the response.
@@ -887,7 +879,7 @@ class PHTTPServer : public PHTTP
        viewer.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
      */
     virtual PBoolean OnError(
       StatusCode code,                         ///< Status code for the error response.
@@ -899,7 +891,7 @@ class PHTTPServer : public PHTTP
      */
     void SetDefaultMIMEInfo(
       PMIMEInfo & info,      ///< Extra MIME information in command.
-      const PHTTPConnectionInfo & connectInfo
+      const PHTTPConnectionInfo & connectInfo   ///< Connection information
     );
 
     /**Get the connection info for this connection.
@@ -920,7 +912,7 @@ class PHTTPServer : public PHTTP
 // PHTTPRequest
 
 /** This object describes a HyperText Transport Protocol request. An individual
-   request is passed to handler functions on #PHTTPResource# descendant
+   request is passed to handler functions on <code>PHTTPResource</code> descendant
    classes.
  */
 class PHTTPRequest : public PObject
@@ -977,7 +969,7 @@ class PHTTPAuthority : public PObject
        the realm specified by the class instance.
 
        @return
-       PTrue if the user and password are authorised in the realm.
+       true if the user and password are authorised in the realm.
      */
     virtual PBoolean Validate(
       const PHTTPRequest & request,  ///< Request information.
@@ -988,10 +980,10 @@ class PHTTPAuthority : public PObject
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
-       The default behaviour is to return PTrue.
+       The default behaviour is to return true.
 
        @return
-       PTrue if the authorisation in the realm is to be applied.
+       true if the authorisation in the realm is to be applied.
      */
     virtual PBoolean IsActive() const;
 
@@ -1025,7 +1017,7 @@ class PHTTPSimpleAuth : public PHTTPAuthority
 
   // Overrides from class PObject.
     /** Create a copy of the class on the heap. This is used by the
-       #PHTTPResource# classes for maintaining authorisation to
+       <code>PHTTPResource</code> classes for maintaining authorisation to
        resources.
 
        @return
@@ -1049,7 +1041,7 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        the realm specified by the class instance.
 
        @return
-       PTrue if the user and password are authorised in the realm.
+       true if the user and password are authorised in the realm.
      */
     virtual PBoolean Validate(
       const PHTTPRequest & request,  ///< Request information.
@@ -1060,10 +1052,10 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
-       The default behaviour is to return PTrue.
+       The default behaviour is to return true.
 
        @return
-       PTrue if the authorisation in the realm is to be applied.
+       true if the authorisation in the realm is to be applied.
      */
     virtual PBoolean IsActive() const;
 
@@ -1112,7 +1104,7 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
 
   // Overrides from class PObject.
     /** Create a copy of the class on the heap. This is used by the
-       #PHTTPResource# classes for maintaining authorisation to
+       <code>PHTTPResource</code> classes for maintaining authorisation to
        resources.
 
        @return
@@ -1136,7 +1128,7 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        the realm specified by the class instance.
 
        @return
-       PTrue if the user and password are authorised in the realm.
+       true if the user and password are authorised in the realm.
      */
     virtual PBoolean Validate(
       const PHTTPRequest & request,  ///< Request information.
@@ -1147,10 +1139,10 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
-       The default behaviour is to return PTrue.
+       The default behaviour is to return true.
 
        @return
-       PTrue if the authorisation in the realm is to be applied.
+       true if the authorisation in the realm is to be applied.
      */
     virtual PBoolean IsActive() const;
 
@@ -1175,7 +1167,7 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
 // PHTTPResource
 
 /** This object describes a HyperText Transport Protocol resource. A tree of
-   these resources are available to the #PHTTPSocket# class.
+   these resources are available to the <code>PHTTPServer</code> class.
  */
 class PHTTPResource : public PObject
 {
@@ -1254,13 +1246,13 @@ class PHTTPResource : public PObject
     /** Handle the GET command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
-       call the virtuals #LoadHeaders()# and #OnGETData()# to get
+       call the virtuals <code>LoadHeaders()</code> and <code>OnGETData()</code> to get
        a resource to be sent to the socket.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close.
+       true if the connection may persist, false if the connection must close.
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnGET(
       PHTTPServer & server,       ///< HTTP server that received the request
@@ -1271,12 +1263,12 @@ class PHTTPResource : public PObject
 
     /**Send the data associated with a GET command.
 
-       The default action calls #SendData()#.
+       The default action calls <code>SendData()</code>.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close.
+       true if the connection may persist, false if the connection must close.
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
     */
     virtual PBoolean OnGETData(
       PHTTPServer & server,                       ///< HTTP server that received the request
@@ -1288,13 +1280,13 @@ class PHTTPResource : public PObject
     /** Handle the HEAD command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
-       call the virtual #LoadHeaders()# to get the header information to
+       call the virtual <code>LoadHeaders()</code> to get the header information to
        be sent to the socket.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnHEAD(
       PHTTPServer & server,       ///< HTTP server that received the request
@@ -1306,13 +1298,13 @@ class PHTTPResource : public PObject
     /** Handle the POST command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
-       call the virtual #Post()# function to handle the data being
+       call the virtual <code>Post()</code> function to handle the data being
        received.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
      */
     virtual PBoolean OnPOST(
       PHTTPServer & server,         ///< HTTP server that received the request
@@ -1324,12 +1316,12 @@ class PHTTPResource : public PObject
 
     /**Send the data associated with a POST command.
 
-       The default action calls #Post()#.
+       The default action calls <code>Post()</code>.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close.
+       true if the connection may persist, false if the connection must close.
        If there is no ContentLength field in the response, this value must
-       be PFalse for correct operation.
+       be false for correct operation.
     */
     virtual PBoolean OnPOSTData(
       PHTTPRequest & request,        ///< request information
@@ -1340,7 +1332,7 @@ class PHTTPResource : public PObject
        specified.
 
        @return
-       PTrue if has been modified since.
+       true if has been modified since.
      */
     virtual PBoolean IsModifiedSince(
       const PTime & when    ///< Time to see if modified later than
@@ -1374,7 +1366,7 @@ class PHTTPResource : public PObject
        required by the resource and return the status for the load.
 
        @return
-       PTrue if all OK, PFalse if an error occurred.
+       true if all OK, false if an error occurred.
      */
     virtual PBoolean LoadHeaders(
       PHTTPRequest & request    ///<  Information on this request.
@@ -1382,7 +1374,7 @@ class PHTTPResource : public PObject
 
     /**Send the data associated with a command.
 
-       The default action is to call the virtual #LoadData()# to get a
+       The default action is to call the virtual <code>LoadData()</code> to get a
        resource to be sent to the socket.
     */
     virtual void SendData(
@@ -1391,11 +1383,11 @@ class PHTTPResource : public PObject
 
     /** Get a block of data that the resource contains.
 
-       The default behaviour is to call the #LoadText()# function and
-       if successful, call the #OnLoadedText()# function.
+       The default behaviour is to call the <code>LoadText()</code> function and
+       if successful, call the <code>OnLoadedText()</code> function.
 
        @return
-       PTrue if there is still more to load.
+       true if there is still more to load.
      */
     virtual PBoolean LoadData(
       PHTTPRequest & request,    ///<  Information on this request.
@@ -1404,8 +1396,8 @@ class PHTTPResource : public PObject
 
     /** Get a block of text data (eg HTML) that the resource contains.
 
-       The default behaviour is to assert, one of #LoadText()# or
-       #LoadData()# functions must be overridden for correct operation.
+       The default behaviour is to assert, one of <code>LoadText()</code> or
+       <code>LoadData()</code> functions must be overridden for correct operation.
 
        @return
        String for loaded text.
@@ -1431,7 +1423,7 @@ class PHTTPResource : public PObject
        success.
 
        @return
-       PTrue if the connection may persist, PFalse if the connection must close
+       true if the connection may persist, false if the connection must close
      */
     virtual PBoolean Post(
       PHTTPRequest & request,       ///<  Information on this request.
@@ -1461,18 +1453,15 @@ class PHTTPResource : public PObject
       PHTTPServer & server,       ///<  HTTP server that received the request
       const PURL & url,           ///<  Universal Resource Locator for document.
       const PMIMEInfo & info,     ///<  Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo,
-      PBoolean  IsGet
+      const PHTTPConnectionInfo & conInfo,  ///< Connection information
+      PBoolean isGet              ///< Flag indicating is GET or HEAD
     );
 
-    /// Base URL for the resource, may accept URLS with a longer hierarchy
-    PURL             baseURL;
-    /// MIME content type for the resource
-    PString          contentType;
-    /// Authorisation method for the resource
-    PHTTPAuthority * authority;
-    /// COunt of number of times resource was accessed.
-    volatile DWORD   hitCount;
+
+    PURL             baseURL;     ///< Base URL for the resource, may accept URLS with a longer hierarchy
+    PString          contentType; ///< MIME content type for the resource
+    PHTTPAuthority * authority;   ///< Authorisation method for the resource
+    volatile DWORD   hitCount;    ///< COunt of number of times resource was accessed.
 };
 
 
@@ -1526,7 +1515,7 @@ class PHTTPString : public PHTTPResource
        required by the resource and return the status for the load.
 
        @return
-       PTrue if all OK, PFalse if an error occurred.
+       true if all OK, false if an error occurred.
      */
     virtual PBoolean LoadHeaders(
       PHTTPRequest & request    // Information on this request.
@@ -1534,8 +1523,8 @@ class PHTTPString : public PHTTPResource
 
     /** Get a block of text data (eg HTML) that the resource contains.
 
-       The default behaviour is to assert, one of #LoadText()# or
-       #LoadData()# functions must be overridden for correct operation.
+       The default behaviour is to assert, one of <code>LoadText()</code> or
+       <code>LoadData()</code> functions must be overridden for correct operation.
 
        @return
        String for loaded text.
@@ -1570,7 +1559,7 @@ class PHTTPString : public PHTTPResource
 /** This object describes a HyperText Transport Protocol resource which is a
    single file. The file can be anywhere in the file system and is mapped to
    the specified URL location in the HTTP name space defined by the
-   #PHTTPSpace# class.
+   <code>PHTTPSpace</code> class.
  */
 class PHTTPFile : public PHTTPResource
 {
@@ -1630,7 +1619,7 @@ class PHTTPFile : public PHTTPResource
        required by the resource and return the status for the load.
 
        @return
-       PTrue if all OK, PFalse if an error occurred.
+       true if all OK, false if an error occurred.
      */
     virtual PBoolean LoadHeaders(
       PHTTPRequest & request    // Information on this request.
@@ -1639,7 +1628,7 @@ class PHTTPFile : public PHTTPResource
     /** Get a block of data that the resource contains.
 
        @return
-       PTrue if more to load.
+       true if more to load.
      */
     virtual PBoolean LoadData(
       PHTTPRequest & request,    // Information on this request.
@@ -1648,8 +1637,8 @@ class PHTTPFile : public PHTTPResource
 
     /** Get a block of text data (eg HTML) that the resource contains.
 
-       The default behaviour is to assert, one of #LoadText()# or
-       #LoadData()# functions must be overridden for correct operation.
+       The default behaviour is to assert, one of <code>LoadText()</code> or
+       <code>LoadData()</code> functions must be overridden for correct operation.
 
        @return
        String for loaded text.
@@ -1693,7 +1682,7 @@ class PHTTPFileRequest : public PHTTPRequest
 /** This object describes a HyperText Transport Protocol resource which is a
    single file. The file can be anywhere in the file system and is mapped to
    the specified URL location in the HTTP name space defined by the
-   #PHTTPSpace# class.
+   <code>PHTTPSpace</code> class.
 
    The difference between this and PHTTPFile is that it continually outputs
    the contents of the file, as per the unix "tail -f" command.
@@ -1744,7 +1733,7 @@ class PHTTPTailFile : public PHTTPFile
        required by the resource and return the status for the load.
 
        @return
-       PTrue if all OK, PFalse if an error occurred.
+       true if all OK, false if an error occurred.
      */
     virtual PBoolean LoadHeaders(
       PHTTPRequest & request    // Information on this request.
@@ -1753,7 +1742,7 @@ class PHTTPTailFile : public PHTTPFile
     /** Get a block of data that the resource contains.
 
        @return
-       PTrue if more to load.
+       true if more to load.
      */
     virtual PBoolean LoadData(
       PHTTPRequest & request,    // Information on this request.
@@ -1768,13 +1757,13 @@ class PHTTPTailFile : public PHTTPFile
 /** This object describes a HyperText Transport Protocol resource which is a
    set of files in a directory. The directory can be anywhere in the file
    system and is mapped to the specified URL location in the HTTP name space
-   defined by the #PHTTPSpace# class.
+   defined by the <code>PHTTPSpace</code> class.
 
    All subdirectories and files are available as URL names in the HTTP name
    space. This effectively grafts a file system directory tree onto the URL
    name space tree.
 
-   See the #PMIMEInfo# class for more information on the mappings between
+   See the <code>PMIMEInfo</code> class for more information on the mappings between
    file types and MIME types.
  */
 class PHTTPDirectory : public PHTTPFile
@@ -1783,13 +1772,13 @@ class PHTTPDirectory : public PHTTPFile
 
   public:
     PHTTPDirectory(
-      const PURL & url,            /// Name of the resource in URL space.
-      const PDirectory & dir       /// Location of file in file system.
+      const PURL & url,            ///< Name of the resource in URL space.
+      const PDirectory & dir       ///< Location of file in file system.
     );
     PHTTPDirectory(
-      const PURL & url,            /// Name of the resource in URL space.
-      const PDirectory & dir,      /// Location of file in file system.
-      const PHTTPAuthority & auth  /// Authorisation for the resource.
+      const PURL & url,            ///< Name of the resource in URL space.
+      const PDirectory & dir,      ///< Location of file in file system.
+      const PHTTPAuthority & auth  ///< Authorisation for the resource.
     );
     // Construct a new directory resource for HTTP.
 
@@ -1812,22 +1801,22 @@ class PHTTPDirectory : public PHTTPFile
        required by the resource and return the status for the load.
 
        @return
-       PTrue if all OK, PFalse if an error occurred.
+       true if all OK, false if an error occurred.
      */
     virtual PBoolean LoadHeaders(
-      PHTTPRequest & request    /// Information on this request.
+      PHTTPRequest & request    ///< Information on this request.
     );
 
     /** Get a block of text data (eg HTML) that the resource contains.
 
-       The default behaviour is to assert, one of #LoadText()# or
-       #LoadData()# functions must be overridden for correct operation.
+       The default behaviour is to assert, one of <code>LoadText()</code> or
+       <code>LoadData()</code> functions must be overridden for correct operation.
 
        @return
        String for loaded text.
      */
     virtual PString LoadText(
-      PHTTPRequest & request    /// Information on this request.
+      PHTTPRequest & request    ///< Information on this request.
     );
 
     /** Enable or disable access control using .access files. A directory tree containing
@@ -1842,7 +1831,7 @@ class PHTTPDirectory : public PHTTPFile
 
     /** Enable or disable directory listings when a default directory file does not exist
      */
-    void AllowDirectories(PBoolean enable = PTrue);
+    void AllowDirectories(PBoolean enable = true);
 
   protected:
     PBoolean CheckAuthority(

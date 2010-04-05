@@ -78,8 +78,8 @@ class PTime : public PObject
        This initialises the time to the specified time.
      */
     PTime(
-      time_t tsecs,          ///< Time in seconds since 00:00:00 1/1/70 UTC
-      long usecs = 0
+      time_t tsecs,     ///< Time in seconds since 00:00:00 1/1/70 UTC
+      long usecs = 0    ///< microseconds part of time.
     ) { theTime = tsecs; microseconds = usecs; }
 
     /**Create a time object instance.
@@ -136,8 +136,8 @@ class PTime : public PObject
       const PObject & obj   ///< Other time to compare against.
     ) const;
 
-    /**Output the time to the stream. This uses the #AsString()# function
-       with the #ShortDateTime# parameter.
+    /**Output the time to the stream. This uses the <code>AsString()</code> function
+       with the <code>ShortDateTime</code> parameter.
      */
     virtual void PrintOn(
       ostream & strm    ///< Stream to output the time to.
@@ -167,7 +167,7 @@ class PTime : public PObject
   /**@name Access functions */
   //@{
     /**Determine if the timestamp is valid.
-       This will return PTrue if the timestamp can be represented as a time
+       This will return true if the timestamp can be represented as a time
        in the epoch. The epoch is the 1st January 1970.
 
        In practice this means the time is > 13 hours to allow for time zones.
@@ -283,14 +283,14 @@ class PTime : public PObject
     /**Determine if the time is in the past or in the future.
 
        @return
-       PTrue if time is before the current real time.
+       true if time is before the current real time.
      */
     PBoolean IsPast() const;
 
     /**Determine if the time is in the past or in the future.
 
        @return
-       PTrue if time is after the current real time.
+       true if time is after the current real time.
      */
     PBoolean IsFuture() const;
   //@}
@@ -300,7 +300,7 @@ class PTime : public PObject
     /**Get flag indicating daylight savings is current.
     
        @return
-       PTrue if daylight savings time is active.
+       true if daylight savings time is active.
      */
     static PBoolean IsDaylightSavings();
 
@@ -475,7 +475,7 @@ class PTime : public PObject
     /**Get the internationalised time format: AM/PM or 24 hour.
     
        @return
-       PTrue is 12 hour, PFalse if 24 hour.
+       true is 12 hour, false if 24 hour.
      */
     static PBoolean GetTimeAMPM();
 

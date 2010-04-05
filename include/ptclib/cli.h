@@ -89,10 +89,10 @@ class PCLI : public PObject
            PCLI::m_newLine.
 
            The GetErrorCode() function should be consulted after Write() returns
-           PFalse to determine what caused the failure.
+           false to determine what caused the failure.
 
            @return
-           PTrue if at least len bytes were written to the channel.
+           true if at least len bytes were written to the channel.
          */
         virtual PBoolean Write(
           const void * buf, ///< Pointer to a block of memory to write.

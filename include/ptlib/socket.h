@@ -73,7 +73,7 @@ class PSocket : public PChannel
        Use the SetReadTimeout() function to set a maximum time for the Connect().
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
@@ -97,7 +97,7 @@ class PSocket : public PChannel
        SetPort() or SetService() function.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
@@ -125,7 +125,7 @@ class PSocket : public PChannel
        The default behaviour is to assert.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
@@ -134,7 +134,7 @@ class PSocket : public PChannel
     /**Close one or both of the data streams associated with a socket.
 
        @return
-       PTrue if the shutdown was performed
+       true if the shutdown was performed
      */
     virtual PBoolean Shutdown(
       ShutdownValue option   ///< Flag for shutdown of read, write or both.
@@ -147,7 +147,7 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       PTrue if the option was successfully set.
+       true if the option was successfully set.
      */
     PBoolean SetOption(
       int option,             ///< Option to set.
@@ -159,7 +159,7 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       PTrue if the option was successfully set.
+       true if the option was successfully set.
      */
     PBoolean SetOption(
       int option,             ///< Option to set.
@@ -172,7 +172,7 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       PTrue if the option was successfully retrieved.
+       true if the option was successfully retrieved.
      */
     PBoolean GetOption(
       int option,             ///< Option to get.
@@ -184,7 +184,7 @@ class PSocket : public PChannel
        options of the class SOL_SOCKET.
 
        @return
-       PTrue if the option was successfully retrieved.
+       true if the option was successfully retrieved.
      */
     PBoolean GetOption(
       int option,             ///< Option to get.
@@ -372,7 +372,7 @@ class PSocket : public PChannel
        has data available.
 
        @return
-       PTrue if the select was successful or timed out, PFalse if an error
+       true if the select was successful or timed out, false if an error
        occurred. If a timeout occurred then the lists returned will be empty.
 
        For the versions taking sockets directly instead of lists the integer

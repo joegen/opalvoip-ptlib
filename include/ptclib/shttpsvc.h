@@ -54,7 +54,7 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
 
     PBoolean SetServerCertificate(
       const PFilePath & certFile,
-      PBoolean create = PFalse,
+      PBoolean create = false,
       const char * dn = NULL
     );
 

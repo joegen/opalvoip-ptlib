@@ -55,7 +55,7 @@ class PTextFile : public PFile
   //@{
     /** Create a text file object but do not open it. It does not initially
        have a valid file name. However, an attempt to open the file using the
-       #PFile::Open()# function will generate a unique temporary file.
+       <code>PFile::Open()</code> function will generate a unique temporary file.
      */
     PTextFile();
 
@@ -64,24 +64,24 @@ class PTextFile : public PFile
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The #PChannel::IsOpen()# function may be used after object
+       The <code>PChannel::IsOpen()</code> function may be used after object
        construction to determine if the file was successfully opened.
      */
     PTextFile(
       OpenMode mode,          ///< Mode in which to open the file.
-      int opts = ModeDefault  ///< #OpenOptions enum# for open operation.
+      int opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
     );
       
     /** Create a text file object with the specified name and open it in the
        specified mode and with the specified options.
 
-       The #PChannel::IsOpen()# function may be used after object
+       The <code>PChannel::IsOpen()</code> function may be used after object
        construction to determine if the file was successfully opened.
      */
     PTextFile(
       const PFilePath & name,    ///< Name of file to open.
       OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-      int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
+      int opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
     );
   //@}
 
@@ -90,11 +90,11 @@ class PTextFile : public PFile
     /** Read a line from the text file. What constitutes an end of line in the
        file is platform dependent.
        
-       Use the #PChannel::GetLastError()# function to determine if there
+       Use the <code>PChannel::GetLastError()</code> function to determine if there
        was some error other than end of file.
        
        @return
-       PTrue if successful, PFalse if at end of file or a read error.
+       true if successful, false if at end of file or a read error.
      */
     PBoolean ReadLine(
       PString & str  ///< String into which line of text is read.
@@ -103,11 +103,11 @@ class PTextFile : public PFile
     /** Read a line from the text file. What constitutes an end of line in the
        file is platform dependent.
        
-       Use the #PChannel::GetLastError()# function to determine the
+       Use the <code>PChannel::GetLastError()</code> function to determine the
        failure mode.
 
        @return
-       PTrue if successful, PFalse if an error occurred.
+       true if successful, false if an error occurred.
      */
     PBoolean WriteLine(
       const PString & str  ///< String to write with end of line terminator.

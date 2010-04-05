@@ -49,7 +49,7 @@
    (found in the standard C header file limits.h) milliseconds. This is
    approximately 596 hours for 32 bit integers.
    
-   There is a constant, #PMaxTimeInterval# which defines the
+   There is a constant, <code>PMaxTimeInterval</code> which defines the
    maximum number of milliseconds that a time interval may be.
  */
 class PTimeInterval : public PObject
@@ -62,13 +62,13 @@ class PTimeInterval : public PObject
     /** Create a new time interval object. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-<code>
+<pre><code>
               PTimeInterval(120000)
               PTimeInterval(60000, 60)
               PTimeInterval(60000, 0, 1)
               PTimeInterval(0, 60, 1)
               PTimeInterval(0, 0, 2)
-</code>
+</code></pre>
      */
     PTimeInterval(
       PInt64 millisecs = 0   ///< Number of milliseconds for interval.
@@ -99,7 +99,7 @@ class PTimeInterval : public PObject
        expect for two integers.
        
        @return
-       #EqualTo#, #LessThan# or #GreaterThan#
+       <code>EqualTo</code>, <code>LessThan</code> or <code>GreaterThan</code>
        depending on their relative rank.
      */
     virtual Comparison Compare(
@@ -187,13 +187,13 @@ class PTimeInterval : public PObject
     /** Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-<code>
+<pre><code>
               SetInterval(120000)
               SetInterval(60000, 60)
               SetInterval(60000, 0, 1)
               SetInterval(0, 60, 1)
               SetInterval(0, 0, 2)
-</code>
+</code></pre>
      */
     virtual void SetInterval(
       PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
@@ -302,7 +302,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       PTrue if intervals are equal.
+       true if intervals are equal.
      */
     bool operator==(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -316,7 +316,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       PTrue if intervals are not equal.
+       true if intervals are not equal.
      */
     bool operator!=(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -330,7 +330,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       PTrue if intervals are greater than.
+       true if intervals are greater than.
      */
     bool operator> (
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -344,7 +344,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       PTrue if intervals are greater than or equal.
+       true if intervals are greater than or equal.
      */
     bool operator>=(
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -358,7 +358,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       PTrue if intervals are less than.
+       true if intervals are less than.
      */
     bool operator< (
       const PTimeInterval & interval   ///< Time interval to compare.
@@ -372,7 +372,7 @@ class PTimeInterval : public PObject
        literals that represent milliseconds.
 
        @return
-       PTrue if intervals are less than or equal.
+       true if intervals are less than or equal.
      */
     bool operator<=(
       const PTimeInterval & interval   ///< Time interval to compare.

@@ -142,7 +142,7 @@ class PTones : public PShortArray
         tone cycle to assure correct zero crossing when tones change.
       */
     bool Generate(
-      char operation,
+      char operation,             ///< Operation for mixing frequency
       unsigned frequency1,        ///< Primary frequency for tone
       unsigned frequency2,        ///< Secondary frequency for summing or modulation
       unsigned milliseconds,      ///< Duration of tone

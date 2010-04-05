@@ -61,14 +61,14 @@ class PTelnetSocket : public PTCPSocket
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        The TELNET channel intercepts and escapes commands in the data stream to
        implement the TELNET protocol.
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -81,12 +81,12 @@ class PTelnetSocket : public PTCPSocket
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        The TELNET channel intercepts and escapes commands in the data stream to
        implement the TELNET protocol.
 
-       Returns PTrue if at least len bytes were written to the channel.
+       Returns true if at least len bytes were written to the channel.
      */
     PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -114,7 +114,7 @@ class PTelnetSocket : public PTCPSocket
        <A>PIPSocket::SetPort()</A> function.
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
@@ -133,7 +133,7 @@ class PTelnetSocket : public PTCPSocket
        port number specified in the "listening" socket.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Accept(
       PSocket & socket          ///< Listening socket making the connection.
@@ -183,11 +183,11 @@ class PTelnetSocket : public PTCPSocket
        <DL>
        <DT>DO, DONT, WILL, WONT    <DD><CODE>opt</CODE> is Options code.
 
-       <DT>AbortOutput             <DD>PTrue is flush buffer.
+       <DT>AbortOutput             <DD>true is flush buffer.
 
        <DT>InterruptProcess,
           Break, AbortProcess,
-          SuspendProcess           <DD>PTrue is synchronise.
+          SuspendProcess           <DD>true is synchronise.
        </DL>
 
        Synchronises the TELNET streams, inserts the data mark into outgoing
@@ -195,7 +195,7 @@ class PTelnetSocket : public PTCPSocket
        data in the stream up until the syncronisation command.
 
        @return
-       PTrue if the command was successfully sent.
+       true if the command was successfully sent.
      */
     PBoolean SendCommand(
       Command cmd,  ///< Command code to send
@@ -253,7 +253,7 @@ class PTelnetSocket : public PTCPSocket
     /** Send DO request.
 
        @return
-       PTrue if the command was successfully sent.
+       true if the command was successfully sent.
      */
     virtual PBoolean SendDo(
       BYTE option    ///< Option to DO
@@ -262,7 +262,7 @@ class PTelnetSocket : public PTCPSocket
     /** Send DONT command.
 
        @return
-       PTrue if the command was successfully sent.
+       true if the command was successfully sent.
      */
     virtual PBoolean SendDont(
       BYTE option    ///< Option to DONT
@@ -271,7 +271,7 @@ class PTelnetSocket : public PTCPSocket
     /** Send WILL request.
 
        @return
-       PTrue if the command was successfully sent.
+       true if the command was successfully sent.
      */
     virtual PBoolean SendWill(
       BYTE option    ///< Option to WILL
@@ -280,7 +280,7 @@ class PTelnetSocket : public PTCPSocket
     /** Send WONT command.
 
        @return
-       PTrue if the command was successfully sent.
+       true if the command was successfully sent.
      */
     virtual PBoolean SendWont(
       BYTE option    ///< Option to WONT
@@ -295,7 +295,7 @@ class PTelnetSocket : public PTCPSocket
     /** Send a sub-option with the information given.
 
        @return
-       PTrue if the command was successfully sent.
+       true if the command was successfully sent.
      */
     PBoolean SendSubOption(
       BYTE code,          ///< Suboptions option code.
@@ -309,7 +309,7 @@ class PTelnetSocket : public PTCPSocket
      */
     void SetOurOption(
       BYTE code,          ///< Option to check.
-      PBoolean state = PTrue   ///< New state for for option.
+      PBoolean state = true   ///< New state for for option.
     ) { option[code].weCan = state; }
 
     /** Set if the option on their side is desired, this does not mean it is set
@@ -317,13 +317,13 @@ class PTelnetSocket : public PTCPSocket
      */
     void SetTheirOption(
       BYTE code,          ///< Option to check.
-      PBoolean state = PTrue  ///< New state for for option.
+      PBoolean state = true  ///< New state for for option.
     ) { option[code].theyShould = state; }
 
     /** Determine if the option on our side is enabled.
 
        @return
-       PTrue if option is enabled.
+       true if option is enabled.
      */
     PBoolean IsOurOption(
       BYTE code    ///< Option to check.
@@ -332,7 +332,7 @@ class PTelnetSocket : public PTCPSocket
     /** Determine if the option on their side is enabled.
 
        @return
-       PTrue if option is enabled.
+       true if option is enabled.
      */
     PBoolean IsTheirOption(
       BYTE code    ///< Option to check.
@@ -370,7 +370,7 @@ class PTelnetSocket : public PTCPSocket
        the standard TELNET class and a WONT for all others.
 
        @return
-       PTrue if option is accepted.
+       true if option is accepted.
      */
     virtual void OnDo(
       BYTE option   ///< Option to DO
@@ -420,10 +420,10 @@ class PTelnetSocket : public PTCPSocket
        telnet command that it does not do anything with.
 
        The default action displays a message to the <A>PError</A> stream
-       (when <CODE>debug</CODE> is PTrue) and returns PTrue;
+       (when <CODE>debug</CODE> is true) and returns true;
 
        @return
-       PTrue if next byte is not part of the command.
+       true if next byte is not part of the command.
      */
     virtual PBoolean OnCommand(
       BYTE code  ///< Code received that could not be precessed.

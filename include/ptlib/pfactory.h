@@ -325,9 +325,9 @@ class PFactory : PFactoryBase
     {
       PWaitAndSignal m(mutex);
       if (keyMap.find(oldKey) == keyMap.end())
-        return PFalse;
+        return false;
       keyMap[newKey] = keyMap[oldKey];
-      return PTrue;
+      return true;
     }
 
     void Unregister_Internal(const Key_T & key)
