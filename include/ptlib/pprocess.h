@@ -49,7 +49,7 @@
 /**Create a process.
    This macro is used to create the components necessary for a user PWLib
    process. For a PWLib program to work correctly on all platforms the
-   #main()# function must be defined in the same module as the
+   main() function must be defined in the same module as the
    instance of the application.
  */
 #ifdef P_VXWORKS
@@ -90,7 +90,7 @@ extern "C" {\
 /*$MACRO PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build)
    This macro is used to declare the components necessary for a user PWLib
    process. This will declare the PProcess descendent class, eg PApplication,
-   and create an instance of the class. See the #PCREATE_PROCESS# macro
+   and create an instance of the class. See the <code>PCREATE_PROCESS</code> macro
    for more details.
  */
 #define PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build) \
@@ -104,9 +104,9 @@ extern "C" {\
 
 
 class PTimerList : public PObject
-/* This class defines a list of #PTimer# objects. It is primarily used
+/* This class defines a list of <code>PTimer</code> objects. It is primarily used
    internally by the library and the user should never create an instance of
-   it. The #PProcess# instance for the application maintains an instance
+   it. The <code>PProcess</code> instance for the application maintains an instance
    of all of the timers created so that it may decrements them at regular
    intervals.
  */
@@ -118,7 +118,7 @@ class PTimerList : public PObject
     PTimerList();
 
     /* Decrement all the created timers and dispatch to their callback
-       functions if they have expired. The #PTimer::Tick()# function
+       functions if they have expired. The <code>PTimer::Tick()</code> function
        value is used to determine the time elapsed since the last call to
        Process().
 
@@ -216,12 +216,12 @@ class PTimerList : public PObject
    "programme" in the  context of the operating system. Note that there can
    only be one instance of a PProcess class in a given programme.
    
-   The instance of a PProcess or its GUI descendent #PApplication# is
+   The instance of a PProcess or its GUI descendent <code>PApplication</code> is
    usually a static variable created by the application writer. This is the
    initial "anchor" point for all data structures in an application. As the
    application writer never needs to access the standard system
-   #main()# function, it is in the library, the programmes
-   execution begins with the virtual function #PThread::Main()# on a
+   <code>main()</code> function, it is in the library, the programmes
+   execution begins with the virtual function <code>PThread::Main()</code> on a
    process.
  */
 class PProcess : public PThread
@@ -261,7 +261,7 @@ class PProcess : public PThread
        a programme only has access to a single process, its own.
 
        @return
-       #EqualTo# if the two process object have the same name.
+       <code>EqualTo</code> if the two process object have the same name.
      */
     Comparison Compare(
       const PObject & obj   ///< Other process to compare against.
@@ -332,10 +332,10 @@ class PProcess : public PThread
     );
 
     /**Determine if the current processes object instance has been initialised.
-       If this returns PTrue it is safe to use the PProcess::Current() function.
+       If this returns true it is safe to use the PProcess::Current() function.
        
        @return
-       PTrue if process class has been initialised.
+       true if process class has been initialised.
      */
     static PBoolean IsInitialised();
 
@@ -370,7 +370,7 @@ class PProcess : public PThread
 
     /**Get the name of the manufacturer of the software. This is used in the
        default "About" dialog box and for determining the location of the
-       configuration information as used by the #PConfig# class.
+       configuration information as used by the <code>PConfig</code> class.
 
        The default for this information is the empty string.
     
@@ -381,7 +381,7 @@ class PProcess : public PThread
 
     /**Get the name of the process. This is used in the
        default "About" dialog box and for determining the location of the
-       configuration information as used by the #PConfig# class.
+       configuration information as used by the <code>PConfig</code> class.
 
        The default is the title part of the executable image file.
 
@@ -392,11 +392,11 @@ class PProcess : public PThread
 
     /**Get the version of the software. This is used in the default "About"
        dialog box and for determining the location of the configuration
-       information as used by the #PConfig# class.
+       information as used by the <code>PConfig</code> class.
 
-       If the #full# parameter is PTrue then a version string
+       If the <code>full</code> parameter is true then a version string
        built from the major, minor, status and build veriosn codes is
-       returned. If PFalse then only the major and minor versions are
+       returned. If false then only the major and minor versions are
        returned.
 
        The default for this information is "1.0".
@@ -405,7 +405,7 @@ class PProcess : public PThread
        string for the version eg "1.0b3".
      */
     virtual PString GetVersion(
-      PBoolean full = PTrue ///< PTrue for full version, PFalse for short version.
+      PBoolean full = true ///< true for full version, false for short version.
     ) const;
 
     /**Get the processes executable image file path.
@@ -457,12 +457,12 @@ class PProcess : public PThread
        meaningful for all platforms.
 
        @return
-       PTrue if processes owner changed. The most common reason for failure is
+       true if processes owner changed. The most common reason for failure is
        that the process does not have the privilege to change the effective user.
       */
     PBoolean SetUserName(
       const PString & username, ///< New user name or uid
-      PBoolean permanent = PFalse    ///< Flag for if effective or real user
+      PBoolean permanent = false    ///< Flag for if effective or real user
     );
 
     /**Get the effective group name of the owner of the process, eg "root" etc.
@@ -495,13 +495,13 @@ class PProcess : public PThread
        meaningful for all platforms.
 
        @return
-       PTrue if processes group changed. The most common reason for failure is
+       true if processes group changed. The most common reason for failure is
        that the process does not have the privilege to change the effective
        group.
       */
     PBoolean SetGroupName(
       const PString & groupname, ///< New group name or gid
-      PBoolean permanent = PFalse     ///< Flag for if effective or real group
+      PBoolean permanent = false     ///< Flag for if effective or real group
     );
 
     /**Get the maximum file handle value for the process.
@@ -519,7 +519,7 @@ class PProcess : public PThread
        For some platforms this is meaningless.
 
        @return
-       PTrue if successfully set the maximum file hadles.
+       true if successfully set the maximum file hadles.
       */
     PBoolean SetMaxHandles(
       int newLimit  ///< New limit on file handles
@@ -609,7 +609,7 @@ class PProcess : public PThread
     PTimerList * GetTimerList();
 
     /**Internal initialisation function called directly from
-       #InternalMain()#. The user should never call this function.
+       <code>InternalMain()</code>. The user should never call this function.
      */
     void PreInitialise(
       int argc,     // Number of program arguments.
@@ -618,7 +618,7 @@ class PProcess : public PThread
     );
 
     /**Internal shutdown function called directly from the ~PProcess
-       #InternalMain()#. The user should never call this function.
+       <code>InternalMain()</code>. The user should never call this function.
      */
     static void PreShutdown();
     static void PostShutdown();

@@ -151,14 +151,14 @@ class PSTUNClient : public PNatMethod
        guarantee an up to date value.
       */
     NatTypes GetNatType(
-      PBoolean force = PFalse    ///< Force a new check
+      PBoolean force = false    ///< Force a new check
     );
 
     /**Determine via the STUN protocol the NAT type for the router.
        As for GetNatType() but returns an English string for the type.
       */
     PString GetNatTypeName(
-      PBoolean force = PFalse    ///< Force a new check
+      PBoolean force = false    ///< Force a new check
     ) { return GetNatTypeString(GetNatType(force)); }
 
     /**Get NatTypes enumeration as an English string for the type.
@@ -171,7 +171,7 @@ class PSTUNClient : public PNatMethod
       Use the force variable to guarantee an up to date test
       */
     RTPSupportTypes GetRTPSupport(
-      PBoolean force = PFalse    ///< Force a new check
+      PBoolean force = false    ///< Force a new check
     );
 
     /**Determine the external router address.
@@ -208,7 +208,7 @@ class PSTUNClient : public PNatMethod
        sure the socket is deleted to avoid memory leaks.
 
        The socket pointer is set to NULL if the function fails and returns
-       PFalse.
+       false.
       */
     PBoolean CreateSocket(
       PUDPSocket * & socket,
@@ -227,7 +227,7 @@ class PSTUNClient : public PNatMethod
        sure the sockets are deleted to avoid memory leaks.
 
        The socket pointers are set to NULL if the function fails and returns
-       PFalse.
+       false.
       */
     virtual PBoolean CreateSocketPair(
       PUDPSocket * & socket1,

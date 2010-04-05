@@ -83,7 +83,7 @@ namespace XMPP
       PCLASSINFO(StreamHandler, BaseStreamHandler);
 
     public:
-      StreamHandler(const JID& jid, const PString& pwd, PBoolean newAccount = PFalse);
+      StreamHandler(const JID& jid, const PString& pwd, PBoolean newAccount = false);
       ~StreamHandler();
 
       virtual PBoolean IsEstablished() const        { return m_State == Established; }
@@ -140,14 +140,15 @@ namespace XMPP
           pointer to a XMPP::IQ)
        */
       virtual PBoolean DiscoverItems(
-                    const PString& jid,           ///< JID to which a query will be send
-                    PNotifier * responseHandler,
-                    const PString& node = PString::Empty()); ///< Optional node
-
+        const PString& jid,           ///< JID to which a query will be send
+        PNotifier * responseHandler,  ///< Handler function for responses
+        const PString& node = PString::Empty() ///< Optional node
+      );
       virtual PBoolean DiscoverInfo(
-                    const PString& jid,           ///< JID to which a query will be send
-                    PNotifier * responseHandler,
-                    const PString& node = PString::Empty()); ///< Optional node
+        const PString& jid,           ///< JID to which a query will be send
+        PNotifier * responseHandler,  ///< Handler function for responses
+        const PString& node = PString::Empty() ///< Optional node
+      );
 
     protected:
       virtual void    OnOpen(Stream& stream, INT);

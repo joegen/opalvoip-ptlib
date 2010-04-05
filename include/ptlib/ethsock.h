@@ -140,7 +140,7 @@ class PEthSocket : public PSocket
     /**Close the channel, shutting down the link to the data source.
 
        @return
-       PTrue if the channel successfully closed.
+       true if the channel successfully closed.
      */
     virtual PBoolean Close();
 
@@ -150,11 +150,11 @@ class PEthSocket : public PSocket
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -167,10 +167,10 @@ class PEthSocket : public PSocket
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue if at least len bytes were written to the channel.
+       true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -185,7 +185,7 @@ class PEthSocket : public PSocket
        the interface that has the specified MAC address.
 
        @return
-       PTrue if the channel was successfully connected to the interface.
+       true if the channel was successfully connected to the interface.
      */
     virtual PBoolean Connect(
       const PString & address   ///< Name of interface to connect to.
@@ -195,7 +195,7 @@ class PEthSocket : public PSocket
        connected to an interface using Connect() to do I/O on the socket.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
@@ -209,13 +209,13 @@ class PEthSocket : public PSocket
   //@{
     /**Enumerate all the interfaces that are capable of being accessed at the
        ethernet level. Begin with index 0, and increment until the function
-       returns PFalse. The name string returned can be passed, unchanged, to
+       returns false. The name string returned can be passed, unchanged, to
        the Connect() function.
 
        Note that the driver does not need to be open for this function to work.
 
        @return
-       PTrue if an interface has the index supplied.
+       true if an interface has the index supplied.
      */
     PBoolean EnumInterfaces(
       PINDEX idx,      ///< Index of interface
@@ -226,7 +226,7 @@ class PEthSocket : public PSocket
     /**Get the low level MAC address of the open interface.
 
        @return
-       PTrue if the address is returned, PFalse on error.
+       true if the address is returned, false on error.
      */
     PBoolean GetAddress(
       Address & addr   ///< Variable to receive the MAC address.
@@ -235,7 +235,7 @@ class PEthSocket : public PSocket
     /**Get the prime IP number bound to the open interface.
 
        @return
-       PTrue if the address is returned, PFalse on error.
+       true if the address is returned, false on error.
      */
     PBoolean GetIpAddress(
       PIPSocket::Address & addr     ///< Variable to receive the IP address.
@@ -245,7 +245,7 @@ class PEthSocket : public PSocket
        This also returns the net mask associated with the open interface.
 
        @return
-       PTrue if the address is returned, PFalse on error.
+       true if the address is returned, false on error.
      */
     PBoolean GetIpAddress(
       PIPSocket::Address & addr,    ///< Variable to receive the IP address.
@@ -255,10 +255,10 @@ class PEthSocket : public PSocket
     /**Enumerate all of the IP addresses and net masks bound to the open
        interface. This allows all the addresses to be found on multi-homed
        hosts. Begin with index 0 and increment until the function returns
-       PFalse to enumerate all the addresses.
+       false to enumerate all the addresses.
 
        @return
-       PTrue if the address is returned, PFalse on error or if there are no more
+       true if the address is returned, false on error or if there are no more
        addresses bound to the interface.
      */
     PBoolean EnumIpAddress(
@@ -351,7 +351,7 @@ class PEthSocket : public PSocket
        A value of zero for the filter mask is useless and will assert.
 
        @return
-       PTrue if the address is returned, PFalse on error.
+       true if the address is returned, false on error.
      */
     PBoolean SetFilter(
       unsigned mask,       ///< Bits for filtering on address
@@ -371,7 +371,7 @@ class PEthSocket : public PSocket
        and 802.3 ethernet frames.
 
        @return
-       PTrue if the packet read, PFalse on error.
+       true if the packet read, false on error.
      */
     PBoolean ReadPacket(
       PBYTEArray & buffer,  ///< Buffer to receive the raw packet
@@ -379,7 +379,7 @@ class PEthSocket : public PSocket
       Address & src,        ///< Source address of packet
       WORD & type,          ///< Packet frame type ID
       PINDEX & len,         ///< Length of payload
-      BYTE * & payload      ///< Pointer into #buffer# of payload.
+      BYTE * & payload      ///< Pointer into <code>buffer</code> of payload.
     );
   //@}
 

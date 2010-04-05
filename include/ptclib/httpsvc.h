@@ -373,7 +373,7 @@ class PServiceMacro : public PObject
 #define PCREATE_SERVICE_MACRO(name, request, args) \
   class PServiceMacro_##name : public PServiceMacro { \
     public: \
-      PServiceMacro_##name() : PServiceMacro(#name, PFalse) { } \
+      PServiceMacro_##name() : PServiceMacro(#name, false) { } \
       PString Translate(PHTTPRequest &, const PString &, const PString &) const; \
   }; \
   static const PServiceMacro_##name serviceMacro_##name; \
@@ -384,7 +384,7 @@ class PServiceMacro : public PObject
 #define PCREATE_SERVICE_MACRO_BLOCK(name, request, args, block) \
   class PServiceMacro_##name : public PServiceMacro { \
     public: \
-      PServiceMacro_##name() : PServiceMacro(#name, PTrue) { } \
+      PServiceMacro_##name() : PServiceMacro(#name, true) { } \
       PString Translate(PHTTPRequest &, const PString &, const PString &) const; \
   }; \
   static const PServiceMacro_##name serviceMacro_##name; \
@@ -426,15 +426,15 @@ class PServiceHTTPFile : public PHTTPFile
 {
   PCLASSINFO(PServiceHTTPFile, PHTTPFile)
   public:
-    PServiceHTTPFile(const PString & filename, PBoolean needSig = PFalse)
+    PServiceHTTPFile(const PString & filename, PBoolean needSig = false)
       : PHTTPFile(filename) { needSignature = needSig; }
-    PServiceHTTPFile(const PString & filename, const PFilePath & file, PBoolean needSig = PFalse)
+    PServiceHTTPFile(const PString & filename, const PFilePath & file, PBoolean needSig = false)
       : PHTTPFile(filename, file) { needSignature = needSig; }
-    PServiceHTTPFile(const PString & filename, const PString & file, PBoolean needSig = PFalse)
+    PServiceHTTPFile(const PString & filename, const PString & file, PBoolean needSig = false)
       : PHTTPFile(filename, file) { needSignature = needSig; }
-    PServiceHTTPFile(const PString & filename, const PHTTPAuthority & auth, PBoolean needSig = PFalse)
+    PServiceHTTPFile(const PString & filename, const PHTTPAuthority & auth, PBoolean needSig = false)
       : PHTTPFile(filename, auth) { needSignature = needSig; }
-    PServiceHTTPFile(const PString & filename, const PFilePath & file, const PHTTPAuthority & auth, PBoolean needSig = PFalse)
+    PServiceHTTPFile(const PString & filename, const PFilePath & file, const PHTTPAuthority & auth, PBoolean needSig = false)
       : PHTTPFile(filename, file, auth) { needSignature = needSig; }
 
     void OnLoadedText(PHTTPRequest &, PString & text);
@@ -451,10 +451,10 @@ class PServiceHTTPDirectory : public PHTTPDirectory
 {
   PCLASSINFO(PServiceHTTPDirectory, PHTTPDirectory)
   public:
-    PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, PBoolean needSig = PFalse)
+    PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, PBoolean needSig = false)
       : PHTTPDirectory(url, dirname) { needSignature = needSig; }
 
-    PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, const PHTTPAuthority & auth, PBoolean needSig = PFalse)
+    PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, const PHTTPAuthority & auth, PBoolean needSig = false)
       : PHTTPDirectory(url, dirname, auth) { needSignature = needSig; }
 
     void OnLoadedText(PHTTPRequest &, PString & text);

@@ -105,7 +105,7 @@ class PPluginManager : public PObject
 
     void AddNotifier(
       const PNotifier & filterFunction,
-      PBoolean existing = PFalse
+      PBoolean existing = false
     );
 
     void RemoveNotifier(
@@ -140,7 +140,7 @@ class PPluginModuleManager : public PObject
     PPluginModuleManager(const char * signatureFunctionName, PPluginManager * pluginMgr = NULL);
 
     PBoolean LoadPlugin(const PString & fileName)
-    { if (pluginMgr == NULL) return PFalse; else return pluginMgr->LoadPlugin(fileName); }
+    { if (pluginMgr == NULL) return false; else return pluginMgr->LoadPlugin(fileName); }
 
     void LoadPluginDirectory(const PDirectory &directory)
     { if (pluginMgr != NULL) pluginMgr->LoadPluginDirectory(directory); }

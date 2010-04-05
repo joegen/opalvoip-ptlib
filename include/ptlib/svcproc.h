@@ -68,11 +68,11 @@ class PServiceProcess : public PProcess
   /**@name Callback functions */
   //@{
     /** Called when the service is started. This typically initialises the
-       service and returns PTrue if the service is ready to run. The
-       #Main()# function is then executed.
+       service and returns true if the service is ready to run. The
+       <code>Main()</code> function is then executed.
 
        @return
-       PTrue if service may start, PFalse if an initialisation failure occurred.
+       true if service may start, false if an initialisation failure occurred.
      */
     virtual PBoolean OnStart() = 0;
 
@@ -88,7 +88,7 @@ class PServiceProcess : public PProcess
        the service.
 
        @return
-       PTrue if the service was successfully paused.
+       true if the service was successfully paused.
      */
     virtual PBoolean OnPause();
 
@@ -114,10 +114,10 @@ class PServiceProcess : public PProcess
     /** Set the level at which errors are logged. Only messages higher than or
        equal to the specified level will be logged.
     
-       The default is #LogError# allowing fatal errors and ordinary\
+       The default is PSystemLog::Error allowing fatal errors and ordinary\
        errors to be logged and warning and information to be ignored.
 
-       If in debug mode then the default is #LogInfo# allowing all
+       If in debug mode then the default is PSystemLog::Info allowing all
        messages to be displayed.
      */
     void SetLogLevel(
@@ -134,7 +134,7 @@ class PServiceProcess : public PProcess
 
 
     /* Internal initialisation function called directly from
-       #main()#. The user should never call this function.
+       <code>main()</code>. The user should never call this function.
      */
     virtual int InternalMain(void * arg = NULL);
 

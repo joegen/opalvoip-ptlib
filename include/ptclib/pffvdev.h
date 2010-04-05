@@ -69,7 +69,7 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
       */
     PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Determine of the device is currently open.
@@ -174,7 +174,7 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
-       PFalse.
+       false.
     */
     virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   /// Variable to receive minimum width
@@ -198,7 +198,7 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual PBoolean TestAllFormats()
-      { return PTrue; }
+      { return true; }
 
  protected:
    unsigned       m_ffmpegFrameWidth;

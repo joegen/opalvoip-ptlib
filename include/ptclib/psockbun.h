@@ -101,18 +101,19 @@ class PInterfaceMonitor : public PProcessStartup
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
     PStringArray GetInterfaces(
-      bool includeLoopBack = false,  /// Flag for if loopback is to included in list
+      bool includeLoopBack = false,  ///< Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+                          ///< Optional destination for selecting specific interface
     );
 
     /** Returns whether destination is reachable through binding or not.
         The default behaviour returns true unless there is an interface
-        filter installed an the filter does not return 'binding' among
+        filter installed an the filter does not return <code>binding</code> among
         it's interfaces.
       */
     bool IsValidBindingForDestination(
-      const PIPSocket::Address & binding,
-      const PIPSocket::Address & destination
+      const PIPSocket::Address & binding,     ///< Interface binding to test
+      const PIPSocket::Address & destination  ///< Destination to test against the <code>binding</code>
     );
 
     /** Return information about an active interface given the descriptor
@@ -120,8 +121,8 @@ class PInterfaceMonitor : public PProcessStartup
        e.g. "10.0.1.11" or "%eth0" may be used.
       */
     bool GetInterfaceInfo(
-      const PString & iface,  /// Interface desciptor name
-      InterfaceEntry & info   /// Information on the interface
+      const PString & iface,  ///< Interface desciptor name
+      InterfaceEntry & info   ///< Information on the interface
     ) const;
     
     /** Returns whether the descriptor string equals the interface entry.
@@ -129,8 +130,8 @@ class PInterfaceMonitor : public PProcessStartup
         e.g. "10.0.1.11" or "%eth0" may be used.
       */
     static bool IsMatchingInterface(
-      const PString & iface,        /// Interface descriptor
-      const InterfaceEntry & entry  /// Interface entry
+      const PString & iface,        ///< Interface descriptor
+      const InterfaceEntry & entry  ///< Interface entry
     );
     
     /** Sets the monitor's interface filter. Note that the monitor instance
@@ -200,8 +201,9 @@ class PInterfaceMonitorClient : public PSafeObject
         before returning it.
       */
     virtual PStringArray GetInterfaces(
-      bool includeLoopBack = false,  /// Flag for if loopback is to included in list
-      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny() /// destination
+      bool includeLoopBack = false,  ///< Flag for if loopback is to included in list
+      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+                          ///< Optional destination for selecting specific interface
     );
 
     /** Return information about an active interface given the descriptor
@@ -209,8 +211,8 @@ class PInterfaceMonitorClient : public PSafeObject
        e.g. "10.0.1.11" or "%eth0" may be used.
       */
     virtual PBoolean GetInterfaceInfo(
-      const PString & iface,  /// Interface desciptor name
-      InterfaceEntry & info   /// Information on the interface
+      const PString & iface,  ///< Interface desciptor name
+      InterfaceEntry & info   ///< Information on the interface
     ) const;
     
     /**Returns the priority of this client. A higher value means higher priority.
@@ -284,10 +286,10 @@ class PMonitoredSockets : public PInterfaceMonitorClient
 
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
-      const PString & iface,        /// Interface to get address for
-      PIPSocket::Address & address, /// Address of interface
-      WORD & port,                  /// Port listening on
-      PBoolean usingNAT                 /// Require NAT address/port
+      const PString & iface,        ///< Interface to get address for
+      PIPSocket::Address & address, ///< Address of interface
+      WORD & port,                  ///< Port listening on
+      PBoolean usingNAT             ///< Require NAT address/port
     ) const = 0;
 
     /** Write to the remote address/port using the socket(s) available. If the
@@ -296,12 +298,12 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         to write the data to.
       */
     virtual PChannel::Errors WriteToBundle(
-      const void * buffer,              /// Data to write
-      PINDEX length,                    /// Length of data
-      const PIPSocket::Address & addr,  /// Remote IP address to write to
-      WORD port,                        /// Remote port to write to
-      const PString & iface,            /// Interface to use for writing
-      PINDEX & lastWriteCount
+      const void * buffer,              ///< Data to write
+      PINDEX length,                    ///< Length of data
+      const PIPSocket::Address & addr,  ///< Remote IP address to write to
+      WORD port,                        ///< Remote port to write to
+      const PString & iface,            ///< Interface to use for writing
+      PINDEX & lastWriteCount           ///< Number of bytes written
     ) = 0;
 
     /** Read fram a remote address/port using the socket(s) available. If the
@@ -311,13 +313,13 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         to read the data from.
       */
     virtual PChannel::Errors ReadFromBundle(
-      void * buffer,                /// Data to read
-      PINDEX length,                /// Maximum length of data
-      PIPSocket::Address & addr,    /// Remote IP address data came from
-      WORD & port,                  /// Remote port data came from
-      PString & iface,              /// Interface to use for read, also one data was read on
-      PINDEX & lastReadCount,       /// Actual length of data read
-      const PTimeInterval & timeout /// Time to wait for data
+      void * buffer,                ///< Data to read
+      PINDEX length,                ///< Maximum length of data
+      PIPSocket::Address & addr,    ///< Remote IP address data came from
+      WORD & port,                  ///< Remote port data came from
+      PString & iface,              ///< Interface to use for read, also one data was read on
+      PINDEX & lastReadCount,       ///< Actual length of data read
+      const PTimeInterval & timeout ///< Time to wait for data
     ) = 0;
 
     /// Set the NAT method, eg STUN client pointer
@@ -334,9 +336,9 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         of PMonitoredSockets depending on teh iface parameter.
       */
     static PMonitoredSockets * Create(
-      const PString & iface,            /// Interface name to create socket for
-      bool reuseAddr = false,           /// Re-use or exclusive port number
-      PNatMethod * natMethod = NULL     /// NAT method
+      const PString & iface,            ///< Interface name to create socket for
+      bool reuseAddr = false,           ///< Re-use or exclusive port number
+      PNatMethod * natMethod = NULL     ///< NAT method
     );
 
   protected:
@@ -417,8 +419,8 @@ class PMonitoredSocketChannel : public PChannel
   //@{
     /// Construct a monitored socket bundle channel
     PMonitoredSocketChannel(
-      const PMonitoredSocketsPtr & sockets,  /// Monitored socket bundle to use in channel
-      bool shared                            /// Monitored socket is shared by other channels
+      const PMonitoredSocketsPtr & sockets,  ///< Monitored socket bundle to use in channel
+      bool shared                            ///< Monitored socket is shared by other channels
     );
   //@}
 
@@ -434,9 +436,9 @@ class PMonitoredSocketChannel : public PChannel
       PINDEX length
     );
 
-    virtual PBoolean Write(
     /** Override of PChannel functions to allow connectionless writes
      */
+    virtual PBoolean Write(
       const void * buffer,
       PINDEX length
     );
@@ -448,7 +450,7 @@ class PMonitoredSocketChannel : public PChannel
         The iface parameter can be a partial descriptor eg "%eth0".
       */
     void SetInterface(
-      const PString & iface   /// Interface descriptor
+      const PString & iface   ///< Interface descriptor
     );
 
     /// Get the current interface descriptor being used/
@@ -457,26 +459,26 @@ class PMonitoredSocketChannel : public PChannel
     /** Get the local IP address and port for the currently selected interface.
       */
     bool GetLocal(
-      PIPSocket::Address & address, /// IP address of local interface
-      WORD & port,                  /// Port listening on
-      bool usingNAT                 /// Require NAT address/port
+      PIPSocket::Address & address, ///< IP address of local interface
+      WORD & port,                  ///< Port listening on
+      bool usingNAT                 ///< Require NAT address/port
     );
 
     /// Set the remote address/port for all Write() functions
     void SetRemote(
-      const PIPSocket::Address & address, /// Remote IP address
-      WORD port                           /// Remote port number
+      const PIPSocket::Address & address, ///< Remote IP address
+      WORD port                           ///< Remote port number
     );
 
     /// Set the remote address/port for all Write() functions
     void SetRemote(
-      const PString & hostAndPort /// String of the form host[:port]
+      const PString & hostAndPort ///< String of the form host[:port]
     );
 
     /// Get the current remote address/port for all Write() functions
     void GetRemote(
-      PIPSocket::Address & addr,  /// Remote IP address
-      WORD & port                 /// Remote port number
+      PIPSocket::Address & addr,  ///< Remote IP address
+      WORD & port                 ///< Remote port number
     ) const { addr = remoteAddress; port = remotePort; }
 
     /** Set flag for receiving UDP data from any remote address. If the flag
@@ -484,7 +486,7 @@ class PMonitoredSocketChannel : public PChannel
         remote address and port is ignored.
       */
     void SetPromiscuous(
-      bool flag   /// New flag
+      bool flag   ///< New flag
     ) { promiscuousReads = flag; }
 
     /// Get flag for receiving UDP data from any remote address
@@ -492,8 +494,8 @@ class PMonitoredSocketChannel : public PChannel
 
     /// Get the IP address and port of the last received UDP data.
     void GetLastReceived(
-      PIPSocket::Address & addr,  /// Remote IP address
-      WORD & port                 /// Remote port number
+      PIPSocket::Address & addr,  ///< Remote IP address
+      WORD & port                 ///< Remote port number
     ) const { addr = lastReceivedAddress; port = lastReceivedPort; }
 
     /// Get the interface the last received UDP data was recieved on.
@@ -548,10 +550,10 @@ class PMonitoredSocketBundle : public PMonitoredSockets
 
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
-      const PString & iface,        /// Interface to get address for
-      PIPSocket::Address & address, /// Address of interface
-      WORD & port,                  /// Port listening on
-      PBoolean usingNAT                 /// Require NAT address/port
+      const PString & iface,        ///< Interface to get address for
+      PIPSocket::Address & address, ///< Address of interface
+      WORD & port,                  ///< Port listening on
+      PBoolean usingNAT             ///< Require NAT address/port
     ) const;
 
     /** Write to the remote address/port using the socket(s) available. If the
@@ -622,8 +624,9 @@ class PSingleMonitoredSocket : public PMonitoredSockets
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
     virtual PStringArray GetInterfaces(
-      PBoolean includeLoopBack = false,  /// Flag for if loopback is to included in list
+      bool includeLoopBack = false,  ///< Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+                          ///< Optional destination for selecting specific interface
     );
 
     /** Open the socket(s) using the specified port. If port is zero then a
@@ -641,10 +644,10 @@ class PSingleMonitoredSocket : public PMonitoredSockets
 
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
-      const PString & iface,        /// Interface to get address for
-      PIPSocket::Address & address, /// Address of interface
-      WORD & port,                  /// Port listening on
-      PBoolean usingNAT                 /// Require NAT address/port
+      const PString & iface,        ///< Interface to get address for
+      PIPSocket::Address & address, ///< Address of interface
+      WORD & port,                  ///< Port listening on
+      PBoolean usingNAT             ///< Require NAT address/port
     ) const;
 
     /** Write to the remote address/port using the socket(s) available. If the

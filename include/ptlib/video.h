@@ -69,8 +69,8 @@ class PVideoChannel : public PChannel
         Create a reference to the video drivers for the platform.
       */
     PVideoChannel(
-      const PString & device,       /// Name of video driver/device
-      Directions dir               /// Video I/O direction
+      const PString & device,   ///< Name of video driver/device
+      Directions dir            ///< Video I/O direction
     );
     // 
 
@@ -84,11 +84,11 @@ class PVideoChannel : public PChannel
        platform specific and is as returned in the GetDevices() function.
 
        @return
-       PTrue if the video device is valid for playing/recording.
+       true if the video device is valid for playing/recording.
      */
     PBoolean Open(
-      const PString & device,       /// Name of video driver/device
-      Directions dir               /// Video I/O direction
+      const PString & device,   ///< Name of video driver/device
+      Directions dir            ///< Video I/O direction
     );
 
     /** return True if one (or both) of the video device class pointers
@@ -99,19 +99,19 @@ class PVideoChannel : public PChannel
     
     /**Get all of the names for video devices/drivers that are available on
        this platform. Note that a named device may not necessarily do both
-       playing and recording so the arrays returned with the #dir#
+       playing and recording so the arrays returned with the <code>dir</code>
        parameter in each value is not necessarily the same.
 
        @return
        An array of platform dependent strings for each video player/recorder.
      */
     static PStringArray GetDeviceNames(
-      Directions dir    // Video I/O direction
+      Directions dir    ///< Video I/O direction
     )  ;
 
     /**Get the name for the default video devices/driver that is on this
        platform. Note that a named device may not necessarily do both
-       playing and recording so the arrays returned with the #dir#
+       playing and recording so the arrays returned with the <code>dir</code>
        parameter in each value is not necessarily the same.
 
        @return
@@ -173,7 +173,7 @@ class PVideoChannel : public PChannel
        If keepCurrent is false, the existing video player is deleted before attaching
        the new player.
      */
-    virtual void AttachVideoPlayer(PVideoOutputDevice * device, PBoolean keepCurrent = PTrue);
+    virtual void AttachVideoPlayer(PVideoOutputDevice * device, PBoolean keepCurrent = true);
 
     /**Attach a user specific class for acquiring video 
 
@@ -183,7 +183,7 @@ class PVideoChannel : public PChannel
        If keepCurrent is false, the existing video reader is deleted before attaching
        the new reader.
      */
-    virtual void AttachVideoReader(PVideoInputDevice * device, PBoolean keepCurrent = PTrue);
+    virtual void AttachVideoReader(PVideoInputDevice * device, PBoolean keepCurrent = true);
 
     /**Return a pointer to the class for acquiring video 
      */

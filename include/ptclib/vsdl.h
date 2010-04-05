@@ -62,7 +62,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     */
     virtual PBoolean Open(
       const PString & /*deviceName*/,   ///< Device name to open
-      PBoolean /*startImmediate*/ = PTrue    ///< Immediately start device
+      PBoolean /*startImmediate*/ = true    ///< Immediately start device
     );
   
     /**Synonymous with the destructor.
@@ -74,14 +74,14 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     virtual PBoolean IsOpen();
   
     /**Set the colour format to be used.
-       Note that this function does not do any conversion. If it returns PTrue
+       Note that this function does not do any conversion. If it returns true
        then the video device does the colour format in native mode.
 
        To utilise an internal converter use the SetColourFormatConverter()
        function.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetColourFormat(
       const PString & colourFormat ///< New colour format for device.
@@ -93,7 +93,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
@@ -115,7 +115,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
       unsigned width,
       unsigned height,
       const BYTE * data,
-      PBoolean endFrame = PTrue
+      PBoolean endFrame = true
     );
 
   protected:

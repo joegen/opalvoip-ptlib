@@ -178,7 +178,7 @@ class PAtomicInteger
       * is a non-atomic test - use the return value of the operator++() or
       * operator--() tests to perform atomic operations
       *
-      * @return PTrue if the integer has a value of zero
+      * @return true if the integer has a value of zero
       */
     __inline bool IsZero() const { return m_value == 0; }
 

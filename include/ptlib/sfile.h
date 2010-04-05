@@ -59,7 +59,7 @@ class PStructuredFile : public PFile
   //@{
     /**Create a structured file object but do not open it. It does not
        initially have a valid file name. However, an attempt to open the file
-       using the #PFile::Open()# function will generate a unique
+       using the <code>PFile::Open()</code> function will generate a unique
        temporary file.
        
        The initial structure size is one byte.
@@ -71,24 +71,24 @@ class PStructuredFile : public PFile
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The #PChannel::IsOpen()# function may be used after object
+       The <code>PChannel::IsOpen()</code> function may be used after object
        construction to determine if the file was successfully opened.
      */
     PStructuredFile(
       OpenMode mode,          ///< Mode in which to open the file.
-      int opts = ModeDefault  ///< #OpenOptions enum# for open operation.
+      int opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
     );
       
     /**Create a structured file object with the specified name and open it in
        the specified mode and with the specified options.
 
-       The #PChannel::IsOpen()# function may be used after object
+       The <code>PChannel::IsOpen()</code> function may be used after object
        construction to determine if the file was successfully opened.
      */
     PStructuredFile(
       const PFilePath & name,    ///< Name of file to open.
       OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-      int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
+      int opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
     );
   //@}
 
@@ -96,10 +96,10 @@ class PStructuredFile : public PFile
   //@{
     /**Read a sequence of bytes into the specified buffer, translating the
        structure according to the specification made in the
-       #SetStructure()# function.
+       <code>SetStructure()</code> function.
 
        @return
-       PTrue if the structure was successfully read.
+       true if the structure was successfully read.
      */
     PBoolean Read(
       void * buffer   ///< Pointer to structure to receive data.
@@ -107,10 +107,10 @@ class PStructuredFile : public PFile
       
     /**Write a sequence of bytes into the specified buffer, translating the
        structure according to the specification made in the
-       #SetStructure()# function.
+       <code>SetStructure()</code> function.
 
        @return
-       PTrue if the structure was successfully written.
+       true if the structure was successfully written.
      */
     PBoolean Write(
       const void * buffer   ///< Pointer to structure to write data from.

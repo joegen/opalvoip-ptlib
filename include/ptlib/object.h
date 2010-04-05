@@ -179,27 +179,27 @@ inline bool PAssertFuncInline(bool b, const char * file, int line, const char * 
   return b;
 }
 
-/** This macro is used to assert that a condition must be PTrue.
-If the condition is PFalse then an assert function is called with the source
+/** This macro is used to assert that a condition must be true.
+If the condition is false then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message described
-by the #msg parameter. This parameter may be either a standard value
-from the #PStandardAssertMessage enum or a literal string.
+by the <code>msg</code> parameter. This parameter may be either a standard value
+from the <code>PStandardAssertMessage</code> enum or a literal string.
 */
-#define PAssert(b, m) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,(m))
+#define PAssert(b, msg) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,(msg))
 
-/** This macro is used to assert that a condition must be PTrue.
-If the condition is PFalse then an assert function is called with the source
+/** This macro is used to assert that a condition must be true.
+If the condition is false then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message described
-by the #msg parameter. This parameter may be either a standard value
-from the #PStandardAssertMessage enum or a literal string.
-The #c parameter specifies the class name that the error occurred in
+by the <code>msg</code> parameter. This parameter may be either a standard value
+from the <code>PStandardAssertMessage</code> enum or a literal string.
+The <code>cls</code> parameter specifies the class name that the error occurred in
 */
-#define PAssert2(b, c, m) PAssertFuncInline((b), __FILE__,__LINE__,(c),(m))
+#define PAssert2(b, cls, msg) PAssertFuncInline((b), __FILE__,__LINE__,(cls),(msg))
 
 /** This macro is used to assert that an operating system call succeeds.
-If the condition is PFalse then an assert function is called with the source
+If the condition is false then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message
-described by the #POperatingSystemError value in the #PStandardAssertMessage
+described by the <code>POperatingSystemError</code> value in the <code>PStandardAssertMessage</code>
 enum.
  */
 #define PAssertOS(b) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,POperatingSystemError)
@@ -207,30 +207,30 @@ enum.
 /** This macro is used to assert that a pointer must be non-null.
 If the pointer is NULL then an assert function is called with the source file
 and line number the macro was instantiated on, plus the message described by
-the PNullPointerReference value in the #PStandardAssertMessage enum.
+the PNullPointerReference value in the <code>PStandardAssertMessage</code> enum.
 
-Note that this evaluates the expression defined by #ptr twice. To
+Note that this evaluates the expression defined by <code>ptr</code> twice. To
 prevent incorrect behaviour with this, the macro will assume that the
-#ptr parameter is an L-Value.
+<code>ptr</code> parameter is an L-Value.
  */
-#define PAssertNULL(p) (((p)!=NULL)?(p): \
-                     (PAssertFunc(__FILE__,__LINE__, __CLASS__, PNullPointerReference),(p)))
+#define PAssertNULL(ptr) (((ptr)!=NULL)?(ptr): \
+                     (PAssertFunc(__FILE__,__LINE__, __CLASS__, PNullPointerReference),(ptr)))
 
 /** This macro is used to assert immediately.
 The assert function is called with the source file and line number the macro
-was instantiated on, plus the message described by the #msg parameter. This
-parameter may be either a standard value from the #PStandardAssertMessage
+was instantiated on, plus the message described by the <code>msg</code> parameter. This
+parameter may be either a standard value from the <code>PStandardAssertMessage</code>
 enum or a literal string.
 */
-#define PAssertAlways(m) PAssertFunc(__FILE__,__LINE__,__CLASS__,(m))
+#define PAssertAlways(msg) PAssertFunc(__FILE__,__LINE__,__CLASS__,(msg))
 
 /** This macro is used to assert immediately.
 The assert function is called with the source file and line number the macro
-was instantiated on, plus the message described by the #msg parameter. This
-parameter may be either a standard value from the #PStandardAssertMessage
+was instantiated on, plus the message described by the <code>msg</code> parameter. This
+parameter may be either a standard value from the <code>PStandardAssertMessage</code>
 enum or a literal string.
 */
-#define PAssertAlways2(c, m) PAssertFunc(__FILE__,__LINE__,(c),(m))
+#define PAssertAlways2(cls, msg) PAssertFunc(__FILE__,__LINE__,(cls),(msg))
 
 #endif // P_USE_ASSERTS
 
@@ -242,23 +242,23 @@ and macros.
 ostream & PGetErrorStream();
 
 /** Set the stream to be used for error output.
-This stream is used for all error output using the #PError macro.
+This stream is used for all error output using the <code>PError</code> macro.
 */
 void PSetErrorStream(ostream * strm /** New stream for error output */ );
 
 /** This macro is used to access the platform specific error output stream.
-This is to be used in preference to assuming #cerr is always available. On
-Unix platforms this {\b is} #cerr but for MS-Windows this is another stream
+This is to be used in preference to assuming <code>cerr</code> is always available. On
+Unix platforms this {\b is} <code>cerr</code> but for MS-Windows this is another stream
 that uses the OutputDebugString() Windows API function. Note that a MS-DOS or
-Windows NT console application would still use #cerr.
+Windows NT console application would still use <code>cerr</code>.
 
-The #PError stream would normally only be used for debugging information as
+The <code>PError</code> stream would normally only be used for debugging information as
 a suitable display is not always available in windowed environments.
    
-The macro is a wrapper for a global variable #PErrorStream which is a pointer
-to an #ostream. The variable is initialised to #cerr for all but MS-Windows
-and NT GUI applications. An application could change this pointer to a
-#ofstream variable of #PError output is wished to be redirected to a file.
+The macro is a wrapper for a global variable error stream. The internal variable
+is initialised to <i>std::cerr</i> for all but MS-Windows and NT GUI applications.
+An application could change this pointer to a <i>std::ofstream</i> variable of
+#PError output is wished to be redirected to a file.
 */
 #define PError (PGetErrorStream())
 
@@ -357,7 +357,7 @@ public:
   static void SetOptions(unsigned options /** New level for trace */ );
 
   /** Clear the trace options.
-  The #PTRACE(), #PTRACE_BLOCK() and #PTRACE_LINE() macros output trace text that
+  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and <code>PTRACE_LINE()</code> macros output trace text that
   may contain assorted values. These are defined by the Options enum.
 
   Note this function AND's the complement of the bits included in the options
@@ -366,27 +366,27 @@ public:
   static void ClearOptions(unsigned options /** New level for trace */ );
 
   /** Get the current trace options.
-  The #PTRACE(), #PTRACE_BLOCK() and #PTRACE_LINE() macros output trace text that
+  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and <code>PTRACE_LINE()</code> macros output trace text that
   may contain assorted values. These are defined by the Options enum.
   */
   static unsigned GetOptions();
 
   /** Set the trace level.
-  The #PTRACE() macro checks to see if its level is equal to or lower then the
+  The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
   level set by this function. If so then the trace text is output to the trace
   stream.
   */
   static void SetLevel(unsigned level /** New level for trace */ );
 
   /** Get the trace level.
-  The #PTRACE() macro checks to see if its level is equal to or lower then the
+  The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
   level set by this function. If so then the trace text is output to the trace
   stream.
   */
   static unsigned GetLevel();
 
   /** Determine if the level may cause trace output.
-  This checks against the current global trace level set by #PSetTraceLevel
+  This checks against the current global trace level set by SetLevel()
   for if the trace output may be emitted. This is used by the PTRACE macro.
   */
   static PBoolean CanTrace(unsigned level /** Trace level to check */);
@@ -399,18 +399,18 @@ public:
 
   /** Begin a trace output.
   If the trace stream output is used outside of the provided macros, it
-  should be noted that a mutex is obtained on the call to #PBeginTrace which
+  should be noted that a mutex is obtained on the call to <code>PBeginTrace</code> which
   will prevent any other threads from using the trace stream until the
-  #PEndTrace function is called.
+  <code>PEndTrace</code> function is called.
 
   So a typical usage would be:
-  \verbatim
+  <pre><code>
     ostream & s = PTrace::Begin(3, __FILE__, __LINE__);
     s << "hello";
     if (want_there)
       s << " there";
     s << '!' << PTrace::End();
-  \endverbatim
+  </code></pre>
   */
   static ostream & Begin(
     unsigned level,         ///< Log level for output
@@ -420,19 +420,19 @@ public:
 
   /** End a trace output.
   If the trace stream output is used outside of the provided macros, the
-  #PEndTrace function must be used at the end of the section of trace
-  output. A mutex is obtained on the call to #PBeginTrace which will prevent
+  <code>PEndTrace</code> function must be used at the end of the section of trace
+  output. A mutex is obtained on the call to <code>PBeginTrace</code> which will prevent
   any other threads from using the trace stream until the PEndTrace. The
-  #PEndTrace is used in a similar manner to #::endl or #::flush.
+  <code>PEndTrace</code> is used in a similar manner to <code>::endl</code> or <code>::flush</code>.
 
   So a typical usage would be:
-  \verbatim
+  <pre><code>
     ostream & s = PTrace::Begin();
     s << "hello";
     if (want_there)
       s << " there";
     s << '!' << PTrace::End();
-  \endverbatim
+  </code></pre>
   */
   static ostream & End(ostream & strm /** Trace output stream being completed */);
 
@@ -444,7 +444,7 @@ public:
   /** Class to trace Execution blocks.
   This class is used for tracing the entry and exit of program blocks. Upon
   construction it outputs an entry trace message and on destruction outputs an
-  exit trace message. This is normally only used from in the #PTRACE_BLOCK macro.
+  exit trace message. This is normally only used from in the <code>PTRACE_BLOCK</code> macro.
   */
   class Block {
     public:
@@ -469,13 +469,13 @@ public:
 };
 
 /* Macro to conditionally declare a parameter to a function to avoid compiler
-   warning due that parameter only being used in a #PTRACE */
+   warning due that parameter only being used in a <code>PTRACE</code> */
 #define PTRACE_PARAM(param) param
 
 /** Trace an execution block.
 This macro creates a trace variable for tracking the entry and exit of program
 blocks. It creates an instance of the PTraceBlock class that will output a
-trace message at the line #PTRACE_BLOCK is called and then on exit from the
+trace message at the line <code>PTRACE_BLOCK</code> is called and then on exit from the
 scope it is defined in.
 */
 #define PTRACE_BLOCK(name) PTrace::Block __trace_block_instance(__FILE__, __LINE__, name)
@@ -491,7 +491,7 @@ This macro outputs a trace of a source file line execution.
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
 output operators. The output is only made if the trace level set by the
-#PSetTraceLevel function is greater than or equal to the #level argument.
+SetLevel() function is greater than or equal to the <code>level</code> argument.
 */
 #define PTRACE(level, args) \
     if (PTrace::CanTrace(level)) \
@@ -501,8 +501,8 @@ output operators. The output is only made if the trace level set by the
 /** Output trace on condition.
 This macro outputs a trace of any information needed, using standard stream
 output operators. The output is only made if the trace level set by the
-#PSetTraceLevel function is greater than or equal to the #level argument
-and the conditional is PTrue. Note the conditional is only evaluated if the
+SetLevel() function is greater than or equal to the <code>level</code> argument
+and the conditional is true. Note the conditional is only evaluated if the
 trace level is sufficient.
 */
 #define PTRACE_IF(level, cond, args) \
@@ -542,7 +542,7 @@ class PMemoryHeap {
 
     /** Allocate a memory block.
        This allocates a new memory block and keeps track of it. The memory
-       block is filled with the value in the #allocFillChar member variable
+       block is filled with the value in the <code>allocFillChar</code> member variable
        to help detect uninitialised structures.
        @return pointer to newly allocated memory block.
      */
@@ -554,7 +554,7 @@ class PMemoryHeap {
     );
     /** Allocate a memory block.
        This allocates a new memory block and keeps track of it. The memory
-       block is filled with the value in the #allocFillChar member variable
+       block is filled with the value in the <code>allocFillChar</code> member variable
        to help detect uninitialised structures.
        @return pointer to newly allocated memory block.
      */
@@ -567,7 +567,7 @@ class PMemoryHeap {
 
     /** Change the size of an allocated memory block.
        This allocates a new memory block and keeps track of it. The memory
-       block is filled with the value in the #allocFillChar member variable
+       block is filled with the value in the <code>allocFillChar</code> member variable
        to help detect uninitialised structures.
       @return pointer to reallocated memory block. Note this may
       {\em not} be the same as the pointer passed into the function.
@@ -582,7 +582,7 @@ class PMemoryHeap {
     /** Free a memory block.
       The memory is deallocated, a warning is displayed if it was never
       allocated. The block of memory is filled with the value in the
-      #freeFillChar member variable.
+      <code>freeFillChar</code> member variable.
      */
     static void Deallocate(
       void * ptr,             ///< Pointer to memory block to deallocate.
@@ -595,7 +595,7 @@ class PMemoryHeap {
       Ok, Bad, Trashed
     };
     /** Validate the memory pointer.
-        The #ptr parameter is validated as a currently allocated heap
+        The <code>ptr</code> parameter is validated as a currently allocated heap
         variable.
         @return Ok for pointer is in heap, Bad for pointer is not in the heap
         or Trashed if the pointer is in the heap but has overwritten the guard
@@ -609,7 +609,7 @@ class PMemoryHeap {
 
     /** Validate all objects in memory.
        This effectively calls Validate() on every object in the heap.
-        @return PTrue if every object in heap is Ok.
+        @return true if every object in heap is Ok.
      */
     static PBoolean ValidateHeap(
       ostream * error = NULL  ///< Stream to output, use default if NULL
@@ -651,7 +651,7 @@ class PMemoryHeap {
 
     /** Dump allocated objects.
        Dump ojects allocated and not deallocated since the specified object
-       number. This would be a value returned by the #GetAllocationRequest()
+       number. This would be a value returned by the <code>GetAllocationRequest()</code>
        function.
 
        Output is to the default stream.
@@ -662,7 +662,7 @@ class PMemoryHeap {
 
     /** Dump allocated objects.
        Dump ojects allocated and not deallocated since the specified object
-       number. This would be a value returned by the #GetAllocationRequest()#
+       number. This would be a value returned by the <code>GetAllocationRequest()</code>
        function.
      */
     static void DumpObjectsSince(
@@ -798,7 +798,7 @@ inline void runtime_free(void * ptr /** Memory block to free */ ) { free(ptr); }
 
 /** Override of system call for memory check system.
 This macro is used to allocate memory via the memory check system selected
-with the #PMEMORY_CHECK compile time option. It will include the source file
+with the <code>PMEMORY_CHECK</code> compile time option. It will include the source file
 and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 */
@@ -806,7 +806,7 @@ track of the memory block.
 
 /** Override of system call for memory check system.
 This macro is used to allocate memory via the memory check system selected
-with the #PMEMORY_CHECK compile time option. It will include the source file
+with the <code>PMEMORY_CHECK</code> compile time option. It will include the source file
 and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 */
@@ -814,7 +814,7 @@ track of the memory block.
 
 /** Override of system call for memory check system.
 This macro is used to allocate memory via the memory check system selected
-with the #PMEMORY_CHECK compile time option. It will include the source file
+with the <code>PMEMORY_CHECK</code> compile time option. It will include the source file
 and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 */
@@ -823,7 +823,7 @@ track of the memory block.
 
 /** Override of system call for memory check system.
 This macro is used to deallocate memory via the memory check system selected
-with the #PMEMORY_CHECK compile time option. It will include the source file
+with the <code>PMEMORY_CHECK</code> compile time option. It will include the source file
 and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 */
@@ -832,24 +832,24 @@ track of the memory block.
 
 /** Override of system call for memory check system.
 This macro is used to deallocate memory via the memory check system selected
-with the #PMEMORY_CHECK compile time option. It will include the source file
+with the <code>PMEMORY_CHECK</code> compile time option. It will include the source file
 and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 */
 #define cfree(p) PMemoryHeap::Deallocate(p, NULL)
 
 
-/** Macro for overriding system default #new operator.
+/** Macro for overriding system default <code>new</code> operator.
 This macro is used to allocate memory via the memory check system selected
 with the PMEMORY_CHECK compile time option. It will include the source file
 and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 
-This macro could be used instead of the system #new operator. Or you can place
+This macro could be used instead of the system <code>new</code> operator. Or you can place
 the line
-\verbatim
+<pre><code>
   #define new PNEW
-\endverbatim
+</code></pre>
 at the begining of the source file, after all declarations that use the
 PCLASSINFO macro.
 */
@@ -910,7 +910,7 @@ inline void operator delete[](void * ptr, const char *, int)
 
 class PMemoryHeapIgnoreAllocationsForScope {
 public:
-  PMemoryHeapIgnoreAllocationsForScope() : previousIgnoreAllocations(PMemoryHeap::SetIgnoreAllocations(PTrue)) { }
+  PMemoryHeapIgnoreAllocationsForScope() : previousIgnoreAllocations(PMemoryHeap::SetIgnoreAllocations(true)) { }
   ~PMemoryHeapIgnoreAllocationsForScope() { PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations); }
 private:
   PBoolean previousIgnoreAllocations;
@@ -974,11 +974,11 @@ template <class Type> class PVariablePoolAllocator : public std::allocator<Type>
 
 /** Declare all the standard PWlib class information.
 This macro is used to provide the basic run-time typing capability needed
-by the library. All descendent classes from the #PObject class require
+by the library. All descendent classes from the <code>PObject</code> class require
 these functions for correct operation. Either use this macro or the
 #PDECLARE_CLASS macro.
 
-The use of the #PDECLARE_CLASS macro is no longer recommended for reasons
+The use of the <code>PDECLARE_CLASS</code> macro is no longer recommended for reasons
 of compatibility with documentation systems.
 */
 
@@ -1032,7 +1032,7 @@ template<class BaseClass> inline BaseClass * PAssertCast(PObject * obj, const ch
 
 /** Declare a class with PWLib class information.
 This macro is used to declare a new class with a single public ancestor. It
-starts the class declaration and then uses the #PCLASSINFO macro to
+starts the class declaration and then uses the <code>PCLASSINFO</code> macro to
 get all the run-time type functions.
 
 The use of this macro is no longer recommended for reasons of compatibility
@@ -1069,7 +1069,7 @@ class PObject {
     /** Get the name of the class as a C string. This is a static function which
        returns the type of a specific class. 
        
-       When comparing class names, always use the #strcmp()
+       When comparing class names, always use the <code>strcmp()</code>
        function rather than comparing pointers. The pointers are not
        necessarily the same over compilation units depending on the compiler,
        platform etc.
@@ -1080,12 +1080,12 @@ class PObject {
 
     /** Get the current dynamic type of the object instance.
 
-       When comparing class names, always use the #strcmp()
+       When comparing class names, always use the <code>strcmp()</code>
        function rather than comparing pointers. The pointers are not
        necessarily the same over compilation units depending on the compiler,
        platform etc.
 
-       The #PCLASSINFO macro declares an override of this function for
+       The <code>PCLASSINFO</code> macro declares an override of this function for
        the particular class. The user need not implement it.
 
        @return pointer to C string literal.
@@ -1097,12 +1097,12 @@ class PObject {
 
     /** Determine if the dynamic type of the current instance is a descendent of
        the specified class. The class name is usually provided by the
-       #Class() static function of the desired class.
+       <code>Class()</code> static function of the desired class.
     
-       The #PCLASSINFO macro declares an override of this function for
+       The <code>PCLASSINFO</code> macro declares an override of this function for
        the particular class. The user need not implement it.
 
-       @return PTrue if object is descended from the class.
+       @return true if object is descended from the class.
      */
     virtual PBoolean InternalIsDescendant(
       const char * clsName    // Ancestor class name to compare against.
@@ -1113,7 +1113,7 @@ class PObject {
 
   /**@name Comparison functions */
   //@{
-    /** Result of the comparison operation performed by the #Compare()
+    /** Result of the comparison operation performed by the <code>Compare()</code>
        function.
       */
     enum Comparison {
@@ -1126,11 +1126,11 @@ class PObject {
        usually overridden by descendent classes to yield the ranking according
        to the semantics of the object.
        
-       The default function is to use the #CompareObjectMemoryDirect()
+       The default function is to use the <code>CompareObjectMemoryDirect()</code>
        function to do a byte wise memory comparison of the two objects.
 
        @return
-       #LessThan, #EqualTo or #GreaterThan
+       <code>LessThan</code>, <code>EqualTo</code> or <code>GreaterThan</code>
        according to the relative rank of the objects.
      */
     virtual Comparison Compare(
@@ -1139,14 +1139,14 @@ class PObject {
     
     /** Determine the byte wise comparison of two objects. This is the default
        comparison operation for objects that do not explicitly override the
-       #Compare() function.
+       <code>Compare()</code> function.
     
-       The #PCLASSINFO macro declares an override of this function for
+       The <code>PCLASSINFO</code> macro declares an override of this function for
        the particular class. The user need not implement it.
 
        @return
-       #LessThan, #EqualTo or #GreaterThan
-       according to the result #memcpy() function.
+       <code>LessThan</code>, <code>EqualTo</code> or <code>GreaterThan</code>
+       according to the result <code>memcpy()</code> function.
      */
     virtual Comparison CompareObjectMemoryDirect(
       const PObject & obj   // Object to compare against.
@@ -1155,7 +1155,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       PTrue if objects are equal.
+       true if objects are equal.
      */
     bool operator==(
       const PObject & obj   // Object to compare against.
@@ -1164,7 +1164,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       PTrue if objects are not equal.
+       true if objects are not equal.
      */
     bool operator!=(
       const PObject & obj   // Object to compare against.
@@ -1173,7 +1173,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       PTrue if objects are less than.
+       true if objects are less than.
      */
     bool operator<(
       const PObject & obj   // Object to compare against.
@@ -1182,7 +1182,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       PTrue if objects are greater than.
+       true if objects are greater than.
      */
     bool operator>(
       const PObject & obj   // Object to compare against.
@@ -1191,7 +1191,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       PTrue if objects are less than or equal.
+       true if objects are less than or equal.
      */
     bool operator<=(
       const PObject & obj   // Object to compare against.
@@ -1200,7 +1200,7 @@ class PObject {
     /** Compare the two objects.
     
        @return
-       PTrue if objects are greater than or equal.
+       true if objects are greater than or equal.
      */
     bool operator>=(
       const PObject & obj   // Object to compare against.
@@ -1211,7 +1211,7 @@ class PObject {
   //@{
     /** Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator<< function.
+       primarily used by the standard <code>operator<<</code> function.
 
        The default behaviour is to print the class name.
      */
@@ -1221,7 +1221,7 @@ class PObject {
 
     /** Input the contents of the object from the stream. The exact input is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator>> function.
+       primarily used by the standard <code>operator>></code> function.
 
        The default behaviour is to do nothing.
      */
@@ -1231,9 +1231,9 @@ class PObject {
 
 
     /** Global function for using the standard << operator on objects descended
-       from PObject. This simply calls the objects #PrintOn() function.
+       from PObject. This simply calls the objects <code>PrintOn()</code> function.
        
-       @return the #strm parameter.
+       @return the <code>strm</code> parameter.
      */
     inline friend ostream & operator<<(
       ostream &strm,       // Stream to print the object into.
@@ -1241,9 +1241,9 @@ class PObject {
     ) { obj.PrintOn(strm); return strm; }
 
     /** Global function for using the standard >> operator on objects descended
-       from PObject. This simply calls the objects #ReadFrom() function.
+       from PObject. This simply calls the objects <code>ReadFrom()</code> function.
 
-       @return the #strm parameter.
+       @return the <code>strm</code> parameter.
      */
     inline friend istream & operator>>(
       istream &strm,   // Stream to read the objects contents from.
@@ -1257,7 +1257,7 @@ class PObject {
        descendent class determine what is required to make a duplicate of the
        instance. Not all classes can even \b do a clone operation.
        
-       The main user of the clone function is the #PDictionary class as
+       The main user of the clone function is the <code>PDictionary</code> class as
        it requires copies of the dictionary keys.
 
        The default behaviour is for this function to assert.
@@ -1267,10 +1267,10 @@ class PObject {
      */
     virtual PObject * Clone() const;
 
-    /** This function yields a hash value required by the #PDictionary
+    /** This function yields a hash value required by the <code>PDictionary</code>
        class. A descendent class that is required to be the key of a dictionary
        should override this function. The precise values returned is dependent
-       on the semantics of the class. For example, the #PString class
+       on the semantics of the class. For example, the <code>PString</code> class
        overrides it to provide a hash function for distinguishing text strings.
 
        The default behaviour is to return the value zero.
@@ -1467,21 +1467,21 @@ typedef PIntSameOrder<long double> PFloat80b;
 
 /*$MACRO PMIN(v1, v2)
    This macro is used to calculate the minimum of two values. As this is a
-   macro the expression in #v1 or #v2 is executed
+   macro the expression in <code>v1</code> or <code>v2</code> is executed
    twice so extreme care should be made in its use.
  */
 #define PMIN(v1, v2) ((v1) < (v2) ? (v1) : (v2))
 
 /*$MACRO PMAX(v1, v2)
    This macro is used to calculate the maximum of two values. As this is a
-   macro the expression in #v1 or #v2 is executed
+   macro the expression in <code>v1</code> or <code>v2</code> is executed
    twice so extreme care should be made in its use.
  */
 #define PMAX(v1, v2) ((v1) > (v2) ? (v1) : (v2))
 
 /*$MACRO PABS(val)
    This macro is used to calculate an absolute value. As this is a macro the
-   expression in #val is executed twice so extreme care should be
+   expression in <code>val</code> is executed twice so extreme care should be
    made in its use.
  */
 #define PABS(v) ((v) < 0 ? -(v) : (v))

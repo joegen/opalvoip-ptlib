@@ -78,7 +78,7 @@ class PDevicePluginAdapter : public PDevicePluginAdapterBase
     void CreateFactory(const PString & device)
     {
       if (!(Factory_T::IsRegistered(device)))
-        new Worker_T(device, PFalse);
+        new Worker_T(device, false);
     }
 };
 

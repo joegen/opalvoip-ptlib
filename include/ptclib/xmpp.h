@@ -123,7 +123,7 @@ namespace XMPP
     virtual PObject * Clone() const { return new BareJID(m_JID); }
     virtual PString GetResource() const { return PString::Empty(); }
     virtual void SetResource(const PString&) { }
-    virtual PBoolean IsBare() const { return PTrue; }
+    virtual PBoolean IsBare() const { return true; }
   };
 
   /** This interface is the base class of each XMPP transport class
@@ -191,7 +191,7 @@ namespace XMPP
     virtual PBoolean        Start(Transport * transport = 0);
     virtual PBoolean        Stop(const PString& error = PString::Empty());
 
-    void                SetAutoReconnect(PBoolean b = PTrue, long timeout = 1000);
+    void                SetAutoReconnect(PBoolean b = true, long timeout = 1000);
 
     PNotifierList&      ElementHandlers()   { return m_ElementHandlers; }
     Stream *            GetStream()         { return m_Stream; }
@@ -406,7 +406,7 @@ namespace XMPP
     that an iq set/get pdu has not being processed, it returns
     an error to the sender
     */
-    void SetProcessed()             { m_Processed = PTrue; }
+    void SetProcessed()             { m_Processed = true; }
     PBoolean HasBeenProcessed() const   { return m_Processed; }
 
     virtual IQType        GetType(PString * typeName = 0) const;

@@ -114,7 +114,7 @@ class PSafeObject : public PObject
        deallocated) as the caller thread is using the object, but not
        necessarily at this time locking it.
 
-       If the function returns PFalse, then the object has been flagged for
+       If the function returns false, then the object has been flagged for
        deletion and the calling thread should immediately cease using the
        object.
 
@@ -136,7 +136,7 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to manage this
        rather than the application calling this function directly.
 
-       @return PTrue if reference count has reached zero and is not being
+       @return true if reference count has reached zero and is not being
                safely deleted elsewhere ie SafeRemove() not called
       */
     PBoolean SafeDereference();
@@ -148,7 +148,7 @@ class PSafeObject : public PObject
        occur and no read/write lock can be present for any read only locks to
        occur.
 
-       If the function returns PFalse, then the object has been flagged for
+       If the function returns false, then the object has been flagged for
        deletion and the calling thread should immediately cease use of the
        object, possibly executing the SafeDereference() function to remove
        any references it may have acquired.
@@ -179,7 +179,7 @@ class PSafeObject : public PObject
        occur and no read/write lock can be present for any read only locks to
        occur.
 
-       If the function returns PFalse, then the object has been flagged for
+       If the function returns false, then the object has been flagged for
        deletion and the calling thread should immediately cease use of the
        object, possibly executing the SafeDereference() function to remove
        any references it may have acquired.
@@ -348,7 +348,7 @@ class PSafeCollection : public PObject
     /**Remove all objects in collection.
       */
     virtual void RemoveAll(
-      PBoolean synchronous = PFalse  ///< Wait till objects are deleted before returning
+      PBoolean synchronous = false  ///< Wait till objects are deleted before returning
     );
 
     /**Disallow the automatic delete any objects that have been removed.
@@ -356,17 +356,17 @@ class PSafeCollection : public PObject
        deletion using PSafeObject::SafeRemove() and DeleteObject().
       */
     void AllowDeleteObjects(
-      PBoolean yes = PTrue   ///< New value for flag for deleting objects
+      PBoolean yes = true   ///< New value for flag for deleting objects
     ) { deleteObjects = yes; }
 
     /**Disallow the automatic delete any objects that have been removed.
        Objects are simply removed from the collection and not marked for
        deletion using PSafeObject::SafeRemove() and DeleteObject().
       */
-    void DisallowDeleteObjects() { deleteObjects = PFalse; }
+    void DisallowDeleteObjects() { deleteObjects = false; }
 
     /**Delete any objects that have been removed.
-       Returns PTrue if all objects in the collection have been removed and
+       Returns true if all objects in the collection have been removed and
        their pending deletions carried out.
       */
     virtual PBoolean DeleteObjectsToBeRemoved();
@@ -506,7 +506,7 @@ class PSafePtrBase : public PObject
       */
     virtual void SetNULL();
 
-    /**Return PTrue if pointer is NULL.
+    /**Return true if pointer is NULL.
       */
     bool operator!() const { return currentObject == NULL; }
 
@@ -928,7 +928,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
       */
     virtual PSafePtr<Base> Append(
       Base * obj,       ///< Object to add to safe collection.
-      PSafetyMode mode = PSafeReference
+      PSafetyMode mode = PSafeReference   ///< Safety mode for returned locked PSafePtr
     ) {
         PWaitAndSignal mutex(collectionMutex);
         if (PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") &&

@@ -41,7 +41,7 @@
    encoding mechanism as defined in RFC1521.
 
    To encode a large block of data use the following seqeunce:
-<code>
+<pre><code>
       PBase64 base;
       base.StartEncoding();
       while (Read(dataChunk)) {
@@ -49,23 +49,23 @@
         out << base.GetEncodedString();
       }
       out << base.CompleteEncoding();
-</code>
+</code></pre>
 
     if smaller blocks that fit easily in memory are to be encoded the
-    #Encode()# functions can be used to everything in one go.
+    <code>Encode()</code> functions can be used to everything in one go.
 
     To decode a large block of data use the following sequence:
-<code>
+<pre><code>
 
       PBase64 base;
       base.StartDecoding();
       while (Read(str) && ProcessDecoding(str))
         Write(base.GetDecodedData());
       Write(base.GetDecodedData());
-</code>
+</code></pre>
 
     if smaller blocks that fit easily in memory are to be decoded the
-    #Decode()# functions can be used to everything in one go.
+    <code>Decode()</code> functions can be used to everything in one go.
  */
 class PBase64 : public PObject
 {
@@ -73,12 +73,12 @@ class PBase64 : public PObject
 
   public:
     /** Construct a base 64 encoder/decoder and initialise both encode and
-       decode members as in #StartEncoding()# and #StartDecoding()#.
+       decode members as in <code>StartEncoding()</code> and <code>StartDecoding()</code>.
      */
     PBase64();
 
     void StartEncoding(
-      PBoolean useCRLFs = PTrue  // Use CR, LF pairs in end of line characters.
+      PBoolean useCRLFs = true  // Use CR, LF pairs in end of line characters.
     );
     // Begin a base 64 encoding operation, initialising the object instance.
 
@@ -105,8 +105,7 @@ class PBase64 : public PObject
     PString GetEncodedString();
 
     /** Complete the base 64 encoding and return the remainder of the encoded
-       Base64 string. Previous data may have been already removed by the
-       #GetInterim()# function.
+       Base64 string.
     
        @return
        Base64 encoded string for the processed data.
@@ -136,7 +135,7 @@ class PBase64 : public PObject
     /** Incorporate the specified data into the base 64 decoding.
     
        @return
-       PTrue if block was last in the Base64 encoded string.
+       true if block was last in the Base64 encoded string.
      */
     PBoolean ProcessDecoding(
       const PString & str      // String to be encoded
@@ -169,8 +168,8 @@ class PBase64 : public PObject
     /** Convert a printable text string to binary data using the Internet MIME
        standard base 64 content transfer encoding.
 
-       The base64 string is checked and PTrue returned if all perfectly correct.
-       If PFalse is returned then the string had extraneous or illegal
+       The base64 string is checked and true returned if all perfectly correct.
+       If false is returned then the string had extraneous or illegal
        characters in it that were ignored. This does not mean that the data is
        not valid, only that it is suspect.
     
@@ -786,7 +785,7 @@ class PSecureConfig : public PConfig
        they are copied to the secured variables.
 
        @return
-       PTrue if secure key values are valid.
+       true if secure key values are valid.
      */
 
     void ResetPending();

@@ -44,8 +44,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PDictionary classes
 
-/**This class is used when an ordinal index value is the key for #PSet
-   and #PDictionary classes.
+/**This class is used when an ordinal index value is the key for <code>PSet</code>
+   and <code>PDictionary</code> classes.
  */
 class POrdinalKey : public PObject
 {
@@ -74,15 +74,15 @@ class POrdinalKey : public PObject
        of the objects PINDEX values.
 
        @return
-       comparison of the two objects, #EqualTo for same,
-       #LessThan for \p obj logically less than the
-       object and #GreaterThan for \p obj logically
+       comparison of the two objects, <code>EqualTo</code> for same,
+       <code>LessThan</code> for \p obj logically less than the
+       object and <code>GreaterThan</code> for \p obj logically
        greater than the object.
      */
     virtual Comparison Compare(const PObject & obj) const;
 
     /**This function calculates a hash table index value for the implementation
-       of #PSet and #PDictionary classes.
+       of <code>PSet</code> and <code>PDictionary</code> classes.
 
        @return
        hash table bucket number.
@@ -169,8 +169,8 @@ PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
 };
 
 
-/**The hash table class is the basis for implementing the #PSet and
-   #PDictionary classes.
+/**The hash table class is the basis for implementing the <code>PSet</code> and
+   <code>PDictionary</code> classes.
 
    The hash table allows for very fast searches for an object based on a "hash
    function". This function yields an index into an array which is directly
@@ -198,8 +198,8 @@ class PHashTable : public PCollection
        same hash table.
 
        @return
-       comparison of the two objects, #EqualTo if the same
-       reference and #GreaterThan if not.
+       comparison of the two objects, <code>EqualTo</code> if the same
+       reference and <code>GreaterThan</code> if not.
      */
     virtual Comparison Compare(
       const PObject & obj   ///< Other PHashTable to compare against.
@@ -215,7 +215,7 @@ class PHashTable : public PCollection
        set in any other way.
 
        @return
-       Always PTrue.
+       Always true.
      */
     virtual PBoolean SetSize(
       PINDEX newSize  ///< New size for the hash table, this is ignored.
@@ -227,11 +227,11 @@ class PHashTable : public PCollection
   //@{
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       PTrue if the object value is in the set.
+       true if the object value is in the set.
      */
     PINLINE PBoolean AbstractContains(
       const PObject & key   ///< Key to look for in the set.
@@ -303,7 +303,7 @@ class PAbstractSet : public PHashTable
   //@{
     /**Add a new object to the collection. If the objects value is already in
        the set then the object is \b not included. If the
-       #AllowDeleteObjects option is set then the \p obj parameter
+       <code>AllowDeleteObjects</code> option is set then the \p obj parameter
        is also deleted.
 
        @return
@@ -315,7 +315,7 @@ class PAbstractSet : public PHashTable
 
     /**Add a new object to the collection. If the objects value is already in
        the set then the object is \b not included. If the
-       #AllowDeleteObjects option is set then the \p obj parameter is
+       <code>AllowDeleteObjects</code> option is set then the \p obj parameter is
        also deleted.
 
        The object is always placed in the an ordinal position dependent on its
@@ -332,7 +332,7 @@ class PAbstractSet : public PHashTable
 
     /**Add a new object to the collection. If the objects value is already in
        the set then the object is \b not included. If the
-       #AllowDeleteObjects option is set then the \p obj parameter is
+       <code>AllowDeleteObjects</code> option is set then the \p obj parameter is
        also deleted.
 
        The object is always placed in the an ordinal position dependent on its
@@ -347,7 +347,7 @@ class PAbstractSet : public PHashTable
       PObject * obj   ///< New object to place into the collection.
     );
 
-    /**Remove the object from the collection. If the #AllowDeleteObjects option
+    /**Remove the object from the collection. If the <code>AllowDeleteObjects</code> option
        is set then the object is also deleted.
 
        Note that the comparison for searching for the object in collection is
@@ -355,13 +355,13 @@ class PAbstractSet : public PHashTable
        same instance of the object that is in the collection.
 
        @return
-       PTrue if the object was in the collection.
+       true if the object was in the collection.
      */
     virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     );
 
-    /**Remove an object at the specified index. If the #AllowDeleteObjects
+    /**Remove an object at the specified index. If the <code>AllowDeleteObjects</code>
        option is set then the object is also deleted.
 
        @return
@@ -390,7 +390,7 @@ class PAbstractSet : public PHashTable
        \p index parameter is ignored.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
@@ -406,7 +406,7 @@ class PAbstractSet : public PHashTable
        see if they are the same instance.
 
        @return
-       ordinal index position of the object, or #P_MAX_INDEX .
+       ordinal index position of the object, or P_MAX_INDEX .
      */
     virtual PINDEX GetObjectsIndex(
       const PObject * obj   ///< Object to find.
@@ -414,11 +414,11 @@ class PAbstractSet : public PHashTable
 
     /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       ordinal index position of the object, or #P_MAX_INDEX.
+       ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetValuesIndex(
       const PObject & obj   ///< Object to find equal value.
@@ -427,14 +427,14 @@ class PAbstractSet : public PHashTable
 };
 
 
-/**This template class maps the #PAbstractSet to a specific object type. The
+/**This template class maps the <code>PAbstractSet</code> to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
    By default, objects placed into the set will \b not be deleted when
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
-   Note that if templates are not used the #PDECLARE_SET macro will
+   Note that if templates are not used the <code>PDECLARE_SET</code> macro will
    simulate the template instantiation.
  */
 template <class T> class PSet : public PAbstractSet
@@ -451,7 +451,7 @@ template <class T> class PSet : public PAbstractSet
        deleted when removed or when all references to the set are destroyed.
        This is different from the default on most collection classes.
      */
-    inline PSet(PBoolean initialDeleteObjects = PFalse)
+    inline PSet(PBoolean initialDeleteObjects = false)
       : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); }
   //@}
 
@@ -468,11 +468,11 @@ template <class T> class PSet : public PAbstractSet
   //@{
     /**Include the specified object into the set. If the objects value is
        already in the set then the object is \b not included. If the
-       #AllowDeleteObjects option is set then the \p obj parameter is
+       <code>AllowDeleteObjects</code> option is set then the \p obj parameter is
        also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the #PObject::Compare()
+       the collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
      */
     void Include(
@@ -483,29 +483,29 @@ template <class T> class PSet : public PAbstractSet
        is already in the set then the object is \b not included.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the #PObject::Compare()
+       the collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
      */
     PSet & operator+=(
       const T & obj   // New object to include in the set.
     ) { Append(obj.Clone()); return *this; }
 
-    /**Remove the object from the set. If the #AllowDeleteObjects option is set
+    /**Remove the object from the set. If the <code>AllowDeleteObjects</code> option is set
        then the object is also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the #PObject::Compare()
+       the collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
      */
     void Exclude(
       const T * obj   // New object to exclude in the set.
     ) { Remove(obj); }
 
-    /**Remove the objects value from the set. If the #AllowDeleteObjects
+    /**Remove the objects value from the set. If the <code>AllowDeleteObjects</code>
        option is set then the object is also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the #PObject::Compare()
+       the collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
      */
     PSet & operator-=(
@@ -514,11 +514,11 @@ template <class T> class PSet : public PAbstractSet
 
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       #PTrue if the object value is in the set.
+       true if the object value is in the set.
      */
     PBoolean Contains(
       const T & key  ///< Key to look for in the set.
@@ -526,11 +526,11 @@ template <class T> class PSet : public PAbstractSet
 
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       #PTrue if the object value is in the set.
+       true if the object value is in the set.
      */
     PBoolean operator[](
       const T & key  ///< Key to look for in the set.
@@ -562,29 +562,29 @@ template <class T> class PSet : public PAbstractSet
 
 
 /**Declare set class.
-   This macro is used to declare a descendent of #PAbstractSet class,
+   This macro is used to declare a descendent of <code>PAbstractSet</code> class,
    customised for a particular object type \b T. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PSet template class.
+   of the <code>PSet</code> template class.
 
-   See the #PSet class and #PDECLARE_SET macro for more
+   See the <code>PSet</code> class and <code>PDECLARE_SET</code> macro for more
    information.
  */
 #define PSET(cls, T) typedef PSet<T> cls
 
 
 /**Begin declaration of a set class.
-   This macro is used to declare a descendent of #PAbstractSet class,
+   This macro is used to declare a descendent of <code>PAbstractSet</code> class,
    customised for a particular object type \b T.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PSet template class. If templates are not being used then the
+   of the <code>PSet</code> template class. If templates are not being used then the
    macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the #PSet and #PAbstractSet classes for more information.
+   See the <code>PSet</code> and <code>PAbstractSet</code> classes for more information.
  */
 #define PDECLARE_SET(cls, T, initDelObj) \
   PSET(cls##_PTemplate, T); \
@@ -625,7 +625,7 @@ class PAbstractDictionary : public PHashTable
   //@{
     /**Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator<< function.
+       primarily used by the standard <code>operator<<</code> function.
 
        The default behaviour is to print the class name.
      */
@@ -637,8 +637,8 @@ class PAbstractDictionary : public PHashTable
   /**@name Overrides from class PCollection */
   //@{
     /**Insert a new object into the dictionary. The semantics of this function
-       is different from that of the #PCollection class. This function is
-       exactly equivalent to the #SetAt() function that sets a data value at
+       is different from that of the <code>PCollection</code> class. This function is
+       exactly equivalent to the <code>SetAt()</code> function that sets a data value at
        the key value location.
 
        @return
@@ -649,8 +649,8 @@ class PAbstractDictionary : public PHashTable
       PObject * obj          ///< New object to place into the collection.
     );
 
-    /**Insert a new object at the specified index. The index is as is used in
-       the #GetKeyAt() function.
+    /**Insert a new object at the specified index. This function only applies
+       to derived classes whose key is PINDEX based.
 
        @return
        \p index parameter.
@@ -660,10 +660,10 @@ class PAbstractDictionary : public PHashTable
       PObject * obj   ///< New object to place into the collection.
     );
 
-    /**Remove an object at the specified index. The index is as is used in
-       the #GetKeyAt() function. The returned pointer is then removed using
-       the #SetAt() function to set that key value to NULL. If the
-       #AllowDeleteObjects option is set then the object is also
+    /**Remove an object at the specified index.  This function only applies
+       to derived classes whose key is PINDEX based. The returned pointer is
+       then removed using the <code>SetAt()</code> function to set that key value to NULL.
+       If the <code>AllowDeleteObjects</code> option is set then the object is also
        deleted.
 
        @return
@@ -673,22 +673,21 @@ class PAbstractDictionary : public PHashTable
       PINDEX index   ///< Index position in collection to place the object.
     );
 
-    /**Set the object at the specified index to the new value. The index is
-       as is used in the #GetKeyAt() function. This will overwrite the
-       existing entry. If the AllowDeleteObjects option is set then the old
-       object is also deleted.
+    /**Set the object at the specified index to the new value. This function
+       only applies to derived classes whose key is PINDEX based. This will
+       overwrite the existing entry. If the AllowDeleteObjects() option is set
+       then the old object is also deleted.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
 
-    /**Get the object at the specified index position. The index is as is
-       used in the #GetKeyAt() function. If the index was not in the
-       collection then NULL is returned.
+    /**Get the object at the specified index position. If the index was not in
+       the collection then NULL is returned.
 
        @return
        pointer to object at the specified index.
@@ -706,7 +705,7 @@ class PAbstractDictionary : public PHashTable
        see if they are the same instance.
 
        @return
-       ordinal index position of the object, or #P_MAX_INDEX.
+       ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetObjectsIndex(
       const PObject * obj  ///< Object to find.
@@ -714,11 +713,11 @@ class PAbstractDictionary : public PHashTable
 
     /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       ordinal index position of the object, or #P_MAX_INDEX.
+       ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetValuesIndex(
       const PObject & obj  ///< Object to find value of.
@@ -734,7 +733,7 @@ class PAbstractDictionary : public PHashTable
        of the keys and the order of insertion.
 
        @return
-       PTrue if the new object could be placed into the dictionary.
+       true if the new object could be placed into the dictionary.
      */
     virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
@@ -750,7 +749,7 @@ class PAbstractDictionary : public PHashTable
        to the data item.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     virtual PBoolean AbstractSetAt(
       const PObject & key,  ///< Key for position in dictionary to add object.
@@ -760,7 +759,7 @@ class PAbstractDictionary : public PHashTable
     /**Get the object at the specified key position. If the key was not in the
        collection then this function asserts.
 
-       This function is primarily for use by the #operator[] function is
+       This function is primarily for use by the operator[] function in the
        descendent template classes.
 
        @return
@@ -794,7 +793,7 @@ class PAbstractDictionary : public PHashTable
       PObject * obj   ///< New object to place into the collection.
     );
 
-    /**Remove the object from the collection. If the #AllowDeleteObjects option
+    /**Remove the object from the collection. If the <code>AllowDeleteObjects</code> option
        is set then the object is also deleted.
 
        Note that the comparison for searching for the object in collection is
@@ -802,7 +801,7 @@ class PAbstractDictionary : public PHashTable
        same instance of the object that is in the collection.
 
        @return
-       PTrue if the object was in the collection.
+       true if the object was in the collection.
      */
     virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
@@ -811,11 +810,11 @@ class PAbstractDictionary : public PHashTable
 };
 
 
-/**This template class maps the #PAbstractDictionary to a specific key and data
+/**This template class maps the <code>PAbstractDictionary</code> to a specific key and data
    types. The functions in this class primarily do all the appropriate casting
    of types.
 
-   Note that if templates are not used the #PDECLARE_DICTIONARY macro
+   Note that if templates are not used the <code>PDECLARE_DICTIONARY</code> macro
    will simulate the template instantiation.
  */
 template <class K, class D> class PDictionary : public PAbstractDictionary
@@ -864,19 +863,19 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
 
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       PTrue if the object value is in the dictionary.
+       true if the object value is in the dictionary.
      */
     PBoolean Contains(
       const K & key   ///< Key to look for in the dictionary.
     ) const { return AbstractContains(key); }
 
     /**Remove an object at the specified \p key. The returned pointer is then
-       removed using the #SetAt() function to set that key value to
-       NULL. If the #AllowDeleteObjects option is set then the
+       removed using the <code>SetAt()</code> function to set that key value to
+       NULL. If the <code>AllowDeleteObjects</code> option is set then the
        object is also deleted.
 
        @return
@@ -894,14 +893,14 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
-       #AllowDeleteObjects option is set then the old object is also deleted.
+       <code>AllowDeleteObjects</code> option is set then the old object is also deleted.
 
        The object is placed in the an ordinal position dependent on the keys
        hash function. Subsequent searches use the hash function to speed access
        to the data item.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     virtual PBoolean SetAt(
       const K & key,  // Key for position in dictionary to add object.
@@ -966,9 +965,9 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
    be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PDictionary template class.
+   of the <code>PDictionary</code> template class.
 
-   See the #PDictionary class and #PDECLARE_DICTIONARY macro for
+   See the <code>PDictionary</code> class and <code>PDECLARE_DICTIONARY</code> macro for
    more information.
  */
 #define PDICTIONARY(cls, K, D) typedef PDictionary<K, D> cls
@@ -979,11 +978,11 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
    customised for a particular key type \b K and data object type \b D.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PDictionary template class. If templates are not being used
+   of the <code>PDictionary</code> template class. If templates are not being used
    then the macro defines a set of inline functions to do all casting of types.
    The resultant classes have an identical set of functions in either case.
 
-   See the #PDictionary and #PAbstractDictionary classes for more
+   See the <code>PDictionary</code> and <code>PAbstractDictionary</code> classes for more
    information.
  */
 #define PDECLARE_DICTIONARY(cls, K, D) \
@@ -999,11 +998,11 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
       { return PNEW cls(0, this); } \
 
 
-/**This template class maps the #PAbstractDictionary to a specific key
-   type and a #POrdinalKey data type. The functions in this class
+/**This template class maps the <code>PAbstractDictionary</code> to a specific key
+   type and a <code>POrdinalKey</code> data type. The functions in this class
    primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the #PDECLARE_ORDINAL_DICTIONARY
+   Note that if templates are not used the <code>PDECLARE_ORDINAL_DICTIONARY</code>
    macro will simulate the template instantiation.
  */
 template <class K> class POrdinalDictionary : public PAbstractDictionary
@@ -1052,11 +1051,11 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
 
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the #PObject::Compare()
+       collection must correctly implement the <code>PObject::Compare()</code>
        function. The hash table is used to locate the entry.
 
        @return
-       PTrue if the object value is in the dictionary.
+       true if the object value is in the dictionary.
      */
     PBoolean Contains(
       const K & key   ///< Key to look for in the dictionary.
@@ -1078,7 +1077,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        of the keys and the order of insertion.
 
        @return
-       PTrue if the new object could be placed into the dictionary.
+       true if the new object could be placed into the dictionary.
      */
     virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
@@ -1087,14 +1086,14 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
-       #AllowDeleteObjects option is set then the old object is also deleted.
+       <code>AllowDeleteObjects</code> option is set then the old object is also deleted.
 
        The object is placed in the an ordinal position dependent on the keys
        hash function. Subsequent searches use the hash function to speed access
        to the data item.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     virtual PBoolean SetAt(
       const K & key,  ///< Key for position in dictionary to add object.
@@ -1102,8 +1101,8 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
     ) { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
 
     /**Remove an object at the specified key. The returned pointer is then
-       removed using the #SetAt() function to set that key value to
-       NULL. If the #AllowDeleteObjects option is set then the
+       removed using the <code>SetAt()</code> function to set that key value to
+       NULL. If the <code>AllowDeleteObjects</code> option is set then the
        object is also deleted.
 
        @return
@@ -1155,14 +1154,14 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
 /**Declare an ordinal dictionary class.
    This macro is used to declare a descendent of PAbstractDictionary class,
    customised for a particular key type \b K and data object type of
-   #POrdinalKey. This macro closes the class declaration off so no
+   <code>POrdinalKey</code>. This macro closes the class declaration off so no
    additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #POrdinalDictionary template class.
+   of the <code>POrdinalDictionary</code> template class.
 
-   See the #POrdinalDictionary class and
-   #PDECLARE_ORDINAL_DICTIONARY macro for more information.
+   See the <code>POrdinalDictionary</code> class and
+   <code>PDECLARE_ORDINAL_DICTIONARY</code> macro for more information.
  */
 #define PORDINAL_DICTIONARY(cls, K) typedef POrdinalDictionary<K> cls
 
@@ -1170,15 +1169,15 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
 /**Begin declaration of an ordinal dictionary class.
    This macro is used to declare a descendent of PAbstractList class,
    customised for a particular key type \b K and data object type of
-   #POrdinalKey.
+   <code>POrdinalKey</code>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #POrdinalDictionary template class. If templates are not being
+   of the <code>POrdinalDictionary</code> template class. If templates are not being
    used then the macro defines a set of inline functions to do all casting of
    types. The resultant classes have an identical set of functions in either
    case.
 
-   See the #POrdinalDictionary and #PAbstractDictionary classes
+   See the <code>POrdinalDictionary</code> and <code>PAbstractDictionary</code> classes
    for more information.
  */
 #define PDECLARE_ORDINAL_DICTIONARY(cls, K) \

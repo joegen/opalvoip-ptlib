@@ -96,7 +96,7 @@ class PAdaptiveDelay : public PObject
        than later" strategy).
 
        @return
-       PTrue if we are "too late" of @a time milliseconds (unrelated to
+       true if we are "too late" of @a time milliseconds (unrelated to
        the maximum slip time).
       */
     PBoolean Delay(int time);
@@ -183,11 +183,11 @@ class PDelayChannel : public PIndirectChannel
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -199,9 +199,9 @@ class PDelayChannel : public PIndirectChannel
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
-       @return PTrue if at least len bytes were written to the channel.
+       @return true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.

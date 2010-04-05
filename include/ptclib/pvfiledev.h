@@ -80,7 +80,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
       */
     PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Determine of the device is currently open.
@@ -196,7 +196,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
-       PFalse.
+       false.
     */
     virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   /// Variable to receive minimum width
@@ -220,7 +220,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual PBoolean TestAllFormats()
-      { return PTrue; }
+      { return true; }
 
     void FillRect(BYTE * frame,int xPos, int initialYPos,int rectWidth, int rectHeight,int r, int g,  int b);
    
@@ -261,7 +261,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
       */
     virtual PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Start the video device I/O.
@@ -304,7 +304,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
       unsigned width,
       unsigned height,
       const BYTE * data,
-      PBoolean endFrame = PTrue
+      PBoolean endFrame = true
     );
 
   protected:  

@@ -75,11 +75,11 @@ class PQueueChannel : public PChannel
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -91,9 +91,9 @@ class PQueueChannel : public PChannel
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
-       @return PTrue if at least len bytes were written to the channel.
+       @return true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -101,7 +101,7 @@ class PQueueChannel : public PChannel
     );
 
     /** Close the file channel.
-        @return PTrue if close was OK.
+        @return true if close was OK.
       */
     virtual PBoolean Close();
   //@}

@@ -45,7 +45,7 @@
   This form of semaphore is used to indicate an <i>event</i> has occurred. A
   thread may block on the sync point and wait until another thread signals
   that it may continue. eg:
-\verbatim
+<pre><code>
     ... thread one
     while (condition) {
       sync.Wait();
@@ -56,7 +56,7 @@
     do_something_else();
     sync.Signal();    // At this point thread 1 wake up and does something.
     do_yet_more();
-\endverbatim
+</code></pre>
 
   Note that events are boolean in nature. If "thread one" is not waiting on the
   event, multiple calls to Signal() are ignored, thread one will only exit the

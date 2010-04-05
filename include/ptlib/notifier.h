@@ -39,10 +39,10 @@
 
 /**
    This is an abstract class for which a descendent is declared for every
-   function that may be called. The #PDECLARE_NOTIFIER macro makes this
+   function that may be called. The <code>PDECLARE_NOTIFIER</code> macro makes this
    declaration.
 
-   The #PNotifier and #PNotifierFunction classes build a completely type
+   The <code>PNotifier</code> and <code>PNotifierFunction</code> classes build a completely type
    safe mechanism for calling arbitrary member functions on classes. The
    "pointer to a member function" capability built into C++ makes the
    assumption that the function name exists in an ancestor class. If you wish
@@ -88,7 +88,7 @@ typedef PNotifierFunctionTemplate<INT> PNotifierFunction;
 
 
 /**
-   The #PNotifier and #PNotifierFunction classes build a completely type
+   The <code>PNotifier</code> and <code>PNotifierFunction</code> classes build a completely type
    safe mechanism for calling arbitrary member functions on classes. The
    "pointer to a member function" capability built into C++ makes the
    assumption that the function name exists in an ancestor class. If you wish
@@ -118,7 +118,7 @@ class PNotifierTemplate : public PSmartPointer
 
     /**Execute the call to the actual notification function on the object
        instance contained in this object. This will make a polymorphic call to
-       the function declared by the #PDECLARE_NOTIFIER# macro which in
+       the function declared by the <code>PDECLARE_NOTIFIER</code> macro which in
        turn calls the required function in the destination object.
      */
     virtual void operator()(
@@ -130,13 +130,16 @@ class PNotifierTemplate : public PSmartPointer
     }
 };
 
+/** \class PNotifier
+    Class specialisation for PNotifierTemplate<INT>
+  */
 typedef PNotifierTemplate<INT> PNotifier;
 
 
 /** Declare a notifier object class.
-  This macro declares the descendent class of #PNotifierFunction that
-  will be used in instances of #PNotifier created by the
-  #PCREATE_NOTIFIER or #PCREATE_NOTIFIER2 macros.
+  This macro declares the descendent class of <code>PNotifierFunction</code> that
+  will be used in instances of <code>PNotifier</code> created by the
+  <code>PCREATE_NOTIFIER</code> or <code>PCREATE_NOTIFIER2</code> macros.
 
   The macro is expected to be used inside a class declaration. The class it
   declares will therefore be a nested class within the class being declared.
@@ -150,10 +153,10 @@ typedef PNotifierTemplate<INT> PNotifier;
   declared.
 
   This macro will also declare the member function itself. This will be:
-\verbatim
+<pre><code>
       void func(notifier & n, INT extra)     // for PNOTIFIER
       void func(notifier & n, void * extra)  // for PNOTIFIER2
-\endverbatim
+</code></pre>
 
   The implementation of the function is left for the user.
  */
@@ -173,12 +176,12 @@ typedef PNotifierTemplate<INT> PNotifier;
 
 
 /** Create a PNotifier object instance.
-  This macro creates an instance of the particular #PNotifier class using
+  This macro creates an instance of the particular <code>PNotifier</code> class using
   the \p func parameter as the member function to call.
 
   The \p obj parameter is the instance to call the function against.
   If the instance to be called is the current instance, ie if \p obj is
-  \p this then the #PCREATE_NOTIFIER macro should be used.
+  \p this then the <code>PCREATE_NOTIFIER</code> macro should be used.
  */
 #define PCREATE_NOTIFIER2_EXT(obj, notifiee, func, type) PNotifierTemplate<type>(new notifiee::func##_PNotifier(obj))
 
@@ -187,11 +190,11 @@ typedef PNotifierTemplate<INT> PNotifier;
 
 
 /** Create a PNotifier object instance.
-  This macro creates an instance of the particular #PNotifier class using
+  This macro creates an instance of the particular <code>PNotifier</code> class using
   the \p func parameter as the member function to call.
 
   The \p this object is used as the instance to call the function
-  against. The #PCREATE_NOTIFIER_EXT macro may be used if the instance to be
+  against. The <code>PCREATE_NOTIFIER_EXT</code> macro may be used if the instance to be
   called is not the current object instance.
  */
 #define PCREATE_NOTIFIER2(func, type) PNotifierTemplate<type>(new func##_PNotifier(this))

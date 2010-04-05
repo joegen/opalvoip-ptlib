@@ -62,33 +62,33 @@ class PArgList : public PObject
     PArgList(
       const char * theArgPtr = NULL,        ///< A string constituting the arguments 
       const char * argumentSpecPtr = NULL,  ///< The specification C string for argument options. See description for details.
-      PBoolean optionsBeforeParams = PTrue       ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = true       ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       const PString & theArgStr,             ///< A string constituting the arguments 
       const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
-      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = true        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       const PString & theArgStr,             ///< A string constituting the arguments 
       const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
-      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = true        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       int theArgc,                           ///< Count of argument strings in theArgv 
       char ** theArgv,                       ///< An array of strings constituting the arguments 
       const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
-      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = true        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
       int theArgc,                           ///< Count of argument strings in theArgv 
       char ** theArgv,                       ///< An array of strings constituting the arguments 
       const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
-      PBoolean optionsBeforeParams = PTrue        ///< Parse options only before parameters 
+      PBoolean optionsBeforeParams = true        ///< Parse options only before parameters 
     );
   //@}
 
@@ -127,8 +127,8 @@ class PArgList : public PObject
 
     /** Parse the arguments.
        Parse the standard C program arguments into an argument of options and
-       parameters. Consecutive calls with #optionsBeforeParams# set
-       to PTrue will parse out different options and parameters. If SetArgs()
+       parameters. Consecutive calls with <code>optionsBeforeParams</code> set
+       to true will parse out different options and parameters. If SetArgs()
        function is called then the Parse() function will restart from the
        beginning of the argument list.
 
@@ -145,16 +145,16 @@ class PArgList : public PObject
        For example, "ab:c" allows for "-a -b arg -barg -c" and
        "a-an-arg.b-option:c;" allows for "-a --an-arg --option arg -c -copt".
 
-       @return PTrue if there is at least one parameter after parsing.
+       @return true if there is at least one parameter after parsing.
      */
     virtual PBoolean Parse(
       const char * theArgumentSpec,    ///< The specification string for argument options. See description for details.
-      PBoolean optionsBeforeParams = PTrue  ///< Parse options only before parameters
+      PBoolean optionsBeforeParams = true  ///< Parse options only before parameters
     );
     /** Parse the arguments. */
     virtual PBoolean Parse(
       const PString & theArgumentStr,  ///< The specification string for argument options. See description for details.       
-      PBoolean optionsBeforeParams = PTrue  ///< Parse options only before parameters
+      PBoolean optionsBeforeParams = true  ///< Parse options only before parameters
     );
   //@}
 
@@ -180,7 +180,7 @@ class PArgList : public PObject
     /** Get if option present.
       Determines whether the option was specified on the command line.
 
-       @return PTrue if the option was present.
+       @return true if the option was present.
      */
     PBoolean HasOption(
       char optionChar             ///< Character letter code for the option 
@@ -219,7 +219,7 @@ class PArgList : public PObject
 
     /** Get the argument count.
        Get the number of parameters that may be obtained via the
-       #GetParameter()# function. Note that this does not include options
+       <code>GetParameter()</code> function. Note that this does not include options
        and option strings.
 
        @return count of parameters.
@@ -278,7 +278,7 @@ class PArgList : public PObject
   //@{
     /** This function is called when access to illegal parameter index is made
        in the GetParameter function. The default behaviour is to output a
-       message to the standard #PError# stream.
+       message to the standard <code>PError</code> stream.
      */
     virtual void IllegalArgumentIndex(
       PINDEX idx ///< Number of the parameter that was accessed. 
@@ -286,7 +286,7 @@ class PArgList : public PObject
 
     /** This function is called when an unknown option was specified on the
        command line. The default behaviour is to output a message to the
-       standard #PError# stream.
+       standard <code>PError</code> stream.
      */
     virtual void UnknownOption(
       const PString & option   ///< Option that was illegally placed on command line. 
@@ -295,7 +295,7 @@ class PArgList : public PObject
     /** This function is called when an option that requires an associated
        string was specified on the command line but no associated string was
        provided. The default behaviour is to output a message to the standard
-       #PError# stream.
+       <code>PError</code> stream.
      */
     virtual void MissingArgument(
       const PString & option  ///< Option for which the associated string was missing. 
