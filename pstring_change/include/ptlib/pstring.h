@@ -45,12 +45,19 @@
 
 #define _WIN32  1
 
+#define P_USE_STD_STRING   1
+
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
 PBASEARRAY(PWCharArray, unsigned short);
 #else
 PBASEARRAY(PWCharArray, wchar_t);
 #endif
 
+class PStringArray;
+class PRegularExpression;
+class PString;
+
+#if P_USE_STD_STRING
 
 class PBaseString : public PObject
 {
@@ -653,10 +660,10 @@ struct PStdCaselessTraits : public char_traits<Char>
 };
 
 
-typedef PStdStringClass<char, unsigned char, std::string> PStdString;
+typedef PStdStringClass<char, unsigned char, std::string>                                    PStdString;
 typedef PStdStringClass<char, unsigned char, basic_string<char, PStdCaselessTraits<char> > > PStdCaselessString;
 
-typedef PStdStringClass<wchar_t, unsigned short, std::wstring> PStdWideString;
+typedef PStdStringClass<wchar_t, unsigned short, std::wstring>                                         PStdWideString;
 typedef PStdStringClass<wchar_t, unsigned short, basic_string<wchar_t, PStdCaselessTraits<wchar_t> > > PStdCaselessWideString;
 
 
@@ -718,11 +725,12 @@ PStdWideString PStd_pvswprintf(
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#else // P_USE_STD_STRING
+
+///////////////////////////////////////////////////////////////////////////////
 // PString class
 
-class PStringArray;
-class PRegularExpression;
-class PString;
 
 /**The same as the standard C snprintf(fmt, 1000, ...), but returns a
    PString instead of a const char *.
@@ -774,8 +782,8 @@ PString pvsprintf(
    world usage.
  */
 
-class PString : public PCharArray {
-  PCLASSINFO(PString, PCharArray);
+class POldString : public PCharArray {
+  PCLASSINFO(POldString, PCharArray);
 
 //  using namespace std;
 
@@ -785,18 +793,18 @@ class PString : public PCharArray {
     /**Construct an empty string. This will have one character in it which is
        the '\\0' character.
      */
-    PINLINE PString();
+    PINLINE POldString();
 
     /**Create a new reference to the specified string. The string memory is not
        copied, only the pointer to the data.
      */
-    PINLINE PString(
-      const PString & str  ///< String to create new reference to.
+    PINLINE POldString(
+      const POldString & str  ///< String to create new reference to.
     );
 
     /**Create a new string from the specified std::string
      */
-    PINLINE PString(
+    PINLINE POldString(
       const std::string & str
     );
 
@@ -808,7 +816,7 @@ class PString : public PCharArray {
        If UCS-2 is used then each char from the char pointer is mapped to a
        single UCS-2 character.
      */
-    PString(
+    POldString(
       const char * cstr ///< Standard '\\0' terminated C string.
     );
 
@@ -816,7 +824,7 @@ class PString : public PCharArray {
        A new memory block is allocated of a size sufficient to take the length
        of the string and its terminating '\\0' character.
      */
-    PString(
+    POldString(
       const wchar_t * ustr ///< UCS-2 null terminated string.
     );
 
@@ -833,7 +841,7 @@ class PString : public PCharArray {
        #MakeMinimumSize()# function is called, all data beyond that first
        #'\\0'# character will be lost.
      */
-    PString(
+    POldString(
       const char * cstr,  ///< Pointer to a string of characters.
       PINDEX len          ///< Length of the string in bytes.
     );
@@ -848,7 +856,7 @@ class PString : public PCharArray {
        #MakeMinimumSize()# function is called, all data beyond that first
        #'\\0'# character will be lost.
      */
-    PString(
+    POldString(
       const wchar_t * ustr,  ///< Pointer to a string of UCS-2 characters.
       PINDEX len          ///< Length of the string in bytes.
     );
@@ -863,7 +871,7 @@ class PString : public PCharArray {
        #MakeMinimumSize()# function is called, all data beyond that first
        #'\\0'# character will be lost.
      */
-    PString(
+    POldString(
       const PWCharArray & ustr ///< UCS-2 null terminated string.
     );
 
@@ -875,7 +883,7 @@ class PString : public PCharArray {
        If UCS-2 is used then the char is mapped to a single UCS-2
        character.
      */
-    PString(
+    POldString(
       char ch    ///< Single character to initialise string.
     );
 
@@ -883,7 +891,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       short n   ///< Integer to convert
     );
 
@@ -891,7 +899,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       unsigned short n   ///< Integer to convert
     );
 
@@ -899,7 +907,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       int n   ///< Integer to convert
     );
 
@@ -907,7 +915,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       unsigned int n   ///< Integer to convert
     );
 
@@ -915,7 +923,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       long n   ///< Integer to convert
     );
 
@@ -923,7 +931,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       unsigned long n   ///< Integer to convert
     );
 
@@ -931,7 +939,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       PInt64 n   ///< Integer to convert
     );
 
@@ -939,7 +947,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString(
+    POldString(
       PUInt64 n   ///< Integer to convert
     );
 
@@ -961,17 +969,17 @@ class PString : public PCharArray {
     /* Contruct a new string converting from the spcified data source into
        a string array.
      */
-    PString(
+    POldString(
       ConversionType type,  ///< Type of data source for conversion.
       const char * str,    ///< String to convert.
       ...                 ///< Extra parameters for #sprintf()# call.
     );
-    PString(
+    POldString(
       ConversionType type,  ///< Type of data source for conversion.
       long value,           ///< Integer value to convert.
       unsigned base = 10    ///< Number base to use for the integer conversion.
     );
-    PString(
+    POldString(
       ConversionType type,  ///< Type of data source for conversion.
       double value,         ///< Floating point value to convert.
       unsigned places       ///< Number of decimals in real number output.
@@ -982,10 +990,10 @@ class PString : public PCharArray {
        parameter.
        
        @return
-       reference to the current PString object.
+       reference to the current POldString object.
      */
-    PString & operator=(
-      const PString & str  ///< New string to assign.
+    POldString & operator=(
+      const POldString & str  ///< New string to assign.
     );
 
     /**Assign the C string to the current object. The current instance then
@@ -995,9 +1003,9 @@ class PString : public PCharArray {
           myStr = "fred";
 </code>
        @return
-       reference to the current PString object.
+       reference to the current POldString object.
      */
-    PString & operator=(
+    POldString & operator=(
       const char * cstr  ///< C string to assign.
     );
 
@@ -1007,9 +1015,9 @@ class PString : public PCharArray {
           myStr = 'A';
 </code>
        @return
-       reference to the current PString object.
+       reference to the current POldString object.
      */
-    PString & operator=(
+    POldString & operator=(
       char ch            ///< Character to assign.
     );
 
@@ -1017,7 +1025,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       short n   ///< Integer to convert
     );
 
@@ -1025,7 +1033,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       unsigned short n   ///< Integer to convert
     );
 
@@ -1033,7 +1041,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       int n   ///< Integer to convert
     );
 
@@ -1041,7 +1049,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       unsigned int n   ///< Integer to convert
     );
 
@@ -1049,7 +1057,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       long n   ///< Integer to convert
     );
 
@@ -1057,7 +1065,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       unsigned long n   ///< Integer to convert
     );
 
@@ -1065,7 +1073,7 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       PInt64 n   ///< Integer to convert
     );
 
@@ -1073,17 +1081,17 @@ class PString : public PCharArray {
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
-    PString & operator=(
+    POldString & operator=(
       PUInt64 n   ///< Integer to convert
     );
 
     /**Make the current string empty
       */
-    virtual PString & MakeEmpty();
+    virtual POldString & MakeEmpty();
 
     /**Return an empty string.
       */
-    static PString Empty();
+    static POldString Empty();
   //@}
 
   /**@name Overrides from class PObject */
@@ -1104,7 +1112,7 @@ class PString : public PCharArray {
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   ///< Other PString to compare against.
+      const PObject & obj   ///< Other POldString to compare against.
     ) const;
 
     /**Output the string to the specified stream.
@@ -1127,7 +1135,7 @@ class PString : public PCharArray {
        The hash function for strings will produce a value based on the sum of
        the first three characters of the string. This is a fairly basic
        function and make no assumptions about the string contents. A user may
-       descend from PString and override the hash function if they can take
+       descend from POldString and override the hash function if they can take
        advantage of the types of strings being used, eg if all strings start
        with the letter 'A' followed by 'B or 'C' then the current hash function
        will not perform very well.
@@ -1219,11 +1227,11 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString operator+(
-      const PString & str   ///< String to concatenate.
+    POldString operator+(
+      const POldString & str   ///< String to concatenate.
     ) const;
 
-    /**Concatenate a C string to a PString to produce a third. The original
+    /**Concatenate a C string to a POldString to produce a third. The original
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
@@ -1234,11 +1242,11 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString operator+(
+    POldString operator+(
       const char * cstr  ///< C string to concatenate.
     ) const;
 
-    /**Concatenate a single character to a PString to produce a third. The
+    /**Concatenate a single character to a POldString to produce a third. The
        original string is not modified, an entirely new unique reference to a
        string is created. The #ch# parameter is typically a
        literal, eg:
@@ -1249,11 +1257,11 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString operator+(
+    POldString operator+(
       char ch   ///< Character to concatenate.
     ) const;
 
-    /**Concatenate a PString to a C string to produce a third. The original
+    /**Concatenate a POldString to a C string to produce a third. The original
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
@@ -1264,12 +1272,12 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    friend PString operator+(
+    friend POldString operator+(
       const char * cstr,    ///< C string to be concatenated to.
-      const PString & str   ///< String to concatenate.
+      const POldString & str   ///< String to concatenate.
     );
 
-    /**Concatenate a PString to a single character to produce a third. The
+    /**Concatenate a POldString to a single character to produce a third. The
        original string is not modified, an entirely new unique reference to a
        string is created. The #c# parameter is typically a literal,
        eg:
@@ -1280,9 +1288,9 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    friend PString operator+(
+    friend POldString operator+(
       char  c,              ///< Character to be concatenated to.
-      const PString & str   ///< String to concatenate.
+      const POldString & str   ///< String to concatenate.
     );
 
     /**Concatenate a string to another string, modifiying that string.
@@ -1290,11 +1298,11 @@ class PString : public PCharArray {
        @return
        reference to string that was concatenated to.
      */
-    PString & operator+=(
-      const PString & str   ///< String to concatenate.
+    POldString & operator+=(
+      const POldString & str   ///< String to concatenate.
     );
 
-    /**Concatenate a C string to a PString, modifiying that string. The
+    /**Concatenate a C string to a POldString, modifiying that string. The
        #cstr# parameter is typically a literal string, eg:
 <code>
           myStr += "fred";
@@ -1303,11 +1311,11 @@ class PString : public PCharArray {
        @return
        reference to string that was concatenated to.
      */
-    PString & operator+=(
+    POldString & operator+=(
       const char * cstr  ///< C string to concatenate.
     );
 
-    /**Concatenate a single character to a PString. The #ch#
+    /**Concatenate a single character to a POldString. The #ch#
        parameter is typically a literal, eg:
 <code>
           myStr += '!';
@@ -1316,7 +1324,7 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString & operator+=(
+    POldString & operator+=(
       char ch   ///< Character to concatenate.
     );
 
@@ -1327,11 +1335,11 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString operator&(
-      const PString & str   ///< String to concatenate.
+    POldString operator&(
+      const POldString & str   ///< String to concatenate.
     ) const;
 
-    /**Concatenate a C string to a PString to produce a third. The original
+    /**Concatenate a C string to a POldString to produce a third. The original
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
@@ -1347,11 +1355,11 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString operator&(
+    POldString operator&(
       const char * cstr  ///< C string to concatenate.
     ) const;
 
-    /**Concatenate a single character to a PString to produce a third. The
+    /**Concatenate a single character to a POldString to produce a third. The
        original string is not modified, an entirely new unique reference to a
        string is created. The #ch# parameter is typically a
        literal, eg:
@@ -1367,11 +1375,11 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    PString operator&(
+    POldString operator&(
       char ch   ///< Character to concatenate.
     ) const;
 
-    /**Concatenate a PString to a C string to produce a third. The original
+    /**Concatenate a POldString to a C string to produce a third. The original
        string is not modified, an entirely new unique reference to a string
        is created. The #cstr# parameter is typically a literal
        string, eg:
@@ -1387,12 +1395,12 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    friend PString operator&(
+    friend POldString operator&(
       const char * cstr,    ///< C string to be concatenated to.
-      const PString & str   ///< String to concatenate.
+      const POldString & str   ///< String to concatenate.
     );
 
-    /**Concatenate a PString to a single character to produce a third. The
+    /**Concatenate a POldString to a single character to produce a third. The
        original string is not modified, an entirely new unique reference to a
        string is created. The #c# parameter is typically a literal,
        eg:
@@ -1408,9 +1416,9 @@ class PString : public PCharArray {
        @return
        new string with concatenation of the object and parameter.
      */
-    friend PString operator&(
+    friend POldString operator&(
       char  ch,              ///< Character to be concatenated to.
-      const PString & str   ///< String to concatenate.
+      const POldString & str   ///< String to concatenate.
     );
 
     /**Concatenate a string to another string, modifiying that string.
@@ -1418,11 +1426,11 @@ class PString : public PCharArray {
        @return
        reference to string that was concatenated to.
      */
-    PString & operator&=(
-      const PString & str   ///< String to concatenate.
+    POldString & operator&=(
+      const POldString & str   ///< String to concatenate.
     );
 
-    /**Concatenate a C string to a PString, modifiying that string. The
+    /**Concatenate a C string to a POldString, modifiying that string. The
        #cstr# parameter is typically a literal string, eg:
 <code>
           myStr &= "fred";
@@ -1436,12 +1444,12 @@ class PString : public PCharArray {
        @return
        reference to string that was concatenated to.
      */
-    PString & operator&=(
+    POldString & operator&=(
       const char * cstr  ///< C string to concatenate.
     );
 
 
-    /**Concatenate a character to a PString, modifiying that string. The
+    /**Concatenate a character to a POldString, modifiying that string. The
        #ch# parameter is typically a literal string, eg:
 <code>
           myStr &= '!';
@@ -1455,7 +1463,7 @@ class PString : public PCharArray {
        @return
        reference to string that was concatenated to.
      */
-    PString & operator&=(
+    POldString & operator&=(
       char ch  ///< Character to concatenate.
     );
   //@}
@@ -1469,7 +1477,7 @@ class PString : public PCharArray {
        PTrue if equal.
      */
     bool operator*=(
-      const PString & str  ///< PString object to compare against.
+      const POldString & str  ///< POldString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1480,7 +1488,7 @@ class PString : public PCharArray {
        PTrue if equal.
      */
     bool operator==(
-      const PObject & str  ///< PString object to compare against.
+      const PObject & str  ///< POldString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1491,7 +1499,7 @@ class PString : public PCharArray {
        PTrue if not equal.
      */
     bool operator!=(
-      const PObject & str  ///< PString object to compare against.
+      const PObject & str  ///< POldString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1502,7 +1510,7 @@ class PString : public PCharArray {
        PTrue if less than.
      */
     bool operator<(
-      const PObject & str  ///< PString object to compare against.
+      const PObject & str  ///< POldString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1513,7 +1521,7 @@ class PString : public PCharArray {
        PTrue if greater than.
      */
     bool operator>(
-      const PObject & str  ///< PString object to compare against.
+      const PObject & str  ///< POldString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1524,7 +1532,7 @@ class PString : public PCharArray {
        PTrue if less than or equal.
      */
     bool operator<=(
-      const PObject & str  ///< PString object to compare against.
+      const PObject & str  ///< POldString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1535,11 +1543,11 @@ class PString : public PCharArray {
        PTrue if greater than or equal.
      */
     bool operator>=(
-      const PObject & str  ///< PString object to compare against.
+      const PObject & str  ///< POldString object to compare against.
     ) const;
 
 
-    /**Compare a PString to a C string using a case insensitive compare
+    /**Compare a POldString to a C string using a case insensitive compare
        function. The #cstr# parameter is typically a literal string,
        eg:
 <code>
@@ -1553,7 +1561,7 @@ class PString : public PCharArray {
       const char * cstr  ///< C string to compare against.
     ) const;
 
-    /**Compare a PString to a C string using the ##Compare()##
+    /**Compare a POldString to a C string using the ##Compare()##
        function. The #cstr# parameter is typically a literal string,
        eg:
 <code>
@@ -1567,7 +1575,7 @@ class PString : public PCharArray {
       const char * cstr  ///< C string to compare against.
     ) const;
 
-    /**Compare a PString to a C string using the #PObject::Compare()#
+    /**Compare a POldString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
 <code>
@@ -1581,7 +1589,7 @@ class PString : public PCharArray {
       const char * cstr  ///< C string to compare against.
     ) const;
 
-    /**Compare a PString to a C string using the #PObject::Compare()#
+    /**Compare a POldString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
 <code>
@@ -1595,7 +1603,7 @@ class PString : public PCharArray {
       const char * cstr  ///< C string to compare against.
     ) const;
 
-    /**Compare a PString to a C string using the #PObject::Compare()#
+    /**Compare a POldString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
 <code>
@@ -1609,7 +1617,7 @@ class PString : public PCharArray {
       const char * cstr  ///< C string to compare against.
     ) const;
 
-    /**Compare a PString to a C string using the #PObject::Compare()#
+    /**Compare a POldString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
 <code>
@@ -1623,7 +1631,7 @@ class PString : public PCharArray {
       const char * cstr  ///< C string to compare against.
     ) const;
 
-    /**Compare a PString to a C string using the #PObject::Compare()#
+    /**Compare a POldString to a C string using the #PObject::Compare()#
        function. The #cstr# parameter is typically a literal
        string, eg:
 <code>
@@ -1649,7 +1657,7 @@ class PString : public PCharArray {
        PTrue if str is a substring of .
      */
     Comparison NumCompare(
-      const PString & str,        ///< PString object to compare against.
+      const POldString & str,        ///< POldString object to compare against.
       PINDEX count = P_MAX_INDEX, ///< Number of chacracters in str to compare
       PINDEX offset = 0           ///< Offset into string to compare
     ) const;
@@ -1683,7 +1691,7 @@ class PString : public PCharArray {
 
     /** Locate the position within the string of the substring. */
     PINDEX Find(
-      const PString & str,  ///< String to search for in string.
+      const POldString & str,  ///< String to search for in string.
       PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
@@ -1714,7 +1722,7 @@ class PString : public PCharArray {
 
     /** Locate the position of the last matching substring. */
     PINDEX FindLast(
-      const PString & str,         ///< String to search for in string.
+      const POldString & str,         ///< String to search for in string.
       PINDEX offset = P_MAX_INDEX  ///< Offset into string to begin search.
     ) const;
 
@@ -1742,7 +1750,7 @@ class PString : public PCharArray {
 
     /** Locate the position of one of the characters in the set. */
     PINDEX FindOneOf(
-      const PString & set,  ///< String of characters to search for in string.
+      const POldString & set,  ///< String of characters to search for in string.
       PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
@@ -1767,7 +1775,7 @@ class PString : public PCharArray {
 
     /** Locate the position of character not in the set. */
     PINDEX FindSpan(
-      const PString & set,  ///< String of characters to search for in string.
+      const POldString & set,  ///< String of characters to search for in string.
       PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
@@ -1842,8 +1850,8 @@ class PString : public PCharArray {
        #PCaselessString# before the search is made.
      */
     void Replace(
-      const PString & target,   ///< Text to be removed.
-      const PString & subs,     ///< String to be inserted into the gaps created
+      const POldString & target,   ///< Text to be removed.
+      const POldString & subs,     ///< String to be inserted into the gaps created
       PBoolean all = PFalse,         ///< Replace all occurrences of target text.
       PINDEX offset = 0         ///< Offset into string to begin search.
     );
@@ -1856,7 +1864,7 @@ class PString : public PCharArray {
        from the old string buffer copied to it.
      */
     void Splice(
-      const PString & str,  ///< Substring to insert.
+      const POldString & str,  ///< Substring to insert.
       PINDEX pos,           ///< Position in string to insert the substring.
       PINDEX len = 0        ///< Length of section to remove.
     );
@@ -1906,7 +1914,7 @@ class PString : public PCharArray {
        @return
        substring of the source string.
      */
-    PString operator()(
+    POldString operator()(
       PINDEX start,  ///< Starting position of the substring.
       PINDEX end     ///< Ending position of the substring.
     ) const;
@@ -1925,7 +1933,7 @@ class PString : public PCharArray {
        @return
        substring of the source string.
      */
-    PString Left(
+    POldString Left(
       PINDEX len   ///< Number of characters to extract.
     ) const;
 
@@ -1943,7 +1951,7 @@ class PString : public PCharArray {
        @return
        substring of the source string.
      */
-    PString Right(
+    POldString Right(
       PINDEX len   ///< Number of characters to extract.
     ) const;
 
@@ -1963,7 +1971,7 @@ class PString : public PCharArray {
        @return
        substring of the source string.
      */
-    PString Mid(
+    POldString Mid(
       PINDEX start,             ///< Starting position of the substring.
       PINDEX len = P_MAX_INDEX  ///< Number of characters to extract.
     ) const;
@@ -1976,7 +1984,7 @@ class PString : public PCharArray {
        @return
        string with leading spaces removed.
      */
-    PString LeftTrim() const;
+    POldString LeftTrim() const;
 
     /**Create a string consisting of all characters from the source string
        except all spaces at the end of the string. The original string is not
@@ -1985,7 +1993,7 @@ class PString : public PCharArray {
        @return
        string with trailing spaces removed.
      */
-    PString RightTrim() const;
+    POldString RightTrim() const;
 
     /**Create a string consisting of all characters from the source string
        except all spaces at the beginning and end of the string. The original
@@ -1995,7 +2003,7 @@ class PString : public PCharArray {
        @return
        string with leading and trailing spaces removed.
      */
-    PString Trim() const;
+    POldString Trim() const;
 
 
     /**Create a string consisting of all characters from the source string
@@ -2006,7 +2014,7 @@ class PString : public PCharArray {
        @return
        string with upper case converted to lower case.
      */
-    PString ToLower() const;
+    POldString ToLower() const;
 
     /**Create a string consisting of all characters from the source string
        with all lower case letters converted to upper case. The original
@@ -2016,12 +2024,12 @@ class PString : public PCharArray {
        @return
        string with lower case converted to upper case.
      */
-    PString ToUpper() const;
+    POldString ToUpper() const;
 
 
     /** Split the string into an array of substrings. */
-    PStringArray Tokenise(
-      const PString & separators,
+    POldStringArray Tokenise(
+      const POldString & separators,
         ///< A string for the set of separator characters that delimit tokens.
       PBoolean onePerSeparator = PTrue
         ///< Flag for if there are empty tokens between consecutive separators.
@@ -2050,7 +2058,7 @@ class PString : public PCharArray {
        @return
        an array of substring for each token in the string.
      */
-    PStringArray Tokenise(
+    POldStringArray Tokenise(
       const char * cseparators,
         ///< A C string for the set of separator characters that delimit tokens.
       PBoolean onePerSeparator = PTrue
@@ -2070,7 +2078,7 @@ class PString : public PCharArray {
        @return
        string array with a substring for each line in the string.
      */
-    PStringArray Lines() const;
+    POldStringArray Lines() const;
   //@}
 
   /**@name Conversion functions */
@@ -2089,14 +2097,14 @@ class PString : public PCharArray {
        @return
        reference to the current string object.
      */
-    PString & sprintf(
+    POldString & sprintf(
       const char * cfmt,   ///< C string for output format.
       ...                  ///< Extra parameters for #sprintf()# call.
     );
 
     /**Produce formatted output as a string. This is identical to the standard
        C library #sprintf()# function, but sends its output to a
-       #PString#.
+       #POldString#.
 
        This function makes the assumption that there is less the 1000
        characters of formatted output. The function will assert if this occurs.
@@ -2108,14 +2116,14 @@ class PString : public PCharArray {
        @return
        reference to the current string object.
      */
-    friend PString psprintf(
+    friend POldString psprintf(
       const char * cfmt,   ///< C string for output format.
       ...                  ///< Extra parameters for #sprintf()# call.
     );
 
     /** Concatenate a formatted output to the string. */
-    PString & vsprintf(
-      const PString & fmt, ///< String for output format.
+    POldString & vsprintf(
+      const POldString & fmt, ///< String for output format.
       va_list args         ///< Extra parameters for #sprintf()# call.
     );
     /**Concatenate a formatted output to the string. This is identical to the
@@ -2132,19 +2140,19 @@ class PString : public PCharArray {
        @return
        reference to the current string object.
      */
-    PString & vsprintf(
+    POldString & vsprintf(
       const char * cfmt,   ///< C string for output format.
       va_list args         ///< Extra parameters for #sprintf()# call.
     );
 
     /** Produce formatted output as a string. */
-    friend PString pvsprintf(
+    friend POldString pvsprintf(
       const char * cfmt,   ///< C string for output format.
       va_list args         ///< Extra parameters for #sprintf()# call.
     );
     /**Produce formatted output as a string. This is identical to the standard
        C library #vsprintf()# function, but sends its output to a
-       #PString#.
+       #POldString#.
 
        This function makes the assumption that there is less the 1000
        characters of formatted output. The function will assert if this occurs.
@@ -2156,8 +2164,8 @@ class PString : public PCharArray {
        @return
        reference to the current string object.
      */
-    friend PString pvsprintf(
-      const PString & fmt, ///< String for output format.
+    friend POldString pvsprintf(
+      const POldString & fmt, ///< String for output format.
       va_list args         ///< Extra parameters for #sprintf()# call.
     );
 
@@ -2262,7 +2270,7 @@ class PString : public PCharArray {
        @return
        string converted to a C language literal form.
      */
-    PString ToLiteral() const;
+    POldString ToLiteral() const;
 
     /**Get the internal buffer as a pointer to unsigned characters. The
        standard "operator const char *" function is provided by the
@@ -2273,7 +2281,7 @@ class PString : public PCharArray {
      */
     operator const unsigned char *() const;
 
-    /** Cast the PString to a std::string
+    /** Cast the POldString to a std::string
       */
     operator std::string () const
     { return std::string(theArray); }
@@ -2309,43 +2317,37 @@ class PString : public PCharArray {
        relative rank of the two strings.
      */
 
-    PString(int dummy, const PString * str);
+    POldString(int dummy, const POldString * str);
 };
 
 
-inline ostream & operator<<(ostream & stream, const PString & string)
+inline ostream & operator<<(ostream & stream, const POldString & string)
 {
   string.PrintOn(stream);
   return stream;
 }
 
 
-inline wostream & operator<<(wostream & stream, const PString & string)
+inline wostream & operator<<(wostream & stream, const POldString & string)
 {
   return stream << (const char *)string;
 }
 
 
 #ifdef _WIN32
-  class PWideString : public PWCharArray {
-    PCLASSINFO(PWideString, PWCharArray);
+  class POldWideString : public PWCharArray {
+    PCLASSINFO(POldWideString, PWCharArray);
 
     public:
-      PWideString() { }
-      PWideString(const PWCharArray & arr) : PWCharArray(arr) { }
-      PWideString(const PString     & str) : PWCharArray(str.AsUCS2()) { }
-      PWideString(const char        * str) : PWCharArray(PString(str).AsUCS2()) { }
-      PWideString & operator=(const PWideString & str) { PWCharArray::operator=(str); return *this; }
-      PWideString & operator=(const PString     & str) { PWCharArray::operator=(str.AsUCS2()); return *this; }
-      PWideString & operator=(const char        * str) { PWCharArray::operator=(PString(str).AsUCS2()); return *this; }
-      friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
+      POldWideString() { }
+      POldWideString(const PWCharArray & arr) : PWCharArray(arr) { }
+      POldWideString(const POldString     & str) : PWCharArray(str.AsUCS2()) { }
+      POldWideString(const char        * str) : PWCharArray(POldString(str).AsUCS2()) { }
+      POldWideString & operator=(const PWideString & str) { PWCharArray::operator=(str); return *this; }
+      POldWideString & operator=(const POldString     & str) { PWCharArray::operator=(str.AsUCS2()); return *this; }
+      POldWideString & operator=(const char        * str) { PWCharArray::operator=(POldString(str).AsUCS2()); return *this; }
+      friend inline ostream & operator<<(ostream & stream, const POldWideString & string) { return stream << POldString(string); }
   };
-
-  #ifdef UNICODE
-    typedef PWideString PVarString;
-  #else
-    typedef PString PVarString;
-  #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2359,36 +2361,36 @@ inline wostream & operator<<(wostream & stream, const PString & string)
    operations are affected. So printing etc will still display the string as
    entered.
  */
-class PCaselessString : public PString
+class POldCaselessString : public POldString
 {
-  PCLASSINFO(PCaselessString, PString);
+  PCLASSINFO(POldCaselessString, POldString);
 
   public:
     /**Create a new, empty, caseless string.
      */
-    PCaselessString();
+    POldCaselessString();
 
     /**Create a new caseless string, initialising it to the characters in the
        C string provided.
      */
-    PCaselessString(
+    POldCaselessString(
       const char * cstr   ///< C string to initialise the caseless string from.
     );
 
     /**Create a caseless string, with a reference to the characters in the
-       normal #PString# provided. A PCaselessString may also be provided
+       normal #POldString# provided. A POldCaselessString may also be provided
        to this constructor.
      */
-    PCaselessString(
-      const PString & str  ///< String to initialise the caseless string from.
+    POldCaselessString(
+      const POldString & str  ///< String to initialise the caseless string from.
     );
 
 
     /**Create a caseless string from a std::string
      */
-    PCaselessString(
+    POldCaselessString(
       const std::string & str  ///< String to initialise the caseless string from.
-      ) : PString(str)
+      ) : POldString(str)
     { }
 
     /**Assign the string to the current object. The current instance then
@@ -2396,10 +2398,10 @@ class PCaselessString : public PString
        parameter.
        
        @return
-       reference to the current PString object.
+       reference to the current POldString object.
      */
-    PCaselessString & operator=(
-      const PString & str  ///< New string to assign.
+    POldCaselessString & operator=(
+      const POldString & str  ///< New string to assign.
     );
 
     /**Assign the C string to the current object. The current instance then
@@ -2409,9 +2411,9 @@ class PCaselessString : public PString
           myStr = "fred";
 </code>
        @return
-       reference to the current PString object.
+       reference to the current POldString object.
      */
-    PCaselessString & operator=(
+    POldCaselessString & operator=(
       const char * cstr  ///< C string to assign.
     );
 
@@ -2421,9 +2423,9 @@ class PCaselessString : public PString
           myStr = 'A';
 </code>
        @return
-       reference to the current PString object.
+       reference to the current POldString object.
      */
-    PCaselessString & operator=(
+    POldCaselessString & operator=(
       char ch            ///< Character to assign.
     );
 
@@ -2436,7 +2438,7 @@ class PCaselessString : public PString
     virtual PObject * Clone() const;
 
   protected:
-  // Overrides from class PString
+  // Overrides from class POldString
     virtual Comparison InternalCompare(
       PINDEX offset,      // Offset into string to compare.
       char c              // Character to compare against.
@@ -2453,8 +2455,34 @@ class PCaselessString : public PString
        relative rank of the two strings or characters.
      */
 
-    PCaselessString(int dummy, const PCaselessString * str);
+    POldCaselessString(int dummy, const POldCaselessString * str);
 };
+
+
+#endif // P_USE_STD_STRING
+
+#if P_USE_STD_STRING
+
+#define PString              PStdString
+#define PWideString          PStdWideString
+#define PCaselessString      PStdCaselessString
+#define PCaselessWideString  PStdCaselessWideString
+
+#else
+
+typedef POldString         POldString;
+typedef POldCaselessString POldCaselesString;
+typedef POldWideString     POldWideString;
+
+#endif
+
+
+#ifdef UNICODE
+typedef PWideString PVarString;
+#else
+typedef PString PVarString;
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 
