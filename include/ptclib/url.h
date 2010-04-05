@@ -47,7 +47,7 @@ class PURLLegacyScheme;
 /**
  This class describes a Universal Resource Locator.
  This is the desciption of a resource location as used by the World Wide
- Web and the #PHTTPSocket# class.
+ Web and the <code>PHTTPSocket</code> class.
  */
 class PURL : public PObject
 {
@@ -78,17 +78,17 @@ class PURL : public PObject
     /**Compare the two URLs and return their relative rank.
 
      @return
-       #LessThan#, #EqualTo# or #GreaterThan#
+       <code>LessThan</code>, <code>EqualTo</code> or <code>GreaterThan</code>
        according to the relative rank of the objects.
      */
     virtual Comparison Compare(
       const PObject & obj   ///< Object to compare against.
     ) const;
 
-    /**This function yields a hash value required by the #PDictionary#
+    /**This function yields a hash value required by the <code>PDictionary</code>
        class. A descendent class that is required to be the key of a dictionary
        should override this function. The precise values returned is dependent
-       on the semantics of the class. For example, the #PString# class
+       on the semantics of the class. For example, the <code>PString</code> class
        overrides it to provide a hash function for distinguishing text strings.
 
        The default behaviour is to return the value zero.
@@ -276,7 +276,7 @@ class PURL : public PObject
       bool emptyDataDeletes = true  ///< If true, and data empty string, key is removed
     );
 
-    /// Get the fragment (##) field of the URL.
+    /// Get the fragment (\#) field of the URL.
     const PString & GetFragment() const { return fragment; }
 
     /// Get the Query (?) field of the URL as a string.
@@ -304,7 +304,7 @@ class PURL : public PObject
     /// Set the contents of URL, data left after all elemetns are parsed out
     void SetContents(const PString & str);
 
-    /// Return PTrue if the URL is an empty string.
+    /// Return true if the URL is an empty string.
     PBoolean IsEmpty() const { return urlString.IsEmpty(); }
 
 

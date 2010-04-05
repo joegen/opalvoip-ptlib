@@ -157,7 +157,7 @@ class PIPSocket : public PSocket
         bool operator==(int i) const      { return  operator==((DWORD)i); }
         bool operator!=(int i) const      { return !operator==((DWORD)i); }
 
-        /// Compare two addresses for equivalence. This will return PTrue
+        /// Compare two addresses for equivalence. This will return true
         /// if the two addresses are equivalent even if they are IPV6 and IPV4.
 #if P_HAS_IPV6
         bool operator*=(const Address & addr) const;
@@ -170,7 +170,7 @@ class PIPSocket : public PSocket
           bool bracketIPv6 = false ///< An IPv6 address is enclosed in []'s
         ) const;
 
-        /// Convert string to IP address. Returns PTrue if was a valid address.
+        /// Convert string to IP address. Returns true if was a valid address.
         PBoolean FromString(
           const PString & str
         );
@@ -309,7 +309,7 @@ class PIPSocket : public PSocket
        PIPSocket::SetPort() function.
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
@@ -344,7 +344,7 @@ class PIPSocket : public PSocket
        For the UDP protocol, the \p queueSize parameter is ignored.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
@@ -380,15 +380,15 @@ class PIPSocket : public PSocket
        specified, for the host this process is running on.
 
        @return
-       PTrue if the IP number was returned.
+       true if the IP number was returned.
      */
     static PBoolean GetHostAddress(
       Address & addr    ///< Variable to receive hosts IP address.
     );
     static PBoolean GetHostAddress(
       const PString & hostname,
-      /* Name of host to get address for. This may be either a domain name or
-         an IP number in "dot" format.
+      /**< Name of host to get address for. This may be either a domain name or
+           an IP number in "dot" format.
        */
       Address & addr    ///< Variable to receive hosts IP address.
     );
@@ -418,7 +418,7 @@ class PIPSocket : public PSocket
        the special number 127.0.0.1 for the loopback device.
 
        @return
-       PTrue if the host is the local machine.
+       true if the host is the local machine.
      */
     static PBoolean IsLocalHost(
       /**Name of host to get address for. This may be either a domain name or
@@ -430,7 +430,7 @@ class PIPSocket : public PSocket
     /**Get the Internet Protocol address and port for the local host.
 
        @return
-       PFalse (or empty string) if the IP number was not available.
+       false (or empty string) if the IP number was not available.
      */
     virtual PString GetLocalAddress();
     virtual PBoolean GetLocalAddress(
@@ -448,7 +448,7 @@ class PIPSocket : public PSocket
        socket is connected to.
 
        @return
-       PFalse (or empty string) if the IP number was not available.
+       false (or empty string) if the IP number was not available.
      */
     virtual PString GetPeerAddress();
     virtual PBoolean GetPeerAddress(
@@ -489,11 +489,11 @@ class PIPSocket : public PSocket
        Note that the driver does not need to be open for this function to work.
 
        @return
-       PTrue if there was a gateway.
+       true if there was a gateway.
      */
     static PBoolean GetGatewayAddress(
       Address & addr,     ///< Variable to receive the IP address.
-	  int version = 4
+	  int version = 4     ///< IP version number
     );
 
     /**Get the name for the interface that is being used as the gateway,
@@ -591,7 +591,7 @@ class PIPSocket : public PSocket
     /**Get the systems route table.
 
        @return
-       PTrue if the route table is returned, PFalse if an error occurs.
+       true if the route table is returned, false if an error occurs.
      */
     static PBoolean GetRouteTable(
       RouteTable & table      ///< Route table
@@ -650,7 +650,7 @@ class PIPSocket : public PSocket
 
         PBoolean HasIP6Address() const
 #if ! P_HAS_IPV6
-        { return PFalse;}
+        { return false;}
 #else
         { return !ip6Addr.IsEmpty();}
 
@@ -678,16 +678,16 @@ class PIPSocket : public PSocket
 
     /**Get a list of all interfaces.
        @return
-       PTrue if the interface table is returned, PFalse if an error occurs.
+       true if the interface table is returned, false if an error occurs.
      */
     static PBoolean GetInterfaceTable(
       InterfaceTable & table,      ///< interface table
-      PBoolean includeDown = PFalse     ///< Include interfaces that are down
+      PBoolean includeDown = false     ///< Include interfaces that are down
     );
 
     /**Get the address of an interface that corresponds to a real network.
        @return
-       PFalse if only loopback interfaces could be found, else PTrue.
+       false if only loopback interfaces could be found, else true.
      */
     static PBoolean GetNetworkInterface(PIPSocket::Address & addr);
 
@@ -695,10 +695,10 @@ class PIPSocket : public PSocket
 
     /**Set flag to capture destination address for incoming packets.
 
-       @return PTrue if host is able to capture incoming address, else PFalse.
+       @return true if host is able to capture incoming address, else false.
       */
     PBoolean SetCaptureReceiveToAddress()
-    { if (!SetOption(IP_PKTINFO, 1, SOL_IP)) return PFalse; catchReceiveToAddr = PTrue; return PTrue; }
+    { if (!SetOption(IP_PKTINFO, 1, SOL_IP)) return false; catchReceiveToAddr = true; return true; }
 
     /**Return the interface address of the last incoming packet.
       */
@@ -715,10 +715,10 @@ class PIPSocket : public PSocket
 
     /**Set flag to capture interface address for incoming packets
 
-       @return PTrue if host is able to capture incoming address, else PFalse
+       @return true if host is able to capture incoming address, else false
       */
     PBoolean SetCaptureReceiveToAddress()
-    { return PFalse; }
+    { return false; }
 
     /**Return the interface address of the last incoming packet.
      */

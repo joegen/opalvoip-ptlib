@@ -50,24 +50,23 @@
    destructors of objects.
 
    An abstract array consists of a linear block of memory sufficient to hold
-   PContainer::GetSize() elements of #elementSize bytes
+   PContainer::GetSize() elements of <code>elementSize</code> bytes
    each. The memory block itself will automatically be resized when required
    and freed when no more references to it are present.
 
    The PAbstractArray class would very rarely be descended from directly by
-   the user. The #PBASEARRAY macro would normally be used to create
+   the user. The <code>PBASEARRAY</code> macro would normally be used to create
    a class and any new classes descended from that. That will instantiate the
-   template based on #PBaseArray or directly declare and define a class
+   template based on <code>PBaseArray</code> or directly declare and define a class
    (using inline functions) if templates are not being used.
 
-   The #PBaseArray class or #PBASEARRAY macro will define the correctly
+   The <code>PBaseArray</code> class or <code>PBASEARRAY</code> macro will define the correctly
    typed operators for pointer access (operator const T *) and subscript
    access (operator[]).
  */
 class PAbstractArray : public PContainer
 {
-  PCONTAINERINFO(PAbstractArray, PContainer);
-
+    PCONTAINERINFO(PAbstractArray, PContainer);
   public:
   /**@name Construction */
   //@{
@@ -78,7 +77,7 @@ class PAbstractArray : public PContainer
        If the initial size is zero then no memory is allocated. Note that the
        internal pointer is set to NULL, not to a pointer to zero bytes of
        memory. This can be an important distinction when the pointer is
-       obtained via an operator created in the #PBASEARRAY macro.
+       obtained via an operator created in the <code>PBASEARRAY</code> macro.
      */
     PAbstractArray(
       PINDEX elementSizeInBytes,  ///< Size of each element in the array. This must be > 0 or the
@@ -94,11 +93,11 @@ class PAbstractArray : public PContainer
        If the initial size is zero then no memory is allocated. Note that the
        internal pointer is set to NULL, not to a pointer to zero bytes of
        memory. This can be an important distinction when the pointer is
-       obtained via an operator created in the #PBASEARRAY macro.
+       obtained via an operator created in the <code>PBASEARRAY</code> macro.
 
-       If the \p dynamicAllocation parameter is #PFalse then the
+       If the \p dynamicAllocation parameter is <code>false</code> then the
        pointer is used directly by the container. It will not be copied to a
-       dynamically allocated buffer. If the #SetSize() function is used to
+       dynamically allocated buffer. If the <code>SetSize()</code> function is used to
        change the size of the buffer, the object will be converted to a
        dynamic form with the contents of the static buffer copied to the
        allocated buffer.
@@ -116,7 +115,7 @@ class PAbstractArray : public PContainer
   //@{
     /**Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator<< function.
+       primarily used by the standard <code>operator<<</code> function.
 
        The default behaviour is to print the class name.
      */
@@ -126,7 +125,7 @@ class PAbstractArray : public PContainer
 
     /**Input the contents of the object from the stream. The exact input is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard #operator>> function.
+       primarily used by the standard <code>operator>></code> function.
 
        The default behaviour is to do nothing.
      */
@@ -136,11 +135,11 @@ class PAbstractArray : public PContainer
 
     /**Get the relative rank of the two arrays. The following algorithm is
        employed for the comparison:
-          \li #EqualTo        if the two array memory blocks are identical in
+          \li <code>EqualTo</code>        if the two array memory blocks are identical in
                               length and contents.
-          \li #LessThan       if the array length is less than the
+          \li <code>LessThan</code>       if the array length is less than the
                               \p obj parameters array length.
-          \li #GreaterThan    if the array length is greater than the
+          \li <code>GreaterThan</code>    if the array length is greater than the
                               \p obj parameters array length.
 
 
@@ -148,13 +147,13 @@ class PAbstractArray : public PContainer
        function is used to rank the two arrays.
 
        @return
-       Comparison of the two objects, #EqualTo for same,
-       #LessThan for \p obj logically less than the
-       object and #GreaterThan for \p obj logically
+       Comparison of the two objects, <code>EqualTo</code> for same,
+       <code>LessThan</code> for \p obj logically less than the
+       object and <code>GreaterThan</code> for \p obj logically
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   ///< Other #PAbstractArray to compare against.
+      const PObject & obj   ///< Other <code>PAbstractArray</code> to compare against.
     ) const;
   //@}
 
@@ -166,7 +165,7 @@ class PAbstractArray : public PContainer
        then the data beyond the new size is lost.
 
        @return
-       #PTrue if the memory for the array was allocated successfully.
+       <code>true</code> if the memory for the array was allocated successfully.
      */
     virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in elements.
@@ -177,7 +176,7 @@ class PAbstractArray : public PContainer
   //@{
     /**Attach a pointer to a static block to the base array type. The pointer
        is used directly and will not be copied to a dynamically allocated
-       buffer. If the #SetSize() function is used to change the size of the
+       buffer. If the <code>SetSize()</code> function is used to change the size of the
        buffer, the object will be converted to a dynamic form with the
        contents of the static buffer copied to the allocated buffer.
 
@@ -210,12 +209,12 @@ class PAbstractArray : public PContainer
        contents and the contents of the parameter. The parameters contents is then
        copied to the end of the existing array.
 
-       Note this does nothing and returns #PFalse if the target array is not
+       Note this does nothing and returns <code>false</code> if the target array is not
        dynamically allocated, or if the two arrays are of base elements of
        different sizes.
 
        @return
-       #PTrue if the memory allocation succeeded.
+       <code>true</code> if the memory allocation succeeded.
      */
     PBoolean Concatenate(
       const PAbstractArray & array  ///< Array to concatenate.
@@ -250,27 +249,26 @@ class PAbstractArray : public PContainer
 ///////////////////////////////////////////////////////////////////////////////
 // An array of some base type
 
-/**This template class maps the #PAbstractArray to a specific element type. The
+/**This template class maps the <code>PAbstractArray</code> to a specific element type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the #PBASEARRAY macro will
+   Note that if templates are not used the <code>PBASEARRAY</code> macro will
    simulate the template instantiation.
 
    The following classes are instantiated automatically for the basic scalar
    types:
-   \li #PCharArray
-   \li #PBYTEArray
-   \li #PShortArray
-   \li #PWORDArray
-   \li #PIntArray
-   \li #PUnsignedArray
-   \li #PLongArray
-   \li #PDWORDArray
+   \li <code>PCharArray</code>
+   \li <code>PBYTEArray</code>
+   \li <code>PShortArray</code>
+   \li <code>PWORDArray</code>
+   \li <code>PIntArray</code>
+   \li <code>PUnsignedArray</code>
+   \li <code>PLongArray</code>
+   \li <code>PDWORDArray</code>
  */
 template <class T> class PBaseArray : public PAbstractArray
 {
-  PCLASSINFO(PBaseArray, PAbstractArray);
-
+    PCLASSINFO(PBaseArray, PAbstractArray);
   public:
   /**@name Construction */
   //@{
@@ -288,7 +286,7 @@ template <class T> class PBaseArray : public PAbstractArray
     PBaseArray(
       T const * buffer,   ///< Pointer to an array of the elements of type \b T.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     ) : PAbstractArray(sizeof(T), buffer, length, dynamic) { }
   //@}
 
@@ -308,7 +306,7 @@ template <class T> class PBaseArray : public PAbstractArray
        expand, if necessary, to fit the new element in.
 
        @return
-       #PTrue if new memory for the array was successfully allocated.
+       <code>true</code> if new memory for the array was successfully allocated.
      */
     PBoolean SetAt(
       PINDEX index,   ///< Position in the array to set the new value.
@@ -332,7 +330,7 @@ template <class T> class PBaseArray : public PAbstractArray
 
     /**Attach a pointer to a static block to the base array type. The pointer
        is used directly and will not be copied to a dynamically allocated
-       buffer. If the #SetSize() function is used to change the size of the
+       buffer. If the <code>SetSize()</code> function is used to change the size of the
        buffer, the object will be converted to a dynamic form with the
        contents of the static buffer copied to the allocated buffer.
 
@@ -386,7 +384,7 @@ template <class T> class PBaseArray : public PAbstractArray
        beyond the end of the allocated array then the array is expanded. If a
        memory allocation failure occurs the function asserts.
 
-       This is functionally similar to the #SetAt() function and allows
+       This is functionally similar to the <code>SetAt()</code> function and allows
        the array subscript to be an lvalue.
 
        @return
@@ -422,11 +420,11 @@ template <class T> class PBaseArray : public PAbstractArray
        contents and the contents of the parameter. The paramters contents is then
        copied to the end of the existing array.
 
-       Note this does nothing and returns #PFalse if the target array is not
+       Note this does nothing and returns <code>false</code> if the target array is not
        dynamically allocated.
 
        @return
-       #PTrue if the memory allocation succeeded.
+       <code>true</code> if the memory allocation succeeded.
      */
     PBoolean Concatenate(
       const PBaseArray & array  ///< Other array to concatenate
@@ -445,52 +443,52 @@ template <class T> class PBaseArray : public PAbstractArray
 };
 
 /**Declare a dynamic array base type.
-   This macro is used to declare a descendent of #PAbstractArray class,
+   This macro is used to declare a descendent of <code>PAbstractArray</code> class,
    customised for a particular element type \b T. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PBaseArray template class.
+   of the <code>PBaseArray</code> template class.
  */
 #define PBASEARRAY(cls, T) typedef PBaseArray<T> cls
 
 /**Begin a declaration of an array of base types.
-   This macro is used to declare a descendent of #PAbstractArray class,
+   This macro is used to declare a descendent of <code>PAbstractArray</code> class,
    customised for a particular element type \b T.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PBaseArray template class. If templates are not being used
+   of the <code>PBaseArray</code> template class. If templates are not being used
    then the macro defines a set of inline functions to do all casting of types.
    The resultant classes have an identical set of functions in either case.
 
-   See the #PBaseArray and #PAbstractArray classes for more
+   See the <code>PBaseArray</code> and <code>PAbstractArray</code> classes for more
    information.
  */
 #define PDECLARE_BASEARRAY(cls, T) \
   PDECLARE_CLASS(cls, PBaseArray<T>) \
     cls(PINDEX initialSize = 0) \
       : PBaseArray<T>(initialSize) { } \
-    cls(T const * buffer, PINDEX length, PBoolean dynamic = PTrue) \
+    cls(T const * buffer, PINDEX length, PBoolean dynamic = true) \
       : PBaseArray<T>(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
 
-/**This template class maps the #PAbstractArray to a specific element type. The
+/**This template class maps the <code>PAbstractArray</code> to a specific element type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the #PSCALAR_ARRAY macro will
+   Note that if templates are not used the <code>PSCALAR_ARRAY</code> macro will
    simulate the template instantiation.
 
    The following classes are instantiated automatically for the basic scalar
    types:
-   \li #PBYTEArray
-   \li #PShortArray
-   \li #PWORDArray
-   \li #PIntArray
-   \li #PUnsignedArray
-   \li #PLongArray
-   \li #PDWORDArray
+   \li <code>PBYTEArray</code>
+   \li <code>PShortArray</code>
+   \li <code>PWORDArray</code>
+   \li <code>PIntArray</code>
+   \li <code>PUnsignedArray</code>
+   \li <code>PLongArray</code>
+   \li <code>PDWORDArray</code>
  */
 template <class T> class PScalarArray : public PBaseArray<T>
 {
@@ -509,9 +507,9 @@ template <class T> class PScalarArray : public PBaseArray<T>
     /**Construct a new dynamic array of elements of the specified type.
      */
     PScalarArray(
-      T const * buffer,   ///< Pointer to an array of the elements of type \b T.
-      PINDEX length,      ///< Number of elements pointed to by #buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      T const * buffer,   ///< Pointer to an array of the elements of type <b>T</b>.
+      PINDEX length,      ///< Number of elements pointed to by <code>buffer</code>.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     ) : PBaseArray<T>(buffer, length, dynamic) { }
   //@}
 
@@ -529,12 +527,12 @@ template <class T> class PScalarArray : public PBaseArray<T>
 
 
 /**Declare a dynamic array base type.
-   This macro is used to declare a descendent of #PAbstractArray class,
+   This macro is used to declare a descendent of <code>PAbstractArray</code> class,
    customised for a particular element type \b T. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PBaseArray template class.
+   of the <code>PBaseArray</code> template class.
  */
 #define PSCALAR_ARRAY(cls, T) typedef PScalarArray<T> cls
 
@@ -557,11 +555,12 @@ class PCharArray : public PBaseArray {
     PCharArray(
       char const * buffer,   ///< Pointer to an array of chars.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
-#endif
+#else
 PDECLARE_BASEARRAY(PCharArray, char);
+#endif
   public:
   /**@name Overrides from class PObject */
   //@{
@@ -594,12 +593,13 @@ class PShortArray : public PBaseArray {
     PShortArray(
       short const * buffer,   ///< Pointer to an array of shorts.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
-#endif
+#else
 PSCALAR_ARRAY(PShortArray, short);
+#endif
 
 
 /// Array of integers.
@@ -620,12 +620,13 @@ class PIntArray : public PBaseArray {
     PIntArray(
       int const * buffer,   ///< Pointer to an array of ints.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
-#endif
+#else
 PSCALAR_ARRAY(PIntArray, int);
+#endif
 
 
 /// Array of long integers.
@@ -646,12 +647,13 @@ class PLongArray : public PBaseArray {
     PLongArray(
       long const * buffer,   ///< Pointer to an array of longs.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
-#endif
+#else
 PSCALAR_ARRAY(PLongArray, long);
+#endif
 
 
 /// Array of unsigned characters.
@@ -672,12 +674,13 @@ class PBYTEArray : public PBaseArray {
     PBYTEArray(
       BYTE const * buffer,   ///< Pointer to an array of BYTEs.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
-#endif
+#else
 PDECLARE_BASEARRAY(PBYTEArray, BYTE);
+#endif
   public:
   /**@name Overrides from class PObject */
   //@{
@@ -711,12 +714,13 @@ class PWORDArray : public PBaseArray {
     PWORDArray(
       WORD const * buffer,   ///< Pointer to an array of WORDs.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
-#endif
+#else
 PSCALAR_ARRAY(PWORDArray, WORD);
+#endif
 
 
 /// Array of unsigned integers.
@@ -735,14 +739,15 @@ class PUnsignedArray : public PBaseArray {
     /**Construct a new dynamic array of unsigned ints.
      */
     PUnsignedArray(
-      unsigned const * buffer,   ///< Pointer to an array of unsigned ints.
-      PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      unsigned const * buffer,  ///< Pointer to an array of unsigned ints.
+      PINDEX length,            ///< Number of elements pointed to by \p buffer.
+      PBoolean dynamic = true   ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
-#endif
+#else
 PSCALAR_ARRAY(PUnsignedArray, unsigned);
+#endif
 
 
 /// Array of unsigned long integers.
@@ -762,12 +767,14 @@ class PDWORDArray : public PBaseArray {
      */
     PDWORDArray(
       DWORD const * buffer,   ///< Pointer to an array of DWORDs.
-      PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = PTrue ///< Buffer is copied and dynamically allocated.
+      PINDEX length,          ///< Number of elements pointed to by \p buffer.
+      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     );
   //@}
-#endif
+};
+#else
 PSCALAR_ARRAY(PDWORDArray, DWORD);
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -786,18 +793,17 @@ An array of objects may have "gaps" in it. These are array entries that
 contain NULL as the object pointer.
 
 The PArrayObjects class would very rarely be descended from directly by
-the user. The #PARRAY macro would normally be used to create a class.
-That will instantiate the template based on #PArray or directly declare
+the user. The <code>PARRAY</code> macro would normally be used to create a class.
+That will instantiate the template based on <code>PArray</code> or directly declare
 and define the class (using inline functions) if templates are not being used.
 
-The #PArray class or #PARRAY macro will define the
+The <code>PArray</code> class or <code>PARRAY</code> macro will define the
 correctly typed operators for pointer access (operator const T *) and
 subscript access (operator[]).
 */
 class PArrayObjects : public PCollection
 {
-  PCONTAINERINFO(PArrayObjects, PCollection);
-
+    PCONTAINERINFO(PArrayObjects, PCollection);
   public:
   /**@name Construction */
   //@{
@@ -817,18 +823,18 @@ class PArrayObjects : public PCollection
     /**Get the relative rank of the two arrays. The following algorithm is
        employed for the comparison:
 
-       \li #EqualTo         if the two array memory blocks are identical in
+       \li <code>EqualTo</code>         if the two array memory blocks are identical in
                             length and each objects values, not pointer, are
                             equal.
 
-       \li #LessThan        if the instances object value at an ordinal
+       \li <code>LessThan</code>        if the instances object value at an ordinal
                             position is less than the corresponding objects
                             value in the \p obj parameters array.
                             This is also returned if all objects are equal and
                             the instances array length is less than the
                             \p obj parameters array length.
 
-       \li #GreaterThan     if the instances object value at an ordinal
+       \li <code>GreaterThan</code>     if the instances object value at an ordinal
                             position is greater than the corresponding objects
                             value in the \p obj parameters array.
                             This is also returned if all objects are equal and
@@ -836,13 +842,13 @@ class PArrayObjects : public PCollection
                             \p obj parameters array length.
 
        @return
-       Comparison of the two objects, #EqualTo for same,
-       #LessThan for \p obj logically less than the
-       object and #GreaterThan for \p obj logically
+       Comparison of the two objects, <code>EqualTo</code> for same,
+       <code>LessThan</code> for \p obj logically less than the
+       object and <code>GreaterThan</code> for \p obj logically
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   ///< Other #PAbstractArray to compare against.
+      const PObject & obj   ///< Other <code>PAbstractArray</code> to compare against.
     ) const;
   //@}
 
@@ -857,7 +863,7 @@ class PArrayObjects : public PCollection
        made smaller then the data beyond the new size is lost.
 
        @return
-       PTrue if the memory for the array was allocated successfully.
+       true if the memory for the array was allocated successfully.
      */
     virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in objects.
@@ -878,13 +884,13 @@ class PArrayObjects : public PCollection
 
     /**Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the #Append() function is performed.
+       the <code>Append()</code> function is performed.
 
        All objects, including the \p before object are shifted up
        one in the array.
 
        Note that the object values are compared for the search of the
-       #before parameter, not the pointers. So the objects in the
+       <code>before</code> parameter, not the pointers. So the objects in the
        collection must correctly implement the PObject::Compare()
        function.
 
@@ -898,7 +904,7 @@ class PArrayObjects : public PCollection
 
     /** Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the #Append() function is performed.
+       equivalent of the <code>Append()</code> function is performed.
 
        All objects, including the \p index position object are
        shifted up one in the array.
@@ -911,20 +917,20 @@ class PArrayObjects : public PCollection
       PObject * obj   ///< New object to place into the collection.
     );
 
-    /**Remove the object from the collection. If the #AllowDeleteObjects option
+    /**Remove the object from the collection. If the <code>AllowDeleteObjects</code> option
        is set then the object is also deleted.
 
        All objects are shifted down to fill the vacated position.
 
        @return
-       #PTrue if the object was in the collection.
+       <code>true</code> if the object was in the collection.
      */
     virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     );
 
     /**Remove the object at the specified ordinal index from the collection.
-       If the #AllowDeleteObjects option is set then the object is also deleted.
+       If the <code>AllowDeleteObjects</code> option is set then the object is also deleted.
 
        All objects are shifted down to fill the vacated position.
 
@@ -939,11 +945,11 @@ class PArrayObjects : public PCollection
     );
 
     /**Set the object at the specified ordinal position to the new value. This
-       will overwrite the existing entry. If the #AllowDeleteObjects option is
+       will overwrite the existing entry. If the <code>AllowDeleteObjects</code> option is
        set then the old object is also deleted.
 
        @return
-       #PTrue if the object was successfully added.
+       <code>true</code> if the object was successfully added.
      */
     virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
@@ -965,7 +971,7 @@ class PArrayObjects : public PCollection
        from ordinal position zero is performed.
 
        @return
-       Ordinal index position of the object, or #P_MAX_INDEX.
+       Ordinal index position of the object, or <code>P_MAX_INDEX</code>.
      */
     virtual PINDEX GetObjectsIndex(
       const PObject * obj  ///< Object to find.
@@ -978,14 +984,14 @@ class PArrayObjects : public PCollection
        performed.
 
        @return
-       Ordinal index position of the object, or #P_MAX_INDEX.
+       Ordinal index position of the object, or <code>P_MAX_INDEX</code>.
      */
     virtual PINDEX GetValuesIndex(
       const PObject & obj   // Object to find equal of.
     ) const;
 
     /**Remove all of the elements in the collection. This operates by
-       continually calling #RemoveAt() until there are no objects left.
+       continually calling <code>RemoveAt()</code> until there are no objects left.
 
        The objects are removed from the last, at index
        (GetSize()-1) toward the first at index zero.
@@ -999,16 +1005,16 @@ class PArrayObjects : public PCollection
 };
 
 
-/**This template class maps the #PArrayObjects to a specific object type.
+/**\class PArray
+   This template class maps the <code>PArrayObjects</code> to a specific object type.
    The functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the #PARRAY macro will
+   Note that if templates are not used the <code>PARRAY</code> macro will
    simulate the template instantiation.
 */
 template <class T> class PArray : public PArrayObjects
 {
-  PCLASSINFO(PArray, PArrayObjects);
-
+    PCLASSINFO(PArray, PArrayObjects);
   public:
   /**@name Construction */
   //@{
@@ -1056,29 +1062,29 @@ template <class T> class PArray : public PArrayObjects
 
 
 /**Declare an array to a specific type of object.
-   This macro is used to declare a descendent of #PArrayObjects class,
+   This macro is used to declare a descendent of <code>PArrayObjects</code> class,
    customised for a particular object type \b T. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the #PArray template class.
+   of the <code>PArray</code> template class.
 
-   See the #PBaseArray class and #PDECLARE_ARRAY macro for more
+   See the <code>PBaseArray</code> class and <code>PDECLARE_ARRAY</code> macro for more
    information.
 */
 #define PARRAY(cls, T) typedef PArray<T> cls
 
 
 /**Begin declaration an array to a specific type of object.
-   This macro is used to declare a descendent of #PArrayObjects class,
+   This macro is used to declare a descendent of <code>PArrayObjects</code> class,
    customised for a particular object type \b T.
 
    If the compilation is using templates then this macro produces a descendent
-   of the #PArray template class. If templates are not being used then
+   of the <code>PArray</code> template class. If templates are not being used then
    the macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the #PBaseArray and #PAbstractArray classes for more
+   See the <code>PBaseArray</code> and <code>PAbstractArray</code> classes for more
    information.
 */
 #define PDECLARE_ARRAY(cls, T) \
@@ -1114,7 +1120,7 @@ class PBitArray : public PBYTEArray
     PBitArray(
       const void * buffer,   ///< Pointer to an array of the elements of type \b T.
       PINDEX length,         ///< Number of bits (not bytes!) pointed to by \p buffer.
-      PBoolean dynamic = PTrue    ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamic = true    ///< Buffer is copied and dynamically allocated.
     );
   //@}
 
@@ -1125,7 +1131,7 @@ class PBitArray : public PBYTEArray
     virtual PObject * Clone() const;
   //@}
 
-  /**@name Overrides from class #PContainer */
+  /**@name Overrides from class <code>PContainer</code> */
   //@{
     /**Get the current size of the container.
        This represents the number of things the container contains. For some
@@ -1141,7 +1147,7 @@ class PBitArray : public PBYTEArray
        then the data beyond the new size is lost.
 
        @return
-       PTrue if the memory for the array was allocated successfully.
+       true if the memory for the array was allocated successfully.
      */
     virtual PBoolean SetSize(
       PINDEX newSize  ///< New size of the array in bits, not bytes.
@@ -1151,7 +1157,7 @@ class PBitArray : public PBYTEArray
        expand, if necessary, to fit the new element in.
 
        @return
-       PTrue if new memory for the array was successfully allocated.
+       true if new memory for the array was successfully allocated.
      */
     PBoolean SetAt(
       PINDEX index,   ///< Position in the array to set the new value.
@@ -1159,7 +1165,7 @@ class PBitArray : public PBYTEArray
     );
 
     /**Get a bit from the array. If \p index is beyond the end
-       of the allocated array then #PFalse is returned.
+       of the allocated array then <code>false</code> is returned.
 
        @return
        Value at the array position.
@@ -1170,7 +1176,7 @@ class PBitArray : public PBYTEArray
 
     /**Attach a pointer to a static block to the bit array type. The pointer
        is used directly and will not be copied to a dynamically allocated
-       buffer. If the #SetSize() function is used to change the size of the
+       buffer. If the <code>SetSize()</code> function is used to change the size of the
        buffer, the object will be converted to a dynamic form with the
        contents of the static buffer copied to the allocated buffer.
 
@@ -1201,10 +1207,10 @@ class PBitArray : public PBYTEArray
 
   /**@name New functions for class */
   //@{
-    /**Get a value from the array. If the #index is beyond the end
+    /**Get a value from the array. If the <code>index</code> is beyond the end
        of the allocated array then a zero value is returned.
 
-       This is functionally identical to the #PContainer::GetAt()
+       This is functionally identical to the <code>PContainer::GetAt()</code>
        function.
 
        @return
@@ -1216,32 +1222,32 @@ class PBitArray : public PBYTEArray
 
     /**Set a bit to the array.
 
-       This is functionally identical to the PContainer::SetAt(index, PTrue)
+       This is functionally identical to the PContainer::SetAt(index, true)
        function.
      */
     PBitArray & operator+=(
       PINDEX index  ///< Position on the array to get value from.
-    ) { SetAt(index, PTrue); return *this; }
+    ) { SetAt(index, true); return *this; }
 
     /**Set a bit to the array.
 
-       This is functionally identical to the PContainer::SetAt(index, PTrue)
+       This is functionally identical to the PContainer::SetAt(index, true)
        function.
      */
     PBitArray & operator-=(
       PINDEX index  ///< Position on the array to get value from.
-    ) { SetAt(index, PFalse); return *this; }
+    ) { SetAt(index, false); return *this; }
 
     /**Concatenate one array to the end of this array.
        This function will allocate a new array large enough for the existing
        contents and the contents of the parameter. The paramters contents is then
        copied to the end of the existing array.
 
-       Note this does nothing and returns PFalse if the target array is not
+       Note this does nothing and returns false if the target array is not
        dynamically allocated.
 
        @return
-       #PTrue if the memory allocation succeeded.
+       <code>true</code> if the memory allocation succeeded.
      */
     PBoolean Concatenate(
       const PBitArray & array  ///< Other array to concatenate

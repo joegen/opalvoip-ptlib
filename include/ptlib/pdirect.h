@@ -67,7 +67,7 @@ class PFileInfo : public PObject
   public:
     /**All types that a particular file path may be. Not all platforms support
        all of the file types. For example under DOS no file may be of the
-       type #SymbolicLink#.
+       type <code>SymbolicLink</code>.
      */
     enum FileTypes {
       /// Ordinary disk file.
@@ -141,7 +141,7 @@ class PFileInfo : public PObject
     };
 
     /**A bit mask of all the file acces permissions. See the
-       #Permissions enum# for the possible bit values.
+       <code>Permissions</code> enum# for the possible bit values.
        
        Not all platforms support all permissions.
      */
@@ -168,7 +168,7 @@ class PFileInfo : public PObject
    The path always has a trailing separator.
 
    Some platforms allow more than one character to act as a directory separator
-   so when doing any processing the #IsSeparator()# function should be
+   so when doing any processing the <code>IsSeparator()</code> function should be
    used to determine if a character is a possible separator.
 
    The directory may be opened to gain access to the list of files that it
@@ -176,8 +176,8 @@ class PFileInfo : public PObject
    entries that some platforms support.
 
    The ancestor class is dependent on the platform. For file systems that are
-   case sensitive, eg Unix, the ancestor is #PString#. For other
-   platforms, the ancestor class is #PCaselessString#.
+   case sensitive, eg Unix, the ancestor is <code>PString</code>. For other
+   platforms, the ancestor class is <code>PCaselessString</code>.
  */
 class PDirectory : public PFilePathString
 {
@@ -190,16 +190,16 @@ class PDirectory : public PFilePathString
     PDirectory();
       
     /**Create a directory object of the specified directory. The
-       #pathname# parameter may be a relative directory which is
-       made absolute by the creation of the #PDirectory# object.
+       <code>cpathname</code> parameter may be a relative directory which is
+       made absolute by the creation of the <code>PDirectory</code> object.
      */
     PDirectory(
       const char * cpathname      ///< Directory path name for new object.
     );
 
     /**Create a directory object of the specified directory. The
-       #pathname# parameter may be a relative directory which is
-       made absolute by the creation of the #PDirectory# object.
+       <code>pathname</code> parameter may be a relative directory which is
+       made absolute by the creation of the <code>PDirectory</code> object.
      */
     PDirectory(
       const PString & pathname    ///< Directory path name for new object.
@@ -244,7 +244,7 @@ class PDirectory : public PFilePathString
     /**Determine if the directory is the root directory of a volume.
     
        @return
-       PTrue if the object is a root directory.
+       true if the object is a root directory.
      */
     PBoolean IsRoot() const;
 
@@ -261,11 +261,11 @@ class PDirectory : public PFilePathString
       */
     PStringArray GetPath() const;
 
-    /**Determine if the character #ch# is a directory path
+    /**Determine if the character <code>ch</code> is a directory path
        separator.
 
        @return
-       PTrue if may be used to separate directories in a path.
+       true if may be used to separate directories in a path.
      */
     PINLINE static PBoolean IsSeparator(
       char ch    ///< Character to check as being a separator.
@@ -279,7 +279,7 @@ class PDirectory : public PFilePathString
        to use all of these bytes.
 
        @return
-       PTrue if the information could be determined.
+       true if the information could be determined.
      */
     PBoolean GetVolumeSpace(
       PInt64 & total,     ///< Total number of bytes available on volume
@@ -293,14 +293,14 @@ class PDirectory : public PFilePathString
     /**Test for if the directory exists.
 
        @return
-       PTrue if directory exists.
+       true if directory exists.
      */
     PBoolean Exists() const;
 
     /**Test for if the specified directory exists.
 
        @return
-       PTrue if directory exists.
+       true if directory exists.
      */
     static PBoolean Exists(
       const PString & path   ///< Directory file path.
@@ -309,14 +309,14 @@ class PDirectory : public PFilePathString
     /**Change the current working directory to the objects location.
 
        @return
-       PTrue if current working directory was changed.
+       true if current working directory was changed.
      */
     PBoolean Change() const;
 
     /**Change the current working directory to that specified..
 
        @return
-       PTrue if current working directory was changed.
+       true if current working directory was changed.
      */
     static PBoolean Change(
       const PString & path   ///< Directory file path.
@@ -325,7 +325,7 @@ class PDirectory : public PFilePathString
     /**Create a new directory with the specified permissions.
 
        @return
-       PTrue if directory created.
+       true if directory created.
      */
     PBoolean Create(
       int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
@@ -333,7 +333,7 @@ class PDirectory : public PFilePathString
     /**Create a new directory as specified with the specified permissions.
 
        @return
-       PTrue if directory created.
+       true if directory created.
      */
     static PBoolean Create(
       const PString & p,   ///< Directory file path.
@@ -343,14 +343,14 @@ class PDirectory : public PFilePathString
     /**Delete the directory.
 
        @return
-       PTrue if directory was deleted.
+       true if directory was deleted.
      */
     PBoolean Remove();
 
     /**Delete the specified directory.
 
        @return
-       PTrue if directory was deleted.
+       true if directory was deleted.
      */
     static PBoolean Remove(
       const PString & path   ///< Directory file path.
@@ -360,8 +360,8 @@ class PDirectory : public PFilePathString
   /**@name Directory listing functions */
   //@{
     /**Open the directory for scanning its list of files. Once opened the
-       #GetEntryName()# function may be used to get the current directory
-       entry and the #Next()# function used to move to the next directory
+       <code>GetEntryName()</code> function may be used to get the current directory
+       entry and the <code>Next()</code> function used to move to the next directory
        entry.
        
        Only files that are of a type that is specified in the mask will be
@@ -371,7 +371,7 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       PTrue if directory was successfully opened, and there was at least one
+       true if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
     virtual PBoolean Open(
@@ -379,8 +379,8 @@ class PDirectory : public PFilePathString
     );
       
     /**Restart file list scan from the beginning of directory. This is similar
-       to the #Open()# command but does not require that the directory be
-       closed (using #Close()#) first.
+       to the <code>Open()</code> command but does not require that the directory be
+       closed (using <code>Close()</code>) first.
 
        Only files that are of a type that is specified in the mask will be
        returned.
@@ -389,7 +389,7 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       PTrue if directory was successfully opened, and there was at least one
+       true if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
     virtual PBoolean Restart(
@@ -399,13 +399,13 @@ class PDirectory : public PFilePathString
     /**Move to the next file in the directory scan.
     
        Only files that are of a type that is specified in the mask passed to
-       the #Open()# or #Restart()# functions will be returned.
+       the <code>Open()</code> or <code>Restart()</code> functions will be returned.
 
        Note that the directory scan will {\b not} return the "." and ".."
        entries that some platforms support.
 
        @return
-       PTrue if there is another valid file in the directory.
+       true if there is another valid file in the directory.
      */
     PBoolean Next();
       
@@ -435,14 +435,14 @@ class PDirectory : public PFilePathString
        entries that some platforms support.
 
        @return
-       PTrue if entry is a subdirectory.
+       true if entry is a subdirectory.
      */
     virtual PBoolean IsSubDir() const;
 
     /**Get file information on the current directory entry.
     
        @return
-       PTrue if file information was successfully retrieved.
+       true if file information was successfully retrieved.
      */
     virtual PBoolean GetInfo(
       PFileInfo & info    ///< Object to receive the file information.

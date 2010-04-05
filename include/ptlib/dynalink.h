@@ -76,7 +76,7 @@ class PDynaLink : public PObject
     /* Open a new dyna-link, loading the specified module.
 
        @return
-       PTrue if the library was loaded.
+       true if the library was loaded.
      */
     virtual PBoolean Open(
       const PString & name    ///< Name of the dynamically loadable module.
@@ -93,14 +93,14 @@ class PDynaLink : public PObject
     /**Get the name of the loaded library. If the library is not loaded
        this may return an empty string.
 
-       If #full# is PTrue then the full pathname of the library
+       If <code>full</code> is true then the full pathname of the library
        is returned otherwise only the name part is returned.
 
        @return
        String for the library name.
      */
     virtual PString GetName(
-      PBoolean full = PFalse  ///< Flag for full or short path name
+      PBoolean full = false  ///< Flag for full or short path name
     ) const;
 
     /**Get the extension used by this platform for dynamic link libraries.
@@ -120,7 +120,7 @@ class PDynaLink : public PObject
     /**Get a pointer to the function in the dynamically loadable module.
 
        @return
-       PTrue if function was found.
+       true if function was found.
      */
     PBoolean GetFunction(
       PINDEX index,    ///< Ordinal number of the function to get.
@@ -130,7 +130,7 @@ class PDynaLink : public PObject
     /**Get a pointer to the function in the dynamically loadable module.
 
        @return
-       PTrue if function was found.
+       true if function was found.
      */
     PBoolean GetFunction(
       const PString & name,  ///< Name of the function to get.

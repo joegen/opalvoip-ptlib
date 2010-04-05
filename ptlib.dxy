@@ -15,11 +15,8 @@
 This document provides reference information for the PTLib C++ class library. It is not intended
 as a tutorial document.
 
-Last updated 17 May, 2004
-
-Copyright (C) 1999-2003 Equivalence Pty Ltd, All right reserved 
-
-Portions Copyright (C) 2004 Post Increment, All Rights Reserved
+Copyright (C) 1999-2003 Equivalence Pty Ltd, All right reserved<BR>
+Portions Copyright (C) 2004 Post Increment, All Rights Reserved<BR>
 Portions Copyright (C) 2009 Vox Lucida Pty, Ltd., All Rights Reserved
 
 
@@ -103,7 +100,7 @@ void Hello::Main()
 // End of hello.cxx
 \endverbatim
 
-The PCREATE_PROCESS macro actually defines the #main()# function
+The PCREATE_PROCESS macro actually defines the main() function
 and creates an instance of Hello. This assures that everything is
 initialised in the correct order. C++ does initialisation of global
 statics badly (and destruction is even worse), so try to put
@@ -148,7 +145,6 @@ Implementation of a network sockets abstraction (roughly based on Berkeley socke
   \li PUDPSocket - IP socket using the UDP protocol
   \li PTCPSocket - IP socket using the TCP/IP protocol
   \li PICMPSocket - IP socket using the ICMP protocl
-  \li PIPXSocket - base class for sockets using the IPX protocol
   \li PEthSocket - socket interface for raw Ethernet interfaces
 
 \subsection thread Process and Thread Classes
@@ -160,7 +156,6 @@ Classes that handle processes, multi-threading and synchronsiation.
   \li PThreadPool - manage a pool of threads for execution.
   \li PSemaphore - synchronisation primitive based on a counter
   \li PMutex - synchronisation primitive based on mutual exclusion
-  \li PCriticalSection - synchronisation primitive implementing exclusive access to a critical code section
   \li PSyncPoint - allows multiple threads to sychronise to a specific code point. See also PSyncPointAck
   \li PReadWriteMutex - mutex that allows multiple readers, single writer model.
   \li PAtomicInteger - implements an integer counter with atomic increment and decrement operations
@@ -175,7 +170,7 @@ Classes that normalise other opeating system functions.
   \li PMail - send an email using a platform-appropriate mechanism
   \li PTextToSpeech - Implement a Text to Speech converter
   \li PRemoteConnection - controls for a dialup network connection
-  \li PSDLVideoDevice - implement a vide display device using the SDL library
+  \li PVideoDevice - abstract class for video devices
 
 \section components Console Components
 
@@ -183,7 +178,7 @@ Classes that normalise other opeating system functions.
 Implementation of various Internet-related protocols. Some of these are implemented within PTLib - some require external libraries for support
   \li PInternetProtocol - base class for all text-based Internet protocols
   \li PPOP3 - base class for POP3 protocol classes. See also PPOP3Client and PPOP3Server
-  \li PSMTMP - base class for SMTP protocol classes. See also PSMTPClient and PSMTPServer
+  \li PSMTP - base class for SMTP protocol classes. See also PSMTPClient and PSMTPServer
   \li PFTP - base class for FTP protocol classes. See also PFTPClient and FTPServer
   \li PMIMEInfo - implements a list of key-value pairs in MIME format
   \li PTelnetSocket - implements the TELNET protocol
@@ -191,7 +186,7 @@ Implementation of various Internet-related protocols. Some of these are implemen
   \li PSTUNClient - implementation of a STUN client
   \li PSNMP - base classs for SNMP protocol implementations. See also PSNMPClient and PSNMPServer
   \li PSSLChannel - PIndirectChannel that implements the SSL protocol via OpenSSL. 
-  \li PSASL - implements the SASL protocol via the Cyrus SASL library
+  \li PSASLClient - implements the SASL protocol via the Cyrus SASL library
   \li PXMLRPC - implements the XMLRPC protocol via the Expat XML library and the HTTP classes
   \li PSOAPClient - implements a SOAP client
   \li PLDAPSession - implements a LDAP client via the OpenLDAP library
@@ -211,7 +206,7 @@ Implementation of the HTTP protocol
   \li PArgList - parse a command line passed to a console program
   \li PRandom - a random number generator
   \li PAdaptiveDelay - class to make delays as constant as possible despite operating system errors.
-  \li PAbstractFactory - an implementation of the "Abstract Factory" paradigm using templates
+  \li PFactory - an implementation of the "Factory" paradigm using templates
   \li PRegularExpression - class for handling regular expression parsing.
   \li PIpAccessControlList - a list of entries that allow specification of a range of IP addresses or networks
   \li PCypher - implementation of various code cyphers such as PMessageDigest5, PTEACypher, and PMessageDigestSHA1
@@ -225,5 +220,5 @@ Implementation of the HTTP protocol
 \subsection history History
 
 \li 17 May 2004 - Converted from Doc++ to Doxygen format by Craig Southeren
-
+     5 Apr 2010 - Major clean up of documentation inconsistencies.
 */

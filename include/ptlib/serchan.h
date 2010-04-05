@@ -93,7 +93,7 @@ class PSerialChannel : public PChannel
     PSerialChannel(
       /**The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
-         #GetPortNames()# can be used to find the platforms serial ports.
+         <code>GetPortNames()</code> can be used to find the platforms serial ports.
        */
       const PString & port,
       /**Serial port speed or baud rate. The actual values possible here are
@@ -106,8 +106,8 @@ class PSerialChannel : public PChannel
        */
       BYTE data = 0,
       /**Parity for serial port. The actual values possible here are platform
-         dependent, but #NoParity#, #OddParity# and
-         #EvenParity# should always be legal.
+         dependent, but <code>NoParity</code>, <code>OddParity</code> and
+         <code>EvenParity</code> should always be legal.
        */
       Parity parity = DefaultParity,
       /**Number of stop bits for serial port. The actual values possible here
@@ -145,7 +145,7 @@ class PSerialChannel : public PChannel
     virtual PBoolean Open(
       /**The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
-         #GetPortNames()# can be used to find the platforms serial ports.
+         <code>GetPortNames()</code> can be used to find the platforms serial ports.
        */
       const PString & port,
       /**Serial port speed or baud rate. The actual values possible here are
@@ -158,8 +158,8 @@ class PSerialChannel : public PChannel
        */
       BYTE data = 0,
       /**Parity for serial port. The actual values possible here are platform
-         dependent, but #NoParity#, #OddParity# and
-         #EvenParity# should always be legal.
+         dependent, but <code>NoParity</code>, <code>OddParity</code> and
+         <code>EvenParity</code> should always be legal.
        */
       Parity parity = DefaultParity,
       /**Number of stop bits for serial port. The actual values possible here
@@ -200,7 +200,7 @@ class PSerialChannel : public PChannel
     /**Set the speed (baud rate) of the serial channel.
 
        @return
-       PTrue if the change was successfully made.
+       true if the change was successfully made.
      */
     PBoolean SetSpeed(
       DWORD speed   ///< New speed for serial channel.
@@ -216,7 +216,7 @@ class PSerialChannel : public PChannel
     /**Set the data bits (5, 6, 7 or 8) of the serial port.
 
        @return
-       PTrue if the change was successfully made.
+       true if the change was successfully made.
      */
     PBoolean SetDataBits(
       BYTE data   ///< New number of data bits for serial channel.
@@ -232,7 +232,7 @@ class PSerialChannel : public PChannel
     /**Set the parity of the serial port.
 
        @return
-       PTrue if the change was successfully made.
+       true if the change was successfully made.
      */
     PBoolean SetParity(
       Parity parity   ///< New parity option for serial channel.
@@ -248,7 +248,7 @@ class PSerialChannel : public PChannel
     /**Set the stop bits (1 or 2) of the serial port.
 
        @return
-       PTrue if the change was successfully made.
+       true if the change was successfully made.
      */
     PBoolean SetStopBits(
       BYTE stop   ///< New number of stop bits for serial channel.
@@ -265,7 +265,7 @@ class PSerialChannel : public PChannel
        port.
 
        @return
-       PTrue if the change was successfully made.
+       true if the change was successfully made.
      */
     PBoolean SetInputFlowControl(
       FlowControl flowControl   ///< New flow control for serial channel input.
@@ -283,7 +283,7 @@ class PSerialChannel : public PChannel
        port.
 
        @return
-       PTrue if the change was successfully made.
+       true if the change was successfully made.
      */
     PBoolean SetOutputFlowControl(
       FlowControl flowControl   ///< New flow control for serial channel output.
@@ -312,59 +312,59 @@ class PSerialChannel : public PChannel
   //@{
     /** Set the Data Terminal Ready signal of the serial port. */
     void SetDTR(
-      PBoolean state = PTrue   ///< New state of the DTR signal.
+      PBoolean state = true   ///< New state of the DTR signal.
     );
 
     /**Clear the Data Terminal Ready signal of the serial port. This is
-       equivalent to #SetDTR(PFalse)#.
+       equivalent to <code>SetDTR(false)</code>.
      */
     void ClearDTR();
 
     /**Set the Request To Send signal of the serial port. */
     void SetRTS(
-      PBoolean state = PTrue   ///< New state of the RTS signal.
+      PBoolean state = true   ///< New state of the RTS signal.
     );
 
     /**Clear the Request To Send signal of the serial port. This is equivalent
-       to #SetRTS(PFalse)#.
+       to <code>SetRTS(false)</code>.
      */
     void ClearRTS();
 
     /** Set the break condition of the serial port. */
     void SetBreak(
-      PBoolean state = PTrue   ///< New state of the serial port break condition.
+      PBoolean state = true   ///< New state of the serial port break condition.
     );
 
     /**Clear the break condition of the serial port. This is equivalent to
-       #SetBreak(PFalse)#.
+       <code>SetBreak(false)</code>.
      */
     void ClearBreak();
 
     /**Get the Clear To Send signal of the serial port.
     
        @return
-       PTrue if the CTS signal is asserted.
+       true if the CTS signal is asserted.
      */
     PBoolean GetCTS();
 
     /**Get the Data Set Ready signal of the serial port.
     
        @return
-       PTrue if the DSR signal is asserted.
+       true if the DSR signal is asserted.
      */
     PBoolean GetDSR();
 
     /**Get the Data Carrier Detect signal of the serial port.
     
        @return
-       PTrue if the DCD signal is asserted.
+       true if the DCD signal is asserted.
      */
     PBoolean GetDCD();
 
     /**Get the Ring Indicator signal of the serial port.
     
        @return
-       PTrue if the RI signal is asserted.
+       true if the RI signal is asserted.
      */
     PBoolean GetRing();
   //@}

@@ -48,7 +48,7 @@
    This may be used to send signals to a thread and await an acknowldegement
    that the signal was processed. This can be be used to initiate an action in
    another thread and wait for the action to be completed.
-\verbatim
+<pre><code>
     ... thread one
     while (condition) {
       sync.Wait();
@@ -62,7 +62,7 @@
     do_yet_more();    // However, this does not get done until Acknowledge()
                       // is called in the other thread.
 
-\endverbatim
+</code></pre>
  */
 class PSyncPointAck : public PSyncPoint
 {
@@ -77,7 +77,7 @@ class PSyncPointAck : public PSyncPoint
        target thread that was blocked by the Wait() function has resumed
        execution and called the Acknowledge() function.
 
-       The #waitTime parameter is used as a maximum amount of time
+       The <code>waitTime</code> parameter is used as a maximum amount of time
        to wait for the achnowledgement to be returned from the other thread.
      */
     virtual void Signal();
@@ -179,7 +179,7 @@ class PIntCondMutex : public PCondMutex
     /** This is the condition that must be met for the WaitCondition() function
        to acquire the mutex.
 
-       @return PTrue if condition is met.
+       @return true if condition is met.
      */
     virtual PBoolean Condition();
 
@@ -334,7 +334,7 @@ class PReadWriteMutex : public PObject
    and automatically ends the read operation on destruction.
 
   This is very usefull for constructs such as:
-\verbatim
+<pre><code>
     void func()
     {
       PReadWaitAndSignal mutexWait(myMutex);
@@ -345,7 +345,7 @@ class PReadWriteMutex : public PObject
         return;
       do_something_else();
     }
-\endverbatim
+</code></pre>
  */
 class PReadWaitAndSignal {
   public:
@@ -355,7 +355,7 @@ class PReadWaitAndSignal {
       */
     PReadWaitAndSignal(
       const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
-      PBoolean start = PTrue    ///< Start read operation on PReadWriteMutex before returning.
+      PBoolean start = true    ///< Start read operation on PReadWriteMutex before returning.
     );
     /** End read operation on the PReadWriteMutex.
         This will execute the EndRead() function on the PReadWriteMutex that
@@ -372,7 +372,7 @@ class PReadWaitAndSignal {
    and automatically ends the write operation on destruction.
 
   This is very useful for constructs such as:
-\verbatim
+<pre><code>
     void func()
     {
       PWriteWaitAndSignal mutexWait(myMutex);
@@ -383,7 +383,7 @@ class PReadWaitAndSignal {
         return;
       do_something_else();
     }
-\endverbatim
+</code></pre>
  */
 class PWriteWaitAndSignal {
   public:
@@ -393,7 +393,7 @@ class PWriteWaitAndSignal {
       */
     PWriteWaitAndSignal(
       const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
-      PBoolean start = PTrue    ///< Start write operation on PReadWriteMutex before returning.
+      PBoolean start = true    ///< Start write operation on PReadWriteMutex before returning.
     );
     /** End write operation on the PReadWriteMutex.
         This will execute the EndWrite() function on the PReadWriteMutex that

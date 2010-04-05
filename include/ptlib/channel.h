@@ -47,14 +47,14 @@ class PChannel;
 
 /* Buffer class used in PChannel stream.
 This class is necessary for implementing the standard C++ iostream interface
-on #PChannel# classes and its descendents. It is an internal class and
+on <code>PChannel</code> classes and its descendents. It is an internal class and
 should not ever be used by application writers.
 */
 class PChannelStreamBuffer : public streambuf {
 
   protected:
     /* Construct the streambuf for standard streams on a channel. This is used
-       internally by the #PChannel# class.
+       internally by the <code>PChannel</code> class.
      */
     PChannelStreamBuffer(
       PChannel * chan   // Channel the buffer operates on.
@@ -87,9 +87,9 @@ class PChannelStreamBuffer : public streambuf {
    serial port, pipe, network socket or even just a simple file. Anything that
    requires opening and closing then reading and/or writing from.
 
-   A descendent would typically have constructors and an #Open()# function which
-   enables access to the I/O channel it represents. The #Read()# and
-   #Write()# functions would then be overridden to the platform and I/O
+   A descendent would typically have constructors and an open function which
+   enables access to the I/O channel it represents. The <code>Read()</code> and
+   <code>Write()</code> functions would then be overridden to the platform and I/O
    specific mechanisms required.
 
    The general model for a channel is that the channel accepts and/or supplies
@@ -97,8 +97,8 @@ class PChannelStreamBuffer : public streambuf {
    functions that allow certain types of transfer. These include direct
    transfers, buffered transfers (via iostream) or asynchronous transfers.
 
-   The model also has the fundamental state of the channel being <i>open</i>
-   or <i>closed</i>. A channel instance that is closed contains sufficient
+   The model also has the fundamental state of the channel being <code>open</code>
+   or <code>closed</code>. A channel instance that is closed contains sufficient
    information to describe the channel but does not allocate or lock any
    system resources. An open channel allocates or locks the particular system
    resource. The act of opening a channel is a key event that may fail. In this
@@ -123,9 +123,9 @@ class PChannel : public PObject, public iostream {
        eg strcmp(), is used.
 
        @return
-       comparison of the two objects, #EqualTo# for same,
-       #LessThan# for #obj# logically less than the
-       object and #GreaterThan# for #obj# logically
+       comparison of the two objects, <code>EqualTo</code> for same,
+       <code>LessThan</code> for <code>obj</code> logically less than the
+       object and <code>GreaterThan</code> for <code>obj</code> logically
        greater than the object.
      */
     virtual Comparison Compare(
@@ -152,15 +152,15 @@ class PChannel : public PObject, public iostream {
   //@{
     /** Determine if the channel is currently open.
        This indicates that read and write operations can be executed on the
-       channel. For example, in the #PFile# class it returns if the file is
+       channel. For example, in the <code>PFile</code> class it returns if the file is
        currently open.
 
-       @return PTrue if the channel is open.
+       @return true if the channel is open.
      */
     virtual PBoolean IsOpen() const;
 
     /** Get the platform and I/O channel type name of the channel. For example,
-       it would return the filename in #PFile# type channels.
+       it would return the filename in <code>PFile</code> type channels.
 
        @return the name of the channel.
      */
@@ -175,7 +175,7 @@ class PChannel : public PObject, public iostream {
 
     /** Get the base channel of channel indirection using PIndirectChannel.
        This function returns the eventual base channel for reading of a series
-       of indirect channels provided by descendents of #PIndirectChannel#.
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
 
        The behaviour for this function is to return "this".
        
@@ -186,7 +186,7 @@ class PChannel : public PObject, public iostream {
 
     /** Get the base channel of channel indirection using PIndirectChannel.
        This function returns the eventual base channel for writing of a series
-       of indirect channels provided by descendents of #PIndirectChannel#.
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
 
        The behaviour for this function is to return "this".
        
@@ -199,7 +199,7 @@ class PChannel : public PObject, public iostream {
   /**@name Reading functions */
   //@{
     /** Set the timeout for read operations. This may be zero for immediate
-       return of data through to #PMaxTimeInterval# which will wait forever for
+       return of data through to <code>PMaxTimeInterval</code> which will wait forever for
        the read request to be filled.
        
        Note that this function may not be available, or meaningfull, for all
@@ -223,11 +223,11 @@ class PChannel : public PObject, public iostream {
        of bytes read.
 
        The GetErrorCode() function should be consulted after Read() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -265,21 +265,23 @@ class PChannel : public PObject, public iostream {
        all of the bytes have been read, or an error occurs.
 
        @return
-       PTrue if the read of #len# bytes was sucessfull.
+       true if the read of <code>len</code> bytes was sucessfull.
      */
     PBoolean ReadBlock(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
-    /** Read #len# character into a string from the channel. This
+    /** Read <code>len</code> character into a string from the channel. This
        function simply uses ReadBlock(), so all remarks pertaining to that
        function also apply to this one.
 
        @return
        String that was read.
      */
-    PString ReadString(PINDEX len);
+    PString ReadString(
+      PINDEX len  ///< Length of string data to read.
+    );
 
     /** Begin an asynchronous read from channel. The read timeout is used as in
        other read operations, in this case calling the OnReadComplete()
@@ -290,14 +292,14 @@ class PChannel : public PObject, public iostream {
        of calling the OnReadComplete() before returning.
 
        @return
-       PTrue if the read was sucessfully queued.
+       true if the read was sucessfully queued.
      */
     virtual PBoolean ReadAsync(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
-    /** User callback function for when a #ReadAsync()# call has completed or
+    /** User callback function for when a <code>ReadAsync()</code> call has completed or
        timed out. The original pointer to the buffer passed in ReadAsync() is
        passed to the function.
      */
@@ -335,10 +337,10 @@ class PChannel : public PObject, public iostream {
        of bytes written.
 
        The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
+       false to determine what caused the failure.
 
        @return
-       PTrue if at least len bytes were written to the channel.
+       true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -350,7 +352,7 @@ class PChannel : public PObject, public iostream {
        Note that the number of bytes written may often be less, or even more,
        than that asked for. A common case of it being less is where the disk
        is full. An example of where the bytes written is more is as follows.
-       On a #PTextFile# channel on the MSDOS platform, there is
+       On a <code>PTextFile</code> channel on the MSDOS platform, there is
        translation of \n to CR/LF pairs. This will result in the number of
        bytes returned being more than that requested.
 
@@ -365,7 +367,7 @@ class PChannel : public PObject, public iostream {
        Note that this asserts if the value is not in the range 0..255.
 
        @return
-       PTrue if the byte was successfully written.
+       true if the byte was successfully written.
      */
     PBoolean WriteChar(int c);
 
@@ -373,7 +375,7 @@ class PChannel : public PObject, public iostream {
        function so all comments on that function also apply.
 
        @return
-       PTrue if the character written.
+       true if the character written.
      */
     PBoolean WriteString(const PString & str);
 
@@ -384,7 +386,7 @@ class PChannel : public PObject, public iostream {
        the addition of calling the OnWriteComplete() before returning.
 
        @return
-       PTrue of the write operation was succesfully queued.
+       true of the write operation was succesfully queued.
      */
     virtual PBoolean WriteAsync(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -406,7 +408,7 @@ class PChannel : public PObject, public iostream {
   //@{
     /** Close the channel, shutting down the link to the data source.
 
-       @return PTrue if the channel successfully closed.
+       @return true if the channel successfully closed.
      */
     virtual PBoolean Close();
 
@@ -418,10 +420,10 @@ class PChannel : public PObject, public iostream {
 
     /** Close one or both of the data streams associated with a channel.
 
-       The default behavour is to do nothing and return PFalse.
+       The default behavour is to do nothing and return false.
 
        @return
-       PTrue if the shutdown was successfully performed.
+       true if the shutdown was successfully performed.
      */
     virtual PBoolean Shutdown(
       ShutdownValue option
@@ -441,7 +443,7 @@ class PChannel : public PObject, public iostream {
     /**Set the iostream buffer size for reads and writes.
 
        @return
-       PTrue if the new buffer size was set.
+       true if the new buffer size was set.
       */
     PBoolean SetBufferSize(
       PINDEX newSize    ///< New buffer size
@@ -483,7 +485,7 @@ class PChannel : public PObject, public iostream {
           <tr><td>\\wnm  <td>as for above but timeout is in milliseconds.
           </table>
        @return
-       PTrue if the command string was completely processed.
+       true if the command string was completely processed.
      */
     PBoolean SendCommandString(
       const PString & command  ///< Command to send to the channel
@@ -561,21 +563,21 @@ class PChannel : public PObject, public iostream {
       ErrorGroup group = NumErrorGroups   ///< Error group to get
     ) const;
 
-      /** Get error message description.
+    /** Get error message description.
         Return a string indicating the error message that may be displayed to
        the user. The error for the last I/O operation in this object is used.
-      @return Operating System error description string.
-       */
+       @return Operating System error description string.
+     */
     virtual PString GetErrorText(
       ErrorGroup group = NumErrorGroups   ///< Error group to get
     ) const;
 
-      /** Get error message description.
-        Return a string indicating the error message that may be displayed to
-       the user. The #osError# parameter is used unless zero, in which case
-       the #lastError# parameter is used.
-      @return Operating System error description string.
-       */
+    /** Get error message description.
+       Return a string indicating the error message that may be displayed to
+       the user. The <code>osError</code> parameter is used unless zero, in which case
+       the <code>lastError</code> parameter is used.
+       @return Operating System error description string.
+     */
     static PString GetErrorText(
       Errors lastError,   ///< Error code to translate.
       int osError = 0     ///< OS error number to translate.
@@ -586,7 +588,7 @@ class PChannel : public PObject, public iostream {
        This will set the lastError and osError member variables for access by
        GetErrorCode() and GetErrorNumber().
        
-       @return PTrue if there was no error.
+       @return true if there was no error.
      */
     static PBoolean ConvertOSError(
       int libcReturnValue,
@@ -615,8 +617,8 @@ class PChannel : public PObject, public iostream {
         implemented by operating systems to do a real scattered read
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Read(
       const VectorOfSlice & slices    // slices to read to
@@ -628,8 +630,8 @@ class PChannel : public PObject, public iostream {
         implemented by operating systems to do a real scattered write
 
        @return
-       PTrue indicates that at least one character was read from the channel.
-       PFalse means no bytes were read due to timeout or some other I/O error.
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
      */
     virtual PBoolean Write(
       const VectorOfSlice & slices    // slices to read to
@@ -644,9 +646,9 @@ class PChannel : public PObject, public iostream {
 
     /** Convert an operating system error into platform independent error.
       The internal error codes are set by this function. They may be obtained
-      via the #GetErrorCode()# and #GetErrorNumber()# functions.
+      via the <code>GetErrorCode()</code> and <code>GetErrorNumber()</code> functions.
        
-       @return PTrue if there was no error.
+       @return true if there was no error.
      */
     virtual PBoolean ConvertOSError(
       int libcReturnValue,                ///< Return value from standard library
@@ -655,7 +657,7 @@ class PChannel : public PObject, public iostream {
 
   public:
     /**Set error values to those specified.
-       Return PTrue if errorCode is NoError, PFalse otherwise
+       Return true if errorCode is NoError, false otherwise
       */
     PBoolean SetErrorValues(
       Errors errorCode,   ///< Error code to translate.
@@ -666,11 +668,11 @@ class PChannel : public PObject, public iostream {
   protected:
     /** Read a character with specified timeout.
       This reads a single character from the channel waiting at most the
-      amount of time specified for it to arrive. The #timeout# parameter
+      amount of time specified for it to arrive. The <code>timeout</code> parameter
       is adjusted for amount of time it actually took, so it can be used
       for a multiple character timeout.
 
-       @return PTrue if there was no error.
+       @return true if there was no error.
      */
     int ReadCharWithTimeout(
       PTimeInterval & timeout  // Timeout for read.

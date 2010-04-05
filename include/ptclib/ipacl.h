@@ -102,7 +102,7 @@ class PIpAccessControlEntry : public PObject
     /** Check the internal fields of the specification for validity.
 
        @return
-       PTrue if entry is valid.
+       true if entry is valid.
      */
     PBoolean IsValid();
 
@@ -123,7 +123,7 @@ class PIpAccessControlEntry : public PObject
                           domain.
 
        @return
-       PTrue if entry is valid.
+       true if entry is valid.
      */
     PBoolean Parse(
       const PString & description   ///< Description of the specification
@@ -134,7 +134,7 @@ class PIpAccessControlEntry : public PObject
        specifed in the Parse() function for this entry.
 
        @return
-       PTrue if entry can match the address.
+       true if entry can match the address.
      */
     PBoolean Match(
       PIPSocket::Address & address    ///< Address to search for
@@ -193,7 +193,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
     /** Create a new, empty, access control list.
      */
     PIpAccessControlList(
-      PBoolean defaultAllowance = PTrue
+      PBoolean defaultAllowance = true
     );
 
     /** Load the system wide files commonly use under Linux (hosts.allow and
@@ -207,8 +207,8 @@ class PIpAccessControlList : public PIpAccessControlList_base
        PProcess::GetName() function is used.
 
        @return
-       PTrue if all the entries in the file were added, if any failed then
-       PFalse is returned.
+       true if all the entries in the file were added, if any failed then
+       false is returned.
      */
     PBoolean LoadHostsAccess(
       const char * daemonName = NULL    ///< Name of "daemon" application
@@ -220,8 +220,8 @@ class PIpAccessControlList : public PIpAccessControlList_base
        equivalent to Load(cfg, "IP Access Control List").
 
        @return
-       PTrue if all the entries in the file were added, if any failed then
-       PFalse is returned.
+       true if all the entries in the file were added, if any failed then
+       false is returned.
      */
     PBoolean Load(
       PConfig & cfg   ///< Configuration file to load entries from.
@@ -233,8 +233,8 @@ class PIpAccessControlList : public PIpAccessControlList_base
        PHTTPConfig classes.
 
        @return
-       PTrue if all the entries in the file were added, if any failed then
-       PFalse is returned.
+       true if all the entries in the file were added, if any failed then
+       false is returned.
      */
     PBoolean Load(
       PConfig & cfg,            ///< Configuration file to load entries from.
@@ -265,7 +265,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
        field.
 
        @return
-       PTrue if the entries was successfully added.
+       true if the entries was successfully added.
      */
     PBoolean Add(
       PIpAccessControlEntry * entry ///< Entry for IP match parameters
@@ -284,7 +284,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
        field.
 
        @return
-       PTrue if the entries was successfully removed.
+       true if the entries was successfully removed.
      */
     PBoolean Remove(
       const PString & description   ///< Description of the IP match parameters
@@ -315,13 +315,13 @@ class PIpAccessControlList : public PIpAccessControlList_base
        control list. If the <CODE>socket</CODE> form is used the peer address
        of the connection is tested.
 
-       If the list is empty then PTrue is returned. If the list is not empty,
-       but the IP address does not match any entries in the list, then PFalse
+       If the list is empty then true is returned. If the list is not empty,
+       but the IP address does not match any entries in the list, then false
        is returned. If a match is made then the allow state of that entry is
        returned.
 
        @return
-       PTrue if the remote host address is allowed.
+       true if the remote host address is allowed.
      */
     PBoolean IsAllowed(
       PTCPSocket & socket           ///< Socket to test

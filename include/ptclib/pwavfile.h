@@ -202,12 +202,12 @@ public:
 
   /**Create a WAV file object but do not open it. It does not
      initially have a valid file name. However, an attempt to open the file
-     using the #PFile::Open() function will generate a unique
+     using the <code>PFile::Open()</code> function will generate a unique
      temporary file.
 
      If a WAV file is being created, the type parameter can be used
      to create a PCM Wave file or a G.723.1 Wave file by using
-     #WaveType enum.
+     <code>WaveType</code> enum.
   */
   PWAVFile(
            unsigned format = fmt_PCM ///< Type of WAV File to create
@@ -223,35 +223,35 @@ public:
 
      If a WAV file is being created, the type parameter can be used
      to create a PCM Wave file or a G.723.1 Wave file by using
-     #WaveType enum.
+     <code>WaveType</code> enum.
 
-     The #PChannel::IsOpen() function may be used after object
+     The <code>PChannel::IsOpen()</code> function may be used after object
      construction to determine if the file was successfully opened.
   */
   PWAVFile(
-           OpenMode mode,          ///< Mode in which to open the file.
-           int opts = ModeDefault, ///< #OpenOptions enum for open operation.
-           unsigned format = fmt_PCM ///< Type of WAV File to create
-           );
+    OpenMode mode,          ///< Mode in which to open the file.
+    int opts = ModeDefault, ///< <code>OpenOptions</code> enum for open operation.
+    unsigned format = fmt_PCM ///< Type of WAV File to create
+  );
   static PWAVFile * format(
-                           const PString & format,  ///< Type of WAV File to create
-                           PFile::OpenMode mode,          ///< Mode in which to open the file.
-                           int opts = PFile::ModeDefault ///< #OpenOptions enum for open operation.
-                           );
+    const PString & format,  ///< Type of WAV File to create
+    PFile::OpenMode mode,          ///< Mode in which to open the file.
+    int opts = PFile::ModeDefault ///< <code>OpenOptions</code> enum for open operation.
+  );
 
   /**Create a WAV file object with the specified name and open it in
      the specified mode and with the specified options.
      If a WAV file is being created, the type parameter can be used
      to create a PCM Wave file or a G.723.1 Wave file by using
-     #WaveType enum.
+     <code>WaveType</code> enum.
 
-     The #PChannel::IsOpen() function may be used after object
+     The <code>PChannel::IsOpen()</code> function may be used after object
      construction to determine if the file was successfully opened.
   */
   PWAVFile(
     const PFilePath & name,     ///< Name of file to open.
     OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
-    int opts = ModeDefault,     ///< #OpenOptions enum for open operation.
+    int opts = ModeDefault,     ///< <code>OpenOptions</code> enum for open operation.
     unsigned format = fmt_PCM ///< Type of WAV File to create
   );
 
@@ -259,7 +259,7 @@ public:
     const PString & format,  ///< Type of WAV File to create
     const PFilePath & name,     ///< Name of file to open.
     OpenMode mode = PFile::ReadWrite,  ///< Mode in which to open the file.
-    int opts = PFile::ModeDefault     ///< #OpenOptions enum for open operation.
+    int opts = PFile::ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /**Close the file before destruction.
@@ -273,8 +273,8 @@ public:
      processing such as byte-order swaping.
 
      @return
-     PTrue indicates that at least one character was read from the channel.
-     PFalse means no bytes were read due to timeout or some other I/O error.
+     true indicates that at least one character was read from the channel.
+     false means no bytes were read due to timeout or some other I/O error.
   */
   virtual PBoolean Read(
     void * buf,   ///< Pointer to a block of memory to receive the read bytes.
@@ -285,8 +285,8 @@ public:
      processing such as byte-order swaping.
 
      @return
-     PTrue indicates that at least one character was written to the channel.
-     PFalse means no bytes were written due to timeout or some other I/O error.
+     true indicates that at least one character was written to the channel.
+     false means no bytes were written due to timeout or some other I/O error.
   */
   virtual PBoolean Write(
     const void * buf,   ///< Pointer to a block of memory to receive the write bytes.
@@ -298,12 +298,12 @@ public:
      it is closed.
 
      If there has not been a filename attached to the file object
-     (via #SetFilePath(), the \p name parameter in the constructor
+     (via <code>SetFilePath()</code>, the \p name parameter in the constructor
      or a previous open) then a new unique temporary filename is
      generated.
 
      @return
-     PTrue if the file was successfully opened.
+     true if the file was successfully opened.
   */
   virtual PBoolean Open(
     OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
@@ -321,18 +321,18 @@ public:
      then the \p name parameter is ignored.
 
      @return
-     PTrue if the file was successfully opened.
+     true if the file was successfully opened.
   */
   virtual PBoolean Open(
     const PFilePath & name,    ///< Name of file to open.
     OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-    int opts = ModeDefault     ///< #OpenOptions enum for open operation.
+    int opts = ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /** Close the file channel.
       If a WAV file has been written to, this will update the header
       to contain the correct size information.
-      @return PTrue if close was OK.
+      @return true if close was OK.
   */
   virtual PBoolean Close();
 
@@ -348,7 +348,7 @@ public:
      perform SetPosition().
 
      @return
-     PTrue if the new file position was set.
+     true if the new file position was set.
   */
   virtual PBoolean SetPosition(
     off_t pos,                         ///< New position to set.
@@ -409,8 +409,8 @@ public:
   /**Determine if the WAV file is a valid wave file.
 
      @return
-     PTrue indicates that the WAV file is valid
-     PFalse indicates that the WAV file is invalid
+     true indicates that the WAV file is valid
+     false indicates that the WAV file is invalid
   */
   PBoolean IsValid() const { return isValidWAV; }
 

@@ -101,8 +101,9 @@ class PColourConverter : public PObject
     
     /**Set the video conversion vertical flip state
      */
-    void SetVFlipState(PBoolean vFlipState) 
-      { verticalFlip = vFlipState; }
+    void SetVFlipState(
+      PBoolean vFlipState  ///< New state for flipping images
+    ) { verticalFlip = vFlipState; }
     
     /**Set the frame size to be used.
 
@@ -116,10 +117,10 @@ class PColourConverter : public PObject
     /**Set the source frame info to be used.
 
        Default behaviour sets the srcFrameWidth and srcFrameHeight variables and
-       recalculates the frame buffer size in bytes then returns PTrue if the size
+       recalculates the frame buffer size in bytes then returns true if the size
        was calculated correctly.
 
-       Returns PFalse if the colour formats do not agree.
+       Returns false if the colour formats do not agree.
     */
     virtual PBoolean SetSrcFrameInfo(
       const PVideoFrameInfo & info   ///< New info for frame
@@ -129,9 +130,9 @@ class PColourConverter : public PObject
 
        Default behaviour sets the dstFrameWidth and dstFrameHeight variables,
        and the scale / crop preference. It then recalculates the frame buffer
-       size in bytes then returns PTrue if the size was calculated correctly.
+       size in bytes then returns true if the size was calculated correctly.
 
-       Returns PFalse if the colour formats do not agree.
+       Returns false if the colour formats do not agree.
     */
     virtual PBoolean SetDstFrameInfo(
       const PVideoFrameInfo & info  ///< New info for frame
@@ -152,7 +153,7 @@ class PColourConverter : public PObject
     /**Set the source frame size to be used.
 
        Default behaviour sets the srcFrameWidth and srcFrameHeight variables and
-       recalculates the frame buffer size in bytes then returns PTrue if the size
+       recalculates the frame buffer size in bytes then returns true if the size
        was calculated correctly.
     */
     virtual PBoolean SetSrcFrameSize(
@@ -164,16 +165,16 @@ class PColourConverter : public PObject
 
        Default behaviour sets the dstFrameWidth and dstFrameHeight variables,
        and the scale / crop preference. It then recalculates the frame buffer
-       size in bytes then returns PTrue if the size was calculated correctly.
+       size in bytes then returns true if the size was calculated correctly.
     */
     virtual PBoolean SetDstFrameSize(
-      unsigned width,  ///< New width of target frame
-      unsigned height ///< New height of target frame
+      unsigned width,   ///< New width of target frame
+      unsigned height   ///< New height of target frame
     );
     virtual PBoolean SetDstFrameSize(
-      unsigned width,  ///< New width of target frame
-      unsigned height, ///< New height of target frame
-      PBoolean bScale
+      unsigned width,   ///< New width of target frame
+      unsigned height,  ///< New height of target frame
+      PBoolean bScale   ///< Indicate if scaling or cropping is to be used
     );
 
     /**Get the source colour format.
@@ -205,7 +206,7 @@ class PColourConverter : public PObject
        where srcFrameBuffer and dstFrameBuffer are the same, if the conversion
        algorithm allows for that to occur without an intermediate frame store.
 
-       The function should return PFalse if srcFrameBuffer and dstFrameBuffer
+       The function should return false if srcFrameBuffer and dstFrameBuffer
        are the same and that form pf conversion is not allowed
     */
     virtual PBoolean Convert(
@@ -217,30 +218,30 @@ class PColourConverter : public PObject
     virtual PBoolean Convert(
       const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
       BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
-      unsigned int srcFrameBytes,
+      unsigned int srcFrameBytes,   ///< Bytes used in source frame buffer
       PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
     ) = 0;
 
     /**Convert from one colour format to another.
        This version will copy the data from one frame buffer to the same frame
        buffer. Not all conversions can do this so an intermediate store and
-       copy may be required. If the noIntermediateFrame parameter is PTrue
+       copy may be required. If the noIntermediateFrame parameter is true
        and the conversion cannot be done in place then the function returns
-       PFalse. If the in place conversion can be done then that parameter is
+       false. If the in place conversion can be done then that parameter is
        ignored.
 
        Note that the frame should be large enough to take the destination
        pixels.
 
        Default behaviour calls Convert() from the frameBuffer to itself, and
-       if that returns PFalse then calls it again (provided noIntermediateFrame
-       is PFalse) using an intermediate store, copying the intermediate store
+       if that returns false then calls it again (provided noIntermediateFrame
+       is false) using an intermediate store, copying the intermediate store
        back to the original frame store.
     */
     virtual PBoolean ConvertInPlace(
       BYTE * frameBuffer,               ///< Frame buffer to translate data
       PINDEX * bytesReturned = NULL,    ///< Bytes written to frameBuffer
-      PBoolean noIntermediateFrame = PFalse  ///< Flag to use intermediate store
+      PBoolean noIntermediateFrame = false  ///< Flag to use intermediate store
     );
 
 

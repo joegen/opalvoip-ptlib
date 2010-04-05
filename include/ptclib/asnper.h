@@ -16,9 +16,9 @@ class PPER_Stream : public PASN_Stream
 {
     PCLASSINFO(PPER_Stream, PASN_Stream);
   public:
-    PPER_Stream(int aligned = PTrue);
-    PPER_Stream(const BYTE * buf, PINDEX size, PBoolean aligned = PTrue);
-    PPER_Stream(const PBYTEArray & bytes, PBoolean aligned = PTrue);
+    PPER_Stream(int aligned = true);
+    PPER_Stream(const BYTE * buf, PINDEX size, PBoolean aligned = true);
+    PPER_Stream(const PBYTEArray & bytes, PBoolean aligned = true);
 
     PPER_Stream & operator=(const PBYTEArray & bytes);
 

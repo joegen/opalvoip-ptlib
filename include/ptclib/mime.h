@@ -65,14 +65,14 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
 
   // Overrides from class PObject
     /** Output the contents of the MIME dictionary to the stream. This is
-       primarily used by the standard ##operator<<## function.
+       primarily used by the standard <code>operator<<</code> function.
      */
     virtual void PrintOn(
       ostream &strm   ///< Stream to print the object into.
     ) const;
 
     /** Input the contents of the MIME dictionary from the stream. This is
-       primarily used by the standard ##operator>>## function.
+       primarily used by the standard <code>operator>></code> function.
      */
     virtual void ReadFrom(
       istream &strm   ///< Stream to read the objects contents from.
@@ -84,7 +84,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     PBoolean SetAt(
       const char * key,
@@ -95,7 +95,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     PBoolean SetAt(
       const PString & key,
@@ -106,7 +106,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     PBoolean SetAt(
       const PCaselessString & key,
@@ -117,7 +117,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        dictionary then this overrides the previous value.
 
        @return
-       PTrue if the object was successfully added.
+       true if the object was successfully added.
      */
     PBoolean SetAt(
       const PString & (*key)(),
@@ -128,7 +128,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       PTrue if the MIME variable is present.
+       true if the MIME variable is present.
      */
     PBoolean Contains(
       const char * key       ///< Key into MIME dictionary to get info.
@@ -138,7 +138,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       PTrue if the MIME variable is present.
+       true if the MIME variable is present.
      */
     PBoolean Contains(
       const PString & key       ///< Key into MIME dictionary to get info.
@@ -148,7 +148,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       PTrue if the MIME variable is present.
+       true if the MIME variable is present.
      */
     PBoolean Contains(
       const PCaselessString & key       ///< Key into MIME dictionary to get info.
@@ -158,7 +158,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        set.
 
        @return
-       PTrue if the MIME variable is present.
+       true if the MIME variable is present.
      */
     PBoolean Contains(
       const PString & (*key)()       ///< Key into MIME dictionary to get info.
@@ -168,7 +168,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     /** Read MIME information from the socket.
 
        @return
-       PTrue if the MIME information was successfully read.
+       true if the MIME information was successfully read.
      */
     PBoolean Read(
       PInternetProtocol & socket   ///< Application socket to read MIME info.
@@ -177,7 +177,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     /** Write MIME information to the socket.
 
        @return
-       PTrue if the MIME information was successfully read.
+       true if the MIME information was successfully read.
      */
     PBoolean Write(
       PInternetProtocol & socket   ///< Application socket to write MIME info.
@@ -189,7 +189,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        value.
 
        @return
-       PTrue is a field was added.
+       true is a field was added.
       */
     bool AddMIME(
       const PString & line
@@ -203,7 +203,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     );
 
     /** Get a string for the particular MIME info field with checking for
-       existance. The #dflt# parameter is substituted if the field
+       existance. The <code>dflt</code> parameter is substituted if the field
        does not exist in the MIME information read in.
 
        @return
@@ -219,7 +219,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     ) const { return GetString(key(), dflt); }
 
     /** Get an integer value for the particular MIME info field with checking
-       for existance. The #dflt# parameter is substituted if the
+       for existance. The <code>dflt</code> parameter is substituted if the
        field does not exist in the MIME information read in.
 
        @return
@@ -252,7 +252,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
            key: <base-value>;tag1=token;tag2="string";tag3
 
         The base-value will be placed in the dictionary where the key is the
-        empty string. If the base-value is quoted with '<, '>' brackets then
+        empty string. If the base-value is quoted with '<', '>' brackets then
         the brackets are removed. Note that the string "<>" can be used to have
         an empty base-value but a field starting with a ';' is illegal and this
         function will return false.
@@ -315,12 +315,12 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        content type is then sent for any file in the directory sub-tree that
        has the same extension.
 
-       Note that if the #merge# parameter if PTrue then the
+       Note that if the <code>merge</code> parameter if true then the
        dictionary is merged into the current association list and is not a
        simple replacement.
 
        The default values placed in this dictionary are:
-<code>
+<pre><code>
 
           ".txt", "text/plain"
           ".text", "text/plain"
@@ -343,14 +343,14 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
           ".mpeg", "video/mpeg"
           ".qt", "video/quicktime"
           ".mov", "video/quicktime"
-</code>
+</code></pre>
 
 
        The default content type will be "application/octet-stream".
      */
     static void SetAssociation(
       const PStringToString & allTypes,  ///< MIME content type associations.
-      PBoolean merge = PTrue                  ///< Flag for merging associations.
+      PBoolean merge = true                  ///< Flag for merging associations.
     );
     static void SetAssociation(
       const PString & fileType,         ///< File type (extension) to match.

@@ -49,20 +49,20 @@ There are four sources of configuration information. The system environment,
 a system wide configuration file, an application specific configuration file
 or an explicit configuration file.
 
-Configuration information follows a three level hierarchy: <i>file</i>,
-<i>section</i> and <i>variable</i>. Thus, a configuration file consists of
+Configuration information follows a three level hierarchy: <code>file</code>,
+<code>section</code> and <code>variable</code>. Thus, a configuration file consists of
 a number of sections each with a number of variables selected by a
-<i>key</i>. Each variable has an associated value.
+<code>key</code>. Each variable has an associated value.
 
 Note that the evironment source for configuration information does not have
 sections. The section is ignored and the same set of keys are available.
 
 The configuration file is a standard text file for the platform with its
 internals appearing in the form:
-<code>
+<pre><code>
      [Section String]
      Key Name=Value String
-</code>
+</code></pre>
 */
 class PConfig : public PObject
 {
@@ -147,7 +147,7 @@ class PConfig : public PObject
        with keys and get or set configuration values will use this section
        unless an explicit section name is specified.
 
-       Note when the #Environment# source is being used the default
+       Note when the <code>Environment</code> source is being used the default
        section may be set but it is ignored.
      */
     virtual void SetDefaultSection(
@@ -158,7 +158,7 @@ class PConfig : public PObject
        with keys and get or set configuration values will use this section
        unless an explicit section name is specified.
 
-       Note when the #Environment# source is being used the default
+       Note when the <code>Environment</code> source is being used the default
        section may be retrieved but it is ignored.
 
        @return default section name string.
@@ -168,7 +168,7 @@ class PConfig : public PObject
     /** Get all of the section names currently specified in the file. A section
        is the part specified by the [ and ] characters.
 
-       Note when the #Environment# source is being used this will
+       Note when the <code>Environment</code> source is being used this will
        return an empty list as there are no section present.
 
        @return list of all section names.
@@ -251,7 +251,7 @@ class PConfig : public PObject
        section name is not specified then the default section is used.
        
        If the key is not present the value returned is the that provided by
-       the #dlft# parameter. Note that this is different from the
+       the <code>dlft</code> parameter. Note that this is different from the
        key being present but having no value, in which case an empty string is
        returned.
 
@@ -290,34 +290,34 @@ class PConfig : public PObject
     /** Get a boolean variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
-       The boolean value can be specified in a number of ways. The PTrue value
+       The boolean value can be specified in a number of ways. The true value
        is returned if the string value for the variable begins with either the
        'T' character or the 'Y' character. Alternatively if the string can
-       be converted to a numeric value, a non-zero value will also return PTrue.
-       Thus the values can be Key=True, Key=Yes or Key=1 for PTrue and
-       Key=False, Key=No, or Key=0 for PFalse.
+       be converted to a numeric value, a non-zero value will also return true.
+       Thus the values can be Key=True, Key=Yes or Key=1 for true and
+       Key=False, Key=No, or Key=0 for false.
 
        If the key is not present the value returned is the that provided by
-       the #dlft# parameter. Note that this is different from the
-       key being present but having no value, in which case PFalse is returned.
+       the <code>dlft</code> parameter. Note that this is different from the
+       key being present but having no value, in which case false is returned.
 
        @return boolean value of the variable.
      */
     virtual PBoolean GetBoolean(
       const PString & key,      ///< The key name for the variable.
-      PBoolean dflt = PFalse         ///< Default value for the variable.
+      PBoolean dflt = false         ///< Default value for the variable.
     ) const;
     /** Get a boolean variable determined by the key in the section. */
     virtual PBoolean GetBoolean(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key,      ///< The key name for the variable.
-      PBoolean dflt = PFalse         ///< Default value for the variable.
+      PBoolean dflt = false         ///< Default value for the variable.
     ) const;
 
     /** Set a boolean variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
-       If value is PTrue then the string "True" is written to the variable
+       If value is true then the string "True" is written to the variable
        otherwise the string "False" is set.
      */
     virtual void SetBoolean(
@@ -336,7 +336,7 @@ class PConfig : public PObject
        section name is not specified then the default section is used.
 
        If the key is not present the value returned is the that provided by
-       the #dlft# parameter. Note that this is different from the
+       the <code>dlft</code> parameter. Note that this is different from the
        key being present but having no value, in which case zero is returned.
 
        @return integer value of the variable.
@@ -374,7 +374,7 @@ class PConfig : public PObject
        section name is not specified then the default section is used.
 
        If the key is not present the value returned is the that provided by
-       the #dlft# parameter. Note that this is different from the
+       the <code>dlft</code> parameter. Note that this is different from the
        key being present but having no value, in which case zero is returned.
 
        @return integer value of the variable.
@@ -412,7 +412,7 @@ class PConfig : public PObject
        the section name is not specified then the default section is used.
 
        If the key is not present the value returned is the that provided by
-       the #dlft# parameter. Note that this is different from the
+       the <code>dlft</code> parameter. Note that this is different from the
        key being present but having no value, in which case zero is returned.
 
        @return floating point value of the variable.
@@ -446,11 +446,11 @@ class PConfig : public PObject
       double value              ///< New value to set for the variable.
     );
 
-    /** Get a #PTime# variable determined by the key in the section. If
+    /** Get a <code>PTime</code> variable determined by the key in the section. If
        the section name is not specified then the default section is used.
 
        If the key is not present the value returned is the that provided by
-       the #dlft# parameter. Note that this is different from the
+       the <code>dlft</code> parameter. Note that this is different from the
        key being present but having no value, in which case zero is returned.
 
        @return time/date value of the variable.
@@ -458,31 +458,31 @@ class PConfig : public PObject
     virtual PTime GetTime(
       const PString & key       ///< The key name for the variable.
     ) const;
-    /** Get a #PTime# variable determined by the key in the section. */
+    /** Get a <code>PTime</code> variable determined by the key in the section. */
     virtual PTime GetTime(
       const PString & key,      ///< The key name for the variable.
       const PTime & dflt        ///< Default value for the variable.
     ) const;
-    /** Get a #PTime# variable determined by the key in the section. */
+    /** Get a <code>PTime</code> variable determined by the key in the section. */
     virtual PTime GetTime(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key       ///< The key name for the variable.
     ) const;
-    /** Get a #PTime# variable determined by the key in the section. */
+    /** Get a <code>PTime</code> variable determined by the key in the section. */
     virtual PTime GetTime(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key,      ///< The key name for the variable.
       const PTime & dflt        ///< Default value for the variable.
     ) const;
 
-    /** Set a #PTime# variable determined by the key in the section. If
+    /** Set a <code>PTime</code> variable determined by the key in the section. If
        the section name is not specified then the default section is used.
      */
     virtual void SetTime(
       const PString & key,      ///< The key name for the variable.
       const PTime & value       ///< New value to set for the variable.
     );
-    /** Set a #PTime# variable determined by the key in the section. */
+    /** Set a <code>PTime</code> variable determined by the key in the section. */
     virtual void SetTime(
       const PString & section,  ///< Section to use instead of the default.
       const PString & key,      ///< The key name for the variable.

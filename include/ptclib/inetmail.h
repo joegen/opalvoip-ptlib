@@ -67,7 +67,7 @@ class PSocket;
     capabilities, but these two will give a basic SMTP server functionality.
 
     The server socket thread would continuously call the
-    <A>ProcessMessage()</A> function until it returns PFalse. This will then
+    <A>ProcessMessage()</A> function until it returns false. This will then
     call the appropriate virtual function on parsing the SMTP protocol.
 */
 class PSMTP : public PInternetProtocol
@@ -128,7 +128,7 @@ class PSMTPClient : public PSMTP
     /** Close the socket, and if connected as a client, QUITs from server.
 
        @return
-       PTrue if the channel was closed and the QUIT accepted by the server.
+       true if the channel was closed and the QUIT accepted by the server.
      */
     virtual PBoolean Close();
 
@@ -139,7 +139,7 @@ class PSMTPClient : public PSMTP
         and a common method is found
 
        @return
-       PTrue if logged in.
+       true if logged in.
      */
     PBoolean LogIn(
       const PString & username,   ///< User name on remote system.
@@ -152,23 +152,23 @@ class PSMTPClient : public PSMTP
        be used to transmit the data itself.
 
        @return
-       PTrue if message was handled, PFalse if an error occurs.
+       true if message was handled, false if an error occurs.
      */
     PBoolean BeginMessage(
       const PString & from,        ///< User name of sender.
       const PString & to,          ///< User name of recipient.
-      PBoolean eightBitMIME = PFalse    ///< Mesage will be 8 bit MIME.
+      PBoolean eightBitMIME = false    ///< Mesage will be 8 bit MIME.
     );
     PBoolean BeginMessage(
       const PString & from,        ///< User name of sender.
       const PStringList & toList,  ///< List of user names of recipients.
-      PBoolean eightBitMIME = PFalse    ///< Mesage will be 8 bit MIME.
+      PBoolean eightBitMIME = false    ///< Mesage will be 8 bit MIME.
     );
 
     /** End transmission of a message using the SMTP socket as a client.
 
        @return
-       PTrue if message was accepted by remote server, PFalse if an error occurs.
+       true if message was accepted by remote server, false if an error occurs.
      */
     PBoolean EndMessage();
 
@@ -210,7 +210,7 @@ class PSMTPClient : public PSMTP
     capabilities, but these two will give a basic SMTP server functionality.
 
     The server socket thread would continuously call the
-    <A>ProcessMessage()</A> function until it returns PFalse. This will then
+    <A>ProcessMessage()</A> function until it returns false. This will then
     call the appropriate virtual function on parsing the SMTP protocol.
 */
 class PSMTPServer : public PSMTP
@@ -232,8 +232,8 @@ class PSMTPServer : public PSMTP
        is used when the socket is acting as a server.
 
        @return
-       PTrue if more processing may be done, PFalse if the QUIT command was
-       received or the <A>OnUnknown()</A> function returns PFalse.
+       true if more processing may be done, false if the QUIT command was
+       received or the <A>OnUnknown()</A> function returns false.
      */
     PBoolean ProcessCommand();
 
@@ -268,7 +268,7 @@ class PSMTPServer : public PSMTP
 
     /** Look up a name in the context of the SMTP server.
 
-       The default bahaviour simply returns PFalse.
+       The default bahaviour simply returns false.
 
        @return
        Result of name look up operation.
@@ -282,10 +282,10 @@ class PSMTPServer : public PSMTP
        the partial or complete message received, depending on the
        <CODE>completed</CODE> parameter.
 
-       The default behaviour is to simply return PFalse;
+       The default behaviour is to simply return false;
 
        @return
-       PTrue if message was handled, PFalse if an error occurs.
+       true if message was handled, false if an error occurs.
      */
     virtual PBoolean HandleMessage(
       PCharArray & buffer,  ///< Buffer containing message data received.
@@ -364,8 +364,8 @@ class PSMTPServer : public PSMTP
     /** Handle an unknown command.
 
        @return
-       PTrue if more processing may be done, PFalse if the
-       <A>ProcessCommand()</A> function is to return PFalse.
+       true if more processing may be done, false if the
+       <A>ProcessCommand()</A> function is to return false.
      */
     virtual PBoolean OnUnknown(
       const PCaselessString & command  ///< Complete command line received.
@@ -384,7 +384,7 @@ class PSMTPServer : public PSMTP
        <CODE>messageBufferSize</CODE> bytes have been read.
 
        @return
-       PTrue if partial message received, PFalse if the end of the data was
+       true if partial message received, false if the end of the data was
        received.
      */
     virtual PBoolean OnTextData(PCharArray & buffer, PBoolean & completed);
@@ -397,7 +397,7 @@ class PSMTPServer : public PSMTP
        <CODE>messageBufferSize</CODE> bytes have been read.
 
        @return
-       PTrue if partial message received, PFalse if the end of the data was
+       true if partial message received, false if the end of the data was
        received.
      */
     virtual PBoolean OnMIMEData(PCharArray & buffer, PBoolean & completed);
@@ -453,7 +453,7 @@ class PSMTPServer : public PSMTP
     basic POP3 server functionality.
 
     The server socket thread would continuously call the
-    <A>ProcessMessage()</A> function until it returns PFalse. This will then
+    <A>ProcessMessage()</A> function until it returns false. This will then
     call the appropriate virtual function on parsing the POP3 protocol.
  */
 class PPOP3 : public PInternetProtocol
@@ -476,7 +476,7 @@ class PPOP3 : public PInternetProtocol
        <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
 
        The default bahaviour looks for a space or a '-' and splits the code
-       and info either side of that character, then returns PFalse.
+       and info either side of that character, then returns false.
 
        @return
        Position of continuation character in response, 0 if no continuation
@@ -542,7 +542,7 @@ class PPOP3Client : public PPOP3
     /** Close the socket, and if connected as a client, QUITs from server.
 
        @return
-       PTrue if the channel was closed and the QUIT accepted by the server.
+       true if the channel was closed and the QUIT accepted by the server.
      */
     virtual PBoolean Close();
 
@@ -560,7 +560,7 @@ class PPOP3Client : public PPOP3
     /** Log into the POP server using the mailbox and access codes specified.
 
        @return
-       PTrue if logged in.
+       true if logged in.
      */
     PBoolean LogIn(
       const PString & username,       ///< User name on remote system.
@@ -597,8 +597,8 @@ class PPOP3Client : public PPOP3
 
     /* Begin the retrieval of an entire message. The application may then use
        the <A>PApplicationSocket::ReadLine()</A> function with the
-       <CODE>unstuffLine</CODE> parameter set to PTrue. Repeated calls until
-       its return valus is PFalse will read the message headers and body.
+       <CODE>unstuffLine</CODE> parameter set to true. Repeated calls until
+       its return valus is false will read the message headers and body.
 
        @return
        Array of strings continaing message headers.
@@ -641,7 +641,7 @@ class PPOP3Client : public PPOP3
     basic POP3 server functionality.
 
     The server socket thread would continuously call the
-    <A>ProcessMessage()</A> function until it returns PFalse. This will then
+    <A>ProcessMessage()</A> function until it returns false. This will then
     call the appropriate virtual function on parsing the POP3 protocol.
  */
 class PPOP3Server : public PPOP3
@@ -663,8 +663,8 @@ class PPOP3Server : public PPOP3
        is used when the socket is acting as a server.
 
        @return
-       PTrue if more processing may be done, PFalse if the QUIT command was
-       received or the <A>OnUnknown()</A> function returns PFalse.
+       true if more processing may be done, false if the QUIT command was
+       received or the <A>OnUnknown()</A> function returns false.
      */
     PBoolean ProcessCommand();
 
@@ -675,7 +675,7 @@ class PPOP3Server : public PPOP3
        member fields <CODE>messageSizes</CODE> and <CODE>messageIDs</CODE>.
 
        @return
-       PTrue if user and password were valid.
+       true if user and password were valid.
      */
     virtual PBoolean HandleOpenMailbox(
       const PString & username,  ///< User name for mail box
@@ -687,7 +687,7 @@ class PPOP3Server : public PPOP3
        stuffing enabled.
 
        @return
-       PTrue if successfully sent message.
+       true if successfully sent message.
      */
     virtual void HandleSendMessage(
       PINDEX messageNumber, ///< Number of message to send.
@@ -700,7 +700,7 @@ class PPOP3Server : public PPOP3
        deleted using the DELE command.
 
        @return
-       PTrue if successfully sent message.
+       true if successfully sent message.
      */
     virtual void HandleDeleteMessage(
       PINDEX messageNumber, ///< Number of message to send.
@@ -766,8 +766,8 @@ class PPOP3Server : public PPOP3
     /** Handle an unknown command.
 
        @return
-       PTrue if more processing may be done, PFalse if the
-       <A>ProcessCommand()</A> function is to return PFalse.
+       true if more processing may be done, false if the
+       <A>ProcessCommand()</A> function is to return false.
      */
     virtual PBoolean OnUnknown(
       const PCaselessString & command  ///< Complete command line received.
@@ -839,7 +839,7 @@ class PRFC822Channel : public PIndirectChannel
        will be output via this function.
 
        @return
-       PTrue if at least len bytes were written to the channel.
+       true if at least len bytes were written to the channel.
      */
     virtual PBoolean Write(
       const void * buf, ///< Pointer to a block of memory to write.
@@ -962,7 +962,7 @@ class PRFC822Channel : public PIndirectChannel
       */
     void SetTransferEncoding(
       const PString & encoding,   ///< Encoding type
-      PBoolean autoTranslate = PTrue   ///< Automatically convert to encoding type
+      PBoolean autoTranslate = true   ///< Automatically convert to encoding type
     );
 
 

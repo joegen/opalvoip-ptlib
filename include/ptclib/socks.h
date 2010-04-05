@@ -118,7 +118,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        <A>PIPSocket::SetPort()</A> function.
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Connect(
       const PString & address   ///< Address of remote machine to connect to.
@@ -140,7 +140,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Listen(
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
@@ -165,7 +165,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        regardless of the return value of the function.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     PBoolean Accept();
     virtual PBoolean Accept(
@@ -177,7 +177,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
     /** Get the Internet Protocol address for the local host.
 
        @return
-       PTrue if the IP number was returned.
+       true if the IP number was returned.
      */
     virtual PBoolean GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address
@@ -191,7 +191,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        connected to.
 
        @return
-       PTrue if the IP number was returned.
+       true if the IP number was returned.
      */
     virtual PBoolean GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address
@@ -327,7 +327,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
        <A>PIPSocket::SetPort()</A> function.
 
        @return
-       PTrue if the channel was successfully connected to the remote host.
+       true if the channel was successfully connected to the remote host.
      */
     virtual PBoolean Connect(
       const PString & address   // Address of remote machine to connect to.
@@ -349,7 +349,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
        For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
 
        @return
-       PTrue if the channel was successfully opened.
+       true if the channel was successfully opened.
      */
     virtual PBoolean Listen(
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
@@ -361,7 +361,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     /** Get the Internet Protocol address for the local host.
 
        @return
-       PTrue if the IP number was returned.
+       true if the IP number was returned.
      */
     virtual PBoolean GetLocalAddress(
       Address & addr    // Variable to receive hosts IP address
@@ -375,7 +375,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
        connected to.
 
        @return
-       PTrue if the IP number was returned.
+       true if the IP number was returned.
      */
     virtual PBoolean GetPeerAddress(
       Address & addr    // Variable to receive hosts IP address
@@ -390,7 +390,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     /** Read a datagram from a remote computer.
        
        @return
-       PTrue if any bytes were sucessfully read.
+       true if any bytes were sucessfully read.
      */
     virtual PBoolean ReadFrom(
       void * buf,     // Data to be written as URGENT TCP data.
@@ -402,7 +402,7 @@ class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
     /** Write a datagram to a remote computer.
 
        @return
-       PTrue if all the bytes were sucessfully written.
+       true if all the bytes were sucessfully written.
      */
     virtual PBoolean WriteTo(
       const void * buf,   // Data to be written as URGENT TCP data.

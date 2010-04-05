@@ -76,7 +76,7 @@ class PSyncNULL : public PSync
    may be used.
 
   This is very useful for constructs such as:
-\verbatim
+<pre><code>
     void func()
     {
       PWaitAndSignal mutexWait(myMutex);
@@ -87,7 +87,7 @@ class PSyncNULL : public PSync
         return;
       do_something_else();
     }
-\endverbatim
+</code></pre>
  */
 
 class PWaitAndSignal {
@@ -98,7 +98,7 @@ class PWaitAndSignal {
       */
     inline PWaitAndSignal(
       const PSync & sem,   ///< Semaphore descendent to wait/signal.
-      PBoolean wait = PTrue    ///< Wait for semaphore before returning.
+      PBoolean wait = true    ///< Wait for semaphore before returning.
     ) : sync((PSync &)sem)
     { if (wait) sync.Wait(); }
 

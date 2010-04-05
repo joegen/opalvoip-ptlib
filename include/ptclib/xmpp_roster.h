@@ -73,19 +73,19 @@ namespace XMPP
       const PStringSet&   GetGroups() const     { return m_Groups; }
       const PresenceInfo& GetPresence() const   { return m_Presence; }
 
-      virtual void  SetJID(const JID& jid, PBoolean dirty = PTrue)
+      virtual void  SetJID(const JID& jid, PBoolean dirty = true)
                                                 { m_JID = jid; if (dirty) SetDirty(); }
-      virtual void  SetType(ItemType type, PBoolean dirty = PTrue)
+      virtual void  SetType(ItemType type, PBoolean dirty = true)
                                                 { m_Type = type; if (dirty) SetDirty(); }
-      virtual void  SetName(const PString& name, PBoolean dirty = PTrue) 
+      virtual void  SetName(const PString& name, PBoolean dirty = true) 
                                                 { m_Name = name; if (dirty) SetDirty(); }
 
-      virtual void  AddGroup(const PString& group, PBoolean dirty = PTrue);
-      virtual void  RemoveGroup(const PString& group, PBoolean dirty = PTrue);
+      virtual void  AddGroup(const PString& group, PBoolean dirty = true);
+      virtual void  RemoveGroup(const PString& group, PBoolean dirty = true);
 
       virtual void  SetPresence(const Presence& p);
 
-      void SetDirty(PBoolean b = PTrue) { m_IsDirty = b; }
+      void SetDirty(PBoolean b = true) { m_IsDirty = b; }
 
       /** This operator will set the dirty flag
        */
@@ -117,13 +117,13 @@ namespace XMPP
 
     virtual Item * FindItem(const PString& jid);
 
-    virtual PBoolean SetItem(Item * item, PBoolean localOnly = PFalse);
-    virtual PBoolean RemoveItem(const PString& jid, PBoolean localOnly = PFalse);
-    virtual PBoolean RemoveItem(Item * item, PBoolean localOnly = PFalse);
+    virtual PBoolean SetItem(Item * item, PBoolean localOnly = false);
+    virtual PBoolean RemoveItem(const PString& jid, PBoolean localOnly = false);
+    virtual PBoolean RemoveItem(Item * item, PBoolean localOnly = false);
 
     virtual void  Attach(XMPP::C2S::StreamHandler * handler);
     virtual void  Detach();
-    virtual void  Refresh(PBoolean sendPresence = PTrue);
+    virtual void  Refresh(PBoolean sendPresence = true);
 
     virtual PNotifierList& ItemChangedHandlers()    { return m_ItemChangedHandlers; }
     virtual PNotifierList& RosterChangedHandlers()  { return m_RosterChangedHandlers; }
