@@ -523,13 +523,17 @@ ostream & PTrace::End(ostream & paramStream)
 
   if (threadInfo != NULL) {
     PStringStream * stackStream = threadInfo->traceStreams.Pop();
-    PAssert(&paramStream == stackStream, PLogicError);
+    if (!PAssert(&paramStream == stackStream, PLogicError))
+      return paramStream;
+    *stackStream << ends << flush;
     info.Lock();
-    *info.stream << *stackStream << ends;
+    *info.stream << *stackStream;
     delete stackStream;
   }
   else {
-    PAssert(&paramStream == info.stream, PLogicError);
+    if (!PAssert(&paramStream == info.stream, PLogicError))
+      return paramStream;
+    info.Lock();
   }
 
   if ((info.options&SystemLogStream) != 0) {
