@@ -525,7 +525,7 @@ ostream & PTrace::End(ostream & paramStream)
     PStringStream * stackStream = threadInfo->traceStreams.Pop();
     PAssert(&paramStream == stackStream, PLogicError);
     info.Lock();
-    *info.stream << *stackStream;
+    *info.stream << *stackStream << ends;
     delete stackStream;
   }
   else {
