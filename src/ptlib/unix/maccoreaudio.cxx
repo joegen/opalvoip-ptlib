@@ -23,7 +23,7 @@
 #include <ptlib/unix/ptlib/maccoreaudio.h>
 #include <iostream>  // used for Volume Listener
  
-
+#include <CoreServices/CoreServices.h>
 
 PCREATE_SOUND_PLUGIN(CoreAudio, PSoundChannelCoreAudio);
  
@@ -1317,77 +1317,78 @@ PBoolean PSoundChannelCoreAudio::SetBuffers(PINDEX bufferSize,
 
 OSStatus PSoundChannelCoreAudio::SetupAdditionalRecordBuffers()
 {
-
-   OSStatus err = noErr;
-   UInt32 bufferSizeFrames, bufferSizeBytes;
+  OSStatus err = noErr;
+  UInt32 bufferSizeFrames, bufferSizeBytes;
    
-   /** 
-    * build buffer list to take over the data from the microphone 
-    */
-   UInt32 propertySize = sizeof(UInt32);
-   err = AudioDeviceGetProperty( mDeviceID,
+  /** 
+   * build buffer list to take over the data from the microphone 
+   */
+  UInt32 propertySize = sizeof(UInt32);
+  err = AudioDeviceGetProperty( mDeviceID,
       0,  // channel, probably all  
       true,  // isInput 
       //false,  // isInput ()
       kAudioDevicePropertyBufferFrameSize,
       &propertySize,
       &bufferSizeFrames);
-   checkStatus(err);
-   bufferSizeBytes = bufferSizeFrames * hwASBD.mBytesPerFrame;
+  checkStatus(err);
+  bufferSizeBytes = bufferSizeFrames * hwASBD.mBytesPerFrame;
 	bufferSizeBytes += bufferSizeBytes / 10; // +10%
 
-   //calculate size of ABL given the last field, assum non-interleaved 
-	UInt32 mChannelsPerFrame = hwASBD.mChannelsPerFrame;
-	UInt32 propsize = (UInt32) &(((AudioBufferList *)0)->mBuffers[mChannelsPerFrame]);
+  //calculate size of ABL given the last field, assum non-interleaved 
+  UInt32 mChannelsPerFrame = hwASBD.mChannelsPerFrame;
+  //UInt32 propsize = (UInt32) &(((AudioBufferList *)0)->mBuffers[mChannelsPerFrame]);
+  UInt32 propsize = sizeof(AudioBuffer) * mChannelsPerFrame + sizeof(AudioBufferList);
 
-   //malloc buffer lists
-   mInputBufferList = (AudioBufferList *)malloc(propsize);
-   mInputBufferList->mNumberBuffers = hwASBD.mChannelsPerFrame;
+  //malloc buffer lists
+  mInputBufferList = (AudioBufferList *)malloc(propsize);
+  mInputBufferList->mNumberBuffers = hwASBD.mChannelsPerFrame;
 
-   //pre-malloc buffers for AudioBufferLists
-   for(UInt32 i =0; i< mInputBufferList->mNumberBuffers ; i++) {
+  //pre-malloc buffers for AudioBufferLists
+  for(UInt32 i =0; i< mInputBufferList->mNumberBuffers ; i++) {
       mInputBufferList->mBuffers[i].mNumberChannels = 1;
       mInputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
       mInputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
-   }
-   mRecordInputBufferSize = bufferSizeBytes;
+  }
+  mRecordInputBufferSize = bufferSizeBytes;
 
-   /** allocate ringbuffer to cache data before passing them to the converter */
-   // take only one buffer -> mono, use double buffering
-   mInputCircularBuffer = new CircularBuffer(bufferSizeBytes * 2);
+  /** allocate ringbuffer to cache data before passing them to the converter */
+  // take only one buffer -> mono, use double buffering
+  mInputCircularBuffer = new CircularBuffer(bufferSizeBytes * 2);
 
 
-   /** 
-    * Build buffer list that is passed to the Converter to be filled with 
-    * the converted frames.
-    */
-   // given the number of input bytes how many bytes to expect at the output?
-   bufferSizeBytes += MIN_INPUT_FILL * hwASBD.mBytesPerFrame;
-   propertySize = sizeof(UInt32);
-   err = AudioConverterGetProperty(converter,
+  /** 
+   * Build buffer list that is passed to the Converter to be filled with 
+   * the converted frames.
+   */
+  // given the number of input bytes how many bytes to expect at the output?
+  bufferSizeBytes += MIN_INPUT_FILL * hwASBD.mBytesPerFrame;
+  propertySize = sizeof(UInt32);
+  err = AudioConverterGetProperty(converter,
          kAudioConverterPropertyCalculateOutputBufferSize,
          &propertySize,
          &bufferSizeBytes);
-   checkStatus(err);
+  checkStatus(err);
 
 
-   //calculate number of buffers from channels
-   mChannelsPerFrame = pwlibASBD.mChannelsPerFrame;
-   propsize = (UInt32) &(((AudioBufferList *)0)->mBuffers[mChannelsPerFrame]);
+  //calculate number of buffers from channels
+  mChannelsPerFrame = pwlibASBD.mChannelsPerFrame;
+  //propsize = (UInt32) &(((AudioBufferList *)0)->mBuffers[mChannelsPerFrame]);
+  propsize = sizeof(AudioBuffer) * mChannelsPerFrame + sizeof(AudioBufferList);
 
-   //malloc buffer lists
-   mOutputBufferList = (AudioBufferList *)malloc(propsize);
-   mOutputBufferList->mNumberBuffers = pwlibASBD.mChannelsPerFrame;
+  //malloc buffer lists
+  mOutputBufferList = (AudioBufferList *)malloc(propsize);
+  mOutputBufferList->mNumberBuffers = pwlibASBD.mChannelsPerFrame;
 
-   //pre-malloc buffers for AudioBufferLists
-   for(UInt32 i =0; i< mOutputBufferList->mNumberBuffers ; i++) {
-      mOutputBufferList->mBuffers[i].mNumberChannels = 1;
-      mOutputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
-      mOutputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
-   }
-   mRecordOutputBufferSize = bufferSizeBytes;
+  //pre-malloc buffers for AudioBufferLists
+  for(UInt32 i =0; i< mOutputBufferList->mNumberBuffers ; i++) {
+     mOutputBufferList->mBuffers[i].mNumberChannels = 1;
+     mOutputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
+     mOutputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
+  }
+  mRecordOutputBufferSize = bufferSizeBytes;
 
-   return err;
+  return err;
 }
  
 
