@@ -1223,7 +1223,7 @@ sem_t * PSemaphore::CreateSem(unsigned initialValue)
   
   PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
   
-  PAssert(((int)sem != (int)SEM_FAILED), "Couldn't create named semaphore");
+  PAssert(sem != SEM_FAILED, "Couldn't create named semaphore");
   return sem;
 }
 #endif
