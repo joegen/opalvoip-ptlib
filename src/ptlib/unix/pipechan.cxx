@@ -47,11 +47,14 @@
 #include <termio.h>
 #endif
 
-#if defined(P_MACOSX)
-#include <crt_externs.h>
-#endif
-
 #include "../common/pipechan.cxx"
+
+#if defined(P_MACOSX)
+#  include <crt_externs.h>
+#  define environ (*_NSGetEnviron())
+#elif defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
+#  extern char ** environ;
+#endif
 
 
 int PX_NewHandle(const char *, int);
@@ -219,12 +222,6 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   PINDEX i;
   for (i = 0; i < argumentList.GetSize(); i++) 
     args[i+1] = strdup(argumentList[i].GetPointer());
-
-#if defined(P_MACOSX)
-#  define environ (*_NSGetEnviron())
-#elif defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
-#  extern char ** environ;
-#endif
 
   // run the program
   execve(subProgram, args, exec_environ);

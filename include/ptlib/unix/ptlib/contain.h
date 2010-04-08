@@ -105,8 +105,15 @@ typedef uint16_t                UWORD;
 typedef long                    LONG;
 typedef signed long             SLONG;
 typedef unsigned long           ULONG;
-typedef  int32_t                SDWORD;
+
+#if defined(__APPLE__)
+typedef signed long int         SDWORD;
+typedef unsigned long int       UDWORD;
+#else
+typedef int32_t                 SDWORD;
 typedef uint32_t                UDWORD;
+#endif
+
 typedef float                   SFLOAT;
 typedef double                  SDOUBLE;
 typedef double                  LDOUBLE;
