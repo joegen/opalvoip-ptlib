@@ -592,9 +592,9 @@ if test $ac_cv_c_long_double != yes ; then
   AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
 fi
 
-if test ${OSTYPE} = Darwin ; then
-  STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
-fi
+dnl if test ${OSTYPE} = Darwin ; then
+dnl   STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
+dnl fi
 
 dnl ########################################################################
 dnl we need flex, so we better make sure it's there
