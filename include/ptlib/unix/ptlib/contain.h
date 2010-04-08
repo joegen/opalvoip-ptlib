@@ -78,13 +78,8 @@ typedef unsigned long long int PUInt64; // 64 bit
 
 
 // Integer type that is same size as a pointer type.
-#ifdef P_64BIT
-typedef long          INT;
-typedef unsigned long UINT;
-#else
-typedef int           INT;
-typedef unsigned int  UINT;
-#endif
+typedef intptr_t      INT;
+typedef uintptr_t    UINT;
 
 // Create "Windows" style definitions.
 

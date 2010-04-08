@@ -321,8 +321,17 @@ esac
 
 MACHTYPE=
 
+echo target = $target_cpu
+
 case "$target_cpu" in
    x86 | i686 | i586 | i486 | i386 ) MACHTYPE=x86
+		   AC_PREPROC_IFELSE(
+		    [[int t = __amd64__;]],
+		    [[ MACHTYPE=x86_64
+		       P_64BIT=1]]
+		    ,
+		    [[MACHTYPE=x86]]
+		   );
                    ;;
 
    x86_64 | amd64) MACHTYPE=$target_cpu ;

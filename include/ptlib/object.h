@@ -947,7 +947,7 @@ public:
 
 
 // Memory pooling allocators
-#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(P_MINGW)
+#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(P_MINGW) && !defined(P_MACOSX)
 #include <ext/bitmap_allocator.h>
 template <class Type> class PFixedPoolAllocator    : public __gnu_cxx::bitmap_allocator<Type> { };
 #include <ext/mt_allocator.h>
