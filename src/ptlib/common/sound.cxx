@@ -155,10 +155,16 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 #endif
 
   PStringArray devices = GetDeviceNames(dir);
-  if (devices.GetSize() > 0)
-    return devices[0];
 
-  return PString::Empty();
+  if (devices.GetSize() == 0)
+    return PString::Empty();
+
+  for (PINDEX i = 0; i < devices.GetSize(); ++i) {
+    if (!(devices[i] *= "NULL"))
+      return devices[i];
+  }
+
+  return devices[0];
 }
 
 
