@@ -276,6 +276,14 @@ An application could change this pointer to a <i>std::ofstream</i> variable of
 /**Class to encapsulate tracing functions.
    This class does not require any instances and is only being used as a
    method of grouping functions together in a name space.
+
+   There are a number of macros for supporting tracing. These will all
+   evaluate as empty in a "No Trace" build of the system:
+     - PTRACE()
+     - PTRACE_IF()
+     - PTRACE_PARAM()
+     - PTRACE_BLOCK()
+     - PTRACE_LINE()
   */
 class PTrace
 {
@@ -302,72 +310,85 @@ public:
     ThreadAddress = 64,
     /// Append to log file rather than resetting every time
     AppendToFile = 128,
-    /** Output timestamps in GMT time rather than local time
-      */
+    /// Output timestamps in GMT time rather than local time
     GMTTime = 256,
-    /** If set, log file will be rotated 
-      */
+    /// If set, log file will be rotated daily
     RotateDaily = 512,
+    /// If set, log file will be rotated hourly
     RotateHourly = 1024,
+    /// If set, log file will be rotated every minute
     RotateMinutely = 2048,
+    /// Mask for all the rotate bits
     RotateLogMask = RotateDaily + RotateHourly + RotateMinutely,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
-        be set in conjection with SetStream(new PSystemLog).
+        be set in conjection with <code>#SetStream(new PSystemLog)</code>.
       */
     SystemLogStream = 32768
   };
 
 
   /**Set the most common trace options.
-     If filename is not NULL then a PTextFile is created and attached the
+     If \p filename is not NULL then a PTextFile is created and attached the
      trace output stream. This object is never closed or deleted until the
      termination of the program.
 
+     There are several special values for \p filename:
+       <dl>
+       <dt>"stderr"      <dd>Output to standard error
+       <dt>"stdout"      <dd>Output to standard output
+       <dt>"DEBUGSTREAM" <dd>Output to debugger (Windows only)
+       </dl>
      A trace output of the program name version and OS is written as well.
     */
   static void Initialise(
-    unsigned level,
-    const char * filename = NULL,
-    unsigned options = Timestamp | Thread | Blocks
+    unsigned level,                               ///< Level for tracing
+    const char * filename = NULL,                 ///< Filename for log output
+    unsigned options = Timestamp | Thread | Blocks ///< #Options for tracing
   );
 
   /**Set the most common trace options.
-     If filename is not NULL then a PTextFile is created and attached the
+     If \p filename is not NULL then a PTextFile is created and attached the
      trace output stream. This object is never closed or deleted until the
      termination of the program.
 
-     If rolloverPatterm is not NULL it is used as the time format patterm
-     appended to filename if the RotateDaily is set. Default: yyyy_MM_dd
+     If \p rolloverPatterm is not NULL it is used as the time format patterm
+     appended to filename if the #RotateDaily is set. Default is "yyyy_MM_dd".
 
      A trace output of the program name version and OS is written as well.
     */
   static void Initialise(
-    unsigned level,
-    const char * filename,
-    const char * rolloverPattern,
-    unsigned options = Timestamp | Thread | Blocks
+    unsigned level,                                 ///< Level for tracing
+    const char * filename,                          ///< Filename for log output
+    const char * rolloverPattern,                   ///< Pattern for rolling over trace files
+    unsigned options = Timestamp | Thread | Blocks  ///< #Options for tracing
   );
 
   /** Set the trace options.
   The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
-  may contain assorted values. These are defined by the Options enum.
+  may contain assorted values. These are defined by the #Options enum.
 
   Note this function OR's the bits included in the options parameter.
   */
-  static void SetOptions(unsigned options /** New level for trace */ );
+  static void SetOptions(
+    unsigned options ///< New option bits for tracing
+  );
 
   /** Clear the trace options.
-  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and <code>PTRACE_LINE()</code> macros output trace text that
-  may contain assorted values. These are defined by the Options enum.
+  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and
+  <code>PTRACE_LINE()</code> macros output trace text that
+  may contain assorted values. These are defined by the #Options enum.
 
   Note this function AND's the complement of the bits included in the options
   parameter.
   */
-  static void ClearOptions(unsigned options /** New level for trace */ );
+  static void ClearOptions(
+    unsigned options ///< Option bits to turn off
+  );
 
   /** Get the current trace options.
-  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and <code>PTRACE_LINE()</code> macros output trace text that
-  may contain assorted values. These are defined by the Options enum.
+  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and
+  <code>PTRACE_LINE()</code> macros output trace text that
+  may contain assorted values. These are defined by the #Options enum.
   */
   static unsigned GetOptions();
 
@@ -376,7 +397,9 @@ public:
   level set by this function. If so then the trace text is output to the trace
   stream.
   */
-  static void SetLevel(unsigned level /** New level for trace */ );
+  static void SetLevel(
+    unsigned level ///< New level for tracing
+  );
 
   /** Get the trace level.
   The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
@@ -387,21 +410,25 @@ public:
 
   /** Determine if the level may cause trace output.
   This checks against the current global trace level set by SetLevel()
-  for if the trace output may be emitted. This is used by the PTRACE macro.
+  for if the trace output may be emitted. This is used by the PTRACE() macro.
   */
-  static PBoolean CanTrace(unsigned level /** Trace level to check */);
+  static PBoolean CanTrace(
+    unsigned level ///< Trace level to check
+  );
 
   /** Set the stream to be used for trace output.
   This stream is used for all trace output using the various trace functions
   and macros.
   */
-  static void SetStream(ostream * out /** New output stream from trace. */ );
+  static void SetStream(
+    ostream * out ///< New output stream from trace.
+  );
 
   /** Begin a trace output.
   If the trace stream output is used outside of the provided macros, it
-  should be noted that a mutex is obtained on the call to <code>PBeginTrace</code> which
+  should be noted that a mutex is obtained on the call to Begin() which
   will prevent any other threads from using the trace stream until the
-  <code>PEndTrace</code> function is called.
+  End() function is called.
 
   So a typical usage would be:
   <pre><code>
@@ -409,7 +436,7 @@ public:
     s << "hello";
     if (want_there)
       s << " there";
-    s << '!' << PTrace::End();
+    s << '!' << PTrace::End;
   </code></pre>
   */
   static ostream & Begin(
@@ -420,10 +447,11 @@ public:
 
   /** End a trace output.
   If the trace stream output is used outside of the provided macros, the
-  <code>PEndTrace</code> function must be used at the end of the section of trace
-  output. A mutex is obtained on the call to <code>PBeginTrace</code> which will prevent
-  any other threads from using the trace stream until the PEndTrace. The
-  <code>PEndTrace</code> is used in a similar manner to <code>::endl</code> or <code>::flush</code>.
+  End() function must be used at the end of the section of trace
+  output. A mutex is obtained on the call to Begin() which will prevent
+  any other threads from using the trace stream until the End(). The
+  End() is used in a similar manner to <code>std::endl</code> or
+  <code>std::flush</code>.
 
   So a typical usage would be:
   <pre><code>
@@ -431,10 +459,12 @@ public:
     s << "hello";
     if (want_there)
       s << " there";
-    s << '!' << PTrace::End();
+    s << '!' << PTrace::End;
   </code></pre>
   */
-  static ostream & End(ostream & strm /** Trace output stream being completed */);
+  static ostream & End(
+    ostream & strm ///< Trace output stream being completed
+  );
 
   /** Cleanup the trace system for a specific thread
       When using thread local storage, this will delete the per-thread trace context
@@ -444,7 +474,7 @@ public:
   /** Class to trace Execution blocks.
   This class is used for tracing the entry and exit of program blocks. Upon
   construction it outputs an entry trace message and on destruction outputs an
-  exit trace message. This is normally only used from in the <code>PTRACE_BLOCK</code> macro.
+  exit trace message. This is normally only used from in the <code>PTRACE_BLOCK()</code> macro.
   */
   class Block {
     public:
@@ -469,13 +499,13 @@ public:
 };
 
 /* Macro to conditionally declare a parameter to a function to avoid compiler
-   warning due that parameter only being used in a <code>PTRACE</code> */
+   warning due that parameter only being used in a <code>PTRACE()</code> */
 #define PTRACE_PARAM(param) param
 
 /** Trace an execution block.
 This macro creates a trace variable for tracking the entry and exit of program
 blocks. It creates an instance of the PTraceBlock class that will output a
-trace message at the line <code>PTRACE_BLOCK</code> is called and then on exit from the
+trace message at the line <code>PTRACE_BLOCK()</code> is called and then on exit from the
 scope it is defined in.
 */
 #define PTRACE_BLOCK(name) PTrace::Block __trace_block_instance(__FILE__, __LINE__, name)
@@ -491,7 +521,7 @@ This macro outputs a trace of a source file line execution.
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
 output operators. The output is only made if the trace level set by the
-SetLevel() function is greater than or equal to the <code>level</code> argument.
+SetLevel() function is greater than or equal to the \p level argument.
 */
 #define PTRACE(level, args) \
     if (PTrace::CanTrace(level)) \
@@ -851,7 +881,7 @@ the line
   #define new PNEW
 </code></pre>
 at the begining of the source file, after all declarations that use the
-PCLASSINFO macro.
+<code>#PCLASSINFO</code> macro.
 */
 #define PNEW  new (__FILE__, __LINE__)
 
@@ -972,13 +1002,13 @@ template <class Type> class PVariablePoolAllocator : public std::allocator<Type>
 
 
 
-/** Declare all the standard PWlib class information.
+/** Declare all the standard PTLib class information.
 This macro is used to provide the basic run-time typing capability needed
 by the library. All descendent classes from the <code>PObject</code> class require
 these functions for correct operation. Either use this macro or the
-#PDECLARE_CLASS macro.
+<code>#PDECLARE_CLASS</code> macro.
 
-The use of the <code>PDECLARE_CLASS</code> macro is no longer recommended for reasons
+The use of the <code>#PDECLARE_CLASS</code> macro is no longer recommended for reasons
 of compatibility with documentation systems.
 */
 
@@ -1032,7 +1062,7 @@ template<class BaseClass> inline BaseClass * PAssertCast(PObject * obj, const ch
 
 /** Declare a class with PWLib class information.
 This macro is used to declare a new class with a single public ancestor. It
-starts the class declaration and then uses the <code>PCLASSINFO</code> macro to
+starts the class declaration and then uses the <code>#PCLASSINFO</code> macro to
 get all the run-time type functions.
 
 The use of this macro is no longer recommended for reasons of compatibility
@@ -1053,7 +1083,7 @@ default comparison operations, simple stream I/O and serialisation support.
 class PObject {
 
   protected:
-    /** Constructor for PObject, make protected so cannot ever create one on
+    /** Constructor for PObject, made protected so cannot ever create one on
        its own.
      */
     PObject() { }
@@ -1085,7 +1115,7 @@ class PObject {
        necessarily the same over compilation units depending on the compiler,
        platform etc.
 
-       The <code>PCLASSINFO</code> macro declares an override of this function for
+       The <code>#PCLASSINFO</code> macro declares an override of this function for
        the particular class. The user need not implement it.
 
        @return pointer to C string literal.
@@ -1099,7 +1129,7 @@ class PObject {
        the specified class. The class name is usually provided by the
        <code>Class()</code> static function of the desired class.
     
-       The <code>PCLASSINFO</code> macro declares an override of this function for
+       The <code>#PCLASSINFO</code> macro declares an override of this function for
        the particular class. The user need not implement it.
 
        @return true if object is descended from the class.
@@ -1141,7 +1171,7 @@ class PObject {
        comparison operation for objects that do not explicitly override the
        <code>Compare()</code> function.
     
-       The <code>PCLASSINFO</code> macro declares an override of this function for
+       The <code>#PCLASSINFO</code> macro declares an override of this function for
        the particular class. The user need not implement it.
 
        @return
@@ -1211,7 +1241,7 @@ class PObject {
   //@{
     /** Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard <code>operator<<</code> function.
+       primarily used by the standard <code>#operator<<</code> function.
 
        The default behaviour is to print the class name.
      */
@@ -1221,7 +1251,7 @@ class PObject {
 
     /** Input the contents of the object from the stream. The exact input is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard <code>operator>></code> function.
+       primarily used by the standard <code>#operator>></code> function.
 
        The default behaviour is to do nothing.
      */
@@ -1233,21 +1263,21 @@ class PObject {
     /** Global function for using the standard << operator on objects descended
        from PObject. This simply calls the objects <code>PrintOn()</code> function.
        
-       @return the <code>strm</code> parameter.
+       @return the \p strm parameter.
      */
     inline friend ostream & operator<<(
-      ostream &strm,       // Stream to print the object into.
-      const PObject & obj  // Object to print to the stream.
+      ostream &strm,       ///< Stream to print the object into.
+      const PObject & obj  ///< Object to print to the stream.
     ) { obj.PrintOn(strm); return strm; }
 
     /** Global function for using the standard >> operator on objects descended
        from PObject. This simply calls the objects <code>ReadFrom()</code> function.
 
-       @return the <code>strm</code> parameter.
+       @return the \p strm parameter.
      */
     inline friend istream & operator>>(
-      istream &strm,   // Stream to read the objects contents from.
-      PObject & obj    // Object to read inormation into.
+      istream &strm,   ///< Stream to read the objects contents from.
+      PObject & obj    ///< Object to read inormation into.
     ) { obj.ReadFrom(strm); return strm; }
 
 
