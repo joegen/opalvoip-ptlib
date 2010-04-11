@@ -413,7 +413,7 @@ else
 ifeq ($(wildcard .svn),)
 	cp $< $@
 else
-	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `svn info | sed -n 's/Revision: //p'`/" $< > $@.tmp
+	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `LC_ALL=C svn info | sed -n 's/Revision: //p'`/" $< > $@.tmp
 	$(Q)if diff -q $@ $@.tmp >/dev/null 2>&1; then \
 	  rm $@.tmp; \
 	else \
