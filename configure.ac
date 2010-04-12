@@ -124,6 +124,7 @@ HAS_FFVDEV=1
 HAS_APPSHARE=
 HAS_SHM_VIDEO=1
 HAS_VXML=1
+HAS_LUA=1
 HAS_EXCEPTIONS=
 HAS_VFW_CAPTURE=
 
@@ -169,6 +170,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_SHM_VIDEO=
   HAS_EXCEPTIONS=
   HAS_VFW_CAPTURE=
+  HAS_LUA=
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -211,6 +213,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_SHM_VIDEO=
   HAS_EXCEPTIONS=
   HAS_VFW_CAPTURE=
+  HAS_LUA=
 fi
 
 dnl ########################################################################
@@ -1263,6 +1266,27 @@ dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA=1
 dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
 dnl MSWIN_CHECK_DIR  lua,\Program Files\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,\Program Files (x86)\Lua\5.1
+
+AC_ARG_ENABLE([lua],
+	      AS_HELP_STRING([--disable-lua],[disable Lua script support]),
+	      [enable_lua=$enableval],
+	      [enable_lua=$default_lua]
+	     )
+
+if test "$enable_lua" = "no" ; then
+  AC_MSG_NOTICE(Lua disabled)
+else
+  PTLIB_FIND_LUA([HAS_LUA=1], [HAS_LUA=])
+
+  if test "x${HAS_LUA}" = "x1" ; then
+    AC_DEFINE(P_LUA, 1, "Lua found")
+    STDCCFLAGS="$STDCCFLAGS $LUA_CFLAGS"
+    ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
+  fi
+fi
+AC_SUBST(HAS_LUA)
+
+
 
 
 dnl ########################################################################
