@@ -1014,6 +1014,7 @@ of compatibility with documentation systems.
 
 #define PCLASSINFO(cls, par) \
   public: \
+    typedef cls P_thisClass; \
     static inline const char * Class() \
       { return #cls; } \
     virtual PBoolean InternalIsDescendant(const char * clsName) const \

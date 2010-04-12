@@ -1158,6 +1158,7 @@ dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\Program Files\OpenSSL\
+dnl MSWIN_CHECK_DIR  openssl,\Program Files (x86)\OpenSSL\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
 AC_ARG_ENABLE([openssl],
@@ -1253,6 +1254,16 @@ else
   fi
 fi
 AC_SUBST(HAS_EXPAT)
+
+
+dnl ########################################################################
+dnl look for Lua library
+dnl MSWIN_DISPLAY    lua,Lua interpreter
+dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA=1
+dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
+dnl MSWIN_CHECK_DIR  lua,\Program Files\Lua\5.1
+dnl MSWIN_CHECK_DIR  lua,\Program Files (x86)\Lua\5.1
+
 
 dnl ########################################################################
 dnl look for IPV6 functions
