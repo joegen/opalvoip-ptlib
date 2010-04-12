@@ -506,6 +506,9 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
     return true;
   }
 
+  PTRACE(1, "MonSock\tCould not listen on "
+         << binding << ':' << localPort
+         << " - " << info.socket->GetErrorText());
   delete info.socket;
   info.socket = NULL;
   return false;
