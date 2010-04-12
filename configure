@@ -725,6 +725,7 @@ HAS_HTTP
 HAS_URL
 HAS_CONFIG_FILE
 HAS_IPV6
+HAS_LUA
 HAS_EXPAT
 P_STATIC_LDFLAGS
 P_STATIC_ENDLDLIBS
@@ -844,6 +845,8 @@ with_ldap_dir
 enable_openssl
 enable_expat
 with_expat_dir
+enable_lua
+with_lua_dir
 enable_ipv6
 enable_configfile
 enable_url
@@ -1548,6 +1551,7 @@ Optional Features:
   --disable-openldap      disable OpenLDAP support
   --disable-openssl       disable OpenSSL support
   --disable-expat         disable expat XML support
+  --disable-lua           disable Lua script support
   --disable-ipv6          disable IPV6 support
   --enable-configfile     enable config file support
   --enable-url            enable URL support
@@ -1600,6 +1604,7 @@ Optional Packages:
                           the lib dir
   --with-ldap-dir=PFX     Location of LDAP
   --with-expat-dir=PFX    Location of expat XML parser
+  --with-lua-dir=PFX      Location of Lua interpreter
   --with-directx-includedir=DIR
                           Location of DirectX include files
   --with-odbc-dir=PFX     Location of odbc XML parser
@@ -3564,6 +3569,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
+
+
+
+
 if test "x$prefix" = "xNONE"; then
    if test "x$PTLIBDIR" = "x"; then
       prefix="/usr/local"
@@ -3686,6 +3695,7 @@ HAS_FFVDEV=1
 HAS_APPSHARE=
 HAS_SHM_VIDEO=1
 HAS_VXML=1
+HAS_LUA=1
 HAS_EXCEPTIONS=
 HAS_VFW_CAPTURE=
 
@@ -3731,6 +3741,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   HAS_SHM_VIDEO=
   HAS_EXCEPTIONS=
   HAS_VFW_CAPTURE=
+  HAS_LUA=
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -3773,6 +3784,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   HAS_SHM_VIDEO=
   HAS_EXCEPTIONS=
   HAS_VFW_CAPTURE=
+  HAS_LUA=
 fi
 
 
@@ -11387,6 +11399,300 @@ _ACEOF
     ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
 fi
+
+
+
+
+# Check whether --enable-lua was given.
+if test "${enable_lua+set}" = set; then
+  enableval=$enable_lua; enable_lua=$enableval
+else
+  enable_lua=$default_lua
+
+fi
+
+
+if test "$enable_lua" = "no" ; then
+  { $as_echo "$as_me:$LINENO: Lua disabled" >&5
+$as_echo "$as_me: Lua disabled" >&6;}
+else
+
+
+# Check whether --with-lua-dir was given.
+if test "${with_lua_dir+set}" = set; then
+  withval=$with_lua_dir; with_lua_dir="$withval"
+fi
+
+
+          ptlib_lua=no
+
+          if test "x${with_lua_dir}" != "x"; then
+            { $as_echo "$as_me:$LINENO: Using lua dir ${with_lua_dir}" >&5
+$as_echo "$as_me: Using lua dir ${with_lua_dir}" >&6;}
+            if test -d ${with_lua_dir}/include; then
+	      ptlib_lua_cflags="-I${with_lua_dir}/include"
+	      ptlib_lua_libs="-L${with_lua_dir}/lib"
+	    else
+	      ptlib_lua_cflags="-I${with_lua_dir}/lib"
+	      ptlib_lua_libs="-L${with_lua_dir}/.libs"
+	    fi
+          fi
+
+          old_LIBS="$LIBS"
+          old_CPPFLAGS="$CPPFLAGS"
+          LIBS="$LIBS ${ptlib_lua_libs}"
+          CPPFLAGS="$CPPFLAGS ${ptlib_lua_cflags}"
+
+
+for ac_header in lua.h
+do
+as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  { $as_echo "$as_me:$LINENO: checking for $ac_header" >&5
+$as_echo_n "checking for $ac_header... " >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  $as_echo_n "(cached) " >&6
+fi
+ac_res=`eval 'as_val=${'$as_ac_Header'}
+		 $as_echo "$as_val"'`
+	       { $as_echo "$as_me:$LINENO: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+else
+  # Is the header compilable?
+{ $as_echo "$as_me:$LINENO: checking $ac_header usability" >&5
+$as_echo_n "checking $ac_header usability... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_cxx_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+$as_echo "$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ $as_echo "$as_me:$LINENO: checking $ac_header presence" >&5
+$as_echo_n "checking $ac_header presence... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_cxx_preproc_warn_flag$ac_cxx_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+$as_echo "$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
+  yes:no: )
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+$as_echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+$as_echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+$as_echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+$as_echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+$as_echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+$as_echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+$as_echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+
+    ;;
+esac
+{ $as_echo "$as_me:$LINENO: checking for $ac_header" >&5
+$as_echo_n "checking for $ac_header... " >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  $as_echo_n "(cached) " >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+ac_res=`eval 'as_val=${'$as_ac_Header'}
+		 $as_echo "$as_val"'`
+	       { $as_echo "$as_me:$LINENO: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+
+fi
+as_val=`eval 'as_val=${'$as_ac_Header'}
+		 $as_echo "$as_val"'`
+   if test "x$as_val" = x""yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+ ptlib_lua=yes
+else
+  ptlib_lua=no
+fi
+
+done
+
+          if test "x${ptlib_lua}" = "xyes" ; then
+            { $as_echo "$as_me:$LINENO: checking for lua_newstate in -llua" >&5
+$as_echo_n "checking for lua_newstate in -llua... " >&6; }
+if test "${ac_cv_lib_lua_lua_newstate+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-llua  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char lua_newstate ();
+int
+main ()
+{
+return lua_newstate ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_cxx_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  ac_cv_lib_lua_lua_newstate=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_lua_lua_newstate=no
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_lua_lua_newstate" >&5
+$as_echo "$ac_cv_lib_lua_lua_newstate" >&6; }
+if test "x$ac_cv_lib_lua_lua_newstate" = x""yes; then
+  ptlib_lua=yes
+else
+  ptlib_lua=no
+fi
+
+          fi
+
+          LIBS="$old_LIBS"
+          CPPFLAGS="$old_CPPFLAGS"
+
+          if test "x${ptlib_lua}" = "xyes" ; then
+            EXPAT_LIBS="-llua ${ptlib_lua_libs}"
+            EXPAT_CFLAGS="${ptlib_lua_cflags}"
+          fi
+          if test $ptlib_lua = yes; then
+  HAS_LUA=1
+else
+  HAS_LUA=
+fi
+
+
+
+  if test "x${HAS_LUA}" = "x1" ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_LUA 1
+_ACEOF
+
+    STDCCFLAGS="$STDCCFLAGS $LUA_CFLAGS"
+    ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
+  fi
+fi
+
+
+
 
 
 

@@ -197,6 +197,9 @@ SOURCES += \
 endif
 endif # HAS_EXPAT
 
+ifdef HAS_LUA
+SOURCES	+= $(COMPONENT_SRC_DIR)/lua.cxx
+endif
 
 ifdef HAS_RESOLVER
 SOURCES += \
