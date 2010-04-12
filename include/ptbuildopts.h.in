@@ -474,6 +474,22 @@
   #undef P_SOAP
 #endif
 
+/////////////////////////////////////////////////
+//
+// Lua interpreter
+//
+
+#undef P_LUA
+
+#if defined(_MSC_VER) && defined(P_LUA)
+  #pragma include_alias(<lua.hpp>,   <@LUA_DIR@/include/lua.hpp>)
+  #pragma include_alias(<lua.h>,     <@LUA_DIR@/include/lua.h>)
+  #pragma include_alias(<lauxlib.h>, <@LUA_DIR@/include/lauxlib.h>)
+  #pragma include_alias(<lualib.h>,  <@LUA_DIR@/include/lualib.h>)
+  
+  #define P_LUA_LIBRARY "@LUA_DIR@/lib/lua5.1.lib"
+#endif
+
 
 /////////////////////////////////////////////////
 //
