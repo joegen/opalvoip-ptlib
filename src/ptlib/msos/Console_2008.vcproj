@@ -7716,6 +7716,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\lua.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\memfile.cxx"
 					>
 				</File>
@@ -9557,6 +9561,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\ipacl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\lua.h"
 					>
 				</File>
 				<File

@@ -7688,6 +7688,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\lua.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\memfile.cxx"
 					>
 				</File>
@@ -8931,6 +8935,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\..\revision.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\revision.h.in"
 				>
 				<FileConfiguration
@@ -8939,7 +8947,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8949,7 +8957,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8959,7 +8967,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8969,7 +8977,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8979,7 +8987,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8989,7 +8997,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8999,7 +9007,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9009,7 +9017,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9019,7 +9027,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9029,7 +9037,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9039,7 +9047,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9049,7 +9057,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9059,7 +9067,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9069,7 +9077,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9079,14 +9087,10 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="copy $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\revision.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\..\version.h"
@@ -9537,6 +9541,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\ipacl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\lua.h"
 					>
 				</File>
 				<File
