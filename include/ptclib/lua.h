@@ -38,9 +38,9 @@
 #include <ptlib.h>
 #include <ptbuildopts.h>
 
-#include <lua.hpp>
-
 #if P_LUA
+
+#include <lua.hpp>
 
 //////////////////////////////////////////////////////////////
 
