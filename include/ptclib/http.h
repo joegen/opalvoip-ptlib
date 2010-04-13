@@ -708,6 +708,21 @@ class PHTTPConnectionInfo : public PObject
     The server socket thread would continuously call the
     ProcessCommand() function until it returns false. This will then
     call the appropriate virtual function on parsing the HTTP protocol.
+    <PRE><CODE>
+    PTCPSocket socket(80);
+    if (!socket.Listen())
+      return;
+
+    PHTTPSpace httpNameSpace;
+    httpNameSpace.AddResource(new PHTTPDirectory("data", "data"))
+
+    PHTTServer httpServer(httpNameSpace);
+    if (!httpServer.Open(socket))
+      return;
+
+    while (httpServer.ProcessCommand())
+      ;
+    </CODE></PRE>
  */
 class PHTTPServer : public PHTTP
 {
