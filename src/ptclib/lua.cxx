@@ -37,6 +37,9 @@
 #include <ptbuildopts.h>
 #include <ptclib/lua.h>
 
+#if P_LUA
+
+
 #if defined(_MSC_VER)
 #pragma comment(lib, P_LUA_LIBRARY)
 #endif
@@ -237,4 +240,4 @@ int PLua::TraceFunction(lua_State * L)
 }
 
 
-
+#endif // P_LUA
