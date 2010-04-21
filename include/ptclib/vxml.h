@@ -169,7 +169,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     // new functions
     PTextToSpeech * SetTextToSpeech(PTextToSpeech * tts, PBoolean autoDelete = false);
     PTextToSpeech * SetTextToSpeech(const PString & ttsName);
-    PTextToSpeech * GetTextToSpeech() { return textToSpeech; }
+    PTextToSpeech * GetTextToSpeech() const { return textToSpeech; }
 
     virtual PBoolean Load(const PString & source);
     virtual PBoolean LoadFile(const PFilePath & file);
@@ -182,14 +182,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     PBoolean Execute();
 
-    PVXMLChannel * GetAndLockVXMLChannel() 
-    { 
-      sessionMutex.Wait(); 
-      if (vxmlChannel != NULL) 
-        return vxmlChannel; 
-      sessionMutex.Signal();
-      return NULL;
-    }
+    PVXMLChannel * GetAndLockVXMLChannel();
     void UnLockVXMLChannel() { sessionMutex.Signal(); }
     PMutex & GetSessionMutex() { return sessionMutex; }
 
@@ -222,6 +215,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     PString GetXMLError() const;
 
+    virtual void OnEndDialog();
     virtual void OnEndSession()         { }
     virtual void OnTransfer(const PString & /*destination*/, bool /*bridged*/) { }
 
@@ -250,8 +244,9 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     void AllowClearCall();
     void ProcessUserInput();
-    void ProcessNode();
     void ProcessGrammar();
+    void ProcessNode();
+    bool NextNode();
 
     PBoolean TraverseAudio();
     PBoolean TraverseGoto();
@@ -304,8 +299,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PBoolean emptyAction;
 
     PThread * vxmlThread;
-    PBoolean threadRunning;
-    PBoolean forceEnd;
+    bool m_abortVXML;
 
     PString mediaFormat;
     PVXMLChannel * & vxmlChannel;
@@ -319,8 +313,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     bool          m_speakNodeData;
 
   private:
-    void      ExecuteDialog();
-
     PString       callingCallToken;
     PSyncPoint    answerSync;
     PString       grammarResult;
@@ -591,10 +583,9 @@ class PVXMLChannel : public PDelayChannel
 
     void SetName(const PString & name) { channelName = name; }
 
-    unsigned GetSampleFrequency() const
-    { return sampleFrequency; }
+    unsigned GetSampleFrequency() const { return sampleFrequency; }
 
-	  void SetSilentCount(int v) { silentCount = v; }
+    void SetSilence(unsigned msecs);
 
   protected:
     PVXMLChannelInterface * vxmlInterface;
@@ -619,9 +610,8 @@ class PVXMLChannel : public PDelayChannel
     PVXMLPlayable * currentPlayItem;
 
     PBoolean paused;
-    int silentCount;
+    PTimer   m_silenceTimer;
     int totalData;
-    PTimer delayTimer;
 
     // "channelname" (which is the name of the <record> tag) so
     // results can be saved in vxml session variable
