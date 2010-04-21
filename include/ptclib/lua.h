@@ -193,7 +193,7 @@ class PLua
   int fn_name(lua_State *);
 
 #define PLUA_BIND_FUNCTION(bindings, cls, fn_name) \
-  bindings.Bind(#fn_name, &cls::fn_name)
+  (bindings).Bind(#fn_name, &cls::fn_name);
 
 
 //////////////////////////////////////////////////////////////
