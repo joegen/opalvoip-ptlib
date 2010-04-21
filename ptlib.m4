@@ -486,8 +486,8 @@ AC_DEFUN([PTLIB_FIND_LUA],
           CPPFLAGS="$old_CPPFLAGS"
 
           if test "x${ptlib_lua}" = "xyes" ; then
-            EXPAT_LIBS="-llua ${ptlib_lua_libs}"
-            EXPAT_CFLAGS="${ptlib_lua_cflags}"
+            LUA_LIBS="-llua ${ptlib_lua_libs}"
+            LUA_CFLAGS="${ptlib_lua_cflags}"
           fi
           AS_IF([test AS_VAR_GET([ptlib_lua]) = yes], [$1], [$2])[]
          ])
