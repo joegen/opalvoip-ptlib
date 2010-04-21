@@ -35,10 +35,11 @@
 #include <ptlib.h>
 
 #include <ptbuildopts.h>
-#include <ptclib/lua.h>
 
 #if P_LUA
 
+#include <ptclib/lua.h>
+#include <lua.hpp>
 
 #if defined(_MSC_VER)
 #pragma comment(lib, P_LUA_LIBRARY)
