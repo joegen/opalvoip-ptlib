@@ -155,6 +155,9 @@ int PSystemLog::Buffer::sync()
   }
 #endif
 
+  // Make sure there is a trailing NULL at end of string
+  overflow('\0');
+
   g_SystemLogTarget.m_targetMutex.Wait();
   if (g_SystemLogTarget.m_targetPointer != NULL)
     g_SystemLogTarget.m_targetPointer->Output(logLevel, m_string);
