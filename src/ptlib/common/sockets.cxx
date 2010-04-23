@@ -1514,16 +1514,19 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
   Psockaddr bind_sa(bindAddr, port); 
 #endif
 
-  if (!IsOpen()) {
-    // attempt to create a socket
 #if P_HAS_IPV6
-    if (!OpenSocket(bind_sa->sa_family))
-      return PFalse;
+  // Always close and re-open as the bindAddr address family might change.
+  Close();
+
+  // attempt to create a socket
+  if (!OpenSocket(bind_sa->sa_family))
+    return PFalse;
 #else
+  if (!IsOpen()) {
     if (!OpenSocket())
       return PFalse;
-#endif
   }
+#endif
   
 #ifndef P_BEOS
 #if P_HAS_IPV6
