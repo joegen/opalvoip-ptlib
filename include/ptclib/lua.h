@@ -79,6 +79,7 @@ class PLua
 
 #define PLUA_BINDING_START(class_type) \
   typedef class_type PLua_InstanceType; \
+  void UnbindFromInstance(PLua &, const char *) { } \
   void BindToInstance(PLua & lua, const char * instanceName) \
   { \
     /* create a new metatable and set the __index table */ \
@@ -86,11 +87,14 @@ class PLua
     lua_pushvalue(lua, -1); \
     lua_setfield(lua, -2, "__index"); \
 
-#define PLUA_BINDING(fn_name) \
+#define PLUA_BINDING2(cpp_name, lua_name) \
     /* set member function */ \
     lua_pushlightuserdata(lua, (void *)this); \
-    lua_pushcclosure (lua, &PLua_InstanceType::fn_name##_callback, 1); \
-    lua_setfield     (lua, -2, #fn_name); \
+    lua_pushcclosure (lua, &PLua_InstanceType::cpp_name##_callback, 1); \
+    lua_setfield     (lua, -2, lua_name); \
+
+#define PLUA_BINDING(fn_name) \
+  PLUA_BINDING2(fn_name, #fn_name)
 
 #define PLUA_BINDING_END() \
     /* assign metatable */ \
