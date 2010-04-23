@@ -107,7 +107,10 @@ bool PLua::Run(const char * program)
 
 void PLua::OnError(int code, const PString & str)
 {
-  PTRACE(2, "Lua\tError (" << code << " - " << str);
+  PStringStream err;
+  err << "Error (" << code << " - " << str;
+  m_lastErrorText = err;
+  PTRACE(2, "Lua\t" << m_lastErrorText);
 }
 
 
