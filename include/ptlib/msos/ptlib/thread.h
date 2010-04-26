@@ -44,6 +44,7 @@
     UINT   threadId;
 
   private:
+    bool   m_isProcess;
     PINDEX originalStackSize;
 
     void CleanUp();
