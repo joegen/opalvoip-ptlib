@@ -746,6 +746,7 @@ void PThread::Win32AttachThreadInput()
 
 PThread::PThread()
   : autoDelete(false)
+  , m_isProcess(true)
   , originalStackSize(0)
   , threadHandle(GetCurrentThread())
   , threadId(GetCurrentThreadId())
@@ -753,6 +754,7 @@ PThread::PThread()
   if (!PProcess::IsInitialised())
     return;
 
+  m_isProcess = false;
   autoDelete = true;
   DuplicateHandle(GetCurrentProcess(), threadHandle, GetCurrentProcess(), &threadHandle, 0, 0, DUPLICATE_SAME_ACCESS);
 
@@ -773,6 +775,7 @@ PThread::PThread(PINDEX stackSize,
                  Priority priorityLevel,
                  const PString & name)
   : threadName(name)
+  , m_isProcess(false)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   originalStackSize = stackSize;
@@ -803,7 +806,7 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (originalStackSize <= 0)
+  if (m_isProcess)
     return;
 
   CleanUp();
@@ -854,7 +857,9 @@ void PThread::CleanUp()
 
 void PThread::Restart()
 {
-  PAssert(IsTerminated(), "Cannot restart running thread");
+  if (!PAssert(originalStackSize != 0, "Cannot restart process/external thread") ||
+      !PAssert(IsTerminated(), "Cannot restart running thread"))
+    return;
 
   CleanUp();
 
