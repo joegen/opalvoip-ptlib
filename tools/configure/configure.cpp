@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.19"
+#define VERSION "1.20"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -144,7 +144,11 @@ Feature::Feature(const string & featureNameParam,
 {
   Parse(optionName, optionValue);
 
-  char * includes = strdup(getenv("INCLUDE"));
+  const char * env = getenv("INCLUDE");
+  if (env == NULL)
+    return;
+
+  char * includes = strdup(env);
   char * dir = strtok(includes, ";");
   do {
     if (*dir != '\0') {
