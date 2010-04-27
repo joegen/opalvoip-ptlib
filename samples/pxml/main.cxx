@@ -70,7 +70,7 @@ void PxmlTest::Main()
 
   PString ch = LEThdr + SetNumHdr + "23" + SetNumTrl + LETtrl;
 
-  PXML xml(ch,PXMLParser::Indent |PXMLParser::NewLineAfterElement+PXMLParser::NoIgnoreWhiteSpace);
+  PXML xml(PXMLParser::Indent | PXMLParser::NewLineAfterElement+PXMLParser::NoIgnoreWhiteSpace, ch);
   PStringStream s;
   s << xml;
 
