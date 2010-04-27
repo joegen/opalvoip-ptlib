@@ -84,13 +84,13 @@ class PXMLBase : public PObject
       IsStandAlone
     };
 
-    PXMLBase(Options opts = NoOptions)
+    PXMLBase(int opts = NoOptions)
       : m_options(opts) { }
 
-    void SetOptions(Options opts)
+    void SetOptions(int opts)
       { m_options = opts; }
 
-    Options GetOptions() const { return m_options; }
+    int GetOptions() const { return m_options; }
 
     virtual PBoolean IsNoIndentElement(
       const PString & /*elementName*/
@@ -100,7 +100,7 @@ class PXMLBase : public PObject
     }
 
   protected:
-    Options m_options;
+    int m_options;
 };
 
 
@@ -110,12 +110,12 @@ class PXML : public PXMLBase
   public:
 
     PXML(
-      Options options = NoOptions,
+      int options = NoOptions,
       const char * noIndentElements = NULL
     );
     PXML(
       const PString & data,
-      Options options = NoOptions,
+      int options = NoOptions,
       const char * noIndentElements = NULL
     );
 
@@ -193,7 +193,12 @@ class PXML : public PXMLBase
       OptionalAttributeWithValueMatching,
       OptionalElementWithBodyMatching,
       SetDefaultNamespace,
-      SetNamespace
+      SetNamespace,
+
+      RequiredAttributeWithValueMatchingEx = RequiredAttributeWithValueMatching + 0x8000,
+      OptionalAttributeWithValueMatchingEx = OptionalAttributeWithValueMatching + 0x8000,
+      RequiredElementWithBodyMatchingEx    = RequiredElementWithBodyMatching    + 0x8000,
+      OptionalElementWithBodyMatchingEx    = OptionalElementWithBodyMatching    + 0x8000
     };
 
     struct ValidationContext {
@@ -243,7 +248,7 @@ class PXML : public PXMLBase
     static PString EscapeSpecialChars(const PString & string);
 
   protected:
-    void Construct(Options options, const char * noIndentElements);
+    void Construct(int options, const char * noIndentElements);
     PXMLElement * rootElement;
     PMutex rootMutex;
 
@@ -352,7 +357,7 @@ class PXMLElement : public PXMLObject {
     PCaselessString GetPathName() const;
 
     void SetName(const PString & v)
-      { name = v; }
+    { name = v; }
 
     PINDEX GetSize() const
       { return subObjects.GetSize(); }
@@ -452,7 +457,7 @@ class PXMLParser : public PXMLBase
 {
   PCLASSINFO(PXMLParser, PXMLBase);
   public:
-    PXMLParser(Options options = NoOptions);
+    PXMLParser(int options = NoOptions);
     ~PXMLParser();
     bool Parse(const char * data, int dataLen, bool final);
     void GetErrorInfo(PString & errorString, unsigned & errorCol, unsigned & errorLine);
