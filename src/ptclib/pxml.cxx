@@ -104,7 +104,7 @@ static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
   ((PXMLParser *)userData)->EndNamespaceDeclHandler(prefix);
 }
 
-PXMLParser::PXMLParser(Options options)
+PXMLParser::PXMLParser(int options)
   : PXMLBase(options)
   , rootOpen(true)
 {
@@ -243,13 +243,14 @@ void PXMLParser::EndNamespaceDeclHandler(const XML_Char * /*prefix*/)
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-PXML::PXML(PXMLParser::Options options, const char * noIndentElements)
-  : PXMLBase(options) 
+
+PXML::PXML(int options, const char * noIndentElements)
+ : PXMLBase(options) 
 {
   Construct(options, noIndentElements);
 }
 
-PXML::PXML(const PString & data, PXMLParser::Options options, const char * noIndentElements)
+PXML::PXML(const PString & data, int options, const char * noIndentElements)
   : PXMLBase(options) 
 {
   Construct(options, noIndentElements);
@@ -283,7 +284,7 @@ PXML::PXML(const PXML & xml)
     rootElement = (PXMLElement *)oldRootElement->Clone(NULL);
 }
 
-void PXML::Construct(PXMLParser::Options options, const char * _noIndentElements)
+void PXML::Construct(int options, const char * _noIndentElements)
 {
   rootElement    = NULL;
   m_options      = options;
@@ -800,6 +801,9 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
     }
   }
 
+  bool checkValue = false;
+  bool extendedRegex = false;
+
   switch (validator->m_op) {
 
     case SetDefaultNamespace:
@@ -849,8 +853,11 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
       }
       break;
 
-    case RequiredElement:
     case RequiredElementWithBodyMatching:
+      extendedRegex = true;
+    case RequiredElementWithBodyMatchingEx:
+      checkValue = true;
+    case RequiredElement:
       if (baseElement->GetElement(elementNameWithNs) == NULL) {
         m_errorString << "Element \"" << baseElement->GetName() << "\" missing required subelement \"" << elementNameWithNs << '"';
         baseElement->GetFilePosition(m_errorColumn, m_errorLine);
@@ -858,8 +865,12 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
       }
       // fall through
 
-    case OptionalElement:
+    case OptionalElementWithBodyMatchingEx:
+      extendedRegex = extendedRegex || validator->m_op == OptionalElementWithBodyMatchingEx;
+      checkValue    = checkValue    || validator->m_op == OptionalElementWithBodyMatching;
     case OptionalElementWithBodyMatching:
+      checkValue    = checkValue    || validator->m_op == OptionalElementWithBodyMatching;
+    case OptionalElement:
       {
         if (baseElement->GetElement(validator->m_name) == NULL) 
           break;
@@ -875,7 +886,7 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
           }
           if (validator->m_op == RequiredElementWithBodyMatching) {
             PString toMatch(subElement->GetData());
-            PRegularExpression regex(PString(validator->m_attributeValues));
+            PRegularExpression regex(PString(validator->m_attributeValues), extendedRegex ? PRegularExpression::Extended : 0);
             if (!toMatch.MatchesRegEx(regex)) {
               m_errorString << "Element \"" << subElement->GetName() << "\" has body with value \"" << toMatch.Trim() << "\" that does not match regex \"" << PString(validator->m_attributeValues) << '"';
               return false;
@@ -886,17 +897,21 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
       }
       break;
 
-    case OptionalAttribute:
+    case OptionalAttributeWithValueMatchingEx:
+      extendedRegex = true;
+    case OptionalAttributeWithValueMatching:
     case OptionalAttributeWithValue:
     case OptionalNonEmptyAttribute:
-    case OptionalAttributeWithValueMatching:
+    case OptionalAttribute:
       if (!baseElement->HasAttribute(validator->m_name)) 
         break;
       // fall through
-    case RequiredAttribute:
+    case RequiredAttributeWithValueMatchingEx:
+      extendedRegex = extendedRegex || validator->m_op == RequiredAttributeWithValueMatchingEx;
+    case RequiredAttributeWithValueMatching:
     case RequiredAttributeWithValue:
     case RequiredNonEmptyAttribute:
-    case RequiredAttributeWithValueMatching:
+    case RequiredAttribute:
       if (!baseElement->HasAttribute(validator->m_name)) {
         m_errorString << "Element \"" << baseElement->GetName() << "\" missing required attribute \"" << validator->m_name << '"';
         baseElement->GetFilePosition(m_errorColumn, m_errorLine);
@@ -938,9 +953,11 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
 
         case RequiredAttributeWithValueMatching:
         case OptionalAttributeWithValueMatching:
+        case RequiredAttributeWithValueMatchingEx:
+        case OptionalAttributeWithValueMatchingEx:
           {
             PString toMatch(baseElement->GetAttribute(validator->m_name));
-            PRegularExpression regex(PString(validator->m_attributeValues));
+            PRegularExpression regex(PString(validator->m_attributeValues), extendedRegex ? PRegularExpression::Extended : 0);
             if (!toMatch.MatchesRegEx(regex)) {
               m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "\" with value \"" << baseElement->GetAttribute(validator->m_name) << "\" that does not match regex \"" << PString(validator->m_attributeValues) << '"';
               return false;
