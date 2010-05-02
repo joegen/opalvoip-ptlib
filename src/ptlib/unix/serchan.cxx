@@ -343,6 +343,26 @@ PBoolean PSerialChannel::SetSpeed(DWORD newBaudRate)
       baud = B230400;
       break;
 #endif
+#ifdef B460800
+    case 460800:
+      baud = B460800;
+      break;
+#endif
+#ifdef B576000
+    case 576000:
+      baud = B576000;
+      break;
+#endif
+#ifdef B921600
+    case 921600:
+      baud = B921600;
+      break;
+#endif
+#ifdef B1152000
+    case 1152000:
+      baud = B1152000;
+      break;
+#endif
     default:
       baud = -1;
   };
