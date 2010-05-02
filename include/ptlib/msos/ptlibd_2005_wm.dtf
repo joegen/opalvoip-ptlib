@@ -1368,6 +1368,8 @@ EXPORTS
     ??0InputFile@PHTML@@QAA@PBD0W4DisableCodes@1@0@Z @18874 NONAME
     ??0InputImage@PHTML@@IAA@PBD00W4DisableCodes@1@0@Z @18875 NONAME
     ??0InputImage@PHTML@@QAA@PBD0W4DisableCodes@1@0@Z @18876 NONAME
+    ??0InputNumber@PHTML@@IAA@PBD0HHHW4DisableCodes@1@0@Z @34003 NONAME
+    ??0InputNumber@PHTML@@QAA@PBDHHHW4DisableCodes@1@0@Z @34004 NONAME
     ??0InputPassword@PHTML@@QAA@PBDH00@Z @18877 NONAME
     ??0InputPassword@PHTML@@QAA@PBDH0HW4DisableCodes@1@0@Z @18878 NONAME
     ??0InputPassword@PHTML@@QAA@PBDHHW4DisableCodes@1@0@Z @18879 NONAME
@@ -1772,13 +1774,14 @@ EXPORTS
     ??0PHTTPClientAuthenticator@@QAA@ABVPString@@0AAVPMIMEInfo@@0@Z @32665 NONAME
     ??0PHTTPClientBasicAuthentication@@QAA@XZ @32666 NONAME
     ??0PHTTPClientDigestAuthentication@@QAA@XZ @32667 NONAME
-    ??0PHTTPCompositeField@@QAA@PBD00@Z @19191 NONAME
+    ??0PHTTPCompositeField@@QAA@PBD00_N@Z @34005 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@1@Z @19192 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@1ABVPHTTPAuthority@@@Z @19193 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@@Z @19194 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@ABVPHTTPAuthority@@@Z @19195 NONAME
     ??0PHTTPConfigSectionList@@QAA@ABVPURL@@ABVPHTTPAuthority@@ABVPString@@2002AAVPHTML@@@Z @19196 NONAME
     ??0PHTTPConnectionInfo@@QAA@XZ @19197 NONAME
+    ??0PHTTPDateField@@QAA@PBDABVPTime@@W4TimeFormat@1@@Z @34006 NONAME
     ??0PHTTPDirectory@@QAA@ABVPURL@@ABVPDirectory@@@Z @19198 NONAME
     ??0PHTTPDirectory@@QAA@ABVPURL@@ABVPDirectory@@ABVPHTTPAuthority@@@Z @19199 NONAME
     ??0PHTTPDirRequest@@QAA@ABVPURL@@ABVPMIMEInfo@@ABVPMultiPartList@@PAVPHTTPResource@@AAVPHTTPServer@@@Z @32668 NONAME
@@ -2370,6 +2373,7 @@ EXPORTS
     ??0Room@MUC@XMPP@@QAA@PAVStreamHandler@C2S@2@ABVJID@2@ABVPString@@@Z @28907 NONAME
     ??0Roster@XMPP@@QAA@PAVStreamHandler@C2S@1@@Z @28908 NONAME
     ??0RouteEntry@PIPSocket@@QAA@ABVAddress@1@@Z @19704 NONAME
+    ??0RouteTableDetector@PIPSocket@@QAA@XZ @34007 NONAME
     ??0runtime_error@std@@QAA@ABV01@@Z @19705 NONAME
     ??0runtime_error@std@@QAA@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@@Z @19706 NONAME
     ??0Select@PHTML@@QAA@PBD0@Z @19707 NONAME
@@ -2411,6 +2415,7 @@ EXPORTS
     ??0User@MUC@XMPP@@QAA@XZ @28918 NONAME
     ??0ValidationContext@PXML@@QAA@XZ @32712 NONAME
     ??0VXMLExecute_PNotifier@PVXMLSession@@QAA@PAV1@@Z @28919 NONAME
+    ??0Win32RouteTableDetector@@QAA@XZ @34008 NONAME
     ??0Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@QAA@ABVPString@@_N@Z @19735 NONAME
     ??0Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@QAA@ABVPString@@_N@Z @19736 NONAME
     ??0Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@QAA@ABVPString@@_N@Z @19737 NONAME
@@ -3028,6 +3033,7 @@ EXPORTS
     ??1InputField@PHTML@@MAA@XZ @20175 NONAME
     ??1InputFile@PHTML@@UAA@XZ @20176 NONAME
     ??1InputImage@PHTML@@UAA@XZ @20177 NONAME
+    ??1InputNumber@PHTML@@UAA@XZ @34009 NONAME
     ??1InputPassword@PHTML@@UAA@XZ @20178 NONAME
     ??1InputRange@PHTML@@UAA@XZ @20179 NONAME
     ??1InputScribble@PHTML@@UAA@XZ @20180 NONAME
@@ -3207,6 +3213,7 @@ EXPORTS
     ??1PHTTPConfig@@UAA@XZ @20307 NONAME
     ??1PHTTPConfigSectionList@@UAA@XZ @20308 NONAME
     ??1PHTTPConnectionInfo@@UAA@XZ @20309 NONAME
+    ??1PHTTPDateField@@UAA@XZ @34010 NONAME
     ??1PHTTPDirectory@@UAA@XZ @20310 NONAME
     ??1PHTTPDirRequest@@UAA@XZ @20311 NONAME
     ??1PHTTPField@@UAA@XZ @20312 NONAME
@@ -3550,6 +3557,7 @@ EXPORTS
     ??1Room@MUC@XMPP@@UAA@XZ @29123 NONAME
     ??1Roster@XMPP@@UAA@XZ @29124 NONAME
     ??1RouteEntry@PIPSocket@@UAA@XZ @20590 NONAME
+    ??1RouteTableDetector@PIPSocket@@UAA@XZ @34011 NONAME
     ??1runtime_error@std@@UAA@XZ @20591 NONAME
     ??1Select@PHTML@@UAA@XZ @20592 NONAME
     ??1SelectList@PSocket@@UAA@XZ @20593 NONAME
@@ -3580,6 +3588,7 @@ EXPORTS
     ??1User@MUC@XMPP@@UAA@XZ @29131 NONAME
     ??1ValidationContext@PXML@@QAA@XZ @32855 NONAME
     ??1VXMLExecute_PNotifier@PVXMLSession@@UAA@XZ @29132 NONAME
+    ??1Win32RouteTableDetector@@UAA@XZ @34012 NONAME
     ??1Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@UAA@XZ @20612 NONAME
     ??1Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@UAA@XZ @20613 NONAME
     ??1Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@UAA@XZ @20614 NONAME
@@ -4875,6 +4884,7 @@ EXPORTS
     ??_7InputField@PHTML@@6B@ @4127 NONAME
     ??_7InputFile@PHTML@@6B@ @4128 NONAME
     ??_7InputImage@PHTML@@6B@ @4129 NONAME
+    ??_7InputNumber@PHTML@@6B@ @34013 NONAME
     ??_7InputPassword@PHTML@@6B@ @4130 NONAME
     ??_7InputRange@PHTML@@6B@ @4131 NONAME
     ??_7InputScribble@PHTML@@6B@ @4132 NONAME
@@ -5015,6 +5025,7 @@ EXPORTS
     ??_7PHTTPConfig@@6B@ @4267 NONAME
     ??_7PHTTPConfigSectionList@@6B@ @4268 NONAME
     ??_7PHTTPConnectionInfo@@6B@ @4269 NONAME
+    ??_7PHTTPDateField@@6B@ @34014 NONAME
     ??_7PHTTPDirectory@@6B@ @4270 NONAME
     ??_7PHTTPDirRequest@@6B@ @4271 NONAME
     ??_7PHTTPField@@6B@ @4272 NONAME
@@ -5392,6 +5403,7 @@ EXPORTS
     ??_7Room@MUC@XMPP@@6B@ @29412 NONAME
     ??_7Roster@XMPP@@6B@ @29413 NONAME
     ??_7RouteEntry@PIPSocket@@6B@ @4701 NONAME
+    ??_7RouteTableDetector@PIPSocket@@6B@ @34015 NONAME
     ??_7runtime_error@std@@6B@ @21504 NONAME
     ??_7Select@PHTML@@6B@ @4705 NONAME
     ??_7SelectList@PSocket@@6B@ @4706 NONAME
@@ -5420,6 +5432,7 @@ EXPORTS
     ??_7Transport@XMPP@@6BPObject@@@ @29422 NONAME
     ??_7User@MUC@XMPP@@6B@ @29423 NONAME
     ??_7VXMLExecute_PNotifier@PVXMLSession@@6B@ @29424 NONAME
+    ??_7Win32RouteTableDetector@@6B@ @34016 NONAME
     ??_7Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@6B@ @17453 NONAME
     ??_7Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@6B@ @4739 NONAME
     ??_7Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@6B@ @4740 NONAME
@@ -5856,6 +5869,7 @@ EXPORTS
     ??_R0?AVInputField@PHTML@@@8 @5183 NONAME
     ??_R0?AVInputFile@PHTML@@@8 @5184 NONAME
     ??_R0?AVInputImage@PHTML@@@8 @5185 NONAME
+    ??_R0?AVInputNumber@PHTML@@@8 @34017 NONAME
     ??_R0?AVInputPassword@PHTML@@@8 @5186 NONAME
     ??_R0?AVInputRange@PHTML@@@8 @5187 NONAME
     ??_R0?AVInputScribble@PHTML@@@8 @5188 NONAME
@@ -5984,6 +5998,7 @@ EXPORTS
     ??_R0?AVPHTTPConfig@@@8 @5313 NONAME
     ??_R0?AVPHTTPConfigSectionList@@@8 @5314 NONAME
     ??_R0?AVPHTTPConnectionInfo@@@8 @5315 NONAME
+    ??_R0?AVPHTTPDateField@@@8 @34018 NONAME
     ??_R0?AVPHTTPDirectory@@@8 @5316 NONAME
     ??_R0?AVPHTTPDirRequest@@@8 @5317 NONAME
     ??_R0?AVPHTTPField@@@8 @5318 NONAME
@@ -6309,6 +6324,7 @@ EXPORTS
     ??_R0?AVRoom@MUC@XMPP@@@8 @29561 NONAME
     ??_R0?AVRoster@XMPP@@@8 @29562 NONAME
     ??_R0?AVRouteEntry@PIPSocket@@@8 @5667 NONAME
+    ??_R0?AVRouteTableDetector@PIPSocket@@@8 @34019 NONAME
     ??_R0?AVruntime_error@std@@@8 @21617 NONAME
     ??_R0?AVSelect@PHTML@@@8 @5671 NONAME
     ??_R0?AVSelectList@PSocket@@@8 @5672 NONAME
@@ -6334,6 +6350,7 @@ EXPORTS
     ??_R0?AVTransport@XMPP@@@8 @29568 NONAME
     ??_R0?AVUser@MUC@XMPP@@@8 @29569 NONAME
     ??_R0?AVVXMLExecute_PNotifier@PVXMLSession@@@8 @29570 NONAME
+    ??_R0?AVWin32RouteTableDetector@@@8 @34020 NONAME
     ??_R0?AVWorker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@@8 @17462 NONAME
     ??_R0?AVWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@@8 @5701 NONAME
     ??_R0?AVWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@@8 @5702 NONAME
@@ -6576,6 +6593,7 @@ EXPORTS
     ??_R1A@?0A@EA@InputField@PHTML@@8 @5921 NONAME
     ??_R1A@?0A@EA@InputFile@PHTML@@8 @5922 NONAME
     ??_R1A@?0A@EA@InputImage@PHTML@@8 @5923 NONAME
+    ??_R1A@?0A@EA@InputNumber@PHTML@@8 @34021 NONAME
     ??_R1A@?0A@EA@InputPassword@PHTML@@8 @5924 NONAME
     ??_R1A@?0A@EA@InputRange@PHTML@@8 @5925 NONAME
     ??_R1A@?0A@EA@InputScribble@PHTML@@8 @5926 NONAME
@@ -6709,6 +6727,7 @@ EXPORTS
     ??_R1A@?0A@EA@PHTTPConfig@@8 @6051 NONAME
     ??_R1A@?0A@EA@PHTTPConfigSectionList@@8 @6052 NONAME
     ??_R1A@?0A@EA@PHTTPConnectionInfo@@8 @6053 NONAME
+    ??_R1A@?0A@EA@PHTTPDateField@@8 @34022 NONAME
     ??_R1A@?0A@EA@PHTTPDirectory@@8 @6054 NONAME
     ??_R1A@?0A@EA@PHTTPDirRequest@@8 @6055 NONAME
     ??_R1A@?0A@EA@PHTTPField@@8 @6056 NONAME
@@ -7034,6 +7053,7 @@ EXPORTS
     ??_R1A@?0A@EA@Room@MUC@XMPP@@8 @29683 NONAME
     ??_R1A@?0A@EA@Roster@XMPP@@8 @29684 NONAME
     ??_R1A@?0A@EA@RouteEntry@PIPSocket@@8 @6431 NONAME
+    ??_R1A@?0A@EA@RouteTableDetector@PIPSocket@@8 @34023 NONAME
     ??_R1A@?0A@EA@runtime_error@std@@8 @21658 NONAME
     ??_R1A@?0A@EA@Select@PHTML@@8 @6435 NONAME
     ??_R1A@?0A@EA@SelectList@PSocket@@8 @6436 NONAME
@@ -7059,6 +7079,7 @@ EXPORTS
     ??_R1A@?0A@EA@Transport@XMPP@@8 @29690 NONAME
     ??_R1A@?0A@EA@User@MUC@XMPP@@8 @29691 NONAME
     ??_R1A@?0A@EA@VXMLExecute_PNotifier@PVXMLSession@@8 @29692 NONAME
+    ??_R1A@?0A@EA@Win32RouteTableDetector@@8 @34024 NONAME
     ??_R1A@?0A@EA@Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@8 @17470 NONAME
     ??_R1A@?0A@EA@Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@8 @6466 NONAME
     ??_R1A@?0A@EA@Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@8 @6467 NONAME
@@ -7335,6 +7356,7 @@ EXPORTS
     ??_R2InputField@PHTML@@8 @6710 NONAME
     ??_R2InputFile@PHTML@@8 @6711 NONAME
     ??_R2InputImage@PHTML@@8 @6712 NONAME
+    ??_R2InputNumber@PHTML@@8 @34025 NONAME
     ??_R2InputPassword@PHTML@@8 @6713 NONAME
     ??_R2InputRange@PHTML@@8 @6714 NONAME
     ??_R2InputScribble@PHTML@@8 @6715 NONAME
@@ -7468,6 +7490,7 @@ EXPORTS
     ??_R2PHTTPConfig@@8 @6840 NONAME
     ??_R2PHTTPConfigSectionList@@8 @6841 NONAME
     ??_R2PHTTPConnectionInfo@@8 @6842 NONAME
+    ??_R2PHTTPDateField@@8 @34026 NONAME
     ??_R2PHTTPDirectory@@8 @6843 NONAME
     ??_R2PHTTPDirRequest@@8 @6844 NONAME
     ??_R2PHTTPField@@8 @6845 NONAME
@@ -7793,6 +7816,7 @@ EXPORTS
     ??_R2Room@MUC@XMPP@@8 @29808 NONAME
     ??_R2Roster@XMPP@@8 @29809 NONAME
     ??_R2RouteEntry@PIPSocket@@8 @7220 NONAME
+    ??_R2RouteTableDetector@PIPSocket@@8 @34027 NONAME
     ??_R2runtime_error@std@@8 @21703 NONAME
     ??_R2Select@PHTML@@8 @7224 NONAME
     ??_R2SelectList@PSocket@@8 @7225 NONAME
@@ -7818,6 +7842,7 @@ EXPORTS
     ??_R2Transport@XMPP@@8 @29815 NONAME
     ??_R2User@MUC@XMPP@@8 @29816 NONAME
     ??_R2VXMLExecute_PNotifier@PVXMLSession@@8 @29817 NONAME
+    ??_R2Win32RouteTableDetector@@8 @34028 NONAME
     ??_R2Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@8 @17479 NONAME
     ??_R2Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@8 @7255 NONAME
     ??_R2Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@8 @7256 NONAME
@@ -8050,6 +8075,7 @@ EXPORTS
     ??_R3InputField@PHTML@@8 @7466 NONAME
     ??_R3InputFile@PHTML@@8 @7467 NONAME
     ??_R3InputImage@PHTML@@8 @7468 NONAME
+    ??_R3InputNumber@PHTML@@8 @34029 NONAME
     ??_R3InputPassword@PHTML@@8 @7469 NONAME
     ??_R3InputRange@PHTML@@8 @7470 NONAME
     ??_R3InputScribble@PHTML@@8 @7471 NONAME
@@ -8183,6 +8209,7 @@ EXPORTS
     ??_R3PHTTPConfig@@8 @7596 NONAME
     ??_R3PHTTPConfigSectionList@@8 @7597 NONAME
     ??_R3PHTTPConnectionInfo@@8 @7598 NONAME
+    ??_R3PHTTPDateField@@8 @34030 NONAME
     ??_R3PHTTPDirectory@@8 @7599 NONAME
     ??_R3PHTTPDirRequest@@8 @7600 NONAME
     ??_R3PHTTPField@@8 @7601 NONAME
@@ -8508,6 +8535,7 @@ EXPORTS
     ??_R3Room@MUC@XMPP@@8 @29930 NONAME
     ??_R3Roster@XMPP@@8 @29931 NONAME
     ??_R3RouteEntry@PIPSocket@@8 @7976 NONAME
+    ??_R3RouteTableDetector@PIPSocket@@8 @34031 NONAME
     ??_R3runtime_error@std@@8 @21744 NONAME
     ??_R3Select@PHTML@@8 @7980 NONAME
     ??_R3SelectList@PSocket@@8 @7981 NONAME
@@ -8533,6 +8561,7 @@ EXPORTS
     ??_R3Transport@XMPP@@8 @29937 NONAME
     ??_R3User@MUC@XMPP@@8 @29938 NONAME
     ??_R3VXMLExecute_PNotifier@PVXMLSession@@8 @29939 NONAME
+    ??_R3Win32RouteTableDetector@@8 @34032 NONAME
     ??_R3Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@8 @17487 NONAME
     ??_R3Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@8 @8011 NONAME
     ??_R3Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@8 @8012 NONAME
@@ -8754,6 +8783,7 @@ EXPORTS
     ??_R4InputField@PHTML@@6B@ @8216 NONAME
     ??_R4InputFile@PHTML@@6B@ @8217 NONAME
     ??_R4InputImage@PHTML@@6B@ @8218 NONAME
+    ??_R4InputNumber@PHTML@@6B@ @34033 NONAME
     ??_R4InputPassword@PHTML@@6B@ @8219 NONAME
     ??_R4InputRange@PHTML@@6B@ @8220 NONAME
     ??_R4InputScribble@PHTML@@6B@ @8221 NONAME
@@ -8894,6 +8924,7 @@ EXPORTS
     ??_R4PHTTPConfig@@6B@ @8356 NONAME
     ??_R4PHTTPConfigSectionList@@6B@ @8357 NONAME
     ??_R4PHTTPConnectionInfo@@6B@ @8358 NONAME
+    ??_R4PHTTPDateField@@6B@ @34034 NONAME
     ??_R4PHTTPDirectory@@6B@ @8359 NONAME
     ??_R4PHTTPDirRequest@@6B@ @8360 NONAME
     ??_R4PHTTPField@@6B@ @8361 NONAME
@@ -9271,6 +9302,7 @@ EXPORTS
     ??_R4Room@MUC@XMPP@@6B@ @30058 NONAME
     ??_R4Roster@XMPP@@6B@ @30059 NONAME
     ??_R4RouteEntry@PIPSocket@@6B@ @8790 NONAME
+    ??_R4RouteTableDetector@PIPSocket@@6B@ @34035 NONAME
     ??_R4runtime_error@std@@6B@ @21794 NONAME
     ??_R4Select@PHTML@@6B@ @8794 NONAME
     ??_R4SelectList@PSocket@@6B@ @8795 NONAME
@@ -9299,6 +9331,7 @@ EXPORTS
     ??_R4Transport@XMPP@@6BPObject@@@ @30068 NONAME
     ??_R4User@MUC@XMPP@@6B@ @30069 NONAME
     ??_R4VXMLExecute_PNotifier@PVXMLSession@@6B@ @30070 NONAME
+    ??_R4Win32RouteTableDetector@@6B@ @34036 NONAME
     ??_R4Worker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@6B@ @17495 NONAME
     ??_R4Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@6B@ @8828 NONAME
     ??_R4Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@6B@ @8829 NONAME
@@ -9370,7 +9403,7 @@ EXPORTS
     ?AddAttr@InputField@PHTML@@MBAXAAV2@@Z @21836 NONAME
     ?AddAttr@InputFile@PHTML@@MBAXAAV2@@Z @21837 NONAME
     ?AddAttr@InputImage@PHTML@@MBAXAAV2@@Z @21838 NONAME
-    ?AddAttr@InputRange@PHTML@@MBAXAAV2@@Z @21839 NONAME
+    ?AddAttr@InputNumber@PHTML@@MBAXAAV2@@Z @34037 NONAME
     ?AddAttr@InputText@PHTML@@MBAXAAV2@@Z @21840 NONAME
     ?AddAttr@ListItem@PHTML@@MBAXAAV2@@Z @21841 NONAME
     ?AddAttr@Option@PHTML@@MBAXAAV2@@Z @21842 NONAME
@@ -9733,6 +9766,7 @@ EXPORTS
     ?CallNotifier@PPluginManager@@IAAXAAVPDynaLink@@H@Z @22065 NONAME
     ?CanCaptureVideo@PVideoInputDevice@@UBA_NXZ @27030 NONAME
     ?CanCaptureVideo@PVideoOutputDevice@@UBA_NXZ @27031 NONAME
+    ?Cancel@Win32RouteTableDetector@@UAAXXZ @34038 NONAME
     ?CanReadAndWrite@PPipeChannel@@SA_NXZ @27032 NONAME
     ?CanTrace@PTrace@@SA_NI@Z @27033 NONAME
     ?capacity@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QBAIXZ @22070 NONAME
@@ -9924,6 +9958,7 @@ EXPORTS
     ?Class@PHTTPConfig@@SAPBDXZ @9417 NONAME
     ?Class@PHTTPConfigSectionList@@SAPBDXZ @9418 NONAME
     ?Class@PHTTPConnectionInfo@@SAPBDXZ @9419 NONAME
+    ?Class@PHTTPDateField@@SAPBDXZ @34039 NONAME
     ?Class@PHTTPDirectory@@SAPBDXZ @9420 NONAME
     ?Class@PHTTPDirRequest@@SAPBDXZ @9421 NONAME
     ?Class@PHTTPField@@SAPBDXZ @9422 NONAME
@@ -10592,6 +10627,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PHTTPConfig@@UBA?AW4Comparison@PObject@@ABV3@@Z @22500 NONAME
     ?CompareObjectMemoryDirect@PHTTPConfigSectionList@@UBA?AW4Comparison@PObject@@ABV3@@Z @22501 NONAME
     ?CompareObjectMemoryDirect@PHTTPConnectionInfo@@UBA?AW4Comparison@PObject@@ABV3@@Z @22502 NONAME
+    ?CompareObjectMemoryDirect@PHTTPDateField@@UBA?AW4Comparison@PObject@@ABV3@@Z @34040 NONAME
     ?CompareObjectMemoryDirect@PHTTPDirectory@@UBA?AW4Comparison@PObject@@ABV3@@Z @22503 NONAME
     ?CompareObjectMemoryDirect@PHTTPDirRequest@@UBA?AW4Comparison@PObject@@ABV3@@Z @22504 NONAME
     ?CompareObjectMemoryDirect@PHTTPField@@UBA?AW4Comparison@PObject@@ABV3@@Z @22505 NONAME
@@ -10892,6 +10928,7 @@ EXPORTS
     ?construct@?$allocator@VPFilePath@@@std@@QAAXPAVPFilePath@@ABV3@@Z @30390 NONAME
     ?construct@?$allocator@VPVideoFrameInfo@@@std@@QAAXPAVPVideoFrameInfo@@ABV3@@Z @32218 NONAME
     ?construct@?$allocator@VRequestType@PTimerList@@@std@@QAAXPAVRequestType@PTimerList@@ABV34@@Z @30391 NONAME
+    ?Construct@InputNumber@PHTML@@AAAXHHH@Z @34041 NONAME
     ?Construct@PASN_BMPString@@IAAXXZ @22726 NONAME
     ?Construct@PASN_Stream@@AAAXXZ @22727 NONAME
     ?Construct@PChannel@@AAAXXZ @22728 NONAME
@@ -11214,6 +11251,7 @@ EXPORTS
     ?CreateRequest@PHTTPDirectory@@UAAPAVPHTTPRequest@@ABVPURL@@ABVPMIMEInfo@@ABVPMultiPartList@@AAVPHTTPServer@@@Z @33418 NONAME
     ?CreateRequest@PHTTPFile@@UAAPAVPHTTPRequest@@ABVPURL@@ABVPMIMEInfo@@ABVPMultiPartList@@AAVPHTTPServer@@@Z @33419 NONAME
     ?CreateRequest@PHTTPResource@@UAAPAVPHTTPRequest@@ABVPURL@@ABVPMIMEInfo@@ABVPMultiPartList@@AAVPHTTPServer@@@Z @33420 NONAME
+    ?CreateRouteTableDetector@PIPSocket@@SAPAVRouteTableDetector@1@XZ @34042 NONAME
     ?CreateScalar@PXMLRPCBlock@@SAPAVPXMLElement@@ABVPString@@0@Z @30431 NONAME
     ?CreateScalar@PXMLRPCBlock@@SAPAVPXMLElement@@ABVPString@@@Z @30432 NONAME
     ?CreateScalar@PXMLRPCBlock@@SAPAVPXMLElement@@H@Z @30433 NONAME
@@ -11357,6 +11395,8 @@ EXPORTS
     ?DeleteKey@RegistryKey@@QAAHABVPString@@@Z @23032 NONAME
     ?DeleteMessage@PPOP3Client@@QAA_NH@Z @27241 NONAME
     ?DeleteObject@PSafeCollection@@UBAXPAVPObject@@@Z @23034 NONAME
+    ?DeleteObject@PSafePtrBase@@MAAXPAVPSafeObject@@@Z @34043 NONAME
+    ?DeleteObject@PSafePtrMultiThreaded@@MAAXPAVPSafeObject@@@Z @34044 NONAME
     ?DeleteObjectsTimeout@PSafeCollection@@MAAXAAVPTimer@@H@Z @23035 NONAME
     ?DeleteObjectsToBeRemoved@PSafeCollection@@UAA_NXZ @27242 NONAME
     ?DeleteSection@PConfig@@UAAXABVPString@@@Z @23037 NONAME
@@ -12128,6 +12168,7 @@ EXPORTS
     ?GetClass@PHTTPConfig@@UBAPBDI@Z @23584 NONAME
     ?GetClass@PHTTPConfigSectionList@@UBAPBDI@Z @23585 NONAME
     ?GetClass@PHTTPConnectionInfo@@UBAPBDI@Z @23586 NONAME
+    ?GetClass@PHTTPDateField@@UBAPBDI@Z @34045 NONAME
     ?GetClass@PHTTPDirectory@@UBAPBDI@Z @23587 NONAME
     ?GetClass@PHTTPDirRequest@@UBAPBDI@Z @23588 NONAME
     ?GetClass@PHTTPField@@UBAPBDI@Z @23589 NONAME
@@ -13523,6 +13564,7 @@ EXPORTS
     ?InternalIsDescendant@PHTTPConfig@@UBA_NPBD@Z @27565 NONAME
     ?InternalIsDescendant@PHTTPConfigSectionList@@UBA_NPBD@Z @27566 NONAME
     ?InternalIsDescendant@PHTTPConnectionInfo@@UBA_NPBD@Z @27567 NONAME
+    ?InternalIsDescendant@PHTTPDateField@@UBA_NPBD@Z @34046 NONAME
     ?InternalIsDescendant@PHTTPDirectory@@UBA_NPBD@Z @27568 NONAME
     ?InternalIsDescendant@PHTTPDirRequest@@UBA_NPBD@Z @27569 NONAME
     ?InternalIsDescendant@PHTTPField@@UBA_NPBD@Z @27570 NONAME
@@ -13983,6 +14025,7 @@ EXPORTS
     ?LocationTag@PHTTP@@SAABVPString@@XZ @17724 NONAME
     ?Lock@PSafeLockReadOnly@@QAA_NXZ @27860 NONAME
     ?Lock@PSafeLockReadWrite@@QAA_NXZ @27861 NONAME
+    ?Lock@PSafePtrMultiThreaded@@IAAXXZ @34047 NONAME
     ?Lock@PTraceInfo@@QAAXXZ @24932 NONAME
     ?LockReadOnly@PSafeObject@@QBA_NXZ @27862 NONAME
     ?LockReadWrite@PSafeObject@@QAA_NXZ @27863 NONAME
@@ -14143,6 +14186,7 @@ EXPORTS
     ?Net2Host@PSocket@@SAGG@Z @13471 NONAME
     ?NewField@PHTTPBooleanField@@UBAPAVPHTTPField@@XZ @25050 NONAME
     ?NewField@PHTTPCompositeField@@UBAPAVPHTTPField@@XZ @25051 NONAME
+    ?NewField@PHTTPDateField@@UBAPAVPHTTPField@@XZ @34048 NONAME
     ?NewField@PHTTPFieldArray@@UBAPAVPHTTPField@@XZ @25052 NONAME
     ?NewField@PHTTPIntegerField@@UBAPAVPHTTPField@@XZ @25053 NONAME
     ?NewField@PHTTPPasswordField@@UBAPAVPHTTPField@@XZ @25054 NONAME
@@ -15396,7 +15440,7 @@ EXPORTS
     ?SetMaxHandles@PProcess@@QAA_NH@Z @28260 NONAME
     ?SetMaximumArraySize@PASN_Object@@SAXH@Z @14703 NONAME
     ?SetMaximumStringSize@PASN_Object@@SAXH@Z @14704 NONAME
-    ?SetMethod@PSOAPMessage@@QAAXABVPString@@0@Z @31276 NONAME
+    ?SetMethod@PSOAPMessage@@QAAXABVPString@@00@Z @34049 NONAME
     ?SetMethod@PSOAPServerResource@@UAA_NABVPString@@ABV?$PNotifierTemplate@H@@@Z @33742 NONAME
     ?SetMethod@PXMLRPCServerResource@@UAA_NABVPString@@ABV?$PNotifierTemplate@H@@@Z @33743 NONAME
     ?SetMilliSeconds@PTimeInterval@@UAAX_J@Z @33744 NONAME
@@ -15442,6 +15486,8 @@ EXPORTS
     ?SetPosition@PFile@@UAA_NJW4FilePositionOrigin@1@@Z @28269 NONAME
     ?SetPosition@PMemoryFile@@UAA_NJW4FilePositionOrigin@PFile@@@Z @28270 NONAME
     ?SetPosition@PVideoFile@@UAA_NJW4FilePositionOrigin@PFile@@@Z @28271 NONAME
+    ?SetPosition@PVideoOutputDevice@@UAA_NHH@Z @34050 NONAME
+    ?SetPosition@PVideoOutputDevice_Window@@UAA_NHH@Z @34051 NONAME
     ?SetPosition@PWAVFile@@UAA_NJW4FilePositionOrigin@PFile@@@Z @28272 NONAME
     ?SetPosition@PWAVFileConverterPCM@@UAA_NAAVPWAVFile@@JW4FilePositionOrigin@PFile@@@Z @28273 NONAME
     ?SetPresence@Item@Roster@XMPP@@UAAXABVPresence@3@@Z @31287 NONAME
@@ -15563,6 +15609,7 @@ EXPORTS
     ?SetValue@PAtomicInteger@@QAAXJ@Z @33756 NONAME
     ?SetValue@PHTTPBooleanField@@UAAXABVPString@@@Z @25964 NONAME
     ?SetValue@PHTTPCompositeField@@UAAXABVPString@@@Z @25965 NONAME
+    ?SetValue@PHTTPDateField@@UAAXABVPString@@@Z @34052 NONAME
     ?SetValue@PHTTPIntegerField@@UAAXABVPString@@@Z @25966 NONAME
     ?SetValue@PHTTPPasswordField@@UAAXABVPString@@@Z @25967 NONAME
     ?SetValue@PHTTPRadioField@@UAAXABVPString@@@Z @25968 NONAME
@@ -15570,7 +15617,7 @@ EXPORTS
     ?SetValue@PHTTPStringField@@UAAXABVPString@@@Z @25970 NONAME
     ?SetValue@RegistryKey@@QAAHABVPString@@0@Z @25971 NONAME
     ?SetValue@RegistryKey@@QAAHABVPString@@K@Z @25972 NONAME
-    ?SetValueRaw@PASN_BMPString@@QAAXABV?$PBaseArray@G@@@Z @33757 NONAME
+    ?SetValueRaw@PASN_BMPString@@QAAXPBGH@Z @34053 NONAME
     ?SetVar@PVXMLSession@@UAAXABVPString@@0@Z @31320 NONAME
     ?SetVersion@PSNMPClient@@QAAXJ@Z @25973 NONAME
     ?SetVersion@PSNMPServer@@QAAXJ@Z @25974 NONAME
@@ -15831,6 +15878,7 @@ EXPORTS
     ?UnknownOption@PArgList@@UBAXABVPString@@@Z @26125 NONAME
     ?Unlock@PSafeLockReadOnly@@QAAXXZ @26126 NONAME
     ?Unlock@PSafeLockReadWrite@@QAAXXZ @26127 NONAME
+    ?Unlock@PSafePtrMultiThreaded@@IAAXXZ @34054 NONAME
     ?Unlock@PTraceInfo@@QAAXXZ @26128 NONAME
     ?UnlockReadOnly@PSafeObject@@QBAXXZ @26130 NONAME
     ?UnlockReadWrite@PSafeObject@@QAAXXZ @26131 NONAME
@@ -15866,6 +15914,7 @@ EXPORTS
     ?Validate@PXML@@QAA_NPBUValidationInfo@1@@Z @33787 NONAME
     ?ValidateAll@PHTTPCompositeField@@UBA_NABVPStringToString@@AAVPStringStream@@@Z @28362 NONAME
     ?ValidateAll@PHTTPField@@UBA_NABVPStringToString@@AAVPStringStream@@@Z @28363 NONAME
+    ?Validated@PHTTPDateField@@UBA_NABVPString@@AAVPStringStream@@@Z @34055 NONAME
     ?Validated@PHTTPField@@UBA_NABVPString@@AAVPStringStream@@@Z @28364 NONAME
     ?Validated@PHTTPIntegerField@@UBA_NABVPString@@AAVPStringStream@@@Z @28365 NONAME
     ?ValidateDeviceName@?$PNatMethodServiceDescriptor@VPSTUNClient@@@@UBA_NABVPString@@H@Z @33788 NONAME
@@ -15895,6 +15944,7 @@ EXPORTS
     ?Wait@PDelayChannel@@MAAXHAAVPTimeInterval@@@Z @26170 NONAME
     ?Wait@PSemaphore@@UAAXXZ @26172 NONAME
     ?Wait@PSemaphore@@UAA_NABVPTimeInterval@@@Z @28368 NONAME
+    ?Wait@Win32RouteTableDetector@@UAA_NABVPTimeInterval@@@Z @34056 NONAME
     ?WaitCondition@PCondMutex@@UAAXXZ @26173 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannel@@UAA_NXZ @28369 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelWin32@@UAA_NXZ @28370 NONAME
@@ -15905,7 +15955,6 @@ EXPORTS
     ?WaitForRecordBufferFull@PSoundChannel@@UAA_NXZ @28375 NONAME
     ?WaitForRecordBufferFull@PSoundChannelWin32@@UAA_NXZ @28376 NONAME
     ?WaitForRecordBufferFull@PSoundChannel_WAVFile@@UAA_NXZ @28377 NONAME
-    ?WaitForRouteTableChange@PIPSocket@@SA_NABVPTimeInterval@@PAVPSyncPoint@@@Z @32339 NONAME
     ?WaitForTermination@PPipeChannel@@QAAHABVPTimeInterval@@@Z @26183 NONAME
     ?WaitForTermination@PPipeChannel@@QAAHXZ @26184 NONAME
     ?WaitForTermination@PThread@@QBAXXZ @26186 NONAME
@@ -16852,16 +16901,6 @@ EXPORTS
     ?_Xlen@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@KAXXZ @17276 NONAME
     ?_Xlen@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@KAXXZ @31510 NONAME
     ?_Xsgetn_s@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAAHPADIH@Z @26722 NONAME
-    abort @26723 NONAME
-    clock @26724 NONAME
-    GetCurrentProcess @26728 NONAME
-    GetCurrentProcessId @26729 NONAME
-    GetCurrentThread @26730 NONAME
-    GetCurrentThreadId @26731 NONAME
-    gmtime @26732 NONAME
-    localtime @26733 NONAME
-    mktime @26734 NONAME
-    perror @26735 NONAME
     PTimeGetChar @26736 NONAME
     PTimeGetDateOrder @26737 NONAME
     PTimeIsDayName @26738 NONAME
@@ -16872,11 +16911,6 @@ EXPORTS
     regerror @26743 NONAME
     regexec @26744 NONAME
     regfree @26745 NONAME
-    ResetEvent @26746 NONAME
-    SetEvent @26747 NONAME
-    time @26756 NONAME
-    TlsAlloc @31585 NONAME
-    TlsFree @31586 NONAME
     _CT??_R0?AVbad_alloc@std@@@8??0bad_alloc@std@@QAA@ABV01@@Z12 @26757 NONAME
     _CT??_R0?AVexception@std@@@8??0exception@std@@QAA@ABV01@@Z12 @26758 NONAME
     _CT??_R0?AVfailure@ios_base@std@@@8??0failure@ios_base@std@@QAA@ABV012@@Z44 @26759 NONAME

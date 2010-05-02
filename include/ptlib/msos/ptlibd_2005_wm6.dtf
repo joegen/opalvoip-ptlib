@@ -11877,6 +11877,8 @@ EXPORTS
     ?DeleteKey@RegistryKey@@QAAHABVPString@@@Z @23032 NONAME
     ?DeleteMessage@PPOP3Client@@QAA_NH@Z @27238 NONAME
     ?DeleteObject@PSafeCollection@@UBAXPAVPObject@@@Z @23034 NONAME
+    ?DeleteObject@PSafePtrBase@@MAAXPAVPSafeObject@@@Z @34649 NONAME
+    ?DeleteObject@PSafePtrMultiThreaded@@MAAXPAVPSafeObject@@@Z @34650 NONAME
     ?DeleteObjectsTimeout@PSafeCollection@@MAAXAAVPTimer@@H@Z @23035 NONAME
     ?DeleteObjectsToBeRemoved@PSafeCollection@@UAA_NXZ @27239 NONAME
     ?DeleteSection@PConfig@@UAAXABVPString@@@Z @23037 NONAME
@@ -14553,6 +14555,7 @@ EXPORTS
     ?LocationTag@PHTTP@@SAABVPString@@XZ @17724 NONAME
     ?Lock@PSafeLockReadOnly@@QAA_NXZ @27857 NONAME
     ?Lock@PSafeLockReadWrite@@QAA_NXZ @27858 NONAME
+    ?Lock@PSafePtrMultiThreaded@@IAAXXZ @34651 NONAME
     ?Lock@PTraceInfo@@QAAXXZ @24932 NONAME
     ?LockReadOnly@PSafeObject@@QBA_NXZ @27859 NONAME
     ?LockReadWrite@PSafeObject@@QAA_NXZ @27860 NONAME
@@ -16470,6 +16473,7 @@ EXPORTS
     ?UnknownOption@PArgList@@UBAXABVPString@@@Z @26123 NONAME
     ?Unlock@PSafeLockReadOnly@@QAAXXZ @26124 NONAME
     ?Unlock@PSafeLockReadWrite@@QAAXXZ @26125 NONAME
+    ?Unlock@PSafePtrMultiThreaded@@IAAXXZ @34652 NONAME
     ?Unlock@PTraceInfo@@QAAXXZ @26126 NONAME
     ?UnlockReadOnly@PSafeObject@@QBAXXZ @26128 NONAME
     ?UnlockReadWrite@PSafeObject@@QAAXXZ @26129 NONAME

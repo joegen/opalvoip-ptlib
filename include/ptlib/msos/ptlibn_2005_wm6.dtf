@@ -1233,6 +1233,8 @@ EXPORTS
     ??0InputFile@PHTML@@QAA@PBD0W4DisableCodes@1@0@Z @972 NONAME
     ??0InputImage@PHTML@@IAA@PBD00W4DisableCodes@1@0@Z @973 NONAME
     ??0InputImage@PHTML@@QAA@PBD0W4DisableCodes@1@0@Z @974 NONAME
+    ??0InputNumber@PHTML@@IAA@PBD0HHHW4DisableCodes@1@0@Z @20097 NONAME
+    ??0InputNumber@PHTML@@QAA@PBDHHHW4DisableCodes@1@0@Z @20098 NONAME
     ??0InputPassword@PHTML@@QAA@PBDH00@Z @975 NONAME
     ??0InputPassword@PHTML@@QAA@PBDH0HW4DisableCodes@1@0@Z @976 NONAME
     ??0InputPassword@PHTML@@QAA@PBDHHW4DisableCodes@1@0@Z @977 NONAME
@@ -1598,13 +1600,14 @@ EXPORTS
     ??0PHTTPClientAuthenticator@@QAA@ABVPString@@0AAVPMIMEInfo@@0@Z @18884 NONAME
     ??0PHTTPClientBasicAuthentication@@QAA@XZ @18885 NONAME
     ??0PHTTPClientDigestAuthentication@@QAA@XZ @18886 NONAME
-    ??0PHTTPCompositeField@@QAA@PBD00@Z @1272 NONAME
+    ??0PHTTPCompositeField@@QAA@PBD00_N@Z @20099 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@1@Z @1273 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@1ABVPHTTPAuthority@@@Z @1274 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@@Z @1275 NONAME
     ??0PHTTPConfig@@QAA@ABVPURL@@ABVPString@@ABVPHTTPAuthority@@@Z @1276 NONAME
     ??0PHTTPConfigSectionList@@QAA@ABVPURL@@ABVPHTTPAuthority@@ABVPString@@2002AAVPHTML@@@Z @1277 NONAME
     ??0PHTTPConnectionInfo@@QAA@XZ @1278 NONAME
+    ??0PHTTPDateField@@QAA@PBDABVPTime@@W4TimeFormat@1@@Z @20100 NONAME
     ??0PHTTPDirectory@@QAA@ABVPURL@@ABVPDirectory@@@Z @1279 NONAME
     ??0PHTTPDirectory@@QAA@ABVPURL@@ABVPDirectory@@ABVPHTTPAuthority@@@Z @1280 NONAME
     ??0PHTTPDirRequest@@QAA@ABVPURL@@ABVPMIMEInfo@@ABVPMultiPartList@@PAVPHTTPResource@@AAVPHTTPServer@@@Z @18887 NONAME
@@ -2633,6 +2636,7 @@ EXPORTS
     ??1InputField@PHTML@@MAA@XZ @2070 NONAME
     ??1InputFile@PHTML@@UAA@XZ @2071 NONAME
     ??1InputImage@PHTML@@UAA@XZ @2072 NONAME
+    ??1InputNumber@PHTML@@UAA@XZ @20101 NONAME
     ??1InputPassword@PHTML@@UAA@XZ @2073 NONAME
     ??1InputRange@PHTML@@UAA@XZ @2074 NONAME
     ??1InputScribble@PHTML@@UAA@XZ @2075 NONAME
@@ -2769,6 +2773,7 @@ EXPORTS
     ??1PHTTPConfig@@UAA@XZ @2184 NONAME
     ??1PHTTPConfigSectionList@@UAA@XZ @2185 NONAME
     ??1PHTTPConnectionInfo@@UAA@XZ @2186 NONAME
+    ??1PHTTPDateField@@UAA@XZ @20102 NONAME
     ??1PHTTPDirectory@@UAA@XZ @2187 NONAME
     ??1PHTTPDirRequest@@UAA@XZ @2188 NONAME
     ??1PHTTPField@@UAA@XZ @2189 NONAME
@@ -4380,6 +4385,7 @@ EXPORTS
     ??_7InputField@PHTML@@6B@ @3419 NONAME
     ??_7InputFile@PHTML@@6B@ @3420 NONAME
     ??_7InputImage@PHTML@@6B@ @3421 NONAME
+    ??_7InputNumber@PHTML@@6B@ @20103 NONAME
     ??_7InputPassword@PHTML@@6B@ @3422 NONAME
     ??_7InputRange@PHTML@@6B@ @3423 NONAME
     ??_7InputScribble@PHTML@@6B@ @3424 NONAME
@@ -4523,6 +4529,7 @@ EXPORTS
     ??_7PHTTPConfig@@6B@ @3542 NONAME
     ??_7PHTTPConfigSectionList@@6B@ @3543 NONAME
     ??_7PHTTPConnectionInfo@@6B@ @3544 NONAME
+    ??_7PHTTPDateField@@6B@ @20104 NONAME
     ??_7PHTTPDirectory@@6B@ @3545 NONAME
     ??_7PHTTPDirRequest@@6B@ @3546 NONAME
     ??_7PHTTPField@@6B@ @3547 NONAME
@@ -5415,6 +5422,7 @@ EXPORTS
     ??_R0?AVInputField@PHTML@@@8 @4206 NONAME
     ??_R0?AVInputFile@PHTML@@@8 @4207 NONAME
     ??_R0?AVInputImage@PHTML@@@8 @4208 NONAME
+    ??_R0?AVInputNumber@PHTML@@@8 @20105 NONAME
     ??_R0?AVInputPassword@PHTML@@@8 @4209 NONAME
     ??_R0?AVInputRange@PHTML@@@8 @4210 NONAME
     ??_R0?AVInputScribble@PHTML@@@8 @4211 NONAME
@@ -5546,6 +5554,7 @@ EXPORTS
     ??_R0?AVPHTTPConfig@@@8 @4318 NONAME
     ??_R0?AVPHTTPConfigSectionList@@@8 @4319 NONAME
     ??_R0?AVPHTTPConnectionInfo@@@8 @4320 NONAME
+    ??_R0?AVPHTTPDateField@@@8 @20106 NONAME
     ??_R0?AVPHTTPDirectory@@@8 @4321 NONAME
     ??_R0?AVPHTTPDirRequest@@@8 @4322 NONAME
     ??_R0?AVPHTTPField@@@8 @4323 NONAME
@@ -6188,6 +6197,7 @@ EXPORTS
     ??_R1A@?0A@EA@InputField@PHTML@@8 @4785 NONAME
     ??_R1A@?0A@EA@InputFile@PHTML@@8 @4786 NONAME
     ??_R1A@?0A@EA@InputImage@PHTML@@8 @4787 NONAME
+    ??_R1A@?0A@EA@InputNumber@PHTML@@8 @20107 NONAME
     ??_R1A@?0A@EA@InputPassword@PHTML@@8 @4788 NONAME
     ??_R1A@?0A@EA@InputRange@PHTML@@8 @4789 NONAME
     ??_R1A@?0A@EA@InputScribble@PHTML@@8 @4790 NONAME
@@ -6324,6 +6334,7 @@ EXPORTS
     ??_R1A@?0A@EA@PHTTPConfig@@8 @4897 NONAME
     ??_R1A@?0A@EA@PHTTPConfigSectionList@@8 @4898 NONAME
     ??_R1A@?0A@EA@PHTTPConnectionInfo@@8 @4899 NONAME
+    ??_R1A@?0A@EA@PHTTPDateField@@8 @20108 NONAME
     ??_R1A@?0A@EA@PHTTPDirectory@@8 @4900 NONAME
     ??_R1A@?0A@EA@PHTTPDirRequest@@8 @4901 NONAME
     ??_R1A@?0A@EA@PHTTPField@@8 @4902 NONAME
@@ -7000,6 +7011,7 @@ EXPORTS
     ??_R2InputField@PHTML@@8 @5388 NONAME
     ??_R2InputFile@PHTML@@8 @5389 NONAME
     ??_R2InputImage@PHTML@@8 @5390 NONAME
+    ??_R2InputNumber@PHTML@@8 @20109 NONAME
     ??_R2InputPassword@PHTML@@8 @5391 NONAME
     ??_R2InputRange@PHTML@@8 @5392 NONAME
     ??_R2InputScribble@PHTML@@8 @5393 NONAME
@@ -7136,6 +7148,7 @@ EXPORTS
     ??_R2PHTTPConfig@@8 @5500 NONAME
     ??_R2PHTTPConfigSectionList@@8 @5501 NONAME
     ??_R2PHTTPConnectionInfo@@8 @5502 NONAME
+    ??_R2PHTTPDateField@@8 @20110 NONAME
     ??_R2PHTTPDirectory@@8 @5503 NONAME
     ??_R2PHTTPDirRequest@@8 @5504 NONAME
     ??_R2PHTTPField@@8 @5505 NONAME
@@ -7768,6 +7781,7 @@ EXPORTS
     ??_R3InputField@PHTML@@8 @5957 NONAME
     ??_R3InputFile@PHTML@@8 @5958 NONAME
     ??_R3InputImage@PHTML@@8 @5959 NONAME
+    ??_R3InputNumber@PHTML@@8 @20111 NONAME
     ??_R3InputPassword@PHTML@@8 @5960 NONAME
     ??_R3InputRange@PHTML@@8 @5961 NONAME
     ??_R3InputScribble@PHTML@@8 @5962 NONAME
@@ -7904,6 +7918,7 @@ EXPORTS
     ??_R3PHTTPConfig@@8 @6069 NONAME
     ??_R3PHTTPConfigSectionList@@8 @6070 NONAME
     ??_R3PHTTPConnectionInfo@@8 @6071 NONAME
+    ??_R3PHTTPDateField@@8 @20112 NONAME
     ??_R3PHTTPDirectory@@8 @6072 NONAME
     ??_R3PHTTPDirRequest@@8 @6073 NONAME
     ??_R3PHTTPField@@8 @6074 NONAME
@@ -8525,6 +8540,7 @@ EXPORTS
     ??_R4InputField@PHTML@@6B@ @6524 NONAME
     ??_R4InputFile@PHTML@@6B@ @6525 NONAME
     ??_R4InputImage@PHTML@@6B@ @6526 NONAME
+    ??_R4InputNumber@PHTML@@6B@ @20113 NONAME
     ??_R4InputPassword@PHTML@@6B@ @6527 NONAME
     ??_R4InputRange@PHTML@@6B@ @6528 NONAME
     ??_R4InputScribble@PHTML@@6B@ @6529 NONAME
@@ -8668,6 +8684,7 @@ EXPORTS
     ??_R4PHTTPConfig@@6B@ @6647 NONAME
     ??_R4PHTTPConfigSectionList@@6B@ @6648 NONAME
     ??_R4PHTTPConnectionInfo@@6B@ @6649 NONAME
+    ??_R4PHTTPDateField@@6B@ @20114 NONAME
     ??_R4PHTTPDirectory@@6B@ @6650 NONAME
     ??_R4PHTTPDirRequest@@6B@ @6651 NONAME
     ??_R4PHTTPField@@6B@ @6652 NONAME
@@ -9194,7 +9211,7 @@ EXPORTS
     ?AddAttr@InputField@PHTML@@MBAXAAV2@@Z @7033 NONAME
     ?AddAttr@InputFile@PHTML@@MBAXAAV2@@Z @7034 NONAME
     ?AddAttr@InputImage@PHTML@@MBAXAAV2@@Z @7035 NONAME
-    ?AddAttr@InputRange@PHTML@@MBAXAAV2@@Z @7036 NONAME
+    ?AddAttr@InputNumber@PHTML@@MBAXAAV2@@Z @20115 NONAME
     ?AddAttr@InputText@PHTML@@MBAXAAV2@@Z @7037 NONAME
     ?AddAttr@ListItem@PHTML@@MBAXAAV2@@Z @7038 NONAME
     ?AddAttr@Option@PHTML@@MBAXAAV2@@Z @7039 NONAME
@@ -9759,6 +9776,7 @@ EXPORTS
     ?Class@PHTTPConfig@@SAPBDXZ @7445 NONAME
     ?Class@PHTTPConfigSectionList@@SAPBDXZ @7446 NONAME
     ?Class@PHTTPConnectionInfo@@SAPBDXZ @7447 NONAME
+    ?Class@PHTTPDateField@@SAPBDXZ @20116 NONAME
     ?Class@PHTTPDirectory@@SAPBDXZ @7448 NONAME
     ?Class@PHTTPDirRequest@@SAPBDXZ @7449 NONAME
     ?Class@PHTTPField@@SAPBDXZ @7450 NONAME
@@ -10415,6 +10433,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PHTTPConfig@@UBA?AW4Comparison@PObject@@ABV3@@Z @7985 NONAME
     ?CompareObjectMemoryDirect@PHTTPConfigSectionList@@UBA?AW4Comparison@PObject@@ABV3@@Z @7986 NONAME
     ?CompareObjectMemoryDirect@PHTTPConnectionInfo@@UBA?AW4Comparison@PObject@@ABV3@@Z @7987 NONAME
+    ?CompareObjectMemoryDirect@PHTTPDateField@@UBA?AW4Comparison@PObject@@ABV3@@Z @20117 NONAME
     ?CompareObjectMemoryDirect@PHTTPDirectory@@UBA?AW4Comparison@PObject@@ABV3@@Z @7988 NONAME
     ?CompareObjectMemoryDirect@PHTTPDirRequest@@UBA?AW4Comparison@PObject@@ABV3@@Z @7989 NONAME
     ?CompareObjectMemoryDirect@PHTTPField@@UBA?AW4Comparison@PObject@@ABV3@@Z @7990 NONAME
@@ -10701,6 +10720,7 @@ EXPORTS
     ?construct@?$allocator@VPFilePath@@@std@@QAAXPAVPFilePath@@ABV3@@Z @16162 NONAME
     ?construct@?$allocator@VPVideoFrameInfo@@@std@@QAAXPAVPVideoFrameInfo@@ABV3@@Z @18484 NONAME
     ?construct@?$allocator@VRequestType@PTimerList@@@std@@QAAXPAVRequestType@PTimerList@@ABV34@@Z @16163 NONAME
+    ?Construct@InputNumber@PHTML@@AAAXHHH@Z @20118 NONAME
     ?Construct@PASN_BMPString@@IAAXXZ @8212 NONAME
     ?Construct@PASN_Stream@@AAAXXZ @8213 NONAME
     ?Construct@PChannel@@AAAXXZ @8214 NONAME
@@ -11169,6 +11189,8 @@ EXPORTS
     ?DeleteKey@RegistryKey@@QAAHABVPString@@@Z @8572 NONAME
     ?DeleteMessage@PPOP3Client@@QAA_NH@Z @13192 NONAME
     ?DeleteObject@PSafeCollection@@UBAXPAVPObject@@@Z @8574 NONAME
+    ?DeleteObject@PSafePtrBase@@MAAXPAVPSafeObject@@@Z @20119 NONAME
+    ?DeleteObject@PSafePtrMultiThreaded@@MAAXPAVPSafeObject@@@Z @20120 NONAME
     ?DeleteObjectsTimeout@PSafeCollection@@MAAXAAVPTimer@@H@Z @8575 NONAME
     ?DeleteObjectsToBeRemoved@PSafeCollection@@UAA_NXZ @13193 NONAME
     ?DeleteSection@PConfig@@UAAXABVPString@@@Z @8577 NONAME
@@ -11945,6 +11967,7 @@ EXPORTS
     ?GetClass@PHTTPConfig@@UBAPBDI@Z @9177 NONAME
     ?GetClass@PHTTPConfigSectionList@@UBAPBDI@Z @9178 NONAME
     ?GetClass@PHTTPConnectionInfo@@UBAPBDI@Z @9179 NONAME
+    ?GetClass@PHTTPDateField@@UBAPBDI@Z @20121 NONAME
     ?GetClass@PHTTPDirectory@@UBAPBDI@Z @9180 NONAME
     ?GetClass@PHTTPDirRequest@@UBAPBDI@Z @9181 NONAME
     ?GetClass@PHTTPField@@UBAPBDI@Z @9182 NONAME
@@ -13335,6 +13358,7 @@ EXPORTS
     ?InternalIsDescendant@PHTTPConfig@@UBA_NPBD@Z @13515 NONAME
     ?InternalIsDescendant@PHTTPConfigSectionList@@UBA_NPBD@Z @13516 NONAME
     ?InternalIsDescendant@PHTTPConnectionInfo@@UBA_NPBD@Z @13517 NONAME
+    ?InternalIsDescendant@PHTTPDateField@@UBA_NPBD@Z @20122 NONAME
     ?InternalIsDescendant@PHTTPDirectory@@UBA_NPBD@Z @13518 NONAME
     ?InternalIsDescendant@PHTTPDirRequest@@UBA_NPBD@Z @13519 NONAME
     ?InternalIsDescendant@PHTTPField@@UBA_NPBD@Z @13520 NONAME
@@ -13783,6 +13807,7 @@ EXPORTS
     ?LocationTag@PHTTP@@SAABVPString@@XZ @10637 NONAME
     ?Lock@PSafeLockReadOnly@@QAA_NXZ @13810 NONAME
     ?Lock@PSafeLockReadWrite@@QAA_NXZ @13811 NONAME
+    ?Lock@PSafePtrMultiThreaded@@IAAXXZ @20123 NONAME
     ?LockReadOnly@PSafeObject@@QBA_NXZ @13812 NONAME
     ?LockReadWrite@PSafeObject@@QAA_NXZ @13813 NONAME
     ?LogIn@PFTPClient@@QAA_NABVPString@@0@Z @13814 NONAME
@@ -13943,6 +13968,7 @@ EXPORTS
     ?Net2Host@PSocket@@SAGG@Z @10764 NONAME
     ?NewField@PHTTPBooleanField@@UBAPAVPHTTPField@@XZ @10765 NONAME
     ?NewField@PHTTPCompositeField@@UBAPAVPHTTPField@@XZ @10766 NONAME
+    ?NewField@PHTTPDateField@@UBAPAVPHTTPField@@XZ @20124 NONAME
     ?NewField@PHTTPFieldArray@@UBAPAVPHTTPField@@XZ @10767 NONAME
     ?NewField@PHTTPIntegerField@@UBAPAVPHTTPField@@XZ @10768 NONAME
     ?NewField@PHTTPPasswordField@@UBAPAVPHTTPField@@XZ @10769 NONAME
@@ -15198,7 +15224,7 @@ EXPORTS
     ?SetMaxHandles@PProcess@@QAA_NH@Z @14209 NONAME
     ?SetMaximumArraySize@PASN_Object@@SAXH@Z @11666 NONAME
     ?SetMaximumStringSize@PASN_Object@@SAXH@Z @11667 NONAME
-    ?SetMethod@PSOAPMessage@@QAAXABVPString@@0@Z @17043 NONAME
+    ?SetMethod@PSOAPMessage@@QAAXABVPString@@00@Z @20125 NONAME
     ?SetMethod@PSOAPServerResource@@UAA_NABVPString@@ABV?$PNotifierTemplate@H@@@Z @19847 NONAME
     ?SetMethod@PXMLRPCServerResource@@UAA_NABVPString@@ABV?$PNotifierTemplate@H@@@Z @19848 NONAME
     ?SetMilliSeconds@PTimeInterval@@UAAX_J@Z @19849 NONAME
@@ -15243,6 +15269,8 @@ EXPORTS
     ?SetPosition@PFile@@UAA_NJW4FilePositionOrigin@1@@Z @14218 NONAME
     ?SetPosition@PMemoryFile@@UAA_NJW4FilePositionOrigin@PFile@@@Z @14219 NONAME
     ?SetPosition@PVideoFile@@UAA_NJW4FilePositionOrigin@PFile@@@Z @14220 NONAME
+    ?SetPosition@PVideoOutputDevice@@UAA_NHH@Z @20126 NONAME
+    ?SetPosition@PVideoOutputDevice_Window@@UAA_NHH@Z @20127 NONAME
     ?SetPosition@PWAVFile@@UAA_NJW4FilePositionOrigin@PFile@@@Z @14221 NONAME
     ?SetPosition@PWAVFileConverterPCM@@UAA_NAAVPWAVFile@@JW4FilePositionOrigin@PFile@@@Z @14222 NONAME
     ?SetPresence@Item@Roster@XMPP@@UAAXABVPresence@3@@Z @17054 NONAME
@@ -15362,6 +15390,7 @@ EXPORTS
     ?SetValue@PAtomicInteger@@QAAXJ@Z @19861 NONAME
     ?SetValue@PHTTPBooleanField@@UAAXABVPString@@@Z @11778 NONAME
     ?SetValue@PHTTPCompositeField@@UAAXABVPString@@@Z @11779 NONAME
+    ?SetValue@PHTTPDateField@@UAAXABVPString@@@Z @20128 NONAME
     ?SetValue@PHTTPIntegerField@@UAAXABVPString@@@Z @11780 NONAME
     ?SetValue@PHTTPPasswordField@@UAAXABVPString@@@Z @11781 NONAME
     ?SetValue@PHTTPRadioField@@UAAXABVPString@@@Z @11782 NONAME
@@ -15667,6 +15696,7 @@ EXPORTS
     ?UnknownOption@PArgList@@UBAXABVPString@@@Z @11954 NONAME
     ?Unlock@PSafeLockReadOnly@@QAAXXZ @11955 NONAME
     ?Unlock@PSafeLockReadWrite@@QAAXXZ @11956 NONAME
+    ?Unlock@PSafePtrMultiThreaded@@IAAXXZ @20129 NONAME
     ?UnlockReadOnly@PSafeObject@@QBAXXZ @11958 NONAME
     ?UnlockReadWrite@PSafeObject@@QAAXXZ @11959 NONAME
     ?UnRead@PInternetProtocol@@UAAXABVPString@@@Z @11960 NONAME
@@ -15701,6 +15731,7 @@ EXPORTS
     ?Validate@PXML@@QAA_NPBUValidationInfo@1@@Z @19892 NONAME
     ?ValidateAll@PHTTPCompositeField@@UBA_NABVPStringToString@@AAVPStringStream@@@Z @14311 NONAME
     ?ValidateAll@PHTTPField@@UBA_NABVPStringToString@@AAVPStringStream@@@Z @14312 NONAME
+    ?Validated@PHTTPDateField@@UBA_NABVPString@@AAVPStringStream@@@Z @20130 NONAME
     ?Validated@PHTTPField@@UBA_NABVPString@@AAVPStringStream@@@Z @14313 NONAME
     ?Validated@PHTTPIntegerField@@UBA_NABVPString@@AAVPStringStream@@@Z @14314 NONAME
     ?ValidateDeviceName@?$PNatMethodServiceDescriptor@VPSTUNClient@@@@UBA_NABVPString@@H@Z @19893 NONAME
