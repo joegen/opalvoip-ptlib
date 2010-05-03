@@ -1009,6 +1009,12 @@ PBoolean PConsoleChannel::Close()
 }
 
 
+#ifdef _WIN32_WCE
+bool PConsoleChannel::SetLocalEcho(bool localEcho)
+{
+  return false;
+}
+#else
 bool PConsoleChannel::SetLocalEcho(bool localEcho)
 {
   if (m_hConsole == INVALID_HANDLE_VALUE)
@@ -1025,6 +1031,7 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
 
   return SetConsoleMode(m_hConsole, mode);
 }
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
