@@ -8785,7 +8785,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8796,7 +8796,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8807,7 +8807,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8818,7 +8818,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8840,7 +8840,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8851,7 +8851,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8862,7 +8862,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8873,7 +8873,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8895,7 +8895,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8906,7 +8906,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8917,7 +8917,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
@@ -8928,7 +8928,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
+						CommandLine="cd $(ProjectDir)\..\..\..&#x0D;&#x0A;configure --no-search --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS &quot;--exclude-dir=\Program Files\Microsoft SDKs\Windows\v7*&quot; &quot;--exclude-dir=\Program Files (x86)\Microsoft SDKs\Windows\v7*&quot; %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%&#x0D;&#x0A;"
 						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
