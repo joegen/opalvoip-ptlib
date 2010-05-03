@@ -1010,7 +1010,7 @@ PBoolean PConsoleChannel::Close()
 
 
 #ifdef _WIN32_WCE
-bool PConsoleChannel::SetLocalEcho(bool localEcho)
+bool PConsoleChannel::SetLocalEcho(bool)
 {
   return false;
 }
