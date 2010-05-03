@@ -206,59 +206,58 @@ PBoolean PTelnetSocket::SendCommand(Command cmd, int opt)
 }
 
 
-static PString GetTELNETOptionName(PINDEX code)
-{
-  static const char * const name[] = {
-    "TransmitBinary",
-    "EchoOption",
-    "ReconnectOption",
-    "SuppressGoAhead",
-    "MessageSizeOption",
-    "StatusOption",
-    "TimingMark",
-    "RCTEOption",
-    "OutputLineWidth",
-    "OutputPageSize",
-    "CRDisposition",
-    "HorizontalTabsStops",
-    "HorizTabDisposition",
-    "FormFeedDisposition",
-    "VerticalTabStops",
-    "VertTabDisposition",
-    "LineFeedDisposition",
-    "ExtendedASCII",
-    "ForceLogout",
-    "ByteMacroOption",
-    "DataEntryTerminal",
-    "SupDupProtocol",
-    "SupDupOutput",
-    "SendLocation",
-    "TerminalType",
-    "EndOfRecordOption",
-    "TACACSUID",
-    "OutputMark",
-    "TerminalLocation",
-    "Use3270RegimeOption",
-    "UseX3PADOption",
-    "WindowSize",
-    "TerminalSpeed",
-    "FlowControl",
-    "LineMode",
-    "XDisplayLocation",
-    "EnvironmentOption",
-    "AuthenticateOption",
-    "EncriptionOption"
-  };
-
-  if (code < PARRAYSIZE(name))
-    return name[code];
-  if (code == PTelnetSocket::ExtendedOptionsList)
-    return "ExtendedOptionsList";
-  return PString(PString::Printf, "Option #%u", code);
-}
-
-
 #if PTRACING
+  static PString GetTELNETOptionName(PINDEX code)
+  {
+    static const char * const name[] = {
+      "TransmitBinary",
+      "EchoOption",
+      "ReconnectOption",
+      "SuppressGoAhead",
+      "MessageSizeOption",
+      "StatusOption",
+      "TimingMark",
+      "RCTEOption",
+      "OutputLineWidth",
+      "OutputPageSize",
+      "CRDisposition",
+      "HorizontalTabsStops",
+      "HorizTabDisposition",
+      "FormFeedDisposition",
+      "VerticalTabStops",
+      "VertTabDisposition",
+      "LineFeedDisposition",
+      "ExtendedASCII",
+      "ForceLogout",
+      "ByteMacroOption",
+      "DataEntryTerminal",
+      "SupDupProtocol",
+      "SupDupOutput",
+      "SendLocation",
+      "TerminalType",
+      "EndOfRecordOption",
+      "TACACSUID",
+      "OutputMark",
+      "TerminalLocation",
+      "Use3270RegimeOption",
+      "UseX3PADOption",
+      "WindowSize",
+      "TerminalSpeed",
+      "FlowControl",
+      "LineMode",
+      "XDisplayLocation",
+      "EnvironmentOption",
+      "AuthenticateOption",
+      "EncriptionOption"
+    };
+
+    if (code < PARRAYSIZE(name))
+      return name[code];
+    if (code == PTelnetSocket::ExtendedOptionsList)
+      return "ExtendedOptionsList";
+    return PString(PString::Printf, "Option #%u", code);
+  }
+
   struct PTelnetTrace
   {
     ostream & m_strm;
@@ -275,6 +274,7 @@ static PString GetTELNETOptionName(PINDEX code)
   #define TELNET_TRACE(info) traceOutput.m_strm << info
 #else
   #define SEND_OP_START(which, code) if ((IsOpen() || SetErrorValues(NotOpen, EBADF))) return false
+  #define ON_OP_START(which, code)
   #define TELNET_TRACE(info)
 #endif
 
@@ -846,7 +846,7 @@ void PTelnetSocket::OnWont(BYTE code)
 }
 
 
-void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX len)
+void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX PTRACE_PARAM(len))
 {
   ON_OP_START("OnSubOption", code);
 
@@ -881,7 +881,7 @@ PBoolean PTelnetSocket::OnCommand(BYTE code)
 }
 
 
-void PTelnetSocket::OnOutOfBand(const void *, PINDEX length)
+void PTelnetSocket::OnOutOfBand(const void *, PINDEX PTRACE_PARAM(length))
 {
   PTRACE(3, "Telnet\tout of band data received of length " << length);
   synchronising++;
