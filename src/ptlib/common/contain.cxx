@@ -67,7 +67,7 @@ class CustomAllocator
 {
   public:
     Type * Allocate(size_t n)
-    { return a.allocate(n); }
+    { return (Type*)a.allocate(n); }
 
     void Deallocate(Type * p, size_t n)
     { a.deallocate(p, n); }
