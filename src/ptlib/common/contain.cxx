@@ -992,7 +992,12 @@ PBoolean PString::IsEmpty() const
 
 PBoolean PString::SetSize(PINDEX newSize)
 {
-  return InternalSetSize(newSize, PTrue);
+  if (newSize < 1)
+    newSize = 1;
+  if (!InternalSetSize(newSize, true))
+    return false;
+  theArray[newSize-1] = '\0';
+  return true;
 }
 
 
