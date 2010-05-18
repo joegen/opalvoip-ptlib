@@ -643,9 +643,9 @@ class PHTTPConnectionInfo : public PObject
 
     PBoolean IsCompatible(int major, int minor) const;
 
-    PBoolean IsPersistant() const         { return isPersistant; }
-    PBoolean WasPersistant() const        { return wasPersistant; }
-    PBoolean IsProxyConnection() const    { return isProxyConnection; }
+    bool IsPersistent() const         { return isPersistent; }
+    bool WasPersistent() const        { return wasPersistent; }
+    bool IsProxyConnection() const    { return isProxyConnection; }
     int  GetMajorVersion() const      { return majorVersion; }
     int  GetMinorVersion() const      { return minorVersion; }
 
@@ -685,9 +685,9 @@ class PHTTPConnectionInfo : public PObject
     PString         commandName;
     PURL            url;
     PMIMEInfo       mimeInfo;
-    PBoolean            isPersistant;
-    PBoolean            wasPersistant;
-    PBoolean            isProxyConnection;
+    bool            isPersistent;
+    bool            wasPersistent;
+    bool            isProxyConnection;
     int             majorVersion;
     int             minorVersion;
     PString         entityBody;        // original entity body (POST only)
@@ -767,9 +767,9 @@ class PHTTPServer : public PHTTP
        is used when the socket is acting as a server.
 
        @return
-       true if the request specified persistant mode and the request version
+       true if the request specified persistent mode and the request version
        allows it, false if the socket closed, timed out, the protocol does not
-       allow persistant mode, or the client did not request it
+       allow persistent mode, or the client did not request it
        timed out
      */
     virtual PBoolean ProcessCommand();
@@ -846,7 +846,7 @@ class PHTTPServer : public PHTTP
 
 
     /** Read the entity body associated with a HTTP request, and close the
-       socket if not a persistant connection.
+       socket if not a persistent connection.
 
        @return
        The entity body of the command

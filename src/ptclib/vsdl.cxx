@@ -242,7 +242,7 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
 bool PVideoOutputDevice_SDL::ProcessSDLEvents()
 {
   if (screen == NULL || overlay == NULL) {
-    PTRACE(6, "VSDL\t Screen and/or overlay not open, so dont process events");
+    PTRACE(6, "VSDL\t Screen and/or overlay not open, so don't process events");
     return false;
   }
 
