@@ -2422,23 +2422,21 @@ PBoolean PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 
   Psockaddr sa;
   PINDEX size = sa.GetSize();
-  if (os_recvfrom(buf, len, 0, sa, &size)) {
-    addr = sa.GetIP();
-    port = sa.GetPort();
-  }
+  bool ok = os_recvfrom(buf, len, 0, sa, &size);
+  addr = sa.GetIP();
+  port = sa.GetPort();
 
 #else
 
   sockaddr_in sockAddr;
   PINDEX addrLen = sizeof(sockAddr);
-  if (os_recvfrom(buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen)) {
-    addr = sockAddr.sin_addr;
-    port = ntohs(sockAddr.sin_port);
-  }
+  bool ok = os_recvfrom(buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen);
+  addr = sockAddr.sin_addr;
+  port = ntohs(sockAddr.sin_port);
 
 #endif
 
-  return lastReadCount > 0;
+  return ok;
 }
 
 
