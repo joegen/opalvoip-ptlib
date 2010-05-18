@@ -40,7 +40,7 @@
 #define new PNEW
 
 
-// define to enable work-around for Netscape persistant connection bug
+// define to enable work-around for Netscape persistent connection bug
 // set to lifetime of suspect sockets (in seconds)
 #define STRANGE_NETSCAPE_BUG  3
 
@@ -272,7 +272,7 @@ PBoolean PHTTPServer::ProcessCommand()
 
   // the URL that comes with Connect requests is not quite kosher, so 
   // mangle it into a proper URL and do NOT close the connection.
-  // for all other commands, close the read connection if not persistant
+  // for all other commands, close the read connection if not persistent
   if (cmd == CONNECT) 
     connectInfo.url = "https://" + args;
   else {
@@ -330,13 +330,13 @@ PBoolean PHTTPServer::ProcessCommand()
   // routines above must make sure that their return value is PFalse if
   // if there was no ContentLength field in the response. This ensures that
   // we always close the socket so the client will get the correct end of file
-  if (persist && connectInfo.IsPersistant()) {
+  if (persist && connectInfo.IsPersistent()) {
     unsigned max = connectInfo.GetPersistenceMaximumTransations();
     if (max == 0 || transactionCount < max)
       return PTrue;
   }
 
-  PTRACE(5, "HTTPServer\tConnection end: " << connectInfo.IsPersistant());
+  PTRACE(5, "HTTPServer\tConnection end: " << connectInfo.IsPersistent());
 
   // close the output stream now and return PFalse
   Shutdown(ShutdownWrite);
@@ -365,8 +365,8 @@ PString PHTTPServer::ReadEntityBody()
     entityBody.SetSize(count+1);
   }
 
-  // close the connection, if not persistant
-  if (!connectInfo.IsPersistant()) {
+  // close the connection, if not persistent
+  if (!connectInfo.IsPersistent()) {
     PIPSocket * socket = GetSocket();
     if (socket != NULL)
       socket->Shutdown(PIPSocket::ShutdownRead);
@@ -572,13 +572,13 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
   if (!info.Contains(ServerTag()))
     info.SetAt(ServerTag(), GetServerName());
 
-  if (connectInfo.IsPersistant()) {
+  if (connectInfo.IsPersistent()) {
     if (connectInfo.IsProxyConnection()) {
-      PTRACE(5, "HTTPServer\tSetting proxy persistant response");
+      PTRACE(5, "HTTPServer\tSetting proxy persistent response");
       info.SetAt(ProxyConnectionTag(), KeepAliveTag());
     }
     else {
-      PTRACE(5, "HTTPServer\tSetting direct persistant response");
+      PTRACE(5, "HTTPServer\tSetting direct persistent response");
       info.SetAt(ConnectionTag(), KeepAliveTag());
     }
   }
@@ -789,9 +789,9 @@ PHTTPRequest::PHTTPRequest(const PURL & _url,
 // PHTTPConnectionInfo
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
-  : persistenceTimeout(0, DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistant connections
+  : persistenceTimeout(0, DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistent connections
 {
-  // maximum lifetime (in transactions) of persistant connections
+  // maximum lifetime (in transactions) of persistent connections
   persistenceMaximum = DEFAULT_PERSIST_TRANSATIONS;
 
   commandCode       = PHTTP::NumCommands;
@@ -799,9 +799,9 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
   majorVersion      = 0;
   minorVersion      = 9;
 
-  isPersistant      = PFalse;
-  wasPersistant     = PFalse;
-  isProxyConnection = PFalse;
+  isPersistent      = false;
+  wasPersistent     = false;
+  isProxyConnection = false;
 
   entityBodyLength  = -1;
 }
@@ -838,8 +838,8 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   if (!mimeInfo.Read(server))
     return PFalse;
 
-  wasPersistant = isPersistant;
-  isPersistant = PFalse;
+  wasPersistent = isPersistent;
+  isPersistent = false;
 
   PString str;
 
@@ -853,8 +853,8 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // get any connection options
   if (!str) {
     PStringArray tokens = str.Tokenise(", \r\n", PFalse);
-    for (PINDEX z = 0; !isPersistant && z < tokens.GetSize(); z++)
-      isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag());
+    for (PINDEX z = 0; !isPersistent && z < tokens.GetSize(); z++)
+      isPersistent = isPersistent || (tokens[z] *= PHTTP::KeepAliveTag());
   }
 
   // If the protocol is version 1.0 or greater, there is MIME info, and the
@@ -862,20 +862,20 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // Content-Length header. If the protocol is less than version 1.0, then 
   // there is no entity body!
 
-  // if the client specified a persistant connection, then use the
+  // if the client specified a persistent connection, then use the
   // ContentLength field. If there is no content length field, then
   // assume a ContentLength of zero and close the connection.
   // The spec actually says to read until end of file in this case,
   // but Netscape hangs if this is done.
-  // If the client didn't specify a persistant connection, then use the
+  // If the client didn't specify a persistent connection, then use the
   // ContentLength if there is one or read until end of file if there isn't
-  if (!isPersistant)
+  if (!isPersistent)
     entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag(),
                                            (commandCode == PHTTP::POST) ? -2 : 0);
   else {
     entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag(), -1);
     if (entityBodyLength < 0) {
-      PTRACE(5, "HTTPServer\tPersistant connection has no content length");
+      PTRACE(5, "HTTPServer\tPersistent connection has no content length");
       entityBodyLength = 0;
       mimeInfo.SetAt(PHTTP::ContentLengthTag(), "0");
     }
