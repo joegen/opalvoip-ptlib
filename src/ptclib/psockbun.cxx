@@ -633,7 +633,7 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(PSocket::SelectList & readers
 
     case EMSGSIZE :
       PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << len << " bytes.");
-      return PChannel::NoError;
+      return PChannel::BufferTooSmall;
 
     case EBADF : // Interface went down
     case EINTR :
