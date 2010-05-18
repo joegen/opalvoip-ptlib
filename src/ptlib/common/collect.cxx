@@ -194,7 +194,9 @@ PBoolean PArrayObjects::SetAt(PINDEX index, PObject * obj)
 
 PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 {
-  for (PINDEX i = GetSize(); i > index; i--)
+  PINDEX i = GetSize();
+  SetSize(i+1);
+  for (; i > index; i--)
     (*theArray)[i] = (*theArray)[i-1];
   (*theArray)[index] = obj;
   return index;
