@@ -1208,8 +1208,8 @@ PBoolean PHTTPResource::LoadData(PHTTPRequest & request, PCharArray & data)
 {
   PString text = LoadText(request);
   OnLoadedText(request, text);
-  text.SetSize(text.GetLength());  // Lose the trailing '\0'
-  data = text;
+  if(data.SetSize(text.GetLength()))
+    memcpy(data.GetPointer(), text.GetPointer(), text.GetLength()); // Lose the trailing '\0'
   return PFalse;
 }
 
