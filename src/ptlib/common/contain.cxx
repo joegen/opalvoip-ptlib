@@ -112,7 +112,7 @@ void PContainer::AssignContents(const PContainer & cont)
     reference = NULL;
   }
 
-  ++cont.reference->count;
+  PAssert(++cont.reference->count > 1, "Assignment of container that was deleted");
   reference = cont.reference;
 }
 
