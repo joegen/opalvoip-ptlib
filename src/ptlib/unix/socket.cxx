@@ -1165,10 +1165,10 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_
   if ((~rtm->rtm_flags&RTF_LLINFO)
 #if defined(P_NETBSD) || defined(P_QNX)
         && (~rtm->rtm_flags&RTF_CLONED)     // Net BSD has flag one way
-#elif !defined(P_OPENBSD)
-        && (~rtm->rtm_flags&RTF_WASCLONED)  // Free BSD/MAC has it another
+#elif !defined(P_OPENBSD) && !defined(P_FREEBSD)
+        && (~rtm->rtm_flags&RTF_WASCLONED)  // MAC has it another
 #else
-                                            // Open BSD does not have it at all!
+                                            // Open/Free BSD does not have it at all!
 #endif
      ) {
 
