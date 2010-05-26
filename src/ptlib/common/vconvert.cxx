@@ -585,12 +585,14 @@ static void CropYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigne
 static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight, unsigned dstFrameWidth, unsigned dstFrameHeight)
 {
   if (srcFrameWidth == 0 || dstFrameWidth == 0 || srcFrameHeight == 0 || dstFrameHeight == 0) {
-    PTRACE(2,"PColCnv\tDimensions cannot be zero.");
+    PTRACE(2,"PColCnv\tDimensions cannot be zero: "
+           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
     return false;
   }
 
   if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
-    PTRACE(2,"PColCnv\tDimensions must be even.");
+    PTRACE(2,"PColCnv\tDimensions must be even: "
+           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
     return false;
   }
 
@@ -603,7 +605,8 @@ static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight, 
   if (srcFrameWidth > dstFrameWidth && srcFrameHeight > dstFrameHeight)
     return true;
 
-  PTRACE(2,"PColCnv\tCannot do one dimension shrinking and the other one growing.");
+  PTRACE(2,"PColCnv\tCannot do one dimension shrinking and the other one growing: "
+         << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
   return false;
 }
 
@@ -780,14 +783,16 @@ PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
                              PINDEX * bytesReturned)
 {
   if ((srcFrameWidth != dstFrameWidth) || (srcFrameHeight != dstFrameHeight)) {
-    PTRACE(2,"PColCnv\tCannot do synonym colour conversion, source and destination frame size not equal.");
+    PTRACE(2,"PColCnv\tCannot do synonym colour conversion, source and destination frame size not equal: "
+           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
     return false;
   }
 
   if (verticalFlip) {
     PINDEX rowSize = dstFrameBytes/srcFrameHeight;
     if (rowSize*srcFrameHeight != dstFrameBytes) {
-      PTRACE(2,"PColCnv\tCannot do synonym colour conversion, frame does not have equal sized scan lines.");
+      PTRACE(2,"PColCnv\tCannot do synonym colour conversion, frame does not have equal sized scan lines: "
+             << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
       return false;
     }
 
