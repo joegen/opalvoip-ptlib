@@ -106,7 +106,9 @@ static struct {
   { "GreyF",    8 },
   { "UYVY422", 16 },
   { "UYV444",  24 },
-  { "SBGGR8",   8 }
+  { "SBGGR8",   8 },
+  { "JPEG",    24 },
+  { "MJPEG",   24 }
 };
 
 
