@@ -596,13 +596,10 @@ static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight, 
     return false;
   }
 
-  if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight)
+  if (srcFrameWidth <= dstFrameWidth && srcFrameHeight <= dstFrameHeight)
     return true;
 
-  if (srcFrameWidth < dstFrameWidth && srcFrameHeight < dstFrameHeight)
-    return true;
-
-  if (srcFrameWidth > dstFrameWidth && srcFrameHeight > dstFrameHeight)
+  if (srcFrameWidth >= dstFrameWidth && srcFrameHeight >= dstFrameHeight)
     return true;
 
   PTRACE(2,"PColCnv\tCannot do one dimension shrinking and the other one growing: "
