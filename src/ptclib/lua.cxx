@@ -41,10 +41,6 @@
 #include <ptclib/lua.h>
 #include <lua.hpp>
 
-#if defined(_MSC_VER)
-#pragma comment(lib, P_LUA_LIBRARY)
-#endif
-
 
 PLua::PLua()
   : m_lua(luaL_newstate())
