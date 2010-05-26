@@ -42,6 +42,10 @@
 
 #include <lua.hpp>
 
+#if defined(_MSC_VER)
+#pragma comment(lib, P_LUA_LIBRARY)
+#endif
+
 //////////////////////////////////////////////////////////////
 
 class PLua
