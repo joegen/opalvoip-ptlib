@@ -33,10 +33,10 @@
    which extracts the version numbers
  */
 
-#define MAJOR_VERSION 2
-#define MINOR_VERSION 9
-#define BUILD_TYPE BetaCode
-#define BUILD_NUMBER 0
+#define MAJOR_VERSION 3
+#define MINOR_VERSION 6
+#define BUILD_TYPE ReleaseCode
+#define BUILD_NUMBER 8
 
 
 #endif  // _PTLib_VERSION_H
