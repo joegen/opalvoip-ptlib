@@ -392,7 +392,7 @@ class PURLLegacyScheme : public PURLScheme
       , defaultPort           (port)
     { }
 
-    bool Parse(const PString & url, PURL & purl) const
+    PBoolean Parse(const PString & url, PURL & purl) const
     { return purl.LegacyParse(url, this); }
 
     PString AsString(PURL::UrlFormat fmt, const PURL & purl) const

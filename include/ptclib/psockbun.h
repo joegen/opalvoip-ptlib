@@ -622,7 +622,7 @@ class PSingleMonitoredSocket : public PMonitoredSockets
         ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0"
       */
     virtual PStringArray GetInterfaces(
-      PBoolean includeLoopBack = false,  /// Flag for if loopback is to included in list
+      bool includeLoopBack = false,  /// Flag for if loopback is to included in list
       const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
     );
 
