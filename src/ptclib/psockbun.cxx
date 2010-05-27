@@ -1054,7 +1054,7 @@ PSingleMonitoredSocket::~PSingleMonitoredSocket()
 }
 
 
-PStringArray PSingleMonitoredSocket::GetInterfaces(PBoolean /*includeLoopBack*/, const PIPSocket::Address & /*destination*/)
+PStringArray PSingleMonitoredSocket::GetInterfaces(bool /*includeLoopBack*/, const PIPSocket::Address & /*destination*/)
 {
   PSafeLockReadOnly guard(*this);
 

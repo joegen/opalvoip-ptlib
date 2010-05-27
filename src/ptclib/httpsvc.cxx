@@ -1570,7 +1570,7 @@ static void SplitCmdAndArgs(const PString & text, PINDEX pos, PCaselessString & 
 }
 
 
-PBoolean PServiceHTML::ProcessMacros(PHTTPRequest & request,
+bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
                                  PString & text,
                                  const PString & defaultFile,
                                  unsigned options)
