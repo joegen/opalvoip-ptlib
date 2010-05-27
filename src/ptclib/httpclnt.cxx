@@ -402,7 +402,7 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
 }
 
 
-bool PHTTPClient::GetDocument(const PURL & url,
+PBoolean PHTTPClient::GetDocument(const PURL & url,
                               PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {

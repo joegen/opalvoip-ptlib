@@ -223,7 +223,7 @@ PBoolean PSMTPClient::BeginMessage(const PString & from,
 }
 
 
-PBoolean PSMTPClient::InternalBeginMessage()
+bool PSMTPClient::InternalBeginMessage()
 {
   PString localHost;
   PString peerHost;
