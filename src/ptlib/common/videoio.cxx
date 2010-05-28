@@ -166,6 +166,21 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
 
+ostream & operator<<(ostream & strm, PVideoFrameInfo::ResizeMode mode)
+{
+  switch (mode) {
+    case PVideoFrameInfo::eScale :
+      return strm << "Scaled";
+    case PVideoFrameInfo::eCropCentre :
+      return strm << "Centred";
+    case PVideoFrameInfo::eCropTopLeft :
+      return strm << "Cropped";
+    default :
+      return strm << "ResizeMode<" << (int)mode << '>';
+  }
+}
+
+
 PVideoFrameInfo::PVideoFrameInfo()
   : frameWidth(CIFWidth)
   , frameHeight(CIFHeight)
@@ -187,6 +202,21 @@ PVideoFrameInfo::PVideoFrameInfo(unsigned        width,
   , colourFormat(format)
   , resizeMode(resize)
 {
+}
+
+
+void PVideoFrameInfo::PrintOn(ostream & strm) const
+{
+  if (!colourFormat.IsEmpty())
+    strm << colourFormat << ':';
+
+  strm << AsString(frameWidth, frameHeight);
+
+  if (frameRate > 0)
+    strm << '@' << frameRate;
+
+  if (resizeMode < eMaxResizeMode)
+    strm << '/' << resizeMode;
 }
 
 
@@ -295,9 +325,13 @@ bool PVideoFrameInfo::Parse(const PString & str)
     } const ResizeNames[] = {
       { "scale",   eScale },
       { "resize",  eScale },
+      { "scaled",  eScale },
       { "centre",  eCropCentre },
+      { "centred", eCropCentre },
       { "center",  eCropCentre },
+      { "centered",eCropCentre },
       { "crop",    eCropTopLeft },
+      { "cropped", eCropTopLeft },
       { "topleft", eCropTopLeft }
     };
 
