@@ -53,11 +53,12 @@ class PVideoFrameInfo : public PObject
   public:
     enum ResizeMode
     {
-        eScale,
-        eCropCentre,
-        eCropTopLeft,
-        eMaxResizeMode
+      eScale,
+      eCropCentre,
+      eCropTopLeft,
+      eMaxResizeMode
     };
+    friend ostream & operator<<(ostream & strm, ResizeMode mode);
 
     enum StandardSizes {
       SQCIFWidth = 128,  SQCIFHeight = 96,
@@ -81,6 +82,16 @@ class PVideoFrameInfo : public PObject
       unsigned        frameRate = 15,
       ResizeMode      resizeMode = eScale
     );
+
+    /** Output the contents of the object to the stream. The exact output is
+       dependent on the exact semantics of the descendent class. This is
+       primarily used by the standard <code>#operator<<</code> function.
+
+       The default behaviour is to print the class name.
+     */
+    virtual void PrintOn(
+      ostream & strm   // Stream to print the object into.
+    ) const;
 
     /**Set the frame size to be used.
 
@@ -212,21 +223,21 @@ class PVideoControlInfo : public PObject
 
  public:
 
-	 typedef enum {
-        ControlPan,
-        ControlTilt,
-        ControlZoom
-     } InputControlType;
+    typedef enum {
+      ControlPan,
+      ControlTilt,
+      ControlZoom
+    } InputControlType;
 
- 	static PString AsString(const InputControlType & type);
+    static PString AsString(const InputControlType & type);
 
-	  InputControlType type;
-	  long					  min;
-	  long					  max;
-	  long					  step;
-	  long					  def;
-	  long					  flags;
-	  long					  current;
+    InputControlType type;
+    long             min;
+    long             max;
+    long             step;
+    long             def;
+    long             flags;
+    long             current;
 };
 
 
@@ -238,28 +249,28 @@ class PVideoInputControl : public PVideoControlInfo
     PCLASSINFO(PVideoInputControl, PVideoControlInfo);
 
 public:
-	~PVideoInputControl();
+  ~PVideoInputControl();
 
-	virtual PBoolean Pan(long value, bool absolute = false );
-	virtual PBoolean Tilt(long value, bool absolute = false);
-	virtual PBoolean Zoom(long value, bool absolute = false);
+  virtual PBoolean Pan(long value, bool absolute = false );
+  virtual PBoolean Tilt(long value, bool absolute = false);
+  virtual PBoolean Zoom(long value, bool absolute = false);
 
-	long GetPan();
-	long GetTilt();
-	long GetZoom();
+  long GetPan();
+  long GetTilt();
+  long GetZoom();
 
-	void Reset();
-	void SetCurrentPosition(const InputControlType ctype, long current);
+  void Reset();
+  void SetCurrentPosition(const InputControlType ctype, long current);
 
-	typedef std::list<PVideoControlInfo> InputDeviceControls;
+  typedef std::list<PVideoControlInfo> InputDeviceControls;
 
 protected:
-	PBoolean GetVideoControlInfo(const InputControlType ctype, PVideoControlInfo & control);
-	PBoolean GetDefaultPosition(const InputControlType ctype, long & def);
-	PBoolean GetCurrentPosition(const InputControlType ctype, long & current);
+  PBoolean GetVideoControlInfo(const InputControlType ctype, PVideoControlInfo & control);
+  PBoolean GetDefaultPosition(const InputControlType ctype, long & def);
+  PBoolean GetCurrentPosition(const InputControlType ctype, long & current);
 
-	std::list<PVideoControlInfo> m_info;
-	PMutex ccmutex;
+  std::list<PVideoControlInfo> m_info;
+  PMutex ccmutex;
 
 };
 
@@ -271,17 +282,17 @@ class PVideoInteractionInfo : public PObject
 
  public:
 
-	 typedef enum {
-        InteractKey,		/// Register remote KeyPresses
-        InteractMouse,		/// Register remote Mouse Movement Clicks
-        InteractNavigate,	/// Register remote Navigation commands
-		InteractRTSP,		/// Register remote RTSP (Real Time Streaming Protocol) Inputs
-		InteractOther		/// Register remote application specific Inputs
+   typedef enum {
+        InteractKey,    /// Register remote KeyPresses
+        InteractMouse,    /// Register remote Mouse Movement Clicks
+        InteractNavigate,  /// Register remote Navigation commands
+    InteractRTSP,    /// Register remote RTSP (Real Time Streaming Protocol) Inputs
+    InteractOther    /// Register remote application specific Inputs
      } InputInteractType;
 
- 	static PString AsString(const InputInteractType & type);
+   static PString AsString(const InputInteractType & type);
 
-	InputInteractType type;
+  InputInteractType type;
 };
 
 
@@ -495,8 +506,8 @@ class PVideoDevice : public PVideoFrameInfo
     virtual PBoolean SetFrameSizeConverter(
       unsigned width,                   ///< New width of frame
       unsigned height,                  ///< New height of frame
-	  PBoolean  /*bScaleNotCrop*/           ///< Not used.
-	  )  { return SetFrameSizeConverter(width,height,eScale); }
+    PBoolean  /*bScaleNotCrop*/           ///< Not used.
+    )  { return SetFrameSizeConverter(width,height,eScale); }
 
 
     /**Set the frame size to be used.
@@ -945,11 +956,11 @@ class PVideoInputDevice : public PVideoDevice
       PBoolean startImmediate = true          ///< Immediately start display
     );
 
-	typedef struct {
-	   std::list<PVideoFrameInfo> framesizes;
-	   std::list<PVideoControlInfo> controls;
-	   std::list<PVideoInteractionInfo> interactions;
-	} Capabilities;
+  typedef struct {
+     std::list<PVideoFrameInfo> framesizes;
+     std::list<PVideoControlInfo> controls;
+     std::list<PVideoInteractionInfo> interactions;
+  } Capabilities;
 
     /**Retrieve a list of Device Capabilities
       */
