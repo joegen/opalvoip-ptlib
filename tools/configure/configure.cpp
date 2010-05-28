@@ -44,7 +44,7 @@
 #include <io.h>
 
 
-#define VERSION "1.20"
+#define VERSION "1.21"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -82,7 +82,8 @@ class Feature
       NotFound,
       Disabled,
       Blocked,
-      Dependency
+      Dependency,
+      DefaultDisabled
     };
 
     Feature(const string & featureName, const string & optionName, const string & optionValue);
@@ -172,6 +173,9 @@ void Feature::Parse(const string & optionName, const string & optionValue)
 {
   if (optionName == "DISPLAY")
     displayName = optionValue;
+
+  else if (optionName == "DEFAULT")
+    state = ToLower(optionValue) == "disabled" ? DefaultDisabled : Enabled;
 
   else if (optionName == "DEFINE") {
     string::size_type equal = optionValue.find('=');
@@ -926,6 +930,10 @@ int main(int argc, char* argv[])
     {
       case Feature::Enabled:
         cout << "enabled";
+        break;
+
+      case Feature::NotFound :
+        cout << "DISABLED due to missing library";
         break;
 
       case Feature::Disabled :
