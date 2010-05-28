@@ -318,6 +318,11 @@ class PColourConverter : public PObject
     );
 
   protected:
+    void Construct(
+      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
+      const PVideoFrameInfo & dst  ///< Destination frame info
+    );
+
     PString  srcColourFormat;
     PString  dstColourFormat;
     unsigned srcFrameWidth;
