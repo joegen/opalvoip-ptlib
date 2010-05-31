@@ -281,9 +281,12 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
 PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
-  PBoolean ok = InternalReadContentBody(replyMIME, &body);
-  body.SetSize(body.GetSize()+1);
-  return ok;
+  PCharArray rawBody;
+  if (!InternalReadContentBody(replyMIME, &rawBody))
+    return false;
+
+  body = PString(rawBody, rawBody.GetSize());
+  return true;
 }
 
 
