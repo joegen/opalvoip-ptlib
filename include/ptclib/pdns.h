@@ -45,6 +45,7 @@
 #if defined(_WIN32)
 
 #  include <windns.h>
+#  include <ntverp.h>
 #  pragma comment(lib, P_DNS_LIBRARY)
 
 // Accommodate spelling error in windns.h
@@ -62,6 +63,20 @@ enum { DnsSectionAdditional = DnsSectionAddtional };
 #  endif
 
 #endif  // _WIN32
+
+#if defined(_WIN32) && VER_PRODUCTBUILD < 6000
+typedef struct
+{
+    WORD            wOrder;
+    WORD            wPreference;
+    PSTR            pFlags;
+    PSTR            pService;
+    PSTR            pRegularExpression;
+    PSTR            pReplacement;
+}
+DNS_NAPTR_DATA;
+#endif
+
 
 #ifdef P_HAS_RESOLVER
 

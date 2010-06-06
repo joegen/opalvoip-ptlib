@@ -1259,6 +1259,16 @@ PString PProcess::GetOSVersion()
                   info.dwMajorVersion, info.dwMinorVersion, wBuildNumber);
 }
 
+void PProcess::GetOSVersion(int & major, int & minor, int & build)
+{
+  OSVERSIONINFO info;
+  info.dwOSVersionInfoSize = sizeof(info);
+  GetVersionEx(&info);
+
+	major = (int)info.dwMajorVersion;
+	minor = (int)info.dwMinorVersion; 
+	build = (int)info.dwBuildNumber;
+}
 
 PDirectory PProcess::GetOSConfigDir()
 {
