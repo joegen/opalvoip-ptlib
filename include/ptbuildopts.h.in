@@ -531,7 +531,8 @@
 
 #if defined(_MSC_VER) && P_DNS
 
-  #pragma include_alias(<windns.h>, <@DNS_DIR@/include/windns.h>)
+  #pragma include_alias(<windns.h>, <@DNS_DIR@/include/windns.h>)  
+  #pragma include_alias(<ntverp.h>, <@DNS_DIR@/include/ntverp.h>)
 
   #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 
@@ -672,7 +673,7 @@
 
     #if P_VIDEO
       #define P_VFW_CAPTURE 1
-      #if 0 //defined(_MSC_VER)
+      #if defined(_MSC_VER)
         #undef P_DIRECTSHOW2 
       #else
         #undef P_DIRECTX_DDRAW_H
