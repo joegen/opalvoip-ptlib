@@ -50,22 +50,25 @@
 #define OID_GEN_CURRENT_PACKET_FILTER       0x0001010E
 #define OID_GEN_MEDIA_SUPPORTED             0x00010103
 
-#define NDIS_PACKET_TYPE_DIRECTED           0x0001
-#define NDIS_PACKET_TYPE_MULTICAST          0x0002
-#define NDIS_PACKET_TYPE_ALL_MULTICAST      0x0004
-#define NDIS_PACKET_TYPE_BROADCAST          0x0008
-#define NDIS_PACKET_TYPE_PROMISCUOUS        0x0020
+#if (WINVER <= 0x502)  // These are defined in Vista SDK
 
-typedef enum _NDIS_MEDIUM {
-    NdisMedium802_3,
-    NdisMedium802_5,
-    NdisMediumFddi,
-    NdisMediumWan,
-    NdisMediumLocalTalk,
-    NdisMediumDix,              // defined for convenience, not a real medium
-    NdisMediumArcnetRaw,
-    NdisMediumArcnet878_2
-} NDIS_MEDIUM, *PNDIS_MEDIUM;                    
+	#define NDIS_PACKET_TYPE_DIRECTED           0x0001
+	#define NDIS_PACKET_TYPE_MULTICAST          0x0002
+	#define NDIS_PACKET_TYPE_ALL_MULTICAST      0x0004
+	#define NDIS_PACKET_TYPE_BROADCAST          0x0008
+	#define NDIS_PACKET_TYPE_PROMISCUOUS        0x0020
+
+	typedef enum _NDIS_MEDIUM {
+		NdisMedium802_3,
+		NdisMedium802_5,
+		NdisMediumFddi,
+		NdisMediumWan,
+		NdisMediumLocalTalk,
+		NdisMediumDix,              // defined for convenience, not a real medium
+		NdisMediumArcnetRaw,
+		NdisMediumArcnet878_2
+	} NDIS_MEDIUM, *PNDIS_MEDIUM;  
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
