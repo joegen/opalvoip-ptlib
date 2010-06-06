@@ -23,6 +23,8 @@ extern "C" {
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 
+#if (WINVER <= 0x502)
+
 typedef USHORT ADDRESS_FAMILY;
 
 #ifndef _WS2IPDEF_
@@ -32,6 +34,10 @@ typedef union _SOCKADDR_INET {
     ADDRESS_FAMILY si_family;    
 } SOCKADDR_INET, *PSOCKADDR_INET;
 #endif // _WS2IPDEF_
+
+#endif
+
+#if (WINVER <= 0x502)
 
 typedef struct _IP_ADDRESS_PREFIX {
     SOCKADDR_INET Prefix;
@@ -124,6 +130,8 @@ typedef struct _MIB_IPFORWARD_TABLE2 {
     ULONG NumEntries;
     MIB_IPFORWARD_ROW2 Table[ANY_SIZE];
 } MIB_IPFORWARD_TABLE2, *PMIB_IPFORWARD_TABLE2;
+
+#endif
 
 typedef ULONG NETIO_STATUS;
 
