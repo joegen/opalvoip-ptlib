@@ -141,6 +141,14 @@ class PVideoChannel : public PChannel
        */
     PBoolean Write(const void * buf,  //Pointer to the image data to be rendered
                PINDEX      len);
+
+    /** Low level write to the video channel with marker. .
+     */
+    virtual PBoolean Write(
+      const void * buf,  ///< Pointer to a block of memory to write.
+      PINDEX len,        ///< Number of bytes to write.
+	  void * mark        ///< Unique Marker to identify write
+    );
     
     /**Cause the referenced data to be drawn to the 
        previously defined media 
@@ -155,11 +163,16 @@ class PVideoChannel : public PChannel
      */
     PINDEX  GetRenderHeight();
 
-    /**Specifiy the width and height of the video stream, which is to be
+    /**Specify the width and height of the video stream, which is to be
        rendered onto the previously specified device.
      */
     virtual void SetRenderFrameSize(int width, int height); 
 
+   /**Specify the width and height of the video stream, which is to be
+       rendered onto the previously specified device including sample aspect ratio.
+     */
+    virtual void SetRenderFrameSize(int width, int height,int sarwidth, int sarheight);
+  
     /**Specifiy the width and height of the video stream, which is to be
        extracted from the previously specified device.
      */
@@ -201,6 +214,13 @@ class PVideoChannel : public PChannel
      */
     virtual PBoolean IsRenderOpen();
 
+	/**Allow the outputdevice decide whether the 
+		decoder should ignore decode hence not render
+		any output. This does not mean the video channel is closed
+		just to not decode and render any frames. 
+	  */
+	virtual PBoolean DisableDecode();
+
     /**Get data from the attached inputDevice, and display on the
        attached ouptutDevice.
     */
@@ -225,6 +245,11 @@ class PVideoChannel : public PChannel
     /**Toggle the vertical flip state of the video grabber.
     */
     PBoolean ToggleVFlipInput();
+
+     /**Flow Control information
+       Pass data to the channel for flowControl determination.
+      */
+    virtual bool FlowControl(const void * flowData);
 
  protected:
 

@@ -125,6 +125,35 @@ class PVideoFrameInfo : public PObject
     */
     virtual unsigned GetFrameHeight() const;
 
+    /**Set the sar size to be used.
+
+       Default behaviour sets the sarWidth and sarHeight variables and
+       returns PTrue.
+    */
+    virtual PBoolean SetFrameSar(unsigned width, unsigned height);
+
+     /**Get the sar size being used.
+
+       Default behaviour returns the value of the sarWidth and sarHeight
+       variable and returns PTrue.
+    */
+    virtual PBoolean GetSarSize(
+      unsigned & width,
+      unsigned & height
+    ) const;
+
+    /** Get the width of the sar being used.
+
+        Default behaviour returns the value of the sarWidth variable
+    */
+    virtual unsigned GetSarWidth() const;
+
+    /** Get the height of the sar being used.
+
+        Default behaviour returns the value of the sarHeight variable
+    */
+    virtual unsigned GetSarHeight() const;
+    
     /**Set the video frame rate to be used on the device.
 
        Default behaviour sets the value of the frameRate variable and then
@@ -211,6 +240,8 @@ class PVideoFrameInfo : public PObject
   protected:
     unsigned   frameWidth;
     unsigned   frameHeight;
+    unsigned   sarWidth;
+    unsigned   sarHeight;
     unsigned   frameRate;
     PString    colourFormat;
     ResizeMode resizeMode;
@@ -749,6 +780,26 @@ class PVideoOutputDevice : public PVideoDevice
       PBoolean endFrame,
       unsigned flags
     );
+    virtual PBoolean SetFrameData(
+      unsigned x,
+      unsigned y,
+      unsigned width,
+      unsigned height,
+      unsigned sarwidth,
+      unsigned sarheight,
+      const BYTE * data,
+      PBoolean endFrame,
+      unsigned flags,
+	  const void * mark
+    );
+
+	/**Allow the outputdevice decide whether the 
+		decoder should ignore decode hence not render
+		any output. 
+
+		Returns: false if to decode and render.
+	  */
+	virtual PBoolean DisableDecode();
 
     /**Get the position of the output device, where relevant. For devices such as
        files, this always returns zeros. For devices such as Windows, this is the
@@ -985,6 +1036,11 @@ class PVideoInputDevice : public PVideoDevice
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
 
+	/**Get the devices video Input controls
+		By Default return NULL;
+	  */
+	virtual PVideoInputControl * GetVideoInputControls();
+
     /**Open the device given the device name.
       */
     virtual PBoolean Open(
@@ -1032,6 +1088,10 @@ class PVideoInputDevice : public PVideoDevice
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned = NULL  ///< Optional bytes returned.
     ) = 0;
+
+    /**Pass data to the inputdevice for flowControl determination.
+      */
+    virtual bool FlowControl(const void * flowData);
 
     /**Try all known video formats & see which ones are accepted by the video driver
      */
