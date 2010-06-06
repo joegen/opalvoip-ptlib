@@ -96,6 +96,9 @@ PBoolean PMail::LogOn(const PString & username,
   return LogOnCommonInterface(username, password, service);
 }
 
+#ifdef _WIN64
+  #pragma warning(disable:4100)
+#endif
 
 PBoolean PMail::LogOnCommonInterface(const char * username,
                                  const char * password,
@@ -736,6 +739,9 @@ PMail::LookUpResult PMail::LookUp(const PString & name, PString * fullName)
   return LookUpError;
 }
 
+#ifdef _WIN64
+  #pragma warning(default:4100)
+#endif
 
 int PMail::GetErrorCode() const
 {

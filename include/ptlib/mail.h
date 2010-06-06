@@ -38,7 +38,7 @@
 #pragma interface
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_WIN64)
 
 #  ifndef P_HAS_MAPI
 #  define P_HAS_MAPI 1
