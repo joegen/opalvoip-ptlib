@@ -346,7 +346,11 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
   // create a BITMAPINFO with enough room for the pixel data
   unsigned bitmapInfoSize = sizeof(BITMAPINFOHEADER);
   if (bitmap.bmBitsPixel <= 8)
+#ifdef _WIN64
+    bitmapInfoSize += (1i64 << bitmap.bmBitsPixel) * sizeof(RGBQUAD);
+#else
     bitmapInfoSize += (1 << bitmap.bmBitsPixel) * sizeof(RGBQUAD);
+#endif
 
   LPBITMAPINFO bitmapInfo = (LPBITMAPINFO)_alloca(bitmapInfoSize);
 

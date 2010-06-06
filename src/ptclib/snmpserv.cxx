@@ -194,7 +194,7 @@ static void EncodeOID(PDUType & pdu, const PINDEX & reqID,
 	   // Build the response list
 		PSNMP_VarBindList & vars = pdu.m_variable_bindings;
 		PINDEX i = 0;
-		vars.SetSize(varlist.size());
+		vars.SetSize((int)varlist.size());
 		PSNMP::BindingList::const_iterator Iter = varlist.begin();
 		while (Iter != varlist.end()) {
 		  vars[i].m_name.SetValue(Iter->first);
