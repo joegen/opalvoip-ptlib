@@ -520,6 +520,36 @@ class PSoundChannel : public PChannel
      */
     virtual PBoolean Write(const void * buf, PINDEX len);
 
+
+    /** Low level write (or play) with watermark to the channel. 
+
+	It will generate a logical assertion if you attempt write to a
+	channel set up for recording.
+
+       @param buf is a pointer to the data to be written to the
+       channel.  It is an error for this pointer to be NULL. A logical
+       assert will be generated when buf is NULL.
+
+       @param len Nr of bytes to send. If len equals the buffer size
+        set by SetBuffers() it will block for
+        (1000*len)/(samplesize*samplerate) ms. Typically, the sample
+        size is 2 bytes.  If len == 0, this will return immediately,
+        where the return value is equal to the value of IsOpen().
+	  
+	   @param mark Unique identifer to identify the write
+ 
+       @return PTrue if len bytes were written to the channel,
+         otherwise PFalse. The GetErrorCode() function should be 
+        consulted after Write() returns PFalse to determine what 
+        caused the failure.
+
+     */
+    virtual PBoolean Write(
+      const void * buf,         ///< Pointer to a block of memory to write.
+      PINDEX len,               ///< Number of bytes to write.
+	  const void * mark         ///< Unique Marker to identify write
+    );
+
     /** Get number of bytes written in last Write() operation. */
     virtual PINDEX GetLastWriteCount() const;
 

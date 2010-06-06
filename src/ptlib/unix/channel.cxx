@@ -197,6 +197,11 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
   return ConvertOSError(0, LastWriteError);
 }
 
+PBoolean PChannel::Write(const void * buf, PINDEX len, const void * /*mark*/)
+{
+   return Write(buf,len);
+}
+
 #ifdef P_HAS_RECVMSG
 
 PBoolean PChannel::Read(const VectorOfSlice & slices)

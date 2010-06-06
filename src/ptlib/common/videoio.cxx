@@ -253,6 +253,38 @@ unsigned PVideoFrameInfo::GetFrameHeight() const
   return h;
 }
 
+PBoolean PVideoFrameInfo::SetFrameSar(unsigned width, unsigned height)
+{
+    if(height == 0 || width == 0)
+    {
+        return PFalse;
+    }
+  sarWidth  = width;
+  sarHeight = height;
+  return PTrue;
+}
+
+PBoolean PVideoFrameInfo::GetSarSize(unsigned & width, unsigned & height) const
+{
+  width  = sarWidth;
+  height = sarHeight;
+  return PTrue;
+}
+
+unsigned PVideoFrameInfo::GetSarWidth() const
+{
+  unsigned w,h;
+  GetSarSize(w, h);
+  return w;
+}
+
+
+unsigned PVideoFrameInfo::GetSarHeight() const
+{
+  unsigned w,h;
+  GetSarSize(w, h);
+  return h;
+}
 
 PBoolean PVideoFrameInfo::SetFrameRate(unsigned rate)
 {
@@ -900,8 +932,8 @@ PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
     frameHeight = height;
 
   if (converter != NULL) {
-    if (!converter->SetSrcFrameSize(width, height) ||
-        !converter->SetDstFrameSize(width, height)) {
+    if ((!converter->SetSrcFrameSize(width, height)) ||
+        (!converter->SetDstFrameSize(width, height))) {
       PTRACE(1, "PVidDev\tSetFrameSize with converter failed with " << width << 'x' << height);
       return PFalse;
     }
@@ -1445,6 +1477,10 @@ PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, co
   return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, caps);
 }
 
+PVideoInputControl * PVideoInputDevice::GetVideoInputControls()
+{
+	return NULL;
+}
 
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driverName,
@@ -1510,6 +1546,11 @@ PBoolean PVideoInputDevice::GetFrameDataNoDelay(
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
+bool PVideoInputDevice::FlowControl(const void * /*flowData*/)
+{
+    return false;
+}
+
 PBoolean PVideoOutputDevice::SetFrameData(
       unsigned x,
       unsigned y,
@@ -1523,8 +1564,26 @@ PBoolean PVideoOutputDevice::SetFrameData(
   return SetFrameData(x, y, width, height, data, endFrame);
 }
 
+PBoolean PVideoOutputDevice::SetFrameData(
+      unsigned x,
+      unsigned y,
+      unsigned width,
+      unsigned height,
+      unsigned /*sarwidth*/,
+      unsigned /*sarheight*/,
+      const BYTE * data,
+      PBoolean endFrame,
+      unsigned flags,
+	  const void * /*mark*/
+)
+{
+  return SetFrameData(x, y, width, height, data, endFrame, flags);
+}
 
-
+PBoolean PVideoOutputDevice::DisableDecode() 
+{
+	return false;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
