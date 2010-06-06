@@ -2876,6 +2876,11 @@ PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
   return false;
 }
 
+PBoolean PUDPSocket::DoPseudoRead(int & /*selectStatus*/)
+{
+   return false;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 PBoolean PICMPSocket::OpenSocket(int)
