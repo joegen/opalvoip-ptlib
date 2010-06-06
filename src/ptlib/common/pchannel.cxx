@@ -527,6 +527,10 @@ bool PChannel::SetLocalEcho(bool /*localEcho*/)
   return IsOpen();
 }
 
+bool PChannel::FlowControl(const void * /*flowData*/)
+{
+    return false;
+}
 
 PChannel * PChannel::GetBaseReadChannel() const
 {

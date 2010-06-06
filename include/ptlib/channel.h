@@ -347,6 +347,24 @@ class PChannel : public PObject, public iostream {
       PINDEX len        ///< Number of bytes to write.
     );
 
+    /** Low level write to the channel with marker. 
+	   This function will block until the requested number of characters 
+	   are written or the write timeout is reached. The GetLastWriteCount() 
+	   function returns the actual number of bytes written. By default it 
+	   calls the Write(void *,len) function
+
+       The GetErrorCode() function should be consulted after Write() returns
+       PFalse to determine what caused the failure.
+
+       @return
+       PTrue if at least len bytes were written to the channel.
+     */
+    virtual PBoolean Write(
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len,        ///< Number of bytes to write.
+	  const void * mark   ///< Unique Marker to identify write
+    );
+
     /** Get the number of bytes written by the last Write() call.
        
        Note that the number of bytes written may often be less, or even more,
@@ -439,6 +457,11 @@ class PChannel : public PObject, public iostream {
     virtual bool SetLocalEcho(
       bool localEcho
     );
+
+    /**Flow Control information 
+       Pass data to the channel for flowControl determination.
+      */
+    virtual bool FlowControl(const void * flowData);
 
     /**Set the iostream buffer size for reads and writes.
 

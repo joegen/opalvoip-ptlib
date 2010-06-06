@@ -114,7 +114,12 @@ PBoolean PVideoChannel::Read(void * buf, PINDEX  len)
 }
 
 PBoolean PVideoChannel::Write(const void * buf,  //image data to be rendered
-                          PINDEX      /* len */)
+                          PINDEX len )
+{
+	return Write(buf, len, 0);
+}
+
+PBoolean PVideoChannel::Write(const void * buf, PINDEX /*len*/, void * mark)
 {
   PWaitAndSignal m(accessMutex);
 
@@ -126,7 +131,10 @@ PBoolean PVideoChannel::Write(const void * buf,  //image data to be rendered
     PTRACE(6,"PVC\t::Write, frame size is "
               << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
               " VideoGrabber is unavailable");
-    return mpOutput->SetFrameData(0, 0, mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(), (const BYTE *)buf, PTrue);
+    return mpOutput->SetFrameData(0, 0,
+        mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(),
+        mpOutput->GetSarWidth(),   mpOutput->GetSarHeight(),
+        (const BYTE *)buf, PTrue,0, mark);
   }
 
   PTRACE(6,"PVC\t::Write, frame size is " 
@@ -134,7 +142,9 @@ PBoolean PVideoChannel::Write(const void * buf,  //image data to be rendered
                " VideoGrabber is source of size");
   return mpOutput->SetFrameData(0, 0,
         mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
-           (const BYTE *)buf, PTrue);  
+        mpInput->GetSarWidth(),   mpInput->GetSarHeight(),
+           (const BYTE *)buf, PTrue,0, mark);  
+
 }
 
 PBoolean PVideoChannel::Close()
@@ -245,6 +255,14 @@ PBoolean PVideoChannel::IsRenderOpen()
     return PFalse; 
 }
 
+PBoolean PVideoChannel::DisableDecode()
+{
+  if (mpOutput != NULL)
+    return mpOutput->DisableDecode();
+  else
+    return PFalse; 
+}
+
 PBoolean PVideoChannel::DisplayRawData(void *videoBuffer)
 {
   PWaitAndSignal m(accessMutex);
@@ -257,7 +275,8 @@ PBoolean PVideoChannel::DisplayRawData(void *videoBuffer)
   int frameWidth  = GetGrabWidth();
   int frameHeight = GetGrabHeight();
   PTRACE(6,"Video\t data direct:: camera-->render, size " << frameWidth << "x" << frameHeight );
-  
+
+  // TODO sar default to 1:1
   SetRenderFrameSize(frameWidth, frameHeight);
   Read(videoBuffer, length);
   Write((const void *)videoBuffer, length);
@@ -277,12 +296,20 @@ void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)
 }
 
 void  PVideoChannel::SetRenderFrameSize(int _width, int _height) 
+{
+   SetRenderFrameSize(_width, _height, 1, 1);
+} 
+
+void  PVideoChannel::SetRenderFrameSize(int _width, int _height, int _sarwidth,int _sarheight) 
 { 
   PTRACE(6, "PVC\t Set Renderer frame size to " << _width << "x" << _height);
   PWaitAndSignal m(accessMutex);
 
   if (mpOutput != NULL)
-    mpOutput->SetFrameSize(_width, _height); 
+  {
+        mpOutput->SetFrameSize(_width, _height);
+        mpOutput->SetFrameSar(_sarwidth, _sarheight);
+  }
 }
 
 PVideoInputDevice *PVideoChannel::GetVideoReader()
@@ -341,6 +368,13 @@ PBoolean PVideoChannel::ToggleVFlipInput()
   return mpInput->SetVFlipState(mpInput->GetVFlipState()); 
 
  return PFalse;
+}
+
+bool PVideoChannel::FlowControl(const void* flowData)
+{
+    if(mpInput)
+        return mpInput->FlowControl(flowData);
+    return false;
 }
 
 #endif
