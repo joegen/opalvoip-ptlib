@@ -87,7 +87,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
 #endif
     httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, exeDir+inf.gifFilename));
     if (gifHTML.IsEmpty()) {
-      gifHTML = psprintf("<img src=\"/%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
+      gifHTML = psprintf("<img src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
       if (inf.gifWidth != 0 && inf.gifHeight != 0)
         gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
       gifHTML += " align=absmiddle>";
