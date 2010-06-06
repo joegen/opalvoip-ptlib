@@ -67,7 +67,7 @@ void PBase64::ProcessEncoding(const PString & str)
 
 void PBase64::ProcessEncoding(const char * cstr)
 {
-  ProcessEncoding((const BYTE *)cstr, strlen(cstr));
+  ProcessEncoding((const BYTE *)cstr, (int)strlen(cstr));
 }
 
 
@@ -173,7 +173,7 @@ PString PBase64::Encode(const PString & str)
 
 PString PBase64::Encode(const char * cstr)
 {
-  return Encode((const BYTE *)cstr, strlen(cstr));
+  return Encode((const BYTE *)cstr, (int)strlen(cstr));
 }
 
 
@@ -335,7 +335,7 @@ void PMessageDigest::Process(const PString & str)
 
 void PMessageDigest::Process(const char * cstr)
 {
-  Process(cstr, strlen(cstr));
+  Process(cstr, (int)strlen(cstr));
 }
 
 
@@ -597,13 +597,13 @@ void PMessageDigest5::Encode(const PString & str, Result & result)
 
 PString PMessageDigest5::Encode(const char * cstr)
 {
-  return Encode((const BYTE *)cstr, strlen(cstr));
+  return Encode((const BYTE *)cstr, (int)strlen(cstr));
 }
 
 
 void PMessageDigest5::Encode(const char * cstr, Result & result)
 {
-  Encode((const BYTE *)cstr, strlen(cstr), result);
+  Encode((const BYTE *)cstr, (int)strlen(cstr), result);
 }
 
 
@@ -643,7 +643,7 @@ void PMessageDigest5::Encode(const PString & str, Code & result)
 
 void PMessageDigest5::Encode(const char * cstr, Code & result)
 {
-  Encode((const BYTE *)cstr, strlen(cstr), result);
+  Encode((const BYTE *)cstr, (int)strlen(cstr), result);
 }
 
 void PMessageDigest5::Encode(const PBYTEArray & data, Code & result)

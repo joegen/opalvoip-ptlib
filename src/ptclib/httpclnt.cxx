@@ -572,7 +572,7 @@ PString PHTTPClientAuthentication::GetAuthParam(const PString & auth, const char
 
   PINDEX pos = auth.Find(name);
   if (pos != P_MAX_INDEX)  {
-    pos += strlen(name);
+    pos += (int)strlen(name);
     while (isspace(auth[pos]) || (auth[pos] == ','))
       pos++;
     if (auth[pos] == '=') {
