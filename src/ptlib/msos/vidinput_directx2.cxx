@@ -434,7 +434,7 @@ bool CheckOrientation(BYTE *pData, VIDEOINFOHEADER *pVih)
 // Video sample Grabber Callback
 
 // Implementation of CSampleGrabberCB object
-static int skipFrames = 5;
+static int skipFrames = 4;
 class CSampleGrabberCB : public ISampleGrabberCB 
 {
 
@@ -522,7 +522,7 @@ public:
 
 	bool GetCurrentBuffer(BYTE & buffer, const long & expectedSize) 
 	{
-		frameready.Wait(2000);
+		frameready.Wait(3000);
 
 		PWaitAndSignal m(mbuf);
 
@@ -671,8 +671,9 @@ struct {
     {(char*) "BGR32",   MEDIASUBTYPE_RGB32}, 
     {(char*) "BGR24",   MEDIASUBTYPE_RGB24}
 #ifndef _WIN32_WCE
-    ,{(char*) "YUV420P", MEDIASUBTYPE_IYUV}, 
-    {(char*) "YUV420",  MEDIASUBTYPE_YUY2}
+    ,{(char*) "YUV420P", MEDIASUBTYPE_IYUV} 
+    ,{(char*) "YUV420",  MEDIASUBTYPE_YUY2}
+    ,{(char*) "MJPG",    MEDIASUBTYPE_MJPG}
 #endif
 }; 
 
@@ -938,8 +939,9 @@ endcontroltest:
 				((mt->subtype == MEDIASUBTYPE_RGB24) ||   //RGB24
 				(mt->subtype == MEDIASUBTYPE_RGB32)     //RGB32
 #ifndef _WIN32_WCE
-				|| (mt->subtype == MEDIASUBTYPE_YUY2) ||     // YUV420
-				(mt->subtype == MEDIASUBTYPE_IYUV)    // YUV420P 
+				|| (mt->subtype == MEDIASUBTYPE_YUY2)    // YUV420
+				|| (mt->subtype == MEDIASUBTYPE_IYUV)    // YUV420P 
+                || (mt->subtype == MEDIASUBTYPE_MJPG)    // MJPEG
 #endif
 				) &&
 				(mt->cbFormat >= sizeof(VIDEOINFOHEADER)) &
@@ -1007,10 +1009,11 @@ PBoolean PVideoInputDevice_DirectShow2::SetVideoFormat(IPin * pin) {
 				((mt->subtype == MEDIASUBTYPE_RGB24) ||   //RGB24
 				(mt->subtype == MEDIASUBTYPE_RGB32)       //RGB32
 #ifndef _WIN32_WCE
-				|| (mt->subtype == MEDIASUBTYPE_YUY2) ||     // YUV420
-				(mt->subtype == MEDIASUBTYPE_IYUV)
+				|| (mt->subtype == MEDIASUBTYPE_YUY2)     // YUV420
+				|| (mt->subtype == MEDIASUBTYPE_IYUV)     // YUV420P
+                || (mt->subtype == MEDIASUBTYPE_MJPG)     // MJPEG
 #endif			
-				) &&    // YUV420P         
+				) &&             
 				(mt->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
 				(mt->pbFormat != NULL) && (!success)) {
 
@@ -1018,7 +1021,7 @@ PBoolean PVideoInputDevice_DirectShow2::SetVideoFormat(IPin * pin) {
 				unsigned width = scc.MaxOutputSize.cx;
 				unsigned height = scc.MaxOutputSize.cy;
 
-				if ((frameWidth <= width) && (frameHeight <= height)) {
+				if ((frameWidth == width) && (frameHeight == height)) {
 				// Set the Required size & frame rate
 					PTRACE(5,"DShow\tChecking: w: " << width << " h: " << height << 
 						                  " wanting w:" << frameWidth << " h: " << frameHeight );
