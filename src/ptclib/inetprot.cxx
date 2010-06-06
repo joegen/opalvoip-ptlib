@@ -911,8 +911,8 @@ bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & 
     info->m_mime.ReadFrom(strm);
 
     // Skip over MIME
-    partPtr += strm.tellp();
-    partLen -= strm.tellp();
+    partPtr += (int)strm.tellp();
+    partLen -= (int)strm.tellp();
 
     // Check transfer encoding
     PStringToString typeInfo;

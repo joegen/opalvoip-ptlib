@@ -592,7 +592,7 @@ PBoolean PBitArray::Concatenate(const PBitArray & array)
 ///////////////////////////////////////////////////////////////////////////////
 
 PString::PString(const char * cstr)
-  : PCharArray(cstr != NULL ? strlen(cstr)+1 : 1)
+  : PCharArray(cstr != NULL ? (int)strlen(cstr)+1 : 1)
 {
   if (cstr != NULL)
     memcpy(theArray, cstr, GetSize());

@@ -1559,7 +1559,7 @@ PProcess & PProcess::Current()
 {
   if (PProcessInstance == NULL) {
     cerr << "Catastrophic failure, PProcess::Current() = NULL!!\n";
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE) && !defined(_WIN64)
     __asm int 3;
 #endif
     _exit(1);
@@ -1895,7 +1895,7 @@ static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 
   __try
   {
-    RaiseException(0x406D1388, 0, sizeof(threadInfo)/sizeof(DWORD), (DWORD *)&threadInfo) ;
+    RaiseException(0x406D1388, 0, sizeof(threadInfo)/sizeof(DWORD), (const ULONG_PTR *)&threadInfo) ;
     // if not running under debugger exception comes back
   }
   __except(EXCEPTION_CONTINUE_EXECUTION)
