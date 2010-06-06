@@ -147,6 +147,15 @@ class PUDPSocket : public PIPDatagramSocket
 		WORD port					///< Detected Port.
 		);
 
+
+    /** PseudoRead
+        This indicates to the upper system that reading on this socket
+        will be a pseudo read when means there is data available that 
+        did not orginate from the physical socket but was programmically
+        injected.
+     */
+	virtual PBoolean DoPseudoRead(int & selectStatus);
+
     /** Check to See if the socket will support QoS on the given local Address
      */
     static PBoolean SupportQoS(const PIPSocket::Address & address);
