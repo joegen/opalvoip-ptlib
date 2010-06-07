@@ -1423,10 +1423,13 @@ dnl MSWIN_IF_FEATURE soap,http&expat
 PTLIB_SIMPLE_OPTION([soap], [SOAP], [enable SOAP support], [HAS_EXPAT], [HAS_HTTP])
 
 dnl ########################################################################
+dnl MSWIN_DISPLAY       atl,Active Template Library
+dnl MSWIN_CHECK_FILE    atl,atlbase.h,P_ATL=1
+
+dnl ########################################################################
 dnl Speech
 dnl MSWIN_DISPLAY       sapi,Speech API
 dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
-dnl MSWIN_CHECK_FILE    sapi,atlbase.h,P_ATL=1
 dnl MSWIN_DEFINE        sapi,P_TTS
 dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
 dnl MSWIN_FIND_FILE     sapi,P_SAPI_LIBRARY,sapi.lib,...
@@ -1709,7 +1712,6 @@ dnl look for Direct Show (video)
 dnl MSWIN_DISPLAY    dshow,Direct Show Support
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW2=1
-dnl MSWIN_CHECK_FILE dshow,atlbase.h,P_ATL=1
 dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_DDRAW_H,ddraw.h,include
 dnl MSWIN_DIR_SYMBOL dshow,DIRECTSHOW_DIR
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v7*
