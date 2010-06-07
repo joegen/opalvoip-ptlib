@@ -682,29 +682,22 @@
 
     #if P_VIDEO
       #define P_VFW_CAPTURE 1
+
+      #undef P_DIRECTX_DDRAW_H
+      #undef P_DIRECTSHOW_DDRAW_H
+
       #if P_ATL
         #undef P_DIRECTSHOW2 
-      #else
-        #undef P_DIRECTX_DDRAW_H
-        #undef P_DIRECTSHOW_DDRAW_H
-            #if defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
-              #undef P_DIRECTSHOW
-            #endif
+      #elif defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
+        #undef P_DIRECTSHOW
       #endif
-    #endif
 
-    #if defined(P_DIRECTSHOW) || defined(P_DIRECTSHOW2)
-    
-       #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
-      
-       #if defined(P_DIRECTSHOW) 
-          #ifdef P_DIRECTSHOW_DDRAW_H
-            #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
-          #else
-            #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
-          #endif
+      #if defined(P_DIRECTSHOW) || defined(P_DIRECTSHOW2)
 
-          
+        #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
+
+        #ifdef P_DIRECTSHOW_DDRAW_H
+          #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
           #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
           #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
           #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
@@ -712,13 +705,23 @@
           #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
           #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
           #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
-       #endif
+          #pragma include_alias(<Qedit.h>, <@DIRECTSHOW_DIR@/include/Qedit.h>)
+          #pragma include_alias(<mmstream.h>, <@DIRECTSHOW_DIR@/include/mmstream.h>)
+          #pragma include_alias(<ddstream.h>, <@DIRECTSHOW_DIR@/include/ddstream.h>)
+          #pragma include_alias(<austream.h>, <@DIRECTSHOW_DIR@/include/austream.h>)
+          #pragma include_alias(<rp.h>, <@DIRECTSHOW_DIR@/include/rpc.h>)
+          #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcndr.h>)
+          #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcsal.h>)
+          #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
+        #else
+          #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
+        #endif
 
-      #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
-      #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
+        #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
+        #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
 
-    #endif // P_DIRECTSHOW
-
+      #endif // P_DIRECTSHOW
+    #endif // P_VIDEO
   #endif // _WIN32_WCE
 
 #else /* defined(_MSC_VER)*/
