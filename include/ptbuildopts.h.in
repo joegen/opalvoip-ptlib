@@ -673,7 +673,8 @@
 
     #if P_VIDEO
       #define P_VFW_CAPTURE 1
-      #if defined(_MSC_VER)
+      #undef P_ATL
+      #if P_ATL
         #undef P_DIRECTSHOW2 
       #else
         #undef P_DIRECTX_DDRAW_H
