@@ -1429,6 +1429,7 @@ dnl MSWIN_CHECK_FILE    atl,atlbase.h,P_ATL=1
 dnl ########################################################################
 dnl Speech
 dnl MSWIN_DISPLAY       sapi,Speech API
+dnl MSWIN_DEFAULT       sapi,Disabled
 dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
 dnl MSWIN_DEFINE        sapi,P_TTS
 dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
