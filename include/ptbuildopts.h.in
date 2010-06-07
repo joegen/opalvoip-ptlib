@@ -542,12 +542,21 @@
 
 /////////////////////////////////////////////////
 //
+// Active Template Library (Windows only)
+// There is no actual code support in PTLib for this, but the symbols is required
+// for other dependencies
+//
+
+#undef P_ATL
+
+
+/////////////////////////////////////////////////
+//
 // SAPI speech API (Windows only)
 // Disabled SAPI because Vista insists in linking with the non-debug version of the code
 // It will need to stay disabled until someone adds a compile-time test for Vista
 //
 
-#undef P_ATL
 #ifdef P_ATL
 #ifndef _WIN32_WCE
 // #undef P_SAPI
@@ -673,7 +682,6 @@
 
     #if P_VIDEO
       #define P_VFW_CAPTURE 1
-      #undef P_ATL
       #if P_ATL
         #undef P_DIRECTSHOW2 
       #else
