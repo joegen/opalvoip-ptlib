@@ -948,7 +948,7 @@ void PThread::Resume()
 
 PBoolean PThread::IsSuspended() const
 {
-  if (threadHandle == PThread::Current()->GetHandle())
+  if (this == PThread::Current())
     return false;
 
   SuspendThread(threadHandle);
