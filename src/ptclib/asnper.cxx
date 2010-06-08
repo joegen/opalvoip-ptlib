@@ -766,13 +766,16 @@ PBoolean PASN_Sequence::PreambleDecodePER(PPER_Stream & strm)
 {
   // X.691 Section 18
 
+  totalExtensions = 0;
+  extensionMap.SetSize(0);
+
   if (extendable) {
     if (strm.IsAtEnd())
       return PFalse;
-    totalExtensions = strm.SingleBitDecode() ? -1 : 0;  // 18.1
+    if (strm.SingleBitDecode()) // 18.1
+      totalExtensions = -1;
   }
-  else
-    totalExtensions = 0;
+
   return optionMap.Decode(strm);  // 18.2
 }
 
