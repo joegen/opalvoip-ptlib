@@ -45,6 +45,7 @@
 #ifdef _MSC_VER
 
   #pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
+  #pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
   #pragma warning(disable:4251)  // disable warning exported structs
   #pragma warning(disable:4511)  // default copy ctor not generated warning
   #pragma warning(disable:4512)  // default assignment op not generated warning
