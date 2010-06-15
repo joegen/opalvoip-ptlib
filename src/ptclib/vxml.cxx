@@ -593,7 +593,7 @@ PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & 
 
 //////////////////////////////////////////////////////////
 
-PVXMLSession::PVXMLSession(PTextToSpeech * _tts, PBoolean autoDelete)
+PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   : vxmlChannel((PVXMLChannel * &)readChannel)
 {
   vxmlThread       = NULL;
@@ -604,8 +604,8 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, PBoolean autoDelete)
   defaultDTMF      = 0;
   timeout          = DEFAULT_TIMEOUT;
 
-  autoDeleteTextToSpeech = false;
-  SetTextToSpeech(_tts, autoDelete);
+  autoDeleteTextToSpeech = autoDelete;
+  textToSpeech = tts;
 
   Initialise();
 }
@@ -634,7 +634,7 @@ PVXMLSession::~PVXMLSession()
 }
 
 
-PTextToSpeech * PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, PBoolean autoDelete)
+PTextToSpeech * PVXMLSession::SetTextToSpeech(PTextToSpeech * tts, PBoolean autoDelete)
 {
   PWaitAndSignal m(sessionMutex);
 
@@ -642,21 +642,27 @@ PTextToSpeech * PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, PBoolean aut
     delete textToSpeech;
 
   autoDeleteTextToSpeech = autoDelete;
-  textToSpeech = _tts;
+  textToSpeech = tts;
   return textToSpeech;
 }
 
 
 PTextToSpeech * PVXMLSession::SetTextToSpeech(const PString & ttsName)
 {
-  PWaitAndSignal m(sessionMutex);
+  PFactory<PTextToSpeech>::Key_T name = ttsName;
+  if (ttsName.IsEmpty()) {
+    PFactory<PTextToSpeech>::KeyList_T engines = PFactory<PTextToSpeech>::GetKeyList();
+    if (engines.empty())
+      return SetTextToSpeech(NULL, false);
 
-  if (autoDeleteTextToSpeech && (textToSpeech != NULL))
-    delete textToSpeech;
+#ifdef _WIN32
+    name = "Microsoft SAPI";
+    if (std::find(engines.begin(), engines.end(), name) == engines.end())
+#endif
+      name = engines[0];
+  }
 
-  autoDeleteTextToSpeech = true;
-  textToSpeech = PFactory<PTextToSpeech>::CreateInstance(ttsName);
-  return textToSpeech;
+  return SetTextToSpeech(PFactory<PTextToSpeech>::CreateInstance(name), true);
 }
 
 
