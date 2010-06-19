@@ -294,9 +294,11 @@ void *dlsym(void *handle, const char *symbol);
 #elif defined (P_MACOSX) || defined(P_MACOS)
  
 #if defined(P_PTHREADS)
-#   define _THREAD_SAFE
-#   define P_THREAD_SAFE_CLIB
-#   include <pthread.h>
+  #ifndef _THREAD_SAFE
+    #define _THREAD_SAFE
+  #endif
+  #define P_THREAD_SAFE_CLIB
+  #include <pthread.h>
 #endif
 #if defined(P_MAC_MPTHREADS)
 #include <CoreServices/CoreServices.h>
