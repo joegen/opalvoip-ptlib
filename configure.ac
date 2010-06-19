@@ -75,12 +75,7 @@ AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
 dnl ########################################################################
 dnl check for minimum sizing
 
-AC_ARG_ENABLE(minsize,
-       [  --enable-minsize        minimise the size of the lib by disabling least used options])
-AC_ARG_ENABLE(openh323,
-       [  --enable-openh323       include only options needed with openh323])
-AC_ARG_ENABLE(opal,
-       [  --enable-opal           include only options needed with opal])
+AC_ARG_ENABLE(minsize,AS_HELP_STRING([--enable-minsize],[Minimise the size of the lib by disabling least used options]))
 
 dnl these are the default configure settings
 HAS_SAMPLES=no
@@ -128,50 +123,7 @@ HAS_LUA=1
 HAS_EXCEPTIONS=
 HAS_VFW_CAPTURE=
 
-if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
-  default_resolver=yes
-  default_openldap=no
-  default_openssl=yes
-  default_expat=yes
-  default_sdl=yes
-  default_sasl=no
-  default_mlib=no
-  HAS_PLUGINS=1
-  HAS_TTS=1
-  HAS_ASN=1
-  HAS_STUN=1
-  HAS_PIPECHAN=1
-  HAS_DTMF=1
-  HAS_WAVFILE=1
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=1
-  default_ipv6=yes
-  HAS_QOS=1
-  HAS_SOCKAGG=
-  HAS_VIDFILE=1
-  HAS_FFVDEV=1
-  HAS_APPSHARE=
-  HAS_VXML=1
-  HAS_SHM_VIDEO=
-  HAS_EXCEPTIONS=
-  HAS_VFW_CAPTURE=
-  HAS_LUA=
-elif test "${enable_minsize}x" = "yesx" ; then
+if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
   default_openssl=no
@@ -224,6 +176,10 @@ dnl MSWIN_DEFINE  winver,WINVER=0x502
 
 
 AC_CANONICAL_TARGET()
+
+
+AC_ARG_ENABLE(force32, AS_HELP_STRING([--enable-force32],[Force 32-bit build]))
+
 
 TARGETDIR=unix
 OSTYPE=
@@ -323,70 +279,89 @@ case "$target_os" in
 esac
 
 MACHTYPE=
+P_64BIT=0
 
 case "$target_cpu" in
-   x86 | i686 | i586 | i486 | i386 ) MACHTYPE=x86
-		   AC_COMPILE_IFELSE(
-		    [[int t = __amd64__;]],
-		    [[ MACHTYPE=x86_64
-		       P_64BIT=1]]
-		    ,
-		    [[MACHTYPE=x86]]
-		   );
-                   ;;
+   x86 | i686 | i586 | i486 | i386 ) 
+	if test "${enable_force32}" = "no" ; then
+	  AC_COMPILE_IFELSE(
+	    [[int t = __amd64__;]],
+	    [[ MACHTYPE=x86_64
+	       P_64BIT=1]]
+	    ,
+	    [[MACHTYPE=x86]]
+	  );
+	else
+	  MACHTYPE=x86
+	  STDCCFLAGS="$STDCCFLAGS -arch i386"
+	  LDFLAGS="$LDFLAGS -arch i386"
+	  AC_MSG_NOTICE(Forcing 32 bit compile)
+	fi
+	;;
 
-   x86_64 | amd64) MACHTYPE=$target_cpu ;
-		   P_64BIT=1 ;
-                   LIB64=1 ;
-		   ;;
+   x86_64 | amd64)
+	if test "${enable_force32}" = "no" ; then
+	  MACHTYPE=$target_cpu
+	  P_64BIT=1
+          LIB64=1
+	else
+	  MACHTYPE=x86
+	  STDCCFLAGS="$STDCCFLAGS -arch i386"
+	  LDFLAGS="$LDFLAGS -arch i386"
+	  AC_MSG_NOTICE(Forcing 32 bit compile)
+	fi
+	;;
 
-   alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7) MACHTYPE=alpha ;
-		   P_64BIT=1 ;
-		   ;;
+   alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7)
+	MACHTYPE=alpha
+	P_64BIT=1
+	;;
 
-   hppa )          MACHTYPE=hppa ;
-		   ;;
+   hppa )
+	MACHTYPE=hppa
+	;;
 
-   hppa64 )        MACHTYPE=hppa64 ;
-		   P_64BIT=1 ;
-                   LIB64=1 ;
-		   ;;
+   hppa64 )
+	MACHTYPE=hppa64
+	P_64BIT=1
+        LIB64=1
+	;;
 
-   sparc|sparc64 ) MACHTYPE=sparc ;
-		   P_64BIT=1 ;
-                   LIB64=1 ;
-		   ;;
+   sparc | sparc64 )
+	MACHTYPE=sparc
+	P_64BIT=1
+        LIB64=1
+	;;
 
-   powerpc )       MACHTYPE=ppc ;
-		   ;;
+   ppc | powerpc )
+	MACHTYPE=ppc
+	;;
 
-   ppc )           MACHTYPE=ppc ;
-		   ;;
+   ppc64 | powerpc64 )
+	MACHTYPE=ppc64
+	P_64BIT=1
+        LIB64=1
+	;;
 
-   powerpc64 )     MACHTYPE=ppc64 ;
-		   P_64BIT=1 ;
-                   LIB64=1 ;
-		   ;;
+   ia64 )
+	MACHTYPE=ia64
+	P_64BIT=1
+	;;
 
-   ppc64 )         MACHTYPE=ppc64 ;
-		   P_64BIT=1 ;
-                   LIB64=1 ;
-		   ;;
+   s390x )
+	MACHTYPE=s390x
+	P_64BIT=1
+        LIB64=1
+	;;
 
-   ia64)	   MACHTYPE=ia64 ;
-		   P_64BIT=1 ;
-	  	   ;;
+   s390 )
+	MACHTYPE=s390
+	;;
 
-   s390x)	   MACHTYPE=s390x ;
-		   P_64BIT=1 ;
-                   LIB64=1 ;
-		   ;;
-
-   s390)	   MACHTYPE=s390 ;
-		   ;;
-
-   * )		   MACHTYPE=$target_cpu ;
-		   AC_MSG_WARN("CPU $target_cpu not recognized - proceed with caution!") ;;
+   * )
+	MACHTYPE=$target_cpu
+	AC_MSG_WARN("CPU $target_cpu not recognized - proceed with caution!")
+	;;
 esac
 
 AC_MSG_NOTICE(OSTYPE set to $OSTYPE);
@@ -400,7 +375,7 @@ AC_SUBST(TARGETDIR, $TARGETDIR)
 
 AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
 
-if test "x$P_64BIT" != "x" ; then
+if test "$P_64BIT" = "1" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
   STDCCFLAGS="$STDCCFLAGS -DP_64BIT"
 fi
@@ -450,14 +425,11 @@ if test x$GXX = xyes ; then
   dnl only enable PCH for gcc 4.0 and later
   AC_MSG_CHECKING(checking if precompiled headers available)
   if test ${GXX_MAJOR} -lt 4 ; then
-    enablepch=no
+    enable_pch=no
   else
-    enablepch=yes
-    AC_ARG_ENABLE(pch,
-         [  --enable-pch             disable precompiled headers],
-         enablepch=$enableval)
+    AC_ARG_ENABLE(pch, AS_HELP_STRING([--enable-pch],[Enable precompiled headers]))
   fi
-  if test "${enablepch}" = "yes" ; then
+  if test "${enable_pch}" = "yes" ; then
     AC_MSG_RESULT(yes)
     USE_PCH=1
   else
@@ -654,8 +626,7 @@ dnl ########################################################################
 dnl check for tracing
 dnl
 
-AC_ARG_ENABLE(tracing,
-       [  --disable-tracing     Remove PTRACE and all trace logging])
+AC_ARG_ENABLE(tracing, AS_HELP_STRING([--disable-tracing],[Remove PTRACE and all trace logging]))
 
 if test "${enable_tracing}" = "no" ; then
   AC_MSG_NOTICE(PTRACE and all trace logging removed)
@@ -672,8 +643,7 @@ dnl
 dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
 dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
 
-AC_ARG_ENABLE(ansi-bool,
-       [  --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool])
+AC_ARG_ENABLE(ansi-bool,AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
 
 if test "${enable_ansi_bool}" = "no" ; then
   AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
@@ -737,8 +707,7 @@ AC_DEFINE_UNQUOTED(P_HAS_STL_STREAMS, ${P_HAS_STL_STREAMS})
 dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
-AC_ARG_ENABLE(atomicity,
-       [  --disable-atomicity     Do not use atomicity.h])
+AC_ARG_ENABLE(atomicity,AS_HELP_STRING([--disable-atomicity],[Do not use atomicity.h]))
 
 P_HAS_ATOMIC_INT=0
 P_NEEDS_GNU_CXX_NAMESPACE=0
@@ -922,7 +891,7 @@ dnl all sorts of strange things happen
 AC_CHECK_HEADERS(regex.h, HAS_REGEX=yes)
 
 AC_ARG_ENABLE(internalregex,
-        [  --enable-internalregex  force internal regex library],
+        AS_HELP_STRING([--enable-internalregex],[Force internal regex library]),
         internalregex=$enableval)
 if test "$internalregex" = "yes" ; then
   AC_MSG_NOTICE(Forcing use of internal regex library)
@@ -1305,8 +1274,7 @@ dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 9.0\VC\Platform
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 
-AC_ARG_ENABLE(ipv6,
-       [  --disable-ipv6          disable IPV6 support])
+AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
 
 if test "${enable_ipv6}z" = "z" ; then
   enable_ipv6=$default_ipv6
@@ -1730,7 +1698,7 @@ dnl ########################################################################
 dnl look for MEMORY_CHECK enabled.
 
 AC_ARG_ENABLE(memcheck,
-       [  --enable-memcheck       enable leak testing code (off by default)],
+       AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]),
        memcheck=$enableval)
 
 if test "$memcheck" = "yes" ; then
