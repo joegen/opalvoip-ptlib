@@ -562,10 +562,10 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
 #if P_HAS_RECVMSG
 
 PBoolean PSocket::os_recvfrom(
-      void * buf,     // Data to be written as URGENT TCP data.
-      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
+      void * buf,
+      PINDEX len,
       int    flags,
-      sockaddr * addr, // Address from which the datagram was received.
+      sockaddr * addr,
       PINDEX * addrlen)
 {
   lastReadCount = 0;
@@ -592,7 +592,7 @@ PBoolean PSocket::os_recvfrom(
   // read a packet 
   int r = ::recvmsg(os_handle, &readData, flags);
   if (r == -1) {
-    PTRACE(5, "PTLIB\trecvmsg returned error " << r);
+    PTRACE(5, "PTLIB\trecvmsg returned error " << errno);
     ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
   }
 
