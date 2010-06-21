@@ -178,9 +178,6 @@ dnl MSWIN_DEFINE  winver,WINVER=0x502
 AC_CANONICAL_TARGET()
 
 
-AC_ARG_ENABLE(force32, AS_HELP_STRING([--enable-force32],[Force 32-bit build]))
-
-
 TARGETDIR=unix
 OSTYPE=
 NEEDS_PTHREADS=yes
@@ -283,33 +280,19 @@ P_64BIT=0
 
 case "$target_cpu" in
    x86 | i686 | i586 | i486 | i386 ) 
-	if test "${enable_force32}" = "no" ; then
-	  AC_COMPILE_IFELSE(
-	    [[int t = __amd64__;]],
-	    [[ MACHTYPE=x86_64
-	       P_64BIT=1]]
-	    ,
-	    [[MACHTYPE=x86]]
-	  );
-	else
-	  MACHTYPE=x86
-	  STDCCFLAGS="$STDCCFLAGS -arch i386"
-	  LDFLAGS="$LDFLAGS -arch i386"
-	  AC_MSG_NOTICE(Forcing 32 bit compile)
-	fi
+	AC_COMPILE_IFELSE(
+	  [[int t = __amd64__;]],
+	  [[ MACHTYPE=x86_64
+	     P_64BIT=1]]
+	  ,
+	  [[MACHTYPE=x86]]
+	);
 	;;
 
    x86_64 | amd64)
-	if test "${enable_force32}" != "yes" ; then
-	  MACHTYPE=$target_cpu
-	  P_64BIT=1
-          LIB64=1
-	else
-	  MACHTYPE=x86
-	  STDCCFLAGS="$STDCCFLAGS -arch i386"
-	  LDFLAGS="$LDFLAGS -arch i386"
-	  AC_MSG_NOTICE(Forcing 32 bit compile)
-	fi
+	MACHTYPE=$target_cpu
+	P_64BIT=1
+        LIB64=1
 	;;
 
    alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7)
@@ -363,6 +346,24 @@ case "$target_cpu" in
 	AC_MSG_WARN("CPU $target_cpu not recognized - proceed with caution!")
 	;;
 esac
+
+
+AC_ARG_ENABLE(force32, AS_HELP_STRING([--enable-force32],[Force 32-bit x86 build]))
+if test "$MACHTYPE" = "x86_64" -a "${enable_force32}" = "yes" ; then
+  if test "$OSTYPE" = "Darwin"; then
+    STDCCFLAGS="$STDCCFLAGS -arch i386"
+    LDFLAGS="$LDFLAGS -arch i386"
+  else
+    STDCCFLAGS="$STDCCFLAGS -m32"
+    LDFLAGS="$LDFLAGS -m32"
+  fi
+
+  MACHTYPE=x86
+  P_64BIT=0
+  LIB64=0
+  AC_MSG_NOTICE(Forcing 32 bit x86 compile)
+fi
+
 
 AC_MSG_NOTICE(OSTYPE set to $OSTYPE);
 AC_MSG_NOTICE(OSRELEASE set to $OSRELEASE);
