@@ -300,7 +300,7 @@ case "$target_cpu" in
 	;;
 
    x86_64 | amd64)
-	if test "${enable_force32}" = "no" ; then
+	if test "${enable_force32}" != "yes" ; then
 	  MACHTYPE=$target_cpu
 	  P_64BIT=1
           LIB64=1
