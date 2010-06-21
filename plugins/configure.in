@@ -220,7 +220,7 @@ if test "${enable_v4l2}z" = "yesz" ; then
   AC_MSG_CHECKING(for V4L2 video support)
   if test "x${HAS_V4L2}" = "x1"; then
     AC_MSG_RESULT(yes)
-    AC_SUBST([V4L2_CFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
+    AC_SUBST([V4L2_CXXFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
   else
     HAS_V4L2=
     AC_MSG_RESULT(no)
