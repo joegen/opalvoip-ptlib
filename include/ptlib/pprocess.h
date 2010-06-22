@@ -582,14 +582,16 @@ class PProcess : public PThread
      */
     static PString GetOSVersion();
 
-#if defined(_MSC_VER)
-    /**Get the version of the operating system the process is running on.
-       
+    /**See if operating system is later than the version specified.
+
        @return
-       OS version major, minor, build.
+       true if OS version leter than or equal to parameters.
      */
-	static void GetOSVersion(int & major, int & minor, int & build);
-#endif
+    static bool IsOSVersion(
+      unsigned major,     ///< Major version number
+      unsigned minor = 0, ///< Minor version number
+      unsigned build = 0  ///< Build number
+    );
 
     /**Get the configuration directory of the operating system the process is
        running on, eg "/etc" for Unix, "c:\windows" for Win95 or
