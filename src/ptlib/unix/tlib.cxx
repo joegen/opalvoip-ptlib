@@ -163,6 +163,38 @@ PString PProcess::GetOSVersion()
 #endif
 }
 
+bool PProcess::IsOSVersion(unsigned major, unsigned minor, unsigned build)
+{
+#if defined(HAS_UNAME)
+  struct utsname info;
+  uname(&info);
+  unsigned maj, min, bld;
+  sscanf(
+#ifdef P_SOLARIS
+         info.version
+#else
+         info.release
+#endif
+         , "%u.%u.%u", &maj, &min, &bld);
+  if (maj < major)
+    return false;
+  if (maj > major)
+    return true;
+
+  if (min < minor)
+    return false;
+  if (min > minor)
+    return true;
+
+  return bld >= build;
+#elif defined(P_VXWORKS)
+  return sysBspRev() >= major;
+#else
+  return true;
+#endif
+}
+
+
 PDirectory PProcess::GetOSConfigDir()
 {
 #ifdef P_VXWORKS

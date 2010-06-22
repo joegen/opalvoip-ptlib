@@ -105,37 +105,29 @@ struct NAPTR_DNS {
   PString GetReplacement() const    { return PString(GetReplacementBase()+1, GetReplacementLen()); }
 };
 
-#if defined(_MSC_VER)
-bool IsVersion6() {
-	int major,minor,build;
-	PProcess::GetOSVersion(major,minor,build);
-	return (major >= 6);
-}
-#endif
 
 void ResolveNAPTR(PDNS_RECORD dnsRecord, PDNS::NAPTRRecord & record)
 {
-#if defined(_MSC_VER)
-	if (IsVersion6()) {
-		DNS_NAPTR_DATA * naptr = (DNS_NAPTR_DATA *)&dnsRecord->Data;
-		record.order       = naptr->wOrder; 
-		record.preference  = naptr->wPreference; 
-		record.flags       = naptr->pFlags; 
-		record.service     = naptr->pService; 
-		record.regex       = naptr->pRegularExpression; 
-		record.replacement = naptr->pReplacement; 
-	} else 
-#endif
-	{
-		NAPTR_DNS * naptr = (NAPTR_DNS *)&dnsRecord->Data; 
-		record.order       = naptr->order; 
-		record.preference  = naptr->preference; 
-		record.flags       = naptr->GetFlags(); 
-		record.service     = naptr->GetService(); 
-		record.regex       = naptr->GetRegex(); 
-		record.replacement = naptr->GetReplacement(); 
-	}
+  if (PProcess::IsOSVersion(6)) {
+    DNS_NAPTR_DATA * naptr = (DNS_NAPTR_DATA *)&dnsRecord->Data;
+    record.order       = naptr->wOrder; 
+    record.preference  = naptr->wPreference; 
+    record.flags       = naptr->pFlags; 
+    record.service     = naptr->pService; 
+    record.regex       = naptr->pRegularExpression; 
+    record.replacement = naptr->pReplacement; 
+  }
+  else {
+    NAPTR_DNS * naptr = (NAPTR_DNS *)&dnsRecord->Data; 
+    record.order       = naptr->order; 
+    record.preference  = naptr->preference; 
+    record.flags       = naptr->GetFlags(); 
+    record.service     = naptr->GetService(); 
+    record.regex       = naptr->GetRegex(); 
+    record.replacement = naptr->GetReplacement(); 
+  }
 }
+
 
 PDNS::NAPTRRecord * PDNS::NAPTRRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS_RECORD /*results*/)
 {
