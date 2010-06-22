@@ -543,6 +543,7 @@ void PCLI::Broadcast(const PString & message) const
 {
   for (ContextList_t::const_iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
     **iter << message << endl;
+  PTRACE(4, "PCLI\tBroadcast \"" << message << '"');
 }
 
 
