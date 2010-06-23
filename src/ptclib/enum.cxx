@@ -108,6 +108,7 @@ struct NAPTR_DNS {
 
 void ResolveNAPTR(PDNS_RECORD dnsRecord, PDNS::NAPTRRecord & record)
 {
+#ifdef _WIN32
   if (PProcess::IsOSVersion(6)) {
     DNS_NAPTR_DATA * naptr = (DNS_NAPTR_DATA *)&dnsRecord->Data;
     record.order       = naptr->wOrder; 
@@ -117,7 +118,9 @@ void ResolveNAPTR(PDNS_RECORD dnsRecord, PDNS::NAPTRRecord & record)
     record.regex       = naptr->pRegularExpression; 
     record.replacement = naptr->pReplacement; 
   }
-  else {
+  else
+#endif
+  {
     NAPTR_DNS * naptr = (NAPTR_DNS *)&dnsRecord->Data; 
     record.order       = naptr->order; 
     record.preference  = naptr->preference; 
