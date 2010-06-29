@@ -651,8 +651,11 @@ PBoolean PHTTPClientBasicAuthentication::Authorise(AuthObject & authObject) cons
 ////////////////////////////////////////////////////////////////////////////////////
 
 PHTTPClientDigestAuthentication::PHTTPClientDigestAuthentication()
+  : algorithm(NumAlgorithms)
+  , qopAuth(false)
+  , qopAuthInt(false)
+  , stale(false)
 {
-  algorithm = NumAlgorithms;
 }
 
 PHTTPClientDigestAuthentication & PHTTPClientDigestAuthentication::operator =(const PHTTPClientDigestAuthentication & auth)
@@ -666,6 +669,7 @@ PHTTPClientDigestAuthentication & PHTTPClientDigestAuthentication::operator =(co
           
   qopAuth    = auth.qopAuth;
   qopAuthInt = auth.qopAuthInt;
+  stale      = auth.stale;
   cnonce     = auth.cnonce;
   nonceCount.SetValue(auth.nonceCount);
 
@@ -676,6 +680,9 @@ PObject::Comparison PHTTPClientDigestAuthentication::Compare(const PObject & oth
 {
   const PHTTPClientDigestAuthentication * otherAuth = dynamic_cast<const PHTTPClientDigestAuthentication *>(&other);
   if (otherAuth == NULL)
+    return LessThan;
+
+  if (stale || otherAuth->stale)
     return LessThan;
 
   if (algorithm < otherAuth->algorithm)
@@ -694,9 +701,9 @@ PObject::Comparison PHTTPClientDigestAuthentication::Compare(const PObject & oth
   return PHTTPClientAuthentication::Compare(other);
 }
 
-PBoolean PHTTPClientDigestAuthentication::Parse(const PString & _auth, PBoolean proxy)
+PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean proxy)
 {
-  PCaselessString auth =_auth;
+  PCaselessString auth = p_auth;
 
   authRealm.MakeEmpty();
   nonce.MakeEmpty();
@@ -749,6 +756,10 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & _auth, PBoolean 
     qopAuthInt = options.GetStringsIndex("auth-int") != P_MAX_INDEX;
     cnonce = PGloballyUniqueID().AsString();
   }
+
+  PCaselessString staleStr = GetAuthParam(auth, "stale");
+  PTRACE_IF(3, !staleStr.IsEmpty(), "HTTP\tAuthentication contains stale flag \"" << staleStr << '"');
+  stale = staleStr.Find("true") != P_MAX_INDEX;
 
   isProxy = proxy;
   return PTrue;

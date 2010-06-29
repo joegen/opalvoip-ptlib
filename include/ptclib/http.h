@@ -396,6 +396,7 @@ class PHTTPClientDigestAuthentication : public PHTTPClientAuthentication
     const PString & GetNonce() const       { return nonce; }
     Algorithm GetAlgorithm() const         { return algorithm; }
     const PString & GetOpaque() const      { return opaque; }
+    bool GetStale() const                  { return stale; }
 
   protected:
     PString   authRealm;
@@ -403,8 +404,9 @@ class PHTTPClientDigestAuthentication : public PHTTPClientAuthentication
     Algorithm algorithm;
     PString   opaque;
 
-    PBoolean qopAuth;
-    PBoolean qopAuthInt;
+    bool    qopAuth;
+    bool    qopAuthInt;
+    bool    stale;
     PString cnonce;
     mutable PAtomicInteger nonceCount;
 };
