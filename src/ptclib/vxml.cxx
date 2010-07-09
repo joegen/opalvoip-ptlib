@@ -972,7 +972,7 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 {
   PTRACE(4, "VXML\tExecution thread started");
 
-  for (;;) {
+  do {
     // check for user input
     ProcessUserInput();
 
@@ -997,11 +997,8 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
         break;
 
       OnEndDialog();
-
-      if (currentNode == NULL)
-        break;
     }
-  }
+  } while (currentNode != NULL || IsPlaying() || IsRecording());
 
   OnEndSession();
 
@@ -2632,7 +2629,8 @@ PBoolean PVXMLChannel::QueuePlayable(const PString & type,
                                  PINDEX delay, 
                                  PBoolean autoDelete)
 {
-  PTRACE(3, "VXML\tEnqueueing playable " << type << " with arg " << arg << " for playing");
+  PTRACE(3, "VXML\tEnqueueing playable " << type << " with arg " << arg
+         << " for playing, followed by " << delay << "ms silence");
   PVXMLPlayable * item = PFactory<PVXMLPlayable>::CreateInstance(type);
   if (item == NULL) {
     PTRACE(2, "VXML\tCannot find playable of type " << type);
@@ -2674,7 +2672,7 @@ PBoolean PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX del
 
 PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  PTRACE(3, "VXML\tEnqueueing " << data.GetSize() << " bytes for playing");
+  PTRACE(3, "VXML\tEnqueueing " << data.GetSize() << " bytes for playing, followed by " << delay << "ms silence");
   PVXMLPlayableData * item = PFactory<PVXMLPlayable>::CreateInstanceAs<PVXMLPlayableData>("PCM Data");
   if (item == NULL) {
     PTRACE(2, "VXML\tCannot find playable of type 'PCM Data'");
