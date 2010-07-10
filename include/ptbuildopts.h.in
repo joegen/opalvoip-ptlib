@@ -496,7 +496,7 @@
 // OpenLDAP
 //
 
-#ifndef _WIN32_WCE
+#if !defined (_WIN32_WCE) && !defined(P_IPHONEOS)
   #undef P_LDAP 
 #endif
 
@@ -582,7 +582,7 @@
 // Cyrus SASL
 //
 
-#ifndef _WIN32_WCE
+#if !defined (_WIN32_WCE) && !defined(P_IPHONEOS)
   #undef P_SASL 
   #undef P_SASL2
   #undef P_HAS_SASL_SASL_H 
