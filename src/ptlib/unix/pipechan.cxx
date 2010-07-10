@@ -49,11 +49,13 @@
 
 #include "../common/pipechan.cxx"
 
-#if defined(P_MACOSX)
+#if defined(P_MACOSX) && !defined(P_IPHONEOS)
 #  include <crt_externs.h>
 #  define environ (*_NSGetEnviron())
 #elif defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
 #  extern char ** environ;
+#elif defined(P_IPHONEOS)
+char ** environ = NULL;
 #endif
 
 
