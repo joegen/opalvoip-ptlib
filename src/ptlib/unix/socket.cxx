@@ -58,11 +58,14 @@
 #define ifr_netmask ifr_addr
 
 #include <net/if_dl.h>
+
+#if !defined(P_IPHONEOS)
 #include <net/if_types.h>
 #include <net/route.h>
+#endif
 
 #include <netinet/in.h>
-#if !defined(P_QNX)
+#if !defined(P_QNX)  && !defined(P_IPHONEOS)
 #include <netinet/if_ether.h>
 #endif
 
@@ -1068,7 +1071,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   return nTime > 0;
 }
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX) 
+#elif (defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX)) && !defined(P_IPHONEOS)
 
 PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
                      unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric);
