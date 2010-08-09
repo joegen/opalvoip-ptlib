@@ -35,7 +35,11 @@ export PTLIBDIR=@PTLIBDIR@
 
 INSTALL=@INSTALL@
 
+ifeq ($(DEBUG),)
 default :: optshared
+else
+default :: debugshared
+endif
 
 all :: 
 
