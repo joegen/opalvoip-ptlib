@@ -575,7 +575,7 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
   PINDEX contentLength;
   if ( replyMIME.Contains( PHTTP::ContentLengthTag() ) )
     contentLength = ( PINDEX ) replyMIME[ PHTTP::ContentLengthTag() ].AsUnsigned();
-  else if ( ok)
+  else if ( ok )
     contentLength = P_MAX_INDEX;
   else
     contentLength = 0;
@@ -617,8 +617,7 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
   }
 
 
-  if ( ( client.GetLastResponseCode() != PHTTP::RequestOK ) &&
-       ( client.GetLastResponseCode() != PHTTP::InternalServerError ) && 
+  if ( ( client.GetLastResponseCode() != PHTTP::RequestOK ) ||
        ( !ok ) )
   {
     response.SetFault( PSOAPMessage::Server, txt );
