@@ -8,9 +8,9 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 
 VERSION="@PTLIB_VERSION@"
-CCFLAGS=""
-LDFLAGS=""
-LIBS="-lpt"
+CCFLAGS="@STDCCFLAGS@"
+LDFLAGS="@LDFLAGS@"
+LIBS="@ENDLDLIBS@ -lpt"
 LIBDIR="@LIBDIR@"
 PTINSTDIR="@prefix@/share/ptlib"
 MACHTYPE="@MACHTYPE@"

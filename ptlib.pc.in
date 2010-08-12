@@ -11,9 +11,9 @@ objdir=obj_@OSTYPE@_@MACHTYPE@${suffix}
 Name: ptlib
 Description: PT Library
 Version: @PTLIB_VERSION@
-Libs: -L${libdir} -lpt${suffix}
+Libs: @LDFLAGS@ -L${libdir} -lpt${suffix}
 Libs.private: @ENDLDLIBS@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @STDCCFLAGS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
 PTLIB_RESOLVER=@PTLIB_RESOLVER@
