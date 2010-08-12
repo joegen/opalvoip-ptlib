@@ -1592,7 +1592,8 @@ else
                        HAS_SDL=1
                        AC_DEFINE(P_SDL, 1, "SDL found")
                        STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
-                       ENDLDLIBS="$ENDLDLIBS ${SDL_LIBS}"
+                       LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl`"
+                       ENDLDLIBS="$ENDLDLIBS `pkg-config --libs-only-l sdl`"
                       ],[HAS_SDL=])
   fi
 fi
