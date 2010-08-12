@@ -314,9 +314,9 @@ PString PTime::AsString(TimeFormat format, int zone) const
     case RFC1123 :
       return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
     case ShortISO8601 :
-      return AsString("yyyyMMddThhmmssZ");
+      return AsString("yyyyMMddThhmmssZ", zone);
     case LongISO8601 :
-      return AsString("yyyy-MM-dd T hh:mm:ss Z");
+      return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
     default :
       break;
   }
