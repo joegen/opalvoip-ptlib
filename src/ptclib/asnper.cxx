@@ -692,7 +692,7 @@ PBoolean PASN_Choice::DecodePER(PPER_Stream & strm)
 
       tag += numChoices;
 
-      unsigned len;
+      unsigned len = 0;
       if (!strm.LengthDecode(0, INT_MAX, len))
         return PFalse;
 
@@ -952,7 +952,7 @@ PBoolean PPER_Stream::ArrayDecode(PASN_Array & array)
 {
   array.RemoveAll();
 
-  unsigned size;
+  unsigned size = 0;
   if (!array.ConstrainedLengthDecode(*this, size))
     return PFalse;
 
@@ -1178,7 +1178,7 @@ PBoolean PPER_Stream::SmallUnsignedDecode(unsigned & value)
   if (!SingleBitDecode())
     return MultiBitDecode(6, value);      // 10.6.1
 
-  unsigned len;
+  unsigned len = 0;
   if (!LengthDecode(0, INT_MAX, len))  // 10.6.2
     return PFalse;
 
