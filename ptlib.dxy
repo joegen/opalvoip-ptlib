@@ -151,7 +151,7 @@ Implementation of a network sockets abstraction (roughly based on Berkeley socke
 Classes that handle processes, multi-threading and synchronsiation.
   \li PProcess - implements the primary thread of control for a running program
   \li PServiceProcess - implements a "daemon" or "system process"
-  \li PDynaLink - abstraction for dynaic or sharabel libraries, loadable at run-time.
+  \li PDynaLink - abstraction for dynamic or sharabel libraries, loadable at run-time.
   \li PThread - abstracts a thread of control or execution context
   \li PThreadPool - manage a pool of threads for execution.
   \li PSemaphore - synchronisation primitive based on a counter
