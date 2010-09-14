@@ -1035,40 +1035,63 @@ PString PIPSocket::GetGatewayInterface(int version)
 
 PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 {
-  PTextFile procfile;
-  if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
-    return false;
+  table.RemoveAll();
 
   PString strLine;
-  bool ok = procfile.ReadLine(strLine);
-  if (ok)
-    ok = procfile.ReadLine(strLine);
+  PTextFile procfile;
 
-  int nTime = 0;
-  while (ok) {
-    // Ignore heading line or remainder of route line
-    strLine.RightTrim();
-    PStringArray strList = strLine.Tokenise("\t");
-    if (strList.GetSize() < 8)
-      return nTime > 0 ? true : false;
-
-    PString iface = strList[0];
-    unsigned net_addr = strList[1].AsUnsigned(16);
-    unsigned dest_addr = strList[2].AsUnsigned(16);
-    int metric= strList[6].AsInteger(10);
-    unsigned net_mask = strList[7].AsUnsigned(16);
-
-    nTime ++;
-    RouteEntry * entry = new RouteEntry(net_addr);
-    entry->net_mask = net_mask;
-    entry->destination = dest_addr;
-    entry->interfaceName = iface;
-    entry->metric = metric;
-    table.Append(entry);
-    ok = procfile.ReadLine(strLine);
+  if (procfile.Open("/proc/net/route", PFile::ReadOnly) && procfile.ReadLine(strLine)) {
+    // Ignore heading line above
+    while (procfile.ReadLine(strLine)) {
+      char iface[20];
+      uint32_t net_addr, dest_addr, net_mask;
+      int flags, refcnt, use, metric;
+      if (sscanf(strLine, "%s%x%x%x%u%u%u%x",
+                 iface, &net_addr, &dest_addr, &flags, &refcnt, &use, &metric, &net_mask) == 8) {
+        RouteEntry * entry = new RouteEntry(net_addr);
+        entry->net_mask = net_mask;
+        entry->destination = dest_addr;
+        entry->interfaceName = iface;
+        entry->metric = metric;
+        table.Append(entry);
+      }
+    }
   }
 
-  return nTime > 0;
+#if P_HAS_IPV6
+  if (procfile.Open("/proc/net/ipv6_route", PFile::ReadOnly)) {
+    while (procfile.ReadLine(strLine)) {
+      PStringArray tokens = strLine.Tokenise(" \t", false);
+      if (tokens.GetSize() == 10) {
+        // 0 = dest_addr
+        // 2 = src_addr
+        // 4 = next_hop
+        // 5 = metric
+        // 6 = refcnt
+        // 7 = use
+        // 8 = flags
+        // 9 = device name
+
+        BYTE net_addr[16];
+        for (size_t i = 0; i < sizeof(net_addr); ++i)
+          net_addr[i] = tokens[0].Mid(i*2, 2).AsUnsigned(16);
+
+        BYTE dest_addr[16];
+        for (size_t i = 0; i < sizeof(dest_addr); ++i)
+          dest_addr[i] = tokens[4].Mid(i*2, 2).AsUnsigned(16);
+
+        RouteEntry * entry = new RouteEntry(Address(sizeof(net_addr), net_addr));
+        entry->destination = Address(sizeof(dest_addr), dest_addr);
+        entry->interfaceName = tokens[9];
+        entry->metric = tokens[5].AsUnsigned(16);
+        entry->net_mask = Address::GetAny(6);
+        table.Append(entry);
+      }
+    }
+  }
+#endif
+
+  return !table.IsEmpty();
 }
 
 #elif (defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX)) && !defined(P_IPHONEOS)
