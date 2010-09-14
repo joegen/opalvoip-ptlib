@@ -232,6 +232,25 @@ void IPV6Test::Main()
     cout << endl;
   }
   {
+    // test #8b - check if route table contains IPV6 addresses
+    cout << "test #8b: check if route table contains IPV6 addresses";
+
+    PIPSocket::RouteTable rt_table;
+    PIPSocket::GetRouteTable( rt_table );
+
+    // Display the route table
+    cout << endl;
+    cout << "The interface table has " << rt_table.GetSize()
+         <<" entries" << endl;
+
+    for (PINDEX i=0; i < rt_table.GetSize(); i++) {
+      PIPSocket::RouteEntry rt_entry = rt_table[i];
+      cout << i << "\t" << rt_entry.GetNetwork() << "\t" << rt_entry.GetNetMask() << "\t" << rt_entry.GetDestination() << "\t" << rt_entry.GetInterface() << endl;
+    }
+    cout << "Please do manual check ...";
+    cout << endl;
+  }
+  {
     // test #9 - see if URLs decode correctly
     cout << "test #9: Please do manual check if parsing IPV6 URLs works" << endl;
 
