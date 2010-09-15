@@ -240,7 +240,7 @@ void IPV6Test::Main()
 
     // Display the route table
     cout << endl;
-    cout << "The interface table has " << rt_table.GetSize()
+    cout << "The route table has " << rt_table.GetSize()
          <<" entries" << endl;
 
     for (PINDEX i=0; i < rt_table.GetSize(); i++) {
