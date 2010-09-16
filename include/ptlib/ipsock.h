@@ -632,9 +632,6 @@ class PIPSocket : public PSocket
           const Address & addr,
           const Address & mask,
           const PString & macAddr
-#if P_HAS_IPV6
-          , const PString & ip6Addr = PString::Empty()
-#endif
         );
 
         /// Print to specified stream.
@@ -648,16 +645,6 @@ class PIPSocket : public PSocket
         /// Get the address associated with the interface.
         Address GetAddress() const { return ipAddr; }
 
-        PBoolean HasIP6Address() const
-#if ! P_HAS_IPV6
-        { return false;}
-#else
-        { return !ip6Addr.IsEmpty();}
-
-        /// Get the address associated with the interface.
-        Address GetIP6Address() const { return ip6Addr; }
-#endif
-
         /// Get the net mask associated with the interface.
         Address GetNetMask() const { return netMask; }
 
@@ -669,9 +656,6 @@ class PIPSocket : public PSocket
         Address ipAddr;
         Address netMask;
         PString macAddr;
-#if P_HAS_IPV6
-        PString ip6Addr;
-#endif
     };
 
     PARRAY(InterfaceTable, InterfaceEntry);

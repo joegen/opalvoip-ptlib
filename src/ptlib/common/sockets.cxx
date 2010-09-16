@@ -2130,18 +2130,11 @@ PIPSocket::InterfaceEntry::InterfaceEntry()
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
                                           const Address & _addr,
                                           const Address & _mask,
-                                          const PString & _macAddr
-#if P_HAS_IPV6
-                                         ,const PString & _ip6Addr
-#endif
-                                         )
+                                          const PString & _macAddr)
   : name(_name.Trim()),
     ipAddr(_addr),
     netMask(_mask),
     macAddr(_macAddr)
-#if P_HAS_IPV6
-    , ip6Addr(_ip6Addr)
-#endif
 {
 }
 
@@ -2149,10 +2142,6 @@ PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
 void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 {
   strm << ipAddr;
-#if P_HAS_IPV6
-  if (!ip6Addr)
-    strm << " [" << ip6Addr << ']';
-#endif
   if (!macAddr)
     strm << " <" << macAddr << '>';
   if (!name)
