@@ -1706,43 +1706,8 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 #endif
 
 
-// fe800000000000000202e3fffe1ee330 02 40 20 80     eth0
-// 00000000000000000000000000000001 01 80 10 80       lo
-
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
 {
-#if P_HAS_IPV6
-  // build a table of IPV6 interface addresses
-  typedef std::map<PString, PString> IP6ListType;
-  IP6ListType ip6Ifaces;
-  {
-    FILE * file;
-    int dummy;
-    int addr[16];
-    char ifaceName[255];
-    if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
-      while (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %x %x %x %x %255s\n",
-              &addr[0],  &addr[1],  &addr[2],  &addr[3], 
-              &addr[4],  &addr[5],  &addr[6],  &addr[7], 
-              &addr[8],  &addr[9],  &addr[10], &addr[11], 
-              &addr[12], &addr[13], &addr[14], &addr[15], 
-             &dummy, &dummy, &dummy, &dummy, ifaceName) != EOF) {
-        PString addrStr(
-          psprintf("%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
-              addr[0],  addr[1],  addr[2],  addr[3], 
-              addr[4],  addr[5],  addr[6],  addr[7], 
-              addr[8],  addr[9],  addr[10], addr[11], 
-              addr[12], addr[13], addr[14], addr[15]
-          )
-        );
-        PString iface(ifaceName);
-        ip6Ifaces.insert(IP6ListType::value_type(ifaceName, addrStr));
-      }
-      fclose(file);
-    }
-  }
-#endif
-
   PUDPSocket sock;
 
   PBYTEArray buffer;
@@ -1832,18 +1797,8 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
 #endif
                   break;
               }
-#if P_HAS_IPV6
-              PString ip6Addr;
-              IP6ListType::const_iterator r = ip6Ifaces.find(name);
-              if (r != ip6Ifaces.end())
-                ip6Addr = r->second;
-#endif
               if (i >= list.GetSize())
-                list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr
-#if P_HAS_IPV6
-                , ip6Addr
-#endif
-                ));
+                list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr));
             }
           }
         }
@@ -1860,6 +1815,31 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
 #if !defined(P_NETBSD)
   }
 #endif
+
+#if P_HAS_IPV6
+  // build a table of IPV6 interface addresses
+  // fe800000000000000202e3fffe1ee330 02 40 20 80     eth0
+  // 00000000000000000000000000000001 01 80 10 80       lo
+  FILE * file;
+  int dummy;
+  int addr[16];
+  char ifaceName[255];
+  if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
+    while (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %x %x %x %x %255s\n",
+            &addr[0],  &addr[1],  &addr[2],  &addr[3], 
+            &addr[4],  &addr[5],  &addr[6],  &addr[7], 
+            &addr[8],  &addr[9],  &addr[10], &addr[11], 
+            &addr[12], &addr[13], &addr[14], &addr[15], 
+           &dummy, &dummy, &dummy, &dummy, ifaceName) != EOF) {
+      BYTE bytes[16];
+      for (PINDEX i = 0; i < 16; i++)
+        bytes[i] = addr[i];
+      list.Append(PNEW InterfaceEntry(ifaceName, Address(16, bytes), Address::GetAny(6), PString::Empty()));
+    }
+    fclose(file);
+  }
+#endif
+
   return PTrue;
 }
 
