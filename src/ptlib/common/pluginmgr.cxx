@@ -148,7 +148,7 @@ PBoolean PPluginManager::LoadPlugin(const PString & fileName)
 
   PDynaLink *dll = new PDynaLink(fileName);
   if (!dll->IsLoaded()) {
-    PTRACE(4, "PLUGIN\tFailed to open " << fileName);
+    PTRACE(4, "PLUGIN\tFailed to open " << fileName << " error: " << dll->GetLastError());
   }
 
   else {
