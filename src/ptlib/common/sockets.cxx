@@ -2707,67 +2707,39 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 {
 #if defined(_WIN32) && defined(P_QOS)
     
-  DWORD bufferSize = 0;
-  DWORD numProtocols, i;
-  LPWSAPROTOCOL_INFO installedProtocols, qosProtocol;
-
   //Try to find a QOS-enabled protocol
- 
-  PBoolean retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
-                                                            NULL,
-                                                            &bufferSize));
-    
-  if (numProtocols == SOCKET_ERROR && WSAGetLastError()!=WSAENOBUFS) 
-    return retval;
+  DWORD bufferSize = 0;
+  DWORD numProtocols = WSAEnumProtocols(proto != 0 ? &proto : NULL, NULL, &bufferSize);
+  if (!ConvertOSError(numProtocols) && WSAGetLastError() != WSAENOBUFS) 
+    return false;
 
-  installedProtocols = (LPWSAPROTOCOL_INFO)(new BYTE[bufferSize]);
-  retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
-                                                            installedProtocols,
-                                                            &bufferSize));
-  if (numProtocols == SOCKET_ERROR) {
+  LPWSAPROTOCOL_INFO installedProtocols = (LPWSAPROTOCOL_INFO)(new BYTE[bufferSize]);
+  numProtocols = WSAEnumProtocols(proto != 0 ? &proto : NULL, installedProtocols, &bufferSize);
+  if (!ConvertOSError(numProtocols)) {
     delete[] installedProtocols;
-    return retval;
+    return false;
   }
 
-  qosProtocol = installedProtocols;
-  PBoolean haveQoSproto = PFalse;
-
-  for (i=0; i<numProtocols; qosProtocol++, i++) {
+  LPWSAPROTOCOL_INFO qosProtocol = installedProtocols;
+  for (DWORD i = 0; i < numProtocols; qosProtocol++, i++) {
     if ((qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) &&
         (qosProtocol->iSocketType == type) &&
         (qosProtocol->iAddressFamily == af)) {
-      haveQoSproto = PTrue;
+      os_handle = WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
       break;
     }
   }
 
-  if (haveQoSproto) {
-    retval =  ConvertOSError(os_handle = WSASocket(af,
-                                                   type,
-                                                   proto,
-                                                   qosProtocol,
-                                                   0,
-                                                   WSA_FLAG_OVERLAPPED));
-  }
-  else
-  {    
-    retval = ConvertOSError(os_handle = WSASocket (af,
-                                                   type,
-                                                   proto,
-                                                   NULL,
-                                                   0,
-                                                   WSA_FLAG_OVERLAPPED));
-  }
-
   delete[] installedProtocols;
 
-  if (os_handle == INVALID_SOCKET)
-    return retval;
-#else
-  PBoolean retval = ConvertOSError(os_handle = os_socket(af, type, proto));
-#endif
+  if (!IsOpen())
+    os_handle = WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 
-  return retval;
+  return ConvertOSError(os_handle);
+
+#else
+  return ConvertOSError(os_handle = os_socket(af, type, proto));
+#endif
 }
 
 #ifdef _WIN32
