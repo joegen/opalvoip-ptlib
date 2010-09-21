@@ -1064,6 +1064,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
       PStringArray tokens = strLine.Tokenise(" \t", false);
       if (tokens.GetSize() == 10) {
         // 0 = dest_addr
+        // 1 = net_mask (cidr in hex)
         // 2 = src_addr
         // 4 = next_hop
         // 5 = metric
@@ -1084,7 +1085,11 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
         entry->destination = Address(sizeof(dest_addr), dest_addr);
         entry->interfaceName = tokens[9];
         entry->metric = tokens[5].AsUnsigned(16);
-        entry->net_mask = Address::GetAny(6);
+		BYTE net_mask[16];
+		bzero(net_mask, sizeof(net_mask));
+		for(size_t i = 0; i < tokens[1].AsUnsigned(16) / 4; ++i)
+			net_mask[i/2] = (i % 2 == 0) ? 0xf0 : 0xff;
+        entry->net_mask = Address(sizeof(net_mask), net_mask);
         table.Append(entry);
       }
     }
