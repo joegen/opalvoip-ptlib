@@ -704,7 +704,7 @@
 			dependencies = (
 			);
 			name = ptlib;
-			passBuildSettingsInEnvironment = 0;
+			passBuildSettingsInEnvironment = 1;
 			productName = ptlib;
 		};
 /* End PBXLegacyTarget section */
@@ -730,7 +730,7 @@
 			buildSettings = {
 				DEBUG = 1;
 				PRODUCT_NAME = ptlib;
-				PTLIBDIR = $HOME/ptlib;
+				PTLIBDIR = $SOURCE_ROOT;
 			};
 			name = Debug;
 		};
@@ -739,30 +739,21 @@
 			buildSettings = {
 				DEBUG = "";
 				PRODUCT_NAME = ptlib;
-				PTLIBDIR = $HOME/ptlib;
+				PTLIBDIR = $SOURCE_ROOT;
 			};
 			name = Release;
 		};
 		1DEB919408733D9F0010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86;
 			};
 			name = Debug;
 		};
 		1DEB919508733D9F0010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86;
 			};
 			name = Release;
 		};
