@@ -54,15 +54,12 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(Configuration)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\Lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(OutDir)$(Configuration)\</IntDir>
-    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir);C:\tools;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\lib;$(LibraryPath)</LibraryPath>
-    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(SolutionDir);C:\tools;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(SolutionDir)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(SolutionDir)\lib;$(LibraryPath)</LibraryPath>
-    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir);C:\tools;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ptlibs</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ptlibsd</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">ptlibsn</TargetName>
@@ -89,6 +86,16 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
+    <PreBuildEvent>
+      <Command>$(ProjectDir)..\..\..\svn_getrev $(ProjectDir)..\..\..\revision.h.in $(ProjectDir)..\..\..\revision.h.tmp &gt; nul
+fc /w  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
+if not errorlevel 1 exit
+copy  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
+del $(ProjectDir)..\..\..\revision.h.tmp
+echo New revision.h file created.
+</Command>
+      <Message>Setting SVN revision include file.</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -112,6 +119,16 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
+    <PreBuildEvent>
+      <Command>$(ProjectDir)..\..\..\svn_getrev $(ProjectDir)..\..\..\revision.h.in $(ProjectDir)..\..\..\revision.h.tmp &gt; nul
+fc /w  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
+if not errorlevel 1 exit
+copy  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
+del $(ProjectDir)..\..\..\revision.h.tmp
+echo New revision.h file created.
+</Command>
+      <Message>Setting SVN revision include file.</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
     <ClCompile>
@@ -134,6 +151,16 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
+    <PreBuildEvent>
+      <Command>$(ProjectDir)..\..\..\svn_getrev $(ProjectDir)..\..\..\revision.h.in $(ProjectDir)..\..\..\revision.h.tmp &gt; nul
+fc /w  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
+if not errorlevel 1 exit
+copy  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
+del $(ProjectDir)..\..\..\revision.h.tmp
+echo New revision.h file created.
+</Command>
+      <Message>Setting SVN revision include file.</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="assert.cxx">
@@ -817,15 +844,24 @@ configure --no-search --exclude-env=VSNET2008_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLI
     <None Include="..\..\..\configure.ac" />
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Setting SVN revision include file.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)\..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Setting SVN revision include file.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Setting SVN revision include file.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
