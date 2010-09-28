@@ -1366,12 +1366,12 @@ PBoolean PSoundChannelWin32::Abort()
 
     if (hWaveOut != NULL || hWaveIn != NULL) {
       for (PINDEX i = 0; i < buffers.GetSize(); i++) {
-        while (buffers[i].Release() == WAVERR_STILLPLAYING) {
+        do {
           if (hWaveOut != NULL)
             waveOutReset(hWaveOut);
           if (hWaveIn != NULL)
             waveInReset(hWaveIn);
-        }
+        } while (buffers[i].Release() == WAVERR_STILLPLAYING);
       }
     }
 
