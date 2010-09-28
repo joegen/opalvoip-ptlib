@@ -31,22 +31,6 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PSimpleTimer
-
-PINLINE PTimeInterval PSimpleTimer::GetElapsed() const
-  { return PTimer::Tick() - m_startTick; }
-
-PINLINE PTimeInterval PSimpleTimer::GetRemaining() const
-  { return *this - (PTimer::Tick() - m_startTick); }
-
-PINLINE bool PSimpleTimer::HasExpired() const
-  { return (PTimer::Tick() - m_startTick) >= *this; }
-
-PINLINE PSimpleTimer::operator bool() const
-  { return (PTimer::Tick() - m_startTick) < *this; }
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
 #if !defined(_WIN32)
