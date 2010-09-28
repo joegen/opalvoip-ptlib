@@ -261,7 +261,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
     --len;
   }
   else {
-    PTimeInterval startTick = PTimer::Tick();
+    PSimpleTimer timeout(readTimeout);
     for (;;) {
       if (!PeekNamedPipe(hFromChild, NULL, 0, NULL, &count, NULL))
         return ConvertOSError(-2, LastReadError);
@@ -269,7 +269,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
       if (count > 0)
         break;
 
-      if ((PTimer::Tick() - startTick) > readTimeout) {
+      if (timeout.HasExpired()) {
         SetErrorValues(Timeout, EAGAIN, LastReadError);
         return false;
       }
