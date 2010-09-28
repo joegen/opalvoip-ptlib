@@ -963,9 +963,9 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
   PXAbortBlock();   // this assist in clean shutdowns on some systems
 
-  PTimeInterval startWaitTick = PTimer::Tick();
+  PSimpleTimer timeout(maxWait);
   while (!IsTerminated()) {
-    if ((PTimer::Tick() - startWaitTick) > maxWait)
+    if (timeout.HasExpired())
       return false;
 
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
