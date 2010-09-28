@@ -947,45 +947,33 @@ PBoolean PThread::IsTerminated() const
 //
 void PThread::WaitForTermination() const
 {
-  // if thread not started or is the current thread, then nothing to do
-  pthread_t id = PX_threadId;
-  if ((id == 0) || (id == Current()->GetThreadId())) {
-    PTRACE(2, "WaitForTermination short circuited");
-    return;
-  }
-  
-  // this assist in clean shutdowns on some systems
-  PXAbortBlock();   
-
-  // wait for termination
-  while (!IsTerminated()) {
-    Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
-               // CPU usage and also yeilds so other threads can run.
-  }
-
-  PTRACE(5, "WaitForTermination on " << id << " finished");
+  WaitForTermination(PMaxTimeInterval);
 }
 
 
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-  if (this == Current()) {
-    PTRACE(2, "WaitForTermination(t) short circuited");
-    return PTrue;
+  pthread_t id = PX_threadId;
+  if ((id == 0) || (id == Current()->GetThreadId())) {
+    PTRACE(2, "WaitForTermination on 0x" << hex << id << dec << " short circuited");
+    return true;
   }
   
-  PTRACE(6, "PTLib\tWaitForTermination(" << maxWait << ')');
+  PTRACE(6, "WaitForTermination on 0x" << hex << id << dec << " for " << maxWait);
 
   PXAbortBlock();   // this assist in clean shutdowns on some systems
-  PTimer timeout = maxWait;
+
+  PTimeInterval startWaitTick = PTimer::Tick();
   while (!IsTerminated()) {
-    if (timeout == 0)
-      return PFalse;
+    if ((PTimer::Tick() - startWaitTick) > maxWait)
+      return false;
+
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
                // CPU usage and also yeilds so other threads can run.
   }
 
-  return PTrue;
+  PTRACE(6, "WaitForTermination on 0x" << hex << id << dec << " finished");
+  return true;
 }
 
 
