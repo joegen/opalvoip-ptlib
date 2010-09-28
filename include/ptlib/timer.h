@@ -42,6 +42,106 @@ class PThread;
 
 #include <ptlib/notifier.h>
 
+/**A class represeting a simple timer.
+   Unlike the PTimer class this does not support call back operations, nor is
+   it startable and stoppable. It is intended for very simple real time
+   operations where an elapsed time from a starting point is required. For
+   example:
+
+    <code>
+     PSimpleTimer timeout(0, 10); // 10 seconds
+     while (!timeout) {
+       DoStuff();
+     }
+    </code>
+  */
+class PSimpleTimer : public PTimeInterval
+{
+  PCLASSINFO(PSimpleTimer, PTimeInterval);
+
+  public:
+  /**@name Construction */
+  //@{
+    /** Create a new timer object which will be expired the specified
+        time interval after "now" in real time.
+      */
+    PSimpleTimer(
+      long milliseconds = 0,  ///< Number of milliseconds for timer.
+      int seconds = 0,        ///< Number of seconds for timer.
+      int minutes = 0,        ///< Number of minutes for timer.
+      int hours = 0,          ///< Number of hours for timer.
+      int days = 0            ///< Number of days for timer.
+    );
+    PSimpleTimer(
+      const PTimeInterval & time    ///< New time interval for timer.
+    );
+    PSimpleTimer(
+      const PSimpleTimer & timer    ///< Timer to copy.
+    );
+
+    /** Restart the timer using the specified time value. It will be expired
+        the specified time interval after "now" in real time.
+
+       @return
+       reference to the timer.
+     */
+    PSimpleTimer & operator=(
+      DWORD milliseconds            ///< New time interval for timer.
+    );
+    PSimpleTimer & operator=(
+      const PTimeInterval & time    ///< New time interval for timer.
+    );
+    PSimpleTimer & operator=(
+      const PSimpleTimer & timer          ///< New time interval for timer.
+    );
+  //@}
+
+  /**@name Control functions */
+  //@{
+    /** Set the value of the time interval. The time interval, in milliseconds,
+       is the sum of all of the parameters. For example all of the following
+       are equivalent:
+<pre><code>
+              SetInterval(120000)
+              SetInterval(60000, 60)
+              SetInterval(60000, 0, 1)
+              SetInterval(0, 60, 1)
+              SetInterval(0, 0, 2)
+</code></pre>
+
+       The timer will be expired the specified time interval after "now" in
+       real time.
+     */
+    virtual void SetInterval(
+      PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
+      long seconds = 0,         ///< Number of seconds for interval.
+      long minutes = 0,         ///< Number of minutes for interval.
+      long hours = 0,           ///< Number of hours for interval.
+      int days = 0              ///< Number of days for interval.
+    );
+
+    /**Return the real time elapsed since instantiation.
+      */
+    PTimeInterval GetElapsed() const;
+
+    /**Return the real time remaining before expiry.
+      */
+    PTimeInterval GetRemaining() const;
+
+    /**Indicate timer has expired.
+      */
+    bool HasExpired() const;
+
+    /**Indicate timer has not expired.
+      */
+    operator bool() const;
+  //@}
+
+  protected:
+    PTimeInterval m_startTick;
+};
+
+
 /**
    A class representing a system timer. The time interval ancestor value is
    the amount of time left in the timer.
