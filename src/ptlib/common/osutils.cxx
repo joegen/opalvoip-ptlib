@@ -631,8 +631,70 @@ void PDirectory::CloneContents(const PDirectory * d)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTimer
+// PSimpleTimer
 
+PSimpleTimer::PSimpleTimer(long milliseconds,
+                           int seconds,
+                           int minutes,
+                           int hours,
+                           int days)
+  : PTimeInterval(milliseconds, seconds, minutes, hours, days)
+  , m_startTick(PTimer::Tick())
+{
+}
+
+
+PSimpleTimer::PSimpleTimer(const PTimeInterval & time)
+  : PTimeInterval(time)
+  , m_startTick(PTimer::Tick())
+{
+}
+
+
+PSimpleTimer::PSimpleTimer(const PSimpleTimer & timer)
+  : PTimeInterval(timer)
+  , m_startTick(PTimer::Tick())
+{
+}
+
+
+PSimpleTimer & PSimpleTimer::operator=(DWORD milliseconds)
+{
+  PTimeInterval::operator=(milliseconds);
+  m_startTick = PTimer::Tick();
+  return *this;
+}
+
+
+PSimpleTimer & PSimpleTimer::operator=(const PTimeInterval & time)
+{
+  PTimeInterval::operator=(time);
+  m_startTick = PTimer::Tick();
+  return *this;
+}
+
+
+PSimpleTimer & PSimpleTimer::operator=(const PSimpleTimer & timer)
+{
+  PTimeInterval::operator=(timer);
+  m_startTick = PTimer::Tick();
+  return *this;
+}
+
+
+void PSimpleTimer::SetInterval(PInt64 milliseconds,
+                               long seconds,
+                               long minutes,
+                               long hours,
+                               int days)
+{
+  PTimeInterval::SetInterval(milliseconds, seconds, minutes, hours, days);
+  m_startTick = PTimer::Tick();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimer
 
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : m_resetTime(millisecs, seconds, minutes, hours, days)
