@@ -128,11 +128,15 @@ class PSimpleTimer : public PTimeInterval
       */
     PTimeInterval GetRemaining() const;
 
+    /**Indicate timer has not expired.
+      */
+    bool IsRunning() const;
+
     /**Indicate timer has expired.
       */
     bool HasExpired() const;
 
-    /**Indicate timer has not expired.
+    /**Indicate timer has expired.
       */
     operator bool() const;
   //@}
