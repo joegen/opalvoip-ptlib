@@ -182,6 +182,25 @@ PINLINE int PTime::GetTimeZone()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PSimpleTimer
+
+PINLINE PTimeInterval PSimpleTimer::GetElapsed() const
+  { return PTimer::Tick() - m_startTick; }
+
+PINLINE PTimeInterval PSimpleTimer::GetRemaining() const
+  { return *this - (PTimer::Tick() - m_startTick); }
+
+PINLINE bool PSimpleTimer::IsRunning() const
+  { return (PTimer::Tick() - m_startTick) < *this; }
+
+PINLINE bool PSimpleTimer::HasExpired() const
+  { return (PTimer::Tick() - m_startTick) >= *this; }
+
+PINLINE PSimpleTimer::operator bool() const
+  { return HasExpired(); }
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
 PINLINE PBoolean PTimer::IsRunning() const
