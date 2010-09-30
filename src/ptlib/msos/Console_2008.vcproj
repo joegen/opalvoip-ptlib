@@ -8971,7 +8971,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8981,7 +8982,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -8991,7 +8993,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9001,7 +9004,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9011,7 +9015,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9021,7 +9026,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9031,7 +9037,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9041,7 +9048,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9051,7 +9059,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9061,7 +9070,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9071,7 +9081,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9081,7 +9092,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9091,7 +9103,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9101,7 +9114,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
@@ -9111,7 +9125,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="copy $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						AdditionalDependencies="$(InputDir).svn\entries"
 						Outputs="$(InputDir)revision.h"
 					/>
 				</FileConfiguration>
