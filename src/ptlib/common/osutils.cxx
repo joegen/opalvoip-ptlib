@@ -1151,16 +1151,22 @@ PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
   while (*spec != '\0') {
     if (*spec == '-')
       optionLetters += ' ';
-    else
+    else {
+      PAssert(optionLetters.Find(*spec) == P_MAX_INDEX, "Multiple occurrences of same option letter");
       optionLetters += *spec++;
+    }
+
     if (*spec == '-') {
       const char * base = ++spec;
       while (*spec != '\0' && *spec != '.' && *spec != ':' && *spec != ';')
         spec++;
-      optionNames[codeCount] = PString(base, spec-base);
+      PString newOpt(base, spec-base);
+      PAssert(optionNames.GetValuesIndex(newOpt) == P_MAX_INDEX, "Multiple occurrences of same option string");
+      optionNames[codeCount] = newOpt;
       if (*spec == '.')
         spec++;
     }
+
     if (*spec == ':' || *spec == ';') {
       canHaveOptionString.SetSize(codeCount+1);
       canHaveOptionString[codeCount] = *spec == ':' ? 2 : 1;
