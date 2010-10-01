@@ -87,14 +87,10 @@
     </ResourceCompile>
     <Lib />
     <PreBuildEvent>
-      <Command>$(ProjectDir)..\..\..\svn_getrev $(ProjectDir)..\..\..\revision.h.in $(ProjectDir)..\..\..\revision.h.tmp &gt; nul
-fc /w  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
-if not errorlevel 1 exit
-copy  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
-del $(ProjectDir)..\..\..\revision.h.tmp
-echo New revision.h file created.
-</Command>
-      <Message>Setting SVN revision include file.</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,14 +116,10 @@ echo New revision.h file created.
     </ResourceCompile>
     <Lib />
     <PreBuildEvent>
-      <Command>$(ProjectDir)..\..\..\svn_getrev $(ProjectDir)..\..\..\revision.h.in $(ProjectDir)..\..\..\revision.h.tmp &gt; nul
-fc /w  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
-if not errorlevel 1 exit
-copy  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
-del $(ProjectDir)..\..\..\revision.h.tmp
-echo New revision.h file created.
-</Command>
-      <Message>Setting SVN revision include file.</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
@@ -152,14 +144,10 @@ echo New revision.h file created.
     </ResourceCompile>
     <Lib />
     <PreBuildEvent>
-      <Command>$(ProjectDir)..\..\..\svn_getrev $(ProjectDir)..\..\..\revision.h.in $(ProjectDir)..\..\..\revision.h.tmp &gt; nul
-fc /w  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
-if not errorlevel 1 exit
-copy  $(ProjectDir)..\..\..\revision.h.tmp $(ProjectDir)..\..\..\revision.h &gt; nul
-del $(ProjectDir)..\..\..\revision.h.tmp
-echo New revision.h file created.
-</Command>
-      <Message>Setting SVN revision include file.</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -844,24 +832,18 @@ configure --no-search --exclude-env=VSNET2008_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLI
     <None Include="..\..\..\configure.ac" />
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-      </Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-      </Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-      </Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Checking SVN revision include file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Checking SVN revision include file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Checking SVN revision include file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory).svn\entries</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory).svn\entries</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory).svn\entries</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
