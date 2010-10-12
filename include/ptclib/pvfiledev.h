@@ -73,7 +73,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 
     /** Destroy video input device.
     */
-    ~PVideoInputDevice_YUVFile();
+    virtual ~PVideoInputDevice_YUVFile();
 
 
     /**Open the device given the device name.
@@ -248,7 +248,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
 
     /** Destroy video output device.
      */
-    ~PVideoOutputDevice_YUVFile();
+    virtual ~PVideoOutputDevice_YUVFile();
 
     /**Get a list of all of the drivers available.
       */
