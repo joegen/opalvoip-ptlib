@@ -1551,6 +1551,19 @@ bool PVideoInputDevice::FlowControl(const void * /*flowData*/)
     return false;
 }
 
+
+bool PVideoInputDevice::SetCaptureMode(unsigned)
+{
+  return false;
+}
+
+
+int PVideoInputDevice::GetCaptureMode() const
+{
+  return -1;
+}
+
+
 PBoolean PVideoOutputDevice::SetFrameData(
       unsigned x,
       unsigned y,
