@@ -790,16 +790,16 @@ class PVideoOutputDevice : public PVideoDevice
       const BYTE * data,
       PBoolean endFrame,
       unsigned flags,
-	  const void * mark
+      const void * mark
     );
 
-	/**Allow the outputdevice decide whether the 
-		decoder should ignore decode hence not render
-		any output. 
+    /**Allow the outputdevice decide whether the 
+        decoder should ignore decode hence not render
+        any output. 
 
-		Returns: false if to decode and render.
-	  */
-	virtual PBoolean DisableDecode();
+        Returns: false if to decode and render.
+      */
+    virtual PBoolean DisableDecode();
 
     /**Get the position of the output device, where relevant. For devices such as
        files, this always returns zeros. For devices such as Windows, this is the
@@ -1036,10 +1036,10 @@ class PVideoInputDevice : public PVideoDevice
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
 
-	/**Get the devices video Input controls
-		By Default return NULL;
-	  */
-	virtual PVideoInputControl * GetVideoInputControls();
+    /**Get the devices video Input controls
+        By Default return NULL;
+      */
+    virtual PVideoInputControl * GetVideoInputControls();
 
     /**Open the device given the device name.
       */
@@ -1096,6 +1096,25 @@ class PVideoInputDevice : public PVideoDevice
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual PBoolean TestAllFormats() = 0;
+
+    /**Set the capture modes for implementations that support them.
+       For example with Video For Windows, this is used to select picture (0)
+       or video (1) modes.
+
+       In picture-mode the implementation requests a single frame from the
+       connected camera device. The camera device then does nothing until the
+       frame has been processed and the next is requested.
+
+       In video-mode the camera continuously sends new frames.
+
+       The default implementation does nothing but returns PFalse.
+      */
+    virtual bool SetCaptureMode(unsigned mode);
+
+    /**Returns the current capture mode. See SetCaptureMode() for more details.
+       A return value of -1 indicates an error or the mode is not supported.
+    */
+    virtual int GetCaptureMode() const;
 };
 
 
@@ -1189,3 +1208,4 @@ class PVideoFont : public PObject
 #endif   // PTLIB_PVIDEOIO_H
 
 // End Of File ///////////////////////////////////////////////////////////////
+
