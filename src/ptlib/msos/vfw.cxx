@@ -82,8 +82,6 @@ BOOL VFWAPI capGetDriverDescriptionA (WORD wDriverIndex, LPSTR lpszName,
 #endif // __MINGW32
 
 
-#define STEP_GRAB_CAPTURE 1
-
 
 /**This class defines a video input device.
  */
@@ -98,7 +96,8 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
 
     /**Close the video input device on destruction.
       */
-    ~PVideoInputDevice_VideoForWindows() { Close(); }
+    ~PVideoInputDevice_VideoForWindows();
+
 
     /** Is the device a camera, and obtain video
      */
@@ -203,6 +202,10 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
      */
     virtual PBoolean TestAllFormats();
 
+    virtual bool SetCaptureMode(unsigned mode);
+    virtual int GetCaptureMode() const { return useVideoMode; }
+
+
   protected:
 
    /**Check the hardware can do the asked for size.
@@ -226,7 +229,8 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     PMutex        operationMutex;
 
     PSyncPoint    frameAvailable;
-    LPBYTE        lastFramePtr;
+    bool          useVideoMode;
+    LPBYTE        lastFrameData;
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
     bool          isCapturingNow;
@@ -403,10 +407,70 @@ PVideoInputDevice_VideoForWindows::PVideoInputDevice_VideoForWindows()
 {
   captureThread = NULL;
   hCaptureWindow = NULL;
-  lastFramePtr = NULL;
   lastFrameSize = 0;
   isCapturingNow = PFalse;
+
+  useVideoMode    = PFalse;
+  lastFrameData   = NULL;
 }
+
+
+PVideoInputDevice_VideoForWindows::~PVideoInputDevice_VideoForWindows()
+{
+  if(lastFrameData)
+    delete[] lastFrameData;
+  Close();
+}
+
+
+bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
+{
+  useVideoMode = mode != 0;
+
+  // Do nothing if we are currently capturing (we don't support switching between picture- and video-mode during a capture).
+  if(IsCapturing())
+    return false;
+
+  // Set the callback function for complete frames
+  BOOL result;
+  if (useVideoMode)
+    result = capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler);
+  else
+    result = capSetCallbackOnFrame(hCaptureWindow, VideoHandler);
+
+  if (!result) {
+    lastError = ::GetLastError();
+    PTRACE(1, "PVidInp\tFailed to set callback on VfW - " << lastError);
+    return false;
+  }
+
+  CAPTUREPARMS parms;
+  memset(&parms, 0, sizeof(parms));
+  if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+    lastError = ::GetLastError();
+    PTRACE(1, "PVidInp\tcapCaptureGetSetup: failed - " << lastError);
+    return PFalse;
+  }
+
+  // For video mode we must tell VfW to work in a separate background thread, or our application will lock otherwise.
+  if (useVideoMode) {
+    parms.fYield = TRUE;
+    parms.dwIndexSize = 324000;
+  }
+  else {
+    parms.fYield = FALSE;
+    parms.dwIndexSize = 0;
+  }
+
+  if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+    lastError = ::GetLastError();
+    PTRACE(1, "PVidInp\tcapCaptureSetSetup: failed - " << lastError);
+    return false;
+  }
+
+  return true;
+}
+
 
 PBoolean PVideoInputDevice_VideoForWindows::Open(const PString & devName, PBoolean startImmediate)
 {
@@ -481,20 +545,24 @@ PBoolean PVideoInputDevice_VideoForWindows::Start()
   if (IsCapturing())
     return PTrue;
 
-#if STEP_GRAB_CAPTURE
-  isCapturingNow = PTrue;
-  return capGrabFrameNoStop(hCaptureWindow);
-#else
+  if (!useVideoMode) {
+    isCapturingNow = true;
+    return capGrabFrameNoStop(hCaptureWindow);
+  }
+
   if (capCaptureSequenceNoFile(hCaptureWindow)) {
     PCapStatus status(hCaptureWindow);
     isCapturingNow = status.fCapturingNow;
+
+    // As initializing the camera takes some time, and video-mode runs in a background thread, we need to wait for the first frame here.
+    // Otherwise "GetFrameDataNoDelay" might time-out.
+    frameAvailable.Wait();
     return isCapturingNow;
   }
 
   lastError = ::GetLastError();
   PTRACE(1, "PVidInp\tcapCaptureSequenceNoFile: failed - " << lastError);
   return PFalse;
-#endif
 }
 
 
@@ -505,16 +573,18 @@ PBoolean PVideoInputDevice_VideoForWindows::Stop()
   if (!IsCapturing())
     return PFalse;
   isCapturingNow = PFalse;
-#if STEP_GRAB_CAPTURE
-  return IsOpen() && frameAvailable.Wait(1000);
-#else
+
+  // If using the picture mode, we just need to wait for the very next frame ...
+  if (!useVideoMode)
+    return IsOpen() && frameAvailable.Wait(1000);
+
+  // ... otherwise we need to explicitely stop capturing.
   if (capCaptureStop(hCaptureWindow))
     return PTrue;
 
   lastError = ::GetLastError();
   PTRACE(1, "PVidInp\tcapCaptureStop: failed - " << lastError);
   return PFalse;
-#endif
 }
 
 
@@ -601,6 +671,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
   // keep current (default) framerate if 0==frameRate   
   if (0 != frameRate)
     parms.dwRequestMicroSecPerFrame = 1000000 / frameRate;
+
   parms.fMakeUserHitOKToCapture = PFalse;
   parms.wPercentDropForError = 100;
   parms.fCaptureAudio = PFalse;
@@ -760,11 +831,11 @@ PBoolean PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, P
 
   lastFrameMutex.Wait();
 
-  if (lastFramePtr != NULL) {
+  if (lastFrameData != NULL) {
     if (NULL != converter)
-      retval = converter->Convert(lastFramePtr, buffer, bytesReturned);
+      retval = converter->Convert(lastFrameData, buffer, bytesReturned);
     else {
-      memcpy(buffer, lastFramePtr, lastFrameSize);
+      memcpy(buffer, lastFrameData, lastFrameSize);
       if (bytesReturned != NULL)
         *bytesReturned = lastFrameSize;
       retval = true;
@@ -773,10 +844,8 @@ PBoolean PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, P
 
   lastFrameMutex.Signal();
 
-#if STEP_GRAB_CAPTURE
-  if (isCapturingNow)
+  if (!useVideoMode && isCapturingNow)
     capGrabFrameNoStop(hCaptureWindow);
-#endif
 
   return retval;
 }
@@ -814,10 +883,28 @@ LRESULT PVideoInputDevice_VideoForWindows::HandleVideo(LPVIDEOHDR vh)
 {
   if ((vh->dwFlags&(VHDR_DONE|VHDR_KEYFRAME)) != 0) {
     lastFrameMutex.Wait();
-    lastFramePtr = vh->lpData;
-    lastFrameSize = vh->dwBytesUsed;
-    if (lastFrameSize == 0)
-      lastFrameSize = vh->dwBufferLength;
+
+    /**
+    * As in video mode VfW captures in background, and hence might override the buffer of the current frame,
+    * we must copy the frame's data into a separate buffer.
+    */
+
+    // If the size of the current frame is same as of the old ...
+    //    -> ... simply copy the data of the new frame into the buffer ...
+    if(lastFrameSize == vh->dwBytesUsed)
+      memcpy(lastFrameData, vh->lpData, lastFrameSize);
+    else {
+      // ... otherwise delete the old buffer ...
+      if (lastFrameSize)
+        delete[] lastFrameData;
+
+      // ... and allocate a new one.
+      lastFrameSize = vh->dwBytesUsed;
+      lastFrameData = new BYTE[lastFrameSize];
+
+      memcpy(lastFrameData, vh->lpData, lastFrameSize);
+    }
+
     lastFrameMutex.Signal();
     frameAvailable.Signal();
   }
@@ -842,13 +929,15 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 
   capSetCallbackOnError(hCaptureWindow, ErrorHandler);
 
-#if STEP_GRAB_CAPTURE
-  if (!capSetCallbackOnFrame(hCaptureWindow, VideoHandler)) { //} balance braces
-#else
-  if (!capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler)) {
-#endif
+  BOOL result = FALSE;
+  if (useVideoMode)
+    result = capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler);
+  else
+    result = capSetCallbackOnFrame(hCaptureWindow, VideoHandler);
+
+  if (!result) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapSetCallbackOnVideoStream failed - " << lastError);
+    PTRACE(1, "PVidInp\tFailed to set callback on VfW - " << lastError);
     return PFalse;
   }
 
