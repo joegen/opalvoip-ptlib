@@ -111,10 +111,12 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PS
   } while (dir.Next());
 }
 
+
 void PPluginManager::AddPluginDirs(PString dirs)
 {
-  additionalPluginDirs = PATH_SEP + dirs;
+  additionalPluginDirs += PATH_SEP + dirs;
 }
+
 
 PStringArray PPluginManager::GetPluginDirs()
 {
