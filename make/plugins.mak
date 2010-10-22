@@ -65,7 +65,7 @@ $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	@mkdir -p $(OBJDIR)
 	$(Q_CC)$(CXX) $(STDCCFLAGS) $(CXXFLAGS) \
 	$(LDSOPTS) $< \
-	$(PLUGIN_LIBS) \
+	$(PLUGIN_LIBS) $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/libpt.so \
 	$(LDFLAGS) \
 	-o $@
 
