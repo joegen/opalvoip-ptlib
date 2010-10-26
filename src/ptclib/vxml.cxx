@@ -2150,11 +2150,14 @@ PBoolean PVXMLSession::TraverseTransfer()
 {
   PXMLElement* element = (PXMLElement *) currentNode;
   if (element->HasSubObjects()) {
-    currentNode = element->GetElement(element->GetSize() - 1);
-    ProcessNode();
-    // If queued up something to play, wait for it finish before we do the transfer.
-    while (IsPlaying() && !m_abortVXML)
-      waitForEvent.Wait();
+    // Process internal nodes before we do the transfer.
+    for (PINDEX i = 0; i < element->GetSize(); ++i) {
+      currentNode = element->GetElement(i);
+      ProcessNode();
+      // If queued up something to play, wait for it finish.
+      while (IsPlaying() && !m_abortVXML)
+        waitForEvent.Wait();
+    }
   }
 
   bool bridged = (element->GetAttribute("bridge") *= "true");
