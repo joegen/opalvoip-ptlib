@@ -51,6 +51,9 @@
 PGloballyUniqueID::PGloballyUniqueID()
   : PBYTEArray(GUID_SIZE)
 {
+  static PMutex mutex;
+  PWaitAndSignal wait(mutex);
+
   // Want time of UTC in 0.1 microseconds since 15 Oct 1582.
   PInt64 timestamp;
   static PInt64 deltaTime = PInt64(10000000)*24*60*60*
