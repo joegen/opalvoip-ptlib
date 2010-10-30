@@ -207,7 +207,6 @@ class PHashTable : public PCollection
   //@}
 
 
-  protected:
   /**@name Overrides from class PContainer */
   //@{
     /**This function is meaningless for hash table. The size of the collection

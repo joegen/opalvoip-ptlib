@@ -386,6 +386,30 @@ PINDEX PSafeCollection::GetSize() const
 }
 
 
+void PSafeCollection::CopySafeCollection(PCollection * other)
+{
+  DisallowDeleteObjects();
+
+  for (PINDEX i = 0; i < other->GetSize(); ++i) {
+    PSafeObject * obj = dynamic_cast<PSafeObject *>(other->GetAt(i));
+    if (obj != NULL && obj->SafeReference())
+      collection->Append(obj);
+  }
+}
+
+
+void PSafeCollection::CopySafeDictionary(PAbstractDictionary * other)
+{
+  DisallowDeleteObjects();
+
+  for (PINDEX i = 0; i < other->GetSize(); ++i) {
+    PSafeObject * obj = dynamic_cast<PSafeObject *>(&other->AbstractGetDataAt(i));
+    if (obj != NULL && obj->SafeReference())
+      collection->Insert(other->AbstractGetKeyAt(i), obj);
+  }
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 PSafePtrBase::PSafePtrBase(PSafeObject * obj, PSafetyMode mode)
