@@ -397,15 +397,21 @@ class PSafeCollection : public PObject
   //@}
 
   protected:
+    void CopySafeCollection(PCollection * other);
+    void CopySafeDictionary(PAbstractDictionary * other);
     void SafeRemoveObject(PSafeObject * obj);
     PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
 
-    PCollection  *     collection;
+    PCollection      * collection;
     mutable PMutex     collectionMutex;
-    PBoolean               deleteObjects;
+    bool               deleteObjects;
     PList<PSafeObject> toBeRemoved;
     PMutex             removalMutex;
     PTimer             deleteObjectsTimer;
+
+  private:
+    PSafeCollection(const PSafeCollection & other) : PObject(other) { }
+    void operator=(const PSafeCollection &) { }
 
   friend class PSafePtrBase;
 };
@@ -918,6 +924,30 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
     PSafeColl()
       : PSafeCollection(new Coll)
       { }
+
+    /**Copy constructor for safe collection.
+       Note the left hand side will always have DisallowDeleteObjects() set.
+      */
+    PSafeColl(const PSafeColl & other)
+      : PSafeCollection(new Coll)
+    {
+      PWaitAndSignal lock2(other.collectionMutex);
+      CopySafeCollection(dynamic_cast<Coll *>(other.collection));
+    }
+
+    /**Assign one safe collection to another.
+       Note the left hand side will always have DisallowDeleteObjects() set.
+      */
+    PSafeColl & operator=(const PSafeColl & other)
+    {
+      if (&other != this) {
+        RemoveAll(true);
+        PWaitAndSignal lock1(collectionMutex);
+        PWaitAndSignal lock2(other.collectionMutex);
+        CopySafeCollection(dynamic_cast<Coll *>(other.collection));
+      }
+      return *this;
+    }
   //@}
 
   /**@name Operations */
@@ -1049,6 +1079,30 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       */
     PSafeDictionaryBase()
       : PSafeCollection(new Coll) { }
+
+    /**Copy constructor for safe collection.
+       Note the left hand side will always have DisallowDeleteObjects() set.
+      */
+    PSafeDictionaryBase(const PSafeDictionaryBase & other)
+      : PSafeCollection(new Coll)
+    {
+      PWaitAndSignal lock2(other.collectionMutex);
+      CopySafeDictionary(dynamic_cast<Coll *>(other.collection));
+    }
+
+    /**Assign one safe collection to another.
+       Note the left hand side will always have DisallowDeleteObjects() set.
+      */
+    PSafeDictionaryBase & operator=(const PSafeDictionaryBase & other)
+    {
+      if (&other != this) {
+        RemoveAll(true);
+        PWaitAndSignal lock1(collectionMutex);
+        PWaitAndSignal lock2(other.collectionMutex);
+        CopySafeDictionary(dynamic_cast<Coll *>(other.collection));
+      }
+      return *this;
+    }
   //@}
 
   /**@name Operations */
