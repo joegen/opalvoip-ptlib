@@ -59,44 +59,36 @@
     DEFINE_GUID(CLSID_CameraName, 0xCB998A05, 0x122C, 0x4166, 0x84, 0x6A, 0x93, 0x3E, 0x4D, 0x7E, 0x3C, 0x86 );
   #endif
 
-  #undef INTERFACE
-  #define INTERFACE ISampleGrabberCB
-  DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
-  {
-    STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
-    STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
-  };
-
-  #undef INTERFACE
-  #define INTERFACE ISampleGrabber
-
-  DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
-  {
-    STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
-    STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-    STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-    STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
-    STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
-    STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
-    STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
-  };
-
 #else // _WIN32_WCE
 
-  // Use this to avoid compile error in Qedit.h with DirectX SDK
-  #define __IDxtCompositor_INTERFACE_DEFINED__
-  #define __IDxtAlphaSetter_INTERFACE_DEFINED__
-  #define __IDxtJpeg_INTERFACE_DEFINED__
-  #define __IDxtKey_INTERFACE_DEFINED__
-
-  #include <Qedit.h>
   #pragma warning(disable:4201)
-
   #include <Ks.h>
   #include <KsMedia.h>
   #pragma warning(default:4201)
 
 #endif // _WIN32_WCE
+
+#undef INTERFACE
+#define INTERFACE ISampleGrabberCB
+DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
+{
+STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
+STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
+};
+
+#undef INTERFACE
+#define INTERFACE ISampleGrabber
+
+DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
+{
+STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
+STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
+STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
+STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
+STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
+};
 
 
 #ifdef _MSC_VER
@@ -490,8 +482,6 @@ public:
   STDMETHODIMP BufferCB( double dblSampleTime, BYTE * buffer, long size )
   {
 
-    PTRACE(6,"DShow\tBuffer Received " << size);
-
     if (cInd < skipFrames) {
       cInd++;
       PTRACE(5,"DShow\tFrame Skipped.");
@@ -504,7 +494,6 @@ public:
       return S_OK;
 
     if (bufferSize != size) {
-      PTRACE(5,"DShow\tResizing buffer from " << bufferSize << " to " << size );
       bufferSize = size;
       if (pBuffer != NULL)
         delete pBuffer;
@@ -551,6 +540,74 @@ protected:
   PSyncPoint frameready;
   PINDEX cInd;
 
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Sorting functions
+
+class inputframes {
+ public:
+    inputframes(unsigned W, unsigned H, unsigned R, PString C)
+        : width(W), height(H), rate(R), colour(C)
+    {};
+    unsigned width;
+    unsigned height;
+    unsigned rate;
+    PString colour;
+};
+
+class frameSort {
+  public:
+     bool operator()(inputframes*& f1, inputframes*& f2) {
+          if (f1->width > f2->width) 
+              return true;
+          else if (f1->width == f2->width && f1->height > f2->height)
+              return true;
+          else 
+              return false;
+     }
+};
+
+class frameMatch {
+  public:
+     bool operator()(inputframes*& f1, inputframes*& f2) {
+          return (f1->width == f2->width) && (f1->height == f2->height);
+     }
+};
+
+class frameSizes : public std::vector<inputframes*>
+{
+  public:
+     ~frameSizes()
+     {
+          for (iterator pItem=begin(); pItem != end(); ++pItem)
+               delete *pItem;
+     }
+
+     void ReIndex() {
+         sort(begin(), end(), frameSort());
+         unique(begin(), end(), frameMatch());
+
+         unsigned lastWidth = 2000;
+         int pos = 0;
+         iterator r = begin();
+         while (r != end()) {
+            const inputframes* frame = *r;
+            if (frame->width > lastWidth) 
+                break;
+            else 
+                lastWidth = frame->width;
+            ++pos;
+            ++r;
+         }
+
+         int sz = size();
+         PINDEX i = sz-1;
+         while (i > pos-1) {
+           erase(begin()+i);
+           --i;
+         }
+     }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -930,6 +987,7 @@ endcontroltest:
     return FALSE;
   }
 
+  frameSizes fsizes;
   if (iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS)) {
     for (int iFormat = 0; iFormat < iCount; iFormat++)
     {
@@ -958,6 +1016,16 @@ endcontroltest:
         }
       }
     }
+	// Resort so we have unique sizes from largest to smallest
+	fsizes.ReIndex(); 
+	for (std::vector<inputframes*>::iterator r = fsizes.begin(); r != fsizes.end(); ++r) {
+	 inputframes* f = *r;
+	   PVideoFrameInfo cap;
+	   cap.SetFrameSize(f->width,f->height);
+	   cap.SetFrameRate(f->rate);
+	   cap.SetColourFormat(f->colour);
+	   caps->framesizes.push_back(cap);
+	}
   }
 
   SAFE_RELEASE(t_pCC);
@@ -1047,7 +1115,9 @@ PBoolean PVideoInputDevice_DirectShow2::SetVideoFormat(IPin * pin) {
               hr = pConfig->SetFormat(mt);
 
               if (SUCCEEDED(hr)) {
-                PTRACE(4,"DShow\tWebcam Output Format Set to " << format);
+				pBufferSize = CalculateFrameBytes(frameWidth, frameHeight, format);
+                PTRACE(4,"DShow\tDShow\tWebcam Output Format Set to " << format 
+                                   << " Buffer size changed to " << pBufferSize);
                 success = TRUE;
                 break;
               } else {
@@ -1204,24 +1274,15 @@ PBoolean PVideoInputDevice_DirectShow2::Open(
 
   hr = m_pCC->GetRange(CameraControl_Pan, &info.min, &info.max, &info.step, &info.def, &info.flags);
   if (FAILED(hr)) {
-    PTRACE(3,"DShow\tWebCam " << deviceName << " does not support Pan. Controls DISABLED");
-    SAFE_RELEASE(m_pCC);
-    m_pCC = NULL;
-    goto endcontroltest;
+	PTRACE(4,"DShow\tWebCam " << deviceName << " does not support Pan. Controls DISABLED");
   } 
   hr = m_pCC->GetRange(CameraControl_Tilt, &info.min, &info.max, &info.step, &info.def, &info.flags);
   if (FAILED(hr)) {
-    PTRACE(3,"DShow\tWebCam " << deviceName << " does not support Tilt. Controls DISABLED");
-    SAFE_RELEASE(m_pCC);
-    m_pCC = NULL;
-    goto endcontroltest;
+    PTRACE(4,"DShow\tWebCam " << deviceName << " does not support Tilt. Controls DISABLED");
   } 
   hr = m_pCC->GetRange(CameraControl_Zoom, &info.min, &info.max, &info.step, &info.def, &info.flags);
   if (FAILED(hr)) {
-    PTRACE(3,"DShow\tWebCam " << deviceName << " does not support zoom. Controls DISABLED");
-    SAFE_RELEASE(m_pCC);
-    m_pCC = NULL;
-    goto endcontroltest;
+    PTRACE(4,"DShow\tWebCam " << deviceName << " does not support zoom. Controls DISABLED");
   }
 
   PTRACE(3,"DShow\tWebCam " << deviceName << " supports Camera Controls. Controls ENABLED");
@@ -1500,6 +1561,29 @@ PBoolean PVideoInputDevice_DirectShow2::SetFrameSize(
     Start();
 
   return TRUE;
+}
+
+bool PVideoInputDevice_DirectShow2::FlowControl(const void * flowData)
+{
+    const PStringArray & options = *(const PStringArray *)flowData;
+    
+    int w=0; int h=0; int r=0;
+    for (PINDEX i=0; i < options.GetSize(); i+=2) {
+      if (options[i] == "Frame Width")
+            w = options[i+1].AsInteger();
+      else if (options[i] == "Frame Height")
+            h = options[i+1].AsInteger();
+      else if (options[i] ==  "Frame Time")
+            r =  90000/options[i+1].AsInteger();
+    }
+
+    PTRACE(4, "DSHOW\tAdjusting to new H: " << h << " W: " << w << " R: " << r);
+    lastFrameMutex.Wait();
+       SetFrameSize(w,h);
+       SetFrameRate(r);
+    lastFrameMutex.Signal();
+
+    return true;
 }
 
 PINDEX PVideoInputDevice_DirectShow2::GetMaxFrameBytes()
