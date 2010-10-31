@@ -169,6 +169,10 @@ class PVideoInputDevice_DirectShow2 : public PVideoInputDevice
       PINDEX * bytesReturned         ///< OPtional bytes returned.
     );
 
+    /**Pass data to the inputdevice for flowControl determination.
+      */
+    virtual bool FlowControl(const void * flowData);
+
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual PBoolean TestAllFormats();
