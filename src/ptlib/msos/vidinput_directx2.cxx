@@ -68,6 +68,19 @@
 
 #endif // _WIN32_WCE
 
+
+#ifdef P_DIRECTSHOW_QEDIT_H
+
+  // Use this to avoid compile error in Qedit.h with DirectX SDK
+  #define __IDxtCompositor_INTERFACE_DEFINED__
+  #define __IDxtAlphaSetter_INTERFACE_DEFINED__
+  #define __IDxtJpeg_INTERFACE_DEFINED__
+  #define __IDxtKey_INTERFACE_DEFINED__
+
+  #include P_DIRECTSHOW_QEDIT_H
+
+#else
+
 #undef INTERFACE
 #define INTERFACE ISampleGrabberCB
 DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
@@ -89,6 +102,8 @@ STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
 STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
 STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
 };
+
+#endif // P_DIRECTSHOW_QEDIT_H
 
 
 #ifdef _MSC_VER
