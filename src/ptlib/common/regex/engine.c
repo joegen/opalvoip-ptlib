@@ -672,6 +672,7 @@ sopno stopst;
 		}
 
 		/* how about a word boundary? */
+    c &= 0x7f;
 		if ( (flagch == BOL || (lastc != OUT && !ISWORD(lastc))) &&
 					(c != OUT && ISWORD(c)) ) {
 			flagch = BOW;
