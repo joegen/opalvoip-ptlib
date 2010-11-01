@@ -170,7 +170,8 @@ class PSNMP : public PIndirectChannel
                       const PSNMPVarBindingList & vars,
                        const PIPSocket::Address & agentAddress);
 
-    static PBoolean DecodeTrap(const PBYTEArray & readBuffer,
+/*
+  static PBoolean DecodeTrap(const PBYTEArray & readBuffer,
                                        PINDEX & version,
                                       PString & community,
                                       PString & enterprise,
@@ -179,6 +180,7 @@ class PSNMP : public PIndirectChannel
                                       PINDEX  & specificTrapType,
                                  PASNUnsigned & timeTicks,
                           PSNMPVarBindingList & varsOut);
+*/
 
 	typedef list<pair<PString,PRFC1155_ObjectSyntax> > BindingList;
 };
