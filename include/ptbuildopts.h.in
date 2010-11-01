@@ -685,6 +685,7 @@
 
       #undef P_DIRECTX_DDRAW_H
       #undef P_DIRECTSHOW_DDRAW_H
+      #undef P_DIRECTSHOW_QEDIT_H
 
       #if P_ATL
         #undef P_DIRECTSHOW2 
@@ -705,7 +706,6 @@
           #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
           #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
           #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
-          #pragma include_alias(<Qedit.h>, <@DIRECTSHOW_DIR@/include/Qedit.h>)
           #pragma include_alias(<mmstream.h>, <@DIRECTSHOW_DIR@/include/mmstream.h>)
           #pragma include_alias(<ddstream.h>, <@DIRECTSHOW_DIR@/include/ddstream.h>)
           #pragma include_alias(<austream.h>, <@DIRECTSHOW_DIR@/include/austream.h>)

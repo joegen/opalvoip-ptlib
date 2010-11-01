@@ -1684,6 +1684,7 @@ dnl MSWIN_DISPLAY    dshow,Direct Show Support
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW2=1
 dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_DDRAW_H,ddraw.h,include
+dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_QEDIT_H,Qedit.h,include
 dnl MSWIN_DIR_SYMBOL dshow,DIRECTSHOW_DIR
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v7*
 dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6*
