@@ -87,7 +87,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
 #endif
     httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, exeDir+inf.gifFilename));
     if (gifHTML.IsEmpty()) {
-      gifHTML = psprintf("<img src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
+      gifHTML = psprintf("<img border=0 src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
       if (inf.gifWidth != 0 && inf.gifHeight != 0)
         gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
       gifHTML += " align=absmiddle>";
@@ -239,10 +239,6 @@ PString PHTTPServiceProcess::GetCopyrightText()
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
-  PFile header;
-  if (header.Open("header.html", PFile::ReadOnly))
-    return header.ReadString(header.GetLength());
-
   PHTML html(PHTML::InBody);
   html << PHTML::TableStart()
        << PHTML::TableRow()
