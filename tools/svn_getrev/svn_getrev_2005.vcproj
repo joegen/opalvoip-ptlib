@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)/svn_getrev.exe"
+				OutputFile="$(ProjectDir)..\..\svn_getrev.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -146,7 +146,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)/svn_getrev.exe"
+				OutputFile="$(ProjectDir)..\..\svn_getrev.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				SubSystem="1"
