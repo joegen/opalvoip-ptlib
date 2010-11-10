@@ -474,6 +474,7 @@
   #undef P_SOAP
 #endif
 
+
 /////////////////////////////////////////////////
 //
 // Lua interpreter
@@ -625,6 +626,8 @@
 
 #endif
 
+
+
 /////////////////////////////////////////////////
 //
 // APP Share Input 
@@ -640,96 +643,92 @@
   #pragma include_alias(<ptlib/vidinput_app.h>, <ptlib/msos/ptlib/vidinput_app.h>)
 #endif
 
+
+
 /////////////////////////////////////////////////
 //
-// DirectX Support (Windows only)
+// DirectSound Support (Windows only)
 //
 
-#if defined(_MSC_VER)
+#undef P_DIRECTSOUND_WINCE
+#if P_AUDIO && !defined(_WIN32_WCE) && !defined(P_DIRECTSOUND_WINCE) && defined(_MSC_VER)
+  #undef P_DIRECTSOUND
+#endif
 
-  #ifdef _WIN32_WCE
+#if defined(P_DIRECTSOUND)
 
-    #if P_VIDEO
-      //#define P_DIRECTSOUND 1
+  #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
+
+  #undef P_DIRECTSOUND_LIB64
+  #undef P_DIRECTSOUND_LIB32
+
+  #if defined(_WIN64)
+    #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB64
+  #else
+    #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
+  #endif
+
+#endif
+
+
+/////////////////////////////////////////////////
+//
+// DirectShow Support (Windows only)
+//
+
+#if P_VIDEO
+
+  #if defined(_MSC_VER)
+
+    #ifdef _WIN32_WCE
+
+      #undef P_VFW_CAPTURE
+
       #define P_DIRECTSHOW 1
       #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
       #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
-    #endif
 
-    #undef P_VFW_CAPTURE
-    
-  #else // _WIN32_WCE
+    #else // _WIN32_WCE
 
-    #if P_AUDIO
-      #undef P_DIRECTSOUND
-      #undef P_DIRECTSOUND_WINCE
-    #endif
-
-    #if defined(P_DIRECTSOUND) && !defined(P_DIRECTSOUND_WINCE)
-
-      #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
-
-      #undef P_DIRECTSOUND_LIB64
-      #undef P_DIRECTSOUND_LIB32
-
-      #if defined(_WIN64)
-        #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB64
-      #else
-        #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
-      #endif
-
-    #endif
-
-    #if P_VIDEO
       #define P_VFW_CAPTURE 1
 
-      #undef P_DIRECTX_DDRAW_H
-      #undef P_DIRECTSHOW_DDRAW_H
+      #undef P_DIRECTSHOW
       #undef P_DIRECTSHOW_QEDIT_H
 
-      #if P_ATL
-        #undef P_DIRECTSHOW2 
-      #elif defined(P_DIRECTX_DDRAW_H) || defined(P_DIRECTSHOW_DDRAW_H)
-        #undef P_DIRECTSHOW
-      #endif
-
-      #if defined(P_DIRECTSHOW) || defined(P_DIRECTSHOW2)
+      #if defined(P_DIRECTSHOW)
 
         #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
 
-        #ifdef P_DIRECTSHOW_DDRAW_H
-          #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
-          #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
-          #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
-          #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
-          #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
-          #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
-          #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
-          #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
-          #pragma include_alias(<mmstream.h>, <@DIRECTSHOW_DIR@/include/mmstream.h>)
-          #pragma include_alias(<ddstream.h>, <@DIRECTSHOW_DIR@/include/ddstream.h>)
-          #pragma include_alias(<austream.h>, <@DIRECTSHOW_DIR@/include/austream.h>)
-          #pragma include_alias(<rp.h>, <@DIRECTSHOW_DIR@/include/rpc.h>)
-          #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcndr.h>)
-          #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcsal.h>)
-          #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
-        #else
-          #pragma include_alias(<ddraw.h>, <@DIRECTX_DIR@/include/ddraw.h>)
-        #endif
+        #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
+        #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
+        #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
+        #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
+        #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
+        #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
+        #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
+        #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
+        #pragma include_alias(<mmstream.h>, <@DIRECTSHOW_DIR@/include/mmstream.h>)
+        #pragma include_alias(<ddstream.h>, <@DIRECTSHOW_DIR@/include/ddstream.h>)
+        #pragma include_alias(<austream.h>, <@DIRECTSHOW_DIR@/include/austream.h>)
+        #pragma include_alias(<rp.h>, <@DIRECTSHOW_DIR@/include/rpc.h>)
+        #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcndr.h>)
+        #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcsal.h>)
+        #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
 
         #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
         #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
 
       #endif // P_DIRECTSHOW
-    #endif // P_VIDEO
-  #endif // _WIN32_WCE
 
-#else /* defined(_MSC_VER)*/
+    #endif // _WIN32_WCE
 
-  #undef P_DIRECTSHOW
-  #undef P_VFW_CAPTURE
+  #else /* defined(_MSC_VER)*/
 
-#endif /* defined(_MSC_VER)*/
+    #undef P_DIRECTSHOW
+    #undef P_VFW_CAPTURE
+
+  #endif /* defined(_MSC_VER)*/
+#endif // P_VIDEO
 
 
 /////////////////////////////////////////////////

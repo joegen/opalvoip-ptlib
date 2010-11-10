@@ -6536,11 +6536,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\vidinput_directx.cxx"
-					>
-				</File>
-				<File
-					RelativePath=".\vidinput_directx2.cxx"
+					RelativePath=".\directshow.cxx"
 					>
 				</File>
 				<File
@@ -9500,10 +9496,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\vidinput_app.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ptlib\msos\ptlib\vidinput_directx.h"
 					>
 				</File>
 			</Filter>
