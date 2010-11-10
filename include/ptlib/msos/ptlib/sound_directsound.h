@@ -36,7 +36,7 @@
 #include <ptlib.h>
 #include <ptbuildopts.h>
 
-#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE) 
+#if defined(P_DIRECTSOUND)
 
 #include <ptlib/sound.h>
 

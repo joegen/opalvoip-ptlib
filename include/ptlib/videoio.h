@@ -1093,10 +1093,6 @@ class PVideoInputDevice : public PVideoDevice
       */
     virtual bool FlowControl(const void * flowData);
 
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual PBoolean TestAllFormats() = 0;
-
     /**Set the capture modes for implementations that support them.
        For example with Video For Windows, this is used to select picture (0)
        or video (1) modes.
@@ -1154,9 +1150,6 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
   PPLUGIN_STATIC_LOAD(DirectShow, PVideoInputDevice);
 #endif
 
-#ifdef P_DIRECTSHOW2
-  PPLUGIN_STATIC_LOAD(DirectShow2, PVideoInputDevice);
-#endif
 
 ////////////////////////////////////////////////////////
 //

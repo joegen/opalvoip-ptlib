@@ -198,21 +198,12 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     );
 
 
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual PBoolean TestAllFormats();
-
     virtual bool SetCaptureMode(unsigned mode);
     virtual int GetCaptureMode() const { return useVideoMode; }
 
 
   protected:
-
-   /**Check the hardware can do the asked for size.
-
-       Note that not all cameras can provide all frame sizes.
-     */
-    virtual PBoolean VerifyHardwareFrameSize(unsigned width, unsigned height);
+    PBoolean VerifyHardwareFrameSize(unsigned width, unsigned height);
 
     PDECLARE_NOTIFIER(PThread, PVideoInputDevice_VideoForWindows, HandleCapture);
 
@@ -739,29 +730,6 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigne
 }
 
 
-PBoolean PVideoInputDevice_VideoForWindows::TestAllFormats()
-{
-  PBoolean running = IsCapturing();
-  if (running)
-    Stop();
-
-  for (PINDEX prefFormatIdx = 0; FormatTable[prefFormatIdx].colourFormat != NULL; prefFormatIdx++) {
-    PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
-    bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].compression;
-    for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
-      bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
-      bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
-      bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx]);
-    } // for prefResizeIdx
-  } // for prefFormatIdx
-
-  if (running)
-    return Start();
-
-  return PTrue;
-}
-
-
 //return PTrue if absolute value of height reported by driver 
 //  is equal to absolute value of current frame height AND
 //  width reported by driver is equal to current frame width
@@ -1007,8 +975,18 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   capPreview(hCaptureWindow, PFalse);
 
 #if PTRACING
-  //if (PTrace::CanTrace(6))
-  //  TestAllFormats(); // list acceptable formats and frame resolutions for video capture driver
+  if (PTrace::CanTrace(6)) {
+    // Display log for every format set
+    for (PINDEX prefFormatIdx = 0; FormatTable[prefFormatIdx].colourFormat != NULL; prefFormatIdx++) {
+      PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
+      bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].compression;
+      for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
+        bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
+        bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
+        bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx]);
+      }
+    }
+  }
 #endif
   
   return SetFrameRate(frameRate) && SetColourFormatConverter(colourFormat.IsEmpty() ? PString("YUV420P") : colourFormat);

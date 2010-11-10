@@ -304,7 +304,7 @@
     <ClCompile Include="..\..\ptclib\vsdl.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="vidinput_directx.cxx">
+    <ClCompile Include="directshow.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
     <ClCompile Include="vidinput_app.cxx">
@@ -763,9 +763,6 @@
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\vidinput_app.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\vidinput_directx.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\vsdl.h">
