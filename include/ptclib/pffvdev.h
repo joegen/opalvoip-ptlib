@@ -195,10 +195,6 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
 
     void ClearMapping() { return ; }
 
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual PBoolean TestAllFormats()
-      { return true; }
 
  protected:
    unsigned       m_ffmpegFrameWidth;

@@ -128,10 +128,6 @@ class PVideoInputDevice_Application : public PVideoInputDevice
       PINDEX * bytesReturned         ///< OPtional bytes returned.
     );
 
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual PBoolean TestAllFormats();
-
     /**Set the Handle of the window you wish to capture
       */
     void AttachCaptureWindow(

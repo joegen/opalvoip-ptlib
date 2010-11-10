@@ -233,12 +233,6 @@ PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDE
 }
 
 
-PBoolean PVideoInputDevice_Application::TestAllFormats()
-{
-  return true;
-}
-
-
 void PVideoInputDevice_Application::AttachCaptureWindow(HWND hWnd, bool client)
 {
   m_hWnd = hWnd;

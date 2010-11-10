@@ -217,11 +217,6 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 
     void ClearMapping() { return ; }
 
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual PBoolean TestAllFormats()
-      { return true; }
-
     void FillRect(BYTE * frame,int xPos, int initialYPos,int rectWidth, int rectHeight,int r, int g,  int b);
    
  protected:

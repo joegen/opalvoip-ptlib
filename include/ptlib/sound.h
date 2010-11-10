@@ -766,7 +766,7 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
   PPLUGIN_STATIC_LOAD(BeOS, PSoundChannel);
 #endif
 
-#if defined(P_DIRECTSOUND) && ! defined(P_DIRECTSOUND_WINCE)
+#if defined(P_DIRECTSOUND)
   PPLUGIN_STATIC_LOAD(DirectSound, PSoundChannel);
 #endif
 
