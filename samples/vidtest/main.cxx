@@ -160,8 +160,8 @@ void VidTest::Main()
       format = PVideoDevice::Auto;
     else {
       cerr << "Illegal video input format name \"" << formatString << '"' << endl;
-    return;
-  }
+      return;
+    }
     if (!m_grabber->SetVideoFormat(format)) {
       cerr << "Video input device could not be set to format \"" << formatString << '"' << endl;
       return;

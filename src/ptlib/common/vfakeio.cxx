@@ -1479,10 +1479,6 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
          
     void ClearMapping() { return ; }
 
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual PBoolean TestAllFormats()
-      { return PTrue; }
 
  protected:
     enum {
