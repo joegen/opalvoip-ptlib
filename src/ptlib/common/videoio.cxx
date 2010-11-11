@@ -1313,7 +1313,7 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
 {
   PWaitAndSignal m(mutex);
 
-  if (x+width > frameWidth || y+height > frameHeight)
+  if (x+width > frameWidth || y+height > frameHeight || PAssertNULL(data) == NULL)
     return PFalse;
 
   if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
