@@ -273,6 +273,7 @@ PBoolean PPipeChannel::Close()
   // kill the child process
   if (IsRunning()) {
     wasRunning = true;
+    PTRACE(4, "PipeChannel\tChild being sent SIGKILL");
     kill(childPid, SIGKILL);
     WaitForTermination();
   }
@@ -446,7 +447,8 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 
 PBoolean PPipeChannel::Kill(int killType)
 {
-  return ConvertOSError(kill (childPid, killType));
+  PTRACE(4, "PipeChannel\tChild being sent signal " << killType);
+  return ConvertOSError(kill(childPid, killType));
 }
 
 PBoolean PPipeChannel::CanReadAndWrite()
