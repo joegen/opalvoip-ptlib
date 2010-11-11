@@ -927,12 +927,16 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 
   PINDEX bufferSize = GetCurrentBufferSize();
   if (converter != NULL) {
-    if (GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize)))
-      converter->Convert(m_tempFrame, destFrame, bufferSize, bytesReturned);
+    if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize)))
+      return false;
+    if (!converter->Convert(m_tempFrame, destFrame, bufferSize, bytesReturned))
+      return false;
   }
   else {
-    if (PAssert(bufferSize <= m_maxFrameBytes, PLogicError))
-      GetCurrentBufferData(destFrame);
+    if (!PAssert(bufferSize <= m_maxFrameBytes, PLogicError))
+      return false;
+    if (!GetCurrentBufferData(destFrame))
+      return false;
     if (bytesReturned != NULL)
       *bytesReturned = bufferSize;
   }
@@ -1729,6 +1733,9 @@ PINDEX PVideoInputDevice_DirectShow::GetCurrentBufferSize()
 bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data)
 {
   CSampleGrabberCB * cb = (CSampleGrabberCB *)&*m_pSampleGrabberCB;
+
+  if (!cb->frameready.Wait(2000))
+    return false;
 
   if (cb->pBuffer == NULL)
     return false;
