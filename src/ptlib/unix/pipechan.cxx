@@ -235,6 +235,8 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 
 PBoolean PPipeChannel::Close()
 {
+  bool wasRunning = false;
+
   // close pipe from child
   if (fromChildPipe[0] != -1) {
     ::close(fromChildPipe[0]);
@@ -270,7 +272,8 @@ PBoolean PPipeChannel::Close()
 
   // kill the child process
   if (IsRunning()) {
-    kill (childPid, SIGKILL);
+    wasRunning = true;
+    kill(childPid, SIGKILL);
     WaitForTermination();
   }
 
@@ -278,7 +281,7 @@ PBoolean PPipeChannel::Close()
   os_handle = -1;
   childPid  = 0;
 
-  return PTrue;
+  return wasRunning;
 }
 
 PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
