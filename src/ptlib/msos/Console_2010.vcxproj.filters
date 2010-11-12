@@ -762,9 +762,6 @@
     <ClInclude Include="..\..\..\include\ptlib\videoio.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\vidinput_app.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\vsdl.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
