@@ -42,6 +42,14 @@
 #include <lua.hpp>
 
 
+#ifdef _MSC_VER
+  #pragma comment(lib, P_LUA_LIBRARY)
+  #pragma message("Lua scripting support enabled")
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PLua::PLua()
   : m_lua(luaL_newstate())
 {
@@ -116,7 +124,7 @@ void PLua::SetValue(const char * name, const char * value)
   lua_setglobal(*this, name);
 }
 
-void PLua::SetFunction(const char * name_, lua_CFunction func)
+void PLua::SetFunction(const char * name_, CFunction func)
 {
   PString name(name_);
   PINDEX pos = name.Find('.');
@@ -229,6 +237,41 @@ bool PLua::CallLuaFunction(const char * name, const char * sig, ...)
   return true;
 }
 
+
+void PLua::BindToInstanceStart(const char * instanceName)
+{
+  /* create a new metatable and set the __index table */
+  luaL_newmetatable(m_lua, instanceName);
+  lua_pushvalue(m_lua, -1);
+  lua_setfield(m_lua, -2, "__index");
+}
+
+
+void PLua::BindToInstanceFunc(const char * lua_name, void * obj, CFunction func)
+{
+  /* set member function */
+  lua_pushlightuserdata(m_lua, obj);
+  lua_pushcclosure(m_lua, func, 1);
+  lua_setfield(m_lua, -2, lua_name);
+}
+
+
+void PLua::BindToInstanceEnd(const char * instanceName)
+{
+  /* assign metatable */
+  lua_newtable(m_lua);
+  luaL_getmetatable(m_lua, instanceName);
+  lua_setmetatable(m_lua, -2);
+  lua_setglobal(m_lua, instanceName);
+}
+
+
+void * PLua::GetInstance(lua_State * L)
+{
+  return lua_touserdata(L, lua_upvalueindex(1));
+}
+
+
 int PLua::TraceFunction(lua_State * L)
 {
   if (!lua_isnumber(L, -2))
@@ -239,5 +282,11 @@ int PLua::TraceFunction(lua_State * L)
   return 0;
 }
 
+
+#else // P_LUA
+
+  #ifdef _MSC_VER
+    #pragma message("Lua scripting support DISABLED")
+  #endif
 
 #endif // P_LUA

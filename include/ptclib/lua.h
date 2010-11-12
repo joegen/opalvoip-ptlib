@@ -40,11 +40,8 @@
 
 #if P_LUA
 
-#include <lua.hpp>
+struct lua_State;
 
-#if defined(_MSC_VER)
-#pragma comment(lib, P_LUA_LIBRARY)
-#endif
 
 //////////////////////////////////////////////////////////////
 
@@ -66,7 +63,8 @@ class PLua
 
     virtual void SetValue(const char * name, const char * value);
 
-    virtual void SetFunction(const char * name, lua_CFunction func);
+    typedef int (*CFunction)(lua_State *L);
+    virtual void SetFunction(const char * name, CFunction func);
 
     bool CallLuaFunction(const char * name);
     bool CallLuaFunction(const char * name, const char * sig, ...);
@@ -75,6 +73,12 @@ class PLua
 
     PString GetLastErrorText() const 
     { return m_lastErrorText; }
+
+    void BindToInstanceStart(const char * instanceName);
+    void BindToInstanceFunc(const char * lua_name, void * obj, CFunction func);
+    void BindToInstanceEnd(const char * instanceName);
+
+    static void * GetInstance(lua_State * L);
 
   protected:
     lua_State * m_lua;
@@ -86,34 +90,23 @@ class PLua
   void UnbindFromInstance(PLua &, const char *) { } \
   void BindToInstance(PLua & lua, const char * instanceName) \
   { \
-    /* create a new metatable and set the __index table */ \
-    luaL_newmetatable(lua, instanceName); \
-    lua_pushvalue(lua, -1); \
-    lua_setfield(lua, -2, "__index"); \
+    lua.BindToInstanceStart(instanceName);
 
 #define PLUA_BINDING2(cpp_name, lua_name) \
-    /* set member function */ \
-    lua_pushlightuserdata(lua, (void *)this); \
-    lua_pushcclosure (lua, &PLua_InstanceType::cpp_name##_callback, 1); \
-    lua_setfield     (lua, -2, lua_name); \
+    lua.BindToInstanceFunc(lua_name, (void *)this, &PLua_InstanceType::cpp_name##_callback);
 
 #define PLUA_BINDING(fn_name) \
   PLUA_BINDING2(fn_name, #fn_name)
 
 #define PLUA_BINDING_END() \
-    /* assign metatable */ \
-    lua_newtable(lua); \
-    luaL_getmetatable(lua, instanceName); \
-    lua_setmetatable(lua, -2); \
-    lua_setglobal(lua, instanceName); \
-  } \
+    lua.BindToInstanceEnd(instanceName); \
+  }
 
 #define PLUA_FUNCTION_DECL(fn_name) \
   static int fn_name##_callback(lua_State * L) \
   { \
-    PLua_InstanceType * instance = (PLua_InstanceType *)lua_touserdata(L, lua_upvalueindex(1)); \
-    return instance->fn_name(L); \
-  } \
+    return ((PLua_InstanceType *)PLua::GetInstance(L))->fn_name(L); \
+  }
 
 #define PLUA_FUNCTION(fn_name) \
   PLUA_FUNCTION_DECL(fn_name) \

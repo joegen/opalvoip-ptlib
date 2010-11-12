@@ -36,6 +36,7 @@
 
 #include <svcguid.h>
 
+
 #ifndef _WIN32_WCE
   #include <nspapi.h>
   #include <wsipx.h>
@@ -43,10 +44,18 @@
   #ifdef _MSC_VER
     #include <wsnwlink.h>
 
-    #ifndef P_WINSOCK2_LIBRARY
-      #define P_WINSOCK2_LIBRARY "ws2_32.lib"
+    #pragma comment(lib, "ws2_32.lib")
+
+    #if P_HAS_IPV6
+      #pragma message("IPv6 support enabled")
+    #else
+      #pragma message("IPv6 support DISABLED")
     #endif
-    #pragma comment(lib, P_WINSOCK2_LIBRARY)
+    #if P_QOS
+      #pragma message("QoS support enabled")
+    #else
+      #pragma message("QoS support DISABLED")
+    #endif
 
   #else
 

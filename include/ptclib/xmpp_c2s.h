@@ -169,7 +169,7 @@ namespace XMPP
       virtual void    HandleNullState(PXML& pdu);
       virtual void    HandleRegStartedState(PXML& pdu);
       virtual void    HandleTLSStartedState(PXML& pdu);
-#if P_SASL2
+#if P_SASL
       virtual void    HandleSASLStartedState(PXML& pdu);
 #endif
       virtual void    HandleNonSASLStartedState(PXML& pdu);
@@ -189,7 +189,7 @@ namespace XMPP
       PBoolean                m_NewAccount;
       JID                 m_JID;
       const PString       m_Password;
-#if P_SASL2
+#if P_SASL
       PSASLClient         m_SASL;
       PString             m_Mechanism;
 #endif
