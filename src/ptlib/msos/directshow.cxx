@@ -119,6 +119,7 @@
     #define __IDxtJpeg_INTERFACE_DEFINED__
     #define __IDxtKey_INTERFACE_DEFINED__
 
+    #include <rpcsal.h>
     #include P_DIRECTSHOW_QEDIT_H
 
   #else
