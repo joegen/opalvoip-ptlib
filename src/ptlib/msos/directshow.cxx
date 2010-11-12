@@ -47,14 +47,6 @@
 #include <initguid.h>
 
 
-#ifdef P_DIRECTSHOW_LIBRARY1
-#pragma comment(lib, P_DIRECTSHOW_LIBRARY1)
-#endif
-#ifdef P_DIRECTSHOW_LIBRARY2
-#pragma comment(lib, P_DIRECTSHOW_LIBRARY2)
-#endif
-
-
 #ifdef _WIN32_WCE
 
   static const GUID MEDIASUBTYPE_IYUV = { 0x56555949, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
@@ -88,6 +80,10 @@
       BYTE * m_sampleData;
   };
 
+  #ifdef _MSC_VER
+    #pragma comment(lib, "ddraw.lib")
+  #endif
+
 #else // _WIN32_WCE
 
   #pragma warning(disable:4201)
@@ -118,6 +114,8 @@
     #define __IDxtAlphaSetter_INTERFACE_DEFINED__
     #define __IDxtJpeg_INTERFACE_DEFINED__
     #define __IDxtKey_INTERFACE_DEFINED__
+
+    #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
 
     #include <rpcsal.h>
     #include P_DIRECTSHOW_QEDIT_H
@@ -157,7 +155,17 @@
 
   #endif // P_DIRECTSHOW_QEDIT_H
 
+  #ifdef _MSC_VER
+    #pragma comment(lib, "quartz.lib")
+  #endif
+
 #endif // _WIN32_WCE
+
+
+#ifdef _MSC_VER
+  #pragma comment(lib, "strmiids.lib")
+  #pragma message("Direct Show video support enabled")
+#endif
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1779,5 +1787,11 @@ PVideoInputControl * PVideoInputDevice_DirectShow::GetVideoInputControls()
 
 #endif  // _WIN32_WCE
 
+
+#else
+
+  #ifdef _MSC_VER
+    #pragma message("Direct Show video support DISABLED")
+  #endif
 
 #endif  // P_DIRECTSHOW

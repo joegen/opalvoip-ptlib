@@ -104,10 +104,9 @@ extern "C" {
 
 
 #ifdef _MSC_VER
-
-#pragma comment(lib, P_SSL_LIB1)
-#pragma comment(lib, P_SSL_LIB2)
-
+  #pragma comment(lib, P_SSL_LIB1)
+  #pragma comment(lib, P_SSL_LIB2)
+  #pragma message("SSL support (via OpenSSL) enabled")
 #endif
 
 
@@ -1284,59 +1283,11 @@ PBoolean PSSLChannel::OnOpen()
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-//  misc unused code
-//
+#else
 
-#if 0
-
-extern "C" {
-
-static verify_depth = 0;
-static verify_error = VERIFY_OK;
-
-// should be X509 * but we can just have them as char *. 
-int verify_callback(int ok, X509 * xs, X509 * xi, int depth, int error)
-{
-  char *s;
-
-  s = (char *)X509_NAME_oneline(X509_get_subject_name(xs));
-  if (s == NULL) {
-//    ERR_print_errors(bio_err);
-    return(0);
-  }
-  PError << "depth= " << depth << " " << (char *)s << endl;
-  free(s);
-  if (error == VERIFY_ERR_UNABLE_TO_GET_ISSUER) {
-    s=(char *)X509_NAME_oneline(X509_get_issuer_name(xs));
-    if (s == NULL) {
-      PError << "verify error" << endl;
-      //ERR_print_errors(bio_err);
-      return(0);
-    }
-    PError << "issuer = " << s << endl;
-    free(s);
-  }
-
-  if (!ok) {
-    PError << "verify error:num=" << error << " " <<
-    X509_cert_verify_error_string(error) << endl;
-    if (verify_depth <= depth) {
-      ok=1;
-      verify_error=VERIFY_OK;
-    } else {
-      ok=0;
-      verify_error=error;
-    }
-  }
-  PError << "verify return:" << ok << endl;
-  return(ok);
-}
-
-};
-
-#endif
+  #ifdef _MSC_VER
+    #pragma message("SSL support (via OpenSSL) DISABLED")
+  #endif
 
 #endif // P_SSL
 

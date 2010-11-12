@@ -36,10 +36,13 @@
 
 #include "ptbuildopts.h"
 
+#if P_TTS
+
 #include <ptclib/ptts.h>
 
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
+
 
 
 #if P_SAPI
@@ -47,23 +50,17 @@
 ////////////////////////////////////////////////////////////
 //
 // Text to speech using Microsoft's Speech API (SAPI)
-// Can be downloaded from http://www.microsoft.com/speech/download/sdk51
-// It is also present in Windows Software Development Kit 6.0 and later.
-//
 
-#if defined(P_SAPI_LIBRARY)
-  #pragma comment(lib, P_SAPI_LIBRARY)
+#ifdef _MSC_VER
+  #pragma comment(lib, "sapi.lib")
+  #pragma message("SAPI support enabled")
 #endif
 
 #ifndef _WIN32_DCOM
   #define _WIN32_DCOM 1
 #endif
 
-#ifdef P_ATL
-
-  #define _INTSAFE_H_INCLUDED_
-
-#else
+#ifndef P_ATL
 
   // We are using express edition of MSVC which does not come with ATL support
   // So hand implement just enough for the SAPI code to work.
@@ -128,8 +125,6 @@
 
 #include <sphelper.h>
 
-
-#define MAX_FN_SIZE 1024
 
 class PTextToSpeech_SAPI : public PTextToSpeech
 {
@@ -296,6 +291,12 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 {
   return 0;
 }
+
+#else
+
+  #ifdef _MSC_VER
+    #pragma message("SAPI support DISABLED")
+  #endif
 
 #endif // P_SAPI
 
@@ -481,34 +482,28 @@ PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath &
 
   PString cmdLine = "echo " + text + " | ./text2wave -F " + PString(PString::Unsigned, rate) + " -otype riff > " + fname;
 
-#if 1
-
-  return system(cmdLine) != -1;
-
-#else
-
   PPipeChannel cmd;
-  int code = -1;
   if (!cmd.Open(cmdLine, PPipeChannel::ReadWriteStd)) {
     PTRACE(1, "TTS\tCannot execute command " << cmd);
+    return false;
+  }
+
+  PTRACE(3, "TTS\tCreating " << fname << " using " << cmdLine);
+  cmd.Execute();
+  int code = -1;
+  code = cmd.WaitForTermination();
+  if (code >= 0) {
+    PTRACE(4, "TTS\tdata generated");
   } else {
-    PTRACE(3, "TTS\tCreating " << fname << " using " << cmdLine);
-    cmd.Execute();
-    code = cmd.WaitForTermination();
-    if (code >= 0) {
-      PTRACE(4, "TTS\tdata generated");
-    } else {
-      PTRACE(1, "TTS\tgeneration failed");
-    }
+    PTRACE(1, "TTS\tgeneration failed");
   }
 
   return code == 0;
-
-#endif
 }
 
+#endif // _WIN32_WCE
 
-#endif
+#endif // P_TTS
 
 
 // End Of File ///////////////////////////////////////////////////////////////
