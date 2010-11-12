@@ -32,59 +32,110 @@
 #pragma implementation "ptts.h"
 #endif
 
+#include <ptlib.h>
+
 #include "ptbuildopts.h"
 
-////////////////////////////////////////////////////////////
-#include <ptlib/pfactory.h>
 #include <ptclib/ptts.h>
 
-
-// WIN32 COM stuff must be first in file to compile properly
-
-#if P_SAPI
-
-#if defined(P_SAPI_LIBRARY)
-#pragma comment(lib, P_SAPI_LIBRARY)
-#endif
-
-#ifndef _WIN32_DCOM
-#define _WIN32_DCOM 1
-#endif
-
-#include <objbase.h>
-#include <atlbase.h>
-#include <windows.h>
-#include <windowsx.h>
-#include <sphelper.h>
-
-#endif
-
-////////////////////////////////////////////////////////////
-
-// this disables the winsock2 stuff in the Windows contain.h, to avoid header file problems
-#define P_KNOCKOUT_WINSOCK2
-
-#include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
 
+
+#if P_SAPI
 
 ////////////////////////////////////////////////////////////
 //
 // Text to speech using Microsoft's Speech API (SAPI)
 // Can be downloaded from http://www.microsoft.com/speech/download/sdk51
+// It is also present in Windows Software Development Kit 6.0 and later.
 //
 
-#if P_SAPI
+#if defined(P_SAPI_LIBRARY)
+  #pragma comment(lib, P_SAPI_LIBRARY)
+#endif
+
+#ifndef _WIN32_DCOM
+  #define _WIN32_DCOM 1
+#endif
+
+#ifdef P_ATL
+
+  #define _INTSAFE_H_INCLUDED_
+
+#else
+
+  // We are using express edition of MSVC which does not come with ATL support
+  // So hand implement just enough for the SAPI code to work.
+  #define __ATLBASE_H__
+
+  #include <objbase.h>
+
+  typedef WCHAR OLECHAR;
+  typedef OLECHAR *LPOLESTR;
+  typedef const OLECHAR *LPCOLESTR;
+  typedef struct IUnknown IUnknown;
+  typedef IUnknown *LPUNKNOWN;
+
+  template <class T> class CComPtr
+  {
+    public:
+      CComPtr(T * pp = NULL) : p(pp) { }
+      ~CComPtr() { Release(); }
+
+      T *  operator-> () const { return  PAssertNULL(p); }
+           operator T*() const { return  PAssertNULL(p); }
+      T &  operator*  () const { return *PAssertNULL(p); }
+      T ** operator&  ()       { return &p; }
+      bool operator!() const   { return (p == NULL); }
+      bool operator<(__in_opt T* pT) const  { return p <  pT; }
+      bool operator==(__in_opt T* pT) const { return p == pT; }
+      bool operator!=(__in_opt T* pT) const { return p != pT; }
+
+      void Attach(T * p2)
+      {
+        if (p)
+	  p->Release();
+        p = p2;
+      }
+
+      T * Detach()
+      {
+        T * pt = p;
+        p = NULL;
+        return pt;
+      }
+
+      void Release()
+      {
+        T * pt = p;
+        if (pt != NULL) {
+	  p = NULL;
+	  pt->Release();
+        }
+      }
+
+      __checkReturn HRESULT CoCreateInstance(__in REFCLSID rclsid, __in_opt LPUNKNOWN pUnkOuter = NULL, __in DWORD dwClsContext = CLSCTX_ALL)
+      {
+        return ::CoCreateInstance(rclsid, pUnkOuter, dwClsContext, __uuidof(T), (void**)&p);
+      }
+
+    private:
+      T * p;
+  };
+
+#endif // P_ATL
+
+#include <sphelper.h>
+
 
 #define MAX_FN_SIZE 1024
 
 class PTextToSpeech_SAPI : public PTextToSpeech
 {
-  PCLASSINFO(PTextToSpeech_SAPI, PTextToSpeech);
+    PCLASSINFO(PTextToSpeech_SAPI, PTextToSpeech);
   public:
     PTextToSpeech_SAPI();
-    ~PTextToSpeech_SAPI();
 
     // overrides
     PStringArray GetVoiceList();
@@ -96,170 +147,103 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
 
-    PBoolean OpenFile   (const PFilePath & fn);
+    PBoolean OpenFile(const PFilePath & fn);
     PBoolean OpenChannel(PChannel * channel);
-    PBoolean IsOpen()     { return opened; }
+    PBoolean IsOpen()     { return m_opened; }
 
-    PBoolean Close      ();
-    PBoolean Speak      (const PString & str, TextType hint);
+    PBoolean Close();
+    PBoolean Speak(const PString & str, TextType hint);
 
   protected:
-    PBoolean OpenVoice();
-
-    static PMutex refMutex;
-    static int * refCount;
-
-    PMutex mutex;
-    CComPtr<ISpVoice> m_cpVoice;
-    CComPtr<ISpStream> cpWavStream;
-    PBoolean opened;
-    PBoolean usingFile;
-    unsigned rate, volume;
-    PString voice;
+    CComPtr<ISpVoice>  m_cpVoice;
+    CComPtr<ISpStream> m_cpWavStream;
+    bool               m_opened;
 };
 
-PFACTORY_CREATE(PTextToSpeech, PTextToSpeech_SAPI, "Microsoft SAPI", false);
-
-int * PTextToSpeech_SAPI::refCount;
-PMutex PTextToSpeech_SAPI::refMutex;
+PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_SAPI, "Microsoft SAPI", false);
 
 
 #define new PNEW
 
 
 PTextToSpeech_SAPI::PTextToSpeech_SAPI()
+  : m_opened(false)
 {
-  PWaitAndSignal m(refMutex);
-
-  if (refCount == NULL) {
-    refCount = new int;
-    *refCount = 1;
-    ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-  } else {
-    (*refCount)++;
-  }
-
-  usingFile = opened = PFalse;
+  ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 }
 
-
-PTextToSpeech_SAPI::~PTextToSpeech_SAPI()
-{
-  PWaitAndSignal m(refMutex);
-
-  if ((--(*refCount)) == 0) {
-    ::CoUninitialize();
-    delete refCount;
-    refCount = NULL;
-  }
-}
-
-PBoolean PTextToSpeech_SAPI::OpenVoice()
-{
-  PWaitAndSignal m(mutex);
-
-  HRESULT hr = m_cpVoice.CoCreateInstance(CLSID_SpVoice);
-  return (opened = SUCCEEDED(hr));
-}
 
 PBoolean PTextToSpeech_SAPI::OpenChannel(PChannel *)
 {
-  PWaitAndSignal m(mutex);
-
   Close();
-  usingFile = PFalse;
-  return (opened = PFalse);
+  return false;
 }
 
 
 PBoolean PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
 {
-  PWaitAndSignal m(mutex);
-
   Close();
-  usingFile = PTrue;
 
-  if (!OpenVoice())
-    return PFalse;
+  HRESULT hr = m_cpVoice.CoCreateInstance(CLSID_SpVoice);
+  if (FAILED(hr))
+    return false;
 
   CSpStreamFormat wavFormat;
   wavFormat.AssignFormat(SPSF_8kHz16BitMono);
 
-  WCHAR szwWavFileName[MAX_FN_SIZE] = L"";;
-
-  USES_CONVERSION;
-  wcscpy(szwWavFileName, T2W((const char *)fn));
-  HRESULT hr = SPBindToFile(szwWavFileName, SPFM_CREATE_ALWAYS, &cpWavStream, &wavFormat.FormatId(), wavFormat.WaveFormatExPtr()); 
-
-  if (!SUCCEEDED(hr)) {
-    cpWavStream.Release();
-    return PFalse;
+  PWideString wfn = fn;
+  hr = SPBindToFile(wfn, SPFM_CREATE_ALWAYS, &m_cpWavStream, &wavFormat.FormatId(), wavFormat.WaveFormatExPtr()); 
+  if (FAILED(hr)) {
+    m_cpWavStream.Release();
+    return false;
   }
 
-  hr = m_cpVoice->SetOutput(cpWavStream, PTrue);
-
-  return (opened = SUCCEEDED(hr));
+  hr = m_cpVoice->SetOutput(m_cpWavStream, true);
+  m_opened = SUCCEEDED(hr);
+  return m_opened;
 }
+
 
 PBoolean PTextToSpeech_SAPI::Close()
 {
-  PWaitAndSignal m(mutex);
+  if (!m_opened)
+    return false;
 
-  if (!opened)
-    return PTrue;
+  m_cpVoice->WaitUntilDone(INFINITE);
+  m_cpWavStream.Release();
+  m_cpVoice.Release();
 
-  if (usingFile) {
-    if (opened)
-      m_cpVoice->WaitUntilDone(INFINITE);
-    cpWavStream.Release();
-  }
-
-  if (opened)
-    m_cpVoice.Release();
-
-  opened = PFalse;
-
-  return PTrue;
+  m_opened = false;
+  return true;
 }
 
 
-PBoolean PTextToSpeech_SAPI::Speak(const PString & otext, TextType hint)
+PBoolean PTextToSpeech_SAPI::Speak(const PString & text, TextType hint)
 {
-  PWaitAndSignal m(mutex);
-
   if (!IsOpen())
-    return PFalse;
+    return false;
 
-  PString text = otext;
+  PWideString wtext = text;
 
   // do various things to the string, depending upon the hint
   switch (hint) {
     case Digits:
-      {
-      }
       break;
-
     default:
-    ;
+      break;
   };
 
-  // quick hack to calculate length of Unicode string
-  WCHAR * uStr = new WCHAR[text.GetLength()+1];
+  HRESULT hr = m_cpVoice->Speak(wtext, SPF_DEFAULT, NULL);
+  if (SUCCEEDED(hr))
+    return true;
 
-  USES_CONVERSION;
-  wcscpy(uStr, T2W((const char *)text));
-
-  HRESULT hr = m_cpVoice->Speak(uStr, SPF_DEFAULT, NULL);
-
-  delete[] uStr;
-
-  return SUCCEEDED(hr);
+  PTRACE(4, "SAPI\tError speaking text: " << hr);
+  return false;
 }
+
 
 PStringArray PTextToSpeech_SAPI::GetVoiceList()
 {
-  PWaitAndSignal m(mutex);
-
   PStringArray voiceList;
 
   CComPtr<ISpObjectToken> cpVoiceToken;
@@ -281,45 +265,39 @@ PStringArray PTextToSpeech_SAPI::GetVoiceList()
     if (SUCCEEDED(hr))
       hr = cpEnum->Next(1, &cpVoiceToken, NULL );
 
-    if (SUCCEEDED(hr)) {
+    if (SUCCEEDED(hr))
       voiceList.AppendString("voice");
-    }
   } 
 
   return voiceList;
 }
 
-PBoolean PTextToSpeech_SAPI::SetVoice(const PString & v)
+PBoolean PTextToSpeech_SAPI::SetVoice(const PString &)
 {
-  PWaitAndSignal m(mutex);
-  voice = v;
-  return PTrue;
+  return false;
 }
 
-PBoolean PTextToSpeech_SAPI::SetRate(unsigned v)
+PBoolean PTextToSpeech_SAPI::SetRate(unsigned)
 {
-  rate = v;
-  return PTrue;
+  return false;
 }
 
 unsigned PTextToSpeech_SAPI::GetRate()
 {
-  return rate;
+  return 0;
 }
 
-PBoolean PTextToSpeech_SAPI::SetVolume(unsigned v)
+PBoolean PTextToSpeech_SAPI::SetVolume(unsigned)
 {
-  volume = v;
-  return PTrue;
+  return false;
 }
 
 unsigned PTextToSpeech_SAPI::GetVolume()
 {
-  return volume;
+  return 0;
 }
 
-#endif
-// P_SAPI
+#endif // P_SAPI
 
 
 #ifndef _WIN32_WCE
@@ -348,12 +326,12 @@ class PTextToSpeech_Festival : public PTextToSpeech
     PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
 
-    PBoolean OpenFile   (const PFilePath & fn);
+    PBoolean OpenFile(const PFilePath & fn);
     PBoolean OpenChannel(PChannel * channel);
     PBoolean IsOpen()    { return opened; }
 
-    PBoolean Close      ();
-    PBoolean Speak      (const PString & str, TextType hint);
+    PBoolean Close();
+    PBoolean Speak(const PString & str, TextType hint);
 
   protected:
     PBoolean Invoke(const PString & str, const PFilePath & fn);
@@ -364,7 +342,6 @@ class PTextToSpeech_Festival : public PTextToSpeech
     PString text;
     PFilePath path;
     unsigned volume, rate;
-    PString voice;
 };
 
 #define new PNEW
@@ -374,7 +351,7 @@ PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_Festival, "Festival", fal
 PTextToSpeech_Festival::PTextToSpeech_Festival()
 {
   PWaitAndSignal m(mutex);
-  usingFile = opened = PFalse;
+  usingFile = opened = false;
   rate = 8000;
   volume = 100;
 }
@@ -390,10 +367,10 @@ PBoolean PTextToSpeech_Festival::OpenChannel(PChannel *)
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = PFalse;
-  opened = PFalse;
+  usingFile = false;
+  opened = false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -402,13 +379,13 @@ PBoolean PTextToSpeech_Festival::OpenFile(const PFilePath & fn)
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = PTrue;
+  usingFile = true;
   path = fn;
-  opened = PTrue;
+  opened = true;
 
   PTRACE(3, "TTS\tWriting speech to " << fn);
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PTextToSpeech_Festival::Close()
@@ -416,16 +393,16 @@ PBoolean PTextToSpeech_Festival::Close()
   PWaitAndSignal m(mutex);
 
   if (!opened)
-    return PTrue;
+    return true;
 
-  PBoolean stat = PFalse;
+  PBoolean stat = false;
 
   if (usingFile)
     stat = Invoke(text, path);
 
   text = PString();
 
-  opened = PFalse;
+  opened = false;
 
   return stat;
 }
@@ -437,7 +414,7 @@ PBoolean PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
 
   if (!IsOpen()) {
     PTRACE(2, "TTS\tAttempt to speak whilst engine not open");
-    return PFalse;
+    return false;
   }
 
   PString str = ostr;
@@ -452,36 +429,30 @@ PBoolean PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
   if (usingFile) {
     PTRACE(3, "TTS\tSpeaking " << ostr);
     text = text & str;
-    return PTrue;
+    return true;
   }
 
   PTRACE(1, "TTS\tStream mode not supported for Festival");
 
-  return PFalse;
+  return false;
 }
 
 PStringArray PTextToSpeech_Festival::GetVoiceList()
 {
-  PWaitAndSignal m(mutex);
-
   PStringArray voiceList;
-
   voiceList.AppendString("default");
-
   return voiceList;
 }
 
 PBoolean PTextToSpeech_Festival::SetVoice(const PString & v)
 {
-  PWaitAndSignal m(mutex);
-  voice = v;
-  return PTrue;
+  return v == "default";
 }
 
 PBoolean PTextToSpeech_Festival::SetRate(unsigned v)
 {
   rate = v;
-  return PTrue;
+  return true;
 }
 
 unsigned PTextToSpeech_Festival::GetRate()
@@ -492,7 +463,7 @@ unsigned PTextToSpeech_Festival::GetRate()
 PBoolean PTextToSpeech_Festival::SetVolume(unsigned v)
 {
   volume = v;
-  return PTrue;
+  return true;
 }
 
 unsigned PTextToSpeech_Festival::GetVolume()
@@ -503,9 +474,9 @@ unsigned PTextToSpeech_Festival::GetVolume()
 PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fname)
 {
   PString text = otext;
-  text.Replace('\n', ' ', PTrue);
-  text.Replace('\"', '\'', PTrue);
-  text.Replace('\\', ' ', PTrue);
+  text.Replace('\n', ' ', true);
+  text.Replace('\"', '\'', true);
+  text.Replace('\\', ' ', true);
   text = "\"" + text + "\"";
 
   PString cmdLine = "echo " + text + " | ./text2wave -F " + PString(PString::Unsigned, rate) + " -otype riff > " + fname;
