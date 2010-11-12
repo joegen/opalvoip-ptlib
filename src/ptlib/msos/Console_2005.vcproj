@@ -8135,14 +8135,6 @@
 					RelativePath="..\..\ptclib\ptts.cxx"
 					>
 					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
@@ -8175,14 +8167,6 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
@@ -8208,14 +8192,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 6 Standard SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="No Trace|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -9460,10 +9436,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\videoio.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ptlib\msos\ptlib\vidinput_app.h"
 					>
 				</File>
 			</Filter>
