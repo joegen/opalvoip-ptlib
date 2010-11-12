@@ -42,6 +42,11 @@
 
 #if P_DNS
 
+#ifdef _MSC_VER
+  #pragma comment(lib, "DnsAPI.Lib")
+  #pragma message("DNS support enabled")
+#endif
+
 
 /////////////////////////////////////////////////
 
@@ -615,6 +620,13 @@ PDNS::MXRecord * PDNS::MXRecordList::GetNext()
 
   return (PDNS::MXRecord *)GetAt(lastIndex++);
 }
+
+
+#else
+
+  #ifdef _MSC_VER
+    #pragma message("DNS support DISABLED")
+  #endif
 
 #endif // P_DNS
 

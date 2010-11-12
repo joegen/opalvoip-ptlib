@@ -47,7 +47,8 @@
 
 
 #if defined(_MSC_VER)
-#pragma comment(lib, P_LDAP_LIBRARY)
+  #pragma comment(lib, P_LDAP_LIBRARY)
+  #pragma message("LDAP support enabled")
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1042,6 +1043,12 @@ void PLDAPSchema::OnSendSchema(PArray<PLDAPSession::ModAttrib> & attrib, PLDAPSe
 	}
 }
 
+
+#else
+
+  #if defined(_MSC_VER)
+    #pragma message("LDAP support DISABLED")
+  #endif
 
 #endif // P_LDAP
 

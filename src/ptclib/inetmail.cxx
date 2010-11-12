@@ -35,7 +35,7 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <ptclib/inetmail.h>
-#if P_SASL2
+#if P_SASL
 #include <ptclib/psasl.h>
 #endif
 
@@ -101,7 +101,7 @@ PBoolean PSMTPClient::Close()
 }
 
 
-#if P_SASL2
+#if P_SASL
 PBoolean PSMTPClient::LogIn(const PString & username,
                         const PString & password)
 {
@@ -874,7 +874,7 @@ PBoolean PPOP3Client::Close()
 
 PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, int options)
 {
-#if P_SASL2
+#if P_SASL
   PString mech;
   PSASLClient auth("pop", username, username, password);
 
@@ -924,9 +924,9 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
     } while (result == PSASLClient::Continue);
     auth.End();
   }
-  else {
+  else
 #endif
-
+  {
     if (!apopBanner.IsEmpty()) { // let's try with APOP
 
       PMessageDigest::Result bin_digest;
@@ -953,10 +953,7 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
 
     if (ExecuteCommand(PASS, password) <= 0)
       return PFalse;
-
-#if P_SASL2
   }
-#endif
 
   loggedIn = PTrue;
   return PTrue;

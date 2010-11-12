@@ -973,16 +973,6 @@ dnl but needs resolv.h included which defines res_search as __res_search
 
 dnl MSWIN_DISPLAY    resolver,DNS Resolver
 dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS=1
-dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
-dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  resolver,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  resolver,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  resolver,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  resolver,\program files\microsoft visual studio 9.0\vc\platformsdk\
-dnl MSWIN_CHECK_DIR  resolver,\program files\microsoft visual studio 8\vc\platformsdk\
-dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2
 
 AC_ARG_ENABLE([resolver],
 	      AS_HELP_STRING([--disable-resolver],[disable DNS resolver support]),
@@ -1046,10 +1036,10 @@ else
 
   if test "x${HAS_SASL2}" = "x1" ; then
     ENDLDLIBS="$ENDLDLIBS -lsasl2"
-    AC_DEFINE(P_SASL2)
+    AC_DEFINE_UNQUOTED(P_SASL,2)
   elif test "x${HAS_SASL}" = "x1" ; then
     ENDLDLIBS="$ENDLDLIBS -lsasl"
-    AC_DEFINE(P_SASL)
+    AC_DEFINE_UNQUOTED(P_SASL,1)
   fi
 fi dnl disable_Sasl
 AC_SUBST(HAS_SASL2)
@@ -1264,16 +1254,6 @@ dnl look for IPV6 functions
 
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
 dnl MSWIN_CHECK_FILE ipv6,include\ws2tcpip.h,P_HAS_IPV6=1
-dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 
 AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
 
@@ -1400,15 +1380,6 @@ dnl Speech
 dnl MSWIN_DISPLAY       sapi,Speech API
 dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
 dnl MSWIN_DEFINE        sapi,P_TTS
-dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
-dnl MSWIN_FIND_FILE     sapi,P_SAPI_LIBRARY,sapi.lib,lib
-dnl MSWIN_CHECK_DIR	sapi,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR	sapi,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR	sapi,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR     sapi,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR     sapi,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR     sapi,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK*
 
 
 PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
@@ -1510,16 +1481,6 @@ dnl look for QoS functions
 
 dnl MSWIN_DISPLAY    qos,QoS Support
 dnl MSWIN_CHECK_FILE qos,include\qossp.h|QOS_DESTADDR,P_QOS=1
-dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  qos,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  qos,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  qos,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 
 PTLIB_SIMPLE_OPTION([qos], [QOS], [enable QOS support])
 
@@ -1659,20 +1620,6 @@ dnl look for Direct Sound
 
 dnl MSWIN_DISPLAY    dsound,Direct Sound Support
 dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
-dnl MSWIN_CHECK_FILE dsound,include\armmacros.s,P_DIRECTSOUND_WINCE=1
-dnl MSWIN_DIR_SYMBOL dsound,DIRECTX_DIR
-dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB64,dsound.lib,lib/x64
-dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib/x86
-dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB32,dsound.lib,lib
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  dsound,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  dsound,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  dsound,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 
 
 dnl ########################################################################
@@ -1681,16 +1628,6 @@ dnl look for Direct Show (video)
 dnl MSWIN_DISPLAY    dshow,Direct Show Support
 dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
 dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_QEDIT_H,Qedit.h,include
-dnl MSWIN_DIR_SYMBOL dshow,DIRECTSHOW_DIR
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  dshow,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  dshow,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  dshow,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  dshow,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 
 
 dnl ########################################################################
@@ -1711,15 +1648,6 @@ dnl look for ODBC code
 
 dnl MSWIN_DISPLAY    odbc,ODBC support
 dnl MSWIN_CHECK_FILE odbc,include\odbcinst.h,P_ODBC=1
-dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  odbc,\Program Files (x86)\Microsoft SDKs\Windows\v7*
-dnl MSWIN_CHECK_DIR  odbc,\Program Files (x86)\Microsoft SDKs\Windows\v6*
-dnl MSWIN_CHECK_DIR  odbc,\Program Files (x86)\Microsoft SDKs\Windows\v*
-dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio 9.0\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\
-dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\
 
 AC_ARG_ENABLE([odbc],
 	      AS_HELP_STRING([--disable-odbc],[disable ODBC support]),

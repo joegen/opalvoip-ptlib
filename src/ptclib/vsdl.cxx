@@ -48,7 +48,8 @@ extern "C" {
 };
 
 #ifdef _MSC_VER
-#pragma comment(lib, P_SDL_LIBRARY)
+  #pragma comment(lib, P_SDL_LIBRARY)
+  #pragma message("SDL video support enabled")
 #endif
 
 
@@ -317,6 +318,12 @@ void PVideoOutputDevice_SDL::SDLThreadMain(PThread &, INT)
   PTRACE(4, "VSDL\tEnd of sdl display loop");
 }
 
+
+#else
+
+  #ifdef _MSC_VER
+    #pragma message("SDL video support DISABLED")
+  #endif
 
 #endif // P_SDL
 

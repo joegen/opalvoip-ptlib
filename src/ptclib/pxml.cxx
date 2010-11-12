@@ -52,7 +52,8 @@
 
 
 #ifdef P_EXPAT_LIBRARY
-#pragma comment(lib, P_EXPAT_LIBRARY)
+  #pragma comment(lib, P_EXPAT_LIBRARY)
+  #pragma message("XML support (via Expat) enabled")
 #endif
 
 
@@ -1543,6 +1544,12 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 }
 
 ///////////////////////////////////////////////////////
+
+#else
+
+  #ifdef P_EXPAT_LIBRARY
+    #pragma message("XML support (via Expat) DISABLED")
+  #endif
 
 #endif 
 
