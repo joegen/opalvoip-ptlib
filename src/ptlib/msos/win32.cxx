@@ -50,7 +50,7 @@
 #if defined(P_WIN_COM) 
   #include <objbase.h>
   #ifdef _MSC_VER
-    #pragma comment(lib, _OLE_LIB)
+    #pragma comment(lib, "ole32.lib")
   #endif
 #endif
 

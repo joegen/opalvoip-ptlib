@@ -31,7 +31,7 @@
 #ifndef PTLIB_PSASL_H
 #define PTLIB_PSASL_H
 
-#if P_SASL2
+#if P_SASL
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -85,7 +85,7 @@ public:
     PBoolean            End();
 };
 
-#endif  // P_SASL2
+#endif  // P_SASL
 
 #endif  // PTLIB_PSASL_H
 

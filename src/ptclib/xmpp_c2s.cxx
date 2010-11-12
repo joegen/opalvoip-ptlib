@@ -102,7 +102,7 @@ XMPP::C2S::StreamHandler::StreamHandler(const JID& jid, const PString& pwd, PBoo
   : m_VersionMajor(1), m_VersionMinor(0),
     m_NewAccount(newAccount),
     m_JID(jid), m_Password(pwd),
-#if P_SASL2
+#if P_SASL
     m_SASL("xmpp", BareJID(m_JID), m_JID.GetUser(), m_Password),
 #endif
     m_HasBind(PFalse), m_HasSession(PFalse),
@@ -364,10 +364,31 @@ void XMPP::C2S::StreamHandler::StartAuthNegotiation()
     return;
   }
 
-#if P_SASL2
+#if P_SASL
   // We have SASL, but we might have not found a mechanism in
   // common, or we are just supporting the old jabber protocol
-  if (m_VersionMajor == 0 || m_Mechanism.IsEmpty())
+  if (m_VersionMajor > 0 && !m_Mechanism.IsEmpty()) {
+    // Go with SASL!
+    PString output;
+
+    if (!m_SASL.Start(m_Mechanism, output)) {
+      Stop();
+      return;
+    }
+
+    PStringStream auth;
+    auth << "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='"
+         << m_Mechanism << '\'';
+
+    if (output.IsEmpty())
+      auth << "/>";
+    else
+      auth << '>' << output << "</auth>";
+
+    m_Stream->Write(auth);
+    SetState(XMPP::C2S::StreamHandler::SASLStarted);
+  }
+  else
 #endif
   {
     // JEP-0078 Non SASL authentication
@@ -380,33 +401,6 @@ void XMPP::C2S::StreamHandler::StartAuthNegotiation()
     m_Stream->Write(auth);
     SetState(XMPP::C2S::StreamHandler::NonSASLStarted);
   }
-#if P_SASL2
-  else {
-    // Go with SASL!
-    PString output;
-
-    if (!m_SASL.Start(m_Mechanism, output))
-    {
-      Stop();
-      return;
-    }
-
-    PString auth("<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='");
-    auth += m_Mechanism;
-
-    if (output.IsEmpty())
-      auth += "'/>";
-    else
-    {
-      auth += "'>";
-      auth += output;
-      auth += "</auth>";
-    }
-
-    m_Stream->Write(auth);
-    SetState(XMPP::C2S::StreamHandler::SASLStarted);
-  }
-#endif
 }
 
 
@@ -438,7 +432,7 @@ void XMPP::C2S::StreamHandler::OnElement(PXML& pdu)
     HandleTLSStartedState(pdu);
     break;
 
-#if P_SASL2
+#if P_SASL
   case SASLStarted:
     HandleSASLStartedState(pdu);
     break;
@@ -496,7 +490,7 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
 
   // We might have to negotiate the TLS first, but we set up the SASL phase now
 
-#if P_SASL2
+#if P_SASL
   PXMLElement * mechList = pdu.GetRootElement()->GetElement("mechanisms");
   if (!mechList || !m_SASL.Init(m_JID.GetServer(), ourMechSet))
   {
@@ -548,7 +542,7 @@ void XMPP::C2S::StreamHandler::HandleTLSStartedState(PXML& /*pdu*/)
 }
 
 
-#if P_SASL2
+#if P_SASL
 void XMPP::C2S::StreamHandler::HandleSASLStartedState(PXML& pdu)
 {
   PString name = pdu.GetRootElement()->GetName();

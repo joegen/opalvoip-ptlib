@@ -166,15 +166,6 @@
   #undef P_HAS_IPV6
 #endif //  _WIN32_WCE
 
-#if defined(_MSC_VER) && P_HAS_IPV6
-
-  #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/include/winsock2.h>)
-  #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/include/ws2tcpip.h>)
-
-  #define P_WINSOCK2_LIBRARY "@IPV6_DIR@/lib/ws2_32.lib"
-
-#endif
-
 
 /////////////////////////////////////////////////
 //
@@ -183,12 +174,6 @@
 //
 
 #undef P_QOS
-
-#if defined(_MSC_VER) && P_QOS
-
-  #pragma include_alias(<qossp.h>, <@QOS_DIR@/include/qossp.h>)
-
-#endif
 
 
 /////////////////////////////////////////////////
@@ -530,16 +515,6 @@
   #undef P_HAS_RES_NINIT
 #endif
 
-#if defined(_MSC_VER) && P_DNS
-
-  #pragma include_alias(<windns.h>, <@DNS_DIR@/include/windns.h>)  
-  #pragma include_alias(<ntverp.h>, <@DNS_DIR@/include/ntverp.h>)
-
-  #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
-
-#endif
-
-
 
 /////////////////////////////////////////////////
 //
@@ -556,28 +531,7 @@
 // SAPI speech API (Windows only)
 //
 
-#undef P_SAPI_LIBRARY
-
-#if !defined(_WIN32_WCE) && defined(P_SAPI_LIBRARY)
-  #undef P_SAPI
-#endif
-
-#if defined(_MSC_VER) && P_SAPI
-
-  #pragma include_alias(<sphelper.h>, <@SAPI_DIR@/include/sphelper.h>)
-  #pragma include_alias(<sapi.h>,     <@SAPI_DIR@/include/sapi.h>)
-  #pragma include_alias(<sapiddk.h>,  <@SAPI_DIR@/include/sapiddk.h>)
-  #pragma include_alias(<SPError.h>,  <@SAPI_DIR@/include/SPError.h>)
-  #pragma include_alias(<SPDebug.h>,  <@SAPI_DIR@/include/SPDebug.h>)
-  #pragma include_alias(<intsafe.h>,  <@SAPI_DIR@/include/intsafe.h>)
-  #pragma include_alias(<rp.h>,       <@SAPI_DIR@/include/rpc.h>)
-  #pragma include_alias(<rpcndr.h>,   <@SAPI_DIR@/include/rpcndr.h>)
-  #pragma include_alias(<rpcsal.h>,   <@SAPI_DIR@/include/rpcsal.h>)
-
-  #undef P_SAPI_LIBRARY
-
-#endif
-
+#undef P_SAPI
 
 
 /////////////////////////////////////////////////
@@ -587,11 +541,10 @@
 
 #if !defined (_WIN32_WCE) && !defined(P_IPHONEOS)
   #undef P_SASL 
-  #undef P_SASL2
   #undef P_HAS_SASL_SASL_H 
 #endif
 
-#if defined(_MSC_VER) && (defined(P_SASL) || defined(P_SASL2))
+#if defined(_MSC_VER) && defined(P_SASL)
 
   #pragma include_alias(<sasl/sasl.h>, <@SASL_DIR@/include/sasl.h>)
 
@@ -641,10 +594,6 @@
   #endif
 #endif
 
-#if defined(_MSC_VER) && P_APPSHARE
-  #pragma include_alias(<ptlib/vidinput_app.h>, <ptlib/msos/ptlib/vidinput_app.h>)
-#endif
-
 
 
 /////////////////////////////////////////////////
@@ -655,21 +604,6 @@
 #undef P_DIRECTSOUND_WINCE
 #if P_AUDIO && !defined(_WIN32_WCE) && !defined(P_DIRECTSOUND_WINCE) && defined(_MSC_VER)
   #undef P_DIRECTSOUND
-#endif
-
-#if defined(P_DIRECTSOUND)
-
-  #pragma include_alias(<dsound.h>, <@DIRECTX_DIR@/include/dsound.h>)
-
-  #undef P_DIRECTSOUND_LIB64
-  #undef P_DIRECTSOUND_LIB32
-
-  #if defined(_WIN64)
-    #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB64
-  #else
-    #define P_DIRECTSOUND_LIBRARY P_DIRECTSOUND_LIB32
-  #endif
-
 #endif
 
 
@@ -685,41 +619,13 @@
     #ifdef _WIN32_WCE
 
       #undef P_VFW_CAPTURE
-
       #define P_DIRECTSHOW 1
-      #define P_DIRECTSHOW_LIBRARY1 "ddraw.lib"
-      #define P_DIRECTSHOW_LIBRARY2 "strmiids.lib"
 
     #else // _WIN32_WCE
 
       #define P_VFW_CAPTURE 1
-
       #undef P_DIRECTSHOW
       #undef P_DIRECTSHOW_QEDIT_H
-
-      #if defined(P_DIRECTSHOW)
-
-        #pragma include_alias(<dshow.h>,    <@DIRECTSHOW_DIR@/include/dshow.h>)
-        #pragma include_alias(<ddraw.h>,    <@DIRECTSHOW_DIR@/include/ddraw.h>)
-        #pragma include_alias(<amvideo.h>,  <@DIRECTSHOW_DIR@/include/amvideo.h>)
-        #pragma include_alias(<evcode.h>,   <@DIRECTSHOW_DIR@/include/evcode.h>)
-        #pragma include_alias(<errors.h>,   <@DIRECTSHOW_DIR@/include/errors.h>)
-        #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
-        #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
-        #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
-        #pragma include_alias(<VFWMSGS.H>,  <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
-        #pragma include_alias(<mmstream.h>, <@DIRECTSHOW_DIR@/include/mmstream.h>)
-        #pragma include_alias(<ddstream.h>, <@DIRECTSHOW_DIR@/include/ddstream.h>)
-        #pragma include_alias(<austream.h>, <@DIRECTSHOW_DIR@/include/austream.h>)
-        #pragma include_alias(<rp.h>,       <@DIRECTSHOW_DIR@/include/rpc.h>)
-        #pragma include_alias(<rpcndr.h>,   <@DIRECTSHOW_DIR@/include/rpcndr.h>)
-        #pragma include_alias(<rpcsal.h>,   <@DIRECTSHOW_DIR@/include/rpcsal.h>)
-        #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
-
-        #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
-        #define P_DIRECTSHOW_LIBRARY2 "@DIRECTSHOW_DIR@/lib/quartz.lib"
-
-      #endif // P_DIRECTSHOW
 
     #endif // _WIN32_WCE
 
@@ -750,7 +656,6 @@
   #endif
 
   #define P_WIN_COM
-  #define _OLE_LIB "ole32.lib"
 
 #endif 
 

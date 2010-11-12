@@ -37,7 +37,7 @@
 #include <ptclib/psasl.h>
 #include <ptclib/cypher.h>
 
-#if P_SASL2
+#if P_SASL
 
 extern "C" {
 
@@ -51,9 +51,8 @@ extern "C" {
 
 
 #ifdef _MSC_VER
-
-#pragma comment(lib, P_SASL_LIBRARY)
-
+  #pragma comment(lib, P_SASL_LIBRARY)
+  #pragma message("SASL support enabled")
 #endif
 
 ///////////////////////////////////////////////////////
@@ -342,7 +341,14 @@ PBoolean PSASLClient::End()
     return PFalse;
 }
 
-#endif // P_SASL2
+
+#else
+
+  #ifdef _MSC_VER
+    #pragma message("SASL support DISABLED")
+  #endif
+
+#endif // P_SASL
 
 // End of File ///////////////////////////////////////////////////////////////
 

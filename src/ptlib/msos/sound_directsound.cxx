@@ -33,7 +33,7 @@
 
 #include <ptlib.h>
 
-#if defined(P_DIRECTSOUND)
+#if P_DIRECTSOUND
 
 #define INITGUID
 #include <ptlib/msos/ptlib/sound_directsound.h>
@@ -44,7 +44,10 @@
 #define DXGetErrorString9(r) r
 
 
-#pragma comment(lib, P_DIRECTSOUND_LIBRARY)
+#ifdef _MSC_VER
+  #pragma comment(lib, "dsound.lib")
+  #pragma message("Direct Sound support enabled")
+#endif
 
 
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
@@ -1076,5 +1079,11 @@ PSoundChannelDirectSound::IsOpen () const
   return isOpen;
 }
 
+
+#else
+
+  #ifdef _MSC_VER
+    #pragma message("Direct Sound support DISABLED")
+  #endif
 
 #endif // P_DIRECTSOUND

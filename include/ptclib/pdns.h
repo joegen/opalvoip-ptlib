@@ -48,7 +48,6 @@
 #ifndef __MINGW32__
 #    include <ntverp.h>
 #endif
-#  pragma comment(lib, P_DNS_LIBRARY)
 
 // Accommodate spelling error in windns.h
 #ifndef __MINGW32__
