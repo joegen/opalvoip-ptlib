@@ -35,10 +35,9 @@
 #pragma interface
 #endif
 
-#include <ptlib.h>
 
+#include <ptlib/pfactory.h>
 
-#include <ptclib/ptts.h>
 
 class PTextToSpeech : public PObject
 {
@@ -68,20 +67,20 @@ class PTextToSpeech : public PObject
     virtual PBoolean SetVolume(unsigned volume) = 0;
     virtual unsigned GetVolume() = 0;
 
-    virtual PBoolean OpenFile   (const PFilePath & fn) = 0;
+    virtual PBoolean OpenFile(const PFilePath & fn) = 0;
     virtual PBoolean OpenChannel(PChannel * chanel) = 0;
     virtual PBoolean IsOpen() = 0;
 
-    virtual PBoolean Close      () = 0;
-    virtual PBoolean Speak      (const PString & text, TextType hint = Default) = 0;
+    virtual PBoolean Close() = 0;
+    virtual PBoolean Speak(const PString & text, TextType hint = Default) = 0;
 };
 
 #if P_SAPI
-PFACTORY_LOAD(PTextToSpeech_SAPI);
+  PFACTORY_LOAD(PTextToSpeech_SAPI);
 #endif
 
 #ifndef _WIN32_WCE
-PFACTORY_LOAD(PTextToSpeech_Festival);
+  PFACTORY_LOAD(PTextToSpeech_Festival);
 #endif
 
 
