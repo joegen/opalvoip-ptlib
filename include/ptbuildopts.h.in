@@ -554,23 +554,25 @@
 /////////////////////////////////////////////////
 //
 // SAPI speech API (Windows only)
-// Disabled SAPI because Vista insists in linking with the non-debug version of the code
-// It will need to stay disabled until someone adds a compile-time test for Vista
 //
 
-#ifdef P_ATL
-#ifndef _WIN32_WCE
-// #undef P_SAPI
-#endif
+#undef P_SAPI_LIBRARY
+
+#if !defined(_WIN32_WCE) && defined(P_SAPI_LIBRARY)
+  #undef P_SAPI
 #endif
 
 #if defined(_MSC_VER) && P_SAPI
 
   #pragma include_alias(<sphelper.h>, <@SAPI_DIR@/include/sphelper.h>)
-  #pragma include_alias(<sapi.h>, <@SAPI_DIR@/include/sapi.h>)
-  #pragma include_alias(<sapiddk.h>, <@SAPI_DIR@/include/sapiddk.h>)
-  #pragma include_alias(<SPError.h>, <@SAPI_DIR@/include/SPError.h>)
-  #pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
+  #pragma include_alias(<sapi.h>,     <@SAPI_DIR@/include/sapi.h>)
+  #pragma include_alias(<sapiddk.h>,  <@SAPI_DIR@/include/sapiddk.h>)
+  #pragma include_alias(<SPError.h>,  <@SAPI_DIR@/include/SPError.h>)
+  #pragma include_alias(<SPDebug.h>,  <@SAPI_DIR@/include/SPDebug.h>)
+  #pragma include_alias(<intsafe.h>,  <@SAPI_DIR@/include/intsafe.h>)
+  #pragma include_alias(<rp.h>,       <@SAPI_DIR@/include/rpc.h>)
+  #pragma include_alias(<rpcndr.h>,   <@SAPI_DIR@/include/rpcndr.h>)
+  #pragma include_alias(<rpcsal.h>,   <@SAPI_DIR@/include/rpcsal.h>)
 
   #undef P_SAPI_LIBRARY
 
@@ -697,22 +699,21 @@
 
       #if defined(P_DIRECTSHOW)
 
-        #pragma include_alias(<dshow.h>, <@DIRECTSHOW_DIR@/include/dshow.h>)
-
-        #pragma include_alias(<ddraw.h>, <@DIRECTSHOW_DIR@/include/ddraw.h>)
-        #pragma include_alias(<amvideo.h>, <@DIRECTSHOW_DIR@/include/amvideo.h>)
-        #pragma include_alias(<evcode.h>, <@DIRECTSHOW_DIR@/include/evcode.h>)
-        #pragma include_alias(<errors.h>, <@DIRECTSHOW_DIR@/include/errors.h>)
+        #pragma include_alias(<dshow.h>,    <@DIRECTSHOW_DIR@/include/dshow.h>)
+        #pragma include_alias(<ddraw.h>,    <@DIRECTSHOW_DIR@/include/ddraw.h>)
+        #pragma include_alias(<amvideo.h>,  <@DIRECTSHOW_DIR@/include/amvideo.h>)
+        #pragma include_alias(<evcode.h>,   <@DIRECTSHOW_DIR@/include/evcode.h>)
+        #pragma include_alias(<errors.h>,   <@DIRECTSHOW_DIR@/include/errors.h>)
         #pragma include_alias(<edevdefs.h>, <@DIRECTSHOW_DIR@/include/edevdefs.h>)
         #pragma include_alias(<audevcod.h>, <@DIRECTSHOW_DIR@/include/audevcod.h>)
         #pragma include_alias(<dvdevcod.h>, <@DIRECTSHOW_DIR@/include/dvdevcod.h>)
-        #pragma include_alias(<VFWMSGS.H>, <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
+        #pragma include_alias(<VFWMSGS.H>,  <@DIRECTSHOW_DIR@/include/VFWMSGS.H>)
         #pragma include_alias(<mmstream.h>, <@DIRECTSHOW_DIR@/include/mmstream.h>)
         #pragma include_alias(<ddstream.h>, <@DIRECTSHOW_DIR@/include/ddstream.h>)
         #pragma include_alias(<austream.h>, <@DIRECTSHOW_DIR@/include/austream.h>)
-        #pragma include_alias(<rp.h>, <@DIRECTSHOW_DIR@/include/rpc.h>)
-        #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcndr.h>)
-        #pragma include_alias(<rpcndr.h>, <@DIRECTSHOW_DIR@/include/rpcsal.h>)
+        #pragma include_alias(<rp.h>,       <@DIRECTSHOW_DIR@/include/rpc.h>)
+        #pragma include_alias(<rpcndr.h>,   <@DIRECTSHOW_DIR@/include/rpcndr.h>)
+        #pragma include_alias(<rpcsal.h>,   <@DIRECTSHOW_DIR@/include/rpcsal.h>)
         #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
 
         #define P_DIRECTSHOW_LIBRARY1 "@DIRECTSHOW_DIR@/lib/strmiids.lib"
