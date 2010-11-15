@@ -1774,7 +1774,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\..\SVN-Trunk\ptlib\src\ptlib\msos\directshow.cxx"
+					RelativePath=".\directshow.cxx"
 					>
 				</File>
 				<File
