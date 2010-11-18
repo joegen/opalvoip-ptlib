@@ -53,7 +53,7 @@ PNatStrategy::PNatStrategy()
 
 PNatStrategy::~PNatStrategy()
 {
-
+   natlist.RemoveAll();
 }
 
 void PNatStrategy::AddMethod(PNatMethod * method)
