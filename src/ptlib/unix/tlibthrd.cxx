@@ -496,7 +496,11 @@ void * PThread::PX_ThreadStart(void * arg)
   // make sure the cleanup routine is called when the thread exits
   //pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
 
+#if defined(P_LINUX)
+  PTRACE(5, "PTLib\tStarted thread " << thread << " (" << thread->PX_linuxId << ") " << thread->GetThreadName());
+#else
   PTRACE(5, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
+#endif
 
   PProcess::Current().OnThreadStart(*thread);
 
