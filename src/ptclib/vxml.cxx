@@ -959,6 +959,7 @@ PBoolean PVXMLSession::Close()
 
     // Signal all syncpoints that could be waiting for things
     answerSync.Signal();
+    recordSync.Signal();
 
     PAssert(thread->WaitForTermination(10000), "VXML thread did not exit in time.");
     delete thread;
