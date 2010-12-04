@@ -61,11 +61,15 @@ ifeq ($(MACHTYPE),hppa)
   STDCCFLAGS += -fPIC
 endif
 
+ifeq ($(P_SHAREDLIB),1)
+  PLUGIN_LIBS += $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/$(PTLIB_FILE)
+endif
+
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	@mkdir -p $(OBJDIR)
 	$(Q_CC)$(CXX) $(STDCCFLAGS) $(CXXFLAGS) \
 	$(LDSOPTS) $< \
-	$(PLUGIN_LIBS) $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/libpt.so \
+	$(PLUGIN_LIBS) \
 	$(LDFLAGS) \
 	-o $@
 
