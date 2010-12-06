@@ -222,7 +222,10 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PVideoInputDevice_DirectShow();
     ~PVideoInputDevice_DirectShow();
 
+
+    static PStringArray GetInputDeviceNames();
     virtual PStringArray GetDeviceNames() const;
+    static PBoolean GetDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
     virtual bool GetDeviceCapabilities(Capabilities * capabilities) const;
 #ifndef _WIN32_WCE
     virtual PVideoInputControl * GetVideoInputControls();
@@ -296,31 +299,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 };
 
 
-//////////////////////////////////////////////////////////////////////////////////////
-
-class PVideoInputDevice_DirectShow_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-public:
-  virtual PObject *   CreateInstance(int /*userData*/) const
-  {
-    return new PVideoInputDevice_DirectShow;
-  }
-
-  virtual PStringArray GetDeviceNames(int /*userData*/) const
-  {
-    PVideoInputDevice_DirectShow instance;
-    return instance.GetDeviceNames();
-  }
-
-  virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const
-  {
-    PVideoInputDevice_DirectShow instance;
-    return instance.Open(deviceName, false) && instance.GetDeviceCapabilities((PVideoInputDevice::Capabilities *)caps);
-  }
-
-} PVideoInputDevice_DirectShow_descriptor;
-
-PCREATE_PLUGIN(DirectShow, PVideoInputDevice, &PVideoInputDevice_DirectShow_descriptor);
+PCREATE_VIDINPUT_PLUGIN(DirectShow);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -462,6 +441,21 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
 PVideoInputDevice_DirectShow::~PVideoInputDevice_DirectShow()
 {
   Close();
+}
+
+
+PStringArray PVideoInputDevice_DirectShow::GetInputDeviceNames()
+{
+  PVideoInputDevice_DirectShow instance;
+  return instance.GetDeviceNames();
+}
+
+
+PBoolean PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & deviceName,
+                                                             Capabilities * capabilities)
+{
+  PVideoInputDevice_DirectShow instance;
+  return instance.Open(deviceName, false) && instance.GetDeviceCapabilities(capabilities);
 }
 
 
@@ -867,16 +861,15 @@ PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned Rate)
   return true;
 }
 
-PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned Width, unsigned Height)
+PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned height)
 {
-
-  if ((frameWidth == Width) && (frameHeight == Height))
-    return true;
-
-  PTRACE(5,"DShow\tSetting Video FrameSize " << Width << " x " << Height);
-
-  if (!PVideoDevice::SetFrameSize(Width, Height))
+  unsigned oldWidth = frameWidth;
+  unsigned oldHeight = frameHeight;
+  if (!PVideoDevice::SetFrameSize(width, height))
     return false;
+
+  if ((frameWidth == oldWidth) && (frameHeight == oldHeight))
+    return true;
 
   bool stop = false;
   if (IsCapturing()) { 
@@ -886,6 +879,7 @@ PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned Width, unsigned Hei
   /// Set the video Filter
   if (m_pCameraOutPin != NULL && !SetVideoFormat(m_pCameraOutPin)) {
       PTRACE(2,"DShow\tUnable to set Video Format!");
+      PVideoDevice::SetFrameSize(oldWidth, oldHeight);
       return false;
   } 
 

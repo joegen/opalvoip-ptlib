@@ -431,12 +431,11 @@ static struct {
     { "WUXGA",  1920,                     1200                      },
     { "QXGA",   2048,                     1536                      },
     { "WQXGA",  2560,                     1600                      },
-    { }
 };
 
 bool PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
 {
-  for (int i = 0; SizeTable[i].name != NULL; i++) {
+  for (int i = 0; i < PARRAYSIZE(SizeTable); i++) {
     if (str *= SizeTable[i].name) {
       width = SizeTable[i].width;
       height = SizeTable[i].height;
@@ -450,12 +449,21 @@ bool PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned 
 
 PString PVideoFrameInfo::AsString(unsigned width, unsigned height)
 {
-  for (int i = 0; SizeTable[i].name != NULL; i++) {
+  for (int i = 0; i < PARRAYSIZE(SizeTable); i++) {
     if (SizeTable[i].width == width && SizeTable[i].height == height)
       return SizeTable[i].name;
   }
 
   return psprintf("%ux%u", width, height);
+}
+
+
+PStringArray PVideoFrameInfo::GetSizeNames()
+{
+  PStringArray names(PARRAYSIZE(SizeTable));
+  for (int i = 0; i < PARRAYSIZE(SizeTable); i++)
+    names[i] = SizeTable[i].name;
+  return names;
 }
 
 
@@ -800,53 +808,6 @@ PBoolean PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
-static struct {
-    unsigned asked_width, asked_height, device_width, device_height;
-} framesizeTab[] = {    
-    { 704, 576,    640, 480 },
-    { 640, 480,    704, 576 },
-    { 640, 480,    352, 288 },
-
-    { 352, 288,    704, 576 },
-    { 352, 288,    640, 480 },
-    { 352, 288,    352, 240 },
-    { 352, 288,    320, 240 },
-    { 352, 288,    176, 144 },
-    { 352, 288,   1024, 576 }, /* High resolution need to be set at the end */
-    { 352, 288,   1280, 960 },
-
-    { 352, 240,    352, 288 },
-    { 352, 240,    320, 240 },
-    { 352, 240,    640, 480 },
-
-    { 320, 240,    352, 288 },
-    { 320, 240,    352, 240 },
-    { 320, 240,    640, 480 },
-
-    { 176, 144,    352, 288 },
-    { 176, 144,    352, 240 },
-    { 176, 144,    320, 240 },
-    { 176, 144,    176, 120 },
-    { 176, 144,    160, 120 },
-    { 176, 144,    640, 480 },
-    { 176, 144,   1024, 576 },
-    { 176, 144,   1280, 960 }, /* High resolution need to be set at the end */
-
-    { 176, 120,    352, 288 },
-    { 176, 120,    352, 240 },
-    { 176, 120,    320, 240 },
-    { 176, 120,    176, 144 },
-    { 176, 120,    160, 120 },
-    { 176, 120,    640, 480 },
-
-    { 160, 120,    352, 288 },
-    { 160, 120,    352, 240 },
-    { 160, 120,    320, 240 },
-    { 160, 120,    176, 144 },
-    { 160, 120,    176, 120 },
-    { 160, 120,    640, 480 },
-};
-
 PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, ResizeMode resizeMode)
 {
   if (SetFrameSize(width, height)) {
@@ -863,18 +824,9 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
   }
 
   // Try and get the most compatible physical frame size to convert from/to
-  PINDEX i;
-  for (i = 0; i < PARRAYSIZE(framesizeTab); i++) {
-    if (framesizeTab[i].asked_width == width && framesizeTab[i].asked_height == height &&
-        SetFrameSize(framesizeTab[i].device_width, framesizeTab[i].device_height))
-      break;
-  }
-  if (i >= PARRAYSIZE(framesizeTab)) {
-    // Failed to find a resolution the device can do so far, so try
-    // using the maximum width and height it claims it can do.
-    unsigned minWidth, minHeight, maxWidth, maxHeight;
-    if (GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight))
-      SetFrameSize(maxWidth, maxHeight);
+  if (!SetNearestFrameSize(width, height)) {
+    PTRACE(1, "PVidDev\tCannot set an apropriate size to scale from.");
+    return false;
   }
 
   // Now create the converter ( if not already exist)
@@ -907,6 +859,25 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
 }
 
 
+PBoolean PVideoDevice::SetNearestFrameSize(unsigned width, unsigned height)
+{
+  unsigned minWidth, minHeight, maxWidth, maxHeight;
+  if (GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight)) {
+    if (width < minWidth)
+      width = minWidth;
+    else if (width > maxWidth)
+      width = maxWidth;
+
+    if (height < minHeight)
+      height = minHeight;
+    else if (height > maxHeight)
+      height = maxHeight;
+  }
+
+  return SetFrameSize(width, height);
+}
+
+
 PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 {
 #if PTRACING
@@ -914,22 +885,8 @@ PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
   unsigned oldHeight = frameHeight;
 #endif
 
-  unsigned minWidth, minHeight, maxWidth, maxHeight;
-  GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
-
-  if (width < minWidth)
-    frameWidth = minWidth;
-  else if (width > maxWidth)
-    frameWidth = maxWidth;
-  else
-    frameWidth = width;
-
-  if (height < minHeight)
-    frameHeight = minHeight;
-  else if (height > maxHeight)
-    frameHeight = maxHeight;
-  else
-    frameHeight = height;
+  frameWidth = width;
+  frameHeight = height;
 
   if (converter != NULL) {
     if ((!converter->SetSrcFrameSize(width, height)) ||
@@ -1515,6 +1472,62 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
   delete device;
   return NULL;
 }
+
+
+PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
+{
+  if (PVideoDevice::SetNearestFrameSize(width, height))
+    return true;
+
+  // Get the discrete sizes grabber is capable of
+  Capabilities caps;
+  if (!GetDeviceCapabilities(&caps))
+    return false;
+
+  // First try and pick one with the same width
+  std::list<PVideoFrameInfo>::iterator it;
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    if (it->GetFrameWidth() == width)
+      return SetFrameSize(width, it->GetFrameHeight());
+  }
+
+  // Then try for the same height
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    if (it->GetFrameHeight() == height)
+      return SetFrameSize(it->GetFrameWidth(), height);
+  }
+
+  // Then try for the double size
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    unsigned w, h;
+    it->GetFrameSize(w, h);
+    if (w == width*2 && h == height*2)
+      return SetFrameSize(w, h);
+  }
+
+  // Now try and pick one that has the nearest number of pixels in total.
+  unsigned pixels = width*height;
+  unsigned widthToUse = 0, heightToUse = 0;
+  int diff = INT_MAX;
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    unsigned w, h;
+    it->GetFrameSize(w, h);
+    int d = w*h - pixels;
+    if (d < 0)
+      d = -d;
+    if (diff > d) {
+      diff = d;
+      widthToUse = w;
+      heightToUse = h;
+    }
+  }
+
+  if (widthToUse == 0)
+    return false;
+
+  return SetFrameSize(widthToUse, heightToUse);
+}
+
 
 PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {
