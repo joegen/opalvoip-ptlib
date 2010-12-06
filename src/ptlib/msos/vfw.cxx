@@ -106,13 +106,6 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     virtual PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
-    /**Retrieve a list of Device Capabilities
-      */
-    static bool GetDeviceCapabilities(
-      const PString & /*deviceName*/, ///< Name of device
-      Capabilities * /*caps*/         ///< List of supported capabilities
-    ) { return false; }
-
     /**Open the device given the device name.
       */
     virtual PBoolean Open(
@@ -127,6 +120,13 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     /**Close the device.
       */
     virtual PBoolean Close();
+
+    /**Retrieve a list of Device Capabilities
+      */
+    bool GetDeviceCapabilities(
+      Capabilities * /*caps*/         ///< List of supported capabilities
+    );
+    static PBoolean GetDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
 
     /**Start the video device I/O.
       */
@@ -526,6 +526,34 @@ PBoolean PVideoInputDevice_VideoForWindows::Close()
   captureThread = NULL;
 
   return PTrue;
+}
+
+
+PBoolean PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(const PString & deviceName,
+                                                                  Capabilities * capabilities)
+{
+  PVideoInputDevice_VideoForWindows instance;
+  return instance.Open(deviceName, false) && instance.GetDeviceCapabilities(capabilities);
+}
+
+
+bool PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(Capabilities * caps)
+{
+  for (PINDEX prefFormatIdx = 0; FormatTable[prefFormatIdx].colourFormat != NULL; prefFormatIdx++) {
+    PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
+    bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].compression;
+    for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
+      bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
+      bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
+      if (bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx]) && caps != NULL) {
+        PVideoFrameInfo frameInfo;
+        frameInfo.SetFrameSize(winTestResTable[prefResizeIdx].device_width,
+                               winTestResTable[prefResizeIdx].device_height);
+        caps->framesizes.push_back(frameInfo);
+      }
+    }
+  }
+  return !caps->framesizes.empty();
 }
 
 

@@ -237,6 +237,12 @@ class PVideoFrameInfo : public PObject
       unsigned height     ///< Height to convert
     );
 
+    /**Get all "known" image size names.
+       Returns all standard names for sizes, e.g. "qcif", "cif", "vga",
+       "hd1080" etc.
+      */
+    static PStringArray GetSizeNames();
+
   protected:
     unsigned   frameWidth;
     unsigned   frameHeight;
@@ -540,6 +546,18 @@ class PVideoDevice : public PVideoFrameInfo
     PBoolean  /*bScaleNotCrop*/           ///< Not used.
     )  { return SetFrameSizeConverter(width,height,eScale); }
 
+
+    /**Set the nearest available frame size to be used.
+
+       Note that devices may not be able to produce the requested size, so
+       this function picks the nearest available size.
+
+       Default behaviour simply calls SetFrameSize().
+    */
+    virtual PBoolean SetNearestFrameSize(
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
+    );
 
     /**Set the frame size to be used.
 
@@ -1058,6 +1076,18 @@ class PVideoInputDevice : public PVideoDevice
     /**Determine if the video device I/O capture is in progress.
       */
     virtual PBoolean IsCapturing() = 0;
+
+    /**Set the nearest available frame size to be used.
+
+       Note that devices may not be able to produce the requested size, so
+       this function picks the nearest available size.
+
+       Default behaviour simply calls SetFrameSize().
+    */
+    virtual PBoolean SetNearestFrameSize(
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
+    );
 
     /**Grab a frame.
       */
