@@ -138,6 +138,7 @@ class PCLI : public PObject
            Returns false if have error and processing is to cease.
           */
         virtual bool ProcessInput(int ch);
+        virtual bool ProcessInput(const PString & line);
 
         /**Call back for a command line was completed and ENTER pressed.
            The default behaviour processes the line into a PArgList and deals
@@ -524,6 +525,15 @@ class PCLI : public PObject
     void SetUnknownCommandError(const PString & unknownCommandError) { m_unknownCommandError = unknownCommandError; }
   //@}
 
+    /** Initialise a foreground context and return it
+    */
+    virtual Context * StartForeground();
+
+    /** Run a context 
+    */
+    virtual bool RunContext(Context * context);
+
+
   protected:
     PString         m_newLine;
     bool            m_requireEcho;
@@ -581,6 +591,8 @@ class PCLIStandard : public PCLI
       bool runInBackground = true   ///< Spawn a thread to read and interpret commands
     );
   //@}
+
+    PCLI::Context * StartForeground();
 };
 
 
