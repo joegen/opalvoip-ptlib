@@ -164,6 +164,22 @@ bool PCLI::Context::ReadAndProcessInput()
   return ProcessInput(ch);
 }
 
+bool PCLI::Context::ProcessInput(const PString & str)
+{
+  PStringArray lines = str.Lines();
+
+  PINDEX i;
+  for (i = 0; i < lines.GetSize(); ++i) {
+    PINDEX j;
+    PString & line = lines[i];
+    for (j = 0; j < line.GetLength(); ++j)
+      if (!ProcessInput(line[j]))
+        return false;
+    if (!ProcessInput('\n'))
+      return false;
+  }
+  return true;
+}
 
 bool PCLI::Context::ProcessInput(int ch)
 {
@@ -379,18 +395,35 @@ bool PCLI::Start(bool runInBackground)
     return true;
   }
 
+  Context * context = StartForeground();
+  if (context == NULL)
+    return false;
+
+  return RunContext(context);
+}
+
+
+PCLI::Context * PCLI::StartForeground()
+{
   if (m_contextList.size() != 1) {
     PTRACE(2, "PCLI\tCan only start in foreground if have one context.");
-    return false;
+    return NULL;
   }
 
   Context * context = m_contextList.front();
   if (!context->IsOpen()) {
     PTRACE(2, "PCLI\tCannot start foreground processing, context not open.");
-    return false;
+    return NULL;
   }
 
   context->OnStart();
+
+  return context;
+}
+
+
+bool PCLI::RunContext(Context * context)
+{
   while (context->ReadAndProcessInput())
     ;
   return true;
@@ -635,6 +668,15 @@ bool PCLIStandard::Start(bool runInBackground)
                  new PConsoleChannel(PConsoleChannel::StandardOutput),
                  true, true, runInBackground);
   return PCLI::Start(runInBackground);
+}
+
+PCLI::Context * PCLIStandard::StartForeground()
+{
+  if (m_contextList.empty())
+    StartContext(new PConsoleChannel(PConsoleChannel::StandardInput),
+                 new PConsoleChannel(PConsoleChannel::StandardOutput),
+                 true, true, false);
+  return PCLI::StartForeground();
 }
 
 
