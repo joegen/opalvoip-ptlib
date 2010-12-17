@@ -1649,15 +1649,6 @@ PBoolean PVXMLSession::IsRecording() const
 }
 
 
-PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt)
-{ 
-  if (!fn.IsEmpty())
-    return new PWAVFile(fn, mode, opts, fmt);
-
-  return new PWAVFile(mode, opts, fmt); 
-}
-
-
 PBoolean PVXMLSession::TraverseAudio()
 {
   if (!currentNode->IsElement()) {
@@ -1735,15 +1726,8 @@ PBoolean PVXMLSession::TraverseAudio()
           PString contentType;
           PBoolean useCache = !(GetVar("caching") *= "safe") && !(element->GetAttribute("caching") *= "safe");
           if (RetreiveResource(url, contentType, fn, useCache)) {
-            PWAVFile * wavFile = vxmlChannel->CreateWAVFile(fn);
-            if (wavFile == NULL)
-              PTRACE(2, "VXML\tCannot create audio file " + fn);
-            else if (!wavFile->IsOpen())
-              delete wavFile;
-            else {
-              loaded = true;
-              PlayFile(fn, 0, 0, !useCache);   // make sure we delete the file if not cacheing
-            }
+            loaded = true;
+            PlayFile(fn, 0, 0, !useCache);   // make sure we delete the file if not cacheing
           }
         }
 
@@ -2721,7 +2705,7 @@ void PVXMLChannel::FlushQueue()
     currentPlayItem = NULL;
   }
 
-  m_silenceTimer.Stop();
+  m_silenceTimer.Stop(false);
 }
 
 
