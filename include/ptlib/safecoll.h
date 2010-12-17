@@ -92,7 +92,41 @@
   automatic unlocking of objects ones the pointer goes out of scope. It may
   also be used to lock each object of a collection in turn.
 
-  The enumeration
+  The enumeration of a PSafeCollection of PSafeObjects utilises the PSafePtr
+  class in a classic "for loop" manner.
+
+  <CODE>
+    for (PSafePtr<MyClass> iter(collection, PSafeReadWrite); iter != NULL; ++iter)
+      iter->Process();
+  </CODE>
+
+  There is one piece if important behaviour in the above. If while enumerating
+  a specic object in the collection, that object is "safely deleted", you are
+  guaranteed that the object is still usable and has not been phsyically
+  deleted, however it will no longer be in the collection, so the enumeration
+  will stop as it can no longer determine where in the collection it was.
+
+  What to do in this case is application dependent, the PSafePtr class gives
+  one option, which is it automatically restart the enumeration.
+
+  <CODE>
+    for (PSafePtr<MyClass> iter(collection, PSafeReadWrite, true); iter != NULL; ++iter)
+      iter->Process();
+  </CODE>
+
+  It should be clear that in this case an instance is not guranteed to be
+  enumerated exactly once. It could be done several times, even though the
+  condition should be fairly rare. If this is an issue, then you need to
+  create a copy of the PSafeCollection before processing.
+
+  <CODE>
+    PSafeList<MyClass> collCopy = collection;
+    for (PSafePtr<MyClass> iter(callCopy, PSafeReadWrite); iter != NULL; ++iter)
+      iter->Process();
+  </CODE>
+
+  This gives "snapshot" at a point of time that can be safely and completely
+  iterated over.
  */
 class PSafeObject : public PObject
 {
@@ -445,39 +479,13 @@ class PSafePtrBase : public PObject
     /**Create a new pointer to a PSafeObject.
        An optional locking mode may be provided to lock the object for reading
        or writing and automatically unlock it on destruction.
-
-       Note that this version is not associated with a collection so the ++
-       and -- operators will not work.
      */
     PSafePtrBase(
-      PSafeObject * obj = NULL,         ///< Physical object to point to.
-      PSafetyMode mode = PSafeReference ///< Locking mode for the object
-    );
-
-    /**Create a new pointer to a PSafeObject.
-       An optional locking mode may be provided to lock the object for reading
-       or writing and automatically unlock it on destruction.
-
-       The idx'th entry of the collection is pointed to by this object. If the
-       idx is beyond the size of the collection, the pointer is NULL.
-     */
-    PSafePtrBase(
-      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
-      PSafetyMode mode,                       ///< Locking mode for the object
-      PINDEX idx                              ///< Index into collection to point to
-    );
-
-    /**Create a new pointer to a PSafeObject.
-       An optional locking mode may be provided to lock the object for reading
-       or writing and automatically unlock it on destruction.
-
-       The obj parameter is only set if it contained in the collection,
-       otherwise the pointer is NULL.
-     */
-    PSafePtrBase(
-      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
-      PSafetyMode mode,                       ///< Locking mode for the object
-      PSafeObject * obj                       ///< Inital object in collection to point to
+      PSafeObject * obj,        ///< Physical object to point to.
+      PSafetyMode mode,         ///< Locking mode for the object
+      const PSafeCollection * safeCollection, ///< Collection pointer will enumerate
+      bool restartOnDeleted     ///< Flag to indicate during collection enumeration to restart
+                                ///< from beginning (or end) if object being iterated is deleted.
     );
 
     /**Copy the pointer to the PSafeObject.
@@ -530,6 +538,10 @@ class PSafePtrBase : public PObject
       PSafetyMode mode  ///< New locking mode
     );
 
+    /**Get the object being pointed to.
+      */
+    PSafeObject * GetObject() const { return currentObject; }
+
     /**Get the associated collection this pointer may be contained in.
       */
     const PSafeCollection * GetCollection() const { return collection; }
@@ -559,6 +571,7 @@ class PSafePtrBase : public PObject
 
   protected:
     const PSafeCollection * collection;
+    bool                    m_restartOnDeleted;
     PSafeObject           * currentObject;
     PSafetyMode             lockMode;
 };
@@ -583,42 +596,16 @@ class PSafePtrMultiThreaded : public PSafePtrBase
   /**@name Construction */
   //@{
   protected:
-    /**Create a new pointer to a PSafeObject.
+    /**Create a new, thread safe, pointer to a PSafeObject.
        An optional locking mode may be provided to lock the object for reading
        or writing and automatically unlock it on destruction.
-
-       Note that this version is not associated with a collection so the ++
-       and -- operators will not work.
      */
     PSafePtrMultiThreaded(
-      PSafeObject * obj = NULL,         ///< Physical object to point to.
-      PSafetyMode mode = PSafeReference ///< Locking mode for the object
-    );
-
-    /**Create a new pointer to a PSafeObject.
-       An optional locking mode may be provided to lock the object for reading
-       or writing and automatically unlock it on destruction.
-
-       The idx'th entry of the collection is pointed to by this object. If the
-       idx is beyond the size of the collection, the pointer is NULL.
-     */
-    PSafePtrMultiThreaded(
-      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
-      PSafetyMode mode,                       ///< Locking mode for the object
-      PINDEX idx                              ///< Index into collection to point to
-    );
-
-    /**Create a new pointer to a PSafeObject.
-       An optional locking mode may be provided to lock the object for reading
-       or writing and automatically unlock it on destruction.
-
-       The obj parameter is only set if it contained in the collection,
-       otherwise the pointer is NULL.
-     */
-    PSafePtrMultiThreaded(
-      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
-      PSafetyMode mode,                       ///< Locking mode for the object
-      PSafeObject * obj                       ///< Inital object in collection to point to
+      PSafeObject * obj,        ///< Physical object to point to.
+      PSafetyMode mode,         ///< Locking mode for the object
+      const PSafeCollection * safeCollection, ///< Collection pointer will enumerate
+      bool restartOnDeleted     ///< Flag to indicate during collection enumeration to restart
+                                ///< from beginning (or end) if object being iterated is deleted.
     );
 
     /**Copy the pointer to the PSafeObject.
@@ -719,7 +706,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
     PSafePtr(
       T * obj = NULL,                   ///< Physical object to point to.
       PSafetyMode mode = PSafeReference ///< Locking mode for the object
-    ) : BaseClass(obj, mode) { }
+    ) : BaseClass(obj, mode, NULL, false) { }
 
     /**Create a new pointer to a PSafeObject.
        An optional locking mode may be provided to lock the object for reading
@@ -731,21 +718,9 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
     PSafePtr(
       const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
       PSafetyMode mode = PSafeReadWrite,      ///< Locking mode for the object
-      PINDEX idx = 0                          ///< Index into collection to point to
-    ) : BaseClass(safeCollection, mode, idx) { }
-
-    /**Create a new pointer to a PSafeObject.
-       An optional locking mode may be provided to lock the object for reading
-       or writing and automatically unlock it on destruction.
-
-       The obj parameter is only set if it contained in the collection,
-       otherwise the pointer is NULL.
-     */
-    PSafePtr(
-      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
-      PSafetyMode mode,                       ///< Locking mode for the object
-      PSafeObject * obj                       ///< Inital object in collection to point to
-    ) : BaseClass(safeCollection, mode, obj) { }
+      bool restartOnDeleted = false    ///< Flag to indicate during collection enumeration to restart
+                                       ///< from beginning (or end) if object being iterated is deleted.
+    ) : BaseClass(NULL, mode, &safeCollection, restartOnDeleted) { }
 
     /**Copy the pointer to the PSafeObject.
        This will create a copy of the pointer with the same locking mode and
@@ -818,15 +793,15 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
   //@{
     /**Return the physical pointer to the object.
       */
-    operator T*()    const { return  (T *)BaseClass::currentObject; }
+    operator T*()    const { return  dynamic_cast<T *>(BaseClass::currentObject); }
 
     /**Return the physical pointer to the object.
       */
-    T & operator*()  const { return *(T *)PAssertNULL(BaseClass::currentObject); }
+    T & operator*()  const { return *dynamic_cast<T *>(PAssertNULL(BaseClass::currentObject)); }
 
     /**Allow access to the physical object the pointer is pointing to.
       */
-    T * operator->() const { return  (T *)PAssertNULL(BaseClass::currentObject); }
+    T * operator->() const { return  dynamic_cast<T *>(PAssertNULL(BaseClass::currentObject)); }
 
     /**Post-increment the pointer.
        This requires that the pointer has been created with a PSafeCollection
@@ -834,7 +809,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator++(int)
       {
-        T * previous = (T *)BaseClass::currentObject;
+        T * previous = dynamic_cast<T *>(BaseClass::currentObject);
         BaseClass::Next();
         return previous;
       }
@@ -846,7 +821,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
     T * operator++()
       {
         BaseClass::Next();
-        return (T *)BaseClass::currentObject;
+        return dynamic_cast<T *>(BaseClass::currentObject);
       }
 
     /**Post-decrement the pointer.
@@ -855,7 +830,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator--(int)
       {
-        T * previous = (T *)BaseClass::currentObject;
+        T * previous = dynamic_cast<T *>(BaseClass::currentObject);
         BaseClass::Previous();
         return previous;
       }
@@ -867,24 +842,9 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
     T * operator--()
       {
         BaseClass::Previous();
-        return (T *)BaseClass::currentObject;
+        return dynamic_cast<T *>(BaseClass::currentObject);
       }
   //@}
-
-  /**Cast the pointer to a different type. The pointer being cast to MUST
-     be a derived class or NULL is returned.
-    */
-      /*
-  template <class Base>
-  static PSafePtr<T> DownCast(const PSafePtr<Base> & oldPtr)
-  {
-    PSafePtr<T> newPtr;
-    Base * realPtr = oldPtr;
-    if (realPtr != NULL && PIsDescendant(realPtr, T))
-      newPtr.Assign(oldPtr);
-    return newPtr;
-  }
-  */
 };
 
 
@@ -894,12 +854,24 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
 template <class Base, class Derived>
 PSafePtr<Derived> PSafePtrCast(const PSafePtr<Base> & oldPtr)
 {
-//  return PSafePtr<Derived>::DownCast<Base>(oldPtr);
     PSafePtr<Derived> newPtr;
     Base * realPtr = oldPtr;
     if (realPtr != NULL && PIsDescendant(realPtr, Derived))
       newPtr.Assign(oldPtr);
     return newPtr;
+}
+
+
+/**Cast the pointer to a different type. The pointer being cast to MUST
+    be a derived class or NULL is returned.
+  */
+template <class Derived>
+PSafePtr<Derived> PSafePtrCast(const PSafePtrBase & oldPtr)
+{
+  PSafePtr<Derived> newPtr;
+  if (dynamic_cast<Derived *>(oldPtr.GetObject()) != NULL)
+    newPtr.Assign(oldPtr);
+  return newPtr;
 }
 
 
