@@ -151,7 +151,6 @@ class PVXMLChannel;
 class PVXMLChannelInterface {
   public:
     virtual ~PVXMLChannelInterface() { }
-    virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt) = 0;
     virtual void RecordEnd() = 0;
     virtual void OnEndRecording(const PString & channelName) = 0;
     virtual void Trigger() = 0;
@@ -232,7 +231,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PXMLElement * FindHandler(const PString & event);
 
     // overrides from VXMLChannelInterface
-    PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt);
     void OnEndRecording(const PString & channelName);
     void RecordEnd();
     void Trigger();
