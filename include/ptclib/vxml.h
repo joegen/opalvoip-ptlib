@@ -179,13 +179,13 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual PBoolean Open(const PString & mediaFormat);
     virtual PBoolean Close();
 
-    PBoolean Execute();
+    virtual PBoolean Execute();
 
     PVXMLChannel * GetAndLockVXMLChannel();
     void UnLockVXMLChannel() { sessionMutex.Signal(); }
     PMutex & GetSessionMutex() { return sessionMutex; }
 
-    PBoolean LoadGrammar(PVXMLGrammar * grammar);
+    virtual PBoolean LoadGrammar(PVXMLGrammar * grammar);
 
     virtual PBoolean PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
     PBoolean ConvertTextToFilenameList(const PString & text, PTextToSpeech::TextType type, PStringArray & list, PBoolean useCacheing);
@@ -231,34 +231,33 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PXMLElement * FindHandler(const PString & event);
 
     // overrides from VXMLChannelInterface
-    void OnEndRecording(const PString & channelName);
-    void RecordEnd();
-    void Trigger();
+    virtual void OnEndRecording(const PString & channelName);
+    virtual void RecordEnd();
+    virtual void Trigger();
 
     PStringToString & GetSessionVars() { return sessionVars; }
 
   protected:
     void Initialise();
 
-    void AllowClearCall();
-    void ProcessUserInput();
-    void ProcessGrammar();
-    void ProcessNode();
-    bool NextNode();
+    virtual void ProcessUserInput();
+    virtual void ProcessGrammar();
+    virtual void ProcessNode();
+    virtual bool NextNode();
 
-    PBoolean TraverseAudio();
-    PBoolean TraverseGoto();
-    PBoolean TraverseGrammar();
-    PBoolean TraverseRecord();
+    virtual PBoolean TraverseAudio();
+    virtual PBoolean TraverseGoto();
+    virtual PBoolean TraverseGrammar();
+    virtual PBoolean TraverseRecord();
 
-    PBoolean TraverseIf();
-    PBoolean TraverseExit();
-    PBoolean TraverseVar();
-    PBoolean TraverseSubmit();
-    PBoolean TraverseMenu();
-    PBoolean TraverseChoice();
-    PBoolean TraverseProperty();
-    PBoolean TraverseTransfer();
+    virtual PBoolean TraverseIf();
+    virtual PBoolean TraverseExit();
+    virtual PBoolean TraverseVar();
+    virtual PBoolean TraverseSubmit();
+    virtual PBoolean TraverseMenu();
+    virtual PBoolean TraverseChoice();
+    virtual PBoolean TraverseProperty();
+    virtual PBoolean TraverseTransfer();
 
     void SayAs(const PString & className, const PString & text);
     void SayAs(const PString & className, const PString & text, const PString & voice);
