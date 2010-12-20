@@ -266,6 +266,7 @@ case "$target_os" in
   solaris* | sunos* ) OSTYPE=solaris ;
 		   OS_TAG="P_SOLARIS" ;
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
+                   STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS"
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
                    dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
