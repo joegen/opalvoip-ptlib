@@ -4334,6 +4334,7 @@ fi
   solaris* | sunos* ) OSTYPE=solaris ;
 		   OS_TAG="P_SOLARIS" ;
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
+                   STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS" ;
                    need_pragma=yes ;
 
 cat >>confdefs.h <<\_ACEOF
