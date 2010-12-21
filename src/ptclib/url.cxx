@@ -123,8 +123,7 @@ DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   tru
 // PURL
 
 PURL::PURL()
-  : //scheme(SchemeTable[DEFAULT_SCHEME].name),
-    scheme(DEFAULT_SCHEME),
+  : scheme(DEFAULT_SCHEME),
     port(0),
     portSupplied (PFalse),
     relativePath(PFalse)
@@ -334,23 +333,24 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
     cstr++;
   PString url = cstr;
 
-  // Character set as per RFC2396
-  PINDEX pos = 0;
-  while ( ((*cstr & 0x80) != 0x00) || isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
-    pos++;
-
-  PString schemeName;
-
   // get information which tells us how to parse URL for this
   // particular scheme
   PURLScheme * schemeInfo = NULL;
 
-  // Determine if the URL has an explicit scheme
-  if (url[pos] == ':') {
-    // get the scheme information
-    schemeInfo = PFactory<PURLScheme>::CreateInstance(url.Left(pos));
-    if (schemeInfo != NULL)
-      url.Delete(0, pos+1);
+  // Character set as per RFC2396
+  //    scheme        = alpha *( alpha | digit | "+" | "-" | "." )
+  if (isalpha(url[0])) {
+    PINDEX pos = 1;
+    while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
+      ++pos;
+
+    // Determine if the URL has an explicit scheme
+    if (url[pos] == ':') {
+      // get the scheme information
+      schemeInfo = PFactory<PURLScheme>::CreateInstance(url.Left(pos));
+      if (schemeInfo != NULL)
+        url.Delete(0, pos+1);
+    }
   }
 
   // if we could not match a scheme, then use the specified default scheme
@@ -902,6 +902,78 @@ void PURL::Recalculate()
 
   urlString = AsString(HostPortOnly) + AsString(URIOnly);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+// RFC2397 data URI
+
+class PURL_data : public PURLScheme
+{
+  public:
+    virtual PString GetName() const
+    {
+      return "data";
+    }
+
+    virtual PBoolean Parse(const PString & url, PURL & purl) const
+    {
+      PINDEX comma = url.Find(',');
+      if (comma == P_MAX_INDEX)
+        return false;
+
+      PINDEX semi = url.Find(';');
+      if (semi > comma)
+        purl.SetParamVar("type", url.Left(comma));
+      else {
+        purl.SetParameters(url(semi, comma-1));
+        purl.SetParamVar("type", url.Left(semi));
+      }
+
+      purl.SetContents(url.Mid(comma+1));
+
+      return true;
+    }
+
+    virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
+    {
+      if (fmt == PURL::HostPortOnly)
+        return PString::Empty();
+
+      const PStringToString & params = purl.GetParamVars();
+      PStringStream strm;
+
+      strm << "data:" + params("type", "text/plain");
+
+      bool base64 = false;
+      for (PINDEX i = 0; i < params.GetSize(); i++) {
+        PCaselessString key = params.GetKeyAt(i);
+        if (key == "type")
+          continue;
+        if (key == "base64") {
+          base64 = true;
+          continue;
+        }
+
+        strm << ';' << PURL::TranslateString(key, PURL::QueryTranslation);
+
+        PString data = params.GetDataAt(i);
+        if (!data)
+          strm << '=' << PURL::TranslateString(data, PURL::QueryTranslation);
+      }
+
+      // This must always be last according to EBNF
+      if (base64)
+        strm << ";base64";
+
+      strm << ',' << PURL::TranslateString(purl.GetContents(), PURL::QueryTranslation);
+
+      return strm;
+    }
+};
+
+static PFactory<PURLScheme>::Worker<PURL_data> dataFactory("data", true);
+
 
 #endif // P_URL
 
