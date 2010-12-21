@@ -679,7 +679,7 @@ PBoolean PODBC::Field::DataFragment(PString & Buffer,PINDEX & fragment, SQLINTEG
 // Buffer Fragment
   if (fragcount < fragment) {
 	  Buffer.Splice(Data.sbinlong,(fragment * size)+1,size);
-	  fragment = fragment++;
+	  fragment++;
 	  return PTrue;
   }
 // Last Fragment
