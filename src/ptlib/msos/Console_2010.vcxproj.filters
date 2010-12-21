@@ -16,9 +16,6 @@
     <ClCompile Include="assert.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\wm\cevfw.cpp">
-      <Filter>Source Files\WM</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\cli.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -48,9 +45,6 @@
     </ClCompile>
     <ClCompile Include="..\common\regex\regcomp.c">
       <Filter>Regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\wm\mmsystemx.cxx">
-      <Filter>Source Files\WM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\dtmf.cxx">
       <Filter>Source Files\Components</Filter>
@@ -147,12 +141,6 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\wm\stdlibx.cpp">
-      <Filter>Source Files\WM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\wm\time.cpp">
-      <Filter>Source Files\WM</Filter>
     </ClCompile>
     <ClCompile Include="ethsock.cxx">
       <Filter>Source Files\Console</Filter>
@@ -773,18 +761,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\cevfw.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\direct.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\crtdbg.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\fcntl.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -793,39 +769,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h.in">
       <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\io.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\mmsystemx.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\nspapi.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\process.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\Snmp.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\sys\stat.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\stdlibx.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\time.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\sys\types.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\wsipx.h">
-      <Filter>Header Files\WM</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\wm\wsnwlink.h">
-      <Filter>Header Files\WM</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\revision.h.in">
       <Filter>Header Files</Filter>
@@ -870,12 +813,6 @@
     </Filter>
     <Filter Include="Regex">
       <UniqueIdentifier>{21a7a2c3-23d7-48fc-b815-55cf0b0c5493}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\WM">
-      <UniqueIdentifier>{ec860c4f-245d-474f-a5d8-698791dc69da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\WM">
-      <UniqueIdentifier>{27286c21-f79b-4855-9d60-01536c9fee31}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
