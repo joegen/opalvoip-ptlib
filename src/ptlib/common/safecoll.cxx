@@ -412,30 +412,46 @@ void PSafeCollection::CopySafeDictionary(PAbstractDictionary * other)
 
 /////////////////////////////////////////////////////////////////////////////
 
-PSafePtrBase::PSafePtrBase(PSafeObject * obj,
-                           PSafetyMode mode,
-                           const PSafeCollection * safeCollection,
-                           bool restartOnDeleted)
-  : collection(safeCollection)
-  , m_restartOnDeleted(restartOnDeleted)
-  , currentObject(obj)
-  , lockMode(mode)
+PSafePtrBase::PSafePtrBase(PSafeObject * obj, PSafetyMode mode)
 {
-  if (collection == NULL)
-    EnterSafetyMode(WithReference);
-  else if (obj == NULL)
-    Assign((PINDEX)0);
-  else
-    Assign(obj);
+  collection = NULL;
+  currentObject = obj;
+  lockMode = mode;
+
+  EnterSafetyMode(WithReference);
+}
+
+
+PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
+                           PSafetyMode mode,
+                           PINDEX idx)
+{
+  collection = &safeCollection;
+  currentObject = NULL;
+  lockMode = mode;
+
+  Assign(idx);
+}
+
+
+PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
+                           PSafetyMode mode,
+                           PSafeObject * obj)
+{
+  collection = &safeCollection;
+  currentObject = NULL;
+  lockMode = mode;
+
+  Assign(obj);
 }
 
 
 PSafePtrBase::PSafePtrBase(const PSafePtrBase & enumerator)
-  : collection(enumerator.collection)
-  , m_restartOnDeleted(enumerator.m_restartOnDeleted)
-  , currentObject(enumerator.currentObject)
-  , lockMode(enumerator.lockMode)
 {
+  collection = enumerator.collection;
+  currentObject = enumerator.currentObject;
+  lockMode = enumerator.lockMode;
+
   EnterSafetyMode(WithReference);
 }
 
@@ -469,7 +485,6 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
   ExitSafetyMode(WithDereference);
 
   collection = enumerator.collection;
-  m_restartOnDeleted = enumerator.m_restartOnDeleted;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
 
@@ -565,19 +580,15 @@ void PSafePtrBase::Next()
   currentObject->SafeDereference();
   currentObject = NULL;
 
-  if (idx != P_MAX_INDEX)
-    ++idx;
-  else if (m_restartOnDeleted)
-    idx = 0;
-
-  while (idx < collection->collection->GetSize()) {
-    currentObject = (PSafeObject *)collection->collection->GetAt(idx);
-    if (currentObject != NULL) {
-      if (currentObject->SafeReference())
-        break;
-      currentObject = NULL;
+  if (idx != P_MAX_INDEX) {
+    while (++idx < collection->collection->GetSize()) {
+      currentObject = (PSafeObject *)collection->collection->GetAt(idx);
+      if (currentObject != NULL) {
+        if (currentObject->SafeReference())
+          break;
+        currentObject = NULL;
+      }
     }
-    ++idx;
   }
 
   collection->collectionMutex.Signal();
@@ -600,19 +611,14 @@ void PSafePtrBase::Previous()
   currentObject->SafeDereference();
   currentObject = NULL;
 
-  if (idx != P_MAX_INDEX)
-    ++idx;
-  else if (m_restartOnDeleted)
-    idx = collection->collection->GetSize();
-  else
-    idx = 0;
-
-  while (idx-- > 0) {
-    currentObject = (PSafeObject *)collection->collection->GetAt(idx);
-    if (currentObject != NULL) {
-      if (currentObject->SafeReference())
-        break;
-      currentObject = NULL;
+  if (idx != P_MAX_INDEX) {
+    while (idx-- > 0) {
+      currentObject = (PSafeObject *)collection->collection->GetAt(idx);
+      if (currentObject != NULL) {
+        if (currentObject->SafeReference())
+          break;
+        currentObject = NULL;
+      }
     }
   }
 
@@ -713,24 +719,60 @@ void PSafePtrBase::DeleteObject(PSafeObject * obj)
 
 /////////////////////////////////////////////////////////////////////////////
 
-PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj,
-                                             PSafetyMode mode,
-                                             const PSafeCollection * safeCollection,
-                                             bool restartOnDeleted)
-  : PSafePtrBase(obj, mode, safeCollection, restartOnDeleted)
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj, PSafetyMode mode)
+  : PSafePtrBase(NULL, mode)
   , m_objectToDelete(NULL)
 {
+  Lock();
+
+  currentObject = obj;
+  EnterSafetyMode(WithReference);
+
+  Unlock();
+}
+
+
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollection,
+                                             PSafetyMode mode,
+                                             PINDEX idx)
+  : PSafePtrBase(NULL, mode)
+  , m_objectToDelete(NULL)
+{
+  Lock();
+
+  collection = &safeCollection;
+  Assign(idx);
+
+  Unlock();
+}
+
+
+PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollection,
+                                             PSafetyMode mode,
+                                             PSafeObject * obj)
+  : PSafePtrBase(NULL, mode)
+  , m_objectToDelete(NULL)
+{
+  Lock();
+
+  collection = &safeCollection;
+  Assign(obj);
+
+  Unlock();
 }
 
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
-  : PSafePtrBase(NULL, PSafeReference, NULL, false)
-  , m_objectToDelete(NULL)
+  : m_objectToDelete(NULL)
 {
   Lock();
   enumerator.m_mutex.Wait();
 
-  Assign(enumerator);
+  collection = enumerator.collection;
+  currentObject = enumerator.currentObject;
+  lockMode = enumerator.lockMode;
+
+  EnterSafetyMode(WithReference);
 
   enumerator.m_mutex.Signal();
   Unlock();
