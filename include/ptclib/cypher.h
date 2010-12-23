@@ -78,7 +78,10 @@ class PBase64 : public PObject
     PBase64();
 
     void StartEncoding(
-      PBoolean useCRLFs = true  // Use CR, LF pairs in end of line characters.
+      bool useCRLFs = true  ///< Use CR, LF pairs in end of line characters.
+    );
+    void StartEncoding(
+      const char * endOfLine  ///< String to use for end of line.
     );
     // Begin a base 64 encoding operation, initialising the object instance.
 
@@ -114,17 +117,21 @@ class PBase64 : public PObject
 
 
     static PString Encode(
-      const PString & str     // String to be encoded to Base64
+      const PString & str,          ///< String to be encoded to Base64
+      const char * endOfLine = "\n" ///< String to use for end of line.
     );
     static PString Encode(
-      const char * cstr       // C String to be encoded to Base64
+      const char * cstr,            ///< C String to be encoded to Base64
+      const char * endOfLine = "\n" ///< String to use for end of line.
     );
     static PString Encode(
-      const PBYTEArray & data // Data block to be encoded to Base64
+      const PBYTEArray & data,      ///< Data block to be encoded to Base64
+      const char * endOfLine = "\n" ///< String to use for end of line.
     );
     static PString Encode(
-      const void * dataBlock, // Pointer to data to be encoded to Base64
-      PINDEX length           // Length of the data block.
+      const void * dataBlock,       ///< Pointer to data to be encoded to Base64
+      PINDEX length,                ///< Length of the data block.
+      const char * endOfLine = "\n" ///< String to use for end of line.
     );
     // Encode the data in memory to Base 64 data returnin the string.
 
@@ -199,7 +206,7 @@ class PBase64 : public PObject
     BYTE    saveTriple[3];
     PINDEX  saveCount;
     PINDEX  nextLine;
-    PBoolean    useCRLFs;
+    PString endOfLine;
 
     PBoolean       perfectDecode;
     PINDEX     quadPosition;
