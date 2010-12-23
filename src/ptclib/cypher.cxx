@@ -51,11 +51,19 @@ PBase64::PBase64()
 }
 
 
-void PBase64::StartEncoding(PBoolean useCRLF)
+void PBase64::StartEncoding(bool useCRLF)
 {
   encodedString = "";
   encodeLength = nextLine = saveCount = 0;
-  useCRLFs = useCRLF;
+  endOfLine = useCRLF ? "\r\n" : "\n";
+}
+
+
+void PBase64::StartEncoding(const char * eol)
+{
+  encodedString = "";
+  encodeLength = nextLine = saveCount = 0;
+  endOfLine = eol;
 }
 
 
@@ -89,10 +97,10 @@ void PBase64::OutputBase64(const BYTE * data)
   out[encodeLength++] = Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
   out[encodeLength++] = Binary2Base64[data[2]&0x3f];
 
-  if (++nextLine > 18) { // 76 columns
-    if (useCRLFs)
-      out[encodeLength++] = '\r';
-    out[encodeLength++] = '\n';
+  PINDEX len = endOfLine.GetLength();
+  if (++nextLine > (76-len)/4) {
+    for (PINDEX i = 0; i < len; ++i)
+      out[encodeLength++] = endOfLine[i];
     nextLine = 0;
   }
 }
@@ -165,27 +173,28 @@ PString PBase64::CompleteEncoding()
 }
 
 
-PString PBase64::Encode(const PString & str)
+PString PBase64::Encode(const PString & str, const char * endOfLine)
 {
-  return Encode((const char *)str);
+  return Encode((const char *)str, str.GetLength(), endOfLine);
 }
 
 
-PString PBase64::Encode(const char * cstr)
+PString PBase64::Encode(const char * cstr, const char * endOfLine)
 {
-  return Encode((const BYTE *)cstr, (int)strlen(cstr));
+  return Encode((const BYTE *)cstr, (PINDEX)strlen(cstr), endOfLine);
 }
 
 
-PString PBase64::Encode(const PBYTEArray & data)
+PString PBase64::Encode(const PBYTEArray & data, const char * endOfLine)
 {
-  return Encode(data, data.GetSize());
+  return Encode(data, data.GetSize(), endOfLine);
 }
 
 
-PString PBase64::Encode(const void * data, PINDEX length)
+PString PBase64::Encode(const void * data, PINDEX length, const char * endOfLine)
 {
   PBase64 encoder;
+  encoder.StartEncoding(endOfLine);
   encoder.ProcessEncoding(data, length);
   return encoder.CompleteEncoding();
 }
