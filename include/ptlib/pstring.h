@@ -319,6 +319,17 @@ class PString : public PCharArray {
       const PString & str  ///< New string to assign.
     );
 
+    /**Assign the string to the current object. The current instance then
+       becomes another reference to the same string in the <code>str</code>
+       parameter.
+       
+       @return
+       reference to the current PString object.
+     */
+    PString & operator=(
+      const std::string & str  ///< New string to assign.
+    ) { return operator=(str.c_str()); }
+
     /**Assign the C string to the current object. The current instance then
        becomes a unique reference to a copy of the <code>cstr</code> parameter.
        The <code>cstr</code> parameter is typically a literal string, eg:
@@ -1660,6 +1671,7 @@ inline wostream & operator<<(wostream & stream, const PString & string)
       PWideString(const char        * str) : PWCharArray(PString(str).AsUCS2()) { }
       PWideString & operator=(const PWideString & str) { PWCharArray::operator=(str); return *this; }
       PWideString & operator=(const PString     & str) { PWCharArray::operator=(str.AsUCS2()); return *this; }
+      PWideString & operator=(const std::string & str) { PWCharArray::operator=(PString(str.c_str()).AsUCS2(); return *this; }
       PWideString & operator=(const char        * str) { PWCharArray::operator=(PString(str).AsUCS2()); return *this; }
       friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
   };
@@ -1725,6 +1737,17 @@ class PCaselessString : public PString
     PCaselessString & operator=(
       const PString & str  ///< New string to assign.
     );
+
+    /**Assign the string to the current object. The current instance then
+       becomes another reference to the same string in the <code>str</code>
+       parameter.
+       
+       @return
+       reference to the current PString object.
+     */
+    PCaselessString & operator=(
+      const std::string & str  ///< New string to assign.
+    ) { return operator=(str.c_str()); }
 
     /**Assign the C string to the current object. The current instance then
        becomes a unique reference to a copy of the <code>cstr</code> parameter.
