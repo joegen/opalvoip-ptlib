@@ -1671,7 +1671,7 @@ inline wostream & operator<<(wostream & stream, const PString & string)
       PWideString(const char        * str) : PWCharArray(PString(str).AsUCS2()) { }
       PWideString & operator=(const PWideString & str) { PWCharArray::operator=(str); return *this; }
       PWideString & operator=(const PString     & str) { PWCharArray::operator=(str.AsUCS2()); return *this; }
-      PWideString & operator=(const std::string & str) { PWCharArray::operator=(PString(str.c_str()).AsUCS2(); return *this; }
+      PWideString & operator=(const std::string & str) { PWCharArray::operator=(PString(str.c_str()).AsUCS2()); return *this; }
       PWideString & operator=(const char        * str) { PWCharArray::operator=(PString(str).AsUCS2()); return *this; }
       friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
   };
