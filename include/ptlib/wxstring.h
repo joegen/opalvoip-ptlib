@@ -42,10 +42,12 @@ class PwxString : public wxString
   public:
     PwxString() { }
     PwxString(const wxString & str) : wxString(str) { }
-    PwxString(const PString & str) : wxString(str, wxConvUTF8 ) { }
-    PwxString(const PFilePath & fn) : wxString(fn, wxConvUTF8 ) { }
+    PwxString(const PString & str) : wxString((const char *)str, wxConvUTF8 ) { }
+    PwxString(const PFilePath & fn) : wxString((const char *)fn, wxConvUTF8 ) { }
     PwxString(const char * str) : wxString(str, wxConvUTF8) { }
-    PwxString(const OpalMediaFormat & fmt) : wxString(fmt, wxConvUTF8) { }
+#ifdef OPAL_OPAL_MEDIAFMT_H
+    PwxString(const OpalMediaFormat & fmt) : wxString((const char *)fmt.GetName(), wxConvUTF8) { }
+#endif
 #if wxUSE_UNICODE
     PwxString(const wchar_t * wstr) : wxString(wstr) { }
 #endif
@@ -55,25 +57,29 @@ class PwxString : public wxString
     inline PwxString & operator=(const wchar_t * wstr) { wxString::operator=(wstr); return *this; }
 #endif
     inline PwxString & operator=(const wxString & str) { wxString::operator=(str); return *this; }
-    inline PwxString & operator=(const PString & str)  { *this = wxString::wxString(str, wxConvUTF8); return *this; }
+    inline PwxString & operator=(const PString & str)  { *this = wxString::wxString((const char *)str, wxConvUTF8); return *this; }
 
     inline bool operator==(const char * other)            const { return IsSameAs(wxString(other, wxConvUTF8)); }
 #if wxUSE_UNICODE
     inline bool operator==(const wchar_t * other)         const { return IsSameAs(other); }
 #endif
     inline bool operator==(const wxString & other)        const { return IsSameAs(other); }
-    inline bool operator==(const PString & other)         const { return IsSameAs(wxString(other, wxConvUTF8)); }
+    inline bool operator==(const PString & other)         const { return IsSameAs(wxString((const char *)other, wxConvUTF8)); }
     inline bool operator==(const PwxString & other)       const { return IsSameAs(other); }
-    inline bool operator==(const OpalMediaFormat & other) const { return IsSameAs(wxString(other, wxConvUTF8)); }
+#ifdef OPAL_OPAL_MEDIAFMT_H
+    inline bool operator==(const OpalMediaFormat & other) const { return IsSameAs(wxString((const char *)other.GetName(), wxConvUTF8)); }
+#endif
 
     inline bool operator!=(const char * other)            const { return !IsSameAs(wxString(other, wxConvUTF8)); }
 #if wxUSE_UNICODE
     inline bool operator!=(const wchar_t * other)         const { return !IsSameAs(other); }
 #endif
     inline bool operator!=(const wxString & other)        const { return !IsSameAs(other); }
-    inline bool operator!=(const PString & other)         const { return !IsSameAs(wxString(other, wxConvUTF8)); }
+    inline bool operator!=(const PString & other)         const { return !IsSameAs(wxString((const char *)other, wxConvUTF8)); }
     inline bool operator!=(const PwxString & other)       const { return !IsSameAs(other); }
-    inline bool operator!=(const OpalMediaFormat & other) const { return !IsSameAs(wxString(other, wxConvUTF8)); }
+#ifdef OPAL_OPAL_MEDIAFMT_H
+    inline bool operator!=(const OpalMediaFormat & other) const { return !IsSameAs(wxString((const char *)other.GetName(), wxConvUTF8)); }
+#endif
 
 #if wxUSE_UNICODE
     inline PString p_str() const { return ToUTF8().data(); }
@@ -92,6 +98,8 @@ class PwxString : public wxString
 #endif
 };
 
+__inline bool wxFromString(wxString & s1, PwxString * & s2) { *s2 = s1; return true; }
+__inline wxString wxToString(const PwxString & str) { return str; }
 
 #endif // PTLIB_WXSTRING_H
 
