@@ -85,6 +85,9 @@ class PwxString : public wxString
     inline PString p_str() const { return ToUTF8().data(); }
     inline operator PString() const { return ToUTF8().data(); }
     inline operator PFilePath() const { return ToUTF8().data(); }
+#ifdef P_URL
+    inline operator PURL() const { return ToUTF8().data(); }
+#endif
     inline operator PIPSocket::Address() const { return PString(ToUTF8().data()); }
     inline friend ostream & operator<<(ostream & stream, const PwxString & string) { return stream << string.ToUTF8(); }
     inline friend wostream & operator<<(wostream & stream, const PwxString & string) { return stream << string.c_str(); }
@@ -92,6 +95,9 @@ class PwxString : public wxString
     inline PString p_str() const { return c_str(); }
     inline operator PString() const { return c_str(); }
     inline operator PFilePath() const { return c_str(); }
+#ifdef P_URL
+    inline operator PURL() const { return c_str(); }
+#endif
     inline operator PIPSocket::Address() const { return c_str(); }
     inline friend ostream & operator<<(ostream & stream, const PwxString & string) { return stream << string.c_str(); }
     inline friend wostream & operator<<(wostream & stream, const PwxString & string) { return stream << string.c_str(); }
