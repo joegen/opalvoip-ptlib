@@ -28,7 +28,7 @@
  *
  * $Revision$
  * $Author$
- * $Date: 2008-12-12 16:42:13 +1100 (Fri, 12 Dec 2008) $
+ * $Date$
  */
 
   protected:
