@@ -26,9 +26,9 @@
  *
  * Contributor(s): Derek Smithies - from a modification of oss module.
  *
- * $Revision: 20949 $
- * $Author: ms30002000 $
- * $Date: 2008-09-14 21:02:41 +1200 (Sun, 14 Sep 2008) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
    
 

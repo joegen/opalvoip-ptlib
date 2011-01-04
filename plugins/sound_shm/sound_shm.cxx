@@ -25,9 +25,9 @@
  * Contributor(s): /
  *
  * $Version: 100 $
- * $Revision: 073 $
- * $Author: mattes $
- * $Date: 2009-10-22  $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #pragma implementation "sound_shm.h"
