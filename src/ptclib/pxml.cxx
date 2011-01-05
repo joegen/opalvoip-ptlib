@@ -977,6 +977,27 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
   return true;
 }
 
+
+bool PXML::LoadAndValidate(const PString & body, const PXML::ValidationInfo * validator, PString & error, int options)
+{
+  PStringStream err;
+
+  // load the XML
+  if (!Load(body, (Options)options))
+    err << "XML parse";
+  else if (!Validate(validator))
+    err << "XML validation";
+  else
+    return true;
+
+  err << " error\n"
+         "Error at line " << GetErrorLine() << ", column " << GetErrorColumn() << '\n'
+      << GetErrorString() << '\n';
+  error = err;
+  return false;
+}
+
+
 ///////////////////////////////////////////////////////
 //
 void PXMLObject::SetDirty()
