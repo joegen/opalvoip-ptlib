@@ -8,6 +8,10 @@
 #include <ptlib/pprocess.h>
 #include <ptclib/lua.h>
 
+#if P_LUA
+#else
+#error Cannot compile Lua test program without Lua support!
+#endif
 
 class LuaProcess : public PProcess
 {
