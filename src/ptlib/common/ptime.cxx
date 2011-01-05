@@ -313,8 +313,10 @@ PString PTime::AsString(TimeFormat format, int zone) const
   switch (format) {
     case RFC1123 :
       return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
+    case RFC3339 :
+      return AsString("yyyy-MM-ddThh:mm:ssz", zone);
     case ShortISO8601 :
-      return AsString("yyyyMMddThhmmssZ", zone);
+      return AsString("yyyyMMddThhmmssZZ", zone);
     case LongISO8601 :
       return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
     default :
@@ -528,14 +530,19 @@ PString PTime::AsString(const char * format, int zone) const
             str << 'Z';
           else
             str << "GMT";
+          while (toupper(*++format) == 'z')
+            ;
         }
         else {
+          while (toupper(*++format) == 'z')
+            repeatCount++;
           str << (zone < 0 ? '-' : '+');
           zone = PABS(zone);
-          str << setw(2) << (zone/60) << setw(2) << (zone%60);
+          str << setw(2) << (zone/60);
+          if (repeatCount > 0)
+            str << ':';
+          str << setw(2) << (zone%60);
         }
-        while (toupper(*++format) == 'z')
-          ;
         break;
 
       case 'u' :
