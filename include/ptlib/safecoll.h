@@ -712,17 +712,17 @@ class PSafePtrMultiThreaded : public PSafePtrBase
   thread safe. Any thread can add, read, write or remove an object with both
   the object and the database of objects itself kept thread safe.
 
-  There are two modes of safe pointer, one that is enumerating a collection
+  There are two modes of safe pointer: one that is enumerating a collection;
   and one that is independent of the collection that the safe object is in.
-  There are some subtle semantics that must be observed in each of these two
+  There are subtle semantics that must be observed in each of these two
   modes especially when switching from one to the other.
 
   NOTE: the PSafePtr will allow safe and mutexed access to objects but may not
-  thread safe itself! This depends on the base calass being used. If the more
-  efficiant PSafePtrBase class is used you should not share PSafePtr instances
+  be thread safe itself! This depends on the base class being used. If the more
+  efficient PSafePtrBase class is used you should not share PSafePtr instances
   across threads.
 
-  See the PSafeObject class for more details. Especially in regard to
+  See the PSafeObject class for more details, especially in regards to
   enumeration of collections.
  */
 template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseClass
