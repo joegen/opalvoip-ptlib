@@ -224,6 +224,7 @@ class PXML : public PXMLBase
     bool Validate(const ValidationInfo * validator);
     bool ValidateElements(ValidationContext & context, PXMLElement * baseElement, const ValidationInfo * elements);
     bool ValidateElement(ValidationContext & context, PXMLElement * element, const ValidationInfo * elements);
+    bool LoadAndValidate(const PString & body, const PXML::ValidationInfo * validator, PString & error, int options = NoOptions);
 
     PString  GetErrorString() const { return m_errorString; }
     unsigned GetErrorColumn() const { return m_errorColumn; }
