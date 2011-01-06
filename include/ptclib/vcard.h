@@ -196,6 +196,9 @@ class PvCard : public PObject
     TextValue   m_publicKey;
 
     struct MultiValue : public PObject {
+      MultiValue() { }
+      MultiValue(const PString & type) { m_types.Append(new ParamValue(type)); }
+
       ParamValues m_types;     // e.g. "home", "work", "pref" etc
       void SetTypes(const ParamMap & params);
     };
@@ -204,6 +207,7 @@ class PvCard : public PObject
       Address(bool label = false) : m_label(label) { }
       virtual void PrintOn(ostream & strm) const;
       virtual void ReadFrom(istream & strm);
+
       bool        m_label;
       TextValue   m_postOfficeBox;
       TextValue   m_extendedAddress;
@@ -217,12 +221,23 @@ class PvCard : public PObject
     PArray<Address> m_labels;
 
     struct Telephone : public MultiValue {
+      Telephone() { }
+      Telephone(const PString & number, const PString & type = PString::Empty())
+        : MultiValue(type)
+        , m_number(number)
+      { }
       virtual void PrintOn(ostream & strm) const;
+
       TextValue   m_number;
     };
     PArray<Telephone> m_telephoneNumbers;
 
     struct EMail : public MultiValue {
+      EMail() { }
+      EMail(const PString & address, const PString & type = PString::Empty())
+        : MultiValue(type)
+        , m_address(address)
+      { }
       virtual void PrintOn(ostream & strm) const;
       TextValue   m_address;
     };
