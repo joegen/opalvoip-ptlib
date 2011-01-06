@@ -52,12 +52,12 @@ class PwxString : public wxString
     PwxString(const wchar_t * wstr) : wxString(wstr) { }
 #endif
 
-    inline PwxString & operator=(const char * str)     { *this = wxString::wxString(str, wxConvUTF8); return *this; }
+    inline PwxString & operator=(const char * str)     { *this = wxString(str, wxConvUTF8); return *this; }
 #if wxUSE_UNICODE
     inline PwxString & operator=(const wchar_t * wstr) { wxString::operator=(wstr); return *this; }
 #endif
     inline PwxString & operator=(const wxString & str) { wxString::operator=(str); return *this; }
-    inline PwxString & operator=(const PString & str)  { *this = wxString::wxString((const char *)str, wxConvUTF8); return *this; }
+    inline PwxString & operator=(const PString & str)  { *this = wxString((const char *)str, wxConvUTF8); return *this; }
 
     inline bool operator==(const char * other)            const { return IsSameAs(wxString(other, wxConvUTF8)); }
 #if wxUSE_UNICODE
