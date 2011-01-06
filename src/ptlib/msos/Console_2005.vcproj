@@ -8400,6 +8400,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\SVN-Trunk\ptlib\src\ptclib\vcard.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\vsdl.cxx"
 					>
 					<FileConfiguration
@@ -9640,6 +9644,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\url.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\SVN-Trunk\ptlib\include\ptclib\vcard.h"
 					>
 				</File>
 				<File
