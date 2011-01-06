@@ -40,6 +40,9 @@
 #include <ptlib/sockets.h>
 
 
+class PURL;
+
+
 /**
 File Transfer Protocol base class.
 */
@@ -72,6 +75,10 @@ class PFTP : public PInternetProtocol
     enum NameTypes {
       ShortNames,
       DetailedNames
+    };
+
+    enum {
+      DefaultPort = 21
     };
 
     /** Send the PORT command for a transfer.
@@ -116,6 +123,13 @@ class PFTPClient : public PFTP
 
   /**@name New functions for class */
   //@{
+    /**Open host using TCP
+     */
+    bool OpenHost(
+      const PString & host,
+      WORD port = DefaultPort
+    );
+
     /** Log in to the remote host for FTP.
 
        @return
@@ -208,8 +222,8 @@ class PFTPClient : public PFTP
        Socket to read data from, or NULL if an error occurred.
      */
     PTCPSocket * GetFile(
-      const PString & filename,            ///< Name of file to get
-      DataChannelType channel = NormalPort ///< Data channel type.
+      const PString & filename,         ///< Name of file to get
+      DataChannelType channel = Passive ///< Data channel type.
     );
 
     /**Begin storing a file to the remote FTP server. The second parameter
@@ -221,8 +235,22 @@ class PFTPClient : public PFTP
        Socket to write data to, or NULL if an error occurred.
      */
     PTCPSocket * PutFile(
-      const PString & filename,   ///< Name of file to get
-      DataChannelType channel = NormalPort ///< Data channel type.
+      const PString & filename,         ///< Name of file to get
+      DataChannelType channel = Passive ///< Data channel type.
+    );
+
+    /**Begin retreiving a file from the remote FTP server. The second
+       parameter indicates that the transfer is on a normal or passive data
+       channel. In short, a normal transfer the server connects to the
+       client and in passive mode the client connects to the server.
+
+       @return
+       Socket to read data from, or NULL if an error occurred.
+     */
+    PTCPSocket * GetURL(
+      const PURL & url,                 ///< URL of file to get
+      RepresentationType type,          ///< Type of transfer (text/binary)
+      DataChannelType channel = Passive ///< Data channel type.
     );
 
   //@}
@@ -446,6 +474,9 @@ class PFTPServer : public PFTP
     PString userName;
     int     illegalPasswordCount;
 };
+
+
+PFACTORY_LOAD(PURL_FtpLoader);
 
 
 #endif // PTLIB_FTP_H
