@@ -117,9 +117,9 @@ static int yyparse(void *);
 static int yylex();
 
 #ifdef __GNUC__
-static int yyerror();
+static int yyerror(char const *msg);
 #else
-static void yyerror();
+static void yyerror(char const *msg);
 #endif
 
 
