@@ -328,6 +328,9 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   queryVars.RemoveAll();
   m_contents.MakeEmpty();
 
+  if (cstr == NULL)
+    return false;
+
   // copy the string so we can take bits off it
   while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
     cstr++;
