@@ -38,6 +38,8 @@
 
 #if P_URL
 
+#include <ptlib/pfactory.h>
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PURL
@@ -308,13 +310,27 @@ class PURL : public PObject
     PBoolean IsEmpty() const { return urlString.IsEmpty(); }
 
 
+    /**Get the resource the URL is pointing at.
+       The data returned is obtained according to the scheme and the factory
+       PURLLoaderFactory.
+      */
+    bool LoadResource(
+      PString & data,  ///< Resource data as a string
+      const PString & requiredContentType = PString::Empty() ///< Expected content type where applicable
+    );
+    bool LoadResource(
+      PBYTEArray & data,  ///< Resource data as a binary blob
+      const PString & requiredContentType = PString::Empty() ///< Expected content type where applicable
+    );
+
     /**Open the URL in a browser.
 
        @return
        The browser was successfully opened. This does not mean the URL exists and was
        displayed.
      */
-    static PBoolean OpenBrowser(
+    bool OpenBrowser() const { return OpenBrowser(AsString()); }
+    static bool OpenBrowser(
       const PString & url   ///< URL to open
     );
   //@}
@@ -357,6 +373,9 @@ class PURLScheme : public PObject
     virtual PBoolean Parse(const PString & url, PURL & purl) const = 0;
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
 };
+
+typedef PFactory<PURLScheme> PURLSchemeFactory;
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PURLLegacyScheme
@@ -414,6 +433,21 @@ class PURLLegacyScheme : public PURLScheme
     bool relativeImpliesScheme;
     WORD defaultPort;
 };
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PURLLoader
+
+class PURLLoader : public PObject
+{
+  PCLASSINFO(PURLLoader, PObject);
+  public:
+    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType) = 0;
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType) = 0;
+};
+
+typedef PFactory<PURLLoader> PURLLoaderFactory;
+
 
 #endif // P_URL
 

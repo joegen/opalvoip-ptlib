@@ -1877,6 +1877,10 @@ class PHTTPDirRequest : public PHTTPFileRequest
     PFilePath realPath;
 };
 
+
+PFACTORY_LOAD(PURL_HttpLoader);
+
+
 #endif // P_HTTP
 
 #endif // PTLIB_HTTP_H
