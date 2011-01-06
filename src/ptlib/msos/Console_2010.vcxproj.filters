@@ -322,6 +322,9 @@
     <ClCompile Include="sound_directsound.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ptclib\vcard.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
@@ -757,6 +760,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\rfc1155.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptclib\vcard.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>

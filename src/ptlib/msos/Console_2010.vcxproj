@@ -139,6 +139,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ptclib\vcard.cxx" />
     <ClCompile Include="assert.cxx">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Create</PrecompiledHeader>
@@ -384,6 +385,7 @@ configure --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLI
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\ptclib\vcard.h" />
     <ClInclude Include="..\..\..\revision.h" />
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
