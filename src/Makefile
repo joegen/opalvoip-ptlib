@@ -385,6 +385,7 @@ SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/random.cxx \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
+	$(COMPONENT_SRC_DIR)/vcard.cxx 
 	$(COMPONENT_SRC_DIR)/guid.cxx \
 	$(GETDATE_SOURCE) \
 	$(PLATFORM_SRC_DIR)/assert.cxx \

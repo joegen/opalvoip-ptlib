@@ -8552,6 +8552,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\vcard.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\vxml.cxx"
 					>
 				</File>
@@ -9700,6 +9704,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\vsdl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\vcard.h"
 					>
 				</File>
 				<File
