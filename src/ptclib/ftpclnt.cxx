@@ -31,6 +31,7 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <ptclib/ftp.h>
+#include <ptclib/url.h>
 
 
 #define new PNEW
@@ -72,6 +73,17 @@ PBoolean PFTPClient::OnOpen()
   socket->GetPeerAddress(remoteHost, remotePort);
   remotePort--;
   return PTrue;
+}
+
+
+bool PFTPClient::OpenHost(const PString & host, WORD port)
+{
+  PTCPSocket * socket = new PTCPSocket(port);
+  if (socket->Connect(host) && Open(socket))
+    return true;
+
+  delete socket;
+  return false;
 }
 
 
@@ -285,6 +297,81 @@ PTCPSocket * PFTPClient::PutFile(const PString & filename,
                             : PassiveClientTransfer(STOR, filename);
 }
 
+
+PTCPSocket * PFTPClient::GetURL(const PURL & url, RepresentationType type, DataChannelType channel)
+{
+  PStringArray path = url.GetPath();
+  if (path.IsEmpty())
+    return NULL;
+
+  if (!OpenHost(url.GetHostName(), url.GetPort()))
+    return NULL;
+
+  PString user, pass;
+  user = url.GetUserName();
+  if (!user.IsEmpty())
+    pass = url.GetPassword();
+  else {
+    user = "anonymous";
+    pass = "user@host";
+  }
+
+  if (!LogIn(user, pass))
+    return NULL;
+
+  if (!SetType(type))
+    return NULL;
+
+  PINDEX lastPathIndex = path.GetSize()-1;
+  for (PINDEX i = 0; i < lastPathIndex; ++i) {
+    if (!ChangeDirectory(path[i]))
+      return NULL;
+  }
+
+  return GetFile(path[lastPathIndex], channel);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+#undef new
+
+class PURL_FtpLoader : public PURLLoader
+{
+    PCLASSINFO(PURL_FtpLoader, PURLLoader);
+  public:
+    virtual bool Load(const PURL & url, PString & str, const PString &)
+    {
+      PFTPClient ftp;
+      PTCPSocket * socket = ftp.GetURL(url, PFTP::ASCII);
+      if (socket == NULL)
+        return false;
+      str = socket->ReadString(P_MAX_INDEX);
+      delete socket;
+      return true;
+    }
+
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString &)
+    {
+      PFTPClient ftp;
+      PTCPSocket * socket = ftp.GetURL(url, PFTP::Image);
+      if (socket == NULL)
+        return false;
+
+      static const PINDEX chunk = 10000;
+      PINDEX total = 0;
+      BYTE * ptr = data.GetPointer(chunk);
+      while (socket->Read(ptr, chunk)) {
+        total += socket->GetLastReadCount();
+        ptr = data.GetPointer(total+chunk)+total;
+      }
+      data.SetSize(total);
+      delete socket;
+      return true;
+    }
+};
+
+PFACTORY_CREATE(PURLLoaderFactory, PURL_FtpLoader, "ftp", true);
 
 
 // End of File ///////////////////////////////////////////////////////////////
