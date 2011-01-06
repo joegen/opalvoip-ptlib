@@ -36,12 +36,10 @@
 
 #if P_URL
 
-#define P_DISABLE_FACTORY_INSTANCES
-#include <ptlib/pfactory.h>
-
 #include <ptclib/url.h>
 
 #include <ptlib/sockets.h>
+#include <ptclib/cypher.h>
 #include <ctype.h>
 
 #if defined(_WIN32) && !defined(_WIN32_WCE)
@@ -90,7 +88,7 @@
         : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
         { } \
   }; \
-  static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
+  static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
 //                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags,  path,   rel,    port
 DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
@@ -350,7 +348,7 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
     // Determine if the URL has an explicit scheme
     if (url[pos] == ':') {
       // get the scheme information
-      schemeInfo = PFactory<PURLScheme>::CreateInstance(url.Left(pos));
+      schemeInfo = PURLSchemeFactory::CreateInstance(url.Left(pos));
       if (schemeInfo != NULL)
         url.Delete(0, pos+1);
     }
@@ -358,7 +356,7 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 
   // if we could not match a scheme, then use the specified default scheme
   if (schemeInfo == NULL && defaultScheme != NULL) {
-    schemeInfo = PFactory<PURLScheme>::CreateInstance(defaultScheme);
+    schemeInfo = PURLSchemeFactory::CreateInstance(defaultScheme);
     PAssert(schemeInfo != NULL, "Default scheme " + PString(defaultScheme) + " not available");
   }
 
@@ -618,9 +616,9 @@ PString PURL::AsString(UrlFormat fmt) const
   if (scheme.IsEmpty())
     return PString::Empty();
 
-  const PURLScheme * schemeInfo = PFactory<PURLScheme>::CreateInstance(scheme);
+  const PURLScheme * schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
   if (schemeInfo == NULL)
-    schemeInfo = PFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
+    schemeInfo = PURLSchemeFactory::CreateInstance(DEFAULT_SCHEME);
 
   return schemeInfo->AsString(fmt, *this);
 }
@@ -876,7 +874,21 @@ void PURL::SetContents(const PString & str)
 }
 
 
-PBoolean PURL::OpenBrowser(const PString & url)
+bool PURL::LoadResource(PString & str, const PString & requiredContentType)
+{
+  PURLLoader * loader = PURLLoaderFactory::CreateInstance(GetScheme());
+  return loader != NULL && loader->Load(*this, str, requiredContentType);
+}
+
+
+bool PURL::LoadResource(PBYTEArray & data, const PString & requiredContentType)
+{
+  PURLLoader * loader = PURLLoaderFactory::CreateInstance(GetScheme());
+  return loader != NULL && loader->Load(*this, data, requiredContentType);
+}
+
+
+bool PURL::OpenBrowser(const PString & url)
 {
 #ifdef _WIN32
   SHELLEXECUTEINFO sei;
@@ -887,14 +899,14 @@ PBoolean PURL::OpenBrowser(const PString & url)
   sei.lpFile = file;
 
   if (ShellExecuteEx(&sei) != 0)
-    return PTrue;
+    return true;
 
   PVarString msg = "Unable to open page" & url;
   PVarString name = PProcess::Current().GetName();
   MessageBox(NULL, msg, name, MB_TASKMODAL);
 
 #endif // WIN32
-  return PFalse;
+  return false;
 }
 
 
@@ -911,8 +923,9 @@ void PURL::Recalculate()
 
 // RFC2397 data URI
 
-class PURL_data : public PURLScheme
+class PURL_DataScheme : public PURLScheme
 {
+    PCLASSINFO(PURL_DataScheme, PURLScheme);
   public:
     virtual PString GetName() const
     {
@@ -975,8 +988,79 @@ class PURL_data : public PURLScheme
     }
 };
 
-static PFactory<PURLScheme>::Worker<PURL_data> dataFactory("data", true);
+static PURLSchemeFactory::Worker<PURL_DataScheme> dataScheme("data", true);
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+class PURL_FileLoader : public PURLLoader
+{
+    PCLASSINFO(PURL_FileLoader, PURLLoader);
+  public:
+    virtual bool Load(const PURL & url, PString & str, const PString &)
+    {
+      PTextFile file;
+      if (!file.Open(url.AsFilePath()))
+        return false;
+      if (!str.SetSize(file.GetLength()+1))
+        return false;
+      return file.Read(str.GetPointer(), str.GetSize()-1);
+    }
+
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString &)
+    {
+      PFile file;
+      if (!file.Open(url.AsFilePath()))
+        return false;
+      if (!data.SetSize(file.GetLength()))
+        return false;
+      return file.Read(data.GetPointer(), data.GetSize());
+    }
+};
+
+PFACTORY_CREATE(PURLLoaderFactory, PURL_FileLoader, "file", true);
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+class PURL_DataLoader : public PURLLoader
+{
+    PCLASSINFO(PURL_FileLoader, PURLLoader);
+  public:
+    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType)
+    {
+      if (!requiredContentType.IsEmpty()) {
+        PCaselessString actualContentType = url.GetParamVars()("type");
+        if (!actualContentType.IsEmpty() && requiredContentType != requiredContentType)
+          return false;
+      }
+
+      str = url.GetContents();
+      return true;
+    }
+
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType)
+    {
+      if (!requiredContentType.IsEmpty()) {
+        PCaselessString actualContentType = url.GetParamVars()("type");
+        if (!actualContentType.IsEmpty() && requiredContentType != requiredContentType)
+          return false;
+      }
+
+      if (url.GetParamVars().Contains("base64"))
+        return PBase64::Decode(url.GetContents(), data);
+
+      PString str = url.GetContents();
+      PINDEX len = str.GetLength();
+      if (!data.SetSize(len))
+        return false;
+
+      memcpy(data.GetPointer(), (const char *)str, len);
+      return true;
+    }
+};
+
+PFACTORY_CREATE(PURLLoaderFactory, PURL_DataLoader, "data", true);
 
 #endif // P_URL
 
