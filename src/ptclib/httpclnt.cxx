@@ -909,6 +909,41 @@ PString PHTTPClientAuthenticator::GetMethod()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+#undef new
+
+class PURL_HttpLoader : public PURLLoader
+{
+    PCLASSINFO(PURL_HttpLoader, PURLLoader);
+  public:
+    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType)
+    {
+      PHTTPClient http;
+      return http.GetTextDocument(url, str, requiredContentType);
+    }
+
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType)
+    {
+      PHTTPClient http;
+      PMIMEInfo outMIME, replyMIME;
+      if (!http.GetDocument(url, outMIME, replyMIME))
+        return false;
+
+      PCaselessString actualContentType = replyMIME(PHTTP::ContentTypeTag());
+      if (!requiredContentType.IsEmpty() && !actualContentType.IsEmpty() &&
+            actualContentType.NumCompare(requiredContentType, requiredContentType.Find(';')) != EqualTo) {
+        PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << requiredContentType << ", got " << actualContentType);
+        return false;
+      }
+
+      return http.ReadContentBody(replyMIME, data);
+    }
+};
+
+PFACTORY_CREATE(PURLLoaderFactory, PURL_HttpLoader, "http", true);
+#if P_SSL
+static PURLLoaderFactory::Worker<PURL_HttpLoader> httpsLoader("https", true);
+#endif
+
 #endif // P_HTTP
 
 

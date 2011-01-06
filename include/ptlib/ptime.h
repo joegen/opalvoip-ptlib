@@ -388,6 +388,8 @@ class PTime : public PObject
     enum TimeFormat {
       /// Internet standard format.
       RFC1123,
+      /// Another Internet standard format.
+      RFC3339,
       /// Short form ISO standard format.
       ShortISO8601,
       /// Long form ISO standard format.
