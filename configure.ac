@@ -1124,6 +1124,8 @@ dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\Program Files\OpenSSL\
 dnl MSWIN_CHECK_DIR  openssl,\Program Files (x86)\OpenSSL\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
+dnl MSWIN_CHECK_DIR  openssl,c:\OpenSSL-Win32
+dnl MSWIN_CHECK_DIR  openssl,c:\OpenSSL-Win64
 
 AC_ARG_ENABLE([openssl],
 	      AS_HELP_STRING([--disable-openssl],[disable OpenSSL support]),
