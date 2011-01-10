@@ -33,6 +33,14 @@
 #include <ptclib/vcard.h>
 
 
+static long MaxLineLength = 72;
+
+static PvCard::Separator Space(' ');
+static PvCard::Separator Comma(',');
+static PvCard::Separator Colon(':');
+static PvCard::Separator Semicolon(';');
+static PvCard::Separator EndOfLine('\n');
+
 PvCard::PvCard()
   : m_version("3.0")
   , m_birthday(0)
@@ -69,6 +77,13 @@ void PvCard::Token::Validate()
 }
 
 
+void PvCard::Token::PrintOn(ostream & strm) const
+{
+  strm.iword(0) += GetLength();
+  PCaselessString::PrintOn(strm);
+}
+
+
 void PvCard::Token::ReadFrom(istream & strm)
 {
   MakeEmpty();
@@ -89,6 +104,18 @@ void PvCard::Token::ReadFrom(istream & strm)
 
   if (IsEmpty())
     strm.setstate(ios::failbit);
+}
+
+
+void PvCard::Separator::PrintOn(ostream & strm) const
+{
+  strm << m_separator;
+  if (m_separator == '\n')
+    strm.iword(0) = 0;
+  else if (++strm.iword(0) > MaxLineLength) {
+    strm << "\n ";
+    strm.iword(0) = 1;
+  }
 }
 
 
@@ -114,6 +141,7 @@ void PvCard::Separator::ReadFrom(istream & strm)
 void PvCard::ParamValue::PrintOn(ostream & strm) const
 {
   if (FindOneOf("\";:,") == P_MAX_INDEX) {
+    strm.iword(0) += GetLength();
     PString::PrintOn(strm);
     return;
   }
@@ -121,9 +149,12 @@ void PvCard::ParamValue::PrintOn(ostream & strm) const
   strm << '"';
   PINDEX lastPos = 0, pos;
   while ((pos = Find('"', lastPos)) != P_MAX_INDEX) {
+    strm.iword(0) += pos - lastPos + 1;
     strm << string(lastPos, pos-1) << "\\\"";
     lastPos = pos+1;
   }
+
+  strm.iword(0) += GetLength() - lastPos + 2; // Two quotes
   strm << Mid(lastPos) << '"';
 }
 
@@ -167,7 +198,7 @@ void PvCard::ParamValues::PrintOn(ostream & strm) const
 {
   for (PINDEX i = 0; i < GetSize(); ++i) {
     if (i > 0)
-      strm << ',';
+      strm << Comma;
     strm << (*this)[i];
   }
 }
@@ -187,13 +218,54 @@ void PvCard::ParamValues::ReadFrom(istream & strm)
 }
 
 
+void PvCard::TypeValues::PrintOn(ostream & strm) const
+{
+  if (IsEmpty())
+    return;
+
+  strm << Semicolon << Token("TYPE") << Separator('=');
+  ParamValues::PrintOn(strm);
+}
+
+
 void PvCard::TextValue::PrintOn(ostream & strm) const
 {
+  PINDEX len = GetLength();
   PINDEX lastPos = 0, pos;
-  while ((pos = FindOneOf(",;", lastPos)) != P_MAX_INDEX) {
-    strm << operator()(lastPos, pos-1) << '\\' << GetAt(pos);
+  while ((pos = FindOneOf("\n\t ,;", lastPos)) != P_MAX_INDEX) {
+    PINDEX chunkSize = pos - lastPos;
+    PINDEX lineLeft = MaxLineLength - strm.iword(0);
+    if (chunkSize > lineLeft)
+      pos = lastPos + lineLeft;
+
+    strm.iword(0) += pos - lastPos;
+    strm << operator()(lastPos, pos-1);
+
+    char c = GetAt(pos);
+    switch (c) {
+      case '\t' :
+        strm << Mid(lastPos, MaxLineLength) << EndOfLine << Space;
+        break;
+
+      case ',' :
+      case ';' :
+        strm << '\\';
+
+      default :
+        strm << Separator(c);
+    }
     lastPos = pos+1;
   }
+
+  PINDEX lineLeft = MaxLineLength - strm.iword(0);
+  while (len - lastPos > lineLeft) {
+    strm.iword(0) += MaxLineLength;
+    strm << Mid(lastPos, lineLeft) << EndOfLine << Space;
+    lastPos += MaxLineLength;
+    lineLeft = MaxLineLength-1;
+  }
+
+  strm.iword(0) += len - lastPos;
   strm << Mid(lastPos);
 }
 
@@ -257,7 +329,7 @@ void PvCard::TextValues::PrintOn(ostream & strm) const
 {
   for (PINDEX i = 0; i < GetSize(); ++i) {
     if (i > 0)
-      strm << ',';
+      strm << Comma;
     strm << (*this)[i];
   }
 }
@@ -277,6 +349,14 @@ void PvCard::TextValues::ReadFrom(istream & strm)
 }
 
 
+void PvCard::URIValue::PrintOn(ostream & strm) const
+{
+  PString str = AsString();
+  strm.iword(0) += str.GetLength();
+  strm << str;
+}
+
+
 void PvCard::URIValue::ReadFrom(istream & strm)
 {
   PvCard::TextValue value;
@@ -289,9 +369,9 @@ void PvCard::URIValue::ReadFrom(istream & strm)
 void PvCard::InlineValue::PrintOn(ostream & strm) const
 {
   if (GetScheme() != "data")
-    strm << ";VALUE=uri:" << AsString();
+    strm << Semicolon << TextValue("VALUE=url") << Colon << AsString();
   else
-    strm << ";ENCODING=b:" << GetContents();
+    strm << Semicolon << TextValue("ENCODING=b") << Colon << TextValue(GetContents());
 }
 
 
@@ -339,17 +419,14 @@ void PvCard::MultiValue::SetTypes(const ParamMap & params)
 
 void PvCard::Address::PrintOn(ostream & strm) const
 {
-  strm << (m_label ? "LABEL" : "ADR");
-  if (!m_types.IsEmpty())
-    strm << ";TYPE=" << m_types;
-  strm << ':'
-       << m_postOfficeBox << ';'
-       << m_extendedAddress << ';'
-       << m_street << ';'
-       << m_locality << ';'
-       << m_region << ';'
-       << m_postCode << ';'
-       << m_country << '\n';
+  strm << Token(m_label ? "LABEL" : "ADR") << m_types << Colon
+       << m_postOfficeBox << Semicolon
+       << m_extendedAddress << Semicolon
+       << m_street << Semicolon
+       << m_locality << Semicolon
+       << m_region << Semicolon
+       << m_postCode << Semicolon
+       << m_country << EndOfLine;
 }
 
 
@@ -368,26 +445,25 @@ void PvCard::Address::ReadFrom(istream & strm)
 
 void PvCard::Telephone::PrintOn(ostream & strm) const
 {
-  strm << "TEL";
-  if (!m_types.IsEmpty())
-    strm << ";TYPE=" << m_types;
-  strm << ':' << m_number << '\n';
+  strm << Token("TEL") << m_types << Colon << m_number << EndOfLine;
 }
 
 
 void PvCard::EMail::PrintOn(ostream & strm) const
 {
-  strm << "EMAIL";
-  if (!m_types.IsEmpty())
-    strm << ";TYPE=" << m_types;
-  strm << ':' << m_address << '\n';
+  strm << Token("EMAIL") << m_types << Colon << m_address << EndOfLine;
 }
 
+
+static ostream & StartEntry();
 
 void PvCard::PrintOn(ostream & strm) const
 {
   if (!IsValid())
     return;
+
+  long previous_iword = strm.iword(0);
+  strm.iword(0) = 0;
 
   switch (strm.width()) {
     case e_XML_XMPP :
@@ -399,62 +475,63 @@ void PvCard::PrintOn(ostream & strm) const
       if (!m_group.IsEmpty())
         strm << m_group << '.';
       strm << "BEGIN:vCard\n"
-              "VERSION:" << m_version << "\n"
-              "FN:" << m_fullName << '\n';
+           << Token("VERSION") << Colon << m_version << EndOfLine
+           << Token("FN") << Colon << m_fullName << EndOfLine;
 
       if (!m_familyName.IsEmpty() ||
           !m_givenName.IsEmpty() ||
           !m_additionalNames.IsEmpty() ||
           !m_honorificPrefixes.IsEmpty() ||
           !m_honorificSuffixes.IsEmpty())
-        strm << "N:" << m_familyName << ';'
-                     << m_givenName << ';'
-                     << m_additionalNames << ';'
-                     << m_honorificPrefixes << ';'
-                     << m_honorificSuffixes << '\n';
+        strm << Token("N") << Colon
+             << m_familyName << Semicolon
+             << m_givenName << Semicolon
+             << m_additionalNames << Semicolon
+             << m_honorificPrefixes << Semicolon
+             << m_honorificSuffixes << EndOfLine;
 
       if (!m_nickNames.IsEmpty())
-        strm << "NICKNAME:" << m_nickNames << '\n';
+        strm << Token("NICKNAME") << Colon << m_nickNames << EndOfLine;
       if (!m_sortString.IsEmpty())
-        strm << "SORT-STRING:" << m_sortString << '\n';
+        strm << Token("SORT-STRING") << Colon << m_sortString << EndOfLine;
       if (m_birthday.IsValid())
-        strm << "BDAY:" << m_birthday.AsString("yyyy-MM-dd") << '\n';
+        strm << Token("BDAY") << Colon << m_birthday.AsString("yyyy-MM-dd") << EndOfLine;
       if (!m_url.IsEmpty())
-        strm << "URL:" << m_url << "\n";
+        strm << Token("URL") << Colon << m_url << EndOfLine;
       if (!m_photo.IsEmpty())
-        strm << "PHOTO" << m_photo << '\n'; // Note no ':' is correct
+        strm << Token("PHOTO") << m_photo << EndOfLine; // Note no ':' is correct
       if (!m_sound.IsEmpty())
-        strm << "SOUND" << m_sound << '\n'; // Note no ':' is correct
+        strm << Token("SOUND") << m_sound << EndOfLine; // Note no ':' is correct
       if (!m_timeZone.IsEmpty())
-        strm << "TZ:" << m_timeZone << '\n';
+        strm << Token("TZ") << Colon << m_timeZone << EndOfLine;
       if (m_latitude >= -90 && m_latitude <= 90 && m_longitude >= -180 && m_longitude <= 180)
-        strm << "GEO:" << m_latitude << ';' << m_longitude << '\n';
+        strm << Token("GEO") << Colon << m_latitude << Semicolon << m_longitude << EndOfLine;
       if (!m_title.IsEmpty())
-        strm << "TITLE:" << m_title << '\n';
+        strm << Token("TITLE") << Colon << m_title << EndOfLine;
       if (!m_role.IsEmpty())
-        strm << "ROLE:" << m_role << '\n';
+        strm << Token("ROLE") << Colon << m_role << EndOfLine;
       if (!m_logo.IsEmpty())
-        strm << "LOGO" << m_logo << '\n'; // Note no ':' is correct
+        strm << Token("LOGO") << m_logo << EndOfLine; // Note no ':' is correct
       if (!m_agent.IsEmpty())
-        strm << "AGENT:" << m_agent << '\n';
+        strm << Token("AGENT") << Colon << m_agent << EndOfLine;
       if (!m_organisationName.IsEmpty() || !m_organisationUnit.IsEmpty())
-        strm << "ORG:" << m_organisationName << ';' << m_organisationUnit << '\n';
+        strm << Token("ORG") << Colon << m_organisationName << Semicolon << m_organisationUnit << EndOfLine;
       if (!m_mailer.IsEmpty())
-        strm << "MAILER:" << m_mailer << '\n';
+        strm << Token("MAILER") << Colon << m_mailer << EndOfLine;
       if (!m_categories.IsEmpty())
-        strm << "CATEGORIES:" << m_categories << '\n';
+        strm << Token("CATEGORIES") << Colon << m_categories << EndOfLine;
       if (!m_note.IsEmpty())
-        strm << "NOTE:" << m_note << '\n';
+        strm << Token("NOTE") << Colon << m_note << EndOfLine;
       if (!m_productId.IsEmpty())
-        strm << "PRODID:" << m_productId << '\n';
+        strm << Token("PRODID") << Colon << m_productId << EndOfLine;
       if (!m_guid.IsEmpty())
-        strm << "UID:" << m_guid << '\n';
+        strm << Token("UID") << Colon << m_guid << EndOfLine;
       if (!m_revision.IsEmpty())
-        strm << "REV:" << m_revision << '\n';
+        strm << Token("REV") << Colon << m_revision << EndOfLine;
       if (!m_class.IsEmpty())
-        strm << "CLASS:" << m_class << '\n';
+        strm << Token("CLASS") << Colon << m_class << EndOfLine;
       if (!m_publicKey.IsEmpty())
-        strm << "KEY:" << m_publicKey << '\n';
+        strm << Token("KEY") << Colon << m_publicKey << EndOfLine;
 
       strm << m_addresses << m_labels << m_telephoneNumbers << m_emailAddresses;
 
@@ -462,15 +539,16 @@ void PvCard::PrintOn(ostream & strm) const
         strm << it->first;
         for (std::map<Token, ParamValues>::const_iterator ip = it->second.m_parameters.begin();
                                                           ip != it->second.m_parameters.end(); ++ip)
-          strm << ';' << ip->first << '=' << ip->second;
-        strm << ':' << it->second.m_value << '\n';
+          strm << Semicolon << ip->first << '=' << ip->second;
+        strm << Colon << it->second.m_value << EndOfLine;
       }
 
       if (!m_group.IsEmpty())
         strm << m_group << '.';
       strm << "END:vCard\n";
-      strm.fill(' ');
   }
+
+  strm.iword(previous_iword);
 }
 
 
