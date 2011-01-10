@@ -85,6 +85,7 @@ class PvCard : public PObject
         Token(const PString & str) : PCaselessString(str) { Validate(); }
         Token & operator=(const char * str) { PCaselessString::operator=(str); Validate(); return *this; }
         Token & operator=(const PString & str) { PCaselessString::operator=(str); Validate(); return *this; }
+        virtual void PrintOn(ostream & strm) const;
         virtual void ReadFrom(istream & strm);
       private:
         void Validate();
@@ -93,6 +94,8 @@ class PvCard : public PObject
     class Separator : public PObject
     {
       public:
+        Separator(char c = '\0') : m_separator(c) { }
+        virtual void PrintOn(ostream & strm) const;
         virtual void ReadFrom(istream & strm);
         bool operator==(char c) const { return m_separator == c; }
         bool operator!=(char c) const { return m_separator != c; }
@@ -118,6 +121,13 @@ class PvCard : public PObject
 
     typedef std::map<Token, ParamValues> ParamMap;
 
+    class TypeValues : public ParamValues
+    {
+      public:
+        TypeValues() { }
+        TypeValues(const ParamValues & values) : ParamValues(values) { }
+        virtual void PrintOn(ostream & strm) const;
+    };
 
     /// Representation of EBNF text-value
     class TextValue : public PString
@@ -142,6 +152,7 @@ class PvCard : public PObject
       public:
         URIValue(const char * str = NULL) : PURL(str) { }
         URIValue(const PString & str) : PURL(str) { }
+        virtual void PrintOn(ostream & strm) const;
         virtual void ReadFrom(istream & strm);
     };
 
@@ -199,7 +210,7 @@ class PvCard : public PObject
       MultiValue() { }
       MultiValue(const PString & type) { m_types.Append(new ParamValue(type)); }
 
-      ParamValues m_types;     // e.g. "home", "work", "pref" etc
+      TypeValues m_types;     // e.g. "home", "work", "pref" etc
       void SetTypes(const ParamMap & params);
     };
 
@@ -228,7 +239,7 @@ class PvCard : public PObject
       { }
       virtual void PrintOn(ostream & strm) const;
 
-      TextValue   m_number;
+      TextValue m_number;
     };
     PArray<Telephone> m_telephoneNumbers;
 
