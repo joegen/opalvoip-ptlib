@@ -877,7 +877,8 @@ void PThread::Restart()
 
 void PThread::Terminate()
 {
-  PAssert(originalStackSize > 0, PLogicError);
+  if (!PAssert(!m_isProcess, "Cannot terminate the process!"))
+    return;
 
   if (Current() == this)
     ExitThread(0);
