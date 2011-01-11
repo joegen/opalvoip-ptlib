@@ -765,6 +765,13 @@ class PIPSocketAddressAndPort
       WORD port
     ) { m_port = port; }
 
+    bool IsValid() const { return m_address.IsValid() && m_port != 0; }
+
+    friend ostream & operator<<(ostream & strm, const PIPSocketAddressAndPort & ap)
+    {
+      return strm << ap.m_address << ap.m_separator << ap.m_port;
+    }
+
   protected:
     PIPSocket::Address m_address;
     WORD               m_port;

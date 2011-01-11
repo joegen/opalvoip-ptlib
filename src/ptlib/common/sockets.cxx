@@ -2894,16 +2894,16 @@ PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char sep
 
   PINDEX pos = str.Find(separator);
   if (pos != P_MAX_INDEX) {
-    m_port    = (WORD)str.Mid(pos+1).AsInteger();
     if (!PIPSocket::GetHostAddress(str.Left(pos), m_address))
       return false;
+    m_port = (WORD)str.Mid(pos+1).AsInteger();
   }
-  else if (m_port == 0) 
-    return false;
-  else if (!PIPSocket::GetHostAddress(str, m_address))
-    return false;
+  else {
+    if (!PIPSocket::GetHostAddress(str, m_address))
+      return false;
+  }
 
-  return true;
+  return m_port != 0;
 }
 
 
