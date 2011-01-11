@@ -455,8 +455,6 @@ void PvCard::EMail::PrintOn(ostream & strm) const
 }
 
 
-static ostream & StartEntry();
-
 void PvCard::PrintOn(ostream & strm) const
 {
   if (!IsValid())
