@@ -2761,6 +2761,103 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 };
 
 
+/** Specialised version of PStringToString to contain a dictionary of
+    options/attributes.
+
+    This assures that the keys are caseless and has some access functions for
+    bool/int types for ease of access with default values.
+  */
+class PStringOptions : public PStringToString 
+{
+  public:
+    /// Determine of the option exists.
+    bool Has(const PString & key) const
+    {
+      return Contains(key);
+    }
+    bool Has(const PString & (*key)()) const
+    {
+      return Contains(key());
+    }
+    bool Has(const char * key) const
+    {
+      return Contains(PCaselessString(key));
+    }
+
+    /// Get the option value.
+    PString Get(const PString & key, const PString & deflt = PString::Empty()) const
+    {
+      return (*this)(key, deflt);
+    }
+    PString Get(const PString & (*key)(), const PString & deflt = PString::Empty()) const
+    {
+      return (*this)(key(), deflt);
+    }
+    PString Get(const char * key, const PString & deflt = PString::Empty()) const
+    {
+      return (*this)(PCaselessString(key), deflt);
+    }
+
+    /// Get the option value as a boolean.
+    bool GetBoolean(const PString & key, bool deflt = false) const
+    {
+      PString * str = GetAt(key);
+      return str ? deflt : (str->NumCompare("t") == EqualTo || str->NumCompare("y") == EqualTo || str->AsUnsigned() != 0);
+    }
+    bool GetBoolean(const PString & (*key)(), bool deflt = false) const
+    {
+      return GetBoolean(key(), deflt);
+    }
+    bool GetBoolean(const char * key, bool deflt = false) const
+    {
+      return GetBoolean(PCaselessString(key), deflt);
+    }
+
+    /// Get the option value as an integer.
+    long GetInteger(const PString & key, long deflt = 0) const
+    {
+      PString * str = GetAt(key);
+      return str != NULL ? str->AsInteger() : deflt;
+    }
+    long GetInteger(const PString & (*key)(), long deflt = 0) const
+    {
+      return GetInteger(key(), deflt);
+    }
+    long GetInteger(const char * key, long deflt = 0) const
+    {
+      return GetInteger(PCaselessString(key), deflt);
+    }
+
+    /// Set the option value.
+    bool Set(const PString & key, const PString & value)
+    {
+      return PStringToString::SetAt(PCaselessString(key), value);
+    }
+    bool Set(const PString & (*key)(), const PString & value)
+    {
+      return PStringToString::SetAt(PCaselessString(key()), value);
+    }
+    bool Set(const char * key, const PString & value)
+    {
+      return PStringToString::SetAt(PCaselessString(key), value);
+    }
+
+
+    // Overide default PStringToString::SetAt() to make sure the key is caseless
+    PBoolean SetAt(const char * key, const PString & data)
+    {
+      return PStringToString::SetAt(PCaselessString(key), data);
+    }
+    PBoolean SetAt(const PString & key, const PString & data)
+    {
+      return PStringToString::SetAt(PCaselessString(key), data);
+    }
+    PBoolean SetAt(const PCaselessString & key, const PString & data)
+    {
+      return PStringToString::SetAt(key, data);
+    }
+};
+
 /**A class representing a regular expression that may be used for locating
    patterns in strings. The regular expression string is "compiled" into a
    form that is more efficient during the matching. This compiled form
