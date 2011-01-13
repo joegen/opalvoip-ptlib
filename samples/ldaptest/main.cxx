@@ -42,6 +42,8 @@
 
 /* Test command lines:
 
+search -h public.ldap.ucalgary.ca -x "cn=Cindy*"
+
 add    -h ils.seconix.com -x "c=AU, cn=robertj@equival.com.au, objectClass=RTPerson" "cn=robertj@equival.com.au" surname=Jongbloed givenName=Robert c=AU
 delete -h ils.seconix.com -x "c=AU, cn=robertj@equival.com.au, objectClass=RTPerson"
 search -h ils.seconix.com -x -b "objectClass=RTPerson" "cn=*au"
@@ -66,7 +68,7 @@ LDAPTest::LDAPTest()
 void LDAPTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("h:p:x.b:s:P.I.", PFalse);
+  args.Parse("h:p:xb:s:PI", PFalse);
 
   if (args.GetCount() == 0) {
     Usage();
