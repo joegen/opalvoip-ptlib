@@ -22,7 +22,10 @@
 
 #include <wx/wx.h>
 
+#include <ptlib/wxstring.h>
+
 #include "MainFrame.h"
+
 
 class XMPPFrameBase : public PObject
 {
