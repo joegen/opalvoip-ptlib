@@ -1622,7 +1622,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 class Win32RouteTableDetector : public PIPSocket::RouteTableDetector
 {
     PDynaLink  m_dll;
-    BOOL    (* m_pCancelIPChangeNotify )(LPOVERLAPPED);
+    BOOL    (WINAPI * m_pCancelIPChangeNotify )(LPOVERLAPPED);
     HANDLE     m_hCancel;
 
   public:
@@ -1665,7 +1665,8 @@ class Win32RouteTableDetector : public PIPSocket::RouteTableDetector
           return true;
 
         case WAIT_OBJECT_0+1 :
-          m_pCancelIPChangeNotify(&overlap);
+          if (m_pCancelIPChangeNotify != NULL)
+            m_pCancelIPChangeNotify(&overlap);
           // Do next case
 
         default :
