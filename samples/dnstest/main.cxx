@@ -17,14 +17,23 @@
 #include <ptclib/enum.h>
 #include <ptclib/url.h>
 
-#include "main.h"
-
 
 #if !P_DNS
 #error Must have DNS support for this application
 #endif
 
+
+class DNSTest : public PProcess
+{
+  PCLASSINFO(DNSTest, PProcess)
+
+  public:
+    DNSTest();
+    void Main();
+};
+
 PCREATE_PROCESS(DNSTest);
+
 
 DNSTest::DNSTest()
   : PProcess("Equivalence", "DNSTest", 1, 0, AlphaCode, 1)

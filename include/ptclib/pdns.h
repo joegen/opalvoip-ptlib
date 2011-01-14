@@ -44,26 +44,30 @@
 
 #if defined(_WIN32)
 
-#  include <windns.h>
-#ifndef __MINGW32__
-#    include <ntverp.h>
-#endif
+  #include <windns.h>
 
-// Accommodate spelling error in windns.h
-#ifndef __MINGW32__
-enum { DnsSectionAdditional = DnsSectionAddtional };
-#endif
+  #ifndef __MINGW32__
+
+    #include <ntverp.h>
+
+    #pragma comment(lib, "dnsapi.lib")
+
+    // Accommodate spelling error in windns.h
+    enum { DnsSectionAdditional = DnsSectionAddtional };
+
+  #endif
 
 #else /* _WIN32 */
 
-#  define  P_HAS_RESOLVER 1         // set if using Unix-style DNS routines
-#  include <arpa/nameser.h>
-#  include <resolv.h>
-#  if defined(P_MACOSX) && (P_MACOSX >= 700)
-#    include <arpa/nameser_compat.h>
-#  endif
+  #define  P_HAS_RESOLVER 1         // set if using Unix-style DNS routines
+  #include <arpa/nameser.h>
+  #include <resolv.h>
+  #if defined(P_MACOSX) && (P_MACOSX >= 700)
+    #include <arpa/nameser_compat.h>
+  #endif
 
 #endif  // _WIN32
+
 
 #if defined(_WIN32) && VER_PRODUCTBUILD < 6000
 typedef struct
