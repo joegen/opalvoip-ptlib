@@ -370,8 +370,13 @@ void PvCard::InlineValue::PrintOn(ostream & strm) const
 {
   if (GetScheme() != "data")
     strm << Semicolon << TextValue("VALUE=url") << Colon << AsString();
-  else
-    strm << Semicolon << TextValue("ENCODING=b") << Colon << TextValue(GetContents());
+  else {
+    strm << Semicolon << TextValue("ENCODING=b");
+    PCaselessString contentType = GetParamVars()("type");
+    if (contentType.NumCompare("image/") == EqualTo)
+      strm << Semicolon << TextValue("TYPE=" + contentType.Mid(6).ToUpper());
+    strm << Colon << TextValue(GetContents());
+  }
 }
 
 
@@ -396,7 +401,7 @@ void PvCard::InlineValue::ReadFrom(istream & strm)
 
   it = m_params->find("TYPE");
   if (it != m_params->end() && !it->second.IsEmpty())
-    SetParamVar("type", it->second[0]);
+    SetParamVar("type", "image/" + it->second[0]);
 
   m_params = NULL;
 }
