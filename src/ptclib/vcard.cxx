@@ -28,6 +28,10 @@
  * $Date$
  */
 
+#ifdef __GNUC__
+#pragma implementation "vcard.h"
+#endif
+
 #include <ptlib.h>
 
 #include <ptclib/vcard.h>
