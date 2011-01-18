@@ -35,6 +35,9 @@
 #pragma interface
 #endif
 
+#include <ptbuildopts.h>
+
+#if P_TTS
 
 #include <ptlib/pfactory.h>
 
@@ -83,6 +86,8 @@ class PTextToSpeech : public PObject
   PFACTORY_LOAD(PTextToSpeech_Festival);
 #endif
 
+
+#endif // P_TTS
 
 #endif // PTLIB_PTTS_H
 
