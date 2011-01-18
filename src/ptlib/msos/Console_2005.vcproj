@@ -8400,7 +8400,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\SVN-Trunk\ptlib\src\ptclib\vcard.cxx"
+					RelativePath="..\..\ptclib\vcard.cxx"
 					>
 				</File>
 				<File
@@ -9647,7 +9647,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\SVN-Trunk\ptlib\include\ptclib\vcard.h"
+					RelativePath="..\..\..\include\ptclib\vcard.h"
 					>
 				</File>
 				<File
