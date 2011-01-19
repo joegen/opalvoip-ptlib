@@ -741,8 +741,13 @@ PBoolean PLDAPSession::GetNextSearchResult(SearchContext & context)
             errorNumber = LDAP_NO_RESULTS_RETURNED;
           context.completed = PTrue;
           return PFalse;
+        case LDAP_RES_SEARCH_REFERENCE :
+          errorNumber = LDAP_SUCCESS;
+          return PTrue;
+        // Ignore other result message types for now ...
+        default:
+          PTRACE(3, "Unhandled LDAP message type " << ldap_msgtype(context.message));
       }
-      // Ignore other result message types for now ...
     }
 
     ldap_msgfree(context.result);
