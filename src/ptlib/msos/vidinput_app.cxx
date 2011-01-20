@@ -443,8 +443,11 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
   // bitblt or stretchblt screen DC to memory DC depending on frame size
   if (width == framewidth && height == frameheight)
     BitBlt(hMemDC, 0, 0, width, height, hScrDC, rect.left, rect.top, SRCCOPY);
-  else
+  else {
+    // Get a better quality scale
+    SetStretchBltMode(hMemDC, COLORONCOLOR);
     StretchBlt(hMemDC, 0, 0, framewidth, frameheight, hScrDC, rect.left, rect.top, width, height, SRCCOPY);
+  }
 
   // get the bitmap information
   if (GetObject(hBitMap, sizeof(BITMAP), (LPSTR)&bitmap) == 0) {
@@ -493,6 +496,10 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
     return false;
   }
 
+  // Clean up DCs
+  DeleteDC(hScrDC);
+  DeleteDC(hMemDC);
+  
   return true;
 }
 
