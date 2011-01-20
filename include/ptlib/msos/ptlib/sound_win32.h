@@ -72,6 +72,36 @@ class PWaveFormat : public PObject
     WAVEFORMATEX * waveFormat;
 };
 
+
+class PMultiMediaFile
+{
+  public:
+    PMultiMediaFile();
+    ~PMultiMediaFile();
+
+    PBoolean CreateWaveFile(const PFilePath & filename,
+                        const PWaveFormat & waveFormat,
+                        DWORD dataSize);
+    PBoolean OpenWaveFile(const PFilePath & filename,
+                      PWaveFormat & waveFormat,
+                      DWORD & dataSize);
+
+    PBoolean Open(const PFilePath & filename, DWORD dwOpenFlags, LPMMIOINFO lpmmioinfo = NULL);
+    PBoolean Close(UINT wFlags = 0);
+    PBoolean Ascend(MMCKINFO & ckinfo, UINT wFlags = 0);
+    PBoolean Descend(UINT wFlags, MMCKINFO & ckinfo, LPMMCKINFO lpckParent = NULL);
+    PBoolean Read(void * data, PINDEX len);
+    PBoolean CreateChunk(MMCKINFO & ckinfo, UINT wFlags = 0);
+    PBoolean Write(const void * data, PINDEX len);
+
+    DWORD GetLastError() const { return dwLastError; }
+
+  protected:
+    HMMIO hmmio;
+    DWORD dwLastError;
+};
+
+
 class PWaveBuffer : public PBYTEArray
 {
   PCLASSINFO(PWaveBuffer, PBYTEArray);
@@ -95,6 +125,7 @@ class PWaveBuffer : public PBYTEArray
 };
 
 PARRAY(PWaveBufferArray, PWaveBuffer);
+
 
 class PSoundChannelWin32: public PSoundChannel
 {
