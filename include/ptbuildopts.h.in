@@ -452,7 +452,9 @@
 
 #ifdef P_EXPAT
   #if P_DTMF
-    #undef P_VXML
+    #if P_TTS
+      #undef P_VXML
+	#endif
   #endif
   #undef P_JABBER
   #undef P_XMLRPC
