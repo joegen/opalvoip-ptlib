@@ -606,6 +606,7 @@
 #undef P_DIRECTSOUND_WINCE
 #if P_AUDIO && !defined(_WIN32_WCE) && !defined(P_DIRECTSOUND_WINCE) && defined(_MSC_VER)
   #undef P_DIRECTSOUND
+  #undef P_DIRECTSOUND_DXERR_H
 #endif
 
 
