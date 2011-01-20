@@ -1515,7 +1515,12 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
     int d = w*h - pixels;
     if (d < 0)
       d = -d;
-    if (diff > d) {
+    if (diff > d && 
+          // Ensure we don't pick one dimension greater and one 
+          // lower because we can't shrink one and grow the other.
+          ((w < width && h < height) || 
+	       (w > width && h > height))
+    ) {
       diff = d;
       widthToUse = w;
       heightToUse = h;
