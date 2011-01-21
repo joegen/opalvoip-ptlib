@@ -67,7 +67,7 @@ static PString GetErrorString(HRESULT error)
     return "Ok";
 
 #ifdef P_DIRECTSOUND_DXERR_H
-  if ((error & ((DWORD)(_FACDS) << 16)) != 0) // DirectX errors not available in GetErrorDescription
+  if (HRESULT_FACILITY(error) == _FACDS) // DirectX errors not available in GetErrorDescription
     return DXGetErrorDescription(error);
 #endif
 
