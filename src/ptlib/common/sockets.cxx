@@ -1619,12 +1619,20 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 
 #if P_HAS_IPV6
 
-/// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
+/// Check for v4 mapped in v6 address ::ffff:a.b.c.d
 PBoolean PIPSocket::Address::IsV4Mapped() const
 {
   if (version != 6)
     return PFalse;
   return IN6_IS_ADDR_V4MAPPED(&v.six) || IN6_IS_ADDR_V4COMPAT(&v.six);
+}
+
+/// Check for link-local address fe80::/10
+PBoolean PIPSocket::Address::IsLinkLocal() const
+{
+  if (version != 6)
+    return PFalse;
+  return IN6_IS_ADDR_LINKLOCAL(&v.six);
 }
 
 #endif
