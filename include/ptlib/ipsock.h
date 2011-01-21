@@ -239,6 +239,9 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d.
         PBoolean IsV4Mapped() const;
+
+		/// Check for link-local address fe80::/10
+        PBoolean IsLinkLocal() const;
 #endif
 
         static const Address & GetLoopback(int version = 4);
