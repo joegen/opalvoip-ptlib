@@ -183,7 +183,6 @@ PPlugin_##serviceType##_##serviceName##_Registration \
   extern int PPlugin_##serviceType##_##serviceName##_link(); \
   int const PPlugin_##serviceType##_##serviceName##_loader = PPlugin_##serviceType##_##serviceName##_link();
 
-// Win32 only has static plugins at present, maybe one day ...
 #ifndef P_FORCE_STATIC_PLUGIN
   #define P_FORCE_STATIC_PLUGIN 1
 #endif
@@ -194,15 +193,20 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_##serviceType() \
 { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); } \
+  int PPlugin_##serviceType##_##serviceName##_link() { return 0; }
 
 #else
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 extern int PWLIB_gStaticLoader__##serviceName##_##serviceType; \
 static int PWLIB_StaticLoader_##serviceName##_##serviceType() \
 { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); return 1; } \
-int PWLIB_gStaticLoader__##serviceName##_##serviceType =  PWLIB_StaticLoader_##serviceName##_##serviceType(); 
+  int PWLIB_gStaticLoader__##serviceName##_##serviceType =  PWLIB_StaticLoader_##serviceName##_##serviceType(); \
+  int PPlugin_##serviceType##_##serviceName##_link() { return 0; }
 #endif
-#define PPLUGIN_STATIC_LOAD(serviceName, serviceType) 
+
+#define PPLUGIN_STATIC_LOAD(serviceName, serviceType) \
+  extern int PPlugin_##serviceType##_##serviceName##_link(); \
+  int const PPlugin_##serviceType##_##serviceName##_loader = PPlugin_##serviceType##_##serviceName##_link();
 
 #endif
 
