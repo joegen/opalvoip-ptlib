@@ -2774,7 +2774,7 @@ class PStringOptions : public PStringToString
     bool GetBoolean(const PString & key, bool deflt = false) const
     {
       PString * str = GetAt(key);
-      return str ? deflt : (str->NumCompare("t") == EqualTo || str->NumCompare("y") == EqualTo || str->AsUnsigned() != 0);
+      return str == NULL ? deflt : (str->NumCompare("t") == EqualTo || str->NumCompare("y") == EqualTo || str->AsUnsigned() != 0);
     }
     bool GetBoolean(const PString & (*key)(), bool deflt = false) const
     {
