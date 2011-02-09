@@ -386,13 +386,13 @@ class PTime : public PObject
   //@{
     /// Standard time formats for string representations of a time and date.
     enum TimeFormat {
-      /// Internet standard format.
+      /// Internet standard format. (eg. Wed, 09 Feb 2011 11:25:58 +01:00)
       RFC1123,
-      /// Another Internet standard format.
+      /// Another Internet standard format. (eg. 2011-02-09T11:14:41ZZ)
       RFC3339,
-      /// Short form ISO standard format.
+      /// Short form ISO standard format. (eg. 20110209T111108Z)
       ShortISO8601,
-      /// Long form ISO standard format.
+      /// Long form ISO standard format. (eg. 2011-02-09 T 11:13:06 Z)
       LongISO8601,
       /// Date with weekday, full month names and time with seconds.
       LongDateTime,
