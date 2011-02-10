@@ -1636,7 +1636,7 @@ PBoolean PVideoInputDevice_FakeVideo::SetFrameSize(unsigned width, unsigned heig
     return PFalse;
 
   m_videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
-  m_scanLineWidth = m_videoFrameSize/frameHeight;
+  m_scanLineWidth = (frameHeight == 0) ? 0 : m_videoFrameSize/frameHeight;
   return m_videoFrameSize > 0;
 }
 
