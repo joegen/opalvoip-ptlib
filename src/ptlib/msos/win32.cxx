@@ -905,7 +905,7 @@ void PThread::WaitForTermination() const
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if ((this == PThread::Current()) || threadHandle == NULL) {
-    PTRACE(3, "PWLib\tWaitForTermination short circuited");
+    PTRACE(3, "PTLib\tWaitForTermination short circuited");
     return PTrue;
   }
 
@@ -1065,7 +1065,7 @@ void PProcess::HouseKeepingThread::Main()
 #ifndef _WIN32_WCE
         DWORD dwFlags;
         if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
-          PTRACE(2, "PWLib\tRefused to put invalid handle into wait list");
+          PTRACE(2, "PTLib\tRefused to put invalid handle into wait list");
         }
         else
 #endif
@@ -1134,17 +1134,21 @@ bool PProcess::SignalTimerChange()
 
 PProcess::~PProcess()
 {
+  PTRACE(4, "PTLib\tStarting process destruction.");
+
   // do whatever needs to shutdown
   PreShutdown();
 
   Sleep(100);  // Give threads time to die a natural death
 
   // Get rid of the house keeper (majordomocide)
+  PTRACE(4, "PTLib\tTerminating housekeeper thread.");
   delete houseKeeper;
   houseKeeper = NULL;
 
   // OK, if there are any left we get really insistent...
   m_activeThreadMutex.Wait();
+  PTRACE(4, "PTLib\tTerminating " << m_activeThreads.size()-1 << " remaining threads.");
   for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it) {
     PThread & thread = *it->second;
     if (this != &thread && !thread.IsTerminated())
@@ -1153,17 +1157,21 @@ PProcess::~PProcess()
   m_activeThreadMutex.Signal();
 
   deleteThreadMutex.Wait();
+  PTRACE(4, "PTLib\tDestroying " << autoDeleteThreads.GetSize() << " remaining auto-delete threads.");
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
   PostShutdown();
 
-#if PTRACING
-  PTrace::Cleanup();
-#endif
-
 #if _DEBUG
   WaitOnExitConsoleWindow();
+#endif
+
+  PTRACE(4, "PTLib\tCompleted process destruction.");
+
+#if PTRACING
+  PTrace::Cleanup();
+  PTrace::SetStream(NULL);
 #endif
 }
 
