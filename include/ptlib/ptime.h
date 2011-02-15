@@ -182,6 +182,13 @@ class PTime : public PObject
      */
     PInt64 GetTimestamp() const;
 
+    /**Set the time in seconds and microseconds.
+      */
+    void SetTimestamp(
+      time_t seconds,
+      long usecs = 0
+    );
+
     /**Get the total seconds since the epoch. The epoch is the 1st
        January 1970.
 
@@ -410,6 +417,8 @@ class PTime : public PObject
       ShortDate,
       /// Time without seconds.
       ShortTime,
+      /// Epoch format (e.g. 1234476388.123456)
+      EpochTime,
       NumTimeStrings
     };
 
@@ -449,7 +458,9 @@ class PTime : public PObject
        <tr><td>MMMM      <td>month of year as full text
        <tr><td>y/yy      <td>year without century
        <tr><td>yyy/yyyy  <td>year with century
-       <tr><td>z         <td>the time zone description
+       <tr><td>z         <td>the time zone description ('GMT' for UTC)
+       <tr><td>Z         <td>the time zone description ('Z' for UTC)
+       <tr><td>ZZ        <td>the time zone description (':' separates hour/minute)
        </table>
 
        All other characters are copied to the output string unchanged.
