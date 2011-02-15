@@ -303,6 +303,11 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 }
 
 
+void PTime::SetTimestamp(time_t seconds, long usecs)
+{ 
+  microseconds = usecs%1000000;
+  theTime = seconds + usecs/1000000;
+}
 
 
 PString PTime::AsString(TimeFormat format, int zone) const
@@ -319,6 +324,8 @@ PString PTime::AsString(TimeFormat format, int zone) const
       return AsString("yyyyMMddThhmmssZ", zone);
     case LongISO8601 :
       return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
+    case EpochTime :
+      return psprintf("%u.%06lu", theTime, microseconds);
     default :
       break;
   }
