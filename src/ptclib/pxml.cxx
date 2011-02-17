@@ -540,7 +540,7 @@ bool PXML::Load(const PString & data, PXMLParser::Options options)
     rootElement = NULL;
   }
   rootElement = loadingRootElement;
-  PTRACE(4, "XML\tLoaded XML " << rootElement->GetName());
+  PTRACE(4, "XML\tLoaded XML <" << rootElement->GetName() << '>');
 
   OnLoaded();
 
@@ -718,7 +718,7 @@ void PXML::ReadFrom(istream & strm)
 
       rootMutex.Signal();
 
-      PTRACE(4, "XML\tRead XML " << rootElement->GetName());
+      PTRACE(4, "XML\tRead XML <" << rootElement->GetName() << '>');
       break;
     }
   }
