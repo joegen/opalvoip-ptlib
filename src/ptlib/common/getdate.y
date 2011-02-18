@@ -783,6 +783,9 @@ int yylex(YYSTYPE * yylval, void * yyInput)
 	} while (Count > 0);
     }
 
+    if (c == '\n')
+        PTimeUngetChar(yyInput, c);
+
     return EOF;
 }
 
