@@ -2163,6 +2163,11 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
     /**Indicate frame may be displayed.
       */
     virtual PBoolean EndFrame();
+
+	/**Decide whether to disable Decode
+	  */
+	virtual PBoolean DisableDecode();
+
 };
 
 PCREATE_VIDOUTPUT_PLUGIN(NULLOutput);
@@ -2227,6 +2232,12 @@ PBoolean PVideoOutputDevice_NULLOutput::SetFrameData(unsigned /*x*/, unsigned /*
 PBoolean PVideoOutputDevice_NULLOutput::EndFrame()
 {
   return PTrue;
+}
+
+
+PBoolean PVideoOutputDevice_NULLOutput::DisableDecode()
+{
+  return PTrue; 
 }
 
 
