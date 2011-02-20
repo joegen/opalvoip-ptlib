@@ -74,8 +74,10 @@ void Test::Main()
   cout << "vCard Test Utility" << endl;
 
   PArgList & args = GetArguments();
-  if (args.GetCount() == 0) {
-    cerr << "usage: " << GetFile().GetTitle() << " <filename> | '-'\n";
+  if (!args.Parse("-P-photo:")) {
+    cerr << "usage: " << GetFile().GetTitle() << " [ options] <filename> | '-'\n"
+            "options:\n"
+            "  -P --photo fname    Output PHOTO field to filename\n";
     return;
   }
 
@@ -109,6 +111,15 @@ void Test::Main()
   }
 
   cout << card;
+
+  if (args.HasOption('P')) {
+    PBYTEArray data;
+    if (card.m_photo.LoadResource(data)) {
+      PFile photo;
+      if (photo.Open(args.GetOptionString('P'), PFile::WriteOnly))
+        photo.Write(data, data.GetSize());
+    }
+  }
 }
 
 
