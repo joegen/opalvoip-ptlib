@@ -724,7 +724,7 @@ PBoolean PASN_Choice::DecodePER(PPER_Stream & strm)
       return PFalse;
   }
 
-  return CreateObject() && choice->Decode(strm);
+  return CreateObject() && choice && choice->Decode(strm);
 }
 
 
