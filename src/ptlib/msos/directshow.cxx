@@ -324,6 +324,43 @@ static struct {
     { "UYVY422", MEDIASUBTYPE_UYVY   }
 };
 
+static const char * GUID2Format(GUID m_guid)
+{
+   for (int j = 0; j < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); j++) {
+        if (m_guid == ColourFormat2GUID[j].m_guid)
+          return ColourFormat2GUID[j].m_colourFormat;
+   }
+
+   wchar_t guidName[256];
+   if (StringFromGUID2(m_guid, guidName, sizeof(guidName)) <= 0)
+       return PString("UNKNOWN"); // Can't use this entry!
+
+   return PString(guidName);
+}
+
+static struct {
+    PString     m_format;
+} const DirectShowFormat[] =
+{
+    { "BGR24" },
+    { "BGR32" }
+#ifndef _WIN32_WCE
+   ,{ "YUY2" },
+    { "YUV420P" },
+    { "MJPEG" }
+#endif
+};
+
+static bool FormatSupported(GUID m_guid)
+{
+   // We need to limit the format to known supported Directshow Transforms to BGR24
+   PString format = GUID2Format(m_guid);
+   for (int j = 0; j < sizeof(DirectShowFormat)/sizeof(DirectShowFormat[0]); j++) {
+        if (format == DirectShowFormat[j].m_format)
+          return true;
+   }
+   return false;
+}
 
 ////////////////////////////////////////////////////////////////////
 // Some support functions/macros
@@ -420,6 +457,69 @@ class MediaTypePtr
     void operator=(const MediaTypePtr &) { }
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Bubble Sorting functions
+// This is used to sort the video frame sizes from largest to smallest (removing duplicates)
+// The optimum frame size can be selected by sorting down the list for a given bandwidth.
+// If there is a better way to do this then great but it very important in order the framesizes. - SH
+
+class inputframes {
+ public:
+    inputframes(unsigned W, unsigned H, unsigned R, PString C)
+        : width(W), height(H), rate(R), colour(C)
+    {};
+    unsigned width; unsigned height; unsigned rate; PString colour;
+};
+
+class frameSort {
+  public:
+     bool operator()(inputframes*& f1, inputframes*& f2) {
+          if (f1->width > f2->width) return true;
+          else if (f1->width == f2->width && f1->height > f2->height)
+              return true;
+          else return false;
+     }
+};
+
+class frameMatch {
+  public:
+     bool operator()(inputframes*& f1, inputframes*& f2) {
+          return (f1->width == f2->width) && (f1->height == f2->height);
+     }
+};
+
+class frameSizes : public std::vector<inputframes*>
+{
+  public:
+     ~frameSizes()
+     {
+          for (iterator pItem=begin(); pItem != end(); ++pItem)
+               delete *pItem;
+     }
+
+     void ReIndex() {
+         sort(begin(), end(), frameSort());
+         unique(begin(), end(), frameMatch());
+
+         unsigned lastWidth = P_MAX_INDEX;
+         int pos = 0;
+         iterator r = begin();
+         while (r != end()) {
+            const inputframes* frame = *r;
+            if (frame->width > lastWidth)  break;
+            else lastWidth = frame->width;
+            ++pos; ++r;
+         }
+
+         int sz = size();
+         PINDEX i = sz-1;
+         while (i > pos-1) {
+           erase(begin()+i);
+           --i;
+         }
+     }
+};
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Input device
@@ -475,50 +575,45 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
   }
 
   bool foundNone = true;
-
+  frameSizes fsizes;
   for (int i = 0; i < iCount; i++) {
     MediaTypePtr pMediaFormat;
     CHECK_ERROR(pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc), continue);
 
     if ((pMediaFormat->majortype == MEDIATYPE_Video) &&
-        (pMediaFormat->formattype == FORMAT_VideoInfo)     &&
+        (pMediaFormat->formattype == FORMAT_VideoInfo) &&
         (pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
         (pMediaFormat->pbFormat != NULL))
     {
-      PVideoFrameInfo frameInfo;
-      frameInfo.SetFrameSize(scc.MaxOutputSize.cx, scc.MaxOutputSize.cy);
-      frameInfo.SetFrameRate(10000000/(unsigned)scc.MinFrameInterval);
-
-      bool notInTable = true;
-      for (int j = 0; j < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); j++) {
-        if (pMediaFormat->subtype == ColourFormat2GUID[j].m_guid) {
-          frameInfo.SetColourFormat(ColourFormat2GUID[j].m_colourFormat);
-          notInTable = false;
-          break;
-        }
-      }
-
-      if (notInTable) {
-        wchar_t guidName[256];
-        if (StringFromGUID2(pMediaFormat->subtype, guidName, sizeof(guidName)) <= 0)
-          continue; // Can't use this entry!
-        frameInfo.SetColourFormat(PString(guidName));
-      }
-
-      if (caps != NULL)
-        caps->framesizes.push_back(frameInfo);
-
-      PTRACE(4,"PVidDirectShow\tFmt["<< i << "] = ("
-             << frameInfo.GetColourFormat() << ", "
-             << frameInfo.GetFrameWidth() << "x" << frameInfo.GetFrameHeight() << ", "
-             << frameInfo.GetFrameRate() << "fps)");
-
-      foundNone = false;
+      if (FormatSupported(pMediaFormat->subtype)) { 
+        inputframes * f = new inputframes(scc.MaxOutputSize.cx,
+                      scc.MaxOutputSize.cy,
+                      10000000/(unsigned)scc.MinFrameInterval,
+                      GUID2Format(pMediaFormat->subtype));
+        fsizes.push_back(f);
+        foundNone = false;
+      } 
     }
   }
 
-  if (foundNone)
-    return false;
+  if (foundNone) return false;
+
+  // Resort so we have unique sizes from largest to smallest
+  fsizes.ReIndex();
+  PINDEX i=0;
+  for (std::vector<inputframes*>::iterator r = fsizes.begin(); r != fsizes.end(); ++r) {
+    inputframes* f = *r;
+    PVideoFrameInfo cap;
+    cap.SetFrameSize(f->width,f->height);
+    cap.SetFrameRate(f->rate);
+    cap.SetColourFormat(f->colour);
+
+    PTRACE(6,"PVidDirectShow\tFmt["<< i << "] = (" << cap.GetColourFormat() << ", "
+      << cap.GetFrameWidth() << "x" << cap.GetFrameHeight() << ", " << cap.GetFrameRate() << "fps)");
+
+    caps->framesizes.push_back(cap);
+    i++;
+  }
 
 #ifndef _WIN32_WCE
 
@@ -583,17 +678,10 @@ bool PVideoInputDevice_DirectShow::SetVideoFormat(IPin * pin)
       AM_MEDIA_TYPE *mt;
       if (SUCCEEDED(pConfig->GetStreamCaps(iFormat,&mt,reinterpret_cast<BYTE*>(&scc)))) {
 
-        if ( (mt->majortype == MEDIATYPE_Video) &&        
-            ((mt->subtype == MEDIASUBTYPE_RGB24) ||   //RGB24
-             (mt->subtype == MEDIASUBTYPE_RGB32)       //RGB32
-#ifndef _WIN32_WCE
-              || (mt->subtype == MEDIASUBTYPE_YUY2)     // YUV420
-              || (mt->subtype == MEDIASUBTYPE_IYUV)     // YUV420P
-              || (mt->subtype == MEDIASUBTYPE_MJPG)     // MJPEG
-#endif            
-              ) &&             
-              (mt->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-              (mt->pbFormat != NULL) && (!success)) {
+        if ( (mt->majortype == MEDIATYPE_Video) &&                    
+             (mt->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
+             FormatSupported(mt->subtype) && 
+             (mt->pbFormat != NULL) && (!success)) {
 
             //Check if the device is capable of the video size required in Mode
             unsigned width = scc.MaxOutputSize.cx;
@@ -606,10 +694,11 @@ bool PVideoInputDevice_DirectShow::SetVideoFormat(IPin * pin)
 
               VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)mt->pbFormat;
 
-              if (frameWidth < width)
-                pVih->bmiHeader.biWidth= frameWidth;
-              if (frameHeight < height) 
-                pVih->bmiHeader.biHeight= frameHeight;  
+//       Do not fiddle with Frame Sizes as some webcams don't like it -SH
+//              if (frameWidth < width)
+//                pVih->bmiHeader.biWidth= frameWidth;
+//              if (frameHeight < height) 
+//                pVih->bmiHeader.biHeight= frameHeight;  
 
               // Set the buffer size
               PString format((const char *)mt->subtype.Data4, 4);
@@ -620,9 +709,9 @@ bool PVideoInputDevice_DirectShow::SetVideoFormat(IPin * pin)
                 }
               }
 
-              int xBufferSize = CalculateFrameBytes(frameWidth, frameHeight, format);
-
-              pVih->bmiHeader.biSizeImage = xBufferSize;
+//          Let DirectShow set the image size (we only care about output pin size) - SH
+//             int xBufferSize = CalculateFrameBytes(frameWidth, frameHeight, format);
+//             pVih->bmiHeader.biSizeImage = xBufferSize;
 
               pVih->AvgTimePerFrame = 10000000 / frameRate;
 
@@ -1527,7 +1616,7 @@ public:
     static int skipFrames = 4;
     if (cInd < skipFrames) {
       cInd++;
-      PTRACE(5,"DShow\tFrame Skipped.");
+//      PTRACE(5,"DShow\tFrame Skipped."); <-- This causes External Thread to Spawn! -SH
       return S_OK;
     }
 
