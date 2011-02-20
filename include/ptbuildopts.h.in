@@ -628,7 +628,9 @@
 
       #define P_VFW_CAPTURE 1
       #undef P_DIRECTSHOW
-      #undef P_DIRECTSHOW_QEDIT_H
+       #if WINVER < 0x502
+          #undef P_DIRECTSHOW_QEDIT_H
+       #endif
 
     #endif // _WIN32_WCE
 
