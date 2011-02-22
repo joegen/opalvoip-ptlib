@@ -31,7 +31,7 @@
 #include <ptclib/vcard.h>
 
 
-static const char * TestData[10] =
+static const char * const TestData[10] =
 {
    "BEGIN:vCard\r\n"
    "VERSION:3.0\r\n"
@@ -90,7 +90,7 @@ void Test::Main()
     }
   }
   else if (args[0].GetLength() == 1 && isdigit(args[0][0])) {
-    PStringStream strm = TestData[args[0].AsUnsigned()];
+    PStringStream strm(TestData[args[0].AsUnsigned()]);
     strm >> card;
     if (strm.fail()) {
       cerr << "Could not parse vCard from Test Data\n";
