@@ -43,9 +43,6 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
-#include <dshow.h>
-#include <initguid.h>
-
 
 #ifdef _WIN32_WCE
 
@@ -56,14 +53,14 @@
   #pragma comment(lib, "mmtimer.lib")
 
   #ifdef DEBUG
-  /* Only the release version is provided as a .lib file, so we need to
-     make sure that the compilation does NOT have the extra fields/functions
-     that are added when DEBUG version. */
-  #undef DEBUG
-  #include <streams.h>
-  #define DEBUG
+    /* Only the release version is provided as a .lib file, so we need to
+       make sure that the compilation does NOT have the extra fields/functions
+       that are added when DEBUG version. */
+    #undef DEBUG
+    #include <streams.h>
+    #define DEBUG
   #else
-  #include <streams.h>
+    #include <streams.h>
   #endif
 
   class PSampleGrabber : public CBaseVideoRenderer
@@ -161,6 +158,8 @@
 
 #endif // _WIN32_WCE
 
+#include <dshow.h>
+#include <initguid.h>
 
 #ifdef _MSC_VER
   #pragma comment(lib, "strmiids.lib")
