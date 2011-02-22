@@ -173,7 +173,9 @@
 //
 //
 
-#undef P_QOS
+#ifndef _WIN32_WCE
+  #undef P_QOS
+#endif //  _WIN32_WCE
 
 
 /////////////////////////////////////////////////
@@ -467,7 +469,9 @@
 // Lua interpreter
 //
 
-#undef P_LUA
+#ifndef _WIN32_WCE
+  #undef P_LUA
+#endif //  _WIN32_WCE
 
 #if defined(_MSC_VER) && defined(P_LUA)
   #pragma include_alias(<lua.hpp>,   <@LUA_DIR@/include/lua.hpp>)
@@ -533,7 +537,9 @@
 // SAPI speech API (Windows only)
 //
 
-#undef P_SAPI
+#ifndef _WIN32_WCE
+  #undef P_SAPI
+#endif
 
 
 /////////////////////////////////////////////////
