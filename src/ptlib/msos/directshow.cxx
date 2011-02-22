@@ -63,6 +63,9 @@
     #include <streams.h>
   #endif
 
+  #include <dshow.h>
+  #include <initguid.h>
+
   class PSampleGrabber : public CBaseVideoRenderer
   {
     public:
@@ -82,6 +85,9 @@
   #endif
 
 #else // _WIN32_WCE
+
+  #include <dshow.h>
+  #include <initguid.h>
 
   #pragma warning(disable:4201)
   #include <Ks.h>
@@ -157,9 +163,6 @@
   #endif
 
 #endif // _WIN32_WCE
-
-#include <dshow.h>
-#include <initguid.h>
 
 #ifdef _MSC_VER
   #pragma comment(lib, "strmiids.lib")
