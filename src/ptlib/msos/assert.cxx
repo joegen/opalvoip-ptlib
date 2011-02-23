@@ -56,6 +56,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   if (wndProcess != (DWORD)thisProcess)
     return PTrue;
 
+  PTRACE(4, "PTLib\tAwaiting key press on exit.");
   cerr << "\nPress a key to continue . . .";
   cerr.flush();
 
