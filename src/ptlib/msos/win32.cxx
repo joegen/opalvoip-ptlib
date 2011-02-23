@@ -1151,17 +1151,17 @@ PProcess::~PProcess()
   PTRACE(4, "PTLib\tTerminating " << m_activeThreads.size()-1 << " remaining threads.");
   for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it) {
     PThread & thread = *it->second;
-    if (this != &thread && !thread.IsTerminated())
+    if (this != &thread && !thread.IsTerminated()) {
+      PTRACE(3, "PTLib\tTerminating thread " << thread);
       TerminateThread(thread.GetHandle(), 1);  // With extreme prejudice
+    }
   }
   m_activeThreadMutex.Signal();
 
-  deleteThreadMutex.Wait();
   PTRACE(4, "PTLib\tDestroying " << autoDeleteThreads.GetSize() << " remaining auto-delete threads.");
+  deleteThreadMutex.Wait();
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
-
-  PostShutdown();
 
 #if _DEBUG
   WaitOnExitConsoleWindow();
@@ -1169,10 +1169,13 @@ PProcess::~PProcess()
 
   PTRACE(4, "PTLib\tCompleted process destruction.");
 
+  // Can't do any more tracing after this ...
 #if PTRACING
   PTrace::Cleanup();
   PTrace::SetStream(NULL);
 #endif
+
+  PostShutdown();
 }
 
 
