@@ -34,9 +34,9 @@
  */
 
 #define MAJOR_VERSION 2
-#define MINOR_VERSION 9
+#define MINOR_VERSION 11
 #define BUILD_TYPE BetaCode
-#define BUILD_NUMBER 1
+#define BUILD_NUMBER 0
 
 
 #endif  // _PTLib_VERSION_H
