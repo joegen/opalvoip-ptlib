@@ -1153,7 +1153,7 @@ PProcess::~PProcess()
     PThread & thread = *it->second;
     if (this != &thread && !thread.IsTerminated()) {
       PTRACE(3, "PTLib\tTerminating thread " << thread);
-      TerminateThread(thread.GetHandle(), 1);  // With extreme prejudice
+      thread.Terminate();  // With extreme prejudice
     }
   }
   m_activeThreadMutex.Signal();
