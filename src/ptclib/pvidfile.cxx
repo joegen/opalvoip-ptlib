@@ -47,115 +47,107 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 PVideoFile::PVideoFile()
-  : unknownFrameSize(PTrue)
-  , frameBytes(CalculateFrameBytes())
-  , headerOffset(0)
+  : m_fixedFrameSize(false)
+  , m_fixedFrameRate(false)
+  , m_frameBytes(CalculateFrameBytes())
+  , m_headerOffset(0)
 {
-}
-
-
-PBoolean PVideoFile::SetFrameSize(unsigned width, unsigned height)   
-{ 
-  if (!PVideoFrameInfo::SetFrameSize(width, height))
-    return PFalse;
-
-  unknownFrameSize = PFalse;
-  frameBytes = CalculateFrameBytes();
-  return frameBytes > 0;
 }
 
 
 PBoolean PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 {
-  if (unknownFrameSize)
-    ExtractHints(name, *this);
-  return file.Open(name, mode, opts);
+  static PRegularExpression res("_(sqcif|qcif|cif|cif4|cif16|[0-9]+x[0-9]+)[^a-z0-9]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression fps("_[0-9]+fps[^a-z]",     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+
+  PINDEX pos, len;
+
+  if (name.FindRegEx(res, pos, len)) {
+    m_fixedFrameSize = Parse(name.Mid(pos+1, len-2));
+    if (m_fixedFrameSize)
+      m_frameBytes = CalculateFrameBytes();
+  }
+
+  if ((pos = name.FindRegEx(fps)) != P_MAX_INDEX)
+    m_fixedFrameRate = PVideoFrameInfo::SetFrameRate(name.Mid(pos+1).AsUnsigned());
+
+  return m_file.Open(name, mode, opts);
 }
 
 
 PBoolean PVideoFile::WriteFrame(const void * frame)
 {
-  return file.Write(frame, frameBytes);
+  return m_file.Write(frame, m_frameBytes);
 }
 
 
 PBoolean PVideoFile::ReadFrame(void * frame)
 {
-  if (file.Read(frame, frameBytes) && file.GetLastReadCount() == frameBytes)
-    return PTrue;
+  if (m_file.Read(frame, m_frameBytes) && m_file.GetLastReadCount() == m_frameBytes)
+    return true;
 
-  PTRACE(4, "YUVFILE\tError reading file " << file.GetErrorText(file.GetErrorCode(PFile::LastReadError)));
-  return PFalse;
+  PTRACE(4, "YUVFILE\tError reading file " << m_file.GetErrorText(m_file.GetErrorCode(PFile::LastReadError)));
+  return false;
 }
 
 
 off_t PVideoFile::GetLength() const
 {
-  off_t len = file.GetLength();
-  return len < headerOffset ? 0 : ((len - headerOffset)/frameBytes);
+  off_t len = m_file.GetLength();
+  return len < m_headerOffset ? 0 : ((len - m_headerOffset)/m_frameBytes);
 }
 
 
 PBoolean PVideoFile::SetLength(off_t len)
 {
-  return file.SetLength(len*frameBytes + headerOffset);
+  return m_file.SetLength(len*m_frameBytes + m_headerOffset);
 }
 
 
 off_t PVideoFile::GetPosition() const
 {
-  off_t pos = file.GetPosition();
-  return pos < headerOffset ? 0 : ((pos - headerOffset)/frameBytes);
+  off_t pos = m_file.GetPosition();
+  return pos < m_headerOffset ? 0 : ((pos - m_headerOffset)/m_frameBytes);
 }
 
 
 PBoolean PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
 {
-  pos *= frameBytes;
+  pos *= m_frameBytes;
   if (origin == PFile::Start)
-    pos += headerOffset;
+    pos += m_headerOffset;
 
-  return file.SetPosition(pos, origin);
+  return m_file.SetPosition(pos, origin);
 }
 
 
-PBoolean PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
+PBoolean PVideoFile::SetFrameSize(unsigned width, unsigned height)
 {
-  static PRegularExpression  qcif  ("_qcif[^a-z0-9]",       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif  ("_cif[^a-z0-9]",        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression sqcif  ("_sqcif[^a-z0-9]",      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif4 ("_cif4[^a-z0-9]",       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   cif16("_cif16[^a-z0-9]",      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression   XbyY ("_[0-9]+x[0-9]+[^a-z]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression fps    ("_[0-9]+fps[^a-z]",     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  if (frameWidth == width && frameHeight == height)
+    return true;
 
-  PCaselessString str = fn;
-  PBoolean foundHint = PFalse;
-  PINDEX pos;
+  if (m_fixedFrameSize)
+    return false;
 
-  if (str.FindRegEx(qcif) != P_MAX_INDEX)
-    foundHint = info.SetFrameSize(QCIFWidth, QCIFHeight);
-  else if (str.FindRegEx(cif) != P_MAX_INDEX)
-    foundHint = info.SetFrameSize(CIFWidth, CIFHeight);
-  else if (str.FindRegEx(sqcif) != P_MAX_INDEX)
-    foundHint = info.SetFrameSize(SQCIFWidth, SQCIFHeight);
-  else if (str.FindRegEx(cif4) != P_MAX_INDEX)
-    foundHint = info.SetFrameSize(CIF4Width, CIF4Height);
-  else if (str.FindRegEx(cif16) != P_MAX_INDEX)
-    foundHint = info.SetFrameSize(CIF16Width, CIF16Height);
-  else if ((pos = str.FindRegEx(XbyY)) != P_MAX_INDEX) {
-    unsigned width, height;
-    if (sscanf(str.Mid(pos+1), "%ux%u", &width, &height) == 2)
-      foundHint = info.SetFrameSize(width, height);
-  }
+  if (!PVideoFrameInfo::SetFrameSize(width, height))
+    return false;
 
-  if ((pos = str.FindRegEx(fps)) != P_MAX_INDEX) {
-    unsigned rate = str.Mid(pos+1).AsUnsigned();
-    foundHint = info.SetFrameRate(rate);
-  }
-
-  return foundHint;
+  m_frameBytes = CalculateFrameBytes();
+  return m_frameBytes > 0;
 }
+
+
+PBoolean PVideoFile::SetFrameRate(unsigned rate)
+{
+  if (frameRate == rate)
+    return true;
+
+  if (m_fixedFrameRate)
+    return false;
+  
+  return PVideoFrameInfo::SetFrameRate(rate);
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,7 +157,7 @@ static PFactory<PVideoFile>::Worker<PYUVFile> y4mFileFactory("y4m");
 
 
 PYUVFile::PYUVFile()
-  : y4mMode(PFalse)
+  : m_y4mMode(false)
 {
 }
 
@@ -173,40 +165,40 @@ PYUVFile::PYUVFile()
 PBoolean PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 {
   if (!PVideoFile::Open(name, mode, opts))
-    return PFalse;
+    return false;
 
-  y4mMode = name.GetType() *= ".y4m";
+  m_y4mMode = name.GetType() *= ".y4m";
 
-  if (y4mMode) {
+  if (m_y4mMode) {
     int ch;
     do {
-      if ((ch = file.ReadChar()) < 0)
-        return PFalse;
+      if ((ch = m_file.ReadChar()) < 0)
+        return false;
     }
     while (ch != '\n');
-    headerOffset = file.GetPosition();
+    m_headerOffset = m_file.GetPosition();
   }
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PYUVFile::WriteFrame(const void * frame)
 {
-  if (y4mMode)
-    file.WriteChar('\n');
+  if (m_y4mMode)
+    m_file.WriteChar('\n');
 
-  return file.Write(frame, frameBytes);
+  return m_file.Write(frame, m_frameBytes);
 }
 
 
 PBoolean PYUVFile::ReadFrame(void * frame)
 {
-  if (y4mMode) {
+  if (m_y4mMode) {
     int ch;
     do {
-      if ((ch = file.ReadChar()) < 0)
-        return PFalse;
+      if ((ch = m_file.ReadChar()) < 0)
+        return false;
     }
     while (ch != '\n');
   }
@@ -216,4 +208,4 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
 
 #endif  // P_VIDFILE
-#endif
+#endif  // P_VIDEO
