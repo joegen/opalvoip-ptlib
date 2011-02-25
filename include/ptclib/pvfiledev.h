@@ -57,15 +57,15 @@
 
 class PVideoInputDevice_YUVFile : public PVideoInputDevice
 {
- PCLASSINFO(PVideoInputDevice_YUVFile, PVideoInputDevice);
- public:
-   enum {
-     Channel_PlayAndClose     = 0,
-     Channel_PlayAndRepeat    = 1,
-     Channel_PlayAndKeepLast  = 2,
-     Channel_PlayAndShowBlack = 3,
-     ChannelCount             = 4
-   };
+  PCLASSINFO(PVideoInputDevice_YUVFile, PVideoInputDevice);
+  public:
+    enum {
+      Channel_PlayAndClose     = 0,
+      Channel_PlayAndRepeat    = 1,
+      Channel_PlayAndKeepLast  = 2,
+      Channel_PlayAndShowBlack = 3,
+      ChannelCount             = 4
+    };
 
     /** Create a new file based video input device.
     */
@@ -143,10 +143,6 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
     );
 
 
-    /**Generate a static image, containing a constant field of grey.
-     */
-    void GrabBlankImage(BYTE *resFrame);
-
     /**Set the video format to be used.
 
        Default behaviour sets the value of the videoFormat variable and then
@@ -215,15 +211,11 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
       unsigned height   /// New height of frame
     );
 
-    void ClearMapping() { return ; }
-
-    void FillRect(BYTE * frame,int xPos, int initialYPos,int rectWidth, int rectHeight,int r, int g,  int b);
    
  protected:
-   unsigned       grabCount;
-   PINDEX         videoFrameSize;
-   PVideoFile   * file;
-   PAdaptiveDelay pacing;
+   PVideoFile   * m_file;
+   PAdaptiveDelay m_pacing;
+   unsigned       m_frameRateAdjust;
 };
 
 
@@ -303,7 +295,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
     );
 
   protected:  
-   PVideoFile * file;
+   PVideoFile * m_file;
 };
 
 
