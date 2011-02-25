@@ -56,19 +56,14 @@ class PVideoFile : public PVideoFrameInfo
     PVideoFile();
 
   public:
-    virtual PBoolean SetFrameSize(
-      unsigned width,   ///< New width of frame
-      unsigned height   ///< New height of frame
-    );
-
     virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
       int opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
 
-    virtual PBoolean IsOpen() const { return file.IsOpen(); }
-    virtual PBoolean Close() { return file.Close(); }
+    virtual PBoolean IsOpen() const { return m_file.IsOpen(); }
+    virtual PBoolean Close() { return m_file.Close(); }
 
     virtual PBoolean WriteFrame(const void * frame);
     virtual PBoolean ReadFrame(void * frame);
@@ -84,17 +79,24 @@ class PVideoFile : public PVideoFrameInfo
       PFile::FilePositionOrigin origin = PFile::Start  ///< Origin for position change.
     );
 
-    const PFilePath & GetFilePath() const { return file.GetFilePath(); }
-    bool IsUnknownFrameSize() const { return unknownFrameSize; }
-    PINDEX GetFrameBytes() const { return frameBytes; }
+    virtual PBoolean SetFrameSize(
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
+    );
+    virtual PBoolean SetFrameRate(
+      unsigned rate  ///< Frames  per second
+    );
 
-    static PBoolean ExtractHints(const PFilePath & fn, PVideoFrameInfo & info);
+    const PFilePath & GetFilePath() const { return m_file.GetFilePath(); }
+    PINDEX GetFrameBytes() const { return m_frameBytes; }
+
 
   protected:
-    bool   unknownFrameSize;
-    PINDEX frameBytes;
-    off_t  headerOffset;
-    PFile  file;
+    bool   m_fixedFrameSize;
+    bool   m_fixedFrameRate;
+    PINDEX m_frameBytes;
+    off_t  m_headerOffset;
+    PFile  m_file;
 };
 
 /**
@@ -118,7 +120,7 @@ class PYUVFile : public PVideoFile
     virtual PBoolean ReadFrame(void * frame);
 
   protected:
-    PBoolean y4mMode;
+    bool m_y4mMode;
 };
 
 PFACTORY_LOAD(PYUVFile);
