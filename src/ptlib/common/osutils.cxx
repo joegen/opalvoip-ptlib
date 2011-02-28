@@ -63,7 +63,9 @@ class PExternalThread : public PThread
 
     ~PExternalThread()
     {
+#ifdef _WIN32
       CleanUp();
+#endif
       PTRACE(5, "PTLib\tDestroyed external thread " << this << ", id " << GetThreadId());
     }
 
