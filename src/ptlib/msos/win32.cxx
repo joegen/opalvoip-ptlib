@@ -842,6 +842,9 @@ bool PThread::GetTimes(Times & times)
 
 void PThread::CleanUp()
 {
+  if (threadHandle == NULL)
+    return;
+
   PProcess & process = PProcess::Current();
   process.m_activeThreadMutex.Wait();
   process.m_activeThreads.erase(threadId);
@@ -850,8 +853,8 @@ void PThread::CleanUp()
   if (!IsTerminated())
     Terminate();
 
-  if (threadHandle != NULL)
-    CloseHandle(threadHandle);
+  CloseHandle(threadHandle);
+  threadHandle = NULL;
 }
 
 
@@ -960,23 +963,23 @@ PBoolean PThread::IsSuspended() const
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 {
   PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+  if (autoDelete == (deletion != AutoDeleteThread))
+    return;
+
+  autoDelete = deletion == AutoDeleteThread;
 
   PProcess & process = PProcess::Current();
 
-  if (autoDelete && deletion != AutoDeleteThread) {
-    process.deleteThreadMutex.Wait();
+  process.deleteThreadMutex.Wait();
+  if (autoDelete)
+    process.autoDeleteThreads.Append(this);
+  else {
     process.autoDeleteThreads.DisallowDeleteObjects();
     process.autoDeleteThreads.Remove(this);
     process.autoDeleteThreads.AllowDeleteObjects();
-    process.deleteThreadMutex.Signal();
   }
-  else if (!autoDelete && deletion == AutoDeleteThread) {
-    process.deleteThreadMutex.Wait();
-    process.autoDeleteThreads.Append(this);
-    process.deleteThreadMutex.Signal();
-  }
+  process.deleteThreadMutex.Signal();
 
-  autoDelete = deletion == AutoDeleteThread;
 }
 
 
@@ -1156,10 +1159,11 @@ PProcess::~PProcess()
       thread.Terminate();  // With extreme prejudice
     }
   }
+  PTRACE(4, "PTLib\tTerminated all threads.");
   m_activeThreadMutex.Signal();
 
-  PTRACE(4, "PTLib\tDestroying " << autoDeleteThreads.GetSize() << " remaining auto-delete threads.");
   deleteThreadMutex.Wait();
+  PTRACE(4, "PTLib\tDestroying " << autoDeleteThreads.GetSize() << " remaining auto-delete threads.");
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
