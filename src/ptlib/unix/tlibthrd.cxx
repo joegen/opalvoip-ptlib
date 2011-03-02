@@ -999,30 +999,42 @@ bool PThread::GetTimes(Times & times)
     return false;
   }
 
-  statfile.ignore(10000, ')'); // Skip pid & filename of executable
-
-  char state;
-  unsigned long dummy, utime, stime;
-  statfile >> state
-           >> dummy // ppid
-           >> dummy // pgrp
-           >> dummy // session
-           >> dummy // tty_nr
-           >> dummy // tpgid
-           >> dummy // flags
-           >> dummy // minflt
-           >> dummy // cminflt
-           >> dummy // majflt
-           >> dummy // cmajflt
-           >> utime
-           >> stime;
+  char line[1000];
+  statfile.getline(line, sizeof(line));
   if (!statfile.good()) {
-    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname);
+    PTRACE(2, "PTLib\tCould not read thread stat file " << procname);
     return false;
   }
 
-  times.m_kernel = jiffies_to_msecs(stime);
-  times.m_user = jiffies_to_msecs(utime);
+  // 3058 (mysqld_safe) S 1 3024 2065 0 -1 4194560 900 8677 0 2 0 0 0 1 18 0 1 0 24323 4730880 303 4294967295 134508544 135220648 3213170608 3213166436 5501954 0 65536 16391 65536 3225583002 0 0 17 0 0 0 123
+
+  char * ptr = strchr(line, ')');
+  if (ptr == NULL) {
+    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", no right parenthesis:\n" << line);
+    return false;
+  }
+  ptr += 2;
+
+  static const char Delimiters[] = " \t";
+  for (int skip = 0; skip < 11; ++skip) {
+    if (strtok(ptr, Delimiters) == NULL) {
+      PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", not enough values:\n" << line);
+      return false;
+    }
+    ptr = NULL;
+  }
+
+  if ((ptr = strtok(NULL, Delimiters)) == NULL) {
+    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", no user time:\n" << line);
+    return false;
+  }
+  times.m_user = jiffies_to_msecs(strtoul(ptr, NULL, 10));
+
+  if ((ptr = strtok(NULL, Delimiters)) == NULL) {
+    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", no kernel time:\n" << line);
+    return false;
+  }
+  times.m_kernel = jiffies_to_msecs(strtoul(ptr, NULL, 10));
 
   if (PX_endTick != 0)
     times.m_real = PX_endTick - PX_startTick;
