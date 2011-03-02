@@ -659,6 +659,8 @@ class PIPSocket : public PSocket
         Address ipAddr;
         Address netMask;
         PString macAddr;
+
+      friend class PIPSocket;
     };
 
     PARRAY(InterfaceTable, InterfaceEntry);
