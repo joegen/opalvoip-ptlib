@@ -1939,7 +1939,7 @@ PThread * PThread::Current()
   if (it != process.m_activeThreads.end())
     return it->second;
 
-  return new PExternalThread;
+  return process.m_shuttingDown ? NULL : new PExternalThread;
 }
 
 
