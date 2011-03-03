@@ -981,6 +981,8 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 }
 
 
+#if defined(P_LINUX)
+
 static inline unsigned long long jiffies_to_msecs(const unsigned long j)
 {
   static long sysconf_HZ = sysconf(_SC_CLK_TCK);
@@ -988,21 +990,22 @@ static inline unsigned long long jiffies_to_msecs(const unsigned long j)
 }
 
 
-bool PThread::GetTimes(Times & times)
+static bool LinuxGetTimes(const PString & statFileName,
+#if PTRACING
+                          PString & error,
+#endif
+                          PThread::Times & times)
 {
-#if defined(P_LINUX)
-  PStringStream procname;
-  procname << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
-  PTextFile statfile(procname, PFile::ReadOnly);
+  PTextFile statfile(statFileName, PFile::ReadOnly);
   if (!statfile.IsOpen()) {
-    PTRACE(2, "PTLib\tCould not find thread stat file " << procname);
+    PTRACE_PARAM(error = "Could not find thread stat file");
     return false;
   }
 
   char line[1000];
   statfile.getline(line, sizeof(line));
   if (!statfile.good()) {
-    PTRACE(2, "PTLib\tCould not read thread stat file " << procname);
+    PTRACE_PARAM(error = "Could not read thread stat file");
     return false;
   }
 
@@ -1010,7 +1013,7 @@ bool PThread::GetTimes(Times & times)
 
   char * ptr = strchr(line, ')');
   if (ptr == NULL) {
-    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", no right parenthesis:\n" << line);
+    PTRACE_PARAM(error = "No right parenthesis:\n" + PString(line));
     return false;
   }
   ptr += 2;
@@ -1018,34 +1021,57 @@ bool PThread::GetTimes(Times & times)
   static const char Delimiters[] = " \t";
   for (int skip = 0; skip < 11; ++skip) {
     if (strtok(ptr, Delimiters) == NULL) {
-      PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", not enough values:\n" << line);
+      PTRACE_PARAM(error = "Not enough values:\n" + PString(line));
       return false;
     }
     ptr = NULL;
   }
 
   if ((ptr = strtok(NULL, Delimiters)) == NULL) {
-    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", no user time:\n" << line);
+    PTRACE_PARAM(error = "No user time:\n" + PString(line));
     return false;
   }
   times.m_user = jiffies_to_msecs(strtoul(ptr, NULL, 10));
 
   if ((ptr = strtok(NULL, Delimiters)) == NULL) {
-    PTRACE(2, "PTLib\tCould not parse thread stat file " << procname << ", no kernel time:\n" << line);
+    PTRACE_PARAM(error = "No kernel time:\n" + PString(line));
     return false;
   }
   times.m_kernel = jiffies_to_msecs(strtoul(ptr, NULL, 10));
 
-  if (PX_endTick != 0)
-    times.m_real = PX_endTick - PX_startTick;
-  else
-    times.m_real = PTimer::Tick() - PX_startTick;
-
   return true;
-#else
-  return false;
-#endif
 }
+
+bool PThread::GetTimes(Times & times)
+{
+  PStringStream statFileName;
+  statFileName << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
+
+  PTRACE_PARAM(PString error);
+
+  for (int retry = 0; retry < 3; ++retry) {
+    if (LinuxGetTimes(statFileName,
+#if PTRACING
+                      error,
+#endif
+                      times)) {
+      if (PX_endTick != 0)
+        times.m_real = PX_endTick - PX_startTick;
+      else
+        times.m_real = PTimer::Tick() - PX_startTick;
+      return true;
+    }
+  }
+
+  PTRACE(2, "PTLib\tError reading " << statFileName << ", " << error);
+  return false;
+}
+#else
+bool PThread::GetTimes(Times & times)
+{
+  return false;
+}
+#endif
 
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
