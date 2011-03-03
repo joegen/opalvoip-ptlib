@@ -896,7 +896,7 @@ PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
     }
   }
 
-  PTRACE_IF(2, oldWidth != frameWidth || oldHeight != frameHeight,
+  PTRACE_IF(3, oldWidth != frameWidth || oldHeight != frameHeight,
             "PVidDev\tSetFrameSize to " << frameWidth << 'x' << frameHeight);
   return PTrue;
 }
