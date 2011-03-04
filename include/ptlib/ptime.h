@@ -72,7 +72,7 @@ class PTime : public PObject
     /**Create a time object instance.
        This initialises the time with the current time in the current time zone.
      */
-    PTime();
+    PTime() { SetCurrentTime(); }
 
     /**Create a time object instance.
        This initialises the time to the specified time.
@@ -181,6 +181,10 @@ class PTime : public PObject
        microseconds.
      */
     PInt64 GetTimestamp() const;
+
+    /**Set the the objects time with the current time in the current time zone.
+      */
+    void SetCurrentTime();
 
     /**Set the time in seconds and microseconds.
       */
