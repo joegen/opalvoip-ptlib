@@ -72,7 +72,7 @@ PINLINE unsigned PTimer::Resolution()
 ///////////////////////////////////////////////////////////////////////////////
 
 
-PINLINE PTime::PTime()
+PINLINE void PTime::SetCurrentTime()
 {
   theTime = time(NULL);
 }

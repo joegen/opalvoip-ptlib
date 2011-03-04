@@ -1184,7 +1184,7 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
 //  PTime
 //
 
-PTime::PTime()
+void PTime::SetCurrentTime()
 {
 #ifdef P_VXWORKS
   struct timespec ts;
