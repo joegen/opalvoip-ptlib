@@ -370,20 +370,19 @@ class PThreadPool : public PThreadPoolBase
 template <class Work_T>
 class PQueuedThreadPool : public PThreadPool<Work_T>
 {
-    PCLASSINFO(PQueuedThreadPool, PThreadPool);
   public:
     //
     //  constructor
     //
     PQueuedThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
-      : PThreadPool(maxWorkers, maxWorkUnits) 
+      : PThreadPool<Work_T>(maxWorkers, maxWorkUnits) 
     { }
 
-    class QueuedWorkerThread : public WorkerThread
+    class QueuedWorkerThread : public PThreadPool<Work_T>::WorkerThread
     {
       public:
-        QueuedWorkerThread(PThreadPool & pool, Priority priority = NormalPriority)
-          : WorkerThread(pool, priority)
+        QueuedWorkerThread(PThreadPool<Work_T> & pool, PThread::Priority priority = PThread::NormalPriority)
+          : PThreadPool<Work_T>::WorkerThread(pool, priority)
           , m_available(0, INT_MAX)
         {
         }
@@ -414,7 +413,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         {
           for (;;) {
             m_available.Wait();
-            if (WorkerThread::m_shutdown)
+            if (PThreadPool<Work_T>::WorkerThread::m_shutdown)
               break;
 
             m_mutex.Wait();
@@ -423,14 +422,14 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
             if (work != NULL) {
               work->Work();
-              WorkerThread::m_pool.RemoveWork(work);
+              PThreadPool<Work_T>::WorkerThread::m_pool.RemoveWork(work);
             }
           }
         }
 
         void Shutdown()
         {
-          WorkerThread::m_shutdown = true;
+          PThreadPool<Work_T>::WorkerThread::m_shutdown = true;
           m_available.Signal();
         }
 
@@ -442,7 +441,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     };
 
 
-    WorkerThreadBase * CreateWorkerThread()
+    virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
     { 
       return new QueuedWorkerThread(*this); 
     }
