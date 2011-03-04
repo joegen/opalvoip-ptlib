@@ -46,8 +46,26 @@
 /**
 
    These classes and templates implement a generic thread pooling mechanism
- 
-   To use them, declare the following:
+
+   There are two forms, low level and high level. For high level, it is assumed
+   that there is a pool of threads each with a queue of work items to be
+   processed. TO use simply decare a class containing the void Work() function
+   and create the poolwith PQueuedThreadPool. e.g.
+
+     class MyWork
+     {
+       void Work()
+       {
+         doIt();
+       }
+     }
+
+     PQueuedThreadPool<MyWork> m_pool;
+
+     m_pool.AddWork(new MyWork());
+
+
+   To use low level, declare the following:
 
       - A class that describes a "unit" of work to be performed. 
  
@@ -127,14 +145,16 @@
    
  */
 
+/** Base class for thread pools.
+  */
 class PThreadPoolBase : public PObject
 {
   public:
     class WorkerThreadBase : public PThread
     {
       public:
-        WorkerThreadBase()
-          : PThread(100, NoAutoDeleteThread, NormalPriority, "Pool")
+        WorkerThreadBase(Priority priority = NormalPriority)
+          : PThread(100, NoAutoDeleteThread, priority, "Pool")
           , m_shutdown(false)
         { }
 
@@ -156,7 +176,6 @@ class PThreadPoolBase : public PObject
         std::string m_group;
     };
 
-    PThreadPoolBase(unsigned maxWorkerCount = 10, unsigned maxWorkUnitCount = 0);
     ~PThreadPoolBase();
 
     virtual WorkerThreadBase * CreateWorkerThread() = 0;
@@ -164,6 +183,8 @@ class PThreadPoolBase : public PObject
     virtual WorkerThreadBase * NewWorker();
 
   protected:
+    PThreadPoolBase(unsigned maxWorkerCount = 10, unsigned maxWorkUnitCount = 0);
+
     virtual bool CheckWorker(WorkerThreadBase * worker);
     void StopWorker(WorkerThreadBase * worker);
     PMutex m_listMutex;
@@ -176,19 +197,29 @@ class PThreadPoolBase : public PObject
 };
 
 
+/** Low Level thread pool.
+  */
 template <class Work_T>
 class PThreadPool : public PThreadPoolBase
 {
   PCLASSINFO(PThreadPool, PThreadPoolBase);
   public:
     //
+    //  constructor
+    //
+    PThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
+      : PThreadPoolBase(maxWorkers, maxWorkUnits) 
+    { }
+
+    //
     // define the ancestor of the worker thread
     //
     class WorkerThread : public WorkerThreadBase
     {
       public:
-        WorkerThread(PThreadPool & pool_)
-          : m_pool(pool_)
+        WorkerThread(PThreadPool & pool, Priority priority = NormalPriority)
+          : WorkerThreadBase(priority)
+          , m_pool(pool)
         {
         }
 
@@ -198,70 +229,6 @@ class PThreadPool : public PThreadPoolBase
   
       protected:
         PThreadPool & m_pool;
-    };
-
-    class QueuedWorkerThread : public WorkerThread
-    {
-      public:
-        QueuedWorkerThread(PThreadPool & pool)
-          : WorkerThread(pool)
-          , m_available(0, INT_MAX)
-        {
-        }
-
-        void AddWork(Work_T * work)
-        {
-          m_mutex.Wait();
-          m_queue.push(work);
-          m_available.Signal();
-          m_mutex.Signal();
-        }
-
-        void RemoveWork(Work_T * )
-        {
-          m_mutex.Wait();
-          delete m_queue.front();
-          m_queue.pop();
-          m_mutex.Signal();
-        }
-
-        unsigned GetWorkSize() const
-        {
-          return m_queue.size();
-        }
-
-        void Main()
-        {
-          for (;;) {
-            m_available.Wait();
-            if (WorkerThread::m_shutdown)
-              break;
-
-            m_mutex.Wait();
-
-            if (!m_queue.empty()) {
-              Work_T * work = m_queue.front();
-              if (work != NULL) {
-                work->Work();
-                WorkerThread::m_pool.RemoveWork(work);
-              }
-            }
-
-            m_mutex.Signal();
-          }
-        }
-
-        void Shutdown()
-        {
-          WorkerThread::m_shutdown = true;
-          m_available.Signal();
-        }
-
-      protected:
-        typedef std::queue<Work_T *> Queue;
-        Queue      m_queue;
-        PMutex     m_mutex;
-        PSemaphore m_available;
     };
 
     //
@@ -302,14 +269,6 @@ class PThreadPool : public PThreadPoolBase
     //
     typedef std::map<std::string, GroupInfo> GroupInfoMap_t;
     GroupInfoMap_t m_groupInfoMap;
-
-
-    //
-    //  constructor
-    //
-    PThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
-      : PThreadPoolBase(maxWorkers, maxWorkUnits) 
-    { }
 
 
     //
@@ -402,6 +361,90 @@ class PThreadPool : public PThreadPoolBase
       m_externalToInternalWorkMap.erase(iterWork);
 
       return true;
+    }
+};
+
+
+/** High Level (queued work item) thread pool.
+  */
+template <class Work_T>
+class PQueuedThreadPool : public PThreadPool<Work_T>
+{
+    PCLASSINFO(PQueuedThreadPool, PThreadPool);
+  public:
+    //
+    //  constructor
+    //
+    PQueuedThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
+      : PThreadPool(maxWorkers, maxWorkUnits) 
+    { }
+
+    class QueuedWorkerThread : public WorkerThread
+    {
+      public:
+        QueuedWorkerThread(PThreadPool & pool, Priority priority = NormalPriority)
+          : WorkerThread(pool, priority)
+          , m_available(0, INT_MAX)
+        {
+        }
+
+        void AddWork(Work_T * work)
+        {
+          m_mutex.Wait();
+          m_queue.push(work);
+          m_available.Signal();
+          m_mutex.Signal();
+        }
+
+        void RemoveWork(Work_T * )
+        {
+          m_mutex.Wait();
+          Work_T * work = m_queue.front();
+          m_queue.pop();
+          m_mutex.Signal();
+          delete work;
+        }
+
+        unsigned GetWorkSize() const
+        {
+          return m_queue.size();
+        }
+
+        void Main()
+        {
+          for (;;) {
+            m_available.Wait();
+            if (WorkerThread::m_shutdown)
+              break;
+
+            m_mutex.Wait();
+            Work_T * work = m_queue.empty() ? NULL : m_queue.front();
+            m_mutex.Signal();
+
+            if (work != NULL) {
+              work->Work();
+              WorkerThread::m_pool.RemoveWork(work);
+            }
+          }
+        }
+
+        void Shutdown()
+        {
+          WorkerThread::m_shutdown = true;
+          m_available.Signal();
+        }
+
+      protected:
+        typedef std::queue<Work_T *> Queue;
+        Queue      m_queue;
+        PMutex     m_mutex;
+        PSemaphore m_available;
+    };
+
+
+    WorkerThreadBase * CreateWorkerThread()
+    { 
+      return new QueuedWorkerThread(*this); 
     }
 };
 
