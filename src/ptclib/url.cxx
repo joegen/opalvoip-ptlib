@@ -109,7 +109,6 @@ DEFINE_LEGACY_URL_SCHEME(h323s,     PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFa
 DEFINE_LEGACY_URL_SCHEME(rtmp,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTMP_PORT)
 DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
 DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
-DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   true,   true,   false,  true,   false,  DEFAULT_MSRP_PORT)
@@ -917,6 +916,64 @@ void PURL::Recalculate()
 
   urlString = AsString(HostPortOnly) + AsString(URIOnly);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+// RFC3966 tel URI
+
+class PURL_TelScheme : public PURLScheme
+{
+    PCLASSINFO(PURL_TelScheme, PURLScheme);
+  public:
+    virtual PString GetName() const
+    {
+      return "tel";
+    }
+
+    virtual PBoolean Parse(const PString & str, PURL & url) const
+    {
+      PINDEX pos = str.FindSpan("0123456789*#", str[0] != '+' ? 0 : 1);
+      if (pos == P_MAX_INDEX)
+        url.SetUserName(str);
+      else {
+        if (str[pos] != ';')
+          return false;
+
+        url.SetUserName(str.Left(pos));
+
+        PStringToString paramVars;
+        PURL::SplitVars(str(pos+1, P_MAX_INDEX), paramVars, ';', '=');
+        url.SetParamVars(paramVars);
+
+        PString phoneContext = paramVars("phone-context");
+        if (phoneContext.IsEmpty()) {
+          if (str[0] != '+')
+            return false;
+        }
+        else if (phoneContext[0] != '+')
+          url.SetHostName(phoneContext);
+        else if (str[0] != '+')
+          url.SetUserName(phoneContext+url.GetUserName());
+        else
+          return false;
+      }
+
+      return url.GetUserName() != "+";
+    }
+
+    virtual PString AsString(PURL::UrlFormat fmt, const PURL & url) const
+    {
+      if (fmt == PURL::HostPortOnly)
+        return PString::Empty();
+
+      PStringStream strm;
+      strm << "tel:" + url.GetUserName() << ';' << url.GetParameters();
+      return strm;
+    }
+};
+
+static PURLSchemeFactory::Worker<PURL_TelScheme> telScheme("tel", true);
 
 
 ///////////////////////////////////////////////////////////////////////////////
