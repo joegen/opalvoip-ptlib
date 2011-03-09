@@ -378,6 +378,9 @@ PBoolean PSoundChannelDirectSound::InitPlaybackBuffer ()
   PTRACE(4, "dsound\tInitPlaybackBuffer");
 
   PWaitAndSignal mutex(bufferMutex);
+  if (!IsOpen())
+    return false;
+
   if (mAudioPlaybackBuffer) {
     PTRACE(4, "dsound\tInitPlayBuffer: Forgot to Abort");
     return false;
@@ -435,6 +438,9 @@ PBoolean PSoundChannelDirectSound::InitCaptureBuffer ()
   PTRACE(4, "dsound\tInitCaptureBuffer");
 
   PWaitAndSignal mutex(bufferMutex);
+  if (!IsOpen())
+    return false;
+
   if (mAudioCaptureBuffer) {
     PTRACE(4, "dsound\tInitCaptureBuffer: Forgot to Abort");
     return false;
@@ -489,6 +495,9 @@ PBoolean PSoundChannelDirectSound::InitCaptureBuffer ()
 PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len)
 {
   lastWriteCount = 0;
+  if (!IsOpen())
+    return false;
+
   if (!mAudioPlaybackBuffer)
   {
     PTRACE(4, "dsound\tWrite Failed: Device not initialised :");
@@ -522,6 +531,9 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len)
 PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len)
 {
   lastReadCount = 0;
+  if (!IsOpen())
+    return false;
+
   if (!mAudioCaptureBuffer)
   {
     PTRACE(4, "dsound\tRead : Device not initialised ");
@@ -552,6 +564,9 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len)
 
 PINDEX PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,  PINDEX len, DWORD position) 
 {
+  if (!IsOpen())
+    return P_MAX_INDEX;
+
   LPVOID lpvWrite1, lpvWrite2;
   DWORD dwLength1, dwLength2;
   PINDEX written = 0;
@@ -579,6 +594,9 @@ PINDEX PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,  PINDEX len, 
 
 PINDEX PSoundChannelDirectSound::ReadFromDXBuffer (const void * buf, PINDEX len, DWORD position)
 {
+  if (!IsOpen())
+    return P_MAX_INDEX;
+
   LPVOID lpvRead1, lpvRead2;
   DWORD dwLength1, dwLength2;
   PINDEX read = 0;
