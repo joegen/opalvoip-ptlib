@@ -584,7 +584,8 @@ void PThread::Restart()
   // unlock the thread list
   process.m_activeThreadMutex.Signal();
 
-  PTRACE_IF(4, newHighWaterMark > 0, "PTLib\tThread high water mark set: " << newHighWaterMark);
+  PTRACE_IF(newHighWaterMark%100 == 0 ? 2 : 4, newHighWaterMark > 0,
+            "PTLib\tThread high water mark set: " << newHighWaterMark);
 
 #ifdef P_MACOSX
   if (PX_priority == HighestPriority) {
@@ -996,6 +997,79 @@ static bool LinuxGetTimes(const PString & statFileName,
 #endif
                           PThread::Times & times)
 {
+  /* From the man page on the "stat" file
+      Status information about the process. This is used by ps(1). It is defined in /usr/src/linux/fs/proc/array.c.
+      The fields, in order, with their proper scanf(3) format specifiers, are:
+         pid         %d   The process ID.
+         comm        %s   The filename of the executable, in parentheses. This is visible
+                          whether or not the executable is swapped out.
+         state       %c   One character from the string "RSDZTW" where R is running, S is
+                          sleeping in an interruptible wait, D is waiting in uninterruptible
+                          disk sleep, Z is zombie, T is traced or stopped (on a signal), and
+                          W is paging.
+         ppid        %d   The PID of the parent.
+         pgrp        %d   The process group ID of the process.
+         session     %d   The session ID of the process.
+         tty_nr      %d   The tty the process uses.
+         tpgid       %d   The process group ID of the process which currently owns the tty
+                          that the process is connected to.
+         flags       %lu  The kernel flags word of the process. For bit meanings, see the
+                          PF_* defines in <linux/sched.h>. Details depend on the kernel
+                          version.
+         minflt      %lu  The number of minor faults the process has made which have not
+                          required loading a memory page from disk.
+         cminflt     %lu  The number of minor faults that the process's waited-for children
+                          have made.
+         majflt      %lu  The number of major faults the process has made which have required
+                          loading a memory page from disk.
+         cmajflt     %lu  The number of major faults that the process's waited-for children
+                          have made.
+         utime       %lu  The number of jiffies that this process has been scheduled in user
+                          mode.
+         stime       %lu  The number of jiffies that this process has been scheduled in kernel
+                          mode.
+         cutime      %ld  The number of jiffies that this process's waited-for children have
+                          been scheduled in user mode. (See also times(2).)
+         cstime      %ld  The number of jiffies that this process's waited-for children have
+                          been scheduled in kernel mode.
+         priority    %ld  The standard nice value, plus fifteen. The value is never negative
+                          in the kernel.
+         nice        %ld  The nice value ranges from 19 (nicest) to -19 (not nice to others).
+         num_threads %ld  Number of threads.
+         itrealvalue %ld  The time in jiffies before the next SIGALRM is sent to the process
+                          due to an interval timer.
+         starttime   %lu  The time in jiffies the process started after system boot.
+         vsize       %lu  Virtual memory size in bytes.
+         rss         %ld  Resident Set Size: number of pages the process has in real memory,
+                          minus 3 for administrative purposes. This is just the pages which
+                          count towards text, data, or stack space. This does not include
+                          pages which have not been demand-loaded in, or which are swapped out.
+         rlim        %lu  Current limit in bytes on the rss of the process
+                          (usually 4294967295 on i386).
+         startcode   %lu  The address above which program text can run.
+         endcode     %lu  The address below which program text can run.
+         startstack  %lu  The address of the start of the stack.
+         kstkesp     %lu  The current value of esp (stack pointer), as found in the kernel
+                          stack page for the process.
+         kstkeip     %lu  The current EIP (instruction pointer).
+         signal      %lu  The bitmap of pending signals.
+         blocked     %lu  The bitmap of blocked signals.
+         sigignore   %lu  The bitmap of ignored signals.
+         sigcatch    %lu  The bitmap of caught signals.
+         wchan       %lu  This is the "channel" in which the process is waiting. It is the
+                          address of a system call, and can be looked up in a namelist if you
+                          need a textual name. (If you have an up-to-date /etc/psdatabase, then
+                          try ps -l to see the WCHAN field in action.)
+         nswap       %lu  Number of pages swapped (not maintained).
+         cnswap      %lu  Cumulative nswap for child processes (not maintained).
+         exit_signal %d   Signal to be sent to parent when we die.
+         processor   %d   CPU number last executed on.
+         rt_priority %lu  (since kernel 2.5.19) Real-time scheduling priority (see sched_setscheduler(2)).
+         policy      %lu  (since kernel 2.5.19) Scheduling policy (see sched_setscheduler(2)).
+         delayacct_blkio_ticks %llu (since Linux 2.6.18) Aggregated block I/O delays, measured in
+                          clock ticks (centiseconds).
+  */
+
   PTextFile statfile(statFileName, PFile::ReadOnly);
   if (!statfile.IsOpen()) {
     PTRACE_PARAM(error = "Could not find thread stat file");
@@ -1009,38 +1083,46 @@ static bool LinuxGetTimes(const PString & statFileName,
     return false;
   }
 
-  // 3058 (mysqld_safe) S 1 3024 2065 0 -1 4194560 900 8677 0 2 0 0 0 1 18 0 1 0 24323 4730880 303 4294967295 134508544 135220648 3213170608 3213166436 5501954 0 65536 16391 65536 3225583002 0 0 17 0 0 0 123
+  int pid;
+  char comm[100];
+  char state;
+  int ppid, pgrp, session, tty_nr, tpgid;
+  unsigned long flags, minflt, cminflt, majflt, cmajflt, utime, stime;
+  long cutime, cstime, priority, nice, num_threads, itrealvalue;
+  unsigned long starttime, vsize;
+  long rss;
+  unsigned long rlim, startcode, endcode, startstack, kstkesp, kstkeip, signal, blocked, sigignore, sigcatch, wchan, nswap, cnswap;
+  int exit_signal, processor;
+  unsigned long rt_priority, policy;
+  unsigned long long delayacct_blkio_ticks;
 
-  char * ptr = strchr(line, ')');
-  if (ptr == NULL) {
-    PTRACE_PARAM(error = "No right parenthesis:\n" + PString(line));
+  // 17698 (maxmcu) R 1 17033 8586 34833 17467 4202560 7
+  // 0 0 0 0 0 0 0 -100 0 16
+  // 0 55172504 258756608 6741 4294967295 134512640 137352760 3217892976 8185700 15991824
+  // 0 0 4 201349635 0 0 0 -1 7 99
+  // 2 0
+
+  int count = sscanf(line,
+         "%d%s %c%d%d%d%d%d%lu%lu"
+         "%lu%lu%lu%lu%lu%ld%ld%ld%ld%ld"
+         "%ld%lu%lu%ld%lu%lu%lu%lu%lu%lu"
+         "%lu%lu%lu%lu%lu%lu%lu%d%d%lu"
+         "%lu%llu",
+         &pid, comm, &state, &ppid, &pgrp, &session, &tty_nr, &tpgid, &flags, &minflt,
+         &cminflt, &majflt, &cmajflt, &utime, &stime, &cutime, &cstime, &priority, &nice, &num_threads,
+         &itrealvalue, &starttime, &vsize, &rss, &rlim, &startcode, &endcode, &startstack, &kstkesp, &kstkeip,
+         &signal, &blocked, &sigignore, &sigcatch, &wchan, &nswap, &cnswap, &exit_signal, &processor, &rt_priority,
+         &policy, &delayacct_blkio_ticks);
+  if (count != 42) {
+    PTRACE_PARAM(error = psprintf("Not enough values (%d)\n%s", count, line));
     return false;
   }
-  ptr += 2;
 
-  static const char Delimiters[] = " \t";
-  for (int skip = 0; skip < 11; ++skip) {
-    if (strtok(ptr, Delimiters) == NULL) {
-      PTRACE_PARAM(error = "Not enough values:\n" + PString(line));
-      return false;
-    }
-    ptr = NULL;
-  }
-
-  if ((ptr = strtok(NULL, Delimiters)) == NULL) {
-    PTRACE_PARAM(error = "No user time:\n" + PString(line));
-    return false;
-  }
-  times.m_user = jiffies_to_msecs(strtoul(ptr, NULL, 10));
-
-  if ((ptr = strtok(NULL, Delimiters)) == NULL) {
-    PTRACE_PARAM(error = "No kernel time:\n" + PString(line));
-    return false;
-  }
-  times.m_kernel = jiffies_to_msecs(strtoul(ptr, NULL, 10));
-
+  times.m_kernel = jiffies_to_msecs(stime);
+  times.m_user = jiffies_to_msecs(utime);
   return true;
 }
+
 
 bool PThread::GetTimes(Times & times)
 {
