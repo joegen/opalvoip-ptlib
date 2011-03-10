@@ -182,6 +182,18 @@ class PThreadPoolBase : public PObject
     virtual WorkerThreadBase * AllocateWorker();
     virtual WorkerThreadBase * NewWorker();
 
+    unsigned GetMaxWorkers() const { return m_maxWorkerCount; }
+
+    void SetMaxWorkers(
+      unsigned count
+    ) { m_maxWorkerCount = count; }
+
+    unsigned GetMaxUnits() const { return m_maxWorkUnitCount; }
+
+    void SetMaxUnits(
+      unsigned count
+    ) { m_maxWorkUnitCount = count; }
+
   protected:
     PThreadPoolBase(unsigned maxWorkerCount = 10, unsigned maxWorkUnitCount = 0);
 
