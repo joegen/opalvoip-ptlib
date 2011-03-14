@@ -321,6 +321,18 @@ void VidTest::Main()
       if (cin.eof() || cmd == "q" || cmd == "x" || cmd == "quit" || cmd == "exit")
         break;
 
+      if (cmd == "stop") {
+        if (!m_grabber->Stop())
+          cout << "\nCould not stop video input device" << endl;
+        continue;
+      }
+
+      if (cmd == "start") {
+        if (!m_grabber->Start())
+          cout << "\nCould not stop video input device" << endl;
+        continue;
+      }
+
       if (cmd == "fg") {
         if (!m_grabber->SetVFlipState(!m_grabber->GetVFlipState()))
           cout << "\nCould not toggle Vflip state of video input device" << endl;
@@ -345,6 +357,8 @@ void VidTest::Main()
       }
 
       cout << "Select:\n"
+              "  stop   : Stop grabbing\n"
+              "  start  : Start grabbing\n"
               "  fg     : Flip video input top to bottom\n"
               "  fd     : Flip video output top to bottom\n"
               "  qcif   : Set size of grab & display to qcif\n"
