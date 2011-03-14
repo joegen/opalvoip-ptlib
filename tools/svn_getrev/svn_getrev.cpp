@@ -37,7 +37,7 @@
 #include <string>
 
 
-#define VERSION "1.00"
+#define VERSION "1.01"
 
 using namespace std;
 
@@ -56,24 +56,35 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  const char * define = argc < 4 ? "SVN_REVISION" : argv[3];
+
+  char revision[20];
+
+
   ifstream file(".svn\\entries", ios::in);
   if (!file.is_open()) {
     file.clear();
     file.open("_svn\\entries", ios::in);
-    if (!file.is_open()) {
-      cerr << "Could not open \".svn\\entries\" or \"_svn\\entries\"" << endl;
-      return 1;
-    }
   }
 
-  file.ignore(1000, '\n');
-  file.ignore(1000, '\n');
-  file.ignore(1000, '\n');
+  if (file.is_open()) {
+    file.ignore(1000, '\n');
+    file.ignore(1000, '\n');
+    file.ignore(1000, '\n');
 
-  char revision[20];
-  file.getline(revision, sizeof(revision));
+    file.getline(revision, sizeof(revision));
 
-  file.close();
+    file.close();
+
+    cout << "Changing to revision " << revision << endl;
+  }
+  else {
+    cout << "Cannot determine revision, using default." << endl;
+    revision[0] = '\0';
+  }
+
+
+  file.clear();
   file.open(argv[1], ios::in);
   if (!file.is_open()) {
     cerr << "Could not open \"" << argv[1] << '"' << endl;
@@ -86,17 +97,14 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  const char * define = argc < 4 ? "SVN_REVISION" : argv[3];
-
   while (!file.eof()) {
     char line[250];
     file.getline(line, sizeof(line));
-    if (strstr(line, define) != NULL)
+    if (revision[0] != '\0' && strstr(line, define) != NULL)
       out << "#define " << define << ' ' << revision << '\n';
     else
       out << line << '\n';
   }
 
-  cout << "Changed to revision " << revision << endl;
   return 0;
 }
