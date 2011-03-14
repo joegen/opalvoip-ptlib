@@ -816,7 +816,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
      */
     PSafePtr & operator=(T * obj)
       {
-        Assign(obj);
+        this->Assign(obj);
         return *this;
       }
 
