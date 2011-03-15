@@ -264,7 +264,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     bool PlatformOpen();
     PINDEX GetCurrentBufferSize();
     bool GetCurrentBufferData(BYTE * data);
-    bool SetVideoFormat(IPin * pin);
+    bool SetPinFormat();
     bool SetControlCommon(long control, int newValue);
     int GetControlCommon(long control);
 
@@ -273,7 +273,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PComPtr<IGraphBuilder>         m_pGraphBuilder;
     PComPtr<ICaptureGraphBuilder2> m_pCaptureBuilder;
     PComPtr<IBaseFilter>           m_pCaptureFilter;
-    PComPtr<IPin>                  m_pCameraOutPin; // WebCam output out -> Transform Input pin
+    PComPtr<IPin>                  m_pCameraOutPin; // Camera output out -> Transform Input pin
 
 #ifdef _WIN32_WCE
     PComPtr<PSampleGrabber>        m_pSampleGrabber;
@@ -285,19 +285,9 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PComPtr<IBaseFilter>           m_pNullRenderer;
     PComPtr<IMediaControl>         m_pMediaControl;
 
-    /**Play States 
-    */
-    enum PLAYSTATE {
-        Stopped, 
-        Paused, 
-        Running, 
-        Init
-    };
-    PLAYSTATE  m_psCurrent;    ///< PlayState
     PINDEX     m_maxFrameBytes;
     PBYTEArray m_tempFrame;
     PMutex     m_lastFrameMutex;
-    bool       m_checkVFlip;
 };
 
 
@@ -326,43 +316,20 @@ static struct {
     { "UYVY422", MEDIASUBTYPE_UYVY   }
 };
 
-static const char * GUID2Format(GUID m_guid)
+static PString GUID2Format(GUID m_guid)
 {
    for (int j = 0; j < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); j++) {
-        if (m_guid == ColourFormat2GUID[j].m_guid)
-          return ColourFormat2GUID[j].m_colourFormat;
+    if (m_guid == ColourFormat2GUID[j].m_guid)
+      return ColourFormat2GUID[j].m_colourFormat;
    }
 
    wchar_t guidName[256];
    if (StringFromGUID2(m_guid, guidName, sizeof(guidName)) <= 0)
-       return PString("UNKNOWN"); // Can't use this entry!
+       return "UNKNOWN"; // Can't use this entry!
 
-   return PString(guidName);
+   return guidName;
 }
 
-static struct {
-    PString     m_format;
-} const DirectShowFormat[] =
-{
-    { "BGR24" },
-    { "BGR32" }
-#ifndef _WIN32_WCE
-   ,{ "YUY2" },
-    { "YUV420P" },
-    { "MJPEG" }
-#endif
-};
-
-static bool FormatSupported(GUID m_guid)
-{
-   // We need to limit the format to known supported Directshow Transforms to BGR24
-   PString format = GUID2Format(m_guid);
-   for (int j = 0; j < sizeof(DirectShowFormat)/sizeof(DirectShowFormat[0]); j++) {
-        if (format == DirectShowFormat[j].m_format)
-          return true;
-   }
-   return false;
-}
 
 ////////////////////////////////////////////////////////////////////
 // Some support functions/macros
@@ -401,7 +368,7 @@ static bool CheckError(HRESULT hr, const char * fn)
   if (SUCCEEDED(hr))
     return false;
 
-  PTRACE(1,"PVidDirectShow\tFunction \"" << fn << "\" failed : " << ErrorMessage(hr));
+  PTRACE(1, "DShow\tFunction \"" << fn << "\" failed : " << ErrorMessage(hr));
   return true;
 }
 
@@ -527,15 +494,14 @@ class frameSizes : public std::vector<inputframes*>
 // Input device
 
 PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
-  : m_psCurrent(Stopped)
-  , m_maxFrameBytes(0)
-  , m_checkVFlip(false)
+  : m_maxFrameBytes(0)
 {
-  PTRACE(4,"DShow\tVideo Device Instance");
+  PTRACE(4, "DShow\tVideo Device Instance");
 
   CoInitializeEx(NULL,COINIT_MULTITHREADED);
 
-  preferredColourFormat = "BGR24";  
+  // Most common
+  preferredColourFormat = colourFormat = "BGR24";  
   frameRate = 25;
 }
 
@@ -572,35 +538,27 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
   /* Sanity check: just to be sure that the Streamcaps is a VIDEOSTREAM and not AUDIOSTREAM */
   VIDEO_STREAM_CONFIG_CAPS scc;
   if (sizeof(scc) != iSize) {
-    PTRACE(1, "PVidDirectShow\tBad Capapabilities (not a  VIDEO_STREAM_CONFIG_CAPS)");
+    PTRACE(1, "DShow\tBad Capapabilities (not a VIDEO_STREAM_CONFIG_CAPS)");
     return false;
   }
 
-  bool foundNone = true;
   frameSizes fsizes;
-  for (int i = 0; i < iCount; i++) {
+  for (int iFormat = 0; iFormat < iCount; iFormat++) {
     MediaTypePtr pMediaFormat;
-    CHECK_ERROR(pStreamConfig->GetStreamCaps(i, &pMediaFormat, (BYTE *)&scc), continue);
-
-    if ((pMediaFormat->majortype == MEDIATYPE_Video) &&
-        (pMediaFormat->formattype == FORMAT_VideoInfo) &&
-        (pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-        (pMediaFormat->pbFormat != NULL))
-    {
-      if (FormatSupported(pMediaFormat->subtype)) { 
-        inputframes * f = new inputframes(scc.MaxOutputSize.cx,
-                      scc.MaxOutputSize.cy,
-                      10000000/(unsigned)scc.MinFrameInterval,
-                      GUID2Format(pMediaFormat->subtype));
-        fsizes.push_back(f);
-        foundNone = false;
-      } 
-    }
+    if (SUCCEEDED(pStreamConfig->GetStreamCaps(iFormat, &pMediaFormat, (BYTE *)&scc)) &&
+        pMediaFormat->majortype == MEDIATYPE_Video &&
+        pMediaFormat->formattype == FORMAT_VideoInfo &&
+        pMediaFormat->pbFormat != NULL &&
+        pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER))
+      fsizes.push_back(new inputframes(scc.MaxOutputSize.cx,
+                                       scc.MaxOutputSize.cy,
+                                       10000000/(unsigned)scc.MinFrameInterval,
+                                       GUID2Format(pMediaFormat->subtype)));
   }
 
-  if (foundNone) return false;
+  if (fsizes.empty()) return false;
 
-  // Resort so we have unique sizes from largest to smallest
+  // Sort so we have unique sizes from largest to smallest
   fsizes.ReIndex();
   PINDEX i=0;
   for (std::vector<inputframes*>::iterator r = fsizes.begin(); r != fsizes.end(); ++r) {
@@ -610,7 +568,7 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     cap.SetFrameRate(f->rate);
     cap.SetColourFormat(f->colour);
 
-    PTRACE(6,"PVidDirectShow\tFmt["<< i << "] = (" << cap.GetColourFormat() << ", "
+    PTRACE(5, "DShow\tFormat["<< i << "] = (" << cap.GetColourFormat() << ", "
       << cap.GetFrameWidth() << "x" << cap.GetFrameHeight() << ", " << cap.GetFrameRate() << "fps)");
 
     caps->framesizes.push_back(cap);
@@ -629,7 +587,7 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     panInfo.type= PVideoControlInfo::ControlPan;
     HRESULT hr = m_pCameraControls->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags);
     if (FAILED(hr)) {
-      PTRACE(4,"DShow\tWebCam " << deviceName << " does not support Pan.");
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Pan.");
     } else {
       caps->controls.push_back(panInfo);
     }
@@ -637,7 +595,7 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     tiltInfo.type= PVideoControlInfo::ControlTilt;
     hr = m_pCameraControls->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags);
     if (FAILED(hr)) {
-      PTRACE(4,"DShow\tWebCam " << deviceName << " does not support Tilt.");
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Tilt.");
     } else {
       caps->controls.push_back(tiltInfo);
     }
@@ -645,7 +603,7 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     zoomInfo.type= PVideoControlInfo::ControlZoom;
     hr = m_pCameraControls->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags);
     if (FAILED(hr)) {
-      PTRACE(4,"DShow\tWebCam " << deviceName << " does not support zoom.");
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support zoom.");
     } else {
       caps->controls.push_back(zoomInfo);
     }
@@ -657,94 +615,52 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
 }
 
 
-bool PVideoInputDevice_DirectShow::SetVideoFormat(IPin * pin)
+bool PVideoInputDevice_DirectShow::SetPinFormat()
 {
-  PTRACE(6,"DShow\tSetting WebCam OutPut Video Format");
-
-  if (pin == NULL) {
-    PTRACE(2,"DShow\tWebCam OutPut Pin is NULL!");
+  if (m_pCameraOutPin == NULL) {
+    PTRACE(2, "DShow\tCamera output pin is NULL!");
     return false;
   }
 
-  /// Check to see if WebCam
-  PComPtr<IAMStreamConfig> pConfig;
-  CHECK_ERROR_RETURN(pin->QueryInterface(&pConfig));
+  PComPtr<IAMStreamConfig> pStreamConfig;
+  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(&pStreamConfig));
 
   int iCount = 0, iSize=0;
-  CHECK_ERROR_RETURN(pConfig->GetNumberOfCapabilities(&iCount, &iSize));
+  CHECK_ERROR_RETURN(pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize));
 
-  bool success = false;
-  if (iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS)) {
-    for (int iFormat = 0; iFormat < iCount; iFormat++) {
-      VIDEO_STREAM_CONFIG_CAPS scc;
-      AM_MEDIA_TYPE *mt;
-      if (SUCCEEDED(pConfig->GetStreamCaps(iFormat,&mt,reinterpret_cast<BYTE*>(&scc)))) {
+  if (iSize != sizeof(VIDEO_STREAM_CONFIG_CAPS))
+    return false;
 
-        if ( (mt->majortype == MEDIATYPE_Video) &&                    
-             (mt->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-             FormatSupported(mt->subtype) && 
-             (mt->pbFormat != NULL) && (!success)) {
+  for (int iFormat = 0; iFormat < iCount; iFormat++) {
+    VIDEO_STREAM_CONFIG_CAPS scc;
+    MediaTypePtr pMediaFormat;
+    if (SUCCEEDED(pStreamConfig->GetStreamCaps(iFormat, &pMediaFormat, (BYTE *)&scc)) &&
+        pMediaFormat->majortype == MEDIATYPE_Video &&
+        pMediaFormat->formattype == FORMAT_VideoInfo &&
+        pMediaFormat->pbFormat != NULL &&
+        pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER) &&
+        scc.MaxOutputSize.cx == (LONG)frameWidth &&
+        scc.MaxOutputSize.cy == (LONG)frameHeight &&
+        GUID2Format(pMediaFormat->subtype) == colourFormat) {
 
-            //Check if the device is capable of the video size required in Mode
-            unsigned width = scc.MaxOutputSize.cx;
-            unsigned height = scc.MaxOutputSize.cy;
+      bool running = IsCapturing();
+      if (running)
+        CHECK_ERROR_RETURN(m_pMediaControl->Stop());
 
-            if ((frameWidth == width) && (frameHeight == height)) {
-              // Set the Required size & frame rate
-              PTRACE(5,"DShow\tChecking: w: " << width << " h: " << height << 
-                " wanting w:" << frameWidth << " h: " << frameHeight );
+      VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
+      pVih->AvgTimePerFrame = 10000000 / frameRate;
+      CHECK_ERROR_RETURN(pStreamConfig->SetFormat(pMediaFormat));
 
-              VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)mt->pbFormat;
+      if (running)
+        CHECK_ERROR_RETURN(m_pMediaControl->Run());
 
-//       Do not fiddle with Frame Sizes as some webcams don't like it -SH
-//              if (frameWidth < width)
-//                pVih->bmiHeader.biWidth= frameWidth;
-//              if (frameHeight < height) 
-//                pVih->bmiHeader.biHeight= frameHeight;  
-
-              // Set the buffer size
-              PString format((const char *)mt->subtype.Data4, 4);
-              for (size_t i = 0; i < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); i++) {
-                if (mt->subtype == ColourFormat2GUID[i].m_guid) {
-                  format = ColourFormat2GUID[i].m_colourFormat;
-                  break;
-                }
-              }
-
-//          Let DirectShow set the image size (we only care about output pin size) - SH
-//             int xBufferSize = CalculateFrameBytes(frameWidth, frameHeight, format);
-//             pVih->bmiHeader.biSizeImage = xBufferSize;
-
-              pVih->AvgTimePerFrame = 10000000 / frameRate;
-
-              HRESULT hr = pConfig->SetFormat(mt);
-              if (SUCCEEDED(hr)) {
-                m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, format);
-                PTRACE(4,"DShow\tDShow\tWebcam Output Format Set to " << format 
-                                   << " Buffer size changed to " << m_maxFrameBytes);
-                success = true;
-                break;
-              }
-
-              PTRACE(4,"DShow\tWebcam Output Format Not Set. " << format << " " << ErrorMessage(hr));
-            }
-            else {
-              PTRACE(4,"DShow\tWebcam does not support proposed Video: w: " << width << " h: " << height);
-            }
-        }
-
-        if (mt->pbFormat!=NULL && mt->cbFormat>0) {
-          CoTaskMemFree(mt->pbFormat);
-          mt->pbFormat=NULL;
-          mt->cbFormat=0;
-        }
-      } else {
-        PTRACE(4,"DShow\tCannot access webcam video capability " << iFormat);
-      }
+      PTRACE(4, "DShow\tCamera format set to " << *this);
+      return true;
     }
   }
 
-  return success;
+  PTRACE(2, "DShow\tCamera formats available could not be matched to " << *this);
+  return false;
 }
 
 
@@ -754,7 +670,7 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   Close();
 
   if (devName.IsEmpty()) {
-    PTRACE(2,"DShow\tUnable to Bind to empty device");
+    PTRACE(2, "DShow\tUnable to Bind to empty device");
     return false;
   }
 
@@ -765,7 +681,6 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
                                       IID_IGraphBuilder,
                                       (void **)&m_pGraphBuilder));
 
-  // Bind the WebCam Input
   // Create the capture graph builder
   CHECK_ERROR_RETURN(CoCreateInstance(CLSID_CaptureGraphBuilder2,
                                       NULL,
@@ -773,6 +688,7 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
                                       IID_ICaptureGraphBuilder2,
                                       (void **)&m_pCaptureBuilder));
 
+  // Bind the Camera Input
   if (!BindCaptureDevice(devName))
     return false;
 
@@ -785,29 +701,24 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   // Obtain interfaces for media control (start/stop capture)
   CHECK_ERROR_RETURN(m_pGraphBuilder->QueryInterface(IID_IMediaControl, (void **)&m_pMediaControl));
 
-  // Get the Webcam output Pin 
+  // Get the camera output Pin 
   PComPtr<IEnumPins> pEnum;
   CHECK_ERROR_RETURN(m_pCaptureFilter->EnumPins(&pEnum));
 
   CHECK_ERROR_RETURN(pEnum->Reset());
   CHECK_ERROR_RETURN(pEnum->Next(1, &m_pCameraOutPin, NULL));
 
-  // Set the format of the Output pin of the webcam
-  if (!SetVideoFormat(m_pCameraOutPin)) {
-    PTRACE(2,"DShow\tCannot Set the WebCam Video Format " << deviceName);
+  // Set the format of the Output pin of the camera
+  if (!SetPinFormat())
     return false;
-  }
 
   if (!PlatformOpen())
     return false;
 
-  // always set BGR24 as that will be supported on almost all webcams.
-  SetColourFormat(preferredColourFormat);
-
   if (startImmediate) 
     Start();
 
-  PTRACE(4,"DShow\tDevice " << devName << " open.");
+  PTRACE(4, "DShow\tDevice " << devName << " open.");
   deviceName = devName;
   return true;
 }
@@ -815,7 +726,7 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
 
 PBoolean PVideoInputDevice_DirectShow::IsOpen()
 {
-  return (m_psCurrent == Running);
+  return m_pGraphBuilder != NULL;
 }
 
 
@@ -824,9 +735,9 @@ PBoolean PVideoInputDevice_DirectShow::Close()
   if (!IsOpen())
     return false;
 
-  PTRACE(4,"DShow\tTorn Down.");
+  PTRACE(4, "DShow\tTorn Down.");
 
-  // Stop WebCam Graph
+  // Stop Camera Graph
   Stop();
 
   // Release filters
@@ -839,7 +750,7 @@ PBoolean PVideoInputDevice_DirectShow::Close()
   m_pCameraControls.Release();
 #endif
 
-  // Release the WebCam and interfaces
+  // Release the Camera and interfaces
   m_pMediaControl.Release();
   m_pCameraOutPin.Release(); 
   m_pCaptureBuilder.Release();
@@ -854,131 +765,101 @@ PBoolean PVideoInputDevice_DirectShow::Close()
 
 PBoolean PVideoInputDevice_DirectShow::Start()
 {
-  if (m_pMediaControl == NULL) {
+  if (!IsOpen()) {
     PTRACE(3, "DShow\tNot open.");
     return false;
   }
 
-  switch (m_psCurrent) {
-    case Running :
-      PTRACE(3, "DShow\tVideo is already started");
-      return true;
+  if (IsCapturing())
+    return true;
 
-    case Paused :
-    case Stopped :
-      CHECK_ERROR_RETURN(m_pMediaControl->Run());
+  CHECK_ERROR_RETURN(m_pMediaControl->Run());
 
-      PTRACE(4,"DShow\tVideo Started.");
-      m_psCurrent = Running;        
-      return true;
-  }
-
-  PTRACE(2,"DShow\tUnable to Start Video, state=" << m_psCurrent);
-  return false;
+  PTRACE(4, "DShow\tVideo Started.");
+  return true;
 }
 
 
 PBoolean PVideoInputDevice_DirectShow::Stop()
 {
-  if (m_pMediaControl == NULL) {
+  if (!IsOpen()) {
     PTRACE(3, "DShow\tNot open.");
     return false;
   }
 
-  if (m_psCurrent != Running) {
-    PTRACE(3, "DShow\tNot running.");
-    return false;
-  }
+  if (!IsCapturing())
+    return true;
 
-  CHECK_ERROR_RETURN(m_pMediaControl->Stop());
+  // Use Pause() not Stop() as the latter is to much of a stop and takes too long to restart
+  CHECK_ERROR_RETURN(m_pMediaControl->Pause());
 
-  PTRACE(3,"DShow\tVideo Stopped.");
-  m_psCurrent = Stopped;
+  PTRACE(3, "DShow\tVideo Stopped.");
   return true;
 }
 
 
 PBoolean PVideoInputDevice_DirectShow::IsCapturing()
 {
-  return (m_psCurrent == Running);
+  OAFilterState state;
+  CHECK_ERROR_RETURN(m_pMediaControl->GetState(0, &state));
+  return state == State_Running;
 }
 
 
 PBoolean PVideoInputDevice_DirectShow::SetColourFormat(const PString & newColourFormat)
 {
-  PTRACE(5,"DShow\tSetting Video Format " << newColourFormat);
+  if (colourFormat == newColourFormat)
+    return true;
 
-  if (newColourFormat != "BGR24")
-    return false;
-
-  bool running = IsCapturing();
-  if (running)
-    Stop();
+  PString oldColourFormat = colourFormat;
 
   if (!PVideoDevice::SetColourFormat(newColourFormat))
     return false;
 
-  if (running) 
-    return Start();
-
-
-  return true;
-}
-
-PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned Rate)
-{
-  if (frameRate == Rate)
+  if (SetPinFormat())
     return true;
 
-  PTRACE(5,"DShow\tSetting Video FrameRate " << Rate);
+  PVideoDevice::SetColourFormat(oldColourFormat);
+  return false;
+}
 
-  if (!PVideoDevice::SetFrameRate(Rate))
+
+PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned newRate)
+{
+  if (frameRate == newRate)
+    return true;
+
+  unsigned oldRate = frameRate;
+
+  if (!PVideoDevice::SetFrameRate(newRate))
     return false;
 
-  bool running = IsCapturing();
-  if (running)
-    Stop();
+  if (SetPinFormat())
+    return true;
 
-  /// Set the video Filter
-  if (m_pCameraOutPin != NULL && !SetVideoFormat(m_pCameraOutPin)) {
-      PTRACE(2,"DShow\tError setting frame rate " << Rate);
-      return false;
-  }
-
-  if (running)
-    Start();
-
-
-  return true;
+  PVideoDevice::SetFrameRate(oldRate);
+  return false;
 }
+
 
 PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned height)
 {
+  if (frameWidth == width && frameHeight == height)
+    return true;
+
   unsigned oldWidth = frameWidth;
   unsigned oldHeight = frameHeight;
+
   if (!PVideoDevice::SetFrameSize(width, height))
     return false;
 
-  if ((frameWidth == oldWidth) && (frameHeight == oldHeight))
+  if (SetPinFormat())
     return true;
 
-  bool stop = false;
-  if (IsCapturing()) { 
-    Stop();
-    stop = true;
-  }
-  /// Set the video Filter
-  if (m_pCameraOutPin != NULL && !SetVideoFormat(m_pCameraOutPin)) {
-      PTRACE(2,"DShow\tUnable to set Video Format!");
-      PVideoDevice::SetFrameSize(oldWidth, oldHeight);
-      return false;
-  } 
-
-  if (stop)
-    Start();
-
-  return true;
+  PVideoDevice::SetFrameSize(oldWidth, oldHeight);
+  return false;
 }
+
 
 bool PVideoInputDevice_DirectShow::FlowControl(const void * flowData)
 {
@@ -994,7 +875,7 @@ bool PVideoInputDevice_DirectShow::FlowControl(const void * flowData)
             r =  90000/options[i+1].AsInteger();
     }
 
-    PTRACE(4, "DSHOW\tAdjusting to new H: " << h << " W: " << w << " R: " << r);
+    PTRACE(4, "DShow\tAdjusting to new H: " << h << " W: " << w << " R: " << r);
     m_lastFrameMutex.Wait();
     SetFrameSize(w,h);
     SetFrameRate(r);
@@ -1017,7 +898,7 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 {
   PWaitAndSignal mutex(m_lastFrameMutex);
 
-  PTRACE(6,"DShow\tGrabbing Frame");
+  PTRACE(6, "DShow\tGrabbing Frame");
 
   PINDEX bufferSize = GetCurrentBufferSize();
   if (converter != NULL) {
@@ -1099,7 +980,7 @@ PBoolean PVideoInputDevice_DirectShow::GetParameters(int *whiteness, int *bright
 
 PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
 {
-  PTRACE(4, "PVidDirectShow\tSetControl() = " << newValue);
+  PTRACE(4, "DShow\tSetControl() = " << newValue);
 
   PComPtr<IAMVideoProcAmp> pVideoProcAmp;
   CHECK_ERROR_RETURN(m_pCaptureFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp));
@@ -1115,7 +996,7 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
     long scaled = minimum + ((maximum-minimum) * newValue) / 65536;
     hr = pVideoProcAmp->Set(control, scaled, VideoProcAmp_Flags_Manual);
   }
-  PTRACE_IF(2, FAILED(hr), "PVidDirectShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
+  PTRACE_IF(2, FAILED(hr), "DShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
 
   return true;
 }
@@ -1249,7 +1130,7 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
 
   HANDLE handle = FindFirstDevice(DeviceSearchByGuid, &guidCamera, &devInfo);
   if (handle == NULL) {
-    PTRACE(1, "PVidDirectShow\tFindFirstDevice failed, error=" << ::GetLastError());
+    PTRACE(1, "DShow\tFindFirstDevice failed, error=" << ::GetLastError());
     return devices;
   }
 
@@ -1257,13 +1138,13 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
     if (devInfo.hDevice != NULL) {
       PString devName(devInfo.szLegacyName);
       devices.AppendString(devName);
-      PTRACE(3, "PVidDirectShow\tFound capture device \""<< devName <<'"');
+      PTRACE(3, "DShow\tFound capture device \""<< devName <<'"');
     }
   } while (FindNextDevice(handle, &devInfo));
 
   FindClose(handle);
 
-  PTRACE_IF(2, devices.IsEmpty(), "PVidDirectShow\tNo video capture devices available.");
+  PTRACE_IF(2, devices.IsEmpty(), "DShow\tNo video capture devices available.");
 
   return devices;
 }
@@ -1398,7 +1279,7 @@ class PComEnumerator
       // Create an enumerator for the video capture devices
       CHECK_ERROR(m_pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &m_pClassEnum, 0), return);
 
-      PTRACE_IF(2, m_pClassEnum == NULL, "PVidDirectShow\tNo video capture device was detected.");
+      PTRACE_IF(2, m_pClassEnum == NULL, "DShow\tNo video capture device was detected.");
     }
 
     bool Next()
@@ -1436,7 +1317,7 @@ class PComEnumerator
 
 PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
 {
-  PTRACE(4,"PVidDirectShow\tEnumerating Device Names");
+  PTRACE(4, "DShow\tEnumerating Device Names");
 
   PStringArray devices;
   unsigned duplicate = 0;
@@ -1497,11 +1378,10 @@ bool PVideoInputControl_DirectShow::Pan(long value, bool absolute)
     hr = t_pCC->Set(CameraControl_Pan, value, flags);
     if SUCCEEDED(hr) {
       hr = t_pCC->Get(CameraControl_Pan, &control.current, &flags);
-      PTRACE(5,"CC\tSet Pan to " << control.current);
+      PTRACE(5, "DShow\tSet Pan to " << control.current);
       return true;
-    } else {
-      PTRACE(2, "CC\tFailed to pan to " << value);
     }
+    PTRACE(2, "DShow\tFailed to pan to " << value);
   }
   return false;
 }
@@ -1522,11 +1402,10 @@ bool PVideoInputControl_DirectShow::Tilt(long value, bool absolute)
     hr = t_pCC->Set(CameraControl_Tilt, value, flags);
     if SUCCEEDED(hr) {
       hr = t_pCC->Get(CameraControl_Tilt, &control.current, &flags);
-      PTRACE(5,"CC\tSet tilt to " << control.current);
+      PTRACE(5, "DShow\tSet tilt to " << control.current);
       return true;
-    } else {
-      PTRACE(2, "CC\tFailed to tilt to " << value);
     }
+    PTRACE(2, "DShow\tFailed to tilt to " << value);
   }    
   return false;
 }
@@ -1537,7 +1416,7 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
 
   // 50 is 100% and 200 is 4x zoom
   if (absolute && ((value < 50) || (value > 200))) {
-    PTRACE(2, "CC\tWrong zoom value received: " << value << " must be between 50 (1x) and 200 (4x).");
+    PTRACE(2, "DShow\tWrong zoom value received: " << value << " must be between 50 (1x) and 200 (4x).");
     return false;
   }
 
@@ -1554,12 +1433,11 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
 
     hr = t_pCC->Set(CameraControl_Zoom, control.current, flags);
     if SUCCEEDED(hr) {
-      PTRACE(5,"CC\tSet Zoom to " << control.current);
+      PTRACE(5, "DShow\tSet Zoom to " << control.current);
       SetCurrentPosition(PVideoControlInfo::ControlZoom, control.current);
       return true;
-    } else {
-      PTRACE(2, "CC\tFailed to zoom to " << value);
     }
+    PTRACE(2, "DShow\tFailed to zoom to " << value);
   }
   return false;
 }
@@ -1615,10 +1493,12 @@ public:
   //
   STDMETHODIMP BufferCB( double dblSampleTime, BYTE * buffer, long size )
   {
+    PTRACE(6, "DShow\tBuffer callback: time=" << dblSampleTime
+           << ", buf=" << (void *)buffer << ", size=" << size);
+
     static int skipFrames = 4;
     if (cInd < skipFrames) {
       cInd++;
-//      PTRACE(5,"DShow\tFrame Skipped."); <-- This causes External Thread to Spawn! -SH
       return S_OK;
     }
 
@@ -1760,8 +1640,9 @@ bool PVideoInputDevice_DirectShow::BindCaptureDevice(const PString & devName)
 
 bool PVideoInputDevice_DirectShow::PlatformOpen()
 {
-  // Buid the WebCam Sample Grabber
-  PTRACE(5,"DShow\tBuilding Sample Grabber");
+  // Buid the Camera Sample Grabber
+  PTRACE(5, "DShow\tBuilding Sample Grabber");
+
   PComPtr<IBaseFilter> pGrab; 
   CHECK_ERROR_RETURN(CoCreateInstance(CLSID_SampleGrabber , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&pGrab));
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(pGrab, L"Sample Grabber"));
@@ -1774,44 +1655,53 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetMediaType(&mt));
 
   m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, "RGB24");
-  PTRACE(5,"DShow\tBuffer size set to " << m_maxFrameBytes);
+  PTRACE(5, "DShow\tBuffer size set to " << m_maxFrameBytes);
 
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetBufferSamples(true));
 
-  PTRACE(5,"DShow\tSetting Sample Grabber Callback");
+  PTRACE(5, "DShow\tSetting Sample Grabber Callback");
   m_pSampleGrabberCB = new CSampleGrabberCB();
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetCallback(m_pSampleGrabberCB, 1));
 
-  PTRACE(5,"DShow\tConnect Sample Grabber to WebCam");
+  PTRACE(5, "DShow\tConnect sample grabber to camera");
   CHECK_ERROR_RETURN(ConnectFilters(m_pGraphBuilder, m_pCameraOutPin, pGrab));
 
   // Set the NULL Renderer
-  PTRACE(5,"DShow\tBuilding NULL output filter");
+  PTRACE(5, "DShow\tBuilding NULL output filter");
   CHECK_ERROR_RETURN(CoCreateInstance (CLSID_NullRenderer , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **) &m_pNullRenderer));
 
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(m_pNullRenderer, L"NULL Output"));
 
-  PTRACE(5,"DShow\tConnect Null Render to Grab filter Pin");
+  PTRACE(5, "DShow\tConnect Null Render to Grab filter Pin");
   CHECK_ERROR_RETURN(ConnectFilters(m_pGraphBuilder, pGrab, m_pNullRenderer));
+
+  PTRACE(5, "DShow\tChecking image flip");
+  CHECK_ERROR_RETURN(m_pSampleGrabber->GetConnectedMediaType(&mt));
+
+  VIDEOINFOHEADER * pvih = (VIDEOINFOHEADER *)mt.pbFormat;
+  if (pvih->bmiHeader.biHeight > 0) {
+    nativeVerticalFlip = true;
+    PTRACE(3, "DShow\tImage up side down");
+  }
 
   // Query for camera controls
   PVideoControlInfo info;
   if (FAILED(m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void **)&m_pCameraControls))) {
-    PTRACE(3,"DShow\tWebCam " << deviceName << " does not support Camera Controls.");
+    PTRACE(3, "DShow\tCamera " << deviceName << " does not support Camera Controls.");
     m_pCameraControls = NULL;
   }
   else {
     if (FAILED(m_pCameraControls->GetRange(CameraControl_Pan, &info.min, &info.max, &info.step, &info.def, &info.flags))) {
-      PTRACE(4,"DShow\tWebCam " << deviceName << " does not support Pan. Controls DISABLED");
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Pan. Controls DISABLED");
     } 
     if (FAILED(m_pCameraControls->GetRange(CameraControl_Tilt, &info.min, &info.max, &info.step, &info.def, &info.flags))) {
-      PTRACE(4,"DShow\tWebCam " << deviceName << " does not support Tilt. Controls DISABLED");
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Tilt. Controls DISABLED");
     } 
     if (FAILED(m_pCameraControls->GetRange(CameraControl_Zoom, &info.min, &info.max, &info.step, &info.def, &info.flags))) {
-      PTRACE(4,"DShow\tWebCam " << deviceName << " does not support zoom. Controls DISABLED");
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support zoom. Controls DISABLED");
     }
 
-    PTRACE(3,"DShow\tWebCam " << deviceName << " supports Camera Controls. Controls ENABLED");
+    PTRACE(3, "DShow\tCamera " << deviceName << " supports Camera Controls. Controls ENABLED");
   }
 
   return true;
@@ -1828,35 +1718,17 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data)
 {
   CSampleGrabberCB * cb = (CSampleGrabberCB *)&*m_pSampleGrabberCB;
 
-  if (!cb->frameready.Wait(2000))
+  if (!cb->frameready.Wait(2000)) {
+    PTRACE(1, "DShow\tTimeout awaiting next frame");
     return false;
+  }
 
-  if (cb->pBuffer == NULL)
+  if (PAssertNULL(cb->pBuffer) == NULL)
     return false;
 
   cb->mbuf.Wait();
   memcpy(data, cb->pBuffer, m_maxFrameBytes);
   cb->mbuf.Signal();
-
-  PTRACE(6,"DShow\tBuffer obtained.");
-
-  // Check orientation of picture and VFlip if required
-  if (!m_checkVFlip) {
-    PTRACE(5,"DShow\tChecking Image orientation");
-    HRESULT hr;
-    AM_MEDIA_TYPE mt;
-    hr = m_pSampleGrabber->GetConnectedMediaType(&mt);
-    if (SUCCEEDED(hr)) {
-      VIDEOINFOHEADER * pvih = (VIDEOINFOHEADER *)mt.pbFormat;
-      if (pvih->bmiHeader.biHeight > 0) {
-        SetVFlipState(true);
-        PTRACE(2,"DShow\tImage wrong orientation VFlipped");
-      }
-    } else {
-      PTRACE(2,"DShow\tFailed to determine Image orientation");
-    }
-    m_checkVFlip = true;
-  }
 
   return true;
 }
