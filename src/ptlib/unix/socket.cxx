@@ -209,23 +209,32 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
 PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
 {
-  if (!listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout()))
-    return SetErrorValues(listener.GetErrorCode(), listener.GetErrorNumber());
+  int new_fd;
+  while ((new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size)) < 0) {
+    switch (errno) {
+      case EINTR :
+        break;
 
 #if defined(E_PROTO)
-  for (;;) {
-    int new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size);
-    if (new_fd >= 0)
-      return ConvertOSError(os_handle = SetNonBlocking(new_fd));
-
-    if (errno != EPROTO)
-      return ConvertOSError(-1);
-
-    PTRACE(3, "PTLib\tAccept on " << sock << " failed with EPROTO - retrying");
-  }
-#else
-  return ConvertOSError(os_handle = SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size)));
+      case EPROTO :
+        PTRACE(3, "PTLib\tAccept on " << listener << " failed with EPROTO - retrying");
+        break;
 #endif
+
+      case EWOULDBLOCK :
+        if (listener.GetReadTimeout() > 0) {
+          if (listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout()))
+            break;
+          return SetErrorValues(listener.GetErrorCode(), listener.GetErrorNumber());
+        }
+        // Next case
+
+      default :
+        return ConvertOSError(-1, LastReadError);
+    }
+  }
+
+  return ConvertOSError(os_handle = SetNonBlocking(new_fd));
 }
 
 
