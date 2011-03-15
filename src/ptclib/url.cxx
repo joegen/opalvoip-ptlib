@@ -80,38 +80,29 @@
 #define DEFAULT_SIP_PORT      5060
 #define DEFAULT_SIPS_PORT     5061
 
-#define DEFINE_LEGACY_URL_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
-  class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
-  { \
-    public: \
-      PURLLegacyScheme_##schemeName() \
-        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
-        { } \
-  }; \
-  static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
-//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags,  path,   rel,    port
-DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
-DEFINE_LEGACY_URL_SCHEME(file,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, 0)
-DEFINE_LEGACY_URL_SCHEME(https,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTPS_PORT)
-DEFINE_LEGACY_URL_SCHEME(gopher,    PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_GOPHER_PORT)
-DEFINE_LEGACY_URL_SCHEME(wais,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_WAIS_PORT)
-DEFINE_LEGACY_URL_SCHEME(nntp,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_NNTP_PORT)
-DEFINE_LEGACY_URL_SCHEME(prospero,  PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_PROSPERO_PORT)
-DEFINE_LEGACY_URL_SCHEME(rtsp,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTSP_PORT)
-DEFINE_LEGACY_URL_SCHEME(rtspu,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTSPU_PORT)
-DEFINE_LEGACY_URL_SCHEME(ftp,       PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_FTP_PORT)
-DEFINE_LEGACY_URL_SCHEME(telnet,    PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, DEFAULT_TELNET_PORT)
-DEFINE_LEGACY_URL_SCHEME(mailto,    PFalse, PFalse, PFalse, PFalse, PTrue,   PTrue,  PFalse, PFalse, PFalse, PFalse, 0)
-DEFINE_LEGACY_URL_SCHEME(news,      PFalse, PFalse, PFalse, PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, 0)
-DEFINE_LEGACY_URL_SCHEME(h323,      PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323_PORT)
-DEFINE_LEGACY_URL_SCHEME(h323s,     PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323S_PORT)
-DEFINE_LEGACY_URL_SCHEME(rtmp,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTMP_PORT)
-DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
-DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
-DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
-DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
-DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   true,   true,   false,  true,   false,  DEFAULT_MSRP_PORT)
+//                 schemeName,user,  passwd,host,  defUser,defhost,query, params,frags, path,  rel,   port
+PURL_LEGACY_SCHEME(http,      true,  true,  true,  false,  true,   true,  true,  true,  true,  true,  DEFAULT_HTTP_PORT )
+PURL_LEGACY_SCHEME(file,      false, false, true,  false,  true,   false, false, false, true,  false, 0)
+PURL_LEGACY_SCHEME(https,     false, false, true,  false,  true,   true,  true,  true,  true,  true,  DEFAULT_HTTPS_PORT)
+PURL_LEGACY_SCHEME(gopher,    false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_GOPHER_PORT)
+PURL_LEGACY_SCHEME(wais,      false, false, true,  false,  false,  false, false, false, true,  false, DEFAULT_WAIS_PORT)
+PURL_LEGACY_SCHEME(nntp,      false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_NNTP_PORT)
+PURL_LEGACY_SCHEME(prospero,  false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_PROSPERO_PORT)
+PURL_LEGACY_SCHEME(rtsp,      false, false, true,  false,  true,   true,  false, false, true,  false, DEFAULT_RTSP_PORT)
+PURL_LEGACY_SCHEME(rtspu,     false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_RTSPU_PORT)
+PURL_LEGACY_SCHEME(ftp,       true,  true,  true,  false,  true,   false, false, false, true,  false, DEFAULT_FTP_PORT)
+PURL_LEGACY_SCHEME(telnet,    true,  true,  true,  false,  true,   false, false, false, false, false, DEFAULT_TELNET_PORT)
+PURL_LEGACY_SCHEME(mailto,    false, false, false, false,  true,   true,  false, false, false, false, 0)
+PURL_LEGACY_SCHEME(news,      false, false, false, false,  true,   false, false, false, false, false, 0)
+PURL_LEGACY_SCHEME(h323,      true,  false, true,  true,   false,  false, true,  false, false, false, DEFAULT_H323_PORT)
+PURL_LEGACY_SCHEME(h323s,     true,  false, true,  true,   false,  false, true,  false, false, false, DEFAULT_H323S_PORT)
+PURL_LEGACY_SCHEME(rtmp,      false, false, true,  false,  false,  false, false, false, true,  false, DEFAULT_RTMP_PORT)
+PURL_LEGACY_SCHEME(sip,       true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIP_PORT)
+PURL_LEGACY_SCHEME(sips,      true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIPS_PORT)
+PURL_LEGACY_SCHEME(fax,       false, false, false, true,   false,  false, true,  false, false, false, 0)
+PURL_LEGACY_SCHEME(callto,    false, false, false, true,   false,  false, true,  false, false, false, 0)
+PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true,  false, true,  false, DEFAULT_MSRP_PORT)
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
@@ -240,7 +231,7 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
       safeChars += ":@&=+$,|";   // Section 3.3
       break;
 
-    case QueryTranslation :
+    default :
       break;    // Section 3.4, no reserved characters may be used
   }
   PINDEX pos = (PINDEX)-1;
@@ -258,8 +249,7 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 
   PINDEX pos;
   if (type == PURL::QueryTranslation) {
-    /* Even though RFC2396 never mentions this, and RFC1630 is quite vague
-       about it, a lot of things do it so we have to do it too */
+    /* Even though RFC2396 never mentions this, RFC1630 does. */
     pos = (PINDEX)-1;
     while ((pos = xlat.Find('+', pos+1)) != P_MAX_INDEX)
       xlat[pos] = ' ';
@@ -281,7 +271,7 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 }
 
 
-void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, char sep2)
+void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, char sep2, TranslationType type)
 {
   vars.RemoveAll();
 
@@ -295,18 +285,44 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
     if (sep2pos > sep1next)
       sep2pos = sep1next;
 
-    PCaselessString key = PURL::UntranslateString(str(sep1prev, sep2pos-1), PURL::QueryTranslation);
+    PCaselessString key = PURL::UntranslateString(str(sep1prev, sep2pos-1), type);
     if (!key) {
-      PString data = PURL::UntranslateString(str(sep2pos+1, sep1next-1), PURL::QueryTranslation);
+      PString data = PURL::UntranslateString(str(sep2pos+1, sep1next-1), type);
 
       if (vars.Contains(key))
-        vars.SetAt(key, vars[key] + ',' + data);
+        vars.SetAt(key, vars[key] + '\n' + data);
       else
         vars.SetAt(key, data);
     }
 
     sep1prev = sep1next+1;
   } while (sep1prev != P_MAX_INDEX);
+}
+
+
+void PURL::OutputVars(ostream & strm,
+                      const PStringToString & vars,
+                      char sep0,
+                      char sep1,
+                      char sep2,
+                      TranslationType type)
+{
+  for (PINDEX i = 0; i < vars.GetSize(); i++) {
+    if (i > 0)
+      strm << sep1;
+    else if (sep0 != '\0')
+      strm << sep0;
+
+    PString key  = TranslateString(vars.GetKeyAt (i), type);
+    PString data = TranslateString(vars.GetDataAt(i), type);
+
+    if (key.IsEmpty())
+      strm << data;
+    else if (data.IsEmpty())
+      strm << key;
+    else
+      strm << key << sep2 << data;
+  }
 }
 
 
@@ -546,7 +562,7 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
     // chop off any trailing parameters
     pos = url.Find(';');
     if (pos != P_MAX_INDEX) {
-      SplitVars(url(pos+1, P_MAX_INDEX), paramVars, ';', '=');
+      SplitVars(url(pos+1, P_MAX_INDEX), paramVars);
       url.Delete(pos, P_MAX_INDEX);
     }
   }
@@ -625,7 +641,6 @@ PString PURL::AsString(UrlFormat fmt) const
 PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const
 {
   PStringStream str;
-  PINDEX i;
 
   if (fmt == HostPortOnly) {
     str << scheme << ':';
@@ -684,15 +699,8 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     if (!fragment)
       str << "#" << TranslateString(fragment, PathTranslation);
 
-    for (i = 0; i < paramVars.GetSize(); i++) {
-      str << ';' << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
-      PString data = paramVars.GetDataAt(i);
-      if (!data)
-        str << '=' << TranslateString(data, QueryTranslation);
-    }
-
-    if (!queryVars.IsEmpty())
-      str << '?' << GetQuery();
+    OutputVars(str, paramVars, ';', ';', '=', ParameterTranslation);
+    OutputVars(str, queryVars, '?', '&', '=', QueryTranslation);
   }
 
   return str;
@@ -782,24 +790,15 @@ void PURL::AppendPath(const PString & segment)
 
 PString PURL::GetParameters() const
 {
-  PStringStream str;
-
-  for (PINDEX i = 0; i < paramVars.GetSize(); i++) {
-    if (i > 0)
-      str << ';';
-    str << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
-    PString data = paramVars.GetDataAt(i);
-    if (!data)
-      str << '=' << TranslateString(data, QueryTranslation);
-  }
-
-  return str;
+  PStringStream strm;
+  OutputVars(strm, paramVars, '\0', ';', '=', ParameterTranslation);
+  return strm;
 }
 
 
 void PURL::SetParameters(const PString & parameters)
 {
-  SplitVars(parameters, paramVars, ';', '=');
+  SplitVars(parameters, paramVars);
   Recalculate();
 }
 
@@ -823,22 +822,9 @@ void PURL::SetParamVar(const PString & key, const PString & data, bool emptyData
 
 PString PURL::GetQuery() const
 {
-  PStringStream str;
-
-  for (PINDEX i = 0; i < queryVars.GetSize(); i++) {
-    if (i > 0)
-      str << '&';
-    PString key  = TranslateString(queryVars.GetKeyAt (i), QueryTranslation);
-    PString data = TranslateString(queryVars.GetDataAt(i), QueryTranslation);
-    if (key.IsEmpty())
-      str << data;
-    else if (data.IsEmpty())
-      str << key;
-    else
-      str << key << '=' << data;
-  }
-
-  return str;
+  PStringStream strm;
+  OutputVars(strm, queryVars, '\0', '&', '=', QueryTranslation);
+  return strm;
 }
 
 
@@ -943,7 +929,7 @@ class PURL_TelScheme : public PURLScheme
         url.SetUserName(str.Left(pos));
 
         PStringToString paramVars;
-        PURL::SplitVars(str(pos+1, P_MAX_INDEX), paramVars, ';', '=');
+        PURL::SplitVars(str(pos+1, P_MAX_INDEX), paramVars);
         url.SetParamVars(paramVars);
 
         PString phoneContext = paramVars("phone-context");
@@ -968,7 +954,8 @@ class PURL_TelScheme : public PURLScheme
         return PString::Empty();
 
       PStringStream strm;
-      strm << "tel:" + url.GetUserName() << ';' << url.GetParameters();
+      strm << "tel:" + url.GetUserName();
+      PURL::OutputVars(strm, url.GetParamVars(), ';', ';', '=', PURL::ParameterTranslation);
       return strm;
     }
 };
@@ -1028,18 +1015,18 @@ class PURL_DataScheme : public PURLScheme
           continue;
         }
 
-        strm << ';' << PURL::TranslateString(key, PURL::QueryTranslation);
+        strm << ';' << PURL::TranslateString(key, PURL::ParameterTranslation);
 
         PString data = params.GetDataAt(i);
         if (!data)
-          strm << '=' << PURL::TranslateString(data, PURL::QueryTranslation);
+          strm << '=' << PURL::TranslateString(data, PURL::ParameterTranslation);
       }
 
       // This must always be last according to EBNF
       if (base64)
         strm << ";base64";
 
-      strm << ',' << PURL::TranslateString(purl.GetContents(), PURL::QueryTranslation);
+      strm << ',' << PURL::TranslateString(purl.GetContents(), PURL::ParameterTranslation);
 
       return strm;
     }
