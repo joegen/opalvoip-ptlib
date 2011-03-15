@@ -818,7 +818,7 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull ()
     if (WaitForMultipleObjects(2, notificationEvent, FALSE, INFINITE) != WAIT_OBJECT_0)
       return false;
   }
-  return true;
+  return IsOpen();
 }
 
 
