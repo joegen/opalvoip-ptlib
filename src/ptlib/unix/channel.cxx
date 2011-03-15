@@ -150,19 +150,32 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
-  if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
-    return PFalse;
+  while ((lastReadCount = ::read(os_handle, buf, len)) < 0) {
+    switch (errno) {
+      case EINTR :
+        break;
 
-  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len), LastReadError))
-    return lastReadCount > 0;
+      case EWOULDBLOCK :
+        if (readTimeout > 0) {
+          if (PXSetIOBlock(PXReadBlock, readTimeout))
+            break;
+          return false;
+        }
+        // Next case
 
-  lastReadCount = 0;
-  return PFalse;
+      default :
+        return ConvertOSError(-1);
+    }
+  }
+
+  return lastReadCount > 0;
 }
 
 
 PBoolean PChannel::Write(const void * buf, PINDEX len)
 {
+  lastWriteCount = 0;
+
   // if the os_handle isn't open, no can do
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
@@ -172,17 +185,25 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
   flush();
   IOSTREAM_MUTEX_SIGNAL();
 
-  lastWriteCount = 0;
-  
   while (len > 0) {
 
     int result;
     while ((result = ::write(os_handle, ((char *)buf)+lastWriteCount, len)) < 0) {
-      if (errno != EWOULDBLOCK)
-        return ConvertOSError(-1, LastWriteError);
+      switch (errno) {
+        case EINTR :
+          break;
 
-      if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-        return PFalse;
+        case EWOULDBLOCK :
+          if (writeTimeout > 0) {
+            if (PXSetIOBlock(PXWriteBlock, writeTimeout))
+              break;
+            return false;
+          }
+          // Next case
+
+        default :
+          return ConvertOSError(-1, LastReadError);
+      }
     }
 
     lastWriteCount += result;
@@ -350,6 +371,11 @@ PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
     case EBADF:  // will get EBADF if a read/write occurs after closing. This must return Interrupted
     case EINTR:
       lastError = Interrupted;
+      break;
+
+    case EWOULDBLOCK :
+    case ETIMEDOUT :
+      lastError = Timeout;
       break;
 
     case EEXIST:
