@@ -161,8 +161,10 @@ class PURL : public PObject
       LoginTranslation,
       /// Translate the path field for a URL.
       PathTranslation,
-      /// Translate the query parameters field for a URL.
-      QueryTranslation
+      /// Translate the query variable field for a URL.
+      QueryTranslation,
+      /// Translate the parameter variables field for a URL.
+      ParameterTranslation
     };
 
     /**Translate a string from general form to one that can be included into
@@ -193,16 +195,27 @@ class PURL : public PObject
     static void SplitVars(
       const PString & str,    ///< String to split into variables.
       PStringToString & vars, ///< Dictionary of variable names and values.
-      char sep1,              ///< Separater between pairs
-      char sep2               ///< Separater between key and value
+      char sep1 = ';',        ///< Separater between pairs
+      char sep2 = '=',        ///< Separater between key and value
+      TranslationType type = ParameterTranslation ///< Type of translation.
     );
 
     /** Split a string in &= form to a dictionary of names and values. */
     static void SplitQueryVars(
       const PString & queryStr,   ///< String to split into variables.
       PStringToString & queryVars ///< Dictionary of variable names and values.
-    ) { SplitVars(queryStr, queryVars, '&', '='); }
+    ) { SplitVars(queryStr, queryVars, '&', '=', QueryTranslation); }
 
+    /** Construct string from a dictionary using separators.
+      */
+    static void OutputVars(
+      ostream & strm,               ///< Stream to output dictionary to
+      const PStringToString & vars, ///< Dictionary of variable names and values.
+      char sep0 = ';',              ///< First separater before all ('\0' means none)
+      char sep1 = ';',              ///< Separater between pairs
+      char sep2 = '=',              ///< Separater between key and value
+      TranslationType type = ParameterTranslation ///< Type of translation.
+    );
 
 
     /// Get the scheme field of the URL.
@@ -433,6 +446,17 @@ class PURLLegacyScheme : public PURLScheme
     bool relativeImpliesScheme;
     WORD defaultPort;
 };
+
+#define PURL_LEGACY_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+  class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
+  { \
+    public: \
+      PURLLegacyScheme_##schemeName() \
+        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+        { } \
+  }; \
+  static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
+
 
 
 //////////////////////////////////////////////////////////////////////////////
