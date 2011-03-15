@@ -83,7 +83,7 @@ ostream & operator<<(ostream & strm, PVideoDevice::VideoFormat fmt)
 static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
-} colourFormatBPPTab[] = {
+} ColourFormatBPPTab[] = {
   { "YUV420P", 12 },
   { "I420",    12 },
   { "IYUV",    12 },
@@ -309,8 +309,8 @@ PBoolean PVideoFrameInfo::SetColourFormat(const PString & colourFmt)
     return PTrue;
   }
 
-  for (PINDEX i = 0; i < PARRAYSIZE(colourFormatBPPTab); i++) {
-    if (SetColourFormat(colourFormatBPPTab[i].colourFormat))
+  for (PINDEX i = 0; i < PARRAYSIZE(ColourFormatBPPTab); i++) {
+    if (SetColourFormat(ColourFormatBPPTab[i].colourFormat))
       return PTrue;
   }
 
@@ -327,9 +327,9 @@ const PString & PVideoFrameInfo::GetColourFormat() const
 PINDEX PVideoFrameInfo::CalculateFrameBytes(unsigned width, unsigned height,
                                               const PString & colourFormat)
 {
-  for (PINDEX i = 0; i < PARRAYSIZE(colourFormatBPPTab); i++) {
-    if (colourFormat *= colourFormatBPPTab[i].colourFormat)
-      return width * height * colourFormatBPPTab[i].bitsPerPixel/8;
+  for (PINDEX i = 0; i < PARRAYSIZE(ColourFormatBPPTab); i++) {
+    if (colourFormat *= ColourFormatBPPTab[i].colourFormat)
+      return width * height * ColourFormatBPPTab[i].bitsPerPixel/8;
   }
   return 0;
 }
@@ -655,121 +655,77 @@ int PVideoDevice::GetChannel() const
 
 PBoolean PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
 {
+  if (converter != NULL) {
+    if (CanCaptureVideo()) {
+      if (converter->GetDstColourFormat() == newColourFmt)
+        return true;
+    }
+    else {
+      if (converter->GetSrcColourFormat() == newColourFmt)
+        return true;
+    }
+  }
+  else {
+    if (colourFormat == newColourFmt)
+      return true;
+  }
+
+  PString newColourFormat = newColourFmt; // make copy, just in case newColourFmt is reference to member colourFormat
+
+  if (!SetColourFormat(newColourFormat) &&
+        (preferredColourFormat.IsEmpty() || !SetColourFormat(preferredColourFormat))) {
+    /************************
+      Eventually, need something more sophisticated than this, but for the
+      moment pick the known colour formats that the device is very likely to
+      support and then look for a conversion routine from that to the
+      destination format.
+
+      What we really want is some sort of better heuristic that looks at
+      computational requirements of each converter and picks a pair of formats
+      that the hardware supports and uses the least CPU.
+    */
+
+    PINDEX knownFormatIdx = 0;
+    while (!SetColourFormat(ColourFormatBPPTab[knownFormatIdx].colourFormat)) {
+      if (++knownFormatIdx >= PARRAYSIZE(ColourFormatBPPTab)) {
+        PTRACE(2, "PVidDev\tSetColourFormatConverter FAILED for " << newColourFormat);
+        return false;
+      }
+    }
+  }
+
+  PTRACE(3, "PVidDev\tSetColourFormatConverter success for native " << colourFormat);
+
   PVideoFrameInfo src = *this;
   PVideoFrameInfo dst = *this;
 
-  PString colourFmt = newColourFmt; // make copy, just in case newColourFmt is reference to member colourFormat
-
   if (converter != NULL) {
-    if (CanCaptureVideo()) {
-      if (converter->GetDstColourFormat() == colourFmt)
-        return PTrue;
-    }
-    else {
-      if (converter->GetSrcColourFormat() == colourFmt)
-        return PTrue;
-    }
     converter->GetSrcFrameInfo(src);
     converter->GetDstFrameInfo(dst);
     delete converter;
     converter = NULL;
   }
-  
-  if (!preferredColourFormat.IsEmpty()) {
-    PTRACE(4,"PVidDev\tSetColourFormatConverter, want " << colourFmt << " trying " << preferredColourFormat);
-    if (SetColourFormat(preferredColourFormat)) {
-      if (CanCaptureVideo()) {
-        PTRACE(4,"PVidDev\tSetColourFormatConverter set camera to native "<< preferredColourFormat);
-        if (preferredColourFormat != colourFmt)
-          src.SetColourFormat(preferredColourFormat);
-      }
-      else {
-        PTRACE(4,"PVidDev\tSetColourFormatConverter set renderer to "<< preferredColourFormat);
-        if (preferredColourFormat != colourFmt)
-          dst.SetColourFormat(preferredColourFormat);
-      }
 
-      if (nativeVerticalFlip || src.GetColourFormat() != dst.GetColourFormat()) {
-        converter = PColourConverter::Create(src, dst);
-        if (converter != NULL) {
-          converter->SetVFlipState(nativeVerticalFlip);
-          return PTrue;
-        }
-      }
+  if (nativeVerticalFlip || colourFormat != newColourFormat) {
+    if (CanCaptureVideo()) {
+      src.SetColourFormat(colourFormat);
+      dst.SetColourFormat(newColourFormat);
     }
-  }
-  
-  if (SetColourFormat(colourFmt)) {
-    if (nativeVerticalFlip) {
-      src.SetColourFormat(colourFmt);
-      dst.SetColourFormat(colourFmt);
-      converter = PColourConverter::Create(src, dst);
-      if (PAssertNULL(converter) == NULL)
-        return PFalse;
-      converter->SetVFlipState(nativeVerticalFlip);
+    else {
+      src.SetColourFormat(newColourFormat);
+      dst.SetColourFormat(colourFormat);
     }
 
-    PTRACE(3, "PVidDev\tSetColourFormatConverter success for native " << colourFmt);    
-    return PTrue;
-  }
-
-  // check to see if we have detected this device before, and try the same combination worked last time
-  if (CanCaptureVideo()) {
-    PString previousColourFormat       = "BGR24";
-
-    PTRACE(4,"PVidDev\tSetColourFormatConverter trying, want " << colourFmt << " trying " << previousColourFormat);
-    if (SetColourFormat(previousColourFormat)) {
-      src.SetColourFormat(previousColourFormat);
-      dst.SetColourFormat(colourFmt);
-      converter = PColourConverter::Create(src, dst);
-      if (converter != NULL) {
-        PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " and device using " << previousColourFormat);
-        converter->SetVFlipState(nativeVerticalFlip);
-        return PTrue;
-      }
+    converter = PColourConverter::Create(src, dst);
+    if (converter == NULL) {
+      PTRACE(2, "PVidDev\tSetColourFormatConverter failed to crate converter from " << src << " to " << dst);
+      return false;
     }
-    PTRACE(4,"PVidDev\tSetColourFormatConverter " << previousColourFormat << " did not work");
-  }
-  
-  /************************
-    Eventually, need something more sophisticated than this, but for the
-    moment pick the known colour formats that the device is very likely to
-    support and then look for a conversion routine from that to the
-    destination format.
 
-    What we really want is some sort of better heuristic that looks at
-    computational requirements of each converter and picks a pair of formats
-    that the hardware supports and uses the least CPU.
-  */
-
-  PINDEX knownFormatIdx = 0;
-  while (knownFormatIdx < PARRAYSIZE(colourFormatBPPTab)) {
-    PString formatToTry = colourFormatBPPTab[knownFormatIdx].colourFormat;
-    PTRACE(4,"PVidDev\tSetColourFormatConverter, want " << colourFmt << " trying " << formatToTry);
-    if (SetColourFormat(formatToTry)) {
-      if (CanCaptureVideo()) {
-        PTRACE(4,"PVidDev\tSetColourFormatConverter set camera to "<< formatToTry);
-        src.SetColourFormat(formatToTry);
-        dst.SetColourFormat(colourFmt);
-      }
-      else {
-        PTRACE(4,"PVidDev\tSetColourFormatConverter set renderer to "<< formatToTry);
-        dst.SetColourFormat(formatToTry);
-        src.SetColourFormat(colourFmt);
-      }
-      converter = PColourConverter::Create(src, dst);
-      if (converter != NULL) {
-        // set converter properties that depend on this color format
-        PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " and device using " << formatToTry);
-        converter->SetVFlipState(nativeVerticalFlip);
-        return PTrue;
-      } 
-    } 
-    knownFormatIdx++;
+    converter->SetVFlipState(nativeVerticalFlip);
   }
 
-  PTRACE(2, "PVidDev\tSetColourFormatConverter  FAILED for " << colourFmt);
-  return PFalse;
+  return true;
 }
 
 
