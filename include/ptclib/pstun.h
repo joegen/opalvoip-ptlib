@@ -39,6 +39,154 @@
 #include <ptclib/pnat.h>
 #include <ptlib/sockets.h>
 
+////////////////////////////////////////////////////////////////////////////////
+
+class PSTUN {
+  public:
+    enum {
+      DefaultPort = 3478
+    };
+
+    enum NatTypes {
+      UnknownNat,
+      OpenNat,
+      ConeNat,
+      RestrictedNat,
+      PortRestrictedNat,
+      SymmetricNat,
+      SymmetricFirewall,
+      BlockedNat,
+      PartialBlockedNat,
+      NumNatTypes
+    };
+
+    /**Get NatTypes enumeration as an English string for the type.
+      */
+    static PString GetNatTypeString(
+      NatTypes type   ///< NAT Type to get name of
+    );
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct PSTUNAttribute
+{
+  enum Types {
+    MAPPED_ADDRESS     = 0x0001,
+    RESPONSE_ADDRESS   = 0x0002,
+    CHANGE_REQUEST     = 0x0003,
+    SOURCE_ADDRESS     = 0x0004,
+    CHANGED_ADDRESS    = 0x0005,
+    USERNAME           = 0x0006,
+    PASSWORD           = 0x0007,
+    MESSAGE_INTEGRITY  = 0x0008,
+    ERROR_CODE         = 0x0009,
+    UNKNOWN_ATTRIBUTES = 0x000a,
+    REFLECTED_FROM     = 0x000b,
+    MaxValidCode
+  };
+  
+  PUInt16b type;
+  PUInt16b length;
+  
+  PSTUNAttribute * GetNext() const { return (PSTUNAttribute *)(((const BYTE *)this)+length+4); }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+#pragma pack(1)
+
+class PSTUNAddressAttribute : public PSTUNAttribute
+{
+  public:
+    BYTE     pad;
+    BYTE     family;
+    PUInt16b port;
+    BYTE     ip[4];
+
+    PIPSocket::Address GetIP() const { return PIPSocket::Address(4, ip); }
+
+  protected:
+    enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+sizeof(PIPSocket::Address) };
+    void InitAddrAttr(Types newType)
+    {
+      type = (WORD)newType;
+      length = SizeofAddressAttribute;
+      pad = 0;
+      family = 1;
+    }
+    bool IsValidAddrAttr(Types checkType) const
+    {
+      return type == checkType && length == SizeofAddressAttribute;
+    }
+};
+
+class PSTUNMappedAddress : public PSTUNAddressAttribute
+{
+  public:
+    void Initialise() { InitAddrAttr(MAPPED_ADDRESS); }
+    bool IsValid() const { return IsValidAddrAttr(MAPPED_ADDRESS); }
+};
+
+class PSTUNChangedAddress : public PSTUNAddressAttribute
+{
+  public:
+    void Initialise() { InitAddrAttr(CHANGED_ADDRESS); }
+    bool IsValid() const { return IsValidAddrAttr(CHANGED_ADDRESS); }
+};
+
+class PSTUNChangeRequest : public PSTUNAttribute
+{
+  public:
+    BYTE flags[4];
+    
+    PSTUNChangeRequest() { }
+
+    PSTUNChangeRequest(bool changeIP, bool changePort)
+    {
+      Initialise();
+      SetChangeIP(changeIP);
+      SetChangePort(changePort);
+    }
+
+    void Initialise()
+    {
+      type = CHANGE_REQUEST;
+      length = sizeof(flags);
+      memset(flags, 0, sizeof(flags));
+    }
+    bool IsValid() const { return type == CHANGE_REQUEST && length == sizeof(flags); }
+    
+    bool GetChangeIP() const { return (flags[3]&4) != 0; }
+    void SetChangeIP(bool on) { if (on) flags[3] |= 4; else flags[3] &= ~4; }
+    
+    bool GetChangePort() const { return (flags[3]&2) != 0; }
+    void SetChangePort(bool on) { if (on) flags[3] |= 2; else flags[3] &= ~2; }
+};
+
+class PSTUNMessageIntegrity : public PSTUNAttribute
+{
+  public:
+    BYTE hmac[20];
+    
+    void Initialise()
+    {
+      type = MESSAGE_INTEGRITY;
+      length = sizeof(hmac);
+      memset(hmac, 0, sizeof(hmac));
+    }
+    bool IsValid() const { return type == MESSAGE_INTEGRITY && length == sizeof(hmac); }
+};
+
+struct PSTUNMessageHeader
+{
+  PUInt16b       msgType;
+  PUInt16b       msgLength;
+  BYTE           transactionId[16];
+};
+
+#pragma pack()
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**UDP socket that has been created by the STUN client.
   */
@@ -62,17 +210,49 @@ class PSTUNUDPSocket : public PUDPSocket
   friend class PSTUNClient;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
+class PSTUNMessage : public PBYTEArray
+{
+  public:
+    enum MsgType {
+      BindingRequest  = 0x0001,
+      BindingResponse = 0x0101,
+      BindingError    = 0x0111,
+        
+      SharedSecretRequest  = 0x0002,
+      SharedSecretResponse = 0x0102,
+      SharedSecretError    = 0x0112,
+    };
+    
+    PSTUNMessage();
+    PSTUNMessage(MsgType newType, const BYTE * id = NULL);
+
+    void SetType(MsgType newType, const BYTE * id = NULL);
+
+    const PSTUNMessageHeader * operator->() const { return (PSTUNMessageHeader *)theArray; }
+
+    PSTUNAttribute * GetFirstAttribute();
+
+    bool Validate(const PSTUNMessage & request);
+
+    void AddAttribute(const PSTUNAttribute & attribute);
+    void SetAttribute(const PSTUNAttribute & attribute);
+    PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type);
+
+    bool Read(PUDPSocket & socket);
+    bool Write(PUDPSocket & socket) const;
+    bool Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**STUN client.
   */
-class PSTUNClient : public PNatMethod
+class PSTUNClient : public PNatMethod, public PSTUN
 {
   PCLASSINFO(PSTUNClient, PNatMethod);
   public:
-    enum {
-      DefaultPort = 3478
-    };
-
     PSTUNClient();
 
     PSTUNClient(
@@ -133,19 +313,6 @@ class PSTUNClient : public PNatMethod
       WORD serverPort = 0
     );
 
-    enum NatTypes {
-      UnknownNat,
-      OpenNat,
-      ConeNat,
-      RestrictedNat,
-      PortRestrictedNat,
-      SymmetricNat,
-      SymmetricFirewall,
-      BlockedNat,
-      PartialBlockedNat,
-      NumNatTypes
-    };
-
     /**Determine via the STUN protocol the NAT type for the router.
        This will cache the last determine NAT type. Use the force variable to
        guarantee an up to date value.
@@ -160,12 +327,6 @@ class PSTUNClient : public PNatMethod
     PString GetNatTypeName(
       PBoolean force = false    ///< Force a new check
     ) { return GetNatTypeString(GetNatType(force)); }
-
-    /**Get NatTypes enumeration as an English string for the type.
-      */
-    static PString GetNatTypeString(
-      NatTypes type   ///< NAT Type to get name of
-    );
 
     /**Return an indication if the current STUN type supports RTP
       Use the force variable to guarantee an up to date test
@@ -299,7 +460,7 @@ class PSTUNClient : public PNatMethod
 };
 
 
-inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUNClient::GetNatTypeString(type); }
+inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUN::GetNatTypeString(type); }
 
 
 #endif // PTLIB_PSTUN_H
