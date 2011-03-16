@@ -51,6 +51,168 @@ PCREATE_NAT_PLUGIN(STUN);
 
 ///////////////////////////////////////////////////////////////////////
 
+PString PSTUN::GetNatTypeString(NatTypes type)
+{
+  static const char * const Names[NumNatTypes] = {
+    "Unknown NAT",
+    "Open NAT",
+    "Cone NAT",
+    "Restricted NAT",
+    "Port Restricted NAT",
+    "Symmetric NAT",
+    "Symmetric Firewall",
+    "Blocked",
+    "Partially Blocked"
+  };
+
+  if (type < NumNatTypes)
+    return Names[type];
+  
+  return psprintf("<NATType %u>", type);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+PSTUNMessage::PSTUNMessage()
+{ }
+  
+PSTUNMessage::PSTUNMessage(MsgType newType, const BYTE * id)
+  : PBYTEArray(sizeof(PSTUNMessageHeader))
+{
+  SetType(newType, id);
+}
+
+void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
+{
+  SetMinSize(sizeof(PSTUNMessageHeader));
+  PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
+  hdr->msgType = (WORD)newType;
+  for (PINDEX i = 0; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
+    hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
+}
+
+PSTUNAttribute * PSTUNMessage::GetFirstAttribute() { 
+
+  int length = ((PSTUNMessageHeader *)theArray)->msgLength;
+  if (theArray == NULL || length < (int) sizeof(PSTUNMessageHeader))
+    return NULL;
+
+  PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
+  PSTUNAttribute * ptr = attr;
+
+  if (attr->length > GetSize() || attr->type >= PSTUNAttribute::MaxValidCode)
+    return NULL;
+
+  while (ptr && (BYTE*) ptr < (BYTE*)(theArray+GetSize()) && length >= (int) ptr->length+4) {
+
+    length -= ptr->length + 4;
+    ptr = ptr->GetNext();
+  }
+
+  if (length != 0)
+    return NULL;
+
+  return attr; 
+}
+
+bool PSTUNMessage::Validate(const PSTUNMessage & request)
+{
+  int length = ((PSTUNMessageHeader *)theArray)->msgLength;
+  PSTUNAttribute * attrib = GetFirstAttribute();
+  while (attrib && length > 0) {
+    length -= attrib->length + 4;
+    attrib = attrib->GetNext();
+  }
+
+  if (length != 0) {
+    PTRACE(2, "STUN\tInvalid reply packet received, incorrect attribute length.");
+    return false;
+  }
+
+  if (memcmp(request->transactionId, (*this)->transactionId, sizeof(request->transactionId)) != 0) {
+    PTRACE(2, "STUN\tInvalid reply packet received, transaction ID does not match.");
+    return false;
+  }
+
+  return true;
+}
+
+void PSTUNMessage::AddAttribute(const PSTUNAttribute & attribute)
+{
+  PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
+  int oldLength = hdr->msgLength;
+  int attrSize = attribute.length + 4;
+  int newLength = oldLength + attrSize;
+  hdr->msgLength = (WORD)newLength;
+  // hdr pointer may be invalidated by next statement
+  SetMinSize(newLength+sizeof(PSTUNMessageHeader));
+  memcpy(theArray+sizeof(PSTUNMessageHeader)+oldLength, &attribute, attrSize);
+}
+
+void PSTUNMessage::SetAttribute(const PSTUNAttribute & attribute)
+{
+  int length = ((PSTUNMessageHeader *)theArray)->msgLength;
+  PSTUNAttribute * attrib = GetFirstAttribute();
+  while (length > 0) {
+    if (attrib->type == attribute.type) {
+      if (attrib->length == attribute.length)
+        *attrib = attribute;
+      else {
+        // More here
+      }
+      return;
+    }
+
+    length -= attrib->length + 4;
+    attrib = attrib->GetNext();
+  }
+
+  AddAttribute(attribute);
+}
+
+PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type)
+{
+  int length = ((PSTUNMessageHeader *)theArray)->msgLength;
+  PSTUNAttribute * attrib = GetFirstAttribute();
+  while (length > 0) {
+    if (attrib->type == type)
+      return attrib;
+
+    length -= attrib->length + 4;
+    attrib = attrib->GetNext();
+  }
+  return NULL;
+}
+
+bool PSTUNMessage::Read(PUDPSocket & socket)
+{
+  if (!socket.Read(GetPointer(1000), 1000))
+    return false;
+
+  SetSize(socket.GetLastReadCount());
+  return true;
+}
+  
+bool PSTUNMessage::Write(PUDPSocket & socket) const
+{
+  return socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)) != PFalse;
+}
+
+bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
+{
+  for (PINDEX retry = 0; retry < pollRetries; retry++) {
+    if (!request.Write(socket))
+      break;
+
+    if (Read(socket) && Validate(request))
+      return true;
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 PSTUNClient::PSTUNClient()
   : serverPort(DefaultPort),
     replyTimeout(DEFAULT_REPLY_TIMEOUT),
@@ -159,280 +321,6 @@ PBoolean PSTUNClient::SetServer(const PIPSocket::Address & address, WORD port)
   serverPort = port;
   return true;
 }
-
-#pragma pack(1)
-
-struct PSTUNAttribute
-{
-  enum Types {
-    MAPPED_ADDRESS = 0x0001,
-    RESPONSE_ADDRESS = 0x0002,
-    CHANGE_REQUEST = 0x0003,
-    SOURCE_ADDRESS = 0x0004,
-    CHANGED_ADDRESS = 0x0005,
-    USERNAME = 0x0006,
-    PASSWORD = 0x0007,
-    MESSAGE_INTEGRITY = 0x0008,
-    ERROR_CODE = 0x0009,
-    UNKNOWN_ATTRIBUTES = 0x000a,
-    REFLECTED_FROM = 0x000b,
-    MaxValidCode
-  };
-  
-  PUInt16b type;
-  PUInt16b length;
-  
-  PSTUNAttribute * GetNext() const { return (PSTUNAttribute *)(((const BYTE *)this)+length+4); }
-};
-
-class PSTUNAddressAttribute : public PSTUNAttribute
-{
-public:
-  BYTE     pad;
-  BYTE     family;
-  PUInt16b port;
-  BYTE     ip[4];
-
-  PIPSocket::Address GetIP() const { return PIPSocket::Address(4, ip); }
-
-protected:
-  enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+sizeof(PIPSocket::Address) };
-  void InitAddrAttr(Types newType)
-  {
-    type = (WORD)newType;
-    length = SizeofAddressAttribute;
-    pad = 0;
-    family = 1;
-  }
-  bool IsValidAddrAttr(Types checkType) const
-  {
-    return type == checkType && length == SizeofAddressAttribute;
-  }
-};
-
-class PSTUNMappedAddress : public PSTUNAddressAttribute
-{
-public:
-  void Initialise() { InitAddrAttr(MAPPED_ADDRESS); }
-  bool IsValid() const { return IsValidAddrAttr(MAPPED_ADDRESS); }
-};
-
-class PSTUNChangedAddress : public PSTUNAddressAttribute
-{
-public:
-  void Initialise() { InitAddrAttr(CHANGED_ADDRESS); }
-  bool IsValid() const { return IsValidAddrAttr(CHANGED_ADDRESS); }
-};
-
-class PSTUNChangeRequest : public PSTUNAttribute
-{
-public:
-  BYTE flags[4];
-  
-  PSTUNChangeRequest() { }
-
-  PSTUNChangeRequest(bool changeIP, bool changePort)
-  {
-    Initialise();
-    SetChangeIP(changeIP);
-    SetChangePort(changePort);
-  }
-
-  void Initialise()
-  {
-    type = CHANGE_REQUEST;
-    length = sizeof(flags);
-    memset(flags, 0, sizeof(flags));
-  }
-  bool IsValid() const { return type == CHANGE_REQUEST && length == sizeof(flags); }
-  
-  bool GetChangeIP() const { return (flags[3]&4) != 0; }
-  void SetChangeIP(bool on) { if (on) flags[3] |= 4; else flags[3] &= ~4; }
-  
-  bool GetChangePort() const { return (flags[3]&2) != 0; }
-  void SetChangePort(bool on) { if (on) flags[3] |= 2; else flags[3] &= ~2; }
-};
-
-class PSTUNMessageIntegrity : public PSTUNAttribute
-{
-public:
-  BYTE hmac[20];
-  
-  void Initialise()
-  {
-    type = MESSAGE_INTEGRITY;
-    length = sizeof(hmac);
-    memset(hmac, 0, sizeof(hmac));
-  }
-  bool IsValid() const { return type == MESSAGE_INTEGRITY && length == sizeof(hmac); }
-};
-
-struct PSTUNMessageHeader
-{
-  PUInt16b       msgType;
-  PUInt16b       msgLength;
-  BYTE           transactionId[16];
-};
-
-
-#pragma pack()
-
-
-class PSTUNMessage : public PBYTEArray
-{
-public:
-  enum MsgType {
-    BindingRequest  = 0x0001,
-    BindingResponse = 0x0101,
-    BindingError    = 0x0111,
-      
-    SharedSecretRequest  = 0x0002,
-    SharedSecretResponse = 0x0102,
-    SharedSecretError    = 0x0112,
-  };
-  
-  PSTUNMessage()
-  { }
-  
-  PSTUNMessage(MsgType newType, const BYTE * id = NULL)
-    : PBYTEArray(sizeof(PSTUNMessageHeader))
-  {
-    SetType(newType, id);
-  }
-
-  void SetType(MsgType newType, const BYTE * id = NULL)
-  {
-    SetMinSize(sizeof(PSTUNMessageHeader));
-    PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
-    hdr->msgType = (WORD)newType;
-    for (PINDEX i = 0; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
-      hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
-  }
-
-  const PSTUNMessageHeader * operator->() const { return (PSTUNMessageHeader *)theArray; }
-  
-  PSTUNAttribute * GetFirstAttribute() { 
-
-    int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-    if (theArray == NULL || length < (int) sizeof(PSTUNMessageHeader))
-      return NULL;
-
-    PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
-    PSTUNAttribute * ptr = attr;
-
-    if (attr->length > GetSize() || attr->type >= PSTUNAttribute::MaxValidCode)
-      return NULL;
-
-    while (ptr && (BYTE*) ptr < (BYTE*)(theArray+GetSize()) && length >= (int) ptr->length+4) {
-
-      length -= ptr->length + 4;
-      ptr = ptr->GetNext();
-    }
-
-    if (length != 0)
-      return NULL;
-
-    return attr; 
-  }
-
-  bool Validate(const PSTUNMessage & request)
-  {
-    int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-    PSTUNAttribute * attrib = GetFirstAttribute();
-    while (attrib && length > 0) {
-      length -= attrib->length + 4;
-      attrib = attrib->GetNext();
-    }
-
-    if (length != 0) {
-      PTRACE(2, "STUN\tInvalid reply packet received, incorrect attribute length.");
-      return false;
-    }
-
-    if (memcmp(request->transactionId, (*this)->transactionId, sizeof(request->transactionId)) != 0) {
-      PTRACE(2, "STUN\tInvalid reply packet received, transaction ID does not match.");
-      return false;
-    }
-
-    return true;
-  }
-
-  void AddAttribute(const PSTUNAttribute & attribute)
-  {
-    PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
-    int oldLength = hdr->msgLength;
-    int attrSize = attribute.length + 4;
-    int newLength = oldLength + attrSize;
-    hdr->msgLength = (WORD)newLength;
-    // hdr pointer may be invalidated by next statement
-    SetMinSize(newLength+sizeof(PSTUNMessageHeader));
-    memcpy(theArray+sizeof(PSTUNMessageHeader)+oldLength, &attribute, attrSize);
-  }
-
-  void SetAttribute(const PSTUNAttribute & attribute)
-  {
-    int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-    PSTUNAttribute * attrib = GetFirstAttribute();
-    while (length > 0) {
-      if (attrib->type == attribute.type) {
-        if (attrib->length == attribute.length)
-          *attrib = attribute;
-        else {
-          // More here
-        }
-        return;
-      }
-
-      length -= attrib->length + 4;
-      attrib = attrib->GetNext();
-    }
-
-    AddAttribute(attribute);
-  }
-
-  PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type)
-  {
-    int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-    PSTUNAttribute * attrib = GetFirstAttribute();
-    while (length > 0) {
-      if (attrib->type == type)
-        return attrib;
-
-      length -= attrib->length + 4;
-      attrib = attrib->GetNext();
-    }
-    return NULL;
-  }
-
-
-  bool Read(PUDPSocket & socket)
-  {
-    if (!socket.Read(GetPointer(1000), 1000))
-      return false;
-
-    SetSize(socket.GetLastReadCount());
-    return true;
-  }
-  
-  bool Write(PUDPSocket & socket) const
-  {
-    return socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)) != PFalse;
-  }
-
-  bool Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
-  {
-    for (PINDEX retry = 0; retry < pollRetries; retry++) {
-      if (!request.Write(socket))
-        break;
-
-      if (Read(socket) && Validate(request))
-        return true;
-    }
-
-    return false;
-  }
-};
-
 
 bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding)
 {
@@ -603,27 +491,6 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
   return natType = (responseIII.Poll(*replySocket, requestIII, pollRetries) ? RestrictedNat : PortRestrictedNat);
-}
-
-
-PString PSTUNClient::GetNatTypeString(NatTypes type)
-{
-  static const char * const Names[NumNatTypes] = {
-    "Unknown NAT",
-    "Open NAT",
-    "Cone NAT",
-    "Restricted NAT",
-    "Port Restricted NAT",
-    "Symmetric NAT",
-    "Symmetric Firewall",
-    "Blocked",
-    "Partially Blocked"
-  };
-
-  if (type < NumNatTypes)
-    return Names[type];
-  
-  return psprintf("<NATType %u>", type);
 }
 
 
