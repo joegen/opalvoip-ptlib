@@ -20,11 +20,6 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): ______________________________________.
- *
- * Library dependencies:
- *
- *   pwlib: v1.4.0   CVS tag: v1_4_0
- *   openh323: v1.10.0   CVS tag: v1_10_0
  */
 
 #ifndef _StunClient_VERSION_H
