@@ -2827,6 +2827,12 @@ void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
 }
 
 
+void PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort)
+{
+  SetSendAddress(addressAndPort.GetAddress(), addressAndPort.GetPort());
+}
+
+
 void PUDPSocket::GetSendAddress(Address & address, WORD & port)
 {
   address = sendAddress;
@@ -2838,6 +2844,12 @@ void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
 {
   address = lastReceiveAddress;
   port    = lastReceivePort;
+}
+
+void PUDPSocket::GetLastReceiveAddress(PIPSocketAddressAndPort & addressAndPort)
+{
+  addressAndPort.SetAddress(lastReceiveAddress);
+  addressAndPort.SetPort(lastReceivePort);
 }
 
 PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
