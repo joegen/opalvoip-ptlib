@@ -1,6 +1,6 @@
-# Simple makefile for the stunclient program
+# Simple makefile for the stunserver program
 
-PROG    = stunclient
+PROG    = stunserver
 SOURCES = main.cxx
 
 ifndef PTLIBDIR
