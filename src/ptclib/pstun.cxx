@@ -45,6 +45,8 @@
 #define DEFAULT_POLL_RETRIES  3
 #define DEFAULT_NUM_SOCKETS_FOR_PAIRING 4
 
+#define RFC5389_MAGIC_COOKIE  0x2112A442
+
 
 typedef PSTUNClient PNatMethod_STUN;
 PCREATE_NAT_PLUGIN(STUN);
@@ -91,21 +93,40 @@ void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
     hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
 }
 
-PSTUNAttribute * PSTUNMessage::GetFirstAttribute() { 
+PSTUNMessage::MsgType PSTUNMessage::GetType() const
+{
+  PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
+  return (PSTUNMessage::MsgType)(int)hdr->msgType;
+}
+
+const BYTE * PSTUNMessage::GetTransactionID() const
+{
+  PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
+  return (const BYTE *)hdr->transactionId;
+}
+
+static int CalcPaddedAttributeLength(int len)
+{
+  return 4 * ((sizeof(PSTUNAttribute) + len + 3) / 4);
+}
+
+PSTUNAttribute * PSTUNMessage::GetFirstAttribute() const
+{ 
+  if ((theArray == NULL) || GetSize() < (int)sizeof(PSTUNMessageHeader))
+    return NULL;
 
   int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-  if (theArray == NULL || length < (int) sizeof(PSTUNMessageHeader))
-    return NULL;
 
   PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
-  PSTUNAttribute * ptr = attr;
+  PSTUNAttribute * ptr  = attr;
 
-  if (attr->length > GetSize() || attr->type >= PSTUNAttribute::MaxValidCode)
+  if ((CalcPaddedAttributeLength(attr->length) > GetSize()) || (attr->type >= PSTUNAttribute::MaxValidCode))
     return NULL;
 
-  while (ptr && (BYTE*) ptr < (BYTE*)(theArray+GetSize()) && length >= (int) ptr->length+4) {
-
-    length -= ptr->length + 4;
+  while (ptr && 
+         ((BYTE*)ptr < (BYTE*)(theArray+GetSize())) && 
+         (length >= CalcPaddedAttributeLength(ptr->length))) {
+    length -= CalcPaddedAttributeLength(ptr->length);
     ptr = ptr->GetNext();
   }
 
@@ -115,19 +136,52 @@ PSTUNAttribute * PSTUNMessage::GetFirstAttribute() {
   return attr; 
 }
 
-bool PSTUNMessage::Validate(const PSTUNMessage & request)
+PSTUNAttribute * PSTUNAttribute::GetNext() const
+{ 
+  return (PSTUNAttribute *)(((const BYTE *)this)+CalcPaddedAttributeLength(length)); 
+}
+
+
+bool PSTUNMessage::Validate()
 {
-  int length = ((PSTUNMessageHeader *)theArray)->msgLength;
+  PSTUNMessageHeader * header = (PSTUNMessageHeader *)theArray;
+
+  // sanity check the length
+  if ((theArray == NULL) || (GetSize() < (int) sizeof(PSTUNMessageHeader)))
+    return false;
+
+  int length = header->msgLength;
+
+  if (GetSize() < ((int)sizeof(PSTUNMessageHeader) + length))
+    return false;
+
+  // do quick checks for RFC5389: magic cookie and top two bits of type must be 00
+  m_isRFC5389 = *(PUInt32b *)(&(header->transactionId)+12) == RFC5389_MAGIC_COOKIE;
+  if (m_isRFC5389 && ((header->msgType & 0x00c0) != 0x00)) {
+    PTRACE(2, "STUN\tPacket received with magic cookie, but type bits are incorrect.");
+    return false;
+  }
+
+  // check attributes
   PSTUNAttribute * attrib = GetFirstAttribute();
   while (attrib && length > 0) {
-    length -= attrib->length + 4;
+    length -= CalcPaddedAttributeLength(attrib->length);
     attrib = attrib->GetNext();
   }
 
   if (length != 0) {
-    PTRACE(2, "STUN\tInvalid reply packet received, incorrect attribute length.");
+    PTRACE(2, "STUN\tInvalid packet received, incorrect attribute length.");
     return false;
   }
+
+  return true;
+}
+
+
+bool PSTUNMessage::Validate(const PSTUNMessage & request)
+{
+  if (!Validate())
+    return false;
 
   if (memcmp(request->transactionId, (*this)->transactionId, sizeof(request->transactionId)) != 0) {
     PTRACE(2, "STUN\tInvalid reply packet received, transaction ID does not match.");
@@ -139,14 +193,16 @@ bool PSTUNMessage::Validate(const PSTUNMessage & request)
 
 void PSTUNMessage::AddAttribute(const PSTUNAttribute & attribute)
 {
-  PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
-  int oldLength = hdr->msgLength;
-  int attrSize = attribute.length + 4;
-  int newLength = oldLength + attrSize;
-  hdr->msgLength = (WORD)newLength;
-  // hdr pointer may be invalidated by next statement
-  SetMinSize(newLength+sizeof(PSTUNMessageHeader));
-  memcpy(theArray+sizeof(PSTUNMessageHeader)+oldLength, &attribute, attrSize);
+  int length       = sizeof(PSTUNAttribute) + attribute.length;
+  int paddedLength = CalcPaddedAttributeLength(attribute.length); 
+
+  int oldLength = ((PSTUNMessageHeader *)theArray)->msgLength;
+  int newLength = oldLength + paddedLength;
+  ((PSTUNMessageHeader *)theArray)->msgLength = (WORD)newLength;
+
+  // theArray pointer may be invalidated by next statement
+  SetMinSize(sizeof(PSTUNMessageHeader) + newLength);
+  memcpy(theArray+sizeof(PSTUNMessageHeader)+oldLength, &attribute, length);
 }
 
 void PSTUNMessage::SetAttribute(const PSTUNAttribute & attribute)
@@ -162,23 +218,22 @@ void PSTUNMessage::SetAttribute(const PSTUNAttribute & attribute)
       }
       return;
     }
-
-    length -= attrib->length + 4;
+    length -= CalcPaddedAttributeLength(attrib->length);
     attrib = attrib->GetNext();
   }
 
   AddAttribute(attribute);
 }
 
-PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type)
+const PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) const
 {
   int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-  PSTUNAttribute * attrib = GetFirstAttribute();
+  const PSTUNAttribute * attrib = GetFirstAttribute();
   while (length > 0) {
     if (attrib->type == type)
       return attrib;
 
-    length -= attrib->length + 4;
+    length -= CalcPaddedAttributeLength(attrib->length);
     attrib = attrib->GetNext();
   }
   return NULL;
@@ -189,13 +244,16 @@ bool PSTUNMessage::Read(PUDPSocket & socket)
   if (!socket.Read(GetPointer(1000), 1000))
     return false;
 
+  socket.GetLastReceiveAddress(m_sourceAddressAndPort);
+
   SetSize(socket.GetLastReadCount());
   return true;
 }
   
 bool PSTUNMessage::Write(PUDPSocket & socket) const
 {
-  return socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)) != PFalse;
+  int len = sizeof(PSTUNMessageHeader) + ((PSTUNMessageHeader *)theArray)->msgLength;
+  return socket.Write(theArray, len);
 }
 
 bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
@@ -209,6 +267,20 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
   }
 
   return false;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void PSTUNAddressAttribute::SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort)
+{
+  pad    = 0;
+  family = 1;
+  port   = addrAndPort.GetPort();
+  PIPSocket::Address addr = addrAndPort.GetAddress();
+  ip[0] = addr.Byte1();
+  ip[1] = addr.Byte2();
+  ip[2] = addr.Byte3();
+  ip[3] = addr.Byte4();
 }
 
 ///////////////////////////////////////////////////////////////////////
