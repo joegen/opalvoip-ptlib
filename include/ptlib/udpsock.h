@@ -109,6 +109,9 @@ class PUDPSocket : public PIPDatagramSocket
       const Address & address,    ///< IP address to send packets.
       WORD port                   ///< Port to send packets.
     );
+    void SetSendAddress(
+      const PIPSocketAddressAndPort & addressAndPort
+    );
 
     /** Get the address to use for connectionless Write().
      */
@@ -136,6 +139,9 @@ class PUDPSocket : public PIPDatagramSocket
     void GetLastReceiveAddress(
       Address & address,    ///< IP address to send packets.
       WORD & port           ///< Port to send packets.
+    );
+    void GetLastReceiveAddress(
+      PIPSocketAddressAndPort & addressAndPort    ///< IP address and port to send packets.
     );
 
     /** CallBack to check if the detected address of the connectionless Read()
