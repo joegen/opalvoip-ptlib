@@ -69,6 +69,8 @@ class PSTUN {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#pragma pack(1)
+
 struct PSTUNAttribute
 {
   enum Types {
@@ -89,11 +91,10 @@ struct PSTUNAttribute
   PUInt16b type;
   PUInt16b length;
   
-  PSTUNAttribute * GetNext() const { return (PSTUNAttribute *)(((const BYTE *)this)+length+4); }
+  PSTUNAttribute * GetNext() const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-#pragma pack(1)
 
 class PSTUNAddressAttribute : public PSTUNAttribute
 {
@@ -104,15 +105,16 @@ class PSTUNAddressAttribute : public PSTUNAttribute
     BYTE     ip[4];
 
     PIPSocket::Address GetIP() const { return PIPSocket::Address(4, ip); }
+    void SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort);
 
   protected:
-    enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+sizeof(PIPSocket::Address) };
+    enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+4 };
     void InitAddrAttr(Types newType)
     {
-      type = (WORD)newType;
-      length = SizeofAddressAttribute;
-      pad = 0;
+      pad    = 0;
       family = 1;
+      type   = (WORD)newType;
+      length = SizeofAddressAttribute;
     }
     bool IsValidAddrAttr(Types checkType) const
     {
@@ -123,15 +125,22 @@ class PSTUNAddressAttribute : public PSTUNAttribute
 class PSTUNMappedAddress : public PSTUNAddressAttribute
 {
   public:
-    void Initialise() { InitAddrAttr(MAPPED_ADDRESS); }
+    void Initialise()    { InitAddrAttr(MAPPED_ADDRESS); }
     bool IsValid() const { return IsValidAddrAttr(MAPPED_ADDRESS); }
 };
 
 class PSTUNChangedAddress : public PSTUNAddressAttribute
 {
   public:
-    void Initialise() { InitAddrAttr(CHANGED_ADDRESS); }
+    void Initialise()    { InitAddrAttr(CHANGED_ADDRESS); }
     bool IsValid() const { return IsValidAddrAttr(CHANGED_ADDRESS); }
+};
+
+class PSTUNSourceAddress : public PSTUNAddressAttribute
+{
+  public:
+    void Initialise() { InitAddrAttr(SOURCE_ADDRESS); }
+    bool IsValid() const { return IsValidAddrAttr(SOURCE_ADDRESS); }
 };
 
 class PSTUNChangeRequest : public PSTUNAttribute
@@ -154,6 +163,7 @@ class PSTUNChangeRequest : public PSTUNAttribute
       length = sizeof(flags);
       memset(flags, 0, sizeof(flags));
     }
+
     bool IsValid() const { return type == CHANGE_REQUEST && length == sizeof(flags); }
     
     bool GetChangeIP() const { return (flags[3]&4) != 0; }
@@ -175,6 +185,41 @@ class PSTUNMessageIntegrity : public PSTUNAttribute
       memset(hmac, 0, sizeof(hmac));
     }
     bool IsValid() const { return type == MESSAGE_INTEGRITY && length == sizeof(hmac); }
+};
+
+class PSTUNErrorCode : public PSTUNAttribute
+{
+  public:
+    BYTE m_zero1;
+    BYTE m_zero2;
+    BYTE m_hundreds;
+    BYTE m_units;
+    char m_reason[256];   // not actually 256, but this will do
+   
+    void Initialise()
+    {
+      type = ERROR_CODE;
+      m_zero1     = 0;
+      m_zero2     = 0;
+      m_hundreds  = 0;
+      m_units     = 0;
+      m_reason[0] = '\0';
+      length      = (WORD)(4 + strlen(m_reason) + 1);
+    }
+
+    void SetErrorCode(int code, const PString & reason)
+    { 
+      m_hundreds = (code / 100) & 7;
+      m_units    = (code % 100);
+      int len = reason.GetLength();
+      if (len > (int)sizeof(m_reason)-1)
+        len = sizeof(m_reason)-1;
+      memcpy(m_reason, (const char *)reason, len);
+      m_reason[len] = '\0';
+      length      = (WORD)(4 + len + 1);
+    }
+
+    bool IsValid() const { return (type == ERROR_CODE) && (length == 4 + strlen(m_reason) + 1); }
 };
 
 struct PSTUNMessageHeader
@@ -229,20 +274,32 @@ class PSTUNMessage : public PBYTEArray
     PSTUNMessage(MsgType newType, const BYTE * id = NULL);
 
     void SetType(MsgType newType, const BYTE * id = NULL);
+    MsgType GetType() const;
+
+    const BYTE * GetTransactionID() const;
 
     const PSTUNMessageHeader * operator->() const { return (PSTUNMessageHeader *)theArray; }
 
-    PSTUNAttribute * GetFirstAttribute();
+    PSTUNAttribute * GetFirstAttribute() const;
 
+    bool Validate();
     bool Validate(const PSTUNMessage & request);
 
     void AddAttribute(const PSTUNAttribute & attribute);
     void SetAttribute(const PSTUNAttribute & attribute);
-    PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type);
+    const PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type) const;
 
     bool Read(PUDPSocket & socket);
     bool Write(PUDPSocket & socket) const;
     bool Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries);
+
+    bool IsRFC5389() const { return m_isRFC5389; }
+
+    const PIPSocketAddressAndPort GetSourceAddressAndPort() const { return m_sourceAddressAndPort; }
+
+  protected:
+    PIPSocketAddressAndPort m_sourceAddressAndPort;
+    bool m_isRFC5389;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
