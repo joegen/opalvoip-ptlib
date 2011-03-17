@@ -74,10 +74,8 @@ void StunServer::Main()
       cerr << "error: invalid message received" << endl;
     else {
       PSTUNMessage response;
-      if (server.Process(response, message, receivedInterface, NULL)) {
-        cout << hex << response << endl;
+      if (server.Process(response, message, receivedInterface, NULL))
         server.Write(response, message.GetSourceAddressAndPort(), receivedInterface);
-      }
     }
   }
 }
