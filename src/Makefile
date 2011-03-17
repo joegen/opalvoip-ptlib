@@ -239,6 +239,7 @@ endif
 
 ifdef HAS_STUN
 SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
+	   $(COMPONENT_SRC_DIR)/pstunsrvr.cxx \
            $(COMPONENT_SRC_DIR)/pnat.cxx
 
 $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
