@@ -281,10 +281,6 @@
 		</Configuration>
 	</Configurations>
 	<References>
-		<ProjectReference
-			ReferencedProjectIdentifier="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
-			RelativePathToProject=".\src\ptlib\msos\PTLib_2008.vcproj"
-		/>
 	</References>
 	<Files>
 		<Filter
