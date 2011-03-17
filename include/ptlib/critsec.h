@@ -166,6 +166,9 @@ class PAtomicInteger
     __inline operator IntegerType() const { return m_value; }
 
     /// Assign a value to the atomic integer
+    __inline PAtomicInteger & operator=(IntegerType i) { SetValue(i); return *this; }
+
+    /// Assign a value to the atomic integer
     __inline PAtomicInteger & operator=(const PAtomicInteger & ref) { SetValue(ref); return *this; }
 
     /// Set the value of the atomic integer
@@ -185,6 +188,10 @@ class PAtomicInteger
     /// Test if atomic integer has a non-zero value.
     __inline bool operator!() const { return m_value != 0; }
 
+    friend __inline ostream & operator<<(ostream & strm, const PAtomicInteger & i)
+    {
+      return strm << i.m_value;
+    }
 
     /**
       * atomically pre-increment the integer value
