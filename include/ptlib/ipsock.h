@@ -756,6 +756,9 @@ class PIPSocketAddressAndPort
 
     bool IsValid() const { return m_address.IsValid() && m_port != 0; }
 
+    bool operator == (const PIPSocketAddressAndPort & obj) const
+    { return (m_address == obj.m_address) && (m_port == obj.m_port); }
+
     friend ostream & operator<<(ostream & strm, const PIPSocketAddressAndPort & ap)
     {
       return strm << ap.m_address << ap.m_separator << ap.m_port;
