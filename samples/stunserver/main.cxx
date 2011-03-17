@@ -62,7 +62,24 @@ void StunServer::Main()
     PError << "error: cannot create STUN server on port " << (int)port << endl;
     return;
   }
-}
 
+  while (server.IsOpen()) {
+    PSTUNMessage message;
+    PIPSocketAddressAndPort receivedInterface;
+    if (!server.Read(message, receivedInterface)) {
+      cerr << "error: read failed" << endl;
+      break;
+    }
+    else if (!message.Validate())
+      cerr << "error: invalid message received" << endl;
+    else {
+      PSTUNMessage response;
+      if (server.Process(response, message, receivedInterface, NULL)) {
+        cout << hex << response << endl;
+        server.Write(response, message.GetSourceAddressAndPort(), receivedInterface);
+      }
+    }
+  }
+}
 
 // End of File ///////////////////////////////////////////////////////////////
