@@ -43,6 +43,8 @@
     virtual PBoolean Close();
 
   protected:
+    virtual HANDLE GetAsyncReadHandle() const;
+    virtual HANDLE GetAsyncWriteHandle() const;
     PBoolean ConvertOSError(int status, ErrorGroup group = LastGeneralError);
     static PBoolean ConvertOSError(int error, Errors & lastError, int & osError);
 

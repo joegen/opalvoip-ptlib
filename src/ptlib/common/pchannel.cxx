@@ -291,37 +291,11 @@ PBoolean PChannel::WriteString(const PString & str)
 }
 
 
-PBoolean PChannel::ReadAsync(void * buf, PINDEX len)
-{
-  PBoolean retVal = Read(buf, len);
-  OnReadComplete(buf, lastReadCount);
-  return retVal;
-}
-
-
-void PChannel::OnReadComplete(void *, PINDEX)
-{
-}
-
-
 PBoolean PChannel::WriteChar(int c)
 {
   PAssert(c >= 0 && c < 256, PInvalidParameter);
   char buf = (char)c;
   return Write(&buf, 1);
-}
-
-
-PBoolean PChannel::WriteAsync(const void * buf, PINDEX len)
-{
-  PBoolean retVal = Write(buf, len);
-  OnWriteComplete(buf, lastWriteCount);
-  return retVal;
-}
-
-
-void PChannel::OnWriteComplete(const void *, PINDEX)
-{
 }
 
 
@@ -566,6 +540,48 @@ PBoolean PChannel::SetErrorValues(Errors errorCode, int errorNum, ErrorGroup gro
   lastErrorNumber[NumErrorGroups] = lastErrorNumber[group] = errorNum;
   return errorCode == NoError;
 }
+
+
+PChannel::AsyncContext::AsyncContext(void * buf, PINDEX len, const AsyncNotifier & notifier)
+  : m_buffer(buf)
+  , m_length(len)
+  , m_notifier(notifier)
+  , m_errorCode(NoError)
+  , m_errorNumber(0)
+  , m_channel(NULL)
+  , m_onComplete(NULL)
+{
+  memset(this, 0, sizeof(AsyncContextBase));
+}
+
+
+void PChannel::AsyncContext::OnIOComplete(PINDEX length, int errorNumber)
+{
+  PTRACE(6, "Async\tOnIOComplete: len=" << length << ", error=" << errorNumber);
+
+  m_length = length;
+  m_errorNumber = errorNumber;
+  PChannel::ConvertOSError(-3, m_errorCode, m_errorNumber);
+
+  PChannel * channel = m_channel;
+  m_channel = NULL;
+  (channel->*m_onComplete)(*this);
+}
+
+
+void PChannel::OnReadComplete(AsyncContext & context)
+{
+  if (!context.m_notifier.IsNULL())
+    context.m_notifier(*this, context);
+}
+
+
+void PChannel::OnWriteComplete(AsyncContext & context)
+{
+  if (!context.m_notifier.IsNULL())
+    context.m_notifier(*this, context);
+}
+
 
 #ifndef P_HAS_RECVMSG
 

@@ -302,10 +302,6 @@ PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
   return baseChannel != NULL && baseChannel->Write(buf, len);
 }
 
-PBoolean PSoundChannel::Write(const void * buf, PINDEX len, const void * /*mark*/)
-{
-  return Write(buf, len);
-}
 
 PINDEX PSoundChannel::GetLastWriteCount() const
 {
