@@ -213,6 +213,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Async Test", "samples\async
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunserver", "samples\stunserver\stunserver_2005.vcproj", "{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -975,6 +981,24 @@ Global
 		{A7495B28-2CC6-4735-8362-548DCD1C6F9B}.Release|Windows Mobile 5.0 Smartphone SDK (ARMV4I).ActiveCfg = Release|Win32
 		{A7495B28-2CC6-4735-8362-548DCD1C6F9B}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Win32
 		{A7495B28-2CC6-4735-8362-548DCD1C6F9B}.Release|Windows Mobile 6 Standard SDK (ARMV4I).ActiveCfg = Release|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Debug|Win32.Build.0 = Debug|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I).ActiveCfg = Debug|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Debug|Windows Mobile 5.0 Smartphone SDK (ARMV4I).ActiveCfg = Debug|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Debug|Windows Mobile 6 Standard SDK (ARMV4I).ActiveCfg = Debug|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.No Trace|Win32.Build.0 = No Trace|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I).ActiveCfg = No Trace|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.No Trace|Windows Mobile 5.0 Smartphone SDK (ARMV4I).ActiveCfg = No Trace|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.No Trace|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = No Trace|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.No Trace|Windows Mobile 6 Standard SDK (ARMV4I).ActiveCfg = No Trace|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Release|Win32.ActiveCfg = Release|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Release|Win32.Build.0 = Release|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I).ActiveCfg = Release|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Release|Windows Mobile 5.0 Smartphone SDK (ARMV4I).ActiveCfg = Release|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Win32
+		{DC07CA7F-7FB6-4231-BC5C-537F6FB98285}.Release|Windows Mobile 6 Standard SDK (ARMV4I).ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
