@@ -252,6 +252,9 @@ class PWin32Overlapped : public OVERLAPPED
 };
 
 
+bool PWaitForSingleObject(HANDLE handle, DWORD timeout);
+
+
 enum { PWIN32ErrorFlag = 0x40000000 };
 
 class PString;
