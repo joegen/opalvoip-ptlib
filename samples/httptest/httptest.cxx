@@ -105,6 +105,8 @@ void HTTPConnection::Work()
 {
   PTRACE(3, "HTTPTest\tStarted work on " << m_socket.GetPeerAddress());
 
+#if 1
+
   PHTTPServer httpServer(m_httpNameSpace);
   if (!httpServer.Open(m_socket))
     return;
@@ -114,6 +116,16 @@ void HTTPConnection::Work()
     ++count;
 
   PTRACE(3, "HTTPTest\tEnded work on " << m_socket.GetPeerAddress() << ", " << count << " transactions.");
+
+#else
+
+  char buffer[1000];
+  if (!m_socket.Read(buffer, sizeof(buffer)))
+    cerr << "Error in read: " << m_socket.GetErrorText(PChannel::LastReadError) << endl;
+  else if (!m_socket.WriteString("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n"))
+    cerr << "Error in write: " << m_socket.GetErrorText(PChannel::LastWriteError) << endl;
+
+#endif
 }
 
 
