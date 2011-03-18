@@ -130,6 +130,9 @@
     <ClCompile Include="..\..\ptclib\pstun.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ptclib\pstunsrvr.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\ptts.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>

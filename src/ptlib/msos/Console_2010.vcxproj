@@ -241,6 +241,7 @@
     <ClCompile Include="..\..\ptclib\psockbun.cxx" />
     <ClCompile Include="..\..\ptclib\pssl.cxx" />
     <ClCompile Include="..\..\ptclib\pstun.cxx" />
+    <ClCompile Include="..\..\ptclib\pstunsrvr.cxx" />
     <ClCompile Include="..\..\ptclib\ptts.cxx">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>

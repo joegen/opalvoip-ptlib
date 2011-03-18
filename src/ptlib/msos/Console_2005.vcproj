@@ -8132,6 +8132,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\pstunsrvr.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\ptts.cxx"
 					>
 					<FileConfiguration
@@ -9576,6 +9580,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pstun.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pstunsrvr.h"
 					>
 				</File>
 				<File
