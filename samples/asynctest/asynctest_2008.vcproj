@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Asynch Test"
+	ProjectGUID="{3B7FE277-599B-42CD-8AC2-F9ABE5FD08E9}"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -203,6 +204,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+			RelativePathToProject=".\src\ptlib\msos\Console_2008.vcproj"
 		/>
 	</References>
 	<Files>

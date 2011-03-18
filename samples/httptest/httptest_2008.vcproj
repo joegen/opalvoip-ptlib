@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="HTTP Test"
+	ProjectGUID="{E786623E-A6E9-46AF-A3D5-1EA99F603499}"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -203,6 +204,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+			RelativePathToProject=".\src\ptlib\msos\Console_2008.vcproj"
 		/>
 	</References>
 	<Files>
