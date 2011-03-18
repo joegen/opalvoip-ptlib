@@ -218,10 +218,89 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
   return ConvertOSError(0, LastWriteError);
 }
 
-PBoolean PChannel::Write(const void * buf, PINDEX len, const void * /*mark*/)
+
+#if defined _AIO_H
+
+static void StaticOnIOComplete(union sigval sig)
 {
-   return Write(buf,len);
+  PChannel::AsyncContext * context = (PChannel::AsyncContext *)sig.sival_ptr;
+  context->OnIOComplete(aio_return(context), aio_error(context));
 }
+
+
+void PChannel::AsyncContext::SetOffset(off_t offset)
+{
+  aio_offset = offset;
+}
+
+
+bool PChannel::AsyncContext::Initialise(PChannel * channel, CompletionFunction onComplete)
+{
+  if (m_channel != NULL)
+    return false;
+
+  m_channel = channel;
+  m_onComplete = onComplete;
+
+  aio_fildes = channel->GetHandle();
+  aio_buf    = m_buffer;
+  aio_nbytes = m_length;
+  aio_sigevent.sigev_notify = SIGEV_THREAD;
+  aio_sigevent.sigev_notify_function = StaticOnIOComplete;
+  aio_sigevent.sigev_value.sival_ptr = this;
+
+  // If doing async, need to be blocking mode, seems but there it is
+  int cmd = 0;
+  ::ioctl(aio_fildes, FIONBIO, &cmd);
+  return true;
+}
+
+
+PBoolean PChannel::ReadAsync(AsyncContext & context)
+{
+  PTRACE(6, "Async\tStarting ReadAsync");
+  return PAssert(context.Initialise(this, &PChannel::OnReadComplete),
+                 "Multiple async read with same context!") &&
+         ConvertOSError(aio_read(&context), LastReadError);
+}
+
+
+PBoolean PChannel::WriteAsync(AsyncContext & context)
+{
+  PTRACE(6, "Async\tStarting WriteAsync");
+  return PAssert(context.Initialise(this, &PChannel::OnWriteComplete),
+                 "Multiple async write with same context!") &&
+         ConvertOSError(aio_write(&context), LastWriteError);
+}
+
+
+#else // _AIO_H
+
+
+void PChannel::AsyncContext::SetOffset(off_t)
+{
+}
+
+
+bool PChannel::AsyncContext::Initialise(PChannel *, CompletionFunction)
+{
+  return false;
+}
+
+
+PBoolean PChannel::ReadAsync(AsyncContext & context)
+{
+  return false;
+}
+
+
+PBoolean PChannel::WriteAsync(AsyncContext & context)
+{
+  return false;
+}
+
+#endif // _AIO_H
+
 
 #ifdef P_HAS_RECVMSG
 

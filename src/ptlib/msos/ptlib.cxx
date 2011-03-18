@@ -249,15 +249,12 @@ PBoolean PChannel::Write(const void *, PINDEX)
   return PFalse;
 }
 
-PBoolean PChannel::Write(const void * buf, PINDEX len, const void * /*mark*/)
-{
-  return Write(buf,len);
-}
 
 PBoolean PChannel::Close()
 {
   return PFalse;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Directories

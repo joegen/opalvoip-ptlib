@@ -138,6 +138,18 @@ PSocket::~PSocket()
 }
 
 
+HANDLE PSocket::GetAsyncReadHandle() const
+{
+  return IsOpen() ? (HANDLE)os_handle : INVALID_HANDLE_VALUE;
+}
+
+
+HANDLE PSocket::GetAsyncWriteHandle() const
+{
+  return IsOpen() ? (HANDLE)os_handle : INVALID_HANDLE_VALUE;
+}
+
+
 PBoolean PSocket::Read(void * buf, PINDEX len)
 {
   flush();
@@ -452,30 +464,8 @@ PBoolean PSocket::ConvertOSError(int status, ErrorGroup group)
 
 PBoolean PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
 {
-  if (status >= 0) {
-    lastError = NoError;
-    osError = 0;
-    return PTrue;
-  }
-
-#ifdef _WIN32
   SetLastError(WSAGetLastError());
-  return PChannel::ConvertOSError(-2, lastError, osError);
-#else
-  osError = WSAGetLastError();
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-      return PTrue;
-    case WSAEWOULDBLOCK :
-      lastError = Timeout;
-      break;
-    default :
-      osError |= PWIN32ErrorFlag;
-      lastError = Miscellaneous;
-  }
-  return PFalse;
-#endif
+  return PChannel::ConvertOSError(status, lastError, osError);
 }
 
 

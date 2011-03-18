@@ -522,6 +522,89 @@ bool PFilePath::IsAbsolutePath(const PString & path)
 ///////////////////////////////////////////////////////////////////////////////
 // PChannel
 
+HANDLE PChannel::GetAsyncReadHandle() const
+{
+  return INVALID_HANDLE_VALUE;
+}
+
+
+HANDLE PChannel::GetAsyncWriteHandle() const
+{
+  return INVALID_HANDLE_VALUE;
+}
+
+
+static VOID CALLBACK StaticOnIOComplete(DWORD dwErrorCode,
+                                        DWORD dwNumberOfBytesTransfered,
+                                        LPOVERLAPPED lpOverlapped)
+{
+  ((PChannel::AsyncContext *)lpOverlapped)->OnIOComplete(dwNumberOfBytesTransfered, dwErrorCode);
+}
+
+
+void PChannel::AsyncContext::SetOffset(off_t offset)
+{
+  Offset = (DWORD)offset;
+#if P_64BIT
+  OffsetHigh = (DWORD)(offset>>32);
+#endif
+}
+
+
+bool PChannel::AsyncContext::Initialise(PChannel * channel, CompletionFunction onComplete)
+{
+  if (m_channel != NULL)
+    return false;
+
+  m_channel = channel;
+  m_onComplete = onComplete;
+  return true;
+}
+
+
+bool PChannel::ReadAsync(AsyncContext & context)
+{
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
+  HANDLE handle = GetAsyncReadHandle();
+  if (handle == INVALID_HANDLE_VALUE)
+    return SetErrorValues(ProtocolFailure, EFAULT);
+
+  if (!PAssert(context.Initialise(this, &PChannel::OnReadComplete),
+               "Multiple async read with same context!"))
+    return SetErrorValues(ProtocolFailure, EINVAL);
+
+  return ConvertOSError(ReadFileEx(handle,
+                                   context.m_buffer,
+                                   context.m_length,
+                                   &context,
+                                   StaticOnIOComplete) && GetLastError() == 0 ? 0 : -2, LastReadError);
+
+}
+
+
+bool PChannel::WriteAsync(AsyncContext & context)
+{
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
+  HANDLE handle = GetAsyncWriteHandle();
+  if (handle == INVALID_HANDLE_VALUE)
+    return SetErrorValues(ProtocolFailure, EFAULT);
+
+  if (!PAssert(context.Initialise(this, &PChannel::OnWriteComplete),
+               "Multiple async write with same context!"))
+    return SetErrorValues(ProtocolFailure, EINVAL);
+
+  return ConvertOSError(WriteFileEx(handle,
+                                    context.m_buffer,
+                                    context.m_length,
+                                    &context,
+                                    StaticOnIOComplete) ? 0 : -2, LastWriteError);
+}
+
+
 PString PChannel::GetErrorText(Errors lastError, int osError)
 {
   if (osError == 0) {
@@ -580,48 +663,54 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
 
 PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 {
-  if (status >= 0) {
-    lastError = NoError;
-    osError = 0;
-    return PTrue;
-  }
+  switch (status) {
+    case -1 :
+      osError = errno;
+      break;
 
-  if (status != -2)
-    osError = errno;
-  else {
-    osError = ::GetLastError();
-    switch (osError) {
-      case ERROR_INVALID_HANDLE :
-      case WSAEBADF :
-      case WSAENOTSOCK :
-        osError = EBADF;
-        break;
-      case ERROR_INVALID_PARAMETER :
-      case WSAEINVAL :
-        osError = EINVAL;
-        break;
-      case ERROR_ACCESS_DENIED :
-      case WSAEACCES :
-        osError = EACCES;
-        break;
-      case ERROR_NOT_ENOUGH_MEMORY :
-        osError = ENOMEM;
-        break;
-      case WSAEINTR :
-        osError = EINTR;
-        break;
-      case WSAEMSGSIZE :
-        osError |= PWIN32ErrorFlag;
-        lastError = BufferTooSmall;
-        return PFalse;
-      case WSAEWOULDBLOCK :
-      case WSAETIMEDOUT :
-        osError |= PWIN32ErrorFlag;
-        lastError = Timeout;
-        return PFalse;
-      default :
-        osError |= PWIN32ErrorFlag;
-    }
+    case -2 :
+      osError = ::GetLastError();
+      switch (osError) {
+        case ERROR_INVALID_HANDLE :
+        case WSAEBADF :
+        case WSAENOTSOCK :
+          osError = EBADF;
+          break;
+        case ERROR_INVALID_PARAMETER :
+        case WSAEINVAL :
+          osError = EINVAL;
+          break;
+        case ERROR_ACCESS_DENIED :
+        case WSAEACCES :
+          osError = EACCES;
+          break;
+        case ERROR_NOT_ENOUGH_MEMORY :
+          osError = ENOMEM;
+          break;
+        case WSAEINTR :
+          osError = EINTR;
+          break;
+        case WSAEMSGSIZE :
+          osError |= PWIN32ErrorFlag;
+          lastError = BufferTooSmall;
+          return PFalse;
+        case WSAEWOULDBLOCK :
+        case WSAETIMEDOUT :
+          osError |= PWIN32ErrorFlag;
+          lastError = Timeout;
+          return PFalse;
+        default :
+          osError |= PWIN32ErrorFlag;
+      }
+      break;
+
+    case -3 :
+      break;
+
+    default :
+      lastError = NoError;
+      osError = 0;
+      return true;
   }
 
   switch (osError) {
@@ -905,31 +994,43 @@ void PThread::WaitForTermination() const
 }
 
 
+bool PWaitForSingleObject(HANDLE handle, DWORD timeout)
+{
+  int retry = 0;
+  while (retry < 10) {
+    DWORD tick = ::GetTickCount();
+    switch (WaitForSingleObjectEx(handle, timeout, TRUE)) {
+      case WAIT_OBJECT_0 :
+        return true;
+
+      case WAIT_TIMEOUT :
+        return false;
+
+      case WAIT_IO_COMPLETION :
+        timeout -= (::GetTickCount() - tick);
+        break;
+
+      default :
+        if (::GetLastError() != ERROR_INVALID_HANDLE) {
+          PAssertAlways(POperatingSystemError);
+          return true;
+        }
+        ++retry;
+    }
+  }
+
+  return false;
+}
+
+
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if ((this == PThread::Current()) || threadHandle == NULL) {
     PTRACE(3, "PTLib\tWaitForTermination short circuited");
-    return PTrue;
+    return true;
   }
 
-  DWORD result;
-  PINDEX retries = 10;
-  while ((result = WaitForSingleObject(threadHandle, maxWait.GetInterval())) != WAIT_TIMEOUT) {
-    if (result == WAIT_OBJECT_0)
-      return PTrue;
-
-    if (::GetLastError() != ERROR_INVALID_HANDLE) {
-      PAssertAlways(POperatingSystemError);
-      return PTrue;
-    }
-
-    if (retries == 0)
-      return PTrue;
-
-    retries--;
-  }
-
-  return PFalse;
+  return PWaitForSingleObject(threadHandle, maxWait.GetInterval());
 }
 
 
@@ -1016,6 +1117,12 @@ PThread::Priority PThread::GetPriority() const
   }
   PAssertAlways(POperatingSystemError);
   return LowestPriority;
+}
+
+
+void PThread::Sleep(const PTimeInterval & delay)
+{
+  ::SleepEx(delay.GetInterval(), TRUE);
 }
 
 
@@ -1467,15 +1574,13 @@ PSemaphore::~PSemaphore()
 
 void PSemaphore::Wait()
 {
-  PAssertOS(WaitForSingleObject(handle, INFINITE) != WAIT_FAILED);
+  PWaitForSingleObject(handle, INFINITE);
 }
 
 
 PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 {
-  DWORD result = WaitForSingleObject(handle, timeout.GetInterval());
-  PAssertOS(result != WAIT_FAILED);
-  return result != WAIT_TIMEOUT;
+  return PWaitForSingleObject(handle, timeout.GetInterval());
 }
 
 
