@@ -196,6 +196,104 @@ class PChannel : public PObject, public iostream {
     virtual PChannel * GetBaseWriteChannel() const;
   //@}
 
+  /**@name Error functions */
+  //@{
+    /** Normalised error codes.
+        The error result of the last file I/O operation in this object.
+     */
+    enum Errors {
+      NoError,
+      /// Open fail due to device or file not found
+      NotFound,       
+      /// Open fail due to file already existing
+      FileExists,     
+      /// Write fail due to disk full
+      DiskFull,       
+      /// Operation fail due to insufficient privilege
+      AccessDenied,   
+      /// Open fail due to device already open for exclusive use
+      DeviceInUse,    
+      /// Operation fail due to bad parameters
+      BadParameter,   
+      /// Operation fail due to insufficient memory
+      NoMemory,       
+      /// Operation fail due to channel not being open yet
+      NotOpen,        
+      /// Operation failed due to a timeout
+      Timeout,        
+      /// Operation was interrupted
+      Interrupted,    
+      /// Operations buffer was too small for data.
+      BufferTooSmall, 
+      /// Miscellaneous error.
+      Miscellaneous,
+      /// High level protocol failure
+      ProtocolFailure,
+      NumNormalisedErrors
+    };
+
+    /**Error groups.
+       To aid in multithreaded applications where reading and writing may be
+       happening simultaneously, read and write errors are separated from
+       other errors.
+      */
+    enum ErrorGroup {
+      LastReadError,      ///< Error during Read() operation
+      LastWriteError,     ///< Error during Write() operation
+      LastGeneralError,   ///< Error during other operation, eg Open()
+      NumErrorGroups
+    };
+
+    /** Get normalised error code.
+      Return the error result of the last file I/O operation in this object.
+      @return Normalised error code.
+      */
+    Errors GetErrorCode(
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
+    ) const;
+
+    /** Get OS errro code.
+      Return the operating system error number of the last file I/O
+      operation in this object.
+      @return Operating System error code.
+      */
+    int GetErrorNumber(
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
+    ) const;
+
+    /** Get error message description.
+        Return a string indicating the error message that may be displayed to
+       the user. The error for the last I/O operation in this object is used.
+       @return Operating System error description string.
+     */
+    virtual PString GetErrorText(
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
+    ) const;
+
+    /** Get error message description.
+       Return a string indicating the error message that may be displayed to
+       the user. The <code>osError</code> parameter is used unless zero, in which case
+       the <code>lastError</code> parameter is used.
+       @return Operating System error description string.
+     */
+    static PString GetErrorText(
+      Errors lastError,   ///< Error code to translate.
+      int osError = 0     ///< OS error number to translate.
+    );
+
+    /** Convert an operating system error into platform independent error.
+       This will set the lastError and osError member variables for access by
+       GetErrorCode() and GetErrorNumber().
+       
+       @return true if there was no error.
+     */
+    static PBoolean ConvertOSError(
+      int libcReturnValue,
+      Errors & lastError,
+      int & osError
+    );
+  //@}
+
   /**@name Reading functions */
   //@{
     /** Set the timeout for read operations. This may be zero for immediate
@@ -282,31 +380,6 @@ class PChannel : public PObject, public iostream {
     PString ReadString(
       PINDEX len  ///< Length of string data to read.
     );
-
-    /** Begin an asynchronous read from channel. The read timeout is used as in
-       other read operations, in this case calling the OnReadComplete()
-       function.
-
-       Note that if the channel is not capable of asynchronous read then this
-       will do a sychronous read is in the Read() function with the addition
-       of calling the OnReadComplete() before returning.
-
-       @return
-       true if the read was sucessfully queued.
-     */
-    virtual PBoolean ReadAsync(
-      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
-      PINDEX len    ///< Maximum number of bytes to read into the buffer.
-    );
-
-    /** User callback function for when a <code>ReadAsync()</code> call has completed or
-       timed out. The original pointer to the buffer passed in ReadAsync() is
-       passed to the function.
-     */
-    virtual void OnReadComplete(
-      void * buf, ///< Pointer to a block of memory that received the read bytes.
-      PINDEX len  ///< Actual number of bytes to read into the buffer.
-    );
   //@}
 
   /**@name Writing functions */
@@ -347,24 +420,6 @@ class PChannel : public PObject, public iostream {
       PINDEX len        ///< Number of bytes to write.
     );
 
-    /** Low level write to the channel with marker. 
-	   This function will block until the requested number of characters 
-	   are written or the write timeout is reached. The GetLastWriteCount() 
-	   function returns the actual number of bytes written. By default it 
-	   calls the Write(void *,len) function
-
-       The GetErrorCode() function should be consulted after Write() returns
-       PFalse to determine what caused the failure.
-
-       @return
-       PTrue if at least len bytes were written to the channel.
-     */
-    virtual PBoolean Write(
-      const void * buf, ///< Pointer to a block of memory to write.
-      PINDEX len,        ///< Number of bytes to write.
-	  const void * mark   ///< Unique Marker to identify write
-    );
-
     /** Get the number of bytes written by the last Write() call.
        
        Note that the number of bytes written may often be less, or even more,
@@ -395,30 +450,116 @@ class PChannel : public PObject, public iostream {
        @return
        true if the character written.
      */
-    PBoolean WriteString(const PString & str);
+    PBoolean WriteString(
+      const PString & str   ///< String to write
+    );
+  //@}
+
+  /**@name Asynchronous I/O functions */
+  //@{
+    class AsyncContext;
+    typedef PNotifierTemplate<PChannel::AsyncContext &> AsyncNotifier;
+    #define PDECLARE_AsyncNotifier(cls, fn) PDECLARE_NOTIFIER2(PChannel, cls, fn, PChannel::AsyncContext &)
+    #define PCREATE_AsyncNotifier(fn) PCREATE_NOTIFIER2(fn, PChannel::AsyncContext &)
+
+#ifdef _MSC_VER
+  #pragma pack(push)
+  #if P_64BIT
+    #pragma pack(8)
+  #else
+    #pragma pack(4)
+  #endif
+#endif
+    /** Parameters for asynchronous I/O operation.
+      */
+#ifdef _WIN32
+    typedef OVERLAPPED AsyncContextBase;
+#elif defined _AIO_H
+    typedef struct aiocb AsyncContextBase;
+#else
+    class AsyncContextBase { off_t m_offset; };
+#endif
+    class AsyncContext : public AsyncContextBase
+    {
+      public:
+        AsyncContext(
+          void * buf = NULL,
+          PINDEX len = 0,
+          const AsyncNotifier & notifier = AsyncNotifier()
+        );
+
+        /** Set the offset to do the read/write operation.
+          */
+        void SetOffset(off_t offset);
+
+        void        * m_buffer;       ///< Pointer to a block of memory to receive the read bytes.
+        PINDEX        m_length;       ///< Maximum number of bytes to read into the buffer.
+        AsyncNotifier m_notifier;     ///< Notification function for when asynchronous operation complete.
+
+        Errors        m_errorCode;    ///< Error returned after operation completed.
+        int           m_errorNumber;  ///< OS error returned after operation completed.
+
+        // Internal stuff
+        PChannel * m_channel;
+        typedef void (PChannel::*CompletionFunction)(AsyncContext &);
+        CompletionFunction m_onComplete;
+        bool Initialise(PChannel * channel, CompletionFunction onComplete);
+        void OnIOComplete(PINDEX length, int errorNumber);
+    };
+#ifdef _MSC_VER
+  #pragma pack(pop)
+#endif
+
+    /** Begin an asynchronous read from channel. The read timeout is used as in
+       other read operations, in this case calling the OnReadComplete()
+       function.
+
+       If the channel is not capable of asynchronous read then returns false.
+
+       Note: the life time of the context and the m_buffer within that context
+       must exceed the duration of the asynchronous operation. After
+       OnReadComplete has been called, these objects may be destroyed.
+
+       @return
+       true if the read was sucessfully queued.
+     */
+    virtual bool ReadAsync(
+      AsyncContext & context ///< Context for asynchronous operation
+    );
+
+    /** User callback function for when a <code>ReadAsync()</code> call has completed or
+       timed out.
+
+       The default behaviour calls the m_callback field of context.
+     */
+    virtual void OnReadComplete(
+      AsyncContext & context ///< Context for asynchronous operation
+    );
 
     /** Begin an asynchronous write from channel. The write timeout is used as
        in other write operations, in this case calling the OnWriteComplete()
-       function. Note that if the channel is not capable of asynchronous write
-       then this will do a sychronous write as in the Write() function with
-       the addition of calling the OnWriteComplete() before returning.
+       function.
+
+       If the channel is not capable of asynchronous write then returns false.
+
+       Note: the life time of the context and the m_buffer within that context
+       must exceed the duration of the asynchronous operation. After
+       OnWriteComplete has been called, these objects may be destroyed.
 
        @return
        true of the write operation was succesfully queued.
      */
-    virtual PBoolean WriteAsync(
-      const void * buf, ///< Pointer to a block of memory to write.
-      PINDEX len        ///< Number of bytes to write.
+    virtual bool WriteAsync(
+      AsyncContext & context ///< Context for asynchronous operation
     );
 
     /** User callback function for when a WriteAsync() call has completed or
-       timed out. The original pointer to the buffer passed in WriteAsync() is
-       passed in here and the len parameter is the actual number of characters
-       written.
+       timed out.
+
+       The default behaviour calls the m_callback field of context.
      */
     virtual void OnWriteComplete(
-      const void * buf, ///< Pointer to a block of memory to write.
-      PINDEX len        ///< Number of bytes to write.
+      AsyncContext & context ///< Context for asynchronous operation
     );
   //@}
 
@@ -520,104 +661,6 @@ class PChannel : public PObject, public iostream {
      */
     void AbortCommandString();
   //@}
-
-  /**@name Error functions */
-  //@{
-    /** Normalised error codes.
-        The error result of the last file I/O operation in this object.
-     */
-    enum Errors {
-      NoError,
-      /// Open fail due to device or file not found
-      NotFound,       
-      /// Open fail due to file already existing
-      FileExists,     
-      /// Write fail due to disk full
-      DiskFull,       
-      /// Operation fail due to insufficient privilege
-      AccessDenied,   
-      /// Open fail due to device already open for exclusive use
-      DeviceInUse,    
-      /// Operation fail due to bad parameters
-      BadParameter,   
-      /// Operation fail due to insufficient memory
-      NoMemory,       
-      /// Operation fail due to channel not being open yet
-      NotOpen,        
-      /// Operation failed due to a timeout
-      Timeout,        
-      /// Operation was interrupted
-      Interrupted,    
-      /// Operations buffer was too small for data.
-      BufferTooSmall, 
-      /// Miscellaneous error.
-      Miscellaneous,
-      /// High level protocol failure
-      ProtocolFailure,
-      NumNormalisedErrors
-    };
-
-    /**Error groups.
-       To aid in multithreaded applications where reading and writing may be
-       happening simultaneously, read and write errors are separated from
-       other errors.
-      */
-    enum ErrorGroup {
-      LastReadError,      ///< Error during Read() operation
-      LastWriteError,     ///< Error during Write() operation
-      LastGeneralError,   ///< Error during other operation, eg Open()
-      NumErrorGroups
-    };
-
-    /** Get normalised error code.
-      Return the error result of the last file I/O operation in this object.
-      @return Normalised error code.
-      */
-    Errors GetErrorCode(
-      ErrorGroup group = NumErrorGroups   ///< Error group to get
-    ) const;
-
-    /** Get OS errro code.
-      Return the operating system error number of the last file I/O
-      operation in this object.
-      @return Operating System error code.
-      */
-    int GetErrorNumber(
-      ErrorGroup group = NumErrorGroups   ///< Error group to get
-    ) const;
-
-    /** Get error message description.
-        Return a string indicating the error message that may be displayed to
-       the user. The error for the last I/O operation in this object is used.
-       @return Operating System error description string.
-     */
-    virtual PString GetErrorText(
-      ErrorGroup group = NumErrorGroups   ///< Error group to get
-    ) const;
-
-    /** Get error message description.
-       Return a string indicating the error message that may be displayed to
-       the user. The <code>osError</code> parameter is used unless zero, in which case
-       the <code>lastError</code> parameter is used.
-       @return Operating System error description string.
-     */
-    static PString GetErrorText(
-      Errors lastError,   ///< Error code to translate.
-      int osError = 0     ///< OS error number to translate.
-    );
-  //@}
-
-    /** Convert an operating system error into platform independent error.
-       This will set the lastError and osError member variables for access by
-       GetErrorCode() and GetErrorNumber().
-       
-       @return true if there was no error.
-     */
-    static PBoolean ConvertOSError(
-      int libcReturnValue,
-      Errors & lastError,
-      int & osError
-    );
 
   /**@name Scattered read/write functions */
   //@{

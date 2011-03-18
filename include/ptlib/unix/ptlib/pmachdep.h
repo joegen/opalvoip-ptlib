@@ -48,6 +48,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
+#include <aio.h>
 
 #define HAS_IFREQ
 

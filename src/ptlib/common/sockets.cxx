@@ -2415,6 +2415,9 @@ PBoolean PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 {
   lastReadCount = 0;
 
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
 #if P_HAS_IPV6
 
   Psockaddr sa;
@@ -2441,6 +2444,9 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
                                 const Address & addr, WORD port)
 {
   lastWriteCount = 0;
+
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   PBoolean broadcast = addr.IsAny() || addr.IsBroadcast();
   if (broadcast) {
