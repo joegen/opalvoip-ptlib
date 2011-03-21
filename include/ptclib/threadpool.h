@@ -418,7 +418,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         unsigned GetWorkSize() const
         {
-          return m_queue.size();
+          return (unsigned)m_queue.size();
         }
 
         void Main()
