@@ -89,8 +89,12 @@ void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
   SetMinSize(sizeof(PSTUNMessageHeader));
   PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
   hdr->msgType = (WORD)newType;
-  for (PINDEX i = 0; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
-    hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
+
+  // add magic number for RFC 5389 
+  *(PUInt32b *)(&(hdr->transactionId)) = RFC5389_MAGIC_COOKIE;
+
+  for (PINDEX i = 4; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
+     hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
 }
 
 PSTUNMessage::MsgType PSTUNMessage::GetType() const
@@ -120,7 +124,7 @@ PSTUNAttribute * PSTUNMessage::GetFirstAttribute() const
   PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
   PSTUNAttribute * ptr  = attr;
 
-  if ((CalcPaddedAttributeLength(attr->length) > GetSize()) || (attr->type >= PSTUNAttribute::MaxValidCode))
+  if ((CalcPaddedAttributeLength(attr->length) > GetSize()))
     return NULL;
 
   while (ptr && 
@@ -271,16 +275,47 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
 
 ///////////////////////////////////////////////////////////////////////
 
+WORD PSTUNAddressAttribute::GetPort() const
+{ 
+  if (type == XOR_MAPPED_ADDRESS)
+    return port ^ (RFC5389_MAGIC_COOKIE >> 16);
+  else
+    return port; 
+}
+
+PIPSocket::Address PSTUNAddressAttribute::GetIP() const
+{ 
+  if (type == XOR_MAPPED_ADDRESS)
+    return PIPSocket::Address(
+      (BYTE)(ip[0] ^ (RFC5389_MAGIC_COOKIE >> 24)),
+      (BYTE)(ip[1] ^ (RFC5389_MAGIC_COOKIE >> 16)),
+      (BYTE)(ip[2] ^ (RFC5389_MAGIC_COOKIE >> 8)),
+      (BYTE)(ip[3] ^ RFC5389_MAGIC_COOKIE)
+    );
+  else
+    return PIPSocket::Address(4, ip); 
+}
+
 void PSTUNAddressAttribute::SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort)
 {
   pad    = 0;
   family = 1;
-  port   = addrAndPort.GetPort();
-  PIPSocket::Address addr = addrAndPort.GetAddress();
-  ip[0] = addr.Byte1();
-  ip[1] = addr.Byte2();
-  ip[2] = addr.Byte3();
-  ip[3] = addr.Byte4();
+  if (type == XOR_MAPPED_ADDRESS) {
+    port   = addrAndPort.GetPort() ^ (RFC5389_MAGIC_COOKIE >> 16);
+    PIPSocket::Address addr = addrAndPort.GetAddress();
+    ip[0] = (BYTE)(addr.Byte1() ^ (RFC5389_MAGIC_COOKIE >> 24));
+    ip[1] = (BYTE)(addr.Byte2() ^ (RFC5389_MAGIC_COOKIE >> 16));
+    ip[2] = (BYTE)(addr.Byte3() ^ (RFC5389_MAGIC_COOKIE >> 8));
+    ip[3] = (BYTE)(addr.Byte4() ^ RFC5389_MAGIC_COOKIE);
+  }
+  else {
+    port   = addrAndPort.GetPort();
+    PIPSocket::Address addr = addrAndPort.GetAddress();
+    ip[0] = addr.Byte1();
+    ip[1] = addr.Byte2();
+    ip[2] = addr.Byte3();
+    ip[3] = addr.Byte4();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -507,14 +542,17 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 
   replySocket->GetLocalAddress(interfaceAddress);
 
-  PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+  PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
-    PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
-    return natType = UnknownNat; // Protocol error
+    mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+    if (mappedAddress == NULL) {
+      PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << *this);
+      return natType = UnknownNat; // Protocol error
+    }
   }
 
   PIPSocket::Address mappedAddressI = mappedAddress->GetIP();
-  WORD mappedPortI = mappedAddress->port;
+  WORD mappedPortI = mappedAddress->GetPort();
   bool notNAT = replySocket->GetPort() == mappedPortI && PIPSocket::IsLocalHost(mappedAddressI);
 
   /* Test II - the client sends a Binding Request with both the "change IP"
@@ -532,13 +570,13 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   if (testII)
     return natType = ConeNat;
 
-  PSTUNChangedAddress * changedAddress = (PSTUNChangedAddress *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
+  PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
   if (changedAddress == NULL)
     return natType = UnknownNat; // Protocol error
 
   // Send test I to another server, to see if restricted or symmetric
   PIPSocket::Address secondaryServer = changedAddress->GetIP();
-  WORD secondaryPort = changedAddress->port;
+  WORD secondaryPort = changedAddress->GetPort();
   replySocket->SetSendAddress(secondaryServer, secondaryPort);
   PSTUNMessage requestI2(PSTUNMessage::BindingRequest);
   requestI2.AddAttribute(PSTUNChangeRequest(false, false));
@@ -549,13 +587,16 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
     return natType = PartialBlockedNat;
   }
 
-  mappedAddress = (PSTUNMappedAddress *)responseI2.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+  mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
-    PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
-    return UnknownNat; // Protocol error
+    mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+    if (mappedAddress == NULL) {
+      PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << *this);
+      return UnknownNat; // Protocol error
+    }
   }
 
-  if (mappedAddress->port != mappedPortI || mappedAddress->GetIP() != mappedAddressI)
+  if (mappedAddress->GetPort() != mappedPortI || mappedAddress->GetIP() != mappedAddressI)
     return natType = SymmetricNat;
 
   replySocket->SetSendAddress(cachedServerAddress, serverPort);
@@ -614,13 +655,14 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
     return false;
   }
 
-  PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)response.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
-  if (mappedAddress == NULL)
-  {
-    PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
-    return false;
+  PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)response.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
+  if (mappedAddress == NULL) {
+    mappedAddress = (PSTUNAddressAttribute *)response.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+    if (mappedAddress == NULL) {
+      PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
+      return false;
+    }
   }
-
   
   externalAddress = cachedExternalAddress = mappedAddress->GetIP();
   timeAddressObtained = PTime();
@@ -695,19 +737,20 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
 
     if (response.Poll(*stunSocket, request, pollRetries))
     {
-      PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)response.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
-      if (mappedAddress != NULL)
-      {
+      PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)response.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
+      if (mappedAddress == NULL)
+        mappedAddress = (PSTUNAddressAttribute *)response.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+      if (mappedAddress != NULL) {
         stunSocket->externalIP = mappedAddress->GetIP();
         if (GetNatType(PFalse) != SymmetricNat)
-          stunSocket->port = mappedAddress->port;
+          stunSocket->port = mappedAddress->GetPort();
         stunSocket->SetSendAddress(0, 0);
         stunSocket->SetReadTimeout(PMaxTimeInterval);
         socket = stunSocket;
         return true;
       }
 
-      PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
+      PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << *this);
     }
     else
       PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
@@ -782,14 +825,16 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
   for (i = 0; i < numSocketsForPairing; i++)
   {
-    PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)response[i].FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
-    if (mappedAddress == NULL)
-    {
-      PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
-      return false;
+    PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)response[i].FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
+    if (mappedAddress == NULL) {
+      mappedAddress = (PSTUNAddressAttribute *)response[i].FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+      if (mappedAddress == NULL) {
+        PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << *this);
+        return false;
+      }
     }
     if (GetNatType(PFalse) != SymmetricNat)
-      stunSocket[i].port = mappedAddress->port;
+      stunSocket[i].port = mappedAddress->GetPort();
     stunSocket[i].externalIP = mappedAddress->GetIP();
   }
 

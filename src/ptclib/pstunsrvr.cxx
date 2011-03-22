@@ -13,249 +13,306 @@
 
 #define new PNEW
 
-// from RFC 5389
+
 #define IS_REQUEST(msg_type)       (((msg_type) & 0x0110) == 0x0000)
 #define IS_INDICATION(msg_type)    (((msg_type) & 0x0110) == 0x0010)
 #define IS_SUCCESS_RESP(msg_type)  (((msg_type) & 0x0110) == 0x0100)
 #define IS_ERR_RESP(msg_type)      (((msg_type) & 0x0110) == 0x0110)
 
+//////////////////////////////////////////////////
+
+PSTUNServer::SocketInfo::SocketInfo()
+  : m_socket(NULL)
+  , m_alternatePortSocket(NULL)
+  , m_alternateAddressSocket(NULL)
+  , m_alternateAddressAndPortSocket(NULL)
+{
+}
+
+//////////////////////////////////////////////////
+
 PSTUNServer::PSTUNServer()
-  : m_stunSocket1(NULL)
-  , m_stunSocket2(NULL)
-  , m_autoDelete(false)
+  : m_autoDelete(false)
 {
 }
 
 bool PSTUNServer::Open(WORD port)
 {
-  return Open(port, port+1);
-}
-
-
-bool PSTUNServer::Open(WORD port1, WORD port2)
-{
   Close();
 
-  PIPSocket::Address addr1;
-  PIPSocket::Address addr2;
+  PIPSocket::Address addr;
 
   // get interfaces to bind to
   PIPSocket::InterfaceTable interfaces;
   if (!PIPSocket::GetInterfaceTable(interfaces)) {
     PTRACE(2, "PSTUNSRVR\nGetInterfaceTable failed");
+    return false;
   }
-  else {
-    PINDEX i;
 
-    // find first interface
-    for (i = 0; i < interfaces.GetSize(); i++) {
-      if (!interfaces[i].GetAddress().IsLinkLocal()
-          && !interfaces[i].GetAddress().IsLoopback()
-#ifndef _DEBUG
-          && !interfaces[i].GetAddress().IsRFC1918()
-#endif
-          ) {
-        addr1 = interfaces[i].GetAddress();
-        PTRACE(2, "PSTUNSRVR\nFound " << addr1 << " as STUN address 1");
-        break;
-      }
-    }
+  int i;
+  std::vector<PIPSocket::Address> interfaceAddresses;
 
-    // find second interface
-    for (++i;i < interfaces.GetSize(); i++) {
-      if (!interfaces[i].GetAddress().IsLinkLocal()
-          && !interfaces[i].GetAddress().IsLoopback()
+  // find interfaces
+  for (i = 0; i < interfaces.GetSize(); i++) {
+    if (!interfaces[i].GetAddress().IsLinkLocal()
+        && !interfaces[i].GetAddress().IsLoopback()
 #ifndef _DEBUG
-          && !interfaces[i].GetAddress().IsRFC1918()
+        && !interfaces[i].GetAddress().IsRFC1918()
 #endif
-          ) {
-        addr2 = interfaces[i].GetAddress();
-        PTRACE(2, "PSTUNSRVR\nFound " << addr2 << " as STUN address 2");
-        break;
-      }
+        ) {
+      interfaceAddresses.push_back(interfaces[i].GetAddress());
     }
   }
 
-  m_interfaceAddress1 = PIPSocketAddressAndPort(addr1, port1);
-  m_interfaceAddress2 = PIPSocketAddressAndPort(addr2, port2);
+  if (interfaceAddresses.size() == 0) {
+    PTRACE(2, "PSTUNSRVR\nno suitable interfaces found");
+    return false;
+  }
 
-  // if could not determine interfaces, use INADDR_ANY
-  if (!addr1.IsValid()) {
-    PTRACE(2, "PSTUNSRVR\nUsing one socket with INADDR_ANY");
-    m_stunSocket1 = new PUDPSocket(port1);
-    if (!m_stunSocket1->IsOpen() || !m_stunSocket1->Listen()) {
-      PTRACE(2, "PSTUNSRVR\nCannot open socket on INADDR_ANY on port " << (int)port1);
-      delete m_stunSocket1;
-      m_stunSocket1 = NULL;
+  // open sockets
+  size_t j;
+  for (j = 0; j < interfaceAddresses.size(); ++j) {
+    PIPSocketAddressAndPort addr(interfaceAddresses[j], port);
+    if (!CreateAndAddSocket(interfaceAddresses[j], port)) {
+      PTRACE(2, "PSTUNSRVR\nCannot open socket on " << addr);
+      Close();
       return false;
     }
-    m_stunSocket2 = NULL;
+    PTRACE(2, "PSTUNSRVR\nListening on " << addr);
   }
 
-  // open designated interfaces
-  else {
-    m_stunSocket1 = new PUDPSocket();
-    if (!m_stunSocket1->Listen(addr1, 5, port1)) {
-      PTRACE(2, "PSTUNSRVR\nCannot open socket on " << addr1 << " on port " << (int)port1);
-      delete m_stunSocket1;
-      m_stunSocket1 = NULL;
+  if (m_sockets.GetSize() == 0) {
+    PTRACE(2, "PSTUNSRVR\nUnable to open any ports" << addr);
+    return false;
+  }
+
+  // open and populate alternates
+  if (m_sockets.GetSize() > 1) {
+    SocketToSocketInfoMap::iterator r = m_socketToSocketInfoMap.begin();
+    SocketInfo & primary = r->second;
+    ++r;
+    SocketInfo & secondary = r->second;
+
+    SocketInfo * primaryAlternatePortSocketInfo = CreateAndAddSocket(primary.m_socketAddress.GetAddress(), primary.m_socketAddress.GetPort()+1);
+    if (primaryAlternatePortSocketInfo == NULL) {
+      PTRACE(2, "PSTUNSRVR\nCannot open primary alternate port socket on " << addr);
       return false;
     }
-    if (addr2.IsValid()) {
-      m_stunSocket2 = new PUDPSocket();
-      if (!m_stunSocket2->Listen(addr2, 5, port2)) {
-        PTRACE(2, "PSTUNSRVR\nCannot open socket on " << addr2 << " on port " << (int)port2);
-        delete m_stunSocket2;
-        m_stunSocket2 = NULL;
-        return false;
-      }
+    PTRACE(2, "PSTUNSRVR\nListening on " << primaryAlternatePortSocketInfo->m_socketAddress);
+
+    SocketInfo * secondaryAlternatePortSocketInfo = CreateAndAddSocket(secondary.m_socketAddress.GetAddress(), secondary.m_socketAddress.GetPort()+1);
+    if (secondaryAlternatePortSocketInfo == NULL) {
+      PTRACE(2, "PSTUNSRVR\nCannot open secondary secondary port socket on " << addr);
+      return false;
     }
+    PTRACE(2, "PSTUNSRVR\nListening on " << secondaryAlternatePortSocketInfo->m_socketAddress);
+
+    primary.m_alternateAddressAndPort         = PIPSocketAddressAndPort(secondary.m_socketAddress.GetAddress(), secondary.m_socketAddress.GetPort()+1);
+    secondary.m_alternateAddressAndPort       = PIPSocketAddressAndPort(primary.m_socketAddress.GetAddress(),   primary.m_socketAddress.GetPort()+1);
+
+    primary.m_alternatePortSocket             = primaryAlternatePortSocketInfo->m_socket;
+    primary.m_alternateAddressSocket          = secondary.m_socket;
+    primary.m_alternateAddressAndPortSocket   = secondaryAlternatePortSocketInfo->m_socket;
+
+    secondary.m_alternatePortSocket           = secondaryAlternatePortSocketInfo->m_socket;
+    secondary.m_alternateAddressSocket        = primary.m_socket;
+    secondary.m_alternateAddressAndPortSocket = primaryAlternatePortSocketInfo->m_socket;
   }
 
   m_autoDelete = true;
   return true;
 }
 
-bool PSTUNServer::Open(PUDPSocket * socket, bool autoDelete)
+PSTUNServer::SocketInfo * PSTUNServer::CreateAndAddSocket(const PIPSocket::Address & address, WORD port)
 {
-  Close();
+  PUDPSocket * sock = new PUDPSocket();
+  if (!sock->Listen(address, 5, port)) {
+    delete sock;
+    return NULL;
+  }
 
-  m_stunSocket1 = socket;
-  m_stunSocket2 = NULL;
-
-  m_autoDelete = autoDelete;
-
-  return false;
+  m_sockets.Append(sock);
+  SocketInfo info;
+  info.m_socket        = sock;
+  info.m_socketAddress = PIPSocketAddressAndPort(address, port);
+  return &m_socketToSocketInfoMap.insert(SocketToSocketInfoMap::value_type(sock, info)).first->second;
 }
 
 bool PSTUNServer::IsOpen() const 
 { 
-  return ((m_stunSocket1 != NULL) 
-          && m_stunSocket1->IsOpen())
-          && ((m_stunSocket2 == NULL) || m_stunSocket2->IsOpen()); }
-
+  return m_sockets.GetSize() > 0; 
+}
 
 bool PSTUNServer::Close()
 {
   if (m_autoDelete) {
-    delete m_stunSocket1;
-    delete m_stunSocket2;
+    PSocketList::iterator r;
+    for (r = m_sockets.begin(); r != m_sockets.end(); ++r)
+      delete *r;
   }
-
-  m_stunSocket1 = NULL;
-  m_stunSocket2 = NULL;
+  m_sockets.SetSize(0);
+  m_selectList.SetSize(0);
+  m_socketToSocketInfoMap.clear();
 
   return true;
 }
 
-bool PSTUNServer::Read(PSTUNMessage & message, PIPSocketAddressAndPort & receivedInterface)
+bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketInfo)
 {
+  message.SetSize(0);
+
   if (!IsOpen())
     return false;
 
-  if (m_stunSocket2 == NULL)
-    return message.Read(*m_stunSocket1);
+  if (m_selectList.GetSize() == 0) {
+    m_selectList = m_sockets;
+    //m_selectList.MakeUnique();
+    int r = PIPSocket::Select(m_selectList);
+    if (r == PChannel::Timeout)
+      return true;
+    if (r != PChannel::NoError)
+      return false;
+    if (m_selectList.GetSize() == 0)
+      return true;
+  }
 
-  int r = PIPSocket::Select(*m_stunSocket1, *m_stunSocket2);
-  if (r == -1) {
-    receivedInterface = m_interfaceAddress1;
-    return message.Read(*m_stunSocket1);
-  }
-  else if (r == -2) {
-    receivedInterface = m_interfaceAddress2; 
-    return message.Read(*m_stunSocket2);
-  }
-  else
+  PUDPSocket * socket = (PUDPSocket *)&m_selectList[0];
+  if (!message.Read(*socket)) {
+    PTRACE(2, "STUNSRVR\tRead failed");
     return false;
-}
+  }  
 
-bool PSTUNServer::Write(const PSTUNMessage & message, const PIPSocketAddressAndPort & destination, const PIPSocketAddressAndPort & iface)
-{
-  if ((m_stunSocket2 == NULL) || (m_interfaceAddress1 == iface)) {
-    m_stunSocket1->SetSendAddress(destination);
-    return message.Write(*m_stunSocket1);
+  SocketToSocketInfoMap::iterator r = m_socketToSocketInfoMap.find(socket);
+  if (r == m_socketToSocketInfoMap.end()) {
+    PTRACE(2, "STUNSRVR\tUnable to find interface for received request - ignoring");
+    return false;
   }
-  m_stunSocket2->SetSendAddress(destination);
-  return message.Write(*m_stunSocket2);
+  socketInfo = r->second;
+  return true;
 }
 
-bool PSTUNServer::Process(PSTUNMessage & response, const PSTUNMessage & message, const PIPSocketAddressAndPort & receivedInterface, const PIPSocketAddressAndPort * alternateInterface)
+bool PSTUNServer::Process(const PSTUNMessage & message, PSTUNServer::SocketInfo & socketInfo)
 {
   int type = message.GetType();
 
   // decode requests
   if (IS_REQUEST(type)) {
     if (type == PSTUNMessage::BindingRequest)
-      return OnBindingRequest(response, message, receivedInterface, alternateInterface);
+      return OnBindingRequest(message, socketInfo);
     else
-      return OnUnknownRequest(response, message, receivedInterface);
+      return OnUnknownRequest(message, socketInfo);
   }
 
   return false;
 }
 
-bool PSTUNServer::OnUnknownRequest(PSTUNMessage & /*response*/, const PSTUNMessage & request, const PIPSocketAddressAndPort & /*receivedInterface*/)
+bool PSTUNServer::WriteTo(const PSTUNMessage & message, PUDPSocket & socket, const PIPSocketAddressAndPort & dest)
+{
+  socket.SetSendAddress(dest);
+  return message.Write(socket);
+}
+
+bool PSTUNServer::OnUnknownRequest(const PSTUNMessage & request, PSTUNServer::SocketInfo & /*socketInfo*/)
 {
   PTRACE(2, "STUNSRVR\tReceived unknown request " << hex << request.GetType() << " from " << request.GetSourceAddressAndPort());
   return false;
 }
 
 
-bool PSTUNServer::OnBindingRequest(PSTUNMessage & response, const PSTUNMessage & request, const PIPSocketAddressAndPort & receivedInterface, const PIPSocketAddressAndPort * /*alternateInterface*/)
+bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, PSTUNServer::SocketInfo & socketInfo)
 {
+  PSTUNMessage response;
+  PUDPSocket * replySocket = socketInfo.m_socket;
+
   PTRACE(2, "STUNSRVR\tReceived BINDING request from " << request.GetSourceAddressAndPort());
 
-  if (request.IsRFC5389()) {
-    // RFC5389 messages MUST contain a MESSAGE-INTEGRITY attribute (RFC 5389, 10.2.2)
-    const PSTUNAttribute * messageIntegrity = request.FindAttribute(PSTUNAttribute::MESSAGE_INTEGRITY);
-    if (!messageIntegrity) {
-      PTRACE(2, "STUNSRVR\tReceived RFC 5389 BINDING request without MESSAGE_INTEGRITY");
-      // TODO - insert correct response here
-      return false;
-    }
-
-    // set the MAPPED_ADDRESS attribute
-    //{
-    //  PSTUNMappedAddress attr;
-    //  attr.Initialise();
-    //  attr.SetIPAndPort(request.m_sourceAddressAndPort);
-    //  response.AddAttribute(attr);
-    //}
-    return false;
-  }
-
-  // if CHANGE_REQUEST was specified, and we have no alternate address, then refuse the request
+  // if CHANGE-REQUEST was specified, and we have no alternate address, then refuse the request
   const PSTUNChangeRequest * changeRequest = (PSTUNChangeRequest *)request.FindAttribute(PSTUNAttribute::CHANGE_REQUEST);
-  if (changeRequest != NULL && (changeRequest->GetChangeIP() || changeRequest->GetChangePort())) {
-    // initialise the response
+  if ((changeRequest != NULL) && 
+      (        
+         (
+          (changeRequest->GetChangeIP() && changeRequest->GetChangePort() && (socketInfo.m_alternateAddressAndPortSocket == NULL))
+         ) || (
+          (changeRequest->GetChangeIP() && (socketInfo.m_alternateAddressSocket == NULL))
+         ) || (
+          (changeRequest->GetChangePort() && (socketInfo.m_alternatePortSocket == NULL))
+          )
+      )
+      ) {
+    PTRACE(2, "STUNSRVR\tUnable to fulfill CHANGE-REQUEST from " << request.GetSourceAddressAndPort());
+
+    // initialise the response as per RFC 5780, para 6.1
     response.SetType(PSTUNMessage::BindingError, request.GetTransactionID());
 
     PSTUNErrorCode attr;
     attr.Initialise();
-    attr.SetErrorCode(600, "Only one interface available");
-    response.AddAttribute(attr);
-
-    return true;
-  }
-
-  // initialise the response
-  response.SetType(PSTUNMessage::BindingResponse, request.GetTransactionID());
-
-  // set the MAPPED_ADDRESS attribute
-  {
-    PSTUNMappedAddress attr;
-    attr.Initialise();
-    attr.SetIPAndPort(request.GetSourceAddressAndPort());
+    attr.SetErrorCode(420, "");
     response.AddAttribute(attr);
   }
+  else {
 
-  // replies always contain SOURCE-ADDRESS 
-  PSTUNSourceAddress attr;
-  attr.Initialise();
-  attr.SetIPAndPort(receivedInterface);
-  response.AddAttribute(attr);
+    // initialise the response
+    response.SetType(PSTUNMessage::BindingResponse, request.GetTransactionID());
 
-  PTRACE(3, "STUNSRVR\tSending BindingResponse to " << request.GetSourceAddressAndPort());
+    // set the MAPPED_ADDRESS attribute
+    {
+      PSTUNAddressAttribute attr;
+      attr.InitAddrAttr(PSTUNAttribute::MAPPED_ADDRESS);
+      attr.SetIPAndPort(request.GetSourceAddressAndPort());
+      response.AddAttribute(attr);
+    }
+
+    // if RFC 5389, set XOR-MAPPED_ADDRESS, RESPONSE_ORIGIN
+    if (request.IsRFC5389()) {
+
+      // set XOR-MAPPED_ADDRESS
+      {
+        PSTUNAddressAttribute attr;
+        attr.InitAddrAttr(PSTUNAttribute::XOR_MAPPED_ADDRESS);
+        attr.SetIPAndPort(request.GetSourceAddressAndPort());
+        response.AddAttribute(attr);
+      }
+
+      // set RESPONSE-ORIGIN
+      {
+        PSTUNAddressAttribute attr;
+        attr.InitAddrAttr(PSTUNAttribute::RESPONSE_ORIGIN);
+        attr.SetIPAndPort(socketInfo.m_socketAddress);
+        response.AddAttribute(attr);
+      }
+    }
+
+    // if not RFC 5389, set the SOURCE attribute 
+    else {
+      // replies always contain SOURCE-ADDRESS 
+      PSTUNAddressAttribute attr;
+      attr.InitAddrAttr(PSTUNAttribute::SOURCE_ADDRESS);
+      attr.SetIPAndPort(socketInfo.m_socketAddress);
+      response.AddAttribute(attr);
+    }
+
+    // set OTHER-ADDRESS, if we can
+    if (socketInfo.m_alternateAddressSocket != 0) {
+      PSTUNAddressAttribute attr;
+      attr.InitAddrAttr(PSTUNAttribute::OTHER_ADDRESS);
+      attr.SetIPAndPort(socketInfo.m_alternateAddressAndPort);
+      response.AddAttribute(attr);
+    }
+
+    // fulfill CHANGE-REQUEST, if any
+    if (changeRequest != NULL) {
+      if (changeRequest->GetChangeIP() && changeRequest->GetChangePort()) 
+        replySocket = socketInfo.m_alternateAddressAndPortSocket;
+      else if (changeRequest->GetChangeIP())
+        replySocket = socketInfo.m_alternateAddressSocket;
+      else if (changeRequest->GetChangePort()) 
+        replySocket = socketInfo.m_alternatePortSocket;
+    }
+
+    PTRACE(3, "STUNSRVR\tSending BindingResponse to " << request.GetSourceAddressAndPort());
+  }
+
+  WriteTo(response, *replySocket, request.GetSourceAddressAndPort());
 
   return true;
 }
