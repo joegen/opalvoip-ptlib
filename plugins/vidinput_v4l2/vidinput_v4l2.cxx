@@ -215,7 +215,10 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean startImm
     if (canSetFrameRate)
       PVideoDevice::SetFrameRate (videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator);
   }
-  
+
+  SetVideoFormat(videoFormat);
+  SetColourFormat(colourFormat);
+
   return PTrue;
 }
 
