@@ -625,7 +625,10 @@ PBoolean PVideoInputDevice_V4L::Open(const PString & devName, PBoolean startImme
     videoAudio.flags &= ~VIDEO_AUDIO_MUTE;
     videoAudio.mode = VIDEO_SOUND_MONO;
     ::ioctl(videoFd, VIDIOCSAUDIO, &videoAudio);
-    } 
+    }
+
+  SetVideoFormat(videoFormat);
+  SetColourFormat(colourFormat);
 
   return PTrue;
 }
