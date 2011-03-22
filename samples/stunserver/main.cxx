@@ -64,18 +64,17 @@ void StunServer::Main()
   }
 
   while (server.IsOpen()) {
+    PSTUNServer::SocketInfo info;
     PSTUNMessage message;
-    PIPSocketAddressAndPort receivedInterface;
-    if (!server.Read(message, receivedInterface)) {
+    if (!server.Read(message, info)) {
       cerr << "error: read failed" << endl;
       break;
     }
-    else if (!message.Validate())
-      cerr << "error: invalid message received" << endl;
-    else {
-      PSTUNMessage response;
-      if (server.Process(response, message, receivedInterface, NULL))
-        server.Write(response, message.GetSourceAddressAndPort(), receivedInterface);
+    else if (message.GetSize() != 0) {
+      if (!message.Validate())
+        cerr << "error: invalid message received" << endl;
+      else
+        server.Process(message, info);
     }
   }
 }
