@@ -18,42 +18,51 @@ class PSTUNServer : public PObject, public PSTUN
     PSTUNServer();
     
     bool Open(WORD port = DefaultPort);
-    bool Open(WORD port1, WORD port2);
-    bool Open(PUDPSocket * socket, bool autoDelete);
 
     bool IsOpen() const;
 
     bool Close();
 
-    virtual bool Read(PSTUNMessage & message, PIPSocketAddressAndPort & receivedInterface);
-    virtual bool Write(const PSTUNMessage & message, const PIPSocketAddressAndPort & destination, const PIPSocketAddressAndPort & iface);
+    struct SocketInfo {
+      SocketInfo();
+
+      PUDPSocket * m_socket;
+      PIPSocketAddressAndPort m_socketAddress;
+      PIPSocketAddressAndPort m_alternateAddressAndPort;
+
+      PUDPSocket * m_alternatePortSocket;
+      PUDPSocket * m_alternateAddressSocket;
+      PUDPSocket * m_alternateAddressAndPortSocket;
+    };
+
+    virtual bool Read(
+      PSTUNMessage & message, 
+      SocketInfo & socketInfo
+    );
 
     virtual bool Process(
-      PSTUNMessage & response, 
       const PSTUNMessage & message,
-      const PIPSocketAddressAndPort & receivedInterface,
-      const PIPSocketAddressAndPort * alternateInterface
+      SocketInfo & socketInfo
     );
 
     virtual bool OnBindingRequest(
-      PSTUNMessage & response, 
       const PSTUNMessage & request,
-      const PIPSocketAddressAndPort & receivedInterface,
-      const PIPSocketAddressAndPort * alternateInterface
+      SocketInfo & socketInfo
     );
 
     virtual bool OnUnknownRequest(
-      PSTUNMessage & response, 
       const PSTUNMessage & request,
-      const PIPSocketAddressAndPort & receivedInterface
+      SocketInfo & socketInfo
     );
 
   protected:
-    PUDPSocket * m_stunSocket1;
-    PIPSocketAddressAndPort m_interfaceAddress1;
+    SocketInfo * CreateAndAddSocket(const PIPSocket::Address & addess, WORD port);
+    bool WriteTo(const PSTUNMessage & message, PUDPSocket & socket, const PIPSocketAddressAndPort & dest);
 
-    PUDPSocket * m_stunSocket2;
-    PIPSocketAddressAndPort m_interfaceAddress2;
+    PSocket::SelectList m_sockets;
+    PSocket::SelectList m_selectList;
+    typedef std::map<PUDPSocket *, SocketInfo> SocketToSocketInfoMap;
+    SocketToSocketInfoMap m_socketToSocketInfoMap;
 
     bool m_autoDelete;
 };

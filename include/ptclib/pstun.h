@@ -74,18 +74,26 @@ class PSTUN {
 struct PSTUNAttribute
 {
   enum Types {
-    MAPPED_ADDRESS     = 0x0001,
-    RESPONSE_ADDRESS   = 0x0002,
-    CHANGE_REQUEST     = 0x0003,
-    SOURCE_ADDRESS     = 0x0004,
-    CHANGED_ADDRESS    = 0x0005,
-    USERNAME           = 0x0006,
-    PASSWORD           = 0x0007,
-    MESSAGE_INTEGRITY  = 0x0008,
-    ERROR_CODE         = 0x0009,
-    UNKNOWN_ATTRIBUTES = 0x000a,
-    REFLECTED_FROM     = 0x000b,
-    MaxValidCode
+    MAPPED_ADDRESS     = 0x0001,   // RFC 3489 & RFC 5389
+    RESPONSE_ADDRESS   = 0x0002,   // RFC 3489 & RFC 5389
+    CHANGE_REQUEST     = 0x0003,   // RFC 3489 & RFC 5389 (added in RFC 5780)
+    SOURCE_ADDRESS     = 0x0004,   // RFC 3489
+    CHANGED_ADDRESS    = 0x0005,   // RFC 3489
+    USERNAME           = 0x0006,   // RFC 3489 & RFC 5389
+    PASSWORD           = 0x0007,   // RFC 3489
+    MESSAGE_INTEGRITY  = 0x0008,   // RFC 3489 & RFC 5389
+    ERROR_CODE         = 0x0009,   // RFC 3489 & RFC 5389
+    UNKNOWN_ATTRIBUTES = 0x000a,   // RFC 3489 & RFC 5389  
+    REFLECTED_FROM     = 0x000b,   // RFC 3489  
+    REALM              = 0x0014,   // RFC 5389  
+    NONCE              = 0x0015,   // RFC 5389  
+    XOR_MAPPED_ADDRESS = 0x0020,   // RFC 5389  
+
+    PADDING            = 0x0026,   // RFC 5389 (added in RFC 5780)
+    RESPONSE_PORT      = 0x0027,   // RFC 5389 (added in RFC 5780)
+
+    RESPONSE_ORIGIN    = 0x802b,   // RFC 5389 (added in RFC 5780)
+    OTHER_ADDRESS      = 0x802c,   // RFC 5389 (added in RFC 5780)
   };
   
   PUInt16b type;
@@ -98,17 +106,13 @@ struct PSTUNAttribute
 
 class PSTUNAddressAttribute : public PSTUNAttribute
 {
-  public:
+  protected:
     BYTE     pad;
     BYTE     family;
     PUInt16b port;
     BYTE     ip[4];
 
-    PIPSocket::Address GetIP() const { return PIPSocket::Address(4, ip); }
-    void SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort);
-
-  protected:
-    enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+4 };
+  public:
     void InitAddrAttr(Types newType)
     {
       pad    = 0;
@@ -116,31 +120,24 @@ class PSTUNAddressAttribute : public PSTUNAttribute
       type   = (WORD)newType;
       length = SizeofAddressAttribute;
     }
+
+    WORD GetPort() const;
+    PIPSocket::Address GetIP() const;
+    void SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort);
+
+  protected:
+    enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+4 };
     bool IsValidAddrAttr(Types checkType) const
     {
       return type == checkType && length == SizeofAddressAttribute;
     }
 };
 
-class PSTUNMappedAddress : public PSTUNAddressAttribute
+class PSTUNResponseOrigin : public PSTUNAddressAttribute
 {
   public:
-    void Initialise()    { InitAddrAttr(MAPPED_ADDRESS); }
-    bool IsValid() const { return IsValidAddrAttr(MAPPED_ADDRESS); }
-};
-
-class PSTUNChangedAddress : public PSTUNAddressAttribute
-{
-  public:
-    void Initialise()    { InitAddrAttr(CHANGED_ADDRESS); }
-    bool IsValid() const { return IsValidAddrAttr(CHANGED_ADDRESS); }
-};
-
-class PSTUNSourceAddress : public PSTUNAddressAttribute
-{
-  public:
-    void Initialise() { InitAddrAttr(SOURCE_ADDRESS); }
-    bool IsValid() const { return IsValidAddrAttr(SOURCE_ADDRESS); }
+    void Initialise() { InitAddrAttr(RESPONSE_ORIGIN); }
+    bool IsValid() const { return IsValidAddrAttr(RESPONSE_ORIGIN); }
 };
 
 class PSTUNChangeRequest : public PSTUNAttribute
@@ -278,7 +275,7 @@ class PSTUNMessage : public PBYTEArray
 
     const BYTE * GetTransactionID() const;
 
-    const PSTUNMessageHeader * operator->() const { return (PSTUNMessageHeader *)theArray; }
+    const PSTUNMessageHeader * operator->() const { return (const PSTUNMessageHeader *)theArray; }
 
     PSTUNAttribute * GetFirstAttribute() const;
 
