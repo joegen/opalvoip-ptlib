@@ -665,8 +665,9 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 {
   switch (status) {
     case -1 :
-      osError = errno;
-      break;
+      if ((osError = errno) != 0)
+        break;
+      // Do next case
 
     case -2 :
       osError = ::GetLastError();
