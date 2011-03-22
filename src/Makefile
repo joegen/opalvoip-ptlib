@@ -425,6 +425,8 @@ else
 	  mv -f $@.tmp $@; \
 	  echo "Revision file updated to `sed $(SED_EXTREGEX_FLAG) -n 's/.*SVN_REVISION(.*)/\1/p' $@`" ; \
 	fi
+
+.PHONY: $(REVISION_FILE)
 endif
 endif
 
