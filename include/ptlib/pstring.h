@@ -2836,31 +2836,31 @@ class PStringOptions : public PStringToString
 {
   public:
     /// Determine if the specified key is present.
-    bool Contains(const char *              key   ) const { return PStringToString::Contains(PConstCaselessString(key)); }
+    bool Contains(const char *              key   ) const { PConstCaselessString k(key); return PStringToString::Contains(k); }
     bool Contains(const PString         &   key   ) const { return PStringToString::Contains(PCaselessString(key)); }
     bool Contains(const PCaselessString &   key   ) const { return PStringToString::Contains(key); }
     bool Contains(const PCaselessString & (*key)()) const { return PStringToString::Contains(key()); }
 
     // Overide default PStringToString::SetAt() to make sure the key is caseless
-    PString * GetAt(const char *              key   ) const { return PStringToString::GetAt(PConstCaselessString(key)); }
+    PString * GetAt(const char *              key   ) const { PConstCaselessString k(key); return PStringToString::GetAt(k); }
     PString * GetAt(const PString         &   key   ) const { return PStringToString::GetAt(PCaselessString(key)); }
     PString * GetAt(const PCaselessString &   key   ) const { return PStringToString::GetAt(key); }
     PString * GetAt(const PCaselessString & (*key)()) const { return PStringToString::GetAt(key()); }
 
     // Overide default PStringToString::SetAt() to make sure the key is caseless
-    PBoolean SetAt(const char *              key,    const PString & data) { return PStringToString::SetAt(PConstCaselessString(key), data); }
+    PBoolean SetAt(const char *              key,    const PString & data) { PConstCaselessString k(key); return PStringToString::SetAt(k, data); }
     PBoolean SetAt(const PString         &   key,    const PString & data) { return PStringToString::SetAt(PCaselessString(key), data); }
     PBoolean SetAt(const PCaselessString &   key,    const PString & data) { return PStringToString::SetAt(key, data); }
     PBoolean SetAt(const PCaselessString & (*key)(), const PString & data) { return PStringToString::SetAt(key(), data); }
 
     // Overide default PStringToString::RemoveAt() to make sure the key is caseless
-    PString * RemoveAt(const char *              key)    { return PStringToString::RemoveAt(PConstCaselessString(key)); }
+    PString * RemoveAt(const char *              key)    { PConstCaselessString k(key); return PStringToString::RemoveAt(k); }
     PString * RemoveAt(const PString         &   key)    { return PStringToString::RemoveAt(PCaselessString(key)); }
     PString * RemoveAt(const PCaselessString &   key)    { return PStringToString::RemoveAt(key); }
     PString * RemoveAt(const PCaselessString & (*key)()) { return PStringToString::RemoveAt(key()); }
 
     /// Get an option value.
-    PString GetString(const char *              key,    const char * dflt = NULL) const { return GetString(PConstCaselessString(key), dflt); }
+    PString GetString(const char *              key,    const char * dflt = NULL) const { PConstCaselessString k(key); return GetString(k, dflt); }
     PString GetString(const PString         &   key,    const char * dflt = NULL) const { return GetString(PCaselessString(key), dflt); }
     PString GetString(const PCaselessString &   key,    const char * dflt = NULL) const;
     PString GetString(const PCaselessString & (*key)(), const char * dflt = NULL) const { return GetString(key(), dflt); }
@@ -2872,37 +2872,37 @@ class PStringOptions : public PStringToString
     bool SetString(const PCaselessString & (*key)(), const PString & value) { return SetAt(key, value); }
 
     /// Get the option value as a boolean.
-    bool GetBoolean(const char *              key,    bool dflt = false) const { return GetBoolean(PConstCaselessString(key), dflt); }
+    bool GetBoolean(const char *              key,    bool dflt = false) const { PConstCaselessString k(key); return GetBoolean(k, dflt); }
     bool GetBoolean(const PString         &   key,    bool dflt = false) const { return GetBoolean(PCaselessString(key), dflt); }
     bool GetBoolean(const PCaselessString &   key,    bool dflt = false) const;
     bool GetBoolean(const PCaselessString & (*key)(), bool dflt = false) const { return GetBoolean(key(), dflt); }
 
     /// Set the option value as a boolean.
-    void SetBoolean(const char *              key,    bool value) { SetBoolean(PConstCaselessString(key), value); }
+    void SetBoolean(const char *              key,    bool value) { PConstCaselessString k(key); SetBoolean(k, value); }
     void SetBoolean(const PString         &   key,    bool value) { SetBoolean(PCaselessString(key), value); }
     void SetBoolean(const PCaselessString &   key,    bool value) { SetAt(key, value ? "true" : "false"); }
     void SetBoolean(const PCaselessString & (*key)(), bool value) { SetBoolean(key(), value); }
 
     /// Get the option value as an integer.
-    long GetInteger(const char *              key,    long dflt = 0) const { return GetInteger(PConstCaselessString(key), dflt); }
+    long GetInteger(const char *              key,    long dflt = 0) const { PConstCaselessString k(key); return GetInteger(k, dflt); }
     long GetInteger(const PString         &   key,    long dflt = 0) const { return GetInteger(PCaselessString(key), dflt); }
     long GetInteger(const PCaselessString &   key,    long dflt = 0) const;
     long GetInteger(const PCaselessString & (*key)(), long dflt = 0) const { return GetInteger(key(), dflt); }
 
     /// Set an integer value for the particular MIME info field.
-    void SetInteger(const char *              key,    long value) { SetInteger(PConstCaselessString(key), value); }
+    void SetInteger(const char *              key,    long value) { PConstCaselessString k(key); SetInteger(k, value); }
     void SetInteger(const PString         &   key,    long value) { SetInteger(PCaselessString(key), value); }
     void SetInteger(const PCaselessString &   key,    long value);
     void SetInteger(const PCaselessString & (*key)(), long value) { SetInteger(key(), value); }
 
     /// Get the option value as a floating point real.
-    double GetReal(const char *              key,    double dflt = 0) const { return GetReal(PConstCaselessString(key), dflt); }
+    double GetReal(const char *              key,    double dflt = 0) const { PConstCaselessString k(key); return GetReal(k, dflt); }
     double GetReal(const PString         &   key,    double dflt = 0) const { return GetReal(PCaselessString(key), dflt); }
     double GetReal(const PCaselessString &   key,    double dflt = 0) const;
     double GetReal(const PCaselessString & (*key)(), double dflt = 0) const { return GetReal(key(), dflt); }
 
     /// Set a floating point real value for the particular MIME info field.
-    void SetReal(const char *              key,    double value, int decimals) { SetReal(PConstCaselessString(key), value, decimals); }
+    void SetReal(const char *              key,    double value, int decimals) { PConstCaselessString k(key); SetReal(k, value, decimals); }
     void SetReal(const PString         &   key,    double value, int decimals) { SetReal(PCaselessString(key), value, decimals); }
     void SetReal(const PCaselessString &   key,    double value, int decimals);
     void SetReal(const PCaselessString & (*key)(), double value, int decimals) { SetReal(key(), value, decimals); }
