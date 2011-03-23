@@ -56,7 +56,7 @@ class PSTUNServer : public PObject, public PSTUN
     );
 
   protected:
-    void PopulateInfo(PSTUNServer::SocketInfo & info, const PIPSocket::Address & alternateAddress, WORD alternatePort, 
+    void PopulateInfo(PUDPSocket * socket, const PIPSocket::Address & alternateAddress, WORD alternatePort, 
              PUDPSocket * alternatePortSocket, PUDPSocket * alternateAddressSocket, PUDPSocket * alternateAddressAndPortSocket);
 
     SocketInfo * CreateAndAddSocket(const PIPSocket::Address & addess, WORD port);
