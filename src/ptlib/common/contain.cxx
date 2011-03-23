@@ -2604,7 +2604,7 @@ char ** PStringToString::ToCharArray(bool withEqualSign, PCharArray * storage) c
 PString PStringOptions::GetString(const PCaselessString & key, const char * dflt) const
 {
   PString * str = PStringToString::GetAt(key);
-  return str != NULL ? *str : dflt;
+  return str != NULL ? *str : PString(dflt);
 }
 
 
