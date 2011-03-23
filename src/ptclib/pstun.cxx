@@ -160,7 +160,7 @@ bool PSTUNMessage::Validate()
     return false;
 
   // do quick checks for RFC5389: magic cookie and top two bits of type must be 00
-  m_isRFC5389 = *(PUInt32b *)(&(header->transactionId)+12) == RFC5389_MAGIC_COOKIE;
+  m_isRFC5389 = *(PUInt32b *)(&(header->transactionId)) == RFC5389_MAGIC_COOKIE;
   if (m_isRFC5389 && ((header->msgType & 0x00c0) != 0x00)) {
     PTRACE(2, "STUN\tPacket received with magic cookie, but type bits are incorrect.");
     return false;
