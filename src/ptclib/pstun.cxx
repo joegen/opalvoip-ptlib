@@ -245,8 +245,10 @@ const PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) c
 
 bool PSTUNMessage::Read(PUDPSocket & socket)
 {
-  if (!socket.Read(GetPointer(1000), 1000))
+  if (!socket.Read(GetPointer(1000), 1000)) {
+    PTRACE(3, "STUNSRVR\tRead error " << socket.GetErrorCode(PChannel::LastReadError) << " - " << socket.GetErrorText(PChannel::LastReadError));
     return false;
+  }
 
   socket.GetLastReceiveAddress(m_sourceAddressAndPort);
 
