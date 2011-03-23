@@ -538,7 +538,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   }
 
   if (replySocket == NULL) {
-    PTRACE(3, "STUN\tNo response to " << *this);
+    PTRACE(3, "STUN\tNo response to test I " << *this);
     return natType = BlockedNat; // No response usually means blocked
   }
 
@@ -553,6 +553,8 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
     }
   }
 
+  PTRACE(2, "STUN\tTest I response received - sending test II (change port and address)");
+
   PIPSocket::Address mappedAddressI = mappedAddress->GetIP();
   WORD mappedPortI = mappedAddress->GetPort();
   bool notNAT = replySocket->GetPort() == mappedPortI && PIPSocket::IsLocalHost(mappedAddressI);
@@ -564,17 +566,28 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   PSTUNMessage responseII;
   bool testII = responseII.Poll(*replySocket, requestII, pollRetries);
 
+  PTRACE(2, "STUN\tTest II response " << (testII ? "" : "not ") << "received");
+
   if (notNAT) {
+    natType = (testII ? OpenNat : SymmetricFirewall);
     // Is not NAT or symmetric firewall
-    return natType = (testII ? OpenNat : SymmetricFirewall);
+    PTRACE(2, "STUN\tTest I and II indicate nat is " << GetNatTypeString(natType));
+    return natType;
   }
 
   if (testII)
     return natType = ConeNat;
 
   PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
-  if (changedAddress == NULL)
-    return natType = UnknownNat; // Protocol error
+  if (changedAddress == NULL) {
+    changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::OTHER_ADDRESS);
+    if (changedAddress == NULL) {
+      PTRACE(2, "STUN\tTest II response indicates no alternate address in use - testing finished");
+      return natType = UnknownNat; // Protocol error
+    }
+  }
+
+  PTRACE(2, "STUN\tSending test I to alternate server");
 
   // Send test I to another server, to see if restricted or symmetric
   PIPSocket::Address secondaryServer = changedAddress->GetIP();
@@ -585,7 +598,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   PSTUNMessage responseI2;
   if (!responseI2.Poll(*replySocket, requestI2, pollRetries)) {
     PTRACE(2, "STUN\tPoll of secondary server " << secondaryServer << ':' << secondaryPort
-           << " failed, NAT partially blocked by firwall rules.");
+           << " failed, NAT partially blocked by firewall rules.");
     return natType = PartialBlockedNat;
   }
 
