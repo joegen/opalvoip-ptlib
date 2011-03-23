@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="HTTP TEst"
+	ProjectGUID="{C3DFD48D-2401-4203-AD8D-2CADFFE68BC6}"
 	>
 	<Platforms>
 		<Platform
