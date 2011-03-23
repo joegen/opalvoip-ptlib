@@ -321,6 +321,14 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, PSTUNServer::So
         attr.SetIPAndPort(socketInfo.m_socketAddress);
         response.AddAttribute(attr);
       }
+
+      // set OTHER-ADDRESS, if we can
+      if (socketInfo.m_alternateAddressSocket != 0) {
+        PSTUNAddressAttribute attr;
+        attr.InitAddrAttr(PSTUNAttribute::OTHER_ADDRESS);
+        attr.SetIPAndPort(socketInfo.m_alternateAddressAndPort);
+        response.AddAttribute(attr);
+      }
     }
 
     // if not RFC 5389, set the SOURCE attribute 
@@ -330,14 +338,14 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, PSTUNServer::So
       attr.InitAddrAttr(PSTUNAttribute::SOURCE_ADDRESS);
       attr.SetIPAndPort(socketInfo.m_socketAddress);
       response.AddAttribute(attr);
-    }
 
-    // set OTHER-ADDRESS, if we can
-    if (socketInfo.m_alternateAddressSocket != 0) {
-      PSTUNAddressAttribute attr;
-      attr.InitAddrAttr(PSTUNAttribute::OTHER_ADDRESS);
-      attr.SetIPAndPort(socketInfo.m_alternateAddressAndPort);
-      response.AddAttribute(attr);
+      // set CHANGED-ADDRESS, if we can
+      if (socketInfo.m_alternateAddressSocket != 0) {
+        PSTUNAddressAttribute attr;
+        attr.InitAddrAttr(PSTUNAttribute::CHANGED_ADDRESS);
+        attr.SetIPAndPort(socketInfo.m_alternateAddressAndPort);
+        response.AddAttribute(attr);
+      }
     }
 
     // fulfill CHANGE-REQUEST, if any
