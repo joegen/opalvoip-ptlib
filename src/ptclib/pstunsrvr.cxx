@@ -32,7 +32,7 @@ PSTUNServer::SocketInfo::SocketInfo()
 //////////////////////////////////////////////////
 
 PSTUNServer::PSTUNServer()
-  : m_autoDelete(false)
+  : m_autoDelete(true)
 {
 }
 
@@ -119,7 +119,7 @@ bool PSTUNServer::Open(WORD port)
     secondary.m_alternateAddressAndPortSocket = primaryAlternatePortSocketInfo->m_socket;
   }
 
-  m_autoDelete = true;
+  m_sockets.AllowDeleteObjects(m_autoDelete);
   return true;
 }
 
@@ -145,11 +145,6 @@ bool PSTUNServer::IsOpen() const
 
 bool PSTUNServer::Close()
 {
-  if (m_autoDelete) {
-    PSocketList::iterator r;
-    for (r = m_sockets.begin(); r != m_sockets.end(); ++r)
-      delete *r;
-  }
   m_sockets.SetSize(0);
   m_selectList.SetSize(0);
   m_socketToSocketInfoMap.clear();
