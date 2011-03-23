@@ -89,38 +89,49 @@ bool PSTUNServer::Open(WORD port)
   // open and populate alternates
   if (m_sockets.GetSize() > 1) {
     SocketToSocketInfoMap::iterator r = m_socketToSocketInfoMap.begin();
+
+    // primary socket
     SocketInfo & primary = r->second;
     ++r;
+
+    // sedcondary socket
     SocketInfo & secondary = r->second;
 
-    SocketInfo * primaryAlternatePortSocketInfo = CreateAndAddSocket(primary.m_socketAddress.GetAddress(), primary.m_socketAddress.GetPort()+1);
-    if (primaryAlternatePortSocketInfo == NULL) {
+    // primary socket, alternate port
+    SocketInfo * primaryAlternate = CreateAndAddSocket(primary.m_socketAddress.GetAddress(), primary.m_socketAddress.GetPort()+1);
+    if (primaryAlternate == NULL) {
       PTRACE(2, "PSTUNSRVR\nCannot open primary alternate port socket on " << addr);
       return false;
     }
-    PTRACE(2, "PSTUNSRVR\nListening on " << primaryAlternatePortSocketInfo->m_socketAddress);
+    PTRACE(2, "PSTUNSRVR\nListening on " << primaryAlternate->m_socketAddress);
 
-    SocketInfo * secondaryAlternatePortSocketInfo = CreateAndAddSocket(secondary.m_socketAddress.GetAddress(), secondary.m_socketAddress.GetPort()+1);
-    if (secondaryAlternatePortSocketInfo == NULL) {
+    // secondary socket, alternate port
+    SocketInfo * secondaryAlternate = CreateAndAddSocket(secondary.m_socketAddress.GetAddress(), secondary.m_socketAddress.GetPort()+1);
+    if (secondaryAlternate == NULL) {
       PTRACE(2, "PSTUNSRVR\nCannot open secondary secondary port socket on " << addr);
       return false;
     }
-    PTRACE(2, "PSTUNSRVR\nListening on " << secondaryAlternatePortSocketInfo->m_socketAddress);
+    PTRACE(2, "PSTUNSRVR\nListening on " << secondaryAlternate->m_socketAddress);
 
-    primary.m_alternateAddressAndPort         = PIPSocketAddressAndPort(secondary.m_socketAddress.GetAddress(), secondary.m_socketAddress.GetPort()+1);
-    secondary.m_alternateAddressAndPort       = PIPSocketAddressAndPort(primary.m_socketAddress.GetAddress(),   primary.m_socketAddress.GetPort()+1);
+    PopulateInfo(primary,           secondary.m_socketAddress.GetAddress(), port+1, primaryAlternate->m_socket, secondary.m_socket,           secondaryAlternate->m_socket);
+    PopulateInfo(*primaryAlternate, secondary.m_socketAddress.GetAddress(), port,   primary.m_socket,           secondaryAlternate->m_socket, secondary.m_socket);
 
-    primary.m_alternatePortSocket             = primaryAlternatePortSocketInfo->m_socket;
-    primary.m_alternateAddressSocket          = secondary.m_socket;
-    primary.m_alternateAddressAndPortSocket   = secondaryAlternatePortSocketInfo->m_socket;
-
-    secondary.m_alternatePortSocket           = secondaryAlternatePortSocketInfo->m_socket;
-    secondary.m_alternateAddressSocket        = primary.m_socket;
-    secondary.m_alternateAddressAndPortSocket = primaryAlternatePortSocketInfo->m_socket;
+    PopulateInfo(secondary,           primary.m_socketAddress.GetAddress(), port+1, secondaryAlternate->m_socket, primary.m_socket,           primaryAlternate->m_socket);
+    PopulateInfo(*secondaryAlternate, primary.m_socketAddress.GetAddress(), port,   secondary.m_socket,           primaryAlternate->m_socket, primary.m_socket);
   }
 
   m_sockets.AllowDeleteObjects(m_autoDelete);
   return true;
+}
+
+void PSTUNServer::PopulateInfo(PSTUNServer::SocketInfo & info, const PIPSocket::Address & alternateAddress, WORD alternatePort, 
+             PUDPSocket * alternatePortSocket, PUDPSocket * alternateAddressSocket, PUDPSocket * alternateAddressAndPortSocket)
+{
+  info.m_alternateAddressAndPort = PIPSocketAddressAndPort(alternateAddress, alternatePort);
+
+  info.m_alternatePortSocket           = alternatePortSocket;
+  info.m_alternateAddressSocket        = alternateAddressSocket;
+  info.m_alternateAddressAndPortSocket = alternateAddressAndPortSocket;
 }
 
 PSTUNServer::SocketInfo * PSTUNServer::CreateAndAddSocket(const PIPSocket::Address & address, WORD port)
