@@ -42,12 +42,12 @@
 
 ///////////////////////////////////////////////////////
 
-const PString & XMPP::LanguageTag() { static PString s = "xml:lang"; return s; }
-const PString & XMPP::NamespaceTag() { static PString s = "xmlns"; return s; }
-const PString & XMPP::MessageStanzaTag() { static PString s = "message"; return s; }
-const PString & XMPP::PresenceStanzaTag() { static PString s = "presence"; return s; }
-const PString & XMPP::IQStanzaTag() { static PString s = "iq"; return s; }
-const PString & XMPP::IQQueryTag() { static PString s = "query"; return s; }
+const PCaselessString & XMPP::LanguageTag()       { static const PConstCaselessString s = "xml:lang"; return s; }
+const PCaselessString & XMPP::NamespaceTag()      { static const PConstCaselessString s = "xmlns";    return s; }
+const PCaselessString & XMPP::MessageStanzaTag()  { static const PConstCaselessString s = "message";  return s; }
+const PCaselessString & XMPP::PresenceStanzaTag() { static const PConstCaselessString s = "presence"; return s; }
+const PCaselessString & XMPP::IQStanzaTag()       { static const PConstCaselessString s = "iq";       return s; }
+const PCaselessString & XMPP::IQQueryTag()        { static const PConstCaselessString s = "query";    return s; }
 
 ///////////////////////////////////////////////////////
 
@@ -411,9 +411,9 @@ void XMPP::BaseStreamHandler::Main()
 
 ///////////////////////////////////////////////////////
 
-const PString & XMPP::Stanza::IDTag()   { static PString s = "id";   return s; }
-const PString & XMPP::Stanza::FromTag() { static PString s = "from"; return s; }
-const PString & XMPP::Stanza::ToTag()   { static PString s = "to";   return s; }
+const PCaselessString & XMPP::Stanza::IDTag()   { static const PConstCaselessString s = "id";   return s; }
+const PCaselessString & XMPP::Stanza::FromTag() { static const PConstCaselessString s = "from"; return s; }
+const PCaselessString & XMPP::Stanza::ToTag()   { static const PConstCaselessString s = "to";   return s; }
 
 void XMPP::Stanza::SetID(const PString& id)
 { 
@@ -470,10 +470,10 @@ PString XMPP::Stanza::GenerateID()
 
 ///////////////////////////////////////////////////////
 
-const PString & XMPP::Message::TypeTag()    { static PString s = "type";    return s; }
-const PString & XMPP::Message::SubjectTag() { static PString s = "subject"; return s; }
-const PString & XMPP::Message::BodyTag()    { static PString s = "body";    return s; }
-const PString & XMPP::Message::ThreadTag()  { static PString s = "thread";  return s; }
+const PCaselessString & XMPP::Message::TypeTag()    { static const PConstCaselessString s = "type";    return s; }
+const PCaselessString & XMPP::Message::SubjectTag() { static const PConstCaselessString s = "subject"; return s; }
+const PCaselessString & XMPP::Message::BodyTag()    { static const PConstCaselessString s = "body";    return s; }
+const PCaselessString & XMPP::Message::ThreadTag()  { static const PConstCaselessString s = "thread";  return s; }
 
 XMPP::Message::Message()
 {
@@ -692,10 +692,10 @@ void XMPP::Message::SetThread(const PString& thrd)
 
 ///////////////////////////////////////////////////////
 
-const PString & XMPP::Presence::TypeTag()    { static PString s = "type";     return s; }
-const PString & XMPP::Presence::ShowTag()    { static PString s = "show";     return s; }
-const PString & XMPP::Presence::StatusTag()  { static PString s = "status";   return s; }
-const PString & XMPP::Presence::PriorityTag(){ static PString s = "priority"; return s; }
+const PCaselessString & XMPP::Presence::TypeTag()    { static const PConstCaselessString s = "type";     return s; }
+const PCaselessString & XMPP::Presence::ShowTag()    { static const PConstCaselessString s = "show";     return s; }
+const PCaselessString & XMPP::Presence::StatusTag()  { static const PConstCaselessString s = "status";   return s; }
+const PCaselessString & XMPP::Presence::PriorityTag(){ static const PConstCaselessString s = "priority"; return s; }
 
 XMPP::Presence::Presence()
 {
@@ -951,7 +951,7 @@ void XMPP::Presence::SetStatus(const PString& status, const PString& lang)
 
 ///////////////////////////////////////////////////////
 
-const PString & XMPP::IQ::TypeTag() { static PString s = "type"; return s; }
+const PCaselessString & XMPP::IQ::TypeTag() { static const PConstCaselessString s = "type"; return s; }
 
 
 XMPP::IQ::IQ(XMPP::IQ::IQType type, PXMLElement * body)

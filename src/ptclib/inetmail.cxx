@@ -39,8 +39,8 @@
 #include <ptclib/psasl.h>
 #endif
 
-static const PString CRLF = "\r\n";
-static const PString CRLFdotCRLF = "\r\n.\r\n";
+static const PConstString CRLF = "\r\n";
+static const PConstString CRLFdotCRLF = "\r\n.\r\n";
 
 
 #define new PNEW
@@ -810,8 +810,8 @@ static char const * const POP3Commands[PPOP3::NumCommands] = {
 };
 
 
-PString PPOP3::okResponse = "+OK";
-PString PPOP3::errResponse = "-ERR";
+const PString & PPOP3::okResponse () { static const PConstString s("+OK");  return s; }
+const PString & PPOP3::errResponse() { static const PConstString s("-ERR"); return s; }
 
 
 PPOP3::PPOP3()
@@ -1022,7 +1022,7 @@ PPOP3Server::PPOP3Server()
 
 PBoolean PPOP3Server::OnOpen()
 {
-  return WriteResponse(okResponse, PIPSocket::GetHostName() +
+  return WriteResponse(okResponse(), PIPSocket::GetHostName() +
                      " POP3 server ready at " +
                       PTime(PTime::MediumDateTime).AsString());
 }
@@ -1065,7 +1065,7 @@ PBoolean PPOP3Server::ProcessCommand()
       break;
     case TOP :
       if (args.Find(' ') == P_MAX_INDEX)
-        WriteResponse(errResponse, "Syntax error");
+        WriteResponse(errResponse(), "Syntax error");
       else
         OnTOP((PINDEX)args.AsInteger(),
               (PINDEX)args.Mid(args.Find(' ')).AsInteger());
@@ -1086,18 +1086,18 @@ void PPOP3Server::OnUSER(const PString & name)
   messageSizes.SetSize(0);
   messageIDs.SetSize(0);
   username = name;
-  WriteResponse(okResponse, "User name accepted.");
+  WriteResponse(okResponse(), "User name accepted.");
 }
 
 
 void PPOP3Server::OnPASS(const PString & password)
 {
   if (username.IsEmpty())
-    WriteResponse(errResponse, "No user name specified.");
+    WriteResponse(errResponse(), "No user name specified.");
   else if (HandleOpenMailbox(username, password))
-    WriteResponse(okResponse, username + " mail is available.");
+    WriteResponse(okResponse(), username + " mail is available.");
   else
-    WriteResponse(errResponse, "No access to " + username + " mail.");
+    WriteResponse(errResponse(), "No access to " + username + " mail.");
   messageDeletions.SetSize(messageIDs.GetSize());
 }
 
@@ -1108,7 +1108,7 @@ void PPOP3Server::OnQUIT()
     if (messageDeletions[i])
       HandleDeleteMessage(i+1, messageIDs[i]);
 
-  WriteResponse(okResponse, PIPSocket::GetHostName() +
+  WriteResponse(okResponse(), PIPSocket::GetHostName() +
                      " POP3 server signing off at " +
                       PTime(PTime::MediumDateTime).AsString());
 
@@ -1120,13 +1120,13 @@ void PPOP3Server::OnRSET()
 {
   for (PINDEX i = 0; i < messageDeletions.GetSize(); i++)
     messageDeletions[i] = PFalse;
-  WriteResponse(okResponse, "Resetting state.");
+  WriteResponse(okResponse(), "Resetting state.");
 }
 
 
 void PPOP3Server::OnNOOP()
 {
-  WriteResponse(okResponse, "Doing nothing.");
+  WriteResponse(okResponse(), "Doing nothing.");
 }
 
 
@@ -1135,32 +1135,32 @@ void PPOP3Server::OnSTAT()
   DWORD total = 0;
   for (PINDEX i = 0; i < messageSizes.GetSize(); i++)
     total += messageSizes[i];
-  WriteResponse(okResponse, psprintf("%u %u", messageSizes.GetSize(), total));
+  WriteResponse(okResponse(), psprintf("%u %u", messageSizes.GetSize(), total));
 }
 
 
 void PPOP3Server::OnLIST(PINDEX msg)
 {
   if (msg == 0) {
-    WriteResponse(okResponse, psprintf("%u messages.", messageSizes.GetSize()));
+    WriteResponse(okResponse(), psprintf("%u messages.", messageSizes.GetSize()));
     for (PINDEX i = 0; i < messageSizes.GetSize(); i++)
       if (!messageDeletions[i])
         WriteLine(psprintf("%u %u", i+1, messageSizes[i]));
     WriteLine(".");
   }
   else if (msg < 1 || msg > messageSizes.GetSize())
-    WriteResponse(errResponse, "No such message.");
+    WriteResponse(errResponse(), "No such message.");
   else
-    WriteResponse(okResponse, psprintf("%u %u", msg, messageSizes[msg-1]));
+    WriteResponse(okResponse(), psprintf("%u %u", msg, messageSizes[msg-1]));
 }
 
 
 void PPOP3Server::OnRETR(PINDEX msg)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
-    WriteResponse(errResponse, "No such message.");
+    WriteResponse(errResponse(), "No such message.");
   else {
-    WriteResponse(okResponse,
+    WriteResponse(okResponse(),
                  PString(PString::Unsigned, messageSizes[msg-1]) + " octets.");
     stuffingState = StuffIdle;
     HandleSendMessage(msg, messageIDs[msg-1], P_MAX_INDEX);
@@ -1173,10 +1173,10 @@ void PPOP3Server::OnRETR(PINDEX msg)
 void PPOP3Server::OnDELE(PINDEX msg)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
-    WriteResponse(errResponse, "No such message.");
+    WriteResponse(errResponse(), "No such message.");
   else {
     messageDeletions[msg-1] = PTrue;
-    WriteResponse(okResponse, "Message marked for deletion.");
+    WriteResponse(okResponse(), "Message marked for deletion.");
   }
 }
 
@@ -1184,9 +1184,9 @@ void PPOP3Server::OnDELE(PINDEX msg)
 void PPOP3Server::OnTOP(PINDEX msg, PINDEX count)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
-    WriteResponse(errResponse, "No such message.");
+    WriteResponse(errResponse(), "No such message.");
   else {
-    WriteResponse(okResponse, "Top of message");
+    WriteResponse(okResponse(), "Top of message");
     stuffingState = StuffIdle;
     HandleSendMessage(msg, messageIDs[msg-1], count);
     stuffingState = DontStuff;
@@ -1198,7 +1198,7 @@ void PPOP3Server::OnTOP(PINDEX msg, PINDEX count)
 void PPOP3Server::OnUIDL(PINDEX msg)
 {
   if (msg == 0) {
-    WriteResponse(okResponse,
+    WriteResponse(okResponse(),
               PString(PString::Unsigned, messageIDs.GetSize()) + " messages.");
     for (PINDEX i = 0; i < messageIDs.GetSize(); i++)
       if (!messageDeletions[i])
@@ -1206,7 +1206,7 @@ void PPOP3Server::OnUIDL(PINDEX msg)
     WriteLine(".");
   }
   else if (msg < 1 || msg > messageSizes.GetSize())
-    WriteResponse(errResponse, "No such message.");
+    WriteResponse(errResponse(), "No such message.");
   else
     WriteLine(PString(PString::Unsigned, msg) & messageIDs[msg-1]);
 }
@@ -1214,7 +1214,7 @@ void PPOP3Server::OnUIDL(PINDEX msg)
 
 PBoolean PPOP3Server::OnUnknown(const PCaselessString & command)
 {
-  WriteResponse(errResponse, "Command \"" + command + "\" unrecognised.");
+  WriteResponse(errResponse(), "Command \"" + command + "\" unrecognised.");
   return PTrue;
 }
 
@@ -1238,17 +1238,17 @@ void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 //////////////////////////////////////////////////////////////////////////////
 // PRFC822Channel
 
-const PString & PRFC822Channel::MimeVersionTag() { static PString s = "MIME-version"; return s; }
-const PString & PRFC822Channel::FromTag() { static PString s = "From"; return s; }
-const PString & PRFC822Channel::ToTag() { static PString s = "To"; return s; }
-const PString & PRFC822Channel::CCTag() { static PString s = "cc"; return s; }
-const PString & PRFC822Channel::BCCTag() { static PString s = "bcc"; return s; }
-const PString & PRFC822Channel::SubjectTag() { static PString s = "Subject"; return s; }
-const PString & PRFC822Channel::DateTag() { static PString s = "Date"; return s; }
-const PString & PRFC822Channel::ReturnPathTag() { static PString s = "Return-Path"; return s; }
-const PString & PRFC822Channel::ReceivedTag() { static PString s = "Received"; return s; }
-const PString & PRFC822Channel::MessageIDTag() { static PString s = "Message-ID"; return s; }
-const PString & PRFC822Channel::MailerTag() { static PString s = "X-Mailer"; return s; }
+const PCaselessString & PRFC822Channel::MimeVersionTag() { static const PConstCaselessString s = "MIME-version"; return s; }
+const PCaselessString & PRFC822Channel::FromTag()        { static const PConstCaselessString s = "From";         return s; }
+const PCaselessString & PRFC822Channel::ToTag()          { static const PConstCaselessString s = "To";           return s; }
+const PCaselessString & PRFC822Channel::CCTag()          { static const PConstCaselessString s = "cc";           return s; }
+const PCaselessString & PRFC822Channel::BCCTag()         { static const PConstCaselessString s = "bcc";          return s; }
+const PCaselessString & PRFC822Channel::SubjectTag()     { static const PConstCaselessString s = "Subject";      return s; }
+const PCaselessString & PRFC822Channel::DateTag()        { static const PConstCaselessString s = "Date";         return s; }
+const PCaselessString & PRFC822Channel::ReturnPathTag()  { static const PConstCaselessString s = "Return-Path";  return s; }
+const PCaselessString & PRFC822Channel::ReceivedTag()    { static const PConstCaselessString s = "Received";     return s; }
+const PCaselessString & PRFC822Channel::MessageIDTag()   { static const PConstCaselessString s = "Message-ID";   return s; }
+const PCaselessString & PRFC822Channel::MailerTag()      { static const PConstCaselessString s = "X-Mailer";     return s; }
 
 
 

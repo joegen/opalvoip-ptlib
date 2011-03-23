@@ -56,33 +56,33 @@ static char const * const HTTPCommands[PHTTP::NumCommands] = {
 };
 
 
-const PString & PHTTP::AllowTag           () { static PString s = "Allow"; return s; }
-const PString & PHTTP::AuthorizationTag   () { static PString s = "Authorization"; return s; }
-const PString & PHTTP::ContentEncodingTag () { static PString s = "Content-Encoding"; return s; }
-const PString & PHTTP::ContentLengthTag   () { static PString s = "Content-Length"; return s; }
-const PString & PHTTP::DateTag            () { static PString s = "Date"; return s; }
-const PString & PHTTP::ExpiresTag         () { static PString s = "Expires"; return s; }
-const PString & PHTTP::FromTag            () { static PString s = "From"; return s; }
-const PString & PHTTP::IfModifiedSinceTag () { static PString s = "If-Modified-Since"; return s; }
-const PString & PHTTP::LastModifiedTag    () { static PString s = "Last-Modified"; return s; }
-const PString & PHTTP::LocationTag        () { static PString s = "Location"; return s; }
-const PString & PHTTP::PragmaTag          () { static PString s = "Pragma"; return s; }
-const PString & PHTTP::PragmaNoCacheTag   () { static PString s = "no-cache"; return s; }
-const PString & PHTTP::RefererTag         () { static PString s = "Referer"; return s; }
-const PString & PHTTP::ServerTag          () { static PString s = "Server"; return s; }
-const PString & PHTTP::UserAgentTag       () { static PString s = "User-Agent"; return s; }
-const PString & PHTTP::WWWAuthenticateTag () { static PString s = "WWW-Authenticate"; return s; }
-const PString & PHTTP::MIMEVersionTag     () { static PString s = "MIME-Version"; return s; }
-const PString & PHTTP::ConnectionTag      () { static PString s = "Connection"; return s; }
-const PString & PHTTP::KeepAliveTag       () { static PString s = "Keep-Alive"; return s; }
-const PString & PHTTP::TransferEncodingTag() { static PString s = "Transfer-Encoding"; return s; }
-const PString & PHTTP::ChunkedTag         () { static PString s = "chunked"; return s; }
-const PString & PHTTP::ProxyConnectionTag () { static PString s = "Proxy-Connection"; return s; }
-const PString & PHTTP::ProxyAuthorizationTag(){ static PString s = "Proxy-Authorization"; return s; }
-const PString & PHTTP::ProxyAuthenticateTag(){ static PString s = "Proxy-Authenticate"; return s; }
-const PString & PHTTP::ForwardedTag       () { static PString s = "Forwarded"; return s; }
-const PString & PHTTP::SetCookieTag       () { static PString s = "Set-Cookie"; return s; }
-const PString & PHTTP::CookieTag          () { static PString s = "Cookie"; return s; }
+const PCaselessString & PHTTP::AllowTag            () { static const PConstCaselessString s = "Allow"; return s; }
+const PCaselessString & PHTTP::AuthorizationTag    () { static const PConstCaselessString s = "Authorization"; return s; }
+const PCaselessString & PHTTP::ContentEncodingTag  () { static const PConstCaselessString s = "Content-Encoding"; return s; }
+const PCaselessString & PHTTP::ContentLengthTag    () { static const PConstCaselessString s = "Content-Length"; return s; }
+const PCaselessString & PHTTP::DateTag             () { static const PConstCaselessString s = "Date"; return s; }
+const PCaselessString & PHTTP::ExpiresTag          () { static const PConstCaselessString s = "Expires"; return s; }
+const PCaselessString & PHTTP::FromTag             () { static const PConstCaselessString s = "From"; return s; }
+const PCaselessString & PHTTP::IfModifiedSinceTag  () { static const PConstCaselessString s = "If-Modified-Since"; return s; }
+const PCaselessString & PHTTP::LastModifiedTag     () { static const PConstCaselessString s = "Last-Modified"; return s; }
+const PCaselessString & PHTTP::LocationTag         () { static const PConstCaselessString s = "Location"; return s; }
+const PCaselessString & PHTTP::PragmaTag           () { static const PConstCaselessString s = "Pragma"; return s; }
+const PCaselessString & PHTTP::PragmaNoCacheTag    () { static const PConstCaselessString s = "no-cache"; return s; }
+const PCaselessString & PHTTP::RefererTag          () { static const PConstCaselessString s = "Referer"; return s; }
+const PCaselessString & PHTTP::ServerTag           () { static const PConstCaselessString s = "Server"; return s; }
+const PCaselessString & PHTTP::UserAgentTag        () { static const PConstCaselessString s = "User-Agent"; return s; }
+const PCaselessString & PHTTP::WWWAuthenticateTag  () { static const PConstCaselessString s = "WWW-Authenticate"; return s; }
+const PCaselessString & PHTTP::MIMEVersionTag      () { static const PConstCaselessString s = "MIME-Version"; return s; }
+const PCaselessString & PHTTP::ConnectionTag       () { static const PConstCaselessString s = "Connection"; return s; }
+const PCaselessString & PHTTP::KeepAliveTag        () { static const PConstCaselessString s = "Keep-Alive"; return s; }
+const PCaselessString & PHTTP::TransferEncodingTag () { static const PConstCaselessString s = "Transfer-Encoding"; return s; }
+const PCaselessString & PHTTP::ChunkedTag          () { static const PConstCaselessString s = "chunked"; return s; }
+const PCaselessString & PHTTP::ProxyConnectionTag  () { static const PConstCaselessString s = "Proxy-Connection"; return s; }
+const PCaselessString & PHTTP::ProxyAuthorizationTag(){ static const PConstCaselessString s = "Proxy-Authorization"; return s; }
+const PCaselessString & PHTTP::ProxyAuthenticateTag() { static const PConstCaselessString s = "Proxy-Authenticate"; return s; }
+const PCaselessString & PHTTP::ForwardedTag        () { static const PConstCaselessString s = "Forwarded"; return s; }
+const PCaselessString & PHTTP::SetCookieTag        () { static const PConstCaselessString s = "Set-Cookie"; return s; }
+const PCaselessString & PHTTP::CookieTag           () { static const PConstCaselessString s = "Cookie"; return s; }
 
 
 
