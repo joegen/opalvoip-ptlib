@@ -210,9 +210,14 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
 
   PSocket::SelectList::iterator r = m_selectList.begin();
   PUDPSocket * socket = (PUDPSocket *)&(*r);
+  m_selectList.erase(r);
+
   if (!message.Read(*socket)) {
-    PTRACE(2, "STUNSRVR\tRead failed");
-    return false;
+    // ignore read errors - they are likely to be connection
+    // refused ICMP messages from symmetric NATs
+    //PTRACE(2, "STUNSRVR\tRead failed");
+    message.SetSize(0);
+    return true;
   }  
 
   {
@@ -224,7 +229,6 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
     socketInfo = r->second;
   }
 
-  m_selectList.erase(r);
   return true;
 }
 
@@ -261,7 +265,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, PSTUNServer::So
   PSTUNMessage response;
   PUDPSocket * replySocket = socketInfo.m_socket;
 
-  PTRACE(2, "STUNSRVR\tReceived BINDING request from " << request.GetSourceAddressAndPort() << " on " << socketInfo.m_socketAddress);
+  PTRACE(2, "STUNSRVR\tReceived " << (request.IsRFC5389() ? "RFC5389 " : "") << "BINDING request from " << request.GetSourceAddressAndPort() << " on " << socketInfo.m_socketAddress);
 
   // if CHANGE-REQUEST was specified, and we have no alternate address, then refuse the request
   const PSTUNChangeRequest * changeRequest = (PSTUNChangeRequest *)request.FindAttribute(PSTUNAttribute::CHANGE_REQUEST);
