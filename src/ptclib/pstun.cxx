@@ -90,11 +90,15 @@ void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
   PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
   hdr->msgType = (WORD)newType;
 
-  // add magic number for RFC 5389 
-  *(PUInt32b *)(&(hdr->transactionId)) = RFC5389_MAGIC_COOKIE;
+  if (id != NULL)
+    memcpy(hdr->transactionId, id, sizeof(hdr->transactionId));
+  else  {
+    // add magic number for RFC 5389 
+    *(PUInt32b *)(&(hdr->transactionId)) = RFC5389_MAGIC_COOKIE;
 
-  for (PINDEX i = 4; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
-     hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
+    for (PINDEX i = 4; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
+       hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
+  }
 }
 
 PSTUNMessage::MsgType PSTUNMessage::GetType() const
