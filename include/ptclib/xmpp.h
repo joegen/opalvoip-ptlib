@@ -49,12 +49,12 @@ namespace XMPP
 {
   /** Various constant strings
    */
-  extern const PString & LanguageTag();
-  extern const PString & NamespaceTag();
-  extern const PString & MessageStanzaTag();
-  extern const PString & PresenceStanzaTag();
-  extern const PString & IQStanzaTag();
-  extern const PString & IQQueryTag();
+  extern const PCaselessString & LanguageTag();
+  extern const PCaselessString & NamespaceTag();
+  extern const PCaselessString & MessageStanzaTag();
+  extern const PCaselessString & PresenceStanzaTag();
+  extern const PCaselessString & IQStanzaTag();
+  extern const PCaselessString & IQQueryTag();
 
   class JID : public PObject
   {
@@ -226,9 +226,9 @@ namespace XMPP
   public:
     /** Various constant strings
     */
-    static const PString & IDTag();
-    static const PString & FromTag();
-    static const PString & ToTag();
+    static const PCaselessString & IDTag();
+    static const PCaselessString & FromTag();
+    static const PCaselessString & ToTag();
 
     virtual PBoolean IsValid() const = 0;
 
@@ -265,10 +265,10 @@ namespace XMPP
 
     /** Various constant strings
     */
-    static const PString & TypeTag();
-    static const PString & SubjectTag();
-    static const PString & BodyTag();
-    static const PString & ThreadTag();
+    static const PCaselessString & TypeTag();
+    static const PCaselessString & SubjectTag();
+    static const PCaselessString & BodyTag();
+    static const PCaselessString & ThreadTag();
 
     /** Construct a new empty message
     */
@@ -336,10 +336,10 @@ namespace XMPP
 
     /** Various constant strings
     */
-    static const PString & TypeTag();
-    static const PString & ShowTag();
-    static const PString & StatusTag();
-    static const PString & PriorityTag();
+    static const PCaselessString & TypeTag();
+    static const PCaselessString & ShowTag();
+    static const PCaselessString & StatusTag();
+    static const PCaselessString & PriorityTag();
 
     /** Construct a new empty presence
     */
@@ -391,7 +391,7 @@ namespace XMPP
 
     /** Various constant strings
     */
-    static const PString & TypeTag();
+    static const PCaselessString & TypeTag();
 
     IQ(IQType type, PXMLElement * body = 0);
     IQ(PXML& pdu);
