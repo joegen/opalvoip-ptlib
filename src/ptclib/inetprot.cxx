@@ -796,11 +796,11 @@ PString PMIMEInfo::GetContentType(const PString & fType)
 }
 
 
-const PCaselessString & PMIMEInfo::ContentTypeTag()             { static const PConstCaselessString s = "Content-Type";              return s; }
-const PCaselessString & PMIMEInfo::ContentDispositionTag()      { static const PConstCaselessString s = "Content-Disposition";       return s; }
-const PCaselessString & PMIMEInfo::ContentTransferEncodingTag() { static const PConstCaselessString s = "Content-Transfer-Encoding"; return s; }
-const PCaselessString & PMIMEInfo::ContentDescriptionTag()      { static const PConstCaselessString s = "Content-Description";       return s; }
-const PCaselessString & PMIMEInfo::ContentIdTag()               { static const PConstCaselessString s = "Content-ID";                return s; }
+const PCaselessString & PMIMEInfo::ContentTypeTag()             { static const PConstCaselessString s("Content-Type");              return s; }
+const PCaselessString & PMIMEInfo::ContentDispositionTag()      { static const PConstCaselessString s("Content-Disposition");       return s; }
+const PCaselessString & PMIMEInfo::ContentTransferEncodingTag() { static const PConstCaselessString s("Content-Transfer-Encoding"); return s; }
+const PCaselessString & PMIMEInfo::ContentDescriptionTag()      { static const PConstCaselessString s("Content-Description");       return s; }
+const PCaselessString & PMIMEInfo::ContentIdTag()               { static const PConstCaselessString s("Content-ID");                return s; }
 
 
 //////////////////////////////////////////////////////////////////////////////
