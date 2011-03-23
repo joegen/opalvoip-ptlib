@@ -65,8 +65,8 @@ PObject::Comparison XMPP::MUC::User::Compare(const PObject & obj) const
 
 ///////////////////////////////////////////////////////
 
-const PString & XMPP::MUC::NamespaceTag() { static PString s = "http://jabber.org/protocol/muc"; return s; }
-const PString & XMPP::MUC::User::NamespaceTag() { static PString s = "http://jabber.org/protocol/muc#user"; return s; }
+const PCaselessString & XMPP::MUC::NamespaceTag()       { static const PConstCaselessString s = "http://jabber.org/protocol/muc"; return s; }
+const PCaselessString & XMPP::MUC::User::NamespaceTag() { static const PConstCaselessString s = "http://jabber.org/protocol/muc#user"; return s; }
 
 XMPP::MUC::Room::Room(C2S::StreamHandler * handler, const JID& jid, const PString& nick)
   : m_Handler(handler), m_RoomJID(jid)

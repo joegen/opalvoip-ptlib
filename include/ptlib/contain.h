@@ -48,28 +48,36 @@
 // Abstract container class
 
 // The type below cannot be nested into PContainer as DevStudio 2005 AUTOEXP.DAT doesn't like it
-class PContainerReference {
+class PContainerReference
+{
   public:
-    inline PContainerReference(PINDEX initialSize)
-      : size(initialSize), count(1), deleteObjects(true)
+    __inline PContainerReference(PINDEX initialSize, bool isConst = false)
+      : size(initialSize)
+      , count(1)
+      , deleteObjects(true)
+      , constObject(isConst)
     {
     }
 
-    inline PContainerReference(const PContainerReference & ref)
-      : size(ref.size), count(1), deleteObjects(ref.deleteObjects)
+    __inline PContainerReference(const PContainerReference & ref)
+      : size(ref.size)
+      , count(1)
+      , deleteObjects(ref.deleteObjects)
+      , constObject(false)
     {  
     }
 
-    PINDEX   size;         // Size of what the container contains
-    PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
-    PBoolean deleteObjects;    // Used by PCollection but put here for efficiency
+    PINDEX         size;          // Size of what the container contains
+    PAtomicInteger count;         // reference count to the container content - guaranteed to be atomic
+    bool           deleteObjects; // Used by PCollection but put here for efficiency
+    bool           constObject;   // Indicates object is constant/static, copy on write.
 
     PDECLARE_POOL_ALLOCATOR();
 
   private:
-    PContainerReference & operator=(const PContainerReference &) 
-    { return *this; }
+    void operator=(const PContainerReference &) { }
 };
+
 
 /** Abstract class to embody the base functionality of a <code>container</code>.
 
@@ -213,6 +221,9 @@ class PContainer : public PObject
       const PContainer * cont  ///< Container class to clone.
     );
 
+    /// Construct using static PContainerReference.
+    PContainer(PContainerReference & reference);
+
     /**Destroy the container contents. This function must be defined by the
        descendent class to do the actual destruction of the contents. It is
        automatically declared when the <code>PCONTAINERINFO()</code> macro is used.
@@ -272,6 +283,10 @@ class PContainer : public PObject
      */
     void Destruct();
 
+    /** Destroy the PContainerReference instance.
+        Override if passing a static vallue in via ctor.
+      */
+    virtual void DestroyReference();
 
     PContainerReference * reference;
 };

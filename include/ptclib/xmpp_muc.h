@@ -46,7 +46,7 @@ namespace XMPP
 {
   namespace MUC
   {
-    extern const PString & NamespaceTag();
+    extern const PCaselessString & NamespaceTag();
 
     class User : public PObject
     {
@@ -55,7 +55,7 @@ namespace XMPP
       User();
       ~User();
 
-      static const PString & NamespaceTag();
+      static const PCaselessString & NamespaceTag();
 
       enum Role {
         None,

@@ -68,6 +68,7 @@ PContainer::PContainer(PINDEX initialSize)
   PAssert(reference != NULL, POutOfMemory);
 }
 
+
 PContainer::PContainer(int, const PContainer * cont)
 {
   if (cont == this)
@@ -79,6 +80,7 @@ PContainer::PContainer(int, const PContainer * cont)
   reference = new PContainerReference(*cont->reference);
   PAssert(reference != NULL, POutOfMemory);
 }
+
 
 PContainer::PContainer(const PContainer & cont)
 {
@@ -92,24 +94,29 @@ PContainer::PContainer(const PContainer & cont)
 }
 
 
+PContainer::PContainer(PContainerReference & ref)
+  : reference(&ref)
+{
+}
+
+
 void PContainer::AssignContents(const PContainer & cont)
 {
   if(cont.reference == NULL){
     PAssertAlways("container reference is null");
     return;
-  } else if(cont.GetClass() == NULL){
+  }
+  if(cont.GetClass() == NULL){
     PAssertAlways("container class is null");
     return;
   }
 
-  if (reference == cont.reference) {
+  if (reference == cont.reference)
     return;
-  }
 
   if (--reference->count == 0) {
     DestroyContents();
-    delete reference;
-    reference = NULL;
+    DestroyReference();
   }
 
   PAssert(++cont.reference->count > 1, "Assignment of container that was deleted");
@@ -120,16 +127,18 @@ void PContainer::AssignContents(const PContainer & cont)
 void PContainer::Destruct()
 {
   if (reference != NULL) {
-    if (--reference->count > 0) {
-      reference = NULL;
-    }
-    
-    else {
+    if (--reference->count <= 0) {
       DestroyContents();
-      delete reference;
-      reference = NULL;
+      DestroyReference();
     }
+    reference = NULL;
   }
+}
+
+
+void PContainer::DestroyReference()
+{
+  delete reference;
 }
 
 
@@ -203,6 +212,15 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
 }
 
 
+PAbstractArray::PAbstractArray(PContainerReference & reference, PINDEX elementSizeInBytes)
+  : PContainer(reference)
+  , elementSize(elementSizeInBytes)
+  , theArray(NULL)
+  , allocatedDynamically(false)
+{
+}
+
+
 void PAbstractArray::DestroyContents()
 {
   if (theArray != NULL) {
@@ -218,6 +236,9 @@ void PAbstractArray::CopyContents(const PAbstractArray & array)
   elementSize = array.elementSize;
   theArray = array.theArray;
   allocatedDynamically = array.allocatedDynamically;
+
+  if (reference->constObject)
+    MakeUnique();
 }
 
 
@@ -325,6 +346,8 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
       if ((newArray = PAbstractArray_allocator.allocate(newsizebytes)) == NULL)
         return PFalse;
   
+      allocatedDynamically = true;
+
       if (theArray != NULL)
         memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
     }
@@ -2572,6 +2595,56 @@ char ** PStringToString::ToCharArray(bool withEqualSign, PCharArray * storage) c
   storagePtr[strIndex] = NULL;
 
   return storagePtr;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+PString PStringOptions::GetString(const PCaselessString & key, const char * dflt) const
+{
+  PString * str = PStringToString::GetAt(key);
+  return str != NULL ? *str : dflt;
+}
+
+
+bool PStringOptions::GetBoolean(const PCaselessString & key, bool dflt) const
+{
+  PString * str = PStringToString::GetAt(key);
+  if (str == NULL)
+    return dflt;
+
+  if (str->IsEmpty() || str->AsUnsigned() != 0)
+    return true;
+
+  PCaselessString test(*str);
+  return test.NumCompare("t") == EqualTo || test.NumCompare("y") == EqualTo;
+}
+
+
+long PStringOptions::GetInteger(const PCaselessString & key, long dflt) const
+{
+  PString * str = PStringToString::GetAt(key);
+  return str != NULL ? str->AsInteger() : dflt;
+}
+
+
+void PStringOptions::SetInteger(const PCaselessString & key, long value)
+{
+  PStringToString::SetAt(key, PString(PString::Signed, value));
+}
+
+
+double PStringOptions::GetReal(const PCaselessString & key, double dflt) const
+{
+  PString * str = PStringToString::GetAt(key);
+  return str != NULL ? str->AsReal() : dflt;
+}
+
+
+void PStringOptions::SetReal(const PCaselessString & key, double value, int decimals)
+{
+  PStringToString::SetAt(key, PString(decimals < 0 ? PString::Exponent : PString::Decimal, value, decimals));
 }
 
 
