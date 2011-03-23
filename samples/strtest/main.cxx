@@ -2,6 +2,7 @@
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
 #include <string>
+#include <ptclib/random.h>
 
 ////////////////////////////////////////////////
 //
@@ -240,6 +241,139 @@ void Test5()
   cout << "main done" << endl;
 }
 
+char buffer[100];
+
+void GetRandString(PString & str, int maxLen)
+{
+  int l;
+  for (l = 0; l < maxLen; ++l)
+    buffer[l] = 'A' + (PRandom::Number() % 26);
+  buffer[l] = '\0';
+  str = PString(buffer);
+}
+
+
+void GetRandString(std::string & str, int maxLen)
+{
+  int l;
+  for (l = 0; l < maxLen; ++l)
+    buffer[l] = 'A' + (PRandom::Number() % 26);
+  buffer[l] = '\0';
+  str = std::string(buffer);
+}
+
+
+void Test6()
+{
+  const int number = 1000000;
+  {
+    cout << "PString start" << endl;
+    PTime start;
+    PSortedStringList pstringList;
+    for (int i = 0; i < number; ++i) {
+      PString str;
+      GetRandString(str, 16);
+      pstringList.AppendString(str);
+    }
+    cout << "Total time = " << (int)(PTime()-start).GetMilliSeconds() << " msecs\n";
+  }
+  {
+    cout << "std::string start" << endl;
+    PTime start;
+    set<std::string> stdstringList;
+    for (int i = 0; i < number; ++i) {
+      std::string str;
+      GetRandString(str, 16);
+      stdstringList.insert(str);
+    }
+    cout << "Total time = " << (int)(PTime()-start).GetMilliSeconds() << " msecs\n";
+  }
+}
+
+void Test7()
+{
+  const int number = 1000000;
+  {
+    cout << "PString start" << endl;
+    PTime start;
+    PSortedStringList pstringList;
+    for (int i = 0; i < number; ++i) {
+      PString str1;
+      GetRandString(str1, 16);
+      PString str2;
+      GetRandString(str2, 16);
+      PString str3;
+      GetRandString(str3, 16);
+
+      PString str = str1 + str2 + str3;
+
+      pstringList.AppendString(str);
+    }
+    cout << "Total time = " << (int)(PTime()-start).GetMilliSeconds() << " msecs\n";
+  }
+  {
+    cout << "std::string start" << endl;
+    PTime start;
+    set<std::string> stdstringList;
+    for (int i = 0; i < number; ++i) {
+      std::string str1;
+      GetRandString(str1, 16);
+      std::string str2;
+      GetRandString(str2, 16);
+      std::string str3;
+      GetRandString(str3, 16);
+
+      PString str = str1 + str2 + str3;
+
+      stdstringList.insert(str);
+    }
+    cout << "Total time = " << (int)(PTime()-start).GetMilliSeconds() << " msecs\n";
+  }
+}
+
+
+
+void Test8()
+{
+  const int number = 1000000;
+  {
+    cout << "PStringStream start" << endl;
+    PTime start;
+    PSortedStringList pstringList;
+    for (int i = 0; i < number; ++i) {
+      PString str1;
+      GetRandString(str1, 16);
+      PString str2;
+      GetRandString(str2, 16);
+      PString str3;
+      GetRandString(str3, 16);
+
+      PStringStream strm; strm << str1 << str2 << str3;
+
+      pstringList.AppendString(strm);
+    }
+    cout << "Total time = " << (int)(PTime()-start).GetMilliSeconds() << " msecs\n";
+  }
+  {
+    cout << "std::string start" << endl;
+    PTime start;
+    set<std::string> stdstringList;
+    for (int i = 0; i < number; ++i) {
+      std::string str1;
+      GetRandString(str1, 16);
+      std::string str2;
+      GetRandString(str2, 16);
+      std::string str3;
+      GetRandString(str3, 16);
+
+      std::stringstream strm; strm << str1 << str2 << str3;
+
+      stdstringList.insert(strm.str());
+    }
+    cout << "Total time = " << (int)(PTime()-start).GetMilliSeconds() << " msecs\n";
+  }
+}
+
 ////////////////////////////////////////////////
 //
 // main
@@ -268,6 +402,9 @@ void StringTest::Main()
          << "    3     PBYTEArray test\n"
          << "    4     string test\n"
          << "    5     queuechannel test\n"
+         << "    6     PSortedList vs std::set\n"
+         << "    7     PString+PSortedList vs std::string+std::set\n"
+         << "    8     PString+PSortedList vs std::string+std::set\n"
          << endl;
     return;
   }
@@ -278,6 +415,9 @@ void StringTest::Main()
     case 3:   Test3(); return;
     case 4:   Test4(); return;
     case 5:   Test5(); return;
+    case 6:   Test6(); return;
+    case 7:   Test7(); return;
+    case 8:   Test8(); return;
     default:  break;
   }
 
