@@ -105,12 +105,15 @@ PBASEARRAY(PWCharArray, wchar_t);
    world usage.
  */
 
-class PString : public PCharArray {
+class PString : public PCharArray
+{
   PCLASSINFO(PString, PCharArray);
 
 //  using namespace std;
 
   public:
+    typedef const char * Initialiser;
+
   /**@name Construction */
   //@{
     /**Construct an empty string. This will have one character in it which is
@@ -1636,14 +1639,16 @@ class PString : public PCharArray {
       PINDEX length,      // Number of characters to compare.
       const char * cstr   // C string to compare against.
     ) const;
+
     /* Internal function to compare the current string value against the
        specified C string.
 
        @return
        relative rank of the two strings.
      */
-
     PString(int dummy, const PString * str);
+
+    PString(PContainerReference & reference) : PCharArray(reference) { }
 };
 
 
@@ -1665,6 +1670,8 @@ inline wostream & operator<<(wostream & stream, const PString & string)
     PCLASSINFO(PWideString, PWCharArray);
 
     public:
+    typedef const wchar_t * Initialiser;
+
       PWideString() { }
       PWideString(const PWCharArray & arr) : PWCharArray(arr) { }
       PWideString(const PString     & str) : PWCharArray(str.AsUCS2()) { }
@@ -1674,6 +1681,9 @@ inline wostream & operator<<(wostream & stream, const PString & string)
       PWideString & operator=(const std::string & str) { PWCharArray::operator=(PString(str.c_str()).AsUCS2()); return *this; }
       PWideString & operator=(const char        * str) { PWCharArray::operator=(PString(str).AsUCS2()); return *this; }
       friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
+
+    protected:
+      PWideString(PContainerReference & reference) : PWCharArray(reference) { }
   };
 
   #ifdef UNICODE
@@ -1801,7 +1811,56 @@ class PCaselessString : public PString
      */
 
     PCaselessString(int dummy, const PCaselessString * str);
+    PCaselessString(PContainerReference & reference) : PString(reference) { }
 };
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+/**Create a constant string.
+   This is used to create a PString wrapper around a constant char string. Thus
+   internal memory allocations are avoided as it does not change. The resultant
+   object can be used in almost every way that a PString does, except being
+   able modify it. However, copying to another PString instance and then
+   making modifications is OK.
+   
+   It is particularly useful in static string declarations, e.g.
+   <CODE>
+   static const PConstantString<PString> str("A test string");
+   </CODE>
+   and is completely thread safe in it's construction.
+  */
+template <class ParentString>
+class PConstantString : public ParentString
+{
+  private:
+    PContainerReference m_staticReference;
+  public:
+    PConstantString(typename ParentString::Initialiser init)
+      : ParentString(m_staticReference)
+      , m_staticReference(strlen(init)+1, true)
+    {
+      this->theArray = (char *)init;
+    }
+    ~PConstantString() { Destruct(); }
+
+    virtual PBoolean SetSize(PINDEX) { return false; }
+    virtual void AssignContents(const PContainer &) { PAssertAlways(PInvalidParameter); }
+    virtual void DestroyReference() { }
+
+  private:
+    PConstantString(const PConstantString &) : ParentString(m_staticReference) { }
+    void operator=(const PConstantString &) { }
+};
+
+
+/// Constant PString type. See PConstantString.
+typedef PConstantString<PString>         PConstString;
+
+/// Constant PCaselessString type. See PConstantString.
+typedef PConstantString<PCaselessString> PConstCaselessString;
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -2445,8 +2504,11 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        @return
        reference to the object indexed by the key.
      */
-    PString operator()(const K & key, const char * dflt = "") const
-      { if (AbstractContains(key)) return (*this)[key]; return dflt; }
+    PString operator()(const K & key, const char * dflt = NULL) const
+    {
+      PString * str = GetAt(key);
+      return str != NULL ? *str : dflt;
+    }
 
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
@@ -2770,93 +2832,107 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 class PStringOptions : public PStringToString 
 {
   public:
-    /// Determine of the option exists.
-    bool Has(const PString & key) const
-    {
-      return Contains(key);
-    }
-    bool Has(const PString & (*key)()) const
-    {
-      return Contains(key());
-    }
-    bool Has(const char * key) const
-    {
-      return Contains(PCaselessString(key));
-    }
-
-    /// Get the option value.
-    PString Get(const PString & key, const PString & deflt = PString::Empty()) const
-    {
-      return (*this)(key, deflt);
-    }
-    PString Get(const PString & (*key)(), const PString & deflt = PString::Empty()) const
-    {
-      return (*this)(key(), deflt);
-    }
-    PString Get(const char * key, const PString & deflt = PString::Empty()) const
-    {
-      return (*this)(PCaselessString(key), deflt);
-    }
-
-    /// Get the option value as a boolean.
-    bool GetBoolean(const PString & key, bool deflt = false) const
-    {
-      PString * str = GetAt(key);
-      return str == NULL ? deflt : (str->IsEmpty() || str->NumCompare("t") == EqualTo || str->NumCompare("y") == EqualTo || str->AsUnsigned() != 0);
-    }
-    bool GetBoolean(const PString & (*key)(), bool deflt = false) const
-    {
-      return GetBoolean(key(), deflt);
-    }
-    bool GetBoolean(const char * key, bool deflt = false) const
-    {
-      return GetBoolean(PCaselessString(key), deflt);
-    }
-
-    /// Get the option value as an integer.
-    long GetInteger(const PString & key, long deflt = 0) const
-    {
-      PString * str = GetAt(key);
-      return str != NULL ? str->AsInteger() : deflt;
-    }
-    long GetInteger(const PString & (*key)(), long deflt = 0) const
-    {
-      return GetInteger(key(), deflt);
-    }
-    long GetInteger(const char * key, long deflt = 0) const
-    {
-      return GetInteger(PCaselessString(key), deflt);
-    }
-
-    /// Set the option value.
-    bool Set(const PString & key, const PString & value)
-    {
-      return PStringToString::SetAt(PCaselessString(key), value);
-    }
-    bool Set(const PString & (*key)(), const PString & value)
-    {
-      return PStringToString::SetAt(PCaselessString(key()), value);
-    }
-    bool Set(const char * key, const PString & value)
-    {
-      return PStringToString::SetAt(PCaselessString(key), value);
-    }
-
+    /// Determine if the specified key is present.
+    bool Contains(const char *              key   ) const { return PStringToString::Contains(PConstCaselessString(key)); }
+    bool Contains(const PString         &   key   ) const { return PStringToString::Contains(PCaselessString(key)); }
+    bool Contains(const PCaselessString &   key   ) const { return PStringToString::Contains(key); }
+    bool Contains(const PCaselessString & (*key)()) const { return PStringToString::Contains(key()); }
 
     // Overide default PStringToString::SetAt() to make sure the key is caseless
-    PBoolean SetAt(const char * key, const PString & data)
-    {
-      return PStringToString::SetAt(PCaselessString(key), data);
-    }
-    PBoolean SetAt(const PString & key, const PString & data)
-    {
-      return PStringToString::SetAt(PCaselessString(key), data);
-    }
-    PBoolean SetAt(const PCaselessString & key, const PString & data)
-    {
-      return PStringToString::SetAt(key, data);
-    }
+    PString * GetAt(const char *              key   ) const { return PStringToString::GetAt(PConstCaselessString(key)); }
+    PString * GetAt(const PString         &   key   ) const { return PStringToString::GetAt(PCaselessString(key)); }
+    PString * GetAt(const PCaselessString &   key   ) const { return PStringToString::GetAt(key); }
+    PString * GetAt(const PCaselessString & (*key)()) const { return PStringToString::GetAt(key()); }
+
+    // Overide default PStringToString::SetAt() to make sure the key is caseless
+    PBoolean SetAt(const char *              key,    const PString & data) { return PStringToString::SetAt(PConstCaselessString(key), data); }
+    PBoolean SetAt(const PString         &   key,    const PString & data) { return PStringToString::SetAt(PCaselessString(key), data); }
+    PBoolean SetAt(const PCaselessString &   key,    const PString & data) { return PStringToString::SetAt(key, data); }
+    PBoolean SetAt(const PCaselessString & (*key)(), const PString & data) { return PStringToString::SetAt(key(), data); }
+
+    // Overide default PStringToString::RemoveAt() to make sure the key is caseless
+    PString * RemoveAt(const char *              key)    { return PStringToString::RemoveAt(PConstCaselessString(key)); }
+    PString * RemoveAt(const PString         &   key)    { return PStringToString::RemoveAt(PCaselessString(key)); }
+    PString * RemoveAt(const PCaselessString &   key)    { return PStringToString::RemoveAt(key); }
+    PString * RemoveAt(const PCaselessString & (*key)()) { return PStringToString::RemoveAt(key()); }
+
+    /// Get an option value.
+    PString GetString(const char *              key,    const char * dflt = NULL) const { return GetString(PConstCaselessString(key), dflt); }
+    PString GetString(const PString         &   key,    const char * dflt = NULL) const { return GetString(PCaselessString(key), dflt); }
+    PString GetString(const PCaselessString &   key,    const char * dflt = NULL) const;
+    PString GetString(const PCaselessString & (*key)(), const char * dflt = NULL) const { return GetString(key(), dflt); }
+
+    /// Set the option value.
+    bool SetString(const char *              key,    const PString & value) { return SetAt(key, value); }
+    bool SetString(const PString         &   key,    const PString & value) { return SetAt(key, value); }
+    bool SetString(const PCaselessString &   key,    const PString & value) { return SetAt(key, value); }
+    bool SetString(const PCaselessString & (*key)(), const PString & value) { return SetAt(key, value); }
+
+    /// Get the option value as a boolean.
+    bool GetBoolean(const char *              key,    bool dflt = false) const { return GetBoolean(PConstCaselessString(key), dflt); }
+    bool GetBoolean(const PString         &   key,    bool dflt = false) const { return GetBoolean(PCaselessString(key), dflt); }
+    bool GetBoolean(const PCaselessString &   key,    bool dflt = false) const;
+    bool GetBoolean(const PCaselessString & (*key)(), bool dflt = false) const { return GetBoolean(key(), dflt); }
+
+    /// Set the option value as a boolean.
+    void SetBoolean(const char *              key,    bool value) { SetBoolean(PConstCaselessString(key), value); }
+    void SetBoolean(const PString         &   key,    bool value) { SetBoolean(PCaselessString(key), value); }
+    void SetBoolean(const PCaselessString &   key,    bool value) { SetAt(key, value ? "true" : "false"); }
+    void SetBoolean(const PCaselessString & (*key)(), bool value) { SetBoolean(key(), value); }
+
+    /// Get the option value as an integer.
+    long GetInteger(const char *              key,    long dflt = 0) const { return GetInteger(PConstCaselessString(key), dflt); }
+    long GetInteger(const PString         &   key,    long dflt = 0) const { return GetInteger(PCaselessString(key), dflt); }
+    long GetInteger(const PCaselessString &   key,    long dflt = 0) const;
+    long GetInteger(const PCaselessString & (*key)(), long dflt = 0) const { return GetInteger(key(), dflt); }
+
+    /// Set an integer value for the particular MIME info field.
+    void SetInteger(const char *              key,    long value) { SetInteger(PConstCaselessString(key), value); }
+    void SetInteger(const PString         &   key,    long value) { SetInteger(PCaselessString(key), value); }
+    void SetInteger(const PCaselessString &   key,    long value);
+    void SetInteger(const PCaselessString & (*key)(), long value) { SetInteger(key(), value); }
+
+    /// Get the option value as a floating point real.
+    double GetReal(const char *              key,    double dflt = 0) const { return GetReal(PConstCaselessString(key), dflt); }
+    double GetReal(const PString         &   key,    double dflt = 0) const { return GetReal(PCaselessString(key), dflt); }
+    double GetReal(const PCaselessString &   key,    double dflt = 0) const;
+    double GetReal(const PCaselessString & (*key)(), double dflt = 0) const { return GetReal(key(), dflt); }
+
+    /// Set a floating point real value for the particular MIME info field.
+    void SetReal(const char *              key,    double value, int decimals) { SetReal(PConstCaselessString(key), value, decimals); }
+    void SetReal(const PString         &   key,    double value, int decimals) { SetReal(PCaselessString(key), value, decimals); }
+    void SetReal(const PCaselessString &   key,    double value, int decimals);
+    void SetReal(const PCaselessString & (*key)(), double value, int decimals) { SetReal(key(), value, decimals); }
+
+    /// Determine of the option exists.
+    __inline bool Has(const char * key) const                 { return Contains(key); }
+    __inline bool Has(const PString & key) const              { return Contains(key); }
+    __inline bool Has(const PCaselessString & key) const      { return Contains(key); }
+    __inline bool Has(const PCaselessString & (*key)()) const { return Contains(key); }
+
+    /// Get the option value.
+    __inline PString Get(const char *              key,    const char * dflt = NULL) const { return GetString(key, dflt); }
+    __inline PString Get(const PString         &   key,    const char * dflt = NULL) const { return GetString(key, dflt); }
+    __inline PString Get(const PCaselessString &   key,    const char * dflt = NULL) const { return GetString(key, dflt); }
+    __inline PString Get(const PCaselessString & (*key)(), const char * dflt = NULL) const { return GetString(key, dflt); }
+    __inline PString Get(const char *              key,    const PString & dflt) const { return GetString(key, dflt); }
+    __inline PString Get(const PString         &   key,    const PString & dflt) const { return GetString(key, dflt); }
+    __inline PString Get(const PCaselessString &   key,    const PString & dflt) const { return GetString(key, dflt); }
+    __inline PString Get(const PCaselessString & (*key)(), const PString & dflt) const { return GetString(key, dflt); }
+
+    /// Set the option value.
+    __inline bool Set(const char *              key,    const PString & value) { return SetAt(key, value); }
+    __inline bool Set(const PString         &   key,    const PString & value) { return SetAt(key, value); }
+    __inline bool Set(const PCaselessString &   key,    const PString & value) { return SetAt(key, value); }
+    __inline bool Set(const PCaselessString & (*key)(), const PString & value) { return SetAt(key, value); }
+
+    /// Remove option value
+    __inline void Remove(const char *              key)    { RemoveAt(key); }
+    __inline void Remove(const PString         &   key)    { RemoveAt(key); }
+    __inline void Remove(const PCaselessString &   key)    { RemoveAt(key); }
+    __inline void Remove(const PCaselessString & (*key)()) { RemoveAt(key); }
 };
+
 
 /**A class representing a regular expression that may be used for locating
    patterns in strings. The regular expression string is "compiled" into a
