@@ -811,7 +811,7 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 {
   // if only one argument, then it must be a version 0.9 simple request
   PINDEX lastSpacePos = args.FindLast(' ');
-  static const PCaselessString httpId = "HTTP/";
+  static const PConstCaselessString httpId = "HTTP/";
   if (lastSpacePos == P_MAX_INDEX || httpId != args(lastSpacePos+1, lastSpacePos+5)) {
     majorVersion = 0;
     minorVersion = 9;

@@ -107,7 +107,7 @@ class PAbstractArray : public PContainer
                                    ///< constructor will assert.
       const void *buffer,          ///< Pointer to an array of elements.
       PINDEX bufferSizeInElements, ///< Number of elements pointed to by buffer.
-      PBoolean dynamicAllocation       ///< Buffer is copied and dynamically allocated.
+      PBoolean dynamicAllocation   ///< Buffer is copied and dynamically allocated.
     );
   //@}
 
@@ -231,6 +231,11 @@ class PAbstractArray : public PContainer
     virtual void ReadElementFrom(
       istream & stream,
       PINDEX index
+    );
+
+    PAbstractArray(
+      PContainerReference & reference,
+      PINDEX elementSizeInBytes
     );
 
     /// Size of an element in bytes.
@@ -440,6 +445,8 @@ template <class T> class PBaseArray : public PAbstractArray
     ) const {
       stream << GetAt(index);
     }
+
+    PBaseArray(PContainerReference & reference) : PAbstractArray(reference, sizeof(T)) { }
 };
 
 /**Declare a dynamic array base type.
@@ -468,6 +475,8 @@ template <class T> class PBaseArray : public PAbstractArray
   PDECLARE_CLASS(cls, PBaseArray<T>) \
     cls(PINDEX initialSize = 0) \
       : PBaseArray<T>(initialSize) { } \
+    cls(PContainerReference & reference) \
+      : PBaseArray<T>(reference) { } \
     cls(T const * buffer, PINDEX length, PBoolean dynamic = true) \
       : PBaseArray<T>(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
