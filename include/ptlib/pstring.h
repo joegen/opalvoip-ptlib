@@ -1842,14 +1842,17 @@ class PConstantString : public ParentString
     {
       this->theArray = (char *)init;
     }
-    ~PConstantString() { Destruct(); }
+    ~PConstantString() { this->Destruct(); }
 
     virtual PBoolean SetSize(PINDEX) { return false; }
     virtual void AssignContents(const PContainer &) { PAssertAlways(PInvalidParameter); }
     virtual void DestroyReference() { }
 
   private:
-    PConstantString(const PConstantString &) : ParentString(m_staticReference) { }
+    PConstantString(const PConstantString &)
+      : ParentString(m_staticReference)
+      , m_staticReference(0, true)
+      { }
     void operator=(const PConstantString &) { }
 };
 
@@ -2506,8 +2509,8 @@ template <class K> class PStringDictionary : public PAbstractDictionary
      */
     PString operator()(const K & key, const char * dflt = NULL) const
     {
-      PString * str = GetAt(key);
-      return str != NULL ? *str : dflt;
+      PString * str = this->GetAt(key);
+      return str != NULL ? *str : PString(dflt);
     }
 
     /**Determine if the value of the object is contained in the hash table. The

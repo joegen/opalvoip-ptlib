@@ -39,8 +39,8 @@
 #include <ptclib/psasl.h>
 #endif
 
-static const PConstString CRLF = "\r\n";
-static const PConstString CRLFdotCRLF = "\r\n.\r\n";
+static const PConstString CRLF("\r\n");
+static const PConstString CRLFdotCRLF("\r\n.\r\n");
 
 
 #define new PNEW
@@ -1238,17 +1238,17 @@ void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 //////////////////////////////////////////////////////////////////////////////
 // PRFC822Channel
 
-const PCaselessString & PRFC822Channel::MimeVersionTag() { static const PConstCaselessString s = "MIME-version"; return s; }
-const PCaselessString & PRFC822Channel::FromTag()        { static const PConstCaselessString s = "From";         return s; }
-const PCaselessString & PRFC822Channel::ToTag()          { static const PConstCaselessString s = "To";           return s; }
-const PCaselessString & PRFC822Channel::CCTag()          { static const PConstCaselessString s = "cc";           return s; }
-const PCaselessString & PRFC822Channel::BCCTag()         { static const PConstCaselessString s = "bcc";          return s; }
-const PCaselessString & PRFC822Channel::SubjectTag()     { static const PConstCaselessString s = "Subject";      return s; }
-const PCaselessString & PRFC822Channel::DateTag()        { static const PConstCaselessString s = "Date";         return s; }
-const PCaselessString & PRFC822Channel::ReturnPathTag()  { static const PConstCaselessString s = "Return-Path";  return s; }
-const PCaselessString & PRFC822Channel::ReceivedTag()    { static const PConstCaselessString s = "Received";     return s; }
-const PCaselessString & PRFC822Channel::MessageIDTag()   { static const PConstCaselessString s = "Message-ID";   return s; }
-const PCaselessString & PRFC822Channel::MailerTag()      { static const PConstCaselessString s = "X-Mailer";     return s; }
+const PCaselessString & PRFC822Channel::MimeVersionTag() { static const PConstCaselessString s("MIME-version"); return s; }
+const PCaselessString & PRFC822Channel::FromTag()        { static const PConstCaselessString s("From");         return s; }
+const PCaselessString & PRFC822Channel::ToTag()          { static const PConstCaselessString s("To");           return s; }
+const PCaselessString & PRFC822Channel::CCTag()          { static const PConstCaselessString s("cc");           return s; }
+const PCaselessString & PRFC822Channel::BCCTag()         { static const PConstCaselessString s("bcc");          return s; }
+const PCaselessString & PRFC822Channel::SubjectTag()     { static const PConstCaselessString s("Subject");      return s; }
+const PCaselessString & PRFC822Channel::DateTag()        { static const PConstCaselessString s("Date");         return s; }
+const PCaselessString & PRFC822Channel::ReturnPathTag()  { static const PConstCaselessString s("Return-Path");  return s; }
+const PCaselessString & PRFC822Channel::ReceivedTag()    { static const PConstCaselessString s("Received");     return s; }
+const PCaselessString & PRFC822Channel::MessageIDTag()   { static const PConstCaselessString s("Message-ID");   return s; }
+const PCaselessString & PRFC822Channel::MailerTag()      { static const PConstCaselessString s("X-Mailer");     return s; }
 
 
 
