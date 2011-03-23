@@ -212,34 +212,34 @@ class PHTTP : public PInternetProtocol
     };
 
     // Common MIME header tags
-    static const PString & AllowTag();
-    static const PString & AuthorizationTag();
-    static const PString & ContentEncodingTag();
-    static const PString & ContentLengthTag();
-    static const PString & ContentTypeTag() { return PMIMEInfo::ContentTypeTag(); }
-    static const PString & DateTag();
-    static const PString & ExpiresTag();
-    static const PString & FromTag();
-    static const PString & IfModifiedSinceTag();
-    static const PString & LastModifiedTag();
-    static const PString & LocationTag();
-    static const PString & PragmaTag();
-    static const PString & PragmaNoCacheTag();
-    static const PString & RefererTag();
-    static const PString & ServerTag();
-    static const PString & UserAgentTag();
-    static const PString & WWWAuthenticateTag();
-    static const PString & MIMEVersionTag();
-    static const PString & ConnectionTag();
-    static const PString & KeepAliveTag();
-    static const PString & TransferEncodingTag();
-    static const PString & ChunkedTag();
-    static const PString & ProxyConnectionTag();
-    static const PString & ProxyAuthorizationTag();
-    static const PString & ProxyAuthenticateTag();
-    static const PString & ForwardedTag();
-    static const PString & SetCookieTag();
-    static const PString & CookieTag();
+    static const PCaselessString & AllowTag();
+    static const PCaselessString & AuthorizationTag();
+    static const PCaselessString & ContentEncodingTag();
+    static const PCaselessString & ContentLengthTag();
+    static const PCaselessString & ContentTypeTag() { return PMIMEInfo::ContentTypeTag(); }
+    static const PCaselessString & DateTag();
+    static const PCaselessString & ExpiresTag();
+    static const PCaselessString & FromTag();
+    static const PCaselessString & IfModifiedSinceTag();
+    static const PCaselessString & LastModifiedTag();
+    static const PCaselessString & LocationTag();
+    static const PCaselessString & PragmaTag();
+    static const PCaselessString & PragmaNoCacheTag();
+    static const PCaselessString & RefererTag();
+    static const PCaselessString & ServerTag();
+    static const PCaselessString & UserAgentTag();
+    static const PCaselessString & WWWAuthenticateTag();
+    static const PCaselessString & MIMEVersionTag();
+    static const PCaselessString & ConnectionTag();
+    static const PCaselessString & KeepAliveTag();
+    static const PCaselessString & TransferEncodingTag();
+    static const PCaselessString & ChunkedTag();
+    static const PCaselessString & ProxyConnectionTag();
+    static const PCaselessString & ProxyAuthorizationTag();
+    static const PCaselessString & ProxyAuthenticateTag();
+    static const PCaselessString & ForwardedTag();
+    static const PCaselessString & SetCookieTag();
+    static const PCaselessString & CookieTag();
 
   protected:
     /** Create a TCP/IP HTTP protocol channel.

@@ -487,8 +487,8 @@ class PPOP3 : public PInternetProtocol
     );
 
   // Member variables
-    static PString okResponse;
-    static PString errResponse;
+    static const PString & okResponse();
+    static const PString & errResponse();
 };
 
 
@@ -975,20 +975,20 @@ class PRFC822Channel : public PIndirectChannel
     );
 
     // Common MIME header tags
-    static const PString & MimeVersionTag();
-    static const PString & FromTag();
-    static const PString & ToTag();
-    static const PString & CCTag();
-    static const PString & BCCTag();
-    static const PString & SubjectTag();
-    static const PString & DateTag();
-    static const PString & ReturnPathTag();
-    static const PString & ReceivedTag();
-    static const PString & MessageIDTag();
-    static const PString & MailerTag();
-    static const PString & ContentTypeTag() { return PMIMEInfo::ContentTypeTag(); }
-    static const PString & ContentDispositionTag() { return PMIMEInfo::ContentDispositionTag(); }
-    static const PString & ContentTransferEncodingTag() { return PMIMEInfo::ContentTransferEncodingTag(); }
+    static const PCaselessString & MimeVersionTag();
+    static const PCaselessString & FromTag();
+    static const PCaselessString & ToTag();
+    static const PCaselessString & CCTag();
+    static const PCaselessString & BCCTag();
+    static const PCaselessString & SubjectTag();
+    static const PCaselessString & DateTag();
+    static const PCaselessString & ReturnPathTag();
+    static const PCaselessString & ReceivedTag();
+    static const PCaselessString & MessageIDTag();
+    static const PCaselessString & MailerTag();
+    static const PCaselessString & ContentTypeTag() { return PMIMEInfo::ContentTypeTag(); }
+    static const PCaselessString & ContentDispositionTag() { return PMIMEInfo::ContentDispositionTag(); }
+    static const PCaselessString & ContentTransferEncodingTag() { return PMIMEInfo::ContentTransferEncodingTag(); }
 
     /**Send this message using an SMTP socket.
        This will create a PSMTPClient and connect to the specified host then
