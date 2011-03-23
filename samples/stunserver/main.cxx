@@ -66,11 +66,9 @@ void StunServer::Main()
   while (server.IsOpen()) {
     PSTUNServer::SocketInfo info;
     PSTUNMessage message;
-    if (!server.Read(message, info)) {
+    if (!server.Read(message, info)) 
       cerr << "error: read failed" << endl;
-      break;
-    }
-    else if (message.GetSize() != 0) {
+    else if (message.GetSize() > 0) {
       if (!message.Validate())
         cerr << "error: invalid message received" << endl;
       else
