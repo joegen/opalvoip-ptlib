@@ -266,7 +266,6 @@ class PIPSocket : public PSocket
 #endif
         } m_v;
         unsigned m_version;
-        bool     m_hasScope6;
         int      m_scope6;
 
       /// Output IPv6 & IPv4 address as a string to the specified string.
