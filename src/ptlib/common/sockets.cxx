@@ -1508,12 +1508,16 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
   Close();
 
   // attempt to create a socket
-  if (!OpenSocket(bind_sa->sa_family))
+  if (!OpenSocket(bind_sa->sa_family)) {
+    PTRACE(4, "Socket\tOpenSocket failed");
     return PFalse;
+  }
 #else
   if (!IsOpen()) {
-    if (!OpenSocket())
+    if (!OpenSocket()) {
+      PTRACE(4, "Socket\tOpenSocket failed");
       return PFalse;
+    }
   }
 #endif
   
@@ -1524,6 +1528,7 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
   {
    // attempt to listen
    if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
+     PTRACE(4, "Socket\tSetOption(SO_REUSEADDR) failed");
      os_close();
      return PFalse;
    }
@@ -1532,11 +1537,15 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 
 #if P_HAS_IPV6
 
-  if (ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize()))) {
+  if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize()))) 
+    PTRACE(4, "Socket\tbind failed " << errno);
+  else {
     Psockaddr sa;
     socklen_t size = sa.GetSize();
-    if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
+    if (!ConvertOSError(::getsockname(os_handle, sa, &size))) {
+      PTRACE(4, "Socket\tgetsockname failed");
       return PFalse;
+    }
 
     port = sa.GetPort();
 
@@ -1560,6 +1569,7 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 
     return false;
   }
+  
 
 #else
 
@@ -1576,13 +1586,14 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
     bind_result = ::bindzero(os_handle, (struct sockaddr*)&sin, sizeof(sin));
   else
     bind_result = ::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin));
-  if (ConvertOSError(bind_result))
+  if (!ConvertOSError(bind_result))
 #else
-  if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
+  if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
 #endif
-  {
+    PTRACE(4, "Socket\tbind failed");
+  else {
     socklen_t size = sizeof(sin);
-    if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
+    if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, &size))) {
       port = ntohs(sin.sin_port);
 
     if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr)))
@@ -1920,7 +1931,7 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 #endif // P_HAS_IPV6
 # if defined(P_HAS_INET_NTOP)
   PString str;
-  if (inet_ntop(AF_INET, (const void *)&v.four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
+  if (inet_ntop(AF_INET, (const void *)&m_v.m_four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
     return PString::Empty();
   str.MakeMinimumSize();
   return str;
