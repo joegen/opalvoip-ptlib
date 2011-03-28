@@ -41,10 +41,12 @@
 #include <ptlib/pfactory.h>
 
 
+class PURLScheme;
+class PURLLegacyScheme;
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PURL
-
-class PURLLegacyScheme;
 
 /**
  This class describes a Universal Resource Locator.
@@ -358,6 +360,8 @@ class PURL : public PObject
       const char * defaultScheme ///< Default scheme for URL
     );
     void Recalculate();
+
+    const PURLScheme * schemeInfo;
     PString urlString;
 
     PCaselessString scheme;
@@ -365,8 +369,8 @@ class PURL : public PObject
     PString password;
     PCaselessString hostname;
     WORD port;
-    PBoolean portSupplied;          /// port was supplied in string input
-    PBoolean relativePath;
+    bool            portSupplied;          /// port was supplied in string input
+    bool            relativePath;
     PStringArray path;
     PStringToString paramVars;
     PString fragment;
