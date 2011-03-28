@@ -101,7 +101,6 @@ PURL_LEGACY_SCHEME(rtmp,      false, false, true,  false,  false,  false, false,
 PURL_LEGACY_SCHEME(sip,       true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIP_PORT)
 PURL_LEGACY_SCHEME(sips,      true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIPS_PORT)
 PURL_LEGACY_SCHEME(fax,       false, false, false, true,   false,  false, true,  false, false, false, 0)
-PURL_LEGACY_SCHEME(callto,    false, false, false, true,   false,  false, true,  false, false, false, 0)
 PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true,  false, true,  false, DEFAULT_MSRP_PORT)
 
 #define DEFAULT_SCHEME "http"
@@ -111,31 +110,31 @@ PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true, 
 // PURL
 
 PURL::PURL()
-  : scheme(DEFAULT_SCHEME),
-    port(0),
-    portSupplied (PFalse),
-    relativePath(PFalse)
+  : schemeInfo(NULL)
+  , port(0)
+  , portSupplied (false)
+  , relativePath(false)
 {
 }
 
 
 PURL::PURL(const char * str, const char * defaultScheme)
 {
-  Parse(str, defaultScheme);
+  InternalParse(str, defaultScheme);
 }
 
 
 PURL::PURL(const PString & str, const char * defaultScheme)
 {
-  Parse(str, defaultScheme);
+  InternalParse((const char *)str, defaultScheme);
 }
 
 
 PURL::PURL(const PFilePath & filePath)
-  : scheme(FILE_SCHEME),
-    port(0),
-    portSupplied (PFalse),
-    relativePath(PFalse)
+  : schemeInfo(PURLSchemeFactory::CreateInstance(FILE_SCHEME))
+  , port(0)
+  , portSupplied(false)
+  , relativePath(false)
 {
   PStringArray pathArray = filePath.GetDirectory().GetPath();
   if (pathArray.IsEmpty())
@@ -235,8 +234,11 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
       break;    // Section 3.4, no reserved characters may be used
   }
   PINDEX pos = (PINDEX)-1;
-  while ((pos = xlat.FindSpan(safeChars, pos+1)) != P_MAX_INDEX)
-    xlat.Splice(psprintf("%%%02X", (BYTE)xlat[pos]), pos, 1);
+  while ((pos = xlat.FindSpan(safeChars, pos+1)) != P_MAX_INDEX) {
+    char buf[10];
+    sprintf(buf, "%%%02X", (BYTE)xlat[pos]);
+    xlat.Splice(buf, pos, 1);
+  }
 
   return xlat;
 }
@@ -260,10 +262,12 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
     int digit1 = xlat[pos+1];
     int digit2 = xlat[pos+2];
     if (isxdigit(digit1) && isxdigit(digit2)) {
-      xlat[pos] = (char)(
+      char buf[2];
+      buf[0] = (char)(
             (isdigit(digit2) ? (digit2-'0') : (toupper(digit2)-'A'+10)) +
            ((isdigit(digit1) ? (digit1-'0') : (toupper(digit1)-'A'+10)) << 4));
-      xlat.Delete(pos+1, 2);
+      buf[1] = '\0';
+      xlat.Splice(buf, pos, 3);
     }
   }
 
@@ -333,8 +337,8 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   password.MakeEmpty();
   hostname.MakeEmpty();
   port = 0;
-  portSupplied = PFalse;
-  relativePath = PFalse;
+  portSupplied = false;
+  relativePath = false;
   path.SetSize(0);
   paramVars.RemoveAll();
   fragment.MakeEmpty();
@@ -351,7 +355,7 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 
   // get information which tells us how to parse URL for this
   // particular scheme
-  PURLScheme * schemeInfo = NULL;
+  schemeInfo = NULL;
 
   // Character set as per RFC2396
   //    scheme        = alpha *( alpha | digit | "+" | "-" | "." )
@@ -383,81 +387,18 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   return schemeInfo->Parse(url, *this) && !IsEmpty();
 }
 
+
 PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
 {
   PString url = _url;
   PINDEX pos;
-
-  // Super special case!
-  if (scheme *= "callto") {
-
-    // Actually not part of MS spec, but a lot of people put in the // into
-    // the URL, so we take it out of it is there.
-    if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
-      url.Delete(0, 2);
-
-    // For some bizarre reason callto uses + instead of ; for paramters
-    // We do a loop so that phone numbers of the form +61243654666 still work
-    do {
-      pos = url.Find('+');
-    } while (pos != P_MAX_INDEX && isdigit(url[pos+1]));
-
-    if (pos != P_MAX_INDEX) {
-      SplitVars(url(pos+1, P_MAX_INDEX), paramVars, '+', '=');
-      url.Delete(pos, P_MAX_INDEX);
-    }
-
-    hostname = paramVars("gateway");
-    if (!hostname)
-      username = UntranslateString(url, LoginTranslation);
-    else {
-      PCaselessString type = paramVars("type");
-      if (type == "directory") {
-        pos = url.Find('/');
-        if (pos == P_MAX_INDEX)
-          username = UntranslateString(url, LoginTranslation);
-        else {
-          hostname = UntranslateString(url.Left(pos), LoginTranslation);
-          username = UntranslateString(url.Mid(pos+1), LoginTranslation);
-        }
-      }
-      else {
-        // Now look for an @ and split user and host
-        pos = url.Find('@');
-        if (pos != P_MAX_INDEX) {
-          username = UntranslateString(url.Left(pos), LoginTranslation);
-          hostname = UntranslateString(url.Mid(pos+1), LoginTranslation);
-        }
-        else {
-          if (type == "ip" || type == "host")
-            hostname = UntranslateString(url, LoginTranslation);
-          else
-            username = UntranslateString(url, LoginTranslation);
-        }
-      }
-    }
-
-    // Allow for [ipv6] form
-    pos = hostname.Find(']');
-    if (pos == P_MAX_INDEX)
-      pos = 0;
-    pos = hostname.Find(':', pos);
-    if (pos != P_MAX_INDEX) {
-      port = (WORD)hostname.Mid(pos+1).AsUnsigned();
-      portSupplied = PTrue;
-      hostname.Delete(pos, P_MAX_INDEX);
-    }
-
-    password = paramVars("password");
-    return PTrue;
-  }
 
   // if the URL should have leading slash, then remove it if it has one
   if (schemeInfo != NULL && schemeInfo->hasHostPort && schemeInfo->hasPath) {
     if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
       url.Delete(0, 2);
     else
-      relativePath = PTrue;
+      relativePath = true;
   }
 
   // parse user/password/host/port
@@ -541,7 +482,7 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
       else {
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
         port = (WORD)uphp.Mid(pos+1).AsUnsigned();
-        portSupplied = PTrue;
+        portSupplied = true;
       }
 
       if (hostname.IsEmpty() && schemeInfo->defaultHostToLocal)
@@ -576,6 +517,14 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
     }
   }
 
+  if (port == 0 && !relativePath) {
+    // Yes another horrible, horrible special case!
+    if (scheme == "h323" && paramVars("type") == "gk")
+      port = DEFAULT_H323RAS_PORT;
+    else
+      port = schemeInfo->defaultPort;
+  }
+
   if (schemeInfo->hasPath)
     SetPathStr(url);   // the hierarchy is what is left
   else {
@@ -584,16 +533,7 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
     Recalculate();
   }
 
-  if (port == 0 && schemeInfo->defaultPort != 0 && !relativePath) {
-    // Yes another horrible, horrible special case!
-    if (scheme == "h323" && paramVars("type") == "gk")
-      port = DEFAULT_H323RAS_PORT;
-    else
-      port = schemeInfo->defaultPort;
-    Recalculate();
-  }
-
-  return PTrue;
+  return true;
 }
 
 
@@ -628,28 +568,27 @@ PString PURL::AsString(UrlFormat fmt) const
   if (fmt == FullURL)
     return urlString;
 
-  if (scheme.IsEmpty())
+  if (scheme.IsEmpty() || schemeInfo == NULL)
     return PString::Empty();
-
-  const PURLScheme * schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
-  if (schemeInfo == NULL)
-    schemeInfo = PURLSchemeFactory::CreateInstance(DEFAULT_SCHEME);
 
   return schemeInfo->AsString(fmt, *this);
 }
+
 
 PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const
 {
   PStringStream str;
 
-  if (fmt == HostPortOnly) {
-    str << scheme << ':';
-
-    if (relativePath) {
+  if (fmt == HostPortOnly && relativePath) {
       if (schemeInfo->relativeImpliesScheme)
         return PString::Empty();
+
+    str << scheme << ':';
       return str;
     }
+
+  if (fmt != URIOnly && !relativePath) {
+    str << scheme << ':';
 
     if (schemeInfo->hasPath && schemeInfo->hasHostPort)
       str << "//";
@@ -675,6 +614,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << ':' << port;
     }
 
+    if (fmt == HostPortOnly) {
     // Problem was fixed for handling legacy schema like tel URI.
     // HostPortOnly format: if there is no default user and host fields, only the schema itself is being returned.
     // URIOnly only format: the pathStr will be retruned.
@@ -688,10 +628,16 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     // Cannot JUST have the scheme: ....
     return PString::Empty();
   }
+  }
 
   // URIOnly and PathOnly
-  if (schemeInfo->hasPath)
-    str << GetPathStr();
+  if (schemeInfo->hasPath) {
+    for (PINDEX i = 0; i < path.GetSize(); i++) {
+      if (i > 0 || !relativePath)
+        str << '/';
+      str << TranslateString(path[i], PathTranslation);
+    }
+  }
   else
     str << TranslateString(m_contents, PathTranslation);
 
@@ -745,7 +691,7 @@ void PURL::SetPort(WORD newPort)
 
 void PURL::SetPathStr(const PString & pathStr)
 {
-  path = pathStr.Tokenise("/", PTrue);
+  path = pathStr.Tokenise("/", true);
 
   if (path.GetSize() > 0 && path[0].IsEmpty()) 
     path.RemoveAt(0);
@@ -897,11 +843,110 @@ bool PURL::OpenBrowser(const PString & url)
 
 void PURL::Recalculate()
 {
-  if (scheme.IsEmpty())
-    scheme = DEFAULT_SCHEME;
-
-  urlString = AsString(HostPortOnly) + AsString(URIOnly);
+  if (schemeInfo != NULL)
+    urlString = schemeInfo->AsString(FullURL, *this);
+  else
+    urlString.MakeEmpty();
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+// RFC3966 tel URI
+
+class PURL_CalltoScheme : public PURLScheme
+{
+    PCLASSINFO(PURL_CalltoScheme, PURLScheme);
+  public:
+    virtual PString GetName() const
+    {
+      return "callto";
+    }
+
+    virtual PBoolean Parse(const PString & pstr, PURL & url) const
+    {
+      PString str = pstr;
+
+      // Actually not part of MS spec, but a lot of people put in the // into
+      // the URL, so we take it out of it is there.
+      if (pstr.GetLength() > 2 && pstr[0] == '/' && pstr[1] == '/')
+        str.Delete(0, 2);
+
+      PINDEX pos = 0;
+      // For some bizarre reason callto uses + instead of ; for paramters
+      pos = pstr.Find('+', pos);
+
+      // We also check for phone numbers of the form +61243654666 still work
+      if (pos != P_MAX_INDEX && isdigit(pstr[pos+1]))
+        pos = pstr.Find('+', pos+1);
+
+      if (pos != P_MAX_INDEX) {
+        PStringToString paramVars;
+        PURL::SplitVars(str.Mid(++pos), paramVars, '+', '=');
+        url.SetParamVars(paramVars);
+        str.Delete(pos, P_MAX_INDEX);
+      }
+
+      PString hostname = url.GetParamVars()("gateway");
+      PString username;
+      if (!hostname)
+        username = PURL::UntranslateString(str, PURL::LoginTranslation);
+      else {
+        PCaselessString type = url.GetParamVars()("type");
+        if (type == "directory") {
+          pos = str.Find('/');
+          if (pos == P_MAX_INDEX)
+            username = PURL::UntranslateString(str, PURL::LoginTranslation);
+          else {
+            hostname = PURL::UntranslateString(str.Left(pos), PURL::LoginTranslation);
+            username = PURL::UntranslateString(str.Mid(pos+1), PURL::LoginTranslation);
+          }
+        }
+        else {
+          // Now look for an @ and split user and host
+          pos = str.Find('@');
+          if (pos != P_MAX_INDEX) {
+            username = PURL::UntranslateString(str.Left(pos), PURL::LoginTranslation);
+            hostname = PURL::UntranslateString(str.Mid(pos+1), PURL::LoginTranslation);
+          }
+          else {
+            if (type == "ip" || type == "host")
+              hostname = PURL::UntranslateString(str, PURL::LoginTranslation);
+            else
+              username = PURL::UntranslateString(str, PURL::LoginTranslation);
+          }
+        }
+      }
+
+      // Allow for [ipv6] form
+      pos = hostname.Find(']');
+      if (pos == P_MAX_INDEX)
+        pos = 0;
+      pos = hostname.Find(':', pos);
+      if (pos != P_MAX_INDEX) {
+        url.SetPort((WORD)hostname.Mid(pos+1).AsUnsigned());
+        hostname.Delete(pos, P_MAX_INDEX);
+      }
+
+      url.SetHostName(hostname);
+      url.SetUserName(username);
+      url.SetPassword(url.GetParamVars()("password"));
+      return true;
+    }
+
+    virtual PString AsString(PURL::UrlFormat fmt, const PURL & url) const
+    {
+      if (fmt == PURL::HostPortOnly)
+        return PString::Empty();
+
+      PStringStream strm;
+      strm << "callto:" + url.GetUserName();
+      PURL::OutputVars(strm, url.GetParamVars(), '+', '+', '=', PURL::ParameterTranslation);
+      return strm;
+    }
+};
+
+static PURLSchemeFactory::Worker<PURL_CalltoScheme> calltoScheme("callto", true);
 
 
 ///////////////////////////////////////////////////////////////////////////////
