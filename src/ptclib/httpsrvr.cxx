@@ -226,7 +226,7 @@ PHTTPServer::PHTTPServer(const PHTTPSpace & space)
 void PHTTPServer::Construct()
 {
   transactionCount = 0;
-  SetReadLineTimeout(PTimeInterval(0, READLINE_TIMEOUT));
+  SetReadLineTimeout(ReadLineTimeout);
 }
 
 
@@ -274,14 +274,14 @@ PBoolean PHTTPServer::ProcessCommand()
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistent
   if (cmd == CONNECT) 
-    connectInfo.url = "https://" + args;
+    connectInfo.url.Parse("https://" + args);
   else {
-    connectInfo.url = args;
+    connectInfo.url.Parse(args, "http");
     if (connectInfo.url.GetPort() == 0)
       connectInfo.url.SetPort(myPort);
   }
 
-  PBoolean persist;
+  bool persist;
   
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
