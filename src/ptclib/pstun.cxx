@@ -449,6 +449,8 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIP
 
   PWaitAndSignal mutex(portInfo.mutex);
 
+  PTRACE(3, "STUN\tUsing ports " << portInfo.basePort << " through " << portInfo.maxPort);
+
   WORD startPort = portInfo.currentPort;
 
   do {
@@ -459,8 +461,11 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIP
     if (socket.Listen(binding, 1, portInfo.currentPort)) {
       socket.SetSendAddress(cachedServerAddress, serverPort);
       socket.SetReadTimeout(replyTimeout);
+      PTRACE(3, "STUN\tListen succeeded on " << binding << ":" << portInfo.currentPort);
       return true;
     }
+
+    PTRACE(3, "STUN\tListen failed on " << binding << ":" << portInfo.currentPort);
 
   } while (portInfo.currentPort != startPort);
 

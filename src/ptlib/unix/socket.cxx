@@ -1849,6 +1849,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
         bytes[i] = addr[i];
 
       PString macAddr;
+
 #if defined(SIO_Get_MAC_Address)
       struct ifreq ifReq;
       memset(&ifReq, 0, sizeof(ifReq));
@@ -1857,6 +1858,10 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
         macAddr = PEthSocket::Address((BYTE *)ifReq.ifr_macaddr);
 #endif
 
+      // the scope value in /proc/net/if_inet6 does not give the scope value for the interface
+      // so, we need to use the hack of assuming that if_nametoindex returns the correct scope
+      // for link-local interfaces. if anyone knows how to do this better, contact craigs@postincrement.com
+      scope = if_nametoindex(ifaceName);
       list.Append(PNEW InterfaceEntry(ifaceName, Address(16, bytes, scope), Address::GetAny(6), macAddr));
     }
     fclose(file);
