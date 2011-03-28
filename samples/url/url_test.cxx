@@ -30,6 +30,9 @@
 #include <ptlib/pprocess.h>
 #include <ptclib/url.h>
 
+// -p 100000 /index.html
+// http://someone:something@somewhere.com:54321/first/second#tag;param1=value%201;param2=value%202?query1=arg1&query+2=arg+2&query3=arg+3
+
 
 class Test : public PProcess
 {
@@ -46,15 +49,34 @@ void Test::Main()
   cout << "URL Test Utility" << endl;
 
   PArgList & args = GetArguments();
+  args.Parse("p:");
+
   if (args.GetCount() < 1) {
     cerr << "usage: " << GetFile().GetTitle() << " <url> [ <filename> ]\n";
     return;
   }
 
   PURL url;
-  if (!url.Parse(args[0])) {
-    cerr << "Could not parse URL \"" << args[0] << '"' << endl;
-    return;
+
+  unsigned total = args.GetOptionString('p').AsUnsigned();
+  if (total == 0) {
+    if (!url.Parse(args[0], "http")) {
+      cerr << "Could not parse URL \"" << args[0] << '"' << endl;
+      return;
+    }
+  }
+  else {
+    unsigned count = total;
+    PTime start;
+
+    do {
+      if (!url.Parse(args[0], "http")) {
+        cerr << "Could not parse URL \"" << args[0] << '"' << endl;
+        return;
+      }
+    } while (count-- > 0);
+
+    cout << "UTL Parsing time is " << (1000.0*(PTime() - start).GetMilliSeconds()/total) << "us" << endl;
   }
 
   if (args.GetCount() == 1) {
