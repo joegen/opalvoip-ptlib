@@ -168,6 +168,7 @@ PURL & PURL::operator=(const PURL & other)
 
 void PURL::CopyContents(const PURL & other)
 {
+  schemeInfo   = other.schemeInfo;
   urlString    = other.urlString;
   scheme       = other.scheme;
   username     = other.username;
