@@ -279,6 +279,34 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
   return false;
 }
 
+
+///////////////////////////////////////////////////////////////////////
+
+void PSTUNErrorCode::Initialise()
+{
+  type = ERROR_CODE;
+  m_zero1     = 0;
+  m_zero2     = 0;
+  m_hundreds  = 0;
+  m_units     = 0;
+  m_reason[0] = '\0';
+  length      = (WORD)(4 + strlen(m_reason) + 1);
+}
+
+
+void PSTUNErrorCode::SetErrorCode(int code, const PString & reason)
+{ 
+  m_hundreds = (BYTE)((code / 100) & 7);
+  m_units    = (BYTE) (code % 100);
+  int len = reason.GetLength();
+  if (len > (int)sizeof(m_reason)-1)
+    len = sizeof(m_reason)-1;
+  memcpy(m_reason, (const char *)reason, len);
+  m_reason[len] = '\0';
+  length      = (WORD)(4 + len + 1);
+}
+
+
 ///////////////////////////////////////////////////////////////////////
 
 WORD PSTUNAddressAttribute::GetPort() const
