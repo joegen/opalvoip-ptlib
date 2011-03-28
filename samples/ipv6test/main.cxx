@@ -214,7 +214,7 @@ void IPV6Test::Main()
   }
   {
     // test #8 - check if interface table contains IPV6 addresses
-    cout << "test #8: check if interface table contains IPV6 addresses";
+    cout << "\n\ntest #8: check if interface table contains IPV6 addresses";
 
     PIPSocket::InterfaceTable if_table;
     PIPSocket::GetInterfaceTable( if_table );
@@ -228,12 +228,28 @@ void IPV6Test::Main()
       PIPSocket::InterfaceEntry if_entry = if_table[i];
       cout << i << " " << if_entry << endl;
     }
+    cout << "Examining IPV6 entries\n";
+    for (PINDEX i=0; i < if_table.GetSize(); i++) {
+      PIPSocket::InterfaceEntry if_entry = if_table[i];
+      if (if_entry.GetAddress().GetVersion() == 6) {
+        PIPSocket::Address ipv6 = if_entry.GetAddress();
+        cout << " Entry " << i << " is IPV6: is link local = " << (ipv6.IsLinkLocal() ? "yes" : "no") << ", scope = " << ipv6.GetIPV6Scope() << endl;
+        PString str = ipv6.AsString();
+        PIPSocket::Address ipv6_2;
+        if (!ipv6_2.FromString(str))
+          cout << "   ERROR: Could not convert '" << str << "' back to address" << endl;
+        else if (ipv6_2 != ipv6)
+          cout << "   ERROR: '" << str << "' converted to different address '" << ipv6_2 << "'" << endl;
+        else
+          cout << "   '" << str << "' correct converted to back to address '" << ipv6_2 << "'" << endl;
+      }
+    }
     cout << "Please do manual check ...";
     cout << endl;
   }
   {
     // test #8b - check if route table contains IPV6 addresses
-    cout << "test #8b: check if route table contains IPV6 addresses";
+    cout << "\n\ntest #8b: check if route table contains IPV6 addresses";
 
     PIPSocket::RouteTable rt_table;
     PIPSocket::GetRouteTable( rt_table );
