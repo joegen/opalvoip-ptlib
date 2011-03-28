@@ -351,7 +351,6 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   // copy the string so we can take bits off it
   while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
     cstr++;
-  PString url = cstr;
 
   // get information which tells us how to parse URL for this
   // particular scheme
@@ -359,44 +358,48 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 
   // Character set as per RFC2396
   //    scheme        = alpha *( alpha | digit | "+" | "-" | "." )
-  if (isalpha(url[0])) {
+  if (isalpha(cstr[0])) {
     PINDEX pos = 1;
-    while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
+    while (isalnum(cstr[pos]) || cstr[pos] == '+' || cstr[pos] == '-' || cstr[pos] == '.')
       ++pos;
 
     // Determine if the URL has an explicit scheme
-    if (url[pos] == ':') {
+    if (cstr[pos] == ':') {
+      scheme = PString(cstr, pos);
       // get the scheme information
-      schemeInfo = PURLSchemeFactory::CreateInstance(url.Left(pos));
+      schemeInfo = PURLSchemeFactory::CreateInstance(std::string(cstr, pos));
       if (schemeInfo != NULL)
-        url.Delete(0, pos+1);
+        cstr += pos+1;
     }
   }
 
   // if we could not match a scheme, then use the specified default scheme
   if (schemeInfo == NULL && defaultScheme != NULL) {
+    scheme = defaultScheme;
     schemeInfo = PURLSchemeFactory::CreateInstance(defaultScheme);
-    PAssert(schemeInfo != NULL, "Default scheme " + PString(defaultScheme) + " not available");
+    PAssert(schemeInfo != NULL, "Default scheme " + scheme + " not available");
   }
 
   // if that still fails, then there is nowehere to go
   if (schemeInfo == NULL)
     return false;
 
-  scheme = schemeInfo->GetName();
-  return schemeInfo->Parse(url, *this) && !IsEmpty();
+  // Now parse using the the scheme info.
+  return schemeInfo->Parse(cstr, *this) && !IsEmpty();
 }
 
 
-PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
+bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
 {
-  PString url = _url;
+  const PConstCaselessString str(cstr);
+  PINDEX start = 0;
+  PINDEX end = P_MAX_INDEX;
   PINDEX pos;
 
   // if the URL should have leading slash, then remove it if it has one
   if (schemeInfo != NULL && schemeInfo->hasHostPort && schemeInfo->hasPath) {
-    if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
-      url.Delete(0, 2);
+    if (str.GetLength() > 2 && str[0] == '/' && str[1] == '/')
+      start = 2;
     else
       relativePath = true;
   }
@@ -412,25 +415,26 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
       endHostChars += ';';
     if (schemeInfo->hasFragments)
       endHostChars += '#';
+
     if (endHostChars.IsEmpty())
       pos = P_MAX_INDEX;
     else if (schemeInfo->hasUsername) {
       //';' showing in the username field should be valid.
       // Looking for ';' after the '@' for the parameters.
-      PINDEX posAt = url.Find('@');
+      PINDEX posAt = str.Find('@', start);
       if (posAt != P_MAX_INDEX)
-        pos = url.FindOneOf(endHostChars, posAt);
+        pos = str.FindOneOf(endHostChars, posAt);
       else 
-        pos = url.FindOneOf(endHostChars);
+        pos = str.FindOneOf(endHostChars, start);
     }
     else
-      pos = url.FindOneOf(endHostChars);
+      pos = str.FindOneOf(endHostChars, start);
 
-    PString uphp = url.Left(pos);
+    PString uphp = str(start, --pos);
     if (pos != P_MAX_INDEX)
-      url.Delete(0, pos);
+      start += pos;
     else
-      url.MakeEmpty();
+      start = P_MAX_INDEX;
 
     // if the URL is of type UserPasswordHostPort, then parse it
     if (schemeInfo->hasUsername) {
@@ -490,30 +494,24 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
     }
   }
 
-  if (schemeInfo->hasQuery) {
-    // chop off any trailing query
-    pos = url.Find('?');
-    if (pos != P_MAX_INDEX) {
-      SplitQueryVars(url(pos+1, P_MAX_INDEX), queryVars);
-      url.Delete(pos, P_MAX_INDEX);
-    }
+  // chop off any trailing query
+  if (schemeInfo->hasQuery && (pos = str.Find('?', start)) < end) {
+    SplitQueryVars(str(pos+1, end), queryVars);
+    end = pos-1;
   }
 
-  if (schemeInfo->hasParameters) {
-    // chop off any trailing parameters
-    pos = url.Find(';');
-    if (pos != P_MAX_INDEX) {
-      SplitVars(url(pos+1, P_MAX_INDEX), paramVars);
-      url.Delete(pos, P_MAX_INDEX);
-    }
+  // chop off any trailing parameters
+  if (schemeInfo->hasParameters && (pos = str.Find(';', start)) < end) {
+    SplitVars(str(pos+1, end), paramVars);
+    end = pos-1;
   }
 
   if (schemeInfo->hasFragments) {
     // chop off any trailing fragment
-    pos = url.Find('#');
-    if (pos != P_MAX_INDEX) {
-      fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
-      url.Delete(pos, P_MAX_INDEX);
+    pos = str.Find('#', start);
+    if (pos < end) {
+      fragment = UntranslateString(str(pos+1, end), PathTranslation);
+      end = pos-1;
     }
   }
 
@@ -525,11 +523,14 @@ PBoolean PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * scheme
       port = schemeInfo->defaultPort;
   }
 
-  if (schemeInfo->hasPath)
-    SetPathStr(url);   // the hierarchy is what is left
+  if (schemeInfo->hasPath) {
+    if (str[start] == '/')
+      ++start;
+    SetPathStr(str(start, end));   // the hierarchy is what is left
+  }
   else {
     // if the rest of the URL isn't a path, then we are finished!
-    m_contents = UntranslateString(url, PathTranslation);
+    m_contents = UntranslateString(str(start, end), PathTranslation);
     Recalculate();
   }
 
@@ -858,62 +859,58 @@ class PURL_CalltoScheme : public PURLScheme
 {
     PCLASSINFO(PURL_CalltoScheme, PURLScheme);
   public:
-    virtual PString GetName() const
+    virtual bool Parse(const char * cstr, PURL & url) const
     {
-      return "callto";
-    }
-
-    virtual PBoolean Parse(const PString & pstr, PURL & url) const
-    {
-      PString str = pstr;
+      const PConstCaselessString str(cstr);
 
       // Actually not part of MS spec, but a lot of people put in the // into
       // the URL, so we take it out of it is there.
-      if (pstr.GetLength() > 2 && pstr[0] == '/' && pstr[1] == '/')
-        str.Delete(0, 2);
+      PINDEX start = 0;
+      if (str.GetLength() > 2 && str[0] == '/' && str[1] == '/')
+        start = 2;
 
-      PINDEX pos = 0;
       // For some bizarre reason callto uses + instead of ; for paramters
-      pos = pstr.Find('+', pos);
+      PINDEX pos = str.Find('+', start);
 
       // We also check for phone numbers of the form +61243654666 still work
-      if (pos != P_MAX_INDEX && isdigit(pstr[pos+1]))
-        pos = pstr.Find('+', pos+1);
+      if (pos != P_MAX_INDEX && isdigit(str[pos+1]))
+        pos = str.Find('+', pos+1);
 
+      PINDEX end = P_MAX_INDEX;
       if (pos != P_MAX_INDEX) {
         PStringToString paramVars;
-        PURL::SplitVars(str.Mid(++pos), paramVars, '+', '=');
+        PURL::SplitVars(str(start, ++pos), paramVars, '+', '=');
         url.SetParamVars(paramVars);
-        str.Delete(pos, P_MAX_INDEX);
+        end = pos-1;
       }
 
       PString hostname = url.GetParamVars()("gateway");
       PString username;
       if (!hostname)
-        username = PURL::UntranslateString(str, PURL::LoginTranslation);
+        username = PURL::UntranslateString(str(start, end), PURL::LoginTranslation);
       else {
         PCaselessString type = url.GetParamVars()("type");
         if (type == "directory") {
-          pos = str.Find('/');
+          pos = str.Find('/', start);
           if (pos == P_MAX_INDEX)
-            username = PURL::UntranslateString(str, PURL::LoginTranslation);
+            username = PURL::UntranslateString(str(start, end), PURL::LoginTranslation);
           else {
-            hostname = PURL::UntranslateString(str.Left(pos), PURL::LoginTranslation);
-            username = PURL::UntranslateString(str.Mid(pos+1), PURL::LoginTranslation);
+            hostname = PURL::UntranslateString(str(start, pos), PURL::LoginTranslation);
+            username = PURL::UntranslateString(str(pos+1, end), PURL::LoginTranslation);
           }
         }
         else {
           // Now look for an @ and split user and host
           pos = str.Find('@');
           if (pos != P_MAX_INDEX) {
-            username = PURL::UntranslateString(str.Left(pos), PURL::LoginTranslation);
-            hostname = PURL::UntranslateString(str.Mid(pos+1), PURL::LoginTranslation);
+            username = PURL::UntranslateString(str(start, pos), PURL::LoginTranslation);
+            hostname = PURL::UntranslateString(str(pos+1, end), PURL::LoginTranslation);
           }
           else {
             if (type == "ip" || type == "host")
-              hostname = PURL::UntranslateString(str, PURL::LoginTranslation);
+              hostname = PURL::UntranslateString(str(start, end), PURL::LoginTranslation);
             else
-              username = PURL::UntranslateString(str, PURL::LoginTranslation);
+              username = PURL::UntranslateString(str(start, end), PURL::LoginTranslation);
           }
         }
       }
@@ -957,13 +954,10 @@ class PURL_TelScheme : public PURLScheme
 {
     PCLASSINFO(PURL_TelScheme, PURLScheme);
   public:
-    virtual PString GetName() const
+    virtual PBoolean Parse(const char * cstr, PURL & url) const
     {
-      return "tel";
-    }
+      const PConstCaselessString str(cstr);
 
-    virtual PBoolean Parse(const PString & str, PURL & url) const
-    {
       PINDEX pos = str.FindSpan("0123456789*#", str[0] != '+' ? 0 : 1);
       if (pos == P_MAX_INDEX)
         url.SetUserName(str);
@@ -974,7 +968,7 @@ class PURL_TelScheme : public PURLScheme
         url.SetUserName(str.Left(pos));
 
         PStringToString paramVars;
-        PURL::SplitVars(str(pos+1, P_MAX_INDEX), paramVars);
+        PURL::SplitVars(str.Mid(pos+1), paramVars);
         url.SetParamVars(paramVars);
 
         PString phoneContext = paramVars("phone-context");
@@ -1016,26 +1010,23 @@ class PURL_DataScheme : public PURLScheme
 {
     PCLASSINFO(PURL_DataScheme, PURLScheme);
   public:
-    virtual PString GetName() const
+    virtual bool Parse(const char * cstr, PURL & url) const
     {
-      return "data";
-    }
+      const PConstCaselessString str(cstr);
 
-    virtual PBoolean Parse(const PString & url, PURL & purl) const
-    {
-      PINDEX comma = url.Find(',');
+      PINDEX comma = str.Find(',');
       if (comma == P_MAX_INDEX)
         return false;
 
-      PINDEX semi = url.Find(';');
+      PINDEX semi = str.Find(';');
       if (semi > comma)
-        purl.SetParamVar("type", url.Left(comma));
+        url.SetParamVar("type", str.Left(comma));
       else {
-        purl.SetParameters(url(semi, comma-1));
-        purl.SetParamVar("type", url.Left(semi));
+        url.SetParameters(str(semi, comma-1));
+        url.SetParamVar("type", str.Left(semi));
       }
 
-      purl.SetContents(url.Mid(comma+1));
+      url.SetContents(str.Mid(comma+1));
 
       return true;
     }

@@ -350,7 +350,7 @@ class PURL : public PObject
     );
   //@}
 
-    PBoolean LegacyParse(const PString & url, const PURLLegacyScheme * schemeInfo);
+    bool LegacyParse(const char * str, const PURLLegacyScheme * schemeInfo);
     PString LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const;
 
   protected:
@@ -386,8 +386,7 @@ class PURLScheme : public PObject
 {
   PCLASSINFO(PURLScheme, PObject);
   public:
-    virtual PString GetName() const = 0;
-    virtual PBoolean Parse(const PString & url, PURL & purl) const = 0;
+    virtual bool Parse(const char * cstr, PURL & url) const = 0;
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
 };
 
@@ -401,7 +400,6 @@ class PURLLegacyScheme : public PURLScheme
 {
   public:
     PURLLegacyScheme(
-      const char * s,
       bool user    = false,
       bool pass    = false,
       bool host    = false,
@@ -414,8 +412,7 @@ class PURLLegacyScheme : public PURLScheme
       bool rel     = false,
       WORD port    = 0
     )
-      : scheme(s)
-      , hasUsername           (user)
+      : hasUsername           (user)
       , hasPassword           (pass)
       , hasHostPort           (host)
       , defaultToUserIfNoAt   (def)
@@ -428,16 +425,16 @@ class PURLLegacyScheme : public PURLScheme
       , defaultPort           (port)
     { }
 
-    PBoolean Parse(const PString & url, PURL & purl) const
-    { return purl.LegacyParse(url, this); }
+    bool Parse(const char * cstr, PURL & url) const
+    {
+      return url.LegacyParse(cstr, this);
+    }
 
-    PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
-    { return purl.LegacyAsString(fmt, this); }
+    PString AsString(PURL::UrlFormat fmt, const PURL & url) const
+    {
+      return url.LegacyAsString(fmt, this);
+    }
 
-    PString GetName() const     
-    { return scheme; }
-
-    PString scheme;
     bool hasUsername;
     bool hasPassword;
     bool hasHostPort;
@@ -456,7 +453,7 @@ class PURLLegacyScheme : public PURLScheme
   { \
     public: \
       PURLLegacyScheme_##schemeName() \
-        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+        : PURLLegacyScheme(user, pass, host, def, defhost, query, params, frags, path, rel, port) \
         { } \
   }; \
   static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
