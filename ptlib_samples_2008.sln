@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World Static", "samples\hello_world\hello_2008.vcproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Static", "src\ptlib\msos\Console_2008.vcproj", "{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
@@ -35,6 +35,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SortedListTest", "samples\sortedlist\SortedListTest_2008.vcproj", "{87578277-AE7F-4B03-A8F8-EBB301EB4EC8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunclient", "samples\stunclient\stunclient_2008.vcproj", "{D0C00ADD-544B-4922-AB52-14415894D684}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D} = {D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ThreadSafe", "samples\ThreadSafe\ThreadSafe_2008.vcproj", "{7AB210A3-FB94-473A-93A5-7CEE149B136C}"
 EndProject
@@ -78,7 +81,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Asynch Test", "samples\asyn
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HTTP Test", "samples\httptest\httptest_2008.vcproj", "{E786623E-A6E9-46AF-A3D5-1EA99F603499}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunserver", "..\SVN-Trunk\ptlib\samples\stunserver\stunserver_2008.vcproj", "{3383DEA4-1054-455B-898A-FFFB85DC6C9D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunserver", "samples\stunserver\stunserver_2008.vcproj", "{3383DEA4-1054-455B-898A-FFFB85DC6C9D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D} = {D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

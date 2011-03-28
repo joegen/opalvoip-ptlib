@@ -474,11 +474,11 @@ PBoolean PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
 
 PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 {
-  version = 4;
-  v.four.S_un.S_un_b.s_b1 = b1;
-  v.four.S_un.S_un_b.s_b2 = b2;
-  v.four.S_un.S_un_b.s_b3 = b3;
-  v.four.S_un.S_un_b.s_b4 = b4;
+  m_version = 4;
+  m_v.m_four.S_un.S_un_b.s_b1 = b1;
+  m_v.m_four.S_un.S_un_b.s_b2 = b2;
+  m_v.m_four.S_un.S_un_b.s_b3 = b3;
+  m_v.m_four.S_un.S_un_b.s_b4 = b4;
 }
 
 
@@ -491,12 +491,12 @@ PIPSocket::Address::Address(DWORD dw)
 PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 {
   if (dw == 0) {
-    version = 0;
-    memset(&v, 0, sizeof(v));
+    m_version = 0;
+    memset(&m_v, 0, sizeof(m_v));
   }
   else {
-    version = 4;
-    v.four.S_un.S_addr = dw;
+    m_version = 4;
+    m_v.m_four.S_un.S_addr = dw;
   }
   return *this;
 }
@@ -504,31 +504,31 @@ PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 
 PIPSocket::Address::operator DWORD() const
 {
-  return version != 4 ? 0 : v.four.S_un.S_addr;
+  return m_version != 4 ? 0 : m_v.m_four.S_un.S_addr;
 }
 
 
 BYTE PIPSocket::Address::Byte1() const
 {
-  return v.four.S_un.S_un_b.s_b1;
+  return m_v.m_four.S_un.S_un_b.s_b1;
 }
 
 
 BYTE PIPSocket::Address::Byte2() const
 {
-  return v.four.S_un.S_un_b.s_b2;
+  return m_v.m_four.S_un.S_un_b.s_b2;
 }
 
 
 BYTE PIPSocket::Address::Byte3() const
 {
-  return v.four.S_un.S_un_b.s_b3;
+  return m_v.m_four.S_un.S_un_b.s_b3;
 }
 
 
 BYTE PIPSocket::Address::Byte4() const
 {
-  return v.four.S_un.S_un_b.s_b4;
+  return m_v.m_four.S_un.S_un_b.s_b4;
 }
 
 
