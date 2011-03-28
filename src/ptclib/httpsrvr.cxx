@@ -45,7 +45,7 @@
 #define STRANGE_NETSCAPE_BUG  3
 
 // maximum delay between characters whilst reading a line of text
-#define READLINE_TIMEOUT  30
+static const PTimeInterval ReadLineTimeout(0, 30);
 
 #define DEFAULT_PERSIST_TIMEOUT 30
 #define DEFAULT_PERSIST_TRANSATIONS 10
