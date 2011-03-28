@@ -88,7 +88,6 @@ static PIPSocket::Address broadcast4(INADDR_BROADCAST);
 static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
-static int defaultIPv6ScopeId = 0; 
 
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
 static PIPSocket::Address broadcast6(16,(const BYTE *)"\377\002\0\0\0\0\0\0\0\0\0\0\0\0\0\001"); // IPV6 multicast address
@@ -123,16 +122,6 @@ void PIPSocket::SetDefaultIpAddressFamilyV4()
 void PIPSocket::SetDefaultIpAddressFamilyV6()
 {
   SetDefaultIpAddressFamily(PF_INET6);
-}
-
-void PIPSocket::SetDefaultV6ScopeId(int scopeId) 
-{
-  defaultIPv6ScopeId = scopeId;
-}; 
-
-int PIPSocket::GetDefaultV6ScopeId()
-{
-  return defaultIPv6ScopeId;
 }
 
 PBoolean PIPSocket::IsIpAddressFamilyV6Supported()
@@ -192,11 +181,11 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
   memset(&storage, 0, sizeof(storage));
 
   if (ip.GetVersion() == 6) {
-    addr6->sin6_family = AF_INET6;
-    addr6->sin6_addr = ip;
-    addr6->sin6_port = htons(port);
+    addr6->sin6_family   = AF_INET6;
+    addr6->sin6_addr     = ip;
+    addr6->sin6_port     = htons(port);
     addr6->sin6_flowinfo = 0;
-    addr6->sin6_scope_id = PIPSocket::GetDefaultV6ScopeId(); // Should be set to the right interface....
+    addr6->sin6_scope_id = ip.GetIPV6Scope();
   }
   else {
     addr4->sin_family = AF_INET;
@@ -227,7 +216,7 @@ PIPSocket::Address Psockaddr::GetIP() const
     case AF_INET :
       return addr4->sin_addr;
     case AF_INET6 :
-      return addr6->sin6_addr;
+      return PIPSocket::Address(addr6->sin6_addr, addr6->sin6_scope_id);
     default :
       return 0;
   }
@@ -1622,17 +1611,25 @@ PBoolean PIPSocket::Listen(const Address & bindAddr,
 /// Check for v4 mapped in v6 address ::ffff:a.b.c.d
 PBoolean PIPSocket::Address::IsV4Mapped() const
 {
-  if (version != 6)
+  if (m_version != 6)
     return PFalse;
-  return IN6_IS_ADDR_V4MAPPED(&v.six) || IN6_IS_ADDR_V4COMPAT(&v.six);
+  return IN6_IS_ADDR_V4MAPPED(&m_v.m_six) || IN6_IS_ADDR_V4COMPAT(&m_v.m_six);
 }
 
-/// Check for link-local address fe80::/10
+/// Check for link-local address
 PBoolean PIPSocket::Address::IsLinkLocal() const
 {
-  if (version != 6)
+  if (m_version != 6)
     return PFalse;
-  return IN6_IS_ADDR_LINKLOCAL(&v.six);
+  return IN6_IS_ADDR_LINKLOCAL(&m_v.m_six);
+}
+
+/// Check for site-local address
+PBoolean PIPSocket::Address::IsSiteLocal() const
+{
+  if (m_version != 6)
+    return PFalse;
+  return IN6_IS_ADDR_SITELOCAL(&m_v.m_six);
 }
 
 #endif
@@ -1688,40 +1685,55 @@ PIPSocket::Address::Address(const PString & dotNotation)
 }
 
 
-PIPSocket::Address::Address(PINDEX len, const BYTE * bytes)
+PIPSocket::Address::Address(PINDEX len, const BYTE * bytes, int scope)
 {
   switch (len) {
 #if P_HAS_IPV6
     case 16 :
-      version = 6;
-      memcpy(&v.six, bytes, len);
+      m_version = 6;
+      memcpy(&m_v.m_six, bytes, len);
+      m_scope6 = scope;
       break;
 #endif
     case 4 :
-      version = 4;
-      memcpy(&v.four, bytes, len);
+      m_version = 4;
+      memcpy(&m_v.m_four, bytes, len);
+      m_scope6 = 0;
       break;
 
     default :
-      version = 0;
+      m_version = 0;
   }
 }
 
 
 PIPSocket::Address::Address(const in_addr & addr)
 {
-  version = 4;
-  v.four = addr;
+  m_version = 4;
+  m_v.m_four = addr;
 }
 
 
 #if P_HAS_IPV6
 PIPSocket::Address::Address(const in6_addr & addr)
-{
-  version = 6;
-  v.six = addr;
+ {
+  if (IN6_IS_ADDR_LINKLOCAL(&addr)) {
+    PTRACE(2, "Socket\tCannot create link-local IPV6 address without scope id");
+    m_version = 0;
+  }
+  else {
+    m_version = 6;
+    m_v.m_six = addr;
+    m_scope6  = 0;
+  }
 }
 
+PIPSocket::Address::Address(const in6_addr & addr, int scope)
+{
+  m_version = 6;
+  m_v.m_six = addr;
+  m_scope6  = scope;
+}
 #endif
 
 
@@ -1736,9 +1748,9 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
         break;
       }
 
-      version = 6;
-      v.six = ((struct sockaddr_in6 *)ai_addr)->sin6_addr;
-      //sin6_scope_id, should be taken into account for link local addresses
+      m_version = 6;
+      m_v.m_six = ((struct sockaddr_in6 *)ai_addr)->sin6_addr;
+      m_scope6  = ((struct sockaddr_in6 *)ai_addr)->sin6_scope_id;
       return;
 #endif
     case AF_INET: 
@@ -1747,15 +1759,16 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
         break;
       }
 
-      version = 4;
-      v.four = ((struct sockaddr_in  *)ai_addr)->sin_addr;
+      m_version = 4;
+      m_v.m_four = ((struct sockaddr_in  *)ai_addr)->sin_addr;
+      m_scope6   = 0;
       return;
 
     default :
       PTRACE(1, "Socket\tIllegal family (" << ai_family << ") specified.");
   }
 
-  version = 0;
+  m_version = 0;
 }
 
 
@@ -1779,16 +1792,17 @@ PIPSocket::Address & PIPSocket::Address::operator=(const struct id_struct & addr
 
 PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
 {
-  version = 4;
-  v.four = addr;
+  m_version = 4;
+  m_v.m_four  = addr;
   return *this;
 }
 
 #if P_HAS_IPV6
-PIPSocket::Address & PIPSocket::Address::operator=(const in6_addr & addr)
+PIPSocket::Address & PIPSocket::Address::AssignIPV6(const in6_addr & addr, int scope)
 {
-  version = 6;
-  v.six = addr;
+  m_version = 6;
+  m_v.m_six = addr;
+  m_scope6  = scope;
   return *this;
 }
 #endif
@@ -1798,14 +1812,23 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
 {
   const PIPSocket::Address & other = (const PIPSocket::Address &)obj;
 
-  if (version < other.version)
+  if (m_version < other.m_version)
     return LessThan;
-  if (version > other.version)
+  if (m_version > other.m_version)
     return GreaterThan;
 
 #if P_HAS_IPV6
-  if (version == 6) {
-    int result = memcmp(&v.six, &other.v.six, sizeof(v.six));
+  if (m_version == 6) {
+    bool isLinkLocal = IN6_IS_ADDR_LINKLOCAL(&m_v.m_six);
+    bool otherIsLinkLocal = IN6_IS_ADDR_LINKLOCAL(&other.m_v.m_six);
+
+    if (isLinkLocal != otherIsLinkLocal) {
+      if (isLinkLocal)
+        return LessThan;
+      else return GreaterThan;
+    }
+
+    int result = memcmp(&m_v.m_six, &other.m_v.m_six, sizeof(m_v.m_six));
     if (result < 0)
       return LessThan;
     if (result > 0)
@@ -1824,19 +1847,28 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
 #if P_HAS_IPV6
 bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
 {
-  if (version == addr.version)
+  if (m_version == addr.m_version)
     return operator==(addr);
 
   if (this->GetVersion() == 6 && this->IsV4Mapped()) 
     return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
   else if (addr.GetVersion() == 6 && addr.IsV4Mapped()) 
     return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
+
   return PFalse;
 }
 
-bool PIPSocket::Address::operator==(in6_addr & addr) const
+bool PIPSocket::Address::operator ==(in6_addr & addr) const
 {
-  PIPSocket::Address a(addr);
+  if (m_version != 6)
+    return false;
+
+  return memcmp(&addr, &m_v.m_six, sizeof(addr)) == 0;
+}
+
+bool PIPSocket::Address::EqualIPV6(in6_addr & addr, int scope) const
+{
+  PIPSocket::Address a(addr, scope);
   return Compare(a) == EqualTo;
 }
 #endif
@@ -1854,10 +1886,10 @@ bool PIPSocket::Address::operator==(DWORD dw) const
   if (dw == 0)
     return !IsValid();
 
-  if (version == 4)
+  if (m_version == 4)
     return (DWORD)*this == dw;
 
-  return *this == Address(dw);
+  return false;
 }
 
 
@@ -1876,13 +1908,10 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
   return ipStorage;    
 #else
 # if defined(P_HAS_IPV6)
-  if (version == 6) {
+  if (m_version == 6) {
     PString str;
     Psockaddr sa(*this, 0);
     PAssertOS(getnameinfo(sa, sa.GetSize(), str.GetPointer(1024), 1024, NULL, 0, NI_NUMERICHOST) == 0);
-    PINDEX percent = str.Find('%'); // used for scoped address e.g. fe80::1%ne0, (ne0=network interface 0)
-    if (percent != P_MAX_INDEX)
-      str[percent] = '\0';
     str.MakeMinimumSize();
     if (bracketIPv6)
       return '[' + str + ']';
@@ -1898,7 +1927,7 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 # else
   static PCriticalSection x;
   PWaitAndSignal m(x);
-  return inet_ntoa(v.four);
+  return inet_ntoa(m_v.m_four);
 #endif // P_HAS_INET_NTOP
 #endif // P_VXWORKS
 }
@@ -1906,41 +1935,45 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 
 PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
 {
-  version = 0;
-  memset(&v, 0, sizeof(v));
+  m_version = 0;
+  memset(&m_v, 0, sizeof(m_v));
+
+#if P_HAS_IPV6
+  PString dotNotation = ipAndInterface;
+
+  // Find out if string is in brackets [], as in ipv6 address
+  PINDEX lbracket = dotNotation.Find('[');
+  PINDEX rbracket = dotNotation.Find(']', lbracket);
+  if (lbracket != P_MAX_INDEX && rbracket != P_MAX_INDEX)
+    dotNotation = dotNotation(lbracket+1, rbracket-1);
+
+  struct addrinfo *res = NULL;
+  struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
+
+  if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
+    if (res->ai_family == PF_INET6) {
+      // IPv6 addr
+      m_version = 6;
+      struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
+      m_v.m_six = addr_in6->sin6_addr;
+      m_scope6  = addr_in6->sin6_scope_id;
+    } else {
+      // IPv4 addr
+      m_version = 4;
+      struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
+      m_v.m_four = addr_in->sin_addr;
+      m_scope6   = 0;
+    }
+    if (res != NULL)
+      freeaddrinfo(res);
+    return IsValid();
+  }
+
+#else //P_HAS_IPV6
 
   PINDEX percent = ipAndInterface.Find('%');
   PString dotNotation = ipAndInterface.Left(percent);
   if (!dotNotation.IsEmpty()) {
-#if P_HAS_IPV6
-
-    // Find out if string is in brackets [], as in ipv6 address
-    PINDEX lbracket = dotNotation.Find('[');
-    PINDEX rbracket = dotNotation.Find(']', lbracket);
-    if (lbracket != P_MAX_INDEX && rbracket != P_MAX_INDEX)
-      dotNotation = dotNotation(lbracket+1, rbracket-1);
-
-    struct addrinfo *res = NULL;
-    struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
-
-    if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
-      if (res->ai_family == PF_INET6) {
-        // IPv6 addr
-        version = 6;
-        struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
-        v.six = addr_in6->sin6_addr;
-      } else {
-        // IPv4 addr
-        version = 4;
-        struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
-        v.four = addr_in->sin_addr;
-      }
-      if (res != NULL)
-        freeaddrinfo(res);
-      return IsValid();
-    }
-
-#else //P_HAS_IPV6
 
     DWORD iaddr;
     if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
@@ -1950,9 +1983,12 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
       return true;
     }
 
-#endif
   }
+#endif
 
+  return false;
+
+/*
   if (percent == P_MAX_INDEX)
     return false;
 
@@ -1970,9 +2006,7 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
       return true;
     }
   }
-
-  return false;
-
+*/
 }
 
 
@@ -1984,20 +2018,20 @@ PIPSocket::Address::operator PString() const
 
 PIPSocket::Address::operator in_addr() const
 {
-  if (version != 4)
+  if (m_version != 4)
     return inaddr_empty;
 
-  return v.four;
+  return m_v.m_four;
 }
 
 
 #if P_HAS_IPV6
 PIPSocket::Address::operator in6_addr() const
 {
-  if (version != 6)
-    return any6.v.six;
+  if (m_version != 6)
+    return any6.m_v.m_six;
 
-  return v.six;
+  return m_v.m_six;
 }
 #endif
 
@@ -2006,14 +2040,14 @@ BYTE PIPSocket::Address::operator[](PINDEX idx) const
 {
   PASSERTINDEX(idx);
 #if P_HAS_IPV6
-  if (version == 6) {
+  if (m_version == 6) {
     PAssert(idx <= 15, PInvalidParameter);
-    return v.six.s6_addr[idx];
+    return m_v.m_six.s6_addr[idx];
   }
 #endif
 
   PAssert(idx <= 3, PInvalidParameter);
-  return ((BYTE *)&v.four)[idx];
+  return ((BYTE *)&m_v.m_four)[idx];
 }
 
 
@@ -2043,7 +2077,7 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
 
 PINDEX PIPSocket::Address::GetSize() const
 {
-  switch (version) {
+  switch (m_version) {
 #if P_HAS_IPV6
     case 6 :
       return 16;
@@ -2059,10 +2093,10 @@ PINDEX PIPSocket::Address::GetSize() const
 
 PBoolean PIPSocket::Address::IsValid() const
 {
-  switch (version) {
+  switch (m_version) {
 #if P_HAS_IPV6
     case 6 :
-      return memcmp(&v.six, &any6.v.six, sizeof(v.six)) != 0;
+      return memcmp(&m_v.m_six, &any6.m_v.m_six, sizeof(m_v.m_six)) != 0;
 #endif
 
     case 4 :
@@ -2075,8 +2109,8 @@ PBoolean PIPSocket::Address::IsValid() const
 PBoolean PIPSocket::Address::IsLoopback() const
 {
 #if P_HAS_IPV6
-  if (version == 6)
-    return IN6_IS_ADDR_LOOPBACK(&v.six);
+  if (m_version == 6)
+    return IN6_IS_ADDR_LOOPBACK(&m_v.m_six);
 #endif
   return Byte1() == 127;
 }
@@ -2085,7 +2119,7 @@ PBoolean PIPSocket::Address::IsLoopback() const
 PBoolean PIPSocket::Address::IsBroadcast() const
 {
 #if P_HAS_IPV6
-  if (version == 6) // In IPv6, no broadcast exist. Only multicast
+  if (m_version == 6) // In IPv6, no broadcast exist. Only multicast
     return *this == broadcast6; // multicast address as as substitute
 #endif
 
@@ -2096,19 +2130,19 @@ PBoolean PIPSocket::Address::IsBroadcast() const
 PBoolean PIPSocket::Address::IsMulticast() const
 {
 #if P_HAS_IPV6
-  if (version == 6)
-    return IN6_IS_ADDR_MULTICAST(&v.six);
+  if (m_version == 6)
+    return IN6_IS_ADDR_MULTICAST(&m_v.m_six);
 #endif
 
-  return IN_MULTICAST(ntohl(v.four.s_addr));
+  return IN_MULTICAST(ntohl(m_v.m_four.s_addr));
 }
 
 
 PBoolean PIPSocket::Address::IsRFC1918() const 
 { 
 #if P_HAS_IPV6
-  if (version == 6) {
-    if (IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six))
+  if (m_version == 6) {
+    if (IN6_IS_ADDR_LINKLOCAL(&m_v.m_six) || IN6_IS_ADDR_SITELOCAL(&m_v.m_six))
       return PTrue;
     if (IsV4Mapped())
       return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]).IsRFC1918();

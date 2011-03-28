@@ -73,7 +73,7 @@ void NetTest::Main()
     cout << i << " " << if_entry.GetName() << " "
                      << if_entry.GetAddress() << " "
                      << if_entry.GetNetMask() << " "
-                     << if_entry.GetMACAddress() << "."
+                     << if_entry.GetMACAddress()
                      << endl;
   }
   cout << endl;

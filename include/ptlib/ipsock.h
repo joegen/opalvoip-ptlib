@@ -86,7 +86,7 @@ class PIPSocket : public PSocket
         Address(const PString & dotNotation);
 
         /// Create an IPv4 or IPv6 address from 4 or 16 byte values.
-        Address(PINDEX len, const BYTE * bytes);
+        Address(PINDEX len, const BYTE * bytes, int scope = 0);
 
         /// Create an IP address from four byte values.
         Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
@@ -100,6 +100,7 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
         /// Create an IPv6 address from an in_addr structure.
         Address(const in6_addr & addr);
+        Address(const in6_addr & addr, int scope);
 #endif
 
         /// Create an IP (v4 or v6) address from a sockaddr (sockaddr_in,
@@ -116,7 +117,7 @@ class PIPSocket : public PSocket
 
 #if P_HAS_IPV6
         /// Copy an address from another IPv6 address.
-        Address & operator=(const in6_addr & addr);
+        Address & AssignIPV6(const in6_addr & addr, int scope);
 #endif
 
         /// Copy an address from a string.
@@ -131,8 +132,11 @@ class PIPSocket : public PSocket
         bool operator==(const Address & addr) const { return Compare(addr) == EqualTo; }
         bool operator!=(const Address & addr) const { return Compare(addr) != EqualTo; }
 #if P_HAS_IPV6
-        bool operator==(in6_addr & addr) const;
-        bool operator!=(in6_addr & addr) const { return !operator==(addr); }
+        bool operator ==(in6_addr & addr) const;
+        bool operator !=(in6_addr & addr) const { return !operator==(addr); }
+
+        bool EqualIPV6(in6_addr & addr, int scope) const;
+        bool NotEqualIPV6(in6_addr & addr, int scope) const { return !EqualIPV6(addr, scope); }
 #endif
         bool operator==(in_addr & addr) const;
         bool operator!=(in_addr & addr) const { return !operator==(addr); }
@@ -184,6 +188,8 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
         /// Return IPv4 address in network order.
         operator in6_addr() const;
+
+        int GetIPV6Scope() const { return m_scope6; }
 #endif
 
         /// Return IPv4 address in network order.
@@ -208,10 +214,10 @@ class PIPSocket : public PSocket
         PINDEX GetSize() const;
 
         /// Get the pointer to IP address data.
-        const char * GetPointer() const { return (const char *)&v; }
+        const char * GetPointer() const { return (const char *)&m_v; }
 
         /// Get the version of the IP address being used.
-        unsigned GetVersion() const { return version; }
+        unsigned GetVersion() const { return m_version; }
 
         /// Check address 0.0.0.0 or ::.
         PBoolean IsValid() const;
@@ -238,25 +244,30 @@ class PIPSocket : public PSocket
 
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d.
-        PBoolean IsV4Mapped() const;
+        bool IsV4Mapped() const;
 
-		/// Check for link-local address fe80::/10
-        PBoolean IsLinkLocal() const;
+		    /// Check for link-local address 
+        bool IsLinkLocal() const;
+
+        //// Check for site-local address
+        bool IsSiteLocal() const;
 #endif
 
-        static const Address & GetLoopback(int version = 4);
-        static const Address & GetAny(int version = 4);
-        static const Address GetBroadcast(int version = 4);
+        static const Address & GetLoopback(int m_version = 4);
+        static const Address & GetAny(int m_version = 4);
+        static const Address GetBroadcast(int m_version = 4);
 
       protected:
         /// Runtime test of IP addresse type.
         union {
-          in_addr four;
+          in_addr m_four;
 #if P_HAS_IPV6
-          in6_addr six;
+          in6_addr m_six;
 #endif
-        } v;
-        unsigned version;
+        } m_v;
+        unsigned m_version;
+        bool     m_hasScope6;
+        int      m_scope6;
 
       /// Output IPv6 & IPv4 address as a string to the specified string.
       friend ostream & operator<<(ostream & s, const Address & a);
@@ -288,9 +299,6 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
     static void SetDefaultIpAddressFamilyV6(); // PF_INET6
     static PBoolean IsIpAddressFamilyV6Supported();
-
-	static void SetDefaultV6ScopeId(int scopeId); // local-link adresses require one
-    static int GetDefaultV6ScopeId(); 
 #endif
     static PIPSocket::Address GetDefaultIpAny();
 

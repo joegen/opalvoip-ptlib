@@ -1560,10 +1560,7 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
           if (routes->NumEntries == 0)
             return ip;
 
-          // Check if local-link addresses supported (scope_id != 0)
-          if ((PIPSocket::GetDefaultV6ScopeId() || (ip[0] != 0xFE && ip[1] != 0x80))
-              &&
-              routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
+          if (!ip.IsLinkLocal() && routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
             return ip;
         }
       }
@@ -1787,7 +1784,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
       for (unsigned b = 0; b < adapter->PhysicalAddressLength; ++b)
         macAddr << setw(2) << (unsigned)adapter->PhysicalAddress[b];
 
-      if (unicast->Address.lpSockaddr->sa_family == AF_INET && PIPSocket::GetDefaultIpAddressFamily() == AF_INET) {
+      if (unicast->Address.lpSockaddr->sa_family == AF_INET) {
         PIPSocket::Address ip(((sockaddr_in *)unicast->Address.lpSockaddr)->sin_addr);
 
         // Find out address index in byAddress table for the mask
@@ -1795,19 +1792,17 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
         for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
           if (adapter->IfIndex == byAddress->table[i].dwIndex) {
             dwMask = byAddress->table[i].dwMask;
-            break;
+            break; 
           }
         } // find mask for the address
 
         table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, dwMask, macAddr));
 
       } // ipv4
-      else if (unicast->Address.lpSockaddr->sa_family == AF_INET6 && PIPSocket::GetDefaultIpAddressFamily() == AF_INET6) {
-        PIPSocket::Address ip(((sockaddr_in6 *)unicast->Address.lpSockaddr)->sin6_addr);
-
-        // Check if local-link addresses supported (scope_id != 0)
-        if (PIPSocket::GetDefaultV6ScopeId() || (ip[0] != 0xFE && ip[1] != 0x80))
-          table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, 0L, macAddr));
+      else if (unicast->Address.lpSockaddr->sa_family == AF_INET6) {
+        sockaddr_in6 * sock6 = (sockaddr_in6 *)unicast->Address.lpSockaddr;
+        PIPSocket::Address ip(sock6->sin6_addr, sock6->sin6_scope_id);
+        table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, 0L, macAddr));
       } // ipv6
     }
   }
