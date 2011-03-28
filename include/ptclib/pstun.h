@@ -193,29 +193,8 @@ class PSTUNErrorCode : public PSTUNAttribute
     BYTE m_units;
     char m_reason[256];   // not actually 256, but this will do
    
-    void Initialise()
-    {
-      type = ERROR_CODE;
-      m_zero1     = 0;
-      m_zero2     = 0;
-      m_hundreds  = 0;
-      m_units     = 0;
-      m_reason[0] = '\0';
-      length      = (WORD)(4 + strlen(m_reason) + 1);
-    }
-
-    void SetErrorCode(int code, const PString & reason)
-    { 
-      m_hundreds = (code / 100) & 7;
-      m_units    = (code % 100);
-      int len = reason.GetLength();
-      if (len > (int)sizeof(m_reason)-1)
-        len = sizeof(m_reason)-1;
-      memcpy(m_reason, (const char *)reason, len);
-      m_reason[len] = '\0';
-      length      = (WORD)(4 + len + 1);
-    }
-
+    void Initialise();
+    void SetErrorCode(int code, const PString & reason);
     bool IsValid() const { return (type == ERROR_CODE) && (length == 4 + strlen(m_reason) + 1); }
 };
 
