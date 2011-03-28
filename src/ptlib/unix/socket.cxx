@@ -384,12 +384,12 @@ PIPSocket::Address::Address(DWORD dw)
 PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 {
   if (dw == 0) {
-    version = 0;
-    memset(&v, 0, sizeof(v));
+    m_version = 0;
+    memset(&m_v, 0, sizeof(m_v));
   }
   else {
-    version = 4;
-    v.four.s_addr = dw;
+    m_version = 4;
+    m_v.m_four.s_addr = dw;
   }
 
   return *this;
@@ -398,33 +398,33 @@ PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 
 PIPSocket::Address::operator DWORD() const
 {
-  return version != 4 ? 0 : (DWORD)v.four.s_addr;
+  return m_version != 4 ? 0 : (DWORD)m_v.m_four.s_addr;
 }
 
 BYTE PIPSocket::Address::Byte1() const
 {
-  return *(((BYTE *)&v.four.s_addr)+0);
+  return *(((BYTE *)&m_v.m_four.s_addr)+0);
 }
 
 BYTE PIPSocket::Address::Byte2() const
 {
-  return *(((BYTE *)&v.four.s_addr)+1);
+  return *(((BYTE *)&m_v.m_four.s_addr)+1);
 }
 
 BYTE PIPSocket::Address::Byte3() const
 {
-  return *(((BYTE *)&v.four.s_addr)+2);
+  return *(((BYTE *)&m_v.m_four.s_addr)+2);
 }
 
 BYTE PIPSocket::Address::Byte4() const
 {
-  return *(((BYTE *)&v.four.s_addr)+3);
+  return *(((BYTE *)&m_v.m_four.s_addr)+3);
 }
 
 PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 {
-  version = 4;
-  BYTE * p = (BYTE *)&v.four.s_addr;
+  m_version = 4;
+  BYTE * p = (BYTE *)&m_v.m_four.s_addr;
   p[0] = b1;
   p[1] = b2;
   p[2] = b3;
@@ -1835,6 +1835,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
   FILE * file;
   int dummy;
   int addr[16];
+  int scope;
   char ifaceName[255];
   if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
     while (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %x %x %x %x %255s\n",
@@ -1842,7 +1843,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
             &addr[4],  &addr[5],  &addr[6],  &addr[7], 
             &addr[8],  &addr[9],  &addr[10], &addr[11], 
             &addr[12], &addr[13], &addr[14], &addr[15], 
-           &dummy, &dummy, &dummy, &dummy, ifaceName) != EOF) {
+           &dummy, &dummy, &scope, &dummy, ifaceName) != EOF) {
       BYTE bytes[16];
       for (PINDEX i = 0; i < 16; i++)
         bytes[i] = addr[i];
@@ -1856,7 +1857,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
         macAddr = PEthSocket::Address((BYTE *)ifReq.ifr_macaddr);
 #endif
 
-      list.Append(PNEW InterfaceEntry(ifaceName, Address(16, bytes), Address::GetAny(6), macAddr));
+      list.Append(PNEW InterfaceEntry(ifaceName, Address(16, bytes, scope), Address::GetAny(6), macAddr));
     }
     fclose(file);
   }
