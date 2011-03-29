@@ -1892,7 +1892,7 @@ PBoolean PVXMLSession::TraverseIf()
     // check if var value equals value from condition and if not skip child elements
     PCaselessString value = GetVar(varname);
     if (value == cond_value) {
-      PTRACE( 3, "VXMLSess\t\tCondition matched \"" << condition << "\"" );
+      PTRACE( 3, "VXMLSess\t\tCondition matched \"" << condition << '"' );
     }
     else {
       PTRACE( 3, "VXMLSess\t\tCondition \"" << condition << "\"did not match, " << varname << " == " << value );
@@ -1907,7 +1907,7 @@ PBoolean PVXMLSession::TraverseIf()
   }
 
   else {
-    PTRACE( 1, "\tPVXMLSession, <if> element contains condition with operator other than ==, not implemented" );
+    PTRACE(1, "VXML\t<if> element contains condition with operator other than ==, not implemented" );
     return false;
   }
 
@@ -1934,43 +1934,43 @@ PBoolean PVXMLSession::TraverseSubmit()
   PXMLElement * element = (PXMLElement *)currentNode;
 
   if (!element->HasAttribute("namelist")){
-    PTRACE(1, "VXMLSess\t<submit> does not contain \"namelist\" parameter");
+    PTRACE(1, "VXML\t<submit> does not contain \"namelist\" parameter");
     return false;
   }
 
   PString name = element->GetAttribute("namelist");
 
   if (name.Find(" ") < name.GetSize()) {
-    PTRACE(1, "VXMLSess\t<submit> does not support more than one value in \"namelist\" parameter");
+    PTRACE(1, "VXML\t<submit> does not support more than one value in \"namelist\" parameter");
     return false;
   }
 
   if (!element->HasAttribute("next")) {
-    PTRACE(1, "VXMLSess\t<submit> does not contain \"next\" parameter");
+    PTRACE(1, "VXML\t<submit> does not contain \"next\" parameter");
     return false;
   }
 
   PString url = element->GetAttribute("next");
 
   if (url.Find( "http://" ) > url.GetSize()) {
-    PTRACE(1, "VXMLSess\t<submit> needs a full url as the \"next\" parameter");
+    PTRACE(1, "VXML\t<submit> needs a full url as the \"next\" parameter");
     return false;
   }
 
   if (GetVar(name + ".type") != "audio/x-wav" ) {
-    PTRACE(1, "VXMLSess\t<submit> does not (yet) support submissions of types other than \"audio/x-wav\"");
+    PTRACE(1, "VXML\t<submit> does not (yet) support submissions of types other than \"audio/x-wav\"");
     return false;
   }
 
   PFilePath fileName = GetVar(name + ".filename");
 
   if (!(element->HasAttribute("method"))) {
-    PTRACE(1, "VXMLSess\t<submit> does not (yet) support default method type \"get\"");
+    PTRACE(1, "VXML\t<submit> does not (yet) support default method type \"get\"");
     return false;
   }
 
   if ( !PFile::Exists(fileName )) {
-    PTRACE(1, "VXMLSess\t<submit> cannot find file " << fileName);
+    PTRACE(1, "VXML\t<submit> cannot find file " << fileName);
     return false;
   }
 
@@ -2054,7 +2054,7 @@ PBoolean PVXMLSession::TraverseSubmit()
 
   else {
     if (element->GetAttribute("method") != "get") {
-      PTRACE(1, "VXMLSess\t<submit> does not (yet) support method type \"" << element->GetAttribute( "method" ) << "\"");
+      PTRACE(1, "VXML\t<submit> does not (yet) support method type \"" << element->GetAttribute( "method" ) << "\"");
       return false;
     }
 
@@ -2066,7 +2066,7 @@ PBoolean PVXMLSession::TraverseSubmit()
   }
 
   if (!result) {
-    PTRACE( 1, "VXMLSess\t<submit> to server failed with "
+    PTRACE(1, "VXML\t<submit> to server failed with "
         << client.GetLastResponseCode() << " "
         << client.GetLastResponseInfo() );
   }
@@ -2124,7 +2124,7 @@ PBoolean PVXMLSession::TraverseChoice()
     // Find the form at next parameter
     PString formID = element->GetAttribute("next");
 
-    PTRACE(3, "VXMLsess\tFound form id \"" << formID << '"');
+    PTRACE(3, "VXML\tFound form id \"" << formID << '"');
 
     if (!formID.IsEmpty()) {
       currentNode = FindForm(formID.Mid(1));
@@ -2154,7 +2154,7 @@ PBoolean PVXMLSession::TraverseVar()
   PString expr = element->GetAttribute( "expr" );
 
   if (name.IsEmpty() || expr.IsEmpty()) {
-    PTRACE( 1, "VXMLSess\t<var> has a problem with its parameters, name=\"" << name << "\", expr=\"" << expr << "\"" );
+    PTRACE(1, "VXML\t<var> has a problem with its parameters, name=\"" << name << "\", expr=\"" << expr << "\"" );
   }
   else {
     SetVar(name, EvaluateExpr(expr));
