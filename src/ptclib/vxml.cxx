@@ -1892,7 +1892,7 @@ PBoolean PVXMLSession::TraverseIf()
     // check if var value equals value from condition and if not skip child elements
     PCaselessString value = GetVar(varname);
     if (value == cond_value) {
-      PTRACE( 3, "VXMLSess\t\tCondition matched \"" << condition << '"' );
+      PTRACE( 3, "VXML\tCondition matched \"" << condition << '"' );
     }
     else {
       PTRACE( 3, "VXMLSess\t\tCondition \"" << condition << "\"did not match, " << varname << " == " << value );

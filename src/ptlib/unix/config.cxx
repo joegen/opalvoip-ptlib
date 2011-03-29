@@ -394,6 +394,12 @@ void PXConfig::ReadFromEnvironment (char **envp)
   PXConfigSection * currentSection = new PXConfigSection("Options");
   Append(currentSection);
 
+  // can't save environment configs
+  canSave = PFalse;
+
+  if (envp == NULL)
+    return;
+
   while (*envp != NULL && **envp != '\0') {
     PString line(*envp);
     PINDEX equals = line.Find('=');
@@ -403,9 +409,6 @@ void PXConfig::ReadFromEnvironment (char **envp)
     }
     envp++;
   }
-
-  // can't save environment configs
-  canSave = PFalse;
 }
 
 PINDEX PXConfig::GetSectionsIndex(const PString & theSection) const
