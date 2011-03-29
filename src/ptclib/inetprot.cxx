@@ -102,7 +102,7 @@ int PInternetProtocol::ReadChar()
   }
 
   lastReadCount = 1;
-  return unReadBuffer[unReadCount--];
+  return (unReadBuffer[--unReadCount]&0xff);
 }
 
 
@@ -321,6 +321,9 @@ PBoolean PInternetProtocol::ReadLine(PString & line, PBoolean allowContinuation)
   }
 
   SetReadTimeout(oldTimeout);
+
+  if (count < line.GetSize()-1)
+    line[count] = '\0';
 
   return gotEndOfLine;
 }
