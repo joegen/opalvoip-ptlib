@@ -566,22 +566,23 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
 void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
                      const PHTTPConnectionInfo & connectInfo)
 {
-  PTime now;
-  if (!info.Contains(DateTag()))
-    info.SetAt(DateTag(), now.AsString(PTime::RFC1123, PTime::GMT));
-  if (!info.Contains(MIMEVersionTag()))
-    info.SetAt(MIMEVersionTag(), "1.0");
-  if (!info.Contains(ServerTag()))
-    info.SetAt(ServerTag(), GetServerName());
+  if (!info.Contains(DateTag))
+    info.SetAt(DateTag, PTime().AsString(PTime::RFC1123, PTime::GMT));
+
+  if (!info.Contains(MIMEVersionTag))
+    info.SetAt(MIMEVersionTag, "1.0");
+
+  if (!info.Contains(ServerTag))
+    info.SetAt(ServerTag, GetServerName());
 
   if (connectInfo.IsPersistent()) {
     if (connectInfo.IsProxyConnection()) {
       PTRACE(5, "HTTPServer\tSetting proxy persistent response");
-      info.SetAt(ProxyConnectionTag(), KeepAliveTag());
+      info.SetAt(ProxyConnectionTag, KeepAliveTag());
     }
     else {
       PTRACE(5, "HTTPServer\tSetting direct persistent response");
-      info.SetAt(ConnectionTag(), KeepAliveTag());
+      info.SetAt(ConnectionTag, KeepAliveTag());
     }
   }
 }
@@ -843,7 +844,8 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 
   // check for Proxy-Connection and Connection strings
   PString str = mimeInfo(PHTTP::ProxyConnectionTag());
-  if (!(isProxyConnection = !str.IsEmpty()))
+  isProxyConnection = !str.IsEmpty();
+  if (!isProxyConnection)
     str = mimeInfo(PHTTP::ConnectionTag());
 
   // get any connection options
@@ -1169,8 +1171,8 @@ static void WriteChunkedDataToServer(PHTTPServer & server, PCharArray & data)
 
 void PHTTPResource::SendData(PHTTPRequest & request)
 {
-  if (!request.outMIME.Contains(PHTTP::ContentTypeTag()) && !contentType)
-    request.outMIME.SetAt(PHTTP::ContentTypeTag(), contentType);
+  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !contentType)
+    request.outMIME.SetAt(PHTTP::ContentTypeTag, contentType);
 
   PCharArray data;
   if (LoadData(request, data)) {
@@ -1193,7 +1195,7 @@ void PHTTPResource::SendData(PHTTPRequest & request)
   }
   else {
     request.server.StartResponse(request.code, request.outMIME, data.GetSize());
-    request.server.Write(data, data.GetSize());
+    request.server.write(data, data.GetSize());
   }
 }
 
