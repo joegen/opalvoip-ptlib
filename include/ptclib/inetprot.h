@@ -90,6 +90,15 @@ class PInternetProtocol : public PIndirectChannel
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
+    /** Read a single 8 bit byte from the channel. If one was not available
+       within the read timeout period, or an I/O error occurred, then the
+       function gives with a -1 return value.
+
+       @return
+       byte read or -1 if no character could be read.
+     */
+    virtual int ReadChar();
+
     /** Low level write to the channel.
 
        This override assures that the sequence CR/LF/./CR/LF does not occur by
