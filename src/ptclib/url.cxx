@@ -353,6 +353,10 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
     cstr++;
 
+  // if string is empty, return
+  if (*cstr == '\0')
+    return false;
+
   // get information which tells us how to parse URL for this
   // particular scheme
   schemeInfo = NULL;
