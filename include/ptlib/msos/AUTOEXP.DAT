@@ -9,7 +9,7 @@
 PObject=<,t>
 PString=<theArray,s>
 PContainer=<,t> size=<reference->size> ref=<reference->count.m_value>
-PIPSocket::Address=<v.four.S_un.S_un_b.s_b1,u>.<v.four.S_un.S_un_b.s_b2,u>.<v.four.S_un.S_un_b.s_b3,u>.<v.four.S_un.S_un_b.s_b4,u>
+PIPSocket::Address=IPv<m_version>:<m_v.m_four.S_un.S_un_b.s_b1,u>.<m_v.m_four.S_un.S_un_b.s_b2,u>.<m_v.m_four.S_un.S_un_b.s_b3,u>.<m_v.m_four.S_un.S_un_b.s_b4,u>
 PTimeInterval=<m_milliseconds>
 PTime=<theTime>
 PAtomicInteger=<m_value>

@@ -1946,17 +1946,21 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 
 PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
 {
+  PString dotNotation;
+
   m_version = 0;
   memset(&m_v, 0, sizeof(m_v));
 
 #if P_HAS_IPV6
-  PString dotNotation = ipAndInterface;
+  m_scope6 = 0;
 
   // Find out if string is in brackets [], as in ipv6 address
-  PINDEX lbracket = dotNotation.Find('[');
-  PINDEX rbracket = dotNotation.Find(']', lbracket);
+  PINDEX lbracket = ipAndInterface.Find('[');
+  PINDEX rbracket = ipAndInterface.Find(']', lbracket);
   if (lbracket != P_MAX_INDEX && rbracket != P_MAX_INDEX)
-    dotNotation = dotNotation(lbracket+1, rbracket-1);
+    dotNotation = ipAndInterface(lbracket+1, rbracket-1);
+  else
+    dotNotation = ipAndInterface;
 
   struct addrinfo *res = NULL;
   struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
@@ -1964,44 +1968,38 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
   if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
     if (res->ai_family == PF_INET6) {
       // IPv6 addr
-      m_version = 6;
       struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
+      m_version = 6;
       m_v.m_six = addr_in6->sin6_addr;
       m_scope6  = addr_in6->sin6_scope_id;
-    } else {
+    }
+    else {
       // IPv4 addr
-      m_version = 4;
       struct sockaddr_in * addr_in = (struct sockaddr_in *)res->ai_addr;
+      m_version  = 4;
       m_v.m_four = addr_in->sin_addr;
-      m_scope6   = 0;
     }
     if (res != NULL)
       freeaddrinfo(res);
     return IsValid();
   }
 
-#else //P_HAS_IPV6
-
-  PINDEX percent = ipAndInterface.Find('%');
-  PString dotNotation = ipAndInterface.Left(percent);
-  if (!dotNotation.IsEmpty()) {
-
-    DWORD iaddr;
-    if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
-                      (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
-      version = 4;
-      v.four.s_addr = iaddr;
-      return true;
-    }
-
-  }
+  // Failed to parse, so check for IPv4 with %interface
 #endif
 
-  return false;
-
-/*
-  if (percent == P_MAX_INDEX)
+  PINDEX percent = ipAndInterface.FindSpan("0123456789.");
+  if (percent != P_MAX_INDEX && ipAndInterface[percent] != '%')
     return false;
+
+  if (percent > 0) {
+    dotNotation = ipAndInterface.Left(percent);
+    DWORD iaddr;
+    if ((iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
+      m_version = 4;
+      m_v.m_four.s_addr = iaddr;
+      return true;
+    }
+  }
 
   PString iface = ipAndInterface.Mid(percent+1);
   if (iface.IsEmpty())
@@ -2017,7 +2015,8 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
       return true;
     }
   }
-*/
+
+  return false;
 }
 
 
