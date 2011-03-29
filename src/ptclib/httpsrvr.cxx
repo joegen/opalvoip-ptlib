@@ -811,26 +811,24 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 {
   // if only one argument, then it must be a version 0.9 simple request
   PINDEX lastSpacePos = args.FindLast(' ');
-  static const PConstCaselessString httpId("HTTP/");
-  if (lastSpacePos == P_MAX_INDEX || httpId != args(lastSpacePos+1, lastSpacePos+5)) {
+  if (lastSpacePos == P_MAX_INDEX || strncasecmp(&args[lastSpacePos+1], "HTTP/", 5) != 0) {
     majorVersion = 0;
     minorVersion = 9;
     return PTrue;
   }
 
   // otherwise, attempt to extract a version number
-  PCaselessString verStr = args.Mid(lastSpacePos + 6);
-  PINDEX dotPos = verStr.Find('.');
-  if (dotPos == 0 || dotPos >= verStr.GetLength()) {
-    server.OnError(PHTTP::BadRequest, "Malformed version number: " + verStr, *this);
+  PINDEX dotPos = args.Find('.', lastSpacePos+6);
+  if (dotPos == 0 || dotPos == P_MAX_INDEX) {
+    server.OnError(PHTTP::BadRequest, "Malformed version number: " + args, *this);
     return PFalse;
   }
 
   // should actually check if the text contains only digits, but the
   // chances of matching everything else and it not being a valid number
   // are pretty small, so don't bother
-  majorVersion = (int)verStr.Left(dotPos).AsInteger();
-  minorVersion = (int)verStr.Mid(dotPos+1).AsInteger();
+  majorVersion = atoi(&args[lastSpacePos+6]);
+  minorVersion = atoi(&args[dotPos+1]);
   args.Delete(lastSpacePos, P_MAX_INDEX);
 
   // build our connection info reading MIME info until an empty line is
@@ -841,14 +839,10 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   wasPersistent = isPersistent;
   isPersistent = false;
 
-  PString str;
-
   // check for Proxy-Connection and Connection strings
-  isProxyConnection = mimeInfo.Contains(PHTTP::ProxyConnectionTag());
-  if (isProxyConnection)
-    str = mimeInfo[PHTTP::ProxyConnectionTag()];
-  else if (mimeInfo.Contains(PHTTP::ConnectionTag()))
-    str = mimeInfo[PHTTP::ConnectionTag()];
+  PString str = mimeInfo(PHTTP::ProxyConnectionTag());
+  if (!(isProxyConnection = !str.IsEmpty()))
+    str = mimeInfo(PHTTP::ConnectionTag());
 
   // get any connection options
   if (!str) {
@@ -870,14 +864,13 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // If the client didn't specify a persistent connection, then use the
   // ContentLength if there is one or read until end of file if there isn't
   if (!isPersistent)
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag(),
-                                           (commandCode == PHTTP::POST) ? -2 : 0);
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, (commandCode == PHTTP::POST) ? -2 : 0);
   else {
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag(), -1);
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
     if (entityBodyLength < 0) {
       PTRACE(5, "HTTPServer\tPersistent connection has no content length");
       entityBodyLength = 0;
-      mimeInfo.SetAt(PHTTP::ContentLengthTag(), "0");
+      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
     }
   }
 
@@ -985,10 +978,9 @@ PBoolean PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
     retVal = PFalse;
     server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
-    PTime expiryDate;
+    PTime expiryDate(0);
     if (GetExpirationDate(expiryDate))
-      request->outMIME.SetAt(PHTTP::ExpiresTag(),
-                              expiryDate.AsString(PTime::RFC1123, PTime::GMT));
+      request->outMIME.Set(PHTTP::ExpiresTag, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
     if (!LoadHeaders(*request)) 
       retVal = server.OnError(request->code, url.AsString(), connectInfo);
