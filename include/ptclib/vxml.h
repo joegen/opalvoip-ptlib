@@ -38,6 +38,7 @@
 
 #if P_VXML
 
+#include <ptlib/pfactory.h>
 #include <ptlib/pipechan.h>
 #include <ptclib/delaychan.h>
 #include <ptclib/pwavfile.h>
@@ -56,7 +57,8 @@ class PVXMLSession;
 #define VXML_G7231         "G.723.1"
 #define VXML_G729          "G.729"
 
-#define PVXML_HAS_FACTORY   1
+
+//////////////////////////////////////////////////////////////////
 
 class PVXMLGrammar : public PObject
 {
@@ -218,7 +220,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual void OnEndSession()         { }
     virtual void OnTransfer(const PString & /*destination*/, bool /*bridged*/) { }
 
-    virtual PString GetVar(const PString & str) const;
+    virtual PCaselessString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
     virtual PString EvaluateExpr(const PString & oexpr);
 
@@ -237,19 +239,14 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     PStringToString & GetSessionVars() { return sessionVars; }
 
-  protected:
-    void Initialise();
-
-    virtual void ProcessUserInput();
-    virtual void ProcessGrammar();
-    virtual void ProcessNode();
-    virtual bool NextNode();
 
     virtual PBoolean TraverseAudio();
+    virtual PBoolean TraverseBreak();
+    virtual PBoolean TraverseValue();
+    virtual PBoolean TraverseSayAs();
     virtual PBoolean TraverseGoto();
     virtual PBoolean TraverseGrammar();
     virtual PBoolean TraverseRecord();
-
     virtual PBoolean TraverseIf();
     virtual PBoolean TraverseExit();
     virtual PBoolean TraverseVar();
@@ -257,7 +254,20 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual PBoolean TraverseMenu();
     virtual PBoolean TraverseChoice();
     virtual PBoolean TraverseProperty();
-    virtual PBoolean TraverseTransfer();
+    virtual PBoolean TraverseDisconnect();
+    virtual PBoolean TraverseForm();
+    virtual PBoolean TraversePrompt();
+    virtual PBoolean TraverseField();
+    virtual PBoolean TraversedField();
+    virtual PBoolean TraversedTransfer();
+
+  protected:
+    void Initialise();
+
+    virtual void ProcessUserInput();
+    virtual void ProcessGrammar();
+    virtual void ProcessNode();
+    virtual bool NextNode();
 
     void SayAs(const PString & className, const PString & text);
     void SayAs(const PString & className, const PString & text, const PString & voice);
@@ -617,6 +627,17 @@ class PVXMLChannel : public PDelayChannel
 
 
 //////////////////////////////////////////////////////////////////
+
+class PVXMLNodeHandler : public PObject
+{
+    PCLASSINFO(PVXMLNodeHandler, PObject);
+  public:
+    virtual bool Start(PVXMLSession & /*session*/, const PXMLElement & /*node*/) const { return false; }
+    virtual bool Finish(PVXMLSession & /*session*/, const PXMLElement & /*node*/) const { return false; }
+};
+
+
+typedef PFactory<PVXMLNodeHandler, PCaselessString> PVXMLNodeFactory;
 
 
 #endif // P_VXML
