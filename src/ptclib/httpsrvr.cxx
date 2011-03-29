@@ -260,7 +260,7 @@ PBoolean PHTTPServer::ProcessCommand()
   }
 
   if (!connectInfo.Initialise(*this, args))
-      return PFalse;
+    return PFalse;
 
   // now that we've decided we did receive a HTTP request, increment the
   // count of transactions
@@ -301,7 +301,6 @@ PBoolean PHTTPServer::ProcessCommand()
     connectInfo.entityBody = ReadEntityBody();
 
     // Handle the local request
-    PStringToString postData;
     switch (cmd) {
       case GET :
         persist = OnGET(url, connectInfo.GetMIME(), connectInfo);
@@ -312,10 +311,13 @@ PBoolean PHTTPServer::ProcessCommand()
         break;
 
       case POST :
+      {
+        PStringToString postData;
         if (!connectInfo.DecodeMultipartFormInfo())
           PURL::SplitQueryVars(connectInfo.entityBody, postData); // x-www-form-urlencoded
         persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
         break;
+      }
 
       case P_MAX_INDEX:
       default:
