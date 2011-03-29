@@ -79,9 +79,6 @@ PBoolean PInternetProtocol::Read(void * buf, PINDEX len)
     len--;
   }
 
-  if (unReadCount == 0)
-    unReadBuffer.SetSize(0);
-
   if (len > 0) {
     PINDEX saveCount = lastReadCount;
     PIndirectChannel::Read(bufptr, len);
@@ -89,6 +86,23 @@ PBoolean PInternetProtocol::Read(void * buf, PINDEX len)
   }
 
   return lastReadCount > 0;
+}
+
+
+int PInternetProtocol::ReadChar()
+{
+  if (unReadCount == 0) {
+    char readAhead[1000];
+    if (!PIndirectChannel::Read(readAhead, sizeof(readAhead)))
+      return -1;
+
+    UnRead(readAhead, GetLastReadCount());
+    if (unReadCount == 0)
+      return -1;
+  }
+
+  lastReadCount = 1;
+  return unReadBuffer[unReadCount--];
 }
 
 
@@ -245,11 +259,11 @@ PBoolean PInternetProtocol::WriteLine(const PString & line)
 }
 
 
-PBoolean PInternetProtocol::ReadLine(PString & str, PBoolean allowContinuation)
+PBoolean PInternetProtocol::ReadLine(PString & line, PBoolean allowContinuation)
 {
-  str = PString();
+  if (!line.SetMinSize(1000))
+    return false;
 
-  PCharArray line(100);
   PINDEX count = 0;
   PBoolean gotEndOfLine = false;
 
@@ -261,13 +275,6 @@ PBoolean PInternetProtocol::ReadLine(PString & str, PBoolean allowContinuation)
   SetReadTimeout(readLineTimeout);
 
   while (c >= 0 && !gotEndOfLine) {
-    if (unReadCount == 0) {
-      char readAhead[1000];
-      SetReadTimeout(0);
-      if (PIndirectChannel::Read(readAhead, sizeof(readAhead)))
-        UnRead(readAhead, GetLastReadCount());
-      SetReadTimeout(readLineTimeout);
-    }
     switch (c) {
       case '\b' :
       case '\177' :
@@ -315,8 +322,6 @@ PBoolean PInternetProtocol::ReadLine(PString & str, PBoolean allowContinuation)
 
   SetReadTimeout(oldTimeout);
 
-  if (count > 0)
-    str = PString(line, count);
   return gotEndOfLine;
 }
 
@@ -597,10 +602,11 @@ bool PMIMEInfo::AddMIME(const PString & line)
   if (colonPos == P_MAX_INDEX)
     return false;
 
-  PCaselessString fieldName  = line.Left(colonPos).Trim();
-  PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+  PINDEX dataPos = colonPos+1;
+  while (isspace(line[dataPos]))
+    ++dataPos;
 
-  return AddMIME(fieldName, fieldValue);
+  return AddMIME(line.Left(colonPos).Trim(), line.Mid(dataPos));
 }
 
 
