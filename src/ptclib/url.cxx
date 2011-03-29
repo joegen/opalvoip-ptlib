@@ -431,7 +431,7 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     else
       pos = str.FindOneOf(endHostChars, start);
 
-    PString uphp = str(start, --pos);
+    PString uphp = str(start, pos+1);
     if (pos != P_MAX_INDEX)
       start += pos;
     else
