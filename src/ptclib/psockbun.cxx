@@ -272,14 +272,17 @@ static PString MakeInterfaceDescription(const PIPSocket::InterfaceEntry & entry)
 }
 
 
-static PBoolean SplitInterfaceDescription(const PString & iface,
+static bool SplitInterfaceDescription(const PString & iface,
                                       PIPSocket::Address & address,
                                       PString & name)
 {
   if (iface.IsEmpty())
     return false;
 
-  PINDEX percent = iface.Find('%');
+  PINDEX right = 0;
+  if (iface[0] == '[')
+    right = iface.Find(']');
+  PINDEX percent = iface.Find('%', right);
   switch (percent) {
     case 0 :
       address = PIPSocket::GetDefaultIpAny();

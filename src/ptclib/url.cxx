@@ -478,14 +478,16 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     else {
       // determine if the URL has a port number
       // Allow for [ipv6] form
-      pos = uphp.Find(']');
-      if (pos == P_MAX_INDEX)
-        pos = 0;
-      pos = uphp.Find(':', pos);
-      if (pos == P_MAX_INDEX)
-        hostname = UntranslateString(uphp, LoginTranslation);
+      if (uphp[0] == '[' && (pos = uphp.Find(']')) != P_MAX_INDEX) {
+        hostname = uphp.Left(pos+1); // No translation if inside []
+        pos = uphp.Find(':', pos);
+      }
       else {
+        pos = uphp.Find(':');
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
+      }
+
+      if (pos != P_MAX_INDEX) {
         port = (WORD)uphp.Mid(pos+1).AsUnsigned();
         portSupplied = true;
       }
@@ -605,10 +607,12 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     }
 
     if (schemeInfo->hasHostPort) {
-      if (hostname.Find(':') != P_MAX_INDEX && hostname[0] != '[')
+      if (hostname[0] == '[') // Should be IPv6 address
+        str << hostname;
+      else if (hostname.Find(':') != P_MAX_INDEX) // Assume it is an IPv6 address
         str << '[' << hostname << ']';
       else
-        str << hostname;
+        str << TranslateString(hostname, LoginTranslation);
     }
 
     if (schemeInfo->defaultPort != 0) {
