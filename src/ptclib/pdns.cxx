@@ -94,13 +94,13 @@ static PBoolean ProcessDNSRecords(
 
     // get other common parts of the record
     WORD  type;
-    WORD  dnsClass;
-    DWORD ttl;
+    //WORD  dnsClass;
+    //DWORD ttl;
     WORD  dlen;
 
     GETSHORT(type,     cp);
-    GETSHORT(dnsClass, cp);
-    GETLONG (ttl,      cp);
+    cp += sizeof(WORD); // GETSHORT(dnsClass, cp);
+    cp += sizeof(LONG); // GETLONG (ttl,      cp);
     GETSHORT(dlen,     cp);
 
     BYTE * data = cp;

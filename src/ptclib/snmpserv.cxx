@@ -216,11 +216,12 @@ PBoolean PSNMPServer::MIB_LocalMatch(PSNMP_PDU & pdu)
     if (obj != NULL){
       vars[x].m_value = *obj;
       found = PTrue;
-    }else{
+    }
+    else{
       pdu.m_error_status = PSNMP::NoSuchName;
-	}
+    }
   }
-  return PTrue;
+  return found;
 }
 
 PBoolean PSNMPServer::ConfirmCommunity(PASN_OctetString & /*community*/)
