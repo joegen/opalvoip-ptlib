@@ -67,14 +67,14 @@ PSoundChannelALSA::PSoundChannelALSA(const PString & device,
 
 void PSoundChannelALSA::Construct()
 {
-  enum _snd_pcm_format val;
-
-#if PBYTE_ORDER == PLITTLE_ENDIAN
-  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_LE : SND_PCM_FORMAT_U8;
-#else
-  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_BE : SND_PCM_FORMAT_U8;
-#endif
-
+//  enum _snd_pcm_format val;
+//
+//#if PBYTE_ORDER == PLITTLE_ENDIAN
+//  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_LE : SND_PCM_FORMAT_U8;
+//#else
+//  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_BE : SND_PCM_FORMAT_U8;
+//#endif
+//
   frameBytes = 2;
   m_bufferSize = 320; // 20 ms worth of 8kHz data
   m_bufferCount = 2;  // double buffering
