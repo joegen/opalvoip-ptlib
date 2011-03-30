@@ -114,7 +114,8 @@ struct Variables {
 #define yyerror		PTime_yyerror
 
 static int yyparse(void *); 
-static int yylex();
+union YYSTYPE;
+static int yylex(YYSTYPE *, void*);
 
 #ifdef __GNUC__
 static int yyerror(char const *msg);
