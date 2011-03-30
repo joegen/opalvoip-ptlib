@@ -341,14 +341,21 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
   info.OpenTraceFile(filename);
 
 #if PTRACING
-  PProcess & process = PProcess::Current();
-  Begin(0, "", 0) << "\tVersion " << process.GetVersion(PTrue)
-                  << " by " << process.GetManufacturer()
-                  << " on " << process.GetOSClass() << ' ' << process.GetOSName()
-                  << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
-                  << ") with PTLib (v" << process.GetLibVersion()
-                  << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
-                  << End;
+  if (PProcess::IsInitialised ()) {
+    PProcess & process = PProcess::Current();
+    Begin(0, "", 0) << "\tVersion " << process.GetVersion(PTrue)
+                    << " by " << process.GetManufacturer()
+                    << " on " << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
+                    << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware()
+                    << ") with PTLib (v" << PProcess::GetLibVersion()
+                    << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
+                    << End;
+  } else  // allow to start tracing before PProcess creation, useful for program initialisation errors (e.g. opal codec loading)
+    Begin(0, "", 0) << " on " << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
+                    << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware()
+                    << ") with PTLib (v" << PProcess::GetLibVersion()
+                    << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
+                    << End;
 #endif
 
 }
