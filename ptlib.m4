@@ -82,8 +82,9 @@ AC_DEFUN([PTLIB_FIND_DIRECTX],
 	  AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([dxerr9.h], [], [ptlib_has_directx=no])
-	  AC_CHECK_HEADERS([ksuuids.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
+dnl ##### the two following headers are included by other headers, so check only if they exist
+	  AC_CHECK_HEADERS([ksuuids.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([uuids.h], [], [ptlib_has_directx=no])
 	  CPPFLAGS="$old_CPPFLAGS"
 
