@@ -117,13 +117,8 @@ struct Variables {
                     + __GNUC_MINOR__ * 100 \
                     + __GNUC_PATCHLEVEL__)
 
-//static int yyparse(void *); 
-#if GCC_VERSION >= 40600
-union YYSTYPE;
-int yylex(YYSTYPE * v, void * p);
-#else
-int yylex();
-#endif
+static int yyparse(void *); 
+static int yylex();
 
 #ifdef __GNUC__
 static int yyerror(char const *msg);
