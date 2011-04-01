@@ -113,6 +113,10 @@ struct Variables {
 #define yylex		PTime_yylex
 #define yyerror		PTime_yyerror
 
+#define GCC_VERSION (__GNUC__ * 10000 \
+                    + __GNUC_MINOR__ * 100 \
+                    + __GNUC_PATCHLEVEL__)
+
 static int yyparse(void *); 
 static int yylex();
 
