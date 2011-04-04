@@ -1838,7 +1838,7 @@ class PConstantString : public ParentString
   public:
     PConstantString(typename ParentString::Initialiser init)
       : ParentString(m_staticReference)
-      , m_staticReference(strlen(init)+1, true)
+      , m_staticReference((PINDEX)strlen(init)+1, true)
     {
       this->theArray = (char *)init;
     }
