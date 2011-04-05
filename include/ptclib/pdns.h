@@ -175,6 +175,7 @@ class DnsRecord {
     } Data;
 };
 
+typedef DnsRecord DNS_RECORD;
 typedef DnsRecord * PDNS_RECORD;
 
 
@@ -201,6 +202,20 @@ extern DNS_STATUS DnsQuery_A(const char * service,
 #endif // P_HAS_RESOLVER
 
 namespace PDNS {
+
+///////////////////////////////////////////////////////////////////////////
+
+DNS_STATUS Cached_DnsQuery(
+    const char * name,
+    WORD       type,
+    DWORD      options,
+    void *     extra,
+    PDNS_RECORD * queryResults,
+    void * reserved
+);
+
+
+void Cached_DnsRecordListFree(PDNS_RECORD, int);
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -376,19 +391,6 @@ inline PBoolean GetMXRecords(
   return GetRecords(domain, serviceList);
 }
 
-///////////////////////////////////////////////////////////////////////////
-
-DNS_STATUS Cached_DnsQuery(
-    const char * name,
-    WORD       type,
-    DWORD      options,
-    void *     extra,
-    PDNS_RECORD * queryResults,
-    void * reserved
-);
-
-
-void Cached_DnsRecordListFree(PDNS_RECORD, int);
 
 }; // namespace PDNS
 
