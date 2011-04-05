@@ -52,22 +52,25 @@
 
 /////////////////////////////////////////////////
 
-#if defined(USE_RESOLVER_CACHING) || defined(P_HAS_RESOLVER)
+#if defined(P_HAS_RESOLVER) ||  defined(USE_RESOLVER_CACHING)
 
-static PMutex & GetDNSMutex()
-{
-  static PMutex mutex;
-  return mutex;
-}
-
-
-static void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
+void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
 {
   while (rec != NULL) {
     PDNS_RECORD next = rec->pNext;
     free(rec);
     rec = next;
   }
+}
+
+#endif
+
+#if defined(USE_RESOLVER_CACHING) || (defined(P_HAS_RESOLVER) && !defined(P_HAS_RES_NINIT))
+
+static PMutex & GetDNSMutex()
+{
+  static PMutex mutex;
+  return mutex;
 }
 
 #endif
@@ -126,7 +129,7 @@ static PBoolean ProcessDNSRecords(
 
     // get the name
     char pName[MAXDNAME];
-    if (!GetDN(reply, replyEnd, cp, pName)) 
+    if (!GetDN(reply, replyEnd, cp, pName))
       return PFalse;
 
     // get other common parts of the record
@@ -135,10 +138,10 @@ static PBoolean ProcessDNSRecords(
     //DWORD ttl;
     WORD  dlen;
 
-    GETSHORT(type,     cp);
-    cp += sizeof(WORD); // GETSHORT(dnsClass, cp);
-    cp += sizeof(LONG); // GETLONG (ttl,      cp);
-    GETSHORT(dlen,     cp);
+    GETSHORT(type, cp);
+    cp += 2; // GETSHORT(dnsClass, cp);
+    cp += 4; // GETLONG (ttl,      cp);
+    GETSHORT(dlen, cp);
 
     BYTE * data = cp;
     cp += dlen;
