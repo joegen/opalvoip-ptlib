@@ -893,9 +893,9 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
         ourMechs.Exclude("LOGIN");
       }
 
-      for (PINDEX i = 0, max = serverMechs.GetSize() ; i < max ; i++)
-        if (ourMechs.Contains(serverMechs.GetKeyAt(i))) {
-          mech = serverMechs.GetKeyAt(i);
+      for (PStringSet::iterator it = serverMechs.begin(); it != serverMechs.end(); ++it)
+        if (ourMechs.Contains(*it)) {
+          mech = *it;
           break;
         }
     }
@@ -1389,7 +1389,7 @@ PBoolean PRFC822Channel::MultipartMessage(const PString & boundary)
     writePartHeaders = PTrue;
   }
 
-  boundaries.InsertAt(0, new PString(boundary));
+  boundaries.Prepend(new PString(boundary));
   return true;
 }
 
@@ -1407,7 +1407,7 @@ void PRFC822Channel::NextPart(const PString & boundary)
     if (boundaries.front() == boundary)
       break;
     *this << "\n--" << boundaries.front() << "--\n";
-    boundaries.RemoveAt(0);
+    boundaries.RemoveHead();
   }
 
   flush();

@@ -269,10 +269,6 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 PINLINE PAbstractList::PAbstractList()
   : info(new PListInfo) { PAssert(info != NULL, POutOfMemory); }
 
-PINLINE PObject & PAbstractList::GetReferenceAt(PINDEX index) const
-  { PObject * obj = GetAt(index);
-                       PAssert(obj != NULL, PInvalidArrayIndex); return *obj; }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PINDEX PStringList::AppendString(const PString & str)

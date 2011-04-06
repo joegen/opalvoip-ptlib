@@ -474,11 +474,11 @@ PBoolean PSSLCertificate::CreateRoot(const PString & subject,
     ASN1_INTEGER_set(X509_get_serialNumber(certificate), 0L);
 
     X509_NAME * name = X509_NAME_new();
-    for (i = 0; i < info.GetSize(); i++)
+    for (POrdinalToString::iterator it = info.begin(); it != info.end(); ++it)
       X509_NAME_add_entry_by_NID(name,
-                                 info.GetKeyAt(i),
+                                 it->first,
                                  MBSTRING_ASC,
-                                 (unsigned char *)(const char *)info.GetDataAt(i),
+                                 (unsigned char *)(const char *)it->second,
                                  -1,-1, 0);
     X509_set_issuer_name(certificate, name);
     X509_set_subject_name(certificate, name);

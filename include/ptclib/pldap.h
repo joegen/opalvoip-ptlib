@@ -467,8 +467,9 @@ class PLDAPStructBase : public PObject {
   public:
     void PrintOn(ostream & strm) const;
 
-    PINDEX GetNumAttributes() const { return attributes.GetSize(); }
-    PLDAPAttributeBase & GetAttribute(PINDEX idx) const { return attributes.GetDataAt(idx); }
+    typedef PDictionary<PString, PLDAPAttributeBase> AttribDict;
+    AttribDict & GetAttributes() { return attributes; }
+    const AttribDict & GetAttributes() const { return attributes; }
     PLDAPAttributeBase * GetAttribute(const char * name) const { return attributes.GetAt(name); }
 
     void AddAttribute(PLDAPAttributeBase * var);
@@ -477,7 +478,7 @@ class PLDAPStructBase : public PObject {
   protected:
     void EndConstructor();
 
-    PDictionary<PString, PLDAPAttributeBase> attributes;
+    AttribDict attributes;
 
     PLDAPStructBase        * initialiserStack;
     static PMutex            initialiserMutex;

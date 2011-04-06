@@ -163,7 +163,7 @@ void PNotifierList::Move(PNotifierList& that)
   that.m_TheList.DisallowDeleteObjects();
 
   while (that.m_TheList.GetSize())
-    m_TheList.Append(that.m_TheList.RemoveAt(0));
+    m_TheList.Append(that.m_TheList.RemoveHead());
 
   that.m_TheList.AllowDeleteObjects();
 }

@@ -153,6 +153,16 @@ class PAbstractList : public PCollection
       PObject * obj   ///< New object to place into the collection.
     );
 
+    /**Append a new object to the collection. This places a new link at the
+       "tail" of the list.
+    
+       @return
+       index of the newly added object.
+     */
+    virtual void Prepend(
+      PObject * obj   ///< New object to place into the collection.
+    );
+
     /**Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
        the <code>Append()</code> function is performed.
@@ -177,7 +187,7 @@ class PAbstractList : public PCollection
        @return
        index of the newly inserted object.
      */
-    virtual PINDEX InsertAt(
+    P_DEPRECATED virtual PINDEX InsertAt(
       PINDEX index,   ///< Index position in collection to place the object.
       PObject * obj   ///< New object to place into the collection.
     );
@@ -192,6 +202,25 @@ class PAbstractList : public PCollection
       const PObject * obj   ///< Existing object to remove from the collection.
     );
 
+    /**Remove the head object from the list. If the AllowDeleteObjects option
+       is set then the object is also deleted.
+
+       @return
+       pointer to the object being removed, or NULL if it was deleted.
+     */
+    virtual PObject * RemoveHead()
+      { return RemoveElement(info->head); }
+
+    /**Remove the tail object from the list. If the AllowDeleteObjects option
+       is set then the object is also deleted.
+
+       @return
+       pointer to the object being removed, or NULL if it was deleted.
+     */
+    virtual PObject * RemoveTail()
+      { return RemoveElement(info->tail); }
+
+
     /**Remove the object at the specified ordinal index from the collection.
        If the AllowDeleteObjects option is set then the object is also deleted.
 
@@ -201,7 +230,7 @@ class PAbstractList : public PCollection
        @return
        pointer to the object being removed, or NULL if it was deleted.
      */
-    virtual PObject * RemoveAt(
+    P_DEPRECATED virtual PObject * RemoveAt(
       PINDEX index   ///< Index position in collection to place the object.
     );
 
@@ -216,7 +245,7 @@ class PAbstractList : public PCollection
        @return
        true if the object was successfully added.
      */
-    virtual PBoolean SetAt(
+    P_DEPRECATED virtual PBoolean SetAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -231,7 +260,7 @@ class PAbstractList : public PCollection
        @return
        true if the object was successfully replaced.
      */   
-    virtual PBoolean ReplaceAt(
+    P_DEPRECATED virtual PBoolean ReplaceAt(
       PINDEX index,   ///< Index position in collection to set.
       PObject * val   ///< New value to place into the collection.
     );
@@ -246,7 +275,7 @@ class PAbstractList : public PCollection
        @return
        pointer to object at the specified index.
      */
-    virtual PObject * GetAt(
+    P_DEPRECATED virtual PObject * GetAt(
       PINDEX index  ///< Index position in the collection of the object.
     ) const;
 
@@ -276,34 +305,10 @@ class PAbstractList : public PCollection
 
 
   protected:
-    /**Get the object at the specified ordinal position. If the index was
-       greater than the size of the collection then this asserts.
-
-       The object accessed in this way is remembered by the class and further
-       access will be fast. Access to elements one either side of that saved
-       element, and the head and tail of the list, will always be fast.
-
-       @return
-       reference to object at the specified index.
-     */
-    PINLINE PObject & GetReferenceAt(
-      PINDEX index  ///< Ordinal index of the list element to set as current.
-    ) const;
-
-    /**Move the internal "cursor" to the index position specified. This
-       function will optimise the sequential move taking into account the
-       previous current position and the position at the head and tail of the
-       list. Whichever of these three points is closes is used as the starting
-       point for a sequential move to the required index.
-
-       @return
-       true if the index could be set as the current element.
-     */
-    PBoolean SetCurrent(
-      PINDEX index,           ///< Ordinal index of the list element to set as current.
-      PListElement * & lastElement ///< pointer to final element
-    ) const;
-
+    PINLINE PObject & GetReferenceAt(PINDEX index) const;
+    PListElement * FindElement(PINDEX index) const;
+    PListElement * FindElement(const PObject & obj, PINDEX * index) const;
+    void InsertElement(PListElement * element, PObject * obj);
     PObject * RemoveElement(PListElement * element);
 
     // The types below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
@@ -345,63 +350,67 @@ template <class T> class PList : public PAbstractList
 
   /**@name Iterators */
   //@{
-    class iterator_base : public std::iterator<std::bidirectional_iterator_tag, T> {
-    protected:
-      iterator_base(PListElement * e) : element(e) { }
-      PListElement * element;
+    typedef T value_type;
 
-      void Next() { element = PAssertNULL(element)->next; }
-      void Prev() { element = PAssertNULL(element)->prev; }
-      T * Ptr() const { return  (T *)PAssertNULL(element)->data; }
+    class iterator_base : public std::iterator<std::bidirectional_iterator_tag, value_type> {
+      protected:
+        iterator_base(PListElement * e) : element(e) { }
+        PListElement * element;
 
-    public:
-      bool operator==(const iterator_base & it) const { return element == it.element; }
-      bool operator!=(const iterator_base & it) const { return element != it.element; }
+        void Next() { this->element = PAssertNULL(this->element)->next; }
+        void Prev() { this->element = PAssertNULL(this->element)->prev; }
+        value_type * Ptr() const { return  (value_type *)PAssertNULL(this->element)->data; }
+
+      public:
+        bool operator==(const iterator_base & it) const { return this->element == it.element; }
+        bool operator!=(const iterator_base & it) const { return this->element != it.element; }
+
+      friend class PList<T>;
     };
 
     class iterator : public iterator_base {
-    public:
-      iterator(PListElement * e = NULL) : iterator_base(e) { }
+      public:
+        iterator(PListElement * e = NULL) : iterator_base(e) { }
 
-      iterator operator++()    {                      iterator_base::Next(); return *this; }
-      iterator operator--()    {                      iterator_base::Prev(); return *this; }
-      iterator operator++(int) { iterator it = *this; iterator_base::Next(); return it;    }
-      iterator operator--(int) { iterator it = *this; iterator_base::Prev(); return it;    }
+        iterator operator++()    {                      this->Next(); return *this; }
+        iterator operator--()    {                      this->Prev(); return *this; }
+        iterator operator++(int) { iterator it = *this; this->Next(); return it;    }
+        iterator operator--(int) { iterator it = *this; this->Prev(); return it;    }
 
-      T * operator->() const { return  iterator_base::Ptr(); }
-      T & operator* () const { return *iterator_base::Ptr(); }
+        value_type * operator->() const { return  this->Ptr(); }
+        value_type & operator* () const { return *this->Ptr(); }
     };
 
     iterator begin()  { return info->head; }
     iterator end()    { return iterator(); }
     iterator rbegin() { return info->tail; }
     iterator rend()   { return iterator(); }
-
+    iterator find(const value_type & obj) { return FindElement(obj, NULL); }
+    void insert(const iterator & pos, value_type * obj) { InsertElement(pos.element, obj); }
 
     class const_iterator : public iterator_base {
-    public:
-      const_iterator(PListElement * e = NULL) : iterator_base(e) { }
+      public:
+        const_iterator(PListElement * e = NULL) : iterator_base(e) { }
 
-      const_iterator operator++()    {                            iterator_base::Next(); return *this; }
-      const_iterator operator--()    {                            iterator_base::Prev(); return *this; }
-      const_iterator operator++(int) { const_iterator it = *this; iterator_base::Next(); return it;    }
-      const_iterator operator--(int) { const_iterator it = *this; iterator_base::Prev(); return it;    }
+        const_iterator operator++()    {                            this->Next(); return *this; }
+        const_iterator operator--()    {                            this->Prev(); return *this; }
+        const_iterator operator++(int) { const_iterator it = *this; this->Next(); return it;    }
+        const_iterator operator--(int) { const_iterator it = *this; this->Prev(); return it;    }
 
-      const T * operator->() const { return  iterator_base::Ptr(); }
-      const T & operator* () const { return *iterator_base::Ptr(); }
+        const value_type * operator->() const { return  this->Ptr(); }
+        const value_type & operator* () const { return *this->Ptr(); }
     };
 
     const_iterator begin()  const { return info->head; }
     const_iterator end()    const { return const_iterator(); }
     const_iterator rbegin() const { return info->tail; }
     const_iterator rend()   const { return iterator(); }
+    const_iterator find(const value_type & obj) const { return FindElement(obj, NULL); }
 
-    T & front() const { return *(T *)PAssertNULL(info->head)->data; }
-    T & back() const { return *(T *)PAssertNULL(info->tail)->data; }
-    void erase(const iterator & it) { Remove(&*it); }
-    void erase(const const_iterator & it) { Remove(&*it); }
-
-    typedef T value_type;
+    value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(info->head)->data); }
+    value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(info->tail)->data); }
+    void erase(const iterator & it) { RemoveElement(it.element); }
+    void erase(const const_iterator & it) { RemoveElement(it.element); }
   //@}
 
   /**@name New functions for class */
@@ -517,7 +526,7 @@ template <class T> class PQueue : public PAbstractList
        first object added to the queue or NULL if queue empty.
      */
     virtual T * Dequeue()
-      { if (GetSize() == 0) return NULL; else return (T *)PAbstractList::RemoveAt(0);}
+      { return (T *)PAbstractList::RemoveHead();}
   //@}
 
   protected:
@@ -613,7 +622,7 @@ template <class T> class PStack : public PAbstractList
      */
     virtual void Push(
       T * obj    ///< Object to add to the stack.
-    ) { PAbstractList::InsertAt(0, obj); }
+    ) { PAbstractList::Prepend(obj); }
 
     /**Remove the last object pushed onto the stack.
 
@@ -621,7 +630,7 @@ template <class T> class PStack : public PAbstractList
        object on top of the stack.
      */
     virtual T * Pop()
-      { return (T *)PAbstractList::RemoveAt(0); }
+      { return (T *)PAbstractList::RemoveHead(); }
 
     /**Get the element that is currently on top of the stack without removing
        it.
@@ -630,7 +639,7 @@ template <class T> class PStack : public PAbstractList
        reference to object on top of the stack.
      */
     virtual T & Top()
-      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); }
+      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)info->head->data; }
   //@}
 
   protected:

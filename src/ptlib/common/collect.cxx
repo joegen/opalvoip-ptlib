@@ -325,20 +325,32 @@ PINDEX PAbstractList::Append(PObject * obj)
     info->head = element;
   info->tail = element;
 
-  PINDEX lastIndex = GetSize();
-  reference->size++;
-  return lastIndex;
+  return reference->size++;
+}
+
+
+void PAbstractList::Prepend(PObject * obj)
+{
+  if (PAssertNULL(obj) == NULL)
+    return;
+
+  Element * element = new Element(obj);
+  if (info->head != NULL)
+    info->head->prev = element;
+  element->prev = NULL;
+  element->next = info->head;
+  if (info->tail == NULL)
+    info->tail = element;
+  info->head = element;
+  ++reference->size;
 }
 
 
 PINDEX PAbstractList::Insert(const PObject & before, PObject * obj)
 {
-  if (PAssertNULL(obj) == NULL)
-    return P_MAX_INDEX;
-  
-  PINDEX where = GetObjectsIndex(&before);
-  InsertAt(where, obj);
-  return where;
+  PINDEX index;
+  InsertElement(FindElement(before, &index), obj);
+  return index;
 }
 
 
@@ -350,17 +362,18 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
   if (index >= GetSize())
     return Append(obj);
 
-  Element * lastElement;
-  PAssert(SetCurrent(index, lastElement), PInvalidArrayIndex);
+  Element * element = FindElement(index);
+  if (!PAssert(element != NULL, PInvalidArrayIndex))
+    return P_MAX_INDEX;
 
   Element * newElement = new Element(obj);
-  if (lastElement->prev != NULL)
-    lastElement->prev->next = newElement;
+  if (element->prev != NULL)
+    element->prev->next = newElement;
   else
     info->head = newElement;
-  newElement->prev = lastElement->prev;
-  newElement->next = lastElement;
-  lastElement->prev = newElement;
+  newElement->prev = element->prev;
+  newElement->next = element;
+  element->prev = newElement;
 
   reference->size++;
   return index;
@@ -369,10 +382,8 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 
 PBoolean PAbstractList::Remove(const PObject * obj)
 {
-  if (info == NULL){
-    PAssertAlways("info is null");
+  if (PAssertNULL(info) == NULL)
     return false;
-  }
 
   Element * elmt = info->head;
   while (elmt != NULL) {
@@ -389,27 +400,34 @@ PBoolean PAbstractList::Remove(const PObject * obj)
 
 PObject * PAbstractList::RemoveAt(PINDEX index)
 {
-  if (info == NULL){
-    PAssertAlways("info is null");
-    return NULL;
-  }
+  if (PAssertNULL(info) == NULL)
+    return false;
 
-  Element * elmt;
-  if (!SetCurrent(index, elmt)) {
-    PAssertAlways(PInvalidArrayIndex);
-    return NULL;
-  }
+  Element * element = FindElement(index);
+  return PAssert(element != NULL, PInvalidArrayIndex) ? RemoveElement(element) : NULL;
+}
 
-  return RemoveElement(elmt);
+
+void PAbstractList::InsertElement(PListElement * element, PObject * obj)
+{
+  if (element == NULL)
+    Append(obj);
+
+  Element * newElement = new Element(obj);
+  if (element->prev != NULL)
+    element->prev->next = newElement;
+  else
+    info->head = newElement;
+  newElement->prev = element->prev;
+  newElement->next = element;
+  element->prev = newElement;
 }
 
 
 PObject * PAbstractList::RemoveElement(PListElement * elmt)
 {
-  if (elmt == NULL){
-    PAssertAlways("elmt is null");
+  if (PAssertNULL(info) == NULL)
     return NULL;
-  }
   
   if (elmt->prev != NULL)
     elmt->prev->next = elmt->next;
@@ -445,32 +463,41 @@ PObject * PAbstractList::RemoveElement(PListElement * elmt)
 
 PObject * PAbstractList::GetAt(PINDEX index) const
 {
-  Element * lastElement;
-  return SetCurrent(index, lastElement) ? lastElement->data : (PObject *)NULL;
+  Element * element = FindElement(index);
+  return element != NULL ? element->data : (PObject *)NULL;
 }
 
 
+PObject & PAbstractList::GetReferenceAt(PINDEX index) const
+{
+  Element * element = FindElement(index);
+  if (element != NULL)
+    return *element->data;
+
+  PAssertAlways(PInvalidArrayIndex);
+  return *(PObject *)NULL;
+}
+
 PBoolean PAbstractList::SetAt(PINDEX index, PObject * val)
 {
-  Element * lastElement;
-  if (!SetCurrent(index, lastElement))
-    return PFalse;
-  lastElement->data = val;
-  return PTrue;
+  Element * element = FindElement(index);
+  if (element == NULL)
+    return false;
+  element->data = val;
+  return true;
 }
 
 PBoolean PAbstractList::ReplaceAt(PINDEX index, PObject * val)
 {
-  Element * lastElement;
-  if (!SetCurrent(index, lastElement))
-    return PFalse;
+  Element * element = FindElement(index);
+  if (element == NULL)
+    return false;
   
-  if (lastElement->data != NULL && reference->deleteObjects) {
-    delete lastElement->data;
-  }
+  if (element->data != NULL && reference->deleteObjects)
+    delete element->data;
 
-  lastElement->data = val;
-  return PTrue;
+  element->data = val;
+  return true;
 }
 
 PINDEX PAbstractList::GetObjectsIndex(const PObject * obj) const
@@ -491,24 +518,17 @@ PINDEX PAbstractList::GetObjectsIndex(const PObject * obj) const
 
 PINDEX PAbstractList::GetValuesIndex(const PObject & obj) const
 {
-  PINDEX index = 0;
-  Element * element = info->head;
-  while (element != NULL) {
-    if (*element->data == obj)
-      return index;
-    element = element->next;
-    index++;
-  }
-
-  return P_MAX_INDEX;
+  PINDEX index;
+  return FindElement(obj, &index) != NULL ? index : P_MAX_INDEX;
 }
 
 
-PBoolean PAbstractList::SetCurrent(PINDEX index, Element * & lastElement) const
+PListElement * PAbstractList::FindElement(PINDEX index) const
 {
   if (index >= GetSize())
     return PFalse;
 
+  Element * lastElement;
   PINDEX lastIndex;
   if (index < GetSize()/2) {
     lastIndex = 0;
@@ -529,7 +549,27 @@ PBoolean PAbstractList::SetCurrent(PINDEX index, Element * & lastElement) const
     --lastIndex;
   }
 
-  return PTrue;
+  return lastElement;
+}
+
+
+PListElement * PAbstractList::FindElement(const PObject & obj, PINDEX * indexPtr) const
+{
+  if (PAssertNULL(info) != NULL)
+    return NULL;
+
+  PINDEX index = 0;
+  Element * element = info->head;
+  while (element != NULL) {
+    if (*element->data == obj)
+      break;
+    element = element->next;
+    index++;
+  }
+
+  if (indexPtr != NULL)
+    *indexPtr = index;
+  return element;
 }
 
 
@@ -1131,6 +1171,7 @@ PINDEX PHashTableInfo::AppendElement(PObject * key, PObject * data)
   PAssert(element != NULL, POutOfMemory);
   element->key = key;
   element->data = data;
+  element->bucket = bucket;
   if (list == NULL) {
     element->next = element->prev = element;
     SetAt(bucket, element);
@@ -1152,64 +1193,46 @@ PINDEX PHashTableInfo::AppendElement(PObject * key, PObject * data)
 PObject * PHashTableInfo::RemoveElement(const PObject & key)
 {
   PObject * obj = NULL;
-  Element * lastElement = GetElementAt(key);
-  if (lastElement != NULL) {
-    if (lastElement == lastElement->prev)
-      SetAt(key.HashFunction(), NULL);
+  Element * element = GetElementAt(key);
+  if (element != NULL) {
+    if (element == element->prev)
+      SetAt(element->bucket, NULL);
     else {
-      lastElement->prev->next = lastElement->next;
-      lastElement->next->prev = lastElement->prev;
-      SetAt(key.HashFunction(), lastElement->next);
+      element->prev->next = element->next;
+      element->next->prev = element->prev;
+      SetAt(element->bucket, element->next);
     }
-    obj = lastElement->data;
+    obj = element->data;
     if (deleteKeys)
-      delete lastElement->key;
-    delete lastElement;
+      delete element->key;
+    delete element;
   }
   return obj;
 }
 
 
-PBoolean PHashTableInfo::SetLastElementAt(PINDEX index, PHashTableElement * & lastElement)
+PHashTableElement * PHashTableInfo::GetElementAt(PINDEX index)
 {
-  PINDEX lastBucket = 0;
-  while ((lastElement = GetAt(lastBucket)) == NULL) {
-    if (lastBucket >= GetSize())
-      return FALSE;
-    lastBucket++;
+  PHashTableElement * element;
+  PINDEX bucket = 0;
+  while ((element = GetAt(bucket)) == NULL) {
+    if (bucket >= GetSize())
+      return NULL;
+    bucket++;
   }
 
-  PINDEX lastIndex = 0;
-
-  if (lastIndex < index) {
-    while (lastIndex != index) {
-      if (lastElement->next != operator[](lastBucket))
-        lastElement = lastElement->next;
-      else {
-        do {
-          if (++lastBucket >= GetSize())
-            return PFalse;
-        } while ((lastElement = operator[](lastBucket)) == NULL);
-      }
-      lastIndex++;
-    }
-  }
-  else {
-    while (lastIndex != index) {
-      if (lastElement != operator[](lastBucket))
-        lastElement = lastElement->prev;
-      else {
-        do {
-          if (lastBucket-- == 0)
-            return PFalse;
-        } while ((lastElement = operator[](lastBucket)) == NULL);
-        lastElement = lastElement->prev;
-      }
-      lastIndex--;
+  for (PINDEX i = 0; i < index; ++i) {
+    if (element->next != operator[](bucket))
+      element = element->next;
+    else {
+      do {
+        if (++bucket >= GetSize())
+          return NULL;
+      } while ((element = operator[](bucket)) == NULL);
     }
   }
 
-  return PTrue;
+  return element;
 }
 
 
@@ -1228,8 +1251,7 @@ PHashTableElement * PHashTableInfo::GetElementAt(const PObject & key)
 }
 
 
-PINDEX PHashTableInfo::GetElementsIndex(
-                           const PObject * obj, PBoolean byValue, PBoolean keys) const
+PINDEX PHashTableInfo::GetElementsIndex(const PObject * obj, PBoolean byValue, PBoolean keys) const
 {
   PINDEX index = 0;
   for (PINDEX i = 0; i < GetSize(); i++) {
@@ -1246,6 +1268,37 @@ PINDEX PHashTableInfo::GetElementsIndex(
     }
   }
   return P_MAX_INDEX;
+}
+
+
+PHashTableElement * PHashTableInfo::NextElement(PHashTableElement * element) const
+{
+  PINDEX bucket = element->bucket;
+  if (element->next != operator[](bucket))
+    element = element->next;
+  else {
+    do {
+      if (++bucket >= GetSize())
+        return NULL;
+    } while ((element = operator[](bucket)) == NULL);
+  }
+  return element;
+}
+
+
+PHashTableElement * PHashTableInfo::PrevElement(PHashTableElement * element) const
+{
+  PINDEX bucket = element->bucket;
+  if (element != operator[](bucket))
+    element = element->prev;
+  else {
+    do {
+      if (bucket-- == 0)
+        return NULL;
+    } while ((element = operator[](bucket)) == NULL);
+    element = element->prev;
+  }
+  return element;
 }
 
 
@@ -1284,8 +1337,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
   hashTable->deleteKeys = original->deleteKeys;
 
   for (PINDEX i = 0; i < sz; i++) {
-    Element * lastElement = NULL;
-    original->SetLastElementAt(i, lastElement);
+    Element * lastElement = original->GetElementAt(i);
     PObject * data = lastElement->data;
     if (data != NULL)
       data = data->Clone();
@@ -1310,16 +1362,16 @@ PBoolean PHashTable::SetSize(PINDEX)
 
 PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
 {
-  Element * lastElement;
-  PAssert(hashTable->SetLastElementAt(index, lastElement), PInvalidArrayIndex);
+  Element * lastElement = hashTable->GetElementAt(index);
+  PAssert(lastElement != NULL, PInvalidArrayIndex);
   return *lastElement->data;
 }
 
 
 const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
 {
-  Element * lastElement;
-  PAssert(hashTable->SetLastElementAt(index, lastElement), PInvalidArrayIndex);
+  Element * lastElement = hashTable->GetElementAt(index);
+  PAssert(lastElement != NULL, PInvalidArrayIndex);
   return *lastElement->key;
 }
 
@@ -1385,8 +1437,8 @@ PBoolean PAbstractSet::Remove(const PObject * obj)
 
 PObject * PAbstractSet::RemoveAt(PINDEX index)
 {
-  Element * lastElement;
-  if (!hashTable->SetLastElementAt(index, lastElement))
+  Element * lastElement = hashTable->GetElementAt(index);
+  if (lastElement == NULL)
     return NULL;
 
   PObject * obj = lastElement->key;
@@ -1483,9 +1535,8 @@ PBoolean PAbstractDictionary::SetAt(PINDEX index, PObject * val)
 
 PObject * PAbstractDictionary::GetAt(PINDEX index) const
 {
-  Element * lastElement;
-  PAssert(hashTable->SetLastElementAt(index, lastElement), PInvalidArrayIndex);
-  return lastElement->data;
+  Element * element = hashTable->GetElementAt(index);
+  return PAssert(element != NULL, PInvalidArrayIndex) ? element->data : NULL;
 }
  
  
@@ -1495,14 +1546,16 @@ PBoolean PAbstractDictionary::SetDataAt(PINDEX index, PObject * val)
 }
 
 
-PBoolean PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
+PObject * PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
 {
   if (obj == NULL) {
     obj = hashTable->RemoveElement(key);
     if (obj != NULL) {
-      if (reference->deleteObjects)
-        delete obj;
       reference->size--;
+      if (reference->deleteObjects) {
+        delete obj;
+        obj = NULL;
+      }
     }
   }
   else {
@@ -1513,11 +1566,12 @@ PBoolean PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
     }
     else {
       if (reference->deleteObjects) 
-    		delete element->data;
+    	delete element->data;
       element->data = obj;
     }
   }
-  return PTrue;
+
+  return obj;
 }
 
 

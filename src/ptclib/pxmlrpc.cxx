@@ -170,11 +170,8 @@ PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PSt
   PXMLElement * structElement = new PXMLElement(NULL, "struct");
   PXMLElement * valueElement  = CreateValueElement(structElement);
 
-  PINDEX i;
-  for (i = 0; i < dict.GetSize(); i++) {
-    PString key = dict.GetKeyAt(i);
-    structElement->AddChild(CreateMember(key, CreateScalar(typeStr, dict[key])));
-  }
+  for (PStringToString::const_iterator it = dict.begin(); it != dict.end(); ++it)
+    structElement->AddChild(CreateMember(it->first, CreateScalar(typeStr, it->second)));
 
   return valueElement;
 }

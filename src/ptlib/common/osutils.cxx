@@ -1920,16 +1920,16 @@ bool PProcess::HostSystemURLHandlerInfo::Register()
 
   // create new commands
   {
-    RegistryKey key3(keyRoot,            RegistryKey::Create);
+    RegistryKey key3(keyRoot, RegistryKey::Create);
     key3.SetValue("", type & "protocol");
     key3.SetValue("URL Protocol", "");
 
     RegistryKey key2(keyRoot + "\\shell",  RegistryKey::Create);
 
-    for (PINDEX i = 0; i < cmds.GetSize(); ++i) {
-      RegistryKey key1(keyRoot + "\\shell\\" + cmds.GetKeyAt(i),              RegistryKey::Create);
-      RegistryKey key(keyRoot + "\\shell\\" + cmds.GetKeyAt(i) + "\\command", RegistryKey::Create);
-      key.SetValue("", cmds.GetDataAt(i));
+    for (PStringToString::iterator it = cmds.begin(); it != cmds.end(); ++it) {
+      RegistryKey key1(keyRoot + "\\shell\\" + it->first,              RegistryKey::Create);
+      RegistryKey key(keyRoot + "\\shell\\" + it->first + "\\command", RegistryKey::Create);
+      key.SetValue("", it->second);
     }
   }
 #endif
