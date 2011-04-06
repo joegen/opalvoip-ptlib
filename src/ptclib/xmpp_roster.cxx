@@ -158,9 +158,9 @@ PXMLElement * XMPP::Roster::Item::AsXML(PXMLElement * parent) const
   if (!s.IsEmpty())
     item->SetAttribute("subscrition", s);
 
-  for (PINDEX i = 0, max = m_Groups.GetSize() ; i < max ; i++) {
+  for (PStringSet::const_iterator it = m_Groups.begin(); it != m_Groups.end(); ++it) {
     PXMLElement * group = item->AddChild(new PXMLElement(item, "group"));
-    group->AddChild(new PXMLData(group, m_Groups.GetKeyAt(i)));
+    group->AddChild(new PXMLData(group, *it));
   }
 
   return item;

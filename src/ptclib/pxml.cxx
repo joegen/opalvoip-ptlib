@@ -179,8 +179,8 @@ void PXMLParser::StartElement(const char * name, const char **attrs)
     rootOpen = true;
   }
 
-  for (PINDEX i = 0; i < m_tempNamespaceList.GetSize(); ++i) 
-    currentElement->AddNamespace(m_tempNamespaceList.GetKeyAt(i), m_tempNamespaceList.GetDataAt(i));
+  for (PStringToString::iterator it = m_tempNamespaceList.begin(); it != m_tempNamespaceList.end(); ++it) 
+    currentElement->AddNamespace(it->first, it->second);
 
   m_tempNamespaceList.RemoveAll();
 }
@@ -1125,7 +1125,7 @@ bool PXMLElement::GetNamespace(const PCaselessString & prefix, PCaselessString &
   return false;
 }
 
-bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri)
+bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri) const
 {
   if (prefix.IsEmpty()) {
     if (!m_defaultNamespace.IsEmpty()) {
@@ -1134,10 +1134,11 @@ bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessSt
     }
   }
   else {
-    PINDEX i = m_nameSpaces.GetValuesIndex(prefix);
-    if (i != P_MAX_INDEX) {
-      uri = m_nameSpaces.GetKeyAt(i) + "|";
-      return true;
+    for (PStringToString::const_iterator it = m_nameSpaces.begin(); it != m_nameSpaces.end(); ++it) {
+      if (prefix == it->second) {
+        uri = it->first + "|";
+        return true;
+      }
     }
   }
 
@@ -1216,22 +1217,6 @@ PString PXMLElement::GetAttribute(const PCaselessString & key) const
   return attributes(key);
 }
 
-PString PXMLElement::GetKeyAttribute(PINDEX idx) const
-{
-  if (idx < attributes.GetSize())
-    return attributes.GetKeyAt(idx);
-  else
-    return PString();
-}
-
-PString PXMLElement::GetDataAttribute(PINDEX idx) const
-{
-  if (idx < attributes.GetSize())
-    return attributes.GetDataAt(idx);
-  else
-    return PString();
-}
-
 void PXMLElement::SetAttribute(const PCaselessString & key,
                                const PString & value,
                                bool setDirty)
@@ -1263,12 +1248,9 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
 
   strm << '<' << name;
 
-  PINDEX i;
   if (attributes.GetSize() > 0) {
-    for (i = 0; i < attributes.GetSize(); i++) {
-      PCaselessString key = attributes.GetKeyAt(i);
-      strm << ' ' << key << "=\"" << attributes[key] << '"';
-    }
+    for (PStringToString::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+      strm << ' ' << it->first << "=\"" << it->second << '"';
   }
 
   // this ensures empty elements use the shortened form
@@ -1284,7 +1266,7 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
     if (indenting)
       strm << endl;
   
-    for (i = 0; i < subObjects.GetSize(); i++) 
+    for (PINDEX i = 0; i < subObjects.GetSize(); i++) 
       subObjects[i].Output(strm, xml, indent + 2);
 
     if (indenting)
@@ -1425,8 +1407,8 @@ PXMLSettings::PXMLSettings(const PConfig & data, PXMLParser::Options options)
 
   for (PStringList::iterator i = sects.begin(); i != sects.end(); ++i) {
     PStringToString keyvals = data.GetAllKeyValues(*i);
-    for (PINDEX j = 0; j < keyvals.GetSize(); ++j)
-      SetAttribute(*i, keyvals.GetKeyAt(j),keyvals.GetDataAt(j));
+    for (PStringToString::iterator it = keyvals.begin(); it != keyvals.end(); ++it)
+      SetAttribute(*i, it->first, it->second);
   }
 }
 #endif // P_CONFIG_FILE
@@ -1501,12 +1483,8 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
   for (PINDEX i = 0;i < (PINDEX)GetNumElements();++i) {
     PXMLElement * el = GetElement(i);
     PString sectionName = el->GetName();
-    for (PINDEX j = 0; j < (PINDEX)el->GetNumAttributes(); ++j) {
-      PString key = el->GetKeyAttribute(j);
-      PString dat = el->GetDataAttribute(j);
-      if (!key && !dat)
-        cfg.SetString(sectionName, key, dat);
-    }
+    for (PStringToString::const_iterator it = el->GetAttributes().begin(); it != el->GetAttributes().end(); ++it)
+      cfg.SetString(sectionName, it->first, it->second);
   }
 }
 #endif // P_CONFIG_FILE

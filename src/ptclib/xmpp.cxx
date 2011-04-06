@@ -1280,9 +1280,9 @@ PXMLElement * XMPP::Disco::Info::AsXML(PXMLElement * parent) const
 
   m_Identities.AsXML(info);
 
-  for (PINDEX i = 0, max = m_Features.GetSize() ; i < max ; i++) {
+  for (PStringSet::const_iterator it = m_Features.begin(); it != m_Features.end(); ++it) {
     PXMLElement * feature = info->AddChild(new PXMLElement(info, "feature"));
-    feature->SetAttribute("var", m_Features.GetKeyAt(i));
+    feature->SetAttribute("var", *it);
   }
 
   return info;

@@ -143,6 +143,7 @@ struct PHashTableElement
     PObject * data;
     PHashTableElement * next;
     PHashTableElement * prev;
+    PINDEX bucket;
 
     PDECLARE_POOL_ALLOCATOR();
 };
@@ -157,9 +158,11 @@ PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
 
     PINDEX AppendElement(PObject * key, PObject * data);
     PObject * RemoveElement(const PObject & key);
-    PBoolean SetLastElementAt(PINDEX index, PHashTableElement * & lastElement);
+    PHashTableElement * GetElementAt(PINDEX index);
     PHashTableElement * GetElementAt(const PObject & key);
     PINDEX GetElementsIndex(const PObject*obj,PBoolean byVal,PBoolean keys) const;
+    PHashTableElement * NextElement(PHashTableElement * element) const;
+    PHashTableElement * PrevElement(PHashTableElement * element) const;
 
     PBoolean deleteKeys;
 
@@ -509,7 +512,7 @@ template <class T> class PSet : public PAbstractSet
      */
     PSet & operator-=(
       const T & obj   // New object to exclude in the set.
-    ) { RemoveAt(GetValuesIndex(obj)); return *this; }
+    ) { erase(find(obj)); return *this; }
 
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
@@ -546,12 +549,92 @@ template <class T> class PSet : public PAbstractSet
        @return
        reference to key at the index position.
      */
-    virtual const T & GetKeyAt(
+    P_DEPRECATED virtual const T & GetKeyAt(
       PINDEX index    ///< Index of value to get.
     ) const
       { return (const T &)AbstractGetKeyAt(index); }
   //@}
 
+  /**@name Iterators */
+  //@{
+    class iterator_base : public std::iterator<std::forward_iterator_tag, T> {
+      protected:
+        iterator_base()
+          : table(NULL)
+          , element(NULL)
+          { }
+        iterator_base(PHashTableInfo * t)
+          : table(t)
+          , element(t->GetElementAt((PINDEX)0))
+          { }
+        iterator_base(PHashTableInfo * t, const T & k)
+          : table(t)
+          , element(t->GetElementAt(k))
+          { }
+
+        PHashTableInfo    * table;
+        PHashTableElement * element;
+
+        void Next() { this->element = PAssertNULL(this->table)->NextElement(this->element); }
+        void Prev() { this->element = PAssertNULL(this->table)->PrevElement(this->element); }
+
+        T * Ptr() const { return dynamic_cast<T *>(PAssertNULL(this->element)->key); }
+
+      public:
+        bool operator==(const iterator_base & it) const { return this->element == it.element; }
+        bool operator!=(const iterator_base & it) const { return this->element != it.element; }
+    };
+
+    class iterator : public iterator_base  {
+      protected:
+        iterator(PHashTableInfo * t) : iterator_base(t) { }
+        iterator(PHashTableInfo * t, const T & k) : iterator_base(t, k) { }
+
+      public:
+        iterator() { }
+
+        iterator operator++()    {                      this->Next(); return *this; }
+        iterator operator--()    {                      this->Prev(); return *this; }
+        iterator operator++(int) { iterator it = *this; this->Next(); return it;    }
+        iterator operator--(int) { iterator it = *this; this->Prev(); return it;    }
+
+        T * operator->() const { return  this->Ptr(); }
+        T & operator* () const { return *this->Ptr(); }
+
+      friend class PSet<T>;
+    };
+
+    iterator begin() { return iterator(hashTable); }
+    iterator end()   { return iterator(); }
+    iterator find(const T & k) { return iterator(hashTable, k); }
+
+
+    class const_iterator : public iterator_base {
+      protected:
+        const_iterator(PHashTableInfo * t) : iterator_base(t) { }
+        const_iterator(PHashTableInfo * t, const T & k) : iterator_base(t, k) { }
+
+      public:
+        const_iterator() { }
+
+        const_iterator operator++()    {                            this->Next(); return *this; }
+        const_iterator operator--()    {                            this->Prev(); return *this; }
+        const_iterator operator++(int) { const_iterator it = *this; this->Next(); return it;    }
+        const_iterator operator--(int) { const_iterator it = *this; this->Prev(); return it;    }
+
+        const T * operator->() const { return  this->Ptr(); }
+        const T & operator* () const { return *this->Ptr(); }
+
+      friend class PSet<T>;
+    };
+
+    const_iterator begin() const { return const_iterator(hashTable); }
+    const_iterator end()   const { return const_iterator(); }
+    const_iterator find(const T & k) const { return const_iterator(hashTable, k); }
+
+    void erase(const iterator & it) { Remove(&*it); }
+    void erase(const const_iterator & it) { Remove(&*it); }
+  //@}
 
   protected:
     PSet(int dummy, const PSet * c)
@@ -734,7 +817,7 @@ class PAbstractDictionary : public PHashTable
        @return
        true if the new object could be placed into the dictionary.
      */
-    virtual PBoolean SetDataAt(
+    P_DEPRECATED virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PObject * obj   ///< New object to put into the dictionary.
     );
@@ -750,7 +833,7 @@ class PAbstractDictionary : public PHashTable
        @return
        true if the object was successfully added.
      */
-    virtual PBoolean AbstractSetAt(
+    virtual PObject * AbstractSetAt(
       const PObject & key,  ///< Key for position in dictionary to add object.
       PObject * obj         ///< New object to put into the dictionary.
     );
@@ -855,10 +938,12 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        @return
        reference to the object indexed by the key.
      */
+    const D & operator[](
+      const K & key   ///< Key to look for in the dictionary.
+    ) const { return (const D &)GetRefAt(key); }
     D & operator[](
       const K & key   ///< Key to look for in the dictionary.
-    ) const
-      { return (D &)GetRefAt(key); }
+    ) { return (D &)GetRefAt(key); }
 
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
@@ -879,16 +964,11 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
 
        @return
        pointer to the object being removed, or NULL if the key was not
-       present in the dictionary. If the dictionary is set to delete objects
-       upon removal, the value -1 is returned if the key existed prior to removal
-       rather than returning an illegal pointer
+       present in the dictionary or the object was deleted automatically.
      */
     virtual D * RemoveAt(
       const K & key   ///< Key for position in dictionary to get object.
-    ) {
-        D * obj = GetAt(key); AbstractSetAt(key, NULL);
-        return reference->deleteObjects ? (obj ? (D *)-1 : NULL) : obj;
-      }
+    ) { return (D *)AbstractSetAt(key, NULL); }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -904,7 +984,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     virtual PBoolean SetAt(
       const K & key,  // Key for position in dictionary to add object.
       D * obj         // New object to put into the dictionary.
-    ) { return AbstractSetAt(key, obj); }
+    ) { return AbstractSetAt(key, obj) != NULL; }
 
     /**Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
@@ -927,7 +1007,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        @return
        reference to key at the index position.
      */
-    const K & GetKeyAt(
+    P_DEPRECATED const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
       { return (const K &)AbstractGetKeyAt(index); }
@@ -943,13 +1023,121 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        @return
        reference to data at the index position.
      */
-    D & GetDataAt(
+    P_DEPRECATED D & GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (D &)AbstractGetDataAt(index); }
   //@}
 
-    typedef std::pair<K, D *> value_type;
+  /**@name Iterators */
+  //@{
+    class iterator_base {
+      protected:
+        iterator_base()
+          : table(NULL)
+          , element(NULL)
+          { }
+        iterator_base(PHashTableInfo * t)
+          : table(t)
+          , element(t->GetElementAt((PINDEX)0))
+          { }
+        iterator_base(PHashTableInfo * t, const K & k)
+          : table(t)
+          , element(t->GetElementAt(k))
+          { }
+
+        PHashTableInfo    * table;
+        PHashTableElement * element;
+        BYTE storage[sizeof(K&)+sizeof(D&)];
+
+        void Next() { this->element = PAssertNULL(this->table)->NextElement(this->element); }
+        void Prev() { this->element = PAssertNULL(this->table)->PrevElement(this->element); }
+
+      public:
+        bool operator==(const iterator_base & it) const { return this->element == it.element; }
+        bool operator!=(const iterator_base & it) const { return this->element != it.element; }
+    };
+
+    class iterator_pair {
+      protected:
+        iterator_pair(PHashTableElement * element)
+          : first(dynamic_cast<K &>(*element->key))
+          , second(dynamic_cast<D &>(*element->data))
+          { }
+
+      public:
+        K & first;
+        D & second;
+
+      friend class PDictionary<K,D>::iterator;
+    };
+    class iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, iterator_pair> {
+      protected:
+        iterator(PHashTableInfo * t) : iterator_base(t) { }
+        iterator(PHashTableInfo * t, const K & k) : iterator_base(t, k) { }
+
+        const iterator_pair * Ptr() const { return new ((void *)this->storage) iterator_pair(this->element); }
+
+      public:
+        iterator() { }
+
+        iterator operator++()    {                      this->Next(); return *this; }
+        iterator operator--()    {                      this->Prev(); return *this; }
+        iterator operator++(int) { iterator it = *this; this->Next(); return it;    }
+        iterator operator--(int) { iterator it = *this; this->Prev(); return it;    }
+
+        const iterator_pair * operator->() const { return  this->Ptr(); }
+        const iterator_pair & operator* () const { return *this->Ptr(); }
+
+      friend class PDictionary<K,D>;
+    };
+
+    iterator begin() { return iterator(hashTable); }
+    iterator end()   { return iterator(); }
+    iterator find(const K & k) { return iterator(hashTable, k); }
+
+
+    class const_iterator_pair {
+      protected:
+        const_iterator_pair(const PHashTableElement * element)
+          : first(dynamic_cast<K &>(*element->key))
+          , second(dynamic_cast<D &>(*element->data))
+          { }
+
+      public:
+        const K & first;
+        const D & second;
+
+      friend class PDictionary<K,D>::const_iterator;
+    };
+    class const_iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, const_iterator_pair> {
+      protected:
+        const_iterator(PHashTableInfo * t) : iterator_base(t) { }
+        const_iterator(PHashTableInfo * t, const K & k) : iterator_base(t, k) { }
+
+        const const_iterator_pair * Ptr() const { return new ((void *)this->storage) const_iterator_pair(this->element); }
+
+      public:
+        const_iterator() { }
+
+        const_iterator operator++()    {                            this->Next(); return *this; }
+        const_iterator operator--()    {                            this->Prev(); return *this; }
+        const_iterator operator++(int) { const_iterator it = *this; this->Next(); return it;    }
+        const_iterator operator--(int) { const_iterator it = *this; this->Prev(); return it;    }
+
+        const const_iterator_pair * operator->() const { return  this->Ptr(); }
+        const const_iterator_pair & operator* () const { return *this->Ptr(); }
+
+      friend class PDictionary<K,D>;
+    };
+
+    const_iterator begin() const { return const_iterator(hashTable); }
+    const_iterator end()   const { return const_iterator(); }
+    const_iterator find(const K & k) const { return const_iterator(hashTable, k); }
+
+    void erase(const iterator & it) { Remove(&*it); }
+    void erase(const const_iterator & it) { Remove(&*it); }
+  //@}
 
   protected:
     PDictionary(int dummy, const PDictionary * c)
@@ -1004,9 +1192,10 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
    Note that if templates are not used the <code>PDECLARE_ORDINAL_DICTIONARY</code>
    macro will simulate the template instantiation.
  */
-template <class K> class POrdinalDictionary : public PAbstractDictionary
+template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
 {
-  PCLASSINFO(POrdinalDictionary, PAbstractDictionary);
+  typedef PDictionary<K, POrdinalKey> ParentClass;
+  PCLASSINFO(POrdinalDictionary, ParentClass);
 
   public:
   /**@name Construction */
@@ -1018,7 +1207,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        destroyed.
      */
     POrdinalDictionary()
-      : PAbstractDictionary() { }
+      : PDictionary<K, POrdinalKey>() { }
   //@}
 
   /**@name Overrides from class PObject */
@@ -1048,28 +1237,6 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
     ) const
       { return (POrdinalKey &)GetRefAt(key); }
 
-    /**Determine if the value of the object is contained in the hash table. The
-       object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <code>PObject::Compare()</code>
-       function. The hash table is used to locate the entry.
-
-       @return
-       true if the object value is in the dictionary.
-     */
-    PBoolean Contains(
-      const K & key   ///< Key to look for in the dictionary.
-    ) const { return AbstractContains(key); }
-
-    virtual POrdinalKey * GetAt(
-      const K & key   ///< Key for position in dictionary to get object.
-    ) const { return (POrdinalKey *)AbstractGetAt(key); }
-    /* Get the object at the specified key position. If the key was not in the
-       collection then NULL is returned.
-
-       @return
-       pointer to object at the specified key.
-     */
-
     /**Set the data at the specified ordinal index position in the dictionary.
 
        The ordinal position in the dictionary is determined by the hash values
@@ -1078,10 +1245,10 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        @return
        true if the new object could be placed into the dictionary.
      */
-    virtual PBoolean SetDataAt(
+    P_DEPRECATED virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
-      ) { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); }
+    ) { return AbstractSetAt(AbstractGetKeyAt(index), PNEW POrdinalKey(ordinal)); }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -1099,18 +1266,6 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
     ) { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
 
-    /**Remove an object at the specified key. The returned pointer is then
-       removed using the <code>SetAt()</code> function to set that key value to
-       NULL. If the <code>AllowDeleteObjects</code> option is set then the
-       object is also deleted.
-
-       @return
-       pointer to the object being removed, or NULL if it was deleted.
-     */
-    virtual PINDEX RemoveAt(
-      const K & key   ///< Key for position in dictionary to get object.
-    ) { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; }
-
     /**Get the key in the dictionary at the ordinal index position.
 
        The ordinal position in the dictionary is determined by the hash values
@@ -1122,7 +1277,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        @return
        reference to key at the index position.
      */
-    const K & GetKeyAt(
+    P_DEPRECATED const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
       { return (const K &)AbstractGetKeyAt(index); }
@@ -1138,7 +1293,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        @return
        reference to data at the index position.
      */
-    PINDEX GetDataAt(
+    P_DEPRECATED PINDEX GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (POrdinalKey &)AbstractGetDataAt(index); }
@@ -1146,7 +1301,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
 
   protected:
     POrdinalDictionary(int dummy, const POrdinalDictionary * c)
-      : PAbstractDictionary(dummy, c) { }
+      : PDictionary<K, POrdinalKey>(dummy, c) { }
 };
 
 

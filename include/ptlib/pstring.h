@@ -2450,9 +2450,9 @@ PDECLARE_SET(PStringSet, PString, true);
    Note that if templates are not used the <code>PDECLARE_STRING_DICTIONARY</code>
    macro will simulate the template instantiation.
  */
-template <class K> class PStringDictionary : public PAbstractDictionary
+template <class K> class PStringDictionary : public PDictionary<K, PString>
 {
-  PCLASSINFO(PStringDictionary, PAbstractDictionary);
+  PCLASSINFO(PStringDictionary, PDictionary);
 
   public:
   /**@name Construction */
@@ -2464,7 +2464,7 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        destroyed.
      */
     PStringDictionary()
-      : PAbstractDictionary() { }
+      : PDictionary() { }
   //@}
 
   /**@name Overrides from class PObject */
@@ -2486,21 +2486,6 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       This function asserts if there is no data at the key position.
-
-       @return
-       reference to the object indexed by the key.
-     */
-    const PString & operator[](const K & key) const
-      { return (const PString &)GetRefAt(key); }
-
-    /**Get the string contained in the dictionary at the <code>key</code>
-       position. The hash table is used to locate the data quickly via the
-       hash function provided by the key.
-
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
-
        This function returns the <code>dflt</code> value if there is no data
        at the key position.
 
@@ -2512,59 +2497,6 @@ template <class K> class PStringDictionary : public PAbstractDictionary
       PString * str = this->GetAt(key);
       return str != NULL ? *str : PString(dflt);
     }
-
-    /**Determine if the value of the object is contained in the hash table. The
-       object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <code>PObject::Compare()</code>
-       function. The hash table is used to locate the entry.
-
-       @return
-       true if the object value is in the dictionary.
-     */
-    PBoolean Contains(
-      const K & key   // Key to look for in the dictionary.
-      ) const { return AbstractContains(key); }
-
-    /**Remove an object at the specified key. The returned pointer is then
-       removed using the <code>SetAt()</code> function to set that key value to
-       NULL. If the <code>AllowDeleteObjects</code> option is set then the
-       object is also deleted.
-
-       @return
-       pointer to the object being removed, or NULL if the key was not 
-       present in the dictionary. If the dictionary is set to delete objects
-       upon removal, the value -1 is returned if the key existed prior to removal
-       rather than returning an illegal pointer
-     */
-    virtual PString * RemoveAt(
-      const K & key   // Key for position in dictionary to get object.
-    ) {
-        PString * s = GetAt(key); AbstractSetAt(key, NULL);
-        return reference->deleteObjects ? (s ? (PString *)-1 : NULL) : s;
-      }
-
-    /**Get the object at the specified key position. If the key was not in the
-       collection then NULL is returned.
-
-       @return
-       pointer to object at the specified key.
-     */
-    virtual PString * GetAt(
-      const K & key   // Key for position in dictionary to get object.
-    ) const { return (PString *)AbstractGetAt(key); }
-
-    /**Set the data at the specified ordinal index position in the dictionary.
-
-       The ordinal position in the dictionary is determined by the hash values
-       of the keys and the order of insertion.
-
-       @return
-       true if the new object could be placed into the dictionary.
-     */
-    virtual PBoolean SetDataAt(
-      PINDEX index,        // Ordinal index in the dictionary.
-      const PString & str  // New string value to put into the dictionary.
-    ) { return PAbstractDictionary::SetDataAt(index, PNEW PString(str)); }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -2581,39 +2513,11 @@ template <class K> class PStringDictionary : public PAbstractDictionary
       const K & key,       // Key for position in dictionary to add object.
       const PString & str  // New string value to put into the dictionary.
     ) { return AbstractSetAt(key, PNEW PString(str)); }
-
-    /**Get the key in the dictionary at the ordinal index position.
-    
-       The ordinal position in the dictionary is determined by the hash values
-       of the keys and the order of insertion.
-
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
-
-       @return
-       reference to key at the index position.
-     */
-    const K & GetKeyAt(PINDEX index) const
-      { return (const K &)AbstractGetKeyAt(index); }
-
-    /**Get the data in the dictionary at the ordinal index position.
-    
-       The ordinal position in the dictionary is determined by the hash values
-       of the keys and the order of insertion.
-
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
-
-       @return
-       reference to data at the index position.
-     */
-    PString & GetDataAt(PINDEX index) const
-      { return (PString &)AbstractGetDataAt(index); }
   //@}
 
   protected:
     PStringDictionary(int dummy, const PStringDictionary * c)
-      : PAbstractDictionary(dummy, c) { }
+      : PDictionary(dummy, c) { }
 };
 
 

@@ -377,11 +377,9 @@ class PXMLElement : public PXMLObject {
                       bool setDirty = true);
 
     PString GetAttribute(const PCaselessString & key) const;
-    PString GetKeyAttribute(PINDEX idx) const;
-    PString GetDataAttribute(PINDEX idx) const;
     bool HasAttribute(const PCaselessString & key) const;
     bool HasAttributes() const      { return attributes.GetSize() > 0; }
-    PINDEX GetNumAttributes() const { return attributes.GetSize(); }
+    const PStringToString & GetAttributes() const { return attributes; }
 
     PXMLElement * GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const;
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
@@ -411,7 +409,7 @@ class PXMLElement : public PXMLObject {
     bool GetDefaultNamespace(PCaselessString & str) const;
     bool GetNamespace(const PCaselessString & prefix, PCaselessString & str) const;
     PCaselessString PrependNamespace(const PCaselessString & name) const;
-    bool GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri);
+    bool GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri) const;
 
   protected:
     PCaselessString name;

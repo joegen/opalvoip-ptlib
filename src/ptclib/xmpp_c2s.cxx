@@ -116,7 +116,7 @@ XMPP::C2S::StreamHandler::~StreamHandler()
 {
   m_PendingIQsLock.Wait();
   while (m_PendingIQs.GetSize() > 0)
-    delete m_PendingIQs.RemoveAt(0);
+    delete m_PendingIQs.RemoveHead();
   m_PendingIQsLock.Signal();
 }
 

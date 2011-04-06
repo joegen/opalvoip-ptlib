@@ -312,14 +312,18 @@ void PURL::OutputVars(ostream & strm,
                       char sep2,
                       TranslationType type)
 {
-  for (PINDEX i = 0; i < vars.GetSize(); i++) {
-    if (i > 0)
+  bool outputSeperator = false;
+  for (PStringOptions::const_iterator it = vars.begin(); it != vars.end(); ++it) {
+    if (outputSeperator)
       strm << sep1;
-    else if (sep0 != '\0')
-      strm << sep0;
+    else {
+      if (sep0 != '\0')
+        strm << sep0;
+      outputSeperator = true;
+    }
 
-    PString key  = TranslateString(vars.GetKeyAt (i), type);
-    PString data = TranslateString(vars.GetDataAt(i), type);
+    PString key  = TranslateString(it->first,  type);
+    PString data = TranslateString(it->second, type);
 
     if (key.IsEmpty())
       strm << data;
@@ -1051,8 +1055,8 @@ class PURL_DataScheme : public PURLScheme
       strm << "data:" + params("type", "text/plain");
 
       bool base64 = false;
-      for (PINDEX i = 0; i < params.GetSize(); i++) {
-        PCaselessString key = params.GetKeyAt(i);
+      for (PStringOptions::const_iterator it = params.begin(); it != params.end(); ++it) {
+        PCaselessString key = it->first;
         if (key == "type")
           continue;
         if (key == "base64") {
@@ -1062,7 +1066,7 @@ class PURL_DataScheme : public PURLScheme
 
         strm << ';' << PURL::TranslateString(key, PURL::ParameterTranslation);
 
-        PString data = params.GetDataAt(i);
+        PString data = it->second;
         if (!data)
           strm << '=' << PURL::TranslateString(data, PURL::ParameterTranslation);
       }
