@@ -74,26 +74,41 @@ class PSTUN {
 struct PSTUNAttribute
 {
   enum Types {
-    MAPPED_ADDRESS     = 0x0001,   // RFC 3489 & RFC 5389
-    RESPONSE_ADDRESS   = 0x0002,   // RFC 3489 & RFC 5389
-    CHANGE_REQUEST     = 0x0003,   // RFC 3489 & RFC 5389 (added in RFC 5780)
-    SOURCE_ADDRESS     = 0x0004,   // RFC 3489
-    CHANGED_ADDRESS    = 0x0005,   // RFC 3489
-    USERNAME           = 0x0006,   // RFC 3489 & RFC 5389
-    PASSWORD           = 0x0007,   // RFC 3489
-    MESSAGE_INTEGRITY  = 0x0008,   // RFC 3489 & RFC 5389
-    ERROR_CODE         = 0x0009,   // RFC 3489 & RFC 5389
-    UNKNOWN_ATTRIBUTES = 0x000a,   // RFC 3489 & RFC 5389  
-    REFLECTED_FROM     = 0x000b,   // RFC 3489  
-    REALM              = 0x0014,   // RFC 5389  
-    NONCE              = 0x0015,   // RFC 5389  
-    XOR_MAPPED_ADDRESS = 0x0020,   // RFC 5389  
+    MAPPED_ADDRESS      = 0x0001,   // RFC 3489 & RFC 5389
+    RESPONSE_ADDRESS    = 0x0002,   // RFC 3489 & RFC 5389
+    CHANGE_REQUEST      = 0x0003,   // RFC 3489 & RFC 5389 (added in RFC 5780)
+    SOURCE_ADDRESS      = 0x0004,   // RFC 3489
+    CHANGED_ADDRESS     = 0x0005,   // RFC 3489
+    USERNAME            = 0x0006,   // RFC 3489 & RFC 5389
+    PASSWORD            = 0x0007,   // RFC 3489
+    MESSAGE_INTEGRITY   = 0x0008,   // RFC 3489 & RFC 5389
+    ERROR_CODE          = 0x0009,   // RFC 3489 & RFC 5389
+    UNKNOWN_ATTRIBUTES  = 0x000a,   // RFC 3489 & RFC 5389  
+    REFLECTED_FROM      = 0x000b,   // RFC 3489  
 
-    PADDING            = 0x0026,   // RFC 5389 (added in RFC 5780)
-    RESPONSE_PORT      = 0x0027,   // RFC 5389 (added in RFC 5780)
+    CHANNEL_NUMBER      = 0x000C,   // RFC 5766 
+    LIFETIME            = 0x000D,   // RFC 5766 
+    //BANDWIDTH         = 0x0010,
+    XOR_PEER_ADDRESS    = 0x0012,   // RFC 5766 
+    DATA                = 0x0013,   // RFC 5766 
 
-    RESPONSE_ORIGIN    = 0x802b,   // RFC 5389 (added in RFC 5780)
-    OTHER_ADDRESS      = 0x802c,   // RFC 5389 (added in RFC 5780)
+    REALM               = 0x0014,   // RFC 5389  
+    NONCE               = 0x0015,   // RFC 5389  
+
+    XOR_RELAYED_ADDRESS = 0x0016,   // RFC 5766 
+    EVEN_PORT           = 0x0018,   // RFC 5766 
+    REQUESTED_TRANSPORT = 0x0019,   // RFC 5766 
+    DONT_FRAGMENT       = 0x001A,   // RFC 5766
+    XOR_MAPPED_ADDRESS  = 0x0020,   // RFC 5389  
+
+    // TIMER-VAL        =  0x0021,
+    RESERVATION_TOKEN   =  0x0022,  // RFC 5766
+
+    PADDING             = 0x0026,   // RFC 5389 (added in RFC 5780)
+    RESPONSE_PORT       = 0x0027,   // RFC 5389 (added in RFC 5780)
+
+    RESPONSE_ORIGIN     = 0x802b,   // RFC 5389 (added in RFC 5780)
+    OTHER_ADDRESS       = 0x802c    // RFC 5389 (added in RFC 5780)
   };
   
   PUInt16b type;
@@ -124,6 +139,7 @@ class PSTUNAddressAttribute : public PSTUNAttribute
     WORD GetPort() const;
     PIPSocket::Address GetIP() const;
     void SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort);
+    void GetIPAndPort(PIPSocketAddressAndPort & addrAndPort);
 
   protected:
     enum { SizeofAddressAttribute = sizeof(BYTE)+sizeof(BYTE)+sizeof(WORD)+4 };
@@ -133,12 +149,30 @@ class PSTUNAddressAttribute : public PSTUNAttribute
     }
 };
 
-class PSTUNResponseOrigin : public PSTUNAddressAttribute
+
+class PSTUNStringAttribute : public PSTUNAttribute
 {
   public:
-    void Initialise() { InitAddrAttr(RESPONSE_ORIGIN); }
-    bool IsValid() const { return IsValidAddrAttr(RESPONSE_ORIGIN); }
+    char m_string[763];   // not actually 763, but this will do
+
+    PSTUNStringAttribute(Types newType, const PString & str)
+    { InitStringAttr(newType, str); }
+
+    PString GetString() const { return PString(m_string, length); }
+
+    void InitStringAttr(Types newType, const PString & str)
+    {
+      type   = (WORD)newType;
+      length = (WORD)str.GetLength();
+      memcpy(m_string, (const char *)str, length);
+    }
+
+    bool IsValidStringAttr(Types checkType) const
+    {
+      return (type == checkType) && (length == strlen(m_string));
+    }
 };
+
 
 class PSTUNChangeRequest : public PSTUNAttribute
 {
@@ -174,12 +208,18 @@ class PSTUNMessageIntegrity : public PSTUNAttribute
 {
   public:
     BYTE hmac[20];
+
+    PSTUNMessageIntegrity(const BYTE * data = NULL)
+    { Initialise(data); }
     
-    void Initialise()
+    void Initialise(const BYTE * data = NULL)
     {
       type = MESSAGE_INTEGRITY;
       length = sizeof(hmac);
-      memset(hmac, 0, sizeof(hmac));
+      if (data == NULL)
+        memset(hmac, 0, sizeof(hmac));
+      else
+        memcpy(hmac, data, sizeof(hmac));
     }
     bool IsValid() const { return type == MESSAGE_INTEGRITY && length == sizeof(hmac); }
 };
@@ -195,6 +235,8 @@ class PSTUNErrorCode : public PSTUNAttribute
    
     void Initialise();
     void SetErrorCode(int code, const PString & reason);
+    int GetErrorCode() const { return (m_hundreds * 100) + m_units; }
+    PString GetReason() { return PString(m_reason); }
     bool IsValid() const { return (type == ERROR_CODE) && (length == 4 + strlen(m_reason) + 1); }
 };
 
@@ -237,13 +279,24 @@ class PSTUNMessage : public PBYTEArray
 {
   public:
     enum MsgType {
-      BindingRequest  = 0x0001,
-      BindingResponse = 0x0101,
-      BindingError    = 0x0111,
+      BindingRequest        = 0x0001,
+      BindingResponse       = 0x0101,
+      BindingError          = 0x0111,
         
-      SharedSecretRequest  = 0x0002,
-      SharedSecretResponse = 0x0102,
-      SharedSecretError    = 0x0112,
+      SharedSecretRequest   = 0x0002,
+      SharedSecretResponse  = 0x0102,
+      SharedSecretError     = 0x0112,
+
+      Allocate              = 0x003,  // RFC 5766
+      AllocateResponse      = 0x103,  // RFC 5766
+      AllocateError         = 0x113,  // RFC 5766
+
+      Refresh               = 0x004,  // RFC 5766
+      Send                  = 0x006,  // RFC 5766
+      Data                  = 0x007,  // RFC 5766
+      CreatePermission      = 0x008,  // RFC 5766
+      ChannelBind           = 0x009,  // RFC 5766
+
     };
     
     PSTUNMessage();
@@ -261,9 +314,12 @@ class PSTUNMessage : public PBYTEArray
     bool Validate();
     bool Validate(const PSTUNMessage & request);
 
-    void AddAttribute(const PSTUNAttribute & attribute);
-    void SetAttribute(const PSTUNAttribute & attribute);
-    const PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type) const;
+    PSTUNAttribute * AddAttribute(const PSTUNAttribute & attribute);
+    PSTUNAttribute * SetAttribute(const PSTUNAttribute & attribute);
+    PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type) const;
+
+    template <class Type> Type * FindAttributeOfType(PSTUNAttribute::Types type) const
+    { return static_cast<Type *>(FindAttribute(type)); }
 
     bool Read(PUDPSocket & socket);
     bool Write(PUDPSocket & socket) const;
@@ -272,6 +328,12 @@ class PSTUNMessage : public PBYTEArray
     bool IsRFC5389() const { return m_isRFC5389; }
 
     const PIPSocketAddressAndPort GetSourceAddressAndPort() const { return m_sourceAddressAndPort; }
+
+    void InsertMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen);
+    void InsertMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi);
+
+    bool CheckMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen);
+    void CalculateMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * hmac);
 
   protected:
     PIPSocketAddressAndPort m_sourceAddressAndPort;
@@ -476,6 +538,9 @@ class PSTUNClient : public PNatMethod, public PSTUN
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
     );
 
+    void SetCredentials(const PString & username, const PString & password, const PString & realm);
+    void SetCredentialsHash(const BYTE * ptr, PINDEX len);
+
   protected:
     PString            serverHost;
     WORD               serverPort;
@@ -490,13 +555,111 @@ class PSTUNClient : public PNatMethod, public PSTUN
     PIPSocket::Address cachedExternalAddress;
     PIPSocket::Address interfaceAddress;
     PTime              timeAddressObtained;
+
+    PBYTEArray m_credentialsHash;
 };
 
 
 inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUN::GetNatTypeString(type); }
 
 
-#endif // PTLIB_PSTUN_H
+////////////////////////////////////////////////////////////////////////////////
+
+/**STUN client.
+  */
+
+class PTURNRequestedTransport : public PSTUNAttribute
+{
+  public:
+    enum {
+      ProtocolUDP = IPPROTO_UDP,
+      ProtocolTCP = IPPROTO_TCP
+    };
+    BYTE m_protocol;
+    BYTE m_rffu1;
+    BYTE m_rffu2;
+    BYTE m_rffu3;
+
+    PTURNRequestedTransport(BYTE protocol = ProtocolUDP)
+    { Initialise(protocol); }
+   
+    void Initialise(BYTE protocol = ProtocolUDP);
+    bool IsValid() const { return (type == REQUESTED_TRANSPORT) && (length == 4); }
+};
+
+
+class PTURNLifetime : public PSTUNAttribute
+{
+  public:
+    PUInt32b m_lifetime;
+
+    PTURNLifetime(DWORD lifetime = 600)
+      : m_lifetime(lifetime)
+    { type = LIFETIME; length = 4; }
+   
+    bool IsValid() const { return (type == LIFETIME) && (length == 8); }
+
+    DWORD GetLifetime() const { return m_lifetime; }
+};
+
+
+class PTURNEvenPort : public PSTUNAttribute
+{
+  public:
+    BYTE m_bits;
+
+    PTURNEvenPort(BOOL evenPort = true)
+    { type = EVEN_PORT; m_bits = evenPort ? 1 : 0; length = 1; }
+   
+    bool IsValid() const { return (type == EVEN_PORT) && (length == 1); }
+
+    bool IsEven() const { return (m_bits & 1) != 0; }
+};
+
+
+class PTURNClient : public PSTUNClient
+{
+  PCLASSINFO(PTURNClient, PSTUNClient);
+  public:
+    PTURNClient(const PString & server);
+    PTURNClient(
+      const PIPSocket::Address & serverAddress,
+      WORD serverPort = DefaultPort
+    );
+
+    virtual bool Open(const PString & username, const PString & password, const PString & realm);
+    virtual bool Close();
+    virtual bool IsOpen() const;
+
+    virtual int CreateAllocation(bool evenPort = false);
+    virtual bool DeleteAllocation(int allocation);
+    virtual bool RefreshAllocation(int allocation, DWORD lifetime = 600);
+
+    bool MakeAuthenticatedRequest(PSTUNMessage & request, PSTUNMessage & response);
+
+    struct Allocation {
+      int m_protocol;
+      PIPSocketAddressAndPort m_clientAddress;
+      PIPSocketAddressAndPort m_relayedTransportAddress;
+      DWORD m_lifeTime;
+
+      bool m_authenticated;
+    };
+
+  protected:
+    PUDPSocket * m_socket;
+    PString m_nonce;
+    PString m_realm;
+    PString m_username;
+    PString m_password;
+
+    PMutex m_allocationMutex;
+    int m_allocationNumber;
+    typedef std::map<int, Allocation> AllocationsMap;
+    AllocationsMap m_allocations;
+};
+
+#endif
 
 
 // End of file ////////////////////////////////////////////////////////////////
