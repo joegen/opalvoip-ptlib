@@ -99,8 +99,8 @@ static PBoolean ProcessDNSRecords(
     WORD  dlen;
 
     GETSHORT(type,     cp);
-    cp += sizeof(WORD); // GETSHORT(dnsClass, cp);
-    cp += sizeof(LONG); // GETLONG (ttl,      cp);
+    cp += 2; // GETSHORT(dnsClass, cp);
+    cp += 4; // GETLONG (ttl,      cp);
     GETSHORT(dlen,     cp);
 
     BYTE * data = cp;
