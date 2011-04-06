@@ -805,9 +805,6 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
   SSL_METHOD * meth;
 
   switch (method) {
-    case SSLv2:
-      meth = SSLv2_method();
-      break;
     case SSLv3:
       meth = SSLv3_method();
       break;
