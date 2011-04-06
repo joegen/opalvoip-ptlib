@@ -50,7 +50,8 @@ void StunClient::Main()
   PArgList & args = GetArguments();
 #if PTRACING
   args.Parse("t-trace."       "-no-trace."
-             "o-output:"      "-no-output.");
+             "o-output:"      "-no-output."
+             "-turn");
 
   PTrace::Initialise(args.GetOptionCount('t'),
                    args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
@@ -61,7 +62,7 @@ void StunClient::Main()
 
   switch (args.GetCount()) {
     case 0 :
-      cout << "usage: stunclient stunserver [ portbase [ portmax ]]\n";
+      cout << "usage: stunclient [--turn] stunserver [ portbase [ portmax ]]\n";
       return;
     case 1 :
       portbase = 0;
@@ -74,6 +75,28 @@ void StunClient::Main()
     default :
       portbase = (WORD)args[1].AsUnsigned();
       portmax = (WORD)args[2].AsUnsigned();
+  }
+  
+  if (args.HasOption("turn")) {
+    PTURNClient turnClient(args[0]);
+
+    if (!turnClient.Open("toto", "password", "opalvoip.org")) {
+      cout << "Cannot open TURN client" << endl;
+      return;
+    }
+
+    int allocation = turnClient.CreateAllocation();
+    if (allocation < 0) {
+      cout << "Cannot create allocation" << endl;
+      return;
+    }
+
+    if (!turnClient.DeleteAllocation(allocation)) {
+      cout << "Cannot delete allocation" << endl;
+      return;
+    }
+
+    return;
   }
 
   PSTUNClient stun(args[0], portbase, portmax, portbase, portmax);
