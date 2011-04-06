@@ -35,6 +35,7 @@
 #include <ptlib.h>
 #include <ptclib/pstun.h>
 #include <ptclib/random.h>
+#include <ptclib/cypher.h>
 
 #define new PNEW
 
@@ -50,6 +51,12 @@
 
 typedef PSTUNClient PNatMethod_STUN;
 PCREATE_NAT_PLUGIN(STUN);
+
+
+#define IS_REQUEST(msg_type)       (((msg_type) & 0x0110) == 0x0000)
+#define IS_INDICATION(msg_type)    (((msg_type) & 0x0110) == 0x0010)
+#define IS_SUCCESS_RESP(msg_type)  (((msg_type) & 0x0110) == 0x0100)
+#define IS_ERR_RESP(msg_type)      (((msg_type) & 0x0110) == 0x0110)
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -199,7 +206,7 @@ bool PSTUNMessage::Validate(const PSTUNMessage & request)
   return true;
 }
 
-void PSTUNMessage::AddAttribute(const PSTUNAttribute & attribute)
+PSTUNAttribute * PSTUNMessage::AddAttribute(const PSTUNAttribute & attribute)
 {
   int length       = sizeof(PSTUNAttribute) + attribute.length;
   int paddedLength = CalcPaddedAttributeLength(attribute.length); 
@@ -210,10 +217,14 @@ void PSTUNMessage::AddAttribute(const PSTUNAttribute & attribute)
 
   // theArray pointer may be invalidated by next statement
   SetMinSize(sizeof(PSTUNMessageHeader) + newLength);
-  memcpy(theArray+sizeof(PSTUNMessageHeader)+oldLength, &attribute, length);
+
+  PSTUNAttribute * newAttr = (PSTUNAttribute *)(theArray + sizeof(PSTUNMessageHeader) + oldLength);
+  memcpy(newAttr, &attribute, length);
+
+  return newAttr;
 }
 
-void PSTUNMessage::SetAttribute(const PSTUNAttribute & attribute)
+PSTUNAttribute * PSTUNMessage::SetAttribute(const PSTUNAttribute & attribute)
 {
   int length = ((PSTUNMessageHeader *)theArray)->msgLength;
   PSTUNAttribute * attrib = GetFirstAttribute();
@@ -224,19 +235,19 @@ void PSTUNMessage::SetAttribute(const PSTUNAttribute & attribute)
       else {
         // More here
       }
-      return;
+      return attrib;
     }
     length -= CalcPaddedAttributeLength(attrib->length);
     attrib = attrib->GetNext();
   }
 
-  AddAttribute(attribute);
+  return AddAttribute(attribute);
 }
 
-const PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) const
+PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) const
 {
   int length = ((PSTUNMessageHeader *)theArray)->msgLength;
-  const PSTUNAttribute * attrib = GetFirstAttribute();
+  PSTUNAttribute * attrib = GetFirstAttribute();
   while (length > 0) {
     if (attrib->type == type)
       return attrib;
@@ -279,6 +290,44 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
   return false;
 }
 
+void PSTUNMessage::InsertMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen)
+{
+  PSTUNMessageIntegrity * mi = FindAttributeOfType<PSTUNMessageIntegrity>(PSTUNAttribute::MESSAGE_INTEGRITY);
+  if (mi == NULL)
+    mi = (PSTUNMessageIntegrity *)AddAttribute(PSTUNMessageIntegrity());
+  return InsertMessageIntegrity(credentialsHash, credentialsHashLen, mi);
+}
+
+void PSTUNMessage::InsertMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi)
+{
+  return CalculateMessageIntegrity(credentialsHash, credentialsHashLen, mi, mi->hmac);
+}
+
+bool PSTUNMessage::CheckMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen)
+{
+  // get message integrity attribute
+  PSTUNMessageIntegrity * mi = FindAttributeOfType<PSTUNMessageIntegrity>(PSTUNAttribute::MESSAGE_INTEGRITY);
+  if (mi == NULL)
+    return true;
+
+  BYTE hmac[20];
+  CalculateMessageIntegrity(credentialsHash, credentialsHashLen, mi, hmac);
+  return memcmp(hmac, mi->hmac, 20);
+}
+
+void PSTUNMessage::CalculateMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * checkHmac)
+{
+  // calculate hash up to, but not including, MESSAGE_INTEGRITY attribute
+  int lengthWithoutMI = (BYTE *)mi - (BYTE *)theArray;
+
+  // calculate message integrity
+  PHMAC_SHA1 hmac(credentialsHash, credentialsHashLen);
+  PHMAC_SHA1::Result result;
+  hmac.Process((BYTE *)theArray, lengthWithoutMI, result);
+
+  // copy the hash to the returned buffer
+  memcpy(checkHmac, result.GetPointer(), 20);
+}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -309,9 +358,21 @@ void PSTUNErrorCode::SetErrorCode(int code, const PString & reason)
 
 ///////////////////////////////////////////////////////////////////////
 
+static bool TypeIsXOR(int type) 
+{
+  switch (type) {
+    case PSTUNAddressAttribute::XOR_MAPPED_ADDRESS:
+    case PSTUNAddressAttribute::XOR_PEER_ADDRESS:
+    case PSTUNAddressAttribute::XOR_RELAYED_ADDRESS:
+      return true;
+    default:
+      return false;
+  }
+}
+
 WORD PSTUNAddressAttribute::GetPort() const
 { 
-  if (type == XOR_MAPPED_ADDRESS)
+  if (TypeIsXOR(type))
     return port ^ (RFC5389_MAGIC_COOKIE >> 16);
   else
     return port; 
@@ -319,7 +380,7 @@ WORD PSTUNAddressAttribute::GetPort() const
 
 PIPSocket::Address PSTUNAddressAttribute::GetIP() const
 { 
-  if (type == XOR_MAPPED_ADDRESS)
+  if (TypeIsXOR(type))
     return PIPSocket::Address(
       (BYTE)(ip[0] ^ (RFC5389_MAGIC_COOKIE >> 24)),
       (BYTE)(ip[1] ^ (RFC5389_MAGIC_COOKIE >> 16)),
@@ -329,6 +390,13 @@ PIPSocket::Address PSTUNAddressAttribute::GetIP() const
   else
     return PIPSocket::Address(4, ip); 
 }
+
+void PSTUNAddressAttribute::GetIPAndPort(PIPSocketAddressAndPort & addrAndPort)
+{
+  addrAndPort.SetAddress(GetIP());
+  addrAndPort.SetPort(GetPort());
+}
+
 
 void PSTUNAddressAttribute::SetIPAndPort(const PIPSocketAddressAndPort & addrAndPort)
 {
@@ -514,7 +582,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   if (PIPSocket::GetInterfaceTable(interfaces)) {
     for (PINDEX i =0; i < interfaces.GetSize(); i++) {
       PIPSocket::Address binding = interfaces[i].GetAddress();
-      if (!binding.IsLoopback()) {
+      if (!binding.IsLoopback() && (binding.GetVersion() == 4)) {
         PUDPSocket * socket = new PUDPSocket;
         if (OpenSocket(*socket, singlePortInfo, binding))
           sockets.Append(socket);
@@ -581,6 +649,28 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 
   replySocket->GetLocalAddress(interfaceAddress);
 
+  // check if server returned "420 Unknown Attribute" - that probably means it cannot do CHANGE_REQUEST even with no changes
+  bool canDoChangeRequest = true;
+
+  PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
+  if (errorAttribute != NULL) {
+    bool ok = false;
+    if (errorAttribute->GetErrorCode() == 420) {
+      // try again without CHANGE request
+      PSTUNMessage request(PSTUNMessage::BindingRequest);
+      ok = responseI.Poll(*replySocket, request, pollRetries);
+      if (ok) { 
+        errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
+        ok = errorAttribute == NULL;
+        canDoChangeRequest = false;
+      }
+    }
+    if (!ok) {
+      PTRACE(2, "STUN\tSTUN server returned unexpected error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
+      return natType = BlockedNat;
+    }
+  }
+
   PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
     mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
@@ -590,11 +680,20 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
     }
   }
 
-  PTRACE(2, "STUN\tTest I response received - sending test II (change port and address)");
-
   PIPSocket::Address mappedAddressI = mappedAddress->GetIP();
   WORD mappedPortI = mappedAddress->GetPort();
-  bool notNAT = replySocket->GetPort() == mappedPortI && PIPSocket::IsLocalHost(mappedAddressI);
+  cachedExternalAddress = mappedAddress->GetIP();
+
+  bool notNAT = (replySocket->GetPort() == mappedPortI) && PIPSocket::IsLocalHost(mappedAddressI);
+
+  // can only guess based on a single sample
+  if (!canDoChangeRequest) {
+    natType = notNAT ? OpenNat : SymmetricNat;
+    PTRACE(2, "STUN\tSTUN server has only one address - best guess is that NAT is " << GetNatTypeString(natType));
+    return natType;
+  }
+
+  PTRACE(2, "STUN\tTest I response received - sending test II (change port and address)");
 
   /* Test II - the client sends a Binding Request with both the "change IP"
      and "change port" flags from the CHANGE-REQUEST attribute set. */
@@ -655,6 +754,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
   PSTUNMessage requestIII(PSTUNMessage::BindingRequest);
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
+
   return natType = (responseIII.Poll(*replySocket, requestIII, pollRetries) ? RestrictedNat : PortRestrictedNat);
 }
 
@@ -684,8 +784,7 @@ PSTUNClient::RTPSupportTypes PSTUNClient::GetRTPSupport(PBoolean force)
   }
 }
 
-PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
-                                     const PTimeInterval & maxAge)
+PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress, const PTimeInterval & maxAge)
 {
   if (cachedExternalAddress.IsValid() && (PTime() - timeAddressObtained < maxAge)) {
     externalAddress = cachedExternalAddress;
@@ -699,7 +798,7 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
     return false;
 
   PSTUNMessage request(PSTUNMessage::BindingRequest);
-  request.AddAttribute(PSTUNChangeRequest(false, false));
+  //request.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage response;
   if (!response.Poll(socket, request, pollRetries))
   {
@@ -744,6 +843,7 @@ void PSTUNClient::InvalidateCache()
 PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort)
 {
   socket = NULL;
+  GetNatType(PFalse);
 
   switch (GetNatType(PFalse)) {
     case OpenNat :
@@ -783,8 +883,13 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
 
   if (opened)
   {
+    if (GetNatType(false) == OpenNat) {
+      socket = stunSocket;
+      return true;
+    }
+
     PSTUNMessage request(PSTUNMessage::BindingRequest);
-    request.AddAttribute(PSTUNChangeRequest(false, false));
+    //request.AddAttribute(PSTUNChangeRequest(false, false));
     PSTUNMessage response;
 
     if (response.Poll(*stunSocket, request, pollRetries))
@@ -860,34 +965,38 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       return false;
     }
 
-    idx = request.Append(new PSTUNMessage(PSTUNMessage::BindingRequest));
-    request[idx].AddAttribute(PSTUNChangeRequest(false, false));
-
-    response.Append(new PSTUNMessage);
-  }
-
-  for (i = 0; i < numSocketsForPairing; i++)
-  {
-    if (!response[i].Poll(stunSocket[i], request[i], pollRetries))
-    {
-      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
-      return false;
+    if (GetNatType(false) != OpenNat) {
+      idx = request.Append(new PSTUNMessage(PSTUNMessage::BindingRequest));
+      response.Append(new PSTUNMessage);
     }
   }
 
-  for (i = 0; i < numSocketsForPairing; i++)
-  {
-    PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)response[i].FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
-    if (mappedAddress == NULL) {
-      mappedAddress = (PSTUNAddressAttribute *)response[i].FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
-      if (mappedAddress == NULL) {
-        PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << *this);
+  if (GetNatType(false) != OpenNat) {
+    for (i = 0; i < numSocketsForPairing; i++) {
+      if (!response[i].Poll(stunSocket[i], request[i], pollRetries))
+      {
+        PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
         return false;
       }
     }
-    if (GetNatType(PFalse) != SymmetricNat)
-      stunSocket[i].port = mappedAddress->GetPort();
-    stunSocket[i].externalIP = mappedAddress->GetIP();
+  }
+
+  for (i = 0; i < numSocketsForPairing; i++) {
+    if (GetNatType(false) == OpenNat)
+      stunSocket[i].GetLocalAddress(stunSocket[i].externalIP, stunSocket[i].port);
+    else {
+      PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)response[i].FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
+      if (mappedAddress == NULL) {
+        mappedAddress = (PSTUNAddressAttribute *)response[i].FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+        if (mappedAddress == NULL) {
+          PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << *this);
+          return false;
+        }
+      }
+      if (GetNatType(PFalse) != SymmetricNat)
+        stunSocket[i].port = mappedAddress->GetPort();
+      stunSocket[i].externalIP = mappedAddress->GetIP();
+    }
   }
 
   for (i = 0; i < numSocketsForPairing; i++)
@@ -917,6 +1026,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 bool PSTUNClient::IsAvailable(const PIPSocket::Address & binding) 
 { 
   switch (GetNatType(PFalse)) {
+    case OpenNat :
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
@@ -933,6 +1043,20 @@ bool PSTUNClient::IsAvailable(const PIPSocket::Address & binding)
 
   return binding.IsAny() || binding == interfaceAddress || binding == cachedExternalAddress;
 }
+
+void PSTUNClient::SetCredentials(const PString & username, const PString & password, const PString & realm)
+{
+  PMessageDigest5::Result credentialsHash;
+  PMessageDigest5::Encode(username + ":" + realm + ":" + password, credentialsHash);
+  SetCredentialsHash(credentialsHash.GetPointer(), credentialsHash.GetSize());
+}
+
+void PSTUNClient::SetCredentialsHash(const BYTE * ptr, PINDEX len)
+{
+  m_credentialsHash.SetSize(len);
+  memcpy(m_credentialsHash.GetPointer(), ptr, len);
+}
+
 
 ////////////////////////////////////////////////////////////////
 
@@ -959,6 +1083,267 @@ PBoolean PSTUNUDPSocket::GetLocalAddress(Address & addr, WORD & port)
 
   addr = externalIP;
   port = GetPort();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////
+   
+void PTURNRequestedTransport::Initialise(BYTE protocol)
+{
+  m_protocol = protocol;
+  type       = REQUESTED_TRANSPORT;
+  length     = 4;
+  m_rffu1    = 0;
+  m_rffu2    = 0;
+  m_rffu3    = 0;
+}
+
+////////////////////////////////////////////////////////////////
+
+PTURNClient::PTURNClient(const PString & server)
+  : PSTUNClient(server)
+  , m_socket(NULL)
+  , m_allocationNumber(0)
+{
+}
+
+
+PTURNClient::PTURNClient(const PIPSocket::Address & serverAddress, WORD serverPort)
+  : PSTUNClient(serverAddress, serverPort)
+  , m_socket(NULL)
+  , m_allocationNumber(0)
+{
+}
+
+bool PTURNClient::Open(const PString & username, const PString & password, const PString & realm)
+{
+  // always close the socket first
+  Close();
+
+  // set new credentials
+  SetCredentials(username, password, realm);
+
+  // reset allocation number
+  m_allocationNumber = 0;
+
+  // resolve address
+  if (!PIPSocket::GetHostAddress(serverHost, cachedServerAddress) || !cachedServerAddress.IsValid()) {
+    PTRACE(3, "TURN\tCannot resolve TURN server address '" << serverHost << "'");
+    return true;
+  }
+
+  // open a new socket
+  m_socket = new PUDPSocket();
+  if (!m_socket->Listen()) {
+    PTRACE(3, "TURN\tListen failed");
+    return false;
+  }
+
+  m_socket->SetSendAddress(cachedServerAddress, serverPort);
+
+  // save parameters
+  m_username = username;
+  m_password = password;
+  m_realm    = realm;
+
+  // do a binding request, just to check if the TURN server is there
+  PSTUNMessage request(PSTUNMessage::BindingRequest);
+  PSTUNMessage response;
+  if (!response.Poll(*m_socket, request, pollRetries)) {
+    PTRACE(2, "TURN\tServer did not respond");
+    return false;
+  }
+
+  PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)response.FindAttribute(PSTUNAttribute::ERROR_CODE);
+
+  if (response.GetType() != PSTUNMessage::BindingResponse) {
+    if (errorAttribute == NULL)
+      PTRACE(2, "TURN\tServer refused authenticated response with no error code");
+    else
+      PTRACE(2, "TURN\tServer refused authenticated response with error code " << errorAttribute->GetErrorCode() << " - " << errorAttribute->GetReason());
+    return false;
+  }
+
+  return true;
+}
+
+bool PTURNClient::IsOpen() const
+{
+  return (m_socket != NULL) && m_socket->IsOpen();
+}
+
+
+int PTURNClient::CreateAllocation(bool evenPort)
+{
+  BYTE protocol = PTURNRequestedTransport::ProtocolUDP;
+
+  if (!IsOpen()) {
+    PTRACE(2, "TURN\tCannot do allocate request on unopened TURN client");
+    return -1;
+  }
+
+  PSTUNMessage allocateRequest(PSTUNMessage::Allocate);
+  allocateRequest.AddAttribute(PTURNRequestedTransport(PTURNRequestedTransport::ProtocolUDP));
+  if (evenPort)
+    allocateRequest.AddAttribute(PTURNEvenPort());
+
+  PSTUNMessage allocateResponse;
+  if (!MakeAuthenticatedRequest(allocateRequest, allocateResponse))
+    return -1;
+
+  Allocation allocation;
+  allocation.m_protocol = protocol;
+
+  PSTUNAddressAttribute * addrAttr = (PSTUNAddressAttribute *)allocateResponse.FindAttribute(PSTUNAttribute::XOR_RELAYED_ADDRESS);
+  if (addrAttr == NULL) {
+    PTRACE(2, "TURN\tAllocate response did not contain XOR_RELAYED_ADDRESS");
+    return -1;
+  }
+  addrAttr->GetIPAndPort(allocation.m_relayedTransportAddress);
+
+  addrAttr = (PSTUNAddressAttribute *)allocateResponse.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
+  if (addrAttr == NULL) {
+    PTRACE(2, "TURN\tAllocate response did not contain XOR_MAPPED_ADDRESS");
+    return -1;
+  }
+  addrAttr->GetIPAndPort(allocation.m_clientAddress);
+
+  PTURNLifetime * lifetimeAttr = (PTURNLifetime *)allocateResponse.FindAttribute(PSTUNAttribute::LIFETIME);
+  if (lifetimeAttr == NULL) {
+    PTRACE(2, "TURN\tAllocate response did not contain LIFETIME");
+    return -1;
+  }
+  allocation.m_lifeTime = lifetimeAttr->GetLifetime();
+
+  PWaitAndSignal m(m_allocationMutex);
+  int allocationNumber = m_allocationNumber++;
+  m_allocations.insert(AllocationsMap::value_type(allocationNumber, allocation));
+
+  PTRACE(2, "TURN\tAddress/port " << allocation.m_relayedTransportAddress << " allocated on server with lifetime " << allocation.m_lifeTime);
+
+  return allocationNumber;
+}
+
+
+bool PTURNClient::DeleteAllocation(int allocationNumber)
+{
+  if (!IsOpen()) {
+    PTRACE(2, "TURN\tCannot do delete request on unopened TURN client");
+    return false;
+  }
+
+  PWaitAndSignal m(m_allocationMutex);
+  AllocationsMap::iterator r = m_allocations.find(allocationNumber);
+  if (r == m_allocations.end()) {
+    PTRACE(2, "TURN\tCannot find allocation number " << allocationNumber);
+    return false;
+  }
+  m_allocations.erase(r);
+
+  PSTUNMessage request(PSTUNMessage::Refresh);
+  request.AddAttribute(PTURNLifetime(0));
+
+  PSTUNMessage response;
+  MakeAuthenticatedRequest(request, response);
+  return true;
+}
+
+
+bool PTURNClient::RefreshAllocation(int allocationNumber, DWORD lifetime)
+{
+  if (!IsOpen()) {
+    PTRACE(2, "TURN\tCannot do refresh request on unopened TURN client");
+    return false;
+  }
+
+  PWaitAndSignal m(m_allocationMutex);
+  AllocationsMap::iterator r = m_allocations.find(allocationNumber);
+  if (r == m_allocations.end()) {
+    PTRACE(2, "TURN\tCannot find allocation number " << allocationNumber);
+    return false;
+  }
+
+  PSTUNMessage request(PSTUNMessage::Refresh);
+  if (lifetime > 0)
+    request.AddAttribute(PTURNLifetime(lifetime));
+
+  PSTUNMessage response;
+  return MakeAuthenticatedRequest(request, response);
+}
+
+
+bool PTURNClient::MakeAuthenticatedRequest(PSTUNMessage & request, PSTUNMessage & response)
+{
+  // send request, which we expect to fail due to authorisation issues
+  if (!response.Poll(*m_socket, request, pollRetries)) {
+    PTRACE(2, "TURN\tServer did not respond");
+    return false;
+  }
+
+  if (!IS_ERR_RESP(response.GetType())) {
+    PTRACE(2, "TURN\tServer responded to unauthenticated request with unexpected response " << hex << response.GetType());
+    return false;
+  }
+
+  PSTUNStringAttribute * realmAttr      = (PSTUNStringAttribute *)response.FindAttribute(PSTUNAttribute::REALM);
+  PSTUNErrorCode       * errorAttribute = (PSTUNErrorCode *)response.FindAttribute(PSTUNAttribute::ERROR_CODE);
+  PSTUNStringAttribute * nonceAttr      = (PSTUNStringAttribute *)response.FindAttribute(PSTUNAttribute::NONCE);
+
+  if ((errorAttribute == NULL) || (errorAttribute->GetErrorCode() != 401) || (nonceAttr == NULL) || (realmAttr == NULL)) {
+    PTRACE(2, "TURN\tServer refused unauthenticated request with insufficient information - unable to proceed");
+    return false;
+  }
+
+  // realms must match
+  if (realmAttr->GetString() != m_realm) {
+    PTRACE(2, "TURN\tServer returned unknown realm '" << realmAttr->GetString() << "'");
+    return false;
+  }
+
+  // save the nonce
+  m_nonce = nonceAttr->GetString();
+
+  PTRACE(2, "TURN\tServer requested authentication for correct realm");
+
+  // now send real allocate request
+  request.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::USERNAME, m_username));
+  request.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::REALM,    m_realm));
+  request.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::NONCE,    m_nonce));
+  request.InsertMessageIntegrity(m_credentialsHash.GetPointer(), m_credentialsHash.GetSize());
+
+  // send request
+  if (!response.Poll(*m_socket, request, pollRetries)) {
+    PTRACE(2, "TURN\tServer failed to respond to authenticated request");
+    return false;
+  }
+
+  // check response
+  if (!IS_SUCCESS_RESP(response.GetType())) {
+    PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)response.FindAttribute(PSTUNAttribute::ERROR_CODE);
+    if (errorAttribute == NULL)
+      PTRACE(2, "TURN\tServer refused authenticated response with no error code");
+    else
+      PTRACE(2, "TURN\tServer refused authenticated response with error code " << errorAttribute->GetErrorCode() << " - " << errorAttribute->GetReason());
+    return false;
+  }
+
+  // integrity must match
+  if (!response.CheckMessageIntegrity(m_credentialsHash.GetPointer(), m_credentialsHash.GetSize())) {
+    PTRACE(2, "TURN\tServer response failed message integrity check");
+    return false;
+  }
+
+  return true;
+}
+
+
+bool PTURNClient::Close()
+{
+  m_allocations.clear();
+  if (m_socket != NULL) {
+    delete m_socket;
+    m_socket = NULL;
+  }
   return true;
 }
 
