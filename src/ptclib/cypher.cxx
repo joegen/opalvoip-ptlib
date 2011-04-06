@@ -1028,6 +1028,75 @@ void PTEACypher::DecodeBlock(const void * in, void * out)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// PHMAC
+//
+
+void PHMAC::Initialise(const BYTE * key, PINDEX oldLen)
+{
+  // ensure the key is at least one block long and pad out if necessary
+  if (oldLen < GetB()) {
+    m_key.SetSize(oldLen);
+    memcpy(m_key.GetPointer(), key,  oldLen);
+  }
+  else if (oldLen > GetB()) {
+    Result result;
+    Hash((const BYTE *)m_key, m_key.GetSize(), result);
+    m_key.SetSize(result.GetSize());
+    memcpy(m_key.GetPointer(), result.GetPointer(), result.GetSize());
+  }
+}
+
+void PHMAC::InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & result)
+{
+  PINDEX i, l;
+  BYTE * s;
+  BYTE * d;
+
+  // construct key XOR ipad. This will always
+  PBYTEArray buffer(GetB() + len);
+  s = m_key.GetPointer();
+  l = m_key.GetSize();
+  d = buffer.GetPointer();
+  for (i = 0; i < l; ++i)
+    *d++ = 0x36 ^ *s++;
+  for (;i < GetB(); ++i)
+    *d++ = 0x36;
+
+  // append text
+  memcpy(d, data, len);
+
+  // hash 
+  Result hash1;
+  Hash(buffer, buffer.GetSize(), hash1);
+
+  // create key XOR opad
+  buffer.SetSize(GetB() + hash1.GetSize());
+  s = m_key.GetPointer();
+  l = m_key.GetSize();
+  d = buffer.GetPointer();
+  for (i = 0; i < l; ++i)
+    *d++ = 0x5c ^ *s++;
+  for (;i < GetB(); ++i)
+    *d++ = 0x5c;
+
+  // append hash
+  memcpy(d, hash1.GetPointer(), hash1.GetSize());
+
+  // hash 
+  Hash(buffer.GetPointer(), buffer.GetSize(), result);
+}
+
+
+PString PHMAC::Encode(const BYTE * data, PINDEX len) { Result result; InternalProcess(data, len, result);            return PBase64::Encode(result.GetPointer(), result.GetSize()); }
+PString PHMAC::Encode(const PBYTEArray & data)       { Result result; InternalProcess(data, data.GetSize(), result); return PBase64::Encode(result.GetPointer(), result.GetSize()); }
+PString PHMAC::Encode(const PString & str)           { Result result; InternalProcess(str, str.GetLength(), result); return PBase64::Encode(result.GetPointer(), result.GetSize()); }
+
+void PHMAC::Process(const BYTE * data, PINDEX len, PHMAC::Result & result)   { InternalProcess(data, len, result); }
+void PHMAC::Process(const PBYTEArray & data, PHMAC::Result & result)         { InternalProcess(data, data.GetSize(), result); }
+void PHMAC::Process(const PString & str, PHMAC::Result & result)             { InternalProcess(str, str.GetLength(), result); }
+
+///////////////////////////////////////////////////////////////////////////////
 // PSecureConfig
 
 #ifdef P_CONFIG_FILE
