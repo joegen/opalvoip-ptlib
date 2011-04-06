@@ -608,7 +608,7 @@ class PTURNEvenPort : public PSTUNAttribute
   public:
     BYTE m_bits;
 
-    PTURNEvenPort(BOOL evenPort = true)
+    PTURNEvenPort(bool evenPort = true)
     { type = EVEN_PORT; m_bits = evenPort ? 1 : 0; length = 1; }
    
     bool IsValid() const { return (type == EVEN_PORT) && (length == 1); }
