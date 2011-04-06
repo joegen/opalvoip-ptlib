@@ -61,7 +61,7 @@ class PSNMPVarBindingList : public PObject
 
     PINDEX GetSize() const;
 
-	PINDEX GetIndex(const PString & objectID) const;
+    PINDEX GetIndex(const PString & objectID) const;
     PString GetObjectID(PINDEX idx) const;
     PASNObject & operator[](PINDEX idx) const;
 
@@ -182,7 +182,7 @@ class PSNMP : public PIndirectChannel
                           PSNMPVarBindingList & varsOut);
 */
 
-	typedef list<pair<PString,PRFC1155_ObjectSyntax> > BindingList;
+    typedef list<pair<PString,PRFC1155_ObjectSyntax> > BindingList;
 };
 
 
@@ -252,38 +252,39 @@ class PSNMPClient : public PSNMP
 
 /** Class which supplies SNMP data
  */
-class PSNMPServer : public PSNMP, PThread
+class PSNMPServer : public PSNMP
 {
   PCLASSINFO(PSNMPServer, PSNMP)
   public:
 
     PSNMPServer(PIPSocket::Address binding = PIPSocket::GetDefaultIpAny(), 
-		        WORD localPort = 161,   
-				PINDEX timeout = 5000, 
-				PINDEX rxSize = 10000, 
-				PINDEX txSize = 10000);
+                WORD localPort = 161,   
+                PINDEX timeout = 5000, 
+                PINDEX rxSize = 10000, 
+                PINDEX txSize = 10000);
 
-	~PSNMPServer();
+    ~PSNMPServer();
 
 	void Main();
 
-	void SetVersion(PASNInt newVersion);
-	PBoolean HandleChannel();
-	PBoolean ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & writeBuffer);
+    void SetVersion(PASNInt newVersion);
+    PBoolean HandleChannel();
+    PBoolean ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & writeBuffer);
 
-	virtual PBoolean Authorise(const PIPSocket::Address & received);
-	virtual PBoolean ConfirmVersion(PASN_Integer vers);
-	virtual PBoolean ConfirmCommunity(PASN_OctetString & community);
+    virtual PBoolean Authorise(const PIPSocket::Address & received);
+    virtual PBoolean ConfirmVersion(PASN_Integer vers);
+    virtual PBoolean ConfirmCommunity(PASN_OctetString & community);
 
     virtual PBoolean MIB_LocalMatch(PSNMP_PDU & pdu);
 
-	virtual PBoolean OnGetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
-	virtual PBoolean OnGetNextRequest (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
-	virtual PBoolean OnSetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+    virtual PBoolean OnGetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+    virtual PBoolean OnGetNextRequest (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
+    virtual PBoolean OnSetRequest     (PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode);
 
     PSNMP::ErrorType SendGetResponse  (PSNMPVarBindingList & vars);
   
   protected:
+    PThreadObj<PSNMPServer> m_thread;
     PString       community;
     PASN_Integer  version;
     PINDEX        lastErrorIndex;
@@ -291,8 +292,8 @@ class PSNMPServer : public PSNMP, PThread
     PBYTEArray    readBuffer;
     PINDEX        maxRxSize;
     PINDEX        maxTxSize;
-	PUDPSocket   *baseSocket;
-	PDictionary<PRFC1155_ObjectName, PRFC1155_ObjectSyntax>  objList;
+    PUDPSocket   *baseSocket;
+    PDictionary<PRFC1155_ObjectName, PRFC1155_ObjectSyntax>  objList;
 };
 
 #endif // P_SNMP

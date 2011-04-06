@@ -43,20 +43,27 @@
 static const char defaultCommunity[] = "public";
 
 PSNMPServer::PSNMPServer(PIPSocket::Address binding, WORD localPort, PINDEX timeout, PINDEX rxSize, PINDEX txSize)
- : PThread(1000, AutoDeleteThread, NormalPriority, "SNMP Server"),
-   community(defaultCommunity),
-   version(SNMP_VERSION),
-   maxRxSize(rxSize),
-   maxTxSize(txSize)
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
+ : m_thread(*this, &PSNMPServer::Main, true, "SNMP Server")
+#ifdef _MSC_VER
+#pragma warning(default:4355)
+#endif
+ , community(defaultCommunity)
+ , version(SNMP_VERSION)
+ , maxRxSize(rxSize)
+ , maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
   baseSocket = new PUDPSocket;
 
   if (!baseSocket->Listen(binding, 0, localPort)) {
-	  PTRACE(4,"SNMPsrv\tError: Unable to Listen on port " << localPort);
-  } else {
-      Open(baseSocket);
-	  Resume();
+    PTRACE(4,"SNMPsrv\tError: Unable to Listen on port " << localPort);
+  }
+  else {
+    Open(baseSocket);
+    m_thread.Resume();
   }
 }
 

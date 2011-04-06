@@ -273,6 +273,8 @@ An application could change this pointer to a <i>std::ofstream</i> variable of
 
 #if PTRACING
 
+class PObject;
+
 /**Class to encapsulate tracing functions.
    This class does not require any instances and is only being used as a
    method of grouping functions together in a name space.
@@ -320,6 +322,8 @@ public:
     RotateMinutely = 2048,
     /// Mask for all the rotate bits
     RotateLogMask = RotateDaily + RotateHourly + RotateMinutely,
+    /// Include object instance in all trace output
+    ObjectInstance = 4096,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
         be set in conjection with <code>#SetStream(new PSystemLog)</code>.
       */
@@ -442,7 +446,8 @@ public:
   static ostream & Begin(
     unsigned level,         ///< Log level for output
     const char * fileName,  ///< Filename of source file being traced
-    int lineNum             ///< Line number of source file being traced.
+    int lineNum,            ///< Line number of source file being traced.
+    const PObject * instance = NULL ///< Instance for object logging occurred in
   );
 
   /** End a trace output.
@@ -523,9 +528,9 @@ This macro outputs a trace of any information needed, using standard stream
 output operators. The output is only made if the trace level set by the
 SetLevel() function is greater than or equal to the \p level argument.
 */
-#define PTRACE(level, args) \
+#define PTRACE2(level, obj, args) \
     if (PTrace::CanTrace(level)) \
-      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End; \
+      PTrace::Begin(level, __FILE__, __LINE__, obj) << args << PTrace::End; \
     else (void)0
 
 /** Output trace on condition.
@@ -535,10 +540,33 @@ SetLevel() function is greater than or equal to the <code>level</code> argument
 and the conditional is true. Note the conditional is only evaluated if the
 trace level is sufficient.
 */
-#define PTRACE_IF(level, cond, args) \
+#define PTRACE_IF2(level, cond, obj, args) \
     if ((PTrace::CanTrace(level) && (cond))) \
-      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End; \
+      PTrace::Begin(level, __FILE__, __LINE__, obj) << args << PTrace::End; \
     else (void)0
+
+#if PTRACING==2
+/** Output trace.
+This macro outputs a trace of any information needed, using standard stream
+output operators. The output is only made if the trace level set by the
+SetLevel() function is greater than or equal to the \p level argument.
+*/
+#define PTRACE(level, args) PTRACE2(level, PTraceObjectInstance(), args)
+
+/** Output trace on condition.
+This macro outputs a trace of any information needed, using standard stream
+output operators. The output is only made if the trace level set by the
+SetLevel() function is greater than or equal to the <code>level</code> argument
+and the conditional is true. Note the conditional is only evaluated if the
+trace level is sufficient.
+*/
+#define PTRACE_IF(level, cond, args) PTRACE_IF2(level, cond, PTraceObjectInstance(), args)
+#else
+#define PTRACE(level, args) PTRACE2(level, NULL, args)
+#define PTRACE_IF(level, cond, args) PTRACE_IF2(level, cond, NULL, args)
+#endif
+
+__inline const PObject * PTraceObjectInstance() { return NULL; }
 
 #else // PTRACING
 
@@ -547,6 +575,8 @@ trace level is sufficient.
 #define PTRACE_LINE()
 #define PTRACE(level, arg)
 #define PTRACE_IF(level, cond, args)
+#define PTRACE2(level, obj, arg)
+#define PTRACE_IF2(level, cond, obj, args)
 
 #endif // PTRACING
 
@@ -1140,6 +1170,7 @@ class PObject {
     ) const
     { return IsClass(clsName); }
 
+    __inline const PObject * PTraceObjectInstance() const { return this; }
   //@}
 
   /**@name Comparison functions */

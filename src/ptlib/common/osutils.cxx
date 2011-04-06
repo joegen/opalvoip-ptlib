@@ -409,7 +409,7 @@ static PThread::TraceInfo * AllocateTraceInfo()
 }
 
 
-ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
+ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, const PObject * instance)
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
@@ -497,6 +497,12 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     }
 
     stream << setw(16) << file << '(' << lineNum << ")\t";
+  }
+
+  if ((info.options&ObjectInstance) != 0) {
+    if (instance != NULL)
+      stream << instance->GetClass() << ':' << instance;
+    stream << '\t';
   }
 
   // Save log level for this message so End() function can use. This is

@@ -61,6 +61,7 @@
 PCREATE_SOUND_PLUGIN(DirectSound, PSoundChannelDirectSound)
 
 
+#if PTRACING
 static PString GetErrorString(HRESULT error)
 {
   if (error == S_OK)
@@ -77,6 +78,7 @@ static PString GetErrorString(HRESULT error)
 
   return psprintf("Error code 0x%l08x", error);
 }
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

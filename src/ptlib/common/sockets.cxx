@@ -1096,7 +1096,7 @@ void PIPSocket::ClearNameCache()
     ::gethostbyname("www.microsoft.com");
   }
 #endif
-  PTRACE(4, "Socket\tCleared DNS cache.");
+  PTRACE2(4, NULL, "Socket\tCleared DNS cache.");
 }
 
 
@@ -2248,9 +2248,9 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
 
   for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
     if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
-      PTRACE(5, "Socket\tRoute packet for " << remoteAddress
-             << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
-             << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+      PTRACE2(5, NULL, "Socket\tRoute packet for " << remoteAddress
+              << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+              << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
       return hostInterfaceTable[IfaceIdx].GetAddress();
     }
   }
@@ -2273,9 +2273,9 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
   if (route != NULL) {
     for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
       if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
-        PTRACE(5, "Socket\tRoute packet for " << remoteAddress
-               << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
-               << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+        PTRACE2(5, NULL, "Socket\tRoute packet for " << remoteAddress
+                << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+                << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
         return hostInterfaceTable[IfaceIdx].GetAddress();
       }
     }
