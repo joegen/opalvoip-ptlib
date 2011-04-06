@@ -2561,13 +2561,13 @@ void PStringToString::ReadFrom(istream & strm)
 
 char ** PStringToString::ToCharArray(bool withEqualSign, PCharArray * storage) const
 {
-  PINDEX i;
+  const_iterator it;
 
   PINDEX mySize = GetSize();
   PINDEX numPointers = mySize*(withEqualSign ? 1 : 2) + 1;
   PINDEX storageSize = numPointers*sizeof(char *);
-  for (i = 0; i < mySize; i++)
-    storageSize += GetKeyAt(i).GetLength()+1 + GetDataAt(i).GetLength()+1;
+  for (it = begin(); it != end(); ++it)
+    storageSize += it->first.GetLength()+1 + it->second.GetLength()+1;
 
   char ** storagePtr;
   if (storage != NULL)
@@ -2581,14 +2581,14 @@ char ** PStringToString::ToCharArray(bool withEqualSign, PCharArray * storage) c
   char * strPtr = (char *)&storagePtr[numPointers];
   PINDEX strIndex = 0;
 
-  for (i = 0; i < mySize; i++) {
+  for (it = begin(); it != end(); ++it) {
     storagePtr[strIndex++] = strPtr;
     if (withEqualSign)
-      strcpy_with_increment(strPtr, GetKeyAt(i) + '=' + GetDataAt(i));
+      strcpy_with_increment(strPtr, it->first + '=' + it->second);
     else {
-      strcpy_with_increment(strPtr, GetKeyAt(i));
+      strcpy_with_increment(strPtr, it->first);
       storagePtr[strIndex++] = strPtr;
-      strcpy_with_increment(strPtr, GetDataAt(i));
+      strcpy_with_increment(strPtr, it->second);
     }
   }
 

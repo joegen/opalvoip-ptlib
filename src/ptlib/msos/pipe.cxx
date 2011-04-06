@@ -81,8 +81,8 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   char * envStr = NULL;
   if (environment != NULL) {
     PINDEX size = 0;
-    for (PINDEX e = 0; e < environment->GetSize(); e++) {
-      PString str = environment->GetKeyAt(e) + '=' + environment->GetDataAt(e);
+    for (PStringToString::const_iterator it = environment->begin(); it != environment->end(); ++it) {
+      PString str = it->first + '=' + it->second;
       PINDEX len = str.GetLength() + 1;
       envBuf.SetSize(size + len);
       memcpy(envBuf.GetPointer()+size, (const char *)str, len);

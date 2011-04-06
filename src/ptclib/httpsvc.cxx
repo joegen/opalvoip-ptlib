@@ -1404,9 +1404,9 @@ PCREATE_SERVICE_MACRO(InputsFromQuery,request,P_EMPTY)
 {
   PStringToString vars = request.url.GetQueryVars();
   PStringStream subs;
-  for (PINDEX i = 0; i < vars.GetSize(); i++)
-    subs << "<INPUT TYPE=hidden NAME=\"" << vars.GetKeyAt(i)
-         << "\" VALUE=\"" << vars.GetDataAt(i) << "\">\r\n";
+  for (PStringToString::iterator it = vars.begin(); it != vars.end(); ++it)
+    subs << "<INPUT TYPE=hidden NAME=\"" << it->first
+         << "\" VALUE=\"" << it->second << "\">\r\n";
   return subs;
 }
 

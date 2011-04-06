@@ -307,9 +307,9 @@ static PArray<PLDAPSession::ModAttrib> AttribsFromDict(const PStringToString & a
 {
   PArray<PLDAPSession::ModAttrib> attrs(attributes.GetSize());
 
-  for (PINDEX i = 0; i < attributes.GetSize(); i++)
-    attrs.SetAt(i, new PLDAPSession::StringModAttrib(attributes.GetKeyAt(i),
-                                                     attributes.GetDataAt(i).Lines()));
+  PINDEX index = 0;
+  for (PStringToString::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+    attrs.SetAt(index++, new PLDAPSession::StringModAttrib(it->first, it->second.Lines()));
 
   return attrs;
 }
@@ -335,8 +335,8 @@ static PArray<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase &
 {
   PArray<PLDAPSession::ModAttrib> attrs;
 
-  for (PINDEX i = 0; i < attributes.GetNumAttributes(); i++) {
-    PLDAPAttributeBase & attr = attributes.GetAttribute(i);
+  for (PLDAPStructBase::AttribDict::const_iterator it = attributes.GetAttributes().begin(); it != attributes.GetAttributes().end(); ++it) {
+    const PLDAPAttributeBase & attr = it->second;
     if (attr.IsBinary())
       attrs.Append(new PLDAPSession::BinaryModAttrib(attr.GetName(), attr.ToBinary()));
     else {
@@ -675,8 +675,8 @@ PBoolean PLDAPSession::GetSearchResult(SearchContext & context,
 
   PBoolean atLeastOne = PFalse;
 
-  for (PINDEX i = 0; i < data.GetNumAttributes(); i++) {
-    PLDAPAttributeBase & attr = data.GetAttribute(i);
+  for (PLDAPStructBase::AttribDict::iterator it = data.GetAttributes().begin(); it != data.GetAttributes().end(); ++it) {
+    PLDAPAttributeBase & attr = it->second;
     if (attr.IsBinary()) {
       PArray<PBYTEArray> bin;
       if (GetSearchResult(context, attr.GetName(), bin)) {
@@ -848,8 +848,11 @@ PLDAPStructBase::PLDAPStructBase()
 
 PLDAPStructBase & PLDAPStructBase::operator=(const PLDAPStructBase & other)
 {
-  for (PINDEX i = 0; i < attributes.GetSize(); i++)
-    attributes.GetDataAt(i).Copy(other.attributes.GetDataAt(i));
+  for (AttribDict::iterator it = attributes.begin(); it != attributes.end(); ++it) {
+    PLDAPAttributeBase * otherAttrib = other.attributes.GetAt(it->first);
+    if (otherAttrib != NULL)
+      it->second.Copy(*otherAttrib);
+  }
 
   return *this;
 }
@@ -872,10 +875,10 @@ PLDAPStructBase & PLDAPStructBase::operator=(const PStringArray & array)
 
 PLDAPStructBase & PLDAPStructBase::operator=(const PStringToString & dict)
 {
-  for (PINDEX i = 0; i < dict.GetSize(); i++) {
-    PLDAPAttributeBase * attr = GetAttribute(dict.GetKeyAt(i));
+  for (PStringToString::const_iterator it = dict.begin(); it != dict.end(); ++it) {
+    PLDAPAttributeBase * attr = GetAttribute(it->first);
     if (attr != NULL)
-      attr->FromString(dict.GetDataAt(i));
+      attr->FromString(it->second);
   }
   return *this;
 }
