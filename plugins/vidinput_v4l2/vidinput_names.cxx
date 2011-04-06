@@ -81,34 +81,31 @@ void V4LXNames::PopulateDictionary()
 {
   PWaitAndSignal m(mutex);
 
-  PINDEX i, j;
   PStringToString tempList;
 
-  for (i = 0; i < inputDeviceNames.GetSize(); i++) {
-    PString ufname = BuildUserFriendly(inputDeviceNames[i]);
-    tempList.SetAt(inputDeviceNames[i], ufname);
-  }
+  for (PStringList::iterator it = inputDeviceNames.begin(); it != inputDeviceNames.end(); ++it)
+    tempList.SetAt(*it, BuildUserFriendly(*it));
 
   //Now, we need to cope with the case where there are two video
   //devices available, which both have the same user friendly name.
   //Matching user friendly names have a (X) appended to the name.
-  for (i = 0; i < tempList.GetSize(); i++) {
-    PString userName = tempList.GetDataAt(i); 
+  for (PStringToString::iterator it1 = tempList.begin(); it1 != tempList.end(); ++it1) {
+    PString userName = it1->second; 
 
-    PINDEX matches = 1;    
-    for (j = i + 1; j < tempList.GetSize(); j++) {
-      if (tempList.GetDataAt(j) == userName) {
+    PINDEX matches = 1;
+    for (PStringToString::iterator it2 = tempList.begin(); it2 != tempList.end(); ++it2) {
+      if (it2->second == userName) {
         matches++;
         PStringStream revisedUserName;
         revisedUserName << userName << " (" << matches << ")";
-        tempList.SetDataAt(j, revisedUserName);
+        tempList.SetAt(it2->first, revisedUserName);
       }
     }
   }
 
   //At this stage, we have correctly modified the temp list of names.
-  for (j = 0; j < tempList.GetSize(); j++)
-    AddUserDeviceName(tempList.GetDataAt(j), tempList.GetKeyAt(j));  
+  for (PStringToString::iterator it = tempList.begin(); it != tempList.end(); ++it)
+    AddUserDeviceName(it->second, it->first);
 }
 
 PString V4LXNames::GetUserFriendly(PString devName)
@@ -127,9 +124,9 @@ PString V4LXNames::GetDeviceName(PString userName)
 {
   PWaitAndSignal m(mutex);
 
-  for (PINDEX i = 0; i < userKey.GetSize(); i++)
-    if (userKey.GetKeyAt(i).Find(userName) != P_MAX_INDEX)
-      return userKey.GetDataAt(i);
+  for (PStringToString::iterator it = userKey.begin(); it != userKey.end(); ++it)
+    if (it->first.Find(userName) != P_MAX_INDEX)
+      return it->second;
 
   return userName;
 }

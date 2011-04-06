@@ -57,46 +57,15 @@
 extern char **environ;
 #endif
 
-//
-//  a single key/value pair
-//
-PDECLARE_CLASS(PXConfigValue, PCaselessString)
-  public:
-    PXConfigValue(const PString & theKey, const PString & theValue = "") 
-      : PCaselessString(theKey), value(theValue) { }
-    PString GetValue() const { return value; }
-    void    SetValue(const PString & theValue) { value = theValue; }
-
-  protected:
-    PString  value;
-};
-
-//
-//  a list of key/value pairs
-//
-PLIST(PXConfigSectionList, PXConfigValue);
-
-//
-//  a list of key value pairs, with a section name
-//
-PDECLARE_CLASS(PXConfigSection, PCaselessString)
-  public:
-    PXConfigSection(const PCaselessString & theName) 
-      : PCaselessString(theName) { list.AllowDeleteObjects(); }
-
-    PXConfigSectionList & GetList() { return list; }
-
-  protected:
-    PXConfigSectionList list;
-};
 
 //
 // a list of sections
 //
 
-class PXConfig : public PList<PXConfigSection>
+class PXConfig : public PDictionary<PCaselessString, PStringToString>
 {
-    PCLASSINFO(PXConfig, PList<PXConfigSection>);
+    typedef PDictionary<PCaselessString, PStringToString> ParentClass;
+    PCLASSINFO(PXConfig, ParentClass);
   public:
     PXConfig();
     ~PXConfig();
@@ -119,8 +88,6 @@ class PXConfig : public PList<PXConfigSection>
     PBoolean      AddInstance();
     PBoolean      RemoveInstance(const PFilePath & filename);
 
-    PINDEX    GetSectionsIndex(const PString & theSection) const;
-
   protected:
     int       instanceCount;
     PMutex    mutex;
@@ -138,10 +105,10 @@ static PBoolean IsComment(const PString& str)
 //
 // a dictionary of configurations, keyed by filename
 //
-typedef PDictionary<PFilePath, PXConfig> PXConfigDictionaryBase;
-class PXConfigDictionary : public PXConfigDictionaryBase
+class PXConfigDictionary : public PDictionary<PFilePath, PXConfig>
 {
-    PCLASSINFO(PXConfigDictionary, PXConfigDictionaryBase)
+    typedef PDictionary<PFilePath, PXConfig> ParentClass;
+    PCLASSINFO(PXConfigDictionary, ParentClass)
   public:
     PXConfigDictionary();
     ~PXConfigDictionary();
@@ -286,25 +253,22 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
     return PFalse;
   }
 
-  for (PINDEX i = 0; i < GetSize(); i++) {
-    PXConfigSectionList & section = (*this)[i].GetList();
-
+  for (iterator it = begin(); it != end(); ++it) {
     // If the line is a comment, output it as is
-    if (IsComment((*this)[i])) {
-      file << (*this)[i] << endl;
+    if (IsComment(it->first)) {
+      file << it->first << endl;
       continue;
     }
 
-    file << "[" << (*this)[i] << "]" << endl;
-    for (PINDEX j = 0; j < section.GetSize(); j++) {
-      PXConfigValue & value = section[j];
-      PStringArray lines = value.GetValue().Tokenise('\n', PTrue);
+    file << "[" << it->first << "]" << endl;
+    for (PStringToString::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+      PStringArray lines = it2->second.Tokenise('\n', PTrue);
       // Preserve name/value pairs with no value, i.e. of the form "name="
       if (lines.IsEmpty())
-	    file << value << "=" << endl;
+	file << it->first << "=" << endl;
       else {
         for (PINDEX k = 0; k < lines.GetSize(); k++) 
-          file << value << "=" << lines[k] << endl;
+          file << it->first << "=" << lines[k] << endl;
       }
     }
     file << endl;
@@ -340,7 +304,7 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
   if (!file.Open(filename, PFile::ReadOnly))
     return PFalse;
 
-  PXConfigSection * currentSection = NULL;
+  PStringToString * currentSection = NULL;
 
   // read lines in the file
   while (file.good()) {
@@ -350,31 +314,28 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
     if ((len = line.GetLength()) > 0) {
       // Preserve comments
       if (IsComment(line))
-        Append(new PXConfigSection(line));
+        SetAt(line, new PStringToString());
       else {
         if (line[0] == '[') {
           PCaselessString sectionName = (line.Mid(1,len-(line[len-1]==']'?2:1))).Trim();
-          PINDEX  index;
-          if ((index = GetValuesIndex(sectionName)) != P_MAX_INDEX)
-            currentSection = &(*this )[index];
+          iterator iter;
+          if ((iter = find(sectionName)) != end())
+            currentSection = &iter->second;
           else {
-            currentSection = new PXConfigSection(sectionName);
-            Append(currentSection);
+            currentSection = new PStringToString();
+            SetAt(sectionName, currentSection);
           }
-        } else if (currentSection != NULL) {
+        }
+        else if (currentSection != NULL) {
           PINDEX equals = line.Find('=');
           if (equals > 0 && equals != P_MAX_INDEX) {
             PString keyStr = line.Left(equals).Trim();
             PString valStr = line.Right(len - equals - 1).Trim();
 
-            PINDEX index;
-            if ((index = currentSection->GetList().GetValuesIndex(keyStr)) != P_MAX_INDEX)  {
-              PXConfigValue & value = currentSection->GetList()[index];
-              value.SetValue(value.GetValue() + '\n' + valStr);
-            } else {
-              PXConfigValue * value = new PXConfigValue(keyStr, valStr);
-              currentSection->GetList().Append(value);
-            }
+            if (currentSection->Contains(keyStr))
+              (*currentSection)[keyStr] += '\n' + valStr;
+            else
+              currentSection->SetAt(keyStr, valStr);
           }
         }
       }
@@ -391,8 +352,8 @@ void PXConfig::ReadFromEnvironment (char **envp)
   // clear out all information
   RemoveAll();
 
-  PXConfigSection * currentSection = new PXConfigSection("Options");
-  Append(currentSection);
+  PStringToString * currentSection = new PStringToString();
+  SetAt("Options", currentSection);
 
   // can't save environment configs
   canSave = PFalse;
@@ -403,21 +364,10 @@ void PXConfig::ReadFromEnvironment (char **envp)
   while (*envp != NULL && **envp != '\0') {
     PString line(*envp);
     PINDEX equals = line.Find('=');
-    if (equals > 0) {
-      PXConfigValue * value = new PXConfigValue(line.Left(equals), line.Right(line.GetLength() - equals - 1));
-      currentSection->GetList().Append(value);
-    }
+    if (equals > 0)
+      currentSection->SetAt(line.Left(equals), line.Mid(equals+1));
     envp++;
   }
-}
-
-PINDEX PXConfig::GetSectionsIndex(const PString & theSection) const
-{
-  PINDEX len = theSection.GetLength()-1;
-  if (theSection[len] != '\\')
-    return GetValuesIndex(theSection);
-  else
-    return GetValuesIndex(theSection.Left(len));
 }
 
 
@@ -524,14 +474,12 @@ void PXConfigDictionary::RemoveInstance(PXConfig * instance)
   mutex.Wait();
 
   if (instance != environmentInstance) {
-    PINDEX index = GetObjectsIndex(instance);
-    PAssert(index != P_MAX_INDEX, "Cannot find PXConfig instance to remove");
-
-    // decrement the instance count and remove it if this was the last instance
-    PFilePath key = GetKeyAt(index);
-    if (instance->RemoveInstance(key)) {
-      instance->Flush(key);
-      RemoveAt(key);
+    for (iterator it = begin(); it != end(); ++it) {
+      if (&it->second == instance && instance->RemoveInstance(it->first)) {
+        instance->Flush(it->first);
+        RemoveAt(it->first);
+        break;
+      }
     }
   }
 
@@ -542,11 +490,8 @@ void PXConfigDictionary::WriteChangedInstances()
 {
   mutex.Wait();
 
-  PINDEX i;
-  for (i = 0; i < GetSize(); i++) {
-    PFilePath key = GetKeyAt(i);
-    GetAt(key)->Flush(key);
-  }
+  for (iterator it = begin(); it != end(); ++it)
+    it->second.Flush(it->first);
 
   mutex.Signal();
 }
@@ -619,8 +564,9 @@ PStringArray PConfig::GetSections() const
   PINDEX sz = config->GetSize();
   PStringArray sections(sz);
 
-  for (PINDEX i = 0; i < sz; i++)
-    sections[i] = (*config)[i];
+  PINDEX index = 0;
+  for (PXConfig::iterator it = config->begin(); it != config->end(); ++it)
+    sections[index++] = it->first;
 
   config->Signal();
 
@@ -642,14 +588,15 @@ PStringArray PConfig::GetKeys(const PString & theSection) const
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PINDEX index;
   PStringArray keys;
 
-  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
-    PXConfigSectionList & section = (*config)[index].GetList();
+  PXConfig::iterator it;
+  if ((it = config->find(theSection)) != config->end()) {
+    PStringToString & section = it->second;
     keys.SetSize(section.GetSize());
-    for (PINDEX i = 0; i < section.GetSize(); i++)
-      keys[i] = section[i];
+    PINDEX index = 0;
+    for (PStringToString::iterator it2 = section.begin(); it2 != section.end(); ++it2)
+      keys[index++] = it2->first;
   }
 
   config->Signal();
@@ -672,9 +619,9 @@ void PConfig::DeleteSection(const PString & theSection)
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PINDEX index;
-  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
-    config->RemoveAt(index);
+  PXConfig::iterator it;
+  if ((it = config->find(theSection)) != config->end()) {
+    config->RemoveAt(it->first);
     config->SetDirty();
   }
 
@@ -695,12 +642,12 @@ void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PINDEX index;
-  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
-    PXConfigSectionList & section = (*config)[index].GetList();
-    PINDEX index_2;
-    if ((index_2 = section.GetValuesIndex(theKey)) != P_MAX_INDEX) {
-      section.RemoveAt(index_2);
+  PXConfig::iterator it;
+  if ((it = config->find(theSection)) != config->end()) {
+    PStringToString & section = it->second;
+    PStringToString::iterator it2;
+    if ((it2 = section.find(theKey)) != section.end()) {
+      section.RemoveAt(it2->first);
       config->SetDirty();
     }
   }
@@ -723,12 +670,10 @@ PBoolean PConfig::HasKey(const PString & theSection, const PString & theKey) con
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PBoolean present = PFalse;
-  PINDEX index;
-  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
-    PXConfigSectionList & section = (*config)[index].GetList();
-    present = section.GetValuesIndex(theKey) != P_MAX_INDEX;
-  }
+  bool present = false;
+  PXConfig::iterator it;
+  if ((it = config->find(theSection)) != config->end())
+    present = it->second.Contains(theKey);
 
   config->Signal();
   return present;
@@ -744,19 +689,18 @@ PBoolean PConfig::HasKey(const PString & theSection, const PString & theKey) con
 //
 ////////////////////////////////////////////////////////////
 
-PString PConfig::GetString(const PString & theSection,
-                                    const PString & theKey, const PString & dflt) const
+PString PConfig::GetString(const PString & theSection, const PString & theKey, const PString & dflt) const
 {
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
   PString value = dflt;
-  PINDEX index;
-  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
-
-    PXConfigSectionList & section = (*config)[index].GetList();
-    if ((index = section.GetValuesIndex(theKey)) != P_MAX_INDEX) 
-      value = section[index].GetValue();
+  PXConfig::iterator it;
+  if ((it = config->find(theSection)) != config->end()) {
+    PStringToString & section = it->second;
+    PStringToString::iterator it2;
+    if ((it2 = section.find(theKey)) != section.end()) 
+      value = it2->second;
   }
 
   config->Signal();
@@ -779,28 +723,20 @@ void PConfig::SetString(const PString & theSection,
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PINDEX index;
-  PXConfigSection * section;
-  PXConfigValue   * value;
+  PStringToString * section;
 
-  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) 
-    section = &(*config)[index];
+  PXConfig::iterator it;
+  if ((it = config->find(theSection)) != config->end())
+    section = &it->second;
   else {
-    section = new PXConfigSection(theSection);
-    config->Append(section);
+    section = new PStringToString;
+    config->SetAt(theSection, section);
     config->SetDirty();
   } 
 
-  if ((index = section->GetList().GetValuesIndex(theKey)) != P_MAX_INDEX) 
-    value = &(section->GetList()[index]);
-  else {
-    value = new PXConfigValue(theKey);
-    section->GetList().Append(value);
-    config->SetDirty();
-  }
-
-  if (theValue != value->GetValue()) {
-    value->SetValue(theValue);
+  PStringToString::iterator it2;
+  if ((it2 = section->find(theKey)) == section->end() || it2->second != theValue) {
+    section->SetAt(theKey, theValue);
     config->SetDirty();
   }
 
