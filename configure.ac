@@ -635,7 +635,7 @@ if test "${enable_tracing}" = "no" ; then
   STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
   AC_MSG_NOTICE(PTRACE and all trace logging included)
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+  STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
 fi
 
 

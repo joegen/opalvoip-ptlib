@@ -497,9 +497,9 @@ void * PThread::PX_ThreadStart(void * arg)
   //pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
 
 #if defined(P_LINUX)
-  PTRACE(5, "PTLib\tStarted thread " << thread << " (" << thread->PX_linuxId << ") " << thread->GetThreadName());
+  PTRACE2(5, thread, "PTLib\tStarted thread " << thread << " (" << thread->PX_linuxId << ") " << thread->GetThreadName());
 #else
-  PTRACE(5, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
+  PTRACE2(5, thread, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
 #endif
 
   PProcess::Current().OnThreadStart(*thread);
