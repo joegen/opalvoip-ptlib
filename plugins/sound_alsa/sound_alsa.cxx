@@ -170,14 +170,14 @@ PStringArray PSoundChannelALSA::GetDeviceNames(Directions dir)
   if (dir == Recorder) {
     if (capture_devices.GetSize() > 0)
       devices += "Default";
-    for (PINDEX i = 0 ; i < capture_devices.GetSize() ; i++)
-      devices += capture_devices.GetKeyAt(i);
+    for (PStringToOrdinal::iterator it = capture_devices.begin(); it != capture_devices.end() ; ++it)
+      devices += it->first;
   }
   else {
     if (playback_devices.GetSize() > 0)
       devices += "Default";
-    for (PINDEX i = 0 ; i < playback_devices.GetSize() ; i++)
-      devices += playback_devices.GetKeyAt(i);
+    for (PStringToOrdinal::iterator it = playback_devices.begin(); it != playback_devices.end() ; ++it)
+      devices += it->first;
   }
 
   return devices;

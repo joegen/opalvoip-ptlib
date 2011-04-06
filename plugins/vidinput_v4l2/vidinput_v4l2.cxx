@@ -1042,8 +1042,8 @@ V4L2Names::Update()
     POrdinalToString vid;
     ReadDeviceDirectory("/dev/", vid);
 
-    for (PINDEX i = 0; i < vid.GetSize(); i++) {
-      PINDEX cardnum = vid.GetKeyAt(i);
+    for (POrdinalToString::iterator it = vid.begin(); it != vid.end(); ++it) {
+      PINDEX cardnum = it->first;
       int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
       if ((fd >= 0) || (errno == EBUSY)) {
         if (fd >= 0)
