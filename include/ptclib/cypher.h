@@ -278,6 +278,46 @@ class PMessageDigest : public PObject
 };
 
 
+/** HMAC template class.
+ Create a class that implemented a HMAC as per RFC 2104 using an arbitrary hash class
+ */
+
+class PHMAC : public PObject
+{
+  public:
+    typedef PMessageDigest::Result Result;
+    virtual void Hash(const BYTE * data, PINDEX len, Result & result) = 0;
+
+    virtual PString Encode(const BYTE * data, PINDEX len);
+    virtual PString Encode(const PBYTEArray & data);
+    virtual PString Encode(const PString & str);
+
+    virtual void Process(const BYTE * data, PINDEX len, Result & result);
+    virtual void Process(const PBYTEArray & data, Result & result);
+    virtual void Process(const PString & str, Result & result);
+
+  protected:
+    virtual int GetL() const = 0;
+    virtual int GetB() const { return 64; }
+    virtual void Initialise(const BYTE * key, PINDEX len);
+    virtual void InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & result);
+
+    PBYTEArray m_key;
+};
+
+template <class hash_class>
+class PHMACTemplate : public PHMAC
+{
+  public:
+    PHMACTemplate(const PString & key)                   { Initialise((const BYTE *)(const char *)key, key.GetLength()); }
+    PHMACTemplate(const PBYTEArray & key)                { Initialise((const BYTE *)key, key.GetSize()); }
+    PHMACTemplate(const BYTE * key, PINDEX len)          { Initialise(key, len); }
+
+    virtual void Hash(const BYTE * data, PINDEX len, Result & result)
+    { hash_class::Encode(data, len, result); }
+    virtual int GetL() const { return 20; };
+};
+
 /** MD5 Message Digest.
  A class to produce a Message Digest for a block of text/data using the
  MD5 algorithm as defined in RFC1321 by Ronald Rivest of MIT Laboratory
@@ -395,6 +435,8 @@ class PMessageDigest5 : public PMessageDigest
     PUInt64 count;
 };
 
+typedef PHMACTemplate<PMessageDigest5> PHMAC_MD5;
+
 #if P_SSL
 
 /** SHA1 Digest.
@@ -469,6 +511,8 @@ class PMessageDigestSHA1 : public PMessageDigest
   private:
     void * shaContext;
 };
+
+typedef PHMACTemplate<PMessageDigestSHA1> PHMAC_SHA1;
 
 #endif
 
