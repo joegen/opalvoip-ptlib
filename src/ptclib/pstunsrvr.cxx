@@ -253,7 +253,7 @@ bool PSTUNServer::WriteTo(const PSTUNMessage & message, PUDPSocket & socket, con
   return message.Write(socket);
 }
 
-bool PSTUNServer::OnUnknownRequest(const PSTUNMessage & request, PSTUNServer::SocketInfo & /*socketInfo*/)
+bool PSTUNServer::OnUnknownRequest(const PSTUNMessage & PTRACE_PARAM(request), PSTUNServer::SocketInfo & /*socketInfo*/)
 {
   PTRACE(2, "STUNSRVR\tReceived unknown request " << hex << request.GetType() << " from " << request.GetSourceAddressAndPort());
   return false;

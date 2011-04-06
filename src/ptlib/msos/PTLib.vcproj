@@ -236,7 +236,7 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="_DEBUG;PTRACING;$(NoInherit)"/>
+					PreprocessorDefinitions="_DEBUG;PTRACING=2;$(NoInherit)"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
@@ -244,7 +244,7 @@
 					Name="VCCLCompilerTool"
 					Optimization="2"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="NDEBUG;PTRACING;$(NoInherit)"
+					PreprocessorDefinitions="NDEBUG;PTRACING=2;$(NoInherit)"
 					PrecompiledHeaderThrough=""/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -253,7 +253,7 @@
 					Name="VCCLCompilerTool"
 					Optimization="2"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="NDEBUG;PTRACING;$(NoInherit)"
+					PreprocessorDefinitions="NDEBUG;PTRACING=2;$(NoInherit)"
 					PrecompiledHeaderThrough=""/>
 			</FileConfiguration>
 		</File>
