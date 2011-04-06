@@ -86,6 +86,7 @@ struct DNSCacheInfo {
 
 typedef std::map<std::string, DNSCacheInfo> DNSCache;
 
+static PTime g_lastAgeTime(0);
 static DNSCache g_dnsCache;
 
 #endif
@@ -704,13 +705,17 @@ DNS_STATUS PDNS::Cached_DnsQuery(
   DNSCache::iterator r;
 
   // age entries in cache
-  r = g_dnsCache.begin();
-  while (r != g_dnsCache.end()) {
-    if ((now - r->second.m_time) < RESOLVER_CACHE_TIMEOUT)
-      ++r;
-    else { 
-      DnsRecordListFree(r->second.m_results, 0);
-      g_dnsCache.erase(r++);
+  if ((now - g_lastAgeTime) > RESOLVER_CACHE_TIMEOUT) {
+    g_lastAgeTime = now;
+
+    r = g_dnsCache.begin();
+    while (r != g_dnsCache.end()) {
+      if ((now - r->second.m_time) < RESOLVER_CACHE_TIMEOUT)
+        ++r;
+      else { 
+        DnsRecordListFree(r->second.m_results, 0);
+        g_dnsCache.erase(r++);
+      }
     }
   }
 
