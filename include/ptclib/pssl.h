@@ -341,7 +341,6 @@ class PSSLContext {
   public:
     enum Method {
       SSLv23,
-      SSLv2,
       SSLv3,
       TLSv1
     };
