@@ -343,14 +343,13 @@ PStringArray PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
       }
     }
 
-    for (i = 0; i < deviceToPluginMap.GetSize(); i++) {
-      if (!deviceToPluginMap.GetDataAt(i).IsEmpty())
-        allDevices.AppendString(deviceToPluginMap.GetKeyAt(i));
+    for (PStringToString::iterator it = deviceToPluginMap.begin(); it != deviceToPluginMap.end(); ++it) {
+      if (!it->second.IsEmpty())
+        allDevices.AppendString(it->first);
     }
   }
   else {
-    PDevicePluginServiceDescriptor * descr =
-                            (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+    PDevicePluginServiceDescriptor * descr = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
     if (descr != NULL)
       allDevices = descr->GetDeviceNames(userData);
   }

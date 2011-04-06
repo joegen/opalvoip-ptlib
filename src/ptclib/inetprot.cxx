@@ -537,9 +537,9 @@ ostream & PMIMEInfo::PrintContents(ostream &strm) const
 {
   PBoolean output_cr = strm.fill() == '\r';
   strm.fill(' ');
-  for (PINDEX i = 0; i < GetSize(); i++) {
-    PString name = GetKeyAt(i) + ": ";
-    PString value = GetDataAt(i);
+  for (const_iterator it = begin(); it != end(); ++it) {
+    PString name = it->first + ": ";
+    PString value = it->second;
     if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
       PStringArray vals = value.Lines();
       for (PINDEX j = 0; j < vals.GetSize(); j++) {
@@ -627,8 +627,8 @@ bool PMIMEInfo::AddMIME(const PString & fieldName, const PString & fieldValue)
 
 bool PMIMEInfo::AddMIME(const PMIMEInfo & mime)
 {
-  for (PINDEX i = 0; i < mime.GetSize(); ++i) {
-    if (!AddMIME(mime.GetKeyAt(i), mime.GetDataAt(i)))
+  for (const_iterator it = mime.begin(); it != mime.end(); ++it) {
+    if (!AddMIME(it->first, it->second))
       return false;
   }
 
@@ -638,9 +638,9 @@ bool PMIMEInfo::AddMIME(const PMIMEInfo & mime)
 
 PBoolean PMIMEInfo::Write(PInternetProtocol & socket) const
 {
-  for (PINDEX i = 0; i < GetSize(); i++) {
-    PString name = GetKeyAt(i) + ": ";
-    PString value = GetDataAt(i);
+  for (const_iterator it = begin(); it != end(); ++it) {
+    PString name = it->first + ": ";
+    PString value = it->second;
     if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
       PStringArray vals = value.Lines();
       for (PINDEX j = 0; j < vals.GetSize(); j++) {
@@ -787,8 +787,8 @@ void PMIMEInfo::SetAssociation(const PStringToString & allTypes, PBoolean merge)
   PStringToString & types = GetContentTypes();
   if (!merge)
     types.RemoveAll();
-  for (PINDEX i = 0; i < allTypes.GetSize(); i++)
-    types.SetAt(allTypes.GetKeyAt(i), allTypes.GetDataAt(i));
+  for (const_iterator it = allTypes.begin(); it != allTypes.end(); ++it)
+    types.SetAt(it->first, it->second);
 }
 
 
@@ -927,7 +927,7 @@ bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & 
         info->m_mime.SetAt(PMIMEInfo::ContentTypeTag, startContentType);
 
       // Make sure "start" mime entry is at the beginning of list
-      InsertAt(0, info);
+      Prepend(info);
       startContentId.MakeEmpty();
     }
 
