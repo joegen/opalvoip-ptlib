@@ -78,12 +78,12 @@ static PMutex & GetDNSMutex()
 #if defined(USE_RESOLVER_CACHING) 
 
 struct DNSCacheInfo {
+  DNSCacheInfo() : m_results(NULL), m_status(-1) { }
   PTime         m_time;
   PDNS_RECORD   m_results;
   DNS_STATUS    m_status;
 };
 
-PTime g_lastAged;
 typedef std::map<std::string, DNSCacheInfo> DNSCache;
 
 static DNSCache g_dnsCache;
@@ -704,24 +704,20 @@ DNS_STATUS PDNS::Cached_DnsQuery(
   DNSCache::iterator r;
 
   // age entries in cache
-  if (((now - g_lastAged).GetMilliSeconds() >= RESOLVER_CACHE_TIMEOUT) && (g_dnsCache.size() > 0)) {
-    DNSCache::iterator n;
-    r = g_dnsCache.begin(); 
-    do {
-      n = r;
-      ++n;
-      if ((now - r->second.m_time) > RESOLVER_CACHE_TIMEOUT) { 
-        DnsRecordListFree(r->second.m_results, 0);
-        g_dnsCache.erase(r);
-      }
-      r = n;
+  r = g_dnsCache.begin();
+  while (r != g_dnsCache.end()) {
+    if ((now - r->second.m_time) < RESOLVER_CACHE_TIMEOUT)
+      ++r;
+    else { 
+      DnsRecordListFree(r->second.m_results, 0);
+      g_dnsCache.erase(r++);
     }
-    while (r != g_dnsCache.end());
   }
 
   // see if cache contains the entry we need
   std::stringstream key;
-  key << name << "\n" << type << "\n" << options;
+  key << name << '\n' << type << '\n' << options;
+
   r = g_dnsCache.find(key.str());
   if (r == g_dnsCache.end()) {
 
