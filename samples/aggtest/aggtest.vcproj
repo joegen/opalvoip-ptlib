@@ -20,7 +20,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_DEBUG;_CONSOLE;PTRACING=1"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;PTRACING=2"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -72,7 +72,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=1"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=2"
 				RuntimeLibrary="4"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"

@@ -47,7 +47,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=1"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE;PTRACING=2"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				PrecompiledHeaderThrough=""
@@ -133,7 +133,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;_CONSOLE;PTRACING=1"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE;PTRACING=2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				PrecompiledHeaderThrough=""
