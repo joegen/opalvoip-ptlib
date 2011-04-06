@@ -317,6 +317,7 @@ bool PSTUNMessage::CheckMessageIntegrity(BYTE * credentialsHash, PINDEX credenti
 
 void PSTUNMessage::CalculateMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * checkHmac)
 {
+#if P_SSL
   // calculate hash up to, but not including, MESSAGE_INTEGRITY attribute
   int lengthWithoutMI = (BYTE *)mi - (BYTE *)theArray;
 
@@ -327,6 +328,7 @@ void PSTUNMessage::CalculateMessageIntegrity(BYTE * credentialsHash, PINDEX cred
 
   // copy the hash to the returned buffer
   memcpy(checkHmac, result.GetPointer(), 20);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
