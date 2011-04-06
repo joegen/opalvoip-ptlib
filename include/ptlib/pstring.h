@@ -2452,7 +2452,8 @@ PDECLARE_SET(PStringSet, PString, true);
  */
 template <class K> class PStringDictionary : public PDictionary<K, PString>
 {
-  PCLASSINFO(PStringDictionary, PDictionary);
+  typedef PDictionary<K, PString> ParentClass;
+  PCLASSINFO(PStringDictionary, ParentClass);
 
   public:
   /**@name Construction */
@@ -2464,7 +2465,7 @@ template <class K> class PStringDictionary : public PDictionary<K, PString>
        destroyed.
      */
     PStringDictionary()
-      : PDictionary() { }
+      : ParentClass() { }
   //@}
 
   /**@name Overrides from class PObject */
@@ -2517,7 +2518,7 @@ template <class K> class PStringDictionary : public PDictionary<K, PString>
 
   protected:
     PStringDictionary(int dummy, const PStringDictionary * c)
-      : PDictionary(dummy, c) { }
+      : ParentClass(dummy, c) { }
 };
 
 

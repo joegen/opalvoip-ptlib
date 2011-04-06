@@ -115,11 +115,12 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   char ** exec_environ = environ;
   if (environment != NULL || !searchPath) {
     exec_environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
-    for (PINDEX i = 0; i < environment->GetSize(); i++) {
-      PString key(environment->GetKeyAt(i));
+    int index = 0;
+    for (PStringToString::const_iterator it = environment->begin(); it != environment->end(); ++it) {
+      PString key = it->first;
       if (searchPath || (key != "PATH")) {
-        PString str = key + '=' + environment->GetDataAt(i);
-        exec_environ[i] = strdup(str);
+        PString str = key + '=' + it->second;
+        exec_environ[index++] = strdup(str);
       }
     }
   }

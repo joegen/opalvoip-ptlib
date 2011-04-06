@@ -355,16 +355,23 @@ PChannel::Errors PSocket::Select(SelectList & read,
   }
 
   for (i = 0; i < 3; i++) {
-    for (j = 0; j < list[i]->GetSize(); j++) {
-      PSocket & socket = (*list[i])[j];
+    SelectList::iterator it = list[i]->begin();
+    while (it != list[i]->end()) {
+      PSocket & socket = *it;
       socket.px_selectThread[i] = NULL;
       socket.px_selectMutex[i].Signal();
-      if (lastError == NoError) {
+      if (lastError != NoError)
+        ++it;
+      else {
         int h = socket.GetHandle();
-        if (h < 0)
+        if (h < 0) {
           lastError = Interrupted;
-        else if (!fds[i].IsPresent(h))
-          list[i]->RemoveAt(j--);
+          ++it;
+        }
+        else if (fds[i].IsPresent(h))
+          ++it;
+        else
+          list[i]->erase(it++);
       }
     }
   }

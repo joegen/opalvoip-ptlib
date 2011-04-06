@@ -1207,7 +1207,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
        destroyed.
      */
     POrdinalDictionary()
-      : PDictionary<K, POrdinalKey>() { }
+      : ParentClass() { }
   //@}
 
   /**@name Overrides from class PObject */
@@ -1248,7 +1248,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     P_DEPRECATED virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
-    ) { return AbstractSetAt(AbstractGetKeyAt(index), PNEW POrdinalKey(ordinal)); }
+    ) { return this->AbstractSetAt(this->AbstractGetKeyAt(index), PNEW POrdinalKey(ordinal)); }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -1280,7 +1280,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     P_DEPRECATED const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
-      { return (const K &)AbstractGetKeyAt(index); }
+      { return (const K &)this->AbstractGetKeyAt(index); }
 
     /**Get the data in the dictionary at the ordinal index position.
 
@@ -1296,12 +1296,12 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     P_DEPRECATED PINDEX GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
-      { return (POrdinalKey &)AbstractGetDataAt(index); }
+      { return (POrdinalKey &)this->AbstractGetDataAt(index); }
   //@}
 
   protected:
     POrdinalDictionary(int dummy, const POrdinalDictionary * c)
-      : PDictionary<K, POrdinalKey>(dummy, c) { }
+      : ParentClass(dummy, c) { }
 };
 
 
