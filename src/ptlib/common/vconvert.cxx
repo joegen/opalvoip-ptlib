@@ -245,7 +245,7 @@ PColourConverter * PColourConverter::Create(const PVideoFrameInfo & src,
     find = find->link;
   }
 
-  PTRACE(2,"PColCnv\tCreate error. Did not find " << src.GetColourFormat() << "->" << dst.GetColourFormat());
+  PTRACE2(2, NULL, "PColCnv\tCreate error. Did not find " << src.GetColourFormat() << "->" << dst.GetColourFormat());
   return NULL;
 }
 

@@ -557,7 +557,7 @@ PChannel::AsyncContext::AsyncContext(void * buf, PINDEX len, const AsyncNotifier
 
 void PChannel::AsyncContext::OnIOComplete(PINDEX length, int errorNumber)
 {
-  PTRACE(6, "Async\tOnIOComplete: len=" << length << ", error=" << errorNumber);
+  PTRACE2(6, m_channel, "Async\tOnIOComplete: len=" << length << ", error=" << errorNumber);
 
   m_length = length;
   m_errorNumber = errorNumber;
