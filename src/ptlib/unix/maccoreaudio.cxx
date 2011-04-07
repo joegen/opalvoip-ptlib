@@ -39,13 +39,15 @@ namespace PWLibStupidLinkerHacks
 #ifdef PTRACING
 
 // should also produce output when ptracing is disabled
-#define checkStatus( err ) \
+#define checkStatus2( err, This ) \
     if(err) {\
       OSStatus error = static_cast<OSStatus>(err);\
-      PTRACE(1, "CoreAudio Error " << __func__ << " "  \
+      PTRACE2(1, This, "CoreAudio Error " << __func__ << " "  \
            <<  error   << "("  << (char*)&err <<  ")" ); \
 			error = err; \
     }         
+
+#define checkStatus( err ) checkStatus2(err, PTraceObjectInstance())
    
 ostream& operator<<(ostream &os, AudioStreamBasicDescription &inDesc)
 {
@@ -110,7 +112,7 @@ ostream& operator<<(ostream &os, PSoundChannelCoreAudio::State &state)
 
 #else
 
-#define checkStatus( err ) \
+#define checkStatus( err, This ) \
     if(err) {\
       OSStatus error = static_cast<OSStatus>(err);\
       cout << "CoreAudio Error " << __func__ << " "  \
@@ -419,7 +421,7 @@ OSStatus PSoundChannelCoreAudio::ComplexBufferFillPlayback(
    //      " packets, " <<  " fetching " << minPackets << " packets");
 
    if(outBytes > This->converter_buffer_size){
-      PTRACE(1, This->direction << " Converter buffer too small");
+      PTRACE2(1, This, This->direction << " Converter buffer too small");
 
       // doesn't matter converter will ask right again for remaining data
       // converter buffer multiple of packet size
@@ -432,7 +434,7 @@ OSStatus PSoundChannelCoreAudio::ComplexBufferFillPlayback(
    UInt32 reqBytes = *ioNumberDataPackets * pwlibASBD.mBytesPerPacket;
    if(outBytes < reqBytes && outBytes < This->converter_buffer_size) {
       reqBytes = MIN(reqBytes, This->converter_buffer_size);
-      PTRACE(1, "Buffer underrun, filling up with silence " 
+      PTRACE2(1, This, "Buffer underrun, filling up with silence " 
             << (reqBytes - outBytes) << " bytes ");
 
       bzero(This->converter_buffer + outBytes, reqBytes - outBytes );
@@ -478,7 +480,7 @@ OSStatus PSoundChannelCoreAudio::PlayRenderProc(
            &inNumberFrames, // should be packets
            ioData,
            NULL /*outPacketDescription*/);
-   checkStatus(err);
+   checkStatus2(err, This);
 
 
    /* now that cpu intensive work is done, make stereo from mono
@@ -520,7 +522,7 @@ OSStatus PSoundChannelCoreAudio::RecordProc(
    }
 
 	if( This->mRecordInputBufferSize < inNumberFrames * asbd.mFramesPerPacket){
-		PTRACE(1, "Allocated ABL RecordBuffer is too small ");
+		PTRACE2(1, This, "Allocated ABL RecordBuffer is too small ");
 		inNumberFrames = This->mRecordInputBufferSize / asbd.mFramesPerPacket;
 	}
 
@@ -532,7 +534,7 @@ OSStatus PSoundChannelCoreAudio::RecordProc(
             inBusNumber,
             inNumberFrames, //# of frames  requested
             inputData);// Audio Buffer List to hold data    
-   checkStatus(err);
+   checkStatus2(err, This);
 
    /* in any case reduce to mono by taking only the first buffer */
    AudioBuffer *audio_buf = &inputData->mBuffers[0];
@@ -555,7 +557,7 @@ OSStatus PSoundChannelCoreAudio::RecordProc(
 
       UInt32 pullPackets = pullBytes / This->pwlibASBD.mBytesPerPacket;
 
-      PTRACE(5, __func__ << " going to pull " << pullPackets << " packets");
+      PTRACE2(5, This, __func__ << " going to pull " << pullPackets << " packets");
 
       /* now pull the frames through the converter */
       AudioBufferList* outputData = This->mOutputBufferList;
@@ -565,7 +567,7 @@ OSStatus PSoundChannelCoreAudio::RecordProc(
               &pullPackets, 
               outputData, 
               NULL /*outPacketDescription*/);
-      checkStatus(err);
+      checkStatus2(err, This);
 
       /* put the converted data into the main CircularBuffer for later 
        * fetching by the public Read function */
@@ -606,7 +608,7 @@ OSStatus PSoundChannelCoreAudio::ComplexBufferFillRecord(
    //     << " fetching " << minPackets << " packets");
 
    if(ioBytes > This->converter_buffer_size){
-      PTRACE(1, "converter_buffer too small " << ioBytes << " requested "
+      PTRACE2(1, This, "converter_buffer too small " << ioBytes << " requested "
              << " but only " << This->converter_buffer_size << " fit in");
       ioBytes = This->converter_buffer_size;
    }
@@ -615,7 +617,7 @@ OSStatus PSoundChannelCoreAudio::ComplexBufferFillRecord(
    
    if(ioBytes  != minPackets * hwASBD.mBytesPerPacket) {
       // no more a multiple of packet problably !!!
-      PTRACE(1, "Failed to fetch the computed number of packets");
+      PTRACE2(1, This, "Failed to fetch the computed number of packets");
    }
 
    ioData->mBuffers[0].mData = This->converter_buffer;
