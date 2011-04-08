@@ -1926,8 +1926,6 @@ PBoolean PVXMLSession::TraverseExit()
 
 PBoolean PVXMLSession::TraverseSubmit()
 {
-  PBoolean result = false;
-
   // Do HTTP client stuff here
 
   // Find out what to submit, for now, only support a WAV file
@@ -1989,10 +1987,14 @@ PBoolean PVXMLSession::TraverseSubmit()
     }
   }
 
-  PHTTPClient client;
-  PMIMEInfo sendMIME, replyMIME;
-
   if (element->GetAttribute("method") *= "post") {
+    PFile file(fileName, PFile::ReadOnly);
+    if (!file.IsOpen()) {
+      PTRACE(1, "VXML\t<submit> coule not find " << fileName);
+      return false;
+    }
+
+    PMIMEInfo sendMIME;
 
     //                            1         2         3        4123
     PString boundary = "--------012345678901234567890123458VXML";
@@ -2002,50 +2004,32 @@ PBoolean PVXMLSession::TraverseSubmit()
     sendMIME.SetAt( "Accept", "text/html" );
 
     // After this all boundaries have a "--" prepended
-    boundary = "--" + boundary;
+    boundary.Splice("--", 0, 0);
 
-    // Create the mime header
-    // First set the primary boundary
-    PString mimeHeader = boundary + "\r\n";
-
-    // Add content disposition
-    mimeHeader += "Content-Disposition: form-data; name=\"voicemail\"; filename=\"" + fileNameOnly + "\"\r\n";
-
-    // Add content type
-    mimeHeader += "Content-Type: audio/wav\r\n\r\n";
-
-    // Create the footer and add the closing of the content with a CR/LF
-    PString mimeFooter = "\r\n";
-
-    // Copy the header, buffer and footer together in one PString
-
-    // Load the WAV file into memory
-    PFile file( fileName, PFile::ReadOnly );
-    int size = file.GetLength();
-    PString mimeThing;
-
+    PMIMEInfo part1, part2;
+    part1.Set(PMIMEInfo::ContentTypeTag, "audio/wav");
+    part1.Set(PMIMEInfo::ContentDispositionTag, "form-data; name=\"voicemail\"; filename=\"" + fileNameOnly + '"');
     // Make PHP happy?
     // Anyway, this shows how to add more variables, for when namelist containes more elements
-    PString mimeMaxFileSize = boundary + "\r\nContent-Disposition: form-data; name=\"MAX_FILE_SIZE\"\r\n\r\n3000000\r\n";
+    part2.Set(PMIMEInfo::ContentDispositionTag, "form-data; name=\"MAX_FILE_SIZE\"\r\n\r\n3000000");
 
-    // Finally close the body with the boundary again, but also add "--"
-    // to show this is the final boundary
-    boundary = boundary + "--";
-    mimeFooter += boundary + "\r\n";
-    mimeHeader = mimeMaxFileSize + mimeHeader;
-    mimeThing.SetSize( mimeHeader.GetSize() + size + mimeFooter.GetSize() );
-
-    // Copy the header to the result
-    memcpy( mimeThing.GetPointer(), mimeHeader.GetPointer(), mimeHeader.GetLength());
-
-    // Copy the contents of the file to the mime result
-    file.Read( mimeThing.GetPointer() + mimeHeader.GetLength(), size );
-
-    // Copy the footer to the result
-    memcpy( mimeThing.GetPointer() + mimeHeader.GetLength() + size, mimeFooter.GetPointer(), mimeFooter.GetLength());
+    PStringStream entityBody;
+    entityBody << "--" << boundary << "\r\n"
+               << part1 << "\r\n"
+               << file.ReadString(file.GetLength())
+               << "--" << boundary << "\r\n"
+               << part2
+               << "\r\n";
 
     // Send the POST request to the server
-    result = client.PostData( url, sendMIME, mimeThing, replyMIME );
+    PHTTPClient client;
+    PMIMEInfo replyMIME;
+    if (!client.PostData(url, sendMIME, entityBody, replyMIME)) {
+      PTRACE(1, "VXML\t<submit> to server failed with "
+          << client.GetLastResponseCode() << " "
+          << client.GetLastResponseInfo() );
+      return false;
+    }
 
     // TODO, Later:
     // Remove file?
@@ -2058,20 +2042,24 @@ PBoolean PVXMLSession::TraverseSubmit()
       return false;
     }
 
-    PString getURL = url + "?" + name + "=" + GetVar( name );
+    PURL getURL = url;
+    if (getURL.IsEmpty()) {
+      PTRACE(1, "VXML\t<submit> has invalid URL \"" << url << "\"");
+      return false;
+    }
+    getURL.SetQueryVar(name, GetVar(name));
 
-    client.GetDocument( url, sendMIME, replyMIME );
+    PString data;
+    if (!getURL.LoadResource(data)) {
+      PTRACE(1, "VXML\t<submit> to server failed.");
+      return false;
+    }
+
     // TODO, Later:
     // Load reply from server as new VXML document ala <goto>
   }
 
-  if (!result) {
-    PTRACE(1, "VXML\t<submit> to server failed with "
-        << client.GetLastResponseCode() << " "
-        << client.GetLastResponseInfo() );
-  }
-
-  return result;
+  return true;
 }
 
 

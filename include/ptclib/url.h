@@ -331,12 +331,14 @@ class PURL : public PObject
       */
     bool LoadResource(
       PString & data,  ///< Resource data as a string
-      const PString & requiredContentType = PString::Empty() ///< Expected content type where applicable
-    );
+      const PString & requiredContentType = PString::Empty(), ///< Expected content type where applicable
+      const PTimeInterval & timeout = PMaxTimeInterval        ///< Timeout to wait for resource
+    ) const;
     bool LoadResource(
       PBYTEArray & data,  ///< Resource data as a binary blob
-      const PString & requiredContentType = PString::Empty() ///< Expected content type where applicable
-    );
+      const PString & requiredContentType = PString::Empty(), ///< Expected content type where applicable
+      const PTimeInterval & timeout = PMaxTimeInterval        ///< Timeout to wait for resource
+    ) const;
 
     /**Open the URL in a browser.
 
@@ -467,8 +469,8 @@ class PURLLoader : public PObject
 {
   PCLASSINFO(PURLLoader, PObject);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType) = 0;
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType) = 0;
+    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType, const PTimeInterval & timeout) = 0;
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType, const PTimeInterval & timeout) = 0;
 };
 
 typedef PFactory<PURLLoader> PURLLoaderFactory;

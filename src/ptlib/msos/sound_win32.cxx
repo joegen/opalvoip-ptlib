@@ -1363,18 +1363,18 @@ PBoolean PSoundChannelWin32::Abort()
 
 PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
 {
-  PString str;
+  char str[256];
 
   if ((lastErrorNumber[group]&PWIN32ErrorFlag) == 0)
     return PChannel::GetErrorText(group);
 
   DWORD osError = lastErrorNumber[group]&~PWIN32ErrorFlag;
   if (direction == Recorder) {
-    if (waveInGetErrorText(osError, str.GetPointer(256), 256) != MMSYSERR_NOERROR)
+    if (waveInGetErrorText(osError, str, sizeof(str)) != MMSYSERR_NOERROR)
       return PChannel::GetErrorText(group);
   }
   else {
-    if (waveOutGetErrorText(osError, str.GetPointer(256), 256) != MMSYSERR_NOERROR)
+    if (waveOutGetErrorText(osError, str, sizeof(str)) != MMSYSERR_NOERROR)
       return PChannel::GetErrorText(group);
   }
 

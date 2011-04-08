@@ -73,10 +73,12 @@ static PString GetErrorString(HRESULT error)
 #endif
 
   PString text;
-  if (FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, 0, error, 0, text.GetPointer(256), 255, 0) != 0)
-    return text;
+  text.SetSize(1000);
+  if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, error, 0, text.GetPointerAndSetLength(0), text.GetSize(), 0) == 0)
+    return psprintf("Error code 0x%l08x", error);
 
-  return psprintf("Error code 0x%l08x", error);
+  text.MakeMinimumSize();
+  return text;
 }
 #endif
 

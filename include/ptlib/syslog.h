@@ -112,7 +112,7 @@ class PSystemLog : public PObject, public iostream
         virtual int_type underflow();
         virtual int sync();
         PSystemLog * m_log;
-        PString      m_string;
+        PCharArray   m_string;
     } m_buffer;
     friend class Buffer;
 

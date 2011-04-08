@@ -384,7 +384,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
   else
     *this += "PW";
   *this += "XXXXXX";
-  PAssert(_mktemp(GetPointer()) != NULL, "Could not make temporary file");
+  PAssert(_mktemp(theArray) != NULL, "Could not make temporary file");
 }
 
 
@@ -697,9 +697,11 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
       DWORD domainLen = 1000;
       SID_NAME_USE usage;
       if (LookupAccountSid(NULL, &ace->SidStart,
-                           account.GetPointer(1000), &accountLen,
-                           domain.GetPointer(1000), &domainLen,
+                           account.GetPointerAndSetLength(accountLen-1), &accountLen,
+                           domain.GetPointerAndSetLength(domainLen-1), &domainLen,
                            &usage)) {
+        account.MakeMinimumSize(accountLen);
+        domain.MakeMinimumSize(domainLen);
         if (account *= "None") {
           cygwinMask |= 2;
           TwiddleBits(newPermissions, oldPermissions, PFileInfo::WorldRead,
@@ -896,17 +898,8 @@ PBoolean PTextFile::IsTextFile() const
 
 PBoolean PTextFile::ReadLine(PString & str)
 {
-  char * ptr = str.GetPointer(100);
-  PINDEX len = 0;
-  int c;
-  while ((c = ReadChar()) >= 0 && c != '\n') {
-    *ptr++ = (char)c;
-    if (++len >= str.GetSize())
-      ptr = str.GetPointer(len + 100) + len;
-  }
-  *ptr = '\0';
-  PAssert(str.MakeMinimumSize(), POutOfMemory);
-  return c >= 0 || len > 0;
+  str.ReadFrom(*this);
+  return !str.IsEmpty();
 }
 
 

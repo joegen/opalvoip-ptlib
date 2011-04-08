@@ -205,7 +205,7 @@ void PBER_Stream::OctetStringEncode(const PASN_OctetString & value)
 
 PBoolean PASN_ConstrainedString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
-  return strm.BlockDecode((BYTE *)value.GetPointer(len+1), len) == len;
+  return strm.BlockDecode((BYTE *)value.GetPointerAndSetLength(len), len) == len;
 }
 
 

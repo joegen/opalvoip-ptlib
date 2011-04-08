@@ -164,11 +164,7 @@ PStringArray PFTPClient::GetDirectoryNames(const PString & path,
     return PStringArray();
 
   PString response = lastResponseInfo;
-  PString str;
-  int count = 0;
-  while(socket->Read(str.GetPointer(count+1000)+count, 1000))
-    count += socket->GetLastReadCount();
-  str.SetSize(count+1);
+  PString str = socket->ReadString(P_MAX_INDEX);
 
   delete socket;
   ReadResponse();
@@ -199,9 +195,7 @@ PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
   if (socket == NULL)
     return PString();
 
-  PString str;
-  socket->Read(str.GetPointer(200), 199);
-  str[socket->GetLastReadCount()] = '\0';
+  PString str = socket->ReadString(P_MAX_INDEX);
   delete socket;
   ReadResponse();
 
@@ -340,24 +334,29 @@ class PURL_FtpLoader : public PURLLoader
 {
     PCLASSINFO(PURL_FtpLoader, PURLLoader);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString &)
+    virtual bool Load(const PURL & url, PString & str, const PString &, const PTimeInterval & timeout)
     {
       PFTPClient ftp;
+      ftp.SetReadTimeout(timeout);
       PTCPSocket * socket = ftp.GetURL(url, PFTP::ASCII);
       if (socket == NULL)
         return false;
+
+      socket->SetReadTimeout(timeout);
       str = socket->ReadString(P_MAX_INDEX);
       delete socket;
       return true;
     }
 
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString &)
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString &, const PTimeInterval & timeout)
     {
       PFTPClient ftp;
+      ftp.SetReadTimeout(timeout);
       PTCPSocket * socket = ftp.GetURL(url, PFTP::Image);
       if (socket == NULL)
         return false;
 
+      socket->SetReadTimeout(timeout);
       static const PINDEX chunk = 10000;
       PINDEX total = 0;
       BYTE * ptr = data.GetPointer(chunk);

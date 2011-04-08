@@ -1920,20 +1920,22 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 #else
 # if defined(P_HAS_IPV6)
   if (m_version == 6) {
-    PString str;
+    char str[INET6_ADDRSTRLEN+3];
     Psockaddr sa(*this, 0);
-    PAssertOS(getnameinfo(sa, sa.GetSize(), str.GetPointer(1024), 1024, NULL, 0, NI_NUMERICHOST) == 0);
-    str.MakeMinimumSize();
-    if (bracketIPv6)
-      return '[' + str + ']';
+    PAssertOS(getnameinfo(sa, sa.GetSize(), &str[bracketIPv6], INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0);
+    if (bracketIPv6) {
+      str[0] = '[';
+      int len = strlen(str);
+      str[len++] = ']';
+      str[len] = '\0';
+    }
     return str;
   }
 #endif // P_HAS_IPV6
 # if defined(P_HAS_INET_NTOP)
-  PString str;
-  if (inet_ntop(AF_INET, (const void *)&m_v.m_four, str.GetPointer(INET_ADDRSTRLEN), INET_ADDRSTRLEN) == NULL)
+  char str[INET_ADDRSTRLEN+1];
+  if (inet_ntop(AF_INET, (const void *)&m_v.m_four, str, INET_ADDRSTRLEN) == NULL)
     return PString::Empty();
-  str.MakeMinimumSize();
   return str;
 # else
   static PCriticalSection x;

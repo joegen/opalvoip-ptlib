@@ -1367,8 +1367,8 @@ bool NT_ServiceManager::Create(PServiceProcess * svc)
     return false;
   }
 
-  PString binaryFilename;
-  GetShortPathName(svc->GetFile(), binaryFilename.GetPointer(_MAX_PATH), _MAX_PATH);
+  char binaryFilename[_MAX_PATH];
+  PINDEX fnlen = GetShortPathName(svc->GetFile(), binaryFilename, sizeof(binaryFilename));
   schService = CreateService(
                     schSCManager,                   // SCManager database
                     svc->GetName(),                 // name of service
@@ -1394,8 +1394,7 @@ bool NT_ServiceManager::Create(PServiceProcess * svc)
                                        svc->GetName(), &key)) != ERROR_SUCCESS)
     return false;
 
-  LPBYTE fn = (LPBYTE)(const char *)binaryFilename;
-  PINDEX fnlen = binaryFilename.GetLength()+1;
+  LPBYTE fn = (LPBYTE)binaryFilename;
   if ((error = RegSetValueEx(key, "EventMessageFile",
                              0, REG_EXPAND_SZ, fn, fnlen)) == ERROR_SUCCESS &&
       (error = RegSetValueEx(key, "CategoryMessageFile",

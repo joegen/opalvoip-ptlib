@@ -245,7 +245,7 @@ PBoolean XMPP::Stream::Write(const PXML& pdu)
 
   PStringStream os;
   root->Output(os, pdu, 0);
-  return Write(os.GetPointer(), os.GetLength());
+  return Write((const char *)os, os.GetLength());
 }
 
 
