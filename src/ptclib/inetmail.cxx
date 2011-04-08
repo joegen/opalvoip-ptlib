@@ -1296,7 +1296,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
 
     PStringStream hdr;
     hdr << ::setfill('\r') << headers;
-    if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
+    if (!PIndirectChannel::Write((const char *)hdr, hdr.GetLength()))
       return PFalse;
 
     if (base64 != NULL)
@@ -1312,7 +1312,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
     PStringStream hdr;
     hdr << "\n--"  << boundaries.front() << '\n'
         << ::setfill('\r') << partHeaders;
-    if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
+    if (!PIndirectChannel::Write((const char *)hdr, hdr.GetLength()))
       return PFalse;
 
     if (base64 != NULL)
@@ -1327,7 +1327,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
   else {
     base64->ProcessEncoding(buf, len);
     PString str = base64->GetEncodedString();
-    ok = PIndirectChannel::Write(str.GetPointer(), str.GetLength());
+    ok = PIndirectChannel::Write((const char *)str, str.GetLength());
   }
 
   // Always return the lastWriteCount as the number of bytes expected to be

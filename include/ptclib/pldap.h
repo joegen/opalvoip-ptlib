@@ -181,7 +181,7 @@ class PLDAPSession : public PObject
         virtual void SetLDAPModVars(struct ldapmod & mod);
 
         PStringArray values;
-        PBaseArray<char *> pointers;
+        PBaseArray<const char *> pointers;
     };
 
     class BinaryModAttrib : public ModAttrib {

@@ -219,9 +219,9 @@ void PLDAPSession::StringModAttrib::SetLDAPModVars(struct ldapmod & mod)
   pointers.SetSize(values.GetSize()+1);
   PINDEX i;
   for (i = 0; i < values.GetSize(); i++)
-    pointers[i] = values[i].GetPointer();
+    pointers[i] = values[i];
   pointers[i] = NULL;
-  mod.mod_values = pointers.GetPointer();
+  mod.mod_values = (char **)pointers.GetPointer();
 }
 
 

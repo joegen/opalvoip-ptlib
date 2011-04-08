@@ -271,32 +271,33 @@ void XMPP::C2S::StreamHandler::OnOpen(XMPP::Stream& stream, INT extra)
      server support the new XMPP protocol or it is an old jabber server
   */
   PString data;
-  PString buf;
   PINDEX beg = P_MAX_INDEX, end = P_MAX_INDEX;
 
   while(beg == P_MAX_INDEX || end == P_MAX_INDEX) {
-    if (!((PChannel&)stream).Read(buf.GetPointer(256), 255)) {
+    char buffer[256];
+    buffer[sizeof(buffer)-1] = '\0';
+    if (!((PChannel&)stream).Read(buffer, sizeof(buffer)-1)) {
       // Error!!!
       stream.Close();
       return;
     }
-    data += buf;
+    data += buffer;
   
     if (beg == P_MAX_INDEX)
       beg = data.Find("<stream:stream ");
     if (beg != P_MAX_INDEX)
       end = data.Find('>', beg);
     if (end != P_MAX_INDEX) {
-      buf = data.Mid(beg, end - beg + 1);
-      PINDEX v = buf.Find("version='");
+      PString str = data.Mid(beg, end - beg + 1);
+      PINDEX v = str.Find("version='");
 
       if (v == P_MAX_INDEX) {
         m_VersionMajor = 0;
         m_VersionMinor = 9;
       } else {
-        buf = buf.Mid(v + 9);
+        str = str.Mid(v + 9);
         int maj, min;
-        if (sscanf(buf.GetPointer(), "%d.%d", &maj, &min) != 2) {
+        if (sscanf(str, "%d.%d", &maj, &min) != 2) {
           m_VersionMajor = 0;
           m_VersionMinor = 9;
         } else {
