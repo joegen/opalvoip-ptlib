@@ -221,8 +221,9 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
   pos = deviceName.Find("Y=");
   int y = pos != P_MAX_INDEX ? atoi(&deviceName[pos+2]) : 100;
 
-  PString winpos(PString::Printf, "SDL_VIDEO_WINDOW_POS=%i,%i", x, y);
-  putenv(winpos.GetPointer());
+  char winpos[100];
+  snprintf(winpos, sizeof(winpos), "SDL_VIDEO_WINDOW_POS=%i,%i", x, y);
+  putenv(winpos);
 
   screen = ::SDL_SetVideoMode(frameWidth, frameHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
   if (screen == NULL) {
