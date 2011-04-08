@@ -1040,4 +1040,20 @@ PBoolean PFile::Copy(const PFilePath & oldname, const PFilePath & newname, PBool
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PTextFile
+
+PBoolean PTextFile::ReadLine(PString & str)
+{
+  str.ReadFrom(*this);
+  return !str.IsEmpty();
+}
+
+
+PBoolean PTextFile::WriteLine(const PString & str)
+{
+  return WriteString(str) && WriteChar('\n');
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
