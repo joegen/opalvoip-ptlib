@@ -570,7 +570,7 @@ void PProcess::PXOnSignal(int sig)
 #endif
     strm << "===============\n";
     m_activeThreadMutex.Signal();
-    fprintf(stderr, "%s", strm.GetPointer());
+    fprintf(stderr, "%s", (const char *)strm);
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(oldIgnore);
 #endif
