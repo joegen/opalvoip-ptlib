@@ -578,9 +578,8 @@ void PMIMEInfo::ReadFrom(istream &strm)
     }
   }
 
-  if (!lastLine.IsEmpty()) {
+  if (!lastLine.IsEmpty())
     AddMIME(lastLine);
-  }
 }
 
 

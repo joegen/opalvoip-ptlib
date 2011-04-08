@@ -119,18 +119,25 @@ class PString : public PCharArray
     /**Construct an empty string. This will have one character in it which is
        the '\\0' character.
      */
-    PINLINE PString();
+    PString();
 
     /**Create a new reference to the specified string. The string memory is not
        copied, only the pointer to the data.
      */
-    PINLINE PString(
+    PString(
       const PString & str  ///< String to create new reference to.
+    );
+
+    /**Create a new reference to the specified buffer. The string memory is not
+       copied, only the pointer to the data.
+     */
+    PString(
+      const PCharArray & buf  ///< Buffer to create new reference to.
     );
 
     /**Create a new string from the specified std::string
      */
-    PINLINE PString(
+    PString(
       const std::string & str
     );
 
@@ -428,7 +435,7 @@ class PString : public PCharArray
 
     /**Return an empty string.
       */
-    static PString Empty();
+    static const PString & Empty();
   //@}
 
   /**@name Overrides from class PObject */
@@ -532,10 +539,15 @@ class PString : public PCharArray
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
 
+       Also, this will ignore the m_length variable and redetermine the length
+       of teh string using strlen(), resetting the m_length.
+
        @return
-       true if new memory block successfully allocated.
+       true if new memory block successfully re-allocated.
      */
-    PBoolean MakeMinimumSize();
+    bool MakeMinimumSize(
+      PINDEX newLength = 0  /// New length for string, if zero strlen is used
+    );
 
     /**Determine the length of the null terminated string. This is different
        from <code>PContainer::GetSize()</code> which returns the amount of memory
@@ -545,7 +557,7 @@ class PString : public PCharArray
        @return
        length of the null terminated string.
      */
-    PINLINE PINDEX GetLength() const;
+    virtual PINDEX GetLength() const { return m_length; }
 
     /**Determine if the string is NOT empty. This is semantically identical
        to executing !IsEmpty() on the string.
@@ -1622,6 +1634,31 @@ class PString : public PCharArray
       */
     operator std::string () const
     { return std::string(theArray); }
+
+    /**Get a pointer to the buffer and set the length of the string.
+       Note the caller may require the actual length to be less than the len
+       parameter, in which case the MakeMinimumSize() function should be
+       called immediately afterward.
+
+       Example 1:
+       <CODE>
+          PString str;
+          memcpy(str.GetPointerAndSetLength(len), someData, len);
+       </CODE>
+
+       Example 2:
+       <CODE>
+          PString str;
+          str.SetMinSize(1000);
+          str.MakeMinimumSize(SomeFunction(str.GetPointerAndSetLength(0), str.GetSize()));
+       </CODE>
+
+       Note the old GetPointer() is deliberately made private to assure the
+       new semantics are used.
+      */
+    char * GetPointerAndSetLength(
+      PINDEX len    /// New Length
+    );
   //@}
 
 
@@ -1648,7 +1685,18 @@ class PString : public PCharArray
      */
     PString(int dummy, const PString * str);
 
-    PString(PContainerReference & reference) : PCharArray(reference) { }
+    virtual void AssignContents(const PContainer &);
+    PString(PContainerReference & reference, PINDEX len)
+      : PCharArray(reference)
+      , m_length(len)
+      { }
+
+  private:
+    // Use of this function can invalidate m_length, so make sure it isn't used.
+    virtual char * GetPointer(PINDEX minSize) { return PCharArray::GetPointer(minSize); }
+
+  protected:
+    mutable PINDEX m_length; // Length of the string, always at least one less than GetSize()
 };
 
 
@@ -1811,11 +1859,15 @@ class PCaselessString : public PString
      */
 
     PCaselessString(int dummy, const PCaselessString * str);
-    PCaselessString(PContainerReference & reference) : PString(reference) { }
+    PCaselessString(PContainerReference & reference, PINDEX len) : PString(reference, len) { }
 };
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
 
 /**Create a constant string.
    This is used to create a PString wrapper around a constant char string. Thus
@@ -1837,8 +1889,8 @@ class PConstantString : public ParentString
     PContainerReference m_staticReference;
   public:
     PConstantString(typename ParentString::Initialiser init)
-      : ParentString(m_staticReference)
-      , m_staticReference((PINDEX)strlen(init)+1, true)
+      : ParentString(m_staticReference, strlen(PAssertNULL(init)))
+      , m_staticReference(this->m_length+1, true)
     {
       this->theArray = (char *)init;
     }
@@ -1856,6 +1908,9 @@ class PConstantString : public ParentString
     void operator=(const PConstantString &) { }
 };
 
+#ifdef _MSC_VER
+#pragma warning(default:4355)
+#endif
 
 /// Constant PString type. See PConstantString.
 typedef PConstantString<PString>         PConstString;
@@ -1866,8 +1921,6 @@ typedef PConstantString<PCaselessString> PConstCaselessString;
 
 
 //////////////////////////////////////////////////////////////////////////////
-
-class PStringStream;
 
 /**This class is a standard C++ stream class descendent for reading or writing
    streamed data to or from a <code>PString</code> class.
@@ -1912,6 +1965,9 @@ class PStringStream : public PString, public iostream
     PStringStream(
       const char * cstr   ///< Initial value for the string stream.
     );
+
+    /// Destroy the string stream, deleting the stream buffer
+    virtual ~PStringStream();
 
     /**Make the current string empty
       */
@@ -1978,10 +2034,7 @@ class PStringStream : public PString, public iostream
       char ch            ///< Character to assign.
     );
 
-
-    /// Destroy the string stream, deleting the stream buffer
-    virtual ~PStringStream();
-
+    virtual PINDEX GetLength() const;
 
   protected:
     virtual void AssignContents(const PContainer & cont);
@@ -1999,8 +2052,8 @@ class PStringStream : public PString, public iostream
         virtual int sync();
         virtual pos_type seekoff(off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
         virtual pos_type seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out);
-        PStringStream & string;
-        PBoolean            fixedBufferSize;
+        PCharArray & string;
+        PBoolean     fixedBufferSize;
     };
 };
 

@@ -116,9 +116,8 @@ static void PWIN32GetLocaleInfo(LCID Locale,LCTYPE LCType,LPSTR lpLCData,int cch
 
 PString PTime::GetTimeSeparator()
 {
-  PString str;
-  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_STIME, str.GetPointer(100), 99);
-  str.MakeMinimumSize();
+  char str[100];
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_STIME, str, sizeof(str));
   return str;
 }
 
@@ -133,50 +132,45 @@ PBoolean PTime::GetTimeAMPM()
 
 PString PTime::GetTimeAM()
 {
-  PString str;
-  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S1159, str.GetPointer(100), 99);
-  str.MakeMinimumSize();
+  char str[100];
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S1159, str, sizeof(str));
   return str;
 }
 
 
 PString PTime::GetTimePM()
 {
-  PString str;
-  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S2359, str.GetPointer(100), 99);
-  str.MakeMinimumSize();
+  char str[100];
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S2359, str, sizeof(str));
   return str;
 }
 
 
 PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 {
-  PString str;
+  char str[100];
   // Of course Sunday is 6 and Monday is 1...
-  PWIN32GetLocaleInfo(GetUserDefaultLCID(), (dayOfWeek+6)%7 +
-          (type == Abbreviated ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1),
-          str.GetPointer(100), 99);
-  str.MakeMinimumSize();
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(),
+                      (dayOfWeek+6)%7 + (type == Abbreviated ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1),
+                      str, sizeof(str));
   return str;
 }
 
 
 PString PTime::GetDateSeparator()
 {
-  PString str;
-  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_SDATE, str.GetPointer(100), 99);
-  str.MakeMinimumSize();
+  char str[100];
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_SDATE, str, sizeof(str));
   return str;
 }
 
 
 PString PTime::GetMonthName(Months month, NameType type)
 {
-  PString str;
-  PWIN32GetLocaleInfo(GetUserDefaultLCID(), month-1 +
-      (type == Abbreviated ? LOCALE_SABBREVMONTHNAME1 : LOCALE_SMONTHNAME1),
-      str.GetPointer(100), 99);
-  str.MakeMinimumSize();
+  char str[100];
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(),
+                      month-1 + (type == Abbreviated ? LOCALE_SABBREVMONTHNAME1 : LOCALE_SMONTHNAME1),
+                      str, sizeof(str));
   return str;
 }
 
@@ -363,9 +357,9 @@ PString PDirectory::CreateFullPath(const PString & path, PBoolean isDirectory)
     partialpath.Delete(0, 1);
 
   LPSTR dummy;
+  PINDEX len = (PINDEX)GetFullPathName(partialpath, 0, NULL, &dummy)-1;
   PString fullpath;
-  PINDEX len = (PINDEX)GetFullPathName(partialpath,
-                           _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
+  GetFullPathName(partialpath, len+1, fullpath.GetPointerAndSetLength(len), &dummy);
 #endif
   if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
     fullpath += PDIR_SEPARATOR;
@@ -1428,10 +1422,11 @@ PDirectory PProcess::GetOSConfigDir()
 
 PString PProcess::GetUserName() const
 {
-  PString username;
 #ifndef _WIN32_WCE
-  unsigned long size = 50;
-  ::GetUserName(username.GetPointer((PINDEX)size), &size);
+  char username[100];
+  DWORD size = sizeof(username);
+  ::GetUserName(username, &size);
+  return PString(username, size);
 #else
   TCHAR wcsuser[50] = {0};
   HKEY hKeyComm, hKeyIdent;
@@ -1450,10 +1445,8 @@ PString PProcess::GetUserName() const
       wcscat( wcsuser, _T(" user") ); // like "Pocket_PC User"
   }
   
-  username = wcsuser;
+  return wcsuser;
 #endif
-  username.MakeMinimumSize();
-  return username;
 }
 
 
@@ -1707,20 +1700,15 @@ PString PDynaLink::GetName(PBoolean full) const
 {
   PFilePathString str;
   if (m_hDLL != NULL) {
-#ifdef UNICODE
     TCHAR path[_MAX_PATH];
     GetModuleFileName(m_hDLL, path, _MAX_PATH-1);
     str = PString(path);
-#else
-    GetModuleFileName(m_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
-#endif
     if (!full) {
       str.Delete(0, str.FindLast('\\')+1);
       PINDEX pos = str.Find(".DLL");
       if (pos != P_MAX_INDEX)
         str.Delete(pos, P_MAX_INDEX);
     }
-    str.MakeMinimumSize();
   }
   return str;
 }

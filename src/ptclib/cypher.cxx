@@ -53,16 +53,16 @@ PBase64::PBase64()
 
 void PBase64::StartEncoding(bool useCRLF)
 {
-  encodedString = "";
-  encodeLength = nextLine = saveCount = 0;
+  encodedString.MakeEmpty();
+  nextLine = saveCount = 0;
   endOfLine = useCRLF ? "\r\n" : "\n";
 }
 
 
 void PBase64::StartEncoding(const char * eol)
 {
-  encodedString = "";
-  encodeLength = nextLine = saveCount = 0;
+  encodedString.MakeEmpty();
+  nextLine = saveCount = 0;
   endOfLine = eol;
 }
 
@@ -90,17 +90,17 @@ static const char Binary2Base64[65] =
 
 void PBase64::OutputBase64(const BYTE * data)
 {
-  char * out = encodedString.GetPointer(((encodeLength+7)&~255) + 256);
+  encodedString.SetMinSize(((encodedString.GetLength()+7)&~255) + 256);
 
-  out[encodeLength++] = Binary2Base64[data[0] >> 2];
-  out[encodeLength++] = Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
-  out[encodeLength++] = Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
-  out[encodeLength++] = Binary2Base64[data[2]&0x3f];
+  encodedString += Binary2Base64[data[0] >> 2];
+  encodedString += Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
+  encodedString += Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
+  encodedString += Binary2Base64[data[2]&0x3f];
 
   PINDEX len = endOfLine.GetLength();
   if (++nextLine > (76-len)/4) {
     for (PINDEX i = 0; i < len; ++i)
-      out[encodeLength++] = endOfLine[i];
+      encodedString += endOfLine[i];
     nextLine = 0;
   }
 }
@@ -144,29 +144,28 @@ void PBase64::ProcessEncoding(const void * dataPtr, PINDEX length)
 PString PBase64::GetEncodedString()
 {
   PString retval = encodedString;
-  encodedString = "";
-  encodeLength = 0;
+  encodedString.MakeEmpty();
   return retval;
 }
 
 
 PString PBase64::CompleteEncoding()
 {
-  char * out = encodedString.GetPointer(encodeLength + 5)+encodeLength;
+  encodedString.SetMinSize(encodedString.GetLength() + 5);
 
   switch (saveCount) {
     case 1 :
-      *out++ = Binary2Base64[saveTriple[0] >> 2];
-      *out++ = Binary2Base64[(saveTriple[0]&3)<<4];
-      *out++ = '=';
-      *out   = '=';
+      encodedString += Binary2Base64[saveTriple[0] >> 2];
+      encodedString += Binary2Base64[(saveTriple[0]&3)<<4];
+      encodedString += '=';
+      encodedString += '=';
       break;
 
     case 2 :
-      *out++ = Binary2Base64[saveTriple[0] >> 2];
-      *out++ = Binary2Base64[((saveTriple[0]&3)<<4) | (saveTriple[1]>>4)];
-      *out++ = Binary2Base64[((saveTriple[1]&15)<<2)];
-      *out   = '=';
+      encodedString += Binary2Base64[saveTriple[0] >> 2];
+      encodedString += Binary2Base64[((saveTriple[0]&3)<<4) | (saveTriple[1]>>4)];
+      encodedString += Binary2Base64[((saveTriple[1]&15)<<2)];
+      encodedString += '=';
   }
 
   return encodedString;
@@ -885,7 +884,7 @@ PBoolean PCypher::Decode(const PString & cypher, PString & clear)
     return PTrue;
 
   PINDEX sz = clearText.GetSize();
-  memcpy(clear.GetPointer(sz+1), (const BYTE *)clearText, sz);
+  memcpy(clear.GetPointerAndSetLength(sz), (const BYTE *)clearText, sz);
   return PTrue;
 }
 

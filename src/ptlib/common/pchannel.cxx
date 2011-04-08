@@ -251,23 +251,15 @@ PString PChannel::ReadString(PINDEX len)
   PString str;
 
   if (len == P_MAX_INDEX) {
-    PINDEX l = 0;
     for (;;) {
-      char * p = l + str.GetPointer(l+1000+1);
-      if (!Read(p, 1000))
+      char chunk[1000];
+      if (!Read(chunk, sizeof(chunk)))
         break;
-      l += lastReadCount;
+      str += PString(chunk, lastReadCount);
     }
-    str.SetSize(l+1);
-
-    /*Need to put in a null at the end to allow for MSDOS/Win32 text files
-      which returns fewer bytes than actually read as it shrinks the data into
-      the removed carriage returns, so it actually changes the buffer beyond
-      what it indicated. */
-    str[l] = '\0';
   }
   else {
-    if (!ReadBlock(str.GetPointer(len+1), len))
+    if (!ReadBlock(str.GetPointerAndSetLength(len), len))
       return PString::Empty();
   }
 

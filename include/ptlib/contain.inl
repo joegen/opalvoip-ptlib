@@ -53,24 +53,6 @@ PINLINE PBoolean PContainer::IsUnique() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PString::PString()
-  : PCharArray(1) { }
-
-PINLINE PString::PString(const PString & str)
-  : PCharArray(str) { }
-
-PINLINE PString::PString(int, const PString * str)
-  : PCharArray(*str) { }
-
-PINLINE PString::PString(const std::string & str)
-  : PCharArray(PString(str.c_str())) { }
-
-PINLINE PString::PString(char c)
-  : PCharArray(2) { SetAt(0, c); }
-
-PINLINE PString PString::Empty()
-  { return PString(); }
-
 PINLINE PString & PString::operator=(const PString & str)
   { AssignContents(str); return *this; }
 
@@ -79,12 +61,6 @@ PINLINE PString & PString::operator=(const char * cstr)
 
 PINLINE PString & PString::operator=(char ch)
   { AssignContents(PString(ch)); return *this; }
-
-PINLINE PBoolean PString::MakeMinimumSize()
-  { return SetSize(GetLength()+1); }
-
-PINLINE PINDEX PString::GetLength() const
-  { return strlen(theArray); }
 
 PINLINE bool PString::operator!() const
   { return !IsEmpty(); }
@@ -167,8 +143,7 @@ PINLINE PINDEX PString::FindSpan(const PString & str, PINDEX offset) const
 PINLINE void PString::Splice(const PString & str, PINDEX pos, PINDEX len)
   { Splice((const char *)str, pos, len); }
 
-PINLINE PStringArray
-      PString::Tokenise(const PString & separators, PBoolean onePerSeparator) const
+PINLINE PStringArray PString::Tokenise(const PString & separators, PBoolean onePerSeparator) const
   { return Tokenise((const char *)separators, onePerSeparator); }
 
 PINLINE PString::operator const unsigned char *() const

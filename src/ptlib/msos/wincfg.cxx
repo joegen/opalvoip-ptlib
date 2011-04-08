@@ -300,27 +300,12 @@ BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
   if (key == NULL)
     return PFalse;
 
-#ifndef _WIN32_WCE
-  if( RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
+  TCHAR buffer[_MAX_PATH];
+  if (RegEnumKey(key, idx, buffer, sizeof(buffer)) != ERROR_SUCCESS)
+    return false;
 
-#else // CE has only Unicode based API
-  WCHAR wcsKey[MAX_PATH] = {0};
-
-  LONG lResult = RegEnumKey(key, idx, wcsKey, MAX_PATH);
-  int size = wcslen(wcsKey);
-  if( size )
-  {
-	wcstombs( (char*) str.GetPointer(size), wcsKey, size );
-	str.SetSize(size + 1);
-	str.SetAt(size, 0);
-  }
-
-  if( lResult != ERROR_SUCCESS )
-#endif
-    return PFalse;
-
-  str.MakeMinimumSize();
-  return PTrue;
+  str = buffer;
+  return true;
 }
 
 
@@ -329,30 +314,13 @@ BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
   if (key == NULL)
     return PFalse;
 
-  DWORD sizeofname = MAX_PATH;
-#ifndef _WIN32_WCE
-  if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
-                         &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+  TCHAR buffer[_MAX_PATH];
+  DWORD size = _MAX_PATH;
+  if (RegEnumValue(key, idx, buffer, &size, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+    return false;
 
-#else  // CE has only Unicode based API
-  WCHAR wcsValue[MAX_PATH] = {0};
-
-  LONG lResult = RegEnumValue(key, idx, wcsValue,
-                         &sizeofname, NULL, NULL, NULL, NULL);
-  sizeofname = wcslen(wcsValue);
-  if( sizeofname )
-  {
-	wcstombs( (char*) str.GetPointer(sizeofname), wcsValue, sizeofname );
-	str.SetSize(sizeofname + 1);
-	str.SetAt(sizeofname, 0);
-  }
-
-  if( lResult != ERROR_SUCCESS )
-#endif
-    return PFalse;
-
-  str.MakeMinimumSize();
-  return PTrue;
+  str = buffer;
+  return true;
 }
 
 
@@ -402,8 +370,11 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
     case REG_EXPAND_SZ :
     case REG_BINARY :
 #ifndef _WIN32_WCE
-      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                  &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
+      return RegQueryValueEx(key,
+                             (char *)(const char *)value, NULL,
+                             &type,
+                             (LPBYTE)str.GetPointerAndSetLength(size),
+                             &size) == ERROR_SUCCESS;
 #else  
 	{
 		// WINCE strings are Unicode
@@ -484,9 +455,9 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
       return RegQueryValueEx(key, valueName, NULL, &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
 
     case REG_SZ : {
-      PVarString vstr;
-      if (RegQueryValueEx(key, valueName, NULL, &type, (LPBYTE)vstr.GetPointer(size), &size) == ERROR_SUCCESS) {
-        PString str = vstr;
+      TCHAR buffer[100];
+      if (RegQueryValueEx(key, valueName, NULL, &type, (LPBYTE)buffer, &size) == ERROR_SUCCESS) {
+        PString str = buffer;
         num = str.AsInteger();
         if (num == 0 && boolean) {
           int c = toupper(str[0]);
@@ -575,9 +546,9 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
       if (IsRegistryPath(appname))
         location = appname;
       else {
-        PString dir;
-        GetWindowsDirectory(dir.GetPointer(_MAX_PATH), _MAX_PATH);
-        Construct(PDirectory(dir)+"WIN.INI");
+        TCHAR dir[_MAX_PATH];
+        GetWindowsDirectory(dir, sizeof(dir));
+        Construct(PDirectory(PString(dir))+"WIN.INI");
       }
       break;
 
@@ -637,12 +608,12 @@ static void RecurseRegistryKeys(const PString & location,
 }
 
 
-static PString PGetPrivateProfileString(const char * lpAppName,
-                                        const char * lpKeyName,
-                                        const char * lpDefault,
-                                        const char * lpFileName)
+static PCharArray PGetPrivateProfileString(const char * lpAppName,
+                                           const char * lpKeyName,
+                                           const char * lpDefault,
+                                           const char * lpFileName)
 {
-  PString buffer;
+  PCharArray buffer;
 
   DWORD numNulls = lpAppName != NULL && lpKeyName != NULL ? 1 : 2;
   DWORD size = 100;
@@ -666,7 +637,7 @@ PStringArray PConfig::GetSections() const
       break;
 
     case NumSources :
-      PString buffer = PGetPrivateProfileString(NULL, NULL, "", location);
+      PCharArray buffer = PGetPrivateProfileString(NULL, NULL, "", location);
       char * ptr = buffer.GetPointer();
       while (*ptr != '\0') {
         sections.AppendString(ptr);
@@ -704,7 +675,7 @@ PStringArray PConfig::GetKeys(const PString & section) const
 
     case NumSources :
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      PString buffer = PGetPrivateProfileString(section, NULL, "", location);
+      PCharArray buffer = PGetPrivateProfileString(section, NULL, "", location);
       char * ptr = buffer.GetPointer();
       while (*ptr != '\0') {
         keys.AppendString(ptr);
@@ -806,7 +777,7 @@ PString PConfig::GetString(const PString & section,
 
     case NumSources :
       PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
-      str = PGetPrivateProfileString(section, key, dflt, location);
+      str = PString(PGetPrivateProfileString(section, key, dflt, location));
       str.MakeMinimumSize();
   }
 

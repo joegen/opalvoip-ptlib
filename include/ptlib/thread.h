@@ -414,7 +414,7 @@ class PThread : public PObject
 #endif
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(disable:4355 4121)
 #endif
 
 /** Define some templates to simplify the declaration
@@ -794,7 +794,7 @@ class PThreadLocalStorage
 
 
 #ifdef _MSC_VER
-#pragma warning(default:4355)
+#pragma warning(default:4355 4121)
 #endif
 
 #endif // PTLIB_THREAD_H

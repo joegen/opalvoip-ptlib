@@ -915,15 +915,17 @@ class PURL_HttpLoader : public PURLLoader
 {
     PCLASSINFO(PURL_HttpLoader, PURLLoader);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType)
+    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType, const PTimeInterval & timeout)
     {
       PHTTPClient http;
+      http.SetReadTimeout(timeout);
       return http.GetTextDocument(url, str, requiredContentType);
     }
 
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType)
+    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType, const PTimeInterval & timeout)
     {
       PHTTPClient http;
+      http.SetReadTimeout(timeout);
       PMIMEInfo outMIME, replyMIME;
       if (!http.GetDocument(url, outMIME, replyMIME))
         return false;

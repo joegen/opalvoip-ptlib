@@ -524,7 +524,7 @@ PBoolean PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
   if (constraint == Unconstrained ||
             (lowerLimit == (int)upperLimit ? (totalBits > 16) : (totalBits >= 16))) {
     if (nBits == 8)
-      return strm.BlockDecode((BYTE *)value.GetPointer(len+1), len) == len;
+      return strm.BlockDecode((BYTE *)value.GetPointerAndSetLength(len), len) == len;
     if (strm.IsAligned())
       strm.ByteAlign();
   }

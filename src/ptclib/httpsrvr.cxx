@@ -356,16 +356,12 @@ PString PHTTPServer::ReadEntityBody()
   // a content length of > 0 means read explicit length
   // a content length of < 0 means read until EOF
   // a content length of 0 means read nothing
-  int count = 0;
-  if (contentLength > 0) {
+  if (contentLength > 0)
     entityBody = ReadString((PINDEX)contentLength);
-  } else if (contentLength == -2) {
-    ReadLine(entityBody, PFalse);
-  } else if (contentLength < 0) {
-    while (Read(entityBody.GetPointer(count+1000)+count, 1000))
-      count += GetLastReadCount();
-    entityBody.SetSize(count+1);
-  }
+  else if (contentLength == -2)
+    ReadLine(entityBody, false);
+  else if (contentLength < 0)
+    entityBody = ReadString(P_MAX_INDEX);
 
   // close the connection, if not persistent
   if (!connectInfo.IsPersistent()) {
@@ -1205,7 +1201,7 @@ PBoolean PHTTPResource::LoadData(PHTTPRequest & request, PCharArray & data)
   PString text = LoadText(request);
   OnLoadedText(request, text);
   if(data.SetSize(text.GetLength()))
-    memcpy(data.GetPointer(), text.GetPointer(), text.GetLength()); // Lose the trailing '\0'
+    memcpy(data.GetPointer(), (const char *)text, text.GetLength()); // Lose the trailing '\0'
   return PFalse;
 }
 
@@ -1412,13 +1408,12 @@ PBoolean PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
 
 PString PHTTPFile::LoadText(PHTTPRequest & request)
 {
-  PFile & file = ((PHTTPFileRequest&)request).file;
-  PAssert(file.IsOpen(), PLogicError);
-  PINDEX count = file.GetLength();
   PString text;
-  if (count > 0)
-    PAssert(file.Read(text.GetPointer(count+1), count), PLogicError);
-  PAssert(file.Close(), PLogicError);
+  PFile & file = ((PHTTPFileRequest&)request).file;
+  if (PAssert(file.IsOpen(), PLogicError)) {
+    text = file.ReadString(file.GetLength());
+    PAssert(file.Close(), PLogicError);
+  }
   return text;
 }
 
