@@ -53,7 +53,18 @@ SUBDIRS += plugins
 endif
 
 ifeq (1, $(HAS_SAMPLES))
-SUBDIRS += samples/hello_world
+SUBDIRS += samples/hello_world \
+           samples/dnstest \
+           samples/httptest \
+           samples/ipv6test \
+           samples/find_ip \
+           samples/map_dict \
+           samples/netif \
+           samples/sockbundle \
+           samples/stunclient \
+           samples/thread \
+           samples/url \
+           samples/vcard
 endif
 
 ifeq ($(OSTYPE),mingw)
