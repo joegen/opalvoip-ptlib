@@ -896,19 +896,6 @@ PBoolean PTextFile::IsTextFile() const
 }
 
 
-PBoolean PTextFile::ReadLine(PString & str)
-{
-  str.ReadFrom(*this);
-  return !str.IsEmpty();
-}
-
-
-PBoolean PTextFile::WriteLine(const PString & str)
-{
-  return WriteString(str) && WriteChar('\n');
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PConsoleChannel
 

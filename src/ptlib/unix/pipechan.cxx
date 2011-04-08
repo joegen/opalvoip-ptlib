@@ -220,11 +220,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // setup the arguments, not as we are about to execl or exit, we don't
   // care about memory leaks, they are not real!
-  char ** args = (char **)calloc(argumentList.GetSize()+2, sizeof(char *));
-  args[0] = strdup(subProgName.GetTitle());
-  PINDEX i;
-  for (i = 0; i < argumentList.GetSize(); i++) 
-    args[i+1] = strdup(argumentList[i].GetPointer());
+  char ** args = argumentList.ToCharArray();
 
   // run the program
   execve(subProgram, args, exec_environ);
@@ -471,7 +467,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
   int available;
   if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
     if (available != 0)
-      status = PChannel::Read(errors.GetPointer(available+1), available);
+      status = PChannel::Read(errors.GetPointerAndSetLength(available+1), available);
     else if (wait) {
       char firstByte;
       status = PChannel::Read(&firstByte, 1);
@@ -479,7 +475,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
         errors = firstByte;
         if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
           if (available != 0)
-            status = PChannel::Read(errors.GetPointer(available+2)+1, available);
+            status = PChannel::Read(errors.GetPointerAndSetLength(available+2)+1, available);
         }
       }
     }

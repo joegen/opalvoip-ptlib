@@ -200,17 +200,16 @@ int PX_NewHandle(const char * clsName, int fd)
 }
 
 
-static PString CanonicaliseDirectory (const PString & path)
-
+static PString CanonicaliseDirectory(const PString & path)
 {
   PString canonical_path;
 
   if (path[0] == '/')
     canonical_path = '/';
   else {
-    char *p = getcwd(canonical_path.GetPointer(P_MAX_PATH), P_MAX_PATH);
-    PAssertOS (p != NULL);
-
+    canonical_path.SetSize(P_MAX_PATH);
+    PAssertOS(getcwd(canonical_path.GetPointerAndSetLength(0), canonical_path.GetSize()) != NULL);
+    canonical_path.MakeMinimumSize();
     // if the path doesn't end in a slash, add one
     if (canonical_path[canonical_path.GetLength()-1] != '/')
       canonical_path += '/';
@@ -240,8 +239,8 @@ static PString CanonicaliseDirectory (const PString & path)
       PINDEX last_char = canonical_path.GetLength()-1;
       if (last_char > 0)
         canonical_path = canonical_path.Left(canonical_path.FindLast('/', last_char-1)+1);
-    } else if (element == "." || element == "") {
-    } else {
+    }
+    else if (element != "." && element != "") {
       canonical_path += element;
       canonical_path += '/';
     }
@@ -947,29 +946,6 @@ PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
 #endif // P_VXWORKS
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// PTextFile
-
-PBoolean PTextFile::WriteLine(const PString & str)
-{
-  return WriteString(str) && WriteChar('\n');
-}
-
-PBoolean PTextFile::ReadLine (PString & str)
-
-{
-  char * ptr = str.GetPointer(100);
-  PINDEX len = 0;
-  int c;
-  while ((c = ReadChar()) >= 0 && c != '\n') {
-    *ptr++ = (char)c;
-    if (++len >= str.GetSize())
-      ptr = str.GetPointer(len + 100) + len;
-  }
-  *ptr = '\0';
-  PAssert(str.MakeMinimumSize(), POutOfMemory);
-  return c >= 0 || len > 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFilePath
