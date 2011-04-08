@@ -119,6 +119,11 @@ PBoolean PLDAPSession::SetOption(int optcode, void * value)
   return ldap_set_option(ldapContext, optcode, value);
 }
 
+PBoolean PLDAPSession::StartTLS()
+{
+  errorNumber = ldap_start_tls_s(ldapContext, NULL, NULL);
+  return errorNumber == LDAP_SUCCESS;
+}
 
 PBoolean PLDAPSession::Bind(const PString & who,
                         const PString & passwd,
