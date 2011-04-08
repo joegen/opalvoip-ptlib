@@ -355,14 +355,11 @@ bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
     return false;
   }
 
-  off_t len = file.GetLength();
-  PString data;
-  if (!file.Read(data.GetPointer(len + 1), len)) {
+  PString data= file.ReadString(file.GetLength());
+  if (data.IsEmpty()) {
     m_errorString << "File read error " << file.GetErrorText();
     return false;
   }
-
-  data[(PINDEX)len] = '\0';
 
   return Load(data);
 }
@@ -387,50 +384,13 @@ bool PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, PXMLParser::
   PTRACE(4, "XML\tLoading URL " << url);
 
   PString data;
-  if (url.GetScheme() == "file") 
-    return LoadFile(url.AsFilePath());
+  if (url.LoadResource(data, PString::Empty(), timeout))
+    return Load(data, options);
 
-  PHTTPClient client;
-  PINDEX contentLength;
-  PMIMEInfo outMIME, replyMIME;
-
-  // make sure we do not hang around for ever
-  client.SetReadTimeout(timeout);
-
-  // get the resource header information
-  if (!client.GetDocument(url, outMIME, replyMIME)) {
-    m_errorString = "Cannot load URL ";
-    m_errorLine = m_errorColumn = 0;
-    m_errorString << '"' << url << '"';
-    return false;
-  }
-
-  // get the length of the data
-  if (replyMIME.Contains(PHTTPClient::ContentLengthTag()))
-    contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag()].AsUnsigned();
-  else
-    contentLength = P_MAX_INDEX;
-
-  // download the resource into memory
-  PINDEX offs = 0;
-  for (;;) {
-    PINDEX len;
-    if (contentLength == P_MAX_INDEX)
-      len = CACHE_BUFFER_SIZE;
-    else if (offs == contentLength)
-      break;
-    else
-      len = PMIN(contentLength = offs, CACHE_BUFFER_SIZE);
-
-    if (!client.Read(offs + data.GetPointer(offs + len), len))
-      break;
-
-    len = client.GetLastReadCount();
-
-    offs += len;
-  }
-
-  return Load(data, options);
+  m_errorString = "Cannot load URL ";
+  m_errorLine = m_errorColumn = 0;
+  m_errorString << '"' << url << '"';
+  return false;
 }
 
 
@@ -1561,11 +1521,11 @@ PString EscapeSpecialChars(const PString & str)
 #endif
 {
   // code based on appendix from http://www.hdfgroup.org/HDF5/XML/xml_escape_chars.htm
-  static const char * quote = "&quot;";
-  static const char * apos  = "&apos;";
-  static const char * amp   = "&amp;";
-  static const char * lt    = "&lt;";
-  static const char * gt    = "&gt;";
+  static const char quote[] = "&quot;";
+  static const char apos[]  = "&apos;";
+  static const char amp[]   = "&amp;";
+  static const char lt[]    = "&lt;";
+  static const char gt[]    = "&gt;";
 
   if (str.IsEmpty())
     return str;
@@ -1577,15 +1537,15 @@ PString EscapeSpecialChars(const PString & str)
   int i;
   for (i = 0; i < len; i++) {
     if (*cp == '\"')
-      extra += (strlen(quote) - 1);
+      extra += (sizeof(quote) - 2);
     else if (*cp == '\'')
-      extra += (strlen(apos) - 1);
+      extra += (sizeof(apos) - 2);
     else if (*cp == '<')
-      extra += (strlen(lt) - 1);
+      extra += (sizeof(lt) - 2);
     else if (*cp == '>')
-      extra += (strlen(gt) - 1);
+      extra += (sizeof(gt) - 2);
     else if (*cp == '&')
-      extra += (strlen(amp) - 1);
+      extra += (sizeof(amp) - 2);
     cp++;
   }
 
@@ -1593,35 +1553,30 @@ PString EscapeSpecialChars(const PString & str)
     return str;
 
   PString rstring;
-  char * ncp = rstring.GetPointer(len+extra+1);
+  rstring.SetSize(len+extra+1);
 
   cp = (const char *)str;
-  for (i = 0; i < len; i++) {
-    if (*cp == '\'') {
-      strncpy(ncp,apos,strlen(apos));
-      ncp += strlen(apos);
-      cp++;
-    } else if (*cp == '<') {
-      strncpy(ncp,lt,strlen(lt));
-      ncp += strlen(lt);
-      cp++;
-    } else if (*cp == '>') {
-      strncpy(ncp,gt,strlen(gt));
-      ncp += strlen(gt);
-      cp++;
-    } else if (*cp == '\"') {
-      strncpy(ncp,quote,strlen(quote));
-      ncp += strlen(quote);
-      cp++;
-    } else if (*cp == '&') {
-      strncpy(ncp,amp,strlen(amp));
-      ncp += strlen(amp);
-      cp++;
-    } else {
-      *ncp++ = *cp++;
+  for (i = 0; i < len; i++, cp++) {
+    switch (*cp) {
+      case '\'' :
+        rstring += apos;
+        break;
+      case '<' :
+        rstring += lt;
+        break;
+      case '>' :
+        rstring += gt;
+        break;
+      case '\"' :
+        rstring += quote;
+        break;
+      case '&' :
+        rstring += amp;
+        break;
+      default :
+        rstring += *cp;
     }
   }
-  *ncp = '\0';
 
   return rstring;
 }

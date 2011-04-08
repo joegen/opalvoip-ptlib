@@ -348,7 +348,7 @@ PStringArray PMail::GetMessageIDs(PBoolean unreadOnly)
             sprintf(ptr, "%02x", messages[m].message_reference->string[c]);
             ptr += 2;
           }
-          msgIDs[m] = buf;
+          msgIDs[m] = PString(buf);
         }
       }
       cmc.free_buf(messages);

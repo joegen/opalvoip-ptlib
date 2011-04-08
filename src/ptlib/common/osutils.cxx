@@ -1585,8 +1585,8 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #ifdef _WIN32
   // Try to get the real image path for this process
-  PVarString moduleName;
-  if (GetModuleFileName(GetModuleHandle(NULL), moduleName.GetPointer(1024), 1024) > 0) {
+  TCHAR moduleName[_MAX_PATH];
+  if (GetModuleFileName(GetModuleHandle(NULL), moduleName, sizeof(moduleName)) > 0) {
     executableFile = moduleName;
     executableFile.Replace("\\??\\","");
   }

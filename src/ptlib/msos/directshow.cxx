@@ -338,20 +338,25 @@ static PString GUID2Format(GUID m_guid)
 static PString ErrorMessage(HRESULT hr)
 {
   PVarString msg;
+  msg.SetSize(1000);
   DWORD dwMsgLen = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                                  FORMAT_MESSAGE_IGNORE_INSERTS,
                                  NULL,
                                  hr,
                                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                                 msg.GetPointer(1000), 999,
+                                 msg.GetPointerAndSetLength(0), msg.GetSize(),
                                  NULL);
-  if (dwMsgLen > 0)
+  if (dwMsgLen > 0) {
+    msg.MakeMinimumSize();
     return msg;
+  }
 
 #ifndef _WIN32_WCE
-  dwMsgLen = AMGetErrorTextA(hr, msg.GetPointer(1000), 1000);
-  if (dwMsgLen > 0)
+  dwMsgLen = AMGetErrorTextA(hr, msg.GetPointerAndSetLength(0), msg.GetSize());
+  if (dwMsgLen > 0) {
+    msg.MakeMinimumSize();
     return msg;
+  }
 #endif
 
 #pragma warning(disable:4995)

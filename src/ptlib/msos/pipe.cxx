@@ -144,7 +144,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     }
   }
 
-  if (ConvertOSError(CreateProcess(prog, cmdLine.GetPointer(),
+  if (ConvertOSError(CreateProcess(prog, (LPSTR)(const char *)cmdLine,
                                    NULL, NULL, PTrue, 0, envStr,
                                    NULL, &startup, &info) ? 0 : -2))
     os_handle = info.dwProcessId;
@@ -343,7 +343,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 
   if (available != 0)
     return ConvertOSError(ReadFile(hStandardError,
-                          errors.GetPointer(available+1), available,
+                          errors.GetPointerAndSetLength(available), available,
                           &bytesRead, NULL) ? 0 : -2, LastReadError);
 
   if (!wait)
@@ -362,7 +362,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
     return PTrue;
 
   return ConvertOSError(ReadFile(hStandardError,
-                        errors.GetPointer(available+2)+1, available,
+                        errors.GetPointerAndSetLength(available+1)+1, available,
                         &bytesRead, NULL) ? 0 : -2, LastReadError);
 }
 #endif // !_WIN32_WCE

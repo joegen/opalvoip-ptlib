@@ -202,13 +202,12 @@ class PBase64 : public PObject
     void OutputBase64(const BYTE * data);
 
     PString encodedString;
-    PINDEX  encodeLength;
     BYTE    saveTriple[3];
     PINDEX  saveCount;
     PINDEX  nextLine;
     PString endOfLine;
 
-    PBoolean       perfectDecode;
+    bool       perfectDecode;
     PINDEX     quadPosition;
     PBYTEArray decodedData;
     PINDEX     decodeSize;
