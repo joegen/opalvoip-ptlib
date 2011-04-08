@@ -510,6 +510,21 @@ else
 fi
 
 
+AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler warning about deprecated functions]))
+
+if test "${enable_deprecated}" = "no" ; then
+  AC_MSG_CHECKING(if linker accepts -Wno-deprecated-declarations)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CXX $CXXFLAGS -Wno-deprecated-declarations conftest.$ac_ext > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCXXFLAGS="$STDCXXFLAGS -Wno-deprecated-declarations"
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+
 dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
