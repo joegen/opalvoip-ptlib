@@ -111,6 +111,10 @@ class PLDAPSession : public PObject
 #endif
     };
 
+    /**Start encrypted connection
+      */
+    PBoolean StartTLS();
+
     /**Bind to the remote LDAP server.
       */
     PBoolean Bind(
