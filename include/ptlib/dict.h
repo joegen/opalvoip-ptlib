@@ -244,8 +244,10 @@ class PHashTable : public PCollection
        The ordinal position in the hash table is determined by the hash values
        of the keys and the order of insertion.
 
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        This function is primarily used by the descendent template classes, or
        macro, with the appropriate type conversion.
@@ -262,8 +264,10 @@ class PHashTable : public PCollection
        The ordinal position in the hash table is determined by the hash values
        of the keys and the order of insertion.
 
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        This function is primarily used by the descendent template classes, or
        macro, with the appropriate type conversion.
@@ -366,6 +370,11 @@ class PAbstractSet : public PHashTable
     /**Remove an object at the specified index. If the <code>AllowDeleteObjects</code>
        option is set then the object is also deleted.
 
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
+
        @return
        pointer to the object being removed, or NULL if it was deleted.
      */
@@ -374,6 +383,11 @@ class PAbstractSet : public PHashTable
     );
 
     /**This function is the same as PHashTable::AbstractGetKeyAt().
+
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        @return
        Always NULL.
@@ -543,13 +557,15 @@ template <class T> class PSet : public PAbstractSet
        The ordinal position in the set is determined by the hash values of the
        keys and the order of insertion.
 
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        @return
        reference to key at the index position.
      */
-    P_DEPRECATED virtual const T & GetKeyAt(
+    virtual const T & GetKeyAt(
       PINDEX index    ///< Index of value to get.
     ) const
       { return (const T &)AbstractGetKeyAt(index); }
@@ -1001,13 +1017,15 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        @return
        reference to key at the index position.
      */
-    P_DEPRECATED const K & GetKeyAt(
+    const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
       { return (const K &)AbstractGetKeyAt(index); }
@@ -1017,13 +1035,15 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        @return
        reference to data at the index position.
      */
-    P_DEPRECATED D & GetDataAt(
+    D & GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (D &)AbstractGetDataAt(index); }
@@ -1242,10 +1262,15 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
+
        @return
        true if the new object could be placed into the dictionary.
      */
-    P_DEPRECATED virtual PBoolean SetDataAt(
+    virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
     ) { return this->AbstractSetAt(this->AbstractGetKeyAt(index), PNEW POrdinalKey(ordinal)); }
@@ -1271,13 +1296,15 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
-       The last key/data pair is remembered by the class so that subseqent
-       access is very fast.
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
 
        @return
        reference to key at the index position.
      */
-    P_DEPRECATED const K & GetKeyAt(
+    const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
       { return (const K &)this->AbstractGetKeyAt(index); }
@@ -1290,10 +1317,15 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
+       WARNING: this code requires a linear search for every operation
+                and will be VERY slow for large data sets. This function
+                is kept for backwards compatibilty only. New code should
+                use the iterator based access methods
+
        @return
        reference to data at the index position.
      */
-    P_DEPRECATED PINDEX GetDataAt(
+    PINDEX GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (POrdinalKey &)this->AbstractGetDataAt(index); }
