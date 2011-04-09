@@ -1659,6 +1659,13 @@ class PString : public PCharArray
     char * GetPointerAndSetLength(
       PINDEX len    /// New Length
     );
+
+    /**
+      Get a const pointer to the buffer contents
+      This function overrides the ancestor function that returns a char *
+      */
+    virtual const char * GetPointer(PINDEX) const { return (const char *)(*this); }
+
   //@}
 
 
@@ -1690,10 +1697,6 @@ class PString : public PCharArray
       : PCharArray(reference)
       , m_length(len)
       { }
-
-  private:
-    // Use of this function can invalidate m_length, so make sure it isn't used.
-    virtual char * GetPointer(PINDEX minSize) { return PCharArray::GetPointer(minSize); }
 
   protected:
     mutable PINDEX m_length; // Length of the string, always at least one less than GetSize()
