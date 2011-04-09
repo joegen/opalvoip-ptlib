@@ -644,13 +644,19 @@ dnl check for tracing
 dnl
 
 AC_ARG_ENABLE(tracing, AS_HELP_STRING([--disable-tracing],[Remove PTRACE and all trace logging]))
+AC_ARG_ENABLE(trace-instance, AS_HELP_STRING([--disable-trace-instance],[Disable PTraceObjectInstance in trace logging]))
 
 if test "${enable_tracing}" = "no" ; then
   AC_MSG_NOTICE(PTRACE and all trace logging removed)
   STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
-  AC_MSG_NOTICE(PTRACE and all trace logging included)
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
+  if test "${enable_trace_instance}" = "no" ; then
+    AC_MSG_NOTICE(PTRACE without object instance trace logging included)
+    STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+  else
+    AC_MSG_NOTICE(PTRACE and all trace logging included)
+    STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
+  fi
 fi
 
 
