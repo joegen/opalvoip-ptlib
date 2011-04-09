@@ -790,6 +790,7 @@ enable_force32
 enable_pch
 enable_deprecated
 enable_tracing
+enable_trace_instance
 enable_ansi_bool
 enable_atomicity
 enable_internalregex
@@ -1491,6 +1492,8 @@ Optional Features:
   --enable-pch            Enable precompiled headers
   --disable-deprecated    Stop compiler warning about deprecated functions
   --disable-tracing       Remove PTRACE and all trace logging
+  --disable-trace-instance
+                          Disable PTraceObjectInstance in trace logging
   --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool
   --disable-atomicity     Do not use atomicity.h
   --enable-internalregex  Force internal regex library
@@ -5977,15 +5980,26 @@ if test "${enable_tracing+set}" = set; then :
   enableval=$enable_tracing;
 fi
 
+# Check whether --enable-trace-instance was given.
+if test "${enable_trace_instance+set}" = set; then :
+  enableval=$enable_trace_instance;
+fi
+
 
 if test "${enable_tracing}" = "no" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE and all trace logging removed" >&5
 $as_echo "$as_me: PTRACE and all trace logging removed" >&6;}
   STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE and all trace logging included" >&5
+  if test "${enable_trace_instance}" = "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE without object instance trace logging included" >&5
+$as_echo "$as_me: PTRACE without object instance trace logging included" >&6;}
+    STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE and all trace logging included" >&5
 $as_echo "$as_me: PTRACE and all trace logging included" >&6;}
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
+    STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
+  fi
 fi
 
 
