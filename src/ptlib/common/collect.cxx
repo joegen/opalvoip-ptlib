@@ -1535,6 +1535,14 @@ PObject & PAbstractDictionary::GetRefAt(const PObject & key) const
 }
 
 
+void PAbstractDictionary::AbstractGetKeys(PArrayObjects & keys) const
+{
+  keys.SetSize(GetSize());
+  for (PINDEX i = 0; i < GetSize(); i++)
+    keys.SetAt(i, AbstractGetKeyAt(i).Clone());
+}
+
+
 void PAbstractDictionary::PrintOn(ostream &strm) const
 {
   char separator = strm.fill();
