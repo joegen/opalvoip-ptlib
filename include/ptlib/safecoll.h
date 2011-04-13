@@ -1194,6 +1194,17 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
         ptr.SetSafetyMode(mode);
         return ptr;
       }
+
+    /**Get an array containing all the keys for the dictionary.
+      */
+    PArray<Key> GetKeys() const
+    {
+      PArray<Key> keys;
+      collectionMutex.Wait();
+      ((Coll *)collection)->AbstractGetKeys(keys);
+      collectionMutex.Signal();
+      return keys;
+    }
   //@}
 };
 

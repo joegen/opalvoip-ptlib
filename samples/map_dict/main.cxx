@@ -46,14 +46,14 @@ MapDictionary::~MapDictionary()
 void MapDictionary::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("l-loops:     "
-	     "s-size:    "
-	     "h-help.    "
+  args.Parse("l-loops:"
+	     "s-size:"
+	     "h-help."
 #if PTRACING
-             "o-output:"             "-no-output."
-             "t-trace."              "-no-trace."
+             "o-output:"
+             "t-trace."
 #endif
-	     "v-version.    "
+	     "v-version."
 	     );
 
   if (args.HasOption('l'))
