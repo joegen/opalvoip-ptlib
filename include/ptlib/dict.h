@@ -876,6 +876,12 @@ class PAbstractDictionary : public PHashTable
     virtual PObject * AbstractGetAt(
       const PObject & key   ///< Key for position in dictionary to get object.
     ) const;
+
+    /**Get an array containing all the keys for the dictionary.
+      */
+    virtual void AbstractGetKeys(
+      PArrayObjects & keys
+    ) const;
   //@}
 
   protected:
@@ -1047,6 +1053,15 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (D &)AbstractGetDataAt(index); }
+
+    /**Get an array containing all the keys for the dictionary.
+      */
+    PArray<K> GetKeys() const
+    {
+      PArray<K> keys;
+      AbstractGetKeys(keys);
+      return keys;
+    }
   //@}
 
   /**@name Iterators */

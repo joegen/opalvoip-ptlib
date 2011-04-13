@@ -1589,6 +1589,15 @@ PObject & PAbstractDictionary::GetRefAt(const PObject & key) const
 }
 
 
+void PAbstractDictionary::AbstractGetKeys(PArrayObjects & keys) const
+{
+  keys.SetSize(GetSize());
+  PINDEX index = 0;
+  for (Element * element = hashTable->GetElementAt((PINDEX)0); element != NULL; element = hashTable->NextElement(element))
+    keys.SetAt(index++, element->key->Clone());
+}
+
+
 void PAbstractDictionary::PrintOn(ostream &strm) const
 {
   char separator = strm.fill();
