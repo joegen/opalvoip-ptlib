@@ -182,7 +182,7 @@ int PSocket::os_socket(int af, int type, int protocol)
 }
 
 
-PBoolean PSocket::os_connect(struct sockaddr * addr, PINDEX size)
+PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 {
   int val;
   do {
@@ -207,7 +207,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 }
 
 
-PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
+PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_t * size)
 {
   int new_fd;
   while ((new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size)) < 0) {
@@ -585,7 +585,7 @@ PBoolean PSocket::os_recvfrom(
       PINDEX len,
       int    flags,
       sockaddr * addr,
-      PINDEX * addrlen)
+      socklen_t * addrlen)
 {
   lastReadCount = 0;
 
@@ -664,7 +664,7 @@ PBoolean PSocket::os_sendto(
       PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
       int flags,
       sockaddr * addr, // Address to which the datagram is sent.
-      PINDEX addrlen)  
+      socklen_t addrlen)  
 {
   lastWriteCount = 0;
 
@@ -967,7 +967,7 @@ PBoolean PEthSocket::Read(void * buf, PINDEX len)
 
   for (;;) {
     sockaddr from;
-    PINDEX fromlen = sizeof(from);
+    socklen_t fromlen = sizeof(from);
     if (!os_recvfrom(bufptr, len, 0, &from, &fromlen))
       return PFalse;
 
