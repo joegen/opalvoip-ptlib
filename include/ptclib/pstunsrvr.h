@@ -55,12 +55,13 @@ class PSTUNServer : public PObject, public PSTUN
       SocketInfo & socketInfo
     );
 
+    bool WriteTo(const PSTUNMessage & message, PUDPSocket & socket, const PIPSocketAddressAndPort & dest);
+
   protected:
     void PopulateInfo(PUDPSocket * socket, const PIPSocket::Address & alternateAddress, WORD alternatePort, 
              PUDPSocket * alternatePortSocket, PUDPSocket * alternateAddressSocket, PUDPSocket * alternateAddressAndPortSocket);
 
     SocketInfo * CreateAndAddSocket(const PIPSocket::Address & addess, WORD port);
-    bool WriteTo(const PSTUNMessage & message, PUDPSocket & socket, const PIPSocketAddressAndPort & dest);
 
     PSocket::SelectList m_sockets;
     PSocket::SelectList m_selectList;

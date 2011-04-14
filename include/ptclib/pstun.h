@@ -107,6 +107,8 @@ struct PSTUNAttribute
     PADDING             = 0x0026,   // RFC 5389 (added in RFC 5780)
     RESPONSE_PORT       = 0x0027,   // RFC 5389 (added in RFC 5780)
 
+    ALTERNATE_SERVER    = 0x8023,   // RFC 5389
+
     RESPONSE_ORIGIN     = 0x802b,   // RFC 5389 (added in RFC 5780)
     OTHER_ADDRESS       = 0x802c    // RFC 5389 (added in RFC 5780)
   };
