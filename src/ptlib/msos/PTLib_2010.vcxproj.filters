@@ -7,51 +7,33 @@
     <ResourceCompile Include="libver.rc" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\lib\release\PTLib.def">
+    <CustomBuild Include="..\..\..\lib\Win32\release\PTLib.def">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\debug\PTLibd.def">
+    <CustomBuild Include="..\..\..\lib\Win32\debug\PTLibd.def">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\No Trace\PTLibn.def">
+    <CustomBuild Include="..\..\..\lib\Win32\No Trace\PTLibn.def">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\wm5\Release\PTLib.def">
-      <Filter>WM5</Filter>
+    <CustomBuild Include="..\..\..\lib\x64\Release\PTLib64.def">
+      <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\wm5\Debug\PTLibd.def">
-      <Filter>WM5</Filter>
+    <CustomBuild Include="..\..\..\lib\x64\Debug\PTLib64d.def">
+      <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\wm5\no trace\PTLibn.def">
-      <Filter>WM5</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\wm6\release\PTLib.def">
-      <Filter>WM6</Filter>
+    <CustomBuild Include="..\..\..\lib\x64\no trace\PTLib64n.def">
+      <Filter>Win64</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib.ignore" />
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2010_wm6.dtf">
-      <Filter>WM6</Filter>
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2010_x64.dtf">
+      <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2010_wm.dtf">
-      <Filter>WM5</Filter>
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2010_x64.dtf">
+      <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\wm6\debug\PTLibd.def">
-      <Filter>WM6</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\wm6\no trace\PTLibn.def">
-      <Filter>WM6</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2010_wm6.dtf">
-      <Filter>WM6</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2010_wm6.dtf">
-      <Filter>WM6</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2010_wm.dtf">
-      <Filter>WM5</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2010_wm.dtf">
-      <Filter>WM5</Filter>
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2010_x64.dtf">
+      <Filter>Win64</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2010.dtf">
       <Filter>Win32</Filter>
@@ -67,11 +49,8 @@
     <Filter Include="Win32">
       <UniqueIdentifier>{0c183152-218e-4bd8-ab15-8dfbd786eabf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="WM5">
+    <Filter Include="Win64">
       <UniqueIdentifier>{9aaddb37-496e-4e2b-9943-da612227b6a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="WM6">
-      <UniqueIdentifier>{0db98837-3525-4b55-afaf-96511dd669db}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

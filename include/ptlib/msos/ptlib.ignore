@@ -1,4 +1,5 @@
 EXPORTS
+    == @1 NONAME
     _regcomp @3549 NONAME ;_regcomp
     _regerror @3550 NONAME ;_regerror
     _regexec @3551 NONAME ;_regexec

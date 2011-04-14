@@ -416,26 +416,26 @@ class PSocket : public PChannel
     int os_socket(int af, int type, int proto);
     PBoolean os_connect(
       struct sockaddr * sin,
-      PINDEX size
+      socklen_t size
     );
     PBoolean os_recvfrom(
       void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * from,
-      PINDEX * fromlen
+      socklen_t * fromlen
     );
     PBoolean os_sendto(
       const void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * to,
-      PINDEX tolen
+      socklen_t tolen
     );
     PBoolean os_accept(
       PSocket & listener,
       struct sockaddr * addr,
-      PINDEX * size
+      socklen_t * size
     );
 
 
