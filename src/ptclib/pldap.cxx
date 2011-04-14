@@ -911,7 +911,7 @@ void PLDAPStructBase::EndConstructor()
 
 static const char PLDAPSchemaPluginBaseClass[] = "PLDAPSchema";
 
-template <> PLDAPSchema * PDevicePluginFactory<PLDAPSchema>::Worker::Create(const PString & type) const
+template <> PLDAPSchema * PDevicePluginFactory<PLDAPSchema>::Worker::Create(const PDefaultPFactoryKey & type) const
 {
   return PLDAPSchema::CreateSchema(type);
 }
