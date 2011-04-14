@@ -46,10 +46,10 @@
 class PSmartNotifieeRegistrar
 {
   public:
-    PSmartNotifieeRegistrar() : m_ID(P_MAX_INDEX) {}
+    PSmartNotifieeRegistrar() : m_ID(UINT_MAX) {}
     ~PSmartNotifieeRegistrar() { UnregisterNotifiee(m_ID); }
 
-    void        Init(void * obj)        { if (m_ID == P_MAX_INDEX) m_ID = RegisterNotifiee(obj); }
+    void        Init(void * obj)        { if (m_ID == UINT_MAX) m_ID = RegisterNotifiee(obj); }
     unsigned    GetID() const           { return m_ID; }
 
     static unsigned    RegisterNotifiee(void * obj);
