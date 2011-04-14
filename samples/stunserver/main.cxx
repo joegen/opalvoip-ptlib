@@ -82,7 +82,9 @@ void StunServer::Main()
       else if (message.GetType() != PSTUNMessage::Allocate)
         server.Process(message, info);
       else if (turnServer.IsValid()) {
+        cerr << "TURN allocate response received from " << info.m_socketAddress << " - redirecting to " << turnServer << endl;
         PSTUNMessage response;
+        response.SetType((PSTUNMessage::MsgType)(message.GetType() | 0x110), message.GetTransactionID());
         {
           PSTUNErrorCode attr;
           attr.Initialise();
@@ -94,9 +96,11 @@ void StunServer::Main()
           attr.InitAddrAttr(PSTUNAttribute::ALTERNATE_SERVER);
           attr.SetIPAndPort(turnServer);
           response.AddAttribute(attr);
-          server.WriteTo(response, *info.m_socket, info.m_socketAddress);
+          server.WriteTo(response, *info.m_socket, message.GetSourceAddressAndPort());
         }
       }
+      else
+        cerr << "Unknown command " << hex << message.GetType() << dec << " from " << message.GetSourceAddressAndPort() << endl;
     }
   }
 }
