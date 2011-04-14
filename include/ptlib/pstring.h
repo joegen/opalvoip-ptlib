@@ -66,9 +66,9 @@ PString pvsprintf(
 );
 
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
-PBASEARRAY(PWCharArray, unsigned short);
+typedef PBaseArray<unsigned short> PWCharArray;
 #else
-PBASEARRAY(PWCharArray, wchar_t);
+typedef PBaseArray<wchar_t> PWCharArray;
 #endif
 
 /**The character string class. It supports a wealth of additional functions
@@ -2076,13 +2076,22 @@ class PSortedStringList;
    See the <code>PAbstractArray</code> and <code>PArray</code> classes and
    <code>PDECLARE_ARRAY</code> macro for more information.
 */
-#ifdef DOC_PLUS_PLUS
-class PStringArray : public PArray {
-#endif
-  PDECLARE_ARRAY(PStringArray, PString);
+class PStringArray : public PArray<PString>
+{
+    typedef PArray<PString> ParentClass;
+    PCLASSINFO(PStringArray, ParentClass);
+
+  protected:
+    inline PStringArray(int dummy, const PStringArray * c)
+      : ParentClass(dummy, c) { }
+
   public:
   /**@name Construction */
   //@{
+    /// Create an empty PString array.
+    inline PStringArray(PINDEX initialSize = 0)
+      : ParentClass(initialSize) { }
+
     /**Create a PStringArray from the array of C strings. If count is
        P_MAX_INDEX then strarr is assumed to point to an array of strings
        where the last pointer is NULL.
@@ -2157,6 +2166,11 @@ class PStringArray : public PArray {
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
     );
+
+    virtual PObject * Clone() const
+    {
+      return new PStringArray(0, this);
+    }
   //@}
 
   /**@name New functions for class */
@@ -2236,13 +2250,23 @@ class PStringArray : public PArray {
    See the <code>PAbstractList</code> and <code>PList</code> classes and
    <code>PDECLARE_LIST</code> macro for more information.
  */
-#ifdef DOC_PLUS_PLUS
-class PStringList : public PList {
-#endif
-PDECLARE_LIST(PStringList, PString);
+class PStringList : public PList<PString>
+{
+    typedef PList<PString> ParentClass;
+    PCLASSINFO(PStringList, ParentClass);
+
+  protected:
+    PStringList(int dummy, const PStringList * c)
+      : ParentClass(dummy, c) { }
+
   public:
   /**@name Construction */
   //@{
+    /**Create an empty PStringList.
+     */
+    PStringList()
+      : ParentClass() { }
+
     /**Create a PStringList from the array of C strings.
      */
     PStringList(
@@ -2278,6 +2302,11 @@ PDECLARE_LIST(PStringList, PString);
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
     );
+
+    virtual PObject * Clone() const
+    {
+      return new PStringList(0, this);
+    }
   //@}
 
   /**@name Operations */
@@ -2443,20 +2472,31 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
    See the <code>PAbstractSet</code> and <code>PSet</code> classes and <code>PDECLARE_SET</code>
    macro for more information.
  */
-#ifdef DOC_PLUS_PLUS
-class PStringSet : public PSet {
-#endif
-PDECLARE_SET(PStringSet, PString, true);
+class PStringSet : public PSet<PString>
+{
+    typedef PSet<PString> ParentClass;
+    PCLASSINFO(PStringSet, ParentClass);
+
+  protected:
+    PStringSet(int dummy, const PStringSet * c)
+      : ParentClass(dummy, c) { }
+
   public:
   /**@name Construction */
   //@{
-    /**Create a PStringArray from the array of C strings.
+    /**Create a PStringSet.
+     */
+    PStringSet(PBoolean initialDeleteObjects = true)
+      : ParentClass(initialDeleteObjects) { }
+
+    /**Create a PStringSet from the array of C strings.
      */
     PStringSet(
       PINDEX count,                 ///< Count of strings in array
       char const * const * strarr,  ///< Array of C strings
       PBoolean caseless = false         ///< New strings are to be PCaselessStrings
     );
+
     /**Create a PStringSet containing the single string.
      */
     PStringSet(
@@ -2475,6 +2515,11 @@ PDECLARE_SET(PStringSet, PString, true);
     virtual void ReadFrom(
       istream &strm   ///< Stream to read the objects contents from.
     );
+
+    virtual PObject * Clone() const
+    {
+      return PNEW PStringSet(0, this);
+    }
   //@}
 
   /**@name Operations */
