@@ -22,7 +22,7 @@
 
 #include <ptlib/pfactory.h>
 
-template <class AbstractClass, typename KeyType = PString>
+template <class AbstractClass, typename KeyType = PDefaultPFactoryKey>
 class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
 {
   public:
@@ -50,8 +50,7 @@ class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
               break;
             }
           }
-          if (key != NULL)
-            PFactory<AbstractClass, KeyType>::Unregister(key);
+          PFactory<AbstractClass, KeyType>::Unregister(key);
         }
 
       protected:
