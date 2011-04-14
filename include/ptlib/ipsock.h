@@ -257,6 +257,8 @@ class PIPSocket : public PSocket
         static const Address & GetAny(int m_version = 4);
         static const Address GetBroadcast(int m_version = 4);
 
+        PObject * Clone() const { return new Address(*this); }
+
       protected:
         /// Runtime test of IP addresse type.
         union {
