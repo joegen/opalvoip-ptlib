@@ -1022,7 +1022,7 @@ dnl ########################################################################
 dnl Look for SASL
 
 dnl MSWIN_DISPLAY    sasl,Cyrus SASL
-dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL=1
+dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL_WIN32=1
 dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
 dnl MSWIN_CHECK_DIR  sasl,..\sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\cyrus-sasl\
@@ -1095,7 +1095,7 @@ dnl look for OpenLDAP (requires SASL)
 
 dnl MSWIN_DISPLAY    openldap,Open LDAP
 dnl MSWIN_IF_FEATURE openldap,sasl
-dnl MSWIN_CHECK_FILE openldap,include\ldap.h|OpenLDAP,P_LDAP=1
+dnl MSWIN_CHECK_FILE openldap,include\ldap.h|OpenLDAP,P_LDAP_WIN32=1
 dnl MSWIN_DIR_SYMBOL openldap,LDAP_DIR
 dnl MSWIN_CHECK_DIR  openldap,..\openldap\
 dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
@@ -1134,10 +1134,10 @@ dnl contains a AC_CHECK_HEADER directive that never gets used. So we have
 dnl to ensure that it is always called
 
 dnl MSWIN_DISPLAY    openssl,Open SSL
-dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_OSSL=1
-dnl MSWIN_CHECK_FILE openssl,include\openssl\ssl.h,P_OSSL=2
-dnl MSWIN_FIND_FILE  openssl,P_OSSL_AES,aes.h,...
-dnl MSWIN_DIR_SYMBOL openssl,SSL_DIR
+dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_SSL_WIN32=1
+dnl MSWIN_CHECK_FILE openssl,include\openssl\ssl.h,P_SSL_WIN32=2
+dnl MSWIN_FIND_FILE  openssl,P_SSL_AES,aes.h,...
+dnl MSWIN_DIR_SYMBOL openssl,SSL_WIN32_DIR
 dnl MSWIN_CHECK_DIR  openssl,..\openssl\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
@@ -1146,7 +1146,12 @@ dnl MSWIN_CHECK_DIR  openssl,\Program Files\OpenSSL\
 dnl MSWIN_CHECK_DIR  openssl,\Program Files (x86)\OpenSSL\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\OpenSSL-Win32
-dnl MSWIN_CHECK_DIR  openssl,c:\OpenSSL-Win64
+
+dnl MSWIN_DISPLAY    openssl64,Open SSL (64 bit)
+dnl MSWIN_CHECK_FILE openssl64,include\openssl\ssl.h,P_SSL_WIN64=1
+dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
+dnl MSWIN_CHECK_DIR  openssl64,\Program Files\OpenSSL64\
+dnl MSWIN_CHECK_DIR  openssl64,c:\OpenSSL-Win64
 
 AC_ARG_ENABLE([openssl],
 	      AS_HELP_STRING([--disable-openssl],[disable OpenSSL support]),
@@ -1161,9 +1166,9 @@ else
                     [openssl], 
                     [
                      HAS_OPENSSL=1
-                     AC_DEFINE(P_OSSL, 1, "OpenSSL found")
+                     AC_DEFINE(P_SSL, 1, "OpenSSL found")
                      PTLIB_CHECK_OPENSSL_AES([
-                                              AC_DEFINE([P_OSSL_AES], [1],[openssl with AES yes])
+                                              AC_DEFINE([P_SSL_AES], [1],[openssl with AES yes])
                                               HAS_OPENSSL_AES=1
                                             ])
                      PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
@@ -1203,15 +1208,17 @@ dnl ########################################################################
 dnl look for expat XML parser
 
 dnl MSWIN_DISPLAY    expat,Expat XML
-dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_WINEXPAT=1
-dnl MSWIN_CHECK_FILE expat,Source\lib\expat.h,P_WINEXPAT=2
-dnl MSWIN_DIR_SYMBOL expat,EXPAT_DIR
+dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_EXPAT_BUILD=1
+dnl MSWIN_CHECK_FILE expat,Source\lib\expat.h,P_EXPAT_WIN32=2
+dnl MSWIN_DIR_SYMBOL expat,EXPAT_BUILD_DIR
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_DEBUG,expat.lib,Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_RELEASE,expat.lib,Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM5_DEBUG,expat.lib,wm5/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM5_RELEASE,expat.lib,wm5/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_DEBUG,expat.lib,wm6/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_V1,libexpat.lib,lib
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_V2,libexpatMT.lib,bin
 dnl MSWIN_CHECK_DIR  expat,..\expat\
@@ -1235,7 +1242,7 @@ else
   PTLIB_FIND_EXPAT([HAS_EXPAT=1], [HAS_EXPAT=])
 
   if test "x${HAS_EXPAT}" = "x1" ; then
-    AC_DEFINE(P_OEXPAT, 1, "expat found")
+    AC_DEFINE(P_EXPAT, 1, "expat found")
     STDCCFLAGS="$STDCCFLAGS $EXPAT_CFLAGS"
     ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
@@ -1246,7 +1253,7 @@ AC_SUBST(HAS_EXPAT)
 dnl ########################################################################
 dnl look for Lua library
 dnl MSWIN_DISPLAY    lua,Lua interpreter
-dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA=1
+dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA_WIN32=1
 dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
 dnl MSWIN_CHECK_DIR  lua,\Program Files\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,\Program Files (x86)\Lua\5.1

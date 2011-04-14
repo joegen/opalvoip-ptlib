@@ -194,7 +194,7 @@ int PSocket::os_socket(int af, int type, int proto)
 }
 
 
-PBoolean PSocket::os_connect(struct sockaddr * addr, PINDEX size)
+PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 {
   if (readTimeout == PMaxTimeInterval)
     return ConvertOSError(::connect(os_handle, addr, size));
@@ -279,7 +279,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 }
 
 
-PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
+PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_t * size)
 {
   if (listener.GetReadTimeout() != PMaxTimeInterval) {
     P_fd_set readfds = listener.GetHandle();
@@ -302,7 +302,7 @@ PBoolean PSocket::os_recvfrom(void * buf,
                           PINDEX len,
                           int flags,
                           struct sockaddr * from,
-                          PINDEX * fromlen)
+                          socklen_t * fromlen)
 {
   lastReadCount = 0;
 
@@ -342,7 +342,7 @@ PBoolean PSocket::os_sendto(const void * buf,
                         PINDEX len,
                         int flags,
                         struct sockaddr * to,
-                        PINDEX tolen)
+                        socklen_t tolen)
 {
   lastWriteCount = 0;
 

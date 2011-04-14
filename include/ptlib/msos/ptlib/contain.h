@@ -85,6 +85,10 @@
   #define _WIN32  1
 #endif
 
+#if defined(_WIN64) && !defined(P_64BIT)
+#define P_64BIT 1
+#endif
+
 #if defined(_WINDOWS) || defined(_WIN32)
 
   // At least Windows 2000, configure.ac will generally uprate this
@@ -201,14 +205,21 @@ typedef long PInt32;
 // Type used in array indexes especially that required by operator[] functions.
 #if defined(_MSC_VER) || defined(__MINGW32__)
 
-  #define PINDEX int
-  #if defined(_WIN32) || defined(_WIN32_WCE)
-    const PINDEX P_MAX_INDEX = 0x7fffffff;
+  #if P_64BIT
+    typedef size_t PINDEX;
+    const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
+    inline PINDEX PABSINDEX(PINDEX idx) { return idx; }
+    #define PASSERTINDEX(idx)
   #else
-    const PINDEX P_MAX_INDEX = 0x7fff;
-  #endif
+    #define PINDEX int
+    #if defined(_WIN32) || defined(_WIN32_WCE)
+      const PINDEX P_MAX_INDEX = 0x7fffffff;
+    #else
+      const PINDEX P_MAX_INDEX = 0x7fff;
+    #endif
     inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
-  #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+    #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+  #endif
 
 #else
 

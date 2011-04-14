@@ -429,6 +429,9 @@ PObject * PAbstractList::RemoveElement(PListElement * elmt)
   if (PAssertNULL(info) == NULL)
     return NULL;
   
+  if (elmt == NULL)
+    return NULL;
+
   if (elmt->prev != NULL)
     elmt->prev->next = elmt->next;
   else {
