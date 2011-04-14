@@ -1175,8 +1175,8 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     const_iterator end()   const { return const_iterator(); }
     const_iterator find(const K & k) const { return const_iterator(hashTable, k); }
 
-    void erase(const iterator & it) { Remove(&*it); }
-    void erase(const const_iterator & it) { Remove(&*it); }
+    void erase(const       iterator & it) { AbstractSetAt(*it.element->key, NULL); }
+    void erase(const const_iterator & it) { AbstractSetAt(*it.element->key, NULL); }
   //@}
 
   protected:
