@@ -148,11 +148,16 @@ struct PHashTableElement
     PDECLARE_POOL_ALLOCATOR();
 };
 
-PDECLARE_BASEARRAY(PHashTableInfo, PHashTableElement *)
-#ifdef DOC_PLUS_PLUS
+class PHashTableInfo : public PBaseArray<PHashTableElement *>
 {
-#endif
+    typedef PBaseArray<PHashTableElement *> ParentClass;
+    PCLASSINFO(PCharArray, ParentClass);
   public:
+    PHashTableInfo(PINDEX initialSize = 0)
+      : ParentClass(initialSize) { }
+    PHashTableInfo(PHashTableElement * const * buffer, PINDEX length, PBoolean dynamic = true)
+      : ParentClass(buffer, length, dynamic) { }
+    virtual PObject * Clone() const { return PNEW PHashTableInfo(*this, GetSize()); }
     virtual ~PHashTableInfo() { Destruct(); }
     virtual void DestroyContents();
 
@@ -697,8 +702,8 @@ template <class T> class PSet : public PAbstractSet
       { return PNEW cls(0, this); } \
 
 
-
-PSET(POrdinalSet, POrdinalKey);
+/// A set of ordinal integers
+typedef PSet<POrdinalKey> POrdinalSet;
 
 
 //////////////////////////////////////////////////////////////////////////////

@@ -547,8 +547,10 @@ template <class T> class PScalarArray : public PBaseArray<T>
 
 
 /// Array of characters.
-#ifdef DOC_PLUS_PLUS
-class PCharArray : public PBaseArray {
+class PCharArray : public PBaseArray<char>
+{
+    typedef PBaseArray<char> ParentClass;
+    PCLASSINFO(PCharArray, ParentClass);
   public:
   /**@name Construction */
   //@{
@@ -557,7 +559,7 @@ class PCharArray : public PBaseArray {
      */
     PCharArray(
       PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
+    ) : ParentClass(initialSize) { }
 
     /**Construct a new dynamic array of char.
      */
@@ -565,12 +567,12 @@ class PCharArray : public PBaseArray {
       char const * buffer,   ///< Pointer to an array of chars.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
       PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
+    ) : ParentClass(buffer, length, dynamic) { }
+
+    PCharArray(PContainerReference & reference)
+      : ParentClass(reference) { }
   //@}
-#else
-PDECLARE_BASEARRAY(PCharArray, char);
-#endif
-  public:
+
   /**@name Overrides from class PObject */
   //@{
     /// Print the array
@@ -581,93 +583,27 @@ PDECLARE_BASEARRAY(PCharArray, char);
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
     );
+    virtual PObject * Clone() const
+    {
+      return PNEW PCharArray(*this, GetSize());
+    }
   //@}
 };
 
 /// Array of short integers.
-#ifdef DOC_PLUS_PLUS
-class PShortArray : public PBaseArray {
-  public:
-  /**@name Construction */
-  //@{
-    /**Construct a new dynamic array of shorts.
-       The array is initialised to all zeros.
-     */
-    PShortArray(
-      PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
-
-    /**Construct a new dynamic array of shorts.
-     */
-    PShortArray(
-      short const * buffer,   ///< Pointer to an array of shorts.
-      PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
-  //@}
-};
-#else
-PSCALAR_ARRAY(PShortArray, short);
-#endif
-
+typedef PScalarArray<short> PShortArray;
 
 /// Array of integers.
-#ifdef DOC_PLUS_PLUS
-class PIntArray : public PBaseArray {
-  public:
-  /**@name Construction */
-  //@{
-    /**Construct a new dynamic array of ints.
-       The array is initialised to all zeros.
-     */
-    PIntArray(
-      PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
-
-    /**Construct a new dynamic array of ints.
-     */
-    PIntArray(
-      int const * buffer,   ///< Pointer to an array of ints.
-      PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
-  //@}
-};
-#else
-PSCALAR_ARRAY(PIntArray, int);
-#endif
-
+typedef PScalarArray<int> PIntArray;
 
 /// Array of long integers.
-#ifdef DOC_PLUS_PLUS
-class PLongArray : public PBaseArray {
-  public:
-  /**@name Construction */
-  //@{
-    /**Construct a new dynamic array of longs.
-       The array is initialised to all zeros.
-     */
-    PLongArray(
-      PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
-
-    /**Construct a new dynamic array of longs.
-     */
-    PLongArray(
-      long const * buffer,   ///< Pointer to an array of longs.
-      PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
-  //@}
-};
-#else
-PSCALAR_ARRAY(PLongArray, long);
-#endif
-
+typedef PScalarArray<long> PLongArray;
 
 /// Array of unsigned characters.
-#ifdef DOC_PLUS_PLUS
-class PBYTEArray : public PBaseArray {
+class PBYTEArray : public PBaseArray<BYTE>
+{
+    typedef PBaseArray<BYTE> ParentClass;
+    PCLASSINFO(PCharArray, ParentClass);
   public:
   /**@name Construction */
   //@{
@@ -676,7 +612,7 @@ class PBYTEArray : public PBaseArray {
      */
     PBYTEArray(
       PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
+    ) : ParentClass(initialSize) { }
 
     /**Construct a new dynamic array of unsigned chars.
      */
@@ -684,13 +620,12 @@ class PBYTEArray : public PBaseArray {
       BYTE const * buffer,   ///< Pointer to an array of BYTEs.
       PINDEX length,      ///< Number of elements pointed to by \p buffer.
       PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
+    ) : ParentClass(buffer, length, dynamic) { }
+
+    PBYTEArray(PContainerReference & reference)
+      : ParentClass(reference) { }
   //@}
-};
-#else
-PDECLARE_BASEARRAY(PBYTEArray, BYTE);
-#endif
-  public:
+
   /**@name Overrides from class PObject */
   //@{
     /// Print the array
@@ -701,89 +636,22 @@ PDECLARE_BASEARRAY(PBYTEArray, BYTE);
     virtual void ReadFrom(
       istream &strm   ///< Stream to read the objects contents from.
     );
+    virtual PObject * Clone() const
+    {
+      return PNEW PBYTEArray(*this, GetSize());
+    }
   //@}
 };
 
 
 /// Array of unsigned short integers.
-#ifdef DOC_PLUS_PLUS
-class PWORDArray : public PBaseArray {
-  public:
-  /**@name Construction */
-  //@{
-    /**Construct a new dynamic array of unsigned shorts.
-       The array is initialised to all zeros.
-     */
-    PWORDArray(
-      PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
-
-    /**Construct a new dynamic array of unsigned shorts.
-     */
-    PWORDArray(
-      WORD const * buffer,   ///< Pointer to an array of WORDs.
-      PINDEX length,      ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
-  //@}
-};
-#else
-PSCALAR_ARRAY(PWORDArray, WORD);
-#endif
-
+typedef PScalarArray<WORD> PWORDArray;
 
 /// Array of unsigned integers.
-#ifdef DOC_PLUS_PLUS
-class PUnsignedArray : public PBaseArray {
-  public:
-  /**@name Construction */
-  //@{
-    /**Construct a new dynamic array of unsigned ints.
-       The array is initialised to all zeros.
-     */
-    PUnsignedArray(
-      PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
-
-    /**Construct a new dynamic array of unsigned ints.
-     */
-    PUnsignedArray(
-      unsigned const * buffer,  ///< Pointer to an array of unsigned ints.
-      PINDEX length,            ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = true   ///< Buffer is copied and dynamically allocated.
-    );
-  //@}
-};
-#else
-PSCALAR_ARRAY(PUnsignedArray, unsigned);
-#endif
-
+typedef PScalarArray<unsigned> PUnsignedArray;
 
 /// Array of unsigned long integers.
-#ifdef DOC_PLUS_PLUS
-class PDWORDArray : public PBaseArray {
-  public:
-  /**@name Construction */
-  //@{
-    /**Construct a new dynamic array of unsigned longs.
-       The array is initialised to all zeros.
-     */
-    PDWORDArray(
-      PINDEX initialSize = 0  ///< Initial number of elements in the array.
-    );
-
-    /**Construct a new dynamic array of DWORDs.
-     */
-    PDWORDArray(
-      DWORD const * buffer,   ///< Pointer to an array of DWORDs.
-      PINDEX length,          ///< Number of elements pointed to by \p buffer.
-      PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
-    );
-  //@}
-};
-#else
-PSCALAR_ARRAY(PDWORDArray, DWORD);
-#endif
+typedef PScalarArray<DWORD> PDWORDArray;
 
 
 ///////////////////////////////////////////////////////////////////////////////
