@@ -37,7 +37,7 @@
 
 
 static const char PNatMethodBaseClass[] = "PNatMethod";
-template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const PString & method) const
+template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const PDefaultPFactoryKey & method) const
 {
    return PNatMethod::Create(method);
 }

@@ -46,12 +46,12 @@ namespace PWLib {
   PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoOutputDevice> > vidoutChannelFactoryAdapter("PVideoOutputDevice", PTrue);
 };
 
-template <> PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PString & type) const
+template <> PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PDefaultPFactoryKey & type) const
 {
   return PVideoInputDevice::CreateDevice(type);
 }
 
-template <> PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worker::Create(const PString & type) const
+template <> PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worker::Create(const PDefaultPFactoryKey & type) const
 {
   return PVideoOutputDevice::CreateDevice(type);
 }

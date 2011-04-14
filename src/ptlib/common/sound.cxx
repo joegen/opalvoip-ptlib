@@ -41,7 +41,7 @@
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
 
-template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
+template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PDefaultPFactoryKey & type) const
 {
   return PSoundChannel::CreateChannel(type);
 }
