@@ -2401,7 +2401,7 @@ PBoolean PTCPSocket::Accept(PSocket & socket)
 #if P_HAS_IPV6
 
   Psockaddr sa;
-  PINDEX size = sa.GetSize();
+  socklen_t size = sa.GetSize();
   if (!os_accept(socket, sa, &size))
     return PFalse;
     
@@ -2467,7 +2467,7 @@ PBoolean PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 #if P_HAS_IPV6
 
   Psockaddr sa;
-  PINDEX size = sa.GetSize();
+  socklen_t size = sa.GetSize();
   bool ok = os_recvfrom(buf, len, 0, sa, &size);
   addr = sa.GetIP();
   port = sa.GetPort();
