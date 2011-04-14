@@ -43,9 +43,15 @@ StunServer::StunServer()
 void StunServer::Main()
 {
   PArgList & args = GetArguments();
+  args.Parse(
+            "-turnserver:"
 #if PTRACING
-  args.Parse("t-trace."       "-no-trace."
-             "o-output:"      "-no-output.");
+            "t-trace."       "-no-trace."
+            "o-output:"      "-no-output."
+#endif
+    );
+
+#if PTRACING
 
   PTrace::Initialise(args.GetOptionCount('t'),
                    args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
@@ -63,6 +69,8 @@ void StunServer::Main()
     return;
   }
 
+  PIPSocketAddressAndPort turnServer(args.GetOptionString("turnserver"));
+
   while (server.IsOpen()) {
     PSTUNServer::SocketInfo info;
     PSTUNMessage message;
@@ -71,8 +79,24 @@ void StunServer::Main()
     else if (message.GetSize() > 0) {
       if (!message.Validate())
         cerr << "error: invalid message received" << endl;
-      else
+      else if (message.GetType() != PSTUNMessage::Allocate)
         server.Process(message, info);
+      else if (turnServer.IsValid()) {
+        PSTUNMessage response;
+        {
+          PSTUNErrorCode attr;
+          attr.Initialise();
+          attr.SetErrorCode(300, "TURN available on alternate server");
+          response.AddAttribute(attr);
+        }
+        {
+          PSTUNAddressAttribute attr;
+          attr.InitAddrAttr(PSTUNAttribute::ALTERNATE_SERVER);
+          attr.SetIPAndPort(turnServer);
+          response.AddAttribute(attr);
+          server.WriteTo(response, *info.m_socket, info.m_socketAddress);
+        }
+      }
     }
   }
 }
