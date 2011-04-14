@@ -67,7 +67,7 @@ class PXConfig : public PDictionary<PCaselessString, PStringToString>
     typedef PDictionary<PCaselessString, PStringToString> ParentClass;
     PCLASSINFO(PXConfig, ParentClass);
   public:
-    PXConfig();
+    PXConfig(const PString & key, const PFilePath & filename);
     ~PXConfig();
 
     void Wait()   { mutex.Wait(); }
@@ -77,7 +77,7 @@ class PXConfig : public PDictionary<PCaselessString, PStringToString>
     void ReadFromEnvironment (char **envp);
 
     PBoolean WriteToFile(const PFilePath & filename);
-    PBoolean Flush(const PFilePath & filename);
+    void Flush();
 
     void SetDirty()
     {
@@ -85,14 +85,15 @@ class PXConfig : public PDictionary<PCaselessString, PStringToString>
       dirty = PTrue;
     }
 
-    PBoolean      AddInstance();
-    PBoolean      RemoveInstance(const PFilePath & filename);
-
   protected:
-    int       instanceCount;
-    PMutex    mutex;
-    PBoolean      dirty;
-    PBoolean      canSave;
+    PString        m_key;
+    PFilePath      m_filename;
+    PAtomicInteger instanceCount;
+    PMutex         mutex;
+    bool           dirty;
+    bool           canSave;
+
+  friend class PXConfigDictionary;
 };
 
 
@@ -105,14 +106,14 @@ static PBoolean IsComment(const PString& str)
 //
 // a dictionary of configurations, keyed by filename
 //
-class PXConfigDictionary : public PDictionary<PFilePath, PXConfig>
+class PXConfigDictionary : public PDictionary<PString, PXConfig>
 {
-    typedef PDictionary<PFilePath, PXConfig> ParentClass;
+    typedef PDictionary<PString, PXConfig> ParentClass;
     PCLASSINFO(PXConfigDictionary, ParentClass)
   public:
     PXConfigDictionary();
     ~PXConfigDictionary();
-    PXConfig * GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey);
+    PXConfig * GetFileConfigInstance(const PString & key, const PFilePath & filename);
     PXConfig * GetEnvironmentInstance();
     void RemoveInstance(PXConfig * instance);
     void WriteChangedInstances();
@@ -128,14 +129,13 @@ class PXConfigDictionary : public PDictionary<PFilePath, PXConfig>
 PDECLARE_CLASS(PXConfigWriteThread, PThread)
   public:
     PXConfigWriteThread(PSyncPointAck & stop);
-    ~PXConfigWriteThread();
     void Main();
   private:
     PSyncPointAck & stop;
 };
 
 
-PXConfigDictionary * configDict;
+static PXConfigDictionary * g_configDict;
 
 #define	new PNEW
 
@@ -154,30 +154,27 @@ PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
   Resume();
 }
 
-PXConfigWriteThread::~PXConfigWriteThread()
-{
-}
 
 void PXConfigWriteThread::Main()
 {
   PTRACE(4, "PTLib\tConfig file cache write back thread started.");
   while (!stop.Wait(30000))  // if stop.Wait() returns PTrue, we are shutting down
-    configDict->WriteChangedInstances();   // check dictionary for items that need writing
+    g_configDict->WriteChangedInstances();   // check dictionary for items that need writing
 
-  configDict->WriteChangedInstances();
+  g_configDict->WriteChangedInstances();
 
   stop.Acknowledge();
 }
 
 
+//////////////////////////////////////////////////////
 
-PXConfig::PXConfig()
+PXConfig::PXConfig(const PString & key, const PFilePath & filename)
+  : m_key(key)
+  , m_filename(filename)
 {
   // make sure content gets removed
   AllowDeleteObjects();
-
-  // no instances, initially
-  instanceCount = 0;
 
   // we start off clean
   dirty = PFalse;
@@ -188,48 +185,23 @@ PXConfig::PXConfig()
   PTRACE(4, "PTLib\tCreated PXConfig " << this);
 }
 
+
 PXConfig::~PXConfig()
 {
   PTRACE(4, "PTLib\tDestroyed PXConfig " << this);
 }
 
 
-PBoolean PXConfig::AddInstance()
+void PXConfig::Flush()
 {
   mutex.Wait();
-  PBoolean stat = instanceCount++ == 0;
-  mutex.Signal();
-
-  return stat;
-}
-
-PBoolean PXConfig::RemoveInstance(const PFilePath & /*filename*/)
-{
-  mutex.Wait();
-
-  PAssert(instanceCount != 0, "PConfig instance count dec past zero");
-
-  PBoolean stat = --instanceCount == 0;
-
-  mutex.Signal();
-
-  return stat;
-}
-
-PBoolean PXConfig::Flush(const PFilePath & filename)
-{
-  mutex.Wait();
-
-  PBoolean stat = instanceCount == 0;
 
   if (canSave && dirty) {
-    WriteToFile(filename);
+    WriteToFile(m_filename);
     dirty = PFalse;
   }
 
   mutex.Signal();
-
-  return stat;
 }
 
 PBoolean PXConfig::WriteToFile(const PFilePath & filename)
@@ -420,7 +392,7 @@ PXConfigDictionary::PXConfigDictionary()
 {
   environmentInstance = NULL;
   writeThread = NULL;
-  configDict = this;
+  g_configDict = this;
 }
 
 
@@ -439,7 +411,7 @@ PXConfig * PXConfigDictionary::GetEnvironmentInstance()
 {
   mutex.Wait();
   if (environmentInstance == NULL) {
-    environmentInstance = new PXConfig;
+    environmentInstance = new PXConfig(PString::Empty(), PString::Empty());
     environmentInstance->ReadFromEnvironment(environ);
   }
   mutex.Signal();
@@ -447,7 +419,7 @@ PXConfig * PXConfigDictionary::GetEnvironmentInstance()
 }
 
 
-PXConfig * PXConfigDictionary::GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey)
+PXConfig * PXConfigDictionary::GetFileConfigInstance(const PString & key, const PFilePath & filename)
 {
   mutex.Wait();
 
@@ -456,14 +428,12 @@ PXConfig * PXConfigDictionary::GetFileConfigInstance(const PFilePath & key, cons
     writeThread = new PXConfigWriteThread(stopConfigWriteThread);
 
   PXConfig * config = GetAt(key);
-  if (config != NULL) 
-    config->AddInstance();
-  else {
-    config = new PXConfig;
-    config->ReadFromFile(readKey);
-    config->AddInstance();
+  if (config == NULL) {
+    config = new PXConfig(key, filename);
+    config->ReadFromFile(filename);
     SetAt(key, config);
   }
+  ++config->instanceCount;
 
   mutex.Signal();
   return config;
@@ -474,12 +444,10 @@ void PXConfigDictionary::RemoveInstance(PXConfig * instance)
   mutex.Wait();
 
   if (instance != environmentInstance) {
-    for (iterator it = begin(); it != end(); ++it) {
-      if (&it->second == instance && instance->RemoveInstance(it->first)) {
-        instance->Flush(it->first);
-        RemoveAt(it->first);
-        break;
-      }
+    iterator it = find(instance->m_key);
+    if (it != end() && --instance->instanceCount == 0) {
+      instance->Flush();
+      erase(it);
     }
   }
 
@@ -491,7 +459,7 @@ void PXConfigDictionary::WriteChangedInstances()
   mutex.Wait();
 
   for (iterator it = begin(); it != end(); ++it)
-    it->second.Flush(it->first);
+    it->second.Flush();
 
   mutex.Signal();
 }
@@ -510,7 +478,7 @@ void PConfig::Construct(Source src,
 {
   // handle cnvironment configs differently
   if (src == PConfig::Environment)  {
-    config = configDict->GetEnvironmentInstance();
+    config = g_configDict->GetEnvironmentInstance();
     return;
   }
   
@@ -524,7 +492,7 @@ void PConfig::Construct(Source src,
     filename = readFilename = PProcess::Current().GetConfigurationFile();
 
   // get, or create, the configuration
-  config = configDict->GetFileConfigInstance(filename, readFilename);
+  config = g_configDict->GetFileConfigInstance(filename, readFilename);
 }
 
 PConfig::PConfig(int, const PString & name)
@@ -532,19 +500,19 @@ PConfig::PConfig(int, const PString & name)
 {
   PFilePath readFilename, filename;
   LocateFile(name, readFilename, filename);
-  config = configDict->GetFileConfigInstance(filename, readFilename);
+  config = g_configDict->GetFileConfigInstance(filename, readFilename);
 }
 
 
 void PConfig::Construct(const PFilePath & theFilename)
 {
-  config = configDict->GetFileConfigInstance(theFilename, theFilename);
+  config = g_configDict->GetFileConfigInstance(theFilename, theFilename);
 }
 
 
 PConfig::~PConfig()
 {
-  configDict->RemoveInstance(config);
+  g_configDict->RemoveInstance(config);
 }
 
 
