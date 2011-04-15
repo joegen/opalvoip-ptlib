@@ -36,6 +36,8 @@
 #pragma interface
 #endif
 
+#if P_FTP
+
 #include <ptclib/inetprot.h>
 #include <ptlib/sockets.h>
 
@@ -476,8 +478,7 @@ class PFTPServer : public PFTP
 };
 
 
-PFACTORY_LOAD(PURL_FtpLoader);
-
+#endif // P_FTP
 
 #endif // PTLIB_FTP_H
 

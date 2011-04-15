@@ -475,6 +475,13 @@ class PURLLoader : public PObject
 
 typedef PFactory<PURLLoader> PURLLoaderFactory;
 
+#if P_HTTP
+  PFACTORY_LOAD(PURL_HttpLoader);
+#endif // P_HTTP
+#if P_FTP
+  PFACTORY_LOAD(PURL_FtpLoader);
+#endif // P_HTTP
+
 
 #endif // P_URL
 
