@@ -119,8 +119,8 @@ SOURCES		+= $(PLATFORM_SRC_DIR)/vfw.cxx
 endif
 
 ifdef HAS_DIRECTSHOW
-SOURCES	+= $(PLATFORM_SRC_DIR)/vidinput_directx.cxx
-$(OBJDIR)/vidinput_directx.o: $(PLATFORM_SRC_DIR)/vidinput_directx.cxx
+SOURCES	+= $(PLATFORM_SRC_DIR)/directshow.cxx
+$(OBJDIR)/directshow.o: $(PLATFORM_SRC_DIR)/directshow.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
