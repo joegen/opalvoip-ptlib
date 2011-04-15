@@ -918,6 +918,7 @@ class PURL_HttpLoader : public PURLLoader
     virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType, const PTimeInterval & timeout)
     {
       PHTTPClient http;
+      http.SetPersistent(false);
       http.SetReadTimeout(timeout);
       return http.GetTextDocument(url, str, requiredContentType);
     }
@@ -925,6 +926,7 @@ class PURL_HttpLoader : public PURLLoader
     virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType, const PTimeInterval & timeout)
     {
       PHTTPClient http;
+      http.SetPersistent(false);
       http.SetReadTimeout(timeout);
       PMIMEInfo outMIME, replyMIME;
       if (!http.GetDocument(url, outMIME, replyMIME))
