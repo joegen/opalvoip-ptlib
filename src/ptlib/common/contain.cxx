@@ -985,7 +985,7 @@ PString & PString::operator=(PUInt64 n)
 void PString::AssignContents(const PContainer & cont)
 {
   PCharArray::AssignContents(cont);
-  m_length = ((const PString &)cont).m_length;
+  m_length = ((const PString &)cont).GetLength();
 }
 
 
