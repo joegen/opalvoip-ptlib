@@ -1046,7 +1046,7 @@ PBoolean PFile::Copy(const PFilePath & oldname, const PFilePath & newname, PBool
 PBoolean PTextFile::ReadLine(PString & str)
 {
   str.ReadFrom(*this);
-  return !str.IsEmpty();
+  return !str.IsEmpty() || good();
 }
 
 
