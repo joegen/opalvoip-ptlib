@@ -324,6 +324,7 @@ PBoolean PInternetProtocol::ReadLine(PString & line, PBoolean allowContinuation)
 
   if (count < line.GetSize()-1)
     line[count] = '\0';
+  line.MakeMinimumSize();
 
   return gotEndOfLine;
 }

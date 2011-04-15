@@ -1882,9 +1882,6 @@ class PHTTPDirRequest : public PHTTPFileRequest
 };
 
 
-PFACTORY_LOAD(PURL_HttpLoader);
-
-
 #endif // P_HTTP
 
 #endif // PTLIB_HTTP_H

@@ -441,7 +441,7 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
 
     PString uphp = str(start, pos-1);
     if (pos != P_MAX_INDEX)
-      start += pos;
+      start = pos;
     else
       start = P_MAX_INDEX;
 
@@ -517,13 +517,10 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     end = pos-1;
   }
 
-  if (schemeInfo->hasFragments) {
-    // chop off any trailing fragment
-    pos = str.Find('#', start);
-    if (pos < end) {
-      fragment = UntranslateString(str(pos+1, end), PathTranslation);
-      end = pos-1;
-    }
+  // chop off any trailing fragment
+  if (schemeInfo->hasFragments && (pos = str.Find('#', start)) < end) {
+    fragment = UntranslateString(str(pos+1, end), PathTranslation);
+    end = pos-1;
   }
 
   if (port == 0 && !relativePath) {
@@ -655,7 +652,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   else
     str << TranslateString(m_contents, PathTranslation);
 
-  if (fmt == URIOnly) {
+  if (fmt == FullURL || fmt == URIOnly) {
     if (!fragment)
       str << "#" << TranslateString(fragment, PathTranslation);
 
