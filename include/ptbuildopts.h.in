@@ -458,7 +458,7 @@
   #if P_EXPAT_BUILD
     #pragma include_alias(<expat.h>, <@EXPAT_BUILD_DIR@/lib/expat.h>)
   #else
-    #pragma include_alias(<expat.h>, <@EXPAT_WIN32_DIR@/lib/expat.h>)
+    #pragma include_alias(<expat.h>, <@EXPAT_WIN32_DIR@/Source/lib/expat.h>)
   #endif
 
   #if P_64BIT
@@ -468,13 +468,7 @@
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W64_RELEASE
     #endif
   #elif defined(P_EXPAT_WIN32)
-    #undef P_EXPAT_LIBRARY_V1
-    #undef P_EXPAT_LIBRARY_V2
-    #ifdef P_EXPAT_LIBRARY_V1
-      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_V1
-    #elif defined (P_EXPAT_LIBRARY_V2)
-      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_V2
-    #endif
+    #undef P_EXPAT_LIBRARY
   #elif !defined(_WIN32_WCE)
     #if defined(_DEBUG)
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W32_DEBUG
