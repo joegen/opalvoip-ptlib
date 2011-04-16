@@ -91,6 +91,7 @@ class Feature
     void Parse(const string & optionName, const string & optionValue);
     void Adjust(string & line);
     bool Locate(const char * testDir);
+    void RunDependencies();
 
     string featureName;
     string displayName;
@@ -123,8 +124,11 @@ class Feature
     };
     list<FindFileInfo> findFiles;
 
-    list<string> ifFeature;
-    list<string> ifNotFeature;
+    struct IfFeature {
+      list<string> present;
+      list<string> absent;
+    };
+    list<IfFeature> ifFeatures;
 
     string breaker;
     string directory;
@@ -243,18 +247,20 @@ void Feature::Parse(const string & optionName, const string & optionValue)
   }
 
   else if (optionName == "IF_FEATURE") {
+    IfFeature ifFeature;
     const char * delimiters = "&";
     string::size_type lastPos = optionValue.find_first_not_of(delimiters, 0);
     string::size_type pos = optionValue.find_first_of(delimiters, lastPos);
     while (string::npos != pos || string::npos != lastPos) {
       string str = optionValue.substr(lastPos, pos - lastPos);
       if (str[0] == '!')
-        ifNotFeature.push_back(str.substr(1));
+        ifFeature.absent.push_back(str.substr(1));
       else
-        ifFeature.push_back(str);
+        ifFeature.present.push_back(str);
       lastPos = optionValue.find_first_not_of(delimiters, pos);
       pos = optionValue.find_first_of(delimiters, lastPos);
     }
+    ifFeatures.push_back(ifFeature);
   }
 }
 
@@ -621,6 +627,40 @@ bool AllFeaturesAre(bool state, const list<string> & features, string & breaker)
 }
 
 
+void Feature::RunDependencies()
+{
+  if (state != Enabled)
+    return;
+
+  States newState = Enabled;
+  for (list<IfFeature>::iterator it = ifFeatures.begin(); it != ifFeatures.end(); ++it) {
+    if (!AllFeaturesAre(true, it->present, breaker))
+      newState = Dependency;
+    else if (!AllFeaturesAre(false, it->absent, breaker))
+      newState = Blocked;
+    else {
+      newState = Enabled;
+      break;
+    }
+  }
+  if (newState != Enabled) {
+    state = newState;
+    return;
+  }
+
+  if (checkFiles.empty())
+    return;
+
+  state = NotFound;
+  for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
+    if (file->found) {
+      state = Enabled;
+      break;
+    }
+  }
+}
+
+
 int main(int argc, char* argv[])
 {
   // open and scan configure.ac
@@ -900,21 +940,8 @@ int main(int argc, char* argv[])
     }
   }
 
-  for (feature = features.begin(); feature != features.end(); feature++) {
-    if (feature->state == Feature::Enabled && !AllFeaturesAre(true, feature->ifFeature, feature->breaker))
-      feature->state = Feature::Dependency;
-    else if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
-      feature->state = Feature::Blocked;
-    else if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
-      feature->state = Feature::NotFound;
-      for (list<Feature::CheckFileInfo>::iterator file = feature->checkFiles.begin(); file != feature->checkFiles.end(); file++) {
-        if (file->found) {
-          feature->state = Feature::Enabled;
-          break;
-        }
-      }
-    }
-  }
+  for (feature = features.begin(); feature != features.end(); feature++)
+    feature->RunDependencies();
 
   int longestNameWidth = 0;
   for (feature = features.begin(); feature != features.end(); feature++) {
