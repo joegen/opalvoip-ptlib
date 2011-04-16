@@ -1177,7 +1177,7 @@ else
 dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
                     ], 
                     [HAS_OPENSSL=])
-fi
+fi 
 
 AC_SUBST(HAS_OPENSSL)
 
@@ -1207,9 +1207,8 @@ fi
 dnl ########################################################################
 dnl look for expat XML parser
 
-dnl MSWIN_DISPLAY    expat,Expat XML
+dnl MSWIN_DISPLAY    expat,Expat XML (local build)
 dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_EXPAT_BUILD=1
-dnl MSWIN_CHECK_FILE expat,Source\lib\expat.h,P_EXPAT_WIN32=2
 dnl MSWIN_DIR_SYMBOL expat,EXPAT_BUILD_DIR
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_DEBUG,expat.lib,Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_RELEASE,expat.lib,Release
@@ -1219,15 +1218,18 @@ dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_DEBUG,expat.lib,wm6/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
-dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_V1,libexpat.lib,lib
-dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_V2,libexpatMT.lib,bin
 dnl MSWIN_CHECK_DIR  expat,..\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\expat\
-dnl MSWIN_CHECK_DIR  expat,\Program Files\Expat 2.*
-dnl MSWIN_CHECK_DIR  expat,\Program Files (x86)\Expat 2.*
+
+dnl MSWIN_DISPLAY    expat32,Expat XML (precompiled)
+dnl MSWIN_CHECK_FILE expat32,Source\lib\expat.h,P_EXPAT_WIN32=1
+dnl MSWIN_DIR_SYMBOL expat32,EXPAT_WIN32_DIR
+dnl MSWIN_FIND_FILE  expat32,P_EXPAT_LIBRARY,libexpatMT.lib,bin
+dnl MSWIN_CHECK_DIR  expat32,\Program Files\Expat 2.*
+dnl MSWIN_CHECK_DIR  expat32,\Program Files (x86)\Expat 2.*
 
 AC_ARG_ENABLE([expat],
 	      AS_HELP_STRING([--disable-expat],[disable expat XML support]),
@@ -1375,6 +1377,7 @@ dnl Jabber
 dnl MSWIN_DISPLAY    jabber,Jabber
 dnl MSWIN_DEFINE     jabber,P_JABBER
 dnl MSWIN_IF_FEATURE jabber,expat
+dnl MSWIN_IF_FEATURE jabber,expat32
 
 PTLIB_SIMPLE_OPTION([jabber], [JABBER], [enable Jabber support], [HAS_EXPAT])
 
@@ -1383,6 +1386,7 @@ dnl VXML
 dnl MSWIN_DISPLAY    vxml,VXML Support
 dnl MSWIN_DEFINE     vxml,P_VXML
 dnl MSWIN_IF_FEATURE vxml,http&expat
+dnl MSWIN_IF_FEATURE vxml,http&expat32
 
 PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP])
 
@@ -1391,6 +1395,7 @@ dnl XMLRPC
 dnl MSWIN_DISPLAY    xmlrpc,XMLRPC Support
 dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
 dnl MSWIN_IF_FEATURE xmlrpc,http&expat
+dnl MSWIN_IF_FEATURE xmlrpc,http&expat32
 
 PTLIB_SIMPLE_OPTION([xmlrpc], [XMLRPC], [enable XMLRPC support], [HAS_EXPAT], [HAS_HTTP])
 
@@ -1399,6 +1404,7 @@ dnl SOAP
 dnl MSWIN_DISPLAY    soap,SOAP Support
 dnl MSWIN_DEFINE     soap,P_SOAP
 dnl MSWIN_IF_FEATURE soap,http&expat
+dnl MSWIN_IF_FEATURE soap,http&expat32
 
 PTLIB_SIMPLE_OPTION([soap], [SOAP], [enable SOAP support], [HAS_EXPAT], [HAS_HTTP])
 
