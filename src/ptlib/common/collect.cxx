@@ -421,6 +421,7 @@ void PAbstractList::InsertElement(PListElement * element, PObject * obj)
   newElement->prev = element->prev;
   newElement->next = element;
   element->prev = newElement;
+  ++reference->size;
 }
 
 
