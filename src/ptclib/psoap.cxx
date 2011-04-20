@@ -568,30 +568,18 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
   // Set thetimeout
   client.SetReadTimeout( timeout );
 
+  PString replyBody;
+
   // Send the POST request to the server
-  PBoolean ok = client.PostData( url, sendMIME, soapRequest, replyMIME );
-
-  // Find the length of the response
-  PINDEX contentLength;
-  if ( replyMIME.Contains( PHTTP::ContentLengthTag() ) )
-    contentLength = ( PINDEX ) replyMIME[ PHTTP::ContentLengthTag() ].AsUnsigned();
-  else if ( ok )
-    contentLength = P_MAX_INDEX;
-  else
-    contentLength = 0;
-
-  // Retrieve the response
-  PString replyBody = client.ReadString( contentLength );
-
-  PTRACE( 5, "PSOAP\tIncoming SOAP is " << replyBody );
+  bool ok = client.PostData( url, sendMIME, soapRequest, replyMIME, replyBody);
 
   // Check if the server really gave us something
   if ( !ok || replyBody.IsEmpty() ) 
-  {
     txt << "HTTP POST failed: "
         << client.GetLastResponseCode() << ' '
         << client.GetLastResponseInfo();
-  }
+  else
+    PTRACE( 5, "PSOAP\tIncoming SOAP is " << replyBody );
 
   // Parse the response only if the response code from the server
   // is either 500 (Internal server error) or 200 (RequestOK)
