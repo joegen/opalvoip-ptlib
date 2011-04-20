@@ -33,6 +33,8 @@
 #include <ptlib/pprocess.h>
 void unsetenv(const char *);
 
+// -x ../../include/ptlib/msos/ptlib.ignore "..\..\lib\ptlibsd.lib" "..\..\include\ptlib\msos\ptlibs_2010.dtf" "..\..\lib\Win32\debug\$(TargetName).def"
+
 PDECLARE_CLASS(Symbol, PCaselessString)
   public:
     Symbol(const PString & sym, const PString & cpp, PINDEX ord, bool ext, bool nonam)
@@ -150,7 +152,7 @@ void MergeSym::Main()
         ext_filename += ".def";
 
       PINDEX previous_def_symbols_size = def_symbols.GetSize();
-	  PINDEX inc_index = 0;
+      PINDEX inc_index = 0;
       for (inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
         PString trial_filename = PDirectory(include_path[inc_index]) + ext_filename;
         if (args.HasOption('v'))
