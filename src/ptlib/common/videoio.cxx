@@ -1453,11 +1453,19 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
       return SetFrameSize(it->GetFrameWidth(), height);
   }
 
-  // Then try for the double size
+  // Then try for double the size
   for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
     unsigned w, h;
     it->GetFrameSize(w, h);
     if (w == width*2 && h == height*2)
+      return SetFrameSize(w, h);
+  }
+
+  // Then try for half the size
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    unsigned w, h;
+    it->GetFrameSize(w, h);
+    if (w == width/2 && h == height/2)
       return SetFrameSize(w, h);
   }
 
