@@ -738,15 +738,11 @@ PBoolean PEthSocket::Connect(const PString & interfaceName)
   fakeMacHeader = PFalse;
   ipppInterface = PFalse;
 
-  if (strncmp("eth", interfaceName, 3) == 0)
-    medium = Medium802_3;
-  else if (strncmp("lo", interfaceName, 2) == 0)
+  if (strncmp("lo", interfaceName, 2) == 0)
     medium = MediumLoop;
-  else if (strncmp("sl", interfaceName, 2) == 0) {
-    medium = MediumWan;
-    fakeMacHeader = PTrue;
-  }
-  else if (strncmp("ppp", interfaceName, 3) == 0) {
+  else if (strncmp("sl", interfaceName, 2) == 0 ||
+           strncmp("wlan", interfaceName, 4) == 0 ||
+           strncmp("ppp", interfaceName, 3) == 0) {
     medium = MediumWan;
     fakeMacHeader = PTrue;
   }
@@ -754,12 +750,8 @@ PBoolean PEthSocket::Connect(const PString & interfaceName)
     medium = MediumWan;
     ipppInterface = PTrue;
   }
-#ifdef P_RTEMS
-  else if (strncmp(RTEMS_BSP_NETWORK_DRIVER_NAME, interfaceName, 3) == 0)
-    medium = Medium802_3;
-#endif
   else
-    return SetErrorValues(NotFound, ENOENT);
+    medium = Medium802_3;
 
 #if defined(SIO_Get_MAC_Address) 
   PUDPSocket ifsock;
