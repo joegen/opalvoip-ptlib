@@ -337,7 +337,7 @@ void PDirectory::Close()
 
 PString PDirectory::CreateFullPath(const PString & path, PBoolean isDirectory)
 {
-  if (path.IsEmpty() && !isDirectory)
+  if (path.IsEmpty())
     return path;
 
 #ifdef _WIN32_WCE //doesn't support Current Directory so the path suppose to be full
