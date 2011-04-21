@@ -73,7 +73,7 @@ static PBoolean PAssertAction(int c, const char * msg)
     case 'c' :
     case 'C' :
       PError << "\nDumping core.\n";
-      kill(getpid(), SIGABRT);
+      raise(SIGABRT);
 
     case 'i' :
     case 'I' :
