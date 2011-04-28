@@ -559,7 +559,7 @@ PListElement * PAbstractList::FindElement(PINDEX index) const
 
 PListElement * PAbstractList::FindElement(const PObject & obj, PINDEX * indexPtr) const
 {
-  if (PAssertNULL(info) != NULL)
+  if (PAssertNULL(info) == NULL)
     return NULL;
 
   PINDEX index = 0;
