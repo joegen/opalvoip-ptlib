@@ -89,10 +89,15 @@
   #include <dshow.h>
   #include <initguid.h>
 
+#ifdef __MINGW32__
+  #include <ks.h>
+  #include <ksmedia.h>
+#else
   #pragma warning(disable:4201)
   #include <Ks.h>
   #include <KsMedia.h>
   #pragma warning(default:4201)
+#endif
 
   class PVideoInputControl_DirectShow : public PVideoInputControl
   {
@@ -530,7 +535,11 @@ PBoolean PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & dev
 bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) const
 {
   PComPtr<IAMStreamConfig> pStreamConfig;
+#ifdef __MINGW32__
+  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(IID_IAMStreamConfig, (void**)&pStreamConfig));
+#else
   CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(&pStreamConfig));
+#endif
 
   int iCount, iSize;
   CHECK_ERROR_RETURN(pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize));
@@ -623,7 +632,11 @@ bool PVideoInputDevice_DirectShow::SetPinFormat()
   }
 
   PComPtr<IAMStreamConfig> pStreamConfig;
+#ifdef __MINGW32__
+  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(IID_IAMStreamConfig, (void**)&pStreamConfig));
+#else
   CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(&pStreamConfig));
+#endif
 
   int iCount = 0, iSize=0;
   CHECK_ERROR_RETURN(pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize));
