@@ -447,7 +447,7 @@ class inputframes {
 
 class frameSort {
   public:
-     bool operator()(inputframes*& f1, inputframes*& f2) {
+     bool operator()(inputframes* const& f1, inputframes* const& f2) {
           if (f1->width > f2->width) return true;
           else if (f1->width == f2->width && f1->height > f2->height)
               return true;
