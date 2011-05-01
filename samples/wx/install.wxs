@@ -86,7 +86,7 @@
       </Directory>
 
       <Directory Id="ProgramMenuFolder" Name="Programs">
-        <Directory Id="ProgramMenuDir" Name="OpenPhone">
+        <Directory Id="ProgramMenuDir" Name="wxSample">
           <Component Id="ProgramMenuDir" Guid="*">
             <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
             <RegistryValue Root='HKCU'
