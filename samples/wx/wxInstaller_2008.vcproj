@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="wxInstaller"
+	ProjectGUID="{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}"
+	RootNamespace="wxInstaller"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="..\..\bin\wxSample\Installer"
+			IntermediateDirectory="$(OutDir)"
+			ConfigurationType="10"
+			CharacterSet="2"
+			DeleteExtensionsOnClean="*.wixobj;*.msi;$(TargetPath)"
+			WholeProgramOptimization="1"
+			EnableManagedIncrementalBuild="0"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}"
+			RelativePathToProject=".\wx_2008.vcproj"
+		/>
+	</References>
+	<Files>
+		<File
+			RelativePath=".\install.wxs"
+			>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="WiX Installer Generation"
+					CommandLine="&quot;$(WIX)\bin\candle.exe&quot; -nologo -dMSVCRT_VER=90 -out &quot;$(IntDir)\$(InputName).wixobj&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;&quot;$(WIX)\bin\light&quot; -nologo -ext WixUIExtension -out &quot;$(OutDir)\wxSample.msi&quot; &quot;$(IntDir)\$(InputName).wixobj&quot;&#x0D;&#x0A;"
+					Outputs="$(OutDir)\wxSample.msi"
+				/>
+			</FileConfiguration>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
