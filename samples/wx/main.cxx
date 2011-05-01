@@ -61,7 +61,7 @@ typedef wstringstream tstringstream;
 typedef  stringstream tstringstream;
 #endif
 
-extern void InitXmlResource(); // From resource.cpp whichis compiled openphone.xrc
+extern void InitXmlResource(); // From resource.cpp whichis compiled resource.xrc
 
 
 // Definitions of the configuration file section and key names
@@ -401,7 +401,7 @@ public:
       return true;
 
     wxMessageBox(wxT("Illegal value \"") + size + wxT("\" for video size."),
-                 wxT("OpenPhone Error"), wxCANCEL|wxICON_EXCLAMATION);
+                 wxT("wxSample Error"), wxCANCEL|wxICON_EXCLAMATION);
     return false;
   }
 };
@@ -431,7 +431,7 @@ OptionsDialog::OptionsDialog(MyFrame * frame)
   SetExtraStyle(GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY);
   wxXmlResource::Get()->LoadDialog(this, frame, wxT("OptionsDialog"));
 
-  PTRACE(4, "OpenPhone\tLoaded options dialog");
+  PTRACE(4, "wxSample\tLoaded options dialog");
 
   // Fill sound player combo box with available devices and set selection
   wxComboBox * combo = FindWindowByNameAs<wxComboBox>(this, SoundPlayerKey);

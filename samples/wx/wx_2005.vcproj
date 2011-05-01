@@ -43,7 +43,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/OpenPhone.tlb"
+				TypeLibraryName="$(IntDir)\$(ProjectName).tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -135,7 +135,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/OpenPhone.tlb"
+				TypeLibraryName="$(IntDir)\$(ProjectName).tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -228,7 +228,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/OpenPhone.tlb"
+				TypeLibraryName="$(IntDir)\$(ProjectName).tlb"
 				HeaderFileName=""
 			/>
 			<Tool
