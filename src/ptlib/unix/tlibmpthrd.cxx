@@ -42,7 +42,7 @@ extern int debug_mpthreads;
 PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
     PHouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread, NormalPriority, "Housekeeper")
+      : PThread(1000, NoAutoDeleteThread, HighestPriority, "Housekeeper")
       { closing = PFalse; Resume(); }
 
     void Main();
