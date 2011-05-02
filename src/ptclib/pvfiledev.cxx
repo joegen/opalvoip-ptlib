@@ -202,7 +202,7 @@ PBoolean PVideoInputDevice_YUVFile::SetVideoFormat(VideoFormat newFormat)
 
 int PVideoInputDevice_YUVFile::GetNumChannels() 
 {
-  return 2;  
+  return ChannelCount;  
 }
 
 
