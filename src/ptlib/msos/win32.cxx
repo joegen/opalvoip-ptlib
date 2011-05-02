@@ -1131,7 +1131,7 @@ void PThread::Yield()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, NormalPriority, "PTLib Housekeeper")
+  : PThread(1000, NoAutoDeleteThread, HighestPriority, "PTLib Housekeeper")
   , m_running(true)
 {
   Resume();
