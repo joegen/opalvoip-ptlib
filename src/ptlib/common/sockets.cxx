@@ -545,6 +545,10 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct addrinfo *res = NULL;
     struct addrinfo hints = { AI_CANONNAME, defaultIpAddressFamily };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
+    if (localErrNo != 0 && defaultIpAddressFamily == AF_INET6) {
+      hints.ai_family = AF_INET;
+      localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
+    }
     host = new PIPCacheData(localErrNo != NETDB_SUCCESS ? NULL : res, name);
     if (res != NULL)
       freeaddrinfo(res);
