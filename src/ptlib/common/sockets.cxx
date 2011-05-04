@@ -85,7 +85,7 @@ static int defaultIpAddressFamily = PF_INET;  // PF_UNSPEC;   // default to IPV4
 
 static PIPSocket::Address loopback4(127,0,0,1);
 static PIPSocket::Address broadcast4(INADDR_BROADCAST);
-static PIPSocket::Address any4(INADDR_ANY);
+static PIPSocket::Address any4(0,0,0,0);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static int defaultIPv6ScopeId = 0; 
