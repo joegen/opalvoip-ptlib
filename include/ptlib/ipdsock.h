@@ -136,7 +136,6 @@ class PIPDatagramSocket : public PIPSocket
       const PIPSocketAddressAndPort & ipAndPort
     );
 
-  protected:
 
     friend struct WriteBytesOp;
     friend struct WriteVectorOp;
@@ -146,6 +145,7 @@ class PIPDatagramSocket : public PIPSocket
       virtual bool CheckLength(PIPDatagramSocket * sock) = 0;
     };
 
+  protected:
     virtual bool InternalWriteTo(InternalWriteOp & op, const PIPSocketAddressAndPort & ipAndPort);
 
 };
