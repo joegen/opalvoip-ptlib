@@ -65,8 +65,8 @@ class PNatCandidate : public PObject
 
     PIPSocketAddressAndPort m_baseAddress;
     PIPSocketAddressAndPort m_transport;
-    BYTE m_component;
     int m_type;
+    BYTE m_component;
 };
 
 
