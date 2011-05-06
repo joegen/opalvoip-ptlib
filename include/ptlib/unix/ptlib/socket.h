@@ -35,7 +35,8 @@
 // PSocket
 
   public:
-    PBoolean Read(void * ptr, PINDEX len);
+    virtual bool Read(void * ptr, PINDEX len);
+    virtual bool Write(const void * buf, PINDEX len);
     ~PSocket();
 
 // End Of File ////////////////////////////////////////////////////////////////
