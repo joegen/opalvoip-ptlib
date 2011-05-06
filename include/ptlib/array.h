@@ -1133,6 +1133,26 @@ class PBitArray : public PBYTEArray
 };
 
 
+template <class ObjClass>
+class PPtrVector : public std::vector<ObjClass *>
+{
+  public:
+    virtual ~PPtrVector()
+    {
+      Clear();
+    }
+
+    void Clear()
+    {
+      while (size() > 0) {
+        delete front();
+        erase(begin());
+      }
+    }
+};
+
+
+
 #endif // PTLIB_ARRAY_H
 
 

@@ -40,6 +40,7 @@
 #include <ptlib/ipsock.h>
 #include <ptlib/sockets.h>
 #include <ptlib/safecoll.h>
+#include <ptclib/pnat.h>
 #include <list>
 
 
