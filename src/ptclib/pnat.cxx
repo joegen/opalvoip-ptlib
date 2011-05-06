@@ -135,11 +135,30 @@ PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr
   return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass,0);
 }
 
-PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,PUDPSocket * & socket2,
-      const PIPSocket::Address & binding, void * /*userData*/)
+PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,
+                                      PUDPSocket * & socket2,
+                                      const PIPSocket::Address & binding,
+                                      void * /*userData*/)
 {
-	return CreateSocketPair(socket1,socket2,binding);
+  return CreateSocketPair(socket1,socket2,binding);
 }
+
+
+bool PNatMethod::CreateSocketPairAsync(const PString & /*token*/)
+{
+  return true;
+}
+
+
+bool PNatMethod::GetSocketPairAsync(const PString & /*token*/,
+                                    PUDPSocket * & socket1,
+                                    PUDPSocket * & socket2,
+                                    const PIPSocket::Address & binding,
+                                    void * userData)
+{
+  return CreateSocketPair(socket1, socket2, binding, userData);
+}
+
 
 void PNatMethod::PrintOn(ostream & strm) const
 {
