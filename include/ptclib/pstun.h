@@ -665,12 +665,12 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
     void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
 
     bool m_allocationMade;
-    BYTE m_protocol;
+    int m_channelNumber;
     bool m_usingTURN;
 
+    BYTE m_protocol;
     PIPSocketAddressAndPort m_relayedAddress;
     DWORD m_lifeTime;
-    int m_channelNumber;
     PIPSocketAddressAndPort m_peerIpAndPort;
 
     VectorOfSlice m_txVect;

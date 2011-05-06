@@ -60,10 +60,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 PSTUN::PSTUN()
-  : replyTimeout(DEFAULT_REPLY_TIMEOUT)
-  , m_timeAddressObtained(0)
-  , m_natType(PNatMethod::UnknownNat)
+  : m_natType(PNatMethod::UnknownNat)
   , m_pollRetries(DEFAULT_POLL_RETRIES)
+  , m_timeAddressObtained(0)
+  , replyTimeout(DEFAULT_REPLY_TIMEOUT)
 {
 }
 
@@ -392,7 +392,8 @@ void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
     memcpy(hdr->transactionId, id, sizeof(hdr->transactionId));
   else  {
     // add magic number for RFC 5389 
-    *(PUInt32b *)(&(hdr->transactionId)) = RFC5389_MAGIC_COOKIE;
+    PUInt32b * n = (PUInt32b *)&(hdr->transactionId);
+    *n = RFC5389_MAGIC_COOKIE;
 
     for (PINDEX i = 4; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
        hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
@@ -462,7 +463,8 @@ bool PSTUNMessage::Validate()
     return false;
 
   // do quick checks for RFC5389: magic cookie and top two bits of type must be 00
-  m_isRFC5389 = *(PUInt32b *)(&(header->transactionId)) == RFC5389_MAGIC_COOKIE;
+  PUInt32b * p = (PUInt32b *)&(header->transactionId);
+  m_isRFC5389 = *p == RFC5389_MAGIC_COOKIE;
   if (m_isRFC5389 && ((header->msgType & 0x00c0) != 0x00)) {
     PTRACE(2, "STUN\tPacket received with magic cookie, but type bits are incorrect.");
     return false;
@@ -1175,8 +1177,8 @@ struct SocketInfo {
   ~SocketInfo()
   { delete m_stunSocket; }
    
-  bool m_ready;
   PSTUNUDPSocket * m_stunSocket;
+  bool m_ready;
   PSTUNMessage    m_request;
   PSTUNMessage    m_response;
 };
@@ -1640,8 +1642,8 @@ struct AllocateSocketFunctor {
     : m_client(client)
     , m_component(component)
     , m_interface(iface)
-    , m_portInfo(portInfo)
     , m_turnSocket(NULL)
+    , m_portInfo(portInfo)
     , m_status(true)
   { }
 
