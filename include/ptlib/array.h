@@ -38,6 +38,8 @@
 #pragma interface
 #endif
 
+#include <vector>
+
 #include <ptlib/contain.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1137,6 +1139,7 @@ template <class ObjClass>
 class PPtrVector : public std::vector<ObjClass *>
 {
   public:
+    typedef std::vector<ObjClass *> Parent;
     virtual ~PPtrVector()
     {
       Clear();
@@ -1144,9 +1147,9 @@ class PPtrVector : public std::vector<ObjClass *>
 
     void Clear()
     {
-      while (size() > 0) {
-        delete front();
-        erase(begin());
+      while (Parent::size() > 0) {
+        delete Parent::front();
+        Parent::erase(Parent::begin());
       }
     }
 };
