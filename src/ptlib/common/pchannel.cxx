@@ -574,43 +574,6 @@ void PChannel::OnWriteComplete(AsyncContext & context)
     context.m_notifier(*this, context);
 }
 
-
-#ifndef P_HAS_RECVMSG
-
-PBoolean PChannel::Read(const VectorOfSlice & slices)
-{
-  PINDEX length = 0;
-
-  VectorOfSlice::const_iterator r;
-  for (r = slices.begin(); r != slices.end(); ++r) {
-    PBoolean stat = Read(r->iov_base, r->iov_len);
-    length        += lastReadCount;
-    lastReadCount = length;
-    if (!stat)
-      return PFalse;
-  }
-
-  return PTrue;
-}
-
-PBoolean PChannel::Write(const VectorOfSlice & slices)
-{
-  PINDEX length = 0;
-
-  VectorOfSlice::const_iterator r;
-  for (r = slices.begin(); r != slices.end(); ++r) {
-    PBoolean stat = Write(r->iov_base, r->iov_len);
-    length        += lastWriteCount;
-    lastWriteCount = length;
-    if (!stat)
-      return PFalse;
-  }
-
-  return PTrue;
-}
-
-#endif // P_HAS_RECVMSG
-
 ///////////////////////////////////////////////////////////////////////////////
 // PIndirectChannel
 

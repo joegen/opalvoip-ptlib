@@ -64,6 +64,20 @@ class PIPDatagramSocket : public PIPSocket
       Address & addr, ///< Address from which the datagram was received.
       WORD & port     ///< Port from which the datagram was received.
     );
+    virtual PBoolean ReadFrom(
+      void * buf,     ///< Data to be written as URGENT TCP data.
+      PINDEX len,     ///< Number of bytes pointed to by <code>buf</code>.
+      PIPSocketAddressAndPort & ipAndPort
+    );
+    virtual PBoolean ReadFrom(
+      VectorOfSlice & slices, ///< Data to be written as URGENT TCP data.
+      Address & addr,         ///< Address from which the datagram was received.
+      WORD & port             ///< Port from which the datagram was received.
+    );
+    virtual PBoolean ReadFrom(
+      VectorOfSlice & slices,             ///< Data to be written as URGENT TCP data.
+      PIPSocketAddressAndPort & ipAndPort
+    );
 
     /**Write a datagram to a remote computer.
 
@@ -75,6 +89,21 @@ class PIPDatagramSocket : public PIPSocket
       const Address & addr, ///< Address to which the datagram is sent.
       WORD port             ///< Port to which the datagram is sent.
     );
+    virtual PBoolean WriteTo(
+      const void * buf,     ///< Data to be written as URGENT TCP data.
+      PINDEX len,           ///< Number of bytes pointed to by <code>buf</code>.
+      const PIPSocketAddressAndPort & ipAndPort
+    );
+
+    virtual PBoolean WriteTo(
+      const VectorOfSlice & slices, ///< Data to be written as URGENT TCP data.
+      const Address & addr,         ///< Address to which the datagram is sent.
+      WORD port                     ///< Port to which the datagram is sent.
+    );
+    virtual PBoolean WriteTo(
+      const VectorOfSlice & slices,              ///< Data to be written as URGENT TCP data.
+      const PIPSocketAddressAndPort & ipAndPort
+    );
 
 
 // Include platform dependent part of class
@@ -83,6 +112,42 @@ class PIPDatagramSocket : public PIPSocket
 #else
 #include "unix/ptlib/ipdsock.h"
 #endif
+
+  public:
+  
+    // Normally, one would expect these to be protected, but they are just so darn
+    // useful that it's just easier if they are public
+    virtual bool InternalReadFrom(
+      void * buf,                                ///< Data to be written as URGENT TCP data.
+      PINDEX len,                                ///< Number of bytes pointed to by <code>buf</code>.
+      PIPSocketAddressAndPort & ipAndPort
+    );
+    virtual bool InternalReadFrom(
+      VectorOfSlice & slices,                    ///< Data to be written as URGENT TCP data.
+      PIPSocketAddressAndPort & ipAndPort
+    );
+    virtual bool InternalWriteTo(
+      const void * buf,                          ///< Data to be written as URGENT TCP data.
+      PINDEX len,                                ///< Number of bytes pointed to by <code>buf</code>.
+      const PIPSocketAddressAndPort & ipAndPort
+    );
+    virtual bool InternalWriteTo(
+      const VectorOfSlice & slices,              ///< Data to be written as URGENT TCP data.
+      const PIPSocketAddressAndPort & ipAndPort
+    );
+
+  protected:
+
+    friend struct WriteBytesOp;
+    friend struct WriteVectorOp;
+
+    struct InternalWriteOp {
+      virtual bool Write(PIPDatagramSocket * sock, int flags, struct sockaddr * saddr, size_t slen) = 0;
+      virtual bool CheckLength(PIPDatagramSocket * sock) = 0;
+    };
+
+    virtual bool InternalWriteTo(InternalWriteOp & op, const PIPSocketAddressAndPort & ipAndPort);
+
 };
 
 

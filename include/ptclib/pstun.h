@@ -36,10 +36,14 @@
 #endif
 
 
+#include <ptlib/pfactory.h>
 #include <ptclib/pnat.h>
 #include <ptlib/sockets.h>
 
 ////////////////////////////////////////////////////////////////////////////////
+
+class PSTUNMessage;
+class PSTUNUDPSocket;
 
 class PSTUN {
   public:
@@ -47,24 +51,79 @@ class PSTUN {
       DefaultPort = 3478
     };
 
-    enum NatTypes {
-      UnknownNat,
-      OpenNat,
-      ConeNat,
-      RestrictedNat,
-      PortRestrictedNat,
-      SymmetricNat,
-      SymmetricFirewall,
-      BlockedNat,
-      PartialBlockedNat,
-      NumNatTypes
+    enum {
+      MinChannelNumber = 0x4000,
+      MaxChannelNumber = 0x7ffe,
     };
 
-    /**Get NatTypes enumeration as an English string for the type.
+    PSTUN();
+
+    /** Determine the NAT type using RFC3489 discovery method
       */
-    static PString GetNatTypeString(
-      NatTypes type   ///< NAT Type to get name of
+    virtual PNatMethod::NatTypes RFC3489Discovery(
+      PSTUNUDPSocket * socket, 
+      const PIPSocketAddressAndPort & serverAddress, 
+      PIPSocketAddressAndPort & baseAddressAndPort, 
+      PIPSocketAddressAndPort & externalAddressAndPort
     );
+
+    virtual PNatMethod::NatTypes FinishRFC3489Discovery(
+      PSTUNMessage & responseI,
+      PSTUNUDPSocket * socket, 
+      PIPSocketAddressAndPort & externalAddressAndPort
+    );
+
+    virtual int MakeAuthenticatedRequest(
+      PSTUNUDPSocket * socket, 
+      PSTUNMessage & request, 
+      PSTUNMessage & response
+    );
+
+    virtual bool GetFromBindingResponse(
+      const PSTUNMessage & response,
+      PIPSocketAddressAndPort & externalAddress
+    );
+
+    virtual void AppendMessageIntegrity(
+      PSTUNMessage & message
+    );
+
+    virtual void SetCredentials(
+      const PString & username, 
+      const PString & password, 
+      const PString & realm
+    );
+
+    /**Get the timeout for responses from STUN server.
+      */
+    virtual const PTimeInterval GetTimeout() const { return replyTimeout; }
+
+    /**Set the timeout for responses from STUN server.
+      */
+    virtual void SetTimeout(
+      const PTimeInterval & timeout   ///< New timeout in milliseconds
+    ) { replyTimeout = timeout; }
+
+    /**Get the number of retries for responses from STUN server.
+      */
+    virtual PINDEX GetRetries() const { return m_pollRetries; }
+
+    /**Set the number of retries for responses from STUN server.
+      */
+    virtual void SetRetries(
+      PINDEX retries    ///< Number of retries
+    ) { m_pollRetries = retries; }
+
+    PNatMethod::NatTypes    m_natType;
+    PINDEX                  m_pollRetries;
+    PTime                   m_timeAddressObtained;
+    PString                 m_userName;
+    PString                 m_realm;
+    PString                 m_nonce;
+    PBYTEArray              m_credentialsHash;
+    PIPSocket::Address      m_interface;
+    PIPSocketAddressAndPort m_serverAddress;
+    PTimeInterval           replyTimeout;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -229,6 +288,9 @@ class PSTUNMessageIntegrity : public PSTUNAttribute
 class PSTUNErrorCode : public PSTUNAttribute
 {
   public:
+    PSTUNErrorCode()
+    { Initialise(); }
+
     BYTE m_zero1;
     BYTE m_zero2;
     BYTE m_hundreds;
@@ -242,6 +304,17 @@ class PSTUNErrorCode : public PSTUNAttribute
     bool IsValid() const { return (type == ERROR_CODE) && (length == 4 + strlen(m_reason) + 1); }
 };
 
+struct PSTUNChannelNumber : public PSTUNAttribute
+{
+  PSTUNChannelNumber()
+  { Initialise(); }
+
+  PUInt16b       m_channelNumber;
+  PUInt16b       m_rffu;
+
+  void Initialise();
+};
+
 struct PSTUNMessageHeader
 {
   PUInt16b       msgType;
@@ -253,26 +326,41 @@ struct PSTUNMessageHeader
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+class PSTUNClient;
+
 /**UDP socket that has been created by the STUN client.
   */
-class PSTUNUDPSocket : public PUDPSocket
+class PSTUNUDPSocket : public PNATUDPSocket
 {
-  PCLASSINFO(PSTUNUDPSocket, PUDPSocket);
+  PCLASSINFO(PSTUNUDPSocket, PNATUDPSocket);
   public:
+    //friend class PSTUNClient;
+    //friend class PSTUNMessage;
+
     PSTUNUDPSocket();
 
-    virtual PBoolean GetLocalAddress(
-      Address & addr    ///< Variable to receive hosts IP address
-    );
-    virtual PBoolean GetLocalAddress(
-      Address & addr,    ///< Variable to receive peer hosts IP address
-      WORD & port        ///< Variable to receive peer hosts port number
-    );
+    bool OpenSTUN(PSTUNClient & client);
+    PNatCandidate GetCandidateInfo();
+
+    bool BaseWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ap)
+    { return PUDPSocket::InternalWriteTo(buf, len, ap); }
+
+    bool BaseReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ap)
+    { return PUDPSocket::InternalReadFrom(buf, len, ap); }
 
   protected:
-    PIPSocket::Address externalIP;
+    friend class PSTUN;
+    friend class PSTUNClient;
 
-  friend class PSTUNClient;
+    PIPSocketAddressAndPort m_serverReflexiveAddress;
+    PIPSocketAddressAndPort m_baseAddressAndPort;
+
+    bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
+    bool InternalGetBaseAddress(PIPSocketAddressAndPort & addr);
+
+  private:
+    PNatMethod::NatTypes m_natType;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,15 +377,15 @@ class PSTUNMessage : public PBYTEArray
       SharedSecretResponse  = 0x0102,
       SharedSecretError     = 0x0112,
 
-      Allocate              = 0x003,  // RFC 5766
-      AllocateResponse      = 0x103,  // RFC 5766
-      AllocateError         = 0x113,  // RFC 5766
+      Allocate              = 0x0003,  // RFC 5766
+      AllocateResponse      = 0x0103,  // RFC 5766
+      AllocateError         = 0x0113,  // RFC 5766
 
-      Refresh               = 0x004,  // RFC 5766
-      Send                  = 0x006,  // RFC 5766
-      Data                  = 0x007,  // RFC 5766
-      CreatePermission      = 0x008,  // RFC 5766
-      ChannelBind           = 0x009,  // RFC 5766
+      Refresh               = 0x0004,  // RFC 5766
+      Send                  = 0x0006,  // RFC 5766
+      Data                  = 0x0007,  // RFC 5766
+      CreatePermission      = 0x0008,  // RFC 5766
+      ChannelBind           = 0x0009,  // RFC 5766
 
     };
     
@@ -351,31 +439,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
   PCLASSINFO(PSTUNClient, PNatMethod);
   public:
     PSTUNClient();
-
-    PSTUNClient(
-      const PString & server,
-      WORD portBase = 0,
-      WORD portMax = 0,
-      WORD portPairBase = 0,
-      WORD portPairMax = 0
-    );
-    PSTUNClient(
-      const PIPSocket::Address & serverAddress,
-      WORD serverPort = DefaultPort,
-      WORD portBase = 0,
-      WORD portMax = 0,
-      WORD portPairBase = 0,
-      WORD portPairMax = 0
-    );
-
-
-    void Initialise(
-      const PString & server,
-      WORD portBase = 0, 
-      WORD portMax = 0,
-      WORD portPairBase = 0, 
-      WORD portPairMax = 0
-    );
+    ~PSTUNClient();
 
     /**Get the NAT Method Name
      */
@@ -385,76 +449,73 @@ class PSTUNClient : public PNatMethod, public PSTUN
     */
     virtual PString GetName() const { return "STUN"; }
 
-    /**Get the current server address and port being used.
-      */
-    virtual bool GetServerAddress(
-      PIPSocket::Address & address,   ///< Address of server
-      WORD & port                     ///< Port server is using.
-    ) const;
-
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
        then the default port 3478 is used. The substring port can also be
        a service name as found in /etc/services. The host substring may be
        a DNS name or explicit IP address.
       */
-    PBoolean SetServer(
+    bool SetServer(
       const PString & server
     );
 
-    /**Set the STUN server to use by IP address and port.
-       If serverPort is zero then the default port of 3478 is used.
+    /**Get the current server address name.
+       Defaults to be "address:port" string form.
       */
-    PBoolean SetServer(
-      const PIPSocket::Address & serverAddress,
-      WORD serverPort = 0
+    virtual PString GetServer() const;
+
+    virtual bool GetServerAddress(
+      PIPSocketAddressAndPort & serverAddressAndPort 
+    ) const;
+
+    virtual bool GetExternalAddress(
+      PIPSocket::Address & externalAddress, ///< External address of router
+      const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
+    );
+
+    virtual bool GetInterfaceAddress(
+      PIPSocket::Address & internalAddress
+    ) const;
+
+    virtual bool Open(
+      const PIPSocket::Address & ifaceAddr
+    );
+
+    bool IsAvailable(
+      const PIPSocket::Address & binding
+    );
+
+    virtual void Close();
+
+    virtual void SetCredentials(
+      const PString & username, 
+      const PString & password, 
+      const PString & realm
     );
 
     /**Determine via the STUN protocol the NAT type for the router.
-       This will cache the last determine NAT type. Use the force variable to
-       guarantee an up to date value.
       */
     NatTypes GetNatType(
-      PBoolean force = false    ///< Force a new check
+      const PTimeInterval & maxAge
     );
+
+    NatTypes GetNatType(
+      bool force = false    ///< Force a new check
+    );
+
+    // new functions
+    bool InternalOpenSocket(BYTE component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
 
     /**Determine via the STUN protocol the NAT type for the router.
        As for GetNatType() but returns an English string for the type.
       */
     PString GetNatTypeName(
-      PBoolean force = false    ///< Force a new check
+      bool force = false    ///< Force a new check
     ) { return GetNatTypeString(GetNatType(force)); }
 
-    /**Return an indication if the current STUN type supports RTP
-      Use the force variable to guarantee an up to date test
-      */
-    RTPSupportTypes GetRTPSupport(
-      PBoolean force = false    ///< Force a new check
+    NatTypes FindNatType(
+      const PIPSocket::Address & binding
     );
-
-    /**Determine the external router address.
-       This will send UDP packets out using the STUN protocol to determine
-       the intervening routers external IP address.
-
-       A cached address is returned provided it is no older than the time
-       specified.
-      */
-    virtual PBoolean GetExternalAddress(
-      PIPSocket::Address & externalAddress, ///< External address of router
-      const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
-    );
-
-    /**Return the interface NAT router is using.
-      */
-    virtual bool GetInterfaceAddress(
-      PIPSocket::Address & internalAddress
-    ) const;
-
-    /**Invalidates the cached addresses and modes.
-       This allows to lazily update the external address cache at the next 
-       attempt to get the external address.
-      */
-    void InvalidateCache();
 
     /**Create a single socket.
        The STUN protocol is used to create a socket for which the external IP
@@ -468,10 +529,11 @@ class PSTUNClient : public PNatMethod, public PSTUN
        The socket pointer is set to NULL if the function fails and returns
        false.
       */
-    PBoolean CreateSocket(
+    bool CreateSocket(
+      BYTE component,
       PUDPSocket * & socket,
-      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
-      WORD localPort = 0
+      const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), 
+      WORD port = 0
     );
 
     /**Create a socket pair.
@@ -487,87 +549,36 @@ class PSTUNClient : public PNatMethod, public PSTUN
        The socket pointers are set to NULL if the function fails and returns
        false.
       */
-    virtual PBoolean CreateSocketPair(
+    virtual bool CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
-      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
+      const PIPSocket::Address & = PIPSocket::GetDefaultIpAny()
     );
 
-    /**Get the timeout for responses from STUN server.
+    /**Return an indication if the current STUN type supports RTP
+      Use the force variable to guarantee an up to date test
       */
-    const PTimeInterval GetTimeout() const { return replyTimeout; }
-
-    /**Set the timeout for responses from STUN server.
-      */
-    void SetTimeout(
-      const PTimeInterval & timeout   ///< New timeout in milliseconds
-    ) { replyTimeout = timeout; }
-
-    /**Get the number of retries for responses from STUN server.
-      */
-    PINDEX GetRetries() const { return pollRetries; }
-
-    /**Set the number of retries for responses from STUN server.
-      */
-    void SetRetries(
-      PINDEX retries    ///< Number of retries
-    ) { pollRetries = retries; }
-
-    /**Get the number of sockets to create in attempt to get a port pair.
-       RTP requires a pair of consecutive ports. To get this several sockets
-       must be opened and fired through the NAT firewall to get a pair. The
-       busier the firewall the more sockets will be required.
-      */
-    PINDEX GetSocketsForPairing() const { return numSocketsForPairing; }
-
-    /**Set the number of sockets to create in attempt to get a port pair.
-       RTP requires a pair of consecutive ports. To get this several sockets
-       must be opened and fired through the NAT firewall to get a pair. The
-       busier the firewall the more sockets will be required.
-      */
-    void SetSocketsForPairing(
-      PINDEX numSockets   ///< Number opf sockets to create
-    ) { numSocketsForPairing = numSockets; }
-
-    /**Returns whether the Nat Method is ready and available in
-       assisting in NAT Traversal. The principal is this function is
-       to allow the EP to detect various methods and if a method
-       is detected then this method is available for NAT traversal.
-       The availablity of the STUN Method is dependant on the Type
-       of NAT being used.
-     */
-    virtual bool IsAvailable(
-      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()  ///< Interface to see if NAT is available on
+    virtual RTPSupportTypes GetRTPSupport(
+      bool force = false    ///< Force a new check
     );
 
-    void SetCredentials(const PString & username, const PString & password, const PString & realm);
-    void SetCredentialsHash(const BYTE * ptr, PINDEX len);
+  protected:    
+    PSTUNUDPSocket * m_socket;
+    PMutex m_mutex;
 
-  protected:
-    PString            serverHost;
-    WORD               serverPort;
-    PTimeInterval      replyTimeout;
-    PINDEX             pollRetries;
-    PINDEX             numSocketsForPairing;
-
-    bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo, const PIPSocket::Address & binding);
-
-    NatTypes           natType;
-    PIPSocket::Address cachedServerAddress;
-    PIPSocket::Address cachedExternalAddress;
-    PIPSocket::Address interfaceAddress;
-    PTime              timeAddressObtained;
-
-    PBYTEArray m_credentialsHash;
+  private:
+    PIPSocketAddressAndPort m_externalAddress;
+    PINDEX                  numSocketsForPairing;
 };
 
 
-inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUN::GetNatTypeString(type); }
+inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PNatMethod::GetNatTypeString(type); }
 
+PDECLARE_NAT_METHOD(STUN, PSTUNClient);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**STUN client.
+/**TURN client.
   */
 
 class PTURNRequestedTransport : public PSTUNAttribute
@@ -618,50 +629,113 @@ class PTURNEvenPort : public PSTUNAttribute
     bool IsEven() const { return (m_bits & 1) != 0; }
 };
 
+///////////////////////////////////////////////////////
+
+class PTURNClient;
+
+#pragma pack(1)
+
+struct PTURNChannelHeader {
+  PUInt16b m_channelNumber;
+  PUInt16b m_length;
+};
+
+#pragma pack()
+
+class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
+{
+  public:
+
+    friend class PTURNClient;
+
+    PTURNUDPSocket();
+    ~PTURNUDPSocket();
+
+    virtual bool Close();
+
+    virtual PNatCandidate GetCandidateInfo();
+
+    int OpenTURN(PTURNClient & client);
+
+  protected:
+    bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
+    bool InternalWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort);
+    bool InternalReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort);
+    void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
+    void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
+
+    bool m_allocationMade;
+    BYTE m_protocol;
+    bool m_usingTURN;
+
+    PIPSocketAddressAndPort m_relayedAddress;
+    DWORD m_lifeTime;
+    int m_channelNumber;
+    PIPSocketAddressAndPort m_peerIpAndPort;
+
+    VectorOfSlice m_txVect;
+    PTURNChannelHeader m_txHeader;
+    Slice m_txPad;
+    BYTE m_txPadding[4];
+
+    VectorOfSlice m_rxVect;
+    PTURNChannelHeader m_rxHeader;
+};
+
+///////////////////////////////////////////////////////
 
 class PTURNClient : public PSTUNClient
 {
   PCLASSINFO(PTURNClient, PSTUNClient);
   public:
-    PTURNClient(const PString & server);
-    PTURNClient(
-      const PIPSocket::Address & serverAddress,
-      WORD serverPort = DefaultPort
+
+    friend class PTURNUDPSocket;
+
+    /**Get the NAT Method Name
+     */
+    static PStringList GetNatMethodName() { return PStringList("TURN"); }
+
+    /** Get the NAT traversal method name
+    */
+    virtual PString GetName() const { return "TURN"; }
+
+    PTURNClient();
+
+    // overrides from PNatMethod
+    virtual bool Open(const PIPSocket::Address & iface);
+
+    virtual void SetCredentials(
+      const PString & username, 
+      const PString & password, 
+      const PString & realm
     );
 
-    virtual bool Open(const PString & username, const PString & password, const PString & realm);
-    virtual bool Close();
-    virtual bool IsOpen() const;
+    bool CreateSocket(
+      BYTE component,
+      PUDPSocket * & socket,
+      const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), 
+      WORD port = 0
+    );
 
-    virtual int CreateAllocation(bool evenPort = false);
-    virtual bool DeleteAllocation(int allocation);
-    virtual bool RefreshAllocation(int allocation, DWORD lifetime = 600);
+    bool CreateSocketPair(
+      PUDPSocket * & socket1,
+      PUDPSocket * & socket2,
+      const PIPSocket::Address & binding
+    );
 
-    bool MakeAuthenticatedRequest(PSTUNMessage & request, PSTUNMessage & response);
-
-    struct Allocation {
-      int m_protocol;
-      PIPSocketAddressAndPort m_clientAddress;
-      PIPSocketAddressAndPort m_relayedTransportAddress;
-      DWORD m_lifeTime;
-
-      bool m_authenticated;
-    };
+    /**Return an indication if the current STUN type supports RTP
+      Use the force variable to guarantee an up to date test
+      */
+    virtual RTPSupportTypes GetRTPSupport(
+      bool force = false    ///< Force a new check
+    );
 
   protected:
-    PUDPSocket * m_socket;
-    PString m_nonce;
-    PString m_realm;
-    PString m_username;
+    // New functions
+    virtual bool RefreshAllocation(DWORD lifetime = 600);
     PString m_password;
-
-    PMutex m_allocationMutex;
-    int m_allocationNumber;
-    typedef std::map<int, Allocation> AllocationsMap;
-    AllocationsMap m_allocations;
 };
 
+PDECLARE_NAT_METHOD(TURN, PTURNClient);
+
 #endif
-
-
-// End of file ////////////////////////////////////////////////////////////////

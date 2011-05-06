@@ -681,48 +681,6 @@ class PChannel : public PObject, public iostream {
     void AbortCommandString();
   //@}
 
-  /**@name Scattered read/write functions */
-  //@{
-    /** Structure that defines a "slice" of memory to be written to
-     */
-#if P_HAS_RECVMSG
-    typedef iovec Slice;
-#else
-    struct Slice {
-      void * iov_base;
-      size_t iov_len;
-    };
-#endif
-
-    typedef std::vector<Slice> VectorOfSlice;
-
-    /** Low level scattered read from the channel. This is identical to Read except 
-        that the data will be read into a series of scattered memory slices. By default,
-        this call will default to calling Read multiple times, but this may be 
-        implemented by operating systems to do a real scattered read
-
-       @return
-       true indicates that at least one character was read from the channel.
-       false means no bytes were read due to timeout or some other I/O error.
-     */
-    virtual PBoolean Read(
-      const VectorOfSlice & slices    // slices to read to
-    );
-
-    /** Low level scattered write to the channel. This is identical to Write except 
-        that the data will be written from a series of scattered memory slices. By default,
-        this call will default to calling Write multiple times, but this can be actually
-        implemented by operating systems to do a real scattered write
-
-       @return
-       true indicates that at least one character was read from the channel.
-       false means no bytes were read due to timeout or some other I/O error.
-     */
-    virtual PBoolean Write(
-      const VectorOfSlice & slices    // slices to read to
-    );
-  //@}
-
   protected:
     PChannel(const PChannel &);
     PChannel & operator=(const PChannel &);

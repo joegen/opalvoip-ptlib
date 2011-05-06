@@ -119,6 +119,9 @@ class PUDPSocket : public PIPDatagramSocket
       Address & address,    ///< IP address to send packets.
       WORD & port           ///< Port to send packets.
     );
+    void GetSendAddress(
+      PIPSocketAddressAndPort & addressAndPort
+    );
 
 
     /** Change the QOS spec for the socket and try to apply the changes
@@ -171,6 +174,13 @@ class PUDPSocket : public PIPDatagramSocket
     static void EnableGQoS();
   //@}
 
+      // Normally, one would expect these to be protected, but they are just so darn
+      // useful that it's just easier if they are public
+      virtual void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
+      virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
+      virtual void InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & addr);
+      virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr);
+
   protected:
     // Open an IPv4 socket (for backward compatibility)
     virtual PBoolean OpenSocket();
@@ -188,12 +198,6 @@ class PUDPSocket : public PIPDatagramSocket
 
     virtual const char * GetProtocolName() const;
 
-    Address sendAddress;
-    WORD    sendPort;
-
-    Address lastReceiveAddress;
-    WORD    lastReceivePort;
-
     PQoS    qosSpec;
 
 // Include platform dependent part of class
@@ -202,6 +206,13 @@ class PUDPSocket : public PIPDatagramSocket
 #else
 #include "unix/ptlib/udpsock.h"
 #endif
+
+    private:
+      Address m_sendAddress;
+      WORD    m_sendPort;
+
+      Address m_lastReceiveAddress;
+      WORD    m_lastReceivePort;
 };
 
 #if P_QOS

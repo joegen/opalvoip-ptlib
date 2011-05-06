@@ -382,6 +382,90 @@ PChannel::Errors PSocket::Select(SelectList & read,
 #endif
 
 
+#ifdef P_HAS_RECVMSG
+
+bool PChannel::os_vread(const VectorOfSlice & slices)
+{
+  lastReadCount = 0;
+
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
+
+  if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
+    return PFalse;
+
+  if (ConvertOSError(lastReadCount = ::readv(os_handle, &slices[0], slices.size()), LastReadError))
+    return lastReadCount > 0;
+
+  lastReadCount = 0;
+  return PFalse;
+}
+
+bool PChannel::os_vwrite(const VectorOfSlice & slices)
+{
+  // if the os_handle isn't open, no can do
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+
+  // flush the buffer before doing a write
+  IOSTREAM_MUTEX_WAIT();
+  flush();
+  IOSTREAM_MUTEX_SIGNAL();
+
+  int result;
+  while ((result = ::writev(os_handle, &slices[0], slices.size())) < 0) {
+    if (errno != EWOULDBLOCK)
+      return ConvertOSError(-1, LastWriteError);
+
+    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
+      return PFalse;
+  }
+
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
+  PThread::Yield(); // Starvation prevention
+#endif
+
+  // Reset all the errors.
+  return ConvertOSError(0, LastWriteError);
+}
+
+#else
+
+PBoolean PChannel::os_vread(VectorOfSlice & slices)
+{
+  PINDEX length = 0;
+
+  VectorOfSlice::const_iterator r;
+  for (r = slices.begin(); r != slices.end(); ++r) {
+    PBoolean stat = Read(r->GetBase(), r->GetLength());
+    length        += lastReadCount;
+    lastReadCount = length;
+    if (!stat)
+      return PFalse;
+  }
+
+  return PTrue;
+}
+
+PBoolean PChannel::os_vwrite(const VectorOfSlice & slices)
+{
+  PINDEX length = 0;
+
+  VectorOfSlice::const_iterator r;
+  for (r = slices.begin(); r != slices.end(); ++r) {
+    PBoolean stat = Write(r->GetBase(), r->GetLength());
+    length        += lastWriteCount;
+    lastWriteCount = length;
+    if (!stat)
+      return PFalse;
+  }
+
+  return PTrue;
+}
+
+#endif
+
+
 PIPSocket::Address::Address(DWORD dw)
 {
   operator=(dw);
