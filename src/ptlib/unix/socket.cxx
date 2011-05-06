@@ -382,88 +382,85 @@ PChannel::Errors PSocket::Select(SelectList & read,
 #endif
 
 
-#ifdef P_HAS_RECVMSG
-
-bool PChannel::os_vread(const VectorOfSlice & slices)
+bool PSocket::os_vread(VectorOfSlice & slices, int flags, struct sockaddr * addr, socklen_t * addrlen)
 {
   lastReadCount = 0;
 
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF, LastReadError);
-
-  if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
+  if (!PXSetIOBlock(PXReadBlock, readTimeout))
     return PFalse;
 
-  if (ConvertOSError(lastReadCount = ::readv(os_handle, &slices[0], slices.size()), LastReadError))
-    return lastReadCount > 0;
+  msghdr readData;
+  memset(&readData, 0, sizeof(readData));
 
-  lastReadCount = 0;
-  return PFalse;
+  readData.msg_name       = addr;
+  readData.msg_namelen    = *addrlen;
+
+  readData.msg_iov        = &slices[0];
+  readData.msg_iovlen     = slices.size();
+
+  char auxdata[50];
+  readData.msg_control    = auxdata;
+  readData.msg_controllen = sizeof(auxdata);
+
+  // read a packet 
+  int r = ::recvmsg(os_handle, &readData, flags);
+  if (r == -1) {
+    PTRACE(5, "PTLIB\tos_vrecv returned error " << errno);
+    ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
+  }
+
+  if (!ConvertOSError(r, LastReadError))
+    return PFalse;
+
+  lastReadCount = r;
+
+  if (r >= 0) {
+    struct cmsghdr * cmsg;
+    for (cmsg = CMSG_FIRSTHDR(&readData); cmsg != NULL; cmsg = CMSG_NXTHDR(&readData,cmsg)) {
+      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO) {
+        in_pktinfo * info = (in_pktinfo *)CMSG_DATA(cmsg);
+        SetLastReceiveAddr(&info->ipi_spec_dst, sizeof(in_addr));
+      }
+    }
+  }
+
+  return lastReadCount > 0;
 }
 
-bool PChannel::os_vwrite(const VectorOfSlice & slices)
+bool PSocket::os_vwrite(const VectorOfSlice & slices,
+                        int flags,
+                        struct sockaddr * addr,
+                        socklen_t addrLen)
 {
-  // if the os_handle isn't open, no can do
-  if (os_handle < 0)
+  lastWriteCount = 0;
+
+
+  if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
-  // flush the buffer before doing a write
-  IOSTREAM_MUTEX_WAIT();
-  flush();
-  IOSTREAM_MUTEX_SIGNAL();
+  msghdr writeData;
+  memset(&writeData, 0, sizeof(writeData));
 
-  int result;
-  while ((result = ::writev(os_handle, &slices[0], slices.size())) < 0) {
-    if (errno != EWOULDBLOCK)
-      return ConvertOSError(-1, LastWriteError);
+  writeData.msg_name       = addr;
+  writeData.msg_namelen    = addrLen;
 
-    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-      return PFalse;
+  writeData.msg_iov        = (iovec *)&slices[0];
+  writeData.msg_iovlen     = slices.size();
+
+  // write the packet 
+  int r = ::sendmsg(os_handle, &writeData, flags);
+  if (r == -1) {
+    PTRACE(5, "PTLIB\tos_vwrite returned error " << errno);
+    ::sendmsg(os_handle, &writeData, MSG_ERRQUEUE);
   }
 
 #if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
   PThread::Yield(); // Starvation prevention
 #endif
 
-  // Reset all the errors.
+  lastWriteCount = r;
   return ConvertOSError(0, LastWriteError);
 }
-
-#else
-
-PBoolean PChannel::os_vread(VectorOfSlice & slices)
-{
-  PINDEX length = 0;
-
-  VectorOfSlice::const_iterator r;
-  for (r = slices.begin(); r != slices.end(); ++r) {
-    PBoolean stat = Read(r->GetBase(), r->GetLength());
-    length        += lastReadCount;
-    lastReadCount = length;
-    if (!stat)
-      return PFalse;
-  }
-
-  return PTrue;
-}
-
-PBoolean PChannel::os_vwrite(const VectorOfSlice & slices)
-{
-  PINDEX length = 0;
-
-  VectorOfSlice::const_iterator r;
-  for (r = slices.begin(); r != slices.end(); ++r) {
-    PBoolean stat = Write(r->GetBase(), r->GetLength());
-    length        += lastWriteCount;
-    lastWriteCount = length;
-    if (!stat)
-      return PFalse;
-  }
-
-  return PTrue;
-}
-
-#endif
 
 
 PIPSocket::Address::Address(DWORD dw)
@@ -797,6 +794,11 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
 
   lastReadCount = 0;
   return PFalse;
+}
+
+bool PSocket::Write(const void * buf, PINDEX len)
+{
+  return PChannel::Write(buf, len);
 }
 
 
