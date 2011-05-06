@@ -445,16 +445,17 @@ class PIPSocket : public PSocket
        false (or empty string) if the IP number was not available.
      */
     virtual PString GetLocalAddress();
-    virtual PBoolean GetLocalAddress(
+    virtual bool GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address.
     );
-    virtual PBoolean GetLocalAddress(
-      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
-    );
-    virtual PBoolean GetLocalAddress(
+    virtual bool GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
     );
+    virtual bool GetLocalAddress(
+      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
+    )
+    { return InternalGetLocalAddress(addr); }
 
     /**Get the Internet Protocol address for the peer host and port the
        socket is connected to.
@@ -463,16 +464,17 @@ class PIPSocket : public PSocket
        false (or empty string) if the IP number was not available.
      */
     virtual PString GetPeerAddress();
-    virtual PBoolean GetPeerAddress(
+    virtual bool GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address.
     );
-    virtual PBoolean GetPeerAddress(
-      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
-    );
-    virtual PBoolean GetPeerAddress(
+    virtual bool GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
     );
+    virtual bool GetPeerAddress(
+      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
+    )
+    { return InternalGetPeerAddress(addr); }
 
     /**Get the host name for the local host.
 
@@ -731,6 +733,11 @@ class PIPSocket : public PSocket
 #else
 #include "unix/ptlib/ipsock.h"
 #endif
+
+  protected:
+    virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort);
+    virtual bool InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort);
+
 };
 
 class PIPSocketAddressAndPort
@@ -747,6 +754,10 @@ class PIPSocketAddressAndPort
     PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char separator = ':')
       : m_port(defaultPort), m_separator(separator)
       { Parse(str, defaultPort, m_separator); }
+
+    PIPSocketAddressAndPort(const PIPSocket::Address & addr, WORD defaultPort = 0, char separator = ':')
+      : m_address(addr), m_port(defaultPort), m_separator(separator)
+      {  }
 
     PBoolean Parse(const PString & str, WORD defaultPort = 0, char separator = ':');
 

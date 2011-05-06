@@ -401,6 +401,88 @@ class PSocket : public PChannel
     inline static DWORD Net2Host(DWORD v) { return ntohl(v); }
   //@}
 
+
+  /**@name Scattered read/write functions */
+  //@{
+    /** Structure that defines a "slice" of memory to be written to
+     */
+#if _WIN32
+    struct Slice : public WSABUF 
+    {
+      Slice()
+      { SetBase(NULL); SetLength(0); }
+
+      Slice(void * v, size_t len)
+      { SetBase(v); SetLength(len); }
+
+      void SetBase(void * v)   { buf = (char *)v; }
+      void * GetBase() const   { return buf; }
+
+      void SetLength(size_t v)  { len = (u_long)v; }
+      size_t GetLength() const  { return len; }
+    };
+#else
+#if P_HAS_RECVMSG
+    struct Slice : public iovec
+#else
+    struct Slice 
+    {
+      protected:
+        void * iov_base;
+        size_t iov_len;
+      public:
+#endif
+      Slice()
+      { SetBase(NULL); SetLength(0); }
+
+      Slice(void * v, size_t len)
+      { SetBase(v); SetLength(len); }
+
+      void SetBase(void * v) { iov_base = v; }
+      void * GetBase() const   { return iov_base; }
+      void SetLength(size_t v) { iov_len = v; }
+      size_t GetLegth() const  { return iov_len; }
+    };
+#endif
+
+    struct VectorOfSlice : public std::vector<Slice> 
+    {
+      size_t GetSize() const 
+      {
+        size_t len = 0;
+        for (const_iterator r = begin(); r != end(); ++r)
+          len += r->GetLength();
+        return len;
+      }
+    };
+
+    /** Low level scattered read from the channel. This is identical to Read except 
+        that the data will be read into a series of scattered memory slices. By default,
+        this call will default to calling Read multiple times, but this may be 
+        implemented by operating systems to do a real scattered read
+
+       @return
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
+     */
+    virtual bool Read(
+      VectorOfSlice & slices    // slices to read to
+    );
+
+    /** Low level scattered write to the channel. This is identical to Write except 
+        that the data will be written from a series of scattered memory slices. By default,
+        this call will default to calling Write multiple times, but this can be actually
+        implemented by operating systems to do a real scattered write
+
+       @return
+       true indicates that at least one character was read from the channel.
+       false means no bytes were read due to timeout or some other I/O error.
+     */
+    virtual bool Write(
+      const VectorOfSlice & slices    // slices to read to
+    );
+  //@}
+
   protected:
     /*This function calls os_socket() with the correct parameters for the
        socket protocol type.
@@ -425,9 +507,21 @@ class PSocket : public PChannel
       struct sockaddr * from,
       socklen_t * fromlen
     );
+    PBoolean os_vread(
+      VectorOfSlice & slices,
+      int flags,
+      struct sockaddr * from,
+      socklen_t * fromlen
+    );
     PBoolean os_sendto(
       const void * buf,
       PINDEX len,
+      int flags,
+      struct sockaddr * to,
+      socklen_t tolen
+    );
+    PBoolean os_vwrite(
+      const VectorOfSlice & slices,
       int flags,
       struct sockaddr * to,
       socklen_t tolen
