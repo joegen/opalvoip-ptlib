@@ -167,6 +167,32 @@ class PNatMethod  : public PObject
       void * userData
     );
 
+    /**Create a socket pair asynchronously.
+       This is similar to CreateSocketPair but returns immediately, initiating
+       the creating of a socket pair in the background. Use GetSocketPairAsync
+       at some later time to get the resultant sockets.
+
+       Default behaviour does nothing.
+      */
+    virtual bool CreateSocketPairAsync(
+      const PString & token
+    );
+
+    /**Get a socket pair asynchronously created.
+       This function will get the socket pair initated by the
+       CreateSocketPairAsync function. If the sockets are not ready yet it
+       will block until they are.
+
+       Default behaviour calls CreateSocketPair synchronously
+      */
+    virtual bool GetSocketPairAsync(
+      const PString & token,
+      PUDPSocket * & socket1,
+      PUDPSocket * & socket2,
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      void * userData = NULL
+    );
+
     /**Returns whether the Nat Method is ready and available in
     assisting in NAT Traversal. The principal is function is
     to allow the EP to detect various methods and if a method
