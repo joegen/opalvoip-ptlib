@@ -454,6 +454,43 @@ class PThreadMain : public PThread
     FnType m_function;
 };
 
+
+/*
+   This template automates calling a global function using a functor
+   It is used as follows:
+
+   struct Functor {
+     void operator()(PThread & thread) { ... code in here }
+   }
+
+   ...
+   Functor arg;
+   new PThreadFunctor<Functor>(arg)
+ */
+template<typename Functor>
+class PThreadFunctor : public PThread
+{
+  PCLASSINFO(PThreadFunctor, PThread);
+  public:
+    PThreadFunctor(Functor & funct, bool autoDel = false)
+      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+      , m_funct(funct)
+    { PThread::Resume(); }
+
+    PThreadFunctor(const char * file, int line, Functor & funct, bool autoDel = false)
+      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
+      , m_funct(funct)
+      { PThread::Resume(); }
+
+    virtual void Main()
+      { m_funct(*this); }
+
+  protected:
+    Functor & m_funct;
+};
+
+
 /*
    This template automates calling a global function with one argument within it's own thread.
    It is used as follows:

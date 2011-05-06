@@ -64,7 +64,7 @@ void PNatStrategy::AddMethod(PNatMethod * method)
 PNatMethod * PNatStrategy::GetMethod(const PIPSocket::Address & address)
 {
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
-    if (i->IsAvailable(address))
+    if (i->Open(address))
       return &*i;
   }
 
@@ -76,13 +76,13 @@ PNatMethod * PNatStrategy::GetMethodByName(const PString & name)
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
     if (i->GetName() == name) {
       return &*i;
-	}
+	  }
   }
 
   return NULL;
 }
 
-PBoolean PNatStrategy::RemoveMethod(const PString & meth)
+bool PNatStrategy::RemoveMethod(const PString & meth)
 {
   for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
     if (i->GetName() == meth) {
@@ -124,7 +124,31 @@ PNatMethod::PNatMethod()
 
 PNatMethod::~PNatMethod()
 {
+}
 
+PString PNatMethod::GetNatTypeString(NatTypes type)
+{
+  static const char * const Names[NumNatTypes] = {
+    "Unknown NAT",
+    "Open NAT",
+    "Cone NAT",
+    "Restricted NAT",
+    "Port Restricted NAT",
+    "Symmetric NAT",
+    "Symmetric Firewall",
+    "Blocked",
+    "Partially Blocked"
+  };
+
+  if (type < NumNatTypes)
+    return Names[type];
+  
+  return psprintf("<NATType %u>", type);
+}
+
+PNatMethod * PNatMethod::Create(const PString & name)
+{
+  return PFactory<PNatMethod>::CreateInstance(name);
 }
 
 PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr)
@@ -134,15 +158,6 @@ PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr
 
   return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass,0);
 }
-
-PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,
-                                      PUDPSocket * & socket2,
-                                      const PIPSocket::Address & binding,
-                                      void * /*userData*/)
-{
-  return CreateSocketPair(socket1,socket2,binding);
-}
-
 
 bool PNatMethod::CreateSocketPairAsync(const PString & /*token*/)
 {
@@ -160,57 +175,71 @@ bool PNatMethod::GetSocketPairAsync(const PString & /*token*/,
 }
 
 
+PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,
+                                      PUDPSocket * & socket2,
+                                      const PIPSocket::Address & binding,
+                                      void * /*userData*/)
+{
+  return CreateSocketPair(socket1, socket2, binding);
+}
+
+
 void PNatMethod::PrintOn(ostream & strm) const
 {
   strm << GetName() << " server " << GetServer();
 }
 
-PString PNatMethod::GetServer() const
-{
-  PStringStream str;
-  PIPSocket::Address serverAddress;
-  WORD serverPort;
-  if (GetServerAddress(serverAddress, serverPort))
-    str << serverAddress << ':' << serverPort;
-  return str;
-}
-
-
 void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
 {
-  singlePortInfo.mutex.Wait();
-
-  singlePortInfo.basePort = portBase;
-  if (portBase == 0)
-    singlePortInfo.maxPort = 0;
-  else if (portMax == 0)
-    singlePortInfo.maxPort = (WORD)(singlePortInfo.basePort+99);
-  else if (portMax < portBase)
-    singlePortInfo.maxPort = portBase;
-  else
-    singlePortInfo.maxPort = portMax;
-
-  singlePortInfo.currentPort = singlePortInfo.basePort;
-
-  singlePortInfo.mutex.Signal();
-
-  pairedPortInfo.mutex.Wait();
-
-  pairedPortInfo.basePort = (WORD)((portPairBase+1)&0xfffe);
-  if (portPairBase == 0) {
-    pairedPortInfo.basePort = 0;
-    pairedPortInfo.maxPort = 0;
+  {
+    PWaitAndSignal m(singlePortInfo.mutex);
+    singlePortInfo.SetPorts(portBase, portMax);
   }
-  else if (portPairMax == 0)
-    pairedPortInfo.maxPort = (WORD)(pairedPortInfo.basePort+99);
-  else if (portPairMax < portPairBase)
-    pairedPortInfo.maxPort = portPairBase;
+  {
+    PWaitAndSignal m(pairedPortInfo.mutex);
+    pairedPortInfo.SetPorts((portPairBase+1)&0xfffe, portPairMax);
+  }
+}
+
+void PNatMethod::PortInfo::SetPorts(WORD start, WORD end)
+{
+  PWaitAndSignal m(mutex);
+
+  basePort = start;
+  if (basePort > 0 && basePort < 1024)
+    basePort = 1024;
+  else if (basePort > 65535)
+    basePort = 65535;
+
+  if (basePort == 0)
+    maxPort = 0;
+  else if (end == 0)
+    maxPort = (WORD)PMIN(65535, basePort + 99);
+  else if (end < basePort)
+    maxPort = basePort;
+  else if (end > 65535)
+    maxPort = 65535;
   else
-    pairedPortInfo.maxPort = portPairMax;
+    maxPort = end;
 
-  pairedPortInfo.currentPort = pairedPortInfo.basePort;
+  if (basePort == maxPort)
+    currentPort = currentPort;
+  else
+    currentPort = (WORD)PRandom::Number(basePort, maxPort-1);
+}
 
-  pairedPortInfo.mutex.Signal();
+WORD PNatMethod::PortInfo::GetNext(unsigned increment)
+{
+  PWaitAndSignal m(mutex);
+
+  if (basePort == 0)
+    return 0;
+
+  WORD p = currentPort;
+
+  currentPort = basePort + (((currentPort - basePort) + increment) % (maxPort - basePort));
+
+  return p;
 }
 
 void PNatMethod::Activate(bool /*active*/)
@@ -232,5 +261,81 @@ WORD PNatMethod::RandomPortPair(unsigned int start, unsigned int end)
 			num++;  // Make sure the number is even
 
 	return num;
+}
+
+////////////////////////////////////////////////////
+
+PNATUDPSocket::PNATUDPSocket(PQoS * qos)
+  : PUDPSocket(qos)
+  , m_component(PNatMethod::eComponent_Unknown)
+{
+}
+
+////////////////////////////////////////////////////
+
+PCREATE_NAT_PLUGIN(Null);
+
+class PNullNATSocket : public PNATUDPSocket
+{
+  PCLASSINFO(PNullNATSocket, PNATUDPSocket);
+  public:
+    PNullNATSocket()
+    { }
+
+    virtual bool OpenNAT(BYTE component)
+    { m_component = component; return true; }
+
+    virtual PNatCandidate GetCandidateInfo()
+    {
+      PNatCandidate candidate(PNatCandidate::eType_Host, m_component);
+      PUDPSocket::GetLocalAddress(candidate.m_baseAddress);
+      PUDPSocket::GetLocalAddress(candidate.m_transport);
+      return candidate;
+    }
+
+    virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort)
+    { return PUDPSocket::InternalGetLocalAddress(addrAndPort); }
+
+    virtual bool InternalGetBaseAddress(PIPSocketAddressAndPort & addrAndPort)
+    { return PUDPSocket::InternalGetLocalAddress(addrAndPort); }
+};
+
+////////////////////////////////////////////////////
+
+PNatCandidate::PNatCandidate()
+  : m_type(eType_Unknown)
+  , m_component(PNatMethod::eComponent_Unknown)
+{
+}
+
+
+PNatCandidate::PNatCandidate(int type, BYTE component)
+  : m_type(type)
+  , m_component(component)
+{
+}
+
+
+PString PNatCandidate::AsString() const
+{
+  PStringStream strm;
+  switch (m_type) {
+    case eType_Host:
+      strm << "Host " << m_baseAddress;
+      break;
+    case eType_ServerReflexive:
+      strm << "ServerReflexive " << m_baseAddress << "/" << m_transport;
+      break;
+    case eType_PeerReflexive:
+      strm << "PeerReflexive " << m_baseAddress << "/" << m_transport;
+      break;
+    case eType_Relay:
+      strm << "Relay " << m_baseAddress << "/" << m_transport;
+      break;
+    default:
+      strm << "Unknown";
+      break;
+  }
+  return strm;
 }
 

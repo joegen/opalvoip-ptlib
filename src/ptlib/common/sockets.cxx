@@ -1225,55 +1225,53 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 
 PString PIPSocket::GetLocalAddress()
 {
-  PStringStream str;
-  Address addr;
-  WORD port;
-  if (GetLocalAddress(addr, port))
-    str << addr << ':' << port;
-  return str;
+  PIPSocketAddressAndPort addrAndPort;
+  if (!GetLocalAddress(addrAndPort)) 
+    return PString::Empty();
+  return addrAndPort.AsString();
 }
 
 
-PBoolean PIPSocket::GetLocalAddress(Address & addr)
+bool PIPSocket::GetLocalAddress(Address & addr)
 {
-  WORD dummy;
-  return GetLocalAddress(addr, dummy);
-}
-
-
-PBoolean PIPSocket::GetLocalAddress(PIPSocketAddressAndPort & addr)
-{
-  Address ip;
-  WORD port;
-  if (!GetLocalAddress(ip, port))
+  PIPSocketAddressAndPort addrAndPort;
+  if (!GetLocalAddress(addrAndPort)) 
     return false;
-
-  addr.SetAddress(ip, port);
+  addr = addrAndPort.GetAddress();
   return true;
 }
 
 
-PBoolean PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
+bool PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
+{
+  PIPSocketAddressAndPort addrAndPort;
+  if (!GetLocalAddress(addrAndPort)) 
+    return false;
+  addr = addrAndPort.GetAddress();
+  portNum = addrAndPort.GetPort();
+  return true;
+}
+
+
+bool PIPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort)
 {
 #if P_HAS_IPV6
-  Address   addrv4;
-  Address   peerv4;
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
     return PFalse;
 
-  addr = sa.GetIP();
-  portNum = sa.GetPort();
+  addrAndPort.SetAddress(sa.GetIP());
+  addrAndPort.SetPort(sa.GetPort());
 
   // If the remote host is an IPv4 only host and our interface if an IPv4/IPv6 mapped
   // Then return an IPv4 address instead of an IPv6
-  if (GetPeerAddress(peerv4)) {
-    if ((peerv4.GetVersion()==4)||(peerv4.IsV4Mapped())) {
-      if (addr.IsV4Mapped()) {
-        addr = Address(addr[12], addr[13], addr[14], addr[15]);
-      }
-    }
+  Address peer;
+  if (addrAndPort.GetAddress().IsV4Mapped() && 
+      GetPeerAddress(peer) && 
+      ((peer.GetVersion() == 4) || peer.IsV4Mapped())) {
+    Address addr = addrAndPort.GetAddress();
+    addrAndPort.SetAddress(Address(addr[12], addr[13], addr[14], addr[15]));
   }
   
 #else
@@ -1283,46 +1281,45 @@ PBoolean PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
   if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return PFalse;
 
-  addr = address.sin_addr;
-  portNum = ntohs(address.sin_port);
+  addrAndPort.SetAddress(address.sin_addr);
+  addrAndPort.SetPort(address.sin_port);
 
 #endif
 
-  return PTrue;
+  return true;
 }
-
 
 PString PIPSocket::GetPeerAddress()
 {
-  PStringStream str;
-  Address addr;
-  WORD port;
-  if (GetPeerAddress(addr, port))
-    str << addr << ':' << port;
-  return str;
+  PIPSocketAddressAndPort addrAndPort;
+  if (!GetPeerAddress(addrAndPort)) 
+    return PString::Empty();
+  return addrAndPort.AsString();
 }
 
 
-PBoolean PIPSocket::GetPeerAddress(Address & addr)
+bool PIPSocket::GetPeerAddress(Address & addr)
 {
-  WORD portNum;
-  return GetPeerAddress(addr, portNum);
-}
-
-
-PBoolean PIPSocket::GetPeerAddress(PIPSocketAddressAndPort & addr)
-{
-  Address ip;
-  WORD port;
-  if (!GetPeerAddress(ip, port))
+  PIPSocketAddressAndPort addrAndPort;
+  if (!GetPeerAddress(addrAndPort)) 
     return false;
-
-  addr.SetAddress(ip, port);
+  addr = addrAndPort.GetAddress();
   return true;
 }
 
 
-PBoolean PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
+bool PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
+{
+  PIPSocketAddressAndPort addrAndPort;
+  if (!GetPeerAddress(addrAndPort)) 
+    return false;
+  addr = addrAndPort.GetAddress();
+  portNum = addrAndPort.GetPort();
+  return true;
+}
+
+
+bool PIPSocket::InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort)
 {
 #if P_HAS_IPV6
 
@@ -1331,8 +1328,8 @@ PBoolean PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
   if (!ConvertOSError(::getpeername(os_handle, sa, &size)))
     return PFalse;
 
-  addr = sa.GetIP();
-  portNum = sa.GetPort();
+  addrAndPort.SetAddress(sa.GetIP());
+  addrAndPort.SetPort(sa.GetPort());
 
 #else
 
@@ -1341,8 +1338,8 @@ PBoolean PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
   if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return PFalse;
 
-  addr = address.sin_addr;
-  portNum = ntohs(address.sin_port);
+  addrAndPort.SetAddress(address.sin_addr);
+  addrAndPort.SetPort(address.sin_port);
 
 #endif
 
@@ -2460,8 +2457,36 @@ PIPDatagramSocket::PIPDatagramSocket()
 }
 
 
-PBoolean PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
-                                 Address & addr, WORD & port)
+bool PIPDatagramSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
+{
+  PIPSocketAddressAndPort ap;
+  bool stat = InternalReadFrom(buf, len, ap);
+  addr = ap.GetAddress();
+  port = ap.GetPort();
+  return stat;
+}
+
+bool PIPDatagramSocket::ReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort)
+{
+  return InternalReadFrom(buf, len, ipAndPort);
+}
+
+
+bool PIPDatagramSocket::ReadFrom(VectorOfSlice & slices, Address & addr, WORD & port)
+{
+  PIPSocketAddressAndPort ap;
+  bool stat = InternalReadFrom(slices, ap);
+  addr = ap.GetAddress();
+  port = ap.GetPort();
+  return stat;
+}
+
+bool PIPDatagramSocket::ReadFrom(VectorOfSlice & slices, PIPSocketAddressAndPort & ipAndPort)
+{
+  return InternalReadFrom(slices, ipAndPort);
+}
+
+bool PIPDatagramSocket::InternalReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort)
 {
   lastReadCount = 0;
 
@@ -2473,27 +2498,122 @@ PBoolean PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   bool ok = os_recvfrom(buf, len, 0, sa, &size);
-  addr = sa.GetIP();
-  port = sa.GetPort();
+  ipAndPort.SetAddress(sa.GetIP());
+  ipAndPort.SetPort(sa.GetPort());
 
 #else
 
   sockaddr_in sockAddr;
   PINDEX addrLen = sizeof(sockAddr);
   bool ok = os_recvfrom(buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen);
-  addr = sockAddr.sin_addr;
-  port = ntohs(sockAddr.sin_port);
+
+  ipAndPort.SetAddress(sockAddr.sin_addr);
+  ipAndPort.SetPort(ntohs(sockAddr.sin_port));
 
 #endif
 
   return ok;
 }
 
+bool PIPDatagramSocket::InternalReadFrom(VectorOfSlice & slices, PIPSocketAddressAndPort & ipAndPort)
+{
+  lastReadCount = 0;
 
-PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
-                                const Address & addr, WORD port)
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
+#if P_HAS_IPV6
+
+  Psockaddr sa;
+  socklen_t size = sa.GetSize();
+  bool ok = os_vread(slices, 0, sa, &size);
+  ipAndPort.SetAddress(sa.GetIP());
+  ipAndPort.SetPort(sa.GetPort());
+
+#else
+
+  sockaddr_in sockAddr;
+  PINDEX addrLen = sizeof(sockAddr);
+  bool ok = os_vread(slices, 0, (struct sockaddr *)&sockAddr, &addrLen);
+
+  ipAndPort.SetAddress(sockAddr.sin_addr);
+  ipAndPort.SetPort(ntohs(sockAddr.sin_port));
+
+#endif
+
+  return ok;
+}
+
+bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
+{
+  PIPSocketAddressAndPort ap(addr, port);
+  return InternalWriteTo(buf, len, ap);
+}
+
+bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
+{
+  return InternalWriteTo(buf, len, ipAndPort);
+}
+
+bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const Address & addr, WORD port)
+{
+  PIPSocketAddressAndPort ap(addr, port);
+  return InternalWriteTo(slices, ap);
+}
+
+bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const PIPSocketAddressAndPort & ipAndPort)
+{
+  return InternalWriteTo(slices, ipAndPort);
+}
+
+struct WriteBytesOp : public PIPDatagramSocket::InternalWriteOp
+{
+  WriteBytesOp(const void * buf, PINDEX len)
+    : m_buf(buf), m_len(len)
+  { }
+
+  virtual bool Write(PIPDatagramSocket * sock, int flags, struct sockaddr * saddr, size_t slen)
+  { return sock->os_sendto(m_buf, m_len, flags, saddr, slen) != 0; }
+
+  virtual bool CheckLength(PIPDatagramSocket * sock) { return sock->lastWriteCount >= m_len; }
+
+  const void * m_buf;
+  int m_len;
+};
+
+bool PIPDatagramSocket::InternalWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
+{
+  WriteBytesOp op(buf, len);
+  return InternalWriteTo(op, ipAndPort);
+}
+
+struct WriteVectorOp : public PIPDatagramSocket::InternalWriteOp
+{
+  WriteVectorOp(const PIPSocket::VectorOfSlice & v)
+    : m_v(v)
+  { }
+
+  virtual bool Write(PIPDatagramSocket * sock, int flags, struct sockaddr * saddr, size_t slen)
+  { return sock->os_vwrite(m_v, flags, saddr, slen) != 0; }
+
+  virtual bool CheckLength(PIPDatagramSocket * sock)  { return sock->lastWriteCount >= (int)m_v.GetSize(); }
+
+  const PIPSocket::VectorOfSlice & m_v;
+};
+
+
+bool PIPDatagramSocket::InternalWriteTo(const PIPSocket::VectorOfSlice & v, const PIPSocketAddressAndPort & ipAndPort)
+{
+  WriteVectorOp op(v);
+  return InternalWriteTo(op, ipAndPort);
+}
+
+bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAddressAndPort & ipAndPort)
 {
   lastWriteCount = 0;
+
+  const PIPSocket::Address & addr = ipAndPort.GetAddress();
+  WORD port = ipAndPort.GetPort();
 
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
@@ -2536,7 +2656,7 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
         
         sockAddr.sin_addr.s_addr = bcastAddr;
         
-        PBoolean result = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+        PBoolean result = op.Write(this, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
         
         ok = ok || result;
       }
@@ -2555,7 +2675,7 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 #if P_HAS_IPV6
   
   Psockaddr sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
-  PBoolean ok = os_sendto(buf, len, 0, sa, sa.GetSize()) != 0;
+  PBoolean ok = op.Write(this, 0, sa, sa.GetSize()) != 0;
   
 #else
   
@@ -2574,7 +2694,7 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
     SetOption(SO_BROADCAST, 0);
 #endif
 
-  return ok && lastWriteCount >= len;
+  return ok && op.CheckLength(this);
 }
 
 
@@ -2583,23 +2703,23 @@ PBoolean PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 
 PUDPSocket::PUDPSocket(WORD newPort, int iAddressFamily)
 {
-  sendPort = 0;
+  m_sendPort = 0;
   SetPort(newPort);
   OpenSocket(iAddressFamily);
 }
 
 PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
 #if P_HAS_IPV6
-  : sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
-    lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
+  : m_sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
+    m_lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
 #else
-  : sendAddress(loopback4),
-    lastReceiveAddress(loopback4)
+  : m_sendAddress(loopback4),
+    m_lastReceiveAddress(loopback4)
 #endif
 {
   if (qos != NULL)
       qosSpec = *qos;
-  sendPort = 0;
+  m_sendPort = 0;
   SetPort(newPort);
   OpenSocket(iAddressFamily);
 }
@@ -2607,16 +2727,16 @@ PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
 
 PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
 #if P_HAS_IPV6
-  : sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
-    lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
+  : m_sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
+    m_lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
 #else
-  : sendAddress(loopback4),
-    lastReceiveAddress(loopback4)
+  : m_sendAddress(loopback4),
+    m_lastReceiveAddress(loopback4)
 #endif
 {
   if (qos != NULL)
       qosSpec = *qos;
-  sendPort = 0;
+  m_sendPort = 0;
   SetPort(service);
   OpenSocket(iAddressFamily);
 }
@@ -2624,7 +2744,7 @@ PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
 
 PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
 {
-  sendPort = 0;
+  SetSendAddress(PIPSocketAddressAndPort());
   SetPort(newPort);
   Connect(address);
 }
@@ -2632,7 +2752,7 @@ PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
 
 PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 {
-  sendPort = 0;
+  SetSendAddress(PIPSocketAddressAndPort());
   SetPort(service);
   Connect(address);
 }
@@ -2715,11 +2835,12 @@ PBoolean PUDPSocket::ApplyQoS()
 #endif
 
   PBoolean retval = PFalse;
-  if (!usesetsockopt && sendAddress.IsValid() && sendPort != 0) {
+  PIPSocketAddressAndPort sendAp;
+  if (!usesetsockopt && sendAp.IsValid() && sendAp.GetPort() != 0) {
     sockaddr_in sa;
     sa.sin_family = AF_INET;
-    sa.sin_port = htons(sendPort);
-    sa.sin_addr = sendAddress;
+    sa.sin_port = htons(sendAp.GetPort());
+    sa.sin_addr = sendAp.GetAddress();
     memset(sa.sin_zero,0,8);
 
     char * inBuf = new char[2048];
@@ -2855,58 +2976,98 @@ const char * PUDPSocket::GetProtocolName() const
 
 PBoolean PUDPSocket::Connect(const PString & address)
 {
-  sendPort = 0;
+  SetSendAddress(PIPSocketAddressAndPort());
   return PIPDatagramSocket::Connect(address);
 }
 
 
 PBoolean PUDPSocket::Read(void * buf, PINDEX len)
 {
-  return PIPDatagramSocket::ReadFrom(buf, len, lastReceiveAddress, lastReceivePort);
+  PIPSocketAddressAndPort ap;
+  bool stat = PIPDatagramSocket::ReadFrom(buf, len, ap);
+  InternalSetLastReceiveAddress(ap);
+  return stat;
 }
 
 
 PBoolean PUDPSocket::Write(const void * buf, PINDEX len)
 {
-  if (sendPort == 0)
+  PIPSocketAddressAndPort ap;
+  GetSendAddress(ap);
+  if (ap.GetPort() == 0)
     return PIPDatagramSocket::Write(buf, len);
   else
-    return PIPDatagramSocket::WriteTo(buf, len, sendAddress, sendPort);
+    return PIPDatagramSocket::InternalWriteTo(buf, len, ap);
 }
 
 
 void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
 {
-  sendAddress = newAddress;
-  sendPort    = newPort;
-  ApplyQoS();
+  InternalSetSendAddress(PIPSocketAddressAndPort(newAddress, newPort));
 }
 
 
 void PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort)
 {
-  SetSendAddress(addressAndPort.GetAddress(), addressAndPort.GetPort());
+  InternalSetSendAddress(addressAndPort);
+}
+
+
+void PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr)
+{
+  m_sendAddress = addr.GetAddress();
+  m_sendPort    = addr.GetPort();
+  ApplyQoS();
 }
 
 
 void PUDPSocket::GetSendAddress(Address & address, WORD & port)
 {
-  address = sendAddress;
-  port    = sendPort;
+  PIPSocketAddressAndPort addr;
+  InternalGetSendAddress(addr);
+  address = addr.GetAddress();
+  port    = addr.GetPort();
+}
+
+
+void PUDPSocket::GetSendAddress(PIPSocketAddressAndPort & addr)
+{
+  InternalGetSendAddress(addr);
+}
+
+
+void PUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr)
+{
+  addr = PIPSocketAddressAndPort(m_sendAddress, m_sendPort);
 }
 
 
 void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
 {
-  address = lastReceiveAddress;
-  port    = lastReceivePort;
+  PIPSocketAddressAndPort ap;
+  InternalGetLastReceiveAddress(ap);
+  address = ap.GetAddress();
+  port    = ap.GetPort();
 }
 
-void PUDPSocket::GetLastReceiveAddress(PIPSocketAddressAndPort & addressAndPort)
+void PUDPSocket::GetLastReceiveAddress(PIPSocketAddressAndPort & ap)
 {
-  addressAndPort.SetAddress(lastReceiveAddress);
-  addressAndPort.SetPort(lastReceivePort);
+  InternalGetLastReceiveAddress(ap);
 }
+
+
+void PUDPSocket::InternalGetLastReceiveAddress(PIPSocketAddressAndPort & ap)
+{
+  ap = PIPSocketAddressAndPort(m_lastReceiveAddress, m_lastReceivePort);
+}
+
+
+void PUDPSocket::InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & ap)
+{
+  m_lastReceiveAddress = ap.GetAddress();
+  m_lastReceivePort    = ap.GetPort();
+}
+
 
 PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
 {
