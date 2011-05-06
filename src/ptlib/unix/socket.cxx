@@ -801,6 +801,24 @@ bool PSocket::Write(const void * buf, PINDEX len)
   return PChannel::Write(buf, len);
 }
 
+PBoolean PSocket::Read(VectorOfSlice & slices)
+{
+  flush();
+  lastReadCount = 0;
+
+  if (slices.size() == 0)
+    return SetErrorValues(BadParameter, EINVAL, LastReadError);
+
+  os_vread(slices, 0, NULL, NULL);
+  return lastReadCount > 0;
+}
+
+
+PBoolean PSocket::Write(const VectorOfSlice & slices)
+{
+  flush();
+  return os_vwrite(slices, 0, NULL, 0) && lastWriteCount >= 0;
+}
 
 
 //////////////////////////////////////////////////////////////////
