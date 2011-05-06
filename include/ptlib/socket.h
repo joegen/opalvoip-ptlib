@@ -424,6 +424,7 @@ class PSocket : public PChannel
 #else
 #if P_HAS_RECVMSG
     struct Slice : public iovec
+    {
 #else
     struct Slice 
     {
@@ -441,7 +442,7 @@ class PSocket : public PChannel
       void SetBase(void * v) { iov_base = v; }
       void * GetBase() const   { return iov_base; }
       void SetLength(size_t v) { iov_len = v; }
-      size_t GetLegth() const  { return iov_len; }
+      size_t GetLength() const  { return iov_len; }
     };
 #endif
 
