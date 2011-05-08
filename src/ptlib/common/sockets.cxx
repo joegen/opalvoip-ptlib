@@ -87,15 +87,16 @@ static PIPSocket::Address loopback4(127,0,0,1);
 static PIPSocket::Address broadcast4(INADDR_BROADCAST);
 static PIPSocket::Address any4(0,0,0,0);
 static in_addr inaddr_empty;
+
 #if P_HAS_IPV6
 
-static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static PIPSocket::Address broadcast6(16,(const BYTE *)"\377\002\0\0\0\0\0\0\0\0\0\0\0\0\0\001"); // IPV6 multicast address
-static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+  static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
+  static PIPSocket::Address broadcast6(16,(const BYTE *)"\377\002\0\0\0\0\0\0\0\0\0\0\0\0\0\001"); // IPV6 multicast address
+  static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
 
-#define IPV6_PARAM(p) p
+  #define IPV6_PARAM(p) p
 #else
-#define IPV6_PARAM(p)
+  #define IPV6_PARAM(p)
 #endif
 
 
@@ -138,7 +139,7 @@ PBoolean PIPSocket::IsIpAddressFamilyV6Supported()
   return PTrue;
 }
 
-#endif
+#endif // P_HAS_IPV6
 
 
 PIPSocket::Address PIPSocket::GetDefaultIpAny()
@@ -151,8 +152,6 @@ PIPSocket::Address PIPSocket::GetDefaultIpAny()
   return any4;
 }
 
-
-#if P_HAS_IPV6
 
 class Psockaddr
 {
@@ -170,7 +169,9 @@ class Psockaddr
       sockaddr_storage * ptr;
       sockaddr         * addr;
       sockaddr_in      * addr4;
+#if P_HAS_IPV6
       sockaddr_in6     * addr6;
+#endif
     };
 };
 
@@ -180,17 +181,22 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
 {
   memset(&storage, 0, sizeof(storage));
 
-  if (ip.GetVersion() == 6) {
-    addr6->sin6_family   = AF_INET6;
-    addr6->sin6_addr     = ip;
-    addr6->sin6_port     = htons(port);
-    addr6->sin6_flowinfo = 0;
-    addr6->sin6_scope_id = ip.GetIPV6Scope();
-  }
-  else {
-    addr4->sin_family = AF_INET;
-    addr4->sin_addr = ip;
-    addr4->sin_port = htons(port);
+  switch (ip.GetVersion()) {
+    case 4 :
+      addr4->sin_family = AF_INET;
+      addr4->sin_addr = ip;
+      addr4->sin_port = htons(port);
+      break;
+
+#if P_HAS_IPV6
+    case 6 :
+      addr6->sin6_family   = AF_INET6;
+      addr6->sin6_addr     = ip;
+      addr6->sin6_port     = htons(port);
+      addr6->sin6_flowinfo = 0;
+      addr6->sin6_scope_id = ip.GetIPV6Scope();
+      break;
+#endif
   }
 }
 
@@ -200,10 +206,12 @@ socklen_t Psockaddr::GetSize() const
   switch (addr->sa_family) {
     case AF_INET :
       return sizeof(sockaddr_in);
+#if P_HAS_IPV6
     case AF_INET6 :
       // RFC 2133 (Old IPv6 spec) size is 24
       // RFC 2553 (New IPv6 spec) size is 28
       return sizeof(sockaddr_in6);
+#endif
     default :
       return sizeof(storage);
   }
@@ -215,8 +223,10 @@ PIPSocket::Address Psockaddr::GetIP() const
   switch (addr->sa_family) {
     case AF_INET :
       return addr4->sin_addr;
+#if P_HAS_IPV6
     case AF_INET6 :
       return PIPSocket::Address(addr6->sin6_addr, addr6->sin6_scope_id);
+#endif
     default :
       return 0;
   }
@@ -228,14 +238,15 @@ WORD Psockaddr::GetPort() const
   switch (addr->sa_family) {
     case AF_INET :
       return ntohs(addr4->sin_port);
+#if P_HAS_IPV6
     case AF_INET6 :
       return ntohs(addr6->sin6_port);
+#endif
     default :
       return 0;
   }
 }
 
-#endif
 
 
 #if (defined(_WIN32) || defined(WINDOWS)) && !defined(__NUCLEUS_MNT__)
@@ -1106,23 +1117,12 @@ void PIPSocket::ClearNameCache()
 
 PString PIPSocket::GetName() const
 {
-#if P_HAS_IPV6
-
   Psockaddr sa;
   socklen_t size = sa.GetSize();
-  if (getpeername(os_handle, sa, &size) == 0)
-    return GetHostName(sa.GetIP()) + psprintf(":%u", sa.GetPort());
+  if (getpeername(os_handle, sa, &size) != 0)
+    return PString::Empty();
 
-#else
-
-  sockaddr_in address;
-  socklen_t size = sizeof(address);
-  if (getpeername(os_handle, (struct sockaddr *)&address, &size) == 0)
-    return GetHostName(address.sin_addr) + psprintf(":%u", ntohs(address.sin_port));
-
-#endif
-
-  return PString::Empty();
+  return GetHostName(sa.GetIP()) + psprintf(":%u", sa.GetPort());
 }
 
 
@@ -1160,12 +1160,7 @@ PString PIPSocket::GetHostName(const Address & addr)
   if (pHostByAddr().GetHostName(addr, hostname))
     return hostname;
 
-#if P_HAS_IPV6
-  if (addr.GetVersion() == 6)
-    return '[' + addr.AsString() + ']';
-#endif
-
-  return addr.AsString();
+  return addr.AsString(true);
 }
 
 
@@ -1255,7 +1250,7 @@ bool PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 
 bool PIPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort)
 {
-#if P_HAS_IPV6
+  Address   peerv4;
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
@@ -1264,37 +1259,28 @@ bool PIPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort)
   addrAndPort.SetAddress(sa.GetIP());
   addrAndPort.SetPort(sa.GetPort());
 
+#if P_HAS_IPV6
   // If the remote host is an IPv4 only host and our interface if an IPv4/IPv6 mapped
   // Then return an IPv4 address instead of an IPv6
-  Address peer;
-  if (addrAndPort.GetAddress().IsV4Mapped() && 
-      GetPeerAddress(peer) && 
-      ((peer.GetVersion() == 4) || peer.IsV4Mapped())) {
-    Address addr = addrAndPort.GetAddress();
-    addrAndPort.SetAddress(Address(addr[12], addr[13], addr[14], addr[15]));
+  if (addrAndPort.GetAddress().IsV4Mapped()) {
+    Address peer;
+    if (GetPeerAddress(peer) && (peer.GetVersion() == 4 || peer.IsV4Mapped())) {
+      Address addr = addrAndPort.GetAddress();
+      addrAndPort.SetAddress(Address(addr[12], addr[13], addr[14], addr[15]));
+    }
   }
-  
-#else
-
-  sockaddr_in address;
-  socklen_t size = sizeof(address);
-  if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
-    return PFalse;
-
-  addrAndPort.SetAddress(address.sin_addr);
-  addrAndPort.SetPort(address.sin_port);
-
 #endif
 
   return true;
 }
 
+
 PString PIPSocket::GetPeerAddress()
 {
   PIPSocketAddressAndPort addrAndPort;
-  if (!GetPeerAddress(addrAndPort)) 
-    return PString::Empty();
-  return addrAndPort.AsString();
+  if (GetPeerAddress(addrAndPort)) 
+    return addrAndPort.AsString();
+  return PString::Empty();
 }
 
 
@@ -1321,8 +1307,6 @@ bool PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 
 bool PIPSocket::InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort)
 {
-#if P_HAS_IPV6
-
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getpeername(os_handle, sa, &size)))
@@ -1330,18 +1314,6 @@ bool PIPSocket::InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort)
 
   addrAndPort.SetAddress(sa.GetIP());
   addrAndPort.SetPort(sa.GetPort());
-
-#else
-
-  sockaddr_in address;
-  socklen_t size = sizeof(address);
-  if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
-    return PFalse;
-
-  addrAndPort.SetAddress(address.sin_addr);
-  addrAndPort.SetPort(address.sin_port);
-
-#endif
 
   return PTrue;
 }
@@ -1372,34 +1344,21 @@ PString PIPSocket::GetPeerHostName()
 PBoolean PIPSocket::Connect(const PString & host)
 {
   Address ipnum(host);
-#if P_HAS_IPV6
   if (ipnum.IsValid() || GetHostAddress(host, ipnum))
     return Connect(GetDefaultIpAny(), 0, ipnum);
-#else
-  if (ipnum.IsValid() || GetHostAddress(host, ipnum))
-    return Connect(INADDR_ANY, 0, ipnum);
-#endif  
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PIPSocket::Connect(const Address & addr)
 {
-#if P_HAS_IPV6
   return Connect(GetDefaultIpAny(), 0, addr);
-#else
-  return Connect(INADDR_ANY, 0, addr);
-#endif
 }
 
 
 PBoolean PIPSocket::Connect(WORD localPort, const Address & addr)
 {
-#if P_HAS_IPV6
   return Connect(GetDefaultIpAny(), localPort, addr);
-#else
-  return Connect(INADDR_ANY, localPort, addr);
-#endif
 }
 
 
@@ -1417,8 +1376,6 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
 
   // make sure we have a port
   PAssert(port != 0, "Cannot connect socket without setting port");
-
-#if P_HAS_IPV6
 
   Psockaddr sa(addr, port);
 
@@ -1444,177 +1401,50 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
   if (os_connect(sa, sa.GetSize()))
     return PTrue;
   
-#else
-
-  // attempt to create a socket
-  if (!OpenSocket())
-    return PFalse;
-
-  // attempt to connect
-  sockaddr_in sin;
-  if (localPort != 0 || iface.IsValid()) {
-    if (!SetOption(SO_REUSEADDR, 0)) {
-      os_close();
-      return PFalse;
-    }
-    memset(&sin, 0, sizeof(sin));
-    sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = iface;
-    sin.sin_port        = htons(localPort);       // set the port
-    if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
-      os_close();
-      return PFalse;
-    }
-  }
-
-  memset(&sin, 0, sizeof(sin));
-  sin.sin_family = AF_INET;
-  sin.sin_port   = htons(port);  // set the port
-  sin.sin_addr   = addr;
-  if (os_connect((struct sockaddr *)&sin, sizeof(sin)))
-    return PTrue;
-
-#endif
-
   os_close();
   return PFalse;
 }
 
 
-PBoolean PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
-{
-#if P_HAS_IPV6
-  return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
-#else
-  return Listen(INADDR_ANY, queueSize, newPort, reuse);
-#endif
-}
-
-
-PBoolean PIPSocket::Listen(const Address & bindAddr,
-                       unsigned,
-                       WORD newPort,
-                       Reusability reuse)
+bool PIPSocket::InternalListen(const Address & bindAddr,
+                               unsigned,
+                               WORD newPort,
+                               Reusability reuse)
 {
   // make sure we have a port
   if (newPort != 0)
     port = newPort;
 
 #if P_HAS_IPV6
-  Psockaddr bind_sa(bindAddr, port); 
-#endif
 
-#if P_HAS_IPV6
   // Always close and re-open as the bindAddr address family might change.
-  Close();
+  os_close();
 
   // attempt to create a socket
-  if (!OpenSocket(bind_sa->sa_family)) {
+  if (!OpenSocket(bindAddr.GetVersion() == 6 ? PF_INET6 : PF_INET)) {
     PTRACE(4, "Socket\tOpenSocket failed");
-    return PFalse;
+    return false;
   }
+
 #else
+
   if (!IsOpen()) {
     if (!OpenSocket()) {
       PTRACE(4, "Socket\tOpenSocket failed");
       return PFalse;
     }
   }
+
 #endif
-  
-#ifndef P_BEOS
-#if P_HAS_IPV6
-  if(bind_sa->sa_family != AF_INET6)
-#endif
-  {
-   // attempt to listen
-   if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
-     PTRACE(4, "Socket\tSetOption(SO_REUSEADDR) failed");
-     os_close();
-     return PFalse;
-   }
-  }
-#endif // BEOS
-
-#if P_HAS_IPV6
-
-  if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize()))) 
-    PTRACE(4, "Socket\tbind failed " << errno);
-  else {
-    Psockaddr sa;
-    socklen_t size = sa.GetSize();
-    if (!ConvertOSError(::getsockname(os_handle, sa, &size))) {
-      PTRACE(4, "Socket\tgetsockname failed");
-      return PFalse;
-    }
-
-    port = sa.GetPort();
-
-    if (!bindAddr.IsMulticast())
-      return true;
-
-    // Probably move this stuff into a separate method
-    if (bindAddr.GetVersion() == 4) {
-      struct ip_mreq  mreq;
-      mreq.imr_multiaddr = in_addr(bindAddr);
-      mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-      if (SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IP)) {
-        PTRACE(4, "Socket\tJoined multicast group");
-        return true;
-      }
-      PTRACE(1, "Socket\tFailed to join multicast group");
-    }
-    else {
-      PTRACE(1, "Socket\tIPV6 Multicast join not implemented yet");
-    }
-
-    return false;
-  }
-  
-
-#else
 
   // attempt to listen
-  sockaddr_in sin;
-  memset(&sin, 0, sizeof(sin));
-  sin.sin_family      = AF_INET;
-  sin.sin_addr.s_addr = bindAddr;
-  sin.sin_port        = htons(port);       // set the port
-
-#ifdef __NUCLEUS_NET__
-  int bind_result;
-  if (port == 0)
-    bind_result = ::bindzero(os_handle, (struct sockaddr*)&sin, sizeof(sin));
-  else
-    bind_result = ::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin));
-  if (!ConvertOSError(bind_result))
-#else
-  if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
-#endif
-    PTRACE(4, "Socket\tbind failed");
-  else {
-    socklen_t size = sizeof(sin);
-    if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, &size))) {
-      port = ntohs(sin.sin_port);
-
-    if (!IN_MULTICAST(ntohl(sin.sin_addr.s_addr)))
-        return true;
-
-      struct ip_mreq  mreq;
-      mreq.imr_multiaddr.s_addr = sin.sin_addr.s_addr;
-      mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-      if (SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))) {
-        PTRACE(4, "Socket\tJoined multicast group");
-        return true;
-      }
-      PTRACE(1, "Socket\tFailed to join multicast group");
-    }
+  if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
+    PTRACE(4, "Socket\tSetOption(SO_REUSEADDR) failed");
+    os_close();
+    return false;
   }
 
-#endif
-
-  os_close();
-  return PFalse;
+  return true;
 }
 
 
@@ -1644,7 +1474,77 @@ PBoolean PIPSocket::Address::IsSiteLocal() const
   return IN6_IS_ADDR_SITELOCAL(&m_v.m_six);
 }
 
-#endif
+
+PIPSocket::Address::Address(const in6_addr & addr)
+ {
+  if (IN6_IS_ADDR_LINKLOCAL(&addr)) {
+    PTRACE(2, "Socket\tCannot create link-local IPV6 address without scope id");
+    m_version = 0;
+  }
+  else {
+    m_version = 6;
+    m_v.m_six = addr;
+    m_scope6  = 0;
+  }
+}
+
+PIPSocket::Address::Address(const in6_addr & addr, int scope)
+{
+  m_version = 6;
+  m_v.m_six = addr;
+  m_scope6  = scope;
+}
+
+
+PIPSocket::Address & PIPSocket::Address::AssignIPV6(const in6_addr & addr, int scope)
+{
+  m_version = 6;
+  m_v.m_six = addr;
+  m_scope6  = scope;
+  return *this;
+}
+
+
+bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
+{
+  if (m_version == addr.m_version)
+    return operator==(addr);
+
+  if (this->GetVersion() == 6 && this->IsV4Mapped()) 
+    return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
+  else if (addr.GetVersion() == 6 && addr.IsV4Mapped()) 
+    return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
+
+  return PFalse;
+}
+
+
+bool PIPSocket::Address::operator ==(in6_addr & addr) const
+{
+  if (m_version != 6)
+    return false;
+
+  return memcmp(&addr, &m_v.m_six, sizeof(addr)) == 0;
+}
+
+
+bool PIPSocket::Address::EqualIPV6(in6_addr & addr, int scope) const
+{
+  PIPSocket::Address a(addr, scope);
+  return Compare(a) == EqualTo;
+}
+
+
+PIPSocket::Address::operator in6_addr() const
+{
+  if (m_version != 6)
+    return any6.m_v.m_six;
+
+  return m_v.m_six;
+}
+
+#endif // P_HAS_IPV6
+
 
 const PIPSocket::Address & PIPSocket::Address::GetLoopback(int IPV6_PARAM(version))
 {
@@ -1655,6 +1555,7 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback(int IPV6_PARAM(versio
   return loopback4;
 }
 
+
 const PIPSocket::Address & PIPSocket::Address::GetAny(int IPV6_PARAM(version))
 {
 #if P_HAS_IPV6
@@ -1663,6 +1564,7 @@ const PIPSocket::Address & PIPSocket::Address::GetAny(int IPV6_PARAM(version))
 #endif
   return any4;
 }
+
 
 const PIPSocket::Address PIPSocket::Address::GetBroadcast(int IPV6_PARAM(version))
 {
@@ -1726,29 +1628,6 @@ PIPSocket::Address::Address(const in_addr & addr)
 }
 
 
-#if P_HAS_IPV6
-PIPSocket::Address::Address(const in6_addr & addr)
- {
-  if (IN6_IS_ADDR_LINKLOCAL(&addr)) {
-    PTRACE(2, "Socket\tCannot create link-local IPV6 address without scope id");
-    m_version = 0;
-  }
-  else {
-    m_version = 6;
-    m_v.m_six = addr;
-    m_scope6  = 0;
-  }
-}
-
-PIPSocket::Address::Address(const in6_addr & addr, int scope)
-{
-  m_version = 6;
-  m_v.m_six = addr;
-  m_scope6  = scope;
-}
-#endif
-
-
 // Create an IP (v4 or v6) address from a sockaddr (sockaddr_in, sockaddr_in6 or sockaddr_in6_old) structure
 PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct sockaddr *ai_addr)
 {
@@ -1809,16 +1688,6 @@ PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
   return *this;
 }
 
-#if P_HAS_IPV6
-PIPSocket::Address & PIPSocket::Address::AssignIPV6(const in6_addr & addr, int scope)
-{
-  m_version = 6;
-  m_v.m_six = addr;
-  m_scope6  = scope;
-  return *this;
-}
-#endif
-
 
 PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
 {
@@ -1855,35 +1724,6 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
     return GreaterThan;
   return EqualTo;
 }
-
-#if P_HAS_IPV6
-bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
-{
-  if (m_version == addr.m_version)
-    return operator==(addr);
-
-  if (this->GetVersion() == 6 && this->IsV4Mapped()) 
-    return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
-  else if (addr.GetVersion() == 6 && addr.IsV4Mapped()) 
-    return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
-
-  return PFalse;
-}
-
-bool PIPSocket::Address::operator ==(in6_addr & addr) const
-{
-  if (m_version != 6)
-    return false;
-
-  return memcmp(&addr, &m_v.m_six, sizeof(addr)) == 0;
-}
-
-bool PIPSocket::Address::EqualIPV6(in6_addr & addr, int scope) const
-{
-  PIPSocket::Address a(addr, scope);
-  return Compare(a) == EqualTo;
-}
-#endif
 
 
 bool PIPSocket::Address::operator==(in_addr & addr) const
@@ -1988,7 +1828,7 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
   }
 
   // Failed to parse, so check for IPv4 with %interface
-#endif
+#endif // P_HAS_IPV6
 
   PINDEX percent = ipAndInterface.FindSpan("0123456789.");
   if (percent != P_MAX_INDEX && ipAndInterface[percent] != '%')
@@ -2036,17 +1876,6 @@ PIPSocket::Address::operator in_addr() const
 
   return m_v.m_four;
 }
-
-
-#if P_HAS_IPV6
-PIPSocket::Address::operator in6_addr() const
-{
-  if (m_version != 6)
-    return any6.m_v.m_six;
-
-  return m_v.m_six;
-}
-#endif
 
 
 BYTE PIPSocket::Address::operator[](PINDEX idx) const
@@ -2176,11 +2005,13 @@ PBoolean PIPSocket::Address::IsRFC1918() const
           );
 }
 
+
 PIPSocket::InterfaceEntry::InterfaceEntry()
   : ipAddr(GetDefaultIpAny())
   , netMask(GetDefaultIpAny())
 {
 }
+
 
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
                                           const Address & _addr,
@@ -2222,6 +2053,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table)
     return true;
 }
 #endif
+
 
 PBoolean PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
 {
@@ -2286,6 +2118,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
 
   return PIPSocket::GetDefaultIpAny();
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
@@ -2371,27 +2204,21 @@ PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
 }
 
 
-PBoolean PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
+bool PTCPSocket::InternalListen(const Address & bindAddr,
+                                unsigned queueSize,
+                                WORD newPort,
+                                Reusability reuse)
 {
-#if P_HAS_IPV6
-  return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
-#else
-  return Listen(INADDR_ANY, queueSize, newPort, reuse);
-#endif
-}
+  if (!PIPSocket::InternalListen(bindAddr, queueSize, newPort, reuse))
+    return false;
 
-
-PBoolean PTCPSocket::Listen(const Address & bindAddr,
-                        unsigned queueSize,
-                        WORD newPort,
-                        Reusability reuse)
-{
-  if (PIPSocket::Listen(bindAddr, queueSize, newPort, reuse) &&
+  Psockaddr bind_sa(bindAddr, port);
+  if (ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize())) &&
       ConvertOSError(::listen(os_handle, queueSize)))
-    return PTrue;
+    return true;
 
   os_close();
-  return PFalse;
+  return false;
 }
 
 
@@ -2399,26 +2226,13 @@ PBoolean PTCPSocket::Accept(PSocket & socket)
 {
   PAssert(PIsDescendant(&socket, PIPSocket), "Invalid listener socket");
 
-#if P_HAS_IPV6
-
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!os_accept(socket, sa, &size))
-    return PFalse;
+    return false;
     
-#else
-
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  PINDEX size = sizeof(address);
-  if (!os_accept(socket, (struct sockaddr *)&address, &size))
-    return PFalse;
-
-#endif
-
-  port = ((PIPSocket &)socket).GetPort();
-  
-  return PTrue;
+  port = ((PIPSocket &)socket).GetPort(); 
+  return true;
 }
 
 
@@ -2493,26 +2307,14 @@ bool PIPDatagramSocket::InternalReadFrom(void * buf, PINDEX len, PIPSocketAddres
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-#if P_HAS_IPV6
-
   Psockaddr sa;
   socklen_t size = sa.GetSize();
-  bool ok = os_recvfrom(buf, len, 0, sa, &size);
+  if (!os_recvfrom(buf, len, 0, sa, &size))
+    return false;
+
   ipAndPort.SetAddress(sa.GetIP());
   ipAndPort.SetPort(sa.GetPort());
-
-#else
-
-  sockaddr_in sockAddr;
-  PINDEX addrLen = sizeof(sockAddr);
-  bool ok = os_recvfrom(buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen);
-
-  ipAndPort.SetAddress(sockAddr.sin_addr);
-  ipAndPort.SetPort(ntohs(sockAddr.sin_port));
-
-#endif
-
-  return ok;
+  return true;
 }
 
 bool PIPDatagramSocket::InternalReadFrom(VectorOfSlice & slices, PIPSocketAddressAndPort & ipAndPort)
@@ -2522,27 +2324,17 @@ bool PIPDatagramSocket::InternalReadFrom(VectorOfSlice & slices, PIPSocketAddres
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-#if P_HAS_IPV6
-
   Psockaddr sa;
   socklen_t size = sa.GetSize();
-  bool ok = os_vread(slices, 0, sa, &size);
+  if (!os_vread(slices, 0, sa, &size))
+    return false;
+
   ipAndPort.SetAddress(sa.GetIP());
   ipAndPort.SetPort(sa.GetPort());
 
-#else
-
-  sockaddr_in sockAddr;
-  PINDEX addrLen = sizeof(sockAddr);
-  bool ok = os_vread(slices, 0, (struct sockaddr *)&sockAddr, &addrLen);
-
-  ipAndPort.SetAddress(sockAddr.sin_addr);
-  ipAndPort.SetPort(ntohs(sockAddr.sin_port));
-
-#endif
-
-  return ok;
+  return true;
 }
+
 
 bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
 {
@@ -2550,10 +2342,12 @@ bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const Address & ad
   return InternalWriteTo(buf, len, ap);
 }
 
+
 bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
 {
   return InternalWriteTo(buf, len, ipAndPort);
 }
+
 
 bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const Address & addr, WORD port)
 {
@@ -2561,10 +2355,12 @@ bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const Address & ad
   return InternalWriteTo(slices, ap);
 }
 
+
 bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const PIPSocketAddressAndPort & ipAndPort)
 {
   return InternalWriteTo(slices, ipAndPort);
 }
+
 
 struct WriteBytesOp : public PIPDatagramSocket::InternalWriteOp
 {
@@ -2581,11 +2377,13 @@ struct WriteBytesOp : public PIPDatagramSocket::InternalWriteOp
   int m_len;
 };
 
+
 bool PIPDatagramSocket::InternalWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
 {
   WriteBytesOp op(buf, len);
   return InternalWriteTo(op, ipAndPort);
 }
+
 
 struct WriteVectorOp : public PIPDatagramSocket::InternalWriteOp
 {
@@ -2607,6 +2405,7 @@ bool PIPDatagramSocket::InternalWriteTo(const PIPSocket::VectorOfSlice & v, cons
   WriteVectorOp op(v);
   return InternalWriteTo(op, ipAndPort);
 }
+
 
 bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAddressAndPort & ipAndPort)
 {
@@ -2672,20 +2471,8 @@ bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAdd
   
 #else
   
-#if P_HAS_IPV6
-  
   Psockaddr sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
   PBoolean ok = op.Write(this, 0, sa, sa.GetSize()) != 0;
-  
-#else
-  
-  sockaddr_in sockAddr;
-  sockAddr.sin_family = AF_INET;
-  sockAddr.sin_addr = (broadcast ? Address::GetBroadcast() : addr);
-  sockAddr.sin_port = htons(port);
-  PBoolean ok = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
-  
-#endif // P_HAS_IPV6
   
 #endif // P_MACOSX
 
@@ -2758,6 +2545,8 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 }
 
 
+#if P_QOS
+
 PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
 {
   if (qos==NULL)
@@ -2767,12 +2556,12 @@ PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
   return PTrue;
 }
 
-#if P_QOS
+
 PQoS & PUDPSocket::GetQoSSpec()
 {
   return qosSpec;
 }
-#endif //P_QOS
+
 
 PBoolean PUDPSocket::ApplyQoS()
 {
@@ -2805,7 +2594,6 @@ PBoolean PUDPSocket::ApplyQoS()
 #endif
 
 #ifdef _WIN32
-#if P_QOS
   if (disableGQoS)
     return PFalse;
 
@@ -2859,7 +2647,6 @@ PBoolean PUDPSocket::ApplyQoS()
   if (!usesetsockopt)
     return retval;
 
-#endif  // P_QOS
 #endif  // _WIN32
 
   unsigned int setDSCP = DSCPval<<2;
@@ -2888,9 +2675,10 @@ PBoolean PUDPSocket::ApplyQoS()
   return PTrue;
 }
 
+
 PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 {
-#if defined(_WIN32) && defined(P_QOS)
+#if defined(_WIN32)
     
   //Try to find a QOS-enabled protocol
   DWORD bufferSize = 0;
@@ -2927,8 +2715,8 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 #endif
 }
 
+
 #ifdef _WIN32
-#if P_QOS
 
 #define COULD_HAVE_QOS
 
@@ -2945,18 +2733,16 @@ static PBoolean CheckOSVersionFor(DWORD major, DWORD minor)
   return PFalse;
 }
 
-#endif // P_QOS
 #endif // _WIN32
+
+#endif //P_QOS
+
 
 PBoolean PUDPSocket::OpenSocket()
 {
-#ifdef COULD_HAVE_QOS
-  if (CheckOSVersionFor(5,1)) 
-    return OpenSocketGQOS(AF_INET, SOCK_DGRAM, 0);
-#endif
-
-  return ConvertOSError(os_handle = os_socket(AF_INET,SOCK_DGRAM, 0));
+  return OpenSocket(PF_INET);
 }
+
 
 PBoolean PUDPSocket::OpenSocket(int ipAdressFamily)
 {
@@ -2968,6 +2754,7 @@ PBoolean PUDPSocket::OpenSocket(int ipAdressFamily)
   return ConvertOSError(os_handle = os_socket(ipAdressFamily,SOCK_DGRAM, 0));
 }
 
+
 const char * PUDPSocket::GetProtocolName() const
 {
   return "udp";
@@ -2978,6 +2765,68 @@ PBoolean PUDPSocket::Connect(const PString & address)
 {
   SetSendAddress(PIPSocketAddressAndPort());
   return PIPDatagramSocket::Connect(address);
+}
+
+
+bool PUDPSocket::InternalListen(const Address & bindAddr,
+                                unsigned queueSize,
+                                WORD newPort,
+                                Reusability reuse)
+{
+  if (bindAddr.IsMulticast()) {
+    if (!PIPSocket::InternalListen(bindAddr, queueSize, newPort, CanReuseAddress))
+      return false;
+
+    Psockaddr bind_sa(GetDefaultIpAny(), port);
+    if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize())))
+      return false;
+
+    bool ok;
+
+#if P_HAS_IPV6
+    if (bindAddr.GetVersion() == 6) {
+      struct ipv6_mreq mreq;
+      mreq.ipv6mr_multiaddr = bindAddr;
+      mreq.ipv6mr_interface = bindAddr.GetIPV6Scope();
+      ok = SetOption(IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IPV6);
+    }
+    else
+#endif
+    {
+      struct ip_mreq mreq;
+      mreq.imr_multiaddr = bindAddr;
+      mreq.imr_interface = Address::GetAny(4);
+      ok = SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IP);
+    }
+
+    if (!ok) {
+      PTRACE(1, "Socket\tMulticast join failed for " << bindAddr << " - " << GetErrorText());
+      return false;
+    }
+
+    PTRACE(4, "Socket\tJoined multicast group " << bindAddr);
+  }
+  else {
+    if (!PIPSocket::InternalListen(bindAddr, queueSize, newPort, reuse))
+      return false;
+
+    Psockaddr bind_sa(bindAddr, port);
+    if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize())))
+      return false;
+  }
+
+  if (port == 0) {
+    Psockaddr sa;
+    socklen_t size = sa.GetSize();
+    if (!ConvertOSError(::getsockname(os_handle, sa, &size))) {
+      PTRACE(4, "Socket\tgetsockname failed: " << GetErrorText());
+      return false;
+    }
+
+    port = sa.GetPort();
+  }
+
+  return true;
 }
 
 
