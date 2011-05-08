@@ -362,13 +362,14 @@ class PIPSocket : public PSocket
       unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
       WORD port = 0,           ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
-    );
+    ) { return InternalListen(GetDefaultIpAny(), queueSize, port, reuse); }
+
     virtual PBoolean Listen(
       const Address & bind,     ///< Local interface address to bind to.
       unsigned queueSize = 5,   ///< Number of pending accepts that may be queued.
       WORD port = 0,            ///< Port number to use for the connection.
       Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
-    );
+    ) { return InternalListen(bind, queueSize, port, reuse); }
     //@}
 
     /**@name New functions for class */
@@ -737,7 +738,7 @@ class PIPSocket : public PSocket
   protected:
     virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort);
     virtual bool InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort);
-
+    virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
 };
 
 class PIPSocketAddressAndPort
