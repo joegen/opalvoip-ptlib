@@ -506,13 +506,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
     // new functions
     bool InternalOpenSocket(BYTE component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
 
-    /**Determine via the STUN protocol the NAT type for the router.
-       As for GetNatType() but returns an English string for the type.
-      */
-    PString GetNatTypeName(
-      bool force = false    ///< Force a new check
-    ) { return GetNatTypeString(GetNatType(force)); }
-
     NatTypes FindNatType(
       const PIPSocket::Address & binding
     );
