@@ -117,38 +117,6 @@ class PTCPSocket : public PIPSocket
 
   /**@name Overrides from class PSocket. */
   //@{
-    /** Listen on a socket for a remote host on the specified port number. This
-       may be used for server based applications. A "connecting" socket begins
-       a connection by initiating a connection to this socket. An active socket
-       of this type is then used to generate other "accepting" sockets which
-       establish a two way communications channel with the "connecting" socket.
-
-       The Listen() method is only used once in the entire lifetime of
-       the socket. In contrast, the Accept() may be used many more
-       times. Thus, if you have a socket to collect incoming
-       connections, do a Listen() on it to get things ready, and then
-       Accept(). With each incoming connection, you will do Accept
-       again.
-
-       If the <code>port</code> parameter is zero then the port number as
-       defined by the object instance construction or the
-       <code>PIPSocket::SetPort()</code> function.
-
-       @return
-       true if the channel was successfully opened.
-     */
-    virtual PBoolean Listen(
-      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
-      WORD port = 0,           ///< Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
-    );
-    virtual PBoolean Listen(
-      const Address & bind,     ///< Local interface address to bind to.
-      unsigned queueSize = 5,   ///< Number of pending accepts that may be queued.
-      WORD port = 0,            ///< Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
-    );
-
     /** Open a socket to a remote host on the specified port number. This is an
        "accepting" socket. When a "listening" socket has a pending connection
        to make, this will accept a connection made by the "connecting" socket
@@ -207,6 +175,8 @@ class PTCPSocket : public PIPSocket
     virtual PBoolean OpenSocket(
       int ipAdressFamily
     );
+
+    virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
 
     virtual const char * GetProtocolName() const;
 

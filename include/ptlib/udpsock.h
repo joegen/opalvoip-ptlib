@@ -174,12 +174,12 @@ class PUDPSocket : public PIPDatagramSocket
     static void EnableGQoS();
   //@}
 
-      // Normally, one would expect these to be protected, but they are just so darn
-      // useful that it's just easier if they are public
-      virtual void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
-      virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
-      virtual void InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & addr);
-      virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr);
+    // Normally, one would expect these to be protected, but they are just so darn
+    // useful that it's just easier if they are public
+    virtual void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
+    virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
+    virtual void InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & addr);
+    virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr);
 
   protected:
     // Open an IPv4 socket (for backward compatibility)
@@ -189,6 +189,8 @@ class PUDPSocket : public PIPDatagramSocket
     virtual PBoolean OpenSocket(
       int ipAdressFamily
     );
+
+    virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
 
     // Create a QOS-enabled socket
     virtual PBoolean OpenSocketGQOS(int af, int type, int proto);
