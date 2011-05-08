@@ -173,6 +173,13 @@ class PNatMethod  : public PObject
       bool force = false    ///< Force a new check
     ) = 0;
 
+    /**Determine via the STUN protocol the NAT type for the router.
+       As for GetNatType() but returns an English string for the type.
+      */
+    PString GetNatTypeName(
+      bool force = false    ///< Force a new check
+    ) { return GetNatTypeString(GetNatType(force)); }
+
     /**Set the current server address name.
        Defaults to be "address:port" string form.
       */
@@ -191,9 +198,15 @@ class PNatMethod  : public PObject
       PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
     ) const = 0;
 
+    /**Open the NAT method.
+      */
     virtual bool Open(
       const PIPSocket::Address & ifaceAddr
-      ) = 0;
+    ) = 0;
+
+    /**Close the NAT method
+      */
+    virtual void Close() { }
 
     /**Create a single socket.
        The NAT traversal protocol is used to create a socket for which the
@@ -292,8 +305,7 @@ class PNatMethod  : public PObject
       const PIPSocket::Address & binding
     ) = 0;
 
-    /**Activate
-     Activate/DeActivate the NAT Method on a call by call basis
+    /**Activate/DeActivate the NAT Method on a call by call basis
      Default does nothing
       */
     virtual void Activate(bool active);
