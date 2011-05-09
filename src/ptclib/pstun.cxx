@@ -953,7 +953,7 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
 {
   PWaitAndSignal m(m_mutex);
 
-  if ((binding != PIPSocket::GetDefaultIpAny()) && (binding.IsLoopback() || (binding.GetVersion() != 4))) {
+  if (!binding.IsAny() && (binding.IsLoopback() || binding.GetVersion() != 4)) {
     PTRACE(1, "STUN\tCannot use interface " << binding << " to find STUN server");
     return m_natType = UnknownNat;
   }
@@ -1132,11 +1132,11 @@ void PSTUNClient::SetCredentials(const PString &, const PString &, const PString
 {
 }
 
-bool PSTUNClient::CreateSocket(BYTE component, PUDPSocket * & udpSocket, const PIPSocket::Address & address, WORD port)
+bool PSTUNClient::CreateSocket(BYTE component, PUDPSocket * & udpSocket, const PIPSocket::Address & binding, WORD port)
 {
   PWaitAndSignal m(m_mutex);
 
-  if (address != m_interface)
+  if (!binding.IsAny() && binding != m_interface)
     return false;
 
   PSTUNUDPSocket * stunSocket = new PSTUNUDPSocket;
@@ -1185,9 +1185,12 @@ struct SocketInfo {
 
 bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2,
-                                   const PIPSocket::Address &)
+                                   const PIPSocket::Address & binding)
 {
   PWaitAndSignal m(m_mutex);
+
+  if (!binding.IsAny() && binding != m_interface)
+    return false;
 
   socket1 = NULL;
   socket2 = NULL;
@@ -1216,8 +1219,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   PPtrVector<SocketInfo> socketInfo;
 
   // send binding requests until we get a pair of adjacent sockets
-  PINDEX socketCount = 0;
-  while (socketCount < numSocketsForPairing)  {
+  for (PINDEX socketCount = 0; socketCount < numSocketsForPairing; ++socketCount)  {
     // always ensure we have two sockets
     while (socketInfo.size() < 2) {
 
@@ -1230,7 +1232,6 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
         PTRACE(1, "STUN\tUnable to open socket to " << *this);
         return false;
       }
-      numSocketsForPairing++;
 
       // if necessary, send a binding request
       if (GetNatType(false) == OpenNat) {
@@ -1712,7 +1713,7 @@ bool PTURNClient::CreateSocket(BYTE component, PUDPSocket * & socket, const PIPS
   if (component != PNatMethod::eComponent_RTP && component != PNatMethod::eComponent_RTCP)
     return PSTUNClient::CreateSocket(component, socket, binding, port);
 
-  if (binding != m_interface)
+  if (!binding.IsAny() && binding != m_interface)
     return false;
   
   socket = NULL;
@@ -1724,7 +1725,7 @@ bool PTURNClient::CreateSocket(BYTE component, PUDPSocket * & socket, const PIPS
   else
     portInfo = &singlePortInfo;
 
-  AllocateSocketFunctor op(*this, component, binding, *portInfo);
+  AllocateSocketFunctor op(*this, component, m_interface, *portInfo);
 
   op.operator()(*PThread::Current());
 
@@ -1745,6 +1746,9 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2,
                                    const PIPSocket::Address & binding)
 {
+  if (!binding.IsAny() && binding != m_interface)
+    return false;
+
 #ifndef ENABLE_TURN_FOR_ALL
   switch (GetNatType(PFalse)) {
     case OpenNat :
