@@ -67,7 +67,7 @@ PSTUN::PSTUN()
 {
 }
 
-PNatMethod::NatTypes PSTUN::RFC3489Discovery(
+PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
   PSTUNUDPSocket * socket, 
   const PIPSocketAddressAndPort & serverAddress,
   PIPSocketAddressAndPort & baseAddressAndPort, 
@@ -563,7 +563,8 @@ PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) const
 bool PSTUNMessage::Read(PUDPSocket & socket)
 {
   if (!socket.PUDPSocket::InternalReadFrom(GetPointer(1000), 1000, m_sourceAddressAndPort)) {
-    PTRACE(3, "STUNSRVR\tRead error " << socket.GetErrorCode(PChannel::LastReadError) << " - " << socket.GetErrorText(PChannel::LastReadError));
+    PTRACE_IF(2, socket.GetErrorCode(PChannel::LastReadError) != PChannel::Timeout,
+              "STUN\tRead error: " << socket.GetErrorText(PChannel::LastReadError));
     return false;
   }
 
@@ -585,10 +586,17 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
     if (!request.Write(socket))
       break;
 
-    if (Read(socket) && Validate(request))
-      return true;
+    if (Read(socket)) {
+      if (Validate(request))
+        return true;
+    }
+    else {
+      if (socket.GetErrorCode(PChannel::LastReadError) != PChannel::Timeout)
+        return false;
+    }
   }
 
+  PTRACE(4, "STUN\tTimed out on poll with retries.");
   return false;
 }
 
@@ -933,20 +941,11 @@ PNatMethod::NatTypes PSTUNClient::GetNatType(bool force)
     return m_natType = UnknownNat;
   }
 
-//  if (!m_interface.IsValid()) {
-//    PTRACE(1, "STUN\tSTUN interface not set");
-//    return m_natType = UnknownNat;
-//  }
-
-  if (m_socket == NULL) {
-    PTRACE(1, "STUN\tSocket not set");
-    return m_natType = UnknownNat;
-  }
+  if (m_socket == NULL)
+    return FindNatType(PIPSocket::GetDefaultIpAny());
 
   PIPSocketAddressAndPort baseAddress;
-  RFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
-
-  return m_natType;
+  return DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
 }
 
 
@@ -1038,7 +1037,7 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
       if (responseI.Read(udp) && responseI.Validate(requestI)) {
         m_socket = &udp;
         sockets.AllowDeleteObjects(false);
-        sockets.erase(sockets.begin());
+        sockets.Remove(m_socket);
         sockets.AllowDeleteObjects(true);
         break;
       }
@@ -1047,6 +1046,7 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
 
   // complete discovery
   m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
+  m_socket->SetReadTimeout(replyTimeout);
   PIPSocketAddressAndPort ap;
   m_socket->GetBaseAddress(ap);
   m_interface = ap.GetAddress();

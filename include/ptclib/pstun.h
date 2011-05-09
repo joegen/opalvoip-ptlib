@@ -60,7 +60,7 @@ class PSTUN {
 
     /** Determine the NAT type using RFC3489 discovery method
       */
-    virtual PNatMethod::NatTypes RFC3489Discovery(
+    virtual PNatMethod::NatTypes DoRFC3489Discovery(
       PSTUNUDPSocket * socket, 
       const PIPSocketAddressAndPort & serverAddress, 
       PIPSocketAddressAndPort & baseAddressAndPort, 
