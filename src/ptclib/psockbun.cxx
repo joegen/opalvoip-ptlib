@@ -482,28 +482,22 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   delete info.socket;
   info.socket = NULL;
   
-  if (natMethod != NULL) {
-    if (natMethod->IsAvailable(binding)) {
-      PIPSocket::Address address;
-      WORD port;
-      natMethod->GetServerAddress(address, port);
-      if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
-        if (natMethod->CreateSocket(info.socket, binding, localPort)) {
-          info.socket->PUDPSocket::GetLocalAddress(address, port);
-          PTRACE(4, "MonSock\tCreated bundled UDP socket via " << natMethod->GetName()
-                 << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
-          return true;
-        }
+  if (natMethod != NULL && natMethod->IsAvailable(binding)) {
+    PIPSocket::Address address;
+    WORD port;
+    natMethod->GetServerAddress(address, port);
+    if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
+      if (natMethod->CreateSocket(info.socket, binding, localPort)) {
+        info.socket->PUDPSocket::GetLocalAddress(address, port);
+        PTRACE(4, "MonSock\tCreated bundled UDP socket via " << natMethod->GetName()
+               << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
+        return true;
       }
-    }
-
-    if (!natMethod->CreateSocket(info.socket, PIPSocket::Address::GetAny(binding.GetVersion()))) {
-      PTRACE(4, "MonSock\tCannot create bundled UDP socket on " << binding);
-      return false;
     }
   }
 
-  if (natMethod != NULL && info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
+  info.socket = new PUDPSocket(localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
+  if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
     PTRACE(4, "MonSock\tCreated bundled UDP socket " << binding << ':' << info.socket->GetPort());
     int sz = 0;
     if (info.socket->GetOption(SO_RCVBUF, sz) && sz < UDP_BUFFER_SIZE) {
