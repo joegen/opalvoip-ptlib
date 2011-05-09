@@ -116,6 +116,7 @@
 #undef P_TTS
 #undef P_ASN
 #undef P_STUN
+#undef P_STUNSRVR
 #undef P_PIPECHAN
 #undef P_DTMF
 #undef P_WAVFILE

@@ -91,6 +91,7 @@ HAS_PLUGINS=1
 HAS_TTS=1
 HAS_ASN=1
 HAS_STUN=1
+HAS_STUNSRVR=1
 HAS_PIPECHAN=1
 HAS_DTMF=1
 HAS_WAVFILE=1
@@ -135,6 +136,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_TTS=
   HAS_ASN=1
   HAS_STUN=1
+  HAS_STUNSRVR=
   HAS_PIPECHAN=
   HAS_DTMF=
   HAS_WAVFILE=
@@ -1441,8 +1443,11 @@ dnl ########################################################################
 dnl check for enabling STUN support
 dnl MSWIN_DISPLAY    stun,STUN Support
 dnl MSWIN_DEFINE     stun,P_STUN
-
-PTLIB_SIMPLE_OPTION([stun], [STUN], [enable STUN support])
+dnl MSWIN_DISPLAY    stun,STUN server support
+dnl MSWIN_DEFINE     stun,P_STUNSRVR
+ 
+PTLIB_SIMPLE_OPTION([stun],     [STUN],     [enable STUN support])
+PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [enable STUN server support])
 
 dnl ########################################################################
 dnl check for enabling PIPECHAN support
@@ -1777,6 +1782,7 @@ PTLIB_NEW_OPTION(VIDEO_CAPTURE)
 PTLIB_NEW_OPTION(TTS)
 PTLIB_NEW_OPTION(ASN)
 PTLIB_NEW_OPTION(STUN)
+PTLIB_NEW_OPTION(STUNSRVR)
 PTLIB_NEW_OPTION(PIPECHAN)
 PTLIB_NEW_OPTION(DTMF)
 PTLIB_NEW_OPTION(WAVFILE)

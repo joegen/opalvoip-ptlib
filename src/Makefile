@@ -248,6 +248,15 @@ $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 
 endif
 
+ifdef HAS_STUNSRVR
+SOURCES += $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
+
+$(OBJDIR)/pstunsrvr.o: $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
+        @if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+        $(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+endif
+
+
 ifdef HAS_SOCKS
 SOURCES += $(COMPONENT_SRC_DIR)/socks.cxx 
 endif
