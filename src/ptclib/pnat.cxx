@@ -208,8 +208,6 @@ void PNatMethod::PortInfo::SetPorts(WORD start, WORD end)
   basePort = start;
   if (basePort > 0 && basePort < 1024)
     basePort = 1024;
-  else if (basePort > 65535)
-    basePort = 65535;
 
   if (basePort == 0)
     maxPort = 0;
@@ -217,8 +215,6 @@ void PNatMethod::PortInfo::SetPorts(WORD start, WORD end)
     maxPort = (WORD)PMIN(65535, basePort + 99);
   else if (end < basePort)
     maxPort = basePort;
-  else if (end > 65535)
-    maxPort = 65535;
   else
     maxPort = end;
 
