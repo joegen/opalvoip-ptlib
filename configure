@@ -4929,6 +4929,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
 	MACHTYPE=x86
+	  PBYTE_ORDER=PLITTLE_ENDIAN
 
 fi
 
@@ -4939,6 +4940,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext;
 	MACHTYPE=$target_cpu
 	P_64BIT=1
         LIB64=1
+	PBYTE_ORDER=PLITTLE_ENDIAN
 	;;
 
    alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7)
@@ -4986,6 +4988,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext;
    s390 )
 	MACHTYPE=s390
 	;;
+
+   arm | armv6 | armv7 )
+        MACHTYPE=$target_cpu
+	PBYTE_ORDER=PLITTLE_ENDIAN
+        ;;
 
    * )
 	MACHTYPE=$target_cpu
@@ -6170,6 +6177,9 @@ cat >>confdefs.h <<_ACEOF
 #define PBYTE_ORDER $PBYTE_ORDER
 _ACEOF
 
+else
+  { $as_echo "$as_me:$LINENO: $target_cpu is $PBYTE_ORDER" >&5
+$as_echo "$as_me: $target_cpu is $PBYTE_ORDER" >&6;}
 fi
 
 { $as_echo "$as_me:$LINENO: Default extension for C++ files is $ac_ext" >&5
