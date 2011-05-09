@@ -657,10 +657,11 @@ PString::PString(char c)
 }
 
 
+static PConstString const EmptyString("");
+
 const PString & PString::Empty()
 {
-  static PConstString const empty("");
-  return empty;
+  return EmptyString;
 }
 
 
