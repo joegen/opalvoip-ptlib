@@ -287,6 +287,7 @@ case "$target_cpu" in
 	     P_64BIT=1]]
 	  ,
 	  [[MACHTYPE=x86]]
+	  PBYTE_ORDER=PLITTLE_ENDIAN
 	);
 	;;
 
@@ -294,6 +295,7 @@ case "$target_cpu" in
 	MACHTYPE=$target_cpu
 	P_64BIT=1
         LIB64=1
+	PBYTE_ORDER=PLITTLE_ENDIAN
 	;;
 
    alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7)
@@ -341,6 +343,11 @@ case "$target_cpu" in
    s390 )
 	MACHTYPE=s390
 	;;
+
+   arm | armv6 | armv7 )
+        MACHTYPE=$target_cpu
+	PBYTE_ORDER=PLITTLE_ENDIAN
+        ;;
 
    * )
 	MACHTYPE=$target_cpu
@@ -471,6 +478,8 @@ if test ${OSTYPE} != "Darwin" ; then
   fi
 
   AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
+else
+  AC_MSG_NOTICE($target_cpu is $PBYTE_ORDER)
 fi
 
 AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
