@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "URL", "samples\url\url_2010
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "map_dict", "samples\map_dict\map_dict_2010.vcxproj", "{3C48777B-D020-425B-AB6F-3A4ED02640C2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunclient", "samples\stunclient\stunclient_2010.vcxproj", "{D0C00ADD-544B-4922-AB52-14415894D684}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -122,6 +124,15 @@ Global
 		{3C48777B-D020-425B-AB6F-3A4ED02640C2}.Release|Win32.Build.0 = Release|Win32
 		{3C48777B-D020-425B-AB6F-3A4ED02640C2}.Release|x64.ActiveCfg = Release|x64
 		{3C48777B-D020-425B-AB6F-3A4ED02640C2}.Release|x64.Build.0 = Release|x64
+		{D0C00ADD-544B-4922-AB52-14415894D684}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.Debug|Win32.Build.0 = Debug|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.Debug|x64.ActiveCfg = Debug|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.No Trace|Win32.Build.0 = No Trace|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.No Trace|x64.ActiveCfg = No Trace|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.Release|Win32.ActiveCfg = Release|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.Release|Win32.Build.0 = Release|Win32
+		{D0C00ADD-544B-4922-AB52-14415894D684}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

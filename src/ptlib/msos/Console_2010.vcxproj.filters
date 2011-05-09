@@ -768,6 +768,9 @@
     <ClInclude Include="..\..\..\include\ptclib\vcard.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptclib\pnat.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
