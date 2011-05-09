@@ -636,6 +636,7 @@ configure --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLI
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\ptclib\pnat.h" />
     <ClInclude Include="..\..\..\include\ptclib\vcard.h" />
     <ClInclude Include="..\..\..\revision.h" />
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">

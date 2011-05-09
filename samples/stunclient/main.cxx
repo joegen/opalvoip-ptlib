@@ -48,69 +48,82 @@ StunClient::StunClient()
 void StunClient::Main()
 {
   PArgList & args = GetArguments();
+  args.Parse("-turn."
+             "-username:"
+             "-password:"
+             "-realm:"
+             "-portbase:"
+             "-portmax:"
+             "-pairbase:"
+             "-pairmax:"
 #if PTRACING
-  args.Parse("t-trace."       "-no-trace."
-             "o-output:"      "-no-output."
-             "-turn");
+             "t-trace."
+             "o-output:"
+#endif
+             "V-version."
+  );
 
+#if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
-                   args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-                   PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+                     PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
-  WORD portbase, portmax;
-
-  switch (args.GetCount()) {
-    case 0 :
-      cout << "usage: stunclient [--turn] stunserver [ portbase [ portmax ]]\n";
-      return;
-    case 1 :
-      portbase = 0;
-      portmax = 0;
-      break;
-    case 2 :
-      portbase = (WORD)args[1].AsUnsigned();
-      portmax = (WORD)(portbase+9);
-      break;
-    default :
-      portbase = (WORD)args[1].AsUnsigned();
-      portmax = (WORD)args[2].AsUnsigned();
-  }
-  
-  if (args.HasOption("turn")) {
-    PTURNClient turnClient(args[0]);
-
-    if (!turnClient.Open("toto", "password", "opalvoip.org")) {
-      cout << "Cannot open TURN client" << endl;
-      return;
-    }
-
-    int allocation = turnClient.CreateAllocation();
-    if (allocation < 0) {
-      cout << "Cannot create allocation" << endl;
-      return;
-    }
-
-    if (!turnClient.DeleteAllocation(allocation)) {
-      cout << "Cannot delete allocation" << endl;
-      return;
-    }
-
+  if (args.HasOption('V')) {
+    cout << GetName() << " version " << GetVersion() << endl;
     return;
   }
 
-  PSTUNClient stun(args[0], portbase, portmax, portbase, portmax);
-  cout << "NAT type: " << stun.GetNatTypeName() << endl;
+  if (args.GetCount() == 0) {
+    cerr << "usage: " << GetFile().GetTitle() << " [options] stunserver\n"
+            "options:\n"
+            "  --turn           Use TURN instead of STUN\n"
+            "  --username name  TURN Authorisation username\n"
+            "  --password pass  TURN Authorisation password\n"
+            "  --realm id       TURN Authorisation realm\n"
+            "  --portbase n     Port base for sockets\n"
+            "  --portmax n      Port maximum for sockets\n"
+            "  --pairbase n     Port base for socket pairs\n"
+            "  --pairmax n      Port maximum for socket pairs\n"
+#if PTRACING
+            " -t --trace         Trace log level\n"
+            " -o --output fn     Output trace log to fn\n"
+#endif
+            " -V --version       Output version\n";
+      return;
+  }
+
+  PString methodName = args.HasOption("turn") ? "TURN" : "STUN";
+  PNatMethod * nat = PNatMethod::Create(methodName);
+  if (nat == NULL) {
+    cerr << "Could not create NAT method for " << methodName << endl;
+    return;
+  }
+
+  nat->SetCredentials(args.GetOptionString("username", "toto"),
+                      args.GetOptionString("password", "password"),
+                      args.GetOptionString("realm", "opalvoip.org"));
+  nat->SetPortRanges((WORD)args.GetOptionString("portbase").AsUnsigned(),
+                     (WORD)args.GetOptionString("portmax").AsUnsigned(),
+                     (WORD)args.GetOptionString("pairbase").AsUnsigned(),
+                     (WORD)args.GetOptionString("pairmax").AsUnsigned());
+
+  if (!nat->SetServer(args[0])) {
+    cerr << "Cannot set server \"" << args[0] << "\" for " << methodName << endl;
+    return;
+  }
+
+  cout << "NAT type: " << nat->GetNatTypeName() << endl;
 
   PIPSocket::Address router;
-  if (!stun.GetExternalAddress(router)) {
+  if (!nat->GetExternalAddress(router)) {
     cout << "Could not get router address!" << endl;
     return;
   }
   cout << "Router address: " << router << endl;
 
   PUDPSocket * udp;
-  if (!stun.CreateSocket(udp)) {
+  if (!nat->CreateSocket(udp)) {
     cout << "Cannot create a socket!" << endl;
     return;
   }
@@ -123,7 +136,7 @@ void StunClient::Main()
   delete udp;
 
   PUDPSocket * udp1, * udp2;
-  if (!stun.CreateSocketPair(udp1, udp2)) {
+  if (!nat->CreateSocketPair(udp1, udp2)) {
     cout << "Cannot create socket pair" << endl;
     return;
   }
