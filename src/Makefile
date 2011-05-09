@@ -251,8 +251,8 @@ ifdef HAS_STUNSRVR
 SOURCES += $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 
 $(OBJDIR)/pstunsrvr.o: $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
-        @if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-        $(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 
