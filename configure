@@ -672,6 +672,7 @@ PTLIB_SOCKS
 PTLIB_WAVFILE
 PTLIB_DTMF
 PTLIB_PIPECHAN
+PTLIB_STUNSRVR
 PTLIB_STUN
 PTLIB_ASN
 PTLIB_TTS
@@ -712,6 +713,7 @@ HAS_FTP
 HAS_SOCKS
 HAS_DTMF
 HAS_PIPECHAN
+HAS_STUNSRVR
 HAS_STUN
 HAS_ASN
 HAS_TTS
@@ -861,6 +863,7 @@ enable_soap
 enable_tts
 enable_asn
 enable_stun
+enable_stunsrvr
 enable_pipechan
 enable_dtmf
 enable_socks
@@ -1569,6 +1572,7 @@ Optional Features:
   --enable-tts            enable Text-To-Speech server support
   --enable-asn            enable ASN decoding/encoding support
   --enable-stun           enable STUN support
+  --enable-stunsrvr       enable STUN server support
   --enable-pipechan       enable pipechannel support
   --enable-dtmf           enable DTMF protocol support
   --enable-socks          enable SOCKS protocol support
@@ -3661,6 +3665,7 @@ HAS_PLUGINS=1
 HAS_TTS=1
 HAS_ASN=1
 HAS_STUN=1
+HAS_STUNSRVR=1
 HAS_PIPECHAN=1
 HAS_DTMF=1
 HAS_WAVFILE=1
@@ -3705,6 +3710,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_TTS=
   HAS_ASN=1
   HAS_STUN=1
+  HAS_STUNSRVR=
   HAS_PIPECHAN=
   HAS_DTMF=
   HAS_WAVFILE=
@@ -12535,6 +12541,56 @@ $as_echo "no" >&6; }
 
 
 
+          { $as_echo "$as_me:$LINENO: checking enable STUN server support" >&5
+$as_echo_n "checking enable STUN server support... " >&6; }
+          # Check whether --enable-stunsrvr was given.
+if test "${enable_stunsrvr+set}" = set; then
+  enableval=$enable_stunsrvr;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_STUNSRVR=1
+                         else
+                           HAS_STUNSRVR=
+                         fi
+
+fi
+
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:$LINENO: stunsrvr support disabled due to disabled dependency " >&5
+$as_echo "$as_me: stunsrvr support disabled due to disabled dependency " >&6;}
+	      HAS_STUNSRVR=
+	    fi
+	  fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:$LINENO: stunsrvr support disabled due to disabled dependency " >&5
+$as_echo "$as_me: stunsrvr support disabled due to disabled dependency " >&6;}
+	      HAS_STUNSRVR=
+	    fi
+	  fi
+
+
+          if test "x${HAS_STUNSRVR}" = "x1"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_STUNSRVR 1
+_ACEOF
+
+            HAS_STUNSRVR=1
+            { $as_echo "$as_me:$LINENO: result: yes" >&5
+$as_echo "yes" >&6; }
+          else
+            HAS_STUNSRVR=
+            { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+          fi
+
+
+
+
+
 
 
           { $as_echo "$as_me:$LINENO: checking enable pipechannel support" >&5
@@ -15339,6 +15395,16 @@ esac
 
           else
             PTLIB_STUN=no
+
+          fi
+
+
+
+          if test "x${HAS_STUNSRVR}" = "x1" ; then
+            PTLIB_STUNSRVR=yes
+
+          else
+            PTLIB_STUNSRVR=no
 
           fi
 
