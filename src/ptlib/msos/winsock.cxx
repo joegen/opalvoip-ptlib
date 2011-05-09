@@ -339,7 +339,7 @@ PBoolean PSocket::os_recvfrom(void * buf,
         return PFalse;
 
       if (selval == 0)
-        return SetErrorValues(Timeout, EAGAIN, LastReadError);
+        return SetErrorValues(Timeout, WSAETIMEDOUT|PWIN32ErrorFlag, LastReadError);
 
       if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
         return PFalse;
