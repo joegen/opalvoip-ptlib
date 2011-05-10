@@ -2466,7 +2466,7 @@ bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAdd
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_addr = addr;
     sockAddr.sin_port = htons(port);
-    ok = os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+    ok = op.Write(this, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
   }
   
 #else
