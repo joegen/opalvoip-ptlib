@@ -41,6 +41,8 @@
 #pragma implementation "qos.h"
 
 #include <ptlib.h>
+
+#include <ptbuildopts.h>
 #include <ptlib/sockets.h>
 
 #include <map>
@@ -712,7 +714,7 @@ PBoolean PSocket::os_recvfrom(
       PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
       int    flags,
       sockaddr * addr, // Address from which the datagram was received.
-      PINDEX * addrlen)
+      socklen_t * addrlen)
 {
   lastReadCount = 0;
 

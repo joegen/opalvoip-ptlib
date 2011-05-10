@@ -20,6 +20,10 @@
  
 #pragma implementation "maccoreaudio.h" 
 
+#include <ptbuildopts.h>
+
+#if P_MACOSX < 1006
+
 #include <ptlib/unix/ptlib/maccoreaudio.h>
 #include <iostream>  // used for Volume Listener
  
@@ -837,7 +841,7 @@ PBoolean PSoundChannelCoreAudio::Open(const PString & deviceName,
    */
   if (strcmp(deviceName, CA_DUMMY_DEVICE_NAME) == 0) {
      /* Dummy device */
-     PTRACE(6, "Dummy device " << direction);
+     //PTRACE(6, "Dummy device " << direction);
      mDeviceID = kAudioDeviceUnknown;
   } else {
 
@@ -1008,7 +1012,7 @@ OSStatus PSoundChannelCoreAudio::MatchHALInputFormat()
    PBoolean isInterleaved = 
             !(asbd.mFormatFlags & kAudioFormatFlagIsNonInterleaved); 
 
-   PTRACE_IF(5, isInterleaved, "channels are interleaved ");
+   //PTRACE_IF(5, isInterleaved, "channels are interleaved ");
 
    // mFormatID -> assume lpcm !!!
    asbd.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;   
@@ -1054,7 +1058,7 @@ PBoolean PSoundChannelCoreAudio::SetFormat(unsigned numChannels,
       PUnsupportedFeature);
 
    if(state != open_){
-      PTRACE(1, "Please select a device first");
+      //PTRACE(1, "Please select a device first");
       return PFalse;
    }
   
@@ -1079,7 +1083,7 @@ PBoolean PSoundChannelCoreAudio::SetFormat(unsigned numChannels,
   
   
    if(mDeviceID == kAudioDeviceDummy){
-      PTRACE(1, "Dummy device");
+      //PTRACE(1, "Dummy device");
       return PTrue;
    }
 
@@ -1095,8 +1099,8 @@ PBoolean PSoundChannelCoreAudio::SetFormat(unsigned numChannels,
     * Create AudioConverters, input/output buffers, compute conversion rate 
     */
   
-   PTRACE(3, "ASBD PwLib Format of "    << direction << endl << pwlibASBD);
-   PTRACE(3, "ASBD Hardware Format of " << direction << endl << hwASBD);
+   //PTRACE(3, "ASBD PwLib Format of "    << direction << endl << pwlibASBD);
+   //PTRACE(3, "ASBD Hardware Format of " << direction << endl << hwASBD);
   
   
    // how many samples has the output device compared to pwlib sample rate?
@@ -1150,14 +1154,14 @@ PBoolean PSoundChannelCoreAudio::IsOpen() const
  */
 int PSoundChannelCoreAudio::GetHandle() const
 {
-   PTRACE(1, "GetHandle");
+   //PTRACE(1, "GetHandle");
    //return os_handle; 
    return -1;
 }
 
 PBoolean PSoundChannelCoreAudio::Abort()
 {
-   PTRACE(1, "Abort");
+   //PTRACE(1, "Abort");
    PAssert(0, PUnimplementedFunction);
    return false;
 }
@@ -1778,5 +1782,6 @@ PBoolean PSoundChannelCoreAudio::WaitForAllRecordBuffersFull()
    return false;
 }
 
+#endif
 
 // End of file
