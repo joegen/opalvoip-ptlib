@@ -382,6 +382,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
 #endif
 
 
+#if P_HAS_RECVMSG
+
 bool PSocket::os_vread(VectorOfSlice & slices, int flags, struct sockaddr * addr, socklen_t * addrlen)
 {
   lastReadCount = 0;
@@ -414,18 +416,14 @@ bool PSocket::os_vread(VectorOfSlice & slices, int flags, struct sockaddr * addr
 
   lastReadCount = r;
 
-  if (r >= 0) {
-    struct cmsghdr * cmsg;
-    for (cmsg = CMSG_FIRSTHDR(&readData); cmsg != NULL; cmsg = CMSG_NXTHDR(&readData,cmsg)) {
-      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO) {
-        in_pktinfo * info = (in_pktinfo *)CMSG_DATA(cmsg);
-        SetLastReceiveAddr(&info->ipi_spec_dst, sizeof(in_addr));
-      }
-    }
-  }
+  SetLastReceiveAddr(addr, *addrlen);
 
   return lastReadCount > 0;
 }
+
+#endif
+
+#if P_HAS_RECVMSG
 
 bool PSocket::os_vwrite(const VectorOfSlice & slices,
                         int flags,
@@ -462,6 +460,7 @@ bool PSocket::os_vwrite(const VectorOfSlice & slices,
   return ConvertOSError(0, LastWriteError);
 }
 
+#endif
 
 PIPSocket::Address::Address(DWORD dw)
 {
@@ -701,15 +700,7 @@ PBoolean PSocket::os_recvfrom(
 
   lastReadCount = r;
 
-  if (r >= 0) {
-    struct cmsghdr * cmsg;
-    for (cmsg = CMSG_FIRSTHDR(&readData); cmsg != NULL; cmsg = CMSG_NXTHDR(&readData,cmsg)) {
-      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO) {
-        in_pktinfo * info = (in_pktinfo *)CMSG_DATA(cmsg);
-        SetLastReceiveAddr(&info->ipi_spec_dst, sizeof(in_addr));
-      }
-    }
-  }
+  SetLastReceiveAddr(addr, *addrlen);
 
   return lastReadCount > 0;
 }
