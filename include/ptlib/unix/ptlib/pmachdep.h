@@ -295,7 +295,13 @@ void *dlsym(void *handle, const char *symbol);
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_MACOSX) || defined(P_MACOS)
- 
+
+#include "Availability.h"
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED
+#define P_IPHONEOS 1
+#endif
+
 #if defined(P_PTHREADS)
   #ifndef _THREAD_SAFE
     #define _THREAD_SAFE
@@ -336,7 +342,9 @@ typedef int socklen_t;
 #endif
  
 #define HAS_IFREQ
+#ifndef P_IPHONEOS
 #define _POSIX_MONOTONIC_CLOCK
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
