@@ -760,6 +760,13 @@ class PIPSocketAddressAndPort
       : m_address(addr), m_port(defaultPort), m_separator(separator)
       {  }
 
+    PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen)
+      : m_address(ai_addr->sa_family, ai_addrlen, ai_addr)
+      , m_port(ntohs((ai_addr->sa_family == AF_INET) ? ((sockaddr_in *)ai_addr)->sin_port : ((sockaddr_in6 *)ai_addr)->sin6_port))
+      , m_separator(':')
+      {  
+      }
+
     PBoolean Parse(const PString & str, WORD defaultPort = 0, char separator = ':');
 
     PString AsString(char separator = 0) const
