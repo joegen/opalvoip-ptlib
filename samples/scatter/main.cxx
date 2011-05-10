@@ -66,8 +66,14 @@ void WaitForIncoming::operator () (PThread &)
   for (;;) {
     PIPSocketAddressAndPort addr;
     if (!m_socket.ReadFrom(slices, addr)) {
-      PError << "read failed" << endl;
-      break;
+      if (m_socket.GetErrorCode() == PUDPSocket::Interrupted) {
+        PError << "read interrupted" << endl;
+        continue;
+      }
+      else {
+        PError << "read failed : " << m_socket.GetErrorText() << endl;
+        break;
+      }
     }
     PError << "Read from " << addr << " return " << m_socket.GetLastReadCount() << " bytes in " << slices.size() << " slices" << endl;
     size_t i;
@@ -97,13 +103,13 @@ void ScatterTest::Main()
   // open listening socket 
   PUDPSocket rxSocket;
   if (!rxSocket.Listen()) {
-    PError << "error: socket listen failed" << endl;
+    PError << "error: socket listen failed : " << rxSocket.GetErrorText() << endl;
     return;
   }  
 
   PIPSocketAddressAndPort rxAddr;
   if (!rxSocket.GetLocalAddress(rxAddr)) {
-    PError << "error: cannot get local socket address" << endl;
+    PError << "error: cannot get local socket address : " << rxSocket.GetErrorText() << endl;
     return;
   }  
 
@@ -119,18 +125,18 @@ void ScatterTest::Main()
 
   {
     PIPSocket::VectorOfSlice slices;
-    BYTE buffer1[10];
-    BYTE buffer2[10];
+    BYTE buffer1[7];
+    BYTE buffer2[7];
     slices.push_back(PUDPSocket::Slice(buffer1, sizeof(buffer1)));
     slices.push_back(PUDPSocket::Slice(buffer2, sizeof(buffer2)));
 
     PIPSocketAddressAndPort dest("127.0.0.1", port);
 
     if (!txSocket.WriteTo(slices, dest)) {
-      PError << "error: write failed" << endl;
+      PError << "error: write failed : " << rxSocket.GetErrorText() << endl;
     }
     else {
-      PError << "error: write succeeded" << endl;
+      PError << "write succeeded" << endl;
     }
   }
 
