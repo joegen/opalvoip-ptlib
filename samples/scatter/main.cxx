@@ -43,11 +43,9 @@ struct WaitForIncoming
 {
   WaitForIncoming(PUDPSocket & socket);
 
-  void operator () (PThread & thread)
-  {
-  }
+  void operator () (PThread & thread);
 
-  PUDPSocket * m_socket;
+  PUDPSocket & m_socket;
 };
 
 WaitForIncoming::WaitForIncoming(PUDPSocket & socket)
@@ -57,18 +55,24 @@ WaitForIncoming::WaitForIncoming(PUDPSocket & socket)
 
 void WaitForIncoming::operator () (PThread &)
 {
-  PUDPSocket::VectorOfSlices slices;
+  PUDPSocket::VectorOfSlice slices;
 
   BYTE buffer1[10];
   BYTE buffer2[10];
 
-  slices.push_back(PUDPSocket::Slice(buffer1, sizeof(buffer1));
-  slices.push_back(PUDPSocket::Slice(buffer2, sizeof(buffer2));
+  slices.push_back(PUDPSocket::Slice(buffer1, sizeof(buffer1)));
+  slices.push_back(PUDPSocket::Slice(buffer2, sizeof(buffer2)));
 
   for (;;) {
     PIPSocketAddressAndPort addr;
-    slices.PushBack
-    int r = m_socket.RecvFrom(slices, addr);
+    if (!m_socket.ReadFrom(slices, addr)) {
+      PError << "read failed" << endl;
+      break;
+    }
+    PError << "Read from " << addr << " return " << m_socket.GetLastReadCount() << " bytes in " << slices.size() << " slices" << endl;
+    size_t i;
+    for (i = 0; i < slices.size(); ++i)
+      PError << "  slice " << i+1 << " : len = " << slices[i].GetLength() << endl;
   }
 }
 
@@ -104,17 +108,34 @@ void ScatterTest::Main()
   }  
 
   WORD port = rxAddr.GetPort();
-  cout << "listening socket opened on port " << port << endl;
+  PError << "listening socket opened on port " << port << endl;
 
-  PThread * thread = PThreadFunctor<
+  WaitForIncoming waiter(rxSocket);
+  PThread * thread = new PThreadFunctor<WaitForIncoming>(waiter);
 
 
+  // send some test data
   PUDPSocket txSocket;
 
-  PIPSocket::VectorOfSlices
-  
+  {
+    PIPSocket::VectorOfSlice slices;
+    BYTE buffer1[10];
+    BYTE buffer2[10];
+    slices.push_back(PUDPSocket::Slice(buffer1, sizeof(buffer1)));
+    slices.push_back(PUDPSocket::Slice(buffer2, sizeof(buffer2)));
 
+    PIPSocketAddressAndPort dest("127.0.0.1", port);
 
+    if (!txSocket.WriteTo(slices, dest)) {
+      PError << "error: write failed" << endl;
+    }
+    else {
+      PError << "error: write succeeded" << endl;
+    }
+  }
+
+  thread->WaitForTermination();
+  delete thread;
 }
 
 // End of File ///////////////////////////////////////////////////////////////
