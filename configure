@@ -7260,7 +7260,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int t = SOL_IP; t = IP_PKTINFO; struct msghdr *msg; recvmsg(0, msg, 0);
+ struct msghdr *msg; recvmsg(0, msg, 0);
   ;
   return 0;
 }

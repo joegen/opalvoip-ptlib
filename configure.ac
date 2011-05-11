@@ -695,7 +695,7 @@ AC_MSG_CHECKING(for recvmsg)
 AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>
                 #include <netinet/in.h>],
-               [int t = SOL_IP; t = IP_PKTINFO; struct msghdr *msg; recvmsg(0, msg, 0);], P_HAS_RECVMSG=1)
+               [ struct msghdr *msg; recvmsg(0, msg, 0);], P_HAS_RECVMSG=1)
 if test "${P_HAS_RECVMSG}" = "1" ; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(P_HAS_RECVMSG, 1)
