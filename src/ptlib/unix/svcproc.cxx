@@ -501,7 +501,7 @@ void PServiceProcess::Terminate()
   PSystemLog::SetTarget(NULL);
 
   // Now end the program
-  exit(terminationValue);
+  _exit(terminationValue);
 }
 
 void PServiceProcess::PXOnAsyncSignal(int sig)
