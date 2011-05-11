@@ -57,6 +57,7 @@ class PSTUN {
     };
 
     PSTUN();
+    virtual ~PSTUN() { }
 
     /** Determine the NAT type using RFC3489 discovery method
       */
