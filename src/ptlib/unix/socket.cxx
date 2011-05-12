@@ -172,7 +172,7 @@ int PSocket::os_socket(int af, int type, int protocol)
 {
   int fd = ::socket(af, type, protocol);
 
-#if P_HAS_RECVMSG
+#if P_HAS_RECVMSG_IP_RECVERR
   if ((fd != -1) && (type == SOCK_DGRAM)) {
     int v = 1;
     setsockopt(fd, IPPROTO_IP, IP_RECVERR, &v, sizeof(v));
@@ -410,15 +410,15 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
   int r = ::recvmsg(os_handle, &readData, flags);
   if (r == -1) {
     PTRACE(5, "PTLIB\tos_vrecv returned error " << errno);
+#if P_HAS_RECVMSG_MSG_ERRQUEUE
     ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
+#endif
   }
 
   if (!ConvertOSError(r, LastReadError))
     return PFalse;
 
   lastReadCount = r;
-
-  SetLastReceiveAddr(addr, *addrlen);
 
   return lastReadCount > 0;
 }
@@ -437,14 +437,16 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
   writeData.msg_name       = addr;
   writeData.msg_namelen    = addrLen;
 
-  writeData.msg_iov        = slices;
+  writeData.msg_iov        = (iovec *)slices;
   writeData.msg_iovlen     = sliceCount;
 
   // write the packet 
   int r = ::sendmsg(os_handle, &writeData, flags);
   if (r == -1) {
     PTRACE(5, "PTLIB\tos_vwrite returned error " << errno);
+#if P_HAS_RECVMSG_MSG_ERRQUEUE
     ::sendmsg(os_handle, &writeData, MSG_ERRQUEUE);
+#endif
   }
 
 #if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
@@ -667,118 +669,6 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
 }
 
 
-#if P_HAS_RECVMSG
-
-PBoolean PSocket::os_recvfrom(
-      void * buf,
-      PINDEX len,
-      int    flags,
-      sockaddr * addr,
-      socklen_t * addrlen)
-{
-  lastReadCount = 0;
-
-  if (!PXSetIOBlock(PXReadBlock, readTimeout))
-    return PFalse;
-
-  msghdr readData;
-  memset(&readData, 0, sizeof(readData));
-
-  readData.msg_name       = addr;
-  readData.msg_namelen    = *addrlen;
-
-  iovec readVector;
-  readVector.iov_base     = buf;
-  readVector.iov_len      = len;
-  readData.msg_iov        = &readVector;
-  readData.msg_iovlen     = 1;
-
-  char auxdata[50];
-  readData.msg_control    = auxdata;
-  readData.msg_controllen = sizeof(auxdata);
-
-  // read a packet 
-  int r = ::recvmsg(os_handle, &readData, flags);
-  if (r == -1) {
-    PTRACE(5, "PTLIB\trecvmsg returned error " << errno);
-    ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
-  }
-
-  if (!ConvertOSError(r, LastReadError))
-    return PFalse;
-
-  lastReadCount = r;
-
-  SetLastReceiveAddr(addr, *addrlen);
-
-  return lastReadCount > 0;
-}
-
-#else
-
-PBoolean PSocket::os_recvfrom(
-      void * buf,     // Data to be written as URGENT TCP data.
-      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
-      int    flags,
-      sockaddr * addr, // Address from which the datagram was received.
-      socklen_t * addrlen)
-{
-  lastReadCount = 0;
-
-  if (!PXSetIOBlock(PXReadBlock, readTimeout))
-    return PFalse;
-
-  // attempt to read non-out of band data
-  int r = ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen);
-  if (!ConvertOSError(r, LastReadError))
-    return PFalse;
-
-  lastReadCount = r;
-  return lastReadCount > 0;
-}
-
-#endif
-
-
-PBoolean PSocket::os_sendto(
-      const void * buf,   // Data to be written as URGENT TCP data.
-      PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
-      int flags,
-      sockaddr * addr, // Address to which the datagram is sent.
-      socklen_t addrlen)  
-{
-  lastWriteCount = 0;
-
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
-
-  // attempt to read data
-  int result;
-  for (;;) {
-    if (addr != NULL)
-      result = ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
-    else
-      result = ::send(os_handle, (char *)buf, len, flags);
-
-    if (result > 0)
-      break;
-
-    if (errno != EWOULDBLOCK)
-      return ConvertOSError(-1, LastWriteError);
-
-    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-      return PFalse;
-  }
-
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
-  PThread::Yield(); // Starvation prevention
-#endif
-
-  lastWriteCount = result;
-  return ConvertOSError(0, LastWriteError);
-}
-
-
 PBoolean PSocket::Read(void * buf, PINDEX len)
 {
   if (os_handle < 0)
@@ -801,23 +691,23 @@ bool PSocket::Write(const void * buf, PINDEX len)
   return PChannel::Write(buf, len);
 }
 
-PBoolean PSocket::Read(VectorOfSlice & slices)
+PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
   flush();
   lastReadCount = 0;
 
-  if (slices.size() == 0)
+  if (sliceCount == 0)
     return SetErrorValues(BadParameter, EINVAL, LastReadError);
 
-  os_vread(slices, 0, NULL, NULL);
+  os_vread(slices, sliceCount, 0, NULL, NULL);
   return lastReadCount > 0;
 }
 
 
-PBoolean PSocket::Write(const VectorOfSlice & slices)
+PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 {
   flush();
-  return os_vwrite(slices, 0, NULL, 0) && lastWriteCount >= 0;
+  return os_vwrite(slices, sliceCount, 0, NULL, 0) && lastWriteCount >= 0;
 }
 
 
@@ -1064,7 +954,8 @@ PBoolean PEthSocket::Read(void * buf, PINDEX len)
   for (;;) {
     sockaddr from;
     socklen_t fromlen = sizeof(from);
-    if (!os_recvfrom(bufptr, len, 0, &from, &fromlen))
+    Slice slice(bufptr, len);
+    if (!os_vread(&slice, 1, 0, &from, &fromlen))
       return PFalse;
 
     if (channelName != from.sa_data)
@@ -1109,7 +1000,8 @@ PBoolean PEthSocket::Write(const void * buf, PINDEX len)
 {
   sockaddr to;
   strcpy((char *)to.sa_data, channelName);
-  return os_sendto(buf, len, 0, &to, sizeof(to)) && lastWriteCount >= len;
+  Slice slice((void *)buf, len);
+  return os_vwrite(&slice, 1, 0, &to, sizeof(to)) && lastWriteCount >= len;
 }
 
 

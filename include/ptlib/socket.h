@@ -412,10 +412,14 @@ class PSocket : public PChannel
       Slice()
       { SetBase(NULL); SetLength(0); }
 
+      Slice(void * v, const size_t len)
+      { SetBase(v); SetLength(len); }
+
       Slice(const void * v, const size_t len)
       { SetBase(v); SetLength(len); }
 
       void SetBase(const void * v)   { buf = (char *)v; }
+      void SetBase(void * v)         { buf = (char *)v; }
       void * GetBase() const         { return buf; }
 
       void SetLength(size_t v)  { len = (u_long)v; }
