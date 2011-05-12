@@ -2485,8 +2485,6 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 }
 
 
-#if P_QOS
-
 PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
 {
   if (qos==NULL)
@@ -2505,6 +2503,7 @@ PQoS & PUDPSocket::GetQoSSpec()
 
 PBoolean PUDPSocket::ApplyQoS()
 {
+#if P_QOS
   char DSCPval = 0;
 #ifndef _WIN32_WCE
   if (qosSpec.GetDSCP() < 0 ||
@@ -2611,6 +2610,7 @@ PBoolean PUDPSocket::ApplyQoS()
     PTRACE(1,"QOS\tsetsockopt failed with code " << err);
     return PFalse;
   }
+#endif  // P_QOS
     
   return PTrue;
 }
@@ -2618,6 +2618,8 @@ PBoolean PUDPSocket::ApplyQoS()
 
 PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 {
+#if P_QOS
+
 #if defined(_WIN32)
     
   //Try to find a QOS-enabled protocol
@@ -2649,8 +2651,9 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
     os_handle = WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 
   return ConvertOSError(os_handle);
+#endif
 
-#else
+#else  // P_QOS
   return ConvertOSError(os_handle = os_socket(af, type, proto));
 #endif
 }
@@ -2674,8 +2677,6 @@ static PBoolean CheckOSVersionFor(DWORD major, DWORD minor)
 }
 
 #endif // _WIN32
-
-#endif //P_QOS
 
 
 PBoolean PUDPSocket::OpenSocket()
