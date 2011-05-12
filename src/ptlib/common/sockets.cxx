@@ -2395,7 +2395,7 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
         
         sockAddr.sin_addr.s_addr = bcastAddr;
         
-        bool result = os_vwrite(slices, sliceCount, flags, sockAddr, sizeof(sockAddr));
+        bool result = os_vwrite(slices, sliceCount, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr) != 0);
         
         ok = ok || result;
       }
@@ -2406,7 +2406,7 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_addr = addr;
     sockAddr.sin_port = htons(port);
-    ok = op.Write(this, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+    ok = os_vwrite(slices, sliceCount, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
   }
   
 #else
