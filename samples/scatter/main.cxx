@@ -32,6 +32,8 @@
 
 #include <ptlib/udpsock.h>
 
+#include <vector>
+
 PCREATE_PROCESS(ScatterTest);
 
 ScatterTest::ScatterTest()
@@ -55,7 +57,7 @@ WaitForIncoming::WaitForIncoming(PUDPSocket & socket)
 
 void WaitForIncoming::operator () (PThread &)
 {
-  PUDPSocket::VectorOfSlice slices;
+  std::vector<PUDPSocket::Slice> slices;
 
   BYTE buffer1[10];
   BYTE buffer2[10];
@@ -65,7 +67,7 @@ void WaitForIncoming::operator () (PThread &)
 
   for (;;) {
     PIPSocketAddressAndPort addr;
-    if (!m_socket.ReadFrom(slices, addr)) {
+    if (!m_socket.ReadFrom(&slices[0], slices.size(), addr)) {
       if (m_socket.GetErrorCode() == PUDPSocket::Interrupted) {
         PError << "read interrupted" << endl;
         continue;
@@ -124,7 +126,7 @@ void ScatterTest::Main()
   PUDPSocket txSocket;
 
   {
-    PIPSocket::VectorOfSlice slices;
+    std::vector<PIPSocket::Slice> slices;
     BYTE buffer1[7];
     BYTE buffer2[7];
     slices.push_back(PUDPSocket::Slice(buffer1, sizeof(buffer1)));
@@ -132,7 +134,7 @@ void ScatterTest::Main()
 
     PIPSocketAddressAndPort dest("127.0.0.1", port);
 
-    if (!txSocket.WriteTo(slices, dest)) {
+    if (!txSocket.WriteTo(&slices[0], slices.size(), dest)) {
       PError << "error: write failed : " << rxSocket.GetErrorText() << endl;
     }
     else {

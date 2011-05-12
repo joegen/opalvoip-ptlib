@@ -39,4 +39,10 @@
     virtual bool Write(const void * buf, PINDEX len);
     ~PSocket();
 
+  protected:
+#ifndef P_RECVMSG
+    PBYTEArray m_vWriteBuffer;
+    PBYTEArray m_vReadBuffer;
+#endif
+
 // End Of File ////////////////////////////////////////////////////////////////
