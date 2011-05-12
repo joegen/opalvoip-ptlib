@@ -66,11 +66,14 @@ class PVideoFrameInfo : public PObject
       CIFWidth   = 352,  CIFHeight   = 288,
       CIF4Width  = 704,  CIF4Height  = 576,
       CIF16Width = 1408, CIF16Height = 1152,
-      i480Width  = 640,  i480Height  = 480,
-      p720Width  = 960,  p720Height  = 720,
+      HD480Width = 704,  HD480Height = 480,
+      i480Width  = 704,  i480Height  = 480,
+      HD720Width = 1280, HD720Height = 720,
+      p720Width  = 1280, p720Height  = 720,
+      HD1080Width= 1920, HD1080Height= 1080,
       i1080Width = 1920, i1080Height = 1080,
       HDTVWidth  = 1920, HDTVHeight  = 1080,
-      MaxWidth   = 1920, MaxHeight   = 1152
+      MaxWidth   = 1920, MaxHeight   = 1200
     };
 
     /// Construct video frame information
