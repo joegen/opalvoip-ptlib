@@ -412,11 +412,11 @@ class PSocket : public PChannel
       Slice()
       { SetBase(NULL); SetLength(0); }
 
-      Slice(void * v, size_t len)
+      Slice(const void * v, const size_t len)
       { SetBase(v); SetLength(len); }
 
-      void SetBase(void * v)   { buf = (char *)v; }
-      void * GetBase() const   { return buf; }
+      void SetBase(const void * v)   { buf = (char *)v; }
+      void * GetBase() const         { return buf; }
 
       void SetLength(size_t v)  { len = (u_long)v; }
       size_t GetLength() const  { return len; }
@@ -446,17 +446,6 @@ class PSocket : public PChannel
     };
 #endif
 
-    struct VectorOfSlice : public std::vector<Slice> 
-    {
-      size_t GetSize() const 
-      {
-        size_t len = 0;
-        for (const_iterator r = begin(); r != end(); ++r)
-          len += r->GetLength();
-        return len;
-      }
-    };
-
     /** Low level scattered read from the channel. This is identical to Read except 
         that the data will be read into a series of scattered memory slices. By default,
         this call will default to calling Read multiple times, but this may be 
@@ -467,7 +456,8 @@ class PSocket : public PChannel
        false means no bytes were read due to timeout or some other I/O error.
      */
     virtual bool Read(
-      VectorOfSlice & slices    // slices to read to
+      Slice * slices,    // slices to read to
+      size_t sliceCount
     );
 
     /** Low level scattered write to the channel. This is identical to Write except 
@@ -480,7 +470,8 @@ class PSocket : public PChannel
        false means no bytes were read due to timeout or some other I/O error.
      */
     virtual bool Write(
-      const VectorOfSlice & slices    // slices to read to
+      const Slice * slices,  // slices to write from
+      size_t sliceCount
     );
   //@}
 
@@ -501,32 +492,23 @@ class PSocket : public PChannel
       struct sockaddr * sin,
       socklen_t size
     );
-    PBoolean os_recvfrom(
-      void * buf,
-      PINDEX len,
-      int flags,
-      struct sockaddr * from,
-      socklen_t * fromlen
-    );
+
     PBoolean os_vread(
-      VectorOfSlice & slices,
+      Slice * slices,
+      size_t sliceCount,
       int flags,
       struct sockaddr * from,
       socklen_t * fromlen
     );
-    PBoolean os_sendto(
-      const void * buf,
-      PINDEX len,
-      int flags,
-      struct sockaddr * to,
-      socklen_t tolen
-    );
+
     PBoolean os_vwrite(
-      const VectorOfSlice & slices,
+      const Slice * slices,
+      size_t sliceCount,
       int flags,
       struct sockaddr * to,
       socklen_t tolen
     );
+
     PBoolean os_accept(
       PSocket & listener,
       struct sockaddr * addr,
@@ -537,12 +519,6 @@ class PSocket : public PChannel
   // Member variables
     /// Port to be used by the socket when opening the channel.
     WORD port;
-
-#if P_HAS_RECVMSG
-    PBoolean catchReceiveToAddr;
-    virtual void SetLastReceiveAddr(void * /*addr*/, int /*addrLen*/)
-    { }
-#endif
 
 // Include platform dependent part of class
 #ifdef _WIN32
