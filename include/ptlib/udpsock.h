@@ -130,11 +130,10 @@ class PUDPSocket : public PIPDatagramSocket
       PQoS * qos            ///< QoS specification to use
     );
 
-#if P_QOS
     /** Get the QOS object for the socket.
     */
     virtual PQoS & GetQoSSpec();
-#endif
+
     /** Get the address of the sender in the last connectionless Read().
         Note that thsi only applies to the Read() and not the ReadFrom()
         function.
