@@ -692,42 +692,6 @@ class PIPSocket : public PSocket
      */
     static PBoolean GetNetworkInterface(PIPSocket::Address & addr);
 
-#if P_HAS_RECVMSG
-
-    /**Set flag to capture destination address for incoming packets.
-
-       @return true if host is able to capture incoming address, else false.
-      */
-    PBoolean SetCaptureReceiveToAddress()
-    { if (!SetOption(IP_PKTINFO, 1, SOL_IP)) return false; catchReceiveToAddr = true; return true; }
-
-    /**Return the interface address of the last incoming packet.
-      */
-    PIPSocket::Address GetLastReceiveToAddress() const
-    { return lastReceiveToAddr; }
-
-  protected:
-    void SetLastReceiveAddr(void * addr, int addrLen)
-    { if (addrLen == sizeof(in_addr)) lastReceiveToAddr = *(in_addr *)addr; }
-
-    PIPSocket::Address lastReceiveToAddr;
-
-#else
-
-    /**Set flag to capture interface address for incoming packets
-
-       @return true if host is able to capture incoming address, else false
-      */
-    PBoolean SetCaptureReceiveToAddress()
-    { return false; }
-
-    /**Return the interface address of the last incoming packet.
-     */
-    PIPSocket::Address GetLastReceiveToAddress() const
-    { return PIPSocket::Address(); }
-
-#endif
-
 // Include platform dependent part of class
 #ifdef _WIN32
 #include "msos/ptlib/ipsock.h"
