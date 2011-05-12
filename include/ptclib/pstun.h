@@ -345,10 +345,10 @@ class PSTUNUDPSocket : public PNATUDPSocket
     PNatCandidate GetCandidateInfo();
 
     bool BaseWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ap)
-    { return PUDPSocket::InternalWriteTo(buf, len, ap); }
+    { Slice slice(buf, len); return PUDPSocket::InternalWriteTo(&slice, 1, ap); }
 
     bool BaseReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ap)
-    { return PUDPSocket::InternalReadFrom(buf, len, ap); }
+    { Slice slice(buf, len); return PUDPSocket::InternalReadFrom(&slice, 1, ap); }
 
   protected:
     friend class PSTUN;
@@ -653,8 +653,8 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
 
   protected:
     bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
-    bool InternalWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort);
-    bool InternalReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort);
+    bool InternalWriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort);
+    bool InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort);
     void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
     void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
 
@@ -667,13 +667,13 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
     DWORD m_lifeTime;
     PIPSocketAddressAndPort m_peerIpAndPort;
 
-    VectorOfSlice m_txVect;
+    std::vector<Slice> m_txVect;
     PTURNChannelHeader m_txHeader;
-    Slice m_txPad;
     BYTE m_txPadding[4];
 
-    VectorOfSlice m_rxVect;
+    std::vector<Slice> m_rxVect;
     PTURNChannelHeader m_rxHeader;
+    BYTE m_rxPadding[4];
 };
 
 ///////////////////////////////////////////////////////

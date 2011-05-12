@@ -562,7 +562,8 @@ PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) const
 
 bool PSTUNMessage::Read(PUDPSocket & socket)
 {
-  if (!socket.PUDPSocket::InternalReadFrom(GetPointer(1000), 1000, m_sourceAddressAndPort)) {
+  PUDPSocket::Slice slice(GetPointer(1000), 1000);
+  if (!socket.PUDPSocket::InternalReadFrom(&slice, 1, m_sourceAddressAndPort)) {
     PTRACE_IF(2, socket.GetErrorCode(PChannel::LastReadError) != PChannel::Timeout,
               "STUN\tRead error: " << socket.GetErrorText(PChannel::LastReadError));
     return false;
@@ -575,9 +576,10 @@ bool PSTUNMessage::Read(PUDPSocket & socket)
 bool PSTUNMessage::Write(PUDPSocket & socket) const
 {
   int len = sizeof(PSTUNMessageHeader) + ((PSTUNMessageHeader *)theArray)->msgLength;
+  PUDPSocket::Slice slice((const BYTE *)*this, len);
   PIPSocketAddressAndPort ap;
   socket.PUDPSocket::InternalGetSendAddress(ap);
-  return socket.PUDPSocket::InternalWriteTo(theArray, len, ap);
+  return socket.PUDPSocket::InternalWriteTo(&slice, 1, ap);
 }
 
 bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
@@ -1374,23 +1376,15 @@ PTURNUDPSocket::PTURNUDPSocket()
   , m_usingTURN(false)
 {
   // first slice for TURN header
-  m_txVect.reserve(3);
-  m_txVect.push_back(Slice());
+  m_txVect.resize(3);
   m_txVect[0].SetBase(&m_txHeader);
   m_txVect[0].SetLength(sizeof(m_txHeader));
   m_txHeader.m_channelNumber = (WORD)m_channelNumber;
 
-  // second slice for RTP data
-  m_txVect.push_back(Slice());
-
   // first slice for TURN header
-  m_rxVect.reserve(2);
-  m_rxVect.push_back(Slice());
+  m_rxVect.resize(3);
   m_rxVect[0].SetBase(&m_rxHeader);
   m_rxVect[0].SetLength(sizeof(m_rxHeader));
-
-  // second slice for RTP data
-  m_rxVect.push_back(Slice());
 }
 
 
@@ -1571,24 +1565,33 @@ void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAn
 
 
 
-bool PTURNUDPSocket::InternalWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
+bool PTURNUDPSocket::InternalWriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort)
 {
   if (!m_usingTURN)
-    return PUDPSocket::InternalWriteTo(buf, len, ipAndPort);
+    return PUDPSocket::InternalWriteTo(slices, sliceCount, ipAndPort);
 
-  m_txHeader.m_length = (WORD)len;
-  m_txVect[1].SetBase((void *)buf);
-  m_txVect[1].SetLength(len);
-  if ((len & 3) == 0)
-    m_txVect.resize(2);
-  else {
-    // third slice for padding
-    m_txVect.resize(3);
-    m_txVect[2].SetBase(m_txPadding);
-    m_txVect[2].SetLength(4 - (len & 3));
+  // one slice for the TURN header, and one padding
+  m_txVect.resize(1+sliceCount);
+
+  // copy the slices and count the length (needed for padding)
+  int len = 0;
+  size_t i;
+  for (i = 0; i < sliceCount; ++i) {
+    m_txVect[i+1] = slices[i];
+    len += slices[i].GetLength();
   }
 
-  bool status = PUDPSocket::InternalWriteTo(m_txVect, m_serverAddress);
+  m_txHeader.m_length = (WORD)len;
+
+  if ((len & 3) != 0) {
+    // extra slice for padding
+    m_txVect.resize(1+sliceCount+1);
+    m_txVect[i].SetBase(m_txPadding);
+    m_txVect[i].SetLength(4 - (len & 3));
+    ++i;
+  }
+
+  bool status = PUDPSocket::InternalWriteTo(&m_txVect[0], i+1, m_serverAddress);
 
   if (status)
     lastWriteCount -= sizeof(m_txVect[1].GetLength());
@@ -1597,20 +1600,27 @@ bool PTURNUDPSocket::InternalWriteTo(const void * buf, PINDEX len, const PIPSock
 }
 
 
-bool PTURNUDPSocket::InternalReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort)
+bool PTURNUDPSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort)
 {
   if (!m_usingTURN)
-    return PUDPSocket::InternalReadFrom(buf, len, ipAndPort);
+    return PUDPSocket::InternalReadFrom(slices, sliceCount, ipAndPort);
 
-  m_rxVect[1].SetBase(buf);
-  m_rxVect[1].SetLength(len);
+  // one extra slice for the TURN header, and one extra for padding
+  m_rxVect.resize(1+sliceCount+1);
+
+  // copy the slices
+  size_t i;
+  for (i = 0; i < sliceCount; ++i)
+    m_rxVect[i+1] = slices[i];
+  m_rxVect[i+1].SetBase(m_rxPadding);
+  m_rxVect[i+1].SetLength(sizeof(m_rxPadding));
 
   PIPSocketAddressAndPort ap;
-  bool status = PUDPSocket::InternalReadFrom(m_rxVect, ap);
+  bool status = PUDPSocket::InternalReadFrom(&m_rxVect[0], sliceCount + 2, ap);
   ipAndPort = m_peerIpAndPort;
 
   if (status)
-    lastReadCount -= m_rxVect[0].GetLength();
+    lastReadCount = m_rxHeader.m_length;
 
   return status;
 }
