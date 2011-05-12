@@ -69,13 +69,16 @@ class PIPDatagramSocket : public PIPSocket
       PINDEX len,     ///< Number of bytes pointed to by <code>buf</code>.
       PIPSocketAddressAndPort & ipAndPort
     );
+
     virtual PBoolean ReadFrom(
-      VectorOfSlice & slices, ///< Data to be written as URGENT TCP data.
+      Slice * slices,         ///< Data to be written as URGENT TCP data.
+      size_t sliceCount,
       Address & addr,         ///< Address from which the datagram was received.
       WORD & port             ///< Port from which the datagram was received.
     );
     virtual PBoolean ReadFrom(
-      VectorOfSlice & slices,             ///< Data to be written as URGENT TCP data.
+      Slice * slices,         ///< Data to be written as URGENT TCP data.
+      size_t sliceCount,
       PIPSocketAddressAndPort & ipAndPort
     );
 
@@ -96,12 +99,14 @@ class PIPDatagramSocket : public PIPSocket
     );
 
     virtual PBoolean WriteTo(
-      const VectorOfSlice & slices, ///< Data to be written as URGENT TCP data.
+      const Slice * slices,         ///< Data to be written as URGENT TCP data.
+      size_t sliceCount,
       const Address & addr,         ///< Address to which the datagram is sent.
       WORD port                     ///< Port to which the datagram is sent.
     );
     virtual PBoolean WriteTo(
-      const VectorOfSlice & slices,              ///< Data to be written as URGENT TCP data.
+      const Slice * slices,         ///< Data to be written as URGENT TCP data.
+      size_t sliceCount,
       const PIPSocketAddressAndPort & ipAndPort
     );
 
@@ -118,36 +123,16 @@ class PIPDatagramSocket : public PIPSocket
     // Normally, one would expect these to be protected, but they are just so darn
     // useful that it's just easier if they are public
     virtual bool InternalReadFrom(
-      void * buf,                                ///< Data to be written as URGENT TCP data.
-      PINDEX len,                                ///< Number of bytes pointed to by <code>buf</code>.
+      Slice * slices, 
+      size_t sliceCount, 
       PIPSocketAddressAndPort & ipAndPort
     );
-    virtual bool InternalReadFrom(
-      VectorOfSlice & slices,                    ///< Data to be written as URGENT TCP data.
-      PIPSocketAddressAndPort & ipAndPort
-    );
+
     virtual bool InternalWriteTo(
-      const void * buf,                          ///< Data to be written as URGENT TCP data.
-      PINDEX len,                                ///< Number of bytes pointed to by <code>buf</code>.
+      const Slice * slices, 
+      size_t sliceCount, 
       const PIPSocketAddressAndPort & ipAndPort
     );
-    virtual bool InternalWriteTo(
-      const VectorOfSlice & slices,              ///< Data to be written as URGENT TCP data.
-      const PIPSocketAddressAndPort & ipAndPort
-    );
-
-
-    friend struct WriteBytesOp;
-    friend struct WriteVectorOp;
-
-    struct InternalWriteOp {
-      virtual bool Write(PIPDatagramSocket * sock, int flags, struct sockaddr * saddr, size_t slen) = 0;
-      virtual bool CheckLength(PIPDatagramSocket * sock) = 0;
-    };
-
-  protected:
-    virtual bool InternalWriteTo(InternalWriteOp & op, const PIPSocketAddressAndPort & ipAndPort);
-
 };
 
 

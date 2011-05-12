@@ -386,7 +386,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
 #if P_HAS_RECVMSG
 
-bool PSocket::os_vread(VectorOfSlice & slices, int flags, struct sockaddr * addr, socklen_t * addrlen)
+bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t * addrlen)
 {
   lastReadCount = 0;
 
@@ -399,8 +399,8 @@ bool PSocket::os_vread(VectorOfSlice & slices, int flags, struct sockaddr * addr
   readData.msg_name       = addr;
   readData.msg_namelen    = *addrlen;
 
-  readData.msg_iov        = &slices[0];
-  readData.msg_iovlen     = slices.size();
+  readData.msg_iov        = slices;
+  readData.msg_iovlen     = sliceCount;
 
   char auxdata[50];
   readData.msg_control    = auxdata;
@@ -423,14 +423,7 @@ bool PSocket::os_vread(VectorOfSlice & slices, int flags, struct sockaddr * addr
   return lastReadCount > 0;
 }
 
-#endif
-
-#if P_HAS_RECVMSG
-
-bool PSocket::os_vwrite(const VectorOfSlice & slices,
-                        int flags,
-                        struct sockaddr * addr,
-                        socklen_t addrLen)
+bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t addrLen)
 {
   lastWriteCount = 0;
 
@@ -444,8 +437,8 @@ bool PSocket::os_vwrite(const VectorOfSlice & slices,
   writeData.msg_name       = addr;
   writeData.msg_namelen    = addrLen;
 
-  writeData.msg_iov        = (iovec *)&slices[0];
-  writeData.msg_iovlen     = slices.size();
+  writeData.msg_iov        = slices;
+  writeData.msg_iovlen     = sliceCount;
 
   // write the packet 
   int r = ::sendmsg(os_handle, &writeData, flags);
@@ -462,7 +455,21 @@ bool PSocket::os_vwrite(const VectorOfSlice & slices,
   return ConvertOSError(0, LastWriteError);
 }
 
-#endif
+#else // P_RECVMSG
+
+bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t * addrlen)
+{
+  #error Implementation of PSocket::os_vread not available
+  return false;
+}
+
+bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t addrLen)
+{
+  #error Implementation of PSocket::os_vwrite not available
+  return false;
+}
+
+#endif // P_RECVMSG
 
 PIPSocket::Address::Address(DWORD dw)
 {

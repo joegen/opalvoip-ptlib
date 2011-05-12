@@ -158,20 +158,18 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
   if (len == 0)
     return SetErrorValues(BadParameter, EINVAL, LastReadError);
 
-  os_recvfrom((char *)buf, len, 0, NULL, NULL);
+  Slice slice(buf, len);
+  os_vread(&slice, 1, 0, NULL, NULL);
   return lastReadCount > 0;
 }
 
 
-PBoolean PSocket::Read(VectorOfSlice & slices)
+PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
   flush();
   lastReadCount = 0;
 
-  if (slices.size() == 0)
-    return SetErrorValues(BadParameter, EINVAL, LastReadError);
-
-  os_vread(slices, 0, NULL, NULL);
+  os_vread(slices, sliceCount, 0, NULL, NULL);
   return lastReadCount > 0;
 }
 
@@ -179,14 +177,15 @@ PBoolean PSocket::Read(VectorOfSlice & slices)
 PBoolean PSocket::Write(const void * buf, PINDEX len)
 {
   flush();
-  return os_sendto(buf, len, 0, NULL, 0) && lastWriteCount >= len;
+  Slice slice(buf, len);
+  return os_vwrite(&slice, 1, 0, NULL, 0) && lastWriteCount >= len;
 }
 
 
-PBoolean PSocket::Write(const VectorOfSlice & slices)
+PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 {
   flush();
-  return os_vwrite(slices, 0, NULL, 0) && lastWriteCount >= 0;
+  return os_vwrite(slices, sliceCount, 0, NULL, 0) && lastWriteCount >= 0;
 }
 
 
@@ -318,50 +317,10 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
 }
 
 
-PBoolean PSocket::os_recvfrom(void * buf,
-                          PINDEX len,
-                          int flags,
-                          struct sockaddr * from,
-                          socklen_t * fromlen)
-{
-  lastReadCount = 0;
-
-  if (readTimeout != PMaxTimeInterval) {
-    DWORD available;
-    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
-      return PFalse;
-
-    if (available == 0) {
-      P_fd_set readfds = os_handle;
-      P_timeval tv = readTimeout;
-      int selval = ::select(0, readfds, NULL, NULL, tv);
-      if (!ConvertOSError(selval, LastReadError))
-        return PFalse;
-
-      if (selval == 0)
-        return SetErrorValues(Timeout, WSAETIMEDOUT|PWIN32ErrorFlag, LastReadError);
-
-      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
-        return PFalse;
-    }
-
-    if (available > 0 && len > (PINDEX)available)
-      len = available;
-  }
-
-  int recvResult = ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
-  if (!ConvertOSError(recvResult, LastReadError))
-    return PFalse;
-
-  lastReadCount = recvResult;
-  return PTrue;
-}
-
-
-bool PSocket::os_vread(VectorOfSlice & slices,
-                           int flags,
-                           struct sockaddr * from,
-                           socklen_t * fromlen)
+bool PSocket::os_vread(Slice * slices, size_t sliceCount,
+                       int flags,
+                       struct sockaddr * from,
+                       socklen_t * fromlen)
 {
   lastReadCount = 0;
 
@@ -379,16 +338,12 @@ bool PSocket::os_vread(VectorOfSlice & slices,
 
       if (selval == 0)
         return SetErrorValues(Timeout, EAGAIN, LastReadError);
-
-      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
-        return PFalse;
     }
   }
 
-  //int recvResult = ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
   DWORD receivedCount;
   DWORD dflags = flags;
-  int recvResult = WSARecvFrom(os_handle, &slices[0], slices.size(), &receivedCount, &dflags, from, fromlen, NULL, NULL);
+  int recvResult = WSARecvFrom(os_handle, slices, sliceCount, &receivedCount, &dflags, from, fromlen, NULL, NULL);
 
   if (!ConvertOSError(recvResult, LastReadError))
     return false;
@@ -398,44 +353,8 @@ bool PSocket::os_vread(VectorOfSlice & slices,
 }
 
 
-PBoolean PSocket::os_sendto(const void * buf,
-                        PINDEX len,
-                        int flags,
-                        struct sockaddr * to,
-                        socklen_t tolen)
-{
-  lastWriteCount = 0;
-
-  if (writeTimeout != PMaxTimeInterval) {
-    P_fd_set writefds = os_handle;
-    P_timeval tv = writeTimeout;
-    int selval = ::select(0, NULL, writefds, NULL, tv);
-    if (selval < 0)
-      return PFalse;
-
-    if (selval == 0) {
-#ifndef _WIN32_WCE
-      errno = EAGAIN;
-#else
-      SetLastError(EAGAIN);
-#endif
-      return PFalse;
-    }
-  }
-
-  int sendResult = ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
-  if (!ConvertOSError(sendResult, LastWriteError))
-    return PFalse;
-
-  if (sendResult == 0)
-    return PFalse;
-
-  lastWriteCount = sendResult;
-  return PTrue;
-}
-
-
-bool PSocket::os_vwrite(const VectorOfSlice & slices,
+bool PSocket::os_vwrite(const Slice * slices,
+                        size_t sliceCount,
                         int flags,
                         struct sockaddr * to,
                         socklen_t tolen)
@@ -460,7 +379,7 @@ bool PSocket::os_vwrite(const VectorOfSlice & slices,
   }
 
   DWORD bytesSent;
-  int sendResult = ::WSASendTo(os_handle, (WSABUF *)&slices[0], slices.size(), &bytesSent, flags, to, tolen, NULL, NULL);
+  int sendResult = ::WSASendTo(os_handle, (LPWSABUF)slices, sliceCount, &bytesSent, flags, to, tolen, NULL, NULL);
   if (!ConvertOSError(sendResult, LastWriteError))
     return PFalse;
 

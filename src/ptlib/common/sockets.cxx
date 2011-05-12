@@ -841,9 +841,6 @@ P_timeval & P_timeval::operator=(const PTimeInterval & time)
 PSocket::PSocket()
 {
   port = 0;
-#if P_HAS_RECVMSG
-  catchReceiveToAddr = PFalse;
-#endif
 }
 
 
@@ -2193,7 +2190,8 @@ PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
   PINDEX writeCount = 0;
 
   while (len > 0) {
-    if (!os_sendto(((char *)buf)+writeCount, len, 0, NULL, 0))
+    Slice slice(((char *)buf)+writeCount, len);
+    if (!os_vwrite(&slice, 1, 0, NULL, 0))
       return PFalse;
     writeCount += lastWriteCount;
     len -= lastWriteCount;
@@ -2274,7 +2272,8 @@ PIPDatagramSocket::PIPDatagramSocket()
 bool PIPDatagramSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 {
   PIPSocketAddressAndPort ap;
-  bool stat = InternalReadFrom(buf, len, ap);
+  Slice slice(buf, len); 
+  bool stat = InternalReadFrom(&slice, 1, ap);
   addr = ap.GetAddress();
   port = ap.GetPort();
   return stat;
@@ -2282,25 +2281,26 @@ bool PIPDatagramSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & 
 
 bool PIPDatagramSocket::ReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort)
 {
-  return InternalReadFrom(buf, len, ipAndPort);
+  Slice slice(buf, len); 
+  return InternalReadFrom(&slice, 1, ipAndPort);
 }
 
 
-bool PIPDatagramSocket::ReadFrom(VectorOfSlice & slices, Address & addr, WORD & port)
+bool PIPDatagramSocket::ReadFrom(Slice * slices, size_t sliceCount, Address & addr, WORD & port)
 {
   PIPSocketAddressAndPort ap;
-  bool stat = InternalReadFrom(slices, ap);
+  bool stat = InternalReadFrom(slices, sliceCount, ap);
   addr = ap.GetAddress();
   port = ap.GetPort();
   return stat;
 }
 
-bool PIPDatagramSocket::ReadFrom(VectorOfSlice & slices, PIPSocketAddressAndPort & ipAndPort)
+bool PIPDatagramSocket::ReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort)
 {
-  return InternalReadFrom(slices, ipAndPort);
+  return InternalReadFrom(slices, sliceCount, ipAndPort);
 }
 
-bool PIPDatagramSocket::InternalReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ipAndPort)
+bool PIPDatagramSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort)
 {
   lastReadCount = 0;
 
@@ -2309,24 +2309,7 @@ bool PIPDatagramSocket::InternalReadFrom(void * buf, PINDEX len, PIPSocketAddres
 
   Psockaddr sa;
   socklen_t size = sa.GetSize();
-  if (!os_recvfrom(buf, len, 0, sa, &size))
-    return false;
-
-  ipAndPort.SetAddress(sa.GetIP());
-  ipAndPort.SetPort(sa.GetPort());
-  return true;
-}
-
-bool PIPDatagramSocket::InternalReadFrom(VectorOfSlice & slices, PIPSocketAddressAndPort & ipAndPort)
-{
-  lastReadCount = 0;
-
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
-
-  Psockaddr sa;
-  socklen_t size = sa.GetSize();
-  if (!os_vread(slices, 0, sa, &size))
+  if (!os_vread(slices, sliceCount, 0, sa, &size))
     return false;
 
   ipAndPort.SetAddress(sa.GetIP());
@@ -2339,75 +2322,32 @@ bool PIPDatagramSocket::InternalReadFrom(VectorOfSlice & slices, PIPSocketAddres
 bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
 {
   PIPSocketAddressAndPort ap(addr, port);
-  return InternalWriteTo(buf, len, ap);
+  Slice slice(buf, len); 
+  return InternalWriteTo(&slice, 1, ap);
 }
 
 
 bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
 {
-  return InternalWriteTo(buf, len, ipAndPort);
+  Slice slice(buf, len); 
+  return InternalWriteTo(&slice, 1, ipAndPort);
 }
 
 
-bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const Address & addr, WORD port)
+bool PIPDatagramSocket::WriteTo(const Slice * slices, size_t sliceCount, const Address & addr, WORD port)
 {
   PIPSocketAddressAndPort ap(addr, port);
-  return InternalWriteTo(slices, ap);
+  return InternalWriteTo(slices, sliceCount, ap);
 }
 
 
-bool PIPDatagramSocket::WriteTo(const VectorOfSlice & slices, const PIPSocketAddressAndPort & ipAndPort)
+bool PIPDatagramSocket::WriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort)
 {
-  return InternalWriteTo(slices, ipAndPort);
+  return InternalWriteTo(slices, sliceCount, ipAndPort);
 }
 
 
-struct WriteBytesOp : public PIPDatagramSocket::InternalWriteOp
-{
-  WriteBytesOp(const void * buf, PINDEX len)
-    : m_buf(buf), m_len(len)
-  { }
-
-  virtual bool Write(PIPDatagramSocket * sock, int flags, struct sockaddr * saddr, size_t slen)
-  { return sock->os_sendto(m_buf, m_len, flags, saddr, slen) != 0; }
-
-  virtual bool CheckLength(PIPDatagramSocket * sock) { return sock->lastWriteCount >= m_len; }
-
-  const void * m_buf;
-  int m_len;
-};
-
-
-bool PIPDatagramSocket::InternalWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
-{
-  WriteBytesOp op(buf, len);
-  return InternalWriteTo(op, ipAndPort);
-}
-
-
-struct WriteVectorOp : public PIPDatagramSocket::InternalWriteOp
-{
-  WriteVectorOp(const PIPSocket::VectorOfSlice & v)
-    : m_v(v)
-  { }
-
-  virtual bool Write(PIPDatagramSocket * sock, int flags, struct sockaddr * saddr, size_t slen)
-  { return sock->os_vwrite(m_v, flags, saddr, slen) != 0; }
-
-  virtual bool CheckLength(PIPDatagramSocket * sock)  { return sock->lastWriteCount >= (int)m_v.GetSize(); }
-
-  const PIPSocket::VectorOfSlice & m_v;
-};
-
-
-bool PIPDatagramSocket::InternalWriteTo(const PIPSocket::VectorOfSlice & v, const PIPSocketAddressAndPort & ipAndPort)
-{
-  WriteVectorOp op(v);
-  return InternalWriteTo(op, ipAndPort);
-}
-
-
-bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAddressAndPort & ipAndPort)
+bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort)
 {
   lastWriteCount = 0;
 
@@ -2455,7 +2395,7 @@ bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAdd
         
         sockAddr.sin_addr.s_addr = bcastAddr;
         
-        PBoolean result = op.Write(this, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+        bool result = os_vwrite(slices, sliceCount, flags, sockAddr, sizeof(sockAddr));
         
         ok = ok || result;
       }
@@ -2472,7 +2412,7 @@ bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAdd
 #else
   
   Psockaddr sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
-  PBoolean ok = op.Write(this, 0, sa, sa.GetSize()) != 0;
+  bool ok = os_vwrite(slices, sliceCount, 0, sa, sizeof(sa));
   
 #endif // P_MACOSX
 
@@ -2481,7 +2421,7 @@ bool PIPDatagramSocket::InternalWriteTo(InternalWriteOp & op, const PIPSocketAdd
     SetOption(SO_BROADCAST, 0);
 #endif
 
-  return ok && op.CheckLength(this);
+  return ok;
 }
 
 
@@ -2843,10 +2783,8 @@ PBoolean PUDPSocket::Write(const void * buf, PINDEX len)
 {
   PIPSocketAddressAndPort ap;
   GetSendAddress(ap);
-  if (ap.GetPort() == 0)
-    return PIPDatagramSocket::Write(buf, len);
-  else
-    return PIPDatagramSocket::InternalWriteTo(buf, len, ap);
+  Slice slice(buf, len);
+  return PIPDatagramSocket::InternalWriteTo(&slice, 1, ap);
 }
 
 
