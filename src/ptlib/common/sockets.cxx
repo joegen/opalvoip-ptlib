@@ -2322,14 +2322,14 @@ bool PIPDatagramSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPS
 bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
 {
   PIPSocketAddressAndPort ap(addr, port);
-  Slice slice(buf, len); 
+  Slice slice((void *)buf, (size_t)len); 
   return InternalWriteTo(&slice, 1, ap);
 }
 
 
 bool PIPDatagramSocket::WriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ipAndPort)
 {
-  Slice slice(buf, len); 
+  Slice slice((void *)buf, len); 
   return InternalWriteTo(&slice, 1, ipAndPort);
 }
 
@@ -2783,7 +2783,7 @@ PBoolean PUDPSocket::Write(const void * buf, PINDEX len)
 {
   PIPSocketAddressAndPort ap;
   GetSendAddress(ap);
-  Slice slice(buf, len);
+  Slice slice((void *)buf, len);
   return PIPDatagramSocket::InternalWriteTo(&slice, 1, ap);
 }
 

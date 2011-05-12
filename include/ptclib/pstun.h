@@ -336,16 +336,13 @@ class PSTUNUDPSocket : public PNATUDPSocket
 {
   PCLASSINFO(PSTUNUDPSocket, PNATUDPSocket);
   public:
-    //friend class PSTUNClient;
-    //friend class PSTUNMessage;
-
     PSTUNUDPSocket();
 
     bool OpenSTUN(PSTUNClient & client);
     PNatCandidate GetCandidateInfo();
 
     bool BaseWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ap)
-    { Slice slice(buf, len); return PUDPSocket::InternalWriteTo(&slice, 1, ap); }
+    { Slice slice((void *)buf, len); return PUDPSocket::InternalWriteTo(&slice, 1, ap); }
 
     bool BaseReadFrom(void * buf, PINDEX len, PIPSocketAddressAndPort & ap)
     { Slice slice(buf, len); return PUDPSocket::InternalReadFrom(&slice, 1, ap); }

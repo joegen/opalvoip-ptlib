@@ -704,6 +704,39 @@ else
 fi
 
 dnl ########################################################################
+dnl check for recvmsg option MSG_ERRQUEUE
+
+P_HAS_RECVMSG_MSG_ERRQUEUE=
+AC_MSG_CHECKING(for recvmsg flag MSG_ERRQUEUE)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <sys/socket.h>
+                #include <netinet/in.h>],
+               [ int fd = -1; msghdr readData; ::recvmsg(fd, &readData, MSG_ERRQUEUE); ], P_HAS_RECVMSG_MSG_ERRQUEUE=1)
+if test "${P_HAS_RECVMSG_MSG_ERRQUEUE}" = "1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_HAS_RECVMSG_MSG_ERRQUEUE, 1)
+else
+  AC_MSG_RESULT(no)
+fi
+
+dnl ########################################################################
+dnl check for recvmsg option IP_RECVERR
+
+P_HAS_RECVMSG_IP_RECVERR=
+AC_MSG_CHECKING(for sockopt option IP_RECVERR)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <sys/socket.h>
+                #include <netinet/in.h>],
+               [ int fd = -1; int v = 1; setsockopt(fd, IPPROTO_IP, IP_RECVERR, &v, sizeof(v));], P_HAS_RECVMSG_IP_RECVERR=1)
+if test "${P_HAS_RECVMSG_IP_RECVERR}" = "1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_HAS_RECVMSG_IP_RECVERR, 1)
+else
+  AC_MSG_RESULT(no)
+fi
+
+
+dnl ########################################################################
 dnl check for NetLink support
 
 P_HAS_NETLINK=0

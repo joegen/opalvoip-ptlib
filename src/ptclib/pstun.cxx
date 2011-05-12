@@ -576,7 +576,7 @@ bool PSTUNMessage::Read(PUDPSocket & socket)
 bool PSTUNMessage::Write(PUDPSocket & socket) const
 {
   int len = sizeof(PSTUNMessageHeader) + ((PSTUNMessageHeader *)theArray)->msgLength;
-  PUDPSocket::Slice slice((const BYTE *)*this, len);
+  PUDPSocket::Slice slice(theArray, len);
   PIPSocketAddressAndPort ap;
   socket.PUDPSocket::InternalGetSendAddress(ap);
   return socket.PUDPSocket::InternalWriteTo(&slice, 1, ap);
