@@ -410,7 +410,7 @@ class PSocket : public PChannel
     struct Slice : public WSABUF 
     {
       Slice()
-      { SetBase(NULL); SetLength(0); }
+      { buf = (char *)0; len = 0; }
 
       Slice(void * v, const size_t len)
       { SetBase(v); SetLength(len); }
@@ -422,7 +422,7 @@ class PSocket : public PChannel
       void SetBase(void * v)         { buf = (char *)v; }
       void * GetBase() const         { return buf; }
 
-      void SetLength(size_t v)  { len = (u_long)v; }
+      void SetLength(size_t v)  { len = (ULONG)v; }
       size_t GetLength() const  { return len; }
     };
 #else
