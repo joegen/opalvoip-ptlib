@@ -1005,9 +1005,12 @@ public:
 
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
+#define GCC_VERSION (__GNUC__ * 10000 \
+                   + __GNUC_MINOR__ * 100 \
+                   + __GNUC_PATCHLEVEL__)
 
 // Memory pooling allocators
-#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(P_MINGW) && !defined(P_MACOSX)
+#if defined(__GNUC__) && (GCC_VERSION >= 40000) && (GCC_VERSION < 40404 ) && !defined(P_MINGW) && !defined(P_MACOSX) 
 #include <ext/bitmap_allocator.h>
 template <class Type> class PFixedPoolAllocator    : public __gnu_cxx::bitmap_allocator<Type> { };
 #include <ext/mt_allocator.h>
