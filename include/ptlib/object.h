@@ -1005,19 +1005,43 @@ public:
 
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
-#define GCC_VERSION (__GNUC__ * 10000 \
-                   + __GNUC_MINOR__ * 100 \
-                   + __GNUC_PATCHLEVEL__)
+
+/*
+ *  Implement "construct on first use" paradigm
+ */
+
+template <class GnuAllocator, class Type>
+struct PAllocatorTemplate
+{
+  Type * allocate(size_t v)  
+  {
+    return GetAllocator()->allocate(v);
+  }
+
+  void deallocate(Type * p, size_t v)  
+  {
+    GetAllocator()->deallocate(p, v);
+  }
+
+  private:
+    static GnuAllocator * GetAllocator()
+    {
+      static GnuAllocator * m_instance = NULL;
+      if (m_instance == NULL) 
+        m_instance = new GnuAllocator();
+      return m_instance;
+    }
+};
 
 // Memory pooling allocators
-#if defined(__GNUC__) && (GCC_VERSION >= 40000) && (GCC_VERSION < 40404 ) && !defined(P_MINGW) && !defined(P_MACOSX) 
+#if defined(__GNUC__) && !defined(P_MINGW) && !defined(P_MACOSX) 
 #include <ext/bitmap_allocator.h>
-template <class Type> class PFixedPoolAllocator    : public __gnu_cxx::bitmap_allocator<Type> { };
 #include <ext/mt_allocator.h>
-template <class Type> class PVariablePoolAllocator : public __gnu_cxx::__mt_alloc<Type>   { };
+template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<__gnu_cxx::bitmap_allocator<Type>, Type> { };
+template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<__gnu_cxx::__mt_alloc<Type>, Type>       { };
 #else
-template <class Type> class PFixedPoolAllocator    : public std::allocator<Type> { };
-template <class Type> class PVariablePoolAllocator : public std::allocator<Type> { };
+template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<std::allocator<Type>, Type> { };
+template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<std::allocator<Type>, Type> { };
 #endif
 
 #define PDECLARE_POOL_ALLOCATOR() \
