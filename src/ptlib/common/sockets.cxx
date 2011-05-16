@@ -2618,9 +2618,7 @@ PBoolean PUDPSocket::ApplyQoS()
 
 PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
 {
-#if P_QOS
-
-#if defined(_WIN32)
+#if defined(P_QOS) && defined(_WIN32)
     
   //Try to find a QOS-enabled protocol
   DWORD bufferSize = 0;
@@ -2651,10 +2649,11 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
     os_handle = WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 
   return ConvertOSError(os_handle);
-#endif
 
 #else  // P_QOS
+
   return ConvertOSError(os_handle = os_socket(af, type, proto));
+
 #endif
 }
 
