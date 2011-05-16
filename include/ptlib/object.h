@@ -1038,12 +1038,14 @@ struct PAllocatorTemplate
                    + __GNUC_PATCHLEVEL__)
 
 // Memory pooling allocators
-#if defined(__GNUC__) && (GCC_VERSION > 40000) && !defined(P_MINGW) && !defined(P_MACOSX) 
+#if defined(__GNUC__) && (GCC_VERSION > 40000) && (GCC_VERSION < 40400) && !defined(P_MINGW) && !defined(P_MACOSX) 
 #include <ext/bitmap_allocator.h>
 #include <ext/mt_allocator.h>
 template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<__gnu_cxx::bitmap_allocator<Type>, Type> { };
 template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<__gnu_cxx::__mt_alloc<Type>, Type>       { };
+
 #else
+
 template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<std::allocator<Type>, Type> { };
 template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<std::allocator<Type>, Type> { };
 #endif
