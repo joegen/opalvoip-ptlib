@@ -1740,8 +1740,11 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data)
     return false;
 
   cb->mbuf.Wait();
-  memcpy(data, cb->pBuffer, m_maxFrameBytes);
-  cb->mbuf.Signal();
+  if (cb->bufferSize <= m_maxFrameBytes) {
+    memcpy(data, cb->pBuffer, cb->bufferSize);
+    cb->mbuf.Signal();
+  } else
+    PTRACE(1, "DShow\tNot copying, since bufferSize is greater than m_maxFrameBytes (" << cb->bufferSize << " > " << m_maxFrameBytes << ")");
 
   return true;
 }
