@@ -1739,8 +1739,8 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data)
   if (PAssertNULL(cb->pBuffer) == NULL)
     return false;
 
-  cb->mbuf.Wait();
   if (cb->bufferSize <= m_maxFrameBytes) {
+    cb->mbuf.Wait();
     memcpy(data, cb->pBuffer, cb->bufferSize);
     cb->mbuf.Signal();
   } else
