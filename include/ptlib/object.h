@@ -976,15 +976,49 @@ public:
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
 
+
+/*
+ *  Implement "construct on first use" paradigm
+ */
+
+template <class GnuAllocator, class Type>
+struct PAllocatorTemplate
+{
+  Type * allocate(size_t v)  
+  {
+    return GetAllocator()->allocate(v);
+  }
+
+  void deallocate(Type * p, size_t v)  
+  {
+    GetAllocator()->deallocate(p, v);
+  }
+
+  private:
+    static GnuAllocator * GetAllocator()
+    {
+      static GnuAllocator * m_instance = NULL;
+      if (m_instance == NULL) 
+        m_instance = new GnuAllocator();
+      return m_instance;
+    }
+};
+
+#define GCC_VERSION (__GNUC__ * 10000 \
+                   + __GNUC_MINOR__ * 100 \
+                   + __GNUC_PATCHLEVEL__)
+
 // Memory pooling allocators
-#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(P_MINGW) && !defined(P_MACOSX)
+#if defined(__GNUC__) && (GCC_VERSION > 40000) && (GCC_VERSION < 40400) && !defined(P_MINGW) && !defined(P_MACOSX) 
 #include <ext/bitmap_allocator.h>
-template <class Type> class PFixedPoolAllocator    : public __gnu_cxx::bitmap_allocator<Type> { };
 #include <ext/mt_allocator.h>
-template <class Type> class PVariablePoolAllocator : public __gnu_cxx::__mt_alloc<Type>   { };
+template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<__gnu_cxx::bitmap_allocator<Type>, Type> { };
+template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<__gnu_cxx::__mt_alloc<Type>, Type>       { };
+
 #else
-template <class Type> class PFixedPoolAllocator    : public std::allocator<Type> { };
-template <class Type> class PVariablePoolAllocator : public std::allocator<Type> { };
+
+template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<std::allocator<Type>, Type> { };
+template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<std::allocator<Type>, Type> { };
 #endif
 
 #define PDECLARE_POOL_ALLOCATOR() \
@@ -999,7 +1033,6 @@ template <class Type> class PVariablePoolAllocator : public std::allocator<Type>
   void * cls::operator new(size_t, const char *, int)        { return cls##_allocator.allocate(1);               } \
   void   cls::operator delete(void * ptr)                    {        cls##_allocator.deallocate((cls *)ptr, 1); } \
   void   cls::operator delete(void * ptr, const char *, int) {        cls##_allocator.deallocate((cls *)ptr, 1); }
-
 
 
 /** Declare all the standard PTLib class information.
