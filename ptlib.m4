@@ -84,8 +84,8 @@ AC_DEFUN([PTLIB_FIND_DIRECTX],
 	  AC_CHECK_HEADERS([dxerr9.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
 dnl ##### the two following headers are included by other headers, so check only if they exist
-	  AC_PREPROC_IFELSE([ksuuids.h], [], [ptlib_has_directx=no])
-	  AC_PREPROC_IFELSE([uuids.h], [], [ptlib_has_directx=no])
+	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [ptlib_has_directx=no])
+	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [ptlib_has_directx=no])
 	  CPPFLAGS="$old_CPPFLAGS"
 
 
@@ -114,7 +114,7 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
           ptlib_has_resolver=no
           HAS_RES_NINIT=
 
-          AC_CHECK_FUNC([res_ninit], 
+          AC_CHECK_FUNC([[res_ninit]], 
                         [
                          HAS_RES_NINIT=1
                          ptlib_has_resolver=yes
@@ -124,13 +124,11 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
             AC_MSG_CHECKING([for res_ninit in -lresolv])
             old_LIBS="$LIBS"
             LIBS="$LIBS -lresolv"
-            AC_LINK_IFELSE([[
-                            #include <netinet/in.h>
-                            #include <resolv.h>
-                            int main(int argc,char **argv) {
+            AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>
+                                              #include <resolv.h>]],
+                           [[int main(int argc,char **argv) {
                               res_state p; res_ninit(p);
-                            }
-                          ]],
+                            }]])],
                           [
                             HAS_RES_NINIT=1
                             ptlib_has_resolver=yes
@@ -148,13 +146,11 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
             AC_MSG_CHECKING([for res_search in -lresolv])
             old_LIBS="$LIBS"
             LIBS="$LIBS -lresolv"
-            AC_LINK_IFELSE([[
-                            #include <netinet/in.h>
-                            #include <resolv.h>
-                            int main(int argc,char **argv){
+            AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>
+                                              #include <resolv.h>]],
+                            [[int main(int argc,char **argv){
                               res_search (NULL, 0, 0, NULL, 0);
-                            }
-                          ]],
+                            }]])],
                           [
                             ptlib_has_resolver=yes
                             RESOLVER_LIBS="-lresolv"
@@ -193,13 +189,13 @@ AC_DEFUN([PTLIB_OPENSSL_CONST],
           CXXFLAGS="$CFLAGS $OPENSSL_CFLAGS"
           AC_LANG(C++)
           AC_MSG_CHECKING(for const arg to d2i_AutoPrivateKey)
-          AC_TRY_COMPILE([#include <openssl/evp.h>],
-                         [
-                           EVP_PKEY **a; const unsigned char **p; long l;
-                           d2i_AutoPrivateKey(a, p, l);
-                         ],
-                         [ptlib_openssl_const=yes]
-                        )
+          AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <openssl/evp.h>]],
+                                             [[
+                                               EVP_PKEY **a; const unsigned char **p; long l;
+                                               d2i_AutoPrivateKey(a, p, l);
+                                             ]]
+                             )],
+                             [ptlib_openssl_const=yes]);
           AC_MSG_RESULT(${ptlib_openssl_const})
           CXXFLAGS="${old_CXXFLAGS}"
 
@@ -233,11 +229,10 @@ AC_DEFUN([PTLIB_CHECK_UPAD128],
            ptlib_upad128=no
 
            AC_MSG_CHECKING(for upad128_t)
-           AC_TRY_COMPILE([#include <sys/types.h>],
-                          [upad128_t upad; upad._q = 0.0;],
-                          [ptlib_upad128=yes])
+           AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>]],
+                                              [[upad128_t upad; upad._q = 0.0;]])],
+                             [ptlib_upad128=yes])
            AC_MSG_RESULT(${ptlib_upad128})
-
            AS_IF([test AS_VAR_GET([ptlib_upad128]) = yes], [$1], [$2])[]
          ])
 
@@ -258,8 +253,11 @@ AC_DEFUN([PTLIB_FIND_LIBDL],
           if test "$ptlib_dlfcn" = yes ; then
             AC_MSG_CHECKING(if dlopen is available)
             AC_LANG(C)
-            AC_TRY_COMPILE([#include <dlfcn.h>],
-                            [void * p = dlopen("lib", 0);], [ptlib_dlopen=yes], [ptlib_dlopen=no])
+            AC_COMPILE_IFELSE(
+                              [AC_LANG_PROGRAM([[#include <dlfcn.h>]],
+                                               [[void * p = dlopen("lib", 0);]])],
+                              [ptlib_dlopen=yes],
+                              [ptlib_dlopen=no])
             if test "$ptlib_dlopen" = no ; then
               AC_MSG_RESULT(no)
             else
@@ -322,11 +320,9 @@ AC_DEFUN([PTLIB_CHECK_SASL_INCLUDE],
          [
           ptlib_sasl=no
           AC_MSG_CHECKING([if <sasl.h> works])
-          AC_COMPILE_IFELSE([[
-                              #include <sasl.h>
-                              int main(int argc,char **argv)
-                              { int v = SASL_LOG_PASS; }
-                            ]],
+          AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sasl.h>]],
+                             [[int main(int argc,char **argv)
+                              { int v = SASL_LOG_PASS; }]])],
                             [
                               AC_MSG_RESULT(yes)
                               ptlib_sasl=yes
@@ -338,10 +334,10 @@ AC_DEFUN([PTLIB_CHECK_SASL_INCLUDE],
 
           if test "x${HAS_INCLUDE_SASL_H}" != "xyes" ; then
             AC_MSG_CHECKING([if <sasl/sasl.h> works])
-            AC_COMPILE_IFELSE([[
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                                 #include <sasl/sasl.h>
                                 int main(int argc,char **argv){ int v = SASL_LOG_PASS; }
-                              ]],
+                              ]])],
                               [
                                 AC_MSG_RESULT(yes)
                                 ptlib_sasl=yes

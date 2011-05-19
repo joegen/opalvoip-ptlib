@@ -357,11 +357,6 @@ ifeq ($(OSTYPE),Darwin)
  
 # MacOS X or later / Darwin
 
-CFLAGS		+= -fno-common -dynamic
-LDFLAGS		+= -multiply_defined suppress
-ENDLDLIBS	+= -lresolv -framework AudioToolbox -framework CoreAudio
-ENDLDLIBS   += -framework AudioUnit -framework CoreServices
-STDCCFLAGS  += -D__MACOSX__
 
 # Quicktime support is still a long way off. But for development purposes,
 # I am inluding the flags to allow QuickTime to be linked.
