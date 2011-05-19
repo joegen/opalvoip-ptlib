@@ -713,7 +713,7 @@ DNS_STATUS PDNS::Cached_DnsQuery(
       if ((now - r->second.m_time) < RESOLVER_CACHE_TIMEOUT)
         ++r;
       else { 
-        DnsRecordListFree(r->second.m_results, 0);
+        DnsRecordListFree(r->second.m_results, DnsFreeFlat);
         g_dnsCache.erase(r++);
       }
     }
