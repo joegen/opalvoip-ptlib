@@ -158,6 +158,7 @@
 #undef P_HAS_UPAD128_T
 #undef P_HAS_INET_NTOP
 #undef P_SETPGRP_NOPARM
+#undef P_HAS_IPV6_ADD_MEMBERSHIP
 
 
 /////////////////////////////////////////////////
