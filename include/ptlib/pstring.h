@@ -1664,7 +1664,7 @@ class PString : public PCharArray
       Get a const pointer to the buffer contents
       This function overrides the ancestor function that returns a char *
       */
-    virtual const char * GetPointer(PINDEX notused = 0) const { return (const char *)(*this); }
+    virtual const char * GetPointer(PINDEX = 0) const { return (const char *)(*this); }
 
   //@}
 
