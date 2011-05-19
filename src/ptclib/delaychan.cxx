@@ -56,6 +56,9 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
     return PTrue;
   }
 
+  if (frameTime == 0)
+    return true;
+
   // Set the new target
   targetTime += frameTime;
 
