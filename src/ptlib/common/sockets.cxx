@@ -2723,7 +2723,7 @@ bool PUDPSocket::InternalListen(const Address & bindAddr,
 
     bool ok;
 
-#if P_HAS_IPV6
+#if P_HAS_IPV6 && defined(IPV6_ADD_MEMBERSHIP)
     if (bindAddr.GetVersion() == 6) {
       struct ipv6_mreq mreq;
       mreq.ipv6mr_multiaddr = bindAddr;
