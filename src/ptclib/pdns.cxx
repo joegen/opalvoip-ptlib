@@ -54,6 +54,8 @@
 
 #if defined(P_HAS_RESOLVER) ||  defined(USE_RESOLVER_CACHING)
 
+#define DnsFreeFlat 0
+
 void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
 {
   while (rec != NULL) {
