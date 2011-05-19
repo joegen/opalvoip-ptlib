@@ -54,8 +54,10 @@ bool PSTUNServer::Open(WORD port)
 
   // find interfaces
   for (i = 0; i < interfaces.GetSize(); i++) {
-    if (!interfaces[i].GetAddress().IsLinkLocal()
-        && !interfaces[i].GetAddress().IsLoopback()
+    if (!interfaces[i].GetAddress().IsLoopback()
+#if P_HAS_IPV6
+        && !interfaces[i].GetAddress().IsLinkLocal()
+#endif
 #ifndef _DEBUG
         && !interfaces[i].GetAddress().IsRFC1918()
 #endif
