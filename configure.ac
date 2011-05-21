@@ -278,12 +278,12 @@ P_64BIT=0
 
 case "$target_cpu" in
    x86 | i686 | i586 | i486 | i386 ) 
-	AC_COMPILE_IFELSE([
-          AC_LANG_SOURCE([[int t = __amd64__;]]),
+	AC_COMPILE_IFELSE(
+          [AC_LANG_SOURCE([[int t = __amd64__;]])],
 	  [[MACHTYPE=x86_64
 	    P_64BIT=1]],
 	  [[MACHTYPE=x86]]
-        ])
+        )
 	PBYTE_ORDER=PLITTLE_ENDIAN
 	;;
 
