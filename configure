@@ -806,6 +806,7 @@ enable_ansi_bool
 enable_atomicity
 enable_internalregex
 enable_plugins
+enable_plugins
 with_plugin_installdir
 enable_samples
 enable_resolver
@@ -878,6 +879,9 @@ LIBS
 CPPFLAGS
 CXX
 CXXFLAGS
+LDFLAGS
+LIBS
+CPPFLAGS
 CCC
 CXXCPP
 CPP
@@ -4617,14 +4621,13 @@ case "$target_cpu" in
    x86 | i686 | i586 | i486 | i386 )
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-          int t = __amd64__;,
-	  [MACHTYPE=x86_64
-	    P_64BIT=1],
-	  [MACHTYPE=x86]
-
+int t = __amd64__;
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
+  MACHTYPE=x86_64
+	    P_64BIT=1
+else
+  MACHTYPE=x86
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
