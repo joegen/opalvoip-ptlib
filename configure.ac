@@ -274,7 +274,6 @@ case "$target_os" in
 		   OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
 		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
-  		   ENDLDLIBS="-lresolv"
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;

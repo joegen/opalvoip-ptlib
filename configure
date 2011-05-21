@@ -4538,7 +4538,6 @@ $as_echo "${ptlib_fdsize}" >&6; }
 		   OS_MINOR=`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`
 		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
-  		   ENDLDLIBS="-lresolv"
 
 $as_echo "#define P_PTHREADS 1" >>confdefs.h
 
