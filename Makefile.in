@@ -79,9 +79,11 @@ optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # and adjust shared lib names
 ifeq (,$(findstring $(OSTYPE),Darwin cygwin mingw))
-  LIB_SONAME = $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@
+  LIB_SONAME   = $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@
+  DEBUG_SONAME = $(PTLIB_DEBUG_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@
 else
-  LIB_SONAME = $(subst .$(LIB_SUFFIX),.@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@.$(LIB_SUFFIX),$(PTLIB_FILE))
+  LIB_SONAME   = $(subst .$(LIB_SUFFIX),.@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@.$(LIB_SUFFIX),$(PTLIB_FILE))
+  DEBUG_SONAME = $(subst .$(LIB_SUFFIX),.@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@._d$(LIB_SUFFIX),$(PTLIB_FILE))
 endif
 
 # all these targets are just passed to all subdirectories
@@ -108,16 +110,27 @@ install:
                      $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
-	( if test -e $(PT_LIBDIR)/$(LIB_SONAME) ; then \
-		$(INSTALL) -m 444 $(PT_LIBDIR)/$(LIB_SONAME) $(DESTDIR)$(LIBDIR); \
-	fi )
-	( if test -e $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a ; then \
-		$(INSTALL) -m 444 $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a $(DESTDIR)$(LIBDIR); \
-	fi )
-	(cd $(DESTDIR)$(LIBDIR) ; \
-		rm -f  $(PTLIB_FILE) ; \
+	( for lib in  $(PT_LIBDIR)/$(LIB_SONAME) \
+	              $(PT_LIBDIR)/$(DEBUG_SONAME) \
+	              $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a \
+	              $(PT_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
+          do \
+	  ( if test -e $$lib ; then \
+		$(INSTALL) -m 444 $$lib $(DESTDIR)$(LIBDIR); \
+	  fi ) \
+	done )
+	( if test -e $(PT_LIBDIR)/$(LIB_SONAME); then \
+	    (cd $(DESTDIR)$(LIBDIR) ; \
+		rm -f $(PTLIB_FILE) ; \
 		ln -sf $(LIB_SONAME) $(PTLIB_FILE) \
-	)
+	    ) \
+	fi )
+	( if test -e $(PT_LIBDIR)/$(DEBUG_SONAME); then \
+	    (cd $(DESTDIR)$(LIBDIR) ; \
+		rm -f $(PTLIB_DEBUG_FILE) ; \
+		ln -sf $(DEBUG_SONAME) $(PTLIB_DEBUG_FILE) \
+	    ) \
+	fi )
 ifeq (1, $(HAS_PLUGINS))
 	if test -e $(PT_LIBDIR)/device/; then \
 	cd $(PT_LIBDIR)/device/; \
