@@ -139,7 +139,8 @@ endif
 	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
 	chmod 755 $(DESTDIR)$(LIBDIR)/pkgconfig
 	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(LIBDIR)/pkgconfig/
-uninstall:
+
+uninstall: 
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
 	       $(DESTDIR)$(PREFIX)/include/ptclib \
 	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
@@ -150,6 +151,7 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a \
 	      $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE) \
 	      $(DESTDIR)$(LIBDIR)/$(LIB_SONAME)
+	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; rm -f ../share/ptlib/make/ptlib-config )
 
 distclean: clean
 	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4
