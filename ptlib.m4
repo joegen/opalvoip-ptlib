@@ -126,9 +126,7 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
             LIBS="$LIBS -lresolv"
             AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>
                                               #include <resolv.h>]],
-                           [[int main(int argc,char **argv) {
-                              res_state p; res_ninit(p);
-                            }]])],
+                           [[ res_state p; res_ninit(p); ]])],
                           [
                             HAS_RES_NINIT=1
                             ptlib_has_resolver=yes
@@ -148,9 +146,7 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
             LIBS="$LIBS -lresolv"
             AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>
                                               #include <resolv.h>]],
-                            [[int main(int argc,char **argv){
-                              res_search (NULL, 0, 0, NULL, 0);
-                            }]])],
+                            [[ res_search (NULL, 0, 0, NULL, 0); ]])],
                           [
                             ptlib_has_resolver=yes
                             RESOLVER_LIBS="-lresolv"
@@ -321,8 +317,7 @@ AC_DEFUN([PTLIB_CHECK_SASL_INCLUDE],
           ptlib_sasl=no
           AC_MSG_CHECKING([if <sasl.h> works])
           AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sasl.h>]],
-                             [[int main(int argc,char **argv)
-                              { int v = SASL_LOG_PASS; }]])],
+                             [[ int v = SASL_LOG_PASS; ]])],
                             [
                               AC_MSG_RESULT(yes)
                               ptlib_sasl=yes
@@ -334,10 +329,8 @@ AC_DEFUN([PTLIB_CHECK_SASL_INCLUDE],
 
           if test "x${HAS_INCLUDE_SASL_H}" != "xyes" ; then
             AC_MSG_CHECKING([if <sasl/sasl.h> works])
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-                                #include <sasl/sasl.h>
-                                int main(int argc,char **argv){ int v = SASL_LOG_PASS; }
-                              ]])],
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ #include <sasl/sasl.h> ]],
+                               [[ int v = SASL_LOG_PASS; ]])],
                               [
                                 AC_MSG_RESULT(yes)
                                 ptlib_sasl=yes
