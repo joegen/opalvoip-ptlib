@@ -806,7 +806,6 @@ enable_ansi_bool
 enable_atomicity
 enable_internalregex
 enable_plugins
-enable_plugins
 with_plugin_installdir
 enable_samples
 enable_resolver
@@ -879,9 +878,6 @@ LIBS
 CPPFLAGS
 CXX
 CXXFLAGS
-LDFLAGS
-LIBS
-CPPFLAGS
 CCC
 CXXCPP
 CPP
@@ -3031,7 +3027,6 @@ $as_echo "$as_me: configuring for $IOS_PLATFORM version $IOS_VER" >&6;}
   CC="${IOS_DEVROOT}/usr/bin/gcc -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
   LD="${IOS_DEVROOT}/usr/bin/ld -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
   LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
-  ENDLDLIBS="-lresolv"
 
   echo $CC
   echo $LDFLAGS
@@ -4543,6 +4538,7 @@ $as_echo "${ptlib_fdsize}" >&6; }
 		   OS_MINOR=`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`
 		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
+  		   ENDLDLIBS="-lresolv"
 
 $as_echo "#define P_PTHREADS 1" >>confdefs.h
 
@@ -5482,7 +5478,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 $as_echo_n "checking if compiler accepts -felide-constructors... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int main(int ac,char **av) { return 0; }
+return 0;
 _ACEOF
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
@@ -5498,7 +5494,7 @@ fi
 $as_echo_n "checking if linker accepts -Wreorder... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int main(int ac,char **av) { return 0; }
+return 0;
 _ACEOF
 $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
@@ -5522,7 +5518,7 @@ if test "${enable_deprecated}" = "no" ; then
 $as_echo_n "checking if linker accepts -Wno-deprecated-declarations... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int main(int ac,char **av) { return 0; }
+return 0;
 _ACEOF
   $CXX $CXXFLAGS -Wno-deprecated-declarations conftest.$ac_ext > /dev/null 2>&1
   if test $? = 0 ; then
@@ -5541,7 +5537,7 @@ fi
 $as_echo_n "checking if debug build accepts -g3 -ggdb -O0... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int main(int ac,char **av) { return 0; }
+return 0;
 _ACEOF
 $CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
@@ -5556,7 +5552,7 @@ fi
 
 
 # AC_MSG_CHECKING(if linker accepts -Woverloaded-virtual)
-# AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+# AC_LANG_CONFTEST([[return 0;]])
 # $CXX $CFLAGS -Woverloaded-virtual conftest.cc > /dev/null 2>&1
 # if test $? = 0 ; then
 #   AC_MSG_RESULT(yes)
@@ -5569,11 +5565,11 @@ fi
 $as_echo_n "checking if compiler uses RTTI by default... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
 #include <typeinfo>
-int main(int ac,char **av)
+int
+main ()
 {
-  class A
+ class A
   {
     public:
       virtual void fred() { }
@@ -5586,8 +5582,10 @@ int main(int ac,char **av)
   B t;
   A * p = dynamic_cast<A *>(&t);
   return 0;
-}
 
+  ;
+  return 0;
+}
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
   DEFAULT_RTTI=1
@@ -7338,9 +7336,7 @@ $as_echo_n "checking for res_ninit in -lresolv... " >&6; }
 int
 main ()
 {
-int main(int argc,char **argv) {
-                              res_state p; res_ninit(p);
-                            }
+ res_state p; res_ninit(p);
   ;
   return 0;
 }
@@ -7379,9 +7375,7 @@ $as_echo_n "checking for res_search in -lresolv... " >&6; }
 int
 main ()
 {
-int main(int argc,char **argv){
-                              res_search (NULL, 0, 0, NULL, 0);
-                            }
+ res_search (NULL, 0, 0, NULL, 0);
   ;
   return 0;
 }
@@ -7665,8 +7659,7 @@ $as_echo_n "checking if <sasl.h> works... " >&6; }
 int
 main ()
 {
-int main(int argc,char **argv)
-                              { int v = SASL_LOG_PASS; }
+ int v = SASL_LOG_PASS;
   ;
   return 0;
 }
@@ -7691,14 +7684,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo_n "checking if <sasl/sasl.h> works... " >&6; }
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-                                #include <sasl/sasl.h>
-                                int main(int argc,char **argv){ int v = SASL_LOG_PASS; }
-
+ #include <sasl/sasl.h>
 int
 main ()
 {
-
+ int v = SASL_LOG_PASS;
   ;
   return 0;
 }
