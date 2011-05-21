@@ -2,9 +2,6 @@ AC_INIT(include/ptlib.h)
 
 AC_CONFIG_SUBDIRS(plugins)
 
-dnl PKG_LIBS=
-dnl PKG_CFLAGS=
-dnl PKG_REQUIRES=
 PKG_PROG_PKG_CONFIG()
 if test -z "$PKG_CONFIG" ; then
   AC_MSG_ERROR(PTLib must have pkg-config installed, 1)
@@ -281,13 +278,13 @@ P_64BIT=0
 
 case "$target_cpu" in
    x86 | i686 | i586 | i486 | i386 ) 
-	AC_COMPILE_IFELSE(
-	  [[int t = __amd64__;]],
-	  [[ MACHTYPE=x86_64
-	     P_64BIT=1]]
-	  ,
+	AC_COMPILE_IFELSE([
+          AC_LANG_SOURCE([[int t = __amd64__;]]),
+	  [[MACHTYPE=x86_64
+	    P_64BIT=1]],
 	  [[MACHTYPE=x86]]
-	);
+        ])
+	PBYTE_ORDER=PLITTLE_ENDIAN
 	;;
 
    x86_64 | amd64)
@@ -490,7 +487,7 @@ dnl   AC_MSG_RESULT(no)
 dnl fi
 
 AC_MSG_CHECKING(if compiler accepts -felide-constructors)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[int main(int ac,char **av) { return 0; }]])])
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -500,7 +497,7 @@ else
 fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[int main(int ac,char **av) { return 0; }]])])
 $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -514,7 +511,7 @@ dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
 AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[int main(int ac,char **av) { return 0; }]])])
 $CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -536,7 +533,7 @@ fi
 # fi
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
-AC_COMPILE_IFELSE([[
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <typeinfo>
 int main(int ac,char **av)
 {
@@ -554,7 +551,7 @@ int main(int ac,char **av)
   A * p = dynamic_cast<A *>(&t);
   return 0;
 }
-]],DEFAULT_RTTI=1, DEFAULT_RTTI=0)
+]])],DEFAULT_RTTI=1, DEFAULT_RTTI=0)
 if test "$DEFAULT_RTTI" = "1" ; then
   AC_MSG_RESULT(yes)
 else
@@ -630,7 +627,7 @@ dnl
 
 AC_ARG_ENABLE(tracing, AS_HELP_STRING([--disable-tracing],[Remove PTRACE and all trace logging]))
 
-if test "${enable_tracing}" = "no" ; then
+if test "x${enable_tracing}" = "xno" ; then
   AC_MSG_NOTICE(PTRACE and all trace logging removed)
   STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
@@ -647,7 +644,7 @@ dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
 
 AC_ARG_ENABLE(ansi-bool,AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
 
-if test "${enable_ansi_bool}" = "no" ; then
+if test "x${enable_ansi_bool}" = "xno" ; then
   AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
 else
   AC_MSG_NOTICE(Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true))
@@ -664,9 +661,24 @@ AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>
                 #include <netinet/in.h>],
                [int t = SOL_IP; t = IP_PKTINFO; struct msghdr *msg; recvmsg(0, msg, 0);], P_HAS_RECVMSG=1)
-if test "${P_HAS_RECVMSG}" = "1" ; then
+if test "x${P_HAS_RECVMSG}" = "x1" ; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(P_HAS_RECVMSG, 1)
+else
+  AC_MSG_RESULT(no)
+fi
+
+dnl ########################################################################
+dnl check for IPV6_ADD_MEMBERSHIP
+
+P_HAS_IPV6_ADD_MEMBERSHIP=
+AC_MSG_CHECKING(for IPV6_ADD_MEMBERSHIP)
+AC_TRY_COMPILE([#include <netinet/in.h>],
+               [int x = IPV6_ADD_MEMBERSHIP;],
+               P_HAS_IPV6_ADD_MEMBERSHIP=1)
+if test "x${P_HAS_IPV6_ADD_MEMBERSHIP}" = "x1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_HAS_IPV6_ADD_MEMBERSHIP, 1)
 else
   AC_MSG_RESULT(no)
 fi
