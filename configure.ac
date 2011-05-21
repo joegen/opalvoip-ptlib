@@ -477,7 +477,7 @@ dnl look for compile flags
 AC_LANG_PUSH(C++)
 
 dnl AC_MSG_CHECKING(if compiler accepts -fstack-protector)
-dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+dnl AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
 dnl $CXX $CXXFLAGS -fstack-protector conftest.$ac_ext > /dev/null 2>&1
 dnl if test $? = 0 ; then
 dnl   AC_MSG_RESULT(yes)
@@ -487,7 +487,7 @@ dnl   AC_MSG_RESULT(no)
 dnl fi
 
 AC_MSG_CHECKING(if compiler accepts -felide-constructors)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[int main(int ac,char **av) { return 0; }]])])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0; ]])])
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -497,7 +497,7 @@ else
 fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[int main(int ac,char **av) { return 0; }]])])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
 $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -511,7 +511,7 @@ dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
 AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[int main(int ac,char **av) { return 0; }]])])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
 $CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -523,7 +523,7 @@ fi
 
 
 # AC_MSG_CHECKING(if linker accepts -Woverloaded-virtual)
-# AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+# AC_LANG_CONFTEST([[return 0;]])
 # $CXX $CFLAGS -Woverloaded-virtual conftest.cc > /dev/null 2>&1
 # if test $? = 0 ; then
 #   AC_MSG_RESULT(yes)
@@ -533,11 +533,8 @@ fi
 # fi
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
-AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-#include <typeinfo>
-int main(int ac,char **av)
-{
-  class A
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <typeinfo>]],
+[[ class A
   {
     public:
       virtual void fred() { }
@@ -550,7 +547,6 @@ int main(int ac,char **av)
   B t;
   A * p = dynamic_cast<A *>(&t);
   return 0;
-}
 ]])],DEFAULT_RTTI=1, DEFAULT_RTTI=0)
 if test "$DEFAULT_RTTI" = "1" ; then
   AC_MSG_RESULT(yes)
