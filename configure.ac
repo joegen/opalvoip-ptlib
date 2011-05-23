@@ -476,18 +476,8 @@ dnl ########################################################################
 dnl look for compile flags
 AC_LANG_PUSH(C++)
 
-dnl AC_MSG_CHECKING(if compiler accepts -fstack-protector)
-dnl AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
-dnl $CXX $CXXFLAGS -fstack-protector conftest.$ac_ext > /dev/null 2>&1
-dnl if test $? = 0 ; then
-dnl   AC_MSG_RESULT(yes)
-dnl   STDCXXFLAGS="$STDCXXFLAGS -fstack-protector"
-dnl else
-dnl   AC_MSG_RESULT(no)
-dnl fi
-
 AC_MSG_CHECKING(if compiler accepts -felide-constructors)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0; ]])])
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -497,7 +487,7 @@ else
 fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
 $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -511,7 +501,7 @@ dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
 AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
 $CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -521,16 +511,6 @@ else
   DEBUG_FLAG="-g"
 fi
 
-
-# AC_MSG_CHECKING(if linker accepts -Woverloaded-virtual)
-# AC_LANG_CONFTEST([[return 0;]])
-# $CXX $CFLAGS -Woverloaded-virtual conftest.cc > /dev/null 2>&1
-# if test $? = 0 ; then
-#   AC_MSG_RESULT(yes)
-#   STDCCFLAGS="$STDCCFLAGS -Woverloaded-virtual"
-# else
-#   AC_MSG_RESULT(no)
-# fi
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <typeinfo>]],
