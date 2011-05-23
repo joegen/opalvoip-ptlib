@@ -534,7 +534,7 @@ dnl   AC_MSG_RESULT(no)
 dnl fi
 
 AC_MSG_CHECKING(if compiler accepts -felide-constructors)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0; ]])])
+AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[return 0; ]])])
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -544,7 +544,7 @@ else
 fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[]],[[return 0;]])])
 $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
@@ -558,7 +558,7 @@ AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler w
 
 if test "${enable_deprecated}" = "no" ; then
   AC_MSG_CHECKING(if linker accepts -Wno-deprecated-declarations)
-  AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
+  AC_LANG_CONFTEST([AC_LANG_SOURCE([[]],[[return 0;]])])
   $CXX $CXXFLAGS -Wno-deprecated-declarations conftest.$ac_ext > /dev/null 2>&1
   if test $? = 0 ; then
     AC_MSG_RESULT(yes)
@@ -573,7 +573,7 @@ dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
 AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
-AC_LANG_CONFTEST([AC_LANG_SOURCE([[return 0;]])])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[]],[[return 0;]])])
 $CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
