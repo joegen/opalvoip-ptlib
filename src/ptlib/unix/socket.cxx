@@ -427,34 +427,30 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
 {
   lastWriteCount = 0;
 
-
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   msghdr writeData;
   memset(&writeData, 0, sizeof(writeData));
 
-  writeData.msg_name       = addr;
-  writeData.msg_namelen    = addrLen;
+  writeData.msg_name    = addr;
+  writeData.msg_namelen = addrLen;
 
-  writeData.msg_iov        = (iovec *)slices;
-  writeData.msg_iovlen     = sliceCount;
+  writeData.msg_iov     = const_cast<Slice *>(slices);
+  writeData.msg_iovlen  = sliceCount;
 
   // write the packet 
-  int r = ::sendmsg(os_handle, &writeData, flags);
-  if (r == -1) {
-    PTRACE(5, "PTLIB\tos_vwrite returned error " << errno);
-#if P_HAS_RECVMSG_MSG_ERRQUEUE
-    ::sendmsg(os_handle, &writeData, MSG_ERRQUEUE);
-#endif
+  int result = ::sendmsg(os_handle, &writeData, flags);
+  if (ConvertOSError(0, LastWriteError)) {
+    lastWriteCount = result;
+    return true;
   }
 
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
-  PThread::Yield(); // Starvation prevention
+#if P_HAS_RECVMSG_MSG_ERRQUEUE
+  ::sendmsg(os_handle, &writeData, MSG_ERRQUEUE);
 #endif
 
-  lastWriteCount = r;
-  return ConvertOSError(0, LastWriteError);
+  return false;
 }
 
 #else // P_RECVMSG
