@@ -322,7 +322,15 @@ void  V4LNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
       if (devdir.GetInfo(info) && info.type == PFileInfo::CharDevice) {
         struct stat s;
         if (lstat(devname, &s) == 0) {
- 
+#if defined(P_FREEBSD)
+          // device numbers are irrelevant here, so we match on names instead
+          if (filename.GetLength() <= 5 || filename.Left(5) != "video")
+            continue;
+          int num = atoi(filename.Mid(6));
+          if (num < 0 || num > 63)
+            continue;
+          vid.SetAt(num, devname);
+#else
           static const int deviceNumbers[] = { 81 };
           for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
             if (MAJOR(s.st_rdev) == deviceNumbers[i]) {
@@ -332,6 +340,7 @@ void  V4LNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
               }
             }
           }
+#endif
         }
       }
     }
