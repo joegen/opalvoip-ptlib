@@ -2412,7 +2412,7 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
 #else
   
   Psockaddr sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
-  bool ok = os_vwrite(slices, sliceCount, 0, sa, sizeof(sa));
+  bool ok = os_vwrite(slices, sliceCount, 0, sa, sa.GetSize());
   
 #endif // P_MACOSX
 
