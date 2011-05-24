@@ -441,7 +441,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
 
   // write the packet 
   int result = ::sendmsg(os_handle, &writeData, flags);
-  if (ConvertOSError(0, LastWriteError)) {
+  if (ConvertOSError(result, LastWriteError)) {
     lastWriteCount = result;
     return true;
   }
