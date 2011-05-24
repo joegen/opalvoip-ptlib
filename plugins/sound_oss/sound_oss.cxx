@@ -133,12 +133,12 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
             }
           }
         }
-      } 
+      }
       else {
         // On Linux devfs systems, the major numbers can change dynamically.
         // On FreeBSD and other OSs, the major numbes are different to Linux.
         // So collect devices by looking for dsp(N) and mixer(N).
-        // (or /dev/audio(N) and mixer(N) on NetBSD
+        // (or /dev/audio(N) and mixer(N) on NetBSD)
         // Notes. FreeBSD supports audio stream mixing. A single sound card
         // may have multiple /dev entries in the form /dev/dspN.M
         // eg /dev/dsp0.0 /dev/dsp0.1 /dev/dsp0.2 and /dev/dsp0.3
@@ -146,7 +146,7 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         // found is used.
 
 #if defined (P_NETBSD) || defined (P_OPENBSD)
-        // Look for audio on NetBSD 
+        // Look for audio on NetBSD
         if (filename == "audio") {
           dsp.SetAt(0, devname);
         }
@@ -174,12 +174,13 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
             // If we have not yet inserted something for this cardnum, insert it
             if (dsp.GetAt(cardnum+1) == NULL) {
 #if defined (P_FREEBSD)
-              // in FreeBSD the file name should be used via the devfs(5) and
-              // is just "/dev/dsp0" and devfs(5) takes care of virtual channels,
-              // like /dev/dsp0.0 /dev/dsp0.1 ...
-              // everything else would conflict with other KDE apps using the
-              // audio
-              devname = devdir + "dsp0";
+              // in FreeBSD we might have different sound channels
+              // created by sound(4) in devfs(5), like /dev/dsp0, /dev/dsp1, ...
+              // see also 'cat /dev/sndstat',
+              // and the end user should make its choice between the sound
+              // devices, for example having a built-in micro in a webcam
+              // and a headset micro
+              devname = devdir + "dsp" + numbers;
               PTRACE(1, "OSS\tCollectSoundDevices FreeBSD devname set to devfs(5) name:" << devname );
 #endif /* defined (P_FREEBSD) */
               dsp.SetAt(cardnum+1, devname);
