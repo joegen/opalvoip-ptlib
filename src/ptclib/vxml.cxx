@@ -1350,49 +1350,21 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 
 PCaselessString PVXMLSession::GetVar(const PString & varName) const
 {
-  PString key = varName;
-  PString scope;
+  PString prefix;
+  if (varName.Find('.') == P_MAX_INDEX)
+    prefix = "application.";
 
-  // get scope
-  PINDEX pos = key.Find('.');
-  if (pos != P_MAX_INDEX) {
-    scope = key.Left(pos);
-    key   = key.Mid(pos+1);
-  }
-
-  // process session scope
-  if (scope.IsEmpty() || (scope *= "session")) {
-    if (sessionVars.Contains(key))
-      return sessionVars[key];
-  }
-
-  // assume any other scope is actually document or application
-  return documentVars(key);
+  return m_variables(prefix+varName);
 }
 
 
-void PVXMLSession::SetVar(const PString & ostr, const PString & val)
+void PVXMLSession::SetVar(const PString & varName, const PString & value)
 {
-  PString str = ostr;
-  PString scope;
+  PString prefix;
+  if (varName.Find('.') == P_MAX_INDEX)
+    prefix = currentForm != NULL ? "dialog." : "application.";
 
-  // get scope
-  PINDEX pos = str.Find('.');
-  if (pos != P_MAX_INDEX) {
-    scope = str.Left(pos);
-    str   = str.Mid(pos+1);
-  }
-
-  // do session scope
-  if (scope.IsEmpty() || (scope *= "session")) {
-    sessionVars.SetAt(str, val);
-    return;
-  }
-
-  PTRACE(3, "VXML\tDocument: " << str << " = \"" << val << "\"");
-
-  // assume any other scope is actually document or application
-  documentVars.SetAt(str, val);
+  m_variables.SetAt(prefix+varName, value);
 }
 
 
