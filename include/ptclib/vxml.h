@@ -220,6 +220,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual void OnEndSession()         { }
     virtual void OnTransfer(const PString & /*destination*/, bool /*bridged*/) { }
 
+    const PStringToString & GetVariables() { return m_variables; }
     virtual PCaselessString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
     virtual PString EvaluateExpr(const PString & oexpr);
@@ -236,8 +237,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual void OnEndRecording(const PString & channelName);
     virtual void RecordEnd();
     virtual void Trigger();
-
-    PStringToString & GetSessionVars() { return sessionVars; }
 
 
     virtual PBoolean TraverseAudio();
@@ -288,8 +287,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PBoolean listening;                 // true if waiting for recognition events
     int timeout;                    // timeout in msecs for the current recognition
 
-    PStringToString sessionVars;
-    PStringToString documentVars;
+    PStringToString m_variables;
 
     PMutex userInputMutex;
     std::queue<char> userInputQueue;
