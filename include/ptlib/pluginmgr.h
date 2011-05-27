@@ -15,8 +15,6 @@
 #ifndef PTLIB_PLUGINMGR_H
 #define PTLIB_PLUGINMGR_H
 
-#define DEFAULT_PLUGINDIR "/usr/lib/pwlib"
-
 #include <ptlib/plugin.h>
 
 class PPluginSuffix {
