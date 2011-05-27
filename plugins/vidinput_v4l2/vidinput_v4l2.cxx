@@ -48,6 +48,7 @@ PCREATE_VIDINPUT_PLUGIN(V4L2);
 #include <libv4l2.h>
 #else
 #define v4l2_fd_open(fd, flags) (fd)
+#define v4l2_open open
 #define v4l2_close close
 #define v4l2_ioctl ioctl
 #define v4l2_read read
@@ -161,7 +162,7 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean startImm
   PString name = GetNames().GetDeviceName(devName);
   PTRACE(1,"PVidInDev\tOpen()\tdevName:" << name << "  videoFd:" << videoFd);
   
-  videoFd = ::open((const char *)name, O_RDWR);
+  videoFd = ::v4l2_open((const char *)name, O_RDWR);
   if (videoFd < 0) {
     PTRACE(1,"PVidInDev\topen failed : " << ::strerror(errno));
     return PFalse;
@@ -980,6 +981,32 @@ void
 V4L2Names::Update()
 {
   PTRACE(1,"Detecting V4L2 devices");
+  PWaitAndSignal m(mutex);
+  inputDeviceNames.RemoveAll (); // flush the previous run
+#if defined(P_FREEBSD)
+  for (int i = 0; i < 10; i++) {
+    PString thisDevice = PString("/dev/video") + PString(i);
+    int videoFd=::v4l2_open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
+    if ((videoFd > 0) || (errno == EBUSY)) {
+      PBoolean valid = PFalse;
+      struct v4l2_capability videoCaps;
+      memset(&videoCaps,0,sizeof(videoCaps));
+      if ((errno == EBUSY) ||
+          (v4l2_ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 &&
+          (videoCaps.capabilities & V4L2_CAP_VIDEO_CAPTURE))) {
+        PTRACE(1,"PV4L2Plugin\tdetected capture device " << videoCaps.card);
+        valid = PTrue;
+      }
+      else {
+        PTRACE(1,"PV4L2Plugin\t" << thisDevice << "is not deemed valid");
+      }
+      if (videoFd>0)
+        ::v4l2_close(videoFd);
+      if(valid)
+        inputDeviceNames += thisDevice;
+    }
+  }
+#else
   PDirectory   procvideo2_4("/proc/video/dev");
   PDirectory   procvideo2_6("/sys/class/video4linux");
   PDirectory * procvideo;
@@ -999,8 +1026,6 @@ V4L2Names::Update()
     kernelVersion=KUNKNOWN;
     procvideo=0;
   }
-  PWaitAndSignal m(mutex);
-  inputDeviceNames.RemoveAll (); // flush the previous run
   if (procvideo) {
     PTRACE(2,"PV4L2Plugin\tdetected device metadata at "<<*procvideo);
     if (((kernelVersion==K2_6 && procvideo->Open(PFileInfo::SubDirectory)) || 
@@ -1009,7 +1034,7 @@ V4L2Names::Update()
         entry = procvideo->GetEntryName();
         if ((entry.Left(5) == "video")) {
           PString thisDevice = "/dev/" + entry;
-          int videoFd=::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
+          int videoFd=::v4l2_open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
           if ((videoFd > 0) || (errno == EBUSY)) {
             PBoolean valid = PFalse;
             struct v4l2_capability videoCaps;
@@ -1024,7 +1049,7 @@ V4L2Names::Update()
               PTRACE(1,"PV4L2Plugin\t" << thisDevice << "is not deemed valid");
             }
             if (videoFd>0)
-              ::close(videoFd);
+              ::v4l2_close(videoFd);
             if(valid)
               inputDeviceNames += thisDevice;
           }
@@ -1038,16 +1063,17 @@ V4L2Names::Update()
   else {
     PTRACE(1,"Unable to detect v4l2 directory");
   }
+#endif
   if (inputDeviceNames.GetSize() == 0) {
     POrdinalToString vid;
     ReadDeviceDirectory("/dev/", vid);
 
     for (POrdinalToString::iterator it = vid.begin(); it != vid.end(); ++it) {
       PINDEX cardnum = it->first;
-      int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
+      int fd = ::v4l2_open(vid[cardnum], O_RDONLY | O_NONBLOCK);
       if ((fd >= 0) || (errno == EBUSY)) {
         if (fd >= 0)
-          ::close(fd);
+          ::v4l2_close(fd);
         inputDeviceNames += vid[cardnum];
       }
     }
@@ -1059,7 +1085,7 @@ PString V4L2Names::BuildUserFriendly(PString devname)
 {
   PString Result;
 
-  int fd = ::open((const char *)devname, O_RDONLY);
+  int fd = ::v4l2_open((const char *)devname, O_RDONLY);
   if(fd < 0) {
     return devname;
   }
@@ -1067,11 +1093,11 @@ PString V4L2Names::BuildUserFriendly(PString devname)
   struct v4l2_capability videocap;
   memset(&videocap,0,sizeof(videocap));
   if (v4l2_ioctl(fd, VIDIOC_QUERYCAP, &videocap) < 0)  {
-      ::close(fd);
+      ::v4l2_close(fd);
       return devname;
     }
   
-  ::close(fd);
+  ::v4l2_close(fd);
   PString ufname((const char*)videocap.card);
 
   return ufname;
