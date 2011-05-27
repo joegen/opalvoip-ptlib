@@ -24,9 +24,9 @@
 #  if defined (_WIN32_WCE)
 #    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
 #  elif defined (_WIN32)
-#    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS"
 #  else
-#    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"
+#    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib"
 #  endif
 #endif
 
@@ -45,10 +45,8 @@
 #endif
 
 #define ENV_PTLIB_PLUGIN_DIR  "PTLIBPLUGINDIR"
-#define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
 
 #define PTPLUGIN_SUFFIX       "_ptplugin"
-#define PWPLUGIN_SUFFIX       "_pwplugin"
 
 PString PPluginManager::additionalPluginDirs = "";
 
@@ -76,7 +74,6 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
 { 
   PStringList suffixes;
   suffixes.AppendString(PTPLUGIN_SUFFIX);
-  suffixes.AppendString(PWPLUGIN_SUFFIX);
 
   PFactory<PPluginSuffix>::KeyList_T keys = PFactory<PPluginSuffix>::GetKeyList();
   PFactory<PPluginSuffix>::KeyList_T::const_iterator r;
@@ -121,8 +118,6 @@ void PPluginManager::AddPluginDirs(PString dirs)
 PStringArray PPluginManager::GetPluginDirs()
 {
   PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
-  if (env.IsEmpty()) 
-    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
   if (env.IsEmpty()) 
     env = P_DEFAULT_PLUGIN_DIR + additionalPluginDirs;
 
