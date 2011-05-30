@@ -47,14 +47,14 @@
 #ifdef _MSC_VER
   #pragma comment(lib, "DnsAPI.Lib")
   #pragma message("DNS support enabled")
+#else
+  enum { DnsFreeFlat = 0 };
 #endif
 
 
 /////////////////////////////////////////////////
 
 #if defined(P_HAS_RESOLVER) ||  defined(USE_RESOLVER_CACHING)
-
-#define DnsFreeFlat 0
 
 void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
 {
