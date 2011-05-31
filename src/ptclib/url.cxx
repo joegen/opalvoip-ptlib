@@ -93,7 +93,7 @@ PURL_LEGACY_SCHEME(rtsp,      false, false, true,  false,  true,   true,  false,
 PURL_LEGACY_SCHEME(rtspu,     false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_RTSPU_PORT)
 PURL_LEGACY_SCHEME(ftp,       true,  true,  true,  false,  true,   false, false, false, true,  false, DEFAULT_FTP_PORT)
 PURL_LEGACY_SCHEME(telnet,    true,  true,  true,  false,  true,   false, false, false, false, false, DEFAULT_TELNET_PORT)
-PURL_LEGACY_SCHEME(mailto,    false, false, false, false,  true,   true,  false, false, false, false, 0)
+PURL_LEGACY_SCHEME(mailto,    false, false, false, true,   false,  true,  false, false, false, false, 0)
 PURL_LEGACY_SCHEME(news,      false, false, false, false,  true,   false, false, false, false, false, 0)
 PURL_LEGACY_SCHEME(h323,      true,  false, true,  true,   false,  false, true,  false, false, false, DEFAULT_H323_PORT)
 PURL_LEGACY_SCHEME(h323s,     true,  false, true,  true,   false,  false, true,  false, false, false, DEFAULT_H323S_PORT)
@@ -348,6 +348,8 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
     cstr++;
   PString url = cstr;
+  if (url.IsEmpty())
+    return false;
 
   // get information which tells us how to parse URL for this
   // particular scheme
