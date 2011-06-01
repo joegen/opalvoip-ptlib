@@ -609,11 +609,6 @@
 			<Tool
 				Name="VCWebDeploymentTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
@@ -705,12 +700,6 @@
 			/>
 			<Tool
 				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
@@ -813,12 +802,6 @@
 			<Tool
 				Name="VCCodeSignTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
-			/>
 			<DeploymentTool
 				ForceDirty="-1"
 				RemoteDirectory="%CSIDL_PROGRAM_FILES%\MobileOPAL"
@@ -918,12 +901,6 @@
 			/>
 			<Tool
 				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
@@ -1025,12 +1002,6 @@
 			/>
 			<Tool
 				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
@@ -1136,11 +1107,6 @@
 			<Tool
 				Name="VCWebDeploymentTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-			/>
 		</Configuration>
 		<Configuration
 			Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
@@ -1232,12 +1198,6 @@
 			/>
 			<Tool
 				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
@@ -1340,12 +1300,6 @@
 			<Tool
 				Name="VCCodeSignTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
-			/>
 			<DeploymentTool
 				ForceDirty="-1"
 				RemoteDirectory="%CSIDL_PROGRAM_FILES%\MobileOPAL"
@@ -1445,12 +1399,6 @@
 			/>
 			<Tool
 				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
@@ -1552,12 +1500,6 @@
 			/>
 			<Tool
 				Name="VCCodeSignTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
-				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
