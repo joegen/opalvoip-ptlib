@@ -1437,12 +1437,6 @@ EXPORTS
     ??0?$PFactory@VPWAVFileConverter@@I@@IAE@XZ @1159 NONAME
     ??0?$PFactory@VPWAVFileFormat@@I@@IAE@XZ @1160 NONAME
     ??0?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@IAE@XZ @1161 NONAME
-    ??0?$PFixedPoolAllocator@UPHashTableElement@@@@QAE@XZ @1162 NONAME
-    ??0?$PFixedPoolAllocator@UPListElement@@@@QAE@XZ @1163 NONAME
-    ??0?$PFixedPoolAllocator@UPListInfo@@@@QAE@XZ @1164 NONAME
-    ??0?$PFixedPoolAllocator@UPSortedListElement@@@@QAE@XZ @1165 NONAME
-    ??0?$PFixedPoolAllocator@UPSortedListInfo@@@@QAE@XZ @1166 NONAME
-    ??0?$PFixedPoolAllocator@VPContainerReference@@@@QAE@XZ @1167 NONAME
     ??0?$PIntReversedOrder@G@@QAE@XZ @1168 NONAME
     ??0?$PIntReversedOrder@K@@QAE@XZ @1169 NONAME
     ??0?$PIntSameOrder@G@@QAE@XZ @1170 NONAME
@@ -1538,7 +1532,6 @@ EXPORTS
     ??0?$PStringDictionary@VPString@@@@QAE@XZ @1256 NONAME
     ??0?$PThreadLocalStorage@UTraceInfo@PThread@@@@QAE@XZ @1257 NONAME
     ??0?$PThreadObj@VPInterfaceMonitor@@@@QAE@AAVPInterfaceMonitor@@P81@AEXXZ_NPBDW4Priority@PThread@@@Z @1258 NONAME
-    ??0?$PVariablePoolAllocator@D@@QAE@XZ @1259 NONAME
     ??0?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@QAE@XZ @1260 NONAME
     ??0?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@QAE@XZ @1261 NONAME
     ??0?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@QAE@XZ @1262 NONAME
@@ -7355,7 +7348,7 @@ EXPORTS
     ??R?$PNotifierTemplate@H@@UBEXAAVPObject@@H@Z @6339 NONAME
     ??R?$PStringDictionary@VPString@@@@QBE?AVPString@@ABV1@PBD@Z @6341 NONAME
     ??RframeMatch@@QAE_NAAPAVinputframes@@0@Z @20244 NONAME
-    ??RframeSort@@QAE_NAAPAVinputframes@@0@Z @20245 NONAME
+    ??RframeSort@@QAE_NABQAVinputframes@@0@Z @22510 NONAME
     ??RPString@@QBE?AV0@HH@Z @6342 NONAME
     ??RTable@PODBC@@QAEAAVField@1@HH@Z @6343 NONAME
     ??RTimerExpiryInfo_compare@PTimerList@@QBE_NABUTimerExpiryInfo@1@0@Z @6344 NONAME
@@ -13583,6 +13576,13 @@ EXPORTS
     ?allocate@?$allocator@VPFilePath@@@std@@QAEPAVPFilePath@@I@Z @11764 NONAME
     ?allocate@?$allocator@VPIPSocketAddressAndPort@@@std@@QAEPAVPIPSocketAddressAndPort@@I@Z @11765 NONAME
     ?allocate@?$allocator@VRequestType@PTimerList@@@std@@QAEPAVRequestType@PTimerList@@I@Z @11766 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@D@std@@D@@QAEPADI@Z @22511 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@UPHashTableElement@@@std@@UPHashTableElement@@@@QAEPAUPHashTableElement@@I@Z @22512 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@UPListElement@@@std@@UPListElement@@@@QAEPAUPListElement@@I@Z @22513 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@UPListInfo@@@std@@UPListInfo@@@@QAEPAUPListInfo@@I@Z @22514 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@QAEPAUPSortedListElement@@I@Z @22515 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@QAEPAUPSortedListInfo@@I@Z @22516 NONAME
+    ?allocate@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@QAEPAVPContainerReference@@I@Z @22517 NONAME
     ?Allocate@PMemoryHeap@@SAPAXIIPBDH@Z @11767 NONAME
     ?Allocate@PMemoryHeap@@SAPAXIPBDH0@Z @11768 NONAME
     ?AllocateWorker@PThreadPoolBase@@UAEPAVWorkerThreadBase@1@XZ @11769 NONAME
@@ -15797,6 +15797,13 @@ EXPORTS
     ?deallocate@?$allocator@VPFilePath@@@std@@QAEXPAVPFilePath@@I@Z @13792 NONAME
     ?deallocate@?$allocator@VPIPSocketAddressAndPort@@@std@@QAEXPAVPIPSocketAddressAndPort@@I@Z @13793 NONAME
     ?deallocate@?$allocator@VRequestType@PTimerList@@@std@@QAEXPAVRequestType@PTimerList@@I@Z @13794 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@D@std@@D@@QAEXPADI@Z @22518 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@UPHashTableElement@@@std@@UPHashTableElement@@@@QAEXPAUPHashTableElement@@I@Z @22519 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@UPListElement@@@std@@UPListElement@@@@QAEXPAUPListElement@@I@Z @22520 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@UPListInfo@@@std@@UPListInfo@@@@QAEXPAUPListInfo@@I@Z @22521 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@QAEXPAUPSortedListElement@@I@Z @22522 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@QAEXPAUPSortedListInfo@@I@Z @22523 NONAME
+    ?deallocate@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@QAEXPAVPContainerReference@@I@Z @22524 NONAME
     ?Deallocate@PMemoryHeap@@SAXPAXPBD@Z @13795 NONAME
     ?DebugOutput@PServiceProcess@@AAEXPBD@Z @13796 NONAME
     ?dec@?$_Iosb@H@std@@2W4_Fmtflags@12@B @13797 NONAME
@@ -16426,6 +16433,13 @@ EXPORTS
     ?GetAllKeyValues@PConfig@@UBE?AVPStringToString@@XZ @14366 NONAME
     ?GetAllNames@PHTTPCompositeField@@UBEXAAVPStringArray@@@Z @14367 NONAME
     ?GetAllNames@PHTTPField@@UBEXAAVPStringArray@@@Z @14368 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@D@std@@D@@CAPAV?$allocator@D@std@@XZ @22525 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@UPHashTableElement@@@std@@UPHashTableElement@@@@CAPAV?$allocator@UPHashTableElement@@@std@@XZ @22526 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@UPListElement@@@std@@UPListElement@@@@CAPAV?$allocator@UPListElement@@@std@@XZ @22527 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@UPListInfo@@@std@@UPListInfo@@@@CAPAV?$allocator@UPListInfo@@@std@@XZ @22528 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@CAPAV?$allocator@UPSortedListElement@@@std@@XZ @22529 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@CAPAV?$allocator@UPSortedListInfo@@@std@@XZ @22530 NONAME
+    ?GetAllocator@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@CAPAV?$allocator@VPContainerReference@@@std@@XZ @22531 NONAME
     ?GetAndLockVXMLChannel@PVXMLSession@@QAEPAVPVXMLChannel@@XZ @14369 NONAME
     ?GetAny@Address@PIPSocket@@SAABV12@H@Z @14370 NONAME
     ?GetArguments@PProcess@@QAEAAVPArgList@@XZ @14371 NONAME
@@ -19078,6 +19092,13 @@ EXPORTS
     ?MultiBitEncode@PPER_Stream@@QAEXII@Z @16848 NONAME
     ?MultipartMessage@PRFC822Channel@@QAE?AVPString@@XZ @16849 NONAME
     ?MultipartMessage@PRFC822Channel@@QAE_NABVPString@@@Z @16850 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@D@std@@D@@CAPAV?$allocator@D@std@@XZ@4PAV34@A @22532 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPHashTableElement@@@std@@UPHashTableElement@@@@CAPAV?$allocator@UPHashTableElement@@@std@@XZ@4PAV34@A @22533 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPListElement@@@std@@UPListElement@@@@CAPAV?$allocator@UPListElement@@@std@@XZ@4PAV34@A @22534 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPListInfo@@@std@@UPListInfo@@@@CAPAV?$allocator@UPListInfo@@@std@@XZ@4PAV34@A @22535 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@CAPAV?$allocator@UPSortedListElement@@@std@@XZ@4PAV34@A @22536 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@CAPAV?$allocator@UPSortedListInfo@@@std@@XZ@4PAV34@A @22537 NONAME
+    ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@CAPAV?$allocator@VPContainerReference@@@std@@XZ@4PAV34@A @22538 NONAME
     ?NamespaceTag@MUC@XMPP@@YAABVPCaselessString@@XZ @22264 NONAME
     ?NamespaceTag@User@MUC@XMPP@@SAABVPCaselessString@@XZ @22265 NONAME
     ?NamespaceTag@XMPP@@YAABVPCaselessString@@XZ @22266 NONAME
