@@ -91,6 +91,8 @@ DNS_NAPTR_DATA;
 // on non-Window systems
 //
 
+#define DnsRecordListFree  PDnsRecordListFree
+
 #ifndef T_SRV
 #define T_SRV   33
 #endif
@@ -173,6 +175,7 @@ class DnsRecord {
     } Data;
 };
 
+typedef DnsRecord DNS_RECORD;
 typedef DnsRecord * PDNS_RECORD;
 
 
@@ -186,7 +189,7 @@ typedef struct  _IP4_ARRAY
 IP4_ARRAY, *PIP4_ARRAY;
 
 
-extern void DnsRecordListFree(PDNS_RECORD rec, int FreeType);
+extern void PDnsRecordListFree(PDNS_RECORD rec, int FreeType);
 
 extern DNS_STATUS DnsQuery_A(const char * service,
           WORD requestType,
@@ -199,6 +202,20 @@ extern DNS_STATUS DnsQuery_A(const char * service,
 #endif // P_HAS_RESOLVER
 
 namespace PDNS {
+
+///////////////////////////////////////////////////////////////////////////
+
+DNS_STATUS Cached_DnsQuery(
+    const char * name,
+    WORD       type,
+    DWORD      options,
+    void *     extra,
+    PDNS_RECORD * queryResults,
+    void * reserved
+);
+
+
+void Cached_DnsRecordListFree(PDNS_RECORD, int);
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -215,12 +232,12 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
   recordList.RemoveAll();
 
   PDNS_RECORD results = NULL;
-  DNS_STATUS status = DnsQuery_A((const char *)name, 
-                                 type,
-                                 DNS_QUERY_STANDARD, 
-                                 (PIP4_ARRAY)NULL, 
-                                 &results, 
-                                 NULL);
+  DNS_STATUS status = Cached_DnsQuery((const char *)name, 
+                                      type,
+                                      DNS_QUERY_STANDARD, 
+                                      (PIP4_ARRAY)NULL, 
+                                      &results, 
+                                      NULL);
   if (status != 0)
     return false;
 
@@ -234,7 +251,7 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
   }
 
   if (results != NULL)
-    DnsRecordListFree(results, DnsFreeRecordList);
+    Cached_DnsRecordListFree(results, DnsFreeRecordList);
 
   return recordList.GetSize() != 0;
 }
@@ -374,7 +391,6 @@ inline PBoolean GetMXRecords(
   return GetRecords(domain, serviceList);
 }
 
-///////////////////////////////////////////////////////////////////////////
 
 }; // namespace PDNS
 
