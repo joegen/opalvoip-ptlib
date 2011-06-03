@@ -478,9 +478,9 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
 
   PIPSocket::InterfaceTable interfaces;
   if (PIPSocket::GetInterfaceTable(interfaces)) {
-    for (PINDEX i =0; i < interfaces.GetSize(); i++) {
+    for (PINDEX i = 0; i < interfaces.GetSize(); i++) {
       PIPSocket::Address binding = interfaces[i].GetAddress();
-      if (!binding.IsLoopback()) {
+      if (!binding.IsLoopback() && binding.GetVersion() == 4) {
         PUDPSocket * socket = new PUDPSocket;
         if (OpenSocket(*socket, singlePortInfo, binding))
           sockets.Append(socket);
