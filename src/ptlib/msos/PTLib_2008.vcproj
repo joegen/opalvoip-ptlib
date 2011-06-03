@@ -1557,6 +1557,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+			RelativePathToProject=".\Console_2008.vcproj"
 		/>
 	</References>
 	<Files>
