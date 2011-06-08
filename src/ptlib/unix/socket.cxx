@@ -56,6 +56,10 @@
 #define  ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
+#if defined(P_LINUX) && P_HAS_RECVMSG && P_HAS_RECVMSG_MSG_ERRQUEUE
+  #include "linux/errqueue.h"
+#endif
+
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 #define ifr_netmask ifr_addr
 
@@ -386,42 +390,62 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
 #if P_HAS_RECVMSG
 
+#if P_HAS_RECVMSG_MSG_ERRQUEUE
+  #include "linux/errqueue.h"
+  static void SetErrorFromQueue(SOCKET handle, PChannel::Errors & errorCode, int & errorNumber)
+  {
+    msghdr errorData;
+    memset(&errorData, 0, sizeof(errorData));
+
+    char control_data[50];
+    errorData.msg_control    = control_data;
+    errorData.msg_controllen = sizeof(control_data);
+
+    if (::recvmsg(handle, &errorData, MSG_ERRQUEUE) < 0)
+      return;
+
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
+      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
+        struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
+        errno = sock_error->ee_errno;
+        PChannel::ConvertOSError(-1, errorCode, errorNumber);
+      }
+    }
+  }
+#else
+  #define SetErrorFromQueue(handle, errorCode, errorNumber)
+#endif
+
 bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t * addrlen)
 {
   lastReadCount = 0;
 
-  if (!PXSetIOBlock(PXReadBlock, readTimeout))
-    return PFalse;
+  do {
+    msghdr readData;
+    memset(&readData, 0, sizeof(readData));
 
-  msghdr readData;
-  memset(&readData, 0, sizeof(readData));
+    readData.msg_name       = addr;
+    readData.msg_namelen    = *addrlen;
 
-  readData.msg_name       = addr;
-  readData.msg_namelen    = *addrlen;
+    readData.msg_iov        = slices;
+    readData.msg_iovlen     = sliceCount;
 
-  readData.msg_iov        = slices;
-  readData.msg_iovlen     = sliceCount;
+    // read a packet 
+    int result = ::recvmsg(os_handle, &readData, flags);
+    if (ConvertOSError(result, LastReadError)) {
+      lastReadCount = result;
+      return lastReadCount > 0;
+    }
 
-  char auxdata[50];
-  readData.msg_control    = auxdata;
-  readData.msg_controllen = sizeof(auxdata);
+    if (lastErrorNumber[LastReadError] != EWOULDBLOCK) {
+      SetErrorFromQueue(os_handle, lastErrorCode[LastReadError], lastErrorNumber[LastReadError]);
+      return false;
+    }
+  } while (PXSetIOBlock(PXReadBlock, readTimeout));
 
-  // read a packet 
-  int r = ::recvmsg(os_handle, &readData, flags);
-  if (r == -1) {
-    PTRACE(5, "PTLIB\tos_vrecv returned error " << errno);
-#if P_HAS_RECVMSG_MSG_ERRQUEUE
-    ::recvmsg(os_handle, &readData, MSG_ERRQUEUE);
-#endif
-  }
-
-  if (!ConvertOSError(r, LastReadError))
-    return PFalse;
-
-  lastReadCount = r;
-
-  return lastReadCount > 0;
+  return false;
 }
+
 
 bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t addrLen)
 {
@@ -430,25 +454,28 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
-  msghdr writeData;
-  memset(&writeData, 0, sizeof(writeData));
+  do {
+    msghdr writeData;
+    memset(&writeData, 0, sizeof(writeData));
 
-  writeData.msg_name    = addr;
-  writeData.msg_namelen = addrLen;
+    writeData.msg_name    = addr;
+    writeData.msg_namelen = addrLen;
 
-  writeData.msg_iov     = const_cast<Slice *>(slices);
-  writeData.msg_iovlen  = sliceCount;
+    writeData.msg_iov     = const_cast<Slice *>(slices);
+    writeData.msg_iovlen  = sliceCount;
 
-  // write the packet 
-  int result = ::sendmsg(os_handle, &writeData, flags);
-  if (ConvertOSError(result, LastWriteError)) {
-    lastWriteCount = result;
-    return true;
-  }
+    // write the packet 
+    int result = ::sendmsg(os_handle, &writeData, flags);
+    if (ConvertOSError(result, LastWriteError)) {
+      lastWriteCount = result;
+      return true;
+    }
 
-#if P_HAS_RECVMSG_MSG_ERRQUEUE
-  ::sendmsg(os_handle, &writeData, MSG_ERRQUEUE);
-#endif
+    if (lastErrorNumber[LastWriteError] != EWOULDBLOCK) {
+      SetErrorFromQueue(os_handle, lastErrorCode[LastWriteError], lastErrorNumber[LastWriteError]);
+      return false;
+    }
+  } while (PXSetIOBlock(PXWriteBlock, writeTimeout));
 
   return false;
 }
