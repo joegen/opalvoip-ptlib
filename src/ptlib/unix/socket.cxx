@@ -57,6 +57,7 @@
 #endif
 
 #if defined(P_LINUX) && P_HAS_RECVMSG && P_HAS_RECVMSG_MSG_ERRQUEUE
+  #include "asm/types.h"
   #include "linux/errqueue.h"
 #endif
 
