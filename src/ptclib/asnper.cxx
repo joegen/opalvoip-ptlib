@@ -532,22 +532,22 @@ PBoolean PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
   if ((PINDEX)len > MaximumStringSize)
     return PFalse;
 
-  if (!value.SetSize(len+1))
-    return PFalse;
+  char * valuePtr = value.GetPointerAndSetLength(len);
+  if (valuePtr == NULL)
+    return false;
 
-  PINDEX i;
-  for (i = 0; i < (PINDEX)len; i++) {
+  for (unsigned i = 0; i < len; i++, valuePtr++) {
     unsigned theBits;
     if (!strm.MultiBitDecode(nBits, theBits))
       return PFalse;
     if (nBits >= canonicalSetBits && canonicalSetBits > 4)
-      value[i] = (char)theBits;
+      *valuePtr = (char)theBits;
     else
-      value[i] = characterSet[(PINDEX)theBits];
+      *valuePtr = characterSet[(PINDEX)theBits];
   }
-  value[i] = '\0';
+  *valuePtr = '\0';
 
-  return PTrue;
+  return true;
 }
 
 
