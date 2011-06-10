@@ -1412,27 +1412,16 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
   if (newPort != 0)
     port = newPort;
 
-#if P_HAS_IPV6
+  Psockaddr sa(bindAddr, port);
 
   // Always close and re-open as the bindAddr address family might change.
   os_close();
 
   // attempt to create a socket
-  if (!OpenSocket(bindAddr.GetVersion() == 6 ? PF_INET6 : PF_INET)) {
+  if (!OpenSocket(sa->sa_family)) {
     PTRACE(4, "Socket\tOpenSocket failed");
     return false;
   }
-
-#else
-
-  if (!IsOpen()) {
-    if (!OpenSocket()) {
-      PTRACE(4, "Socket\tOpenSocket failed");
-      return PFalse;
-    }
-  }
-
-#endif
 
   // attempt to listen
   if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
@@ -1441,6 +1430,22 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
     return false;
   }
 
+  if (!ConvertOSError(::bind(os_handle, sa, sa.GetSize()))) {
+    os_close();
+    return false;
+  }
+
+  if (port != 0)
+    return true;
+
+  socklen_t size = sa.GetSize();
+  if (!ConvertOSError(::getsockname(os_handle, sa, &size))) {
+    PTRACE(4, "Socket\tgetsockname failed: " << GetErrorText());
+    os_close();
+    return false;
+  }
+
+  port = sa.GetPort();
   return true;
 }
 
@@ -2210,9 +2215,7 @@ bool PTCPSocket::InternalListen(const Address & bindAddr,
   if (!PIPSocket::InternalListen(bindAddr, queueSize, newPort, reuse))
     return false;
 
-  Psockaddr bind_sa(bindAddr, port);
-  if (ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize())) &&
-      ConvertOSError(::listen(os_handle, queueSize)))
+  if (ConvertOSError(::listen(os_handle, queueSize)))
     return true;
 
   os_close();
@@ -2713,59 +2716,37 @@ bool PUDPSocket::InternalListen(const Address & bindAddr,
                                 WORD newPort,
                                 Reusability reuse)
 {
-  if (bindAddr.IsMulticast()) {
-    if (!PIPSocket::InternalListen(bindAddr, queueSize, newPort, CanReuseAddress))
-      return false;
+  if (!bindAddr.IsMulticast())
+    return PIPSocket::InternalListen(bindAddr, queueSize, newPort, reuse);
 
-    Psockaddr bind_sa(GetDefaultIpAny(), port);
-    if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize())))
-      return false;
+  if (!PIPSocket::InternalListen(Address::GetAny(bindAddr.GetVersion()), queueSize, newPort, CanReuseAddress))
+    return false;
 
-    bool ok;
+  bool ok;
 
 #if defined(P_HAS_IPV6) && defined(P_HAS_IPV6_ADD_MEMBERSHIP)
-    if (bindAddr.GetVersion() == 6) {
-      struct ipv6_mreq mreq;
-      mreq.ipv6mr_multiaddr = bindAddr;
-      mreq.ipv6mr_interface = bindAddr.GetIPV6Scope();
-      ok = SetOption(IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IPV6);
-    }
-    else
+  if (bindAddr.GetVersion() == 6) {
+    struct ipv6_mreq mreq;
+    mreq.ipv6mr_multiaddr = bindAddr;
+    mreq.ipv6mr_interface = bindAddr.GetIPV6Scope();
+    ok = SetOption(IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IPV6);
+  }
+  else
 #endif
-    {
-      struct ip_mreq mreq;
-      mreq.imr_multiaddr = bindAddr;
-      mreq.imr_interface = Address::GetAny(4);
-      ok = SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IP);
-    }
-
-    if (!ok) {
-      PTRACE(1, "Socket\tMulticast join failed for " << bindAddr << " - " << GetErrorText());
-      return false;
-    }
-
-    PTRACE(4, "Socket\tJoined multicast group " << bindAddr);
-  }
-  else {
-    if (!PIPSocket::InternalListen(bindAddr, queueSize, newPort, reuse))
-      return false;
-
-    Psockaddr bind_sa(bindAddr, port);
-    if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize())))
-      return false;
+  {
+    struct ip_mreq mreq;
+    mreq.imr_multiaddr = bindAddr;
+    mreq.imr_interface = Address::GetAny(4);
+    ok = SetOption(IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq), IPPROTO_IP);
   }
 
-  if (port == 0) {
-    Psockaddr sa;
-    socklen_t size = sa.GetSize();
-    if (!ConvertOSError(::getsockname(os_handle, sa, &size))) {
-      PTRACE(4, "Socket\tgetsockname failed: " << GetErrorText());
-      return false;
-    }
-
-    port = sa.GetPort();
+  if (!ok) {
+    PTRACE(1, "Socket\tMulticast join failed for " << bindAddr << " - " << GetErrorText());
+    os_close();
+    return false;
   }
 
+  PTRACE(4, "Socket\tJoined multicast group " << bindAddr);
   return true;
 }
 
