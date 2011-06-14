@@ -641,11 +641,16 @@ EXPORTS
     ??0?$allocator@VPVideoInteractionInfo@@@std@@QAE@XZ @22353 NONAME
     ??0?$allocator@VRequestType@PTimerList@@@std@@QAE@ABV01@@Z @19497 NONAME
     ??0?$allocator@VRequestType@PTimerList@@@std@@QAE@XZ @19498 NONAME
-    ??0?$CComPtr@UIEnumSpObjectTokens@@@@QAE@PAUIEnumSpObjectTokens@@@Z @25933 NONAME
-    ??0?$CComPtr@UISpObjectToken@@@@QAE@PAUISpObjectToken@@@Z @25934 NONAME
-    ??0?$CComPtr@UISpObjectTokenCategory@@@@QAE@PAUISpObjectTokenCategory@@@Z @25935 NONAME
-    ??0?$CComPtr@UISpStream@@@@QAE@PAUISpStream@@@Z @25936 NONAME
-    ??0?$CComPtr@UISpVoice@@@@QAE@PAUISpVoice@@@Z @25937 NONAME
+    ??0?$CComPtr@UIEnumSpObjectTokens@@@ATL@@QAE@XZ @26034 NONAME
+    ??0?$CComPtr@UISpObjectToken@@@ATL@@QAE@XZ @26035 NONAME
+    ??0?$CComPtr@UISpObjectTokenCategory@@@ATL@@QAE@XZ @26036 NONAME
+    ??0?$CComPtr@UISpStream@@@ATL@@QAE@XZ @26037 NONAME
+    ??0?$CComPtr@UISpVoice@@@ATL@@QAE@XZ @26038 NONAME
+    ??0?$CComPtrBase@UIEnumSpObjectTokens@@@ATL@@IAE@XZ @26039 NONAME
+    ??0?$CComPtrBase@UISpObjectToken@@@ATL@@IAE@XZ @26040 NONAME
+    ??0?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@IAE@XZ @26041 NONAME
+    ??0?$CComPtrBase@UISpStream@@@ATL@@IAE@XZ @26042 NONAME
+    ??0?$CComPtrBase@UISpVoice@@@ATL@@IAE@XZ @26043 NONAME
     ??0?$deque@DV?$allocator@D@std@@@std@@QAE@XZ @23426 NONAME
     ??0?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @19499 NONAME
     ??0?$fpos@H@std@@QAE@J@Z @510 NONAME
@@ -2809,6 +2814,7 @@ EXPORTS
     ??0TextValue@PvCard@@QAE@ABVPString@@@Z @22471 NONAME
     ??0TextValue@PvCard@@QAE@PBD@Z @22472 NONAME
     ??0TextValues@PvCard@@QAE@XZ @22473 NONAME
+    ??0Thank_you@Define_the_symbol__ATL_MIXED@@QAE@XZ @26044 NONAME
     ??0ThreadMain_PNotifier@Context@PCLI@@QAE@PAV12@@Z @21097 NONAME
     ??0ThreadMain_PNotifier@PCLISocket@@QAE@PAV1@@Z @21098 NONAME
     ??0TimerExpiryInfo@PTimerList@@QAE@I_JJ@Z @21099 NONAME
@@ -2881,11 +2887,16 @@ EXPORTS
     ??0_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QAE@PAU012@00ABU?$pair@$$CBVToken@PvCard@@VParamValues@2@@2@D@Z @22483 NONAME
     ??0_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QAE@PAU012@00ABUTimerExpiryInfo@PTimerList@@D@Z @21109 NONAME
     ??0_Sentry_base@?$basic_ostream@DU?$char_traits@D@std@@@std@@QAE@AAV12@@Z @2357 NONAME
-    ??1?$CComPtr@UIEnumSpObjectTokens@@@@QAE@XZ @25955 NONAME
-    ??1?$CComPtr@UISpObjectToken@@@@QAE@XZ @25956 NONAME
-    ??1?$CComPtr@UISpObjectTokenCategory@@@@QAE@XZ @25957 NONAME
-    ??1?$CComPtr@UISpStream@@@@QAE@XZ @25958 NONAME
-    ??1?$CComPtr@UISpVoice@@@@QAE@XZ @25959 NONAME
+    ??1?$CComPtr@UIEnumSpObjectTokens@@@ATL@@QAE@XZ @26045 NONAME
+    ??1?$CComPtr@UISpObjectToken@@@ATL@@QAE@XZ @26046 NONAME
+    ??1?$CComPtr@UISpObjectTokenCategory@@@ATL@@QAE@XZ @26047 NONAME
+    ??1?$CComPtr@UISpStream@@@ATL@@QAE@XZ @26048 NONAME
+    ??1?$CComPtr@UISpVoice@@@ATL@@QAE@XZ @26049 NONAME
+    ??1?$CComPtrBase@UIEnumSpObjectTokens@@@ATL@@QAE@XZ @26050 NONAME
+    ??1?$CComPtrBase@UISpObjectToken@@@ATL@@QAE@XZ @26051 NONAME
+    ??1?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QAE@XZ @26052 NONAME
+    ??1?$CComPtrBase@UISpStream@@@ATL@@QAE@XZ @26053 NONAME
+    ??1?$CComPtrBase@UISpVoice@@@ATL@@QAE@XZ @26054 NONAME
     ??1?$deque@DV?$allocator@D@std@@@std@@QAE@XZ @23617 NONAME
     ??1?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @19595 NONAME
     ??1?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@XZ @21110 NONAME
@@ -4475,7 +4486,7 @@ EXPORTS
     ??ARow@PODBC@@QAEAAVField@1@H@Z @23753 NONAME
     ??ARow@PODBC@@QAEAAVField@1@VPString@@@Z @23754 NONAME
     ??ATable@PODBC@@QAEAAVRow@1@H@Z @23755 NONAME
-    ??B?$CComPtr@UISpStream@@@@QBEPAUISpStream@@XZ @25967 NONAME
+    ??B?$CComPtrBase@UISpStream@@@ATL@@QBEPAUISpStream@@XZ @26055 NONAME
     ??B?$fpos@H@std@@QBEJXZ @3679 NONAME
     ??B?$PBaseArray@D@@QBEPBDXZ @3680 NONAME
     ??B?$PBaseArray@E@@QBEPBEXZ @3681 NONAME
@@ -4596,9 +4607,9 @@ EXPORTS
     ??BP_timeval@@QAEPAUtimeval@@XZ @3784 NONAME
     ??BSecurityID@@QBEPAXXZ @3785 NONAME
     ??Bsentry@?$basic_ostream@DU?$char_traits@D@std@@@std@@QBE_NXZ @3786 NONAME
-    ??C?$CComPtr@UIEnumSpObjectTokens@@@@QBEPAUIEnumSpObjectTokens@@XZ @25968 NONAME
-    ??C?$CComPtr@UISpObjectTokenCategory@@@@QBEPAUISpObjectTokenCategory@@XZ @25969 NONAME
-    ??C?$CComPtr@UISpVoice@@@@QBEPAUISpVoice@@XZ @25970 NONAME
+    ??C?$CComPtrBase@UIEnumSpObjectTokens@@@ATL@@QBEPAV?$_NoAddRefReleaseOnCComPtr@UIEnumSpObjectTokens@@@1@XZ @26056 NONAME
+    ??C?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QBEPAV?$_NoAddRefReleaseOnCComPtr@UISpObjectTokenCategory@@@1@XZ @26057 NONAME
+    ??C?$CComPtrBase@UISpVoice@@@ATL@@QBEPAV?$_NoAddRefReleaseOnCComPtr@UISpVoice@@@1@XZ @26058 NONAME
     ??C?$PComPtr@UIAMCameraControl@@@@QBEPAUIAMCameraControl@@XZ @23770 NONAME
     ??C?$PComPtr@UIAMStreamConfig@@@@QBEPAUIAMStreamConfig@@XZ @23771 NONAME
     ??C?$PComPtr@UIAMVideoProcAmp@@@@QBEPAUIAMVideoProcAmp@@XZ @23772 NONAME
@@ -5027,10 +5038,10 @@ EXPORTS
     ??HPStringList@@QAE?AV0@ABVPString@@@Z @4055 NONAME
     ??HPTime@@QBE?AV0@ABVPTimeInterval@@@Z @4056 NONAME
     ??HPTimeInterval@@QBE?AV0@ABV0@@Z @4057 NONAME
-    ??I?$CComPtr@UIEnumSpObjectTokens@@@@QAEPAPAUIEnumSpObjectTokens@@XZ @25979 NONAME
-    ??I?$CComPtr@UISpObjectToken@@@@QAEPAPAUISpObjectToken@@XZ @25980 NONAME
-    ??I?$CComPtr@UISpObjectTokenCategory@@@@QAEPAPAUISpObjectTokenCategory@@XZ @25981 NONAME
-    ??I?$CComPtr@UISpStream@@@@QAEPAPAUISpStream@@XZ @25982 NONAME
+    ??I?$CComPtrBase@UIEnumSpObjectTokens@@@ATL@@QAEPAPAUIEnumSpObjectTokens@@XZ @26059 NONAME
+    ??I?$CComPtrBase@UISpObjectToken@@@ATL@@QAEPAPAUISpObjectToken@@XZ @26060 NONAME
+    ??I?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QAEPAPAUISpObjectTokenCategory@@XZ @26061 NONAME
+    ??I?$CComPtrBase@UISpStream@@@ATL@@QAEPAPAUISpStream@@XZ @26062 NONAME
     ??I?$PComPtr@UIAMCameraControl@@@@QAEPAPAUIAMCameraControl@@XZ @23837 NONAME
     ??I?$PComPtr@UIAMStreamConfig@@@@QAEPAPAUIAMStreamConfig@@XZ @23838 NONAME
     ??I?$PComPtr@UIAMVideoProcAmp@@@@QAEPAPAUIAMVideoProcAmp@@XZ @23839 NONAME
@@ -6087,6 +6098,7 @@ EXPORTS
     ??_7TextToSpeech_Sample@@6B@ @23929 NONAME
     ??_7TextValue@PvCard@@6B@ @22637 NONAME
     ??_7TextValues@PvCard@@6B@ @22638 NONAME
+    ??_7Thank_you@Define_the_symbol__ATL_MIXED@@6B@ @26063 NONAME
     ??_7ThreadMain_PNotifier@Context@PCLI@@6B@ @21368 NONAME
     ??_7ThreadMain_PNotifier@PCLISocket@@6B@ @21369 NONAME
     ??_7Title@PHTML@@6B@ @4994 NONAME
@@ -6359,6 +6371,7 @@ EXPORTS
     ??_R0?AUPLDAPAttr_surname@RTPerson@PILSSession@@@8 @5259 NONAME
     ??_R0?AUPLDAPAttr_timestamp@RTPerson@PILSSession@@@8 @5260 NONAME
     ??_R0?AUTelephone@PvCard@@@8 @22646 NONAME
+    ??_R0?AUThank_you@Define_the_symbol__ATL_MIXED@@@8 @26064 NONAME
     ??_R0?AV?$basic_ios@DU?$char_traits@D@std@@@std@@@8 @5262 NONAME
     ??_R0?AV?$basic_iostream@DU?$char_traits@D@std@@@std@@@8 @5263 NONAME
     ??_R0?AV?$basic_istream@DU?$char_traits@D@std@@@std@@@8 @5264 NONAME
@@ -8160,6 +8173,7 @@ EXPORTS
     ??_R1A@?0A@EA@TextToSpeech_Sample@@8 @24081 NONAME
     ??_R1A@?0A@EA@TextValue@PvCard@@8 @22717 NONAME
     ??_R1A@?0A@EA@TextValues@PvCard@@8 @22718 NONAME
+    ??_R1A@?0A@EA@Thank_you@Define_the_symbol__ATL_MIXED@@8 @26065 NONAME
     ??_R1A@?0A@EA@ThreadMain_PNotifier@Context@PCLI@@8 @21453 NONAME
     ??_R1A@?0A@EA@ThreadMain_PNotifier@PCLISocket@@8 @21454 NONAME
     ??_R1A@?0A@EA@Title@PHTML@@8 @6844 NONAME
@@ -9126,6 +9140,7 @@ EXPORTS
     ??_R2TextToSpeech_Sample@@8 @24154 NONAME
     ??_R2TextValue@PvCard@@8 @22759 NONAME
     ??_R2TextValues@PvCard@@8 @22760 NONAME
+    ??_R2Thank_you@Define_the_symbol__ATL_MIXED@@8 @26066 NONAME
     ??_R2ThreadMain_PNotifier@Context@PCLI@@8 @21495 NONAME
     ??_R2ThreadMain_PNotifier@PCLISocket@@8 @21496 NONAME
     ??_R2Title@PHTML@@8 @7694 NONAME
@@ -10054,6 +10069,7 @@ EXPORTS
     ??_R3TextToSpeech_Sample@@8 @24222 NONAME
     ??_R3TextValue@PvCard@@8 @22799 NONAME
     ??_R3TextValues@PvCard@@8 @22800 NONAME
+    ??_R3Thank_you@Define_the_symbol__ATL_MIXED@@8 @26067 NONAME
     ??_R3ThreadMain_PNotifier@Context@PCLI@@8 @21536 NONAME
     ??_R3ThreadMain_PNotifier@PCLISocket@@8 @21537 NONAME
     ??_R3Title@PHTML@@8 @8507 NONAME
@@ -11041,6 +11057,7 @@ EXPORTS
     ??_R4TextToSpeech_Sample@@6B@ @24295 NONAME
     ??_R4TextValue@PvCard@@6B@ @22839 NONAME
     ??_R4TextValues@PvCard@@6B@ @22840 NONAME
+    ??_R4Thank_you@Define_the_symbol__ATL_MIXED@@6B@ @26068 NONAME
     ??_R4ThreadMain_PNotifier@Context@PCLI@@6B@ @21578 NONAME
     ??_R4ThreadMain_PNotifier@PCLISocket@@6B@ @21579 NONAME
     ??_R4Title@PHTML@@6B@ @9383 NONAME
@@ -11379,6 +11396,7 @@ EXPORTS
     ?AsXML@Item@Roster@XMPP@@UBEPAVPXMLElement@@PAV4@@Z @9656 NONAME
     ?AsXML@ItemList@Disco@XMPP@@QBEPAVPXMLElement@@PAV4@@Z @9657 NONAME
     ?ate@?$_Iosb@H@std@@2W4_Openmode@12@B @9658 NONAME
+    ?ATL_CREATE_OBJECT@CComApartment@ATL@@2IA @26069 NONAME
     ?Attach@?$PBaseArray@D@@QAEXPBDH@Z @9661 NONAME
     ?Attach@?$PBaseArray@E@@QAEXPBEH@Z @9662 NONAME
     ?Attach@?$PBaseArray@F@@QAEXPBFH@Z @9663 NONAME
@@ -11579,6 +11597,7 @@ EXPORTS
     ?capacity@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QBEIXZ @20226 NONAME
     ?capacity@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBEIXZ @24335 NONAME
     ?capacity@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEIXZ @24336 NONAME
+    ?cbNeverDelete@CRegParser@ATL@@1HB @26070 NONAME
     ?CCTag@PRFC822Channel@@SAABVPCaselessString@@XZ @25677 NONAME
     ?Change@PDirectory@@QBE_NXZ @17408 NONAME
     ?Change@PDirectory@@SA_NABVPString@@@Z @17409 NONAME
@@ -11601,6 +11620,8 @@ EXPORTS
     ?ChoiceEncode@PPER_Stream@@UAEXABVPASN_Choice@@@Z @9835 NONAME
     ?ChoiceEncode@PXER_Stream@@UAEXABVPASN_Choice@@@Z @9836 NONAME
     ?ChunkedTag@PHTTP@@SAABVPCaselessString@@XZ @25678 NONAME
+    ?clash@Define_the_symbol__ATL_MIXED@@3UThank_you@1@A @26071 NONAME
+    ?clash@Inconsistent_definition_of_symbol__ATL_MIXED@@3U_Please_define_it_the_same_throughout_your_project@1@A @26072 NONAME
     ?Class@?$PArray@UAddress@PvCard@@@@SAPBDXZ @22867 NONAME
     ?Class@?$PArray@UEMail@PvCard@@@@SAPBDXZ @22868 NONAME
     ?Class@?$PArray@UTelephone@PvCard@@@@SAPBDXZ @22869 NONAME
@@ -12324,8 +12345,8 @@ EXPORTS
     ?CloseVideoPlayer@PVideoChannel@@UAEXXZ @10517 NONAME
     ?CloseVideoReader@PVideoChannel@@UAEXXZ @10518 NONAME
     ?Clr@PHTML@@QAEXW4ElementInSet@1@@Z @10519 NONAME
-    ?CoCreateInstance@?$CComPtr@UISpObjectTokenCategory@@@@QAEJABU_GUID@@PAUIUnknown@@K@Z @25988 NONAME
-    ?CoCreateInstance@?$CComPtr@UISpVoice@@@@QAEJABU_GUID@@PAUIUnknown@@K@Z @25989 NONAME
+    ?CoCreateInstance@?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QAEJABU_GUID@@PAUIUnknown@@K@Z @26073 NONAME
+    ?CoCreateInstance@?$CComPtrBase@UISpVoice@@@ATL@@QAEJABU_GUID@@PAUIUnknown@@K@Z @26074 NONAME
     ?collate@?$_Locbase@H@std@@2HB @10522 NONAME
     ?Column@Row@PODBC@@QAEAAVField@2@H@Z @24396 NONAME
     ?Column@Row@PODBC@@QAEAAVField@2@VPString@@@Z @24397 NONAME
@@ -13661,7 +13682,7 @@ EXPORTS
     ?DestroySocket@PMonitoredSockets@@IAE_NAAUSocketInfo@1@@Z @17682 NONAME
     ?Destruct@PContainer@@IAEXXZ @11672 NONAME
     ?Destruct@PDirectory@@IAEXXZ @11673 NONAME
-    ?Detach@?$CComPtr@UISpObjectTokenCategory@@@@QAEPAUISpObjectTokenCategory@@XZ @25994 NONAME
+    ?Detach@?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QAEPAUISpObjectTokenCategory@@XZ @26075 NONAME
     ?Detach@Roster@XMPP@@UAEXXZ @11675 NONAME
     ?Dial@PModem@@QAE_NABVPString@@@Z @17683 NONAME
     ?DisableDecode@PVideoChannel@@UAE_NXZ @22949 NONAME
@@ -16786,6 +16807,8 @@ EXPORTS
     ?max_size@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@QBEIXZ @23074 NONAME
     ?max_size@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QBEIXZ @23075 NONAME
     ?max_size@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QBEIXZ @21963 NONAME
+    ?MAX_TYPE@CRegParser@ATL@@1HB @26076 NONAME
+    ?MAX_VALUE@CRegParser@ATL@@1HB @26077 NONAME
     ?MessageIDTag@PRFC822Channel@@SAABVPCaselessString@@XZ @25780 NONAME
     ?messages@?$_Locbase@H@std@@2HB @14468 NONAME
     ?MessageSenderHandlers@StreamHandler@C2S@XMPP@@QAEAAVPNotifierList@@ABVJID@3@@Z @14469 NONAME
@@ -16811,6 +16834,7 @@ EXPORTS
     ?MultiBitEncode@PPER_Stream@@QAEXII@Z @14488 NONAME
     ?MultipartMessage@PRFC822Channel@@QAE?AVPString@@XZ @14489 NONAME
     ?MultipartMessage@PRFC822Channel@@QAE_NABVPString@@@Z @18620 NONAME
+    ?m_bInitFailed@CAtlBaseModule@ATL@@2_NA @26078 NONAME
     ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@D@std@@D@@CAPAV?$allocator@D@std@@XZ@4PAV34@A @25918 NONAME
     ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPHashTableElement@@@std@@UPHashTableElement@@@@CAPAV?$allocator@UPHashTableElement@@@std@@XZ@4PAV34@A @25919 NONAME
     ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPListElement@@@std@@UPListElement@@@@CAPAV?$allocator@UPListElement@@@std@@XZ@4PAV34@A @25920 NONAME
@@ -16818,6 +16842,7 @@ EXPORTS
     ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@CAPAV?$allocator@UPSortedListElement@@@std@@XZ@4PAV34@A @25922 NONAME
     ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@CAPAV?$allocator@UPSortedListInfo@@@std@@XZ@4PAV34@A @25923 NONAME
     ?m_instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@CAPAV?$allocator@VPContainerReference@@@std@@XZ@4PAV34@A @25924 NONAME
+    ?m_libid@CAtlModule@ATL@@2U_GUID@@A @26079 NONAME
     ?NamespaceTag@MUC@XMPP@@YAABVPCaselessString@@XZ @25784 NONAME
     ?NamespaceTag@User@MUC@XMPP@@SAABVPCaselessString@@XZ @25785 NONAME
     ?NamespaceTag@XMPP@@YAABVPCaselessString@@XZ @25786 NONAME
@@ -16914,6 +16939,7 @@ EXPORTS
     ?OnDetectedNonSSLConnection@PSecureHTTPServiceProcess@@UAE_NPAVPChannel@@ABVPString@@@Z @18646 NONAME
     ?OnDo@PTelnetSocket@@MAEXE@Z @14567 NONAME
     ?OnDont@PTelnetSocket@@MAEXE@Z @14568 NONAME
+    ?one@Thank_you@Define_the_symbol__ATL_MIXED@@UAEXXZ @26080 NONAME
     ?OnEHLO@PSMTPServer@@MAEXABVPCaselessString@@@Z @14570 NONAME
     ?OnElement@BaseStreamHandler@XMPP@@UAEXAAVPXML@@@Z @14571 NONAME
     ?OnElement@StreamHandler@C2S@XMPP@@MAEXAAVPXML@@@Z @14572 NONAME
@@ -17297,6 +17323,38 @@ EXPORTS
     ?PlayTone@PVXMLSession@@UAE_NABVPString@@HH@Z @24868 NONAME
     ?PluginLoaderStartup_instance@PFactoryLoader@@3V?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @21991 NONAME
     ?PluginLoaderStartup_link@PFactoryLoader@@YAHXZ @21992 NONAME
+    ?pmField@?$CVarTypeInfo@D@ATL@@2QQtagVARIANT@@DQ3@ @26081 NONAME
+    ?pmField@?$CVarTypeInfo@E@ATL@@2QQtagVARIANT@@EQ3@ @26082 NONAME
+    ?pmField@?$CVarTypeInfo@F@ATL@@2QQtagVARIANT@@FQ3@ @26083 NONAME
+    ?pmField@?$CVarTypeInfo@G@ATL@@2QQtagVARIANT@@GQ3@ @26084 NONAME
+    ?pmField@?$CVarTypeInfo@H@ATL@@2QQtagVARIANT@@HQ3@ @26085 NONAME
+    ?pmField@?$CVarTypeInfo@I@ATL@@2QQtagVARIANT@@IQ3@ @26086 NONAME
+    ?pmField@?$CVarTypeInfo@J@ATL@@2QQtagVARIANT@@JQ3@ @26087 NONAME
+    ?pmField@?$CVarTypeInfo@K@ATL@@2QQtagVARIANT@@KQ3@ @26088 NONAME
+    ?pmField@?$CVarTypeInfo@M@ATL@@2QQtagVARIANT@@MQ3@ @26089 NONAME
+    ?pmField@?$CVarTypeInfo@N@ATL@@2QQtagVARIANT@@NQ3@ @26090 NONAME
+    ?pmField@?$CVarTypeInfo@PAD@ATL@@2QQtagVARIANT@@PADQ3@ @26091 NONAME
+    ?pmField@?$CVarTypeInfo@PAE@ATL@@2QQtagVARIANT@@PAEQ3@ @26092 NONAME
+    ?pmField@?$CVarTypeInfo@PAF@ATL@@2QQtagVARIANT@@PAFQ3@ @26093 NONAME
+    ?pmField@?$CVarTypeInfo@PAG@ATL@@2QQtagVARIANT@@PAGQ3@ @26094 NONAME
+    ?pmField@?$CVarTypeInfo@PAH@ATL@@2QQtagVARIANT@@PAHQ3@ @26095 NONAME
+    ?pmField@?$CVarTypeInfo@PAI@ATL@@2QQtagVARIANT@@PAIQ3@ @26096 NONAME
+    ?pmField@?$CVarTypeInfo@PAJ@ATL@@2QQtagVARIANT@@PAJQ3@ @26097 NONAME
+    ?pmField@?$CVarTypeInfo@PAK@ATL@@2QQtagVARIANT@@PAKQ3@ @26098 NONAME
+    ?pmField@?$CVarTypeInfo@PAM@ATL@@2QQtagVARIANT@@PAMQ3@ @26099 NONAME
+    ?pmField@?$CVarTypeInfo@PAN@ATL@@2QQtagVARIANT@@PANQ3@ @26100 NONAME
+    ?pmField@?$CVarTypeInfo@PAPAUIDispatch@@@ATL@@2QQtagVARIANT@@PAPAUIDispatch@@Q3@ @26101 NONAME
+    ?pmField@?$CVarTypeInfo@PAPAUIUnknown@@@ATL@@2QQtagVARIANT@@PAPAUIUnknown@@Q3@ @26102 NONAME
+    ?pmField@?$CVarTypeInfo@PAPA_W@ATL@@2QQtagVARIANT@@PAPA_WQ3@ @26103 NONAME
+    ?pmField@?$CVarTypeInfo@PATtagCY@@@ATL@@2QQtagVARIANT@@PATtagCY@@Q3@ @26104 NONAME
+    ?pmField@?$CVarTypeInfo@PAUIDispatch@@@ATL@@2QQtagVARIANT@@PAUIDispatch@@Q3@ @26105 NONAME
+    ?pmField@?$CVarTypeInfo@PAUIUnknown@@@ATL@@2QQtagVARIANT@@PAUIUnknown@@Q3@ @26106 NONAME
+    ?pmField@?$CVarTypeInfo@PA_J@ATL@@2QQtagVARIANT@@PA_JQ3@ @26107 NONAME
+    ?pmField@?$CVarTypeInfo@PA_K@ATL@@2QQtagVARIANT@@PA_KQ3@ @26108 NONAME
+    ?pmField@?$CVarTypeInfo@PA_W@ATL@@2QQtagVARIANT@@PA_WQ3@ @26109 NONAME
+    ?pmField@?$CVarTypeInfo@TtagCY@@@ATL@@2QQtagVARIANT@@TtagCY@@Q3@ @26110 NONAME
+    ?pmField@?$CVarTypeInfo@_J@ATL@@2QQtagVARIANT@@_JQ3@ @26111 NONAME
+    ?pmField@?$CVarTypeInfo@_K@ATL@@2QQtagVARIANT@@_KQ3@ @26112 NONAME
     ?Poll@PSTUNMessage@@QAE_NAAVPUDPSocket@@ABV1@H@Z @14952 NONAME
     ?pop@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEXXZ @24901 NONAME
     ?pop@?$queue@VRequestType@PTimerList@@V?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@@std@@QAEXXZ @20050 NONAME
@@ -17803,11 +17861,9 @@ EXPORTS
     ?Register_Internal@?$PFactory@VPWAVFileFormat@@I@@IAEXABIPAVWorkerBase@1@@Z @15372 NONAME
     ?Register_Internal@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@IAEXABVPCaselessString@@PAVWorkerBase@1@@Z @15373 NONAME
     ?ReIndex@frameSizes@@QAEXXZ @24962 NONAME
-    ?Release@?$CComPtr@UIEnumSpObjectTokens@@@@QAEXXZ @26004 NONAME
-    ?Release@?$CComPtr@UISpObjectToken@@@@QAEXXZ @26005 NONAME
-    ?Release@?$CComPtr@UISpObjectTokenCategory@@@@QAEXXZ @26006 NONAME
-    ?Release@?$CComPtr@UISpStream@@@@QAEXXZ @26007 NONAME
-    ?Release@?$CComPtr@UISpVoice@@@@QAEXXZ @26008 NONAME
+    ?Release@?$CComPtrBase@UISpObjectToken@@@ATL@@QAEXXZ @26113 NONAME
+    ?Release@?$CComPtrBase@UISpStream@@@ATL@@QAEXXZ @26114 NONAME
+    ?Release@?$CComPtrBase@UISpVoice@@@ATL@@QAEXXZ @26115 NONAME
     ?Release@?$PComPtr@UIAMCameraControl@@@@QAEXXZ @24966 NONAME
     ?Release@?$PComPtr@UIAMStreamConfig@@@@QAEXXZ @24967 NONAME
     ?Release@?$PComPtr@UIAMVideoProcAmp@@@@QAEXXZ @24968 NONAME
@@ -17923,6 +17979,7 @@ EXPORTS
     ?RGBtoYUV420PWithCrop@PStandardColourConverter@@IBEXPBEPAEIII@Z @23123 NONAME
     ?RGBtoYUV@PColourConverter@@SAXIIIAAE00@Z @22035 NONAME
     ?RGBtoYUV@PColourConverter@@SAXIIIAAI00@Z @22036 NONAME
+    ?rgszNeverDelete@CRegParser@ATL@@1QBQBDB @26116 NONAME
     ?right@?$_Iosb@H@std@@2W4_Fmtflags@12@B @15469 NONAME
     ?Right@PString@@QBE?AV1@H@Z @15470 NONAME
     ?right@std@@YAAAVios_base@1@AAV21@@Z @20485 NONAME
@@ -18904,6 +18961,39 @@ EXPORTS
     ?vidoutChannelFactoryAdapter@PWLib@@3V?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16309 NONAME
     ?vsprintf@PString@@QAEAAV1@ABV1@PAD@Z @16310 NONAME
     ?vsprintf@PString@@QAEAAV1@PBDPAD@Z @16311 NONAME
+    ?VT@?$CVarTypeInfo@D@ATL@@2GB @26117 NONAME
+    ?VT@?$CVarTypeInfo@E@ATL@@2GB @26118 NONAME
+    ?VT@?$CVarTypeInfo@F@ATL@@2GB @26119 NONAME
+    ?VT@?$CVarTypeInfo@G@ATL@@2GB @26120 NONAME
+    ?VT@?$CVarTypeInfo@H@ATL@@2GB @26121 NONAME
+    ?VT@?$CVarTypeInfo@I@ATL@@2GB @26122 NONAME
+    ?VT@?$CVarTypeInfo@J@ATL@@2GB @26123 NONAME
+    ?VT@?$CVarTypeInfo@K@ATL@@2GB @26124 NONAME
+    ?VT@?$CVarTypeInfo@M@ATL@@2GB @26125 NONAME
+    ?VT@?$CVarTypeInfo@N@ATL@@2GB @26126 NONAME
+    ?VT@?$CVarTypeInfo@PAD@ATL@@2GB @26127 NONAME
+    ?VT@?$CVarTypeInfo@PAE@ATL@@2GB @26128 NONAME
+    ?VT@?$CVarTypeInfo@PAF@ATL@@2GB @26129 NONAME
+    ?VT@?$CVarTypeInfo@PAG@ATL@@2GB @26130 NONAME
+    ?VT@?$CVarTypeInfo@PAH@ATL@@2GB @26131 NONAME
+    ?VT@?$CVarTypeInfo@PAI@ATL@@2GB @26132 NONAME
+    ?VT@?$CVarTypeInfo@PAJ@ATL@@2GB @26133 NONAME
+    ?VT@?$CVarTypeInfo@PAK@ATL@@2GB @26134 NONAME
+    ?VT@?$CVarTypeInfo@PAM@ATL@@2GB @26135 NONAME
+    ?VT@?$CVarTypeInfo@PAN@ATL@@2GB @26136 NONAME
+    ?VT@?$CVarTypeInfo@PAPAUIDispatch@@@ATL@@2GB @26137 NONAME
+    ?VT@?$CVarTypeInfo@PAPAUIUnknown@@@ATL@@2GB @26138 NONAME
+    ?VT@?$CVarTypeInfo@PAPA_W@ATL@@2GB @26139 NONAME
+    ?VT@?$CVarTypeInfo@PATtagCY@@@ATL@@2GB @26140 NONAME
+    ?VT@?$CVarTypeInfo@PAUIDispatch@@@ATL@@2GB @26141 NONAME
+    ?VT@?$CVarTypeInfo@PAUIUnknown@@@ATL@@2GB @26142 NONAME
+    ?VT@?$CVarTypeInfo@PA_J@ATL@@2GB @26143 NONAME
+    ?VT@?$CVarTypeInfo@PA_K@ATL@@2GB @26144 NONAME
+    ?VT@?$CVarTypeInfo@PA_W@ATL@@2GB @26145 NONAME
+    ?VT@?$CVarTypeInfo@TtagCY@@@ATL@@2GB @26146 NONAME
+    ?VT@?$CVarTypeInfo@UtagVARIANT@@@ATL@@2GB @26147 NONAME
+    ?VT@?$CVarTypeInfo@_J@ATL@@2GB @26148 NONAME
+    ?VT@?$CVarTypeInfo@_K@ATL@@2GB @26149 NONAME
     ?VXMLExecute@PVXMLSession@@UAEXAAVPThread@@H@Z @25113 NONAME
     ?vxmlPlayableCommandFactory@@3V?$Worker@VPVXMLPlayableCommand@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @25114 NONAME
     ?vxmlPlayableDataFactory@@3V?$Worker@VPVXMLPlayableData@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @25115 NONAME
@@ -19575,6 +19665,12 @@ EXPORTS
     ?_Lrotate@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@2@@Z @23218 NONAME
     ?_Lrotate@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@2@@Z @23219 NONAME
     ?_Lrotate@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@@Z @22223 NONAME
+    ?_Max@?$AtlLimits@H@ATL@@2HB @26150 NONAME
+    ?_Max@?$AtlLimits@I@ATL@@2IB @26151 NONAME
+    ?_Max@?$AtlLimits@J@ATL@@2JB @26152 NONAME
+    ?_Max@?$AtlLimits@K@ATL@@2KB @26153 NONAME
+    ?_Max@?$AtlLimits@_J@ATL@@2_JB @26154 NONAME
+    ?_Max@?$AtlLimits@_K@ATL@@2_KB @26155 NONAME
     ?_Max@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@PAU342@@Z @16853 NONAME
     ?_Max@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@2@PAU342@@Z @16854 NONAME
     ?_Max@?$_Tree@V?$_Tmap_traits@IUActiveTimerInfo@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUActiveTimerInfo@PTimerList@@@std@@@4@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IUActiveTimerInfo@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUActiveTimerInfo@PTimerList@@@std@@@4@$0A@@std@@@2@PAU342@@Z @22224 NONAME
@@ -19608,6 +19704,12 @@ EXPORTS
     ?_Max@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@2@PAU342@@Z @23221 NONAME
     ?_Max@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@2@PAU342@@Z @23222 NONAME
     ?_Max@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@PAU342@@Z @22230 NONAME
+    ?_Min@?$AtlLimits@H@ATL@@2HB @26156 NONAME
+    ?_Min@?$AtlLimits@I@ATL@@2IB @26157 NONAME
+    ?_Min@?$AtlLimits@J@ATL@@2JB @26158 NONAME
+    ?_Min@?$AtlLimits@K@ATL@@2KB @26159 NONAME
+    ?_Min@?$AtlLimits@_J@ATL@@2_JB @26160 NONAME
+    ?_Min@?$AtlLimits@_K@ATL@@2_KB @26161 NONAME
     ?_Min@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@PAU342@@Z @16882 NONAME
     ?_Min@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@2@PAU342@@Z @16883 NONAME
     ?_Min@?$_Tree@V?$_Tmap_traits@IUActiveTimerInfo@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUActiveTimerInfo@PTimerList@@@std@@@4@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IUActiveTimerInfo@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUActiveTimerInfo@PTimerList@@@std@@@4@$0A@@std@@@2@PAU342@@Z @22231 NONAME
@@ -19760,6 +19862,11 @@ EXPORTS
     ?_Parent@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@KAAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@2@PAU342@@Z @23237 NONAME
     ?_Parent@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@KAAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@2@PAU342@@Z @23238 NONAME
     ?_Parent@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@KAAAPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@PAU342@@Z @22261 NONAME
+    ?_pAtlAutoThreadModule@ATL@@3PAUIAtlAutoThreadModule@1@A @26162 NONAME
+    ?_pAtlModule@ATL@@3PAVCAtlModule@1@A @26163 NONAME
+    ?_pModule@ATL@@3PAVCComModule@1@A @26164 NONAME
+    ?_pPerfRegFunc@ATL@@3P6AJPAUHINSTANCE__@@@ZA @26165 NONAME
+    ?_pPerfUnRegFunc@ATL@@3P6AJXZA @26166 NONAME
     ?_Prevnode@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@KAAAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@PAU342@@Z @22262 NONAME
     ?_Prevnode@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@KAAAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@PAU342@@Z @16989 NONAME
     ?_Prevnode@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@KAAAPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@PAU342@@Z @16990 NONAME
