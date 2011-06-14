@@ -39,6 +39,9 @@
 //#pragma interface
 //#endif
 
+#include <ptbuildopts.h>
+
+#ifdef P_WAVFILE
 
 #include <ptlib/pfactory.h>
 
@@ -467,6 +470,8 @@ protected:
 
   PBoolean     header_needs_updating;
 };
+
+#endif // P_WAVFILE
 
 #endif // PTLIB_PWAVFILE_H
 

@@ -17,7 +17,7 @@ elif test "$enable_ios" = "iphone" ; then
   IOS_PLATFORM=iPhoneOS
   IOS_ARCH=armv6
 elif test "$enable_ios" = "simulator" ; then
-  IOS_PLATFORM=Simulator
+  IOS_PLATFORM=iPhoneSimulator
   IOS_ARCH=i686
 else
   AC_MSG_ERROR([Unknown iOS variant $enable_ios - use either iphone or simulator])
@@ -31,16 +31,16 @@ if test "x$IOS_PLATFORM" != "x" ; then
   fi
   AC_MSG_NOTICE(configuring for $IOS_PLATFORM version $IOS_VER)
 
-  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/iPhoneOS${IOS_VER}.sdk
+  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${IOS_PLATFORM}${IOS_VER}.sdk
 
   CXX=["${IOS_DEVROOT}/usr/bin/g++ -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"]
   CC=["${IOS_DEVROOT}/usr/bin/gcc -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"]
   LD=["${IOS_DEVROOT}/usr/bin/ld -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"]
   LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
 
-  echo $CC
-  echo $LDFLAGS
-  echo $ENDLDLIBS
+  dnl echo $CC
+  dnl echo $LDFLAGS
+  dnl echo $ENDLDLIBS
 fi
 
 
@@ -274,6 +274,7 @@ case "$target_os" in
 		   OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
 		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
+		   ENDLDLIBS="-lresolv"
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 		   ;;

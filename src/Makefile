@@ -234,7 +234,8 @@ SOURCES += \
 endif
 
 ifdef HAS_TELNET
-SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx 
+SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx \
+	$(COMPONENT_SRC_DIR)/cli.cxx
 endif
 
 ifdef HAS_STUN
@@ -384,7 +385,6 @@ endif
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	+= \
-	$(COMPONENT_SRC_DIR)/cli.cxx \
 	$(COMPONENT_SRC_DIR)/threadpool.cxx \
 	$(COMPONENT_SRC_DIR)/ipacl.cxx \
 	$(COMPONENT_SRC_DIR)/qchannel.cxx \
