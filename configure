@@ -2980,7 +2980,7 @@ elif test "$enable_ios" = "iphone" ; then
   IOS_PLATFORM=iPhoneOS
   IOS_ARCH=armv6
 elif test "$enable_ios" = "simulator" ; then
-  IOS_PLATFORM=Simulator
+  IOS_PLATFORM=iPhoneSimulator
   IOS_ARCH=i686
 else
   as_fn_error "Unknown iOS variant $enable_ios - use either iphone or simulator" "$LINENO" 5
@@ -2995,17 +2995,14 @@ if test "x$IOS_PLATFORM" != "x" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: configuring for $IOS_PLATFORM version $IOS_VER" >&5
 $as_echo "$as_me: configuring for $IOS_PLATFORM version $IOS_VER" >&6;}
 
-  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/iPhoneOS${IOS_VER}.sdk
+  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${IOS_PLATFORM}${IOS_VER}.sdk
 
   CXX="${IOS_DEVROOT}/usr/bin/g++ -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
   CC="${IOS_DEVROOT}/usr/bin/gcc -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
   LD="${IOS_DEVROOT}/usr/bin/ld -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
   LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
 
-  echo $CC
-  echo $LDFLAGS
-  echo $ENDLDLIBS
-fi
+      fi
 
 
 ac_ext=c
@@ -4513,6 +4510,7 @@ $as_echo "${ptlib_fdsize}" >&6; }
 		   OS_MINOR=`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`
 		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
                    SHAREDLIBEXT="dylib";
+		   ENDLDLIBS="-lresolv"
 
 $as_echo "#define P_PTHREADS 1" >>confdefs.h
 
