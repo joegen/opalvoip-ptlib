@@ -1015,21 +1015,19 @@ struct PAllocatorTemplate
 {
   Type * allocate(size_t v)  
   {
-    return GetAllocator()->allocate(v);
+    return GetAllocator().allocate(v);
   }
 
   void deallocate(Type * p, size_t v)  
   {
-    GetAllocator()->deallocate(p, v);
+    GetAllocator().deallocate(p, v);
   }
 
   private:
-    static GnuAllocator * GetAllocator()
+    static GnuAllocator & GetAllocator()
     {
-      static GnuAllocator * m_instance = NULL;
-      if (m_instance == NULL) 
-        m_instance = new GnuAllocator();
-      return m_instance;
+      static GnuAllocator instance;
+      return instance;
     }
 };
 
