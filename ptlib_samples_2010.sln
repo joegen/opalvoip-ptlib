@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World DLL", "samples\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HTTP Test", "samples\httptest\httptest_2010.vcxproj", "{0CB35BD2-AAD9-D376-4705-4BA5C6636DAA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "String Tests", "samples\strtest\strtest_2010.vcxproj", "{BC216ABC-6D3B-372A-724B-1A730E1F51D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -47,6 +49,12 @@ Global
 		{0CB35BD2-AAD9-D376-4705-4BA5C6636DAA}.No Trace|Win32.Build.0 = No Trace|Win32
 		{0CB35BD2-AAD9-D376-4705-4BA5C6636DAA}.Release|Win32.ActiveCfg = Release|Win32
 		{0CB35BD2-AAD9-D376-4705-4BA5C6636DAA}.Release|Win32.Build.0 = Release|Win32
+		{BC216ABC-6D3B-372A-724B-1A730E1F51D7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BC216ABC-6D3B-372A-724B-1A730E1F51D7}.Debug|Win32.Build.0 = Debug|Win32
+		{BC216ABC-6D3B-372A-724B-1A730E1F51D7}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{BC216ABC-6D3B-372A-724B-1A730E1F51D7}.No Trace|Win32.Build.0 = No Trace|Win32
+		{BC216ABC-6D3B-372A-724B-1A730E1F51D7}.Release|Win32.ActiveCfg = Release|Win32
+		{BC216ABC-6D3B-372A-724B-1A730E1F51D7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
