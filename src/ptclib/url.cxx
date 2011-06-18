@@ -667,6 +667,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
 void PURL::SetScheme(const PString & s)
 {
   scheme = s;
+  schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
   Recalculate();
 }
 
