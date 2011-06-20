@@ -1292,7 +1292,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
     if (writePartHeaders)
       headers.SetAt(ContentTypeTag(), "multipart/mixed; boundary=\""+boundaries.front()+'"');
     else if (!headers.Contains(ContentTypeTag()))
-      headers.SetAt(ContentTypeTag(), "text/plain");
+      headers.SetAt(ContentTypeTag(), PMIMEInfo::TextPlain());
 
     PStringStream hdr;
     hdr << ::setfill('\r') << headers;
@@ -1307,7 +1307,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
 
   if (writePartHeaders) {
     if (!partHeaders.Contains(ContentTypeTag()))
-      partHeaders.SetAt(ContentTypeTag(), "text/plain");
+      partHeaders.SetAt(ContentTypeTag(), PMIMEInfo::TextPlain());
 
     PStringStream hdr;
     hdr << "\n--"  << boundaries.front() << '\n'
