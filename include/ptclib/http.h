@@ -567,7 +567,7 @@ class PHTTPClient : public PHTTP
     bool PutTextDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       const PString & document,       ///< Body read
-      const PString & contentType = "text/plain" ///< Content-Type header to use
+      const PString & contentType = PMIMEInfo::TextPlain() ///< Content-Type header to use
     );
 
     /** Put the document specified by the URL.
