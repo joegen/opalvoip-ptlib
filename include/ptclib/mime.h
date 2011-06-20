@@ -192,6 +192,8 @@ class PMIMEInfo : public PStringOptions
     static const PCaselessString & ContentDescriptionTag();
     static const PCaselessString & ContentIdTag();
 
+    static const PCaselessString & TextPlain();
+
 
     /** Set an association between a file type and a MIME content type. The
        content type is then sent for any file in the directory sub-tree that
