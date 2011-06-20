@@ -669,6 +669,8 @@ bool PVideoInputDevice_DirectShow::SetPinFormat()
       pVih->AvgTimePerFrame = 10000000 / frameRate;
       CHECK_ERROR_RETURN(pStreamConfig->SetFormat(pMediaFormat));
 
+      m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+
       if (running)
         CHECK_ERROR_RETURN(m_pMediaControl->Run());
 
@@ -1671,9 +1673,6 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   mt.majortype = MEDIATYPE_Video;
   mt.subtype = MEDIASUBTYPE_RGB24;
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetMediaType(&mt));
-
-  m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, "RGB24");
-  PTRACE(5, "DShow\tBuffer size set to " << m_maxFrameBytes);
 
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetBufferSamples(true));
 
