@@ -786,7 +786,7 @@ void PMIMEInfo::SetAssociation(const PStringToString & allTypes, PBoolean merge)
 PString PMIMEInfo::GetContentType(const PString & fType)
 {
   if (fType.IsEmpty())
-    return "text/plain";
+    return PMIMEInfo::TextPlain();
 
   PStringToString & types = GetContentTypes();
   if (types.Contains(fType))
@@ -801,6 +801,8 @@ const PCaselessString & PMIMEInfo::ContentDispositionTag()      { static const P
 const PCaselessString & PMIMEInfo::ContentTransferEncodingTag() { static const PConstCaselessString s("Content-Transfer-Encoding"); return s; }
 const PCaselessString & PMIMEInfo::ContentDescriptionTag()      { static const PConstCaselessString s("Content-Description");       return s; }
 const PCaselessString & PMIMEInfo::ContentIdTag()               { static const PConstCaselessString s("Content-ID");                return s; }
+
+const PCaselessString & PMIMEInfo::TextPlain()                  { static const PConstCaselessString s("text/plain");                return s; }
 
 
 //////////////////////////////////////////////////////////////////////////////
