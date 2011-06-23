@@ -975,6 +975,12 @@ AC_DEFINE_UNQUOTED(P_SETPGRP_NOPARM, ${P_SETPGRP_NOPARM})
 
 
 dnl ########################################################################
+dnl check for asyc I/O
+
+AC_CHECK_HEADERS(aio.h, [AC_DEFINE(P_HAS_AIO, 1)])
+
+
+dnl ########################################################################
 dnl check for regex library
 
 dnl yes this test needs to be outside the if below
