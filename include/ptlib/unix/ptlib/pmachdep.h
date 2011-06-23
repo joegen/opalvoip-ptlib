@@ -48,7 +48,6 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
-#include <aio.h>
 
 #define HAS_IFREQ
 
@@ -515,6 +514,10 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 
 // includes common to all Unix variants
+
+#ifdef P_HAS_AIO
+#include <aio.h>
+#endif
 
 #include <netdb.h>
 #include <dirent.h>

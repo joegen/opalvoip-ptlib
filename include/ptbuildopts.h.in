@@ -102,6 +102,7 @@
 #undef P_PTHREADS_XPG6      
 #undef P_HAS_SEMAPHORES_XPG6
 #undef P_EXCEPTIONS
+#undef P_HAS_AIO
 
 
 /////////////////////////////////////////////////
