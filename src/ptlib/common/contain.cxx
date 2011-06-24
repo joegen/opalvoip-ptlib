@@ -2927,27 +2927,51 @@ PBoolean PRegularExpression::Execute(const char * cstr,
     return PFalse;
   }
 
-  regmatch_t single_match;
-  regmatch_t * matches = &single_match;
-
   PINDEX count = starts.GetSize();
-  if (count > 1)
-    matches = new regmatch_t[count];
-  else
+  if (count == 0) {
+    starts.SetSize(1);
     count = 1;
+  }
+  ends.SetSize(count);
 
-  lastError = (ErrorCodes)regexec(regexpression(), cstr, count, matches, flags);
+  regmatch_t * matches = new regmatch_t[count];
+
+  lastError = (ErrorCodes)::regexec(regexpression(), cstr, count, matches, flags);
   if (lastError == NoError) {
-    starts.SetMinSize(count);
-    ends.SetMinSize(count);
     for (PINDEX i = 0; i < count; i++) {
       starts[i] = matches[i].rm_so;
       ends[i] = matches[i].rm_eo;
     }
   }
 
-  if (matches != &single_match)
-    delete [] matches;
+  delete [] matches;
+
+  return lastError == NoError;
+}
+
+
+PBoolean PRegularExpression::Execute(const char * cstr, PStringArray & substring, int flags) const
+{
+  if (expression == NULL) {
+    lastError = NotCompiled;
+    return PFalse;
+  }
+
+  PINDEX count = substring.GetSize();
+  if (count == 0) {
+    substring.SetSize(1);
+    count = 1;
+  }
+
+  regmatch_t * matches = new regmatch_t[count];
+
+  lastError = (ErrorCodes)::regexec(regexpression(), cstr, count, matches, flags);
+  if (lastError == NoError) {
+    for (PINDEX i = 0; i < count; i++)
+      substring[i] = PString(cstr+matches[i].rm_so, matches[i].rm_eo-matches[i].rm_so);
+  }
+
+  delete [] matches;
 
   return lastError == NoError;
 }
