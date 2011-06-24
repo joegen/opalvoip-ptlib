@@ -3107,68 +3107,90 @@ class PRegularExpression : public PObject
     /** Execute regular expression */
     PBoolean Execute(
       const PString & str,    ///< Source string to search
-      PINDEX & start,         ///< First match locations
+      PINDEX & start,         ///< First match location
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     PBoolean Execute(
       const PString & str,    ///< Source string to search
-      PINDEX & start,         ///< First match locations
+      PINDEX & start,         ///< First match location
       PINDEX & len,           ///< Length of match
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     PBoolean Execute(
       const char * cstr,      ///< Source string to search
-      PINDEX & start,         ///< First match locations
+      PINDEX & start,         ///< First match location
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     PBoolean Execute(
       const char * cstr,      ///< Source string to search
-      PINDEX & start,         ///< First match locations
+      PINDEX & start,         ///< First match location
       PINDEX & len,           ///< Length of match
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     PBoolean Execute(
       const PString & str,    ///< Source string to search
-      PIntArray & starts,     ///< List of match locations
+      PIntArray & starts,     ///< Array of match locations
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     PBoolean Execute(
       const PString & str,    ///< Source string to search
-      PIntArray & starts,     ///< List of match locations
-      PIntArray & ends,       ///< List of match ends
+      PIntArray & starts,     ///< Array of match locations
+      PIntArray & ends,       ///< Array of match ends
       int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     PBoolean Execute(
       const char * cstr,      ///< Source string to search
-      PIntArray & starts,     ///< List of match locations
+      PIntArray & starts,     ///< Array of match locations
       int flags = 0           ///< Pattern match options
     ) const;
     /**Execute regular expression.
        Execute the pattern match algorithm using the previously compiled
        pattern.
 
-       The <code>starts</code> array is filled with as many matches as will fit
-       into the array. If the the array size is zero then it is set to at least
-       one for the first match found.
-       
-       The <code>ends</code> array is set to the ending position of each
-       substring whose start is returned in the <code>starts</code> array. This
-       will always be set to the same size as that array.
+       The \p starts and \p ends arrays indicate the start and end positions
+       of the matched substrings in \p cstr. The 0th member is filled in to
+       indicate what substring was matched by the entire regular expression.
+       The remaining members report what substring was matched by parenthesized
+       subexpressions within the regular expression.
 
-       @return
-       true if successfully compiled.
+       The caller should set the size of the \p starts array before calling to
+       indicated how many subexpressions are expected. If the \p starts array
+       is empty, it will be set to one entry.
+
+       @return true if successfully compiled.
      */
     PBoolean Execute(
       const char * cstr,      ///< Source string to search
-      PIntArray & starts,     ///< List of match locations
-      PIntArray & ends,       ///< List of match ends
+      PIntArray & starts,     ///< Array of match locations
+      PIntArray & ends,       ///< Array of match ends
       int flags = 0           ///< Pattern match options
+    ) const;
+    /**Execute regular expression.
+       Execute the pattern match algorithm using the previously compiled
+       pattern.
+
+       The \p substring arrays is filled with the matched substrings out of
+       \p cstr. The 0th member is filled in to indicate what substring was
+       matched by the entire regular expression. The remaining members report
+       what substring was matched by parenthesized subexpressions within the
+       regular expression.
+
+       The caller should set the size of the \p substring array before calling
+       to indicated how many subexpressions are expected. If the \p substring
+       array is empty, it will be set to one entry.
+
+       @return true if successfully compiled.
+     */
+    PBoolean Execute(
+      const char * cstr,        ///< Source string to search
+      PStringArray & substring, ///< Array of matched substrings
+      int flags = 0             ///< Pattern match options
     ) const;
   //@}
 
