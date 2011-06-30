@@ -52,7 +52,7 @@ void Test::Main()
   }
 
   PURL url;
-  if (!url.Parse(args[0])) {
+  if (!url.Parse(args[0], "http")) {
     cerr << "Could not parse URL \"" << args[0] << '"' << endl;
     return;
   }
