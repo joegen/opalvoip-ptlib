@@ -1425,8 +1425,7 @@ PString PProcess::GetUserName() const
 #ifndef _WIN32_WCE
   char username[100];
   DWORD size = sizeof(username);
-  ::GetUserName(username, &size);
-  return PString(username, size);
+  return ::GetUserName(username, &size) ? PString(username, size-1) : PString::Empty();
 #else
   TCHAR wcsuser[50] = {0};
   HKEY hKeyComm, hKeyIdent;
