@@ -626,19 +626,19 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     }
 
     if (fmt == HostPortOnly) {
-    // Problem was fixed for handling legacy schema like tel URI.
-    // HostPortOnly format: if there is no default user and host fields, only the schema itself is being returned.
-    // URIOnly only format: the pathStr will be retruned.
-    // The Recalculate() will merge both HostPortOnly and URIOnly formats for the completed uri string creation.
-    if (schemeInfo->defaultToUserIfNoAt)
-      return str;
+      // Problem was fixed for handling legacy schema like tel URI.
+      // HostPortOnly format: if there is no default user and host fields, only the schema itself is being returned.
+      // URIOnly only format: the pathStr will be retruned.
+      // The Recalculate() will merge both HostPortOnly and URIOnly formats for the completed uri string creation.
+      if (schemeInfo->defaultToUserIfNoAt)
+        return str;
 
-    if (str.GetLength() > scheme.GetLength()+1)
-      return str;
+      if (str.GetLength() > scheme.GetLength()+1)
+        return str;
 
-    // Cannot JUST have the scheme: ....
-    return PString::Empty();
-  }
+      // Cannot JUST have the scheme: ....
+      return PString::Empty();
+    }
   }
 
   // URIOnly and PathOnly
@@ -648,6 +648,8 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << '/';
       str << TranslateString(path[i], PathTranslation);
     }
+    if (!relativePath && str.IsEmpty())
+      str << '/';
   }
   else
     str << TranslateString(m_contents, PathTranslation);
