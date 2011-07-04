@@ -43,6 +43,7 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#include <ptlib/msos/ptlib/pt_atl.h>
 
 #ifdef _WIN32_WCE
 
@@ -176,49 +177,6 @@
 
 
 //////////////////////////////////////////////////////////////////////
-
-    
-template <class T> class PComPtr
-{
-    T * pointer;
-  public:
-    PComPtr() : pointer(NULL) { }
-    ~PComPtr() { Release(); }
-
-    PComPtr & operator=(T * p)
-    {
-      Release();
-      if (p != NULL)
-        p->AddRef();
-      pointer = p;
-      return *this;
-    }
-
-    operator T *()        const { return  pointer; }
-    T & operator*()       const { return *pointer; }
-    T** operator&()             { return &pointer; }
-    T* operator->()       const { return  pointer; }
-    bool operator!()      const { return  pointer == NULL; }
-    bool operator<(T* p)  const { return  pointer < p; }
-    bool operator==(T* p) const { return  pointer == p; }
-    bool operator!=(T* p) const { return  pointer != p; }
-
-    void Release()
-    {
-      T * p = pointer;
-      if (p != NULL) {
-        pointer = NULL;
-        p->Release();
-      }
-    }
-
-  private:
-    PComPtr(const PComPtr &) {}
-    void operator=(const PComPtr &) { }
-};
-
-
-//////////////////////////////////////////////////////////////////////
 // Video Input device
 
 class PVideoInputDevice_DirectShow : public PVideoInputDevice
@@ -269,26 +227,26 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     bool PlatformOpen();
     PINDEX GetCurrentBufferSize();
     bool GetCurrentBufferData(BYTE * data);
-    bool SetPinFormat();
+    bool SetPinFormat(unsigned useDefaultColourOrSize = 0);
     bool SetControlCommon(long control, int newValue);
     int GetControlCommon(long control);
 
 
     // DirectShow 
-    PComPtr<IGraphBuilder>         m_pGraphBuilder;
-    PComPtr<ICaptureGraphBuilder2> m_pCaptureBuilder;
-    PComPtr<IBaseFilter>           m_pCaptureFilter;
-    PComPtr<IPin>                  m_pCameraOutPin; // Camera output out -> Transform Input pin
+    CComPtr<IGraphBuilder>         m_pGraphBuilder;
+    CComPtr<ICaptureGraphBuilder2> m_pCaptureBuilder;
+    CComPtr<IBaseFilter>           m_pCaptureFilter;
+    CComPtr<IPin>                  m_pCameraOutPin; // Camera output out -> Transform Input pin
 
 #ifdef _WIN32_WCE
-    PComPtr<PSampleGrabber>        m_pSampleGrabber;
+    CComPtr<PSampleGrabber>        m_pSampleGrabber;
 #else
-    PComPtr<ISampleGrabber>        m_pSampleGrabber;
-    PComPtr<ISampleGrabberCB>      m_pSampleGrabberCB;
-    PComPtr<IAMCameraControl>      m_pCameraControls;
+    CComPtr<ISampleGrabber>        m_pSampleGrabber;
+    CComPtr<ISampleGrabberCB>      m_pSampleGrabberCB;
+    CComPtr<IAMCameraControl>      m_pCameraControls;
 #endif
-    PComPtr<IBaseFilter>           m_pNullRenderer;
-    PComPtr<IMediaControl>         m_pMediaControl;
+    CComPtr<IBaseFilter>           m_pNullRenderer;
+    CComPtr<IMediaControl>         m_pMediaControl;
 
     PINDEX     m_maxFrameBytes;
     PBYTEArray m_tempFrame;
@@ -442,61 +400,61 @@ class MediaTypePtr
 // The optimum frame size can be selected by sorting down the list for a given bandwidth.
 // If there is a better way to do this then great but it very important in order the framesizes. - SH
 
-class inputframes {
- public:
-    inputframes(unsigned W, unsigned H, unsigned R, PString C)
-        : width(W), height(H), rate(R), colour(C)
-    {};
-    unsigned width; unsigned height; unsigned rate; PString colour;
-};
-
-class frameSort {
-  public:
-     bool operator()(inputframes* const& f1, inputframes* const& f2) {
-          if (f1->width > f2->width) return true;
-          else if (f1->width == f2->width && f1->height > f2->height)
-              return true;
-          else return false;
-     }
-};
-
-class frameMatch {
-  public:
-     bool operator()(inputframes*& f1, inputframes*& f2) {
-          return (f1->width == f2->width) && (f1->height == f2->height);
-     }
-};
-
-class frameSizes : public std::vector<inputframes*>
+class PVideoFrameInfoSort
 {
   public:
-     ~frameSizes()
-     {
-          for (iterator pItem=begin(); pItem != end(); ++pItem)
-               delete *pItem;
-     }
+    bool operator()(PVideoFrameInfo* const& f1, PVideoFrameInfo* const& f2)
+    {
+      if (f1->GetFrameWidth() > f2->GetFrameWidth())
+        return true;
+      if (f1->GetFrameWidth() == f2->GetFrameWidth() && f1->GetFrameHeight() > f2->GetFrameHeight())
+        return true;
+      return false;
+    }
+};
 
-     void ReIndex() {
-         sort(begin(), end(), frameSort());
-         unique(begin(), end(), frameMatch());
+class PVideoFrameInfoMatch
+{
+  public:
+    bool operator()(PVideoFrameInfo*& f1, PVideoFrameInfo*& f2)
+    {
+      return (f1->GetFrameWidth()  == f2->GetFrameWidth()) &&
+             (f1->GetFrameHeight() == f2->GetFrameHeight());
+    }
+};
 
-         unsigned lastWidth = P_MAX_INDEX;
-         int pos = 0;
-         iterator r = begin();
-         while (r != end()) {
-            const inputframes* frame = *r;
-            if (frame->width > lastWidth)  break;
-            else lastWidth = frame->width;
-            ++pos; ++r;
-         }
+class PVideoFrameInfoArray : public std::vector<PVideoFrameInfo*>
+{
+  public:
+    ~PVideoFrameInfoArray()
+    {
+      for (iterator pItem=begin(); pItem != end(); ++pItem)
+        delete *pItem;
+    }
 
-         int sz = size();
-         PINDEX i = sz-1;
-         while (i > pos-1) {
-           erase(begin()+i);
-           --i;
-         }
-     }
+    void ReIndex()
+    {
+      sort(begin(), end(), PVideoFrameInfoSort());
+      unique(begin(), end(), PVideoFrameInfoMatch());
+
+      unsigned lastWidth = P_MAX_INDEX;
+      int pos = 0;
+      iterator r = begin();
+      while (r != end()) {
+        const PVideoFrameInfo* frame = *r;
+        if (frame->GetFrameWidth() > lastWidth)
+          break;
+        lastWidth = frame->GetFrameWidth();
+        ++pos; ++r;
+      }
+
+      int sz = size();
+      PINDEX i = sz-1;
+      while (i > pos-1) {
+        erase(begin()+i);
+        --i;
+      }
+    }
 };
 
 
@@ -509,10 +467,6 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   PTRACE(4, "DShow\tVideo Device Instance");
 
   CoInitializeEx(NULL,COINIT_MULTITHREADED);
-
-  // Most common
-  preferredColourFormat = colourFormat = "BGR24";  
-  frameRate = 25;
 }
 
 
@@ -539,7 +493,7 @@ PBoolean PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & dev
 
 bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) const
 {
-  PComPtr<IAMStreamConfig> pStreamConfig;
+  CComPtr<IAMStreamConfig> pStreamConfig;
 #ifdef __MINGW32__
   CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(IID_IAMStreamConfig, (void**)&pStreamConfig));
 #else
@@ -556,7 +510,7 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     return false;
   }
 
-  frameSizes fsizes;
+  PVideoFrameInfoArray fsizes;
   for (int iFormat = 0; iFormat < iCount; iFormat++) {
     MediaTypePtr pMediaFormat;
     if (SUCCEEDED(pStreamConfig->GetStreamCaps(iFormat, &pMediaFormat, (BYTE *)&scc)) &&
@@ -564,29 +518,21 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
         pMediaFormat->formattype == FORMAT_VideoInfo &&
         pMediaFormat->pbFormat != NULL &&
         pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER))
-      fsizes.push_back(new inputframes(scc.MaxOutputSize.cx,
-                                       scc.MaxOutputSize.cy,
-                                       10000000/(unsigned)scc.MinFrameInterval,
-                                       GUID2Format(pMediaFormat->subtype)));
+      fsizes.push_back(new PVideoFrameInfo(scc.MaxOutputSize.cx,
+                                           scc.MaxOutputSize.cy,
+                                           GUID2Format(pMediaFormat->subtype),
+                                           10000000/(unsigned)scc.MinFrameInterval));
   }
 
-  if (fsizes.empty()) return false;
+  if (fsizes.empty())
+    return false;
 
   // Sort so we have unique sizes from largest to smallest
   fsizes.ReIndex();
-  PINDEX i=0;
-  for (std::vector<inputframes*>::iterator r = fsizes.begin(); r != fsizes.end(); ++r) {
-    inputframes* f = *r;
-    PVideoFrameInfo cap;
-    cap.SetFrameSize(f->width,f->height);
-    cap.SetFrameRate(f->rate);
-    cap.SetColourFormat(f->colour);
-
-    PTRACE(5, "DShow\tFormat["<< i << "] = (" << cap.GetColourFormat() << ", "
-      << cap.GetFrameWidth() << "x" << cap.GetFrameHeight() << ", " << cap.GetFrameRate() << "fps)");
-
-    caps->framesizes.push_back(cap);
-    i++;
+  caps->framesizes.clear();
+  for (std::vector<PVideoFrameInfo*>::iterator it = fsizes.begin(); it != fsizes.end(); ++it) {
+    PTRACE(5, "DShow\tFormat["<< caps->framesizes.size() << "] = (" << **it);
+    caps->framesizes.push_back(**it);
   }
 
 #ifndef _WIN32_WCE
@@ -629,14 +575,14 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
 }
 
 
-bool PVideoInputDevice_DirectShow::SetPinFormat()
+bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
 {
   if (m_pCameraOutPin == NULL) {
     PTRACE(2, "DShow\tCamera output pin is NULL!");
     return false;
   }
 
-  PComPtr<IAMStreamConfig> pStreamConfig;
+  CComPtr<IAMStreamConfig> pStreamConfig;
 #ifdef __MINGW32__
   CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(IID_IAMStreamConfig, (void**)&pStreamConfig));
 #else
@@ -657,9 +603,17 @@ bool PVideoInputDevice_DirectShow::SetPinFormat()
         pMediaFormat->formattype == FORMAT_VideoInfo &&
         pMediaFormat->pbFormat != NULL &&
         pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER) &&
-        scc.MaxOutputSize.cx == (LONG)frameWidth &&
-        scc.MaxOutputSize.cy == (LONG)frameHeight &&
-        GUID2Format(pMediaFormat->subtype) == colourFormat) {
+        (
+          useDefaultColourOrSize >= 2 ||
+          (
+            scc.MaxOutputSize.cx == (LONG)frameWidth &&
+            scc.MaxOutputSize.cy == (LONG)frameHeight &&
+            (
+              useDefaultColourOrSize >= 1 ||
+              GUID2Format(pMediaFormat->subtype) == colourFormat
+            )
+          )
+        )) {
 
       bool running = IsCapturing();
       if (running)
@@ -668,6 +622,14 @@ bool PVideoInputDevice_DirectShow::SetPinFormat()
       VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
       pVih->AvgTimePerFrame = 10000000 / frameRate;
       CHECK_ERROR_RETURN(pStreamConfig->SetFormat(pMediaFormat));
+
+      if (useDefaultColourOrSize >= 1) {
+        colourFormat = GUID2Format(pMediaFormat->subtype);
+        if (useDefaultColourOrSize >= 2) {
+          frameWidth = scc.MaxOutputSize.cx;
+          frameHeight = scc.MaxOutputSize.cy;
+        }
+      }
 
       m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
@@ -695,18 +657,16 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   }
 
   // Get the interface for DirectShow's GraphBuilder
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_FilterGraph,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_IGraphBuilder,
-                                      (void **)&m_pGraphBuilder));
+  CHECK_ERROR_RETURN(m_pGraphBuilder.CoCreateInstance(CLSID_FilterGraph,
+                                                      NULL,
+                                                      CLSCTX_INPROC_SERVER,
+                                                      IID_IGraphBuilder));
 
   // Create the capture graph builder
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_CaptureGraphBuilder2,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_ICaptureGraphBuilder2,
-                                      (void **)&m_pCaptureBuilder));
+  CHECK_ERROR_RETURN(m_pCaptureBuilder.CoCreateInstance(CLSID_CaptureGraphBuilder2,
+                                                        NULL,
+                                                        CLSCTX_INPROC_SERVER,
+                                                        IID_ICaptureGraphBuilder2));
 
   // Bind the Camera Input
   if (!BindCaptureDevice(devName))
@@ -722,14 +682,14 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   CHECK_ERROR_RETURN(m_pGraphBuilder->QueryInterface(IID_IMediaControl, (void **)&m_pMediaControl));
 
   // Get the camera output Pin 
-  PComPtr<IEnumPins> pEnum;
+  CComPtr<IEnumPins> pEnum;
   CHECK_ERROR_RETURN(m_pCaptureFilter->EnumPins(&pEnum));
 
   CHECK_ERROR_RETURN(pEnum->Reset());
   CHECK_ERROR_RETURN(pEnum->Next(1, &m_pCameraOutPin, NULL));
 
   // Set the format of the Output pin of the camera
-  if (!SetPinFormat())
+  if (!(SetPinFormat(0) || SetPinFormat(1) || SetPinFormat(2)))
     return false;
 
   if (!PlatformOpen())
@@ -942,7 +902,7 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 
 int PVideoInputDevice_DirectShow::GetControlCommon(long control)
 {
-  PComPtr<IAMVideoProcAmp> pVideoProcAmp;
+  CComPtr<IAMVideoProcAmp> pVideoProcAmp;
   CHECK_ERROR(m_pCaptureFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp), return -1);
 
   long minimum, maximum, stepping, def, flags;
@@ -1002,7 +962,7 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
 {
   PTRACE(4, "DShow\tSetControl() = " << newValue);
 
-  PComPtr<IAMVideoProcAmp> pVideoProcAmp;
+  CComPtr<IAMVideoProcAmp> pVideoProcAmp;
   CHECK_ERROR_RETURN(m_pCaptureFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp));
 
   long minimum, maximum, stepping, def, flags;
@@ -1230,13 +1190,12 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * pData)
 bool PVideoInputDevice_DirectShow::BindCaptureDevice(const PString & devName)
 {
   // Create an instance of the video capture filter
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_VideoCapture,
-                                      NULL,
-                                      CLSCTX_INPROC,
-                                      IID_IBaseFilter,
-                                      (void**)&m_pCaptureFilter));
+  CHECK_ERROR_RETURN(m_pCaptureFilter.CoCreateInstance(CLSID_VideoCapture,
+                                                       NULL,
+                                                       CLSCTX_INPROC,
+                                                       IID_IBaseFilter));
 
-  PComPtr<IPersistPropertyBag> pPropertyBag;
+  CComPtr<IPersistPropertyBag> pPropertyBag;
   CHECK_ERROR_RETURN(m_pCaptureFilter->QueryInterface(&pPropertyBag));
 
   VARIANT varName;
@@ -1266,10 +1225,10 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(dynamic_cast<IBaseFilter *>(grabber), L"Sampler"));
 
   // Find the source's output pin and the renderer's input pin
-  PComPtr<IPin> pCapturePinOut;
+  CComPtr<IPin> pCapturePinOut;
   CHECK_ERROR_RETURN(m_pCaptureFilter->FindPin(L"Capture", &pCapturePinOut));
 
-  PComPtr<IPin> pGrabberPinIn;
+  CComPtr<IPin> pGrabberPinIn;
   CHECK_ERROR_RETURN(m_pSampleGrabber->FindPin(L"In", &pGrabberPinIn));
 
   // Connect these two filters pins
@@ -1288,14 +1247,14 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
 
 class PComEnumerator
 {
-    PComPtr<ICreateDevEnum> m_pDevEnum;
-    PComPtr<IEnumMoniker>   m_pClassEnum;
-    PComPtr<IMoniker>       m_pMoniker;
+    CComPtr<ICreateDevEnum> m_pDevEnum;
+    CComPtr<IEnumMoniker>   m_pClassEnum;
+    CComPtr<IMoniker>       m_pMoniker;
   public:
     PComEnumerator()
     {
       // Create the system device enumerator
-      CHECK_ERROR(CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC, IID_ICreateDevEnum, (void **)&m_pDevEnum), return);
+      CHECK_ERROR(m_pDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC, IID_ICreateDevEnum), return);
       // Create an enumerator for the video capture devices
       CHECK_ERROR(m_pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &m_pClassEnum, 0), return);
 
@@ -1317,7 +1276,7 @@ class PComEnumerator
 
     PString GetMonikerName()
     {
-      PComPtr<IPropertyBag> pPropBag;
+      CComPtr<IPropertyBag> pPropBag;
       CHECK_ERROR(m_pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag), return PString::Empty());
 
       // Find the description or friendly name.
@@ -1663,8 +1622,8 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   // Buid the Camera Sample Grabber
   PTRACE(5, "DShow\tBuilding Sample Grabber");
 
-  PComPtr<IBaseFilter> pGrab; 
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_SampleGrabber , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **)&pGrab));
+  CComPtr<IBaseFilter> pGrab; 
+  CHECK_ERROR_RETURN(pGrab.CoCreateInstance(CLSID_SampleGrabber , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter));
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(pGrab, L"Sample Grabber"));
   CHECK_ERROR_RETURN(pGrab->QueryInterface(IID_ISampleGrabber, (void **)&m_pSampleGrabber));
 
@@ -1685,7 +1644,7 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
 
   // Set the NULL Renderer
   PTRACE(5, "DShow\tBuilding NULL output filter");
-  CHECK_ERROR_RETURN(CoCreateInstance (CLSID_NullRenderer , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void **) &m_pNullRenderer));
+  CHECK_ERROR_RETURN(m_pNullRenderer.CoCreateInstance (CLSID_NullRenderer , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter));
 
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(m_pNullRenderer, L"NULL Output"));
 
