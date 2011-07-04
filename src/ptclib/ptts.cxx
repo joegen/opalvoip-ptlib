@@ -60,68 +60,7 @@
   #define _WIN32_DCOM 1
 #endif
 
-#ifndef P_ATL
-
-  // We are using express edition of MSVC which does not come with ATL support
-  // So hand implement just enough for the SAPI code to work.
-  #define __ATLBASE_H__
-
-  #include <objbase.h>
-
-  typedef WCHAR OLECHAR;
-  typedef OLECHAR *LPOLESTR;
-  typedef const OLECHAR *LPCOLESTR;
-  typedef struct IUnknown IUnknown;
-  typedef IUnknown *LPUNKNOWN;
-
-  template <class T> class CComPtr
-  {
-    public:
-      CComPtr(T * pp = NULL) : p(pp) { }
-      ~CComPtr() { Release(); }
-
-      T *  operator-> () const { return  PAssertNULL(p); }
-           operator T*() const { return  PAssertNULL(p); }
-      T &  operator*  () const { return *PAssertNULL(p); }
-      T ** operator&  ()       { return &p; }
-      bool operator!() const   { return (p == NULL); }
-      bool operator<(__in_opt T* pT) const  { return p <  pT; }
-      bool operator==(__in_opt T* pT) const { return p == pT; }
-      bool operator!=(__in_opt T* pT) const { return p != pT; }
-
-      void Attach(T * p2)
-      {
-        if (p)
-	  p->Release();
-        p = p2;
-      }
-
-      T * Detach()
-      {
-        T * pt = p;
-        p = NULL;
-        return pt;
-      }
-
-      void Release()
-      {
-        T * pt = p;
-        if (pt != NULL) {
-	  p = NULL;
-	  pt->Release();
-        }
-      }
-
-      __checkReturn HRESULT CoCreateInstance(__in REFCLSID rclsid, __in_opt LPUNKNOWN pUnkOuter = NULL, __in DWORD dwClsContext = CLSCTX_ALL)
-      {
-        return ::CoCreateInstance(rclsid, pUnkOuter, dwClsContext, __uuidof(T), (void**)&p);
-      }
-
-    private:
-      T * p;
-  };
-
-#endif // P_ATL
+#include <ptlib/msos/ptlib/pt_atl.h>
 
 #include <sphelper.h>
 
