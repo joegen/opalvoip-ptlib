@@ -42,6 +42,8 @@
 
 #include <dsound.h>
 
+#include <ptlib/msos/ptlib/pt_atl.h>
+
 #ifdef _WIN32_WCE
 #define LPDIRECTSOUND8 LPDIRECTSOUND
 #define LPDIRECTSOUNDBUFFER8 LPDIRECTSOUNDBUFFER
@@ -197,12 +199,12 @@ private:
   PString deviceName;
   Directions mDirection;
 
-  LPDIRECTSOUNDCAPTURE8 sAudioCaptureDevice;
-  LPDIRECTSOUNDCAPTUREBUFFER mAudioCaptureBuffer;
+  CComPtr<IDirectSoundCapture8>      sAudioCaptureDevice;
+  CComPtr<IDirectSoundCaptureBuffer> mAudioCaptureBuffer;
 
-  LPDIRECTSOUND8 sAudioPlaybackDevice;
-  LPDIRECTSOUNDBUFFER mAudioPlaybackBuffer;
-  LPDIRECTSOUNDBUFFER mAudioPrimaryPlaybackBuffer;
+  CComPtr<IDirectSound8>      sAudioPlaybackDevice;
+  CComPtr<IDirectSoundBuffer> mAudioPlaybackBuffer;
+  CComPtr<IDirectSoundBuffer> mAudioPrimaryPlaybackBuffer;
   
   PBoolean InitPlaybackBuffer();
   PBoolean InitPlaybackDevice(GUID *pGUID);
