@@ -31,7 +31,11 @@
 #ifndef PTLIB_ATL_H
 #define PTLIB_ATL_H
 
-#ifndef P_ATL
+#ifdef P_ATL
+  #pragma warning(disable:4127)
+  #include <atlcomcli.h>
+  #pragma warning(default:4127)
+#else
 
 // We are using express edition of MSVC which does not come with ATL support
 // So hand implement just enough for some code (e.g. SAPI) to work.
