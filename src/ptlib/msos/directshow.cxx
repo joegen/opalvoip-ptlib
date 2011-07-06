@@ -657,16 +657,18 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   }
 
   // Get the interface for DirectShow's GraphBuilder
-  CHECK_ERROR_RETURN(m_pGraphBuilder.CoCreateInstance(CLSID_FilterGraph,
-                                                      NULL,
-                                                      CLSCTX_INPROC_SERVER,
-                                                      IID_IGraphBuilder));
+  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_FilterGraph,
+                                      NULL,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_IGraphBuilder,
+                                      (LPVOID *)&m_pGraphBuilder));
 
   // Create the capture graph builder
-  CHECK_ERROR_RETURN(m_pCaptureBuilder.CoCreateInstance(CLSID_CaptureGraphBuilder2,
-                                                        NULL,
-                                                        CLSCTX_INPROC_SERVER,
-                                                        IID_ICaptureGraphBuilder2));
+  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_CaptureGraphBuilder2,
+                                      NULL,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_ICaptureGraphBuilder2,
+                                      (LPVOID *)&m_pCaptureBuilder));
 
   // Bind the Camera Input
   if (!BindCaptureDevice(devName))
@@ -1254,7 +1256,11 @@ class PComEnumerator
     PComEnumerator()
     {
       // Create the system device enumerator
-      CHECK_ERROR(m_pDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC, IID_ICreateDevEnum), return);
+      CHECK_ERROR(CoCreateInstance(CLSID_SystemDeviceEnum,
+                                   NULL,
+                                   CLSCTX_INPROC,
+                                   IID_ICreateDevEnum,
+                                   (LPVOID *)&m_pDevEnum), return);
       // Create an enumerator for the video capture devices
       CHECK_ERROR(m_pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &m_pClassEnum, 0), return);
 
@@ -1623,7 +1629,11 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   PTRACE(5, "DShow\tBuilding Sample Grabber");
 
   CComPtr<IBaseFilter> pGrab; 
-  CHECK_ERROR_RETURN(pGrab.CoCreateInstance(CLSID_SampleGrabber , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter));
+  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_SampleGrabber,
+                                      NULL,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_IBaseFilter,
+                                      (LPVOID *)&pGrab));
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(pGrab, L"Sample Grabber"));
   CHECK_ERROR_RETURN(pGrab->QueryInterface(IID_ISampleGrabber, (void **)&m_pSampleGrabber));
 
@@ -1644,7 +1654,11 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
 
   // Set the NULL Renderer
   PTRACE(5, "DShow\tBuilding NULL output filter");
-  CHECK_ERROR_RETURN(m_pNullRenderer.CoCreateInstance (CLSID_NullRenderer , NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter));
+  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_NullRenderer,
+                                      NULL,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_IBaseFilter,
+                                      (LPVOID *)&m_pNullRenderer));
 
   CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(m_pNullRenderer, L"NULL Output"));
 
