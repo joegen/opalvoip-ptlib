@@ -80,7 +80,7 @@ void PTimeInterval::PrintOn(ostream & stream) const
   Formats fmt = NormalFormat;
   if ((stream.flags()&ios::scientific) != 0)
     fmt = SecondsOnly;
-  else if (precision < 0) {
+  else if (precision > -4 && precision < 0) {
     fmt = IncludeDays;
     precision = -precision;
   }
@@ -116,8 +116,12 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
 
   if (precision > 3)
     precision = 3;
-  else if (precision < 0)
-    precision = 0;
+  else if (precision < -9)
+    precision = -9;
+  else if (precision < -6)
+    precision = -6;
+  else if (precision < -3)
+    precision = -3;
 
   PInt64 ms = GetMilliSeconds();
   if (ms < 0) {
@@ -161,24 +165,30 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
   else
     tmp = (long)(ms/3600000);
 
-  if (hadPrevious || tmp > 0 || width > (precision+7)) {
-    if (hadPrevious)
-      str.width(2);
-    str << tmp << ':';
-    hadPrevious = PTrue;
+  if (precision >= -9) {
+    if (hadPrevious || tmp > 0 || width > (precision+7)) {
+      if (hadPrevious)
+        str << ':' << setw(2);
+      str << tmp;
+      hadPrevious = PTrue;
+    }
   }
 
-  tmp = (long)(ms%3600000)/60000;
-  if (hadPrevious || tmp > 0 || width > (precision+4)) {
-    if (hadPrevious)
-      str.width(2);
-    str << tmp << ':';
-    hadPrevious = PTrue;
+  if (precision >= -6) {
+    tmp = (long)(ms%3600000)/60000;
+    if (hadPrevious || tmp > 0 || width > (precision+4)) {
+      if (hadPrevious)
+        str << ':' << setw(2);
+      str << tmp;
+      hadPrevious = PTrue;
+    }
   }
 
-  if (hadPrevious)
-    str.width(2);
-  str << (long)(ms%60000)/1000;
+  if (precision >= -3) {
+    if (hadPrevious)
+      str << ':' << setw(2);
+    str << (long)(ms%60000)/1000;
+  }
 
   switch (precision) {
     case 1 :
