@@ -881,17 +881,56 @@ PString::PString(PUInt64 n)
 }
 
 
-PString::PString(ConversionType type, long value, unsigned base)
-  : PCharArray(sizeof(long)*3+1)
+static const char siTable[] = { 'f', 'p', 'n', 'u', 'm', '\0', 'k', 'M', 'G', 'T', 'E' };
+static const size_t siZero = sizeof(siTable)/2;
+
+PString::PString(ConversionType type, PInt64 value, unsigned param)
+  : PCharArray(sizeof(PInt64)*3+1)
 {
-  PAssert(base >= 2 && base <= 36, PInvalidParameter);
+  PAssert(param >= 2 && param <= 36, PInvalidParameter);
   switch (type) {
     case Signed :
-      m_length = p_signed2string<long>(value, base, theArray);
+      m_length = p_signed2string<PInt64>(value, param, theArray);
       break;
 
     case Unsigned :
-      m_length = p_unsigned2string<unsigned long>(value, base, theArray);
+      m_length = p_unsigned2string<PUInt64>(value, param, theArray);
+      break;
+
+    case ScaleSI :
+      // Scale it according to SI multipliers
+      if (value > -1000 && value < 1000)
+        m_length = p_signed2string<PInt64>(value, 10, theArray);
+      else {
+        if (param > 4)
+          param = 4;
+
+        PInt64 absValue = value;
+        if (absValue < 0) {
+          absValue = -absValue;
+          ++param;
+        }
+
+        PInt64 multiplier = 1;
+        for (size_t i = siZero+1; i < sizeof(siTable); ++i) {
+          multiplier *= 1000;
+          if (absValue < multiplier*1000) {
+            m_length = p_signed2string<PInt64>(value/multiplier, 10, theArray);
+            param -= m_length;
+            if (param > 0) {
+              theArray[m_length++] = '.';
+              while (param-- > 0) {
+                multiplier /= 10;
+                theArray[m_length++] = (absValue/multiplier)%10 + '0';
+              }
+            }
+            while (theArray[m_length-1] == '0')
+              theArray[--m_length] = '\0';
+            theArray[m_length++] = siTable[i];
+            break;
+          }
+        }
+      }
       break;
 
     default :
@@ -911,6 +950,21 @@ PString::PString(ConversionType type, double value, unsigned places)
     case Exponent :
       sprintf("%0.*e", (int)places, value);
       break;
+
+    case ScaleSI :
+    {
+      // Scale it according to SI multipliers
+      double multiplier = 1e-18;
+      for (size_t i = 0; i < sizeof(siTable); ++i) {
+        multiplier *= 1000;
+        if (( value > multiplier &&  value < multiplier*1000) ||
+            (-value > multiplier && -value < multiplier*1000)) {
+          sprintf("%0.*f%c", (int)places, value/multiplier, siTable[i]);
+          break;
+        }
+      }
+      break;
+    }
 
     default :
       PAssertAlways(PInvalidParameter);
