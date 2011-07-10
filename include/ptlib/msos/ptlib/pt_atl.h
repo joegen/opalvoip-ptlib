@@ -33,6 +33,7 @@
 
 #ifdef P_ATL
   #pragma warning(disable:4127)
+  #include <cguid.h>
   #include <atlcomcli.h>
   #pragma warning(default:4127)
 #else
