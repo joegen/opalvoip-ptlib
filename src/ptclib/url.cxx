@@ -228,7 +228,7 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
       break;
 
     case PathTranslation :
-      safeChars += ":@&=+$,|";   // Section 3.3
+      safeChars += ":@&=$,|";   // Section 3.3
       break;
 
     default :
@@ -589,12 +589,12 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   PStringStream str;
 
   if (fmt == HostPortOnly && relativePath) {
-      if (schemeInfo->relativeImpliesScheme)
-        return PString::Empty();
+    if (schemeInfo->relativeImpliesScheme)
+      return PString::Empty();
 
     str << scheme << ':';
-      return str;
-    }
+    return str;
+  }
 
   if (fmt != URIOnly && !relativePath) {
     str << scheme << ':';
@@ -736,6 +736,7 @@ PString PURL::GetPathStr() const
 
 void PURL::SetPath(const PStringArray & p)
 {
+  path.MakeUnique();
   path = p;
   Recalculate();
 }
@@ -743,8 +744,23 @@ void PURL::SetPath(const PStringArray & p)
 
 void PURL::AppendPath(const PString & segment)
 {
+  path.MakeUnique();
   path.AppendString(segment);
   Recalculate();
+}
+
+
+void PURL::ChangePath(const PString & segment, PINDEX idx)
+{
+  path.MakeUnique();
+  if (path.IsEmpty())
+    AppendPath(segment);
+  else {
+    if (idx >= path.GetSize())
+      idx = path.GetSize()-1;
+    path[idx] = segment;
+    Recalculate();
+  }
 }
 
 
