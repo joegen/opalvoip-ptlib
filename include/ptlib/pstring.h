@@ -285,19 +285,20 @@ class PString : public PCharArray
     );
 
  
-    enum ConversionType {
-      Pascal,   // Data is a length byte followed by characters.
-      Basic,    // Data is two length bytes followed by characters.
-      Literal,  // Data is C language style string with \\ escape codes.
-      Signed,   // Convert a signed integer to a string.
-      Unsigned, // Convert an unsigned integer to a string.
-      Decimal,  // Convert a real number to a string in decimal format.
-      Exponent, // Convert a real number to a string in exponent format.
-      Printf,   // Formatted output, sprintf() style function.
-      NumConversionTypes
-    };
     /* Type of conversion to make in the conversion constructors.
      */
+    enum ConversionType {
+      Pascal,   ///< Data is a length byte followed by characters.
+      Basic,    ///< Data is two length bytes followed by characters.
+      Literal,  ///< Data is C language style string with \\ escape codes.
+      Signed,   ///< Convert a signed integer to a string.
+      Unsigned, ///< Convert an unsigned integer to a string.
+      Decimal,  ///< Convert a real number to a string in decimal format.
+      Exponent, ///< Convert a real number to a string in exponent format.
+      ScaleSI,  ///< Output scaled to SI units, e.g. k, M, G.
+      Printf,   ///< Formatted output, sprintf() style function.
+      NumConversionTypes
+    };
 
     /* Contruct a new string converting from the spcified data source into
        a string array.
@@ -308,9 +309,12 @@ class PString : public PCharArray
       ...                 ///< Extra parameters for <code>sprintf()</code> call.
     );
     PString(
-      ConversionType type,  ///< Type of data source for conversion.
-      long value,           ///< Integer value to convert.
-      unsigned base = 10    ///< Number base to use for the integer conversion.
+      ConversionType type, ///< Type of data source for conversion.
+      PInt64 value,        ///< Large integer value to convert.
+      unsigned param = 10  /**< For Signed/Unsigned, this is number base
+                                to use for the integer conversion.
+                                For ScaleSI, this is the number of significant
+                                figures to be used, maiximum 4. */
     );
     PString(
       ConversionType type,  ///< Type of data source for conversion.
