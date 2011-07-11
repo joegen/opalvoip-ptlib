@@ -295,14 +295,13 @@ static PMutex & GetDLLMutex()
 #else
 
 PDynaLink::PDynaLink()
+  : dllHandle(NULL)
 {
-  dllHandle = NULL;
 }
 
 PDynaLink::PDynaLink(const PString & _name)
-  : name(_name)
+  : dllHandle(NULL)
 {
-  dllHandle = NULL;
   Open(_name);
 }
 
@@ -322,15 +321,20 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & _name)
 {
+  PWaitAndSignal m(GetDLLMutex());
+
   m_lastError.MakeEmpty();
 
   Close();
 
+  if (_name.IsEmpty())
+    return false;
+
+  PTRACE(4, "UDLL\topening " << _name);
+
   name = _name;
 
   {
-    PWaitAndSignal m(GetDLLMutex());
-
 #if defined(P_OPENBSD)
     dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
 #else
@@ -349,10 +353,16 @@ PBoolean PDynaLink::Open(const PString & _name)
 
 void PDynaLink::Close()
 {
-  if (dllHandle != NULL) {
-    dlclose(dllHandle);
-    dllHandle = NULL;
-  }
+  PWaitAndSignal m(GetDLLMutex());
+
+  if (dllHandle == NULL)
+    return;
+
+  PTRACE(4, "UDLL\tClosing " << name);
+
+
+  dlclose(dllHandle);
+  dllHandle = NULL;
   name.MakeEmpty();
 }
 
@@ -363,6 +373,8 @@ PBoolean PDynaLink::IsLoaded() const
 
 PString PDynaLink::GetName(PBoolean full) const
 {
+  PWaitAndSignal m(GetDLLMutex());
+
   if (!IsLoaded())
     return "";
 
@@ -390,6 +402,8 @@ PBoolean PDynaLink::GetFunction(PINDEX, Function &)
 
 PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
 {
+  PWaitAndSignal m(GetDLLMutex());
+
   m_lastError.MakeEmpty();
 
   if (dllHandle == NULL)
