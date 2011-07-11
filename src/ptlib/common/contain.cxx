@@ -54,6 +54,9 @@ extern "C" int vsprintf(char *, const char *, va_list);
 
 PDEFINE_POOL_ALLOCATOR(PContainerReference);
 
+static char EmptyStringMemory[sizeof(PConstString)];
+static PConstString const * EmptyString = new (EmptyStringMemory) PConstString("");
+
 
 #define new PNEW
 #undef  __CLASS__
@@ -657,11 +660,9 @@ PString::PString(char c)
 }
 
 
-static PConstString const EmptyString("");
-
 const PString & PString::Empty()
 {
-  return EmptyString;
+  return *EmptyString;
 }
 
 
