@@ -62,6 +62,8 @@ class PPluginManager : public PObject
     // functions to load/unload a dynamic plugin 
     PBoolean LoadPlugin (const PString & fileName);
     void LoadPluginDirectory (const PDirectory & dir);
+
+    void OnShutdown();
   
     // functions to access the plugins' services 
     PStringArray GetPluginTypes() const;
