@@ -409,6 +409,21 @@ PBoolean PPluginManager::RegisterService(const PString & serviceName,
   return PTrue;
 }
 
+void PPluginManager::OnShutdown()
+{
+  for (PINDEX i = 0; i < plugins.GetSize(); i++)
+    CallNotifier(plugins[i], 0);
+
+  PWaitAndSignal m(notifiersMutex);
+  for (PList<PNotifier>::iterator i = notifiers.begin(); i != notifiers.end(); i++) {
+    notifiers.Remove(&*i);
+    i = notifiers.begin();
+  }
+  
+  while (plugins.GetSize() > 0)
+    plugins.RemoveAt(0);
+}
+
 
 void PPluginManager::AddNotifier(const PNotifier & notifyFunction, PBoolean existing)
 {
@@ -506,6 +521,8 @@ void PluginLoaderStartup::OnShutdown()
     mgr->OnShutdown();
     delete mgr;
   }
+ 
+  PPluginManager::GetPluginManager().OnShutdown();
 }
 
 PFACTORY_CREATE(PFactory<PProcessStartup>, PluginLoaderStartup, "PluginLoader", true);
