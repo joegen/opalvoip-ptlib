@@ -514,6 +514,8 @@ void PluginLoaderStartup::OnStartup()
 
 void PluginLoaderStartup::OnShutdown()
 {
+  PPluginManager::GetPluginManager().OnShutdown();
+
   while (managers.begin() != managers.end()) {
     std::vector<PPluginModuleManager *>::iterator r = managers.begin();
     PPluginModuleManager * mgr = *r;
@@ -521,8 +523,6 @@ void PluginLoaderStartup::OnShutdown()
     mgr->OnShutdown();
     delete mgr;
   }
- 
-  PPluginManager::GetPluginManager().OnShutdown();
 }
 
 PFACTORY_CREATE(PFactory<PProcessStartup>, PluginLoaderStartup, "PluginLoader", true);
