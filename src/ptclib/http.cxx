@@ -56,6 +56,7 @@ static char const * const HTTPCommands[PHTTP::NumCommands] = {
 };
 
 
+const PCaselessString & PHTTP::HostTag             () { static const PConstCaselessString s("Host"); return s; }
 const PCaselessString & PHTTP::AllowTag            () { static const PConstCaselessString s("Allow"); return s; }
 const PCaselessString & PHTTP::AuthorizationTag    () { static const PConstCaselessString s("Authorization"); return s; }
 const PCaselessString & PHTTP::ContentEncodingTag  () { static const PConstCaselessString s("Content-Encoding"); return s; }
@@ -92,12 +93,18 @@ PHTTP::PHTTP()
 }
 
 
+PHTTP::PHTTP(const char * defaultServiceName)
+  : PInternetProtocol(defaultServiceName, NumCommands, HTTPCommands)
+{
+}
+
+
 PINDEX PHTTP::ParseResponse(const PString & line)
 {
   PINDEX endVer = line.Find(' ');
   if (endVer == P_MAX_INDEX) {
     lastResponseInfo = "Bad response";
-    lastResponseCode = PHTTP::InternalServerError;
+    lastResponseCode = PHTTP::BadResponse;
     return 0;
   }
 
@@ -105,7 +112,7 @@ PINDEX PHTTP::ParseResponse(const PString & line)
   PINDEX endCode = line.Find(' ', endVer+1);
   lastResponseCode = line(endVer+1,endCode-1).AsInteger();
   if (lastResponseCode == 0)
-    lastResponseCode = PHTTP::InternalServerError;
+    lastResponseCode = PHTTP::BadResponse;
   lastResponseInfo &= line.Mid(endCode);
   return 0;
 }
