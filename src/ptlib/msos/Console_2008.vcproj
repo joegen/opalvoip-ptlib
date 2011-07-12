@@ -8556,6 +8556,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\ssdp.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\vcard.cxx"
 					>
 				</File>
@@ -9708,6 +9712,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\vsdl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\ssdp.h"
 					>
 				</File>
 				<File

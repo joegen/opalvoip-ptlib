@@ -176,6 +176,7 @@ class PHTTP : public PInternetProtocol
     };
 
     enum StatusCode {
+      BadResponse = 1,             ///<   1 = response is malformed
       Continue = 100,              ///< 100 - Continue
       SwitchingProtocols,          ///< 101 - upgrade allowed
       RequestOK = 200,             ///< 200 - request has succeeded
@@ -212,6 +213,7 @@ class PHTTP : public PInternetProtocol
     };
 
     // Common MIME header tags
+    static const PCaselessString & HostTag();
     static const PCaselessString & AllowTag();
     static const PCaselessString & AuthorizationTag();
     static const PCaselessString & ContentEncodingTag();
@@ -245,6 +247,9 @@ class PHTTP : public PInternetProtocol
     /** Create a TCP/IP HTTP protocol channel.
      */
     PHTTP();
+    PHTTP(
+      const char * defaultServiceName  ///< Service name for the protocol.
+    );
 
     /** Parse a response line string into a response code and any extra info
        on the line. Results are placed into the member variables
@@ -486,14 +491,29 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & replyMIME
     );
 
+    /// Call back to process the body of the HTTP command
+    struct ContentProcessor
+    {
+      virtual void * GetBuffer(PINDEX & size) = 0;
+      virtual bool Process(const void * data, PINDEX length) = 0;
+    };
+
     /// Read the body of the HTTP command
-    PBoolean ReadContentBody(
-      PMIMEInfo & replyMIME,
-      PBYTEArray & body
+    bool ReadContentBody(
+      PMIMEInfo & replyMIME,        ///< Reply MIME from server
+      ContentProcessor & processor  ///< Processor for received body
     );
-    PBoolean ReadContentBody(
-      PMIMEInfo & replyMIME,
-      PString & body
+
+    /// Read the body of the HTTP command
+    bool ReadContentBody(
+      PMIMEInfo & replyMIME,        ///< Reply MIME from server
+      PString & body                ///< Received body as a string
+    );
+
+    /// Read the body of the HTTP command
+    bool ReadContentBody(
+      PMIMEInfo & replyMIME,        ///< Reply MIME from server
+      PBYTEArray & body             ///< Received body as binary data
     );
 
 
@@ -505,7 +525,7 @@ class PHTTPClient : public PHTTP
        @return
        true if document is being transferred.
      */
-    PBoolean GetTextDocument(
+    bool GetTextDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       PString & document,       ///< Body read
       const PString & contentType = PString::Empty() ///< Content-Type header to expect
@@ -513,10 +533,32 @@ class PHTTPClient : public PHTTP
 
     /** Get the document specified by the URL.
 
+        An empty string for the contentType parameter means that any content
+        type is acceptable.
+
        @return
        true if document is being transferred.
      */
-    PBoolean GetDocument(
+    bool GetBinaryDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PBYTEArray & document,    ///< Body read
+      const PString & contentType = PString::Empty() ///< Content-Type header to expect
+    );
+
+    /** Start getting the document specified by the URL.
+
+       @return
+       true if document is being transferred.
+     */
+    bool GetDocument(
+      const PURL & url,             ///< Universal Resource Locator for document.
+      ContentProcessor & processor  ///< Processor for received body
+    );
+    bool GetDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & replyMIME     ///< MIME info in response
+    );
+    bool GetDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
       PMIMEInfo & replyMIME     ///< MIME info in response
@@ -527,6 +569,10 @@ class PHTTPClient : public PHTTP
        @return
        true if document header is being transferred.
      */
+    PBoolean GetHeader(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & replyMIME     ///< MIME info in response
+    );
     PBoolean GetHeader(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
@@ -607,10 +653,6 @@ class PHTTPClient : public PHTTP
 
   protected:
     PBoolean AssureConnect(const PURL & url, PMIMEInfo & outMIME);
-    bool InternalReadContentBody(
-      PMIMEInfo & replyMIME,
-      PAbstractArray * body
-    );
 
     PString m_userAgentName;
     bool    m_persist;
