@@ -36,6 +36,9 @@
 #endif
 
 
+#include <ptclib/mime.h>
+
+
 class PSocket;
 class PIPSocket;
 
@@ -227,12 +230,10 @@ class PInternetProtocol : public PIndirectChannel
        @return
        true if the command was completely written.
      */
-    virtual PBoolean WriteCommand(
-      PINDEX cmdNumber       ///< Number of command to write.
-    );
-    virtual PBoolean WriteCommand(
-      PINDEX cmdNumber,      ///< Number of command to write.
-      const PString & param  ///< Extra parameters required by the command.
+    virtual bool WriteCommand(
+      PINDEX cmdNumber,                         ///< Number of command to write.
+      const PString & param = PString::Empty(), ///< Extra parameters required by the command.
+      const PMIMEInfo & mime = PMIMEInfo()      ///< Optional MIME info sent after the command.
     );
 
     /** Read a single line of a command which ends with a CR/LF pair. The
@@ -253,10 +254,15 @@ class PInternetProtocol : public PIndirectChannel
        true if something was read, otherwise an I/O error occurred.
      */
     virtual PBoolean ReadCommand(
-      PINDEX & num,
-       ///< Number of the command parsed from the command line, or P_MAX_INDEX
-       ///< if no match.
+      PINDEX & num,     /**< Number of the command parsed from the command line,
+                             or P_MAX_INDEX if no match. */
       PString & args  ///< String to receive the arguments to the command.
+    );
+    virtual PBoolean ReadCommand(
+      PINDEX & num,     /**< Number of the command parsed from the command line,
+                             or P_MAX_INDEX if no match. */
+      PString & args,   ///< String to receive the arguments to the command.
+      PMIMEInfo & mime  ///< MIME info received after command line.
     );
 
     /** Write a response code followed by a text string describing the response
@@ -306,6 +312,11 @@ class PInternetProtocol : public PIndirectChannel
     virtual PBoolean ReadResponse(
       int & code,      ///< Response code for command response.
       PString & info   ///< Extra information available after response code.
+    );
+    virtual PBoolean ReadResponse(
+      int & code,      ///< Response code for command response.
+      PString & info,  ///< Extra information available after response code.
+      PMIMEInfo & mime ///< MIME information supplied in reply
     );
 
     /** Write a command to the socket, using <CODE>WriteCommand()</CODE> and

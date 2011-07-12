@@ -35,11 +35,11 @@
 #pragma interface
 #endif
 
-#include <ptclib/inetprot.h>
 #include <ptclib/cypher.h>
 
 
 class PMultiPartList;
+class PInternetProtocol;
 
 
 //////////////////////////////////////////////////////////////////////////////
