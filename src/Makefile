@@ -313,6 +313,7 @@ endif
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
+	$(COMPONENT_SRC_DIR)/ssdp.cxx \
 	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/html.cxx \
 	$(COMPONENT_SRC_DIR)/httpsrvr.cxx

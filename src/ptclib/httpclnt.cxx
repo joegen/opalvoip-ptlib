@@ -214,6 +214,22 @@ PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
 }
 
 
+struct PHTTPClient_DummyProcessor : public PHTTPClient::ContentProcessor
+{
+  BYTE m_body[4096];
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    size = sizeof(m_body);
+    return m_body;
+  }
+
+  virtual bool Process(const void *, PINDEX)
+  {
+    return true;
+  }
+};
+
 PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
   PString http = ReadString(7);
@@ -237,10 +253,12 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
       PString body;
       if (lastResponseCode >= 300) {
-        if (replyMIME.GetInteger(ContentLengthTag(), INT_MAX) > MaxTraceContentSize)
-          InternalReadContentBody(replyMIME, NULL); // Waste body
-        else
+        if (replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
+        else {
+          PHTTPClient_DummyProcessor dummy;
+          ReadContentBody(replyMIME, dummy); // Waste body
+        }
       }
 
 #if PTRACING
@@ -279,37 +297,84 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 }
 
 
+struct PHTTPClient_StringProcessor : public PHTTPClient::ContentProcessor
+{
+  PString & m_body;
+
+  PHTTPClient_StringProcessor(PString & body)
+    : m_body(body)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    PINDEX oldLength = m_body.GetLength();
+    char * ptr = m_body.GetPointerAndSetLength(oldLength+size);
+    return ptr != NULL ? ptr+oldLength : NULL;
+  }
+
+  virtual bool Process(const void *, PINDEX)
+  {
+    return true;
+  }
+};
+
 PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
-  PCharArray rawBody;
-  if (!InternalReadContentBody(replyMIME, &rawBody))
-    return false;
-
-  body = PString(rawBody, rawBody.GetSize());
-  return true;
+  PHTTPClient_StringProcessor processor(body);
+  return ReadContentBody(replyMIME, processor);
 }
 
+
+struct PHTTPClient_BinaryProcessor : public PHTTPClient::ContentProcessor
+{
+  PBYTEArray & m_body;
+
+  PHTTPClient_BinaryProcessor(PBYTEArray & body)
+    : m_body(body)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    PINDEX oldSize = m_body.GetSize();
+    BYTE * ptr = m_body.GetPointer(oldSize+size);
+    return ptr != NULL ? ptr+oldSize : NULL;
+  }
+
+  virtual bool Process(const void *, PINDEX)
+  {
+    return true;
+  }
+};
 
 PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
-  return InternalReadContentBody(replyMIME, &body);
+  PHTTPClient_BinaryProcessor processor(body);
+  return ReadContentBody(replyMIME, processor);
 }
 
 
-PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray * body)
+PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & processor)
 {
   PCaselessString encoding = replyMIME(TransferEncodingTag());
 
   if (encoding != ChunkedTag()) {
     if (replyMIME.Contains(ContentLengthTag())) {
       PINDEX length = replyMIME.GetInteger(ContentLengthTag());
-      if (body != NULL) {
-        body->SetSize(length);
-        return ReadBlock(body->GetPointer(), length);
-      }
-      while (length-- > 0) {
-        if (ReadChar() < 0)
+
+      PINDEX size = length;
+      void * ptr = processor.GetBuffer(size);
+      if (ptr == NULL)
+        return false;
+
+      if (length == size)
+        return ReadBlock(ptr, length);
+
+      while (length > 0 && Read(ptr, PMIN(length, size))) {
+        if (!processor.Process(ptr, GetLastReadCount()))
           return false;
+        length -= GetLastReadCount();
       }
       return true;
     }
@@ -317,64 +382,79 @@ PBoolean PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractAr
     if (!(encoding.IsEmpty())) {
       lastResponseCode = -1;
       lastResponseInfo = "Unknown Transfer-Encoding extension";
-      return PFalse;
+      return false;
     }
 
-    if (body != NULL) {
-      // Must be raw, read to end file variety
-      static const PINDEX ChunkSize = 2048;
-      PINDEX bytesRead = 0;
-      while (ReadBlock((char *)body->GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
-        bytesRead += GetLastReadCount();
+    PINDEX size = 8192;
+    void * ptr = processor.GetBuffer(size);
+    if (ptr == NULL)
+      return false;
 
-      body->SetSize(bytesRead + GetLastReadCount());
+    // Must be raw, read to end file variety
+    while (Read(ptr, size)) {
+      if (!processor.Process(ptr, GetLastReadCount()))
+        return false;
     }
-    else {
-      while (ReadChar() >= 0)
-        ;
-    }
+
     return GetErrorCode(LastReadError) == NoError;
   }
 
   // HTTP1.1 chunked format
-  PINDEX bytesRead = 0;
   for (;;) {
     // Read chunk length line
     PString chunkLengthLine;
     if (!ReadLine(chunkLengthLine))
-      return PFalse;
+      return false;
 
     // A zero length chunk is end of output
     PINDEX chunkLength = chunkLengthLine.AsUnsigned(16);
     if (chunkLength == 0)
       break;
 
-    if (body != NULL) {
-      // Read the chunk
-      if (!ReadBlock((char *)body->GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
-        return PFalse;
-      bytesRead+= chunkLength;
+    PINDEX size = chunkLength;
+    void * ptr = processor.GetBuffer(size);
+    if (ptr == NULL)
+      return false;
+
+    if (chunkLength == size) {
+      if (!ReadBlock(ptr, chunkLength))
+        return false;
     }
     else {
-      while (chunkLength-- > 0) {
-        if (ReadChar() < 0)
+      // Read the chunk
+      while (chunkLength > 0 && Read(ptr, PMIN(chunkLength, size))) {
+        if (!processor.Process(ptr, GetLastReadCount()))
           return false;
+        chunkLength -= GetLastReadCount();
       }
     }
 
     // Read the trailing CRLF
     if (!ReadLine(chunkLengthLine))
-      return PFalse;
+      return false;
   }
 
   // Read the footer
   PString footer;
   do {
     if (!ReadLine(footer))
-      return PFalse;
+      return false;
   } while (replyMIME.AddMIME(footer));
 
-  return PTrue;
+  return true;
+}
+
+
+static bool CheckContentType(const PMIMEInfo & replyMIME, const PString & requiredContentType)
+{
+  PCaselessString actualContentType = replyMIME(PHTTPClient::ContentTypeTag());
+  if (requiredContentType.IsEmpty() || actualContentType.IsEmpty() ||
+      actualContentType.NumCompare(requiredContentType, requiredContentType.Find(';')) == PObject::EqualTo)
+    return true;
+
+  PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting "
+         << requiredContentType << ", got " << actualContentType);
+  return false;
 }
 
 
@@ -386,11 +466,9 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
   if (!GetDocument(url, outMIME, replyMIME))
     return PFalse;
 
-  PCaselessString actualContentType = replyMIME(ContentTypeTag());
-  if (!requiredContentType.IsEmpty() && !actualContentType.IsEmpty() &&
-        actualContentType.NumCompare(requiredContentType, requiredContentType.Find(';')) != EqualTo) {
-    PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << requiredContentType << ", got " << actualContentType);
-    InternalReadContentBody(replyMIME, NULL); // Waste body
+  if (!CheckContentType(replyMIME, requiredContentType)) {
+    PHTTPClient_DummyProcessor dummy;
+    ReadContentBody(replyMIME, dummy); // Waste body
     return false;
   }
 
@@ -405,11 +483,58 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
 }
 
 
-PBoolean PHTTPClient::GetDocument(const PURL & url,
+bool PHTTPClient::GetBinaryDocument(const PURL & url,
+                                    PBYTEArray & document,
+                                    const PString & requiredContentType)
+{
+  PMIMEInfo outMIME, replyMIME;
+  if (!GetDocument(url, outMIME, replyMIME))
+    return PFalse;
+
+  if (!CheckContentType(replyMIME, requiredContentType)) {
+    PHTTPClient_DummyProcessor dummy;
+    ReadContentBody(replyMIME, dummy); // Waste body
+    return false;
+  }
+
+  if (!ReadContentBody(replyMIME, document)) {
+    PTRACE(2, "HTTP\tRead of body failed");
+    return false;
+  }
+
+  PTRACE_IF(4, !document.IsEmpty(), "HTTP\tReceived " << document.GetSize() << " byte body\n");
+  return true;
+}
+
+
+bool PHTTPClient::GetDocument(const PURL & url, ContentProcessor & processor)
+{
+  PMIMEInfo outMIME, replyMIME;
+  return IsOK(ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME)) &&
+         ReadContentBody(replyMIME, processor);
+}
+
+
+bool PHTTPClient::GetDocument(const PURL & url, PMIMEInfo & replyMIME)
+{
+  PMIMEInfo outMIME;
+  return IsOK(ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME));
+}
+
+
+bool PHTTPClient::GetDocument(const PURL & url,
                               PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {
   return IsOK(ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME));
+}
+
+
+PBoolean PHTTPClient::GetHeader(const PURL & url,
+                            PMIMEInfo & replyMIME)
+{
+  PMIMEInfo outMIME;
+  return IsOK(ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
@@ -519,7 +644,6 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
   }
 
   // Have connection, so fill in the required MIME fields
-  static char HostTag[] = "Host";
   if (!outMIME.Contains(HostTag)) {
     if (!host)
       outMIME.SetAt(HostTag, host);

@@ -70,6 +70,14 @@ void PInternetProtocol::SetReadLineTimeout(const PTimeInterval & t)
 
 PBoolean PInternetProtocol::Read(void * buf, PINDEX len)
 {
+  if (unReadCount == 0) {
+    char readAhead[1000];
+    if (!PIndirectChannel::Read(readAhead, sizeof(readAhead)))
+      return false;
+
+    UnRead(readAhead, GetLastReadCount());
+  }
+
   lastReadCount = PMIN(unReadCount, len);
   const char * unReadPtr = ((const char *)unReadBuffer)+unReadCount;
   char * bufptr = (char *)buf;
@@ -354,22 +362,18 @@ void PInternetProtocol::UnRead(const void * buffer, PINDEX len)
 }
 
 
-PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber)
+PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param, const PMIMEInfo & mime)
 {
   if (cmdNumber >= commandNames.GetSize())
     return false;
-  return WriteLine(commandNames[cmdNumber]);
-}
 
+  *this << commandNames[cmdNumber];
 
-PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param)
-{
-  if (cmdNumber >= commandNames.GetSize())
-    return false;
-  if (param.IsEmpty())
-    return WriteLine(commandNames[cmdNumber]);
-  else
-    return WriteLine(commandNames[cmdNumber] & param);
+  if (!param.IsEmpty())
+    *this << ' ' << param;
+
+  *this << CRLF << setfill('\r') << mime << ::flush;
+  return good();
 }
 
 
@@ -390,6 +394,15 @@ PBoolean PInternetProtocol::ReadCommand(PINDEX & num, PString & args)
     args = args.Mid(endCommand+1);
 
   return true;
+}
+
+
+PBoolean PInternetProtocol::ReadCommand(PINDEX & num, PString & args, PMIMEInfo & mime)
+{
+  if (!ReadCommand(num, args))
+    return false;
+
+  return mime.Read(*this);
 }
 
 
@@ -466,6 +479,15 @@ PBoolean PInternetProtocol::ReadResponse(int & code, PString & info)
 }
 
 
+PBoolean PInternetProtocol::ReadResponse(int & code, PString & info, PMIMEInfo & mime)
+{
+  if (!ReadResponse(code, info))
+    return false;
+
+  return mime.Read(*this);
+}
+
+
 PINDEX PInternetProtocol::ParseResponse(const PString & line)
 {
   PINDEX endCode = line.FindOneOf(" -");
@@ -528,8 +550,9 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
+  bool crlf = strm.fill() == '\r';
   PrintContents(strm);
-  if (strm.fill() == '\r')
+  if (crlf)
     strm << '\r';
   strm << '\n';
 }
