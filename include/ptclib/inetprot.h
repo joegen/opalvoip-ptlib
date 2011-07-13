@@ -232,8 +232,12 @@ class PInternetProtocol : public PIndirectChannel
      */
     virtual bool WriteCommand(
       PINDEX cmdNumber,                         ///< Number of command to write.
-      const PString & param = PString::Empty(), ///< Extra parameters required by the command.
-      const PMIMEInfo & mime = PMIMEInfo()      ///< Optional MIME info sent after the command.
+      const PString & param = PString::Empty()  ///< Extra parameters required by the command.
+    );
+    virtual bool WriteCommand(
+      PINDEX cmdNumber,                         ///< Number of command to write.
+      const PString & param,                    ///< Extra parameters required by the command.
+      const PMIMEInfo & mime                    ///< Optional MIME info sent after the command.
     );
 
     /** Read a single line of a command which ends with a CR/LF pair. The

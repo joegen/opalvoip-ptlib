@@ -362,7 +362,7 @@ void PInternetProtocol::UnRead(const void * buffer, PINDEX len)
 }
 
 
-PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param, const PMIMEInfo & mime)
+PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param)
 {
   if (cmdNumber >= commandNames.GetSize())
     return false;
@@ -372,7 +372,17 @@ PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param
   if (!param.IsEmpty())
     *this << ' ' << param;
 
-  *this << CRLF << setfill('\r') << mime << ::flush;
+  *this << CRLF << setfill('\r') << ::flush;
+  return good();
+}
+
+
+PBoolean PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param, const PMIMEInfo & mime)
+{
+  if (!WriteCommand(cmdNumber, param))
+    return false;
+
+  *this << setfill('\r') << mime << ::flush;
   return good();
 }
 
