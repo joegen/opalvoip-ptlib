@@ -264,6 +264,8 @@ bool PSMTPClient::InternalBeginMessage()
   if (ExecuteCommand(DATA, PString())/100 != 3)
     return false;
 
+  flush();
+
   stuffingState = StuffIdle;
   sendingData = PTrue;
   return true;
@@ -1295,7 +1297,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
       headers.SetAt(ContentTypeTag(), PMIMEInfo::TextPlain());
 
     PStringStream hdr;
-    hdr << ::setfill('\r') << headers;
+    hdr << headers;
     if (!PIndirectChannel::Write((const char *)hdr, hdr.GetLength()))
       return PFalse;
 
@@ -1303,15 +1305,17 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
       base64->StartEncoding();
 
     writeHeaders = PFalse;
+
+    flush();
   }
 
-  if (writePartHeaders) {
+  if (writePartHeaders && (boundaries.GetSize() > 0)) {
     if (!partHeaders.Contains(ContentTypeTag()))
       partHeaders.SetAt(ContentTypeTag(), PMIMEInfo::TextPlain());
 
     PStringStream hdr;
     hdr << "\n--"  << boundaries.front() << '\n'
-        << ::setfill('\r') << partHeaders;
+        << partHeaders;
     if (!PIndirectChannel::Write((const char *)hdr, hdr.GetLength()))
       return PFalse;
 
@@ -1319,6 +1323,8 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
       base64->StartEncoding();
 
     writePartHeaders = PFalse;
+
+    flush();
   }
 
   PBoolean ok;
@@ -1329,6 +1335,8 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
     PString str = base64->GetEncodedString();
     ok = PIndirectChannel::Write((const char *)str, str.GetLength());
   }
+
+  flush();
 
   // Always return the lastWriteCount as the number of bytes expected to be
   // written, not teh actual number which with base64 encoding etc may be
@@ -1368,7 +1376,7 @@ PString PRFC822Channel::MultipartMessage()
   PString boundary;
 
   do {
-    boundary.sprintf("PWLib.%lu.%u", PTime().GetTimeInSeconds(), rand());
+    boundary.sprintf("PTLib.%lu.%u", PTime().GetTimeInSeconds(), rand());
   } while (!MultipartMessage(boundary));
 
   return boundary;
@@ -1401,6 +1409,7 @@ void PRFC822Channel::NextPart(const PString & boundary)
     base64 = NULL;
     *this << oldBase64->CompleteEncoding() << '\n';
     delete oldBase64;
+    flush();
   }
 
   while (boundaries.GetSize() > 0) {
