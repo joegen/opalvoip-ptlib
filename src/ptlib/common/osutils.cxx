@@ -2276,17 +2276,36 @@ void PReadWriteMutex::StartRead()
 }
 
 
+void PReadWriteMutex::InternalWait(PSemaphore & semaphore) const
+{
+#if PTRACING
+  if (semaphore.Wait(15000))
+    return;
+
+  ostream & trace = PTrace::Begin(1, __FILE__, __LINE__);
+  trace << "PTLib\tPossible deadlock in read/write mutex:\n";
+  for (std::map<PThreadIdentifier, Nest>::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it)
+    trace << "  thread-id=" << it->first << ","
+              " readers=" << it->second.readerCount << ","
+              " writers=" << it->second.writerCount << '\n';
+  trace << PTrace::End;
+#endif
+
+  semaphore.Wait();
+}
+
+
 void PReadWriteMutex::InternalStartRead()
 {
   // Text book read only lock
 
   starvationPreventer.Wait();
-   readerSemaphore.Wait();
+   InternalWait(readerSemaphore);
     readerMutex.Wait();
 
      readerCount++;
      if (readerCount == 1)
-       writerSemaphore.Wait();
+       InternalWait(writerSemaphore);
 
     readerMutex.Signal();
    readerSemaphore.Signal();
@@ -2365,11 +2384,11 @@ void PReadWriteMutex::StartWrite()
 
   writerCount++;
   if (writerCount == 1)
-    readerSemaphore.Wait();
+    InternalWait(readerSemaphore);
 
   writerMutex.Signal();
 
-  writerSemaphore.Wait();
+  InternalWait(writerSemaphore);
 }
 
 
