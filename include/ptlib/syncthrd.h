@@ -327,6 +327,7 @@ class PReadWriteMutex : public PObject
     void EndNest();
     void InternalStartRead();
     void InternalEndRead();
+    void InternalWait(PSemaphore & semaphore) const;
 };
 
 
