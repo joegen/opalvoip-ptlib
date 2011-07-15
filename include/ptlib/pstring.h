@@ -1903,7 +1903,7 @@ class PConstantString : public ParentString
     }
     ~PConstantString() { this->Destruct(); }
 
-    virtual PBoolean SetSize(PINDEX s) { return s <= m_length+1; }
+    virtual PBoolean SetSize(PINDEX s) { return s <= this->m_length+1; }
     virtual void AssignContents(const PContainer &) { PAssertAlways(PInvalidParameter); }
     virtual void DestroyReference() { }
 
