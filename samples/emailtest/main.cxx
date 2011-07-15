@@ -47,13 +47,13 @@ void Emailtest::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
-             "h-help.   "
-             "v-version.    "
-             "s-server:"
-             "t-to:"
-             "f-from:"
-             "r-re:"
-             "a-attachment:"
+             "h-help."
+             "v-version."
+             "-server:"
+             "-to:"
+             "-from:"
+             "-subject:"
+             "-attach:"
 
 #if PTRACING
              "o-output:"             "-no-output."
@@ -64,11 +64,11 @@ void Emailtest::Main()
   if (args.HasOption('h')) {
     cout << "usage: " <<  (const char *)GetName()
          << endl
-         << "     -s or --server srv     : set mail server" << endl
-         << "     -t or --to     dst     : set to address" << endl
-         << "     -f or --from   frm     : set from address " << endl
-         << "     -r or --re     sbj     : set subject " << endl
-         << "     -a or --attachment atc : list of attachments " << endl
+         << "     --server srv     : set mail server" << endl
+         << "     --to     dst     : set to address" << endl
+         << "     --from   frm     : set from address " << endl
+         << "     -subject sbj     : set subject " << endl
+         << "     --attach atc     : list of attachments " << endl
          << "     -h or --help           : get help on usage " << endl
          << "     -v or --version        : report program version " << endl
 #if PTRACING
@@ -105,9 +105,9 @@ void Emailtest::Main()
 
   email.SetToAddress(to);
   email.SetFromAddress(from);
-  email.SetSubject(args.GetOptionString("re"));
+  email.SetSubject(args.GetOptionString("subject"));
 
-  PStringArray attachments = args.GetOptionString("attachment").Lines();
+  PStringArray attachments = args.GetOptionString("attach").Lines();
 
   PString server = args.GetOptionString("server");
   if (server.IsEmpty())
@@ -167,8 +167,6 @@ void Emailtest::Main()
       }
     }
   }
-
-  smtpClient.EndMessage();
 
   email.Close();
 }
