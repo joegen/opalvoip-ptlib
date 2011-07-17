@@ -97,7 +97,7 @@ PStringArray PSoundChannelPulse::GetDeviceNames(Directions /*dir*/)
   // On linux without devfs we scan all of the devices and look for ones
   // with major device numbers corresponding to Pulse compatible drivers.
 
-  PTRACE(6, "Pulse\tReport devicenames as \"ptlib pulse plugin\"");
+  PTRACE2(6, NULL, "Pulse\tReport devicenames as \"ptlib pulse plugin\"");
   PStringArray devices;
   devices.AppendString("ptlib pulse plugin");
 
@@ -107,7 +107,7 @@ PStringArray PSoundChannelPulse::GetDeviceNames(Directions /*dir*/)
 
 PString PSoundChannelPulse::GetDefaultDevice(Directions dir)
 {
-  PTRACE(6, "Pulse\t report default device as \"ptlib pulse plugin\"");
+  PTRACE2(6, NULL, "Pulse\t report default device as \"ptlib pulse plugin\"");
   PStringArray devicenames;
   devicenames = PSoundChannelPulse::GetDeviceNames(dir);
 
