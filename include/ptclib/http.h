@@ -177,6 +177,8 @@ class PHTTP : public PInternetProtocol
 
     enum StatusCode {
       BadResponse = 1,             ///<   1 = response is malformed
+      ContentProcessorError,       ///< Content Processer returned error
+      UnknownTransferEncoding,     ///< Unknown "Transfer-Encoding" extension
       Continue = 100,              ///< 100 - Continue
       SwitchingProtocols,          ///< 101 - upgrade allowed
       RequestOK = 200,             ///< 200 - request has succeeded
