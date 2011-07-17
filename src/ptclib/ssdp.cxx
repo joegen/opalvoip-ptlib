@@ -99,7 +99,8 @@ bool PSSDP::Search(const PString & urn, PMIMEInfo & reply)
     if (!Open(socket, true))
       return false;
     socket->SetSendAddress(ssdpMulticast, ssdpPort);
-    SetReadLineTimeout(1000);
+    SetReadTimeout(1000);
+    SetReadLineTimeout(100);
   }
 
   PMIMEInfo mime;
