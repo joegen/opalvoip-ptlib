@@ -365,15 +365,21 @@ PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & 
 
       PINDEX size = length;
       void * ptr = processor.GetBuffer(size);
-      if (ptr == NULL)
+      if (ptr == NULL) {
+        lastResponseCode = ContentProcessorError;
+        lastResponseInfo = "No buffer from HTTP content processor";
         return false;
+      }
 
       if (length == size)
         return ReadBlock(ptr, length);
 
       while (length > 0 && Read(ptr, PMIN(length, size))) {
-        if (!processor.Process(ptr, GetLastReadCount()))
+        if (!processor.Process(ptr, GetLastReadCount())) {
+          lastResponseCode = ContentProcessorError;
+          lastResponseInfo = "Content processing error";
           return false;
+        }
         length -= GetLastReadCount();
       }
       return true;
@@ -387,13 +393,19 @@ PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & 
 
     PINDEX size = 8192;
     void * ptr = processor.GetBuffer(size);
-    if (ptr == NULL)
+    if (ptr == NULL) {
+      lastResponseCode = ContentProcessorError;
+      lastResponseInfo = "No buffer from HTTP content processor";
       return false;
+    }
 
     // Must be raw, read to end file variety
     while (Read(ptr, size)) {
-      if (!processor.Process(ptr, GetLastReadCount()))
+      if (!processor.Process(ptr, GetLastReadCount())) {
+        lastResponseCode = ContentProcessorError;
+        lastResponseInfo = "Content processing error";
         return false;
+      }
     }
 
     return GetErrorCode(LastReadError) == NoError;
@@ -413,8 +425,11 @@ PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & 
 
     PINDEX size = chunkLength;
     void * ptr = processor.GetBuffer(size);
-    if (ptr == NULL)
+    if (ptr == NULL) {
+      lastResponseCode = ContentProcessorError;
+      lastResponseInfo = "No buffer from HTTP content processor";
       return false;
+    }
 
     if (chunkLength == size) {
       if (!ReadBlock(ptr, chunkLength))
@@ -423,8 +438,11 @@ PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & 
     else {
       // Read the chunk
       while (chunkLength > 0 && Read(ptr, PMIN(chunkLength, size))) {
-        if (!processor.Process(ptr, GetLastReadCount()))
+        if (!processor.Process(ptr, GetLastReadCount())) {
+          lastResponseCode = ContentProcessorError;
+          lastResponseInfo = "Content processing error";
           return false;
+        }
         chunkLength -= GetLastReadCount();
       }
     }
