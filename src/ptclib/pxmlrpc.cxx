@@ -377,6 +377,8 @@ PBoolean PXMLRPCBlock::ValidateResponse()
   if (params == NULL)
     params = rootElement->GetElement("params");
   if (params == NULL)
+    params = rootElement->GetElement("fault");
+  if (params == NULL)
     return PTrue;
 
   // determine if fault
