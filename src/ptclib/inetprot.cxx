@@ -519,8 +519,9 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
+  bool crlf = strm.fill() == '\r';
   PrintContents(strm);
-  if (strm.fill() == '\r')
+  if (crlf)
     strm << '\r';
   strm << '\n';
 }
