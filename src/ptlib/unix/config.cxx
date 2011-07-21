@@ -237,10 +237,10 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
       PStringArray lines = it2->second.Tokenise('\n', PTrue);
       // Preserve name/value pairs with no value, i.e. of the form "name="
       if (lines.IsEmpty())
-	file << it->first << "=" << endl;
+	file << it2->first << "=" << endl;
       else {
         for (PINDEX k = 0; k < lines.GetSize(); k++) 
-          file << it->first << "=" << lines[k] << endl;
+          file << it2->first << "=" << lines[k] << endl;
       }
     }
     file << endl;
