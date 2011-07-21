@@ -46,8 +46,8 @@ dnl	  fi
             AC_MSG_RESULT([no])
           fi
           AC_SUBST(HAS_$2)
-          
-          
+
+
          ])
 
 dnl PTLIB_FIND_DIRECTX
@@ -68,14 +68,14 @@ AC_DEFUN([PTLIB_FIND_DIRECTX],
 	              [with_directx_dir="$withval"],
 		      [with_directx_dir="include"]
 	  )
-	  
+
 	  AC_MSG_CHECKING(for DirectX includes in ${with_directx_dir})
 	  AC_MSG_RESULT()
 
 	  old_CPPFLAGS="$CPPFLAGS"
 	  CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
 	  AC_LANG(C++)
-	  
+
 	  AC_CHECK_HEADERS([mingw_dshow_port.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
@@ -84,21 +84,19 @@ AC_DEFUN([PTLIB_FIND_DIRECTX],
 	  AC_CHECK_HEADERS([dxerr9.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
 dnl ##### the two following headers are included by other headers, so check only if they exist
-	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [ptlib_has_directx=no])
-	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [ptlib_has_directx=no])
+	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [], [ptlib_has_directx=no])
+	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [], [ptlib_has_directx=no])
 	  CPPFLAGS="$old_CPPFLAGS"
 
 
-	  if test "x${ptlib_has_directx}" = "xyes" ; then
-	    AC_MSG_CHECKING([for DirectX libraries])
-	    AC_MSG_RESULT()
-	  fi
-	  
+      AC_MSG_CHECKING([for DirectX includes])
+      AC_MSG_RESULT(${ptlib_has_directx})
+
 	  if test "x${ptlib_has_directx}" = "xyes" ; then
 	    DIRECTX_INCLUDES="-I${with_directx_dir}"
 	    DIRECTX_LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
 	  fi
-	  
+
           AS_IF([test AS_VAR_GET([ptlib_has_directx]) = yes], [$1], [$2])[]
          ])
 
