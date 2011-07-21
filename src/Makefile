@@ -386,6 +386,7 @@ endif
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	+= \
+	$(COMPONENT_SRC_DIR)/spooldir.cxx \
 	$(COMPONENT_SRC_DIR)/threadpool.cxx \
 	$(COMPONENT_SRC_DIR)/ipacl.cxx \
 	$(COMPONENT_SRC_DIR)/qchannel.cxx \
