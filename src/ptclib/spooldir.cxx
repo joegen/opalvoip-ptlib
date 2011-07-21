@@ -33,7 +33,7 @@
 #endif
 
 #include <ptlib.h>
-#include <ptclib\spooldir.h>
+#include <ptclib/spooldir.h>
 
 
 PSpoolDirectory::PSpoolDirectory()
