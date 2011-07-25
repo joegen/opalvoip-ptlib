@@ -92,3 +92,4 @@ class PSpoolDirectory : PObject
 
 
 #endif // PTLIB_SPOOLDIR_H
+

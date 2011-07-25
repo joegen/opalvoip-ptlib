@@ -496,6 +496,7 @@ class PHTTPClient : public PHTTP
     /// Call back to process the body of the HTTP command
     struct ContentProcessor
     {
+      virtual ~ContentProcessor() { }
       virtual void * GetBuffer(PINDEX & size) = 0;
       virtual bool Process(const void * data, PINDEX length) = 0;
     };
