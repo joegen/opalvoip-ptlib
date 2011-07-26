@@ -193,7 +193,7 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean startImm
     videoFd = -1;
     return PFalse;
   }
-    
+
   canRead = videoCapability.capabilities & V4L2_CAP_READWRITE;
   canStream = videoCapability.capabilities & V4L2_CAP_STREAMING;
   canSelect = videoCapability.capabilities & V4L2_CAP_ASYNCIO;
@@ -213,8 +213,12 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean startImm
   } else {
 
     canSetFrameRate = videoStreamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME;
-    if (canSetFrameRate)
+    if (canSetFrameRate) {
+      if (videoStreamParm.parm.capture.timeperframe.numerator == 0) {
+        PTRACE(1,"PVidInDev\tnumerator is zero and denominator is " << videoStreamParm.parm.capture.timeperframe.denominator << ", driver bug??");
+      }
       PVideoDevice::SetFrameRate (videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator);
+    }
   }
 
   SetVideoFormat(videoFormat);
@@ -224,7 +228,7 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean startImm
 }
 
 
-PBoolean PVideoInputDevice_V4L2::IsOpen() 
+PBoolean PVideoInputDevice_V4L2::IsOpen()
 {
   return videoFd >= 0;
 }
