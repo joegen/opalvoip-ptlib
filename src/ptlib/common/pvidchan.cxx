@@ -127,6 +127,7 @@ PBoolean PVideoChannel::Write(const void * buf, PINDEX /*len*/, void * mark)
     return PFalse;
 
 
+  bool keyFrameNeeded;
   if (mpInput == NULL) {
     PTRACE(6,"PVC\t::Write, frame size is "
               << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
@@ -134,7 +135,10 @@ PBoolean PVideoChannel::Write(const void * buf, PINDEX /*len*/, void * mark)
     return mpOutput->SetFrameData(0, 0,
         mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(),
         mpOutput->GetSarWidth(),   mpOutput->GetSarHeight(),
-        (const BYTE *)buf, PTrue,0, mark);
+                                  (const BYTE *)buf,
+                                  true,
+                                  keyFrameNeeded,
+                                  mark);
   }
 
   PTRACE(6,"PVC\t::Write, frame size is " 
@@ -143,7 +147,10 @@ PBoolean PVideoChannel::Write(const void * buf, PINDEX /*len*/, void * mark)
   return mpOutput->SetFrameData(0, 0,
         mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
         mpInput->GetSarWidth(),   mpInput->GetSarHeight(),
-           (const BYTE *)buf, PTrue,0, mark);  
+                                (const BYTE *)buf,
+                                true,
+                                keyFrameNeeded,
+                                mark);  
 
 }
 
