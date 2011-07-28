@@ -112,8 +112,8 @@ class PVideoFrameInfo : public PObject
        variable and returns true.
     */
     virtual PBoolean GetFrameSize(
-      unsigned & width,
-      unsigned & height
+      unsigned & width, ///< Current width of frame
+      unsigned & height ///< Current height of frame
     ) const;
 
     /** Get the width of the frame being used.
@@ -128,30 +128,33 @@ class PVideoFrameInfo : public PObject
     */
     virtual unsigned GetFrameHeight() const;
 
-    /**Set the sar size to be used.
+    /**Set the Storage Aspect Ratio size to be used.
 
        Default behaviour sets the sarWidth and sarHeight variables and
        returns PTrue.
     */
-    virtual PBoolean SetFrameSar(unsigned width, unsigned height);
+    virtual PBoolean SetFrameSar(
+      unsigned width,   ///< New SAR width of frame
+      unsigned height   ///< New SAR height of frame
+    );
 
-     /**Get the sar size being used.
+     /**Get the Storage Aspect Ratio size being used.
 
        Default behaviour returns the value of the sarWidth and sarHeight
        variable and returns PTrue.
     */
     virtual PBoolean GetSarSize(
-      unsigned & width,
-      unsigned & height
+      unsigned & width, ///< Current SAR width of frame
+      unsigned & height ///< Current SAR height of frame
     ) const;
 
-    /** Get the width of the sar being used.
+    /** Get the width of the Storage Aspect Ratio being used.
 
         Default behaviour returns the value of the sarWidth variable
     */
     virtual unsigned GetSarWidth() const;
 
-    /** Get the height of the sar being used.
+    /** Get the height of the Storage Aspect Ratio being used.
 
         Default behaviour returns the value of the sarHeight variable
     */
@@ -785,32 +788,32 @@ class PVideoOutputDevice : public PVideoDevice
     /**Set a section of the output frame buffer.
       */
     virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame = true
+      unsigned x,               ///< Horizontal position in frame where data is put
+      unsigned y,               ///< Vertical position in frame where data is put
+      unsigned width,           ///< Width of area in frame where data is put
+      unsigned height,          ///< Height of area in frame where data is put
+      const BYTE * data,        ///< Data to put into the video frame store
+      PBoolean endFrame = true  ///< Indicate no more data for this video frame
     ) = 0;
     virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame,
-      unsigned flags
+      unsigned x,               ///< Horizontal position in frame where data is put
+      unsigned y,               ///< Vertical position in frame where data is put
+      unsigned width,           ///< Width of area in frame where data is put
+      unsigned height,          ///< Height of area in frame where data is put
+      const BYTE * data,        ///< Data to put into the video frame store
+      PBoolean endFrame,        ///< Indicate no more data for this video frame
+      bool & keyFrameNeeded     ///< Indicates bad video and a new key frame is required
     );
     virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      unsigned sarwidth,
-      unsigned sarheight,
-      const BYTE * data,
-      PBoolean endFrame,
-      unsigned flags,
+      unsigned x,               ///< Horizontal position in frame where data is put
+      unsigned y,               ///< Vertical position in frame where data is put
+      unsigned width,           ///< Width of area in frame where data is put
+      unsigned height,          ///< Height of area in frame where data is put
+      unsigned sarWidth,        ///< Aspect ratio width of area in frame where data is put
+      unsigned sarHeight,       ///< Aspect ratio height of area in frame where data is put
+      const BYTE * data,        ///< Data to put into the video frame store
+      PBoolean endFrame,        ///< Indicate no more data for this video frame
+      bool & keyFrameNeeded,    ///< Indicates bad video and a new key frame is required
       const void * mark
     );
 
@@ -1103,7 +1106,8 @@ class PVideoInputDevice : public PVideoDevice
     virtual PBoolean GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned,        ///< Optional bytes returned.
-      unsigned int & flags           ///< optional flags returned
+      bool & keyFrame         /**< On input, forces generation of key frame,
+                                   On return indicates key frame generated */
     );
     virtual PBoolean GetFrameData(
       BYTE * buffer,                 ///< Buffer to receive frame
@@ -1115,7 +1119,8 @@ class PVideoInputDevice : public PVideoDevice
     virtual PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
       PINDEX * bytesReturned,       ///< Optional bytes returned.
-      unsigned int & flags           ///< optional flags returned
+      bool & keyFrame         /**< On input, forces generation of key frame,
+                                   On return indicates key frame generated */
     );
     virtual PBoolean GetFrameDataNoDelay(
       BYTE * buffer,                 ///< Buffer to receive frame
