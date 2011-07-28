@@ -171,7 +171,8 @@ class PIPSocket : public PSocket
 
         /// Format an address as a string.
         PString AsString(
-          bool bracketIPv6 = false ///< An IPv6 address is enclosed in []'s
+          bool bracketIPv6 = false,  ///< An IPv6 address is enclosed in []'s
+          bool excludeScope = false  ///< An IPv6 address includes %xxx for scope ID
         ) const;
 
         /// Convert string to IP address. Returns true if was a valid address.
@@ -270,7 +271,12 @@ class PIPSocket : public PSocket
         unsigned m_version;
         int      m_scope6;
 
-      /// Output IPv6 & IPv4 address as a string to the specified string.
+      /** Output IPv6 & IPv4 address as a string to the specified string.
+          If the stream flag <b>hex</b> is set, then an IPv6 address is
+          surrounded by square brackets [].
+          If the stream flag <b>fixed</b> is set, the an IPv6 address will
+          have the scope ID (%xxx) suppressed.
+        */
       friend ostream & operator<<(ostream & s, const Address & a);
 
       /// Input IPv4 (not IPv6 yet!) address as a string from the specified string.
@@ -709,51 +715,73 @@ class PIPSocketAddressAndPort
 {
   public:
     PIPSocketAddressAndPort()
-      : m_port(0), m_separator(':')
-      { }
+      : m_address(0)
+      , m_port(0)
+      , m_separator(':')
+    {
+    }
 
     PIPSocketAddressAndPort(char separator)
-      : m_port(0), m_separator(separator)
-      { }
+      : m_address(0)
+      , m_port(0)
+      , m_separator(separator)
+    {
+    }
+
+    PIPSocketAddressAndPort(WORD defaultPort, char separator = ':')
+      : m_address(0)
+      , m_port(defaultPort)
+      , m_separator(separator)
+    {
+    }
 
     PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char separator = ':')
-      : m_port(defaultPort), m_separator(separator)
-      { Parse(str, defaultPort, m_separator); }
+      : m_address(0)
+      , m_port(defaultPort)
+      , m_separator(separator)
+    {
+        Parse(str, defaultPort, m_separator);
+    }
 
     PIPSocketAddressAndPort(const PIPSocket::Address & addr, WORD defaultPort = 0, char separator = ':')
-      : m_address(addr), m_port(defaultPort), m_separator(separator)
-      {  }
+      : m_address(addr)
+      , m_port(defaultPort)
+      , m_separator(separator)
+    {
+    }
 
-    PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen)
-      : m_address(ai_addr->sa_family, ai_addrlen, ai_addr)
-      , m_port(ntohs((ai_addr->sa_family == AF_INET) ? ((sockaddr_in *)ai_addr)->sin_port : ((sockaddr_in6 *)ai_addr)->sin6_port))
-      , m_separator(':')
-      {  
-      }
+    PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen);
 
     PBoolean Parse(const PString & str, WORD defaultPort = 0, char separator = ':');
 
-    PString AsString(char separator = 0) const
-      { return m_address.AsString() + (separator ? separator : m_separator) + PString(PString::Unsigned, m_port); }
+    PString AsString(char separator = 0) const;
+
+    const PIPSocket::Address & GetAddress() const { return m_address; }
 
     void SetAddress(
       const PIPSocket::Address & addr,
       WORD port = 0
     );
-    const PIPSocket::Address & GetAddress() const { return m_address; }
+
     WORD GetPort() const { return m_port; }
+
     void SetPort(
       WORD port
     ) { m_port = port; }
 
-    bool IsValid() const { return m_address.IsValid() && m_port != 0; }
+    bool IsValid() const
+    {
+      return m_address.IsValid() && m_port != 0;
+    }
 
-    bool operator == (const PIPSocketAddressAndPort & obj) const
-    { return (m_address == obj.m_address) && (m_port == obj.m_port); }
+    bool operator==(const PIPSocketAddressAndPort & obj) const
+    {
+      return (m_address == obj.m_address) && (m_port == obj.m_port);
+    }
 
     friend ostream & operator<<(ostream & strm, const PIPSocketAddressAndPort & ap)
     {
-      return strm << ap.m_address << ap.m_separator << ap.m_port;
+      return strm << ap.AsString();
     }
 
   protected:
