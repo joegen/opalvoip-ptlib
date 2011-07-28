@@ -1509,25 +1509,20 @@ PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
   return PTrue;
 }
 
-PBoolean PVideoInputDevice::GetFrameData(
-  BYTE * buffer,
-  PINDEX * bytesReturned,
-  unsigned int & flags
-)
+
+PBoolean PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
 {
-  flags = 0;
+  keyFrame = true;
   return GetFrameData(buffer, bytesReturned);
 }
 
-PBoolean PVideoInputDevice::GetFrameDataNoDelay(
-  BYTE * buffer,
-  PINDEX * bytesReturned,
-  unsigned & flags
-)
+
+PBoolean PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
 {
-  flags = 0;
+  keyFrame = true;
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
+
 
 bool PVideoInputDevice::FlowControl(const void * /*flowData*/)
 {
@@ -1554,27 +1549,29 @@ PBoolean PVideoOutputDevice::SetFrameData(
       unsigned height,
       const BYTE * data,
       PBoolean endFrame,
-      unsigned /*flags*/
+      bool & /*keyFrameNeeded*/
 )
 {
   return SetFrameData(x, y, width, height, data, endFrame);
 }
+
 
 PBoolean PVideoOutputDevice::SetFrameData(
       unsigned x,
       unsigned y,
       unsigned width,
       unsigned height,
-      unsigned /*sarwidth*/,
-      unsigned /*sarheight*/,
+      unsigned /*saWidth*/,
+      unsigned /*sarHeight*/,
       const BYTE * data,
       PBoolean endFrame,
-      unsigned flags,
+      bool & keyFrameNeeded,
 	  const void * /*mark*/
 )
 {
-  return SetFrameData(x, y, width, height, data, endFrame, flags);
+  return SetFrameData(x, y, width, height, data, endFrame, keyFrameNeeded);
 }
+
 
 PBoolean PVideoOutputDevice::DisableDecode() 
 {
