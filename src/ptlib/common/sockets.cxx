@@ -519,7 +519,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   if (key.IsEmpty() ||
       key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.") != P_MAX_INDEX ||
       key[len-1] == '-') {
-    PTRACE(3, "Socket\tIllegal RFC952 characters in DNS name \"" << key << '"');
+    PTRACE_IF(3, key[0] != '[', "Socket\tIllegal RFC952 characters in DNS name \"" << key << '"');
     return NULL;
   }
 
@@ -1754,7 +1754,8 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 }
 
 
-PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
+PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
+                                     bool IPV6_PARAM(excludeScope)) const
 {
 #if defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];
@@ -1771,6 +1772,14 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
       int len = strlen(str);
       str[len++] = ']';
       str[len] = '\0';
+    }
+    if (excludeScope) {
+      char * percent = strchr(str, '%');
+      if (percent != NULL) {
+        if (bracketIPv6)
+          *percent++ = ']';
+        *percent = '\0';
+      }
     }
     return str;
   }
@@ -1789,28 +1798,35 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6)) const
 }
 
 
-PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
+PBoolean PIPSocket::Address::FromString(const PString & str)
 {
-  PString dotNotation;
-
   m_version = 0;
   memset(&m_v, 0, sizeof(m_v));
 
 #if P_HAS_IPV6
   m_scope6 = 0;
 
-  // Find out if string is in brackets [], as in ipv6 address
-  PINDEX lbracket = ipAndInterface.Find('[');
-  PINDEX rbracket = ipAndInterface.Find(']', lbracket);
-  if (lbracket != P_MAX_INDEX && rbracket != P_MAX_INDEX)
-    dotNotation = ipAndInterface(lbracket+1, rbracket-1);
-  else
-    dotNotation = ipAndInterface;
-
   struct addrinfo *res = NULL;
   struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
 
-  if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
+  // Find out if string is in brackets [], as in ipv6 address
+  PINDEX lbracket = str.Find('[');
+  PINDEX rbracket = str.Find(']', lbracket);
+  if (lbracket == P_MAX_INDEX || rbracket == P_MAX_INDEX)
+    getaddrinfo((const char *)str, NULL , &hints, &res);
+  else {
+    PString ip6 = str(lbracket+1, rbracket-1);
+    if (getaddrinfo((const char *)ip6, NULL , &hints, &res) != 0) {
+      PINDEX percent = ip6.Find('%');
+      if (percent > 0 && percent != P_MAX_INDEX) {
+        // If have a scope qualifier, remove it as it might be for the remote system
+        ip6.Delete(percent, P_MAX_INDEX);
+        getaddrinfo((const char *)ip6, NULL , &hints, &res);
+      }
+    }
+  }
+
+  if (res != NULL) {
     if (res->ai_family == PF_INET6) {
       // IPv6 addr
       struct sockaddr_in6 * addr_in6 = (struct sockaddr_in6 *)res->ai_addr;
@@ -1824,29 +1840,29 @@ PBoolean PIPSocket::Address::FromString(const PString & ipAndInterface)
       m_version  = 4;
       m_v.m_four = addr_in->sin_addr;
     }
-    if (res != NULL)
-      freeaddrinfo(res);
+
+    freeaddrinfo(res);
     return IsValid();
   }
 
   // Failed to parse, so check for IPv4 with %interface
 #endif // P_HAS_IPV6
 
-  PINDEX percent = ipAndInterface.FindSpan("0123456789.");
-  if (percent != P_MAX_INDEX && ipAndInterface[percent] != '%')
+  PINDEX percent = str.FindSpan("0123456789.");
+  if (percent != P_MAX_INDEX && str[percent] != '%')
     return false;
 
   if (percent > 0) {
-    dotNotation = ipAndInterface.Left(percent);
+    PString ip4 = str.Left(percent);
     DWORD iaddr;
-    if ((iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
+    if ((iaddr = ::inet_addr((const char *)ip4)) != (DWORD)INADDR_NONE) {
       m_version = 4;
       m_v.m_four.s_addr = iaddr;
       return true;
     }
   }
 
-  PString iface = ipAndInterface.Mid(percent+1);
+  PString iface = str.Mid(percent+1);
   if (iface.IsEmpty())
     return false;
 
@@ -1897,7 +1913,7 @@ BYTE PIPSocket::Address::operator[](PINDEX idx) const
 
 ostream & operator<<(ostream & s, const PIPSocket::Address & a)
 {
-  return s << a.AsString();
+  return s << a.AsString((s.flags()&ios::hex) != 0, (s.flags()&ios::fixed) != 0);
 }
 
 istream & operator>>(istream & s, PIPSocket::Address & a)
@@ -2856,6 +2872,14 @@ PBoolean PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
+PIPSocketAddressAndPort::PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen)
+  : m_address(ai_addr->sa_family, ai_addrlen, ai_addr)
+  , m_port(ntohs((ai_addr->sa_family == AF_INET) ? ((sockaddr_in *)ai_addr)->sin_port : ((sockaddr_in6 *)ai_addr)->sin6_port))
+  , m_separator(':')
+{  
+}
+
+
 PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char separator)
 {
   m_separator= separator;
@@ -2873,6 +2897,15 @@ PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char sep
   }
 
   return m_port != 0;
+}
+
+
+PString PIPSocketAddressAndPort::AsString(char separator) const
+{
+  PString str = m_address.AsString(true, true);
+  str += (separator ? separator : m_separator);
+  str.sprintf("%u", m_port);
+  return str;
 }
 
 
