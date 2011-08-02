@@ -56,17 +56,17 @@ class PUDPSocket : public PIPDatagramSocket
      */
     PUDPSocket(
       WORD port = 0,             ///< Port number to use for the connection.
-	  int iAddressFamily = AF_INET ///< Family
+      int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
        PQoS * qos,              ///< Pointer to a QOS structure for the connection
       WORD port = 0,            ///< Port number to use for the connection.
-	  int iAddressFamily = AF_INET ///< Family
+      int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
       const PString & service,   ///< Service name to use for the connection.
       PQoS * qos = NULL,         ///< Pointer to a QOS structure for the connection
-	  int iAddressFamily = AF_INET ///< Family
+      int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
       const PString & address,  ///< Address of remote machine to connect to.
@@ -115,20 +115,9 @@ class PUDPSocket : public PIPDatagramSocket
     void GetSendAddress(
       Address & address,    ///< IP address to send packets.
       WORD & port           ///< Port to send packets.
-    );
+    ) const;
+    PString GetSendAddress() const;
 
-
-    /** Change the QOS spec for the socket and try to apply the changes
-     */
-    virtual PBoolean ModifyQoSSpec(
-      PQoS * qos            ///< QoS specification to use
-    );
-
-#if P_QOS
-    /** Get the QOS object for the socket.
-    */
-    virtual PQoS & GetQoSSpec();
-#endif
     /** Get the address of the sender in the last connectionless Read().
         Note that thsi only applies to the Read() and not the ReadFrom()
         function.
@@ -136,17 +125,17 @@ class PUDPSocket : public PIPDatagramSocket
     void GetLastReceiveAddress(
       Address & address,    ///< IP address to send packets.
       WORD & port           ///< Port to send packets.
-    );
+    ) const;
+    PString GetLastReceiveAddress() const;
 
     /** CallBack to check if the detected address of the connectionless Read()
-		is an alternate address. Use this to switch the target to send and
-		receive the connectionless read/write.
+        is an alternate address. Use this to switch the target to send and
+        receive the connectionless read/write.
      */
-	virtual PBoolean IsAlternateAddress(
-		const Address & address,    ///< Detected IP Address.
-		WORD port					///< Detected Port.
-		);
-
+    virtual PBoolean IsAlternateAddress(
+      const Address & address,    ///< Detected IP Address.
+      WORD port                    ///< Detected Port.
+    );
 
     /** PseudoRead
         This indicates to the upper system that reading on this socket
@@ -154,7 +143,18 @@ class PUDPSocket : public PIPDatagramSocket
         did not orginate from the physical socket but was programmically
         injected.
      */
-	virtual PBoolean DoPseudoRead(int & selectStatus);
+    virtual PBoolean DoPseudoRead(int & selectStatus);
+
+#if P_QOS
+    /** Change the QOS spec for the socket and try to apply the changes
+     */
+    virtual PBoolean ModifyQoSSpec(
+      PQoS * qos            ///< QoS specification to use
+    );
+
+    /** Get the QOS object for the socket.
+    */
+    virtual PQoS & GetQoSSpec();
 
     /** Check to See if the socket will support QoS on the given local Address
      */
@@ -163,6 +163,7 @@ class PUDPSocket : public PIPDatagramSocket
     /** Manually Enable GQoS Support
      */
     static void EnableGQoS();
+#endif
   //@}
 
   protected:
