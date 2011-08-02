@@ -2831,18 +2831,31 @@ void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
 }
 
 
-void PUDPSocket::GetSendAddress(Address & address, WORD & port)
+void PUDPSocket::GetSendAddress(Address & address, WORD & port) const
 {
   address = sendAddress;
   port    = sendPort;
 }
 
 
-void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
+PString PUDPSocket::GetSendAddress() const
+{
+  return sendAddress.AsString(true) + psprintf(":%u", sendPort);
+}
+
+
+void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port) const
 {
   address = lastReceiveAddress;
   port    = lastReceivePort;
 }
+
+
+PString PUDPSocket::GetLastReceiveAddress() const
+{
+  return lastReceiveAddress.AsString(true) + psprintf(":%u", lastReceivePort);
+}
+
 
 PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
 {
