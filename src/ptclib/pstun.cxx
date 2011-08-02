@@ -416,19 +416,25 @@ public:
   
   bool Write(PUDPSocket & socket) const
   {
-    return socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)) != PFalse;
+    if (socket.Write(theArray, ((PSTUNMessageHeader *)theArray)->msgLength+sizeof(PSTUNMessageHeader)))
+      return true;
+
+    PTRACE(1, "STUN\tError writing to " << socket.GetSendAddress()
+           << " - " << socket.GetErrorText(PChannel::LastWriteError));
+    return false;
   }
 
   bool Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
   {
     for (PINDEX retry = 0; retry < pollRetries; retry++) {
       if (!request.Write(socket))
-        break;
+        return false;
 
       if (Read(socket) && Validate(request))
         return true;
     }
 
+    PTRACE(5, "STUN\tNo response from " << socket.GetSendAddress() << " after " << pollRetries << " retries.");
     return false;
   }
 };
@@ -517,9 +523,6 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
     for (PList<PUDPSocket>::iterator socket = sockets.begin(); socket != sockets.end(); ++socket) {
       if (requestI.Write(*socket))
         selectList += *socket;
-      else {
-        PTRACE(1, "STUN\tError writing to " << *this << " - " << socket->GetErrorText(PChannel::LastWriteError));
-      }
     }
 
     if (selectList.IsEmpty())
@@ -568,6 +571,9 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(PBoolean force)
     // Is not NAT or symmetric firewall
     return natType = (testII ? OpenNat : SymmetricFirewall);
   }
+
+  cachedExternalAddress = mappedAddressI;
+  timeAddressObtained.SetCurrentTime();
 
   if (testII)
     return natType = ConeNat;
@@ -671,7 +677,7 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
   PSTUNMessage response;
   if (!response.Poll(socket, request, pollRetries))
   {
-    PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
+    PTRACE(1, "STUN\t" << *this << " unexpectedly went offline getting external address.");
     return false;
   }
 
@@ -684,7 +690,7 @@ PBoolean PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
 
   
   externalAddress = cachedExternalAddress = mappedAddress->GetIP();
-  timeAddressObtained = PTime();
+  timeAddressObtained.SetCurrentTime();
   return true;
 }
 
@@ -771,7 +777,7 @@ PBoolean PSTUNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Addre
       PTRACE(2, "STUN\tExpected mapped address attribute from " << *this);
     }
     else
-      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
+      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline creating socket.");
   }
 
   delete stunSocket;
@@ -836,7 +842,7 @@ PBoolean PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   {
     if (!response[i].Poll(stunSocket[i], request[i], pollRetries))
     {
-      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline.");
+      PTRACE(1, "STUN\t" << *this << " unexpectedly went offline creating socket pair.");
       return false;
     }
   }
