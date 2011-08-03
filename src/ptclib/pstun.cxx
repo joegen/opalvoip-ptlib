@@ -89,7 +89,7 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
   //requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
   if (!responseI.Poll(*socket, requestI, m_pollRetries)) {
-    PTRACE(2, "STUN\tSTUN server did not response");
+    PTRACE(2, "STUN\tSTUN server " << serverAddress << " did not respond.");
     return m_natType = PNatMethod::UnknownNat;
   }
 
@@ -119,7 +119,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
       }
     }
     if (!ok) {
-      PTRACE(2, "STUN\tSTUN server returned unexpected error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
+      PTRACE(2, "STUN\tSTUN server " << socket->GetSendAddress() << " returned unexpected error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
       return m_natType = PNatMethod::BlockedNat;
     }
   }
@@ -134,8 +134,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   }
 
   mappedAddress->GetIPAndPort(externalAddressAndPort);
-  m_timeAddressObtained = PTime();
-
+  m_timeAddressObtained.SetCurrentTime();
 
   bool notNAT = (socket->GetPort() == externalAddressAndPort.GetPort()) && PIPSocket::IsLocalHost(externalAddressAndPort.GetAddress());
 
@@ -203,7 +202,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   {
     PIPSocketAddressAndPort ipAndPort;
     mappedAddress->GetIPAndPort(ipAndPort);
-    if (!(ipAndPort == externalAddressAndPort))
+    if (ipAndPort != externalAddressAndPort)
       return m_natType = PNatMethod::SymmetricNat;
   }
 
@@ -242,7 +241,7 @@ int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & requ
 
     // send request, 
     if (!response.Poll(*socket, request, m_pollRetries)) {
-      PTRACE(2, "STUN\tServer " << m_serverAddress << " did not respond");
+      PTRACE(2, "STUN\tServer " << m_serverAddress << " did not respond.");
       return -1;
     }
 
@@ -579,14 +578,19 @@ bool PSTUNMessage::Write(PUDPSocket & socket) const
   PUDPSocket::Slice slice(theArray, len);
   PIPSocketAddressAndPort ap;
   socket.PUDPSocket::InternalGetSendAddress(ap);
-  return socket.PUDPSocket::InternalWriteTo(&slice, 1, ap);
+  if (socket.PUDPSocket::InternalWriteTo(&slice, 1, ap))
+    return true;
+
+  PTRACE(2, "STUN\tError writing to " << socket.GetSendAddress()
+         << " - " << socket.GetErrorText(PChannel::LastWriteError));
+  return false;
 }
 
 bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
 {
   for (PINDEX retry = 0; retry < pollRetries; retry++) {
     if (!request.Write(socket))
-      break;
+      return false;
 
     if (Read(socket)) {
       if (Validate(request))
@@ -598,7 +602,7 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
     }
   }
 
-  PTRACE(4, "STUN\tTimed out on poll with retries.");
+  PTRACE(4, "STUN\tTimed out on poll with " << pollRetries << " retries.");
   return false;
 }
 
@@ -866,12 +870,8 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
     case PortRestrictedNat :
       break;
 
-    case SymmetricNat :
-      PTRACE(1, "STUN\tCannot use STUN with symmetric NAT");
-      return false;
-
-    default : // UnknownNet, SymmetricFirewall, BlockedNat
-      PTRACE(1, "STUN\tCannot use STUN with Unknown, SymmetricFirewall or BlockedNat");
+    default :
+      PTRACE(1, "STUN\tCannot use STUN with " << m_natType << " type.");
       return false;
   }
 
@@ -1018,9 +1018,6 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
     for (PList<PSTUNUDPSocket>::iterator socket = sockets.begin(); socket != sockets.end(); ++socket) {
       if (requestI.Write(*socket))
         selectList += *socket;
-      else {
-        PTRACE(1, "STUN\tError writing to " << *this << " - " << socket->GetErrorText(PChannel::LastWriteError));
-      }
     }
 
     if (selectList.IsEmpty())
@@ -1521,7 +1518,7 @@ void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAn
     return PUDPSocket::InternalSetSendAddress(ipAndPort);
 
   // set permission on TURN server
-  if (!(ipAndPort == m_peerIpAndPort)) {
+  if (ipAndPort != m_peerIpAndPort) {
 
     PTRACE(3, "PTURN\tSending ChannelBind request for channel " << m_channelNumber << " to set peer to " << ipAndPort);
     m_peerIpAndPort = ipAndPort;

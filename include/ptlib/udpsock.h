@@ -56,17 +56,17 @@ class PUDPSocket : public PIPDatagramSocket
      */
     PUDPSocket(
       WORD port = 0,             ///< Port number to use for the connection.
-	  int iAddressFamily = AF_INET ///< Family
+      int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
        PQoS * qos,              ///< Pointer to a QOS structure for the connection
       WORD port = 0,            ///< Port number to use for the connection.
-	  int iAddressFamily = AF_INET ///< Family
+      int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
       const PString & service,   ///< Service name to use for the connection.
       PQoS * qos = NULL,         ///< Pointer to a QOS structure for the connection
-	  int iAddressFamily = AF_INET ///< Family
+      int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
       const PString & address,  ///< Address of remote machine to connect to.
@@ -118,12 +118,43 @@ class PUDPSocket : public PIPDatagramSocket
     void GetSendAddress(
       Address & address,    ///< IP address to send packets.
       WORD & port           ///< Port to send packets.
-    );
+    ) const;
     void GetSendAddress(
       PIPSocketAddressAndPort & addressAndPort
+    ) const;
+    PString GetSendAddress() const;
+
+    /** Get the address of the sender in the last connectionless Read().
+        Note that thsi only applies to the Read() and not the ReadFrom()
+        function.
+     */
+    void GetLastReceiveAddress(
+      Address & address,    ///< IP address to send packets.
+      WORD & port           ///< Port to send packets.
+    ) const;
+    void GetLastReceiveAddress(
+      PIPSocketAddressAndPort & addressAndPort    ///< IP address and port to send packets.
+    ) const;
+    PString GetLastReceiveAddress() const;
+
+    /** CallBack to check if the detected address of the connectionless Read()
+        is an alternate address. Use this to switch the target to send and
+        receive the connectionless read/write.
+     */
+    virtual PBoolean IsAlternateAddress(
+      const Address & address,    ///< Detected IP Address.
+      WORD port                    ///< Detected Port.
     );
 
+    /** PseudoRead
+        This indicates to the upper system that reading on this socket
+        will be a pseudo read when means there is data available that 
+        did not orginate from the physical socket but was programmically
+        injected.
+     */
+    virtual PBoolean DoPseudoRead(int & selectStatus);
 
+#if P_QOS
     /** Change the QOS spec for the socket and try to apply the changes
      */
     virtual PBoolean ModifyQoSSpec(
@@ -134,36 +165,6 @@ class PUDPSocket : public PIPDatagramSocket
     */
     virtual PQoS & GetQoSSpec();
 
-    /** Get the address of the sender in the last connectionless Read().
-        Note that thsi only applies to the Read() and not the ReadFrom()
-        function.
-     */
-    void GetLastReceiveAddress(
-      Address & address,    ///< IP address to send packets.
-      WORD & port           ///< Port to send packets.
-    );
-    void GetLastReceiveAddress(
-      PIPSocketAddressAndPort & addressAndPort    ///< IP address and port to send packets.
-    );
-
-    /** CallBack to check if the detected address of the connectionless Read()
-		is an alternate address. Use this to switch the target to send and
-		receive the connectionless read/write.
-     */
-	virtual PBoolean IsAlternateAddress(
-		const Address & address,    ///< Detected IP Address.
-		WORD port					///< Detected Port.
-		);
-
-
-    /** PseudoRead
-        This indicates to the upper system that reading on this socket
-        will be a pseudo read when means there is data available that 
-        did not orginate from the physical socket but was programmically
-        injected.
-     */
-	virtual PBoolean DoPseudoRead(int & selectStatus);
-
     /** Check to See if the socket will support QoS on the given local Address
      */
     static PBoolean SupportQoS(const PIPSocket::Address & address);
@@ -171,14 +172,15 @@ class PUDPSocket : public PIPDatagramSocket
     /** Manually Enable GQoS Support
      */
     static void EnableGQoS();
+#endif
   //@}
 
     // Normally, one would expect these to be protected, but they are just so darn
     // useful that it's just easier if they are public
     virtual void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
-    virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
+    virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr) const;
     virtual void InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & addr);
-    virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr);
+    virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr) const;
 
   protected:
     // Open an IPv4 socket (for backward compatibility)

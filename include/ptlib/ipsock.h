@@ -776,7 +776,12 @@ class PIPSocketAddressAndPort
 
     bool operator==(const PIPSocketAddressAndPort & obj) const
     {
-      return (m_address == obj.m_address) && (m_port == obj.m_port);
+      return m_port == obj.m_port && m_address == obj.m_address;
+    }
+
+    bool operator!=(const PIPSocketAddressAndPort & obj) const
+    {
+      return m_port != obj.m_port || m_address != obj.m_address;
     }
 
     friend ostream & operator<<(ostream & strm, const PIPSocketAddressAndPort & ap)
