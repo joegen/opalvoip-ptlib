@@ -2805,7 +2805,7 @@ void PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr)
 }
 
 
-void PUDPSocket::GetSendAddress(Address & address, WORD & port)
+void PUDPSocket::GetSendAddress(Address & address, WORD & port) const
 {
   PIPSocketAddressAndPort addr;
   InternalGetSendAddress(addr);
@@ -2814,19 +2814,25 @@ void PUDPSocket::GetSendAddress(Address & address, WORD & port)
 }
 
 
-void PUDPSocket::GetSendAddress(PIPSocketAddressAndPort & addr)
+void PUDPSocket::GetSendAddress(PIPSocketAddressAndPort & addr) const
 {
   InternalGetSendAddress(addr);
 }
 
 
-void PUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr)
+PString PUDPSocket::GetSendAddress() const
+{
+  return m_sendAddress.AsString(true) + psprintf(":%u", m_sendPort);
+}
+
+
+void PUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr) const
 {
   addr = PIPSocketAddressAndPort(m_sendAddress, m_sendPort);
 }
 
 
-void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
+void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port) const
 {
   PIPSocketAddressAndPort ap;
   InternalGetLastReceiveAddress(ap);
@@ -2834,13 +2840,20 @@ void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
   port    = ap.GetPort();
 }
 
-void PUDPSocket::GetLastReceiveAddress(PIPSocketAddressAndPort & ap)
+
+void PUDPSocket::GetLastReceiveAddress(PIPSocketAddressAndPort & ap) const
 {
   InternalGetLastReceiveAddress(ap);
 }
 
 
-void PUDPSocket::InternalGetLastReceiveAddress(PIPSocketAddressAndPort & ap)
+PString PUDPSocket::GetLastReceiveAddress() const
+{
+  return m_lastReceiveAddress.AsString(true) + psprintf(":%u", m_lastReceivePort);
+}
+
+
+void PUDPSocket::InternalGetLastReceiveAddress(PIPSocketAddressAndPort & ap) const
 {
   ap = PIPSocketAddressAndPort(m_lastReceiveAddress, m_lastReceivePort);
 }
