@@ -86,6 +86,11 @@ class PPluginManager : public PObject
     // static functions for accessing global instances of plugin managers
     static PPluginManager & GetPluginManager();
 
+    enum NotificationCode {
+      LoadingPlugIn,
+      UnloadingPlugIn
+    };
+
     /**Add a notifier to the plugin manager.
        The call back function is executed just after loading, or 
        just after unloading, a plugin. 
@@ -113,18 +118,19 @@ class PPluginManager : public PObject
     );
 
     static PString additionalPluginDirs;
+
   protected:
     void LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes);
-    void CallNotifier(PDynaLink & dll, INT code);
+    void CallNotifier(PDynaLink & dll, NotificationCode code);
 
-    PMutex pluginsMutex;
-    PArray<PDynaLink> plugins;
+    PMutex            m_pluginsMutex;
+    PArray<PDynaLink> m_plugins;
     
-    PMutex servicesMutex;
-    PArray<PPluginService> services;
+    PMutex                 m_servicesMutex;
+    PArray<PPluginService> m_services;
 
-    PMutex notifiersMutex;
-    PList<PNotifier> notifiers;
+    PMutex           m_notifiersMutex;
+    PList<PNotifier> m_notifiers;
 };
 
 //////////////////////////////////////////////////////
