@@ -287,6 +287,10 @@ ifdef HAS_DTMF
 SOURCES += $(COMPONENT_SRC_DIR)/dtmf.cxx 
 endif
 
+ifdef HAS_VCARD
+SOURCES += $(COMPONENT_SRC_DIR)/vcard.cxx 
+endif
+
 ifdef HAS_SERIAL
 
 ifeq ($(OSTYPE),mingw)
@@ -313,10 +317,13 @@ endif
 ifdef HAS_HTTP
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
-	$(COMPONENT_SRC_DIR)/ssdp.cxx \
 	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/html.cxx \
 	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
+
+ifdef HAS_SSDP
+SOURCES += $(COMPONENT_SRC_DIR)/ssdp.cxx
+endif
 endif
 
 ifdef HAS_HTTPFORMS
@@ -396,7 +403,6 @@ SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/random.cxx \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
-	$(COMPONENT_SRC_DIR)/vcard.cxx \
 	$(COMPONENT_SRC_DIR)/guid.cxx \
 	$(GETDATE_SOURCE) \
 	$(PLATFORM_SRC_DIR)/assert.cxx \
