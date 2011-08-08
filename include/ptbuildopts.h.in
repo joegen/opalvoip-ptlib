@@ -116,10 +116,12 @@
 #undef P_REGEX
 #undef P_TTS
 #undef P_ASN
+#undef P_NAT
 #undef P_STUN
 #undef P_STUNSRVR
 #undef P_PIPECHAN
 #undef P_DTMF
+#undef P_VCARD
 #undef P_WAVFILE
 #undef P_SOCKS
 #undef P_FTP
@@ -136,6 +138,7 @@
   #ifdef P_HTTP
     #undef P_HTTPFORMS
     #undef P_HTTPSVC
+    #undef P_SSDP
   #endif
 #endif
 
