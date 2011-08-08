@@ -2333,9 +2333,10 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 
 PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
 { 
-  PWAVFile * wav = PWAVFile::format(mediaFormat);
-  if (wav == NULL) {
+  PWAVFile * wav = new PWAVFile;
+  if (!wav->SetFormat(mediaFormat)) {
     PTRACE(1, "VXML\tWAV file format " << mediaFormat << " not known");
+    delete wav;
     return NULL;
   }
 
