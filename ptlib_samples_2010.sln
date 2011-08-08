@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "URL", "samples\url\url_2010
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timing", "..\SVN-3.10-Luyten\ptlib\samples\timing\timing_2010.vcxproj", "{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavfile", "..\SVN-3.10-Luyten\ptlib\samples\wavfile\wavfile_2010.vcxproj", "{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -71,6 +73,12 @@ Global
 		{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}.No Trace|Win32.Build.0 = No Trace|Win32
 		{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}.Release|Win32.ActiveCfg = Release|Win32
 		{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}.Release|Win32.Build.0 = Release|Win32
+		{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}.Debug|Win32.Build.0 = Debug|Win32
+		{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}.No Trace|Win32.Build.0 = No Trace|Win32
+		{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}.Release|Win32.ActiveCfg = Release|Win32
+		{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
