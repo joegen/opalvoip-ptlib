@@ -55,7 +55,7 @@ PCREATE_PROCESS(WAVFileTest)
 void WAVFileTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("p.r.c:F:C:R:d:D:v:h.");
+  args.Parse("hprc:F:C:R:d:D:v:");
 
   if (args.GetCount() > 0) {
     if (args.HasOption('c')) {
@@ -124,12 +124,11 @@ void WAVFileTest::Play(PArgList & args)
   PINDEX hdrLen  = file.GetHeaderLength();
   PINDEX fileLen = file.GetLength();
 
-  cout << "Format:       " << file.wavFmtChunk.format << " (" << file.GetFormatString() << ")" << "\n"
-       << "Channels:     " << file.wavFmtChunk.numChannels << "\n"
-       << "Sample rate:  " << file.wavFmtChunk.sampleRate << "\n"
-       << "Bytes/sec:    " << file.wavFmtChunk.bytesPerSec << "\n"
-       << "Bytes/sample: " << file.wavFmtChunk.bytesPerSample << "\n"
-       << "Bits/sample:  " << file.wavFmtChunk.bitsPerSample << "\n"
+  cout << "Format:       " << file.GetFormat() << " (" << file.GetFormatString() << ")" << "\n"
+       << "Channels:     " << file.GetChannels() << "\n"
+       << "Sample rate:  " << file.GetSampleRate() << "\n"
+       << "Bytes/sec:    " << file.GetBytesPerSecond() << "\n"
+       << "Bits/sample:  " << file.GetSampleSize() << "\n"
        << "\n"
        << "Hdr length :  " << hdrLen << endl
        << "Data length:  " << dataLen << endl
