@@ -81,18 +81,10 @@ static void SWAB(const void * void_from, void * void_to, register size_t len)
 // PWAVFile
 
 PWAVFile::PWAVFile(unsigned fmt)
-  : PFile(), origFmt(fmt)
+  : origFmt(fmt)
 {
   Construct();
   SelectFormat(fmt);
-}
-
-PWAVFile * PWAVFile::format(const PString & format)
-{
-  PWAVFile * file = new PWAVFile;
-  file->origFmt = 0xffffffff;
-  file->SelectFormat(format);
-  return file;
 }
 
 PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
@@ -100,18 +92,6 @@ PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
 {
   Construct();
   SelectFormat(fmt);
-}
-
-PWAVFile * PWAVFile::format(
-  const PString & format,
-  PFile::OpenMode mode,
-  int opts
-)
-{
-  PWAVFile * file = new PWAVFile(mode, opts);
-  file->origFmt = 0xffffffff;
-  file->SelectFormat(format);
-  return file;
 }
 
 PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, unsigned fmt)
@@ -822,7 +802,7 @@ PBoolean PWAVFileFormatPCM::Read(PWAVFile & file, void * buf, PINDEX & len)
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
   // Note: swab only works on even length buffers.
-  if (file.wavFmtChunk.bitsPerSample == 16) {
+  if (file.GetSampleSize() == 16) {
     SWAB(buf, buf, len);
   }
 
@@ -834,7 +814,7 @@ PBoolean PWAVFileFormatPCM::Write(PWAVFile & file, const void * buf, PINDEX & le
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
   // Note: swab only works on even length buffers.
-  if (file.wavFmtChunk.bitsPerSample == 16) {
+  if (file.GetSampleSize() == 16) {
     SWAB(buf, (void *)buf, len);
   }
 
@@ -1084,11 +1064,11 @@ off_t PWAVFileConverterPCM::GetDataLength(PWAVFile & file)
 
 PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
 {
-  if (file.wavFmtChunk.bitsPerSample == 16)
+  if (file.GetSampleSize() == 16)
     return file.PWAVFile::RawRead(buf, len);
 
-  if (file.wavFmtChunk.bitsPerSample != 8) {
-    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << (int)file.wavFmtChunk.bitsPerSample);
+  if (file.GetSampleSize() != 8) {
+    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
     return PFalse;
   }
 
@@ -1113,10 +1093,10 @@ PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
 
 PBoolean PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX len)
 {
-  if (file.wavFmtChunk.bitsPerSample == 16)
+  if (file.GetSampleSize() == 16)
     return file.PWAVFile::RawWrite(buf, len);
 
-  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << (int)file.wavFmtChunk.bitsPerSample);
+  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
   return PFalse;
 }
 
