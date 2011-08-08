@@ -478,6 +478,26 @@ class PTime : public PObject
       const char * formatPtr,    ///< Arbitrary format C string pointer for time.
       int zone = Local           ///< Time zone for the time.
     ) const;
+
+    /**Parse a string representation of time.
+       This initialises the time to the specified time, parsed from the
+       string. The string may be in many different formats, for example:
+          "5/03/1999 12:34:56"
+          "15/06/1999 12:34:56"
+          "15/06/01 12:34:56 PST"
+          "5/06/02 12:34:56"
+          "5/23/1999 12:34am"
+          "5/23/00 12:34am"
+          "1999/23/04 12:34:56"
+          "Mar 3, 1999 12:34pm"
+          "3 Jul 2004 12:34pm"
+          "12:34:56 5 December 1999"
+          "10 minutes ago"
+          "2 weeks"
+     */
+    bool Parse(
+      const PString & str
+    );
   //@}
 
   /**@name Internationalisation functions */

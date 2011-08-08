@@ -451,14 +451,14 @@ PString PTime::AsString(const char * format, int zone) const
   struct tm ts;
   struct tm * t = os_gmtime(&realTime, &ts);
 
-  PINDEX repeatCount;
-
   while (*format != '\0') {
-    repeatCount = 1;
-    switch (*format) {
+    char formatLetter = *format;
+    PINDEX repeatCount = 1;
+    while (*++format == formatLetter)
+      repeatCount++;
+
+    switch (formatLetter) {
       case 'a' :
-        while (*++format == 'a')
-          ;
         if (t->tm_hour < 12)
           str << GetTimeAM();
         else
@@ -466,26 +466,18 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       case 'h' :
-        while (*++format == 'h')
-          repeatCount++;
         str << setw(repeatCount) << (is12hour ? (t->tm_hour+11)%12+1 : t->tm_hour);
         break;
 
       case 'm' :
-        while (*++format == 'm')
-          repeatCount++;
         str << setw(repeatCount) << t->tm_min;
         break;
 
       case 's' :
-        while (*++format == 's')
-          repeatCount++;
         str << setw(repeatCount) << t->tm_sec;
         break;
 
       case 'w' :
-        while (*++format == 'w')
-          repeatCount++;
         if (repeatCount != 3 || *format != 'e')
           str << GetDayName((Weekdays)t->tm_wday, repeatCount <= 3 ? Abbreviated : FullName);
         else {
@@ -498,8 +490,6 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       case 'M' :
-        while (*++format == 'M')
-          repeatCount++;
         if (repeatCount < 3)
           str << setw(repeatCount) << (t->tm_mon+1);
         else if (repeatCount > 3 || *format != 'E')
@@ -516,14 +506,10 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       case 'd' :
-        while (*++format == 'd')
-          repeatCount++;
         str << setw(repeatCount) << t->tm_mday;
         break;
 
       case 'y' :
-        while (*++format == 'y')
-          repeatCount++;
         if (repeatCount < 3)
           str << setw(2) << (t->tm_year%100);
         else
@@ -532,17 +518,13 @@ PString PTime::AsString(const char * format, int zone) const
 
       case 'z' :
       case 'Z' :
-        if (zone == 0) {
-          if (*format == 'Z')
+        if (repeatCount == 1 && zone == 0) {
+          if (formatLetter == 'Z')
             str << 'Z';
           else
             str << "GMT";
-          while (toupper(*++format) == 'z')
-            ;
         }
         else {
-          while (toupper(*++format) == 'z')
-            repeatCount++;
           str << (zone < 0 ? '-' : '+');
           zone = PABS(zone);
           str << setw(2) << (zone/60);
@@ -553,8 +535,6 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       case 'u' :
-        while (*++format == 'u')
-          repeatCount++;
         switch (repeatCount) {
           case 1 :
             str << (microseconds/100000);
@@ -572,11 +552,10 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       case '\\' :
-        format++;
         // Escaped character, put straight through to output string
 
       default :
-        str << *format++;
+        str << formatLetter;
     }
   }
 
@@ -636,7 +615,6 @@ int STDAPICALLTYPE PTimeIsDayName(const char * str, int day, int abbrev)
 };
 
 
-
 void PTime::ReadFrom(istream & strm)
 {
   time_t now;
@@ -647,6 +625,13 @@ void PTime::ReadFrom(istream & strm)
   theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone(StandardTime));
 }
 
+
+bool PTime::Parse(const PString & str)
+{
+  PStringStream strm(str);
+  ReadFrom(strm);
+  return IsValid();
+}
 
 
 PTime PTime::operator+(const PTimeInterval & t) const
