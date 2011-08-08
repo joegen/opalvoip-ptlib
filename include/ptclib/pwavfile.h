@@ -213,11 +213,8 @@ public:
      <code>WaveType</code> enum.
   */
   PWAVFile(
-           unsigned format = fmt_PCM ///< Type of WAV File to create
-           );
-  static PWAVFile * format(
-                           const PString & format    ///< Type of WAV File to create
-                           );
+    unsigned format = fmt_PCM ///< Type of WAV File to create
+  );
 
   /**Create a unique temporary file name, and open the file in the specified
      mode and using the specified options. Note that opening a new, unique,
@@ -235,11 +232,6 @@ public:
     OpenMode mode,          ///< Mode in which to open the file.
     int opts = ModeDefault, ///< <code>OpenOptions</code> enum for open operation.
     unsigned format = fmt_PCM ///< Type of WAV File to create
-  );
-  static PWAVFile * format(
-    const PString & format,  ///< Type of WAV File to create
-    PFile::OpenMode mode,          ///< Mode in which to open the file.
-    int opts = PFile::ModeDefault ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /**Create a WAV file object with the specified name and open it in
@@ -443,21 +435,20 @@ public:
   void SetLastReadCount(PINDEX v) { lastReadCount = v; }
   void SetLastWriteCount(PINDEX v) { lastWriteCount = v; }
 
-  PWAV::FMTChunk wavFmtChunk;
-  PBYTEArray extendedHeader;
-
 protected:
   void Construct();
   bool SelectFormat(unsigned fmt);
   bool SelectFormat(const PString & format);
 
-  PBYTEArray wavHeaderData;
-
   PBoolean ProcessHeader();
   PBoolean GenerateHeader();
   PBoolean UpdateHeader();
 
-  PBoolean     isValidWAV;
+  PBYTEArray wavHeaderData;
+  PWAV::FMTChunk wavFmtChunk;
+  PBYTEArray extendedHeader;
+
+  bool     isValidWAV;
 
   unsigned int origFmt;
   PWAVFileFormat * formatHandler;
@@ -468,7 +459,7 @@ protected:
   off_t lenHeader;
   off_t lenData;
 
-  PBoolean     header_needs_updating;
+  bool     header_needs_updating;
 };
 
 #endif // P_WAVFILE
