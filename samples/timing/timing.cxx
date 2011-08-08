@@ -54,27 +54,33 @@ void TimingTest::Main()
           "Time is now " << now.AsString("yyyy/MM/dd h:m:s.uuuu") << "\n"
           "Time is now " << now.AsString("MMM/d/yyyyy w h:m:sa") << "\n"
           "Time is now " << now.AsString("wwww d/M/yyy h:m:s.uu") << "\n"
-          "Time is now " << now.AsString("www d/MMMM/yy h:m:s.uuu") << endl;
+          "Time is now " << now.AsString("www d/MMMM/yy h:m:s.uuu") << "\n"
+          "Time is now " << now.AsString(PTime::RFC3339) << "\n"
+          "Time is now " << now.AsString(PTime::ShortISO8601) << "\n"
+          "Time is now " << now.AsString(PTime::LongISO8601) << "\n"
+          "Time is now " << now.AsString(PTime::RFC1123) << endl;
 
   cout << "\nTesting time string conversion" << endl;
-  TEST_TIME("20010203T1234Z");
-  TEST_TIME("20010203T1234");
-  TEST_TIME("20010203T0034");
-  TEST_TIME("20010203T10034");
+  TEST_TIME("2001-06-03 T 12:34:56");
+  TEST_TIME("2001-02-03 T 12:34:56+1000");
+  TEST_TIME("2001-02-03T12:34:56+09:30");
+  TEST_TIME("20010203T123456Z");
+  TEST_TIME("20010203T000056Z");
   TEST_TIME("20010203T123456+1100");
-  TEST_TIME("20010203T000056");
-  TEST_TIME("20010203T123456");
-  TEST_TIME("2001-02-03 T 12:34:56");
   TEST_TIME("5/03/1999 12:34:56");
+  TEST_TIME("5/03/1999 12:34");
+  TEST_TIME("12:34 5/03/1999");
   TEST_TIME("15/06/1999 12:34:56");
   TEST_TIME("15/06/01 12:34:56 PST");
   TEST_TIME("5/06/02 12:34:56");
   TEST_TIME("5/23/1999 12:34am");
+  TEST_TIME("23/5/1999 12:34am");
+  TEST_TIME("1999/04/23 12:34:56");
   TEST_TIME("5/23/00 12:34am");
-  TEST_TIME("1999/23/04 12:34:56");
   TEST_TIME("Mar 3, 1999 12:34pm");
   TEST_TIME("3 Jul 2004 12:34pm");
   TEST_TIME("12:34:56 5 December 1999");
+  TEST_TIME("12:34:56");
   TEST_TIME("10 minutes ago");
   TEST_TIME("2 weeks");
 
