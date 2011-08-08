@@ -124,6 +124,7 @@ default_mlib=no
 HAS_PLUGINS=1
 HAS_TTS=1
 HAS_ASN=1
+HAS_NAT=1
 HAS_STUN=1
 HAS_STUNSRVR=1
 HAS_PIPECHAN=1
@@ -142,6 +143,8 @@ HAS_URL=1
 HAS_HTTP=1
 HAS_HTTPFORMS=1
 HAS_HTTPSVC=1
+HAS_SSDP=1
+HAS_VCARD=1
 HAS_SOAP=1
 HAS_XMLRPC=1
 HAS_JABBER=1
@@ -169,6 +172,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_PLUGINS=1
   HAS_TTS=
   HAS_ASN=1
+  HAS_NAT=1
   HAS_STUN=1
   HAS_STUNSRVR=
   HAS_PIPECHAN=
@@ -187,6 +191,8 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_HTTP=1
   HAS_HTTPFORMS=
   HAS_HTTPSVC=
+  HAS_SSDP=
+  HAS_VCARD=
   HAS_SOAP=
   HAS_XMLRPC=
   HAS_JABBER=
@@ -1448,6 +1454,21 @@ dnl MSWIN_IF_FEATURE httpsvc,httpforms
 PTLIB_SIMPLE_OPTION([httpsvc], [HTTPSVC], [enable HTTP server support], [HAS_HTTPFORMS])
 
 dnl ########################################################################
+dnl check for SSDP support
+dnl MSWIN_DISPLAY    ssdp,SSDP support
+dnl MSWIN_DEFINE     ssdp,P_SSDP
+dnl MSWIN_IF_FEATURE ssdp,http
+
+PTLIB_SIMPLE_OPTION([ssdp], [SSDP], [enable SSDP support], [HAS_HTTP])
+
+dnl ########################################################################
+dnl check for VCard support
+dnl MSWIN_DISPLAY    vcard,VCard support
+dnl MSWIN_DEFINE     vcard,P_VCARD
+
+PTLIB_SIMPLE_OPTION([vcard], [VCARD], [enable VCard support])
+
+dnl ########################################################################
 dnl Jabber
 dnl MSWIN_DISPLAY    jabber,Jabber
 dnl MSWIN_DEFINE     jabber,P_JABBER
@@ -1504,14 +1525,22 @@ dnl MSWIN_DEFINE     asn,P_ASN
 PTLIB_SIMPLE_OPTION([asn], [ASN], [enable ASN decoding/encoding support])
 
 dnl ########################################################################
+dnl check for enabling NAT support
+dnl MSWIN_DISPLAY    nat,NAT Support
+dnl MSWIN_DEFINE     nat,P_NAT
+dnl MSWIN_DISPLAY    nat,NAT traversal support
+ 
+PTLIB_SIMPLE_OPTION([nat],     [NAT],     [enable NAT traversal support])
+
+dnl ########################################################################
 dnl check for enabling STUN support
 dnl MSWIN_DISPLAY    stun,STUN Support
 dnl MSWIN_DEFINE     stun,P_STUN
 dnl MSWIN_DISPLAY    stun,STUN server support
 dnl MSWIN_DEFINE     stun,P_STUNSRVR
  
-PTLIB_SIMPLE_OPTION([stun],     [STUN],     [enable STUN support])
-PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [enable STUN server support])
+PTLIB_SIMPLE_OPTION([stun],     [STUN],     [enable STUN support],        [HAS_NAT])
+PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [enable STUN server support], [HAS_NAT])
 
 dnl ########################################################################
 dnl check for enabling PIPECHAN support
@@ -1845,6 +1874,7 @@ PTLIB_NEW_OPTION(VIDEO_CAPTURE)
 
 PTLIB_NEW_OPTION(TTS)
 PTLIB_NEW_OPTION(ASN)
+PTLIB_NEW_OPTION(NAT)
 PTLIB_NEW_OPTION(STUN)
 PTLIB_NEW_OPTION(STUNSRVR)
 PTLIB_NEW_OPTION(PIPECHAN)

@@ -36,7 +36,10 @@
 
 #include <ptlib.h>
 #include <ptclib/psockbun.h>
+
+#if P_STUN
 #include <ptclib/pstun.h>
+#endif
 
 
 static const char FactoryName[] = PINTERFACE_MONITOR_FACTORY_NAME;
@@ -451,6 +454,8 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 }
 
 
+#ifdef P_NAT
+
 void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
 {
   PWaitAndSignal guard(m_clientsMutex);
@@ -464,13 +469,21 @@ void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
   }
 }
 
+#endif
+
 
 //////////////////////////////////////////////////
 
-PMonitoredSockets::PMonitoredSockets(bool reuseAddr, PNatMethod  * nat)
+PMonitoredSockets::PMonitoredSockets(bool reuseAddr
+#ifdef P_NAT
+                                                   , PNatMethod * nat
+#endif
+                                                                     )
   : localPort(0)
   , reuseAddress(reuseAddr)
+#ifdef P_NAT
   , natMethod(nat)
+#endif
   , opened(false)
   , interfaceAddedSignal(localPort, PIPSocket::GetDefaultIpAddressFamily())
 {
@@ -482,6 +495,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   delete info.socket;
   info.socket = NULL;
   
+#ifdef P_NAT
   if (natMethod != NULL && natMethod->IsAvailable(binding)) {
     PIPSocket::Address address;
     WORD port;
@@ -495,6 +509,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
       }
     }
   }
+#endif
 
   info.socket = new PUDPSocket(localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
   if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
@@ -689,20 +704,35 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 }
 
 
-PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr, PNatMethod * natMethod)
+PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr
+#ifdef P_NAT
+                                                                                   , PNatMethod * natMethod
+#endif
+                                                                                                           )
 {
   if (iface.IsEmpty() || iface == "*" || (iface[0] != '%' && PIPSocket::Address(iface).IsAny()))
-    return new PMonitoredSocketBundle(reuseAddr, natMethod);
+    return new PMonitoredSocketBundle(reuseAddr
+#ifdef P_NAT
+                                                      , natMethod
+#endif
+                                                                 );
   else
-    return new PSingleMonitoredSocket(iface, reuseAddr, natMethod);
+    return new PSingleMonitoredSocket(iface, reuseAddr
+#ifdef P_NAT
+                                                      , natMethod
+#endif
+                                                                 );
 }
 
+#ifdef P_NAT
 
 void PMonitoredSockets::OnRemoveNatMethod(const PNatMethod * nat)
 {
   if (natMethod == nat)
     natMethod = NULL;
 }
+
+#endif
 
 
 //////////////////////////////////////////////////
@@ -830,8 +860,16 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr, PNatMethod * natMethod)
-  : PMonitoredSockets(reuseAddr, natMethod)
+PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr
+#ifdef P_NAT
+                                                              , PNatMethod * natMethod
+#endif
+                                                                                       )
+  : PMonitoredSockets(reuseAddr
+#ifdef P_NAT
+                               , natMethod
+#endif
+                                           )
 {
   PTRACE(4, "MonSock\tCreated socket bundle for all interfaces.");
 }
@@ -1046,8 +1084,16 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 
 //////////////////////////////////////////////////
 
-PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr, PNatMethod * natMethod)
-  : PMonitoredSockets(reuseAddr, natMethod)
+PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr
+#ifdef P_NAT
+                                                                                            , PNatMethod * natMethod
+#endif
+                                                                                                                     )
+  : PMonitoredSockets(reuseAddr
+#ifdef P_NAT
+                               , natMethod
+#endif
+                                          )
   , theInterface(_theInterface)
 {
   PTRACE(4, "MonSock\tCreated monitored socket for interfaces " << _theInterface);
