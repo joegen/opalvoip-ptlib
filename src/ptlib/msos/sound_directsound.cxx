@@ -64,7 +64,7 @@ static PString GetErrorString(HRESULT error)
     return "Ok";
 
 #ifdef P_DIRECTSOUND_DXERR_H
-  if (HRESULT_FACILITY(error) == _FACDS) // DirectX errors not available in GetErrorDescription
+  if (HRESULT_FACILITY(error) == _FACDS) // DirectX errors not m_availableBufferSpace in GetErrorDescription
     return DXGetErrorDescription(error);
 #endif
 
@@ -122,7 +122,7 @@ void EnumerateDSoundDevices (PSoundChannel::Directions dir, DirectSoundDevices &
   else
     DirectSoundEnumerate((LPDSENUMCALLBACK)DSoundEnumCallback, &devices);
 
-  if (devices.names.GetSize () > 1)
+  if (devices.names.GetSize() > 1)
     devices.Append("Default", (dir == PSoundChannel::Player) ? DSDEVID_DefaultPlayback  : DSDEVID_DefaultCapture);
 }
 
@@ -138,19 +138,9 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-PSoundChannelDirectSound::PSoundChannelDirectSound ()
-: mAudioPlaybackBuffer(NULL),
-  mAudioPrimaryPlaybackBuffer(NULL),
-  sAudioPlaybackDevice(NULL),
-  sAudioCaptureDevice(NULL),
-  mAudioCaptureBuffer(NULL),
-  mDXBufferSize(0),
-  mStreaming(true),
-  mVolume(0)
+PSoundChannelDirectSound::PSoundChannelDirectSound()
 {
-  memset (&mWFX, 0, sizeof (mWFX)); 
-  notificationEvent[0] = CreateEvent(NULL, PFalse, PFalse, NULL);// auto-reset
-  notificationEvent[1] = CreateEvent(NULL, PFalse, PFalse, NULL);// auto-reset
+  Construct();
 }
 
 
@@ -159,140 +149,137 @@ PSoundChannelDirectSound::PSoundChannelDirectSound (const PString &device,
                                                     unsigned numChannels,
                                                     unsigned sampleRate,
                                                     unsigned bitsPerSample)
-: mAudioPlaybackBuffer(NULL),
-  mAudioPrimaryPlaybackBuffer(NULL),
-  sAudioPlaybackDevice(NULL),
-  sAudioCaptureDevice(NULL),
-  mAudioCaptureBuffer(NULL),
-  mDXBufferSize(0),
-  mStreaming(true),
-  mVolume(0)
 {
-  notificationEvent[0] = CreateEvent(NULL, PFalse, PFalse, NULL);// auto-reset
-  notificationEvent[1] = CreateEvent(NULL, PFalse, PFalse, NULL);// auto-reset
-  Open (device, dir, numChannels, sampleRate, bitsPerSample);
+  Construct();
+  Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
 
-PSoundChannelDirectSound::~PSoundChannelDirectSound ()
+void PSoundChannelDirectSound::Construct()
+{
+  m_audioPlaybackBuffer = NULL;
+  m_audioPrimaryPlaybackBuffer = NULL;
+  m_audioPlaybackDevice = NULL;
+  m_audioCaptureDevice = NULL;
+  m_audioCaptureBuffer = NULL;
+  m_dxBufferSize = 0;
+  m_isStreaming = true;
+  m_volume = 0;
+
+  memset (&m_waveFormat, 0, sizeof (m_waveFormat)); 
+  m_notificationEvent[0] = CreateEvent(NULL, false, false, NULL);// auto-reset
+  m_notificationEvent[1] = CreateEvent(NULL, false, false, NULL);// auto-reset
+
+  SetBuffers(16000, 3); // 3 seconds at 8kHz
+}
+
+
+PSoundChannelDirectSound::~PSoundChannelDirectSound()
 {
   Close();
-  if (notificationEvent[0] != NULL)
-    CloseHandle(notificationEvent[0]);
+  if (m_notificationEvent[0] != NULL)
+    CloseHandle(m_notificationEvent[0]);
 
-  if (notificationEvent[1] != NULL)
-    CloseHandle(notificationEvent[1]);
+  if (m_notificationEvent[1] != NULL)
+    CloseHandle(m_notificationEvent[1]);
 
-  PTRACE(4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " destroyed");
+  PTRACE(4, "dsound\t" << ((m_direction == Player) ? "Playback" : "Recording") << " destroyed");
 }
 
 
-PBoolean PSoundChannelDirectSound::Open (const PString & _device,
-                                Directions _dir,
-                                unsigned _numChannels,
-                                unsigned _sampleRate,
-                                unsigned _bitsPerSample)
+PBoolean PSoundChannelDirectSound::Open(const PString & device,
+                                        Directions dir,
+                                        unsigned numChannels,
+                                        unsigned sampleRate,
+                                        unsigned bitsPerSample)
 {
-  deviceName = _device;
-  mDirection = _dir;
-  mNumChannels = _numChannels;
-  mSampleRate = _sampleRate;
-  mBitsPerSample = _bitsPerSample;
+  Abort();
+
+  m_deviceName = device;
+  m_direction = dir;
+  m_numChannels = numChannels;
+  m_sampleRate = sampleRate;
+  m_bitsPerSample = bitsPerSample;
+
+  Close();
+  ResetEvent(m_notificationEvent[1]);
+
+  PTRACE(4, "dsound\tOpen " << ((m_direction == Player) ? "playback" : "recording") << " device " << m_deviceName);
 
   GUID deviceGUID;
-  if (!GetDeviceID(_device, &deviceGUID))
-    return false;
-
-  Close();
-  ResetEvent(notificationEvent[1]);
-
-  PTRACE(4, "dsound\tOpen " << ((mDirection == Player) ? "playback" : "recording") << " device " << deviceName);
-
-  SetFormat(_numChannels, _sampleRate, _bitsPerSample);
-  return (mDirection == Player) ? InitPlaybackDevice(&deviceGUID) : InitCaptureDevice(&deviceGUID);
-}
-
-
-PBoolean PSoundChannelDirectSound::GetDeviceID (PString deviceName, GUID *pGUID)
-{
-  *pGUID = (mDirection == Player) ? DSDEVID_DefaultPlayback  : DSDEVID_DefaultCapture;
   DirectSoundDevices devices;
-  EnumerateDSoundDevices(mDirection, devices);
+  EnumerateDSoundDevices(m_direction, devices);
 
-  PINDEX idx = devices.names.GetStringsIndex(deviceName);
+  PINDEX idx = devices.names.GetStringsIndex(m_deviceName);
   if (idx != P_MAX_INDEX)
-    *pGUID = devices.guids[idx];
-  else
-    PTRACE(4, "dsound\tGetDeviceID device: " << deviceName << " not found, substituting default");
-
-  return true;
-}
-
-
-PBoolean PSoundChannelDirectSound::InitPlaybackDevice (GUID *pGUID)
-{
-  HRESULT hr = DirectSoundCreate8(pGUID, &sAudioPlaybackDevice, NULL);
-  if (hr != S_OK) {
-    PTRACE(4, "dsound\tCould not create playback device: " << GetErrorString(hr));
-    return false;
-  }
-  HWND hWnd = GetForegroundWindow();
-  if (hWnd == NULL)
-    hWnd = GetDesktopWindow();
-
-  hr = sAudioPlaybackDevice->SetCooperativeLevel(hWnd, DSSCL_PRIORITY);
-  if (hr != S_OK) {
-    PTRACE(4, "dsound\tCould not set playback device cooperative level: " << GetErrorString(hr));
-    sAudioPlaybackDevice.Release();
-    return false;
+    deviceGUID = devices.guids[idx];
+  else {
+    PTRACE(4, "dsound\tGetDeviceID device: " << m_deviceName << " not found, substituting default");
+    deviceGUID = (m_direction == Player) ? DSDEVID_DefaultPlayback  : DSDEVID_DefaultCapture;
   }
 
-  DSBUFFERDESC dsbd = {
-    sizeof(DSBUFFERDESC),        // dwSize
-    DSBCAPS_PRIMARYBUFFER        // dwFlags
-  };                            // dwBufferBytes, dwReserved, lpwfxFormat, guid3DAlgorithm = 0
-  if (FAILED(sAudioPlaybackDevice->CreateSoundBuffer(&dsbd, &mAudioPrimaryPlaybackBuffer, NULL))) {
-    PTRACE(4, "dsound\tCould not create playback device primary buffer: " << GetErrorString(hr));
-    sAudioPlaybackDevice.Release();
-    return false;
-  }
-  return PTrue;
-}
+  if (m_direction == Player) {
+    HRESULT hr = DirectSoundCreate8(&deviceGUID, &m_audioPlaybackDevice, NULL);
+    if (hr != S_OK) {
+      PTRACE(4, "dsound\tCould not create playback device: " << GetErrorString(hr));
+      return false;
+    }
 
+    HWND hWnd = GetForegroundWindow();
+    if (hWnd == NULL)
+      hWnd = GetDesktopWindow();
 
-PBoolean PSoundChannelDirectSound::InitCaptureDevice(GUID *pGUID)
-{
-  HRESULT hr = DirectSoundCaptureCreate8 (pGUID, &sAudioCaptureDevice, NULL);
-  if (hr != S_OK) {
-    PTRACE(4, "dsound\tCould not create Capture device: " << GetErrorString(hr));
-    return false;
+    hr = m_audioPlaybackDevice->SetCooperativeLevel(hWnd, DSSCL_PRIORITY);
+    if (hr != S_OK) {
+      PTRACE(4, "dsound\tCould not set playback device cooperative level: " << GetErrorString(hr));
+      m_audioPlaybackDevice.Release();
+      return false;
+    }
+
+    DSBUFFERDESC dsbd = {
+      sizeof(DSBUFFERDESC),        // dwSize
+      DSBCAPS_PRIMARYBUFFER        // dwFlags
+    };                            // dwBufferBytes, dwReserved, lpwfxFormat, guid3DAlgorithm = 0
+    if (FAILED(m_audioPlaybackDevice->CreateSoundBuffer(&dsbd, &m_audioPrimaryPlaybackBuffer, NULL))) {
+      PTRACE(4, "dsound\tCould not create playback device primary buffer: " << GetErrorString(hr));
+      m_audioPlaybackDevice.Release();
+      return false;
+    }
   }
-  return true;
+  else {
+    HRESULT hr = DirectSoundCaptureCreate8(&deviceGUID, &m_audioCaptureDevice, NULL);
+    if (hr != S_OK) {
+      PTRACE(4, "dsound\tCould not create Capture device: " << GetErrorString(hr));
+      return false;
+    }
+  }
+
+  return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
 
 
 PBoolean PSoundChannelDirectSound::Abort()
 {
-  SetEvent(notificationEvent[1]); // abort waiting
-  PWaitAndSignal mutex(bufferMutex);
-  switch (mDirection) {
+  SetEvent(m_notificationEvent[1]); // abort waiting
+  PWaitAndSignal mutex(m_bufferMutex);
+  switch (m_direction) {
   case Player:
-    if (mAudioPlaybackBuffer) {
-      PTRACE(4, "dsound\tClose playback device " << deviceName);
-      mAudioPlaybackBuffer->Stop ();
+    if (m_audioPlaybackBuffer) {
+      PTRACE(4, "dsound\tClose playback device " << m_deviceName);
+      m_audioPlaybackBuffer->Stop();
     }
-    mAudioPlaybackBuffer.Release();
+    m_audioPlaybackBuffer.Release();
     break;
 
   case Recorder:
-    if (mAudioCaptureBuffer) {
-      PTRACE(4, "dsound\tClose recording device " << deviceName);
-      mAudioCaptureBuffer->Stop ();
+    if (m_audioCaptureBuffer) {
+      PTRACE(4, "dsound\tClose recording device " << m_deviceName);
+      m_audioCaptureBuffer->Stop();
     }
-    mAudioCaptureBuffer.Release();
+    m_audioCaptureBuffer.Release();
     break;
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -300,227 +287,238 @@ PBoolean PSoundChannelDirectSound::Close()
 {
   Abort(); // abort waiting for I/O & destroy buffers
 
-  switch (mDirection) {
+  switch (m_direction) {
   case Player:
-    mAudioPrimaryPlaybackBuffer.Release();
-    sAudioPlaybackDevice.Release();
+    m_audioPrimaryPlaybackBuffer.Release();
+    m_audioPlaybackDevice.Release();
     break;
 
   case Recorder:
-    sAudioCaptureDevice.Release();
+    m_audioCaptureDevice.Release();
     break;
   }
-  return PTrue;
+  return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::SetFormat (unsigned numChannels,
-                                     unsigned sampleRate,
-                                     unsigned bitsPerSample)
+PBoolean PSoundChannelDirectSound::SetFormat(unsigned numChannels,
+                                             unsigned sampleRate,
+                                             unsigned bitsPerSample)
 {
-  memset (&mWFX, 0, sizeof (mWFX)); 
-  mWFX.wFormatTag = WAVE_FORMAT_PCM;
-  mWFX.nChannels = (WORD)numChannels;
-  mWFX.nSamplesPerSec = sampleRate;
-  mWFX.wBitsPerSample = (WORD)bitsPerSample;
-  mWFX.nBlockAlign = mWFX.nChannels * (mWFX.wBitsPerSample / 8);
-  mWFX.nAvgBytesPerSec = mWFX.nSamplesPerSec * mWFX.nBlockAlign;
-
-  PTRACE(4, "dsound\t" << ((mDirection == Player) ? "Playback" : "Recording") << " SetFormat\n"
-    << "   -->  nChannels: " << mWFX.nChannels << '\n'
-    << "   -->  nSamplesPerSec: " << mWFX.nSamplesPerSec << '\n'
-    << "   -->  wBitsPerSample: " << mWFX.wBitsPerSample << '\n'
-    << "   -->  nBlockAlign: " << mWFX.nBlockAlign << '\n'
-    << "   -->  nAvgBytesPerSec: " << mWFX.nAvgBytesPerSec);
-
-  if (!mDXBufferSize)
-    return PTrue; // no buffers yet
-
-  // resize the buffers to match
   Abort(); // abort waiting for I/O & destroy buffers
-  if (mDirection == Player)
-    return InitPlaybackBuffer();
 
-  return InitCaptureBuffer();
+  memset (&m_waveFormat, 0, sizeof (m_waveFormat)); 
+  m_waveFormat.wFormatTag = WAVE_FORMAT_PCM;
+  m_waveFormat.nChannels = (WORD)numChannels;
+  m_waveFormat.nSamplesPerSec = sampleRate;
+  m_waveFormat.wBitsPerSample = (WORD)bitsPerSample;
+  m_waveFormat.nBlockAlign = m_waveFormat.nChannels * (m_waveFormat.wBitsPerSample / 8);
+  m_waveFormat.nAvgBytesPerSec = m_waveFormat.nSamplesPerSec * m_waveFormat.nBlockAlign;
+
+  PTRACE(4, "dsound\t" << ((m_direction == Player) ? "Playback" : "Recording") << " SetFormat\n"
+    << "   -->  nChannels: " << m_waveFormat.nChannels << '\n'
+    << "   -->  nSamplesPerSec: " << m_waveFormat.nSamplesPerSec << '\n'
+    << "   -->  wBitsPerSample: " << m_waveFormat.wBitsPerSample << '\n'
+    << "   -->  nBlockAlign: " << m_waveFormat.nBlockAlign << '\n'
+    << "   -->  nAvgBytesPerSec: " << m_waveFormat.nAvgBytesPerSec);
+
+  return true; // no buffers yet
 }
 
 
-PBoolean PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count)
+PBoolean PSoundChannelDirectSound::SetBuffers(PINDEX size, PINDEX count)
 {
-  if (mDXBufferSize)
-    Abort(); // abort waiting for I/O & destroy buffers
+  Abort(); // abort waiting for I/O & destroy buffers
 
-  mBufferCount = count;
-  mBufferSize = size; 
-  mDXBufferSize = mBufferCount * mBufferSize;
+  m_bufferCount = count;
+  m_bufferSize = size; 
+  m_dxBufferSize = m_bufferCount * m_bufferSize;
 
-  PTRACE(4, "dsound\tSetBuffers ==>  size = " << mBufferSize << "  |  count = " << mBufferCount << "  | DXBufferSize = " << mDXBufferSize);
-  if (mDirection == Player)
-    return InitPlaybackBuffer();
-
-  return InitCaptureBuffer();
+  PTRACE(4, "dsound\tSetBuffers ==>  size = " << m_bufferSize << "  |  count = " << m_bufferCount << "  | DXBufferSize = " << m_dxBufferSize);
+  return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::GetBuffers (PINDEX & size, PINDEX & count)
+PBoolean PSoundChannelDirectSound::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  count = mBufferCount;
-  size = mBufferSize;
-  return PTrue;
+  count = m_bufferCount;
+  size = m_bufferSize;
+  return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::InitPlaybackBuffer ()
+PBoolean PSoundChannelDirectSound::InitPlaybackBuffer()
 {
   PTRACE(4, "dsound\tInitPlaybackBuffer");
 
-  PWaitAndSignal mutex(bufferMutex);
+  PWaitAndSignal mutex(m_bufferMutex);
   if (!IsOpen())
     return false;
 
-  if (mAudioPlaybackBuffer) {
-    PTRACE(4, "dsound\tInitPlayBuffer: Forgot to Abort");
-    return false;
-  }
+  if (m_audioPlaybackBuffer != NULL)
+    return true;
+
   DSBUFFERDESC dsbdesc = {
     sizeof(DSBUFFERDESC),
     DSBCAPS_GLOBALFOCUS + DSBCAPS_CTRLPOSITIONNOTIFY + DSBCAPS_GETCURRENTPOSITION2,
-    mDXBufferSize,                // calculated by SetBuffers
+    m_dxBufferSize,                // calculated by SetBuffers
     0,                            // reserved
-    &mWFX                       // format
+    &m_waveFormat                       // format
   } ;
-  HRESULT hr = sAudioPlaybackDevice->CreateSoundBuffer(&dsbdesc, &mAudioPlaybackBuffer, NULL); 
+  HRESULT hr = m_audioPlaybackDevice->CreateSoundBuffer(&dsbdesc, &m_audioPlaybackBuffer, NULL); 
   if (FAILED(hr)) { 
     PTRACE(4, "dsound\tInitPlaybackBuffer: CreateSoundBuffer failed: " << GetErrorString(hr));
     return false;
   } 
   IDirectSoundNotify * Notify ;// temporary pointer to the interface
-  hr = mAudioPlaybackBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID *) &Notify);
+  hr = m_audioPlaybackBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID *) &Notify);
   if (FAILED(hr)) { 
     PTRACE(4, "dsound\tInitPlayBuffer: Notify interface query failed: " << GetErrorString(hr));
-    mAudioPlaybackBuffer.Release();
+    m_audioPlaybackBuffer.Release();
     return false;
   }
-  PTRACE(4, "dsound\tInitPlayBuffer: Setting up notification for " << mBufferCount << " blocks of " << mBufferSize << " bytes");
-  DSBPOSITIONNOTIFY * Position = new DSBPOSITIONNOTIFY [mBufferCount];
+  PTRACE(4, "dsound\tInitPlayBuffer: Setting up notification for " << m_bufferCount << " blocks of " << m_bufferSize << " bytes");
+  DSBPOSITIONNOTIFY * Position = new DSBPOSITIONNOTIFY [m_bufferCount];
   if (Position == 0) {
     PTRACE(4, "dsound\tInitPlayBuffer: Notify allocation failed");
     Notify->Release();
-    mAudioPlaybackBuffer.Release();
+    m_audioPlaybackBuffer.Release();
     return false;
   }
-  DWORD BlockOffset = mBufferSize - 1;
-  for (PINDEX i = 0; i < mBufferCount; i++) {
+  DWORD BlockOffset = m_bufferSize - 1;
+  for (PINDEX i = 0; i < m_bufferCount; i++) {
     Position [i].dwOffset = BlockOffset;
-    Position [i].hEventNotify = notificationEvent[0]; // all use same event
-    BlockOffset += mBufferSize;
+    Position [i].hEventNotify = m_notificationEvent[0]; // all use same event
+    BlockOffset += m_bufferSize;
   }
-  hr = Notify->SetNotificationPositions (mBufferCount, Position);
+  hr = Notify->SetNotificationPositions (m_bufferCount, Position);
   Notify->Release();
   if (FAILED(hr)) { 
     PTRACE(4, "dsound\tInitPlaybackBuffer: Notify interface query failed: " << GetErrorString(hr));
-    mAudioPlaybackBuffer.Release();
+    m_audioPlaybackBuffer.Release();
     return false;
   }
   delete [] Position;
-  bufferByteOffset = 0; // reset write position
-  mAudioPlaybackBuffer->SetCurrentPosition (0);
-  ResetEvent(notificationEvent[1]);
+  m_bufferByteOffset = 0; // reset write position
+  m_audioPlaybackBuffer->SetCurrentPosition (0);
+  ResetEvent(m_notificationEvent[1]);
   return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::InitCaptureBuffer () 
+PBoolean PSoundChannelDirectSound::InitCaptureBuffer() 
 {
   PTRACE(4, "dsound\tInitCaptureBuffer");
 
-  PWaitAndSignal mutex(bufferMutex);
+  PWaitAndSignal mutex(m_bufferMutex);
   if (!IsOpen())
     return false;
 
-  if (mAudioCaptureBuffer) {
-    PTRACE(4, "dsound\tInitCaptureBuffer: Forgot to Abort");
-    return false;
-  }
+  if (m_audioCaptureBuffer != NULL)
+    return true;
+
   DSCBUFFERDESC dscbdesc = {
     sizeof(DSCBUFFERDESC),
     DSCBCAPS_WAVEMAPPED,        // DSCBCAPS_CTRLFX(support effects) | DSCBCAPS_WAVEMAPPED(use wave mapper for formats unsupported by device)
-    mDXBufferSize,                // calculated by SetBuffers
+    m_dxBufferSize,                // calculated by SetBuffers
     0,                            // reserved
-    &mWFX                       // format
+    &m_waveFormat                       // format
   } ;
-  HRESULT hr = sAudioCaptureDevice->CreateCaptureBuffer(&dscbdesc, &mAudioCaptureBuffer, NULL); 
+  HRESULT hr = m_audioCaptureDevice->CreateCaptureBuffer(&dscbdesc, &m_audioCaptureBuffer, NULL); 
   if (FAILED(hr)) { 
     PTRACE(4, "dsound\tInitCaptureBuffer: Create Sound Buffer failed: " << GetErrorString(hr));
     return false;
   }
   IDirectSoundNotify * Notify ;// temporary pointer to the interface
-  hr = mAudioCaptureBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID *) &Notify);
+  hr = m_audioCaptureBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID *) &Notify);
   if (FAILED(hr)) { 
     PTRACE(4, "dsound\tInitCaptureBuffer: Notify interface query failed: " << GetErrorString(hr));
-    mAudioCaptureBuffer.Release();
+    m_audioCaptureBuffer.Release();
     return false;
   }
-  PTRACE(4, "dsound\tInitCaptureBuffer: Setting up notification for " << mBufferCount << " blocks of " << mBufferSize << " bytes");
-  DSBPOSITIONNOTIFY * Position = new DSBPOSITIONNOTIFY [mBufferCount];
+  PTRACE(4, "dsound\tInitCaptureBuffer: Setting up notification for " << m_bufferCount << " blocks of " << m_bufferSize << " bytes");
+  DSBPOSITIONNOTIFY * Position = new DSBPOSITIONNOTIFY [m_bufferCount];
   if (Position == 0) {
     PTRACE(4, "dsound\tInitCaptureBuffer: Notify allocation failed");
     Notify->Release();
-    mAudioCaptureBuffer.Release();
+    m_audioCaptureBuffer.Release();
     return false;
   }
-  DWORD BlockOffset = mBufferSize - 1;
-  for (PINDEX i = 0; i < mBufferCount; i++) {
+  DWORD BlockOffset = m_bufferSize - 1;
+  for (PINDEX i = 0; i < m_bufferCount; i++) {
     Position [i].dwOffset = BlockOffset;
-    Position [i].hEventNotify = notificationEvent[0];// all use same event
-    BlockOffset += mBufferSize;
+    Position [i].hEventNotify = m_notificationEvent[0];// all use same event
+    BlockOffset += m_bufferSize;
   }
-  hr = Notify->SetNotificationPositions (mBufferCount, Position);
+  hr = Notify->SetNotificationPositions (m_bufferCount, Position);
   Notify->Release();
   if (FAILED(hr)) { 
     PTRACE(4, "dsound\tInitCaptureBuffer : Notify interface query failed: " << GetErrorString(hr));
-    mAudioCaptureBuffer.Release();
+    m_audioCaptureBuffer.Release();
     return false;
   }
   delete [] Position ;
-  bufferByteOffset = 0; // reset read position
-  ResetEvent(notificationEvent[1]);
+  m_bufferByteOffset = 0; // reset read position
+  ResetEvent(m_notificationEvent[1]);
   return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len)
+PBoolean PSoundChannelDirectSound::Write(const void *buf, PINDEX len)
 {
   lastWriteCount = 0;
-  if (!IsOpen())
+  if (!InitPlaybackBuffer())
     return false;
 
-  if (!mAudioPlaybackBuffer)
-  {
-    PTRACE(4, "dsound\tWrite Failed: Device not initialised :");
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
-  }
   char * src = (char *) buf;
   do {
-    if (!WaitForPlayBufferFree())       // wait for output space to become available
+    if (!WaitForPlayBufferFree())       // wait for output space to become m_availableBufferSpace
       return false;                     // closed
 
-    PWaitAndSignal mutex(bufferMutex);  // prevent closing while active
+    PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
 
-    // Write data from buf to circular buffer
-    PINDEX writeCount = WriteToDXBuffer (src, PMIN ((PINDEX)available, len), bufferByteOffset);
-    if (writeCount == P_MAX_INDEX)
+    LPVOID lpvWrite1, lpvWrite2;
+    DWORD dwLength1, dwLength2;
+    HRESULT hr = m_audioPlaybackBuffer->Lock(m_bufferByteOffset,
+                                            PMIN((PINDEX)m_availableBufferSpace, len),
+                                            &lpvWrite1,
+                                            &dwLength1,
+                                            &lpvWrite2,
+                                            &dwLength2,
+                                            0L);
+    if (hr == DSERR_BUFFERLOST) { // Buffer was lost, need to restore it
+      m_audioPlaybackBuffer->Restore();
+      hr = m_audioPlaybackBuffer->Lock(m_bufferByteOffset,
+                                      PMIN((PINDEX)m_availableBufferSpace, len),
+                                      &lpvWrite1,
+                                      &dwLength1,
+                                      &lpvWrite2,
+                                      &dwLength2,
+                                      0L);
+    }
+    if (FAILED (hr)) {
+      PTRACE(1, "dsound\tWriteToDXBuffer failed: " << GetErrorString(hr) << " len " << len << " pos " << m_bufferByteOffset);
       return false;
+    }
+
+    // Copy supplied buffer into locked DX memory
+    memcpy (lpvWrite1, buf, dwLength1);
+    if (lpvWrite2 != NULL)
+      memcpy (lpvWrite2, (BYTE *) buf + dwLength1, dwLength2);
+
+    PINDEX writeCount = dwLength1 + dwLength2;
+
+    m_audioPlaybackBuffer->Unlock(lpvWrite1, dwLength1, lpvWrite2, dwLength2);
 
     src += writeCount;
     len -= writeCount;
     lastWriteCount += writeCount;
-    bufferByteOffset += lastWriteCount;
-    bufferByteOffset %= mDXBufferSize;
+    m_bufferByteOffset += lastWriteCount;
+    m_bufferByteOffset %= m_dxBufferSize;
                                         // tell DX to play
-    mAudioPlaybackBuffer->Play (0, 0, mStreaming ? DSBPLAY_LOOPING : 0L);
-  }
-  while (lastWriteCount < len);
+    m_audioPlaybackBuffer->Play (0, 0, m_isStreaming ? DSBPLAY_LOOPING : 0L);
+  } while (lastWriteCount < len);
+
   return true;
 }
 
@@ -528,108 +526,62 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len)
 PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len)
 {
   lastReadCount = 0;
-  if (!IsOpen())
+  if (!StartRecording())                // Start the first read
     return false;
 
-  if (!mAudioCaptureBuffer)
-  {
-    PTRACE(4, "dsound\tRead : Device not initialised ");
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
-  }
   char * dest = (char *) buf;
   do {
-    if (!WaitForRecordBufferFull())     // sets bufferByteOffset and available
+    if (!WaitForRecordBufferFull())     // sets m_bufferByteOffset and m_availableBufferSpace
       return false;                     // closed
 
-    PWaitAndSignal mutex(bufferMutex);  // prevent closing while active
+    PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
 
-    // Read from device buffer minimum between the data required and data available
-    PINDEX readCount = ReadFromDXBuffer (dest, PMIN((PINDEX)available, len), bufferByteOffset);
-    if (readCount == P_MAX_INDEX)
+    LPVOID lpvRead1, lpvRead2;
+    DWORD dwLength1, dwLength2;
+    HRESULT hr = m_audioCaptureBuffer->Lock(m_bufferByteOffset,
+                                           PMIN((PINDEX)m_availableBufferSpace, len),
+                                           &lpvRead1,
+                                           &dwLength1,
+                                           &lpvRead2,
+                                           &dwLength2,
+                                           0L);
+    if (FAILED(hr)) {
+      PTRACE(1, "dsound\tReadFromDXBuffer Lock failed: " << GetErrorString(hr));
       return false;
+    }
+
+    // Copy from DX locked memory into return buffer
+    memcpy((BYTE *)buf, lpvRead1, dwLength1);
+    if (lpvRead2 != NULL)
+      memcpy ((BYTE *) buf + dwLength1, lpvRead2, dwLength2);
+
+    PINDEX readCount = dwLength1 + dwLength2;
+
+    m_audioCaptureBuffer->Unlock(lpvRead1, dwLength1, lpvRead2, dwLength2);
 
     dest += readCount;
     len -= readCount;
     lastReadCount += readCount;
-    bufferByteOffset += readCount;
-    bufferByteOffset %= mDXBufferSize;
-  }
-  while (lastReadCount < len);
+    m_bufferByteOffset += readCount;
+    m_bufferByteOffset %= m_dxBufferSize;
+  } while (lastReadCount < len);
+
   return true;
-}
-
-
-PINDEX PSoundChannelDirectSound::WriteToDXBuffer (const void *buf,  PINDEX len, DWORD position) 
-{
-  if (!IsOpen())
-    return P_MAX_INDEX;
-
-  LPVOID lpvWrite1, lpvWrite2;
-  DWORD dwLength1, dwLength2;
-  PINDEX written = 0;
-  HRESULT hr = mAudioPlaybackBuffer->Lock (position, len, &lpvWrite1, &dwLength1, &lpvWrite2, &dwLength2, 0L);
-  if (hr == DSERR_BUFFERLOST) { // Buffer was lost, need to restore it
-    mAudioPlaybackBuffer->Restore ();
-    hr = mAudioPlaybackBuffer->Lock (position, len, &lpvWrite1, &dwLength1, &lpvWrite2, &dwLength2, 0L);
-  }
-  if (FAILED (hr)) {
-    PTRACE(4, "dsound\tWriteToDXBuffer failed: " << GetErrorString(hr) << " len " << len << " pos " << position);
-    return P_MAX_INDEX;
-  }
-  // Copy supplied buffer into locked DX memory
-  memcpy (lpvWrite1, buf, dwLength1);
-  if (lpvWrite2 != NULL)
-    memcpy (lpvWrite2, (BYTE *) buf + dwLength1, dwLength2);
-
-  written = dwLength1 + dwLength2;
-
-  mAudioPlaybackBuffer->Unlock (lpvWrite1, dwLength1, lpvWrite2, dwLength2);
-
-  return written;
-}
-
-
-PINDEX PSoundChannelDirectSound::ReadFromDXBuffer (const void * buf, PINDEX len, DWORD position)
-{
-  if (!IsOpen())
-    return P_MAX_INDEX;
-
-  LPVOID lpvRead1, lpvRead2;
-  DWORD dwLength1, dwLength2;
-  PINDEX read = 0;
-
-  HRESULT hr = mAudioCaptureBuffer->Lock (position, len, &lpvRead1, &dwLength1, &lpvRead2, &dwLength2, 0L);
-  if (FAILED(hr)) {
-    PTRACE(4, "dsound\tReadFromDXBuffer Lock failed: " << GetErrorString(hr));
-    return P_MAX_INDEX;
-  }
-  // Copy from DX locked memory into return buffer
-  memcpy ((BYTE *)buf, lpvRead1, dwLength1);
-
-  if (lpvRead2 != NULL)
-    memcpy ((BYTE *) buf + dwLength1, lpvRead2, dwLength2);
-
-  read = dwLength1 + dwLength2;
-
-  mAudioCaptureBuffer->Unlock (lpvRead1, dwLength1, lpvRead2, dwLength2);
-
-  return read;
 }
 
 
 PBoolean PSoundChannelDirectSound::PlaySound (const PSound & sound, PBoolean wait)
 {
-  mStreaming = false;
+  m_isStreaming = false;
 
-  if (!mAudioPlaybackBuffer)
-      SetBuffers (sound.GetSize(), 1);
+  SetBuffers(sound.GetSize(), 1);
 
   if (!Write((const void *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
-  return PTrue;
+  return true;
 }
 
 
@@ -642,21 +594,21 @@ PBoolean PSoundChannelDirectSound::PlayFile (const PFilePath & filename, PBoolea
     return SetErrorValues(NotOpen, mmio.GetLastError() | PWIN32ErrorFlag, LastWriteError);
 
   Abort();
-  mDXBufferSize = 0; // so SetFormat doesn't create buffer
+  m_dxBufferSize = 0; // so SetFormat doesn't create buffer
 
   // Save old format and set to one loaded from file.
-  unsigned numChannels = mWFX.nChannels;
-  unsigned sampleRate = mWFX.nSamplesPerSec;
-  unsigned bitsPerSample = mWFX.wBitsPerSample;
+  unsigned numChannels = m_waveFormat.nChannels;
+  unsigned sampleRate = m_waveFormat.nSamplesPerSec;
+  unsigned bitsPerSample = m_waveFormat.wBitsPerSample;
 
   SetFormat(fileFormat->nChannels, fileFormat->nSamplesPerSec, fileFormat->wBitsPerSample);
 
-  int bufferSize = mWFX.nAvgBytesPerSec / 2;
+  int bufferSize = m_waveFormat.nAvgBytesPerSec / 2;
   if (!SetBuffers (bufferSize, 4))
     SetFormat(numChannels, sampleRate, bitsPerSample);// restore audio format
 
   PBYTEArray buffer;
-  mStreaming = false;
+  m_isStreaming = false;
 
   while (dataSize)
   {
@@ -676,42 +628,45 @@ PBoolean PSoundChannelDirectSound::PlayFile (const PFilePath & filename, PBoolea
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::IsPlayBufferFree ()
+PBoolean PSoundChannelDirectSound::IsPlayBufferFree()
 {
+  if (!InitPlaybackBuffer())
+    return false;
+
   DWORD PlayPos; // byte offset from start of buffer to next byte directsound will play (end of where we can write)
-  mAudioPlaybackBuffer->GetCurrentPosition (&PlayPos, 0);
-  if (PlayPos <= bufferByteOffset) // wrapped around
-    available = mDXBufferSize - bufferByteOffset + PlayPos;
+  m_audioPlaybackBuffer->GetCurrentPosition (&PlayPos, 0);
+  if (PlayPos <= m_bufferByteOffset) // wrapped around
+    m_availableBufferSpace = m_dxBufferSize - m_bufferByteOffset + PlayPos;
   else
-    available = PlayPos - bufferByteOffset;
+    m_availableBufferSpace = PlayPos - m_bufferByteOffset;
 
-  //if (available % mWFX.nBlockAlign) // always write multiples of sample frames
-  //  available -= (available % mWFX.nBlockAlign);
+  //if (m_availableBufferSpace % m_waveFormat.nBlockAlign) // always write multiples of sample frames
+  //  m_availableBufferSpace -= (m_availableBufferSpace % m_waveFormat.nBlockAlign);
 
-  if ((PINDEX)available == mDXBufferSize) {
+  if ((PINDEX)m_availableBufferSpace == m_dxBufferSize) {
     DWORD dwStatus;
-    mAudioPlaybackBuffer->GetStatus (&dwStatus);
+    m_audioPlaybackBuffer->GetStatus (&dwStatus);
     if ((dwStatus & DSBSTATUS_PLAYING) != 0) 
-      available = 0;
+      m_availableBufferSpace = 0;
 
-    //PTRACE(4, "dsound\tPlayer buffer " << available << (((dwStatus & DSBSTATUS_PLAYING) == 0)? " empty" : " full"));
+    //PTRACE(4, "dsound\tPlayer buffer " << m_availableBufferSpace << (((dwStatus & DSBSTATUS_PLAYING) == 0)? " empty" : " full"));
   }
   //else
-  //  PTRACE(4, "dsound\tPlayer buffer " << available);
+  //  PTRACE(4, "dsound\tPlayer buffer " << m_availableBufferSpace);
 
-  return available >= (unsigned)mBufferSize;
+  return m_availableBufferSpace >= (unsigned)m_bufferSize;
 }
 
 
-PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree ()
+PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree()
 {
-  ResetEvent(notificationEvent[0]);
+  ResetEvent(m_notificationEvent[0]);
   while (!IsPlayBufferFree()) { // always call last (after wait) to set member variables
-    if (WaitForMultipleObjects(2, notificationEvent, FALSE, INFINITE) != WAIT_OBJECT_0) {
+    if (WaitForMultipleObjects(2, m_notificationEvent, FALSE, INFINITE) != WAIT_OBJECT_0) {
       PTRACE(4, "dsound\tPlayer abort");
       return false;
     }
@@ -720,61 +675,58 @@ PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree ()
 }
 
 
-PBoolean PSoundChannelDirectSound::HasPlayCompleted ()
+PBoolean PSoundChannelDirectSound::HasPlayCompleted()
 {
   DWORD dwStatus;
-  if (mAudioPlaybackBuffer != NULL) {
-    mAudioPlaybackBuffer->GetStatus (&dwStatus);
+  if (m_audioPlaybackBuffer != NULL) {
+    m_audioPlaybackBuffer->GetStatus (&dwStatus);
     if (dwStatus & DSBSTATUS_PLAYING)
-      return PFalse;
+      return false;
   }
-  return PTrue;
+  return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::WaitForPlayCompletion ()
+PBoolean PSoundChannelDirectSound::WaitForPlayCompletion()
 {
   while (!HasPlayCompleted()) 
     Sleep (50);
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelDirectSound::RecordSound (PSound & /*sound*/)
 {
   PTRACE(4, "dsound\tRecordSound unimplemented");
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelDirectSound::RecordFile (const PFilePath & /*filename*/)
 {
   PTRACE(4, "dsound\tRecordFile unimplemented");
-  return PFalse;
+  return false;
 }
 
 
-PBoolean PSoundChannelDirectSound::StartRecording ()
+PBoolean PSoundChannelDirectSound::StartRecording()
 {
-  if (!mAudioCaptureBuffer)
-  {
-    PTRACE(4, "dsound\tStartRecording: Device not initialised");
-    // TODO: proper error reporting
-    //return SetErrorValues(NotOpen, EBADF, LastWriteError);
+  if (!InitCaptureBuffer())
     return false;
-  }
+
   DWORD Status = 0;
-  if (FAILED(mAudioCaptureBuffer->GetStatus(&Status))) {
+  if (FAILED(m_audioCaptureBuffer->GetStatus(&Status))) {
     PTRACE(4, "dsound\tStartRecording: Failed GetStatus");
     //return SetErrorValues(NotOpen, EBADF, LastWriteError);
     return false;
   }
+
   if ((Status & DSCBSTATUS_CAPTURING) != 0)
     return true;
 
-  bufferByteOffset = 0;
-  if (FAILED(mAudioCaptureBuffer->Start (DSCBSTART_LOOPING))) {
+  m_bufferByteOffset = 0;
+  if (FAILED(m_audioCaptureBuffer->Start (DSCBSTART_LOOPING))) {
     PTRACE(4, "dsound\tStartRecording: Failed Start");
     //return SetErrorValues(NotOpen, EBADF, LastWriteError);
     return false;
@@ -784,72 +736,72 @@ PBoolean PSoundChannelDirectSound::StartRecording ()
 }
 
 
-PBoolean PSoundChannelDirectSound::IsRecordBufferFull ()
+PBoolean PSoundChannelDirectSound::IsRecordBufferFull()
 {
   if (!StartRecording())                // Start the first read
     return false;
 
   DWORD ReadPos;                        // byte offset from start of buffer to the end of the data that has been fully captured
-  mAudioCaptureBuffer->GetCurrentPosition (0, &ReadPos);
-  if (ReadPos < bufferByteOffset)        // wrapped around
-    available = mDXBufferSize - bufferByteOffset + ReadPos;
+  m_audioCaptureBuffer->GetCurrentPosition (0, &ReadPos);
+  if (ReadPos < m_bufferByteOffset)        // wrapped around
+    m_availableBufferSpace = m_dxBufferSize - m_bufferByteOffset + ReadPos;
   else
-    available = ReadPos - bufferByteOffset;
+    m_availableBufferSpace = ReadPos - m_bufferByteOffset;
                                         // always read multiples of sample frames
-  available -= (available % mWFX.nBlockAlign);
-  return available >= (unsigned)mBufferSize;
+  m_availableBufferSpace -= (m_availableBufferSpace % m_waveFormat.nBlockAlign);
+  return m_availableBufferSpace >= (unsigned)m_bufferSize;
 }
 
 
-PBoolean PSoundChannelDirectSound::AreAllRecordBuffersFull ()
+PBoolean PSoundChannelDirectSound::AreAllRecordBuffersFull()
 {
   PTRACE(4, "dsound\tAreAllRecordBuffersFull unimplemented");
-  return PTrue;
+  return true;
 }
 
 
-PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull ()
+PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull()
 {
-  ResetEvent(notificationEvent[0]);
+  ResetEvent(m_notificationEvent[0]);
   while (!IsRecordBufferFull()) {       // repeat after wait to set member variables
-    if (WaitForMultipleObjects(2, notificationEvent, FALSE, INFINITE) != WAIT_OBJECT_0)
+    if (WaitForMultipleObjects(2, m_notificationEvent, FALSE, INFINITE) != WAIT_OBJECT_0)
       return false;
   }
   return IsOpen();
 }
 
 
-PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull ()
+PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull()
 {
 
   PTRACE(4, "dsound\tWaitForAllRecordBuffersFull unimplemented");
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelDirectSound::SetVolume (unsigned newVal)
 {
 
-  PBoolean no_error=PTrue;
+  PBoolean no_error=true;
   HRESULT hr;
 
-  switch (mDirection) {
+  switch (m_direction) {
   case Player:
-    if (mAudioPlaybackBuffer) {
+    if (m_audioPlaybackBuffer) {
       // SetVolume is already logarithmic and is in 100ths of a decibel attenuation,
       // 0=max gain, 10,000 is min gain.
-      if (FAILED (hr = mAudioPlaybackBuffer->SetVolume((MaxVolume - newVal)*100))) {
+      if (FAILED (hr = m_audioPlaybackBuffer->SetVolume((MaxVolume - newVal)*100))) {
         PTRACE(4, "PSoundChannelDirectSound::SetVolume failed " << GetErrorString(hr));
-        no_error = PFalse;
+        no_error = false;
       }
     }
     else
-      PTRACE(4, "PSoundChannelDirectSound::SetVolume Failed mAudioPlaybackBuffer is NULLL (huh?)");
+      PTRACE(4, "PSoundChannelDirectSound::SetVolume Failed m_audioPlaybackBuffer is NULLL (huh?)");
     break;
 
   case Recorder:
     // DirectX does not let you change the capture buffer volume
-    mVolume = newVal;
+    m_volume = newVal;
     break;
   }
   return no_error;
@@ -858,12 +810,12 @@ PBoolean PSoundChannelDirectSound::SetVolume (unsigned newVal)
 
 PBoolean PSoundChannelDirectSound::GetVolume (unsigned &devVol)
 {
-  switch (mDirection) 
+  switch (m_direction) 
   {
     case Player:
-      if (mAudioPlaybackBuffer) {
+      if (m_audioPlaybackBuffer) {
         long volume;
-        HRESULT hr = mAudioPlaybackBuffer->GetVolume(&volume);
+        HRESULT hr = m_audioPlaybackBuffer->GetVolume(&volume);
         if (SUCCEEDED(hr)) {
           devVol = (unsigned int)(MaxVolume - volume/100);
           return true;
@@ -874,7 +826,7 @@ PBoolean PSoundChannelDirectSound::GetVolume (unsigned &devVol)
 
     case Recorder:
       // DirectX does not let you change the capture buffer volume
-      devVol = mVolume;
+      devVol = m_volume;
       break;
   }
   return false;
