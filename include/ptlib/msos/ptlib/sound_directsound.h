@@ -99,11 +99,11 @@ public:
             unsigned sampleRate,
             unsigned bitsPerSample);
 
-  PString GetName() const { return deviceName; }
+  PString GetName() const { return m_deviceName; }
 
   PBoolean IsOpen() const
   {
-    return (mDirection == Player && sAudioPlaybackDevice != NULL) || sAudioCaptureDevice != NULL;
+    return (m_direction == Player && m_audioPlaybackDevice != NULL) || m_audioCaptureDevice != NULL;
   }
 
   /** Stop I/O and destroy I/O buffer
@@ -121,9 +121,9 @@ public:
                  unsigned sampleRate,
                  unsigned bitsPerSample);
 
-  unsigned GetChannels() const { return mNumChannels; }
-  unsigned GetSampleRate() const { return mSampleRate; }
-  unsigned GetSampleSize() const { return mBitsPerSample; }
+  unsigned GetChannels() const { return m_numChannels; }
+  unsigned GetSampleRate() const { return m_sampleRate; }
+  unsigned GetSampleSize() const { return m_bitsPerSample; }
 
   /** Configure the device's transfer buffers.
       No audio can be played or captured until after this method is set!
@@ -162,9 +162,9 @@ public:
     */
   PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
 
-  /** Checks space available for writing audio to play.
+  /** Checks space m_availableBufferSpace for writing audio to play.
 	  Returns true if space enough for one buffer as set by SetBuffers.
-	  Sets 'available' member for use by Write.
+	  Sets 'm_availableBufferSpace' member for use by Write.
     */
   PBoolean IsPlayBufferFree();
 
@@ -191,56 +191,40 @@ public:
   PBoolean GetVolume (unsigned &);
 
 private:
+  void Construct();
 
-  unsigned mNumChannels;// 1=mono, 2=stereo, etc.
-  unsigned mSampleRate;
-  unsigned mBitsPerSample;
+  unsigned m_numChannels;// 1=mono, 2=stereo, etc.
+  unsigned m_sampleRate;
+  unsigned m_bitsPerSample;
   
-  PString deviceName;
-  Directions mDirection;
+  PString m_deviceName;
+  Directions m_direction;
 
-  CComPtr<IDirectSoundCapture8>      sAudioCaptureDevice;
-  CComPtr<IDirectSoundCaptureBuffer> mAudioCaptureBuffer;
+  CComPtr<IDirectSoundCapture8>      m_audioCaptureDevice;
+  CComPtr<IDirectSoundCaptureBuffer> m_audioCaptureBuffer;
 
-  CComPtr<IDirectSound8>      sAudioPlaybackDevice;
-  CComPtr<IDirectSoundBuffer> mAudioPlaybackBuffer;
-  CComPtr<IDirectSoundBuffer> mAudioPrimaryPlaybackBuffer;
+  CComPtr<IDirectSound8>      m_audioPlaybackDevice;
+  CComPtr<IDirectSoundBuffer> m_audioPlaybackBuffer;
+  CComPtr<IDirectSoundBuffer> m_audioPrimaryPlaybackBuffer;
   
   PBoolean InitPlaybackBuffer();
-  PBoolean InitPlaybackDevice(GUID *pGUID);
-  
   PBoolean InitCaptureBuffer();
-  PBoolean InitCaptureDevice(GUID *pGUID);
-  
-  PBoolean GetDeviceID (PString deviceName, GUID *pGUID);
-
-  /** Writes (len) bytes from the buffer (*buf) to (position) in DirectX sound device buffer
-      position is a byte offset from start of DX buffer.
-      Returns the number of bytes actually written
-    */
-  PINDEX WriteToDXBuffer(const void * buf, PINDEX len, DWORD position);
-
-  /** Reads (len) bytes from the buffer (*buf) from (position) in DirectX sound capture device buffer
-      position is a byte offset from start of DX buffer.
-      Returns the number of bytes actually read
-    */
-  PINDEX ReadFromDXBuffer(const void * buf, PINDEX len, DWORD position);
   
   PBoolean SetFormat ();
 
-  PBoolean mStreaming;
-  PINDEX mBufferSize;
-  PINDEX mDXBufferSize;
-  PINDEX mBufferCount;
-  DWORD bufferByteOffset;   // byte offset from start of DX buffer to where we can write or read
-  DWORD available;          // number of bytes space available to write, or available to read
+  PBoolean m_isStreaming;
+  PINDEX m_bufferSize;
+  PINDEX m_dxBufferSize;
+  PINDEX m_bufferCount;
+  DWORD m_bufferByteOffset;   // byte offset from start of DX buffer to where we can write or read
+  DWORD m_availableBufferSpace;  // number of bytes space available to write, or available to read
 
-  PINDEX mVolume;
+  PINDEX m_volume;
 
-  WAVEFORMATEX mWFX;        // audio format supplied to DirectSound
-  HANDLE notificationEvent[2];  // [0]triggered by DirectSound at buffer boundaries, [1]by Close
+  WAVEFORMATEX m_waveFormat;        // audio format supplied to DirectSound
+  HANDLE m_notificationEvent[2];  // [0]triggered by DirectSound at buffer boundaries, [1]by Close
   
-  PMutex bufferMutex;
+  PMutex m_bufferMutex;
 };
 
 #endif // P_DIRECTSOUND
