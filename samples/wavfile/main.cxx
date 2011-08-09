@@ -55,7 +55,7 @@ PCREATE_PROCESS(WAVFileTest)
 void WAVFileTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("hprc:F:C:R:d:D:v:");
+  args.Parse("hpr:c:F:C:R:d:D:v:");
 
   if (args.GetCount() > 0) {
     if (args.HasOption('c')) {
@@ -75,9 +75,9 @@ void WAVFileTest::Main()
   }
 
   cout << "usage: wavfile { -r | -p | -c tones } [ options ] filename\n"
-          "   -p          Play wav file\n"
-          "   -r          Record wav file\n"
-          "   -c tones    Create wav file from generated tones\n"
+          "   -p          Play WAV file\n"
+          "   -r time     Record WAV file for number of seconds\n"
+          "   -c tones    Create WAV file from generated tones\n"
           "\n"
           "Options:\n"
           "   -F format   File format, e.g. \"PCM-16\" (create/record only)\n"
@@ -188,7 +188,7 @@ void WAVFileTest::Record(PArgList & args)
 
   PSoundChannel * sound = PSoundChannel::CreateOpenedChannel(args.GetOptionString('D'),
                                                              args.GetOptionString('d'),
-                                                             PSoundChannel::Player,
+                                                             PSoundChannel::Recorder,
                                                              file.GetChannels(),
                                                              file.GetSampleRate(),
                                                              file.GetSampleSize());
@@ -198,6 +198,20 @@ void WAVFileTest::Record(PArgList & args)
   }
 
   sound->SetVolume(args.GetOptionString('v', "50").AsUnsigned());
+
+  PSimpleTimer timer(0, args.GetOptionString('r').AsUnsigned());
+  cout << "Recording WAV file for " << timer << " seconds ..." << endl;
+  while (timer.IsRunning()) {
+    BYTE buffer[8192];
+    if (!sound->Read(buffer, sizeof(buffer))) {
+      cout << "Error reading sound channel: " << sound->GetErrorText() << endl;
+      break;
+    }
+    if (!file.Write(buffer, sound->GetLastReadCount())) {
+      cout << "Error writing WAV file: " << file.GetErrorText() << endl;
+      break;
+    }
+  }
 
   delete sound;
 }
