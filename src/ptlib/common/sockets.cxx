@@ -2895,21 +2895,17 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(struct sockaddr *ai_addr, const
 
 PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char separator)
 {
-  m_separator= separator;
-  m_port = port;
+  if (separator != '\0')
+    m_separator = separator;
 
-  PINDEX pos = str.Find(separator);
-  if (pos != P_MAX_INDEX) {
-    if (!PIPSocket::GetHostAddress(str.Left(pos), m_address))
-      return false;
-    m_port = (WORD)str.Mid(pos+1).AsInteger();
-  }
-  else {
-    if (!PIPSocket::GetHostAddress(str, m_address))
-      return false;
-  }
+  PINDEX pos = str.Find(m_separator);
+  if (pos != P_MAX_INDEX)
+    port = (WORD)str.Mid(pos+1).AsUnsigned();
 
-  return m_port != 0;
+  if (port != 0)
+    m_port = port;
+
+  return PIPSocket::GetHostAddress(str.Left(pos), m_address) && m_port != 0;
 }
 
 
