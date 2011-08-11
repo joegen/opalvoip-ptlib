@@ -284,8 +284,8 @@ PBoolean XMPP::BaseStreamHandler::Start(XMPP::Transport * transport)
     Stop();
 
   m_Stream = new XMPP::Stream();
-  m_Stream->OpenHandlers().Add(new PCREATE_NOTIFIER(OnOpen));
-  m_Stream->CloseHandlers().Add(new PCREATE_NOTIFIER(OnClose));
+  m_Stream->OpenHandlers().Add(PCREATE_NOTIFIER(OnOpen));
+  m_Stream->CloseHandlers().Add(PCREATE_NOTIFIER(OnClose));
 
   if (!transport->IsOpen() && !transport->Open())
     return PFalse;
@@ -374,7 +374,7 @@ PBoolean XMPP::BaseStreamHandler::Write(const PXML& pdu)
 
 void XMPP::BaseStreamHandler::OnElement(PXML& pdu)
 {
-  m_ElementHandlers.Fire(pdu);
+  m_ElementHandlers(pdu, 0);
 }
 
 

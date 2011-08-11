@@ -202,13 +202,16 @@ PNotifierList& XMPP::C2S::StreamHandler::MessageSenderHandlers(const JID& from)
 }
 
 
-PBoolean XMPP::C2S::StreamHandler::Discover(const PString& xmlns, const PString& jid, PNotifier * responseHandler, const PString& node)
+PBoolean XMPP::C2S::StreamHandler::Discover(const PString& xmlns,
+                                            const PString& jid,
+                                            const PNotifier & responseHandler,
+                                            const PString& node)
 {
   if (!IsEstablished()) {
     PTRACE(1, "XMPP\tDisco: invalid stream state");
     return PFalse;
   }
-  else if (responseHandler == NULL) {
+  else if (responseHandler.IsNULL()) {
     PTRACE(1, "XMPP\tDisco: invalid response handler");
     return PFalse;
   }
@@ -227,7 +230,7 @@ PBoolean XMPP::C2S::StreamHandler::Discover(const PString& xmlns, const PString&
 }
 
 
-PBoolean XMPP::C2S::StreamHandler::DiscoverItems(const PString& jid, PNotifier * responseHandler, const PString& node)
+PBoolean XMPP::C2S::StreamHandler::DiscoverItems(const PString& jid, const PNotifier & responseHandler, const PString& node)
 {
   if (node.IsEmpty())
     PTRACE(3, "XMPP\tDisco: discovering items for " << jid);
@@ -239,7 +242,7 @@ PBoolean XMPP::C2S::StreamHandler::DiscoverItems(const PString& jid, PNotifier *
 }
 
 
-PBoolean XMPP::C2S::StreamHandler::DiscoverInfo(const PString& jid, PNotifier * responseHandler, const PString& node)
+PBoolean XMPP::C2S::StreamHandler::DiscoverInfo(const PString& jid, const PNotifier & responseHandler, const PString& node)
 {
   if (node.IsEmpty())
     PTRACE(3, "XMPP\tDisco: discovering info for " << jid);
@@ -407,13 +410,13 @@ void XMPP::C2S::StreamHandler::StartAuthNegotiation()
 
 void XMPP::C2S::StreamHandler::OnSessionEstablished()
 {
-  m_SessionEstablishedHandlers.Fire(*this);
+  m_SessionEstablishedHandlers(*this, 0);
 }
 
 
 void XMPP::C2S::StreamHandler::OnSessionReleased()
 {
-  m_SessionReleasedHandlers.Fire(*this);
+  m_SessionReleasedHandlers(*this, 0);
 }
 
 
@@ -776,7 +779,7 @@ void XMPP::C2S::StreamHandler::HandleEstablishedState(PXML& pdu)
 
 void XMPP::C2S::StreamHandler::OnError(PXML& pdu)
 {
-  m_ErrorHandlers.Fire(pdu);
+  m_ErrorHandlers(pdu, 0);
 }
 
 
@@ -787,14 +790,14 @@ void XMPP::C2S::StreamHandler::OnMessage(XMPP::Message& pdu)
   /* Fire the generic message handles only if there isn't a notifier list 
   for this particular originator or the list is empty
   */
-  if (!m_MessageSenderHandlers.Contains(from) || !m_MessageSenderHandlers[from].Fire(pdu))
-    m_MessageHandlers.Fire(pdu);
+  if (!m_MessageSenderHandlers.Contains(from) || !m_MessageSenderHandlers[from](pdu, 0))
+    m_MessageHandlers(pdu, 0);
 }
 
 
 void XMPP::C2S::StreamHandler::OnPresence(XMPP::Presence& pdu)
 {
-  m_PresenceHandlers.Fire(pdu);
+  m_PresenceHandlers(pdu, 0);
 }
 
 
@@ -816,17 +819,17 @@ void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
   }
 
   if (origMsg != NULL)
-    origMsg->GetResponseHandlers().Fire(pdu);
+    origMsg->GetResponseHandlers()(pdu, 0);
 
   // Let's see if someone is registered to handle this namespace
   PXMLElement * query = (PXMLElement *)pdu.GetRootElement()->GetElement(0);
   PString xmlns = query != NULL ? query->GetAttribute(XMPP::NamespaceTag()) : PString::Empty();
 
   if (!xmlns.IsEmpty() && m_IQNamespaceHandlers.Contains(xmlns))
-    m_IQNamespaceHandlers[xmlns].Fire(pdu);
+    m_IQNamespaceHandlers[xmlns](pdu, 0);
 
   // Now the "normal" handlers
-  m_IQHandlers.Fire(pdu);
+  m_IQHandlers(pdu, 0);
 
   // If it was a set or a get and nobody took care of it, we send and error back
   if ((type == XMPP::IQ::Set || type == XMPP::IQ::Get) && !pdu.HasBeenProcessed()) {
