@@ -316,6 +316,19 @@ class PString : public PCharArray
                                 For ScaleSI, this is the number of significant
                                 figures to be used, maiximum 4. */
     );
+    PString(ConversionType type, PUInt64        value, unsigned param = 10);
+    PString(ConversionType type, unsigned long  value, unsigned param = 10);
+    PString(ConversionType type,   signed long  value, unsigned param = 10);
+    PString(ConversionType type, unsigned int   value, unsigned param = 10);
+    PString(ConversionType type,   signed int   value, unsigned param = 10);
+    PString(ConversionType type, unsigned short value, unsigned param = 10);
+    PString(ConversionType type,   signed short value, unsigned param = 10);
+    PString(ConversionType type, unsigned char  value, unsigned param = 10);
+    PString(ConversionType type,   signed char  value, unsigned param = 10);
+
+    /* Contruct a new string converting from the spcified data source into
+       a string array.
+     */
     PString(
       ConversionType type,  ///< Type of data source for conversion.
       double value,         ///< Floating point value to convert.
