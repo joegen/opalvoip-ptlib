@@ -807,7 +807,7 @@ PString::PString(ConversionType type, const char * str, ...)
 }
 
 
-template <class T> PINDEX p_unsigned2string(T value, T base, char * str)
+template <typename T> PINDEX p_unsigned2string(T value, T base, char * str)
 {
   PINDEX len = value < base ? 0 : p_unsigned2string<T>(value/base, base, str);
   value %= base;
@@ -816,7 +816,10 @@ template <class T> PINDEX p_unsigned2string(T value, T base, char * str)
 }
 
 
-template <class T> PINDEX p_signed2string(T value, T base, char * str)
+#ifdef _MSC_VER
+#pragma warning(disable:4146)
+#endif
+template <typename T> PINDEX p_signed2string(T value, T base, char * str)
 {
   if (value >= 0)
     return p_unsigned2string<T>(value, base, str);
@@ -824,6 +827,9 @@ template <class T> PINDEX p_signed2string(T value, T base, char * str)
   *str = '-';
   return p_unsigned2string<T>(-value, base, str+1)+1;
 }
+#ifdef _MSC_VER
+#pragma warning(default:4146)
+#endif
 
 
 PString::PString(short n)
@@ -885,61 +891,82 @@ PString::PString(PUInt64 n)
 static const char siTable[] = { 'f', 'p', 'n', 'u', 'm', '\0', 'k', 'M', 'G', 'T', 'E' };
 static const size_t siZero = sizeof(siTable)/2;
 
-PString::PString(ConversionType type, PInt64 value, unsigned param)
-  : PCharArray(sizeof(PInt64)*3+1)
+static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArray)
 {
-  PAssert(param >= 2 && param <= 36, PInvalidParameter);
-  switch (type) {
-    case Signed :
-      m_length = p_signed2string<PInt64>(value, param, theArray);
-      break;
+  // Scale it according to SI multipliers
+  if (value > -1000 && value < 1000)
+    return p_signed2string<PInt64>(value, 10, theArray);
 
-    case Unsigned :
-      m_length = p_unsigned2string<PUInt64>(value, param, theArray);
-      break;
+  if (param > 4)
+    param = 4;
 
-    case ScaleSI :
-      // Scale it according to SI multipliers
-      if (value > -1000 && value < 1000)
-        m_length = p_signed2string<PInt64>(value, 10, theArray);
-      else {
-        if (param > 4)
-          param = 4;
+  PInt64 absValue = value;
+  if (absValue < 0) {
+    absValue = -absValue;
+    ++param;
+  }
 
-        PInt64 absValue = value;
-        if (absValue < 0) {
-          absValue = -absValue;
-          ++param;
-        }
-
-        PInt64 multiplier = 1;
-        for (size_t i = siZero+1; i < sizeof(siTable); ++i) {
-          multiplier *= 1000;
-          if (absValue < multiplier*1000) {
-            m_length = p_signed2string<PInt64>(value/multiplier, 10, theArray);
-            param -= m_length;
-            if (param > 0) {
-              theArray[m_length++] = '.';
-              while (param-- > 0) {
-                multiplier /= 10;
-                theArray[m_length++] = (absValue/multiplier)%10 + '0';
-              }
-            }
-            while (theArray[m_length-1] == '0')
-              theArray[--m_length] = '\0';
-            theArray[m_length++] = siTable[i];
-            break;
-          }
+  PINDEX length = 0;
+  PInt64 multiplier = 1;
+  for (size_t i = siZero+1; i < sizeof(siTable); ++i) {
+    multiplier *= 1000;
+    if (absValue < multiplier*1000) {
+      length = p_signed2string<PInt64>(value/multiplier, 10, theArray);
+      param -= length;
+      if (param > 0) {
+        theArray[length++] = '.';
+        while (param-- > 0) {
+          multiplier /= 10;
+          theArray[length++] = (absValue/multiplier)%10 + '0';
         }
       }
+      while (theArray[length-1] == '0')
+        theArray[--length] = '\0';
+      theArray[length++] = siTable[i];
       break;
-
-    default :
-      PAssertAlways(PInvalidParameter);
-      MakeEmpty();
+    }
   }
+
+  return length;
 }
 
+template <typename T> PINDEX p_convert(PString::ConversionType type, T value, unsigned param, char * theArray)
+{
+#define GetClass() NULL
+  PAssert(param >= 2 && param <= 36, PInvalidParameter);
+  switch (type) {
+    case PString::Signed :
+      return p_signed2string<T>(value, (T)param, theArray);
+
+    case PString::Unsigned :
+      return p_unsigned2string<T>(value, (T)param, theArray);
+
+    case PString::ScaleSI :
+      return InternalConvertScaleSI(value, param, theArray);
+  }
+
+  PAssertAlways(PInvalidParameter);
+  return 0;
+#undef GetClass
+}
+
+#define PSTRING_CONV_CTOR(intType) \
+PString::PString(ConversionType type, intType value, unsigned param) \
+  : PCharArray(sizeof(intType)*3+1) \
+{ \
+  m_length = p_convert<intType>(type, value, param, theArray); \
+}
+
+PSTRING_CONV_CTOR(PInt64);
+PSTRING_CONV_CTOR(PUInt64);
+PSTRING_CONV_CTOR(unsigned long );
+PSTRING_CONV_CTOR(  signed long );
+PSTRING_CONV_CTOR(unsigned int  );
+PSTRING_CONV_CTOR(  signed int  );
+PSTRING_CONV_CTOR(unsigned short);
+PSTRING_CONV_CTOR(  signed short);
+PSTRING_CONV_CTOR(unsigned char );
+PSTRING_CONV_CTOR(  signed char );
 
 PString::PString(ConversionType type, double value, unsigned places)
 {
