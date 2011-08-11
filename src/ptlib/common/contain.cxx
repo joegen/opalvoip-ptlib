@@ -943,6 +943,9 @@ template <typename T> PINDEX p_convert(PString::ConversionType type, T value, un
 
     case PString::ScaleSI :
       return InternalConvertScaleSI(value, param, theArray);
+
+    default :
+      break;
   }
 
   PAssertAlways(PInvalidParameter);
