@@ -152,11 +152,11 @@ namespace XMPP
     Stream(Transport * transport = 0);
     ~Stream();
 
-    virtual PBoolean        OnOpen()            { return m_OpenHandlers.Fire(*this); }
+    virtual bool        OnOpen()            { m_OpenHandlers(*this, 0); return true; }
     PNotifierList&      OpenHandlers()      { return m_OpenHandlers; }
 
     virtual PBoolean        Close();
-    virtual void        OnClose()           { m_CloseHandlers.Fire(*this); }
+    virtual void        OnClose()           { m_CloseHandlers(*this, 0); }
     PNotifierList&      CloseHandlers()     { return m_CloseHandlers; }
 
     virtual PBoolean        Write(const void * buf, PINDEX len);

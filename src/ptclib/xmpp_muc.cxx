@@ -69,9 +69,9 @@ const PCaselessString & XMPP::MUC::NamespaceTag()       { static const PConstCas
 const PCaselessString & XMPP::MUC::User::NamespaceTag() { static const PConstCaselessString s("http://jabber.org/protocol/muc#user"); return s; }
 
 XMPP::MUC::Room::Room(C2S::StreamHandler * handler, const JID& jid, const PString& nick)
-  : m_Handler(handler), m_RoomJID(jid)
+  : m_Handler(handler)
+  , m_RoomJID(jid)
 {
-  PCREATE_SMART_NOTIFIEE;
 
   if (PAssertNULL(m_Handler) == NULL)
     return;
@@ -81,9 +81,9 @@ XMPP::MUC::Room::Room(C2S::StreamHandler * handler, const JID& jid, const PStrin
   m_User.m_Affiliation = XMPP::MUC::User::None_a;
 
   m_RoomJID.SetResource(PString::Empty());
-  m_Handler->SessionReleasedHandlers().Add(new PCREATE_SMART_NOTIFIER(OnSessionReleased));
-  m_Handler->PresenceHandlers().Add(new PCREATE_SMART_NOTIFIER(OnPresence));
-  m_Handler->MessageSenderHandlers(m_RoomJID).Add(new PCREATE_SMART_NOTIFIER(OnMessage));
+  m_Handler->SessionReleasedHandlers().Add(PCREATE_NOTIFIER(OnSessionReleased));
+  m_Handler->PresenceHandlers().Add(PCREATE_NOTIFIER(OnPresence));
+  m_Handler->MessageSenderHandlers(m_RoomJID).Add(PCREATE_NOTIFIER(OnMessage));
 }
 
 
@@ -144,26 +144,26 @@ PBoolean XMPP::MUC::Room::SendMessage(Message& msg)
 
 
 void XMPP::MUC::Room::OnMessage(Message& msg)
-{ m_MessageHandlers.Fire(msg); }
+{ m_MessageHandlers(msg, 0); }
 
 void XMPP::MUC::Room::OnRoomJoined()
-{ m_RoomJoinedHandlers.Fire(*this); }
+{ m_RoomJoinedHandlers(*this, 0); }
 
 
 void XMPP::MUC::Room::OnRoomLeft()
-{ m_RoomLeftHandlers.Fire(*this); }
+{ m_RoomLeftHandlers(*this, 0); }
 
 
 void XMPP::MUC::Room::OnUserAdded(User& user)
-{ m_UserAddedHandlers.Fire(user); }
+{ m_UserAddedHandlers(user, 0); }
 
 
 void XMPP::MUC::Room::OnUserRemoved(User& user)
-{ m_UserRemovedHandlers.Fire(user); }
+{ m_UserRemovedHandlers(user, 0); }
 
 
 void XMPP::MUC::Room::OnUserChanged(User& user)
-{ m_UserChangedHandlers.Fire(user); }
+{ m_UserChangedHandlers(user, 0); }
 
 
 void XMPP::MUC::Room::OnSessionReleased(C2S::StreamHandler&, INT)

@@ -204,8 +204,8 @@ PBoolean XMPP::Roster::SetItem(Item * item, PBoolean localOnly)
       m_Items.Remove(existingItem);
 
     if (m_Items.Append(item)) {
-      m_ItemChangedHandlers.Fire(*item);
-      m_RosterChangedHandlers.Fire(*this);
+      m_ItemChangedHandlers(*item, 0);
+      m_RosterChangedHandlers(*this, 0);
       return PTrue;
     }
     else
@@ -230,7 +230,7 @@ PBoolean XMPP::Roster::RemoveItem(const PString& jid, PBoolean localOnly)
 
   if (localOnly) {
     m_Items.Remove(item);
-    m_RosterChangedHandlers.Fire(*this);
+    m_RosterChangedHandlers(*this, 0);
     return PTrue;
   }
 
@@ -262,10 +262,10 @@ void XMPP::Roster::Attach(XMPP::C2S::StreamHandler * handler)
     return;
 
   m_Handler = handler;
-  m_Handler->SessionEstablishedHandlers().Add(new PCREATE_NOTIFIER(OnSessionEstablished));
-  m_Handler->SessionReleasedHandlers().Add(new PCREATE_NOTIFIER(OnSessionReleased));
-  m_Handler->PresenceHandlers().Add(new PCREATE_NOTIFIER(OnPresence));
-  m_Handler->IQNamespaceHandlers("jabber:iq:roster").Add(new PCREATE_NOTIFIER(OnIQ));
+  m_Handler->SessionEstablishedHandlers().Add(PCREATE_NOTIFIER(OnSessionEstablished));
+  m_Handler->SessionReleasedHandlers().Add(PCREATE_NOTIFIER(OnSessionReleased));
+  m_Handler->PresenceHandlers().Add(PCREATE_NOTIFIER(OnPresence));
+  m_Handler->IQNamespaceHandlers("jabber:iq:roster").Add(PCREATE_NOTIFIER(OnIQ));
 
   if (m_Handler->IsEstablished())
     Refresh(PTrue);
@@ -283,7 +283,7 @@ void XMPP::Roster::Detach()
     m_Handler->IQNamespaceHandlers("jabber:iq:roster").RemoveTarget(this);
     m_Handler = 0;
   }
-  m_RosterChangedHandlers.Fire(*this);
+  m_RosterChangedHandlers(*this, 0);
 }
 
 
@@ -323,8 +323,8 @@ void XMPP::Roster::OnPresence(XMPP::Presence& msg, INT)
 
   if (item != NULL) {
     item->SetPresence(msg);
-    m_ItemChangedHandlers.Fire(*item);
-    m_RosterChangedHandlers.Fire(*this);
+    m_ItemChangedHandlers(*item, 0);
+    m_RosterChangedHandlers(*this, 0);
   }
 }
 
@@ -356,7 +356,7 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
   }
 
   if (doUpdate)
-    m_RosterChangedHandlers.Fire(*this);
+    m_RosterChangedHandlers(*this, 0);
 }
 
 
