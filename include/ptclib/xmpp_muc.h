@@ -82,10 +82,9 @@ namespace XMPP
     };
     PSORTED_LIST(Users, User);
 
-    class Room : public PObject
+    class Room : public PObject, public PValidatedNotifierTarget
     {
       PCLASSINFO(Room, PObject);
-      PDECLARE_SMART_NOTIFIEE;
     public:
       Room(C2S::StreamHandler * handler,  ///< The C2S stream handler
            const JID& jid,                ///< The room's jid
@@ -108,9 +107,9 @@ namespace XMPP
       virtual void  OnUserChanged(User& user);
 
     protected:
-      PDECLARE_SMART_NOTIFIER(C2S::StreamHandler, Room, OnSessionReleased);
-      PDECLARE_SMART_NOTIFIER(Message, Room, OnMessage);
-      PDECLARE_SMART_NOTIFIER(Presence, Room, OnPresence);
+      PDECLARE_VALIDATED_NOTIFIER(C2S::StreamHandler, Room, OnSessionReleased);
+      PDECLARE_VALIDATED_NOTIFIER(Message, Room, OnMessage);
+      PDECLARE_VALIDATED_NOTIFIER(Presence, Room, OnPresence);
 
       C2S::StreamHandler *  m_Handler;
       BareJID               m_RoomJID;

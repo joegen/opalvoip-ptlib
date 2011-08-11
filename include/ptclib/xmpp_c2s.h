@@ -141,12 +141,12 @@ namespace XMPP
        */
       virtual PBoolean DiscoverItems(
         const PString& jid,           ///< JID to which a query will be send
-        PNotifier * responseHandler,  ///< Handler function for responses
+        const PNotifier & responseHandler,  ///< Handler function for responses
         const PString& node = PString::Empty() ///< Optional node
       );
       virtual PBoolean DiscoverInfo(
         const PString& jid,           ///< JID to which a query will be send
-        PNotifier * responseHandler,  ///< Handler function for responses
+        const PNotifier & responseHandler,  ///< Handler function for responses
         const PString& node = PString::Empty() ///< Optional node
       );
 
@@ -180,7 +180,7 @@ namespace XMPP
 
       virtual PBoolean    Discover(const PString& xmlns,
                                const PString& jid,
-                               PNotifier * responseHandler,
+                               const PNotifier & responseHandler,
                                const PString& node);
 
       WORD                m_VersionMajor;

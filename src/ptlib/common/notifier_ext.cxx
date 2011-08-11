@@ -34,184 +34,143 @@
 
 #include <ptlib.h>
 #include <ptlib/notifier_ext.h>
+#include <ptlib/semaphor.h>
+
+#include <set>
+#include <map>
+
 
 //////////////////////////////////////////////////////////////////////////////
 
-class PPointer : public PObject
+static PNotifierIdentifer s_ValidationId = 0;
+static std::set<PNotifierIdentifer> s_TargetValid;
+static PMutex s_Mutex;
+
+
+PValidatedNotifierTarget::PValidatedNotifierTarget()
 {
-  PCLASSINFO(PPointer, PObject);
-protected:
-  void *  m_Pointer;
-public:
-  PPointer(void * pointer) : m_Pointer(pointer) { }
-  void * GetPointer() const { return m_Pointer; }
-};
-
-PDICTIONARY(PNotifierBroker, POrdinalKey, PPointer);
-
-static unsigned s_ID = 0;
-static PNotifierBroker s_Broker;
-static PMutex s_BrokerLock;
-
-
-unsigned PSmartNotifieeRegistrar::RegisterNotifiee(void * obj)
-{
-  s_BrokerLock.Wait();
-  unsigned id = ++s_ID;
-  s_Broker.SetAt(POrdinalKey(id), new PPointer(obj));
-  s_BrokerLock.Signal();
-  return id;
+  s_Mutex.Wait();
+  do {
+    m_validatedNotifierId = ++s_ValidationId;
+  } while (!s_TargetValid.insert(m_validatedNotifierId).second);
+  s_Mutex.Signal();
 }
 
 
-PBoolean PSmartNotifieeRegistrar::UnregisterNotifiee(unsigned id)
+PValidatedNotifierTarget::~PValidatedNotifierTarget()
 {
-  PWaitAndSignal l(s_BrokerLock);
-  if (s_Broker.Contains(id))
+  s_Mutex.Wait();
+  s_TargetValid.erase(m_validatedNotifierId);
+  s_Mutex.Signal();
+}
+
+
+bool PValidatedNotifierTargetExists(PNotifierIdentifer id)
+{
+  PWaitAndSignal mutex(s_Mutex);
+  return s_TargetValid.find(id) != s_TargetValid.end();
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+struct PAsyncNotifierQueue : std::queue<PAsyncNotifierCallback *>
+{
+  PSemaphore             m_count;
+  PAsyncNotifierTarget * m_target;
+
+  PAsyncNotifierQueue(PAsyncNotifierTarget * target)
+    : m_count(0, INT_MAX)
+    , m_target(target)
+  { }
+
+  void Queue(PAsyncNotifierCallback * callback)
   {
-    s_Broker.RemoveAt(id);
-    return PTrue;
+    push(callback);
+    m_count.Signal();
+    m_target->AsyncNotifierSignal();
   }
+
+  bool Execute(PAsyncNotifierTarget * target, const PTimeInterval & wait)
+  {
+    if (!PAssert(target == m_target, "PAsyncNotifier mismatch"))
+      return false;
+
+    if (!m_count.Wait(wait))
+      return false;
+    
+    if (!PAssert(!empty(), "PAsyncNotifier queue empty"))
+      return false;
+
+    PAsyncNotifierCallback * callback = front();
+    pop();
+    if (!PAssert(callback != NULL, "PAsyncNotifier callback NULL"))
+      return false;
+
+    s_Mutex.Signal();
+    callback->Call();
+    s_Mutex.Wait();
+
+    return true;
+  }
+};
+
+typedef std::map<PNotifierIdentifer, PAsyncNotifierQueue> PAsyncNotifierQueueMap;
+
+static PAsyncNotifierQueueMap s_TargetQueues;
+
+
+PAsyncNotifierTarget::PAsyncNotifierTarget()
+{
+  s_Mutex.Wait();
+  do {
+    m_asyncNotifierId = ++s_ValidationId;
+  } while (!s_TargetQueues.insert(PAsyncNotifierQueueMap::value_type(m_asyncNotifierId, this)).second);
+  s_Mutex.Signal();
+}
+
+
+PAsyncNotifierTarget::~PAsyncNotifierTarget()
+{
+  s_Mutex.Wait();
+  s_TargetQueues.erase(m_asyncNotifierId);
+  s_Mutex.Signal();
+}
+
+
+void PAsyncNotifierCallback::Queue(PNotifierIdentifer id, PAsyncNotifierCallback * callback)
+{
+  s_Mutex.Wait();
+
+  PAsyncNotifierQueueMap::iterator it = s_TargetQueues.find(id);
+  if (it == s_TargetQueues.end())
+    delete callback;
   else
-    return PFalse;
+    it->second.Queue(callback);
+
+  s_Mutex.Signal();
 }
 
 
-PBoolean PSmartNotifieeRegistrar::UnregisterNotifiee(void * /*obj*/)
+bool PAsyncNotifierTarget::AsyncNotifierExecute(const PTimeInterval & wait)
 {
-  PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  bool doneOne = false;
+
+  s_Mutex.Wait();
+
+  PAsyncNotifierQueueMap::iterator it = s_TargetQueues.find(m_asyncNotifierId);
+  if (PAssert(it != s_TargetQueues.end(), "PAsyncNotifier missing"))
+    doneOne = it->second.Execute(this, wait);
+
+  s_Mutex.Signal();
+
+  return doneOne;
 }
 
 
-void * PSmartNotifieeRegistrar::GetNotifiee(unsigned id)
+void PAsyncNotifierTarget::AsyncNotifierSignal()
 {
-  void * obj = 0;
-
-  s_BrokerLock.Wait();
-  if (s_Broker.Contains(id))
-  {
-    obj = s_Broker.GetAt(id)->GetPointer();
-  }
-  s_BrokerLock.Signal();
-
-  return obj;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-
-class PSmartFuncInspector : public PNotifierFunction
-{
-  PCLASSINFO(PSmartFuncInspector, PNotifierFunction);
-
-public:
-  PSmartFuncInspector(void *obj) : PNotifierFunction(obj) { }
-
-  void * GetTarget() const { return object; }
-  virtual void Call(PObject &, INT) const {}
-};
-
-
-class PSmartPtrInspector : public PSmartPointer
-{
-  PCLASSINFO(PSmartPtrInspector, PSmartPointer);
-
-public:
-  PSmartPtrInspector(const PNotifier& ptr) : PSmartPointer(ptr) { }
-
-  void * GetObject() const { return object; }
-  void * GetTarget() const;
-};
-
-void * PSmartPtrInspector::GetTarget() const
-{
-  if (!object)
-    return 0;
-
-  PObject * ptr = (PObject *)object;
-
-  if (PIsDescendant(ptr, PSmartNotifierFunction))
-    return ((PSmartNotifierFunction *)ptr)->GetNotifiee();
-  else
-    return ((PSmartFuncInspector *)ptr)->GetTarget();
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-PBoolean PNotifierList::RemoveTarget(PObject * obj)
-{
-  Cleanup();
-
-  for (_PNotifierList::iterator i = m_TheList.begin(); i != m_TheList.end() ; i++) {
-    PSmartPtrInspector sptr(*i);
-
-    if (sptr.GetTarget() == obj) {
-      m_TheList.erase(i);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-void PNotifierList::Move(PNotifierList& that)
-{
-  Cleanup();
-  that.Cleanup();
-
-  that.m_TheList.DisallowDeleteObjects();
-
-  while (that.m_TheList.GetSize())
-    m_TheList.Append(that.m_TheList.RemoveHead());
-
-  that.m_TheList.AllowDeleteObjects();
-}
-
-
-void PNotifierList::Cleanup()
-{
-  for (_PNotifierList::iterator i = m_TheList.begin(); i != m_TheList.end() ; i++) {
-    PSmartPtrInspector sptr(*i);
-    PObject * ptr = (PObject *)sptr.GetObject();
-
-    if (!ptr || (PIsDescendant(ptr, PSmartNotifierFunction) &&
-      ((PSmartNotifierFunction *)ptr)->GetNotifiee() == 0))
-    {
-      PTRACE(2, "PNotifierList\tRemoving invalid notifier " << ((PSmartNotifierFunction *)ptr)->GetNotifieeID());
-      m_TheList.erase(i);
-      i = m_TheList.begin();
-    }
-  }
-}
-
-
-PBoolean PNotifierList::Fire(PObject& obj, INT val)
-{
-  if (!m_TheList.GetSize()) return PFalse;
-
-  for (_PNotifierList::iterator i = m_TheList.begin(); i != m_TheList.end() ; i++)
-  {
-    PNotifier& n = *i;
-
-#ifdef _DEBUG
-    if (PTrace::CanTrace(6)) // Debug only
-    {
-      PSmartPtrInspector sptr(n);
-      PObject * obj = (PObject *)sptr.GetTarget();
-
-      if (obj)
-      {
-        PTRACE(6, "PNotifierList\tInvoking on " << obj->GetClass());
-      }
-    }
-#endif
-
-    n(obj, val);
-  }
-
-  return PTrue;
-}
 
 // End of File ///////////////////////////////////////////////////////////////
-
