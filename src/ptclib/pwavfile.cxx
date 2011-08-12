@@ -137,6 +137,24 @@ void PWAVFile::Construct()
   wavFmtChunk.hdr.len     = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);
 }
 
+
+PWAVFile * PWAVFile::format(const PString & format)
+{
+  PWAVFile * file = new PWAVFile;
+  file->origFmt = 0xffffffff;
+  file->SelectFormat(format);
+  return file;
+}
+
+PWAVFile * PWAVFile::format(const PString & format, PFile::OpenMode mode, int opts)
+{
+  PWAVFile * file = new PWAVFile(mode, opts);
+  file->origFmt = 0xffffffff;
+  file->SelectFormat(format);
+  return file;
+}
+
+
 bool PWAVFile::SelectFormat(unsigned fmt)
 {
   delete formatHandler;
