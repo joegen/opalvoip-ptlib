@@ -43,47 +43,106 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static PNotifierIdentifer s_ValidationId = 0;
-static std::set<PNotifierIdentifer> s_TargetValid;
-static PMutex s_Mutex;
+class PValidatedNotifierSet : std::set<PNotifierIdentifer>
+{
+  unsigned m_state; // 0 = pre-constructor, 1 = active, 2 = destroyed
+  unsigned m_nextId;
+  PMutex   m_mutex;
+
+public:
+  PValidatedNotifierSet()
+    : m_state(1)
+  {
+  }
+
+  ~PValidatedNotifierSet()
+  {
+    m_state = 2;
+  }
+
+  PNotifierIdentifer Add()
+  {
+    if (m_state != 1)
+      return 0;
+
+    PNotifierIdentifer id;
+
+    m_mutex.Wait();
+
+    do {
+      id = ++m_nextId;
+    } while (!insert(value_type(id)).second);
+
+    m_mutex.Signal();
+
+    return id;
+  }
+
+
+  void Remove(PNotifierIdentifer id)
+  {
+    if (m_state != 1)
+      return;
+
+    m_mutex.Wait();
+
+    erase(id);
+
+    m_mutex.Signal();
+  }
+
+
+  bool Exists(PNotifierIdentifer id)
+  {
+    if (m_state != 1)
+      return false;
+
+    PWaitAndSignal mutex(m_mutex);
+    return find(id) != end();
+  }
+};
+
+static PValidatedNotifierSet s_ValidatedTargets;
 
 
 PValidatedNotifierTarget::PValidatedNotifierTarget()
 {
-  s_Mutex.Wait();
-  do {
-    m_validatedNotifierId = ++s_ValidationId;
-  } while (!s_TargetValid.insert(m_validatedNotifierId).second);
-  s_Mutex.Signal();
+  m_validatedNotifierId = s_ValidatedTargets.Add();
 }
 
 
 PValidatedNotifierTarget::~PValidatedNotifierTarget()
 {
-  s_Mutex.Wait();
-  s_TargetValid.erase(m_validatedNotifierId);
-  s_Mutex.Signal();
+  s_ValidatedTargets.Remove(m_validatedNotifierId);
 }
 
 
 bool PValidatedNotifierTargetExists(PNotifierIdentifer id)
 {
-  PWaitAndSignal mutex(s_Mutex);
-  return s_TargetValid.find(id) != s_TargetValid.end();
+  return s_ValidatedTargets.Exists(id);
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct PAsyncNotifierQueue : std::queue<PAsyncNotifierCallback *>
+class PAsyncNotifierQueue : std::queue<PAsyncNotifierCallback *>
 {
   PSemaphore             m_count;
   PAsyncNotifierTarget * m_target;
 
+public:
   PAsyncNotifierQueue(PAsyncNotifierTarget * target)
     : m_count(0, INT_MAX)
     , m_target(target)
-  { }
+  {
+  }
+
+
+  ~PAsyncNotifierQueue()
+  {
+    m_target = NULL;
+  }
+
 
   void Queue(PAsyncNotifierCallback * callback)
   {
@@ -92,80 +151,145 @@ struct PAsyncNotifierQueue : std::queue<PAsyncNotifierCallback *>
     m_target->AsyncNotifierSignal();
   }
 
-  bool Execute(PAsyncNotifierTarget * target, const PTimeInterval & wait)
+
+  PAsyncNotifierCallback * GetCallback(PAsyncNotifierTarget * target, const PTimeInterval & wait)
   {
     if (!PAssert(target == m_target, "PAsyncNotifier mismatch"))
-      return false;
+      return NULL;
 
     if (!m_count.Wait(wait))
-      return false;
+      return NULL;
     
     if (!PAssert(!empty(), "PAsyncNotifier queue empty"))
-      return false;
+      return NULL;
 
     PAsyncNotifierCallback * callback = front();
     pop();
+
     if (!PAssert(callback != NULL, "PAsyncNotifier callback NULL"))
+      return NULL;
+
+    return callback;
+  }
+};
+
+
+class PAsyncNotifierQueueMap : std::map<PNotifierIdentifer, PAsyncNotifierQueue>
+{
+  unsigned m_state; // 0 = pre-constructor, 1 = active, 2 = destroyed
+  unsigned m_nextId;
+  PMutex   m_mutex;
+
+public:
+  PAsyncNotifierQueueMap()
+    : m_state(1)
+    , m_nextId(1)
+  {
+  }
+
+
+  ~PAsyncNotifierQueueMap()
+  {
+    m_state = 2;
+  }
+
+
+  PNotifierIdentifer Add(PAsyncNotifierTarget * target)
+  {
+    if (m_state != 1)
+      return 0;
+
+    PNotifierIdentifer id;
+
+    m_mutex.Wait();
+
+    do {
+      id = ++m_nextId;
+    } while (!insert(value_type(id, target)).second);
+
+    m_mutex.Signal();
+
+    return id;
+  }
+
+
+  void Remove(PNotifierIdentifer id)
+  {
+    if (m_state != 1)
+      return;
+
+    m_mutex.Wait();
+
+    erase(id);
+
+    m_mutex.Signal();
+  }
+
+
+  void Queue(PNotifierIdentifer id, PAsyncNotifierCallback * callback)
+  {
+    if (m_state != 1)
+      return;
+
+    m_mutex.Wait();
+
+    iterator it = find(id);
+    if (it == end())
+      delete callback;
+    else
+      it->second.Queue(callback);
+
+    m_mutex.Signal();
+  }
+
+
+  bool Execute(PNotifierIdentifer id, PAsyncNotifierTarget * target, const PTimeInterval & wait)
+  {
+    if (m_state != 1)
       return false;
 
-    s_Mutex.Signal();
-    callback->Call();
-    s_Mutex.Wait();
+    PAsyncNotifierCallback * callback = NULL;
 
+    m_mutex.Wait();
+
+    iterator it = find(id);
+    if (PAssert(it != end(), "PAsyncNotifier missing"))
+      callback = it->second.GetCallback(target, wait);
+
+    m_mutex.Signal();
+
+    if (callback == NULL)
+      return false;
+
+    callback->Call();
     return true;
   }
 };
 
-typedef std::map<PNotifierIdentifer, PAsyncNotifierQueue> PAsyncNotifierQueueMap;
-
-static PAsyncNotifierQueueMap s_TargetQueues;
+static PAsyncNotifierQueueMap s_AsyncTargetQueues;
 
 
 PAsyncNotifierTarget::PAsyncNotifierTarget()
 {
-  s_Mutex.Wait();
-  do {
-    m_asyncNotifierId = ++s_ValidationId;
-  } while (!s_TargetQueues.insert(PAsyncNotifierQueueMap::value_type(m_asyncNotifierId, this)).second);
-  s_Mutex.Signal();
+  m_asyncNotifierId = s_AsyncTargetQueues.Add(this);
 }
 
 
 PAsyncNotifierTarget::~PAsyncNotifierTarget()
 {
-  s_Mutex.Wait();
-  s_TargetQueues.erase(m_asyncNotifierId);
-  s_Mutex.Signal();
+  s_AsyncTargetQueues.Remove(m_asyncNotifierId);
 }
 
 
 void PAsyncNotifierCallback::Queue(PNotifierIdentifer id, PAsyncNotifierCallback * callback)
 {
-  s_Mutex.Wait();
-
-  PAsyncNotifierQueueMap::iterator it = s_TargetQueues.find(id);
-  if (it == s_TargetQueues.end())
-    delete callback;
-  else
-    it->second.Queue(callback);
-
-  s_Mutex.Signal();
+  s_AsyncTargetQueues.Queue(id, callback);
 }
 
 
 bool PAsyncNotifierTarget::AsyncNotifierExecute(const PTimeInterval & wait)
 {
-  bool doneOne = false;
-
-  s_Mutex.Wait();
-
-  PAsyncNotifierQueueMap::iterator it = s_TargetQueues.find(m_asyncNotifierId);
-  if (PAssert(it != s_TargetQueues.end(), "PAsyncNotifier missing"))
-    doneOne = it->second.Execute(this, wait);
-
-  s_Mutex.Signal();
-
-  return doneOne;
+  return s_AsyncTargetQueues.Execute(m_asyncNotifierId, this, wait);
 }
 
 
