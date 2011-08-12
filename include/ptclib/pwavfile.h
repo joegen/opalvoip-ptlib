@@ -417,8 +417,6 @@ public:
 
   //@}
 
-  friend class PWAVFileConverter;
-
   PBoolean RawRead(void * buf, PINDEX len);
   PBoolean RawWrite(const void * buf, PINDEX len);
 
@@ -431,6 +429,11 @@ public:
 
   void SetLastReadCount(PINDEX v) { lastReadCount = v; }
   void SetLastWriteCount(PINDEX v) { lastWriteCount = v; }
+
+  // Restored for backward compatibility reasons
+  static PWAVFile * format(const PString & format);
+  static PWAVFile * format(const PString & format, PFile::OpenMode mode, int opts = PFile::ModeDefault);
+
 
 protected:
   void Construct();
@@ -457,6 +460,8 @@ protected:
   off_t lenData;
 
   bool     header_needs_updating;
+
+friend class PWAVFileConverter;
 };
 
 #endif // PTLIB_PWAVFILE_H
