@@ -104,6 +104,7 @@ template <class T> class CComPtr
       }
     }
 
+#ifndef __MINGW32__
     __checkReturn HRESULT CoCreateInstance(
       __in     REFCLSID  rclsid,
       __in_opt LPUNKNOWN pUnkOuter    = NULL,
@@ -112,6 +113,7 @@ template <class T> class CComPtr
     {
       return ::CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, (void**)&m_pointer);
     }
+#endif
 };
 
 #endif // P_ATL
