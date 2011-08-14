@@ -145,13 +145,13 @@ class PUDPSocket : public PIPDatagramSocket
      */
     virtual PBoolean DoPseudoRead(int & selectStatus);
 
-#if P_QOS
     /** Change the QOS spec for the socket and try to apply the changes
      */
     virtual PBoolean ModifyQoSSpec(
       PQoS * qos            ///< QoS specification to use
     );
 
+#if P_QOS
     /** Get the QOS object for the socket.
     */
     virtual PQoS & GetQoSSpec();
