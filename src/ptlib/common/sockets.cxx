@@ -2586,6 +2586,7 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 }
 
 
+#if P_QOS
 PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
 {
   if (qos==NULL)
@@ -2595,7 +2596,6 @@ PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
   return PTrue;
 }
 
-#if P_QOS
 PQoS & PUDPSocket::GetQoSSpec()
 {
   return qosSpec;

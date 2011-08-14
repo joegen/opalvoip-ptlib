@@ -139,7 +139,7 @@ class PUDPSocket : public PIPDatagramSocket
 
     /** PseudoRead
         This indicates to the upper system that reading on this socket
-        will be a pseudo read when means there is data available that 
+        will be a pseudo read when means there is data available that
         did not orginate from the physical socket but was programmically
         injected.
      */
@@ -155,6 +155,7 @@ class PUDPSocket : public PIPDatagramSocket
     /** Get the QOS object for the socket.
     */
     virtual PQoS & GetQoSSpec();
+#endif
 
     /** Check to See if the socket will support QoS on the given local Address
      */
@@ -163,7 +164,6 @@ class PUDPSocket : public PIPDatagramSocket
     /** Manually Enable GQoS Support
      */
     static void EnableGQoS();
-#endif
   //@}
 
   protected:
