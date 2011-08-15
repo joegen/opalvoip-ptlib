@@ -239,7 +239,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     CComPtr<IPin>                  m_pCameraOutPin; // Camera output out -> Transform Input pin
 
 #ifdef _WIN32_WCE
-    CComPtr<PSampleGrabber>        m_pSampleGrabber;
+    PSampleGrabber               * m_pSampleGrabber;
 #else
     CComPtr<ISampleGrabber>        m_pSampleGrabber;
     CComPtr<ISampleGrabberCB>      m_pSampleGrabberCB;
@@ -458,6 +458,9 @@ class PVideoFrameInfoArray : public std::vector<PVideoFrameInfo*>
 
 PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   : m_maxFrameBytes(0)
+#ifdef _WIN32_WCE
+  , m_pSampleGrabber(NULL)
+#endif
 {
   PTRACE(4, "DShow\tVideo Device Instance");
 
@@ -719,7 +722,10 @@ PBoolean PVideoInputDevice_DirectShow::Close()
 
   // Release filters
 #ifdef _WIN32_WCE
-  delete m_pSampleGrabber;
+  if (m_pSampleGrabber != NULL) {
+    m_pSampleGrabber->Release();
+    delete m_pSampleGrabber;
+  }
 #else
   m_pNullRenderer.Release();
   m_pSampleGrabberCB.Release();
@@ -1187,10 +1193,11 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * pData)
 bool PVideoInputDevice_DirectShow::BindCaptureDevice(const PString & devName)
 {
   // Create an instance of the video capture filter
-  CHECK_ERROR_RETURN(m_pCaptureFilter.CoCreateInstance(CLSID_VideoCapture,
-                                                       NULL,
-                                                       CLSCTX_INPROC,
-                                                       IID_IBaseFilter));
+  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_VideoCapture,
+                                      NULL,
+                                      CLSCTX_INPROC,
+                                      IID_IBaseFilter,
+                                      (LPVOID *)&m_pCaptureFilter));
 
   CComPtr<IPersistPropertyBag> pPropertyBag;
   CHECK_ERROR_RETURN(m_pCaptureFilter->QueryInterface(&pPropertyBag));
