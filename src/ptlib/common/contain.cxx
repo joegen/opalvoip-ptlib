@@ -821,7 +821,7 @@ template <typename T> PINDEX p_unsigned2string(T value, T base, char * str)
 #endif
 template <typename T> PINDEX p_signed2string(T value, T base, char * str)
 {
-  if (value >= 0)
+  if ((int)value >= 0)
     return p_unsigned2string<T>(value, base, str);
 
   *str = '-';
