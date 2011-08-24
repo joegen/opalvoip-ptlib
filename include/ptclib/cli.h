@@ -111,6 +111,12 @@ class PCLI : public PObject
           */
         void Stop();
 
+        /**Run command line interpreter context.
+           This will execute OnStart() then ReadAndProcessInput() until it
+           returns false, then OnStop().
+          */
+        bool Run();
+
         /**Call back frunction for when context is started.
            This is usually called from within a background thread.
 
@@ -241,8 +247,8 @@ class PCLI : public PObject
        that have been added will have their background threads started.
 
        If runInBackground is false, then there must only be one context added
-       and that context is continuously read until it's channel is closed or
-       returns end of file.
+       and that context is continuously read until it is stopped, it's channel
+       is closed or returns end of file.
       */
     virtual bool Start(
       bool runInBackground = true   ///< Spawn a thread to read and interpret commands
@@ -254,20 +260,56 @@ class PCLI : public PObject
       */
     virtual void Stop();
 
-    /**Open a command line interpreter context.
+    /**Start a command line interpreter context.
+       If \p runInBackground is true then the context is immediately started in
+       a thread. If false then the context is set up and will await a call to
+       the Start() function.
       */
-    bool StartContext(
+    Context * StartContext(
       PChannel * channel,           ///< Channel to read/write
       bool autoDelete = true,       ///< Automatically delete channel on exit
       bool runInBackground = true   ///< Spawn a thread to read and interpret commands
-    );
-    bool StartContext(
+    ) { return StartContext(channel, channel, autoDelete, autoDelete, runInBackground); }
+    Context * StartContext(
       PChannel * readChannel,      ///< Channel to be used for both read operations.
       PChannel * writeChannel,     ///< Channel to be used for both write operations.
       bool autoDeleteRead = true,  ///< Automatically delete the read channel
       bool autoDeleteWrite = true, ///< Automatically delete the write channel
       bool runInBackground = true   ///< Spawn a thread to read and interpret commands
     );
+
+    /** Start default foreground context.
+        Default action returns NULL.
+      */
+    virtual Context * StartForeground();
+
+    /**Run a command line interpreter context.
+       This will run the interpreter synchonously, continuously reading from
+       the channel supplied until the context is stopped or the channel is
+       closed or returns end of file.
+      */
+    bool Run(
+      PChannel & channel            ///< Channel to read/write
+    ) { return Run(&channel, &channel, false, false); }
+    bool Run(
+      PChannel * channel,           ///< Channel to read/write
+      bool autoDelete = true        ///< Automatically delete channel on exit
+    ) { return Run(channel, channel, autoDelete, autoDelete); }
+    bool Run(
+      PChannel * readChannel,      ///< Channel to be used for both read operations.
+      PChannel * writeChannel,     ///< Channel to be used for both write operations.
+      bool autoDeleteRead = true,  ///< Automatically delete the read channel
+      bool autoDeleteWrite = true  ///< Automatically delete the write channel
+    );
+
+    /** Run a context.
+       This will run the interpreter synchonously, continuously reading from
+       the channel supplied until the context is stopped or the channel is
+       closed or returns end of file.
+    */
+    bool RunContext(
+      Context * context
+    ) { return context != NULL && context->Run(); }
 
     /**Create a new context.
        Users may use this to create derived classes for their own use.
@@ -432,6 +474,16 @@ class PCLI : public PObject
       */
     void SetPassword(const PString & password) { m_password = password; }
 
+    /**Get command to be used for comment lines.
+       Default is "#\n;\n//".
+      */
+    const PCaselessString & GetCommentCommand() const { return m_commentCommand; }
+
+    /**Set command to be used for comment lines.
+       Default is "#\n;\n//".
+      */
+    void SetCommentCommand(const PCaselessString & commentCommand) { m_commentCommand = commentCommand; }
+
     /**Get command to be used to exit session.
        Default is "exit\nquit".
       */
@@ -525,14 +577,6 @@ class PCLI : public PObject
     void SetUnknownCommandError(const PString & unknownCommandError) { m_unknownCommandError = unknownCommandError; }
   //@}
 
-    /** Initialise a foreground context and return it
-    */
-    virtual Context * StartForeground();
-
-    /** Run a context 
-    */
-    virtual bool RunContext(Context * context);
-
 
   protected:
     PString         m_newLine;
@@ -543,6 +587,7 @@ class PCLI : public PObject
     PString         m_passwordPrompt;
     PString         m_username;
     PString         m_password;
+    PCaselessString m_commentCommand;
     PCaselessString m_exitCommand;
     PCaselessString m_helpCommand;
     PString         m_helpOnHelp;
@@ -583,16 +628,25 @@ class PCLIStandard : public PCLI
 
   /**@name Overrides from PCLI */
   //@{
-    /**Start a command line interpreter.
-       As for ancestor function, however if no contexts have been added, then
-       on that takes a PConsoleChannel is automatically added.
+    /** Start default foreground context.
+        Default behaviour returns a context using stdin/stdout.
       */
-    virtual bool Start(
-      bool runInBackground = true   ///< Spawn a thread to read and interpret commands
-    );
+    virtual Context * StartForeground();
   //@}
 
-    PCLI::Context * StartForeground();
+  /**@name Operations */
+  //@{
+    /**Run a script file, output going to stdout.
+       This will also suppress output of the prompt.
+      */
+    bool RunScript(
+      PChannel & channel            ///< Channel to read from
+    ) { return RunScript(&channel, false); }
+    bool RunScript(
+      PChannel * channel,           ///< Channel to read from
+      bool autoDelete = true        ///< Automatically delete channel on exit
+    );
+  //@}
 };
 
 
