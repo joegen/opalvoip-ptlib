@@ -119,6 +119,19 @@ void PCLI::Context::Stop()
 }
 
 
+bool PCLI::Context::Run()
+{
+  if (!IsOpen())
+    return false;
+
+  OnStart();
+  while (ReadAndProcessInput())
+    ;
+  OnStop();
+  return true;
+}
+
+
 void PCLI::Context::OnStart()
 {
   WritePrompt();
@@ -270,6 +283,14 @@ void PCLI::Context::OnCompletedLine()
     return;
   }
 
+  if (m_cli.GetCommentCommand().Find(line[0]) != P_MAX_INDEX) {
+    PStringArray comments = m_cli.GetCommentCommand().Lines();
+    for (PINDEX i = 0; i < comments.GetSize(); ++i) {
+      if (line.NumCompare(comments[i]) == EqualTo)
+        return;
+    }
+  }
+
   if (line.NumCompare(m_cli.GetRepeatCommand()) == EqualTo) {
     if (m_commandHistory.IsEmpty()) {
       *this << m_cli.GetNoHistoryError() << endl;
@@ -313,14 +334,7 @@ void PCLI::Context::OnCompletedLine()
 void PCLI::Context::ThreadMain(PThread &, INT)
 {
   PTRACE(4, "PCLI\tContext thread started");
-
-  if (IsOpen()) {
-    OnStart();
-    while (ReadAndProcessInput())
-      ;
-    OnStop();
-  }
-
+  Run();
   PTRACE(4, "PCLI\tContext thread ended");
 }
 
@@ -360,6 +374,7 @@ PCLI::PCLI(const char * prompt)
   , m_prompt(prompt != NULL ? prompt : "CLI> ")
   , m_usernamePrompt("Username: ")
   , m_passwordPrompt("Password: ")
+  , m_commentCommand("#\n;\n//")
   , m_exitCommand("exit\nquit")
   , m_helpCommand("?\nhelp")
   , m_helpOnHelp("Use ? or 'help' to display help\n"
@@ -395,38 +410,19 @@ bool PCLI::Start(bool runInBackground)
     return true;
   }
 
-  Context * context = StartForeground();
-  if (context == NULL)
-    return false;
+  if (m_contextList.empty())
+    StartForeground();
 
-  return RunContext(context);
-}
-
-
-PCLI::Context * PCLI::StartForeground()
-{
   if (m_contextList.size() != 1) {
     PTRACE(2, "PCLI\tCan only start in foreground if have one context.");
-    return NULL;
+    return false;
   }
 
   Context * context = m_contextList.front();
-  if (!context->IsOpen()) {
-    PTRACE(2, "PCLI\tCannot start foreground processing, context not open.");
-    return NULL;
-  }
-
-  context->OnStart();
-
-  return context;
-}
-
-
-bool PCLI::RunContext(Context * context)
-{
-  while (context->ReadAndProcessInput())
-    ;
-  return true;
+  bool result = context->Run();
+  RemoveContext(context);
+  PTRACE_IF(2, !result, "PCLI\tCannot start foreground processing, context not open.");
+  return result;
 }
 
 
@@ -441,42 +437,50 @@ void PCLI::Stop()
 }
 
 
-bool PCLI::StartContext(PChannel * channel, bool autoDelete, bool runInBackground)
+PCLI::Context * PCLI::StartContext(PChannel * readChannel,
+                                   PChannel * writeChannel,
+                                   bool autoDeleteRead,
+                                   bool autoDeleteWrite,
+                                   bool runInBackground)
 {
   PCLI::Context * context = AddContext();
   if (context == NULL)
-    return false;
-
-  if (!context->Open(channel, autoDelete)) {
-    PTRACE(2, "PCLI\tCould not open context: " << context->GetErrorText());
-    return false;
-  }
-
-  if (runInBackground)
-    return context->Start();
-
-  return true;
-}
-
-
-bool PCLI::StartContext(PChannel * readChannel,
-                        PChannel * writeChannel,
-                        bool autoDeleteRead,
-                        bool autoDeleteWrite,
-                        bool runInBackground)
-{
-  PCLI::Context * context = AddContext();
-  if (context == NULL)
-    return false;
+    return NULL;
   
   if (!context->Open(readChannel, writeChannel, autoDeleteRead, autoDeleteWrite)) {
     PTRACE(2, "PCLI\tCould not open context: " << context->GetErrorText());
-    return false;
+    RemoveContext(context);
+    return NULL;
   }
 
-  if (runInBackground)
-    return context->Start();
+  if (runInBackground) {
+    if (!context->Start()) {
+      RemoveContext(context);
+      return NULL;
+    }
+  }
 
+  return context;
+}
+
+
+PCLI::Context * PCLI::StartForeground()
+{
+  return NULL;
+}
+
+
+bool PCLI::Run(PChannel * readChannel,
+               PChannel * writeChannel,
+               bool autoDeleteRead,
+               bool autoDeleteWrite)
+{
+  Context * context = StartContext(readChannel, writeChannel, autoDeleteRead, autoDeleteWrite, false);
+  if (context == NULL)
+    return false;
+
+  context->Run();
+  RemoveContext(context);
   return true;
 }
 
@@ -661,22 +665,21 @@ PCLIStandard::PCLIStandard(const char * prompt)
 }
 
 
-bool PCLIStandard::Start(bool runInBackground)
-{
-  if (m_contextList.empty())
-    StartContext(new PConsoleChannel(PConsoleChannel::StandardInput),
-                 new PConsoleChannel(PConsoleChannel::StandardOutput),
-                 true, true, runInBackground);
-  return PCLI::Start(runInBackground);
-}
-
 PCLI::Context * PCLIStandard::StartForeground()
 {
-  if (m_contextList.empty())
-    StartContext(new PConsoleChannel(PConsoleChannel::StandardInput),
-                 new PConsoleChannel(PConsoleChannel::StandardOutput),
-                 true, true, false);
-  return PCLI::StartForeground();
+  return StartContext(new PConsoleChannel(PConsoleChannel::StandardInput),
+                      new PConsoleChannel(PConsoleChannel::StandardOutput),
+                      true, true, false);
+}
+
+
+bool PCLIStandard::RunScript(PChannel * channel, bool autoDelete)
+{
+  PString prompt = GetPrompt();
+  SetPrompt(PString::Empty());
+  bool result = Run(channel, new PConsoleChannel(PConsoleChannel::StandardOutput), autoDelete, true);
+  SetPrompt(prompt);
+  return result;
 }
 
 
