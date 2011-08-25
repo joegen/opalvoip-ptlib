@@ -31,10 +31,14 @@
  * $Date$
  */
 
-#include <ptlib/sockets.h>
-
 #ifndef PTLIB_PNAT_H
 #define PTLIB_PNAT_H
+
+#include <ptbuildopts.h>
+
+#if P_NAT
+
+#include <ptlib/sockets.h>
 
 #include <ptlib/plugin.h>
 #include <ptlib/pluginmgr.h>
@@ -615,6 +619,15 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
 #define PCREATE_NAT_PLUGIN(name) \
   static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
   PCREATE_PLUGIN(name, PNatMethod, &PNatMethod_##name##_descriptor) \
+
+
+#define P_NAT_PARAM(p) ,p
+
+#else  // P_NAT
+
+#define P_NAT_PARAM(p)
+
+#endif // P_NAT
 
 #endif // PTLIB_PNAT_H
 

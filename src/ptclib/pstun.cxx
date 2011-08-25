@@ -33,8 +33,11 @@
 #endif
 
 #include <ptlib.h>
-#include <ptlib/array.h>
+
 #include <ptclib/pstun.h>
+
+#if P_STUN
+
 #include <ptclib/random.h>
 #include <ptclib/cypher.h>
 
@@ -1824,5 +1827,8 @@ bool PTURNClient::RefreshAllocation(DWORD lifetime)
   PSTUNMessage response;
   return MakeAuthenticatedRequest(m_socket, request, response) == 0;
 }
+
+
+#endif P_STUN
 
 // End of File ////////////////////////////////////////////////////////////////
