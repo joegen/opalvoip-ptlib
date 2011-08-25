@@ -35,8 +35,10 @@
 #pragma interface
 #endif
 
+#include <ptbuildopts.h>
 
-#include <ptlib/pfactory.h>
+#if P_STUN
+
 #include <ptclib/pnat.h>
 #include <ptlib/sockets.h>
 
@@ -729,4 +731,7 @@ class PTURNClient : public PSTUNClient
 
 PDECLARE_NAT_METHOD(TURN, PTURNClient);
 
-#endif
+
+#endif // P_STUN
+
+#endif // PTLIB_PSTUN_H

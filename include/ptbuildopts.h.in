@@ -116,9 +116,6 @@
 #undef P_REGEX
 #undef P_TTS
 #undef P_ASN
-#undef P_NAT
-#undef P_STUN
-#undef P_STUNSRVR
 #undef P_PIPECHAN
 #undef P_DTMF
 #undef P_VCARD
@@ -130,8 +127,16 @@
 #undef P_REMCONN
 #undef P_SERIAL
 #undef P_POP3SMTP
-
 #undef P_CONFIG_FILE
+
+#undef P_NAT
+#if P_NAT
+  #undef P_STUN
+  #if P_STUN
+    #undef P_STUNSRVR
+  #endif
+#endif
+
 #undef P_URL
 #ifdef P_URL
   #undef P_HTTP
