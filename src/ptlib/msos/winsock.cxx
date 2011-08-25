@@ -506,14 +506,8 @@ PIPSocket::Address::Address(DWORD dw)
 
 PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 {
-  if (dw == 0) {
-    m_version = 0;
-    memset(&m_v, 0, sizeof(m_v));
-  }
-  else {
-    m_version = 4;
-    m_v.m_four.S_un.S_addr = dw;
-  }
+  m_version = 4;
+  m_v.m_four.S_un.S_addr = dw;
   return *this;
 }
 
