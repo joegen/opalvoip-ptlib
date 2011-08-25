@@ -7,9 +7,10 @@
 #endif
 
 #include <ptlib.h>
-#include <ptclib/pstun.h>
-#include <ptclib/random.h>
+
 #include <ptclib/pstunsrvr.h>
+
+#if P_STUNSRVR
 
 #define new PNEW
 
@@ -375,3 +376,4 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, PSTUNServer::So
 }
 
 
+#endif // P_STUNSRVR

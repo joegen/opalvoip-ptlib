@@ -32,7 +32,11 @@
  */
 
 #include <ptlib.h>
+
 #include <ptclib/pnat.h>
+
+#if P_NAT
+
 #include <ptclib/random.h>
 
 
@@ -335,3 +339,4 @@ PString PNatCandidate::AsString() const
   return strm;
 }
 
+#endif // P_NAT

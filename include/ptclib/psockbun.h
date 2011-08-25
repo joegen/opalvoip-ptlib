@@ -40,12 +40,9 @@
 #include <ptlib/ipsock.h>
 #include <ptlib/sockets.h>
 #include <ptlib/safecoll.h>
+#include <ptclib/pnat.h>
 #include <list>
 
-#ifdef P_NAT
-#include <ptclib/pnat.h>
-class PNatMethod;
-#endif
 
 class PInterfaceMonitorClient;
 class PInterfaceFilter;
@@ -267,9 +264,9 @@ class PMonitoredSockets : public PInterfaceMonitorClient
   PCLASSINFO(PMonitoredSockets, PInterfaceMonitorClient);
   protected:
     PMonitoredSockets(
-      bool reuseAddr
+      bool reuseAddr    ///< Flag for sharing socket/exclusve use
 #ifdef P_NAT
-      , PNatMethod * natMethod
+      , PNatMethod * natMethod  ///< NET method to use to create sockets.
 #endif
     );
 
@@ -547,9 +544,9 @@ class PMonitoredSocketBundle : public PMonitoredSockets
   PCLASSINFO(PMonitoredSocketBundle, PMonitoredSockets);
   public:
     PMonitoredSocketBundle(
-      bool reuseAddr = false
+      bool reuseAddr    ///< Flag for sharing socket/exclusve use
 #ifdef P_NAT
-      , PNatMethod  * natMethod = NULL
+      , PNatMethod * natMethod  ///< NET method to use to create sockets.
 #endif
     );
     ~PMonitoredSocketBundle();
@@ -632,11 +629,12 @@ class PSingleMonitoredSocket : public PMonitoredSockets
   PCLASSINFO(PSingleMonitoredSocket, PMonitoredSockets);
   public:
     PSingleMonitoredSocket(
-      const PString & theInterface,
-      bool reuseAddr = false
+      const PString & theInterface, ///< Interface to bind to
+      bool reuseAddr    ///< Flag for sharing socket/exclusve use
 #ifdef P_NAT
-      , PNatMethod  * natMethod = NULL
+      , PNatMethod * natMethod  ///< NET method to use to create sockets.
 #endif
+
     );
     ~PSingleMonitoredSocket();
 
