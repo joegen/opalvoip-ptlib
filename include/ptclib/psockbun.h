@@ -544,7 +544,8 @@ class PMonitoredSocketBundle : public PMonitoredSockets
   PCLASSINFO(PMonitoredSocketBundle, PMonitoredSockets);
   public:
     PMonitoredSocketBundle(
-      bool reuseAddr    ///< Flag for sharing socket/exclusve use
+      unsigned ipVersion, ///< Version of IP to listen
+      bool reuseAddr      ///< Flag for sharing socket/exclusve use
 #ifdef P_NAT
       , PNatMethod * natMethod  ///< NET method to use to create sockets.
 #endif
@@ -615,6 +616,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     void CloseSocket(SocketInfoMap_T::iterator iterSocket);
 
     SocketInfoMap_T socketInfoMap;
+    unsigned m_ipVersion;
 };
 
 
