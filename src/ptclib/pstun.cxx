@@ -1829,6 +1829,6 @@ bool PTURNClient::RefreshAllocation(DWORD lifetime)
 }
 
 
-#endif P_STUN
+#endif // P_STUN
 
 // End of File ////////////////////////////////////////////////////////////////
