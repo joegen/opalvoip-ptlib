@@ -1535,10 +1535,10 @@ PIPSocket::Address::operator in6_addr() const
     case 6 :
       return m_v.m_six;
     case 4 :
-      in6_addr a = {
+      in6_addr a = {{{
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff,
         Byte1(), Byte2(), Byte3(), Byte4()
-      };
+      }}};
       return a;
   }
 }
