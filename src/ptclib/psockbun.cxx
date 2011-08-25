@@ -700,10 +700,14 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
 PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
 {
-  if (iface.IsEmpty() || iface == "*" || (iface[0] != '%' && PIPSocket::Address(iface).IsAny()))
-    return new PMonitoredSocketBundle(reuseAddr P_NAT_PARAM(natMethod));
-  else
+  if (iface[0] == '%')
     return new PSingleMonitoredSocket(iface, reuseAddr P_NAT_PARAM(natMethod));
+
+  PIPSocket::Address ip(iface);
+  if (ip.IsValid() && !ip.IsAny())
+    return new PSingleMonitoredSocket(iface, reuseAddr P_NAT_PARAM(natMethod));
+
+  return new PMonitoredSocketBundle(ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethod));
 }
 
 
@@ -843,10 +847,13 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketBundle::PMonitoredSocketBundle(bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
+PMonitoredSocketBundle::PMonitoredSocketBundle(unsigned ipVersion, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
+  , m_ipVersion(ipVersion)
 {
-  PTRACE(4, "MonSock\tCreated socket bundle for all interfaces.");
+  PTRACE(4, "MonSock\tCreated socket bundle for all"
+         << (ipVersion != 4 ? ipVersion != 6 ? " " : " IPv6 " : " IPv4 " )
+         << "interfaces.");
 }
 
 
@@ -903,7 +910,7 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
 {
   PIPSocket::InterfaceEntry info;
   if (!GetInterfaceInfo(iface, info)) {
-    address = PIPSocket::GetDefaultIpAny();
+    address = PIPSocket::Address::GetAny(m_ipVersion);
     port = localPort;
     return true;
   }
@@ -922,6 +929,11 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   PIPSocket::Address binding;
   PString name;
   SplitInterfaceDescription(iface, binding, name);
+
+  if (m_ipVersion != 0 && binding.GetVersion() != m_ipVersion) {
+    PTRACE(4, "MonSock\tInterface \"" << iface << "\" is not IPv" << m_ipVersion);
+    return;
+  }
 
   SocketInfo info;
   if (CreateSocket(info, binding)) {

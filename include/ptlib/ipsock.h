@@ -220,18 +220,19 @@ class PIPSocket : public PSocket
         /// Get the version of the IP address being used.
         unsigned GetVersion() const { return m_version; }
 
+        /// Check for illegal address
+        bool IsValid() const { return m_version == 4 || m_version == 6; }
         /// Check address 0.0.0.0 or ::.
-        PBoolean IsValid() const;
-        PBoolean IsAny() const;
+        bool IsAny() const;
 
         /// Check address 127.0.0.1 or ::1.
-        PBoolean IsLoopback() const;
+        bool IsLoopback() const;
 
         /// Check for Broadcast address 255.255.255.255.
-        PBoolean IsBroadcast() const;
+        bool IsBroadcast() const;
 
         /// Check if address is multicast group
-        PBoolean IsMulticast() const;
+        bool IsMulticast() const;
 
         /** Check if the remote address is a private address.
             For IPV4 this is specified RFC 1918 as the following ranges:
@@ -241,7 +242,7 @@ class PIPSocket : public PSocket
 
             For IPV6 this is specified as any address having "1111 1110 1" for the first nine bits.
         */
-        PBoolean IsRFC1918() const ;
+        bool IsRFC1918() const ;
 
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d.
@@ -307,7 +308,7 @@ class PIPSocket : public PSocket
     static void SetDefaultIpAddressFamilyV6(); // PF_INET6
     static PBoolean IsIpAddressFamilyV6Supported();
 #endif
-    static PIPSocket::Address GetDefaultIpAny();
+    static const PIPSocket::Address & GetDefaultIpAny();
 
     /**Open an IPv4 or IPv6 socket
      */
