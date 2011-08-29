@@ -487,7 +487,7 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 PINLINE void PArgList::SetArgs(int argc, char ** argv)
   { SetArgs(PStringArray(argc, argv)); }
 
-PINLINE PBoolean PArgList::Parse(const PString & theArgumentSpec, PBoolean optionsBeforeParams)
+PINLINE PArgList::ParseResult PArgList::Parse(const PString & theArgumentSpec, PBoolean optionsBeforeParams)
   { return Parse((const char *)theArgumentSpec, optionsBeforeParams); }
 
 PINLINE PBoolean PArgList::HasOption(char option) const
@@ -500,7 +500,7 @@ PINLINE PBoolean PArgList::HasOption(const PString & option) const
   { return GetOptionCount(option) != 0; }
 
 PINLINE PINDEX PArgList::GetCount() const
-  { return parameterIndex.GetSize()-shift; }
+  { return m_parameterIndex.GetSize()-m_shift; }
 
 PINLINE PString PArgList::operator[](PINDEX num) const
   { return GetParameter(num); }
