@@ -1120,7 +1120,7 @@ void PArgList::Usage(ostream & strm) const
       strm << "    ";
     else
       strm << " or ";
-    strm << left;
+    strm << left << "--";
     if (opt.m_type == NoString)
       strm << setw(maxNameLength) << opt.m_name;
     else
@@ -1129,7 +1129,7 @@ void PArgList::Usage(ostream & strm) const
     if (!lines.IsEmpty()) {
       strm << "  : " << lines[0] << '\n';
       for (PINDEX i = 1; i < lines.GetSize(); ++i)
-        strm << setw(maxNameLength+12) << ' ' << lines[i] << '\n';
+        strm << setw(maxNameLength+14) << ' ' << lines[i] << '\n';
     }
   }
 }
