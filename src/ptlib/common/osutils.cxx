@@ -343,7 +343,7 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 #if PTRACING
   if (PProcess::IsInitialised ()) {
     PProcess & process = PProcess::Current();
-    Begin(0, "", 0) << "\tVersion " << process.GetVersion(PTrue)
+    Begin(0, "", 0) << "\tVersion " << process.GetVersion(true)
                     << " by " << process.GetManufacturer()
                     << " on " << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
                     << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware()
@@ -744,7 +744,7 @@ void PTimer::Construct()
   m_timerId = m_timerList->GetNewTimerId();
   m_state = Stopped;
 
-  StartRunning(PTrue);
+  StartRunning(true);
 }
 
 
@@ -802,7 +802,7 @@ void PTimer::SetInterval(PInt64 milliseconds,
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
   m_resetTime = time;
-  StartRunning(PFalse);
+  StartRunning(false);
 }
 
 
@@ -1078,10 +1078,10 @@ PArgList::PArgList(int theArgc, char ** theArgv,
 
 void PArgList::PrintOn(ostream & strm) const
 {
-  for (PINDEX i = 0; i < argumentArray.GetSize(); i++) {
+  for (PINDEX i = 0; i < m_argumentArray.GetSize(); i++) {
     if (i > 0)
       strm << strm.fill();
-    strm << argumentArray[i];
+    strm << m_argumentArray[i];
   }
 }
 
@@ -1094,9 +1094,53 @@ void PArgList::ReadFrom(istream & strm)
 }
 
 
+void PArgList::Usage(ostream & strm) const
+{
+  size_t i;
+  PINDEX maxNameLength = 0;
+  for (i = 0; i < m_options.size(); ++i) {
+    PINDEX len = m_options[i].m_name.GetLength();
+    if (maxNameLength < len)
+      maxNameLength = len;
+  }
+  maxNameLength += 6;
+
+  for (i = 0; i < m_options.size(); ++i) {
+    const OptionSpec & opt = m_options[i];
+    if (!opt.m_section.IsEmpty())
+      strm << '\n' << opt.m_section << '\n';
+
+    strm << "  ";
+    if (opt.m_letter != '\0')
+      strm << '-' << opt.m_letter;
+    else
+      strm << "  ";
+
+    if (opt.m_letter == '\0' || opt.m_name.IsEmpty())
+      strm << "    ";
+    else
+      strm << " or ";
+    strm << left;
+    if (opt.m_type == NoString)
+      strm << setw(maxNameLength) << opt.m_name;
+    else
+      strm << opt.m_name << setw(maxNameLength-opt.m_name.GetLength()) << " <arg>";
+    strm << "  : " << opt.m_usage << '\n';
+  }
+}
+
+
+PString PArgList::Usage() const
+{
+  PStringStream str;
+  Usage(str);
+  return str;
+}
+
+
 void PArgList::SetArgs(const PString & argStr)
 {
-  argumentArray.SetSize(0);
+  m_argumentArray.SetSize(0);
 
   const char * str = argStr;
 
@@ -1106,7 +1150,7 @@ void PArgList::SetArgs(const PString & argStr)
     if (*str == '\0')
       break;
 
-    PString & arg = argumentArray[argumentArray.GetSize()];
+    PString & arg = m_argumentArray[m_argumentArray.GetSize()];
     while (*str != '\0' && !isspace(*str)) {
       switch (*str) {
         case '"' :
@@ -1133,105 +1177,149 @@ void PArgList::SetArgs(const PString & argStr)
     }
   }
 
-  SetArgs(argumentArray);
+  SetArgs(m_argumentArray);
 }
 
 
 void PArgList::SetArgs(const PStringArray & theArgs)
 {
-  argumentArray = theArgs;
-  shift = 0;
-  optionLetters = "";
-  optionNames.SetSize(0);
-  parameterIndex.SetSize(argumentArray.GetSize());
-  for (PINDEX i = 0; i < argumentArray.GetSize(); i++)
-    parameterIndex[i] = i;
+  if (!theArgs.IsEmpty())
+    m_argumentArray = theArgs;
+
+  m_shift = 0;
+  m_options.clear();
+  m_parameterIndex.SetSize(m_argumentArray.GetSize());
+  for (PINDEX i = 0; i < m_argumentArray.GetSize(); i++)
+    m_parameterIndex[i] = i;
   m_argsParsed = 0;
 }
 
 
-PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
+PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
 {
-  if (PAssertNULL(spec) == NULL)
-    return PFalse;
-
   // Find starting point, start at shift if first Parse() call.
-  PINDEX arg = optionLetters.IsEmpty() ? shift : 0;
+  PINDEX arg = m_options.empty() ? m_shift : 0;
 
   // If not in parse all mode, have been parsed before, and had some parameters
   // from last time, then start argument parsing somewhere along instead of start.
-  if (optionsBeforeParams && !optionLetters && m_argsParsed > 0)
+  if (optionsBeforeParams && !m_options.empty() && m_argsParsed > 0)
     arg = m_argsParsed;
 
-  // Parse the option specification
-  optionLetters = "";
-  optionNames.SetSize(0);
-  PIntArray canHaveOptionString;
-
-  PINDEX codeCount = 0;
-  while (*spec != '\0') {
-    if (*spec == '-')
-      optionLetters += ' ';
-    else {
-      PAssert(optionLetters.Find(*spec) == P_MAX_INDEX, "Multiple occurrences of same option letter");
-      optionLetters += *spec++;
+  if (spec == NULL) {
+    if (m_options.empty() || !optionsBeforeParams)
+      return ParseInvalidOptions;
+    for (size_t opt = 0; opt < m_options.size(); ++opt) {
+      m_options[opt].m_count = 0;
+      m_options[opt].m_string.MakeEmpty();
     }
+  }
+  else {
+    // Parse the option specification
+    m_options.clear();
 
-    if (*spec == '-') {
-      const char * base = ++spec;
-      while (*spec != '\0' && *spec != '.' && *spec != ':' && *spec != ';')
-        spec++;
-      PString newOpt(base, spec-base);
-      PAssert(optionNames.GetValuesIndex(newOpt) == P_MAX_INDEX, "Multiple occurrences of same option string");
-      optionNames[codeCount] = newOpt;
-      if (*spec == '.')
-        spec++;
-    }
+    while (*spec != '\0') {
+      OptionSpec opts;
 
-    if (*spec == ':' || *spec == ';') {
-      canHaveOptionString.SetSize(codeCount+1);
-      canHaveOptionString[codeCount] = *spec == ':' ? 2 : 1;
-      spec++;
+      if (*spec == '[') {
+        const char * end = strchr(++spec, ']');
+        if (end == NULL || spec == end)
+          return ParseInvalidOptions;
+        opts.m_section = PString(spec, end-spec);
+        spec = end+1;
+        if (spec == '\0')
+          return ParseInvalidOptions;
+      }
+
+      if (*spec != '-')
+        opts.m_letter = *spec++;
+
+      if (*spec == '-') {
+        size_t pos = strcspn(++spec, ".:; ");
+        if (pos < 2)
+          return ParseInvalidOptions;
+        opts.m_name = PString(spec, pos);
+        spec += pos;
+      }
+
+      switch (*spec++) {
+        case '.' :
+          opts.m_type = NoString;
+          break;
+        case ':' :
+          opts.m_type = HasString;
+          break;
+        case ';' :
+          opts.m_type = StringWithLetter;
+          break;
+        default :
+          --spec;
+      }
+
+      if (*spec == ' ') {
+        while (*spec == ' ')
+          ++spec;
+        const char * end = strchr(spec, '\n');
+        if (end == NULL) {
+          opts.m_usage = spec;
+          while (*spec != '\0')
+            ++spec;
+        }
+        else {
+          opts.m_usage = PString(spec, end-spec);
+          spec = end+1;
+        }
+        opts.m_usage.Replace('\r', '\n', true);
+      }
+
+      // Check for duplicates
+      for (size_t i = 0; i < m_options.size(); ++i) {
+        if (opts.m_letter != '\0' && opts.m_letter == m_options[i].m_letter)
+          return ParseInvalidOptions;
+        if (!opts.m_name.IsEmpty() && opts.m_name == m_options[i].m_name)
+          return ParseInvalidOptions;
+      }
+
+      m_options.push_back(opts);
     }
-    codeCount++;
   }
 
-  // Clear and reset size of option information
-  optionCount.SetSize(0);
-  optionCount.SetSize(codeCount);
-  optionString.SetSize(0);
-  optionString.SetSize(codeCount);
-
   // Clear parameter indexes
-  parameterIndex.SetSize(0);
-  shift = 0;
+  m_parameterIndex.SetSize(0);
+  m_shift = 0;
 
-  // Now work through the arguments and split out the options
+  // Now work through the parameters and split out the options
   PINDEX param = 0;
-  PBoolean hadMinusMinus = PFalse;
-  while (arg < argumentArray.GetSize()) {
-    const PString & argStr = argumentArray[arg];
+  PBoolean hadMinusMinus = false;
+  while (arg < m_argumentArray.GetSize()) {
+    const PString & argStr = m_argumentArray[arg];
     if (hadMinusMinus || argStr[0] != '-' || argStr[1] == '\0') {
       // have a parameter string
-      parameterIndex.SetSize(param+1);
-      parameterIndex[param++] = arg;
+      m_parameterIndex.SetSize(param+1);
+      m_parameterIndex[param++] = arg;
     }
-    else if (optionsBeforeParams && parameterIndex.GetSize() > 0)
+    else if (optionsBeforeParams && m_parameterIndex.GetSize() > 0)
       break;
     else if (argStr == "--") {
       if (optionsBeforeParams)
-        hadMinusMinus = PTrue; // ALL remaining args are parameters not options
+        hadMinusMinus = true; // ALL remaining args are parameters not options
       else {
         m_argsParsed = arg+1;
         break;
       }
     }
-    else if (argStr[1] == '-')
-      ParseOption(optionNames.GetValuesIndex(argStr.Mid(2)), 0, arg, canHaveOptionString);
+    else if (argStr[1] == '-') {
+      ParseResult result = ParseOption(FindOption(argStr.Mid(2)), 0, arg);
+      if (result < 0)
+        return result;
+    }
     else {
-      for (PINDEX i = 1; i < argStr.GetLength(); i++)
-        if (ParseOption(optionLetters.Find(argStr[i]), i+1, arg, canHaveOptionString))
+      for (PINDEX i = 1; i < argStr.GetLength(); i++) {
+        ParseResult result = ParseOption(FindOption(argStr[i]), i+1, arg);
+        if (result < 0)
+          return result;
+        if (result == ParseWithArguments)
           break;
+      }
     }
 
     arg++;
@@ -1240,93 +1328,109 @@ PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
   if (optionsBeforeParams)
     m_argsParsed = arg;
 
-  return param > 0;
+  return param > 0 ? ParseWithArguments : ParseNoArguments;
 }
 
 
-PBoolean PArgList::ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg,
-                           const PIntArray & canHaveOptionString)
+size_t PArgList::FindOption(char letter) const
 {
-  if (idx == P_MAX_INDEX) {
-    UnknownOption(argumentArray[arg]);
-    return PFalse;
+  size_t opt;
+  for (opt = 0; opt < m_options.size(); ++opt) {
+    if (m_options[opt].m_letter == letter)
+      break;
+  }
+  return opt;
+}
+
+
+size_t PArgList::FindOption(const PString & name) const
+{
+  size_t opt;
+  for (opt = 0; opt < m_options.size(); ++opt) {
+    if (m_options[opt].m_name == name)
+      break;
+  }
+  return opt;
+}
+
+
+PArgList::ParseResult PArgList::ParseOption(size_t idx, PINDEX offset, PINDEX & arg)
+{
+  if (idx >= m_options.size())
+    return ParseUnknownOption;
+
+  OptionSpec & opt = m_options[idx];
+  ++opt.m_count;
+  if (opt.m_type == NoString)
+    return ParseNoArguments;
+
+  if (!opt.m_string)
+    opt.m_string += '\n';
+
+  if (offset != 0 && (opt.m_type == StringWithLetter || m_argumentArray[arg][offset] != '\0')) {
+    opt.m_string += m_argumentArray[arg].Mid(offset);
+    return ParseWithArguments;
   }
 
-  optionCount[idx]++;
-  if (canHaveOptionString[idx] == 0)
-    return PFalse;
+  if (++arg >= m_argumentArray.GetSize())
+    return ParseMissingOptionString;
 
-  if (!optionString[idx])
-    optionString[idx] += '\n';
-
-  if (offset != 0 &&
-        (canHaveOptionString[idx] == 1 || argumentArray[arg][offset] != '\0')) {
-    optionString[idx] += argumentArray[arg].Mid(offset);
-    return PTrue;
-  }
-
-  if (++arg >= argumentArray.GetSize())
-    return PFalse;
-
-  optionString[idx] += argumentArray[arg];
-  return PTrue;
+  opt.m_string += m_argumentArray[arg];
+  return ParseWithArguments;
 }
 
 
 PINDEX PArgList::GetOptionCount(char option) const
 {
-  return GetOptionCountByIndex(optionLetters.Find(option));
+  return GetOptionCountByIndex(FindOption(option));
 }
 
 
 PINDEX PArgList::GetOptionCount(const char * option) const
 {
-  return GetOptionCountByIndex(optionNames.GetValuesIndex(PString(option)));
+  return GetOptionCountByIndex(FindOption(PString(option)));
 }
 
 
 PINDEX PArgList::GetOptionCount(const PString & option) const
 {
-  return GetOptionCountByIndex(optionNames.GetValuesIndex(option));
+  return GetOptionCountByIndex(FindOption(option));
 }
 
 
-PINDEX PArgList::GetOptionCountByIndex(PINDEX idx) const
+PINDEX PArgList::GetOptionCountByIndex(size_t idx) const
 {
-  if (idx < optionCount.GetSize())
-    return optionCount[idx];
-
-  return 0;
+  return idx < m_options.size() ? m_options[idx].m_count : 0;
 }
 
 
 PString PArgList::GetOptionString(char option, const char * dflt) const
 {
-  return GetOptionStringByIndex(optionLetters.Find(option), dflt);
+  return GetOptionStringByIndex(FindOption(option), dflt);
 }
 
 
 PString PArgList::GetOptionString(const char * option, const char * dflt) const
 {
-  return GetOptionStringByIndex(optionNames.GetValuesIndex(PString(option)), dflt);
+  return GetOptionStringByIndex(FindOption(PString(option)), dflt);
 }
 
 
 PString PArgList::GetOptionString(const PString & option, const char * dflt) const
 {
-  return GetOptionStringByIndex(optionNames.GetValuesIndex(option), dflt);
+  return GetOptionStringByIndex(FindOption(option), dflt);
 }
 
 
-PString PArgList::GetOptionStringByIndex(PINDEX idx, const char * dflt) const
+PString PArgList::GetOptionStringByIndex(size_t idx, const char * dflt) const
 {
-  if (idx < optionString.GetSize() && optionString.GetAt(idx) != NULL)
-    return optionString[idx];
+  if (idx < m_options.size() && !m_options[idx].m_string.IsEmpty())
+    return m_options[idx].m_string;
 
   if (dflt != NULL)
     return dflt;
 
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1334,14 +1438,14 @@ PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
 {
   PStringArray array;
 
-  last += shift;
+  last += m_shift;
   if (last < 0)
     return array;
 
-  if (last >= parameterIndex.GetSize())
-    last = parameterIndex.GetSize()-1;
+  if (last >= m_parameterIndex.GetSize())
+    last = m_parameterIndex.GetSize()-1;
 
-  first += shift;
+  first += m_shift;
   if (first < 0)
     first = 0;
 
@@ -1352,7 +1456,7 @@ PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
 
   PINDEX idx = 0;
   while (first <= last)
-    array[idx++] = argumentArray[parameterIndex[first++]];
+    array[idx++] = m_argumentArray[m_parameterIndex[first++]];
 
   return array;
 }
@@ -1360,42 +1464,23 @@ PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
 
 PString PArgList::GetParameter(PINDEX num) const
 {
-  int idx = shift+(int)num;
-  if (idx >= 0 && idx < (int)parameterIndex.GetSize())
-    return argumentArray[parameterIndex[idx]];
+  int idx = m_shift + (int)num;
+  if (idx >= 0 && idx < (int)m_parameterIndex.GetSize())
+    return m_argumentArray[m_parameterIndex[idx]];
 
-  IllegalArgumentIndex(idx);
-  return PString();
+  return PString::Empty();
 }
 
 
 void PArgList::Shift(int sh) 
 {
-  shift += sh;
-  if (shift < 0)
-    shift = 0;
-  else if (shift > (int)parameterIndex.GetSize())
-    shift = parameterIndex.GetSize() - 1;
+  m_shift += sh;
+  if (m_shift < 0)
+    m_shift = 0;
+  else if (m_shift > (int)m_parameterIndex.GetSize())
+    m_shift = m_parameterIndex.GetSize() - 1;
 }
 
-
-void PArgList::IllegalArgumentIndex(PINDEX idx) const
-{
-  PError << "attempt to access undefined argument at index "
-         << idx << endl;
-}
- 
-
-void PArgList::UnknownOption(const PString & option) const
-{
-  PError << "unknown option \"" << option << "\"\n";
-}
-
-
-void PArgList::MissingArgument(const PString & option) const
-{
-  PError << "option \"" << option << "\" requires argument\n";
-}
 
 #ifdef P_CONFIG_FILE
 
@@ -1491,13 +1576,13 @@ void PConfigArgs::Save(const PString & saveOptionName)
 
   config.DeleteSection(sectionName);
 
-  for (PINDEX i = 0; i < optionCount.GetSize(); i++) {
-    PString optionName = optionNames[i];
-    if (optionCount[i] > 0 && optionName != saveOptionName) {
-      if (optionString.GetAt(i) != NULL)
-        config.SetString(sectionName, optionName, optionString[i]);
+  for (size_t i = 0; i < m_options.size(); i++) {
+    PString optionName = m_options[i].m_name;
+    if (m_options[i].m_count > 0 && optionName != saveOptionName) {
+      if (!m_options[i].m_string.IsEmpty())
+        config.SetString(sectionName, optionName, m_options[i].m_string);
       else
-        config.SetBoolean(sectionName, optionName, PTrue);
+        config.SetBoolean(sectionName, optionName, true);
     }
   }
 }
@@ -1505,14 +1590,8 @@ void PConfigArgs::Save(const PString & saveOptionName)
 
 PString PConfigArgs::CharToString(char ch) const
 {
-  PINDEX index = optionLetters.Find(ch);
-  if (index == P_MAX_INDEX)
-    return PString();
-
-  if (optionNames.GetAt(index) == NULL)
-    return PString();
-
-  return optionNames[index];
+  size_t index = FindOption(ch);
+  return index < m_options.size() ? m_options[index].m_name : PString::Empty();
 }
 
 #endif // P_CONFIG_ARGS
@@ -1618,7 +1697,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #if PMEMORY_HEAP
   // Now we start looking for memory leaks!
-  PMemoryHeap::SetIgnoreAllocations(PFalse);
+  PMemoryHeap::SetIgnoreAllocations(false);
 #endif
 }
 
@@ -1768,7 +1847,7 @@ PString PProcess::GetLibVersion()
 
 void PProcess::SetConfigurationPath(const PString & path)
 {
-  configurationPaths = path.Tokenise(";:", PFalse);
+  configurationPaths = path.Tokenise(";:", false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
