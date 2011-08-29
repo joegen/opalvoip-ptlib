@@ -1125,7 +1125,12 @@ void PArgList::Usage(ostream & strm) const
       strm << setw(maxNameLength) << opt.m_name;
     else
       strm << opt.m_name << setw(maxNameLength-opt.m_name.GetLength()) << " <arg>";
-    strm << "  : " << opt.m_usage << '\n';
+    PStringArray lines = opt.m_usage.Lines();
+    if (!lines.IsEmpty()) {
+      strm << "  : " << lines[0] << '\n';
+      for (PINDEX i = 1; i < lines.GetSize(); ++i)
+        strm << setw(maxNameLength+12) << ' ' << lines[i] << '\n';
+    }
   }
 }
 
@@ -1268,7 +1273,6 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
           opts.m_usage = PString(spec, end-spec);
           spec = end+1;
         }
-        opts.m_usage.Replace('\r', '\n', true);
       }
 
       // Check for duplicates
