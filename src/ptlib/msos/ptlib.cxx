@@ -229,13 +229,6 @@ void PChannel::Construct()
 }
 
 
-PString PChannel::GetName() const
-{
-  PAssertAlways(PUnimplementedFunction);
-  return PString();
-}
-
-
 PBoolean PChannel::Read(void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);

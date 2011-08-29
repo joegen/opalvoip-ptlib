@@ -107,12 +107,13 @@ class PChannelStreamBuffer : public streambuf {
 class PChannel : public PObject, public iostream {
   PCLASSINFO(PChannel, PObject);
 
-  public:
   /**@name Construction */
   //@{
+  protected:
       /// Create the channel.
     PChannel();
 
+  public:
       /// Close down the channel.
     ~PChannel();
   //@}
@@ -164,7 +165,7 @@ class PChannel : public PObject, public iostream {
 
        @return the name of the channel.
      */
-    virtual PString GetName() const;
+    virtual PString GetName() const { return channelName; }
 
     /** Get the integer operating system handle for the channel.
 
@@ -745,7 +746,8 @@ class PChannel : public PObject, public iostream {
     PTimeInterval readTimeout;
     /// Timeout for write operations.
     PTimeInterval writeTimeout;
-
+    /// Name of channel
+    PString channelName;
 
   private:
     // New functions for class
@@ -764,6 +766,19 @@ class PChannel : public PObject, public iostream {
 #include "unix/ptlib/channel.h"
 #endif
 
+};
+
+
+/** A channel that does nothing.
+  */
+class PNullChannel : public PChannel
+{
+    PCLASSINFO(PNullChannel, PChannel)
+  public:
+    PNullChannel();
+
+    PBoolean Read(void *, PINDEX);
+    PBoolean Write(const void *, PINDEX);
 };
 
 
