@@ -730,6 +730,7 @@ class PCLISocket : public PCLI
 };
 
 
+#if P_TELNET
 /**Command Line Interpreter over Telnet sockets.
    This class allows for access and automatic creation of command line
    interpreter contexts from incoming Telnet connections on a listening port.
@@ -749,6 +750,7 @@ class PCLITelnet : public PCLISocket
   protected:
     virtual PTCPSocket * CreateSocket();
 };
+#endif // P_TELNET
 
 
 #endif // PTLIB_CLI_H

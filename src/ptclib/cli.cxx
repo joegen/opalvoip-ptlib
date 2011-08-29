@@ -861,6 +861,8 @@ PTCPSocket * PCLISocket::CreateSocket()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#if P_TELNET
+
 PCLITelnet::PCLITelnet(WORD port, const char * prompt, bool singleThreadForAll)
   : PCLISocket(port, prompt, singleThreadForAll)
 {
@@ -872,5 +874,6 @@ PTCPSocket * PCLITelnet::CreateSocket()
   return new PTelnetSocket();
 }
 
+#endif // P_TELNET
 
 ///////////////////////////////////////////////////////////////////////////////
