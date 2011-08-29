@@ -617,10 +617,6 @@ class PVXMLChannel : public PDelayChannel
     PBoolean paused;
     PTimer   m_silenceTimer;
     int totalData;
-
-    // "channelname" (which is the name of the <record> tag) so
-    // results can be saved in vxml session variable
-    PString channelName;
 };
 
 

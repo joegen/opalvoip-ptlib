@@ -55,8 +55,6 @@
 
     int  PXClose();
 
-    PString channelName;
-
 #ifdef P_PTHREADS
 #define P_IO_BREAK_SIGNAL SIGPROF
   protected:
