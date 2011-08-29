@@ -125,12 +125,33 @@ class PArgList : public PObject
       const PStringArray & theArgs ///< A string array constituting the arguments
     );
 
+    /// Argument parsing result for Parse() function.
+    enum ParseResult {
+      ParseInvalidOptions = -100, ///< Multiple argument option names/letters
+      ParseUnknownOption,         ///< Unknown option was entered
+      ParseMissingOptionString,   ///< Option string was not present and required
+      ParseNoArguments = 0,       ///< Parsed options, but no argmented entered
+      ParseWithArguments          ///< Parsed options and arguments.
+    };
+
     /** Parse the arguments.
        Parse the standard C program arguments into an argument of options and
-       parameters. Consecutive calls with <code>optionsBeforeParams</code> set
-       to true will parse out different options and parameters. If SetArgs()
-       function is called then the Parse() function will restart from the
-       beginning of the argument list.
+       parameters.
+
+       If \p optionsBeforeParams is set to true then options will be parsed up
+       until the first parameter. Consecutive calls maybe made using \p
+       theArgumentSpec of NULL and sets of options/parametes may be parsed,
+       e.g. -f -g first one -h -k second. A -- indicates the end of the first
+       parsed set if there are no parameters, e.g. -f -g -- -h -k second
+
+       If \p optionsBeforeParams is set to false then options and parameters
+       may be mixed in any order. If a -- is seen then option parsing is
+       stopped and all remaining arguments are passed as parameters, e.g. -a
+       -b -- "-param starting with minus sign".
+
+       If SetArgs() function is called then the Parse() function will restart
+       from the beginning of the argument list. SetArgs(0, NULL) may be used
+       to reset parsing without altering the supplied arguments.
 
        The specification string consists of case significant letters for each
        option. If the letter is followed by a '-' character then a long name
@@ -142,20 +163,37 @@ class PArgList : public PObject
        an associated string but this MUST follow the letter immediately, if
        it is present at all.
 
-       For example, "ab:c" allows for "-a -b arg -barg -c" and
-       "a-an-arg.b-option:c;" allows for "-a --an-arg --option arg -c -copt".
+       If the option is followed by a space character then all text up until
+       a new line '\\n' is used as a usage/help text for the option.
 
-       @return true if there is at least one parameter after parsing.
+       Any text comainted with '[' and ']' characters will provide a section
+       break in the usage/help text.
+
+       For example, "ab:c" allows for "-a -b arg -barg -c" and
+       "a-an-arg. help\nb-option:c;" allows for "-a --an-arg --option arg -c -copt".
+
+       @return Result of the parsing.
      */
-    virtual PBoolean Parse(
+    virtual ParseResult Parse(
       const char * theArgumentSpec,    ///< The specification string for argument options. See description for details.
       PBoolean optionsBeforeParams = true  ///< Parse options only before parameters
     );
     /** Parse the arguments. */
-    virtual PBoolean Parse(
+    virtual ParseResult Parse(
       const PString & theArgumentStr,  ///< The specification string for argument options. See description for details.       
       PBoolean optionsBeforeParams = true  ///< Parse options only before parameters
     );
+
+    /**Determine if already parsed at least once.
+      */
+    bool IsParsed() const { return !m_options.empty(); }
+
+    /**Output usage text for parsed arguments.
+      */
+    void Usage(
+      ostream & strm    ///< Stream to output usage text.
+    ) const;
+    PString Usage() const;
   //@}
 
   /**@name Getting parsed arguments */
@@ -274,54 +312,40 @@ class PArgList : public PObject
     );
   //@}
 
-  /**@name Errors */
-  //@{
-    /** This function is called when access to illegal parameter index is made
-       in the GetParameter function. The default behaviour is to output a
-       message to the standard <code>PError</code> stream.
-     */
-    virtual void IllegalArgumentIndex(
-      PINDEX idx ///< Number of the parameter that was accessed. 
-    ) const;
-
-    /** This function is called when an unknown option was specified on the
-       command line. The default behaviour is to output a message to the
-       standard <code>PError</code> stream.
-     */
-    virtual void UnknownOption(
-      const PString & option   ///< Option that was illegally placed on command line. 
-    ) const;
-
-    /** This function is called when an option that requires an associated
-       string was specified on the command line but no associated string was
-       provided. The default behaviour is to output a message to the standard
-       <code>PError</code> stream.
-     */
-    virtual void MissingArgument(
-      const PString & option  ///< Option for which the associated string was missing. 
-    ) const;
-  //@}
-
   protected:
     /// The original program arguments.
-    PStringArray argumentArray;
-    /// The specification letters for options
-    PString      optionLetters;
-    /// The specification strings for options
-    PStringArray optionNames;
-    /// The count of the number of times an option appeared in the command line.
-    PIntArray    optionCount;
-    /// The array of associated strings to options.
-    PStringArray optionString;
-    /// The index of each .
-    PIntArray    parameterIndex;
-    /// Shift count for the parameters in the argument list.
-    int          shift;
+    PStringArray m_argumentArray;
 
-  private:
-    PBoolean ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg, const PIntArray & canHaveOptionString);
-    PINDEX GetOptionCountByIndex(PINDEX idx) const;
-    PString GetOptionStringByIndex(PINDEX idx, const char * dflt) const;
+    enum OptionType {
+      NoString,
+      HasString,
+      StringWithLetter
+    };
+    struct OptionSpec {
+      OptionSpec() : m_letter('\0'), m_type(NoString), m_count(0) { }
+      char       m_letter;
+      PString    m_name;
+      PString    m_usage;
+      PString    m_section;
+      OptionType m_type;
+
+      unsigned   m_count;
+      PString    m_string;
+    };
+    vector<OptionSpec> m_options;
+
+    /// The index of each parameter.
+    PIntArray m_parameterIndex;
+
+    /// Shift count for the parameters in the argument list.
+    int m_shift;
+
+    // Internal stuff
+    size_t FindOption(char letter) const;
+    size_t FindOption(const PString & name) const;
+    ParseResult ParseOption(size_t idx, PINDEX offset, PINDEX & arg);
+    PINDEX GetOptionCountByIndex(size_t idx) const;
+    PString GetOptionStringByIndex(size_t idx, const char * dflt) const;
     int m_argsParsed;
 };
 
