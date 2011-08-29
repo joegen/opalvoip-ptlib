@@ -574,6 +574,31 @@ void PChannel::OnWriteComplete(AsyncContext & context)
     context.m_notifier(*this, context);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PNullChannel
+
+PNullChannel::PNullChannel()
+{
+  channelName = "null";
+  os_handle = 0;
+}
+
+
+PBoolean PNullChannel::Read(void *, PINDEX)
+{
+  lastReadCount = 0;
+  return false;
+}
+
+
+PBoolean PNullChannel::Write(const void *, PINDEX length)
+{
+  lastWriteCount = length;
+  return true;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PIndirectChannel
 

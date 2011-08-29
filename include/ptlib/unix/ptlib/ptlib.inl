@@ -97,9 +97,6 @@ PINLINE PBoolean PFile::Remove(const PString & name, PBoolean)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PString PChannel::GetName() const
-  { return channelName; }
-
 #ifdef BE_THREADS
 
 PINLINE PThreadIdentifier PThread::GetThreadId() const

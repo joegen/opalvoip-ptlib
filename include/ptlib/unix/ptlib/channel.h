@@ -43,7 +43,6 @@
     PBoolean PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout);
     int  PXClose();
 
-    PString     channelName;
     PMutex      px_threadMutex;
     PXBlockType px_lastBlockType;
     PThread   * px_readThread;

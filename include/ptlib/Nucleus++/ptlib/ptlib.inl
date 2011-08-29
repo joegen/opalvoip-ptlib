@@ -126,7 +126,4 @@ PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean)
 PINLINE void PChannel::Construct()
   { os_handle = -1; }
 
-PINLINE PString PChannel::GetName() const
-  { return channelName; }
-
 // End Of File ///////////////////////////////////////////////////////////////
