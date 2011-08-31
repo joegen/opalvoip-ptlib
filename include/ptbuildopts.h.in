@@ -140,9 +140,13 @@
 #undef P_URL
 #ifdef P_URL
   #undef P_HTTP
-  #ifdef P_HTTP
-    #undef P_HTTPFORMS
-    #undef P_HTTPSVC
+  #if P_HTTP
+    #if P_CONFIG_FILE
+      #undef P_HTTPFORMS
+      #if P_HTTPFORMS
+        #undef P_HTTPSVC
+      #endif
+    #endif
     #undef P_SSDP
   #endif
 #endif
