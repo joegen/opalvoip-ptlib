@@ -35,7 +35,7 @@
 #include <ptlib.h>
 #include <ptclib/ftp.h>
 
-#if PFTP
+#if P_FTP
 
 #include <ptlib/sockets.h>
 
