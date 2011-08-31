@@ -29,8 +29,11 @@
  */
 
 #include <ptlib.h>
-#include <ptlib/sockets.h>
 #include <ptclib/ftp.h>
+
+#if P_FTP
+
+#include <ptlib/sockets.h>
 
 #define new PNEW
 
@@ -702,5 +705,7 @@ void PFTPServer::SendToClient(const PFilePath & filename)
   }
 }
 
+
+#endif // P_FTP
 
 // End of File ///////////////////////////////////////////////////////////////
