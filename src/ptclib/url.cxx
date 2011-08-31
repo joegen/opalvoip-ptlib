@@ -670,6 +670,11 @@ void PURL::SetScheme(const PString & s)
 {
   scheme = s;
   schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
+  if (schemeInfo != NULL && !portSupplied) {
+    const PURLLegacyScheme * legacy = dynamic_cast<const PURLLegacyScheme *>(schemeInfo);
+    if (legacy != NULL)
+      port = legacy->defaultPort;
+  }
   Recalculate();
 }
 
