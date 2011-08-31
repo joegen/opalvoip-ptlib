@@ -591,8 +591,9 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
     };
     SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(TabStops), (LPARAM)(LPDWORD)TabStops);
 
+    PString systemLogFileName;
 #if P_CONFIG_FILE
-    PString systemLogFileName = cfg.GetString(SystemLogFileNameKey);
+    systemLogFileName = cfg.GetString(SystemLogFileNameKey);
 #endif // P_CONFIG_FILE
     if (systemLogFileName.IsEmpty() || systemLogFileName == WindowLogOutput)
       PSystemLog::SetTarget(new LogToWindow());

@@ -29,8 +29,11 @@
  */
 
 #include <ptlib.h>
-#include <ptlib/sockets.h>
 #include <ptclib/ftp.h>
+
+#if P_FTP
+
+#include <ptlib/sockets.h>
 #include <ptclib/url.h>
 
 
@@ -372,5 +375,7 @@ class PURL_FtpLoader : public PURLLoader
 
 PFACTORY_CREATE(PURLLoaderFactory, PURL_FtpLoader, "ftp", true);
 
+
+#endif // P_FTP
 
 // End of File ///////////////////////////////////////////////////////////////

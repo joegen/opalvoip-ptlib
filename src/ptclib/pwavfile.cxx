@@ -37,8 +37,11 @@
 #endif
 
 #include <ptlib.h>
-#include <ptlib/pfactory.h>
 #include <ptclib/pwavfile.h>
+
+#if P_WAVFILE
+
+#include <ptlib/pfactory.h>
 
 #define new PNEW
 
@@ -1119,5 +1122,8 @@ PBoolean PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX l
 }
 
 PWAVFileConverterFactory::Worker<PWAVFileConverterPCM> pcmConverter(PWAVFile::fmt_PCM);
+
+
+#endif // P_WAVFILE
 
 //////////////////////////////////////////////////////////////////
