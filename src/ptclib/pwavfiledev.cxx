@@ -38,6 +38,7 @@
 #include <ptlib.h>
 #include <ptclib/pwavfiledev.h>
 
+#if P_WAVFILE
 
 class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
@@ -333,6 +334,9 @@ PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
 {
   return PTrue;
 }
+
+
+#endif // P_WAVFILE
 
 
 // End of File ///////////////////////////////////////////////////////////////

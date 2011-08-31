@@ -33,8 +33,11 @@
 #endif
 
 #include <ptlib.h>
-#include <ptlib/sockets.h>
 #include <ptclib/ftp.h>
+
+#if PFTP
+
+#include <ptlib/sockets.h>
 
 
 /////////////////////////////////////////////////////////
@@ -67,5 +70,7 @@ PBoolean PFTP::SendPORT(const PIPSocket::Address & addr, WORD port)
   return ExecuteCommand(PORT, str)/100 == 2;
 }
 
+
+#endif // P_FTP
 
 // End of File ///////////////////////////////////////////////////////////////
