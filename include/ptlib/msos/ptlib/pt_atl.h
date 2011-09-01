@@ -104,6 +104,7 @@ template <class T> class CComPtr
       }
     }
 
+// mingw32 does not know __ parameters (yet)
 #ifndef __MINGW32__
     __checkReturn HRESULT CoCreateInstance(
       __in     REFCLSID  rclsid,
