@@ -176,10 +176,9 @@ unsigned PRandom::Generate(unsigned minimum, unsigned maximum)
 }
 
 
-static PMutex mutex;
-
 unsigned PRandom::Number()
 {
+  static PMutex mutex;
   PWaitAndSignal wait(mutex);
 
   static PRandom rand;
