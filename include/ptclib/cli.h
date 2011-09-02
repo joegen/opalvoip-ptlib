@@ -382,7 +382,8 @@ class PCLI : public PObject
       const char * command,       ///< Command(s) to register
       const PNotifier & notifier, ///< Callback to execute when command interpreted
       const char * help = NULL,   ///< Help text on command (what it does)
-      const char * usage = NULL   ///< Usage text on command (syntax/options)
+      const char * usage = NULL,  ///< Usage text on command (syntax/options)
+      const char * argSpec = NULL ///< Argument specification to pass to PArgList
     );
 
     /**Show help for registered commands to the context.
@@ -602,6 +603,7 @@ class PCLI : public PObject
       PNotifier m_notifier;
       PString   m_help;
       PString   m_usage;
+      PString   m_argSpec;
     };
     typedef std::map<PString, InternalCommand> CommandMap_t;
     CommandMap_t m_commands;
