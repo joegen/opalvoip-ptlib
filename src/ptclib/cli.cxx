@@ -564,7 +564,10 @@ void PCLI::OnReceivedLine(Arguments & args)
       args.Shift(nesting);
       args.m_command = cmd->first;
       args.m_usage = cmd->second.m_usage;
-      cmd->second.m_notifier(args, 0);
+      if (cmd->second.m_argSpec.IsEmpty() || args.Parse(cmd->second.m_argSpec) >= PArgList::ParseNoArguments)
+        cmd->second.m_notifier(args, 0);
+      else
+        args.WriteUsage();
       return;
     }
   }
@@ -587,7 +590,7 @@ void PCLI::Broadcast(const PString & message) const
 }
 
 
-bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const char * help, const char * usage)
+bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec)
 {
   if (!PAssert(command != NULL && *command != '\0' && !notifier.IsNULL(), PInvalidParameter))
     return false;
@@ -611,6 +614,7 @@ bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const ch
       cmd.m_help = help;
       if (usage != NULL && *usage != '\0')
         cmd.m_usage = names & usage;
+      cmd.m_argSpec = argSpec;
     }
   }
 
