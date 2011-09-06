@@ -1,5 +1,6 @@
 AC_INIT(../include/ptlib.h)
 
+AC_PREREQ([2.63])  # sometimes this file gets processed by old autoconf
 AC_PROG_CXX
 AC_PROG_CPP
 
