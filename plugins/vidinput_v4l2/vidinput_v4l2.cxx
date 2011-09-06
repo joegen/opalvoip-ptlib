@@ -373,20 +373,15 @@ PBoolean PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
 }
 
 
-int PVideoInputDevice_V4L2::GetNumChannels() 
+int PVideoInputDevice_V4L2::GetNumChannels()
 {
   // if opened, return the capability value, else 1 as in videoio.cxx
   if (IsOpen ()) {
 
     struct v4l2_input videoEnumInput;
     videoEnumInput.index = 0;
-    while (1) {
-      if (v4l2_ioctl(videoFd, VIDIOC_ENUMINPUT, &videoEnumInput) < 0) {
-        break;
-      }
-      else
-        videoEnumInput.index++;
-    }
+    while (v4l2_ioctl(videoFd, VIDIOC_ENUMINPUT, &videoEnumInput) >= 0)
+      videoEnumInput.index++;
 
     return videoEnumInput.index;
   }
@@ -404,7 +399,7 @@ PBoolean PVideoInputDevice_V4L2::SetChannel(int newChannel)
 
   // set the channel
   if (v4l2_ioctl(videoFd, VIDIOC_S_INPUT, &channelNumber) < 0) {
-    PTRACE(1,"VideoInputDevice\tS_INPUT failed : " << ::strerror(errno));    
+    PTRACE(1,"VideoInputDevice\tS_INPUT failed : " << ::strerror(errno));
     return PFalse;
   }
 
