@@ -125,6 +125,7 @@ class PSimpleTimer : public PTimeInterval
     PTimeInterval GetElapsed() const;
 
     /**Return the real time remaining before expiry.
+       If timer has expired, then returns zero.
       */
     PTimeInterval GetRemaining() const;
 
