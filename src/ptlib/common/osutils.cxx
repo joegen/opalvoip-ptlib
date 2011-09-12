@@ -714,6 +714,13 @@ void PSimpleTimer::SetInterval(PInt64 milliseconds,
 }
 
 
+PTimeInterval PSimpleTimer::GetRemaining() const
+{
+  PTimeInterval remaining = *this - GetElapsed();
+  return remaining > 0 ? remaining : PTimeInterval(0);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
