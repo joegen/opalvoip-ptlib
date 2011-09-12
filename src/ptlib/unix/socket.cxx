@@ -1684,7 +1684,165 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
   return new NetLinkRouteTableDetector();
 }
 
-#else
+#elif defined(P_IPHONEOS)
+
+#include <netdb.h>
+#include <sys/time.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <SystemConfiguration/SystemConfiguration.h>
+#include <SystemConfiguration/SCNetworkReachability.h>
+
+#define kSCNetworkReachabilityOptionNodeName	CFSTR("nodename")
+
+/*!
+	@constant kSCNetworkReachabilityOptionServName
+	@discussion A CFString that will be passed to getaddrinfo(3).  An acceptable
+		value is either a decimal port number or a service name listed in
+		services(5).
+ */
+#define kSCNetworkReachabilityOptionServName	CFSTR("servname")
+
+/*!
+	@constant kSCNetworkReachabilityOptionHints
+	@discussion A CFData wrapping a "struct addrinfo" that will be passed to
+		getaddrinfo(3).  The caller can supply any of the ai_family,
+		ai_socktype, ai_protocol, and ai_flags structure elements.  All
+		other elements must be 0 or the null pointer.
+ */
+#define kSCNetworkReachabilityOptionHints	CFSTR("hints")
+
+class ReachabilityRouteTableDetector : public PIPSocket::RouteTableDetector
+{
+	SCNetworkReachabilityRef	target_async;
+
+   public:
+	SCNetworkReachabilityRef _setupReachability(SCNetworkReachabilityContext *context)
+	{
+		struct sockaddr_in		sin;
+		struct sockaddr_in6		sin6;
+		SCNetworkReachabilityRef	target	= NULL;
+
+		bzero(&sin, sizeof(sin));
+		sin.sin_len    = sizeof(sin);
+		sin.sin_family = AF_INET;
+
+		bzero(&sin6, sizeof(sin6));
+		sin6.sin6_len    = sizeof(sin6);
+		sin6.sin6_family = AF_INET6;
+
+		const char *anchor = "apple.com";
+
+		if (inet_aton(anchor, &sin.sin_addr) == 1) {
+
+			target = SCNetworkReachabilityCreateWithAddress(NULL, (struct sockaddr *)&sin);
+			
+		} else if (inet_pton(AF_INET6, anchor, &sin6.sin6_addr) == 1) {
+			char	*p;
+
+			p = strchr(anchor, '%');
+			if (p != NULL) {
+				sin6.sin6_scope_id = if_nametoindex(p + 1);
+			}
+
+			target = SCNetworkReachabilityCreateWithAddress(NULL, (struct sockaddr *)&sin6);
+			
+		} else {
+			
+		target = SCNetworkReachabilityCreateWithName(NULL, anchor);
+				
+#if	!TARGET_OS_IPHONE
+		if (CFDictionaryGetCount(options) > 0) {
+
+			target = SCNetworkReachabilityCreateWithOptions(NULL, options);
+
+		} else {
+
+			SCPrint(TRUE, stderr, CFSTR("Must specify nodename or servname\n"));
+			return NULL;
+		}
+		CFRelease(options);
+#endif			
+		}
+
+		return target;
+	}
+	  
+	static void callout(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
+	{
+		struct tm	tm_now;
+		struct timeval	tv_now;
+
+		(void)gettimeofday(&tv_now, NULL);
+		(void)localtime_r(&tv_now.tv_sec, &tm_now);
+
+		PTRACE(1, psprintf("Reachability changed at: %2d:%02d:%02d.%03d, now it is %sreachable",
+			tm_now.tm_hour,
+			tm_now.tm_min,
+			tm_now.tm_sec,
+			tv_now.tv_usec / 1000,
+			flags & kSCNetworkReachabilityFlagsReachable? "" : "not ")
+			);
+
+		ReachabilityRouteTableDetector* d = (ReachabilityRouteTableDetector*) info;	
+		d->Cancel();
+	}
+
+	ReachabilityRouteTableDetector()
+		: RouteTableDetector(),
+		target_async(NULL)
+	{
+		SCNetworkReachabilityContext	context	= { 0, NULL, NULL, NULL, NULL };
+		
+		target_async = _setupReachability(&context);
+		if (target_async == NULL) {
+			PTRACE(1, psprintf("  Could not determine status: %s\n", SCErrorString(SCError())));
+			return;
+		}
+		
+		context.info = (void*) this;
+		
+		if (!SCNetworkReachabilitySetCallback(target_async, ReachabilityRouteTableDetector::callout, &context)) {
+			PTRACE(1, psprintf("SCNetworkReachabilitySetCallback() failed: %s\n", SCErrorString(SCError())));
+			return;
+		}
+
+		if (!SCNetworkReachabilityScheduleWithRunLoop(target_async, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
+			PTRACE(1, psprintf("SCNetworkReachabilityScheduleWithRunLoop() failed: %s\n", SCErrorString(SCError()) ) );
+			return;
+		}
+	}
+   
+	~ReachabilityRouteTableDetector()
+	{
+		if(target_async != NULL)
+			CFRelease(target_async);
+	}
+
+    bool Wait(const PTimeInterval & timeout)
+    {
+		m_cancel.Wait(timeout);
+		return PTrue;
+    }
+
+    void Cancel()
+    {
+      m_cancel.Signal();
+    }
+
+  private:
+    PSyncPoint m_cancel;
+	PBoolean m_continue;
+};
+
+PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
+{
+	return new ReachabilityRouteTableDetector();
+}
+
+#else // P_HAS_NETLINK, elif defined(P_IPHONEOS)
 
 class DummyRouteTableDetector : public PIPSocket::RouteTableDetector
 {
@@ -1709,7 +1867,7 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
   return new DummyRouteTableDetector();
 }
 
-#endif
+#endif // P_HAS_NETLINK, elif defined(P_IPHONEOS)
 
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
