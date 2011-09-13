@@ -60,6 +60,9 @@
 #include <sstream>
 
 
+using namespace std; // Not a good practice (name space polution), but will take too long to fix.
+
+
 #define P_REMOVE_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_removed ****** fn { return 0; }
 
 #if defined(_MSC_VER)
@@ -1086,8 +1089,6 @@ of compatibility with documentation systems.
     PNEW_AND_DELETE_FUNCTIONS
 
 
-#if P_HAS_TYPEINFO
-
 #define PIsDescendant(ptr, cls)    (dynamic_cast<const cls *>(ptr) != NULL) 
 #define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str)) 
 
@@ -1102,23 +1103,6 @@ template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const 
 #endif
 
 #include <typeinfo>
-
-#else // P_HAS_TYPEINFO
-
-#define PIsDescendant(ptr, cls)    ((ptr)->InternalIsDescendant(cls::Class()))
-#define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str))
-
-#define PRemoveConst(cls, ptr)  ((cls*)(ptr))
-
-#if P_USE_ASSERTS
-template<class BaseClass> inline BaseClass * PAssertCast(PObject * obj, const char * file, int line) 
-  { if (obj->InternalIsDescendant(BaseClass::Class())) return (BaseClass *)obj; PAssertFunc(file, line, BaseClass::Class(), PInvalidCast); return NULL; }
-#define PDownCast(cls, ptr) PAssertCast<cls>((ptr),__FILE__,__LINE__)
-#else
-#define PDownCast(cls, ptr) ((cls*)(ptr))
-#endif
-
-#endif // P_HAS_TYPEINFO
 
 
 /** Declare a class with PWLib class information.

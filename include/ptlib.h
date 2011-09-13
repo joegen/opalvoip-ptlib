@@ -35,21 +35,11 @@
 #define PTLIB_PTLIB_H
 
 #ifdef __GNUC__
-
 #pragma interface
-
-#if !defined(__USE_STD__) && __GNUC__ >= 3
-#define __USE_STD__
-#endif
-
 #endif
 
 #ifdef __NUCLEUS_PLUS__
 #include "nucpp.h"
-#endif
-
-#ifdef __USE_STD__
-//using namespace std;
 #endif
 
 #include "ptbuildopts.h"
