@@ -403,21 +403,25 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
       lastWriteCount += r * frameBytes;
     }
     else {
+      PTRACE(5, "ALSA\tBuffer underrun detected. Recovering... ");
       if (r == -EPIPE) {    /* under-run */
         r = snd_pcm_prepare(os_handle);
-        if (r < 0) {
-          PTRACE(1, "ALSA\tCould not prepare device: " << snd_strerror(r));
-        }
+        PTRACE_IF(1, r < 0, "ALSA\tCould not prepare device: " << snd_strerror(r));
       }
       else if (r == -ESTRPIPE) {
+        PTRACE(5, "ALSA\tOutput suspended. Resuming... ");
         while ((r = snd_pcm_resume(os_handle)) == -EAGAIN)
           sleep(1);       /* wait until the suspend flag is released */
 
-        if (r < 0)
-          snd_pcm_prepare(os_handle);
+        if (r < 0) {
+          r = snd_pcm_prepare(os_handle);
+          PTRACE_IF(1, r < 0, "ALSA\tCould not prepare device: " << snd_strerror(r));
+        }
+      }
+      else {
+        PTRACE(1, "ALSA\tCould not write " << max_try << " " << len << " " << snd_strerror(r));
       }
 
-      PTRACE(1, "ALSA\tCould not write " << max_try << " " << len << " " << snd_strerror(r));
       max_try++;
       if (max_try > 5)
         return false;
