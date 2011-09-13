@@ -142,26 +142,5 @@ typedef int PINDEX;
 inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
 #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
-///////////////////////////////////////////
-//
-// needed for STL
-//
-#if P_HAS_STL_STREAMS
-#define __USE_STL__     1
-// both gnu-c++ and stlport define __true_type normally this would be
-// fine but until pwlib removes the evil using namespace std below,
-// this is included here to ensure the types do not conflict.  Yes you
-// get math when you don't want it but its one of the things in
-// stlport that sources the native cmath and includes
-// the gcc header bits/cpp_type_traits.h which has the conflicting type.
-//
-// the sooner the using namespace std below is removed the better.
-// namespace pollution in headers is plain wrong!
-// 
-#include <cmath>
-#endif
 
-#define P_HAS_TYPEINFO  1
-
-using namespace std;
-
+// End Of File ///////////////////////////////////////////////////////////////

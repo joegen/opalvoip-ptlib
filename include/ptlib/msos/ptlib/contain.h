@@ -59,10 +59,6 @@
   #pragma warning(disable:4097)  // typedef synonym for class
   #pragma warning(disable:4800)  // forcing value to bool 'true' or 'false' (performance warning)
 
-  #if !defined(__USE_STL__) && (_MSC_VER>=1300)
-    #define __USE_STL__ 1
-  #endif
-
   #if !defined(_CRT_SECURE_NO_DEPRECATE) && (_MSC_VER>=1400)
     #define _CRT_SECURE_NO_DEPRECATE 1
   #endif
@@ -170,8 +166,6 @@ typedef short PInt16;
 typedef long PInt32;
 
 #ifdef __MINGW32__
-  #define __USE_STL__
-  using namespace std;
   #define P_HAS_INT64
   typedef signed __int64 PInt64;
   typedef unsigned __int64 PUInt64;
@@ -370,8 +364,6 @@ class RegistryKey
 
 #endif
 
-#define   P_HAS_TYPEINFO  1
-
 // preload <string> and kill warnings
 #if defined(_MSC_VER)
   #pragma warning(push)
@@ -448,11 +440,6 @@ class RegistryKey
 #include <queue>
 #if defined(_MSC_VER)
   #pragma warning(pop)
-#endif
-
-// VS.net won't work without this :(
-#if _MSC_VER>=1300
-  using namespace std;
 #endif
 
 #if defined(_MSC_VER)
