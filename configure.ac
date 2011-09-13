@@ -789,20 +789,6 @@ else
 fi
 
 dnl ########################################################################
-dnl check for streams types
-
-P_HAS_STL_STREAMS=0
-AC_MSG_CHECKING(if using STL streams)
-AC_TRY_COMPILE([#include <iostream>],
-               [int v = (int)std::ios_base::seekdir();], P_HAS_STL_STREAMS=1)
-if test "${P_HAS_STL_STREAMS}" = 1 ; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-fi
-AC_DEFINE_UNQUOTED(P_HAS_STL_STREAMS, ${P_HAS_STL_STREAMS})
-
-dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
 AC_ARG_ENABLE(atomicity,AS_HELP_STRING([--disable-atomicity],[Do not use atomicity.h]))

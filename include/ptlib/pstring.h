@@ -107,10 +107,7 @@ typedef PBaseArray<wchar_t> PWCharArray;
 
 class PString : public PCharArray
 {
-  PCLASSINFO(PString, PCharArray);
-
-//  using namespace std;
-
+    PCLASSINFO(PString, PCharArray);
   public:
     typedef const char * Initialiser;
 
