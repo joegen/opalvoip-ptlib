@@ -187,7 +187,7 @@ class PIPSocket : public PSocket
         operator in_addr() const;
 
 #if P_HAS_IPV6
-        /// Return IPv4 address in network order.
+        /// Return IPv6 address in network order.
         operator in6_addr() const;
 
         int GetIPV6Scope() const { return m_scope6; }
@@ -245,7 +245,7 @@ class PIPSocket : public PSocket
         bool IsRFC1918() const ;
 
 #if P_HAS_IPV6
-        /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d.
+        /// Check for v4 mapped in v6 address ::ffff:a.b.c.d.
         bool IsV4Mapped() const;
 
 		    /// Check for link-local address 
