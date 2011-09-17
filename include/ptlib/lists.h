@@ -381,12 +381,12 @@ template <class T> class PList : public PAbstractList
         value_type & operator* () const { return *this->Ptr(); }
     };
 
-    iterator begin()  { return info->head; }
+    iterator begin()  { return this->info->head; }
     iterator end()    { return iterator(); }
-    iterator rbegin() { return info->tail; }
+    iterator rbegin() { return this->info->tail; }
     iterator rend()   { return iterator(); }
-    iterator find(const value_type & obj) { return FindElement(obj, NULL); }
-    void insert(const iterator & pos, value_type * obj) { InsertElement(pos.element, obj); }
+    iterator find(const value_type & obj) { return this->FindElement(obj, NULL); }
+    void insert(const iterator & pos, value_type * obj) { this->InsertElement(pos.element, obj); }
 
     class const_iterator : public iterator_base {
       public:
@@ -401,16 +401,16 @@ template <class T> class PList : public PAbstractList
         const value_type & operator* () const { return *this->Ptr(); }
     };
 
-    const_iterator begin()  const { return info->head; }
+    const_iterator begin()  const { return this->info->head; }
     const_iterator end()    const { return const_iterator(); }
-    const_iterator rbegin() const { return info->tail; }
+    const_iterator rbegin() const { return this->info->tail; }
     const_iterator rend()   const { return iterator(); }
-    const_iterator find(const value_type & obj) const { return FindElement(obj, NULL); }
+    const_iterator find(const value_type & obj) const { return this->FindElement(obj, NULL); }
 
-    value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(info->head)->data); }
-    value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(info->tail)->data); }
-    void erase(const iterator & it) { RemoveElement(it.element); }
-    void erase(const const_iterator & it) { RemoveElement(it.element); }
+    value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->head)->data); }
+    value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->tail)->data); }
+    void erase(const iterator & it) { this->RemoveElement(it.element); }
+    void erase(const const_iterator & it) { this->RemoveElement(it.element); }
   //@}
 
   /**@name New functions for class */
@@ -428,7 +428,7 @@ template <class T> class PList : public PAbstractList
      */
     T & operator[](
       PINDEX index  ///< Index for entry
-    ) const { return (T &)GetReferenceAt(index); }
+    ) const { return (T &)this->GetReferenceAt(index); }
   //@}
 
   protected:
@@ -639,13 +639,13 @@ template <class T> class PStack : public PAbstractList
        reference to object on top of the stack.
      */
     virtual T & Top()
-      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)info->head->data; }
+      { PAssert(this->GetSize() > 0, PStackEmpty); return *(T *)this->info->head->data; }
   //@}
 
   protected:
     PStack(int dummy, const PStack * c)
       : PAbstractList(dummy, c)
-      { reference->deleteObjects = c->reference->deleteObjects; }
+      { this->reference->deleteObjects = c->reference->deleteObjects; }
 };
 
 
@@ -999,7 +999,7 @@ template <class T> class PSortedList : public PAbstractSortedList
      */
     T & operator[](
       PINDEX index  ///< Index for entry
-    ) const { return *(T *)GetAt(index); }
+    ) const { return *(T *)this->GetAt(index); }
   //@}
 
   protected:

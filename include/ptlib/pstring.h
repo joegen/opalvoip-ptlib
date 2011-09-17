@@ -2628,7 +2628,7 @@ template <class K> class PStringDictionary : public PDictionary<K, PString>
     virtual PBoolean SetAt(
       const K & key,       // Key for position in dictionary to add object.
       const PString & str  // New string value to put into the dictionary.
-    ) { return AbstractSetAt(key, PNEW PString(str)); }
+    ) { return this->AbstractSetAt(key, PNEW PString(str)); }
   //@}
 
   protected:

@@ -473,7 +473,7 @@ template <class T> class PSet : public PAbstractSet
        This is different from the default on most collection classes.
      */
     inline PSet(PBoolean initialDeleteObjects = false)
-      : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); }
+      : PAbstractSet() { this->AllowDeleteObjects(initialDeleteObjects); }
   //@}
 
   /**@name Overrides from class PObject */
@@ -498,7 +498,7 @@ template <class T> class PSet : public PAbstractSet
      */
     void Include(
       const T * obj   // New object to include in the set.
-    ) { Append((PObject *)obj); }
+    ) { this->Append((PObject *)obj); }
 
     /**Include the specified objects value into the set. If the objects value
        is already in the set then the object is \b not included.
@@ -509,7 +509,7 @@ template <class T> class PSet : public PAbstractSet
      */
     PSet & operator+=(
       const T & obj   // New object to include in the set.
-    ) { Append(obj.Clone()); return *this; }
+    ) { this->Append(obj.Clone()); return *this; }
 
     /**Remove the object from the set. If the <code>AllowDeleteObjects</code> option is set
        then the object is also deleted.
@@ -520,7 +520,7 @@ template <class T> class PSet : public PAbstractSet
      */
     void Exclude(
       const T * obj   // New object to exclude in the set.
-    ) { Remove(obj); }
+    ) { this->Remove(obj); }
 
     /**Remove the objects value from the set. If the <code>AllowDeleteObjects</code>
        option is set then the object is also deleted.
@@ -531,7 +531,7 @@ template <class T> class PSet : public PAbstractSet
      */
     PSet & operator-=(
       const T & obj   // New object to exclude in the set.
-    ) { erase(find(obj)); return *this; }
+    ) { this->erase(this->find(obj)); return *this; }
 
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
@@ -543,7 +543,7 @@ template <class T> class PSet : public PAbstractSet
      */
     PBoolean Contains(
       const T & key  ///< Key to look for in the set.
-    ) const { return AbstractContains(key); }
+    ) const { return this->AbstractContains(key); }
 
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
@@ -555,7 +555,7 @@ template <class T> class PSet : public PAbstractSet
      */
     PBoolean operator[](
       const T & key  ///< Key to look for in the set.
-    ) const { return AbstractContains(key); }
+    ) const { return this->AbstractContains(key); }
 
     /**Get the key in the set at the ordinal index position.
 
@@ -573,11 +573,13 @@ template <class T> class PSet : public PAbstractSet
     virtual const T & GetKeyAt(
       PINDEX index    ///< Index of value to get.
     ) const
-      { return (const T &)AbstractGetKeyAt(index); }
+      { return (const T &)this->AbstractGetKeyAt(index); }
   //@}
 
   /**@name Iterators */
   //@{
+    class iterator;
+    class const_iterator;
     class iterator_base : public std::iterator<std::forward_iterator_tag, T> {
       protected:
         iterator_base()
@@ -625,9 +627,9 @@ template <class T> class PSet : public PAbstractSet
       friend class PSet<T>;
     };
 
-    iterator begin() { return iterator(hashTable); }
+    iterator begin() { return iterator(this->hashTable); }
     iterator end()   { return iterator(); }
-    iterator find(const T & k) { return iterator(hashTable, k); }
+    iterator find(const T & k) { return iterator(this->hashTable, k); }
 
 
     class const_iterator : public iterator_base {
@@ -649,18 +651,18 @@ template <class T> class PSet : public PAbstractSet
       friend class PSet<T>;
     };
 
-    const_iterator begin() const { return const_iterator(hashTable); }
+    const_iterator begin() const { return const_iterator(this->hashTable); }
     const_iterator end()   const { return const_iterator(); }
-    const_iterator find(const T & k) const { return const_iterator(hashTable, k); }
+    const_iterator find(const T & k) const { return const_iterator(this->hashTable, k); }
 
-    void erase(const iterator & it) { Remove(&*it); }
-    void erase(const const_iterator & it) { Remove(&*it); }
+    void erase(const iterator & it) { this->Remove(&*it); }
+    void erase(const const_iterator & it) { this->Remove(&*it); }
   //@}
 
   protected:
     PSet(int dummy, const PSet * c)
       : PAbstractSet(dummy, c)
-      { reference->deleteObjects = c->reference->deleteObjects; }
+      { this->reference->deleteObjects = c->reference->deleteObjects; }
 };
 
 
@@ -967,10 +969,10 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     const D & operator[](
       const K & key   ///< Key to look for in the dictionary.
-    ) const { return (const D &)GetRefAt(key); }
+    ) const { return (const D &)this->GetRefAt(key); }
     D & operator[](
       const K & key   ///< Key to look for in the dictionary.
-    ) { return (D &)GetRefAt(key); }
+    ) { return (D &)this->GetRefAt(key); }
 
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
@@ -982,7 +984,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     PBoolean Contains(
       const K & key   ///< Key to look for in the dictionary.
-    ) const { return AbstractContains(key); }
+    ) const { return this->AbstractContains(key); }
 
     /**Remove an object at the specified \p key. The returned pointer is then
        removed using the <code>SetAt()</code> function to set that key value to
@@ -995,7 +997,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     virtual D * RemoveAt(
       const K & key   ///< Key for position in dictionary to get object.
-    ) { return (D *)AbstractSetAt(key, NULL); }
+    ) { return (D *)this->AbstractSetAt(key, NULL); }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -1011,7 +1013,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     virtual PBoolean SetAt(
       const K & key,  // Key for position in dictionary to add object.
       D * obj         // New object to put into the dictionary.
-    ) { return AbstractSetAt(key, obj) != NULL; }
+    ) { return this->AbstractSetAt(key, obj) != NULL; }
 
     /**Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
@@ -1021,7 +1023,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     virtual D * GetAt(
       const K & key   // Key for position in dictionary to get object.
-    ) const { return (D *)AbstractGetAt(key); }
+    ) const { return (D *)this->AbstractGetAt(key); }
 
     /**Get the key in the dictionary at the ordinal index position.
 
@@ -1039,7 +1041,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
-      { return (const K &)AbstractGetKeyAt(index); }
+      { return (const K &)this->AbstractGetKeyAt(index); }
 
     /**Get the data in the dictionary at the ordinal index position.
 
@@ -1057,20 +1059,22 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     D & GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
-      { return (D &)AbstractGetDataAt(index); }
+      { return (D &)this->AbstractGetDataAt(index); }
 
     /**Get an array containing all the keys for the dictionary.
       */
     PArray<K> GetKeys() const
     {
       PArray<K> keys;
-      AbstractGetKeys(keys);
+      this->AbstractGetKeys(keys);
       return keys;
     }
   //@}
 
   /**@name Iterators */
   //@{
+    class iterator;
+    class const_iterator;
     class iterator_base {
       protected:
         iterator_base()
@@ -1132,9 +1136,9 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
       friend class PDictionary<K,D>;
     };
 
-    iterator begin() { return iterator(hashTable); }
+    iterator begin() { return iterator(this->hashTable); }
     iterator end()   { return iterator(); }
-    iterator find(const K & k) { return iterator(hashTable, k); }
+    iterator find(const K & k) { return iterator(this->hashTable, k); }
 
 
     class const_iterator_pair {
@@ -1171,12 +1175,12 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
       friend class PDictionary<K,D>;
     };
 
-    const_iterator begin() const { return const_iterator(hashTable); }
+    const_iterator begin() const { return const_iterator(this->hashTable); }
     const_iterator end()   const { return const_iterator(); }
-    const_iterator find(const K & k) const { return const_iterator(hashTable, k); }
+    const_iterator find(const K & k) const { return const_iterator(this->hashTable, k); }
 
-    void erase(const       iterator & it) { AbstractSetAt(*it.element->key, NULL); }
-    void erase(const const_iterator & it) { AbstractSetAt(*it.element->key, NULL); }
+    void erase(const       iterator & it) { this->AbstractSetAt(*it.element->key, NULL); }
+    void erase(const const_iterator & it) { this->AbstractSetAt(*it.element->key, NULL); }
   //@}
 
   protected:
@@ -1275,7 +1279,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     PINDEX operator[](
       const K & key   // Key to look for in the dictionary.
     ) const
-      { return (POrdinalKey &)GetRefAt(key); }
+      { return (POrdinalKey &)this->GetRefAt(key); }
 
     /**Set the data at the specified ordinal index position in the dictionary.
 
@@ -1309,7 +1313,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     virtual PBoolean SetAt(
       const K & key,  ///< Key for position in dictionary to add object.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
-    ) { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
+    ) { return this->AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
 
     /**Get the key in the dictionary at the ordinal index position.
 
