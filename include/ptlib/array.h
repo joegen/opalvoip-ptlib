@@ -929,7 +929,7 @@ template <class T> class PArray : public PArrayObjects
     T & operator[](
       PINDEX index  ///< Index position in the collection of the object.
     ) const {
-      PObject * obj = GetAt(index);
+      PObject * obj = this->GetAt(index);
       PAssert(obj != NULL, PInvalidArrayElement);
       return (T &)*obj;
     }
