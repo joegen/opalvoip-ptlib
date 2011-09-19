@@ -1332,6 +1332,9 @@ PSTUNClient::RTPSupportTypes PSTUNClient::GetRTPSupport(bool force)
   }
 }
 
+typedef PSTUNClient PNatMethod_STUN;
+PCREATE_NAT_PLUGIN(STUN);
+
 //////////////////////////////////////////////////////////////////////
    
 void PTURNRequestedTransport::Initialise(BYTE protocol)
