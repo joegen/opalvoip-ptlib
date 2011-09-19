@@ -1843,8 +1843,7 @@ class ReachabilityRouteTableDetector : public PIPSocket::RouteTableDetector
 
     bool Wait(const PTimeInterval & timeout)
     {
-		m_cancel.Wait(timeout);
-		return PTrue;
+      return !m_cancel.Wait(timeout);
     }
 
     void Cancel()
