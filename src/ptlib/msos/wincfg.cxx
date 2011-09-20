@@ -609,18 +609,18 @@ static void RecurseRegistryKeys(const PString & location,
 }
 
 
-static PCharArray PGetPrivateProfileString(const char * lpAppName,
+static PString PGetPrivateProfileString(const char * lpAppName,
                                            const char * lpKeyName,
                                            const char * lpDefault,
                                            const char * lpFileName)
 {
-  PCharArray buffer;
+  PString buffer;
 
   DWORD numNulls = lpAppName != NULL && lpKeyName != NULL ? 1 : 2;
   DWORD size = 100;
   while (size <= 100000 &&
                 ::GetPrivateProfileString(lpAppName, lpKeyName, lpDefault,
-                                          buffer.GetPointer(size+numNulls), size+numNulls,
+                                          buffer.GetPointerAndSetLength(size+numNulls), size+numNulls,
                                           lpFileName) == size)
     size *= 10;
 
