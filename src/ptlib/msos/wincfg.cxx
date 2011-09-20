@@ -281,7 +281,8 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
     error = RegCreateKeyEx(basekey, subkey, 0, empty, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, &disposition);
     if (error != ERROR_SUCCESS) {
       PTRACE(1, "PTLib\tCould not create registry entry "
-             << (basekey != NULL ? "" : LocalMachineStr) << subkey);
+             << (basekey == HKEY_LOCAL_MACHINE ? LocalMachineStr :
+                (basekey == HKEY_CURRENT_USER ? CurrentUserStr : "")) << subkey);
       key = NULL;
     }
   }
