@@ -1654,14 +1654,15 @@ dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
-dnl MSWIN_DEFAULT    libsdl,Disabled
-dnl MSWIN_CHECK_FILE libsdl,include\SDL_video.h,P_SDL=1
+dnl MSWIN_CHECK_FILE libsdl,include\SDL.h,P_SDL=1
+dnl MSWIN_CHECK_FILE libsdl,include\SDL\SDL.h,P_SDL=2
 dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
 dnl MSWIN_FIND_FILE  libsdl,P_SDL_LIBRARY,SDL.lib,lib
 dnl MSWIN_CHECK_DIR  libsdl,..\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
+dnl MSWIN_CHECK_DIR  libsdl,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
 
 AC_ARG_ENABLE([sdl],
 	      AS_HELP_STRING([--disable-sdl],[disable SDL support]),

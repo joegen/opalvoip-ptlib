@@ -1577,15 +1577,16 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
 
     case SvcCmdVersion : // Version command
       ::SetLastError(0);
-	  {
-        PString msg = GetName() + " Version " + GetVersion(true)
-             + " by " + GetManufacturer()
-             + " on " + GetOSClass()   + ' ' + GetOSName()
-             + " ("   + GetOSVersion() + '-' + GetOSHardware() + ')';
+      {
+        PStringStream msg;
+        msg << GetName() << " Version " << GetVersion(true)
+            << " by " << GetManufacturer()
+            << " on " << GetOSClass()   << ' ' + GetOSName()
+            << " ("   << GetOSVersion() << '-' + GetOSHardware() << ')';
         MessageBox(NULL, msg, GetName(), MB_TASKMODAL);
         PError << msg << endl;
-	  }
-	  return true;
+      }
+      return true;
 
     case SvcCmdDefault : // run app with no params.
       if (svcManager->IsInstalled(this)) {
