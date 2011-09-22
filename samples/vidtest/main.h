@@ -45,6 +45,7 @@ class VidTest : public PProcess
 
   PVideoInputDevice     * m_grabber;
   PVideoOutputDevice    * m_display;
+  PVideoOutputDevice    * m_secondary;
   PList<PColourConverter> m_converters;
   PSyncPointAck           m_exitGrabAndDisplay;
   PSyncPointAck           m_pauseGrabAndDisplay;
