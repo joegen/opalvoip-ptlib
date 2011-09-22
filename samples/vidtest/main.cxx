@@ -44,6 +44,7 @@ VidTest::VidTest()
   : PProcess("PwLib Video Example", "vidtest", 1, 0, ReleaseCode, 0)
   , m_grabber(NULL)
   , m_display(NULL)
+  , m_secondary(NULL)
 {
 }
 
@@ -333,6 +334,19 @@ void VidTest::Main()
         continue;
       }
 
+      if (cmd == "secondary") {
+        if (m_secondary != NULL) {
+          delete m_secondary;
+          m_secondary = NULL;
+        }
+        else {
+          m_secondary = PVideoOutputDevice::CreateOpenedDevice(PString::Empty(), m_display->GetDeviceName());
+          if (m_secondary == NULL)
+            cout << "\nCould not start secondary video output device" << endl;
+        }
+        continue;
+      }
+
       if (cmd == "fg") {
         if (!m_grabber->SetVFlipState(!m_grabber->GetVFlipState()))
           cout << "\nCould not toggle Vflip state of video input device" << endl;
@@ -371,6 +385,7 @@ void VidTest::Main()
   cout << "Exiting." << endl;
   m_exitGrabAndDisplay.Signal();
 
+  delete m_secondary;
   delete m_display;
   delete m_grabber;
 }
@@ -382,6 +397,7 @@ void VidTest::GrabAndDisplay(PThread &, INT)
   unsigned frameCount = 0;
   bool oldGrabberState = true;
   bool oldDisplayState = true;
+  bool oldSecondaryState = true;
 
   if (!m_grabber->Start()) {
     cout << "Could not start video grabber!" << endl;
@@ -411,18 +427,26 @@ void VidTest::GrabAndDisplay(PThread &, INT)
       if (m_converters[frameIndex].Convert(frames[frameIndex],
                                             frames[frameIndex+1].GetPointer(m_converters[frameIndex].GetMaxDstFrameBytes())))
         m_converters[frameIndex].GetDstFrameSize(width, height);
-      else {
+      else
         cerr << "Frame conversion failed!" << endl;
-      }
     }
 
     m_display->SetFrameSize(width, height);
 
     bool displayState = m_display->SetFrameData(0, 0, width, height, frames.back());
-    if (oldDisplayState != displayState)
-    {
+    if (oldDisplayState != displayState) {
       oldDisplayState = displayState;
       cerr << "Frame display " << (displayState ? "restored." : "failed!") << endl;
+    }
+
+    if (m_secondary != NULL) {
+      m_secondary->SetFrameSize(width, height);
+
+      displayState = m_secondary->SetFrameData(0, 0, width, height, frames.back());
+      if (oldSecondaryState != displayState) {
+        oldSecondaryState = displayState;
+        cerr << "Secondary Frame display " << (displayState ? "restored." : "failed!") << endl;
+      }
     }
 
     if (m_pauseGrabAndDisplay.Wait(0)) {

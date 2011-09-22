@@ -119,20 +119,17 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     );
 
   protected:
-    PDECLARE_NOTIFIER(PThread, PVideoOutputDevice_SDL, SDLThreadMain);
-    bool InitialiseSDL();
-    bool ProcessSDLEvents();
+    PSyncPoint    m_operationComplete;
+    SDL_Overlay * m_overlay;
+    unsigned      m_x, m_y;
 
-    PThread     * sdlThread;
-    PSyncPoint    sdlStarted;
-    PSyncPointAck sdlStop;
-    PSyncPointAck adjustSize;
-    bool          updateOverlay;
-    PMutex        mutex;
+  private:
+    PString GetTitle() const;
+    void UpdateContent();
+    void PostEvent(unsigned code);
 
-    SDL_Surface * screen;
-    SDL_Overlay * overlay;
-  };
+  friend class PSDL_Window;
+};
 
 
 typedef PVideoOutputDevice_SDL PSDLVideoDevice; // Backward compatibility
