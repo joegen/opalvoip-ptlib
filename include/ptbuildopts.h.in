@@ -575,7 +575,11 @@
 #endif
 
 #if defined(_MSC_VER) && P_SDL
-  #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
+  #if P_SDL==1
+    #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
+  #else
+    #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL/SDL.h>)
+  #endif
 
   #undef P_SDL_LIBRARY
 
