@@ -1187,7 +1187,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     virtual PSafePtr<Base> FindWithLock(
       const Key & key,
       PSafetyMode mode = PSafeReadWrite
-    ) {
+    ) const {
         collectionMutex.Wait();
         PSafePtr<Base> ptr(*this, PSafeReference, ((Coll *)collection)->GetAt(key));
         collectionMutex.Signal();
