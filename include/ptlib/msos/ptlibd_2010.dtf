@@ -116,6 +116,7 @@ EXPORTS
     ??$?0PAVPInterfaceMonitorClient@@@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@ABV?$allocator@PAVPInterfaceMonitorClient@@@1@@Z @90 NONAME
     ??$?0PAVPPluginModuleManager@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@PAVPPluginModuleManager@@@1@@Z @91 NONAME
     ??$?0PAVPVideoFrameInfo@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@PAVPVideoFrameInfo@@@1@@Z @26625 NONAME
+    ??$?0PAVPVideoOutputDevice_SDL@@@?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@ABV?$allocator@PAVPVideoOutputDevice_SDL@@@1@@Z @26904 NONAME
     ??$?0PAVWorkerThreadBase@PThreadPoolBase@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@1@@Z @92 NONAME
     ??$?0QAVPSocket@@PAVContext@PCLI@@@?$pair@QAVPSocket@@PAVContext@PCLI@@@std@@QAE@$$QAU01@@Z @93 NONAME
     ??$?0U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@?$allocator@U_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@@std@@QAE@ABV?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@1@@Z @94 NONAME
@@ -155,6 +156,7 @@ EXPORTS
     ??$?0U_GUID@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_GUID@@@1@@Z @121 NONAME
     ??$?0U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@1@@Z @122 NONAME
     ??$?0U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@1@@Z @123 NONAME
+    ??$?0U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@1@@Z @26905 NONAME
     ??$?0U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@1@@Z @124 NONAME
     ??$?0U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@1@@Z @22672 NONAME
     ??$?0U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@?$allocator@U_Container_proxy@std@@@std@@QAE@ABV?$allocator@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@1@@Z @125 NONAME
@@ -241,6 +243,7 @@ EXPORTS
     ??$addressof@PAVContext@PCLI@@@std@@YAPAPAVContext@PCLI@@AAPAV12@@Z @191 NONAME
     ??$addressof@PAVPInterfaceMonitorClient@@@std@@YAPAPAVPInterfaceMonitorClient@@AAPAV1@@Z @192 NONAME
     ??$addressof@PAVPVideoFrameInfo@@@std@@YAPAPAVPVideoFrameInfo@@AAPAV1@@Z @26626 NONAME
+    ??$addressof@PAVPVideoOutputDevice_SDL@@@std@@YAPAPAVPVideoOutputDevice_SDL@@AAPAV1@@Z @26906 NONAME
     ??$addressof@QAVPPluginModuleManager@@@std@@YAPBQAVPPluginModuleManager@@ABQAV1@@Z @193 NONAME
     ??$addressof@QAVWorkerThreadBase@PThreadPoolBase@@@std@@YAPBQAVWorkerThreadBase@PThreadPoolBase@@ABQAV12@@Z @194 NONAME
     ??$addressof@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@std@@YAPAU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@0@AAU10@@Z @195 NONAME
@@ -361,6 +364,7 @@ EXPORTS
     ??$forward@ABQAVContext@PCLI@@@std@@YAABQAVContext@PCLI@@ABQAV12@@Z @286 NONAME
     ??$forward@ABQAVPInterfaceMonitorClient@@@std@@YAABQAVPInterfaceMonitorClient@@ABQAV1@@Z @287 NONAME
     ??$forward@ABQAVPPluginModuleManager@@@std@@YAABQAVPPluginModuleManager@@ABQAV1@@Z @288 NONAME
+    ??$forward@ABQAVPVideoOutputDevice_SDL@@@std@@YAABQAVPVideoOutputDevice_SDL@@ABQAV1@@Z @26907 NONAME
     ??$forward@ABQAVWorkerThreadBase@PThreadPoolBase@@@std@@YAABQAVWorkerThreadBase@PThreadPoolBase@@ABQAV12@@Z @289 NONAME
     ??$forward@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@YAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@ABV10@@Z @290 NONAME
     ??$forward@ABVPFilePath@@@std@@YAABVPFilePath@@ABV1@@Z @22702 NONAME
@@ -599,6 +603,7 @@ EXPORTS
     ??$_Allocate@U_GUID@@@std@@YAPAU_GUID@@IPAU1@@Z @476 NONAME
     ??$_Allocate@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@0@IPAU120@@Z @477 NONAME
     ??$_Allocate@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@IPAU120@@Z @478 NONAME
+    ??$_Allocate@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@0@IPAU120@@Z @26908 NONAME
     ??$_Allocate@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@YAPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@0@IPAU120@@Z @479 NONAME
     ??$_Allocate@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@0@IPAU120@@Z @22733 NONAME
     ??$_Allocate@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@0@IPAU120@@Z @480 NONAME
@@ -686,6 +691,7 @@ EXPORTS
     ??$_Construct@PAVContext@PCLI@@ABQAV12@@std@@YAXPAPAVContext@PCLI@@ABQAV12@@Z @546 NONAME
     ??$_Construct@PAVPInterfaceMonitorClient@@ABQAV1@@std@@YAXPAPAVPInterfaceMonitorClient@@ABQAV1@@Z @547 NONAME
     ??$_Construct@PAVPPluginModuleManager@@ABQAV1@@std@@YAXPAPAVPPluginModuleManager@@ABQAV1@@Z @548 NONAME
+    ??$_Construct@PAVPVideoOutputDevice_SDL@@ABQAV1@@std@@YAXPAPAVPVideoOutputDevice_SDL@@ABQAV1@@Z @26909 NONAME
     ??$_Construct@PAVWorkerThreadBase@PThreadPoolBase@@ABQAV12@@std@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@ABQAV12@@Z @549 NONAME
     ??$_Construct@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV12@@std@@YAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@ABV10@@Z @550 NONAME
     ??$_Construct@VPFilePath@@ABV1@@std@@YAXPAVPFilePath@@ABV1@@Z @22745 NONAME
@@ -700,6 +706,7 @@ EXPORTS
     ??$_Cons_val@V?$allocator@PAVPPluginModuleManager@@@std@@PAVPPluginModuleManager@@AAPAV3@@std@@YAXAAV?$allocator@PAVPPluginModuleManager@@@0@PAPAVPPluginModuleManager@@AAPAV2@@Z @559 NONAME
     ??$_Cons_val@V?$allocator@PAVPPluginModuleManager@@@std@@PAVPPluginModuleManager@@ABQAV3@@std@@YAXAAV?$allocator@PAVPPluginModuleManager@@@0@PAPAVPPluginModuleManager@@ABQAV2@@Z @560 NONAME
     ??$_Cons_val@V?$allocator@PAVPVideoFrameInfo@@@std@@PAVPVideoFrameInfo@@PAV3@@std@@YAXAAV?$allocator@PAVPVideoFrameInfo@@@0@PAPAVPVideoFrameInfo@@$$QAPAV2@@Z @26637 NONAME
+    ??$_Cons_val@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@PAVPVideoOutputDevice_SDL@@ABQAV3@@std@@YAXAAV?$allocator@PAVPVideoOutputDevice_SDL@@@0@PAPAVPVideoOutputDevice_SDL@@ABQAV2@@Z @26910 NONAME
     ??$_Cons_val@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@PAVWorkerThreadBase@PThreadPoolBase@@AAPAV34@@std@@YAXAAV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@0@PAPAVWorkerThreadBase@PThreadPoolBase@@AAPAV23@@Z @561 NONAME
     ??$_Cons_val@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@PAVWorkerThreadBase@PThreadPoolBase@@ABQAV34@@std@@YAXAAV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@0@PAPAVWorkerThreadBase@PThreadPoolBase@@ABQAV23@@Z @562 NONAME
     ??$_Cons_val@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@std@@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@U32@@std@@YAXAAV?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@0@PAU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@0@$$QAU20@@Z @563 NONAME
@@ -854,6 +861,7 @@ EXPORTS
     ??$_Destroy@U_GUID@@@std@@YAXPAU_GUID@@@Z @681 NONAME
     ??$_Destroy@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@0@@Z @682 NONAME
     ??$_Destroy@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@@Z @683 NONAME
+    ??$_Destroy@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@0@@Z @26911 NONAME
     ??$_Destroy@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@YAXPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@0@@Z @684 NONAME
     ??$_Destroy@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@0@@Z @22771 NONAME
     ??$_Destroy@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@0@@Z @685 NONAME
@@ -924,6 +932,7 @@ EXPORTS
     ??$_Dest_val@V?$allocator@U_GUID@@@std@@U_GUID@@@std@@YAXAAV?$allocator@U_GUID@@@0@PAU_GUID@@@Z @741 NONAME
     ??$_Dest_val@V?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@@std@@YAXAAV?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@0@PAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@0@@Z @742 NONAME
     ??$_Dest_val@V?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@@std@@YAXAAV?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@0@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@@Z @743 NONAME
+    ??$_Dest_val@V?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@@std@@YAXAAV?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@0@PAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@0@@Z @26912 NONAME
     ??$_Dest_val@V?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@@std@@YAXAAV?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@0@PAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@0@@Z @744 NONAME
     ??$_Dest_val@V?$allocator@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@@std@@YAXAAV?$allocator@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@0@PAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@0@@Z @22784 NONAME
     ??$_Dest_val@V?$allocator@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@@std@@YAXAAV?$allocator@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@0@PAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@0@@Z @745 NONAME
@@ -1096,6 +1105,8 @@ EXPORTS
     ??0?$allocator@PAVPPluginModuleManager@@@std@@QAE@XZ @871 NONAME
     ??0?$allocator@PAVPVideoFrameInfo@@@std@@QAE@ABV01@@Z @26679 NONAME
     ??0?$allocator@PAVPVideoFrameInfo@@@std@@QAE@XZ @26680 NONAME
+    ??0?$allocator@PAVPVideoOutputDevice_SDL@@@std@@QAE@ABV01@@Z @26913 NONAME
+    ??0?$allocator@PAVPVideoOutputDevice_SDL@@@std@@QAE@XZ @26914 NONAME
     ??0?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QAE@ABV01@@Z @872 NONAME
     ??0?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QAE@XZ @873 NONAME
     ??0?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@std@@QAE@ABV01@@Z @874 NONAME
@@ -1233,6 +1244,7 @@ EXPORTS
     ??0?$fpos@H@std@@QAE@_J@Z @965 NONAME
     ??0?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@XZ @966 NONAME
     ??0?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE@XZ @967 NONAME
+    ??0?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @26915 NONAME
     ??0?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @968 NONAME
     ??0?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @22826 NONAME
     ??0?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE@XZ @969 NONAME
@@ -1561,6 +1573,7 @@ EXPORTS
     ??0?$PStringDictionary@VPString@@@@QAE@XZ @1256 NONAME
     ??0?$PThreadLocalStorage@UTraceInfo@PThread@@@@QAE@XZ @1257 NONAME
     ??0?$PThreadObj@VPInterfaceMonitor@@@@QAE@AAVPInterfaceMonitor@@P81@AEXXZ_NPBDW4Priority@PThread@@@Z @1258 NONAME
+    ??0?$PThreadObj@VPSDL_Window@@@@QAE@AAVPSDL_Window@@P81@AEXXZ_NPBDW4Priority@PThread@@@Z @26916 NONAME
     ??0?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@QAE@XZ @1260 NONAME
     ??0?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@QAE@XZ @1261 NONAME
     ??0?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@QAE@XZ @1262 NONAME
@@ -1663,6 +1676,8 @@ EXPORTS
     ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVContext@PCLI@@HPBQAV34@ABQAV34@U_Iterator_base12@2@@std@@QAE@XZ @1333 NONAME
     ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVPInterfaceMonitorClient@@HPBQAV3@ABQAV3@U_Iterator_base12@2@@std@@QAE@ABU01@@Z @1334 NONAME
     ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVPInterfaceMonitorClient@@HPBQAV3@ABQAV3@U_Iterator_base12@2@@std@@QAE@XZ @1335 NONAME
+    ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVPVideoOutputDevice_SDL@@HPBQAV3@ABQAV3@U_Iterator_base12@2@@std@@QAE@ABU01@@Z @26917 NONAME
+    ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVPVideoOutputDevice_SDL@@HPBQAV3@ABQAV3@U_Iterator_base12@2@@std@@QAE@XZ @26918 NONAME
     ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@HPBU32@ABU32@U_Iterator_base12@2@@std@@QAE@ABU01@@Z @1336 NONAME
     ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@HPBU32@ABU32@U_Iterator_base12@2@@std@@QAE@XZ @1337 NONAME
     ??0?$_Iterator012@Ubidirectional_iterator_tag@std@@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@2@HPBU32@ABU32@U_Iterator_base12@2@@std@@QAE@ABU01@@Z @1338 NONAME
@@ -1758,6 +1773,8 @@ EXPORTS
     ??0?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@1@PBV?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@1@@Z @1410 NONAME
     ??0?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@ABV01@@Z @1411 NONAME
     ??0?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@PBV?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@@Z @1412 NONAME
+    ??0?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@ABV01@@Z @26919 NONAME
+    ??0?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@1@PBV?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @26920 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@ABV01@@Z @1413 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@PAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@1@PBV?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@1@@Z @1414 NONAME
     ??0?$_List_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@ABV01@@Z @22944 NONAME
@@ -1770,6 +1787,7 @@ EXPORTS
     ??0?$_List_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@1@PBV?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@1@@Z @1419 NONAME
     ??0?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@ABV01@@Z @1420 NONAME
     ??0?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@PBV?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@@Z @1421 NONAME
+    ??0?$_List_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@1@PBV?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @26921 NONAME
     ??0?$_List_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@PAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@1@PBV?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@1@@Z @1422 NONAME
     ??0?$_List_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@1@PBV?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@1@@Z @22946 NONAME
     ??0?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAE@PAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@1@PBV?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@1@@Z @1423 NONAME
@@ -1777,6 +1795,7 @@ EXPORTS
     ??0?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QAE@XZ @19898 NONAME
     ??0?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@V?$allocator@PAVContext@PCLI@@@1@@Z @1425 NONAME
     ??0?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE@V?$allocator@PAVPInterfaceMonitorClient@@@1@@Z @1426 NONAME
+    ??0?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@V?$allocator@PAVPVideoOutputDevice_SDL@@@1@@Z @26922 NONAME
     ??0?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@1@@Z @1427 NONAME
     ??0?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@V?$allocator@VAttribute@PLDAPSchema@@@1@@Z @22947 NONAME
     ??0?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE@V?$allocator@VPVideoControlInfo@@@1@@Z @1428 NONAME
@@ -1786,6 +1805,8 @@ EXPORTS
     ??0?$_List_unchecked_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@PAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@1@PBV?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@1@@Z @1432 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@ABV01@@Z @1433 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@PBV?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@@Z @1434 NONAME
+    ??0?$_List_unchecked_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@ABV01@@Z @26923 NONAME
+    ??0?$_List_unchecked_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@PAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@1@PBV?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @26924 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@U_Iterator_base12@2@@std@@QAE@ABV01@@Z @1435 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@U_Iterator_base12@2@@std@@QAE@PAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@1@PBV?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@1@@Z @1436 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@ABV01@@Z @22948 NONAME
@@ -1797,6 +1818,7 @@ EXPORTS
     ??0?$_List_unchecked_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @19899 NONAME
     ??0?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@V?$allocator@PAVContext@PCLI@@@1@@Z @1441 NONAME
     ??0?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE@V?$allocator@PAVPInterfaceMonitorClient@@@1@@Z @1442 NONAME
+    ??0?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@V?$allocator@PAVPVideoOutputDevice_SDL@@@1@@Z @26925 NONAME
     ??0?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@1@@Z @1443 NONAME
     ??0?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@V?$allocator@VAttribute@PLDAPSchema@@@1@@Z @22950 NONAME
     ??0?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE@V?$allocator@VPVideoControlInfo@@@1@@Z @1444 NONAME
@@ -2959,6 +2981,7 @@ EXPORTS
     ??0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z @2438 NONAME
     ??0PPlugin_PVideoInputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z @2439 NONAME
     ??0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z @2440 NONAME
+    ??0PPlugin_PVideoOutputDevice_SDL_Registration@@QAE@PAVPPluginManager@@@Z @26926 NONAME
     ??0PPlugin_PVideoOutputDevice_Window_Registration@@QAE@PAVPPluginManager@@@Z @2441 NONAME
     ??0PPlugin_PVideoOutputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z @2442 NONAME
     ??0PPointer@@QAE@PAX@Z @2443 NONAME
@@ -3028,6 +3051,7 @@ EXPORTS
     ??0PSafePtrMultiThreaded@@IAE@ABVPSafeCollection@@W4PSafetyMode@@PAVPSafeObject@@@Z @2507 NONAME
     ??0PSafePtrMultiThreaded@@IAE@PAVPSafeObject@@W4PSafetyMode@@@Z @2508 NONAME
     ??0PSASLClient@@QAE@ABVPString@@000@Z @23114 NONAME
+    ??0PSDL_Window@@AAE@XZ @26927 NONAME
     ??0PSecureConfig@@QAE@ABUKey@PTEACypher@@ABVPStringArray@@W4Source@PConfig@@@Z @2509 NONAME
     ??0PSecureConfig@@QAE@ABUKey@PTEACypher@@PBQBDHW4Source@PConfig@@@Z @2510 NONAME
     ??0PSecureHTTPServiceProcess@@QAE@ABUInfo@PHTTPServiceProcess@@@Z @2511 NONAME
@@ -3370,6 +3394,8 @@ EXPORTS
     ??0PVideoOutputDevice@@QAE@XZ @2830 NONAME
     ??0PVideoOutputDeviceRGB@@QAE@XZ @2831 NONAME
     ??0PVideoOutputDevice_NULLOutput@@QAE@XZ @2832 NONAME
+    ??0PVideoOutputDevice_SDL@@QAE@XZ @26928 NONAME
+    ??0PVideoOutputDevice_SDL_PluginServiceDescriptor@@QAE@XZ @26929 NONAME
     ??0PVideoOutputDevice_Window@@QAE@XZ @2833 NONAME
     ??0PVideoOutputDevice_Window_PluginServiceDescriptor@@QAE@XZ @2834 NONAME
     ??0PVideoOutputDevice_YUVFile@@QAE@XZ @2835 NONAME
@@ -3685,6 +3711,7 @@ EXPORTS
     ??1?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @3079 NONAME
     ??1?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@XZ @3080 NONAME
     ??1?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE@XZ @3081 NONAME
+    ??1?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @26930 NONAME
     ??1?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @3082 NONAME
     ??1?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @23221 NONAME
     ??1?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE@XZ @3083 NONAME
@@ -3903,6 +3930,7 @@ EXPORTS
     ??1?$PStringDictionary@VPString@@@@UAE@XZ @3269 NONAME
     ??1?$PThreadLocalStorage@UTraceInfo@PThread@@@@QAE@XZ @3270 NONAME
     ??1?$PThreadObj@VPInterfaceMonitor@@@@UAE@XZ @3271 NONAME
+    ??1?$PThreadObj@VPSDL_Window@@@@UAE@XZ @26931 NONAME
     ??1?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@UAE@XZ @3272 NONAME
     ??1?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@UAE@XZ @3273 NONAME
     ??1?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@UAE@XZ @3274 NONAME
@@ -4000,6 +4028,7 @@ EXPORTS
     ??1?$_Deque_val@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAE@XZ @3340 NONAME
     ??1?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVContext@PCLI@@HPBQAV34@ABQAV34@U_Iterator_base12@2@@std@@QAE@XZ @3341 NONAME
     ??1?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVPInterfaceMonitorClient@@HPBQAV3@ABQAV3@U_Iterator_base12@2@@std@@QAE@XZ @3342 NONAME
+    ??1?$_Iterator012@Ubidirectional_iterator_tag@std@@PAVPVideoOutputDevice_SDL@@HPBQAV3@ABQAV3@U_Iterator_base12@2@@std@@QAE@XZ @26932 NONAME
     ??1?$_Iterator012@Ubidirectional_iterator_tag@std@@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@HPBU32@ABU32@U_Iterator_base12@2@@std@@QAE@XZ @3343 NONAME
     ??1?$_Iterator012@Ubidirectional_iterator_tag@std@@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@2@HPBU32@ABU32@U_Iterator_base12@2@@std@@QAE@XZ @3344 NONAME
     ??1?$_Iterator012@Ubidirectional_iterator_tag@std@@U?$pair@$$CBIUActiveTimerInfo@PTimerList@@@2@HPBU32@ABU32@U_Iterator_base12@2@@std@@QAE@XZ @3345 NONAME
@@ -4049,18 +4078,21 @@ EXPORTS
     ??1?$_Iterator012@Urandom_access_iterator_tag@std@@VPIPSocketAddressAndPort@@HPBV3@ABV3@U_Iterator_base12@2@@std@@QAE@XZ @3380 NONAME
     ??1?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE@XZ @3381 NONAME
     ??1?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@XZ @3382 NONAME
+    ??1?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@XZ @26933 NONAME
     ??1?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@XZ @3383 NONAME
     ??1?$_List_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@XZ @23305 NONAME
     ??1?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAE@XZ @3384 NONAME
     ??1?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QAE@XZ @3385 NONAME
     ??1?$_List_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE@XZ @3386 NONAME
     ??1?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAE@XZ @3387 NONAME
+    ??1?$_List_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@XZ @26934 NONAME
     ??1?$_List_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@XZ @3388 NONAME
     ??1?$_List_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@XZ @23306 NONAME
     ??1?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAE@XZ @3389 NONAME
     ??1?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QAE@XZ @3390 NONAME
     ??1?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@XZ @3391 NONAME
     ??1?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE@XZ @3392 NONAME
+    ??1?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @26935 NONAME
     ??1?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @3393 NONAME
     ??1?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @23307 NONAME
     ??1?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE@XZ @3394 NONAME
@@ -4068,12 +4100,14 @@ EXPORTS
     ??1?$_List_nod@VPVideoInteractionInfo@@V?$allocator@VPVideoInteractionInfo@@@std@@@std@@QAE@XZ @3396 NONAME
     ??1?$_List_unchecked_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @3397 NONAME
     ??1?$_List_unchecked_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @3398 NONAME
+    ??1?$_List_unchecked_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @26936 NONAME
     ??1?$_List_unchecked_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@U_Iterator_base12@2@@std@@QAE@XZ @3399 NONAME
     ??1?$_List_unchecked_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @23308 NONAME
     ??1?$_List_unchecked_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @3400 NONAME
     ??1?$_List_unchecked_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@U_Iterator_base12@2@@std@@QAE@XZ @3401 NONAME
     ??1?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@XZ @3402 NONAME
     ??1?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE@XZ @3403 NONAME
+    ??1?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @26937 NONAME
     ??1?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @3404 NONAME
     ??1?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @23309 NONAME
     ??1?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE@XZ @3405 NONAME
@@ -4760,6 +4794,7 @@ EXPORTS
     ??1PSafePtrBase@@UAE@XZ @3973 NONAME
     ??1PSafePtrMultiThreaded@@UAE@XZ @3974 NONAME
     ??1PSASLClient@@UAE@XZ @23419 NONAME
+    ??1PSDL_Window@@QAE@XZ @26938 NONAME
     ??1PSecureConfig@@UAE@XZ @3975 NONAME
     ??1PSecureHTTPServiceProcess@@UAE@XZ @3976 NONAME
     ??1PSemaphore@@UAE@XZ @3977 NONAME
@@ -4956,6 +4991,8 @@ EXPORTS
     ??1PVideoOutputDevice@@UAE@XZ @4156 NONAME
     ??1PVideoOutputDeviceRGB@@UAE@XZ @4157 NONAME
     ??1PVideoOutputDevice_NULLOutput@@UAE@XZ @4158 NONAME
+    ??1PVideoOutputDevice_SDL@@UAE@XZ @26939 NONAME
+    ??1PVideoOutputDevice_SDL_PluginServiceDescriptor@@UAE@XZ @26940 NONAME
     ??1PVideoOutputDevice_Window@@UAE@XZ @4159 NONAME
     ??1PVideoOutputDevice_Window_PluginServiceDescriptor@@UAE@XZ @4160 NONAME
     ??1PVideoOutputDevice_YUVFile@@UAE@XZ @4161 NONAME
@@ -5270,6 +5307,7 @@ EXPORTS
     ??2?$PStringDictionary@VPOrdinalKey@@@@SAPAXIPBDH@Z @4425 NONAME
     ??2?$PStringDictionary@VPString@@@@SAPAXIPBDH@Z @4426 NONAME
     ??2?$PThreadObj@VPInterfaceMonitor@@@@SAPAXIPBDH@Z @4427 NONAME
+    ??2?$PThreadObj@VPSDL_Window@@@@SAPAXIPBDH@Z @26941 NONAME
     ??2@YAPAXIPAX@Z @4428 NONAME
     ??2@YAPAXIPBDH@Z @4429 NONAME
     ??2BareJID@XMPP@@SAPAXI@Z @23525 NONAME
@@ -5452,6 +5490,7 @@ EXPORTS
     ??2PVideoInputDevice_VideoForWindows@@SAPAXI@Z @4596 NONAME
     ??2PVideoInputDevice_YUVFile@@SAPAXIPBDH@Z @4597 NONAME
     ??2PVideoOutputDevice_NULLOutput@@SAPAXI@Z @4598 NONAME
+    ??2PVideoOutputDevice_SDL@@SAPAXIPBDH@Z @26942 NONAME
     ??2PVideoOutputDevice_Window@@SAPAXIPBDH@Z @4599 NONAME
     ??2PVideoOutputDevice_YUVFile@@SAPAXIPBDH@Z @4600 NONAME
     ??2PVXMLChannelG7231@@SAPAXI@Z @23544 NONAME
@@ -5642,6 +5681,8 @@ EXPORTS
     ??3?$PStringDictionary@VPString@@@@SAXPAXPBDH@Z @4762 NONAME
     ??3?$PThreadObj@VPInterfaceMonitor@@@@SAXPAX@Z @4763 NONAME
     ??3?$PThreadObj@VPInterfaceMonitor@@@@SAXPAXPBDH@Z @4764 NONAME
+    ??3?$PThreadObj@VPSDL_Window@@@@SAXPAX@Z @26943 NONAME
+    ??3?$PThreadObj@VPSDL_Window@@@@SAXPAXPBDH@Z @26944 NONAME
     ??3@YAXPAX0@Z @4765 NONAME
     ??3@YAXPAXPBDH@Z @4766 NONAME
     ??3BareJID@XMPP@@SAXPAX@Z @23611 NONAME
@@ -6107,6 +6148,8 @@ EXPORTS
     ??3PVideoOutputDevice@@SAXPAX@Z @5208 NONAME
     ??3PVideoOutputDeviceRGB@@SAXPAX@Z @5209 NONAME
     ??3PVideoOutputDevice_NULLOutput@@SAXPAX@Z @5210 NONAME
+    ??3PVideoOutputDevice_SDL@@SAXPAX@Z @26945 NONAME
+    ??3PVideoOutputDevice_SDL@@SAXPAXPBDH@Z @26946 NONAME
     ??3PVideoOutputDevice_Window@@SAXPAX@Z @5211 NONAME
     ??3PVideoOutputDevice_Window@@SAXPAXPBDH@Z @5212 NONAME
     ??3PVideoOutputDevice_YUVFile@@SAXPAX@Z @5213 NONAME
@@ -6539,6 +6582,7 @@ EXPORTS
     ??8?$CComPtr@UIPin@@@@QBE_NPAUIPin@@@Z @26747 NONAME
     ??8?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QBE_NABV01@@Z @5585 NONAME
     ??8?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QBE_NABV01@@Z @5586 NONAME
+    ??8?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBE_NABV01@@Z @26947 NONAME
     ??8?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QBE_NABV01@@Z @5587 NONAME
     ??8?$_List_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBE_NABV01@@Z @23740 NONAME
     ??8?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QBE_NABV01@@Z @5588 NONAME
@@ -6609,6 +6653,7 @@ EXPORTS
     ??9?$CComPtr@UIGraphBuilder@@@@QBE_NPAUIGraphBuilder@@@Z @26754 NONAME
     ??9?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QBE_NABV01@@Z @5640 NONAME
     ??9?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QBE_NABV01@@Z @5641 NONAME
+    ??9?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBE_NABV01@@Z @26948 NONAME
     ??9?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QBE_NABV01@@Z @5642 NONAME
     ??9?$_List_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBE_NABV01@@Z @23747 NONAME
     ??9?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QBE_NABV01@@Z @5643 NONAME
@@ -6991,11 +7036,13 @@ EXPORTS
     ??D?$_Deque_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEAAVRequestType@PTimerList@@XZ @5970 NONAME
     ??D?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QBEABQAVContext@PCLI@@XZ @5971 NONAME
     ??D?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QBEABQAVPInterfaceMonitorClient@@XZ @5972 NONAME
+    ??D?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBEABQAVPVideoOutputDevice_SDL@@XZ @26949 NONAME
     ??D?$_List_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBEABVAttribute@PLDAPSchema@@XZ @23787 NONAME
     ??D?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QBEABVPVideoControlInfo@@XZ @5973 NONAME
     ??D?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QBEABVPVideoFrameInfo@@XZ @5974 NONAME
     ??D?$_List_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QBEAAPAVContext@PCLI@@XZ @5975 NONAME
     ??D?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QBEAAPAVPInterfaceMonitorClient@@XZ @5976 NONAME
+    ??D?$_List_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBEAAPAVPVideoOutputDevice_SDL@@XZ @26950 NONAME
     ??D?$_List_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBEAAVAttribute@PLDAPSchema@@XZ @23788 NONAME
     ??D?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QBEAAVPVideoControlInfo@@XZ @5977 NONAME
     ??D?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QBEAAVPVideoFrameInfo@@XZ @5978 NONAME
@@ -7117,12 +7164,14 @@ EXPORTS
     ??E?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE?AV01@H@Z @6074 NONAME
     ??E?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAEAAV01@XZ @6075 NONAME
     ??E?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAEAAV01@XZ @6076 NONAME
+    ??E?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEAAV01@XZ @26951 NONAME
     ??E?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEAAV01@XZ @6077 NONAME
     ??E?$_List_const_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEAAV01@XZ @23804 NONAME
     ??E?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAEAAV01@XZ @6078 NONAME
     ??E?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QAEAAV01@XZ @20210 NONAME
     ??E?$_List_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAEAAV01@XZ @6079 NONAME
     ??E?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAEAAV01@XZ @6080 NONAME
+    ??E?$_List_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEAAV01@XZ @26952 NONAME
     ??E?$_List_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEAAV01@XZ @23805 NONAME
     ??E?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAEAAV01@XZ @6081 NONAME
     ??E?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QAEAAV01@XZ @20211 NONAME
@@ -7609,6 +7658,7 @@ EXPORTS
     ??_7?$PStringDictionary@VPOrdinalKey@@@@6B@ @6480 NONAME
     ??_7?$PStringDictionary@VPString@@@@6B@ @6481 NONAME
     ??_7?$PThreadObj@VPInterfaceMonitor@@@@6B@ @6482 NONAME
+    ??_7?$PThreadObj@VPSDL_Window@@@@6B@ @26953 NONAME
     ??_7?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@6B@ @6483 NONAME
     ??_7?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@6B@ @6484 NONAME
     ??_7?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@6B@ @6485 NONAME
@@ -8041,6 +8091,7 @@ EXPORTS
     ??_7PSafePtrBase@@6B@ @6845 NONAME
     ??_7PSafePtrMultiThreaded@@6B@ @6846 NONAME
     ??_7PSASLClient@@6B@ @23955 NONAME
+    ??_7PSDL_Window@@6B@ @26954 NONAME
     ??_7PSecureConfig@@6B@ @6847 NONAME
     ??_7PSecureHTTPServiceProcess@@6B@ @6848 NONAME
     ??_7PSemaphore@@6B@ @6849 NONAME
@@ -8261,6 +8312,8 @@ EXPORTS
     ??_7PVideoOutputDevice@@6B@ @7052 NONAME
     ??_7PVideoOutputDeviceRGB@@6B@ @7053 NONAME
     ??_7PVideoOutputDevice_NULLOutput@@6B@ @7054 NONAME
+    ??_7PVideoOutputDevice_SDL@@6B@ @26955 NONAME
+    ??_7PVideoOutputDevice_SDL_PluginServiceDescriptor@@6B@ @26956 NONAME
     ??_7PVideoOutputDevice_Window@@6B@ @7055 NONAME
     ??_7PVideoOutputDevice_Window_PluginServiceDescriptor@@6B@ @7056 NONAME
     ??_7PVideoOutputDevice_YUVFile@@6B@ @7057 NONAME
@@ -8619,6 +8672,7 @@ EXPORTS
     ??_8TCPTransport@C2S@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @24057 NONAME
     ??_8Transport@XMPP@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @24058 NONAME
     ??_8Transport@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @24059 NONAME
+    ??_9PSDL_Window@@$BA@AE @26957 NONAME
     ??_B?1???0PPlugin_PNatMethod_STUN_Registration@@QAE@PAVPPluginManager@@@Z@51 @7379 NONAME
     ??_B?1???0PPlugin_PSoundChannel_DirectSound_Registration@@QAE@PAVPPluginManager@@@Z@51 @7380 NONAME
     ??_B?1???0PPlugin_PSoundChannel_WAVFile_Registration@@QAE@PAVPPluginManager@@@Z@51 @7381 NONAME
@@ -8630,6 +8684,7 @@ EXPORTS
     ??_B?1???0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z@51 @7387 NONAME
     ??_B?1???0PPlugin_PVideoInputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@51 @7388 NONAME
     ??_B?1???0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z@51 @7389 NONAME
+    ??_B?1???0PPlugin_PVideoOutputDevice_SDL_Registration@@QAE@PAVPPluginManager@@@Z@51 @26958 NONAME
     ??_B?1???0PPlugin_PVideoOutputDevice_Window_Registration@@QAE@PAVPPluginManager@@@Z@51 @7390 NONAME
     ??_B?1???0PPlugin_PVideoOutputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@51 @7391 NONAME
     ??_B?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@D@std@@D@@CAAAV?$allocator@D@std@@XZ@51 @26816 NONAME
@@ -8639,6 +8694,7 @@ EXPORTS
     ??_B?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@CAAAV?$allocator@UPSortedListElement@@@std@@XZ@51 @26820 NONAME
     ??_B?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@CAAAV?$allocator@UPSortedListInfo@@@std@@XZ@51 @26821 NONAME
     ??_B?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@CAAAV?$allocator@VPContainerReference@@@std@@XZ@51 @26822 NONAME
+    ??_B?1??GetInstance@PSDL_Window@@SAAAV1@XZ@51 @26959 NONAME
     ??_B?1??Instance@PTraceInfo@@SAAAV1@XZ@51 @7392 NONAME
     ??_D?$basic_ofstream@DU?$char_traits@D@std@@@std@@QAEXXZ @7393 NONAME
     ??_D?$basic_ostringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEXXZ @7394 NONAME
@@ -8866,6 +8922,7 @@ EXPORTS
     ??_R0?AV?$PStringDictionary@VPOrdinalKey@@@@@8 @7567 NONAME
     ??_R0?AV?$PStringDictionary@VPString@@@@@8 @7568 NONAME
     ??_R0?AV?$PThreadObj@VPInterfaceMonitor@@@@@8 @7569 NONAME
+    ??_R0?AV?$PThreadObj@VPSDL_Window@@@@@8 @26960 NONAME
     ??_R0?AV?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@@8 @7570 NONAME
     ??_R0?AV?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@@8 @7571 NONAME
     ??_R0?AV?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@@8 @7572 NONAME
@@ -9245,6 +9302,7 @@ EXPORTS
     ??_R0?AVPSafePtrBase@@@8 @7908 NONAME
     ??_R0?AVPSafePtrMultiThreaded@@@8 @7909 NONAME
     ??_R0?AVPSASLClient@@@8 @24180 NONAME
+    ??_R0?AVPSDL_Window@@@8 @26961 NONAME
     ??_R0?AVPSecureConfig@@@8 @7910 NONAME
     ??_R0?AVPSecureHTTPServiceProcess@@@8 @7911 NONAME
     ??_R0?AVPSemaphore@@@8 @7912 NONAME
@@ -9433,6 +9491,8 @@ EXPORTS
     ??_R0?AVPVideoOutputDevice@@@8 @8084 NONAME
     ??_R0?AVPVideoOutputDeviceRGB@@@8 @8085 NONAME
     ??_R0?AVPVideoOutputDevice_NULLOutput@@@8 @8086 NONAME
+    ??_R0?AVPVideoOutputDevice_SDL@@@8 @26962 NONAME
+    ??_R0?AVPVideoOutputDevice_SDL_PluginServiceDescriptor@@@8 @26963 NONAME
     ??_R0?AVPVideoOutputDevice_Window@@@8 @8087 NONAME
     ??_R0?AVPVideoOutputDevice_Window_PluginServiceDescriptor@@@8 @8088 NONAME
     ??_R0?AVPVideoOutputDevice_YUVFile@@@8 @8089 NONAME
@@ -9776,6 +9836,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$PStringDictionary@VPOrdinalKey@@@@8 @8380 NONAME
     ??_R1A@?0A@EA@?$PStringDictionary@VPString@@@@8 @8381 NONAME
     ??_R1A@?0A@EA@?$PThreadObj@VPInterfaceMonitor@@@@8 @8382 NONAME
+    ??_R1A@?0A@EA@?$PThreadObj@VPSDL_Window@@@@8 @26964 NONAME
     ??_R1A@?0A@EA@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@8 @8383 NONAME
     ??_R1A@?0A@EA@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@8 @8384 NONAME
     ??_R1A@?0A@EA@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@8 @8385 NONAME
@@ -10185,6 +10246,7 @@ EXPORTS
     ??_R1A@?0A@EA@PSafePtrBase@@8 @8720 NONAME
     ??_R1A@?0A@EA@PSafePtrMultiThreaded@@8 @8721 NONAME
     ??_R1A@?0A@EA@PSASLClient@@8 @24371 NONAME
+    ??_R1A@?0A@EA@PSDL_Window@@8 @26965 NONAME
     ??_R1A@?0A@EA@PSecureConfig@@8 @8722 NONAME
     ??_R1A@?0A@EA@PSecureHTTPServiceProcess@@8 @8723 NONAME
     ??_R1A@?0A@EA@PSemaphore@@8 @8724 NONAME
@@ -10373,6 +10435,8 @@ EXPORTS
     ??_R1A@?0A@EA@PVideoOutputDevice@@8 @8896 NONAME
     ??_R1A@?0A@EA@PVideoOutputDeviceRGB@@8 @8897 NONAME
     ??_R1A@?0A@EA@PVideoOutputDevice_NULLOutput@@8 @8898 NONAME
+    ??_R1A@?0A@EA@PVideoOutputDevice_SDL@@8 @26966 NONAME
+    ??_R1A@?0A@EA@PVideoOutputDevice_SDL_PluginServiceDescriptor@@8 @26967 NONAME
     ??_R1A@?0A@EA@PVideoOutputDevice_Window@@8 @8899 NONAME
     ??_R1A@?0A@EA@PVideoOutputDevice_Window_PluginServiceDescriptor@@8 @8900 NONAME
     ??_R1A@?0A@EA@PVideoOutputDevice_YUVFile@@8 @8901 NONAME
@@ -10748,6 +10812,7 @@ EXPORTS
     ??_R2?$PStringDictionary@VPOrdinalKey@@@@8 @9221 NONAME
     ??_R2?$PStringDictionary@VPString@@@@8 @9222 NONAME
     ??_R2?$PThreadObj@VPInterfaceMonitor@@@@8 @9223 NONAME
+    ??_R2?$PThreadObj@VPSDL_Window@@@@8 @26968 NONAME
     ??_R2?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@8 @9224 NONAME
     ??_R2?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@8 @9225 NONAME
     ??_R2?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@8 @9226 NONAME
@@ -11157,6 +11222,7 @@ EXPORTS
     ??_R2PSafePtrBase@@8 @9561 NONAME
     ??_R2PSafePtrMultiThreaded@@8 @9562 NONAME
     ??_R2PSASLClient@@8 @24567 NONAME
+    ??_R2PSDL_Window@@8 @26969 NONAME
     ??_R2PSecureConfig@@8 @9563 NONAME
     ??_R2PSecureHTTPServiceProcess@@8 @9564 NONAME
     ??_R2PSemaphore@@8 @9565 NONAME
@@ -11345,6 +11411,8 @@ EXPORTS
     ??_R2PVideoOutputDevice@@8 @9737 NONAME
     ??_R2PVideoOutputDeviceRGB@@8 @9738 NONAME
     ??_R2PVideoOutputDevice_NULLOutput@@8 @9739 NONAME
+    ??_R2PVideoOutputDevice_SDL@@8 @26970 NONAME
+    ??_R2PVideoOutputDevice_SDL_PluginServiceDescriptor@@8 @26971 NONAME
     ??_R2PVideoOutputDevice_Window@@8 @9740 NONAME
     ??_R2PVideoOutputDevice_Window_PluginServiceDescriptor@@8 @9741 NONAME
     ??_R2PVideoOutputDevice_YUVFile@@8 @9742 NONAME
@@ -11681,6 +11749,7 @@ EXPORTS
     ??_R3?$PStringDictionary@VPOrdinalKey@@@@8 @10025 NONAME
     ??_R3?$PStringDictionary@VPString@@@@8 @10026 NONAME
     ??_R3?$PThreadObj@VPInterfaceMonitor@@@@8 @10027 NONAME
+    ??_R3?$PThreadObj@VPSDL_Window@@@@8 @26972 NONAME
     ??_R3?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@8 @10028 NONAME
     ??_R3?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@8 @10029 NONAME
     ??_R3?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@8 @10030 NONAME
@@ -12090,6 +12159,7 @@ EXPORTS
     ??_R3PSafePtrBase@@8 @10365 NONAME
     ??_R3PSafePtrMultiThreaded@@8 @10366 NONAME
     ??_R3PSASLClient@@8 @24759 NONAME
+    ??_R3PSDL_Window@@8 @26973 NONAME
     ??_R3PSecureConfig@@8 @10367 NONAME
     ??_R3PSecureHTTPServiceProcess@@8 @10368 NONAME
     ??_R3PSemaphore@@8 @10369 NONAME
@@ -12278,6 +12348,8 @@ EXPORTS
     ??_R3PVideoOutputDevice@@8 @10541 NONAME
     ??_R3PVideoOutputDeviceRGB@@8 @10542 NONAME
     ??_R3PVideoOutputDevice_NULLOutput@@8 @10543 NONAME
+    ??_R3PVideoOutputDevice_SDL@@8 @26974 NONAME
+    ??_R3PVideoOutputDevice_SDL_PluginServiceDescriptor@@8 @26975 NONAME
     ??_R3PVideoOutputDevice_Window@@8 @10544 NONAME
     ??_R3PVideoOutputDevice_Window_PluginServiceDescriptor@@8 @10545 NONAME
     ??_R3PVideoOutputDevice_YUVFile@@8 @10546 NONAME
@@ -12609,6 +12681,7 @@ EXPORTS
     ??_R4?$PStringDictionary@VPOrdinalKey@@@@6B@ @10824 NONAME
     ??_R4?$PStringDictionary@VPString@@@@6B@ @10825 NONAME
     ??_R4?$PThreadObj@VPInterfaceMonitor@@@@6B@ @10826 NONAME
+    ??_R4?$PThreadObj@VPSDL_Window@@@@6B@ @26976 NONAME
     ??_R4?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_DirectShow@@@@6B@ @10827 NONAME
     ??_R4?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@6B@ @10828 NONAME
     ??_R4?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@6B@ @10829 NONAME
@@ -13041,6 +13114,7 @@ EXPORTS
     ??_R4PSafePtrBase@@6B@ @11189 NONAME
     ??_R4PSafePtrMultiThreaded@@6B@ @11190 NONAME
     ??_R4PSASLClient@@6B@ @24951 NONAME
+    ??_R4PSDL_Window@@6B@ @26977 NONAME
     ??_R4PSecureConfig@@6B@ @11191 NONAME
     ??_R4PSecureHTTPServiceProcess@@6B@ @11192 NONAME
     ??_R4PSemaphore@@6B@ @11193 NONAME
@@ -13261,6 +13335,8 @@ EXPORTS
     ??_R4PVideoOutputDevice@@6B@ @11396 NONAME
     ??_R4PVideoOutputDeviceRGB@@6B@ @11397 NONAME
     ??_R4PVideoOutputDevice_NULLOutput@@6B@ @11398 NONAME
+    ??_R4PVideoOutputDevice_SDL@@6B@ @26978 NONAME
+    ??_R4PVideoOutputDevice_SDL_PluginServiceDescriptor@@6B@ @26979 NONAME
     ??_R4PVideoOutputDevice_Window@@6B@ @11399 NONAME
     ??_R4PVideoOutputDevice_Window_PluginServiceDescriptor@@6B@ @11400 NONAME
     ??_R4PVideoOutputDevice_YUVFile@@6B@ @11401 NONAME
@@ -13496,9 +13572,11 @@ EXPORTS
     ??__Ffactory@?1???0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z@YAXXZ @11599 NONAME
     ??__Ffactory@?1???0PPlugin_PVideoInputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@YAXXZ @11600 NONAME
     ??__Ffactory@?1???0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z@YAXXZ @11601 NONAME
+    ??__Ffactory@?1???0PPlugin_PVideoOutputDevice_SDL_Registration@@QAE@PAVPPluginManager@@@Z@YAXXZ @26980 NONAME
     ??__Ffactory@?1???0PPlugin_PVideoOutputDevice_Window_Registration@@QAE@PAVPPluginManager@@@Z@YAXXZ @11602 NONAME
     ??__Ffactory@?1???0PPlugin_PVideoOutputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@YAXXZ @11603 NONAME
     ??__Finfo@?1??Instance@PTraceInfo@@SAAAV1@XZ@YAXXZ @11604 NONAME
+    ??__Finstance@?1??GetInstance@PSDL_Window@@SAAAV1@XZ@YAXXZ @26981 NONAME
     ?Abort@PModem@@QAEXXZ @11605 NONAME
     ?Abort@PSoundChannel@@UAE_NXZ @11606 NONAME
     ?Abort@PSoundChannelDirectSound@@UAE_NXZ @11607 NONAME
@@ -13578,6 +13656,7 @@ EXPORTS
     ?AddContext@PCLI@@UAEPAVContext@1@PAV21@@Z @11675 NONAME
     ?AddContext@PCLISocket@@UAEPAVContext@PCLI@@PAV23@@Z @11676 NONAME
     ?AddData@PXMLElement@@QAEXABVPString@@@Z @25054 NONAME
+    ?AddDevice@PSDL_Window@@AAEXPAVPVideoOutputDevice_SDL@@@Z @26982 NONAME
     ?AddElement@PXMLElement@@QAEPAV1@ABVPString@@00@Z @25055 NONAME
     ?AddElement@PXMLElement@@QAEPAV1@ABVPString@@0@Z @25056 NONAME
     ?AddElement@PXMLElement@@QAEPAV1@PBD@Z @25057 NONAME
@@ -13619,6 +13698,7 @@ EXPORTS
     ?AddValue@StringModAttrib@PLDAPSession@@QAEXABVPString@@@Z @25074 NONAME
     ?AddVariable@PXMLRPCStructBase@@QAEXPAVPXMLRPCVariableBase@@@Z @25075 NONAME
     ?adjustfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B @11714 NONAME
+    ?AdjustOverlays@PSDL_Window@@AAEXXZ @26983 NONAME
     ?AdjustWavFilename@PVXMLChannel@@UAE?AVPString@@ABV2@@Z @25076 NONAME
     ?adwKHZ@?CA@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBKB @20491 NONAME
     ?adwKHZ@?CJ@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBKB @20492 NONAME
@@ -13641,6 +13721,7 @@ EXPORTS
     ?allocate@?$allocator@U_GUID@@@std@@QAEPAU_GUID@@I@Z @11728 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@I@Z @11729 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@I@Z @11730 NONAME
+    ?allocate@?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@I@Z @26984 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@I@Z @11731 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@I@Z @25078 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAEPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@I@Z @11732 NONAME
@@ -13849,6 +13930,7 @@ EXPORTS
     ?begin@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@2@XZ @11908 NONAME
     ?begin@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@2@XZ @11909 NONAME
     ?begin@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@2@XZ @11910 NONAME
+    ?begin@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@2@XZ @26985 NONAME
     ?begin@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@2@XZ @11911 NONAME
     ?begin@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@2@XZ @25101 NONAME
     ?begin@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@2@XZ @11912 NONAME
@@ -14119,6 +14201,7 @@ EXPORTS
     ?Class@?$PStringDictionary@VPOrdinalKey@@@@SAPBDXZ @12141 NONAME
     ?Class@?$PStringDictionary@VPString@@@@SAPBDXZ @12142 NONAME
     ?Class@?$PThreadObj@VPInterfaceMonitor@@@@SAPBDXZ @12143 NONAME
+    ?Class@?$PThreadObj@VPSDL_Window@@@@SAPBDXZ @26986 NONAME
     ?Class@BareJID@XMPP@@SAPBDXZ @25160 NONAME
     ?Class@BaseStreamHandler@XMPP@@SAPBDXZ @25161 NONAME
     ?Class@BinaryModAttrib@PLDAPSession@@SAPBDXZ @25162 NONAME
@@ -14439,6 +14522,7 @@ EXPORTS
     ?Class@PVideoOutputDevice@@SAPBDXZ @12444 NONAME
     ?Class@PVideoOutputDeviceRGB@@SAPBDXZ @12445 NONAME
     ?Class@PVideoOutputDevice_NULLOutput@@SAPBDXZ @12446 NONAME
+    ?Class@PVideoOutputDevice_SDL@@SAPBDXZ @26987 NONAME
     ?Class@PVideoOutputDevice_Window@@SAPBDXZ @12447 NONAME
     ?Class@PVideoOutputDevice_YUVFile@@SAPBDXZ @12448 NONAME
     ?Class@PVXMLChannel@@SAPBDXZ @25186 NONAME
@@ -14503,6 +14587,7 @@ EXPORTS
     ?Cleanup@PTrace@@SAXXZ @12505 NONAME
     ?clear@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXXZ @12506 NONAME
     ?clear@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEXXZ @12507 NONAME
+    ?clear@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXXZ @26988 NONAME
     ?clear@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXXZ @12508 NONAME
     ?clear@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAEXXZ @25231 NONAME
     ?clear@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXXZ @12509 NONAME
@@ -14757,6 +14842,7 @@ EXPORTS
     ?Close@PVideoInputDevice_YUVFile@@UAE_NXZ @12739 NONAME
     ?Close@PVideoOutputDevice@@UAE_NXZ @12740 NONAME
     ?Close@PVideoOutputDevice_NULLOutput@@UAE_NXZ @12741 NONAME
+    ?Close@PVideoOutputDevice_SDL@@UAE_NXZ @26989 NONAME
     ?Close@PVideoOutputDevice_Window@@UAE_NXZ @12742 NONAME
     ?Close@PVideoOutputDevice_YUVFile@@UAE_NXZ @12743 NONAME
     ?Close@PVXMLChannel@@UAE_NXZ @25266 NONAME
@@ -14925,6 +15011,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PStringDictionary@VPOrdinalKey@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @12894 NONAME
     ?CompareObjectMemoryDirect@?$PStringDictionary@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @12895 NONAME
     ?CompareObjectMemoryDirect@?$PThreadObj@VPInterfaceMonitor@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @12896 NONAME
+    ?CompareObjectMemoryDirect@?$PThreadObj@VPSDL_Window@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @26990 NONAME
     ?CompareObjectMemoryDirect@BareJID@XMPP@@UBE?AW4Comparison@PObject@@ABV4@@Z @25297 NONAME
     ?CompareObjectMemoryDirect@BaseStreamHandler@XMPP@@UBE?AW4Comparison@PObject@@ABV4@@Z @25298 NONAME
     ?CompareObjectMemoryDirect@BinaryModAttrib@PLDAPSession@@UBE?AW4Comparison@PObject@@ABV4@@Z @25299 NONAME
@@ -15246,6 +15333,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PVideoOutputDevice@@UBE?AW4Comparison@PObject@@ABV3@@Z @13197 NONAME
     ?CompareObjectMemoryDirect@PVideoOutputDeviceRGB@@UBE?AW4Comparison@PObject@@ABV3@@Z @13198 NONAME
     ?CompareObjectMemoryDirect@PVideoOutputDevice_NULLOutput@@UBE?AW4Comparison@PObject@@ABV3@@Z @13199 NONAME
+    ?CompareObjectMemoryDirect@PVideoOutputDevice_SDL@@UBE?AW4Comparison@PObject@@ABV3@@Z @26991 NONAME
     ?CompareObjectMemoryDirect@PVideoOutputDevice_Window@@UBE?AW4Comparison@PObject@@ABV3@@Z @13200 NONAME
     ?CompareObjectMemoryDirect@PVideoOutputDevice_YUVFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @13201 NONAME
     ?CompareObjectMemoryDirect@PVXMLChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @25323 NONAME
@@ -15370,6 +15458,7 @@ EXPORTS
     ?construct@?$allocator@PAVPInterfaceMonitorClient@@@std@@QAEXPAPAVPInterfaceMonitorClient@@ABQAV3@@Z @13318 NONAME
     ?construct@?$allocator@PAVPPluginModuleManager@@@std@@QAEXPAPAVPPluginModuleManager@@ABQAV3@@Z @13319 NONAME
     ?construct@?$allocator@PAVPVideoFrameInfo@@@std@@QAEXPAPAVPVideoFrameInfo@@$$QAPAV3@@Z @26836 NONAME
+    ?construct@?$allocator@PAVPVideoOutputDevice_SDL@@@std@@QAEXPAPAVPVideoOutputDevice_SDL@@ABQAV3@@Z @26992 NONAME
     ?construct@?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QAEXPAPAVWorkerThreadBase@PThreadPoolBase@@ABQAV34@@Z @13320 NONAME
     ?construct@?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@std@@QAEXPAU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@2@$$QAU32@@Z @13321 NONAME
     ?construct@?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@std@@QAEXPAU?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@2@$$QAU32@@Z @13322 NONAME
@@ -15769,6 +15858,7 @@ EXPORTS
     ?CreateInstance@PVideoInputDevice_Application_PluginServiceDescriptor@@UBEPAVPObject@@H@Z @13654 NONAME
     ?CreateInstance@PVideoInputDevice_FFMPEG_PluginServiceDescriptor@@UBEPAVPObject@@H@Z @13655 NONAME
     ?CreateInstance@PVideoInputDevice_YUVFile_PluginServiceDescriptor@@UBEPAVPObject@@H@Z @13656 NONAME
+    ?CreateInstance@PVideoOutputDevice_SDL_PluginServiceDescriptor@@UBEPAVPObject@@H@Z @26993 NONAME
     ?CreateInstance@PVideoOutputDevice_Window_PluginServiceDescriptor@@UBEPAVPObject@@H@Z @13657 NONAME
     ?CreateInstance@PVideoOutputDevice_YUVFile_PluginServiceDescriptor@@UBEPAVPObject@@H@Z @13658 NONAME
     ?CreateInstance@WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@IAEPAVPDevicePluginAdapterBase@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13659 NONAME
@@ -15876,6 +15966,7 @@ EXPORTS
     ?deallocate@?$allocator@U_GUID@@@std@@QAEXPAU_GUID@@I@Z @13756 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@I@Z @13757 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@I@Z @13758 NONAME
+    ?deallocate@?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@I@Z @26994 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEXPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@I@Z @13759 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@I@Z @25480 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@I@Z @13760 NONAME
@@ -16055,6 +16146,7 @@ EXPORTS
     ?destroy@?$allocator@U_GUID@@@std@@QAEXPAU_GUID@@@Z @13911 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@@Z @13912 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@@Z @13913 NONAME
+    ?destroy@?$allocator@U_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@@Z @26995 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEXPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@@Z @13914 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@@Z @25500 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QAEXPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@@Z @13915 NONAME
@@ -16107,6 +16199,7 @@ EXPORTS
     ?empty@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBE_NXZ @13956 NONAME
     ?empty@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBE_NXZ @13957 NONAME
     ?empty@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QBE_NXZ @13958 NONAME
+    ?empty@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QBE_NXZ @26996 NONAME
     ?empty@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBE_NXZ @20586 NONAME
     ?empty@?$queue@VRequestType@PTimerList@@V?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@@std@@QBE_NXZ @13959 NONAME
     ?empty@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@QBE_NXZ @26839 NONAME
@@ -16200,6 +16293,7 @@ EXPORTS
     ?end@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@2@XZ @14046 NONAME
     ?end@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@2@XZ @14047 NONAME
     ?end@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@2@XZ @14048 NONAME
+    ?end@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@2@XZ @26997 NONAME
     ?end@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@2@XZ @14049 NONAME
     ?end@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@2@XZ @14050 NONAME
     ?end@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@2@XZ @25510 NONAME
@@ -16438,6 +16532,7 @@ EXPORTS
     ?factory@?1???0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @14250 NONAME
     ?factory@?1???0PPlugin_PVideoInputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @14251 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @14252 NONAME
+    ?factory@?1???0PPlugin_PVideoOutputDevice_SDL_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @26998 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_Window_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @14253 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @14254 NONAME
     ?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B @14255 NONAME
@@ -16739,6 +16834,7 @@ EXPORTS
     ?GetClass@?$PStringDictionary@VPOrdinalKey@@@@UBEPBDI@Z @14510 NONAME
     ?GetClass@?$PStringDictionary@VPString@@@@UBEPBDI@Z @14511 NONAME
     ?GetClass@?$PThreadObj@VPInterfaceMonitor@@@@UBEPBDI@Z @14512 NONAME
+    ?GetClass@?$PThreadObj@VPSDL_Window@@@@UBEPBDI@Z @26999 NONAME
     ?GetClass@BareJID@XMPP@@UBEPBDI@Z @25622 NONAME
     ?GetClass@BaseStreamHandler@XMPP@@UBEPBDI@Z @25623 NONAME
     ?GetClass@BinaryModAttrib@PLDAPSession@@UBEPBDI@Z @25624 NONAME
@@ -17060,6 +17156,7 @@ EXPORTS
     ?GetClass@PVideoOutputDevice@@UBEPBDI@Z @14814 NONAME
     ?GetClass@PVideoOutputDeviceRGB@@UBEPBDI@Z @14815 NONAME
     ?GetClass@PVideoOutputDevice_NULLOutput@@UBEPBDI@Z @14816 NONAME
+    ?GetClass@PVideoOutputDevice_SDL@@UBEPBDI@Z @27000 NONAME
     ?GetClass@PVideoOutputDevice_Window@@UBEPBDI@Z @14817 NONAME
     ?GetClass@PVideoOutputDevice_YUVFile@@UBEPBDI@Z @14818 NONAME
     ?GetClass@PVXMLChannel@@UBEPBDI@Z @25648 NONAME
@@ -17246,6 +17343,8 @@ EXPORTS
     ?GetDeviceNames@PVideoInputDevice_YUVFile@@UBE?AVPStringArray@@XZ @14994 NONAME
     ?GetDeviceNames@PVideoInputDevice_YUVFile_PluginServiceDescriptor@@UBE?AVPStringArray@@H@Z @14995 NONAME
     ?GetDeviceNames@PVideoOutputDevice_NULLOutput@@UBE?AVPStringArray@@XZ @14996 NONAME
+    ?GetDeviceNames@PVideoOutputDevice_SDL@@UBE?AVPStringArray@@XZ @27001 NONAME
+    ?GetDeviceNames@PVideoOutputDevice_SDL_PluginServiceDescriptor@@UBE?AVPStringArray@@H@Z @27002 NONAME
     ?GetDeviceNames@PVideoOutputDevice_Window@@UBE?AVPStringArray@@XZ @14997 NONAME
     ?GetDeviceNames@PVideoOutputDevice_Window_PluginServiceDescriptor@@UBE?AVPStringArray@@H@Z @14998 NONAME
     ?GetDeviceNames@PVideoOutputDevice_YUVFile@@UBE?AVPStringArray@@XZ @14999 NONAME
@@ -17485,6 +17584,7 @@ EXPORTS
     ?GetInstance@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@KAAAV1@XZ @15226 NONAME
     ?GetInstance@PInterfaceMonitor@@SAAAV1@XZ @15227 NONAME
     ?GetInstance@PLua@@SAPAXPAUlua_State@@@Z @22187 NONAME
+    ?GetInstance@PSDL_Window@@SAAAV1@XZ @27003 NONAME
     ?GetInt64@PConfig@@UBE_JABVPString@@0_J@Z @15228 NONAME
     ?GetInt64@PConfig@@UBE_JABVPString@@_J@Z @15229 NONAME
     ?GetInteger@PASNInteger@@UBEJXZ @15230 NONAME
@@ -17585,6 +17685,7 @@ EXPORTS
     ?GetMaxFrameBytes@PVideoInputDevice_YUVFile@@UAEHXZ @15322 NONAME
     ?GetMaxFrameBytes@PVideoOutputDeviceRGB@@UAEHXZ @15323 NONAME
     ?GetMaxFrameBytes@PVideoOutputDevice_NULLOutput@@UAEHXZ @15324 NONAME
+    ?GetMaxFrameBytes@PVideoOutputDevice_SDL@@UAEHXZ @27004 NONAME
     ?GetMaxFrameBytes@PVideoOutputDevice_YUVFile@@UAEHXZ @15325 NONAME
     ?GetMaxFrameBytesConverted@PVideoDevice@@IBEHH@Z @15326 NONAME
     ?GetMaxHandles@PProcess@@QBEHXZ @15327 NONAME
@@ -17615,6 +17716,7 @@ EXPORTS
     ?GetMonth@PTime@@QBE?AW4Months@1@XZ @15352 NONAME
     ?GetMonthName@PTime@@SA?AVPString@@W4Months@1@W4NameType@1@@Z @15353 NONAME
     ?GetMultipartFormInfo@PHTTPConnectionInfo@@QBEABVPMultiPartList@@XZ @15354 NONAME
+    ?GetMutex@PSDL_Window@@QAEAAVPCriticalSection@@XZ @27005 NONAME
     ?GetMutex@PXML@@QAEAAVPCriticalSection@@XZ @25734 NONAME
     ?GetName@InterfaceEntry@PIPSocket@@QBEABVPString@@XZ @15356 NONAME
     ?GetName@Item@Roster@XMPP@@QBEABVPString@@XZ @25735 NONAME
@@ -18017,6 +18119,7 @@ EXPORTS
     ?GetTimeZoneString@PTime@@SA?AVPString@@W4TimeZoneType@1@@Z @15731 NONAME
     ?GetTitle@PFilePath@@QBE?AVPCaselessString@@XZ @15732 NONAME
     ?GetTitle@PHTTPField@@QBEABVPString@@XZ @15733 NONAME
+    ?GetTitle@PVideoOutputDevice_SDL@@ABE?AVPString@@XZ @27006 NONAME
     ?GetTo@Stanza@XMPP@@UBE?AVPString@@XZ @25805 NONAME
     ?GetTokenBucketSize@PQoS@@QBEKXZ @15735 NONAME
     ?GetTokenRate@PQoS@@QBEKXZ @15736 NONAME
@@ -18165,6 +18268,7 @@ EXPORTS
     ?HandleDNSRecord@SRVRecordList@PDNS@@QAEPAVSRVRecord@2@PAU_DnsRecordA@@0@Z @15875 NONAME
     ?HandleError@PVideoInputDevice_VideoForWindows@@IAEJHPBD@Z @15876 NONAME
     ?HandleEstablishedState@StreamHandler@C2S@XMPP@@MAEXAAVPXML@@@Z @25828 NONAME
+    ?HandleEvent@PSDL_Window@@AAE_NXZ @27007 NONAME
     ?HandleIncoming@PCLISocket@@IAE_NXZ @15878 NONAME
     ?HandleMessage@PSMTPServer@@UAE_NAAVPCharArray@@_N1@Z @15879 NONAME
     ?HandleNonSASLStartedState@StreamHandler@C2S@XMPP@@MAEXAAVPXML@@@Z @25829 NONAME
@@ -18256,6 +18360,7 @@ EXPORTS
     ?instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListElement@@@std@@UPSortedListElement@@@@CAAAV?$allocator@UPSortedListElement@@@std@@XZ@4V34@A @26859 NONAME
     ?instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@UPSortedListInfo@@@std@@UPSortedListInfo@@@@CAAAV?$allocator@UPSortedListInfo@@@std@@XZ@4V34@A @26860 NONAME
     ?instance@?1??GetAllocator@?$PAllocatorTemplate@V?$allocator@VPContainerReference@@@std@@VPContainerReference@@@@CAAAV?$allocator@VPContainerReference@@@std@@XZ@4V34@A @26861 NONAME
+    ?instance@?1??GetInstance@PSDL_Window@@SAAAV2@XZ@4V2@A @27008 NONAME
     ?Instance@PTraceInfo@@SAAAV1@XZ @15959 NONAME
     ?IntegerDecode@PBER_Stream@@UAE_NAAVPASN_Integer@@@Z @15960 NONAME
     ?IntegerDecode@PPER_Stream@@UAE_NAAVPASN_Integer@@@Z @15961 NONAME
@@ -18354,6 +18459,7 @@ EXPORTS
     ?InternalIsDescendant@?$PStringDictionary@VPOrdinalKey@@@@UBE_NPBD@Z @16043 NONAME
     ?InternalIsDescendant@?$PStringDictionary@VPString@@@@UBE_NPBD@Z @16044 NONAME
     ?InternalIsDescendant@?$PThreadObj@VPInterfaceMonitor@@@@UBE_NPBD@Z @16045 NONAME
+    ?InternalIsDescendant@?$PThreadObj@VPSDL_Window@@@@UBE_NPBD@Z @27009 NONAME
     ?InternalIsDescendant@BareJID@XMPP@@UBE_NPBD@Z @25872 NONAME
     ?InternalIsDescendant@BaseStreamHandler@XMPP@@UBE_NPBD@Z @25873 NONAME
     ?InternalIsDescendant@BinaryModAttrib@PLDAPSession@@UBE_NPBD@Z @25874 NONAME
@@ -18675,6 +18781,7 @@ EXPORTS
     ?InternalIsDescendant@PVideoOutputDevice@@UBE_NPBD@Z @16347 NONAME
     ?InternalIsDescendant@PVideoOutputDeviceRGB@@UBE_NPBD@Z @16348 NONAME
     ?InternalIsDescendant@PVideoOutputDevice_NULLOutput@@UBE_NPBD@Z @16349 NONAME
+    ?InternalIsDescendant@PVideoOutputDevice_SDL@@UBE_NPBD@Z @27010 NONAME
     ?InternalIsDescendant@PVideoOutputDevice_Window@@UBE_NPBD@Z @16350 NONAME
     ?InternalIsDescendant@PVideoOutputDevice_YUVFile@@UBE_NPBD@Z @16351 NONAME
     ?InternalIsDescendant@PVXMLChannel@@UBE_NPBD@Z @25898 NONAME
@@ -18847,6 +18954,7 @@ EXPORTS
     ?IsOpen@PVideoInputDevice_VideoForWindows@@UAE_NXZ @16509 NONAME
     ?IsOpen@PVideoInputDevice_YUVFile@@UAE_NXZ @16510 NONAME
     ?IsOpen@PVideoOutputDevice_NULLOutput@@UAE_NXZ @16511 NONAME
+    ?IsOpen@PVideoOutputDevice_SDL@@UAE_NXZ @27011 NONAME
     ?IsOpen@PVideoOutputDevice_Window@@UAE_NXZ @16512 NONAME
     ?IsOpen@PVideoOutputDevice_YUVFile@@UAE_NXZ @16513 NONAME
     ?IsOpen@PVXMLChannel@@UBE_NXZ @25963 NONAME
@@ -19081,6 +19189,7 @@ EXPORTS
     ?lower_bound@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QBE?AV?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@@2@ABVToken@PvCard@@@Z @20690 NONAME
     ?MailerTag@PRFC822Channel@@SAABVPCaselessString@@XZ @22248 NONAME
     ?Main@?$PThreadObj@VPInterfaceMonitor@@@@UAEXXZ @16722 NONAME
+    ?Main@?$PThreadObj@VPSDL_Window@@@@UAEXXZ @27012 NONAME
     ?Main@BaseStreamHandler@XMPP@@UAEXXZ @26004 NONAME
     ?Main@HouseKeepingThread@PProcess@@UAEXXZ @16724 NONAME
     ?Main@PExternalThread@@UAEXXZ @16725 NONAME
@@ -19089,6 +19198,7 @@ EXPORTS
     ?Main@PSNMPServer@@UAEXXZ @16728 NONAME
     ?MainEntry@PServiceProcess@@AAEXKPAPAD@Z @16729 NONAME
     ?MainFunction@PThread@@CGIPAX@Z @16730 NONAME
+    ?MainLoop@PSDL_Window@@EAEXXZ @27013 NONAME
     ?MakeEmpty@PString@@UAEAAV1@XZ @16731 NONAME
     ?MakeEmpty@PStringStream@@UAEAAVPString@@XZ @16732 NONAME
     ?MakeMinimumSize@PString@@QAE_NXZ @16733 NONAME
@@ -19118,6 +19228,7 @@ EXPORTS
     ?max_size@?$allocator@PAVPInterfaceMonitorClient@@@std@@QBEIXZ @16757 NONAME
     ?max_size@?$allocator@PAVPPluginModuleManager@@@std@@QBEIXZ @16758 NONAME
     ?max_size@?$allocator@PAVPVideoFrameInfo@@@std@@QBEIXZ @26863 NONAME
+    ?max_size@?$allocator@PAVPVideoOutputDevice_SDL@@@std@@QBEIXZ @27014 NONAME
     ?max_size@?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QBEIXZ @16759 NONAME
     ?max_size@?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@std@@QBEIXZ @16760 NONAME
     ?max_size@?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@std@@QBEIXZ @16761 NONAME
@@ -19164,6 +19275,7 @@ EXPORTS
     ?max_size@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QBEIXZ @16794 NONAME
     ?max_size@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBEIXZ @16795 NONAME
     ?max_size@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QBEIXZ @16796 NONAME
+    ?max_size@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QBEIXZ @27015 NONAME
     ?max_size@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBEIXZ @16797 NONAME
     ?max_size@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QBEIXZ @20696 NONAME
     ?max_size@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBEIXZ @16798 NONAME
@@ -19558,6 +19670,7 @@ EXPORTS
     ?Open@PVideoInputDevice_VideoForWindows@@UAE_NABVPString@@_N@Z @17168 NONAME
     ?Open@PVideoInputDevice_YUVFile@@UAE_NABVPString@@_N@Z @17169 NONAME
     ?Open@PVideoOutputDevice_NULLOutput@@UAE_NABVPString@@_N@Z @17170 NONAME
+    ?Open@PVideoOutputDevice_SDL@@UAE_NABVPString@@_N@Z @27016 NONAME
     ?Open@PVideoOutputDevice_Window@@UAE_NABVPString@@_N@Z @17171 NONAME
     ?Open@PVideoOutputDevice_YUVFile@@UAE_NABVPString@@_N@Z @17172 NONAME
     ?Open@PVXMLChannel@@UAE_NPAVPVXMLChannelInterface@@@Z @26105 NONAME
@@ -19745,6 +19858,7 @@ EXPORTS
     ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@1@Z @17344 NONAME
     ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@1AAV4@@Z @17345 NONAME
     ?PostDelete@PODBCRecord@@QAE_NH@Z @17346 NONAME
+    ?PostEvent@PVideoOutputDevice_SDL@@AAEXI@Z @27017 NONAME
     ?PostNew@PODBCRecord@@QAE_NAAVRow@PODBC@@@Z @17347 NONAME
     ?PostShutdown@PProcess@@SAXXZ @17348 NONAME
     ?PostUpdate@PODBCRecord@@QAE_NAAVRow@PODBC@@@Z @17349 NONAME
@@ -19770,6 +19884,8 @@ EXPORTS
     ?PPlugin_PVideoInputDevice_YUVFile_Registration_Instance@@3VPPlugin_PVideoInputDevice_YUVFile_Registration@@A @17369 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_link@@YAHXZ @17370 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_Registration_Instance@@3VPPlugin_PVideoOutputDevice_NULLOutput_Registration@@A @17371 NONAME
+    ?PPlugin_PVideoOutputDevice_SDL_link@@YAHXZ @27018 NONAME
+    ?PPlugin_PVideoOutputDevice_SDL_Registration_Instance@@3VPPlugin_PVideoOutputDevice_SDL_Registration@@A @27019 NONAME
     ?PPlugin_PVideoOutputDevice_Window_link@@YAHXZ @17372 NONAME
     ?PPlugin_PVideoOutputDevice_Window_Registration_Instance@@3VPPlugin_PVideoOutputDevice_Window_Registration@@A @17373 NONAME
     ?PPlugin_PVideoOutputDevice_YUVFile_link@@YAHXZ @17374 NONAME
@@ -19982,6 +20098,7 @@ EXPORTS
     ?push_back@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QAEXABVRequestType@PTimerList@@@Z @17528 NONAME
     ?push_back@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXABQAVContext@PCLI@@@Z @17529 NONAME
     ?push_back@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEXABQAVPInterfaceMonitorClient@@@Z @17530 NONAME
+    ?push_back@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXABQAVPVideoOutputDevice_SDL@@@Z @27020 NONAME
     ?push_back@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEX$$QAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@2@@Z @17531 NONAME
     ?push_back@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXABVPVideoControlInfo@@@Z @20736 NONAME
     ?push_back@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEXABVPVideoFrameInfo@@@Z @17532 NONAME
@@ -20000,6 +20117,7 @@ EXPORTS
     ?PVideoInputDevice_Application_descriptor@@3VPVideoInputDevice_Application_PluginServiceDescriptor@@A @17544 NONAME
     ?PVideoInputDevice_FFMPEG_descriptor@@3VPVideoInputDevice_FFMPEG_PluginServiceDescriptor@@A @17545 NONAME
     ?PVideoInputDevice_YUVFile_descriptor@@3VPVideoInputDevice_YUVFile_PluginServiceDescriptor@@A @17546 NONAME
+    ?PVideoOutputDevice_SDL_descriptor@@3VPVideoOutputDevice_SDL_PluginServiceDescriptor@@A @27021 NONAME
     ?PVideoOutputDevice_Window_descriptor@@3VPVideoOutputDevice_Window_PluginServiceDescriptor@@A @17547 NONAME
     ?PVideoOutputDevice_YUVFile_descriptor@@3VPVideoOutputDevice_YUVFile_PluginServiceDescriptor@@A @17548 NONAME
     ?pvsprintf@@YA?AVPString@@ABV1@PAD@Z @17549 NONAME
@@ -20267,6 +20385,7 @@ EXPORTS
     ?Release@MediaTypePtr@@QAEXXZ @17755 NONAME
     ?Release@PWaveBuffer@@AAEKXZ @17756 NONAME
     ?remove@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEXABQAVPInterfaceMonitorClient@@@Z @17757 NONAME
+    ?remove@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXABQAVPVideoOutputDevice_SDL@@@Z @27022 NONAME
     ?Remove@NT_ServiceManager@@UAE_NPAVPServiceProcess@@@Z @17758 NONAME
     ?Remove@PAbstractDictionary@@EAE_NPBVPObject@@@Z @17759 NONAME
     ?Remove@PAbstractList@@UAE_NPBVPObject@@@Z @17760 NONAME
@@ -20313,6 +20432,7 @@ EXPORTS
     ?RemoveConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@@Z @17800 NONAME
     ?RemoveContext@PCLI@@UAEXPAVContext@1@@Z @17801 NONAME
     ?RemoveContext@PCLISocket@@UAEXPAVContext@PCLI@@@Z @17802 NONAME
+    ?RemoveDevice@PSDL_Window@@AAEXPAVPVideoOutputDevice_SDL@@@Z @27023 NONAME
     ?RemoveElement@PAbstractList@@IAEPAVPObject@@PAUPListElement@@@Z @17803 NONAME
     ?RemoveElement@PAbstractSortedList@@IAEXPAUPSortedListElement@@@Z @17804 NONAME
     ?RemoveElement@PHashTableInfo@@QAEPAVPObject@@ABV2@@Z @17805 NONAME
@@ -20380,6 +20500,7 @@ EXPORTS
     ?Rows@Row@PODBC@@QAEHXZ @17866 NONAME
     ?Rows@Table@PODBC@@QAEHXZ @17867 NONAME
     ?Run@PLua@@UAE_NPBD@Z @22346 NONAME
+    ?Run@PSDL_Window@@QAEXXZ @27024 NONAME
     ?RunContext@PCLI@@UAE_NPAVContext@1@@Z @20764 NONAME
     ?RunContinuous@PTimer@@QAEXABVPTimeInterval@@@Z @17868 NONAME
     ?SafeDereference@PSafeObject@@QAE_NXZ @17869 NONAME
@@ -20596,6 +20717,7 @@ EXPORTS
     ?SetColourFormat@PVideoInputDevice_VideoForWindows@@UAE_NABVPString@@@Z @18072 NONAME
     ?SetColourFormat@PVideoInputDevice_YUVFile@@UAE_NABVPString@@@Z @18073 NONAME
     ?SetColourFormat@PVideoOutputDeviceRGB@@UAE_NABVPString@@@Z @18074 NONAME
+    ?SetColourFormat@PVideoOutputDevice_SDL@@UAE_NABVPString@@@Z @27025 NONAME
     ?SetColourFormat@PVideoOutputDevice_Window@@UAE_NABVPString@@@Z @18075 NONAME
     ?SetColourFormat@PVideoOutputDevice_YUVFile@@UAE_NABVPString@@@Z @18076 NONAME
     ?SetColourFormatConverter@PVideoDevice@@UAE_NABVPString@@@Z @18077 NONAME
@@ -20678,6 +20800,7 @@ EXPORTS
     ?SetFrameData@PVideoOutputDevice@@UAE_NIIIIPBE_NI@Z @18154 NONAME
     ?SetFrameData@PVideoOutputDeviceRGB@@UAE_NIIIIPBE_N@Z @18155 NONAME
     ?SetFrameData@PVideoOutputDevice_NULLOutput@@UAE_NIIIIPBE_N@Z @18156 NONAME
+    ?SetFrameData@PVideoOutputDevice_SDL@@UAE_NIIIIPBE_N@Z @27026 NONAME
     ?SetFrameData@PVideoOutputDevice_YUVFile@@UAE_NIIIIPBE_N@Z @18157 NONAME
     ?SetFrameRate@PVideoFile@@UAE_NI@Z @22361 NONAME
     ?SetFrameRate@PVideoFrameInfo@@UAE_NI@Z @18158 NONAME
@@ -20697,6 +20820,7 @@ EXPORTS
     ?SetFrameSize@PVideoInputDevice_VideoForWindows@@UAE_NII@Z @18172 NONAME
     ?SetFrameSize@PVideoInputDevice_YUVFile@@UAE_NII@Z @18173 NONAME
     ?SetFrameSize@PVideoOutputDeviceRGB@@UAE_NII@Z @18174 NONAME
+    ?SetFrameSize@PVideoOutputDevice_SDL@@UAE_NII@Z @27027 NONAME
     ?SetFrameSize@PVideoOutputDevice_Window@@UAE_NII@Z @18175 NONAME
     ?SetFrameSizeConverter@PVideoDevice@@UAE_NIIW4ResizeMode@PVideoFrameInfo@@@Z @18176 NONAME
     ?SetFrameSizeConverter@PVideoDevice@@UAE_NII_N@Z @18177 NONAME
@@ -21341,6 +21465,7 @@ EXPORTS
     ?UnsignedDecode@PPER_Stream@@QAE_NIIAAI@Z @18749 NONAME
     ?UnsignedEncode@PPER_Stream@@QAEXHII@Z @18750 NONAME
     ?UntranslateString@PURL@@SA?AVPString@@ABV2@W4TranslationType@1@@Z @18751 NONAME
+    ?UpdateContent@PVideoOutputDevice_SDL@@AAEXXZ @27028 NONAME
     ?UpdateHeader@PWAVFile@@IAE_NXZ @18752 NONAME
     ?UpdateHeader@PWAVFileFormat@@UAEXAAUFMTChunk@PWAV@@AAVPBYTEArray@@@Z @18753 NONAME
     ?UpdateHeader@PWAVFileFormatPCM@@UAEXAAUFMTChunk@PWAV@@AAVPBYTEArray@@@Z @18754 NONAME
@@ -21372,6 +21497,7 @@ EXPORTS
     ?ValidateDeviceName@PVideoInputDevice_Application_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @18779 NONAME
     ?ValidateDeviceName@PVideoInputDevice_FFMPEG_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @18780 NONAME
     ?ValidateDeviceName@PVideoInputDevice_YUVFile_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @18781 NONAME
+    ?ValidateDeviceName@PVideoOutputDevice_SDL_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @27029 NONAME
     ?ValidateDeviceName@PVideoOutputDevice_Window_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @18782 NONAME
     ?ValidateDeviceName@PVideoOutputDevice_YUVFile_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @18783 NONAME
     ?ValidateElement@PXML@@QAE_NAAUValidationContext@1@PAVPXMLElement@@PBUValidationInfo@1@@Z @26468 NONAME
@@ -21523,6 +21649,7 @@ EXPORTS
     ?_Assign_rv@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEX$$QAV12@@Z @18928 NONAME
     ?_Buynode@?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@PAU342@0ABQAVContext@PCLI@@@Z @18929 NONAME
     ?_Buynode@?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@PAU342@0ABQAVPInterfaceMonitorClient@@@Z @18930 NONAME
+    ?_Buynode@?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@PAU342@0ABQAVPVideoOutputDevice_SDL@@@Z @27030 NONAME
     ?_Buynode@?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@PAU342@0ABVPVideoControlInfo@@@Z @20809 NONAME
     ?_Buynode@?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEPAU_Node@?$_List_nod@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@2@PAU342@0ABVPVideoFrameInfo@@@Z @18931 NONAME
     ?_Buynode@?$_Tree_val@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@XZ @18932 NONAME
@@ -21676,6 +21803,7 @@ EXPORTS
     ?_Hardfail@?$_Iosb@H@std@@2W4_Iostate@12@B @19054 NONAME
     ?_Incsize@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXI@Z @19055 NONAME
     ?_Incsize@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEXI@Z @19056 NONAME
+    ?_Incsize@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXI@Z @27031 NONAME
     ?_Incsize@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXI@Z @19057 NONAME
     ?_Incsize@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXI@Z @20824 NONAME
     ?_Incsize@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEXI@Z @19058 NONAME
@@ -21684,6 +21812,7 @@ EXPORTS
     ?_Initcvt@?$basic_filebuf@DU?$char_traits@D@std@@@std@@IAEXPBV?$codecvt@DDH@2@@Z @19061 NONAME
     ?_Insert@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXV?$_List_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@2@ABQAVContext@PCLI@@@Z @19062 NONAME
     ?_Insert@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEXV?$_List_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@2@ABQAVPInterfaceMonitorClient@@@Z @19063 NONAME
+    ?_Insert@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXV?$_List_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@2@ABQAVPVideoOutputDevice_SDL@@@Z @27032 NONAME
     ?_Insert@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXV?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@2@ABVPVideoControlInfo@@@Z @20825 NONAME
     ?_Insert@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEXV?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@2@ABVPVideoFrameInfo@@@Z @19064 NONAME
     ?_Insert@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@IAE?AV?$_Tree_iterator@V?$_Tree_val@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@@2@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@2@1@Z @19065 NONAME
@@ -22053,6 +22182,7 @@ EXPORTS
     ?_Min@?$_Tree_val@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@SAPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@PAU342@@Z @19354 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@U_Iterator_base12@2@@std@@QBEPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@XZ @19355 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@U_Iterator_base12@2@@std@@QBEPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@XZ @19356 NONAME
+    ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@U_Iterator_base12@2@@std@@QBEPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@XZ @27033 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@U_Iterator_base12@2@@std@@QBEPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@XZ @19357 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@U_Iterator_base12@2@@std@@QBEPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@XZ @20862 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@U_Iterator_base12@2@@std@@QBEPAU_Node@?$_List_nod@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@2@XZ @19358 NONAME
@@ -22093,6 +22223,7 @@ EXPORTS
     ?_Myptr@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QBEPBDXZ @19386 NONAME
     ?_Myval@?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@SAAAPAVContext@PCLI@@PAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@@Z @19387 NONAME
     ?_Myval@?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@SAAAPAVPInterfaceMonitorClient@@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@@Z @19388 NONAME
+    ?_Myval@?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@SAAAPAVPVideoOutputDevice_SDL@@PAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@@Z @27034 NONAME
     ?_Myval@?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@SAAAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@2@PAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@@Z @19389 NONAME
     ?_Myval@?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@SAAAVAttribute@PLDAPSchema@@PAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@@Z @26568 NONAME
     ?_Myval@?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@SAAAVPVideoControlInfo@@PAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@@Z @19390 NONAME
@@ -22132,6 +22263,7 @@ EXPORTS
     ?_Myval@?$_Tree_val@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@SAAAUTimerExpiryInfo@PTimerList@@PAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@@Z @19417 NONAME
     ?_Nextnode@?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@SAAAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@PAU342@@Z @19418 NONAME
     ?_Nextnode@?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@SAAAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@PAU342@@Z @19419 NONAME
+    ?_Nextnode@?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@SAAAPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@PAU342@@Z @27035 NONAME
     ?_Nextnode@?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@SAAAPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@PAU342@@Z @19420 NONAME
     ?_Nextnode@?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@SAAAPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@PAU342@@Z @26574 NONAME
     ?_Nextnode@?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@SAAAPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@PAU342@@Z @19421 NONAME
@@ -22144,6 +22276,7 @@ EXPORTS
     ?_Orphan_off@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IBEXI@Z @19428 NONAME
     ?_Orphan_ptr@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBEXAAV12@PAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@@Z @19429 NONAME
     ?_Orphan_ptr@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QBEXAAV12@PAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@@Z @19430 NONAME
+    ?_Orphan_ptr@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QBEXAAV12@PAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@@Z @27036 NONAME
     ?_Orphan_ptr@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBEXAAV12@PAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@@Z @19431 NONAME
     ?_Orphan_ptr@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QBEXAAV12@PAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@@Z @26576 NONAME
     ?_Orphan_ptr@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QBEXAAV12@PAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@@Z @19432 NONAME
@@ -22225,6 +22358,7 @@ EXPORTS
     ?_Parent@?$_Tree_val@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@SAAAPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@PAU342@@Z @19493 NONAME
     ?_Prevnode@?$_List_val@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@SAAAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@PAU342@@Z @19494 NONAME
     ?_Prevnode@?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@SAAAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@PAU342@@Z @19495 NONAME
+    ?_Prevnode@?$_List_val@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@SAAAPAU_Node@?$_List_nod@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@2@PAU342@@Z @27037 NONAME
     ?_Prevnode@?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@SAAAPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@PAU342@@Z @19496 NONAME
     ?_Prevnode@?$_List_val@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@SAAAPAU_Node@?$_List_nod@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@2@PAU342@@Z @26588 NONAME
     ?_Prevnode@?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@SAAAPAU_Node@?$_List_nod@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@2@PAU342@@Z @19497 NONAME
@@ -22403,6 +22537,7 @@ EXPORTS
     ?_Tidy@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@IAEXXZ @19639 NONAME
     ?_Tidy@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXXZ @19640 NONAME
     ?_Tidy@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@QAEXXZ @19641 NONAME
+    ?_Tidy@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXXZ @27038 NONAME
     ?_Tidy@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXXZ @19642 NONAME
     ?_Tidy@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAEXXZ @26613 NONAME
     ?_Tidy@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXXZ @19643 NONAME
