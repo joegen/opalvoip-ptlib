@@ -682,6 +682,7 @@ bool PURL::SetScheme(const PString & newScheme)
   }
 
   Recalculate();
+  return true;
 }
 
 
