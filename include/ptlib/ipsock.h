@@ -309,6 +309,7 @@ class PIPSocket : public PSocket
     static PBoolean IsIpAddressFamilyV6Supported();
 #endif
     static const PIPSocket::Address & GetDefaultIpAny();
+    static const PIPSocket::Address & GetInvalidAddress();
 
     /**Open an IPv4 or IPv6 socket
      */
