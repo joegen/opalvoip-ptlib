@@ -717,28 +717,28 @@ class PIPSocketAddressAndPort
 {
   public:
     PIPSocketAddressAndPort()
-      : m_address(0)
+      : m_address(PIPSocket::GetInvalidAddress())
       , m_port(0)
       , m_separator(':')
     {
     }
 
     PIPSocketAddressAndPort(char separator)
-      : m_address(0)
+      : m_address(PIPSocket::GetInvalidAddress())
       , m_port(0)
       , m_separator(separator)
     {
     }
 
     PIPSocketAddressAndPort(WORD defaultPort, char separator = ':')
-      : m_address(0)
+      : m_address(PIPSocket::GetInvalidAddress())
       , m_port(defaultPort)
       , m_separator(separator)
     {
     }
 
     PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char separator = ':')
-      : m_address(0)
+      : m_address(PIPSocket::GetInvalidAddress())
       , m_port(defaultPort)
       , m_separator(separator)
     {
