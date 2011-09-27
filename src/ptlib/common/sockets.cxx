@@ -86,6 +86,7 @@ static int defaultIpAddressFamily = PF_INET;  // PF_UNSPEC;   // default to IPV4
 static PIPSocket::Address loopback4(127,0,0,1);
 static PIPSocket::Address broadcast4(INADDR_BROADCAST);
 static PIPSocket::Address any4(0,0,0,0);
+static PIPSocket::Address invalid(0,NULL);
 
 #if P_HAS_IPV6
 
@@ -149,6 +150,12 @@ const PIPSocket::Address & PIPSocket::GetDefaultIpAny()
 #endif
 
   return any4;
+}
+
+
+const PIPSocket::Address & PIPSocket::GetInvalidAddress()
+{
+  return invalid;
 }
 
 
