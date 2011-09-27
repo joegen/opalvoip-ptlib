@@ -666,15 +666,21 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
 }
 
 
-void PURL::SetScheme(const PString & s)
+bool PURL::SetScheme(const PString & newScheme)
 {
-  scheme = s;
-  schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
-  if (schemeInfo != NULL && !portSupplied) {
+  const PURLScheme * newSchemeInfo = PURLSchemeFactory::CreateInstance(newScheme);
+  if (newSchemeInfo == NULL)
+    return false;
+
+  scheme = newScheme;
+  schemeInfo = newSchemeInfo;
+
+  if (!portSupplied) {
     const PURLLegacyScheme * legacy = dynamic_cast<const PURLLegacyScheme *>(schemeInfo);
     if (legacy != NULL)
       port = legacy->defaultPort;
   }
+
   Recalculate();
 }
 

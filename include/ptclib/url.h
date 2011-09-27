@@ -224,7 +224,7 @@ class PURL : public PObject
     const PCaselessString & GetScheme() const { return scheme; }
 
     /// Set the scheme field of the URL
-    void SetScheme(const PString & scheme);
+    bool SetScheme(const PString & scheme);
 
     /// Get the username field of the URL.
     const PString & GetUserName() const { return username; }
