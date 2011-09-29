@@ -87,7 +87,7 @@ void IPV6Test::Main()
   }
 
 #if ! P_HAS_IPV6
-  cout << "error: IPV6 not included in PWLib" << endl;
+  cout << "error: IPV6 not included in PTLib" << endl;
 #else
 
   if (args.HasOption('4')) {
@@ -278,6 +278,16 @@ void IPV6Test::Main()
     cout << "  host string = " << addrStr << " (should be [::ffff:220.244.81.10])\n"
          << "  address     = " << addr    << " (should be ::ffff:220.244.81.10)\n"
          << "  port        = " << port    << " (should be 1234)\n";
+  }
+  {
+    // test #10 - check PIPSocket::GetGatewayAddress()
+    cout << "test #10: PIPSocket::GetGatewayAddress() ";
+	PIPSocket::Address gw;
+    if (PIPSocket::GetGatewayAddress(gw, 6) && (gw.GetVersion() != 6))
+        cout << "failed";	// IPv6 GW found, but GW is not version 6
+    else
+        cout << "OK";
+    cout << endl;
   }
 #endif
 }
