@@ -1029,7 +1029,8 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
   RouteTable table;
   if (GetRouteTable(table)) {
     for (PINDEX i = 0; i < table.GetSize(); i++) {
-      if (table[i].GetNetwork() == 0) {
+      if ((table[i].GetNetwork() == 0)
+          && (table[i].GetDestination().GetVersion() == (unsigned)version)) {
         addr = table[i].GetDestination();
         return PTrue;
       }
