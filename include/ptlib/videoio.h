@@ -1149,6 +1149,9 @@ class PVideoInputDevice : public PVideoDevice
        A return value of -1 indicates an error or the mode is not supported.
     */
     virtual int GetCaptureMode() const;
+
+    P_REMOVE_VIRTUAL(PBoolean, GetFrameData(BYTE *, PINDEX *, unsigned &), false);
+    P_REMOVE_VIRTUAL(PBoolean, GetFrameDataNoDelay(BYTE *, PINDEX *, unsigned &), false);
 };
 
 
