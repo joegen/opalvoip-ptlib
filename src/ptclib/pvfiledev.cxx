@@ -98,6 +98,7 @@ PCREATE_PLUGIN(YUVFile, PVideoInputDevice, &PVideoInputDevice_YUVFile_descriptor
 
 PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
   : m_file(NULL)
+  , m_pacing(500)
   , m_frameRateAdjust(0)
 {
   SetColourFormat("YUV420P");
