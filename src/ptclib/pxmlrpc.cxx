@@ -667,7 +667,7 @@ PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBas
   for (PINDEX i = 0; i < dataElement->GetSize(); i++) {
     PXMLElement * element = (PXMLElement *)dataElement->GetElement(i);
 
-    PXMLRPCStructBase * structure = array.GetStruct(i);
+    PXMLRPCStructBase * structure = array.GetStruct(count);
     if (structure != NULL) {
       if (ParseStruct(element, *structure))
         count++;
