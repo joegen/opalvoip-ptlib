@@ -109,6 +109,10 @@
 #endif
 #endif
 
+#if defined(P_FREEBSD)
+#include <ifaddrs.h>
+#endif
+
 int PX_NewHandle(const char *, int);
 
 #ifdef P_VXWORKS
@@ -1892,6 +1896,23 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
 {
+#if defined(P_FREEBSD)
+  // tested on FreeBSD 8.2, but seems to work fine on Linux, too
+  struct ifaddrs *interfaces, *ifa;
+
+  if (getifaddrs(&interfaces) == 0) {
+    for (ifa = interfaces; ifa != NULL; ifa = ifa->ifa_next) {
+      if (ifa->ifa_addr == NULL) continue;
+      if ((ifa->ifa_flags & IFF_UP) == 0) continue;
+      if (ifa->ifa_addr->sa_family == AF_INET) {
+        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_netmask)), ""));
+      } else if (ifa->ifa_addr->sa_family == AF_INET6) {
+        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_netmask)), ""));
+      }
+    }
+    freeifaddrs(interfaces);
+  }
+#else	// not P_FREEBSD
   PUDPSocket sock;
 
   PBYTEArray buffer;
@@ -2036,6 +2057,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
     }
     fclose(file);
   }
+#endif
 #endif
 
   return PTrue;
