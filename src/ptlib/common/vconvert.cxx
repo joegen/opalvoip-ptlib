@@ -606,7 +606,8 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
 {
   if (srcX == 0 && srcY == 0 && dstX == 0 && dstY == 0 &&
       srcWidth == dstWidth && srcHeight == dstHeight &&
-      srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) {
+      srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight &&
+      srcWidth == srcFrameWidth && srcHeight == srcFrameHeight) {
     memcpy(dstYUV, srcYUV, srcFrameWidth*srcFrameHeight*3/2);
     return true;
   }
