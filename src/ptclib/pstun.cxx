@@ -875,6 +875,8 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
+    case SymmetricNat :
+    case SymmetricFirewall :
       break;
 
     default :
