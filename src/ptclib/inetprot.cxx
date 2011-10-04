@@ -605,7 +605,7 @@ bool PMIMEInfo::AddMIME(const PString & line)
 }
 
 
-bool PMIMEInfo::AddMIME(const PString & fieldName, const PString & fieldValue)
+bool PMIMEInfo::InternalAddMIME(const PString & fieldName, const PString & fieldValue)
 {
   PString * str = GetAt(fieldName);
   if (str == NULL)
