@@ -39,8 +39,7 @@
 #include <ptclib/pstun.h>
 
 
-static const char FactoryName[] = PINTERFACE_MONITOR_FACTORY_NAME;
-static PFactory<PProcessStartup>::Worker<PInterfaceMonitor> InterfaceMonitorFactory(FactoryName, true);
+PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PInterfaceMonitor);
 
 #ifndef _WIN32_WCE
 #define UDP_BUFFER_SIZE 32768
@@ -96,12 +95,6 @@ PInterfaceMonitor::~PInterfaceMonitor()
 
   delete m_changedDetector;
   delete m_interfaceFilter;
-}
-
-
-PInterfaceMonitor & PInterfaceMonitor::GetInstance()
-{
-  return *PFactory<PProcessStartup>::CreateInstanceAs<PInterfaceMonitor>(FactoryName);
 }
 
 

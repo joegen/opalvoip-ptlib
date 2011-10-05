@@ -157,6 +157,8 @@ class PPluginModuleManager : public PObject
     virtual PluginListType GetPluginList() const
     { return pluginDLLs; }
 
+    virtual void OnStartup()
+    { }
     virtual void OnShutdown()
     { }
 
