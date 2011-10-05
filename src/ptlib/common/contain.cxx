@@ -34,6 +34,7 @@
 #include <ptlib.h>
 #include <ctype.h>
 
+#include <ostream>
 
 #ifdef __NUCLEUS_PLUS__
 extern "C" int vsprintf(char *, const char *, va_list);
@@ -53,9 +54,6 @@ extern "C" int vsprintf(char *, const char *, va_list);
 
 
 PDEFINE_POOL_ALLOCATOR(PContainerReference);
-
-static char EmptyStringMemory[sizeof(PConstString)];
-static PConstString const * EmptyString = new (EmptyStringMemory) PConstString("");
 
 
 #define new PNEW
@@ -662,6 +660,8 @@ PString::PString(char c)
 
 const PString & PString::Empty()
 {
+  static char EmptyStringMemory[sizeof(PConstString)];
+  static PConstString const * EmptyString = new (EmptyStringMemory)PConstString("");
   return *EmptyString;
 }
 
@@ -677,6 +677,7 @@ PString::PString(const char * cstr)
   }
 }
 
+#ifdef P_HAS_WCHAR
 
 PString::PString(const wchar_t * ustr)
 {
@@ -690,16 +691,6 @@ PString::PString(const wchar_t * ustr)
   }
 }
 
-
-PString::PString(const char * cstr, PINDEX len)
-  : PCharArray(len+1)
-  , m_length(len)
-{
-  if (len > 0)
-    memcpy(theArray, PAssertNULL(cstr), len);
-}
-
-
 PString::PString(const wchar_t * ustr, PINDEX len)
 {
   InternalFromUCS2(ustr, len);
@@ -712,6 +703,16 @@ PString::PString(const PWCharArray & ustr)
   if (size > 0 && ustr[size-1] == 0) // Stip off trailing NULL if present
     size--;
   InternalFromUCS2(ustr, size);
+}
+
+#endif // P_HAS_WCHAR
+
+PString::PString(const char * cstr, PINDEX len)
+  : PCharArray(len+1)
+  , m_length(len)
+{
+  if (len > 0)
+    memcpy(theArray, PAssertNULL(cstr), len);
 }
 
 
@@ -827,6 +828,26 @@ template <typename T> PINDEX p_signed2string(T value, T base, char * str)
   *str = '-';
   return p_unsigned2string<T>(-value, base, str+1)+1;
 }
+
+template <>
+PINDEX p_signed2string(unsigned int value, unsigned int base, char * str)
+{
+  return p_unsigned2string<unsigned int>(value, base, str);
+}
+
+template <>
+PINDEX p_signed2string(unsigned short value, unsigned short base, char * str)
+{
+  return p_unsigned2string<unsigned short>(value, base, str);
+}
+
+template <>
+PINDEX p_signed2string(unsigned char value, unsigned char base, char * str)
+{
+  return p_unsigned2string<unsigned char>(value, base, str);
+}
+
+
 #ifdef _MSC_VER
 #pragma warning(default:4146)
 #endif
@@ -1860,6 +1881,8 @@ double PString::AsReal() const
 }
 
 
+#ifdef P_HAS_WCHAR
+
 PWCharArray PString::AsUCS2() const
 {
   PWCharArray ucs2(1); // Null terminated empty string
@@ -1999,6 +2022,8 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
 
 #endif
 }
+
+#endif // P_HAS_WCHAR
 
 
 PBYTEArray PString::ToPascal() const

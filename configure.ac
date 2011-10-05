@@ -233,6 +233,15 @@ case "$target_os" in
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
                    ;;
 
+  uclibc*)         OSTYPE=linux ;  
+                   OSRELEASE="\"`uname -r`\"";
+		   OS_TAG="P_LINUX" ;
+                   need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+		   HAS_HTTPSVC=
+                   ;;
+
   freebsd*|kfreebsd*)       OSTYPE=FreeBSD ;
 		   OS_TAG="P_FREEBSD" ;
                    if test "x$OSRELEASE" = "x"; then
@@ -389,6 +398,11 @@ case "$target_cpu" in
    arm | armv6 | armv7 )
         MACHTYPE=$target_cpu
 	PBYTE_ORDER=PLITTLE_ENDIAN
+        ;;
+
+   bfin )
+        MACHTYPE=bfin
+	STDCCFLAGS=-mstack-check-l1
         ;;
 
    * )
@@ -967,9 +981,15 @@ AC_DEFINE_UNQUOTED(P_SETPGRP_NOPARM, ${P_SETPGRP_NOPARM})
 
 
 dnl ########################################################################
-dnl check for asyc I/O
+dnl check for async I/O
 
 AC_CHECK_HEADERS(aio.h, [AC_DEFINE(P_HAS_AIO, 1)])
+
+dnl ########################################################################
+dnl check for wchar and friends
+
+dnl MSWIN wchar support,,P_HAS_WCHAR
+AC_CHECK_HEADERS(wchar.h, [AC_DEFINE(P_HAS_WCHAR, 1)])
 
 
 dnl ########################################################################
