@@ -76,7 +76,7 @@ class PInterfaceMonitor : public PProcessStartup
     virtual ~PInterfaceMonitor();
 
     /// Return the singleton interface for the network monitor
-    static PInterfaceMonitor & GetInstance();
+    PFACTORY_GET_SINGLETON(PProcessStartupFactory, PInterfaceMonitor);
     
     /// Change the refresh interval
     void SetRefreshInterval (unsigned refresh);

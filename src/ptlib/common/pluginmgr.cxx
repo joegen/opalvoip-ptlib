@@ -61,9 +61,6 @@ class PluginLoaderStartup : public PProcessStartup
   public:
     void OnStartup();
     void OnShutdown();
-
-  protected:
-    std::vector<PPluginModuleManager *> managers;
 };
 
 
@@ -504,36 +501,27 @@ void PluginLoaderStartup::OnStartup()
   // load the actual DLLs, which will also load the system plugins
   PStringArray dirs = PPluginManager::GetPluginDirs();
   PPluginManager & mgr = PPluginManager::GetPluginManager();
-  PINDEX i;
-  for (i = 0; i < dirs.GetSize(); i++) 
+  for (PINDEX i = 0; i < dirs.GetSize(); i++) 
     mgr.LoadPluginDirectory(dirs[i]);
 
-  // load the plugin module managers, and construct the list of suffixes
+  // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
-  PFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
-  for (r = keyList.begin(); r != keyList.end(); ++r) {
-    PPluginModuleManager * mgr = PFactory<PPluginModuleManager>::CreateInstance(*r);
-    if (mgr == NULL) {
-      PTRACE(1, "PLUGIN\tCannot create manager for plugins of type " << *r);
-    } else {
-      PTRACE(3, "PLUGIN\tCreated manager for plugins of type " << *r);
-      managers.push_back(mgr);
-    }
-  }
+  PFactory<PPluginModuleManager>::KeyList_T::const_iterator it;
+  for (it = keyList.begin(); it != keyList.end(); ++it)
+    PFactory<PPluginModuleManager>::CreateInstance(*it)->OnStartup();
 }
+
 
 void PluginLoaderStartup::OnShutdown()
 {
   PPluginManager::GetPluginManager().OnShutdown();
 
-  while (managers.begin() != managers.end()) {
-    std::vector<PPluginModuleManager *>::iterator r = managers.begin();
-    PPluginModuleManager * mgr = *r;
-    managers.erase(r);
-    mgr->OnShutdown();
-    delete mgr;
-  }
+  // load the plugin module managers, and construct the list of suffixes
+  PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
+  PFactory<PPluginModuleManager>::KeyList_T::const_iterator it;
+  for (it = keyList.begin(); it != keyList.end(); ++it)
+    PFactory<PPluginModuleManager>::CreateInstance(*it)->OnShutdown();
 }
 
-PFACTORY_CREATE(PFactory<PProcessStartup>, PluginLoaderStartup, "PluginLoader", true);
+PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PluginLoaderStartup);
 
