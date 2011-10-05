@@ -89,7 +89,11 @@ typedef uint32_t DWORD;
 
 typedef void                    VOID;
 typedef char                    CHAR;
+
+#ifdef P_HAS_WCHAR
 typedef wchar_t                 WCHAR;
+#endif
+
 typedef signed char             SCHAR;
 typedef unsigned char           UCHAR;
 typedef short                   SHORT;
@@ -116,9 +120,13 @@ typedef double                  LDOUBLE;
 typedef void *                  PTR;
 typedef void *                  LPVOID;
 typedef CHAR *                  LPSTR;
+
+#ifdef P_HAS_WCHAR
 typedef WCHAR *                 LPWSTR;
-typedef const CHAR *            LPCSTR;
 typedef const WCHAR *           LPCWSTR;
+#endif
+
+typedef const CHAR *            LPCSTR;
 typedef DWORD *                 LPDWORD;
 #define FAR
 
