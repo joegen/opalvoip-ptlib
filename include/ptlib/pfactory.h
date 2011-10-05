@@ -117,6 +117,8 @@ class PFactoryBase
     virtual ~PFactoryBase()
     { }
 
+    virtual void DestroySingletons() = 0;
+
     class FactoryMap : public std::map<std::string, PFactoryBase *>
     {
       public:
@@ -127,7 +129,8 @@ class PFactoryBase
     static FactoryMap & GetFactories();
     static PMutex & GetFactoriesMutex();
 
-    PMutex mutex;
+  protected:
+    PMutex m_mutex;
 
   private:
     PFactoryBase(const PFactoryBase &) {}
@@ -147,41 +150,54 @@ class PFactory : PFactoryBase
     class WorkerBase
     {
       protected:
+        enum Types {
+          NonSingleton,
+          StaticSingleton,
+          DynamicSingleton
+        } m_type;
+
+        Abstract_T * m_singletonInstance;
+
         WorkerBase(bool singleton = false)
-          : isDynamic(false),
-            isSingleton(singleton),
-            singletonInstance(NULL),
-            deleteSingleton(false)
+          : m_type(singleton ? DynamicSingleton : NonSingleton)
+          , m_singletonInstance(NULL)
         { }
+
         WorkerBase(Abstract_T * instance, bool delSingleton = true)
-          : isDynamic(true),
-            isSingleton(true),
-            singletonInstance(instance),
-            deleteSingleton(delSingleton)
+          : m_type(delSingleton ? DynamicSingleton : StaticSingleton)
+          , m_singletonInstance(instance)
         { }
 
         virtual ~WorkerBase()
         {
-          if (deleteSingleton)
-            delete singletonInstance;
+          DestroySingleton();
         }
 
         Abstract_T * CreateInstance(const Key_T & key)
         {
-          if (!isSingleton)
+          if (m_type == NonSingleton)
             return Create(key);
 
-          if (singletonInstance == NULL)
-            singletonInstance = Create(key);
-          return singletonInstance;
+          if (m_singletonInstance == NULL)
+            m_singletonInstance = Create(key);
+          return m_singletonInstance;
         }
 
-        virtual Abstract_T * Create(const Key_T & /*key*/) const { return singletonInstance; }
+        virtual Abstract_T * Create(const Key_T & /*key*/) const
+        {
+          PAssert(this->m_type == StaticSingleton, "Incorrect factory worker descendant");
+          return this->m_singletonInstance;
+        }
 
-        bool         isDynamic;
-        bool         isSingleton;
-        Abstract_T * singletonInstance;
-        bool         deleteSingleton;
+        virtual void DestroySingleton()
+        {
+          if (m_type == DynamicSingleton) {
+            delete m_singletonInstance;
+            m_singletonInstance = NULL;
+          }
+        }
+
+        bool IsSingleton() const { return m_type != NonSingleton; }
 
       friend class PFactory<Abstract_T, Key_T>;
     };
@@ -194,30 +210,23 @@ class PFactory : PFactoryBase
           : WorkerBase(singleton)
         {
           PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-          PFactory<Abstract_T, Key_T>::Register(key, this);   // here
+          PAssert((PFactory<Abstract_T, Key_T>::Register(key, this)),
+                  "Multiple instances of factory worker registered");
         }
 
       protected:
         virtual Abstract_T * Create(const Key_T & /*key*/) const
         {
-#if PMEMORY_HEAP
-          // Singletons are never deallocated, so make sure they arenot reported as a leak
-          PBoolean previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(WorkerBase::isSingleton);
-#endif
-          Abstract_T * instance = new ConcreteClass;
-#if PMEMORY_HEAP
-          PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
-#endif
-          return instance;
+          return new ConcreteClass;
         }
     };
 
     typedef std::map<Key_T, WorkerBase *> KeyMap_T;
     typedef std::vector<Key_T> KeyList_T;
 
-    static void Register(const Key_T & key, WorkerBase * worker)
+    static bool Register(const Key_T & key, WorkerBase * worker)
     {
-      GetInstance().Register_Internal(key, worker);
+      return GetInstance().Register_Internal(key, worker);
     }
 
     static void Register(const Key_T & key, Abstract_T * instance, bool autoDeleteInstance = true)
@@ -269,12 +278,18 @@ class PFactory : PFactoryBase
 
     static KeyMap_T & GetKeyMap()
     { 
-      return GetInstance().keyMap;
+      return GetInstance().m_keyMap;
     }
 
     static PMutex & GetMutex()
     {
-      return GetInstance().mutex;
+      return GetInstance().m_mutex;
+    }
+
+    virtual void DestroySingletons()
+    {
+      for (typename KeyMap_T::const_iterator it = m_keyMap.begin(); it != m_keyMap.end(); ++it)
+        it->second->DestroySingleton();
     }
 
   protected:
@@ -283,11 +298,7 @@ class PFactory : PFactoryBase
 
     ~PFactory()
     {
-      typename KeyMap_T::const_iterator entry;
-      for (entry = keyMap.begin(); entry != keyMap.end(); ++entry) {
-        if (entry->second->isDynamic)
-          delete entry->second;
-      }
+      DestroySingletons();
     }
 
     static PFactory & GetInstance()
@@ -311,77 +322,72 @@ class PFactory : PFactoryBase
     }
 
 
-    void Register_Internal(const Key_T & key, WorkerBase * worker)
+    bool Register_Internal(const Key_T & key, WorkerBase * worker)
     {
-      PWaitAndSignal m(mutex);
-      if (keyMap.find(key) == keyMap.end()) {
-        keyMap[key] = worker;
-        if (worker->isSingleton)
-          worker->CreateInstance(key);
-      }
+      PWaitAndSignal mutex(m_mutex);
+      if (m_keyMap.find(key) != m_keyMap.end())
+        return false;
+      m_keyMap[key] = PAssertNULL(worker);
+      return true;
     }
 
     PBoolean RegisterAs_Internal(const Key_T & newKey, const Key_T & oldKey)
     {
-      PWaitAndSignal m(mutex);
-      if (keyMap.find(oldKey) == keyMap.end())
+      PWaitAndSignal mutex(m_mutex);
+      if (m_keyMap.find(oldKey) == m_keyMap.end())
         return false;
-      keyMap[newKey] = keyMap[oldKey];
+      m_keyMap[newKey] = m_keyMap[oldKey];
       return true;
     }
 
     void Unregister_Internal(const Key_T & key)
     {
-      PWaitAndSignal m(mutex);
-      typename KeyMap_T::iterator r = keyMap.find(key);
-      if (r != keyMap.end()) {
-        if (r->second->isDynamic)
-          delete r->second;
-        keyMap.erase(r);
-      }
+      m_mutex.Wait();
+      m_keyMap.erase(key);
+      m_mutex.Signal();
     }
 
     void UnregisterAll_Internal()
     {
-      PWaitAndSignal m(mutex);
-      while (keyMap.size() > 0)
-        keyMap.erase(keyMap.begin());
+      m_mutex.Wait();
+      m_keyMap.clear();
+      m_mutex.Signal();
     }
 
     bool IsRegistered_Internal(const Key_T & key)
     {
-      PWaitAndSignal m(mutex);
-      return keyMap.find(key) != keyMap.end();
+      PWaitAndSignal mutex(m_mutex);
+      return m_keyMap.find(key) != m_keyMap.end();
     }
 
     Abstract_T * CreateInstance_Internal(const Key_T & key)
     {
-      PWaitAndSignal m(mutex);
-      typename KeyMap_T::const_iterator entry = keyMap.find(key);
-      if (entry != keyMap.end())
+      PWaitAndSignal mutex(m_mutex);
+      typename KeyMap_T::const_iterator entry = m_keyMap.find(key);
+      if (entry != m_keyMap.end())
         return entry->second->CreateInstance(key);
       return NULL;
     }
 
     bool IsSingleton_Internal(const Key_T & key)
     {
-      PWaitAndSignal m(mutex);
-      if (keyMap.find(key) == keyMap.end())
+      PWaitAndSignal mutex(m_mutex);
+      if (m_keyMap.find(key) == m_keyMap.end())
         return false;
-      return keyMap[key]->isSingleton;
+      return m_keyMap[key]->IsSingleton();
     }
 
     KeyList_T GetKeyList_Internal()
     { 
-      PWaitAndSignal m(mutex);
+      PWaitAndSignal mutex(m_mutex);
       KeyList_T list;
       typename KeyMap_T::const_iterator entry;
-      for (entry = keyMap.begin(); entry != keyMap.end(); ++entry)
+      for (entry = m_keyMap.begin(); entry != m_keyMap.end(); ++entry)
         list.push_back(entry->first);
       return list;
     }
 
-    KeyMap_T keyMap;
+    KeyMap_T m_keyMap;
 
   private:
     PFactory(const PFactory &) {}
@@ -400,11 +406,21 @@ class PFactory : PFactoryBase
     are in the library. Then whan an application includes the abstract types
     header, it will force the load of all the possible concrete classes.
   */
-#define PFACTORY_CREATE(factory, ConcreteType, keyValue, singleton) \
+#define PFACTORY_CREATE(factory, ConcreteClass, ...) \
   namespace PFactoryLoader { \
-    int ConcreteType##_link() { return 0; } \
-    factory::Worker<ConcreteType> ConcreteType##_instance(keyValue, singleton); \
+    int ConcreteClass##_link() { return 0; } \
+    factory::Worker<ConcreteClass> ConcreteClass##_instance(__VA_ARGS__); \
   }
+
+#define PFACTORY_CREATE_SINGLETON(factory, ConcreteClass) \
+        PFACTORY_CREATE(factory, ConcreteClass, typeid(ConcreteClass).name(), true)
+
+#define PFACTORY_GET_SINGLETON(factory, ConcreteClass) \
+        static ConcreteClass & GetInstance() { \
+          return *factory::CreateInstanceAs<ConcreteClass>(typeid(ConcreteClass).name()); \
+        }
+
+
 
 
 /* This macro is used to force linking of factories.
