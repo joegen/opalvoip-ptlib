@@ -661,7 +661,9 @@ PString::PString(char c)
 const PString & PString::Empty()
 {
   static char EmptyStringMemory[sizeof(PConstString)];
-  static PConstString const * EmptyString = new PConstString("");
+#undef new
+  static PConstString const * EmptyString = new (EmptyStringMemory) PConstString("");
+#define new PNEW
   return *EmptyString;
 }
 
