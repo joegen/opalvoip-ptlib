@@ -134,6 +134,7 @@ HAS_SOCKS=1
 HAS_FTP=1
 HAS_SNMP=1
 HAS_TELNET=1
+HAS_CLI=1
 HAS_REMCONN=1
 HAS_SERIAL=1
 HAS_POP3SMTP=1
@@ -182,6 +183,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_FTP=
   HAS_SNMP=
   HAS_TELNET=
+  HAS_CLI=
   HAS_REMCONN=
   HAS_SERIAL=
   HAS_POP3SMTP=
@@ -1593,6 +1595,13 @@ dnl MSWIN_DEFINE     telnet,P_TELNET
 PTLIB_SIMPLE_OPTION([telnet], [TELNET], [enable TELNET protocol support])
 
 dnl ########################################################################
+dnl check for enabling CLI support
+dnl MSWIN_DISPLAY    cli,Command ine interpreter support
+dnl MSWIN_DEFINE     cli,P_CLI
+
+PTLIB_SIMPLE_OPTION([cli], [CLI], [enable command line interpreter support])
+
+dnl ########################################################################
 dnl check for enabling REMCONN support
 dnl MSWIN_DISPLAY    remconn,remote connection support
 dnl MSWIN_DEFINE     remconn,P_REMCONN
@@ -1893,6 +1902,7 @@ PTLIB_NEW_OPTION(SOCKS)
 PTLIB_NEW_OPTION(FTP)
 PTLIB_NEW_OPTION(SNMP)
 PTLIB_NEW_OPTION(TELNET)
+PTLIB_NEW_OPTION(CLI)
 PTLIB_NEW_OPTION(REMCONN)
 PTLIB_NEW_OPTION(SERIAL)
 PTLIB_NEW_OPTION(POP3SMTP)
