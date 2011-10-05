@@ -36,7 +36,10 @@
 #ifndef PTLIB_CLI_H
 #define PTLIB_CLI_H
 
-#include <ptlib.h>
+#include <ptbuildopts.h>
+
+#if P_CLI
+
 #include <ptlib/sockets.h>
 
 #include <list>
@@ -754,6 +757,7 @@ class PCLITelnet : public PCLISocket
 };
 #endif // P_TELNET
 
+#endif // P_CLI
 
 #endif // PTLIB_CLI_H
 
