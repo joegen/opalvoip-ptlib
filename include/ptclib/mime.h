@@ -112,9 +112,14 @@ class PMIMEInfo : public PStringOptions
     bool AddMIME(
       const PString & fieldName, ///< MIME field name
       const PString & fieldValue ///< MIME field value
-    );
+    ) { return InternalAddMIME(fieldName, fieldValue); }
     bool AddMIME(
       const PMIMEInfo & mime
+    );
+
+    virtual bool InternalAddMIME(
+      const PString & fieldName, ///< MIME field name
+      const PString & fieldValue ///< MIME field value
     );
 
     /** Get a complex MIME field.
