@@ -1612,8 +1612,6 @@ PString PConfigArgs::CharToString(char ch) const
 
 PProcess * PProcessInstance;
 
-typedef std::map<PString, PProcessStartup *> PProcessStartupList;
-
 int PProcess::InternalMain(void *)
 {
   Main();
@@ -1641,13 +1639,6 @@ void PProcess::PreInitialise(int c, char ** v, char **)
 }
 
 
-static PProcessStartupList & GetPProcessStartupList()
-{
-  static PProcessStartupList list;
-  return list;
-}
-
-
 PProcess::PProcess(const char * manuf, const char * name,
                    WORD major, WORD minor, CodeStatus stat, WORD build,
                    bool library)
@@ -1664,6 +1655,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 {
   m_activeThreads[GetCurrentThreadId()] = this;
 
+  PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
 
 #ifdef P_RTEMS
@@ -1687,23 +1679,15 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
-  // create one instance of each class registered in the 
-  // PProcessStartup abstract factory
-  PProcessStartupList & startups = GetPProcessStartupList();
-  {
-    PProcessStartup * levelSet = PFactory<PProcessStartup>::CreateInstance("SetTraceLevel");
-    if (levelSet != NULL) 
-      levelSet->OnStartup();
+  PProcessStartup * levelSet = PProcessStartupFactory::CreateInstance("SetTraceLevel");
+  if (levelSet != NULL) 
+    levelSet->OnStartup();
 
-    PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
-    PProcessStartupFactory::KeyList_T::const_iterator r;
-    for (r = list.begin(); r != list.end(); ++r) {
-      if (*r != "SetTraceLevel") {
-        PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
-        instance->OnStartup();
-        startups.insert(std::pair<PString, PProcessStartup *>(*r, instance));
-      }
-    }
+  // create one instance of each class registered in the PProcessStartup abstract factory
+  PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
+  for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it) {
+    if (*it != "SetTraceLevel")
+      PProcessStartupFactory::CreateInstance(*it)->OnStartup();
   }
 
 #if PMEMORY_HEAP
@@ -1716,19 +1700,18 @@ PProcess::PProcess(const char * manuf, const char * name,
 void PProcess::PreShutdown()
 {
   PProcessInstance->m_shuttingDown = true;
-  PProcessStartupList & startups = GetPProcessStartupList();
-  for (PProcessStartupList::iterator startup = startups.begin(); startup != startups.end(); ++startup)
-    startup->second->OnShutdown();
+  PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
+  for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it)
+    PProcessStartupFactory::CreateInstance(*it)->OnShutdown();
 }
 
 
 void PProcess::PostShutdown()
 {
-  PProcessStartupList & startups = GetPProcessStartupList();
-  for (PProcessStartupList::iterator startup = startups.begin(); startup != startups.end(); ++startup)
-    delete startup->second;
-
-  startups.clear();
+  PWaitAndSignal mutex(PFactoryBase::GetFactoriesMutex());
+  PFactoryBase::FactoryMap & factories = PFactoryBase::GetFactories();
+  for (PFactoryBase::FactoryMap::iterator it = factories.begin(); it != factories.end(); ++it)
+    it->second->DestroySingletons();
 
   PProcessInstance = NULL;
 }
