@@ -1565,15 +1565,17 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback(int IPV6_PARAM(versio
 
 const PIPSocket::Address & PIPSocket::Address::GetAny(int IPV6_PARAM(version))
 {
-  switch (version) {
 #if P_HAS_IPV6
+  switch (version) {
     case 6 :
       return any6;
-#endif
     case 4 :
       return any4;
 
     default :
+#else
+  {
+#endif
       return PIPSocket::GetDefaultIpAny();
   }
 }
@@ -2516,6 +2518,7 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
   Connect(address);
 }
 
+#if P_QOS
 
 PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
 {
@@ -2532,6 +2535,7 @@ PQoS & PUDPSocket::GetQoSSpec()
   return qosSpec;
 }
 
+#endif
 
 PBoolean PUDPSocket::ApplyQoS()
 {
