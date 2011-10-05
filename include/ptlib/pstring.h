@@ -65,10 +65,14 @@ PString pvsprintf(
   va_list arg       ///< Arguments for formatting
 );
 
+#ifdef P_HAS_WCHAR
+
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
 typedef PBaseArray<unsigned short> PWCharArray;
 #else
 typedef PBaseArray<wchar_t> PWCharArray;
+#endif
+
 #endif
 
 /**The character string class. It supports a wealth of additional functions
@@ -154,9 +158,11 @@ class PString : public PCharArray
        A new memory block is allocated of a size sufficient to take the length
        of the string and its terminating '\\0' character.
      */
+#ifdef P_HAS_WCHAR
     PString(
       const wchar_t * ustr ///< UCS-2 null terminated string.
     );
+#endif
 
     /**Create a string from the array. A new memory block is allocated of
        a size equal to <code>len</code> plus one which is sufficient to take
@@ -186,6 +192,7 @@ class PString : public PCharArray
        <code>MakeMinimumSize()</code> function is called, all data beyond that first
        '\\0' character will be lost.
      */
+#ifdef P_HAS_WCHAR
     PString(
       const wchar_t * ustr,  ///< Pointer to a string of UCS-2 characters.
       PINDEX len          ///< Length of the string in bytes.
@@ -204,6 +211,7 @@ class PString : public PCharArray
     PString(
       const PWCharArray & ustr ///< UCS-2 null terminated string.
     );
+#endif
 
     /**Create a string from the single character. This is most commonly used
        as a type conversion constructor when a literal character, eg 'A' is
@@ -1608,10 +1616,12 @@ class PString : public PCharArray
      */
     double AsReal() const;
      
+#ifdef P_HAS_WCHAR
     /**Convert UTF-8 string to UCS-2.
        Note the resultant PWCharArray will have the trailing null included.
       */
     PWCharArray AsUCS2() const;
+#endif
 
     /**Convert a standard null terminated string to a "pascal" style string.
        This consists of a songle byte for the length of the string and then
@@ -1684,10 +1694,12 @@ class PString : public PCharArray
 
 
   protected:
+#ifdef P_HAS_WCHAR
     void InternalFromUCS2(
       const wchar_t * ptr,
       PINDEX len
     );
+#endif
     virtual Comparison InternalCompare(
       PINDEX offset,      // Offset into string to compare.
       char c              // Character to compare against.
@@ -1723,11 +1735,12 @@ inline ostream & operator<<(ostream & stream, const PString & string)
   return stream;
 }
 
-
+#ifdef P_HAS_WCHAR
 inline wostream & operator<<(wostream & stream, const PString & string)
 {
   return stream << (const char *)string;
 }
+#endif
 
 
 #ifdef _WIN32

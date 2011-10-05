@@ -946,8 +946,10 @@ bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & 
     // save the entity body, being careful of binary files
     if (encoding == "base64")
       PBase64::Decode(PString(partPtr, partLen), info->m_binaryBody);
+#ifdef P_HAS_WCHAR
     else if (typeInfo("charset") *= "UCS-2")
       info->m_textBody = PString((const wchar_t *)partPtr, partLen/2);
+#endif
     else if (encoding == "7bit" || encoding == "8bit" || (typeInfo("charset") *= "UTF-8") || memchr(partPtr, 0, partLen) == NULL)
       info->m_textBody = PString(partPtr, partLen);
     else
