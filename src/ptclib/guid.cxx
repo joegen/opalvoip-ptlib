@@ -38,7 +38,10 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/random.h>
+
+#if P_ASN
 #include <ptclib/asner.h>
+#endif
 
 
 #define new PNEW
