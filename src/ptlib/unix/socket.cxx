@@ -2117,6 +2117,8 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
+#if P_QOS
+
 void PUDPSocket::EnableGQoS()
 {
 }
@@ -2125,6 +2127,8 @@ PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & )
 {
   return PFalse;
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
