@@ -988,7 +988,7 @@ AC_CHECK_HEADERS(aio.h, [AC_DEFINE(P_HAS_AIO, 1)])
 dnl ########################################################################
 dnl check for wchar and friends
 
-dnl MSWIN_DISPLAY wchar,wchar Support,
+dnl MSWIN_DISPLAY wchar,wchar Support
 dnl MSWIN_DEFINE  wchar,P_HAS_WCHAR
 
 AC_CHECK_HEADERS(wchar.h, [AC_DEFINE(P_HAS_WCHAR, 1)])
