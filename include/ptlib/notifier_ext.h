@@ -144,7 +144,7 @@ class PAsyncNotifierTarget
 {
   public:
     PAsyncNotifierTarget();
-    ~PAsyncNotifierTarget();
+    virtual ~PAsyncNotifierTarget();
 
     /**Execute any notifications queued.
        The target must call this function for the asynchronous notifications
