@@ -126,12 +126,13 @@ class PSSLInitialiser : public PProcessStartup
     virtual void OnShutdown();
     void LockingCallback(int mode, int n);
 
+    PFACTORY_GET_SINGLETON(PProcessStartupFactory, PSSLInitialiser);
+
   private:
     vector<PMutex> mutexes;
 };
 
-static const char SSLSubsystemName[] = "OpenSSL";
-static PFactory<PProcessStartup>::Worker<PSSLInitialiser> PSSLInitialiserInstance(SSLSubsystemName, true);
+PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PSSLInitialiser);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -718,8 +719,7 @@ PBoolean PSSLDiffieHellman::Load(const PFilePath & dhFile,
 
 static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/)
 {
-  static PSSLInitialiser * instance = PFactory<PProcessStartup>::CreateInstanceAs<PSSLInitialiser>(SSLSubsystemName);
-  instance->LockingCallback(mode, n);
+  PSSLInitialiser::GetInstance().LockingCallback(mode, n);
 }
 
 
