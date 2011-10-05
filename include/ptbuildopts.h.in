@@ -125,6 +125,7 @@
 #undef P_FTP
 #undef P_SNMP
 #undef P_TELNET
+#undef P_CLI
 #undef P_REMCONN
 #undef P_SERIAL
 #undef P_POP3SMTP

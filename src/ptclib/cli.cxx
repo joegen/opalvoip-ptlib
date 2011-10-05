@@ -35,6 +35,9 @@
 
 #include <ptlib.h>
 #include <ptclib/cli.h>
+
+#if P_CLI
+
 #include <ptclib/telnet.h>
 
 
@@ -882,5 +885,7 @@ PTCPSocket * PCLITelnet::CreateSocket()
 }
 
 #endif // P_TELNET
+
+#endif // P_CLI
 
 ///////////////////////////////////////////////////////////////////////////////

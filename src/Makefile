@@ -234,8 +234,11 @@ SOURCES += \
 endif
 
 ifdef HAS_TELNET
-SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx \
-	$(COMPONENT_SRC_DIR)/cli.cxx
+SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx
+endif
+
+ifdef HAS_CLI
+SOURCES += $(COMPONENT_SRC_DIR)/cli.cxx
 endif
 
 ifdef HAS_STUN
