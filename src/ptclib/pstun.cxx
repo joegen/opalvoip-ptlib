@@ -60,6 +60,9 @@
 #define IS_SUCCESS_RESP(msg_type)  (((msg_type) & 0x0110) == 0x0100)
 #define IS_ERR_RESP(msg_type)      (((msg_type) & 0x0110) == 0x0110)
 
+PFACTORY_CREATE(PFactory<PNatMethod>, PSTUNClient, "STUN");
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 PSTUN::PSTUN()
@@ -1338,8 +1341,6 @@ PSTUNClient::RTPSupportTypes PSTUNClient::GetRTPSupport(bool force)
   }
 }
 
-typedef PSTUNClient PNatMethod_STUN;
-PCREATE_NAT_PLUGIN(STUN);
 
 //////////////////////////////////////////////////////////////////////
    
@@ -1354,6 +1355,8 @@ void PTURNRequestedTransport::Initialise(BYTE protocol)
 }
 
 //////////////////////////////////////////////////////////////////////
+
+PFACTORY_CREATE(PFactory<PNatMethod>, PTURNClient, "TURN");
 
 PTURNClient::PTURNClient()
   : PSTUNClient()

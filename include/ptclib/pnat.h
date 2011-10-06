@@ -613,8 +613,7 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
 	} 
 };
 
-#define PDECLARE_NAT_METHOD(method, cls) \
-  static PFactory<PNatMethod>::Worker<cls> static_##cls##_Factory(#method) 
+#define PDECLARE_NAT_METHOD(method, cls) PFACTORY_CREATE(PFactory<PNatMethod>, cls, #method)
 
 #define PCREATE_NAT_PLUGIN(name) \
   static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
@@ -622,6 +621,15 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
 
 
 #define P_NAT_PARAM(p) ,p
+
+
+#if P_STUN
+PFACTORY_LOAD(PSTUNClient);
+#endif
+
+#if P_TURN
+PFACTORY_LOAD(PTURNClient);
+#endif
 
 #else  // P_NAT
 
