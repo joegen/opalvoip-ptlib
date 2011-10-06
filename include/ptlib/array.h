@@ -820,7 +820,7 @@ class PArrayObjects : public PCollection
        Pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveAt(
-      PINDEX index   ///< Index position in collection to place the object.
+      PINDEX index   ///< Index position in collection of object to remove.
     );
 
     /**Set the object at the specified ordinal position to the new value. This
