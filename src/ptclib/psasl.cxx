@@ -228,8 +228,11 @@ PBoolean PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
     if (m_ConnState)
         End();
 
-    sasl_conn_t** s = (sasl_conn_t **)&m_ConnState;
-    int result = sasl_client_new(m_Service, fqdn, 0, 0, (const sasl_callback_t *)m_CallBacks, 0, s);
+    int result = sasl_client_new(m_Service,
+                                 fqdn, 0, 0,
+                                 (const sasl_callback_t *)m_CallBacks,
+                                 0,
+                                 (sasl_conn_t **)&m_ConnState);
 
     if (result != SASL_OK)
         return PFalse;

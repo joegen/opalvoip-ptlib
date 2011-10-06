@@ -52,7 +52,7 @@ PSafeObject::PSafeObject(PSafeObject * indirectLock)
 PBoolean PSafeObject::SafeReference()
 {
 #if PTRACING
-  unsigned tracedReferenceCount;
+  unsigned tracedReferenceCount = 0;
 #endif
 
   {
