@@ -229,10 +229,13 @@ class PFactory : PFactoryBase
       return GetInstance().Register_Internal(key, worker);
     }
 
-    static void Register(const Key_T & key, Abstract_T * instance, bool autoDeleteInstance = true)
+    static bool Register(const Key_T & key, Abstract_T * instance, bool autoDeleteInstance = true)
     {
-      WorkerBase * w = PNEW WorkerBase(instance, autoDeleteInstance);
-      GetInstance().Register_Internal(key, w);
+      WorkerBase * worker = PNEW WorkerBase(instance, autoDeleteInstance);
+      if (GetInstance().Register_Internal(key, worker))
+        return true;
+      delete worker;
+      return false;
     }
 
     static PBoolean RegisterAs(const Key_T & newKey, const Key_T & oldKey)
