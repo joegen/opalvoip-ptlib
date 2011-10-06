@@ -54,8 +54,9 @@ protected:
     static PString  s_Realm;
     static PString  s_Path;
 
-    void *          m_CallBacks;
-    void *          m_ConnState;
+    struct sasl_callback * m_CallBacks;
+    struct sasl_conn     * m_ConnState;
+
     const PString   m_Service;
     const PString   m_UserID;
     const PString   m_AuthID;
