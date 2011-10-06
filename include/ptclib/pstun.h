@@ -567,7 +567,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
 
 inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PNatMethod::GetNatTypeString(type); }
 
-PDECLARE_NAT_METHOD(STUN, PSTUNClient);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -728,8 +727,6 @@ class PTURNClient : public PSTUNClient
     virtual bool RefreshAllocation(DWORD lifetime = 600);
     PString m_password;
 };
-
-PDECLARE_NAT_METHOD(TURN, PTURNClient);
 
 
 #endif // P_STUN
