@@ -351,9 +351,21 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
 	} 
 };
 
+#define PDECLARE_NAT_METHOD(method, cls) PFACTORY_CREATE(PFactory<PNatMethod>, cls, #method)
+
 #define PCREATE_NAT_PLUGIN(name) \
   static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
   PCREATE_PLUGIN_STATIC(name, PNatMethod, &PNatMethod_##name##_descriptor)
+
+
+#if P_STUN
+PFACTORY_LOAD(PSTUNClient);
+#endif
+
+#if P_TURN
+PFACTORY_LOAD(PTURNClient);
+#endif
+
 
 #endif // PTLIB_PNAT_H
 
