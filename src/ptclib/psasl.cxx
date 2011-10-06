@@ -196,7 +196,7 @@ PSASLClient::~PSASLClient()
     if (m_ConnState)
         End();
 
-    delete (sasl_callback_t *)m_CallBacks;
+    delete [] m_CallBacks;
 }
 
 
@@ -228,18 +228,15 @@ PBoolean PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
     if (m_ConnState)
         End();
 
-    sasl_conn_t * newState = NULL;
-    int result = sasl_client_new(m_Service, fqdn, 0, 0, (const sasl_callback_t *)m_CallBacks, 0, &newState);
+    int result = sasl_client_new(m_Service, fqdn, 0, 0, m_CallBacks, 0, &m_ConnState);
     if (result != SASL_OK)
         return false;
-
-    m_ConnState = newState;
 
     const char * list;
     unsigned plen;
     int pcount;
 
-    sasl_listmech((sasl_conn_t *)m_ConnState, 0, 0, " ", 0, &list, &plen, &pcount); 
+    sasl_listmech(m_ConnState, 0, 0, " ", 0, &list, &plen, &pcount); 
 
     PStringArray a = PString(list).Tokenise(" ");
 
@@ -278,7 +275,7 @@ PBoolean PSASLClient::Start(const PString& mechanism, const char ** output, unsi
     if (!m_ConnState)
         return PFalse;
 
-    int result = sasl_client_start((sasl_conn_t *)m_ConnState, mechanism, 0, output, &len, 0);
+    int result = sasl_client_start(m_ConnState, mechanism, 0, output, &len, 0);
 
     if (result == SASL_OK || result == SASL_CONTINUE)
         return PTrue;
@@ -317,7 +314,7 @@ PSASLClient::PSASLResult PSASLClient::Negotiate(const char * input, const char *
 {
     unsigned len;
 
-    int result = sasl_client_step((sasl_conn_t *)m_ConnState, input, strlen(input), 0, output, &len);
+    int result = sasl_client_step(m_ConnState, input, strlen(input), 0, output, &len);
 
     if (result != SASL_OK && result != SASL_CONTINUE)
         return PSASLClient::Fail;
@@ -333,9 +330,7 @@ PBoolean PSASLClient::End()
 {
     if (m_ConnState)
     {
-        sasl_conn_t * s = (sasl_conn_t *)m_ConnState;
-        sasl_dispose(&s);
-        m_ConnState = 0;
+        sasl_dispose(&m_ConnState);
         return PTrue;
     }
 
