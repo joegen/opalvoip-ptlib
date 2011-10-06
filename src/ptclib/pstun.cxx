@@ -49,6 +49,9 @@
 typedef PSTUNClient PNatMethod_STUN;
 PCREATE_NAT_PLUGIN(STUN);
 
+PFACTORY_CREATE(PFactory<PNatMethod>, PSTUNClient, "STUN");
+
+
 ///////////////////////////////////////////////////////////////////////
 
 PSTUNClient::PSTUNClient()
