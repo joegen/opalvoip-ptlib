@@ -1127,8 +1127,8 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 
 #elif (defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX)) && !defined(P_IPHONEOS)
 
-PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
-                     unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric);
+PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & net_addr,
+                     PIPSocket::Address & net_mask, PIPSocket::Address & dest_addr, int & metric);
 PBoolean get_ifname(int index, char *name);
 
 PBoolean PIPSocket::GetRouteTable(RouteTable & table)
@@ -1139,7 +1139,6 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   struct rt_msghdr *rtm;
 
   InterfaceTable if_table;
-
 
   // Read the Routing Table
   mib[0] = CTL_NET;
@@ -1166,25 +1165,23 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
     return PFalse;
   }
 
-
   // Read the interface table
   if (!GetInterfaceTable(if_table)) {
     printf("Interface Table Invalid\n");
     return PFalse;
   }
 
-
   // Process the Routing Table data
   limit = buf + space_needed;
   for (ptr = buf; ptr < limit; ptr += rtm->rtm_msglen) {
 
-    unsigned long net_addr, dest_addr, net_mask;
+    PIPSocket::Address net_addr, dest_addr, net_mask;
     int metric;
     char name[16];
 
     rtm = (struct rt_msghdr *)ptr;
 
-    if ( process_rtentry(rtm,ptr, &net_addr, &net_mask, &dest_addr, &metric) ){
+    if ( process_rtentry(rtm, ptr, net_addr, net_mask, dest_addr, metric) ){
 
       RouteEntry * entry = new RouteEntry(net_addr);
       entry->net_mask = net_mask;
@@ -1202,16 +1199,11 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   return PTrue;
 }
 
-PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
-                     unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric) {
+PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & net_addr,
+                     PIPSocket::Address & net_mask, PIPSocket::Address & dest_addr, int & metric) {
 
-  struct sockaddr_in *sa_in;
-
-  unsigned long net_addr, dest_addr, net_mask;
-  int metric;
-
-  sa_in = (struct sockaddr_in *)(rtm + 1);
-
+  struct sockaddr *sa = (struct sockaddr *)(rtm + 1);
+  struct sockaddr_in *sa_in = (struct sockaddr_in *)(rtm + 1);
 
   // Check for zero length entry
   if (rtm->rtm_msglen == 0) {
@@ -1219,7 +1211,7 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_
     return PFalse;
   }
 
-  if ((~rtm->rtm_flags&RTF_LLINFO)
+  if ((~rtm->rtm_flags & RTF_LLINFO)
 #if defined(P_NETBSD) || defined(P_QNX)
         && (~rtm->rtm_flags&RTF_CLONED)     // Net BSD has flag one way
 #elif !defined(P_OPENBSD) && !defined(P_FREEBSD)
@@ -1229,45 +1221,48 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_
 #endif
      ) {
 
-    //strcpy(name, if_table[rtm->rtm_index].GetName);
-
-    net_addr=dest_addr=net_mask=metric=0;
+	metric=0;
 
     // NET_ADDR
-    if(rtm->rtm_addrs&RTA_DST ) {
+    if(rtm->rtm_addrs & RTA_DST ) {
       if(sa_in->sin_family == AF_INET)
-        net_addr = sa_in->sin_addr.s_addr;
+        net_addr = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
+      if(sa_in->sin_family == AF_INET6)
+        net_addr = PIPSocket::Address(AF_INET6, sizeof(sockaddr_in6), (struct sockaddr *)sa_in);
 
       sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
     }
 
     // DEST_ADDR
-    if(rtm->rtm_addrs&RTA_GATEWAY) {
+    if(rtm->rtm_addrs & RTA_GATEWAY) {
       if(sa_in->sin_family == AF_INET)
-        dest_addr = sa_in->sin_addr.s_addr;
+        dest_addr = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
+      if(sa_in->sin_family == AF_INET6)
+        dest_addr = PIPSocket::Address(AF_INET6, sizeof(sockaddr_in6), (struct sockaddr *)sa_in);
 
       sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
     }
 
     // NETMASK
-    if(rtm->rtm_addrs&RTA_NETMASK && sa_in->sin_len)
-      net_mask = sa_in->sin_addr.s_addr;
+    if(rtm->rtm_addrs & RTA_NETMASK && sa_in->sin_len) {
+      if(sa_in->sin_family == AF_INET)
+        net_mask = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
+      if(sa_in->sin_family == AF_INET6)
+        net_mask = PIPSocket::Address(AF_INET6, sizeof(sockaddr_in6), (struct sockaddr *)sa_in);
+    }
 
-    if( rtm->rtm_flags&RTF_HOST)
-      net_mask = 0xffffffff;
-
-
-    *p_metric = metric;
-    *p_net_addr = net_addr;
-    *p_dest_addr = dest_addr;
-    *p_net_mask = net_mask;
+    if(rtm->rtm_flags & RTF_HOST) {
+      if(sa_in->sin_family == AF_INET)
+        net_mask = 0xffffffff;
+      if(sa_in->sin_family == AF_INET6)
+        net_mask = 0xffffffff;	// TODO: fix for IPv6
+    }
 
     return PTrue;
 
   } else {
     return PFalse;
   }
-
 }
 
 PBoolean get_ifname(int index, char *name) {
