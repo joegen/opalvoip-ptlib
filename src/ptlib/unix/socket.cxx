@@ -1202,7 +1202,6 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & net_addr,
                      PIPSocket::Address & net_mask, PIPSocket::Address & dest_addr, int & metric) {
 
-  struct sockaddr *sa = (struct sockaddr *)(rtm + 1);
   struct sockaddr_in *sa_in = (struct sockaddr_in *)(rtm + 1);
 
   // Check for zero length entry
@@ -1245,6 +1244,7 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
 
     // NETMASK
     if(rtm->rtm_addrs & RTA_NETMASK && sa_in->sin_len) {
+      // TODO: IPv4 and IPv6 netmasks seem wrong...
       if(sa_in->sin_family == AF_INET)
         net_mask = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
       if(sa_in->sin_family == AF_INET6)
