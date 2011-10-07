@@ -1243,19 +1243,38 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
     }
 
     // NETMASK
-    if(rtm->rtm_addrs & RTA_NETMASK && sa_in->sin_len) {
-      // TODO: IPv4 and IPv6 netmasks seem wrong...
-      if(sa_in->sin_family == AF_INET)
-        net_mask = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
-      if(sa_in->sin_family == AF_INET6)
-        net_mask = PIPSocket::Address(AF_INET6, sizeof(sockaddr_in6), (struct sockaddr *)sa_in);
+    if(rtm->rtm_addrs & RTA_NETMASK) {
+      unsigned char *ptr = (unsigned char *)&((sockaddr*)sa_in)->sa_data[2];
+      if (sa_in->sin_len == 0) {
+        net_mask = (net_addr.GetVersion() == 4) ? "0.0.0.0" : "::";
+      } else if (sa_in->sin_len == 5) {
+        net_mask =  PString(PString::Printf, "%d.0.0.0", *ptr);
+      } else if (sa_in->sin_len == 6) {
+        net_mask = PString(PString::Printf, "%d.%d.0.0", *ptr, *(ptr+1));
+      } else if (sa_in->sin_len == 7) {
+        net_mask = PString(PString::Printf, "%d.%d.%d.0", *ptr, *(ptr+1), *(ptr+2));
+      } else if (sa_in->sin_len == 8) {
+        net_mask = PString(PString::Printf, "%d.%d.%d.%d", *ptr, *(ptr+1), *(ptr+2), *(ptr+3));
+      } else if (sa_in->sin_len == 10) {
+        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x::", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5));
+      } else if (sa_in->sin_len == 12) {
+        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x::", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7));
+      } else if (sa_in->sin_len == 14) {
+        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x::", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9));
+      } else if (sa_in->sin_len == 16) {
+        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:0:0", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11));
+      } else if (sa_in->sin_len == 18) {
+        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:0", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13));
+      } else if (sa_in->sin_len == 20) {
+        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15));
+      }
     }
 
     if(rtm->rtm_flags & RTF_HOST) {
-      if(sa_in->sin_family == AF_INET)
+      if(net_addr.GetVersion() == 4)
         net_mask = 0xffffffff;
-      if(sa_in->sin_family == AF_INET6)
-        net_mask = 0xffffffff;	// TODO: fix for IPv6
+      if(net_addr.GetVersion() == 6)
+        net_mask = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff";
     }
 
     return PTrue;
