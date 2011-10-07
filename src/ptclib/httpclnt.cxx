@@ -694,10 +694,6 @@ PObject::Comparison PHTTPClientDigestAuthentication::Compare(const PObject & oth
   if (result != EqualTo)
     return result;
 
-  result = nonce.Compare(otherAuth->nonce);
-  if (result != EqualTo)
-    return result;
-
   return PHTTPClientAuthentication::Compare(other);
 }
 
