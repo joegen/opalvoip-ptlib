@@ -138,12 +138,12 @@ void PAssertFunc(const char * msg)
   for(;;) {
     PError << "\n<A>bort, <C>ore dump"
 #if P_EXCEPTIONS
-           << ", <I>gnore <T>hrow exception"
+           << ", <T>hrow exception"
 #endif
 #ifdef _DEBUG
            << ", <D>ebug"
 #endif
-           << "? " << flush;
+           << ", <I>gnore? " << flush;
 
     int c = getchar();
 
