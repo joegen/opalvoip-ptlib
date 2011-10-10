@@ -210,8 +210,7 @@ class PFactory : PFactoryBase
           : WorkerBase(singleton)
         {
           PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-          PAssert((PFactory<Abstract_T, Key_T>::Register(key, this)),
-                  "Multiple instances of factory worker registered");
+          PFactory<Abstract_T, Key_T>::Register(key, this);
         }
 
       protected:
