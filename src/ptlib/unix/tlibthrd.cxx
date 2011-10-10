@@ -1387,12 +1387,13 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  if (sem_timedwait(&semId, &absTime) == 0) {
-    return PTrue;
-  }
-  else {
-    return PFalse;
-  }
+  do {
+    if (sem_timedwait(&semId, &absTime) == 0)
+      return true;
+  } while (errno == EINTR);
+
+  PAssert(errno == ETIMEDOUT, strerror(errno));
+  return false;
 
 #else
   // loop until timeout, or semaphore becomes available
