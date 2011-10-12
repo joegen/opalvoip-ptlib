@@ -87,10 +87,12 @@ class PVXMLChannelG729 : public PVXMLChannel
 };
 
 
+static PVXMLNodeFactory::Worker<PVXMLNodeHandler> BlockNodeHandler("Block", true);
+
 #define TRAVERSE_NODE(name) \
   class PVXMLTraverse##name : public PVXMLNodeHandler { \
-    virtual bool Start(PVXMLSession & session, const PXMLElement &) const \
-    { return session.Traverse##name(); } \
+    virtual bool Start(PVXMLSession & session, PXMLElement & element) const \
+    { return session.Traverse##name(element); } \
   }; \
   static PVXMLNodeFactory::Worker<PVXMLTraverse##name> name##NodeHandler(#name, true)
 
@@ -100,31 +102,48 @@ TRAVERSE_NODE(Value);
 TRAVERSE_NODE(SayAs);
 TRAVERSE_NODE(Goto);
 TRAVERSE_NODE(Grammar);
-TRAVERSE_NODE(Record);
 TRAVERSE_NODE(If);
 TRAVERSE_NODE(Exit);
 TRAVERSE_NODE(Var);
 TRAVERSE_NODE(Submit);
-TRAVERSE_NODE(Menu);
 TRAVERSE_NODE(Choice);
 TRAVERSE_NODE(Property);
 TRAVERSE_NODE(Disconnect);
-TRAVERSE_NODE(Form);
 TRAVERSE_NODE(Prompt);
+TRAVERSE_NODE(Filled);
+TRAVERSE_NODE(NoInput);
+TRAVERSE_NODE(NoMatch);
+TRAVERSE_NODE(Error);
+TRAVERSE_NODE(Catch);
 
-class PVXMLTraverseField : public PVXMLNodeHandler {
-  virtual bool Start(PVXMLSession & session, const PXMLElement &) const
-  { return session.TraverseField(); }
-  virtual bool Finish(PVXMLSession & session, const PXMLElement &) const
-  { return session.TraversedField(); }
-};
-static PVXMLNodeFactory::Worker<PVXMLTraverseField> FieldNodeHandler("Field", true);
+#define TRAVERSE_NODE2(name) \
+  class PVXMLTraverse##name : public PVXMLNodeHandler { \
+    virtual bool Start(PVXMLSession & session, PXMLElement & element) const \
+    { return session.Traverse##name(element); } \
+    virtual bool Finish(PVXMLSession & session, PXMLElement & element) const \
+    { return session.Traversed##name(element); } \
+  }; \
+  static PVXMLNodeFactory::Worker<PVXMLTraverse##name> name##NodeHandler(#name, true)
 
-class PVXMLTraverseTransfer : public PVXMLNodeHandler {
-  virtual bool Finish(PVXMLSession & session, const PXMLElement &) const
-  { return session.TraversedTransfer(); }
+TRAVERSE_NODE2(Menu);
+TRAVERSE_NODE2(Form);
+TRAVERSE_NODE2(Field);
+TRAVERSE_NODE2(Transfer);
+TRAVERSE_NODE2(Record);
+
+#if PTRACING
+class PVXMLTraverseLog : public PVXMLNodeHandler {
+  virtual bool Start(PVXMLSession & session, PXMLElement & node) const
+  {
+    unsigned level = node.GetAttribute("level").AsUnsigned();
+    if (level == 0)
+      level = 3;
+    PTRACE(level, "VXML-Log\t" + session.EvaluateExpr(node.GetAttribute("expr")));
+    return true;
+  }
 };
-static PVXMLNodeFactory::Worker<PVXMLTraverseTransfer> TransferNodeHandler("Transfer", true);
+static PVXMLNodeFactory::Worker<PVXMLTraverseLog> LogNodeHandler("Log", true);
+#endif
 
 
 #define new PNEW
@@ -133,9 +152,6 @@ static PVXMLNodeFactory::Worker<PVXMLTraverseTransfer> TransferNodeHandler("Tran
 #define SMALL_BREAK_MSECS   1000
 #define MEDIUM_BREAK_MSECS  2500
 #define LARGE_BREAK_MSECS   5000
-
-// LATER: Lookup what this value should be
-#define DEFAULT_TIMEOUT     10000
 
 
 //////////////////////////////////////////////////////////
@@ -633,34 +649,20 @@ PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & 
 //////////////////////////////////////////////////////////
 
 PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
-  : vxmlChannel((PVXMLChannel * &)readChannel)
+  : m_textToSpeech(tts)
+  , m_autoDeleteTextToSpeech(autoDelete)
+  , m_vxmlThread(NULL)
+  , m_abortVXML(false)
+  , m_currentNode(NULL)
+  , m_speakNodeData(true)
+  , m_grammar(NULL)
+  , m_defaultMenuDTMF('N') /// Disabled
+  , m_recordingStatus(NotRecording)
+  , m_recordStopOnDTMF(false)
+  , m_transferStatus(NotTransfering)
+  , m_transferStartTime(0)
 {
-  vxmlThread       = NULL;
-  textToSpeech     = NULL;
-  loaded           = false;
-  emptyAction      = false;
-  recordDTMFTerm   = false;
-  defaultDTMF      = 0;
-  timeout          = DEFAULT_TIMEOUT;
-
-  autoDeleteTextToSpeech = autoDelete;
-  textToSpeech = tts;
-
-  Initialise();
-}
-
-
-void PVXMLSession::Initialise()
-{
-  recording        = false;
-  listening        = false;
-  activeGrammar    = NULL;
-  listening        = false;
-  m_abortVXML      = false;
-  currentForm      = NULL;
-  currentField     = NULL;
-  currentNode      = NULL;
-  m_speakNodeData  = true;
+  SetVar("property.timeout" , "10s");
 }
 
 
@@ -668,21 +670,20 @@ PVXMLSession::~PVXMLSession()
 {
   Close();
 
-  if ((textToSpeech != NULL) && autoDeleteTextToSpeech)
-    delete textToSpeech;
+  if (m_autoDeleteTextToSpeech)
+    delete m_textToSpeech;
 }
 
 
 PTextToSpeech * PVXMLSession::SetTextToSpeech(PTextToSpeech * tts, PBoolean autoDelete)
 {
-  PWaitAndSignal m(sessionMutex);
+  PWaitAndSignal mutex(m_sessionMutex);
 
-  if (autoDeleteTextToSpeech && (textToSpeech != NULL))
-    delete textToSpeech;
+  if (m_autoDeleteTextToSpeech)
+    delete m_textToSpeech;
 
-  autoDeleteTextToSpeech = autoDelete;
-  textToSpeech = tts;
-  return textToSpeech;
+  m_autoDeleteTextToSpeech = autoDelete;
+  return m_textToSpeech = tts;
 }
 
 
@@ -728,7 +729,7 @@ PBoolean PVXMLSession::Load(const PString & source)
 }
 
 
-PBoolean PVXMLSession::LoadFile(const PFilePath & filename)
+PBoolean PVXMLSession::LoadFile(const PFilePath & filename, const PString & firstForm)
 {
   PTRACE(4, "VXML\tLoading file: " << filename);
 
@@ -738,7 +739,7 @@ PBoolean PVXMLSession::LoadFile(const PFilePath & filename)
     return false;
   }
 
-  return LoadVXML(file.ReadString(P_MAX_INDEX));
+  return LoadVXML(file.ReadString(P_MAX_INDEX), firstForm);
 }
 
 
@@ -754,52 +755,48 @@ PBoolean PVXMLSession::LoadURL(const PURL & url)
     return false;
   }
 
-  if (!LoadFile(fn)) {
+  if (!LoadFile(fn, url.GetFragment())) {
     PTRACE(1, "VXML\tCannot load VXML from " << url);
     return false;
   }
 
-  rootURL = url;
+  m_rootURL = url;
   return true;
 }
 
 
-PBoolean PVXMLSession::LoadVXML(const PString & xmlText)
+PBoolean PVXMLSession::LoadVXML(const PString & xmlText, const PString & firstForm)
 {
-  PWaitAndSignal m(sessionMutex);
+  PWaitAndSignal mutex(m_sessionMutex);
 
-  rootURL = PString::Empty();
+  m_rootURL = PString::Empty();
+  LoadGrammar(NULL);
 
   // parse the XML
-  xmlFile.RemoveAll();
-  if (!xmlFile.Load(xmlText)) {
+  m_xml.RemoveAll();
+  if (!m_xml.Load(xmlText)) {
     PTRACE(1, "VXML\tCannot parse root document: " << GetXMLError());
     return false;
   }
 
-  PXMLElement * root = xmlFile.GetRootElement();
+  PXMLElement * root = m_xml.GetRootElement();
   if (root == NULL) {
     PTRACE(1, "VXML\tNo root element");
     return false;
   }
 
-  // reset interpeter state
-  Initialise();
-
   // find the first form
-  if ((currentForm = FindForm(PString::Empty())) == NULL) {
+  if (!SetCurrentForm(firstForm, false)) {
     PTRACE(1, "VXML\tNo form element");
+    m_xml.RemoveAll();
     return false;
   }
 
-  // start processing with this <form> element
-  currentNode = currentForm;
-
-  loaded = true;
+  m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
 
   // Clear out any audio being output, so can start fresh on new VXML.
-  if (vxmlChannel != NULL)
-    vxmlChannel->FlushQueue();
+  if (IsOpen())
+    GetVXMLChannel()->FlushQueue();
 
   return Execute();
 }
@@ -812,11 +809,11 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
   if ((pos != P_MAX_INDEX) && (pos < 5))
     return src;
 
-  if (rootURL.IsEmpty())
+  if (m_rootURL.IsEmpty())
     return "file:" + src;
 
   // else use scheme and path from root document
-  PURL url = rootURL;
+  PURL url = m_rootURL;
   PStringArray path = url.GetPath();
   PString pathStr;
   if (path.GetSize() > 0) {
@@ -905,45 +902,60 @@ PBoolean PVXMLSession::RetreiveResource(const PURL & url,
 }
 
 
-PXMLElement * PVXMLSession::FindForm(const PString & id)
+bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 {
+  PTRACE(4, "VXML\tSetting form to \"" << searchId << '"');
+
   // NOTE: should have some flag to know if it is loaded
-  PXMLElement * root = xmlFile.GetRootElement();
+  PXMLElement * root = m_xml.GetRootElement();
   if (root == NULL)
-    return NULL;
-  
-  // Only handle search of top level nodes for <form> element
+    return false;
+
+  PString id = searchId;
+
+  if (fullURI) {
+    if (searchId.IsEmpty())
+      return false;
+
+    if (searchId[0] != '#')
+      return LoadURL(NormaliseResourceName(searchId));
+
+    id = searchId.Mid(1);
+  }
+
+  // Only handle search of top level nodes for <form>/<menu> element
   PINDEX i;
   for (i = 0; i < root->GetSize(); i++) {
     PXMLObject * xmlObject = root->GetElement(i); 
     if (xmlObject->IsElement()) {
       PXMLElement * xmlElement = (PXMLElement*)xmlObject;
       if (
-          (xmlElement->GetName() *= "form") && 
-          (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
-         )
-        return xmlElement;
+            (xmlElement->GetName() == "form" || xmlElement->GetName() == "menu") && 
+            (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
+         ) {
+        m_currentNode = xmlObject;
+        return true;
+      }
     }
   }
-  return NULL;
+
+  return false;
 }
 
 
 PVXMLChannel * PVXMLSession::GetAndLockVXMLChannel()
 {
-  sessionMutex.Wait();
-  if (vxmlChannel != NULL)
-    return vxmlChannel;
+  m_sessionMutex.Wait();
+  if (IsOpen())
+    return GetVXMLChannel();
 
-  sessionMutex.Signal();
+  m_sessionMutex.Signal();
   return NULL;
 }
 
 
-PBoolean PVXMLSession::Open(const PString & _mediaFormat)
+PBoolean PVXMLSession::Open(const PString & mediaFormat)
 {
-  mediaFormat = _mediaFormat;
-
   PVXMLChannel * chan = PFactory<PVXMLChannel>::CreateInstance(mediaFormat);
   if (chan == NULL) {
     PTRACE(1, "VXML\tCannot create VXML channel with format " << mediaFormat);
@@ -965,11 +977,11 @@ PBoolean PVXMLSession::Open(const PString & _mediaFormat)
 
 PBoolean PVXMLSession::Execute()
 {
-  PWaitAndSignal m(sessionMutex);
+  PWaitAndSignal mutex(m_sessionMutex);
 
-  if (loaded) {
-    if (vxmlThread == NULL)
-      vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), "VXML");
+  if (IsLoaded()) {
+    if (m_vxmlThread == NULL)
+      m_vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), "VXML");
     else
       Trigger();
   }
@@ -982,23 +994,19 @@ PBoolean PVXMLSession::Close()
 {
   PThread * thread = NULL;
 
-  sessionMutex.Wait();
-  if (PThread::Current() != vxmlThread) {
-    thread = vxmlThread;
-    vxmlThread = NULL;
+  m_sessionMutex.Wait();
+  if (PThread::Current() != m_vxmlThread) {
+    thread = m_vxmlThread;
+    m_vxmlThread = NULL;
   }
-  sessionMutex.Signal();
+  m_sessionMutex.Signal();
 
   if (thread != NULL) {
     PTRACE(3, "VXML\tClosing session, fast forwarding through script");
 
     // Stop condition for thread
     m_abortVXML = true;
-    waitForEvent.Signal();
-
-    // Signal all syncpoints that could be waiting for things
-    answerSync.Signal();
-    recordSync.Signal();
+    Trigger();
 
     PAssert(thread->WaitForTermination(10000), "VXML thread did not exit in time.");
     delete thread;
@@ -1013,36 +1021,36 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
   PTRACE(4, "VXML\tExecution thread started");
 
   do {
-    sessionMutex.Wait();
-
-    // check for user input
-    ProcessUserInput();
-
-    // process any active grammars
-    ProcessGrammar();
-
     // process current node in the VXML script
-    ProcessNode();
+    if (ProcessNode()) {
+      /* wait for something to happen, usually output of some audio. But under
+         some circumstances we want to abort the script, but we  have to make
+         sure the script has been run to the end so submit actions etc. can be
+         performed. Record and audio and other user interaction commands can
+         be skipped, so we don't wait for them */
+      for (;;) {
+        if (ProcessEvents())
+          m_waitForEvent.Wait();
 
-    sessionMutex.Signal();
-
-    /* wait for something to happen, usually output of some audio. But under
-       some circumstances we want to abort the script, but we  have to make
-       sure the script has been run to the end so submit actions etc. can be
-       performed. Record and audio and other user interaction commands can
-       be skipped, so we don't wait for them */
-    while (!m_abortVXML && (IsPlaying() || IsRecording()))
-      waitForEvent.Wait();
+        if (NextNode())
+          break;
+      }
+    }
+    else {
+      // Skip all children
+      m_currentNode = m_currentNode->GetNextObject();
+      NextNode();
+    }
 
     // Determine if we should quit
-    if (!NextNode()) {
+    if (m_currentNode == NULL) {
       PTRACE(3, "VXML\tEnd of VoiceXML elements.");
       if (m_abortVXML)
         break;
 
       OnEndDialog();
     }
-  } while (currentNode != NULL || IsPlaying() || IsRecording());
+  } while (m_currentNode != NULL);
 
   OnEndSession();
 
@@ -1055,259 +1063,227 @@ void PVXMLSession::OnEndDialog()
 }
 
 
-void PVXMLSession::ProcessUserInput()
+void PVXMLSession::OnEndSession()
 {
-  // without this initialisation, gcc 4.1 gives a warning
-  char ch = 0;
-  {
-    PWaitAndSignal m(userInputMutex);
-    if (userInputQueue.size() == 0)
-      return;
-    ch = userInputQueue.front();
-    userInputQueue.pop();
+}
+
+
+bool PVXMLSession::ProcessEvents()
+{
+  if (m_abortVXML)
+    return false;
+
+  char ch;
+
+  m_userInputMutex.Wait();
+  if (m_userInputQueue.empty())
+    ch = '\0';
+  else {
+    ch = m_userInputQueue.front();
+    m_userInputQueue.pop();
     PTRACE(3, "VXML\tHandling user input " << ch);
   }
+  m_userInputMutex.Signal();
 
+  if (ch != '\0') {
+    m_sessionMutex.Wait();
 
-  // recording
-  if (recording) {
-    if (recordDTMFTerm)
-      RecordEnd();
-  } 
+    if (m_recordStopOnDTMF)
+      EndRecording();
 
-  // playback
-  else {
-    if (activeGrammar != NULL)
-      activeGrammar->OnUserInput(ch);
+    if (m_grammar != NULL)
+      m_grammar->OnUserInput(ch);
+
+    m_sessionMutex.Signal();
   }
+
+  return IsPlaying() || IsRecording() || IsAwaitingInput() || m_transferStatus == TransferInProgress;
 }
 
 
 bool PVXMLSession::NextNode()
 {
-  PWaitAndSignal m(sessionMutex);
+  PWaitAndSignal mutex(m_sessionMutex);
 
   // No more nodes
-  if (currentNode == NULL)
+  if (m_currentNode == NULL)
+    return true;
+
+  PXMLElement * element;
+
+  if (m_currentNode->IsElement()) {
+    element = (PXMLElement*)m_currentNode;
+    // if the current node has children, then process the first child
+    if ((m_currentNode = element->GetElement(0)) != NULL)
+      return true;
+  }
+  else {
+    // Data node
+    PXMLObject * sibling = m_currentNode->GetNextObject();
+    if (sibling != NULL) {
+      m_currentNode = sibling;
+      return true;
+    }
+    if ((element = m_currentNode->GetParent()) == NULL) {
+      m_currentNode = NULL;
+      return true;
+    }
+  }
+
+  // No children, move to sibling
+  do {
+    PCaselessString nodeType = element->GetName();
+    PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
+    if (handler != NULL) {
+      if (!handler->Finish(*this, *element))
+        return false;
+      PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
+    }
+
+    if ((m_currentNode = element->GetNextObject()) != NULL)
+      break;
+
+  } while ((element = element->GetParent()) != NULL);
+
+  return true;
+}
+
+
+bool PVXMLSession::ProcessGrammar()
+{
+  if (PAssertNULL(m_grammar) == NULL)
+    return true;
+
+  switch (m_grammar->GetState()) {
+    case PVXMLGrammar::Idle :
+      m_grammar->Start();
+      return false;
+
+    case PVXMLGrammar::Started :
+      return false;
+
+    default :
+      break;
+  }
+
+  bool nextNode = m_grammar->Process();
+  LoadGrammar(NULL);
+  return nextNode;
+}
+
+
+bool PVXMLSession::ProcessNode()
+{
+  PWaitAndSignal mutex(m_sessionMutex);
+
+  if (m_abortVXML)
     return false;
 
-  // if the current node has children, then process the first child
-  if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
-    currentNode = ((PXMLElement *)currentNode)->GetElement(0);
+  if (m_currentNode == NULL)
+    return false;
 
-  // else process the next sibling
-  else {
-    // Keep moving up the parents until we find a next sibling
-    while ((currentNode != NULL) && currentNode->GetNextObject() == NULL) {
-      currentNode = currentNode->GetParent();
-      // if we are on the backwards traversal through a <field> then wait
-      // for a grammar recognition and throw events if necessary
-      if (currentNode != NULL && currentNode->IsElement()) {
-        PXMLElement * element = (PXMLElement*)currentNode;
-        PCaselessString nodeType = element->GetName();
-        PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
-        if (handler != NULL) {
-          handler->Finish(*this, *element);
-          PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
-        }
-      }
-    }
-
-    if (currentNode != NULL)
-      currentNode = currentNode->GetNextObject();
-  }
-
-  return currentNode != NULL;
-}
-
-
-void PVXMLSession::ProcessGrammar()
-{
-  if (activeGrammar == NULL)
-    return;
-
-  PBoolean processGrammar(false);
-
-  // Stop if we've matched a grammar or have a failed recognition
-  if (activeGrammar->GetState() == PVXMLGrammar::FILLED || activeGrammar->GetState() == PVXMLGrammar::NOMATCH)
-    processGrammar = true;
-
-  // Stop the grammar if we've timed out
-  else if (listening && !IsPlaying())   {
-    activeGrammar->Stop();
-    processGrammar = true;
-  }
-
-  // Let the loop run again if we're still waiting to time out and haven't resolved the grammar one way or the other
-  if (!processGrammar && listening)
-    return;
-
-  if (processGrammar)
-  {
-    PVXMLGrammar::GrammarState state = activeGrammar->GetState();
-    grammarResult = activeGrammar->GetValue();
-
-    PXMLElement * field = activeGrammar->GetField();
-    if (field != NULL && field->HasAttribute("name"))
-      SetVar(field->GetAttribute("name"), grammarResult);
-
-    LoadGrammar(NULL);
-    listening = false;
-
-    // Stop any playback
-    if (IsOpen()) {
-      vxmlChannel->FlushQueue();
-      vxmlChannel->EndRecording();
-    }
-
-    // Check we're not in a menu
-    if (eventName.IsEmpty()) {
-
-      // Figure out what happened
-      switch (state)
-      {
-      case PVXMLGrammar::FILLED:
-        eventName = "filled";
-        break;
-      case PVXMLGrammar::NOINPUT:
-        eventName = "noinput";
-        break;
-      case PVXMLGrammar::NOMATCH:
-        eventName = "nomatch";
-        break;
-      default:
-        ; //ERROR - unexpected grammar state
-      }
-
-      // Find the handler and move there
-      PXMLElement * handler = FindHandler(eventName);
-      if (handler != NULL)
-        currentNode = handler;
-    }
-  }
-}
-
-
-void PVXMLSession::ProcessNode()
-{
-  if (m_abortVXML)
-    return;
-
-  if (currentNode == NULL)
-    return;
-
-  if (!currentNode->IsElement()) {
+  if (!m_currentNode->IsElement()) {
     if (m_speakNodeData)
-      PlayText(((PXMLData *)currentNode)->GetString().Trim());
-    return;
+      PlayText(((PXMLData *)m_currentNode)->GetString().Trim());
+    return true;
   }
 
   m_speakNodeData = true;
 
-  PXMLElement * element = (PXMLElement*)currentNode;
+  PXMLElement * element = (PXMLElement*)m_currentNode;
   PCaselessString nodeType = element->GetName();
   PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
-  if (handler == NULL)
+  if (handler == NULL) {
     PTRACE(2, "VXML\tUnknown/unimplemented VoiceXML element: <" << nodeType << '>');
-  else {
-    PTRACE(3, "VXML\tProcessing VoiceXML element: <" << nodeType << '>');
-    handler->Start(*this, *element);
+    return false;
   }
+
+  PTRACE(3, "VXML\tProcessing VoiceXML element: <" << nodeType << '>');
+  bool started = handler->Start(*this, *element);
+  PTRACE_IF(4, !started, "VXML\tSkipping VoiceXML element: <" << nodeType << '>');
+  return started;
 }
 
 
-PBoolean PVXMLSession::OnUserInput(const PString & str)
+void PVXMLSession::OnUserInput(const PString & str)
 {
   {
-    PWaitAndSignal m(userInputMutex);
+    PWaitAndSignal mutex(m_userInputMutex);
     for (PINDEX i = 0; i < str.GetLength(); i++)
-      userInputQueue.push(str[i]);
+      m_userInputQueue.push(str[i]);
   }
-  waitForEvent.Signal();
+  Trigger();
+}
+
+
+bool PVXMLSession::IsAwaitingInput() const
+{
+  return m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started;
+}
+
+
+PBoolean PVXMLSession::TraverseRecord(PXMLElement &)
+{
+  m_recordingStatus = NotRecording;
   return true;
 }
 
 
-PBoolean PVXMLSession::TraverseRecord()
+PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
 {
   if (m_abortVXML)
-    return false;
+    return true;
 
-  if (currentNode->IsElement()) {
-    
-    PString strName;
-    PXMLElement * element = (PXMLElement *)currentNode;
-    
-    // Get the name (name)
-    if (element->HasAttribute("name"))
-      strName = element->GetAttribute("name");
-    else if (element->HasAttribute("id"))
-      strName = element->GetAttribute("id");
-    
-    // see if we need a beep
-    if (element->GetAttribute("beep").ToLower() *= "true") {
-      PBYTEArray beepData;
-      GetBeepData(beepData, 1000);
-      if (beepData.GetSize() != 0)
-        PlayData(beepData);
-    }
+  switch (m_recordingStatus) {
+    case RecordingInProgress :
+      return false;
 
-    // Get the destination filename (dest)
-    PURL destURL;
-    if (element->HasAttribute("dest")) 
-      destURL = element->GetAttribute("dest");
+    case RecordingComplete :
+      return GoToEventHandler(element, "filled");
 
-    if (destURL.IsEmpty()) {
-      PTime now;
-      destURL = GetVar("session.telephone.dnis" ) + "_" + GetVar( "session.telephone.ani" ) + "_" + now.AsString( "yyyyMMdd_hhmmss") + ".wav";
-    }
-
-    // For some reason, if the file is there the create 
-    // seems to fail. 
-    PFilePath file = destURL.AsFilePath();
-    PFile::Remove(file);
-    
-    // Get max record time (maxtime)
-    PTimeInterval maxTime = PMaxTimeInterval;
-    if (element->HasAttribute("maxtime")) 
-      maxTime = StringToTime(element->GetAttribute("maxtime"));
-    
-    // Get terminating silence duration (finalsilence)
-    PTimeInterval termTime(3000);
-    if (element->HasAttribute("finalsilence")) 
-      termTime = StringToTime(element->GetAttribute("finalsilence"));
-    
-    // Get dtmf term (dtmfterm)
-    PBoolean dtmfTerm = true;
-    if (element->HasAttribute("dtmfterm"))
-      dtmfTerm = !(element->GetAttribute("dtmfterm").ToLower() *= "false");
-    
-    // create a semaphore, and then wait for the recording to terminate
-    StartRecording(file, dtmfTerm, maxTime, termTime);
-    
-    if (!recordSync.Wait(maxTime)) {
-      // The Wait() has timed out, to signal that the record timed out.
-      // This is VXML version 2 property, but nice.
-      // So it's possible to detect if the record timed out from within the 
-      // VXML script
-      SetVar(strName + "$.maxtime", "true");
-    }
-    else {
-      // Normal hangup before timeout
-      SetVar( strName + "$.maxtime", "false");
-    }
-
-    // when this returns, we are done
-    EndRecording();
+    default :
+      break;
   }
+
+  // see if we need a beep
+  if (element.GetAttribute("beep").ToLower() *= "true") {
+    PBYTEArray beepData;
+    GetBeepData(beepData, 1000);
+    if (beepData.GetSize() != 0)
+      PlayData(beepData);
+  }
+
+  // Get the destination filename (dest)
+  PURL destURL;
+  if (element.HasAttribute("dest")) 
+    destURL = element.GetAttribute("dest");
+
+  if (destURL.IsEmpty())
+    destURL.Parse("recording_" + PTime().AsString("yyyyMMdd_hhmmss") + ".wav", "file");
+
+  // Get max record time (maxtime)
+  PTimeInterval maxTime = PMaxTimeInterval;
+  if (element.HasAttribute("maxtime")) 
+    maxTime = StringToTime(element.GetAttribute("maxtime"));
+
+  // Get terminating silence duration (finalsilence)
+  PTimeInterval termTime(3000);
+  if (element.HasAttribute("finalsilence")) 
+    termTime = StringToTime(element.GetAttribute("finalsilence"));
   
-  return true;
+  // Get dtmf term (dtmfterm)
+  PBoolean dtmfTerm = true;
+  if (element.HasAttribute("dtmfterm"))
+    dtmfTerm = !(element.GetAttribute("dtmfterm").ToLower() *= "false");
+  
+  // create a semaphore, and then wait for the recording to terminate
+  return !StartRecording(destURL.AsFilePath(), dtmfTerm, maxTime, termTime);
 }
 
 
 PString PVXMLSession::GetXMLError() const
 {
-  return psprintf("(%i:%i) ", xmlFile.GetErrorLine(), xmlFile.GetErrorColumn()) + xmlFile.GetErrorString();
+  return psprintf("(%i:%i) ", m_xml.GetErrorLine(), m_xml.GetErrorColumn()) + m_xml.GetErrorString();
 }
 
 
@@ -1350,52 +1326,74 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 
 PCaselessString PVXMLSession::GetVar(const PString & varName) const
 {
-  PString prefix;
+  PString fullVarName = varName;
   if (varName.Find('.') == P_MAX_INDEX)
-    prefix = "application.";
+    fullVarName = m_variableScope+'.'+varName;
 
-  return m_variables(prefix+varName);
+  return m_variables(fullVarName);
 }
 
 
 void PVXMLSession::SetVar(const PString & varName, const PString & value)
 {
-  PString prefix;
+  PString fullVarName = varName;
   if (varName.Find('.') == P_MAX_INDEX)
-    prefix = currentForm != NULL ? "dialog." : "application.";
+    fullVarName = m_variableScope+'.'+varName;
 
-  m_variables.SetAt(prefix+varName, value);
+  m_variables.SetAt(fullVarName, value);
 }
 
 
 PBoolean PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, PBoolean autoDelete)
 {
-  return IsOpen() && vxmlChannel->QueueFile(fn, repeat, delay, autoDelete);
+  return IsOpen() && GetVXMLChannel()->QueueFile(fn, repeat, delay, autoDelete);
 }
 
 
 PBoolean PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && vxmlChannel->QueueCommand(cmd, repeat, delay);
+  return IsOpen() && GetVXMLChannel()->QueueCommand(cmd, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && vxmlChannel->QueueData(data, repeat, delay);
+  return IsOpen() && GetVXMLChannel()->QueueData(data, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && vxmlChannel->QueuePlayable("Tone", toneSpec, repeat, delay, true);
+  return IsOpen() && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
+}
+
+
+PBoolean PVXMLSession::PlayElement(PXMLElement & element)
+{
+  PString str = element.GetAttribute("src").Trim();
+  if (str.IsEmpty())
+    return false;
+
+  if (str[0] == '|')
+    return PlayCommand(str.Mid(1));
+
+  // get a normalised name for the resource
+  bool safe = GetVar("caching") == "safe" || (element.GetAttribute("caching") *= "safe");
+
+  // load the resource from the cache
+  PString contentType;
+  PFilePath fn; 
+  if (RetreiveResource(NormaliseResourceName(str), contentType, fn, !safe))
+    return PlayFile(fn, 0, 0, safe);   // make sure we delete the file if not cacheing
+
+  return false;
 }
 
 
 void PVXMLSession::GetBeepData(PBYTEArray & data, unsigned ms)
 {
   if (IsOpen())
-    vxmlChannel->GetBeepData(data, ms);
+    GetVXMLChannel()->GetBeepData(data, ms);
 }
 
 
@@ -1408,31 +1406,27 @@ PBoolean PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 PBoolean PVXMLSession::PlaySilence(PINDEX msecs)
 {
   PBYTEArray nothing;
-  return IsOpen() && vxmlChannel->QueueData(nothing, 1, msecs);
+  return IsOpen() && GetVXMLChannel()->QueueData(nothing, 1, msecs);
 }
 
 
 PBoolean PVXMLSession::PlayStop()
 {
-  return IsOpen() && vxmlChannel->QueuePlayable(new PVXMLPlayableStop());
+  return IsOpen() && GetVXMLChannel()->QueuePlayable(new PVXMLPlayableStop());
 }
 
 
 PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && vxmlChannel->QueueResource(url, repeat, delay);
+  return IsOpen() && GetVXMLChannel()->QueueResource(url, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 {
-  if (activeGrammar != NULL) {
-    delete activeGrammar;
-    activeGrammar = false;
-  }
-
-  activeGrammar = grammar;
-
+  delete m_grammar;
+  m_grammar = grammar;
+  PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
   return true;
 }
 
@@ -1455,13 +1449,13 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
   }
 
   PVXMLPlayableFilenameList * playable = new PVXMLPlayableFilenameList;
-  if (!playable->Open(*vxmlChannel, list, delay, repeat, !useCache)) {
+  if (!playable->Open(*GetVXMLChannel(), list, delay, repeat, !useCache)) {
     delete playable;
     PTRACE(1, "VXML\tCannot create playable for filename list");
     return false;
   }
 
-  if (!vxmlChannel->QueuePlayable(playable))
+  if (!GetVXMLChannel()->QueuePlayable(playable))
     return false;
 
   PTRACE(2, "VXML\tQueued filename list for playing");
@@ -1494,18 +1488,16 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
      PTRACE(3, "VXML\tUsing cached WAV file for " << _text);
     } else {
       PFilePath tmpfname;
-      if (textToSpeech != NULL) {
+      if (m_textToSpeech != NULL) {
         tmpfname = PVXMLCache::GetResourceCache().GetRandomFilename("tts", "wav");
-        if (!textToSpeech->OpenFile(tmpfname)) {
-          PTRACE(2, "VXML\tcannot open file " << tmpfname);
-        } else {
-          spoken = textToSpeech->Speak(text, type);
+        if (m_textToSpeech->OpenFile(tmpfname)) {
+          spoken = m_textToSpeech->Speak(text, type);
           PTRACE(3, "VXML\tCreated new WAV file for " << _text);
-          if (!textToSpeech->Close()) {
-            PTRACE(2, "VXML\tcannot close TTS engine");
-          }
         }
-        textToSpeech->Close();
+        else {
+          PTRACE(2, "VXML\tcannot open file " << tmpfname);
+        }
+        m_textToSpeech->Close();
         if (useCache)
           PVXMLCache::GetResourceCache().Put(prefix, text, "wav", contentType, tmpfname, dataFn);
         else
@@ -1526,108 +1518,75 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
 void PVXMLSession::SetPause(PBoolean pause)
 {
   if (IsOpen())
-    vxmlChannel->SetPause(pause);
+    GetVXMLChannel()->SetPause(pause);
 }
 
 
 PBoolean PVXMLSession::IsPlaying() const
 {
-  return IsOpen() && vxmlChannel->IsPlaying();
+  return IsOpen() && GetVXMLChannel()->IsPlaying();
 }
 
 
-PBoolean PVXMLSession::StartRecording(const PFilePath & p_recordFn, 
-                                               PBoolean p_recordDTMFTerm, 
-                                  const PTimeInterval & p_recordMaxTime, 
-                                  const PTimeInterval & p_recordFinalSilence)
+PBoolean PVXMLSession::StartRecording(const PFilePath & recordFn, 
+                                               PBoolean recordDTMFTerm, 
+                                  const PTimeInterval & recordMaxTime, 
+                                  const PTimeInterval & recordFinalSilence)
 {
-  recording          = true;
-  recordFn           = p_recordFn;
-  recordDTMFTerm     = p_recordDTMFTerm;
-  recordMaxTime      = p_recordMaxTime;
-  recordFinalSilence = p_recordFinalSilence;
+  if (!IsOpen())
+    return false;
 
-  return IsOpen() && vxmlChannel->StartRecording(recordFn,
-                                                 (unsigned)recordFinalSilence.GetMilliSeconds(), 
-                                                 (unsigned)recordMaxTime.GetMilliSeconds());
-}
+  if (recordFn.IsEmpty()) {
+    PTRACE(1, "VXML\tNo destination file location");
+    return true;
+  }
 
+  PFile::Remove(recordFn);
 
-void PVXMLSession::RecordEnd()
-{
-  if (recording)
-    recordSync.Signal();
+  m_recordStopOnDTMF = recordDTMFTerm;
+
+  if (!GetVXMLChannel()->StartRecording(recordFn,
+                                        (unsigned)recordFinalSilence.GetMilliSeconds(), 
+                                        (unsigned)recordMaxTime.GetMilliSeconds()))
+    return false;
+
+  m_recordingStatus = RecordingInProgress;
+  return true;
 }
 
 
 PBoolean PVXMLSession::EndRecording()
 {
-  if (recording) {
-    recording = false;
-    if (IsOpen())
-      return vxmlChannel->EndRecording();
-  }
-
-  return false;
+  return m_recordingStatus == RecordingInProgress && IsOpen() && GetVXMLChannel()->EndRecording();
 }
 
 
 PBoolean PVXMLSession::IsRecording() const
 {
-  return IsOpen() && vxmlChannel->IsRecording();
+  return IsOpen() && GetVXMLChannel()->IsRecording();
 }
 
 
-PBoolean PVXMLSession::TraverseAudio()
+PBoolean PVXMLSession::TraverseAudio(PXMLElement & element)
 {
-  PXMLElement * element = (PXMLElement *)currentNode;
-
-  if (!element->HasAttribute("src"))
-    return true;
-
-  bool loaded = false;
-
-  PString str = element->GetAttribute("src").Trim();
-  if (!str.IsEmpty() && (str[0] == '|'))
-    loaded = PlayCommand(str.Mid(1));
-  else {
-    // get a normalised name for the resource
-    PFilePath fn; 
-    PURL url = NormaliseResourceName(str);
-    bool safe = GetVar("caching") == "safe" || (element->GetAttribute("caching") *= "safe");
-
-    // load the resource from the cache
-    PString contentType;
-    if (RetreiveResource(url, contentType, fn, !safe))
-      loaded = PlayFile(fn, 0, 0, safe);   // make sure we delete the file if not cacheing
-  }
-
-  if (loaded) {
-    // skip to the next node
-    if (element->HasSubObjects())
-      currentNode = element->GetElement(element->GetSize() - 1);
-  }
-
-  return true;
+  return !PlayElement(element);
 }
 
 
-PBoolean PVXMLSession::TraverseBreak()
+PBoolean PVXMLSession::TraverseBreak(PXMLElement & element)
 {
-  PXMLElement * element = (PXMLElement *)currentNode;
-
   // msecs is VXML 1.0
-  if (element->HasAttribute("msecs"))
-    return PlaySilence(element->GetAttribute("msecs").AsInteger());
+  if (element.HasAttribute("msecs"))
+    return PlaySilence(element.GetAttribute("msecs").AsInteger());
 
   // time is VXML 2.0
-  if (element->HasAttribute("time")) {
-    PTimeInterval time = StringToTime(element->GetAttribute("time"));
+  if (element.HasAttribute("time")) {
+    PTimeInterval time = StringToTime(element.GetAttribute("time"));
     return PlaySilence(time);
   }
   
-  if (element->HasAttribute("size")) {
-    PString size = element->GetAttribute("size");
+  if (element.HasAttribute("size")) {
+    PString size = element.GetAttribute("size");
     if (size *= "none")
       return true;
     if (size *= "small")
@@ -1642,13 +1601,11 @@ PBoolean PVXMLSession::TraverseBreak()
 }
 
 
-PBoolean PVXMLSession::TraverseValue()
+PBoolean PVXMLSession::TraverseValue(PXMLElement & element)
 {
-  PXMLElement * element = (PXMLElement *)currentNode;
-
-  PString className = element->GetAttribute("class");
-  PString value = EvaluateExpr(element->GetAttribute("expr"));
-  PString voice = element->GetAttribute("voice");
+  PString className = element.GetAttribute("class");
+  PString value = EvaluateExpr(element.GetAttribute("expr"));
+  PString voice = element.GetAttribute("voice");
   if (voice.IsEmpty())
     voice = GetVar("voice");
   SayAs(className, value, voice);
@@ -1656,12 +1613,10 @@ PBoolean PVXMLSession::TraverseValue()
 }
 
 
-PBoolean PVXMLSession::TraverseSayAs()
+PBoolean PVXMLSession::TraverseSayAs(PXMLElement & element)
 {
-  PXMLElement * element = (PXMLElement *)currentNode;
-
-  PString className = element->GetAttribute("class");
-  PXMLObject * object = element->GetElement();
+  PString className = element.GetAttribute("class");
+  PXMLObject * object = element.GetElement();
   if (!object->IsElement()) {
     PString text = ((PXMLData *)object)->GetString();
     SayAs(className, text);
@@ -1670,50 +1625,18 @@ PBoolean PVXMLSession::TraverseSayAs()
 }
 
 
-PBoolean PVXMLSession::TraverseGoto()   // <goto>
+PBoolean PVXMLSession::TraverseGoto(PXMLElement & element)
 {
-  PAssert(currentNode != NULL, "ProcessGotoElement(): Expected valid node");
-  if (currentNode == NULL)
-    return false;
-  
-  // LATER: handle expr, expritem, fetchaudio, fetchhint, fetchtimeout, maxage, maxstale
-  
-  PAssert(currentNode->IsElement(), "ProcessGotoElement(): Expected element");
-  
-  // nextitem
-  PString nextitem = ((PXMLElement*)currentNode)->GetAttribute("nextitem");
-  if (!nextitem.IsEmpty()) {
-    // LATER: Take out the optional #
-    currentForm = FindForm(nextitem);
-    currentNode = currentForm;
-    if (currentForm == NULL) {
-      // LATER: throw "error.semantic" or "error.badfetch" -- lookup which
-      return false;
-    }
-    return true;
-  }
-  
-  // next
-  PString next = ((PXMLElement*)currentNode)->GetAttribute("next");
-  // LATER: fixup filename to prepend path
-  if (!next.IsEmpty()) { 
-    if (next[0] == '#') {
-      next = next.Right( next.GetLength() -1 );
-      currentForm = FindForm(next);
-      currentNode = currentForm;
-      // LATER: throw "error.semantic" or "error.badfetch" -- lookup which
-      return currentForm != NULL;
-    }
-    else {
-      PURL url = NormaliseResourceName(next);
-      return LoadURL(url) && (currentForm != NULL);
-    }
-  }
+  bool fullURI = element.HasAttribute("next");
+  if (SetCurrentForm(element.GetAttribute(fullURI ? "next" : "nextitem"), fullURI))
+    return ProcessNode();
+
+  // LATER: throw "error.semantic" or "error.badfetch" -- lookup which
   return false;
 }
 
 
-PBoolean PVXMLSession::TraverseGrammar()   // <grammar>
+PBoolean PVXMLSession::TraverseGrammar(PXMLElement & element)
 {
   // LATER: A bunch of work to do here!
 
@@ -1724,21 +1647,20 @@ PBoolean PVXMLSession::TraverseGrammar()   // <grammar>
   //       out the text and process a grammar like '1 | 2'
 
   // Right now we only support one active grammar.
-  if (activeGrammar != NULL) {
+  if (m_grammar != NULL) {
     PTRACE(2, "VXML\tWarning: can only process one grammar at a time, ignoring previous grammar");
     LoadGrammar(NULL);
   }
 
   m_speakNodeData = false;
 
-  PXMLElement * element = (PXMLElement*)currentNode;
-  PCaselessString attrib = element->GetAttribute("mode");
+  PCaselessString attrib = element.GetAttribute("mode");
   if (!attrib.IsEmpty() && attrib != "dtmf") {
     PTRACE(2, "VXML\tOnly DTMF mode supported for grammar");
     return false;
   }
 
-  attrib = element->GetAttribute("type");
+  attrib = element.GetAttribute("type");
   if (!attrib.IsEmpty() && attrib != "X-OPAL/digits") {
     PTRACE(2, "VXML\tOnly \"digits\" type supported for grammar");
     return false;
@@ -1746,8 +1668,9 @@ PBoolean PVXMLSession::TraverseGrammar()   // <grammar>
 
   PTRACE(4, "VXML\tLoading new grammar");
   PStringToString tokens;
-  PURL::SplitVars(element->GetData(), tokens, ';', '=');
-  return LoadGrammar(new PVXMLDigitsGrammar(element->GetParent(),
+  PURL::SplitVars(element.GetData(), tokens, ';', '=');
+  return LoadGrammar(new PVXMLDigitsGrammar(*this,
+                                            *element.GetParent(),
                                             tokens("minDigits", "1").AsUnsigned(),
                                             tokens("maxDigits", "10").AsUnsigned(),
                                             tokens("terminators", "#")));
@@ -1756,29 +1679,44 @@ PBoolean PVXMLSession::TraverseGrammar()   // <grammar>
 
 // Finds the proper event hander for 'noinput', 'filled', 'nomatch' and 'error'
 // by searching the scope hiearchy from the current from
-PXMLElement * PVXMLSession::FindHandler(const PString & event)
+bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & eventName)
 {
-  PAssert(currentNode->IsElement(), "Expected 'PXMLElement' in PVXMLSession::FindHandler");
-  PXMLElement * tmp = (PXMLElement *)currentNode;
+  PXMLElement * level = &element;
   PXMLElement * handler = NULL;
 
-  // Look in all the way up the tree for a handler either explicitly or in a catch
-  while (tmp != NULL) {
-    // Check for an explicit hander - i.e. <error>, <filled>, <noinput>, <nomatch>, <help>
-    if ((handler = tmp->GetElement(event)) != NULL)
-      return handler;
+  int actualCount = 1; // Need to increment this with state stored ... somewhere
 
-    // Check for a <catch>
-    if ((handler = tmp->GetElement("catch")) != NULL) {
-      PString strCond = handler->GetAttribute("cond");
-      if (strCond.Find(event))
-        return handler;
+  // Look in all the way up the tree for a handler either explicitly or in a catch
+  for (;;) {
+    for (int testCount = actualCount; testCount >= 0; --testCount) {
+      // Check for an explicit hander - i.e. <error>, <filled>, <noinput>, <nomatch>, <help>
+      PINDEX index = 0;
+      if ((handler = level->GetElement(eventName)) != NULL &&
+              handler->GetAttribute("count").AsInteger() == testCount)
+        goto gotHandler;
+
+      // Check for a <catch>
+      index = 0;
+      while ((handler = level->GetElement("catch", index++)) != NULL) {
+        if ((handler->GetAttribute("event") *= eventName) &&
+                handler->GetAttribute("count").AsInteger() == testCount)
+          goto gotHandler;
+      }
     }
 
-    tmp = tmp->GetParent();
+    level = level->GetParent();
+    if (level == NULL) {
+      PTRACE(4, "VXML\tNo event handler found for \"" << eventName << '"');
+      return true;
+    }
   }
 
-  return NULL;
+gotHandler:
+  handler->SetAttribute("fired", "true");
+  m_currentNode = handler;
+  PTRACE(4, "VXML\tSetting event handler to node " << handler << " for \"" << eventName << '"');
+  ProcessNode();
+  return false;
 }
 
 
@@ -1788,12 +1726,12 @@ void PVXMLSession::SayAs(const PString & className, const PString & text)
 }
 
 
-void PVXMLSession::SayAs(const PString & className, const PString & _text, const PString & voice)
+void PVXMLSession::SayAs(const PString & className, const PString & textToSay, const PString & voice)
 {
-  if (textToSpeech != NULL)
-    textToSpeech->SetVoice(voice);
+  if (m_textToSpeech != NULL)
+    m_textToSpeech->SetVoice(voice);
 
-  PString text = _text.Trim();
+  PString text = textToSay.Trim();
   if (!text.IsEmpty()) {
     PTextToSpeech::TextType type = PTextToSpeech::Literal;
 
@@ -1843,84 +1781,74 @@ PTimeInterval PVXMLSession::StringToTime(const PString & str)
 }
 
 
-PBoolean PVXMLSession::TraverseIf()
+PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
 {
   // If 'cond' parameter evaluates to true, enter child entities, else
   // go to next element.
 
-  PString condition = ((PXMLElement*)currentNode)->GetAttribute("cond");
+  PString condition = element.GetAttribute("cond");
 
   // Find comparison type
   PINDEX location = condition.Find("==");
-  PBoolean isEqual = (location < condition.GetSize());
-
-  if (isEqual) {
-    // Find var name
-    PString varname = condition.Left(location);
-
-    // Find value, skip '=' signs
-    PString cond_value = condition.Right(condition.GetSize() - (location + 3));
-    
-    // check if var value equals value from condition and if not skip child elements
-    PCaselessString value = GetVar(varname);
-    if (value == cond_value) {
-      PTRACE( 3, "VXML\tCondition matched \"" << condition << '"' );
-    }
-    else {
-      PTRACE( 3, "VXMLSess\t\tCondition \"" << condition << "\"did not match, " << varname << " == " << value );
-      if (currentNode->IsElement()) {
-        PXMLElement* element = (PXMLElement*) currentNode;
-        if (element->HasSubObjects()) {
-          // Step to last child element (really last element is NULL?)
-          currentNode = element->GetElement(element->GetSize() - 1);
-        }
-      }
-    }
-  }
-
-  else {
+  if (location == P_MAX_INDEX) {
     PTRACE(1, "VXML\t<if> element contains condition with operator other than ==, not implemented" );
     return false;
   }
 
+  // Find var name
+  PString varname = condition.Left(location);
+
+  // Find value, skip '=' signs
+  PString cond_value = condition.Mid(location + 3);
+  
+  // check if var value equals value from condition and if not skip child elements
+  PCaselessString value = GetVar(varname);
+  if (value == cond_value) {
+    PTRACE(3, "VXML\tCondition matched \"" << condition << '"');
+  }
+  else {
+    PTRACE(3, "VXMLSess\t\tCondition \"" << condition << "\"did not match, " << varname << " == " << value);
+    if (element.HasSubObjects())
+      // Step to last child element (really last element is NULL?)
+      m_currentNode = element.GetElement(element.GetSize() - 1);
+  }
+
   return true;
 }
 
 
-PBoolean PVXMLSession::TraverseExit()
+PBoolean PVXMLSession::TraverseExit(PXMLElement &)
 {
   PTRACE(2, "VXML\tExiting, fast forwarding through script");
   m_abortVXML = true;
-  waitForEvent.Signal();
+  Trigger();
   return true;
 }
 
 
-PBoolean PVXMLSession::TraverseSubmit()
+PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
 {
   // Do HTTP client stuff here
 
   // Find out what to submit, for now, only support a WAV file
-  PXMLElement * element = (PXMLElement *)currentNode;
-
-  if (!element->HasAttribute("namelist")){
+  if (!element.HasAttribute("namelist")){
     PTRACE(1, "VXML\t<submit> does not contain \"namelist\" parameter");
     return false;
   }
 
-  PString name = element->GetAttribute("namelist");
+  PString name = element.GetAttribute("namelist");
 
   if (name.Find(" ") < name.GetSize()) {
     PTRACE(1, "VXML\t<submit> does not support more than one value in \"namelist\" parameter");
     return false;
   }
 
-  if (!element->HasAttribute("next")) {
+  if (!element.HasAttribute("next")) {
     PTRACE(1, "VXML\t<submit> does not contain \"next\" parameter");
     return false;
   }
 
-  PString url = element->GetAttribute("next");
+  PString url = element.GetAttribute("next");
 
   if (url.Find( "http://" ) > url.GetSize()) {
     PTRACE(1, "VXML\t<submit> needs a full url as the \"next\" parameter");
@@ -1934,7 +1862,7 @@ PBoolean PVXMLSession::TraverseSubmit()
 
   PFilePath fileName = GetVar(name + ".filename");
 
-  if (!(element->HasAttribute("method"))) {
+  if (!(element.HasAttribute("method"))) {
     PTRACE(1, "VXML\t<submit> does not (yet) support default method type \"get\"");
     return false;
   }
@@ -1959,7 +1887,7 @@ PBoolean PVXMLSession::TraverseSubmit()
     }
   }
 
-  if (element->GetAttribute("method") *= "post") {
+  if (element.GetAttribute("method") *= "post") {
     PFile file(fileName, PFile::ReadOnly);
     if (!file.IsOpen()) {
       PTRACE(1, "VXML\t<submit> coule not find " << fileName);
@@ -2009,8 +1937,8 @@ PBoolean PVXMLSession::TraverseSubmit()
   }
 
   else {
-    if (element->GetAttribute("method") != "get") {
-      PTRACE(1, "VXML\t<submit> does not (yet) support method type \"" << element->GetAttribute( "method" ) << "\"");
+    if (element.GetAttribute("method") != "get") {
+      PTRACE(1, "VXML\t<submit> does not (yet) support method type \"" << element.GetAttribute("method") << "\"");
       return false;
     }
 
@@ -2035,231 +1963,358 @@ PBoolean PVXMLSession::TraverseSubmit()
 }
 
 
-PBoolean PVXMLSession::TraverseProperty()
+PBoolean PVXMLSession::TraverseProperty(PXMLElement & element)
 {
-  PXMLElement* element = (PXMLElement *) currentNode;
-  if (element->HasAttribute("name"))
-    SetVar(element->GetAttribute("name"), element->GetAttribute("value"));
+  if (element.HasAttribute("name"))
+    SetVar("property." + element.GetAttribute("name"), element.GetAttribute("value"));
 
   return true;
 }
 
 
-PBoolean PVXMLSession::TraversedTransfer()
+PBoolean PVXMLSession::TraverseTransfer(PXMLElement &)
 {
-  PXMLElement* element = (PXMLElement *) currentNode;
-  bool bridged = (element->GetAttribute("bridge") *= "true");
-
-  if (element->HasAttribute("dest"))
-    OnTransfer(element->GetAttribute("dest"), bridged);
-  else if (element->HasAttribute("destexpr"))
-    OnTransfer(EvaluateExpr(element->GetAttribute("destexpr")), bridged);
-
+  m_transferStatus = NotTransfering;
   return true;
 }
 
 
-PBoolean PVXMLSession::TraverseMenu()
+PBoolean PVXMLSession::TraversedTransfer(PXMLElement & element)
 {
-  LoadGrammar(new PVXMLDigitsGrammar((PXMLElement*) currentNode, 1, 1, "" ));
-  eventName = "menu";
-  return true;
-}
-
-
-PBoolean PVXMLSession::TraverseChoice()
-{
-  // Iterate over all choice elements starting at currentnode
-  PXMLElement* element = (PXMLElement *) currentNode;
-  // Current node is a choice element
-
-  PString dtmf = element->GetAttribute("dtmf");
-
-  if (dtmf.IsEmpty())
-    dtmf = PString(PString::Unsigned, defaultDTMF);
-
-  // Check if DTMF value for grammarResult matches the DTMF value for the choice
-  if (dtmf == grammarResult) {
-
-    // Find the form at next parameter
-    PString formID = element->GetAttribute("next");
-
-    PTRACE(3, "VXML\tFound form id \"" << formID << '"');
-
-    if (!formID.IsEmpty()) {
-      currentNode = FindForm(formID.Mid(1));
-      if (currentNode != NULL) {
-        // If the correct choice has been found, 
-        /// make sure everything is reset correctly
-        eventName.MakeEmpty();
-        grammarResult.MakeEmpty();
-        defaultDTMF = 1;
-        return true;
-      }
+  if (m_transferStatus == NotTransfering) {
+    TransferType type = BridgedTransfer;
+    if (element.GetAttribute("bridge") *= "false")
+      type = BlindTransfer;
+    else {
+      PCaselessString typeStr = element.GetAttribute("type");
+      if (typeStr == "blind")
+        type = BlindTransfer;
+      else if (typeStr == "consultation")
+        type = ConsultationTransfer;
     }
+
+    m_transferStartTime.SetCurrentTime();
+
+    bool started = false;
+    if (element.HasAttribute("dest"))
+      started = OnTransfer(element.GetAttribute("dest"), type);
+    else if (element.HasAttribute("destexpr"))
+      started = OnTransfer(EvaluateExpr(element.GetAttribute("destexpr")), type);
+
+    if (started) {
+      m_transferStatus = TransferInProgress;
+      return false;
+    }
+
+    m_transferStatus = TransferFailed;
+  }
+  else {
+    PString name = element.GetAttribute("name");
+    if (!name.IsEmpty())
+      SetVar(name + "$.duration", PString(PString::Unsigned, (PTime() - m_transferStartTime).GetSeconds()));
   }
 
-  defaultDTMF++;
-  return false;
+  return GoToEventHandler(element, m_transferStatus == TransferSuccessful ? "filled" : "error");
 }
 
 
-PBoolean PVXMLSession::TraverseVar()
+void PVXMLSession::SetTransferComplete(bool state)
 {
-  PBoolean result = false;
+  PTRACE(3, "VXML\tTransfer " << (state ? "completed" : "failed"));
+  m_transferStatus = state ? TransferSuccessful : TransferFailed;
+  Trigger();
+}
 
-  PXMLElement* element = (PXMLElement *) currentNode;
 
-  PString name = element->GetAttribute( "name" );
-  PString expr = element->GetAttribute( "expr" );
+PBoolean PVXMLSession::TraverseMenu(PXMLElement & element)
+{
+  LoadGrammar(new PVXMLMenuGrammar(*this, element));
+  m_defaultMenuDTMF = (element.GetAttribute("dtmf") *= "true") ? '1' : 'N';
+  return true;
+}
+
+
+PBoolean PVXMLSession::TraversedMenu(PXMLElement &)
+{
+  return ProcessGrammar();
+}
+
+
+PBoolean PVXMLSession::TraverseChoice(PXMLElement & element)
+{
+  if (!element.HasAttribute("dtmf") && m_defaultMenuDTMF <= '9')
+    element.SetAttribute("dtmf", PString(m_defaultMenuDTMF++));
+
+  return true;
+}
+
+
+PBoolean PVXMLSession::TraverseVar(PXMLElement & element)
+{
+  PString name = element.GetAttribute("name");
+  PString expr = element.GetAttribute("expr");
 
   if (name.IsEmpty() || expr.IsEmpty()) {
     PTRACE(1, "VXML\t<var> has a problem with its parameters, name=\"" << name << "\", expr=\"" << expr << "\"" );
-  }
-  else {
-    SetVar(name, EvaluateExpr(expr));
-    result = true;
+    return false;
   }
 
-  return result;
-}
-
-
-PBoolean PVXMLSession::TraverseDisconnect()
-{
-  currentNode = NULL;
+  SetVar(name, EvaluateExpr(expr));
   return true;
 }
 
 
-PBoolean PVXMLSession::TraverseForm()
+PBoolean PVXMLSession::TraverseDisconnect(PXMLElement &)
 {
-  // this is now the current element - go on
-  currentForm = (PXMLElement *) currentNode;
-  currentField = NULL;  // no active field in a new form
-  return currentForm != NULL;
+  m_currentNode = NULL;
+  return true;
 }
 
 
-PBoolean PVXMLSession::TraversePrompt()
+PBoolean PVXMLSession::TraverseForm(PXMLElement &)
 {
-  PXMLElement* element = (PXMLElement *) currentNode;
+  m_variableScope = "dialog";
+  return true;
+}
 
+
+PBoolean PVXMLSession::TraversedForm(PXMLElement &)
+{
+  m_variableScope = "application";
+  return true;
+}
+
+
+PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
+{
   // LATER:
   // check 'cond' attribute to see if the children of this node should be processed
   // check 'count' attribute to see if this node should be processed
   // flush all prompts if 'bargein' attribute is set to false
 
   // Update timeout of current recognition (if 'timeout' attribute is set)
-  if (element->HasAttribute("timeout")) {
-    PTimeInterval timeout = StringToTime(element->GetAttribute("timeout"));
+  if (element.HasAttribute("timeout")) {
+    PTimeInterval timeout = StringToTime(element.GetAttribute("timeout"));
   }
 
+  return !PlayElement(element);
+}
+
+
+PBoolean PVXMLSession::TraverseField(PXMLElement &)
+{
   return true;
 }
 
 
-PBoolean PVXMLSession::TraverseField()
+PBoolean PVXMLSession::TraversedField(PXMLElement &)
 {
-  currentField = (PXMLElement*)currentNode;
-  timeout = DEFAULT_TIMEOUT;
-  return currentField != NULL;
+  return ProcessGrammar();
 }
 
 
-PBoolean PVXMLSession::TraversedField()
+static bool HasFired(PXMLElement & element)
 {
-  listening = true;
-  return PlaySilence(timeout);
+  bool fired = element.GetAttribute("fired") == "true";
+  element.SetAttribute("fired", "false");
+  return fired;
 }
 
 
-void PVXMLSession::OnEndRecording(const PString & /*channelName*/)
+PBoolean PVXMLSession::TraverseFilled(PXMLElement & element)
+{
+  return HasFired(element);
+}
+
+
+PBoolean PVXMLSession::TraverseNoInput(PXMLElement & element)
+{
+  return HasFired(element);
+}
+
+
+PBoolean PVXMLSession::TraverseNoMatch(PXMLElement & element)
+{
+  return HasFired(element);
+}
+
+
+PBoolean PVXMLSession::TraverseError(PXMLElement & element)
+{
+  return HasFired(element);
+}
+
+
+PBoolean PVXMLSession::TraverseCatch(PXMLElement & element)
+{
+  return HasFired(element);
+}
+
+
+void PVXMLSession::OnEndRecording()
 {
   //SetVar(channelName + ".size", PString(incomingChannel->GetWAVFile()->GetDataLength() ) );
   //SetVar(channelName + ".type", "audio/x-wav" );
   //SetVar(channelName + ".filename", incomingChannel->GetWAVFile()->GetName() );
+  m_recordingStatus = RecordingComplete;
+  Trigger();
 }
 
 
 void PVXMLSession::Trigger()
 {
-  waitForEvent.Signal();
+  PTRACE(5, "VXML\tEvent triggered");
+  m_waitForEvent.Signal();
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-PVXMLGrammar::PVXMLGrammar(PXMLElement * _field)
-  : field(_field), state(PVXMLGrammar::NOINPUT)
+PVXMLGrammar::PVXMLGrammar(PVXMLSession & session, PXMLElement & field)
+  : m_session(session)
+  , m_field(field)
+  , m_state(Idle)
 {
+  m_timer.SetNotifier(PCREATE_NOTIFIER(OnTimeout));
 }
+
+
+void PVXMLGrammar::Start()
+{
+  m_state = Started;
+  m_timer = PVXMLSession::StringToTime(m_session.GetVar("property.timeout"));
+  PTRACE(3, "VXML\tStarted grammar " << *this << ", timeout=" << m_timer);
+}
+
+
+void PVXMLGrammar::OnTimeout(PTimer &, INT)
+{
+  PTRACE(3, "VXML\tTimeout for grammar " << *this);
+  m_mutex.Wait();
+
+  if (m_state == Started) {
+    m_state = NoInput;
+    m_session.Trigger();
+  }
+
+  m_mutex.Signal();
+}
+
+
+bool PVXMLGrammar::Process()
+{
+  // Figure out what happened
+  switch (m_state) {
+    case Filled:
+      if (m_field.HasAttribute("name"))
+        m_session.SetVar(m_field.GetAttribute("name"), m_value);
+      return m_session.GoToEventHandler(m_field, "filled");
+
+    case PVXMLGrammar::NoInput:
+      return m_session.GoToEventHandler(m_field, "noinput");
+
+    case PVXMLGrammar::NoMatch:
+      return m_session.GoToEventHandler(m_field, "nomatch");
+
+    default:
+      break; //ERROR - unexpected grammar state
+  }
+
+  return true; // Next node
+}
+
 
 //////////////////////////////////////////////////////////////////
 
-PVXMLMenuGrammar::PVXMLMenuGrammar(PXMLElement * _field)
-  : PVXMLGrammar(_field)
+PVXMLMenuGrammar::PVXMLMenuGrammar(PVXMLSession & session, PXMLElement & field)
+  : PVXMLGrammar(session, field)
 {
 }
+
+
+void PVXMLMenuGrammar::OnUserInput(const char ch)
+{
+  m_mutex.Wait();
+
+  m_value = ch;
+  m_state = PVXMLGrammar::Filled;
+
+  m_mutex.Signal();
+}
+
+
+bool PVXMLMenuGrammar::Process()
+{
+  if (m_state == Filled) {
+    PXMLElement * choice;
+    PINDEX index = 0;
+    while ((choice = m_field.GetElement("choice", index++)) != NULL) {
+      // Check if DTMF value for grammarResult matches the DTMF value for the choice
+      if (choice->GetAttribute("dtmf") == m_value) {
+        PTRACE(3, "VXML\tMatched menu choice: " << m_value);
+        if (m_session.SetCurrentForm(choice->GetAttribute("next"), true))
+          return false;
+
+        return m_session.GoToEventHandler(m_field, choice->GetAttribute("event"));
+      }
+    }
+
+    m_state = NoMatch;
+  }
+
+  return PVXMLGrammar::Process();
+}
+
 
 //////////////////////////////////////////////////////////////////
 
-PVXMLDigitsGrammar::PVXMLDigitsGrammar(PXMLElement * _field, PINDEX _minDigits, PINDEX _maxDigits, PString _terminators)
-  : PVXMLGrammar(_field),
-  minDigits(_minDigits),
-  maxDigits(_maxDigits),
-  terminators(_terminators)
+PVXMLDigitsGrammar::PVXMLDigitsGrammar(PVXMLSession & session,
+                                       PXMLElement & field,
+                                       PINDEX minDigits,
+                                       PINDEX maxDigits,
+                                       PString terminators)
+  : PVXMLGrammar(session, field)
+  , m_minDigits(minDigits)
+  , m_maxDigits(maxDigits)
+  , m_terminators(terminators)
 {
-  PAssert(_minDigits <= _maxDigits, "Error - invalid grammar parameter");
+  PAssert(minDigits <= maxDigits, PInvalidParameter);
 }
 
 
-PBoolean PVXMLDigitsGrammar::OnUserInput(const char ch)
+void PVXMLDigitsGrammar::OnUserInput(const char ch)
 {
-  // Ignore any other keys if we've already filled the grammar
-  if (state == PVXMLGrammar::FILLED || state == PVXMLGrammar::NOMATCH)
-    return true;
+  PWaitAndSignal mutex(m_mutex);
+
+  // Ignore any keys until we are running
+  if (m_state != Started)
+    return;
+
+  PINDEX len = m_value.GetLength();
 
   // is this char the terminator?
-  if (terminators.Find(ch) != P_MAX_INDEX) {
-    state = (value.GetLength() >= minDigits && value.GetLength() <= maxDigits) ? 
-      PVXMLGrammar::FILLED : 
-      PVXMLGrammar::NOMATCH;
-    return true;
+  if (m_terminators.Find(ch) != P_MAX_INDEX) {
+    m_state = (len >= m_minDigits && len <= m_maxDigits) ? Filled : NoMatch;
+    return;
   }
 
   // Otherwise add to the grammar and check to see if we're done
-  value += ch;
-  if (value.GetLength() == maxDigits) {
-    state = PVXMLGrammar::FILLED;   // the grammar is filled!
-    return true;
-  }
-
-  return false;
+  m_value += ch;
+  if (++len >= m_maxDigits)
+    m_state = PVXMLGrammar::Filled;   // the grammar is filled!
 }
 
-
-void PVXMLDigitsGrammar::Stop()
-{
-  // Stopping recognition here may change the state if something was
-  // recognized but it didn't fill the number of digits requested
-  if (!value.IsEmpty())
-    state = PVXMLGrammar::NOMATCH;
-  // otherwise the state will stay as NOINPUT
-}
 
 //////////////////////////////////////////////////////////////////
 
 PVXMLChannel::PVXMLChannel(unsigned _frameDelay, PINDEX frameSize)
   : PDelayChannel(DelayReadsAndWrites, _frameDelay, frameSize)
+  , m_vxmlSession(NULL)
 {
-  vxmlInterface = NULL; 
-
   sampleFrequency = 8000;
   closed          = false;
 
-  recording       = false;
   recordable      = NULL;
 
   paused          = false;
@@ -2268,10 +2323,10 @@ PVXMLChannel::PVXMLChannel(unsigned _frameDelay, PINDEX frameSize)
 }
 
 
-PBoolean PVXMLChannel::Open(PVXMLChannelInterface * _vxmlInterface)
+PBoolean PVXMLChannel::Open(PVXMLSession * session)
 {
   currentPlayItem = NULL;
-  vxmlInterface = _vxmlInterface;
+  m_vxmlSession = session;
   m_silenceTimer.SetInterval(500); // 1/2 a second delay before we start outputting stuff
   PTRACE(4, "VXML\tOpening channel " << this);
   return true;
@@ -2430,7 +2485,6 @@ PBoolean PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
   // insert the new recordable
   PWaitAndSignal mutex(channelWriteMutex);
   recordable = newItem;
-  recording = true;
   totalData = 0;
   newItem->OnStart();
   newItem->Record(*this);
@@ -2445,12 +2499,10 @@ PBoolean PVXMLChannel::EndRecording()
 
   if (recordable != NULL) {
     PTRACE(3, "VXML\tFinished recording " << totalData << " bytes");
-
-    PDelayChannel::Close();
     recordable->OnStop();
     delete recordable;
     recordable = NULL;
-    PTRACE(4, "VXML\tRecording finished");
+    m_vxmlSession->OnEndRecording();
   }
 
   return true;
@@ -2521,6 +2573,7 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
           currentPlayItem->OnStop();
           delete currentPlayItem;
           currentPlayItem = NULL;
+          m_vxmlSession->Trigger();
         }
 
         PDelayChannel::Close();
@@ -2534,7 +2587,6 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
         // then trigger the VXML and send silence
         currentPlayItem = playQueue.Dequeue();
         if (currentPlayItem == NULL) {
-          vxmlInterface->Trigger();
           silenceStuff = true;
           break;
         }
