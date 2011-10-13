@@ -2777,14 +2777,14 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
 void PVXMLChannel::FlushQueue()
 {
-  PTRACE(4, "VXML\tFlushing playable queue");
-
   m_channelReadMutex.Wait();
   if (GetBaseReadChannel() != NULL)
     PDelayChannel::Close();
   m_channelReadMutex.Signal();
 
   m_queueMutex.Wait();
+
+  PTRACE(4, "VXML\tFlushing playable queue");
 
   PVXMLPlayable * qItem;
   while ((qItem = m_playQueue.Dequeue()) != NULL) {
@@ -2797,6 +2797,8 @@ void PVXMLChannel::FlushQueue()
     delete m_currentPlayItem;
     m_currentPlayItem = NULL;
   }
+
+  m_silenceTimer.SetInterval(0);
 
   m_queueMutex.Signal();
 }
