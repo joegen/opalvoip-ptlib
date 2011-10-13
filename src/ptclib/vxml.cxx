@@ -697,6 +697,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_vxmlThread(NULL)
   , m_abortVXML(false)
   , m_currentNode(NULL)
+  , m_xmlChanged(false)
   , m_speakNodeData(true)
   , m_grammar(NULL)
   , m_defaultMenuDTMF('N') /// Disabled
@@ -812,6 +813,7 @@ PBoolean PVXMLSession::LoadVXML(const PString & xmlText, const PString & firstFo
 {
   PWaitAndSignal mutex(m_sessionMutex);
 
+  m_xmlChanged = true;
   m_rootURL = PString::Empty();
   LoadGrammar(NULL);
 
@@ -1069,6 +1071,8 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 {
   PTRACE(4, "VXML\tExecution thread started");
 
+  m_sessionMutex.Wait();
+
   while (!m_abortVXML) {
     // process current node in the VXML script
     if (ProcessNode()) {
@@ -1077,18 +1081,14 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
          sure the script has been run to the end so submit actions etc. can be
          performed. Record and audio and other user interaction commands can
          be skipped, so we don't wait for them */
-      for (;;) {
-        if (ProcessEvents())
-          m_waitForEvent.Wait();
-
-        if (NextNode())
-          break;
-      }
+      do {
+        ProcessEvents();
+      } while (NextNode());
     }
     else {
       // Wait till node finishes
       while (ProcessEvents())
-        m_waitForEvent.Wait();
+        ;
 
       // Skip all children
       m_currentNode = m_currentNode->GetNextObject();
@@ -1105,13 +1105,13 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 
     // Wait for anything OnEndDialog plays to complete.
     while (ProcessEvents())
-      m_waitForEvent.Wait();
+      ;
 
-    m_sessionMutex.Wait();
     if (m_currentNode == NULL)
       m_abortVXML = true;
-    m_sessionMutex.Signal();
   }
+
+  m_sessionMutex.Signal();
 
   OnEndSession();
 
@@ -1131,6 +1131,8 @@ void PVXMLSession::OnEndSession()
 
 bool PVXMLSession::ProcessEvents()
 {
+  // m_sessionMutex already locked
+
   if (m_abortVXML)
     return false;
 
@@ -1146,8 +1148,6 @@ bool PVXMLSession::ProcessEvents()
   }
   m_userInputMutex.Signal();
 
-  PWaitAndSignal mutex(m_sessionMutex);
-
   if (ch != '\0') {
     if (m_recordStopOnDTMF)
       EndRecording();
@@ -1156,43 +1156,45 @@ bool PVXMLSession::ProcessEvents()
       m_grammar->OnUserInput(ch);
   }
 
-  if (IsOpen()) {
-    if (GetVXMLChannel()->IsPlaying()) {
-      PTRACE(5, "VXML\tIs playing");
-      return true;
-    }
-
-    if (GetVXMLChannel()->IsRecording()) {
-      PTRACE(5, "VXML\tIs recording");
-      return true;
-    }
+  if (IsOpen() && GetVXMLChannel()->IsPlaying()) {
+    PTRACE(5, "VXML\tIs playing");
   }
-
-  if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
+  else if (IsOpen() && GetVXMLChannel()->IsRecording()) {
+    PTRACE(5, "VXML\tIs recording");
+  }
+  else if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
     PTRACE(5, "VXML\tAwaiting input");
-    return true;
   }
-  
-  if (m_transferStatus == TransferInProgress) {
+  else if (m_transferStatus == TransferInProgress) {
     PTRACE(5, "VXML\tTransfer in progress");
-    return true;
+  }
+  else {
+    PTRACE(5, "VXML\tNothing happening");
+    return false;
   }
 
-  PTRACE(5, "VXML\tNothing happening");
-  return false;
+  m_sessionMutex.Signal();
+  m_waitForEvent.Wait();
+  m_sessionMutex.Wait();
+  return true;
 }
 
 
 bool PVXMLSession::NextNode()
 {
-  PWaitAndSignal mutex(m_sessionMutex);
+  // m_sessionMutex already locked
 
   if (m_abortVXML)
-    return true;
+    return false;
 
   // No more nodes
   if (m_currentNode == NULL)
-    return true;
+    return false;
+
+  if (m_xmlChanged) {
+    m_xmlChanged = false;
+    return false;
+  }
 
   PXMLElement * element;
 
@@ -1200,18 +1202,18 @@ bool PVXMLSession::NextNode()
     element = (PXMLElement*)m_currentNode;
     // if the current node has children, then process the first child
     if ((m_currentNode = element->GetElement(0)) != NULL)
-      return true;
+      return false;
   }
   else {
     // Data node
     PXMLObject * sibling = m_currentNode->GetNextObject();
     if (sibling != NULL) {
       m_currentNode = sibling;
-      return true;
+      return false;
     }
     if ((element = m_currentNode->GetParent()) == NULL) {
       m_currentNode = NULL;
-      return true;
+      return false;
     }
   }
 
@@ -1221,7 +1223,7 @@ bool PVXMLSession::NextNode()
     PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
     if (handler != NULL) {
       if (!handler->Finish(*this, *element))
-        return false;
+        return true;
       PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
     }
 
@@ -1230,7 +1232,7 @@ bool PVXMLSession::NextNode()
 
   } while ((element = element->GetParent()) != NULL);
 
-  return true;
+  return false;
 }
 
 
@@ -1261,13 +1263,15 @@ bool PVXMLSession::ProcessGrammar()
 
 bool PVXMLSession::ProcessNode()
 {
-  PWaitAndSignal mutex(m_sessionMutex);
+  // m_sessionMutex already locked
 
   if (m_abortVXML)
     return false;
 
   if (m_currentNode == NULL)
     return false;
+
+  m_xmlChanged = false;
 
   if (!m_currentNode->IsElement()) {
     if (m_speakNodeData)
@@ -2798,7 +2802,7 @@ void PVXMLChannel::FlushQueue()
     m_currentPlayItem = NULL;
   }
 
-  m_silenceTimer.SetInterval(0);
+  m_silenceTimer.Stop();
 
   m_queueMutex.Signal();
 }

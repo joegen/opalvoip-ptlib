@@ -305,6 +305,7 @@ class PVXMLSession : public PIndirectChannel
     bool             m_abortVXML;
     PSyncPoint       m_waitForEvent;
     PXMLObject  *    m_currentNode;
+    bool             m_xmlChanged;
     bool             m_speakNodeData;
 
     PVXMLGrammar *   m_grammar;
