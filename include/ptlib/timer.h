@@ -120,6 +120,10 @@ class PSimpleTimer : public PTimeInterval
       int days = 0              ///< Number of days for interval.
     );
 
+    /**Stop the timer.
+      */
+    void Stop();
+
     /**Return the real time elapsed since instantiation.
       */
     PTimeInterval GetElapsed() const;
