@@ -1096,6 +1096,9 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
         break;
 
       OnEndDialog();
+
+      while (ProcessEvents())
+        m_waitForEvent.Wait();
     }
   } while (m_currentNode != NULL);
 
