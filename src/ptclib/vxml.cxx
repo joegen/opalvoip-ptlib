@@ -1091,7 +1091,8 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
         ;
 
       // Skip all children
-      m_currentNode = m_currentNode->GetNextObject();
+      if (m_xmlChanged)
+        m_currentNode = m_currentNode->GetNextObject();
       NextNode();
     }
 
