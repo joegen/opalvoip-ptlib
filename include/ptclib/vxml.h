@@ -215,11 +215,8 @@ class PVXMLSession : public PIndirectChannel
 
     virtual PBoolean StartRecording(const PFilePath & fn, PBoolean recordDTMFTerm, const PTimeInterval & recordMaxTime, const PTimeInterval & recordFinalSilence);
     virtual PBoolean EndRecording();
-    virtual PBoolean IsPlaying() const;
-    virtual PBoolean IsRecording() const;
 
     virtual void OnUserInput(const PString & str);
-    virtual bool IsAwaitingInput() const;
 
     PString GetXMLError() const;
 
@@ -342,12 +339,11 @@ class PVXMLRecordable : public PObject
 {
   PCLASSINFO(PVXMLRecordable, PObject);
   public:
-    PVXMLRecordable()
-    { consecutiveSilence = 0; finalSilence = 3000; maxDuration = 30000; }
+    PVXMLRecordable();
 
     virtual PBoolean Open(const PString & arg) = 0;
 
-    virtual void Record(PVXMLChannel & incomingChannel) = 0;
+    virtual bool Record(PVXMLChannel & incomingChannel) = 0;
 
     virtual void OnStart() { }
 
@@ -356,23 +352,36 @@ class PVXMLRecordable : public PObject
     virtual void OnStop() { }
 
     void SetFinalSilence(unsigned v)
-    { finalSilence = v; }
+    { m_finalSilence = v > 0 ? v : 60000; }
 
     unsigned GetFinalSilence()
-    { return finalSilence; }
+    { return m_finalSilence; }
 
     void SetMaxDuration(unsigned v)
-    { maxDuration = v; }
+    { m_maxDuration = v > 0 ? v : 86400000; }
 
     unsigned GetMaxDuration()
-    { return maxDuration; }
+    { return m_maxDuration; }
 
   protected:
-    PTime silenceStart;
-    PTime recordStart;
-    unsigned finalSilence;
-    unsigned maxDuration;
-    unsigned consecutiveSilence;
+    PSimpleTimer m_silenceTimer;
+    PSimpleTimer m_recordTimer;
+    unsigned     m_finalSilence;
+    unsigned     m_maxDuration;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLRecordableFilename : public PVXMLRecordable
+{
+  PCLASSINFO(PVXMLRecordableFilename, PVXMLRecordable);
+  public:
+    PBoolean Open(const PString & arg);
+    bool Record(PVXMLChannel & incomingChannel);
+    PBoolean OnFrame(PBoolean isSilence);
+
+  protected:
+    PFilePath m_fileName;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -381,12 +390,9 @@ class PVXMLPlayable : public PObject
 {
   PCLASSINFO(PVXMLPlayable, PObject);
   public:
-    PVXMLPlayable()
-    { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = false; delayDone = false; }
+    PVXMLPlayable();
 
-    virtual PBoolean Open(PVXMLChannel & /*chan*/, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
-
-    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean v);
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
 
     virtual void Play(PVXMLChannel & outgoingChannel) = 0;
 
@@ -398,19 +404,19 @@ class PVXMLPlayable : public PObject
     virtual void OnStop() { }
 
     virtual void SetRepeat(PINDEX v) 
-    { repeat = v; }
+    { m_repeat = v; }
 
     virtual PINDEX GetRepeat() const
-    { return repeat; }
+    { return m_repeat; }
 
     virtual PINDEX GetDelay() const
-    { return delay; }
+    { return m_delay; }
 
     void SetFormat(const PString & fmt)
-    { format = fmt; }
+    { m_format = fmt; }
 
     void SetSampleFrequency(unsigned rate)
-    { sampleFrequency = rate; }
+    { m_sampleFrequency = rate; }
 
     virtual PBoolean ReadFrame(PVXMLChannel & channel, void * buf, PINDEX len);
 
@@ -420,13 +426,12 @@ class PVXMLPlayable : public PObject
     friend class PVXMLChannel;
 
   protected:
-    PString arg;
-    PINDEX repeat;
-    PINDEX delay;
-    PString format;
-    unsigned sampleFrequency;
-    PBoolean autoDelete;
-    PBoolean delayDone; // very tacky flag used to indicate when the post-play delay has been done
+    PINDEX   m_repeat;
+    PINDEX   m_delay;
+    PString  m_format;
+    unsigned m_sampleFrequency;
+    bool     m_autoDelete;
+    bool     m_delayDone; // very tacky flag used to indicate when the post-play delay has been done
 };
 
 //////////////////////////////////////////////////////////////////
@@ -445,10 +450,10 @@ class PVXMLPlayableURL : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableURL, PVXMLPlayable);
   public:
-    PBoolean Open(PVXMLChannel & chan, const PString & url, PINDEX delay, PINDEX repeat, PBoolean v);
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     void Play(PVXMLChannel & outgoingChannel);
   protected:
-    PURL url;
+    PURL m_url;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -457,12 +462,12 @@ class PVXMLPlayableData : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableData, PVXMLPlayable);
   public:
-    PBoolean Open(PVXMLChannel & chan, const PString & fn, PINDEX delay, PINDEX repeat, PBoolean v);
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     void SetData(const PBYTEArray & data);
     void Play(PVXMLChannel & outgoingChannel);
     PBoolean Rewind(PChannel * chan);
   protected:
-    PBYTEArray data;
+    PBYTEArray m_data;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -473,9 +478,9 @@ class PVXMLPlayableTone : public PVXMLPlayableData
 {
   PCLASSINFO(PVXMLPlayableTone, PVXMLPlayableData);
   public:
-    PBoolean Open(PVXMLChannel & chan, const PString & toneSpec, PINDEX delay, PINDEX repeat, PBoolean v);
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
   protected:
-    PTones tones;
+    PTones m_tones;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -485,11 +490,13 @@ class PVXMLPlayableCommand : public PVXMLPlayable
   PCLASSINFO(PVXMLPlayableCommand, PVXMLPlayable);
   public:
     PVXMLPlayableCommand();
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     void Play(PVXMLChannel & outgoingChannel);
     void OnStop();
 
   protected:
-    PPipeChannel * pipeCmd;
+    PString        m_command;
+    PPipeChannel * m_pipe;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -498,12 +505,12 @@ class PVXMLPlayableFilename : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableFilename, PVXMLPlayable);
   public:
-    PBoolean Open(PVXMLChannel & chan, const PString & fn, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     void Play(PVXMLChannel & outgoingChannel);
     void OnStop();
     virtual PBoolean Rewind(PChannel * chan);
   protected:
-    PFilePath fn;
+    PFilePath m_filePath;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -512,28 +519,16 @@ class PVXMLPlayableFilenameList : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableFilenameList, PVXMLPlayable);
   public:
+    PVXMLPlayableFilenameList();
+    virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     PBoolean Open(PVXMLChannel & chan, const PStringArray & filenames, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     void Play(PVXMLChannel & outgoingChannel)
     { OnRepeat(outgoingChannel); }
     void OnRepeat(PVXMLChannel & outgoingChannel);
     void OnStop();
   protected:
-    PINDEX currentIndex;
-    PStringArray filenames;
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLRecordableFilename : public PVXMLRecordable
-{
-  PCLASSINFO(PVXMLRecordableFilename, PVXMLRecordable);
-  public:
-    PBoolean Open(const PString & arg);
-    void Record(PVXMLChannel & incomingChannel);
-    PBoolean OnFrame(PBoolean isSilence);
-
-  protected:
-    PFilePath fn;
+    PStringArray m_fileNames;
+    PINDEX       m_currentIndex;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -572,7 +567,7 @@ class PVXMLChannel : public PDelayChannel
 
     PBoolean StartRecording(const PFilePath & fn, unsigned finalSilence = 3000, unsigned maxDuration = 30000);
     PBoolean EndRecording();
-    PBoolean IsRecording() const { return recordable != NULL; }
+    PBoolean IsRecording() const { return m_recordable != NULL; }
 
     // Outgoing channel functions
     virtual PBoolean ReadFrame(void * buffer, PINDEX amount) = 0;
@@ -592,44 +587,37 @@ class PVXMLChannel : public PDelayChannel
     { return QueuePlayable("Command", cmd, repeat, delay, true); }
 
     virtual void FlushQueue();
-    virtual PBoolean IsPlaying() const { return currentPlayItem != NULL || playQueue.GetSize() > 0; }
+    virtual PBoolean IsPlaying() const { return m_currentPlayItem != NULL || m_playQueue.GetSize() > 0; }
 
-    void SetPause(PBoolean pause) { paused = pause; }
+    void SetPause(PBoolean pause) { m_paused = pause; }
 
-    void SetName(const PString & name) { channelName = name; }
-
-    unsigned GetSampleFrequency() const { return sampleFrequency; }
+    unsigned GetSampleFrequency() const { return m_sampleFrequency; }
 
     void SetSilence(unsigned msecs);
 
   protected:
     PVXMLSession * m_vxmlSession;
 
-    unsigned sampleFrequency;
+    unsigned m_sampleFrequency;
     PString mediaFormat;
     PString wavFilePrefix;
 
-    PMutex channelWriteMutex;
-    PMutex channelReadMutex;
-    PBoolean closed;
+    PMutex   m_channelWriteMutex;
+    PMutex   m_channelReadMutex;
+    bool     m_closed;
+    bool     m_paused;
+    PINDEX   m_totalData;
 
     // Incoming audio variables
-    PVXMLRecordable * recordable;
-    unsigned finalSilence;
-    unsigned silenceRun;
+    PVXMLRecordable * m_recordable;
+    unsigned          m_finalSilence;
+    unsigned          m_silenceRun;
 
     // Outgoing audio variables
-    PMutex queueMutex;
-    PVXMLQueue playQueue;
-    PVXMLPlayable * currentPlayItem;
-
-    PBoolean paused;
-    PTimer   m_silenceTimer;
-    int totalData;
-
-    // "channelname" (which is the name of the <record> tag) so
-    // results can be saved in vxml session variable
-    PString channelName;
+    PMutex          m_queueMutex;
+    PVXMLQueue      m_playQueue;
+    PVXMLPlayable * m_currentPlayItem;
+    PSimpleTimer    m_silenceTimer;
 };
 
 
