@@ -184,6 +184,9 @@ PINLINE int PTime::GetTimeZone()
 ///////////////////////////////////////////////////////////////////////////////
 // PSimpleTimer
 
+PINLINE void PSimpleTimer::Stop()
+  { SetInterval(0); }
+
 PINLINE PTimeInterval PSimpleTimer::GetElapsed() const
   { return PTimer::Tick() - m_startTick; }
 
