@@ -1224,7 +1224,7 @@ bool PVXMLSession::NextNode()
 
 bool PVXMLSession::ProcessGrammar()
 {
-  if (PAssertNULL(m_grammar) == NULL)
+  if (m_grammar == NULL)
     return true;
 
   switch (m_grammar->GetState()) {
