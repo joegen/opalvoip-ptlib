@@ -947,41 +947,43 @@ PBoolean PVXMLSession::RetreiveResource(const PURL & url,
 
 bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 {
-  PTRACE(4, "VXML\tSetting form to \"" << searchId << '"');
-
-  // NOTE: should have some flag to know if it is loaded
-  PXMLElement * root = m_xml.GetRootElement();
-  if (root == NULL)
-    return false;
-
   PString id = searchId;
 
   if (fullURI) {
-    if (searchId.IsEmpty())
+    if (searchId.IsEmpty()) {
+      PTRACE(3, "VXML\tFull URI required for this form/menu search");
       return false;
+    }
 
-    if (searchId[0] != '#')
+    if (searchId[0] != '#') {
+      PTRACE(4, "VXML\tSearching form/menu \"" << searchId << '"');
       return LoadURL(NormaliseResourceName(searchId));
+    }
 
     id = searchId.Mid(1);
   }
 
   // Only handle search of top level nodes for <form>/<menu> element
-  PINDEX i;
-  for (i = 0; i < root->GetSize(); i++) {
-    PXMLObject * xmlObject = root->GetElement(i); 
-    if (xmlObject->IsElement()) {
-      PXMLElement * xmlElement = (PXMLElement*)xmlObject;
-      if (
-            (xmlElement->GetName() == "form" || xmlElement->GetName() == "menu") && 
-            (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
-         ) {
-        m_currentNode = xmlObject;
-        return true;
+  // NOTE: should have some flag to know if it is loaded
+  PXMLElement * root = m_xml.GetRootElement();
+  if (root != NULL) {
+    for (PINDEX i = 0; i < root->GetSize(); i++) {
+      PXMLObject * xmlObject = root->GetElement(i); 
+      if (xmlObject->IsElement()) {
+        PXMLElement * xmlElement = (PXMLElement*)xmlObject;
+        if (
+              (xmlElement->GetName() == "form" || xmlElement->GetName() == "menu") && 
+              (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
+           ) {
+          PTRACE(3, "VXML\tFound <" << xmlElement->GetName() << " id=\"" << xmlElement->GetAttribute("id") << "\">");
+          m_currentNode = xmlObject;
+          return true;
+        }
       }
     }
   }
 
+  PTRACE(3, "VXML\tNo form/menu with id \"" << searchId << '"');
   return false;
 }
 
@@ -1038,10 +1040,14 @@ PBoolean PVXMLSession::Close()
   PThread * thread = NULL;
 
   m_sessionMutex.Wait();
+
+  LoadGrammar(NULL);
+
   if (PThread::Current() != m_vxmlThread) {
     thread = m_vxmlThread;
     m_vxmlThread = NULL;
   }
+
   m_sessionMutex.Signal();
 
   if (thread != NULL) {
@@ -1063,7 +1069,7 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 {
   PTRACE(4, "VXML\tExecution thread started");
 
-  do {
+  while (!m_abortVXML) {
     // process current node in the VXML script
     if (ProcessNode()) {
       /* wait for something to happen, usually output of some audio. But under
@@ -1090,17 +1096,22 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
     }
 
     // Determine if we should quit
-    if (m_currentNode == NULL) {
-      PTRACE(3, "VXML\tEnd of VoiceXML elements.");
-      if (m_abortVXML)
-        break;
+    if (m_currentNode != NULL)
+      continue;
 
-      OnEndDialog();
+    PTRACE(3, "VXML\tEnd of VoiceXML elements.");
 
-      while (ProcessEvents())
-        m_waitForEvent.Wait();
-    }
-  } while (m_currentNode != NULL);
+    OnEndDialog();
+
+    // Wait for anything OnEndDialog plays to complete.
+    while (ProcessEvents())
+      m_waitForEvent.Wait();
+
+    m_sessionMutex.Wait();
+    if (m_currentNode == NULL)
+      m_abortVXML = true;
+    m_sessionMutex.Signal();
+  }
 
   OnEndSession();
 
@@ -1135,16 +1146,14 @@ bool PVXMLSession::ProcessEvents()
   }
   m_userInputMutex.Signal();
 
-  if (ch != '\0') {
-    m_sessionMutex.Wait();
+  PWaitAndSignal mutex(m_sessionMutex);
 
+  if (ch != '\0') {
     if (m_recordStopOnDTMF)
       EndRecording();
 
     if (m_grammar != NULL)
       m_grammar->OnUserInput(ch);
-
-    m_sessionMutex.Signal();
   }
 
   if (IsOpen()) {
@@ -1227,8 +1236,10 @@ bool PVXMLSession::NextNode()
 
 bool PVXMLSession::ProcessGrammar()
 {
-  if (m_grammar == NULL)
+  if (m_grammar == NULL) {
+    PTRACE(1, "VXML\tNo grammar was created!");
     return true;
+  }
 
   switch (m_grammar->GetState()) {
     case PVXMLGrammar::Idle :
@@ -1496,8 +1507,11 @@ PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX dela
 
 PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 {
+  PTRACE_IF(2, m_grammar != NULL && grammar == NULL, "VXML\tGrammar cleared from " << *m_grammar);
+
   delete m_grammar;
   m_grammar = grammar;
+
   PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
   return true;
 }
@@ -1553,7 +1567,7 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
     // see if we have converted this text before
     PString contentType = "audio/x-wav";
     if (useCache)
-      spoken = PVXMLCache::GetResourceCache().Get(prefix, contentType + "\n" + text, "wav", contentType, dataFn);
+      spoken = PVXMLCache::GetResourceCache().Get(prefix, contentType + '\t' + text, "wav", contentType, dataFn);
 
     // if not cached, then use the text to speech converter
     if (spoken) {
@@ -2763,6 +2777,8 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
 void PVXMLChannel::FlushQueue()
 {
+  PTRACE(4, "VXML\tFlushing playable queue");
+
   m_channelReadMutex.Wait();
   if (GetBaseReadChannel() != NULL)
     PDelayChannel::Close();
