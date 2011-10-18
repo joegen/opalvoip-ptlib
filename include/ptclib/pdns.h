@@ -106,6 +106,7 @@ DNS_NAPTR_DATA;
 #define DNS_TYPE_SRV  T_SRV
 #define DNS_TYPE_MX  T_MX
 #define DNS_TYPE_A  T_A
+#define DNS_TYPE_AAAA  T_AAAA
 #define DNS_TYPE_NAPTR  T_NAPTR
 #define DnsFreeRecordList 0
 #define DNS_QUERY_STANDARD 0
@@ -114,6 +115,10 @@ DNS_NAPTR_DATA;
 typedef struct _DnsAData {
   DWORD IpAddress;
 } DNS_A_DATA;
+
+typedef struct _DnsAAAAData {
+  DWORD Ip6Address[4];
+} DNS_AAAA_DATA;
 
 typedef struct {
   char   pNameExchange[MAXDNAME];
@@ -168,6 +173,7 @@ class DnsRecord {
 
     union {
       DNS_A_DATA     A;
+      DNS_AAAA_DATA  AAAA;
       DNS_MX_DATA    MX;
       DNS_PTR_DATA   NS;
       DNS_SRV_DATA   SRV;
