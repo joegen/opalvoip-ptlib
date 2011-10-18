@@ -97,6 +97,7 @@ void IPV6Test::Main()
 
   if (args.HasOption('d')) {
     PString name = args.GetOptionString('d');
+    PIPSocket::SetDefaultIpAddressFamily(AF_INET6);
     PIPSocket::Address addr;
     if (!PIPSocket::GetHostAddress(name, addr)) 
       PError << "error: hostname \"" << name << "\" not found" << endl;
