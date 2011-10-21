@@ -362,7 +362,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
         break;
       }
       if ((dnsRecord->Flags.S.Section == DnsSectionAdditional) && (dnsRecord->wType == DNS_TYPE_AAAA)) {
-        record->hostAddress = PIPSocket::Address(16, (BYTE *)dnsRecord->Data.AAAA.Ip6Address);
+        record->hostAddress = PIPSocket::Address(16, (BYTE *)&dnsRecord->Data.AAAA.Ip6Address);
         break;
       }
       aRecord = aRecord->pNext;
@@ -624,7 +624,7 @@ PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS
         break;
       }
       if ((dnsRecord->Flags.S.Section == DnsSectionAdditional) && (dnsRecord->wType == DNS_TYPE_AAAA)) {
-        record->hostAddress = PIPSocket::Address(16, (BYTE *)dnsRecord->Data.AAAA.Ip6Address);
+        record->hostAddress = PIPSocket::Address(16, (BYTE *)&dnsRecord->Data.AAAA.Ip6Address);
         break;
       }
       aRecord = aRecord->pNext;
