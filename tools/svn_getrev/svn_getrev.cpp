@@ -37,7 +37,7 @@
 #include <string>
 
 
-#define VERSION "1.01"
+#define VERSION "1.02"
 
 using namespace std;
 
@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
   const char * define = argc < 4 ? "SVN_REVISION" : argv[3];
 
   char revision[20];
+  revision[0] = '\0';
 
 
   ifstream file(".svn\\entries", ios::in);
@@ -75,13 +76,12 @@ int main(int argc, char* argv[])
     file.getline(revision, sizeof(revision));
 
     file.close();
+  }
 
-    cout << "Changing to revision " << revision << endl;
-  }
-  else {
+  if (revision[0] == '\0')
     cout << "Cannot determine revision, using default." << endl;
-    revision[0] = '\0';
-  }
+  else
+    cout << "Changing to revision " << revision << endl;
 
 
   file.clear();
@@ -100,6 +100,16 @@ int main(int argc, char* argv[])
   while (!file.eof()) {
     char line[250];
     file.getline(line, sizeof(line));
+    if (revision[0] == '\0' && strstr(line, "$Revision: ") != NULL) {
+      char * digits = line;
+      while (!isdigit(*digits))
+        ++digits;
+      char * end = digits;
+      while (isdigit(*end))
+        ++end;
+      *end = '\0';
+      strcpy(revision, digits);
+    }
     if (revision[0] != '\0' && strstr(line, define) != NULL)
       out << "#define " << define << ' ' << revision << '\n';
     else
