@@ -524,5 +524,5 @@ void PluginLoaderStartup::OnShutdown()
     PFactory<PPluginModuleManager>::CreateInstance(*it)->OnShutdown();
 }
 
-PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PluginLoaderStartup);
+PFACTORY_CREATE(PProcessStartupFactory, PluginLoaderStartup, PLUGIN_LOADER_STARTUP_NAME, true);
 
