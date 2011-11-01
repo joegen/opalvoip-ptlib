@@ -35,11 +35,13 @@
 #include <vector>
 #include <map>
 #include <fstream>
+#include <algorithm>
 
 #include <ctype.h>
 #include <ptlib/pfactory.h>
 #include <ptlib/pprocess.h>
 #include <ptlib/svcproc.h>
+#include <ptlib/pluginmgr.h>
 #include "../../../version.h"
 #include "../../../revision.h"
 
@@ -1679,15 +1681,16 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
-  PProcessStartup * levelSet = PProcessStartupFactory::CreateInstance("SetTraceLevel");
-  if (levelSet != NULL) 
-    levelSet->OnStartup();
-
   // create one instance of each class registered in the PProcessStartup abstract factory
+  // But make sure we have plugins first, to avoid bizarre behaviour where static objects
+  // are initialised multiple times when libraries are loaded in Linux.
   PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
+  std::swap(list.front(), *std::find(list.begin(), list.end(), PLUGIN_LOADER_STARTUP_NAME));
+  list.insert(list.begin(), "SetTraceLevel");
   for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it) {
-    if (*it != "SetTraceLevel")
-      PProcessStartupFactory::CreateInstance(*it)->OnStartup();
+    PProcessStartup * startup = PProcessStartupFactory::CreateInstance(*it);
+    if (startup != NULL)
+      startup->OnStartup();
   }
 
 #if PMEMORY_HEAP

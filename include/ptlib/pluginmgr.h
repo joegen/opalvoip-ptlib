@@ -172,6 +172,8 @@ class PPluginModuleManager : public PObject
 };
 
 
+#define PLUGIN_LOADER_STARTUP_NAME "PluginLoaderStartup"
+
 PFACTORY_LOAD(PluginLoaderStartup);
 
 
