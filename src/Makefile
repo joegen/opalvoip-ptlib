@@ -431,11 +431,11 @@ CLEAN_FILES = $(GETDATE_SOURCE)
 $(COMMON_SRC_DIR)/osutils.cxx: $(REVISION_FILE)
 
 $(REVISION_FILE) : $(REVISION_FILE).in
-ifeq ($(shell which svn 2> /dev/null),)
-	cp $< $@
+ifeq ($(shell which svn2 2> /dev/null),)
+	sed -e "s/.WCREV./`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $<`/" $< > $@
 else
 ifeq ($(wildcard .svn),)
-	cp $< $@
+	sed -e "s/.WCREV./`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $<`/" $< > $@
 else
 	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `LC_ALL=C svn info | sed -n 's/Revision: //p'`/" $< > $@.tmp
 	$(Q)if diff -q $@ $@.tmp >/dev/null 2>&1; then \
