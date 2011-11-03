@@ -1016,6 +1016,11 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
 void PMonitoredSocketBundle::OnAddInterface(const InterfaceEntry & entry)
 {
   // Already locked
+
+  // Temporarily ignore IPv6 interfaces, will be available in Eridani (> v2.11)
+  if (entry.GetAddress().GetVersion() == 6)
+    return;
+
   if (opened) {
     OpenSocket(MakeInterfaceDescription(entry));
     PTRACE(3, "MonSock\tUDP socket bundle has added interface " << entry);
@@ -1161,6 +1166,10 @@ PChannel::Errors PSingleMonitoredSocket::ReadFromBundle(void * buf,
 void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
 {
   // Already locked
+
+  // Temporarily ignore IPv6 interfaces, will be available in Eridani (> v2.11)
+  if (entry.GetAddress().GetVersion() == 6)
+    return;
 
   PIPSocket::Address addr;
   PString name;
