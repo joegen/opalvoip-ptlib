@@ -78,7 +78,7 @@ class PPluginManager : public PObject
     PBoolean RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
 
     // Add a directory to the list of plugin directories (used by OPAL)
-    static void AddPluginDirs(PString dirs);
+    static bool AddPluginDirs(const PString & dirs);
 
     // Get the list of plugin directories
     static PStringArray GetPluginDirs();
@@ -116,8 +116,6 @@ class PPluginManager : public PObject
     void RemoveNotifier(
       const PNotifier & filterFunction
     );
-
-    static PString additionalPluginDirs;
 
   protected:
     void LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes);
