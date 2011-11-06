@@ -1873,6 +1873,8 @@ PString PString::ToLiteral() const
   for (char * p = theArray; *p != '\0'; p++) {
     if (*p == '"')
       str += "\\\"";
+    else if (*p == '\\')
+      str += "\\\\";
     else if (isprint(*p & 0xff))
       str += *p;
     else {
