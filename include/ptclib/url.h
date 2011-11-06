@@ -166,7 +166,9 @@ class PURL : public PObject
       /// Translate the query variable field for a URL.
       QueryTranslation,
       /// Translate the parameter variables field for a URL.
-      ParameterTranslation
+      ParameterTranslation,
+      /// Translate the quoted parameter variables field for a URL.
+      QuotedParameterTranslation
     };
 
     /**Translate a string from general form to one that can be included into
