@@ -281,14 +281,46 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
     if (sep1next == P_MAX_INDEX)
       sep1next--; // Implicit assumption string is not a couple of gigabytes long ...
 
+    PCaselessString key, data;
+
     PINDEX sep2pos = str.Find(sep2, sep1prev);
     if (sep2pos > sep1next)
-      sep2pos = sep1next;
+      key = str(sep1prev, sep1next-1);
+    else {
+      key = str(sep1prev, sep2pos-1);
+      if (type != QuotedParameterTranslation)
+        data = str(sep2pos+1, sep1next-1);
+      else {
+        while (isspace(str[++sep2pos]))
+          ;
+        if (str[sep2pos] != '"')
+          data = str(sep2pos, sep1next-1);
+        else {
+          // find the end quote
+          PINDEX endQuote = sep2pos+1;
+          do {
+            endQuote = str.Find('"', endQuote+1);
+            if (endQuote == P_MAX_INDEX) {
+              PTRACE2(1, NULL, "URI\tNo closing double quote in parameter: " << str);
+              endQuote = str.GetLength()-1;
+              break;
+            }
+          } while (str[endQuote-1] == '\\');
 
-    PCaselessString key = PURL::UntranslateString(str(sep1prev, sep2pos-1), type);
+          data = PString(PString::Literal, str(sep2pos, endQuote));
+
+          if (sep1next < endQuote) {
+            sep1next = str.Find(sep1, endQuote);
+            if (sep1next == P_MAX_INDEX)
+              sep1next--; // Implicit assumption string is not a couple of gigabytes long ...
+          }
+        }
+      }
+    }
+
+    key = PURL::UntranslateString(key, type);
     if (!key) {
-      PString data = PURL::UntranslateString(str(sep2pos+1, sep1next-1), type);
-
+      data = PURL::UntranslateString(data, type);
       if (vars.Contains(key))
         vars.SetAt(key, vars[key] + '\n' + data);
       else
