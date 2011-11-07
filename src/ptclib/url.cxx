@@ -301,7 +301,7 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
           do {
             endQuote = str.Find('"', endQuote+1);
             if (endQuote == P_MAX_INDEX) {
-              PTRACE2(1, NULL, "URI\tNo closing double quote in parameter: " << str);
+              PTRACE(1, "URI\tNo closing double quote in parameter: " << str);
               endQuote = str.GetLength()-1;
               break;
             }
