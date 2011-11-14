@@ -970,10 +970,9 @@ void PString::ReadFrom(istream &strm)
   SetMinSize(100);
   char * ptr = theArray;
   PINDEX len = 0;
-  while (strm.peek() != EOF) {
-    if ((*ptr = (char)strm.get()) == '\n')
-      break;
-    ptr++;
+  int ch;
+  while ((ch = strm.get()) != EOF && ch != '\n') {
+    *ptr++ = (char)ch;
     len++;
     if (len >= GetSize()) {
       SetSize(len + 100);
