@@ -76,7 +76,7 @@
 #include <netinet/if_ether.h>
 #endif
 
-#if defined(P_NETBSD) || defined(P_MACOSX)
+#if defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
 #include <ifaddrs.h>
 #endif
 
@@ -1910,8 +1910,8 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
 {
-#if defined(P_FREEBSD) || defined(P_MACOSX)
-  // tested on FreeBSD 8.2 and MacOS X 10.5.6, but seems to work fine on Linux, too
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+  // tested on FreeBSD 8.2, OpenBSD 5.0 and MacOS X 10.5.6, but seems to work fine on Linux, too
   struct ifaddrs *interfaces, *ifa;
 
   if (getifaddrs(&interfaces) == 0) {
@@ -1926,7 +1926,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
     }
     freeifaddrs(interfaces);
   }
-#else	// not P_FREEBSD
+#else	// not P_FREEBSD...
   PUDPSocket sock;
 
   PBYTEArray buffer;
