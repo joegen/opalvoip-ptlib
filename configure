@@ -8504,6 +8504,7 @@ $as_echo "no" >&6; }
   else
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
 #include <sys/socket.h>
                      #include <netdb.h>
 int
