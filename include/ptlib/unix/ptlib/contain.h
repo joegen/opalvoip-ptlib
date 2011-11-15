@@ -35,6 +35,9 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <limits.h>
+#ifdef P_OPENBSD
+#include <stdint.h>
+#endif
 
 
 ///////////////////////////////////////////
