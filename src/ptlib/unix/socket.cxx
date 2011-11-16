@@ -1282,7 +1282,28 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
         net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x00:0", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15), *(ptr+16));
       } else if (sa_in->sin_len == 22) {
         net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:0", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15), *(ptr+16), *(ptr+17));
+      } else {
+        PTRACE(1, "Unhandled netmask length " << (int)sa_in->sin_len << " family " << sa_in->sin_family);
       }
+
+      sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
+    }
+
+    if(rtm->rtm_addrs & RTA_IFP) {
+      //const char *ptr = (const char *)&((sockaddr_dl*)sa_in)->sdl_data[0];
+      //PTRACE(5, "RTA_IFP addr=" << net_addr << " name=" << PString(ptr));
+      sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
+    }
+
+    if(rtm->rtm_addrs & RTA_IFA) {
+      if (dest_addr.IsLoopback()) {
+        if(sa_in->sin_family == AF_INET)
+          dest_addr = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
+        if(sa_in->sin_family == AF_INET6)
+          dest_addr = PIPSocket::Address(AF_INET6, sizeof(sockaddr_in6), (struct sockaddr *)sa_in);
+      }
+
+      sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
     }
 
     if(rtm->rtm_flags & RTF_HOST) {
