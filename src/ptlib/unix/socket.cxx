@@ -1223,7 +1223,7 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
 	metric=0;
 
     // NET_ADDR
-    if(rtm->rtm_addrs & RTA_DST ) {
+    if(rtm->rtm_addrs & RTA_DST) {
       if(sa_in->sin_family == AF_INET)
         net_addr = PIPSocket::Address(AF_INET, sizeof(sockaddr_in), (struct sockaddr *)sa_in);
       if(sa_in->sin_family == AF_INET6)
@@ -1245,6 +1245,7 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
     // NETMASK
     if(rtm->rtm_addrs & RTA_NETMASK) {
       unsigned char *ptr = (unsigned char *)&((sockaddr*)sa_in)->sa_data[2];
+      // TODO: is there a nicer way to convert the bytes into a netmask ?
       if (sa_in->sin_len == 0) {
         net_mask = (net_addr.GetVersion() == 4) ? "0.0.0.0" : "::";
       } else if (sa_in->sin_len == 5) {
@@ -1256,17 +1257,31 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
       } else if (sa_in->sin_len == 8) {
         net_mask = PString(PString::Printf, "%d.%d.%d.%d", *ptr, *(ptr+1), *(ptr+2), *(ptr+3));
       } else if (sa_in->sin_len == 10) {
-        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x::", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5));
+        net_mask = PString(PString::Printf, "%x%02x::", *(ptr+4), *(ptr+5));
+      } else if (sa_in->sin_len == 11) {
+        net_mask = PString(PString::Printf, "%x%02x:%x00::", *(ptr+4), *(ptr+5), *(ptr+6));
       } else if (sa_in->sin_len == 12) {
-        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x::", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7));
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7));
+      } else if (sa_in->sin_len == 13) {
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x00::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8));
       } else if (sa_in->sin_len == 14) {
-        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x::", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9));
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9));
+      } else if (sa_in->sin_len == 15) {
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x00::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10));
       } else if (sa_in->sin_len == 16) {
-        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:0:0", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11));
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11));
+      } else if (sa_in->sin_len == 17) {
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x00::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12));
       } else if (sa_in->sin_len == 18) {
-        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:0", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13));
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13));
+      } else if (sa_in->sin_len == 19) {
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x00::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14));
       } else if (sa_in->sin_len == 20) {
-        net_mask = PString(PString::Printf, "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x", *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15));
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x::", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15));
+      } else if (sa_in->sin_len == 21) {
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x00:0", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15), *(ptr+16));
+      } else if (sa_in->sin_len == 22) {
+        net_mask = PString(PString::Printf, "%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:%x%02x:0", *(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7), *(ptr+8), *(ptr+9), *(ptr+10), *(ptr+11), *(ptr+12), *(ptr+13), *(ptr+14), *(ptr+15), *(ptr+16), *(ptr+17));
       }
     }
 
