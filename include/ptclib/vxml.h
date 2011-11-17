@@ -619,6 +619,7 @@ class PVXMLChannel : public PDelayChannel
     PVXMLQueue      m_playQueue;
     PVXMLPlayable * m_currentPlayItem;
     PSimpleTimer    m_silenceTimer;
+    PSyncPointAck   m_flushQueue;
 };
 
 
