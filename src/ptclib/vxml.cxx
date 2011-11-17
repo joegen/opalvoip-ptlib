@@ -184,7 +184,6 @@ PVXMLPlayable::PVXMLPlayable()
 
 PBoolean PVXMLPlayable::Open(PVXMLChannel & chan, const PString &, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 { 
-  chan.SetReadChannel(NULL); 
   m_delay = delay; 
   m_repeat = repeat; 
   m_autoDelete = autoDelete; 
@@ -811,33 +810,35 @@ PBoolean PVXMLSession::LoadURL(const PURL & url)
 
 PBoolean PVXMLSession::LoadVXML(const PString & xmlText, const PString & firstForm)
 {
-  PWaitAndSignal mutex(m_sessionMutex);
+  {
+    PWaitAndSignal mutex(m_sessionMutex);
 
-  m_xmlChanged = true;
-  m_rootURL = PString::Empty();
-  LoadGrammar(NULL);
+    m_xmlChanged = true;
+    m_rootURL = PString::Empty();
+    LoadGrammar(NULL);
 
-  // parse the XML
-  m_xml.RemoveAll();
-  if (!m_xml.Load(xmlText)) {
-    PTRACE(1, "VXML\tCannot parse root document: " << GetXMLError());
-    return false;
-  }
-
-  PXMLElement * root = m_xml.GetRootElement();
-  if (root == NULL) {
-    PTRACE(1, "VXML\tNo root element");
-    return false;
-  }
-
-  // find the first form
-  if (!SetCurrentForm(firstForm, false)) {
-    PTRACE(1, "VXML\tNo form element");
+    // parse the XML
     m_xml.RemoveAll();
-    return false;
-  }
+    if (!m_xml.Load(xmlText)) {
+      PTRACE(1, "VXML\tCannot parse root document: " << GetXMLError());
+      return false;
+    }
 
-  m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
+    PXMLElement * root = m_xml.GetRootElement();
+    if (root == NULL) {
+      PTRACE(1, "VXML\tNo root element");
+      return false;
+    }
+
+    // find the first form
+    if (!SetCurrentForm(firstForm, false)) {
+      PTRACE(1, "VXML\tNo form element");
+      m_xml.RemoveAll();
+      return false;
+    }
+
+    m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
+  }
 
   // Clear out any audio being output, so can start fresh on new VXML.
   if (IsOpen())
@@ -1083,17 +1084,14 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
          be skipped, so we don't wait for them */
       do {
         ProcessEvents();
-      } while (NextNode());
+      } while (NextNode(false));
     }
     else {
       // Wait till node finishes
       while (ProcessEvents())
         ;
 
-      // Skip all children
-      if (m_xmlChanged)
-        m_currentNode = m_currentNode->GetNextObject();
-      NextNode();
+      NextNode(true);
     }
 
     // Determine if we should quit
@@ -1181,7 +1179,7 @@ bool PVXMLSession::ProcessEvents()
 }
 
 
-bool PVXMLSession::NextNode()
+bool PVXMLSession::NextNode(bool skipChildren)
 {
   // m_sessionMutex already locked
 
@@ -1196,6 +1194,10 @@ bool PVXMLSession::NextNode()
     m_xmlChanged = false;
     return false;
   }
+
+  // Skip all children
+  if (skipChildren)
+    m_currentNode = m_currentNode->GetNextObject();
 
   PXMLElement * element;
 
@@ -2600,6 +2602,32 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
     {
       PWaitAndSignal m(m_channelReadMutex);
 
+      if (m_flushQueue.Wait(0)) {
+        PTRACE(4, "VXML\tFlushing playable queue");
+
+        if (GetBaseReadChannel() != NULL)
+          PDelayChannel::Close();
+
+        m_queueMutex.Wait();
+
+        PVXMLPlayable * qItem;
+        while ((qItem = m_playQueue.Dequeue()) != NULL) {
+          qItem->OnStop();
+          delete qItem;
+        }
+
+        if (m_currentPlayItem != NULL) {
+          m_currentPlayItem->OnStop();
+          delete m_currentPlayItem;
+          m_currentPlayItem = NULL;
+        }
+
+        m_queueMutex.Signal();
+
+        m_silenceTimer.Stop();
+        m_flushQueue.Acknowledge();
+      }
+
       // if we are paused or in a delay, then do return silence
       if (m_paused || m_silenceTimer.IsRunning()) {
         silenceStuff = true;
@@ -2706,6 +2734,9 @@ PBoolean PVXMLChannel::QueuePlayable(const PString & type,
                                  PINDEX delay, 
                                  PBoolean autoDelete)
 {
+  if (repeat <= 0)
+    repeat = 1;
+
   PVXMLPlayable * item = PFactory<PVXMLPlayable>::CreateInstance(type);
   if (item == NULL) {
     PTRACE(2, "VXML\tCannot find playable of type " << type);
@@ -2770,30 +2801,9 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
 void PVXMLChannel::FlushQueue()
 {
-  m_channelReadMutex.Wait();
-  if (GetBaseReadChannel() != NULL)
-    PDelayChannel::Close();
-  m_channelReadMutex.Signal();
-
-  m_queueMutex.Wait();
-
-  PTRACE(4, "VXML\tFlushing playable queue");
-
-  PVXMLPlayable * qItem;
-  while ((qItem = m_playQueue.Dequeue()) != NULL) {
-    qItem->OnStop();
-    delete qItem;
-  }
-
-  if (m_currentPlayItem != NULL) {
-    m_currentPlayItem->OnStop();
-    delete m_currentPlayItem;
-    m_currentPlayItem = NULL;
-  }
-
-  m_silenceTimer.Stop();
-
-  m_queueMutex.Signal();
+  PTRACE(4, "VXML\tSignalling playable queue flush");
+  m_flushQueue.Signal(10000);
+  PTRACE(4, "VXML\tPlayable queue flush completed");
 }
 
 
