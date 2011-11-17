@@ -184,7 +184,6 @@ PVXMLPlayable::PVXMLPlayable()
 
 PBoolean PVXMLPlayable::Open(PVXMLChannel & chan, const PString &, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 { 
-  chan.SetReadChannel(NULL); 
   m_delay = delay; 
   m_repeat = repeat; 
   m_autoDelete = autoDelete; 
@@ -2615,6 +2614,32 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
     {
       PWaitAndSignal m(m_channelReadMutex);
 
+      if (m_flushQueue.Wait(0)) {
+        PTRACE(4, "VXML\tFlushing playable queue");
+
+        if (GetBaseReadChannel() != NULL)
+          PDelayChannel::Close();
+
+        m_queueMutex.Wait();
+
+        PVXMLPlayable * qItem;
+        while ((qItem = m_playQueue.Dequeue()) != NULL) {
+          qItem->OnStop();
+          delete qItem;
+        }
+
+        if (m_currentPlayItem != NULL) {
+          m_currentPlayItem->OnStop();
+          delete m_currentPlayItem;
+          m_currentPlayItem = NULL;
+        }
+
+        m_queueMutex.Signal();
+
+        m_silenceTimer.Stop();
+        m_flushQueue.Acknowledge();
+      }
+
       // if we are paused or in a delay, then do return silence
       if (m_paused || m_silenceTimer.IsRunning()) {
         silenceStuff = true;
@@ -2721,6 +2746,9 @@ PBoolean PVXMLChannel::QueuePlayable(const PString & type,
                                  PINDEX delay, 
                                  PBoolean autoDelete)
 {
+  if (repeat <= 0)
+    repeat = 1;
+
   PVXMLPlayable * item = PFactory<PVXMLPlayable>::CreateInstance(type);
   if (item == NULL) {
     PTRACE(2, "VXML\tCannot find playable of type " << type);
@@ -2785,30 +2813,9 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
 void PVXMLChannel::FlushQueue()
 {
-  m_channelReadMutex.Wait();
-  if (GetBaseReadChannel() != NULL)
-    PDelayChannel::Close();
-  m_channelReadMutex.Signal();
-
-  m_queueMutex.Wait();
-
-  PTRACE(4, "VXML\tFlushing playable queue");
-
-  PVXMLPlayable * qItem;
-  while ((qItem = m_playQueue.Dequeue()) != NULL) {
-    qItem->OnStop();
-    delete qItem;
-  }
-
-  if (m_currentPlayItem != NULL) {
-    m_currentPlayItem->OnStop();
-    delete m_currentPlayItem;
-    m_currentPlayItem = NULL;
-  }
-
-  m_silenceTimer.Stop();
-
-  m_queueMutex.Signal();
+  PTRACE(4, "VXML\tSignalling playable queue flush");
+  m_flushQueue.Signal(10000);
+  PTRACE(4, "VXML\tPlayable queue flush completed");
 }
 
 
