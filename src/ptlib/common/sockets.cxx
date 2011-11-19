@@ -189,13 +189,19 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
 
   switch (ip.GetVersion()) {
     case 4 :
+#ifdef P_NETBSD
+      addr4->sin_len    = sizeof(struct sockaddr_in);
+#endif
       addr4->sin_family = AF_INET;
-      addr4->sin_addr = ip;
-      addr4->sin_port = htons(port);
+      addr4->sin_addr   = ip;
+      addr4->sin_port   = htons(port);
       break;
 
 #if P_HAS_IPV6
     case 6 :
+#ifdef P_NETBSD
+      addr6->sin6_len      = sizeof(struct sockaddr_in6);
+#endif
       addr6->sin6_family   = AF_INET6;
       addr6->sin6_addr     = ip;
       addr6->sin6_port     = htons(port);
@@ -1767,15 +1773,6 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
   return ipStorage;    
 #else
 # if defined(P_HAS_IPV6)
-#  if defined(P_NETBSD)
-  // somehow getnameinfo() doesn't work on NetBSD 5.1...
-  if (m_version == 6) {
-    char str[INET6_ADDRSTRLEN+1];
-    if (inet_ntop(AF_INET6, (const void *)&m_v.m_six, str, INET6_ADDRSTRLEN) == NULL)
-      return PString::Empty();
-    return bracketIPv6 ? PString("[") + str + "]" : str;
-  }
-#  endif
   if (m_version == 6) {
     char str[INET6_ADDRSTRLEN+3];
     Psockaddr sa(*this, 0);
