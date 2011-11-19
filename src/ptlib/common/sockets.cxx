@@ -1767,6 +1767,15 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
   return ipStorage;    
 #else
 # if defined(P_HAS_IPV6)
+#  if defined(P_NETBSD)
+  // somehow getnameinfo() doesn't work on NetBSD 5.1...
+  if (m_version == 6) {
+    char str[INET6_ADDRSTRLEN+1];
+    if (inet_ntop(AF_INET6, (const void *)&m_v.m_six, str, INET6_ADDRSTRLEN) == NULL)
+      return PString::Empty();
+    return bracketIPv6 ? PString("[") + str + "]" : str;
+  }
+#  endif
   if (m_version == 6) {
     char str[INET6_ADDRSTRLEN+3];
     Psockaddr sa(*this, 0);
