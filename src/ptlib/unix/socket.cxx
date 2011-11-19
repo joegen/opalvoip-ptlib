@@ -76,7 +76,7 @@
 #include <netinet/if_ether.h>
 #endif
 
-#if defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#if defined(P_FREEBSD) || defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
 #include <ifaddrs.h>
 #endif
 
@@ -107,10 +107,6 @@
   (sizeof(struct ifreq) - sizeof(struct sockaddr) + \
   (ifr).ifr_addr.sa_len) : sizeof(struct ifreq))
 #endif
-#endif
-
-#if defined(P_FREEBSD)
-#include <ifaddrs.h>
 #endif
 
 int PX_NewHandle(const char *, int);
