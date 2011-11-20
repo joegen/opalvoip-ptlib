@@ -121,8 +121,12 @@ PBoolean PLDAPSession::SetOption(int optcode, void * value)
 
 PBoolean PLDAPSession::StartTLS()
 {
+#ifdef LDAP_EXOP_START_TLS
   errorNumber = ldap_start_tls_s(ldapContext, NULL, NULL);
   return errorNumber == LDAP_SUCCESS;
+#else
+  return LDAP_OPERATIONS_ERROR;
+#endif
 }
 
 PBoolean PLDAPSession::Bind(const PString & who,
