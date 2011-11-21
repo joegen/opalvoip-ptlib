@@ -182,7 +182,7 @@ PVXMLPlayable::PVXMLPlayable()
 }
 
 
-PBoolean PVXMLPlayable::Open(PVXMLChannel & chan, const PString &, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
+PBoolean PVXMLPlayable::Open(PVXMLChannel &, const PString &, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 { 
   m_delay = delay; 
   m_repeat = repeat; 
@@ -840,10 +840,6 @@ PBoolean PVXMLSession::LoadVXML(const PString & xmlText, const PString & firstFo
     m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
   }
 
-  // Clear out any audio being output, so can start fresh on new VXML.
-  if (IsOpen())
-    GetVXMLChannel()->FlushQueue();
-
   return Execute();
 }
 
@@ -1083,7 +1079,8 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
          performed. Record and audio and other user interaction commands can
          be skipped, so we don't wait for them */
       do {
-        ProcessEvents();
+        while (ProcessEvents())
+          ;
       } while (NextNode(false));
     }
     else {
@@ -1156,26 +1153,36 @@ bool PVXMLSession::ProcessEvents()
   }
 
   if (IsOpen() && GetVXMLChannel()->IsPlaying()) {
-    PTRACE(5, "VXML\tIs playing");
+    PTRACE(4, "VXML\tIs playing, awaiting event");
   }
   else if (IsOpen() && GetVXMLChannel()->IsRecording()) {
-    PTRACE(5, "VXML\tIs recording");
+    PTRACE(4, "VXML\tIs recording, awaiting event");
   }
   else if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
-    PTRACE(5, "VXML\tAwaiting input");
+    PTRACE(4, "VXML\tAwaiting input, awaiting event");
   }
   else if (m_transferStatus == TransferInProgress) {
-    PTRACE(5, "VXML\tTransfer in progress");
+    PTRACE(4, "VXML\tTransfer in progress, awaiting event");
   }
   else {
-    PTRACE(5, "VXML\tNothing happening");
+    PTRACE(4, "VXML\tNothing happening, processing next node");
     return false;
   }
 
   m_sessionMutex.Signal();
   m_waitForEvent.Wait();
   m_sessionMutex.Wait();
-  return true;
+
+  if (!m_xmlChanged)
+    return true;
+
+  PTRACE(4, "VXML\tXML changed, flushing queue");
+
+  // Clear out any audio being output, so can start fresh on new VXML.
+  if (IsOpen())
+    GetVXMLChannel()->FlushQueue();
+
+  return false;
 }
 
 
@@ -1190,10 +1197,8 @@ bool PVXMLSession::NextNode(bool skipChildren)
   if (m_currentNode == NULL)
     return false;
 
-  if (m_xmlChanged) {
-    m_xmlChanged = false;
+  if (m_xmlChanged)
     return false;
-  }
 
   // Skip all children
   if (skipChildren)
@@ -1850,15 +1855,12 @@ void PVXMLSession::SayAs(const PString & className, const PString & textToSay, c
 
 PTimeInterval PVXMLSession::StringToTime(const PString & str)
 {
-  PTimeInterval timeout;
+  PTimeInterval time(str.AsUnsigned64());
 
-  long msecs = str.AsInteger();
-  if (str.Find("ms") != P_MAX_INDEX)
-    ;
-  else if (str.Find("s") != P_MAX_INDEX)
-    msecs = msecs * 1000;
+  if (str.Find("ms") == P_MAX_INDEX && str.Find('s') != P_MAX_INDEX)
+    time *= 1000;
 
-  return PTimeInterval(msecs);
+  return time;
 }
 
 
@@ -2244,7 +2246,7 @@ void PVXMLSession::OnEndRecording()
 
 void PVXMLSession::Trigger()
 {
-  PTRACE(5, "VXML\tEvent triggered");
+  PTRACE(4, "VXML\tEvent triggered");
   m_waitForEvent.Signal();
 }
 
