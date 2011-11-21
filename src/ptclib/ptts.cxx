@@ -92,6 +92,7 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     CComPtr<ISpVoice>  m_cpVoice;
     CComPtr<ISpStream> m_cpWavStream;
     bool               m_opened;
+    PString            m_CurrentVoice;
 };
 
 PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_SAPI, "Microsoft SAPI", false);
@@ -104,6 +105,7 @@ PTextToSpeech_SAPI::PTextToSpeech_SAPI()
   : m_opened(false)
 {
   ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  PTRACE(5, "TTS\tPTextToSpeech_SAPI constructed");
 }
 
 
@@ -167,11 +169,44 @@ PBoolean PTextToSpeech_SAPI::Speak(const PString & text, TextType hint)
       break;
   };
 
-  HRESULT hr = m_cpVoice->Speak(wtext, SPF_DEFAULT, NULL);
+  HRESULT hr = S_OK;
+
+  if (m_CurrentVoice != NULL && !m_CurrentVoice.IsEmpty()) {
+    PTRACE(4, "SAPI\tTrying to set voice \"" << m_CurrentVoice << "\""
+              " of voices: " << setfill(',') << GetVoiceList());
+
+    //Enumerate voice tokens with attribute "Name=<specified voice>"
+    CComPtr<IEnumSpObjectTokens> cpEnum;
+    hr = SpEnumTokens(SPCAT_VOICES, m_CurrentVoice.AsUCS2(), NULL, &cpEnum);
+    if (FAILED(hr)) {
+      PTRACE(2, "SAPI\tSpEnumTokens failed: " << hr);
+    }
+    else {
+      //Get the closest token
+      CComPtr<ISpObjectToken> cpVoiceToken;
+      hr = cpEnum->Next(1, &cpVoiceToken, NULL);
+      if (FAILED(hr)) {
+        PTRACE(2, "SAPI\tEnumerate next failed: " << hr);
+      }
+      else {
+        //set the voice
+        hr = m_cpVoice->SetVoice(cpVoiceToken);
+        if (FAILED(hr)) {
+          PTRACE(2, "SAPI\tSetVoice failed: " << hr);
+        }
+        else {
+          PTRACE(4, "SAPI\tSetVoice(" << m_CurrentVoice << ") OK!");
+        }
+      }
+    } 
+  }
+
+  PTRACE(4, "SAPI\tSpeaking...");
+  hr = m_cpVoice->Speak(wtext, SPF_DEFAULT, NULL);
   if (SUCCEEDED(hr))
     return true;
 
-  PTRACE(4, "SAPI\tError speaking text: " << hr);
+  PTRACE(2, "SAPI\tError speaking text: " << hr);
   return false;
 }
 
@@ -188,9 +223,10 @@ PStringArray PTextToSpeech_SAPI::GetVoiceList()
   HRESULT hr = SpEnumTokens(SPCAT_VOICES, NULL, NULL, &cpEnum);
 
   // Get the number of voices
-  if (SUCCEEDED(hr))
+  if (SUCCEEDED(hr)) {
     hr = cpEnum->GetCount(&ulCount);
-
+    PTRACE(4, "SAPI\tFound " << ulCount << " voices..");
+  }
   // Obtain a list of available voice tokens, set the voice to the token, and call Speak
   while (SUCCEEDED(hr) && ulCount--) {
 
@@ -199,16 +235,19 @@ PStringArray PTextToSpeech_SAPI::GetVoiceList()
     if (SUCCEEDED(hr))
       hr = cpEnum->Next(1, &cpVoiceToken, NULL );
 
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(hr)) {
       voiceList.AppendString("voice");
+      PTRACE(4, "SAPI\tFound voice:" << cpVoiceToken);
+    }
   } 
 
   return voiceList;
 }
 
-PBoolean PTextToSpeech_SAPI::SetVoice(const PString &)
+PBoolean PTextToSpeech_SAPI::SetVoice(const PString & voice)
 {
-  return false;
+  m_CurrentVoice = voice;
+  return true;
 }
 
 PBoolean PTextToSpeech_SAPI::SetRate(unsigned)
@@ -294,6 +333,7 @@ PTextToSpeech_Festival::PTextToSpeech_Festival()
   usingFile = opened = false;
   rate = 8000;
   volume = 100;
+  PTRACE(4, "TTS\tPTextToSpeech_Festival constructed");
 }
 
 
