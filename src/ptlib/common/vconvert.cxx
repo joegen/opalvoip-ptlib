@@ -303,6 +303,14 @@ void PColourConverter::Construct(const PVideoFrameInfo & src, const PVideoFrameI
 }
 
 
+void PColourConverter::PrintOn(ostream & strm) const
+{
+  strm << srcColourFormat << ':' << srcFrameWidth << 'x' << srcFrameHeight << "->"
+       << dstColourFormat << ':' << dstFrameWidth << 'x' << dstFrameHeight << '/'
+       << resizeMode;
+}
+
+
 PBoolean PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
   bool ok1 = SetSrcFrameSize(width, height);
@@ -315,7 +323,7 @@ PBoolean PColourConverter::SetFrameSize(unsigned width, unsigned height)
 
 PBoolean PColourConverter::SetSrcFrameInfo(const PVideoFrameInfo & info)
 {
-  if (info.GetColourFormat() != GetSrcColourFormat())
+  if (!PAssert(info.GetColourFormat() != GetSrcColourFormat(), "Cannot change colour format"))
     return false;
 
   unsigned w, h;
@@ -325,7 +333,7 @@ PBoolean PColourConverter::SetSrcFrameInfo(const PVideoFrameInfo & info)
 
 PBoolean PColourConverter::SetDstFrameInfo(const PVideoFrameInfo & info)
 {
-  if (info.GetColourFormat() != GetDstColourFormat())
+  if (!PAssert(info.GetColourFormat() != GetDstColourFormat(), "Cannot change colour format"))
     return false;
 
   SetResizeMode(info.GetResizeMode());
@@ -674,6 +682,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       break;
 
     default :
+      PAssertAlways(PInvalidParameter);
       return false;
   }
 
@@ -782,16 +791,14 @@ PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
                              PINDEX * bytesReturned)
 {
   if ((srcFrameWidth != dstFrameWidth) || (srcFrameHeight != dstFrameHeight)) {
-    PTRACE(2,"PColCnv\tCannot do synonym colour conversion, source and destination frame size not equal: "
-           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
+    PTRACE(2,"PColCnv\tCannot do synonym conversion, source and destination size not equal: " << *this);
     return false;
   }
 
   if (verticalFlip) {
     PINDEX rowSize = dstFrameBytes/srcFrameHeight;
     if (rowSize*srcFrameHeight != dstFrameBytes) {
-      PTRACE(2,"PColCnv\tCannot do synonym colour conversion, frame does not have equal sized scan lines: "
-             << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight);
+      PTRACE(2,"PColCnv\tCannot do synonym conversion, frame does not have equal scan lines: " << *this);
       return false;
     }
 
@@ -932,8 +939,10 @@ void PStandardColourConverter::GreytoYUV420PWithCrop(const BYTE * grey, BYTE * y
 
 bool PStandardColourConverter::GreytoYUV420P(const BYTE * grey, BYTE * yuv, PINDEX * bytesReturned) const
 {
-  if (grey == yuv)
-    return false; // Cannot do in place conversion
+  if (grey == yuv) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
+    return false;
+  }
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
     GreytoYUV420PSameSize(grey, yuv);
@@ -1058,8 +1067,10 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * rgb,
                                             unsigned redOffset,
                                             unsigned blueOffset)
 {
-  if (rgb == yuv)
-    return false; // Cannot do in place conversion
+  if (rgb == yuv) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
+    return false;
+  }
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
     RGBtoYUV420PSameSize(rgb, yuv, rgbIncrement, redOffset, blueOffset);
@@ -1416,8 +1427,10 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
   if (srcFrameBuffer == dstFrameBuffer) {
     if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
       return true;
-    if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
+    if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight) {
+      PTRACE(2,"PColCnv\tCannot do in place conversion, increasing image size.");
       return false;
+    }
   }
 
   return CopyYUV420P(0, 0, srcFrameWidth, srcFrameHeight, srcFrameWidth, srcFrameHeight, srcFrameBuffer,
@@ -1575,8 +1588,15 @@ bool PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
                                            BYTE       * dst,
                                            PINDEX     * bytesReturned) const
 {
-  if (src == dst || verticalFlip)
+  if (src == dst) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
     return false;
+  }
+
+  if (verticalFlip) {
+    PTRACE(2,"PColCnv\tCannot do vertical flip, not implemented.");
+    return false;
+  }
 
   long int i;
   const BYTE *rawpt;
@@ -1680,8 +1700,10 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             unsigned redOffset,
                                             unsigned blueOffset) const
 {
-  if (srcFrameBuffer == dstFrameBuffer)
-    return false; // Cannot do in-place conversion
+  if (srcFrameBuffer == dstFrameBuffer) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
+    return false;
+  }
 
   static const unsigned greenOffset = 1;
 
@@ -1784,8 +1806,11 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
                                             BYTE * dstFrameBuffer,
                                             PINDEX * bytesReturned) const
 {
-  if (srcFrameBuffer == dstFrameBuffer)
-    return PFalse; // Cannot do in-place conversion
+  if (srcFrameBuffer == dstFrameBuffer) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
+    return false;
+  }
+
   static const unsigned rgbIncrement = 2;
 
   unsigned height = PMIN(srcFrameHeight, dstFrameHeight)&(UINT_MAX-1); // Must be even
@@ -1863,7 +1888,7 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1932,8 +1957,10 @@ bool PStandardColourConverter::SwapRedAndBlue(const BYTE * srcFrameBuffer,
                                               unsigned srcIncrement,
                                               unsigned dstIncrement) const
 {
-  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight))
+  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight)) {
+    PTRACE(2,"PColCnv\tCannot do different sized RGB swap, not implemented.");
     return false;
+  }
 
   unsigned srcRowSize = srcFrameBytes/srcFrameHeight;
   const BYTE * srcRowPtr = srcFrameBuffer;
@@ -2027,8 +2054,10 @@ PSTANDARD_COLOUR_CONVERTER(BGR32,RGB32)
 
 PSTANDARD_COLOUR_CONVERTER(RGB24,RGB32)
 {
-  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight))
+  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight)) {
+    PTRACE(2,"PColCnv\tCannot do RGB 24/32 conversion on different sized image, not implemented.");
     return false;
+  }
 
   // Go from bottom to top so can do in place conversion
   const BYTE * src = srcFrameBuffer+srcFrameBytes-1;
@@ -2050,8 +2079,10 @@ PSTANDARD_COLOUR_CONVERTER(RGB24,RGB32)
 
 PSTANDARD_COLOUR_CONVERTER(RGB32,RGB24)
 {
-  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight))
+  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight)) {
+    PTRACE(2,"PColCnv\tCannot do RGB 32/24 conversion on different sized image, not implemented.");
     return false;
+  }
 
   const BYTE * src = srcFrameBuffer;
   BYTE * dst = dstFrameBuffer;
@@ -2107,11 +2138,15 @@ PSTANDARD_COLOUR_CONVERTER(RGB32,RGB24)
 //
 PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
 {
-  if (srcFrameBuffer == dstFrameBuffer)
+  if (srcFrameBuffer == dstFrameBuffer) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
     return false;
+  }
 
-  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight))
+  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight)) {
+    PTRACE(2,"PColCnv\tCannot do YUV 420/411 conversion on different sized image, not implemented.");
     return false;
+  }
 
   // Copy over the Y plane.
   memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight);
@@ -2190,11 +2225,15 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
 //
 PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV420P)
 {
-  if (srcFrameBuffer == dstFrameBuffer)
+  if (srcFrameBuffer == dstFrameBuffer) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
     return false;
+  }
 
-  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight))
+  if ((dstFrameWidth != srcFrameWidth) || (dstFrameHeight != srcFrameHeight)) {
+    PTRACE(2,"PColCnv\tCannot do YUV 411/420 conversion on different sized image, not implemented.");
     return false;
+  }
 
   // Copy over the Y plane.
   memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight);
@@ -2263,10 +2302,12 @@ PSTANDARD_COLOUR_CONVERTER(UYVY422, UYVY422)
     *bytesReturned = dstFrameBytes;
   
   if (srcFrameBuffer == dstFrameBuffer) {
-        if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
-                return true;
-        else if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
-                return false;
+    if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
+      return true;
+    if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight) {
+      PTRACE(2,"PColCnv\tCannot do in place conversion, increasing image size.");
+      return false;
+    }
   }
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
@@ -2562,8 +2603,10 @@ http://www.1394ta.org/Download/Technology/Specifications/2000/IIDC_Spec_v1_30.pd
  */
 PSTANDARD_COLOUR_CONVERTER(UYVY422,YUV420P)
 {
-  if (srcFrameBuffer == dstFrameBuffer)
+  if (srcFrameBuffer == dstFrameBuffer) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
     return false;
+  }
 
   if ((srcFrameWidth==dstFrameWidth) && (srcFrameHeight==dstFrameHeight))
     UYVY422toYUV420PSameSize(srcFrameBuffer, dstFrameBuffer);
@@ -2578,8 +2621,10 @@ PSTANDARD_COLOUR_CONVERTER(UYVY422,YUV420P)
 
 PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
 {
-  if (srcFrameBuffer == dstFrameBuffer)
+  if (srcFrameBuffer == dstFrameBuffer) {
+    PTRACE(2,"PColCnv\tCannot do in-place conversion, not implemented.");
     return false;
+  }
 
   unsigned int row,column;
   unsigned char *y = dstFrameBuffer;  //Initialise y,u,v here, to stop compiler warnings.
