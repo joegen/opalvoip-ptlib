@@ -94,6 +94,11 @@ class PColourConverter : public PObject
       const PVideoFrameInfo & dst  ///< Destination frame info
     );
 
+    /// Print description of converter
+    virtual void PrintOn(
+      ostream & strm
+    ) const;
+
     /**Get the video conversion vertical flip state
      */
     PBoolean GetVFlipState() 

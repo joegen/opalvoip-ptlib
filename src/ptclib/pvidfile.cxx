@@ -86,7 +86,13 @@ PBoolean PVideoFile::ReadFrame(void * frame)
   if (m_file.Read(frame, m_frameBytes) && m_file.GetLastReadCount() == m_frameBytes)
     return true;
 
-  PTRACE(4, "YUVFILE\tError reading file " << m_file.GetErrorText(m_file.GetErrorCode(PFile::LastReadError)));
+#if PTRACING
+  if (m_file.GetErrorCode(PFile::LastReadError) != PFile::NoError)
+    PTRACE(2, "VidFile\tError reading file \"" << m_file.GetFilePath()
+           << "\" - " << m_file.GetErrorText(PFile::LastReadError));
+  else
+    PTRACE(4, "VidFile\tEnd of file \"" << m_file.GetFilePath() << '"');
+#endif
   return false;
 }
 
@@ -195,12 +201,9 @@ PBoolean PYUVFile::WriteFrame(const void * frame)
 PBoolean PYUVFile::ReadFrame(void * frame)
 {
   if (m_y4mMode) {
-    int ch;
-    do {
-      if ((ch = m_file.ReadChar()) < 0)
-        return false;
-    }
-    while (ch != '\n');
+    PString info;
+    info.ReadFrom(m_file);
+    PTRACE(4, "VidFile\ty4m \"" << info << '"');
   }
 
   return PVideoFile::ReadFrame(frame);
