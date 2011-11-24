@@ -134,14 +134,14 @@ PBoolean PVideoInputDevice_YUVFile::Open(const PString & devName, PBoolean /*sta
       } while (dir.Next());
     }
     if (fileName.IsEmpty()) {
-      PTRACE(1, "YUVFile\tCannot find any file using " << dir << DefaultYUVFileName << " as video input device");
+      PTRACE(1, "VidFileDev\tCannot find any file using " << dir << DefaultYUVFileName << " as video input device");
       return false;
     }
   }
 
   m_file = PFactory<PVideoFile>::CreateInstance("yuv");
   if (m_file == NULL || !m_file->Open(fileName, PFile::ReadOnly, PFile::MustExist)) {
-    PTRACE(1, "YUVFile\tCannot open file " << fileName << " as video input device");
+    PTRACE(1, "VidFileDev\tCannot open file " << fileName << " as video input device");
     return false;
   }
 
@@ -233,8 +233,13 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
+  if (m_file == NULL) {
+    PTRACE(2, "VidFileDev\tCannot get frame size limits, no file opened.");
+    return false;
+  }
+
   unsigned width, height;
-  if (m_file == NULL || !m_file->GetFrameSize(width, height))
+  if (!m_file->GetFrameSize(width, height))
     return false;
 
   minWidth  = maxWidth  = width;
@@ -245,7 +250,12 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameSizeLimits(unsigned & minWidth,
 
 PBoolean PVideoInputDevice_YUVFile::SetFrameSize(unsigned width, unsigned height)
 {
-  return m_file != NULL && m_file->SetFrameSize(width, height) && PVideoDevice::SetFrameSize(width, height);
+  if (m_file == NULL) {
+    PTRACE(2, "VidFileDev\tCannot set frame size, no file opened.");
+    return false;
+  }
+
+  return m_file->SetFrameSize(width, height) && PVideoDevice::SetFrameSize(width, height);
 }
 
 
@@ -257,8 +267,10 @@ PINDEX PVideoInputDevice_YUVFile::GetMaxFrameBytes()
 
 PBoolean PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  if (m_file == NULL)
+  if (m_file == NULL) {
+    PTRACE(2, "VidFileDev\tCannot get frame data, no file opened.");
     return false;
+  }
 
   m_pacing.Delay(1000/frameRate);
 
@@ -282,7 +294,7 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesRe
     }
   }
 
-  PTRACE(6, "YUVFile\tPlaying frame number " << frameNumber);
+  PTRACE(6, "VidFileDev\tPlaying frame number " << frameNumber);
   m_file->SetPosition(frameNumber);
 
   return GetFrameDataNoDelay(buffer, bytesReturned);
@@ -291,8 +303,10 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesRe
 
 PBoolean PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
 {
-  if (m_file == NULL)
+  if (m_file == NULL) {
+    PTRACE(2, "VidFileDev\tCannot get frame data, no file opened.");
     return false;
+  }
 
   BYTE * readBuffer = converter != NULL ? frameStore.GetPointer(m_file->GetFrameBytes()) : frame;
 
@@ -305,18 +319,25 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
     switch (channelNumber) {
       case Channel_PlayAndClose:
       default:
+        PTRACE(4, "VidFileDev\tCompleted play and close of " << m_file->GetFilePath());
         return false;
 
       case Channel_PlayAndRepeat:
         m_file->Open(deviceName, PFile::ReadOnly, PFile::MustExist);
-        if (!m_file->SetPosition(0) || !m_file->ReadFrame(readBuffer))
+        if (!m_file->SetPosition(0)) {
+          PTRACE(2, "VidFileDev\tCould not rewind " << m_file->GetFilePath());
+          return false;
+        }
+        if (!m_file->ReadFrame(readBuffer))
           return false;
         break;
 
       case Channel_PlayAndKeepLast:
+        PTRACE(4, "VidFileDev\tCompleted play and keep last of " << m_file->GetFilePath());
         break;
 
       case Channel_PlayAndShowBlack:
+        PTRACE(4, "VidFileDev\tCompleted play and show black of " << m_file->GetFilePath());
         PColourConverter::FillYUV420P(0, 0,
                                       frameWidth, frameHeight,
                                       frameWidth, frameHeight,
@@ -332,8 +353,10 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
   }
   else {
     converter->SetSrcFrameSize(frameWidth, frameHeight);
-    if (!converter->Convert(readBuffer, frame, bytesReturned))
+    if (!converter->Convert(readBuffer, frame, bytesReturned)) {
+      PTRACE(2, "VidFileDev\tConversion failed with " << *converter);
       return false;
+    }
 
     if (bytesReturned != NULL)
       *bytesReturned = converter->GetMaxDstFrameBytes();
