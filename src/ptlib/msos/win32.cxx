@@ -963,10 +963,11 @@ PBoolean PThread::IsSuspended() const
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 {
   PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  if (autoDelete == (deletion != AutoDeleteThread))
+  bool newAutoDelete = (deletion == AutoDeleteThread);
+  if (autoDelete == newAutoDelete)
     return;
 
-  autoDelete = deletion == AutoDeleteThread;
+  autoDelete = newAutoDelete;
 
   PProcess & process = PProcess::Current();
 
