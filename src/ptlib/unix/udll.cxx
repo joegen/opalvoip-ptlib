@@ -282,10 +282,18 @@ static void *dlsym(void *handle, const char *symbol)
 
 #endif // P_MACOSX
 
+// only with gcc (and GNU ld) we can ensure that the DLL mutex will be destructed after static instances of PDynaLink
+#ifdef __GNUC__
+#define _DESTRUCT_LAST __attribute__ ((init_priority (101)))
+#else
+#define _DESTRUCT_LAST /* */
+#endif
+
+static PMutex _DESTRUCT_LAST DLLMutex;
+
 static PMutex & GetDLLMutex()
 {
-  static PMutex mutex;
-  return mutex;
+  return DLLMutex;
 }
 
 #ifndef  P_DYNALINK
