@@ -729,7 +729,7 @@ int setegid(gid_t gid) { return 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Toolchain dependent stuff
-#if (__GNUC_MINOR__  > 9)
+#if (__GNUC__ == 2) && (__GNUC_MINOR__  > 9)
 #warning "Using gcc 2.95.x"
     ostream& ostream::write(const char *s, streamsize n) { return write(s, (long) n); };
     istream& istream::read(char *s, streamsize n) { return read(s, (long) n); };
