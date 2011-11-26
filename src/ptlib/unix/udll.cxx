@@ -285,6 +285,11 @@ static void *dlsym(void *handle, const char *symbol)
 // only with gcc (and GNU ld) we can ensure that the DLL mutex will be destructed after static instances of PDynaLink
 #ifdef __GNUC__
 #define _DESTRUCT_LAST __attribute__ ((init_priority (101)))
+#if defined(P_LINUX) || defined (P_FREEBSD) || defined (P_OPENBSD) || defined (P_NETBSD)
+// only set of platforms that use GNU ld
+// (checking with ./configure would be better than to assume default configuration)
+#define LATE_DESTRUCTION_HACK 1
+#endif
 #else
 #define _DESTRUCT_LAST /* */
 #endif
@@ -361,7 +366,10 @@ PBoolean PDynaLink::Open(const PString & _name)
 
 void PDynaLink::Close()
 {
+// without the hack to force late destruction of the DLL mutex this may crash for static PDynaLink instances
+#ifdef LATE_DESTRUCTION_HACK
   PWaitAndSignal m(GetDLLMutex());
+#endif
 
   if (dllHandle == NULL)
     return;
