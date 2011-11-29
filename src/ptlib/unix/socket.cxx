@@ -61,6 +61,12 @@
   #include "linux/errqueue.h"
 #endif
 
+#if defined(P_LINUX)
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <ifaddrs.h>
+#endif
+
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 #define ifr_netmask ifr_addr
 
@@ -1942,8 +1948,8 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
 {
-#if defined(P_FREEBSD) || defined (P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
-  // tested on FreeBSD 8.2, NetBSD 5.1, OpenBSD 5.0, MacOS X 10.5.6 and Solaris 11, but seems to work fine on Linux, too
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined (P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
+  // tested on Linux 2.6.x, FreeBSD 8.2, NetBSD 5.1, OpenBSD 5.0, MacOS X 10.5.6 and Solaris 11
   struct ifaddrs *interfaces, *ifa;
 
   if (getifaddrs(&interfaces) == 0) {
