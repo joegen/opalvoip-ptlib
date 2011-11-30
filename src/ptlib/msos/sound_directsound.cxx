@@ -193,7 +193,10 @@ PBoolean PSoundChannelDirectSound::Open(const PString & device,
                                         unsigned sampleRate,
                                         unsigned bitsPerSample)
 {
-  Abort();
+  PWaitAndSignal mutex(m_bufferMutex);
+
+  Close();
+  ResetEvent(m_notificationEvent[1]);
 
   PINDEX tab = device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
   m_deviceName = tab == P_MAX_INDEX ? device : device.Mid(tab+1);
@@ -201,9 +204,6 @@ PBoolean PSoundChannelDirectSound::Open(const PString & device,
   m_numChannels = numChannels;
   m_sampleRate = sampleRate;
   m_bitsPerSample = bitsPerSample;
-
-  Close();
-  ResetEvent(m_notificationEvent[1]);
 
   PTRACE(4, "dsound\tOpen " << ((m_direction == Player) ? "playback" : "recording") << " device \"" << m_deviceName << '"');
 
@@ -262,39 +262,50 @@ PBoolean PSoundChannelDirectSound::Open(const PString & device,
 PBoolean PSoundChannelDirectSound::Abort()
 {
   SetEvent(m_notificationEvent[1]); // abort waiting
+
   PWaitAndSignal mutex(m_bufferMutex);
+
   switch (m_direction) {
   case Player:
-    if (m_audioPlaybackBuffer) {
-      PTRACE(4, "dsound\tClose playback device " << m_deviceName);
-      m_audioPlaybackBuffer->Stop();
-    }
-    m_audioPlaybackBuffer.Release();
+    if (m_audioPlaybackBuffer == NULL)
+      return false;
+
+    PTRACE(4, "dsound\tAbort playback device \"" << m_deviceName << '"');
+    m_audioPlaybackBuffer->Stop();
     break;
 
   case Recorder:
-    if (m_audioCaptureBuffer) {
-      PTRACE(4, "dsound\tClose recording device " << m_deviceName);
-      m_audioCaptureBuffer->Stop();
-    }
-    m_audioCaptureBuffer.Release();
+    if (m_audioCaptureBuffer == NULL)
+      return false;
+
+    PTRACE(4, "dsound\tAbort recording device \"" << m_deviceName << '"');
+    m_audioCaptureBuffer->Stop();
     break;
   }
+
   return true;
 }
 
 
 PBoolean PSoundChannelDirectSound::Close()
 {
+  SetEvent(m_notificationEvent[1]); // abort waiting
+
+  PWaitAndSignal mutex(m_bufferMutex);
+
   Abort(); // abort waiting for I/O & destroy buffers
 
   switch (m_direction) {
   case Player:
+    PTRACE(4, "dsound\tClosing playback device \"" << m_deviceName << '"');
     m_audioPrimaryPlaybackBuffer.Release();
+    m_audioPlaybackBuffer.Release();
     m_audioPlaybackDevice.Release();
     break;
 
   case Recorder:
+    PTRACE(4, "dsound\tClosing recording device \"" << m_deviceName << '"');
+    m_audioCaptureBuffer.Release();
     m_audioCaptureDevice.Release();
     break;
   }
@@ -478,6 +489,11 @@ PBoolean PSoundChannelDirectSound::Write(const void *buf, PINDEX len)
 
     PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
 
+    if (m_audioPlaybackBuffer == NULL) {
+      PTRACE(4, "dsound\tStopped during Write()");
+      return false;
+    }
+
     LPVOID lpvWrite1, lpvWrite2;
     DWORD dwLength1, dwLength2;
     HRESULT hr = m_audioPlaybackBuffer->Lock(m_bufferByteOffset,
@@ -536,6 +552,11 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len)
       return false;                     // closed
 
     PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
+
+    if (m_audioCaptureBuffer == NULL) {
+      PTRACE(4, "dsound\tStopped during Read()");
+      return false;
+    }
 
     LPVOID lpvRead1, lpvRead2;
     DWORD dwLength1, dwLength2;
@@ -635,6 +656,8 @@ PBoolean PSoundChannelDirectSound::PlayFile (const PFilePath & filename, PBoolea
 
 PBoolean PSoundChannelDirectSound::IsPlayBufferFree()
 {
+  PWaitAndSignal mutex(m_bufferMutex);
+
   if (!InitPlaybackBuffer())
     return false;
 
@@ -678,6 +701,8 @@ PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree()
 
 PBoolean PSoundChannelDirectSound::HasPlayCompleted()
 {
+  PWaitAndSignal mutex(m_bufferMutex);
+
   DWORD dwStatus;
   if (m_audioPlaybackBuffer != NULL) {
     m_audioPlaybackBuffer->GetStatus (&dwStatus);
@@ -713,6 +738,8 @@ PBoolean PSoundChannelDirectSound::RecordFile (const PFilePath & /*filename*/)
 
 PBoolean PSoundChannelDirectSound::StartRecording()
 {
+  PWaitAndSignal mutex(m_bufferMutex);
+
   if (!InitCaptureBuffer())
     return false;
 
@@ -739,6 +766,8 @@ PBoolean PSoundChannelDirectSound::StartRecording()
 
 PBoolean PSoundChannelDirectSound::IsRecordBufferFull()
 {
+  PWaitAndSignal mutex(m_bufferMutex);
+
   if (!StartRecording())                // Start the first read
     return false;
 
@@ -782,6 +811,7 @@ PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull()
 
 PBoolean PSoundChannelDirectSound::SetVolume (unsigned newVal)
 {
+  PWaitAndSignal mutex(m_bufferMutex);
 
   PBoolean no_error=true;
   HRESULT hr;
@@ -811,6 +841,8 @@ PBoolean PSoundChannelDirectSound::SetVolume (unsigned newVal)
 
 PBoolean PSoundChannelDirectSound::GetVolume (unsigned &devVol)
 {
+  PWaitAndSignal mutex(m_bufferMutex);
+
   switch (m_direction) 
   {
     case Player:
