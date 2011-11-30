@@ -98,7 +98,7 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
         if (px_readThread != NULL && px_lastBlockType != PXReadBlock)
           return SetErrorValues(DeviceInUse, EBUSY, LastReadError);
 
-        PTRACE(4, "PWLib\tBlocking on write.");
+        PTRACE(6, "PWLib\tBlocking on write.");
         px_writeMutex.Wait();
         px_writeThread = blockedThread;
         break;
