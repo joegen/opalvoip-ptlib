@@ -195,7 +195,8 @@ PBoolean PSoundChannelDirectSound::Open(const PString & device,
 {
   Abort();
 
-  m_deviceName = device;
+  PINDEX tab = device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
+  m_deviceName = tab == P_MAX_INDEX ? device : device.Mid(tab+1);
   m_direction = dir;
   m_numChannels = numChannels;
   m_sampleRate = sampleRate;
@@ -204,7 +205,7 @@ PBoolean PSoundChannelDirectSound::Open(const PString & device,
   Close();
   ResetEvent(m_notificationEvent[1]);
 
-  PTRACE(4, "dsound\tOpen " << ((m_direction == Player) ? "playback" : "recording") << " device " << m_deviceName);
+  PTRACE(4, "dsound\tOpen " << ((m_direction == Player) ? "playback" : "recording") << " device \"" << m_deviceName << '"');
 
   GUID deviceGUID;
   DirectSoundDevices devices;
@@ -349,7 +350,7 @@ PBoolean PSoundChannelDirectSound::GetBuffers(PINDEX & size, PINDEX & count)
 
 PBoolean PSoundChannelDirectSound::InitPlaybackBuffer()
 {
-  PTRACE(4, "dsound\tInitPlaybackBuffer");
+  PTRACE(6, "dsound\tInitPlaybackBuffer");
 
   PWaitAndSignal mutex(m_bufferMutex);
   if (!IsOpen())
@@ -408,7 +409,7 @@ PBoolean PSoundChannelDirectSound::InitPlaybackBuffer()
 
 PBoolean PSoundChannelDirectSound::InitCaptureBuffer() 
 {
-  PTRACE(4, "dsound\tInitCaptureBuffer");
+  PTRACE(6, "dsound\tInitCaptureBuffer");
 
   PWaitAndSignal mutex(m_bufferMutex);
   if (!IsOpen())
