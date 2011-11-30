@@ -103,7 +103,7 @@ public:
 
   PBoolean IsOpen() const
   {
-    return (m_direction == Player && m_audioPlaybackDevice != NULL) || m_audioCaptureDevice != NULL;
+    return m_direction == Player ? (m_audioPlaybackDevice != NULL) : (m_audioCaptureDevice != NULL);
   }
 
   /** Stop I/O and destroy I/O buffer
