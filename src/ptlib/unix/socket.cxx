@@ -61,6 +61,12 @@
   #include "linux/errqueue.h"
 #endif
 
+#if defined(P_LINUX)
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <ifaddrs.h>
+#endif
+
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 #define ifr_netmask ifr_addr
 
@@ -1942,18 +1948,29 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
 {
-#if defined(P_FREEBSD) || defined (P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
-  // tested on FreeBSD 8.2, NetBSD 5.1, OpenBSD 5.0, MacOS X 10.5.6 and Solaris 11, but seems to work fine on Linux, too
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined (P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
+  // tested on Linux 2.6.x, FreeBSD 8.2, NetBSD 5.1, OpenBSD 5.0, MacOS X 10.5.6 and Solaris 11
   struct ifaddrs *interfaces, *ifa;
 
   if (getifaddrs(&interfaces) == 0) {
     for (ifa = interfaces; ifa != NULL; ifa = ifa->ifa_next) {
       if (ifa->ifa_addr == NULL) continue;
       if ((ifa->ifa_flags & IFF_UP) == 0) continue;
+      PString macAddr;
+#if defined(SIO_Get_MAC_Address) 
+      PUDPSocket ifsock;
+      struct ifreq ifReq;
+      memset(&ifReq, 0, sizeof(ifReq));
+      ifReq.ifr_addr.sa_family = ifa->ifa_addr->sa_family;
+      strncpy(ifReq.ifr_name, ifa->ifa_name, sizeof(ifReq.ifr_name) - 1);
+      if (ioctl(ifsock.GetHandle(), SIO_Get_MAC_Address, &ifReq) == 0) {
+        macAddr = PEthSocket::Address((BYTE *)ifReq.ifr_macaddr);
+      }
+#endif
       if (ifa->ifa_addr->sa_family == AF_INET) {
-        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_netmask)), ""));
+        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_netmask)), macAddr));
       } else if (ifa->ifa_addr->sa_family == AF_INET6) {
-        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_netmask)), ""));
+        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_netmask)), macAddr));
       }
     }
     freeifaddrs(interfaces);
