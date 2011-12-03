@@ -107,7 +107,7 @@ static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
 
 PXMLParser::PXMLParser(int options)
   : PXMLBase(options)
-  , rootOpen(true)
+  , m_parsing(true)
 {
   if ((options & WithNS) != 0)
     expat = XML_ParserCreateNS(NULL, '|');
@@ -134,14 +134,14 @@ PXMLParser::~PXMLParser()
 
 PXMLElement * PXMLParser::GetXMLTree() const
 { 
-  return rootOpen ? NULL : rootElement; 
+  return m_parsing ? NULL : rootElement; 
 }
 
 PXMLElement * PXMLParser::SetXMLTree(PXMLElement * newRoot)
 { 
   PXMLElement * oldRoot = rootElement;
   rootElement = newRoot;
-  rootOpen = false;
+  m_parsing = false;
   return oldRoot;
 }
 
@@ -176,7 +176,7 @@ void PXMLParser::StartElement(const char * name, const char **attrs)
 
   if (rootElement == NULL) {
     rootElement = currentElement;
-    rootOpen = true;
+    m_parsing = true;
   }
 
   for (PStringToString::iterator it = m_tempNamespaceList.begin(); it != m_tempNamespaceList.end(); ++it) 
@@ -191,7 +191,7 @@ void PXMLParser::EndElement(const char * /*name*/)
     currentElement = currentElement->GetParent();
   else {
     currentElement = NULL;
-    rootOpen = false;
+    m_parsing = false;
   }
   lastElement    = NULL;
 }
@@ -1463,7 +1463,7 @@ void PXMLStreamParser::EndElement(const char * name)
 
   PXMLParser::EndElement(name);
 
-  if (rootOpen) {
+  if (m_parsing) {
     PINDEX i = rootElement->FindObject(element);
 
     if (i != P_MAX_INDEX) {
@@ -1485,7 +1485,7 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
 
   channel->SetReadTimeout(1000);
 
-  while (rootOpen) {
+  while (m_parsing) {
     if (messages.GetSize() != 0)
       return messages.Dequeue();
 
