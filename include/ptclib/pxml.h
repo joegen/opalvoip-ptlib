@@ -484,7 +484,7 @@ class PXMLParser : public PXMLBase
   protected:
     void * expat;
     PXMLElement * rootElement;
-    bool rootOpen;
+    bool m_parsing;
     PXMLElement * currentElement;
     PXMLData * lastElement;
     PString version, encoding;
