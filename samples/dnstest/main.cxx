@@ -49,7 +49,9 @@ void Usage()
             "       dnstest -t NAPTR resource         (i.e. 2.1.2.1.5.5.5.0.0.8.1.e164.org)\n"
             "       dnstest -t NAPTR resource service (i.e. 2.1.2.1.5.5.5.0.0.8.1.e164.org E2U+SIP)\n"
             "       dnstest -t ENUM service           (i.e. +18005551212 E2U+SIP)\n"
+            "       dnstest -t IP hostname            (i.e. server.example.com)\n"
             "       dnstest -u url                    (i.e. http://craigs@postincrement.com)\n"
+            "               -r n                      repeat count\n"
   ;
 }
 
@@ -252,6 +254,20 @@ void DNSTest::Main()
             cout << "Could not resolve E164 number " << e164 << " with service " << service << endl;
           else
             cout << "E164 number " << e164 << " with service " << service << " resolved to " << str << endl;
+        }
+      }
+
+      else if (type *= "IP") {
+        if (args.GetCount() < 1)
+          Usage();
+        else {
+          for (PINDEX arg = 0; arg < args.GetCount(); arg++) {
+            PIPSocket::Address ip;
+            if (PIPSocket::GetHostAddress(args[arg], ip))
+              cout << "IP = " << ip << endl;
+            else
+              cout << '"' << args[arg] << "\" not found.\n";
+          }
         }
       }
     }
