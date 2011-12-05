@@ -359,11 +359,10 @@ static PHostByAddr & pHostByAddr()
 // IP Caching
 
 PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
+  : address(PIPSocket::GetInvalidAddress())
 {
-  if (host_info == NULL) {
-    address = 0;
+  if (host_info == NULL)
     return;
-  }
 
   hostname = host_info->h_name;
   if (host_info->h_addr != NULL)
@@ -398,12 +397,11 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 #if HAS_GETADDRINFO
 
 PIPCacheData::PIPCacheData(struct addrinfo * addr_info, const char * original)
+  : address(PIPSocket::GetInvalidAddress())
 {
   PINDEX i;
-  if (addr_info == NULL) {
-    address = 0;
+  if (addr_info == NULL)
     return;
-  }
 
   // Fill Host primary informations
   hostname = addr_info->ai_canonname; // Fully Qualified Domain Name (FQDN)
@@ -557,8 +555,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct addrinfo *res = NULL;
     struct addrinfo hints = { AI_CANONNAME, defaultIpAddressFamily };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
-    if (localErrNo != 0 && defaultIpAddressFamily == AF_INET6) {
-      hints.ai_family = AF_INET;
+    if (localErrNo != 0) {
+      hints.ai_family = defaultIpAddressFamily == AF_INET6 ? AF_INET : AF_INET6;
       localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     }
     host = new PIPCacheData(localErrNo != NETDB_SUCCESS ? NULL : res, name);
