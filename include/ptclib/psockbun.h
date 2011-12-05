@@ -341,7 +341,19 @@ class PMonitoredSockets : public PInterfaceMonitorClient
 
     /** Create a new monitored socket instance based on the interface
         descriptor. This will create a multiple or single socket derived class
-        of PMonitoredSockets depending on teh iface parameter.
+        of PMonitoredSockets depending on the iface parameter.
+
+        If the iface parameter starts with a '%' or "*%" then a bundle is
+        created for all IP addresses for a specific interface.
+
+        If the iface has a non INADDR_ANY address value, with or without a
+        %iface qualifier, then only that IP address is listened to.
+
+        If the iface resolves to a specific INADDR_ANY or INADDR6_ANY, then
+        only that version will be listened to, on all interfaces or 
+
+        Finally if empty string or "*", than all IP versions and all interfaces
+        are used.
       */
     static PMonitoredSockets * Create(
       const PString & iface,              ///< Interface name to create socket for
@@ -544,10 +556,11 @@ class PMonitoredSocketBundle : public PMonitoredSockets
   PCLASSINFO(PMonitoredSocketBundle, PMonitoredSockets);
   public:
     PMonitoredSocketBundle(
-      unsigned ipVersion, ///< Version of IP to listen
-      bool reuseAddr      ///< Flag for sharing socket/exclusve use
+      const PString & fixedInterface, ///< Interface name for bundle, "" is all interfaces
+      unsigned ipVersion,             ///< Version of IP to listen
+      bool reuseAddr                  ///< Flag for sharing socket/exclusve use
 #ifdef P_NAT
-      , PNatMethod * natMethod  ///< NET method to use to create sockets.
+      , PNatMethod * natMethod        ///< NET method to use to create sockets.
 #endif
     );
     ~PMonitoredSocketBundle();
@@ -615,8 +628,9 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     void OpenSocket(const PString & iface);
     void CloseSocket(SocketInfoMap_T::iterator iterSocket);
 
-    SocketInfoMap_T socketInfoMap;
-    unsigned m_ipVersion;
+    SocketInfoMap_T m_socketInfoMap;
+    PCaselessString m_fixedInterface;
+    unsigned        m_ipVersion;
 };
 
 
