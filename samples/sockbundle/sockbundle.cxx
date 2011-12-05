@@ -39,7 +39,7 @@ void SockBundleProcess::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
-  PMonitoredSocketBundle bundle(0, false, NULL);
+  PMonitoredSocketBundle bundle(PString::Empty(), 0, false, NULL);
   if (!bundle.Open(5080)) {
     cout << "Cannot open monitored socket bundle" << endl;
     return;
