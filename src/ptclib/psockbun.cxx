@@ -693,14 +693,23 @@ PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
 
 PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
 {
-  if (iface[0] == '%')
-    return new PSingleMonitoredSocket(iface, reuseAddr P_NAT_PARAM(natMethod));
+  if (iface.IsEmpty() || iface == "*")
+    return new PMonitoredSocketBundle(PString::Empty(), 0, reuseAddr P_NAT_PARAM(natMethod));
+
+  PINDEX percent = iface.Find('%');
+
+  if (percent == 0 || (percent == 1 && iface[0] == '*'))
+    return new PMonitoredSocketBundle(iface.Mid(percent+1), 0, reuseAddr P_NAT_PARAM(natMethod));
 
   PIPSocket::Address ip(iface);
-  if (ip.IsValid() && !ip.IsAny())
-    return new PSingleMonitoredSocket(iface, reuseAddr P_NAT_PARAM(natMethod));
+  if (!ip.IsValid())
+    return NULL;
+  
+  if (ip.IsAny())
+    return new PMonitoredSocketBundle(percent != P_MAX_INDEX ? iface.Mid(percent+1) : PString::Empty(),
+                                      ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethod));
 
-  return new PMonitoredSocketBundle(ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethod));
+  return new PSingleMonitoredSocket(iface, reuseAddr P_NAT_PARAM(natMethod));
 }
 
 
@@ -840,13 +849,18 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 
 //////////////////////////////////////////////////
 
-PMonitoredSocketBundle::PMonitoredSocketBundle(unsigned ipVersion, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
+PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
+                                               unsigned ipVersion,
+                                               bool reuseAddr
+                                               P_NAT_PARAM(PNatMethod * natMethod))
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
+  , m_fixedInterface(fixedInterface)
   , m_ipVersion(ipVersion)
 {
-  PTRACE(4, "MonSock\tCreated socket bundle for all"
+  PTRACE(4, "MonSock\tCreated socket bundle for "
+         << (fixedInterface.IsEmpty() ? "all" : "fixed")
          << (ipVersion != 4 ? ipVersion != 6 ? " " : " IPv6 " : " IPv4 " )
-         << "interfaces.");
+         << "interface" << (fixedInterface.IsEmpty() ? "s." : ": ") << fixedInterface);
 }
 
 
@@ -868,8 +882,8 @@ PBoolean PMonitoredSocketBundle::Open(WORD port)
   localPort = port;
 
   // Close and re-open all sockets
-  while (!socketInfoMap.empty())
-    CloseSocket(socketInfoMap.begin());
+  while (!m_socketInfoMap.empty())
+    CloseSocket(m_socketInfoMap.begin());
 
   PStringArray interfaces = GetInterfaces();
   for (PINDEX i = 0; i < interfaces.GetSize(); ++i)
@@ -886,8 +900,8 @@ PBoolean PMonitoredSocketBundle::Close()
 
   opened = false;
 
-  while (!socketInfoMap.empty())
-    CloseSocket(socketInfoMap.begin());
+  while (!m_socketInfoMap.empty())
+    CloseSocket(m_socketInfoMap.begin());
   interfaceAddedSignal.Close(); // Fail safe break out of Select()
 
   UnlockReadWrite();
@@ -912,8 +926,8 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
   if (!guard.IsLocked())
     return false;
 
-  SocketInfoMap_T::const_iterator iter = socketInfoMap.find(MakeInterfaceDescription(info));
-  return iter != socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
+  SocketInfoMap_T::const_iterator iter = m_socketInfoMap.find(MakeInterfaceDescription(info));
+  return iter != m_socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
 }
 
 
@@ -922,6 +936,11 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   PIPSocket::Address binding;
   PString name;
   SplitInterfaceDescription(iface, binding, name);
+
+  if (!m_fixedInterface.IsEmpty() && m_fixedInterface != name) {
+    PTRACE(4, "MonSock\tInterface \"" << iface << "\" is not on \"" << m_fixedInterface << '"');
+    return;
+  }
 
   if (m_ipVersion != 0 && binding.GetVersion() != m_ipVersion) {
     PTRACE(4, "MonSock\tInterface \"" << iface << "\" is not IPv" << m_ipVersion);
@@ -932,7 +951,7 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   if (CreateSocket(info, binding)) {
     if (localPort == 0)
       info.socket->PUDPSocket::GetLocalAddress(binding, localPort);
-    socketInfoMap[iface] = info;
+    m_socketInfoMap[iface] = info;
   }
 }
 
@@ -941,11 +960,11 @@ void PMonitoredSocketBundle::CloseSocket(SocketInfoMap_T::iterator iterSocket)
 {
   //Already locked by caller
 
-  if (iterSocket == socketInfoMap.end())
+  if (iterSocket == m_socketInfoMap.end())
     return;
 
   DestroySocket(iterSocket->second);
-  socketInfoMap.erase(iterSocket);
+  m_socketInfoMap.erase(iterSocket);
 }
 
 
@@ -962,15 +981,15 @@ PChannel::Errors PMonitoredSocketBundle::WriteToBundle(const void * buf,
   PChannel::Errors errorCode = PChannel::NoError;
 
   if (iface.IsEmpty()) {
-    for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
+    for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
       PChannel::Errors err = WriteToSocket(buf, len, addr, port, iter->second, lastWriteCount);
       if (err != PChannel::NoError)
         errorCode = err;
     }
   }
   else {
-    SocketInfoMap_T::iterator iter = socketInfoMap.find(iface);
-    if (iter != socketInfoMap.end())
+    SocketInfoMap_T::iterator iter = m_socketInfoMap.find(iface);
+    if (iter != m_socketInfoMap.end())
       errorCode = WriteToSocket(buf, len, addr, port, iter->second, lastWriteCount);
     else
       errorCode = PChannel::NotFound;
@@ -1003,7 +1022,7 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
       // If interface is empty, then grab the next datagram on any of the interfaces
       PSocket::SelectList readers;
 
-      for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
+      for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
         if (iter->second.inUse) {
           PTRACE(2, "MonSock\tCannot read from multiple threads.");
           UnlockReadWrite();
@@ -1019,7 +1038,7 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
       PUDPSocket * socket;
       errorCode = ReadFromSocket(readers, socket, buf, len, addr, port, lastReadCount, timeout);
 
-      for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
+      for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
         if (iter->second.socket == socket)
           iface = iter->first;
         iter->second.inUse = false;
@@ -1028,8 +1047,8 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
   }
   else {
     // if interface is not empty, use that specific interface
-    SocketInfoMap_T::iterator iter = socketInfoMap.find(iface);
-    if (iter != socketInfoMap.end())
+    SocketInfoMap_T::iterator iter = m_socketInfoMap.find(iface);
+    if (iter != m_socketInfoMap.end())
       errorCode = ReadFromSocket(iter->second, buf, len, addr, port, lastReadCount, timeout);
     else
       errorCode = PChannel::NotFound;
@@ -1056,7 +1075,7 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 {
   // Already locked
   if (opened) {
-    CloseSocket(socketInfoMap.find(MakeInterfaceDescription(entry)));
+    CloseSocket(m_socketInfoMap.find(MakeInterfaceDescription(entry)));
     PTRACE(3, "MonSock\tUDP socket bundle has removed interface " << entry);
   }
 }
