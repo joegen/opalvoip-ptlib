@@ -507,6 +507,19 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
     stream << '\t';
   }
 
+  if ((info.options&ContextIdentifier) != 0) {
+    unsigned id = 0;
+    if (instance != NULL)
+      id = instance->GetTraceContextIdentifier();
+    if (id == 0)
+      id = thread->GetTraceContextIdentifier();
+    if (id != 0)
+      stream << setfill('0') << setw(13) << id << setfill(' ');
+    else
+      stream << "- - - - - - -";
+    stream << '\t';
+  }
+
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local
 #if P_HAS_THREADLOCAL_STORAGE
@@ -640,6 +653,38 @@ void PTrace::Cleanup()
   key.Set(NULL);
 #endif
 }
+
+
+static PAtomicInteger g_lastContextIdentifer;
+
+unsigned PTrace::GetNextContextIdentifier()
+{
+  return ++g_lastContextIdentifer;
+}
+
+
+PTraceSaveContextIdentifier::PTraceSaveContextIdentifier(const PObject & obj)
+  : m_currentThread(PThread::Current())
+  , m_savedContextIdentifier(m_currentThread->GetTraceContextIdentifier())
+{
+  m_currentThread->SetTraceContextIdentifier(obj.GetTraceContextIdentifier());
+}
+
+
+PTraceSaveContextIdentifier::PTraceSaveContextIdentifier(const PObject * obj)
+  : m_currentThread(PThread::Current())
+  , m_savedContextIdentifier(m_currentThread->GetTraceContextIdentifier())
+{
+  m_currentThread->SetTraceContextIdentifier(obj->GetTraceContextIdentifier());
+}
+
+
+PTraceSaveContextIdentifier::~PTraceSaveContextIdentifier()
+{
+  if (m_currentThread != NULL)
+    m_currentThread->SetTraceContextIdentifier(m_savedContextIdentifier);
+}
+
 
 #endif // PTRACING
 
@@ -2364,7 +2409,7 @@ void PReadWriteMutex::InternalWait(PSemaphore & semaphore) const
   if (semaphore.Wait(15000))
     return;
 
-  ostream & trace = PTrace::Begin(1, __FILE__, __LINE__);
+  ostream & trace = PTrace::Begin(1, __FILE__, __LINE__, this);
   trace << "PTLib\tPossible deadlock in read/write mutex:\n";
   for (std::map<PThreadIdentifier, Nest>::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it)
     trace << "  thread-id=" << it->first << ","

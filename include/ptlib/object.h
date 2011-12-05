@@ -327,6 +327,8 @@ public:
     RotateLogMask = RotateDaily + RotateHourly + RotateMinutely,
     /// Include object instance in all trace output
     ObjectInstance = 4096,
+    /// Include context identifier in all trace output
+    ContextIdentifier = 8192,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
         be set in conjection with <code>#SetStream(new PSystemLog)</code>.
       */
@@ -504,6 +506,8 @@ public:
       int          line;
       const char * name;
   };
+
+  static unsigned GetNextContextIdentifier();
 };
 
 /* Macro to conditionally declare a parameter to a function to avoid compiler
@@ -571,6 +575,29 @@ trace level is sufficient.
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
 
+/**Propagate PTRACE context identifier in an object from another.
+   The context identifier can group objects together with a single
+   identifier which can aid in debugging highly threaded systems where
+   the logs from various threads become very interleaved.
+  */
+#define PTRACE_CONTEXT_ID_NEW() SetTraceContextIdentifier(PTrace::GetNextContextIdentifier())
+#define PTRACE_CONTEXT_ID_SET(to, from) (to).SetTraceContextIdentifier(from)
+#define PTRACE_CONTEXT_ID_FROM(obj) SetTraceContextIdentifier(obj)
+#define PTRACE_CONTEXT_ID_TO(obj) GetTraceContextIdentifier(obj)
+
+class PTraceSaveContextIdentifier
+{
+  private:
+    class PThread * m_currentThread;
+    unsigned        m_savedContextIdentifier;
+  public:
+    PTraceSaveContextIdentifier(const PObject & obj);
+    PTraceSaveContextIdentifier(const PObject * obj);
+    ~PTraceSaveContextIdentifier();
+};
+
+#define PTRACE_CONTEXT_ID_PUSH_THREAD(obj) PTraceSaveContextIdentifier praceSavedContextIdentifier(obj)
+
 #else // PTRACING
 
 #define PTRACE_PARAM(param)
@@ -580,6 +607,10 @@ __inline const PObject * PTraceObjectInstance() { return NULL; }
 #define PTRACE_IF(level, cond, args)
 #define PTRACE2(level, obj, arg)
 #define PTRACE_IF2(level, cond, obj, args)
+#define PTRACE_CONTEXT_ID_SET(to, from)
+#define PTRACE_CONTEXT_ID_FROM(obj)
+#define PTRACE_CONTEXT_ID_TO(obj)
+#define PTRACE_CONTEXT_ID_PUSH_THREAD(obj)
 
 #endif // PTRACING
 
@@ -1127,11 +1158,29 @@ default comparison operations, simple stream I/O and serialisation support.
 */
 class PObject {
 
+#if PTRACING
+  protected:
+    unsigned m_traceContextIdentifier;
+  public:
+    /**Get PTRACE context identifier
+      */
+    unsigned GetTraceContextIdentifier() const { return m_traceContextIdentifier; }
+    void SetTraceContextIdentifier(unsigned id) { m_traceContextIdentifier = id; }
+    void GetTraceContextIdentifier(PObject & obj) { obj.m_traceContextIdentifier = m_traceContextIdentifier; }
+    void GetTraceContextIdentifier(PObject * obj) { if (obj != NULL) obj->m_traceContextIdentifier = m_traceContextIdentifier; }
+    void SetTraceContextIdentifier(const PObject & obj) { m_traceContextIdentifier = obj.m_traceContextIdentifier; }
+    void SetTraceContextIdentifier(const PObject * obj) { if (obj != NULL) m_traceContextIdentifier = obj->m_traceContextIdentifier; }
+#endif
+
   protected:
     /** Constructor for PObject, made protected so cannot ever create one on
        its own.
      */
-    PObject() { }
+    PObject()
+#if PTRACING
+      : m_traceContextIdentifier(0)
+#endif
+    { }
 
   public:
     /* Destructor required to get the "virtual". A PObject really has nothing
