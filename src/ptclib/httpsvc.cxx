@@ -345,12 +345,14 @@ PTCPSocket * PHTTPServiceProcess::AcceptHTTP()
     if (socket->Accept(listeners.front()))
       return socket;
 
-    if (socket->GetErrorCode() != PChannel::Interrupted)
+    if (socket->GetErrorCode() != PChannel::Interrupted) {
       PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket->GetErrorText());
+    }
     delete socket;
   }
-  else if (error != PChannel::Interrupted)
+  else if (error != PChannel::Interrupted) {
     PSYSTEMLOG(Error, "Select failed for HTTP: " << PSocket::GetErrorText(error));
+  }
 
   return NULL;
 }
