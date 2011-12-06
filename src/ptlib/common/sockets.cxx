@@ -1352,20 +1352,20 @@ PBoolean PIPSocket::Connect(const PString & host)
 {
   Address ipnum(host);
   if (ipnum.IsValid() || GetHostAddress(host, ipnum))
-    return Connect(GetDefaultIpAny(), 0, ipnum);
+    return Connect(Address::GetAny(ipnum.GetVersion()), 0, ipnum);
   return false;
 }
 
 
 PBoolean PIPSocket::Connect(const Address & addr)
 {
-  return Connect(GetDefaultIpAny(), 0, addr);
+  return Connect(Address::GetAny(addr.GetVersion()), 0, addr);
 }
 
 
 PBoolean PIPSocket::Connect(WORD localPort, const Address & addr)
 {
-  return Connect(GetDefaultIpAny(), localPort, addr);
+  return Connect(Address::GetAny(addr.GetVersion()), localPort, addr);
 }
 
 
@@ -2044,8 +2044,8 @@ bool PIPSocket::Address::IsRFC1918() const
 
 
 PIPSocket::InterfaceEntry::InterfaceEntry()
-  : ipAddr(GetDefaultIpAny())
-  , netMask(GetDefaultIpAny())
+  : ipAddr(PIPSocket::GetInvalidAddress())
+  , netMask(PIPSocket::GetInvalidAddress())
 {
 }
 
