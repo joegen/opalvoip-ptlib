@@ -411,7 +411,7 @@ CLEAN_FILES = $(GETDATE_SOURCE)
 $(COMMON_SRC_DIR)/osutils.cxx: $(REVISION_FILE)
 
 $(REVISION_FILE) : $(REVISION_FILE).in
-ifeq ($(shell which svn2 2> /dev/null),)
+ifeq ($(shell which svn 2> /dev/null),)
 	sed -e "s/.WCREV./`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $<`/" $< > $@
 else
 ifeq ($(wildcard .svn),)
