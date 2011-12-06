@@ -252,6 +252,11 @@ PTHREAD_MUTEX_RECURSIVE_NP
     Unlock();
   }
 
+  ostream * GetStream() const
+  {
+    return stream;
+  }
+
   void OpenTraceFile(const char * newFilename)
   {
     if (newFilename != NULL && *newFilename != '\0')
@@ -307,6 +312,11 @@ PTHREAD_MUTEX_RECURSIVE_NP
 void PTrace::SetStream(ostream * s)
 {
   PTraceInfo::Instance().SetStream(s);
+}
+
+ostream * PTrace::GetStream()
+{
+  return PTraceInfo::Instance().GetStream();
 }
 
 void PTrace::Initialise(

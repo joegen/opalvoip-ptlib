@@ -433,6 +433,10 @@ public:
     ostream * out ///< New output stream from trace.
   );
 
+  /** Get the stream being used for trace output.
+  */
+  static ostream * GetStream();
+
   /** Begin a trace output.
   If the trace stream output is used outside of the provided macros, it
   should be noted that a mutex is obtained on the call to Begin() which

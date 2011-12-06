@@ -57,6 +57,8 @@ static struct PSystemLogTargetGlobal
   {
     m_targetMutex.Wait();
 
+    PSystemLog::Level level = m_targetPointer->GetThresholdLevel();
+
     if (m_targetAutoDelete)
       delete m_targetPointer;
 
@@ -68,6 +70,8 @@ static struct PSystemLogTargetGlobal
       m_targetPointer = new PSystemLogToNowhere;
       m_targetAutoDelete = true;
     }
+
+    m_targetPointer->SetThresholdLevel(level);
 
     m_targetMutex.Signal();
   }
@@ -261,6 +265,24 @@ void PSystemLogToStderr::Output(PSystemLog::Level level, const char * msg)
 {
   OutputToStream(cerr, level, msg);
 }
+
+
+///////////////////////////////////////////////////////////////
+
+#if PTRACING
+PSystemLogToTrace::PSystemLogToTrace()
+{
+  // Must be off or recurses!
+  PTrace::ClearOptions(PTrace::SystemLogStream);
+  if (PIsDescendant(PTrace::GetStream(), PSystemLog))
+    PTrace::SetStream(NULL);
+}
+
+void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
+{
+  PTrace::Begin(level, NULL, 0) << msg << PTrace::End;
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////
