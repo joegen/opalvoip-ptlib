@@ -496,16 +496,21 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
   if ((info.options&TraceLevel) != 0)
     stream << level << '\t';
 
-  if ((info.options&FileAndLine) != 0 && fileName != NULL) {
-    const char * file = strrchr(fileName, '/');
-    if (file != NULL)
-      file++;
+  if ((info.options&FileAndLine) != 0) {
+    const char * file;
+    if (fileName == NULL)
+      file = "-";
     else {
-      file = strrchr(fileName, '\\');
+      file = strrchr(fileName, '/');
       if (file != NULL)
         file++;
-      else
-        file = fileName;
+      else {
+        file = strrchr(fileName, '\\');
+        if (file != NULL)
+          file++;
+        else
+          file = fileName;
+      }
     }
 
     stream << setw(16) << file << '(' << lineNum << ")\t";
