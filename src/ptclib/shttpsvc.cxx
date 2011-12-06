@@ -158,7 +158,7 @@ PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, 
     else {
       PIPSocket::Address addr;
       PIPSocket::GetHostAddress(addr);
-      url = addr.AsString() + ":" + PString(PString::Unsigned, httpListeningSocket->GetPort());
+      url = addr.AsString() + ":" + PString(PString::Unsigned, m_httpListeningSockets.front().GetPort());
     }
   }
 
