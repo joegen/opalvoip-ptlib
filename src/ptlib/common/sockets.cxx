@@ -1433,14 +1433,23 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
     return false;
   }
 
-  // attempt to listen
-  if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
-    PTRACE(4, "Socket\tSetOption(SO_REUSEADDR) failed");
+  int reuseAddr = reuse == CanReuseAddress ? 1 : 0;
+  if (!SetOption(SO_REUSEADDR, reuseAddr)) {
+    PTRACE(4, "Socket\tSetOption(SO_REUSEADDR," << reuseAddr << ") failed: " << GetErrorText());
     os_close();
     return false;
   }
 
+#if P_HAS_IPV6 && defined(IPV6_V6ONLY)
+  if (bindAddr.GetVersion() == 6) {
+    if (!SetOption(IPV6_V6ONLY, reuseAddr, IPPROTO_IPV6)) {
+      PTRACE(4, "Socket\tSetOption(IPV6_V6ONLY," << reuseAddr << ") failed: " << GetErrorText());
+    }
+  }
+#endif
+
   if (!ConvertOSError(::bind(os_handle, sa, sa.GetSize()))) {
+    PTRACE(4, "Socket\tbind failed: " << GetErrorText());
     os_close();
     return false;
   }
