@@ -208,6 +208,31 @@ class PSystemLogToStderr : public PSystemLogTarget
 };
 
 
+#if PTRACING
+/** Log system output to PTRACE.
+  */
+class PSystemLogToTrace : public PSystemLogTarget
+{
+    PCLASSINFO(PSystemLogToTrace, PSystemLogTarget);
+  public:
+  /**@name Construction */
+  //@{
+    PSystemLogToTrace();
+  //@}
+
+  /**@name Overrides of PSystemLogTarget */
+  //@{
+    /** Log an error into the system log.
+     */
+    virtual void Output(
+      PSystemLog::Level level,  ///< Level of this message
+      const char * msg          ///< Message to be logged
+    );
+  //@}
+};
+#endif
+
+
 /** Log system output to a file.
   */
 class PSystemLogToFile : public PSystemLogTarget
