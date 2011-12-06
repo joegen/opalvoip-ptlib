@@ -113,12 +113,18 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual void OnConfigChanged() = 0;
     virtual PBoolean Initialise(const char * initMsg) = 0;
 
-    PBoolean ListenForHTTP(
+    bool ListenForHTTP(
       WORD port,
       PSocket::Reusability reuse = PSocket::CanReuseAddress,
       PINDEX stackSize = 0x4000
     );
-    PBoolean ListenForHTTP(
+    bool ListenForHTTP(
+      const PString & interfaces,
+      WORD port,
+      PSocket::Reusability reuse = PSocket::CanReuseAddress,
+      PINDEX stackSize = 0x4000
+    );
+    bool ListenForHTTP(
       PSocket * listener,
       PSocket::Reusability reuse = PSocket::CanReuseAddress,
       PINDEX stackSize = 0x4000
@@ -138,8 +144,8 @@ class PHTTPServiceProcess : public PServiceProcess
     const PTEACypher::Key & GetProductKey() const { return productKey; }
     const PStringArray & GetSecuredKeys() const { return securedKeys; }
     const PTEACypher::Key & GetSignatureKey() const { return signatureKey; }
-    PBoolean ShouldIgnoreSignatures() const { return ignoreSignatures; }
-    void SetIgnoreSignatures(PBoolean ig) { ignoreSignatures = ig; }
+    bool ShouldIgnoreSignatures() const { return ignoreSignatures; }
+    void SetIgnoreSignatures(bool ig) { ignoreSignatures = ig; }
 
     static PHTTPServiceProcess & Current();
 
@@ -152,14 +158,14 @@ class PHTTPServiceProcess : public PServiceProcess
     PBoolean ProcessHTTP(PTCPSocket & socket);
 
   protected:
-    PSocket  * httpListeningSocket;
+    PSocketList m_httpListeningSockets;
     PHTTPSpace httpNameSpace;
     PString    macroKeyword;
 
     PTEACypher::Key productKey;
     PStringArray    securedKeys;
     PTEACypher::Key signatureKey;
-    PBoolean            ignoreSignatures;
+    bool            ignoreSignatures;
 
     PTime      compilationDate;
     PString    manufacturersHomePage;
