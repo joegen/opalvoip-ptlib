@@ -67,11 +67,11 @@ extern "C" {\
 }
 #elif defined(_WIN32_WCE)
 #define PCREATE_PROCESS(cls) \
-  int WinMain(HINSTANCE hInst, HINSTANCE, LPWSTR cmdLine, int) \
+  PDEFINE_WINMAIN(hInstance, , lpCmdLine, ) \
     { \
       cls *pInstance = new cls(); \
-      pInstance->GetArguments().SetArgs(cmdLine); \
-      int terminationValue = pInstance->InternalMain(hInst); \
+      pInstance->GetArguments().SetArgs(lpCmdLine); \
+      int terminationValue = pInstance->InternalMain(hInstance); \
       delete pInstance; \
       return terminationValue; \
     }
