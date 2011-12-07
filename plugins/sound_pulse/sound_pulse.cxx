@@ -34,8 +34,11 @@
 
 #pragma implementation "sound_pulse.h"
 
-#include <pulse/simple.h>
+#include <pulse/context.h>
 #include <pulse/error.h>
+#include <pulse/introspect.h>
+#include <pulse/thread-mainloop.h>
+#include <pulse/volume.h>
 //#include <pulse/gccmacro.h>
 #include <pulse/sample.h>
 #include <ptlib.h>
@@ -46,6 +49,75 @@
 
 
 PCREATE_SOUND_PLUGIN(Pulse, PSoundChannelPulse);
+
+static pa_threaded_mainloop* paloop;
+static pa_context* context;
+
+class PulseContext {
+private:
+  static void notify_cb(pa_context *c,void *userdata) {
+    pa_threaded_mainloop_signal(paloop,0);
+  }
+public:
+  PulseContext() {
+    paloop=pa_threaded_mainloop_new();
+    pa_threaded_mainloop_start(paloop);
+    pa_threaded_mainloop_lock(paloop);
+    pa_proplist *proplist=pa_proplist_new();
+    pa_proplist_sets(proplist,"media.role","phone");
+    /* TODO: I wasn't able to make module-cork-music-on-phone do what I expected */
+    context=pa_context_new_with_proplist(pa_threaded_mainloop_get_api(paloop),"ptlib",proplist);
+    pa_proplist_free(proplist);
+    pa_context_connect(context,NULL,PA_CONTEXT_NOFLAGS ,NULL);
+    pa_context_set_state_callback(context,notify_cb,NULL);
+    while (pa_context_get_state(context)<PA_CONTEXT_READY) {
+      pa_threaded_mainloop_wait(paloop);
+    }
+    pa_context_set_state_callback(context,NULL,NULL);
+    pa_threaded_mainloop_unlock(paloop);
+  }
+  ~PulseContext() {
+    pa_context_disconnect(context);
+    pa_context_unref(context);
+    pa_threaded_mainloop_stop(paloop);
+    pa_threaded_mainloop_free(paloop);
+  }
+  static void signal() {
+    pa_threaded_mainloop_signal(paloop,0);
+  }
+
+};
+
+static PulseContext pamain;
+
+class PulseLock {
+public:
+
+  PulseLock() {
+    pa_threaded_mainloop_lock(paloop);
+  }
+
+  ~PulseLock() {
+    pa_threaded_mainloop_unlock(paloop);
+  }
+
+  void wait() {
+    pa_threaded_mainloop_wait(paloop);
+  }
+
+  bool waitFor(pa_operation* operation) {
+    if (!operation)
+      return false;
+
+    while (pa_operation_get_state(operation)==PA_OPERATION_RUNNING) {
+      pa_threaded_mainloop_wait(paloop);
+    }
+    bool toReturn=pa_operation_get_state(operation)==PA_OPERATION_DONE;
+    pa_operation_unref(operation);
+    return toReturn;
+  }
+
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 PSoundChannelPulse::PSoundChannelPulse()
@@ -90,17 +162,41 @@ PSoundChannelPulse::~PSoundChannelPulse()
 
 
 
-PStringArray PSoundChannelPulse::GetDeviceNames(Directions /*dir*/)
+static void sink_info_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata)
 {
-  // First locate sound cards. On Linux with devfs and on the other platforms
-  // (eg FreeBSD), we search for filenames with dspN or mixerN.
-  // On linux without devfs we scan all of the devices and look for ones
-  // with major device numbers corresponding to Pulse compatible drivers.
+  if (eol) {
+    PulseContext::signal();
+  } else {
+    ((PStringArray*) userdata)->AppendString(i->name);
+  }
+}
 
+static void source_info_cb(pa_context *c, const pa_source_info *i, int eol, void *userdata)
+{
+  if (eol) {
+    PulseContext::signal();
+  } else {
+    /* Ignore monitor sources */
+    if (i->monitor_of_sink==PA_INVALID_INDEX)
+      ((PStringArray*) userdata)->AppendString(i->name);
+  }
+}
+
+PStringArray PSoundChannelPulse::GetDeviceNames(Directions dir)
+{
   PTRACE2(6, NULL, "Pulse\tReport devicenames as \"ptlib pulse plugin\"");
+  PulseLock lock;
   PStringArray devices;
-  devices.AppendString("ptlib pulse plugin");
-
+  devices.AppendString("ptlib pulse plugin"); // Default device
+  pa_operation* operation;
+  if (dir==Player) {
+    operation=
+      pa_context_get_sink_info_list(context,sink_info_cb,&devices);
+  } else {
+    operation=
+      pa_context_get_source_info_list(context,source_info_cb,&devices);
+  }
+  lock.waitFor(operation);
   return devices;
 }
 
@@ -112,6 +208,14 @@ PString PSoundChannelPulse::GetDefaultDevice(Directions dir)
   devicenames = PSoundChannelPulse::GetDeviceNames(dir);
 
   return devicenames[0];
+}
+
+static void stream_notify_cb(pa_stream *s, void *userdata) {
+  PulseContext::signal();
+}
+
+static void stream_write_cb(pa_stream* s,size_t nbytes,void *userdata) {
+  PulseContext::signal();
 }
 
 PBoolean PSoundChannelPulse::Open(const PString & _device,
@@ -128,8 +232,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
   mBitsPerSample = _bitsPerSample;
   Construct();
 
-  PWaitAndSignal m(deviceMutex);
-  int error;
+  PulseLock lock;
   char *app = getenv ("PULSE_PROP_application.name");
   PStringStream appName, streamName;
   if (app != NULL)
@@ -145,22 +248,56 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
   ss.channels = _numChannels;
   ss.format =  PA_SAMPLE_S16LE;  
 
-  if (_dir == Player) {
-    s = pa_simple_new(NULL, appName.GetPointer(), PA_STREAM_PLAYBACK, NULL, 
-		      streamName.GetPointer(), &ss, NULL, NULL, &error);
+  const char* dev;
+  if (_device=="ptlib pulse plugin") {
+    /* Default device */
+    dev=NULL;
   } else {
-    s = pa_simple_new(NULL, appName.GetPointer(), PA_STREAM_RECORD, NULL, 
-		      streamName.GetPointer(), &ss, NULL, NULL, &error);
+    dev=_device;
   }
+  s=pa_stream_new(context,appName.GetPointer(),&ss,NULL);
+  pa_stream_set_state_callback(s,stream_notify_cb,NULL);
 
   if (s == NULL) {
-    PTRACE(2, ": pa_simple_new() failed: " << pa_strerror(error));
-    PTRACE(2, ": pa_simple_new() uses stream " << streamName);
-    PTRACE(2, ": pa_simple_new() uses rate " << PINDEX(ss.rate));
-    PTRACE(2, ": pa_simple_new() uses channels " << PINDEX(ss.channels));
+    PTRACE(2, ": pa_stream_new() failed: " << pa_strerror(pa_context_errno(context)));
+    PTRACE(2, ": pa_stream_new() uses stream " << streamName);
+    PTRACE(2, ": pa_stream_new() uses rate " << PINDEX(ss.rate));
+    PTRACE(2, ": pa_stream_new() uses channels " << PINDEX(ss.channels));
     return PFalse;
   }
-  
+
+  if (_dir == Player) {
+    int err=pa_stream_connect_playback(s,dev,NULL,PA_STREAM_NOFLAGS,NULL,NULL);
+    if (err) {
+      PTRACE(2, ": pa_connect_playback() failed: " << pa_strerror(err));
+      pa_stream_unref(s);
+      s=NULL;
+      return PFalse;
+    }
+    pa_stream_set_write_callback(s,stream_write_cb,NULL);
+  } else {
+    int err=pa_stream_connect_record(s,dev,NULL,PA_STREAM_NOFLAGS);
+    if (err) {
+      PTRACE(2, ": pa_connect_record() failed: " << pa_strerror(pa_context_errno(context)));
+      pa_stream_unref(s);
+      s=NULL;
+      return PFalse;
+    }
+    pa_stream_set_read_callback(s,stream_write_cb,NULL);
+    /* No input yet */
+    record_len=0;
+    record_data=NULL;
+  }
+
+  /* Wait for stream to become ready */
+  while (pa_stream_get_state(s)<PA_STREAM_READY) lock.wait();
+  if (pa_stream_get_state(s)!=PA_STREAM_READY) {
+    PTRACE(2, "stream state is " << pa_stream_get_state(s));
+    pa_stream_unref(s);
+    s=NULL;
+    return PFalse;
+  }
+
   os_handle = 1;
   return PTrue;
 }
@@ -168,47 +305,50 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
 PBoolean PSoundChannelPulse::Close()
 {
   PTRACE(6, "Pulse\tClose");
-  int error;
-  PWaitAndSignal m(deviceMutex);
+  PulseLock lock;
 
   if (s == NULL)
     return PTrue;
 
-  /* Make sure that every single sample was played. We don't care about
-     errors here - we are closing it and want all the sound out. */
-
-  pa_simple_drain(s, &error);
-  
-  if (s)
-    pa_simple_free(s);
-  
+  /* Remove the reference. The main loop keeps going and will drain the output */
+  pa_stream_disconnect(s);
+  pa_stream_unref(s);
   s = NULL;
-
   os_handle = -1;
+
   return PTrue;
 }
 
 PBoolean PSoundChannelPulse::IsOpen() const
 {
   PTRACE(6, "Pulse\t report is open as " << (os_handle >= 0));
-  PWaitAndSignal m(deviceMutex);
+  PulseLock lock;
   return os_handle >= 0;
 }
 
 PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
 {
   PTRACE(6, "Pulse\tWrite " << len << " bytes");
-  int error;
-  PWaitAndSignal m(deviceMutex);
+  PulseLock lock;
+  char* buff=(char*) buf;
 
-  if (!IsOpen()) {
+  if (!os_handle) {
     PTRACE(4, ": Pulse audio Write() failed as device closed");
     return PFalse;
   }
 
-  if (pa_simple_write(s, buf, (size_t) len, &error) < 0) {
-    PTRACE(4, ": pa_simple_write() failed: " << pa_strerror(error));
-    return PFalse;   
+  size_t toWrite=len;
+  while (toWrite) {
+    size_t ws;
+    while ((ws=pa_stream_writable_size(s))<=0) lock.wait();
+    if (ws>toWrite) ws=toWrite;
+    int err=pa_stream_write(s,buff,ws,NULL,0,PA_SEEK_RELATIVE);
+    if (err) {
+      PTRACE(4, ": pa_stream_write() failed: " << pa_strerror(err));
+      return PFalse;   
+    }
+    toWrite-=ws;
+    buff+=ws;
   }
 
   lastWriteCount = len;
@@ -220,17 +360,29 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
 PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
 {
   PTRACE(6, "Pulse\tRead " << len << " bytes");
-  int error;
-  PWaitAndSignal m(deviceMutex);
+  PulseLock lock;
+  char* buff=(char*) buf;
 
-  if (!IsOpen()) {
+  if (!os_handle) {
     PTRACE(4, ": Pulse audio Read() failed as device closed");
     return PFalse;
   }
 
-  if (pa_simple_read(s, buf, (size_t) len, &error) < 0) {
-    PTRACE(4, ": pa_simple_read() failed: " << pa_strerror(error));
-    return PFalse;   
+  size_t toRead=len;
+  while (toRead) {
+    while (!record_len) {
+      /* Fill the record buffer first */
+      pa_stream_peek(s,&record_data,&record_len);
+      if (!record_len) lock.wait();
+    }
+    size_t toCopy=toRead<record_len ? toRead : record_len;
+    memcpy(buff,record_data,toCopy);
+    toRead-=toCopy;
+    buff+=toCopy;
+    record_data=((char*) record_data)+toCopy;
+    record_len-=toCopy;
+    /* Buffer empty? */
+    if (!record_len) pa_stream_drop(s);
   }
 
   lastReadCount = len;
@@ -360,16 +512,58 @@ PBoolean PSoundChannelPulse::WaitForAllRecordBuffersFull()
   return PFalse;
 }
 
+static void sink_volume_cb(pa_context* context,const pa_sink_info* i,int eol,void* userdata) {
+  if (!eol) {
+    *((pa_cvolume*) userdata)=i->volume;
+    PulseContext::signal();
+  }
+}
+
+static void source_volume_cb(pa_context* context,const pa_source_info* i,int eol,void* userdata) {
+  if (!eol) {
+    *((pa_cvolume*) userdata)=i->volume;
+    PulseContext::signal();
+  }
+}
 
 PBoolean PSoundChannelPulse::SetVolume(unsigned newVal)
 {
-  PWaitAndSignal m(deviceMutex);
+  if (s) {
+    PulseLock lock;
+    int dev=pa_stream_get_device_index(s);
+    pa_operation* operation;
+    pa_cvolume volume;
+    if (direction==Player) {
+      operation=pa_context_get_sink_info_by_index(context,dev,sink_volume_cb,&volume);
+    } else {
+      operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);
+    }
+    if (!lock.waitFor(operation)) return PFalse;
+    pa_cvolume_scale(&volume,newVal*PA_VOLUME_NORM/100);
+    if (direction==Player) {
+      pa_context_set_sink_volume_by_index(context,dev,&volume,NULL,NULL);
+    } else {
+      pa_context_set_source_volume_by_index(context,dev,&volume,NULL,NULL);
+    }
+  }
   return PTrue;
 }
 
 PBoolean  PSoundChannelPulse::GetVolume(unsigned &devVol)
 {
-  PWaitAndSignal m(deviceMutex);
+  if (s) {
+    PulseLock lock;
+    int dev=pa_stream_get_device_index(s);
+    pa_operation* operation;
+    pa_cvolume volume;
+    if (direction==Player) {
+      operation=pa_context_get_sink_info_by_index(context,dev,sink_volume_cb,&volume);
+    } else {
+      operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);
+    }
+    if (!lock.waitFor(operation)) return PFalse;
+    devVol=100*pa_cvolume_avg(&volume)/PA_VOLUME_NORM;
+  }
   return PTrue;
 }
   
