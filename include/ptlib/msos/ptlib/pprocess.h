@@ -68,10 +68,7 @@
   friend UINT __stdcall PThread::MainFunction(void * thread);
   friend class PServiceProcess;
   friend class PApplication;
-#ifndef _WIN32_WCE
-  friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
-#else
-  friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
-#endif
+
+  friend PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 // End Of File ///////////////////////////////////////////////////////////////
