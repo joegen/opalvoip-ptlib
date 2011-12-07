@@ -44,6 +44,28 @@ static const PINDEX TopWindowPrefixLen = sizeof(TopWindowPrefix)-1;
 #endif
 
 
+/* Convert bitmap colour format to format name 
+  colourFormat will contains colour format name on success, an empty string if unsupported format
+  return true on succes, false otherwise 
+*/
+static bool GetBitmapColourFormat(BITMAP bitmap, PString & colourFormat) {
+	switch (bitmap.bmBitsPixel) {
+	case 32:
+		colourFormat = "BGR32";
+		break;
+	case 24:
+		colourFormat = "BGR24";
+		break;
+	default:
+		PTRACE(2, "AppInput\tUnsupported pixel format");
+		colourFormat = "";
+		return false;
+	}
+
+	return true;
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // Video Input device
 
@@ -149,8 +171,12 @@ PBoolean PVideoInputDevice_Application::Open(const PString & deviceName, PBoolea
   }
 
   BITMAP bitmap;
-  if (GetWindowBitmap(bitmap))
-    return PVideoDevice::SetColourFormat(bitmap.bmBitsPixel == 32 ? "BGR32" : "BGR24");
+  if (GetWindowBitmap(bitmap)) {
+    PString bmpColourFmt;
+    if (!GetBitmapColourFormat(bitmap, bmpColourFmt)) 
+	  return false;
+	return PVideoDevice::SetColourFormat(bmpColourFmt);
+  }
 
   m_hWnd = NULL;
   return false;
@@ -184,8 +210,12 @@ PBoolean PVideoInputDevice_Application::IsCapturing()
 PBoolean PVideoInputDevice_Application::SetColourFormat(const PString & colourFormat)
 {
   BITMAP bitmap;
+
   if (GetWindowBitmap(bitmap)) {
-    if (!(colourFormat *= (bitmap.bmBitsPixel == 32 ? "BGR32" : "BGR24")))
+	PString bmpColourFmt;
+	if (!GetBitmapColourFormat(bitmap, bmpColourFmt)) 
+      return false;
+    if (!(colourFormat *= bmpColourFmt))
       return false;
   }
   else {
@@ -352,12 +382,11 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
 
   // create a BITMAPINFO with enough room for the pixel data
   unsigned bitmapInfoSize = sizeof(BITMAPINFOHEADER);
-  if (bitmap.bmBitsPixel <= 8)
-#ifdef _WIN64
-    bitmapInfoSize += (1i64 << bitmap.bmBitsPixel) * sizeof(RGBQUAD);
-#else
-    bitmapInfoSize += (1 << bitmap.bmBitsPixel) * sizeof(RGBQUAD);
-#endif
+
+  // check pixel format is supported
+  PString bmpColourFmt;
+  if (!GetBitmapColourFormat(bitmap, bmpColourFmt)) 
+	return false;
 
   LPBITMAPINFO bitmapInfo = (LPBITMAPINFO)_alloca(bitmapInfoSize);
 
