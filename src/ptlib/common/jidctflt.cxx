@@ -87,7 +87,7 @@
  *
  *
  */   
-#include <stdint.h>
+#include <inttypes.h>
 #include "tinyjpeg-internal.h"
 #include "ptbuildopts.h"
 #ifdef P_MEDIALIB
