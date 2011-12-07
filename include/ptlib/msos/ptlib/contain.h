@@ -280,10 +280,13 @@ class RegistryKey
 };
 
 #ifndef _WIN32_WCE
-  extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+  #define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
+    int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 #else
-  extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
+  #define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
+    int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 #endif
+extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 // used by various modules to disable the winsock2 include to avoid header file problems
 #ifndef P_KNOCKOUT_WINSOCK2
