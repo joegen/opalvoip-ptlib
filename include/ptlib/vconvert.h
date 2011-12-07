@@ -345,11 +345,6 @@ class PColourConverter : public PObject
 
     PBYTEArray intermediateFrameStore;
 
-#ifndef P_MACOSX
-      /* Use by the jpeg decompressor */
-    struct jdec_private *jdec;
-#endif
-
   friend class PColourConverterRegistration;
 };
 
