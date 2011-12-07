@@ -80,7 +80,11 @@ class PStandardColourConverter : public PColourConverter
     PStandardColourConverter(
       const PVideoFrameInfo & src,
       const PVideoFrameInfo & dst
-    ) : PColourConverter(src, dst) { }
+    ) : PColourConverter(src, dst)
+#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
+      , jdec(NULL)
+#endif
+    { }
 
     bool SBGGR8toYUV420P(
      const BYTE * srgb,
@@ -180,7 +184,10 @@ class PStandardColourConverter : public PColourConverter
       const BYTE *yuy2,
       BYTE *yuv420p
     );
-#if defined (__GNUC__) || defined (__sun)
+
+#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
+      /* Use by the jpeg decompressor */
+    struct jdec_private *jdec;
     bool MJPEGtoXXX(
       const BYTE *mjpeg,
             BYTE *output_data,
@@ -283,10 +290,6 @@ PColourConverter::PColourConverter(const PVideoFrameInfo & src,
 
 void PColourConverter::Construct(const PVideoFrameInfo & src, const PVideoFrameInfo & dst)
 {
-#ifndef P_MACOSX
-  jdec = NULL;
-#endif
-
   srcColourFormat = src.GetColourFormat();
   src.GetFrameSize(srcFrameWidth, srcFrameHeight);
   srcFrameBytes = src.CalculateFrameBytes();
@@ -658,6 +661,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       }
       break;
 
+    default :
     case PVideoFrameInfo::eCropCentre :
       if (srcWidth < dstWidth) {
         unsigned deltaX = (dstWidth - srcWidth)/2;
@@ -680,10 +684,6 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
         srcHeight = dstHeight;
       }
       break;
-
-    default :
-      PAssertAlways(PInvalidParameter);
-      return false;
   }
 
   // Copy plane Y
@@ -2680,8 +2680,7 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
   return true;
 }
 
-#if  defined (__GNUC__) || defined (__sun)
-#ifndef P_MACOSX
+#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
 /*
  * Convert a MJPEG Buffer to one plane pixel format (RGB24, BGR24, GRAY)
  * image need to be same size.
@@ -2865,7 +2864,6 @@ PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
 }
 
 
-#endif // P_MACOSX
 #endif // __GNUC__
 
 #ifdef _MSC_VER
