@@ -265,7 +265,7 @@ class PSNMPServer : public PSNMP
 
     ~PSNMPServer();
 
-    void Main();
+	void Main();
 
     void SetVersion(PASNInt newVersion);
     PBoolean HandleChannel();
@@ -284,7 +284,7 @@ class PSNMPServer : public PSNMP
     PSNMP::ErrorType SendGetResponse  (PSNMPVarBindingList & vars);
   
   protected:
-    PThread     * m_thread;
+    PThreadObj<PSNMPServer> m_thread;
     PString       community;
     PASN_Integer  version;
     PINDEX        lastErrorIndex;
