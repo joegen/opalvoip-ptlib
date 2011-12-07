@@ -149,14 +149,26 @@ void PAssertFunc(const char * file, int line, const char * className, const char
 
 #endif // !P_USE_ASSERTS
 
-PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject&obj) const
+PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject & obj) const
 {
-  int retval = memcmp(this, &obj, sizeof(PObject));
+  return InternalCompareObjectMemoryDirect(this, &obj, sizeof(obj));
+}
+
+
+PObject::Comparison PObject::InternalCompareObjectMemoryDirect(const PObject * obj1,
+                                                               const PObject * obj2,
+                                                               PINDEX size)
+{
+  if (obj2 == NULL)
+    return PObject::LessThan;
+  if (obj1 == NULL)
+    return PObject::GreaterThan;
+  int retval = memcmp((const void *)obj1, (const void *)obj2, size);
   if (retval < 0)
-    return LessThan;
+    return PObject::LessThan;
   if (retval > 0)
-    return GreaterThan;
-  return EqualTo;
+    return PObject::GreaterThan;
+  return PObject::EqualTo;
 }
 
 
