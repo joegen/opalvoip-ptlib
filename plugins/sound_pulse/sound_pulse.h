@@ -27,8 +27,7 @@
 #include <soundcard.h>
 #endif
 
-#include <pulse/simple.h>
-
+#include <pulse/stream.h>
 
 class PSoundChannelPulse: public PSoundChannel
 {
@@ -89,14 +88,10 @@ class PSoundChannelPulse: public PSoundChannel
     PINDEX bufferSize;
     PINDEX bufferCount;
 
-    /**This locks all access of this channel to this device. Thus,
-  there is only one activity hitting this instance of
-  sound. if this sound channel instance is used for read, it does not
-  interfere with anything related to write */
-  PMutex deviceMutex;
-
   pa_sample_spec ss;
 
-  pa_simple *s;
+  pa_stream *s;
+  const void* record_data;
+  size_t record_len;
 
 };
