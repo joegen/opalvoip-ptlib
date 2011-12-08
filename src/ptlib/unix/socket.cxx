@@ -1059,6 +1059,29 @@ PString PIPSocket::GetGatewayInterface(int version)
   return PString();
 }
 
+// bit setting inspired by Tim Ring on StackOverflow
+const unsigned char QuickByteMask[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+void ResetBit(unsigned bit, BYTE *bitmap)
+{
+    unsigned x = bit / 8;                // Index to byte.
+    unsigned n = bit % 8;                // Specific bit in byte.
+    bitmap[x] &= (~QuickByteMask[n]);  // Reset bit.
+}
+
+PIPSocket::Address NetmaskV6WithPrefix(unsigned prefixbits, unsigned masklen = 0, BYTE * mask = NULL)
+{
+  BYTE fullmask[16] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+
+  if (mask) {
+    memset(&fullmask, 0, sizeof(fullmask));
+    memcpy(&fullmask, mask, std::min((size_t)masklen, sizeof(fullmask)));
+  }
+  for(unsigned i=128; i >= prefixbits; --i) {
+    ResetBit(i, fullmask);
+  }
+  return PIPSocket::Address(16, (BYTE*)&fullmask);
+}
+
 #if defined(P_LINUX) || defined (P_AIX)
 
 PBoolean PIPSocket::GetRouteTable(RouteTable & table)
@@ -1481,16 +1504,16 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
       goto Return;
   }
 
-  if (req->level != MIB2_IP
+  if ( (req->level != MIB2_IP
 #if P_SOLARIS > 7
-      || req->name != MIB2_IP_ROUTE
+        || req->name != MIB2_IP_ROUTE)
+      && (req->level != MIB2_IP6 || req->name != MIB2_IP6_ROUTE)
 #endif
            ) {  /* == 21 */
       /* If this is not the routing table, skip it */
-      /* TODO: Handle IPv6 (MIB2_IP6_ROUTE) ... */
       strbuf.maxlen = task_pagesize;
       do {
-    rc = getmsg(sd, (struct strbuf *) 0, &strbuf, &flags);
+        rc = getmsg(sd, (struct strbuf *) 0, &strbuf, &flags);
       } while (rc == MOREDATA) ;
       continue;
   }
@@ -1499,7 +1522,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   strbuf.len = 0;
   flags = 0;
   do {
-      rc = getmsg(sd, (struct strbuf * ) 0, &strbuf, &flags);
+      rc = getmsg(sd, (struct strbuf *) 0, &strbuf, &flags);
       
       switch (rc) {
       case -1:
@@ -1520,46 +1543,54 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
       case MOREDATA:
       case 0:
         {
-    mib2_ipRouteEntry_t *rp = (mib2_ipRouteEntry_t *) strbuf.buf;
-    mib2_ipRouteEntry_t *lp = (mib2_ipRouteEntry_t *) (strbuf.buf + strbuf.len);
+          mib2_ipRouteEntry_t *rp = (mib2_ipRouteEntry_t *) strbuf.buf;
+          mib2_ipRouteEntry_t *lp = (mib2_ipRouteEntry_t *) (strbuf.buf + strbuf.len);
 
-    do {
-      char name[256];
-#ifdef SOL_DEBUG_RT
-      printf("%s -> %s mask %s metric %d %d %d %d %d ifc %.*s type %d/%x/%x\n",
-             inet_ntoa(rp->ipRouteDest),
-             inet_ntoa(rp->ipRouteNextHop),
-             inet_ntoa(rp->ipRouteMask),
-             rp->ipRouteMetric1,
-             rp->ipRouteMetric2,
-             rp->ipRouteMetric3,
-             rp->ipRouteMetric4,
-             rp->ipRouteMetric5,
-             rp->ipRouteIfIndex.o_length,
-             rp->ipRouteIfIndex.o_bytes,
-             rp->ipRouteType,
-             rp->ipRouteInfo.re_ire_type,
-             rp->ipRouteInfo.re_flags
-        );
-#endif
-      if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL))
-                    continue;
-      RouteEntry * entry = new RouteEntry(rp->ipRouteDest);
-      entry->net_mask = rp->ipRouteMask;
-      entry->destination = rp->ipRouteNextHop;
-                  unsigned len = rp->ipRouteIfIndex.o_length;
-                  if (len >= sizeof(name))
-                    len = sizeof(name)-1;
-      strncpy(name, rp->ipRouteIfIndex.o_bytes, len);
-      name[len] = '\0';
-      entry->interfaceName = name;
-      entry->metric =  rp->ipRouteMetric1;
-      table.Append(entry);
-    } while (++rp < lp) ;
+          do {
+            char name[256];
+            name[0] = '\0';
+            if (req->level == 0) {
+              if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL)) {
+                ++rp;
+                continue;
+              }
+              RouteEntry * entry = new RouteEntry(rp->ipRouteDest);
+              entry->net_mask = rp->ipRouteMask;
+              entry->destination = rp->ipRouteNextHop;
+              unsigned len = rp->ipRouteIfIndex.o_length;
+              if (len >= sizeof(name))
+                len = sizeof(name)-1;
+              strncpy(name, rp->ipRouteIfIndex.o_bytes, len);
+              name[len] = '\0';
+              entry->interfaceName = name;
+              entry->metric = rp->ipRouteMetric1;
+              table.Append(entry);
+              ++rp;
+            } else {
+              mib2_ipv6RouteEntry_t *rp6 = (mib2_ipv6RouteEntry_t *) rp;
+              if (rp6->ipv6RouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL)) {
+                rp = (mib2_ipRouteEntry_t *) ((BYTE*)rp + sizeof(mib2_ipv6RouteEntry_t));
+                continue;
+              }
+              RouteEntry * entry = new RouteEntry(Address(16, (BYTE*)&rp6->ipv6RouteDest));
+              entry->net_mask = NetmaskV6WithPrefix(rp6->ipv6RoutePfxLength);
+              entry->destination = Address(16, (BYTE*)&rp6->ipv6RouteNextHop);
+              unsigned len = rp6->ipv6RouteIfIndex.o_length;
+              if (len >= sizeof(name))
+                len = sizeof(name)-1;
+              strncpy(name, rp6->ipv6RouteIfIndex.o_bytes, len);
+              name[len] = '\0';
+              entry->interfaceName = name;
+              entry->metric = rp6->ipv6RouteMetric;
+              table.Append(entry);
+              rp = (mib2_ipRouteEntry_t *) ((BYTE*)rp + sizeof(mib2_ipv6RouteEntry_t));
+            }
+          } while (rp < lp) ;
+
+          }
+          break;
         }
-        break;
-      }
-  } while (rc == MOREDATA) ;
+      } while (rc == MOREDATA) ;
     }
 
  Return:
