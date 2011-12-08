@@ -1120,7 +1120,7 @@ of compatibility with documentation systems.
     virtual const char * GetClass(unsigned ancestor = 0) const \
       { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
     virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
-      { return InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
+      { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
 
 
