@@ -721,7 +721,82 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
 }
 
 
-bool PColourConverter::FillYUV420P(unsigned x, unsigned y, int width, int height,
+bool PColourConverter::RotateYUV420P(int angle, unsigned width, unsigned height, BYTE * srcYUV, BYTE * dstYUV)
+{
+  if (!PAssert(width > 16 && height > 16, PInvalidParameter))
+    return false;
+
+  unsigned size = width*height*3/2;
+
+  if (angle == 0) {
+    if (dstYUV != NULL && srcYUV != dstYUV)
+      memcpy(dstYUV, srcYUV, size);
+    return true;
+  }
+
+  if (!PAssert(angle == -90 || angle == 90 || angle == 180, PInvalidParameter))
+    return false;
+
+  PBYTEArray storage;
+  if (dstYUV == NULL || srcYUV == dstYUV)
+    dstYUV = storage.GetPointer(size);
+
+  struct PlaneInfo {
+    int width;
+    int height;
+    BYTE * src;
+    BYTE * dst;
+  } plane[3] = {
+    { width,   height,   srcYUV,                  dstYUV                  },
+    { width/2, height/2, srcYUV+width*height,     dstYUV+width*height     },
+    { width/2, height/2, srcYUV+width*height*5/4, dstYUV+width*height*5/4 }
+  };
+
+  switch (angle) {
+    case -90 :
+      for (int p = 0; p < 3; ++p) {
+        plane[p].dst += plane[p].width*plane[p].height;
+        for (int y = plane[p].height; y > 0; --y) {
+          BYTE * tempY = plane[p].dst - y;
+          for (int x = plane[p].width; x > 0; --x) {
+            *tempY = *plane[p].src++;
+            tempY -= plane[p].height;
+          }
+        }
+      }
+      break;
+
+    case 90 :
+      for (int p = 0; p < 3; ++p) {
+        for (int y = plane[p].height-1; y >= 0; --y) {
+          BYTE * tempY = plane[p].dst + y;
+          for (int x = plane[p].width; x > 0; --x) {
+            *tempY = *plane[p].src++;
+            tempY += plane[p].height;
+          }
+        }
+      }
+      break;
+
+    case 180 :
+      for (int p = 0; p < 3; ++p) {
+        plane[p].dst += plane[p].width*plane[p].height;
+        for (int y = plane[p].height; y > 0; --y) {
+          for (int x = plane[p].width; x > 0; --x)
+            *--plane[p].dst = *plane[p].src++;
+        }
+      }
+      break;
+  }
+
+  if (!storage.IsEmpty())
+    memcpy(srcYUV, dstYUV, size);
+
+  return true;
+}
+
+
+bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsigned height,
                                    unsigned frameWidth, unsigned frameHeight, BYTE * yuv,
                                    unsigned r, unsigned g, unsigned b)
 {
@@ -745,7 +820,7 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, int width, int height
   int halfRectWidth  = width/2;
   int halfFrameWidth = frameWidth/2;
   
-  for (int dy = 0; dy < height; dy += 2) {
+  for (unsigned dy = 0; dy < height; dy += 2) {
     memset(Yptr, Y, width);
     Yptr += frameWidth;
     memset(Yptr, Y, width);
