@@ -316,8 +316,20 @@ class PColourConverter : public PObject
       PVideoFrameInfo::ResizeMode resizeMode
     );
 
+    /**Rotate the video buffer image.
+       At this time, the \p angle may be 90, -90 or 180.
+       Note: if dstYUV is NULL for an in-place rotation, then there may be a
+       performance hit due to allocating an internal buffer and copying back
+       to the source memory.
+      */
+    static bool RotateYUV420P(
+      int angle, unsigned width, unsigned height, BYTE * srcYUV, BYTE * dstYUV = NULL
+    );
+
+    /**Fill a rectangle of the video buffer with the specified colour.
+      */
     static bool FillYUV420P(
-      unsigned x, unsigned y, int width, int height,
+      unsigned x, unsigned y, unsigned width, unsigned height,
       unsigned frameWidth, unsigned frameHeight, BYTE * yuv,
       unsigned r, unsigned g, unsigned b
     );
