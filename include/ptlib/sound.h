@@ -186,12 +186,12 @@ class PSound : public PBYTEArray
 
 
 /**
-   Abstract class for a generalised sound channel, 
-   and an implementation of PSoundChannel for old code that is not plugin-aware.
+   Abstract class for a generalised sound channel, and an implementation of
+   PSoundChannel for old code that is not plugin-aware.
    When instantiated, it selects the first plugin of the base class 
    "PSoundChannel"
 
-   As an abstract class, this represents a sound schannel. Drivers for real, 
+   As an abstract class, this represents a sound channel. Drivers for real, 
    platform dependent sound hardware will be ancestors of this class and 
    can be found in the plugins section of PTLib.
 
@@ -201,13 +201,12 @@ class PSound : public PBYTEArray
    both read and write audio data to once instance of a PSoundChannel
    class.
 
-   PSoundChanel instances are designed to be reentrant. The actual
+   PSoundChannel instances are designed to be reentrant. The actual
    usage model employed is left to the developer. One model could be
-   where one thread is responsible for 
-   construction, setup, opening and read/write operations. After creating and
-   eventually opening the channel this thread is responsible for
-   handling read/writes fast enough to avoid gaps in the generated  audio
-   stream.
+   where one thread is responsible for construction, setup, opening and 
+   read/write operations. After creating and eventually opening the channel
+   this thread is responsible for handling read/writes fast enough to avoid
+   gaps in the generated audio stream.
 
    Remaining operations may beinvoked from other threads.
    This includes Close() and actually gathering the necessary data to
@@ -238,7 +237,7 @@ class PSound : public PBYTEArray
    Similarly for reading, an entire buffer must be read before any of it is
    available to a Read() call. Note that once a buffer is filled you can read
    it a byte at a time if desired, but as soon as all the data in the buffer
-   is used returned, the next read will wait until the entire next buffer is
+   is used, the next read will wait until the entire next buffer is
    read from the hardware. So again, tailor the number and size of buffers to
    the application. To avoid being blocked until the buffer fills, you can use
    the StartRecording() function to initiate the buffer filling, and the
@@ -257,6 +256,7 @@ class PSoundChannel : public PChannel
   /**@name Construction */
   //@{
     enum Directions {
+      Closed,
       Recorder,
       Player
     };
@@ -342,12 +342,8 @@ class PSoundChannel : public PChannel
 
     /**Get the name for the default sound devices/driver that is on this
        platform. Note that a named device may not necessarily do both
-       playing and recording so the arrays returned with the <code>dir</code>
+       playing and recording so the string returned with the <code>dir</code>
        parameter in each value is not necessarily the same.
-
-       This will return a list of uniqie device names across all of the available
-       drivers. If two drivers have identical names for devices, then the string
-       returned will be of the form driver+'\\t'+device.
 
        @return
        A platform dependent string for the sound player/recorder.
@@ -360,6 +356,10 @@ class PSoundChannel : public PChannel
        platform. Note that a named device may not necessarily do both
        playing and recording so the arrays returned with the <code>dir</code>
        parameter in each value is not necessarily the same.
+
+       This will return a list of unique device names across all of the available
+       drivers. If two drivers have identical names for devices, then the string
+       returned will be of the form driver+'\\t'+device.
 
        @return
        Platform dependent strings for the sound player/recorder.
@@ -406,9 +406,26 @@ class PSoundChannel : public PChannel
     /// Get the name of the open channel
     virtual PString GetName() const;
 
+    /// Get the direction of the channel
+    virtual Directions GetDirection() const
+    {
+      return activeDirection;
+    }
+
+    /// Get text representing the direction of the channel
+    static const char * GetDirectionText(Directions dir)
+    {
+      return (dir == Player)? "Playback" : ((dir == Recorder)? "Recording" : "Closed");
+    }
+
+    virtual const char * GetDirectionText() const
+    {
+      return GetDirectionText(activeDirection);
+    }
+
     /** Abort the background playing/recording of the sound channel.
-	There will be a logic assertion if you attempt to Abort a
-	sound channel operation, when the device is currently closed.
+        There will be a logic assertion if you attempt to Abort a
+        sound channel operation, when the device is currently closed.
 
        @return
        true if the sound has successfully been aborted.
@@ -499,24 +516,23 @@ class PSoundChannel : public PChannel
 
     /** Low level write (or play) to the channel. 
 
-	It will generate a logical assertion if you attempt write to a
-	channel set up for recording.
+        It will generate a logical assertion if you attempt write to a
+        channel set up for recording.
 
-       @param buf is a pointer to the data to be written to the
-       channel.  It is an error for this pointer to be NULL. A logical
-       assert will be generated when buf is NULL.
+        @param buf is a pointer to the data to be written to the
+        channel.  It is an error for this pointer to be NULL. A logical
+        assert will be generated when buf is NULL.
 
-       @param len Nr of bytes to send. If len equals the buffer size
+        @param len Nr of bytes to send. If len equals the buffer size
         set by SetBuffers() it will block for
         (1000*len)/(samplesize*samplerate) ms. Typically, the sample
         size is 2 bytes.  If len == 0, this will return immediately,
         where the return value is equal to the value of IsOpen().
  
-       @return true if len bytes were written to the channel,
-         otherwise false. The GetErrorCode() function should be 
+        @return true if len bytes were written to the channel,
+        otherwise false. The GetErrorCode() function should be 
         consulted after Write() returns false to determine what 
         caused the failure.
-
      */
     virtual PBoolean Write(const void * buf, PINDEX len);
 
@@ -590,18 +606,18 @@ class PSoundChannel : public PChannel
        reached. The GetLastReadCount() function returns the actual number
        of bytes read.
 
-	It will generate a logical assertion if you attempt to read
-	from a PSoundChannel that is setup for playing.
+       It will generate a logical assertion if you attempt to read
+       from a PSoundChannel that is setup for playing.
 
        The GetErrorCode() function should be consulted after Read() returns
        false to determine what caused the failure.
 
-        @param len Nr of bytes to endeaveour to read from the sound
-        device. If len equals the buffer size set by SetBuffers() it
-        will block for (1000*len)/(samplesize*samplerate)
-        ms. Typically, the sample size is 2 bytes.  If len == 0, this
-        will return immediately, where the return value is equal to
-        the value of IsOpen().
+       @param len Nr of bytes to endeaveour to read from the sound
+       device. If len equals the buffer size set by SetBuffers() it
+       will block for (1000*len)/(samplesize*samplerate)
+       ms. Typically, the sample size is 2 bytes.  If len == 0, this
+       will return immediately, where the return value is equal to
+       the value of IsOpen().
 
        @param buf is a pointer to the empty data area, which will
        contain the data collected from the sound device.  It is an
