@@ -290,10 +290,15 @@ PBoolean PWAVFile::RawRead(void * buf, PINDEX len)
   // We do not want to return this data by mistake.
   PINDEX readlen = len;
   off_t pos = PFile::GetPosition();
-  if (pos >= (lenHeader+lenData))
+
+  // indicate eof (return false, but error=0, lastReadCount=0)
+  if (pos >= (lenHeader + lenData)) {
+    lastReadCount = 0;
+    ConvertOSError(0, LastReadError);
     return PFalse;
-  
-  if ((pos + len) > (lenHeader+lenData))
+  }
+
+  if ((pos + len) > (lenHeader + lenData))
     readlen = (lenHeader+lenData) - pos;
 
   if (formatHandler != NULL)
