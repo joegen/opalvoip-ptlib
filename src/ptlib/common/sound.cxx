@@ -169,6 +169,7 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
 
 PSoundChannel::PSoundChannel()
+: activeDirection(Closed)
 {
   baseChannel = NULL;
 }
