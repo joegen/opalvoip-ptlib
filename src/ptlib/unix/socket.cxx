@@ -441,7 +441,12 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
     int result = ::recvmsg(os_handle, &readData, flags);
     if (ConvertOSError(result, LastReadError)) {
       lastReadCount = result;
-      return lastReadCount > 0;
+      if ((readData.msg_flags&MSG_TRUNC) == 0)
+        return lastReadCount > 0;
+
+      PTRACE(4, "PTlib\tTruncated packet read, returning EMSGSIZE");
+      SetErrorValues(BufferTooSmall, EMSGSIZE);
+      return false;
     }
 
     if (lastErrorNumber[LastReadError] != EWOULDBLOCK) {
