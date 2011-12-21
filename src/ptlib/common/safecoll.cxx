@@ -290,6 +290,15 @@ PBoolean PSafeCollection::SafeRemoveAt(PINDEX idx)
 }
 
 
+void PSafeCollection::PrintOn(ostream &strm) const
+{
+  collectionMutex.Wait();
+  if (collection != NULL)
+    collection->PrintOn(strm);
+  collectionMutex.Signal();
+}
+
+
 void PSafeCollection::RemoveAll(PBoolean synchronous)
 {
   collectionMutex.Wait();
