@@ -525,6 +525,8 @@ PBoolean PSoundChannelDirectSound::Abort () // public
 
 PBoolean PSoundChannelDirectSound::Close () // public
 {
+  PWaitAndSignal mutex(m_bufferMutex);
+
   Abort(); // abort waiting for I/O & destroy buffers
 
   if (m_mixer != NULL) {
