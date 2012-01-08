@@ -1121,10 +1121,10 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 
   localPort = port;
 
-  if (theEntry.GetAddress().IsAny())
+  if (theEntry.GetAddress().IsValid())
     GetInterfaceInfo(theInterface, theEntry);
     
-  if (theEntry.GetAddress().IsAny()) {
+  if (theEntry.GetAddress().IsValid()) {
     PTRACE(3, "MonSock\tNot creating socket as interface \"" << theEntry.GetName() << "\" is  not up.");
     return true; // Still say successful though
   }
