@@ -279,7 +279,7 @@ class PURL : public PObject
 
     /// Get the parameter (;) field(s) of the URL as a string dictionary.
     /// Note the values have already been translated using UntranslateString
-    const PStringToString & GetParamVars() const { return paramVars; }
+    const PStringOptions & GetParamVars() const { return paramVars; }
 
     /// Set the parameter (;) field(s) of the URL as a string dictionary.
     /// Note the values will be translated using TranslateString
@@ -305,7 +305,7 @@ class PURL : public PObject
 
     /// Get the Query (?) field of the URL as a string dictionary.
     /// Note the values have already been translated using UntranslateString
-    const PStringToString & GetQueryVars() const { return queryVars; }
+    const PStringOptions & GetQueryVars() const { return queryVars; }
 
     /// Set the Query (?) field(s) of the URL as a string dictionary.
     /// Note the values will be translated using TranslateString
@@ -370,9 +370,9 @@ class PURL : public PObject
     PBoolean portSupplied;          /// port was supplied in string input
     PBoolean relativePath;
     PStringArray path;
-    PStringToString paramVars;
+    PStringOptions paramVars;
     PString fragment;
-    PStringToString queryVars;
+    PStringOptions queryVars;
     PString m_contents;  // Anything left after parsing other elements
 };
 
