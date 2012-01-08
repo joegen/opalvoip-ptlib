@@ -133,3 +133,5 @@ EXPORTS
     mktime @26732 NONAME
     perror @26733 NONAME
     time @26754 NONAME
+	__tcsncpy_s
+	__tcsnicmp
