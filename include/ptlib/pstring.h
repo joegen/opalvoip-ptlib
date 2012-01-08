@@ -2868,6 +2868,10 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 class PStringOptions : public PStringToString 
 {
   public:
+    PStringOptions() { }
+    PStringOptions(const PStringToString & other) : PStringToString(other) { }
+    PStringOptions & operator=(const PStringToString & other) { PStringToString::operator=(other); return *this; }
+
     /// Determine if the specified key is present.
     bool Contains(const char *              key   ) const { PConstCaselessString k(key); return PStringToString::Contains(k); }
     bool Contains(const PString         &   key   ) const { return PStringToString::Contains(PCaselessString(key)); }
