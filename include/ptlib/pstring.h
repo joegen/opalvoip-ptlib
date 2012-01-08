@@ -2885,16 +2885,16 @@ class PStringOptions : public PStringToString
     PString * GetAt(const PCaselessString & (*key)()) const { return PStringToString::GetAt(key()); }
 
     // Overide default PStringToString::SetAt() to make sure the key is caseless
-    PBoolean SetAt(const char *              key,    const PString & data) { PConstCaselessString k(key); return PStringToString::SetAt(k, data); }
-    PBoolean SetAt(const PString         &   key,    const PString & data) { return PStringToString::SetAt(PCaselessString(key), data); }
-    PBoolean SetAt(const PCaselessString &   key,    const PString & data) { return PStringToString::SetAt(key, data); }
-    PBoolean SetAt(const PCaselessString & (*key)(), const PString & data) { return PStringToString::SetAt(key(), data); }
+    PBoolean SetAt(const char *              key,    const PString & data) { PConstCaselessString k(key); return SetAt(k, data); }
+    PBoolean SetAt(const PString         &   key,    const PString & data) { return SetAt(PCaselessString(key), data); }
+    PBoolean SetAt(const PCaselessString &   key,    const PString & data) { MakeUnique(); return PStringToString::SetAt(key, data); }
+    PBoolean SetAt(const PCaselessString & (*key)(), const PString & data) { return SetAt(key(), data); }
 
     // Overide default PStringToString::RemoveAt() to make sure the key is caseless
-    PString * RemoveAt(const char *              key)    { PConstCaselessString k(key); return PStringToString::RemoveAt(k); }
-    PString * RemoveAt(const PString         &   key)    { return PStringToString::RemoveAt(PCaselessString(key)); }
-    PString * RemoveAt(const PCaselessString &   key)    { return PStringToString::RemoveAt(key); }
-    PString * RemoveAt(const PCaselessString & (*key)()) { return PStringToString::RemoveAt(key()); }
+    PString * RemoveAt(const char *              key)    { PConstCaselessString k(key); return RemoveAt(k); }
+    PString * RemoveAt(const PString         &   key)    { return RemoveAt(PCaselessString(key)); }
+    PString * RemoveAt(const PCaselessString &   key)    { MakeUnique(); return PStringToString::RemoveAt(key); }
+    PString * RemoveAt(const PCaselessString & (*key)()) { return RemoveAt(key()); }
 
     /// Get an option value.
     PString GetString(const char *              key,    const char * dflt = NULL) const { PConstCaselessString k(key); return GetString(k, dflt); }
