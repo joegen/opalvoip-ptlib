@@ -517,6 +517,27 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 }
 
 
+PMIMEInfo::PMIMEInfo(const PStringToString & dict)
+  : PStringOptions(dict)
+{
+}
+
+
+PMIMEInfo::PMIMEInfo(const PString & str)
+{
+  PStringStream strm(str);
+  ReadFrom(strm);
+}
+
+
+PString PMIMEInfo::AsString() const
+{
+  PStringStream strm;
+  PrintOn(strm);
+  return strm;
+}
+
+
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
   bool crlf = strm.fill() == '\r';
