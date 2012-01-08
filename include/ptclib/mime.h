@@ -61,6 +61,12 @@ class PMIMEInfo : public PStringOptions
     PMIMEInfo(
       PInternetProtocol & socket   ///< Application socket to read MIME info.
     );
+    PMIMEInfo(
+      const PStringToString & dict
+    );
+    PMIMEInfo(
+      const PString & str
+    );
 
 
   // Overrides from class PObject
@@ -97,6 +103,10 @@ class PMIMEInfo : public PStringOptions
     PBoolean Write(
       PInternetProtocol & socket   ///< Application socket to write MIME info.
     ) const;
+
+    /**Return a string presentation of the MIME.
+      */
+    PString AsString() const;
 
     /**Add a MIME field given a "name: value" format string.
        Note that if the field name was already in the MIME dictionary then
