@@ -1781,6 +1781,8 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
 #else
 # if defined(P_HAS_IPV6)
   if (m_version == 6) {
+    if (IsAny())
+      return bracketIPv6 ? "[::]" : "::";
     char str[INET6_ADDRSTRLEN+3];
     Psockaddr sa(*this, 0);
     PAssertOS(getnameinfo(sa, sa.GetSize(), &str[bracketIPv6], INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0);
