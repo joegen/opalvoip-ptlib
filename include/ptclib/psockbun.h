@@ -565,6 +565,18 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     );
     ~PMonitoredSocketBundle();
 
+    /** Get an array of all current interface descriptors, possibly including
+        the loopback (127.0.0.1) interface. Note the names are of the form
+        ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0".
+        If destination is not 'any' and a filter is set, filters the interface list
+        before returning it.
+      */
+    virtual PStringArray GetInterfaces(
+      bool includeLoopBack = false,  ///< Flag for if loopback is to included in list
+      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+                          ///< Optional destination for selecting specific interface
+    );
+
     /** Open the socket(s) using the specified port. If port is zero then a
         system allocated port is used. In this case and when multiple
         interfaces are supported, all sockets use the same dynamic port value.
