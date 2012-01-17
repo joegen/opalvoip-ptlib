@@ -40,6 +40,7 @@
 
 #ifdef __MINGW32__
 #include <process.h>
+#include <ptlib/msos/ptlib/ipsock.h>
 #endif
 
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
