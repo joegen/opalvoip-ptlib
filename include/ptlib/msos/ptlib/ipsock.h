@@ -50,6 +50,7 @@
 #define ETIMEDOUT               (WSAETIMEDOUT|PWIN32ErrorFlag)
 #define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
+#define EWOULDBLOCK             (WSAEWOULDBLOCK|PWIN32ErrorFlag)
 #endif
 
 
