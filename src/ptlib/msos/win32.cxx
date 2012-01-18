@@ -40,6 +40,7 @@
 
 #ifdef __MINGW32__
 #include <process.h>
+#include <ptlib/msos/ptlib/ipsock.h>
 #endif
 
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
@@ -92,7 +93,6 @@ void PTime::SetFromFileTime(const FILETIME & timestamp)
   ULARGE_INTEGER i;
   i.HighPart = timestamp.dwHighDateTime;
   i.LowPart = timestamp.dwLowDateTime;
-  i.QuadPart;
 
   theTime = (time_t)(i.QuadPart/scale - delta);
   microseconds = (long)(i.QuadPart%scale/10);
@@ -668,7 +668,6 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
       switch (osError) {
         case ERROR_INVALID_HANDLE :
         case WSAEBADF :
-        case WSAENOTSOCK :
           osError = EBADF;
           break;
         case ERROR_INVALID_PARAMETER :
@@ -685,15 +684,63 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
         case WSAEINTR :
           osError = EINTR;
           break;
+        case WSAEINPROGRESS :
+          osError = EINPROGRESS;
+          break;
+        case WSAENOTSOCK :
+          osError = ENOTSOCK;
+          break;
+        case WSAEOPNOTSUPP :
+          osError = EOPNOTSUPP;
+          break;
+        case WSAEAFNOSUPPORT :
+          osError = EAFNOSUPPORT;
+          break;
+        case WSAEADDRINUSE :
+          osError = EADDRINUSE;
+          break;
+        case WSAEADDRNOTAVAIL :
+          osError = EADDRNOTAVAIL;
+          break;
+        case WSAENETDOWN :
+          osError = ENETDOWN;
+          break;
+        case WSAENETUNREACH :
+          osError = ENETUNREACH;
+          break;
+        case WSAENETRESET :
+          osError = ENETRESET;
+          break;
+        case WSAECONNABORTED :
+          osError = ECONNABORTED;
+          break;
+        case WSAECONNRESET :
+          osError = ECONNRESET;
+          break;
+        case WSAENOBUFS :
+          osError = ENOBUFS;
+          break;
+        case WSAEISCONN :
+          osError = EISCONN;
+          break;
+        case WSAENOTCONN :
+          osError = ENOTCONN;
+          break;
+        case WSAECONNREFUSED :
+          osError = ECONNREFUSED;
+          break;
+        case WSAEHOSTUNREACH :
+          osError = EHOSTUNREACH;
+          break;
         case WSAEMSGSIZE :
-          osError |= PWIN32ErrorFlag;
-          lastError = BufferTooSmall;
-          return PFalse;
+          osError = EMSGSIZE;
+          break;
         case WSAEWOULDBLOCK :
+          osError = EWOULDBLOCK;
+          break;
         case WSAETIMEDOUT :
-          osError |= PWIN32ErrorFlag;
-          lastError = Timeout;
-          return PFalse;
+          osError = ETIMEDOUT;
+          break;
         default :
           osError |= PWIN32ErrorFlag;
       }
@@ -734,7 +781,12 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
       lastError = NotOpen;
       break;
     case EAGAIN :
+    case ETIMEDOUT :
+    case EWOULDBLOCK :
       lastError = Timeout;
+      break;
+    case EMSGSIZE :
+      lastError = BufferTooSmall;
       break;
     case EINTR :
       lastError = Interrupted;

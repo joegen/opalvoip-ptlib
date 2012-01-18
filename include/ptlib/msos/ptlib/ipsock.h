@@ -35,9 +35,7 @@
 #define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)
 #define ENOTSOCK                (WSAENOTSOCK|PWIN32ErrorFlag)
 #define EMSGSIZE                (WSAEMSGSIZE|PWIN32ErrorFlag)
-#define ESOCKTNOSUPPORT         (WSAESOCKTNOSUPPORT|PWIN32ErrorFlag)
 #define EOPNOTSUPP              (WSAEOPNOTSUPP|PWIN32ErrorFlag)
-#define EPFNOSUPPORT            (WSAEPFNOSUPPORT|PWIN32ErrorFlag)
 #define EAFNOSUPPORT            (WSAEAFNOSUPPORT|PWIN32ErrorFlag)
 #define EADDRINUSE              (WSAEADDRINUSE|PWIN32ErrorFlag)
 #define EADDRNOTAVAIL           (WSAEADDRNOTAVAIL|PWIN32ErrorFlag)
@@ -49,12 +47,10 @@
 #define ENOBUFS                 (WSAENOBUFS|PWIN32ErrorFlag)
 #define EISCONN                 (WSAEISCONN|PWIN32ErrorFlag)
 #define ENOTCONN                (WSAENOTCONN|PWIN32ErrorFlag)
-#define ESHUTDOWN               (WSAESHUTDOWN|PWIN32ErrorFlag)
-#define ETOOMANYREFS            (WSAETOOMANYREFS|PWIN32ErrorFlag)
 #define ETIMEDOUT               (WSAETIMEDOUT|PWIN32ErrorFlag)
 #define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
-#define EHOSTDOWN               (WSAEHOSTDOWN|PWIN32ErrorFlag)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
+#define EWOULDBLOCK             (WSAEWOULDBLOCK|PWIN32ErrorFlag)
 #endif
 
 
