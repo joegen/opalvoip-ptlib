@@ -40,13 +40,14 @@
 
 #ifdef __MINGW32__
 #include <process.h>
-#include <ptlib/msos/ptlib/ipsock.h>
 #endif
 
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
   #include <process.h>
   #pragma comment(lib, "mpr.lib")
 #endif
+
+#include <ptlib/msos/ptlib/ipsock.h>
 
 #if defined(P_WIN_COM) 
   #include <objbase.h>
