@@ -243,7 +243,7 @@ default_depend :: $(DEPS)
 	@echo Created dependencies.
 
 libs ::
-	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i default_depend default_target; done
+	@set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i default_depend default_target; done
 
 help:
 	@echo "The following targets are available:"
@@ -286,47 +286,47 @@ bothdepend :: optdepend debugdepend
 bothlibs :: optlibs debuglibs
 
 opt ::
-	$(MAKE) DEBUG= default_target
+	@$(MAKE) DEBUG= default_target
 
 optshared ::
-	$(MAKE) DEBUG= P_SHAREDLIB=1 default_target
+	@$(MAKE) DEBUG= P_SHAREDLIB=1 default_target
 
 optstatic optnoshared ::
-	$(MAKE) DEBUG= P_SHAREDLIB=0 default_target
+	@$(MAKE) DEBUG= P_SHAREDLIB=0 default_target
 
 optclean ::
-	$(MAKE) DEBUG= default_clean
+	@$(MAKE) DEBUG= default_clean
 
 optstaticclean optnosharedclean ::
-	$(MAKE) DEBUG= P_SHAREDLIB=0 default_clean
+	@$(MAKE) DEBUG= P_SHAREDLIB=0 default_clean
 
 optdepend ::
-	$(MAKE) DEBUG= default_depend
+	@$(MAKE) DEBUG= default_depend
 
 optlibs ::
-	$(MAKE) DEBUG= libs
+	@$(MAKE) DEBUG= libs
 
 
 debug :: 
-	$(MAKE) DEBUG=1 default_target
+	@$(MAKE) DEBUG=1 default_target
 
 debugshared ::
-	$(MAKE) DEBUG=1 P_SHAREDLIB=1 default_target
+	@$(MAKE) DEBUG=1 P_SHAREDLIB=1 default_target
 
 debugstatic debugnoshared ::
-	$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_target
+	@$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_target
 
 debugclean ::
-	$(MAKE) DEBUG=1 default_clean
+	@$(MAKE) DEBUG=1 default_clean
 
 debugstaticclean debugnosharedclean ::
-	$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_clean
+	@$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_clean
 
 debugdepend ::
-	$(MAKE) DEBUG=1 default_depend
+	@$(MAKE) DEBUG=1 default_depend
 
 debuglibs ::
-	$(MAKE) DEBUG=1 libs
+	@$(MAKE) DEBUG=1 libs
 
 
 
