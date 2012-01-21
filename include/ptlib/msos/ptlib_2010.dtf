@@ -1,4 +1,4 @@
-LIBRARY ptlib_2010
+LIBRARY ptlib
 EXPORTS
     ??$?0$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@QAE@$$QAU01@@Z @1 NONAME
     ??$?0$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@QAE@$$QAU01@@Z @2 NONAME
