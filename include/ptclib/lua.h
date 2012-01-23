@@ -62,6 +62,7 @@ class PLua
     operator lua_State * () { return m_lua; }
 
     virtual void SetValue(const char * name, const char * value);
+    virtual PString GetValue(const char * name);
 
     typedef int (*CFunction)(lua_State *L);
     virtual void SetFunction(const char * name, CFunction func);
