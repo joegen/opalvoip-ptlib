@@ -111,7 +111,7 @@ public:
     return (activeDirection == Player)? (m_playbackDevice != NULL) : (m_captureDevice != NULL);
   }
 
-  /** Stop I/O and destroy I/O buffer
+  /** Stop the Read/Write wait
    */
   PBoolean Abort();
 
@@ -123,29 +123,47 @@ public:
   /**@name Channel set up functions */
   //@{
   /** Change the audio format
-      Resets I/O
+      Can be called while open, but Aborts I/O
     */
-  PBoolean SetFormat(unsigned numChannels,
-                 unsigned sampleRate,
-                 unsigned bitsPerSample);
+    PBoolean SetFormat(unsigned numChannels,
+                       unsigned sampleRate,
+                       unsigned bitsPerSample);
 
-  unsigned GetChannels() const { return m_waveFormat.nChannels; }
-  unsigned GetSampleRate() const { return m_waveFormat.nSamplesPerSec; }
-  unsigned GetSampleSize() const { return m_waveFormat.wBitsPerSample; }
-  unsigned GetSampleBlockSize() const { return m_waveFormat.nBlockAlign; }
+    unsigned GetChannels() const { return m_waveFormat.nChannels; }
+    unsigned GetSampleRate() const { return m_waveFormat.nSamplesPerSec; }
+    unsigned GetSampleSize() const { return m_waveFormat.wBitsPerSample; }
+    unsigned GetSampleBlockSize() const { return m_waveFormat.nBlockAlign; }
 
   /** Configure the device's transfer buffers.
       Read and write functions wait for input or space (blocking thread)
 	  in increments of buffer size.
 	  Best to make size the same as the len to be given to Read or Write.
       Best performance requires count of 4
-      Resets I/O
+      Can be called while open, but Aborts I/O
     */
-  PBoolean SetBuffers(PINDEX size, PINDEX count);
-  PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+    PBoolean SetBuffers(PINDEX size, PINDEX count);
 
-  PBoolean SetVolume (unsigned);
-  PBoolean GetVolume (unsigned &);
+    PBoolean GetBuffers(PINDEX & size, PINDEX & count);
+
+    /**Set the volume of the play/read process.
+       The volume range is 0 == quiet, 100 == LOUDEST. The volume is a
+       logarithmic scale mapped from the lowest gain possible on the device to
+       the highest gain
+        
+       @return
+       true if there were no errors.
+    */
+    PBoolean SetVolume (unsigned);
+
+    /**Get the volume of the play/read process.
+       The volume range is 0 == quiet, 100 == LOUDEST. The volume is a
+       logarithmic scale mapped from the lowest gain possible on the device to
+       the highest gain.
+
+       @return
+       true if there were no errors.
+    */
+    PBoolean GetVolume (unsigned &);
   //@}
 
   /**@name Error functions */
@@ -293,12 +311,15 @@ private:
 
   CComPtr<IDirectSound8>      m_playbackDevice;
   CComPtr<IDirectSoundBuffer> m_playbackBuffer;
-  CComPtr<IDirectSoundBuffer> m_primaryPlaybackBuffer;
   
+  PBoolean SetBufferSections(PINDEX size, PINDEX count);
+
   PTimeInterval GetInterval(void);
   DWORD GetCyclesPassed(void);
 
-  PBoolean InitPlaybackBuffer(void);
+  PBoolean OpenPlayback(LPCGUID deviceId);
+  PBoolean OpenPlaybackBuffer (void);
+  void ClosePlayback(void);
 
   /** Checks space available for writing audio to play.
 	  Returns true if space enough for one buffer as set by SetBuffers.
@@ -306,13 +327,15 @@ private:
     */
   PBoolean CheckPlayBuffer (int & notification);
 
-  PBoolean InitCaptureBuffer(void);
+  PBoolean OpenCapture(LPCGUID deviceId);
+  PBoolean OpenCaptureBuffer(void);
+  void CloseCapture(void);
 
   /** Checks for input available from recorder
 	  Returns true if enough input to fill one buffer as set by SetBuffers.
 	  Sets 'm_available' (input) and (possibly) m_movePos members for use by Read.
     */
-  PBoolean CheckRecordBuffer(int & notification);
+  PBoolean CheckCaptureBuffer(int & notification);
 
   PBoolean m_isStreaming;   // causes play to loop old audio when no new audio submitted
   PINDEX m_bufferSectionCount;
@@ -330,15 +353,18 @@ private:
 
   enum // m_triggerEvent indeces
   {
-	  SOUNDEVENT_SOUND = 0, // triggered by DirectSound at buffer boundaries
-	  SOUNDEVENT_CLOSE = 1  // triggered by Abort/Close
+    SOUNDEVENT_SOUND = 0, // triggered by DirectSound at buffer boundaries
+    SOUNDEVENT_ABORT = 1  // triggered by Abort/Close
   };
   HANDLE m_triggerEvent[2];
   
   PMutex m_bufferMutex;     // prevents closing while active, protects xDevice and xBuffer members
-
-  HMIXER       m_mixer;     // these are for recording volume only
+                            // and also m_bufferSectionCount, m_bufferSectionSize & m_bufferSize
+  HMIXER       m_mixer;     // for volume control
   MIXERCONTROL m_volumeControl;
+
+  PBoolean OpenMixer(UINT waveDeviceID);
+  void CloseMixer ();
 
   PNotifier m_notifier;     // hook for notification code handler
 };
