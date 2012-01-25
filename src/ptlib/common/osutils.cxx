@@ -827,6 +827,10 @@ void PTimer::Stop(bool wait)
     m_state = Stopped;
     m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
   }
+  else if (wait) {
+    // ensure that timer is stopped correctly
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
+  }
 }
 
 
