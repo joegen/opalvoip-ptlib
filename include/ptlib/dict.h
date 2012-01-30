@@ -1297,7 +1297,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     virtual PBoolean SetDataAt(
       PINDEX index,   ///< Ordinal index in the dictionary.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
-    ) { return this->AbstractSetAt(this->AbstractGetKeyAt(index), PNEW POrdinalKey(ordinal)); }
+    ) { return this->AbstractSetAt(this->AbstractGetKeyAt(index), PNEW POrdinalKey(ordinal)) != NULL; }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -1313,7 +1313,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     virtual PBoolean SetAt(
       const K & key,  ///< Key for position in dictionary to add object.
       PINDEX ordinal  ///< New ordinal value to put into the dictionary.
-    ) { return this->AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
+    ) { return this->AbstractSetAt(key, PNEW POrdinalKey(ordinal)) != NULL; }
 
     /**Get the key in the dictionary at the ordinal index position.
 
