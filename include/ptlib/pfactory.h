@@ -37,6 +37,7 @@
 
 #include <ptlib.h>
 
+#include <typeinfo>
 #include <string>
 #include <map>
 #include <vector>
