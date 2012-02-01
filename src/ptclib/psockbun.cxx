@@ -568,126 +568,116 @@ bool PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
 }
 
 
-PChannel::Errors PMonitoredSockets::WriteToSocket(const void * buf,
-                                                  PINDEX len,
-                                                  const PIPSocket::Address & addr,
-                                                  WORD port,
-                                                  const SocketInfo & info,
-                                                  PINDEX & lastWriteCount)
+void PMonitoredSockets::SocketInfo::Write(BundleParams & param)
 {
-  info.socket->WriteTo(buf, len, addr, port);
-  lastWriteCount = info.socket->GetLastWriteCount();
-  return info.socket->GetErrorCode(PChannel::LastWriteError);
+  socket->WriteTo(param.m_buffer, param.m_length, param.m_addr, param.m_port);
+  param.m_lastCount = socket->GetLastWriteCount();
+  param.m_errorCode = socket->GetErrorCode(PChannel::LastWriteError);
+  param.m_errorNumber = socket->GetErrorNumber(PChannel::LastWriteError);
 }
 
 
-PChannel::Errors PMonitoredSockets::ReadFromSocket(PSocket::SelectList & readers,
-                                                   PUDPSocket * & socket,
-                                                   void * buf,
-                                                   PINDEX len,
-                                                   PIPSocket::Address & addr,
-                                                   WORD & port,
-                                                   PINDEX & lastReadCount,
-                                                   const PTimeInterval & timeout)
+void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
+                                           PUDPSocket * & socket,
+                                           BundleParams & param)
 {
   // Assume is already locked
 
   socket = NULL;
-  lastReadCount = 0;
+  param.m_lastCount = 0;
 
   UnlockReadWrite();
 
-  PChannel::Errors errorCode = PSocket::Select(readers, timeout);
+  param.m_errorCode = PSocket::Select(readers, param.m_timeout);
 
-  if (!LockReadWrite())
-    return PChannel::NotOpen;
+  if (!LockReadWrite() || !opened) {
+    param.m_errorCode = PChannel::NotOpen;  // Closed, break out
+    return;
+  }
 
-  if (!opened)
-    return PChannel::NotOpen; // Closed, break out
-
-  switch (errorCode) {
+  switch (param.m_errorCode) {
     case PChannel::NoError :
       break;
 
     case PChannel::NotOpen : // Interface went down
       if (!interfaceAddedSignal.IsOpen()) {
         interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
-        return PChannel::Interrupted;
+        param.m_errorCode = PChannel::Interrupted;
+        return;
       }
       // Do next case
 
     default :
-      return errorCode;
+      return;
   }
 
-  if (readers.IsEmpty())
-    return PChannel::Timeout;
+  if (readers.IsEmpty()) {
+    param.m_errorCode = PChannel::Timeout;
+    return;
+  }
 
   socket = (PUDPSocket *)&readers.front();
 
-  if (socket->ReadFrom(buf, len, addr, port)) {
-    lastReadCount = socket->GetLastReadCount();
-    return PChannel::NoError;
-  }
+  bool ok = socket->ReadFrom(param.m_buffer, param.m_length, param.m_addr, param.m_port);
+  param.m_lastCount = socket->GetLastReadCount();
+  param.m_errorCode = socket->GetErrorCode(PChannel::LastReadError);
+  param.m_errorNumber = socket->GetErrorNumber(PChannel::LastReadError);
 
-  switch (socket->GetErrorNumber(PChannel::LastReadError)) {
+  if (ok)
+    return;
+
+  switch (param.m_errorNumber) {
     case ECONNRESET :
     case ECONNREFUSED :
       PTRACE(2, "MonSock\tUDP Port on remote not ready.");
-      return PChannel::NoError;
+      param.m_errorCode = PChannel::NoError;
+      return;
 
     case EMSGSIZE :
-      PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << len << " bytes.");
-      return PChannel::BufferTooSmall;
+      PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << param.m_length << " bytes.");
+      param.m_errorCode = PChannel::BufferTooSmall;
+      return;
 
     case EBADF : // Interface went down
     case EINTR :
     case EAGAIN : // Shouldn't happen, but it does.
-      return PChannel::Interrupted;
+      param.m_errorCode = PChannel::Interrupted;
+      return;
   }
 
   PTRACE(1, "MonSock\tSocket read UDP error ("
          << socket->GetErrorNumber(PChannel::LastReadError) << "): "
          << socket->GetErrorText(PChannel::LastReadError));
-  return socket->GetErrorCode(PChannel::LastReadError); // Exit loop
 }
 
 
-PChannel::Errors PMonitoredSockets::ReadFromSocket(SocketInfo & info,
-                                                   void * buf,
-                                                   PINDEX len,
-                                                   PIPSocket::Address & addr,
-                                                   WORD & port,
-                                                   PINDEX & lastReadCount,
-                                                   const PTimeInterval & timeout)
+void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParams & param)
 {
   // Assume is already locked
 
-  if (info.inUse) {
-    PTRACE(2, "MonSock\tCannot read from multiple threads.");
-    return PChannel::DeviceInUse;
+  if (inUse) {
+    PTRACE2(2, &bundle, "MonSock\tCannot read from multiple threads.");
+    param.m_errorCode = PChannel::DeviceInUse;
+    return;
   }
 
-  lastReadCount = 0;
-
-  PChannel::Errors errorCode;
+  param.m_lastCount = 0;
 
   do {
     PSocket::SelectList sockets;
-    if (info.socket == NULL || !info.socket->IsOpen())
-      info.inUse = false; // socket closed by monitor thread. release the inUse flag
+    if (socket == NULL || !socket->IsOpen())
+      inUse = false; // socket closed by monitor thread. release the inUse flag
     else {
-      sockets += *info.socket;
-      info.inUse = true;
+      sockets += *socket;
+      inUse = true;
     }
-    sockets += interfaceAddedSignal;
+    sockets += bundle.interfaceAddedSignal;
 
     PUDPSocket * socket;
-    errorCode = ReadFromSocket(sockets, socket, buf, len, addr, port, lastReadCount, timeout);
-  } while (errorCode == PChannel::NoError && lastReadCount == 0);
+    bundle.ReadFromSocketList(sockets, socket, param);
+  } while (param.m_errorCode == PChannel::NoError && param.m_lastCount == 0);
 
-  info.inUse = false;
-  return errorCode;
+  inUse = false;
 }
 
 
@@ -758,10 +748,16 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 
   do {
     lastReceivedInterface = GetInterface();
-    if (!SetErrorValues(socketBundle->ReadFromBundle(buffer, length,
-                                                     lastReceivedAddress, lastReceivedPort,
-                                                     lastReceivedInterface, lastReadCount, readTimeout),
-                        0, LastReadError))
+    PMonitoredSockets::BundleParams param;
+    param.m_buffer = buffer;
+    param.m_length = length;
+    param.m_timeout = readTimeout;
+    socketBundle->ReadFromBundle(param);
+    lastReceivedAddress = param.m_addr;
+    lastReceivedPort = param.m_port;
+    lastReceivedInterface = param.m_iface;
+    lastReadCount = param.m_lastCount;
+    if (!SetErrorValues(param.m_errorCode, param.m_errorNumber, LastReadError))
       return false;
 
     if (promiscuousReads)
@@ -779,11 +775,19 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 
 PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
 {
-  return IsOpen() &&
-         SetErrorValues(socketBundle->WriteToBundle(buffer, length,
-                                                    remoteAddress, remotePort,
-                                                    GetInterface(), lastWriteCount),
-                        0, LastWriteError);
+  if (!IsOpen())
+    return false;
+
+  PMonitoredSockets::BundleParams param;
+  param.m_buffer = (void *)buffer;
+  param.m_length = length;
+  param.m_addr = remoteAddress;
+  param.m_port = remotePort;
+  param.m_iface = GetInterface();
+  param.m_timeout = readTimeout;
+  socketBundle->WriteToBundle(param);
+  lastWriteCount = param.m_lastCount;
+  return SetErrorValues(param.m_errorCode, param.m_errorNumber, LastWriteError);
 }
 
 
@@ -979,56 +983,40 @@ void PMonitoredSocketBundle::CloseSocket(SocketInfoMap_T::iterator iterSocket)
 }
 
 
-PChannel::Errors PMonitoredSocketBundle::WriteToBundle(const void * buf,
-                                                       PINDEX len,
-                                                       const PIPSocket::Address & addr,
-                                                       WORD port,
-                                                       const PString & iface,
-                                                       PINDEX & lastWriteCount)
+void PMonitoredSocketBundle::WriteToBundle(BundleParams & param)
 {
-  if (!LockReadWrite())
-    return PChannel::NotOpen;
+  if (!LockReadWrite()) {
+    param.m_errorCode = PChannel::NotOpen;
+    return;
+  }
 
-  PChannel::Errors errorCode = PChannel::NoError;
-
-  if (iface.IsEmpty()) {
+  if (param.m_iface.IsEmpty()) {
     for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
-      PChannel::Errors err = WriteToSocket(buf, len, addr, port, iter->second, lastWriteCount);
-      if (err != PChannel::NoError)
-        errorCode = err;
+      iter->second.Write(param);
+      if (param.m_errorCode != PChannel::NoError)
+        break;
     }
   }
   else {
-    SocketInfoMap_T::iterator iter = m_socketInfoMap.find(iface);
+    SocketInfoMap_T::iterator iter = m_socketInfoMap.find(param.m_iface);
     if (iter != m_socketInfoMap.end())
-      errorCode = WriteToSocket(buf, len, addr, port, iter->second, lastWriteCount);
+      iter->second.Write(param);
     else
-      errorCode = PChannel::NotFound;
+      param.m_errorCode = PChannel::NotFound;
   }
 
   UnlockReadWrite();
-
-  return errorCode;
 }
 
 
-PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
-                                                        PINDEX len,
-                                                        PIPSocket::Address & addr,
-                                                        WORD & port,
-                                                        PString & iface,
-                                                        PINDEX & lastReadCount,
-                                                        const PTimeInterval & timeout)
+void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
 {
-  if (!opened)
-    return PChannel::NotOpen;
+  if (!opened || !LockReadWrite()) {
+    param.m_errorCode = PChannel::NotOpen;
+    return;
+  }
 
-  if (!LockReadWrite())
-    return PChannel::NotOpen;
-
-  PChannel::Errors errorCode = PChannel::NotFound;
-
-  if (iface.IsEmpty()) {
+  if (param.m_iface.IsEmpty()) {
     do {
       // If interface is empty, then grab the next datagram on any of the interfaces
       PSocket::SelectList readers;
@@ -1037,7 +1025,8 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
         if (iter->second.inUse) {
           PTRACE(2, "MonSock\tCannot read from multiple threads.");
           UnlockReadWrite();
-          return PChannel::DeviceInUse;
+          param.m_errorCode = PChannel::DeviceInUse;
+          return;
         }
         if (iter->second.socket->IsOpen()) {
           readers += *iter->second.socket;
@@ -1047,27 +1036,25 @@ PChannel::Errors PMonitoredSocketBundle::ReadFromBundle(void * buf,
       readers += interfaceAddedSignal;
 
       PUDPSocket * socket;
-      errorCode = ReadFromSocket(readers, socket, buf, len, addr, port, lastReadCount, timeout);
+      ReadFromSocketList(readers, socket, param);
 
       for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
         if (iter->second.socket == socket)
-          iface = iter->first;
+          param.m_iface = iter->first;
         iter->second.inUse = false;
       }
-    } while (errorCode == PChannel::NoError && lastReadCount == 0);
+    } while (param.m_errorCode == PChannel::NoError && param.m_lastCount == 0);
   }
   else {
     // if interface is not empty, use that specific interface
-    SocketInfoMap_T::iterator iter = m_socketInfoMap.find(iface);
+    SocketInfoMap_T::iterator iter = m_socketInfoMap.find(param.m_iface);
     if (iter != m_socketInfoMap.end())
-      errorCode = ReadFromSocket(iter->second, buf, len, addr, port, lastReadCount, timeout);
+      iter->second.Read(*this, param);
     else
-      errorCode = PChannel::NotFound;
+      param.m_errorCode = PChannel::NotFound;
   }
 
   UnlockReadWrite();
-
-  return errorCode;
 }
 
 
@@ -1169,47 +1156,32 @@ PBoolean PSingleMonitoredSocket::GetAddress(const PString & iface,
 }
 
 
-PChannel::Errors PSingleMonitoredSocket::WriteToBundle(const void * buf,
-                                                       PINDEX len,
-                                                       const PIPSocket::Address & addr,
-                                                       WORD port,
-                                                       const PString & iface,
-                                                       PINDEX & lastWriteCount)
+void PSingleMonitoredSocket::WriteToBundle(BundleParams & param)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (guard.IsLocked() && m_info.socket != NULL && IsInterface(iface))
-    return WriteToSocket(buf, len, addr, port, m_info, lastWriteCount);
-
-  return PChannel::NotFound;
+  if (guard.IsLocked() && m_info.socket != NULL || IsInterface(param.m_iface))
+    m_info.Write(param);
+  else
+    param.m_errorCode = PChannel::NotFound;
 }
 
 
-PChannel::Errors PSingleMonitoredSocket::ReadFromBundle(void * buf,
-                                                        PINDEX len,
-                                                        PIPSocket::Address & addr,
-                                                        WORD & port,
-                                                        PString & iface,
-                                                        PINDEX & lastReadCount,
-                                                        const PTimeInterval & timeout)
+void PSingleMonitoredSocket::ReadFromBundle(BundleParams & param)
 {
-  if (!opened)
-    return PChannel::NotOpen;
+  if (!opened || !LockReadWrite()) {
+    param.m_errorCode = PChannel::NotOpen;
+    return;
+  }
 
-  if (!LockReadWrite())
-    return PChannel::NotOpen;
-
-  PChannel::Errors errorCode;
-  if (IsInterface(iface))
-    errorCode = ReadFromSocket(m_info, buf, len, addr, port, lastReadCount, timeout);
+  if (IsInterface(param.m_iface))
+    m_info.Read(*this, param);
   else
-    errorCode = PChannel::NotFound;
+    param.m_errorCode = PChannel::NotFound;
 
-  iface = m_interface;
+  param.m_iface = m_interface;
 
   UnlockReadWrite();
-
-  return errorCode;
 }
 
 

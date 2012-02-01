@@ -298,18 +298,35 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       PBoolean usingNAT             ///< Require NAT address/port
     ) const = 0;
 
+    struct BundleParams {
+      BundleParams()
+        : m_buffer(NULL)
+        , m_length(0)
+        , m_addr(0)
+        , m_port(0)
+        , m_lastCount(0)
+        , m_errorCode(PChannel::NoError)
+        , m_errorNumber(0)
+      { }
+
+      void * m_buffer;              ///< Data to read/write
+      PINDEX m_length;              ///< Maximum length of data
+      PIPSocket::Address m_addr;    ///< Remote IP address data came from, or is written to
+      WORD m_port;                  ///< Remote port data came from, or is written to
+      PString m_iface;              ///< Interface to use for read or write, also then one data was read on
+      PINDEX m_lastCount;           ///< Actual length of data read/written
+      PTimeInterval m_timeout;      ///< Time to wait for data
+      PChannel::Errors m_errorCode; ///< Error code for read/write
+      int m_errorNumber;            ///< Error number (OS specific) for read/write
+    };
+
     /** Write to the remote address/port using the socket(s) available. If the
         iface parameter is empty, then the data is written to all socket(s).
         Otherwise the iface parameter indicates the specific interface socket
         to write the data to.
       */
-    virtual PChannel::Errors WriteToBundle(
-      const void * buffer,              ///< Data to write
-      PINDEX length,                    ///< Length of data
-      const PIPSocket::Address & addr,  ///< Remote IP address to write to
-      WORD port,                        ///< Remote port to write to
-      const PString & iface,            ///< Interface to use for writing
-      PINDEX & lastWriteCount           ///< Number of bytes written
+    virtual void WriteToBundle(
+      BundleParams & param ///< Info on data to write
     ) = 0;
 
     /** Read fram a remote address/port using the socket(s) available. If the
@@ -318,14 +335,8 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         Otherwise the iface parameter indicates the specific interface socket
         to read the data from.
       */
-    virtual PChannel::Errors ReadFromBundle(
-      void * buffer,                ///< Data to read
-      PINDEX length,                ///< Maximum length of data
-      PIPSocket::Address & addr,    ///< Remote IP address data came from
-      WORD & port,                  ///< Remote port data came from
-      PString & iface,              ///< Interface to use for read, also one data was read on
-      PINDEX & lastReadCount,       ///< Actual length of data read
-      const PTimeInterval & timeout ///< Time to wait for data
+    virtual void ReadFromBundle(
+      BundleParams & param ///< Info on data to read
     ) = 0;
 
 #ifdef P_NAT
@@ -375,9 +386,13 @@ class PMonitoredSockets : public PInterfaceMonitorClient
         : socket(NULL)
         , inUse(false)
       { }
+      void Read(PMonitoredSockets & bundle, BundleParams & param);
+      void Write(BundleParams & param);
+
       PUDPSocket * socket;
       bool         inUse;
     };
+    friend struct SocketInfo;
 
     bool CreateSocket(
       SocketInfo & info,
@@ -391,32 +406,10 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       bool usingNAT
     ) const;
 
-    PChannel::Errors WriteToSocket(
-      const void * buf,
-      PINDEX len,
-      const PIPSocket::Address & addr,
-      WORD port,
-      const SocketInfo & info,
-      PINDEX & lastWriteCount
-    );
-    PChannel::Errors ReadFromSocket(
-      SocketInfo & info,
-      void * buf,
-      PINDEX len,
-      PIPSocket::Address & addr,
-      WORD & port,
-      PINDEX & lastReadCount,
-      const PTimeInterval & timeout
-    );
-    PChannel::Errors ReadFromSocket(
+    void ReadFromSocketList(
       PSocket::SelectList & readers,
       PUDPSocket * & socket,
-      void * buf,
-      PINDEX len,
-      PIPSocket::Address & addr,
-      WORD & port,
-      PINDEX & lastReadCount,
-      const PTimeInterval & timeout
+      BundleParams & param
     );
 
     WORD          localPort;
@@ -603,13 +596,8 @@ class PMonitoredSocketBundle : public PMonitoredSockets
         Otherwise the iface parameter indicates the specific interface socket
         to write the data to.
       */
-    virtual PChannel::Errors WriteToBundle(
-      const void * buf,
-      PINDEX len,
-      const PIPSocket::Address & addr,
-      WORD port,
-      const PString & iface,
-      PINDEX & lastWriteCount
+    virtual void WriteToBundle(
+      BundleParams & param ///< Info on data to write
     );
 
     /** Read fram a remote address/port using the socket(s) available. If the
@@ -618,14 +606,8 @@ class PMonitoredSocketBundle : public PMonitoredSockets
         Otherwise the iface parameter indicates the specific interface socket
         to read the data from.
       */
-    virtual PChannel::Errors ReadFromBundle(
-      void * buf,
-      PINDEX len,
-      PIPSocket::Address & addr,
-      WORD & port,
-      PString & iface,
-      PINDEX & lastReadCount,
-      const PTimeInterval & timeout
+    virtual void ReadFromBundle(
+      BundleParams & param ///< Info on data to read
     );
 
   protected:
@@ -702,13 +684,8 @@ class PSingleMonitoredSocket : public PMonitoredSockets
         Otherwise the iface parameter indicates the specific interface socket
         to write the data to.
       */
-    virtual PChannel::Errors WriteToBundle(
-      const void * buf,
-      PINDEX len,
-      const PIPSocket::Address & addr,
-      WORD port,
-      const PString & iface,
-      PINDEX & lastWriteCount
+    virtual void WriteToBundle(
+      BundleParams & param ///< Info on data to write
     );
 
     /** Read fram a remote address/port using the socket(s) available. If the
@@ -717,14 +694,8 @@ class PSingleMonitoredSocket : public PMonitoredSockets
         Otherwise the iface parameter indicates the specific interface socket
         to read the data from.
       */
-    virtual PChannel::Errors ReadFromBundle(
-      void * buf,
-      PINDEX len,
-      PIPSocket::Address & addr,
-      WORD & port,
-      PString & iface,
-      PINDEX & lastReadCount,
-      const PTimeInterval & timeout
+    virtual void ReadFromBundle(
+      BundleParams & param ///< Info on data to read
     );
 
 
