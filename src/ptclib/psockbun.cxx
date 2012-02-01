@@ -709,7 +709,7 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseA
     return new PMonitoredSocketBundle(percent != P_MAX_INDEX ? iface.Mid(percent+1) : PString::Empty(),
                                       ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethod));
 
-  return new PSingleMonitoredSocket(iface, reuseAddr P_NAT_PARAM(natMethod));
+  return new PSingleMonitoredSocket(ip.AsString(true), reuseAddr P_NAT_PARAM(natMethod));
 }
 
 
@@ -1094,11 +1094,11 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 
 //////////////////////////////////////////////////
 
-PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
+PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
-  , theInterface(_theInterface)
+  , m_interface(theInterface)
 {
-  PTRACE(4, "MonSock\tCreated monitored socket for interfaces " << _theInterface);
+  PTRACE(4, "MonSock\tCreated monitored socket for interface " << theInterface);
 }
 
 
@@ -1113,8 +1113,8 @@ PStringArray PSingleMonitoredSocket::GetInterfaces(bool /*includeLoopBack*/, con
   PSafeLockReadOnly guard(*this);
 
   PStringList names;
-  if (!theEntry.GetAddress().IsAny())
-    names.AppendString(MakeInterfaceDescription(theEntry));
+  if (m_entry.GetAddress().IsValid())
+    names.AppendString(MakeInterfaceDescription(m_entry));
   return names;
 }
 
@@ -1123,7 +1123,7 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (opened && localPort == port && theInfo.socket != NULL && theInfo.socket->IsOpen())
+  if (opened && localPort == port && m_info.socket != NULL && m_info.socket->IsOpen())
     return true;
 
   Close();
@@ -1132,18 +1132,15 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 
   localPort = port;
 
-  if (!theEntry.GetAddress().IsValid())
-    GetInterfaceInfo(theInterface, theEntry);
-
-  if (!theEntry.GetAddress().IsValid()) {
-    PTRACE(3, "MonSock\tNot creating socket as interface \"" << theEntry.GetName() << "\" is  not up.");
+  if (!m_entry.GetAddress().IsValid() && !GetInterfaceInfo(m_interface, m_entry)) {
+    PTRACE(3, "MonSock\tNot creating socket as interface \"" << m_entry.GetName() << "\" is  not up.");
     return true; // Still say successful though
   }
-    
-  if (!CreateSocket(theInfo, theEntry.GetAddress()))
+
+  if (!CreateSocket(m_info, m_entry.GetAddress()))
     return false;
     
-  localPort = theInfo.socket->PUDPSocket::GetPort();
+  localPort = m_info.socket->PUDPSocket::GetPort();
   return true;
 }
 
@@ -1157,7 +1154,7 @@ PBoolean PSingleMonitoredSocket::Close()
 
   opened = false;
   interfaceAddedSignal.Close(); // Fail safe break out of Select()
-  return DestroySocket(theInfo);
+  return DestroySocket(m_info);
 }
 
 
@@ -1168,7 +1165,7 @@ PBoolean PSingleMonitoredSocket::GetAddress(const PString & iface,
 {
   PSafeLockReadOnly guard(*this);
 
-  return guard.IsLocked() && IsInterface(iface) && GetSocketAddress(theInfo, address, port, usingNAT);
+  return guard.IsLocked() && IsInterface(iface) && GetSocketAddress(m_info, address, port, usingNAT);
 }
 
 
@@ -1181,8 +1178,8 @@ PChannel::Errors PSingleMonitoredSocket::WriteToBundle(const void * buf,
 {
   PSafeLockReadWrite guard(*this);
 
-  if (guard.IsLocked() && theInfo.socket != NULL && IsInterface(iface))
-    return WriteToSocket(buf, len, addr, port, theInfo, lastWriteCount);
+  if (guard.IsLocked() && m_info.socket != NULL && IsInterface(iface))
+    return WriteToSocket(buf, len, addr, port, m_info, lastWriteCount);
 
   return PChannel::NotFound;
 }
@@ -1204,11 +1201,11 @@ PChannel::Errors PSingleMonitoredSocket::ReadFromBundle(void * buf,
 
   PChannel::Errors errorCode;
   if (IsInterface(iface))
-    errorCode = ReadFromSocket(theInfo, buf, len, addr, port, lastReadCount, timeout);
+    errorCode = ReadFromSocket(m_info, buf, len, addr, port, lastReadCount, timeout);
   else
     errorCode = PChannel::NotFound;
 
-  iface = theInterface;
+  iface = m_interface;
 
   UnlockReadWrite();
 
@@ -1222,16 +1219,16 @@ void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
 
   PIPSocket::Address addr;
   PString name;
-  if (!SplitInterfaceDescription(theInterface, addr, name))
+  if (!SplitInterfaceDescription(m_interface, addr, name))
     return;
 
   if ((!addr.IsValid() || entry.GetAddress() == addr) && entry.GetName().NumCompare(name) == EqualTo) {
-    theEntry = entry;
+    m_entry = entry;
     if (!Open(localPort))
-      theEntry = InterfaceEntry();
+      m_entry = InterfaceEntry();
     else {
       interfaceAddedSignal.Close();
-      PTRACE(3, "MonSock\tBound UDP socket UP event on interface " << theEntry);
+      PTRACE(3, "MonSock\tBound UDP socket UP event on interface " << m_entry);
     }
   }
 }
@@ -1241,12 +1238,12 @@ void PSingleMonitoredSocket::OnRemoveInterface(const InterfaceEntry & entry)
 {
   // Already locked
 
-  if (entry != theEntry)
+  if (entry != m_entry)
     return;
 
-  PTRACE(3, "MonSock\tBound UDP socket DOWN event on interface " << theEntry);
-  theEntry = InterfaceEntry();
-  DestroySocket(theInfo);
+  PTRACE(3, "MonSock\tBound UDP socket DOWN event on interface " << m_entry);
+  m_entry = InterfaceEntry();
+  DestroySocket(m_info);
 }
 
 
@@ -1256,10 +1253,10 @@ bool PSingleMonitoredSocket::IsInterface(const PString & iface) const
     return true;
 
   PINDEX percent1 = iface.Find('%');
-  PINDEX percent2 = theInterface.Find('%');
+  PINDEX percent2 = m_interface.Find('%');
 
   if (percent1 != P_MAX_INDEX && percent2 != P_MAX_INDEX)
-    return iface.Mid(percent1+1).NumCompare(theInterface.Mid(percent2+1)) == EqualTo;
+    return iface.Mid(percent1+1).NumCompare(m_interface.Mid(percent2+1)) == EqualTo;
 
-  return PIPSocket::Address(iface.Left(percent1)) == PIPSocket::Address(theInterface.Left(percent2));
+  return PIPSocket::Address(iface.Left(percent1)) == PIPSocket::Address(m_interface.Left(percent2));
 }

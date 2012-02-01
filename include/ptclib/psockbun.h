@@ -737,9 +737,9 @@ class PSingleMonitoredSocket : public PMonitoredSockets
 
     bool IsInterface(const PString & iface) const;
 
-    PString        theInterface;
-    InterfaceEntry theEntry;
-    SocketInfo     theInfo;
+    PString        m_interface;
+    InterfaceEntry m_entry;
+    SocketInfo     m_info;
 };
 
 
