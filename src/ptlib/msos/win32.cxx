@@ -616,43 +616,45 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
   if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
     return _sys_errlist[osError];
 #endif
-  if ((osError & PWIN32ErrorFlag) == 0)
-    return psprintf("C runtime error %u", osError);
-
-  DWORD err = osError & ~PWIN32ErrorFlag;
 
   static const struct {
-    DWORD id;
+    int id1;
+    int id2;
     const char * msg;
   } win32_errlist[] = {
-    { ERROR_FILE_NOT_FOUND,     "File not found" },
-    { ERROR_PATH_NOT_FOUND,     "Path not found" },
-    { ERROR_ACCESS_DENIED,      "Access denied" },
-    { ERROR_NOT_ENOUGH_MEMORY,  "Not enough memory" },
-    { ERROR_INVALID_FUNCTION,   "Invalid function" },
-    { WSAEADDRINUSE,            "Address in use" },
-    { WSAENETDOWN,              "Network subsystem failed" },
-    { WSAEISCONN,               "Socket is already connected" },
-    { WSAENETUNREACH,           "Network unreachable" },
-    { WSAEHOSTUNREACH,          "Host unreachable" },
-    { WSAECONNREFUSED,          "Connection refused" },
-    { WSAEINVAL,                "Invalid operation" },
-    { WSAENOTCONN,              "Socket not connected" },
-    { WSAECONNABORTED,          "Connection aborted" },
-    { WSAECONNRESET,            "Connection reset" },
-    { WSAESHUTDOWN,             "Connection shutdown" },
-    { WSAENOTSOCK,              "Socket closed or invalid" },
-    { WSAETIMEDOUT,             "Timed out" },
-    { WSAEMSGSIZE,              "Message larger than buffer" },
-    { WSAEWOULDBLOCK,           "Would block" },
-    { 0x1000000,                "High level protocol failure" }
+    { PWIN32ErrorFlag|ERROR_FILE_NOT_FOUND,     ENOENT,                "File not found" },
+    { PWIN32ErrorFlag|ERROR_PATH_NOT_FOUND,     ENOTDIR,               "Path not found" },
+    { PWIN32ErrorFlag|ERROR_ACCESS_DENIED,      EACCES,                "Access denied" },
+    { PWIN32ErrorFlag|ERROR_NOT_ENOUGH_MEMORY,  ENOMEM,                "Not enough memory" },
+    { PWIN32ErrorFlag|ERROR_INVALID_FUNCTION,   EINVAL,                "Invalid function" },
+    { PWIN32ErrorFlag|WSAEADDRINUSE,            EADDRINUSE,            "Address in use" },
+    { PWIN32ErrorFlag|WSAEADDRNOTAVAIL,         EADDRNOTAVAIL,         "Address type not available" },
+    { PWIN32ErrorFlag|WSAENETDOWN,              ENETDOWN,              "Network subsystem failed" },
+    { PWIN32ErrorFlag|WSAEISCONN,               EISCONN,               "Socket is already connected" },
+    { PWIN32ErrorFlag|WSAENETUNREACH,           ENETUNREACH,           "Network unreachable" },
+    { PWIN32ErrorFlag|WSAEHOSTUNREACH,          EHOSTUNREACH,          "Host unreachable" },
+    { PWIN32ErrorFlag|WSAECONNREFUSED,          ECONNREFUSED,          "Connection refused" },
+    { PWIN32ErrorFlag|WSAEINVAL,                EINVAL,                "Invalid operation" },
+    { PWIN32ErrorFlag|WSAENOTCONN,              ENOTCONN,              "Socket not connected" },
+    { PWIN32ErrorFlag|WSAECONNABORTED,          ECONNABORTED,          "Connection aborted" },
+    { PWIN32ErrorFlag|WSAECONNRESET,            ECONNRESET,            "Connection reset" },
+    { PWIN32ErrorFlag|WSAESHUTDOWN,             -1,                    "Connection shutdown" },
+    { PWIN32ErrorFlag|WSAENOTSOCK,              ENOTSOCK,              "Socket closed or invalid" },
+    { PWIN32ErrorFlag|WSAETIMEDOUT,             ETIMEDOUT,             "Timed out" },
+    { PWIN32ErrorFlag|WSAEMSGSIZE,              EMSGSIZE,              "Message larger than buffer" },
+    { PWIN32ErrorFlag|WSAEWOULDBLOCK,           EWOULDBLOCK,           "Would block" },
+    { 0x1000000,                                -1,                    "High level protocol failure" }
   };
 
-  for (PINDEX i = 0; i < PARRAYSIZE(win32_errlist); i++)
-    if (win32_errlist[i].id == err)
+  for (PINDEX i = 0; i < PARRAYSIZE(win32_errlist); i++) {
+    if (win32_errlist[i].id1 == osError || win32_errlist[i].id2 == osError)
       return win32_errlist[i].msg;
+  }
 
-  return psprintf("WIN32 error %u", err);
+  if ((osError & PWIN32ErrorFlag) == 0)
+    return psprintf("C runtime error %u", osError);
+  else
+    return psprintf("WIN32 error %u", osError & ~PWIN32ErrorFlag);
 }
 
 
