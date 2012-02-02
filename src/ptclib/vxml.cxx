@@ -2603,133 +2603,79 @@ PBoolean PVXMLChannel::EndRecording()
 
 PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
 {
-  // assume we are returning silence
-  bool done         = false;
-  bool silenceStuff = false;
-  bool delayDone    = false;
-
-  while (!done && !silenceStuff) {
+  while (m_silenceTimer.HasExpired()) {
+    PWaitAndSignal mutex(m_channelReadMutex);
 
     if (m_closed)
       return false;
 
-    {
-      PWaitAndSignal m(m_channelReadMutex);
+    if (m_paused)
+      break;
 
-      if (m_flushQueue.Wait(0)) {
-        PTRACE(4, "VXML\tFlushing playable queue");
+    // try and read data from the underlying channel
+    if (m_currentPlayItem != NULL) {
 
-        if (GetBaseReadChannel() != NULL)
-          PDelayChannel::Close();
+      // if the read succeeds, we are done
+      if (m_currentPlayItem->ReadFrame(*this, buffer, amount)) {
+        m_totalData += amount;
+        return true; // Already done real time delay
+      } 
 
-        m_queueMutex.Wait();
-
-        PVXMLPlayable * qItem;
-        while ((qItem = m_playQueue.Dequeue()) != NULL) {
-          qItem->OnStop();
-          delete qItem;
-        }
-
-        if (m_currentPlayItem != NULL) {
-          m_currentPlayItem->OnStop();
-          delete m_currentPlayItem;
-          m_currentPlayItem = NULL;
-        }
-
-        m_queueMutex.Signal();
-
-        m_silenceTimer.Stop();
-        m_flushQueue.Acknowledge();
-      }
-
-      // if we are paused or in a delay, then do return silence
-      if (m_paused || m_silenceTimer.IsRunning()) {
-        silenceStuff = true;
+      // if a timeout, send silence
+      if (GetErrorCode(LastReadError) == Timeout)
         break;
-      }
 
-      // try and read data from the underlying channel
-      else if (m_currentPlayItem != NULL) {
+      // if current item still active, check for trailing actions
+      if (m_currentPlayItem != NULL) {
+        PTRACE(3, "VXML\tFinished playing " << m_totalData << " bytes");
 
-        PWaitAndSignal m(m_queueMutex);
-
-        // if the read succeeds, we are done
-        if (m_currentPlayItem->ReadFrame(*this, buffer, amount)) {
-          m_totalData += amount;
-          delayDone = true;
-          done = true;
-          break;
+        if (m_currentPlayItem->GetRepeat() > 1) {
+          if (m_currentPlayItem->Rewind(GetBaseReadChannel())) {
+            m_currentPlayItem->SetRepeat(m_currentPlayItem->GetRepeat()-1);
+            m_currentPlayItem->OnRepeat(*this);
+            continue;
+          }
+          PTRACE(2, "VXML\tCannot rewind item - cancelling repeat");
         } 
 
-        // if a timeout, send silence
-        if (GetErrorCode(LastReadError) == Timeout) {
-          silenceStuff = true;
-          break;
-        }
-
-        // if current item still active, check for trailing actions
-        if (m_currentPlayItem != NULL) {
-          PTRACE(3, "VXML\tFinished playing " << m_totalData << " bytes");
-
-          if (m_currentPlayItem->GetRepeat() > 1) {
-            if (m_currentPlayItem->Rewind(GetBaseReadChannel())) {
-              m_currentPlayItem->SetRepeat(m_currentPlayItem->GetRepeat()-1);
-              m_currentPlayItem->OnRepeat(*this);
-              continue;
-            }
-            PTRACE(2, "VXML\tCannot rewind item - cancelling repeat");
-          } 
-
-          // see if end of queue delay specified
-          if (!m_currentPlayItem->m_delayDone) {
-            m_currentPlayItem->m_delayDone = true;
-            int delay = m_currentPlayItem->GetDelay();
-            if (delay > 0) {
-              SetSilence(delay);
-              continue;
-            }
+        // see if end of queue delay specified
+        if (!m_currentPlayItem->m_delayDone) {
+          m_currentPlayItem->m_delayDone = true;
+          int delay = m_currentPlayItem->GetDelay();
+          if (delay > 0) {
+            SetSilence(delay);
+            break;
           }
-
-          // stop the current item
-          m_currentPlayItem->OnStop();
-          delete m_currentPlayItem;
-          m_currentPlayItem = NULL;
-          m_vxmlSession->Trigger();
         }
 
-        PDelayChannel::Close();
+        // stop the current item
+        m_currentPlayItem->OnStop();
+        delete m_currentPlayItem;
+        m_currentPlayItem = NULL;
+        m_vxmlSession->Trigger();
       }
 
-      // check the queue for the next action
-      {
-        PWaitAndSignal m(m_queueMutex);
-
-        // if nothing in the queue (which is weird as something just stopped playing)
-        // then trigger the VXML and send silence
-        m_currentPlayItem = m_playQueue.Dequeue();
-        if (m_currentPlayItem == NULL) {
-          silenceStuff = true;
-          break;
-        }
-
-        // start the new item
-        PTRACE(4, "VXML\tStarted playing " << *m_currentPlayItem);
-        m_currentPlayItem->OnStart();
-        m_currentPlayItem->Play(*this);
-        SetReadTimeout(frameDelay);
-        m_totalData = 0;
-      }
+      PDelayChannel::Close();
     }
-  }
-  
-  // start silence frame if required
-  // note that this always requires a delay
-  if (silenceStuff)
-    lastReadCount = CreateSilenceFrame(buffer, amount);
 
-  // make sure we always do the correct delay
-  if (!delayDone)
-    Wait(amount, nextReadTick);
+    // check the queue for the next action
+    // if nothing in the queue (which is weird as something just stopped playing)
+    // then trigger the VXML and send silence
+    m_currentPlayItem = m_playQueue.Dequeue();
+    if (m_currentPlayItem == NULL)
+      break;
+
+    // start the new item
+    PTRACE(4, "VXML\tStarted playing " << *m_currentPlayItem);
+    m_currentPlayItem->OnStart();
+    m_currentPlayItem->Play(*this);
+    SetReadTimeout(frameDelay);
+    m_totalData = 0;
+  }
+
+  // play silence and make sure we always do the correct delay
+  lastReadCount = CreateSilenceFrame(buffer, amount);
+  Wait(amount, nextReadTick);
 
   return true;
 }
@@ -2771,9 +2717,9 @@ PBoolean PVXMLChannel::QueuePlayable(const PString & type,
 PBoolean PVXMLChannel::QueuePlayable(PVXMLPlayable * newItem)
 {
   newItem->SetSampleFrequency(GetSampleFrequency());
-  m_queueMutex.Wait();
+  m_channelReadMutex.Wait();
   m_playQueue.Enqueue(newItem);
-  m_queueMutex.Signal();
+  m_channelReadMutex.Signal();
   return true;
 }
 
@@ -2815,9 +2761,28 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
 void PVXMLChannel::FlushQueue()
 {
-  PTRACE(4, "VXML\tSignalling playable queue flush");
-  m_flushQueue.Signal(10000);
-  PTRACE(4, "VXML\tPlayable queue flush completed");
+  PTRACE(4, "VXML\tFlushing playable queue");
+
+  PWaitAndSignal mutex(m_channelReadMutex);
+
+  if (GetBaseReadChannel() != NULL)
+    PDelayChannel::Close();
+
+  PVXMLPlayable * qItem;
+  while ((qItem = m_playQueue.Dequeue()) != NULL) {
+    qItem->OnStop();
+    delete qItem;
+  }
+
+  if (m_currentPlayItem != NULL) {
+    m_currentPlayItem->OnStop();
+    delete m_currentPlayItem;
+    m_currentPlayItem = NULL;
+  }
+
+  m_silenceTimer.Stop();
+
+  PTRACE(4, "VXML\tFlushed playable queue");
 }
 
 
