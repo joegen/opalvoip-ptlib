@@ -615,11 +615,9 @@ class PVXMLChannel : public PDelayChannel
     unsigned          m_silenceRun;
 
     // Outgoing audio variables
-    PMutex          m_queueMutex;
     PVXMLQueue      m_playQueue;
     PVXMLPlayable * m_currentPlayItem;
     PSimpleTimer    m_silenceTimer;
-    PSyncPointAck   m_flushQueue;
 };
 
 
