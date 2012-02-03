@@ -43,6 +43,7 @@
 PMemoryFile::PMemoryFile()
 {
   position = 0;
+  os_handle = 1; // Always open
 }
 
 
@@ -50,6 +51,7 @@ PMemoryFile::PMemoryFile(const PBYTEArray & ndata)
 {
   data = ndata;
   position = 0;
+  os_handle = 1; // Always open
 }
 
 
