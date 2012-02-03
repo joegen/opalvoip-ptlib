@@ -824,35 +824,43 @@ PBoolean PIndirectChannel::OnOpen()
 }
 
 
-PBoolean PIndirectChannel::SetReadChannel(PChannel * channel, PBoolean autoDelete)
+bool PIndirectChannel::SetReadChannel(PChannel * channel, bool autoDelete, bool closeExisting)
 {
-  if (readChannel != NULL)
-    return SetErrorValues(DeviceInUse, EEXIST);
+  PWriteWaitAndSignal mutex(channelPointerMutex);
 
-  channelPointerMutex.StartWrite();
+  if (closeExisting) {
+    if (readAutoDelete)
+      delete readChannel;
+  }
+  else {
+    if (readChannel != NULL)
+      return SetErrorValues(DeviceInUse, EEXIST);
+  }
 
   readChannel = channel;
   readAutoDelete = autoDelete;
 
-  channelPointerMutex.EndWrite();
-
-  return IsOpen();
+  return channel != NULL && channel->IsOpen();
 }
 
 
-PBoolean PIndirectChannel::SetWriteChannel(PChannel * channel, PBoolean autoDelete)
+bool PIndirectChannel::SetWriteChannel(PChannel * channel, bool autoDelete, bool closeExisting)
 {
-  if (writeChannel != NULL)
-    return SetErrorValues(DeviceInUse, EEXIST);
+  PWriteWaitAndSignal mutex(channelPointerMutex);
 
-  channelPointerMutex.StartWrite();
+  if (closeExisting) {
+    if (writeAutoDelete)
+      delete writeChannel;
+  }
+  else {
+    if (writeChannel != NULL)
+      return SetErrorValues(DeviceInUse, EEXIST);
+  }
 
   writeChannel = channel;
   writeAutoDelete = autoDelete;
 
-  channelPointerMutex.EndWrite();
-
-  return IsOpen();
+  return channel != NULL && channel->IsOpen();
 }
 
 
