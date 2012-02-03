@@ -123,17 +123,25 @@ PDelayChannel::PDelayChannel(PChannel &channel,
 
 PBoolean PDelayChannel::Read(void * buf, PINDEX count)
 {
+  if (!PIndirectChannel::Read(buf, count))
+    return false;
+
   if (mode != DelayWritesOnly)
-    Wait(count, nextReadTick);
-  return PIndirectChannel::Read(buf, count);
+    Wait(lastReadCount, nextReadTick);
+
+  return true;
 }
 
 
 PBoolean PDelayChannel::Write(const void * buf, PINDEX count)
 {
+  if (!PIndirectChannel::Write(buf, count))
+    return false;
+
   if (mode != DelayReadsOnly)
-    Wait(count, nextWriteTick);
-  return PIndirectChannel::Write(buf, count);
+    Wait(lastWriteCount, nextWriteTick);
+
+  return true;
 }
 
 

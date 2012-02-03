@@ -257,9 +257,10 @@ class PIndirectChannel : public PChannel
        @return
        Returns true if both channels are set and are both open.
      */
-    PBoolean SetReadChannel(
-      PChannel * channel,      ///< Channel to be used for both read operations.
-      PBoolean autoDelete = true   ///< Automatically delete the channel
+    bool SetReadChannel(
+      PChannel * channel,         ///< Channel to be used for both read operations.
+      bool autoDelete = true,     ///< Automatically delete the channel
+      bool closeExisting = false  ///< Close (and auto-delete) the existing read channel
     );
 
     /**Get the channel used for write operations.
@@ -275,8 +276,9 @@ class PIndirectChannel : public PChannel
        Returns true if both channels are set and are both open.
     */
     PBoolean SetWriteChannel(
-      PChannel * channel,      ///< Channel to be used for both write operations.
-      PBoolean autoDelete = true   ///< Automatically delete the channel
+      PChannel * channel,         ///< Channel to be used for both read operations.
+      bool autoDelete = true,     ///< Automatically delete the channel
+      bool closeExisting = false  ///< Close (and auto-delete) the existing read channel
     );
   //@}
 
