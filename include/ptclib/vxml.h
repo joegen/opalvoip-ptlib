@@ -344,13 +344,10 @@ class PVXMLRecordable : public PObject
 
     virtual PBoolean Open(const PString & arg) = 0;
 
-    virtual bool Record(PVXMLChannel & incomingChannel) = 0;
-
-    virtual void OnStart() { }
+    virtual bool OnStart(PVXMLChannel & incomingChannel) = 0;
+    virtual void OnStop() { }
 
     virtual PBoolean OnFrame(PBoolean /*isSilence*/) { return false; }
-
-    virtual void OnStop() { }
 
     void SetFinalSilence(unsigned v)
     { m_finalSilence = v > 0 ? v : 60000; }
@@ -378,7 +375,7 @@ class PVXMLRecordableFilename : public PVXMLRecordable
   PCLASSINFO(PVXMLRecordableFilename, PVXMLRecordable);
   public:
     PBoolean Open(const PString & arg);
-    bool Record(PVXMLChannel & incomingChannel);
+    bool OnStart(PVXMLChannel & incomingChannel);
     PBoolean OnFrame(PBoolean isSilence);
 
   protected:
@@ -395,14 +392,10 @@ class PVXMLPlayable : public PObject
 
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
 
-    virtual void Play(PVXMLChannel & outgoingChannel) = 0;
-
-    virtual void OnRepeat(PVXMLChannel & /*outgoingChannel*/)
-    { }
-
-    virtual void OnStart() { }
-
-    virtual void OnStop() { }
+    virtual bool OnStart() = 0;
+    virtual bool OnRepeat();
+    virtual bool OnDelay();
+    virtual void OnStop();
 
     virtual void SetRepeat(PINDEX v) 
     { m_repeat = v; }
@@ -419,14 +412,11 @@ class PVXMLPlayable : public PObject
     void SetSampleFrequency(unsigned rate)
     { m_sampleFrequency = rate; }
 
-    virtual PBoolean ReadFrame(PVXMLChannel & channel, void * buf, PINDEX len);
-
-    virtual PBoolean Rewind(PChannel *) 
-    { return false; }
-
     friend class PVXMLChannel;
 
   protected:
+    PVXMLChannel * m_vxmlChannel;
+    PChannel * m_subChannel;
     PINDEX   m_repeat;
     PINDEX   m_delay;
     PString  m_format;
@@ -441,8 +431,7 @@ class PVXMLPlayableStop : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableStop, PVXMLPlayable);
   public:
-    virtual void Play(PVXMLChannel & outgoingChannel);
-    virtual PBoolean ReadFrame(PVXMLChannel & channel, void *, PINDEX);
+    virtual bool OnStart();
 };
 
 //////////////////////////////////////////////////////////////////
@@ -452,7 +441,7 @@ class PVXMLPlayableURL : public PVXMLPlayable
   PCLASSINFO(PVXMLPlayableURL, PVXMLPlayable);
   public:
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
-    void Play(PVXMLChannel & outgoingChannel);
+    virtual bool OnStart();
   protected:
     PURL m_url;
 };
@@ -465,8 +454,8 @@ class PVXMLPlayableData : public PVXMLPlayable
   public:
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
     void SetData(const PBYTEArray & data);
-    void Play(PVXMLChannel & outgoingChannel);
-    PBoolean Rewind(PChannel * chan);
+    virtual bool OnStart();
+    virtual bool OnRepeat();
   protected:
     PBYTEArray m_data;
 };
@@ -490,43 +479,40 @@ class PVXMLPlayableCommand : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableCommand, PVXMLPlayable);
   public:
-    PVXMLPlayableCommand();
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
-    void Play(PVXMLChannel & outgoingChannel);
-    void OnStop();
+    virtual bool OnStart();
+    virtual void OnStop();
 
   protected:
-    PString        m_command;
-    PPipeChannel * m_pipe;
+    PString m_command;
 };
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLPlayableFilename : public PVXMLPlayable
+class PVXMLPlayableFile : public PVXMLPlayable
 {
-  PCLASSINFO(PVXMLPlayableFilename, PVXMLPlayable);
+  PCLASSINFO(PVXMLPlayableFile, PVXMLPlayable);
   public:
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
-    void Play(PVXMLChannel & outgoingChannel);
-    void OnStop();
-    virtual PBoolean Rewind(PChannel * chan);
+    virtual bool OnStart();
+    virtual bool OnRepeat();
+    virtual void OnStop();
   protected:
     PFilePath m_filePath;
 };
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLPlayableFilenameList : public PVXMLPlayable
+class PVXMLPlayableFileList : public PVXMLPlayableFile
 {
-  PCLASSINFO(PVXMLPlayableFilenameList, PVXMLPlayable);
+  PCLASSINFO(PVXMLPlayableFileList, PVXMLPlayableFile);
   public:
-    PVXMLPlayableFilenameList();
+    PVXMLPlayableFileList();
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
-    PBoolean Open(PVXMLChannel & chan, const PStringArray & filenames, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
-    void Play(PVXMLChannel & outgoingChannel)
-    { OnRepeat(outgoingChannel); }
-    void OnRepeat(PVXMLChannel & outgoingChannel);
-    void OnStop();
+    virtual PBoolean Open(PVXMLChannel & chan, const PStringArray & filenames, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
+    virtual bool OnStart();
+    virtual bool OnRepeat();
+    virtual void OnStop();
   protected:
     PStringArray m_fileNames;
     PINDEX       m_currentIndex;
