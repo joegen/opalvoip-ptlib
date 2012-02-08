@@ -2275,7 +2275,7 @@ void PReadWriteMutex::InternalWait(PSemaphore & semaphore) const
   ostream & trace = PTrace::Begin(1, __FILE__, __LINE__);
   trace << "PTLib\tPossible deadlock in read/write mutex:\n";
   for (std::map<PThreadIdentifier, Nest>::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it)
-    trace << "  thread-id=" << it->first << ","
+    trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
               " readers=" << it->second.readerCount << ","
               " writers=" << it->second.writerCount << '\n';
   trace << PTrace::End;
