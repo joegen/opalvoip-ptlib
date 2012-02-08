@@ -351,7 +351,7 @@ class PSSLContext {
        session ID is a completely arbitrary block of data. If sessionId is
        non NULL and idSize is zero, then sessionId is assumed to be a pointer
        to a C string.
-       The default SSL method is SSLv23
+       The default SSL method is TLSv1
       */
     PSSLContext(
       const void * sessionId = NULL,  ///< Pointer to session ID
@@ -377,10 +377,10 @@ class PSSLContext {
       const PDirectory & caPath   ///< Directory for CA certificates
     );
 
-    /**Set the CA certificate file.
+    /**Set the CA certificate to send to client from server.
       */
-    PBoolean SetCAFile(
-      const PFilePath & caFile    ///< CA certificate file
+    PBoolean AddCA(
+      const PSSLCertificate & certificate
     );
 
     /**Use the certificate specified.
@@ -482,6 +482,12 @@ class PSSLChannel : public PIndirectChannel
       PBoolean autoDelete = true  ///< Flag for if channel should be automatically deleted.
     );
 
+    /**Set the CA certificate to send to client from server.
+      */
+    PBoolean AddCA(
+      const PSSLCertificate & certificate
+    );
+
     /**Use the certificate specified.
       */
     PBoolean UseCertificate(
@@ -493,6 +499,10 @@ class PSSLChannel : public PIndirectChannel
     PBoolean UsePrivateKey(
       const PSSLPrivateKey & key
     );
+
+    /**Get the available ciphers.
+      */
+    PString GetCipherList() const;
 
     enum VerifyMode {
       VerifyNone,
@@ -509,6 +519,8 @@ class PSSLChannel : public PIndirectChannel
     virtual PBoolean RawSSLRead(void * buf, PINDEX & len);
 
   protected:
+    void Construct(PSSLContext * ctx, PBoolean autoDel);
+
     /**This callback is executed when the Open() function is called with
        open channels. It may be used by descendent channels to do any
        handshaking required by the protocol that channel embodies.
