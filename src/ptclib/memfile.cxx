@@ -41,62 +41,100 @@
 //////////////////////////////////////////////////////////////////////////////
 
 PMemoryFile::PMemoryFile()
+  : m_position(0)
 {
-  position = 0;
-  os_handle = 1; // Always open
+  os_handle = INT_MAX; // Start open
 }
 
 
-PMemoryFile::PMemoryFile(const PBYTEArray & ndata)
+PMemoryFile::PMemoryFile(const PBYTEArray & data)
+  : m_data(data)
+  , m_position(0)
 {
-  data = ndata;
-  position = 0;
-  os_handle = 1; // Always open
+  os_handle = INT_MAX; // Start open
+}
+
+
+PMemoryFile::~PMemoryFile()
+{
+  Close();
 }
 
 
 PObject::Comparison PMemoryFile::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PMemoryFile), PInvalidCast);
-  return data.Compare(((const PMemoryFile &)obj).data);
+  return m_data.Compare(((const PMemoryFile &)obj).m_data);
+}
+
+
+PBoolean PMemoryFile::Open(OpenMode, int)
+{
+  os_handle = INT_MAX;
+  m_position = 0;
+  return true;
+}
+
+
+PBoolean PMemoryFile::Open(const PFilePath &, OpenMode mode, int opts)
+{
+  return Open(mode, opts);
+}
+
+      
+PBoolean PMemoryFile::Close()
+{
+  os_handle = -1;
+  return true;
 }
 
 
 PBoolean PMemoryFile::Read(void * buf, PINDEX len)
 {
-  if ((position + len) > data.GetSize())
-    len = data.GetSize() - position;
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
-  lastReadCount = len;
-
-  if (len != 0) {
-    ::memcpy(buf, position + (const BYTE * )data, len);
-    position += len;
-    lastReadCount = len;
+  if (m_position > m_data.GetSize()) {
+    lastReadCount = 0;
+    return true;
   }
 
-  return lastReadCount != 0;
+  if ((m_position + len) > m_data.GetSize())
+    len = m_data.GetSize() - m_position;
+
+  memcpy(buf, m_position + (const BYTE * )m_data, len);
+  m_position += len;
+  lastReadCount = len;
+
+  return lastReadCount > 0;
 }
 
 
 PBoolean PMemoryFile::Write(const void * buf, PINDEX len)
 {
-  memcpy(data.GetPointer(position+len) + position, buf, len);
-  position += len;
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
+  BYTE * ptr = m_data.GetPointer(m_position+len);
+  if (ptr == NULL)
+    return SetErrorValues(DiskFull, ENOMEM);
+
+  memcpy(ptr + m_position, buf, len);
+  m_position += len;
   lastWriteCount = len;
-  return PTrue;
+  return true;
 }
 
 
 off_t PMemoryFile::GetLength() const
 {
-  return data.GetSize();
+  return m_data.GetSize();
 }
       
 
 PBoolean PMemoryFile::SetLength(off_t len)
 {
-  return data.SetSize(len);
+  return m_data.SetSize(len);
 }
 
 
@@ -104,30 +142,30 @@ PBoolean PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
   switch (origin) {
     case Start:
-      if (pos > data.GetSize())
-        return PFalse;
-      position = pos;
+      if (pos > m_data.GetSize())
+        return false;
+      m_position = pos;
       break;
 
     case Current:
-      if (pos < -position || pos > (data.GetSize() - position))
-        return PFalse;
-      position += pos;
+      if (pos < -m_position || pos > (m_data.GetSize() - m_position))
+        return false;
+      m_position += pos;
       break;
 
     case End:
-      if (pos < -data.GetSize())
-        return PFalse;
-      position = data.GetSize() - pos;
+      if (-pos > m_data.GetSize())
+        return false;
+      m_position = m_data.GetSize() - pos;
       break;
   }
-  return PTrue;
+  return true;
 }
 
 
 off_t PMemoryFile::GetPosition() const
 {
-  return position;
+  return m_position;
 }
 
 
