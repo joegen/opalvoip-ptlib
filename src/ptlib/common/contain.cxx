@@ -967,21 +967,25 @@ void PString::PrintOn(ostream &strm) const
 
 void PString::ReadFrom(istream &strm)
 {
-  SetMinSize(100);
-  char * ptr = theArray;
+  PINDEX bump = 16;
   PINDEX len = 0;
-  int ch;
-  while ((ch = strm.get()) != EOF && ch != '\n') {
-    *ptr++ = (char)ch;
-    len++;
-    if (len >= GetSize()) {
-      SetSize(len + 100);
-      ptr = theArray + len;
+  do {
+    if (!SetMinSize(len + (bump *= 2))) {
+      strm.setstate(ios::badbit);
+      return;
     }
-  }
-  *ptr = '\0';
-  if ((len > 0) && (ptr[-1] == '\r'))
-    ptr[-1] = '\0';
+
+    strm.clear();
+    strm.getline(theArray + len, GetSize() - len);
+    len += strm.gcount();
+  } while (strm.fail());
+
+  if (len > 0 && !strm.eof())
+    --len; // Allow for extracted '\n'
+
+  if (len > 0 && theArray[len-1] == '\r')
+    theArray[len-1] = '\0';
+
   PAssert(MakeMinimumSize(), POutOfMemory);
 }
 
