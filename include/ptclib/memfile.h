@@ -56,6 +56,10 @@ class PMemoryFile : public PFile
     PMemoryFile(
       const PBYTEArray & data  ///< New content filr memory file.
     );
+
+    /**Destroy the memory file
+      */
+    ~PMemoryFile();
   //@}
 
 
@@ -75,6 +79,44 @@ class PMemoryFile : public PFile
 
   /**@name Overrides from class PChannel */
   //@{
+    /**Open the current file in the specified mode and with
+       the specified options. If the file object already has an open file then
+       it is closed.
+       
+       If there has not been a filename attached to the file object (via
+       <code>SetFilePath()</code>, the <code>name</code> parameter or a previous
+       open) then a new unique temporary filename is generated.
+
+       @return
+       true if the file was successfully opened.
+     */
+    virtual PBoolean Open(
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // Options for open operation.
+    );
+
+    /**Open the specified file name in the specified mode and with
+       the specified options. If the file object already has an open file then
+       it is closed.
+       
+       Note: if <code>mode</code> is StandardInput, StandardOutput or StandardError,
+       then the <code>name</code> parameter is ignored.
+
+       @return
+       true if the file was successfully opened.
+     */
+    virtual PBoolean Open(
+      const PFilePath & name,    // Name of file to open.
+      OpenMode mode = ReadWrite, // Mode in which to open the file.
+      int opts = ModeDefault     // <code>OpenOptions</code> enum# for open operation.
+    );
+      
+    /** Close the channel, shutting down the link to the data source.
+
+       @return true if the channel successfully closed.
+     */
+    virtual PBoolean Close();
+
     /**Low level read from the memory file channel. The read timeout is
        ignored.  The GetLastReadCount() function returns the actual number
        of bytes read.
@@ -115,7 +157,7 @@ class PMemoryFile : public PFile
        @return
        length of file in bytes.
      */
-    off_t GetLength() const;
+    virtual off_t GetLength() const;
       
     /**Set the size of the file, padding with 0 bytes if it would require
        expanding the file, or truncating it if being made shorter.
@@ -123,7 +165,7 @@ class PMemoryFile : public PFile
        @return
        true if the file size was changed to the length specified.
      */
-    PBoolean SetLength(
+    virtual PBoolean SetLength(
       off_t len   ///< New length of file.
     );
 
@@ -137,7 +179,7 @@ class PMemoryFile : public PFile
        @return
        true if the new file position was set.
      */
-    PBoolean SetPosition(
+    virtual PBoolean SetPosition(
       off_t pos,                         ///< New position to set.
       FilePositionOrigin origin = Start  ///< Origin for position change.
     );
@@ -148,7 +190,7 @@ class PMemoryFile : public PFile
        @return
        current file position relative to start of file.
      */
-    off_t GetPosition() const;
+    virtual off_t GetPosition() const;
   //@}
 
 
@@ -156,13 +198,13 @@ class PMemoryFile : public PFile
   //@{
     /**Get the memory data the file has operated with.
       */
-    const PBYTEArray & GetData() const { return data; }
+    const PBYTEArray & GetData() const { return m_data; }
   //@}
 
 
   protected:
-    PBYTEArray data;
-    off_t position;
+    PBYTEArray m_data;
+    off_t      m_position;
 };
 
 
