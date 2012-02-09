@@ -621,7 +621,7 @@ void PMIMEInfo::ReadFrom(istream &strm)
 
   PString line;
   PString lastLine;
-  while (!strm.bad() && !strm.eof()) {
+  while (strm.good()) {
     strm >> line;
     if (line.IsEmpty())
       break;
