@@ -1129,7 +1129,7 @@ void PString::ReadFrom(istream &strm)
 
     strm.clear();
     strm.getline(theArray + m_length, GetSize() - m_length);
-    m_length += strm.gcount();
+    m_length += (PINDEX)strm.gcount();
   } while (strm.fail());
 
   if (m_length > 0 && !strm.eof())
