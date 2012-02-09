@@ -1119,19 +1119,22 @@ void PString::PrintOn(ostream &strm) const
 
 void PString::ReadFrom(istream &strm)
 {
-  SetMinSize(100);
-  char * ptr = theArray;
+  PINDEX bump = 16;
   m_length = 0;
-  int ch;
-  while ((ch = strm.get()) != EOF && ch != '\n') {
-    *ptr++ = (char)ch;
-    m_length++;
-    if (m_length >= GetSize()) {
-      SetMinSize(m_length + 100);
-      ptr = theArray + m_length;
+  do {
+    if (!SetMinSize(m_length + (bump *= 2))) {
+      strm.setstate(ios::badbit);
+      return;
     }
-  }
-  *ptr = '\0';
+
+    strm.clear();
+    strm.getline(theArray + m_length, GetSize() - m_length);
+    m_length += strm.gcount();
+  } while (strm.fail());
+
+  if (m_length > 0 && !strm.eof())
+    --m_length; // Allow for extracted '\n'
+
   if (m_length > 0 && theArray[m_length-1] == '\r')
     theArray[--m_length] = '\0';
 
