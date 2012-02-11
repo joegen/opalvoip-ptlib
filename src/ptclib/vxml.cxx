@@ -240,7 +240,7 @@ void PVXMLPlayable::OnStop()
 
 bool PVXMLPlayableStop::OnStart()
 {
-  if (PAssertNULL(m_vxmlChannel) == NULL)
+  if (m_vxmlChannel == NULL)
     return false;
 
   m_vxmlChannel->SetSilence(500);
