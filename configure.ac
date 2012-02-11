@@ -1303,6 +1303,10 @@ dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_EXPAT_BUILD=1
 dnl MSWIN_DIR_SYMBOL expat,EXPAT_BUILD_DIR
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_DEBUG,expat.lib,Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_RELEASE,expat.lib,Release
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_DEBUG,libexpat.lib,win32/bin/Debug
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_RELEASE,libexpat.lib,win32/bin/Release
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_DEBUG,libexpatMT.lib,win32/bin/Debug
+dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W32_RELEASE,libexpatMT.lib,win32/bin/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM5_DEBUG,expat.lib,wm5/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM5_RELEASE,expat.lib,wm5/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_DEBUG,expat.lib,wm6/Debug
