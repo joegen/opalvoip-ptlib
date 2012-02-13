@@ -525,11 +525,10 @@ class PProcess : public PThread
       int newLimit  ///< New limit on file handles
     );
 
-#ifdef P_CONFIG_FILE
+#if P_CONFIG_FILE
     /**Get the default file to use in PConfig instances.
       */
     virtual PString GetConfigurationFile();
-#endif
 
     /**Set the default file or set of directories to search for use in PConfig.
        To find the .ini file for use in the default PConfig() instance, this
@@ -547,6 +546,7 @@ class PProcess : public PThread
     void SetConfigurationPath(
       const PString & path   ///< Explicit file or set of directories
     );
+#endif // P_CONFIG_FILE
   //@}
 
   /**@name Operating System information functions */
