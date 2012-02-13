@@ -978,7 +978,7 @@ void PString::ReadFrom(istream &strm)
     strm.clear();
     strm.getline(theArray + len, GetSize() - len);
     len += strm.gcount();
-  } while (strm.fail());
+  } while (strm.fail() && !strm.eof());
 
   if (len > 0 && !strm.eof())
     --len; // Allow for extracted '\n'
