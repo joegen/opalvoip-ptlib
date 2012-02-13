@@ -1398,6 +1398,17 @@ class PString : public PCharArray
     PString ToUpper() const;
 
 
+    /** Split the string into two substrings around delimiter.
+        @return false if the delimiter not present.
+      */
+    bool Split(
+      char delimiter,   ///< Delimiter around which tom plit the substrings
+      PString & before, ///< Substring before delimiter
+      PString & after,  ///< Substring after delimiter
+      bool trim = true  ///< Substrings to be trimmed of whitespace
+    ) const;
+
+
     /** Split the string into an array of substrings. */
     PStringArray Tokenise(
       const PString & separators,
