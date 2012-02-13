@@ -1160,7 +1160,7 @@ void PSingleMonitoredSocket::WriteToBundle(BundleParams & param)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (guard.IsLocked() && m_info.socket != NULL || IsInterface(param.m_iface))
+  if (guard.IsLocked() && m_info.socket != NULL && IsInterface(param.m_iface))
     m_info.Write(param);
   else
     param.m_errorCode = PChannel::NotFound;
