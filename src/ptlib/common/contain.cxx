@@ -1720,6 +1720,25 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
 }
 
 
+bool PString::Split(char delimiter, PString & before, PString & after, bool trim) const
+{
+  PINDEX pos = Find(delimiter);
+  if (pos == P_MAX_INDEX)
+    return false;
+
+  if (trim) {
+    before = Left(pos).Trim();
+    after = Mid(pos+1).Trim();
+  }
+  else {
+    before = Left(pos);
+    after = Mid(pos+1);
+  }
+
+  return true;
+}
+
+
 PStringArray PString::Tokenise(const char * separators, PBoolean onePerSeparator) const
 {
   PStringArray tokens;
