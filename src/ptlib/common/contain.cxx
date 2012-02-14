@@ -35,6 +35,7 @@
 #include <ctype.h>
 
 #include <ostream>
+#include <limits>
 
 #ifdef __NUCLEUS_PLUS__
 extern "C" int vsprintf(char *, const char *, va_list);
@@ -810,7 +811,7 @@ PString::PString(ConversionType type, const char * str, ...)
 }
 
 
-template <typename T> PINDEX p_unsigned2string(T value, T base, char * str)
+template <typename T> PINDEX p_unsigned2string(T value, unsigned base, char * str)
 {
   PINDEX len = value < base ? 0 : p_unsigned2string<T>(value/base, base, str);
   value %= base;
@@ -819,45 +820,19 @@ template <typename T> PINDEX p_unsigned2string(T value, T base, char * str)
 }
 
 
-#ifdef _MSC_VER
-#pragma warning(disable:4146)
-#endif
-template <typename T> PINDEX p_signed2string(T value, T base, char * str)
+template <typename S, typename U> PINDEX p_signed2string(S value, unsigned base, char * str)
 {
-  if ((int)value >= 0)
-    return p_unsigned2string<T>(value, base, str);
+  if (value >= 0)
+    return p_unsigned2string<U>(value, base, str);
 
-  *str = '-';
-  return p_unsigned2string<T>(-value, base, str+1)+1;
+  *str++ = '-';
+  return p_unsigned2string<U>(-value, base, str);
 }
-
-template <>
-PINDEX p_signed2string(unsigned int value, unsigned int base, char * str)
-{
-  return p_unsigned2string<unsigned int>(value, base, str);
-}
-
-template <>
-PINDEX p_signed2string(unsigned short value, unsigned short base, char * str)
-{
-  return p_unsigned2string<unsigned short>(value, base, str);
-}
-
-template <>
-PINDEX p_signed2string(unsigned char value, unsigned char base, char * str)
-{
-  return p_unsigned2string<unsigned char>(value, base, str);
-}
-
-
-#ifdef _MSC_VER
-#pragma warning(default:4146)
-#endif
 
 
 PString::PString(short n)
   : PCharArray(sizeof(short)*3+2)
-  , m_length(p_signed2string<int>(n, 10, theArray))
+  , m_length(p_signed2string<signed int, unsigned>(n, 10, theArray))
 {
 }
 
@@ -871,7 +846,7 @@ PString::PString(unsigned short n)
 
 PString::PString(int n)
   : PCharArray(sizeof(int)*3+2)
-  , m_length(p_signed2string<int>(n, 10, theArray))
+  , m_length(p_signed2string<signed int, unsigned>(n, 10, theArray))
 {
 }
 
@@ -885,7 +860,7 @@ PString::PString(unsigned int n)
 
 PString::PString(long n)
   : PCharArray(sizeof(long)*3+2)
-  , m_length(p_signed2string<long>(n, 10, theArray))
+  , m_length(p_signed2string<signed long, unsigned long>(n, 10, theArray))
 {
 }
 
@@ -899,7 +874,7 @@ PString::PString(unsigned long n)
 
 PString::PString(PInt64 n)
   : PCharArray(sizeof(PInt64)*3+2)
-  , m_length(p_signed2string<PInt64>(n, 10, theArray))
+  , m_length(p_signed2string<PInt64, PUInt64>(n, 10, theArray))
 {
 }
 
@@ -918,7 +893,7 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
 {
   // Scale it according to SI multipliers
   if (value > -1000 && value < 1000)
-    return p_signed2string<PInt64>(value, 10, theArray);
+    return p_signed2string<PInt64, PUInt64>(value, 10, theArray);
 
   if (param > 4)
     param = 4;
@@ -934,7 +909,7 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
   for (size_t i = siZero+1; i < sizeof(siTable); ++i) {
     multiplier *= 1000;
     if (absValue < multiplier*1000) {
-      length = p_signed2string<PInt64>(value/multiplier, 10, theArray);
+      length = p_signed2string<PInt64, PUInt64>(value/multiplier, 10, theArray);
       param -= length;
       if (param > 0) {
         theArray[length++] = '.';
@@ -953,16 +928,17 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
   return length;
 }
 
-template <typename T> PINDEX p_convert(PString::ConversionType type, T value, unsigned param, char * theArray)
+template <typename S, typename U>
+  PINDEX p_convert(PString::ConversionType type, S value, unsigned param, char * theArray)
 {
 #define GetClass() NULL
   PAssert(param >= 2 && param <= 36, PInvalidParameter);
   switch (type) {
     case PString::Signed :
-      return p_signed2string<T>(value, (T)param, theArray);
+      return p_signed2string<S, U>(value, param, theArray);
 
     case PString::Unsigned :
-      return p_unsigned2string<T>(value, (T)param, theArray);
+      return p_unsigned2string<U>(value, param, theArray);
 
     case PString::ScaleSI :
       return InternalConvertScaleSI(value, param, theArray);
@@ -976,23 +952,28 @@ template <typename T> PINDEX p_convert(PString::ConversionType type, T value, un
 #undef GetClass
 }
 
-#define PSTRING_CONV_CTOR(intType) \
-PString::PString(ConversionType type, intType value, unsigned param) \
+#define PSTRING_CONV_CTOR(sign, intType) \
+PString::PString(ConversionType type, sign intType value, unsigned param) \
   : PCharArray(sizeof(intType)*3+1) \
 { \
-  m_length = p_convert<intType>(type, value, param, theArray); \
+  m_length = p_convert<intType, unsigned intType>(type, value, param, theArray); \
 }
 
-PSTRING_CONV_CTOR(PInt64);
-PSTRING_CONV_CTOR(PUInt64);
-PSTRING_CONV_CTOR(unsigned long );
-PSTRING_CONV_CTOR(  signed long );
-PSTRING_CONV_CTOR(unsigned int  );
-PSTRING_CONV_CTOR(  signed int  );
-PSTRING_CONV_CTOR(unsigned short);
-PSTRING_CONV_CTOR(  signed short);
-PSTRING_CONV_CTOR(unsigned char );
-PSTRING_CONV_CTOR(  signed char );
+PSTRING_CONV_CTOR(unsigned, char );
+PSTRING_CONV_CTOR(        , short);
+PSTRING_CONV_CTOR(unsigned, short);
+PSTRING_CONV_CTOR(        , int  );
+PSTRING_CONV_CTOR(unsigned, int  );
+PSTRING_CONV_CTOR(        , long );
+PSTRING_CONV_CTOR(unsigned, long );
+PSTRING_CONV_CTOR(        , PInt64);
+
+PString::PString(ConversionType type, PUInt64 value, unsigned param)
+  : PCharArray(sizeof(PUInt64)*3+1)
+{
+  m_length = p_convert<PInt64, PUInt64>(type, value, param, theArray);
+}
+
 
 PString::PString(ConversionType type, double value, unsigned places)
 {
@@ -1030,7 +1011,7 @@ PString::PString(ConversionType type, double value, unsigned places)
 PString & PString::operator=(short n)
 {
   SetMinSize(sizeof(short)*3+1);
-  m_length = p_signed2string<int>(n, 10, theArray);
+  m_length = p_signed2string<signed int, unsigned int>(n, 10, theArray);
   return *this;
 }
 
@@ -1046,7 +1027,7 @@ PString & PString::operator=(unsigned short n)
 PString & PString::operator=(int n)
 {
   SetMinSize(sizeof(int)*3+1);
-  m_length = p_signed2string<int>(n, 10, theArray);
+  m_length = p_signed2string<signed int, unsigned int>(n, 10, theArray);
   return *this;
 }
 
@@ -1062,7 +1043,7 @@ PString & PString::operator=(unsigned int n)
 PString & PString::operator=(long n)
 {
   SetMinSize(sizeof(long)*3+1);
-  m_length = p_signed2string<long>(n, 10, theArray);
+  m_length = p_signed2string<signed long,  unsigned long>(n, 10, theArray);
   return *this;
 }
 
@@ -1078,7 +1059,7 @@ PString & PString::operator=(unsigned long n)
 PString & PString::operator=(PInt64 n)
 {
   SetMinSize(sizeof(PInt64)*3+1);
-  m_length = p_signed2string<PInt64>(n, 10, theArray);
+  m_length = p_signed2string<PInt64, PUInt64>(n, 10, theArray);
   return *this;
 }
 
