@@ -229,17 +229,18 @@ HRESULT GetFilteredDSoundDeviceInfo (const GUID & deviceId, PSoundChannelDirectS
 
 // Get the DSoundDeviceInfo for the default device (communications or audio) in the given direction
 
-HRESULT GetDefaultDeviceGUID (PString name, PSoundChannelDirectSound::Directions direction, GUID & guid) // static
+static HRESULT GetDefaultDeviceGUID(const PCaselessString & name, PSoundChannelDirectSound::Directions direction, GUID & guid) // static
 {
   PAssert(direction == PSoundChannelDirectSound::Player || direction == PSoundChannelDirectSound::Recorder, "Invalid device direction parameter");
 
   LPCGUID defaultGUID = NULL;
-  if ((name *= "Default communications") && PProcess::IsOSVersion(6, 1)) // Windows 7
+  if (name == "Default communications" && PProcess::IsOSVersion(6, 1)) // Windows 7
     defaultGUID = (direction == PSoundChannelDirectSound::Player)? &DSDEVID_DefaultVoicePlayback  : &DSDEVID_DefaultVoiceCapture;
   else {
     defaultGUID = (direction == PSoundChannelDirectSound::Player)? &DSDEVID_DefaultPlayback  : &DSDEVID_DefaultCapture;
-    if (!((name *= "Default audio") || (name *= "Default")))
-      PTRACE(4, "dsound\tOpen " << PSoundChannelDirectSound::GetDirectionText(direction) << ": device \"" << name << "\" not found, substituting default");
+    PTRACE_IF(4, name != "Default audio" && name != "Default",
+              "dsound\tOpen " << PSoundChannelDirectSound::GetDirectionText(direction)
+              << ": device \"" << name << "\" not found, substituting default");
   }
   return GetDeviceID(defaultGUID, &guid);
 }
@@ -547,14 +548,16 @@ PBoolean PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count) // pub
   else
     SetBufferSections(size, count);
 
+#if PTRACING
   if (PTrace::CanTrace(4)) {
     ostream & stream = PTrace::Begin(4, __FILE__, __LINE__);
     stream << "dsound\t" << GetDirectionText() << " SetBuffers: count " << m_bufferSectionCount << " x size " << m_bufferSectionSize << " = " << m_bufferSize << " bytes";
     if (m_waveFormat.nAvgBytesPerSec)
-	  stream << " = " << m_bufferSize * 1000 / m_waveFormat.nAvgBytesPerSec << " ms";
-
-	stream << PTrace::End;
+      stream << " = " << m_bufferSize * 1000 / m_waveFormat.nAvgBytesPerSec << " ms";
+    stream << PTrace::End;
   }
+#endif
+
   return true;
 }
 
@@ -888,8 +891,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
 
       m_playbackBuffer->Unlock(pointer1, length1, pointer2, length2);
 
-      if (m_moved == 0ui64)
-        PTRACE(4, "dsound\tPlayback starting");
+      PTRACE_IF(4, m_moved == 0, "dsound\tPlayback starting");
 
       PINDEX writeCount = length1 + length2;
       src += writeCount;
