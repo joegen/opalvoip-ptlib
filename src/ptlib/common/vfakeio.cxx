@@ -1481,6 +1481,8 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
 
 
  protected:
+   bool m_open;
+
     enum {
       eRGB32,
       eRGB24,
@@ -1504,6 +1506,7 @@ PCREATE_VIDINPUT_PLUGIN(FakeVideo);
 
 PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
   : m_Pacing(500)
+  , m_open(false)
 {
   SetColourFormat("RGB24");
   channelNumber = 3; // Blank screen
@@ -1525,31 +1528,33 @@ PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*s
   }
 
   deviceName = FakeDeviceNames[i];
+  m_open = true;
   return true;
 }
 
 
 PBoolean PVideoInputDevice_FakeVideo::IsOpen() 
 {
-  return PTrue;
+  return m_open;
 }
 
 
 PBoolean PVideoInputDevice_FakeVideo::Close()
 {
-  return PTrue;
+  m_open = false;
+  return true;
 }
 
 
 PBoolean PVideoInputDevice_FakeVideo::Start()
 {
-  return PTrue;
+  return IsOpen();
 }
 
 
 PBoolean PVideoInputDevice_FakeVideo::Stop()
 {
-  return PTrue;
+  return IsOpen();
 }
 
 
@@ -1657,6 +1662,9 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameData(BYTE * buffer, PINDEX * bytes
  
 PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
+  if (!IsOpen())
+    return false;
+
   m_grabCount++;
 
   // Make sure are NUM_PATTERNS cases here.
