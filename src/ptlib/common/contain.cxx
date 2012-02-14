@@ -813,7 +813,7 @@ PString::PString(ConversionType type, const char * str, ...)
 
 template <typename T> PINDEX p_unsigned2string(T value, unsigned base, char * str)
 {
-  PINDEX len = value < base ? 0 : p_unsigned2string<T>(value/base, base, str);
+  PINDEX len = value < base ? 0 : p_unsigned2string<T>((T)(value/base), base, str);
   value %= base;
   str[len] = (char)(value < 10 ? (value + '0') : (value + 'A'-10));
   return len+1;
@@ -966,7 +966,12 @@ PSTRING_CONV_CTOR(        , int  );
 PSTRING_CONV_CTOR(unsigned, int  );
 PSTRING_CONV_CTOR(        , long );
 PSTRING_CONV_CTOR(unsigned, long );
-PSTRING_CONV_CTOR(        , PInt64);
+
+PString::PString(ConversionType type, PInt64 value, unsigned param)
+  : PCharArray(sizeof(PInt64)*3+1)
+{
+  m_length = p_convert<PInt64, PUInt64>(type, value, param, theArray);
+}
 
 PString::PString(ConversionType type, PUInt64 value, unsigned param)
   : PCharArray(sizeof(PUInt64)*3+1)
