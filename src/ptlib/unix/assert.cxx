@@ -89,6 +89,11 @@ static PBoolean PAssertAction(int c, const char * msg)
 void PAssertFunc(const char * msg)
 
 {
+  static PBoolean inAssert;
+  if (inAssert)
+    return;
+  inAssert = PTrue;
+
 #ifdef P_BEOS
   // Print location in Eddie-compatible format
   PError << msg << endl;
@@ -99,18 +104,14 @@ void PAssertFunc(const char * msg)
   // start the Be Debugger.
   debugger(msg);
 #else
-  static PBoolean inAssert;
-  if (inAssert)
-    return;
-  inAssert = PTrue;
-
 #if PTRACING
-  ostream & trace = PTrace::Begin(0, __FILE__, __LINE__);
-  trace << "PWLib\t" << msg << PTrace::End;
-
-  if (&trace != &PError)
-    PError << msg << endl;
+  if (PTrace::GetStream() != &PError) {
+    ostream & trace = PTrace::Begin(0, __FILE__, __LINE__);
+    trace << "PTLib\t" << msg << PTrace::End;
+  }
 #endif
+
+  PError << msg << endl;
 
   char *env;
 
@@ -130,7 +131,7 @@ void PAssertFunc(const char * msg)
   }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
-  if (!isatty(STDIN_FILENO)) {
+  if (isatty(STDIN_FILENO) != 1) {
     inAssert = PFalse;
     return;
   }

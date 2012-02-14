@@ -369,19 +369,26 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
   if (level > m_thresholdLevel)
     return;
 
-  static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
-    LOG_CRIT,    // LogFatal,   
-    LOG_ERR,     // LogError,   
-    LOG_WARNING, // LogWarning, 
-    LOG_INFO,    // LogInfo,    
-    LOG_DEBUG,   // LogDebug
-    LOG_DEBUG,
-    LOG_DEBUG,
-    LOG_DEBUG,
-    LOG_DEBUG,
-    LOG_DEBUG
-  };
-  syslog(PwlibLogToUnixLog[level], "%s", msg);
+  int syslog_level;
+  switch (level) {
+    case PSystemLog::Fatal :
+      syslog_level = LOG_CRIT;
+      break;
+    case PSystemLog::Error :
+      syslog_level = LOG_ERR;
+      break;
+    case PSystemLog::StdError :
+    case PSystemLog::Warning :
+      syslog_level = LOG_WARNING;
+      break;
+    case PSystemLog::Info :
+      syslog_level = LOG_INFO;
+      break;
+    default :
+      syslog_level = LOG_DEBUG;
+  }
+
+  syslog(syslog_level, "%s", msg);
 }
 #endif
 
