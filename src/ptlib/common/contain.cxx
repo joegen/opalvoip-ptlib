@@ -952,32 +952,22 @@ template <typename S, typename U>
 #undef GetClass
 }
 
-#define PSTRING_CONV_CTOR(sign, intType) \
-PString::PString(ConversionType type, sign intType value, unsigned param) \
-  : PCharArray(sizeof(intType)*3+1) \
+#define PSTRING_CONV_CTOR(paramType, signedType, unsignedType) \
+PString::PString(ConversionType type, paramType value, unsigned param) \
+  : PCharArray(sizeof(paramType)*3+1) \
 { \
-  m_length = p_convert<intType, unsigned intType>(type, value, param, theArray); \
+  m_length = p_convert<signedType, unsignedType>(type, value, param, theArray); \
 }
 
-PSTRING_CONV_CTOR(unsigned, char );
-PSTRING_CONV_CTOR(        , short);
-PSTRING_CONV_CTOR(unsigned, short);
-PSTRING_CONV_CTOR(        , int  );
-PSTRING_CONV_CTOR(unsigned, int  );
-PSTRING_CONV_CTOR(        , long );
-PSTRING_CONV_CTOR(unsigned, long );
-
-PString::PString(ConversionType type, PInt64 value, unsigned param)
-  : PCharArray(sizeof(PInt64)*3+1)
-{
-  m_length = p_convert<PInt64, PUInt64>(type, value, param, theArray);
-}
-
-PString::PString(ConversionType type, PUInt64 value, unsigned param)
-  : PCharArray(sizeof(PUInt64)*3+1)
-{
-  m_length = p_convert<PInt64, PUInt64>(type, value, param, theArray);
-}
+PSTRING_CONV_CTOR(unsigned char,  char,   unsigned char);
+PSTRING_CONV_CTOR(         short, short,  unsigned short);
+PSTRING_CONV_CTOR(unsigned short, short,  unsigned short);
+PSTRING_CONV_CTOR(         int,   int,    unsigned int);
+PSTRING_CONV_CTOR(unsigned int,   int,    unsigned int);
+PSTRING_CONV_CTOR(         long,  long,   unsigned long);
+PSTRING_CONV_CTOR(unsigned long,  long,   unsigned long);
+PSTRING_CONV_CTOR(       PInt64,  PInt64, PUInt64);
+PSTRING_CONV_CTOR(      PUInt64,  PInt64, PUInt64);
 
 
 PString::PString(ConversionType type, double value, unsigned places)
