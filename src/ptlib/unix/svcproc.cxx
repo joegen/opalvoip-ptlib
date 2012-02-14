@@ -180,25 +180,30 @@ int PServiceProcess::InitialiseService()
              "h-help."
              "x-execute."
              "p-pid-file:"
-       "H-handlemax:"
+             "H-handlemax:"
              "i-ini-file:"
              "k-kill."
              "t-terminate."
+             "r-remote-log:"
              "s-status."
              "l-log-file:"
              "u-uid:"
              "g-gid:"
+#ifdef P_LINUX
              "C-core-size:"
-           , false);
+#endif
+             , false);
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
-    cout << "Product Name: " << productName << endl
-         << "Manufacturer: " << manufacturer << endl
-         << "Version     : " << GetVersion(PTrue) << endl
-         << "System      : " << GetOSName() << '-'
-                             << GetOSHardware() << ' '
-                             << GetOSVersion() << endl;
+    cout << "Product Name: " << productName << "\n"
+            "Manufacturer: " << manufacturer << "\n"
+            "Version     : " << GetVersion(true) << "\n"
+            "System      : " << PProcess::GetOSClass() << ' '
+                             << GetOSName() << ' '
+                             << GetOSVersion() << '('
+                             << GetOSHardware() << ")\n"
+            "PTLib       : " << PProcess::GetLibVersion() << endl;
     return 0;
   }
 
@@ -271,6 +276,71 @@ int PServiceProcess::InitialiseService()
     return 1;
   }
 
+  bool usage = false;
+  if (args.HasOption('h'))
+    usage = true;
+  else if (args.HasOption('d') == args.HasOption('x')) {
+    cout << "error: must specify exactly one of -v, -h, -d or -x" << endl;
+    usage = true;
+  }
+  else if (((args.HasOption('c')?1:0)+(args.HasOption('l')?1:0)+(args.HasOption('r')?1:0)) > 1) {
+    cout << "error: must specify at most one of -c, -l or -r" << endl;
+    usage = true;
+  }
+
+  // if displaying help, then do it
+  if (usage) {
+    cout << "usage: " << GetFile().GetTitle() << " [ options ] { -v | -h | -d | -x }\n"
+            "\n"
+            "Options:\n"
+            "  -h --help             output this help message and exit\n"
+            "  -v --version          display version information and exit\n"
+#if !defined(BE_THREADS) && !defined(P_RTEMS)
+            "  -d --daemon           run as a daemon\n"
+#endif
+            "  -u --uid uid          set user id to run as\n"
+            "  -g --gid gid          set group id to run as\n"
+            "  -p --pid-file         name or directory for pid file\n"
+            "  -t --terminate        orderly terminate process in pid file\n"
+            "  -k --kill             preemptively kill process in pid file\n"
+            "  -s --status           check to see if daemon is running\n"
+            "  -c --console          output messages to stdout rather than syslog\n"
+            "  -l --log-file file    output messages to file or directory instead of syslog\n"
+            "  -r --remote-log host  output messages to file or directory instead of syslog\n"
+            "  -x --execute          execute as a normal program\n"
+            "  -i --ini-file         set the ini file to use, may be explicit file or\n"
+            "                        a ':' separated set of directories to search.\n"
+            "  -H --handlemax n      set maximum number of file handles (set before uid/gid)\n"
+#ifdef P_LINUX
+            "  -C --core-size        set the maximum core file size\n"
+#endif
+         << endl;
+    return 2;
+  }
+
+  // set flag for console messages
+  if (args.HasOption('c')) {
+    PSystemLog::SetTarget(new PSystemLogToStderr());
+    debugMode = true;
+  }
+  else if (args.HasOption('l')) {
+    PFilePath fileName = args.GetOptionString('l');
+    if (fileName.IsEmpty()) {
+      cout << "error: must specify file name for -l" << endl;
+      return 1;
+    }
+    else if (PDirectory::Exists(fileName))
+      fileName = PDirectory(fileName) + PProcess::Current().GetFile().GetFileName() + ".log";
+    PSystemLog::SetTarget(new PSystemLogToFile(fileName));
+  }
+  else if (args.HasOption('r'))
+    PSystemLog::SetTarget(new PSystemLogToNetwork(args.GetOptionString('r')));
+  else
+    PSystemLog::SetTarget(new PSystemLogToSyslog());
+
+  // open the system logger for this program
+  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(PTrue));
+
   // Set the gid we are running under
   if (args.HasOption('g')) {
     PString gidstr = args.GetOptionString('g');
@@ -289,64 +359,8 @@ int PServiceProcess::InitialiseService()
     }
   }
 
-  PBoolean helpAndExit = PFalse;
-
-  // if displaying help, then do it
-  if (args.HasOption('h')) 
-    helpAndExit = PTrue;
-  else if (!args.HasOption('d') && !args.HasOption('x')) {
-    cout << "error: must specify one of -v, -h, -t, -k, -d or -x" << endl;
-    helpAndExit = PTrue;
-  }
-
-  // set flag for console messages
-  if (args.HasOption('c')) {
-    PSystemLog::SetTarget(new PSystemLogToStderr());
-    debugMode = PTrue;
-  }
-
-  if (args.HasOption('l')) {
-    PFilePath fileName = args.GetOptionString('l');
-    if (fileName.IsEmpty()) {
-      cout << "error: must specify file name for -l" << endl;
-      helpAndExit = PTrue;
-    }
-    else if (PDirectory::Exists(fileName))
-      fileName = PDirectory(fileName) + PProcess::Current().GetFile().GetFileName() + ".log";
-    PSystemLog::SetTarget(new PSystemLogToFile(fileName));
-  }
-
-  if (helpAndExit) {
-    cout << "usage: [-c] -v|-d|-h|-x\n"
-            "  -h --help           output this help message and exit\n"
-            "  -v --version        display version information and exit\n"
-#if !defined(BE_THREADS) && !defined(P_RTEMS)
-            "  -d --daemon         run as a daemon\n"
-#endif
-            "  -u --uid uid        set user id to run as\n"
-            "  -g --gid gid        set group id to run as\n"
-            "  -p --pid-file       name or directory for pid file\n"
-            "  -t --terminate      orderly terminate process in pid file\n"
-            "  -k --kill           preemptively kill process in pid file\n"
-            "  -s --status         check to see if daemon is running\n"
-            "  -c --console        output messages to stdout rather than syslog\n"
-            "  -l --log-file file  output messages to file or directory instead of syslog\n"
-            "  -x --execute        execute as a normal program\n"
-            "  -i --ini-file       set the ini file to use, may be explicit file or\n"
-            "                      a ':' separated set of directories to search.\n"
-            "  -H --handlemax n    set maximum number of file handles (set before uid/gid)\n"
-#ifdef P_LINUX
-            "  -C --core-size      set the maximum core file size\n"
-#endif
-         << endl;
-    return 0;
-  }
-
-  // open the system logger for this program
-  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(PTrue));
-
   if (args.HasOption('i'))
-    SetConfigurationPath(PFilePath(args.GetOptionString('i')));
+    SetConfigurationPath(args.GetOptionString('i'));
 
   if (args.HasOption('H')) {
     int uid = geteuid();
@@ -355,9 +369,9 @@ int PServiceProcess::InitialiseService()
     seteuid(uid);
   }
 
+#ifdef P_LINUX
   // set the core file size
   if (args.HasOption('C')) {
-#ifdef P_LINUX
     struct rlimit rlim;
     if (getrlimit(RLIMIT_CORE, &rlim) != 0) 
       cout << "Could not get current core file size : error = " << errno << endl;
@@ -374,8 +388,12 @@ int PServiceProcess::InitialiseService()
       }
       seteuid(uid);
     }
-#endif
   }
+#endif
+
+  // We are a service, don't want to get blocked on input from stdin during asserts
+  if (!debugMode)
+    ::close(STDIN_FILENO);
 
 #if !defined(BE_THREADS) && !defined(P_RTEMS)
   if (!args.HasOption('d'))
@@ -435,9 +453,6 @@ int PServiceProcess::InitialiseService()
   signal(SIGSEGV, PXSignalHandler);
   signal(SIGFPE, PXSignalHandler);
   signal(SIGBUS, PXSignalHandler);
-
-  // Also if in background, don't want to get blocked on input from stdin
-  ::close(STDIN_FILENO);
 
 #endif // !BE_THREADS && !P_RTEMS
 #endif // !P_VXWORKS
