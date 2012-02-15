@@ -1505,8 +1505,8 @@ PCREATE_VIDINPUT_PLUGIN(FakeVideo);
 
 
 PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
-  : m_Pacing(500)
-  , m_open(false)
+  : m_open(false)
+  , m_Pacing(500)
 {
   SetColourFormat("RGB24");
   channelNumber = 3; // Blank screen
