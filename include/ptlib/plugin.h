@@ -26,31 +26,21 @@ template <class AbstractClass, typename KeyType = PDefaultPFactoryKey>
 class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
 {
   public:
-    class Worker : public PFactory<AbstractClass, KeyType>::WorkerBase 
+    typedef PFactory<AbstractClass, KeyType> Base_T;
+    typedef typename Base_T::WorkerBase WorkerBase_T;
+
+    class Worker : protected WorkerBase_T
     {
       public:
         Worker(const KeyType & key, bool singleton = false)
-          : PFactory<AbstractClass, KeyType>::WorkerBase(singleton)
+          : WorkerBase_T(singleton)
         {
-          PFactory<AbstractClass, KeyType>::Register(key, this);
+          Base_T::Register(key, this);
         }
 
         ~Worker()
         {
-          typedef typename PFactory<AbstractClass, KeyType>::WorkerBase WorkerBase_T;
-          typedef std::map<KeyType, WorkerBase_T *> KeyMap_T;
-          KeyType key;
-
-          KeyMap_T km = PFactory<AbstractClass, KeyType>::GetKeyMap();
-
-          typename KeyMap_T::const_iterator entry;
-          for (entry = km.begin(); entry != km.end(); ++entry) {
-            if (entry->second == this) {
-              key = entry->first;
-              break;
-            }
-          }
-          PFactory<AbstractClass, KeyType>::Unregister(key);
+          Base_T::Unregister(this);
         }
 
       protected:
