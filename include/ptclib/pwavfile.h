@@ -49,17 +49,10 @@ class PWAVFile;
 
 namespace PWAV {
 
-#ifdef __GNUC__
-#define P_PACKED    __attribute__ ((packed));
-#else
-#define P_PACKED
-#pragma pack(1)
-#endif
-
   struct ChunkHeader
   {
     char    tag[4];
-    PInt32l len    P_PACKED;
+    P_PACK_FIELD(PInt32l len);
   };
 
   struct RIFFChunkHeader
@@ -70,22 +63,17 @@ namespace PWAV {
 
   struct FMTChunk
   {
-    ChunkHeader hdr;                    ///< chunk header (already packed)
-    PUInt16l format          P_PACKED;  ///< Format
-    PUInt16l numChannels     P_PACKED;  ///< Channels 0x01 = mono, 0x02 = stereo
-    PUInt32l sampleRate      P_PACKED;  ///< Sample Rate in Hz
-    PUInt32l bytesPerSec     P_PACKED;  ///< Average bytes Per Second
-    PUInt16l bytesPerSample  P_PACKED;  ///< Bytes Per Sample, eg 2
-    PUInt16l bitsPerSample   P_PACKED;  ///< Bits Per Sample, eg 16
+    ChunkHeader hdr;          ///< chunk header (already packed)
+    P_PACK_FIELD(PUInt16l format);          ///< Format
+    P_PACK_FIELD(PUInt16l numChannels);     ///< Channels 0x01 = mono, 0x02 = stereo
+    P_PACK_FIELD(PUInt32l sampleRate);      ///< Sample Rate in Hz
+    P_PACK_FIELD(PUInt32l bytesPerSec);     ///< Average bytes Per Second
+    P_PACK_FIELD(PUInt16l bytesPerSample);  ///< Bytes Per Sample, eg 2
+    P_PACK_FIELD(PUInt16l bitsPerSample);   ///< Bits Per Sample, eg 16
   };
 
 }; // namespace PWAV
 
-#ifdef __GNUC__
-#undef P_PACKED
-#else
-#pragma pack()
-#endif
 
 /**Abstract factory class for handling WAV files formats.
  */

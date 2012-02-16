@@ -853,28 +853,18 @@ PBoolean PWAVFileFormatPCM::Write(PWAVFile & file, const void * buf, PINDEX & le
 
 //////////////////////////////////////////////////////////////////
 
-#ifdef __GNUC__
-#define P_PACKED    __attribute__ ((packed));
-#else
-#define P_PACKED
-#pragma pack(1)
-#endif
-
-struct G7231ExtendedInfo {
-  PInt16l data1      P_PACKED;      // 1
-  PInt16l data2      P_PACKED;      // 480
+struct G7231ExtendedInfo
+{
+  P_PACK_FIELD(PInt16l data1);      // 1
+  P_PACK_FIELD(PInt16l data2);      // 480
 };
 
-struct G7231FACTChunk {
-  PWAV::ChunkHeader hdr;
-  PInt32l data1      P_PACKED;      // 0   Should be number of samples.
+struct G7231FACTChunk
+{
+  P_PACK_FIELD(PWAV::ChunkHeader hdr);
+  P_PACK_FIELD(PInt32l data1);      // 0   Should be number of samples.
 };
 
-#ifdef __GNUC__
-#undef P_PACKED
-#else
-#pragma pack()
-#endif
 
 
 class PWAVFileFormatG7231 : public PWAVFileFormat
