@@ -1403,6 +1403,19 @@ class PObject {
      */
     virtual PObject * Clone() const;
 
+    /** As for Clone() but converts to specified type.
+      */
+    template <class CLS>
+    CLS * CloneAs() const
+    {
+      PObject * clone = Clone();
+      CLS * obj = dynamic_cast<CLS *>(clone);
+      if (obj != NULL)
+        return obj;
+      delete clone;
+      return NULL;
+    }
+
     /** This function yields a hash value required by the <code>PDictionary</code>
        class. A descendent class that is required to be the key of a dictionary
        should override this function. The precise values returned is dependent
@@ -1589,6 +1602,13 @@ typedef PIntReversedOrder<long double> PFloat80b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
 typedef PIntSameOrder<long double> PFloat80b;
 #endif
+#endif
+
+
+#ifdef _MSC_VER
+#define P_PACK_FIELD(f) __declspec(align(1)) f
+#else
+#define P_PACK_FIELD(f) f __attribute__ ((packed))
 #endif
 
 
