@@ -55,17 +55,13 @@
 extern PString PX_GetThreadName(pthread_t);
 #endif
 
+
 PFactoryBase::FactoryMap & PFactoryBase::GetFactories()
 {
   static FactoryMap factories;
   return factories;
 }
 
-PMutex & PFactoryBase::GetFactoriesMutex()
-{
-  static PMutex mutex;
-  return mutex;
-}
 
 PFactoryBase::FactoryMap::~FactoryMap()
 {
@@ -75,6 +71,36 @@ PFactoryBase::FactoryMap::~FactoryMap()
     entry->second = NULL;
   }  
 }
+
+
+
+void PFactoryBase::FactoryMap::DestroySingletons()
+{
+  Wait();
+  for (iterator it = begin(); it != end(); ++it)
+    it->second->DestroySingletons();
+  Signal();
+}
+
+
+PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, PFactoryBase * (*createFactory)())
+{
+  FactoryMap & factories = GetFactories();
+  PWaitAndSignal mutex(factories);
+
+  FactoryMap::const_iterator entry = factories.find(className);
+  if (entry != factories.end()) {
+    PAssert(entry->second != NULL, "Factory map returned NULL for existing key");
+    return *entry->second;
+  }
+
+  PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+  PFactoryBase * factory = createFactory();
+  factories[className] = factory;
+
+  return *factory;
+}
+
 
 #if !P_USE_ASSERTS
 
