@@ -1775,11 +1775,7 @@ void PProcess::PreShutdown()
 
 void PProcess::PostShutdown()
 {
-  PWaitAndSignal mutex(PFactoryBase::GetFactoriesMutex());
-  PFactoryBase::FactoryMap & factories = PFactoryBase::GetFactories();
-  for (PFactoryBase::FactoryMap::iterator it = factories.begin(); it != factories.end(); ++it)
-    it->second->DestroySingletons();
-
+  PFactoryBase::GetFactories().DestroySingletons();
   PProcessInstance = NULL;
 }
 
