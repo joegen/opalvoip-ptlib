@@ -142,7 +142,7 @@ class PInterfaceMonitor : public PProcessStartup
     
     virtual void RefreshInterfaceList();
     
-#ifdef P_NAT
+#if P_NAT
     void OnRemoveNatMethod(const PNatMethod * natMethod);
 #endif
 
@@ -231,7 +231,7 @@ class PInterfaceMonitorClient : public PSafeObject
     virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
     
     /// Called when a NAT method is about to be destroyed
-#ifdef P_NAT
+#if P_NAT
     virtual void OnRemoveNatMethod(const PNatMethod * /*natMethod*/) { }
 #endif
     
@@ -265,9 +265,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
   protected:
     PMonitoredSockets(
       bool reuseAddr    ///< Flag for sharing socket/exclusve use
-#ifdef P_NAT
-      , PNatMethod * natMethod  ///< NET method to use to create sockets.
-#endif
+      P_NAT_PARAM(PNatMethod * natMethod)  ///< NET method to use to create sockets.
     );
 
   public:
@@ -339,7 +337,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       BundleParams & param ///< Info on data to read
     ) = 0;
 
-#ifdef P_NAT
+#if P_NAT
     /// Set the NAT method, eg STUN client pointer
     void SetNatMethod(
       PNatMethod * method
@@ -369,13 +367,11 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     static PMonitoredSockets * Create(
       const PString & iface,              ///< Interface name to create socket for
       bool reuseAddr = false              ///< Re-use or exclusive port number
-#ifdef P_NAT
-      , PNatMethod * natMethod = NULL     ///< NAT method
-#endif
+      P_NAT_PARAM(PNatMethod * natMethod = NULL)     ///< NAT method
     );
 
   protected:
-#ifdef P_NAT
+#if P_NAT
     virtual void OnRemoveNatMethod(
       const PNatMethod * natMethod
     );
@@ -414,7 +410,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
 
     WORD          localPort;
     bool          reuseAddress;
-#ifdef P_NAT
+#if P_NAT
     PNatMethod  * natMethod;
 #endif
 
@@ -552,9 +548,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
       const PString & fixedInterface, ///< Interface name for bundle, "" is all interfaces
       unsigned ipVersion,             ///< Version of IP to listen
       bool reuseAddr                  ///< Flag for sharing socket/exclusve use
-#ifdef P_NAT
-      , PNatMethod * natMethod        ///< NET method to use to create sockets.
-#endif
+      P_NAT_PARAM(PNatMethod * natMethod = NULL)  ///< NAT method to use to create sockets.
     );
     ~PMonitoredSocketBundle();
 
@@ -641,10 +635,7 @@ class PSingleMonitoredSocket : public PMonitoredSockets
     PSingleMonitoredSocket(
       const PString & theInterface, ///< Interface to bind to
       bool reuseAddr    ///< Flag for sharing socket/exclusve use
-#ifdef P_NAT
-      , PNatMethod * natMethod  ///< NET method to use to create sockets.
-#endif
-
+      P_NAT_PARAM(PNatMethod * natMethod = NULL)  ///< NET method to use to create sockets.
     );
     ~PSingleMonitoredSocket();
 
