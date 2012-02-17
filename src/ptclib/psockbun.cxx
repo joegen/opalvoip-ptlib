@@ -445,7 +445,7 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 }
 
 
-#ifdef P_NAT
+#if P_NAT
 
 void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
 {
@@ -468,7 +468,7 @@ void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
 PMonitoredSockets::PMonitoredSockets(bool reuseAddr P_NAT_PARAM(PNatMethod * nat))
   : localPort(0)
   , reuseAddress(reuseAddr)
-#ifdef P_NAT
+#if P_NAT
   , natMethod(nat)
 #endif
   , opened(false)
@@ -482,7 +482,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   delete info.socket;
   info.socket = NULL;
   
-#ifdef P_NAT
+#if P_NAT
   if (natMethod != NULL && natMethod->IsAvailable(binding)) {
     PIPSocket::Address address;
     WORD port;
@@ -703,7 +703,7 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseA
 }
 
 
-#ifdef P_NAT
+#if P_NAT
 
 void PMonitoredSockets::OnRemoveNatMethod(const PNatMethod * nat)
 {
