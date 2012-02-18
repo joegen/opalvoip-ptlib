@@ -86,10 +86,13 @@ void V4LXNames::PopulateDictionary()
   for (PStringList::iterator it = inputDeviceNames.begin(); it != inputDeviceNames.end(); ++it)
     tempList.SetAt(*it, BuildUserFriendly(*it));
 
+  if (tempList.IsEmpty())
+    return;
+
   //Now, we need to cope with the case where there are two video
   //devices available, which both have the same user friendly name.
   //Matching user friendly names have a (X) appended to the name.
-  for (PStringToString::iterator it1 = tempList.begin(); it1 != tempList.end(); ++it1) {
+  for (PStringToString::iterator it1 = (++tempList.begin()); it1 != tempList.end(); ++it1) {
     PString userName = it1->second; 
 
     PINDEX matches = 1;
