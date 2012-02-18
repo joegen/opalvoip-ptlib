@@ -126,7 +126,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
   private:
     PString GetTitle() const;
     void UpdateContent();
-    void PostEvent(unsigned code);
+    void PostEvent(unsigned codei, bool wait);
 
   friend class PSDL_Window;
 };

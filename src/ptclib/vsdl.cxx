@@ -120,23 +120,24 @@ class PSDL_Window
       : m_surface(NULL)
       , m_thread(NULL)
     {
-      SDL_version v1;
-      SDL_VERSION(&v1);
-      const SDL_version * v2 = SDL_Linked_Version();
-      PTRACE(3, "VSDL\tCompiled version: "
-             << (unsigned)v1.major << '.' << (unsigned)v1.minor << '.' << (unsigned)v1.patch
-             << "  Run-Time version: "
-             << (unsigned)v2->major << '.' << (unsigned)v2->minor << '.' << (unsigned)v2->patch);
     }
 
 
     virtual void MainLoop()
     {
-      PTRACE(4, "VSDL\tStart of event thread");
+      PTRACE(4, "SDL\tStart of event thread");
+
+      SDL_version v1;
+      SDL_VERSION(&v1);
+      const SDL_version * v2 = SDL_Linked_Version();
+      PTRACE(3, "SDL\tCompiled version: "
+             << (unsigned)v1.major << '.' << (unsigned)v1.minor << '.' << (unsigned)v1.patch
+             << "  Run-Time version: "
+             << (unsigned)v2->major << '.' << (unsigned)v2->minor << '.' << (unsigned)v2->patch);
 
       // initialise the SDL library
       if (::SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0) {
-        PTRACE(1, "VSDL\tCouldn't initialize SDL: " << ::SDL_GetError());
+        PTRACE(1, "SDL\tCouldn't initialize SDL: " << ::SDL_GetError());
         return;
       }
 
@@ -153,7 +154,7 @@ class PSDL_Window
       m_surface = NULL;
       m_thread = NULL;
 
-      PTRACE(4, "VSDL\tEnd of event thread");
+      PTRACE(4, "SDL\tEnd of event thread");
     }
 
 
@@ -161,7 +162,7 @@ class PSDL_Window
     {
       SDL_Event sdlEvent;
       if (!::SDL_WaitEvent(&sdlEvent)) {
-        PTRACE(1, "VSDL\tError getting event: " << ::SDL_GetError());
+        PTRACE(1, "SDL\tError getting event: " << ::SDL_GetError());
         return false;
       }
 
@@ -184,11 +185,14 @@ class PSDL_Window
             case e_ContentChanged :
               ((PVideoOutputDevice_SDL *)sdlEvent.user.data1)->UpdateContent();
               break;
+
+            default :
+              PTRACE(5, "SDL\tUnhandled user event " << sdlEvent.user.code);
           }
           break;
 
-        case SDL_QUIT : //User selected cross
-          PTRACE(3, "VSDL\t user selected cross on window, close window");
+        case SDL_QUIT :
+          PTRACE(3, "SDL\tUser closed window");
           for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it) {
             ::SDL_FreeYUVOverlay((*it)->m_overlay);
             (*it)->m_overlay = NULL;
@@ -198,8 +202,12 @@ class PSDL_Window
           return false;
 
         case SDL_VIDEORESIZE :
-          PTRACE(4, "VSDL\t Resize window to " << sdlEvent.resize.w << " x " << sdlEvent.resize.h);
+          PTRACE(4, "SDL\tResize window to " << sdlEvent.resize.w << " x " << sdlEvent.resize.h);
           AdjustOverlays();
+          break;
+
+        default :
+          PTRACE(5, "SDL\tUnhandled event " << (unsigned)sdlEvent.type);
       }
 
       return true;
@@ -228,7 +236,7 @@ class PSDL_Window
         m_surface = ::SDL_SetVideoMode(device->GetFrameWidth(),
                                        device->GetFrameHeight(),
                                        0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
-        PTRACE_IF(1, m_surface == NULL, "VSDL\tCouldn't create SDL surface: " << ::SDL_GetError());
+        PTRACE_IF(1, m_surface == NULL, "SDL\tCouldn't create SDL surface: " << ::SDL_GetError());
       }
 
       AdjustOverlays();
@@ -285,7 +293,7 @@ class PSDL_Window
                                                     m_surface);
 
           if (device.m_overlay == NULL) {
-            PTRACE(1, "VSDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
+            PTRACE(1, "SDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
           }
           else {
             PINDEX sz = device.GetFrameWidth()*device.GetFrameHeight();
@@ -311,7 +319,7 @@ class PSDL_Window
       ::SDL_WM_SetCaption(title, NULL);
 
       if (::SDL_SetVideoMode(fullWidth, fullHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */) != m_surface) {
-        PTRACE(1, "VSDL\tCouldn't resize surface: " << ::SDL_GetError());
+        PTRACE(1, "SDL\tCouldn't resize surface: " << ::SDL_GetError());
       }
 
       for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
@@ -350,8 +358,7 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
   deviceName = name;
 
   PSDL_Window::GetInstance().Run();
-  PostEvent(PSDL_Window::e_AddDevice);
-  m_operationComplete.Wait();
+  PostEvent(PSDL_Window::e_AddDevice, true);
 
   return IsOpen();
 }
@@ -368,8 +375,7 @@ PBoolean PVideoOutputDevice_SDL::Close()
   if (!IsOpen())
     return false;
 
-  PostEvent(PSDL_Window::e_RemoveDevice);
-  m_operationComplete.Wait();
+  PostEvent(PSDL_Window::e_RemoveDevice, true);
 
   return true;
 }
@@ -392,10 +398,8 @@ PBoolean PVideoOutputDevice_SDL::SetFrameSize(unsigned width, unsigned height)
   if (!PVideoOutputDevice::SetFrameSize(width, height))
     return false;
 
-  if (IsOpen()) {
-    PostEvent(PSDL_Window::e_SizeChanged);
-    m_operationComplete.Wait();
-  }
+  if (IsOpen())
+    PostEvent(PSDL_Window::e_SizeChanged, true);
 
   return true;
 }
@@ -440,7 +444,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
 
   ::SDL_UnlockYUVOverlay(m_overlay);
 
-  PostEvent(PSDL_Window::e_ContentChanged);
+  PostEvent(PSDL_Window::e_ContentChanged, false);
   return true;
 }
 
@@ -469,7 +473,7 @@ void PVideoOutputDevice_SDL::UpdateContent()
 }
 
 
-void PVideoOutputDevice_SDL::PostEvent(unsigned code)
+void PVideoOutputDevice_SDL::PostEvent(unsigned code, bool wait)
 {
   SDL_Event sdlEvent;
   sdlEvent.type = SDL_USEREVENT;
@@ -477,7 +481,12 @@ void PVideoOutputDevice_SDL::PostEvent(unsigned code)
   sdlEvent.user.data1 = this;
   sdlEvent.user.data2 = NULL;
   if (::SDL_PushEvent(&sdlEvent) < 0) {
-    PTRACE(1, "VSDL\tCouldn't post event: " << ::SDL_GetError());
+    PTRACE(1, "SDL\tCouldn't post user event " << (unsigned)sdlEvent.user.code << ": " << ::SDL_GetError());
+  }
+  else {
+    PTRACE(5, "SDL\tPosted user event " << (unsigned)sdlEvent.user.code);
+    if (wait)
+      m_operationComplete.Wait();
   }
 }
 
