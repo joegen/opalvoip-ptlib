@@ -2673,14 +2673,18 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
       m_vxmlSession->Trigger();
     }
 
-    do {
+    for (;;) {
       // check the queue for the next action, if none, send silence
       m_currentPlayItem = m_playQueue.Dequeue();
       if (m_currentPlayItem == NULL)
         goto double_break;
 
       // start the new item
-    } while (!m_currentPlayItem->OnStart());
+      if (m_currentPlayItem->OnStart())
+        break;
+
+      delete m_currentPlayItem;
+    }
 
     PTRACE(4, "VXML\tStarted playing " << *m_currentPlayItem);
     SetReadTimeout(frameDelay);
@@ -2729,6 +2733,11 @@ PBoolean PVXMLChannel::QueuePlayable(const PString & type,
 
 PBoolean PVXMLChannel::QueuePlayable(PVXMLPlayable * newItem)
 {
+  if (!IsOpen()) {
+    delete newItem;
+    return false;
+  }
+
   newItem->SetSampleFrequency(GetSampleFrequency());
   m_channelReadMutex.Wait();
   m_playQueue.Enqueue(newItem);
