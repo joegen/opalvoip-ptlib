@@ -1840,7 +1840,6 @@ gotHandler:
   handler->SetAttribute("fired", "true");
   m_currentNode = handler;
   PTRACE(4, "VXML\tSetting event handler to node " << handler << " for \"" << eventName << '"');
-  ProcessNode();
   return false;
 }
 
