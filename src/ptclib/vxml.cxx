@@ -2772,11 +2772,7 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
   item->SetData(data);
 
-  if (QueuePlayable(item))
-    return true;
-
-  delete item;
-  return false;
+  return QueuePlayable(item);
 }
 
 
