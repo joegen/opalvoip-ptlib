@@ -2765,12 +2765,24 @@ void PStringToString::ReadFrom(istream & strm)
   while (strm.good()) {
     PString str;
     strm >> str;
-    PINDEX equal = str.Find('=');
-    if (equal == P_MAX_INDEX)
-      SetAt(str, PString::Empty());
+    if (str.IsEmpty())
+      continue;
+
+    PString key, value;
+    if (str.Split('=', key, value))
+      SetAt(key, value);
     else
-      SetAt(str.Left(equal), str.Mid(equal+1));
+      SetAt(str, PString::Empty());
   }
+}
+
+
+void PStringToString::FromString(const PString & str)
+{
+  RemoveAll();
+
+  PStringStream strm(str);
+  strm >> *this;
 }
 
 
