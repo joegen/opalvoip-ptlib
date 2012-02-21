@@ -2836,6 +2836,13 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
       PBoolean caselessKeys = false,   ///< New keys are to be PCaselessStrings
       PBoolean caselessValues = false  ///< New values are to be PCaselessStrings
     );
+
+    /** Initialise the string dictionary from the string.
+        The string is expected to be of the form "key=value\\nkey=value".
+      */
+    PStringToString(
+      const PString & str  ///< String to read dictionary from
+    ) { FromString(str); }
   //@}
 
   /**@name Overrides from class PObject */
@@ -2843,8 +2850,8 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
     /** Input the contents of the object from the stream. This is
        primarily used by the standard <code>operator>></code> function.
 
-       The default behaviour reads '\\n' separated strings until
-       <code>!strm.good()</code>.
+       The default behaviour reads input of the form "key=value\\nkey=value"
+       until <code>!strm.good()</code>.
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
@@ -2867,6 +2874,13 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
       bool withEqualSign,
       PCharArray * storage = NULL
     ) const;
+
+    /**Set dictionary from string.
+       The string is expected to be of the form "key=value\\nkey=value".
+      */
+    void FromString(
+      const PString & str  ///< String to read dictionary from
+    );
 };
 
 
@@ -2880,6 +2894,7 @@ class PStringOptions : public PStringToString
 {
   public:
     PStringOptions() { }
+    PStringOptions(const PString & str) : PStringToString(str) { }
     PStringOptions(const PStringToString & other) : PStringToString(other) { }
     PStringOptions & operator=(const PStringToString & other) { PStringToString::operator=(other); return *this; }
 
