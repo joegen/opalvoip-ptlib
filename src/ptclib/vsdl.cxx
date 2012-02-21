@@ -42,9 +42,7 @@
 #if P_SDL
 
 extern "C" {
-
-#include <SDL/SDL.h>
-
+  #include <SDL.h>
 };
 
 #ifdef _MSC_VER
