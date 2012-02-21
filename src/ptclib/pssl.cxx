@@ -775,7 +775,7 @@ static void InfoCallback(const SSL *ssl, int where, int ret)
 {
 #if PTRACING
   static const unsigned Level = 4;
-  if (PTrace::GetLevel() <= Level) {
+  if (PTrace::GetLevel() >= Level) {
     ostream & trace = PTrace::Begin(Level, __FILE__, __LINE__);
     trace << "SSL\t";
 
@@ -814,7 +814,7 @@ static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
 {
 #if PTRACING
   static const unsigned Level = 3;
-  if (PTrace::GetLevel() <= Level) {
+  if (PTrace::GetLevel() >= Level) {
     X509 * err_cert = X509_STORE_CTX_get_current_cert(ctx);
     //int err         = X509_STORE_CTX_get_error(ctx);
 
@@ -854,7 +854,7 @@ PSSLContext::PSSLContext(Method method, const void * sessionId, PINDEX idSize)
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 {
-  Construct(SSLv3, sessionId, idSize);
+  Construct(TLSv1, sessionId, idSize);
 }
 
 void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
