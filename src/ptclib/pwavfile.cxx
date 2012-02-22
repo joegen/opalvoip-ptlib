@@ -90,14 +90,14 @@ PWAVFile::PWAVFile(unsigned fmt)
   SelectFormat(fmt);
 }
 
-PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
+PWAVFile::PWAVFile(OpenMode mode, OpenOptions opts, unsigned fmt)
   : PFile(mode, opts), origFmt(fmt)
 {
   Construct();
   SelectFormat(fmt);
 }
 
-PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, unsigned fmt)
+PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, OpenOptions opts, unsigned fmt)
   : origFmt(fmt)
 {
   Construct();
@@ -109,7 +109,7 @@ PWAVFile::PWAVFile(
   const PString & format,  
   const PFilePath & name,  
   OpenMode mode,
-  int opts 
+  OpenOptions opts 
 )
 {
   origFmt = 0xffffffff;
@@ -149,7 +149,7 @@ PWAVFile * PWAVFile::format(const PString & format)
   return file;
 }
 
-PWAVFile * PWAVFile::format(const PString & format, PFile::OpenMode mode, int opts)
+PWAVFile * PWAVFile::format(const PString & format, PFile::OpenMode mode, OpenOptions opts)
 {
   PWAVFile * file = new PWAVFile(mode, opts);
   file->origFmt = 0xffffffff;
@@ -192,7 +192,7 @@ bool PWAVFile::SelectFormat(const PString & format)
   return true;
 }
 
-PBoolean PWAVFile::Open(OpenMode mode, int opts)
+PBoolean PWAVFile::Open(OpenMode mode, OpenOptions opts)
 {
   if (!(PFile::Open(mode, opts)))
     return PFalse;
@@ -236,7 +236,7 @@ PBoolean PWAVFile::Open(OpenMode mode, int opts)
 }
 
 
-PBoolean PWAVFile::Open(const PFilePath & name, OpenMode mode, int opts)
+PBoolean PWAVFile::Open(const PFilePath & name, OpenMode mode, OpenOptions opts)
 {
   if (IsOpen())
     Close();

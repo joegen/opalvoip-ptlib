@@ -958,7 +958,7 @@ PBoolean PFile::Write(const void * buffer, PINDEX amount)
 }
 
 
-PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, int opts)
+PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts)
 {
   Close();
   SetFilePath(name);

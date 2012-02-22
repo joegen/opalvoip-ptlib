@@ -688,7 +688,7 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
-PBoolean PFile::Open(OpenMode mode, int opt)
+PBoolean PFile::Open(OpenMode mode, OpenOptions opt)
 
 {
   Close();
@@ -740,11 +740,11 @@ PBoolean PFile::Open(OpenMode mode, int opt)
       default :
         PAssertAlways(PInvalidParameter);
     }
-    if ((opt&Create) != 0)
+    if (opt & Create)
       oflags |= O_CREAT;
-    if ((opt&Exclusive) != 0)
+    if (opt & Exclusive)
       oflags |= O_EXCL;
-    if ((opt&Truncate) != 0)
+    if (opt & Truncate)
       oflags |= O_TRUNC;
 
 

@@ -43,6 +43,7 @@
 #include <sys/stat.h>
 #endif
 
+#include <ptlib/bitwise_enum.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,24 +91,17 @@ class PFile : public PChannel
           \arg \c WriteOnly <code>Create | Truncate</code>
           \arg \c ReadWrite <code>Create</code>
      */
-    enum OpenOptions {
-      /// File options depend on the OpenMode parameter.
-      ModeDefault = -1, 
-      /// File open fails if file does not exist.
-      MustExist = 0,    
-      /// File is created if it does not exist.
-      Create = 1,       
-      /// File is set to zero length if it already exists.
-      Truncate = 2,     
-      /// File open fails if file already exists.
-      Exclusive = 4,    
-      /// File is temporary and is to be deleted when closed.
-      Temporary = 8,
-      /// File may not be read by another process.
-      DenySharedRead = 16,
-      /// File may not be written by another process.
-      DenySharedWrite = 32
-    };
+    P_DECLARE_BITWISE_ENUM_EX(OpenOptions, 6,
+        (MustExist,       ///< File open fails if file does not exist.
+         Create,          ///< File is created if it does not exist.
+         Truncate,        ///< File is set to zero length if it already exists.
+         Exclusive,       ///< File open fails if file already exists.
+         Temporary,       ///< File is temporary and is to be deleted when closed.
+         DenySharedRead,  ///< File may not be read by another process.
+         DenySharedWrite  ///< File may not be written by another process.
+        ), 
+        ModeDefault = -1  ///< File options depend on the OpenMode parameter.
+    );
 
     /**Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
@@ -119,7 +113,7 @@ class PFile : public PChannel
      */
     PFile(
       OpenMode mode,          ///< Mode in which to open the file.
-      int opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
     );
 
     /**Create a file object with the specified name and open it in the
@@ -131,7 +125,7 @@ class PFile : public PChannel
     PFile(
       const PFilePath & name,    ///< Name of file to open.
       OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-      int opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
     );
 
     /// Close the file on destruction.
@@ -417,7 +411,7 @@ class PFile : public PChannel
      */
     virtual PBoolean Open(
       OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // Options for open operation.
+      OpenOptions opts = ModeDefault      // Options for open operation.
     );
 
     /**Open the specified file name in the specified mode and with
@@ -433,7 +427,7 @@ class PFile : public PChannel
     virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       OpenMode mode = ReadWrite, // Mode in which to open the file.
-      int opts = ModeDefault     // <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
       
     /**Get the current size of the file.

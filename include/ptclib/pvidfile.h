@@ -59,7 +59,7 @@ class PVideoFile : public PVideoFrameInfo
     virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
-      int opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
+      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
 
     virtual PBoolean IsOpen() const { return m_file.IsOpen(); }
@@ -113,7 +113,7 @@ class PYUVFile : public PVideoFile
     virtual PBoolean Open(
       const PFilePath & name,    // Name of file to open.
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
-      int opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
+      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
 
     virtual PBoolean WriteFrame(const void * frame);

@@ -57,7 +57,7 @@ class PSOAPMessage : public PXML
 public:
   
   //! Construct a SOAP message 
-  PSOAPMessage( int options = PXMLParser::Indent + PXMLParser::NewLineAfterElement );
+  PSOAPMessage(Options options = Indent + NewLineAfterElement);
 
   //! Construct a SOAP message with method name and namespace already provided
   PSOAPMessage( const PString & method, const PString & nameSpace );

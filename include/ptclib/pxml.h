@@ -47,7 +47,9 @@ extern PString EscapeSpecialChars(const PString & str);
 
 #else
 
+#include <ptlib/bitwise_enum.h>
 #include <ptclib/http.h>
+
 
 ////////////////////////////////////////////////////////////
 
@@ -64,18 +66,9 @@ class PXMLData;
 class PXMLBase : public PObject
 {
   public:
-    enum Options {
-      NoOptions           = 0x0000,
-      Indent              = 0x0001,
-      NewLineAfterElement = 0x0002,
-      NoIgnoreWhiteSpace  = 0x0004,   ///< ignored
-      CloseExtended       = 0x0008,   ///< ignored
-      WithNS              = 0x0010,
-      FragmentOnly        = 0x0020,   ///< XML fragment, not complete document.
-      AllOptions          = 0xffff
-    };
-    __inline friend Options operator|(Options o1, Options o2) { return (Options)(((unsigned)o1) | ((unsigned)o2)); }
-    __inline friend Options operator&(Options o1, Options o2) { return (Options)(((unsigned)o1) & ((unsigned)o2)); }
+    P_DECLARE_BITWISE_ENUM_EX(Options, 6,
+                              (NoOptions, Indent, NewLineAfterElement, NoIgnoreWhiteSpace, CloseExtended, WithNS, FragmentOnly),
+                              AllOptions = (1<<(6+1))-1);
 
     enum StandAloneType {
       UninitialisedStandAlone = -2,
@@ -84,13 +77,13 @@ class PXMLBase : public PObject
       IsStandAlone
     };
 
-    PXMLBase(int opts = NoOptions)
+    PXMLBase(Options opts = NoOptions)
       : m_options(opts) { }
 
-    void SetOptions(int opts)
+    void SetOptions(Options opts)
       { m_options = opts; }
 
-    int GetOptions() const { return m_options; }
+    Options GetOptions() const { return m_options; }
 
     virtual PBoolean IsNoIndentElement(
       const PString & /*elementName*/
@@ -100,7 +93,7 @@ class PXMLBase : public PObject
     }
 
   protected:
-    int m_options;
+    Options m_options;
 };
 
 
@@ -110,12 +103,7 @@ class PXML : public PXMLBase
   public:
 
     PXML(
-      int options = NoOptions,
-      const char * noIndentElements = NULL
-    );
-    PXML(
-      const PString & data,
-      int options = NoOptions,
+      Options options = NoOptions,
       const char * noIndentElements = NULL
     );
 
@@ -149,7 +137,7 @@ class PXML : public PXMLBase
     virtual void OnLoaded() { }
 
     bool Save(Options options = NoOptions);
-    bool Save(PString & data, Options options = NoOptions);
+    PString AsString(Options options = NoOptions);
     bool SaveFile(const PFilePath & fn, Options options = NoOptions);
 
     void RemoveAll();
@@ -224,7 +212,7 @@ class PXML : public PXMLBase
     bool Validate(const ValidationInfo * validator);
     bool ValidateElements(ValidationContext & context, PXMLElement * baseElement, const ValidationInfo * elements);
     bool ValidateElement(ValidationContext & context, PXMLElement * element, const ValidationInfo * elements);
-    bool LoadAndValidate(const PString & body, const PXML::ValidationInfo * validator, PString & error, int options = NoOptions);
+    bool LoadAndValidate(const PString & body, const PXML::ValidationInfo * validator, PString & error, Options options = NoOptions);
 
     PString  GetErrorString() const { return m_errorString; }
     unsigned GetErrorColumn() const { return m_errorColumn; }
@@ -249,7 +237,6 @@ class PXML : public PXMLBase
     static PString EscapeSpecialChars(const PString & string);
 
   protected:
-    void Construct(int options, const char * noIndentElements);
     PXMLElement * rootElement;
     PMutex rootMutex;
 
@@ -431,15 +418,6 @@ class PXMLSettings : public PXML
   PCLASSINFO(PXMLSettings, PXML);
   public:
     PXMLSettings(Options options = NewLineAfterElement);
-    PXMLSettings(const PString & data, Options options = NewLineAfterElement);
-    PXMLSettings(const PConfig & data, Options options = NewLineAfterElement);
-
-    bool Load(const PString & data);
-    bool LoadFile(const PFilePath & fn);
-
-    bool Save();
-    bool Save(PString & data);
-    bool SaveFile(const PFilePath & fn);
 
     void SetAttribute(const PCaselessString & section, const PString & key, const PString & value);
 
@@ -447,6 +425,7 @@ class PXMLSettings : public PXML
     bool    HasAttribute(const PCaselessString & section, const PString & key) const;
 
     void ToConfig(PConfig & cfg) const;
+    void FromConfig(const PConfig & cfg);
 };
 
 
@@ -456,7 +435,7 @@ class PXMLParser : public PXMLBase
 {
   PCLASSINFO(PXMLParser, PXMLBase);
   public:
-    PXMLParser(int options = NoOptions);
+    PXMLParser(Options options = NoOptions);
     ~PXMLParser();
     bool Parse(const char * data, int dataLen, bool final);
     void GetErrorInfo(PString & errorString, unsigned & errorCol, unsigned & errorLine);

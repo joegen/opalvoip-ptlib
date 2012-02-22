@@ -50,7 +50,7 @@ PStructuredFile::PStructuredFile()
 }
 
 
-PStructuredFile::PStructuredFile(OpenMode mode, int opts)
+PStructuredFile::PStructuredFile(OpenMode mode, OpenOptions opts)
   : PFile(mode, opts)
 {
   structureSize = 0;
@@ -59,7 +59,7 @@ PStructuredFile::PStructuredFile(OpenMode mode, int opts)
 }
 
 
-PStructuredFile::PStructuredFile(const PFilePath & name, OpenMode mode, int opts)
+PStructuredFile::PStructuredFile(const PFilePath & name, OpenMode mode, OpenOptions opts)
   : PFile(name, mode, opts)
 {
   structureSize = 0;

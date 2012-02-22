@@ -336,10 +336,10 @@ PINLINE PFilePath & PFilePath::operator+=(const char * cstr)
 PINLINE PFile::PFile()
   { os_handle = -1; removeOnClose = PFalse; }
 
-PINLINE PFile::PFile(OpenMode mode, int opts)
+PINLINE PFile::PFile(OpenMode mode, OpenOptions opts)
   { os_handle = -1; removeOnClose = PFalse; Open(mode, opts); }
 
-PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
+PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, OpenOptions opts)
   { os_handle = -1; removeOnClose = PFalse; Open(name, mode, opts); }
 
 
@@ -378,10 +378,10 @@ PINLINE off_t PFile::GetPosition() const
 PINLINE PTextFile::PTextFile()
   { }
 
-PINLINE PTextFile::PTextFile(OpenMode mode, int opts)
+PINLINE PTextFile::PTextFile(OpenMode mode, OpenOptions opts)
   { Open(mode, opts); }
 
-PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
+PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, OpenOptions opts)
   { Open(name, mode, opts); }
 
 
