@@ -32,11 +32,8 @@
 #if P_SDL
 
 #include <ptlib.h>
-#include <SDL/SDL.h>
 
 #include <ptlib/videoio.h>
-
-#undef main
 
 
 /**Display data to the SDL screen.
@@ -119,9 +116,9 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     );
 
   protected:
-    PSyncPoint    m_operationComplete;
-    SDL_Overlay * m_overlay;
-    unsigned      m_x, m_y;
+    PSyncPoint m_operationComplete;
+    unsigned   m_x, m_y;
+    struct SDL_Overlay * m_overlay;
 
   private:
     PString GetTitle() const;
