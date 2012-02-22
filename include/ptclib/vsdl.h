@@ -116,9 +116,9 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     );
 
   protected:
+    struct SDL_Overlay * m_overlay;
     PSyncPoint m_operationComplete;
     unsigned   m_x, m_y;
-    struct SDL_Overlay * m_overlay;
 
   private:
     PString GetTitle() const;
