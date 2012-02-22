@@ -51,21 +51,21 @@
  */
 
 
-PSOAPMessage::PSOAPMessage( int options ) : 
-  PXML( options ),
-  pSOAPBody( 0 ),
-  pSOAPMethod( 0 ),
-  faultCode( PSOAPMessage::NoFault )
+PSOAPMessage::PSOAPMessage(Options options)
+  : PXML(options)
+  , pSOAPBody(0)
+  , pSOAPMethod(0)
+  , faultCode(PSOAPMessage::NoFault)
 {
 }
 
-PSOAPMessage::PSOAPMessage( const PString & method, const PString & nameSpace ) :
-  PXML( PXMLParser::Indent + PXMLParser::NewLineAfterElement ),
-  pSOAPBody( 0 ),
-  pSOAPMethod( 0 ),
-  faultCode( PSOAPMessage::NoFault )
+PSOAPMessage::PSOAPMessage(const PString & method, const PString & nameSpace)
+  : PXML(Indent + NewLineAfterElement)
+  , pSOAPBody(0)
+  , pSOAPMethod(0)
+  , faultCode(PSOAPMessage::NoFault)
 {
-    SetMethod( method, nameSpace );
+  SetMethod(method, nameSpace);
 }
 
 
@@ -533,13 +533,11 @@ PBoolean PSOAPClient::MakeRequest( PSOAPMessage & request, PSOAPMessage & respon
 PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & response )
 {
   // create SOAP request
-  PString soapRequest;
 
   PStringStream txt;
   
-  if ( !request.Save( soapRequest ) ) 
-  {
-    
+  PString soapRequest = request.AsString();
+  if (soapRequest.IsEmpty())  {
     txt << "Error creating request XML ("
         << request.GetErrorLine() 
         << ") :" 

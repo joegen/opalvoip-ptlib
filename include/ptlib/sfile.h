@@ -76,7 +76,7 @@ class PStructuredFile : public PFile
      */
     PStructuredFile(
       OpenMode mode,          ///< Mode in which to open the file.
-      int opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
     );
       
     /**Create a structured file object with the specified name and open it in
@@ -88,7 +88,7 @@ class PStructuredFile : public PFile
     PStructuredFile(
       const PFilePath & name,    ///< Name of file to open.
       OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-      int opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
     );
   //@}
 

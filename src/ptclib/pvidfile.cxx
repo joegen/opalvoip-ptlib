@@ -55,7 +55,7 @@ PVideoFile::PVideoFile()
 }
 
 
-PBoolean PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
+PBoolean PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
 {
   static PRegularExpression res("_(sqcif|qcif|cif|cif4|cif16|[0-9]+x[0-9]+)[^a-z0-9]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   static PRegularExpression fps("_[0-9]+fps[^a-z]",     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
@@ -168,7 +168,7 @@ PYUVFile::PYUVFile()
 }
 
 
-PBoolean PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
+PBoolean PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
 {
   if (!PVideoFile::Open(name, mode, opts))
     return false;

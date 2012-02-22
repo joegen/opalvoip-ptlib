@@ -218,7 +218,7 @@ public:
   */
   PWAVFile(
     OpenMode mode,          ///< Mode in which to open the file.
-    int opts = ModeDefault, ///< <code>OpenOptions</code> enum for open operation.
+    OpenOptions opts = ModeDefault, ///< <code>OpenOptions</code> enum for open operation.
     unsigned format = fmt_PCM ///< Type of WAV File to create
   );
 
@@ -234,15 +234,15 @@ public:
   PWAVFile(
     const PFilePath & name,     ///< Name of file to open.
     OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
-    int opts = ModeDefault,     ///< <code>OpenOptions</code> enum for open operation.
+    OpenOptions opts = ModeDefault,     ///< <code>OpenOptions</code> enum for open operation.
     unsigned format = fmt_PCM ///< Type of WAV File to create
   );
 
   PWAVFile(
     const PString & format,  ///< Type of WAV File to create
     const PFilePath & name,     ///< Name of file to open.
-    OpenMode mode = PFile::ReadWrite,  ///< Mode in which to open the file.
-    int opts = PFile::ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
+    OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
+    OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /**Close the file before destruction.
@@ -290,7 +290,7 @@ public:
   */
   virtual PBoolean Open(
     OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
-    int opts = ModeDefault      ///< Options for open operation.
+    OpenOptions opts = ModeDefault      ///< Options for open operation.
   );
 
   /**Open the specified WAV file name in the specified mode and with
@@ -309,7 +309,7 @@ public:
   virtual PBoolean Open(
     const PFilePath & name,    ///< Name of file to open.
     OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-    int opts = ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
+    OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /** Close the file channel.
@@ -423,7 +423,7 @@ public:
 
   // Restored for backward compatibility reasons
   static PWAVFile * format(const PString & format);
-  static PWAVFile * format(const PString & format, PFile::OpenMode mode, int opts = PFile::ModeDefault);
+  static PWAVFile * format(const PString & format, OpenMode mode, OpenOptions opts = ModeDefault);
 
 
 protected:
