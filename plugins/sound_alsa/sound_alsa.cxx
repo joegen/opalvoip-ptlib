@@ -567,7 +567,7 @@ PBoolean PSoundChannelALSA::PlayFile(const PFilePath & filename, PBoolean wait)
 
   /* use PWAVFile instead of PFile -> skips wav header bytes */
 
-  PWAVFile file(filename, PFile::ReadOnly,PWAVFile::fmt_NotKnown);
+  PWAVFile file(filename, PFile::ReadOnly, PFile::MustExist, PWAVFile::fmt_NotKnown);
   snd_pcm_prepare(os_handle);
 
   if (!file.IsOpen())
