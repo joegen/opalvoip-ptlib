@@ -927,8 +927,8 @@ PBoolean PXMLRPC::MakeRequest(const PString & method, const PXMLRPCStructBase & 
 PBoolean PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   // create XML version of request
-  PString requestXML;
-  if (!request.Save(requestXML, m_options)) {
+  PString requestXML = request.AsString(m_options);
+  if (requestXML.IsEmpty()) {
     PStringStream txt;
     txt << "Error creating request XML ("
         << request.GetErrorLine() 

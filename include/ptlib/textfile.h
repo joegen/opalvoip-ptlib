@@ -69,7 +69,7 @@ class PTextFile : public PFile
      */
     PTextFile(
       OpenMode mode,          ///< Mode in which to open the file.
-      int opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
     );
       
     /** Create a text file object with the specified name and open it in the
@@ -81,7 +81,7 @@ class PTextFile : public PFile
     PTextFile(
       const PFilePath & name,    ///< Name of file to open.
       OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-      int opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
+      OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum# for open operation.
     );
   //@}
 

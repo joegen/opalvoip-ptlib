@@ -105,7 +105,7 @@ static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
   ((PXMLParser *)userData)->EndNamespaceDeclHandler(prefix);
 }
 
-PXMLParser::PXMLParser(int options)
+PXMLParser::PXMLParser(Options options)
   : PXMLBase(options)
   , m_parsing(true)
 {
@@ -245,18 +245,37 @@ void PXMLParser::EndNamespaceDeclHandler(const XML_Char * /*prefix*/)
 
 
 
-PXML::PXML(int options, const char * noIndentElements)
- : PXMLBase(options) 
+PXML::PXML(Options options, const char * noIndentElementsParam)
+  : PXMLBase(options)
+  , rootElement(NULL)
+  , loadFromFile(false)
+  , m_standAlone(UninitialisedStandAlone)
+  , m_errorLine(0)
+  , m_errorColumn(0)
+  , noIndentElements(PString(noIndentElementsParam).Tokenise(' ', false))
 {
-  Construct(options, noIndentElements);
 }
 
-PXML::PXML(const PString & data, int options, const char * noIndentElements)
-  : PXMLBase(options) 
+
+PXML::PXML(const PXML & xml)
+  : PXMLBase(xml.m_options)
+  , loadFromFile(xml.loadFromFile)
+  , loadFilename(xml.loadFilename)
+  , version(xml.version)
+  , encoding(xml.encoding)
+  , m_standAlone(xml.m_standAlone)
+  , m_errorLine(0)
+  , m_errorColumn(0)
+  , noIndentElements(xml.noIndentElements)
+  , m_defaultNameSpace(xml.m_defaultNameSpace)
 {
-  Construct(options, noIndentElements);
-  Load(data);
+  PWaitAndSignal m(xml.rootMutex);
+  if (xml.rootElement != NULL)
+    rootElement = (PXMLElement *)xml.rootElement->Clone(NULL);
+  else
+    rootElement = NULL;
 }
+
 
 PXML::~PXML()
 {
@@ -266,37 +285,6 @@ PXML::~PXML()
   RemoveAll();
 }
 
-PXML::PXML(const PXML & xml)
-  : noIndentElements(xml.noIndentElements)
-{
-  Construct(xml.m_options, NULL);
-
-  loadFromFile       = xml.loadFromFile;
-  loadFilename       = xml.loadFilename;
-  version            = xml.version;
-  encoding           = xml.encoding;
-  m_standAlone       = xml.m_standAlone;
-  m_defaultNameSpace = xml.m_defaultNameSpace;
-
-  PWaitAndSignal m(xml.rootMutex);
-
-  PXMLElement * oldRootElement = xml.rootElement;
-  if (oldRootElement != NULL)
-    rootElement = (PXMLElement *)oldRootElement->Clone(NULL);
-}
-
-void PXML::Construct(int options, const char * _noIndentElements)
-{
-  rootElement    = NULL;
-  m_options      = options;
-  loadFromFile   = false;
-  m_standAlone   = UninitialisedStandAlone;
-  m_errorLine    = 0;
-  m_errorColumn  = 0;
-
-  if (_noIndentElements != NULL)
-    noIndentElements = PString(_noIndentElements).Tokenise(' ', false);
-}
 
 PXMLElement * PXML::SetRootElement(const PString & documentType)
 {
@@ -526,15 +514,15 @@ bool PXML::SaveFile(const PFilePath & fn, PXMLParser::Options options)
   if (!file.Open(fn, PFile::WriteOnly)) 
     return false;
 
-  PString data;
-  if (!Save(data, options))
+  PString data = AsString(options);
+  if (data.IsEmpty())
     return false;
 
-  return file.Write((const char *)data, data.GetLength());
+  return file.WriteString(data);
 }
 
 
-bool PXML::Save(PString & data, PXMLParser::Options options)
+PString PXML::AsString(PXMLParser::Options options)
 {
   PWaitAndSignal m(rootMutex);
 
@@ -542,8 +530,7 @@ bool PXML::Save(PString & data, PXMLParser::Options options)
 
   PStringStream strm;
   strm << *this;
-  data = strm;
-  return true;
+  return strm;
 }
 
 
@@ -938,12 +925,12 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
 }
 
 
-bool PXML::LoadAndValidate(const PString & body, const PXML::ValidationInfo * validator, PString & error, int options)
+bool PXML::LoadAndValidate(const PString & body, const PXML::ValidationInfo * validator, PString & error, Options options)
 {
   PStringStream err;
 
   // load the XML
-  if (!Load(body, (Options)options))
+  if (!Load(body, options))
     err << "XML parse";
   else if (!Validate(validator))
     err << "XML validation";
@@ -1353,52 +1340,6 @@ PXMLSettings::PXMLSettings(PXMLParser::Options options)
 {
 }
 
-PXMLSettings::PXMLSettings(const PString & data, PXMLParser::Options options)
-  : PXML(data, options) 
-{
-}
-
-
-#if P_CONFIG_FILE
-PXMLSettings::PXMLSettings(const PConfig & data, PXMLParser::Options options)
-  : PXML(options) 
-{
-  PStringList sects = data.GetSections();
-
-  for (PStringList::iterator i = sects.begin(); i != sects.end(); ++i) {
-    PStringToString keyvals = data.GetAllKeyValues(*i);
-    for (PStringToString::iterator it = keyvals.begin(); it != keyvals.end(); ++it)
-      SetAttribute(*i, it->first, it->second);
-  }
-}
-#endif // P_CONFIG_FILE
-
-
-bool PXMLSettings::Load(const PString & data)
-{
-  return PXML::Load(data);
-}
-
-bool PXMLSettings::LoadFile(const PFilePath & fn)
-{
-  return PXML::LoadFile(fn);
-}
-
-bool PXMLSettings::Save()
-{
-  return PXML::Save();
-}
-
-bool PXMLSettings::Save(PString & data)
-{
-  return PXML::Save(data);
-}
-
-bool PXMLSettings::SaveFile(const PFilePath & fn)
-{
-  return PXML::SaveFile(fn);
-}
-
 PString PXMLSettings::GetAttribute(const PCaselessString & section, const PString & key) const
 {
   if (rootElement == NULL)
@@ -1445,6 +1386,17 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
     PString sectionName = el->GetName();
     for (PStringToString::const_iterator it = el->GetAttributes().begin(); it != el->GetAttributes().end(); ++it)
       cfg.SetString(sectionName, it->first, it->second);
+  }
+}
+
+void PXMLSettings::FromConfig(const PConfig & data)
+{
+  PStringList sects = data.GetSections();
+
+  for (PStringList::iterator i = sects.begin(); i != sects.end(); ++i) {
+    PStringToString keyvals = data.GetAllKeyValues(*i);
+    for (PStringToString::iterator it = keyvals.begin(); it != keyvals.end(); ++it)
+      SetAttribute(*i, it->first, it->second);
   }
 }
 #endif // P_CONFIG_FILE

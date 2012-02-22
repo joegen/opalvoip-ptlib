@@ -816,13 +816,13 @@ PBoolean PFile::IsTextFile() const
 }
 
 
-PBoolean PFile::Open(OpenMode mode, int opts)
+PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
 {
   Close();
   clear();
 
   if (path.IsEmpty())
-    path = PFilePath("PWL", NULL);
+    path = PFilePath("PTL", NULL);
 
   int oflags = IsTextFile() ? _O_TEXT : _O_BINARY;
   switch (mode) {
@@ -848,22 +848,22 @@ PBoolean PFile::Open(OpenMode mode, int opts)
       PAssertAlways(PInvalidParameter);
   }
 
-  if ((opts&Create) != 0)
+  if (opts & Create)
     oflags |= O_CREAT;
-  if ((opts&Exclusive) != 0)
+  if (opts & Exclusive)
     oflags |= O_EXCL;
-  if ((opts&Truncate) != 0)
+  if (opts & Truncate)
     oflags |= O_TRUNC;
 
-  if ((opts&Temporary) != 0)
-    removeOnClose = PTrue;
+  if (opts & Temporary)
+    removeOnClose = true;
 
   int sflags = _SH_DENYNO;
-  if ((opts&DenySharedRead) == DenySharedRead)
+  if (opts & DenySharedRead)
     sflags = _SH_DENYRD;
-  else if ((opts&DenySharedWrite) == DenySharedWrite)
+  else if (opts & DenySharedWrite)
     sflags = _SH_DENYWR;
-  else if ((opts&(DenySharedRead|DenySharedWrite)) != 0)
+  else if (opts & (DenySharedRead|DenySharedWrite))
     sflags = _SH_DENYWR;
 
   os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE);
