@@ -513,10 +513,9 @@ endif # Nucleus
 
 ####################################################
 
-ifeq ($(OSTYPE),mingw)
-LDFLAGS += -enable-auto-import -enable-runtime-pseudo-reloc
-LDFLAGS += -enable-stdcall-fixup -fatal-warning
-endif # mingw
+#ifeq ($(OSTYPE),mingw)
+#LDFLAGS += -enable-runtime-pseudo-reloc -fatal-warning
+#endif # mingw
 
 ###############################################################################
 #
