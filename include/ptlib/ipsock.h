@@ -643,22 +643,22 @@ class PIPSocket : public PSocket
         ) const;
 
         /// Get the name of the interface.
-        const PString & GetName() const { return name; }
+        const PString & GetName() const { return m_name; }
 
         /// Get the address associated with the interface.
-        Address GetAddress() const { return ipAddr; }
+        Address GetAddress() const { return m_ipAddress; }
 
         /// Get the net mask associated with the interface.
-        Address GetNetMask() const { return netMask; }
+        Address GetNetMask() const { return m_netMask; }
 
         /// Get the MAC address associate with the interface.
-        const PString & GetMACAddress() const { return macAddr; }
+        const PString & GetMACAddress() const { return m_macAddress; }
 
       protected:
-        PString name;
-        Address ipAddr;
-        Address netMask;
-        PString macAddr;
+        PString m_name;
+        Address m_ipAddress;
+        Address m_netMask;
+        PString m_macAddress;
 
       friend class PIPSocket;
     };
