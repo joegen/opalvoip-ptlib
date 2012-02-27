@@ -2152,10 +2152,10 @@ PIPSocket::InterfaceEntry::InterfaceEntry(const PString & name,
      At various points in PTLib (and OPAL) the interface name is used in
      situations where there can be confusion in parsing. For example a URL can
      be http:://[::%interface]:2345 and a ] in interface name blows it to
-     pieces. Similarly, "ip:port" style description whcih can be used a LOT,
+     pieces. Similarly, "ip:port" style description which can be used a LOT,
      will also fail. At this late stage it is too hard to change all the other
      places, so we hack the fairly rare cases by translating those special
-     characaters.
+     characters.
    */ 
   m_name.Replace('[', '{', true);
   m_name.Replace(']', '}', true);
