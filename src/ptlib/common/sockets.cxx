@@ -2134,30 +2134,42 @@ PBoolean PIPSocket::Address::IsRFC1918() const
 }
 
 PIPSocket::InterfaceEntry::InterfaceEntry()
-  : ipAddr(GetDefaultIpAny())
-  , netMask(GetDefaultIpAny())
+  : m_ipAddress(0, NULL)
+  , m_netMask(0, NULL)
 {
 }
 
-PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
-                                          const Address & _addr,
-                                          const Address & _mask,
-                                          const PString & _macAddr)
-  : name(_name.Trim()),
-    ipAddr(_addr),
-    netMask(_mask),
-    macAddr(_macAddr)
+PIPSocket::InterfaceEntry::InterfaceEntry(const PString & name,
+                                          const Address & address,
+                                          const Address & mask,
+                                          const PString & macAddress)
+  : m_name(name.Trim())
+  , m_ipAddress(address)
+  , m_netMask(mask)
+  , m_macAddress(macAddress)
 {
+  /* HACK!!
+     At various points in PTLib (and OPAL) the interface name is used in
+     situations where there can be confusion in parsing. For example a URL can
+     be http:://[::%interface]:2345 and a ] in interface name blows it to
+     pieces. Similarly, "ip:port" style description whcih can be used a LOT,
+     will also fail. At this late stage it is too hard to change all the other
+     places, so we hack the fairly rare cases by translating those special
+     characaters.
+   */ 
+  m_name.Replace('[', '{', true);
+  m_name.Replace(']', '}', true);
+  m_name.Replace(':', ';', true);
 }
 
 
 void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 {
-  strm << ipAddr;
-  if (!macAddr)
-    strm << " <" << macAddr << '>';
-  if (!name)
-    strm << " (" << name << ')';
+  strm << m_ipAddress;
+  if (!m_macAddress)
+    strm << " <" << m_macAddress << '>';
+  if (!m_name)
+    strm << " (" << m_name << ')';
 }
 
 
