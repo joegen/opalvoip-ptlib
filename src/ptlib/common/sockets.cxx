@@ -2148,6 +2148,12 @@ PIPSocket::InterfaceEntry::InterfaceEntry(const PString & name,
   , m_netMask(mask)
   , m_macAddress(macAddress)
 {
+  SanitiseName(m_name);
+}
+
+
+void PIPSocket::InterfaceEntry::SanitiseName(PString & name)
+{
   /* HACK!!
      At various points in PTLib (and OPAL) the interface name is used in
      situations where there can be confusion in parsing. For example a URL can
@@ -2157,9 +2163,9 @@ PIPSocket::InterfaceEntry::InterfaceEntry(const PString & name,
      places, so we hack the fairly rare cases by translating those special
      characters.
    */ 
-  m_name.Replace('[', '{', true);
-  m_name.Replace(']', '}', true);
-  m_name.Replace(':', ';', true);
+  name.Replace('[', '{', true);
+  name.Replace(']', '}', true);
+  name.Replace(':', ';', true);
 }
 
 
