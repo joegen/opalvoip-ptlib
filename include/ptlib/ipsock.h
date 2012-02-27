@@ -642,7 +642,14 @@ class PIPSocket : public PSocket
           ostream &strm   // Stream to print the object into.
         ) const;
 
-        /// Get the name of the interface.
+        /** Get the name of the interface.
+            Note the name will havebeen sanitised of certain possible
+            characters that can cause issues elsewhere in the system.
+            Therefore, make sure that if you get a device name from some
+            other source than the InterfaceEntry, the name is sanitised via
+            PIPSocket::InterfaceEntry::SanitiseName() before comparing against
+            the name returned here.
+          */
         const PString & GetName() const { return m_name; }
 
         /// Get the address associated with the interface.
@@ -653,6 +660,9 @@ class PIPSocket : public PSocket
 
         /// Get the MAC address associate with the interface.
         const PString & GetMACAddress() const { return m_macAddress; }
+
+        /// Sanitise a device name for use in PTLib
+        static void SanitiseName(PString & name);
 
       protected:
         PString m_name;
