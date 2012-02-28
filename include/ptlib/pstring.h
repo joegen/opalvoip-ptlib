@@ -65,15 +65,12 @@ PString pvsprintf(
   va_list arg       ///< Arguments for formatting
 );
 
-#ifdef P_HAS_WCHAR
 
-#if (defined(_WIN32) || defined(_WIN32_WCE)) && (!defined(_NATIVE_WCHAR_T_DEFINED)) && (!defined(__MINGW32__))
-typedef PBaseArray<unsigned short> PWCharArray;
-#else
+#ifdef P_HAS_WCHAR
+/// Wide character array, based on standard wchar_t
 typedef PBaseArray<wchar_t> PWCharArray;
 #endif
 
-#endif
 
 /**The character string class. It supports a wealth of additional functions
    for string processing and conversion. Operators are provided so that
@@ -1746,7 +1743,7 @@ inline ostream & operator<<(ostream & stream, const PString & string)
   return stream;
 }
 
-#ifdef P_HAS_WCHAR
+#ifdef P_HAS_WOSTREAM
 inline wostream & operator<<(wostream & stream, const PString & string)
 {
   return stream << (const char *)string;

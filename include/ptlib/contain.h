@@ -39,9 +39,8 @@
 #endif
 
 
-#include <ptlib/critsec.h>
 #include <ptlib/object.h>
-
+#include <ptlib/critsec.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////

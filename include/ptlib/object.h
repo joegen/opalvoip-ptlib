@@ -38,30 +38,31 @@
 #pragma interface
 #endif
 
-#if defined(_WIN32) || defined(_WIN32_WCE)
-#include "msos/ptlib/contain.h"
-#else
-#include "unix/ptlib/contain.h"
-#endif
-
-#if defined(P_VXWORKS)
-#include <private/stdiop.h>
-#endif
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-
+#include <limits.h>
 #include <string.h>
+#include <ctype.h>
+#include <errno.h>
 
 #include <string>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-
+#include <typeinfo>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
 
+
+#if defined(_WIN32)
+#include "msos/ptlib/platform.h"
+#else
+#include "unix/ptlib/platform.h"
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 #define P_REMOVE_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_removed ****** fn { return 0; }
 
@@ -97,14 +98,21 @@ using namespace std; // Not a good practice (name space polution), but will take
 // is also used for C translation units).
 // without P_USE_INTEGER_BOOL, the ANSI C++ bool is used.
 
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
+
 #if defined(P_USE_INTEGER_BOOL) || !defined(__cplusplus)
-   typedef BOOL PBoolean;
-#  define PTrue TRUE
-#  define PFalse FALSE
+  typedef BOOL   PBoolean;
+  #define PTrue  TRUE
+  #define PFalse FALSE
 #else
-   typedef bool PBoolean;
-#  define PTrue true
-#  define PFalse false
+  typedef bool   PBoolean;
+  #define PTrue  true
+  #define PFalse false
 #endif
 
 
@@ -1136,8 +1144,6 @@ template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const 
 #else
 #define PDownCast(cls, ptr) (dynamic_cast<cls*>(ptr))
 #endif
-
-#include <typeinfo>
 
 
 /** Declare a class with PWLib class information.
