@@ -38,6 +38,12 @@
 #pragma interface
 #endif
 
+#if defined(_WIN32)
+#include "msos/ptlib/platform.h"
+#else
+#include "unix/ptlib/platform.h"
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -53,13 +59,6 @@
 #include <typeinfo>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
-
-
-#if defined(_WIN32)
-#include "msos/ptlib/platform.h"
-#else
-#include "unix/ptlib/platform.h"
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
