@@ -635,6 +635,8 @@ typedef HWND SQLHWND;
 ///////////////////////////////////////////
 // Type used for array indexes and sizes
 
+#include <limits.h>
+
 typedef int PINDEX;
 #define P_MAX_INDEX INT_MAX
 
