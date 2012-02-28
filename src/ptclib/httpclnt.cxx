@@ -832,7 +832,7 @@ PBoolean PHTTPClientDigestAuthentication::Authorise(AuthObject & authObject) con
          << "response=\"" << AsHex(response) << "\", "
          << "cnonce=\"" << cnonce << "\", "
          << "nc=" << nc << ", "
-         << "qop=\"" << qop << '"';
+         << "qop=" << qop;
   }
   else {
     digestor.Process(AsHex(a2));
