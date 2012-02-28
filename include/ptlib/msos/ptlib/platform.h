@@ -31,15 +31,8 @@
  * $Date$
  */
 
-#ifndef PTLIB_CONTAIN_H
-#ifndef _WIN32_WCE
-#error "Please remove pwlib\include\ptlib\msos from the tool include path" \
-"and from the pre-processor options for this project"
-#endif // !_WIN32_WCE
-#endif
-
-#ifndef PTLIB_MSOS_CONTAIN_H
-#define PTLIB_MSOS_CONTAIN_H
+#ifndef PTLIB_PLATFORM_H
+#define PTLIB_PLATFORM_H
 
 
 #ifdef _MSC_VER
@@ -450,7 +443,7 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 #endif
 
 
-#endif // PTLIB_MSOS_CONTAIN_H
+#endif // PTLIB_PLATFORM_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////
