@@ -993,7 +993,16 @@ dnl check for wchar and friends
 dnl MSWIN_DISPLAY wchar,wchar Support
 dnl MSWIN_DEFINE  wchar,P_HAS_WCHAR
 
-AC_CHECK_HEADERS(wchar.h, [AC_DEFINE(P_HAS_WCHAR, 1)])
+dnl MSWIN_DISPLAY wstream,wchar stream Support
+dnl MSWIN_DEFINE  wstream,P_HAS_WOSTREAM
+
+AC_CHECK_HEADERS(
+   wchar.h,
+   [
+      AC_DEFINE(P_HAS_WCHAR, 1)
+      AC_DEFINE(P_HAS_WOSTREAM, 1)
+   ]
+)
 
 
 dnl ########################################################################

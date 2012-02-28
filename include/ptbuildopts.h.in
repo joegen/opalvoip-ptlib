@@ -61,26 +61,40 @@
 
 /////////////////////////////////////////////////
 //
-// sizeof(int)
+// Language stuff
+//
+
+#undef  P_USE_STANDARD_CXX_BOOL
+#if !defined(P_USE_STANDARD_CXX_BOOL)
+  #define P_USE_INTEGER_BOOL 1
+#endif
+
+#undef P_EXCEPTIONS
+#define P_USE_ASSERTS 1
+
+
+/////////////////////////////////////////////////
+//
+// Integer/char types
 //
 
 #undef SIZEOF_INT
 #undef PNO_LONG_DOUBLE
 
-/////////////////////////////////////////////////
-//
-// Processor endianess
-//
+#undef P_HAS_WCHAR
+#if P_HAS_WCHAR
+  #undef P_HAS_WOSTREAM
+#endif
 
-#if !defined(P_MACOSX)
-  #undef PBYTE_ORDER
-#else
+#undef PBYTE_ORDER
+#ifndef PBYTE_ORDER
   #if defined(__BIG_ENDIAN__)
     #define PBYTE_ORDER PBIG_ENDIAN
   #else
     #define PBYTE_ORDER PLITTLE_ENDIAN
   #endif
 #endif
+
 
 /////////////////////////////////////////////////
 //
@@ -91,25 +105,53 @@
 #undef P_PLUGINS
 #undef P_DEFAULT_PLUGIN_DIR
 
+
 /////////////////////////////////////////////////
 //
-// PThreads and related vars
+// Threads and Unix variants for network stuff
 //
 
 #undef P_PTHREADS
 #undef P_HAS_SEMAPHORES
+#undef P_HAS_ATOMIC_INT
+#undef P_NEEDS_GNU_CXX_NAMESPACE
+#undef P_HAS_RECURSIVE_MUTEX
+#undef P_HAS_RECVMSG
+#undef P_HAS_RECVMSG_MSG_ERRQUEUE
+#undef P_HAS_RECVMSG_IP_RECVERR
+#undef P_HAS_NETLINK
+#undef P_SETPGRP_NOPARM
 #undef P_HAS_NAMED_SEMAPHORES
 #undef P_PTHREADS_XPG6      
 #undef P_HAS_SEMAPHORES_XPG6
-#undef P_EXCEPTIONS
 #undef P_HAS_AIO
-#undef P_HAS_WCHAR
+#undef P_HAS_POSIX_READDIR_R
+#undef P_HAS_UPAD128_T
+#undef P_HAS_INET_NTOP
+#undef P_HAS_IPV6_ADD_MEMBERSHIP
+
+#ifndef _WIN32_WCE
+  #undef P_HAS_IPV6
+  #undef P_QOS
+#endif //  _WIN32_WCE
 
 
 /////////////////////////////////////////////////
 //
-// various non-core functions
+// various platform specific features
 //
+
+#undef P_LPIA
+#undef USE_SYSTEM_SWAB
+#undef P_SHM_VIDEO
+
+
+/////////////////////////////////////////////////
+//
+// various non-platform specific features
+//
+
+#undef PMEMORY_CHECK
 
 #undef P_AUDIO
 #undef P_VIDEO
@@ -126,6 +168,7 @@
 #undef P_SNMP
 #undef P_TELNET
 #undef P_CLI
+#undef P_ODBC
 #undef P_REMCONN
 #undef P_SERIAL
 #undef P_POP3SMTP
@@ -153,47 +196,8 @@
   #endif
 #endif
 
-#undef P_SOCKAGG
 #undef P_VIDFILE
 #undef P_FFVDEV
-#undef P_ODBC
-#undef P_SHM_VIDEO
-
-#undef P_LPIA
-#undef P_HAS_POSIX_READDIR_R
-#undef P_HAS_ATOMIC_INT
-#undef P_HAS_RECURSIVE_MUTEX
-#undef P_NEEDS_GNU_CXX_NAMESPACE
-#undef PMEMORY_CHECK
-#undef P_HAS_RECVMSG
-#undef P_HAS_RECVMSG_MSG_ERRQUEUE
-#undef P_HAS_RECVMSG_IP_RECVERR
-#undef P_HAS_NETLINK
-#undef P_HAS_UPAD128_T
-#undef P_HAS_INET_NTOP
-#undef P_SETPGRP_NOPARM
-#undef P_HAS_IPV6_ADD_MEMBERSHIP
-
-
-/////////////////////////////////////////////////
-//
-// IP v6 Support
-//
-
-#ifndef _WIN32_WCE
-  #undef P_HAS_IPV6
-#endif //  _WIN32_WCE
-
-
-/////////////////////////////////////////////////
-//
-// QoS Support
-//
-//
-
-#ifndef _WIN32_WCE
-  #undef P_QOS
-#endif //  _WIN32_WCE
 
 
 /////////////////////////////////////////////////
@@ -757,21 +761,9 @@
 
 #endif 
 
-/////////////////////////////////////////////////
-//
-// various functions
-//
-#undef USE_SYSTEM_SWAB
-
-#undef  P_USE_STANDARD_CXX_BOOL
-#if !defined(P_USE_STANDARD_CXX_BOOL)
-#  define P_USE_INTEGER_BOOL
-#endif
-
 
 #endif // PTLIB_BUILDOPTS_H
 
-#define P_USE_ASSERTS    1
 
 // End Of File ///////////////////////////////////////////////////////////////
 

@@ -1,5 +1,5 @@
 /*
- * machdep.h
+ * platform.h
  *
  * Unix machine dependencies
  *
@@ -31,21 +31,19 @@
  * $Date$
  */
 
-#ifndef _PMACHDEP_H
-#define _PMACHDEP_H
+#ifndef PTLIB_PLATFORM_H
+#define PTLIB_PLATFORM_H
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
 
 #include <paths.h>
-#include <errno.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <sys/termios.h>
 #include <unistd.h>
 #include <net/if.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
 
@@ -73,7 +71,6 @@ typedef size_t socklen_t;
 #endif
 
 #include <paths.h>
-#include <errno.h>
 #include <dlfcn.h>
 #include <termios.h>
 #include <sys/fcntl.h>
@@ -102,7 +99,6 @@ typedef int socklen_t;
 #endif
 
 #include <paths.h>
-#include <errno.h>
 #include <dlfcn.h>
 #include <termios.h>
 #include <sys/fcntl.h>
@@ -128,7 +124,6 @@ typedef int socklen_t;
 
 #include <stdlib.h>
 #include <paths.h>
-#include <errno.h>
 #include <dlfcn.h>
 #include <termios.h>
 #include <unistd.h>
@@ -146,7 +141,6 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
 
-#include <errno.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
@@ -161,7 +155,6 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <unistd.h>
 #include <net/if.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
 #include <net/if.h>
@@ -196,7 +189,6 @@ int gethostname(char *, int);
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_SUN4)
 
-#include <errno.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -269,7 +261,6 @@ struct servent * getservbyname(const char *, const char *);
 ///////////////////////////////////////////////////////////////////////////////
 #elif __BEOS__
 
-#include <errno.h>
 #include <termios.h>
 #include <sys/socket.h>
 #include <OS.h>
@@ -325,7 +316,6 @@ void *dlsym(void *handle, const char *symbol);
 #endif // MPThreads
 
 #include <paths.h>
-#include <errno.h>
 #include <termios.h>
 #include <sys/fcntl.h>
 #include <sys/filio.h>
@@ -349,7 +339,6 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_AIX)
 
-#include <errno.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -363,7 +352,6 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <unistd.h>
 #include <net/if.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
 #include <net/if.h>
@@ -374,7 +362,6 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_IRIX)
 
-#include <errno.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
@@ -389,7 +376,6 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <unistd.h>
 #include <net/if.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
 #include <net/if.h>
@@ -411,7 +397,6 @@ typedef int socklen_t;
 #include <hostLib.h>
 #include <ioctl.h>
 #include <net/if.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/times.h>
@@ -482,7 +467,6 @@ extern "C" {
 
 #include <stdlib.h>
 #include <paths.h>
-#include <errno.h>
 #include <dlfcn.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -516,15 +500,12 @@ extern "C" {
 // includes common to all Unix variants
 
 #ifdef P_HAS_AIO
-#include <aio.h>
+  #include <aio.h>
 #endif
 
 #include <netdb.h>
 #include <dirent.h>
-#include <limits.h>
 
-#include <netinet/in.h>
-#include <errno.h>
 #include <sys/socket.h>
 #ifndef P_VXWORKS
 #include <sys/time.h>
@@ -538,21 +519,21 @@ extern "C" {
 typedef int SOCKET;
 
 #ifndef PSETPGRP
-#if P_SETPGRP_NOPARM
-#define PSETPGRP()  setpgrp()
-#else
-#define PSETPGRP()  setpgrp(0, 0)
-#endif
+  #if P_SETPGRP_NOPARM
+    #define PSETPGRP()  setpgrp()
+  #else
+    #define PSETPGRP()  setpgrp(0, 0)
+  #endif
 #endif
 
 #ifdef P_PTHREADS
 
-#include <pthread.h>
-#define P_THREADIDENTIFIER pthread_t
+  #include <pthread.h>
+  #define P_THREADIDENTIFIER pthread_t
 
-#if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
-#include <semaphore.h>
-#endif  // P_HAS_SEMPAHORES
+  #if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
+    #include <semaphore.h>
+  #endif  // P_HAS_SEMPAHORES
 
 #endif  // P_PTHREADS
 
@@ -560,6 +541,107 @@ typedef int SOCKET;
 #define P_THREADIDENTIFIER thread_id
 #endif // BE_THREADS
 
-#endif // _PMACHDEP_H
+
+///////////////////////////////////////////
+//
+//  define a macro for declaring classes so we can bolt
+//  extra things to class declarations
+//
+
+#define PEXPORT
+#define PSTATIC
+
+
+///////////////////////////////////////////
+//
+// define some basic types and their limits
+//
+
+typedef  int16_t  PInt16; // 16 bit
+typedef uint16_t PUInt16; // 16 bit
+typedef  int32_t  PInt32; // 32 bit
+typedef uint32_t PUInt32; // 32 bit
+
+#ifndef P_NEEDS_INT64
+typedef   signed long long int  PInt64; // 64 bit
+typedef unsigned long long int PUInt64; // 64 bit
+#endif
+
+
+// Integer type that is same size as a pointer type.
+typedef intptr_t      INT;
+typedef uintptr_t    UINT;
+
+// Create "Windows" style definitions.
+
+typedef uint8_t  BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+
+typedef void                    VOID;
+typedef char                    CHAR;
+
+#ifdef P_HAS_WCHAR
+typedef wchar_t                 WCHAR;
+#endif
+
+typedef signed char             SCHAR;
+typedef unsigned char           UCHAR;
+typedef short                   SHORT;
+typedef signed short            SSHORT;
+typedef unsigned short          USHORT;
+typedef  int16_t                SWORD;
+typedef uint16_t                UWORD;
+typedef long                    LONG;
+typedef signed long             SLONG;
+typedef unsigned long           ULONG;
+
+#if defined(__APPLE__)
+typedef signed long int         SDWORD;
+typedef unsigned long int       UDWORD;
+#else
+typedef int32_t                 SDWORD;
+typedef uint32_t                UDWORD;
+#endif
+
+typedef float                   SFLOAT;
+typedef double                  SDOUBLE;
+typedef double                  LDOUBLE;
+
+typedef void *                  PTR;
+typedef void *                  LPVOID;
+typedef CHAR *                  LPSTR;
+
+#ifdef P_HAS_WCHAR
+typedef WCHAR *                 LPWSTR;
+typedef const WCHAR *           LPCWSTR;
+#endif
+
+typedef const CHAR *            LPCSTR;
+typedef DWORD *                 LPDWORD;
+#define FAR
+
+typedef signed short            RETCODE;
+typedef void *                  HWND;
+
+// For sqltypes.h, prevent it from redefining the above
+#define ALLREADY_HAVE_WINDOWS_TYPE 1
+
+typedef SCHAR SQLSCHAR;
+typedef HWND SQLHWND;
+#define SQL_API
+
+
+///////////////////////////////////////////
+// Type used for array indexes and sizes
+
+typedef int PINDEX;
+#define P_MAX_INDEX INT_MAX
+
+inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
+#define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+
+
+#endif // PTLIB_PLATFORM_H
 
 // End of file
