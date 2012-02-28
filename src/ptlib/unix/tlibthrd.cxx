@@ -60,8 +60,6 @@ static pthread_t baseThread;
 
 int PX_NewHandle(const char *, int);
 
-#define PPThreadKill(id, sig)  PProcess::Current().PThreadKill(id, sig)
-
 
 #define PAssertPTHREAD(func, args) \
   { \
@@ -295,15 +293,6 @@ PProcess::~PProcess()
   PostShutdown();
 }
 
-PBoolean PProcess::PThreadKill(pthread_t id, unsigned sig)
-{
-  PWaitAndSignal m(m_activeThreadMutex);
-
-  if (m_activeThreads.find(id) == m_activeThreads.end()) 
-    return false;
-
-  return pthread_kill(id, sig) == 0;
-}
 
 void PProcess::PXSetThread(pthread_t id, PThread * thread)
 {
@@ -606,7 +595,7 @@ void PX_SuspendSignalHandler(int)
   while (notResumed) {
     BYTE ch;
     notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
-#if !( defined(P_NETBSD) && defined(P_NO_CANCEL) )
+#if !defined(P_NO_CANCEL)
     pthread_testcancel();
 #endif
   }
@@ -638,7 +627,7 @@ void PThread::Suspend(PBoolean susp)
   // Suspend - warn the user with an Assertion
   PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
 #else
-  if (PPThreadKill(PX_threadId, 0)) {
+  if (!IsTerminated()) {
 
     // if suspending, then see if already suspended
     if (susp) {
@@ -646,7 +635,7 @@ void PThread::Suspend(PBoolean susp)
       if (PX_suspendCount == 1) {
         if (PX_threadId != pthread_self()) {
           signal(SUSPEND_SIG, PX_SuspendSignalHandler);
-          PPThreadKill(PX_threadId, SUSPEND_SIG);
+          pthread_kill(PX_threadId, SUSPEND_SIG);
         }
         else {
           PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
@@ -872,7 +861,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
     if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
       break;
 
-#if !( defined(P_NETBSD) && defined(P_NO_CANCEL) )
+#if !defined(P_NO_CANCEL)
     pthread_testcancel();
 #endif
 
@@ -925,13 +914,13 @@ void PThread::Terminate()
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
-#if ( defined(P_NETBSD) && defined(P_NO_CANCEL) )
-  PPThreadKill(PX_threadId,SIGKILL);
+  if (PX_threadId != 0) {
+#if defined(P_NO_CANCEL)
+    pthread_kill(PX_threadId, SIGKILL);
 #else
-  if (PX_threadId) {
     pthread_cancel(PX_threadId);
-  }
 #endif
+  }
 }
 
 
