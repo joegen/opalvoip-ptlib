@@ -43,7 +43,10 @@
 #endif
 
 #include "ptbuildopts.h"
+
+#include <ptlib/object.h>
 #include <ptlib/contain.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
