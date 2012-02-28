@@ -824,7 +824,7 @@ class PThreadLocalStorage
 
 #else
 
-#undef P_HAS_THREADLOCAL_STORAGE 1
+#undef P_HAS_THREADLOCAL_STORAGE
 #warning("Thread local storage not supported");
 
 #endif
