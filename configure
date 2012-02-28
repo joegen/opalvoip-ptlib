@@ -6796,6 +6796,7 @@ done
 
 
 
+
 for ac_header in wchar.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "wchar.h" "ac_cv_header_wchar_h" "$ac_includes_default"
@@ -6803,7 +6804,12 @@ if test "x$ac_cv_header_wchar_h" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_WCHAR_H 1
 _ACEOF
- $as_echo "#define P_HAS_WCHAR 1" >>confdefs.h
+
+      $as_echo "#define P_HAS_WCHAR 1" >>confdefs.h
+
+      $as_echo "#define P_HAS_WOSTREAM 1" >>confdefs.h
+
+
 
 fi
 
@@ -8505,7 +8511,7 @@ $as_echo "no" >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/types.h>
-#include <sys/socket.h>
+                     #include <sys/socket.h>
                      #include <netdb.h>
 int
 main ()
