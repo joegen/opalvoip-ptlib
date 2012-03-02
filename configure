@@ -555,7 +555,6 @@ PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
 ac_unique_file="include/ptlib.h"
-enable_option_checking=no
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -602,108 +601,120 @@ ENDLDLIBS
 OPTSTDCCFLAGS
 STDCXXFLAGS
 STDCCFLAGS
-PTLIB_ODBC
-PTLIB_FFVDEV
-PTLIB_VIDFILE
-PTLIB_SOCKAGG
-PTLIB_CONFIG_FILE
-PTLIB_HTTPSVC
-PTLIB_HTTPFORMS
-PTLIB_HTTP
-PTLIB_URL
-PTLIB_SOAP
-PTLIB_XMLRPC
-PTLIB_JABBER
-PTLIB_VXML
-PTLIB_SHM_VIDEO
-PTLIB_VIDEO
-PTLIB_AUDIO
-PTLIB_POP3SMTP
-PTLIB_SERIAL
-PTLIB_REMCONN
-PTLIB_CLI
-PTLIB_TELNET
-PTLIB_SNMP
-PTLIB_FTP
-PTLIB_SOCKS
-PTLIB_WAVFILE
-PTLIB_DTMF
-PTLIB_PIPECHAN
-PTLIB_STUNSRVR
-PTLIB_STUN
-PTLIB_NAT
-PTLIB_ASN
-PTLIB_TTS
-PTLIB_VIDEO_CAPTURE
-PTLIB_SDL
-PTLIB_REGEX
-PTLIB_EXPAT
-PTLIB_SASL2
-PTLIB_SASL
-PTLIB_OPENLDAP
-PTLIB_OPENSSL_AES
-PTLIB_OPENSSL
-PTLIB_RESOLVER
-PTLIB_IPV6
+DC_CFLAGS
+HAS_DC1394
+HAS_AVC1394
+HAS_BSDVIDEOCAP
+HAS_LIBV4L
+HAS_V4L2
+V4L2_CXXFLAGS
+HAS_V4L
+HAS_AUDIOSHM
+HAS_SUNAUDIO
+HAS_PULSE
+HAS_OSS
+HAS_ESD
+HAS_ALSA
 HAS_EXCEPTIONS
+PTLIB_ODBC
 HAS_ODBC
 HAS_VFW_CAPTURE
+PTLIB_VIDEO_CAPTURE
 HAS_VIDEO_CAPTURE
 HAS_DIRECTSOUND
 HAS_DIRECTSHOW
+PTLIB_SDL
 HAS_SDL
 SDL_LIBS
 SDL_CFLAGS
+PTLIB_SHM_VIDEO
 HAS_SHM_VIDEO
 HAS_APPSHARE
+PTLIB_FFVDEV
 HAS_FFVDEV
+PTLIB_VIDFILE
 HAS_VIDFILE
+PTLIB_VIDEO
 HAS_VIDEO
 HAS_QOS
+PTLIB_WAVFILE
 HAS_WAVFILE
+PTLIB_AUDIO
 HAS_AUDIO
+PTLIB_POP3SMTP
 HAS_POP3SMTP
+PTLIB_SERIAL
 HAS_SERIAL
+PTLIB_REMCONN
 HAS_REMCONN
+PTLIB_CLI
 HAS_CLI
+PTLIB_TELNET
 HAS_TELNET
+PTLIB_SNMP
 HAS_SNMP
+PTLIB_FTP
 HAS_FTP
+PTLIB_SOCKS
 HAS_SOCKS
+PTLIB_DTMF
 HAS_DTMF
+PTLIB_PIPECHAN
 HAS_PIPECHAN
+PTLIB_STUNSRVR
 HAS_STUNSRVR
+PTLIB_STUN
 HAS_STUN
+PTLIB_NAT
 HAS_NAT
+PTLIB_ASN
 HAS_ASN
+PTLIB_TTS
 HAS_TTS
+PTLIB_SOAP
 HAS_SOAP
+PTLIB_XMLRPC
 HAS_XMLRPC
+PTLIB_VXML
 HAS_VXML
+PTLIB_JABBER
 HAS_JABBER
 HAS_VCARD
 HAS_SSDP
+PTLIB_HTTPSVC
 HAS_HTTPSVC
+PTLIB_HTTPFORMS
 HAS_HTTPFORMS
+PTLIB_HTTP
 HAS_HTTP
+PTLIB_URL
 HAS_URL
+PTLIB_CONFIG_FILE
 HAS_CONFIG_FILE
+PTLIB_IPV6
 HAS_IPV6
 HAS_LUA
+PTLIB_EXPAT
 HAS_EXPAT
 P_STATIC_LDFLAGS
 P_STATIC_ENDLDLIBS
+PTLIB_OPENSSL
 HAS_OPENSSL
 OPENSSL_LIBS
 OPENSSL_CFLAGS
+PTLIB_OPENLDAP
 HAS_OPENLDAP
+PTLIB_SASL
 HAS_SASL
+PTLIB_SASL2
 HAS_SASL2
+PTLIB_RESOLVER
 HAS_RESOLVER
 CPP
 HAS_SAMPLES
 DEV_PLUGIN_DIR
 HAS_PLUGINS
+PTLIB_REGEX
 HAS_REGEX
 BISON
 AR
@@ -719,6 +730,16 @@ TARGETDIR
 OSRELEASE
 OSTYPE
 MACHTYPE
+ac_ct_CXX
+CXXFLAGS
+CXX
+OBJEXT
+EXEEXT
+ac_ct_CC
+CPPFLAGS
+LDFLAGS
+CFLAGS
+CC
 target_os
 target_vendor
 target_cpu
@@ -736,22 +757,10 @@ PTLIB_VERSION
 BUILD_NUMBER
 MINOR_VERSION
 MAJOR_VERSION
-PTINSTDIR
 PTLIBDIR
-ac_ct_CXX
-CXXFLAGS
-CXX
-OBJEXT
-EXEEXT
-ac_ct_CC
-CPPFLAGS
-LDFLAGS
-CFLAGS
-CC
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
-subdirs
 target_alias
 host_alias
 build_alias
@@ -793,8 +802,8 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-enable_ios
 enable_minsize
+enable_ios
 enable_force32
 enable_pch
 enable_deprecated
@@ -866,6 +875,9 @@ enable_memcheck
 enable_odbc
 with_odbc_dir
 enable_exceptions
+enable_esd
+enable_sunaudio
+enable_shmaudio
 '
       ac_precious_vars='build_alias
 host_alias
@@ -887,7 +899,7 @@ OPENSSL_CFLAGS
 OPENSSL_LIBS
 SDL_CFLAGS
 SDL_LIBS'
-ac_subdirs_all='plugins'
+
 
 # Initialize some variables set by options.
 ac_init_help=
@@ -1500,11 +1512,11 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-minsize        Minimise the size of the lib by disabling least used
+                          options
   --enable-ios=iphone|simulator
                           enable iOS support for iPhone
 
-  --enable-minsize        Minimise the size of the lib by disabling least used
-                          options
   --enable-force32        Force 32-bit x86 build
   --enable-pch            Enable precompiled headers
   --disable-deprecated    Stop compiler warning about deprecated functions
@@ -1571,6 +1583,12 @@ Optional Features:
   --enable-memcheck       enable leak testing code (off by default)
   --disable-odbc          disable ODBC support
   --enable-exceptions     enable C++ exceptions
+  --enable-esd            enable ESD audio support
+  --enable-pulse       enable Pulse audio support
+  --enable-sunaudio            enable  Sun audio support
+  --enable-shmaudio       enable shm audio support
+  --disable-video         disable video device support
+  --enable-v4l2            enable V4L2 video support
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2842,8 +2860,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
 ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
+for ac_dir in make "$srcdir"/make; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -2859,7 +2879,7 @@ for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in make \"$srcdir\"/make" "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -2873,7 +2893,39 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
-subdirs="$subdirs plugins"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2999,6 +3051,177 @@ if test -z "$PKG_CONFIG" ; then
   as_fn_error 1 "PTLib must have pkg-config installed" "$LINENO" 5
 fi
 
+
+
+# Check whether --enable-minsize was given.
+if test "${enable_minsize+set}" = set; then :
+  enableval=$enable_minsize;
+fi
+
+
+if test "${enable_minsize}x" = "yesx" ; then
+  default_resolver=no
+  default_openldap=no
+  default_openssl=no
+  default_expat=no
+  default_sdl=no
+  default_sasl=no
+  default_mlib=no
+  default_ipv6=no
+  HAS_TTS=
+  HAS_ASN=1
+  HAS_NAT=1
+  HAS_STUN=1
+  HAS_STUNSRVR=
+  HAS_PIPECHAN=
+  HAS_DTMF=
+  HAS_WAVFILE=
+  HAS_SOCKS=
+  HAS_FTP=
+  HAS_SNMP=
+  HAS_TELNET=
+  HAS_CLI=
+  HAS_REMCONN=
+  HAS_SERIAL=
+  HAS_POP3SMTP=
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=
+  HAS_HTTPSVC=
+  HAS_SSDP=
+  HAS_VCARD=
+  HAS_SOAP=
+  HAS_XMLRPC=
+  HAS_JABBER=
+  HAS_CONFIG_FILE=0
+  HAS_QOS=
+  HAS_VIDFILE=
+  HAS_FFVDEV=
+  HAS_APPSHARE=
+  HAS_VXML=
+  HAS_SHM_VIDEO=
+  HAS_VFW_CAPTURE=
+  HAS_LUA=
+else
+  default_tracing=yes
+  default_resolver=yes
+  default_openldap=yes
+  default_openssl=yes
+  default_expat=yes
+  default_sdl=yes
+  default_sasl=yes
+  default_mlib=no
+  default_ipv6=yes
+  HAS_TTS=1
+  HAS_ASN=1
+  HAS_NAT=1
+  HAS_STUN=1
+  HAS_STUNSRVR=1
+  HAS_PIPECHAN=1
+  HAS_DTMF=1
+  HAS_WAVFILE=1
+  HAS_SOCKS=1
+  HAS_FTP=1
+  HAS_SNMP=1
+  HAS_TELNET=1
+  HAS_CLI=1
+  HAS_REMCONN=1
+  HAS_SERIAL=1
+  HAS_POP3SMTP=1
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=1
+  HAS_HTTPSVC=1
+  HAS_SSDP=1
+  HAS_VCARD=1
+  HAS_SOAP=1
+  HAS_XMLRPC=1
+  HAS_JABBER=1
+  HAS_CONFIG_FILE=1
+  HAS_QOS=1
+  HAS_VIDFILE=1
+  HAS_FFVDEV=1
+  HAS_APPSHARE=
+  HAS_SHM_VIDEO=1
+  HAS_VXML=1
+  HAS_LUA=1
+  HAS_VFW_CAPTURE=
+fi
+
+HAS_SAMPLES=no
+HAS_PLUGINS=1
+HAS_EXCEPTIONS=
+
+
+if test "x$prefix" = "xNONE"; then
+   if test "x$PTLIBDIR" = "x"; then
+      prefix="/usr/local"
+   else
+      prefix="$PTLIBDIR"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: PTLIBDIR detected - setting install prefix to ${PTLIBDIR}" >&5
+$as_echo "$as_me: PTLIBDIR detected - setting install prefix to ${PTLIBDIR}" >&6;}
+   fi
+fi
+
+
+
+if test "x$PTLIBDIR" = "x"; then
+  PTLIBDIR=`pwd`
+fi
+
+
+
+
+
+MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
+PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
+BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+
+
+
+
+
+
+MAJOR_VERSION=$MAJOR_VERSION
+
+MINOR_VERSION=$MINOR_VERSION
+
+BUILD_NUMBER=$BUILD_NUMBER
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: PTLib version is ${PTLIB_VERSION}" >&5
+$as_echo "$as_me: PTLib version is ${PTLIB_VERSION}" >&6;};
+
+
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_MAJOR $MAJOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_MINOR $MINOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_BUILD $BUILD_NUMBER
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_VERSION "$PTLIB_VERSION"
+_ACEOF
+
+
+
+
+
 # Check whether --enable-ios was given.
 if test "${enable_ios+set}" = set; then :
   enableval=$enable_ios;
@@ -3006,15 +3229,19 @@ fi
 
 
 if test "x$enable_ios" = "x" ; then
-  IOS_PLATFORM=
+   IOS_PLATFORM=
 elif test "$enable_ios" = "iphone" ; then
-  IOS_PLATFORM=iPhoneOS
-  IOS_ARCH=armv6
+   IOS_PLATFORM=iPhoneOS
+   target_vendor=apple
+   target_os=darwin10
+   target_cpu=armv6
 elif test "$enable_ios" = "simulator" ; then
-  IOS_PLATFORM=iPhoneSimulator
-  IOS_ARCH=i686
+   IOS_PLATFORM=iPhoneSimulator
+   target_vendor=apple
+   target_os=darwin10
+   target_cpu=i686
 else
-  as_fn_error $? "Unknown iOS variant $enable_ios - use either iphone or simulator" "$LINENO" 5
+   as_fn_error $? "Unknown iOS variant $enable_ios - use either iphone or simulator" "$LINENO" 5
 fi
 
 if test "x$IOS_PLATFORM" != "x" ; then
@@ -3028,12 +3255,122 @@ $as_echo "$as_me: configuring for $IOS_PLATFORM version $IOS_VER" >&6;}
 
   IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${IOS_PLATFORM}${IOS_VER}.sdk
 
-  CXX="${IOS_DEVROOT}/usr/bin/g++ -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
-  CC="${IOS_DEVROOT}/usr/bin/gcc -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
-  LD="${IOS_DEVROOT}/usr/bin/ld -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"
+  CXX="${IOS_DEVROOT}/usr/bin/g++ -arch $target_cpu -isysroot ${IOS_SDKROOT}"
+  CC="${IOS_DEVROOT}/usr/bin/gcc -arch $target_cpu -isysroot ${IOS_SDKROOT}"
+  LD="${IOS_DEVROOT}/usr/bin/ld -arch $target_cpu -isysroot ${IOS_SDKROOT}"
   LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
+else
+  # Make sure we can run config.sub.
+$SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
+  as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
 
-      fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking build system type" >&5
+$as_echo_n "checking build system type... " >&6; }
+if test "${ac_cv_build+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "$ac_aux_dir/config.guess"`
+test "x$ac_build_alias" = x &&
+  as_fn_error $? "cannot guess build type; you must specify one" "$LINENO" 5
+ac_cv_build=`$SHELL "$ac_aux_dir/config.sub" $ac_build_alias` ||
+  as_fn_error $? "$SHELL $ac_aux_dir/config.sub $ac_build_alias failed" "$LINENO" 5
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
+$as_echo "$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
+$as_echo_n "checking host system type... " >&6; }
+if test "${ac_cv_host+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "$ac_aux_dir/config.sub" $host_alias` ||
+    as_fn_error $? "$SHELL $ac_aux_dir/config.sub $host_alias failed" "$LINENO" 5
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
+$as_echo "$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking target system type" >&5
+$as_echo_n "checking target system type... " >&6; }
+if test "${ac_cv_target+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "x$target_alias" = x; then
+  ac_cv_target=$ac_cv_host
+else
+  ac_cv_target=`$SHELL "$ac_aux_dir/config.sub" $target_alias` ||
+    as_fn_error $? "$SHELL $ac_aux_dir/config.sub $target_alias failed" "$LINENO" 5
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_target" >&5
+$as_echo "$ac_cv_target" >&6; }
+case $ac_cv_target in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical target" "$LINENO" 5;;
+esac
+target=$ac_cv_target
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_target
+shift
+target_cpu=$1
+target_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+target_os=$*
+IFS=$ac_save_IFS
+case $target_os in *\ *) target_os=`echo "$target_os" | sed 's/ /-/g'`;; esac
+
+
+# The aliases save the names the user supplied, while $host etc.
+# will get canonicalized.
+test -n "$target_alias" &&
+  test "$program_prefix$program_suffix$program_transform_name" = \
+    NONENONEs,x,x, &&
+  program_prefix=${target_alias}-
+fi
 
 
 ac_ext=c
@@ -4094,322 +4431,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if test "x$prefix" = "xNONE"; then
-   if test "x$PTLIBDIR" = "x"; then
-      prefix="/usr/local"
-   else
-      prefix="$PTLIBDIR"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: PTLIBDIR detected - setting install prefix to ${PTLIBDIR}" >&5
-$as_echo "$as_me: PTLIBDIR detected - setting install prefix to ${PTLIBDIR}" >&6;}
-   fi
-fi
-
-
-
-if test "x$PTLIBDIR" = "x"; then
-  PTLIBDIR=`pwd`
-fi
-
-
-
-
-
-
-
-MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
-BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
-
-
-
-
-
-
-MAJOR_VERSION=$MAJOR_VERSION
-
-MINOR_VERSION=$MINOR_VERSION
-
-BUILD_NUMBER=$BUILD_NUMBER
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: PTLib version is ${PTLIB_VERSION}" >&5
-$as_echo "$as_me: PTLib version is ${PTLIB_VERSION}" >&6;};
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_MAJOR $MAJOR_VERSION
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_MINOR $MINOR_VERSION
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_BUILD $BUILD_NUMBER
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_VERSION "$PTLIB_VERSION"
-_ACEOF
-
-
-
-# Check whether --enable-minsize was given.
-if test "${enable_minsize+set}" = set; then :
-  enableval=$enable_minsize;
-fi
-
-
-HAS_SAMPLES=no
-default_tracing=yes
-default_resolver=yes
-default_openldap=yes
-default_openssl=yes
-default_expat=yes
-default_sdl=yes
-default_sasl=yes
-default_mlib=no
-HAS_PLUGINS=1
-HAS_TTS=1
-HAS_ASN=1
-HAS_NAT=1
-HAS_STUN=1
-HAS_STUNSRVR=1
-HAS_PIPECHAN=1
-HAS_DTMF=1
-HAS_WAVFILE=1
-HAS_SOCKS=1
-HAS_FTP=1
-HAS_SNMP=1
-HAS_TELNET=1
-HAS_CLI=1
-HAS_REMCONN=1
-HAS_SERIAL=1
-HAS_POP3SMTP=1
-HAS_AUDIO=1
-HAS_VIDEO=1
-HAS_URL=1
-HAS_HTTP=1
-HAS_HTTPFORMS=1
-HAS_HTTPSVC=1
-HAS_SSDP=1
-HAS_VCARD=1
-HAS_SOAP=1
-HAS_XMLRPC=1
-HAS_JABBER=1
-HAS_CONFIG_FILE=1
-default_ipv6=yes
-HAS_QOS=1
-HAS_SOCKAGG=
-HAS_VIDFILE=1
-HAS_FFVDEV=1
-HAS_APPSHARE=
-HAS_SHM_VIDEO=1
-HAS_VXML=1
-HAS_LUA=1
-HAS_EXCEPTIONS=
-HAS_VFW_CAPTURE=
-
-if test "${enable_minsize}x" = "yesx" ; then
-  default_resolver=no
-  default_openldap=no
-  default_openssl=no
-  default_expat=no
-  default_sdl=no
-  default_sasl=no
-  default_mlib=no
-  HAS_PLUGINS=1
-  HAS_TTS=
-  HAS_ASN=1
-  HAS_NAT=1
-  HAS_STUN=1
-  HAS_STUNSRVR=
-  HAS_PIPECHAN=
-  HAS_DTMF=
-  HAS_WAVFILE=
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_CLI=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SSDP=
-  HAS_VCARD=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=0
-  default_ipv6=no
-  HAS_QOS=
-  HAS_SOCKAGG=
-  HAS_VIDFILE=
-  HAS_FFVDEV=
-  HAS_APPSHARE=
-  HAS_VXML=
-  HAS_SHM_VIDEO=
-  HAS_EXCEPTIONS=
-  HAS_VFW_CAPTURE=
-  HAS_LUA=
-fi
-
-
-
-
-# Make sure we can run config.sub.
-$SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
-  as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking build system type" >&5
-$as_echo_n "checking build system type... " >&6; }
-if test "${ac_cv_build+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_build_alias=$build_alias
-test "x$ac_build_alias" = x &&
-  ac_build_alias=`$SHELL "$ac_aux_dir/config.guess"`
-test "x$ac_build_alias" = x &&
-  as_fn_error $? "cannot guess build type; you must specify one" "$LINENO" 5
-ac_cv_build=`$SHELL "$ac_aux_dir/config.sub" $ac_build_alias` ||
-  as_fn_error $? "$SHELL $ac_aux_dir/config.sub $ac_build_alias failed" "$LINENO" 5
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
-$as_echo "$ac_cv_build" >&6; }
-case $ac_cv_build in
-*-*-*) ;;
-*) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
-esac
-build=$ac_cv_build
-ac_save_IFS=$IFS; IFS='-'
-set x $ac_cv_build
-shift
-build_cpu=$1
-build_vendor=$2
-shift; shift
-# Remember, the first character of IFS is used to create $*,
-# except with old shells:
-build_os=$*
-IFS=$ac_save_IFS
-case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
-$as_echo_n "checking host system type... " >&6; }
-if test "${ac_cv_host+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test "x$host_alias" = x; then
-  ac_cv_host=$ac_cv_build
-else
-  ac_cv_host=`$SHELL "$ac_aux_dir/config.sub" $host_alias` ||
-    as_fn_error $? "$SHELL $ac_aux_dir/config.sub $host_alias failed" "$LINENO" 5
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
-$as_echo "$ac_cv_host" >&6; }
-case $ac_cv_host in
-*-*-*) ;;
-*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
-esac
-host=$ac_cv_host
-ac_save_IFS=$IFS; IFS='-'
-set x $ac_cv_host
-shift
-host_cpu=$1
-host_vendor=$2
-shift; shift
-# Remember, the first character of IFS is used to create $*,
-# except with old shells:
-host_os=$*
-IFS=$ac_save_IFS
-case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking target system type" >&5
-$as_echo_n "checking target system type... " >&6; }
-if test "${ac_cv_target+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test "x$target_alias" = x; then
-  ac_cv_target=$ac_cv_host
-else
-  ac_cv_target=`$SHELL "$ac_aux_dir/config.sub" $target_alias` ||
-    as_fn_error $? "$SHELL $ac_aux_dir/config.sub $target_alias failed" "$LINENO" 5
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_target" >&5
-$as_echo "$ac_cv_target" >&6; }
-case $ac_cv_target in
-*-*-*) ;;
-*) as_fn_error $? "invalid value of canonical target" "$LINENO" 5;;
-esac
-target=$ac_cv_target
-ac_save_IFS=$IFS; IFS='-'
-set x $ac_cv_target
-shift
-target_cpu=$1
-target_vendor=$2
-shift; shift
-# Remember, the first character of IFS is used to create $*,
-# except with old shells:
-target_os=$*
-IFS=$ac_save_IFS
-case $target_os in *\ *) target_os=`echo "$target_os" | sed 's/ /-/g'`;; esac
-
-
-# The aliases save the names the user supplied, while $host etc.
-# will get canonicalized.
-test -n "$target_alias" &&
-  test "$program_prefix$program_suffix$program_transform_name" = \
-    NONENONEs,x,x, &&
-  program_prefix=${target_alias}-
-
-
 TARGETDIR=unix
 OSTYPE=
 NEEDS_PTHREADS=yes
@@ -4857,6 +4878,7 @@ SHAREDLIBEXT=$SHAREDLIBEXT
 
 
 $as_echo "#define P_SHAREDLIBEXT \$SHAREDLIBEXT" >>confdefs.h
+
 
 
 
@@ -5497,6 +5519,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Default extension for C++ files is $ac_ext" >&5
 $as_echo "$as_me: Default extension for C++ files is $ac_ext" >&6;}
+
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -6860,6 +6883,17 @@ $as_echo "#define P_REGEX 1" >>confdefs.h
 fi
 
 
+          if test "x${HAS_REGEX}" = "x1" ; then
+            PTLIB_REGEX=yes
+
+          else
+            PTLIB_REGEX=no
+
+          fi
+
+
+
+
 
 
 case "$target_os" in
@@ -7125,8 +7159,10 @@ $as_echo "no" >&6; }
 
 
 
+    ;;
+esac
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking where plugins are being installed" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where plugins are being installed" >&5
 $as_echo_n "checking where plugins are being installed... " >&6; }
 
 # Check whether --with-plugin-installdir was given.
@@ -7138,18 +7174,24 @@ else
 fi
 
 
-    EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
-    if test "x${exec_prefix}" = "xNONE" ; then
-      if test "x${prefix}" = "xNONE" ; then
-        EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
-      else
-        EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
-      fi
-    else
-      EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
-    fi
+EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
+if test "x${exec_prefix}" = "xNONE" ; then
+  if test "x${prefix}" = "xNONE" ; then
+    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
+  else
+    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
+  fi
+else
+  EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
+fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${EXPANDED_PLUGIN_DIR}" >&5
+case "$target_os" in
+  cygwin* | mingw* )
+    EXPANDED_PLUGIN_DIR="plugins"
+  ;;
+esac
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${EXPANDED_PLUGIN_DIR}" >&5
 $as_echo "${EXPANDED_PLUGIN_DIR}" >&6; }
 
 
@@ -7158,10 +7200,8 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-    DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
 
-    ;;
-    esac
 
 
 
@@ -7604,6 +7644,17 @@ fi
 
 
 
+          if test "x${HAS_RESOLVER}" = "x1" ; then
+            PTLIB_RESOLVER=yes
+
+          else
+            PTLIB_RESOLVER=no
+
+          fi
+
+
+
+
 
 
 # Check whether --enable-sasl was given.
@@ -7793,6 +7844,26 @@ _ACEOF
 
   fi
 fi
+
+          if test "x${HAS_SASL2}" = "x1" ; then
+            PTLIB_SASL2=yes
+
+          else
+            PTLIB_SASL2=no
+
+          fi
+
+
+
+
+          if test "x${HAS_SASL}" = "x1" ; then
+            PTLIB_SASL=yes
+
+          else
+            PTLIB_SASL=no
+
+          fi
+
 
 
 
@@ -7997,6 +8068,17 @@ fi
 
 
 
+          if test "x${HAS_OPENLDAP}" = "x1" ; then
+            PTLIB_OPENLDAP=yes
+
+          else
+            PTLIB_OPENLDAP=no
+
+          fi
+
+
+
+
 
 
 
@@ -8172,6 +8254,16 @@ fi
 
 
 
+          if test "x${HAS_OPENSSL}" = "x1" ; then
+            PTLIB_OPENSSL=yes
+
+          else
+            PTLIB_OPENSSL=no
+
+          fi
+
+
+
 
 
 
@@ -8336,6 +8428,16 @@ $as_echo "#define P_EXPAT 1" >>confdefs.h
     ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
 fi
+
+
+          if test "x${HAS_EXPAT}" = "x1" ; then
+            PTLIB_EXPAT=yes
+
+          else
+            PTLIB_EXPAT=no
+
+          fi
+
 
 
 
@@ -8542,6 +8644,16 @@ $as_echo "#define P_HAS_IPV6 1" >>confdefs.h
 fi
 
 
+          if test "x${HAS_IPV6}" = "x1" ; then
+            PTLIB_IPV6=yes
+
+          else
+            PTLIB_IPV6=no
+
+          fi
+
+
+
 HAS_INET_NTOP=
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for inet_ntop" >&5
 $as_echo_n "checking for inet_ntop... " >&6; }
@@ -8624,6 +8736,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_CONFIG_FILE}" = "x1" ; then
+            PTLIB_CONFIG_FILE=yes
+
+          else
+            PTLIB_CONFIG_FILE=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable URL support" >&5
@@ -8671,6 +8793,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_URL}" = "x1" ; then
+            PTLIB_URL=yes
+
+          else
+            PTLIB_URL=no
+
+          fi
 
 
 
@@ -8724,6 +8856,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_HTTP}" = "x1" ; then
+            PTLIB_HTTP=yes
+
+          else
+            PTLIB_HTTP=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable HTTP forms support" >&5
@@ -8771,6 +8913,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_HTTPFORMS}" = "x1" ; then
+            PTLIB_HTTPFORMS=yes
+
+          else
+            PTLIB_HTTPFORMS=no
+
+          fi
 
 
 
@@ -8822,6 +8974,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_HTTPSVC}" = "x1" ; then
+            PTLIB_HTTPSVC=yes
+
+          else
+            PTLIB_HTTPSVC=no
+
+          fi
 
 
 
@@ -8975,6 +9137,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_JABBER}" = "x1" ; then
+            PTLIB_JABBER=yes
+
+          else
+            PTLIB_JABBER=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable VXML support" >&5
@@ -9022,6 +9194,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_VXML}" = "x1" ; then
+            PTLIB_VXML=yes
+
+          else
+            PTLIB_VXML=no
+
+          fi
 
 
 
@@ -9075,6 +9257,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_XMLRPC}" = "x1" ; then
+            PTLIB_XMLRPC=yes
+
+          else
+            PTLIB_XMLRPC=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable SOAP support" >&5
@@ -9122,6 +9314,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_SOAP}" = "x1" ; then
+            PTLIB_SOAP=yes
+
+          else
+            PTLIB_SOAP=no
+
+          fi
 
 
 
@@ -9177,6 +9379,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_TTS}" = "x1" ; then
+            PTLIB_TTS=yes
+
+          else
+            PTLIB_TTS=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable ASN decoding/encoding support" >&5
@@ -9224,6 +9436,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_ASN}" = "x1" ; then
+            PTLIB_ASN=yes
+
+          else
+            PTLIB_ASN=no
+
+          fi
 
 
 
@@ -9277,6 +9499,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_NAT}" = "x1" ; then
+            PTLIB_NAT=yes
+
+          else
+            PTLIB_NAT=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable STUN support" >&5
@@ -9327,6 +9559,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_STUN}" = "x1" ; then
+            PTLIB_STUN=yes
+
+          else
+            PTLIB_STUN=no
+
+          fi
+
+
+
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable STUN server support" >&5
 $as_echo_n "checking enable STUN server support... " >&6; }
           # Check whether --enable-stunsrvr was given.
@@ -9372,6 +9614,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_STUNSRVR}" = "x1" ; then
+            PTLIB_STUNSRVR=yes
+
+          else
+            PTLIB_STUNSRVR=no
+
+          fi
 
 
 
@@ -9425,6 +9677,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_PIPECHAN}" = "x1" ; then
+            PTLIB_PIPECHAN=yes
+
+          else
+            PTLIB_PIPECHAN=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable DTMF protocol support" >&5
@@ -9472,6 +9734,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_DTMF}" = "x1" ; then
+            PTLIB_DTMF=yes
+
+          else
+            PTLIB_DTMF=no
+
+          fi
 
 
 
@@ -9525,6 +9797,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_SOCKS}" = "x1" ; then
+            PTLIB_SOCKS=yes
+
+          else
+            PTLIB_SOCKS=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable FTP protocol support" >&5
@@ -9572,6 +9854,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_FTP}" = "x1" ; then
+            PTLIB_FTP=yes
+
+          else
+            PTLIB_FTP=no
+
+          fi
 
 
 
@@ -9625,6 +9917,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_SNMP}" = "x1" ; then
+            PTLIB_SNMP=yes
+
+          else
+            PTLIB_SNMP=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable TELNET protocol support" >&5
@@ -9672,6 +9974,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_TELNET}" = "x1" ; then
+            PTLIB_TELNET=yes
+
+          else
+            PTLIB_TELNET=no
+
+          fi
 
 
 
@@ -9725,6 +10037,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_CLI}" = "x1" ; then
+            PTLIB_CLI=yes
+
+          else
+            PTLIB_CLI=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable remote connection support" >&5
@@ -9772,6 +10094,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_REMCONN}" = "x1" ; then
+            PTLIB_REMCONN=yes
+
+          else
+            PTLIB_REMCONN=no
+
+          fi
 
 
 
@@ -9825,6 +10157,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_SERIAL}" = "x1" ; then
+            PTLIB_SERIAL=yes
+
+          else
+            PTLIB_SERIAL=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable POP3/SMTP support" >&5
@@ -9872,6 +10214,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_POP3SMTP}" = "x1" ; then
+            PTLIB_POP3SMTP=yes
+
+          else
+            PTLIB_POP3SMTP=no
+
+          fi
 
 
 
@@ -9925,6 +10277,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_AUDIO}" = "x1" ; then
+            PTLIB_AUDIO=yes
+
+          else
+            PTLIB_AUDIO=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable WAVFILE support" >&5
@@ -9972,6 +10334,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_WAVFILE}" = "x1" ; then
+            PTLIB_WAVFILE=yes
+
+          else
+            PTLIB_WAVFILE=no
+
+          fi
 
 
 
@@ -10076,6 +10448,17 @@ $as_echo "no" >&6; }
 
 
 
+
+          if test "x${HAS_VIDEO}" = "x1" ; then
+            PTLIB_VIDEO=yes
+
+          else
+            PTLIB_VIDEO=no
+
+          fi
+
+
+
 if test "x${HAS_VIDEO}" != "x1" ; then
 
 $as_echo "#define NO_VIDEO_CAPTURE /**/" >>confdefs.h
@@ -10132,6 +10515,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_VIDFILE}" = "x1" ; then
+            PTLIB_VIDFILE=yes
+
+          else
+            PTLIB_VIDFILE=no
+
+          fi
+
+
+
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable FFMpeg video file support" >&5
@@ -10179,6 +10572,16 @@ $as_echo "no" >&6; }
           fi
 
 
+
+
+
+          if test "x${HAS_FFVDEV}" = "x1" ; then
+            PTLIB_FFVDEV=yes
+
+          else
+            PTLIB_FFVDEV=no
+
+          fi
 
 
 
@@ -10282,6 +10685,16 @@ $as_echo "no" >&6; }
 
 
 
+          if test "x${HAS_SHM_VIDEO}" = "x1" ; then
+            PTLIB_SHM_VIDEO=yes
+
+          else
+            PTLIB_SHM_VIDEO=no
+
+          fi
+
+
+
 
 
 # Check whether --enable-sdl was given.
@@ -10381,6 +10794,16 @@ $as_echo "#define P_SDL 1" >>confdefs.h
 fi
   fi
 fi
+
+
+          if test "x${HAS_SDL}" = "x1" ; then
+            PTLIB_SDL=yes
+
+          else
+            PTLIB_SDL=no
+
+          fi
+
 
 
 
@@ -10609,6 +11032,16 @@ fi
 
 
 
+          if test "x${HAS_VIDEO_CAPTURE}" = "x1" ; then
+            PTLIB_VIDEO_CAPTURE=yes
+
+          else
+            PTLIB_VIDEO_CAPTURE=no
+
+          fi
+
+
+
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable video for windows capture" >&5
 $as_echo_n "checking enable video for windows capture... " >&6; }
@@ -10822,6 +11255,16 @@ $as_echo "$as_me: ODBC support enabled" >&6;}
 fi
 
 
+          if test "x${HAS_ODBC}" = "x1" ; then
+            PTLIB_ODBC=yes
+
+          else
+            PTLIB_ODBC=no
+
+          fi
+
+
+
 
 if test "${HAS_RESOLVER:-unset}" != "unset" ; then
     ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
@@ -10895,439 +11338,550 @@ $as_echo "no" >&6; }
 esac
 
 
+if test "$enable_plugins" = "no" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Plugins disabled" >&5
+$as_echo "$as_me: Plugins disabled" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Checking for plugins" >&5
+$as_echo "$as_me: Checking for plugins" >&6;}
+
+if test "${enable_audio}" = "yes" ; then
+
+
+# Check whether --enable-alsa was given.
+if test "${enable_alsa+set}" = set; then :
+  enableval=$enable_alsa;
+else
+  enable_alsa=yes
+fi
+
+
+if test "${enable_alsa}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "alsa/asoundlib.h" "ac_cv_header_alsa_asoundlib_h" "$ac_includes_default"
+if test "x$ac_cv_header_alsa_asoundlib_h" = x""yes; then :
+  ALSAHDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ALSA sound support" >&5
+$as_echo_n "checking for ALSA sound support... " >&6; }
+  if test "${ALSAHDR}z" != "z"; then
+    HAS_ALSA=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-esd was given.
+if test "${enable_esd+set}" = set; then :
+  enableval=$enable_esd;
+else
+  enable_esd=no
+fi
+
+
+if test "${enable_esd}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "esd.h" "ac_cv_header_esd_h" "$ac_includes_default"
+if test "x$ac_cv_header_esd_h" = x""yes; then :
+  ESDHDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ESD sound support" >&5
+$as_echo_n "checking for ESD sound support... " >&6; }
+  if test "${ESDHDR}z" != "z"; then
+    HAS_ESD=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-oss was given.
+if test "${enable_oss+set}" = set; then :
+  enableval=$enable_oss;
+else
+  enable_oss=no
+fi
+
+
+if test "${enable_oss}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "sys/soundcard.h" "ac_cv_header_sys_soundcard_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_soundcard_h" = x""yes; then :
+  OSSSNDCARDHDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OSS sound support" >&5
+$as_echo_n "checking for OSS sound support... " >&6; }
+  if test "${OSSSNDCARDHDR}z" != "z"; then
+    HAS_OSS=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-pulse was given.
+if test "${enable_pulse+set}" = set; then :
+  enableval=$enable_pulse;
+else
+  enable_pulse=yes
+fi
+
 
+if test "${enable_pulse}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "pulse/simple.h" "ac_cv_header_pulse_simple_h" "$ac_includes_default"
+if test "x$ac_cv_header_pulse_simple_h" = x""yes; then :
+  PULSESNDCARDHDR=1
+fi
+
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Pulse sound support" >&5
+$as_echo_n "checking for Pulse sound support... " >&6; }
+  if test "${PULSESNDCARDHDR}z" != "z"; then
+    HAS_PULSE=1
 
-          if test "x${HAS_IPV6}" = "x1" ; then
-            PTLIB_IPV6=yes
-
-          else
-            PTLIB_IPV6=no
-
-          fi
-
-
-
-          if test "x${HAS_RESOLVER}" = "x1" ; then
-            PTLIB_RESOLVER=yes
-
-          else
-            PTLIB_RESOLVER=no
-
-          fi
-
-
-
-          if test "x${HAS_OPENSSL}" = "x1" ; then
-            PTLIB_OPENSSL=yes
-
-          else
-            PTLIB_OPENSSL=no
-
-          fi
-
-
-
-          if test "x${HAS_OPENSSL_AES}" = "x1" ; then
-            PTLIB_OPENSSL_AES=yes
-
-          else
-            PTLIB_OPENSSL_AES=no
-
-          fi
-
-
-
-          if test "x${HAS_OPENLDAP}" = "x1" ; then
-            PTLIB_OPENLDAP=yes
-
-          else
-            PTLIB_OPENLDAP=no
-
-          fi
-
-
-
-          if test "x${HAS_SASL}" = "x1" ; then
-            PTLIB_SASL=yes
-
-          else
-            PTLIB_SASL=no
-
-          fi
-
-
-
-          if test "x${HAS_SASL2}" = "x1" ; then
-            PTLIB_SASL2=yes
-
-          else
-            PTLIB_SASL2=no
-
-          fi
-
-
-
-          if test "x${HAS_EXPAT}" = "x1" ; then
-            PTLIB_EXPAT=yes
-
-          else
-            PTLIB_EXPAT=no
-
-          fi
-
-
-
-          if test "x${HAS_REGEX}" = "x1" ; then
-            PTLIB_REGEX=yes
-
-          else
-            PTLIB_REGEX=no
-
-          fi
-
-
-
-          if test "x${HAS_SDL}" = "x1" ; then
-            PTLIB_SDL=yes
-
-          else
-            PTLIB_SDL=no
-
-          fi
-
-
-
-          if test "x${HAS_VIDEO_CAPTURE}" = "x1" ; then
-            PTLIB_VIDEO_CAPTURE=yes
-
-          else
-            PTLIB_VIDEO_CAPTURE=no
-
-          fi
-
-
-
-
-          if test "x${HAS_TTS}" = "x1" ; then
-            PTLIB_TTS=yes
-
-          else
-            PTLIB_TTS=no
-
-          fi
-
-
-
-          if test "x${HAS_ASN}" = "x1" ; then
-            PTLIB_ASN=yes
-
-          else
-            PTLIB_ASN=no
-
-          fi
-
-
-
-          if test "x${HAS_NAT}" = "x1" ; then
-            PTLIB_NAT=yes
-
-          else
-            PTLIB_NAT=no
-
-          fi
-
-
-
-          if test "x${HAS_STUN}" = "x1" ; then
-            PTLIB_STUN=yes
-
-          else
-            PTLIB_STUN=no
-
-          fi
-
-
-
-          if test "x${HAS_STUNSRVR}" = "x1" ; then
-            PTLIB_STUNSRVR=yes
-
-          else
-            PTLIB_STUNSRVR=no
-
-          fi
-
-
-
-          if test "x${HAS_PIPECHAN}" = "x1" ; then
-            PTLIB_PIPECHAN=yes
-
-          else
-            PTLIB_PIPECHAN=no
-
-          fi
-
-
-
-          if test "x${HAS_DTMF}" = "x1" ; then
-            PTLIB_DTMF=yes
-
-          else
-            PTLIB_DTMF=no
-
-          fi
-
-
-
-          if test "x${HAS_WAVFILE}" = "x1" ; then
-            PTLIB_WAVFILE=yes
-
-          else
-            PTLIB_WAVFILE=no
-
-          fi
-
-
-
-          if test "x${HAS_SOCKS}" = "x1" ; then
-            PTLIB_SOCKS=yes
-
-          else
-            PTLIB_SOCKS=no
-
-          fi
-
-
-
-          if test "x${HAS_FTP}" = "x1" ; then
-            PTLIB_FTP=yes
-
-          else
-            PTLIB_FTP=no
-
-          fi
-
-
-
-          if test "x${HAS_SNMP}" = "x1" ; then
-            PTLIB_SNMP=yes
-
-          else
-            PTLIB_SNMP=no
-
-          fi
-
-
-
-          if test "x${HAS_TELNET}" = "x1" ; then
-            PTLIB_TELNET=yes
-
-          else
-            PTLIB_TELNET=no
-
-          fi
-
-
-
-          if test "x${HAS_CLI}" = "x1" ; then
-            PTLIB_CLI=yes
-
-          else
-            PTLIB_CLI=no
-
-          fi
-
-
-
-          if test "x${HAS_REMCONN}" = "x1" ; then
-            PTLIB_REMCONN=yes
-
-          else
-            PTLIB_REMCONN=no
-
-          fi
-
-
-
-          if test "x${HAS_SERIAL}" = "x1" ; then
-            PTLIB_SERIAL=yes
-
-          else
-            PTLIB_SERIAL=no
-
-          fi
-
-
-
-          if test "x${HAS_POP3SMTP}" = "x1" ; then
-            PTLIB_POP3SMTP=yes
-
-          else
-            PTLIB_POP3SMTP=no
-
-          fi
-
-
-
-          if test "x${HAS_AUDIO}" = "x1" ; then
-            PTLIB_AUDIO=yes
-
-          else
-            PTLIB_AUDIO=no
-
-          fi
-
-
-
-          if test "x${HAS_VIDEO}" = "x1" ; then
-            PTLIB_VIDEO=yes
-
-          else
-            PTLIB_VIDEO=no
-
-          fi
-
-
-
-          if test "x${HAS_SHM_VIDEO}" = "x1" ; then
-            PTLIB_SHM_VIDEO=yes
-
-          else
-            PTLIB_SHM_VIDEO=no
-
-          fi
-
-
-
-
-          if test "x${HAS_VXML}" = "x1" ; then
-            PTLIB_VXML=yes
-
-          else
-            PTLIB_VXML=no
-
-          fi
-
-
-
-          if test "x${HAS_JABBER}" = "x1" ; then
-            PTLIB_JABBER=yes
-
-          else
-            PTLIB_JABBER=no
-
-          fi
-
-
-
-          if test "x${HAS_XMLRPC}" = "x1" ; then
-            PTLIB_XMLRPC=yes
-
-          else
-            PTLIB_XMLRPC=no
-
-          fi
-
-
-
-          if test "x${HAS_SOAP}" = "x1" ; then
-            PTLIB_SOAP=yes
-
-          else
-            PTLIB_SOAP=no
-
-          fi
-
-
-
-          if test "x${HAS_URL}" = "x1" ; then
-            PTLIB_URL=yes
-
-          else
-            PTLIB_URL=no
-
-          fi
-
-
-
-          if test "x${HAS_HTTP}" = "x1" ; then
-            PTLIB_HTTP=yes
-
-          else
-            PTLIB_HTTP=no
-
-          fi
-
-
-
-          if test "x${HAS_HTTPFORMS}" = "x1" ; then
-            PTLIB_HTTPFORMS=yes
-
-          else
-            PTLIB_HTTPFORMS=no
-
-          fi
-
-
-
-          if test "x${HAS_HTTPSVC}" = "x1" ; then
-            PTLIB_HTTPSVC=yes
-
-          else
-            PTLIB_HTTPSVC=no
-
-          fi
-
-
-
-          if test "x${HAS_CONFIG_FILE}" = "x1" ; then
-            PTLIB_CONFIG_FILE=yes
-
-          else
-            PTLIB_CONFIG_FILE=no
-
-          fi
-
-
-
-          if test "x${HAS_SOCKAGG}" = "x1" ; then
-            PTLIB_SOCKAGG=yes
-
-          else
-            PTLIB_SOCKAGG=no
-
-          fi
-
-
-
-          if test "x${HAS_VIDFILE}" = "x1" ; then
-            PTLIB_VIDFILE=yes
-
-          else
-            PTLIB_VIDFILE=no
-
-          fi
-
-
-
-          if test "x${HAS_FFVDEV}" = "x1" ; then
-            PTLIB_FFVDEV=yes
-
-          else
-            PTLIB_FFVDEV=no
-
-          fi
-
-
-
-          if test "x${HAS_ODBC}" = "x1" ; then
-            PTLIB_ODBC=yes
-
-          else
-            PTLIB_ODBC=no
-
-          fi
-
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-sunaudio was given.
+if test "${enable_sunaudio+set}" = set; then :
+  enableval=$enable_sunaudio;
+else
+  enable_sunaudio=no
+fi
+
+
+if test "${enable_sunaudio}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "sys/conf.h" "ac_cv_header_sys_conf_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_conf_h" = x""yes; then :
+  SUNSNDCARDHDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Sun audio sound support" >&5
+$as_echo_n "checking for Sun audio sound support... " >&6; }
+  if test "${SUNSNDCARDHDR}z" != "z"; then
+    HAS_SUNAUDIO=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-shmaudio was given.
+if test "${enable_shmaudio+set}" = set; then :
+  enableval=$enable_shmaudio;
+else
+  enable_shmaudio=no
+fi
+
+
+if test "${enable_shmaudio}z" = "yesz" ; then
+  ac_fn_cxx_check_func "$LINENO" "sem_timedwait" "ac_cv_func_sem_timedwait"
+if test "x$ac_cv_func_sem_timedwait" = x""yes; then :
+  SNDSHMHDR=1
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for shm audio sound support" >&5
+$as_echo_n "checking for shm audio sound support... " >&6; }
+  if test "${SNDSHMHDR}z" != "z"; then
+    HAS_AUDIOSHM=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+fi # enable_audio
+
+# Check whether --enable-video was given.
+if test "${enable_video+set}" = set; then :
+  enableval=$enable_video;
+fi
+
+
+if test "${enable_video}z" = "z" ; then
+  enable_video=yes
+fi
+
+if test "$enable_video" = "yes" ; then
+
+
+# Check whether --enable-v4l was given.
+if test "${enable_v4l+set}" = set; then :
+  enableval=$enable_v4l;
+else
+  enable_v4l=no
+fi
+
+if test "${enable_v4l}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "linux/videodev.h" "ac_cv_header_linux_videodev_h" "$ac_includes_default"
+if test "x$ac_cv_header_linux_videodev_h" = x""yes; then :
+  V4LHDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V4L video support" >&5
+$as_echo_n "checking for V4L video support... " >&6; }
+  if test "${V4LHDR}z" != "z"; then
+    HAS_V4L=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-v4l2 was given.
+if test "${enable_v4l2+set}" = set; then :
+  enableval=$enable_v4l2;
+else
+  enable_v4l2=yes
+fi
+
+
+if test "${enable_v4l2}z" = "yesz" ; then
+  case "$target_os" in
+    solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
+    netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
+          * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
+  esac
+
+  as_ac_Header=`$as_echo "ac_cv_header_$V4L2_HEADER" | $as_tr_sh`
+ac_fn_cxx_check_header_compile "$LINENO" "$V4L2_HEADER" "$as_ac_Header" "
+		#ifdef __linux__
+		#include <linux/types.h>
+		#endif
+
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  HAS_V4L2=1
+else
+
+		    # We can't use AC_CHECK_HEADER again because
+                    # the value is cached, perhaps we have another
+                    # method to do this more cleanly ?
+		    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $V4L2_HEADER with sys/types.h" >&5
+$as_echo_n "checking for $V4L2_HEADER with sys/types.h... " >&6; }
+		    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+					#ifdef __linux__
+					#include <sys/types.h>
+					#include <linux/types.h>
+                                        #else
+                                        #ifdef __sun
+                                        #include <sys/types.h>
+                                        #include <sys/time.h>
+                                        #else
+					#error "not supported"
+					#endif
+					#endif
+					#include "$V4L2_HEADER"
+
+int
+main ()
+{
+
+				        return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+				        HAS_V4L2=1
+				        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+				        HAS_V4L2=
+				        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V4L2 video support" >&5
+$as_echo_n "checking for V4L2 video support... " >&6; }
+  if test "x${HAS_V4L2}" = "x1"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    V4L2_CXXFLAGS=-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'
+
+  else
+    HAS_V4L2=
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+
+
+  if test "x${HAS_V4L2}" = "x1"; then
+    ac_fn_cxx_check_header_mongrel "$LINENO" "libv4l2.h" "ac_cv_header_libv4l2_h" "$ac_includes_default"
+if test "x$ac_cv_header_libv4l2_h" = x""yes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for v4l2_fd_open in -lv4l2" >&5
+$as_echo_n "checking for v4l2_fd_open in -lv4l2... " >&6; }
+if test "${ac_cv_lib_v4l2_v4l2_fd_open+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lv4l2  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char v4l2_fd_open ();
+int
+main ()
+{
+return v4l2_fd_open ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_v4l2_v4l2_fd_open=yes
+else
+  ac_cv_lib_v4l2_v4l2_fd_open=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_v4l2_v4l2_fd_open" >&5
+$as_echo "$ac_cv_lib_v4l2_v4l2_fd_open" >&6; }
+if test "x$ac_cv_lib_v4l2_v4l2_fd_open" = x""yes; then :
+  HAS_LIBV4L=1
+fi
+
+
+fi
+
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libv4l2 support" >&5
+$as_echo_n "checking for libv4l2 support... " >&6; }
+    if test "x${HAS_LIBV4L}" = "x1"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+
+  fi
+fi
+
+
+# Check whether --enable-bsdvideo was given.
+if test "${enable_bsdvideo+set}" = set; then :
+  enableval=$enable_bsdvideo;
+else
+  enable_bsdvideo=yes
+fi
+
+
+if test "${enable_bsdvideo}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "machine/ioctl_meteor.h" "ac_cv_header_machine_ioctl_meteor_h" "$ac_includes_default"
+if test "x$ac_cv_header_machine_ioctl_meteor_h" = x""yes; then :
+  BSDVIDEOHDR=1
+fi
+
+
+  ac_fn_cxx_check_header_mongrel "$LINENO" "i386/ioctl_meteor.h" "ac_cv_header_i386_ioctl_meteor_h" "$ac_includes_default"
+if test "x$ac_cv_header_i386_ioctl_meteor_h" = x""yes; then :
+  BSDVIDEOHDR=1
+fi
+
+
+  ac_fn_cxx_check_header_mongrel "$LINENO" "dev/ic/bt8xx.h" "ac_cv_header_dev_ic_bt8xx_h" "$ac_includes_default"
+if test "x$ac_cv_header_dev_ic_bt8xx_h" = x""yes; then :
+  BSDVIDEOHDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BSD video support" >&5
+$as_echo_n "checking for BSD video support... " >&6; }
+  if test "${BSDVIDEOHDR}z" != "z"; then
+    HAS_BSDVIDEOCAP=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-avc was given.
+if test "${enable_avc+set}" = set; then :
+  enableval=$enable_avc;
+else
+  enable_avc=no
+fi
+
+
+if test "${enable_avc}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "libavc1394/avc1394.h" "ac_cv_header_libavc1394_avc1394_h" "$ac_includes_default"
+if test "x$ac_cv_header_libavc1394_avc1394_h" = x""yes; then :
+  AVC1394HDR=1
+fi
+
+
+  ac_fn_cxx_check_header_mongrel "$LINENO" "libdv/dv.h" "ac_cv_header_libdv_dv_h" "$ac_includes_default"
+if test "x$ac_cv_header_libdv_dv_h" = x""yes; then :
+  DVHDR=1
+fi
+
+
+  ac_fn_cxx_check_header_mongrel "$LINENO" "libraw1394/raw1394.h" "ac_cv_header_libraw1394_raw1394_h" "$ac_includes_default"
+if test "x$ac_cv_header_libraw1394_raw1394_h" = x""yes; then :
+  RAW1394HDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for IEEE1394/AVC video support" >&5
+$as_echo_n "checking for IEEE1394/AVC video support... " >&6; }
+  if test "${AVC1394HDR}z" != "z" -a "${DVHDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
+    HAS_AVC1394=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+
+# Check whether --enable-dc was given.
+if test "${enable_dc+set}" = set; then :
+  enableval=$enable_dc;
+else
+  enable_dc=yes
+fi
+
+
+if test "${enable_dc}z" = "yesz" ; then
+  ac_fn_cxx_check_header_mongrel "$LINENO" "libdc1394/dc1394_control.h" "ac_cv_header_libdc1394_dc1394_control_h" "$ac_includes_default"
+if test "x$ac_cv_header_libdc1394_dc1394_control_h" = x""yes; then :
+  DC1394HDR=1
+fi
+
+
+  ac_fn_cxx_check_header_mongrel "$LINENO" "libraw1394/raw1394.h" "ac_cv_header_libraw1394_raw1394_h" "$ac_includes_default"
+if test "x$ac_cv_header_libraw1394_raw1394_h" = x""yes; then :
+  RAW1394HDR=1
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for IEEE1394/DC video support" >&5
+$as_echo_n "checking for IEEE1394/DC video support... " >&6; }
+  if test "${DC1394HDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
+    HAS_DC1394=1
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if dc1394_dma_setup_capture has 12 parms" >&5
+$as_echo_n "checking if dc1394_dma_setup_capture has 12 parms... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include "libdc1394/dc1394_control.h"
+int main(int ac,char **av)
+{
+  raw1394handle_t handle;
+  nodeid_t node;
+  int channel;
+  int format;
+  int mode;
+  int speed;
+  int frame_rate;
+  int num_dma_buffers;
+  int do_extra_buffering;
+  int drop_frames;
+  const char *dma_device_file;
+  dc1394_cameracapture *camera;
+  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
+			   do_extra_buffering, drop_frames, dma_device_file, camera);
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  NEW_DC_API=1
+else
+  NEW_DC_API=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    if test "$NEW_DC_API" = "1" ; then
+      DC_CFLAGS=-DNEW_DC_API
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+fi
+
+fi
+
+ac_config_files="$ac_config_files plugins/Makefile"
+
+ac_config_files="$ac_config_files plugins/vidinput_v4l2/Makefile"
+
+ac_config_files="$ac_config_files plugins/vidinput_dc/Makefile"
+
+
+fi # enable_plugins
 
 
 
@@ -11436,15 +11990,11 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
-ac_config_files="$ac_config_files make/ptbuildopts.mak"
-
-ac_config_files="$ac_config_files make/ptlib-config"
-
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files ptlib.pc"
 
 ac_config_files="$ac_config_files ptlib_cfg.dxy"
 
-ac_config_files="$ac_config_files ptlib.pc"
+ac_config_files="$ac_config_files make/ptbuildopts.mak"
 
 
 ac_config_headers="$ac_config_headers include/ptbuildopts.h"
@@ -12135,11 +12685,12 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "make/ptbuildopts.mak") CONFIG_FILES="$CONFIG_FILES make/ptbuildopts.mak" ;;
-    "make/ptlib-config") CONFIG_FILES="$CONFIG_FILES make/ptlib-config" ;;
-    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "ptlib_cfg.dxy") CONFIG_FILES="$CONFIG_FILES ptlib_cfg.dxy" ;;
+    "plugins/Makefile") CONFIG_FILES="$CONFIG_FILES plugins/Makefile" ;;
+    "plugins/vidinput_v4l2/Makefile") CONFIG_FILES="$CONFIG_FILES plugins/vidinput_v4l2/Makefile" ;;
+    "plugins/vidinput_dc/Makefile") CONFIG_FILES="$CONFIG_FILES plugins/vidinput_dc/Makefile" ;;
     "ptlib.pc") CONFIG_FILES="$CONFIG_FILES ptlib.pc" ;;
+    "ptlib_cfg.dxy") CONFIG_FILES="$CONFIG_FILES ptlib_cfg.dxy" ;;
+    "make/ptbuildopts.mak") CONFIG_FILES="$CONFIG_FILES make/ptbuildopts.mak" ;;
     "include/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS include/ptbuildopts.h" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -12688,11 +13239,6 @@ $as_echo "$as_me: $ac_file is unchanged" >&6;}
 
   esac
 
-
-  case $ac_file$ac_mode in
-    "make/ptlib-config":F) chmod a+x make/ptlib-config ;;
-
-  esac
 done # for ac_tag
 
 
@@ -12724,153 +13270,9 @@ if test "$no_create" != yes; then
   # would make configure fail if this is the last instruction.
   $ac_cs_success || as_fn_exit 1
 fi
-
-#
-# CONFIG_SUBDIRS section.
-#
-if test "$no_recursion" != yes; then
-
-  # Remove --cache-file, --srcdir, and --disable-option-checking arguments
-  # so they do not pile up.
-  ac_sub_configure_args=
-  ac_prev=
-  eval "set x $ac_configure_args"
-  shift
-  for ac_arg
-  do
-    if test -n "$ac_prev"; then
-      ac_prev=
-      continue
-    fi
-    case $ac_arg in
-    -cache-file | --cache-file | --cache-fil | --cache-fi \
-    | --cache-f | --cache- | --cache | --cach | --cac | --ca | --c)
-      ac_prev=cache_file ;;
-    -cache-file=* | --cache-file=* | --cache-fil=* | --cache-fi=* \
-    | --cache-f=* | --cache-=* | --cache=* | --cach=* | --cac=* | --ca=* \
-    | --c=*)
-      ;;
-    --config-cache | -C)
-      ;;
-    -srcdir | --srcdir | --srcdi | --srcd | --src | --sr)
-      ac_prev=srcdir ;;
-    -srcdir=* | --srcdir=* | --srcdi=* | --srcd=* | --src=* | --sr=*)
-      ;;
-    -prefix | --prefix | --prefi | --pref | --pre | --pr | --p)
-      ac_prev=prefix ;;
-    -prefix=* | --prefix=* | --prefi=* | --pref=* | --pre=* | --pr=* | --p=*)
-      ;;
-    --disable-option-checking)
-      ;;
-    *)
-      case $ac_arg in
-      *\'*) ac_arg=`$as_echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"` ;;
-      esac
-      as_fn_append ac_sub_configure_args " '$ac_arg'" ;;
-    esac
-  done
-
-  # Always prepend --prefix to ensure using the same prefix
-  # in subdir configurations.
-  ac_arg="--prefix=$prefix"
-  case $ac_arg in
-  *\'*) ac_arg=`$as_echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"` ;;
-  esac
-  ac_sub_configure_args="'$ac_arg' $ac_sub_configure_args"
-
-  # Pass --silent
-  if test "$silent" = yes; then
-    ac_sub_configure_args="--silent $ac_sub_configure_args"
-  fi
-
-  # Always prepend --disable-option-checking to silence warnings, since
-  # different subdirs can have different --enable and --with options.
-  ac_sub_configure_args="--disable-option-checking $ac_sub_configure_args"
-
-  ac_popdir=`pwd`
-  for ac_dir in : $subdirs; do test "x$ac_dir" = x: && continue
-
-    # Do not complain, so a configure script can configure whichever
-    # parts of a large source tree are present.
-    test -d "$srcdir/$ac_dir" || continue
-
-    ac_msg="=== configuring in $ac_dir (`pwd`/$ac_dir)"
-    $as_echo "$as_me:${as_lineno-$LINENO}: $ac_msg" >&5
-    $as_echo "$ac_msg" >&6
-    as_dir="$ac_dir"; as_fn_mkdir_p
-    ac_builddir=.
-
-case "$ac_dir" in
-.) ac_dir_suffix= ac_top_builddir_sub=. ac_top_build_prefix= ;;
-*)
-  ac_dir_suffix=/`$as_echo "$ac_dir" | sed 's|^\.[\\/]||'`
-  # A ".." for each directory in $ac_dir_suffix.
-  ac_top_builddir_sub=`$as_echo "$ac_dir_suffix" | sed 's|/[^\\/]*|/..|g;s|/||'`
-  case $ac_top_builddir_sub in
-  "") ac_top_builddir_sub=. ac_top_build_prefix= ;;
-  *)  ac_top_build_prefix=$ac_top_builddir_sub/ ;;
-  esac ;;
-esac
-ac_abs_top_builddir=$ac_pwd
-ac_abs_builddir=$ac_pwd$ac_dir_suffix
-# for backward compatibility:
-ac_top_builddir=$ac_top_build_prefix
-
-case $srcdir in
-  .)  # We are building in place.
-    ac_srcdir=.
-    ac_top_srcdir=$ac_top_builddir_sub
-    ac_abs_top_srcdir=$ac_pwd ;;
-  [\\/]* | ?:[\\/]* )  # Absolute name.
-    ac_srcdir=$srcdir$ac_dir_suffix;
-    ac_top_srcdir=$srcdir
-    ac_abs_top_srcdir=$srcdir ;;
-  *) # Relative name.
-    ac_srcdir=$ac_top_build_prefix$srcdir$ac_dir_suffix
-    ac_top_srcdir=$ac_top_build_prefix$srcdir
-    ac_abs_top_srcdir=$ac_pwd/$srcdir ;;
-esac
-ac_abs_srcdir=$ac_abs_top_srcdir$ac_dir_suffix
-
-
-    cd "$ac_dir"
-
-    # Check for guested configure; otherwise get Cygnus style configure.
-    if test -f "$ac_srcdir/configure.gnu"; then
-      ac_sub_configure=$ac_srcdir/configure.gnu
-    elif test -f "$ac_srcdir/configure"; then
-      ac_sub_configure=$ac_srcdir/configure
-    elif test -f "$ac_srcdir/configure.in"; then
-      # This should be Cygnus configure.
-      ac_sub_configure=$ac_aux_dir/configure
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: no configuration information is in $ac_dir" >&5
-$as_echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2;}
-      ac_sub_configure=
-    fi
-
-    # The recursion is here.
-    if test -n "$ac_sub_configure"; then
-      # Make the cache file name correct relative to the subdirectory.
-      case $cache_file in
-      [\\/]* | ?:[\\/]* ) ac_sub_cache_file=$cache_file ;;
-      *) # Relative name.
-	ac_sub_cache_file=$ac_top_build_prefix$cache_file ;;
-      esac
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: running $SHELL $ac_sub_configure $ac_sub_configure_args --cache-file=$ac_sub_cache_file --srcdir=$ac_srcdir" >&5
-$as_echo "$as_me: running $SHELL $ac_sub_configure $ac_sub_configure_args --cache-file=$ac_sub_cache_file --srcdir=$ac_srcdir" >&6;}
-      # The eval makes quoting arguments work.
-      eval "\$SHELL \"\$ac_sub_configure\" $ac_sub_configure_args \
-	   --cache-file=\"\$ac_sub_cache_file\" --srcdir=\"\$ac_srcdir\"" ||
-	as_fn_error $? "$ac_sub_configure failed for $ac_dir" "$LINENO" 5
-    fi
-
-    cd "$ac_popdir"
-  done
-fi
 if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
 
