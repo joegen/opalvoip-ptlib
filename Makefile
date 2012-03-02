@@ -28,13 +28,6 @@
 # $Date$
 #
 
-PREFIX=@prefix@
-exec_prefix = ${PREFIX}
-export LIBDIR=@LIBDIR@
-export PTLIBDIR=@PTLIBDIR@
-
-INSTALL=@INSTALL@
-
 ifeq ($(DEBUG),)
 default :: optshared
 else
@@ -42,8 +35,6 @@ default :: debugshared
 endif
 
 all :: 
-
-TARGETDIR=@TARGETDIR@
 
 include make/ptlib.mak
 
@@ -79,11 +70,11 @@ optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # and adjust shared lib names
 ifeq (,$(findstring $(OSTYPE),Darwin cygwin mingw))
-  LIB_SONAME   = $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@
-  DEBUG_SONAME = $(PTLIB_DEBUG_FILE).@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@
+  LIB_SONAME   = $(PTLIB_FILE).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
+  DEBUG_SONAME = $(PTLIB_DEBUG_FILE).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
 else
-  LIB_SONAME   = $(subst .$(LIB_SUFFIX),.@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@.$(LIB_SUFFIX),$(PTLIB_FILE))
-  DEBUG_SONAME = $(subst .$(LIB_SUFFIX),.@MAJOR_VERSION@.@MINOR_VERSION@@BUILD_TYPE@@BUILD_NUMBER@._d$(LIB_SUFFIX),$(PTLIB_FILE))
+  LIB_SONAME   = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(PTLIB_FILE))
+  DEBUG_SONAME = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)._d$(LIB_SUFFIX),$(PTLIB_FILE))
 endif
 
 # all these targets are just passed to all subdirectories
@@ -157,8 +148,6 @@ endif
 	(for fn in make/*.mak ; \
 		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/ptlib/make; \
 	done)
-	$(INSTALL) -m 755 make/ptlib-config $(DESTDIR)$(PREFIX)/share/ptlib/make/
-	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; ln -snf ../share/ptlib/make/ptlib-config ptlib-config)
 
 	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
 	chmod 755 $(DESTDIR)$(LIBDIR)/pkgconfig
@@ -175,7 +164,6 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a \
 	      $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE) \
 	      $(DESTDIR)$(LIBDIR)/$(LIB_SONAME)
-	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; rm -f ../share/ptlib/make/ptlib-config )
 
 distclean: clean
 	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4

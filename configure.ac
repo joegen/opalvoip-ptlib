@@ -1,55 +1,125 @@
+dnl
+dnl PTLib configuration
+dnl
+
 AC_INIT(include/ptlib.h)
 
-AC_CONFIG_SUBDIRS(plugins)
+AC_PREREQ([2.63])
+
+AC_CONFIG_AUX_DIR(make)
+
+m4_include(ptlib.m4)
+
 
 PKG_PROG_PKG_CONFIG()
 if test -z "$PKG_CONFIG" ; then
   AC_MSG_ERROR(PTLib must have pkg-config installed, 1)
 fi
 
-AC_ARG_ENABLE([ios],
-	      AS_HELP_STRING([--enable-ios=iphone|simulator],[enable iOS support for iPhone])
-	     )
 
-if test "x$enable_ios" = "x" ; then
-  IOS_PLATFORM=
-elif test "$enable_ios" = "iphone" ; then
-  IOS_PLATFORM=iPhoneOS
-  IOS_ARCH=armv6
-elif test "$enable_ios" = "simulator" ; then
-  IOS_PLATFORM=iPhoneSimulator
-  IOS_ARCH=i686
+dnl ########################################################################
+dnl check for minimum sizing
+
+AC_ARG_ENABLE(minsize,AS_HELP_STRING([--enable-minsize],[Minimise the size of the lib by disabling least used options]))
+
+dnl these are the default configure settings, minimum or full
+if test "${enable_minsize}x" = "yesx" ; then
+  default_resolver=no
+  default_openldap=no
+  default_openssl=no
+  default_expat=no
+  default_sdl=no
+  default_sasl=no
+  default_mlib=no
+  default_ipv6=no
+  HAS_TTS=
+  HAS_ASN=1
+  HAS_NAT=1
+  HAS_STUN=1
+  HAS_STUNSRVR=
+  HAS_PIPECHAN=
+  HAS_DTMF=
+  HAS_WAVFILE=
+  HAS_SOCKS=
+  HAS_FTP=
+  HAS_SNMP=
+  HAS_TELNET=
+  HAS_CLI=
+  HAS_REMCONN=
+  HAS_SERIAL=
+  HAS_POP3SMTP=
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=
+  HAS_HTTPSVC=
+  HAS_SSDP=
+  HAS_VCARD=
+  HAS_SOAP=
+  HAS_XMLRPC=
+  HAS_JABBER=
+  HAS_CONFIG_FILE=0
+  HAS_QOS=
+  HAS_VIDFILE=
+  HAS_FFVDEV=
+  HAS_APPSHARE=
+  HAS_VXML=
+  HAS_SHM_VIDEO=
+  HAS_VFW_CAPTURE=
+  HAS_LUA=
 else
-  AC_MSG_ERROR([Unknown iOS variant $enable_ios - use either iphone or simulator])
+  default_tracing=yes
+  default_resolver=yes
+  default_openldap=yes
+  default_openssl=yes
+  default_expat=yes
+  default_sdl=yes
+  default_sasl=yes
+  default_mlib=no
+  default_ipv6=yes
+  HAS_TTS=1
+  HAS_ASN=1
+  HAS_NAT=1
+  HAS_STUN=1
+  HAS_STUNSRVR=1
+  HAS_PIPECHAN=1
+  HAS_DTMF=1
+  HAS_WAVFILE=1
+  HAS_SOCKS=1
+  HAS_FTP=1
+  HAS_SNMP=1
+  HAS_TELNET=1
+  HAS_CLI=1
+  HAS_REMCONN=1
+  HAS_SERIAL=1
+  HAS_POP3SMTP=1
+  HAS_AUDIO=1
+  HAS_VIDEO=1
+  HAS_URL=1
+  HAS_HTTP=1
+  HAS_HTTPFORMS=1
+  HAS_HTTPSVC=1
+  HAS_SSDP=1
+  HAS_VCARD=1
+  HAS_SOAP=1
+  HAS_XMLRPC=1
+  HAS_JABBER=1
+  HAS_CONFIG_FILE=1
+  HAS_QOS=1
+  HAS_VIDFILE=1
+  HAS_FFVDEV=1
+  HAS_APPSHARE=
+  HAS_SHM_VIDEO=1
+  HAS_VXML=1
+  HAS_LUA=1
+  HAS_VFW_CAPTURE=
 fi
 
-if test "x$IOS_PLATFORM" != "x" ; then
-  IOS_DEVROOT="`xcode-select -print-path`/Platforms/${IOS_PLATFORM}.platform/Developer"
-  IOS_VER="`xcodebuild -showsdks | grep iphoneos | sort | tail -n 1 | awk '{ print $2}' `"
-  if test "x$IOS_VER" == "x" ; then
-    AC_MSG_ERROR([Unable to determine iOS version number])
-  fi
-  AC_MSG_NOTICE(configuring for $IOS_PLATFORM version $IOS_VER)
+HAS_SAMPLES=no
+HAS_PLUGINS=1
+HAS_EXCEPTIONS=
 
-  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${IOS_PLATFORM}${IOS_VER}.sdk
-
-  CXX=["${IOS_DEVROOT}/usr/bin/g++ -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"]
-  CC=["${IOS_DEVROOT}/usr/bin/gcc -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"]
-  LD=["${IOS_DEVROOT}/usr/bin/ld -arch $IOS_ARCH -isysroot ${IOS_SDKROOT}"]
-  LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
-
-  dnl echo $CC
-  dnl echo $LDFLAGS
-  dnl echo $ENDLDLIBS
-fi
-
-
-AC_PROG_CC
-AC_PROG_CXX
-
-AC_LANG(C++)
-
-m4_include(ptlib.m4)
 
 dnl ########################################################################
 dnl set the PREFIX accordingly
@@ -71,9 +141,6 @@ if test "x$PTLIBDIR" = "x"; then
 fi
 
 AC_SUBST(PTLIBDIR)
-
-dnl set the PTLib installation dir for ptlib-config
-AC_SUBST(PTINSTDIR)
 
 
 dnl ########################################################################
@@ -106,121 +173,61 @@ AC_DEFINE_UNQUOTED([PTLIB_MINOR],   [$MINOR_VERSION], [Minor version])
 AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER], [Build number])
 AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
 
+
+
 dnl ########################################################################
-dnl check for minimum sizing
+dnl iOS is special
 
-AC_ARG_ENABLE(minsize,AS_HELP_STRING([--enable-minsize],[Minimise the size of the lib by disabling least used options]))
+AC_ARG_ENABLE([ios],
+	      AS_HELP_STRING([--enable-ios=iphone|simulator],[enable iOS support for iPhone])
+	     )
 
-dnl these are the default configure settings
-HAS_SAMPLES=no
-default_tracing=yes
-default_resolver=yes
-default_openldap=yes
-default_openssl=yes
-default_expat=yes
-default_sdl=yes
-default_sasl=yes
-default_mlib=no
-HAS_PLUGINS=1
-HAS_TTS=1
-HAS_ASN=1
-HAS_NAT=1
-HAS_STUN=1
-HAS_STUNSRVR=1
-HAS_PIPECHAN=1
-HAS_DTMF=1
-HAS_WAVFILE=1
-HAS_SOCKS=1
-HAS_FTP=1
-HAS_SNMP=1
-HAS_TELNET=1
-HAS_CLI=1
-HAS_REMCONN=1
-HAS_SERIAL=1
-HAS_POP3SMTP=1
-HAS_AUDIO=1
-HAS_VIDEO=1
-HAS_URL=1
-HAS_HTTP=1
-HAS_HTTPFORMS=1
-HAS_HTTPSVC=1
-HAS_SSDP=1
-HAS_VCARD=1
-HAS_SOAP=1
-HAS_XMLRPC=1
-HAS_JABBER=1
-HAS_CONFIG_FILE=1
-default_ipv6=yes
-HAS_QOS=1
-HAS_SOCKAGG=
-HAS_VIDFILE=1
-HAS_FFVDEV=1
-HAS_APPSHARE=
-HAS_SHM_VIDEO=1
-HAS_VXML=1
-HAS_LUA=1
-HAS_EXCEPTIONS=
-HAS_VFW_CAPTURE=
-
-if test "${enable_minsize}x" = "yesx" ; then
-  default_resolver=no
-  default_openldap=no
-  default_openssl=no
-  default_expat=no
-  default_sdl=no
-  default_sasl=no
-  default_mlib=no
-  HAS_PLUGINS=1
-  HAS_TTS=
-  HAS_ASN=1
-  HAS_NAT=1
-  HAS_STUN=1
-  HAS_STUNSRVR=
-  HAS_PIPECHAN=
-  HAS_DTMF=
-  HAS_WAVFILE=
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_CLI=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SSDP=
-  HAS_VCARD=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=0
-  default_ipv6=no
-  HAS_QOS=
-  HAS_SOCKAGG=
-  HAS_VIDFILE=
-  HAS_FFVDEV=
-  HAS_APPSHARE=
-  HAS_VXML=
-  HAS_SHM_VIDEO=
-  HAS_EXCEPTIONS=
-  HAS_VFW_CAPTURE=
-  HAS_LUA=
+if test "x$enable_ios" = "x" ; then
+   IOS_PLATFORM=
+elif test "$enable_ios" = "iphone" ; then
+   IOS_PLATFORM=iPhoneOS
+   target_vendor=apple
+   target_os=darwin10
+   target_cpu=armv6
+elif test "$enable_ios" = "simulator" ; then
+   IOS_PLATFORM=iPhoneSimulator
+   target_vendor=apple
+   target_os=darwin10
+   target_cpu=i686
+else
+   AC_MSG_ERROR([Unknown iOS variant $enable_ios - use either iphone or simulator])
 fi
+
+if test "x$IOS_PLATFORM" != "x" ; then
+  IOS_DEVROOT="`xcode-select -print-path`/Platforms/${IOS_PLATFORM}.platform/Developer"
+  IOS_VER="`xcodebuild -showsdks | grep iphoneos | sort | tail -n 1 | awk '{ print $2}' `"
+  if test "x$IOS_VER" == "x" ; then
+    AC_MSG_ERROR([Unable to determine iOS version number])
+  fi
+  AC_MSG_NOTICE(configuring for $IOS_PLATFORM version $IOS_VER)
+
+  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${IOS_PLATFORM}${IOS_VER}.sdk
+
+  CXX=["${IOS_DEVROOT}/usr/bin/g++ -arch $target_cpu -isysroot ${IOS_SDKROOT}"]
+  CC=["${IOS_DEVROOT}/usr/bin/gcc -arch $target_cpu -isysroot ${IOS_SDKROOT}"]
+  LD=["${IOS_DEVROOT}/usr/bin/ld -arch $target_cpu -isysroot ${IOS_SDKROOT}"]
+  LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
+else
+  AC_CANONICAL_TARGET()
+fi
+
+
+AC_PROG_CC
+AC_PROG_CXX
+
+AC_LANG(C++)
+
 
 dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
 
 dnl MSWIN_DISPLAY winver,Advanced Windows API
 dnl MSWIN_DEFINE  winver,WINVER=0x502
-
-
-AC_CANONICAL_TARGET()
-
 
 TARGETDIR=unix
 OSTYPE=
@@ -521,6 +528,7 @@ fi
 AC_SUBST(SHAREDLIBEXT, $SHAREDLIBEXT)
 AC_DEFINE([P_SHAREDLIBEXT], [$SHAREDLIBEXT], [shared library extension])
 
+
 dnl ########################################################################
 dnl check the endianness
 
@@ -541,6 +549,7 @@ else
 fi
 
 AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
+
 
 dnl ########################################################################
 dnl look for compile flags
@@ -1031,6 +1040,8 @@ else
   fi
 fi
 
+PTLIB_NEW_OPTION(REGEX)
+
 
 dnl ########################################################################
 dnl check for dynamic library code (dlopen and friends)
@@ -1123,6 +1134,8 @@ else
 fi
 
 AC_SUBST(HAS_RESOLVER)
+PTLIB_NEW_OPTION(RESOLVER)
+
 
 dnl ########################################################################
 dnl Look for SASL
@@ -1171,7 +1184,9 @@ else
   fi
 fi dnl disable_Sasl
 AC_SUBST(HAS_SASL2)
+PTLIB_NEW_OPTION(SASL2)
 AC_SUBST(HAS_SASL)
+PTLIB_NEW_OPTION(SASL)
 
 
 dnl ########################################################################
@@ -1227,6 +1242,8 @@ else
 fi
 
 AC_SUBST(HAS_OPENLDAP)
+PTLIB_NEW_OPTION(OPENLDAP)
+
 
 dnl ########################################################################
 dnl look for OpenSSL
@@ -1286,6 +1303,7 @@ dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
 fi 
 
 AC_SUBST(HAS_OPENSSL)
+PTLIB_NEW_OPTION(OPENSSL)
 
 dnl For now...
 AC_SUBST(P_STATIC_ENDLDLIBS)
@@ -1360,6 +1378,7 @@ else
   fi
 fi
 AC_SUBST(HAS_EXPAT)
+PTLIB_NEW_OPTION(EXPAT)
 
 
 dnl ########################################################################
@@ -1430,6 +1449,7 @@ else
   fi
 fi
 AC_SUBST(HAS_IPV6)
+PTLIB_NEW_OPTION(IPV6)
 
 HAS_INET_NTOP=
 AC_MSG_CHECKING(for inet_ntop)
@@ -1450,6 +1470,7 @@ dnl MSWIN_DISPLAY    configfile,Config file protocol support
 dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
 
 PTLIB_SIMPLE_OPTION([configfile], [CONFIG_FILE], [enable config file support])
+PTLIB_NEW_OPTION(CONFIG_FILE)
 
 dnl ########################################################################
 dnl check for URL support
@@ -1457,6 +1478,7 @@ dnl MSWIN_DISPLAY    url,URL Support
 dnl MSWIN_DEFINE     url,P_URL
 
 PTLIB_SIMPLE_OPTION([url], [URL], [enable URL support])
+PTLIB_NEW_OPTION(URL)
 
 dnl ########################################################################
 dnl check for HTTP support
@@ -1465,6 +1487,7 @@ dnl MSWIN_DEFINE     http,P_HTTP
 dnl MSWIN_IF_FEATURE http,url
 
 PTLIB_SIMPLE_OPTION([http], [HTTP], [enable HTTP support], [HAS_URL])
+PTLIB_NEW_OPTION(HTTP)
 
 dnl ########################################################################
 dnl check for HTTPFORMS support
@@ -1473,6 +1496,7 @@ dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
 dnl MSWIN_IF_FEATURE httpforms,http&configfile
 
 PTLIB_SIMPLE_OPTION([httpforms], [HTTPFORMS], [enable HTTP forms support], [HAS_HTTP], [HAS_CONFIG_FILE])
+PTLIB_NEW_OPTION(HTTPFORMS)
 
 
 dnl ########################################################################
@@ -1482,6 +1506,7 @@ dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
 dnl MSWIN_IF_FEATURE httpsvc,httpforms
 
 PTLIB_SIMPLE_OPTION([httpsvc], [HTTPSVC], [enable HTTP server support], [HAS_HTTPFORMS])
+PTLIB_NEW_OPTION(HTTPSVC)
 
 dnl ########################################################################
 dnl check for SSDP support
@@ -1506,6 +1531,7 @@ dnl MSWIN_IF_FEATURE jabber,expat
 dnl MSWIN_IF_FEATURE jabber,expat32
 
 PTLIB_SIMPLE_OPTION([jabber], [JABBER], [enable Jabber support], [HAS_EXPAT])
+PTLIB_NEW_OPTION(JABBER)
 
 dnl ########################################################################
 dnl VXML 
@@ -1515,6 +1541,7 @@ dnl MSWIN_IF_FEATURE vxml,http&expat
 dnl MSWIN_IF_FEATURE vxml,http&expat32
 
 PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP])
+PTLIB_NEW_OPTION(VXML)
 
 dnl ########################################################################
 dnl XMLRPC
@@ -1524,6 +1551,7 @@ dnl MSWIN_IF_FEATURE xmlrpc,http&expat
 dnl MSWIN_IF_FEATURE xmlrpc,http&expat32
 
 PTLIB_SIMPLE_OPTION([xmlrpc], [XMLRPC], [enable XMLRPC support], [HAS_EXPAT], [HAS_HTTP])
+PTLIB_NEW_OPTION(XMLRPC)
 
 dnl ########################################################################
 dnl SOAP
@@ -1533,6 +1561,7 @@ dnl MSWIN_IF_FEATURE soap,http&expat
 dnl MSWIN_IF_FEATURE soap,http&expat32
 
 PTLIB_SIMPLE_OPTION([soap], [SOAP], [enable SOAP support], [HAS_EXPAT], [HAS_HTTP])
+PTLIB_NEW_OPTION(SOAP)
 
 dnl ########################################################################
 dnl MSWIN_DISPLAY       atl,Active Template Library
@@ -1546,6 +1575,7 @@ dnl MSWIN_DEFINE        sapi,P_TTS
 
 
 PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
+PTLIB_NEW_OPTION(TTS)
 
 dnl ########################################################################
 dnl check for enabling ASN support
@@ -1553,6 +1583,7 @@ dnl MSWIN_DISPLAY    asn,ASN Support
 dnl MSWIN_DEFINE     asn,P_ASN
 
 PTLIB_SIMPLE_OPTION([asn], [ASN], [enable ASN decoding/encoding support])
+PTLIB_NEW_OPTION(ASN)
 
 dnl ########################################################################
 dnl check for enabling NAT support
@@ -1561,6 +1592,7 @@ dnl MSWIN_DEFINE     nat,P_NAT
 dnl MSWIN_DISPLAY    nat,NAT traversal support
  
 PTLIB_SIMPLE_OPTION([nat],     [NAT],     [enable NAT traversal support])
+PTLIB_NEW_OPTION(NAT)
 
 dnl ########################################################################
 dnl check for enabling STUN support
@@ -1570,7 +1602,9 @@ dnl MSWIN_DISPLAY    stunsrv,STUN server support
 dnl MSWIN_DEFINE     stunsrv,P_STUNSRVR
  
 PTLIB_SIMPLE_OPTION([stun],     [STUN],     [enable STUN support],        [HAS_NAT])
+PTLIB_NEW_OPTION(STUN)
 PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [enable STUN server support], [HAS_NAT])
+PTLIB_NEW_OPTION(STUNSRVR)
 
 dnl ########################################################################
 dnl check for enabling PIPECHAN support
@@ -1578,6 +1612,7 @@ dnl MSWIN_DISPLAY    pipechan,pipe channel Support
 dnl MSWIN_DEFINE     pipechan,P_PIPECHAN
 
 PTLIB_SIMPLE_OPTION([pipechan], [PIPECHAN], [enable pipechannel support])
+PTLIB_NEW_OPTION(PIPECHAN)
 
 dnl ########################################################################
 dnl check for enabling DTMF support
@@ -1585,6 +1620,7 @@ dnl MSWIN_DISPLAY  dtmf,DTMF encoding/decoding support
 dnl MSWIN_DEFINE   dtmf,P_DTMF
 
 PTLIB_SIMPLE_OPTION([dtmf], [DTMF], [enable DTMF protocol support])
+PTLIB_NEW_OPTION(DTMF)
 
 dnl ########################################################################
 dnl check for enabling SOCKS support
@@ -1592,6 +1628,7 @@ dnl MSWIN_DISPLAY    socks,SOCKS protocol support
 dnl MSWIN_DEFINE     socks,P_SOCKS
 
 PTLIB_SIMPLE_OPTION([socks], [SOCKS], [enable SOCKS protocol support])
+PTLIB_NEW_OPTION(SOCKS)
 
 dnl ########################################################################
 dnl check for enabling FTP support
@@ -1599,6 +1636,7 @@ dnl MSWIN_DISPLAY    ftp,FTP protocol support
 dnl MSWIN_DEFINE     ftp,P_FTP
 
 PTLIB_SIMPLE_OPTION([ftp], [FTP], [enable FTP protocol support])
+PTLIB_NEW_OPTION(FTP)
 
 dnl ########################################################################
 dnl check for enabling SNMP support
@@ -1606,6 +1644,7 @@ dnl MSWIN_DISPLAY    snmp,SNMP protocol support
 dnl MSWIN_DEFINE     snmp,P_SNMP
 
 PTLIB_SIMPLE_OPTION([snmp], [SNMP], [enable SNMP protocol support])
+PTLIB_NEW_OPTION(SNMP)
 
 dnl ########################################################################
 dnl check for enabling TELNET support
@@ -1613,6 +1652,7 @@ dnl MSWIN_DISPLAY    telnet,Telnet protocol support
 dnl MSWIN_DEFINE     telnet,P_TELNET
 
 PTLIB_SIMPLE_OPTION([telnet], [TELNET], [enable TELNET protocol support])
+PTLIB_NEW_OPTION(TELNET)
 
 dnl ########################################################################
 dnl check for enabling CLI support
@@ -1620,6 +1660,7 @@ dnl MSWIN_DISPLAY    cli,Command ine interpreter support
 dnl MSWIN_DEFINE     cli,P_CLI
 
 PTLIB_SIMPLE_OPTION([cli], [CLI], [enable command line interpreter support])
+PTLIB_NEW_OPTION(CLI)
 
 dnl ########################################################################
 dnl check for enabling REMCONN support
@@ -1627,6 +1668,7 @@ dnl MSWIN_DISPLAY    remconn,remote connection support
 dnl MSWIN_DEFINE     remconn,P_REMCONN
 
 PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support], [HAS_CONFIG_FILE])
+PTLIB_NEW_OPTION(REMCONN)
 
 dnl ########################################################################
 dnl check for enabling serial port handling
@@ -1634,6 +1676,7 @@ dnl MSWIN_DISPLAY    serial,Serial Support
 dnl MSWIN_DEFINE     serial,P_SERIAL
 
 PTLIB_SIMPLE_OPTION([serial], [SERIAL], [enable serial port support])
+PTLIB_NEW_OPTION(SERIAL)
 
 dnl ########################################################################
 dnl check for POP3/SMTP support
@@ -1641,6 +1684,7 @@ dnl MSWIN_DISPLAY    pop3smtp,POP3/SMTP Support
 dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
 
 PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [enable POP3/SMTP support])
+PTLIB_NEW_OPTION(POP3SMTP)
 
 dnl ########################################################################
 dnl check for sound support
@@ -1648,6 +1692,7 @@ dnl MSWIN_DISPLAY audio,Sound support
 dnl MSWIN_DEFINE  audio,P_AUDIO
 
 PTLIB_SIMPLE_OPTION([audio], [AUDIO], [enable audio support])
+PTLIB_NEW_OPTION(AUDIO)
 
 dnl ########################################################################
 dnl check for enabling WAVFILE support
@@ -1655,6 +1700,7 @@ dnl MSWIN_DISPLAY    wavfile,WAV file support
 dnl MSWIN_DEFINE     wavfile,P_WAVFILE
 
 PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [enable WAVFILE support], [HAS_AUDIO])
+PTLIB_NEW_OPTION(WAVFILE)
 
 
 dnl ########################################################################
@@ -1671,6 +1717,8 @@ dnl MSWIN_DISPLAY    video,Video Support
 dnl MSWIN_DEFINE     video,P_VIDEO
 
 PTLIB_SIMPLE_OPTION([video], [VIDEO], [enable video device support])
+PTLIB_NEW_OPTION(VIDEO)
+
 if test "x${HAS_VIDEO}" != "x1" ; then
   AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
 fi
@@ -1681,6 +1729,7 @@ dnl MSWIN_DISPLAY    vidfile,Video file support
 dnl MSWIN_DEFINE     vidfile,P_VIDFILE
 
 PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [enable video file support], [HAS_VIDEO])
+PTLIB_NEW_OPTION(VIDFILE)
 
 dnl ########################################################################
 dnl check for enabling FFMpeg video file support
@@ -1688,6 +1737,7 @@ dnl MSWIN_DISPLAY    ffvdev,FFMpeg video file support
 dnl MSWIN_DEFINE     ffvdev,P_FFVDEV
 
 PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [enable FFMpeg video file support], [HAS_FFVDEV], [HAS_PIPECHAN])
+PTLIB_NEW_OPTION(FFVDEV)
 
 dnl ########################################################################
 dnl check for enabling app share support
@@ -1700,6 +1750,7 @@ dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
 PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
+PTLIB_NEW_OPTION(SHM_VIDEO)
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
@@ -1740,6 +1791,7 @@ else
   fi
 fi
 AC_SUBST(HAS_SDL)
+PTLIB_NEW_OPTION(SDL)
 
 
 dnl ########################################################################
@@ -1784,6 +1836,7 @@ fi
 AC_SUBST(HAS_DIRECTSHOW)
 AC_SUBST(HAS_DIRECTSOUND)
 AC_SUBST(HAS_VIDEO_CAPTURE)
+PTLIB_NEW_OPTION(VIDEO_CAPTURE)
 
 PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [HAS_VIDEO])
 
@@ -1851,6 +1904,7 @@ else
   fi
 fi
 AC_SUBST(HAS_ODBC)
+PTLIB_NEW_OPTION(ODBC)
 
 dnl ########################################################################
 dnl output make directives
@@ -1887,64 +1941,312 @@ case "$target_os" in
 esac
 
 
-dnl Forward compatibility for pkg-config options
-AC_DEFUN([PTLIB_NEW_OPTION],
-         [
-          if test "x${HAS_$1}" = "x1" ; then
-            AC_SUBST([PTLIB_$1], [yes])
-          else
-            AC_SUBST([PTLIB_$1], [no])
-          fi
-         ]
-        )
+if test "$enable_plugins" = "no" ; then
+  AC_MSG_NOTICE(Plugins disabled)
+else
+  AC_MSG_NOTICE(Checking for plugins)
+ 
+if test "${enable_audio}" = "yes" ; then
 
-PTLIB_NEW_OPTION(IPV6)
-PTLIB_NEW_OPTION(RESOLVER)
-PTLIB_NEW_OPTION(OPENSSL)
-PTLIB_NEW_OPTION(OPENSSL_AES)
-PTLIB_NEW_OPTION(OPENLDAP)
-PTLIB_NEW_OPTION(SASL)
-PTLIB_NEW_OPTION(SASL2)
-PTLIB_NEW_OPTION(EXPAT)
-PTLIB_NEW_OPTION(REGEX)
-PTLIB_NEW_OPTION(SDL)
-PTLIB_NEW_OPTION(VIDEO_CAPTURE)
+dnl #########################################################################
+dnl check for Alsa sound support
+dnl ########################################################################
 
-PTLIB_NEW_OPTION(TTS)
-PTLIB_NEW_OPTION(ASN)
-PTLIB_NEW_OPTION(NAT)
-PTLIB_NEW_OPTION(STUN)
-PTLIB_NEW_OPTION(STUNSRVR)
-PTLIB_NEW_OPTION(PIPECHAN)
-PTLIB_NEW_OPTION(DTMF)
-PTLIB_NEW_OPTION(WAVFILE)
-PTLIB_NEW_OPTION(SOCKS)
-PTLIB_NEW_OPTION(FTP)
-PTLIB_NEW_OPTION(SNMP)
-PTLIB_NEW_OPTION(TELNET)
-PTLIB_NEW_OPTION(CLI)
-PTLIB_NEW_OPTION(REMCONN)
-PTLIB_NEW_OPTION(SERIAL)
-PTLIB_NEW_OPTION(POP3SMTP)
-PTLIB_NEW_OPTION(AUDIO)
-PTLIB_NEW_OPTION(VIDEO)
-PTLIB_NEW_OPTION(SHM_VIDEO)
+AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],,enable_alsa=yes)
 
-PTLIB_NEW_OPTION(VXML)
-PTLIB_NEW_OPTION(JABBER)
-PTLIB_NEW_OPTION(XMLRPC)
-PTLIB_NEW_OPTION(SOAP)
-PTLIB_NEW_OPTION(URL)
-PTLIB_NEW_OPTION(HTTP)
-PTLIB_NEW_OPTION(HTTPFORMS)
-PTLIB_NEW_OPTION(HTTPSVC)
-PTLIB_NEW_OPTION(CONFIG_FILE)
-PTLIB_NEW_OPTION(SOCKAGG)
-PTLIB_NEW_OPTION(VIDFILE)
-PTLIB_NEW_OPTION(FFVDEV)
-PTLIB_NEW_OPTION(ODBC)
+if test "${enable_alsa}z" = "yesz" ; then
+  AC_CHECK_HEADER(alsa/asoundlib.h, ALSAHDR=1)
+  AC_MSG_CHECKING(for ALSA sound support)
+  if test "${ALSAHDR}z" != "z"; then
+    AC_SUBST(HAS_ALSA, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
 
-dnl /Forward compatibility for pkg-config options
+dnl #########################################################################
+dnl check for ESD sound support
+dnl ########################################################################
+
+AC_ARG_ENABLE(esd, [  --enable-esd            enable ESD audio support],,enable_esd=no)
+
+if test "${enable_esd}z" = "yesz" ; then
+  AC_CHECK_HEADER(esd.h, ESDHDR=1)
+  AC_MSG_CHECKING(for ESD sound support)
+  if test "${ESDHDR}z" != "z"; then
+    AC_SUBST(HAS_ESD, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for OSS sound support
+dnl ########################################################################
+
+AC_ARG_ENABLE(oss, [  --enable-oss            enable OSS audio support],,enable_oss=no)
+
+if test "${enable_oss}z" = "yesz" ; then
+  AC_CHECK_HEADER(sys/soundcard.h, OSSSNDCARDHDR=1)
+  AC_MSG_CHECKING(for OSS sound support)
+  if test "${OSSSNDCARDHDR}z" != "z"; then
+    AC_SUBST(HAS_OSS, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+dnl #########################################################################
+
+dnl check for Pulse sound support
+dnl ########################################################################
+
+AC_ARG_ENABLE(pulse, [  --enable-pulse       enable Pulse audio support],,enable_pulse=yes)
+
+if test "${enable_pulse}z" = "yesz" ; then
+  AC_CHECK_HEADER(pulse/simple.h, PULSESNDCARDHDR=1)
+  AC_MSG_CHECKING(for Pulse sound support)
+  if test "${PULSESNDCARDHDR}z" != "z"; then
+    AC_SUBST(HAS_PULSE, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for sunaudio sound support
+dnl ########################################################################
+
+AC_ARG_ENABLE(sunaudio, [  --enable-sunaudio            enable  Sun audio support],,enable_sunaudio=no)
+
+if test "${enable_sunaudio}z" = "yesz" ; then
+  AC_CHECK_HEADER(sys/conf.h, SUNSNDCARDHDR=1)
+  AC_MSG_CHECKING(for Sun audio sound support)
+  if test "${SUNSNDCARDHDR}z" != "z"; then
+    AC_SUBST(HAS_SUNAUDIO, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for shm sound support
+dnl ########################################################################
+
+AC_ARG_ENABLE(shmaudio, [  --enable-shmaudio       enable shm audio support],,enable_shmaudio=no)
+
+if test "${enable_shmaudio}z" = "yesz" ; then
+  AC_CHECK_FUNC(sem_timedwait, SNDSHMHDR=1)
+  AC_MSG_CHECKING(for shm audio sound support)
+  if test "${SNDSHMHDR}z" != "z"; then
+    AC_SUBST(HAS_AUDIOSHM, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+fi # enable_audio
+
+AC_ARG_ENABLE(video,
+       [  --disable-video         disable video device support])
+
+if test "${enable_video}z" = "z" ; then
+  enable_video=yes
+fi
+
+if test "$enable_video" = "yes" ; then
+
+dnl #########################################################################
+dnl check for V4L video support
+dnl ########################################################################
+
+AC_ARG_ENABLE(v4l, [  --enable-v4l            enable V4L video support],,enable_v4l=no)
+if test "${enable_v4l}z" = "yesz" ; then
+  AC_CHECK_HEADER(linux/videodev.h, V4LHDR=1)
+  AC_MSG_CHECKING(for V4L video support)
+  if test "${V4LHDR}z" != "z"; then
+    AC_SUBST(HAS_V4L, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for V4L2 video support
+dnl ########################################################################
+
+AC_ARG_ENABLE(v4l2, [  --enable-v4l2            enable V4L2 video support],,enable_v4l2=yes)
+
+if test "${enable_v4l2}z" = "yesz" ; then
+  case "$target_os" in
+    solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
+    netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
+          * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
+  esac
+
+  AC_CHECK_HEADER([$V4L2_HEADER], 
+                  [HAS_V4L2=1],
+                  [
+		    # We can't use AC_CHECK_HEADER again because
+                    # the value is cached, perhaps we have another
+                    # method to do this more cleanly ?
+		    AC_MSG_CHECKING([for $V4L2_HEADER with sys/types.h])
+		    AC_TRY_COMPILE([
+					#ifdef __linux__
+					#include <sys/types.h>
+					#include <linux/types.h>
+                                        #else
+                                        #ifdef __sun
+                                        #include <sys/types.h>
+                                        #include <sys/time.h>
+                                        #else
+					#error "not supported"
+					#endif
+					#endif
+					#include "$V4L2_HEADER"
+				    ],
+				    [
+				        return 0;
+				    ],
+				    [
+				        HAS_V4L2=1
+				        AC_MSG_RESULT(yes)
+				    ],
+                                    [
+				        HAS_V4L2=
+				        AC_MSG_RESULT(no)
+                                    ])
+                  ], 
+		[
+		#ifdef __linux__
+		#include <linux/types.h>
+		#endif
+		])
+  AC_MSG_CHECKING(for V4L2 video support)
+  if test "x${HAS_V4L2}" = "x1"; then
+    AC_MSG_RESULT(yes)
+    AC_SUBST([V4L2_CXXFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
+  else
+    HAS_V4L2=
+    AC_MSG_RESULT(no)
+  fi
+  AC_SUBST(HAS_V4L2)
+
+  if test "x${HAS_V4L2}" = "x1"; then
+    AC_CHECK_HEADER([libv4l2.h], 
+                    [AC_CHECK_LIB([v4l2], [v4l2_fd_open], [HAS_LIBV4L=1])]
+                   )
+                   
+    AC_MSG_CHECKING([for libv4l2 support])
+    if test "x${HAS_LIBV4L}" = "x1"; then
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+    AC_SUBST(HAS_LIBV4L)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for BSD video capture support
+dnl ########################################################################
+
+AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support],,enable_bsdvideo=yes)
+
+if test "${enable_bsdvideo}z" = "yesz" ; then
+  AC_CHECK_HEADER(machine/ioctl_meteor.h, BSDVIDEOHDR=1)
+  AC_CHECK_HEADER(i386/ioctl_meteor.h, BSDVIDEOHDR=1)
+  AC_CHECK_HEADER(dev/ic/bt8xx.h, BSDVIDEOHDR=1)
+  AC_MSG_CHECKING(for BSD video support)
+  if test "${BSDVIDEOHDR}z" != "z"; then
+    AC_SUBST(HAS_BSDVIDEOCAP, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for AVC video support
+dnl ########################################################################
+
+AC_ARG_ENABLE(avc, [  --enable-avc            enable IEEE1394/AVC video support],,enable_avc=no)
+
+if test "${enable_avc}z" = "yesz" ; then
+  AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
+  AC_CHECK_HEADER(libdv/dv.h, DVHDR=1)
+  AC_CHECK_HEADER(libraw1394/raw1394.h, RAW1394HDR=1)
+  AC_MSG_CHECKING(for IEEE1394/AVC video support)
+  if test "${AVC1394HDR}z" != "z" -a "${DVHDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
+    AC_SUBST(HAS_AVC1394, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
+dnl check for DC video support
+dnl ########################################################################
+
+AC_ARG_ENABLE(dc, [  --enable-dc             enable IEEE1394/DC video support],,enable_dc=yes)
+
+if test "${enable_dc}z" = "yesz" ; then
+  AC_CHECK_HEADER(libdc1394/dc1394_control.h, DC1394HDR=1)
+  AC_CHECK_HEADER(libraw1394/raw1394.h, RAW1394HDR=1)
+  AC_MSG_CHECKING(for IEEE1394/DC video support)
+  if test "${DC1394HDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
+    AC_SUBST(HAS_DC1394, 1)
+    AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
+    AC_COMPILE_IFELSE([[
+#include "libdc1394/dc1394_control.h"
+int main(int ac,char **av)
+{
+  raw1394handle_t handle;
+  nodeid_t node;
+  int channel;
+  int format;
+  int mode;
+  int speed;
+  int frame_rate; 
+  int num_dma_buffers;
+  int do_extra_buffering;
+  int drop_frames;
+  const char *dma_device_file;
+  dc1394_cameracapture *camera;
+  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
+			   do_extra_buffering, drop_frames, dma_device_file, camera);
+  return 0;
+}
+]],NEW_DC_API=1, NEW_DC_API=0)
+    if test "$NEW_DC_API" = "1" ; then
+      AC_SUBST(DC_CFLAGS, -DNEW_DC_API)
+      AC_MSG_RESULT(yes)
+    else
+      AC_SUBST(DC_CFLAGS)
+      AC_MSG_RESULT(no)
+    fi
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+fi
+dnl end of test for video
+
+AC_CONFIG_FILES(plugins/Makefile)
+AC_CONFIG_FILES(plugins/vidinput_v4l2/Makefile)
+AC_CONFIG_FILES(plugins/vidinput_dc/Makefile)
+
+fi # enable_plugins
+
 
 dnl ########################################################################
 dnl final declarations
@@ -1959,16 +2261,16 @@ AC_SUBST(ENDLDLIBS)
 AC_SUBST(DEBUG_FLAG)
 AC_SUBST(OSTYPE)
 AC_SUBST(MACHTYPE)
+
 AC_PROG_INSTALL
 
-AC_CONFIG_FILES(make/ptbuildopts.mak)
-AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])
-AC_CONFIG_FILES(Makefile)
-AC_CONFIG_FILES(ptlib_cfg.dxy)
 AC_CONFIG_FILES(ptlib.pc)
+AC_CONFIG_FILES(ptlib_cfg.dxy)
+AC_CONFIG_FILES(make/ptbuildopts.mak)
 
 dnl ########################################################################
 dnl output header file
 AC_CONFIG_HEADERS(include/ptbuildopts.h)
 
 AC_OUTPUT()
+
