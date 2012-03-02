@@ -50,6 +50,17 @@ dnl	  fi
 
          ])
 
+dnl Forward compatibility for pkg-config options
+AC_DEFUN([PTLIB_NEW_OPTION],
+         [
+          if test "x${HAS_$1}" = "x1" ; then
+            AC_SUBST([PTLIB_$1], [yes])
+          else
+            AC_SUBST([PTLIB_$1], [no])
+          fi
+         ]
+        )
+
 dnl PTLIB_FIND_DIRECTX
 dnl Check for directX
 dnl Arguments:

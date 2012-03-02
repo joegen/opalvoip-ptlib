@@ -161,7 +161,6 @@ endif # P_SHAREDLIB
 
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
-SYSLIBDIR	:= $(shell $(PTLIBDIR)/make/ptlib-config --libdir)
 
 endif # linux
 
@@ -290,7 +289,6 @@ ENDLDLIBS	+= -lsocket -lnsl -ldl -lposix4
 #STDCCFLAGS      += -DP_USE_PRAGMA	# migrated to configure
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
-SYSLIBDIR	:= /opt/openh323/lib
 
 # Rest added by jpd@louisiana.edu, to get .so libs created!
 ifndef DEBUG
@@ -422,11 +420,10 @@ endif # VxWorks
 
 ifeq ($(OSTYPE),rtems)
 
-SYSLIBDIR	:= $(RTEMS_MAKEFILE_PATH)/lib
 SYSINCDIR	:= $(RTEMS_MAKEFILE_PATH)/lib/include
 
-LDFLAGS		+= -B$(SYSLIBDIR)/ -specs=bsp_specs -qrtems
-STDCCFLAGS	+= -B$(SYSLIBDIR)/ -specs=bsp_specs -ansi -fasm -qrtems
+LDFLAGS		+= -B$(RTEMS_MAKEFILE_PATH)/lib/ -specs=bsp_specs -qrtems
+STDCCFLAGS	+= -B$(RTEMS_MAKEFILE_PATH)/lib/ -specs=bsp_specs -ansi -fasm -qrtems
 
 ifeq ($(CPUTYPE),mcpu32)
 STDCCFLAGS	+= -mcpu32

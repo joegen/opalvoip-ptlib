@@ -162,11 +162,6 @@ endif
 
 TARGET_LIBS	= $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/$(PTLIB_FILE)
 
-# distinguish betweek building and using pwlib
-ifeq (,$(wildcard $(PTLIBDIR)/src))
-TARGET_LIBS     = $(SYSLIBDIR)/$(PTLIB_FILE)
-endif
-
 $(TARGET):	$(OBJS) $(TARGET_LIBS)
 ifeq ($(OSTYPE),beos)
 # BeOS won't find dynamic libraries unless they are in one of the system
