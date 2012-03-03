@@ -99,9 +99,8 @@ class PXMLBase : public PObject
 
 class PXML : public PXMLBase
 {
-  PCLASSINFO(PXML, PObject);
+    PCLASSINFO(PXML, PObject);
   public:
-
     PXML(
       Options options = NoOptions,
       const char * noIndentElements = NULL
@@ -115,23 +114,6 @@ class PXML : public PXMLBase
     bool IsDirty() const;
 
     bool Load(const PString & data, Options options = NoOptions);
-
-#if P_HTTP
-    bool StartAutoReloadURL(
-      const PURL & url, 
-      const PTimeInterval & timeout, 
-      const PTimeInterval & refreshTime,
-      Options options = NoOptions
-    );
-    bool StopAutoReloadURL();
-    PString GetAutoReloadStatus() { PWaitAndSignal m(autoLoadMutex); PString str = autoLoadError; return str; }
-    bool AutoLoadURL();
-    virtual void OnAutoLoad(PBoolean ok);
-
-    bool LoadURL(const PURL & url);
-    bool LoadURL(const PURL & url, const PTimeInterval & timeout, Options options = NoOptions);
-#endif // P_HTTP
-
     bool LoadFile(const PFilePath & fn, Options options = NoOptions);
 
     virtual void OnLoaded() { }
@@ -223,11 +205,6 @@ class PXML : public PXMLBase
 
     PMutex & GetMutex() { return rootMutex; }
 
-#if P_HTTP
-    PDECLARE_NOTIFIER(PTimer,  PXML, AutoReloadTimeout);
-    PDECLARE_NOTIFIER(PThread, PXML, AutoReloadThread);
-#endif // P_HTTP
-
     // static methods to create XML tags
     static PString CreateStartTag (const PString & text);
     static PString CreateEndTag (const PString & text);
@@ -245,14 +222,6 @@ class PXML : public PXMLBase
     PString version, encoding;
     StandAloneType m_standAlone;
 
-#if P_HTTP
-    PTimer autoLoadTimer;
-    PURL autoloadURL;
-    PTimeInterval autoLoadWaitTime;
-    PMutex autoLoadMutex;
-    PString autoLoadError;
-#endif // P_HTTP
-
     PStringStream m_errorString;
     unsigned      m_errorLine;
     unsigned      m_errorColumn;
@@ -262,6 +231,43 @@ class PXML : public PXMLBase
     PString docType;
     PString m_defaultNameSpace;
 };
+
+
+#if P_HTTP
+class PXML_HTTP : public PXML
+{
+    PCLASSINFO(PXML_HTTP, PXML);
+  public:
+    PXML_HTTP(
+      Options options = NoOptions,
+      const char * noIndentElements = NULL
+    );
+
+    bool StartAutoReloadURL(
+      const PURL & url, 
+      const PTimeInterval & timeout, 
+      const PTimeInterval & refreshTime,
+      Options options = NoOptions
+    );
+    bool StopAutoReloadURL();
+    PString GetAutoReloadStatus() { PWaitAndSignal m(autoLoadMutex); PString str = autoLoadError; return str; }
+    bool AutoLoadURL();
+    virtual void OnAutoLoad(PBoolean ok);
+
+    bool LoadURL(const PURL & url);
+    bool LoadURL(const PURL & url, const PTimeInterval & timeout, Options options = NoOptions);
+
+  protected:
+    PDECLARE_NOTIFIER(PTimer,  PXML_HTTP, AutoReloadTimeout);
+    PDECLARE_NOTIFIER(PThread, PXML_HTTP, AutoReloadThread);
+
+    PTimer autoLoadTimer;
+    PURL autoloadURL;
+    PTimeInterval autoLoadWaitTime;
+    PMutex autoLoadMutex;
+    PString autoLoadError;
+};
+#endif // P_HTTP
 
 ////////////////////////////////////////////////////////////
 
