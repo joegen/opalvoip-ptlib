@@ -279,9 +279,6 @@ PXML::PXML(const PXML & xml)
 
 PXML::~PXML()
 {
-#if P_HTTP
-  autoLoadTimer.Stop();
-#endif // P_HTTP
   RemoveAll();
 }
 
@@ -351,103 +348,6 @@ bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
 
   return Load(data);
 }
-
-
-#if P_HTTP
-
-bool PXML::LoadURL(const PURL & url)
-{
-  return LoadURL(url, PMaxTimeInterval, PXMLParser::NoOptions);
-}
-
-
-bool PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, PXMLParser::Options options)
-{
-  if (url.IsEmpty()) {
-    m_errorString = "Cannot load empty URL";
-    m_errorLine = m_errorColumn = 0;
-    return false;
-  }
-
-  PTRACE(4, "XML\tLoading URL " << url);
-
-  PString data;
-  if (url.LoadResource(data, PString::Empty(), timeout))
-    return Load(data, options);
-
-  m_errorString = "Cannot load URL ";
-  m_errorLine = m_errorColumn = 0;
-  m_errorString << '"' << url << '"';
-  return false;
-}
-
-
-bool PXML::StartAutoReloadURL(const PURL & url, 
-                              const PTimeInterval & timeout, 
-                              const PTimeInterval & refreshTime,
-                              PXMLParser::Options options)
-{
-  if (url.IsEmpty()) {
-    autoLoadError = "Cannot auto-load empty URL";
-    return false;
-  }
-
-  PWaitAndSignal m(autoLoadMutex);
-  autoLoadTimer.Stop();
-
-  SetOptions(options);
-  autoloadURL      = url;
-  autoLoadWaitTime = timeout;
-  autoLoadError.MakeEmpty();
-  autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
-
-  bool stat = AutoLoadURL();
-
-  autoLoadTimer = refreshTime;
-
-  return stat;
-}
-
-
-void PXML::AutoReloadTimeout(PTimer &, INT)
-{
-  PThread::Create(PCREATE_NOTIFIER(AutoReloadThread), "XmlReload");
-}
-
-
-void PXML::AutoReloadThread(PThread &, INT)
-{
-  PWaitAndSignal m(autoLoadMutex);
-  OnAutoLoad(AutoLoadURL());
-  autoLoadTimer.Reset();
-}
-
-
-void PXML::OnAutoLoad(bool PTRACE_PARAM(ok))
-{
-  PTRACE_IF(3, !ok, "XML\tFailed to load XML: " << GetErrorString());
-}
-
-
-bool PXML::AutoLoadURL()
-{
-  bool stat = LoadURL(autoloadURL, autoLoadWaitTime);
-  if (stat)
-    autoLoadError.MakeEmpty();
-  else 
-    autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
-  return stat;
-}
-
-
-bool PXML::StopAutoReloadURL()
-{
-  PWaitAndSignal m(autoLoadMutex);
-  autoLoadTimer.Stop();
-  return true;
-}
-
-#endif // P_HTTP
 
 
 bool PXML::Load(const PString & data, PXMLParser::Options options)
@@ -943,6 +843,111 @@ bool PXML::LoadAndValidate(const PString & body, const PXML::ValidationInfo * va
   error = err;
   return false;
 }
+
+
+///////////////////////////////////////////////////////
+
+#if P_HTTP
+
+PXML_HTTP::PXML_HTTP(Options options, const char * noIndentElements)
+  : PXML(options, noIndentElements)
+{
+}
+
+
+bool PXML_HTTP::LoadURL(const PURL & url)
+{
+  return LoadURL(url, PMaxTimeInterval, PXMLParser::NoOptions);
+}
+
+
+bool PXML_HTTP::LoadURL(const PURL & url, const PTimeInterval & timeout, Options options)
+{
+  if (url.IsEmpty()) {
+    m_errorString = "Cannot load empty URL";
+    m_errorLine = m_errorColumn = 0;
+    return false;
+  }
+
+  PTRACE(4, "XML\tLoading URL " << url);
+
+  PString data;
+  if (url.LoadResource(data, PString::Empty(), timeout))
+    return Load(data, options);
+
+  m_errorString = "Cannot load URL ";
+  m_errorLine = m_errorColumn = 0;
+  m_errorString << '"' << url << '"';
+  return false;
+}
+
+
+bool PXML_HTTP::StartAutoReloadURL(const PURL & url, 
+                                   const PTimeInterval & timeout, 
+                                   const PTimeInterval & refreshTime,
+                                   PXMLParser::Options options)
+{
+  if (url.IsEmpty()) {
+    autoLoadError = "Cannot auto-load empty URL";
+    return false;
+  }
+
+  PWaitAndSignal m(autoLoadMutex);
+  autoLoadTimer.Stop();
+
+  SetOptions(options);
+  autoloadURL      = url;
+  autoLoadWaitTime = timeout;
+  autoLoadError.MakeEmpty();
+  autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
+
+  bool stat = AutoLoadURL();
+
+  autoLoadTimer = refreshTime;
+
+  return stat;
+}
+
+
+void PXML_HTTP::AutoReloadTimeout(PTimer &, INT)
+{
+  PThread::Create(PCREATE_NOTIFIER(AutoReloadThread), "XmlReload");
+}
+
+
+void PXML_HTTP::AutoReloadThread(PThread &, INT)
+{
+  PWaitAndSignal m(autoLoadMutex);
+  OnAutoLoad(AutoLoadURL());
+  autoLoadTimer.Reset();
+}
+
+
+void PXML_HTTP::OnAutoLoad(bool PTRACE_PARAM(ok))
+{
+  PTRACE_IF(3, !ok, "XML\tFailed to load XML: " << GetErrorString());
+}
+
+
+bool PXML_HTTP::AutoLoadURL()
+{
+  bool stat = LoadURL(autoloadURL, autoLoadWaitTime);
+  if (stat)
+    autoLoadError.MakeEmpty();
+  else 
+    autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
+  return stat;
+}
+
+
+bool PXML_HTTP::StopAutoReloadURL()
+{
+  PWaitAndSignal m(autoLoadMutex);
+  autoLoadTimer.Stop();
+  return true;
+}
+
+#endif // P_HTTP
 
 
 ///////////////////////////////////////////////////////
