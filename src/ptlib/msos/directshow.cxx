@@ -237,6 +237,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     CComPtr<ICaptureGraphBuilder2> m_pCaptureBuilder;
     CComPtr<IBaseFilter>           m_pCaptureFilter;
     CComPtr<IPin>                  m_pCameraOutPin; // Camera output out -> Transform Input pin
+    GUID                           m_selectedGUID;
 
 #ifdef _WIN32_WCE
     PSampleGrabber               * m_pSampleGrabber;
@@ -279,15 +280,15 @@ static struct {
     { "UYVY422", MEDIASUBTYPE_UYVY   }
 };
 
-static PString GUID2Format(GUID m_guid)
+static PString GUID2Format(GUID guid)
 {
    for (int j = 0; j < sizeof(ColourFormat2GUID)/sizeof(ColourFormat2GUID[0]); j++) {
-    if (m_guid == ColourFormat2GUID[j].m_guid)
+    if (guid == ColourFormat2GUID[j].m_guid)
       return ColourFormat2GUID[j].m_colourFormat;
    }
 
    wchar_t guidName[256];
-   if (StringFromGUID2(m_guid, guidName, sizeof(guidName)) <= 0)
+   if (StringFromGUID2(guid, guidName, sizeof(guidName)) <= 0)
        return "UNKNOWN"; // Can't use this entry!
 
    return guidName;
@@ -629,6 +630,7 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
         }
       }
 
+      m_selectedGUID = pMediaFormat->subtype;
       m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
       if (running)
@@ -1642,7 +1644,7 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   AM_MEDIA_TYPE mt;
   ZeroMemory(&mt, sizeof(AM_MEDIA_TYPE));
   mt.majortype = MEDIATYPE_Video;
-  mt.subtype = MEDIASUBTYPE_RGB24;
+  mt.subtype = m_selectedGUID;
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetMediaType(&mt));
 
   CHECK_ERROR_RETURN(m_pSampleGrabber->SetBufferSamples(true));
