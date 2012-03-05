@@ -1368,7 +1368,7 @@ PString PString::Mid(PINDEX start, PINDEX len) const
   if (len <= 0 || start < 0)
     return Empty();
 
-  if (start+len < start) // Beware of wraparound
+  if (len == P_MAX_INDEX || start+len < start) // If open ended or check for wraparound
     return operator()(start, P_MAX_INDEX);
   else
     return operator()(start, start+len-1);
