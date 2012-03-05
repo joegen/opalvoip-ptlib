@@ -175,14 +175,14 @@ ifdef DEBUG
 
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
 $(PT_LIBDIR)/$(PTLIB_FILE):
-	$(MAKE) -C $(PTLIBDIR)/src/ptlib/unix debug
+	$(MAKE) -C $(PTLIBDIR) debug
 endif
 
 else
 
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
 $(PT_LIBDIR)/$(PTLIB_FILE):
-	$(MAKE) -C $(PTLIBDIR)/src/ptlib/unix opt
+	$(MAKE) -C $(PTLIBDIR) opt
 endif
 
 endif
