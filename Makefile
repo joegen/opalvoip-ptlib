@@ -28,6 +28,16 @@
 # $Date$
 #
 
+ifeq (,$(wildcard make/ptbuildopts.mak))
+  dummy := $(info Running configure)$(shell ./configure)
+  ifeq (,$(wildcard make/ptbuildopts.mak))
+    dummy := $(error Configure failed, check config.log for reasons)
+  endif
+endif
+
+include make/ptbuildopts.mak
+
+  
 ifeq ($(DEBUG),)
 default :: optshared
 else

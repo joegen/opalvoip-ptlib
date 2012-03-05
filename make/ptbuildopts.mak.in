@@ -2,15 +2,12 @@
 #
 
 ifndef PTLIBDIR
-	echo "No PTLIBDIR environment variable defined!"
-	echo "You need to define PTLIBDIR!"
-	echo "Try something like:"
-	echo "PTLIBDIR = $(HOME)/ptlib"
-	exit 1
+  PTLIBDIR := @PTLIBDIR@
 endif
 
-PREFIX := @PREFIX@
-LIBDIR := @LIBDIR@
+PREFIX         := @PREFIX@
+exec_prefix    :=$(PREFX)
+LIBDIR         := @LIBDIR@
 DEV_PLUGIN_DIR := @DEV_PLUGIN_DIR@
 
 AR	:= @AR@
