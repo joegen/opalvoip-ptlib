@@ -861,7 +861,7 @@ struct G7231ExtendedInfo
 
 struct G7231FACTChunk
 {
-  P_PACK_FIELD(PWAV::ChunkHeader hdr);
+  PWAV::ChunkHeader hdr;
   P_PACK_FIELD(PInt32l data1);      // 0   Should be number of samples.
 };
 
