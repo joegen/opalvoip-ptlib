@@ -332,11 +332,11 @@ class PURL : public PObject
     bool LoadResource(
       PString & data,  ///< Resource data as a string
       const PString & requiredContentType = PString::Empty() ///< Expected content type where applicable
-    );
+    ) const;
     bool LoadResource(
       PBYTEArray & data,  ///< Resource data as a binary blob
       const PString & requiredContentType = PString::Empty() ///< Expected content type where applicable
-    );
+    ) const;
 
     /**Open the URL in a browser.
 
