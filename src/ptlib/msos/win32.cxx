@@ -94,7 +94,6 @@ void PTime::SetFromFileTime(const FILETIME & timestamp)
   ULARGE_INTEGER i;
   i.HighPart = timestamp.dwHighDateTime;
   i.LowPart = timestamp.dwLowDateTime;
-  i.QuadPart;
 
   theTime = (time_t)(i.QuadPart/scale - delta);
   microseconds = (long)(i.QuadPart%scale/10);
