@@ -69,7 +69,7 @@
 
 // Doesn't everybody have this?
 #ifndef _PATH_VARRUN
-#define _PATH_VARRUN /var/run
+#define _PATH_VARRUN "/var/run"
 #endif
 
 
