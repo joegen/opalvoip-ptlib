@@ -799,10 +799,10 @@ void PThread::Win32AttachThreadInput()
 
 PThread::PThread()
   : autoDelete(false)
-  , m_isProcess(true)
-  , originalStackSize(0)
   , threadHandle(GetCurrentThread())
   , threadId(GetCurrentThreadId())
+  , m_isProcess(true)
+  , originalStackSize(0)
 {
   if (!PProcess::IsInitialised())
     return;
