@@ -38,14 +38,14 @@
 
 #ifdef P_VXWORKS
 #include <logLib.h>
-#define LOG_EMERG      0
-#define LOG_ALERT      1
-#define LOG_CRIT      2
-#define LOG_ERR        3
-#define LOG_WARNING      4
-#define  LOG_NOTICE      5
-#define LOG_INFO      6
-#define LOG_DEBUG      7
+#define LOG_EMERG    0
+#define LOG_ALERT    1
+#define LOG_CRIT     2
+#define LOG_ERR      3
+#define LOG_WARNING  4
+#define  LOG_NOTICE  5
+#define LOG_INFO     6
+#define LOG_DEBUG    7
 #else
 #include <syslog.h>
 #include <pwd.h>
@@ -66,26 +66,26 @@
 #include <sys/resource.h>
 #endif
 
+
+// Doesn't everybody have this?
+#ifndef _PATH_VARRUN
+#define _PATH_VARRUN /var/run
+#endif
+
+
 #define new PNEW
+
 
 extern void PXSignalHandler(int);
 
 #define  MAX_LOG_LINE_LEN  1024
 
-static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
-  "Message",
-  "Fatal error",
-  "Error",
-  "Warning",
-  "Info",
-  "Debug",
-  "Debug2",
-  "Debug3",
-  "Debug4",
-  "Debug5",
-  "Debug6",
-};
+static const unsigned TraceUpSignal = SIGUSR1;
+static const unsigned TraceDownSignal = SIGUSR2;
 
+
+///////////////////////////////////////////////////////////////////////
+//
 PServiceProcess::PServiceProcess(const char * manuf,
                                  const char * name,
                                          WORD majorVersion,
@@ -153,6 +153,34 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 }
 
 
+static unsigned CountOptionSet(const PArgList & args, const char * options)
+{
+  unsigned count = 0;
+  while (*options != '\0') {
+    if (args.HasOption(*options))
+      count++;
+    ++options;
+  }
+  return count;
+}
+
+
+static PString ExpandOptionSet(const char * options)
+{
+  PStringStream strm;
+  bool comma = false;
+  while (options[1] != '\0') {
+    if (comma)
+      strm << ", ";
+    else
+      comma = true;
+    strm << '-' << *options++;
+  }
+  strm << " or " << '-' << *options;
+  return strm;
+}
+
+
 int PServiceProcess::InitialiseService()
 {
 #ifndef P_VXWORKS
@@ -164,7 +192,7 @@ int PServiceProcess::InitialiseService()
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
   PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
-  PTrace::SetLevel(4);
+  PTrace::SetLevel(GetLogLevel());
 #endif
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(PFalse);
@@ -174,24 +202,37 @@ int PServiceProcess::InitialiseService()
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
 
-  args.Parse("v-version."
-             "d-daemon."
-             "c-console."
-             "h-help."
-             "x-execute."
-             "p-pid-file:"
-             "H-handlemax:"
-             "i-ini-file:"
-             "k-kill."
-             "t-terminate."
-             "r-remote-log:"
-             "s-status."
-             "l-log-file:"
-             "u-uid:"
-             "g-gid:"
-#ifdef P_LINUX
-             "C-core-size:"
+  PString progName = GetFile().GetTitle();
+
+  args.Parse("[Execution:]"
+#if !defined(BE_THREADS) && !defined(P_RTEMS)
+             "d-daemon.           run as a daemon\n"
 #endif
+             "x-execute.          execute as a normal program\n"
+             "v-version.          display version information and exit\n"
+             "h-help.             output this help message and exit\n"
+             "[Options:]"
+             "p-pid-file:         file path or directory for pid file (default " _PATH_VARRUN ")\r"
+                                 "if directory, then file is <dir>/" + progName + ".pid\n"
+             "i-ini-file:         set the ini file to use, may be explicit file path or\r"
+                                 "if directory, then file is <dir>/" + progName + ".ini\n"
+             "u-uid:              set user id to run as\n"
+             "g-gid:              set group id to run as\n"
+             "c-console.          output messages to stdout instead of syslog\n"
+             "l-log-file:         output messages to file or directory instead of syslog\r"
+                                 "if directory then file is <dir>/" + progName + ".log\n"
+             "r-remote-log:       output messages to remote syslog server\n"
+             "H-handle-max:       set maximum number of file handles, this is set\r"
+                                 "before the uid/gid, so can initially be superuser\n"
+#ifdef P_LINUX
+             "C-core-size:        set the maximum core file size\n"
+#endif
+             "[Control:]"
+             "s-status.           check to see if daemon is running\n"
+             "t-terminate.        orderly terminate process in pid file (SIGTERM)\n"
+             "k-kill.             preemptively kill process in pid file (SIGKILL)\n"
+             "U-trace-up.         increase the trace log level\n"
+             "D-trace-down.       reduce the trace log level\n"
              , false);
 
   // if only displaying version information, do it and finish
@@ -207,18 +248,38 @@ int PServiceProcess::InitialiseService()
     return 0;
   }
 
+    // Validate the various command line options
+  const char Set1[] = "dx";
+  const char Set2[] = "ktsR";
+  const char Set3[] = "clr";
+  int set1 = CountOptionSet(args, Set1);
+  int set2 = CountOptionSet(args, Set2);
+  int set3 = CountOptionSet(args, Set3);
+  if (args.HasOption('h') || !(set1 == 0 && set2 == 1) || !(set1 == 1 && set2 == 0) || set3 > 1) {
+    if (set1 > 1)
+      cerr << "error: must specify exactly one of " << ExpandOptionSet(Set1) << "\n\n";
+    else if (set1 > 0 && set2 > 0)
+      cerr << "error: cannot specify " << ExpandOptionSet(Set1) << " with " << ExpandOptionSet(Set2) << "\n\n";
+    else if (set2 > 1)
+      cerr << "error: must specify at most one of " << ExpandOptionSet(Set2) << "\n\n";
+    else if (set3 > 1)
+      cerr << "error: must specify at most one of " << ExpandOptionSet(Set3) << "\n\n";
+
+    cerr << "usage: " << progName << " [ options ]\n";
+    args.Usage(cerr);
+    return 2;
+  }
+
   PString pidfilename;
   if (args.HasOption('p'))
     pidfilename = args.GetOptionString('p');
-#ifdef _PATH_VARRUN
   else
     pidfilename =  _PATH_VARRUN;
-#endif
 
   if (!pidfilename && PDirectory::Exists(pidfilename))
-    pidfilename = PDirectory(pidfilename) + PProcess::Current().GetFile().GetFileName() + ".pid";
+    pidfilename = PDirectory(pidfilename) + progName + ".pid";
 
-  if (args.HasOption('k') || args.HasOption('t') || args.HasOption('s')) {
+  if (set2 > 0) {
     pid_t pid;
 
     {
@@ -248,74 +309,40 @@ int PServiceProcess::InitialiseService()
       return 0;
     }
 
-    int sig = args.HasOption('t') ? SIGTERM : SIGKILL;
-    switch (KillProcess(pid, sig)) {
+    if (args.HasOption('U') || args.HasOption('D')) {
+      if (kill(pid, args.HasOption('D') ? TraceDownSignal : TraceUpSignal) != 0) {
+        cout << "Process at " << pid << ' ';
+        if (errno == ESRCH)
+          cout << "does not exist.";
+        else
+          cout << " status could not be determined, error: " << strerror(errno);
+        cout << endl;
+      }
+      return 0;
+    }
+
+    switch (KillProcess(pid, SIGTERM)) {
       case -1 :
         break;
       case 0 :
         PFile::Remove(pidfilename);
         return 0;
       case 1 :
-        if (args.HasOption('t') && args.HasOption('k')) {
+        if (args.HasOption('k')) {
           switch (KillProcess(pid, SIGKILL)) {
             case -1 :
               break;
             case 0 :
               PFile::Remove(pidfilename);
               return 0;
-            case 1 :
-              return 2;
           }
         }
-        else
-          return 2;
+        cout << "Process " << pid << " did not stop.\n";
+        return 2;
     }
 
-    cout << "Could not stop process " << pid <<
-            " - " << strerror(errno) << endl;
+    cout << "Could not stop process " << pid << " - " << strerror(errno) << endl;
     return 1;
-  }
-
-  bool usage = false;
-  if (args.HasOption('h'))
-    usage = true;
-  else if (args.HasOption('d') == args.HasOption('x')) {
-    cout << "error: must specify exactly one of -v, -h, -d or -x" << endl;
-    usage = true;
-  }
-  else if (((args.HasOption('c')?1:0)+(args.HasOption('l')?1:0)+(args.HasOption('r')?1:0)) > 1) {
-    cout << "error: must specify at most one of -c, -l or -r" << endl;
-    usage = true;
-  }
-
-  // if displaying help, then do it
-  if (usage) {
-    cout << "usage: " << GetFile().GetTitle() << " [ options ] { -v | -h | -d | -x }\n"
-            "\n"
-            "Options:\n"
-            "  -h --help             output this help message and exit\n"
-            "  -v --version          display version information and exit\n"
-#if !defined(BE_THREADS) && !defined(P_RTEMS)
-            "  -d --daemon           run as a daemon\n"
-#endif
-            "  -u --uid uid          set user id to run as\n"
-            "  -g --gid gid          set group id to run as\n"
-            "  -p --pid-file         name or directory for pid file\n"
-            "  -t --terminate        orderly terminate process in pid file\n"
-            "  -k --kill             preemptively kill process in pid file\n"
-            "  -s --status           check to see if daemon is running\n"
-            "  -c --console          output messages to stdout rather than syslog\n"
-            "  -l --log-file file    output messages to file or directory instead of syslog\n"
-            "  -r --remote-log host  output messages to file or directory instead of syslog\n"
-            "  -x --execute          execute as a normal program\n"
-            "  -i --ini-file         set the ini file to use, may be explicit file or\n"
-            "                        a ':' separated set of directories to search.\n"
-            "  -H --handlemax n      set maximum number of file handles (set before uid/gid)\n"
-#ifdef P_LINUX
-            "  -C --core-size        set the maximum core file size\n"
-#endif
-         << endl;
-    return 2;
   }
 
   // set flag for console messages
@@ -330,7 +357,7 @@ int PServiceProcess::InitialiseService()
       return 1;
     }
     else if (PDirectory::Exists(fileName))
-      fileName = PDirectory(fileName) + PProcess::Current().GetFile().GetFileName() + ".log";
+      fileName = PDirectory(fileName) + progName + ".log";
     PSystemLog::SetTarget(new PSystemLogToFile(fileName));
   }
   else if (args.HasOption('r'))
@@ -589,6 +616,19 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
 void PServiceProcess::PXOnSignal(int sig)
 {
+  static const char * const LevelName[PSystemLog::NumLogLevels] = {
+    "Fatal error",
+    "Error",
+    "Warning",
+    "Info",
+    "Debug",
+    "Debug2",
+    "Debug3",
+    "Debug4",
+    "Debug5",
+    "Debug6",
+  };
+
   PProcess::PXOnSignal(sig);
   switch (sig) {
     case SIGINT :
@@ -596,33 +636,21 @@ void PServiceProcess::PXOnSignal(int sig)
       Terminate();
       break;
 
-    case SIGUSR1 :
-      OnPause();
-      break;
-
-    case SIGUSR2 :
-      OnContinue();
-      break;
-
-#if 0
-    case SIGHUP :
-      if (currentLogLevel < PSystemLog::NumLogLevels-1) {
-        currentLogLevel = (PSystemLog::Level)(currentLogLevel+1);
+    case TraceUpSignal :
+      if (GetLogLevel() < PSystemLog::NumLogLevels-1) {
+        SetLogLevel((PSystemLog::Level)(GetLogLevel()+1));
         PSystemLog s(PSystemLog::StdError);
-        s << "Log level increased to " << PLevelName[currentLogLevel+1];
+        s << "Log level increased to " << LevelName[GetLogLevel()];
       }
       break;
 
-#ifdef SIGWINCH
-    case SIGWINCH :
-      if (currentLogLevel > PSystemLog::Fatal) {
-        currentLogLevel = (PSystemLog::Level)(currentLogLevel-1);
+    case TraceDownSignal :
+      if (GetLogLevel() > PSystemLog::Fatal) {
+        SetLogLevel((PSystemLog::Level)(GetLogLevel()-1));
         PSystemLog s(PSystemLog::StdError);
-        s << "Log level decreased to " << PLevelName[currentLogLevel+1];
+        s << "Log level decreased to " << LevelName[GetLogLevel()];
       }
       break;
-#endif
-#endif
   }
 }
 
