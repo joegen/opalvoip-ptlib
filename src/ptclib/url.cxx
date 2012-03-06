@@ -893,14 +893,14 @@ void PURL::SetContents(const PString & str)
 }
 
 
-bool PURL::LoadResource(PString & str, const PString & requiredContentType)
+bool PURL::LoadResource(PString & str, const PString & requiredContentType) const
 {
   PURLLoader * loader = PURLLoaderFactory::CreateInstance(GetScheme());
   return loader != NULL && loader->Load(*this, str, requiredContentType);
 }
 
 
-bool PURL::LoadResource(PBYTEArray & data, const PString & requiredContentType)
+bool PURL::LoadResource(PBYTEArray & data, const PString & requiredContentType) const
 {
   PURLLoader * loader = PURLLoaderFactory::CreateInstance(GetScheme());
   return loader != NULL && loader->Load(*this, data, requiredContentType);
