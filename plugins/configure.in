@@ -295,7 +295,7 @@ if test "${enable_dc}z" = "yesz" ; then
     AC_SUBST(HAS_DC1394, 1)
     AC_MSG_RESULT(yes)
     AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
-    AC_COMPILE_IFELSE([[
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include "libdc1394/dc1394_control.h"
 int main(int ac,char **av)
 {
@@ -315,7 +315,7 @@ int main(int ac,char **av)
 			   do_extra_buffering, drop_frames, dma_device_file, camera);
   return 0;
 }
-]],NEW_DC_API=1, NEW_DC_API=0)
+])],NEW_DC_API=1, NEW_DC_API=0)
     if test "$NEW_DC_API" = "1" ; then
       AC_SUBST(DC_CFLAGS, -DNEW_DC_API)
       AC_MSG_RESULT(yes)
