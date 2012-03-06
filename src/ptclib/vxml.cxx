@@ -827,23 +827,16 @@ PBoolean PVXMLSession::LoadFile(const PFilePath & filename, const PString & firs
 
 PBoolean PVXMLSession::LoadURL(const PURL & url)
 {
-  PTRACE(4, "VXML\tLoading URL: " << url);
+  PTRACE(4, "VXML\tLoading URL " << url);
 
   // retreive the document (may be a HTTP get)
-  PFilePath fn;
-  PString contentType;
-  if (!RetreiveResource(url, contentType, fn, false)) {
-    PTRACE(1, "VXML\tCannot load document " << url);
-    return false;
-  }
 
-  if (!LoadFile(fn, url.GetFragment())) {
-    PTRACE(1, "VXML\tCannot load VXML from " << url);
-    return false;
-  }
+  PString xmlStr;
+  if (url.LoadResource(xmlStr))
+    return LoadVXML(xmlStr, url.GetFragment());
 
-  m_rootURL = url;
-  return true;
+  PTRACE(1, "VXML\tCannot load document " << url);
+  return false;
 }
 
 
@@ -915,71 +908,50 @@ PBoolean PVXMLSession::RetreiveResource(const PURL & url,
                                      PFilePath & dataFn,
                                             PBoolean useCache)
 {
-  PBoolean stat = false;
-
   // files on the local file system get loaded locally
-  if (url.GetScheme() *= "file") {
+  if (url.GetScheme() == "file" && url.GetHostName().IsEmpty()) {
     dataFn = url.AsFilePath();
     if (contentType.IsEmpty())
       contentType = GetContentType(dataFn);
-    stat = true;
+    return true;
   }
 
-  // do a HTTP get when appropriate
-  else if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
-
-    PFilePath fn;
-    PString fileType = url.AsFilePath().GetType();
-
-    PBoolean inCache = false;
-    if (useCache)
-      inCache = PVXMLCache::GetResourceCache().Get("url", url.AsString(), fileType, contentType, dataFn);
-
-    if (!inCache) {
-
-      // get a random filename
-      fn = PVXMLCache::GetResourceCache().GetRandomFilename("url", fileType);
-
-      // get the resource header information
-      PHTTPClient client;
-      PMIMEInfo outMIME, replyMIME;
-      if (!client.GetDocument(url, outMIME, replyMIME)) {
-        PTRACE(2, "VXML\tCannot load resource " << url);
-        stat =false;
-      }
-
-      else {
-
-        // Get the body of the response in a PBYTEArray (might be binary data)
-        PBYTEArray incomingData;
-        client.ReadContentBody(replyMIME, incomingData);
-        contentType = replyMIME(PHTTPClient::ContentTypeTag());
-
-        // write the data in the file
-        PFile cacheFile(fn, PFile::WriteOnly);
-        cacheFile.Write(incomingData.GetPointer(), incomingData.GetSize() );
-
-        // if we have a cache and we are using it, then save the data
-        if (useCache)
-          PVXMLCache::GetResourceCache().Put("url", url.AsString(), fileType, contentType, fn, dataFn);
-
-        // data is loaded
-        stat = true;
-      }
-    }
+  PString fileType;
+  {
+    const PStringArray & path = url.GetPath();
+    if (!path.IsEmpty())
+      fileType = PFilePath(path[path.GetSize()-1]).GetType();
   }
 
-  // files on the local file system get loaded locally
-  else if (url.GetScheme() *= "file") {
-    dataFn = url.AsFilePath();
-    stat = true;
+  if (useCache && PVXMLCache::GetResourceCache().Get("url", url.AsString(), fileType, contentType, dataFn))
+    return true;
+
+  // get a random filename
+  PFilePath newFn = PVXMLCache::GetResourceCache().GetRandomFilename("url", fileType);
+
+  // get the resource header information
+  PHTTPClient client;
+  PMIMEInfo outMIME, replyMIME;
+  if (!client.GetDocument(url, outMIME, replyMIME)) {
+    PTRACE(2, "VXML\tCannot load resource " << url);
+    return false;
   }
 
-  // unknown schemes give an error
-  else
-    stat = false;
+  // Get the body of the response in a PBYTEArray (might be binary data)
+  PBYTEArray incomingData;
+  client.ReadContentBody(replyMIME, incomingData);
+  contentType = replyMIME(PHTTPClient::ContentTypeTag());
 
-  return stat;
+  // write the data in the file
+  PFile cacheFile(newFn, PFile::WriteOnly);
+  cacheFile.Write(incomingData.GetPointer(), incomingData.GetSize());
+
+  // if we have a cache and we are using it, then save the data
+  if (useCache)
+    PVXMLCache::GetResourceCache().Put("url", url.AsString(), fileType, contentType, newFn, dataFn);
+
+  // data is loaded
+  return true;
 }
 
 
