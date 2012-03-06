@@ -45,32 +45,13 @@
 #pragma comment(lib, "gdi32.lib")
 #endif
 
-    
+
 #include <vfw.h>
 
 #ifdef __MINGW32__
 
 #define VHDR_DONE       0x00000001
 #define VHDR_KEYFRAME   0x00000008
-#define WM_USER 1024
-#define WM_CAP_FIRSTA (WM_USER)
-
-#define capSetCallbackOnError(hwnd, fpProc)        ((BOOL)::SendMessage(hwnd, WM_CAP_SET_CALLBACK_ERROR, 0, (LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnFrame(hwnd, fpProc)        ((BOOL)::SendMessage(hwnd, WM_CAP_SET_CALLBACK_FRAME, 0, (LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnVideoStream(hwnd, fpProc)  ((BOOL)::SendMessage(hwnd, WM_CAP_SET_CALLBACK_VIDEOSTREAM, 0, (LPARAM)(LPVOID)(fpProc)))
-#define capGetUserData(hwnd)                       (::SendMessage(hwnd, WM_CAP_GET_USER_DATA, 0, 0))
-#define capSetUserData(hwnd, lUser)                ((BOOL)::SendMessage(hwnd, WM_CAP_SET_USER_DATA, 0, (LPARAM)lUser))
-#define capDriverConnect(hwnd, i)                  ((BOOL)::SendMessage(hwnd, WM_CAP_DRIVER_CONNECT, (WPARAM)(i), 0L))
-#define capDriverDisconnect(hwnd)                  ((BOOL)::SendMessage(hwnd, WM_CAP_DRIVER_DISCONNECT, (WPARAM)0, 0L))
-#define capDriverGetCaps(hwnd, s, wSize)           ((BOOL)::SendMessage(hwnd, WM_CAP_DRIVER_GET_CAPS, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPDRIVERCAPS)(s)))
-#define capGetVideoFormat(hwnd, s, wSize)          ((DWORD)::SendMessage(hwnd, WM_CAP_GET_VIDEOFORMAT, (WPARAM)(wSize), (LPARAM)(LPVOID)(s)))
-#define capGetVideoFormatSize(hwnd)                ((DWORD)::SendMessage(hwnd, WM_CAP_GET_VIDEOFORMAT, 0, NULL))
-#define capSetVideoFormat(hwnd, s, wSize)          ((BOOL)::SendMessage(hwnd, WM_CAP_SET_VIDEOFORMAT, (WPARAM)(wSize), (LPARAM)(LPVOID)(s)))
-#define capPreview(hwnd, f)                        ((BOOL)::SendMessage(hwnd, WM_CAP_SET_PREVIEW, (WPARAM)(BOOL)(f), 0L))
-#define capGetStatus(hwnd, s, wSize)               ((BOOL)::SendMessage(hwnd, WM_CAP_GET_STATUS, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPSTATUS)(s)))
-#define capGrabFrameNoStop(hwnd)                   ((BOOL)::SendMessage(hwnd, WM_CAP_GRAB_FRAME_NOSTOP, (WPARAM)0, (LPARAM)0L))
-#define capCaptureSetSetup(hwnd, s, wSize)         ((BOOL)::SendMessage(hwnd, WM_CAP_SET_SEQUENCE_SETUP, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
-#define capCaptureGetSetup(hwnd, s, wSize)         ((BOOL)::SendMessage(hwnd, WM_CAP_GET_SEQUENCE_SETUP, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
 
 extern "C" {
 #ifdef _MSC_VER
