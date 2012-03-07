@@ -413,13 +413,12 @@ unsigned PWAVFile::GetChannels() const
 
 void PWAVFile::SetChannels(unsigned v) 
 {
-  wavFmtChunk.numChannels = (WORD)v;
-  if (wavFmtChunk.numChannels == 1 || wavFmtChunk.numChannels == 2)
-  {
-      wavFmtChunk.bytesPerSample = (wavFmtChunk.bitsPerSample/8) * wavFmtChunk.numChannels;
-      wavFmtChunk.bytesPerSec = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
+  if (formatHandler == NULL || formatHandler->CanSetChannels(v)) {
+    wavFmtChunk.numChannels = (WORD)v;
+    wavFmtChunk.bytesPerSample = (wavFmtChunk.bitsPerSample/8) * wavFmtChunk.numChannels;
+    wavFmtChunk.bytesPerSec = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
+    header_needs_updating = PTrue;
   }
-  header_needs_updating = PTrue;
 }
 
 unsigned PWAVFile::GetSampleRate() const
@@ -783,6 +782,9 @@ class PWAVFileFormatPCM : public PWAVFileFormat
     unsigned GetFormat() const
     { return PWAVFile::fmt_PCM; }
 
+    bool CanSetChannels(unsigned channels) const
+    { return channels > 0 && channels < 7; }
+
     PString GetDescription() const
     { return "PCM"; }
 
@@ -884,6 +886,9 @@ class PWAVFileFormatG7231 : public PWAVFileFormat
 
     void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
     PBoolean WriteExtraChunks(PWAVFile & file);
+
+    bool CanSetChannels(unsigned channels) const
+    { return channels == 1; }
 
     PString GetFormatString() const
     { return "G.723.1"; }   // must match string in mediafmt.h
