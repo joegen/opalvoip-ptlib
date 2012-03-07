@@ -103,6 +103,9 @@ public:
    */
   virtual PString GetDescription() const = 0;
 
+  /// Check that this format can be set to the number of channels
+  virtual bool CanSetChannels(unsigned channels) const = 0;
+
   /**Populate the header with the correct values.
    */
   virtual void CreateHeader(PWAV::FMTChunk & header, PBYTEArray & extendedHeader) = 0;
