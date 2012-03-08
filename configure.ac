@@ -737,6 +737,9 @@ AC_DEFINE_UNQUOTED(P_NEEDS_GNU_CXX_NAMESPACE, ${P_NEEDS_GNU_CXX_NAMESPACE})
 dnl ########################################################################
 dnl check for Unix semaphores
 
+# mingw implements itself the semaphores in src/ptlib/msos/win32.cxx
+if test ${OSTYPE} != mingw ; then
+
 dnl posix unnamed semaphore support in darwin/macosx is broken
 if test ${OSTYPE} != Darwin ; then
   AC_TRY_COMPILE([#include <semaphore.h>],
@@ -751,7 +754,7 @@ if test ${OSTYPE} != Darwin ; then
 fi
 
 if test "${P_HAS_SEMAPHORES}x" = "x" ; then
-  
+
   AC_TRY_COMPILE([#include <semaphore.h>],
                  [sem_t *s = sem_open("test", O_CREAT)],
                  P_HAS_NAMED_SEMAPHORES=1 )
@@ -767,6 +770,8 @@ if test "${P_HAS_SEMAPHORES}x" = "x" ; then
     AC_MSG_WARN(programs. This feature has been disabled for this host)
   fi
 fi
+
+fi  # mingw
 
 dnl ########################################################################
 dnl check for pthreads library
