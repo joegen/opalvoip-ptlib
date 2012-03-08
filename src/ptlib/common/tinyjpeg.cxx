@@ -2159,10 +2159,10 @@ int tinyjpeg_decode(struct jdec_private *priv, int pixfmt)
   return 0;
 }
 
-const char *tinyjpeg_get_errorstring(struct jdec_private *priv)
+const char *tinyjpeg_get_errorstring(struct jdec_private * /*priv*/)
 {
   /* FIXME: the error string must be store in the context */
-  priv = priv;
+  //priv = priv;
   return error_string;
 }
 
