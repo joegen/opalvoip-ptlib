@@ -677,7 +677,7 @@ PBoolean PSocksUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD 
       break;
 
     case SOCKS_ADDR_IPV4 :
-      memcpy(&addr, &newbuf[4], 4);
+      memcpy((char *)&addr, &newbuf[4], 4);
       port_pos = 4;
       break;
 
@@ -701,7 +701,7 @@ PBoolean PSocksUDPSocket::WriteTo(const void * buf, PINDEX len, const Address & 
   // Build header, bytes 0, 1 & 2 are zero
 
   bufptr[3] = SOCKS_ADDR_IPV4;
-  memcpy(bufptr+4, &addr, 4);
+  memcpy(bufptr+4, (const char *)&addr, 4);
   bufptr[8] = (BYTE)(port >> 8);
   bufptr[9] = (BYTE)port;
   memcpy(bufptr+10, buf, len);
