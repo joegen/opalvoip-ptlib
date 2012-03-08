@@ -401,7 +401,7 @@ PBoolean PAbstractList::Remove(const PObject * obj)
 PObject * PAbstractList::RemoveAt(PINDEX index)
 {
   if (PAssertNULL(info) == NULL)
-    return false;
+    return NULL;
 
   Element * element = FindElement(index);
   return PAssert(element != NULL, PInvalidArrayIndex) ? RemoveElement(element) : NULL;
@@ -530,7 +530,7 @@ PINDEX PAbstractList::GetValuesIndex(const PObject & obj) const
 PListElement * PAbstractList::FindElement(PINDEX index) const
 {
   if (index >= GetSize())
-    return PFalse;
+    return NULL;
 
   Element * lastElement;
   PINDEX lastIndex;
