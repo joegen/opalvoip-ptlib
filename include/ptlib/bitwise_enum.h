@@ -141,6 +141,16 @@ class PBitwiseEnum
 #define P_DECLARE_BITWISE_ENUM_7(_0,_1,_2,_3,_4,_5,_6,_7)P_DECLARE_BITWISE_ENUM_6(_0,_1,_2,_3,_4,_5,_6),_7=64
 #define P_DECLARE_BITWISE_ENUM_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_ENUM_6(_0,_1,_2,_3,_4,_5,_6,_7),_8=128
 
+#define P_DECLARE_BITWISE_ENUM_END(name, count) \
+  __inline friend name##_Bits operator+(name##_Bits lhs, name##_Bits rhs) \
+    { return static_cast<name##_Bits>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs)); } \
+  __inline friend name##_Bits operator|(name##_Bits lhs, name##_Bits rhs) \
+    { return static_cast<name##_Bits>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs)); } \
+  __inline friend name##_Bits operator-(name##_Bits lhs, name##_Bits rhs) \
+    { return static_cast<name##_Bits>(static_cast<unsigned>(lhs) & ~static_cast<unsigned>(rhs)); } \
+  typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> name
+
+
 /**This macro can be used to declare a bit wise enumeration, using the
    PBitWiseEnum template class.
 
@@ -153,8 +163,7 @@ class PBitwiseEnum
   */
 #define P_DECLARE_BITWISE_ENUM(name, count, values) \
   enum name##_Bits { P_DECLARE_BITWISE_ENUM_##count values }; \
-  typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> name
-
+  P_DECLARE_BITWISE_ENUM_END(name, count)
 
 /**This macro can be used to declare a bit wise enumeration, using the
    PBitWiseEnum template class.
@@ -169,13 +178,7 @@ class PBitwiseEnum
   */
 #define P_DECLARE_BITWISE_ENUM_EX(name, count, values, ...) \
   enum name##_Bits { P_DECLARE_BITWISE_ENUM_##count values , ##__VA_ARGS__ }; \
-  __inline friend name##_Bits operator+(name##_Bits lhs, name##_Bits rhs) \
-    { return static_cast<name##_Bits>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs)); } \
-  __inline friend name##_Bits operator|(name##_Bits lhs, name##_Bits rhs) \
-    { return static_cast<name##_Bits>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs)); } \
-  __inline friend name##_Bits operator-(name##_Bits lhs, name##_Bits rhs) \
-    { return static_cast<name##_Bits>(static_cast<unsigned>(lhs) & ~static_cast<unsigned>(rhs)); } \
-  typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> name
+  P_DECLARE_BITWISE_ENUM_END(name, count)
 
 
 #endif // PTLIB_BITWISE_ENUM_H
