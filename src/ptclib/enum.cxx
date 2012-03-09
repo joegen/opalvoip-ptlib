@@ -245,7 +245,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
 
   // construct the regular expression
   PRegularExpression regex;
-  int regexFlags = PRegularExpression::Extended;
+  PRegularExpression::CompileOptions regexFlags = PRegularExpression::Extended;
   if (flags.Find('i') != P_MAX_INDEX)
     regexFlags += PRegularExpression::IgnoreCase;
   if (!regex.Compile(strings[0], regexFlags)) {

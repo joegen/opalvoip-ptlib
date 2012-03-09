@@ -47,7 +47,6 @@ extern "C" int vsprintf(char *, const char *, va_list);
 #include "regex/regex.h"
 #endif
 
-#define regexpression()  ((regex_t *)expression)
 
 #if !P_USE_INLINES
 #include "ptlib/contain.inl"
@@ -1623,11 +1622,11 @@ PBoolean PString::FindRegEx(const PRegularExpression & regex,
     return false;
 
   if (offset == olen) {
-    if (!regex.Execute("", pos, len, 0))
+    if (!regex.Execute("", pos, len))
       return false;
   }
   else {
-    if (!regex.Execute(&theArray[offset], pos, len, 0))
+    if (!regex.Execute(&theArray[offset], pos, len))
       return PFalse;
   }
 
@@ -1643,7 +1642,7 @@ PBoolean PString::MatchesRegEx(const PRegularExpression & regex) const
   PINDEX pos = 0;
   PINDEX len = 0;
 
-  if (!regex.Execute(theArray, pos, len, 0))
+  if (!regex.Execute(theArray, pos, len))
     return PFalse;
 
   return (pos == 0) && (len == GetLength());
@@ -2878,176 +2877,191 @@ void PStringOptions::SetReal(const PCaselessString & key, double value, int deci
 ///////////////////////////////////////////////////////////////////////////////
 
 PRegularExpression::PRegularExpression()
+  : m_compileOptions(IgnoreCase)
+  , m_compiledRegex(NULL)
+  , m_lastError(NotCompiled)
 {
-  lastError   = NotCompiled;
-  expression  = NULL;
-  flagsSaved  = IgnoreCase;
 }
 
 
-PRegularExpression::PRegularExpression(const PString & pattern, int flags)
+PRegularExpression::PRegularExpression(const PString & pattern, CompileOptions options)
+  : m_pattern(pattern)
+  , m_compileOptions(options)
+  , m_compiledRegex(NULL)
 {
-  expression = NULL;
-  bool b = Compile(pattern, flags);
-  PAssert(b, PString("regular expression compile failed : " + GetErrorText()));
+  PAssert(InternalCompile(), "Regular expression compile failed: " + GetErrorText());
 }
 
 
-PRegularExpression::PRegularExpression(const char * pattern, int flags)
+PRegularExpression::PRegularExpression(const char * pattern, CompileOptions options)
+  : m_pattern(pattern)
+  , m_compileOptions(options)
+  , m_compiledRegex(NULL)
 {
-  expression = NULL;
-  bool b = Compile(pattern, flags);
-  PAssert(b, PString("regular expression compile failed : " + GetErrorText()));
+  PAssert(InternalCompile(), "Regular expression compile failed: " + GetErrorText());
 }
+
 
 PRegularExpression::PRegularExpression(const PRegularExpression & from)
+  : m_pattern(from.m_pattern)
+  , m_compileOptions(from.m_compileOptions)
+  , m_compiledRegex(NULL)
 {
-  expression   = NULL;
-  bool b = Compile(from.patternSaved, from.flagsSaved);
-  PAssert(b, PString("regular expression compile failed : " + GetErrorText()));
+  if (m_pattern.IsEmpty())
+    m_lastError = NotCompiled;
+  else
+    PAssert(InternalCompile(), "Regular expression compile failed: " + GetErrorText());
 }
 
-PRegularExpression & PRegularExpression::operator =(const PRegularExpression & from)
+
+PRegularExpression & PRegularExpression::operator=(const PRegularExpression & from)
 {
-  if (expression != from.expression) {
-    if (expression != NULL && expression != from.expression) {
-      regfree(regexpression());
-      delete regexpression();
-    }
-    expression = NULL;
+  if (&from != this) {
+    m_pattern = from.m_pattern;
+    m_compileOptions = from.m_compileOptions;
+    PAssert(InternalCompile(), "Regular expression compile failed: " + GetErrorText());
   }
-  Compile(from.patternSaved, from.flagsSaved);
+
   return *this;
 }
 
+
 PRegularExpression::~PRegularExpression()
 {
-  if (expression != NULL) {
-    regfree(regexpression());
-    delete regexpression();
+  InternalClean();
+}
+
+
+void PRegularExpression::InternalClean()
+{
+  if (m_compiledRegex != NULL) {
+    regfree(m_compiledRegex);
+    delete m_compiledRegex;
+    m_compiledRegex = NULL;
   }
 }
 
 
 void PRegularExpression::PrintOn(ostream &strm) const
 {
-  strm << patternSaved;
-}
-
-
-PRegularExpression::ErrorCodes PRegularExpression::GetErrorCode() const
-{
-  return lastError;
+  strm << m_pattern;
 }
 
 
 PString PRegularExpression::GetErrorText() const
 {
   char str[256];
-  regerror(lastError, regexpression(), str, sizeof(str));
+  regerror(m_lastError, m_compiledRegex, str, sizeof(str));
   return str;
 }
 
 
-PBoolean PRegularExpression::Compile(const PString & pattern, int flags)
+bool PRegularExpression::Compile(const PString & pattern, CompileOptions options)
 {
-  return Compile((const char *)pattern, flags);
+  m_pattern = pattern;
+  m_compileOptions = options;
+  return InternalCompile();
 }
 
 
-PBoolean PRegularExpression::Compile(const char * pattern, int flags)
+bool PRegularExpression::Compile(const char * pattern, CompileOptions options)
 {
-  patternSaved = pattern;
-  flagsSaved   = flags;
-
-  if (expression != NULL) {
-    regfree(regexpression());
-    delete regexpression();
-    expression = NULL;
-  }
-  if (pattern == NULL || *pattern == '\0')
-    lastError = BadPattern;
-  else {
-    expression = new regex_t;
-    lastError = (ErrorCodes)regcomp(regexpression(), pattern, flags);
-  }
-  return lastError == NoError;
+  m_pattern = pattern;
+  m_compileOptions = options;
+  return InternalCompile();
 }
 
 
-PBoolean PRegularExpression::Execute(const PString & str, PINDEX & start, int flags) const
+bool PRegularExpression::InternalCompile()
+{
+  InternalClean();
+
+  if (m_pattern.IsEmpty()) {
+    m_lastError = BadPattern;
+    return false;
+  }
+
+  m_compiledRegex = new regex_t;
+  m_lastError = (ErrorCodes)regcomp(m_compiledRegex, m_pattern, m_compileOptions);
+  if (m_lastError == NoError)
+    return true;
+
+  InternalClean();
+  return false;
+}
+
+
+bool PRegularExpression::Execute(const PString & str, PINDEX & start, ExecOptions options) const
 {
   PINDEX dummy;
-  return Execute((const char *)str, start, dummy, flags);
+  return Execute((const char *)str, start, dummy, options);
 }
 
 
-PBoolean PRegularExpression::Execute(const PString & str, PINDEX & start, PINDEX & len, int flags) const
+bool PRegularExpression::Execute(const PString & str, PINDEX & start, PINDEX & len, ExecOptions options) const
 {
-  return Execute((const char *)str, start, len, flags);
+  return Execute((const char *)str, start, len, options);
 }
 
 
-PBoolean PRegularExpression::Execute(const char * cstr, PINDEX & start, int flags) const
+bool PRegularExpression::Execute(const char * cstr, PINDEX & start, ExecOptions options) const
 {
   PINDEX dummy;
-  return Execute(cstr, start, dummy, flags);
+  return Execute(cstr, start, dummy, options);
 }
 
 
-PBoolean PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len, int flags) const
+bool PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len, ExecOptions options) const
 {
-  if (expression == NULL) {
-    lastError = NotCompiled;
-    return PFalse;
-  }
+  if (m_compiledRegex == NULL)
+    m_lastError = NotCompiled;
 
-  if (lastError != NoError && lastError != NoMatch)
-    return PFalse;
+  if (m_lastError != NoError && m_lastError != NoMatch)
+    return false;
 
   regmatch_t match;
 
-  lastError = (ErrorCodes)regexec(regexpression(), cstr, 1, &match, flags);
-  if (lastError != NoError)
-    return PFalse;
+  m_lastError = (ErrorCodes)regexec(m_compiledRegex, cstr, 1, &match, options);
+  if (m_lastError != NoError)
+    return false;
 
   start = match.rm_so;
   len = match.rm_eo - start;
-  return PTrue;
+  return true;
 }
 
 
-PBoolean PRegularExpression::Execute(const PString & str, PIntArray & starts, int flags) const
+bool PRegularExpression::Execute(const PString & str, PIntArray & starts, ExecOptions options) const
 {
   PIntArray dummy;
-  return Execute((const char *)str, starts, dummy, flags);
+  return Execute((const char *)str, starts, dummy, options);
 }
 
 
-PBoolean PRegularExpression::Execute(const PString & str,
+bool PRegularExpression::Execute(const PString & str,
                                  PIntArray & starts,
                                  PIntArray & ends,
-                                 int flags) const
+                                 ExecOptions options) const
 {
-  return Execute((const char *)str, starts, ends, flags);
+  return Execute((const char *)str, starts, ends, options);
 }
 
 
-PBoolean PRegularExpression::Execute(const char * cstr, PIntArray & starts, int flags) const
+bool PRegularExpression::Execute(const char * cstr, PIntArray & starts, ExecOptions options) const
 {
   PIntArray dummy;
-  return Execute(cstr, starts, dummy, flags);
+  return Execute(cstr, starts, dummy, options);
 }
 
 
-PBoolean PRegularExpression::Execute(const char * cstr,
+bool PRegularExpression::Execute(const char * cstr,
                                  PIntArray & starts,
                                  PIntArray & ends,
-                                 int flags) const
+                                 ExecOptions options) const
 {
-  if (expression == NULL) {
-    lastError = NotCompiled;
-    return PFalse;
+  if (m_compiledRegex == NULL) {
+    m_lastError = NotCompiled;
+    return false;
   }
 
   PINDEX count = starts.GetSize();
@@ -3059,8 +3073,8 @@ PBoolean PRegularExpression::Execute(const char * cstr,
 
   regmatch_t * matches = new regmatch_t[count];
 
-  lastError = (ErrorCodes)::regexec(regexpression(), cstr, count, matches, flags);
-  if (lastError == NoError) {
+  m_lastError = (ErrorCodes)::regexec(m_compiledRegex, cstr, count, matches, options);
+  if (m_lastError == NoError) {
     for (PINDEX i = 0; i < count; i++) {
       starts[i] = matches[i].rm_so;
       ends[i] = matches[i].rm_eo;
@@ -3069,15 +3083,15 @@ PBoolean PRegularExpression::Execute(const char * cstr,
 
   delete [] matches;
 
-  return lastError == NoError;
+  return m_lastError == NoError;
 }
 
 
-PBoolean PRegularExpression::Execute(const char * cstr, PStringArray & substring, int flags) const
+bool PRegularExpression::Execute(const char * cstr, PStringArray & substring, ExecOptions options) const
 {
-  if (expression == NULL) {
-    lastError = NotCompiled;
-    return PFalse;
+  if (m_compiledRegex == NULL) {
+    m_lastError = NotCompiled;
+    return false;
   }
 
   PINDEX count = substring.GetSize();
@@ -3088,15 +3102,15 @@ PBoolean PRegularExpression::Execute(const char * cstr, PStringArray & substring
 
   regmatch_t * matches = new regmatch_t[count];
 
-  lastError = (ErrorCodes)::regexec(regexpression(), cstr, count, matches, flags);
-  if (lastError == NoError) {
+  m_lastError = (ErrorCodes)::regexec(m_compiledRegex, cstr, count, matches, options);
+  if (m_lastError == NoError) {
     for (PINDEX i = 0; i < count; i++)
       substring[i] = PString(cstr+matches[i].rm_so, matches[i].rm_eo-matches[i].rm_so);
   }
 
   delete [] matches;
 
-  return lastError == NoError;
+  return m_lastError == NoError;
 }
 
 

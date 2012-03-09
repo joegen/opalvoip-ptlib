@@ -41,6 +41,8 @@
 #include <string>
 #include <vector>
 #include <ptlib/array.h>
+#include <ptlib/bitwise_enum.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PString class
@@ -3004,35 +3006,37 @@ class PStringOptions : public PStringToString
  */
 class PRegularExpression : public PObject
 {
-  PCLASSINFO(PRegularExpression, PObject);
-
+    PCLASSINFO(PRegularExpression, PObject);
   public:
   /**@name Constructors & destructors */
   //@{
     /// Flags for compiler options.
-    enum {
-      /// Use extended regular expressions
-      Extended = 1,
-      /// Ignore case in search.
-      IgnoreCase = 2,
-      /**If this bit is set, then anchors do not match at newline
-         characters in the string. If not set, then anchors do match
-         at newlines.
-        */
-      AnchorNewLine = 4
-    };
+    P_DECLARE_BITWISE_ENUM(
+      CompileOptions, 3,
+      (
+        Simple,         ///< No options, simple regex
+        Extended,       ///< Use extended regular expressions
+        IgnoreCase,     ///< Ignore case in search.
+        AnchorNewLine   /**< If this bit is set, then anchors do not match at
+                              newline characters in the string. If not set,
+                              then anchors do match at newlines. */
+      )
+    );
+
     /// Flags for execution options.
-    enum {
-      /**If this bit is set, then the beginning-of-line operator doesn't match
-         the beginning of the string (presumably because it's not the
-         beginning of a line).
-         If not set, then the beginning-of-line operator does match the
-         beginning of the string.
-      */
-      NotBeginningOfLine = 1,
-      /**Like <code>NotBeginningOfLine</code>, except for the end-of-line.  */
-      NotEndofLine = 2
-    };
+    P_DECLARE_BITWISE_ENUM(
+      ExecOptions, 2,
+      (
+        Normal,             ///< Normal execution
+        NotBeginningOfLine, /**< If this bit is set, then the beginning-of-line
+                                 operator doesn't match the beginning of the string
+                                 (presumably because it's not the beginning of a
+                                 line). If not set, then the beginning-of-line
+                                 operator does match the beginning of the string. */
+        NotEndofLine        /**< Like <code>NotBeginningOfLine</code>, except for
+                                 the end-of-line.  */
+      )
+    );
 
     /// Create a new, empty, regular expression
     PRegularExpression();
@@ -3040,15 +3044,15 @@ class PRegularExpression : public PObject
     /** Create and compile a new regular expression pattern.
      */
     PRegularExpression(
-      const PString & pattern,    ///< Pattern to compile
-      int flags = IgnoreCase      ///< Pattern match options
+      const PString & pattern,            ///< Pattern to compile
+      CompileOptions options = IgnoreCase ///< Pattern match options
     );
 
     /** Create and compile a new regular expression pattern.
      */
     PRegularExpression(
-      const char * cpattern,      ///< Pattern to compile
-      int flags = IgnoreCase      ///< Pattern match options
+      const char * cpattern,              ///< Pattern to compile
+      CompileOptions options = IgnoreCase ///< Pattern match options
     );
 
     /**
@@ -3130,7 +3134,7 @@ class PRegularExpression : public PObject
        @return
        Error code.
      */
-    ErrorCodes GetErrorCode() const;
+    ErrorCodes GetErrorCode() const { return m_lastError; }
 
     /**Get the text description for the error of the last Compile() or
        Execute() operation.
@@ -3141,15 +3145,15 @@ class PRegularExpression : public PObject
     PString GetErrorText() const;
 
     /** Return the string which represents the pattern matched by the regular expression. */
-    const PString & GetPattern() const { return patternSaved; }
+    const PString & GetPattern() const { return m_pattern; }
   //@}
 
   /**@name Compile & Execute functions */
   //@{
     /** Compiler pattern. */
-    PBoolean Compile(
-      const PString & pattern,    ///< Pattern to compile
-      int flags = IgnoreCase      ///< Pattern match options
+    bool Compile(
+      const PString & pattern,            ///< Pattern to compile
+      CompileOptions options = IgnoreCase ///< Pattern match options
     );
     /**Compiler pattern.
        The pattern is compiled into an internal format to speed subsequent
@@ -3158,56 +3162,56 @@ class PRegularExpression : public PObject
        @return
        true if successfully compiled.
      */
-    PBoolean Compile(
-      const char * cpattern,      ///< Pattern to compile
-      int flags = IgnoreCase      ///< Pattern match options
+    bool Compile(
+      const char * cpattern,              ///< Pattern to compile
+      CompileOptions options = IgnoreCase ///< Pattern match options
     );
 
 
     /** Execute regular expression */
-    PBoolean Execute(
-      const PString & str,    ///< Source string to search
-      PINDEX & start,         ///< First match location
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const PString & str,          ///< Source string to search
+      PINDEX & start,               ///< First match location
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    PBoolean Execute(
-      const PString & str,    ///< Source string to search
-      PINDEX & start,         ///< First match location
-      PINDEX & len,           ///< Length of match
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const PString & str,          ///< Source string to search
+      PINDEX & start,               ///< First match location
+      PINDEX & len,                 ///< Length of match
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    PBoolean Execute(
-      const char * cstr,      ///< Source string to search
-      PINDEX & start,         ///< First match location
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const char * cstr,            ///< Source string to search
+      PINDEX & start,               ///< First match location
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    PBoolean Execute(
-      const char * cstr,      ///< Source string to search
-      PINDEX & start,         ///< First match location
-      PINDEX & len,           ///< Length of match
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const char * cstr,            ///< Source string to search
+      PINDEX & start,               ///< First match location
+      PINDEX & len,                 ///< Length of match
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    PBoolean Execute(
-      const PString & str,    ///< Source string to search
-      PIntArray & starts,     ///< Array of match locations
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const PString & str,          ///< Source string to search
+      PIntArray & starts,           ///< Array of match locations
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    PBoolean Execute(
-      const PString & str,    ///< Source string to search
-      PIntArray & starts,     ///< Array of match locations
-      PIntArray & ends,       ///< Array of match ends
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const PString & str,          ///< Source string to search
+      PIntArray & starts,           ///< Array of match locations
+      PIntArray & ends,             ///< Array of match ends
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /** Execute regular expression */
-    PBoolean Execute(
-      const char * cstr,      ///< Source string to search
-      PIntArray & starts,     ///< Array of match locations
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const char * cstr,            ///< Source string to search
+      PIntArray & starts,           ///< Array of match locations
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /**Execute regular expression.
        Execute the pattern match algorithm using the previously compiled
@@ -3225,11 +3229,11 @@ class PRegularExpression : public PObject
 
        @return true if successfully compiled.
      */
-    PBoolean Execute(
-      const char * cstr,      ///< Source string to search
-      PIntArray & starts,     ///< Array of match locations
-      PIntArray & ends,       ///< Array of match ends
-      int flags = 0           ///< Pattern match options
+    bool Execute(
+      const char * cstr,            ///< Source string to search
+      PIntArray & starts,           ///< Array of match locations
+      PIntArray & ends,             ///< Array of match ends
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
     /**Execute regular expression.
        Execute the pattern match algorithm using the previously compiled
@@ -3247,10 +3251,10 @@ class PRegularExpression : public PObject
 
        @return true if successfully compiled.
      */
-    PBoolean Execute(
-      const char * cstr,        ///< Source string to search
-      PStringArray & substring, ///< Array of matched substrings
-      int flags = 0             ///< Pattern match options
+    bool Execute(
+      const char * cstr,            ///< Source string to search
+      PStringArray & substring,     ///< Array of matched substrings
+      ExecOptions options = Normal  ///< Pattern match options
     ) const;
   //@}
 
@@ -3268,11 +3272,13 @@ class PRegularExpression : public PObject
   //@}
 
   protected:
-    PString patternSaved;
-    int flagsSaved;
+    bool InternalCompile();
+    void InternalClean();
 
-    void * expression;
-    mutable ErrorCodes lastError;
+    PString                    m_pattern;
+    CompileOptions             m_compileOptions;
+    struct re_pattern_buffer * m_compiledRegex;
+    mutable ErrorCodes         m_lastError;
 };
 
 
