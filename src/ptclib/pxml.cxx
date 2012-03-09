@@ -734,7 +734,8 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
           }
           if (validator->m_op == RequiredElementWithBodyMatching) {
             PString toMatch(subElement->GetData());
-            PRegularExpression regex(PString(validator->m_attributeValues), extendedRegex ? PRegularExpression::Extended : 0);
+            PRegularExpression regex(validator->m_attributeValues,
+                                     extendedRegex ? PRegularExpression::Extended : PRegularExpression::Simple);
             if (!toMatch.MatchesRegEx(regex)) {
               m_errorString << "Element \"" << subElement->GetName() << "\" has body with value \"" << toMatch.Trim() << "\" that does not match regex \"" << PString(validator->m_attributeValues) << '"';
               return false;
@@ -805,7 +806,8 @@ bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElemen
         case OptionalAttributeWithValueMatchingEx:
           {
             PString toMatch(baseElement->GetAttribute(validator->m_name));
-            PRegularExpression regex(PString(validator->m_attributeValues), extendedRegex ? PRegularExpression::Extended : 0);
+            PRegularExpression regex(validator->m_attributeValues,
+                                     extendedRegex ? PRegularExpression::Extended : PRegularExpression::Simple);
             if (!toMatch.MatchesRegEx(regex)) {
               m_errorString << "Element \"" << baseElement->GetName() << "\" has attribute \"" << validator->m_name << "\" with value \"" << baseElement->GetAttribute(validator->m_name) << "\" that does not match regex \"" << PString(validator->m_attributeValues) << '"';
               return false;
