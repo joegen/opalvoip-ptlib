@@ -3275,10 +3275,10 @@ class PRegularExpression : public PObject
     bool InternalCompile();
     void InternalClean();
 
-    PString                    m_pattern;
-    CompileOptions             m_compileOptions;
-    struct re_pattern_buffer * m_compiledRegex;
-    mutable ErrorCodes         m_lastError;
+    PString            m_pattern;
+    CompileOptions     m_compileOptions;
+    void             * m_compiledRegex;
+    mutable ErrorCodes m_lastError;
 };
 
 
