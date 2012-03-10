@@ -5,7 +5,7 @@ ifndef PTLIBDIR
   PTLIBDIR := @PTLIBDIR@
 endif
 
-PREFIX         := @PREFIX@
+PREFIX         := @prefix@
 exec_prefix    :=$(PREFIX)
 LIBDIR         := @LIBDIR@
 DEV_PLUGIN_DIR := @DEV_PLUGIN_DIR@
