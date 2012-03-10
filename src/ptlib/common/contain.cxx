@@ -2935,8 +2935,8 @@ PRegularExpression::~PRegularExpression()
 void PRegularExpression::InternalClean()
 {
   if (m_compiledRegex != NULL) {
-    regfree(m_compiledRegex);
-    delete m_compiledRegex;
+    regfree((regex_t*)m_compiledRegex);
+    free(m_compiledRegex);
     m_compiledRegex = NULL;
   }
 }
@@ -2951,7 +2951,7 @@ void PRegularExpression::PrintOn(ostream &strm) const
 PString PRegularExpression::GetErrorText() const
 {
   char str[256];
-  regerror(m_lastError, m_compiledRegex, str, sizeof(str));
+  regerror(m_lastError, (regex_t*)m_compiledRegex, str, sizeof(str));
   return str;
 }
 
@@ -2981,8 +2981,8 @@ bool PRegularExpression::InternalCompile()
     return false;
   }
 
-  m_compiledRegex = new regex_t;
-  m_lastError = (ErrorCodes)regcomp(m_compiledRegex, m_pattern, m_compileOptions);
+  m_compiledRegex = malloc(sizeof(regex_t));
+  m_lastError = (ErrorCodes)regcomp((regex_t*)m_compiledRegex, m_pattern, m_compileOptions);
   if (m_lastError == NoError)
     return true;
 
@@ -3021,7 +3021,7 @@ bool PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len
 
   regmatch_t match;
 
-  m_lastError = (ErrorCodes)regexec(m_compiledRegex, cstr, 1, &match, options);
+  m_lastError = (ErrorCodes)regexec((regex_t*)m_compiledRegex, cstr, 1, &match, options);
   if (m_lastError != NoError)
     return false;
 
@@ -3073,7 +3073,7 @@ bool PRegularExpression::Execute(const char * cstr,
 
   regmatch_t * matches = new regmatch_t[count];
 
-  m_lastError = (ErrorCodes)::regexec(m_compiledRegex, cstr, count, matches, options);
+  m_lastError = (ErrorCodes)::regexec((regex_t*)m_compiledRegex, cstr, count, matches, options);
   if (m_lastError == NoError) {
     for (PINDEX i = 0; i < count; i++) {
       starts[i] = matches[i].rm_so;
@@ -3102,7 +3102,7 @@ bool PRegularExpression::Execute(const char * cstr, PStringArray & substring, Ex
 
   regmatch_t * matches = new regmatch_t[count];
 
-  m_lastError = (ErrorCodes)::regexec(m_compiledRegex, cstr, count, matches, options);
+  m_lastError = (ErrorCodes)::regexec((regex_t*)m_compiledRegex, cstr, count, matches, options);
   if (m_lastError == NoError) {
     for (PINDEX i = 0; i < count; i++)
       substring[i] = PString(cstr+matches[i].rm_so, matches[i].rm_eo-matches[i].rm_so);
