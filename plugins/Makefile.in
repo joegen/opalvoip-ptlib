@@ -2,6 +2,7 @@ all ::
 
 TARGETDIR=@TARGETDIR@
 
+include ../make/ptbuildopts.mak
 include ../make/ptlib.mak
 
 ###############################Alsa
