@@ -181,13 +181,13 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
   if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, userID))
     return GetLastError();
 
-  if (!SetSecurityDescriptorDacl(&secdesc, PTrue, dacl, PFalse))
+  if (!SetSecurityDescriptorDacl(&secdesc, true, dacl, false))
     return GetLastError();
 
   SECURITY_ATTRIBUTES secattr;
   secattr.nLength = sizeof(secattr);
   secattr.lpSecurityDescriptor = &secdesc;
-  secattr.bInheritHandle = PFalse;
+  secattr.bInheritHandle = false;
 
   DWORD disposition;
 
@@ -228,8 +228,8 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 
     subkey = adjustedSubkey;
 
-    if (!proc.GetVersion(PFalse).IsEmpty()) {
-      adjustedSubkey.Replace("CurrentVersion", proc.GetVersion(PFalse));
+    if (!proc.GetVersion(false).IsEmpty()) {
+      adjustedSubkey.Replace("CurrentVersion", proc.GetVersion(false));
       PVarString keyname = adjustedSubkey;
 
       error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
@@ -299,7 +299,7 @@ RegistryKey::~RegistryKey()
 BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
 {
   if (key == NULL)
-    return PFalse;
+    return false;
 
   TCHAR buffer[_MAX_PATH];
   if (RegEnumKey(key, idx, buffer, sizeof(buffer)) != ERROR_SUCCESS)
@@ -313,7 +313,7 @@ BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
 BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
 {
   if (key == NULL)
-    return PFalse;
+    return false;
 
   TCHAR buffer[_MAX_PATH];
   DWORD size = _MAX_PATH;
@@ -328,143 +328,92 @@ BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
 BOOL RegistryKey::DeleteKey(const PString & subkey)
 {
   if (key == NULL)
-    return PTrue;
+    return true;
 
   return RegDeleteKey(key, PVarString(subkey)) == ERROR_SUCCESS;
 }
 
 
-BOOL RegistryKey::DeleteValue(const PString & value)
+BOOL RegistryKey::DeleteValue(const PString & valueName)
 {
   if (key == NULL)
-    return PTrue;
+    return true;
 
-  return RegDeleteValue(key, PVarString(value)) == ERROR_SUCCESS;
+  return RegDeleteValue(key, PVarString(valueName)) == ERROR_SUCCESS;
 }
 
 
-BOOL RegistryKey::QueryValue(const PString & value, PString & str)
+BOOL RegistryKey::QueryValue(const PString & valueName, PString & str)
 {
   if (key == NULL)
-    return PFalse;
+    return false;
 
-  DWORD type, size;
-#ifndef _WIN32_WCE
-  if (RegQueryValueEx(key, (char *)(const char *)value,
-                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
-#else  
-    // WINCE has only Unicode based API
-    LONG lResult = ERROR_SUCCESS;
-    {   
-	  WCHAR wcsValue[MAX_PATH];
-	  mbstowcs(wcsValue, value, MAX_PATH);
-	  lResult = RegQueryValueEx(key, wcsValue, NULL,
-            &type, NULL, &size );
-    }
-  if( lResult != ERROR_SUCCESS )
-#endif
-    return PFalse;
+  PVarString varValueName = valueName;
 
-  switch (type) {
-    case REG_SZ :
-    case REG_MULTI_SZ :
-    case REG_EXPAND_SZ :
-    case REG_BINARY :
-#ifndef _WIN32_WCE
-      return RegQueryValueEx(key,
-                             (char *)(const char *)value, NULL,
-                             &type,
-                             (LPBYTE)str.GetPointerAndSetLength(size),
-                             &size) == ERROR_SUCCESS;
-#else  
-	{
-		// WINCE strings are Unicode
-		WCHAR wcsValue[MAX_PATH];
-		mbstowcs(wcsValue, value, MAX_PATH);
+  DWORD type, size, num;
+  if (RegQueryValueEx(key, varValueName, NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return false;
 
-		// Expand receiving buffer to accomodate wchars
-		str.SetSize( str.GetSize() * sizeof (short) );
-		if( RegQueryValueEx(key, wcsValue, NULL,
-			&type, (LPBYTE) str.GetPointer(size), &size ) != ERROR_SUCCESS )
-			return PFalse;
-		else
-		{
-			if( type != REG_BINARY )
-			{
-				// Convert to char* string
-				wcsncpy( wcsValue, (LPCWSTR) str.GetPointer(), MAX_PATH );
-				size = wcslen(wcsValue);
-				if( size )
-				{
-					wcstombs( (char*) str.GetPointer(size), wcsValue, size );
-					str.SetSize(size + 1);
-					str.SetAt(size, 0);
-				}
-			}
-			return PTrue;
-		}
-	}
-#endif // _WIN32_WCE
+  if (type == REG_DWORD) {
+    size = sizeof(num);
+    if (RegQueryValueEx(key, varValueName, NULL, &type, (LPBYTE)&num, &size) != ERROR_SUCCESS)
+      return false;
 
-    case REG_DWORD : {
-      DWORD num;
-      size = sizeof(num);
-#ifndef _WIN32_WCE
-      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                                &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
-        str = PString(PString::Signed, num);
-#else
-	  // WINCE strings are Unicode
-	  WCHAR wcsValue[MAX_PATH];
-	  mbstowcs(wcsValue, value, MAX_PATH);
-      if (RegQueryValueEx(key, wcsValue, NULL,
-             &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
-
-		str = PString(PString::Signed, num);
-#endif
-        return PTrue;
-      }
-    }
-    default :
-      PAssertAlways("Unsupported registry type.");
+    str = PString(PString::Signed, num);
+    return true;
   }
-  return PFalse;
+
+  if (type != REG_SZ && type != REG_MULTI_SZ && REG_EXPAND_SZ && type != REG_BINARY) {
+    PAssertAlways("Unsupported registry type.");
+    return false;
+  }
+
+  if (RegQueryValueEx(key, varValueName, NULL, &type,
+                      (LPBYTE)str.GetPointerAndSetLength(size), &size) != ERROR_SUCCESS)
+    return false;
+
+  if (type == REG_BINARY)
+    return true;
+
+  if (str[size-1] == '\0')
+    str.GetPointerAndSetLength(size-1);
+  return true;
 }
 
 
-BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
+BOOL RegistryKey::QueryValue(const PString & valueName, DWORD & num, BOOL boolean)
 {
   if (key == NULL)
-    return PFalse;
+    return false;
 
   DWORD type, size;
-  PVarString valueName = value;
+  PVarString varValueName = valueName;
 
-  if (RegQueryValueEx(key, valueName, NULL, &type, NULL, &size) != ERROR_SUCCESS)
-    return PFalse;
+  if (RegQueryValueEx(key, varValueName, NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return false;
 
 
   switch (type) {
     case REG_BINARY :
       if (size > sizeof(DWORD))
-        return PFalse;
+        return false;
 
       num = 0;
       // Do REG_DWORD case
 
     case REG_DWORD :
-      return RegQueryValueEx(key, valueName, NULL, &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+      return RegQueryValueEx(key, varValueName, NULL, &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
 
     case REG_SZ : {
       TCHAR buffer[100];
-      if (RegQueryValueEx(key, valueName, NULL, &type, (LPBYTE)buffer, &size) == ERROR_SUCCESS) {
+      if (RegQueryValueEx(key, varValueName, NULL, &type, (LPBYTE)buffer, &size) == ERROR_SUCCESS) {
         PString str = buffer;
         num = str.AsInteger();
         if (num == 0 && boolean) {
           int c = toupper(str[0]);
           num = c == 'T' || c == 'Y';
         }
-        return PTrue;
+        return true;
       }
       break;
     }
@@ -472,25 +421,25 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
       PAssertAlways("Unsupported registry type.");
   }
 
-  return PFalse;
+  return false;
 }
 
 
-BOOL RegistryKey::SetValue(const PString & value, const PString & str)
+BOOL RegistryKey::SetValue(const PString & valueName, const PString & str)
 {
   if (key == NULL)
-    return PFalse;
+    return false;
 
   PVarString vstr(str);
-  return RegSetValueEx(key, PVarString(value), 0, REG_SZ,
-                       (LPBYTE)(const TCHAR *)vstr, str.GetLength()+1) == ERROR_SUCCESS;
+  return RegSetValueEx(key, PVarString(valueName), 0, REG_SZ,
+                       (LPBYTE)(const TCHAR *)vstr, vstr.GetLength()+1) == ERROR_SUCCESS;
 }
 
 
 BOOL RegistryKey::SetValue(const PString & value, DWORD num)
 {
   if (key == NULL)
-    return PFalse;
+    return false;
 
   return RegSetValueEx(key, PVarString(value), 0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
 }
@@ -748,7 +697,7 @@ PBoolean PConfig::HasKey(const PString & section, const PString & key) const
       return PGetPrivateProfileString(section, key, dflt, location) != dflt;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -822,7 +771,7 @@ PBoolean PConfig::GetBoolean(const PString & section,
   RegistryKey registry(location + section, RegistryKey::ReadOnly);
 
   DWORD value;
-  if (!registry.QueryValue(key, value, PTrue))
+  if (!registry.QueryValue(key, value, true))
     return dflt;
 
   return value != 0;
@@ -853,7 +802,7 @@ long PConfig::GetInteger(const PString & section,
   RegistryKey registry(location + section, RegistryKey::ReadOnly);
 
   DWORD value;
-  if (!registry.QueryValue(key, value, PFalse))
+  if (!registry.QueryValue(key, value, false))
     return dflt;
 
   return value;
