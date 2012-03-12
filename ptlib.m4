@@ -448,50 +448,6 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
          ])
 
 
-dnl PTLIB_FIND_LUA
-dnl Find Lua
-dnl Arguments: $STDCCFLAGS
-dnl Return:    $STDCCFLAGS
-AC_DEFUN([PTLIB_FIND_LUA],
-         [
-          AC_ARG_WITH([lua-dir], 
-                      AS_HELP_STRING([--with-lua-dir=PFX],[Location of Lua interpreter]),
-                      [with_lua_dir="$withval"])
-
-          ptlib_lua=no
-
-          if test "x${with_lua_dir}" != "x"; then
-            AC_MSG_NOTICE(Using lua dir ${with_lua_dir})
-            if test -d ${with_lua_dir}/include; then
-	      ptlib_lua_cflags="-I${with_lua_dir}/include"
-	      ptlib_lua_libs="-L${with_lua_dir}/lib"
-	    else
-	      ptlib_lua_cflags="-I${with_lua_dir}/lib"
-	      ptlib_lua_libs="-L${with_lua_dir}/.libs"
-	    fi
-          fi
-
-          old_LIBS="$LIBS"
-          old_CPPFLAGS="$CPPFLAGS"
-          LIBS="$LIBS ${ptlib_lua_libs}"
-          CPPFLAGS="$CPPFLAGS ${ptlib_lua_cflags}"
-
-          AC_CHECK_HEADERS([lua.h], [ptlib_lua=yes], [ptlib_lua=no])
-          if test "x${ptlib_lua}" = "xyes" ; then
-            AC_CHECK_LIB([lua], [lua_newstate], [ptlib_lua=yes], [ptlib_lua=no])
-          fi
-
-          LIBS="$old_LIBS"
-          CPPFLAGS="$old_CPPFLAGS"
-
-          if test "x${ptlib_lua}" = "xyes" ; then
-            LUA_LIBS="-llua ${ptlib_lua_libs}"
-            LUA_CFLAGS="${ptlib_lua_cflags}"
-          fi
-          AS_IF([test AS_VAR_GET([ptlib_lua]) = yes], [$1], [$2])[]
-         ])
-
-
 dnl PTLIB_FIND_ODBC
 dnl Find OpenLDAP
 dnl Arguments: $STDCCFLAGS
