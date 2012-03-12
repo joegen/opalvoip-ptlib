@@ -32,6 +32,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_sasl=no
   default_mlib=no
   default_ipv6=no
+  default_lua=no
   HAS_TTS=
   HAS_ASN=1
   HAS_NAT=1
@@ -67,7 +68,6 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_VXML=
   HAS_SHM_VIDEO=
   HAS_VFW_CAPTURE=
-  HAS_LUA=
 else
   default_tracing=yes
   default_resolver=yes
@@ -78,6 +78,7 @@ else
   default_sasl=yes
   default_mlib=no
   default_ipv6=yes
+  default_lua=yes
   HAS_TTS=1
   HAS_ASN=1
   HAS_NAT=1
@@ -112,7 +113,6 @@ else
   HAS_APPSHARE=
   HAS_SHM_VIDEO=1
   HAS_VXML=1
-  HAS_LUA=1
   HAS_VFW_CAPTURE=
 fi
 
@@ -1400,19 +1400,19 @@ AC_ARG_ENABLE([lua],
 	      [enable_lua=$default_lua]
 	     )
 
+HAS_LUA=
 if test "$enable_sdl" = "no" ; then
    AC_MSG_NOTICE(SDL disabled)
 else
    PKG_CHECK_MODULES(
       [LUA], 
-      [lua], 
+      [lua5.1], 
       [HAS_LUA=1],
-      PKG_CHECK_MODULES(
+      [PKG_CHECK_MODULES(
          [LUA], 
-         [lua5.1], 
-         [HAS_LUA=1],
-         [HAS_LUA=]
-      )
+         [lua], 
+         [HAS_LUA=1]
+      )]
    )
 fi
 
