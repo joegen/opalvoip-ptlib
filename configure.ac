@@ -1400,18 +1400,30 @@ AC_ARG_ENABLE([lua],
 	      [enable_lua=$default_lua]
 	     )
 
-if test "$enable_lua" = "no" ; then
-  AC_MSG_NOTICE(Lua disabled)
+if test "$enable_sdl" = "no" ; then
+   AC_MSG_NOTICE(SDL disabled)
 else
-  PTLIB_FIND_LUA([HAS_LUA=1], [HAS_LUA=])
+   PKG_CHECK_MODULES(
+      [LUA], 
+      [lua], 
+      [HAS_LUA=1],
+      PKG_CHECK_MODULES(
+         [LUA], 
+         [lua5.1], 
+         [HAS_LUA=1],
+         [HAS_LUA=]
+      )
+   )
+fi
 
-  if test "x${HAS_LUA}" = "x1" ; then
-    AC_DEFINE(P_LUA, 1, "Lua found")
-    STDCCFLAGS="$STDCCFLAGS $LUA_CFLAGS"
-    ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
-  fi
+if test "x${HAS_LUA}" != "x" ; then
+   AC_DEFINE(P_LUA, 1, "Lua found")
+   STDCCFLAGS="$STDCCFLAGS $LUA_CFLAGS"
+   LDFLAGS="$LDFLAGS $LUA_LDFLAGS"
+   ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
 fi
 AC_SUBST(HAS_LUA)
+PTLIB_NEW_OPTION(LUA)
 
 
 
