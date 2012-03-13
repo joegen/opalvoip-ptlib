@@ -1401,8 +1401,8 @@ AC_ARG_ENABLE([lua],
 	     )
 
 HAS_LUA=
-if test "$enable_sdl" = "no" ; then
-   AC_MSG_NOTICE(SDL disabled)
+if test "x$enable_lua" = "xno" ; then
+   AC_MSG_NOTICE(LUA disabled by user)
 else
    PKG_CHECK_MODULES(
       [LUA], 
@@ -1411,7 +1411,8 @@ else
       [PKG_CHECK_MODULES(
          [LUA], 
          [lua], 
-         [HAS_LUA=1]
+         [HAS_LUA=1],
+         [HAS_LUA=]
       )]
    )
 fi
