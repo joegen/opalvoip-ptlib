@@ -255,7 +255,7 @@ int PServiceProcess::InitialiseService()
   int set1 = CountOptionSet(args, Set1);
   int set2 = CountOptionSet(args, Set2);
   int set3 = CountOptionSet(args, Set3);
-  if (args.HasOption('h') || !(set1 == 0 && set2 == 1) || !(set1 == 1 && set2 == 0) || set3 > 1) {
+  if (args.HasOption('h') || !((set1 == 0 && set2 == 1) || (set1 == 1 && set2 == 0)) || set3 > 1) {
     if (set1 > 1)
       cerr << "error: must specify exactly one of " << ExpandOptionSet(Set1) << "\n\n";
     else if (set1 > 0 && set2 > 0)
