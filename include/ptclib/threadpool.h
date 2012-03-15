@@ -152,12 +152,13 @@ class PThreadPoolBase : public PObject
   public:
     class WorkerThreadBase : public PThread
     {
-      public:
-        WorkerThreadBase(Priority priority = NormalPriority)
-          : PThread(100, NoAutoDeleteThread, priority, "Pool")
+      protected:
+        WorkerThreadBase(Priority priority, const char * threadName)
+          : PThread(100, NoAutoDeleteThread, priority, threadName)
           , m_shutdown(false)
         { }
 
+      public:
         virtual void Shutdown() = 0;
         virtual unsigned GetWorkSize() const = 0;
 
@@ -195,7 +196,12 @@ class PThreadPoolBase : public PObject
     ) { m_maxWorkUnitCount = count; }
 
   protected:
-    PThreadPoolBase(unsigned maxWorkerCount = 10, unsigned maxWorkUnitCount = 0);
+    PThreadPoolBase(
+      unsigned maxWorkerCount,
+      unsigned maxWorkUnitCount,
+      const char * threadName,
+      PThread::Priority priority
+    );
 
     virtual bool CheckWorker(WorkerThreadBase * worker);
     void StopWorker(WorkerThreadBase * worker);
@@ -204,8 +210,10 @@ class PThreadPoolBase : public PObject
     typedef std::vector<WorkerThreadBase *> WorkerList_t;
     WorkerList_t m_workers;
 
-    unsigned m_maxWorkerCount;
-    unsigned m_maxWorkUnitCount;
+    unsigned          m_maxWorkerCount;
+    unsigned          m_maxWorkUnitCount;
+    PString           m_threadName;
+    PThread::Priority m_priority;
 };
 
 
@@ -219,8 +227,12 @@ class PThreadPool : public PThreadPoolBase
     //
     //  constructor
     //
-    PThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
-      : PThreadPoolBase(maxWorkers, maxWorkUnits) 
+    PThreadPool(
+      unsigned maxWorkers = 10,
+      unsigned maxWorkUnits = 0,
+      const char * threadName = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThreadPoolBase(maxWorkers, maxWorkUnits, threadName, priority)
     { }
 
     //
@@ -228,13 +240,14 @@ class PThreadPool : public PThreadPoolBase
     //
     class WorkerThread : public WorkerThreadBase
     {
-      public:
-        WorkerThread(PThreadPool & pool, Priority priority = NormalPriority)
-          : WorkerThreadBase(priority)
+      protected:
+        WorkerThread(PThreadPool & pool, Priority priority = NormalPriority, const char * threadName = NULL)
+          : WorkerThreadBase(priority, threadName)
           , m_pool(pool)
         {
         }
 
+      public:
         virtual void AddWork(Work_T * work) = 0;
         virtual void RemoveWork(Work_T * work) = 0;
         virtual void Main() = 0;
@@ -386,15 +399,21 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     //
     //  constructor
     //
-    PQueuedThreadPool(unsigned maxWorkers = 10, unsigned maxWorkUnits = 0)
-      : PThreadPool<Work_T>(maxWorkers, maxWorkUnits) 
+    PQueuedThreadPool(
+      unsigned maxWorkers = 10,
+      unsigned maxWorkUnits = 0,
+      const char * threadName = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
     { }
 
     class QueuedWorkerThread : public PThreadPool<Work_T>::WorkerThread
     {
       public:
-        QueuedWorkerThread(PThreadPool<Work_T> & pool, PThread::Priority priority = PThread::NormalPriority)
-          : PThreadPool<Work_T>::WorkerThread(pool, priority)
+        QueuedWorkerThread(PThreadPool<Work_T> & pool,
+                           PThread::Priority priority = PThread::NormalPriority,
+                           const char * threadName = NULL)
+          : PThreadPool<Work_T>::WorkerThread(pool, priority, threadName)
           , m_available(0, INT_MAX)
         {
         }
@@ -454,8 +473,8 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
-    { 
-      return new QueuedWorkerThread(*this); 
+    {
+      return new QueuedWorkerThread(*this, m_priority, m_threadName);
     }
 };
 
