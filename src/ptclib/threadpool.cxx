@@ -42,8 +42,14 @@
 #define new PNEW
 
 
-PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount, unsigned int maxWorkUnitCount)
-  : m_maxWorkerCount(maxWorkerCount), m_maxWorkUnitCount(maxWorkUnitCount)
+PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
+                                 unsigned int maxWorkUnitCount,
+                                 const char * threadName,
+                                 PThread::Priority priority)
+  : m_maxWorkerCount(maxWorkerCount)
+  , m_maxWorkUnitCount(maxWorkUnitCount)
+  , m_threadName(threadName != NULL ? threadName : "Pool")
+  , m_priority(priority)
 {
 }
 
