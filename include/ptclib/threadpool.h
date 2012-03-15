@@ -474,7 +474,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
     {
-      return new QueuedWorkerThread(*this, m_priority, m_threadName);
+      return new QueuedWorkerThread(*this, this->m_priority, this->m_threadName);
     }
 };
 
