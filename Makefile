@@ -68,7 +68,7 @@ SUBDIRS += samples/hello_world \
            samples/vcard
 endif
 
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 ARCH_INCLUDE=msos
 else
 ARCH_INCLUDE=unix
@@ -79,7 +79,7 @@ optshared   debugshared   bothshared   :: P_SHAREDLIB=1
 optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # and adjust shared lib names
-ifeq (,$(findstring $(OSTYPE),Darwin cygwin mingw))
+ifeq (,$(findstring $(target_os),Darwin cygwin mingw))
   LIB_SONAME   = $(PTLIB_FILE).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
   DEBUG_SONAME = $(PTLIB_DEBUG_FILE).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
 else
@@ -103,12 +103,12 @@ docs:
 	doxygen ptlib_cfg.dxy > doxygen.out 2>&1
 
 install:
-	( for dir in $(DESTDIR)$(LIBDIR) \
-		     $(DESTDIR)$(PREFIX)/bin \
-		     $(DESTDIR)$(PREFIX)/include/ptlib \
-                     $(DESTDIR)$(PREFIX)/include/ptlib/$(ARCH_INCLUDE)/ptlib \
-                     $(DESTDIR)$(PREFIX)/include/ptclib \
-                     $(DESTDIR)$(PREFIX)/share/ptlib/make ; \
+	( for dir in $(DESTDIR)$(libdir) \
+		     $(DESTDIR)$(prefix)/bin \
+		     $(DESTDIR)$(prefix)/include/ptlib \
+                     $(DESTDIR)$(prefix)/include/ptlib/$(ARCH_INCLUDE)/ptlib \
+                     $(DESTDIR)$(prefix)/include/ptclib \
+                     $(DESTDIR)$(prefix)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
 	( for lib in  $(PT_LIBDIR)/$(LIB_SONAME) \
@@ -117,17 +117,17 @@ install:
 	              $(PT_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
           do \
 	  ( if test -e $$lib ; then \
-		$(INSTALL) -m 444 $$lib $(DESTDIR)$(LIBDIR); \
+		$(INSTALL) -m 444 $$lib $(DESTDIR)$(libdir); \
 	  fi ) \
 	done )
 	( if test -e $(PT_LIBDIR)/$(LIB_SONAME); then \
-	    (cd $(DESTDIR)$(LIBDIR) ; \
+	    (cd $(DESTDIR)$(libdir) ; \
 		rm -f $(PTLIB_FILE) ; \
 		ln -sf $(LIB_SONAME) $(PTLIB_FILE) \
 	    ) \
 	fi )
 	( if test -e $(PT_LIBDIR)/$(DEBUG_SONAME); then \
-	    (cd $(DESTDIR)$(LIBDIR) ; \
+	    (cd $(DESTDIR)$(libdir) ; \
 		rm -f $(PTLIB_DEBUG_FILE) ; \
 		ln -sf $(DEBUG_SONAME) $(PTLIB_DEBUG_FILE) \
 	    ) \
@@ -136,47 +136,46 @@ ifeq (1, $(HAS_PLUGINS))
 	if test -e $(PT_LIBDIR)/device/; then \
 	cd $(PT_LIBDIR)/device/; \
 	(  for dir in ./* ;\
-		do mkdir -p $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
-		chmod 755 $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
+		do mkdir -p $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
+		chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
-			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir; \
+			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir; \
 		done ); \
 	done ) ; \
 	fi
 endif
-	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
-	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(prefix)/include
+	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(prefix)/include
 	(for fn in include/ptlib/*.h include/ptlib/*.inl; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/include/ptlib; \
 	done)
 	(for fn in include/ptlib/$(ARCH_INCLUDE)/ptlib/*.h include/ptlib/$(ARCH_INCLUDE)/ptlib/*.inl ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib/$(ARCH_INCLUDE)/ptlib ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/include/ptlib/$(ARCH_INCLUDE)/ptlib ; \
 	done)
 	(for fn in include/ptclib/*.h ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptclib; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/include/ptclib; \
 	done)
 	(for fn in make/*.mak ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/ptlib/make; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/share/ptlib/make; \
 	done)
 
-	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
-	chmod 755 $(DESTDIR)$(LIBDIR)/pkgconfig
-	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(LIBDIR)/pkgconfig/
+	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
+	chmod 755 $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(libdir)/pkgconfig/
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
-	       $(DESTDIR)$(PREFIX)/include/ptclib \
-	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
-	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
-	       $(DESTDIR)$(PREFIX)/share/ptlib \
-	       $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR) \
-	       $(DESTDIR)$(LIBDIR)/pkgconfig/ptlib.pc
-	rm -f $(DESTDIR)$(LIBDIR)/lib$(PTLIB_BASE)_s.a \
-	      $(DESTDIR)$(LIBDIR)/$(PTLIB_FILE) \
-	      $(DESTDIR)$(LIBDIR)/$(LIB_SONAME)
+	rm -rf $(DESTDIR)$(prefix)/include/ptlib \
+	       $(DESTDIR)$(prefix)/include/ptclib \
+	       $(DESTDIR)$(prefix)/include/ptlib.h \
+	       $(DESTDIR)$(prefix)/include/ptbuildopts.h \
+	       $(DESTDIR)$(prefix)/share/ptlib \
+	       $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR) \
+	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc
+	rm -f $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
+	      $(DESTDIR)$(libdir)/$(PTLIB_FILE) \
+	      $(DESTDIR)$(libdir)/$(LIB_SONAME)
 
 distclean: clean
-	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4
-	rm -rf lib*
+	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4 lib*
 
 # End of Makefile.in

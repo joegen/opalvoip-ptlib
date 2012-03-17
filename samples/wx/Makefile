@@ -72,7 +72,7 @@ resource.cxx : resource.xrc
 	wxrc $? -c -o $@
 
 
-ifneq ($(OSTYPE),Darwin)
+ifneq ($(target_os),Darwin)
 
 bundle: $(TARGET)
 

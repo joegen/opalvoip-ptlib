@@ -28,7 +28,7 @@
 # $Date$
 #
 
-ifeq (,$(findstring $(OSTYPE),Darwin cygwin mingw))
+ifeq (,$(findstring $(target_os),Darwin cygwin mingw))
   LIBNAME_PAT = $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
 else
   LIBNAME_PAT = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
@@ -37,38 +37,38 @@ endif
 LIB_SONAME	= $(LIBNAME_PAT)
 
 ifneq ($(P_SHAREDLIB),1)
-  STATIC_LIB_FILE = $(LIBDIR)/$(LIB_FILENAME)
+  STATIC_LIB_FILE = $(libdir)/$(LIB_FILENAME)
 else
-  STATIC_LIB_FILE = $(LIBDIR)/$(subst .$(LIB_SUFFIX),_s.$(STATICLIBEXT),$(LIB_FILENAME))
+  STATIC_LIB_FILE = $(libdir)/$(subst .$(LIB_SUFFIX),_s.$(STATICLIBEXT),$(LIB_FILENAME))
 endif
 
-CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_FILENAME) $(STATIC_LIB_FILE)
+CLEAN_FILES += $(libdir)/$(LIBNAME_PAT) $(libdir)/$(LIB_FILENAME) $(STATIC_LIB_FILE)
 
-$(LIBDIR)/$(LIB_FILENAME) : $(TARGETLIB)
+$(libdir)/$(LIB_FILENAME) : $(TARGETLIB)
 
 ifeq ($(P_SHAREDLIB),1)
 
   ENDLDLIBS := $(SYSLIBS) $(ENDLDLIBS)
-  ifeq ($(OSTYPE),beos)
+  ifeq ($(target_os),beos)
     # BeOS requires different options when building shared libraries
     # Also, when building a shared library x that references symbols in libraries y,
     # the y libraries need to be added to the linker command
     LDSOOPTS = -nostdlib -nostart
     EXTLIBS = -lstdc++.r4
   else
-    ifeq ($(OSTYPE),Darwin)
+    ifeq ($(target_os),Darwin)
       LDSOOPTS = -dynamiclib
     else
       LDSOOPTS = -shared
     endif
   endif
 
-  ifeq ($(OSTYPE),rtems)
+  ifeq ($(target_os),rtems)
     EXTLIBS = -lstdc++
   endif
 
-  ifneq ($(OSTYPE), QNX)
-    ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
+  ifneq ($(target_os), QNX)
+    ifneq (,$(findstring $(target_os),FreeBSD OpenBSDs))
       ifdef P_PTHREADS
         EXTLIBS += -pthread
       endif
@@ -83,29 +83,29 @@ ifeq ($(P_SHAREDLIB),1)
   # We could use -Wl,-h,$(LIB_BASENAME).1 but then we find that the arglist
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
-  ifeq ($(OSTYPE),solaris)
+  ifeq ($(target_os),solaris)
      LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
   else
-    ifeq ($(OSTYPE),mingw)
+    ifeq ($(target_os),mingw)
       LDSOOPTS += -Wl,--kill-at
     else
-      ifneq ($(OSTYPE),Darwin)
+      ifneq ($(target_os),Darwin)
         LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
       endif
     endif
   endif
 
-  $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
-	@cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
+  $(libdir)/$(LIB_FILENAME): $(libdir)/$(LIBNAME_PAT)
+	@cd $(libdir) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
 
-  $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	$(Q_LD)$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
+  $(libdir)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
+	@if [ ! -d $(libdir) ] ; then mkdir $(libdir) ; fi
+	$(Q_LD)$(LD) $(LDSOOPTS) -o $(libdir)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
 endif # P_SHAREDLIB
 
 $(STATIC_LIB_FILE): $(OBJS)
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+	@if [ ! -d $(libdir) ] ; then mkdir $(libdir) ; fi
 	$(Q_AR)$(ARCHIVE) $(STATIC_LIB_FILE) $(OBJS)
 ifeq ($(P_USE_RANLIB),1)
 	$(RANLIB) $(STATIC_LIB_FILE)

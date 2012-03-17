@@ -36,14 +36,14 @@ include $(PTLIBDIR)/make/unix.mak
 
 PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)
 
-OBJDIR = $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/$(PLUGIN_FAMILY)
+OBJDIR = $(PT_LIBDIR)/$(PLUGIN_FAMILY)
 
 TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
 
-ifeq ($(OSTYPE),solaris)
-  LDSOPTS += -R$(LIBDIR) -G
+ifeq ($(target_os),solaris)
+  LDSOPTS += -R$(libdir) -G
 else
-  ifneq ($(OSTYPE),Darwin)
+  ifneq ($(target_os),Darwin)
     LDSOPTS += -shared
   endif
 endif
@@ -53,16 +53,16 @@ Q = @echo $@ ;
 endif
 
 
-ifeq ($(MACHTYPE),x86_64)
+ifeq ($(target_cpu),x86_64)
   STDCCFLAGS += -fPIC
 endif
 
-ifeq ($(MACHTYPE),hppa)
+ifeq ($(target_cpu),hppa)
   STDCCFLAGS += -fPIC
 endif
 
 ifeq ($(P_SHAREDLIB),1)
-  PLUGIN_LIBS += $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/$(PTLIB_FILE)
+  PLUGIN_LIBS += $(PT_LIBDIR)/$(PTLIB_FILE)
   CXXFLAGS += -DP_SHAREDLIB
 endif
 

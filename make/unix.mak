@@ -57,36 +57,6 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX cygwin mingw))
-
-default_target :
-	@echo
-	@echo ######################################################################
-	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed.  This may"
-	@echo "         be a new operating system not yet encountered, or more"
-	@echo "         likely, the OSTYPE and MACHTYPE environment variables are"
-	@echo "         set to unusual values. You may need to explicitly set these"
-	@echo "         variables for the correct operation of this system."
-	@echo
-	@echo "         Currently supported OSTYPE names are:"
-	@echo "              linux Linux linux-gnu mklinux"
-	@echo "              solaris Solaris SunOS"
-	@echo "              FreeBSD OpenBSD NetBSD beos Darwin Carbon"
-	@echo "              VxWorks rtems mingw"
-	@echo
-	@echo "              **********************************"
-	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
-	@echo "              **********************************"
-	@echo
-	@echo "         The system almost certainly will not compile! When you get"
-	@echo "         it working please send patches to support@equival.com.au"
-	@echo ######################################################################
-	@echo
-
-$(STANDARD_TARGETS) :: default_target
-
-endif
-
 ####################################################
 
 # Set default for shared library usage
@@ -105,7 +75,7 @@ ifdef RPM_OPT_FLAGS
 STDCCFLAGS	+= $(RPM_OPT_FLAGS)
 endif
 
-ifneq ($(OSTYPE),rtems)
+ifneq ($(target_os),rtems)
 ifndef SYSINCDIR
 SYSINCDIR := /usr/include
 endif
@@ -119,9 +89,9 @@ LD=
 
 STDCCFLAGS += -Wformat -Wformat-security -D_FORTIFY_SOURCE=2 
 
-ifeq ($(OSTYPE),linux)
+ifeq ($(target_os),linux)
 
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 ifdef CPUTYPE
 ifeq ($(CPUTYPE),crusoe)
 STDCCFLAGS	+= -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=0 
@@ -132,24 +102,24 @@ endif
 endif
 endif
 
-ifeq ($(MACHTYPE),ia64)
+ifeq ($(target_cpu),ia64)
 STDCCFLAGS     += -DP_64BIT
 endif
 
-ifeq ($(MACHTYPE),hppa64)
+ifeq ($(target_cpu),hppa64)
 STDCCFLAGS     += -DP_64BIT
 endif
 
-ifeq ($(MACHTYPE),s390x)
+ifeq ($(target_cpu),s390x)
 STDCCFLAGS     += -DP_64BIT
 endif
 
-ifeq ($(MACHTYPE),x86_64)
+ifeq ($(target_cpu),x86_64)
 STDCCFLAGS     += -DP_64BIT
 LDLIBS		+= -lresolv
 endif
 
-ifeq ($(MACHTYPE),ppc64)
+ifeq ($(target_cpu),ppc64)
 STDCCFLAGS     += -DP_64BIT
 endif
 
@@ -167,15 +137,15 @@ endif # linux
 
 ####################################################
 
-ifeq ($(OSTYPE),FreeBSD)
+ifeq ($(target_os),FreeBSD)
 
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 ifdef CPUTYPE
 STDCCFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
-ifeq ($(MACHTYPE),amd64)
+ifeq ($(target_cpu),amd64)
 STDCCFLAGS     += -DP_64BIT
 endif
 
@@ -193,9 +163,9 @@ endif # FreeBSD
 
 ####################################################
 
-ifeq ($(OSTYPE),OpenBSD)
+ifeq ($(target_os),OpenBSD)
 
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 #STDCCFLAGS	+= -m486
 endif
 
@@ -210,15 +180,15 @@ endif # OpenBSD
 
 ####################################################
 
-ifeq ($(OSTYPE),NetBSD)
+ifeq ($(target_os),NetBSD)
 
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 ifdef CPUTYPE
 STDCCFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
-ifeq ($(MACHTYPE),x86_64)
+ifeq ($(target_cpu),x86_64)
 STDCCFLAGS	+= -DP_64BIT
 endif
 
@@ -234,7 +204,7 @@ endif # NetBSD
 
 ####################################################
 
-ifeq ($(OSTYPE),AIX)
+ifeq ($(target_os),AIX)
 
 STDCCFLAGS	+= -DP_AIX  
 # -pedantic -g
@@ -251,7 +221,7 @@ endif # AIX
 
 ####################################################
 
-ifeq ($(OSTYPE),sunos)
+ifeq ($(target_os),sunos)
 
 # Sparc Sun 4x, using gcc 2.7.2
 
@@ -264,14 +234,14 @@ endif # sunos
 
 ####################################################
 
-ifeq ($(OSTYPE),solaris)
+ifeq ($(target_os),solaris)
 
 #  Solaris (Sunos 5.x)
 
 CFLAGS +=-DSOLARIS -D__inline=inline
 CXXFLAGS +=-DSOLARIS -D__inline=inline
 
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 ifeq ($(USE_GCC),yes)
 DEBUG_FLAG	:= -gstabs+
 CFLAGS           += -DUSE_GCC
@@ -303,7 +273,7 @@ endif # solaris
 
 ####################################################
 
-ifeq ($(OSTYPE),irix)
+ifeq ($(target_os),irix)
 
 #  should work whith Irix 6.5
 
@@ -319,7 +289,7 @@ endif # irix
 
 ####################################################
 
-ifeq ($(OSTYPE),beos)
+ifeq ($(target_os),beos)
 
 SYSLIBS     += -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl 
 STDCCFLAGS	+= -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format
@@ -331,7 +301,7 @@ endif # beos
 
 ####################################################
 
-ifeq ($(OSTYPE),ultrix)
+ifeq ($(target_os),ultrix)
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
 STDCCFLAGS	+= -DP_ULTRIX
@@ -341,7 +311,7 @@ endif # ultrix
 
 ####################################################
 
-ifeq ($(OSTYPE),hpux)
+ifeq ($(target_os),hpux)
 STDCCFLAGS      += -DP_USE_PRAGMA
 # HP/UX 9.x, using gcc 2.6.C3 (Cygnus version)
 STDCCFLAGS	+= -DP_HPUX9
@@ -351,7 +321,7 @@ endif # hpux
 
 ####################################################
  
-ifeq ($(OSTYPE),Darwin)
+ifeq ($(target_os),Darwin)
  
 # MacOS X or later / Darwin
 
@@ -364,7 +334,7 @@ ifeq ($(OSTYPE),Darwin)
 #STDCCFLAGS     += -DHAS_QUICKTIMEX
 #ENDLDLIBS      += -framework QuickTime
  
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 STDCCFLAGS	+= -m486
 endif
 
@@ -373,7 +343,7 @@ P_USE_RANLIB	:= 0
 
 endif # Darwin
 
-ifeq ($(OSTYPE),Carbon)
+ifeq ($(target_os),Carbon)
 
 # MacOS 9 or X using Carbonlib calls
 
@@ -395,9 +365,9 @@ endif # Carbon
 
 ####################################################
 
-ifeq ($(OSTYPE),VxWorks)
+ifeq ($(target_os),VxWorks)
 
-ifeq ($(MACHTYPE),ARM)
+ifeq ($(target_cpu),ARM)
 STDCCFLAGS	+= -mcpu=arm8 -DCPU=ARMARCH4
 endif
 
@@ -418,7 +388,7 @@ endif # VxWorks
  
 ####################################################
 
-ifeq ($(OSTYPE),rtems)
+ifeq ($(target_os),rtems)
 
 SYSINCDIR	:= $(RTEMS_MAKEFILE_PATH)/lib/include
 
@@ -443,9 +413,9 @@ endif # rtems
 
 ####################################################
 
-ifeq ($(OSTYPE),QNX)
+ifeq ($(target_os),QNX)
 
-ifeq ($(MACHTYPE),x86)
+ifeq ($(target_cpu),x86)
 STDCCFLAGS	+= -Wc,-m486
 endif
 
@@ -460,7 +430,7 @@ ifeq ($(P_SHAREDLIB),1)
 ifeq ($(USE_GCC),yes)
 STDCCFLAGS      += -shared
 else
-ifeq ($(OSTYPE),solaris)
+ifeq ($(target_os),solaris)
 STDCCFLAGS      += -G
 endif
 endif
@@ -471,7 +441,7 @@ endif # QNX6
 
 ####################################################
 
-ifeq ($(OSTYPE),Nucleus)
+ifeq ($(target_os),Nucleus)
 
 # Nucleus using gcc
 STDCCFLAGS	+= -msoft-float -nostdinc $(DEBUGFLAGS)
@@ -505,7 +475,7 @@ endif # Nucleus
 
 ####################################################
 
-#ifeq ($(OSTYPE),mingw)
+#ifeq ($(target_os),mingw)
 #LDFLAGS += -enable-runtime-pseudo-reloc -fatal-warning
 #endif # mingw
 
@@ -545,12 +515,6 @@ ifndef DEBUG_FLAG
 DEBUG_FLAG	:=  -g
 endif
 
-ifndef PTLIB_ALT
-PLATFORM_TYPE = $(OSTYPE)_$(MACHTYPE)
-else
-PLATFORM_TYPE = $(OSTYPE)_$(PTLIB_ALT)_$(MACHTYPE)
-endif
-
 ifndef OBJ_SUFFIX
 ifdef	DEBUG
 OBJ_SUFFIX	:= _d
@@ -575,25 +539,13 @@ ifndef OBJDIR_SUFFIX
 OBJDIR_SUFFIX = $(OBJ_SUFFIX)$(LIB_TYPE)
 endif
 
-ifndef INSTALL_DIR
-INSTALL_DIR	= ${PREFIX}
-endif
-
-ifndef INSTALLBIN_DIR
-INSTALLBIN_DIR	= $(INSTALL_DIR)/bin
-endif
-
-ifndef INSTALLLIB_DIR
-INSTALLLIB_DIR	= $(INSTALL_DIR)/lib
-endif
-
 
 ###############################################################################
 #
 # define some common stuff
 #
 
-ifneq ($(OSTYPE),solaris)
+ifneq ($(target_os),solaris)
 SHELL		:= /bin/sh
 else
 SHELL           := /bin/bash
@@ -605,17 +557,11 @@ endif
 
 # Directories
 
-ifdef PREFIX
-UNIX_INC_DIR	= $(PREFIX)/include/ptlib/unix
-else
-UNIX_INC_DIR	= $(PTLIBDIR)/include/ptlib/unix
-endif
-
 ifndef UNIX_SRC_DIR
 UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/unix
 endif
 
-PT_LIBDIR	= $(PTLIBDIR)/lib_$(PLATFORM_TYPE)
+PT_LIBDIR	= $(PTLIBDIR)/lib_$(target)
 
 # set name of the PT library
 PTLIB_BASE	= pt$(OBJ_SUFFIX)
@@ -642,8 +588,8 @@ else
 
 STDCCFLAGS	+= -DNDEBUG
 
-ifneq ($(OSTYPE),Darwin)
-  ifeq ($(OSTYPE),solaris)
+ifneq ($(target_os),Darwin)
+  ifeq ($(target_os),solaris)
     ifeq ($(USE_GCC),yes)
       STDCCFLAGS	+= -O3
     else
@@ -676,9 +622,6 @@ endif
 #STDCCFLAGS	+= -fno-default-inline
 #STDCCFLAGS     += -Woverloaded-virtual
 #STDCCFLAGS     += -fno-implement-inlines
-
-# add OS directory to include path
-# STDCCFLAGS	+= -I$(UNIX_INC_DIR)  # removed CRS
 
 
 # add library directory to library path and include the library
