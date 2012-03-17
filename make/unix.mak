@@ -52,7 +52,7 @@ optdepend   debugdepend   bothdepend \
 optshared   debugshared   bothshared \
 optnoshared debugnoshared bothnoshared \
 optclean    debugclean    clean \
-release tagbuild
+release
 
 .PHONY: all $(STANDARD_TARGETS)
 
@@ -569,6 +569,13 @@ PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PTLIB_DEBUG_FILE= lib$(PTLIB_BASE)_d$(LIB_TYPE).$(LIB_SUFFIX)
 PT_OBJBASE	= obj$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PT_LIBDIR)/$(PT_OBJBASE)
+
+ifeq (,$(findstring $(target_os),Darwin cygwin mingw))
+  PTLIB_SONAME = $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
+else
+  PTLIB_SONAME = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
+endif
+
 
 ###############################################################################
 #
