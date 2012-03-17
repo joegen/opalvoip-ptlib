@@ -8,7 +8,7 @@ AC_PREREQ([2.66])
 
 AC_CONFIG_AUX_DIR(make)
 
-m4_include(ptlib.m4)
+m4_include(make/ptlib.m4)
 
 
 PKG_PROG_PKG_CONFIG()
@@ -180,7 +180,7 @@ dnl Normalise target_os and target_cpu
 dnl MSWIN_DISPLAY winver,Advanced Windows API
 dnl MSWIN_DEFINE  winver,WINVER=0x502
 
-m4_include(canonical.m4)
+m4_include(make/canonical.m4)
 MY_CANONICAL_TARGET()
 
 AC_PROG_CC
