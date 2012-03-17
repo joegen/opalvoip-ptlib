@@ -45,7 +45,7 @@ ifndef OBJDIR
 ifndef OBJDIR_PREFIX
 OBJDIR_PREFIX=.
 endif
-OBJDIR	=	$(OBJDIR_PREFIX)/obj_$(PLATFORM_TYPE)$(OBJDIR_SUFFIX)
+OBJDIR = $(OBJDIR_PREFIX)/obj_$(target)
 endif
 
 vpath %.cxx $(VPATH_CXX)
@@ -62,7 +62,7 @@ STDCCFLAGS	:= -I$(PTLIBDIR)/include $(STDCCFLAGS)
 
 ifneq ($(P_SHAREDLIB),1)
 
-#ifneq ($(OSTYPE),Darwin) # Mac OS X does not really support -static
+#ifneq ($(target_os),Darwin) # Mac OS X does not really support -static
 #LDFLAGS += -static
 #endif
 
@@ -160,10 +160,10 @@ ifdef BUILDFILES
 OBJS += $(OBJDIR)/buildnum.o
 endif
 
-TARGET_LIBS	= $(PTLIBDIR)/lib_$(PLATFORM_TYPE)/$(PTLIB_FILE)
+TARGET_LIBS	= $(PTLIBDIR)/lib_$(target)/$(PTLIB_FILE)
 
 $(TARGET):	$(OBJS) $(TARGET_LIBS)
-ifeq ($(OSTYPE),beos)
+ifeq ($(target_os),beos)
 # BeOS won't find dynamic libraries unless they are in one of the system
 # library directories or in the lib directory under the application's
 # directory
@@ -192,7 +192,7 @@ CLEAN_FILES += $(TARGET)
 ifndef INSTALL_OVERRIDE
 
 install:	$(TARGET)
-	$(INSTALL) $(TARGET) $(INSTALLBIN_DIR)
+	$(INSTALL) $(TARGET)
 endif
 
 # ifdef PROG
@@ -442,7 +442,7 @@ RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
 
 release :: $(TARGET) releasefiles
 	cp $(TARGET) $(RELEASEPROGDIR)/$(PROG)
-	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
+	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(target).tar.gz
 	rm -r $(RELEASEPROGDIR)
 
 releasefiles ::
