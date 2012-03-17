@@ -1,12 +1,13 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-libdir=@LIBDIR@
+libdir=@libdir@
 includedir=@includedir@
+target_cpu=@target_cpu@
+target_os=@target_os@
+target=@target@
 cxxflags=@STDCXXFLAGS@
 suffix=
-machtype=@MACHTYPE@
-ostype=@OSTYPE@
-objdir=obj_@OSTYPE@_@MACHTYPE@${suffix}
+objdir=obj/@target@
 
 Name: ptlib
 Description: PT Library

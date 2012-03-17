@@ -5,19 +5,19 @@ ifndef PTLIBDIR
   PTLIBDIR := @PTLIBDIR@
 endif
 
-PREFIX         := @prefix@
-exec_prefix    :=$(PREFIX)
-LIBDIR         := @LIBDIR@
+prefix      := @prefix@
+exec_prefix := @exec_prefix@
+libdir      := @libdir@
+target      := @target@
+target_os   := @target_os@
+target_cpu  := @target_cpu@
+
 DEV_PLUGIN_DIR := @DEV_PLUGIN_DIR@
 
 AR	:= @AR@
 CC	:= @CC@
 CXX	:= @CXX@
 INSTALL := @INSTALL@
-
-MACHTYPE  := @MACHTYPE@
-OSTYPE	  := @OSTYPE@
-OSRELEASE := @OSRELEASE@
 
 MAJOR_VERSION :=@MAJOR_VERSION@
 MINOR_VERSION :=@MINOR_VERSION@
