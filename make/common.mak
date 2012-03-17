@@ -265,7 +265,6 @@ help:
 	@echo "  make all           Create debug & optimised dependencies & libraries"
 	@echo
 	@echo "  make version       Display version for project"
-	@echo "  make tagbuild      Do a CVS tag of the source, and bump build number"
 	@echo "  make release       Package up optimised version int tar.gz file"
 
 
@@ -403,11 +402,6 @@ ifdef VERSION_FILE
   endif # ifndef VERSION
 endif # ifdef VERSION_FILE
 
-# Build the CVS_TAG string from the components
-ifndef CVS_TAG
-  CVS_TAG := v$(MAJOR_VERSION)_$(MINOR_VERSION)$(subst .,_,$(BUILD_TYPE))$(BUILD_NUMBER)
-endif
-
 ifdef DEBUG
 
 # Cannot do this in DEBUG mode, so do it without DEBUG
@@ -421,9 +415,6 @@ else
 ifndef VERSION
 
 release ::
-	@echo Must define VERSION macro or have version.h/custom.cxx file.
-
-tagbuild ::
 	@echo Must define VERSION macro or have version.h/custom.cxx file.
 
 else # ifdef VERSION
@@ -454,31 +445,7 @@ version:
 
 ifndef VERSION_FILE
 
-tagbuild ::
-	@echo Must define VERSION_FILE macro or have version.h/custom.cxx file.
-
 else # ifndef VERSION_FILE
-
-ifndef CVS_TAG
-
-tagbuild ::
-	@echo Must define CVS_TAG macro or have version.h/custom.cxx file.
-
-else # ifndef CVS_TAG
-
-tagbuild ::
-	sed $(foreach dir,$(LIBDIRS), -e "s/ $(notdir $(dir)):.*/ $(notdir $(dir)): $(shell $(MAKE) -s -C $(dir) version)/") $(VERSION_FILE) > $(VERSION_FILE).new
-	mv -f $(VERSION_FILE).new $(VERSION_FILE)
-	cvs commit -m "Pre-tagging check in for $(CVS_TAG)." $(VERSION_FILE)
-	cvs tag -c $(CVS_TAG)
-	BLD=`expr $(BUILD_NUMBER) + 1` ; \
-	echo "Incrementing to build number " $$BLD; \
-	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
-	mv -f $(VERSION_FILE).new $(VERSION_FILE)
-	cvs commit -m "Incremented build number after tagging to $(CVS_TAG)." $(VERSION_FILE)
-	cvs -q update -r $(CVS_TAG)
-
-endif # else ifndef CVS_TAG
 
 endif # else ifndef VERSION_FILE
 
