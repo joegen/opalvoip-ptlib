@@ -174,261 +174,87 @@ AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER], [Build number])
 AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
 
 
-
-dnl ########################################################################
-dnl iOS is special
-
-AC_ARG_ENABLE([ios],
-	      AS_HELP_STRING([--enable-ios=iphone|simulator],[enable iOS support for iPhone])
-	     )
-
-if test "x$enable_ios" = "x" ; then
-   IOS_PLATFORM=
-elif test "$enable_ios" = "iphone" ; then
-   IOS_PLATFORM=iPhoneOS
-   target_vendor=apple
-   target_os=darwin10
-   target_cpu=armv6
-elif test "$enable_ios" = "simulator" ; then
-   IOS_PLATFORM=iPhoneSimulator
-   target_vendor=apple
-   target_os=darwin10
-   target_cpu=i686
-else
-   AC_MSG_ERROR([Unknown iOS variant $enable_ios - use either iphone or simulator])
-fi
-
-if test "x$IOS_PLATFORM" != "x" ; then
-  IOS_DEVROOT="`xcode-select -print-path`/Platforms/${IOS_PLATFORM}.platform/Developer"
-  IOS_VER="`xcodebuild -showsdks | grep iphoneos | sort | tail -n 1 | awk '{ print $2}' `"
-  if test "x$IOS_VER" == "x" ; then
-    AC_MSG_ERROR([Unable to determine iOS version number])
-  fi
-  AC_MSG_NOTICE(configuring for $IOS_PLATFORM version $IOS_VER)
-
-  IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${IOS_PLATFORM}${IOS_VER}.sdk
-
-  CXX=["${IOS_DEVROOT}/usr/bin/g++ -arch $target_cpu -isysroot ${IOS_SDKROOT}"]
-  CC=["${IOS_DEVROOT}/usr/bin/gcc -arch $target_cpu -isysroot ${IOS_SDKROOT}"]
-  LD=["${IOS_DEVROOT}/usr/bin/ld -arch $target_cpu -isysroot ${IOS_SDKROOT}"]
-  LDFLAGS="${LDFLAGS} -L${IOS_SDKROOT}/usr/lib"
-else
-  AC_CANONICAL_TARGET()
-fi
-
-
-AC_PROG_CC
-AC_PROG_CXX
-
-AC_LANG(C++)
-
-
 dnl ########################################################################
 dnl Normalise target_os and target_cpu
 
 dnl MSWIN_DISPLAY winver,Advanced Windows API
 dnl MSWIN_DEFINE  winver,WINVER=0x502
 
-NEEDS_PTHREADS=yes
+m4_include(canonical.m4)
+MY_CANONICAL_TARGET()
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
+
+AC_LANG(C++)
+
 
 case "$target_os" in
-   linux* )
-      target_os=linux
+   linux )
       OS_TAG="P_LINUX"
-      OSRELEASE="\"`uname -r`\""
       need_pragma=yes
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
    ;;
 
-   uclibc* )
-      target_os=linux
-      OS_TAG="P_LINUX"
-      OSRELEASE="\"`uname -r`\""
-      need_pragma=yes
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-      HAS_HTTPSVC=
-   ;;
-
-   freebsd* | kfreebsd* )
-      target_os=FreeBSD
+   FreeBSD )
       OS_TAG="P_FREEBSD"
-      OSRELEASE="`sysctl -n kern.osreldate`"
       need_pragma=yes
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
    ;;
 
-   openbsd* )
-      target_os=OpenBSD
+   OpenBSD )
       OS_TAG="P_OPENBSD"
-      OSRELEASE="`sysctl -n kern.osrevision`"
       ENDLDLIBS="-lossaudio"
       need_pragma=yes
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
    ;;
 
-   netbsd* )
-      target_os=NetBSD
+   NetBSD )
       OS_TAG="P_NETBSD"
-      OSRELEASE="`/sbin/sysctl -n kern.osrevision`"
       ENDLDLIBS="-lossaudio"
       need_pragma=yes
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
    ;;
 
-   solaris* | sunos* )
-      target_os=solaris
+   solaris )
       OS_TAG="P_SOLARIS"
-      OSRELEASE=`uname -r | sed "s/5\.//g"`
       STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS"
       need_pragma=yes
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
       dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
-      dnl Solaris swab should not be used
       PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
       PTLIB_CHECK_FDSIZE()
    ;;
 
-   darwin* )
-      target_os=Darwin
+   Darwin )
       OS_TAG="P_MACOSX" 
-      OS_MAJOR=`uname -r | sed 's/\..*$//'`
-      OS_MAJOR=`expr $OS_MAJOR \* 100`
-      OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
-      OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
       SHAREDLIBEXT="dylib"
       ENDLDLIBS="-lresolv"
-      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
    ;;
 
-   beos* )
-      target_os=beos
+   beos )
       OS_TAG="P_BEOS"
-      OSRELEASE=`uname -r`
       STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
    ;;
 
-   cygwin* )
-      target_os=cygwin
+   cygwin )
       OS_TAG="P_CYGWIN"
-      OSRELEASE="`uname -r`"
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
       HAS_SHM_VIDEO=
    ;;
 
-   mingw* )
-      target_os=mingw
+   mingw )
       OS_TAG="P_MINGW"
-      OSRELEASE=`uname -r`
       SHAREDLIBEXT="dll"
       STDCCFLAGS="$STDCCFLAGS -mms-bitfields"
       ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
-      NEEDS_PTHREADS=no
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
       HAS_SHM_VIDEO=
    ;;
 
    * )
       OS_TAG="P_TARGET_OS"
-      OSRELEASE="\"${target_os} `uname -r`\""
-      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-      AC_MSG_WARN("OS $target_os not recognized - proceed with caution!")
    ;;
 esac
 
-P_64BIT=0
-
-case "$target_cpu" in
-   x86 | i686 | i586 | i486 | i386 ) 
-      AC_COMPILE_IFELSE(
-         [AC_LANG_SOURCE(
-            [],
-            [int t = __amd64__;]
-         )],
-	 [
-            target_cpu=x86_64
-	    P_64BIT=1
-         ],
-	 [target_cpu=x86]
-      )
-   ;;
-
-   x86_64 | amd64 )
-      P_64BIT=1
-      LIB64=1
-   ;;
-
-   alpha* )
-      target_cpu=alpha
-      P_64BIT=1
-   ;;
-
-   hppa64 )
-      P_64BIT=1
-      LIB64=1
-   ;;
-
-   sparc* )
-      target_cpu=sparc
-      P_64BIT=1
-      LIB64=1
-   ;;
-
-   ppc | powerpc )
-      target_cpu=ppc
-   ;;
-
-   ppc64 | powerpc64 )
-      target_cpu=ppc64
-      P_64BIT=1
-      LIB64=1
-   ;;
-
-   ia64 )
-      P_64BIT=1
-   ;;
-
-   s390x )
-      P_64BIT=1
-      LIB64=1
-   ;;
-
-   bfin )
-      STDCCFLAGS=-mstack-check-l1
-   ;;
-esac
-
-AC_ARG_ENABLE(force32, AS_HELP_STRING([--enable-force32],[Force 32-bit x86 build]))
-if test "$target_cpu" = "x86_64" -a "${enable_force32}" = "yes" ; then
-  if test "$target_os" = "Darwin"; then
-    STDCCFLAGS="$STDCCFLAGS -arch i386"
-    LDFLAGS="$LDFLAGS -arch i386"
-  else
-    STDCCFLAGS="$STDCCFLAGS -m32"
-    LDFLAGS="$LDFLAGS -m32"
-  fi
-
-  target_cpu=x86
-  P_64BIT=0
-  LIB64=0
-  AC_MSG_NOTICE(Forcing 32 bit x86 compile)
-fi
+AC_DEFINE_UNQUOTED($OS_TAG, $target_release)
 
 
-AC_MSG_NOTICE(target_os set to $target_os);
-AC_MSG_NOTICE(target_cpu set to $target_cpu);
-target=${target_os}_${target_cpu}
-
-AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
-
-
-if test "$P_64BIT" = "1" ; then
+if test "$target_64bit" = "1" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
   STDCCFLAGS="$STDCCFLAGS -DP_64BIT"
 fi
@@ -519,7 +345,11 @@ else
 fi
 
 
-AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
+dnl Solaris swab should not be used
+if test "$target_os" != "solaris"; then
+   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+fi
+
 
 
 dnl ########################################################################
@@ -879,22 +709,28 @@ dnl MSWIN_DEFINE  semaphore,P_HAS_SEMAPHORES
 dnl Linux, Mac OS X use libpthread and -lpthread
 dnl FreeBSD uses the -pthread compiler option and uses libc_r
 
-AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
-if test ${HAS_PTHREADS} = yes ; then
-  ENDLDLIBS="$ENDLDLIBS -lpthread"
-  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+if test "${target_os}" = "FreeBSD" ; then
+   HAS_PTHREADS=yes
+   ENDLDLIBS="$ENDLDLIBS -pthread"
+   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
+   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 else
-  if test ${target_os} = FreeBSD ; then
-    HAS_PTHREADS=yes
-    ENDLDLIBS="$ENDLDLIBS -pthread"
-    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
-  fi
+   AC_CHECK_LIB(pthread, pthread_create,
+      [
+         HAS_PTHREADS=yes
+         ENDLDLIBS="$ENDLDLIBS -lpthread"
+         STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+         AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      ],
+      [
+         if test "${target_os}" != "mingw" ; then
+            AC_MSG_ERROR(must have pthreads!)
+         fi
+         HAS_PTHREADS=no
+      ]
+   )
 fi
 
-
-if test ${HAS_PTHREADS} != yes -a ${NEEDS_PTHREADS} = yes; then
-  AC_MSG_ERROR(must have pthreads!)
-fi
 
 dnl ########################################################################
 dnl check for rt library
@@ -904,10 +740,6 @@ if test ${HAS_RT} = yes ; then
   ENDLDLIBS="$ENDLDLIBS -lrt"
 fi
 
-
-if test ${HAS_PTHREADS} != yes -a ${NEEDS_PTHREADS} = yes; then
-  AC_MSG_ERROR(must have pthreads!)
-fi
 
 dnl ########################################################################
 dnl check for XPG6 compliant pthreads (timed spinlocks)
