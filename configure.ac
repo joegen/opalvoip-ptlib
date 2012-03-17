@@ -4,7 +4,7 @@ dnl
 
 AC_INIT(include/ptlib.h)
 
-AC_PREREQ([2.63])
+AC_PREREQ([2.66])
 
 AC_CONFIG_AUX_DIR(make)
 
@@ -122,7 +122,7 @@ HAS_EXCEPTIONS=
 
 
 dnl ########################################################################
-dnl set the PREFIX accordingly
+dnl set the prefix accordingly
 if test "x$prefix" = "xNONE"; then
    if test "x$PTLIBDIR" = "x"; then
       prefix="/usr/local"
@@ -224,206 +224,189 @@ AC_LANG(C++)
 
 
 dnl ########################################################################
-dnl set the OSTYPE and MACHTYPE
+dnl Normalise target_os and target_cpu
 
 dnl MSWIN_DISPLAY winver,Advanced Windows API
 dnl MSWIN_DEFINE  winver,WINVER=0x502
 
-TARGETDIR=unix
-OSTYPE=
 NEEDS_PTHREADS=yes
 
 case "$target_os" in
-  linux*)          OSTYPE=linux ;  
-                   OSRELEASE="\"`uname -r`\"";
-		   OS_TAG="P_LINUX" ;
-                   need_pragma=yes ;
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-                   ;;
+   linux* )
+      target_os=linux
+      OS_TAG="P_LINUX"
+      OSRELEASE="\"`uname -r`\""
+      need_pragma=yes
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+   ;;
 
-  uclibc*)         OSTYPE=linux ;  
-                   OSRELEASE="\"`uname -r`\"";
-		   OS_TAG="P_LINUX" ;
-                   need_pragma=yes ;
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   HAS_HTTPSVC=
-                   ;;
+   uclibc* )
+      target_os=linux
+      OS_TAG="P_LINUX"
+      OSRELEASE="\"`uname -r`\""
+      need_pragma=yes
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+      HAS_HTTPSVC=
+   ;;
 
-  freebsd*|kfreebsd*)       OSTYPE=FreeBSD ;
-		   OS_TAG="P_FREEBSD" ;
-                   if test "x$OSRELEASE" = "x"; then
-                     OSRELEASE="`sysctl -n kern.osreldate`" ;
-                   fi
-                   need_pragma=yes ;
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   ;;
+   freebsd* | kfreebsd* )
+      target_os=FreeBSD
+      OS_TAG="P_FREEBSD"
+      OSRELEASE="`sysctl -n kern.osreldate`"
+      need_pragma=yes
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+   ;;
 
-  openbsd* )       OSTYPE=OpenBSD ;
-		   OS_TAG="P_OPENBSD" ;
-                   OSRELEASE="`sysctl -n kern.osrevision`" ;
-		   ENDLDLIBS="-lossaudio" ;
-                   need_pragma=yes ;
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   ;;
+   openbsd* )
+      target_os=OpenBSD
+      OS_TAG="P_OPENBSD"
+      OSRELEASE="`sysctl -n kern.osrevision`"
+      ENDLDLIBS="-lossaudio"
+      need_pragma=yes
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+   ;;
 
-  netbsd* )        OSTYPE=NetBSD ;
-		   OS_TAG="P_NETBSD" ;
-                   OSRELEASE="`/sbin/sysctl -n kern.osrevision`" ;
-		   ENDLDLIBS="-lossaudio" ;
-                   need_pragma=yes ;
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   ;;
+   netbsd* )
+      target_os=NetBSD
+      OS_TAG="P_NETBSD"
+      OSRELEASE="`/sbin/sysctl -n kern.osrevision`"
+      ENDLDLIBS="-lossaudio"
+      need_pragma=yes
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+   ;;
 
-  solaris* | sunos* ) OSTYPE=solaris ;
-		   OS_TAG="P_SOLARIS" ;
-                   OSRELEASE=`uname -r | sed "s/5\.//g"` ;
-                   STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS"
-                   need_pragma=yes ;
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-                   dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
-                   dnl Solaris swab should not be used
-                   PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
-                   PTLIB_CHECK_FDSIZE()
-		   ;;
+   solaris* | sunos* )
+      target_os=solaris
+      OS_TAG="P_SOLARIS"
+      OSRELEASE=`uname -r | sed "s/5\.//g"`
+      STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS"
+      need_pragma=yes
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
+      dnl Solaris swab should not be used
+      PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
+      PTLIB_CHECK_FDSIZE()
+   ;;
 
-  darwin* )	   OSTYPE=Darwin ;
-		   OS_TAG="P_MACOSX" ;
-		   OS_MAJOR=`uname -r | sed 's/\..*$//'`
-		   OS_MAJOR=`expr $OS_MAJOR \* 100`
-		   OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
-		   OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
-                   SHAREDLIBEXT="dylib";
-		   ENDLDLIBS="-lresolv"
-		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   ;;
+   darwin* )
+      target_os=Darwin
+      OS_TAG="P_MACOSX" 
+      OS_MAJOR=`uname -r | sed 's/\..*$//'`
+      OS_MAJOR=`expr $OS_MAJOR \* 100`
+      OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
+      OSRELEASE=`expr $OS_MAJOR + $OS_MINOR`
+      SHAREDLIBEXT="dylib"
+      ENDLDLIBS="-lresolv"
+      AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+   ;;
 
-  beos*)           OSTYPE=beos ;
-                   OS_TAG="P_BEOS" ;
-                   OSRELEASE=`uname -r` ;
-                   STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
-                   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   ;;
+   beos* )
+      target_os=beos
+      OS_TAG="P_BEOS"
+      OSRELEASE=`uname -r`
+      STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+   ;;
 
-  cygwin*)         OSTYPE=cygwin ;
-                   OS_TAG="P_CYGWIN" ;
-                   OSRELEASE="`uname -r`";
-                   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-                   HAS_SHM_VIDEO=
-		   ;;
+   cygwin* )
+      target_os=cygwin
+      OS_TAG="P_CYGWIN"
+      OSRELEASE="`uname -r`"
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+      HAS_SHM_VIDEO=
+   ;;
 
-  mingw*)	   OSTYPE=mingw ;
-		   OS_TAG="P_MINGW" ;
-		   OSRELEASE=`uname -r` ;
-		   TARGETDIR=msos ;
-		   SHAREDLIBEXT="dll" ;
-		   STDCCFLAGS="$STDCCFLAGS -mms-bitfields" ;
-		   ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32" ;
-		   NEEDS_PTHREADS=no ;
-		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   HAS_SHM_VIDEO=
-		   ;;
+   mingw* )
+      target_os=mingw
+      OS_TAG="P_MINGW"
+      OSRELEASE=`uname -r`
+      SHAREDLIBEXT="dll"
+      STDCCFLAGS="$STDCCFLAGS -mms-bitfields"
+      ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
+      NEEDS_PTHREADS=no
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+      HAS_SHM_VIDEO=
+   ;;
 
-  * )		   OSTYPE="$target_os" ;
-		   OS_TAG="P_UNKNOWN_OS" ;
-  		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
-  		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-		   AC_MSG_WARN("OS $target_os not recognized - proceed with caution!") ;
-		   ;;
+   * )
+      OS_TAG="P_TARGET_OS"
+      OSRELEASE="\"${target_os} `uname -r`\""
+      AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+      AC_MSG_WARN("OS $target_os not recognized - proceed with caution!")
+   ;;
 esac
 
-MACHTYPE=
 P_64BIT=0
 
 case "$target_cpu" in
    x86 | i686 | i586 | i486 | i386 ) 
-	AC_COMPILE_IFELSE(
-          [AC_LANG_SOURCE([[int t = __amd64__;]])],
-	  [[MACHTYPE=x86_64
-	    P_64BIT=1]],
-	  [[MACHTYPE=x86]]
-        )
-	PBYTE_ORDER=PLITTLE_ENDIAN
-	;;
+      AC_COMPILE_IFELSE(
+         [AC_LANG_SOURCE(
+            [],
+            [int t = __amd64__;]
+         )],
+	 [
+            target_cpu=x86_64
+	    P_64BIT=1
+         ],
+	 [target_cpu=x86]
+      )
+   ;;
 
-   x86_64 | amd64)
-	MACHTYPE=$target_cpu
-	P_64BIT=1
-        LIB64=1
-	PBYTE_ORDER=PLITTLE_ENDIAN
-	;;
+   x86_64 | amd64 )
+      P_64BIT=1
+      LIB64=1
+   ;;
 
-   alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7)
-	MACHTYPE=alpha
-	P_64BIT=1
-	;;
-
-   hppa )
-	MACHTYPE=hppa
-	;;
+   alpha* )
+      target_cpu=alpha
+      P_64BIT=1
+   ;;
 
    hppa64 )
-	MACHTYPE=hppa64
-	P_64BIT=1
-        LIB64=1
-	;;
+      P_64BIT=1
+      LIB64=1
+   ;;
 
-   sparc | sparc64 )
-	MACHTYPE=sparc
-	P_64BIT=1
-        LIB64=1
-	;;
+   sparc* )
+      target_cpu=sparc
+      P_64BIT=1
+      LIB64=1
+   ;;
 
    ppc | powerpc )
-	MACHTYPE=ppc
-	;;
+      target_cpu=ppc
+   ;;
 
    ppc64 | powerpc64 )
-	MACHTYPE=ppc64
-	P_64BIT=1
-        LIB64=1
-	;;
+      target_cpu=ppc64
+      P_64BIT=1
+      LIB64=1
+   ;;
 
    ia64 )
-	MACHTYPE=ia64
-	P_64BIT=1
-	;;
+      P_64BIT=1
+   ;;
 
    s390x )
-	MACHTYPE=s390x
-	P_64BIT=1
-        LIB64=1
-	;;
-
-   s390 )
-	MACHTYPE=s390
-	;;
-
-   arm | armv6 | armv7 )
-        MACHTYPE=$target_cpu
-	PBYTE_ORDER=PLITTLE_ENDIAN
-        ;;
+      P_64BIT=1
+      LIB64=1
+   ;;
 
    bfin )
-        MACHTYPE=bfin
-	STDCCFLAGS=-mstack-check-l1
-        ;;
-
-   * )
-	MACHTYPE=$target_cpu
-	AC_MSG_WARN("CPU $target_cpu not recognized - proceed with caution!")
-	;;
+      STDCCFLAGS=-mstack-check-l1
+   ;;
 esac
 
-
 AC_ARG_ENABLE(force32, AS_HELP_STRING([--enable-force32],[Force 32-bit x86 build]))
-if test "$MACHTYPE" = "x86_64" -a "${enable_force32}" = "yes" ; then
-  if test "$OSTYPE" = "Darwin"; then
+if test "$target_cpu" = "x86_64" -a "${enable_force32}" = "yes" ; then
+  if test "$target_os" = "Darwin"; then
     STDCCFLAGS="$STDCCFLAGS -arch i386"
     LDFLAGS="$LDFLAGS -arch i386"
   else
@@ -431,23 +414,19 @@ if test "$MACHTYPE" = "x86_64" -a "${enable_force32}" = "yes" ; then
     LDFLAGS="$LDFLAGS -m32"
   fi
 
-  MACHTYPE=x86
+  target_cpu=x86
   P_64BIT=0
   LIB64=0
   AC_MSG_NOTICE(Forcing 32 bit x86 compile)
 fi
 
 
-AC_MSG_NOTICE(OSTYPE set to $OSTYPE);
-AC_MSG_NOTICE(OSRELEASE set to $OSRELEASE);
-AC_MSG_NOTICE(MACHTYPE set to $MACHTYPE);
-
-AC_SUBST(MACHTYPE,  $MACHTYPE)
-AC_SUBST(OSTYPE,    $OSTYPE)
-AC_SUBST(OSRELEASE, $OSRELEASE)
-AC_SUBST(TARGETDIR, $TARGETDIR)
+AC_MSG_NOTICE(target_os set to $target_os);
+AC_MSG_NOTICE(target_cpu set to $target_cpu);
+target=${target_os}_${target_cpu}
 
 AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
+
 
 if test "$P_64BIT" = "1" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
@@ -460,13 +439,10 @@ fi
 
 
 dnl ########################################################################
-dnl set LIBDIR accordingly
+dnl set libdir accordingly
 if test "$prefix" = "$PTLIBDIR"; then
-   LIBDIR=${libdir}_${OSTYPE}_${MACHTYPE}
-else
-   LIBDIR=${libdir}
+   libdir=$PTLIBDIR/lib_$target
 fi
-AC_SUBST(LIBDIR)
 
 
 dnl ########################################################################
@@ -535,18 +511,13 @@ dnl check the endianness
 dnl MSWIN_DISPLAY byteorder,Byte Order
 dnl MSWIN_DEFINE  byteorder,PBYTE_ORDER=PLITTLE_ENDIAN
 
-if test ${OSTYPE} != "Darwin" ; then  
-  AC_C_BIGENDIAN()
-  if test ${ac_cv_c_bigendian} = yes ; then
-    PBYTE_ORDER=PBIG_ENDIAN
-  else
-    PBYTE_ORDER=PLITTLE_ENDIAN
-  fi
-
-  AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
+AC_C_BIGENDIAN()
+if test "x${ac_cv_c_bigendian}" = "xyes" ; then
+   AC_DEFINE_UNQUOTED(PBYTE_ORDER, PBIG_ENDIAN, "byte order")
 else
-  AC_MSG_NOTICE($target_cpu is $PBYTE_ORDER)
+   AC_DEFINE_UNQUOTED(PBYTE_ORDER, PLITTLE_ENDIAN, "byte order")
 fi
+
 
 AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
 
@@ -607,27 +578,32 @@ fi
 
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <typeinfo>]],
-[[ class A
-  {
-    public:
-      virtual void fred() { }
-  };
-  class B : public A
-  {
-    public:
-      void fred() { }
-  };
-  B t;
-  A * p = dynamic_cast<A *>(&t);
-  return 0;
-]])],DEFAULT_RTTI=1, DEFAULT_RTTI=0)
-if test "$DEFAULT_RTTI" = "1" ; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-  STDCXXFLAGS="$STDCCFLAGS -frtti"
-fi
+AC_COMPILE_IFELSE(
+   [AC_LANG_SOURCE(
+      [],
+      [
+         class A
+         {
+           public:
+             virtual void fred() { }
+         };
+         class B : public A
+         {
+           public:
+             void fred() { }
+         };
+         B t;
+         A * p = dynamic_cast<A *>(&t);
+      ]
+   )],
+   [
+      AC_MSG_RESULT(yes)
+   ],
+   [
+      AC_MSG_RESULT(no)
+      STDCXXFLAGS="$STDCCFLAGS -frtti"
+   ]
+)
 
 AC_LANG_POP(C++)
 
@@ -643,7 +619,7 @@ if test $ac_cv_c_long_double != yes ; then
   AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
 fi
 
-dnl if test ${OSTYPE} = Darwin ; then
+dnl if test ${target_os} = Darwin ; then
 dnl   STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
 dnl fi
 
@@ -859,10 +835,10 @@ dnl ########################################################################
 dnl check for Unix semaphores
 
 # mingw implements itself the semaphores in src/ptlib/msos/win32.cxx
-if test ${OSTYPE} != mingw ; then
+if test ${target_os} != mingw ; then
 
 dnl posix unnamed semaphore support in darwin/macosx is broken
-if test ${OSTYPE} != Darwin ; then
+if test ${target_os} != Darwin ; then
   AC_TRY_COMPILE([#include <semaphore.h>],
                  [sem_t *s; sem_init(s, 0, 0);], P_HAS_SEMAPHORES=1)
   AC_MSG_CHECKING(if Unix semaphores are available)
@@ -908,7 +884,7 @@ if test ${HAS_PTHREADS} = yes ; then
   ENDLDLIBS="$ENDLDLIBS -lpthread"
   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 else
-  if test ${OSTYPE} = FreeBSD ; then
+  if test ${target_os} = FreeBSD ; then
     HAS_PTHREADS=yes
     ENDLDLIBS="$ENDLDLIBS -pthread"
     STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
@@ -1038,7 +1014,7 @@ else
     if test "$HAS_REGEX" = "yes" ; then
       AC_SUBST(HAS_REGEX, 1)
       AC_DEFINE(P_REGEX, 1, "Regex library found")
-      if test ${OSTYPE} = mingw ; then
+      if test ${target_os} = mingw ; then
         ENDLDLIBS="$ENDLDLIBS -lregex"
       fi
     fi
@@ -1081,7 +1057,7 @@ AC_ARG_WITH([plugin-installdir],
              [PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
            )
 
-EXPANDED_PLUGIN_DIR="${LIBDIR}/${PLUGIN_DIR}"
+EXPANDED_PLUGIN_DIR="${libdir}/${PLUGIN_DIR}"
 if test "x${exec_prefix}" = "xNONE" ; then
   if test "x${prefix}" = "xNONE" ; then
     EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
@@ -1394,11 +1370,12 @@ dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
 dnl MSWIN_CHECK_DIR  lua,\Program Files\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,\Program Files (x86)\Lua\5.1
 
-AC_ARG_ENABLE([lua],
-	      AS_HELP_STRING([--disable-lua],[disable Lua script support]),
-	      [enable_lua=$enableval],
-	      [enable_lua=$default_lua]
-	     )
+AC_ARG_ENABLE(
+   [lua],
+   AS_HELP_STRING([--disable-lua],[disable Lua script support]),
+   [enable_lua=$enableval],
+   [enable_lua=$default_lua]
+)
 
 HAS_LUA=
 if test "x$enable_lua" = "xno" ; then
@@ -1425,8 +1402,6 @@ if test "x${HAS_LUA}" != "x" ; then
 fi
 AC_SUBST(HAS_LUA)
 PTLIB_NEW_OPTION(LUA)
-
-
 
 
 dnl ########################################################################
@@ -2277,8 +2252,6 @@ AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
 AC_SUBST(DEBUG_FLAG)
-AC_SUBST(OSTYPE)
-AC_SUBST(MACHTYPE)
 
 AC_PROG_INSTALL
 

@@ -32,8 +32,7 @@ endif
 include $(PTLIBDIR)/make/unix.mak
 
 OBJDIR	= $(PT_OBJDIR)
-LIBDIR  = $(PT_LIBDIR)
-TARGET  = $(LIBDIR)/$(PTLIB_FILE)
+TARGET  = $(PT_LIBDIR)/$(PTLIB_FILE)
 VERSION_FILE = $(PTLIBDIR)/version.h
 REVISION_FILE = $(PTLIBDIR)/revision.h
 
@@ -42,14 +41,14 @@ REVISION_FILE = $(PTLIBDIR)/revision.h
 COMPONENT_SRC_DIR	= ptclib
 COMMON_SRC_DIR		= ptlib/common
 PLUGIN_DIR		= ../plugins
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 PLATFORM_SRC_DIR        = ptlib/msos
 else
 PLATFORM_SRC_DIR        = ptlib/unix
 endif
 VPATH_CXX		:= $(PLATFORM_SRC_DIR) $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR) 
 
-ifeq ($(OSTYPE),Darwin)
+ifeq ($(target_os),Darwin)
 SED_EXTREGEX_FLAG		= -E
 else
 SED_EXTREGEX_FLAG		= -r
@@ -107,7 +106,7 @@ endif
 
 ifndef HAS_PLUGINS
 
-ifeq ($(OSTYPE),linux)
+ifeq ($(target_os),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/vidinput_v4l
 SOURCES		+= $(PLUGIN_DIR)/vidinput_v4l/vidinput_v4l.cxx
 endif
@@ -134,7 +133,7 @@ ifdef HAS_AUDIO
 
 SOURCES += $(COMMON_SRC_DIR)/sound.cxx 
 
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/sound_win32.cxx
 $(OBJDIR)/sound_win32.o: $(PLATFORM_SRC_DIR)/sound_win32.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
@@ -143,7 +142,7 @@ endif
 
 ifndef HAS_PLUGINS
 
-ifeq ($(OSTYPE),linux)
+ifeq ($(target_os),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/sound_oss
 SOURCES		+= $(PLUGIN_DIR)/sound_oss/sound_oss.cxx
 endif # linux
@@ -153,7 +152,7 @@ VPATH_CXX	+= $(PLUGIN_DIR)/sound_alsa
 SOURCES		+= $(PLUGIN_DIR)/sound_alsa/sound_alsa.cxx
 endif  # HAS_ALSA
 
-ifeq ($(OSTYPE),beos)
+ifeq ($(target_os),beos)
 SOURCES	 += $(PLATFORM_SRC_DIR)/beaudio.cxx
 endif  # beos
  
@@ -162,7 +161,7 @@ endif  # HAS_PLUGINS
 # Although not an external plugin, the MacOSX
 # CoreAudio sound driver still is in plugin form
 # and requires the PPluginManager
-ifeq ($(OSTYPE),Darwin)
+ifeq ($(target_os),Darwin)
 SOURCES	+= $(PLATFORM_SRC_DIR)/maccoreaudio.cxx
 endif # Darwin
 
@@ -265,7 +264,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/socks.cxx
 endif
 
 ifdef HAS_PIPECHAN
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/pipe.cxx 
 SOURCES += $(COMMON_SRC_DIR)/pipechan.cxx 
 else
@@ -296,7 +295,7 @@ endif
 
 ifdef HAS_SERIAL
 
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/winserial.cxx \
      	   $(COMMON_SRC_DIR)/serial.cxx
 
@@ -345,7 +344,7 @@ endif #HAS_OPENSSL
 endif #HAS_HTTPSVC
 
 ifdef HAS_CONFIG_FILE
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/wincfg.cxx 
 else
 SOURCES += $(PLATFORM_SRC_DIR)/config.cxx 
@@ -371,7 +370,7 @@ $(OBJDIR)/pffvdev.o: $(COMPONENT_SRC_DIR)/pffvdev.cxx
 
 endif
 
-ifeq ($(OSTYPE),mingw)
+ifeq ($(target_os),mingw)
 SOURCES	+= \
         $(PLATFORM_SRC_DIR)/ptlib.cxx \
         $(PLATFORM_SRC_DIR)/icmp.cxx \
