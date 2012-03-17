@@ -28,21 +28,13 @@
 # $Date$
 #
 
-ifeq (,$(findstring $(target_os),Darwin cygwin mingw))
-  LIBNAME_PAT = $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
-else
-  LIBNAME_PAT = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
-endif
-
-LIB_SONAME	= $(LIBNAME_PAT)
-
 ifneq ($(P_SHAREDLIB),1)
   STATIC_LIB_FILE = $(libdir)/$(LIB_FILENAME)
 else
   STATIC_LIB_FILE = $(libdir)/$(subst .$(LIB_SUFFIX),_s.$(STATICLIBEXT),$(LIB_FILENAME))
 endif
 
-CLEAN_FILES += $(libdir)/$(LIBNAME_PAT) $(libdir)/$(LIB_FILENAME) $(STATIC_LIB_FILE)
+CLEAN_FILES += $(libdir)/$(PTLIB_SONAME) $(libdir)/$(LIB_FILENAME) $(STATIC_LIB_FILE)
 
 $(libdir)/$(LIB_FILENAME) : $(TARGETLIB)
 
@@ -84,23 +76,23 @@ ifeq ($(P_SHAREDLIB),1)
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(target_os),solaris)
-     LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
+     LDSOOPTS = -Bdynamic -G -h $(PTLIB_SONAME)
   else
     ifeq ($(target_os),mingw)
       LDSOOPTS += -Wl,--kill-at
     else
       ifneq ($(target_os),Darwin)
-        LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
+        LDSOOPTS += -Wl,-soname,$(PTLIB_SONAME)
       endif
     endif
   endif
 
-  $(libdir)/$(LIB_FILENAME): $(libdir)/$(LIBNAME_PAT)
-	@cd $(libdir) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
+  $(libdir)/$(LIB_FILENAME): $(libdir)/$(PTLIB_SONAME)
+	@cd $(libdir) ; rm -f $(LIB_FILENAME) ; ln -sf $(PTLIB_SONAME) $(LIB_FILENAME)
 
-  $(libdir)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
+  $(libdir)/$(PTLIB_SONAME): $(STATIC_LIB_FILE)
 	@if [ ! -d $(libdir) ] ; then mkdir $(libdir) ; fi
-	$(Q_LD)$(LD) $(LDSOOPTS) -o $(libdir)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
+	$(Q_LD)$(LD) $(LDSOOPTS) -o $(libdir)/$(PTLIB_SONAME) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
 endif # P_SHAREDLIB
 
