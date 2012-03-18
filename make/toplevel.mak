@@ -58,6 +58,9 @@ SUBDIRS += samples/hello_world \
            samples/vcard
 endif
 
+optshared   debugshared   bothshared   :: P_SHAREDLIB=1
+optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
+
 # all these targets are just passed to all subdirectories
 $(STANDARD_TARGETS) ::
 	@set -e; $(foreach dir,$(addprefix $(PTLIBDIR)/,$(SUBDIRS)),if test -d $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
