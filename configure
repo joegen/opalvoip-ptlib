@@ -606,9 +606,8 @@ INSTALL_SCRIPT
 INSTALL_PROGRAM
 DEBUG_FLAG
 ENDLDLIBS
-OPTSTDCCFLAGS
-STDCXXFLAGS
-STDCCFLAGS
+PTLIB_CXXFLAGS
+PTLIB_CFLAGS
 DC_CFLAGS
 HAS_DC1394
 HAS_AVC1394
@@ -709,12 +708,14 @@ PTLIB_EXPAT
 HAS_EXPAT
 P_STATIC_LDFLAGS
 P_STATIC_ENDLDLIBS
-PTLIB_OPENSSL
-HAS_OPENSSL
+PTLIB_SSL_AES
+HAS_SSL_AES
+PTLIB_SSL
+HAS_SSL
 OPENSSL_LIBS
 OPENSSL_CFLAGS
-PTLIB_OPENLDAP
-HAS_OPENLDAP
+PTLIB_LDAP
+HAS_LDAP
 PTLIB_SASL
 HAS_SASL
 PTLIB_SASL2
@@ -5150,7 +5151,7 @@ case "$target_os" in
 
    solaris )
       OS_TAG="P_SOLARIS"
-      STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__inline=inline -DSOLARIS"
       need_pragma=yes
 
 
@@ -5194,7 +5195,7 @@ fi
           fi
 
           if test "x${ptlib_fdsize}" != "x4098"; then
-            STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
+            PTLIB_CFLAGS="$PTLIB_CFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
           fi
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ptlib_fdsize}" >&5
@@ -5210,7 +5211,7 @@ $as_echo "${ptlib_fdsize}" >&6; }
 
    beos )
       OS_TAG="P_BEOS"
-      STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__BEOS__"
    ;;
 
    cygwin )
@@ -5221,7 +5222,7 @@ $as_echo "${ptlib_fdsize}" >&6; }
    mingw )
       OS_TAG="P_MINGW"
       SHAREDLIBEXT="dll"
-      STDCCFLAGS="$STDCCFLAGS -mms-bitfields"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
       ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
       HAS_SHM_VIDEO=
    ;;
@@ -5241,7 +5242,7 @@ if test "$target_64bit" = "1" ; then
 
 $as_echo "#define P_64BIT 1" >>confdefs.h
 
-  STDCCFLAGS="$STDCCFLAGS -DP_64BIT"
+  PTLIB_CFLAGS="$PTLIB_CFLAGS -DP_64BIT"
 fi
 
 if test "$target_os" = "linux-gnulp" ; then
@@ -5273,7 +5274,7 @@ $as_echo "$as_me: gcc version is $gcc_version" >&6;};
 $as_echo_n "checking checking if pragma implementation should be used... " >&6; }
   if test ${GXX_MAJOR} -lt 4 ; then
     if test "${need_pragma}" = "yes" ; then
-      STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -DP_USE_PRAGMA"
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
     else
@@ -5993,7 +5994,7 @@ $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-  STDCXXFLAGS="$STDCXXFLAGS -felide-constructors"
+  PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -felide-constructors"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -6016,7 +6017,7 @@ $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-  STDCXXFLAGS="$STDCXXFLAGS -Wreorder"
+  PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wreorder"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -6047,7 +6048,7 @@ _ACEOF
   if test $? = 0 ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-    STDCXXFLAGS="$STDCXXFLAGS -Wno-deprecated-declarations"
+    PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wno-deprecated-declarations"
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -6096,7 +6097,7 @@ else
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-      STDCXXFLAGS="$STDCCFLAGS -frtti"
+      PTLIB_CXXFLAGS="$PTLIB_CFLAGS -frtti"
 
 
 fi
@@ -6560,16 +6561,16 @@ fi
 if test "x${enable_tracing}" = "xno" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE and all trace logging removed" >&5
 $as_echo "$as_me: PTRACE and all trace logging removed" >&6;}
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
+  PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
   if test "x${enable_trace_instance}" = "xno" ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE without object instance trace logging included" >&5
 $as_echo "$as_me: PTRACE without object instance trace logging included" >&6;}
-    STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=1"
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: PTRACE and all trace logging included" >&5
 $as_echo "$as_me: PTRACE and all trace logging included" >&6;}
-    STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=2"
   fi
 fi
 
@@ -6938,7 +6939,7 @@ fi  # mingw
 if test "${target_os}" = "FreeBSD" ; then
    HAS_PTHREADS=yes
    ENDLDLIBS="$ENDLDLIBS -pthread"
-   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
+   PTLIB_CFLAGS="$PTLIB_CFLAGS -D_REENTRANT -pthread"
 
 $as_echo "#define P_PTHREADS 1" >>confdefs.h
 
@@ -6983,7 +6984,7 @@ if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
 
          HAS_PTHREADS=yes
          ENDLDLIBS="$ENDLDLIBS -lpthread"
-         STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+         PTLIB_CFLAGS="$PTLIB_CFLAGS -D_REENTRANT"
 
 $as_echo "#define P_PTHREADS 1" >>confdefs.h
 
@@ -8381,7 +8382,7 @@ else
 fi
 
 
-HAS_OPENLDAP=
+HAS_LDAP=
 if test "$enable_openldap" = "no" ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: OpenLDAP disabled" >&5
 $as_echo "$as_me: OpenLDAP disabled" >&6;}
@@ -8418,7 +8419,7 @@ $as_echo "$as_me: OpenLDAP support disabled due to disabled dependency HAS_RESOL
             old_LIBS="$LIBS"
             old_CFLAGS="$CFLAGS"
             LIBS="$LIBS ${ptlib_openldap_libs} $RESOLVER_LIBS"
-            CFLAGS="$CFLAGS ${ptlib_openldap_cflags}"
+            PTLIB_CFLAGS="$PTLIB_CFLAGS ${ptlib_openldap_cflags}"
 
             for ac_header in ldap.h
 do :
@@ -8488,27 +8489,27 @@ fi
             fi
           fi
           if test $ptlib_openldap = yes; then :
-  HAS_OPENLDAP=1
+  HAS_LDAP=1
 else
-  HAS_OPENLDAP=
+  HAS_LDAP=
 fi
 
-  if test "x${HAS_OPENLDAP}" = "x1" ; then
+  if test "x${HAS_LDAP}" = "x1" ; then
 
 $as_echo "#define P_LDAP 1" >>confdefs.h
 
     ENDLDLIBS="$ENDLDLIBS $OPENLDAP_LIBS"
-    STDCCFLAGS="$STDCCFLAGS $OPENLDAP_CFLAGS"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS $OPENLDAP_CFLAGS"
   fi
 fi
 
 
 
-          if test "x${HAS_OPENLDAP}" = "x1" ; then
-            PTLIB_OPENLDAP=yes
+          if test "x${HAS_LDAP}" = "x1" ; then
+            PTLIB_LDAP=yes
 
           else
-            PTLIB_OPENLDAP=no
+            PTLIB_LDAP=no
 
           fi
 
@@ -8590,18 +8591,18 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OPENSSL_PKG_ERRORS" >&5
 
-	HAS_OPENSSL=
+	HAS_SSL=
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	HAS_OPENSSL=
+	HAS_SSL=
 else
 	OPENSSL_CFLAGS=$pkg_cv_OPENSSL_CFLAGS
 	OPENSSL_LIBS=$pkg_cv_OPENSSL_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-                     HAS_OPENSSL=1
+                     HAS_SSL=1
 
 $as_echo "#define P_SSL 1" >>confdefs.h
 
@@ -8639,7 +8640,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 $as_echo "#define P_SSL_AES 1" >>confdefs.h
 
-                                              HAS_OPENSSL_AES=1
+                                              HAS_SSL_AES=1
 
 fi
 
@@ -8684,7 +8685,7 @@ $as_echo "#define P_SSL_USE_CONST 1" >>confdefs.h
 
 fi
 
-                     STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
+                     PTLIB_CFLAGS="$PTLIB_CFLAGS ${OPENSSL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
 
 fi
@@ -8692,11 +8693,23 @@ fi
 
 
 
-          if test "x${HAS_OPENSSL}" = "x1" ; then
-            PTLIB_OPENSSL=yes
+          if test "x${HAS_SSL}" = "x1" ; then
+            PTLIB_SSL=yes
 
           else
-            PTLIB_OPENSSL=no
+            PTLIB_SSL=no
+
+          fi
+
+
+
+
+
+          if test "x${HAS_SSL_AES}" = "x1" ; then
+            PTLIB_SSL_AES=yes
+
+          else
+            PTLIB_SSL_AES=no
 
           fi
 
@@ -8862,7 +8875,7 @@ fi
 
 $as_echo "#define P_EXPAT 1" >>confdefs.h
 
-    STDCCFLAGS="$STDCCFLAGS $EXPAT_CFLAGS"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS $EXPAT_CFLAGS"
     ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
 fi
@@ -9117,7 +9130,7 @@ if test "x${HAS_LUA}" != "x" ; then
 
 $as_echo "#define P_LUA 1" >>confdefs.h
 
-   STDCCFLAGS="$STDCCFLAGS $LUA_CFLAGS"
+   PTLIB_CFLAGS="$PTLIB_CFLAGS $LUA_CFLAGS"
    LDFLAGS="$LDFLAGS $LUA_LDFLAGS"
    ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
 fi
@@ -11355,7 +11368,7 @@ $as_echo "yes" >&6; }
 
 $as_echo "#define P_SDL 1" >>confdefs.h
 
-                       STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
+                       PTLIB_CFLAGS="$PTLIB_CFLAGS ${SDL_CFLAGS}"
                        LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl`"
                        ENDLDLIBS="$ENDLDLIBS `pkg-config --libs-only-l sdl`"
 
@@ -11546,7 +11559,7 @@ $as_echo "${ptlib_has_directx}" >&6; }
           if test $ptlib_has_directx = yes; then :
   HAS_VIDEO_CAPTURE=1
 	 	              ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
-			      STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
+			      PTLIB_CFLAGS="$PTLIB_CFLAGS ${DIRECTX_INCLUDES}"
                               HAS_DIRECTSHOW=1
                               HAS_DIRECTSOUND=1
 			      $as_echo "#define P_DIRECTSHOW 1" >>confdefs.h
@@ -11734,9 +11747,9 @@ $as_echo "$as_me: Using odbc dir ${with_odbc_dir}" >&6;}
           fi
 
           old_LIBS="$LIBS"
-          old_CPPFLAGS="$CPPFLAGS"
+          old_CFLAGS="$CFLAGS"
           LIBS="$LIBS ${ptlib_odbc_libs}"
-          CPPFLAGS="$CPPFLAGS ${ptlib_odbc_cflags}"
+          CFLAGS="$CFLAGS ${ptlib_odbc_cflags}"
 
           for ac_header in sql.h
 do :
@@ -11798,7 +11811,7 @@ fi
           fi
 
           LIBS="$old_LIBS"
-          CPPFLAGS="$old_CPPFLAGS"
+          CFLAGS="$old_CFLAGS"
 
           if test "x${ptlib_odbc}" = "xyes" ; then
             ODBC_LIBS="-lodbc ${ptlib_odbc_libs}"
@@ -11815,7 +11828,7 @@ fi
 
 $as_echo "#define P_ODBC 1" >>confdefs.h
 
-    STDCCFLAGS="$STDCCFLAGS $ODBC_CFLAGS"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS $ODBC_CFLAGS"
     ENDLDLIBS="$ENDLDLIBS $ODBC_LIBS"
     { $as_echo "$as_me:${as_lineno-$LINENO}: ODBC support enabled" >&5
 $as_echo "$as_me: ODBC support enabled" >&6;}
@@ -11840,7 +11853,7 @@ fi
 
 if test "x${HAS_LIBDL}" = "x1" ; then
   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
-  STDCCFLAGS="$STDCCFLAGS $DL_CFLAGS"
+  PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
 fi
 
 
@@ -11898,9 +11911,9 @@ $as_echo "no" >&6; }
 
 
     if test "x${HAS_EXCEPTIONS}" = "x1" ; then
-      STDCCFLAGS="$STDCCFLAGS -fexceptions"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -fexceptions"
     else
-      STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -fno-exceptions"
     fi
     ;;
 esac
@@ -12450,7 +12463,6 @@ ac_config_files="$ac_config_files plugins/vidinput_dc/Makefile"
 
 
 fi # enable_plugins
-
 
 
 

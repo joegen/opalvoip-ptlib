@@ -427,7 +427,7 @@
     #pragma include_alias(<openssl/pqueue.h>,     <@SSL_WIN32_DIR@/inc32/openssl/pqueue.h>)
     #pragma include_alias(<openssl/hmac.h>,       <@SSL_WIN32_DIR@/inc32/openssl/hmac.h>)
 
-    #ifdef P_OPENSSL_AES
+    #ifdef P_SSL_AES
       #pragma include_alias(<openssl/aes.h>,      <@SSL_WIN32_DIR@/inc32/openssl/aes.h>)
     #endif
 

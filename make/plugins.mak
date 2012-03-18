@@ -36,7 +36,7 @@ include $(PTLIBDIR)/make/unix.mak
 
 PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)
 
-OBJDIR = $(PT_LIBDIR)/$(PLUGIN_FAMILY)
+OBJDIR = $(PTLIB_LIBDIR)/$(PLUGIN_FAMILY)
 
 TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
 
@@ -54,21 +54,21 @@ endif
 
 
 ifeq ($(target_cpu),x86_64)
-  STDCCFLAGS += -fPIC
+  PTLIB_CFLAGS += -fPIC
 endif
 
 ifeq ($(target_cpu),hppa)
-  STDCCFLAGS += -fPIC
+  PTLIB_CFLAGS += -fPIC
 endif
 
 ifeq ($(P_SHAREDLIB),1)
-  PLUGIN_LIBS += $(PT_LIBDIR)/$(PTLIB_FILE)
+  PLUGIN_LIBS += $(PTLIB_LIBDIR)/$(PTLIB_FILE)
   CXXFLAGS += -DP_SHAREDLIB
 endif
 
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	@mkdir -p $(OBJDIR)
-	$(Q_CC)$(CXX) $(STDCCFLAGS) $(CXXFLAGS) \
+	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(CXXFLAGS) \
 	$(LDSOPTS) $< \
 	$(PLUGIN_LIBS) \
 	$(LDFLAGS) \

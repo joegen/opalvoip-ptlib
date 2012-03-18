@@ -5,7 +5,7 @@ includedir=@includedir@
 target_cpu=@target_cpu@
 target_os=@target_os@
 target=@target@
-cxxflags=@STDCXXFLAGS@
+cxxflags=@PTLIB_CXXFLAGS@
 suffix=
 objdir=obj/@target@
 
@@ -14,13 +14,13 @@ Description: PT Library
 Version: @PTLIB_VERSION@
 Libs: @LDFLAGS@ -L${libdir} -lpt${suffix}
 Libs.private: @ENDLDLIBS@
-Cflags: -I${includedir} @STDCCFLAGS@
+Cflags: -I${includedir} @PTLIB_CFLAGS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
 PTLIB_RESOLVER=@PTLIB_RESOLVER@
-PTLIB_OPENSSL=@PTLIB_OPENSSL@
-PTLIB_OPENSSL_AES=@PTLIB_OPENSSL_AES@
-PTLIB_OPENLDAP=@PTLIB_OPENLDAP@
+PTLIB_SSL=@PTLIB_SSL@
+PTLIB_SSL_AES=@PTLIB_SSL_AES@
+PTLIB_LDAP=@PTLIB_LDAP@
 PTLIB_SASL=@PTLIB_SASL@
 PTLIB_SASL2=@PTLIB_SASL2@
 PTLIB_EXPAT=@PTLIB_EXPAT@
