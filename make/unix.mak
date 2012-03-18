@@ -68,11 +68,11 @@ endif
 # -Wall must be at the start of the options otherwise
 # any -W overrides won't have any effect
 ifeq ($(USE_GCC),yes)
-STDCCFLAGS += -Wall 
+PTLIB_CFLAGS += -Wall 
 endif
 
 ifdef RPM_OPT_FLAGS
-STDCCFLAGS	+= $(RPM_OPT_FLAGS)
+PTLIB_CFLAGS	+= $(RPM_OPT_FLAGS)
 endif
 
 ifneq ($(target_os),rtems)
@@ -87,45 +87,45 @@ LD=
 
 ####################################################
 
-STDCCFLAGS += -Wformat -Wformat-security -D_FORTIFY_SOURCE=2 
+PTLIB_CFLAGS += -Wformat -Wformat-security -D_FORTIFY_SOURCE=2 
 
 ifeq ($(target_os),linux)
 
 ifeq ($(target_cpu),x86)
 ifdef CPUTYPE
 ifeq ($(CPUTYPE),crusoe)
-STDCCFLAGS	+= -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=0 
-STDCCFLAGS      += -malign-jumps=0 -malign-loops=0
+PTLIB_CFLAGS	+= -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=0 
+PTLIB_CFLAGS      += -malign-jumps=0 -malign-loops=0
 else
-STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+PTLIB_CFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 endif
 
 ifeq ($(target_cpu),ia64)
-STDCCFLAGS     += -DP_64BIT
+PTLIB_CFLAGS     += -DP_64BIT
 endif
 
 ifeq ($(target_cpu),hppa64)
-STDCCFLAGS     += -DP_64BIT
+PTLIB_CFLAGS     += -DP_64BIT
 endif
 
 ifeq ($(target_cpu),s390x)
-STDCCFLAGS     += -DP_64BIT
+PTLIB_CFLAGS     += -DP_64BIT
 endif
 
 ifeq ($(target_cpu),x86_64)
-STDCCFLAGS     += -DP_64BIT
+PTLIB_CFLAGS     += -DP_64BIT
 LDLIBS		+= -lresolv
 endif
 
 ifeq ($(target_cpu),ppc64)
-STDCCFLAGS     += -DP_64BIT
+PTLIB_CFLAGS     += -DP_64BIT
 endif
 
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
-STDCCFLAGS	+= -fPIC -DPIC
+PTLIB_CFLAGS	+= -fPIC -DPIC
 endif # PROG
 endif # P_SHAREDLIB
 
@@ -141,20 +141,20 @@ ifeq ($(target_os),FreeBSD)
 
 ifeq ($(target_cpu),x86)
 ifdef CPUTYPE
-STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+PTLIB_CFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
 ifeq ($(target_cpu),amd64)
-STDCCFLAGS     += -DP_64BIT
+PTLIB_CFLAGS     += -DP_64BIT
 endif
 
 P_USE_RANLIB		:= 1
-#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
+#PTLIB_CFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
-STDCCFLAGS	+= -fPIC -DPIC
+PTLIB_CFLAGS	+= -fPIC -DPIC
 endif # PROG
 endif # P_SHAREDLIB
 
@@ -166,13 +166,13 @@ endif # FreeBSD
 ifeq ($(target_os),OpenBSD)
 
 ifeq ($(target_cpu),x86)
-#STDCCFLAGS	+= -m486
+#PTLIB_CFLAGS	+= -m486
 endif
 
 LDLIBS		+= -lossaudio
 
 P_USE_RANLIB		:= 1
-#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
+#PTLIB_CFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 
 endif # OpenBSD
@@ -184,19 +184,19 @@ ifeq ($(target_os),NetBSD)
 
 ifeq ($(target_cpu),x86)
 ifdef CPUTYPE
-STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+PTLIB_CFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
 ifeq ($(target_cpu),x86_64)
-STDCCFLAGS	+= -DP_64BIT
+PTLIB_CFLAGS	+= -DP_64BIT
 endif
 
 P_USE_RANLIB		:= 1
-#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
+#PTLIB_CFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 ifndef PROG
-STDCCFLAGS	+= -fPIC -DPIC
+PTLIB_CFLAGS	+= -fPIC -DPIC
 endif # PROG
 
 endif # NetBSD
@@ -206,14 +206,14 @@ endif # NetBSD
 
 ifeq ($(target_os),AIX)
 
-STDCCFLAGS	+= -DP_AIX  
+PTLIB_CFLAGS	+= -DP_AIX  
 # -pedantic -g
 # LDLIBS	+= -lossaudio
 
-STDCCFLAGS	+= -mminimal-toc
+PTLIB_CFLAGS	+= -mminimal-toc
 
 #P_USE_RANLIB		:= 1
-STDCCFLAGS      += -DP_USE_PRAGMA
+PTLIB_CFLAGS      += -DP_USE_PRAGMA
 
 
 endif # AIX
@@ -227,7 +227,7 @@ ifeq ($(target_os),sunos)
 
 P_USE_RANLIB		:= 1
 REQUIRES_SEPARATE_SWITCH = 1
-#STDCCFLAGS      += -DP_USE_PRAGMA	# migrated to configure
+#PTLIB_CFLAGS      += -DP_USE_PRAGMA	# migrated to configure
 
 endif # sunos
 
@@ -256,7 +256,7 @@ ENDLDLIBS	+= -lsocket -lnsl -ldl -lposix4
 
 #P_USE_RANLIB		:= 1
 
-#STDCCFLAGS      += -DP_USE_PRAGMA	# migrated to configure
+#PTLIB_CFLAGS      += -DP_USE_PRAGMA	# migrated to configure
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 
@@ -264,7 +264,7 @@ STATIC_LIBS	:= libstdc++.a libg++.a
 ifndef DEBUG
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
-STDCCFLAGS	+= -fPIC -DPIC
+PTLIB_CFLAGS	+= -fPIC -DPIC
 endif # PROG
 endif
 endif
@@ -279,10 +279,10 @@ ifeq ($(target_os),irix)
 
 # IRIX using a gcc
 CC		:= gcc
-STDCCFLAGS	+= -DP_IRIX
+PTLIB_CFLAGS	+= -DP_IRIX
 LDLIBS		+= -lsocket -lnsl
 
-STDCCFLAGS      += -DP_USE_PRAGMA
+PTLIB_CFLAGS      += -DP_USE_PRAGMA
 
 endif # irix
 
@@ -292,7 +292,7 @@ endif # irix
 ifeq ($(target_os),beos)
 
 SYSLIBS     += -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl 
-STDCCFLAGS	+= -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format
+PTLIB_CFLAGS	+= -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format
 LDLIBS		+= $(SYSLIBS)
 
 MEMORY_CHECK := 0
@@ -304,17 +304,17 @@ endif # beos
 ifeq ($(target_os),ultrix)
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
-STDCCFLAGS	+= -DP_ULTRIX
-STDCCFLAGS      += -DP_USE_PRAGMA
+PTLIB_CFLAGS	+= -DP_ULTRIX
+PTLIB_CFLAGS      += -DP_USE_PRAGMA
 endif # ultrix
 
 
 ####################################################
 
 ifeq ($(target_os),hpux)
-STDCCFLAGS      += -DP_USE_PRAGMA
+PTLIB_CFLAGS      += -DP_USE_PRAGMA
 # HP/UX 9.x, using gcc 2.6.C3 (Cygnus version)
-STDCCFLAGS	+= -DP_HPUX9
+PTLIB_CFLAGS	+= -DP_HPUX9
 
 endif # hpux
 
@@ -331,11 +331,11 @@ ifeq ($(target_os),Darwin)
 # Uncomment them if you wish, but it will do nothing for the time being.
 
 #HAS_QUICKTIMEX := 1
-#STDCCFLAGS     += -DHAS_QUICKTIMEX
+#PTLIB_CFLAGS     += -DHAS_QUICKTIMEX
 #ENDLDLIBS      += -framework QuickTime
  
 ifeq ($(target_cpu),x86)
-STDCCFLAGS	+= -m486
+PTLIB_CFLAGS	+= -m486
 endif
 
 ARCHIVE			:= libtool -static -o
@@ -347,7 +347,7 @@ ifeq ($(target_os),Carbon)
 
 # MacOS 9 or X using Carbonlib calls
 
-STDCCFLAGS	+= -DP_MACOS
+PTLIB_CFLAGS	+= -DP_MACOS
 
 # I'm having no end of trouble with the debug memory allocator.
 MEMORY_CHECK    := 0
@@ -355,7 +355,7 @@ MEMORY_CHECK    := 0
 # Carbon is only available for full Mac OS X, not pure Darwin, so the only
 # currently available architecture is PPC.
 P_MAC_MPTHREADS := 1
-STDCCFLAGS	+= -DP_MAC_MPTHREADS
+PTLIB_CFLAGS	+= -DP_MAC_MPTHREADS
 LDLIBS		+= -prebind -framework CoreServices -framework QuickTime -framework Carbon
   
 P_SHAREDLIB	:= 0 
@@ -368,17 +368,17 @@ endif # Carbon
 ifeq ($(target_os),VxWorks)
 
 ifeq ($(target_cpu),ARM)
-STDCCFLAGS	+= -mcpu=arm8 -DCPU=ARMARCH4
+PTLIB_CFLAGS	+= -mcpu=arm8 -DCPU=ARMARCH4
 endif
 
-STDCCFLAGS	+= -DP_VXWORKS -DPHAS_TEMPLATES -DVX_TASKS
-STDCCFLAGS	+= -DNO_LONG_DOUBLE
+PTLIB_CFLAGS	+= -DP_VXWORKS -DPHAS_TEMPLATES -DVX_TASKS
+PTLIB_CFLAGS	+= -DNO_LONG_DOUBLE
 
-STDCCFLAGS	+= -Wno-multichar -Wno-format
+PTLIB_CFLAGS	+= -Wno-multichar -Wno-format
 
 MEMORY_CHECK := 0
 
-STDCCFLAGS      += -DP_USE_PRAGMA
+PTLIB_CFLAGS      += -DP_USE_PRAGMA
 
 LD		= ld
 LDFLAGS		+= --split-by-reloc 65535 -r 
@@ -393,19 +393,19 @@ ifeq ($(target_os),rtems)
 SYSINCDIR	:= $(RTEMS_MAKEFILE_PATH)/lib/include
 
 LDFLAGS		+= -B$(RTEMS_MAKEFILE_PATH)/lib/ -specs=bsp_specs -qrtems
-STDCCFLAGS	+= -B$(RTEMS_MAKEFILE_PATH)/lib/ -specs=bsp_specs -ansi -fasm -qrtems
+PTLIB_CFLAGS	+= -B$(RTEMS_MAKEFILE_PATH)/lib/ -specs=bsp_specs -ansi -fasm -qrtems
 
 ifeq ($(CPUTYPE),mcpu32)
-STDCCFLAGS	+= -mcpu32
+PTLIB_CFLAGS	+= -mcpu32
 LDFLAGS		+= -mcpu32 
 endif
 
 ifeq ($(CPUTYPE),mpc860)
-STDCCFLAGS	+= -mcpu=860
+PTLIB_CFLAGS	+= -mcpu=860
 LDFLAGS		+= -mcpu=860
 endif
 
-STDCCFLAGS	+= -DP_RTEMS -DP_HAS_SEMAPHORES
+PTLIB_CFLAGS	+= -DP_RTEMS -DP_HAS_SEMAPHORES
 
 P_SHAREDLIB	:= 0
 
@@ -416,22 +416,22 @@ endif # rtems
 ifeq ($(target_os),QNX)
 
 ifeq ($(target_cpu),x86)
-STDCCFLAGS	+= -Wc,-m486
+PTLIB_CFLAGS	+= -Wc,-m486
 endif
 
-STDCCFLAGS	+= -DP_QNX -DP_HAS_RECURSIVE_MUTEX=1 -DFD_SETSIZE=1024
+PTLIB_CFLAGS	+= -DP_QNX -DP_HAS_RECURSIVE_MUTEX=1 -DFD_SETSIZE=1024
 LDLIBS		+= -lasound
 ENDLDLIBS       += -lsocket -lstdc++
 
 P_USE_RANLIB	:= 1
-STDCCFLAGS      += -DP_USE_PRAGMA
+PTLIB_CFLAGS      += -DP_USE_PRAGMA
 
 ifeq ($(P_SHAREDLIB),1)
 ifeq ($(USE_GCC),yes)
-STDCCFLAGS      += -shared
+PTLIB_CFLAGS      += -shared
 else
 ifeq ($(target_os),solaris)
-STDCCFLAGS      += -G
+PTLIB_CFLAGS      += -G
 endif
 endif
 
@@ -444,8 +444,8 @@ endif # QNX6
 ifeq ($(target_os),Nucleus)
 
 # Nucleus using gcc
-STDCCFLAGS	+= -msoft-float -nostdinc $(DEBUGFLAGS)
-STDCCFLAGS	+= -D__NUCLEUS_PLUS__ -D__ppc -DWOT_NO_FILESYSTEM -DPLUS \
+PTLIB_CFLAGS	+= -msoft-float -nostdinc $(DEBUGFLAGS)
+PTLIB_CFLAGS	+= -D__NUCLEUS_PLUS__ -D__ppc -DWOT_NO_FILESYSTEM -DPLUS \
 		   -D__HAS_NO_FLOAT -D__USE_STL__ \
                    -D__USE_STD__ \
 		   -D__NUCLEUS_NET__ -D__NEWLIB__ \
@@ -459,7 +459,7 @@ endif
 ifndef STLDIR
 STLDIR		= ${WORK}/embedded/packages/stl-3.2-stream
 endif
-STDCCFLAGS	+= -I$(NUCLEUSDIR)/plus \
+PTLIB_CFLAGS	+= -I$(NUCLEUSDIR)/plus \
 		-I$(NUCLEUSDIR)/plusplus \
 		-I$(NUCLEUSDIR)/net \
 		-I$(NUCLEUSDIR) \
@@ -561,14 +561,14 @@ ifndef UNIX_SRC_DIR
 UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/unix
 endif
 
-PT_LIBDIR	= $(PTLIBDIR)/lib_$(target)
+PTLIB_LIBDIR	= $(PTLIBDIR)/lib_$(target)
 
 # set name of the PT library
 PTLIB_BASE	= pt$(OBJ_SUFFIX)
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PTLIB_DEBUG_FILE= lib$(PTLIB_BASE)_d$(LIB_TYPE).$(LIB_SUFFIX)
-PT_OBJBASE	= obj$(OBJDIR_SUFFIX)
-PT_OBJDIR	= $(PT_LIBDIR)/$(PT_OBJBASE)
+PTLIB_OBJBASE	= obj$(OBJDIR_SUFFIX)
+PTLIB_OBJDIR	= $(PTLIB_LIBDIR)/$(PTLIB_OBJBASE)
 
 ifeq (,$(findstring $(target_os),Darwin cygwin mingw))
   PTLIB_SONAME = $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
@@ -588,32 +588,32 @@ ifndef MEMORY_CHECK
 MEMORY_CHECK := 1
 endif
 
-STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG
+PTLIB_CFLAGS	+= $(DEBUG_FLAG) -D_DEBUG
 LDFLAGS		+= $(DEBLDFLAGS)
 
 else
 
-STDCCFLAGS	+= -DNDEBUG
+PTLIB_CFLAGS	+= -DNDEBUG
 
 ifneq ($(target_os),Darwin)
   ifeq ($(target_os),solaris)
     ifeq ($(USE_GCC),yes)
-      STDCCFLAGS	+= -O3
+      PTLIB_CFLAGS	+= -O3
     else
-      STDCCFLAGS	+= -xO3
+      PTLIB_CFLAGS	+= -xO3
     endif
   else
-    STDCCFLAGS	+= -Os 
+    PTLIB_CFLAGS	+= -Os 
   endif
 else
-  STDCCFLAGS	+= -O2
+  PTLIB_CFLAGS	+= -O2
 endif
 
 endif # DEBUG
 
 # define ESDDIR variables if installed
 ifdef  ESDDIR
-STDCCFLAGS	+= -I$(ESDDIR)/include -DUSE_ESD=1
+PTLIB_CFLAGS	+= -I$(ESDDIR)/include -DUSE_ESD=1
 ENDLDLIBS	+= $(ESDDIR)/lib/libesd.a  # to avoid name conflicts
 HAS_ESD		= 1
 endif
@@ -621,18 +621,18 @@ endif
 # feature migrated to configure.in
 # #define templates if available
 # ifndef NO_PTLIB_TEMPLATES
-# STDCCFLAGS	+= -DPHAS_TEMPLATES
+# PTLIB_CFLAGS	+= -DPHAS_TEMPLATES
 # endif
 
 # compiler flags for all modes
-#STDCCFLAGS	+= -fomit-frame-pointer
-#STDCCFLAGS	+= -fno-default-inline
-#STDCCFLAGS     += -Woverloaded-virtual
-#STDCCFLAGS     += -fno-implement-inlines
+#PTLIB_CFLAGS	+= -fomit-frame-pointer
+#PTLIB_CFLAGS	+= -fno-default-inline
+#PTLIB_CFLAGS     += -Woverloaded-virtual
+#PTLIB_CFLAGS     += -fno-implement-inlines
 
 
 # add library directory to library path and include the library
-LDFLAGS		+= -L$(PT_LIBDIR)
+LDFLAGS		+= -L$(PTLIB_LIBDIR)
 
 LDLIBS		+= -l$(PTLIB_BASE)$(LIB_TYPE)
 

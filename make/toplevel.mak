@@ -104,30 +104,30 @@ install:
                      $(DESTDIR)$(prefix)/share/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
-	( for lib in  $(PT_LIBDIR)/$(PTLIB_SONAME) \
-	              $(PT_LIBDIR)/$(DEBUG_SONAME) \
-	              $(PT_LIBDIR)/lib$(PTLIB_BASE)_s.a \
-	              $(PT_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
+	( for lib in  $(PTLIB_LIBDIR)/$(PTLIB_SONAME) \
+	              $(PTLIB_LIBDIR)/$(DEBUG_SONAME) \
+	              $(PTLIB_LIBDIR)/lib$(PTLIB_BASE)_s.a \
+	              $(PTLIB_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
           do \
 	  ( if test -e $$lib ; then \
 		$(INSTALL) -m 444 $$lib $(DESTDIR)$(libdir); \
 	  fi ) \
 	done )
-	( if test -e $(PT_LIBDIR)/$(PTLIB_SONAME); then \
+	( if test -e $(PTLIB_LIBDIR)/$(PTLIB_SONAME); then \
 	    (cd $(DESTDIR)$(libdir) ; \
 		rm -f $(PTLIB_FILE) ; \
 		ln -sf $(PTLIB_SONAME) $(PTLIB_FILE) \
 	    ) \
 	fi )
-	( if test -e $(PT_LIBDIR)/$(DEBUG_SONAME); then \
+	( if test -e $(PTLIB_LIBDIR)/$(DEBUG_SONAME); then \
 	    (cd $(DESTDIR)$(libdir) ; \
 		rm -f $(PTLIB_DEBUG_FILE) ; \
 		ln -sf $(DEBUG_SONAME) $(PTLIB_DEBUG_FILE) \
 	    ) \
 	fi )
 ifeq (1, $(HAS_PLUGINS))
-	if test -e $(PT_LIBDIR)/device/; then \
-	cd $(PT_LIBDIR)/device/; \
+	if test -e $(PTLIB_LIBDIR)/device/; then \
+	cd $(PTLIB_LIBDIR)/device/; \
 	(  for dir in ./* ;\
 		do mkdir -p $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \

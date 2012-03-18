@@ -58,7 +58,7 @@ vpath %.gch $(PTLIBDIR)/include
 #
 # add common directory to include path - must be after PT directories
 #
-STDCCFLAGS	:= -I$(PTLIBDIR)/include $(STDCCFLAGS)
+PTLIB_CFLAGS	:= -I$(PTLIBDIR)/include $(PTLIB_CFLAGS)
 
 ifneq ($(P_SHAREDLIB),1)
 
@@ -94,15 +94,15 @@ endif
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CC) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 #
 # create list of object files 
@@ -127,17 +127,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CXX) $(PTLIB_CFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CXX) $(PTLIB_CFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CC) $(STDCCFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CC) $(PTLIB_CFLAGS:-g=) $(CFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
@@ -167,21 +167,21 @@ ifeq ($(target_os),beos)
 # BeOS won't find dynamic libraries unless they are in one of the system
 # library directories or in the lib directory under the application's
 # directory
-	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PT_LIBDIR) lib; fi
+	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PTLIB_LIBDIR) lib; fi
 endif
 	$(Q_LD)$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
 ifdef DEBUG
 
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
-$(PT_LIBDIR)/$(PTLIB_FILE):
+$(PTLIB_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PTLIBDIR) debug
 endif
 
 else
 
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
-$(PT_LIBDIR)/$(PTLIB_FILE):
+$(PTLIB_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PTLIBDIR) opt
 endif
 
@@ -205,12 +205,12 @@ endif
 #
 
 USE_PCH:=no
-$(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PTLIBDIR)/include/ptlib.h
+$(PTLIBDIR)/include/ptlib.h.gch/$(PTLIB_OBJBASE): $(PTLIBDIR)/include/ptlib.h
 	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
-	$(CXX) $(STDCCFLAGS) $(STDCXXFLAGS) $(CFLAGS) -x c++ -c $< -o $@
+	$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -x c++ -c $< -o $@
 
 ifeq ($(USE_PCH),yes)
-PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
+PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PTLIB_OBJBASE)
 CLEAN_FILES  += $(PCH_FILES)
 
 precompile: $(PCH_FILES)
