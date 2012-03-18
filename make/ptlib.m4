@@ -293,8 +293,8 @@ AC_DEFUN([PTLIB_FIND_LIBDL],
 
 dnl PTLIB_CHECK_FDSIZE
 dnl check for select_large_fdset (Solaris)
-dnl Arguments: $STDCCFLAGS
-dnl Return:    $STDCCFLAGS
+dnl Arguments: $PTLIB_CFLAGS
+dnl Return:    $PTLIB_CFLAGS
 AC_DEFUN([PTLIB_CHECK_FDSIZE],
          [
           ptlib_fdsize_file=/etc/system
@@ -310,7 +310,7 @@ AC_DEFUN([PTLIB_CHECK_FDSIZE],
           fi
 
           if test "x${ptlib_fdsize}" != "x4098"; then
-            STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
+            PTLIB_CFLAGS="$PTLIB_CFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
           fi
 
           AC_MSG_RESULT(${ptlib_fdsize})
@@ -354,8 +354,8 @@ AC_DEFUN([PTLIB_CHECK_SASL_INCLUDE],
 
 dnl PTLIB_FIND_OPENLDAP
 dnl Find OpenLDAP
-dnl Arguments: $STDCCFLAGS
-dnl Return:    $STDCCFLAGS
+dnl Arguments: $PTLIB_CFLAGS
+dnl Return:    $PTLIB_CFLAGS
 AC_DEFUN([PTLIB_FIND_OPENLDAP],
          [
           AC_ARG_WITH([ldap-dir], 
@@ -386,7 +386,7 @@ AC_DEFUN([PTLIB_FIND_OPENLDAP],
             old_LIBS="$LIBS"
             old_CFLAGS="$CFLAGS"
             LIBS="$LIBS ${ptlib_openldap_libs} $RESOLVER_LIBS"
-            CFLAGS="$CFLAGS ${ptlib_openldap_cflags}"
+            PTLIB_CFLAGS="$PTLIB_CFLAGS ${ptlib_openldap_cflags}"
 
             AC_CHECK_HEADERS([ldap.h], [ptlib_openldap=yes], [ptlib_openldap=no])
             if test "x${ptlib_openldap}" = "xyes" ; then
@@ -406,8 +406,8 @@ AC_DEFUN([PTLIB_FIND_OPENLDAP],
 
 dnl PTLIB_FIND_EXPAT
 dnl Find Expat
-dnl Arguments: $STDCCFLAGS
-dnl Return:    $STDCCFLAGS
+dnl Arguments: $PTLIB_CFLAGS
+dnl Return:    $PTLIB_CFLAGS
 AC_DEFUN([PTLIB_FIND_EXPAT],
          [
           AC_ARG_WITH([expat-dir], 
@@ -450,8 +450,8 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
 
 dnl PTLIB_FIND_ODBC
 dnl Find OpenLDAP
-dnl Arguments: $STDCCFLAGS
-dnl Return:    $STDCCFLAGS
+dnl Arguments: $PTLIB_CFLAGS
+dnl Return:    $PTLIB_CFLAGS
 AC_DEFUN([PTLIB_FIND_ODBC],
          [
           AC_ARG_WITH([odbc-dir], 
@@ -467,9 +467,9 @@ AC_DEFUN([PTLIB_FIND_ODBC],
           fi
 
           old_LIBS="$LIBS"
-          old_CPPFLAGS="$CPPFLAGS"
+          old_CFLAGS="$CFLAGS"
           LIBS="$LIBS ${ptlib_odbc_libs}"
-          CPPFLAGS="$CPPFLAGS ${ptlib_odbc_cflags}"
+          CFLAGS="$CFLAGS ${ptlib_odbc_cflags}"
 
           AC_CHECK_HEADERS([sql.h], [ptlib_odbc=yes], [ptlib_odbc=no])
           if test "x${ptlib_odbc}" = "xyes" ; then
@@ -477,7 +477,7 @@ AC_DEFUN([PTLIB_FIND_ODBC],
           fi
 
           LIBS="$old_LIBS"
-          CPPFLAGS="$old_CPPFLAGS"
+          CFLAGS="$old_CFLAGS"
 
           if test "x${ptlib_odbc}" = "xyes" ; then
             ODBC_LIBS="-lodbc ${ptlib_odbc_libs}"

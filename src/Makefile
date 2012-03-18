@@ -31,8 +31,8 @@ endif
 
 include $(PTLIBDIR)/make/unix.mak
 
-OBJDIR	= $(PT_OBJDIR)
-TARGET  = $(PT_LIBDIR)/$(PTLIB_FILE)
+OBJDIR	= $(PTLIB_OBJDIR)
+TARGET  = $(PTLIB_LIBDIR)/$(PTLIB_FILE)
 VERSION_FILE = $(PTLIBDIR)/version.h
 REVISION_FILE = $(PTLIBDIR)/revision.h
 
@@ -61,13 +61,13 @@ ifdef HAS_SASL2
 SOURCES	+= $(COMPONENT_SRC_DIR)/psasl.cxx 
 endif
 
-ifdef HAS_OPENLDAP
+ifdef HAS_LDAP
 SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/pldap.cxx \
         $(COMPONENT_SRC_DIR)/pils.cxx
 endif
 
-ifdef HAS_OPENSSL
+ifdef HAS_SSL
 SOURCES += $(COMPONENT_SRC_DIR)/pssl.cxx 
 endif
 
@@ -76,7 +76,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 
 $(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -98,7 +98,7 @@ SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
 
 $(OBJDIR)/vfakeio.o: $(COMMON_SRC_DIR)/vfakeio.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 ifdef HAS_SHM_VIDEO
 SOURCES	+= $(PLATFORM_SRC_DIR)/shmvideo.cxx
@@ -121,7 +121,7 @@ ifdef HAS_DIRECTSHOW
 SOURCES	+= $(PLATFORM_SRC_DIR)/directshow.cxx
 $(OBJDIR)/directshow.o: $(PLATFORM_SRC_DIR)/directshow.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 endif # HAS_VIDEO
@@ -137,7 +137,7 @@ ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/sound_win32.cxx
 $(OBJDIR)/sound_win32.o: $(PLATFORM_SRC_DIR)/sound_win32.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 ifndef HAS_PLUGINS
@@ -246,7 +246,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
 
 $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -255,7 +255,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 
 $(OBJDIR)/pstunsrvr.o: $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 
@@ -282,7 +282,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx \
 
 $(OBJDIR)/pwavfiledev.o: $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 ifdef HAS_DTMF
@@ -338,9 +338,9 @@ SOURCES += \
 	$(PLATFORM_SRC_DIR)/svcproc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsvc.cxx
 
-ifdef HAS_OPENSSL
+ifdef HAS_SSL
 SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx
-endif #HAS_OPENSSL
+endif #HAS_SSL
 endif #HAS_HTTPSVC
 
 ifdef HAS_CONFIG_FILE
@@ -357,7 +357,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 
 $(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -366,7 +366,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
 
 $(OBJDIR)/pffvdev.o: $(COMPONENT_SRC_DIR)/pffvdev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 endif
 
@@ -475,14 +475,14 @@ $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: $(PLATFORM_SRC_DIR)/switch.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
-	$(Q_CC)$(CC) -Wno-write-strings $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) -Wno-write-strings $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
-	$(Q_CC)$(CC) $(STDCCFLAGS) -M $< >> $@
+	$(Q_CC)$(CC) $(PTLIB_CFLAGS) -M $< >> $@
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c

@@ -215,7 +215,7 @@ case "$target_os" in
 
    solaris )
       OS_TAG="P_SOLARIS"
-      STDCCFLAGS="$STDCCFLAGS -D__inline=inline -DSOLARIS"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__inline=inline -DSOLARIS"
       need_pragma=yes
       dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
       PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
@@ -230,7 +230,7 @@ case "$target_os" in
 
    beos )
       OS_TAG="P_BEOS"
-      STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__BEOS__"
    ;;
 
    cygwin )
@@ -241,7 +241,7 @@ case "$target_os" in
    mingw )
       OS_TAG="P_MINGW"
       SHAREDLIBEXT="dll"
-      STDCCFLAGS="$STDCCFLAGS -mms-bitfields"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
       ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
       HAS_SHM_VIDEO=
    ;;
@@ -256,7 +256,7 @@ AC_DEFINE_UNQUOTED($OS_TAG, $target_release)
 
 if test "$target_64bit" = "1" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
-  STDCCFLAGS="$STDCCFLAGS -DP_64BIT"
+  PTLIB_CFLAGS="$PTLIB_CFLAGS -DP_64BIT"
 fi
 
 if test "$target_os" = "linux-gnulp" ; then
@@ -289,7 +289,7 @@ if test x$GXX = xyes ; then
   AC_MSG_CHECKING(checking if pragma implementation should be used)
   if test ${GXX_MAJOR} -lt 4 ; then
     if test "${need_pragma}" = "yes" ; then
-      STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -DP_USE_PRAGMA"
       AC_MSG_RESULT(yes)
     else
       AC_MSG_RESULT(no)
@@ -361,7 +361,7 @@ AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
 $CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
-  STDCXXFLAGS="$STDCXXFLAGS -felide-constructors"
+  PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -felide-constructors"
 else
   AC_MSG_RESULT(no)
 fi
@@ -371,7 +371,7 @@ AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
 $CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
-  STDCXXFLAGS="$STDCXXFLAGS -Wreorder"
+  PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wreorder"
 else
   AC_MSG_RESULT(no)
 fi
@@ -385,7 +385,7 @@ if test "${enable_deprecated}" = "no" ; then
   $CXX $CXXFLAGS -Wno-deprecated-declarations conftest.$ac_ext > /dev/null 2>&1
   if test $? = 0 ; then
     AC_MSG_RESULT(yes)
-    STDCXXFLAGS="$STDCXXFLAGS -Wno-deprecated-declarations"
+    PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wno-deprecated-declarations"
   else
     AC_MSG_RESULT(no)
   fi
@@ -431,7 +431,7 @@ AC_COMPILE_IFELSE(
    ],
    [
       AC_MSG_RESULT(no)
-      STDCXXFLAGS="$STDCCFLAGS -frtti"
+      PTLIB_CXXFLAGS="$PTLIB_CFLAGS -frtti"
    ]
 )
 
@@ -450,7 +450,7 @@ if test $ac_cv_c_long_double != yes ; then
 fi
 
 dnl if test ${target_os} = Darwin ; then
-dnl   STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
+dnl   PTLIB_CFLAGS="$PTLIB_CFLAGS -Wno-long-double"
 dnl fi
 
 dnl ########################################################################
@@ -506,14 +506,14 @@ AC_ARG_ENABLE(trace-instance, AS_HELP_STRING([--disable-trace-instance],[Disable
 
 if test "x${enable_tracing}" = "xno" ; then
   AC_MSG_NOTICE(PTRACE and all trace logging removed)
-  STDCCFLAGS="$STDCCFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
+  PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
   if test "x${enable_trace_instance}" = "xno" ; then
     AC_MSG_NOTICE(PTRACE without object instance trace logging included)
-    STDCCFLAGS="$STDCCFLAGS -DPTRACING=1"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=1"
   else
     AC_MSG_NOTICE(PTRACE and all trace logging included)
-    STDCCFLAGS="$STDCCFLAGS -DPTRACING=2"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=2"
   fi
 fi
 
@@ -712,14 +712,14 @@ dnl FreeBSD uses the -pthread compiler option and uses libc_r
 if test "${target_os}" = "FreeBSD" ; then
    HAS_PTHREADS=yes
    ENDLDLIBS="$ENDLDLIBS -pthread"
-   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
+   PTLIB_CFLAGS="$PTLIB_CFLAGS -D_REENTRANT -pthread"
    AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 else
    AC_CHECK_LIB(pthread, pthread_create,
       [
          HAS_PTHREADS=yes
          ENDLDLIBS="$ENDLDLIBS -lpthread"
-         STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+         PTLIB_CFLAGS="$PTLIB_CFLAGS -D_REENTRANT"
          AC_DEFINE(P_PTHREADS, 1, "PThreads found")
       ],
       [
@@ -1042,20 +1042,20 @@ AC_ARG_ENABLE([openldap],
 	      [enable_openldap=$default_openldap]
 	     )
 
-HAS_OPENLDAP=
+HAS_LDAP=
 if test "$enable_openldap" = "no" ; then
   AC_MSG_NOTICE(OpenLDAP disabled)
 else 
-  PTLIB_FIND_OPENLDAP([HAS_OPENLDAP=1], [HAS_OPENLDAP=])
-  if test "x${HAS_OPENLDAP}" = "x1" ; then
+  PTLIB_FIND_OPENLDAP([HAS_LDAP=1], [HAS_LDAP=])
+  if test "x${HAS_LDAP}" = "x1" ; then
     AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
     ENDLDLIBS="$ENDLDLIBS $OPENLDAP_LIBS"
-    STDCCFLAGS="$STDCCFLAGS $OPENLDAP_CFLAGS"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS $OPENLDAP_CFLAGS"
   fi
 fi
 
-AC_SUBST(HAS_OPENLDAP)
-PTLIB_NEW_OPTION(OPENLDAP)
+AC_SUBST(HAS_LDAP)
+PTLIB_NEW_OPTION(LDAP)
 
 
 dnl ########################################################################
@@ -1101,22 +1101,25 @@ else
   PKG_CHECK_MODULES([OPENSSL], 
                     [openssl], 
                     [
-                     HAS_OPENSSL=1
+                     HAS_SSL=1
                      AC_DEFINE(P_SSL, 1, "OpenSSL found")
                      PTLIB_CHECK_OPENSSL_AES([
                                               AC_DEFINE([P_SSL_AES], [1],[openssl with AES yes])
-                                              HAS_OPENSSL_AES=1
+                                              HAS_SSL_AES=1
                                             ])
                      PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
-                     STDCCFLAGS="$STDCCFLAGS ${OPENSSL_CFLAGS}"
+                     PTLIB_CFLAGS="$PTLIB_CFLAGS ${OPENSSL_CFLAGS}"
                      ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
 dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
                     ], 
-                    [HAS_OPENSSL=])
+                    [HAS_SSL=])
 fi 
 
-AC_SUBST(HAS_OPENSSL)
-PTLIB_NEW_OPTION(OPENSSL)
+AC_SUBST(HAS_SSL)
+PTLIB_NEW_OPTION(SSL)
+
+AC_SUBST(HAS_SSL_AES)
+PTLIB_NEW_OPTION(SSL_AES)
 
 dnl For now...
 AC_SUBST(P_STATIC_ENDLDLIBS)
@@ -1186,7 +1189,7 @@ else
 
   if test "x${HAS_EXPAT}" = "x1" ; then
     AC_DEFINE(P_EXPAT, 1, "expat found")
-    STDCCFLAGS="$STDCCFLAGS $EXPAT_CFLAGS"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS $EXPAT_CFLAGS"
     ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
   fi
 fi
@@ -1228,7 +1231,7 @@ fi
 
 if test "x${HAS_LUA}" != "x" ; then
    AC_DEFINE(P_LUA, 1, "Lua found")
-   STDCCFLAGS="$STDCCFLAGS $LUA_CFLAGS"
+   PTLIB_CFLAGS="$PTLIB_CFLAGS $LUA_CFLAGS"
    LDFLAGS="$LDFLAGS $LUA_LDFLAGS"
    ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
 fi
@@ -1609,7 +1612,7 @@ else
                       [
                        HAS_SDL=1
                        AC_DEFINE(P_SDL, 1, "SDL found")
-                       STDCCFLAGS="$STDCCFLAGS ${SDL_CFLAGS}"
+                       PTLIB_CFLAGS="$PTLIB_CFLAGS ${SDL_CFLAGS}"
                        LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl`"
                        ENDLDLIBS="$ENDLDLIBS `pkg-config --libs-only-l sdl`"
                       ],[HAS_SDL=])
@@ -1635,7 +1638,7 @@ if test "x${HAS_VIDEO}" = "x1" ; then
     cygwin* | mingw* )
   	  PTLIB_FIND_DIRECTX([HAS_VIDEO_CAPTURE=1
 	 	              ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
-			      STDCCFLAGS="$STDCCFLAGS ${DIRECTX_INCLUDES}"
+			      PTLIB_CFLAGS="$PTLIB_CFLAGS ${DIRECTX_INCLUDES}"
                               HAS_DIRECTSHOW=1
                               HAS_DIRECTSOUND=1
 			      AC_DEFINE(P_DIRECTSHOW, 1)
@@ -1723,7 +1726,7 @@ else
 
   if test "x${HAS_ODBC}" = "x1" ; then
     AC_DEFINE(P_ODBC, 1, "ODBC found")
-    STDCCFLAGS="$STDCCFLAGS $ODBC_CFLAGS"
+    PTLIB_CFLAGS="$PTLIB_CFLAGS $ODBC_CFLAGS"
     ENDLDLIBS="$ENDLDLIBS $ODBC_LIBS"
     AC_MSG_NOTICE(ODBC support enabled)
   fi
@@ -1744,7 +1747,7 @@ dnl dl needs to be at the end
 if test "x${HAS_LIBDL}" = "x1" ; then
   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
 dnl   PKG_LIBS="$PKG_LIBS $DL_LIBS"
-  STDCCFLAGS="$STDCCFLAGS $DL_CFLAGS"
+  PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
 dnl   PKG_CFLAGS="$PKG_CFLAGS $DL_CFLAGS"
 fi
 
@@ -1758,9 +1761,9 @@ case "$target_os" in
     PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
 
     if test "x${HAS_EXCEPTIONS}" = "x1" ; then
-      STDCCFLAGS="$STDCCFLAGS -fexceptions"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -fexceptions"
     else
-      STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -fno-exceptions"
     fi
     ;;
 esac
@@ -2078,9 +2081,8 @@ dnl final declarations
 
 AC_SUBST(CC)
 AC_SUBST(CXX)
-AC_SUBST(STDCCFLAGS)
-AC_SUBST(STDCXXFLAGS)
-AC_SUBST(OPTSTDCCFLAGS)
+AC_SUBST(PTLIB_CFLAGS)
+AC_SUBST(PTLIB_CXXFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
 AC_SUBST(DEBUG_FLAG)
