@@ -26,7 +26,7 @@
 # Contributor(s): Matthias Schneider____________________.
 
 ifndef PTLIBDIR
-PTLIBDIR := $(HOME)/ptlib
+  $(error PTLIBDIR must be defined)
 endif
 
 include $(PTLIBDIR)/make/unix.mak
