@@ -29,7 +29,8 @@
 #
 
 ifndef PTLIBDIR
-PTLIBDIR=$(CURDIR)
+  export PTLIBDIR:=$(CURDIR)
+  $(info Setting default PTLIBDIR to $(PTLIBDIR))
 endif
 
 TOP_LEVEL_MAKE := $(PTLIBDIR)/make/toplevel.mak
@@ -50,13 +51,25 @@ default: $(CONFIG_FILES)
 $(CONFIG_FILES): $(CONFIGURE)
 	$(CONFIGURE) $(CFG_ARGS)
 
-$(CONFIGURE): $(CONFIGURE).ac $(ACLOCAL).m4
+ifneq (,$(shell which $(AUTOCONF)))
+
+$(CONFIGURE): $(CONFIGURE).ac $(ACLOCAL).m4 $(PTLIBDIR)/make/*.m4
 	$(AUTOCONF)
 
 $(ACLOCAL).m4:
 	$(ACLOCAL)
 
-$(CONFIG_FILES): $(addsuffix .in, $(CONFIG_FILES)) $(PTLIBDIR)/make/*.m4
+$(CONFIG_FILES): $(addsuffix .in, $(CONFIG_FILES)) $(CONFIGURE)
 
+else # autoconf installed
+
+$(CONFIGURE): $(CONFIGURE).ac
+	@echo ---------------------------------------------------------------------
+	@echo The configure script requires updating but autoconf not is installed.
+	@echo Either install autoconf or execute the command:
+	@echo touch $@
+	@echo ---------------------------------------------------------------------
+
+endif # autoconf installed
 
 # End of Makefile.in
