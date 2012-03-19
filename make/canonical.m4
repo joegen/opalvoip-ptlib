@@ -97,10 +97,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       x86 | i686 | i586 | i486 | i386 )
          AC_MSG_CHECKING([64 bit system masquerading as 32 bit])
          AC_COMPILE_IFELSE(
-            [AC_LANG_SOURCE(
-               [],
-               [int t = __amd64__;]
-            )],
+            [AC_LANG_SOURCE([int t = __amd64__;])],
             [
                AC_MSG_RESULT(yes)
                target_cpu=x86_64
