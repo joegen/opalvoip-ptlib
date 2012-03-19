@@ -4221,7 +4221,7 @@ $as_echo "$as_me: WARNING: Operating system \"$target_os\" not recognized - proc
 $as_echo_n "checking 64 bit system masquerading as 32 bit... " >&6; }
          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
+int t = __amd64__;
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
