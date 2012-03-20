@@ -598,6 +598,7 @@ INSTALL_SCRIPT
 INSTALL_PROGRAM
 DEBUG_FLAG
 ENDLDLIBS
+LDSOFLAGS
 PTLIB_CXXFLAGS
 PTLIB_CFLAGS
 DC_CFLAGS
@@ -3154,17 +3155,6 @@ HAS_PLUGINS=1
 HAS_EXCEPTIONS=
 
 
-if test "x$prefix" = "xNONE"; then
-   if test "x$PTLIBDIR" = "x"; then
-      prefix="/usr/local"
-   else
-      prefix="$PTLIBDIR"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: PTLIBDIR detected - setting install prefix to ${PTLIBDIR}" >&5
-$as_echo "$as_me: PTLIBDIR detected - setting install prefix to ${PTLIBDIR}" >&6;}
-   fi
-fi
-
-
 
 if test "x$PTLIBDIR" = "x"; then
   PTLIBDIR=`pwd`
@@ -5122,6 +5112,9 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
+#default, most platforms do it this way
+LDSOFLAGS="-shared -Wl,-soname,\$(PTLIB_SONAME)"
+
 case "$target_os" in
    linux )
       OS_TAG="P_LINUX"
@@ -5148,6 +5141,7 @@ case "$target_os" in
    solaris )
       OS_TAG="P_SOLARIS"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -D__inline=inline -DSOLARIS"
+      LDSOFLAGS="-Bdynamic -G -h \$(PTLIB_SONAME)"
       need_pragma=yes
 
 
@@ -5202,12 +5196,15 @@ $as_echo "${ptlib_fdsize}" >&6; }
    Darwin )
       OS_TAG="P_MACOSX"
       SHAREDLIBEXT="dylib"
+      LDSOFLAGS="-dynamiclib"
       ENDLDLIBS="-lresolv"
    ;;
 
    beos )
       OS_TAG="P_BEOS"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -D__BEOS__"
+      LDSOFLAGS="-shared -nostdlib -nostart"
+      ENDLDLIBS="-lstdc++.r4"
    ;;
 
    cygwin )
@@ -5217,8 +5214,9 @@ $as_echo "${ptlib_fdsize}" >&6; }
 
    mingw )
       OS_TAG="P_MINGW"
-      SHAREDLIBEXT="dll"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
+      SHAREDLIBEXT="dll"
+      LDSOFLAGS="-shared -Wl,--kill-at"
       ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
       HAS_SHM_VIDEO=
    ;;
@@ -12449,6 +12447,7 @@ ac_config_files="$ac_config_files plugins/vidinput_dc/Makefile"
 
 
 fi # enable_plugins
+
 
 
 
