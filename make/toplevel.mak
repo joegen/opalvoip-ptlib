@@ -66,12 +66,15 @@ $(STANDARD_TARGETS) ::
 	@set -e; $(foreach dir,$(addprefix $(PTLIBDIR)/,$(SUBDIRS)),if test -d $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
 
 
-update: svn_update bothdepend both
+ifneq (,$(SVN))
 
-snvupdate:
-	svn update
-	echo =====================================================
+update: svnupdate bothdepend both
 
+svnupdate:
+	$(SVN) update
+	@echo =====================================================
+
+endif
 
 ptlib:
 	$(MAKE) -C $(PTLIBDIR)/src both
