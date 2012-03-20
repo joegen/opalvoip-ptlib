@@ -28,7 +28,9 @@
 # $Date$
 #
 
-ifndef PTLIBDIR
+ifdef PTLIBDIR
+  CFG_ARGS:=--prefix=$(PTLIBDIR) $(CFG_ARGS)
+else
   export PTLIBDIR:=$(CURDIR)
   $(info Setting default PTLIBDIR to $(PTLIBDIR))
 endif

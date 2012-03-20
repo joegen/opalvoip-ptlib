@@ -156,11 +156,7 @@ ifndef TARGET
 TARGET = $(OBJDIR)/$(PROG)
 endif
 
-ifdef BUILDFILES
-OBJS += $(OBJDIR)/buildnum.o
-endif
-
-TARGET_LIBS	= $(PTLIBDIR)/lib_$(target)/$(PTLIB_FILE)
+TARGET_LIBS = $(PTLIB_LIBDIR)/$(PTLIB_FILE)
 
 $(TARGET):	$(OBJS) $(TARGET_LIBS)
 ifeq ($(target_os),beos)
@@ -171,32 +167,19 @@ ifeq ($(target_os),beos)
 endif
 	$(Q_LD)$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
+ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
+$(TARGET_LIBS) :
 ifdef DEBUG
-
-ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
-$(PTLIB_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PTLIBDIR) debug
-endif
-
 else
-
-ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
-$(PTLIB_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PTLIBDIR) opt
 endif
+endif # have source
 
-endif
 
 CLEAN_FILES += $(TARGET)
 
-ifndef INSTALL_OVERRIDE
-
-install:	$(TARGET)
-	$(INSTALL) $(TARGET)
-endif
-
-# ifdef PROG
-endif
+endif # PROG
 
 
 ######################################################################
@@ -453,25 +436,6 @@ endif # else ifdef VERSION
 
 endif # else ifdef DEBUG
 
-
-######################################################################
-#
-# rules for creating build number files
-#
-######################################################################
-
-ifdef BUILDFILES
-$(OBJDIR)/buildnum.o:	buildnum.c
-	cc -o $(OBJDIR)/buildnum.o -c buildnum.c
-
-#ifndef DEBUG
-#buildnum.c:	$(SOURCES) $(BUILDFILES) 
-#	buildinc buildnum.c
-#else
-buildnum.c:
-#endif
-
-endif
 
 ######################################################################
 #

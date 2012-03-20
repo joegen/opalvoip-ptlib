@@ -122,18 +122,6 @@ HAS_EXCEPTIONS=
 
 
 dnl ########################################################################
-dnl set the prefix accordingly
-if test "x$prefix" = "xNONE"; then
-   if test "x$PTLIBDIR" = "x"; then
-      prefix="/usr/local"
-   else
-      prefix="$PTLIBDIR"
-      AC_MSG_NOTICE(PTLIBDIR detected - setting install prefix to ${PTLIBDIR})
-   fi
-fi
-
-
-dnl ########################################################################
 dnl set the PTLIB directory to the current directory
 
 if test "x$PTLIBDIR" = "x"; then
@@ -190,6 +178,9 @@ AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
 AC_LANG(C++)
 
 
+#default, most platforms do it this way
+LDSOFLAGS="-shared -Wl,-soname,\$(PTLIB_SONAME)"
+
 case "$target_os" in
    linux )
       OS_TAG="P_LINUX"
@@ -216,6 +207,7 @@ case "$target_os" in
    solaris )
       OS_TAG="P_SOLARIS"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -D__inline=inline -DSOLARIS"
+      LDSOFLAGS="-Bdynamic -G -h \$(PTLIB_SONAME)"
       need_pragma=yes
       dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
       PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
@@ -225,12 +217,15 @@ case "$target_os" in
    Darwin )
       OS_TAG="P_MACOSX" 
       SHAREDLIBEXT="dylib"
+      LDSOFLAGS="-dynamiclib"
       ENDLDLIBS="-lresolv"
    ;;
 
    beos )
       OS_TAG="P_BEOS"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -D__BEOS__"
+      LDSOFLAGS="-shared -nostdlib -nostart"
+      ENDLDLIBS="-lstdc++.r4"
    ;;
 
    cygwin )
@@ -240,8 +235,9 @@ case "$target_os" in
 
    mingw )
       OS_TAG="P_MINGW"
-      SHAREDLIBEXT="dll"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
+      SHAREDLIBEXT="dll"
+      LDSOFLAGS="-shared -Wl,--kill-at"
       ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
       HAS_SHM_VIDEO=
    ;;
@@ -265,7 +261,7 @@ fi
 
 
 dnl ########################################################################
-dnl set libdir accordingly
+dnl set libdir with target if using PTLIBDIR as install prefix
 if test "$prefix" = "$PTLIBDIR"; then
    libdir=$PTLIBDIR/lib_$target
 fi
@@ -2084,6 +2080,7 @@ AC_SUBST(CXX)
 AC_SUBST(PTLIB_CFLAGS)
 AC_SUBST(PTLIB_CXXFLAGS)
 AC_SUBST(LDFLAGS)
+AC_SUBST(LDSOFLAGS)
 AC_SUBST(ENDLDLIBS)
 AC_SUBST(DEBUG_FLAG)
 

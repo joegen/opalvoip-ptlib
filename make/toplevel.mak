@@ -88,6 +88,14 @@ distclean: clean
 
 ################################################################################
 
+ifeq ($(prefix),$(PTLIBDIR))
+
+install uninstall:
+	@echo install/uninstall not available as prefix=PTLIBDIR
+	@false
+
+else
+
 ifeq ($(target_os),mingw)
 ARCH_INCLUDE=msos
 else
@@ -167,5 +175,7 @@ uninstall:
 	rm -f $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
 	      $(DESTDIR)$(libdir)/$(PTLIB_FILE) \
 	      $(DESTDIR)$(libdir)/$(PTLIB_SONAME)
+
+endif
 
 # End of Makefile.in
