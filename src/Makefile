@@ -489,10 +489,33 @@ $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 
 #######################################################
 
-LIB_BASENAME=$(PTLIB_BASE)
-LIB_FILENAME=$(PTLIB_FILE)
+ifeq ($(P_SHAREDLIB),1)
+  STATIC_LIB_FILE = $(PTLIB_LIBDIR)/$(subst .$(LIB_SUFFIX),_s.$(STATICLIBEXT),$(PTLIB_FILE))
 
-include $(PTLIBDIR)/make/lib.mak
+  $(PTLIB_LIBDIR)/$(PTLIB_FILE): $(PTLIB_LIBDIR)/$(PTLIB_SONAME)
+	@cd $(dir $@) ; rm -f $@ ; ln -sf $(notdir $<) $(notdir $@)
+
+  $(PTLIB_LIBDIR)/$(PTLIB_SONAME): $(STATIC_LIB_FILE)
+	@if [ ! -d $(dir $@) ] ; then mkdir $(dir $@) ; fi
+	$(Q_LD)$(LD) $(LDSOFLAGS) -o $@ $(EXTLIBS) $(OBJS) $(SYSLIBS) $(ENDLDLIBS)
+
+  CLEAN_FILES += $(PTLIB_LIBDIR)/$(PTLIB_SONAME) $(PTLIB_LIBDIR)/$(PTLIB_FILE)
+
+else # P_SHAREDLIB
+
+  STATIC_LIB_FILE = $(PTLIB_LIBDIR)/$(PTLIB_FILE)
+
+endif # P_SHAREDLIB
+
+$(STATIC_LIB_FILE): $(OBJS)
+	@if [ ! -d $(dir $@) ] ; then mkdir $(dir $@) ; fi
+	$(Q_AR)$(ARCHIVE) $(STATIC_LIB_FILE) $(OBJS)
+ifeq ($(P_USE_RANLIB),1)
+	$(RANLIB) $(STATIC_LIB_FILE)
+endif
+
+CLEAN_FILES += $(STATIC_LIB_FILE)
+
 
 #######################################################
 
