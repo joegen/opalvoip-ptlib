@@ -2352,11 +2352,14 @@ PReadWriteMutex::PReadWriteMutex()
 {
   readerCount = 0;
   writerCount = 0;
+  PTRACE(5, "PTLib\tCreated read/write mutex " << this);
 }
 
 
 PReadWriteMutex::~PReadWriteMutex()
 {
+  PTRACE(5, "PTLib\tDestroying read/write mutex " << this);
+
   EndNest(); // Destruction while current thread has a lock is OK
 
   /* There is a small window during destruction where another thread is on the
@@ -2425,7 +2428,7 @@ void PReadWriteMutex::InternalWait(PSemaphore & semaphore) const
     return;
 
   ostream & trace = PTrace::Begin(1, __FILE__, __LINE__, this);
-  trace << "PTLib\tPossible deadlock in read/write mutex:\n";
+  trace << "PTLib\tPossible deadlock in read/write mutex " << this << " :\n";
   for (std::map<PThreadIdentifier, Nest>::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it)
     trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
               " readers=" << it->second.readerCount << ","
