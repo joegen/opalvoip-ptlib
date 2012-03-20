@@ -471,6 +471,9 @@ if test -z "$BISON" ; then
 fi
 
 dnl ########################################################################
+AC_CHECK_TOOL(SVN, svn)
+
+dnl ########################################################################
 dnl check for number of parms to readdir
 AC_MSG_CHECKING(if readdir_r has 2 parms)
 AC_TRY_COMPILE([#define _POSIX_PTHREAD_SEMANTICS
