@@ -116,7 +116,7 @@ install:
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
 	( for lib in  $(PTLIB_LIBDIR)/$(PTLIB_SONAME) \
-	              $(PTLIB_LIBDIR)/$(DEBUG_SONAME) \
+	              $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SONAME) \
 	              $(PTLIB_LIBDIR)/lib$(PTLIB_BASE)_s.a \
 	              $(PTLIB_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
           do \
@@ -130,10 +130,10 @@ install:
 		ln -sf $(PTLIB_SONAME) $(PTLIB_FILE) \
 	    ) \
 	fi )
-	( if test -e $(PTLIB_LIBDIR)/$(DEBUG_SONAME); then \
+	( if test -e $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SONAME); then \
 	    (cd $(DESTDIR)$(libdir) ; \
 		rm -f $(PTLIB_DEBUG_FILE) ; \
-		ln -sf $(DEBUG_SONAME) $(PTLIB_DEBUG_FILE) \
+		ln -sf $(PTLIB_DEBUG_SONAME) $(PTLIB_DEBUG_FILE) \
 	    ) \
 	fi )
 ifeq (1, $(HAS_PLUGINS))
