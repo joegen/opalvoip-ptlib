@@ -42,7 +42,7 @@
 #define USE_RESOLVER_CACHING    1
 #define RESOLVER_CACHE_TIMEOUT  30000
 
-#if P_DNS
+#if P_DNS_RESOLVER
 
 #ifdef _MSC_VER
   #pragma comment(lib, "DnsAPI.Lib")
@@ -54,7 +54,7 @@
 
 /////////////////////////////////////////////////
 
-#if defined(P_HAS_RESOLVER) ||  defined(USE_RESOLVER_CACHING)
+#if defined(P_HAS_RESOLV_H) ||  defined(USE_RESOLVER_CACHING)
 
 void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
 {
@@ -67,7 +67,7 @@ void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
 
 #endif
 
-#if defined(USE_RESOLVER_CACHING) || (defined(P_HAS_RESOLVER) && !defined(P_HAS_RES_NINIT))
+#if defined(USE_RESOLVER_CACHING) || (defined(P_HAS_RESOLV_H) && !defined(P_HAS_RES_NINIT))
 
 static PMutex & GetDNSMutex()
 {
@@ -93,7 +93,7 @@ static DNSCache g_dnsCache;
 
 #endif
 
-#ifdef P_HAS_RESOLVER
+#ifdef P_HAS_RESOLV_H
 
 static PBoolean GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char * buff)
 {
@@ -302,7 +302,7 @@ DNS_STATUS DnsQuery_A(const char * service,
 }
 
 
-#endif // P_HAS_RESOLVER
+#endif // P_HAS_RESOLV_H
 
 PObject::Comparison PDNS::SRVRecord::Compare(const PObject & obj) const
 {
@@ -779,10 +779,10 @@ void PDNS::Cached_DnsRecordListFree(PDNS_RECORD results, int)
 #else
 
   #ifdef _MSC_VER
-    #pragma message("DNS support DISABLED")
+    #pragma message("DNS resolver support DISABLED")
   #endif
 
-#endif // P_DNS
+#endif // P_DNS_RESOLVER
 
 
 // End Of File ///////////////////////////////////////////////////////////////

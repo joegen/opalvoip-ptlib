@@ -18,8 +18,8 @@
 #include <ptclib/url.h>
 
 
-#if !P_DNS
-#error Must have DNS support for this application
+#if !P_DNS_RESOLVER
+  #error Must have DNS support for this application
 #endif
 
 
