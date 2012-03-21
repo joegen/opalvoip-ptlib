@@ -38,9 +38,7 @@
 
 #if P_EXPAT
 
-#if P_DNS
 #include <ptclib/pdns.h>
-#endif
 #include <ptclib/cypher.h>
 
 
@@ -52,7 +50,7 @@ XMPP::C2S::TCPTransport::TCPTransport(const PString& hostname)
   : m_Hostname(hostname),
     m_Port(5222)
 {
-#if P_DNS
+#if P_DNS_RESOLVER
   PDNS::SRVRecordList srvRecords;
 
   if (PDNS::GetSRVRecords(PString("_xmpp-client._tcp.") + hostname, srvRecords)) {
