@@ -923,7 +923,7 @@ dnl on some systems, the resolver is in libc
 dnl but needs resolv.h included which defines res_search as __res_search
 
 dnl MSWIN_DISPLAY    resolver,DNS Resolver
-dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS=1
+dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS_RESOLVER=1
 
 AC_ARG_ENABLE([resolver],
 	      AS_HELP_STRING([--disable-resolver],[disable DNS resolver support]),
@@ -931,22 +931,22 @@ AC_ARG_ENABLE([resolver],
 	      [enable_resolver=$default_resolver]
 	     )
 
-HAS_RESOLVER=
+HAS_DNS_RESOLVER=
 if test "$enable_resolver" = "no" ; then
   AC_MSG_NOTICE(DNS resolver disabled)
 else
-  PTLIB_FIND_RESOLVER([HAS_RESOLVER=1], [HAS_RESOLVER=])
+  PTLIB_FIND_RESOLVER([HAS_DNS_RESOLVER=1], [HAS_DNS_RESOLVER=])
 
-  if test "x${HAS_RESOLVER}" = "x1" ; then
-    AC_DEFINE(P_DNS, 1, "resolver libraries found")
+  if test "x${HAS_DNS_RESOLVER}" = "x1" ; then
+    AC_DEFINE(P_DNS_RESOLVER, 1, "resolver libraries found")
     if test "${HAS_RES_NINIT}z" != "z" ; then
       AC_DEFINE(P_HAS_RES_NINIT)
     fi
   fi
 fi
 
-AC_SUBST(HAS_RESOLVER)
-PTLIB_NEW_OPTION(RESOLVER)
+AC_SUBST(HAS_DNS_RESOLVER)
+PTLIB_NEW_OPTION(DNS_RESOLVER)
 
 
 dnl ########################################################################
@@ -1737,17 +1737,14 @@ dnl ########################################################################
 dnl output make directives
 
 dnl resolver needs to be at the end
-if test "${HAS_RESOLVER:-unset}" != "unset" ; then
-    ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
-dnl     PKG_LIBS="$PKG_LIBS ${RESOLVER_LIBS}"
+if test "${HAS_DNS_RESOLVER:-unset}" != "unset" ; then
+   ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
 fi
 
 dnl dl needs to be at the end
 if test "x${HAS_LIBDL}" = "x1" ; then
-  ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
-dnl   PKG_LIBS="$PKG_LIBS $DL_LIBS"
-  PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
-dnl   PKG_CFLAGS="$PKG_CFLAGS $DL_CFLAGS"
+   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+   PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
 fi
 
 
