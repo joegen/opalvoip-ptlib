@@ -51,7 +51,7 @@
 
 
 static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
-
+static const char DefaultRollOverPattern[] = "_yyyy_MM_dd_hh_hh";
 
 class PExternalThread : public PThread
 {
@@ -139,10 +139,10 @@ public:
   unsigned        currentLevel;
   unsigned        options;
   unsigned        thresholdLevel;
-  const char    * filename;
+  PCaselessString m_filename;
   ostream       * stream;
   PTimeInterval   startTick;
-  const char    * rolloverPattern;
+  PString         m_rolloverPattern;
   unsigned        lastRotate;
   ios::fmtflags   oldStreamFlags;
   std::streamsize oldPrecision;
@@ -185,14 +185,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   PTraceInfo()
     : currentLevel(0)
-    , filename(NULL)
 #ifdef __NUCLEUS_PLUS__
     , stream(NULL)
 #else
     , stream(&cerr)
 #endif
     , startTick(PTimer::Tick())
-    , rolloverPattern("yyyy_MM_dd_hh_hh")
+    , m_rolloverPattern(DefaultRollOverPattern)
     , lastRotate(0)
     , oldStreamFlags(ios::left)
     , oldPrecision(0)
@@ -254,30 +253,34 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   void OpenTraceFile(const char * newFilename)
   {
-    if (newFilename != NULL && *newFilename != '\0')
-      filename = newFilename;
-
-    if (filename == NULL)
+    if (newFilename == NULL || *newFilename == '\0') {
+      m_filename.MakeEmpty();
       return;
+    }
 
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-    if (strcasecmp(filename, "stderr") == 0)
+    m_filename = newFilename;
+
+    if (m_filename == "stderr")
       SetStream(&cerr);
-    else if (strcasecmp(filename, "stdout") == 0)
+    else if (m_filename == "stdout")
       SetStream(&cout);
 #ifdef _WIN32
-    else if (strcasecmp(filename, "DEBUGSTREAM") == 0)
+    else if (m_filename == "DEBUGSTREAM")
       SetStream(new PDebugStream);
 #endif
     else {
-      PFilePath fn(filename);
+      PFilePath fn(m_filename);
       fn.Replace("%P", PString((unsigned int) PProcess::Current().GetProcessID()));
      
       if ((options & PTrace::RotateLogMask) != 0)
       {
           PTime now;
-          fn = PFilePath(fn.GetDirectory() + fn.GetTitle() + now.AsString(rolloverPattern, ((options&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) + fn.GetType());
+          fn = fn.GetDirectory() +
+               fn.GetTitle() +
+               now.AsString(m_rolloverPattern, ((options&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) +
+               fn.GetType();
       }
 
       ofstream * traceOutput;
@@ -336,7 +339,9 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 
   info.options = options;
   info.thresholdLevel = level;
-  info.rolloverPattern = rolloverPattern != NULL ? rolloverPattern : "yyyy_MM_dd_hh_mm";
+  info.m_rolloverPattern = rolloverPattern;
+  if (info.m_rolloverPattern.IsEmpty())
+    info.m_rolloverPattern = DefaultRollOverPattern;
   // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
   // between os_gmtime and os_localtime?
   info.lastRotate = GetRotateVal(options);
@@ -420,7 +425,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
   info.Lock();
 
-  if ((info.filename != NULL) && (info.options&RotateLogMask) != 0) {
+  if (!info.m_filename.IsEmpty() && (info.options&RotateLogMask) != 0) {
     unsigned rotateVal = GetRotateVal(info.options);
     if (rotateVal != info.lastRotate) {
       info.OpenTraceFile(NULL);
