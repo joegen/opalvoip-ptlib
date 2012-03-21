@@ -31,7 +31,7 @@
 #ifndef PTLIB_PDNS_H
 #define PTLIB_PDNS_H
 
-#if P_DNS
+#if P_DNS_RESOLVER
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -59,7 +59,7 @@
 
 #else /* _WIN32 */
 
-  #define  P_HAS_RESOLVER 1         // set if using Unix-style DNS routines
+  #define  P_HAS_RESOLV_H 1         // set if using Unix-style DNS routines
   #include <arpa/nameser.h>
   #include <resolv.h>
   #if defined(P_MACOSX) && (P_MACOSX >= 700)
@@ -83,7 +83,7 @@ DNS_NAPTR_DATA;
 #endif
 
 
-#ifdef P_HAS_RESOLVER
+#ifdef P_HAS_RESOLV_H
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -205,7 +205,7 @@ extern DNS_STATUS DnsQuery_A(const char * service,
           void *);
 
 
-#endif // P_HAS_RESOLVER
+#endif // P_HAS_RESOLV_H
 
 namespace PDNS {
 
@@ -400,7 +400,7 @@ inline PBoolean GetMXRecords(
 
 }; // namespace PDNS
 
-#endif // P_DNS
+#endif // P_DNS_RESOLVER
 
 #endif // PTLIB_PDNS_H
 

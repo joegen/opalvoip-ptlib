@@ -37,7 +37,7 @@
 
 #include <ptclib/pdns.h>
 
-#if P_DNS
+#if P_DNS_RESOLVER
 
 namespace PDNS {
 
@@ -167,7 +167,7 @@ PBoolean RDSLookup(const PURL & url,            ///< URL to lookup
 
 }; // namespace PDNS
 
-#endif // P_DNS
+#endif // P_DNS_RESOLVER
 
 #endif // PTLIB_ENUM_H
 

@@ -37,7 +37,7 @@
 #define new PNEW
 
 
-#if P_DNS
+#if P_DNS_RESOLVER
 
 #ifdef  _WIN32
 #define PATH_SEP   ";"

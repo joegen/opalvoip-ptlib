@@ -200,7 +200,7 @@ ifdef HAS_LUA
 SOURCES	+= $(COMPONENT_SRC_DIR)/lua.cxx
 endif
 
-ifdef HAS_RESOLVER
+ifdef HAS_DNS_RESOLVER
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
 	$(COMPONENT_SRC_DIR)/enum.cxx 
