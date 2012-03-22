@@ -742,8 +742,8 @@ bool PColourConverter::RotateYUV420P(int angle, unsigned width, unsigned height,
     dstYUV = storage.GetPointer(size);
 
   struct PlaneInfo {
-    int width;
-    int height;
+    unsigned int width;
+    unsigned int height;
     BYTE * src;
     BYTE * dst;
   } plane[3] = {
