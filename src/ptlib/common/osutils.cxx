@@ -51,7 +51,7 @@
 
 
 static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
-static const char DefaultRollOverPattern[] = "_yyyy_MM_dd_hh_hh";
+static const char DefaultRollOverPattern[] = "_yyyy_MM_dd_hh_mm";
 
 class PExternalThread : public PThread
 {
