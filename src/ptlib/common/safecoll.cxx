@@ -732,12 +732,12 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj, PSafetyMode mode
   : PSafePtrBase(NULL, mode)
   , m_objectToDelete(NULL)
 {
-  Lock();
+  LockPtr();
 
   currentObject = obj;
   EnterSafetyMode(WithReference);
 
-  Unlock();
+  UnlockPtr();
 }
 
 
@@ -747,12 +747,12 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
   : PSafePtrBase(NULL, mode)
   , m_objectToDelete(NULL)
 {
-  Lock();
+  LockPtr();
 
   collection = &safeCollection;
   Assign(idx);
 
-  Unlock();
+  UnlockPtr();
 }
 
 
@@ -762,19 +762,19 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
   : PSafePtrBase(NULL, mode)
   , m_objectToDelete(NULL)
 {
-  Lock();
+  LockPtr();
 
   collection = &safeCollection;
   Assign(obj);
 
-  Unlock();
+  UnlockPtr();
 }
 
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
   : m_objectToDelete(NULL)
 {
-  Lock();
+  LockPtr();
   enumerator.m_mutex.Wait();
 
   collection = enumerator.collection;
@@ -784,16 +784,16 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enume
   EnterSafetyMode(WithReference);
 
   enumerator.m_mutex.Signal();
-  Unlock();
+  UnlockPtr();
 }
 
 
 PSafePtrMultiThreaded::~PSafePtrMultiThreaded()
 {
-  Lock();
+  LockPtr();
   ExitSafetyMode(WithDereference);
   currentObject = NULL;
-  Unlock();
+  UnlockPtr();
 }
 
 
@@ -806,9 +806,9 @@ PObject::Comparison PSafePtrMultiThreaded::Compare(const PObject & obj) const
 
 void PSafePtrMultiThreaded::SetNULL()
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::SetNULL();
-  Unlock();
+  UnlockPtr();
 }
 
 
@@ -821,59 +821,59 @@ PBoolean PSafePtrMultiThreaded::SetSafetyMode(PSafetyMode mode)
 
 void PSafePtrMultiThreaded::Assign(const PSafePtrMultiThreaded & ptr)
 {
-  Lock();
+  LockPtr();
   ptr.m_mutex.Wait();
   PSafePtrBase::Assign(ptr);
   ptr.m_mutex.Signal();
-  Unlock();
+  UnlockPtr();
 }
 
 
 void PSafePtrMultiThreaded::Assign(const PSafePtrBase & ptr)
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::Assign(ptr);
-  Unlock();
+  UnlockPtr();
 }
 
 
 void PSafePtrMultiThreaded::Assign(const PSafeCollection & safeCollection)
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::Assign(safeCollection);
-  Unlock();
+  UnlockPtr();
 }
 
 
 void PSafePtrMultiThreaded::Assign(PSafeObject * obj)
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::Assign(obj);
-  Unlock();
+  UnlockPtr();
 }
 
 
 void PSafePtrMultiThreaded::Assign(PINDEX idx)
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::Assign(idx);
-  Unlock();
+  UnlockPtr();
 }
 
 
 void PSafePtrMultiThreaded::Next()
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::Next();
-  Unlock();
+  UnlockPtr();
 }
 
 
 void PSafePtrMultiThreaded::Previous()
 {
-  Lock();
+  LockPtr();
   PSafePtrBase::Previous();
-  Unlock();
+  UnlockPtr();
 }
 
 
@@ -883,7 +883,7 @@ void PSafePtrMultiThreaded::DeleteObject(PSafeObject * obj)
 }
 
 
-void PSafePtrMultiThreaded::Unlock()
+void PSafePtrMultiThreaded::UnlockPtr()
 {
   PSafeObject * obj = m_objectToDelete;
   m_objectToDelete = NULL;
