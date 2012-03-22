@@ -363,7 +363,7 @@ BOOL RegistryKey::QueryValue(const PString & valueName, PString & str)
     return true;
   }
 
-  if (type != REG_SZ && type != REG_MULTI_SZ && REG_EXPAND_SZ && type != REG_BINARY) {
+  if (type != REG_SZ && type != REG_MULTI_SZ && type != REG_EXPAND_SZ && type != REG_BINARY) {
     PAssertAlways("Unsupported registry type.");
     return false;
   }
