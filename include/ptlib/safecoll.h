@@ -579,6 +579,9 @@ class PSafePtrBase : public PObject
     };
     void ExitSafetyMode(ExitSafetyModeOption ref);
 
+    virtual void LockPtr() { }
+    virtual void UnlockPtr() { }
+
   protected:
     const PSafeCollection * collection;
     PSafeObject           * currentObject;
@@ -697,8 +700,8 @@ class PSafePtrMultiThreaded : public PSafePtrBase
     virtual void Previous();
     virtual void DeleteObject(PSafeObject * obj);
 
-    void Lock() { m_mutex.Wait(); }
-    void Unlock();
+    virtual void LockPtr() { m_mutex.Wait(); }
+    virtual void UnlockPtr();
 
   protected:
     mutable PMutex m_mutex;
@@ -834,6 +837,19 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
         BaseClass::Assign(idx);
         return *this;
       }
+
+    /**Set the safe pointer to the specified object.
+       This will return a PSafePtr for the previous value of this. It does
+       this in a thread safe manner so "test and set" semantics are obeyed.
+      */
+    PSafePtr Set(T * obj)
+      {
+        this->LockPtr();
+        PSafePtr oldPtr = *this;
+        this->Assign(obj);
+        this->UnlockPtr();
+        return oldPtr;
+      }
   //@}
 
   /**@name Operations */
@@ -892,21 +908,6 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
         return (T *)BaseClass::currentObject;
       }
   //@}
-
-  /**Cast the pointer to a different type. The pointer being cast to MUST
-     be a derived class or NULL is returned.
-    */
-      /*
-  template <class Base>
-  static PSafePtr<T> DownCast(const PSafePtr<Base> & oldPtr)
-  {
-    PSafePtr<T> newPtr;
-    Base * realPtr = oldPtr;
-    if (realPtr != NULL && PIsDescendant(realPtr, T))
-      newPtr.Assign(oldPtr);
-    return newPtr;
-  }
-  */
 };
 
 
