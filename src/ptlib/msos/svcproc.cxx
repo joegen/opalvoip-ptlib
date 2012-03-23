@@ -83,6 +83,7 @@ enum {
   SvcCmdAutoRestart,
   SvcCmdNoRestart,
   SvcCmdNoWindow,
+  SvcCmdHelp,
   NumSvcCmds
 };
 
@@ -100,7 +101,8 @@ static const char * const ServiceCommandNames[NumSvcCmds] = {
   "Deinstall",
   "AutoRestart",
   "NoRestart",
-  "NoWin"
+  "NoWin",
+  "Help"
 };
 
 
@@ -1521,21 +1523,15 @@ bool NT_ServiceManager::IsRunning(PServiceProcess * svc)
 
 bool PServiceProcess::ProcessCommand(const char * cmd)
 {
+  if (*cmd == '/')
+    ++cmd;
+  else if (cmd[0] == '-' && cmd[1] == '-')
+    cmd += 2;
+
   PINDEX cmdNum = 0;
   while (strcasecmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
-    if (++cmdNum >= NumSvcCmds) {
-      if (!CreateControlWindow(true))
-        return false;
-      if (*cmd != '\0')
-        PError << "Unknown command \"" << cmd << "\".\n";
-      else
-        PError << "Could not start service.\n";
-      PError << "usage: " << GetName() << " [ ";
-      for (cmdNum = 0; cmdNum < NumSvcCmds-1; cmdNum++)
-        PError << ServiceCommandNames[cmdNum] << " | ";
-      PError << ServiceCommandNames[cmdNum] << " ]" << endl;
-      return false;
-    }
+    if (++cmdNum >= NumSvcCmds)
+      break;
   }
 
   NT_ServiceManager nt;
@@ -1547,7 +1543,9 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
   else
     svcManager = &nt;
 
+  PStringStream msg;
   bool good = false;
+
   switch (cmdNum) {
     case SvcCmdNoWindow :
       if (controlWindow == NULL)
@@ -1578,17 +1576,11 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       return true;
 
     case SvcCmdVersion : // Version command
-      ::SetLastError(0);
-      {
-        PStringStream msg;
-        msg << GetName() << " Version " << GetVersion(true)
-            << " by " << GetManufacturer()
-            << " on " << GetOSClass()   << ' ' + GetOSName()
-            << " ("   << GetOSVersion() << '-' + GetOSHardware() << ')';
-        MessageBox(NULL, msg, GetName(), MB_TASKMODAL);
-        PError << msg << endl;
-      }
-      return true;
+      msg << GetName() << " Version " << GetVersion(true)
+          << " by " << GetManufacturer()
+          << " on " << GetOSClass()   << ' ' + GetOSName()
+          << " ("   << GetOSVersion() << '-' + GetOSHardware() << ')';
+      break;
 
     case SvcCmdDefault : // run app with no params.
       if (svcManager->IsInstalled(this)) {
@@ -1672,35 +1664,46 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       svcManager->Remove(this);
       TrayIconRegistry(this, DelTrayIcon);
 #if P_CONFIG_FILE
-      PConfig cfg;
-      PStringArray sections = cfg.GetSections();
-      PINDEX i;
-      for (i = 0; i < sections.GetSize(); i++)
-        cfg.DeleteSection(sections[i]);
+      {
+        PConfig cfg;
+        PStringArray sections = cfg.GetSections();
+        PINDEX i;
+        for (i = 0; i < sections.GetSize(); i++)
+          cfg.DeleteSection(sections[i]);
+      }
 #endif // P_CONFIG_FILE
       good = true;
       break;
+
+    default :
+      if (cmdNum != SvcCmdHelp)
+        msg << "Unknown command \"" << cmd << "\".\r\n\r\n";
+      msg << "usage: " << GetFile().GetTitle() << " [ ";
+      for (cmdNum = 0; cmdNum < NumSvcCmds-1; cmdNum++)
+        msg << ServiceCommandNames[cmdNum] << " | ";
+      msg << ServiceCommandNames[cmdNum] << " ]" << endl;
   }
 
   SetLastError(0);
 
-  PStringStream msg;
-  msg << "Service command ";
-  if (cmdNum != SvcCmdDefault)
-    msg << '"' << ServiceCommandNames[cmdNum] << "\" ";
-  if (good)
-    msg << "successful.";
-  else {
-    msg << "failed - ";
-    switch (svcManager->GetError()) {
-      case ERROR_ACCESS_DENIED :
-        msg << "Access denied";
-        break;
-      case 0x10000000 :
-        msg << "process still running.";
-        break;
-      default :
-        msg << "error code = " << svcManager->GetError();
+  if (msg.IsEmpty()) {
+    msg << "Service command ";
+    if (cmdNum != SvcCmdDefault)
+      msg << '"' << ServiceCommandNames[cmdNum] << "\" ";
+    if (good)
+      msg << "successful.";
+    else {
+      msg << "failed - ";
+      switch (svcManager->GetError()) {
+        case ERROR_ACCESS_DENIED :
+          msg << "Access denied";
+          break;
+        case 0x10000000 :
+          msg << "process still running.";
+          break;
+        default :
+          msg << "error code = " << svcManager->GetError();
+      }
     }
   }
 
