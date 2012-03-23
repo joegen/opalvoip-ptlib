@@ -34,6 +34,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+#define PTHREAD_ID_FMT ":0x%x"
+
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
@@ -49,6 +51,12 @@
 #ifndef P_HAS_SEMAPHORES
     void PXSetWaitingSemaphore(PSemaphore * sem);
 #endif
+
+    typedef pthread_key_t LocalStorageKey;
+    __inline static void   CreateLocalStorage(LocalStorageKey & key) { pthread_key_create(&key, NULL); }
+    __inline static void   RemoveLocalStorage(const LocalStorageKey & key) { pthread_key_delete(key); }
+    __inline static void * GetLocalStoragePtr(const LocalStorageKey & key) { return pthread_getspecific(key); }
+    __inline static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr) { pthread_setspecific(key, ptr); }
 
   protected:
     static void * PX_ThreadStart(void *);
@@ -76,7 +84,17 @@
     friend class PSocket;
     friend void PX_SuspendSignalHandler(int);
 
-#elif defined(__BEOS__)
+#else // P_PTHREADS
+
+    typedef unsigned LocalStorageKey;
+    static void   CreateLocalStorage(LocalStorageKey & key);
+    static void   RemoveLocalStorage(const LocalStorageKey & key);
+    static void * GetLocalStoragePtr(const LocalStorageKey & key);
+    static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr);
+
+    map<unsigned, void *> m_localStorage;
+
+#if defined(__BEOS__)
 
   protected:
     static int32 ThreadFunction(void * threadPtr);
@@ -121,6 +139,8 @@
     PINDEX originalStackSize;
 
 #endif
+
+#endif // P_PTHREADS
 
 
 // End Of File ////////////////////////////////////////////////////////////////
