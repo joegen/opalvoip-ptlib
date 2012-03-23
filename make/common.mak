@@ -45,7 +45,7 @@ ifndef OBJDIR
 ifndef OBJDIR_PREFIX
 OBJDIR_PREFIX=.
 endif
-OBJDIR = $(OBJDIR_PREFIX)/obj_$(target)
+OBJDIR = $(OBJDIR_PREFIX)/obj_$(target)$(OBJ_SUFFIX)
 endif
 
 vpath %.cxx $(VPATH_CXX)
