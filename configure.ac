@@ -263,6 +263,7 @@ fi
 dnl ########################################################################
 dnl set libdir with target if using PTLIBDIR as install prefix
 if test "$prefix" = "$PTLIBDIR"; then
+   includedir=$PTLIBDIR/include
    libdir=$PTLIBDIR/lib_$target
 fi
 
