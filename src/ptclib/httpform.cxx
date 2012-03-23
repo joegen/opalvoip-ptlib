@@ -1042,7 +1042,7 @@ PHTTPField * PHTTPStringField::NewField() const
 void PHTTPStringField::GetHTMLTag(PHTML & html) const
 {
   if (size < 128)
-    html << PHTML::InputText(fullName, size, value);
+    html << PHTML::InputText(fullName, size);
   else
     html << PHTML::TextArea(fullName, (size+79)/80, 80) << value << PHTML::TextArea(fullName);
 }
@@ -1093,7 +1093,7 @@ PHTTPField * PHTTPPasswordField::NewField() const
 
 void PHTTPPasswordField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::InputPassword(fullName, size, value);
+  html << PHTML::InputPassword(fullName, size);
 }
 
 
