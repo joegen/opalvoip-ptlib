@@ -800,12 +800,50 @@ void* POSIX_Init(void*);
 //  Non-PTHREAD based routines
 //
 
+#if defined(P_PTHREADS)
+#include "tlibthrd.cxx"
+#else
 #if defined(P_MAC_MPTHREADS)
 #include "tlibmpthrd.cxx"
-#elif defined(P_PTHREADS)
-#include "tlibthrd.cxx"
 #elif defined(BE_THREADS)
 #include "tlibbe.cxx"
 #elif defined(VX_TASKS)
 #include "tlibvx.cxx"
 #endif
+#else // P_PTHREADS
+
+static PAtomicInteger NextLocalStorageKey;
+
+void PThread::CreateLocalStorage(LocalStorageKey & key)
+{
+  key = ++NextLocalStorageKey;
+}
+
+
+void PThread::RemoveLocalStorage(const LocalStorageKey & key)
+{
+  PThread * current = PThread::Current();
+  if (current != NULL)
+    current->m_localStorage.erase(key);
+}
+
+
+void * PThread::GetLocalStoragePtr(const LocalStorageKey & key)
+{
+  PThread * current = PThread::Current();
+  if (current != NULL) {
+    map<unsigned, void *>::iterator it = current->m_localStorage.find(key);
+    if (it != current->m_localStorage.end())
+      return it->second;
+  }
+  return NULL;
+}
+
+
+void PThread::SetLocalStoragePtr(const LocalStorageKey & key, void * ptr)
+{
+  PThread * current = PThread::Current();
+  if (current != NULL)
+    current->m_localStorage[key] = ptr;
+}
+#endif // P_PTHREADS
