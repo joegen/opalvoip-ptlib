@@ -334,8 +334,10 @@ int PServiceProcess::InternalMain(void * arg)
   SetLogLevel(debugMode ? PSystemLog::Info : PSystemLog::Warning);
 
   if (!debugMode && arguments.GetCount() > 0) {
-    for (PINDEX a = 0; a < arguments.GetCount(); a++)
-      ProcessCommand(arguments[a]);
+    for (PINDEX a = 0; a < arguments.GetCount(); a++) {
+      if (!ProcessCommand(arguments[a]))
+        return 1;
+    }
 
     if (controlWindow == NULL || controlWindow == (HWND)-1)
       return GetTerminationValue();
@@ -1550,7 +1552,7 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
     case SvcCmdNoWindow :
       if (controlWindow == NULL)
         controlWindow = (HWND)-1;
-      break;
+      return true;
 
     case SvcCmdTray :
       if (CreateControlWindow(false)) {
@@ -1702,7 +1704,7 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
     }
   }
 
-  if (controlWindow == NULL || controlWindow == (HWND)-1)
+  if (controlWindow == NULL)
     MessageBox(NULL, msg, GetName(), MB_TASKMODAL);
   else
     PError << msg << endl;
