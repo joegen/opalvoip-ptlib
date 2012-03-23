@@ -741,7 +741,7 @@ class PThreadLocalStorage
 {
   public:
     typedef typename PThread::LocalStorageKey Key_T;
-    typedef typename Storage_T * Ptr_T;
+    typedef Storage_T * Ptr_T;
 
     PThreadLocalStorage()  { PThread::CreateLocalStorage(m_key); }
     ~PThreadLocalStorage() { PThread::RemoveLocalStorage(m_key); }
