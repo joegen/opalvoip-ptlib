@@ -801,8 +801,11 @@ void* POSIX_Init(void*);
 //
 
 #if defined(P_PTHREADS)
+
 #include "tlibthrd.cxx"
+
 #else
+
 #if defined(P_MAC_MPTHREADS)
 #include "tlibmpthrd.cxx"
 #elif defined(BE_THREADS)
@@ -810,7 +813,6 @@ void* POSIX_Init(void*);
 #elif defined(VX_TASKS)
 #include "tlibvx.cxx"
 #endif
-#else // P_PTHREADS
 
 static PAtomicInteger NextLocalStorageKey;
 
@@ -846,4 +848,6 @@ void PThread::SetLocalStoragePtr(const LocalStorageKey & key, void * ptr)
   if (current != NULL)
     current->m_localStorage[key] = ptr;
 }
+
 #endif // P_PTHREADS
+
