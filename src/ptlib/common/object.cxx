@@ -108,7 +108,7 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 
 #else
 
-void PAssertFunc(const char * file,
+bool PAssertFunc(const char * file,
                  int line,
                  const char * className,
                  PStandardAssertMessage msg)
@@ -119,8 +119,7 @@ void PAssertFunc(const char * file,
     static const char fmt[] = "Out of memory at file %.100s, line %u, class %.30s";
     char msgbuf[sizeof(fmt)+100+10+30];
     sprintf(msgbuf, fmt, file, line, className);
-    PAssertFunc(msgbuf);
-    return;
+    return PAssertFunc(msgbuf);
   }
 
   static const char * const textmsg[PMaxStandardAssertMessage] = {
@@ -147,11 +146,11 @@ void PAssertFunc(const char * file,
     sprintf(msgbuf, "Assertion %i", msg);
     theMsg = msgbuf;
   }
-  PAssertFunc(file, line, className, theMsg);
+  return PAssertFunc(file, line, className, theMsg);
 }
 
 
-void PAssertFunc(const char * file, int line, const char * className, const char * msg)
+bool PAssertFunc(const char * file, int line, const char * className, const char * msg)
 {
 #if defined(_WIN32)
   DWORD err = GetLastError();
@@ -170,7 +169,7 @@ void PAssertFunc(const char * file, int line, const char * className, const char
     str << ", Error=" << err;
   str << ends;
   
-  PAssertFunc(str.str().c_str());
+  return PAssertFunc(str.str().c_str());
 }
 
 #endif // !P_USE_ASSERTS
