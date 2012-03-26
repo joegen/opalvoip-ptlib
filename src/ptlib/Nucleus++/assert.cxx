@@ -36,12 +36,12 @@
 #include <ctype.h>
 #include <signal.h>
 
-void PAssertFunc (const char * msg)
+bool PAssertFunc (const char * msg)
 
 {
   PError << msg << endl;
   BREAKPOINT;
-  return;
+  return false;
 }
 
 // End Of File ///////////////////////////////////////////////////////////////

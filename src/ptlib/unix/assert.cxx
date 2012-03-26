@@ -86,12 +86,12 @@ static PBoolean PAssertAction(int c, const char * msg)
 #endif
 #endif
 
-void PAssertFunc(const char * msg)
+bool PAssertFunc(const char * msg)
 
 {
   static PBoolean inAssert;
   if (inAssert)
-    return;
+    return false;
   inAssert = PTrue;
 
 #ifdef P_BEOS
@@ -127,13 +127,13 @@ void PAssertFunc(const char * msg)
   env = ::getenv("PWLIB_ASSERT_ACTION");
   if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
     inAssert = PFalse;
-    return;
+    return false;
   }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {
     inAssert = PFalse;
-    return;
+    return false;
   }
 
   for(;;) {
@@ -161,6 +161,8 @@ void PAssertFunc(const char * msg)
 
 #endif // P_VXWORKS
 #endif // P_BEOS
+
+  return false;
 }
 
 // End Of File ///////////////////////////////////////////////////////////////
