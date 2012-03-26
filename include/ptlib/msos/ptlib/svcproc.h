@@ -123,6 +123,6 @@
     HWND                  controlWindow;
     HWND                  debugWindow;
 
-  friend void PAssertFunc(const char *);
+  friend bool PAssertFunc(const char *);
 
 // End Of File ///////////////////////////////////////////////////////////////
