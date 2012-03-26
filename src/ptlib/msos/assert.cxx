@@ -156,7 +156,7 @@ PImageDLL::PImageDLL()
 #endif
 #endif
 
-void PAssertFunc(const char * msg)
+bool PAssertFunc(const char * msg)
 {
   ostringstream str;
   str << msg;
@@ -278,7 +278,7 @@ void PAssertFunc(const char * msg)
       __asm int 3;
 #endif
 #endif // !_WIN32_WCE
-    return;
+    return false;
   }
 
   PTRACE(0, sstr);
@@ -304,7 +304,7 @@ void PAssertFunc(const char * msg)
 #if defined(_WIN32)
     ReleaseSemaphore(mutex, 1, NULL);
 #endif
-    return;
+    return false;
   }
 
   for (;;) {
@@ -333,9 +333,10 @@ void PAssertFunc(const char * msg)
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
 #endif
-        return;
     }
   }
+
+  return false;
 }
 
 
