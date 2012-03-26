@@ -112,7 +112,7 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
           ptlib_has_resolver=no
           HAS_RES_NINIT=
 
-          AC_CHECK_FUNC([[res_ninit]], 
+          AC_CHECK_FUNC([[res_ninit]],
                         [
                          HAS_RES_NINIT=1
                          ptlib_has_resolver=yes
@@ -162,11 +162,18 @@ AC_DEFUN([PTLIB_FIND_RESOLVER],
           fi
 
           if test "x${ptlib_has_resolver}" = "xno" ; then
+            AC_CHECK_HEADERS([windows.h])
             AC_CHECK_HEADERS([windns.h],
                             [
                               ptlib_has_resolver=yes
                               RESOLVER_LIBS="-ldnsapi"
-                            ])
+                            ],
+                            [],
+                            [#ifdef HAVE_WINDOWS_H
+                             #include <windows.h>
+                             #endif
+                            ]
+                            )
           fi
           AS_IF([test AS_VAR_GET([ptlib_has_resolver]) = yes], [$1], [$2])[]
          ])
