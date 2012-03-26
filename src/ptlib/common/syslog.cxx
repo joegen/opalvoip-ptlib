@@ -147,11 +147,11 @@ int PSystemLog::Buffer::sync()
   PSystemLog::Level logLevel = m_log->m_logLevel;
 
 #if PTRACING
-  if (m_log->width() != 0 &&(PTrace::GetOptions()&PTrace::SystemLogStream) != 0) {
+  if (m_log->width() > 0 && (PTrace::GetOptions()&PTrace::SystemLogStream) != 0) {
     // Trace system sets the ios stream width as the last thing it does before
     // doing a flush, which gets us here. SO now we can get a PTRACE looking
     // exactly like a PSYSTEMLOG of appropriate level.
-    unsigned traceLevel = (int)m_log->width();
+    unsigned traceLevel = (unsigned)m_log->width() - 1;
     m_log->width(0);
     if (traceLevel >= PSystemLog::NumLogLevels)
       traceLevel = PSystemLog::NumLogLevels-1;
