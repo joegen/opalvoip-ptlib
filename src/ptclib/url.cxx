@@ -112,7 +112,6 @@ DEFINE_LEGACY_URL_SCHEME(rtmp,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFa
 DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
 DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
 DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
-DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
 DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   true,   true,   false,  true,   false,  DEFAULT_MSRP_PORT)
