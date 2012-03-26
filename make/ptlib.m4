@@ -370,8 +370,8 @@ AC_DEFUN([PTLIB_FIND_OPENLDAP],
                       [with_ldap_dir="$withval"])
 
           ptlib_openldap=yes
-          if test "x${HAS_RESOLVER}" != "x1"; then
-            AC_MSG_NOTICE([OpenLDAP support disabled due to disabled dependency HAS_RESOLVER])
+          if test "x${HAS_DNS_RESOLVER}" != "x1"; then
+            AC_MSG_NOTICE([OpenLDAP support disabled due to disabled dependency on DNS resolver])
             ptlib_openldap=no
           fi
 
