@@ -176,18 +176,6 @@ void PAssertFunc(const char * file, int line, const char * className, PStandardA
 void PAssertFunc(const char * file, int line, const char * className, const char * msg);
 void PAssertFunc(const char * full_msg);
 
-inline bool PAssertFuncInline(bool b, const char * file, int line, const char * className, PStandardAssertMessage msg)
-{
-  if (!b) 
-    PAssertFunc(file, line, className, msg);
-  return b;
-}
-inline bool PAssertFuncInline(bool b, const char * file, int line, const char * className, const char * msg)
-{
-  if (!b) 
-    PAssertFunc(file, line, className, msg);
-  return b;
-}
 
 /** This macro is used to assert that a condition must be true.
 If the condition is false then an assert function is called with the source
@@ -195,7 +183,7 @@ file and line number the macro was instantiated on, plus the message described
 by the <code>msg</code> parameter. This parameter may be either a standard value
 from the <code>PStandardAssertMessage</code> enum or a literal string.
 */
-#define PAssert(b, msg) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,(msg))
+#define PAssert(b, msg) ((b)?true:(PAssertFunc(__FILE__,__LINE__,__CLASS__,(msg)),false))
 
 /** This macro is used to assert that a condition must be true.
 If the condition is false then an assert function is called with the source
@@ -204,7 +192,7 @@ by the <code>msg</code> parameter. This parameter may be either a standard value
 from the <code>PStandardAssertMessage</code> enum or a literal string.
 The <code>cls</code> parameter specifies the class name that the error occurred in
 */
-#define PAssert2(b, cls, msg) PAssertFuncInline((b), __FILE__,__LINE__,(cls),(msg))
+#define PAssert2(b, cls, msg) ((b)?true:(PAssertFunc(__FILE__,__LINE__,(cls),(msg)),false))
 
 /** This macro is used to assert that an operating system call succeeds.
 If the condition is false then an assert function is called with the source
@@ -212,7 +200,7 @@ file and line number the macro was instantiated on, plus the message
 described by the <code>POperatingSystemError</code> value in the <code>PStandardAssertMessage</code>
 enum.
  */
-#define PAssertOS(b) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,POperatingSystemError)
+#define PAssertOS(b) ((b)?true:(PAssertFunc(__FILE__,__LINE__,__CLASS__,POperatingSystemError),false))
 
 /** This macro is used to assert that a pointer must be non-null.
 If the pointer is NULL then an assert function is called with the source file
