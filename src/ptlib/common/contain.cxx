@@ -676,14 +676,18 @@ static const unsigned char PStringEscapeValue[] = { '\a', '\b', '\f', '\n', '\r'
 
 static void TranslateEscapes(const char * src, char * dst)
 {
-  if (*src == '"')
+  bool hadLeadingQuote = *src == '"';
+  if (hadLeadingQuote)
     src++;
 
   while (*src != '\0') {
     int c = *src++ & 0xff;
-    if (c == '"' && *src == '\0')
-      c  = '\0'; // Trailing '"' is ignored
-    else if (c == '\\') {
+    if (c == '"' && hadLeadingQuote) {
+      *dst = '\0'; // Trailing '"' and remaining string is ignored
+      break;
+    }
+
+    if (c == '\\') {
       c = *src++ & 0xff;
       for (PINDEX i = 0; i < PARRAYSIZE(PStringEscapeCode); i++) {
         if (c == PStringEscapeCode[i])
