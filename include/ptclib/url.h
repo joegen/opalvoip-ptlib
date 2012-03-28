@@ -415,18 +415,6 @@ class PURLLegacyScheme : public PURLScheme
     WORD defaultPort;
 };
 
-#define PURL_LEGACY_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
-  class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
-  { \
-    public: \
-      PURLLegacyScheme_##schemeName() \
-        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
-        { } \
-  }; \
-  static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
-
-
-
 #endif // P_URL
 
 #endif // PTLIB_PURL_H

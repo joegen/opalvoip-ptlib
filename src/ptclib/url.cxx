@@ -82,30 +82,39 @@
 #define DEFAULT_SIP_PORT      5060
 #define DEFAULT_SIPS_PORT     5061
 
+#define DEFINE_LEGACY_URL_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+  class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
+  { \
+    public: \
+      PURLLegacyScheme_##schemeName() \
+        : PURLLegacyScheme(#schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+        { } \
+  }; \
+  static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
-//                 schemeName,user,  passwd,host,  defUser,defhost,query, params,frags, path,  rel,   port
-PURL_LEGACY_SCHEME(http,      true,  true,  true,  false,  true,   true,  true,  true,  true,  true,  DEFAULT_HTTP_PORT )
-PURL_LEGACY_SCHEME(file,      false, false, true,  false,  true,   false, false, false, true,  false, 0)
-PURL_LEGACY_SCHEME(https,     false, false, true,  false,  true,   true,  true,  true,  true,  true,  DEFAULT_HTTPS_PORT)
-PURL_LEGACY_SCHEME(gopher,    false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_GOPHER_PORT)
-PURL_LEGACY_SCHEME(wais,      false, false, true,  false,  false,  false, false, false, true,  false, DEFAULT_WAIS_PORT)
-PURL_LEGACY_SCHEME(nntp,      false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_NNTP_PORT)
-PURL_LEGACY_SCHEME(prospero,  false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_PROSPERO_PORT)
-PURL_LEGACY_SCHEME(rtsp,      false, false, true,  false,  true,   true,  false, false, true,  false, DEFAULT_RTSP_PORT)
-PURL_LEGACY_SCHEME(rtspu,     false, false, true,  false,  true,   false, false, false, true,  false, DEFAULT_RTSPU_PORT)
-PURL_LEGACY_SCHEME(ftp,       true,  true,  true,  false,  true,   false, false, false, true,  false, DEFAULT_FTP_PORT)
-PURL_LEGACY_SCHEME(telnet,    true,  true,  true,  false,  true,   false, false, false, false, false, DEFAULT_TELNET_PORT)
-PURL_LEGACY_SCHEME(mailto,    false, false, false, true,   false,  true,  false, false, false, false, 0)
-PURL_LEGACY_SCHEME(news,      false, false, false, false,  true,   false, false, false, false, false, 0)
-PURL_LEGACY_SCHEME(h323,      true,  false, true,  true,   false,  false, true,  false, false, false, DEFAULT_H323_PORT)
-PURL_LEGACY_SCHEME(h323s,     true,  false, true,  true,   false,  false, true,  false, false, false, DEFAULT_H323S_PORT)
-PURL_LEGACY_SCHEME(rtmp,      false, false, true,  false,  false,  false, false, false, true,  false, DEFAULT_RTMP_PORT)
-PURL_LEGACY_SCHEME(sip,       true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIP_PORT)
-PURL_LEGACY_SCHEME(sips,      true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIPS_PORT)
-PURL_LEGACY_SCHEME(tel,       false, false, false, true,   false,  false, true,  false, false, false, 0)
-PURL_LEGACY_SCHEME(fax,       false, false, false, true,   false,  false, true,  false, false, false, 0)
-PURL_LEGACY_SCHEME(callto,    false, false, false, true,   false,  false, true,  false, false, false, 0)
-PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true,  false, true,  false, DEFAULT_MSRP_PORT)
+//                       schemeName,user,   passwd, host,   defUser,defhost, query,  params, frags,  path,   rel,    port
+DEFINE_LEGACY_URL_SCHEME(http,      PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTP_PORT )
+DEFINE_LEGACY_URL_SCHEME(file,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(https,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PTrue,  PTrue,  PTrue,  PTrue,  DEFAULT_HTTPS_PORT)
+DEFINE_LEGACY_URL_SCHEME(gopher,    PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_GOPHER_PORT)
+DEFINE_LEGACY_URL_SCHEME(wais,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_WAIS_PORT)
+DEFINE_LEGACY_URL_SCHEME(nntp,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_NNTP_PORT)
+DEFINE_LEGACY_URL_SCHEME(prospero,  PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_PROSPERO_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtsp,      PFalse, PFalse, PTrue,  PFalse, PTrue,   PTrue,  PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTSP_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtspu,     PFalse, PFalse, PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTSPU_PORT)
+DEFINE_LEGACY_URL_SCHEME(ftp,       PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_FTP_PORT)
+DEFINE_LEGACY_URL_SCHEME(telnet,    PTrue,  PTrue,  PTrue,  PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, DEFAULT_TELNET_PORT)
+DEFINE_LEGACY_URL_SCHEME(mailto,    PFalse, PFalse, PFalse, PFalse, PTrue,   PTrue,  PFalse, PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(news,      PFalse, PFalse, PFalse, PFalse, PTrue,   PFalse, PFalse, PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(h323,      PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323_PORT)
+DEFINE_LEGACY_URL_SCHEME(h323s,     PTrue,  PFalse, PTrue,  PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, DEFAULT_H323S_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtmp,      PFalse, PFalse, PTrue,  PFalse, PFalse,  PFalse, PFalse, PFalse, PTrue,  PFalse, DEFAULT_RTMP_PORT)
+DEFINE_LEGACY_URL_SCHEME(sip,       PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIP_PORT)
+DEFINE_LEGACY_URL_SCHEME(sips,      PTrue,  PTrue,  PTrue,  PFalse, PFalse,  PTrue,  PTrue,  PFalse, PFalse, PFalse, DEFAULT_SIPS_PORT)
+DEFINE_LEGACY_URL_SCHEME(tel,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(fax,       PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(callto,    PFalse, PFalse, PFalse, PTrue,  PFalse,  PFalse, PTrue,  PFalse, PFalse, PFalse, 0)
+DEFINE_LEGACY_URL_SCHEME(msrp,      false,  false,  true,   false,  false,   true,   true,   false,  true,   false,  DEFAULT_MSRP_PORT)
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
@@ -114,7 +123,8 @@ PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true, 
 // PURL
 
 PURL::PURL()
-  : scheme(DEFAULT_SCHEME),
+  : //scheme(SchemeTable[DEFAULT_SCHEME].name),
+    scheme(DEFAULT_SCHEME),
     port(0),
     portSupplied (PFalse),
     relativePath(PFalse)
