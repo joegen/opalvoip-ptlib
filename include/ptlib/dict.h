@@ -422,6 +422,22 @@ class PAbstractSet : public PHashTable
     virtual PINDEX GetValuesIndex(
       const PObject & obj   ///< Object to find equal value.
     ) const;
+
+    /**Calculate union of sets.
+       Returns true if any new elements were added.
+      */
+    bool Union(
+      const PAbstractSet & set
+    );
+
+    /**Calculate intersection of sets.
+       Returns true if there is an intersection.
+      */
+    static bool Intersection(
+      const PAbstractSet & set1,
+      const PAbstractSet & set2,
+      PAbstractSet * intersection = NULL
+    );
   //@}
 };
 
