@@ -2404,7 +2404,17 @@ PDECLARE_SET(PStringSet, PString, true);
     /**Create a PStringSet containing the single string.
      */
     PStringSet(
-      const PString & str  ///< Single string to convert to a list of one.
+      const PString & str  ///< Single string to convert to a set of one.
+    );
+    /**Create a PStringSet containing the strings.
+     */
+    PStringSet(
+      const PStringArray & strArray  ///< String to convert to a set.
+    );
+    /**Create a PStringSet containing the strings.
+     */
+    PStringSet(
+      const PStringList & strList  ///< String to convert to a set.
     );
   //@}
 
