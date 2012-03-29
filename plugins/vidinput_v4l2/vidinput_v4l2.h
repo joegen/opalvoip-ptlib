@@ -49,11 +49,12 @@ class PVideoInputDevice_V4L2: public PVideoInputDevice
 {
 
   PCLASSINFO(PVideoInputDevice_V4L2, PVideoInputDevice);
-      
-
+private:
+  PVideoInputDevice_V4L2(const PVideoInputDevice_V4L2& ){};
+  PVideoInputDevice_V4L2& operator=(const PVideoInputDevice_V4L2& ){ return *this; };
 public:
   PVideoInputDevice_V4L2();
-  ~PVideoInputDevice_V4L2();
+  virtual ~PVideoInputDevice_V4L2();
   
   void ReadDeviceDirectory (PDirectory, POrdinalToString &);
 
@@ -84,8 +85,8 @@ public:
   PBoolean TestAllFormats();
 
   PBoolean SetFrameSize(unsigned int, unsigned int);
+  PBoolean SetNearestFrameSize(unsigned int, unsigned int);
   PBoolean SetFrameRate(unsigned int);
-  PBoolean VerifyHardwareFrameSize(unsigned int, unsigned int);
 
   PBoolean GetParameters(int*, int*, int*, int*, int*);
 
@@ -112,9 +113,17 @@ public:
 
   PBoolean NormalReadProcess(BYTE*, PINDEX*);
 
+private:
   void ClearMapping();
 
   PBoolean SetMapping();
+
+  PBoolean VerifyHardwareFrameSize(unsigned int & width, unsigned int & height);
+
+  PBoolean QueueBuffers();
+
+  PBoolean StartStreaming();
+  void StopStreaming();
 
   struct v4l2_capability videoCapability;
   struct v4l2_streamparm videoStreamParm;
@@ -127,6 +136,10 @@ public:
   BYTE * videoBuffer[NUM_VIDBUF];
   uint   videoBufferCount;
   uint   currentvideoBuffer;
+
+  PBoolean isOpen;				/** Has the Video Input Device successfully been openend? */
+  PBoolean areBuffersQueued;
+  PBoolean isStreaming;
 
   int    videoFd;
   int    frameBytes;
