@@ -2465,6 +2465,20 @@ PStringSet::PStringSet(const PString & str)
 }
 
 
+PStringSet::PStringSet(const PStringArray & strArray)
+{
+  for (PINDEX i = 0; i < strArray.GetSize(); ++i)
+    Include(strArray[i]);
+}
+
+
+PStringSet::PStringSet(const PStringList & strList)
+{
+  for (PStringList::const_iterator it = strList.begin(); it != strList.end(); ++it)
+    Include(*it);
+}
+
+
 void PStringSet::ReadFrom(istream & strm)
 {
   while (strm.good()) {
