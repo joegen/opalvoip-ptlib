@@ -53,6 +53,7 @@ default: $(CONFIG_FILES)
 $(CONFIG_FILES): $(CONFIGURE)
 	$(CONFIGURE) $(CFG_ARGS)
 
+ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
 
 $(CONFIGURE): $(CONFIGURE).ac $(ACLOCAL).m4 $(PTLIBDIR)/make/*.m4
@@ -73,5 +74,6 @@ $(CONFIGURE): $(CONFIGURE).ac
 	@echo ---------------------------------------------------------------------
 
 endif # autoconf installed
+endif # autoconf enabled
 
 # End of Makefile.in
