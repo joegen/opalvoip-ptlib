@@ -99,6 +99,7 @@ PCREATE_PLUGIN(YUVFile, PVideoInputDevice, &PVideoInputDevice_YUVFile_descriptor
 PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
   : m_file(NULL)
   , m_frameRateAdjust(0)
+  , m_opened(false)
 {
   SetColourFormat("YUV420P");
 }
@@ -148,19 +149,24 @@ PBoolean PVideoInputDevice_YUVFile::Open(const PString & devName, PBoolean /*sta
   *static_cast<PVideoFrameInfo *>(this) = *static_cast<PVideoFrameInfo *>(m_file);
 
   deviceName = m_file->GetFilePath();
+  m_opened = true;
   return true;    
 }
 
 
 PBoolean PVideoInputDevice_YUVFile::IsOpen() 
 {
-  return m_file != NULL && m_file->IsOpen();
+  return m_opened;
 }
 
 
 PBoolean PVideoInputDevice_YUVFile::Close()
 {
+  m_opened = false;
+
   PBoolean ok = m_file != NULL && m_file->Close();
+
+  PThread::Sleep(1000/frameRate);
 
   delete m_file;
   m_file = NULL;
@@ -267,12 +273,12 @@ PINDEX PVideoInputDevice_YUVFile::GetMaxFrameBytes()
 
 PBoolean PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  if (m_file == NULL) {
-    PTRACE(2, "VidFileDev\tCannot get frame data, no file opened.");
+  m_pacing.Delay(1000/frameRate);
+
+  if (!m_opened || PAssertNULL(m_file) == NULL) {
+    PTRACE(5, "VidFileDev\tAbort GetFrameData, closed.");
     return false;
   }
-
-  m_pacing.Delay(1000/frameRate);
 
   off_t frameNumber = m_file->GetPosition();
 
@@ -303,8 +309,8 @@ PBoolean PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesRe
 
 PBoolean PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
 {
-  if (m_file == NULL) {
-    PTRACE(2, "VidFileDev\tCannot get frame data, no file opened.");
+  if (!m_opened || PAssertNULL(m_file) == NULL) {
+    PTRACE(5, "VidFileDev\tAbort GetFrameDataNoDelay, closed.");
     return false;
   }
 
@@ -391,6 +397,7 @@ PCREATE_PLUGIN(YUVFile, PVideoOutputDevice, &PVideoOutputDevice_YUVFile_descript
 
 PVideoOutputDevice_YUVFile::PVideoOutputDevice_YUVFile()
   : m_file(NULL)
+  , m_opened(false)
 {
 }
 
@@ -421,12 +428,17 @@ PBoolean PVideoOutputDevice_YUVFile::Open(const PString & devName, PBoolean /*st
   }
 
   deviceName = m_file->GetFilePath();
+  m_opened = true;
   return true;
 }
 
 PBoolean PVideoOutputDevice_YUVFile::Close()
 {
+  m_opened = false;
+
   PBoolean ok = m_file == NULL || m_file->Close();
+
+  PThread::Sleep(10);
 
   delete m_file;
   m_file = NULL;
@@ -446,7 +458,7 @@ PBoolean PVideoOutputDevice_YUVFile::Stop()
 
 PBoolean PVideoOutputDevice_YUVFile::IsOpen()
 {
-  return m_file != NULL && m_file->IsOpen();
+  return m_opened;
 }
 
 
@@ -473,12 +485,17 @@ PBoolean PVideoOutputDevice_YUVFile::SetFrameData(unsigned x, unsigned y,
                                               const BYTE * data,
                                               PBoolean /*endFrame*/)
 {
+  if (!m_opened || PAssertNULL(m_file) == NULL) {
+    PTRACE(5, "VidFileDev\tAbort SetFrameData, closed.");
+    return false;
+  }
+
   if (x != 0 || y != 0 || width != frameWidth || height != frameHeight) {
     PTRACE(1, "YUVFile\tOutput device only supports full frame writes");
     return false;
   }
 
-  if (m_file == NULL || !m_file->SetFrameSize(width, height))
+  if (!m_file->SetFrameSize(width, height))
     return false;
 
   if (converter == NULL)
