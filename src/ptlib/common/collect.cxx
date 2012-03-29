@@ -1421,6 +1421,38 @@ PBoolean PAbstractSet::SetAt(PINDEX, PObject * obj)
 }
 
 
+bool PAbstractSet::Union(const PAbstractSet & set)
+{
+  bool something = false;
+  for (PINDEX i = 0; i < set.GetSize(); ++i) {
+    const PObject & obj = set.AbstractGetKeyAt(i);
+    if (!AbstractContains(obj)) {
+      something = true;
+      Append(obj.Clone());
+    }
+  }
+  return something;
+}
+
+
+bool PAbstractSet::Intersection(const PAbstractSet & set1,
+                                const PAbstractSet & set2,
+                                PAbstractSet * intersection)
+{
+  bool something = false;
+  for (PINDEX i = 0; i < set1.GetSize(); ++i) {
+    const PObject & obj = set1.AbstractGetKeyAt(i);
+    if (set2.AbstractContains(obj)) {
+      something = true;
+      if (intersection == NULL)
+        break;
+      intersection->Append(obj.Clone());
+    }
+  }
+  return something;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PINDEX PAbstractDictionary::Append(PObject *)
