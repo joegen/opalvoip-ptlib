@@ -216,6 +216,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
    PVideoFile   * m_file;
    PAdaptiveDelay m_pacing;
    unsigned       m_frameRateAdjust;
+   bool           m_opened;
 };
 
 
@@ -296,6 +297,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
 
   protected:  
    PVideoFile * m_file;
+   bool         m_opened;
 };
 
 
