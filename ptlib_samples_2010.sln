@@ -14,9 +14,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "String Tests", "samples\str
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "URL", "samples\url\url_2010.vcxproj", "{632862F3-8191-410B-B824-A4A5DF6E4E15}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timing", "..\SVN-3.10-Luyten\ptlib\samples\timing\timing_2010.vcxproj", "{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timing", ".\samples\timing\timing_2010.vcxproj", "{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavfile", "..\SVN-3.10-Luyten\ptlib\samples\wavfile\wavfile_2010.vcxproj", "{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavfile", ".\samples\wavfile\wavfile_2010.vcxproj", "{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
