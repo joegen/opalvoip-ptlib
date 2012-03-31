@@ -45,17 +45,12 @@
 #if defined(_WIN32)
 
   #include <windns.h>
+  #include <ntverp.h>
 
-  #ifndef __MINGW32__
+  #pragma comment(lib, "dnsapi.lib")
 
-    #include <ntverp.h>
-
-    #pragma comment(lib, "dnsapi.lib")
-
-    // Accommodate spelling error in windns.h
-    enum { DnsSectionAdditional = DnsSectionAddtional };
-
-  #endif
+  // Accommodate spelling error in windns.h
+  enum { DnsSectionAdditional = DnsSectionAddtional };
 
 #else /* _WIN32 */
 
