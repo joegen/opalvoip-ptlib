@@ -44,7 +44,7 @@
 
 #if P_DNS
 
-#ifdef _MSC_VER
+#ifdef _WIN32
   #pragma comment(lib, "DnsAPI.Lib")
   #pragma message("DNS support enabled")
 #else
