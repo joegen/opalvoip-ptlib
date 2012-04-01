@@ -58,6 +58,10 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <list>
+#include <map>
+#include <algorithm>
 
 
 #define P_REMOVE_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_removed ****** fn { return 0; }
