@@ -56,6 +56,10 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <list>
+#include <map>
+#include <algorithm>
 #include <typeinfo>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
