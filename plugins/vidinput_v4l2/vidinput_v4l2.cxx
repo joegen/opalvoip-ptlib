@@ -454,7 +454,7 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   PTRACE(8,"PVidInDev\tSet colour format \"" << newFormat << "\"");
 
   PBoolean colorFormatSet = PFalse;
-  PINDEX colourFormatIndex = 0;
+  PINDEX currentColourFormatIndex, colourFormatIndex = 0;
   while (newFormat != colourFormatTab[colourFormatIndex].colourFormat) {
     colourFormatIndex++;
     PTRACE(9,"PVidInDev\tColourformat did not match" << colourFormatTab[colourFormatIndex].colourFormat);
@@ -501,6 +501,15 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
     PTRACE(8,"PVidInDev\tG_FMT succeeded");
   }
 
+  // update colourFormat to current value so in case of VIDIOC_S_FMT failure will have corect one
+  for (currentColourFormatIndex = 0; currentColourFormatIndex < PARRAYSIZE(colourFormatTab); currentColourFormatIndex++) {
+    if (videoFormat.fmt.pix.pixelformat == colourFormatTab[currentColourFormatIndex].code)
+    {
+      colourFormat = colourFormatTab[currentColourFormatIndex].colourFormat;
+      break;
+    }
+  }
+
   videoFormat.fmt.pix.pixelformat = colourFormatTab[colourFormatIndex].code;
 
   // set the colour format
@@ -524,6 +533,7 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
     PTRACE(3,"PVidInDev\tcolour format mismatch.");
     return colorFormatSet;
   } else {
+    colourFormat = newFormat;
     PTRACE(8,"PVidInDev\tcolour format matches.");
   }
 
