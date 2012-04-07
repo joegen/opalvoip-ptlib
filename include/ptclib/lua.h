@@ -3,7 +3,7 @@
  *
  * Interface library for Lua interpreter
  *
- * Portable Tools Library]
+ * Portable Tools Library
  *
  * Copyright (C) 2010 by Post Increment
  *
@@ -22,6 +22,7 @@
  * The Initial Developer of the Original Code is Post Increment
  *
  * Contributor(s): Craig Southeren
+ *                 Robert Jongbloed
  *
  * $Revision$
  * $Author$
@@ -45,84 +46,217 @@ struct lua_State;
 
 //////////////////////////////////////////////////////////////
 
-class PLua
+/**A wrapper around a Lua scripting language instance.
+ */
+class PLua : public PObject
 {
+    PCLASSINFO(PLua, PObject)
   public:
+  /**@name Construction */
+  //@{
+    /**Create a context in which to execute a Lua script.
+     */
     PLua();
+
+    /// Destroy the Lua script context.
     ~PLua();
+  //@}
 
-    virtual bool LoadString(const char * text);
+  /**@name Path addition functions */
+  //@{
+    /**Load a Lua script from a file.
+      */
+    virtual bool LoadFile(
+      const PFilePath & filename  ///< Name of script file to load
+    );
 
-    virtual bool LoadFile(const char * filename);
+    /** Load a Lua script text.
+      */
+    virtual bool LoadText(
+      const PString & text  ///< Script text to load.
+    );
 
-    virtual bool Run(const char * program = NULL);
+    /**Run the script.
+       If \p script is NULL or empty then the currently laoded script is
+       executed. If \p script is an existing file, then that will be loaded
+       and executed. All other cases the string is laoded as direct script
+       text and executed.
+      */
+    virtual bool Run(
+      const char * script = NULL
+    );
 
-    virtual void OnError(int code, const PString & str);
+    /**Create a metatable
+      */
+    bool CreateTable(
+      const PString & name,   ///M Name of new table
+      bool withMeta = true    ///< Include metatable
+    );
 
-    operator lua_State * () { return m_lua; }
 
-    virtual void SetValue(const char * name, const char * value);
-    virtual PString GetValue(const char * name);
+    /**Get a variable in the script as a string value.
+      */
+    bool GetBoolean(
+      const PString & name  ///< Name of global
+    );
 
-    typedef int (*CFunction)(lua_State *L);
-    virtual void SetFunction(const char * name, CFunction func);
+    /**Set a variable in the script as a string value.
+      */
+    bool SetBoolean(
+      const PString & name, ///< Name of global
+      bool value            ///< New value
+    );
 
-    bool CallLuaFunction(const char * name);
-    bool CallLuaFunction(const char * name, const char * sig, ...);
+    /**Get a variable in the script as an integer value.
+      */
+    int GetInteger(
+      const PString & name  ///< Name of global
+    );
 
-    static int TraceFunction(lua_State * L);
+    /**Set a variable in the script as an integer value.
+      */
+    bool SetInteger(
+      const PString & name, ///< Name of global
+      int value             ///< New value
+    );
 
-    PString GetLastErrorText() const 
-    { return m_lastErrorText; }
+    /**Get a variable in the script as a number value.
+      */
+    double GetNumber(
+      const PString & name  ///< Name of global
+    );
 
-    void BindToInstanceStart(const char * instanceName);
-    void BindToInstanceFunc(const char * lua_name, void * obj, CFunction func);
-    void BindToInstanceEnd(const char * instanceName);
+    /**Set a variable in the script as a number value.
+      */
+    bool SetNumber(
+      const PString & name, ///< Name of global
+      double value          ///< New value
+    );
 
-    static void * GetInstance(lua_State * L);
+    /**Get a variable in the script as a string value.
+      */
+    PString GetString(
+      const PString & name  ///< Name of global
+    );
+
+    /**Set a variable in the script as a string value.
+      */
+    bool SetString(
+      const PString & name, ///< Name of global
+      const char * value    ///< New value
+    );
+
+
+    enum ParamType {
+      ParamNIL,  // Must be zero
+      ParamBoolean,
+      ParamInteger,
+      ParamNumber,
+      ParamStaticString,
+      ParamDynamicString,
+      ParamUserData
+    };
+
+    struct Parameter {
+      Parameter() { memset(this, 0, sizeof(*this)); }
+      ~Parameter() { if (m_type == ParamDynamicString) delete[] m_dynamicString; }
+
+      ParamType m_type; ///< Type of argument, 'i', 'n' or 's'
+
+      union {
+        bool m_boolean;
+        int m_integer;
+        double m_number;
+        const char * m_staticString;
+        char * m_dynamicString;
+        const void * m_userData;
+      };
+      friend ostream& operator<<(ostream& strm, const Parameter& param);
+    };
+
+    struct ParamVector : public vector<Parameter>
+    {
+      ParamVector(size_t sz = 0) : vector<Parameter>(sz) { }
+      void Push(lua_State * lua);
+      void Pop(lua_State * lua);
+    };
+
+    struct Signature {
+      ParamVector m_arguments;
+      ParamVector m_results;
+    };
+
+    /**Call a specific function in the script.
+       The \p sigString indicates the types of the arguments and return values
+       for the function. The types available are:
+         'b' for boolean,
+         'i' for integer,
+         'n' for a number (double float)
+         's' for string (const char * or char *)
+         'p' for user defined (void *)
+
+       A '>' separates arguments from return values. The same letters are used
+       for the tpes, but a pointer to the variable is supplied in the argument
+       list, as for scanf. Note there can be multiple return values.
+
+       if 's' is used as a return value, then the caller is expected to delete
+       the returned string pointer as it is allocated on the heap.
+
+       If \p sigString is NULL or empty then a void parameterless function is
+       called.
+
+       The second form with \p signature alows for the caller to adaptively
+       respond to different return types.
+
+       @returns false if function does not exist.
+      */
+    bool Call(
+      const PString & name,           ///< Name of function to execute.
+      const char * sigString = NULL,  ///< Signature of arguments following
+      ...
+    );
+    bool Call(
+      const PString & name,       ///< Name of function to execute.
+      Signature & signature ///< Signature of arguments following
+    );
+
+
+    typedef PNotifierTemplate<const Signature &>  FunctionNotifier;
+    #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, const PLua::Signature &)
+
+    /**Set a notifier as a Lua callable function.
+      */
+    bool SetFunction(
+      const PString & name,         ///< Name of function Lua script can call
+      const FunctionNotifier & func ///< Notifier excuted
+    );
+  //@}
+
+  /**@name member variables */
+  //@{
+    /// Rerturn true if script is successfully loaded.
+    bool IsLoaded() const { return m_loaded; }
+
+    /// Get the last error text for an operation.
+    const PString & GetLastErrorText() const { return m_lastErrorText; }
+  //@}
 
   protected:
+    /**Check for an error and set m_lastErrorText to error text.
+      */
+    virtual bool OnError(int code, const PString & str = PString::Empty(), unsigned pop = 0);
+
+    bool InternalGetVariable(const PString & name);
+    bool InternalSetVariable(const PString & name);
+    static int InternalCallback(lua_State * state);
+    int InternalCallback();
+
     lua_State * m_lua;
+    bool m_loaded;
     PString m_lastErrorText;
+    map<PString, FunctionNotifier> m_functions;
 };
 
-#define PLUA_BINDING_START(class_type) \
-  typedef class_type PLua_InstanceType; \
-  void UnbindFromInstance(PLua &, const char *) { } \
-  void BindToInstance(PLua & lua, const char * instanceName) \
-  { \
-    lua.BindToInstanceStart(instanceName);
-
-#define PLUA_BINDING2(cpp_name, lua_name) \
-    lua.BindToInstanceFunc(lua_name, (void *)this, &PLua_InstanceType::cpp_name##_callback);
-
-#define PLUA_BINDING(fn_name) \
-  PLUA_BINDING2(fn_name, #fn_name)
-
-#define PLUA_BINDING_END() \
-    lua.BindToInstanceEnd(instanceName); \
-  }
-
-#define PLUA_FUNCTION_DECL(fn_name) \
-  static int fn_name##_callback(lua_State * L) \
-  { \
-    return ((PLua_InstanceType *)PLua::GetInstance(L))->fn_name(L); \
-  }
-
-#define PLUA_FUNCTION(fn_name) \
-  PLUA_FUNCTION_DECL(fn_name) \
-  int fn_name(lua_State * L) \
-
-#define PLUA_FUNCTION_NOARGS(fn_name) \
-  PLUA_FUNCTION_DECL(fn_name) \
-  int fn_name(lua_State *) \
-
-#define PLUA_DECLARE_FUNCTION(fn_name) \
-  PLUA_FUNCTION_DECL(fn_name) \
-  int fn_name(lua_State * L); \
-
-
-//////////////////////////////////////////////////////////////
 
 #endif // P_LUA
 

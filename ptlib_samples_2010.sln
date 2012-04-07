@@ -20,11 +20,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunclient", "samples\stunc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "String Tests", "samples\strtest\strtest_2010.vcxproj", "{BC216ABC-6D3B-372A-724B-1A730E1F51D7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timing", ".\samples\timing\timing_2010.vcxproj", "{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timing", "samples\timing\timing_2010.vcxproj", "{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavfile", ".\samples\wavfile\wavfile_2010.vcxproj", "{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wavfile", "samples\wavfile\wavfile_2010.vcxproj", "{042020F3-F4F1-4C93-A7FA-DE67E1B3212D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dnstest", "samples\dnstest\dnstest_2010.vcxproj", "{5EA556B2-5A78-46D7-98A2-B0E3498ABCD1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "samples\lua\lua_2010.vcxproj", "{C558BF7A-920A-8265-FE3E-A4B0EF31259F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -177,6 +179,18 @@ Global
 		{5EA556B2-5A78-46D7-98A2-B0E3498ABCD1}.Release|Win32.ActiveCfg = Release|Win32
 		{5EA556B2-5A78-46D7-98A2-B0E3498ABCD1}.Release|Win32.Build.0 = Release|Win32
 		{5EA556B2-5A78-46D7-98A2-B0E3498ABCD1}.Release|x64.ActiveCfg = Release|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Debug|Win32.Build.0 = Debug|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Debug|x64.ActiveCfg = Debug|x64
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Debug|x64.Build.0 = Debug|x64
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.No Trace|Win32.Build.0 = No Trace|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.No Trace|x64.ActiveCfg = No Trace|x64
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.No Trace|x64.Build.0 = No Trace|x64
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|Win32.ActiveCfg = Release|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|Win32.Build.0 = Release|Win32
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|x64.ActiveCfg = Release|x64
+		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

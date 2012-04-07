@@ -383,7 +383,11 @@
     <ClCompile Include="..\..\ptclib\inetmail.cxx" />
     <ClCompile Include="..\..\ptclib\inetprot.cxx" />
     <ClCompile Include="..\..\ptclib\ipacl.cxx" />
-    <ClCompile Include="..\..\ptclib\lua.cxx" />
+    <ClCompile Include="..\..\ptclib\lua.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files %28x86%29\Lua\5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">C:\Program Files %28x86%29\Lua\5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files %28x86%29\Lua\5.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\memfile.cxx" />
     <ClCompile Include="..\..\ptclib\modem.cxx" />
     <ClCompile Include="..\..\ptclib\pasn.cxx" />
