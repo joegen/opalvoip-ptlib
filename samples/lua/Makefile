@@ -1,7 +1,7 @@
 # Simple makefile for the lua test program
 
 PROG    = lua
-SOURCES = lua.cxx
+SOURCES = lua_test.cxx
 
 ifndef PTLIBDIR
 PTLIBDIR=$(HOME)/ptlib
