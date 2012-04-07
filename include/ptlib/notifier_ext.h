@@ -61,7 +61,7 @@ class PValidatedNotifierTarget
 {
   public:
     PValidatedNotifierTarget();
-    ~PValidatedNotifierTarget();
+    virtual ~PValidatedNotifierTarget();
 
   private:
     PNotifierIdentifer m_validatedNotifierId;
@@ -79,17 +79,22 @@ bool PValidatedNotifierTargetExists(PNotifierIdentifer id);
 
    See PNotifierFunctionTemplate for more information.
   */
-template <typename ParmType>
-class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParmType>
+template <typename ParamType>
+class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParamType>
 {
-  typedef PNotifierFunctionTemplate<ParmType> Parent;
+  typedef PNotifierFunctionTemplate<ParamType> Parent;
   PCLASSINFO(PValidatedNotifierFunction, Parent);
 
   public:
-    PValidatedNotifierFunction(void * obj, PValidatedNotifierTarget * target)
-      : Parent(obj)
+    PValidatedNotifierFunction(PValidatedNotifierTarget * target)
+      : Parent(target)
       , m_targetID(target->m_validatedNotifierId)
     { }
+
+    virtual void * GetTarget() const
+    {
+      return PValidatedNotifierTargetExists(this->m_targetID) ? this->m_target : NULL;
+    }
 
   protected:
     PNotifierIdentifer m_targetID;
@@ -99,21 +104,12 @@ class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParmType>
 /** Declare a validated notifier object class.
     See PDECLARE_NOTIFIER2 for more information.
   */
-#define PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, type) \
-  class func##_PNotifier : public PValidatedNotifierFunction<type> { \
-    public: \
-      func##_PNotifier(notifiee * target) : PValidatedNotifierFunction<type>(target, target) { } \
-      virtual void Call(PObject & note, type extra) const \
-      { \
-        if (PValidatedNotifierTargetExists(this->m_targetID)) \
-          ((notifiee*)object)->func((notifier &)note, extra); \
-      } \
-  }; \
-  friend class func##_PNotifier; \
-  virtual void func(notifier & note, type extra)
+#define PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, ParamType) \
+            PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, PValidatedNotifierFunction<ParamType>)
 
 /// Declare validated PNotifier derived class with INT parameter. Uses PDECLARE_VALIDATED_NOTIFIER2 macro.
-#define PDECLARE_VALIDATED_NOTIFIER(notifier, notifiee, func) PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, INT)
+#define PDECLARE_VALIDATED_NOTIFIER(notifier, notifiee, func) \
+       PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, INT)
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -180,20 +176,20 @@ class PAsyncNotifierTarget
 
    See PNotifierFunctionTemplate for more information.
 
-   Note: the user must be very careful with the type of ParmType. The lifetime
+   Note: the user must be very careful with the type of ParamType. The lifetime
    must be guaranteed until the PAsyncNotifierTarget::AsyncNotifierExecute()
    function is called. It is usually easier to simply make sure the data is
    passed by value and never pointer or reference.
   */
-template <typename ParmType>
-class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParmType>
+template <typename ParamType>
+class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParamType>
 {
-  typedef PNotifierFunctionTemplate<ParmType> Parent;
+  typedef PNotifierFunctionTemplate<ParamType> Parent;
   PCLASSINFO(PAsyncNotifierFunction, Parent);
 
   public:
-    PAsyncNotifierFunction(void * obj, PAsyncNotifierTarget * target)
-      : Parent(obj)
+    PAsyncNotifierFunction(PAsyncNotifierTarget * target)
+      : Parent(target)
       , m_targetID(target->m_asyncNotifierId)
     { }
 
@@ -206,10 +202,10 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParmType>
       private:
         const Target  & m_target;
         PObject       & m_notifier;
-        ParmType        m_extra;
+        ParamType        m_extra;
 
       public:
-        TypedCallback(const Target & target, PObject & notifier, const ParmType & extra)
+        TypedCallback(const Target & target, PObject & notifier, const ParamType & extra)
           : m_target(target)
           , m_notifier(notifier)
           , m_extra(extra)
@@ -226,32 +222,27 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParmType>
 /** Declare an asynchronous notifier object class.
     See PDECLARE_NOTIFIER2 for more information.
   */
-#define PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, type) \
-  class func##_PNotifier : public PAsyncNotifierFunction<type> { \
-    public: \
-      func##_PNotifier(notifiee * target) : PAsyncNotifierFunction<type>(target, target) { } \
-      virtual void Call(PObject & note, type extra) const \
-        { PAsyncNotifierCallback::Queue(m_targetID, new TypedCallback<func##_PNotifier>(*this, note, extra)); } \
-      void AsyncCall(PObject & note, type extra) const \
-        { reinterpret_cast<notifiee*>(object)->func(static_cast<notifier &>(note), extra); } \
-  }; \
-  friend class func##_PNotifier; \
-  virtual void func(notifier & note, type extra)
+#define PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, ParamType) \
+       PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, PAsyncNotifierFunction<ParamType>) \
+       { PAsyncNotifierCallback::Queue(m_targetID, new TypedCallback<func##_PNotifier>(*this, note, extra)); } \
+       void AsyncCall(PObject & note, ParamType extra) const \
+       PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, PAsyncNotifierFunction<ParamType>) \
 
 /// Declare an asynchronous PNotifier derived class with INT parameter. Uses PDECLARE_ASYNC_NOTIFIER2 macro.
-#define PDECLARE_ASYNC_NOTIFIER(notifier, notifiee, func) PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, INT)
+#define PDECLARE_ASYNC_NOTIFIER(notifier, notifiee, func) \
+       PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, INT)
 
 
 ///////////////////////////////////////////////////////////////////////
 
 /**Maintain a list of notifiers to be called all at once.
   */
-template <typename ParmType>
+template <typename ParamType>
 class PNotifierListTemplate : public PObject
 {
   PCLASSINFO(PNotifierListTemplate, PObject);
   private:
-    typedef PNotifierTemplate<ParmType> Notifier;
+    typedef PNotifierTemplate<ParamType> Notifier;
     typedef std::list<Notifier> List;
     List m_list;
 
@@ -286,11 +277,11 @@ class PNotifierListTemplate : public PObject
     }
 
     /// Execute all notifiers in the list.
-    bool operator()(PObject & obj, ParmType param)
+    bool operator()(PObject & obj, ParamType param)
     {
       if (this->m_list.empty())
         return false;
-      for (std::list<PNotifier>::iterator it = this->m_list.begin(); it != this->m_list.end() ; ++it)
+      for (typename List::iterator it = this->m_list.begin(); it != this->m_list.end() ; ++it)
         (*it)(obj, param);
       return true;
     }
