@@ -1503,7 +1503,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath=".\lua.cxx"
+			RelativePath=".\lua_test.cxx"
 			>
 		</File>
 	</Files>

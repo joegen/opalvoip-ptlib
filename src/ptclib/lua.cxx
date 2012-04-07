@@ -3,7 +3,7 @@
  *
  * Interface library for Lua interpreter
  *
- * Portable Tools Library]
+ * Portable Tools Library
  *
  * Copyright (C) 2010 by Post Increment
  *
@@ -22,6 +22,7 @@
  * The Initial Developer of the Original Code is Post Increment
  *
  * Contributor(s): Craig Southeren
+ *                 Robert Jongbloed
  *
  * $Revision$
  * $Author$
@@ -48,12 +49,27 @@
 #endif
 
 
+#if PTRACING
+static int TraceFunction(lua_State * L)
+{
+  if (lua_isnumber(L, -2) && lua_isstring(L, -1))
+    PTRACE(lua_tointeger(L, -2), "LuaScript\t" << lua_tostring(L, -1));
+  return 0;
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PLua::PLua()
   : m_lua(luaL_newstate())
+  , m_loaded(false)
 {
   luaL_openlibs(m_lua);
+
+#if PTRACING
+  lua_pushcfunction(m_lua, TraceFunction);
+  lua_setglobal(m_lua, "PTRACE");
+#endif
 }
 
 
@@ -63,231 +79,513 @@ PLua::~PLua()
 }
 
 
-bool PLua::LoadFile(const char * filename)
+bool PLua::LoadFile(const PFilePath & filename)
 {
-  int err;
-  if ((err = luaL_loadfile(m_lua, filename)) == 0)
+  int err = luaL_loadfile(m_lua, filename);
+  m_loaded = err == 0;
+  if (m_loaded)
     return true;
 
-  if (err == LUA_ERRFILE) {
-    stringstream strm;
-    strm << "Cannot load/open file '" << filename << "'";
-    OnError(err, strm.str());
-    return false;
+  if (err != LUA_ERRFILE)
+    return OnError(err);
+
+  return OnError(err, "Cannot load/open file " + filename, 1);
+}
+
+
+bool PLua::LoadText(const PString & text)
+{
+  m_loaded = OnError(luaL_loadstring(m_lua, text));
+  return m_loaded;
+}
+
+
+bool PLua::Run(const char * script)
+{
+  if (script != NULL) {
+    PFilePath filename = script;
+    if (PFile::Exists(filename)) {
+      if (!LoadFile(filename))
+        return false;
+    }
+    else {
+      if (!LoadText(script))
+        return false;
+    }
   }
 
-  OnError(err, lua_tostring(m_lua, -1));
-  lua_pop(m_lua, 1);
-  return false;
+  if (IsLoaded())
+    return OnError(lua_pcall(m_lua, 0, 0, 0));
+
+  return OnError(LUA_ERRRUN, "Script not loaded");
 }
 
 
-bool PLua::LoadString(const char * string)
+bool PLua::CreateTable(const PString & name, bool withMeta)
 {
-  int err;
-  if ((err = luaL_loadstring(m_lua, string)) == 0)
-    return true;
+  if (name.Find('.') != P_MAX_INDEX)
+    return OnError(LUA_ERRSYNTAX, "Illegal table name " + name);
 
-  OnError(err, lua_tostring(m_lua, -1));
+  if (!InternalGetVariable(name))
+    return false;
+
+  int type = lua_type(m_lua, -1);
   lua_pop(m_lua, 1);
-  return false;
-}
 
+  switch (type) {
+    case LUA_TNIL :
+      break;
 
-bool PLua::Run(const char * program)
-{
-  int err;
-  if ((program == NULL) || ((err = luaL_loadstring(m_lua, program)) == 0)) {
-    if ((err = lua_pcall(m_lua, 0, 0, 0)) == 0)
+    case LUA_TTABLE :
       return true;
+
+    default :
+      return OnError(LUA_ERRSYNTAX, "Already using name " + name + ", type " + lua_typename(m_lua, type));
   }
 
-  OnError(err, lua_tostring(m_lua, -1));
-  lua_pop(m_lua, 1);
-  
-  return false;
-}
+  lua_newtable(m_lua);
 
-
-void PLua::OnError(int code, const PString & str)
-{
-  PStringStream err;
-  err << "Error (" << code << " - " << str;
-  m_lastErrorText = err;
-  PTRACE(2, "Lua\t" << m_lastErrorText);
-}
-
-
-void PLua::SetValue(const char * name, const char * value)
-{
-  lua_pushstring(*this, value);
-  lua_setglobal(*this, name);
-}
-
-PString PLua::GetValue(const char * name)
-{
-  lua_getglobal(*this, name);
-  PString result = lua_tostring(*this, -1);
-  lua_pop(*this, 1);
-  return result;
-}
-
-void PLua::SetFunction(const char * name_, CFunction func)
-{
-  PString name(name_);
-  PINDEX pos = name.Find('.');
-  if (pos == P_MAX_INDEX) {
-    lua_register(*this, name, func);
-    return;
+  if (withMeta) {
+    luaL_newmetatable(m_lua, name);
+    lua_setmetatable(m_lua, -2);
   }
 
-  PString table(name.Left(pos));
-  name = name.Mid(pos+1);
-
-  lua_getglobal(*this, table);
-  if (lua_istable(*this, -1)) {
-    lua_pushcfunction(*this, func);
-    lua_setfield(*this, -1, name);
-  }
-}
-
-bool PLua::CallLuaFunction(const char * name_)
-{
-  PString name(name_);
-  PINDEX pos = name.Find('.');
-  if (pos == P_MAX_INDEX) {
-    lua_getglobal(*this, name);
-    return lua_pcall(*this, 0, 0, 0) == 0;
-  }
-
-  PString table(name.Left(pos));
-  name = name.Mid(pos+1);
-
-  lua_getglobal(*this, table);
-  if (lua_istable(*this, -1)) {
-    lua_getfield(*this, -1, name);
-    if (lua_isfunction(*this, -1))
-      return lua_pcall(*this, 0, 0, 0) == 0;
-  }
-
-  return false;
-}
-
-bool PLua::CallLuaFunction(const char * name, const char * sig, ...)
-{
-  va_list args;
-  va_start(args, sig);
-  lua_getglobal(*this, name);
-
-  if (lua_isnil(*this, -1))
-    return false;
-
-  int nargs;
-  for (nargs = 0; *sig != '\0'; ++nargs) {
-    switch (*sig++) {
-      case 'd':
-        lua_pushnumber(*this, va_arg(args, double));
-        break;
-      case 'i':
-        lua_pushinteger(*this, va_arg(args, int));
-        break;
-      case 's':
-        lua_pushstring(*this, va_arg(args, char *));
-        break;
-      case '>':
-        goto endargs;
-      default:
-        PTRACE(1, "LUA\tInvalid argument in call " << *(sig -1));
-        return false;
-    }
-  }
-  endargs:
-
-  int nresults = strlen(sig);
-
-  if (lua_pcall(*this, nargs, nresults, 0) != 0) 
-    return false;
-
-  nresults = -nresults;
-
-  while (*sig) {
-    switch (*sig++) {
-      case 'd':
-        if (lua_isnumber(*this, nresults)) {
-          PTRACE(1, "LUA\tInvalid result from call " << *(sig -1));
-          return false;
-        }
-        *va_arg(args, double *) = lua_tonumber(*this, nresults);
-        break;
-      case 'i':
-        if (lua_isnumber(*this, nresults)) {
-          PTRACE(1, "LUA\tInvalid result from call " << *(sig -1));
-          return false;
-        }
-        *va_arg(args, int *) = lua_tointeger(*this, nresults);
-        break;
-      case 's':
-        if (lua_isstring(*this, nresults)) {
-          PTRACE(1, "LUA\tInvalid result from call " << *(sig -1));
-          return false;
-        }
-        *va_arg(args, const char **) = lua_tostring(*this, nresults);
-        break;
-      default:
-        PTRACE(1, "LUA\tInvalid result from call " << *(sig -1));
-        return false;
-    }
-    nresults++;
-  }
-
-  va_end(args);
+  lua_setglobal(m_lua, name);
 
   return true;
 }
 
 
-void PLua::BindToInstanceStart(const char * instanceName)
+bool PLua::GetBoolean(const PString & name)
 {
-  /* create a new metatable and set the __index table */
-  luaL_newmetatable(m_lua, instanceName);
-  lua_pushvalue(m_lua, -1);
-  lua_setfield(m_lua, -2, "__index");
+  if (!InternalGetVariable(name))
+    return false;
+
+  bool result = lua_toboolean(m_lua, -1);
+  lua_pop(m_lua, 1);
+  return result;
 }
 
 
-void PLua::BindToInstanceFunc(const char * lua_name, void * obj, CFunction func)
+bool PLua::SetBoolean(const PString & name, bool value)
 {
-  /* set member function */
-  lua_pushlightuserdata(m_lua, obj);
-  lua_pushcclosure(m_lua, func, 1);
-  lua_setfield(m_lua, -2, lua_name);
+  lua_pushboolean(m_lua, value);
+  return InternalSetVariable(name);
 }
 
 
-void PLua::BindToInstanceEnd(const char * instanceName)
+int PLua::GetInteger(const PString & name)
 {
-  /* assign metatable */
-  lua_newtable(m_lua);
-  luaL_getmetatable(m_lua, instanceName);
-  lua_setmetatable(m_lua, -2);
-  lua_setglobal(m_lua, instanceName);
+  if (!InternalGetVariable(name))
+    return false;
+
+  int result = lua_tointeger(m_lua, -1);
+  lua_pop(m_lua, 1);
+  return result;
 }
 
 
-void * PLua::GetInstance(lua_State * L)
+bool PLua::SetInteger(const PString & name, int value)
 {
-  return lua_touserdata(L, lua_upvalueindex(1));
+  lua_pushinteger(m_lua, value);
+  return InternalSetVariable(name);
 }
 
 
-int PLua::TraceFunction(lua_State * L)
+double PLua::GetNumber(const PString & name)
 {
-  if (!lua_isnumber(L, -2))
+  if (!InternalGetVariable(name))
+    return false;
+
+  double result = lua_tonumber(m_lua, -1);
+  lua_pop(m_lua, 1);
+  return result;
+}
+
+
+bool PLua::SetNumber(const PString & name, double value)
+{
+  lua_pushnumber(m_lua, value);
+  return InternalSetVariable(name);
+}
+
+
+PString PLua::GetString(const PString & name)
+{
+  if (!InternalGetVariable(name))
+    return false;
+
+  PString result = lua_tostring(m_lua, -1);
+  lua_pop(m_lua, 1);
+  return result;
+}
+
+
+bool PLua::SetString(const PString & name, const char * value)
+{
+  lua_pushstring(m_lua, value);
+  return InternalSetVariable(name);
+}
+
+
+static char * my_lua_tostring(lua_State * lua, int index)
+{
+  size_t len;
+  const char * str = lua_tolstring(lua, index, &len);
+  char * buf = new char[len+1];
+  strcpy(buf, str);
+  return buf;
+}
+
+bool PLua::Call(const PString & name, const char * signature, ...)
+{
+  va_list args;
+  va_start(args, signature);
+
+  if (!InternalGetVariable(name))
+    return false;
+
+  if (!lua_isfunction(m_lua, -1))
+    return OnError(LUA_ERRRUN, "No such function as " + name, 1);
+
+  int nargs = 0, nresults = 0;
+  const char * resultSignature = NULL;
+  if (signature != NULL) {
+    while (*signature != '\0') {
+      switch (*signature++) {
+        case 'B':
+        case 'b':
+          if (resultSignature != NULL)
+            ++nresults;
+          else {
+            lua_pushboolean(m_lua, va_arg(args, bool));
+            ++nargs;
+          }
+          break;
+
+        case 'I':
+        case 'i':
+          if (resultSignature != NULL)
+            ++nresults;
+          else {
+            lua_pushinteger(m_lua, va_arg(args, int));
+            ++nargs;
+          }
+          break;
+
+        case 'N':
+        case 'n':
+          if (resultSignature != NULL)
+            ++nresults;
+          else {
+            lua_pushnumber(m_lua, va_arg(args, double));
+            ++nargs;
+          }
+          break;
+
+        case 'S':
+        case 's':
+          if (resultSignature != NULL)
+            ++nresults;
+          else {
+            lua_pushstring(m_lua, va_arg(args, const char *));
+            ++nargs;
+          }
+          break;
+
+        case 'U':
+        case 'u':
+          if (resultSignature != NULL)
+            ++nresults;
+          else {
+            lua_pushlightuserdata(m_lua, va_arg(args, void *));
+            ++nargs;
+          }
+          break;
+
+        case '>':
+          if (resultSignature == NULL)
+            resultSignature = signature;
+          break;
+      }
+    }
+  }
+
+  if (!OnError(lua_pcall(m_lua, nargs, nresults, 0)))
+    return false;
+
+  if (resultSignature != NULL) {
+    int result = -nresults;
+
+    while (*resultSignature) {
+      switch (*resultSignature++) {
+        case 'B':
+        case 'b':
+          *va_arg(args, bool *) = lua_toboolean(m_lua, result++);
+          break;
+
+        case 'I':
+        case 'i':
+          *va_arg(args, int *) = lua_tointeger(m_lua, result++);
+          break;
+
+        case 'N':
+        case 'n':
+          *va_arg(args, double *) = lua_tonumber(m_lua, result++);
+          break;
+
+        case 'S':
+        case 's':
+          *va_arg(args, char **) = my_lua_tostring(m_lua, result++);
+          break;
+
+        case 'U':
+        case 'u':
+          *va_arg(args, void **) = lua_touserdata(m_lua, result++);
+          break;
+      }
+    }
+    lua_pop(m_lua, nresults);
+  }
+
+  va_end(args);
+  return true;
+}
+
+
+bool PLua::Call(const PString & name, Signature & signature)
+{
+  if (!InternalGetVariable(name))
+    return false;
+
+  if (!lua_isfunction(m_lua, -1))
+    return OnError(LUA_ERRRUN, "No such function as " + name, 1);
+
+  signature.m_arguments.Push(m_lua);
+
+  if (!OnError(lua_pcall(m_lua, signature.m_arguments.size(), signature.m_results.size(), 0)))
+    return false;
+
+  signature.m_results.Pop(m_lua);
+
+  return true;
+}
+
+
+int PLua::InternalCallback(lua_State * state)
+{
+  PLua * lua = reinterpret_cast<PLua *>(lua_touserdata(state, lua_upvalueindex(2)));
+  return lua != NULL ? lua->InternalCallback() : NULL;
+}
+
+
+int PLua::InternalCallback()
+{
+  PLua::FunctionNotifier * func = reinterpret_cast<PLua::FunctionNotifier *>(lua_touserdata(m_lua, lua_upvalueindex(1)));
+  if (func == NULL || func->IsNULL())
     return 0;
-  if (!lua_isstring(L, -1))
-    return 0;
-  PTRACE(lua_tointeger(L, -2), lua_tostring(L, -1));
-  return 0;
+
+  PLua::Signature signature;
+
+  signature.m_arguments.Pop(m_lua);
+
+  (*func)(*this, signature);
+
+  signature.m_results.Push(m_lua);
+
+  return signature.m_results.size();
+}
+
+
+bool PLua::SetFunction(const PString & name, const FunctionNotifier & func)
+{
+  map<PString, FunctionNotifier>::iterator it = m_functions.find(name);
+  if (it == m_functions.end()) {
+    if (func.IsNULL())
+      return true;
+
+    if (!InternalGetVariable(name))
+      return false;
+
+    int type = lua_type(m_lua, -1);
+    lua_pop(m_lua, 1);
+
+    if (type != LUA_TNIL)
+      return OnError(LUA_ERRSYNTAX, "Already using name " + name + ", type " + lua_typename(m_lua, type));
+  }
+  else {
+    if (it->second == func)
+      return true;
+  }
+
+  m_functions[name] = func;
+  lua_pushlightuserdata(m_lua, &m_functions[name]);
+  lua_pushlightuserdata(m_lua, this);
+  lua_pushcclosure(m_lua, InternalCallback, 2);
+  return InternalSetVariable(name);
+}
+
+
+bool PLua::OnError(int code, const PString & str, unsigned pop)
+{
+  if (code == 0)
+    return true;
+
+  m_lastErrorText = str;
+  if (str.IsEmpty()) {
+    m_lastErrorText = lua_tostring(m_lua, -1);
+    ++pop;
+
+    if (m_lastErrorText.IsEmpty())
+      m_lastErrorText.sprintf("Error code %i", code);
+  }
+
+  if (pop > 0)
+    lua_pop(m_lua, pop);
+
+  PTRACE(2, "Lua\tError " << code << ": " << m_lastErrorText);
+  return false;
+}
+
+
+bool PLua::InternalGetVariable(const PString & name)
+{
+  if (name.IsEmpty())
+    return OnError(LUA_ERRSYNTAX, "Empty name");
+
+  PString table, field;
+  if (!name.Split('.', table, field))
+    lua_getglobal(m_lua, name);
+  else {
+    lua_getglobal(m_lua, table);
+    if (!lua_istable(m_lua, -1))
+      return OnError(LUA_ERRSYNTAX, "No such table as " + table, 1);
+
+    lua_getfield(m_lua, -1, field);
+  }
+
+  return true;
+}
+
+
+bool PLua::InternalSetVariable(const PString & name)
+{
+  if (name.IsEmpty())
+    return OnError(LUA_ERRSYNTAX, "Empty name", 1);
+
+  PString table, field;
+  if (!name.Split('.', table, field))
+    lua_setglobal(m_lua, name);
+  else {
+    lua_getglobal(m_lua, table);
+    if (!lua_istable(m_lua, -3))
+      return OnError(LUA_ERRSYNTAX, "No such table as " + table, 2);
+
+    lua_insert(m_lua, -2); // Swap table (top of stack) and next below (value)
+
+    lua_pushstring(m_lua, field);
+    lua_insert(m_lua, -2); // Swap field name (top of stack) and next below (value)
+
+    lua_settable(m_lua, -3);  // Set table key to value
+
+    lua_pop(m_lua, 1); // Pop the table as above doesn't
+  }
+
+  return true;
+}
+
+
+void PLua::ParamVector::Push(lua_State * lua)
+{
+  for (iterator it = begin(); it != end(); ++it) {
+    switch (it->m_type) {
+      case PLua::ParamNIL :
+        lua_pushnil(lua);
+        break;
+
+      case PLua::ParamBoolean :
+        lua_pushboolean(lua, it->m_boolean);
+        break;
+
+      case PLua::ParamInteger :
+        lua_pushinteger(lua, it->m_integer);
+        break;
+
+      case PLua::ParamNumber :
+        lua_pushnumber(lua, it->m_number);
+        break;
+
+      case PLua::ParamStaticString :
+        lua_pushstring(lua, it->m_staticString);
+        break;
+
+      case PLua::ParamDynamicString :
+        lua_pushstring(lua, it->m_dynamicString);
+    }
+  }
+}
+
+
+void PLua::ParamVector::Pop(lua_State * lua)
+{
+  resize(lua_gettop(lua));
+
+  for (reverse_iterator it = rbegin(); it != rend(); ++it) {
+    switch (lua_type(lua, -1)) {
+      case LUA_TBOOLEAN :
+        it->m_type = ParamBoolean;
+        it->m_boolean = lua_toboolean(lua, -1);
+        break;
+
+      case LUA_TLIGHTUSERDATA :
+        it->m_type = ParamUserData;
+        it->m_userData = lua_touserdata(lua, -1);
+        break;
+
+      case LUA_TNUMBER :
+        it->m_type = ParamNumber;
+        it->m_number = lua_tonumber(lua, -1);
+        break;
+
+      case LUA_TSTRING :
+        it->m_type = ParamDynamicString;
+        it->m_dynamicString = my_lua_tostring(lua, -1);
+        break;
+    }
+
+    lua_pop(lua, 1);
+  }
+}
+
+
+ostream& operator<<(ostream& strm, const PLua::Parameter& param)
+{
+  switch (param.m_type) {
+    case PLua::ParamNIL :
+      strm << "(nil)";
+      break;
+
+    case PLua::ParamBoolean :
+      strm << param.m_boolean;
+      break;
+
+    case PLua::ParamInteger :
+      strm << param.m_integer;
+      break;
+
+    case PLua::ParamNumber :
+      strm << param.m_number;
+      break;
+
+    case PLua::ParamStaticString :
+    case PLua::ParamDynamicString :
+      strm << param.m_staticString;
+      break;
+
+    case PLua::ParamUserData :
+      strm << param.m_userData;
+  }
+  return strm;
 }
 
 
