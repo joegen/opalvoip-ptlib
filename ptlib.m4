@@ -76,12 +76,10 @@ AC_DEFUN([PTLIB_FIND_DIRECTX],
 	  CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
 	  AC_LANG(C++)
 
-	  AC_CHECK_HEADERS([mingw_dshow_port.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
-	  AC_CHECK_HEADERS([dxerr9.h], [], [ptlib_has_directx=no])
 	  AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
 dnl ##### the two following headers are included by other headers, so check only if they exist
 	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [], [ptlib_has_directx=no])
