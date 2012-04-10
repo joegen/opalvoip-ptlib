@@ -53,12 +53,14 @@ PCREATE_PROCESS(MyProcess)
 #define LUA_TO_C_FUNCTION "lua_to_c_test"
 #define C_TO_LUA_FUNCTION "c_to_lua_test"
 #define LUA_VARIABLE      "lua_variable"
+#define LUA_VAR_INIT_VALUE 12
+#define LUA_VAR_NEW_VALUE  "27"
 
 const char TestScript[] =
   LUA_TO_C_FUNCTION "('main')\n"
   "class1."LUA_TO_C_FUNCTION"('first', 1)\n"
   "class2."LUA_TO_C_FUNCTION"('second', 2)\n"
-  "x=17\n"
+  LUA_VARIABLE"="LUA_VAR_NEW_VALUE"\n"
   "function "C_TO_LUA_FUNCTION"(a, b)\n"
   "  return 'a+b=' .. (a + b)\n"
   "end\n";
@@ -109,11 +111,23 @@ void MyProcess::Main()
   MyClass class1(lua, "class1");
   MyClass class2(lua, "class2");
 
-  lua.SetInteger(LUA_VARIABLE, 12);
+  lua.SetInteger(LUA_VARIABLE, LUA_VAR_INIT_VALUE);
+
+  lua.CreateTable("TopTable");
+  lua.CreateTable("TopTable.MiddleTable");
+  lua.CreateTable("TopTable.MiddleTable.BottomTable");
+  lua.SetNumber("TopTable.MiddleTable.BottomTable.Number", 1234.56789);
+  cout << "TopTable.MiddleTable.BottomTable.Number="
+       << setprecision(10) << lua.GetNumber("TopTable.MiddleTable.BottomTable.Number") << endl;
+
+  lua.DeleteTable("TopTable.MiddleTable");
+  if (lua.GetNumber("TopTable.MiddleTable.BottomTable.Number") != 0)
+    cerr << "Failed to delete table TopTable.MiddleTable" << endl;
 
   if (args.GetCount() == 0) {
     if (lua.Run(TestScript)) {
-      cout << "New value for x=" << lua.GetInteger(LUA_VARIABLE) << endl;
+      cout << "Variable " LUA_VARIABLE " changed from " << LUA_VAR_INIT_VALUE
+           << " to " << lua.GetInteger(LUA_VARIABLE) << " (expected " LUA_VAR_NEW_VALUE ")" << endl;
       char * str = NULL;
       if (lua.Call(C_TO_LUA_FUNCTION, "in>s", 3, 0.14159, &str))
         cout << "Function returned \"" << str << '"' << endl;
