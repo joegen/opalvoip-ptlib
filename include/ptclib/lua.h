@@ -47,6 +47,12 @@ struct lua_State;
 //////////////////////////////////////////////////////////////
 
 /**A wrapper around a Lua scripting language instance.
+
+   The \p name indicates the variable name of the form
+     var[.var[.var ...]]
+   where var is the usual alphanumeric+underscore string for identifier names
+   as used in C and many other languages. The dots separate Lua tables and
+   fields of that table. Tables may be nested.
  */
 class PLua : public PObject
 {
@@ -76,6 +82,12 @@ class PLua : public PObject
       const PString & text  ///< Script text to load.
     );
 
+    /**Load a Lua script from a file (if exists) or assume is the actual script.
+      */
+    virtual bool Load(
+      const PString & lua  ///< Name of script file or script itself to load
+    );
+
     /**Run the script.
        If \p script is NULL or empty then the currently laoded script is
        executed. If \p script is an existing file, then that will be loaded
@@ -86,21 +98,36 @@ class PLua : public PObject
       const char * script = NULL
     );
 
-    /**Create a metatable
+    /**Create a table with optional metatable.
+       If the metatable does not exist it is created.
+
+       See class description for how \p name is parsed.
       */
     bool CreateTable(
-      const PString & name,   ///M Name of new table
-      bool withMeta = true    ///< Include metatable
+      const PString & name,   ///< Name of new table
+      const PString & metatable = PString::Empty() ///< Metatable to attach
+    );
+
+    /**Delete table.
+       Note this only applies to metatables and global tables. Tables
+       contained within other tables are garbage collected when the
+       enclosing table no longer reference it.
+      */
+    bool DeleteTable(
+      const PString & name,   ///< Name of table to delete
+      bool metaTable = false  ///< Table it a metatable
     );
 
 
     /**Get a variable in the script as a string value.
+       See class description for how \p name is parsed.
       */
     bool GetBoolean(
       const PString & name  ///< Name of global
     );
 
     /**Set a variable in the script as a string value.
+       See class description for how \p name is parsed.
       */
     bool SetBoolean(
       const PString & name, ///< Name of global
@@ -108,12 +135,14 @@ class PLua : public PObject
     );
 
     /**Get a variable in the script as an integer value.
+       See class description for how \p name is parsed.
       */
     int GetInteger(
       const PString & name  ///< Name of global
     );
 
     /**Set a variable in the script as an integer value.
+       See class description for how \p name is parsed.
       */
     bool SetInteger(
       const PString & name, ///< Name of global
@@ -121,12 +150,14 @@ class PLua : public PObject
     );
 
     /**Get a variable in the script as a number value.
+       See class description for how \p name is parsed.
       */
     double GetNumber(
       const PString & name  ///< Name of global
     );
 
     /**Set a variable in the script as a number value.
+       See class description for how \p name is parsed.
       */
     bool SetNumber(
       const PString & name, ///< Name of global
@@ -134,12 +165,14 @@ class PLua : public PObject
     );
 
     /**Get a variable in the script as a string value.
+       See class description for how \p name is parsed.
       */
     PString GetString(
       const PString & name  ///< Name of global
     );
 
     /**Set a variable in the script as a string value.
+       See class description for how \p name is parsed.
       */
     bool SetString(
       const PString & name, ///< Name of global
@@ -147,6 +180,7 @@ class PLua : public PObject
     );
 
 
+    /// Type of the parameter in Paramater structure
     enum ParamType {
       ParamNIL,  // Must be zero
       ParamBoolean,
@@ -157,6 +191,7 @@ class PLua : public PObject
       ParamUserData
     };
 
+    /// Individual Parameter in ParamVector.
     struct Parameter {
       Parameter() { memset(this, 0, sizeof(*this)); }
       ~Parameter() { if (m_type == ParamDynamicString) delete[] m_dynamicString; }
@@ -171,9 +206,12 @@ class PLua : public PObject
         char * m_dynamicString;
         const void * m_userData;
       };
+
       friend ostream& operator<<(ostream& strm, const Parameter& param);
+      PString AsString() const;
     };
 
+    /// Vector of parameters as used by Signature structure.
     struct ParamVector : public vector<Parameter>
     {
       ParamVector(size_t sz = 0) : vector<Parameter>(sz) { }
@@ -181,6 +219,7 @@ class PLua : public PObject
       void Pop(lua_State * lua);
     };
 
+    /// Signature of Lua function and callback.
     struct Signature {
       ParamVector m_arguments;
       ParamVector m_results;
@@ -208,6 +247,8 @@ class PLua : public PObject
        The second form with \p signature alows for the caller to adaptively
        respond to different return types.
 
+       See class description for how \p name is parsed.
+
        @returns false if function does not exist.
       */
     bool Call(
@@ -225,6 +266,7 @@ class PLua : public PObject
     #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, const PLua::Signature &)
 
     /**Set a notifier as a Lua callable function.
+       See class description for how \p name is parsed.
       */
     bool SetFunction(
       const PString & name,         ///< Name of function Lua script can call
@@ -244,8 +286,9 @@ class PLua : public PObject
   protected:
     /**Check for an error and set m_lastErrorText to error text.
       */
-    virtual bool OnError(int code, const PString & str = PString::Empty(), unsigned pop = 0);
+    virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0);
 
+    bool ValidateVariableName(const PString & name);
     bool InternalGetVariable(const PString & name);
     bool InternalSetVariable(const PString & name);
     static int InternalCallback(lua_State * state);
