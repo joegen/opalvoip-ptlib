@@ -55,6 +55,7 @@ PCREATE_PROCESS(MyProcess)
 #define LUA_VARIABLE      "lua_variable"
 #define LUA_VAR_INIT_VALUE 12
 #define LUA_VAR_NEW_VALUE  "27"
+const PConstString StringIndex("Some \"string\" index");
 
 const char TestScript[] =
 #if PTRACING
@@ -126,6 +127,20 @@ void MyProcess::Main()
   lua.DeleteTable("TopTable.MiddleTable");
   if (lua.GetNumber("TopTable.MiddleTable.BottomTable.Number") != 0)
     cerr << "Failed to delete table TopTable.MiddleTable" << endl;
+  else
+    cout << "Deleteed table TopTable.MiddleTable\n";
+
+  PString strTableName = "TopTable[" + StringIndex.ToLiteral() + ']';
+  if (!lua.CreateTable(strTableName))
+    cerr << lua.GetLastErrorText() << " creating string indexed table" << endl;
+
+  if (!lua.SetString(strTableName + ".a_string", "A value"))
+    cerr << lua.GetLastErrorText() << " setting string field of indexed table" << endl;
+
+  if (lua.GetString(strTableName + ".a_string") != "A value")
+    cerr << "Did not actually set string field of indexed table" << endl;
+  else
+    cout << "Set string field: " << strTableName << ".a_string" << endl;
 
   if (args.GetCount() == 0) {
     if (lua.Run(TestScript)) {
