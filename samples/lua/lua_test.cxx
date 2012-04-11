@@ -166,14 +166,14 @@ static void TestOutput(const PLua::Signature & sig)
 }
 
 
-void MyProcess::LuaTestFunction(PLua&, const PLua::Signature & sig)
+void MyProcess::LuaTestFunction(PLua&, PLua::Signature & sig)
 {
   cout << "Global:";
   TestOutput(sig);
 }
 
 
-void MyClass::LuaTestFunction(PLua&, const PLua::Signature & sig)
+void MyClass::LuaTestFunction(PLua&, PLua::Signature & sig)
 {
   cout << "Memeber: instance=" << m_instance << ',';
   TestOutput(sig); 
