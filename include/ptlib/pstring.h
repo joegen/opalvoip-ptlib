@@ -1655,6 +1655,17 @@ class PString : public PCharArray
      */
     PString ToLiteral() const;
 
+    /** Parse a C literal string format as for PString::ToLiteral().
+        The \p offset is the initial position is \p str and will be updated
+        to the final position in the string for the literal. If the string
+        starts with an opening quote, this will be the one past final
+        enclosing quote. If no opening quote is present this will be
+        PString::GetLength().
+      */
+    PString FromLiteral(
+      PINDEX & offset
+    ) const;
+
     /**Get the internal buffer as a pointer to unsigned characters. The
        standard "operator const char *" function is provided by the
        <code>PCharArray</code> ancestor class.
