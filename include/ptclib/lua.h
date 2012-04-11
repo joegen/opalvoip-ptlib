@@ -263,8 +263,8 @@ class PLua : public PObject
     );
 
 
-    typedef PNotifierTemplate<const Signature &>  FunctionNotifier;
-    #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, const PLua::Signature &)
+    typedef PNotifierTemplate<Signature &>  FunctionNotifier;
+    #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, PLua::Signature &)
 
     /**Set a notifier as a Lua callable function.
        See class description for how \p name is parsed.
