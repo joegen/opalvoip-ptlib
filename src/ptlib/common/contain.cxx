@@ -733,7 +733,7 @@ static int TranslateHex(char x)
 static const unsigned char PStringEscapeCode[]  = {  'a',  'b',  'f',  'n',  'r',  't',  'v' };
 static const unsigned char PStringEscapeValue[] = { '\a', '\b', '\f', '\n', '\r', '\t', '\v' };
 
-static void TranslateEscapes(const char * src, char * dst)
+static void TranslateEscapes(const char * & src, char * dst)
 {
   bool hadLeadingQuote = *src == '"';
   if (hadLeadingQuote)
@@ -2061,6 +2061,22 @@ PString PString::ToLiteral() const
     }
   }
   return str + '"';
+}
+
+
+PString PString::FromLiteral(PINDEX & offset) const
+{
+  if (offset >= GetLength())
+    return PString::Empty();
+
+  PString str;
+  str.SetSize(GetLength()-offset);
+  const char * cstr = theArray+offset;
+  TranslateEscapes(cstr, str.theArray);
+  str.MakeMinimumSize();
+  offset = cstr - theArray;
+
+  return str;
 }
 
 
