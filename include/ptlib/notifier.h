@@ -67,7 +67,8 @@ class PNotifierFunctionTemplate : public PSmartObject
   protected:
     /// Create a notification function instance.
     PNotifierFunctionTemplate(
-      void * target    ///< Object instance on which the function will be called on.
+      void * target,    ///< Object instance on which the function will be called on.
+      void * = NULL
     ) { m_target = PAssertNULL(target); }
 
   public:
@@ -151,7 +152,7 @@ typedef PNotifierTemplate<INT> PNotifier;
 #define PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
   class func##_PNotifier : public BaseClass { \
     public: \
-      func##_PNotifier(notifiee * obj) : BaseClass(obj) { } \
+      func##_PNotifier(notifiee * target) : BaseClass(target, target) { } \
       virtual void Call(PObject & note, ParamType extra) const \
 
 #define PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, BaseClass) \
