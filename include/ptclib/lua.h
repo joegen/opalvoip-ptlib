@@ -193,17 +193,19 @@ class PLua : public PObject
 
     /// Individual Parameter in ParamVector.
     struct Parameter {
-      Parameter() { memset(this, 0, sizeof(*this)); }
-      ~Parameter() { if (m_type == ParamDynamicString) delete[] m_dynamicString; }
+      Parameter();
+      Parameter(const Parameter & other);
+      Parameter & operator=(const Parameter & other);
+      ~Parameter();
 
-      ParamType m_type; ///< Type of argument, 'i', 'n' or 's'
+      ParamType m_type; ///< Type of parameter
 
       union {
-        bool m_boolean;
-        int m_integer;
-        double m_number;
+        bool         m_boolean;
+        int          m_integer;
+        double       m_number;
         const char * m_staticString;
-        char * m_dynamicString;
+        char       * m_dynamicString;
         const void * m_userData;
       };
 
