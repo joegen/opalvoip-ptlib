@@ -50,10 +50,28 @@
 
 
 #if PTRACING
-static int TraceFunction(lua_State * L)
+static int TraceFunction(lua_State * lua)
 {
-  if (lua_isnumber(L, -2) && lua_isstring(L, -1))
-    PTRACE(lua_tointeger(L, -2), "LuaScript\t" << lua_tostring(L, -1));
+  int argCount = lua_gettop(lua);
+  if (argCount < 2) {
+    PTRACE(1, "Lua\tToo few arguments for PTRACE.");
+    return 0;
+  }
+
+  if (!lua_isnumber(lua, -argCount)) {
+    PTRACE(1, "Lua\tFirst PTRACE argument must be number.");
+    return 0;
+  }
+
+  unsigned level = (unsigned)lua_tointeger(lua, -argCount);
+  if (!PTrace::CanTrace(level))
+    return 0;
+
+  ostream & strm = PTrace::Begin(level, __FILE__, __LINE__);
+  for (int arg = -(argCount-1); arg < 0; ++arg)
+    strm << lua_tostring(lua, arg);
+  strm << PTrace::End;
+
   return 0;
 }
 #endif
@@ -262,6 +280,9 @@ static char * my_lua_tostring(lua_State * lua, int index)
 {
   size_t len;
   const char * str = lua_tolstring(lua, index, &len);
+  if (str == NULL)
+    return NULL;
+
   char * buf = new char[len+1];
   strcpy(buf, str);
   return buf;
@@ -661,6 +682,28 @@ PString PLua::Parameter::AsString() const
   PStringStream strm;
   strm << *this;
   return strm;
+}
+
+
+int PLua::Parameter::AsInteger() const
+{
+  switch (m_type) {
+    case PLua::ParamBoolean :
+      return m_boolean;
+
+    case PLua::ParamInteger :
+      return m_integer;
+
+    case PLua::ParamNumber :
+      return (int)m_number;
+
+    case PLua::ParamStaticString :
+    case PLua::ParamDynamicString :
+      return atoi(m_staticString);
+
+    default :
+      return 0;
+  }
 }
 
 
