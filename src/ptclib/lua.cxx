@@ -75,6 +75,7 @@ static int TraceFunction(lua_State * lua)
     strm << lua_tostring(lua, arg);
   strm << PTrace::End;
 
+  lua_pop(lua, argCount);
   return 0;
 }
 #endif
@@ -417,7 +418,7 @@ bool PLua::Call(const PString & name, Signature & signature)
 
   signature.m_arguments.Push(m_lua);
 
-  if (!OnError(lua_pcall(m_lua, signature.m_arguments.size(), signature.m_results.size(), 0)))
+  if (!OnError(lua_pcall(m_lua, signature.m_arguments.size(), LUA_MULTRET, 0)))
     return false;
 
   signature.m_results.Pop(m_lua);
@@ -446,6 +447,7 @@ int PLua::InternalCallback()
   (*func)(*this, signature);
 
   signature.m_results.Push(m_lua);
+  PTRACE(6, "Lua\tInternalCallback stack=" << lua_gettop(m_lua) << ", results::size=" << signature.m_results.size());
 
   return signature.m_results.size();
 }
@@ -502,42 +504,71 @@ bool PLua::OnError(int code, const PString & str, int pop)
 }
 
 
-bool PLua::ValidateVariableName(const PString & name)
+static bool ValidIdentifer(const PString & identifier)
+{
+  return !isdigit(identifier[0]) &&
+          identifier.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_") == P_MAX_INDEX;
+}
+
+
+bool PLua::ParseVariableName(const PString & name, PStringArray & elements)
 {
   if (name.IsEmpty())
     return OnError(LUA_ERRSYNTAX, "Empty name");
 
-  if (name.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.") != P_MAX_INDEX)
-    return OnError(LUA_ERRSYNTAX, "Illegal characters in name " + name);
+  // First element must be a straight variable
+  PINDEX elementPos = name.FindOneOf(".[");
+  PString element = name.Left(elementPos);
+  if (!ValidIdentifer(element))
+    return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
 
-  if (isdigit(name[0]))
-    return OnError(LUA_ERRSYNTAX, "Start with digit in name " + name);
+  while (elementPos != P_MAX_INDEX) {
+    elements.AppendString(element);
 
-  if (name.Find("..") != P_MAX_INDEX)
-    return OnError(LUA_ERRSYNTAX, "Empty table name in " + name);
+    if (name[elementPos++] == '.') {
+      PINDEX lastElementPos = elementPos;
+      elementPos = name.FindOneOf(".[", lastElementPos);
+      element = name(lastElementPos, elementPos-1);
+      if (!ValidIdentifer(element))
+        return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
+    }
+    else {
+      element = name.FromLiteral(elementPos);
+      if (name[elementPos++] != ']')
+        return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
 
+      if (elementPos >= name.GetLength())
+        elementPos = P_MAX_INDEX;
+      else {
+        if (name[elementPos] != '.' && name[elementPos] != '[')
+          return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
+      }
+    }
+  }
+
+  elements.AppendString(element);
   return true;
 }
 
 
 bool PLua::InternalGetVariable(const PString & name)
 {
-  if (!ValidateVariableName(name))
+  PStringArray elements;
+  if (!ParseVariableName(name, elements))
     return false;
 
-  PStringArray vars = name.Tokenise('.', false);
-  if (vars.GetSize() < 2) {
+  if (elements.GetSize() < 2) {
     lua_getglobal(m_lua, name);
     return true;
   }
 
-  lua_getglobal(m_lua, vars[0]);
-  for (PINDEX var = 1; var < vars.GetSize(); ++var) {
+  lua_getglobal(m_lua, elements[0]);
+  for (PINDEX var = 1; var < elements.GetSize(); ++var) {
     int type = lua_type(m_lua, -1);
     if (type != LUA_TTABLE)
-      return OnError(LUA_ERRSYNTAX, "No such table as " + vars[var-1] + ", type " + lua_typename(m_lua, type), 1);
+      return OnError(LUA_ERRSYNTAX, "No such table as " + elements[var-1] + ", type " + lua_typename(m_lua, type), 1);
 
-    lua_getfield(m_lua, -1, vars[var]);
+    lua_getfield(m_lua, -1, elements[var]);
     lua_remove(m_lua, -2); // Remove the table from underneath
   }
 
@@ -548,33 +579,35 @@ bool PLua::InternalGetVariable(const PString & name)
 
 bool PLua::InternalSetVariable(const PString & name)
 {
-  if (!ValidateVariableName(name))
+  PStringArray elements;
+  if (!ParseVariableName(name, elements)) {
+    lua_pop(m_lua, 1);
     return false;
+  }
 
-  PStringArray vars = name.Tokenise('.', false);
-  if (vars.GetSize() < 2) {
+  if (elements.GetSize() < 2) {
     lua_setglobal(m_lua, name);
     return true;
   }
 
-  lua_getglobal(m_lua, vars[0]);
+  lua_getglobal(m_lua, elements[0]);
 
   PINDEX var = 1;
   for (;;) {
     int type = lua_type(m_lua, -1);
     if (type != LUA_TTABLE)
-      return OnError(LUA_ERRSYNTAX, "No such table as " + vars[var-1] + ", type " + lua_typename(m_lua, type), 1);
+      return OnError(LUA_ERRSYNTAX, "No such table as " + elements[var-1] + ", type " + lua_typename(m_lua, type), 2);
 
-    if (var >= vars.GetSize()-1)
+    if (var >= elements.GetSize()-1)
       break;
 
-    lua_getfield(m_lua, -1, vars[var++]);
+    lua_getfield(m_lua, -1, elements[var++]);
     lua_remove(m_lua, -2); // Remove the table from underneath
   }
 
   lua_insert(m_lua, -2); // Swap table (top of stack) and next below (value)
 
-  lua_pushstring(m_lua, vars[var]);
+  lua_pushstring(m_lua, elements[var]);
   lua_insert(m_lua, -2); // Swap field name (top of stack) and next below (value)
 
   lua_settable(m_lua, -3);  // Set table key to value
@@ -620,6 +653,7 @@ void PLua::ParamVector::Push(lua_State * lua)
 void PLua::ParamVector::Pop(lua_State * lua)
 {
   resize(lua_gettop(lua));
+  PTRACE2(6, NULL, "Lua\tParamVector::Pop stack=" << size());
 
   for (reverse_iterator it = rbegin(); it != rend(); ++it) {
     switch (lua_type(lua, -1)) {

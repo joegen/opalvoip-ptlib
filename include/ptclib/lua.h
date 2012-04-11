@@ -292,7 +292,7 @@ class PLua : public PObject
       */
     virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0);
 
-    bool ValidateVariableName(const PString & name);
+    bool ParseVariableName(const PString & name, PStringArray & vars);
     bool InternalGetVariable(const PString & name);
     bool InternalSetVariable(const PString & name);
     static int InternalCallback(lua_State * state);
