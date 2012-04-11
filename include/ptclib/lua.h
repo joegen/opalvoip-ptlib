@@ -209,6 +209,7 @@ class PLua : public PObject
 
       friend ostream& operator<<(ostream& strm, const Parameter& param);
       PString AsString() const;
+      int AsInteger() const;
     };
 
     /// Vector of parameters as used by Signature structure.
