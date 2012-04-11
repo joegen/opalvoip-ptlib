@@ -175,7 +175,7 @@ void MyProcess::LuaTestFunction(PLua&, PLua::Signature & sig)
 
 void MyClass::LuaTestFunction(PLua&, PLua::Signature & sig)
 {
-  cout << "Memeber: instance=" << m_instance << ',';
+  cout << "Member: instance=" << m_instance << ',';
   TestOutput(sig); 
 }
 

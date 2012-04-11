@@ -49,6 +49,9 @@
 #endif
 
 
+#define new PNEW
+
+
 #if PTRACING
 static int TraceFunction(lua_State * lua)
 {
@@ -636,8 +639,8 @@ void PLua::ParamVector::Pop(lua_State * lua)
         break;
 
       case LUA_TSTRING :
-        it->m_type = ParamDynamicString;
         it->m_dynamicString = my_lua_tostring(lua, -1);
+        it->m_type = it->m_dynamicString != NULL ? ParamDynamicString : ParamNIL;
         break;
     }
 
@@ -704,6 +707,23 @@ int PLua::Parameter::AsInteger() const
     default :
       return 0;
   }
+}
+
+
+void PLua::Parameter::SetDynamicString(const char * str, size_t len)
+{
+  if (str == NULL) {
+    m_type = PLua::ParamNIL;
+    return;
+  }
+
+  m_type = PLua::ParamDynamicString;
+
+  if (len == 0)
+    len = strlen(str);
+
+  m_dynamicString = new char[len+1];
+  strcpy(m_dynamicString, str);
 }
 
 
