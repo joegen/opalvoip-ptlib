@@ -649,6 +649,45 @@ void PLua::ParamVector::Pop(lua_State * lua)
 }
 
 
+PLua::Parameter::Parameter()
+{
+  memset(this, 0, sizeof(*this));
+}
+
+
+PLua::Parameter::Parameter(const Parameter & other)
+{
+  memset(this, 0, sizeof(*this));
+  operator=(other);
+}
+
+
+PLua::Parameter & PLua::Parameter::operator=(const Parameter & other)
+{
+  if (this == &other)
+    return *this;
+
+  if (m_type == ParamDynamicString)
+    delete[] m_dynamicString;
+
+  if (other.m_type != ParamDynamicString)
+    memcpy(this, &other, sizeof(*this));
+  else {
+    memset(this, 0, sizeof(*this));
+    SetDynamicString(other.m_dynamicString);
+  }
+
+  return *this;
+}
+
+
+PLua::Parameter::~Parameter()
+{
+  if (m_type == ParamDynamicString)
+    delete[] m_dynamicString;
+}
+
+
 ostream& operator<<(ostream& strm, const PLua::Parameter& param)
 {
   switch (param.m_type) {
@@ -712,6 +751,9 @@ int PLua::Parameter::AsInteger() const
 
 void PLua::Parameter::SetDynamicString(const char * str, size_t len)
 {
+  if (m_type == ParamDynamicString)
+    delete[] m_dynamicString;
+
   if (str == NULL) {
     m_type = PLua::ParamNIL;
     return;
