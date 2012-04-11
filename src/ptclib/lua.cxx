@@ -313,7 +313,7 @@ bool PLua::Call(const PString & name, const char * signature, ...)
           if (resultSignature != NULL)
             ++nresults;
           else {
-            lua_pushboolean(m_lua, va_arg(args, bool));
+            lua_pushboolean(m_lua, va_arg(args, int));
             ++nargs;
           }
           break;
@@ -430,7 +430,7 @@ bool PLua::Call(const PString & name, Signature & signature)
 int PLua::InternalCallback(lua_State * state)
 {
   PLua * lua = reinterpret_cast<PLua *>(lua_touserdata(state, lua_upvalueindex(2)));
-  return lua != NULL ? lua->InternalCallback() : NULL;
+  return lua != NULL ? lua->InternalCallback() : 0;
 }
 
 
@@ -645,6 +645,10 @@ void PLua::ParamVector::Push(lua_State * lua)
 
       case PLua::ParamDynamicString :
         lua_pushstring(lua, it->m_dynamicString);
+        break;
+
+      case PLua::ParamUserData :
+        lua_pushlightuserdata(lua, (void *)it->m_userData);
     }
   }
 }
