@@ -57,6 +57,9 @@ PCREATE_PROCESS(MyProcess)
 #define LUA_VAR_NEW_VALUE  "27"
 
 const char TestScript[] =
+#if PTRACING
+  "PTRACE(2, 'Starting test script: ', ' setting "LUA_VARIABLE" to ', "LUA_VAR_NEW_VALUE")\n"
+#endif
   LUA_TO_C_FUNCTION "('main')\n"
   "class1."LUA_TO_C_FUNCTION"('first', 1)\n"
   "class2."LUA_TO_C_FUNCTION"('second', 2)\n"
