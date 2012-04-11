@@ -86,9 +86,9 @@ class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParamType>
   PCLASSINFO(PValidatedNotifierFunction, Parent);
 
   public:
-    PValidatedNotifierFunction(PValidatedNotifierTarget * target)
-      : Parent(target)
-      , m_targetID(target->m_validatedNotifierId)
+    PValidatedNotifierFunction(void * voidTarget, PValidatedNotifierTarget * notifierTarget)
+      : Parent(voidTarget)
+      , m_targetID(notifierTarget->m_validatedNotifierId)
     { }
 
     virtual void * GetTarget() const
@@ -188,9 +188,9 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParamType>
   PCLASSINFO(PAsyncNotifierFunction, Parent);
 
   public:
-    PAsyncNotifierFunction(PAsyncNotifierTarget * target)
-      : Parent(target)
-      , m_targetID(target->m_asyncNotifierId)
+    PAsyncNotifierFunction(void * voidTarget, PAsyncNotifierTarget * notifierTarget)
+      : Parent(voidTarget)
+      , m_targetID(notifierTarget->m_asyncNotifierId)
     { }
 
   protected:
@@ -202,7 +202,7 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParamType>
       private:
         const Target  & m_target;
         PObject       & m_notifier;
-        ParamType        m_extra;
+        ParamType       m_extra;
 
       public:
         TypedCallback(const Target & target, PObject & notifier, const ParamType & extra)
