@@ -157,7 +157,7 @@ typedef PNotifierTemplate<INT> PNotifier;
 
 #define PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, BaseClass) \
         { notifiee * target = reinterpret_cast<notifiee *>(this->GetTarget()); \
-          if (PAssertNULL(target) != NULL) \
+          if (target != NULL) \
             target->func((notifier &)note, extra); \
         } \
       static PNotifierTemplate<ParamType> Create(notifiee * obj) { return new func##_PNotifier(obj); } \
