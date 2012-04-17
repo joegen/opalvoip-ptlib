@@ -318,9 +318,8 @@ static PString ErrorMessage(HRESULT hr)
     return msg;
 #endif
 
-#pragma warning(disable:4995)
   char hex[20];
-  _snprintf(hex, sizeof(hex), "0x%08x", hr);
+  _snprintf_s(hex, sizeof(hex), _TRUNCATE, "0x%08x", hr);
   return hex;
 }
 #endif // PTRACING
