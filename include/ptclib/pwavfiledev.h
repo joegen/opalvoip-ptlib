@@ -94,12 +94,15 @@ class PSoundChannel_WAVFile : public PSoundChannel
 
 protected:
     bool ReadSamples(void * data, PINDEX size);
+    bool ReadSample(short & data);
 
     PWAVFile       m_WAVFile;
     PAdaptiveDelay m_Pacing;
     bool           m_autoRepeat;
     unsigned       m_sampleRate;
     PINDEX         m_bufferSize;
+    PShortArray    m_sampleBuffer;
+    PINDEX         m_samplePosition;
 };
 
 
