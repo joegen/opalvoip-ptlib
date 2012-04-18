@@ -86,6 +86,7 @@ PSoundChannel_WAVFile::PSoundChannel_WAVFile()
   : m_autoRepeat(false)
   , m_sampleRate(8000)
   , m_bufferSize(2)
+  , m_samplePosition(P_MAX_INDEX)
 {
 }
 
@@ -265,7 +266,7 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
       iDutyCycle += wavSampleRate;
       if (iDutyCycle >= m_sampleRate) {
         iDutyCycle -= m_sampleRate;
-        if (!ReadSamples(&iSample, sizeof(short)))
+        if (!ReadSample(iSample))
           return false;
       }
       *pPCM++ = iSample;
@@ -279,7 +280,7 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
     short * pPCM = (short *)data;
     for (PINDEX count = 0; count < size; count += sizeof(short)) {
       do {
-        if (!ReadSamples(&iSample, sizeof(short)))
+        if (!ReadSample(iSample))
           return false;
         iDutyCycle += m_sampleRate;
       } while (iDutyCycle < wavSampleRate);
@@ -299,9 +300,23 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 }
 
 
+bool PSoundChannel_WAVFile::ReadSample(short & sample)
+{
+  if (m_samplePosition >= m_sampleBuffer.GetSize()) {
+    static const PINDEX BufferSize = 10000;
+    if (!ReadSamples(m_sampleBuffer.GetPointer(BufferSize), BufferSize*sizeof(short)))
+      return false;
+    m_sampleBuffer.SetSize(m_WAVFile.GetLastReadCount()/sizeof(short));
+    m_samplePosition = 0;
+  }
+  sample = m_sampleBuffer[m_samplePosition++];
+  return true;
+}
+
+
 bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
 {
-  if (m_WAVFile.Read(data, size) && m_WAVFile.GetLastReadCount() >= size)
+  if (m_WAVFile.Read(data, size))
     return true;
 
   if (!m_autoRepeat)
