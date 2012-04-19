@@ -1592,6 +1592,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
 
+  PPluginManager::AddPluginDirs(executableFile.GetDirectory());
+
   Construct();
 
   // create one instance of each class registered in the PProcessStartup abstract factory
