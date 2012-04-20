@@ -1451,11 +1451,13 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
                                0, 0, frameWidth, frameHeight,
                                0, 0, 0, frameHeight,
                                frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
-  else
+  else {
+    SetStretchBltMode(hDC, STRETCH_DELETESCANS);
     result = StretchDIBits(hDC,
                            0, 0, rect.right, rect.bottom,
                            0, 0, frameWidth, frameHeight,
                            frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
+  }
 
   if (result == 0) {
     lastError = ::GetLastError();
@@ -1582,6 +1584,22 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
         GetWindowRect(m_hWnd, &rect);
         m_lastPosition.x = rect.left;
         m_lastPosition.y = rect.top;
+      }
+      break;
+
+    case WM_LBUTTONDBLCLK :
+      if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000) {
+        m_fixedSize.cx = 2*(m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth);
+        m_fixedSize.cy = 2*(m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight);
+        SetWindowSize();
+      }
+      break;
+
+    case WM_RBUTTONDBLCLK :
+      if ((m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0) {
+        m_fixedSize.cx = (m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth)/2;
+        m_fixedSize.cy = (m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight)/2;
+        SetWindowSize();
       }
       break;
 
