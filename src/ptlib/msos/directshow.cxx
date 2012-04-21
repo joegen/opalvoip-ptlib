@@ -87,6 +87,11 @@
 
 #else // _WIN32_WCE
 
+  #ifdef __MINGW32__
+  // workaround a compile error with mingw-w64 on sprintf usage below
+  // need to define this before dshow.h inclusion
+  #define STRSAFE_NO_DEPRECATE
+  #endif
   #include <dshow.h>
   #include <initguid.h>
 
