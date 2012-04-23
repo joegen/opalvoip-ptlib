@@ -1587,12 +1587,13 @@ PProcess::PProcess(const char * manuf, const char * name,
     executableFile = moduleName;
     executableFile.Replace("\\??\\","");
   }
+#ifndef __MINGW32__
+  PPluginManager::AddPluginDirs(executableFile.GetDirectory());
+#endif
 #endif
 
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
-
-  PPluginManager::AddPluginDirs(executableFile.GetDirectory());
 
   Construct();
 
