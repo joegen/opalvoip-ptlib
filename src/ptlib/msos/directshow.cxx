@@ -87,23 +87,20 @@
 
 #else // _WIN32_WCE
 
-  #ifdef __MINGW32__
-  // workaround a compile error with mingw-w64 on sprintf usage below
-  // need to define this before dshow.h inclusion
+  /* workaround a compile error with mingw-w64 on sprintf member function
+     below. Even though the member function is not the same thing as the
+     global function which _is_ deprecated.
+
+     Also applies to a warning in MSVC.
+
+     Need to define this before dshow.h inclusion.
+   */
   #define STRSAFE_NO_DEPRECATE
-  #endif
+
   #include <dshow.h>
   #include <initguid.h>
-
-#ifdef __MINGW32__
   #include <ks.h>
   #include <ksmedia.h>
-#else
-  #pragma warning(disable:4201)
-  #include <Ks.h>
-  #include <KsMedia.h>
-  #pragma warning(default:4201)
-#endif
 
   class PVideoInputControl_DirectShow : public PVideoInputControl
   {
