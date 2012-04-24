@@ -840,17 +840,12 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(PBoolean once)
 {
+  Stop(true);
+
   PTimeInterval::operator=(m_resetTime);
   m_oneshot = once;
-  int oldState = m_state;
-  m_state = (m_resetTime == 0 ? Stopped : Running);
 
-  if (!IsRunning() && (oldState != Stopped)) 
-    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
-  else if (IsRunning()) {
-    if (oldState != Stopped)
-      m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, false);
-
+  if (m_resetTime > 0) {
     m_absoluteTime = Tick().GetMilliSeconds() + m_resetTime.GetMilliSeconds();
     m_timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
   }
@@ -859,32 +854,22 @@ void PTimer::StartRunning(PBoolean once)
 
 void PTimer::Stop(bool wait)
 {
-  if (m_state != Stopped) {
-    m_state = Stopped;
+  if (m_state != Stopped)
     m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
-  }
-  else if (wait) {
-    // ensure that timer is stopped correctly
-    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
-  }
 }
 
 
 void PTimer::Pause()
 {
-  if (IsRunning()) {
-    m_state = Paused;
-    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
-  }
+  if (IsRunning())
+    m_timerList->QueueRequest(PTimerList::RequestType::Pause, this);
 }
 
 
 void PTimer::Resume()
 {
-  if (m_state == Stopped || m_state == Paused) {
-    m_state = Running;
+  if (m_state == Stopped || m_state == Paused)
     m_timerList->QueueRequest(PTimerList::RequestType::Start, this);
-  }
 }
 
 
@@ -903,17 +888,10 @@ void PTimer::OnTimeout()
 
 void PTimer::Process(PInt64 now)
 {
-  switch (m_state) {
-    case Running :
-      if (m_absoluteTime <= now) {
-        if (m_oneshot) 
-          m_state = Stopped;
-        OnTimeout();
-      }
-      break;
-
-    default : // Stopped or Paused, do nothing.
-      break;
+  if (m_state == Running && m_absoluteTime <= now) {
+    if (m_oneshot) 
+      m_state = Stopped;
+    OnTimeout();
   }
 }
 
@@ -931,11 +909,11 @@ void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool i
   bool inTimerThread = m_timerThread == PThread::Current();
 
   RequestType request(action, timer);
-  PSyncPoint sync;
 
   // set synchronisation point
-  if (!inTimerThread) 
-    request.m_sync = isSync ? &sync : NULL;
+  PSyncPoint sync;
+  if (!inTimerThread && isSync)
+    request.m_sync = &sync;
 
   // queue the request
   m_queueMutex.Wait();
@@ -945,20 +923,6 @@ void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool i
   // wait for synchronisation point
   if (!inTimerThread && PProcess::Current().SignalTimerChange() && isSync)
     sync.Wait();
-}
-
-
-void PTimerList::AddActiveTimer(const RequestType & request)
-{
-  ActiveTimerInfoMap::iterator r = m_activeTimers.find(request.m_id);
-  if (r == m_activeTimers.end()) {
-    m_activeTimers.insert(ActiveTimerInfoMap::value_type(request.m_id, ActiveTimerInfo(request.m_timer, request.m_serialNumber)));
-  }
-  else {
-    r->second.m_serialNumber = request.m_serialNumber;
-    r->second.m_timer        = request.m_timer;
-  }
-  m_expiryList.insert(TimerExpiryInfo(request.m_id, request.m_absoluteTime, request.m_serialNumber));
 }
 
 
@@ -973,21 +937,34 @@ void PTimerList::ProcessTimerQueue()
     m_requestQueue.pop();
     m_queueMutex.Signal();
 
+    ActiveTimerInfoMap::iterator it = m_activeTimers.find(request.m_id);
     switch (request.m_action) {
       case PTimerList::RequestType::Start:
-        AddActiveTimer(request);
+        if (it == m_activeTimers.end())
+          m_activeTimers.insert(ActiveTimerInfoMap::value_type(request.m_id, ActiveTimerInfo(request.m_timer, request.m_serialNumber)));
+        else
+          it->second.m_serialNumber = request.m_serialNumber;
+        m_expiryList.insert(TimerExpiryInfo(request.m_id, request.m_absoluteTime, request.m_serialNumber));
+        request.m_timer->m_state = PTimer::Running;
         break;
+
       case PTimerList::RequestType::Stop:
-        {
-          ActiveTimerInfoMap::iterator r = m_activeTimers.find(request.m_id);
-          if (r != m_activeTimers.end()) 
-            m_activeTimers.erase(r);
-        }
+        if (it != m_activeTimers.end())
+          m_activeTimers.erase(it);
+        request.m_timer->m_state = PTimer::Stopped;
         break;
+
+      case PTimerList::RequestType::Pause:
+        if (it != m_activeTimers.end())
+          m_activeTimers.erase(it);
+        request.m_timer->m_state = PTimer::Paused;
+        break;
+
       default:
         PAssertAlways("unknown timer request code");
         break;
     }
+
     if (request.m_sync != NULL)
       request.m_sync->Signal();
 
