@@ -1092,14 +1092,14 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
       do {
         while (ProcessEvents())
           ;
-      } while (NextNode(false));
+      } while (NextNode(true));
     }
     else {
       // Wait till node finishes
       while (ProcessEvents())
         ;
 
-      NextNode(true);
+      NextNode(false);
     }
 
     // Determine if we should quit
@@ -1197,7 +1197,7 @@ bool PVXMLSession::ProcessEvents()
 }
 
 
-bool PVXMLSession::NextNode(bool skipChildren)
+bool PVXMLSession::NextNode(bool processChildren)
 {
   // m_sessionMutex already locked
 
@@ -1211,16 +1211,13 @@ bool PVXMLSession::NextNode(bool skipChildren)
   if (m_xmlChanged)
     return false;
 
-  // Skip all children
-  if (skipChildren)
-    m_currentNode = m_currentNode->GetNextObject();
-
   PXMLElement * element;
 
   if (m_currentNode->IsElement()) {
     element = (PXMLElement*)m_currentNode;
+
     // if the current node has children, then process the first child
-    if ((m_currentNode = element->GetElement(0)) != NULL)
+    if (processChildren && (m_currentNode = element->GetElement(0)) != NULL)
       return false;
   }
   else {
