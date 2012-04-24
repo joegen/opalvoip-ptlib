@@ -137,7 +137,8 @@ class PTimerList : public PObject
       public:
         enum Action {
           Stop,
-          Start
+          Start,
+          Pause
         } m_action;
 
         RequestType(Action act, PTimer * t)
@@ -165,9 +166,6 @@ class PTimerList : public PObject
     PMutex m_queueMutex;
     typedef std::queue<RequestType> RequestQueueType;
     RequestQueueType m_requestQueue;
-
-    // add an active timer to the lists
-    void AddActiveTimer(const RequestType & request);
 
     //  counter to keep track of timer IDs
     mutable PAtomicInteger timerId; 
