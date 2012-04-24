@@ -1978,11 +1978,18 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
         macAddr = PEthSocket::Address((BYTE *)ifReq.ifr_macaddr);
       }
 #endif
-      if (ifa->ifa_addr->sa_family == AF_INET) {
-        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET, sizeof(struct sockaddr_in), (struct sockaddr *)(ifa->ifa_netmask)), macAddr));
-      } else if (ifa->ifa_addr->sa_family == AF_INET6) {
-        list.Append(PNEW InterfaceEntry(ifa->ifa_name, Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_addr)), Address(AF_INET6, sizeof(struct sockaddr_in6), (struct sockaddr *)(ifa->ifa_netmask)), macAddr));
-      }
+      if (ifa->ifa_addr->sa_family == AF_INET)
+        list.Append(PNEW InterfaceEntry(ifa->ifa_name,
+                                        Address(AF_INET, sizeof(sockaddr_in), ifa->ifa_addr),
+                                        Address(AF_INET, sizeof(sockaddr_in), ifa->ifa_netmask),
+                                        macAddr));
+#ifdef P_HAS_IPV6
+      else if (ifa->ifa_addr->sa_family == AF_INET6)
+        list.Append(PNEW InterfaceEntry(ifa->ifa_name,
+                                        Address(AF_INET6, sizeof(sockaddr_in6), ifa->ifa_addr),
+                                        Address(AF_INET6, sizeof(sockaddr_in6), ifa->ifa_netmask),
+                                        macAddr));
+#endif
     }
     freeifaddrs(interfaces);
   }
