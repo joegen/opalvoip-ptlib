@@ -286,7 +286,7 @@ class PVXMLSession : public PIndirectChannel
     virtual bool ProcessNode();
     virtual bool ProcessEvents();
     virtual bool ProcessGrammar();
-    virtual bool NextNode(bool skipChildren);
+    virtual bool NextNode(bool processChildren);
 
     void SayAs(const PString & className, const PString & text);
     void SayAs(const PString & className, const PString & text, const PString & voice);
