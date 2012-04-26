@@ -155,6 +155,7 @@ SOURCE_FORGE_FILES=( $SRC_ARCHIVE_TBZ2 $DOC_ARCHIVE_TBZ2 $SRC_ARCHIVE_ZIP $DOC_A
 CHANGELOG_BASE=ChangeLog-${base}-${release_tag}.txt
 CHANGELOG_FILE=${base}/$CHANGELOG_BASE
 VERSION_FILE=${base}/version.h
+REVISION_FILE=${base}/revision.h.in
 
 
 
@@ -274,7 +275,7 @@ function create_tag () {
     echo "Creating tag $release_tag in $base"
     $SVN copy ${repository}/$release_branch ${repository}/tags/$release_tag -m "Tagging $release_tag"
   fi
-
+  
   if [ -e $VERSION_FILE ]; then
     new_version=( ${release_version[*]} )
     let new_version[2]++
@@ -287,7 +288,12 @@ function create_tag () {
       cat $VERSION_FILE
       $SVN revert $VERSION_FILE
     else
-      $SVN commit -m "$msg" $VERSION_FILE
+      if [ -e $REVISION_FILE ]; then
+        sed -i "s/\$Revision.*\$/\$Revision\$/" revision.h.in
+        $SVN commit -m "$msg" $VERSION_FILE $REVISION_FILE
+      else
+        $SVN commit -m "$msg" $VERSION_FILE
+      fi
     fi
   fi
 }
