@@ -13,6 +13,7 @@ target_os   := @target_os@
 target_cpu  := @target_cpu@
 
 DEV_PLUGIN_DIR := @DEV_PLUGIN_DIR@
+PTLIB_PLUGIN_DIR := @PTLIB_PLUGIN_DIR@
 
 AR	:= @AR@
 CC	:= @CC@
