@@ -289,7 +289,7 @@ function create_tag () {
       $SVN revert $VERSION_FILE
     else
       if [ -e $REVISION_FILE ]; then
-        sed -i "s/\$Revision.*\$/\$Revision\$/" revision.h.in
+        sed -i "s/\$Revision.*\$/\$Revision\$/" $REVISION_FILE
         $SVN commit -m "$msg" $VERSION_FILE $REVISION_FILE
       else
         $SVN commit -m "$msg" $VERSION_FILE
