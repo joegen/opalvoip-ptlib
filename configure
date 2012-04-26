@@ -718,6 +718,7 @@ HAS_DNS_RESOLVER
 CPP
 HAS_SAMPLES
 DEV_PLUGIN_DIR
+PTLIB_PLUGIN_DIR
 HAS_PLUGINS
 PTLIB_REGEX
 HAS_REGEX
@@ -7724,14 +7725,16 @@ $as_echo_n "checking where plugins are being installed... " >&6; }
 
 # Check whether --with-plugin-installdir was given.
 if test "${with_plugin_installdir+set}" = set; then :
-  withval=$with_plugin_installdir; PLUGIN_DIR="$withval"
+  withval=$with_plugin_installdir; PTLIB_PLUGIN_DIR="$withval"
 else
-  PLUGIN_DIR="ptlib-${PTLIB_VERSION}"
+  PTLIB_PLUGIN_DIR="ptlib-${PTLIB_VERSION}"
 
 fi
 
 
-EXPANDED_PLUGIN_DIR="${libdir}/${PLUGIN_DIR}"
+
+
+EXPANDED_PLUGIN_DIR="${libdir}/${PTLIB_PLUGIN_DIR}"
 if test "x${exec_prefix}" = "xNONE" ; then
   if test "x${prefix}" = "xNONE" ; then
     EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
@@ -7757,7 +7760,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+DEV_PLUGIN_DIR="${PTLIB_PLUGIN_DIR}/devices"
 
 
 
@@ -11552,20 +11555,6 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-	  for ac_header in mingw_dshow_port.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "mingw_dshow_port.h" "ac_cv_header_mingw_dshow_port_h" "$ac_includes_default"
-if test "x$ac_cv_header_mingw_dshow_port_h" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_MINGW_DSHOW_PORT_H 1
-_ACEOF
-
-else
-  ptlib_has_directx=no
-fi
-
-done
-
 	  for ac_header in control.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "control.h" "ac_cv_header_control_h" "$ac_includes_default"
@@ -11614,20 +11603,6 @@ do :
 if test "x$ac_cv_header_dsound_h" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_DSOUND_H 1
-_ACEOF
-
-else
-  ptlib_has_directx=no
-fi
-
-done
-
-	  for ac_header in dxerr9.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "dxerr9.h" "ac_cv_header_dxerr9_h" "$ac_includes_default"
-if test "x$ac_cv_header_dxerr9_h" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_DXERR9_H 1
 _ACEOF
 
 else
