@@ -120,6 +120,7 @@ class PSDL_Window
       : m_surface(NULL)
       , m_thread(NULL)
     {
+#if PTRACING
       SDL_version v1;
       SDL_VERSION(&v1);
       const SDL_version * v2 = SDL_Linked_Version();
@@ -127,6 +128,7 @@ class PSDL_Window
              << (unsigned)v1.major << '.' << (unsigned)v1.minor << '.' << (unsigned)v1.patch
              << "  Run-Time version: "
              << (unsigned)v2->major << '.' << (unsigned)v2->minor << '.' << (unsigned)v2->patch);
+#endif
     }
 
 
