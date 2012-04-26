@@ -52,8 +52,12 @@ void LuaProcess::Main()
   MyClass class2("class2");
   class2.BindToInstance(lua, "class2");
 
-  if (!lua.Run("class1.print()\nclass2.print()"))
+  lua.SetValue("a", "12");
+
+  if (!lua.Run("class1.print()\nclass2.print()\na=17"))
     cout << lua.GetLastErrorText() << endl;
+
+  cout << "New value for a=" << lua.GetValue("a") << endl;
 }
 
 // End of hello.cxx
