@@ -124,6 +124,14 @@ void PLua::SetValue(const char * name, const char * value)
   lua_setglobal(*this, name);
 }
 
+PString PLua::GetValue(const char * name)
+{
+  lua_getglobal(*this, name);
+  PString result = lua_tostring(*this, -1);
+  lua_pop(*this, 1);
+  return result;
+}
+
 void PLua::SetFunction(const char * name_, CFunction func)
 {
   PString name(name_);
