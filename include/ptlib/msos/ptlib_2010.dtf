@@ -1531,6 +1531,7 @@ EXPORTS
     ??0?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @1486 NONAME
     ??0?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @1487 NONAME
     ??0?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @1488 NONAME
+    ??0?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @21431 NONAME
     ??0?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @1489 NONAME
     ??0?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @1490 NONAME
     ??0?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @1491 NONAME
@@ -2066,8 +2067,8 @@ EXPORTS
     ??0Arguments@PCLI@@QAE@AAVContext@1@ABVPString@@@Z @2008 NONAME
     ??0Attribute@PLDAPSchema@@QAE@ABVPString@@W4AttributeType@1@@Z @2009 NONAME
     ??0AuthObject@PHTTPClientAuthentication@@QAE@XZ @2010 NONAME
-    ??0AutoReloadThread_PNotifier@PXML@@QAE@PAV1@@Z @2011 NONAME
-    ??0AutoReloadTimeout_PNotifier@PXML@@QAE@PAV1@@Z @2012 NONAME
+    ??0AutoReloadThread_PNotifier@PXML_HTTP@@QAE@PAV1@@Z @21432 NONAME
+    ??0AutoReloadTimeout_PNotifier@PXML_HTTP@@QAE@PAV1@@Z @21433 NONAME
     ??0bad_alloc@std@@QAE@ABV01@@Z @2013 NONAME
     ??0bad_alloc@std@@QAE@PBD@Z @2014 NONAME
     ??0Banner@PHTML@@QAE@PBD@Z @2015 NONAME
@@ -2945,6 +2946,8 @@ EXPORTS
     ??0PStringOptions@@QAE@XZ @2882 NONAME
     ??0PStringSet@@IAE@HPBV0@@Z @2883 NONAME
     ??0PStringSet@@QAE@ABVPString@@@Z @2884 NONAME
+    ??0PStringSet@@QAE@ABVPStringArray@@@Z @21434 NONAME
+    ??0PStringSet@@QAE@ABVPStringList@@@Z @21435 NONAME
     ??0PStringSet@@QAE@HPBQBD_N@Z @2885 NONAME
     ??0PStringSet@@QAE@_N@Z @2886 NONAME
     ??0PStringStream@@QAE@ABVPString@@@Z @2887 NONAME
@@ -3054,6 +3057,7 @@ EXPORTS
     ??0PURLLegacyScheme_rtspu@@QAE@XZ @2991 NONAME
     ??0PURLLegacyScheme_sip@@QAE@XZ @2992 NONAME
     ??0PURLLegacyScheme_sips@@QAE@XZ @2993 NONAME
+    ??0PURLLegacyScheme_tel@@QAE@XZ @21436 NONAME
     ??0PURLLegacyScheme_telnet@@QAE@XZ @2994 NONAME
     ??0PURLLegacyScheme_wais@@QAE@XZ @2995 NONAME
     ??0PURLLoader@@QAE@XZ @2996 NONAME
@@ -3201,6 +3205,7 @@ EXPORTS
     ??0PXMLSettings@@QAE@ABVPString@@W4Options@PXMLBase@@@Z @3131 NONAME
     ??0PXMLSettings@@QAE@W4Options@PXMLBase@@@Z @3132 NONAME
     ??0PXMLStreamParser@@QAE@XZ @3133 NONAME
+    ??0PXML_HTTP@@QAE@HPBD@Z @21437 NONAME
     ??0PYUVFile@@QAE@XZ @3134 NONAME
     ??0P_BGR24_RGB24@@QAE@ABVPVideoFrameInfo@@0@Z @3135 NONAME
     ??0P_BGR24_RGB24_Registration@@QAE@XZ @3136 NONAME
@@ -3646,6 +3651,7 @@ EXPORTS
     ??1?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3572 NONAME
     ??1?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3573 NONAME
     ??1?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3574 NONAME
+    ??1?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @21438 NONAME
     ??1?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3575 NONAME
     ??1?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3576 NONAME
     ??1?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3577 NONAME
@@ -3822,8 +3828,8 @@ EXPORTS
     ??1Arguments@PCLI@@UAE@XZ @3742 NONAME
     ??1Attribute@PLDAPSchema@@QAE@XZ @3743 NONAME
     ??1AuthObject@PHTTPClientAuthentication@@UAE@XZ @3744 NONAME
-    ??1AutoReloadThread_PNotifier@PXML@@UAE@XZ @3745 NONAME
-    ??1AutoReloadTimeout_PNotifier@PXML@@UAE@XZ @3746 NONAME
+    ??1AutoReloadThread_PNotifier@PXML_HTTP@@UAE@XZ @21439 NONAME
+    ??1AutoReloadTimeout_PNotifier@PXML_HTTP@@UAE@XZ @21440 NONAME
     ??1bad_alloc@std@@UAE@XZ @3747 NONAME
     ??1Banner@PHTML@@UAE@XZ @3748 NONAME
     ??1BareJID@XMPP@@UAE@XZ @3749 NONAME
@@ -4334,6 +4340,7 @@ EXPORTS
     ??1PURLLegacyScheme_rtspu@@UAE@XZ @4253 NONAME
     ??1PURLLegacyScheme_sip@@UAE@XZ @4254 NONAME
     ??1PURLLegacyScheme_sips@@UAE@XZ @4255 NONAME
+    ??1PURLLegacyScheme_tel@@UAE@XZ @21441 NONAME
     ??1PURLLegacyScheme_telnet@@UAE@XZ @4256 NONAME
     ??1PURLLegacyScheme_wais@@UAE@XZ @4257 NONAME
     ??1PURLLoader@@UAE@XZ @4258 NONAME
@@ -4460,6 +4467,7 @@ EXPORTS
     ??1PXMLRPCVariableBase@@UAE@XZ @4372 NONAME
     ??1PXMLSettings@@UAE@XZ @4373 NONAME
     ??1PXMLStreamParser@@UAE@XZ @4374 NONAME
+    ??1PXML_HTTP@@UAE@XZ @21442 NONAME
     ??1PYUVFile@@UAE@XZ @4375 NONAME
     ??1P_BGR24_RGB24@@UAE@XZ @4376 NONAME
     ??1P_BGR24_RGB24_Registration@@UAE@XZ @4377 NONAME
@@ -5977,6 +5985,7 @@ EXPORTS
     ??_7?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @5866 NONAME
     ??_7?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @5867 NONAME
     ??_7?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @5868 NONAME
+    ??_7?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @21443 NONAME
     ??_7?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @5869 NONAME
     ??_7?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @5870 NONAME
     ??_7?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @5871 NONAME
@@ -6033,8 +6042,8 @@ EXPORTS
     ??_7Address@PvCard@@6B@ @5915 NONAME
     ??_7Arguments@PCLI@@6B@ @5916 NONAME
     ??_7AuthObject@PHTTPClientAuthentication@@6B@ @5917 NONAME
-    ??_7AutoReloadThread_PNotifier@PXML@@6B@ @5918 NONAME
-    ??_7AutoReloadTimeout_PNotifier@PXML@@6B@ @5919 NONAME
+    ??_7AutoReloadThread_PNotifier@PXML_HTTP@@6B@ @21444 NONAME
+    ??_7AutoReloadTimeout_PNotifier@PXML_HTTP@@6B@ @21445 NONAME
     ??_7bad_alloc@std@@6B@ @5920 NONAME
     ??_7Banner@PHTML@@6B@ @5921 NONAME
     ??_7BareJID@XMPP@@6B@ @5922 NONAME
@@ -6570,6 +6579,7 @@ EXPORTS
     ??_7PURLLegacyScheme_rtspu@@6B@ @6451 NONAME
     ??_7PURLLegacyScheme_sip@@6B@ @6452 NONAME
     ??_7PURLLegacyScheme_sips@@6B@ @6453 NONAME
+    ??_7PURLLegacyScheme_tel@@6B@ @21446 NONAME
     ??_7PURLLegacyScheme_telnet@@6B@ @6454 NONAME
     ??_7PURLLegacyScheme_wais@@6B@ @6455 NONAME
     ??_7PURLLoader@@6B@ @6456 NONAME
@@ -6696,6 +6706,7 @@ EXPORTS
     ??_7PXMLRPCVariableBase@@6B@ @6571 NONAME
     ??_7PXMLSettings@@6B@ @6572 NONAME
     ??_7PXMLStreamParser@@6B@ @6573 NONAME
+    ??_7PXML_HTTP@@6B@ @21447 NONAME
     ??_7PYUVFile@@6B@ @6574 NONAME
     ??_7P_BGR24_RGB24@@6B@ @6575 NONAME
     ??_7P_BGR24_RGB24_Registration@@6B@ @6576 NONAME
@@ -7256,6 +7267,7 @@ EXPORTS
     ??_R0?AV?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7123 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7124 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7125 NONAME
+    ??_R0?AV?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @21448 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7126 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7127 NONAME
     ??_R0?AV?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7128 NONAME
@@ -7312,8 +7324,8 @@ EXPORTS
     ??_R0?AVAddress@PIPSocket@@@8 @7172 NONAME
     ??_R0?AVArguments@PCLI@@@8 @7173 NONAME
     ??_R0?AVAuthObject@PHTTPClientAuthentication@@@8 @7174 NONAME
-    ??_R0?AVAutoReloadThread_PNotifier@PXML@@@8 @7175 NONAME
-    ??_R0?AVAutoReloadTimeout_PNotifier@PXML@@@8 @7176 NONAME
+    ??_R0?AVAutoReloadThread_PNotifier@PXML_HTTP@@@8 @21449 NONAME
+    ??_R0?AVAutoReloadTimeout_PNotifier@PXML_HTTP@@@8 @21450 NONAME
     ??_R0?AVbad_alloc@std@@@8 @7177 NONAME
     ??_R0?AVbad_cast@std@@@8 @7178 NONAME
     ??_R0?AVBanner@PHTML@@@8 @7179 NONAME
@@ -7766,6 +7778,7 @@ EXPORTS
     ??_R0?AVPURLLegacyScheme_rtspu@@@8 @7624 NONAME
     ??_R0?AVPURLLegacyScheme_sip@@@8 @7625 NONAME
     ??_R0?AVPURLLegacyScheme_sips@@@8 @7626 NONAME
+    ??_R0?AVPURLLegacyScheme_tel@@@8 @21451 NONAME
     ??_R0?AVPURLLegacyScheme_telnet@@@8 @7627 NONAME
     ??_R0?AVPURLLegacyScheme_wais@@@8 @7628 NONAME
     ??_R0?AVPURLLoader@@@8 @7629 NONAME
@@ -7884,6 +7897,7 @@ EXPORTS
     ??_R0?AVPXMLRPCVariableBase@@@8 @7735 NONAME
     ??_R0?AVPXMLSettings@@@8 @7736 NONAME
     ??_R0?AVPXMLStreamParser@@@8 @7737 NONAME
+    ??_R0?AVPXML_HTTP@@@8 @21452 NONAME
     ??_R0?AVPYUVFile@@@8 @7738 NONAME
     ??_R0?AVP_BGR24_RGB24@@@8 @7739 NONAME
     ??_R0?AVP_BGR24_RGB24_Registration@@@8 @7740 NONAME
@@ -8187,6 +8201,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8033 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8034 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8035 NONAME
+    ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @21453 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8036 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8037 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8038 NONAME
@@ -8244,8 +8259,8 @@ EXPORTS
     ??_R1A@?0A@EA@Address@PvCard@@8 @8083 NONAME
     ??_R1A@?0A@EA@Arguments@PCLI@@8 @8084 NONAME
     ??_R1A@?0A@EA@AuthObject@PHTTPClientAuthentication@@8 @8085 NONAME
-    ??_R1A@?0A@EA@AutoReloadThread_PNotifier@PXML@@8 @8086 NONAME
-    ??_R1A@?0A@EA@AutoReloadTimeout_PNotifier@PXML@@8 @8087 NONAME
+    ??_R1A@?0A@EA@AutoReloadThread_PNotifier@PXML_HTTP@@8 @21454 NONAME
+    ??_R1A@?0A@EA@AutoReloadTimeout_PNotifier@PXML_HTTP@@8 @21455 NONAME
     ??_R1A@?0A@EA@bad_alloc@std@@8 @8088 NONAME
     ??_R1A@?0A@EA@Banner@PHTML@@8 @8089 NONAME
     ??_R1A@?0A@EA@BareJID@XMPP@@8 @8090 NONAME
@@ -8727,6 +8742,7 @@ EXPORTS
     ??_R1A@?0A@EA@PURLLegacyScheme_rtspu@@8 @8564 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_sip@@8 @8565 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_sips@@8 @8566 NONAME
+    ??_R1A@?0A@EA@PURLLegacyScheme_tel@@8 @21456 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_telnet@@8 @8567 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_wais@@8 @8568 NONAME
     ??_R1A@?0A@EA@PURLLoader@@8 @8569 NONAME
@@ -8845,6 +8861,7 @@ EXPORTS
     ??_R1A@?0A@EA@PXMLRPCVariableBase@@8 @8675 NONAME
     ??_R1A@?0A@EA@PXMLSettings@@8 @8676 NONAME
     ??_R1A@?0A@EA@PXMLStreamParser@@8 @8677 NONAME
+    ??_R1A@?0A@EA@PXML_HTTP@@8 @21457 NONAME
     ??_R1A@?0A@EA@PYUVFile@@8 @8678 NONAME
     ??_R1A@?0A@EA@P_BGR24_RGB24@@8 @8679 NONAME
     ??_R1A@?0A@EA@P_BGR24_RGB24_Registration@@8 @8680 NONAME
@@ -9177,6 +9194,7 @@ EXPORTS
     ??_R2?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9005 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9006 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9007 NONAME
+    ??_R2?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @21458 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9008 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9009 NONAME
     ??_R2?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9010 NONAME
@@ -9234,8 +9252,8 @@ EXPORTS
     ??_R2Address@PvCard@@8 @9055 NONAME
     ??_R2Arguments@PCLI@@8 @9056 NONAME
     ??_R2AuthObject@PHTTPClientAuthentication@@8 @9057 NONAME
-    ??_R2AutoReloadThread_PNotifier@PXML@@8 @9058 NONAME
-    ??_R2AutoReloadTimeout_PNotifier@PXML@@8 @9059 NONAME
+    ??_R2AutoReloadThread_PNotifier@PXML_HTTP@@8 @21459 NONAME
+    ??_R2AutoReloadTimeout_PNotifier@PXML_HTTP@@8 @21460 NONAME
     ??_R2bad_alloc@std@@8 @9060 NONAME
     ??_R2Banner@PHTML@@8 @9061 NONAME
     ??_R2BareJID@XMPP@@8 @9062 NONAME
@@ -9717,6 +9735,7 @@ EXPORTS
     ??_R2PURLLegacyScheme_rtspu@@8 @9536 NONAME
     ??_R2PURLLegacyScheme_sip@@8 @9537 NONAME
     ??_R2PURLLegacyScheme_sips@@8 @9538 NONAME
+    ??_R2PURLLegacyScheme_tel@@8 @21461 NONAME
     ??_R2PURLLegacyScheme_telnet@@8 @9539 NONAME
     ??_R2PURLLegacyScheme_wais@@8 @9540 NONAME
     ??_R2PURLLoader@@8 @9541 NONAME
@@ -9835,6 +9854,7 @@ EXPORTS
     ??_R2PXMLRPCVariableBase@@8 @9647 NONAME
     ??_R2PXMLSettings@@8 @9648 NONAME
     ??_R2PXMLStreamParser@@8 @9649 NONAME
+    ??_R2PXML_HTTP@@8 @21462 NONAME
     ??_R2PYUVFile@@8 @9650 NONAME
     ??_R2P_BGR24_RGB24@@8 @9651 NONAME
     ??_R2P_BGR24_RGB24_Registration@@8 @9652 NONAME
@@ -10131,6 +10151,7 @@ EXPORTS
     ??_R3?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9938 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9939 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9940 NONAME
+    ??_R3?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @21463 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9941 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9942 NONAME
     ??_R3?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9943 NONAME
@@ -10188,8 +10209,8 @@ EXPORTS
     ??_R3Address@PvCard@@8 @9988 NONAME
     ??_R3Arguments@PCLI@@8 @9989 NONAME
     ??_R3AuthObject@PHTTPClientAuthentication@@8 @9990 NONAME
-    ??_R3AutoReloadThread_PNotifier@PXML@@8 @9991 NONAME
-    ??_R3AutoReloadTimeout_PNotifier@PXML@@8 @9992 NONAME
+    ??_R3AutoReloadThread_PNotifier@PXML_HTTP@@8 @21464 NONAME
+    ??_R3AutoReloadTimeout_PNotifier@PXML_HTTP@@8 @21465 NONAME
     ??_R3bad_alloc@std@@8 @9993 NONAME
     ??_R3Banner@PHTML@@8 @9994 NONAME
     ??_R3BareJID@XMPP@@8 @9995 NONAME
@@ -10671,6 +10692,7 @@ EXPORTS
     ??_R3PURLLegacyScheme_rtspu@@8 @10469 NONAME
     ??_R3PURLLegacyScheme_sip@@8 @10470 NONAME
     ??_R3PURLLegacyScheme_sips@@8 @10471 NONAME
+    ??_R3PURLLegacyScheme_tel@@8 @21466 NONAME
     ??_R3PURLLegacyScheme_telnet@@8 @10472 NONAME
     ??_R3PURLLegacyScheme_wais@@8 @10473 NONAME
     ??_R3PURLLoader@@8 @10474 NONAME
@@ -10789,6 +10811,7 @@ EXPORTS
     ??_R3PXMLRPCVariableBase@@8 @10580 NONAME
     ??_R3PXMLSettings@@8 @10581 NONAME
     ??_R3PXMLStreamParser@@8 @10582 NONAME
+    ??_R3PXML_HTTP@@8 @21467 NONAME
     ??_R3PYUVFile@@8 @10583 NONAME
     ??_R3P_BGR24_RGB24@@8 @10584 NONAME
     ??_R3P_BGR24_RGB24_Registration@@8 @10585 NONAME
@@ -11080,6 +11103,7 @@ EXPORTS
     ??_R4?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10866 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10867 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10868 NONAME
+    ??_R4?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @21468 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10869 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10870 NONAME
     ??_R4?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10871 NONAME
@@ -11136,8 +11160,8 @@ EXPORTS
     ??_R4Address@PvCard@@6B@ @10915 NONAME
     ??_R4Arguments@PCLI@@6B@ @10916 NONAME
     ??_R4AuthObject@PHTTPClientAuthentication@@6B@ @10917 NONAME
-    ??_R4AutoReloadThread_PNotifier@PXML@@6B@ @10918 NONAME
-    ??_R4AutoReloadTimeout_PNotifier@PXML@@6B@ @10919 NONAME
+    ??_R4AutoReloadThread_PNotifier@PXML_HTTP@@6B@ @21469 NONAME
+    ??_R4AutoReloadTimeout_PNotifier@PXML_HTTP@@6B@ @21470 NONAME
     ??_R4bad_alloc@std@@6B@ @10920 NONAME
     ??_R4Banner@PHTML@@6B@ @10921 NONAME
     ??_R4BareJID@XMPP@@6B@ @10922 NONAME
@@ -11673,6 +11697,7 @@ EXPORTS
     ??_R4PURLLegacyScheme_rtspu@@6B@ @11451 NONAME
     ??_R4PURLLegacyScheme_sip@@6B@ @11452 NONAME
     ??_R4PURLLegacyScheme_sips@@6B@ @11453 NONAME
+    ??_R4PURLLegacyScheme_tel@@6B@ @21471 NONAME
     ??_R4PURLLegacyScheme_telnet@@6B@ @11454 NONAME
     ??_R4PURLLegacyScheme_wais@@6B@ @11455 NONAME
     ??_R4PURLLoader@@6B@ @11456 NONAME
@@ -11799,6 +11824,7 @@ EXPORTS
     ??_R4PXMLRPCVariableBase@@6B@ @11571 NONAME
     ??_R4PXMLSettings@@6B@ @11572 NONAME
     ??_R4PXMLStreamParser@@6B@ @11573 NONAME
+    ??_R4PXML_HTTP@@6B@ @21472 NONAME
     ??_R4PYUVFile@@6B@ @11574 NONAME
     ??_R4P_BGR24_RGB24@@6B@ @11575 NONAME
     ??_R4P_BGR24_RGB24_Registration@@6B@ @11576 NONAME
@@ -12288,9 +12314,9 @@ EXPORTS
     ?Authorise@PSNMPServer@@UAE_NABVAddress@PIPSocket@@@Z @12056 NONAME
     ?AuthoriseUser@PFTPServer@@UAE_NABVPString@@0AA_N@Z @12057 NONAME
     ?AuthorizationTag@PHTTP@@SAABVPCaselessString@@XZ @12058 NONAME
-    ?AutoLoadURL@PXML@@QAE_NXZ @12059 NONAME
-    ?AutoReloadThread@PXML@@UAEXAAVPThread@@H@Z @12060 NONAME
-    ?AutoReloadTimeout@PXML@@UAEXAAVPTimer@@H@Z @12061 NONAME
+    ?AutoLoadURL@PXML_HTTP@@QAE_NXZ @21473 NONAME
+    ?AutoReloadThread@PXML_HTTP@@MAEXAAVPThread@@H@Z @21474 NONAME
+    ?AutoReloadTimeout@PXML_HTTP@@MAEXAAVPTimer@@H@Z @21475 NONAME
     ?back@?$PList@VPString@@@@QBEAAVPString@@XZ @12062 NONAME
     ?badbit@?$_Iosb@H@std@@2W4_Iostate@12@B @12063 NONAME
     ?base@?$_Revranit@V?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@U?$iterator@Ubidirectional_iterator_tag@std@@PAVPInterfaceMonitorClient@@HPAPAV3@AAPAV3@@2@@std@@QBE?AV?$_List_iterator@V?$_List_val@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@2@XZ @12064 NONAME
@@ -12432,8 +12458,8 @@ EXPORTS
     ?CalculateSignature@PServiceHTML@@QAE?AVPString@@XZ @12200 NONAME
     ?CalculateSignature@PServiceHTML@@SA?AVPString@@ABV2@@Z @12201 NONAME
     ?CalculateSignature@PServiceHTML@@SA?AVPString@@ABV2@ABUKey@PTEACypher@@@Z @12202 NONAME
-    ?Call@AutoReloadThread_PNotifier@PXML@@UBEXAAVPObject@@H@Z @12203 NONAME
-    ?Call@AutoReloadTimeout_PNotifier@PXML@@UBEXAAVPObject@@H@Z @12204 NONAME
+    ?Call@AutoReloadThread_PNotifier@PXML_HTTP@@UBEXAAVPObject@@H@Z @21476 NONAME
+    ?Call@AutoReloadTimeout_PNotifier@PXML_HTTP@@UBEXAAVPObject@@H@Z @21477 NONAME
     ?Call@DeleteObjectsTimeout_PNotifier@PSafeCollection@@UBEXAAVPObject@@H@Z @12205 NONAME
     ?Call@HandleCapture_PNotifier@PVideoInputDevice_VideoForWindows@@UBEXAAVPObject@@H@Z @12206 NONAME
     ?Call@HandleDisplay_PNotifier@PVideoOutputDevice_Window@@UBEXAAVPObject@@H@Z @12207 NONAME
@@ -12464,6 +12490,8 @@ EXPORTS
     ?CanRead@PModem@@QBE_NXZ @12231 NONAME
     ?CanReadAndWrite@PPipeChannel@@SA_NXZ @12232 NONAME
     ?CanSendUser@PModem@@QBE_NXZ @12233 NONAME
+    ?CanSetChannels@PWAVFileFormatG7231@@UBE_NI@Z @21478 NONAME
+    ?CanSetChannels@PWAVFileFormatPCM@@UBE_NI@Z @21479 NONAME
     ?CanTrace@PTrace@@SA_NI@Z @12234 NONAME
     ?capacity@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@QBEIXZ @12236 NONAME
     ?capacity@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBEIXZ @12237 NONAME
@@ -12942,6 +12970,7 @@ EXPORTS
     ?Class@PXMLRPCVariableBase@@SAPBDXZ @12705 NONAME
     ?Class@PXMLSettings@@SAPBDXZ @12706 NONAME
     ?Class@PXMLStreamParser@@SAPBDXZ @12707 NONAME
+    ?Class@PXML_HTTP@@SAPBDXZ @21480 NONAME
     ?Class@PYUVFile@@SAPBDXZ @12708 NONAME
     ?Class@Room@MUC@XMPP@@SAPBDXZ @12709 NONAME
     ?Class@Roster@XMPP@@SAPBDXZ @12710 NONAME
@@ -13757,6 +13786,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PXMLRPCVariableBase@@UBE?AW4Comparison@PObject@@ABV3@@Z @13512 NONAME
     ?CompareObjectMemoryDirect@PXMLSettings@@UBE?AW4Comparison@PObject@@ABV3@@Z @13513 NONAME
     ?CompareObjectMemoryDirect@PXMLStreamParser@@UBE?AW4Comparison@PObject@@ABV3@@Z @13514 NONAME
+    ?CompareObjectMemoryDirect@PXML_HTTP@@UBE?AW4Comparison@PObject@@ABV3@@Z @21481 NONAME
     ?CompareObjectMemoryDirect@PYUVFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @13515 NONAME
     ?CompareObjectMemoryDirect@Room@MUC@XMPP@@UBE?AW4Comparison@PObject@@ABV5@@Z @13516 NONAME
     ?CompareObjectMemoryDirect@Roster@XMPP@@UBE?AW4Comparison@PObject@@ABV4@@Z @13517 NONAME
@@ -14073,6 +14103,7 @@ EXPORTS
     ?Create@?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLScheme@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13825 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLScheme@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13826 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLScheme@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13827 NONAME
+    ?Create@?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLScheme@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @21482 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLScheme@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13828 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLScheme@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13829 NONAME
     ?Create@?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPURLLoader@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @13830 NONAME
@@ -14210,6 +14241,7 @@ EXPORTS
     ?CreateDeviceByName@PVideoInputDevice@@SAPAV1@ABVPString@@0PAVPPluginManager@@@Z @13954 NONAME
     ?CreateDeviceByName@PVideoOutputDevice@@SAPAV1@ABVPString@@0PAVPPluginManager@@@Z @13955 NONAME
     ?CreateDirectoryA@PFTPClient@@QAE_NABVPString@@@Z @13956 NONAME
+    ?CreateDisplayWindow@PVideoOutputDevice_Window@@IAEXXZ @21483 NONAME
     ?CreateEndTag@PXML@@SA?AVPString@@ABV2@@Z @13957 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPNatMethod@@@@UAEXABVPString@@@Z @13958 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPSoundChannel@@@@UAEXABVPString@@@Z @13959 NONAME
@@ -15628,6 +15660,7 @@ EXPORTS
     ?GetClass@PXMLRPCVariableBase@@UBEPBDI@Z @15321 NONAME
     ?GetClass@PXMLSettings@@UBEPBDI@Z @15322 NONAME
     ?GetClass@PXMLStreamParser@@UBEPBDI@Z @15323 NONAME
+    ?GetClass@PXML_HTTP@@UBEPBDI@Z @21484 NONAME
     ?GetClass@PYUVFile@@UBEPBDI@Z @15324 NONAME
     ?GetClass@Room@MUC@XMPP@@UBEPBDI@Z @15325 NONAME
     ?GetClass@Roster@XMPP@@UBEPBDI@Z @15326 NONAME
@@ -17269,6 +17302,7 @@ EXPORTS
     ?InternalIsDescendant@PXMLRPCVariableBase@@UBE_NPBD@Z @16935 NONAME
     ?InternalIsDescendant@PXMLSettings@@UBE_NPBD@Z @16936 NONAME
     ?InternalIsDescendant@PXMLStreamParser@@UBE_NPBD@Z @16937 NONAME
+    ?InternalIsDescendant@PXML_HTTP@@UBE_NPBD@Z @21485 NONAME
     ?InternalIsDescendant@PYUVFile@@UBE_NPBD@Z @16938 NONAME
     ?InternalIsDescendant@Room@MUC@XMPP@@UBE_NPBD@Z @16939 NONAME
     ?InternalIsDescendant@Roster@XMPP@@UBE_NPBD@Z @16940 NONAME
@@ -17296,6 +17330,7 @@ EXPORTS
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @16962 NONAME
     ?InternalStringSelect@PSortedStringList@@IBEHPBDHPAUPSortedListElement@@AAPAU2@@Z @16963 NONAME
     ?InternalWait@PReadWriteMutex@@IBEXAAVPSemaphore@@@Z @16964 NONAME
+    ?Intersection@PAbstractSet@@SA_NABV1@0PAV1@@Z @21486 NONAME
     ?InvalidateCache@PSTUNClient@@QAEXXZ @16965 NONAME
     ?Invert@PASN_BitString@@QAEXI@Z @16966 NONAME
     ?Invoke@PTextToSpeech_Festival@@IAE_NABVPString@@ABVPFilePath@@@Z @16967 NONAME
@@ -17560,8 +17595,8 @@ EXPORTS
     ?LoadPlugin@PPluginManager@@QAE_NABVPString@@@Z @17227 NONAME
     ?LoadPluginDirectory@PPluginManager@@IAEXABVPDirectory@@ABVPStringList@@@Z @17228 NONAME
     ?LoadPluginDirectory@PPluginManager@@QAEXABVPDirectory@@@Z @17229 NONAME
-    ?LoadResource@PURL@@QAE_NAAVPBYTEArray@@ABVPString@@@Z @17230 NONAME
-    ?LoadResource@PURL@@QAE_NAAVPString@@ABV2@@Z @17231 NONAME
+    ?LoadResource@PURL@@QBE_NAAVPBYTEArray@@ABVPString@@@Z @21487 NONAME
+    ?LoadResource@PURL@@QBE_NAAVPString@@ABV2@@Z @21488 NONAME
     ?LoadSchema@PLDAPSchema@@QAEXXZ @17232 NONAME
     ?LoadStringA@PLua@@UAE_NPBD@Z @17233 NONAME
     ?LoadTable@PODBC@@QAE?AVTable@1@VPString@@@Z @17234 NONAME
@@ -17572,17 +17607,18 @@ EXPORTS
     ?LoadText@PRegisterPage@@UAE?AVPString@@AAVPHTTPRequest@@@Z @17239 NONAME
     ?LoadText@PServiceHTTPString@@UAE?AVPString@@AAVPHTTPRequest@@@Z @17240 NONAME
     ?LoadURL@PVXMLSession@@UAE_NABVPURL@@@Z @17241 NONAME
-    ?LoadURL@PXML@@QAE_NABVPURL@@@Z @17242 NONAME
-    ?LoadURL@PXML@@QAE_NABVPURL@@ABVPTimeInterval@@W4Options@PXMLBase@@@Z @17243 NONAME
+    ?LoadURL@PXML_HTTP@@QAE_NABVPURL@@@Z @21489 NONAME
+    ?LoadURL@PXML_HTTP@@QAE_NABVPURL@@ABVPTimeInterval@@W4Options@PXMLBase@@@Z @21490 NONAME
     ?LoadVXML@PVXMLSession@@UAE_NABVPString@@0@Z @21055 NONAME
     ?LocateName@PHTTPCompositeField@@UBEPBVPHTTPField@@ABVPString@@@Z @17245 NONAME
     ?LocateName@PHTTPField@@UBEPBV1@ABVPString@@@Z @17246 NONAME
     ?LocationTag@PHTTP@@SAABVPCaselessString@@XZ @17247 NONAME
     ?Lock@PSafeLockReadOnly@@QAE_NXZ @17248 NONAME
     ?Lock@PSafeLockReadWrite@@QAE_NXZ @17249 NONAME
-    ?Lock@PSafePtrMultiThreaded@@IAEXXZ @17250 NONAME
     ?Lock@PTraceInfo@@QAEXXZ @17251 NONAME
     ?LockingCallback@PSSLInitialiser@@QAEXHH@Z @17252 NONAME
+    ?LockPtr@PSafePtrBase@@MAEXXZ @21491 NONAME
+    ?LockPtr@PSafePtrMultiThreaded@@MAEXXZ @21492 NONAME
     ?LockReadOnly@PSafeObject@@QBE_NXZ @17253 NONAME
     ?LockReadWrite@PSafeObject@@QAE_NXZ @17254 NONAME
     ?LogIn@PFTPClient@@QAE_NABVPString@@0@Z @17255 NONAME
@@ -17862,7 +17898,7 @@ EXPORTS
     ?OnAddInterface@PSingleMonitoredSocket@@MAEXABVInterfaceEntry@PIPSocket@@@Z @17525 NONAME
     ?OnALLO@PFTPServer@@UAE_NABVPCaselessString@@@Z @17526 NONAME
     ?OnAPPE@PFTPServer@@UAE_NABVPCaselessString@@@Z @17527 NONAME
-    ?OnAutoLoad@PXML@@UAEX_N@Z @17528 NONAME
+    ?OnAutoLoad@PXML_HTTP@@UAEX_N@Z @21493 NONAME
     ?OnCDUP@PFTPServer@@UAE_NABVPCaselessString@@@Z @17529 NONAME
     ?OnClose@BaseStreamHandler@XMPP@@MAEXAAVStream@2@H@Z @17530 NONAME
     ?OnClose@Stream@XMPP@@UAEXXZ @17531 NONAME
@@ -18749,6 +18785,7 @@ EXPORTS
     ?ReadResponse@PHTTPClient@@QAE_NAAVPMIMEInfo@@@Z @18386 NONAME
     ?ReadResponse@PInternetProtocol@@UAE_NAAHAAVPString@@@Z @18387 NONAME
     ?ReadResponse@PInternetProtocol@@UAE_NXZ @18388 NONAME
+    ?ReadSample@PSoundChannel_WAVFile@@IAE_NAAF@Z @21494 NONAME
     ?ReadSamples@PSoundChannel_WAVFile@@IAE_NPAXH@Z @18389 NONAME
     ?ReadStandardError@PPipeChannel@@QAE_NAAVPString@@_N@Z @18390 NONAME
     ?ReadString@PChannel@@QAE?AVPString@@H@Z @18391 NONAME
@@ -18966,6 +19003,7 @@ EXPORTS
     ?SafeRemoveObject@PSafeCollection@@IAEXPAVPSafeObject@@@Z @18604 NONAME
     ?SampleCB@CSampleGrabberCB@@UAGJNPAUIMediaSample@@@Z @18605 NONAME
     ?sampleTTSFactory@@3V?$Worker@VTextToSpeech_Sample@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @18606 NONAME
+    ?SanitiseName@InterfaceEntry@PIPSocket@@SAXAAVPString@@@Z @21495 NONAME
     ?Save@PConfigArgs@@QAEXABVPString@@@Z @18607 NONAME
     ?Save@PSound@@QAE_NABVPFilePath@@@Z @18608 NONAME
     ?Save@PSSLCertificate@@QAE_NABVPFilePath@@_NW4PSSLFileTypes@@@Z @18609 NONAME
@@ -19705,7 +19743,7 @@ EXPORTS
     ?Start@StreamHandler@C2S@XMPP@@UAE_NPAVTransport@3@@Z @19330 NONAME
     ?Start@Win95_ServiceManager@@UAE_NPAVPServiceProcess@@@Z @19331 NONAME
     ?StartAuthNegotiation@StreamHandler@C2S@XMPP@@MAEXXZ @19332 NONAME
-    ?StartAutoReloadURL@PXML@@QAE_NABVPURL@@ABVPTimeInterval@@1W4Options@PXMLBase@@@Z @19333 NONAME
+    ?StartAutoReloadURL@PXML_HTTP@@QAE_NABVPURL@@ABVPTimeInterval@@1W4Options@PXMLBase@@@Z @21496 NONAME
     ?StartContext@PCLI@@QAE_NPAVPChannel@@0_N11@Z @19334 NONAME
     ?StartContext@PCLI@@QAE_NPAVPChannel@@_N1@Z @19335 NONAME
     ?StartDecoding@PBase64@@QAEXXZ @19336 NONAME
@@ -19756,7 +19794,7 @@ EXPORTS
     ?Stop@PVideoOutputDevice_Window@@UAE_NXZ @19380 NONAME
     ?Stop@PVideoOutputDevice_YUVFile@@UAE_NXZ @19381 NONAME
     ?Stop@Win95_ServiceManager@@UAE_NPAVPServiceProcess@@@Z @19384 NONAME
-    ?StopAutoReloadURL@PXML@@QAE_NXZ @19385 NONAME
+    ?StopAutoReloadURL@PXML_HTTP@@QAE_NXZ @21497 NONAME
     ?StopWorker@PThreadPoolBase@@IAEXPAVWorkerThreadBase@1@@Z @19386 NONAME
     ?str@?$basic_ostringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ @19387 NONAME
     ?str@?$basic_stringbuf@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ @19388 NONAME
@@ -19903,6 +19941,7 @@ EXPORTS
     ?underflow@Buffer@PStringStream@@UAEHXZ @19519 NONAME
     ?underflow@Buffer@PSystemLog@@UAEHXZ @19520 NONAME
     ?underflow@PChannelStreamBuffer@@MAEHXZ @19521 NONAME
+    ?Union@PAbstractSet@@QAE_NABV1@@Z @21498 NONAME
     ?unitbuf@?$_Iosb@H@std@@2W4_Fmtflags@12@B @19522 NONAME
     ?UnknownExtensionsDecode@PASN_Sequence@@QAE_NAAVPASN_Stream@@@Z @19523 NONAME
     ?UnknownExtensionsDecodeBER@PASN_Sequence@@QAE_NAAVPBER_Stream@@@Z @19524 NONAME
@@ -19915,9 +19954,10 @@ EXPORTS
     ?UnknownOption@PArgList@@UBEXABVPString@@@Z @19531 NONAME
     ?Unlock@PSafeLockReadOnly@@QAEXXZ @19532 NONAME
     ?Unlock@PSafeLockReadWrite@@QAEXXZ @19533 NONAME
-    ?Unlock@PSafePtrMultiThreaded@@IAEXXZ @19534 NONAME
     ?Unlock@PTraceInfo@@QAEXXZ @19535 NONAME
     ?UnlockOrder@NAPTRRecordList@PDNS@@QAEXXZ @19536 NONAME
+    ?UnlockPtr@PSafePtrBase@@MAEXXZ @21499 NONAME
+    ?UnlockPtr@PSafePtrMultiThreaded@@MAEXXZ @21500 NONAME
     ?UnlockReadOnly@PSafeObject@@QBEXXZ @19537 NONAME
     ?UnlockReadWrite@PSafeObject@@QAEXXZ @19538 NONAME
     ?UnRead@PInternetProtocol@@UAEXABVPString@@@Z @19539 NONAME
