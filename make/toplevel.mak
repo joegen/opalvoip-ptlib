@@ -173,7 +173,7 @@ uninstall:
 	       $(DESTDIR)$(prefix)/include/ptlib.h \
 	       $(DESTDIR)$(prefix)/include/ptbuildopts.h \
 	       $(DESTDIR)$(prefix)/share/ptlib \
-	       $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR) \
+	       $(DESTDIR)$(libdir)/$(PTLIB_PLUGIN_DIR) \
 	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc
 	rm -f $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
 	      $(DESTDIR)$(libdir)/$(PTLIB_FILE) \

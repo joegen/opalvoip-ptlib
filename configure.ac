@@ -885,11 +885,13 @@ esac
 AC_MSG_CHECKING(where plugins are being installed)
 AC_ARG_WITH([plugin-installdir],
              AS_HELP_STRING([--with-plugin-installdir=DIR],[Location where plugins are installed, starting at the lib dir]),
-             [PLUGIN_DIR="$withval"],
-             [PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
+             [PTLIB_PLUGIN_DIR="$withval"],
+             [PTLIB_PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
            )
 
-EXPANDED_PLUGIN_DIR="${libdir}/${PLUGIN_DIR}"
+AC_SUBST(PTLIB_PLUGIN_DIR)
+
+EXPANDED_PLUGIN_DIR="${libdir}/${PTLIB_PLUGIN_DIR}"
 if test "x${exec_prefix}" = "xNONE" ; then
   if test "x${prefix}" = "xNONE" ; then
     EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
@@ -910,7 +912,7 @@ AC_MSG_RESULT(${EXPANDED_PLUGIN_DIR})
 
 AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
 
-DEV_PLUGIN_DIR="${PLUGIN_DIR}/devices"
+DEV_PLUGIN_DIR="${PTLIB_PLUGIN_DIR}/devices"
 AC_SUBST(DEV_PLUGIN_DIR)
 
 dnl #########################################################################
