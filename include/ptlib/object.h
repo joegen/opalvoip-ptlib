@@ -610,6 +610,7 @@ class PTraceSaveContextIdentifier
 #define PTRACE_IF(level, cond, args)
 #define PTRACE2(level, obj, arg)
 #define PTRACE_IF2(level, cond, obj, args)
+#define PTRACE_CONTEXT_ID_NEW()
 #define PTRACE_CONTEXT_ID_SET(to, from)
 #define PTRACE_CONTEXT_ID_FROM(obj)
 #define PTRACE_CONTEXT_ID_TO(obj)
