@@ -64,7 +64,7 @@ class PSoundChannelALSA : public PSoundChannel {
   unsigned mBitsPerSample;
   PBoolean isInitialised;
 
-  snd_pcm_t *os_handle; /* Handle, different from the PChannel handle */
+  snd_pcm_t *pcm_handle; /* Handle, different from the PChannel handle */
   int card_nr;
 
   PMutex device_mutex;
