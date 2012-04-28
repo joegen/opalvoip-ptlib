@@ -400,14 +400,18 @@ class PHTTPStringField : public PHTTPField
       const char * name,
       PINDEX size,
       const char * initVal = NULL,
-      const char * help = NULL
+      const char * help = NULL,
+      int rows = 0, // 0=auto, 1=InputText, >1=TextArea
+      int columns = 0
     );
     PHTTPStringField(
       const char * name,
       const char * title,
       PINDEX size,
       const char * initVal = NULL,
-      const char * help = NULL
+      const char * help = NULL,
+      int rows = 0, // 0=auto, 1=InputText, >1=TextArea
+      int columns = 0
     );
 
     virtual PHTTPField * NewField() const;
@@ -427,6 +431,8 @@ class PHTTPStringField : public PHTTPField
     PString value;
     PString initialValue;
     PINDEX size;
+    int rows;
+    int columns;
 };
 
 

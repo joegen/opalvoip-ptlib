@@ -1009,27 +1009,35 @@ void PHTTPFieldArray::SetStrings(PConfig & cfg, const PStringArray & values)
 // PHTTPStringField
 
 PHTTPStringField::PHTTPStringField(const char * name,
-                                   PINDEX siz,
+                                   PINDEX sz,
                                    const char * initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help),
-    value(initVal != NULL ? initVal : ""),
-    initialValue(value)
+                                   const char * help,
+                                   int r,
+                                   int c)
+  : PHTTPField(name, NULL, help)
+  , value(initVal != NULL ? initVal : "")
+  , initialValue(value)
+  , size(sz)
+  , rows(r)
+  , columns(c)
 {
-  size = siz;
 }
 
 
 PHTTPStringField::PHTTPStringField(const char * name,
                                    const char * title,
-                                   PINDEX siz,
+                                   PINDEX sz,
                                    const char * initVal,
-                                   const char * help)
-  : PHTTPField(name, title, help),
-    value(initVal != NULL ? initVal : ""),
-    initialValue(value)
+                                   const char * help,
+                                   int r,
+                                   int c)
+  : PHTTPField(name, title, help)
+  , value(initVal != NULL ? initVal : "")
+  , initialValue(value)
+  , size(sz)
+  , rows(r)
+  , columns(c)
 {
-  size = siz;
 }
 
 
@@ -1041,10 +1049,34 @@ PHTTPField * PHTTPStringField::NewField() const
 
 void PHTTPStringField::GetHTMLTag(PHTML & html) const
 {
-  if (size < 128)
-    html << PHTML::InputText(fullName, size);
+  const int DefaultColumns = 80;
+  int r, c;
+  if (rows == 0) {
+    if (columns != 0) {
+      c = columns;
+      r = (size+c-1)/c;
+    }
+    else if (size < DefaultColumns*2) {
+      c = size;
+      r = 1;
+    }
+    else {
+      c = DefaultColumns;
+      r = (size+c-1)/c;
+    }
+  }
+  else {
+    r = rows;
+    if (columns != 0)
+      c = columns;
+    else
+      c = (size+r-1)/r;
+  }
+
+  if (r <= 1)
+    html << PHTML::InputText(fullName, c, size);
   else
-    html << PHTML::TextArea(fullName, (size+79)/80, 80) << value << PHTML::TextArea(fullName);
+    html << PHTML::TextArea(fullName, r, c) << value << PHTML::TextArea(fullName);
 }
 
 
