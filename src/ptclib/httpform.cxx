@@ -243,11 +243,13 @@ static PBoolean FindInputValue(const PString & text, PINDEX & before, PINDEX & a
 
 PString PHTTPField::GetHTMLInput(const PString & input) const
 {
+  PStringStream adjusted;
   PINDEX before, after;
   if (FindInputValue(input, before, after))
-    return input(0, before) + GetValue(PFalse) + input.Mid(after);
-
-  return "<input value=\"" + GetValue(PFalse) + "\"" + input.Mid(6);
+    adjusted << input(0, before) << PHTML::Escaped(GetValue(false)) << input.Mid(after);
+  else
+    adjusted << "<INPUT VALUE=\"" << PHTML::Escaped(GetValue(false)) << '"' << input.Mid(6);
+  return adjusted;
 }
 
 
@@ -528,7 +530,7 @@ void PHTTPCompositeField::GetHTMLHeading(PHTML & html) const
 {
   html << PHTML::TableRow();
   for (PINDEX i = 0; i < fields.GetSize(); i++)
-    html << PHTML::TableHeader() << fields[i].GetTitle();
+    html << PHTML::TableHeader() << PHTML::Escaped(fields[i].GetTitle());
 }
 
 
@@ -631,10 +633,10 @@ void PHTTPSubForm::GetHTMLTag(PHTML & html) const
     value = "New";
   html << PHTML::HotLink(subFormName +
             "?subformprefix=" + PURL::TranslateString(fullName, PURL::QueryTranslation))
-       << value << PHTML::HotLink();
+       << PHTML::Escaped(value) << PHTML::HotLink();
 
   if (secondary != P_MAX_INDEX)
-    html << PHTML::TableData("NOWRAP") << fields[secondary].GetValue();
+    html << PHTML::TableData("NOWRAP") << PHTML::Escaped(fields[secondary].GetValue());
 }
 
 
@@ -727,7 +729,7 @@ void PHTTPFieldArray::AddArrayControlBox(PHTML & html, PINDEX fld) const
   PStringArray options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
   html << PHTML::Select(fields[fld].GetName() + ArrayControlBox);
   for (PINDEX i = 0; i < options.GetSize(); i++)
-    html << PHTML::Option(i == 0 ? PHTML::Selected : PHTML::NotSelected) << options[i];
+    html << PHTML::Option(i == 0 ? PHTML::Selected : PHTML::NotSelected) << PHTML::Escaped(options[i]);
   html << PHTML::Select();
 }
 
@@ -1076,7 +1078,7 @@ void PHTTPStringField::GetHTMLTag(PHTML & html) const
   if (r <= 1)
     html << PHTML::InputText(fullName, c, size);
   else
-    html << PHTML::TextArea(fullName, r, c) << value << PHTML::TextArea(fullName);
+    html << PHTML::TextArea(fullName, r, c) << PHTML::Escaped(value) << PHTML::TextArea(fullName);
 }
 
 
@@ -1237,7 +1239,7 @@ PHTTPField * PHTTPIntegerField::NewField() const
 
 void PHTTPIntegerField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::InputNumber(fullName, low, high, value) << "  " << units;
+  html << PHTML::InputNumber(fullName, low, high, value) << "  " << PHTML::Escaped(units);
 }
 
 
@@ -1547,7 +1549,7 @@ void PHTTPRadioField::GetHTMLTag(PHTML & html) const
   for (PINDEX i = 0; i < values.GetSize(); i++)
     html << PHTML::RadioButton(fullName, values[i],
                         values[i] == value ? PHTML::Checked : PHTML::UnChecked)
-         << titles[i]
+         << PHTML::Escaped(titles[i])
          << PHTML::BreakLine();
 }
 
@@ -1653,7 +1655,7 @@ void PHTTPSelectField::GetHTMLTag(PHTML & html) const
   html << PHTML::Select(fullName);
   for (PINDEX i = 0; i < values.GetSize(); i++)
     html << PHTML::Option(values[i] == value ? PHTML::Selected : PHTML::NotSelected)
-         << values[i];
+         << PHTML::Escaped(values[i]);
   html << PHTML::Select();
 }
 
@@ -1858,7 +1860,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceField(ValueRegEx, PRegularExpression(), text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL)
-      text.Splice(field->GetValue(), pos, len);
+      text.Splice(PHTML::Escape(field->GetValue()), pos, len);
   }
 
   pos = len = 0;
@@ -1890,7 +1892,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   static PRegularExpression TextEndRegEx("</textarea[^>]*>", PRegularExpression::IgnoreCase);
   while (FindSpliceField(TextRegEx, TextEndRegEx, text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL)
-      text.Splice(field->GetValue(), start, finish-start+1);
+      text.Splice(PHTML::Escape(field->GetValue()), start, finish-start+1);
   }
 }
 
@@ -1932,7 +1934,7 @@ void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
     if (field.NotYetInHTML()) {
       html << PHTML::TableRow()
            << PHTML::TableData("align=right")
-           << field.GetTitle()
+           << PHTML::Escaped(field.GetTitle())
            << PHTML::TableData("align=left")
            << "<!--#form html " << field.GetName() << "-->"
            << PHTML::TableData()
@@ -2246,12 +2248,12 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
           html << PHTML::TableRow()
                << PHTML::TableData()
                << PHTML::HotLink(editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation))
-               << name
+               << PHTML::Escaped(name)
                << PHTML::HotLink();
           if (!additionalValueName)
             html << PHTML::TableData()
                  << PHTML::HotLink(editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation))
-                 << cfg.GetString(nameList[i], additionalValueName, "")
+                 << PHTML::Escaped(cfg.GetString(nameList[i], additionalValueName, ""))
                  << PHTML::HotLink();
           html << PHTML::TableData() << PHTML::SubmitButton("Remove", name);
         }
@@ -2260,7 +2262,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
       html << PHTML::TableRow()
            << PHTML::TableData()
            << PHTML::HotLink(newSectionLink)
-           << newSectionTitle
+           << PHTML::Escaped(newSectionTitle)
            << PHTML::HotLink()
            << PHTML::TableEnd()
            << PHTML::Form();

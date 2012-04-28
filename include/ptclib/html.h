@@ -139,6 +139,16 @@ class PHTML : public PStringStream
     void Toggle(ElementInSet elmt);
 
 
+    class Escaped {
+      public:
+        Escaped(const char * str) : m_str(str) { }
+      private:
+        void Output(ostream & strm) const;
+        const char * m_str;
+      friend ostream & operator<<(ostream & strm, const Escaped & e) { e.Output(strm); return strm; }
+    };
+    static PString Escape(const char * str);
+
     class Element {
       public: 
         virtual ~Element() {}
