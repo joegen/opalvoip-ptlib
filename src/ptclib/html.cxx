@@ -124,6 +124,37 @@ void PHTML::Toggle(ElementInSet elmt)
 }
 
 
+void PHTML::Escaped::Output(ostream & strm) const
+{
+  for (const char * ptr = m_str; *ptr != '\0'; ++ptr) {
+    switch (*ptr) {
+      case '"' :
+        strm << "&quot;";
+        break;
+      case '<' :
+        strm << "&lt;";
+        break;
+      case '>' :
+        strm << "&gt;";
+        break;
+      case '&' :
+        strm << "&amp;";
+        break;
+      default :
+        strm << *ptr;
+    }
+  }
+}
+
+
+PString PHTML::Escape(const char * str)
+{
+  PStringStream strm;
+  strm << Escaped(str);
+  return strm;
+}
+
+
 void PHTML::Element::Output(PHTML & html) const
 {
   PAssert(reqElement == NumElementsInSet || html.Is(reqElement),
@@ -288,7 +319,7 @@ void PHTML::Heading::AddAttr(PHTML & html) const
   PAssert(num >= 1 && num <= 6, "Bad heading number");
   html << num;
   if (srcString != NULL)
-    html << " SRC=\"" << srcString << '"';
+    html << " SRC=\"" << Escaped(srcString) << '"';
   if (seqNum > 0)
     html << " SEQNUM=" << seqNum;
   if (skipSeq > 0)
@@ -331,7 +362,7 @@ PHTML::HotLink::HotLink(const char * href, const char * attr)
 void PHTML::HotLink::AddAttr(PHTML & html) const
 {
   if (hrefString != NULL && *hrefString != '\0')
-    html << " HREF=\"" << hrefString << '"';
+    html << " HREF=\"" << Escaped(hrefString) << '"';
   else
     PAssert(html.Is(InAnchor), PInvalidParameter);
 }
@@ -346,7 +377,7 @@ PHTML::Target::Target(const char * name, const char * attr)
 void PHTML::Target::AddAttr(PHTML & html) const
 {
   if (nameString != NULL && *nameString != '\0')
-    html << " NAME=\"" << nameString << '"';
+    html << " NAME=\"" << Escaped(nameString) << '"';
 }
 
 
@@ -365,7 +396,7 @@ PHTML::ImageElement::ImageElement(const char * n,
 void PHTML::ImageElement::AddAttr(PHTML & html) const
 {
   if (srcString != NULL)
-    html << " SRC=\"" << srcString << '"';
+    html << " SRC=\"" << Escaped(srcString) << '"';
 }
 
 
@@ -392,7 +423,7 @@ void PHTML::Image::AddAttr(PHTML & html) const
 {
   PAssert(srcString != NULL && *srcString != '\0', PInvalidParameter);
   if (altString != NULL)
-    html << " ALT=\"" << altString << '"';
+    html << " ALT=\"" << Escaped(altString) << '"';
   if (width != 0)
     html << " WIDTH=" << width;
   if (height != 0)
@@ -626,11 +657,11 @@ void PHTML::Form::AddAttr(PHTML & html) const
   if (methodString != NULL)
     html << " METHOD=" << methodString;
   if (actionString != NULL)
-    html << " ACTION=\"" << actionString << '"';
+    html << " ACTION=\"" << Escaped(actionString) << '"';
   if (mimeTypeString != NULL)
-    html << " ENCTYPE=\"" << mimeTypeString << '"';
+    html << " ENCTYPE=\"" << Escaped(mimeTypeString) << '"';
   if (scriptString != NULL)
-    html << " SCRIPT=\"" << scriptString << '"';
+    html << " SCRIPT=\"" << Escaped(scriptString) << '"';
 }
 
 
@@ -669,7 +700,7 @@ void PHTML::Select::AddAttr(PHTML & html) const
 {
   if (!html.Is(InSelect)) {
     PAssert(nameString != NULL && *nameString != '\0', PInvalidParameter);
-    html << " NAME=\"" << nameString << '"';
+    html << " NAME=\"" << Escaped(nameString) << '"';
   }
   FieldElement::AddAttr(html);
 }
@@ -725,7 +756,7 @@ PHTML::FormField::FormField(const char * n,
 void PHTML::FormField::AddAttr(PHTML & html) const
 {
   PAssert(nameString != NULL && *nameString != '\0', PInvalidParameter);
-  html << " NAME=\"" << nameString << '"';
+  html << " NAME=\"" << Escaped(nameString) << '"';
   FieldElement::AddAttr(html);
 }
 
@@ -787,7 +818,7 @@ void PHTML::HiddenField::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   PAssert(valueString != NULL, PInvalidParameter);
-  html << " VALUE=\"" << valueString << '"';
+  html << " VALUE=\"" << Escaped(valueString) << '"';
 }
 
 
@@ -859,7 +890,7 @@ void PHTML::InputText::AddAttr(PHTML & html) const
   if (length > 0)
     html << " MAXLENGTH=" << length;
   if (value != NULL)
-    html << " VALUE=\"" << value << '"';
+    html << " VALUE=\"" << Escaped(value) << '"';
 }
 
 
@@ -945,7 +976,7 @@ void PHTML::RadioButton::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   PAssert(valueString != NULL, PInvalidParameter);
-  html << " VALUE=\"" << valueString << "\"";
+  html << " VALUE=\"" << Escaped(valueString) << '"';
   if (checkedFlag)
     html << " CHECKED";
 }
@@ -1017,7 +1048,7 @@ void PHTML::InputNumber::AddAttr(PHTML & html) const
   html << " SIZE=" << width
        << " MIN=" << minValue
        << " MAX=" << maxValue
-       << " VALUE=\"" << initValue << "\"";
+       << " VALUE=\"" << initValue << '"';
 }
 
 
@@ -1043,7 +1074,7 @@ void PHTML::InputFile::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   if (acceptString != NULL)
-    html << " ACCEPT=\"" << acceptString << '"';
+    html << " ACCEPT=\"" << Escaped(acceptString) << '"';
 }
 
 
@@ -1070,7 +1101,7 @@ void PHTML::InputImage::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   if (srcString != NULL)
-    html << " SRC=\"" << srcString << '"';
+    html << " SRC=\"" << Escaped(srcString) << '"';
 }
 
 
@@ -1107,7 +1138,7 @@ void PHTML::ResetButton::AddAttr(PHTML & html) const
 {
   InputImage::AddAttr(html);
   if (titleString != NULL)
-    html << " VALUE=\"" << titleString << '"';
+    html << " VALUE=\"" << Escaped(titleString) << '"';
 }
 
 
