@@ -50,6 +50,11 @@ class PGloballyUniqueID : public PBYTEArray
   PCLASSINFO(PGloballyUniqueID, PBYTEArray);
 
   public:
+    enum { 
+      /// Size of a GUID
+      Size = 16
+    };
+
   /**@name Construction */
   //@{
     /**Create a new ID.
@@ -70,6 +75,14 @@ class PGloballyUniqueID : public PBYTEArray
      */
     PGloballyUniqueID(
       const PString & str  ///<  String of hex to convert
+    );
+    /**Create an ID from a block of memory.
+       If the block is too small it is padded with zeros.
+       If the block is too large, only the initial bytes are used.
+     */
+    PGloballyUniqueID(
+      const void * data,
+      PINDEX size
     );
 #if P_ASN
     /**Create an ID from an octet string in an ASN PDU.
@@ -123,6 +136,9 @@ class PGloballyUniqueID : public PBYTEArray
 
     PBoolean operator!() const { return !IsNULL(); }
   //@}
+
+  private:
+    virtual PBoolean SetSize(PINDEX) { return true; }
 };
 
 

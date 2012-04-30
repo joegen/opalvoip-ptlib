@@ -46,13 +46,11 @@
 
 #define new PNEW
 
-#define GUID_SIZE 16
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PGloballyUniqueID::PGloballyUniqueID()
-  : PBYTEArray(GUID_SIZE)
+  : PBYTEArray(Size)
 {
   static PMutex mutex;
   PWaitAndSignal wait(mutex);
@@ -146,7 +144,7 @@ PGloballyUniqueID::PGloballyUniqueID()
 
 
 PGloballyUniqueID::PGloballyUniqueID(const char * cstr)
-  : PBYTEArray(GUID_SIZE)
+  : PBYTEArray(Size)
 {
   if (cstr != NULL && *cstr != '\0') {
     PStringStream strm(cstr);
@@ -156,10 +154,17 @@ PGloballyUniqueID::PGloballyUniqueID(const char * cstr)
 
 
 PGloballyUniqueID::PGloballyUniqueID(const PString & str)
-  : PBYTEArray(GUID_SIZE)
+  : PBYTEArray(Size)
 {
   PStringStream strm(str);
   ReadFrom(strm);
+}
+
+
+PGloballyUniqueID::PGloballyUniqueID(const void * data, PINDEX size)
+  : PBYTEArray(Size)
+{
+  memcpy(theArray, PAssertNULL(data), PMIN(size, GetSize()));
 }
 
 
@@ -167,15 +172,15 @@ PGloballyUniqueID::PGloballyUniqueID(const PString & str)
 PGloballyUniqueID::PGloballyUniqueID(const PASN_OctetString & newId)
   : PBYTEArray(newId)
 {
-  PAssert(GetSize() == GUID_SIZE, PInvalidParameter);
-  SetSize(GUID_SIZE);
+  PAssert(GetSize() == Size, PInvalidParameter);
+  PBYTEArray::SetSize(Size);
 }
 #endif
 
 
 PObject * PGloballyUniqueID::Clone() const
 {
-  PAssert(GetSize() == GUID_SIZE, "PGloballyUniqueID is invalid size");
+  PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
 
   return new PGloballyUniqueID(*this);
 }
@@ -183,7 +188,7 @@ PObject * PGloballyUniqueID::Clone() const
 
 PINDEX PGloballyUniqueID::HashFunction() const
 {
-  PAssert(GetSize() == GUID_SIZE, "PGloballyUniqueID is invalid size");
+  PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
 
   DWORD * words = (DWORD *)theArray;
   DWORD sum = words[0] + words[1] + words[2] + words[3];
@@ -193,7 +198,7 @@ PINDEX PGloballyUniqueID::HashFunction() const
 
 void PGloballyUniqueID::PrintOn(ostream & strm) const
 {
-  PAssert(GetSize() == GUID_SIZE, "PGloballyUniqueID is invalid size");
+  PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
 
   char fillchar = strm.fill();
   strm << hex << setfill('0')
@@ -219,14 +224,14 @@ void PGloballyUniqueID::PrintOn(ostream & strm) const
 
 void PGloballyUniqueID::ReadFrom(istream & strm)
 {
-  PAssert(GetSize() == GUID_SIZE, "PGloballyUniqueID is invalid size");
-  SetSize(16);
+  PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
+  PBYTEArray::SetSize(Size);
 
   strm >> ws;
 
   PINDEX count = 0;
 
-  while (count < 2*GUID_SIZE) {
+  while (count < 2*Size) {
     if (isxdigit(strm.peek())) {
       char digit = (char)(strm.get() - '0');
       if (digit >= 10) {
@@ -248,8 +253,8 @@ void PGloballyUniqueID::ReadFrom(istream & strm)
       break;
   }
 
-  if (count < 2*GUID_SIZE) {
-    memset(theArray, 0, GUID_SIZE);
+  if (count < 2*Size) {
+    memset(theArray, 0, Size);
     strm.clear(ios::failbit);
   }
 }
@@ -265,9 +270,9 @@ PString PGloballyUniqueID::AsString() const
 
 PBoolean PGloballyUniqueID::IsNULL() const
 {
-  PAssert(GetSize() == GUID_SIZE, "PGloballyUniqueID is invalid size");
+  PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
 
-  return memcmp(theArray, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 16) == 0;
+  return memcmp(theArray, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", Size) == 0;
 }
 
 
