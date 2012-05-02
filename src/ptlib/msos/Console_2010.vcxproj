@@ -436,6 +436,7 @@
     <ClCompile Include="..\..\ptclib\telnet.cxx" />
     <ClCompile Include="..\..\ptclib\threadpool.cxx" />
     <ClCompile Include="..\..\ptclib\url.cxx" />
+    <ClCompile Include="..\..\ptclib\vartype.cxx" />
     <ClCompile Include="..\..\ptclib\vsdl.cxx" />
     <ClCompile Include="..\..\ptclib\vxml.cxx" />
     <ClCompile Include="..\..\ptclib\xmpp.cxx" />
@@ -810,6 +811,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptclib\telnet.h" />
     <ClInclude Include="..\..\..\include\ptclib\threadpool.h" />
     <ClInclude Include="..\..\..\include\ptclib\url.h" />
+    <ClInclude Include="..\..\..\include\ptclib\vartype.h" />
     <ClInclude Include="..\..\..\include\ptclib\vsdl.h" />
     <ClInclude Include="..\..\..\include\ptclib\vxml.h" />
     <ClInclude Include="..\..\..\include\ptclib\xmpp.h" />

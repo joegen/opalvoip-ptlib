@@ -277,6 +277,9 @@
     <ClCompile Include="..\..\ptclib\xmpp.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ptclib\vartype.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\vxml.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -688,6 +691,9 @@
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\xmpp.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptclib\vartype.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\vxml.h">

@@ -1,1101 +1,674 @@
 /*
- * podbc.cxx
- *
- * Virteos ODBC Implementation for PWLib Library.
- *
- * Virteos is a Trade Mark of ISVO (Asia) Pte Ltd.
- *
- * Copyright (c) 2004 ISVO (Asia) Pte Ltd. All Rights Reserved.
- *
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.0 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
- * the License for the specific language governing rights and limitations
- * under the License.
- *
- *
- * The Original Code is derived from and used in conjunction with the 
- * pwlib Libaray of the OpenH323 Project (www.openh323.org/)
- *
- * The Initial Developer of the Original Code is ISVO (Asia) Pte Ltd.
- *
- *   Portions: Simple ODBC Wrapper Article www.codeproject.com
- *
- * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
- */
+* podbc.cxx
+*
+* Virteos ODBC Implementation for PWLib Library.
+*
+* Virteos is a Trade Mark of ISVO (Asia) Pte Ltd.
+*
+* Copyright (c) 2004 ISVO (Asia) Pte Ltd. All Rights Reserved.
+*
+* The contents of this file are subject to the Mozilla Public License
+* Version 1.0 (the "License"); you may not use this file except in
+* compliance with the License. You may obtain a copy of the License at
+* http://www.mozilla.org/MPL/
+*
+* Software distributed under the License is distributed on an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+* the License for the specific language governing rights and limitations
+* under the License.
+*
+*
+* The Original Code is derived from and used in conjunction with the
+* pwlib Libaray of the OpenH323 Project (www.openh323.org/)
+*
+* The Initial Developer of the Original Code is ISVO (Asia) Pte Ltd.
+*
+*   Portions: Simple ODBC Wrapper Article www.codeproject.com
+*
+* Contributor(s): ______________________________________.
+*
+* $Revision$
+* $Author$
+* $Date$
+*/
 
 #include <ptlib.h>
 
 #if defined(P_ODBC) && !defined(_WIN32_WCE)
 
 #include <ptclib/podbc.h>
+#include <ptclib/guid.h>
+
+
+#include <odbcinst.h>
+#include <sql.h> 
+#include <sqlext.h>
+
+#ifdef _MSC_VER
+ #include <tchar.h>
+ #pragma comment(lib,"odbc32.lib")
+ #pragma comment(lib,"odbcCP32.lib")
+#else
+
+  #ifdef UNICODE
+  typedef WCHAR                 TCHAR;
+  typedef LPWSTR                LPTSTR;
+  typedef LPCWSTR               LPCTSTR;
+  // Needs a definition one day ... #define _T(x)
+  #else
+  typedef CHAR                  TCHAR;
+  typedef LPSTR                 LPTSTR;
+  typedef LPCSTR                LPCTSTR;
+  #define _T(x) x
+  #endif
+
+#endif // _MSC_VER
+
+
+class PODBC::Statement : public PObject
+{
+    PCLASSINFO(Statement, PObject);
+  public:
+    /**@name Constructor/Deconstructor */
+    //@{
+    /** Constructor PODBC (Datasources call) or thro' DSNConnection (Connection call). 
+    In General this class is constructed within the PODBC::RecordSet Class.
+    */
+    Statement(PODBC & odbc);
+
+    /** Deconstructor. This Class should be available for the duration of which
+    a specific query/table is required and be deconstructed at the time of
+    the PODBC::RecordSet deconstruction.
+    */
+    ~Statement();
+    //@}
+
+    /**@name Data Management */
+    //@{ 
+    /** IsValid Checks to ensure a Handle has been allocated and
+    is effective.
+    */
+    bool IsValid() const { return m_hStmt != SQL_NULL_HSTMT; }
+
+    /** GetChangedRowCount retreives the number of rows updated/altered by
+    UPDATE/INSERT statements.
+    */
+    DWORD GetChangedRowCount();
+
+    /** Query function is the Main function to pass SQL statements to retreive/
+    add/Modify database data. It accepts generally acceptable SQL Statements.
+    ie. Select * from [table-x]
+    */
+    bool Query(const PString & sql);
+    //@}
+
+    /**@name Data Retrieval */
+    //@{  
+    /** FetchRow More detailed fetching of Rows. This allows you to fetch an
+    Absolute row or a row relative to the current row fetched.
+    */
+    bool FetchScroll(SQLSMALLINT orientation, SQLLEN offset = 0)
+    { return SQL_OK(SQLFetchScroll(m_hStmt, orientation, offset)); }
+
+    /** Cancel the Current Statement
+    */
+    bool Cancel() { return SQL_OK(SQLCancel(m_hStmt)); }
+
+    // Commit the data
+    bool Commit(PODBC::Row & row, unsigned operation);
+
+    /** Retreive the List of tables from the current Datasource
+    The option field can be used to specify the Table Types
+    ie "TABLE" for Tables or "VIEW" for preconfigured datasource
+    queries. *Further investigation is required*
+    */
+    PStringArray TableList(const PString & option = PString::Empty());
+
+    /** Is the SQL Instruction OK
+    If an Error is detected then GetLastError is called
+    to Retrieve the SQL Error Information and Returns false
+    */
+    bool SQL_OK(SQLRETURN res);
+    //@}
+
+    bool NumResultCols(SQLSMALLINT *columnCount) { return SQL_OK(SQLNumResultCols(m_hStmt, columnCount)); }
+
+    bool GetData(
+      SQLUSMALLINT column,
+      SQLSMALLINT type,
+      SQLPOINTER data,
+      SQLLEN size,
+      SQLLEN * len
+    ) { return SQL_OK(SQLGetData(m_hStmt, column, type, data, size, len)); }
+
+    bool BindCol(
+      SQLUSMALLINT column,
+      SQLSMALLINT type,
+      SQLPOINTER data, 
+      SQLLEN size,
+      SQLLEN * len
+      ) { return SQL_OK(SQLBindCol(m_hStmt, column, type, data, size, len)); }
+
+    bool DescribeCol(
+      SQLUSMALLINT column,
+      SQLCHAR *namePtr,
+      SQLSMALLINT nameSize,
+      SQLSMALLINT *nameLength,
+      SQLSMALLINT *dataType,
+      SQLULEN *columnSize,
+      SQLSMALLINT *decimalDigits,
+      SQLSMALLINT *nullable
+    ) { return SQL_OK(SQLDescribeCol(m_hStmt, column, namePtr, nameSize, nameLength, dataType, columnSize, decimalDigits, nullable)); }
+
+    bool ColAttribute (
+      SQLUSMALLINT column,
+      SQLUSMALLINT field,
+      SQLPOINTER attrPtr,
+      SQLSMALLINT attrSize,
+      SQLSMALLINT *length,
+      SQLLEN * numericPtr
+    ) { return SQL_OK(SQLColAttribute(m_hStmt, column, field, attrPtr, attrSize, length, numericPtr)); }
+
+
+    PODBC   & m_odbc;   /// Reference to the PODBC Class
+    HSTMT     m_hStmt;
+    SQLRETURN m_lastError;
+
+  private:
+    Statement(const Statement & other) : PObject(other), m_odbc(other.m_odbc) { }
+    void operator=(const Statement &) { }
+};
+
+
+// Must be simple struct, no virtuals!
+struct PODBC::FieldExtra
+{
+  // Union must be first
+  union {
+    DATE_STRUCT      date;      /// Date Structure  
+    TIME_STRUCT      time;      /// Time Structure
+    TIMESTAMP_STRUCT timestamp; /// TimeStamp Structure
+    char             datetime[SQL_TIMESTAMP_LEN];
+  };
+
+  SQLLEN bindLenOrInd;
+
+  FieldExtra() { memset(this, 0, sizeof(*this)); }
+};
+
+
+struct PODBC::Link
+{
+  HENV m_hEnv; // Handle to environment
+  HDBC m_hDBC; // Handle to database connection
+};
+
 
 #define new PNEW
 
 
 #ifdef _MSC_VER
- #pragma warning(disable:4244)
- #pragma warning(disable:4100)
+#pragma warning(disable:4244)
 #endif
 
-//// Utilities
-//////////////////////////////////////////////////////////////////
 
-static void AddField(PODBC::Field & newField, const PString FieldName, 
-              PODBC::FieldTypes odbctype, PODBC::PwType pwtype)
-{
-  if (newField.Name.GetLength() == 0)   /// If not already set..
-  {
-  newField.ODBCType = odbctype;
-  newField.Name = FieldName;
-  newField.Type = pwtype;
-  }
-}
-
-/// Simple converters
-///////////////////////////////////////////////////////////////////////////////////////
-/// To Bound Data
-
-static void Convert(long int & data, PString field)
-{
-  data = field.AsInteger();
-}
-
-static void Convert(short int & data, PString field)
-{
-  data = field.AsInteger();
-}
-
-static void Convert(unsigned char * data, PString field)
-{
-    data = (unsigned char *)(const char *)field;
-}
-
-
-static void Convert(unsigned char & data, PString field)
-{
-  int f = field.AsInteger();
-  data = (unsigned char)f;
-}
-
-
-static void Convert(PInt64 & data, PString field)
-{
-  data = field.AsInt64();
-}
-
-static void Convert(double & data, PString field,int Precision = PODBCRecord::Precision)
-{
-  /// Reformat to the Required Decimal places
-  data = PString(PString::Decimal,field.AsReal(),Precision).AsReal();
-}
-
-static void Convert(DATE_STRUCT & data, PString field)
-{
-  PTime t = PTime(field);
-
-  data.day = t.GetDay();
-  data.month = t.GetMonth();
-  data.year = t.GetYear();
-}
-
-static void Convert(TIME_STRUCT & data, PString field)
-{
-  PTime t = PTime(field);
-
-  data.second = t.GetSecond();
-  data.minute = t.GetMinute();
-  data.hour = t.GetHour();
-}
-             
-static void Convert(TIMESTAMP_STRUCT & data, PString field)
-{
-  PTime t = PTime(field);
-
-  data.day = t.GetDay();
-  data.month = t.GetMonth();
-  data.year = t.GetYear();
-  data.second = t.GetSecond();
-  data.minute = t.GetMinute();
-  data.hour = t.GetHour();
-}
-
-static void Convert(SQLGUID & data, PString field)
-{
-// Yet To Be Implemented.
-  field = PString();
-}
-
-
-/// To PString
-///////////////////////////////////////////////////////////////////////////////////////
-template <typename SQLField>
-static PString Convert(SQLField field)
-{
-  return PString(field);
-}
-
-static PString Convert(double field,int Precision = PODBCRecord::Precision)
-{
-  return PString(PString::Decimal,field,Precision);
-}
-
-static PString Convert(unsigned char * field)
-{
-  return PString(*field);
-}
-
-static PString Convert(DATE_STRUCT date)
-{
-  return PTime(0,0,0,date.day,date.month,date.year).AsString(PODBCRecord::TimeFormat);
-}
-
-static PString Convert(TIME_STRUCT time)
-{
-  return PTime(time.second,time.minute,time.hour,0,0,0).AsString(PODBCRecord::TimeFormat);
-}
-             
-static PString Convert(TIMESTAMP_STRUCT  timestamp)
-{
-  return PTime(timestamp.second,timestamp.minute,
-    timestamp.hour,timestamp.day,timestamp.month,timestamp.year).AsString(PODBCRecord::TimeFormat);
-}
-
-static PString Convert(SQLGUID guid)
-{
-// To Be Implemented.
-  return PString();
-}
-
-
-///PODBC
 /////////////////////////////////////////////////////////////////
-
+///PODBC
 
 PODBC::PODBC()
+  : m_link(new Link)
+  , m_lastError(SQL_ERROR)
+  , m_precision(4)
+  , m_timeFormat(PTime::MediumDate)
+  , m_dateFormat(PTime::LongTime)
+  , m_dateTimeFormat(PTime::MediumDateTime)
+  , m_needChunking(false)
+  , m_maxChunkSize(32768)
 {
-  m_hDBC              = NULL;
-  m_hEnv              = NULL;
-  m_nReturn           = SQL_ERROR;
+  m_link->m_hDBC = NULL;
+  m_lastError = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_link->m_hEnv);
+  if (SQL_SUCCEEDED(m_lastError))
+    m_lastError = SQLSetEnvAttr(m_link->m_hEnv, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
 }
+
 
 PODBC::~PODBC()
 {
-   if( m_hDBC != NULL ) {
-    m_nReturn = SQLFreeHandle( SQL_HANDLE_DBC,  m_hDBC );
-   }
-   if( m_hEnv!=NULL )
-    m_nReturn = SQLFreeHandle( SQL_HANDLE_ENV, m_hEnv );
+  Disconnect();
+
+  if (m_link->m_hEnv != NULL)
+    m_lastError = SQLFreeHandle(SQL_HANDLE_ENV, m_link->m_hEnv);
 }
 
 
-PBoolean PODBC::Connect(LPCTSTR svSource)
+PINDEX PODBC::GetSources(PStringList & servers, PStringList & descriptions, bool system)
 {
-   int nConnect = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_hEnv );
-   if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
-    nConnect = SQLSetEnvAttr( m_hEnv, 
-                      SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0 );
-    if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
-     nConnect = SQLAllocHandle( SQL_HANDLE_DBC, m_hEnv, &m_hDBC );
-     if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
-      SQLSetConnectOption( m_hDBC,SQL_LOGIN_TIMEOUT,5 );                
-      short shortResult = 0;
-      SQLTCHAR szOutConnectString[ 1024 ];
-      nConnect = SQLDriverConnect( m_hDBC,  // Connection Handle
-          NULL,                           // Window Handle
-          (SQLTCHAR*)svSource,        // InConnectionString
-#ifdef _WIN32
-          _tcslen(svSource),              // StringLength1
-#else
-          strlen(svSource),
-#endif
-          szOutConnectString,             // OutConnectionString
-          sizeof( szOutConnectString ),   // Buffer length
-          &shortResult,                   // StringLength2Ptr
-          SQL_DRIVER_NOPROMPT );          // no User prompt
-      return ((nConnect == SQL_SUCCESS) || (nConnect == SQL_SUCCESS_WITH_INFO));
-     }
-    }
-   }
-   if( m_hDBC != NULL ) {
-    m_nReturn = SQLDisconnect( m_hDBC );
-    m_nReturn = SQLFreeHandle( SQL_HANDLE_DBC,  m_hDBC );
-   }
-   if( m_hEnv!=NULL )
-    m_nReturn = SQLFreeHandle( SQL_HANDLE_ENV, m_hEnv );
-   m_hDBC              = NULL;
-   m_hEnv              = NULL;
-   m_nReturn           = SQL_ERROR;
-   return ((m_nReturn == SQL_SUCCESS) || (m_nReturn == SQL_SUCCESS_WITH_INFO));
+  if (m_link->m_hEnv == NULL)
+    return 0;
+
+  PString server, description;
+  SQLSMALLINT servLen, descLen;
+  SQLUSMALLINT fetch = system ? SQL_FETCH_FIRST_SYSTEM : SQL_FETCH_FIRST_USER;
+  PINDEX count = 0;
+
+  if (SQL_SUCCEEDED(m_lastError = SQLDataSources(m_link->m_hEnv, fetch, NULL, 0, &servLen, NULL, 0, &descLen))) {
+    do {
+      m_lastError = SQLDataSources(m_link->m_hEnv, fetch,
+                                   (SQLCHAR*)server.GetPointerAndSetLength(servLen), servLen, &servLen,
+                                   (SQLCHAR*)description.GetPointerAndSetLength(descLen), descLen, &descLen);
+      servers.AppendString(server);
+      descriptions.AppendString(description);
+      fetch = SQL_FETCH_NEXT;
+      ++count;
+    } while (SQL_SUCCEEDED(m_lastError = SQLDataSources(m_link->m_hEnv, fetch, NULL, 0, &servLen, NULL, 0, &descLen)));
+  }
+
+  return count;
+}
+
+
+bool PODBC::InternalConnectSetUp()
+{
+  if (m_link->m_hEnv == NULL)
+    return false;
+
+  Disconnect();
+
+  if (!SQL_SUCCEEDED(m_lastError = SQLAllocHandle(SQL_HANDLE_DBC, m_link->m_hEnv, &m_link->m_hDBC)))
+    return false;
+
+  SQLSetConnectOption(m_link->m_hDBC, SQL_LOGIN_TIMEOUT, 5);
+  return true;
+}
+
+
+bool PODBC::Connect(const PString & source)
+{
+  short shortResult = 0;
+  SQLCHAR szOutConnectString[1024];
+
+  if (InternalConnectSetUp() &&
+      SQL_SUCCEEDED(m_lastError = SQLDriverConnect(m_link->m_hDBC,                 // Connection Handle
+                                                   NULL,                           // Window Handle
+                                                   (SQLCHAR*)source.GetPointer(),  // InConnectionString
+                                                   source.GetLength(),
+                                                   szOutConnectString,             // OutConnectionString
+                                                   sizeof(szOutConnectString),     // Buffer length
+                                                   &shortResult,                   // StringLength2Ptr
+                                                   SQL_DRIVER_NOPROMPT             // no User prompt
+                                                   ))) {
+    PTRACE(4, "ODBC\tConnected to " << source);
+    OnConnected();
+    return true;
+  }
+
+  Disconnect();
+  return false;
+}
+
+
+bool PODBC::Connect(const PString & source, const PString & username, const PString & password)
+{
+  if (InternalConnectSetUp() &&
+      SQL_SUCCEEDED(m_lastError = SQLConnect(m_link->m_hDBC,
+                                             (SQLCHAR *)source.GetPointer(),   source.GetLength(),
+                                             (SQLCHAR *)username.GetPointer(), username.GetLength(),
+                                             (SQLCHAR *)password.GetPointer(), password.GetLength()))) {
+    PTRACE(4, "ODBC\tConnected to " << source);
+    OnConnected();
+    return true;
+  }
+
+  Disconnect();
+  return false;
+}
+
+
+bool PODBC::IsConnected() const
+{
+  return m_link->m_hDBC != NULL;
 }
 
 
 void PODBC::Disconnect()
-  {
-   if( m_hDBC != NULL )
-   {
-    m_nReturn = SQLDisconnect( m_hDBC );
-    m_hDBC = NULL;
-   }
-}
-
-
-//--
-
-PBoolean PODBC::Connect_MSSQL(PString User,PString Pass, 
-         PString Host,PBoolean Trusted, 
-         MSSQLProtocols Proto)
-{  
-  PString Network = PString();
-
-        switch(Proto) {
-     case MSSQLNamedPipes:
-    Network ="dbnmpntw";
-    break;
-     case MSSQLWinSock:
-    Network ="dbmssocn";
-    break;
-     case MSSQLIPX:
-    Network = "dbmsspxn";
-    break;
-     case MSSQLBanyan:
-    Network = "dbmsvinn";
-    break;
-     case MSSQLRPC:
-    Network = "dbmsrpcn";
-    break;
-     default:
-    Network = "dbmssocn";
-    break;
-   }
-
-  PString ConStr = "Driver={SQL Server};Server=" + Host + ";Uid=" + User + ";Pwd=" +
-     Pass +";Trusted_Connection=" + (Trusted ? "Yes" : "No") + ";Network=" + Network + ";";
-
-   return PODBC::Connect(ConStr);
-}
-
-
- //--
-PBoolean PODBC::Connect_DB2(PFilePath DBPath)
 {
-   PString ConStr ="Driver={Microsoft dBASE Driver (*.dbf)};DriverID=277;Dbq=" + DBPath + ";";
-   return PODBC::Connect(ConStr);
+  if (m_link->m_hDBC != NULL) {
+    m_lastError = SQLDisconnect(m_link->m_hDBC);
+    m_link->m_hDBC = NULL;
+  }
 }
 
- //--
-PBoolean PODBC::Connect_XLS(PFilePath XLSPath,PString DefDir)
+
+bool PODBC::Connect_MSSQL(const PString & user,
+                          const PString & pass,
+                          const PString & host,
+                          bool trusted,
+                          MSSQLProtocols Proto)
 {
-   PString ConStr = "Driver={Microsoft Excel Driver (*.xls)};DriverId=790;bq="+ XLSPath 
-            + ";DefaultDir=" + DefDir + ";";
-   return PODBC::Connect(ConStr);
+  PString network;
+
+  switch(Proto) {
+  case MSSQLNamedPipes:
+    network ="dbnmpntw";
+    break;
+  case MSSQLWinSock:
+    network ="dbmssocn";
+    break;
+  case MSSQLIPX:
+    network = "dbmsspxn";
+    break;
+  case MSSQLBanyan:
+    network = "dbmsvinn";
+    break;
+  case MSSQLRPC:
+    network = "dbmsrpcn";
+    break;
+  default:
+    network = "dbmssocn";
+    break;
+  }
+
+  return PODBC::Connect("Driver={SQL Server};"
+                        "Server=" + host + ";"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass + ";"
+                        "Trusted_Connection=" + (trusted ? "Yes" : "No") + ";"
+                        "Network=" + network + ";");
 }
 
- //--
-PBoolean PODBC::Connect_TXT(PFilePath TXTPath)
-{
-   PString ConStr = "Driver={Microsoft Text Driver (*.txt; *.csv)};Dbq="+ TXTPath 
-            + ";Extensions=asc,csv,tab,txt;";
 
-   return PODBC::Connect(ConStr);
+bool PODBC::Connect_DB2(const PFilePath & dbPath)
+{
+  return PODBC::Connect("Driver={Microsoft dBASE Driver (*.dbf)};"
+                        "DriverID=277;"
+                        "Dbq=" + dbPath + ";");
 }
 
- //--
-PBoolean PODBC::Connect_FOX(PFilePath DBPath,PString User,
-          PString Pass,PString Type,
-          PBoolean Exclusive)
+
+bool PODBC::Connect_XLS(const PFilePath & xlsPath, const PString & defDir)
 {
-   PString ConStr = "Driver={Microsoft Visual Foxpro Driver};Uid=" + User + ";Pwd=" + Pass 
-        +";SourceDB=" + DBPath + ";SourceType=" + Type + ";Exclusive=" + (Exclusive ? "yes": "no") + ";";
-   
-   return PODBC::Connect(ConStr);
+  return PODBC::Connect("Driver={Microsoft Excel Driver (*.xls)};"
+                        "DriverId=790;"
+                        "bq=" + xlsPath + ";"
+                        "DefaultDir=" + defDir + ";");
 }
 
- //--
-PBoolean PODBC::Connect_MDB(PFilePath MDBPath,PString User,
-            PString Pass,PBoolean Exclusive)
-{
-   PString ConStr = "Driver={Microsoft Access Driver (*.mdb)};Dbq=" + MDBPath + ";Uid=" + User +
-     ";Pwd=" + Pass + ";Exclusive=" + (Exclusive ? "yes" : "no");
 
-   return PODBC::Connect(ConStr);
+bool PODBC::Connect_TXT(const PFilePath & txtPath)
+{
+  return PODBC::Connect("Driver={Microsoft Text Driver (*.txt; *.csv)};"
+                        "Dbq=" + txtPath + ";"
+                        "Extensions=asc,csv,tab,txt;");
 }
 
- //--
-PBoolean PODBC::Connect_PDOX(PDirectory DBPath,PDirectory DefaultDir,int version)
+
+bool PODBC::Connect_FOX(const PFilePath & dbPath,
+                        const PString & user,
+                        const PString & pass,
+                        const PString & type,
+                        bool exclusive)
 {
-   PString driver = "3.X";
-  if (version == 4) 
+  return PODBC::Connect("Driver={Microsoft Visual Foxpro Driver};"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass + ";"
+                        "SourceDB=" + dbPath + ";"
+                        "SourceType=" + type + ";"
+                        "Exclusive=" + (exclusive ? "yes": "no") + ";");
+}
+
+
+bool PODBC::Connect_MDB(const PFilePath & mdbPath,
+                        const PString & user,
+                        const PString & pass,
+                        bool exclusive)
+{
+  return PODBC::Connect("Driver={Microsoft Access Driver (*.mdb)};"
+                        "Dbq=" + mdbPath + ";"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass + ";"
+                        "Exclusive=" + (exclusive ? "yes" : "no"));
+}
+
+
+bool PODBC::Connect_PDOX(const PDirectory & dbPath, const PDirectory & defaultDir, int version)
+{
+  PString driver = "3.X";
+  if (version == 4)
     driver = "4.X";
-  if (version > 4) 
+  if (version > 4)
     driver = "5.X";
 
-   PString ConStr = "Driver={Microsoft Paradox Driver (*.db )};DriverID=538;Fil=Paradox " + 
-             driver + ";DefaultDir=" + DefaultDir +
-             "\\;Dbq=" + DBPath + "\\;CollatingSequence=ASCII;";
-
-   return PODBC::Connect(ConStr);
+  return PODBC::Connect("Driver={Microsoft Paradox Driver (*.db )};"
+                        "DriverID=538;"
+                        "Fil=Paradox " + driver + ";"
+                        "DefaultDir=" + defaultDir + ";"
+                        "Dbq=" + dbPath + ";"
+                        "CollatingSequence=ASCII;");
 }
 
- //--
-PBoolean PODBC::Connect_DBASE(PDirectory DBPath)
-{
-   PString ConStr = "Driver={Microsoft dBASE Driver (*.dbf)};DriverID=277;Dbq=" + DBPath + ";";
-   return PODBC::Connect(ConStr);
-}
- //--
-PBoolean PODBC::Connect_Oracle(PString Server,PString User, PString Pass)
-{
-  PString ConStr = "Driver={Microsoft ODBC for Oracle};Server=" + Server + 
-          ";Uid=" + User + ";Pwd=" + Pass + ";";
 
-  return PODBC::Connect(ConStr);
+bool PODBC::Connect_DBASE(const PDirectory & dbPath)
+{
+  return PODBC::Connect("Driver={Microsoft dBASE Driver (*.dbf)};"
+                        "DriverID=277;Dbq=" + dbPath + ";");
 }
 
- //--
-PBoolean PODBC::Connect_mySQL(PString User,PString Pass,PString Host, int Port,int Option)
-{
-   PString ConStr = "Driver={MySQL ODBC 3.51 Driver};Uid=" + User + ";Pwd=" + Pass
-         + ";Server=" + Host + ";Port=" + PString(Port) + ";";
 
-   return PODBC::Connect(ConStr);
+bool PODBC::Connect_Oracle(const PString & server, const PString & user, const PString & pass)
+{
+  return PODBC::Connect("Driver={Microsoft ODBC for Oracle};"
+                        "Server=" + server + ";"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass + ";");
 }
 
-PBoolean PODBC::ConnectDB_mySQL(PString DB,PString User,PString Pass,PString Host, int Port,int Option)
-{
-   PString ConStr = "Driver={MySQL ODBC 3.51 Driver};Database=" + DB + ";Uid=" + User
-          + ";Pwd=" + Pass +";Server=" + Host + ";Port=" + PString(Port) + ";";
 
-   return PODBC::Connect(ConStr);
+bool PODBC::Connect_mySQL(const PString & user,
+                          const PString & pass,
+                          const PString & host,
+                          int port)
+{
+  return PODBC::Connect("Driver={MySQL ODBC 3.51 Driver};"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass + ";"
+                        "Server=" + (host.IsEmpty() ? "localhost" : host) + ";"
+                        "Port=" + PString(port == 0 ? 3306 : port) + ";");
 }
 
-PBoolean PODBC::Connect_postgreSQL(PString DB,PString User,
-        PString Pass,PString Host, int Port,int Option)
-{
-   PString ConStr = "Driver={PostgreSQL};Database=" + DB + ";Uid=" + User
-          + ";Pwd=" + Pass +";Server=" + Host + ";Port=" + PString(Port) + ";";
 
-   return PODBC::Connect(ConStr);
+bool PODBC::ConnectDB_mySQL(const PString & db,
+                            const PString & user,
+                            const PString & pass,
+                            const PString & host,
+                            int port)
+{
+  if (db.IsEmpty())
+    return Connect_mySQL(user, pass, host, port);
+
+  return PODBC::Connect("Driver={MySQL ODBC 3.51 Driver};"
+                        "Database=" + db + ";"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass +";"
+                        "Server=" + (host.IsEmpty() ? "localhost" : host) + ";"
+                        "Port=" + PString(port == 0 ? 3306 : port) + ";");
 }
 
- //--
-PBoolean PODBC::DataSource(DataSources Source, ConnectData Data)
+
+bool PODBC::Connect_postgreSQL(const PString & db,
+                               const PString & user,
+                               const PString & pass,
+                               const PString & host,
+                               int port)
 {
-   dbase = Source;
-
-   switch (Source)
-   {
-     case PODBC::mySQL:
-       if (Data.Host.GetLength() == 0) 
-         Data.Host = "localhost";
-       if (Data.Port == 0) 
-         Data.Port = 3306;
-       if (Data.DefDir.GetLength() == 0) {
-         return Connect_mySQL(Data.User,Data.Pass,Data.Host,Data.Port,Data.opt);
-        } else {
-          return ConnectDB_mySQL(Data.DefDir,Data.User,Data.Pass,Data.Host,Data.Port,Data.opt);
-        }
-     case PODBC::MSSQL:
-       if (Data.Host.GetLength() == 0) 
-         Data.Host = "(local)";
-         return Connect_MSSQL(Data.User,Data.Pass,Data.Host,Data.Excl_Trust, (MSSQLProtocols)Data.opt);
-     case PODBC::Oracle:
-         return Connect_Oracle(Data.Host,Data.User, Data.Pass);
-     case PODBC::IBM_DB2:
-         return Connect_DB2(Data.DBPath);
-     case PODBC::DBASE:
-         return Connect_DBASE(Data.DBPath);
-     case PODBC::Paradox:
-         return Connect_PDOX(Data.DBPath,Data.DefDir,Data.opt);
-     case PODBC::Excel:
-         return Connect_XLS(Data.DBPath,Data.DefDir);
-     case PODBC::Ascii:
-         return Connect_TXT(Data.DBPath);
-     case PODBC::Foxpro:
-         return Connect_FOX(Data.DBPath,Data.User,Data.Pass,"DBF",Data.Excl_Trust);
-     case PODBC::MSAccess:
-         return Connect_MDB(Data.DBPath,Data.User,Data.Pass,Data.Excl_Trust);
-     case PODBC::postgreSQL:
-         return Connect_postgreSQL(Data.User,Data.Pass,Data.Host,Data.Port,Data.opt);
-   };
-
-  return PFalse;
+  return PODBC::Connect("Driver={PostgreSQL};"
+                        "Database=" + db + ";"
+                        "Uid=" + user + ";"
+                        "Pwd=" + pass +";"
+                        "Server=" + (host.IsEmpty() ? "localhost" : host) + ";"
+                        "Port=" + PString(port == 0 ? 5432 : port) + ";");
 }
 
-PStringArray PODBC::TableList(PString option)
+
+bool PODBC::DataSource(DataSources Source, ConnectData connectInfo)
 {
-    PODBCStmt data(this);
+  connectInfo.Source = Source;
+  return Connect(connectInfo);
+}
+
+
+bool PODBC::Connect(const ConnectData & connectInfo)
+{
+  m_dbase = connectInfo.Source;
+
+  switch (m_dbase)
+  {
+  case PODBC::mySQL:
+    return ConnectDB_mySQL(connectInfo.DefDir,connectInfo.User,connectInfo.Pass,connectInfo.Host,connectInfo.Port);
+  case PODBC::MSSQL:
+    return Connect_MSSQL(connectInfo.User,connectInfo.Pass,connectInfo.Host,connectInfo.Excl_Trust, (MSSQLProtocols)connectInfo.Option);
+  case PODBC::Oracle:
+    return Connect_Oracle(connectInfo.Host,connectInfo.User, connectInfo.Pass);
+  case PODBC::IBM_DB2:
+    return Connect_DB2(connectInfo.DBPath);
+  case PODBC::DBASE:
+    return Connect_DBASE(connectInfo.DBPath);
+  case PODBC::Paradox:
+    return Connect_PDOX(connectInfo.DBPath,connectInfo.DefDir,connectInfo.Option);
+  case PODBC::Excel:
+    return Connect_XLS(connectInfo.DBPath,connectInfo.DefDir);
+  case PODBC::Ascii:
+    return Connect_TXT(connectInfo.DBPath);
+  case PODBC::Foxpro:
+    return Connect_FOX(connectInfo.DBPath,connectInfo.User,connectInfo.Pass,"DBF",connectInfo.Excl_Trust);
+  case PODBC::MSAccess:
+    return Connect_MDB(connectInfo.DBPath,connectInfo.User,connectInfo.Pass,connectInfo.Excl_Trust);
+  case PODBC::postgreSQL:
+    return Connect_postgreSQL(connectInfo.User,connectInfo.Pass,connectInfo.Host,connectInfo.Port,connectInfo.Option);
+  };
+
+  return false;
+}
+
+
+PStringArray PODBC::TableList(const PString & option)
+{
+  Statement data(*this);
   return data.TableList(option);
 }
 
-PODBC::Table PODBC::LoadTable(PString table)
+
+bool PODBC::Query(const PString & query)
 {
-  PODBC::Table newTable(this,table);
-  return newTable;
+  if (m_link->m_hDBC == NULL)
+    return false;
+
+  Statement stmt(*this);
+  return stmt.Query(query);
 }
 
-PBoolean PODBC::Query(PString Query)
-{
-  if (m_hDBC == NULL)
-    return PFalse;
 
-   PODBCStmt stmt(this);
-  return stmt.Query(Query);
+void PODBC::SetPrecision(unsigned precision)
+{
+  m_precision = precision;
 }
 
-void PODBC::SetPrecision(int Digit)
-{
-  PODBCRecord::Precision = Digit;
-}
 
-void PODBC::SetTimeFormat(PTime::TimeFormat tformat)
-{
-  PODBCRecord::TimeFormat = tformat;
-}
-
-PBoolean PODBC::NeedLongDataLen()
+void PODBC::OnConnected()
 {
   char f[2];
-  SQLGetInfo(m_hDBC,SQL_NEED_LONG_DATA_LEN, f, sizeof(f), NULL);
-  return f[0] != 'N';
+  m_lastError = SQLGetInfo(m_link->m_hDBC, SQL_NEED_LONG_DATA_LEN, f, sizeof(f), NULL);
+  m_needChunking = toupper(f[0]) == 'Y';
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-// PODBC::Field
+// PODBC::Statement
 
-PString PODBC::Field::AsString()
+PODBC::Statement::Statement(PODBC & odbc)
+  : m_odbc(odbc)
+  , m_lastError(SQL_SUCCESS)
 {
-Bind & b = Data;     /// Bound Buffer container    
-PBoolean B = isReadOnly;   /// ReadOnly Columns are not Buffer Bound and have to get Data;
+  SQLRETURN m_nReturn = SQLAllocHandle(SQL_HANDLE_STMT, odbc.m_link->m_hDBC, &m_hStmt);
+  SQLSetStmtAttr(m_hStmt, SQL_ATTR_CONCURRENCY,    (SQLPOINTER) SQL_CONCUR_ROWVER, 0);
+  SQLSetStmtAttr(m_hStmt, SQL_ATTR_CURSOR_TYPE,    (SQLPOINTER)SQL_CURSOR_KEYSET_DRIVEN, 0);
+  SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_BIND_TYPE,  (SQLPOINTER)SQL_BIND_BY_COLUMN, 0);
+  SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)1, 0);
+  SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_STATUS_PTR, NULL, 0);
 
-     switch (ODBCType) {
-      case PODBC::BigInt:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.sbint,0,&b.dataLen);
-          return Convert(b.sbint);
-
-      case PODBC::TinyInt:
-      case PODBC::Bit:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.sbit,0,&b.dataLen);
-          return Convert(b.sbit);        
-  
-      case PODBC::Char:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.suchar,0,&b.dataLen);
-          return Convert(b.suchar);    
-
-      case PODBC::Integer:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.slint,0,&b.dataLen);
-          return Convert(b.slint);
-        
-      case PODBC::SmallInt:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.ssint,0,&b.dataLen);
-          return Convert(b.ssint);
-
-      case PODBC::Numeric:
-      case PODBC::Decimal:
-      case PODBC::Float:
-      case PODBC::Real:
-      case PODBC::Double:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.sdoub,0,&b.dataLen);
-          return Convert(b.sdoub,Decimals);
-
-      /// Date Times
-      case PODBC::Date: 
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.date,0,&b.dataLen);
-          return Convert(b.date);
-
-      case PODBC::Time:
-        if (B) 
-          SQLGetData(*row->rec->Stmt,col,ODBCType,&b.time,0,&b.dataLen);
-          return Convert(b.time);
-
-      case PODBC::TimeStamp:
-         if (B) 
-           SQLGetData(*row->rec->Stmt,col,ODBCType,&b.timestamp,0,&b.dataLen);
-           return Convert(b.timestamp);
-
-      case PODBC::Guid:   
-         if (B) 
-           SQLGetData(*row->rec->Stmt,col,ODBCType,&b.guid,0,&b.dataLen);
-           return Convert(b.guid);
-
-      /// Binary/Long Data Cannot be Bound Need to get it!
-      case PODBC::Binary:
-      case PODBC::VarBinary:
-      case PODBC::LongVarBinary:
-      case PODBC::LongVarChar:    
-        return row->rec->GetLongData(col);  
-      
-      /// Character 
-      case PODBC::DateTime:
-      case PODBC::Unknown:
-      case PODBC::VarChar:
-      default:
-        if (B) {
-          b.sbin.SetMinSize(MAX_DATA_LEN);
-          SQLGetData(*row->rec->Stmt, col, ODBCType, b.sbin.GetPointerAndSetLength(0), MAX_DATA_LEN, &b.dataLen);
-          b.sbin.MakeMinimumSize();
-        }
-        return b.sbin;
-  }
-}
-
-void PODBC::Field::SetValue(PString value)
-{
- 
-    Bind &b = Data;
-
-   /// If Field is marked as ReadOnly Do not Update
-   if (isReadOnly) 
-        return;
-
-   /// If Field is not Nullable and the New Value length =0 No Update.
-   if ((!isNullable) && (value.GetLength() == 0)) 
-    return;
-
-  switch (ODBCType) {
-    case PODBC::BigInt:
-      Convert(b.sbint,value);
-      break;
-
-    case PODBC::TinyInt:
-    case PODBC::Bit:
-       Convert(b.sbit,value);  
-       break;
-  
-    case PODBC::Char:
-       Convert(b.suchar,value);
-       break;
-
-    case PODBC::Integer:
-       Convert(b.slint,value);
-       break;
-        
-    case PODBC::SmallInt:
-       Convert(b.ssint,value);
-       break;
-
-    case PODBC::Numeric:
-    case PODBC::Decimal:
-    case PODBC::Float:
-    case PODBC::Real:
-    case PODBC::Double:
-       Convert(b.sdoub,value);
-       break;
-
-    /// Date Times
-    case PODBC::Date:  
-       Convert(b.date,value);
-       break;
-
-    case PODBC::Time:
-       Convert(b.time,value);
-       break;
-
-    case PODBC::TimeStamp:
-       Convert(b.timestamp,value);
-       break;
-
-    case PODBC::Guid:   
-       Convert(b.guid,value);
-
-    /// Binary Data
-    case PODBC::Binary:
-    case PODBC::VarBinary:
-    case PODBC::LongVarBinary:
-    case PODBC::LongVarChar:
-      b.sbinlong = value;  
-        if (row->rec->dbase == PODBC::MSAccess) {
-          b.sbinlong.SetSize(MAX_DATA_LEN * PODBCRecord::MaxCharSize);
-          b.dataLen = b.sbinlong.GetLength();
-        }
-      break;
-      
-    /// Character 
-    case PODBC::DateTime:
-    case PODBC::Unknown:
-    case PODBC::VarChar:
-    default:
-      b.sbin = value;
-      b.sbin.SetSize(MAX_DATA_LEN);
-      b.dataLen = b.sbin.GetLength();
-  };
-}
-
-void PODBC::Field::SetDefaultValues() 
-{
-  if ((isReadOnly) || (isAutoInc))  
-    return;
- 
-  /// Set Default Values
-  switch (Type) {
-    case oPString:  
-    case ochar:  
-     if (isNullable)
-       SetValue(PString());
-     else
-       SetValue("?");
-     break;
-    case oPTime:
-      SetValue(PTime().AsString());
-      break;
-    default:
-      SetValue(0);
-  } 
-}
-
-PString PODBC::Field::operator=(const PString & str)
-{ 
-  return AsString();
+  if(!SQL_OK(m_nReturn))
+    m_hStmt = SQL_NULL_HSTMT;
 }
 
 
-PBoolean PODBC::Field::DataFragment(PString & Buffer, PINDEX & fragment, SQLINTEGER & size)
+PODBC::Statement::~Statement()
 {
-  PINDEX fragcount = PINDEX(Data.sbinlong.GetLength()/size);
-// Value less than Buffer Size
-  if (fragcount == 0) {
-    Buffer = Data.sbinlong;
-    return PFalse;
-  }
-// Buffer Fragment
-  if (fragcount < fragment) {
-    Buffer.Splice(Data.sbinlong,(fragment * size)+1,size);
-    fragment++;
-    return PTrue;
-  }
-// Last Fragment
-  PINDEX blen = Data.sbinlong.GetLength() - (fragment * size);
-  Buffer = Data.sbinlong.Right(blen);
-  size = blen;
-  return PFalse; 
+  SQLCloseCursor(m_hStmt);
+
+  if (IsValid())
+    SQLFreeHandle(SQL_HANDLE_STMT, m_hStmt);
 }
 
-PBoolean PODBC::Field::Post() 
+
+DWORD PODBC::Statement::GetChangedRowCount(void)
 {
-  return row->Post();
+  SQLLEN nRows = 0;
+  return SQL_OK(SQLRowCount(m_hStmt,&nRows)) ? nRows : 0;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// PODBC::Table
-    
-PODBC::Table::Table(PODBC * odbc, PString Query)
-  :  stmt(PODBCStmt(odbc))
-{
-   PString query;
-    tableName = PString();
 
-// Do the Query
-    if (Query.Trim().Left(6) == "SELECT") {    // Select Query
-      query = Query;
-    } else {                  // Table Query
-      tableName = Query;
-      query = "SELECT * FROM [" + tableName + "];";
+bool PODBC::Statement::Query(const PString & query)
+{
+  return SQL_OK(SQLExecDirect(m_hStmt, (SQLCHAR *)query.GetPointer(), query.GetLength()));
+}
+
+
+bool PODBC::Statement::Commit(PODBC::Row & row, unsigned operation)
+{
+  SQLRETURN nRet = operation == SQL_ADD ? SQLBulkOperations(m_hStmt, SQL_ADD)
+                                        : SQLSetPos(m_hStmt, 1, operation, SQL_LOCK_NO_CHANGE);
+
+  /// Everything OK but no Long Data
+  if (SQL_OK(nRet))
+    return true;
+
+  /// Error Somewhere else.
+  if (nRet != SQL_NEED_DATA)
+    return false;
+
+  PINDEX chunkSize = m_odbc.GetMaxChunkSize();
+  SQLPOINTER pColumn;
+
+  /// If More Data Required
+  while ((nRet = SQLParamData(m_hStmt, &pColumn)) == SQL_NEED_DATA) {
+    Field & field = row[*(PINDEX*)pColumn];
+
+    const uint8_t * ptr = (const uint8_t *)field.GetPointer();
+    PINDEX len = field.GetSize();
+
+    while (len > chunkSize) {
+      SQLPutData(m_hStmt, (SQLPOINTER)ptr, chunkSize);
+      len -= chunkSize;
+      ptr += chunkSize;
     }
-
-    if (!stmt.Query(query))
-      return;
-
-    // Create the Row Handler
-    RowHandler = new Row(&stmt);
-}
-
-PODBC::Table::~Table() 
-{
-}
-         
-PODBC::Row PODBC::Table::NewRow() 
-{
-      RowHandler->SetNewRow();
-      return *RowHandler;
-}
-
-PBoolean PODBC::Table::DeleteRow(PINDEX row)
-{
-      return RowHandler->Delete(row);
-}
-
-
-PBoolean PODBC::Table::Post()
-{
-      return RowHandler->Post();
-}
-
-PINDEX PODBC::Table::Rows()  
-{ 
-      return RowHandler->RowCount; 
-}
-
-PINDEX PODBC::Table::Columns() 
-{ 
-     return RowHandler->Columns(); 
-}
-    
-PStringArray PODBC::Table::ColumnNames() 
-{ 
-     return RowHandler->ColumnNames(); 
-}
-
-PODBC::Row & PODBC::Table::operator[] (PINDEX row) 
-{ 
-   if (RowHandler->Navigate(row))
-     return *RowHandler; 
-
-   return *RowHandler;
-}
-
-PODBC::Row & PODBC::Table::RecordHandler()
-{
-     return *RowHandler;
-}
-
-PODBC::Field & PODBC::Table::operator() (PINDEX row, PINDEX col) 
-{ 
-
-     RowHandler->Navigate(row);
-     return RowHandler->Column(col); 
-}
-
-PODBC::Field & PODBC::Table::Column(PINDEX col)
-{
-     return RowHandler->Column(col);
-}
-
-PODBC::Field & PODBC::Table::Column(PString Name)
-{
-  return RowHandler->Column(Name);
-}
-///////////////////////////////////////////////////////////////////
-// PODBC::Row
-
-PODBC::Row::Row(PODBCStmt * stmt)
-  : rec(new PODBCRecord(stmt))  
-{
-  /// Create a blank Row (RecordHolder) with default Recordset Info.
-  for (PINDEX i=0; i < rec->ColumnCount(); i++)
-  {   
-          Field * nfield = new Field;
-          nfield->row = this;
-          nfield->col = i+1;
-
-   // Default Attributes
-         nfield->isReadOnly = PFalse;
-         nfield->isNullable = PTrue;
-         nfield->isAutoInc = PFalse;
-         nfield->Decimals = 0;
-         nfield->LongData = stmt->GetLink()->NeedLongDataLen();
-
-         rec->Data(i+1, *nfield);
-          
-        /// Append to PArray
-        Fields.Append(nfield);
-       }
-
-   
-   NewRow = PFalse;
-
-// Attempt to get the first Record
-  if (!stmt->FetchFirst())   
-    RowCount = 0; 
-  else    
-    RowCount = 1;
-
-// Get the Record Count  (Need a better way other than fetching! :-( )
-   while(stmt->Fetch())
-  RowCount++;
-   
-  /// Put the RecordHolder to point to the First Row
-  if (RowCount > 0) {
-   stmt->FetchFirst();
-   CurRow = 1;
-  } else 
-   CurRow = 0;
-}
-
-
-PODBC::Field & PODBC::Row::Column(PINDEX col) 
-{ 
-  /// Column = 0 return blank field
-  if ((col == 0) || (col > Fields.GetSize()))    
-      return *(new PODBC::Field());
-
-   return Fields[col-1];
-}
-
-PODBC::Field & PODBC::Row::Column(PString name)
-{
-    PINDEX i = rec->ColumnByName(name);
-    return Column(i);
-}
-
-PINDEX PODBC::Row::Columns()
-{
-    return rec->ColumnCount();
-}
-
-PStringArray PODBC::Row::ColumnNames()
-{
-    PStringArray Names;
-
-    for (PINDEX i = 0; i < Fields.GetSize(); i++)
-    {
-      Names.AppendString(rec->ColumnName(i+1));
-    }
-    return Names;
-}
-
-PINDEX PODBC::Row::Rows()
-{
-   return RowCount;
-}
-
-
-PODBC::Field & PODBC::Row::operator[] (PINDEX col) 
-{  
-    return Column(col);
-} 
-
-PODBC::Field & PODBC::Row::operator[] (PString col) 
-{  
-     PINDEX i = rec->ColumnByName(col);
-     return Column(i);
-}
-
-void PODBC::Row::SetNewRow()
-{
-  CurRow = RowCount+1;
-  NewRow = PTrue;
-
-  for (PINDEX i = 0; i < Fields.GetSize(); i++)
-  {
-     Column(i).SetDefaultValues();
+    SQLPutData(m_hStmt, (SQLPOINTER)ptr, len);
   }
-}
 
-PBoolean PODBC::Row::Navigate(PINDEX row)
-{
-   if ((row > 0) && (CurRow != row)) {
-     if (!rec->Stmt->FetchRow(row,PTrue)) 
-  return PFalse;
-
-     CurRow = row;
-   } 
-  return PTrue;
-}
-
-PBoolean PODBC::Row::Post()
-{
-  PBoolean Success;
-
-  if (NewRow) {
-    NewRow = PFalse;
-    RowCount++;
-    CurRow = RowCount;
-    Success = rec->PostNew(*this);
-   } else {
-    Success = rec->PostUpdate(*this);
-   }
-
-   return Success;
+  return SQL_OK(nRet);
 }
 
 
-
-PBoolean PODBC::Row::Delete(PINDEX row)
+PStringArray PODBC::Statement::TableList(const PString & option)
 {
-    if (row > 0) {
-      if (!Navigate(row))
-        return PFalse;
-      }
+  PStringArray list;
+  SQLLEN cb = 0;
 
-    if (!rec->PostDelete())
-     return PFalse;
+  /// This Statement will need reviewing as it
+  /// depends on the Database, Might work on some
+  /// but not on others
 
-    RowCount--;
-    return PTrue;
-}
-
-
-// PDSNConnection
-/////////////////////////////////////////////////////////////////////////////////////
-
-PDSNConnection::PDSNConnection()
-{
-
-}
-
-PDSNConnection::~PDSNConnection()
-{
-
-}
-
-
-PBoolean PDSNConnection::Connect( PString Source ,PString Username, PString Password)
-{
-   int nConnect = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_hEnv );
-
-    if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
-     nConnect = SQLSetEnvAttr( m_hEnv, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0 );
-
-      if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
-        nConnect = SQLAllocHandle( SQL_HANDLE_DBC, m_hEnv, &m_hDBC );
-
-  if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
-    SQLSetConnectOption( m_hDBC,SQL_LOGIN_TIMEOUT,5 );                
-    nConnect=SQLConnect( m_hDBC,
-     ( SQLTCHAR *)(const char *)Source,SQL_NTS, 
-     ( SQLTCHAR *)(const char *)Username,
-     SQL_NTS,
-     ( SQLTCHAR *)(const char *)Password,
-     SQL_NTS 
-               );
-    return ((nConnect == SQL_SUCCESS) || (nConnect == SQL_SUCCESS_WITH_INFO));
-  }
-      }
-    }
-
-   if( m_hDBC != NULL ) {
-    m_nReturn = SQLDisconnect( m_hDBC );
-    m_nReturn = SQLFreeHandle( SQL_HANDLE_DBC,  m_hDBC );
-   }
-   if( m_hEnv!=NULL )
-    m_nReturn = SQLFreeHandle( SQL_HANDLE_ENV, m_hEnv );
-
-   m_hDBC              = NULL;
-   m_hEnv              = NULL;
-   m_nReturn           = SQL_ERROR;
-
-   return PFalse;
-}
- //--
-PODBCStmt::PODBCStmt(PODBC * odbc)
-  : odbclink(odbc)
-{
-   HDBC hDBCLink = *odbc;
-
-   SQLRETURN m_nReturn;
-   m_nReturn = SQLAllocHandle( SQL_HANDLE_STMT, hDBCLink, &m_hStmt );
-   SQLSetStmtAttr(m_hStmt, SQL_ATTR_CONCURRENCY, 
-                       (SQLPOINTER) SQL_CONCUR_ROWVER, 0);
-   SQLSetStmtAttr(m_hStmt, SQL_ATTR_CURSOR_TYPE,
-                       (SQLPOINTER)SQL_CURSOR_KEYSET_DRIVEN, 0);
-   SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_BIND_TYPE, 
-             (SQLPOINTER)SQL_BIND_BY_COLUMN, 0);
-   SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_ARRAY_SIZE, 
-             (SQLPOINTER)1, 0);
-   SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_STATUS_PTR, 
-             NULL, 0);
-
-   dbase = odbc->dbase;
-
-   if(!SQL_OK(m_nReturn))
-    m_hStmt=SQL_NULL_HSTMT;
-}
-
-
-PODBCStmt::~PODBCStmt()
-{
-   SQLCloseCursor(m_hStmt);
-
-   if(m_hStmt!=SQL_NULL_HSTMT)
-    SQLFreeHandle(SQL_HANDLE_STMT,m_hStmt);
-}
-
-PBoolean PODBCStmt::IsValid()
-{
-    return m_hStmt!=SQL_NULL_HSTMT;
-}
-
-
-DWORD PODBCStmt::GetChangedRowCount(void)
-{
-   SQLLEN nRows=0;
-   if(!SQL_OK(SQLRowCount(m_hStmt,&nRows)))
-    return 0;
-   return nRows;
-}
-
-PBoolean PODBCStmt::Query(PString strSQL)
-{
-   SQLRETURN nRet=SQLExecDirect( m_hStmt, (SQLTCHAR *)(const char *)strSQL, SQL_NTS );
-    return SQL_OK( nRet );
-}
-
-PBoolean PODBCStmt::Fetch()
-{
-   return SQL_OK(SQLFetch(m_hStmt));
-}
-
-PBoolean PODBCStmt::FetchPrevious()
-{
-   SQLRETURN nRet=SQLFetchScroll(m_hStmt,SQL_FETCH_PRIOR,0);
-   return SQL_OK(nRet);
-}
-
-PBoolean PODBCStmt::FetchNext()
-{
-   SQLRETURN nRet=SQLFetchScroll(m_hStmt,SQL_FETCH_NEXT,0);
-   return SQL_OK(nRet);
-}
-
-PBoolean PODBCStmt::FetchRow(PINDEX nRow,PBoolean Absolute)
-{
-   SQLRETURN nRet=SQLFetchScroll(m_hStmt,
-      (Absolute ? SQL_FETCH_ABSOLUTE : SQL_FETCH_RELATIVE),nRow);
-   return SQL_OK(nRet);
-}
-
-PBoolean PODBCStmt::FetchFirst()
-{
-   SQLRETURN nRet=SQLFetchScroll(m_hStmt,SQL_FETCH_FIRST,0);
-   return SQL_OK(nRet);
-}
-
-PBoolean PODBCStmt::FetchLast()
-{
-   SQLRETURN nRet=SQLFetchScroll(m_hStmt,SQL_FETCH_LAST,0);
-   return SQL_OK(nRet);
-}
-
-PBoolean PODBCStmt::Cancel()
-{
-   SQLRETURN nRet=SQLCancel(m_hStmt);
-   return SQL_OK(nRet);
-}
-
-PStringArray PODBCStmt::TableList(PString option)
-{
-    PStringArray list;
-    SQLLEN cb = 0;
-    SQLRETURN nRet;
-
-/// This Statement will need reviewing as it
-/// depends on the Database, Might work on some
-/// but not on others
-
-      nRet = SQLTables(m_hStmt, 0, SQL_NTS, 0, SQL_NTS,0, SQL_NTS,(unsigned char *)(const char *)option,option.GetLength());
-
-  if (SQL_OK(nRet)) {
+  if (SQL_OK(SQLTables(m_hStmt, 0, SQL_NTS, 0, SQL_NTS, 0, SQL_NTS, (SQLCHAR *)option.GetPointer(), option.GetLength()))) {
     char entry[130];
-    SQLBindCol(m_hStmt, 3, SQL_C_CHAR, entry, sizeof(entry), &cb);
-
-    while (Fetch())
-    {
+    while (SQL_OK(SQLFetch(m_hStmt))) {
       SQLGetData(m_hStmt, 3, SQL_C_CHAR, entry, sizeof(entry), &cb);
       if (entry[0] != '\0')
         list += entry;
@@ -1105,462 +678,527 @@ PStringArray PODBCStmt::TableList(PString option)
   return list;
 }
 
-PBoolean PODBCStmt::SQL_OK(SQLRETURN res) 
+
+bool PODBC::Statement::SQL_OK(SQLRETURN res)
 {
-  if ((res==SQL_SUCCESS_WITH_INFO) || (res==SQL_SUCCESS))
-      return PTrue;
+  if (SQL_SUCCEEDED(res))
+    return true;
 
-  if (res != SQL_NEED_DATA)  
-      GetLastError();
+  m_lastError = res;
+  if (res == SQL_NEED_DATA)
+    return false;
 
-  return PFalse;
-}
+  SQLINTEGER  nativeError;
+  SQLSMALLINT msgLen, i = 1;
+  char errStr[6], msg[SQL_MAX_MESSAGE_LENGTH];
 
-void PODBCStmt::GetLastError()
-{
+  while (SQLGetDiagRec(SQL_HANDLE_STMT,
+                       m_hStmt,
+                       i++,
+                       (unsigned char *)errStr,
+                       &nativeError,
+                       (unsigned char *)msg,
+                       sizeof(msg),
+                       &msgLen) != SQL_NO_DATA) {
+    PTRACE(2, "ODBC\tError " << errStr << " - " << msg);
+    m_odbc.OnSQLError(errStr, msg);
+  }
 
-  SQLRETURN   rc;
-  SQLINTEGER    NativeError;
-  SQLSMALLINT MsgLen, i = 1;
-  char ErrStr[6], Msg[SQL_MAX_MESSAGE_LENGTH];
-
-   while ((rc = SQLGetDiagRec(SQL_HANDLE_STMT, m_hStmt, i, (unsigned char *)ErrStr, 
-                              &NativeError, (unsigned char *)Msg, sizeof(Msg), &MsgLen)) != SQL_NO_DATA)
-   {
-       odbclink->OnSQLError(ErrStr, Msg);
-      i++;
-   }
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-/// PODBCRecord
-
-unsigned int PODBCRecord::Precision;
-int PODBCRecord::MaxCharSize;
-PTime::TimeFormat PODBCRecord::TimeFormat;
-
- //--
-PODBCRecord::PODBCRecord(PODBCStmt * hStmt)
-  : Stmt(hStmt)
-{
-  m_hStmt=*hStmt;
-  dbase = (PODBC::DataSources)hStmt->GetDBase();  // Database name
-  if (!Precision) 
-          Precision = 4;
-  if (!TimeFormat) 
-          TimeFormat = PTime::RFC1123;
-  MaxCharSize = 56;  //56 Kbytes (Stupid MSAccess)
-}
-
-PINDEX PODBCRecord::ColumnCount()
-{
-   short nCols=0;
-   if(!Stmt->SQL_OK(SQLNumResultCols(m_hStmt,&nCols)))
-    return 0;
-   return nCols;
+  return false;
 }
 
 
-PBoolean PODBCRecord::InternalBindColumn(::USHORT Column,LPVOID pBuffer,
-        ULONG pBufferSize,LONG * pReturnedBufferSize,
-        USHORT nType)
-{
-   SQLLEN pReturnedSize=0;
+/////////////////////////////////////////////////////////////////////////////
+// PODBC::Field
 
-   SQLRETURN Ret=SQLBindCol(m_hStmt,Column,nType,
-               pBuffer,pBufferSize,&pReturnedSize);
-   if(*pReturnedBufferSize)
-    *pReturnedBufferSize=pReturnedSize;
-cout << pReturnedSize;
-   return Stmt->SQL_OK(Ret);
+PODBC::Field::Field(Row & row, PINDEX column)
+  : m_row(row)
+  , m_column(column)
+  , m_odbcType(UINT_MAX)
+  , m_size(P_MAX_INDEX)
+  , m_scale(UINT_MAX)
+  , m_isNullable(false)
+  , m_isReadOnly(false)
+  , m_isAutoIncrement(false)
+  , m_decimals(UINT_MAX)
+  , m_extra(new FieldExtra)
+{
+  Statement & statement = *m_row.m_recordSet.m_statement;
+
+  SWORD swCol = 0, swType = 0, swScale = 0, swNull = 0;
+  SQLULEN pcbColDef = 0;
+  TCHAR name[256] = _T("");
+  if (!statement.DescribeCol(m_column,        // ColumnNumber
+                             (SQLCHAR*)name, // ColumnName
+                             sizeof(name),    // BufferLength
+                             &swCol,          // NameLengthPtr
+                             &swType,         // DataTypePtr
+                             &pcbColDef,      // ColumnSizePtr
+                             &swScale,        // DecimalDigitsPtr
+                             &swNull))        // NullablePtr
+    return;
+
+  m_name = name;
+  m_odbcType = swType;
+  m_size = pcbColDef;
+  m_scale = swScale;
+  m_isNullable = swNull == SQL_NULLABLE;
+
+  SQLINTEGER attr = SQL_ATTR_READONLY;
+  statement.ColAttribute(m_column, SQL_DESC_UPDATABLE, NULL, 0, NULL, &attr);
+  m_isReadOnly = attr == SQL_ATTR_READONLY;
+
+  attr = SQL_FALSE;
+  statement.ColAttribute(m_column, SQL_DESC_AUTO_UNIQUE_VALUE, NULL, 0, NULL, &attr);
+  m_isAutoIncrement = attr == SQL_TRUE;
+
+  attr = 0;
+  statement.ColAttribute(m_column, SQL_DESC_PRECISION, NULL, 0, NULL, &attr);
+  m_decimals = attr;
+
+  bool useExtra = false;
+
+  switch (swType) {
+    case SQL_C_BIT :
+      PVarType::SetType(VarBoolean);
+      break;
+
+    case SQL_C_TINYINT :
+      PVarType::SetType(VarInt8);
+      break;
+
+    case SQL_C_UTINYINT :
+      PVarType::SetType(VarUInt8);
+      break;
+
+    case SQL_C_SSHORT :
+      PVarType::SetType(VarInt16);
+      break;
+
+    case SQL_C_USHORT :
+      PVarType::SetType(VarUInt16);
+      break;
+
+    case SQL_C_LONG :
+      PVarType::SetType(VarInt32);
+      break;
+
+    case SQL_C_ULONG :
+      PVarType::SetType(VarUInt32);
+      break;
+
+    case SQL_C_SBIGINT :
+      PVarType::SetType(VarInt64);
+      break;
+
+    case SQL_C_UBIGINT :
+      PVarType::SetType(VarUInt64);
+      break;
+
+    case SQL_NUMERIC :
+    case SQL_DECIMAL :
+    case SQL_FLOAT :
+    case SQL_REAL :
+    case SQL_DOUBLE :
+      PVarType::SetType(VarFloatDouble);
+      m_odbcType = SQL_DOUBLE;
+      break;
+
+    case SQL_C_GUID:
+      PVarType::SetType(VarGUID);
+      break;
+
+    case SQL_DATETIME:
+    case SQL_C_TYPE_TIMESTAMP:
+      PVarType::SetType(VarTime, statement.m_odbc.GetDateTimeFormat());
+      useExtra = true;
+      break;
+
+    case SQL_C_TYPE_DATE:
+      PVarType::SetType(VarTime, statement.m_odbc.GetDateFormat());
+      useExtra = true;
+      break;
+
+    case SQL_C_TYPE_TIME:
+      PVarType::SetType(VarTime, statement.m_odbc.GetTimeFormat());
+      useExtra = true;
+      break;
+
+    default :
+      PTRACE(2, "ODBC\tUnknown/unsupported column data type " << swType);
+      // Do next case, assume a char field
+
+    case SQL_VARCHAR :
+    case SQL_C_CHAR :
+      PVarType::SetType(m_size <= 1 ? VarChar : VarFixedString, m_size+1);
+      m_odbcType = SQL_C_CHAR;
+  }
+
+  if (!m_isReadOnly)
+    statement.BindCol(m_column,
+                      m_odbcType,
+                      useExtra ? m_extra : (SQLPOINTER)GetPointer(),
+                      useExtra ? sizeof(*m_extra) : GetSize(),
+                      &m_extra->bindLenOrInd);
 }
 
-PINDEX PODBCRecord::ColumnByName(PString Column)
+
+PODBC::Field & PODBC::Field::operator=(const PVarType & other)
 {
-   PINDEX nCols=ColumnCount();
-   for(PINDEX i=1;i<(nCols+1);i++)
-   {
-    if(Column == ColumnName(i))
+  if (m_type == other.GetType())
+    InternalCopy(other);
+  else
+    SetValue(other.AsString());
+  return *this;
+}
+
+
+PODBC::Field::~Field()
+{
+  delete m_extra;
+}
+
+
+bool PODBC::Field::SetType(BasicType, PINDEX)
+{
+  return false;
+}
+
+
+void PODBC::Field::SetDefaultValues()
+{
+  if (IsReadOnly() || IsAutoIncrement())
+    return;
+
+  if (IsNullable())
+    SetValue(PString::Empty());
+  else
+    SetValue("0");
+}
+
+
+void PODBC::Field::OnGetValue()
+{
+  Statement & statement = *m_row.m_recordSet.m_statement;
+
+  if (m_type == VarTime) {
+    if (m_isReadOnly)
+      statement.GetData(m_column, m_odbcType, m_extra, sizeof(*m_extra), &m_extra->bindLenOrInd);
+
+    switch (m_odbcType) {
+      case SQL_DATETIME :
+        m_.time.seconds = PTime(m_extra->datetime).GetTimeInSeconds();
+        break;
+      case SQL_C_TYPE_DATE:
+        m_.time.seconds = PTime(0, 0, 0, m_extra->date.day, m_extra->date.month, m_extra->date.year).GetTimeInSeconds();
+        break;
+      case SQL_C_TYPE_TIME:
+        m_.time.seconds = PTime(m_extra->time.second, m_extra->time.minute, m_extra->time.hour, 0, 0, 0).GetTimeInSeconds();
+        break;
+      case SQL_C_TYPE_TIMESTAMP:
+        m_.time.seconds = PTime(m_extra->timestamp.second, m_extra->timestamp.minute, m_extra->timestamp.hour,
+                                m_extra->timestamp.day, m_extra->date.month, m_extra->date.year).GetTimeInSeconds();
+        break;
+    }
+  }
+  else {
+    if (m_isReadOnly)
+      statement.GetData(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
+  }
+}
+
+
+void PODBC::Field::OnValueChanged()
+{
+  switch (m_type) {
+    case VarFixedString :
+      m_extra->bindLenOrInd = m_.dynamic.size;
+      break;
+  }
+}
+
+
+bool PODBC::Field::Post()
+{
+  return m_row.m_recordSet.Commit();
+}
+
+
+///////////////////////////////////////////////////////////////////
+// PODBC::Row
+
+PODBC::Row::Row(RecordSet & table)
+  : m_recordSet(table)
+  , m_rowIndex(UndefinedRowIndex)
+{
+}
+
+
+PODBC::Field & PODBC::Row::Column(PINDEX col) const
+{
+  /// Column = 0 return blank field
+  return m_fields[PAssert(col > 0 && col <= m_fields.GetSize(), PInvalidParameter) ? col-1 : 0];
+}
+
+
+PODBC::Field & PODBC::Row::Column(const PString & name) const
+{
+  return Column(ColumnByName(name));
+}
+
+
+PStringArray PODBC::Row::ColumnNames() const
+{
+  PStringArray names;
+  for (PINDEX i = 0; i < m_fields.GetSize(); ++i)
+    names.AppendString(m_fields[i].GetName());
+  return names;
+}
+
+
+PINDEX PODBC::Row::Rows()
+{
+  return m_recordSet.Rows();
+}
+
+
+void PODBC::Row::SetNewRow()
+{
+  m_rowIndex = UndefinedRowIndex;
+  for (PINDEX i = 0; i < m_fields.GetSize(); i++)
+    m_fields[i].SetDefaultValues();
+}
+
+
+bool PODBC::Row::MoveTo(RowIndex row)
+{
+  if (row == UndefinedRowIndex)
+    return false;
+
+  if (m_rowIndex == row)
+    return true;
+
+  if (!m_recordSet.m_statement->FetchScroll(SQL_FETCH_ABSOLUTE, row))
+    return false;
+
+  m_rowIndex = row;
+  return true;
+}
+
+
+bool PODBC::Row::Move(int offset)
+{
+  switch (offset) {
+    case 0 :
+      return true;
+    case 1 :
+      return Next();
+    case -1 :
+      return Previous();
+  }
+
+  if (!m_recordSet.m_statement->FetchScroll(SQL_FETCH_RELATIVE, offset))
+    return false;
+
+  if (m_rowIndex != UndefinedRowIndex)
+    m_rowIndex += offset;
+  return true;
+}
+
+
+bool PODBC::Row::First()
+{
+  if (!m_recordSet.m_statement->FetchScroll(SQL_FETCH_FIRST))
+    return false;
+
+  m_rowIndex = 1;
+  return true;
+}
+
+
+bool PODBC::Row::Next()
+{
+  if (!m_recordSet.m_statement->FetchScroll(SQL_FETCH_NEXT)) {
+    if (m_recordSet.m_statement->m_lastError == SQL_NO_DATA && m_recordSet.m_totalRows == UndefinedRowIndex)
+      m_recordSet.m_totalRows = m_rowIndex;
+    m_rowIndex = UndefinedRowIndex;
+    return false;
+  }
+
+  if (m_rowIndex != UndefinedRowIndex)
+    ++m_rowIndex;
+  return true;
+}
+
+
+bool PODBC::Row::Previous()
+{
+  if (!m_recordSet.m_statement->FetchScroll(SQL_FETCH_PRIOR))
+    return false;
+
+  if (m_rowIndex != UndefinedRowIndex)
+    --m_rowIndex;
+  return true;
+}
+
+
+bool PODBC::Row::Last()
+{
+  if (!m_recordSet.m_statement->FetchScroll(SQL_FETCH_LAST))
+    return false;
+
+  m_rowIndex = m_recordSet.Rows(false);
+  return true;
+}
+
+
+bool PODBC::Row::Commit()
+{
+  if (m_rowIndex != 0)
+    return m_recordSet.m_statement->Commit(*this, SQL_UPDATE);
+
+  if (!m_recordSet.m_statement->Commit(*this, SQL_ADD))
+    return false;
+
+  if (m_recordSet.m_totalRows != UndefinedRowIndex)
+    ++m_recordSet.m_totalRows;
+
+  return true;
+}
+
+
+bool PODBC::Row::Delete(RowIndex row)
+{
+  return m_recordSet.DeleteRow(row);
+}
+
+
+PINDEX PODBC::Row::ColumnByName(const PCaselessString & columnName) const
+{
+  PINDEX nCols = Columns();
+  for(PINDEX i = 1; i <= nCols; ++i) {
+    if (columnName == ColumnName(i))
       return i;
-   }
-   return 0;
+  }
+  return 0;
 }
 
-PBoolean PODBCRecord::InternalGetData(USHORT Column, LPVOID pBuffer, 
-    ULONG pBufLen, SQLINTEGER * dataLen, int Type)
+
+/////////////////////////////////////////////////////////////////////////////
+// PODBC::Table
+
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
+
+PODBC::RecordSet::RecordSet(PODBC & odbc, const PString & query)
+  : m_statement(new Statement(odbc))
+  , m_totalRows(UndefinedRowIndex)
+  , m_cursor(*this)
 {
-   SQLLEN od=0;
-   int Err=SQLGetData(m_hStmt,Column,Type,pBuffer,pBufLen,&od);
-
-   if (!Stmt->SQL_OK(Err))
-    return PFalse;
-    
-   if(dataLen)
-    *dataLen=od;
-   return PTrue;
+  Construct(query);
 }
 
-PString PODBCRecord::GetLongData(PINDEX Column)
+
+PODBC::RecordSet::RecordSet(PODBC * odbc, const PString & query)
+  : m_statement(new Statement(*odbc))
+  , m_totalRows(UndefinedRowIndex)
+  , m_cursor(*this)
 {
-  PString data;
-  char buffer[MAX_DATA_LEN];
-  SQLINTEGER cb =0;
-
-  while (InternalGetData((USHORT)Column, buffer, sizeof(buffer), &cb))
-    data += buffer;
-
-  return data;
+  Construct(query);
 }
 
-void PODBCRecord::Data(PINDEX Column, PODBC::Field & field)
+
+PODBC::RecordSet::RecordSet(const RecordSet & other)
+  : PObject(other)
+  , m_statement(NULL)
+  , m_cursor(*this)
 {
-//   SQLINTEGER cb =0;
-   PBoolean B = PTrue;    /// Bind Switch (Readonly Fields are not Bound
-
-   PODBC::Field::Bind & b = field.Data;
-   PODBC::FieldTypes ctype = ColumnType(Column);
-
- /// Set the Attributes
-   field.isReadOnly = !IsColumnUpdatable(Column);
-   field.isNullable  = IsColumnNullable(Column);
-   field.isAutoInc = IsColumnAutoIndex(Column);
-
- /// Mark Columns which ReadOnly to Be Ignored when Binding.
-   if (field.isReadOnly) B = PFalse;
-
-   switch (ctype) {
-
-    /// Numeric Data
-    case PODBC::BigInt:
-       if (B) 
-        SQLBindCol(m_hStmt, Column,SQL_C_SBIGINT, &b.sbint,0,&b.dataLen);
-        AddField(field,ColumnName(Column),ctype, PODBC::oPInt64);
-        break;
-
-     case PODBC::TinyInt:
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_UTINYINT, &b.sbit, 0, &b.dataLen);
-        AddField(field,ColumnName(Column),ctype, PODBC::oshort);
-        break;
-        
-     case PODBC::Bit:
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_BIT, &b.sbit, 0, &b.dataLen);
-        AddField(field,ColumnName(Column),ctype, PODBC::oBOOL);
-        break;
-  
-     case PODBC::Char:
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_CHAR, &b.suchar, 0, &b.dataLen);
-        AddField(field,ColumnName(Column),ctype,PODBC::ochar);
-        break;
-
-     case PODBC::Integer:
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_LONG, &b.slint, 0, &b.dataLen);
-        AddField(field,ColumnName(Column),ctype,PODBC::olong);
-        break;
-        
-     case PODBC::SmallInt:
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_SSHORT, &b.ssint, 0, &b.dataLen);
-        AddField(field,ColumnName(Column),ctype, PODBC::oint);
-        break;
-
-     case PODBC::Numeric:
-     case PODBC::Decimal:
-     case PODBC::Float:
-     case PODBC::Real:
-     case PODBC::Double:
-       field.Decimals = ColumnPrecision(Column);
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_DOUBLE, &b.sdoub, 0, &b.dataLen);
-       AddField(field,ColumnName(Column),ctype,PODBC::odouble);
-       break;
-
-     // Data Structures
-     case PODBC::Date:  
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_TYPE_DATE, &b.date, 0, &b.dataLen);
-       AddField(field,ColumnName(Column),ctype,PODBC::oPTime);
-       break;
-
-     case PODBC::Time:
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_TYPE_TIME, &b.time, 0, &b.dataLen);
-       AddField(field,ColumnName(Column),ctype,PODBC::oPTime);
-       break;
-
-     case PODBC::TimeStamp:
-       if (B) 
-         SQLBindCol(m_hStmt, Column, SQL_C_TYPE_TIMESTAMP, &b.timestamp, 0, &b.dataLen);
-       AddField(field,ColumnName(Column),ctype,PODBC::oPTime);
-       break;
-
-     case PODBC::Guid:   
-       if (B) 
-        SQLBindCol(m_hStmt, Column, SQL_C_GUID, &b.guid, 0, &b.dataLen);
-       AddField(field,ColumnName(Column),ctype,PODBC::oPGUID);
-       break;
-
-      /// Binary Data
-      case PODBC::Binary:
-      case PODBC::VarBinary:
-      case PODBC::LongVarBinary:
-      case PODBC::LongVarChar:
-        if (dbase == PODBC::MSAccess) {  /// Stupid Access Stuff!
-          if (B) {
-            b.sbinlong.SetMinSize(MAX_DATA_LEN*MaxCharSize);
-            SQLBindCol(m_hStmt, field.col, SQL_C_CHAR, b.sbinlong.GetPointerAndSetLength(0), b.sbinlong.GetSize(), &b.dataLen);
-            b.sbinlong.MakeMinimumSize();
-          }
-          else {
-            if (B) 
-              SQLBindCol(m_hStmt, Column, SQL_LONGVARCHAR, (SQLPOINTER)Column, 0, &b.dataLen);
-            if (field.LongData) 
-              b.dataLen = SQL_LEN_DATA_AT_EXEC(0);
-            else
-              b.dataLen = SQL_LEN_DATA_AT_EXEC(MAX_DATA_LEN);
-          }   
-        }
-        AddField(field,ColumnName(Column),ctype,PODBC::oPString);
-        break;
-      
-      /// Character 
-      case PODBC::DateTime:
-      case PODBC::Unknown:
-      case PODBC::VarChar:
-      default:
-        AddField(field,ColumnName(Column),ctype,PODBC::oPString);
-        if (B) {
-          b.sbin.SetMinSize(MAX_DATA_LEN);
-          SQLBindCol(m_hStmt, Column, SQL_C_CHAR, b.sbin.GetPointerAndSetLength(0), b.sbin.GetSize(), &b.dataLen);
-          b.sbin.MakeMinimumSize();
-        }
-        break;
-   };
-}
-
-
-PBoolean PODBCRecord::PostNew(PODBC::Row & rec)
-{
-   SQLRETURN nRet;
-
-   nRet = SQLBulkOperations(m_hStmt,      // Statement handle
-      SQL_ADD                // Operation
-   );
-
-   return InternalSaveLongData(nRet,rec);
-}
-
-
-PBoolean PODBCRecord::PostUpdate(PODBC::Row & rec)
-{
-   SQLRETURN nRet;
-
-   nRet = SQLSetPos(m_hStmt,      // Statement handle
-     (unsigned short)1,        // RowNumber
-     SQL_UPDATE,            // Operation
-     SQL_LOCK_NO_CHANGE        // LockType
-     );
-
-   return InternalSaveLongData(nRet,rec);
-}
-
-
-PBoolean PODBCRecord::PostDelete(PINDEX row)
-{
-   SQLRETURN nRet;
-
-   nRet = SQLSetPos(m_hStmt,      // Statement handle
-     (unsigned short)row,        // RowNumber
-     SQL_DELETE,            // Operation
-     SQL_LOCK_NO_CHANGE        // LockType
-     );
-
-   return (Stmt->SQL_OK(nRet));
-}
-
-PBoolean PODBCRecord::InternalSaveLongData(SQLRETURN nRet, PODBC::Row & rec)
-{
-
-   SQLPOINTER pToken;
-   SQLINTEGER cbData;
-   PString DataSlice;
-   PINDEX frag, col=0;
-
- /// Everything OK but no Long Data
-   if (Stmt->SQL_OK(nRet)) 
-      return PTrue;
- /// Error Somewhere else.
-   if (nRet != SQL_NEED_DATA) 
-      return PFalse;
-  
-/// If More Data Required
-   while (nRet == SQL_NEED_DATA) {
-     nRet = SQLParamData(m_hStmt,&pToken);
-
-     if (col != *(PINDEX*)pToken) {
-       col = *(PINDEX*)pToken;
-       DataSlice = PString();
-       frag = 0;
-       cbData = MAX_DATA_LEN;
-     }
-   
-     if (nRet == SQL_NEED_DATA) {
-       while (rec[col].DataFragment(DataSlice, frag, cbData))
-        SQLPutData(m_hStmt, (SQLPOINTER)(const char *)DataSlice, cbData);
-     }
-   }
-   return PTrue;
-}
-
-PODBC::FieldTypes PODBCRecord::ColumnType( PINDEX Column )
-{
-   int nType=SQL_C_DEFAULT;
-   SQLTCHAR svColName[ 256 ]=_T("");
-   SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLULEN pcbColDef;
-   SQLDescribeCol( m_hStmt,            // Statement handle
-       Column,             // ColumnNumber
-       svColName,          // ColumnName
-       sizeof( svColName), // BufferLength
-       &swCol,             // NameLengthPtr
-       &swType,            // DataTypePtr
-       &pcbColDef,         // ColumnSizePtr
-       &swScale,           // DecimalDigitsPtr
-       &swNull );          // NullablePtr
-   nType=(int)swType;
-   return( (PODBC::FieldTypes)nType );
-}
-
-DWORD PODBCRecord::ColumnSize( PINDEX Column )
-{
-//   int nType=SQL_C_DEFAULT;
-   SQLTCHAR svColName[ 256 ]=_T("");
-   SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLULEN pcbColDef=0;
-   SQLDescribeCol( m_hStmt,            // Statement handle
-       Column,             // ColumnNumber
-       svColName,          // ColumnName
-       sizeof( svColName), // BufferLength
-       &swCol,             // NameLengthPtr
-       &swType,            // DataTypePtr
-       &pcbColDef,         // ColumnSizePtr
-       &swScale,           // DecimalDigitsPtr
-       &swNull );          // NullablePtr
-   return pcbColDef;
-}
-
-DWORD PODBCRecord::ColumnScale( PINDEX Column )
-{
-//   int nType=SQL_C_DEFAULT;
-   SQLTCHAR svColName[ 256 ]=_T("");
-   SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLULEN pcbColDef=0;
-   SQLDescribeCol( m_hStmt,            // Statement handle
-       Column,             // ColumnNumber
-       svColName,          // ColumnName
-       sizeof( svColName), // BufferLength
-       &swCol,             // NameLengthPtr
-       &swType,            // DataTypePtr
-       &pcbColDef,         // ColumnSizePtr
-       &swScale,           // DecimalDigitsPtr
-       &swNull );          // NullablePtr
-   return swScale;
-}
-
-PString PODBCRecord::ColumnName(PINDEX Column) //, PString Name, SHORT NameLen )
-{
-//   int nType=SQL_C_DEFAULT;
-   SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLULEN pcbColDef=0;
-   TCHAR Name[256]=_T("");
-   SQLRETURN Ret=
-    SQLDescribeCol( m_hStmt,            // Statement handle
-       Column,               // ColumnNumber
-       (SQLTCHAR*)(LPTSTR)Name,     // ColumnName
-       sizeof(Name),    // BufferLength
-       &swCol,             // NameLengthPtr
-       &swType,            // DataTypePtr
-       &pcbColDef,         // ColumnSizePtr
-       &swScale,           // DecimalDigitsPtr
-       &swNull );          // NullablePtr
-
-   if (!Stmt->SQL_OK(Ret))
-    return PString();
-
-   return Name;
-}
-
-PBoolean PODBCRecord::IsColumnNullable( PINDEX Column )
- {
-//   int nType=SQL_C_DEFAULT;
-   SQLTCHAR svColName[ 256 ]=_T("");
-   SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   SQLULEN pcbColDef;
-   SQLDescribeCol( m_hStmt,            // Statement handle
-       Column,             // ColumnNumber
-       svColName,          // ColumnName
-       sizeof( svColName), // BufferLength
-       &swCol,             // NameLengthPtr
-       &swType,            // DataTypePtr
-       &pcbColDef,         // ColumnSizePtr
-       &swScale,           // DecimalDigitsPtr
-       &swNull );          // NullablePtr
-   return (swNull==SQL_NULLABLE);
-}
-
-PBoolean PODBCRecord::IsColumnUpdatable(PINDEX Column )
-{
-
-   SQLLEN colUpdate=0;
-   SQLColAttribute(m_hStmt,     // StatementHandle
-        (SQLSMALLINT)(Column),  // ColumnNumber
-        SQL_DESC_UPDATABLE,  // FieldIdentifier
-        NULL,      // CharacterAttributePtr
-        0,      // BufferLength
-        NULL,      // StringLengthPtr
-        &colUpdate);    // NumericAttributePtr
-   return (colUpdate != SQL_ATTR_READONLY);
-}
-
-PBoolean PODBCRecord::IsColumnAutoIndex(PINDEX Column )
-{
-
-   SQLLEN colIndex=0;
-   SQLColAttribute(m_hStmt,  // StatementHandle
-        (SQLSMALLINT)(Column),  // ColumnNumber
-        SQL_DESC_AUTO_UNIQUE_VALUE,  // FieldIdentifier
-        NULL,                    // CharacterAttributePtr
-        0,                       // BufferLength
-        NULL,                    // StringLengthPtr
-        &colIndex);              // NumericAttributePtr
-   return (colIndex == SQL_TRUE);
-}
-
-unsigned int PODBCRecord::ColumnPrecision(PINDEX Column )
-{
-   SQLLEN coldigits=0;
-   SQLColAttribute(m_hStmt,      // StatementHandle
-        (SQLSMALLINT)(Column),   // ColumnNumber
-        SQL_DESC_PRECISION,      // FieldIdentifier
-        NULL,                    // CharacterAttributePtr
-        0,                       // BufferLength
-        NULL,                    // StringLengthPtr
-        &coldigits);             // NumericAttributePtr
-
-   if (Precision < (unsigned)coldigits)
-     return Precision;
-   else
-     return coldigits;
 }
 
 #ifdef _MSC_VER
- #pragma warning(default:4100)
- #pragma warning(default:4244)
+#pragma warning(default:4355)
 #endif
+
+
+PODBC::RecordSet::~RecordSet()
+{
+  delete m_statement;
+}
+
+
+void PODBC::RecordSet::Construct(const PString & query)
+{
+  PCaselessString select = query.Trim();
+  if (select.NumCompare("SELECT") != EqualTo)    // Select Query
+    select = "SELECT * FROM [" + select + "];";
+
+  if (!m_statement->Query(select))
+    return;
+
+  // See if succeeded
+  SQLSMALLINT numColumns = 0;
+  if(!m_statement->NumResultCols(&numColumns))
+    return;
+
+  // Go to the First Row
+  m_cursor.First();
+
+  // Get initial values and structure
+  for (SQLSMALLINT i = 1; i <= numColumns; i++)
+    m_cursor.m_fields.Append(new Field(m_cursor, i));
+}
+
+
+PODBC::RowIndex PODBC::RecordSet::Rows(bool forceCount)
+{
+  if (m_totalRows == UndefinedRowIndex && forceCount) {
+    RowIndex save = m_cursor.m_rowIndex;
+    if (m_cursor.First()) {
+      do {
+      } while (m_cursor.Next());
+    }
+    m_cursor.MoveTo(save);
+  }
+  return m_totalRows;
+}
+
+
+PODBC::Row & PODBC::RecordSet::NewRow()
+{
+  m_cursor.SetNewRow();
+  return m_cursor;
+}
+
+
+bool PODBC::RecordSet::DeleteRow(RowIndex row)
+{
+  if (row != 0)
+    m_cursor.Navigate(row);
+
+  if (!m_statement->Commit(m_cursor, SQL_DELETE))
+    return false;
+
+  if (m_totalRows != UndefinedRowIndex)
+    --m_totalRows;
+
+  return true;
+}
+
+
+PODBC::Row & PODBC::RecordSet::operator[](PINDEX row)
+{
+  m_cursor.Navigate(row);
+  return m_cursor;
+}
+
+
+PODBC::Field & PODBC::RecordSet::operator()(RowIndex row, PINDEX col)
+{
+  m_cursor.Navigate(row);
+  return m_cursor.Column(col);
+}
+
 
 #endif // P_ODBC
 

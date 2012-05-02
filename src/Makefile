@@ -406,6 +406,7 @@ SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
 	$(COMPONENT_SRC_DIR)/guid.cxx \
+	$(COMPONENT_SRC_DIR)/vartype.cxx \
 	$(GETDATE_SOURCE) \
 	$(PLATFORM_SRC_DIR)/assert.cxx \
 	$(COMMON_SRC_DIR)/pluginmgr.cxx \

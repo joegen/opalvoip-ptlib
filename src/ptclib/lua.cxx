@@ -622,33 +622,44 @@ bool PLua::InternalSetVariable(const PString & name)
 void PLua::ParamVector::Push(lua_State * lua)
 {
   for (iterator it = begin(); it != end(); ++it) {
-    switch (it->m_type) {
-      case PLua::ParamNIL :
+    switch (it->GetType()) {
+      case PVarType::VarNULL :
         lua_pushnil(lua);
         break;
 
-      case PLua::ParamBoolean :
-        lua_pushboolean(lua, it->m_boolean);
+      case PVarType::VarBoolean :
+        lua_pushboolean(lua, it->AsBoolean());
         break;
 
-      case PLua::ParamInteger :
-        lua_pushinteger(lua, it->m_integer);
+      case PVarType::VarInt8 :
+      case PVarType::VarInt16 :
+      case PVarType::VarInt32 :
+      case PVarType::VarInt64 :
+      case PVarType::VarUInt8 :
+      case PVarType::VarUInt16 :
+      case PVarType::VarUInt32 :
+      case PVarType::VarUInt64 :
+        lua_pushinteger(lua, it->AsInteger());
         break;
 
-      case PLua::ParamNumber :
-        lua_pushnumber(lua, it->m_number);
+      case PVarType::VarFloatSingle :
+      case PVarType::VarFloatDouble :
+      case PVarType::VarFloatExtended :
+        lua_pushnumber(lua, it->AsFloat());
         break;
 
-      case PLua::ParamStaticString :
-        lua_pushstring(lua, it->m_staticString);
+      case PVarType::VarStaticString :
+      case PVarType::VarDynamicString :
+        lua_pushstring(lua, it->AsString());
         break;
 
-      case PLua::ParamDynamicString :
-        lua_pushstring(lua, it->m_dynamicString);
+      case PVarType::VarStaticBinary :
+      case PVarType::VarDynamicBinary :
+        lua_pushlightuserdata(lua, (void *)it->GetPointer());
         break;
 
-      case PLua::ParamUserData :
-        lua_pushlightuserdata(lua, (void *)it->m_userData);
+      default :
+        PAssertAlways("Unsupport PVarType for Lua");
     }
   }
 }
@@ -662,148 +673,24 @@ void PLua::ParamVector::Pop(lua_State * lua)
   for (reverse_iterator it = rbegin(); it != rend(); ++it) {
     switch (lua_type(lua, -1)) {
       case LUA_TBOOLEAN :
-        it->m_type = ParamBoolean;
-        it->m_boolean = lua_toboolean(lua, -1);
+        *it = (bool)lua_toboolean(lua, -1);
         break;
 
       case LUA_TLIGHTUSERDATA :
-        it->m_type = ParamUserData;
-        it->m_userData = lua_touserdata(lua, -1);
+        *it = PVarType(lua_touserdata(lua, -1), lua_objlen(lua, -1), true);
         break;
 
       case LUA_TNUMBER :
-        it->m_type = ParamNumber;
-        it->m_number = lua_tonumber(lua, -1);
+        *it = lua_tonumber(lua, -1);
         break;
 
       case LUA_TSTRING :
-        it->m_dynamicString = my_lua_tostring(lua, -1);
-        it->m_type = it->m_dynamicString != NULL ? ParamDynamicString : ParamNIL;
+        *it = my_lua_tostring(lua, -1);
         break;
     }
 
     lua_pop(lua, 1);
   }
-}
-
-
-PLua::Parameter::Parameter()
-{
-  memset(this, 0, sizeof(*this));
-}
-
-
-PLua::Parameter::Parameter(const Parameter & other)
-{
-  memset(this, 0, sizeof(*this));
-  operator=(other);
-}
-
-
-PLua::Parameter & PLua::Parameter::operator=(const Parameter & other)
-{
-  if (this == &other)
-    return *this;
-
-  if (m_type == ParamDynamicString)
-    delete[] m_dynamicString;
-
-  if (other.m_type != ParamDynamicString)
-    memcpy(this, &other, sizeof(*this));
-  else {
-    memset(this, 0, sizeof(*this));
-    SetDynamicString(other.m_dynamicString);
-  }
-
-  return *this;
-}
-
-
-PLua::Parameter::~Parameter()
-{
-  if (m_type == ParamDynamicString)
-    delete[] m_dynamicString;
-}
-
-
-ostream& operator<<(ostream& strm, const PLua::Parameter& param)
-{
-  switch (param.m_type) {
-    case PLua::ParamNIL :
-      strm << "(nil)";
-      break;
-
-    case PLua::ParamBoolean :
-      strm << param.m_boolean;
-      break;
-
-    case PLua::ParamInteger :
-      strm << param.m_integer;
-      break;
-
-    case PLua::ParamNumber :
-      strm << param.m_number;
-      break;
-
-    case PLua::ParamStaticString :
-    case PLua::ParamDynamicString :
-      strm << param.m_staticString;
-      break;
-
-    case PLua::ParamUserData :
-      strm << param.m_userData;
-  }
-  return strm;
-}
-
-
-PString PLua::Parameter::AsString() const
-{
-  PStringStream strm;
-  strm << *this;
-  return strm;
-}
-
-
-int PLua::Parameter::AsInteger() const
-{
-  switch (m_type) {
-    case PLua::ParamBoolean :
-      return m_boolean;
-
-    case PLua::ParamInteger :
-      return m_integer;
-
-    case PLua::ParamNumber :
-      return (int)m_number;
-
-    case PLua::ParamStaticString :
-    case PLua::ParamDynamicString :
-      return atoi(m_staticString);
-
-    default :
-      return 0;
-  }
-}
-
-
-void PLua::Parameter::SetDynamicString(const char * str, size_t len)
-{
-  if (m_type == ParamDynamicString)
-    delete[] m_dynamicString;
-
-  if (str == NULL) {
-    m_type = PLua::ParamNIL;
-    return;
-  }
-
-  m_type = PLua::ParamDynamicString;
-
-  if (len == 0)
-    len = strlen(str);
-
-  m_dynamicString = new char[len+1];
-  strcpy(m_dynamicString, str);
 }
 
 
