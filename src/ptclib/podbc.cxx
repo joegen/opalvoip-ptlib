@@ -744,7 +744,7 @@ PODBC::Field::Field(Row & row, PINDEX column)
   m_scale = swScale;
   m_isNullable = swNull == SQL_NULLABLE;
 
-  SQLINTEGER attr = SQL_ATTR_READONLY;
+  SQLLEN attr = SQL_ATTR_READONLY;
   statement.ColAttribute(m_column, SQL_DESC_UPDATABLE, NULL, 0, NULL, &attr);
   m_isReadOnly = attr == SQL_ATTR_READONLY;
 
@@ -913,6 +913,9 @@ void PODBC::Field::OnValueChanged()
   switch (m_type) {
     case VarFixedString :
       m_extra->bindLenOrInd = m_.dynamic.size;
+      break;
+
+    default :
       break;
   }
 }
