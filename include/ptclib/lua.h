@@ -41,6 +41,9 @@
 
 #if P_LUA
 
+#include <ptclib/vartype.h>
+
+
 struct lua_State;
 
 
@@ -180,45 +183,11 @@ class PLua : public PObject
     );
 
 
-    /// Type of the parameter in Paramater structure
-    enum ParamType {
-      ParamNIL,  // Must be zero
-      ParamBoolean,
-      ParamInteger,
-      ParamNumber,
-      ParamStaticString,
-      ParamDynamicString,
-      ParamUserData
-    };
-
     /// Individual Parameter in ParamVector.
-    struct Parameter {
-      Parameter();
-      Parameter(const Parameter & other);
-      Parameter & operator=(const Parameter & other);
-      ~Parameter();
-
-      ParamType m_type; ///< Type of parameter
-
-      union {
-        bool         m_boolean;
-        int          m_integer;
-        double       m_number;
-        const char * m_staticString;
-        char       * m_dynamicString;
-        const void * m_userData;
-      };
-
-      friend ostream& operator<<(ostream& strm, const Parameter& param);
-      PString AsString() const;
-      int AsInteger() const;
-      void SetDynamicString(const char * str, size_t len = 0);
-    };
-
     /// Vector of parameters as used by Signature structure.
-    struct ParamVector : public vector<Parameter>
+    struct ParamVector : public vector<PVarType>
     {
-      ParamVector(size_t sz = 0) : vector<Parameter>(sz) { }
+      ParamVector(size_t sz = 0) : vector<PVarType>(sz) { }
       void Push(lua_State * lua);
       void Pop(lua_State * lua);
     };

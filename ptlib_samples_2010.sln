@@ -28,6 +28,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dnstest", "samples\dnstest\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "samples\lua\lua_2010.vcxproj", "{C558BF7A-920A-8265-FE3E-A4B0EF31259F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ODBC", "samples\ODBC\odbc_2010.vcxproj", "{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -191,6 +193,18 @@ Global
 		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|Win32.Build.0 = Release|Win32
 		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|x64.ActiveCfg = Release|x64
 		{C558BF7A-920A-8265-FE3E-A4B0EF31259F}.Release|x64.Build.0 = Release|x64
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Debug|Win32.Build.0 = Debug|Win32
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Debug|x64.ActiveCfg = Debug|x64
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Debug|x64.Build.0 = Debug|x64
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.No Trace|Win32.Build.0 = No Trace|Win32
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.No Trace|x64.ActiveCfg = No Trace|x64
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.No Trace|x64.Build.0 = No Trace|x64
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Release|Win32.ActiveCfg = Release|Win32
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Release|Win32.Build.0 = Release|Win32
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Release|x64.ActiveCfg = Release|x64
+		{D6C51CB2-7D78-CD3F-45CB-9B32D646C25C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
