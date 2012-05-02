@@ -23,9 +23,9 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision: 27212 $
-# $Author: rjongbloed $
-# $Date: 2012-03-17 13:07:29 +1100 (Sat, 17 Mar 2012) $
+# $Revision$
+# $Author$
+# $Date$
 #
 
 include $(PTLIBDIR)/make/ptbuildopts.mak
@@ -56,6 +56,12 @@ SUBDIRS += samples/hello_world \
            samples/thread \
            samples/url \
            samples/vcard
+ifdef HAS_ODBC
+SUBDIRS += samples/ODBC
+endif
+ifdef HAS_LUA
+SUBDIRS += samples/lua
+endif
 endif
 
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1

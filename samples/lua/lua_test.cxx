@@ -34,10 +34,6 @@
 #include <ptclib/lua.h>
 
 #if P_LUA
-#else
-#error Cannot compile Lua test program without Lua support!
-#endif
-
 
 class MyProcess : public PProcess
 {
@@ -195,4 +191,6 @@ void MyClass::LuaTestFunction(PLua&, PLua::Signature & sig)
 }
 
 
-// End of hello.cxx
+#else
+#error Cannot compile Lua test program without Lua support!
+#endif // P_LUA
