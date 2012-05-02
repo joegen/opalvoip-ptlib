@@ -143,49 +143,22 @@
 #define PCHAR8 PANSI_CHAR
 #define PBYTE_ORDER PLITTLE_ENDIAN
 
+#include <ptlib/msos/stdint.h>
+
+/////////////////////////////////////////////////////////////////
+// Some backward compatbility stuff, really should use stdint now
 
 // Declaration for integer that is the same size as a void *
-#if defined(_WIN32)
-  typedef int INT;
-#else
-  typedef long INT;   
-#endif
-
-
+typedef intptr_t INT;
 // Declaration for signed integer that is 16 bits
-typedef short PInt16;
+typedef int16_t PInt16;
 
 // Declaration for signed integer that is 32 bits
-typedef long PInt32;
+typedef int32_t PInt32;
 
-#ifdef __MINGW32__
-  #define P_HAS_INT64
-  typedef signed __int64 PInt64;
-  typedef unsigned __int64 PUInt64;
-#endif
-
-// Declaration for 64 bit unsigned integer quantity
-#if defined(_MSC_VER)
-
-  #define P_HAS_INT64
-
-  typedef signed __int64 PInt64;
-  typedef unsigned __int64 PUInt64;
-
-  #if _MSC_VER<1300
-
-    class ostream;
-    class istream;
-
-    ostream & operator<<(ostream & s, PInt64 v);
-    ostream & operator<<(ostream & s, PUInt64 v);
-
-    istream & operator>>(istream & s, PInt64 & v);
-    istream & operator>>(istream & s, PUInt64 & v);
-
-  #endif
-
-#endif
+#define P_HAS_INT64
+typedef int64_t PInt64;
+typedef uint64_t PUInt64;
 
 
 // Standard array index type (depends on compiler)
@@ -210,14 +183,11 @@ typedef long PInt32;
 
 #else
 
-  #define PINDEX unsigned
-  #ifndef SIZEOF_INT
-  # define SIZEOF_INT sizeof(int)
-  #endif
-  #if SIZEOF_INT == 4
-     const PINDEX P_MAX_INDEX = 0xffffffff;
+  typedef size_t PINDEX;
+  #if SIZEOF_INT == 8
+     const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
   #else
-     const PINDEX P_MAX_INDEX = 0xffff;
+     const PINDEX P_MAX_INDEX = 0xffffffff;
   #endif
   #define PABSINDEX(idx) (idx)
   #define PASSERTINDEX(idx)
@@ -232,9 +202,6 @@ typedef long PInt32;
   #else
     #define strcasecmp(s1,s2) stricmp(s1,s2)
     #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
-    //#define _putenv ::putenv
-    //#define _close ::close
-    //#define _access ::access
   #endif
 
 #endif // !_WIN32_WCE 
@@ -342,7 +309,6 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
   #include <fcntl.h>
   #include <direct.h>
   #include <time.h>
-  #include <stdint.h>
 
 #else
 
