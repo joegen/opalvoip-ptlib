@@ -41,9 +41,6 @@
 #include <ptclib/ptts.h>
 
 #include <ptlib/pipechan.h>
-#include <ptclib/ptts.h>
-
-
 
 #if P_SAPI
 
@@ -61,6 +58,20 @@
 #endif
 
 #include <ptlib/msos/ptlib/pt_atl.h>
+
+// Following defined by both stdint.h and intsafe.h
+#undef INT8_MIN
+#undef INT16_MIN
+#undef INT32_MIN
+#undef INT64_MIN
+#undef INT8_MAX
+#undef UINT8_MAX
+#undef INT16_MAX
+#undef UINT16_MAX
+#undef INT32_MAX
+#undef UINT32_MAX
+#undef INT64_MAX
+#undef UINT64_MAX
 
 #include <sphelper.h>
 
