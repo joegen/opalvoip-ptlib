@@ -308,9 +308,6 @@ class PODBC  : public PObject
         */
         Field & operator[](const PString & columnName) const { return Column(columnName); }
 
-        /**
-        /**@name Data Information */
-        //@{ 
         /** Column Name
         */
         PString ColumnName(PINDEX column) const { return Column(column).GetName(); }
