@@ -55,13 +55,10 @@ private:
 public:
   PVideoInputDevice_V4L2();
   virtual ~PVideoInputDevice_V4L2();
-  
-  void ReadDeviceDirectory (PDirectory, POrdinalToString &);
 
   static PStringList GetInputDeviceNames();
 
-  PStringArray GetDeviceNames() const
-  { return GetInputDeviceNames(); }
+  PStringArray GetDeviceNames() const { return GetInputDeviceNames(); }
 
   PBoolean Open(const PString &deviceName, PBoolean startImmediate);
 
@@ -82,8 +79,6 @@ public:
   PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
-  PBoolean TestAllFormats();
-
   PBoolean SetFrameSize(unsigned int, unsigned int);
   PBoolean SetNearestFrameSize(unsigned int, unsigned int);
   PBoolean SetFrameRate(unsigned int);
@@ -91,9 +86,6 @@ public:
   PBoolean GetParameters(int*, int*, int*, int*, int*);
 
   PBoolean SetColourFormat(const PString&);
-
-  int GetControlCommon(unsigned int control, int *value);
-  PBoolean SetControlCommon(unsigned int control, int newValue);
 
   int GetContrast();
   PBoolean SetContrast(unsigned int);
@@ -111,19 +103,40 @@ public:
   int GetNumChannels();
   PBoolean SetChannel(int);
 
-  PBoolean NormalReadProcess(BYTE*, PINDEX*);
+  /**Retrieve a list of Device Capabilities
+    */
+  virtual PBoolean GetDeviceCapabilities(
+    Capabilities * capabilities          ///< List of supported capabilities
+  ) const;
+
+  /**Retrieve a list of Device Capabilities for particular device
+    */
+  static PBoolean GetDeviceCapabilities(
+    const PString & deviceName,           ///< Name of device
+    Capabilities * capabilities,          ///< List of supported capabilities
+    PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
+  );
 
 private:
-  void ClearMapping();
+  int GetControlCommon(unsigned int control, int *value);
+  PBoolean SetControlCommon(unsigned int control, int newValue);
+  PBoolean NormalReadProcess(BYTE*, PINDEX*);
 
+  void Reset();
+  void ClearMapping();
   PBoolean SetMapping();
 
   PBoolean VerifyHardwareFrameSize(unsigned int & width, unsigned int & height);
 
-  PBoolean QueueBuffers();
+  PBoolean QueueAllBuffers();
 
   PBoolean StartStreaming();
   void StopStreaming();
+
+  PBoolean DoIOCTL(unsigned long int r, void * s, PBoolean retryOnBusy=PFalse);
+
+  PBoolean EnumFrameFormats(Capabilities & capabilities) const;
+  PBoolean EnumControls(Capabilities & capabilities) const;
 
   struct v4l2_capability videoCapability;
   struct v4l2_streamparm videoStreamParm;
@@ -135,7 +148,7 @@ private:
 #define NUM_VIDBUF 4
   BYTE * videoBuffer[NUM_VIDBUF];
   uint   videoBufferCount;
-  uint   currentvideoBuffer;
+  uint   currentVideoBuffer;
 
   PBoolean isOpen;				/** Has the Video Input Device successfully been openend? */
   PBoolean areBuffersQueued;
