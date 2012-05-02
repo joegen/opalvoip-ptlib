@@ -342,6 +342,7 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
   #include <fcntl.h>
   #include <direct.h>
   #include <time.h>
+  #include <stdint.h>
 
 #else
 
