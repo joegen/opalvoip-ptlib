@@ -45,7 +45,6 @@ PCREATE_VIDINPUT_PLUGIN(V4L2);
 
 #include "vidinput_names.h" 
 
-#define HAS_LIBV4L
 
 #ifdef HAS_LIBV4L
 #include <libv4l2.h>
