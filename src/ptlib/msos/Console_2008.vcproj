@@ -8456,6 +8456,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\vartype.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\vsdl.cxx"
 					>
 					<FileConfiguration
@@ -9708,6 +9712,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\url.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\vartype.h"
 					>
 				</File>
 				<File
