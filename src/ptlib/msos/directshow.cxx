@@ -314,17 +314,14 @@ static PString ErrorMessage(HRESULT hr)
   if (dwMsgLen > 0)
     return msg;
 
-  char hex[20];
-
-#ifdef _WIN32_WCE
-  _snprintf(hex, sizeof(hex), "0x%08x", hr);
-#else
+#ifndef _WIN32_WCE
   dwMsgLen = AMGetErrorTextA(hr, msg.GetPointer(1000), 1000);
   if (dwMsgLen > 0)
     return msg;
-
-  _snprintf_s(hex, sizeof(hex), _TRUNCATE, "0x%08x", hr);
 #endif
+
+  char hex[20];
+  _snprintf(hex, sizeof(hex), "0x%08x", hr);
   return hex;
 }
 #endif // PTRACING
