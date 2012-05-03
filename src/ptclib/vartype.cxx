@@ -636,7 +636,7 @@ PString PVarType::AsString() const
     case VarGUID :
       return PGloballyUniqueID(m_.guid, sizeof(m_.guid)).AsString();
     case VarStaticString :
-      return PConstString(m_.staticString);
+      return m_.staticString;
     case VarFixedString :
     case VarDynamicString :
       return PString(m_.dynamic.data);
