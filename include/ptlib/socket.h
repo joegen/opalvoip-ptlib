@@ -492,7 +492,15 @@ class P_fd_set {
     fd_set * set;
 
   private:
+#ifdef __MINGW32__
+  // avoid compile error when this declaration is private
+  // this could be a gcc bug
+  public:
     P_fd_set(const P_fd_set &) {}
+  private:
+#else
+    P_fd_set(const P_fd_set &) {}
+#endif
     void operator=(const P_fd_set &) {}
 };
 
