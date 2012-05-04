@@ -123,6 +123,7 @@ class PSDL_Window
 
     virtual void MainLoop()
     {
+#if PTRACING
       PTRACE(4, "SDL\tStart of event thread");
 
       SDL_version v1;
@@ -132,6 +133,7 @@ class PSDL_Window
              << (unsigned)v1.major << '.' << (unsigned)v1.minor << '.' << (unsigned)v1.patch
              << "  Run-Time version: "
              << (unsigned)v2->major << '.' << (unsigned)v2->minor << '.' << (unsigned)v2->patch);
+#endif
 
       // initialise the SDL library
       if (::SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0) {

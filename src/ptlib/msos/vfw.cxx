@@ -1452,7 +1452,11 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
                                0, 0, 0, frameHeight,
                                frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
   else {
+#ifdef _WIN32_WCE
+    SetStretchBltMode(hDC, COLORONCOLOR);
+#else
     SetStretchBltMode(hDC, STRETCH_DELETESCANS);
+#endif
     result = StretchDIBits(hDC,
                            0, 0, rect.right, rect.bottom,
                            0, 0, frameWidth, frameHeight,
