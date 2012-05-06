@@ -184,10 +184,10 @@ static void source_info_cb(pa_context *c, const pa_source_info *i, int eol, void
 
 PStringArray PSoundChannelPulse::GetDeviceNames(Directions dir)
 {
-  PTRACE(6, "Pulse\tReport devicenames as \"ptlib pulse plugin\"");
+  PTRACE(6, "Pulse\tReport devicenames as \"PulseAudio\"");
   PulseLock lock;
   PStringArray devices;
-  devices.AppendString("ptlib pulse plugin"); // Default device
+  devices.AppendString("PulseAudio"); // Default device
   pa_operation* operation;
   if (dir==Player) {
     operation=
@@ -203,7 +203,7 @@ PStringArray PSoundChannelPulse::GetDeviceNames(Directions dir)
 
 PString PSoundChannelPulse::GetDefaultDevice(Directions dir)
 {
-  PTRACE(6, "Pulse\t report default device as \"ptlib pulse plugin\"");
+  PTRACE(6, "Pulse\t report default device as \"PulseAudio\"");
   PStringArray devicenames;
   devicenames = PSoundChannelPulse::GetDeviceNames(dir);
 
@@ -249,7 +249,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
   ss.format =  PA_SAMPLE_S16LE;  
 
   const char* dev;
-  if (_device=="ptlib pulse plugin") {
+  if (_device=="PulseAudio") {
     /* Default device */
     dev=NULL;
   } else {
