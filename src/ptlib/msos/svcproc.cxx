@@ -1118,8 +1118,16 @@ PBoolean PServiceProcess::ReportStatus(DWORD dwCurrentState,
 }
 
 
+void PServiceProcess::Main()
+{
+  m_exitMain.Wait();
+}
+
+
 void PServiceProcess::OnStop()
 {
+  m_exitMain.Signal();
+  PSYSTEMLOG(Warning, GetName() << " stopped.");
 }
 
 
