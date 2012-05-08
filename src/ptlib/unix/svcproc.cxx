@@ -504,16 +504,26 @@ int PServiceProcess::InternalMain(void *)
 }
 
 
+void PServiceProcess::Main()
+{
+  m_exitMain.Wait();
+}
+
+
+void PServiceProcess::OnStop()
+{
+  m_exitMain.Signal();
+  PSYSTEMLOG(Warning, GetName() << " stopped.");
+}
+
+
 PBoolean PServiceProcess::OnPause()
 {
   return PTrue;
 }
 
-void PServiceProcess::OnContinue()
-{
-}
 
-void PServiceProcess::OnStop()
+void PServiceProcess::OnContinue()
 {
 }
 

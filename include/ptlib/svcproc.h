@@ -65,6 +65,14 @@ class PServiceProcess : public PProcess
     );
   //@}
 
+    /** User override function for the main execution routine of the thread. A
+       descendent class could provide the code that will be executed in the
+       thread within this function.
+       
+       Default behaviour is to wait until m_exitMain is signalled.
+     */
+    virtual void Main();
+
   /**@name Callback functions */
   //@{
     /** Called when the service is started. This typically initialises the
@@ -79,6 +87,8 @@ class PServiceProcess : public PProcess
     /** Called by the system when the service is stopped. One return from this
        function there is no guarentee that any more user code will be executed.
        Any cleaning up or closing of resource must be done in here.
+
+       Default behaviour signals the m_exitMain to exit Main().
      */
     virtual void OnStop();
 
@@ -141,6 +151,8 @@ class PServiceProcess : public PProcess
 
   protected:
   // Member variables
+    PSyncPoint m_exitMain;
+
     /// Flag to indicate service is run in simulation mode.
     PBoolean debugMode;
 

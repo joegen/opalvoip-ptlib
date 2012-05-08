@@ -126,7 +126,6 @@ PBoolean PHTTPServiceProcess::OnStart()
 void PHTTPServiceProcess::OnStop()
 {
   ShutdownListener();
-  PSYSTEMLOG(Warning, GetName() << " stopped.");
   PServiceProcess::OnStop();
 }
 
