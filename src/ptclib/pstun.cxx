@@ -909,15 +909,13 @@ void PSTUNClient::Close()
 
 bool PSTUNClient::SetServer(const PString & server)
 {
+  if (server.IsEmpty())
+    return false;
+
   PWaitAndSignal m(m_mutex);
 
   m_serverAddress = PIPSocketAddressAndPort(server, DefaultPort);
-  if (!m_serverAddress.IsValid())
-    return false;
-
-  //InvalidateCache();
-
-  return true;
+  return m_serverAddress.IsValid();
 }
 
 
