@@ -518,7 +518,7 @@ unsigned PVarType::AsUnsigned() const
         return UINT_MAX;
       return (unsigned)m_.floatExtended;
     case VarTime :
-      if (m_.time.seconds > UINT_MAX)
+      if ((unsigned)m_.time.seconds > UINT_MAX)
         return UINT_MAX;
       return (unsigned)m_.time.seconds;
     case VarGUID :
