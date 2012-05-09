@@ -2961,8 +2961,10 @@ PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char sep
 PString PIPSocketAddressAndPort::AsString(char separator) const
 {
   PString str = m_address.AsString(true, true);
-  str += (separator ? separator : m_separator);
-  str.sprintf("%u", m_port);
+  if (m_port != 0) {
+    str += (separator ? separator : m_separator);
+    str.sprintf("%u", m_port);
+  }
   return str;
 }
 
