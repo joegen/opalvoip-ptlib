@@ -414,7 +414,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
       if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
         struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
-        PTRACE_IF(2, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
+        PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
                   "PTLib\tICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
         errno = sock_error->ee_errno;
         PChannel::ConvertOSError(-1, errorCode, errorNumber);
