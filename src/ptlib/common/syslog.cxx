@@ -215,12 +215,6 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   if (level > m_thresholdLevel)
     return;
 
-#ifdef WIN32
-  DWORD err = GetLastError();
-#else
-  int err = errno;
-#endif
-
   PTime now;
   stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
 
@@ -252,9 +246,7 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   }
 
   stream << '\t' << msg;
-  if (level < PSystemLog::Info && err != 0)
-    stream << " - error = " << err << endl;
-  else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
+  if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
     stream << endl;
 }
 
