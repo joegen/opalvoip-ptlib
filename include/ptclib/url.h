@@ -458,12 +458,39 @@ class PURLLegacyScheme : public PURLScheme
     WORD defaultPort;
 };
 
-#define PURL_LEGACY_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+/** Define a scheme based on basic legacy syntax.
+    The full HTTP style URL is:
+      scheme://user:pass@host:port/path#fragment;params?query
+    the various flags indicate if the subsection is present in the scheme.
+
+  */
+#define PURL_LEGACY_SCHEME(schemeName, \
+                           hasUsername,           /* URL scheme has a ysername */ \
+                           hasPassword,           /* URL scheme has a password */ \
+                           hasHostPort,           /* URL scheme has a host:port */ \
+                           defaultToUserIfNoAt,   /* URL scheme is username if no @, otherwise host:port */ \
+                           defaultHostToLocal,    /* URL scheme defaults to PIPSocket::GetHostName() if not present */ \
+                           hasQuery,              /* URL scheme has a query secton */ \
+                           hasParameters,         /* URL scheme has a parameter section */ \
+                           hasFragments,          /* URL scheme has a fragment section */ \
+                           hasPath,               /* URL scheme has a path */ \
+                           relativeImpliesScheme, /* URL scheme has relative path (no //) then scheme: is not output */ \
+                           defaultPort)           /* URL scheme default port if not specified in host:port */ \
   class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
   { \
     public: \
       PURLLegacyScheme_##schemeName() \
-        : PURLLegacyScheme(user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+        : PURLLegacyScheme(hasUsername, \
+                           hasPassword, \
+                           hasHostPort, \
+                           defaultToUserIfNoAt, \
+                           defaultHostToLocal, \
+                           hasQuery, \
+                           hasParameters, \
+                           hasFragments, \
+                           hasPath, \
+                           relativeImpliesScheme, \
+                           defaultPort) \
         { } \
   }; \
   static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
