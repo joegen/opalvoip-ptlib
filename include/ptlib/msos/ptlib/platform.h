@@ -143,7 +143,12 @@
 #define PCHAR8 PANSI_CHAR
 #define PBYTE_ORDER PLITTLE_ENDIAN
 
-#include <ptlib/msos/stdint.h>
+#if _MSC_VER < 1600
+  #include <ptlib/msos/stdint.h>
+#else
+  #include <stdint.h>
+#endif
+
 
 /////////////////////////////////////////////////////////////////
 // Some backward compatbility stuff, really should use stdint now
