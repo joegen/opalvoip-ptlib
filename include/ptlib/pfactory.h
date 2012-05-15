@@ -352,7 +352,7 @@ typedef std::string PDefaultPFactoryKey;
   static cls & GetFactory()                                            { return PFactoryBase::GetFactoryAs<cls>(); } \
   static bool Register(const Key_T & k, WorkerBase_T * w)              { return GetFactory().InternalRegister(k, w); } \
   static bool Register(const Key_T & k, Abstract_T * i, bool a = true) { return GetFactory().InternalRegister(k, i, a); } \
-  static bool RegisterAs(const Key_T & k1, const Key_T & k2)           { return GetFactory().InternalRegisterAs(k1, k2); } \
+  static bool RegisterAs(const Key_T & synonym, const Key_T & original){ return GetFactory().InternalRegisterAs(synonym, original); } \
   static void Unregister(const Key_T & k)                              {        GetFactory().InternalUnregister(k); } \
   static void Unregister(WorkerBase_T * a)                             {        GetFactory().InternalUnregister(a); } \
   static void UnregisterAll()                                          {        GetFactory().InternalUnregisterAll(); } \
