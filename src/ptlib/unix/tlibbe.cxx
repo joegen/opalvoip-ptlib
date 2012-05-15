@@ -459,6 +459,9 @@ void PHouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
+  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
+    return false;
+
   if (housekeepingThread == NULL)
   {  
     housekeepingThread = new PHouseKeepingThread;
