@@ -207,7 +207,7 @@ void PHouseKeepingThread::Main()
 
 bool PProcess::SignalTimerChange()
 {
-  if (m_shuttingDown)
+  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
     return false;
 
   PWaitAndSignal m(housekeepingMutex);
