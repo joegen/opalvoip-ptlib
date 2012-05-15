@@ -1616,7 +1616,7 @@ PString PConfigArgs::CharToString(char ch) const
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-PProcess * PProcessInstance;
+PProcess * PProcessInstance = NULL;
 
 int PProcess::InternalMain(void *)
 {
