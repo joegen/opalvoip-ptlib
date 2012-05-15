@@ -117,6 +117,9 @@ void PProcess::Construct()
 
 void PProcess::SignalTimerChange()
 {
+  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
+    return false;
+
 #if __NUCLEUS_PLUS__
 #pragma message ("Do we need to do anything in PProcess::SignalTimerChange?")
 #else

@@ -501,6 +501,9 @@ void PProcess::HouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
+  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
+    return false;
+
   if (houseKeeper == NULL) {
     // Prevent reentrance before the following assignment is done
     // Placed after above if-statement due to efficiency, and so 
