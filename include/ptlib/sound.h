@@ -256,7 +256,7 @@ class PSoundChannel : public PChannel
   /**@name Construction */
   //@{
     enum Directions {
-      Closed,
+      Closed = -1,
       Recorder,
       Player
     };
