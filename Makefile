@@ -36,8 +36,17 @@ else
 endif
 
 TOP_LEVEL_MAKE := $(PTLIBDIR)/make/toplevel.mak
-CONFIG_FILES   := $(PTLIBDIR)/make/ptbuildopts.mak $(PTLIBDIR)/plugins/Makefile
 CONFIGURE      := $(PTLIBDIR)/configure
+CONFIG_FILES   := $(PTLIBDIR)/ptlib.pc \
+                  $(PTLIBDIR)/ptlib_cfg.dxy \
+                  $(PTLIBDIR)/make/ptbuildopts.mak
+
+ifneq (,$(findstring --disable-plugins,$(CFG_ARGS)))
+  CONFIG_FILES += $(PTLIBDIR)/plugins/Makefile \
+                  $(PTLIBDIR)/plugins/vidinput_v4l2/Makefile \
+                  $(PTLIBDIR)/plugins/vidinput_dc/Makefile
+endif
+
 
 AUTOCONF       := autoconf
 ACLOCAL        := aclocal
@@ -50,7 +59,7 @@ endif
 default: $(CONFIG_FILES)
 	@$(MAKE) -f $(TOP_LEVEL_MAKE) $(MAKECMDGOALS)
 
-$(CONFIG_FILES): $(CONFIGURE)
+$(firstword $(CONFIG_FILES)): $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES)) $(CONFIGURE)
 	$(CONFIGURE) $(CFG_ARGS)
 
 ifneq (,$(AUTOCONF))
@@ -61,8 +70,6 @@ $(CONFIGURE): $(CONFIGURE).ac $(ACLOCAL).m4 $(PTLIBDIR)/make/*.m4
 
 $(ACLOCAL).m4:
 	$(ACLOCAL)
-
-$(CONFIG_FILES): $(addsuffix .in, $(CONFIG_FILES)) $(CONFIGURE)
 
 else # autoconf installed
 
