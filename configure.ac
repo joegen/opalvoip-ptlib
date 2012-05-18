@@ -1817,7 +1817,7 @@ if test "x$enable_plugins" != "xno" ; then
          sunaudio,
          AS_HELP_STRING([--disable-sunaudio],[disable Sun audio support]),
          [AC_MSG_NOTICE(OSS audio disabled by user)],
-         [AC_CHECK_HEADER([sys/conf.h], [AC_SUBST(HAS_SUNAUDIO, 1)])]
+         [AC_CHECK_HEADER([sys/mixer.h], [AC_SUBST(HAS_SUNAUDIO, 1)])]
       )
 
       dnl #########################################################################
