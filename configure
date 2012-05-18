@@ -1577,7 +1577,6 @@ Optional Features:
   --disable-odbc          disable ODBC support
   --enable-exceptions     enable C++ exceptions
   --enable-plugins        enable plugin support
-  --enable-plugins        disable plugin support
   --disable-alsa          disable ALSA audio support
   --disable-esd           disable ESD audio support
   --disable-oss           disable OSS audio support
@@ -11879,8 +11878,8 @@ $as_echo "#define P_DYNALINK 1" >>confdefs.h
                fi
 
 
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking disable plugin support" >&5
-$as_echo_n "checking disable plugin support... " >&6; }
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable plugin support" >&5
+$as_echo_n "checking enable plugin support... " >&6; }
           # Check whether --enable-plugins was given.
 if test "${enable_plugins+set}" = set; then :
   enableval=$enable_plugins;
