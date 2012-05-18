@@ -57,21 +57,21 @@ endif
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
-ifdef HAS_SASL2
+ifeq ($(HAS_SASL2),1)
 SOURCES	+= $(COMPONENT_SRC_DIR)/psasl.cxx 
 endif
 
-ifdef HAS_LDAP
+ifeq ($(HAS_LDAP),1)
 SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/pldap.cxx \
         $(COMPONENT_SRC_DIR)/pils.cxx
 endif
 
-ifdef HAS_SSL
+ifeq ($(HAS_SSL),1)
 SOURCES += $(COMPONENT_SRC_DIR)/pssl.cxx 
 endif
 
-ifdef HAS_SDL
+ifeq ($(HAS_SDL),1)
 SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 
 $(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
@@ -80,14 +80,12 @@ $(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
 
 endif
 
-ifdef HAS_ODBC
+ifeq ($(HAS_ODBC),1)
 SOURCES += $(COMPONENT_SRC_DIR)/podbc.cxx
 endif
 
-## VIDEO DRIVERS
-## Note this is mostly handled by the plugin system
 
-ifdef HAS_VIDEO
+ifeq ($(HAS_VIDEO),1)
 
 SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
             $(COMMON_SRC_DIR)/videoio.cxx \
@@ -100,24 +98,15 @@ $(OBJDIR)/vfakeio.o: $(COMMON_SRC_DIR)/vfakeio.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
-ifdef HAS_SHM_VIDEO
+ifeq ($(HAS_SHM_VIDEO),1)
 SOURCES	+= $(PLATFORM_SRC_DIR)/shmvideo.cxx
 endif
 
-ifndef HAS_PLUGINS
-
-ifeq ($(target_os),linux)
-VPATH_CXX	+= $(PLUGIN_DIR)/vidinput_v4l
-SOURCES		+= $(PLUGIN_DIR)/vidinput_v4l/vidinput_v4l.cxx
-endif
-
-endif  # HAS_PLUGINS
-
-ifdef HAS_VFW_CAPTURE
+ifeq ($(HAS_VFW_CAPTURE),1)
 SOURCES		+= $(PLATFORM_SRC_DIR)/vfw.cxx
 endif
 
-ifdef HAS_DIRECTSHOW
+ifeq ($(HAS_DIRECTSHOW),1)
 SOURCES	+= $(PLATFORM_SRC_DIR)/directshow.cxx
 $(OBJDIR)/directshow.o: $(PLATFORM_SRC_DIR)/directshow.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
@@ -129,7 +118,7 @@ endif # HAS_VIDEO
 ## SOUND DRIVERS
 ## Note this is mostly handled by the plugin system
 
-ifdef HAS_AUDIO
+ifeq ($(HAS_AUDIO),1)
 
 SOURCES += $(COMMON_SRC_DIR)/sound.cxx 
 
@@ -139,24 +128,6 @@ $(OBJDIR)/sound_win32.o: $(PLATFORM_SRC_DIR)/sound_win32.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
-
-ifndef HAS_PLUGINS
-
-ifeq ($(target_os),linux)
-VPATH_CXX	+= $(PLUGIN_DIR)/sound_oss
-SOURCES		+= $(PLUGIN_DIR)/sound_oss/sound_oss.cxx
-endif # linux
-
-ifdef HAS_ALSA
-VPATH_CXX	+= $(PLUGIN_DIR)/sound_alsa
-SOURCES		+= $(PLUGIN_DIR)/sound_alsa/sound_alsa.cxx
-endif  # HAS_ALSA
-
-ifeq ($(target_os),beos)
-SOURCES	 += $(PLATFORM_SRC_DIR)/beaudio.cxx
-endif  # beos
- 
-endif  # HAS_PLUGINS
 
 # Although not an external plugin, the MacOSX
 # CoreAudio sound driver still is in plugin form
@@ -171,23 +142,23 @@ endif  # HAS_AUDIO
 
 SOURCES	+= $(COMPONENT_SRC_DIR)/pxml.cxx 
 
-ifdef HAS_EXPAT
+ifeq ($(HAS_EXPAT),1)
 
-ifdef HAS_XMLRPC
+ifeq ($(HAS_XMLRPC),1)
 SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
 	$(COMPONENT_SRC_DIR)/pxmlrpcs.cxx 
 endif
 
-ifdef HAS_SOAP
+ifeq ($(HAS_SOAP),1)
 SOURCES	+= $(COMPONENT_SRC_DIR)/psoap.cxx 
 endif
 
-ifdef HAS_VXML
+ifeq ($(HAS_VXML),1)
 SOURCES	+= $(COMPONENT_SRC_DIR)/vxml.cxx 
 endif
 
-ifdef HAS_SASL2
+ifeq ($(HAS_SASL2),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/xmpp.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
@@ -196,27 +167,27 @@ SOURCES += \
 endif
 endif # HAS_EXPAT
 
-ifdef HAS_LUA
+ifeq ($(HAS_LUA),1)
 SOURCES	+= $(COMPONENT_SRC_DIR)/lua.cxx
 endif
 
-ifdef HAS_DNS_RESOLVER
+ifeq ($(HAS_DNS_RESOLVER),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
 	$(COMPONENT_SRC_DIR)/enum.cxx 
 endif
 
-ifdef HAS_TTS
+ifeq ($(HAS_TTS),1)
 SOURCES += $(COMPONENT_SRC_DIR)/ptts.cxx 
 endif
 
-ifdef HAS_ASN
+ifeq ($(HAS_ASN),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/asner.cxx \
 	$(COMPONENT_SRC_DIR)/pasn.cxx 
 endif
 
-ifdef HAS_SNMP
+ifeq ($(HAS_SNMP),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/snmpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/snmpserv.cxx \
@@ -225,22 +196,22 @@ SOURCES += \
 	$(COMPONENT_SRC_DIR)/rfc1155.cxx 
 endif
 
-ifdef HAS_FTP
+ifeq ($(HAS_FTP),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/ftpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/ftpsrvr.cxx \
 	$(COMPONENT_SRC_DIR)/ftp.cxx 
 endif
 
-ifdef HAS_TELNET
+ifeq ($(HAS_TELNET),1)
 SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx
 endif
 
-ifdef HAS_CLI
+ifeq ($(HAS_CLI),1)
 SOURCES += $(COMPONENT_SRC_DIR)/cli.cxx
 endif
 
-ifdef HAS_STUN
+ifeq ($(HAS_STUN),1)
 SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
            $(COMPONENT_SRC_DIR)/pnat.cxx
 
@@ -250,7 +221,7 @@ $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 
 endif
 
-ifdef HAS_STUNSRVR
+ifeq ($(HAS_STUNSRVR),1)
 SOURCES += $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 
 $(OBJDIR)/pstunsrvr.o: $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
@@ -259,11 +230,11 @@ $(OBJDIR)/pstunsrvr.o: $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 endif
 
 
-ifdef HAS_SOCKS
+ifeq ($(HAS_SOCKS),1)
 SOURCES += $(COMPONENT_SRC_DIR)/socks.cxx 
 endif
 
-ifdef HAS_PIPECHAN
+ifeq ($(HAS_PIPECHAN),1)
 ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/pipe.cxx 
 SOURCES += $(COMMON_SRC_DIR)/pipechan.cxx 
@@ -272,11 +243,11 @@ SOURCES += $(PLATFORM_SRC_DIR)/pipechan.cxx
 endif
 endif
 
-ifdef HAS_REMCONN
+ifeq ($(HAS_REMCONN),1)
 SOURCES += $(PLATFORM_SRC_DIR)/remconn.cxx 
 endif
 
-ifdef HAS_WAVFILE
+ifeq ($(HAS_WAVFILE),1)
 SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx \
            $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
 
@@ -285,15 +256,15 @@ $(OBJDIR)/pwavfiledev.o: $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
 	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
-ifdef HAS_DTMF
+ifeq ($(HAS_DTMF),1)
 SOURCES += $(COMPONENT_SRC_DIR)/dtmf.cxx 
 endif
 
-ifdef HAS_VCARD
+ifeq ($(HAS_VCARD),1)
 SOURCES += $(COMPONENT_SRC_DIR)/vcard.cxx 
 endif
 
-ifdef HAS_SERIAL
+ifeq ($(HAS_SERIAL),1)
 
 ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/winserial.cxx \
@@ -306,44 +277,44 @@ endif
 SOURCES += $(COMPONENT_SRC_DIR)/modem.cxx 
 endif
 
-ifdef HAS_POP3SMTP
+ifeq ($(HAS_POP3SMTP),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/inetmail.cxx 
 endif
 
-ifdef HAS_URL
+ifeq ($(HAS_URL),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/url.cxx 
 endif
 
-ifdef HAS_HTTP
+ifeq ($(HAS_HTTP),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/http.cxx \
 	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/html.cxx \
 	$(COMPONENT_SRC_DIR)/httpsrvr.cxx
 
-ifdef HAS_SSDP
+ifeq ($(HAS_SSDP),1)
 SOURCES += $(COMPONENT_SRC_DIR)/ssdp.cxx
 endif
 endif
 
-ifdef HAS_HTTPFORMS
+ifeq ($(HAS_HTTPFORMS),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/httpform.cxx
 endif #HAS_HTTPFORMS
 
-ifdef HAS_HTTPSVC
+ifeq ($(HAS_HTTPSVC),1)
 SOURCES += \
 	$(PLATFORM_SRC_DIR)/svcproc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsvc.cxx
 
-ifdef HAS_SSL
+ifeq ($(HAS_SSL),1)
 SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif #HAS_SSL
 endif #HAS_HTTPSVC
 
-ifdef HAS_CONFIG_FILE
+ifeq ($(HAS_CONFIG_FILE),1)
 ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/wincfg.cxx 
 else
@@ -351,7 +322,7 @@ SOURCES += $(PLATFORM_SRC_DIR)/config.cxx
 endif
 endif
 
-ifdef HAS_VIDFILE
+ifeq ($(HAS_VIDFILE),1)
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
 
@@ -361,7 +332,7 @@ $(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
 
 endif
 
-ifdef HAS_FFVDEV
+ifeq ($(HAS_FFVDEV),1)
 SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
 
 $(OBJDIR)/pffvdev.o: $(COMPONENT_SRC_DIR)/pffvdev.cxx
