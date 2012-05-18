@@ -369,7 +369,7 @@ void V4LNames::PopulateDictionary()
         matches++;
         PStringStream revisedUserName;
         revisedUserName << userName << " (" << matches << ")";
-        tempList.SetDataAt(j, revisedUserName);
+        tempList.SetDataAt(j, new PString(revisedUserName));
       }
     }
   }
@@ -1121,11 +1121,12 @@ void PVideoInputDevice_V4L::ClearMapping()
     for (int i=0; i<2; i++) {
       if (pendingSync[i]) {
         int res = ::ioctl(videoFd, VIDIOCSYNC, &i);
-        if (res < 0) 
+        if (res < 0) {
           PTRACE(1,"PVideoInputDevice_V4L::GetFrameData csync failed : " << ::strerror(errno));
-          pendingSync[i] = PFalse;    
         }
-        ::munmap(videoBuffer, frame.size);
+        pendingSync[i] = PFalse;    
+      }
+      ::munmap(videoBuffer, frame.size);
     }
   }
   

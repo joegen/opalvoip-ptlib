@@ -20,7 +20,7 @@ fi
 dnl ########################################################################
 dnl check for minimum sizing
 
-AC_ARG_ENABLE(minsize,AS_HELP_STRING([--enable-minsize],[Minimise the size of the lib by disabling least used options]))
+AC_ARG_ENABLE(minsize, AS_HELP_STRING([--enable-minsize],[Minimise the size of the lib by disabling least used options]))
 
 dnl these are the default configure settings, minimum or full
 if test "${enable_minsize}x" = "yesx" ; then
@@ -524,7 +524,7 @@ dnl
 dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
 dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
 
-AC_ARG_ENABLE(ansi-bool,AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
+AC_ARG_ENABLE(ansi-bool, AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
 
 if test "x${enable_ansi_bool}" = "xno" ; then
   AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
@@ -622,7 +622,7 @@ fi
 dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
-AC_ARG_ENABLE(atomicity,AS_HELP_STRING([--disable-atomicity],[Do not use atomicity.h]))
+AC_ARG_ENABLE(atomicity, AS_HELP_STRING([--disable-atomicity],[Do not use atomicity.h]))
 
 P_HAS_ATOMIC_INT=0
 P_NEEDS_GNU_CXX_NAMESPACE=0
@@ -835,9 +835,11 @@ dnl because autoconf needs to initialise stuff. without this
 dnl all sorts of strange things happen
 AC_CHECK_HEADERS(regex.h, HAS_REGEX=yes)
 
-AC_ARG_ENABLE(internalregex,
-        AS_HELP_STRING([--enable-internalregex],[Force internal regex library]),
-        internalregex=$enableval)
+AC_ARG_ENABLE(
+   internalregex,
+   AS_HELP_STRING([--enable-internalregex],[Force internal regex library]),
+   internalregex=$enableval
+)
 if test "$internalregex" = "yes" ; then
   AC_MSG_NOTICE(Forcing use of internal regex library)
 else
@@ -861,59 +863,6 @@ dnl check for dynamic library code (dlopen and friends)
 
 dnl MSWIN DLL Support,,P_DYNALINK
 
-case "$target_os" in
-  cygwin* | mingw* )
-    PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support])
-    AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-    ;;
-  *)
-    PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
-    if test "x$HAS_LIBDL" = "x1" ; then
-      AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-      dnl The rest is done further down...
-    fi
-
-    dnl #########################################################################
-    dnl check to see if plugins enabled
-    dnl MSWIN_DISPLAY plugins,Plugin Support
-    dnl MSWIN_DEFINE  plugins,P_PLUGINS
-
-    PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
-    ;;
-esac
-
-AC_MSG_CHECKING(where plugins are being installed)
-AC_ARG_WITH([plugin-installdir],
-             AS_HELP_STRING([--with-plugin-installdir=DIR],[Location where plugins are installed, starting at the lib dir]),
-             [PTLIB_PLUGIN_DIR="$withval"],
-             [PTLIB_PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
-           )
-
-AC_SUBST(PTLIB_PLUGIN_DIR)
-
-EXPANDED_PLUGIN_DIR="${libdir}/${PTLIB_PLUGIN_DIR}"
-if test "x${exec_prefix}" = "xNONE" ; then
-  if test "x${prefix}" = "xNONE" ; then
-    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
-  else
-    EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
-  fi
-else
-  EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
-fi
-
-case "$target_os" in
-  cygwin* | mingw* )
-    EXPANDED_PLUGIN_DIR="plugins"
-  ;;
-esac
-
-AC_MSG_RESULT(${EXPANDED_PLUGIN_DIR})
-
-AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
-
-DEV_PLUGIN_DIR="${PTLIB_PLUGIN_DIR}/devices"
-AC_SUBST(DEV_PLUGIN_DIR)
 
 dnl #########################################################################
 dnl check to see if samples are enabled
@@ -928,11 +877,12 @@ dnl but needs resolv.h included which defines res_search as __res_search
 dnl MSWIN_DISPLAY    resolver,DNS Resolver
 dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS_RESOLVER=1
 
-AC_ARG_ENABLE([resolver],
-	      AS_HELP_STRING([--disable-resolver],[disable DNS resolver support]),
-	      [enable_resolver=$enableval],
-	      [enable_resolver=$default_resolver]
-	     )
+AC_ARG_ENABLE(
+   [resolver],
+   AS_HELP_STRING([--disable-resolver],[disable DNS resolver support]),
+   [enable_resolver=$enableval],
+   [enable_resolver=$default_resolver]
+)
 
 HAS_DNS_RESOLVER=
 if test "$enable_resolver" = "no" ; then
@@ -967,11 +917,12 @@ dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
   
-AC_ARG_ENABLE([sasl],
-	      AS_HELP_STRING([--disable-sasl],[disable SASL support]),
-	      [enable_sasl=$enableval],
-	      [enable_sasl=$default_sasl]
-	     )
+AC_ARG_ENABLE(
+   [sasl],
+   AS_HELP_STRING([--disable-sasl],[disable SASL support]),
+   [enable_sasl=$enableval],
+   [enable_sasl=$default_sasl]
+)
 
 if test "$enable_sasl" = "no" ; then
   AC_MSG_NOTICE(SASL disabled)
@@ -1007,11 +958,12 @@ PTLIB_NEW_OPTION(SASL)
 dnl ########################################################################
 dnl check for SUN mediaLib library
 
-AC_ARG_ENABLE([mlib],
-	      AS_HELP_STRING([--enable-mlib],[enable SUN mlib support]),
-	      [enable_mlib=$enableval],
-	      [enable_mlib=$default_mlib]
-	     )
+AC_ARG_ENABLE(
+   [mlib],
+   AS_HELP_STRING([--enable-mlib],[enable SUN mlib support]),
+   [enable_mlib=$enableval],
+   [enable_mlib=$default_mlib]
+)
 if test "$enable_mlib" = "no" ; then
   AC_MSG_NOTICE(SUN mlib disabled)
 else 
@@ -1038,11 +990,12 @@ dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
 dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
-AC_ARG_ENABLE([openldap],
-	      AS_HELP_STRING([--disable-openldap],[disable OpenLDAP support]),
-	      [enable_openldap=$enableval],
-	      [enable_openldap=$default_openldap]
-	     )
+AC_ARG_ENABLE(
+   [openldap],
+   AS_HELP_STRING([--disable-openldap],[disable OpenLDAP support]),
+   [enable_openldap=$enableval],
+   [enable_openldap=$default_openldap]
+)
 
 HAS_LDAP=
 if test "$enable_openldap" = "no" ; then
@@ -1091,11 +1044,12 @@ dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
 dnl MSWIN_CHECK_DIR  openssl64,\Program Files\OpenSSL64\
 dnl MSWIN_CHECK_DIR  openssl64,c:\OpenSSL-Win64
 
-AC_ARG_ENABLE([openssl],
-	      AS_HELP_STRING([--disable-openssl],[disable OpenSSL support]),
-	      [enable_openssl=$enableval],
-	      [enable_openssl=$default_openssl]
-	     )
+AC_ARG_ENABLE(
+   [openssl],
+   AS_HELP_STRING([--disable-openssl],[disable OpenSSL support]),
+   [enable_openssl=$enableval],
+   [enable_openssl=$default_openssl]
+)
 
 if test "$enable_openssl" = "no" ; then
   AC_MSG_NOTICE(disabled)
@@ -1177,11 +1131,12 @@ dnl MSWIN_FIND_FILE  expat32,P_EXPAT_LIBRARY,libexpatMT.lib,bin
 dnl MSWIN_CHECK_DIR  expat32,\Program Files\Expat 2.*
 dnl MSWIN_CHECK_DIR  expat32,\Program Files (x86)\Expat 2.*
 
-AC_ARG_ENABLE([expat],
-	      AS_HELP_STRING([--disable-expat],[disable expat XML support]),
-	      [enable_expat=$enableval],
-	      [enable_expat=$default_expat]
-	     )
+AC_ARG_ENABLE(
+   [expat],
+   AS_HELP_STRING([--disable-expat],[disable expat XML support]),
+   [enable_expat=$enableval],
+   [enable_expat=$default_expat]
+)
 
 
 if test "$enable_expat" = "no" ; then
@@ -1596,11 +1551,12 @@ dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
 
-AC_ARG_ENABLE([sdl],
-	      AS_HELP_STRING([--disable-sdl],[disable SDL support]),
-	      [enable_sdl=$enableval],
-	      [enable_sdl=$default_sdl]
-	     )
+AC_ARG_ENABLE(
+   [sdl],
+   AS_HELP_STRING([--disable-sdl],[disable SDL support]),
+   [enable_sdl=$enableval],
+   [enable_sdl=$default_sdl]
+)
 
 HAS_SDL=
 if test "x${HAS_VIDEO}" != "x1" ; then
@@ -1654,13 +1610,6 @@ if test "x${HAS_VIDEO}" = "x1" ; then
     AC_MSG_NOTICE(No Video Capture support)
     AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
   fi
-
-  dnl these are needed to pass through to plugin configure
-  AC_ARG_ENABLE(v4l,      [  --enable-v4l            enable V4L video support])
-  AC_ARG_ENABLE(v4l2,     [  --enable-v4l2           enable V4L2 video support])
-  AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support])
-  AC_ARG_ENABLE(avc,      [  --enable-avc            enable IEEE1394/AVC video support])
-  AC_ARG_ENABLE(dc,       [  --enable-dc             enable IEEE1394/DC video support])
 fi
 
 AC_SUBST(HAS_DIRECTSHOW)
@@ -1670,38 +1619,12 @@ PTLIB_NEW_OPTION(VIDEO_CAPTURE)
 
 PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [HAS_VIDEO])
 
-if test "x${HAS_AUDIO}" = "x1" ; then
-
-  dnl these are needed to pass through to the plugin configure program
-  AC_ARG_ENABLE(alsa,  [  --enable-alsa           enable ALSA audio support],enable_alsa=$enableval)
-  AC_ARG_ENABLE(oss,   [  --enable-oss            enable OSS audio support],enable_oss=$enableval)
-  AC_ARG_ENABLE(pulse, [  --enable-pulse          enable PULSE audio support],enable_pulse=$enableval)
-fi
-
-
-
-dnl ########################################################################
-dnl look for Direct Sound
-
-dnl MSWIN_DISPLAY    dsound,Direct Sound Support
-dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
-dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_DXERR_H,dxerr.h,include
-
-
-dnl ########################################################################
-dnl look for Direct Show (video)
-
-dnl MSWIN_DISPLAY    dshow,Direct Show Support
-dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
-dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_QEDIT_H,Qedit.h,include
 
 
 dnl ########################################################################
 dnl look for MEMORY_CHECK enabled.
 
-AC_ARG_ENABLE(memcheck,
-       AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]),
-       memcheck=$enableval)
+AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
 
 if test "$memcheck" = "yes" ; then
   AC_DEFINE(PMEMORY_CHECK, 1)
@@ -1715,11 +1638,12 @@ dnl look for ODBC code
 dnl MSWIN_DISPLAY    odbc,ODBC support
 dnl MSWIN_CHECK_FILE odbc,include\odbcinst.h,P_ODBC=1
 
-AC_ARG_ENABLE([odbc],
-	      AS_HELP_STRING([--disable-odbc],[disable ODBC support]),
-	      [enable_odbc=$enableval],
-	      [enable_odbc=$default_odbc]
-	     )
+AC_ARG_ENABLE(
+   [odbc],
+   AS_HELP_STRING([--disable-odbc],[disable ODBC support]),
+   [enable_odbc=$enableval],
+   [enable_odbc=$default_odbc]
+)
 
 if test "$enable_odbc" = "no" ; then
   AC_MSG_NOTICE(ODBC disabled)
@@ -1768,309 +1692,351 @@ case "$target_os" in
 esac
 
 
-if test "$enable_plugins" = "no" ; then
-  AC_MSG_NOTICE(Plugins disabled)
-else
-  AC_MSG_NOTICE(Checking for plugins)
- 
-if test "${enable_audio}" = "yes" ; then
-
-dnl #########################################################################
-dnl check for Alsa sound support
 dnl ########################################################################
+dnl Plug ins!
+dnl
 
-AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],,enable_alsa=yes)
+dnl MSWIN_DISPLAY plugins,Plugin Support
+dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
-if test "${enable_alsa}z" = "yesz" ; then
-  AC_CHECK_HEADER(alsa/asoundlib.h, ALSAHDR=1)
-  AC_MSG_CHECKING(for ALSA sound support)
-  if test "${ALSAHDR}z" != "z"; then
-    AC_SUBST(HAS_ALSA, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+case "$target_os" in
+   cygwin* | mingw* )
+      PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support])
+      AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
+   ;;
 
-dnl #########################################################################
-dnl check for ESD sound support
-dnl ########################################################################
+   *)
+      PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
+      if test "x$HAS_LIBDL" = "x1" ; then
+         AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
+         dnl The rest is done further down...
+      fi
 
-AC_ARG_ENABLE(esd, [  --enable-esd            enable ESD audio support],,enable_esd=no)
+      PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [disable plugin support], [HAS_LIBDL])
+   ;;
+esac
 
-if test "${enable_esd}z" = "yesz" ; then
-  AC_CHECK_HEADER(esd.h, ESDHDR=1)
-  AC_MSG_CHECKING(for ESD sound support)
-  if test "${ESDHDR}z" != "z"; then
-    AC_SUBST(HAS_ESD, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+if test "x$enable_plugins" != "xno" ; then
+   AC_MSG_CHECKING(where plugins are being installed)
+   AC_ARG_WITH([plugin-installdir],
+                AS_HELP_STRING([--with-plugin-installdir=DIR],[Location where plugins are installed, starting at the lib dir]),
+                [PTLIB_PLUGIN_DIR="$withval"],
+                [PTLIB_PLUGIN_DIR="ptlib-${PTLIB_VERSION}"]
+              )
 
-dnl #########################################################################
-dnl check for OSS sound support
-dnl ########################################################################
+   AC_SUBST(PTLIB_PLUGIN_DIR)
 
-AC_ARG_ENABLE(oss, [  --enable-oss            enable OSS audio support],,enable_oss=no)
+   EXPANDED_PLUGIN_DIR="${libdir}/${PTLIB_PLUGIN_DIR}"
+   if test "x${exec_prefix}" = "xNONE" ; then
+     if test "x${prefix}" = "xNONE" ; then
+       EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#/usr/local#`
+     else
+       EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${prefix}#`
+     fi
+   else
+     EXPANDED_PLUGIN_DIR=`echo ${EXPANDED_PLUGIN_DIR} | sed s#\\${exec_prefix}#${exec_prefix}#`
+   fi
 
-if test "${enable_oss}z" = "yesz" ; then
-  AC_CHECK_HEADER(sys/soundcard.h, OSSSNDCARDHDR=1)
-  AC_MSG_CHECKING(for OSS sound support)
-  if test "${OSSSNDCARDHDR}z" != "z"; then
-    AC_SUBST(HAS_OSS, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-dnl #########################################################################
+   case "$target_os" in
+     cygwin* | mingw* )
+       EXPANDED_PLUGIN_DIR="plugins"
+     ;;
+   esac
 
-dnl check for Pulse sound support
-dnl ########################################################################
+   AC_MSG_RESULT(${EXPANDED_PLUGIN_DIR})
 
-AC_ARG_ENABLE(pulse, [  --enable-pulse       enable Pulse audio support],,enable_pulse=yes)
+   AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
 
-if test "${enable_pulse}z" = "yesz" ; then
-  AC_CHECK_HEADER(pulse/simple.h, PULSESNDCARDHDR=1)
-  AC_MSG_CHECKING(for Pulse sound support)
-  if test "${PULSESNDCARDHDR}z" != "z"; then
-    AC_SUBST(HAS_PULSE, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
 
-dnl #########################################################################
-dnl check for sunaudio sound support
-dnl ########################################################################
+   DEV_PLUGIN_DIR="${PTLIB_PLUGIN_DIR}/devices"
+   AC_SUBST(DEV_PLUGIN_DIR)
 
-AC_ARG_ENABLE(sunaudio, [  --enable-sunaudio            enable  Sun audio support],,enable_sunaudio=no)
 
-if test "${enable_sunaudio}z" = "yesz" ; then
-  AC_CHECK_HEADER(sys/conf.h, SUNSNDCARDHDR=1)
-  AC_MSG_CHECKING(for Sun audio sound support)
-  if test "${SUNSNDCARDHDR}z" != "z"; then
-    AC_SUBST(HAS_SUNAUDIO, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+   if test "x${enable_audio}" != "xno" ; then
 
-dnl #########################################################################
-dnl check for shm sound support
-dnl ########################################################################
+      dnl ########################################################################
+      dnl look for Direct Sound
 
-AC_ARG_ENABLE(shmaudio, [  --enable-shmaudio       enable shm audio support],,enable_shmaudio=no)
+      dnl MSWIN_DISPLAY    dsound,Direct Sound Support
+      dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
+      dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_DXERR_H,dxerr.h,include
 
-if test "${enable_shmaudio}z" = "yesz" ; then
-  AC_CHECK_FUNC(sem_timedwait, SNDSHMHDR=1)
-  AC_MSG_CHECKING(for shm audio sound support)
-  if test "${SNDSHMHDR}z" != "z"; then
-    AC_SUBST(HAS_AUDIOSHM, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
 
-fi # enable_audio
+      dnl ########################################################################
+      dnl look for Direct Show (video)
 
-AC_ARG_ENABLE(video,
-       [  --disable-video         disable video device support])
+      dnl MSWIN_DISPLAY    dshow,Direct Show Support
+      dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
+      dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_QEDIT_H,Qedit.h,include
 
-if test "${enable_video}z" = "z" ; then
-  enable_video=yes
-fi
 
-if test "$enable_video" = "yes" ; then
+      dnl #########################################################################
+      dnl check for Alsa sound support
 
-dnl #########################################################################
-dnl check for V4L video support
-dnl ########################################################################
+      AC_ARG_ENABLE(
+         alsa,
+         AS_HELP_STRING([--disable-alsa],[disable ALSA audio support]),
+         [AC_MSG_NOTICE(ALSA audio disabled by user)],
+         [AC_CHECK_HEADER([alsa/asoundlib.h], [AC_SUBST(HAS_ALSA, 1)])]
+      )
 
-AC_ARG_ENABLE(v4l, [  --enable-v4l            enable V4L video support],,enable_v4l=no)
-if test "${enable_v4l}z" = "yesz" ; then
-  AC_CHECK_HEADER(linux/videodev.h, V4LHDR=1)
-  AC_MSG_CHECKING(for V4L video support)
-  if test "${V4LHDR}z" != "z"; then
-    AC_SUBST(HAS_V4L, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+      dnl #########################################################################
+      dnl check for ESD sound support
 
-dnl #########################################################################
-dnl check for V4L2 video support
-dnl ########################################################################
+      AC_ARG_ENABLE(
+         esd,
+         AS_HELP_STRING([--disable-esd],[disable ESD audio support]),
+         [AC_MSG_NOTICE(ESD audio disabled by user)],
+         [AC_CHECK_HEADER([esd.h], [AC_SUBST(HAS_ESD, 1)])]
+      )
 
-AC_ARG_ENABLE(v4l2, [  --enable-v4l2            enable V4L2 video support],,enable_v4l2=yes)
+      dnl #########################################################################
+      dnl check for OSS sound support
 
-if test "${enable_v4l2}z" = "yesz" ; then
-  case "$target_os" in
-    solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
-    netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
-          * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
-  esac
+      AC_ARG_ENABLE(
+         oss,
+         AS_HELP_STRING([--disable-oss],[disable OSS audio support]),
+         [AC_MSG_NOTICE(OSS audio disabled by user)],
+         [AC_CHECK_HEADER([sys/soundcard.h], [AC_SUBST(HAS_OSS, 1)])]
+      )
 
-  AC_CHECK_HEADER([$V4L2_HEADER], 
-                  [HAS_V4L2=1],
-                  [
-		    # We can't use AC_CHECK_HEADER again because
-                    # the value is cached, perhaps we have another
-                    # method to do this more cleanly ?
-		    AC_MSG_CHECKING([for $V4L2_HEADER with sys/types.h])
-		    AC_TRY_COMPILE([
-					#ifdef __linux__
-					#include <sys/types.h>
-					#include <linux/types.h>
-                                        #else
-                                        #ifdef __sun
-                                        #include <sys/types.h>
-                                        #include <sys/time.h>
-                                        #else
-					#error "not supported"
-					#endif
-					#endif
-					#include "$V4L2_HEADER"
-				    ],
-				    [
-				        return 0;
-				    ],
-				    [
-				        HAS_V4L2=1
-				        AC_MSG_RESULT(yes)
-				    ],
-                                    [
-				        HAS_V4L2=
-				        AC_MSG_RESULT(no)
-                                    ])
-                  ], 
-		[
-		#ifdef __linux__
-		#include <linux/types.h>
-		#endif
-		])
-  AC_MSG_CHECKING(for V4L2 video support)
-  if test "x${HAS_V4L2}" = "x1"; then
-    AC_MSG_RESULT(yes)
-    AC_SUBST([V4L2_CXXFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
-  else
-    HAS_V4L2=
-    AC_MSG_RESULT(no)
-  fi
-  AC_SUBST(HAS_V4L2)
+      dnl #########################################################################
+      dnl check for Pulse sound support
 
-  if test "x${HAS_V4L2}" = "x1"; then
-    AC_CHECK_HEADER([libv4l2.h], 
-                    [AC_CHECK_LIB([v4l2], [v4l2_fd_open], [HAS_LIBV4L=1])]
-                   )
+      AC_ARG_ENABLE(
+         pulse,
+         AS_HELP_STRING([--disable-pulse],[disable Pulse audio support]),
+         [AC_MSG_NOTICE(OSS audio disabled by user)],
+         [AC_CHECK_HEADER([pulse/simple.h], [AC_SUBST(HAS_PULSE, 1)])]
+      )
+
+      dnl #########################################################################
+      dnl check for sunaudio sound support
+
+      AC_ARG_ENABLE(
+         sunaudio,
+         AS_HELP_STRING([--disable-sunaudio],[disable Sun audio support]),
+         [AC_MSG_NOTICE(OSS audio disabled by user)],
+         [AC_CHECK_HEADER([sys/conf.h], [AC_SUBST(HAS_SUNAUDIO, 1)])]
+      )
+
+      dnl #########################################################################
+      dnl check for shm sound support
+
+      AC_ARG_ENABLE(
+         shmaudio,
+         AS_HELP_STRING([--disable-shmaudio],[disable shm audio support]),
+         [AC_MSG_NOTICE(shm audio disabled by user)],
+         [AC_CHECK_FUNC([sem_timedwait], [AC_SUBST(HAS_AUDIOSHM, 1)])]
+      )
+
+   fi # enable_audio
+
+   if test "x$enable_video" != "xno" ; then
+
+      dnl #########################################################################
+      dnl check for V4L video support
+
+      AC_ARG_ENABLE(
+         v4l,
+         AS_HELP_STRING([--disable-v4l],[disable V4L video support]),
+         [AC_MSG_NOTICE(V4L video disabled by user)],
+         [AC_CHECK_HEADER([linux/videodev.h], [AC_SUBST(HAS_V4L, 1)])]
+      )
+
+      dnl #########################################################################
+      dnl check for V4L2 video support
+      dnl ########################################################################
+
+      AC_ARG_ENABLE(v4l2, AS_HELP_STRING([--disable-v4l2],[disable V4L2 video support]))
+
+      if test "x$enable_v4l2" != "xno" ; then
+         case "$target_os" in
+            solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
+            netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
+            * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
+         esac
+
+         AC_CHECK_HEADER(
+            [$V4L2_HEADER], 
+            [HAS_V4L2=1],
+            [
+		          # We can't use AC_CHECK_HEADER again because
+                          # the value is cached, perhaps we have another
+                          # method to do this more cleanly ?
+		          AC_MSG_CHECKING([for $V4L2_HEADER with sys/types.h])
+		          AC_TRY_COMPILE([
+					      #ifdef __linux__
+					      #include <sys/types.h>
+					      #include <linux/types.h>
+                                              #else
+                                              #ifdef __sun
+                                              #include <sys/types.h>
+                                              #include <sys/time.h>
+                                              #else
+					      #error "not supported"
+					      #endif
+					      #endif
+					      #include "$V4L2_HEADER"
+				          ],
+				          [
+				              return 0;
+				          ],
+				          [
+				              HAS_V4L2=1
+				              AC_MSG_RESULT(yes)
+				          ],
+                                          [
+				              HAS_V4L2=
+				              AC_MSG_RESULT(no)
+                                          ])
+                        ], 
+		      [
+		      #ifdef __linux__
+		      #include <linux/types.h>
+		      #endif
+		      ])
+        AC_MSG_CHECKING(for V4L2 video support)
+        if test "x${HAS_V4L2}" = "x1"; then
+          AC_MSG_RESULT(yes)
+          AC_SUBST([V4L2_CXXFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
+        else
+          HAS_V4L2=
+          AC_MSG_RESULT(no)
+        fi
+        AC_SUBST(HAS_V4L2)
+
+        if test "x${HAS_V4L2}" = "x1"; then
+          AC_CHECK_HEADER([libv4l2.h], 
+                          [AC_CHECK_LIB([v4l2], [v4l2_fd_open], [HAS_LIBV4L=1])]
+                         )
                    
-    AC_MSG_CHECKING([for libv4l2 support])
-    if test "x${HAS_LIBV4L}" = "x1"; then
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
-    fi
-    AC_SUBST(HAS_LIBV4L)
-  fi
-fi
+          AC_MSG_CHECKING([for libv4l2 support])
+          if test "x${HAS_LIBV4L}" = "x1"; then
+            AC_MSG_RESULT(yes)
+          else
+            AC_MSG_RESULT(no)
+          fi
+          AC_SUBST(HAS_LIBV4L)
+        fi
+      fi
 
-dnl #########################################################################
-dnl check for BSD video capture support
-dnl ########################################################################
+      dnl #########################################################################
+      dnl check for BSD video capture support
 
-AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support],,enable_bsdvideo=yes)
+      AC_ARG_ENABLE(
+         bsdvideo,
+         AS_HELP_STRING([--disable-bsdvideo],[disable BSD video support]),
+         [AC_MSG_NOTICE(BSD video disabled by user)],
+         [
+            AC_CHECK_HEADER(
+               [machine/ioctl_meteor.h],
+               [AC_SUBST(HAS_BSDVIDEOCAP, 1)],
+               [
+                  AC_CHECK_HEADER(
+                     [i386/ioctl_meteor.h],
+                     [AC_SUBST(HAS_BSDVIDEOCAP, 1)],
+                     [
+                        AC_CHECK_HEADER(
+                           [dev/ic/bt8xx.h],
+                           [AC_SUBST(HAS_BSDVIDEOCAP, 1)]
+                        )
+                     ]
+                  )
+               ]
+            )
+         ]
+      )
 
-if test "${enable_bsdvideo}z" = "yesz" ; then
-  AC_CHECK_HEADER(machine/ioctl_meteor.h, BSDVIDEOHDR=1)
-  AC_CHECK_HEADER(i386/ioctl_meteor.h, BSDVIDEOHDR=1)
-  AC_CHECK_HEADER(dev/ic/bt8xx.h, BSDVIDEOHDR=1)
-  AC_MSG_CHECKING(for BSD video support)
-  if test "${BSDVIDEOHDR}z" != "z"; then
-    AC_SUBST(HAS_BSDVIDEOCAP, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+      dnl #########################################################################
+      dnl check for AVC video support
 
-dnl #########################################################################
-dnl check for AVC video support
-dnl ########################################################################
+      AC_ARG_ENABLE(
+         avc,
+         AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]),
+         [AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)],
+         [
+            AC_CHECK_HEADER(
+               [libavc1394/avc1394.h],
+               [AC_SUBST(HAS_AVC1394, 1)],
+               [
+                  AC_CHECK_HEADER(
+                     [libdv/dv.h],
+                     [AC_SUBST(HAS_AVC1394, 1)],
+                     [
+                        AC_CHECK_HEADER(
+                           [libraw1394/raw1394.h],
+                           [AC_SUBST(HAS_AVC1394, 1)]
+                        )
+                     ]
+                  )
+               ]
+            )
+         ]
+      )
 
-AC_ARG_ENABLE(avc, [  --enable-avc            enable IEEE1394/AVC video support],,enable_avc=no)
+      dnl #########################################################################
+      dnl check for DC video support
 
-if test "${enable_avc}z" = "yesz" ; then
-  AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
-  AC_CHECK_HEADER(libdv/dv.h, DVHDR=1)
-  AC_CHECK_HEADER(libraw1394/raw1394.h, RAW1394HDR=1)
-  AC_MSG_CHECKING(for IEEE1394/AVC video support)
-  if test "${AVC1394HDR}z" != "z" -a "${DVHDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
-    AC_SUBST(HAS_AVC1394, 1)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+      AC_ARG_ENABLE(
+         dc,
+         AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]),
+         [AC_MSG_NOTICE(IEEE1394/DC video disabled by user)],
+         [
+            AC_CHECK_HEADER(
+               [libdc1394/dc1394_control.h],
+               [AC_SUBST(HAS_DC1394, 1)],
+               [
+                  AC_CHECK_HEADER(
+                     [libraw1394/raw1394.h],
+                     [AC_SUBST(HAS_DC1394, 1)],
+                  )
+               ]
+            )
+         ]
+      )
 
-dnl #########################################################################
-dnl check for DC video support
-dnl ########################################################################
+      if test "x${HAS_DC1394}" = "x1" ; then
+         AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
+         AC_COMPILE_IFELSE(
+            [AC_LANG_SOURCE([
+               #include "libdc1394/dc1394_control.h"
+               int main(int ac,char **av)
+               {
+                 raw1394handle_t handle;
+                 nodeid_t node;
+                 int channel;
+                 int format;
+                 int mode;
+                 int speed;
+                 int frame_rate; 
+                 int num_dma_buffers;
+                 int do_extra_buffering;
+                 int drop_frames;
+                 const char *dma_device_file;
+                 dc1394_cameracapture *camera;
+                 dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
+			                  do_extra_buffering, drop_frames, dma_device_file, camera);
+                 return 0;
+               }
+            ])],
+            [
+               AC_SUBST(DC_CFLAGS, -DNEW_DC_API)
+               AC_MSG_RESULT(yes)
+            ],
+            [
+               AC_SUBST(DC_CFLAGS)
+               AC_MSG_RESULT(no)
+            ]
+         )
+      fi
 
-AC_ARG_ENABLE(dc, [  --enable-dc             enable IEEE1394/DC video support],,enable_dc=yes)
+   fi
+   dnl end of test for video
 
-if test "${enable_dc}z" = "yesz" ; then
-  AC_CHECK_HEADER(libdc1394/dc1394_control.h, DC1394HDR=1)
-  AC_CHECK_HEADER(libraw1394/raw1394.h, RAW1394HDR=1)
-  AC_MSG_CHECKING(for IEEE1394/DC video support)
-  if test "${DC1394HDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
-    AC_SUBST(HAS_DC1394, 1)
-    AC_MSG_RESULT(yes)
-    AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
-#include "libdc1394/dc1394_control.h"
-int main(int ac,char **av)
-{
-  raw1394handle_t handle;
-  nodeid_t node;
-  int channel;
-  int format;
-  int mode;
-  int speed;
-  int frame_rate; 
-  int num_dma_buffers;
-  int do_extra_buffering;
-  int drop_frames;
-  const char *dma_device_file;
-  dc1394_cameracapture *camera;
-  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
-			   do_extra_buffering, drop_frames, dma_device_file, camera);
-  return 0;
-}
-])],NEW_DC_API=1, NEW_DC_API=0)
-    if test "$NEW_DC_API" = "1" ; then
-      AC_SUBST(DC_CFLAGS, -DNEW_DC_API)
-      AC_MSG_RESULT(yes)
-    else
-      AC_SUBST(DC_CFLAGS)
-      AC_MSG_RESULT(no)
-    fi
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-
-fi
-dnl end of test for video
-
-AC_CONFIG_FILES(plugins/Makefile)
-AC_CONFIG_FILES(plugins/vidinput_v4l2/Makefile)
-AC_CONFIG_FILES(plugins/vidinput_dc/Makefile)
+   AC_CONFIG_FILES(plugins/Makefile)
+   AC_CONFIG_FILES(plugins/vidinput_v4l2/Makefile)
+   AC_CONFIG_FILES(plugins/vidinput_dc/Makefile)
 
 fi # enable_plugins
 
