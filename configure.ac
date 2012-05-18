@@ -1712,7 +1712,7 @@ case "$target_os" in
          dnl The rest is done further down...
       fi
 
-      PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [disable plugin support], [HAS_LIBDL])
+      PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
    ;;
 esac
 
