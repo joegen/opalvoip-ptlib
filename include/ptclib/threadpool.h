@@ -418,6 +418,9 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         {
         }
 
+        ~QueuedWorkerThread()
+        { }
+
         void AddWork(Work_T * work)
         {
           m_mutex.Wait();
