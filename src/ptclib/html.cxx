@@ -886,7 +886,8 @@ PHTML::InputText::InputText(const char * type,
 void PHTML::InputText::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  html << " SIZE=" << width;
+  if (width > 0)
+    html << " SIZE=" << width;
   if (length > 0)
     html << " MAXLENGTH=" << length;
   if (value != NULL)
