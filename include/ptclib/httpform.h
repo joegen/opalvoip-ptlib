@@ -398,7 +398,7 @@ class PHTTPStringField : public PHTTPField
   public:
     PHTTPStringField(
       const char * name,
-      PINDEX size,
+      PINDEX maxLength,
       const char * initVal = NULL,
       const char * help = NULL,
       int rows = 0, // 0=auto, 1=InputText, >1=TextArea
@@ -407,7 +407,7 @@ class PHTTPStringField : public PHTTPField
     PHTTPStringField(
       const char * name,
       const char * title,
-      PINDEX size,
+      PINDEX maxLength,
       const char * initVal = NULL,
       const char * help = NULL,
       int rows = 0, // 0=auto, 1=InputText, >1=TextArea
@@ -430,7 +430,7 @@ class PHTTPStringField : public PHTTPField
   protected:
     PString value;
     PString initialValue;
-    PINDEX size;
+    PINDEX maxLength;
     int rows;
     int columns;
 };
