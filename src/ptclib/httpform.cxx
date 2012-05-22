@@ -1011,7 +1011,7 @@ void PHTTPFieldArray::SetStrings(PConfig & cfg, const PStringArray & values)
 // PHTTPStringField
 
 PHTTPStringField::PHTTPStringField(const char * name,
-                                   PINDEX sz,
+                                   PINDEX maxLen,
                                    const char * initVal,
                                    const char * help,
                                    int r,
@@ -1019,7 +1019,7 @@ PHTTPStringField::PHTTPStringField(const char * name,
   : PHTTPField(name, NULL, help)
   , value(initVal != NULL ? initVal : "")
   , initialValue(value)
-  , size(sz)
+  , maxLength(maxLen)
   , rows(r)
   , columns(c)
 {
@@ -1028,7 +1028,7 @@ PHTTPStringField::PHTTPStringField(const char * name,
 
 PHTTPStringField::PHTTPStringField(const char * name,
                                    const char * title,
-                                   PINDEX sz,
+                                   PINDEX maxLen,
                                    const char * initVal,
                                    const char * help,
                                    int r,
@@ -1036,7 +1036,7 @@ PHTTPStringField::PHTTPStringField(const char * name,
   : PHTTPField(name, title, help)
   , value(initVal != NULL ? initVal : "")
   , initialValue(value)
-  , size(sz)
+  , maxLength(maxLen)
   , rows(r)
   , columns(c)
 {
@@ -1045,7 +1045,7 @@ PHTTPStringField::PHTTPStringField(const char * name,
 
 PHTTPField * PHTTPStringField::NewField() const
 {
-  return new PHTTPStringField(baseName, title, size, initialValue, help);
+  return new PHTTPStringField(baseName, title, maxLength, initialValue, help);
 }
 
 
@@ -1056,15 +1056,15 @@ void PHTTPStringField::GetHTMLTag(PHTML & html) const
   if (rows == 0) {
     if (columns != 0) {
       c = columns;
-      r = (size+c-1)/c;
+      r = (maxLength+c-1)/c;
     }
-    else if (size < DefaultColumns*2) {
-      c = size;
+    else if (maxLength < DefaultColumns*2) {
+      c = maxLength;
       r = 1;
     }
     else {
       c = DefaultColumns;
-      r = (size+c-1)/c;
+      r = (maxLength+c-1)/c;
     }
   }
   else {
@@ -1072,11 +1072,11 @@ void PHTTPStringField::GetHTMLTag(PHTML & html) const
     if (columns != 0)
       c = columns;
     else
-      c = (size+r-1)/r;
+      c = (maxLength+r-1)/r;
   }
 
   if (r <= 1)
-    html << PHTML::InputText(fullName, c, size);
+    html << PHTML::InputText(fullName, c, maxLength);
   else
     html << PHTML::TextArea(fullName, r, c) << PHTML::Escaped(value) << PHTML::TextArea(fullName);
 }
@@ -1121,13 +1121,13 @@ PHTTPPasswordField::PHTTPPasswordField(const char * name,
 
 PHTTPField * PHTTPPasswordField::NewField() const
 {
-  return new PHTTPPasswordField(baseName, title, size, initialValue, help);
+  return new PHTTPPasswordField(baseName, title, maxLength, initialValue, help);
 }
 
 
 void PHTTPPasswordField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::InputPassword(fullName, size);
+  html << PHTML::InputPassword(fullName, maxLength);
 }
 
 
