@@ -1268,6 +1268,10 @@ class PHTTPResource : public PObject
      */
     const PURL & GetURL() const { return baseURL; }
 
+    /**Get relative hot link for this resouce.
+      */
+    PString GetHotLink() const { return baseURL.AsString(PURL::PathOnly); }
+
     /** Get the current content type for the resource.
 
        @return
