@@ -205,7 +205,7 @@ class PConfigPage : public PHTTPConfig
     );
     PConfigPage(
       PHTTPServiceProcess & app,
-      const PString & title,
+      const PString & url,
       const PString & section,
       const PHTTPAuthority & auth
     );
