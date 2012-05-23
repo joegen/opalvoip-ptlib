@@ -497,10 +497,10 @@ void PHTTPServiceThread::Main()
 //////////////////////////////////////////////////////////////
 
 PConfigPage::PConfigPage(PHTTPServiceProcess & app,
-                         const PString & title,
+                         const PString & url,
                          const PString & section,
                          const PHTTPAuthority & auth)
-  : PHTTPConfig(title, section, auth),
+  : PHTTPConfig(url, section, auth),
     process(app)
 {
 }
