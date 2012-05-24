@@ -517,7 +517,8 @@ void * PThread::PX_ThreadStart(void * arg)
 #endif
 
   // Inform the helgrind finite state machine that this thread has finished
-  pthread_exit(0);
+  // Commented out as on some platforms it causes a crash, no idea why!
+  // pthread_exit(0);
 
   return NULL;
 }
