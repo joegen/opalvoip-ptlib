@@ -169,25 +169,28 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
 
 PSoundChannel::PSoundChannel()
-: activeDirection(Closed)
+  : m_baseChannel(NULL)
+  , activeDirection(Closed)
 {
-  baseChannel = NULL;
 }
 
 PSoundChannel::~PSoundChannel()
 {
-  delete baseChannel;
+  delete m_baseChannel;
 }
+
 
 PSoundChannel::PSoundChannel(const PString & device,
                              Directions dir,
                              unsigned numChannels,
                              unsigned sampleRate,
                              unsigned bitsPerSample)
+  : m_baseChannel(NULL)
+  , activeDirection(dir)
 {
-  baseChannel = NULL;
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
+
 
 PBoolean PSoundChannel::Open(const PString & devSpec,
                          Directions dir,
@@ -204,92 +207,109 @@ PBoolean PSoundChannel::Open(const PString & devSpec,
     device = devSpec.Mid(colon+1).Trim();
   }
 
-  delete baseChannel;
+  m_baseMutex.StartWrite();
+
+  delete m_baseChannel;
   activeDirection = dir;
 
-  baseChannel = CreateOpenedChannel(driver, device, dir, numChannels, sampleRate, bitsPerSample);
-  if (baseChannel == NULL && !driver.IsEmpty())
-    baseChannel = CreateOpenedChannel(PString::Empty(), devSpec, dir, numChannels, sampleRate, bitsPerSample);
+  m_baseChannel = CreateOpenedChannel(driver, device, dir, numChannels, sampleRate, bitsPerSample);
+  if (m_baseChannel == NULL && !driver.IsEmpty())
+    m_baseChannel = CreateOpenedChannel(PString::Empty(), devSpec, dir, numChannels, sampleRate, bitsPerSample);
 
-  return baseChannel != NULL;
+  m_baseMutex.EndWrite();
+
+  return m_baseChannel != NULL;
 }
+
 
 PString PSoundChannel::GetName() const
 {
-  return baseChannel != NULL ? baseChannel->GetName() : PString::Empty();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL ? m_baseChannel->GetName() : PString::Empty();
 }
 
 
 PBoolean PSoundChannel::IsOpen() const
 {
-  return baseChannel != NULL && baseChannel->PChannel::IsOpen();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->PChannel::IsOpen();
 }
 
 
 PBoolean PSoundChannel::Close()
 {
-  return baseChannel == NULL || baseChannel->Close();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel == NULL || m_baseChannel->Close();
 }
 
 
 int PSoundChannel::GetHandle() const
 {
-  return baseChannel == NULL ? -1 : baseChannel->PChannel::GetHandle();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel == NULL ? -1 : m_baseChannel->PChannel::GetHandle();
 }
 
 
 PBoolean PSoundChannel::Abort()
 {
-  PAssert(IsOpen(), PLogicError); 
-  return baseChannel->Abort();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel == NULL || m_baseChannel->Abort();
 }
 
 
 PBoolean PSoundChannel::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
 {
-  return baseChannel != NULL && baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample);
 }
 
 
 unsigned PSoundChannel::GetChannels() const
 {
-  return baseChannel == NULL ? 0 : baseChannel->GetChannels();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel == NULL ? 0 : m_baseChannel->GetChannels();
 }
 
 
 unsigned PSoundChannel::GetSampleRate() const
 {
-  return baseChannel == NULL ? 0 : baseChannel->GetSampleRate();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel == NULL ? 0 : m_baseChannel->GetSampleRate();
 }
 
 
 unsigned PSoundChannel::GetSampleSize() const 
 {
-  return baseChannel == NULL ? 0 : baseChannel->GetSampleSize();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel == NULL ? 0 : m_baseChannel->GetSampleSize();
 }
 
 
 PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
-  return baseChannel != NULL && baseChannel->SetBuffers(size, count);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->SetBuffers(size, count);
 }
 
 
 PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  return baseChannel != NULL && baseChannel->GetBuffers(size, count);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->GetBuffers(size, count);
 }
 
 
 PBoolean PSoundChannel::SetVolume(unsigned volume)
 {
-  return baseChannel != NULL && baseChannel->SetVolume(volume);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->SetVolume(volume);
 }
 
 
 PBoolean PSoundChannel::GetVolume(unsigned & volume)
 {
-  return baseChannel != NULL && baseChannel->GetVolume(volume);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->GetVolume(volume);
 }
 
 
@@ -300,7 +320,8 @@ PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
   if (len == 0)
     return IsOpen();
 
-  return baseChannel != NULL && baseChannel->Write(buf, len);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->Write(buf, len);
 }
 
 PBoolean PSoundChannel::Write(const void * buf, PINDEX len, const void * /*mark*/)
@@ -310,35 +331,40 @@ PBoolean PSoundChannel::Write(const void * buf, PINDEX len, const void * /*mark*
 
 PINDEX PSoundChannel::GetLastWriteCount() const
 {
-  return baseChannel != NULL ? baseChannel->GetLastWriteCount() : PChannel::GetLastWriteCount();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL ? m_baseChannel->GetLastWriteCount() : PChannel::GetLastWriteCount();
 }
 
 
 PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
   PAssert(activeDirection == Player, PLogicError);
-  return baseChannel != NULL && baseChannel->PlaySound(sound, wait);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->PlaySound(sound, wait);
 }
 
 
 PBoolean PSoundChannel::PlayFile(const PFilePath & file, PBoolean wait)
 {
   PAssert(activeDirection == Player, PLogicError);
-  return baseChannel != NULL && baseChannel->PlayFile(file, wait);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->PlayFile(file, wait);
 }
 
 
 PBoolean PSoundChannel::HasPlayCompleted()
 {
   PAssert(activeDirection == Player, PLogicError);
-  return baseChannel != NULL && baseChannel->HasPlayCompleted();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->HasPlayCompleted();
 }
 
 
 PBoolean PSoundChannel::WaitForPlayCompletion() 
 {
   PAssert(activeDirection == Player, PLogicError);
-  return baseChannel != NULL && baseChannel->WaitForPlayCompletion();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->WaitForPlayCompletion();
 }
 
 
@@ -349,62 +375,86 @@ PBoolean PSoundChannel::Read(void * buf, PINDEX len)
   if (len == 0)
     return IsOpen();
 
-  return baseChannel != NULL && baseChannel->Read(buf, len);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->Read(buf, len);
 }
 
 
 PINDEX PSoundChannel::GetLastReadCount() const
 {
-  return baseChannel != NULL ? baseChannel->GetLastReadCount() : PChannel::GetLastReadCount();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL ? m_baseChannel->GetLastReadCount() : PChannel::GetLastReadCount();
 }
 
 
 PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->RecordSound(sound);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->RecordSound(sound);
 }
 
 
 PBoolean PSoundChannel::RecordFile(const PFilePath & file)
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->RecordFile(file);
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->RecordFile(file);
 }
 
 
 PBoolean PSoundChannel::StartRecording()
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->StartRecording();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->StartRecording();
 }
 
 
 PBoolean PSoundChannel::IsRecordBufferFull() 
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->IsRecordBufferFull();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->IsRecordBufferFull();
 }
 
 
 PBoolean PSoundChannel::AreAllRecordBuffersFull() 
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->AreAllRecordBuffersFull();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->AreAllRecordBuffersFull();
 }
 
 
 PBoolean PSoundChannel::WaitForRecordBufferFull() 
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->WaitForRecordBufferFull();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->WaitForRecordBufferFull();
 }
 
 
 PBoolean PSoundChannel::WaitForAllRecordBuffersFull() 
 {
   PAssert(activeDirection == Recorder, PLogicError);
-  return baseChannel != NULL && baseChannel->WaitForAllRecordBuffersFull();
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->WaitForAllRecordBuffersFull();
+}
+
+
+const char * PSoundChannel::GetDirectionText(Directions dir)
+{
+  switch (dir) {
+    case Player :
+      return "Playback";
+    case Recorder :
+      return "Recording";
+    case Closed :
+      return "Closed";
+  }
+
+  return "<Unknown>";
 }
 
 
