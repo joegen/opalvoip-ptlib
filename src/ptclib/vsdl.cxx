@@ -42,9 +42,7 @@
 #if P_SDL
 
 extern "C" {
-
-#include <SDL/SDL.h>
-
+  #include <SDL.h>
 };
 
 #ifdef _MSC_VER
@@ -77,7 +75,7 @@ PCREATE_PLUGIN(SDL, PVideoOutputDevice, &PVideoOutputDevice_SDL_descriptor);
 
 ///////////////////////////////////////////////////////////////////////
 
-class PSDL_Window
+class PSDL_Window : public PMutex
 {
   public:
     static PSDL_Window & GetInstance()
@@ -95,9 +93,6 @@ class PSDL_Window
     };
 
 
-    PMutex & GetMutex() { return m_mutex; }
-
-
     void Run()
     {
       if (m_thread == NULL) {
@@ -110,7 +105,6 @@ class PSDL_Window
   private:
     SDL_Surface * m_surface;
     PThread     * m_thread;
-    PMutex        m_mutex;
     PSyncPoint    m_started;
 
     typedef std::list<PVideoOutputDevice_SDL *> DeviceList;
@@ -167,6 +161,8 @@ class PSDL_Window
         return false;
       }
 
+      PWaitAndSignal mutex(*this);
+
       switch (sdlEvent.type) {
         case SDL_USEREVENT :
           switch (sdlEvent.user.code) {
@@ -186,22 +182,27 @@ class PSDL_Window
             case e_ContentChanged :
               ((PVideoOutputDevice_SDL *)sdlEvent.user.data1)->UpdateContent();
               break;
+
+            default :
+              PTRACE(5, "SDL\tUnhandled user event " << sdlEvent.user.code);
           }
           break;
 
-        case SDL_QUIT : //User selected cross
-          PTRACE(3, "VSDL\t user selected cross on window, close window");
-          for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it) {
-            ::SDL_FreeYUVOverlay((*it)->m_overlay);
-            (*it)->m_overlay = NULL;
-          }
+        case SDL_QUIT :
+          PTRACE(3, "SDL\tUser closed window");
+          for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
+            (*it)->FreeOverlay();
 
           m_devices.clear();
           return false;
 
         case SDL_VIDEORESIZE :
-          PTRACE(4, "VSDL\t Resize window to " << sdlEvent.resize.w << " x " << sdlEvent.resize.h);
+          PTRACE(4, "SDL\tResize window to " << sdlEvent.resize.w << " x " << sdlEvent.resize.h);
           AdjustOverlays();
+          break;
+
+        default :
+          PTRACE(5, "SDL\tUnhandled event " << (unsigned)sdlEvent.type);
       }
 
       return true;
@@ -210,8 +211,6 @@ class PSDL_Window
 
     void AddDevice(PVideoOutputDevice_SDL * device)
     {
-      PWaitAndSignal mutex(m_mutex);
-
       m_devices.push_back(device);
 
       if (m_surface == NULL) {
@@ -230,7 +229,7 @@ class PSDL_Window
         m_surface = ::SDL_SetVideoMode(device->GetFrameWidth(),
                                        device->GetFrameHeight(),
                                        0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
-        PTRACE_IF(1, m_surface == NULL, "VSDL\tCouldn't create SDL surface: " << ::SDL_GetError());
+        PTRACE_IF(1, m_surface == NULL, "SDL\tCouldn't create SDL surface: " << ::SDL_GetError());
       }
 
       AdjustOverlays();
@@ -241,14 +240,10 @@ class PSDL_Window
 
     void RemoveDevice(PVideoOutputDevice_SDL * device)
     {
-      PWaitAndSignal mutex(m_mutex);
-
       m_devices.remove(device);
 
       if (PAssertNULL(m_surface) != NULL) {
-        if (device->m_overlay != NULL)
-          ::SDL_FreeYUVOverlay(device->m_overlay);
-
+        device->FreeOverlay();
         AdjustOverlays();
       }
 
@@ -276,26 +271,12 @@ class PSDL_Window
 
         device.m_x = x;
         device.m_y = y;
-        if (device.m_overlay == NULL ||
-            device.GetFrameWidth() != (unsigned)device.m_overlay->w ||
-            device.GetFrameHeight() != (unsigned)device.m_overlay->h) {
-          if (device.m_overlay != NULL)
-            ::SDL_FreeYUVOverlay(device.m_overlay);
-          device.m_overlay = ::SDL_CreateYUVOverlay(device.GetFrameWidth(),
-                                                    device.GetFrameHeight(),
-                                                    SDL_IYUV_OVERLAY,
-                                                    m_surface);
-
-          if (device.m_overlay == NULL) {
-            PTRACE(1, "VSDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
-          }
-          else {
-            PINDEX sz = device.GetFrameWidth()*device.GetFrameHeight();
-            memset(device.m_overlay->pixels[0], 0, sz);
-            sz /= 4;
-            memset(device.m_overlay->pixels[1], 0x80, sz);
-            memset(device.m_overlay->pixels[2], 0x80, sz);
-          }
+        if (device.m_overlay == NULL)
+          device.CreateOverlay(m_surface);
+        else if (device.GetFrameWidth() != (unsigned)device.m_overlay->w ||
+                 device.GetFrameHeight() != (unsigned)device.m_overlay->h) {
+          device.FreeOverlay();
+          device.CreateOverlay(m_surface);
         }
 
         if (fullWidth < x+device.GetFrameWidth())
@@ -313,7 +294,7 @@ class PSDL_Window
       ::SDL_WM_SetCaption(title, NULL);
 
       if (::SDL_SetVideoMode(fullWidth, fullHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */) != m_surface) {
-        PTRACE(1, "VSDL\tCouldn't resize surface: " << ::SDL_GetError());
+        PTRACE(1, "SDL\tCouldn't resize surface: " << ::SDL_GetError());
       }
 
       for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
@@ -352,8 +333,7 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
   deviceName = name;
 
   PSDL_Window::GetInstance().Run();
-  PostEvent(PSDL_Window::e_AddDevice);
-  m_operationComplete.Wait();
+  PostEvent(PSDL_Window::e_AddDevice, true);
 
   return IsOpen();
 }
@@ -370,8 +350,7 @@ PBoolean PVideoOutputDevice_SDL::Close()
   if (!IsOpen())
     return false;
 
-  PostEvent(PSDL_Window::e_RemoveDevice);
-  m_operationComplete.Wait();
+  PostEvent(PSDL_Window::e_RemoveDevice, true);
 
   return true;
 }
@@ -394,10 +373,8 @@ PBoolean PVideoOutputDevice_SDL::SetFrameSize(unsigned width, unsigned height)
   if (!PVideoOutputDevice::SetFrameSize(width, height))
     return false;
 
-  if (IsOpen()) {
-    PostEvent(PSDL_Window::e_SizeChanged);
-    m_operationComplete.Wait();
-  }
+  if (IsOpen())
+    PostEvent(PSDL_Window::e_SizeChanged, true);
 
   return true;
 }
@@ -420,7 +397,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   if (x != 0 || y != 0 || width != frameWidth || height != frameHeight || !endFrame)
     return false;
 
-  PWaitAndSignal mutex(PSDL_Window::GetInstance().GetMutex());
+  PWaitAndSignal mutex(PSDL_Window::GetInstance());
 
   ::SDL_LockYUVOverlay(m_overlay);
 
@@ -442,7 +419,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
 
   ::SDL_UnlockYUVOverlay(m_overlay);
 
-  PostEvent(PSDL_Window::e_ContentChanged);
+  PostEvent(PSDL_Window::e_ContentChanged, false);
   return true;
 }
 
@@ -467,11 +444,40 @@ void PVideoOutputDevice_SDL::UpdateContent()
   rect.y = (Uint16)m_y;
   rect.w = (Uint16)frameWidth;
   rect.h = (Uint16)frameHeight;
-  ::SDL_DisplayYUVOverlay(m_overlay, &rect);
+  ::SDL_DisplayYUVOverlay(PAssertNULL(m_overlay), &rect);
 }
 
 
-void PVideoOutputDevice_SDL::PostEvent(unsigned code)
+void PVideoOutputDevice_SDL::CreateOverlay(struct SDL_Surface * surface)
+{
+  if (m_overlay != NULL)
+    return;
+
+  m_overlay = ::SDL_CreateYUVOverlay(frameWidth, frameHeight, SDL_IYUV_OVERLAY, surface);
+  if (m_overlay == NULL) {
+    PTRACE(1, "SDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
+    return;
+  }
+
+  PINDEX sz = frameWidth*frameHeight;
+  memset(m_overlay->pixels[0], 0, sz);
+  sz /= 4;
+  memset(m_overlay->pixels[1], 0x80, sz);
+  memset(m_overlay->pixels[2], 0x80, sz);
+}
+
+
+void PVideoOutputDevice_SDL::FreeOverlay()
+{
+  if (m_overlay == NULL)
+    return;
+
+  ::SDL_FreeYUVOverlay(m_overlay);
+  m_overlay = NULL;
+}
+
+
+void PVideoOutputDevice_SDL::PostEvent(unsigned code, bool wait)
 {
   SDL_Event sdlEvent;
   sdlEvent.type = SDL_USEREVENT;
@@ -479,7 +485,12 @@ void PVideoOutputDevice_SDL::PostEvent(unsigned code)
   sdlEvent.user.data1 = this;
   sdlEvent.user.data2 = NULL;
   if (::SDL_PushEvent(&sdlEvent) < 0) {
-    PTRACE(1, "VSDL\tCouldn't post event: " << ::SDL_GetError());
+    PTRACE(1, "SDL\tCouldn't post user event " << (unsigned)sdlEvent.user.code << ": " << ::SDL_GetError());
+  }
+  else {
+    PTRACE(5, "SDL\tPosted user event " << (unsigned)sdlEvent.user.code);
+    if (wait)
+      m_operationComplete.Wait();
   }
 }
 
