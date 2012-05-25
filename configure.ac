@@ -1848,9 +1848,14 @@ if test "x$enable_plugins" != "xno" ; then
       dnl check for V4L2 video support
       dnl ########################################################################
 
-      AC_ARG_ENABLE(v4l2, AS_HELP_STRING([--disable-v4l2],[disable V4L2 video support]))
+      AC_ARG_ENABLE(
+         v4l2,
+         AS_HELP_STRING([--disable-v4l2],[disable V4L2 video support]),
+         [AC_MSG_NOTICE(V4L2 video disabled by user)],
+         [enable_v4l2=yes]
+      )
 
-      if test "x$enable_v4l2" != "xno" ; then
+      if test "x$enable_v4l2" = "xyes" ; then
          case "$target_os" in
             solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
             netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
