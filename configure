@@ -12149,11 +12149,15 @@ fi
 
       # Check whether --enable-v4l2 was given.
 if test "${enable_v4l2+set}" = set; then :
-  enableval=$enable_v4l2;
+  enableval=$enable_v4l2; { $as_echo "$as_me:${as_lineno-$LINENO}: V4L2 video disabled by user" >&5
+$as_echo "$as_me: V4L2 video disabled by user" >&6;}
+else
+  enable_v4l2=yes
+
 fi
 
 
-      if test "x$enable_v4l2" != "xno" ; then
+      if test "x$enable_v4l2" = "xyes" ; then
          case "$target_os" in
             solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
             netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
