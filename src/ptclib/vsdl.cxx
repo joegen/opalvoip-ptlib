@@ -75,7 +75,7 @@ PCREATE_PLUGIN(SDL, PVideoOutputDevice, &PVideoOutputDevice_SDL_descriptor);
 
 ///////////////////////////////////////////////////////////////////////
 
-class PSDL_Window
+class PSDL_Window : public PMutex
 {
   public:
     static PSDL_Window & GetInstance()
@@ -93,9 +93,6 @@ class PSDL_Window
     };
 
 
-    PMutex & GetMutex() { return m_mutex; }
-
-
     void Run()
     {
       if (m_thread == NULL) {
@@ -108,7 +105,6 @@ class PSDL_Window
   private:
     SDL_Surface * m_surface;
     PThread     * m_thread;
-    PMutex        m_mutex;
     PSyncPoint    m_started;
 
     typedef std::list<PVideoOutputDevice_SDL *> DeviceList;
@@ -166,6 +162,8 @@ class PSDL_Window
         return false;
       }
 
+      PWaitAndSignal mutex(*this);
+
       switch (sdlEvent.type) {
         case SDL_USEREVENT :
           switch (sdlEvent.user.code) {
@@ -193,10 +191,8 @@ class PSDL_Window
 
         case SDL_QUIT :
           PTRACE(3, "SDL\tUser closed window");
-          for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it) {
-            ::SDL_FreeYUVOverlay((*it)->m_overlay);
-            (*it)->m_overlay = NULL;
-          }
+          for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
+            (*it)->FreeOverlay();
 
           m_devices.clear();
           return false;
@@ -216,8 +212,6 @@ class PSDL_Window
 
     void AddDevice(PVideoOutputDevice_SDL * device)
     {
-      PWaitAndSignal mutex(m_mutex);
-
       m_devices.push_back(device);
 
       if (m_surface == NULL) {
@@ -247,14 +241,10 @@ class PSDL_Window
 
     void RemoveDevice(PVideoOutputDevice_SDL * device)
     {
-      PWaitAndSignal mutex(m_mutex);
-
       m_devices.remove(device);
 
       if (PAssertNULL(m_surface) != NULL) {
-        if (device->m_overlay != NULL)
-          ::SDL_FreeYUVOverlay(device->m_overlay);
-
+        device->FreeOverlay();
         AdjustOverlays();
       }
 
@@ -282,26 +272,12 @@ class PSDL_Window
 
         device.m_x = x;
         device.m_y = y;
-        if (device.m_overlay == NULL ||
-            device.GetFrameWidth() != (unsigned)device.m_overlay->w ||
-            device.GetFrameHeight() != (unsigned)device.m_overlay->h) {
-          if (device.m_overlay != NULL)
-            ::SDL_FreeYUVOverlay(device.m_overlay);
-          device.m_overlay = ::SDL_CreateYUVOverlay(device.GetFrameWidth(),
-                                                    device.GetFrameHeight(),
-                                                    SDL_IYUV_OVERLAY,
-                                                    m_surface);
-
-          if (device.m_overlay == NULL) {
-            PTRACE(1, "SDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
-          }
-          else {
-            PINDEX sz = device.GetFrameWidth()*device.GetFrameHeight();
-            memset(device.m_overlay->pixels[0], 0, sz);
-            sz /= 4;
-            memset(device.m_overlay->pixels[1], 0x80, sz);
-            memset(device.m_overlay->pixels[2], 0x80, sz);
-          }
+        if (device.m_overlay == NULL)
+          device.CreateOverlay(m_surface);
+        else if (device.GetFrameWidth() != (unsigned)device.m_overlay->w ||
+                 device.GetFrameHeight() != (unsigned)device.m_overlay->h) {
+          device.FreeOverlay();
+          device.CreateOverlay(m_surface);
         }
 
         if (fullWidth < x+device.GetFrameWidth())
@@ -422,7 +398,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   if (x != 0 || y != 0 || width != frameWidth || height != frameHeight || !endFrame)
     return false;
 
-  PWaitAndSignal mutex(PSDL_Window::GetInstance().GetMutex());
+  PWaitAndSignal mutex(PSDL_Window::GetInstance());
 
   ::SDL_LockYUVOverlay(m_overlay);
 
@@ -469,7 +445,36 @@ void PVideoOutputDevice_SDL::UpdateContent()
   rect.y = (Uint16)m_y;
   rect.w = (Uint16)frameWidth;
   rect.h = (Uint16)frameHeight;
-  ::SDL_DisplayYUVOverlay(m_overlay, &rect);
+  ::SDL_DisplayYUVOverlay(PAssertNULL(m_overlay), &rect);
+}
+
+
+void PVideoOutputDevice_SDL::CreateOverlay(struct SDL_Surface * surface)
+{
+  if (m_overlay != NULL)
+    return;
+
+  m_overlay = ::SDL_CreateYUVOverlay(frameWidth, frameHeight, SDL_IYUV_OVERLAY, surface);
+  if (m_overlay == NULL) {
+    PTRACE(1, "VSDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
+    return;
+  }
+
+  PINDEX sz = frameWidth*frameHeight;
+  memset(m_overlay->pixels[0], 0, sz);
+  sz /= 4;
+  memset(m_overlay->pixels[1], 0x80, sz);
+  memset(m_overlay->pixels[2], 0x80, sz);
+}
+
+
+void PVideoOutputDevice_SDL::FreeOverlay()
+{
+  if (m_overlay == NULL)
+    return;
+
+  ::SDL_FreeYUVOverlay(m_overlay);
+  m_overlay = NULL;
 }
 
 
