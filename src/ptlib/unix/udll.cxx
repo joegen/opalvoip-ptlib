@@ -283,7 +283,7 @@ static void *dlsym(void *handle, const char *symbol)
 #endif // P_MACOSX
 
 // only with gcc (and GNU ld) we can ensure that the DLL mutex will be destructed after static instances of PDynaLink
-#ifdef __GNUC__
+#if defined(__GNUC__) &&!defined(SOLARIS)
 #define _DESTRUCT_LAST __attribute__ ((init_priority (101)))
 #if defined(P_LINUX) || defined (P_FREEBSD) || defined (P_OPENBSD) || defined (P_NETBSD)
 // only set of platforms that use GNU ld

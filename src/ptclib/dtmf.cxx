@@ -25,8 +25,6 @@
 
 #if P_DTMF
 
-#include <math.h>
-
 /* Integer math scaling factor */
 #define FSC (1<<12)
 
