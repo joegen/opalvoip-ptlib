@@ -29,7 +29,7 @@
  */
 
 #ifdef __GNUC__
-#pragma implementation "cypher.h"
+#pragma implementation "spooldir.h"
 #endif
 
 #include <ptlib.h>

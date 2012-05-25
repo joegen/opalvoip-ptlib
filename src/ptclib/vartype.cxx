@@ -28,6 +28,10 @@
  * $Date$
  */
 
+#ifdef __GNUC__
+#pragma implementation "vartype.h"
+#endif
+
 #include <ptlib.h>
 #include <ptclib/vartype.h>
 
