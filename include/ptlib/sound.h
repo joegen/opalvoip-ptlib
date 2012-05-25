@@ -407,16 +407,13 @@ class PSoundChannel : public PChannel
     virtual PString GetName() const;
 
     /// Get the direction of the channel
-    virtual Directions GetDirection() const
+    Directions GetDirection() const
     {
       return activeDirection;
     }
 
     /// Get text representing the direction of the channel
-    static const char * GetDirectionText(Directions dir)
-    {
-      return (dir == Player)? "Playback" : ((dir == Recorder)? "Recording" : "Closed");
-    }
+    static const char * GetDirectionText(Directions dir);
 
     virtual const char * GetDirectionText() const
     {
@@ -750,7 +747,8 @@ class PSoundChannel : public PChannel
   //@}
 
   protected:
-    PSoundChannel * baseChannel;
+    PSoundChannel * m_baseChannel;
+    PReadWriteMutex m_baseMutex;
 
     /**This is the direction that this sound channel is opened for use
        in.  Should the user attempt to used this opened class instance
