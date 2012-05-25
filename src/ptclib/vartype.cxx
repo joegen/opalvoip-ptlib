@@ -47,7 +47,7 @@ void PVarType::Variant::Dynamic::Copy(const Dynamic & other)
 {
   size = other.size;
   data = new char[size];
-  memcpy(data, data, size);
+  memcpy(data, other.data, size);
 }
 
 
