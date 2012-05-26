@@ -141,6 +141,7 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
 
+#include <alloca.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
