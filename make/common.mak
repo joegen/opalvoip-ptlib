@@ -120,6 +120,7 @@ SRC_DEPS := $(SOURCES:.c=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
 SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
 DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
+DEPFLAGS := $(subst $(DEBUG_FLAG),,$(PTLIB_CFLAGS))
 
 #
 # define rule for .dep files
@@ -127,17 +128,17 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(PTLIB_CFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(PTLIB_CFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CC) $(PTLIB_CFLAGS:-g=) $(CFLAGS) -M $< >> $@
+	$(Q_DEP)$(CC) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
