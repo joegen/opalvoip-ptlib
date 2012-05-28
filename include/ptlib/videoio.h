@@ -571,7 +571,7 @@ class PVideoDevice : public PVideoFrameInfo
        this function will fail.  See SetFrameSizeConverter().
 
        Default behaviour sets the frameWidth and frameHeight variables and
-       returns true.
+       then sets the converter sizes.
     */
     virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
@@ -579,19 +579,29 @@ class PVideoDevice : public PVideoFrameInfo
     );
 
     /**Get the frame size being used.
-
-       Default behaviour returns the value of the frameWidth and frameHeight
-       variable and returns true.
+       If a converter exists, the destination frame size of the converter
+       is returned, not the underlying physical device. If you wish the
+       physical device frame size use PVideoFrameInfo::GetFrameSize().
     */
     virtual PBoolean GetFrameSize(
       unsigned & width,
       unsigned & height
     ) const;
 
-    /**Get the maximum frame size in bytes.
+    /**Get the colour format being used.
+       If a converter exists, the destination colour format of the converter
+       is returned, not the underlying physical device. If you wish the
+       physical device colout format use PVideoFrameInfo::GetColourFormat().
+      */
+    virtual const PString& GetColourFormat() const;
 
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
+    /**Get the maximum frame size in bytes.
+       This gets the maximum of the physical device or the converted frame
+       size and colour format. It is guranteed to be enought memory space for
+       any video grab or output.
+
+       Note, a particular device may be able to provide variable length
+       frames (eg motion JPEG) so this will be the maximum size of all frames.
       */
     virtual PINDEX GetMaxFrameBytes() = 0;
 
