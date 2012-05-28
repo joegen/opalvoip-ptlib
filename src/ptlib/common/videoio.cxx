@@ -222,11 +222,12 @@ void PVideoFrameInfo::PrintOn(ostream & strm) const
 
 PBoolean PVideoFrameInfo::SetFrameSize(unsigned width, unsigned height)
 {
-  if (width < 8 || height < 8)
-    return PFalse;
+  if (!PAssert(width >= 16 && height >= 16 && width < 65536 && height < 65536, PInvalidParameter))
+    return false;
+
   frameWidth = width;
   frameHeight = height;
-  return PTrue;
+  return true;
 }
 
 
@@ -253,16 +254,17 @@ unsigned PVideoFrameInfo::GetFrameHeight() const
   return h;
 }
 
+
 PBoolean PVideoFrameInfo::SetFrameSar(unsigned width, unsigned height)
 {
-    if(height == 0 || width == 0)
-    {
-        return PFalse;
-    }
+  if (!PAssert(width < 65536 && height < 65536, PInvalidParameter))
+    return false;
+
   sarWidth  = width;
   sarHeight = height;
   return PTrue;
 }
+
 
 PBoolean PVideoFrameInfo::GetSarSize(unsigned & width, unsigned & height) const
 {
@@ -288,8 +290,8 @@ unsigned PVideoFrameInfo::GetSarHeight() const
 
 PBoolean PVideoFrameInfo::SetFrameRate(unsigned rate)
 {
-  if (rate < 1 || rate > 999)
-    return PFalse;
+  if (!PAssert(rate > 0 && rate < 1000, PInvalidParameter))
+    return false;
 
   frameRate = rate;
   return PTrue;
@@ -842,27 +844,36 @@ PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
   unsigned oldHeight = frameHeight;
 #endif
 
-  frameWidth = width;
-  frameHeight = height;
+  if (!PVideoFrameInfo::SetFrameSize(width, height))
+    return false;
 
-  if (converter != NULL) {
-    if ((!converter->SetSrcFrameSize(width, height)) ||
-        (!converter->SetDstFrameSize(width, height))) {
-      PTRACE(1, "PVidDev\tSetFrameSize with converter failed with " << width << 'x' << height);
-      return PFalse;
-    }
+  if (converter != NULL && !converter->SetFrameSize(width, height)) {
+    PTRACE(1, "PVidDev\tSetFrameSize with converter failed with " << width << 'x' << height);
+    return false;
   }
 
   PTRACE_IF(3, oldWidth != frameWidth || oldHeight != frameHeight,
             "PVidDev\tSetFrameSize to " << frameWidth << 'x' << frameHeight);
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) const
 {
   // Channels get very upset at this not returning the output size.
-  return converter != NULL ? converter->GetDstFrameSize(width, height) : PVideoFrameInfo::GetFrameSize(width, height);
+  if (converter == NULL)
+    return PVideoFrameInfo::GetFrameSize(width, height);
+  return CanCaptureVideo() ? converter->GetDstFrameSize(width, height)
+                           : converter->GetSrcFrameSize(width, height);
+}
+
+
+const PString& PVideoDevice::GetColourFormat() const
+{
+  if (converter == NULL)
+    return PVideoFrameInfo::GetColourFormat();
+  return CanCaptureVideo() ? converter->GetDstColourFormat()
+                           : converter->GetSrcColourFormat();
 }
 
 
