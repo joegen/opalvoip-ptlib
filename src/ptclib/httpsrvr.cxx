@@ -286,6 +286,8 @@ PBoolean PHTTPServer::ProcessCommand()
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
 
+  PTRACE(5, "HTTPServer\tTransaction " << connectInfo.commandCode << ' ' << connectInfo.GetURL());
+
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
   // command we should check to see if it is a local server request and process
