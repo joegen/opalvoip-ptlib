@@ -563,8 +563,16 @@ bool PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
   if (info.socket == NULL)
     return false;
 
-  return usingNAT ? info.socket->GetLocalAddress(address, port)
-                  : info.socket->PUDPSocket::GetLocalAddress(address, port);
+  if (usingNAT)
+    return info.socket->GetLocalAddress(address, port);
+
+  PIPSocketAddressAndPort addrAndPort;
+  if (!info.socket->PUDPSocket::InternalGetLocalAddress(addrAndPort))
+    return false;
+
+  address = addrAndPort.GetAddress();
+  port = addrAndPort.GetPort();
+  return true;
 }
 
 
@@ -964,8 +972,11 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
 
   SocketInfo info;
   if (CreateSocket(info, binding)) {
-    if (localPort == 0)
-      info.socket->PUDPSocket::GetLocalAddress(binding, localPort);
+    if (localPort == 0) {
+      PIPSocketAddressAndPort addrAndPort;
+      info.socket->PUDPSocket::InternalGetLocalAddress(addrAndPort);
+      localPort = addrAndPort.GetPort();
+    }
     m_socketInfoMap[iface] = info;
   }
 }
