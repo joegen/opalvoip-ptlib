@@ -897,6 +897,7 @@ PBoolean PVideoInputDevice_V4L2::SetMapping()
 
 void PVideoInputDevice_V4L2::ClearMapping()
 {
+  PWaitAndSignal m(mmapMutex);
   if (!canStream) // 'isMapped' wouldn't handle partial mappings
     return;
 
@@ -934,6 +935,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
 {
   PTRACE(8,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
 
+  PWaitAndSignal m(mmapMutex);
   if (!started)
     return NormalReadProcess(buffer, bytesReturned);
 
