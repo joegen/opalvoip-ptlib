@@ -84,7 +84,6 @@ static int TraceFunction(lua_State * lua)
 
 PLua::PLua()
   : m_lua(luaL_newstate())
-  , m_loaded(false)
 {
   luaL_openlibs(m_lua);
 
@@ -119,22 +118,6 @@ bool PLua::LoadText(const PString & text)
 {
   m_loaded = OnError(luaL_loadstring(m_lua, text));
   return m_loaded;
-}
-
-
-bool PLua::Load(const PString & script)
-{
-  PFilePath filename = script;
-  if (PFile::Exists(filename)) {
-    if (!LoadFile(filename))
-      return false;
-  }
-  else {
-    if (!LoadText(script))
-      return false;
-  }
-
-  return true;
 }
 
 
@@ -619,8 +602,9 @@ bool PLua::InternalSetVariable(const PString & name)
 }
 
 
-void PLua::ParamVector::Push(lua_State * lua)
+void PLua::ParamVector::Push(void * data)
 {
+  lua_State * lua = static_cast<lua_State *>(data);
   for (iterator it = begin(); it != end(); ++it) {
     switch (it->GetType()) {
       case PVarType::VarNULL :
@@ -665,8 +649,10 @@ void PLua::ParamVector::Push(lua_State * lua)
 }
 
 
-void PLua::ParamVector::Pop(lua_State * lua)
+void PLua::ParamVector::Pop(void * data)
 {
+  lua_State * lua = static_cast<lua_State *>(data);
+
   resize(lua_gettop(lua));
   PTRACE2(6, NULL, "Lua\tParamVector::Pop stack=" << size());
 
