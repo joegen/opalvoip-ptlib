@@ -1197,6 +1197,46 @@ PTLIB_NEW_OPTION(LUA)
 
 
 dnl ########################################################################
+dnl look for V8 library
+dnl MSWIN_DISPLAY    lua,V8 Javascript interpreter
+dnl MSWIN_CHECK_FILE lua,include\v8.h,P_V8_WIN32=1
+dnl MSWIN_DIR_SYMBOL lua,V8_DIR
+
+AC_ARG_ENABLE(
+   [v8],
+   AS_HELP_STRING([--disable-v8],[disable V8 Javascript script support]),
+   [enable_v8=$enableval],
+   [enable_v8=$default_v8]
+)
+
+HAS_V8=
+if test "x$enable_v8" = "xno" ; then
+   AC_MSG_NOTICE(V8 disabled by user)
+else
+  AC_MSG_CHECKING(for V8 Javascript support)
+  SAVED_LDFLAGS=$LDFLAGS
+  LDFLAGS="$LDFLAGS -lv8"
+  AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM([#include <v8.h>],
+                      [int i = v8::HandleScope::NumberOfHandles()]
+                    )],
+     [HAS_V8=1] ; [AC_MSG_RESULT([yes])],
+     [HAS_V8=]  ; [AC_MSG_RESULT([no])]
+  )
+  LDFLAGS=$SAVED_LDFLAGS
+fi
+
+if test "x${HAS_V8}" != "x" ; then
+  AC_DEFINE(P_V8, 1, "V8 found")
+  PTLIB_CFLAGS="$PTLIB_CFLAGS $V8_CFLAGS"
+  LDFLAGS="$LDFLAGS $V8_LDFLAGS"
+  ENDLDLIBS="$ENDLDLIBS $V8_LIBS"
+fi
+AC_SUBST(HAS_V8)
+PTLIB_NEW_OPTION(V8)
+
+
+dnl ########################################################################
 dnl look for IPV6 functions
 
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
