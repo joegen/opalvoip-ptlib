@@ -1,7 +1,7 @@
 /*
- * lua.h
+ * script.h
  *
- * Interface library for Lua interpreter
+ * Abstract class for interface to external script languages
  *
  * Portable Tools Library
  *
@@ -24,13 +24,13 @@
  * Contributor(s): Craig Southeren
  *                 Robert Jongbloed
  *
- * $Revision$
- * $Author$
- * $Date$
+ * $Revision: 27552 $
+ * $Author: rjongbloed $
+ * $Date: 2012-05-02 16:04:44 +1000 (Wed, 02 May 2012) $
  */
 
-#ifndef PTLIB_LUA_H
-#define PTLIB_LUA_H
+#ifndef PTLIB_SCRIPT_H
+#define PTLIB_SCRIPT_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -39,143 +39,135 @@
 #include <ptlib.h>
 #include <ptbuildopts.h>
 
-#if P_LUA
+//#if P_SCRIPT
 
-#include <ptclib/script.h>
 #include <ptclib/vartype.h>
-
-
-struct lua_State;
 
 
 //////////////////////////////////////////////////////////////
 
-/**A wrapper around a Lua scripting language instance.
-
-   The \p name indicates the variable name of the form
-     var[.var[.var ...]]
-   where var is the usual alphanumeric+underscore string for identifier names
-   as used in C and many other languages. The dots separate Lua tables and
-   fields of that table. Tables may be nested.
+/**A wrapper around a scripting language instance.
  */
-class PLua : public PScriptLanguage
+class PScriptLanguage : public PObject
 {
-    PCLASSINFO(PLua, PScriptLanguage)
+  PCLASSINFO(PScriptLanguage, PObject)
   public:
+    static PScriptLanguage * Create(const PString & language);
+
   /**@name Construction */
   //@{
-    /**Create a context in which to execute a Lua script.
+    /**Create a context in which to execute a script.
      */
-    PLua();
+    PScriptLanguage();
 
-    /// Destroy the Lua script context.
-    ~PLua();
+    /// Destroy the script context.
+    ~PScriptLanguage();
   //@}
 
   /**@name Path addition functions */
   //@{
-    /**Load a Lua script from a file.
+    /**Load a script from a file.
       */
     virtual bool LoadFile(
       const PFilePath & filename  ///< Name of script file to load
-    );
+    ) = 0;
 
-    /** Load a Lua script text.
+    /** Load script text.
       */
     virtual bool LoadText(
       const PString & text  ///< Script text to load.
+    ) = 0;
+
+    /**Load script from a file (if exists) or assume is the actual script.
+      */
+    virtual bool Load(
+      const PString & script  ///< Name of script file or script itself to load
     );
 
     /**Run the script.
        If \p script is NULL or empty then the currently laoded script is
        executed. If \p script is an existing file, then that will be loaded
-       and executed. All other cases the string is laoded as direct script
+       and executed. All other cases the string is loaded as direct script
        text and executed.
       */
     virtual bool Run(
       const char * script = NULL
-    );
-
-    /**Create a table with optional metatable.
-       If the metatable does not exist it is created.
-
-       See class description for how \p name is parsed.
-      */
-    bool CreateTable(
-      const PString & name,   ///< Name of new table
-      const PString & metatable = PString::Empty() ///< Metatable to attach
-    );
-
-    /**Delete table.
-       Note this only applies to metatables and global tables. Tables
-       contained within other tables are garbage collected when the
-       enclosing table no longer reference it.
-      */
-    bool DeleteTable(
-      const PString & name,   ///< Name of table to delete
-      bool metaTable = false  ///< Table it a metatable
-    );
-
+    ) = 0;
 
     /**Get a variable in the script as a string value.
        See class description for how \p name is parsed.
       */
-    bool GetBoolean(
+    virtual bool GetBoolean(
       const PString & name  ///< Name of global
-    );
+    ) = 0;
 
     /**Set a variable in the script as a string value.
        See class description for how \p name is parsed.
       */
-    bool SetBoolean(
+    virtual bool SetBoolean(
       const PString & name, ///< Name of global
       bool value            ///< New value
-    );
+    ) = 0;
 
     /**Get a variable in the script as an integer value.
        See class description for how \p name is parsed.
       */
-    int GetInteger(
+    virtual int GetInteger(
       const PString & name  ///< Name of global
-    );
+    ) = 0;
 
     /**Set a variable in the script as an integer value.
        See class description for how \p name is parsed.
       */
-    bool SetInteger(
+    virtual bool SetInteger(
       const PString & name, ///< Name of global
       int value             ///< New value
-    );
+    ) = 0;
 
     /**Get a variable in the script as a number value.
        See class description for how \p name is parsed.
       */
-    double GetNumber(
+    virtual double GetNumber(
       const PString & name  ///< Name of global
-    );
+    ) = 0;
 
     /**Set a variable in the script as a number value.
        See class description for how \p name is parsed.
       */
-    bool SetNumber(
+    virtual bool SetNumber(
       const PString & name, ///< Name of global
       double value          ///< New value
-    );
+    ) = 0;
 
     /**Get a variable in the script as a string value.
        See class description for how \p name is parsed.
       */
-    PString GetString(
+    virtual PString GetString(
       const PString & name  ///< Name of global
-    );
+    ) = 0;
 
     /**Set a variable in the script as a string value.
        See class description for how \p name is parsed.
       */
-    bool SetString(
+    virtual bool SetString(
       const PString & name, ///< Name of global
       const char * value    ///< New value
-    );
+    ) = 0;
+
+    /// Individual Parameter in ParamVector.
+    /// Vector of parameters as used by Signature structure.
+    struct ParamVector : public vector<PVarType>
+    {
+      ParamVector(size_t sz = 0) : vector<PVarType>(sz) { }
+      void Push(void * state);
+      void Pop(void * state);
+    };
+
+    /// Signature of Lua function and callback.
+    struct Signature {
+      ParamVector m_arguments;
+      ParamVector m_results;
+    };
 
     /**Call a specific function in the script.
        The \p sigString indicates the types of the arguments and return values
@@ -203,45 +195,48 @@ class PLua : public PScriptLanguage
 
        @returns false if function does not exist.
       */
-    bool Call(
+    virtual bool Call(
       const PString & name,           ///< Name of function to execute.
       const char * sigString = NULL,  ///< Signature of arguments following
       ...
-    );
-    bool Call(
+    ) = 0;
+    virtual bool Call(
       const PString & name,       ///< Name of function to execute.
       Signature & signature ///< Signature of arguments following
-    );
-
+    ) = 0;
 
     typedef PNotifierTemplate<Signature &>  FunctionNotifier;
-    #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, PLua::Signature &)
 
-    /**Set a notifier as a Lua callable function.
+    /**Set a notifier as a script callable function.
        See class description for how \p name is parsed.
       */
-    bool SetFunction(
-      const PString & name,         ///< Name of function Lua script can call
+    virtual bool SetFunction(
+      const PString & name,         ///< Name of function script can call
       const FunctionNotifier & func ///< Notifier excuted
-    );
+    ) = 0;
+  //@}
+
+  /**@name member variables */
+  //@{
+    /// Rerturn true if script is successfully loaded.
+    virtual bool IsLoaded() const { return m_loaded; }
+
+    /// Get the last error text for an operation.
+    virtual const PString & GetLastErrorText() const { return m_lastErrorText; }
   //@}
 
   protected:
     /**Check for an error and set m_lastErrorText to error text.
       */
-    virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0);
+    virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0) = 0;
 
-    bool ParseVariableName(const PString & name, PStringArray & vars);
-    bool InternalGetVariable(const PString & name);
-    bool InternalSetVariable(const PString & name);
-    static int InternalCallback(lua_State * state);
-    int InternalCallback();
-
-    lua_State * m_lua;
+    bool m_loaded;
+    PString m_lastErrorText;
+    map<PString, FunctionNotifier> m_functions;
 };
 
 
-#endif // P_LUA
+//#endif // P_SCRIPT
 
-#endif  // PTLIB_LUA_H
+#endif  // PTLIB_SCRIPT_H
 
