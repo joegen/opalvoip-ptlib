@@ -861,7 +861,8 @@ PTLIB_NEW_OPTION(REGEX)
 dnl ########################################################################
 dnl check for dynamic library code (dlopen and friends)
 
-dnl MSWIN DLL Support,,P_DYNALINK
+dnl MSWIN_DISPLAY dll,DLL Support
+dnl MSWIN_DEFINE  dll,P_DYNALINK
 
 
 dnl #########################################################################
