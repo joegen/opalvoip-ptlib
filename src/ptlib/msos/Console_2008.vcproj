@@ -8328,6 +8328,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\script.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\shttpsvc.cxx"
 					>
 					<FileConfiguration
@@ -9688,6 +9692,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\rfc1155.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\script.h"
 					>
 				</File>
 				<File
