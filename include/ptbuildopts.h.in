@@ -555,6 +555,23 @@
 //
 
 #undef P_V8
+#undef P_V8_WIN64
+#undef P_V8_WIN32
+
+#if (defined(P_V8_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_V8_WIN32) && !defined(P_64BIT))
+  #define P_V8 1
+#endif
+
+#if defined(_MSC_VER) && defined(P_V8)
+  #pragma include_alias(<v8.h>, <@V8_DIR@/include/v8.h>)
+  
+  #ifdef _DEBUG
+    #define P_V8_LIBRARY "@V8_DIR@/build/Debug/v8_base.lib"
+  #else
+    #define P_V8_LIBRARY "@V8_DIR@/build/Release/v8_base.lib"
+  #endif
+#endif
 
 /////////////////////////////////////////////////
 //
