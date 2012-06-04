@@ -670,10 +670,8 @@
 // SDL toolkit
 //
 
-#if P_VIDEO
-  #ifndef _WIN32_WCE
-    #undef P_SDL
-  #endif
+#if P_VIDEO && !P_64BIT && !defined(_WIN32_WCE)
+  #undef P_SDL
 #endif
 
 #if defined(_MSC_VER) && P_SDL
@@ -761,6 +759,7 @@
 //
 
 #undef P_MEDIALIB
+#undef P_TINY_JPEG
 
 
 /////////////////////////////////////////////////
