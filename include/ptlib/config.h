@@ -370,6 +370,44 @@ class PConfig : public PObject
     );
 
 
+    /* Get an enum variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       @return enum value of the variable.
+     */
+    template <typename Enumeration>
+    Enumeration GetEnum(
+      const PString & key,      ///< The key name for the variable.
+      Enumeration dflt          ///< Default value for the variable.
+    ) const { return (Enumeration)GetInteger(key, dflt); }
+    /* Get an enum variable determined by the key in the section. */
+    template <typename Enumeration>
+    Enumeration GetEnum(
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      Enumeration dflt          ///< Default value for the variable.
+    ) const { return (Enumeration)GetInteger(section, key, dflt); }
+
+    /** Set an enum variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       The value is always formatted as a signed number with no leading or
+       trailing blanks.
+     */
+    template <typename Enumeration>
+    void SetEnum(
+      const PString & key,      ///< The key name for the variable.
+      Enumeration value         ///< New value to set for the variable.
+    ) { SetInteger(key, value); }
+    /** Set an enum variable determined by the key in the section. */
+    template <typename Enumeration>
+    void SetEnum(
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      Enumeration value         ///< New value to set for the variable.
+    ) { SetInteger(section, key, value); }
+
+
     /** Get a 64 bit integer variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
