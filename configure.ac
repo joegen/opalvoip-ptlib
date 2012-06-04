@@ -1198,9 +1198,10 @@ PTLIB_NEW_OPTION(LUA)
 
 dnl ########################################################################
 dnl look for V8 library
-dnl MSWIN_DISPLAY    lua,V8 Javascript interpreter
-dnl MSWIN_CHECK_FILE lua,include\v8.h,P_V8_WIN32=1
-dnl MSWIN_DIR_SYMBOL lua,V8_DIR
+dnl MSWIN_DISPLAY    v8,V8 Javascript interpreter
+dnl MSWIN_CHECK_FILE v8,include\v8.h,P_V8_WIN32=1
+dnl MSWIN_DIR_SYMBOL v8,V8_DIR
+dnl MSWIN_CHECK_DIR  v8,..\external\v8
 
 AC_ARG_ENABLE(
    [v8],
