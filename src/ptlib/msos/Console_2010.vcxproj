@@ -278,6 +278,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ptclib\script.cxx" />
     <ClCompile Include="..\..\ptclib\ssdp.cxx" />
     <ClCompile Include="..\..\ptclib\vcard.cxx" />
     <ClCompile Include="assert.cxx">
@@ -654,6 +655,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\ptclib\script.h" />
     <ClInclude Include="..\..\..\include\ptclib\pnat.h" />
     <ClInclude Include="..\..\..\include\ptclib\ssdp.h" />
     <ClInclude Include="..\..\..\include\ptclib\vcard.h" />
