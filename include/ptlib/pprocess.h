@@ -313,8 +313,8 @@ class PProcess : public PThread
       PThread & thread
     );
 
-    /**Callback for when a ^C (SIGINT) or termination request (SIGTERM) is
-       received by process.
+    /**Callback for when a ^C (SIGINT), hangup (SIGHUP) or termination request
+       (SIGTERM) is received by process.
 
        Note this function is called asynchronously and there may be many
        limitations on what can and cannot be done depending on the underlying
