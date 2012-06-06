@@ -532,14 +532,11 @@ void PProcess::PXOnAsyncSignal(int sig)
 
   switch (sig) {
     case SIGINT:
-    case SIGTERM:
-      if (OnInterrupt(sig == SIGTERM))
-        break;
-      // Do next case
-
     case SIGHUP:
-      raise(SIGKILL);
-      break;
+    case SIGTERM:
+      if (!OnInterrupt(sig == SIGTERM))
+        raise(SIGKILL);
+      // Do next case
     default:
       return;
   }

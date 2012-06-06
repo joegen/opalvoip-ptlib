@@ -642,6 +642,7 @@ void PServiceProcess::PXOnSignal(int sig)
   PProcess::PXOnSignal(sig);
   switch (sig) {
     case SIGINT :
+    case SIGHUP :
     case SIGTERM :
       Terminate();
       break;
