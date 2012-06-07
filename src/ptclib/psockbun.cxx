@@ -48,6 +48,8 @@ PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PInterfaceMonitor);
 #define UDP_BUFFER_SIZE 8192
 #endif
 
+#define PTraceModule() "MonSock"
+
 #define new PNEW
 
 
@@ -118,7 +120,7 @@ void PInterfaceMonitor::Start()
   if (m_changedDetector == NULL) {
     m_interfacesMutex.Wait();
     PIPSocket::GetInterfaceTable(m_interfaces);
-    PTRACE(3, "IfaceMon\tInitial interface list:\n" << setfill('\n') << m_interfaces << setfill(' '));
+    PTRACE(3, "IfaceMon", "Initial interface list:\n" << setfill('\n') << m_interfaces << setfill(' '));
     m_interfacesMutex.Signal();
 
     if (m_runMonitorThread) {
@@ -136,7 +138,7 @@ void PInterfaceMonitor::Stop()
 
   // shutdown the update thread
   if (m_changedDetector != NULL) {
-    PTRACE(4, "IfaceMon\tAwaiting thread termination");
+    PTRACE(4, "IfaceMon", "Awaiting thread termination");
 
     m_changedDetector->Cancel();
 
@@ -219,7 +221,7 @@ void PInterfaceMonitor::RefreshInterfaceList()
   PIPSocket::InterfaceTable oldInterfaces = m_interfaces;
   m_interfaces = newInterfaces;
 
-  PTRACE(3, "IfaceMon\tInterface change detected, new list:\n" << setfill('\n') << newInterfaces << setfill(' '));
+  PTRACE(3, "IfaceMon", "Interface change detected, new list:\n" << setfill('\n') << newInterfaces << setfill(' '));
   
   m_interfacesMutex.Signal();
 
@@ -250,13 +252,13 @@ void PInterfaceMonitor::RefreshInterfaceList()
 
 void PInterfaceMonitor::UpdateThreadMain()
 {
-  PTRACE(4, "IfaceMon\tStarted interface monitor thread.");
+  PTRACE(4, "IfaceMon", "Started interface monitor thread.");
 
   // check for interface changes periodically
   while (m_changedDetector->Wait(m_refreshInterval))
     RefreshInterfaceList();
 
-  PTRACE(4, "IfaceMon\tFinished interface monitor thread.");
+  PTRACE(4, "IfaceMon", "Finished interface monitor thread.");
 }
 
 
@@ -490,7 +492,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
     if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
       if (natMethod->CreateSocket(info.socket, binding, localPort)) {
         info.socket->PUDPSocket::GetLocalAddress(address, port);
-        PTRACE(4, "MonSock\tCreated bundled UDP socket via " << natMethod->GetName()
+        PTRACE(4, "Created bundled UDP socket via " << natMethod->GetName()
                << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
         return true;
       }
@@ -500,18 +502,18 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
 
   info.socket = new PUDPSocket(localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
   if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
-    PTRACE(4, "MonSock\tCreated bundled UDP socket " << binding << ':' << info.socket->GetPort());
+    PTRACE(4, "Created bundled UDP socket " << binding << ':' << info.socket->GetPort());
     int sz = 0;
     if (info.socket->GetOption(SO_RCVBUF, sz) && sz < UDP_BUFFER_SIZE) {
       if (!info.socket->SetOption(SO_RCVBUF, UDP_BUFFER_SIZE)) {
-        PTRACE(1, "MonSock\tSetOption(SO_RCVBUF) failed: " << info.socket->GetErrorText());
+        PTRACE(1, "SetOption(SO_RCVBUF) failed: " << info.socket->GetErrorText());
       }
     }
 
     return true;
   }
 
-  PTRACE(1, "MonSock\tCould not listen on "
+  PTRACE(1, "Could not listen on "
          << binding << ':' << localPort
          << " - " << info.socket->GetErrorText());
   delete info.socket;
@@ -529,9 +531,9 @@ bool PMonitoredSockets::DestroySocket(SocketInfo & info)
 
 #if PTRACING
   if (result)
-    PTRACE(4, "MonSock\tClosed UDP socket " << info.socket);
+    PTRACE(4, "Closed UDP socket " << info.socket);
   else
-    PTRACE(2, "MonSock\tClose failed for UDP socket " << info.socket);
+    PTRACE(2, "Close failed for UDP socket " << info.socket);
 #endif
 
   // This is pretty ugly, but needed to make sure multi-threading doesn't crash
@@ -542,12 +544,12 @@ bool PMonitoredSockets::DestroySocket(SocketInfo & info)
     if (!LockReadWrite())
       return false;
     if (--failSafe == 0) {
-      PTRACE(1, "MonSock\tRead thread break for UDP socket " << info.socket << " taking too long.");
+      PTRACE(1, "Read thread break for UDP socket " << info.socket << " taking too long.");
       break;
     }
   }
 
-  PTRACE(4, "MonSock\tDeleting UDP socket " << info.socket);
+  PTRACE(4, "Deleting UDP socket " << info.socket);
   delete info.socket;
   info.socket = NULL;
 
@@ -637,12 +639,12 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
   switch (param.m_errorNumber) {
     case ECONNRESET :
     case ECONNREFUSED :
-      PTRACE(2, "MonSock\tUDP Port on remote not ready.");
+      PTRACE(2, "UDP Port on remote not ready.");
       param.m_errorCode = PChannel::NoError;
       return;
 
     case EMSGSIZE :
-      PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << param.m_length << " bytes.");
+      PTRACE(2, "Read UDP packet too large for buffer of " << param.m_length << " bytes.");
       param.m_errorCode = PChannel::BufferTooSmall;
       return;
 
@@ -653,7 +655,7 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
       return;
   }
 
-  PTRACE(1, "MonSock\tSocket read UDP error ("
+  PTRACE(1, "Socket read UDP error ("
          << socket->GetErrorNumber(PChannel::LastReadError) << "): "
          << socket->GetErrorText(PChannel::LastReadError));
 }
@@ -664,7 +666,7 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
   // Assume is already locked
 
   if (inUse) {
-    PTRACE2(2, &bundle, "MonSock\tCannot read from multiple threads.");
+    PTRACE(2, &bundle, NULL, "Cannot read from multiple threads.");
     param.m_errorCode = PChannel::DeviceInUse;
     return;
   }
@@ -869,7 +871,7 @@ PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
   , m_fixedInterface(fixedInterface)
   , m_ipVersion(ipVersion)
 {
-  PTRACE(4, "MonSock\tCreated socket bundle for "
+  PTRACE(4, "Created socket bundle for "
          << (fixedInterface.IsEmpty() ? "all" : "fixed")
          << (ipVersion != 4 ? ipVersion != 6 ? " " : " IPv6 " : " IPv4 " )
          << "interface" << (fixedInterface.IsEmpty() ? "s." : ": ") << fixedInterface);
@@ -961,12 +963,12 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   SplitInterfaceDescription(iface, binding, name);
 
   if (!m_fixedInterface.IsEmpty() && m_fixedInterface != name) {
-    PTRACE(4, "MonSock\tInterface \"" << iface << "\" is not on \"" << m_fixedInterface << '"');
+    PTRACE(4, "Interface \"" << iface << "\" is not on \"" << m_fixedInterface << '"');
     return;
   }
 
   if (m_ipVersion != 0 && binding.GetVersion() != m_ipVersion) {
-    PTRACE(4, "MonSock\tInterface \"" << iface << "\" is not IPv" << m_ipVersion);
+    PTRACE(4, "Interface \"" << iface << "\" is not IPv" << m_ipVersion);
     return;
   }
 
@@ -1034,7 +1036,7 @@ void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
 
       for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
         if (iter->second.inUse) {
-          PTRACE(2, "MonSock\tCannot read from multiple threads.");
+          PTRACE(2, "Cannot read from multiple threads.");
           UnlockReadWrite();
           param.m_errorCode = PChannel::DeviceInUse;
           return;
@@ -1074,7 +1076,7 @@ void PMonitoredSocketBundle::OnAddInterface(const InterfaceEntry & entry)
   // Already locked
   if (opened) {
     OpenSocket(MakeInterfaceDescription(entry));
-    PTRACE(3, "MonSock\tUDP socket bundle has added interface " << entry);
+    PTRACE(3, "UDP socket bundle has added interface " << entry);
     interfaceAddedSignal.Close();
   }
 }
@@ -1085,7 +1087,7 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
   // Already locked
   if (opened) {
     CloseSocket(m_socketInfoMap.find(MakeInterfaceDescription(entry)));
-    PTRACE(3, "MonSock\tUDP socket bundle has removed interface " << entry);
+    PTRACE(3, "UDP socket bundle has removed interface " << entry);
   }
 }
 
@@ -1096,7 +1098,7 @@ PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, boo
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
   , m_interface(theInterface)
 {
-  PTRACE(4, "MonSock\tCreated monitored socket for interface " << theInterface);
+  PTRACE(4, "Created monitored socket for interface " << theInterface);
 }
 
 
@@ -1131,7 +1133,7 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
   localPort = port;
 
   if (!m_entry.GetAddress().IsValid() && !GetInterfaceInfo(m_interface, m_entry)) {
-    PTRACE(3, "MonSock\tNot creating socket as interface \"" << m_entry.GetName() << "\" is  not up.");
+    PTRACE(3, "Not creating socket as interface \"" << m_entry.GetName() << "\" is  not up.");
     return true; // Still say successful though
   }
 
@@ -1211,7 +1213,7 @@ void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
       m_entry = InterfaceEntry();
     else {
       interfaceAddedSignal.Close();
-      PTRACE(3, "MonSock\tBound UDP socket UP event on interface " << m_entry);
+      PTRACE(3, "Bound UDP socket UP event on interface " << m_entry);
     }
   }
 }
@@ -1224,7 +1226,7 @@ void PSingleMonitoredSocket::OnRemoveInterface(const InterfaceEntry & entry)
   if (entry != m_entry)
     return;
 
-  PTRACE(3, "MonSock\tBound UDP socket DOWN event on interface " << m_entry);
+  PTRACE(3, "Bound UDP socket DOWN event on interface " << m_entry);
   m_entry = InterfaceEntry();
   DestroySocket(m_info);
 }

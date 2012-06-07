@@ -278,7 +278,7 @@ An application could change this pointer to a <i>std::ofstream</i> variable of
 // Debug and tracing
 
 #ifndef PTRACING
-#define PTRACING 1
+#define PTRACING 2
 #endif
 
 #if PTRACING
@@ -463,8 +463,27 @@ public:
     unsigned level,         ///< Log level for output
     const char * fileName,  ///< Filename of source file being traced
     int lineNum,            ///< Line number of source file being traced.
-    const PObject * instance = NULL ///< Instance for object logging occurred in
+    const PObject * instance = NULL,  ///< Instance for object logging occurred in
+    const char * module = NULL        ///< Module or subsection string
   );
+
+  static ostream & Begin(
+    unsigned level,           ///< Log level for output
+    const char * fileName,    ///< Filename of source file being traced
+    int lineNum,              ///< Line number of source file being traced.
+    const char * module,      ///< Module or subsection string
+    const PObject * instance, ///< Instance for object logging occurred in
+    const char * defModule
+  ) { return Begin(level, fileName, lineNum, instance, module != NULL ? module : defModule); }
+
+  static ostream & Begin(
+    unsigned level,           ///< Log level for output
+    const char * fileName,    ///< Filename of source file being traced
+    int lineNum,              ///< Line number of source file being traced.
+    const PObject * instance, ///< Instance for object logging occurred in
+    const PObject * defInstance,
+    const char * module       ///< Module or subsection string
+  ) { return Begin(level, fileName, lineNum, instance != NULL ? instance : defInstance, module); }
 
   /** End a trace output.
   If the trace stream output is used outside of the provided macros, the
@@ -541,50 +560,120 @@ This macro outputs a trace of a source file line execution.
       PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End; \
     else (void)0
 
+
+
+#define PTRACE_INTERNAL(level, condition, args, ...) \
+    if (PTrace::CanTrace(level) condition) \
+      PTrace::Begin(level, __FILE__, __LINE__, __VA_ARGS__) << args << PTrace::End; \
+    else (void)0
+
+#define PTRACE_NO_CONDITION
+
+
+#define PTRACE_PART1(narg, args) PTRACE_PART2(narg, args)
+#define PTRACE_PART2(narg, args) PTRACE_ARG_##narg args
+
+#define PTRACE_ARG_4(level, object, module, args) \
+        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, object, module)
+
+#define PTRACE_ARG_3(level, objectOrModule, args) \
+        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, objectOrModule, PTraceObjectInstance(), PTraceModule())
+
+#define PTRACE_ARG_2(level, args) \
+        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, PTraceObjectInstance(), PTraceModule())
+
+
+#define PTRACE_IF_PART1(narg, args) PTRACE_IF_PART2(narg, args)
+#define PTRACE_IF_PART2(narg, args) PTRACE_IF_ARG_##narg args
+
+#define PTRACE_IF_ARG_5(level, condition, object, module, args) \
+        PTRACE_INTERNAL(level, && (condition), args, object, module)
+
+#define PTRACE_IF_ARG_4(level, condition, objectOrModule, args) \
+        PTRACE_INTERNAL(level, && (condition), args, objectOrModule, PTraceObjectInstance(), PTraceModule())
+
+#define PTRACE_IF_ARG_3(level, condition, args) \
+        PTRACE_INTERNAL(level, && (condition), args, PTraceObjectInstance(), PTraceModule())
+
+
+#define PTRACE_BEGIN_PART1(narg, args) PTRACE_BEGIN_PART2(narg, args)
+#define PTRACE_BEGIN_PART2(narg, args) PTRACE_BEGIN_ARG_##narg args
+
+#define PTRACE_BEGIN_ARG_3(level, object, module) \
+      PTrace::Begin(level, __FILE__, __LINE__, object, module)
+
+#define PTRACE_BEGIN_ARG_2(level, objectOrModule) \
+      PTrace::Begin(level, __FILE__, __LINE__, objectOrModule, PTraceObjectInstance(), PTraceModule())
+
+#define PTRACE_BEGIN_ARG_1(level) \
+      PTrace::Begin(level, __FILE__, __LINE__, PTraceObjectInstance(), PTraceModule())
+
+
+#define PTRACE_NARG(...) PTRACE_NARG_PART1(PTRACE_NARG_PART2(__VA_ARGS__,4,3,2,1,0))
+#define PTRACE_NARG_PART1(arg) arg
+#define PTRACE_NARG_PART2(_1,_2,_3,_4,N,...) N
+
+// Backward compatibility
+#define PTRACE2(level, object, args) \
+        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, object, PTraceModule())
+#define PTRACE_IF2(level, condition, object, args) \
+        PTRACE_INTERNAL(level, && (condition), args, object, PTraceModule())
+
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
 output operators. The output is only made if the trace level set by the
-SetLevel() function is greater than or equal to the \p level argument.
+SetLevel() function is greater than or equal to the first argument.
+
+There can be variable numbers of arguments to this macro. Its full form is:
+
+  PTRACE(level, instance, module, stream)
+
+The level is the level for this trace log, instance is a PObject instance to
+generate a context for the trace, module is a string representing a subsytem
+for filtering and stream is a standard C++ stream output expression.
+
+Both instance and module can by NULL, or absent. If only one of instance or
+module is present it is determined by its type (PObject * or char *) as to
+which it is.
+
+The stream is only evaluated if level is below the PTrace::GetLevel()
+threshold, so do not expect any functions to always be executed.
+
+Note: If this is used with a static function of a PObject descendant there
+will be an issue with the default usage of PTraceObjectInstance(). To avoid
+the issue you will need to make sure the PTRACE macro has four parameters, as
+in the full form descibed above.
 */
-#define PTRACE2(level, obj, args) \
-    if (PTrace::CanTrace(level)) \
-      PTrace::Begin(level, __FILE__, __LINE__, obj) << args << PTrace::End; \
-    else (void)0
+#define PTRACE(...) PTRACE_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
 
 /** Output trace on condition.
-This macro outputs a trace of any information needed, using standard stream
-output operators. The output is only made if the trace level set by the
-SetLevel() function is greater than or equal to the <code>level</code> argument
-and the conditional is true. Note the conditional is only evaluated if the
-trace level is sufficient.
-*/
-#define PTRACE_IF2(level, cond, obj, args) \
-    if ((PTrace::CanTrace(level) && (cond))) \
-      PTrace::Begin(level, __FILE__, __LINE__, obj) << args << PTrace::End; \
-    else (void)0
+This macro conditionally outputs a trace of any information needed.
 
-#if PTRACING==2
-/** Output trace.
-This macro outputs a trace of any information needed, using standard stream
-output operators. The output is only made if the trace level set by the
-SetLevel() function is greater than or equal to the \p level argument.
-*/
-#define PTRACE(level, args) PTRACE2(level, PTraceObjectInstance(), args)
+This macro has variable arguments, and is of the form:
 
-/** Output trace on condition.
-This macro outputs a trace of any information needed, using standard stream
-output operators. The output is only made if the trace level set by the
-SetLevel() function is greater than or equal to the <code>level</code> argument
-and the conditional is true. Note the conditional is only evaluated if the
-trace level is sufficient.
+  PTRACE_IF(level, condition, instance, module, stream)
+
+Note condition is only evaluated if level is below the PTrace::GetLevel()
+threshold, and stream is only evaluated if condition is evaluated to true.
+
+See PTRACE() for more information on level, instance, module and stream.
 */
-#define PTRACE_IF(level, cond, args) PTRACE_IF2(level, cond, PTraceObjectInstance(), args)
-#else
-#define PTRACE(level, args) PTRACE2(level, NULL, args)
-#define PTRACE_IF(level, cond, args) PTRACE_IF2(level, cond, NULL, args)
-#endif
+#define PTRACE_IF(...) PTRACE_IF_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
+
+/** Begin output trace.
+This macro returns a ostream & for trace output.
+
+This macro has variable arguments, and is of the form:
+
+  PTRACE_BEGIN(level, instance, module)
+
+See PTRACE() for more information on level, instance, module.
+*/
+#define PTRACE_BEGIN(...) PTRACE_BEGIN_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
+
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
+__inline const char * PTraceModule() { return NULL; }
 
 /**Propagate PTRACE context identifier in an object from another.
    The context identifier can group objects together with a single
@@ -1168,7 +1257,7 @@ default comparison operations, simple stream I/O and serialisation support.
 */
 class PObject {
 
-#if PTRACING
+#if PTRACING==2
   protected:
     unsigned m_traceContextIdentifier;
   public:
@@ -1180,14 +1269,14 @@ class PObject {
     void GetTraceContextIdentifier(PObject * obj) { if (obj != NULL) obj->m_traceContextIdentifier = m_traceContextIdentifier; }
     void SetTraceContextIdentifier(const PObject & obj) { m_traceContextIdentifier = obj.m_traceContextIdentifier; }
     void SetTraceContextIdentifier(const PObject * obj) { if (obj != NULL) m_traceContextIdentifier = obj->m_traceContextIdentifier; }
-#endif
+#endif // PTRACING==2
 
   protected:
     /** Constructor for PObject, made protected so cannot ever create one on
        its own.
      */
     PObject()
-#if PTRACING
+#if PTRACING==2
       : m_traceContextIdentifier(0)
 #endif
     { }

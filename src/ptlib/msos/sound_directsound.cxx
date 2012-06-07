@@ -35,6 +35,8 @@
 
 #if P_DIRECTSOUND
 
+#define PTraceModule() "dsound"
+
 #include <ptlib/pprocess.h>
 #include <algorithm>
 
@@ -239,7 +241,7 @@ static HRESULT GetDefaultDeviceGUID(const PCaselessString & name, PSoundChannelD
   else {
     defaultGUID = (direction == PSoundChannelDirectSound::Player)? &DSDEVID_DefaultPlayback  : &DSDEVID_DefaultCapture;
     PTRACE_IF(4, name != "Default audio" && name != "Default",
-              "dsound\tOpen " << PSoundChannelDirectSound::GetDirectionText(direction)
+              "Open " << PSoundChannelDirectSound::GetDirectionText(direction)
               << ": device \"" << name << "\" not found, substituting default");
   }
   return GetDeviceID(defaultGUID, &guid);
@@ -296,7 +298,7 @@ PSoundChannelDirectSound::~PSoundChannelDirectSound ()
   if (m_triggerEvent[SOUNDEVENT_ABORT] != NULL)
     CloseHandle(m_triggerEvent[SOUNDEVENT_ABORT]);
 
-  PTRACE(4, "dsound\t" << GetDirectionText() << " destroyed");
+  PTRACE(4, GetDirectionText() << " destroyed");
 }
 
 
@@ -311,17 +313,17 @@ PString PSoundChannelDirectSound::GetDefaultDevice (Directions dir) // static
   GUID deviceGUID;
   HRESULT result = GetDeviceID((dir == Player)? &DSDEVID_DefaultPlayback  : &DSDEVID_DefaultCapture, &deviceGUID);
   if (result != S_OK) {
-    PTRACE2(4, NULL, "dsound\tCould not find default device: " << GetErrorText(Miscellaneous, result));
+    PTRACE(4, NULL, NULL, "Could not find default device: " << GetErrorText(Miscellaneous, result));
     return PString();
   }
   DSoundDeviceInfoVector devices;
   result = GetFilteredDSoundDeviceInfo(deviceGUID, dir, PString::Empty(), -1, devices);
   if (result != S_OK) {
-    PTRACE2(4, NULL, "dsound\tOpen: Could not retrieve device information: " << GetErrorText(Miscellaneous, result));
+    PTRACE(4, NULL, NULL, "Open: Could not retrieve device information: " << GetErrorText(Miscellaneous, result));
     return PString();
   }
   if (devices.size() == 0) {
-    PTRACE2(4, NULL, "dsound\tOpen: Default device not found");
+    PTRACE(4, NULL, NULL, "Open: Default device not found");
     return PString();
   }
   return devices[0].GetDescription();
@@ -335,7 +337,7 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir) // static
   DSoundDeviceInfoVector devices;
   HRESULT result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
   if (result != S_OK) {
-    PTRACE2(4, NULL, "dsound\tCould not get device list: " << GetErrorText(Miscellaneous, result));
+    PTRACE(4, NULL, NULL, "Could not get device list: " << GetErrorText(Miscellaneous, result));
     return PString();
   }
   PStringArray names;
@@ -381,7 +383,7 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
   HRESULT result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
   if (result != S_OK) {
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Could not get device list: " << GetErrorText());
+    PTRACE(4, "Open" << GetDirectionText() << ": Could not get device list: " << GetErrorText());
     return false;
   }
   // validate the device name, use default if bad
@@ -391,17 +393,17 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
     result = GetDefaultDeviceGUID(m_deviceName, activeDirection, deviceGUID);
     if (result != S_OK) {
       SetErrorValues(Miscellaneous, result);
-      PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Could not get default device ID: " << GetErrorText());
+      PTRACE(4, "Open" << GetDirectionText() << ": Could not get default device ID: " << GetErrorText());
       return false;
     }
     deviceInfo = find(devices.begin(), devices.end(), deviceGUID);
     if (deviceInfo == devices.end()) {
-      PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Could not find default device");
+      PTRACE(4, "Open" << GetDirectionText() << ": Could not find default device");
       return SetErrorValues(NotFound, HRESULT_FROM_WIN32(ERROR_NOT_FOUND));
     }
     m_deviceName = deviceInfo->GetDescription();
   }
-  PTRACE(4, "dsound\tOpening " << GetDirectionText() << " device \"" << m_deviceName << '"');
+  PTRACE(4, "Opening " << GetDirectionText() << " device \"" << m_deviceName << '"');
 
   SetFormat(numChannels, sampleRate, bitsPerSample);
 
@@ -446,15 +448,15 @@ PBoolean PSoundChannelDirectSound::Close () // public
 
   switch (activeDirection) {
   case Player:
-    PTRACE(4, "dsound\tClosing Playback device \"" << m_deviceName << '"');
+    PTRACE(4, "Closing Playback device \"" << m_deviceName << '"');
     ClosePlayback();
-    PTRACE(4, "dsound\tPlayback closed: wrote " << GetSamplesMoved() << ", played " << GetSamplesBuffered() << ", lost " <<  GetSamplesLost() << " samples");
+    PTRACE(4, "Playback closed: wrote " << GetSamplesMoved() << ", played " << GetSamplesBuffered() << ", lost " <<  GetSamplesLost() << " samples");
     break;
 
   case Recorder:
-    PTRACE(4, "dsound\tClosing Recording device \"" << m_deviceName << '"');
+    PTRACE(4, "Closing Recording device \"" << m_deviceName << '"');
     CloseCapture();
-    PTRACE(4, "dsound\tRecording closed: captured " << GetSamplesBuffered() << ", read " << GetSamplesMoved() << ", lost " <<  GetSamplesLost() << " samples");
+    PTRACE(4, "Recording closed: captured " << GetSamplesBuffered() << ", read " << GetSamplesMoved() << ", lost " <<  GetSamplesLost() << " samples");
     break;
   }
   CloseMixer();
@@ -506,7 +508,7 @@ PBoolean PSoundChannelDirectSound::SetFormat (unsigned numChannels, // public
   else // Closed, no buffers yet
     SetWaveFormat(m_waveFormat, numChannels, sampleRate, bitsPerSample);
 
-  PTRACE(4, "dsound\t" << GetDirectionText() << " SetFormat:"
+  PTRACE(4, GetDirectionText() << " SetFormat:"
     << " Channels " << m_waveFormat.nChannels
     << " Rate " << m_waveFormat.nSamplesPerSec
     << " Bits " << m_waveFormat.wBitsPerSample);
@@ -526,7 +528,7 @@ PBoolean PSoundChannelDirectSound::SetBufferSections (PINDEX size, PINDEX count)
 PBoolean PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count) // public
 {
   if (size < DSBSIZE_MIN || size > DSBSIZE_MAX) {
-    PTRACE(4, "dsound\t" << GetDirectionText() << " SetBuffers: invalid buffer size " << size << " bytes");
+    PTRACE(4, GetDirectionText() << " SetBuffers: invalid buffer size " << size << " bytes");
     return SetErrorValues(BadParameter, E_INVALIDARG);
   }
   if (IsOpen()) {
@@ -550,8 +552,8 @@ PBoolean PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count) // pub
 
 #if PTRACING
   if (PTrace::CanTrace(4)) {
-    ostream & stream = PTrace::Begin(4, __FILE__, __LINE__);
-    stream << "dsound\t" << GetDirectionText() << " SetBuffers: count " << m_bufferSectionCount << " x size " << m_bufferSectionSize << " = " << m_bufferSize << " bytes";
+    ostream & stream = PTRACE_BEGIN(4);
+    stream << GetDirectionText() << " SetBuffers: count " << m_bufferSectionCount << " x size " << m_bufferSectionSize << " = " << m_bufferSize << " bytes";
     if (m_waveFormat.nAvgBytesPerSec)
       stream << " = " << m_bufferSize * 1000 / m_waveFormat.nAvgBytesPerSec << " ms";
     stream << PTrace::End;
@@ -662,7 +664,7 @@ PBoolean PSoundChannelDirectSound::OpenPlayback (LPCGUID deviceId) // private
   HRESULT result = DirectSoundCreate8(deviceId, &m_playbackDevice, NULL);
   if (result != S_OK) {
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpen Playback: Could not create device: " << GetErrorText());
+    PTRACE(4, "Open Playback: Could not create device: " << GetErrorText());
     return false;
   }
   HWND window = GetForegroundWindow();
@@ -672,7 +674,7 @@ PBoolean PSoundChannelDirectSound::OpenPlayback (LPCGUID deviceId) // private
   result = m_playbackDevice->SetCooperativeLevel(window, DSSCL_PRIORITY);
   if (result != S_OK) {
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpen Playback: Could not set cooperative level: " << GetErrorText());
+    PTRACE(4, "Open Playback: Could not set cooperative level: " << GetErrorText());
 	ClosePlayback();
     return false;
   }
@@ -704,7 +706,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   HRESULT result = m_playbackDevice->CreateSoundBuffer(&bufferDescription, &m_playbackBuffer, NULL); 
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpenPlaybackBuffer: CreateSoundBuffer fail: " << GetErrorText());
+    PTRACE(4, "OpenPlaybackBuffer: CreateSoundBuffer fail: " << GetErrorText());
 	ClosePlayback();
     return false;
   } 
@@ -712,15 +714,15 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   result = m_playbackBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID *) &notify);
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpenPlaybackBuffer: notify interface query fail: " << GetErrorText());
+    PTRACE(4, "OpenPlaybackBuffer: notify interface query fail: " << GetErrorText());
 	ClosePlayback();
     return false;
   }
-  PTRACE(4, "dsound\tOpen Playback: Setting up notification for " << m_bufferSectionCount << " blocks of " << m_bufferSectionSize << " bytes");
+  PTRACE(4, "Open Playback: Setting up notification for " << m_bufferSectionCount << " blocks of " << m_bufferSectionSize << " bytes");
   DSBPOSITIONNOTIFY * position = new DSBPOSITIONNOTIFY[m_bufferSectionCount];
   if (position == 0) {
     SetErrorValues(NoMemory, E_OUTOFMEMORY);
-    PTRACE(4, "dsound\tOpenPlaybackBuffer: notify allocation fail");
+    PTRACE(4, "OpenPlaybackBuffer: notify allocation fail");
     notify->Release();
 	ClosePlayback();
     return false;
@@ -735,7 +737,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   notify->Release();
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpenPlaybackBuffer: Notify interface query fail: " << GetErrorText());
+    PTRACE(4, "OpenPlaybackBuffer: Notify interface query fail: " << GetErrorText());
 	ClosePlayback();
     return false;
   }
@@ -763,7 +765,7 @@ PBoolean PSoundChannelDirectSound::CheckPlayBuffer (int & notification) // priva
   PWaitAndSignal mutex(m_bufferMutex); // make Close & SetBuffers wait
 
   if (!m_playbackBuffer) { // closed
-    PTRACE(4, "dsound\tPlayback closed while checking");
+    PTRACE(4, "Playback closed while checking");
     return false;
   }               // Write is ahead of Play, DirectSound is playing data from Play to Write - do not put data between them.
                   // we can write ahead of Write, from m_movePos to PlayPos
@@ -800,7 +802,7 @@ PBoolean PSoundChannelDirectSound::CheckPlayBuffer (int & notification) // priva
   { // Write has been delayed so much that card is playing from empty or old space
     unsigned underruns = (unsigned)(m_dsMoved - (m_moved + m_lost));
     m_lost += underruns;
-    PTRACE(3, "dsound\tPlayback underrun: wrote " << GetSamplesMoved() << " played " << GetSamplesBuffered() << " replayed " << underruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
+    PTRACE(3, "Playback underrun: wrote " << GetSamplesMoved() << " played " << GetSamplesBuffered() << " replayed " << underruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
     notification = SOUNDNOTIFY_UNDERRUN;
     m_movePos = writePos;
   }
@@ -810,7 +812,7 @@ PBoolean PSoundChannelDirectSound::CheckPlayBuffer (int & notification) // priva
     return true;
 
   // some space, but not enough yet
-  PTRACE(6, "dsound\tPlayer buffer overrun, waiting for space");
+  PTRACE(6, "Player buffer overrun, waiting for space");
   notification = SOUNDNOTIFY_OVERRUN;
   return false;
 }
@@ -828,7 +830,7 @@ PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree () // protected
       m_notifier(*this, notification); // can close here!
 
     if (!m_playbackBuffer) { // closed
-      PTRACE(4, "dsound\tPlayback closed while writing");
+      PTRACE(4, "Playback closed while writing");
       return SetErrorValues(NotOpen, EBADF, LastWriteError);
     }
     if (isSpaceAvailable) // Ok to write
@@ -838,7 +840,7 @@ PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree () // protected
 
   { // Aborted
     PWaitAndSignal mutex(m_bufferMutex);
-    PTRACE(4, "dsound\tPlayback write abort");
+    PTRACE(4, "Playback write abort");
     if (m_playbackBuffer != NULL) { // still open
       m_playbackBuffer->Stop();
       CheckPlayBuffer(notification);
@@ -856,7 +858,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
     lastWriteCount = 0;
     if (!m_playbackBuffer) { // check this before direction=Closed causes assertion
       SetErrorValues(NotOpen, EBADF, LastWriteError);
-      PTRACE(4, "dsound\tWrite fail: Device closed");
+      PTRACE(4, "Write fail: Device closed");
       return false;
     }
   }                                     // unlock to allow Abort while waiting for buffer
@@ -882,7 +884,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
       }
       if (FAILED(Result)) {
         SetErrorValues(Miscellaneous, Result, LastWriteError);
-        PTRACE(1, "dsound\tWrite failure: " << GetErrorText() << " len " << len << " pos " << m_movePos);
+        PTRACE(1, "Write failure: " << GetErrorText() << " len " << len << " pos " << m_movePos);
         return false;
       }
       // Copy supplied buffer into locked DirectSound memory
@@ -892,7 +894,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
 
       m_playbackBuffer->Unlock(pointer1, length1, pointer2, length2);
 
-      PTRACE_IF(4, m_moved == 0, "dsound\tPlayback starting");
+      PTRACE_IF(4, m_moved == 0, "Playback starting");
 
       PINDEX writeCount = length1 + length2;
       src += writeCount;
@@ -982,7 +984,7 @@ PBoolean PSoundChannelDirectSound::PlayFile (const PFilePath & filename, PBoolea
     PINDEX count = PMIN(dataSize,((DWORD)bufferSize));
     if (!mediaFile.Read(buffer.GetPointer(bufferSize), count)) {
       SetErrorValues(Miscellaneous, mediaFile.GetLastError() | PWIN32ErrorFlag, LastReadError);
-      PTRACE(4, "dsound\tPlayFile read error: " << GetErrorText());
+      PTRACE(4, "PlayFile read error: " << GetErrorText());
       return false;
     }
     if (!Write(buffer, count))
@@ -1010,7 +1012,7 @@ PBoolean PSoundChannelDirectSound::OpenCapture (LPCGUID deviceId) // private
   HRESULT result = DirectSoundCaptureCreate8(deviceId, &m_captureDevice, NULL);
   if (result != S_OK) {
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Could not create device: " << GetErrorText());
+    PTRACE(4, "Open" << GetDirectionText() << ": Could not create device: " << GetErrorText());
     return false;
   }
   return OpenCaptureBuffer();
@@ -1038,22 +1040,22 @@ PBoolean PSoundChannelDirectSound::OpenCaptureBuffer () // private
   HRESULT result = m_captureDevice->CreateCaptureBuffer(&bufferDescription, &m_captureBuffer, NULL); 
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpenCaptureBuffer: Create Sound Buffer fail: " << GetErrorText());
+    PTRACE(4, "OpenCaptureBuffer: Create Sound Buffer fail: " << GetErrorText());
     return false;
   }
   IDirectSoundNotify * notify; // temporary pointer to the interface
   result = m_captureBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID *) &notify);
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpenCaptureBuffer: Notify interface query fail: " << GetErrorText());
+    PTRACE(4, "OpenCaptureBuffer: Notify interface query fail: " << GetErrorText());
     CloseCapture();
     return false;
   }
-  PTRACE(4, "dsound\tOpenCaptureBuffer: Setting up notification for " << m_bufferSectionCount << " blocks of " << m_bufferSectionSize << " bytes");
+  PTRACE(4, "OpenCaptureBuffer: Setting up notification for " << m_bufferSectionCount << " blocks of " << m_bufferSectionSize << " bytes");
   DSBPOSITIONNOTIFY * position = new DSBPOSITIONNOTIFY[m_bufferSectionCount];
   if (position == NULL) {
     SetErrorValues(NoMemory, E_OUTOFMEMORY);
-    PTRACE(4, "dsound\tOpenCaptureBuffer: Notify allocation fail");
+    PTRACE(4, "OpenCaptureBuffer: Notify allocation fail");
     notify->Release();
     CloseCapture();
     return false;
@@ -1068,7 +1070,7 @@ PBoolean PSoundChannelDirectSound::OpenCaptureBuffer () // private
   notify->Release();
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "dsound\tOpenCaptureBuffer: Notify interface query fail: " << GetErrorText());
+    PTRACE(4, "OpenCaptureBuffer: Notify interface query fail: " << GetErrorText());
     CloseCapture();
     return false;
   }
@@ -1096,14 +1098,14 @@ PBoolean PSoundChannelDirectSound::StartRecording () // public
 
   if (!m_captureBuffer) { // closed
     SetErrorValues(NotOpen, EBADF, LastReadError);
-    PTRACE(4, "dsound\tStartRecording fail: Device closed");
+    PTRACE(4, "StartRecording fail: Device closed");
     return false;
   }
   DWORD Status = 0;
   HRESULT Result = m_captureBuffer->GetStatus(&Status);
   if (FAILED(Result)) {
     SetErrorValues(Miscellaneous, Result, LastReadError);
-    PTRACE(4, "dsound\tStartRecording: Failed GetStatus - " << GetErrorText());
+    PTRACE(4, "StartRecording: Failed GetStatus - " << GetErrorText());
       return false;
   }
   if ((Status & DSCBSTATUS_CAPTURING) != 0)
@@ -1112,10 +1114,10 @@ PBoolean PSoundChannelDirectSound::StartRecording () // public
   Result = m_captureBuffer->Start(DSCBSTART_LOOPING);
   if (FAILED(Result)) {
     SetErrorValues(Miscellaneous, Result, LastReadError);
-    PTRACE(4, "dsound\tStartRecording: Failed Start - " << GetErrorText());
+    PTRACE(4, "StartRecording: Failed Start - " << GetErrorText());
       return false;
   }
-  PTRACE(4, "dsound\tRecorder starting");
+  PTRACE(4, "Recorder starting");
   return true;
 }
 
@@ -1126,7 +1128,7 @@ PBoolean PSoundChannelDirectSound::CheckCaptureBuffer (int & notification) // pr
   PWaitAndSignal mutex(m_bufferMutex); // make Abort wait
 
   if (!m_captureBuffer) { // closed
-    PTRACE(4, "dsound\tRecording closed while checking");
+    PTRACE(4, "Recording closed while checking");
     return false;
   }                 // Capture is ahead of Read, do not get data from between them. Data for us is at m_movePos behind Read.
   DWORD readPos;    // circular buffer byte offset to the end of the data that has been fully captured (end of what we can read)
@@ -1152,7 +1154,7 @@ PBoolean PSoundChannelDirectSound::CheckCaptureBuffer (int & notification) // pr
     // overruns are what will never be read
     unsigned overruns = (unsigned)((m_dsMoved - m_bufferSize) - (m_moved + m_lost));
     m_lost += overruns;
-    PTRACE(3, "dsound\tRecorder overrun: captured " << GetSamplesBuffered() << " read " << GetSamplesMoved() << " lost " << overruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
+    PTRACE(3, "Recorder overrun: captured " << GetSamplesBuffered() << " read " << GetSamplesMoved() << " lost " << overruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
     notification = SOUNDNOTIFY_OVERRUN;
     // Move read position to DirectSound's capture position, where audio has not been overwritten yet
     m_movePos = m_dsPos;
@@ -1193,7 +1195,7 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
       m_notifier(*this, notification); // can close here!
 
     if (!m_captureBuffer) { // closed
-      PTRACE(4, "dsound\tRecording closed while reading");
+      PTRACE(4, "Recording closed while reading");
       return SetErrorValues(NotOpen, EBADF, LastReadError);
     }
     if (isDataAvailable) // Ok to read
@@ -1203,7 +1205,7 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
 
   { // Aborted
     PWaitAndSignal mutex(m_bufferMutex);
-    PTRACE(4, "dsound\tRecording read abort");
+    PTRACE(4, "Recording read abort");
     if (m_captureBuffer != NULL) { // still open
       m_captureBuffer->Stop();
       CheckCaptureBuffer(notification);
@@ -1221,7 +1223,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
     lastReadCount = 0;
     if (!m_captureBuffer) { // check this before direction=Closed causes assertion
       SetErrorValues(NotOpen, EBADF, LastReadError);
-      PTRACE(4, "dsound\tRead fail: Device closed");
+      PTRACE(4, "Read fail: Device closed");
       return false;
     }
   }                                     // unlock to allow Abort while waiting for buffer
@@ -1243,7 +1245,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
                                              &pointer1, &length1, &pointer2, &length2, 0L);
       if (FAILED(Result)) {
         SetErrorValues(Miscellaneous, Result, LastReadError);
-        PTRACE(1, "dsound\tRead Lock fail: " << GetErrorText());
+        PTRACE(1, "Read Lock fail: " << GetErrorText());
         return false;
       }
       // Copy from DirectSound locked memory into return buffer
@@ -1268,14 +1270,14 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
 
 PBoolean PSoundChannelDirectSound::AreAllRecordBuffersFull() // public
 {
-  PTRACE(4, "dsound\tAreAllRecordBuffersFull unimplemented");
+  PTRACE(4, "AreAllRecordBuffersFull unimplemented");
   return true;
 }
 
 
 PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull() // public
 {
-  PTRACE(4, "dsound\tWaitForAllRecordBuffersFull unimplemented");
+  PTRACE(4, "WaitForAllRecordBuffersFull unimplemented");
   return false;
 }
 
@@ -1283,7 +1285,7 @@ PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull() // public
 PBoolean PSoundChannelDirectSound::RecordSound (PSound & /*sound*/) // public
 {
   PAssert(activeDirection == Recorder, "Invalid device direction");
-  PTRACE(4, "dsound\tRecordSound unimplemented");
+  PTRACE(4, "RecordSound unimplemented");
   return false;
 }
 
@@ -1291,7 +1293,7 @@ PBoolean PSoundChannelDirectSound::RecordSound (PSound & /*sound*/) // public
 PBoolean PSoundChannelDirectSound::RecordFile (const PFilePath & /*filename*/) // public
 {
   PAssert(activeDirection == Recorder, "Invalid device direction");
-  PTRACE(4, "dsound\tRecordFile unimplemented");
+  PTRACE(4, "RecordFile unimplemented");
   return false;
 }
 
@@ -1307,13 +1309,13 @@ PBoolean PSoundChannelDirectSound::OpenMixer (UINT waveDeviceId)
 {
   mixerOpen(&m_mixer, waveDeviceId, NULL, NULL, (activeDirection == Player)? MIXER_OBJECTF_WAVEOUT : MIXER_OBJECTF_WAVEIN);
   if (m_mixer == NULL) {
-    PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Failed to open mixer - volume control will not function");
+    PTRACE(4, "Open" << GetDirectionText() << ": Failed to open mixer - volume control will not function");
 	return false;
   }
   MIXERLINE line = { sizeof(MIXERLINE) };
   line.dwComponentType = (activeDirection == Player)? MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT : MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
   if (mixerGetLineInfo((HMIXEROBJ)m_mixer, &line, MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE) != MMSYSERR_NOERROR) {
-    PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Failed to access mixer line - volume control will not function");
+    PTRACE(4, "Open" << GetDirectionText() << ": Failed to access mixer line - volume control will not function");
     CloseMixer();
 	return false;
   }
@@ -1328,7 +1330,7 @@ PBoolean PSoundChannelDirectSound::OpenMixer (UINT waveDeviceId)
   controls.cbmxctrl = m_volumeControl.cbStruct;
 
   if (mixerGetLineControls((HMIXEROBJ)m_mixer, &controls, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE) != MMSYSERR_NOERROR) {
-    PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Failed to configure volume control - volume control will not function");
+    PTRACE(4, "Open" << GetDirectionText() << ": Failed to configure volume control - volume control will not function");
     CloseMixer();
 	return false;
   }
@@ -1350,7 +1352,7 @@ PBoolean PSoundChannelDirectSound::SetVolume (unsigned newVal) // public
 {
   PWaitAndSignal mutex(m_bufferMutex);
   if (!IsOpen() || m_mixer == NULL) {
-    PTRACE(4, "dsound\t" << GetDirectionText() << " SetVolume fail: Device closed");
+    PTRACE(4, GetDirectionText() << " SetVolume fail: Device closed");
     return SetErrorValues(NotOpen, EBADF);
   }
   MIXERCONTROLDETAILS_UNSIGNED volume;
@@ -1371,7 +1373,7 @@ PBoolean PSoundChannelDirectSound::SetVolume (unsigned newVal) // public
   MMRESULT result = mixerSetControlDetails((HMIXEROBJ)m_mixer, &details, MIXER_OBJECTF_HMIXER | MIXER_SETCONTROLDETAILSF_VALUE);
   if (result != MMSYSERR_NOERROR) {
     SetErrorValues(Miscellaneous, MAKE_HRESULT(1, FACILITY_WAVEIN, result));
-    PTRACE(4, "dsound\t" << GetDirectionText() << " SetVolume fail: " << GetErrorText());
+    PTRACE(4, GetDirectionText() << " SetVolume fail: " << GetErrorText());
     return false;
   }
   return true;
@@ -1382,7 +1384,7 @@ PBoolean PSoundChannelDirectSound::GetVolume (unsigned & devVol) // public
 {
   PWaitAndSignal mutex(m_bufferMutex);
   if (!IsOpen() || m_mixer == NULL) {
-    PTRACE(4, "dsound\t" << GetDirectionText() << " GetVolume fail: Device closed");
+    PTRACE(4, GetDirectionText() << " GetVolume fail: Device closed");
     return SetErrorValues(NotOpen, EBADF);
   }
   MIXERCONTROLDETAILS_UNSIGNED volume;
@@ -1398,7 +1400,7 @@ PBoolean PSoundChannelDirectSound::GetVolume (unsigned & devVol) // public
   MMRESULT result = mixerGetControlDetails((HMIXEROBJ)m_mixer, &details, MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_VALUE);
   if (result != MMSYSERR_NOERROR) {
     SetErrorValues(Miscellaneous, MAKE_HRESULT(1, FACILITY_WAVEIN, result));
-    PTRACE(4, "dsound\t" << GetDirectionText() << " GetVolume fail: " << GetErrorText());
+    PTRACE(4, GetDirectionText() << " GetVolume fail: " << GetErrorText());
     return false;
   }
   devVol = 100 * (volume.dwValue - m_volumeControl.Bounds.dwMinimum) / (m_volumeControl.Bounds.dwMaximum - m_volumeControl.Bounds.dwMinimum);

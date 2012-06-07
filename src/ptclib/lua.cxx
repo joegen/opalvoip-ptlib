@@ -49,6 +49,8 @@
 #endif
 
 
+#define PTraceModule() "Lua"
+
 #define new PNEW
 
 
@@ -57,12 +59,12 @@ static int TraceFunction(lua_State * lua)
 {
   int argCount = lua_gettop(lua);
   if (argCount < 2) {
-    PTRACE(1, "Lua\tToo few arguments for PTRACE.");
+    PTRACE(1, "Too few arguments for PTRACE.");
     return 0;
   }
 
   if (!lua_isnumber(lua, -argCount)) {
-    PTRACE(1, "Lua\tFirst PTRACE argument must be number.");
+    PTRACE(1, "First PTRACE argument must be number.");
     return 0;
   }
 
@@ -70,7 +72,7 @@ static int TraceFunction(lua_State * lua)
   if (!PTrace::CanTrace(level))
     return 0;
 
-  ostream & strm = PTrace::Begin(level, __FILE__, __LINE__);
+  ostream & strm = PTRACE_BEGIN(level);
   for (int arg = -(argCount-1); arg < 0; ++arg)
     strm << lua_tostring(lua, arg);
   strm << PTrace::End;
@@ -430,7 +432,7 @@ int PLua::InternalCallback()
   (*func)(*this, signature);
 
   signature.m_results.Push(m_lua);
-  PTRACE(6, "Lua\tInternalCallback stack=" << lua_gettop(m_lua) << ", results::size=" << signature.m_results.size());
+  PTRACE(6, "InternalCallback stack=" << lua_gettop(m_lua) << ", results::size=" << signature.m_results.size());
 
   return signature.m_results.size();
 }
@@ -482,7 +484,7 @@ bool PLua::OnError(int code, const PString & str, int pop)
   if (pop > 0)
     lua_pop(m_lua, pop);
 
-  PTRACE(2, "Lua\tError " << code << ": " << m_lastErrorText);
+  PTRACE(2, "Error " << code << ": " << m_lastErrorText);
   return false;
 }
 
@@ -555,7 +557,7 @@ bool PLua::InternalGetVariable(const PString & name)
     lua_remove(m_lua, -2); // Remove the table from underneath
   }
 
-  PTRACE(6, "Lua\tInternalGetVariable stack=" << lua_gettop(m_lua));
+  PTRACE(6, "InternalGetVariable stack=" << lua_gettop(m_lua));
   return true;
 }
 
@@ -597,7 +599,7 @@ bool PLua::InternalSetVariable(const PString & name)
 
   lua_pop(m_lua, 1); // Pop the table as above doesn't
 
-  PTRACE(6, "Lua\tInternalSetVariable stack=" << lua_gettop(m_lua));
+  PTRACE(6, "InternalSetVariable stack=" << lua_gettop(m_lua));
   return true;
 }
 
@@ -654,7 +656,7 @@ void PLua::ParamVector::Pop(void * data)
   lua_State * lua = static_cast<lua_State *>(data);
 
   resize(lua_gettop(lua));
-  PTRACE2(6, NULL, "Lua\tParamVector::Pop stack=" << size());
+  PTRACE(6, NULL, NULL, "ParamVector::Pop stack=" << size());
 
   for (reverse_iterator it = rbegin(); it != rend(); ++it) {
     switch (lua_type(lua, -1)) {
