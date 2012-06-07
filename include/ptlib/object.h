@@ -700,11 +700,12 @@ class PTraceSaveContextIdentifier
 
 #else // PTRACING
 
-#define PTRACE_PARAM(param)
+#define PTRACE_PARAM(...)
 #define PTRACE_BLOCK(n)
 #define PTRACE_LINE()
-#define PTRACE(level, arg)
-#define PTRACE_IF(level, cond, args)
+#define PTRACE(...)
+#define PTRACE_IF(...)
+#define PTRACE_BEGIN(...)
 #define PTRACE2(level, obj, arg)
 #define PTRACE_IF2(level, cond, obj, args)
 #define PTRACE_CONTEXT_ID_NEW()
