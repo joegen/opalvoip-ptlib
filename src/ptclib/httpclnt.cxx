@@ -185,7 +185,7 @@ PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
 
 #if PTRACING
   if (PTrace::CanTrace(3)) {
-    ostream & strm = PTrace::Begin(3, __FILE__, __LINE__, this);
+    ostream & strm = PTRACE_BEGIN(3);
     strm << "HTTP\tSending ";
     if (PTrace::CanTrace(4))
       strm << '\n';
@@ -263,7 +263,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
 #if PTRACING
       if (PTrace::CanTrace(3)) {
-        ostream & strm = PTrace::Begin(3, __FILE__, __LINE__, this);
+        ostream & strm = PTRACE_BEGIN(3);
         strm << "HTTP\tResponse ";
         if (PTrace::CanTrace(4))
           strm << '\n';
