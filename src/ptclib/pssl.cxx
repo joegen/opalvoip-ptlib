@@ -771,7 +771,7 @@ void PSSLInitialiser::LockingCallback(int mode, int n)
 }
 
 
-static void InfoCallback(const SSL *ssl, int where, int ret)
+static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(where), int PTRACE_PARAM(ret))
 {
 #if PTRACING
   static const unsigned Level = 4;
@@ -810,7 +810,7 @@ static void InfoCallback(const SSL *ssl, int where, int ret)
 }
 
 
-static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
+static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
 {
 #if PTRACING
   static const unsigned Level = 3;
