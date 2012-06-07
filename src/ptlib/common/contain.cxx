@@ -914,15 +914,13 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
     if (absValue < multiplier*1000) {
       length = p_signed2string<PInt64, PUInt64>(value/multiplier, 10, theArray);
       param -= length;
-      if (param > 0) {
+      if (param > 0 && absValue%multiplier != 0) {
         theArray[length++] = '.';
-        while (param-- > 0) {
+        do {
           multiplier /= 10;
           theArray[length++] = (absValue/multiplier)%10 + '0';
-        }
+        } while (--param > 0 && absValue%multiplier != 0);
       }
-      while (theArray[length-1] == '0')
-        theArray[--length] = '\0';
       theArray[length++] = siTable[i];
       break;
     }
