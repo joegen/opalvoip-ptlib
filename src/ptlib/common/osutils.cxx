@@ -420,7 +420,7 @@ PBoolean PTrace::CanTrace(unsigned level)
 }
 
 
-ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, const PObject * instance)
+ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
@@ -526,6 +526,9 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
       stream << "- - - - - - -";
     stream << '\t';
   }
+
+  if (module != NULL)
+    stream << left << setw(8) << module << '\t';
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local

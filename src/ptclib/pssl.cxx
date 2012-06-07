@@ -776,7 +776,7 @@ static void InfoCallback(const SSL *ssl, int where, int ret)
 #if PTRACING
   static const unsigned Level = 4;
   if (PTrace::GetLevel() >= Level) {
-    ostream & trace = PTrace::Begin(Level, __FILE__, __LINE__);
+    ostream & trace = PTRACE_BEGIN(Level);
     trace << "SSL\t";
 
     if (where & SSL_CB_ALERT) {
@@ -822,7 +822,7 @@ static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
     char buf[256];
     X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
 
-    ostream & trace = PTrace::Begin(Level, __FILE__, __LINE__);
+    ostream & trace = PTRACE_BEGIN(Level);
     trace << "SSL\tVerify callback depth "
            << X509_STORE_CTX_get_error_depth(ctx)
            << " : cert name = " << buf

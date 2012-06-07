@@ -393,7 +393,7 @@ void XMPP::BaseStreamHandler::Main()
     {
 #if PTRACING
       if (PTrace::CanTrace(5)) {
-        ostream& os = PTrace::Begin(5, __FILE__, __LINE__, this);
+        ostream& os = PTRACE_BEGIN(5);
         os << "XMPP\tRCV: ";
         pdu->GetRootElement()->Output(os, *pdu, 0);
         os << PTrace::End;
