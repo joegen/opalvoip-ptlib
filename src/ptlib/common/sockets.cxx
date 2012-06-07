@@ -37,6 +37,8 @@
 
 #include <ctype.h>
 
+#define PTraceModule() "Socket"
+
 #ifdef P_VXWORKS
 // VxWorks variant of inet_ntoa() allocates INET_ADDR_LEN bytes via malloc
 // BUT DOES NOT FREE IT !!!  Use inet_ntoa_b() instead.
@@ -529,7 +531,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   if (key.IsEmpty() ||
       key.FindSpan("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.") != P_MAX_INDEX ||
       key[len-1] == '-') {
-    PTRACE_IF(3, key[0] != '[', "Socket\tIllegal RFC952 characters in DNS name \"" << key << '"');
+    PTRACE_IF(3, key[0] != '[', "Illegal RFC952 characters in DNS name \"" << key << '"');
     return NULL;
   }
 
@@ -637,7 +639,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   if (host->GetHostAddress().IsValid())
     return host;
 
-  PTRACE(4, "Socket\tName lookup of \"" << name << "\" failed: errno=" << localErrNo);
+  PTRACE(4, "Name lookup of \"" << name << "\" failed: errno=" << localErrNo);
   return NULL;
 }
 
@@ -1118,7 +1120,7 @@ void PIPSocket::ClearNameCache()
     ::gethostbyname("www.microsoft.com");
   }
 #endif
-  PTRACE2(4, NULL, "Socket\tCleared DNS cache.");
+  PTRACE(4, NULL, NULL, "Cleared DNS cache.");
 }
 
 
@@ -1429,13 +1431,13 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 
   // attempt to create a socket
   if (!OpenSocket(sa->sa_family)) {
-    PTRACE(4, "Socket\tOpenSocket failed");
+    PTRACE(4, "OpenSocket failed");
     return false;
   }
 
   int reuseAddr = reuse == CanReuseAddress ? 1 : 0;
   if (!SetOption(SO_REUSEADDR, reuseAddr)) {
-    PTRACE(4, "Socket\tSetOption(SO_REUSEADDR," << reuseAddr << ") failed: " << GetErrorText());
+    PTRACE(4, "SetOption(SO_REUSEADDR," << reuseAddr << ") failed: " << GetErrorText());
     os_close();
     return false;
   }
@@ -1443,13 +1445,13 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 #if P_HAS_IPV6 && defined(IPV6_V6ONLY)
   if (bindAddr.GetVersion() == 6) {
     if (!SetOption(IPV6_V6ONLY, reuseAddr, IPPROTO_IPV6)) {
-      PTRACE(4, "Socket\tSetOption(IPV6_V6ONLY," << reuseAddr << ") failed: " << GetErrorText());
+      PTRACE(4, "SetOption(IPV6_V6ONLY," << reuseAddr << ") failed: " << GetErrorText());
     }
   }
 #endif
 
   if (!ConvertOSError(::bind(os_handle, sa, sa.GetSize()))) {
-    PTRACE(4, "Socket\tbind failed: " << GetErrorText());
+    PTRACE(4, "bind failed: " << GetErrorText());
     os_close();
     return false;
   }
@@ -1459,7 +1461,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getsockname(os_handle, sa, &size))) {
-    PTRACE(4, "Socket\tgetsockname failed: " << GetErrorText());
+    PTRACE(4, "getsockname failed: " << GetErrorText());
     os_close();
     return false;
   }
@@ -1493,7 +1495,7 @@ PBoolean PIPSocket::Address::IsSiteLocal() const
 PIPSocket::Address::Address(const in6_addr & addr)
  {
   if (IN6_IS_ADDR_LINKLOCAL(&addr)) {
-    PTRACE(2, "Socket\tCannot create link-local IPV6 address without scope id");
+    PTRACE(2, "Cannot create link-local IPV6 address without scope id");
     m_version = 0;
   }
   else {
@@ -1657,7 +1659,7 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
 #if P_HAS_IPV6
     case AF_INET6:
       if (ai_addrlen < (int)sizeof(sockaddr_in6)) {
-        PTRACE(1, "Socket\tsockaddr size too small (" << ai_addrlen << ")  for family " << ai_family);
+        PTRACE(1, "sockaddr size too small (" << ai_addrlen << ")  for family " << ai_family);
         break;
       }
 
@@ -1668,7 +1670,7 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
 #endif
     case AF_INET: 
       if (ai_addrlen < (int)sizeof(sockaddr_in)) {
-        PTRACE(1, "Socket\tsockaddr size too small (" << ai_addrlen << ")  for family " << ai_family);
+        PTRACE(1, "sockaddr size too small (" << ai_addrlen << ")  for family " << ai_family);
         break;
       }
 
@@ -1678,7 +1680,7 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
       return;
 
     default :
-      PTRACE(1, "Socket\tIllegal family (" << ai_family << ") specified.");
+      PTRACE(1, "Illegal family (" << ai_family << ") specified.");
   }
 
   m_version = 0;
@@ -2148,7 +2150,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
 
   for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
     if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
-      PTRACE2(5, NULL, "Socket\tRoute packet for " << remoteAddress
+      PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
               << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
               << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
       return hostInterfaceTable[IfaceIdx].GetAddress();
@@ -2173,7 +2175,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
   if (route != NULL) {
     for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
       if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
-        PTRACE2(5, NULL, "Socket\tRoute packet for " << remoteAddress
+        PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
                 << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
                 << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
         return hostInterfaceTable[IfaceIdx].GetAddress();
@@ -2675,11 +2677,11 @@ PBoolean PUDPSocket::ApplyQoS()
 #else
     err = errno;
 #endif
-    PTRACE(1,"QOS\tsetsockopt failed with code " << err);
+    PTRACE(1, "QOS", "setsockopt failed with code " << err);
     return false;
   }
 #endif  // P_QOS
-    
+
   return true;
 }
 
@@ -2806,12 +2808,12 @@ bool PUDPSocket::InternalListen(const Address & bindAddr,
   }
 
   if (!ok) {
-    PTRACE(1, "Socket\tMulticast join failed for " << bindAddr << " - " << GetErrorText());
+    PTRACE(1, "Multicast join failed for " << bindAddr << " - " << GetErrorText());
     os_close();
     return false;
   }
 
-  PTRACE(4, "Socket\tJoined multicast group " << bindAddr);
+  PTRACE(4, "Joined multicast group " << bindAddr);
   return true;
 }
 
