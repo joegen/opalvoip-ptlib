@@ -523,7 +523,7 @@ public:
 
 /* Macro to conditionally declare a parameter to a function to avoid compiler
    warning due that parameter only being used in a <code>PTRACE()</code> */
-#define PTRACE_PARAM(param) param
+#define PTRACE_PARAM(...) __VA_ARGS__
 
 /** Trace an execution block.
 This macro creates a trace variable for tracking the entry and exit of program
