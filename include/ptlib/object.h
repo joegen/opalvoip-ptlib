@@ -675,6 +675,9 @@ See PTRACE() for more information on level, instance, module.
 __inline const PObject * PTraceObjectInstance() { return NULL; }
 __inline const char * PTraceModule() { return NULL; }
 
+
+#if PTRACING==2
+
 /**Propagate PTRACE context identifier in an object from another.
    The context identifier can group objects together with a single
    identifier which can aid in debugging highly threaded systems where
@@ -698,24 +701,61 @@ class PTraceSaveContextIdentifier
 
 #define PTRACE_CONTEXT_ID_PUSH_THREAD(obj) PTraceSaveContextIdentifier praceSavedContextIdentifier(obj)
 
-#else // PTRACING
-
-#define PTRACE_PARAM(...)
-#define PTRACE_BLOCK(n)
-#define PTRACE_LINE()
-#define PTRACE(...)
-#define PTRACE_IF(...)
-#define PTRACE_BEGIN(...)
-#define PTRACE2(level, obj, arg)
-#define PTRACE_IF2(level, cond, obj, args)
-#define PTRACE_CONTEXT_ID_NEW()
-#define PTRACE_CONTEXT_ID_SET(to, from)
-#define PTRACE_CONTEXT_ID_FROM(obj)
-#define PTRACE_CONTEXT_ID_TO(obj)
-#define PTRACE_CONTEXT_ID_PUSH_THREAD(obj)
+#endif // PTRACING==2
 
 #endif // PTRACING
 
+#ifndef PTRACE_PARAM
+#define PTRACE_PARAM(...)
+#endif
+
+#ifndef PTRACE_BLOCK
+#define PTRACE_BLOCK(n)
+#endif
+
+#ifndef PTRACE_LINE
+#define PTRACE_LINE()
+#endif
+
+#ifndef PTRACE
+#define PTRACE(...)
+#endif
+
+#ifndef PTRACE_IF
+#define PTRACE_IF(...)
+#endif
+
+#ifndef PTRACE_BEGIN
+#define PTRACE_BEGIN(...)
+#endif
+
+#ifndef PTRACE2
+#define PTRACE2(level, obj, arg)
+#endif
+
+#ifndef PTRACE_IF2
+#define PTRACE_IF2(level, cond, obj, args)
+#endif
+
+#ifndef PTRACE_CONTEXT_ID_NEW
+#define PTRACE_CONTEXT_ID_NEW()
+#endif
+
+#ifndef PTRACE_CONTEXT_ID_SET
+#define PTRACE_CONTEXT_ID_SET(to, from)
+#endif
+
+#ifndef PTRACE_CONTEXT_ID_FROM
+#define PTRACE_CONTEXT_ID_FROM(obj)
+#endif
+
+#ifndef PTRACE_CONTEXT_ID_TO
+#define PTRACE_CONTEXT_ID_TO(obj)
+#endif
+
+#ifndef PTRACE_CONTEXT_ID_PUSH_THREAD
+#define PTRACE_CONTEXT_ID_PUSH_THREAD(obj)
+#endif
 
 
 #if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
