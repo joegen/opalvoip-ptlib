@@ -53,19 +53,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\bin\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\obj\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\bin\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\obj\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\bin\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">.\obj\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(OutDir)</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">false</LinkIncremental>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\lib;$(ProjectDir)..\..\..\ptlib\lib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\lib;$(ProjectDir)..\..\..\ptlib\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\include;$(ProjectDir)..\..\..\ptlib\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\include;$(ProjectDir)..\..\..\ptlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">\Work\ptlib\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">\Work\ptlib\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">\Work\ptlib\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">\Work\ptlib\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
@@ -222,7 +222,7 @@ exit 1
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ptlib\msos\PTLib_2010.vcxproj">
+    <ProjectReference Include="\Work\ptlib\src\ptlib\msos\PTLib_2010.vcxproj">
       <Project>{85f4f26a-1a5d-4685-a48a-448102c5c5bc}</Project>
     </ProjectReference>
   </ItemGroup>
