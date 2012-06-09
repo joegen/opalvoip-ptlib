@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory=".\obj\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="1"
 			UseOfMFC="0"
@@ -104,7 +104,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory=".\obj\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="1"
 			UseOfMFC="0"
@@ -193,7 +193,7 @@
 		</Configuration>
 		<Configuration
 			Name="No Trace|Win32"
-			OutputDirectory="..\..\bin\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory=".\obj\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="1"
 			UseOfMFC="0"
