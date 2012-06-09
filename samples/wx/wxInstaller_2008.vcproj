@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\bin\wxSample\Installer"
+			OutputDirectory=".\obj\Installer"
 			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="10"
 			CharacterSet="2"
