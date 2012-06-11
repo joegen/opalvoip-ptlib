@@ -301,30 +301,7 @@ PBoolean PHTTPServer::ProcessCommand()
     persist = OnProxy(connectInfo);
   else {
     connectInfo.entityBody = ReadEntityBody();
-
-    // Handle the local request
-    switch (cmd) {
-      case GET :
-        persist = OnGET(url, connectInfo.GetMIME(), connectInfo);
-        break;
-
-      case HEAD :
-        persist = OnHEAD(url, connectInfo.GetMIME(), connectInfo);
-        break;
-
-      case POST :
-      {
-        PStringToString postData;
-        if (!connectInfo.DecodeMultipartFormInfo())
-          PURL::SplitQueryVars(connectInfo.entityBody, postData); // x-www-form-urlencoded
-        persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
-        break;
-      }
-
-      case P_MAX_INDEX:
-      default:
-        persist = OnUnknown(args, connectInfo);
-    }
+    persist = OnCommand(cmd, url, args, connectInfo);
   }
 
   flush();
@@ -346,6 +323,39 @@ PBoolean PHTTPServer::ProcessCommand()
   Shutdown(ShutdownWrite);
   return PFalse;
 }
+
+
+bool PHTTPServer::OnCommand(PINDEX cmd, const PURL & url, const PString & args, PHTTPConnectionInfo & connectInfo)
+{
+  bool persist = false;
+
+  // Handle the local request
+  switch (cmd) {
+    case GET :
+      persist = OnGET(url, connectInfo.GetMIME(), connectInfo);
+      break;
+
+    case HEAD :
+      persist = OnHEAD(url, connectInfo.GetMIME(), connectInfo);
+      break;
+
+    case POST :
+    {
+      PStringToString postData;
+      if (!connectInfo.DecodeMultipartFormInfo())
+        PURL::SplitQueryVars(connectInfo.entityBody, postData); // x-www-form-urlencoded
+      persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
+      break;
+    }
+
+    case P_MAX_INDEX:
+    default:
+      persist = OnUnknown(args, connectInfo);
+  }
+
+  return persist;
+}
+
 
 
 PString PHTTPServer::ReadEntityBody()
