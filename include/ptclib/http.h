@@ -960,6 +960,19 @@ class PHTTPServer : public PHTTP
       */
     PHTTPConnectionInfo & GetConnectionInfo() { return connectInfo; }
 
+    /**Called when a request is received. 
+       By default, this intercepts the GET, HEAD and POST commands
+       and calls OnGET, OnHEAD and OnPOST. For all other command,
+       OnUnknown is called
+       */
+    virtual bool OnCommand(
+      PINDEX cmd,
+      const PURL & url, 
+      const PString & args,
+      PHTTPConnectionInfo & connectInfo
+    );
+
+
   protected:
     void Construct();
 
