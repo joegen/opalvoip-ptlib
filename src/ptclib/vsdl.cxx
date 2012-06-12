@@ -394,7 +394,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   if (!IsOpen())
     return false;
 
-  if (x != 0 || y != 0 || width != frameWidth || height != frameHeight || !endFrame)
+  if (x != 0 || y != 0 || width != frameWidth || height != frameHeight || data == NULL || !endFrame)
     return false;
 
   PWaitAndSignal mutex(PSDL_Window::GetInstance());
