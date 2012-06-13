@@ -527,20 +527,22 @@ typedef int SOCKET;
   #endif
 #endif
 
+typedef pid_t PProcessIdentifier;
+
 #ifdef P_PTHREADS
 
   #include <pthread.h>
-  #define P_THREADIDENTIFIER pthread_t
+  typedef pthread_t PThreadIdentifier;
 
   #if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
     #include <semaphore.h>
   #endif  // P_HAS_SEMPAHORES
 
-#endif  // P_PTHREADS
+#elif defined(BE_THREADS)
 
-#ifdef BE_THREADS
-#define P_THREADIDENTIFIER thread_id
-#endif // BE_THREADS
+  typedef thread_id PThreadIdentifier;
+
+#endif
 
 
 ///////////////////////////////////////////
