@@ -319,7 +319,9 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 #undef Yield
 
-#define P_THREADIDENTIFIER DWORD
+typedef DWORD PThreadIdentifier;
+typedef DWORD PProcessIdentifier;
+
 
 #if defined(_MSC_VER)
   #pragma warning(disable:4201)

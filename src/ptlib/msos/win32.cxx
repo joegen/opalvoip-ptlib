@@ -1429,9 +1429,9 @@ PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean)
 }
 
 
-DWORD PProcess::GetProcessID() const
+PProcessIdentifier PProcess::GetCurrentProcessID()
 {
-  return GetCurrentProcessId();
+  return ::GetCurrentProcessId();
 }
 
 

@@ -78,7 +78,7 @@ class PICMPSocket : public PIPDatagramSocket
     class PingInfo {
       public:
         /// Create Ping information structure.
-        PingInfo(WORD id = (WORD)PProcess::Current().GetProcessID());
+        PingInfo(WORD id = (WORD)PProcess::GetCurrentProcessID());
 
         /**@name Supplied data */
         //@{
