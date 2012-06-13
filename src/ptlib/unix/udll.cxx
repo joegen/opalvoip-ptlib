@@ -366,7 +366,6 @@ void PDynaLink::Close()
 #ifdef LATE_DESTRUCTION_HACK
   PWaitAndSignal m(g_DLLMutex);
 #endif
-#endif
 
   if (dllHandle == NULL)
     return;
