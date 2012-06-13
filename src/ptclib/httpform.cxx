@@ -1591,13 +1591,14 @@ void PHTTPRadioField::SetValue(const PString & newVal)
 PHTTPSelectField::PHTTPSelectField(const char * name,
                                    const PStringArray & valueArray,
                                    PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help),
-    values(valueArray)
+                                   const char * help,
+                                   bool enumeration)
+  : PHTTPField(name, NULL, help)
+  , m_values(valueArray)
+  , m_enumeration(enumeration)
+  , m_initialValue(initVal)
+  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
-  initialValue = initVal;
-  if (initVal < values.GetSize())
-    value = values[initVal];
 }
 
 
@@ -1605,13 +1606,14 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    PINDEX count,
                                    const char * const * valueStrings,
                                    PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help),
-    values(count, valueStrings)
+                                   const char * help,
+                                   bool enumeration)
+  : PHTTPField(name, NULL, help)
+  , m_values(count, valueStrings)
+  , m_enumeration(enumeration)
+  , m_initialValue(initVal)
+  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
-  initialValue = initVal;
-  if (initVal < count)
-    value = values[initVal];
 }
 
 
@@ -1619,13 +1621,14 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    const char * title,
                                    const PStringArray & valueArray,
                                    PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, title, help),
-    values(valueArray)
+                                   const char * help,
+                                   bool enumeration)
+  : PHTTPField(name, title, help)
+  , m_values(valueArray)
+  , m_enumeration(enumeration)
+  , m_initialValue(initVal)
+  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
-  initialValue = initVal;
-  if (initVal < values.GetSize())
-    value = values[initVal];
 }
 
 
@@ -1634,28 +1637,30 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    PINDEX count,
                                    const char * const * valueStrings,
                                    PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, title, help),
-    values(count, valueStrings)
+                                   const char * help,
+                                   bool enumeration)
+  : PHTTPField(name, title, help)
+  , m_values(count, valueStrings)
+  , m_enumeration(enumeration)
+  , m_initialValue(initVal)
+  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
-  initialValue = initVal;
-  if (initVal < values.GetSize())
-    value = values[initVal];
 }
 
 
 PHTTPField * PHTTPSelectField::NewField() const
 {
-  return new PHTTPSelectField(baseName, title, values, initialValue, help);
+  return new PHTTPSelectField(baseName, title, m_values, m_initialValue, help);
 }
 
 
 void PHTTPSelectField::GetHTMLTag(PHTML & html) const
 {
   html << PHTML::Select(fullName);
-  for (PINDEX i = 0; i < values.GetSize(); i++)
-    html << PHTML::Option(values[i] == value ? PHTML::Selected : PHTML::NotSelected)
-         << PHTML::Escaped(values[i]);
+  for (PINDEX i = 0; i < m_values.GetSize(); i++)
+    html << PHTML::Option(m_values[i] == m_value ? PHTML::Selected : PHTML::NotSelected,
+                          m_enumeration ? psprintf("value=\"%u\"", i) : PString::Empty())
+         << PHTML::Escaped(m_values[i]);
   html << PHTML::Select();
 }
 
@@ -1663,18 +1668,18 @@ void PHTTPSelectField::GetHTMLTag(PHTML & html) const
 PString PHTTPSelectField::GetValue(PBoolean dflt) const
 {
   if (dflt)
-    if (initialValue < values.GetSize())
-      return values[initialValue];
+    if (m_initialValue < m_values.GetSize())
+      return m_values[m_initialValue];
     else
-      return PString();
+      return PString::Empty();
   else
-    return value;
+    return m_value;
 }
 
 
 void PHTTPSelectField::SetValue(const PString & newVal)
 {
-  value = newVal;
+  m_value = newVal;
 }
 
 
