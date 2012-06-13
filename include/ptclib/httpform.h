@@ -691,21 +691,24 @@ class PHTTPSelectField : public PHTTPField
       const char * name,
       const PStringArray & valueArray,
       PINDEX initVal = 0,
-      const char * help = NULL
+      const char * help = NULL,
+      bool enumeration = false
     );
     PHTTPSelectField(
       const char * name,
       PINDEX count,
       const char * const * valueStrings,
       PINDEX initVal = 0,
-      const char * help = NULL
+      const char * help = NULL,
+      bool enumeration = false
     );
     PHTTPSelectField(
       const char * name,
       const char * title,
       const PStringArray & valueArray,
       PINDEX initVal = 0,
-      const char * help = NULL
+      const char * help = NULL,
+      bool enumeration = false
     );
     PHTTPSelectField(
       const char * name,
@@ -713,7 +716,8 @@ class PHTTPSelectField : public PHTTPField
       PINDEX count,
       const char * const * valueStrings,
       PINDEX initVal = 0,
-      const char * help = NULL
+      const char * help = NULL,
+      bool enumeration = false
     );
 
     virtual PHTTPField * NewField() const;
@@ -728,13 +732,49 @@ class PHTTPSelectField : public PHTTPField
       const PString & newVal
     );
 
-
-    PStringArray values;
-
-
   protected:
-    PString value;
-    PINDEX initialValue;
+    PStringArray m_values;
+    bool         m_enumeration;
+    PINDEX       m_initialValue;
+    PString      m_value;
+};
+
+
+template <typename Enumeration, Enumeration InitVal = (Enumeration)0>
+class PHTTPEnumField : public PHTTPSelectField
+{
+    PCLASSINFO(PHTTPEnumField, PHTTPSelectField)
+  public:
+    PHTTPEnumField(
+      const char * name,
+      const PStringArray & valueArray,
+      Enumeration initVal = InitVal,
+      const char * help = NULL
+    ) : PHTTPSelectField(name, valueArray, initVal, help, true) { }
+    PHTTPEnumField(
+      const char * name,
+      PINDEX count,
+      const char * const * valueStrings,
+      Enumeration initVal = InitVal,
+      const char * help = NULL
+    ) : PHTTPSelectField(name, count, valueStrings, initVal, help, true) { }
+    PHTTPEnumField(
+      const char * name,
+      const char * title,
+      const PStringArray & valueArray,
+      Enumeration initVal = InitVal,
+      const char * help = NULL
+    ) : PHTTPSelectField(name, title, valueArray, initVal, help, true) { }
+    PHTTPEnumField(
+      const char * name,
+      const char * title,
+      PINDEX count,
+      const char * const * valueStrings,
+      Enumeration initVal = InitVal,
+      const char * help = NULL
+    ) : PHTTPSelectField(name, title, count, valueStrings, initVal, help, true) { }
+
+    virtual PHTTPField * NewField() const { return new PHTTPEnumField(baseName, title, m_values, (Enumeration)m_initialValue, help); }
 };
 
 
