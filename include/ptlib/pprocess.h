@@ -415,14 +415,23 @@ class PProcess : public PThread
      */
     const PFilePath & GetFile() const;
 
-    /**Get the platform dependent process identifier for the process. This is
-       an arbitrary (and unique) integer attached to a process by the operating
-       system.
+    /**Get the platform dependent process identifier for the process.
+       This is an arbitrary (and unique) integer attached to a process by the
+       operating system.
 
        @return
        Process ID for process.
      */
-    DWORD GetProcessID() const;
+    PProcessIdentifier GetProcessID() const { return m_processID; }
+
+    /**Get the platform dependent process identifier for the currentprocess.
+       This is an arbitrary (and unique) integer attached to a process by the
+       operating system.
+
+       @return
+       Process ID for current process.
+     */
+    static PProcessIdentifier GetCurrentProcessID();
 
     /**Return the time at which the program was started 
     */
@@ -694,46 +703,23 @@ class PProcess : public PThread
     void Construct();
 
   // Member variables
-    int terminationValue;
-    // Application return value
+    bool m_library;                   // Indication PTLib is being used as a library for an external process.
+    int  terminationValue;            // Application return value
 
-    PString manufacturer;
-    // Application manufacturer name.
+    PString manufacturer;             // Application manufacturer name.
+    PString productName;              // Application executable base name from argv[0]
 
-    PString productName;
-    // Application executable base name from argv[0]
+    WORD       majorVersion;          // Major version number of the product
+    WORD       minorVersion;          // Minor version number of the product
+    CodeStatus status;                // Development status of the product
+    WORD       buildNumber;           // Build number of the product
 
-    WORD majorVersion;
-    // Major version number of the product
-    
-    WORD minorVersion;
-    // Minor version number of the product
-    
-    CodeStatus status;
-    // Development status of the product
-    
-    WORD buildNumber;
-    // Build number of the product
+    PFilePath    executableFile;      // Application executable file from argv[0] (not open)
+    PStringArray configurationPaths;  // Explicit file or set of directories to find default PConfig
+    PArgList     arguments;           // The list of arguments
+    int          maxHandles;          // Maximum number of file handles process can open.
 
-    PFilePath executableFile;
-    // Application executable file from argv[0] (not open)
-
-    PStringArray configurationPaths;
-    // Explicit file or set of directories to find default PConfig
-
-    PArgList arguments;
-    // The list of arguments
-
-    PTimerList timers;
-    // List of active timers in system
-
-    PTime programStartTime;
-    // time at which process was intantiated, i.e. started
-
-    int maxHandles;
-    // Maximum number of file handles process can open.
-
-    bool m_library;
+    PTime programStartTime;           // time at which process was intantiated, i.e. started
 
     bool m_shuttingDown;
 
@@ -741,6 +727,10 @@ class PProcess : public PThread
     ThreadMap m_activeThreads;
     PMutex    m_activeThreadMutex;
     
+    PTimerList timers;
+
+    PProcessIdentifier m_processID;
+
   friend class PThread;
 
 
