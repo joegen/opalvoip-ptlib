@@ -44,12 +44,12 @@
 #include <langinfo.h>
 #endif
 
-PINLINE DWORD PProcess::GetProcessID() const
+PINLINE PProcessIdentifier PProcess::GetCurrentProcessID()
 {
 #ifdef P_VXWORKS
-  return PX_threadId;
+  return PThread::Current().PX_threadId;
 #else
-  return (DWORD)getpid();
+  return getpid();
 #endif // P_VXWORKS
 }
 
