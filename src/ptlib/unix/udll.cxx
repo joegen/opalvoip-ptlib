@@ -282,11 +282,20 @@ static void *dlsym(void *handle, const char *symbol)
 
 #endif // P_MACOSX
 
-static PMutex & GetDLLMutex()
-{
-  static PMutex mutex;
-  return mutex;
-}
+// only with gcc (and GNU ld) we can ensure that the DLL mutex will be destructed after static instances of PDynaLink
+#if defined(__GNUC__) &&!defined(SOLARIS)
+#define _DESTRUCT_LAST __attribute__ ((init_priority (101)))
+#if defined(P_LINUX) || defined (P_FREEBSD) || defined (P_OPENBSD) || defined (P_NETBSD)
+// only set of platforms that use GNU ld
+// (checking with ./configure would be better than to assume default configuration)
+#define LATE_DESTRUCTION_HACK 1
+#endif
+#else
+#define _DESTRUCT_LAST /* */
+#endif
+
+static PMutex _DESTRUCT_LAST g_DLLMutex;
+
 
 #ifndef  P_DYNALINK
 
@@ -321,7 +330,7 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & _name)
 {
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
 
   m_lastError.MakeEmpty();
 
@@ -353,7 +362,10 @@ PBoolean PDynaLink::Open(const PString & _name)
 
 void PDynaLink::Close()
 {
-  PWaitAndSignal m(GetDLLMutex());
+// without the hack to force late destruction of the DLL mutex this may crash for static PDynaLink instances
+#ifdef LATE_DESTRUCTION_HACK
+  PWaitAndSignal m(g_DLLMutex);
+#endif
 
   if (dllHandle == NULL)
     return;
@@ -373,7 +385,7 @@ PBoolean PDynaLink::IsLoaded() const
 
 PString PDynaLink::GetName(PBoolean full) const
 {
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
 
   if (!IsLoaded())
     return "";
@@ -402,7 +414,7 @@ PBoolean PDynaLink::GetFunction(PINDEX, Function &)
 
 PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
 {
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
 
   m_lastError.MakeEmpty();
 
