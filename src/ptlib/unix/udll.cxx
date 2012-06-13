@@ -294,12 +294,8 @@ static void *dlsym(void *handle, const char *symbol)
 #define _DESTRUCT_LAST /* */
 #endif
 
-static PMutex _DESTRUCT_LAST DLLMutex;
+static PMutex _DESTRUCT_LAST g_DLLMutex;
 
-static PMutex & GetDLLMutex()
-{
-  return DLLMutex;
-}
 
 #ifndef  P_DYNALINK
 
@@ -334,7 +330,7 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & _name)
 {
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
 
   m_lastError.MakeEmpty();
 
@@ -368,7 +364,8 @@ void PDynaLink::Close()
 {
 // without the hack to force late destruction of the DLL mutex this may crash for static PDynaLink instances
 #ifdef LATE_DESTRUCTION_HACK
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
+#endif
 #endif
 
   if (dllHandle == NULL)
@@ -389,7 +386,7 @@ PBoolean PDynaLink::IsLoaded() const
 
 PString PDynaLink::GetName(PBoolean full) const
 {
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
 
   if (!IsLoaded())
     return "";
@@ -418,7 +415,7 @@ PBoolean PDynaLink::GetFunction(PINDEX, Function &)
 
 PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
 {
-  PWaitAndSignal m(GetDLLMutex());
+  PWaitAndSignal m(g_DLLMutex);
 
   m_lastError.MakeEmpty();
 

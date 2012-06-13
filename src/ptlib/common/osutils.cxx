@@ -285,7 +285,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 #endif
     else {
       PFilePath fn(m_filename);
-      fn.Replace("%P", PString((unsigned int) PProcess::Current().GetProcessID()));
+      fn.Replace("%P", PString(PProcess::GetCurrentProcessID()));
      
       if ((options & PTrace::RotateLogMask) != 0)
       {
@@ -416,7 +416,7 @@ unsigned PTrace::GetLevel()
 
 PBoolean PTrace::CanTrace(unsigned level)
 {
-  return level <= PTraceInfo::Instance().thresholdLevel;
+  return PProcess::IsInitialised() && level <= PTraceInfo::Instance().thresholdLevel;
 }
 
 
@@ -424,7 +424,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
-  if (level == UINT_MAX)
+  if (level == UINT_MAX || !PProcess::IsInitialised())
     return *info.stream;
 
   PTraceInfo::ThreadLocalInfo * threadInfo = info.m_threadStorage.Get();
@@ -1651,7 +1651,8 @@ void PProcess::PreInitialise(int c, char ** v, char **)
 PProcess::PProcess(const char * manuf, const char * name,
                    WORD major, WORD minor, CodeStatus stat, WORD build,
                    bool library)
-  : terminationValue(0)
+  : m_library(library)
+  , terminationValue(0)
   , manufacturer(manuf)
   , productName(name)
   , majorVersion(major)
@@ -1659,8 +1660,10 @@ PProcess::PProcess(const char * manuf, const char * name,
   , status(stat)
   , buildNumber(build)
   , maxHandles(INT_MAX)
-  , m_library(library)
   , m_shuttingDown(false)
+#ifndef P_VXWORKS
+  , m_processID(GetCurrentProcessID())
+#endif
 {
   m_activeThreads[GetCurrentThreadId()] = this;
 
@@ -1730,7 +1733,7 @@ void PProcess::PostShutdown()
 PProcess & PProcess::Current()
 {
   if (PProcessInstance == NULL) {
-    cerr << "Catastrophic failure, PProcess::Current() = NULL!!\n";
+    fputs("Catastrophic failure, PProcess::Current() = NULL!!\n", stderr);
 #if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE) && !defined(_WIN64)
     __asm int 3;
 #endif
