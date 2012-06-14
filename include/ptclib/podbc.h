@@ -18,7 +18,7 @@
  * under the License.
  *
  *
- * The Original Code is derived from and used in conjunction with the 
+ * The Original Code is derived from and used in conjunction with the
  * pwlib Libaray of the OpenH323 Project (www.openh323.org/)
  *
  * The Initial Developer of the Original Code is ISVO (Asia) Pte Ltd.
@@ -56,7 +56,7 @@
     // Load a Database Table (could also be a SELECT Query)
     PODBC::RecordSet table(link, "FooTable");
 
-    // Bind to Column 1 
+    // Bind to Column 1
     PODBC::Field & field = table.Column(1):
 
     // Display Contents
@@ -106,10 +106,10 @@
 
 
 /** PODBC Class
-  The Main ODBC class. This Class should be used in the there is 
+  The Main ODBC class. This Class should be used in the there is
   not a preconfigured DSN setup in the MDAC. This class will use
   the applicable ODBC drivers to connect to a compliant Datasource.
-  It Supports a wide variety of Datasources but others can added 
+  It Supports a wide variety of Datasources but others can added
   by simply creating your custom connection string and then calling
   PODBC::Connect. For Defined sources the PODBC::DataSource function
   should be used.
@@ -130,67 +130,9 @@ class PODBC  : public PObject
     ~PODBC();
     //@}
 
-    /**@name Enumerators */
-    //@{
-    /** Datasources that are supported by this implementation
-    used in the PODBC::DataSource Function.
-    */
-
-    enum DataSources
-    {
-      mySQL,      
-      MSSQL,      
-      Oracle,      
-      IBM_DB2,
-      DBASE,
-      Paradox,
-      Excel,
-      Ascii,
-      Foxpro,
-      MSAccess,
-      postgreSQL
-    };
-
-    /** MSSQL protocols.If your interested?
-    */
-    enum MSSQLProtocols
-    {
-      MSSQLNamedPipes,
-      MSSQLWinSock,
-      MSSQLIPX,
-      MSSQLBanyan,
-      MSSQLRPC
-    };
-
-    //@}
-
-    /**@name Connection Class */
-    //@{
-    /** This class is a multipurpose use
-    class for storing parameters when
-    initiating connection to DataSource.
-    Not all field are required. By default
-    all non-essential params are set to a 
-    datasource specific default value.
-    */
-    struct ConnectData
-    {
-      DataSources Source;   ///< Data source type
-      PFilePath DBPath;     ///< Database file Path (not Oracle,xxSQL)
-      PString DefDir;       ///< Used with Paradox/DBase/Excel (& mySQL db)
-      PString User;         ///< UserName
-      PString Pass;         ///< Password
-      bool Excl_Trust;      ///< Whether Datasource is locked or Trusted.
-      PString Host;         ///< URL for Host Datasouce xxSQL
-      int Port;             ///< Port to connect to mySQL
-      int Option;              ///< General Option Value.mySQL & Paradox
-    };
-
     /// Type for row index, may become 64 bit one day
     typedef unsigned RowIndex;
     enum { UndefinedRowIndex = 0 };
-    //@}
-
 
     class Field;
     class Row;
@@ -263,7 +205,7 @@ class PODBC  : public PObject
 
 
     /**Database Row Class
-    This class functions as a simple wrapper 
+    This class functions as a simple wrapper
     of the Statement class to fetch/Save
     data to the Datasource. Data is fetched
     on a need to basis and not cached except
@@ -417,9 +359,9 @@ class PODBC  : public PObject
         PCLASSINFO(RecordSet, PObject);
       public:
         /**@name Constructor/Deconstructor */
-        //@{ 
+        //@{
         /** Constructor
-        Using the HDBC and TableName/Select SQL Query 
+        Using the HDBC and TableName/Select SQL Query
         creates a virtual table in the OBDC driver.
         */
         RecordSet(PODBC & odbc, const PString & query);
@@ -463,7 +405,7 @@ class PODBC  : public PObject
         Row & operator[](PINDEX row);
 
         /** Returns the Field data at a predetermined position in the Resultant
-        RecordSet. It Fetches the Row than isolates the Column from the fetched 
+        RecordSet. It Fetches the Row than isolates the Column from the fetched
         data.
         */
         Field & operator()(RowIndex row, PINDEX col);
@@ -473,7 +415,7 @@ class PODBC  : public PObject
         */
         Field & Column(PINDEX column) { return m_cursor.Column(column); }
 
-        /** Returns the indicated Column Holder Name for the RecordSet,  
+        /** Returns the indicated Column Holder Name for the RecordSet,
         */
         Field & Column(const PString & name) { return m_cursor.Column(name); }
 
@@ -503,19 +445,60 @@ class PODBC  : public PObject
     typedef RecordSet Table; // For backward compatibility
 
 
-    /**@name Data Queries */
-    //@{ 
-    /** Added Information to the DataSource. Use this 
-    function if you just want to use a SQL statement
-    to add data to a datasource without retreiving the
-    data itself. ie "UPDATE" "APPEND" "INSERT" queries.
-    */
-    bool Query(const PString & query);
-    //@}
-
-
     /**@name DataSource Access */
-    //@{ 
+    //@{
+    /** Driver types that are supported by this implementation.
+    */
+    enum DriverType
+    {
+      DSN,
+      mySQL,
+      postgreSQL,
+      Oracle,
+      IBM_DB2,
+      MSSQL,
+      MSAccess,
+      Paradox,
+      Foxpro,
+      dBase,
+      Excel,
+      Ascii,
+      ConnectionString,
+      NumDriverTypes
+    };
+
+    /** MSSQL protocols.If your interested?
+    */
+    enum MSSQLProtocols
+    {
+      MSSQLNamedPipes,
+      MSSQLWinSock,
+      MSSQLIPX,
+      MSSQLBanyan,
+      MSSQLRPC
+    };
+
+    /** This class is a multipurpose use
+    class for storing parameters when
+    initiating connection to DataSource.
+    Not all field are required. By default
+    all non-essential params are set to a
+    datasource specific default value.
+    */
+    struct ConnectData
+    {
+      DriverType m_driver;    ///< Driver type
+      PString    m_database;  ///< Database name or file Path (not Oracle,xxSQL)
+      PDirectory m_directory; ///< Used with Paradox/DBase/Excel (& mySQL db)
+      PString    m_username;  ///< UID
+      PString    m_password;  ///< Password
+      PString    m_host;      ///< Host name to connect to source
+      unsigned   m_port;      ///< Port to connect to source
+      bool       m_exclusive; ///< Whether Datasource is locked.
+      bool       m_trusted;   ///< Whether Datasource is trusted.
+      int        m_options;   ///< General Option Value.mySQL & Paradox
+    };
+
     /**Connect to database using ConnectData
     This is the main function to call to contact a
     DataSource. Source specifies the Type of DataSource
@@ -526,7 +509,7 @@ class PODBC  : public PObject
     bool Connect(const ConnectData & connectInfo);
 
     /** General Connect Function
-    Custom connection strings should call this 
+    Custom connection strings should call this
     to connect.
     */
     bool Connect(
@@ -536,7 +519,7 @@ class PODBC  : public PObject
     /**@name Connection/Disconnect */
     //@{
     /** Connect to the MDAC using a pre-existing MDAC Defined DataSource
-    This is different than calling PODBC::DataSource in that the 
+    This is different than calling PODBC::DataSource in that the
     Data Source is known defined externally within MDAC,
     */
     bool Connect(
@@ -608,7 +591,7 @@ class PODBC  : public PObject
     */
     bool Connect_MSSQL(
       const PString & user = PString::Empty(),
-      const PString & pass = PString::Empty(), 
+      const PString & pass = PString::Empty(),
       const PString & host = "(local)",
       bool trusted = true,
       MSSQLProtocols Proto = MSSQLNamedPipes
@@ -664,25 +647,37 @@ class PODBC  : public PObject
     );
     //@}
 
-    /**@name Utilities */
-    //@{ 
+    /**@name SQL */
+    //@{
     /** Retrieve a List of Tables in the Datasource
     use the option field to specify the type of
-    data to access. ie "TABLE" or "VIEW" (further dev req'd)
+    data to access. ie "CATALOGS", "SCHEMAS", "TABLE" or "VIEW"
+    Note case is significant.
     */
-    PStringArray TableList(const PString & option = PString::Empty());
+    PStringArray TableList(const PString & options = PString::Empty());
 
-    /** OnSQL Error
+    /** Added Information to the DataSource. Use this
+    function if you just want to use a SQL statement
+    to add data to a datasource without retreiving the
+    data itself. ie "UPDATE" "APPEND" "INSERT" queries.
     */
-    virtual void OnSQLError(
-      const PString & /*retCode*/,
-      const PString & /*retString*/
-    ) { }
+    bool Execute(const PString & sql);
 
+    // For backward compatibility
+    __inline bool Query(const PString & sql) { return Execute(sql); }
+    //@}
+
+
+    /**@name Utilities */
+    //@{
+    /**Get valid field type for PVarType enumeration.
+       This will get the database specific field name for the driver type.
+      */
+    static PString GetFieldType(DriverType driver, PVarType::BasicType type, unsigned size = 0);
 
     /** Set the Number of Decimal places to
     round to By Default it is 4. However if the field
-    decimal places is less then Precision Value the 
+    decimal places is less then Precision Value the
     field rounding will be used. This must be set prior
     to calling LoadTable()
     */
@@ -707,27 +702,39 @@ class PODBC  : public PObject
       */
     PINDEX GetMaxChunkSize() const { return m_needChunking ? m_maxChunkSize : P_MAX_INDEX; }
 
-    /// Get last error for connect
+    /// Get last error
     int GetLastError() const { return m_lastError; }
+
+    /// Get last error text
+    PString GetLastErrorText() const { return m_lastErrorText; }
+
+    /** OnSQL Error
+    */
+    virtual void OnSQLError(
+      int native,               ///< Native error code
+      const PString & code,     ///< 5 character SQLSTATE code
+      const PString & message   ///< Human readable error message
+    );
     //@}
 
     // For backward compatibility
-    bool DataSource(DataSources Source, ConnectData Data);
+    bool DataSource(DriverType driver, ConnectData Data);
 
   protected:
-    bool InternalConnectSetUp();
-
     struct Link;
 
     Link      * m_link;
-    DataSources m_dbase;       /// Database Type connected to
-    int         m_lastError;   // Internal SQL Error code
+    DriverType  m_driver;       /// Driver Type connected to
+    int         m_lastError;
+    PString     m_lastErrorText;
     unsigned    m_precision;   /// Double Real Float Decimal digit rounding def= 4;
     PTime::TimeFormat m_timeFormat;
     PTime::TimeFormat m_dateFormat;
     PTime::TimeFormat m_dateTimeFormat;
     bool        m_needChunking;
     PINDEX      m_maxChunkSize;
+
+    P_REMOVE_VIRTUAL_VOID(OnSQLError(const PString &, const PString &));
 
   friend class Statement;
 };
