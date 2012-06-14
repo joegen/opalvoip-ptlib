@@ -57,15 +57,26 @@ PCREATE_PROCESS(ODBCtest)
   PODBC link;
 
   {
-    PStringList servers, descriptions;
-    link.GetSources(servers, descriptions, false);
-    link.GetSources(servers, descriptions, true);
-    cout << "Sources\n";
-    PStringList::iterator its = servers.begin();
-    PStringList::iterator itd = descriptions.begin();
-    while (its != servers.end())
-      cout << *its++ << ": " << *itd++ << '\n';
-    cout << endl;
+    cout << "Drivers available:" << endl;
+    PStringList drivers = link.GetDrivers();
+    for (PStringList::iterator it = drivers.begin(); it != drivers.end(); ++it) {
+      it->Replace("\t", "\n    ", true);
+      cout << "  " << *it << endl;
+    }
+  }
+
+  {
+    cout << "User sources available:" << endl;
+    PStringList sources = link.GetSources(false);
+    for (PStringList::iterator it = sources.begin(); it != sources.end(); ++it)
+      cout << "  " << *it << endl;
+  }
+
+  {
+    cout << "System sources available:" << endl;
+    PStringList sources = link.GetSources(true);
+    for (PStringList::iterator it = sources.begin(); it != sources.end(); ++it)
+      cout << "  " << *it << endl;
   }
 
   PODBC::ConnectData data;
@@ -87,16 +98,20 @@ PCREATE_PROCESS(ODBCtest)
   link.SetDateTimeFormat(PTime::MediumDate);	// Set the Default Display Time
 
   /// Enumerate catalogs in Database
-  cout << "Catalogs in Database:" << endl;
-  PStringArray catalogs = link.TableList("CATALOGS");
-  for (PINDEX c = 0; c < catalogs.GetSize(); c++)
-    cout << "  " << catalogs[c] << endl;
+  {
+    cout << "Catalogs in Database:" << endl;
+    PStringArray catalogs = link.TableList("CATALOGS");
+    for (PINDEX c = 0; c < catalogs.GetSize(); c++)
+      cout << "  " << catalogs[c] << endl;
+  }
 
   /// Enumerate schemas in Database
-  cout << "Schemas in Database:" << endl;
-  PStringArray schemas = link.TableList("SCHEMAS");
-  for (PINDEX s = 0; s < schemas.GetSize(); s++)
-    cout << "  " << schemas[s] << endl;
+  {
+    cout << "Schemas in Database:" << endl;
+    PStringArray schemas = link.TableList("SCHEMAS");
+    for (PINDEX s = 0; s < schemas.GetSize(); s++)
+      cout << "  " << schemas[s] << endl;
+  }
 
   /// Enumerate Tables in Database
   ///+++++++++++++++++++++++++++++
