@@ -69,11 +69,12 @@ PCREATE_PROCESS(ODBCtest)
   }
 
   PODBC::ConnectData data;
-  data.DBPath = "test.mdb";
+  data.m_driver = PODBC::MSAccess;
+  data.m_database = "test.mdb";
 
-  cout << "Open AccessDB " << data.DBPath << endl;
+  cout << "Open AccessDB " << data.m_database << endl;
 
-  if (!link.DataSource(PODBC::MSAccess,data)) {
+  if (!link.Connect(data)) {
     cout << "ODBC Error Link" << endl;
     return;
   }
@@ -85,13 +86,25 @@ PCREATE_PROCESS(ODBCtest)
   link.SetPrecision(2);			// Number of Decimal Places (def = 4)   
   link.SetDateTimeFormat(PTime::MediumDate);	// Set the Default Display Time
 
+  /// Enumerate catalogs in Database
+  cout << "Catalogs in Database:" << endl;
+  PStringArray catalogs = link.TableList("CATALOGS");
+  for (PINDEX c = 0; c < catalogs.GetSize(); c++)
+    cout << "  " << catalogs[c] << endl;
+
+  /// Enumerate schemas in Database
+  cout << "Schemas in Database:" << endl;
+  PStringArray schemas = link.TableList("SCHEMAS");
+  for (PINDEX s = 0; s < schemas.GetSize(); s++)
+    cout << "  " << schemas[s] << endl;
+
   /// Enumerate Tables in Database
   ///+++++++++++++++++++++++++++++
   /// You can also use the QUERY keyword to view Queries
-  cout << "Tables in Database" << endl;
+  cout << "Tables in Database:" << endl;
   PStringArray tables = link.TableList("TABLE");
   for (PINDEX t = 0; t < tables.GetSize(); t++)
-    cout << tables[t] << endl;
+    cout << "  " << tables[t] << endl;
 
   /// Viewing Database Contents
   ///++++++++++++++++++++++++++
@@ -202,6 +215,27 @@ PCREATE_PROCESS(ODBCtest)
       cout << endl;
     } while (row.Next());
     cout << "Rows " << ntable.Rows() << endl;
+  }
+
+  {
+    link.Execute("DROP TABLE test_create;");
+    PStringStream sql;
+    sql   << "CREATE TABLE test_create (\n";
+    for (PVarType::BasicType t = PVarType::VarBoolean; t <= PVarType::VarTime; t = (PVarType::BasicType)(t+1))
+      sql << "  field" << (unsigned)t << ' ' << PODBC::GetFieldType(data.m_driver, t) << ",\n";
+    sql   << "  char10 " << PODBC::GetFieldType(data.m_driver, PVarType::VarFixedString, 10) << ",\n"
+             "  varchar20 " << PODBC::GetFieldType(data.m_driver, PVarType::VarStaticString, 20) << ",\n"
+             "  varchar2000 " << PODBC::GetFieldType(data.m_driver, PVarType::VarDynamicString, 2000) << ",\n"
+             "  varchar_infinite " << PODBC::GetFieldType(data.m_driver, PVarType::VarDynamicString) << ",\n"
+             "  binary_100 " << PODBC::GetFieldType(data.m_driver, PVarType::VarStaticBinary, 100) << ",\n"
+             "  binary_1000 " << PODBC::GetFieldType(data.m_driver, PVarType::VarDynamicBinary, 1000) << ",\n"
+             "  binary_infinite " << PODBC::GetFieldType(data.m_driver, PVarType::VarDynamicBinary) << "\n"
+             ");";
+    if (link.Execute(sql))
+      cout << "Created new table";
+    else
+      cout << "Create of new table failed: " << link.GetLastErrorText() << '\n' << sql << endl;
+    cout << '\n' << sql << endl;
   }
 }
 
