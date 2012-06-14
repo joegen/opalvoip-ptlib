@@ -1297,10 +1297,9 @@ This provides functionality provided to all classes, eg run-time types,
 default comparison operations, simple stream I/O and serialisation support.
 */
 class PObject {
-
-#if PTRACING==2
   protected:
     unsigned m_traceContextIdentifier;
+#if PTRACING==2
   public:
     /**Get PTRACE context identifier
       */
@@ -1317,9 +1316,7 @@ class PObject {
        its own.
      */
     PObject()
-#if PTRACING==2
       : m_traceContextIdentifier(0)
-#endif
     { }
 
   public:
