@@ -275,29 +275,51 @@ PODBC::~PODBC()
 }
 
 
-PINDEX PODBC::GetSources(PStringList & servers, PStringList & descriptions, bool system)
+PStringList PODBC::GetDrivers() const
 {
-  if (m_link->m_hEnv == NULL)
-    return 0;
+  PStringList drivers;
+  SQLCHAR description[1000], attributes[2000];
+  SQLSMALLINT descLen, attrLen;
 
-  PString server, description;
-  SQLSMALLINT servLen, descLen;
-  SQLUSMALLINT fetch = system ? SQL_FETCH_FIRST_SYSTEM : SQL_FETCH_FIRST_USER;
-  PINDEX count = 0;
-
-  if (SQL_SUCCEEDED(SQLDataSources(m_link->m_hEnv, fetch, NULL, 0, &servLen, NULL, 0, &descLen))) {
+  if (m_link->m_hEnv != NULL &&
+      SQL_SUCCEEDED(SQLDrivers(m_link->m_hEnv, SQL_FETCH_FIRST,
+                               description, sizeof(description), &descLen,
+                               attributes, sizeof(attributes), &attrLen))) {
     do {
-      SQL_SUCCEEDED(SQLDataSources(m_link->m_hEnv, fetch,
-                                   (SQLCHAR*)server.GetPointerAndSetLength(servLen), servLen+1, &servLen,
-                                   (SQLCHAR*)description.GetPointerAndSetLength(descLen), descLen+1, &descLen));
-      servers.AppendString(server);
-      descriptions.AppendString(description);
-      fetch = SQL_FETCH_NEXT;
-      ++count;
-    } while (SQL_SUCCEEDED(SQLDataSources(m_link->m_hEnv, fetch, NULL, 0, &servLen, NULL, 0, &descLen)));
+      for (PINDEX i = 0; i < attrLen-1; ++i) {
+        if (attributes[i] == '\0')
+          attributes[i] = '\t';
+      }
+      drivers.AppendString(PString((const char *)description, descLen) + '\t' +
+                            PString((const char *)attributes, attrLen));
+    } while (SQL_SUCCEEDED(SQLDrivers(m_link->m_hEnv, SQL_FETCH_NEXT,
+                                      description, sizeof(description), &descLen,
+                                      attributes, sizeof(attributes), &attrLen)));
   }
 
-  return count;
+  return drivers;
+}
+
+
+PStringList PODBC::GetSources(bool system) const
+{
+  PStringList sources;
+  SQLCHAR server[1000], description[1000];
+  SQLSMALLINT servLen, descLen;
+
+  if (m_link->m_hEnv != NULL &&
+      SQL_SUCCEEDED(SQLDataSources(m_link->m_hEnv, system ? SQL_FETCH_FIRST_SYSTEM : SQL_FETCH_FIRST_USER,
+                                   server, sizeof(server), &servLen,
+                                   description, sizeof(description), &descLen))) {
+    do {
+      sources.AppendString(PString((const char *)server, servLen) + '\t' +
+                           PString((const char *)description, descLen));
+    } while (SQL_SUCCEEDED(SQLDataSources(m_link->m_hEnv, SQL_FETCH_NEXT,
+                                          server, sizeof(server), &servLen,
+                                          description, sizeof(description), &descLen)));
+  }
+
+  return sources;
 }
 
 
@@ -326,6 +348,7 @@ bool PODBC::Connect(const PString & source)
                                   &shortResult,
                                   SQL_DRIVER_NOPROMPT
                                   ))) {
+    PTRACE(2, "ODBC\tCould not connect to " << source);
     // Don't call Disconnect() or m_lastError is changed.
     SQLFreeHandle(SQL_HANDLE_DBC, m_link->m_hDBC);
     m_link->m_hDBC = NULL;

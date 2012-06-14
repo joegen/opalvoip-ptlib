@@ -638,13 +638,17 @@ class PODBC  : public PObject
     */
     void Disconnect();
 
+    /**Get a list of driver descriptions and attributes.
+       The returned strings are of the form name\tattr=val\tattr=val etc
+     */
+    PStringList GetDrivers() const;
+
     /**Get a list of known data sources and their descriptions
+       The returned strings are of the form name\tdescription
       */
-    PINDEX GetSources(
-      PStringList & servers,
-      PStringList & descriptions,
+    PStringList GetSources(
       bool system = false
-    );
+    ) const;
     //@}
 
     /**@name SQL */
