@@ -35,6 +35,8 @@
 
 #include <ptlib.h>
 
+#if P_DYNALINK
+
 #ifdef P_MACOSX
 #if P_MACOSX < 700
 
@@ -282,26 +284,17 @@ static void *dlsym(void *handle, const char *symbol)
 
 #endif // P_MACOSX
 
-// only with gcc (and GNU ld) we can ensure that the DLL mutex will be destructed after static instances of PDynaLink
-#if defined(__GNUC__) &&!defined(SOLARIS)
-#define _DESTRUCT_LAST __attribute__ ((init_priority (101)))
-#if defined(P_LINUX) || defined (P_FREEBSD) || defined (P_OPENBSD) || defined (P_NETBSD)
-// only set of platforms that use GNU ld
-// (checking with ./configure would be better than to assume default configuration)
-#define LATE_DESTRUCTION_HACK 1
-#endif
+
+
+#ifdef P_PTHREADS
+static pthread_mutex_t g_DLLMutex = PTHREAD_MUTEX_INITIALIZER;
+#define LOCK_DLFCN() pthread_mutex_lock(&g_DLLMutex)
+#define UNLOCK_DLFCN() pthread_mutex_unlock(&g_DLLMutex)
 #else
-#define _DESTRUCT_LAST /* */
+#define LOCK_DLFCN()
+#define UNLOCK_DLFCN()
 #endif
 
-static PMutex _DESTRUCT_LAST g_DLLMutex;
-
-
-#ifndef  P_DYNALINK
-
-#warning "No implementation for dynamic library functions"
-
-#else
 
 PDynaLink::PDynaLink()
   : dllHandle(NULL)
@@ -330,8 +323,6 @@ PString PDynaLink::GetExtension()
 
 PBoolean PDynaLink::Open(const PString & _name)
 {
-  PWaitAndSignal m(g_DLLMutex);
-
   m_lastError.MakeEmpty();
 
   Close();
@@ -343,19 +334,20 @@ PBoolean PDynaLink::Open(const PString & _name)
 
   name = _name;
 
-  {
+  LOCK_DLFCN();
+
 #if defined(P_OPENBSD)
     dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
 #else
     dllHandle = dlopen((const char *)name, RTLD_NOW);
 #endif
 
-    if (dllHandle != NULL)
-      return true;
-
+  if (dllHandle == NULL) {
     m_lastError = dlerror();
     PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
   }
+
+  UNLOCK_DLFCN();
 
   return IsLoaded();
 }
@@ -363,19 +355,16 @@ PBoolean PDynaLink::Open(const PString & _name)
 void PDynaLink::Close()
 {
 // without the hack to force late destruction of the DLL mutex this may crash for static PDynaLink instances
-#ifdef LATE_DESTRUCTION_HACK
-  PWaitAndSignal m(g_DLLMutex);
-#endif
-
   if (dllHandle == NULL)
     return;
 
   PTRACE(4, "UDLL\tClosing " << name);
+  name.MakeEmpty();
 
-
+  LOCK_DLFCN();
   dlclose(dllHandle);
   dllHandle = NULL;
-  name.MakeEmpty();
+  UNLOCK_DLFCN();
 }
 
 PBoolean PDynaLink::IsLoaded() const
@@ -385,8 +374,6 @@ PBoolean PDynaLink::IsLoaded() const
 
 PString PDynaLink::GetName(PBoolean full) const
 {
-  PWaitAndSignal m(g_DLLMutex);
-
   if (!IsLoaded())
     return "";
 
@@ -409,32 +396,32 @@ PString PDynaLink::GetName(PBoolean full) const
 
 PBoolean PDynaLink::GetFunction(PINDEX, Function &)
 {
-  return PFalse;
+  return false;
 }
 
 PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
 {
-  PWaitAndSignal m(g_DLLMutex);
-
   m_lastError.MakeEmpty();
 
   if (dllHandle == NULL)
-    return PFalse;
+    return false;
 
+  LOCK_DLFCN();
 #if defined(P_OPENBSD)
   func = (Function)dlsym(dllHandle, (char *)(const char *)fn);
 #else
   func = (Function)dlsym(dllHandle, (const char *)fn);
 #endif
-
-  if (func != NULL)
-    return true;
-
   m_lastError = dlerror();
-  return false;
+  UNLOCK_DLFCN();
+
+  return func != NULL;
 }
 
-#endif
+#else // P_DYNALINK
+
+#warning "No implementation for dynamic library functions"
+
+#endif // P_DYNALINK
 
 // End of file
-
