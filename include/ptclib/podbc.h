@@ -727,16 +727,15 @@ class PODBC  : public PObject
   protected:
     struct Link;
 
-    Link      * m_link;
-    DriverType  m_driver;       /// Driver Type connected to
-    int         m_lastError;
-    PString     m_lastErrorText;
-    unsigned    m_precision;   /// Double Real Float Decimal digit rounding def= 4;
+    Link            * m_link;
+    int               m_lastError;
+    PString           m_lastErrorText;
+    unsigned          m_precision;   /// Double Real Float Decimal digit rounding def= 4;
     PTime::TimeFormat m_timeFormat;
     PTime::TimeFormat m_dateFormat;
     PTime::TimeFormat m_dateTimeFormat;
-    bool        m_needChunking;
-    PINDEX      m_maxChunkSize;
+    bool              m_needChunking;
+    PINDEX            m_maxChunkSize;
 
     P_REMOVE_VIRTUAL_VOID(OnSQLError(const PString &, const PString &));
 
