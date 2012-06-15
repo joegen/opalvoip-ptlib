@@ -466,6 +466,9 @@ class PODBC  : public PObject
       ConnectionString,
       NumDriverTypes
     };
+    friend DriverType & operator++(DriverType & type) { return type = (DriverType)(type+1); }
+    static const char * GetDriverName(DriverType type);
+    friend std::ostream & operator<<(std::ostream & strm, DriverType type) { return strm << PODBC::GetDriverName(type); }
 
     /** MSSQL protocols.If your interested?
     */
@@ -487,6 +490,8 @@ class PODBC  : public PObject
     */
     struct ConnectData
     {
+      ConnectData() : m_driver(DSN), m_port(0), m_exclusive(false), m_trusted(false), m_options(0) { }
+
       DriverType m_driver;    ///< Driver type
       PString    m_database;  ///< Database name or file Path (not Oracle,xxSQL)
       PDirectory m_directory; ///< Used with Paradox/DBase/Excel (& mySQL db)
@@ -639,15 +644,20 @@ class PODBC  : public PObject
     void Disconnect();
 
     /**Get a list of driver descriptions and attributes.
-       The returned strings are of the form name\tattr=val\tattr=val etc
+       The returned strings when\p withAttribute true are of the form
+          name\tattr=val\tattr=val etc
      */
-    PStringList GetDrivers() const;
+    PStringList GetDrivers(
+      bool withAttributes = true
+    ) const;
 
     /**Get a list of known data sources and their descriptions
-       The returned strings are of the form name\tdescription
+       The returned strings when \p withDescription true are of the form
+          name\tdescription
       */
     PStringList GetSources(
-      bool system = false
+      bool system = false,
+      bool withDescription = true
     ) const;
     //@}
 
