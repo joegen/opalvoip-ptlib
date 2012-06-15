@@ -356,8 +356,10 @@ The current log level is checked and if allowed, the second argument is evaluate
 as a stream output sequence which is them output to the system log.
 */
 #define PSYSTEMLOG(level, variables) \
-  if (PSystemLog::GetTarget().GetThresholdLevel() < PSystemLog::level) (void)0; \
-  else PSystemLog(PSystemLog::level) << variables
+  if (PSystemLog::GetTarget().GetThresholdLevel() >= PSystemLog::level) { \
+    PSystemLog P_systemlog(PSystemLog::level); \
+    P_systemlog << variables; \
+  } else (void)0
 
 
 #endif
