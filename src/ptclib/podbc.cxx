@@ -391,7 +391,7 @@ const char * PODBC::GetDriverName(DriverType type)
 static PString AddDriver(PODBC::DriverType type)
 {
   PStringStream strm;
-  strm << "Driver={" << PODBC::GetDriverName(type) << "};";
+  strm << "DRIVER={" << PODBC::GetDriverName(type) << "};";
   return strm;
 }
 
