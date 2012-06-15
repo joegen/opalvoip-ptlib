@@ -49,10 +49,43 @@ PCREATE_PROCESS(ODBCtest)
 
   void ODBCtest::Main()
 {
+  cout << "ODBC Component for the Pwlib Library Test Program\n"
+          "=================================================\n\n";
 
-  cout << "ODBC Component for the Pwlib Library Test Program" << endl;
-  cout << "=================================================" << endl;
-  cout << endl;
+  PArgList & args = GetArguments();
+  args.Parse("d-database:"
+             "H-host:"
+             "P-port:"
+             "u-username:"
+             "p-password:"
+#if PTRACING
+             "o-output:"
+             "t-trace."
+#endif
+             "h-help."
+    );
+
+  if (args.HasOption('h')) {
+    cerr << "usage: " << GetFile().GetTitle() << " [ options ] [ <driver> ]\n"
+         << "Options:\n"
+         << "  -d --database X    : Database name\n"
+         << "  -H --host X        : Host name\n"
+         << "  -P --port X        : Port number\n"
+         << "  -u --username X    : User name\n"
+         << "  -p --password X    : Password\n"
+#if PTRACING
+         << "  -t --trace         : Enable trace, use multiple times for more detail\n"
+         << "  -o --output        : File for trace output, default is stderr\n"
+#endif
+         << endl;
+    return;
+  }
+
+#if PTRACING
+  PTrace::Initialise(args.GetOptionCount('t'),
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+#endif
 
   PODBC link;
 
@@ -80,18 +113,34 @@ PCREATE_PROCESS(ODBCtest)
   }
 
   PODBC::ConnectData data;
-  data.m_driver = PODBC::MSAccess;
-  data.m_database = "test.mdb";
 
-  cout << "Open AccessDB " << data.m_database << endl;
+  if (args.GetCount() == 0)
+    data.m_driver = PODBC::MSAccess;
+  else {
+    for (data.m_driver = PODBC::DSN; data.m_driver < PODBC::NumDriverTypes; ++data.m_driver) {
+      if (args[0].NumCompare(PODBC::GetDriverName(data.m_driver)) == EqualTo)
+        break;
+    }
+    if (data.m_driver == PODBC::NumDriverTypes) {
+      cout << "\n\nCannot use driver \"" << args[0] << '"' << endl;
+      return;
+    }
+  }
+
+  data.m_database = args.GetOptionString('d', "test.mdb");
+  data.m_host = args.GetOptionString('H');
+  data.m_port = args.GetOptionString('P', "0").AsUnsigned();
+  data.m_username = args.GetOptionString('u');
+  data.m_password = args.GetOptionString('p');
+
+  cout << "\n\nOpening " << data.m_driver << ", database " << data.m_database << endl;
 
   if (!link.Connect(data)) {
-    cout << "ODBC Error Link" << endl;
+    cout << "ODBC cannot connect: " << link.GetLastErrorText() << endl;
     return;
   }
 
-  cout << "Connected Access Database" << endl;
-  cout << endl;
+  cout << "Connected Access Database\n" << endl;
 
   /// Settings
   link.SetPrecision(2);			// Number of Decimal Places (def = 4)   
