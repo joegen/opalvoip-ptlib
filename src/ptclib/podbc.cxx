@@ -566,10 +566,7 @@ bool PODBC::DataSource(DriverType driver, ConnectData connectInfo)
 
 bool PODBC::Connect(const ConnectData & connectInfo)
 {
-  m_driver = connectInfo.m_driver;
-
-  switch (m_driver)
-  {
+  switch (connectInfo.m_driver) {
     case DSN :
       return Connect(connectInfo.m_database,connectInfo.m_username, connectInfo.m_password);
     case mySQL:
@@ -596,9 +593,9 @@ bool PODBC::Connect(const ConnectData & connectInfo)
       return Connect_postgreSQL(connectInfo.m_database,connectInfo.m_username,connectInfo.m_password,connectInfo.m_host,connectInfo.m_port);
     case ConnectionString :
       return Connect(connectInfo.m_database);
-  };
-
-  return false;
+    default :
+      return false;
+  }
 }
 
 
