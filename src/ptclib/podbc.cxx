@@ -275,7 +275,7 @@ PODBC::~PODBC()
 }
 
 
-PStringList PODBC::GetDrivers() const
+PStringList PODBC::GetDrivers(bool withAttributes) const
 {
   PStringList drivers;
   SQLCHAR description[1000], attributes[2000];
@@ -286,12 +286,16 @@ PStringList PODBC::GetDrivers() const
                                description, sizeof(description), &descLen,
                                attributes, sizeof(attributes), &attrLen))) {
     do {
-      for (PINDEX i = 0; i < attrLen-1; ++i) {
-        if (attributes[i] == '\0')
-          attributes[i] = '\t';
+      if (withAttributes) {
+        for (PINDEX i = 0; i < attrLen-1; ++i) {
+          if (attributes[i] == '\0')
+            attributes[i] = '\t';
+        }
+        drivers.AppendString(PString((const char *)description, descLen) + '\t' +
+                              PString((const char *)attributes, attrLen));
       }
-      drivers.AppendString(PString((const char *)description, descLen) + '\t' +
-                            PString((const char *)attributes, attrLen));
+      else
+        drivers.AppendString(PString((const char *)description, descLen));
     } while (SQL_SUCCEEDED(SQLDrivers(m_link->m_hEnv, SQL_FETCH_NEXT,
                                       description, sizeof(description), &descLen,
                                       attributes, sizeof(attributes), &attrLen)));
@@ -301,7 +305,7 @@ PStringList PODBC::GetDrivers() const
 }
 
 
-PStringList PODBC::GetSources(bool system) const
+PStringList PODBC::GetSources(bool system, bool withDescription) const
 {
   PStringList sources;
   SQLCHAR server[1000], description[1000];
@@ -312,8 +316,11 @@ PStringList PODBC::GetSources(bool system) const
                                    server, sizeof(server), &servLen,
                                    description, sizeof(description), &descLen))) {
     do {
-      sources.AppendString(PString((const char *)server, servLen) + '\t' +
-                           PString((const char *)description, descLen));
+      if (withDescription)
+        sources.AppendString(PString((const char *)server, servLen) + '\t' +
+                             PString((const char *)description, descLen));
+      else
+        sources.AppendString(PString((const char *)server, servLen));
     } while (SQL_SUCCEEDED(SQLDataSources(m_link->m_hEnv, SQL_FETCH_NEXT,
                                           server, sizeof(server), &servLen,
                                           description, sizeof(description), &descLen)));
@@ -348,7 +355,7 @@ bool PODBC::Connect(const PString & source)
                                   &shortResult,
                                   SQL_DRIVER_NOPROMPT
                                   ))) {
-    PTRACE(2, "ODBC\tCould not connect to " << source);
+    PTRACE(2, "ODBC\tCould not connect to \"" << source << '"');
     // Don't call Disconnect() or m_lastError is changed.
     SQLFreeHandle(SQL_HANDLE_DBC, m_link->m_hDBC);
     m_link->m_hDBC = NULL;
@@ -361,11 +368,83 @@ bool PODBC::Connect(const PString & source)
 }
 
 
+const char * PODBC::GetDriverName(DriverType type)
+{
+  static const char * const Names[] = {
+    "DSN",
+    "MySQL ODBC 3.51 Driver",
+    "PostgreSQL",
+    "Microsoft ODBC for Oracle",
+    "Microsoft ODBC for DB2",
+    "SQL Server",
+    "Microsoft Access Driver (*.mdb)",
+    "Microsoft Paradox Driver (*.db )",
+    "Microsoft Visual Foxpro Driver",
+    "Microsoft dBASE Driver (*.dbf)",
+    "Microsoft Excel Driver (*.xls)",
+    "Microsoft Text Driver (*.txt; *.csv)"
+  };
+  return type < PARRAYSIZE(Names) ? Names[type] : "";
+}
+
+
+static PString AddDriver(PODBC::DriverType type)
+{
+  PStringStream strm;
+  strm << "Driver={" << PODBC::GetDriverName(type) << "};";
+  return strm;
+}
+
+
+static PString AddString(const char * title, const PString & value, const PString & dflt = PString::Empty())
+{
+  PStringStream strm;
+  strm << title << '=';
+
+  if (value.IsEmpty()) {
+    if (dflt.IsEmpty())
+      return PString::Empty();
+    strm << dflt;
+  }
+  else
+    strm << value;
+
+  strm << ';';
+  return strm;
+}
+
+
+static PString AddNumber(const char * title, unsigned value, unsigned dflt = 0)
+{
+  PStringStream strm;
+  strm << title << '=';
+
+  if (value == 0) {
+    if (dflt == 0)
+      return PString::Empty();
+    strm << dflt;
+  }
+  else
+    strm << value;
+
+  strm << ';';
+  return strm;
+}
+
+
+static PString AddBool(const char * title, bool value)
+{
+  PStringStream strm;
+  strm << title << '=' << (value ? "Yes" : "No") << ';';
+  return strm;
+}
+
+
 bool PODBC::Connect(const PString & source, const PString & username, const PString & password)
 {
-  return Connect("DSN=" + source +";"
-                 "Uid=" + username + ";"
-                 "Pwd=" + password + ";");
+  return Connect(AddString("DSN", source) +
+                 AddString("Uid", username) +
+                 AddString("Pwd", password));
 }
 
 
@@ -414,37 +493,37 @@ bool PODBC::Connect_MSSQL(const PString & user,
     break;
   }
 
-  return PODBC::Connect("Driver={SQL Server};"
-                        "Server=" + host + ";"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass + ";"
-                        "Trusted_Connection=" + (trusted ? "Yes" : "No") + ";"
-                        "Network=" + network + ";");
+  return PODBC::Connect(AddDriver(MSSQL) +
+                        AddString("Server", host) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass) +
+                        AddString("Network", network) +
+                        AddBool("Trusted_Connection", trusted));
 }
 
 
 bool PODBC::Connect_DB2(const PFilePath & dbPath)
 {
-  return PODBC::Connect("Driver={Microsoft dBASE Driver (*.dbf)};"
-                        "DriverID=277;"
-                        "Dbq=" + dbPath + ";");
+  return PODBC::Connect(AddDriver(IBM_DB2) +
+                        AddNumber("DriverID", 277) +
+                        AddString("Dbq", dbPath));
 }
 
 
 bool PODBC::Connect_XLS(const PFilePath & xlsPath, const PString & defDir)
 {
-  return PODBC::Connect("Driver={Microsoft Excel Driver (*.xls)};"
-                        "DriverId=790;"
-                        "bq=" + xlsPath + ";"
-                        "DefaultDir=" + defDir + ";");
+  return PODBC::Connect(AddDriver(Excel) +
+                        AddNumber("DriverId", 790) +
+                        AddString("bq", xlsPath) +
+                        AddString("DefaultDir", defDir));
 }
 
 
 bool PODBC::Connect_TXT(const PFilePath & txtPath)
 {
-  return PODBC::Connect("Driver={Microsoft Text Driver (*.txt; *.csv)};"
-                        "Dbq=" + txtPath + ";"
-                        "Extensions=asc,csv,tab,txt;");
+  return PODBC::Connect(AddDriver(Ascii) +
+                        AddString("Dbq", txtPath) +
+                        AddString("Extensions", "asc,csv,tab,txt"));
 }
 
 
@@ -454,12 +533,12 @@ bool PODBC::Connect_FOX(const PFilePath & dbPath,
                         const PString & type,
                         bool exclusive)
 {
-  return PODBC::Connect("Driver={Microsoft Visual Foxpro Driver};"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass + ";"
-                        "SourceDB=" + dbPath + ";"
-                        "SourceType=" + type + ";"
-                        "Exclusive=" + (exclusive ? "yes": "no") + ";");
+  return PODBC::Connect(AddDriver(Foxpro) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass) +
+                        AddString("SourceDB", dbPath) +
+                        AddString("SourceType", type) +
+                        AddBool("Exclusive", exclusive));
 }
 
 
@@ -468,44 +547,39 @@ bool PODBC::Connect_MDB(const PFilePath & mdbPath,
                         const PString & pass,
                         bool exclusive)
 {
-  return PODBC::Connect("Driver={Microsoft Access Driver (*.mdb)};"
-                        "Dbq=" + mdbPath + ";"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass + ";"
-                        "Exclusive=" + (exclusive ? "yes" : "no"));
+  return PODBC::Connect(AddDriver(MSAccess) +
+                        AddString("Dbq", mdbPath) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass) +
+                        AddBool("Exclusive", exclusive));
 }
 
 
 bool PODBC::Connect_PDOX(const PDirectory & dbPath, const PDirectory & defaultDir, int version)
 {
-  PString driver = "3.X";
-  if (version == 4)
-    driver = "4.X";
-  if (version > 4)
-    driver = "5.X";
-
-  return PODBC::Connect("Driver={Microsoft Paradox Driver (*.db )};"
-                        "DriverID=538;"
-                        "Fil=Paradox " + driver + ";"
-                        "DefaultDir=" + defaultDir + ";"
-                        "Dbq=" + dbPath + ";"
+  return PODBC::Connect(AddDriver(Paradox) +
+                        AddNumber("DriverID", 538) +
+                        "Fil=Paradox " + PString(version) + ".X;" +
+                        AddString("DefaultDir", defaultDir) +
+                        AddString("Dbq", dbPath) +
                         "CollatingSequence=ASCII;");
 }
 
 
 bool PODBC::Connect_DBASE(const PDirectory & dbPath)
 {
-  return PODBC::Connect("Driver={Microsoft dBASE Driver (*.dbf)};"
-                        "DriverID=277;Dbq=" + dbPath + ";");
+  return PODBC::Connect(AddDriver(dBase) +
+                        AddNumber("DriverID", 277) +
+                        AddString("Dbq", dbPath));
 }
 
 
 bool PODBC::Connect_Oracle(const PString & server, const PString & user, const PString & pass)
 {
-  return PODBC::Connect("Driver={Microsoft ODBC for Oracle};"
-                        "Server=" + server + ";"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass + ";");
+  return PODBC::Connect(AddDriver(Oracle) +
+                        AddString("Server", server) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass));
 }
 
 
@@ -516,11 +590,11 @@ bool PODBC::Connect_mySQL(const PString & user,
                           const PString & host,
                           int port)
 {
-  return PODBC::Connect("Driver={MySQL ODBC 3.51 Driver};"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass + ";"
-                        "Server=" + (host.IsEmpty() ? LocalHost : host) + ";"
-                        "Port=" + PString(port == 0 ? 3306 : port) + ";");
+  return PODBC::Connect(AddDriver(mySQL) +
+                        AddString("Server", host, LocalHost) +
+                        AddNumber("Port", port, 3306) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass));
 }
 
 
@@ -533,12 +607,12 @@ bool PODBC::ConnectDB_mySQL(const PString & db,
   if (db.IsEmpty())
     return Connect_mySQL(user, pass, host, port);
 
-  return PODBC::Connect("Driver={MySQL ODBC 3.51 Driver};"
-                        "Server=" + (host.IsEmpty() ? LocalHost : host) + ";"
-                        "Port=" + PString(port == 0 ? 3306 : port) + ";"
-                        "Database=" + db + ";"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass +";");
+  return PODBC::Connect(AddDriver(mySQL) +
+                        AddString("Server", host, LocalHost) +
+                        AddNumber("Port", port, 3306) +
+                        AddString("Database", db) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass));
 }
 
 
@@ -548,12 +622,12 @@ bool PODBC::Connect_postgreSQL(const PString & db,
                                const PString & host,
                                int port)
 {
-  return PODBC::Connect("Driver={PostgreSQL};"
-                        "Server=" + (host.IsEmpty() ? LocalHost : host) + ";"
-                        "Port=" + PString(port == 0 ? 5432 : port) + ";"
-                        "Database=" + db + ";"
-                        "Uid=" + user + ";"
-                        "Pwd=" + pass +";");
+  return PODBC::Connect(AddDriver(postgreSQL) +
+                        AddString("Server", host, LocalHost) +
+                        AddNumber("Port", port, 5432) +
+                        AddString("Database", db) +
+                        AddString("Uid", user) +
+                        AddString("Pwd", pass));
 }
 
 
