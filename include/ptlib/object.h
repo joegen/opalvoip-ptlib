@@ -544,28 +544,11 @@ public:
    warning due that parameter only being used in a <code>PTRACE()</code> */
 #define PTRACE_PARAM(...) __VA_ARGS__
 
-/** Trace an execution block.
-This macro creates a trace variable for tracking the entry and exit of program
-blocks. It creates an instance of the PTraceBlock class that will output a
-trace message at the line <code>PTRACE_BLOCK()</code> is called and then on exit from the
-scope it is defined in.
-*/
-#define PTRACE_BLOCK(name) PTrace::Block __trace_block_instance(__FILE__, __LINE__, name)
-
-/** Trace the execution of a line.
-This macro outputs a trace of a source file line execution.
-*/
-#define PTRACE_LINE() \
-    if (PTrace::CanTrace(1)) \
-      PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End; \
-    else (void)0
-
-
 
 #define PTRACE_INTERNAL(level, condition, args, ...) \
-    if (PTrace::CanTrace(level) condition) \
-      PTrace::Begin(level, __FILE__, __LINE__, __VA_ARGS__) << args << PTrace::End; \
-    else (void)0
+    if (!(PTrace::CanTrace(level) condition)) (void)0; \
+    else PTrace::Begin(level, __FILE__, __LINE__, __VA_ARGS__) << args << PTrace::End
+
 
 #define PTRACE_NO_CONDITION
 
@@ -670,6 +653,19 @@ This macro has variable arguments, and is of the form:
 See PTRACE() for more information on level, instance, module.
 */
 #define PTRACE_BEGIN(...) PTRACE_BEGIN_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
+
+/** Trace the execution of a line.
+This macro outputs a trace of a source file line execution.
+*/
+#define PTRACE_LINE() PTRACE_INTERNAL(1, PTRACE_NO_CONDITION, __FILE__ << '(' << __LINE__ << ')')
+
+/** Trace an execution block.
+This macro creates a trace variable for tracking the entry and exit of program
+blocks. It creates an instance of the PTraceBlock class that will output a
+trace message at the line <code>PTRACE_BLOCK()</code> is called and then on exit from the
+scope it is defined in.
+*/
+#define PTRACE_BLOCK(name) PTrace::Block __trace_block_instance(__FILE__, __LINE__, name)
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
