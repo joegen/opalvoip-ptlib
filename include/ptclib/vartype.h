@@ -257,7 +257,11 @@ class PVarType : public PObject
     bool AsBoolean() const;
     int AsInteger() const;
     unsigned AsUnsigned() const;
+    int64_t AsInteger64() const;
+    uint64_t AsUnsigned64() const;
     double AsFloat() const;
+    PGloballyUniqueID AsGUID() const;
+    PTime AsTime() const;
     PString AsString() const;
 
     const void * GetPointer() const;

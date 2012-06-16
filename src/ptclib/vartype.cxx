@@ -546,6 +546,36 @@ unsigned PVarType::AsUnsigned() const
 }
 
 
+int64_t PVarType::AsInteger64() const
+{
+  switch (m_type) {
+    case VarInt64 :
+      const_cast<PVarType *>(this)->OnGetValue();
+      return m_.int64;
+    case VarUInt64 :
+      const_cast<PVarType *>(this)->OnGetValue();
+      return m_.uint64 > INT64_MAX ? INT64_MAX : m_.uint64;
+    default :
+      return AsInteger();
+  }
+}
+
+
+uint64_t PVarType::AsUnsigned64() const
+{
+  switch (m_type) {
+    case VarInt64 :
+      const_cast<PVarType *>(this)->OnGetValue();
+      return m_.int64 < 0 ? 0 : m_.int64;
+    case VarUInt64 :
+      const_cast<PVarType *>(this)->OnGetValue();
+      return m_.uint64;
+    default :
+      return AsUnsigned();
+  }
+}
+
+
 double PVarType::AsFloat() const
 {
   const_cast<PVarType *>(this)->OnGetValue();
@@ -599,6 +629,34 @@ double PVarType::AsFloat() const
   }
 
   return 0;
+}
+
+
+PGloballyUniqueID PVarType::AsGUID() const
+{
+  if (m_type != VarGUID)
+    return AsString();
+
+  const_cast<PVarType *>(this)->OnGetValue();
+  return PGloballyUniqueID(m_.guid, sizeof(m_.guid));
+}
+
+
+PTime PVarType::AsTime() const
+{
+  switch (m_type) {
+    case VarStaticString :
+    case VarFixedString :
+    case VarDynamicString :
+      return AsString();
+
+    case VarTime :
+      const_cast<PVarType *>(this)->OnGetValue();
+      return PTime(m_.time.seconds);
+
+    default :
+      return PTime(AsInteger());
+  }
 }
 
 
