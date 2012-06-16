@@ -1548,13 +1548,21 @@ bool PODBC::RecordSet::Select(const PString & table,
   else
     query << fields;
 
-  query << " FROM [" << table << ']';
+  query << " FROM ";
+  if (table.FindOneOf(" .") == P_MAX_INDEX)
+    query << table;
+  else
+    query << '[' << table << ']';
 
   if (!whereClause.IsEmpty())
     query << " WHERE (" << whereClause << ')';
 
   if (!orderedBy.IsEmpty()) {
-    query << " ORDERED BY [" << orderedBy << ']';
+    query << " ORDERED BY ";
+    if (orderedBy.FindOneOf(" .") == P_MAX_INDEX)
+      query << orderedBy;
+    else
+      query << '[' << orderedBy << ']';
     if (descending)
       query << " DESC";
   }
