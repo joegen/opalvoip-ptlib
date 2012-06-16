@@ -431,10 +431,10 @@ int PVarType::AsInteger() const
     case VarInt32 :
       return m_.int32;
     case VarInt64 :
-      if (m_.int64 < INT_MIN)
-        return INT_MIN;
-      if (m_.int64 > INT_MAX)
-        return INT_MAX;
+      if (m_.int64 < std::numeric_limits<int>::min())
+        return std::numeric_limits<int>::min();
+      if (m_.int64 > std::numeric_limits<int>::max())
+        return std::numeric_limits<int>::max();
       return (int)m_.int64;
     case VarUInt8 :
       return m_.uint8;
@@ -443,30 +443,30 @@ int PVarType::AsInteger() const
     case VarUInt32 :
       return m_.uint32;
     case VarUInt64 :
-      if (m_.uint64 > INT_MAX)
-        return INT_MAX;
+      if (m_.uint64 > std::numeric_limits<int>::max())
+        return std::numeric_limits<int>::max();
       return(int)m_.uint64;
     case VarFloatSingle :
-      if (m_.floatSingle < INT_MIN)
-        return INT_MIN;
-      if (m_.floatSingle > INT_MAX)
-        return INT_MAX;
+      if (m_.floatSingle < std::numeric_limits<int>::min())
+        return std::numeric_limits<int>::min();
+      if (m_.floatSingle > std::numeric_limits<int>::max())
+        return std::numeric_limits<int>::max();
       return (int)m_.floatSingle;
     case VarFloatDouble :
-      if (m_.floatDouble < INT_MIN)
-        return INT_MIN;
-      if (m_.floatDouble > INT_MAX)
-        return INT_MAX;
+      if (m_.floatDouble < std::numeric_limits<int>::min())
+        return std::numeric_limits<int>::min();
+      if (m_.floatDouble > std::numeric_limits<int>::max())
+        return std::numeric_limits<int>::max();
       return (int)m_.floatDouble;
     case VarFloatExtended :
-      if (m_.floatExtended < INT_MIN)
-        return INT_MIN;
-      if (m_.floatExtended > INT_MAX)
-        return INT_MAX;
+      if (m_.floatExtended < std::numeric_limits<int>::min())
+        return std::numeric_limits<int>::min();
+      if (m_.floatExtended > std::numeric_limits<int>::max())
+        return std::numeric_limits<int>::max();
       return (int)m_.floatExtended;
     case VarTime :
-      if (m_.time.seconds > INT_MAX)
-        return INT_MAX;
+      if (m_.time.seconds > std::numeric_limits<int>::max())
+        return std::numeric_limits<int>::max();
       return (int)m_.time.seconds;
     case VarGUID :
       return !PGloballyUniqueID(m_.guid, sizeof(m_.guid)).HashFunction();
@@ -509,8 +509,8 @@ unsigned PVarType::AsUnsigned() const
     case VarInt64 :
       if (m_.int64 < 0)
         return 0;
-      if (m_.int64 > UINT_MAX)
-        return UINT_MAX;
+      if (m_.int64 > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
       return (unsigned)m_.int64;
     case VarUInt8 :
       return m_.uint8;
@@ -519,30 +519,30 @@ unsigned PVarType::AsUnsigned() const
     case VarUInt32 :
       return m_.uint32;
     case VarUInt64 :
-      if (m_.uint64 > UINT_MAX)
-        return UINT_MAX;
+      if (m_.uint64 > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
       return (unsigned)m_.uint64;
     case VarFloatSingle :
       if (m_.floatSingle < 0)
         return 0;
-      if (m_.floatSingle > UINT_MAX)
-        return UINT_MAX;
+      if (m_.floatSingle > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
       return (unsigned)m_.floatSingle;
     case VarFloatDouble :
       if (m_.floatDouble < 0)
         return 0;
-      if (m_.floatDouble > UINT_MAX)
-        return UINT_MAX;
+      if (m_.floatDouble > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
       return (unsigned)m_.floatDouble;
     case VarFloatExtended :
       if (m_.floatExtended < 0)
         return 0;
-      if (m_.floatExtended > UINT_MAX)
-        return UINT_MAX;
+      if (m_.floatExtended > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
       return (unsigned)m_.floatExtended;
     case VarTime :
-      if ((unsigned)m_.time.seconds > UINT_MAX)
-        return UINT_MAX;
+      if ((unsigned)m_.time.seconds > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
       return (unsigned)m_.time.seconds;
     case VarGUID :
       return !PGloballyUniqueID(m_.guid, sizeof(m_.guid)).HashFunction();
@@ -573,7 +573,9 @@ int64_t PVarType::AsInteger64() const
       return m_.int64;
     case VarUInt64 :
       const_cast<PVarType *>(this)->OnGetValue();
-      return m_.uint64 > UINT64_MAX ? UINT64_MAX : m_.uint64;
+      if (m_.uint64 > std::numeric_limits<uint64_t>::max())
+        return std::numeric_limits<uint64_t>::max();
+      return m_.uint64;
     default :
       return AsInteger();
   }
