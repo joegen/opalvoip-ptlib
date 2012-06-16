@@ -42,7 +42,15 @@
 char * PVarType::Variant::Dynamic::Alloc(size_t sz)
 {
   size = sz > 0 ? sz : 1;
-  data = new char[size];
+  data = (char *)malloc(size);
+  return data;
+}
+
+
+char * PVarType::Variant::Dynamic::Realloc(size_t sz)
+{
+  size = sz > 0 ? sz : 1;
+  data = (char *)realloc(data, size);
   return data;
 }
 
@@ -50,7 +58,7 @@ char * PVarType::Variant::Dynamic::Alloc(size_t sz)
 void PVarType::Variant::Dynamic::Copy(const Dynamic & other)
 {
   size = other.size;
-  data = new char[size];
+  data = (char *)malloc(size);
   memcpy(data, other.data, size);
 }
 
@@ -74,6 +82,8 @@ void PVarType::InternalCopy(const PVarType & other)
     default :
       m_ = other.m_;
   }
+
+  OnValueChanged();
 }
 
 
@@ -83,7 +93,8 @@ void PVarType::InternalDestroy()
     case VarFixedString :
     case VarDynamicString :
     case VarDynamicBinary :
-      delete [] m_.dynamic.data;
+      if (m_.dynamic.data != NULL)
+        free(m_.dynamic.data);
       break;
 
     default :
@@ -130,8 +141,16 @@ bool PVarType::SetType(BasicType type, PINDEX option)
 
 PVarType & PVarType::SetValue(const PString & value)
 {
-  PStringStream strm(value);
-  ReadFrom(strm);
+  switch (m_type) {
+    case VarFixedString :
+    case VarDynamicString :
+      *this = value;
+      break;
+
+    default :
+      PStringStream strm(value);
+      ReadFrom(strm);
+  }
   OnValueChanged();
   return *this;
 }
