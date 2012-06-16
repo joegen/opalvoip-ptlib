@@ -7712,6 +7712,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\javascript.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\lua.cxx"
 					>
 				</File>
@@ -9584,6 +9588,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\ipacl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\javascript.h"
 					>
 				</File>
 				<File
