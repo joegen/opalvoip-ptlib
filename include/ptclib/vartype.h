@@ -290,7 +290,7 @@ class PVarType : public PObject
     virtual void OnValueChanged();
 
     // Internal functions
-    void InternalCopy(const PVarType & other);
+    virtual void InternalCopy(const PVarType & other);
     void InternalDestroy();
 
     BasicType m_type; ///< Type of parameter
@@ -321,6 +321,7 @@ class PVarType : public PObject
 
       struct Dynamic {
         char * Alloc(size_t sz);
+        char * Realloc(size_t sz);
         void Copy(const Dynamic & other);
         char * data;
         size_t size;
