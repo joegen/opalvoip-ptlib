@@ -337,6 +337,9 @@
     <ClCompile Include="..\..\ptclib\script.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\SVN-Trunk\ptlib\src\ptclib\jscript.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
@@ -793,6 +796,9 @@
       <Filter>Header Files\MSOS</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\script.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\SVN-Trunk\ptlib\include\ptclib\jscript.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
