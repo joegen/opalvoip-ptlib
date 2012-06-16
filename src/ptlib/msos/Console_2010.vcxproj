@@ -278,7 +278,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\SVN-Trunk\ptlib\src\ptclib\jscript.cxx" />
+    <ClCompile Include="..\..\ptclib\jscript.cxx" />
     <ClCompile Include="..\..\ptclib\script.cxx" />
     <ClCompile Include="..\..\ptclib\ssdp.cxx" />
     <ClCompile Include="..\..\ptclib\vcard.cxx" />
@@ -656,7 +656,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\SVN-Trunk\ptlib\include\ptclib\jscript.h" />
+    <ClInclude Include="..\..\..\include\ptclib\jscript.h" />
     <ClInclude Include="..\..\..\include\ptclib\script.h" />
     <ClInclude Include="..\..\..\include\ptclib\pnat.h" />
     <ClInclude Include="..\..\..\include\ptclib\ssdp.h" />
