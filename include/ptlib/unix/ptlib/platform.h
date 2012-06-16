@@ -47,6 +47,8 @@
 #include <netinet/tcp.h>
 #include <dlfcn.h>
 
+#include <limits>
+
 #define HAS_IFREQ
 
 #if __GNU_LIBRARY__ < 6
@@ -626,6 +628,14 @@ typedef DWORD *                 LPDWORD;
 
 typedef signed short            RETCODE;
 typedef void *                  HWND;
+
+#ifndef INT64_MAX
+#define INT64_MAX	std::numeric_limits<PInt64>::max()
+#endif
+
+#ifndef UINT64_MAX
+#define UINT64_MAX	std::numeric_limits<PUInt64>::max()
+#endif
 
 // For sqltypes.h, prevent it from redefining the above
 #define ALLREADY_HAVE_WINDOWS_TYPE 1
