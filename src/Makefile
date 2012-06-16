@@ -171,6 +171,10 @@ ifeq ($(HAS_LUA),1)
 SOURCES	+= $(COMPONENT_SRC_DIR)/lua.cxx
 endif
 
+ifeq ($(HAS_V8),1)
+SOURCES	+= $(COMPONENT_SRC_DIR)/jscript.cxx
+endif
+
 ifeq ($(HAS_DNS_RESOLVER),1)
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
