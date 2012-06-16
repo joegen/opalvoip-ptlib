@@ -554,7 +554,7 @@ int64_t PVarType::AsInteger64() const
       return m_.int64;
     case VarUInt64 :
       const_cast<PVarType *>(this)->OnGetValue();
-      return m_.uint64 > INT64_MAX ? INT64_MAX : m_.uint64;
+      return m_.uint64 > UINT64_MAX ? UINT64_MAX : m_.uint64;
     default :
       return AsInteger();
   }
