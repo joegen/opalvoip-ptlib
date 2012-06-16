@@ -305,11 +305,11 @@ class PODBC  : public PObject
           */
         bool Next();
 
-        /**Next record
+        /**Previous record
           */
         bool Previous();
 
-        /**First record
+        /**Last record
           */
         bool Last();
 
@@ -364,7 +364,9 @@ class PODBC  : public PObject
         Using the HDBC and TableName/Select SQL Query
         creates a virtual table in the OBDC driver.
         */
-        RecordSet(PODBC & odbc, const PString & query);
+        RecordSet(PODBC & odbc, const PString & query = PString::Empty());
+
+        // For backward compatibility
         RecordSet(PODBC * odbc, const PString & query);
 
         /// Destroy the record set and free resources used
@@ -373,6 +375,21 @@ class PODBC  : public PObject
 
         /**@name Data Storage */
         //@{
+        /** Set the SQL query for this record set.
+            If \p query matches a table then a simple SELECT is made.
+          */
+        bool Query(const PString & query);
+
+        /** Set the SQL query to a SELECT for this record set.
+          */
+        bool Select(
+          const PString & table,
+          const PString & whereClause = PString::Empty(),
+          const PString & fields = PString::Empty(), ///< '*' if empty
+          const PString & orderedBy = PString::Empty(),
+          bool descending = false
+        );
+
         /** Returns the Number of Rows in the Resultant RecordSet.
             Note this can be a very time expensive operation, so only set forceCount
             if really you want it.
@@ -394,6 +411,30 @@ class PODBC  : public PObject
         /** Add New Row
         */
         Row & NewRow();
+
+        /** Move to Specified Row
+        */
+        bool MoveTo(RowIndex row) { return m_cursor.MoveTo(row); }
+
+        /** Move to row relative to current position
+        */
+        bool Move(int offset) { return m_cursor.Move(offset); }
+
+        /**First record
+          */
+        bool First() { return m_cursor.First(); }
+
+        /**Next record
+          */
+        bool Next() { return m_cursor.Next(); }
+
+        /**Previous record
+          */
+        bool Previous() { return m_cursor.Previous(); }
+
+        /**Last record
+          */
+        bool Last() { return m_cursor.Last(); }
 
         /** Delete Row 0 indicates Current Row
         */
@@ -428,8 +469,6 @@ class PODBC  : public PObject
         bool Post() { return m_cursor.Commit(); }
 
       protected:
-        void Construct(const PString & query);
-
         Statement * m_statement; // ODBC Fetched Statement Info
         RowIndex    m_totalRows;
         Row         m_cursor;

@@ -162,6 +162,14 @@ PCREATE_PROCESS(ODBCtest)
       cout << "  " << schemas[s] << endl;
   }
 
+  /// Enumerate schemas in Database
+  {
+    cout << "Types in Database:" << endl;
+    PStringArray types = link.TableList("TYPES");
+    for (PINDEX t = 0; t < types.GetSize(); t++)
+      cout << "  " << types[t] << endl;
+  }
+
   /// Enumerate Tables in Database
   ///+++++++++++++++++++++++++++++
   /// You can also use the QUERY keyword to view Queries
@@ -169,6 +177,13 @@ PCREATE_PROCESS(ODBCtest)
   PStringArray tables = link.TableList("TABLE");
   for (PINDEX t = 0; t < tables.GetSize(); t++)
     cout << "  " << tables[t] << endl;
+
+  cout << "Views in Database:" << endl;
+  PStringArray views = link.TableList("VIEW");
+  for (PINDEX v = 0; v < views.GetSize(); v++)
+    cout << "  " << views[v] << endl;
+
+  cout << "------------------------------------------------------------------\n" << endl;
 
   /// Viewing Database Contents
   ///++++++++++++++++++++++++++
@@ -178,8 +193,9 @@ PCREATE_PROCESS(ODBCtest)
                       "INNER JOIN Calls ON Clients.Ref = Calls.Ref "
                       "WHERE ((Clients.Ref)=1)");
 
-  for (PINDEX t = 0; t < tables.GetSize(); t++) {      
-    cout << "=================" << endl;
+  for (PINDEX t = 0; t < tables.GetSize(); t++) {   
+    if (t > 0)
+      cout << "=================" << endl;
 
     cout << "Query Table: " << tables[t] << endl;
     PODBC::RecordSet table(&link, tables[t]);
@@ -229,7 +245,7 @@ PCREATE_PROCESS(ODBCtest)
   if (ntable.DeleteRow(ntable.Rows()))
     cout << "Last Record Deleted.." << endl;
   else
-    cout << "Error Deleting Last Record" << endl;
+    cout << "Error Deleting Last Record: " << link.GetLastErrorText() << endl;
 
   cout << endl;
 
@@ -241,9 +257,9 @@ PCREATE_PROCESS(ODBCtest)
     cout << "Old Value " << num << " ";
     row[2].SetValue(num+1);
     if (row.Commit())
-      cout << "Committed.." << endl;
+      cout << "Committed." << endl;
     else
-      cout << "Committed failed" << endl;
+      cout << "Commit failed: " << link.GetLastErrorText() << endl;
     row.Next(); // Move away
     cout << "New Value " << ntable[1][2].AsString() << endl;
   }
@@ -257,11 +273,13 @@ PCREATE_PROCESS(ODBCtest)
     row[1] = 12;
     ntable.Column("CallRef").SetValue(1324);
     row.Column("Ref").SetValue("2");
-    row["Date"] = PTime();
+    row["Date"] = PTime(-1);
     row["Duration"] = 3.14;
     row["CalledParty"] = "Fred's brother";
     if (ntable.Commit())
       cout << "New Record Added!" << endl;
+    else
+      cout << "new record add failed: " << link.GetLastErrorText() << endl;
 
     cout << endl;
   }

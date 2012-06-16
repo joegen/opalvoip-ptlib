@@ -115,7 +115,7 @@ class PODBC::Statement : public PObject
     bool Cancel() { return SQL_OK(SQLCancel(m_hStmt)); }
 
     // Commit the data
-    bool Commit(PODBC::Row & row, unsigned operation);
+    bool Commit(unsigned operation);
 
     /** Retreive the List of tables from the current Datasource
     The option field can be used to specify the Table Types
@@ -869,7 +869,7 @@ bool PODBC::Statement::Execute(const PString & sql)
 }
 
 
-bool PODBC::Statement::Commit(PODBC::Row & row, unsigned operation)
+bool PODBC::Statement::Commit(unsigned operation)
 {
   SQLRETURN nRet = operation == SQL_ADD ? SQLBulkOperations(m_hStmt, SQL_ADD)
                                         : SQLSetPos(m_hStmt, 1, operation, SQL_LOCK_NO_CHANGE);
@@ -887,7 +887,7 @@ bool PODBC::Statement::Commit(PODBC::Row & row, unsigned operation)
 
   /// If More Data Required
   while ((nRet = SQLParamData(m_hStmt, &pColumn)) == SQL_NEED_DATA) {
-    Field & field = row[*(PINDEX*)pColumn];
+    Field & field = *(Field*)pColumn;
 
     const uint8_t * ptr = (const uint8_t *)field.GetPointer();
     PINDEX len = field.GetSize();
@@ -909,34 +909,31 @@ PStringArray PODBC::Statement::TableList(const PString & options)
   PStringArray list;
 
   SQLUSMALLINT column = 3;
-  const char * catalogs = NULL;
-  const char * schemas = NULL;
-  const char * table = NULL;
-  const char * types = NULL;
+  SQLRETURN result;
 
   if (options == "CATALOGS") {
-    catalogs = SQL_ALL_CATALOGS;
+    result = SQLTables(m_hStmt, (SQLCHAR *)SQL_ALL_CATALOGS, SQL_NTS, NULL, 0, NULL, 0, NULL, 0);
     column = 1;
   }
   else if (options *= "SCHEMAS") {
-    schemas = SQL_ALL_SCHEMAS;
+    result = SQLTables(m_hStmt, NULL, 0, (SQLCHAR *)SQL_ALL_SCHEMAS, SQL_NTS, NULL, 0, NULL, 0);
     column = 2;
   }
-  else if (options.Find("TABLE") != P_MAX_INDEX || options.Find("VIEW") != P_MAX_INDEX)
-    types = options;
+  else if (options *= "TYPES") {
+    result = SQLTables(m_hStmt, NULL, 0, NULL, 0, NULL, 0, (SQLCHAR *)SQL_ALL_TABLE_TYPES, SQL_NTS);
+    column = 4;
+  }
+  else if (options.Find('%') != P_MAX_INDEX)
+    result = SQLTables(m_hStmt, NULL, 0, NULL, 0, (SQLCHAR *)options.GetPointer(), SQL_NTS, NULL, 0);
   else if (options.IsEmpty())
-    types = SQL_ALL_TABLE_TYPES;
-  else
-    table = options;
+    result = SQLTables(m_hStmt, NULL, 0, NULL, 0, NULL, 0, (SQLCHAR *)"TABLE,VIEW", SQL_NTS);
+  else 
+    result = SQLTables(m_hStmt, NULL, 0, NULL, 0, NULL, 0, (SQLCHAR *)options.GetPointer(), SQL_NTS);
 
-  if (SQL_OK(SQLTables(m_hStmt,
-                       (SQLCHAR *)catalogs, SQL_NTS,
-                       (SQLCHAR *)schemas, SQL_NTS,
-                       (SQLCHAR *)table, SQL_NTS,
-                       (SQLCHAR *)types, SQL_NTS))) {
+  if (SQL_OK(result)) {
     while (SQL_OK(SQLFetch(m_hStmt))) {
       char entry[1000];
-      SQLLEN cb = 0;
+      SQLLEN cb = SQL_NULL_DATA;
       if (SQL_OK(SQLGetData(m_hStmt, column, SQL_C_CHAR, entry, sizeof(entry), &cb)) && cb > 0)
         list.Append(new PCaselessString(entry));
     }
@@ -948,6 +945,7 @@ PStringArray PODBC::Statement::TableList(const PString & options)
 
 bool PODBC::Statement::SQL_OK(SQLRETURN result)
 {
+  m_lastResult = result;
   return !SQLFailed(m_odbc, SQL_HANDLE_STMT, m_hStmt, result);
 }
 
@@ -970,21 +968,21 @@ PODBC::Field::Field(Row & row, PINDEX column)
   Statement & statement = *m_row.m_recordSet.m_statement;
 
   SWORD swCol = 0, swType = 0, swScale = 0, swNull = 0;
-  SQLULEN pcbColDef = 0;
+  SQLULEN suColSize = 0;
   TCHAR name[256] = _T("");
   if (!statement.DescribeCol(m_column,        // ColumnNumber
-                             (SQLCHAR*)name, // ColumnName
+                             (SQLCHAR*)name,  // ColumnName
                              sizeof(name),    // BufferLength
                              &swCol,          // NameLengthPtr
                              &swType,         // DataTypePtr
-                             &pcbColDef,      // ColumnSizePtr
+                             &suColSize,      // ColumnSizePtr
                              &swScale,        // DecimalDigitsPtr
                              &swNull))        // NullablePtr
     return;
 
   m_name = name;
   m_odbcType = swType;
-  m_size = pcbColDef;
+  m_size = suColSize;
   m_scale = swScale;
   m_isNullable = swNull == SQL_NULLABLE;
 
@@ -1142,17 +1140,17 @@ void PODBC::Field::OnGetValue()
     if (m_isReadOnly)
       statement.GetData(m_column, m_odbcType, m_extra, sizeof(*m_extra), &m_extra->bindLenOrInd);
 
-    switch (m_odbcType) {
-      case SQL_DATETIME :
+  switch (m_odbcType) {
+    case SQL_DATETIME :
         m_.time.seconds = PTime(m_extra->datetime).GetTimeInSeconds();
-        break;
-      case SQL_C_TYPE_DATE:
+      break;
+    case SQL_C_TYPE_DATE:
         m_.time.seconds = PTime(0, 0, 0, m_extra->date.day, m_extra->date.month, m_extra->date.year).GetTimeInSeconds();
-        break;
-      case SQL_C_TYPE_TIME:
+      break;
+    case SQL_C_TYPE_TIME:
         m_.time.seconds = PTime(m_extra->time.second, m_extra->time.minute, m_extra->time.hour, 0, 0, 0).GetTimeInSeconds();
-        break;
-      case SQL_C_TYPE_TIMESTAMP:
+      break;
+    case SQL_C_TYPE_TIMESTAMP:
         m_.time.seconds = PTime(m_extra->timestamp.second, m_extra->timestamp.minute, m_extra->timestamp.hour,
                                 m_extra->timestamp.day, m_extra->date.month, m_extra->date.year).GetTimeInSeconds();
         break;
@@ -1161,7 +1159,7 @@ void PODBC::Field::OnGetValue()
   else {
     if (m_isReadOnly)
       statement.GetData(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
-  }
+      }
 }
 
 
@@ -1315,9 +1313,9 @@ bool PODBC::Row::Last()
 bool PODBC::Row::Commit()
 {
   if (m_rowIndex != 0)
-    return m_recordSet.m_statement->Commit(*this, SQL_UPDATE);
+    return m_recordSet.m_statement->Commit(SQL_UPDATE);
 
-  if (!m_recordSet.m_statement->Commit(*this, SQL_ADD))
+  if (!m_recordSet.m_statement->Commit(SQL_ADD))
     return false;
 
   if (m_recordSet.m_totalRows != UndefinedRowIndex)
@@ -1356,7 +1354,7 @@ PODBC::RecordSet::RecordSet(PODBC & odbc, const PString & query)
   , m_totalRows(UndefinedRowIndex)
   , m_cursor(*this)
 {
-  Construct(query);
+  Query(query);
 }
 
 
@@ -1365,7 +1363,7 @@ PODBC::RecordSet::RecordSet(PODBC * odbc, const PString & query)
   , m_totalRows(UndefinedRowIndex)
   , m_cursor(*this)
 {
-  Construct(query);
+  Query(query);
 }
 
 
@@ -1387,19 +1385,27 @@ PODBC::RecordSet::~RecordSet()
 }
 
 
-void PODBC::RecordSet::Construct(const PString & query)
+bool PODBC::RecordSet::Query(const PString & query)
 {
-  PCaselessString select = query.Trim();
-  if (select.NumCompare("SELECT") != EqualTo)    // Select Query
-    select = "SELECT * FROM [" + select + "];";
+  m_statement->Cancel();
+  m_cursor.m_rowIndex = 0;
+  m_cursor.m_fields.RemoveAll();
 
-  if (!m_statement->Execute(select))
-    return;
+  if (query.IsEmpty())
+    return false;
+
+  PCaselessString trimmed = query.Trim();
+  if (trimmed.NumCompare("SELECT") != EqualTo &&
+      m_statement->m_odbc.TableList().GetStringsIndex(trimmed) != P_MAX_INDEX)
+    return Select(trimmed);
+
+  if (!m_statement->Execute(query))
+    return false;
 
   // See if succeeded
   SQLSMALLINT numColumns = 0;
   if(!m_statement->NumResultCols(&numColumns))
-    return;
+    return false;
 
   // Go to the First Row
   m_cursor.First();
@@ -1407,6 +1413,38 @@ void PODBC::RecordSet::Construct(const PString & query)
   // Get initial values and structure
   for (SQLSMALLINT i = 1; i <= numColumns; i++)
     m_cursor.m_fields.Append(new Field(m_cursor, i));
+
+  return true;
+}
+
+
+bool PODBC::RecordSet::Select(const PString & table,
+                              const PString & whereClause,
+                              const PString & fields,
+                              const PString & orderedBy,
+                              bool descending)
+{
+  PStringStream query;
+  query << "SELECT ";
+
+  if (fields.IsEmpty())
+    query << '*';
+  else
+    query << fields;
+
+  query << " FROM [" << table << ']';
+
+  if (!whereClause.IsEmpty())
+    query << " WHERE (" << whereClause << ')';
+
+  if (!orderedBy.IsEmpty()) {
+    query << " ORDERED BY [" << orderedBy << ']';
+    if (descending)
+      query << " DESC";
+  }
+
+  query << ';';
+  return Query(query);
 }
 
 
@@ -1436,7 +1474,7 @@ bool PODBC::RecordSet::DeleteRow(RowIndex row)
   if (row != 0)
     m_cursor.Navigate(row);
 
-  if (!m_statement->Commit(m_cursor, SQL_DELETE))
+  if (!m_statement->Commit(SQL_DELETE))
     return false;
 
   if (m_totalRows != UndefinedRowIndex)
