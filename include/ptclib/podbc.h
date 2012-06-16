@@ -149,7 +149,8 @@ class PODBC  : public PObject
       public:
         ~Field();
 
-        Field & operator=(const PVarType & other);
+        Field & operator=(const Field & other) { PVarType::operator=(other); return *this; }
+        Field & operator=(const PVarType & other) { PVarType::operator=(other); return *this; }
 
         // Overrides from PVarType, make sure can't change type
         virtual bool SetType(BasicType type, PINDEX options = 0);
@@ -158,11 +159,20 @@ class PODBC  : public PObject
         */
         void SetDefaultValues();
 
+        /**Set value to NULL
+          */
+        void SetNULL();
+
+        /// Is curreently NULL value
+        bool IsNULL() const;
+
+        /// Get column index number, 1 up
         PINDEX GetColumn() const { return m_column; }
+
+        /// Get column name
         const PString GetName() const { return m_name; }
 
-        PINDEX GetSize() const { return m_size; }
-        unsigned GetDataType() const { return m_odbcType; }
+        int GetDataType() const { return m_odbcType; }
         unsigned GetScale() const { return m_scale; }
         bool IsNullable() const { return m_isNullable; }
         bool IsReadOnly() const { return m_isReadOnly; }
@@ -180,13 +190,13 @@ class PODBC  : public PObject
         // Call backs from PVarType
         virtual void OnGetValue();
         virtual void OnValueChanged();
+        virtual void InternalCopy(const PVarType & other);
 
         Row   & m_row;       /// Back Reference to the Row
         PINDEX  m_column;    /// Column number
 
         PString    m_name;       /// Column Name
-        unsigned   m_odbcType;
-        PINDEX     m_size;
+        int        m_odbcType;
         unsigned   m_scale;
         bool       m_isNullable;
         bool       m_isReadOnly;
@@ -197,7 +207,6 @@ class PODBC  : public PObject
 
       private:
         Field(const Field & other) : PVarType(), m_row(other.m_row) { }
-        void operator=(const Field &) { }
 
       friend class Row;
       friend class RecordSet;

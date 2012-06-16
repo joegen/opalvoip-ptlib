@@ -273,7 +273,7 @@ PCREATE_PROCESS(ODBCtest)
     row[1] = 12;
     ntable.Column("CallRef").SetValue(1324);
     row.Column("Ref").SetValue("2");
-    row["Date"] = PTime(-1);
+    row["Date"] = PTime();
     row["Duration"] = 3.14;
     row["CalledParty"] = "Fred's brother";
     if (ntable.Commit())
@@ -318,6 +318,26 @@ PCREATE_PROCESS(ODBCtest)
     else
       cout << "Create of new table failed: " << link.GetLastErrorText() << '\n' << sql << endl;
     cout << '\n' << sql << endl;
+
+    {
+      PODBC::RecordSet add(link, "test_create");
+      add.NewRow().Column("varchar_infinite") = "This is a very, very long string! 01\n"
+                                                "This is a very, very long string! 02\n"
+                                                "This is a very, very long string! 03\n"
+                                                "This is a very, very long string! 04\n"
+                                                "This is a very, very long string! 05\n"
+                                                "This is a very, very long string! 06\n"
+                                                "This is a very, very long string! 07\n"
+                                                "This is a very, very long string! 08\n"
+                                                "This is a very, very long string! 09\n"
+                                                "This is a very, very long string! 10\n"
+                                                "This is a very, very long string! 11\n"
+                                                "This is a very, very long string! 12\n";
+      add.Commit();
+    }
+
+    PODBC::RecordSet check(link, "test_create");
+    cout << "long text data:\n" << check[1]["varchar_infinite"] << endl;
   }
 }
 

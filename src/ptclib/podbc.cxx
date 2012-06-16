@@ -206,11 +206,13 @@ struct PODBC::Link
 
 static bool SQLFailed(PODBC & odbc, SQLSMALLINT type, SQLHANDLE handle, SQLRETURN result)
 {
-  if (SQL_SUCCEEDED(result))
+  if (result == SQL_SUCCESS)
     return false;
 
   if (result == SQL_NEED_DATA || result == SQL_NO_DATA)
     return true;
+
+  bool error = result != SQL_SUCCESS_WITH_INFO;
 
   SQLINTEGER  nativeError;
   SQLSMALLINT msgLen, index = 1;
@@ -224,16 +226,16 @@ static bool SQLFailed(PODBC & odbc, SQLSMALLINT type, SQLHANDLE handle, SQLRETUR
                                      (unsigned char *)msg,
                                      sizeof(msg),
                                      &msgLen))) {
-    PTRACE(2, "ODBC\tError " << errStr << ": " << msg);
+    PTRACE(error ? 2 : 4, "ODBC", errStr << ": " << msg);
     odbc.OnSQLError(nativeError, errStr, msg);
   }
 
-  if (index == 2) {
+  if (error && index == 2) {
     PTRACE(2, "ODBC\tSQL function failed but no error information available");
     odbc.OnSQLError(-1, PString::Empty(), "Unknown error");
   }
 
-  return true;
+  return error;
 }
 
 
@@ -957,7 +959,6 @@ PODBC::Field::Field(Row & row, PINDEX column)
   : m_row(row)
   , m_column(column)
   , m_odbcType(UINT_MAX)
-  , m_size(P_MAX_INDEX)
   , m_scale(UINT_MAX)
   , m_isNullable(false)
   , m_isReadOnly(false)
@@ -967,40 +968,39 @@ PODBC::Field::Field(Row & row, PINDEX column)
 {
   Statement & statement = *m_row.m_recordSet.m_statement;
 
-  SWORD swCol = 0, swType = 0, swScale = 0, swNull = 0;
   SQLULEN suColSize = 0;
-  TCHAR name[256] = _T("");
-  if (!statement.DescribeCol(m_column,        // ColumnNumber
-                             (SQLCHAR*)name,  // ColumnName
-                             sizeof(name),    // BufferLength
-                             &swCol,          // NameLengthPtr
-                             &swType,         // DataTypePtr
-                             &suColSize,      // ColumnSizePtr
-                             &swScale,        // DecimalDigitsPtr
-                             &swNull))        // NullablePtr
-    return;
+  {
+    SWORD swNameLen = 0, swType = 0, swScale = 0, swNull = 0;
+    SQLCHAR nameBuf[256];
+    if (!statement.DescribeCol(m_column,        // ColumnNumber
+                               nameBuf,         // ColumnName
+                               sizeof(nameBuf), // BufferLength
+                               &swNameLen,      // NameLengthPtr
+                               &swType,         // DataTypePtr
+                               &suColSize,      // ColumnSizePtr
+                               &swScale,        // DecimalDigitsPtr
+                               &swNull))        // NullablePtr
+      return;
 
-  m_name = name;
-  m_odbcType = swType;
-  m_size = suColSize;
-  m_scale = swScale;
-  m_isNullable = swNull == SQL_NULLABLE;
+    m_name = PString((const char *)nameBuf, swNameLen);
+    m_odbcType = swType;
+    m_scale = swScale;
+    m_isNullable = swNull == SQL_NULLABLE;
 
-  SQLLEN attr = SQL_ATTR_READONLY;
-  statement.ColAttribute(m_column, SQL_DESC_UPDATABLE, NULL, 0, NULL, &attr);
-  m_isReadOnly = attr == SQL_ATTR_READONLY;
+    SQLLEN attr = SQL_ATTR_READONLY;
+    statement.ColAttribute(m_column, SQL_DESC_UPDATABLE, NULL, 0, NULL, &attr);
+    m_isReadOnly = attr == SQL_ATTR_READONLY;
 
-  attr = SQL_FALSE;
-  statement.ColAttribute(m_column, SQL_DESC_AUTO_UNIQUE_VALUE, NULL, 0, NULL, &attr);
-  m_isAutoIncrement = attr == SQL_TRUE;
+    attr = SQL_FALSE;
+    statement.ColAttribute(m_column, SQL_DESC_AUTO_UNIQUE_VALUE, NULL, 0, NULL, &attr);
+    m_isAutoIncrement = attr == SQL_TRUE;
 
-  attr = 0;
-  statement.ColAttribute(m_column, SQL_DESC_PRECISION, NULL, 0, NULL, &attr);
-  m_decimals = attr;
+    attr = 0;
+    statement.ColAttribute(m_column, SQL_DESC_PRECISION, NULL, 0, NULL, &attr);
+    m_decimals = attr;
+  }
 
-  bool useExtra = false;
-
-  switch (swType) {
+  switch (m_odbcType) {
     case SQL_C_BIT :
       PVarType::SetType(VarBoolean);
       break;
@@ -1043,7 +1043,7 @@ PODBC::Field::Field(Row & row, PINDEX column)
     case SQL_REAL :
     case SQL_DOUBLE :
       PVarType::SetType(VarFloatDouble);
-      m_odbcType = SQL_DOUBLE;
+      m_odbcType = SQL_C_DOUBLE;
       break;
 
     case SQL_C_GUID:
@@ -1052,59 +1052,73 @@ PODBC::Field::Field(Row & row, PINDEX column)
 
     case SQL_DATETIME:
     case SQL_C_TYPE_TIMESTAMP:
-      PVarType::SetType(VarTime, statement.m_odbc.GetDateTimeFormat());
-      useExtra = true;
-      break;
-
     case SQL_C_TYPE_DATE:
-      PVarType::SetType(VarTime, statement.m_odbc.GetDateFormat());
-      useExtra = true;
-      break;
-
     case SQL_C_TYPE_TIME:
-      PVarType::SetType(VarTime, statement.m_odbc.GetTimeFormat());
-      useExtra = true;
-      break;
+      switch (m_odbcType) {
+        case SQL_DATETIME:
+          m_odbcType = SQL_C_TYPE_TIMESTAMP;
+        case SQL_C_TYPE_TIMESTAMP:
+          PVarType::SetType(VarTime, statement.m_odbc.GetDateTimeFormat());
+          break;
+
+        case SQL_C_TYPE_DATE:
+          PVarType::SetType(VarTime, statement.m_odbc.GetDateFormat());
+          break;
+
+        case SQL_C_TYPE_TIME:
+          PVarType::SetType(VarTime, statement.m_odbc.GetTimeFormat());
+          break;
+      }
+      if (!m_isReadOnly)
+        statement.BindCol(m_column, m_odbcType, m_extra, sizeof(*m_extra), &m_extra->bindLenOrInd);
+      return;
 
     case SQL_VARCHAR :
     case SQL_C_CHAR :
-      PVarType::SetType(m_size <= 1 ? VarChar : VarFixedString, m_size+1);
+      PVarType::SetType(suColSize <= 1 ? VarChar : VarFixedString, suColSize+1);
       m_odbcType = SQL_C_CHAR;
       break;
 
-    case SQL_LONGVARCHAR :
-      PVarType::SetType(VarDynamicString);
-      break;
-
     case SQL_BINARY :
-      PVarType::SetType(VarDynamicBinary, m_size);
+      PVarType::SetType(VarDynamicBinary, suColSize);
+      m_odbcType = SQL_C_BINARY;
       break;
 
+    case SQL_LONGVARCHAR :
     case SQL_LONGVARBINARY :
-      PVarType::SetType(VarDynamicBinary);
-      break;
+      m_odbcType = m_odbcType == SQL_LONGVARCHAR ? SQL_C_CHAR : SQL_C_BINARY;
+
+      if (m_isReadOnly || statement.m_odbc.GetMaxChunkSize() == P_MAX_INDEX) {
+        PVarType::SetType(m_odbcType == SQL_C_CHAR ? VarDynamicString : VarDynamicBinary, 256);
+        m_extra->bindLenOrInd = 0;
+      }
+      else {
+        PVarType::SetType(m_odbcType == SQL_C_CHAR ? VarDynamicString : VarDynamicBinary, statement.m_odbc.GetMaxChunkSize());
+        m_extra->bindLenOrInd = SQL_DATA_AT_EXEC;
+      }
+
+      if (!m_isReadOnly)
+        statement.BindCol(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
+      return;
 
     default :
-      PTRACE(2, "ODBC\tUnknown/unsupported column data type " << swType << " for " << name);
+      PTRACE(2, "ODBC\tUnknown/unsupported column data type " << m_odbcType << " for " << m_name);
       // Do next case, assume a char field
   }
 
+  m_extra->bindLenOrInd = GetSize();
+
   if (!m_isReadOnly)
-    statement.BindCol(m_column,
-                      m_odbcType,
-                      useExtra ? m_extra : (SQLPOINTER)GetPointer(),
-                      useExtra ? sizeof(*m_extra) : GetSize(),
-                      &m_extra->bindLenOrInd);
+    statement.BindCol(m_column, m_odbcType, (SQLPOINTER)GetPointer(), m_extra->bindLenOrInd, &m_extra->bindLenOrInd);
 }
 
 
-PODBC::Field & PODBC::Field::operator=(const PVarType & other)
+void PODBC::Field::InternalCopy(const PVarType & other)
 {
   if (m_type == other.GetType())
-    InternalCopy(other);
+    PVarType::InternalCopy(other);
   else
     SetValue(other.AsString());
-  return *this;
 }
 
 
@@ -1125,8 +1139,10 @@ void PODBC::Field::SetDefaultValues()
   if (IsReadOnly() || IsAutoIncrement())
     return;
 
-  if (IsNullable())
+  if (IsNullable()) {
     SetValue(PString::Empty());
+    SetNULL();
+  }
   else
     SetValue("0");
 }
@@ -1136,43 +1152,143 @@ void PODBC::Field::OnGetValue()
 {
   Statement & statement = *m_row.m_recordSet.m_statement;
 
-  if (m_type == VarTime) {
-    if (m_isReadOnly)
-      statement.GetData(m_column, m_odbcType, m_extra, sizeof(*m_extra), &m_extra->bindLenOrInd);
+  if (m_isReadOnly && m_type == VarTime)
+    statement.GetData(m_column, m_odbcType, m_extra, sizeof(*m_extra), &m_extra->bindLenOrInd);
 
   switch (m_odbcType) {
     case SQL_DATETIME :
+      if (m_extra->bindLenOrInd == SQL_NULL_DATA)
+        m_.time.seconds = -1;
+      else
         m_.time.seconds = PTime(m_extra->datetime).GetTimeInSeconds();
       break;
+
     case SQL_C_TYPE_DATE:
+      if (m_extra->bindLenOrInd == SQL_NULL_DATA)
+        m_.time.seconds = -1;
+      else
         m_.time.seconds = PTime(0, 0, 0, m_extra->date.day, m_extra->date.month, m_extra->date.year).GetTimeInSeconds();
       break;
+
     case SQL_C_TYPE_TIME:
+      if (m_extra->bindLenOrInd == SQL_NULL_DATA)
+        m_.time.seconds = -1;
+      else
         m_.time.seconds = PTime(m_extra->time.second, m_extra->time.minute, m_extra->time.hour, 0, 0, 0).GetTimeInSeconds();
       break;
+
     case SQL_C_TYPE_TIMESTAMP:
+      if (m_extra->bindLenOrInd == SQL_NULL_DATA)
+        m_.time.seconds = -1;
+      else
         m_.time.seconds = PTime(m_extra->timestamp.second, m_extra->timestamp.minute, m_extra->timestamp.hour,
-                                m_extra->timestamp.day, m_extra->date.month, m_extra->date.year).GetTimeInSeconds();
-        break;
-    }
-  }
-  else {
-    if (m_isReadOnly)
-      statement.GetData(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
+                                m_extra->timestamp.day, m_extra->timestamp.month, m_extra->timestamp.year).GetTimeInSeconds();
+      break;
+
+    default :
+      if (m_extra->bindLenOrInd != 0) {
+        if (m_isReadOnly)
+          statement.GetData(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
       }
+      else {
+        size_t nullTerminatedString = m_odbcType == SQL_C_CHAR ? 1 : 0;
+        size_t total = 0;
+        SQLINTEGER chunk = m_.dynamic.size;
+        SQLINTEGER lenOrInd = 0;
+        while (statement.GetData(m_column, m_odbcType, m_.dynamic.data+total, chunk, &lenOrInd)) {
+          total += chunk - nullTerminatedString;
+
+          if (lenOrInd == SQL_NO_TOTAL)
+            m_.dynamic.Realloc(m_.dynamic.size+1000);
+          else if (lenOrInd > chunk)
+            m_.dynamic.Realloc(lenOrInd + nullTerminatedString);
+          else
+            break;
+
+          chunk = m_.dynamic.size - total;
+        }
+      }
+  }
 }
 
 
 void PODBC::Field::OnValueChanged()
 {
+  Statement & statement = *m_row.m_recordSet.m_statement;
+
   switch (m_type) {
     case VarFixedString :
-      m_extra->bindLenOrInd = m_.dynamic.size;
+    case VarStaticString :
+    case VarDynamicString :
+      m_extra->bindLenOrInd = strlen(m_.dynamic.data); // Allow for trailing '\0'
+
+      // Bind again as pointer might have changed
+      if (!m_isReadOnly)
+        statement.BindCol(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
+      break;
+
+    case VarDynamicBinary :
+      m_extra->bindLenOrInd = GetSize();
+
+      // Bind again as pointer might have changed
+      if (!m_isReadOnly)
+        statement.BindCol(m_column, m_odbcType, (SQLPOINTER)GetPointer(), GetSize(), &m_extra->bindLenOrInd);
+      break;
+
+    case VarTime:
+      if (m_.time.seconds <= 0)
+        SetNULL();
+      else {
+        PTime time(m_.time.seconds);
+        switch (m_odbcType) {
+          case SQL_DATETIME :
+            strcpy(m_extra->datetime, time.AsString("YYYY-MM-dd hh:mm:ss"));
+            m_extra->bindLenOrInd = sizeof(m_extra->datetime);
+            break;
+
+          case SQL_C_TYPE_DATE:
+            m_extra->date.day = time.GetDay();
+            m_extra->date.month = time.GetMonth();
+            m_extra->date.year = time.GetYear();
+            m_extra->bindLenOrInd = sizeof(m_extra->date);
+            break;
+
+          case SQL_C_TYPE_TIME:
+            m_extra->time.second = time.GetSecond();
+            m_extra->time.minute = time.GetMinute();
+            m_extra->time.hour = time.GetHour();
+            m_extra->bindLenOrInd = sizeof(m_extra->time);
+            break;
+
+          case SQL_C_TYPE_TIMESTAMP:
+            m_extra->timestamp.fraction = time.GetMicrosecond()*1000;
+            m_extra->timestamp.second = time.GetSecond();
+            m_extra->timestamp.minute = time.GetMinute();
+            m_extra->timestamp.hour = time.GetHour();
+            m_extra->timestamp.day = time.GetDay();
+            m_extra->timestamp.month = time.GetMonth();
+            m_extra->timestamp.year = time.GetYear();
+            m_extra->bindLenOrInd = sizeof(m_extra->timestamp);
+            break;
+        }
+      }
       break;
 
     default :
-      break;
+      m_extra->bindLenOrInd = GetSize();
   }
+}
+
+
+void PODBC::Field::SetNULL()
+{
+  m_extra->bindLenOrInd = SQL_NULL_DATA;
+}
+
+
+bool PODBC::Field::IsNULL() const
+{
+  return m_extra->bindLenOrInd == SQL_NULL_DATA;
 }
 
 
