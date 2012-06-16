@@ -1194,7 +1194,7 @@ void PODBC::Field::OnGetValue()
         size_t nullTerminatedString = m_odbcType == SQL_C_CHAR ? 1 : 0;
         size_t total = 0;
         SQLINTEGER chunk = m_.dynamic.size;
-        SQLINTEGER lenOrInd = 0;
+        SQLLEN lenOrInd = 0;
         while (statement.GetData(m_column, m_odbcType, m_.dynamic.data+total, chunk, &lenOrInd)) {
           total += chunk - nullTerminatedString;
 
