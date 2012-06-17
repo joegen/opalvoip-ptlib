@@ -1120,10 +1120,53 @@ PODBC::Field::~Field()
 
 void PODBC::Field::InternalCopy(const PVarType & other)
 {
-  if (m_type == other.GetType())
+  if (m_type == other.GetType()) {
     PVarType::InternalCopy(other);
-  else
-    SetValue(other.AsString());
+    return;
+  }
+
+  switch (m_type) {
+    case VarBoolean :
+      m_.boolean = other.AsBoolean();
+      return;
+    case VarInt8 :
+      m_.int8 = other.AsInteger();
+      return;
+    case VarInt16 :
+      m_.int16 = other.AsInteger();
+      return;
+    case VarInt32 :
+      m_.int32 = other.AsInteger();
+      return;
+    case VarInt64 :
+      m_.int64 = other.AsInteger64();
+      return;
+    case VarUInt8 :
+      m_.uint8 = other.AsUnsigned();
+      return;
+    case VarUInt16 :
+      m_.uint16 = other.AsUnsigned();
+      return;
+    case VarUInt32 :
+      m_.uint32 = other.AsUnsigned();
+      return;
+    case VarUInt64 :
+      m_.uint64 = other.AsUnsigned64();
+      return;
+    case VarFloatSingle :
+      m_.floatSingle = other.AsFloat();
+      return;
+    case VarFloatDouble :
+      m_.floatDouble = other.AsFloat();
+      return;
+    case VarFloatExtended :
+      m_.floatExtended = other.AsFloat();
+      return;
+    default :
+      break;
+  }
+
+  SetValue(other.AsString());
 }
 
 
