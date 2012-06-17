@@ -100,6 +100,9 @@ class PODBC::Statement : public PObject
     ie. Select * from [table-x]
     */
     bool Execute(const PString & sql);
+
+    // Close cursor, remove all bindings.
+    bool CloseCursor() { return SQL_OK(SQLCloseCursor(m_hStmt)); }
     //@}
 
     /**@name Data Retrieval */
@@ -850,7 +853,7 @@ PODBC::Statement::Statement(PODBC & odbc)
 PODBC::Statement::~Statement()
 {
   if (IsValid()) {
-    SQLCloseCursor(m_hStmt);
+    CloseCursor();
     SQLFreeHandle(SQL_HANDLE_STMT, m_hStmt);
   }
 }
@@ -1107,18 +1110,20 @@ PODBC::Field::Field(Row & row, PINDEX column)
 }
 
 
+PODBC::Field::~Field()
+{
+  if (!m_isReadOnly)
+    m_row.m_recordSet.m_statement->BindCol(m_column, m_odbcType, NULL, 0, NULL);
+  delete m_extra;
+}
+
+
 void PODBC::Field::InternalCopy(const PVarType & other)
 {
   if (m_type == other.GetType())
     PVarType::InternalCopy(other);
   else
     SetValue(other.AsString());
-}
-
-
-PODBC::Field::~Field()
-{
-  delete m_extra;
 }
 
 
@@ -1497,6 +1502,7 @@ PODBC::RecordSet::~RecordSet()
 
 bool PODBC::RecordSet::Query(const PString & query)
 {
+  m_statement->CloseCursor();
   m_cursor.m_rowIndex = 0;
   m_cursor.m_fields.RemoveAll();
 
