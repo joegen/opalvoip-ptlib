@@ -88,7 +88,7 @@ class PODBC::Statement : public PObject
     /** IsValid Checks to ensure a Handle has been allocated and
     is effective.
     */
-    bool IsValid() const { return m_hStmt != SQL_NULL_HSTMT; }
+    __inline bool IsValid() const { return m_hStmt != SQL_NULL_HSTMT; }
 
     /** GetChangedRowCount retreives the number of rows updated/altered by
     UPDATE/INSERT statements.
@@ -110,10 +110,6 @@ class PODBC::Statement : public PObject
     bool FetchScroll(SQLSMALLINT orientation, SQLLEN offset = 0)
     { return SQL_OK(SQLFetchScroll(m_hStmt, orientation, offset)); }
 
-    /** Cancel the Current Statement
-    */
-    bool Cancel() { return SQL_OK(SQLCancel(m_hStmt)); }
-
     // Commit the data
     bool Commit(unsigned operation);
 
@@ -131,9 +127,9 @@ class PODBC::Statement : public PObject
     bool SQL_OK(SQLRETURN res);
     //@}
 
-    bool NumResultCols(SQLSMALLINT *columnCount) { return SQL_OK(SQLNumResultCols(m_hStmt, columnCount)); }
+    __inline bool NumResultCols(SQLSMALLINT *columnCount) { return SQL_OK(SQLNumResultCols(m_hStmt, columnCount)); }
 
-    bool GetData(
+    __inline bool GetData(
       SQLUSMALLINT column,
       SQLSMALLINT type,
       SQLPOINTER data,
@@ -141,7 +137,7 @@ class PODBC::Statement : public PObject
       SQLLEN * len
     ) { return SQL_OK(SQLGetData(m_hStmt, column, type, data, size, len)); }
 
-    bool BindCol(
+    __inline bool BindCol(
       SQLUSMALLINT column,
       SQLSMALLINT type,
       SQLPOINTER data, 
@@ -149,7 +145,7 @@ class PODBC::Statement : public PObject
       SQLLEN * len
       ) { return SQL_OK(SQLBindCol(m_hStmt, column, type, data, size, len)); }
 
-    bool DescribeCol(
+    __inline bool DescribeCol(
       SQLUSMALLINT column,
       SQLCHAR *namePtr,
       SQLSMALLINT nameSize,
@@ -160,7 +156,7 @@ class PODBC::Statement : public PObject
       SQLSMALLINT *nullable
     ) { return SQL_OK(SQLDescribeCol(m_hStmt, column, namePtr, nameSize, nameLength, dataType, columnSize, decimalDigits, nullable)); }
 
-    bool ColAttribute (
+    __inline bool ColAttribute (
       SQLUSMALLINT column,
       SQLUSMALLINT field,
       SQLPOINTER attrPtr,
@@ -170,7 +166,8 @@ class PODBC::Statement : public PObject
     ) { return SQL_OK(SQLColAttribute(m_hStmt, column, field, attrPtr, attrSize, length, numericPtr)); }
 
 
-    PODBC   & m_odbc;   /// Reference to the PODBC Class
+    // Member variables
+    PODBC   & m_odbc;
     HSTMT     m_hStmt;
     SQLRETURN m_lastResult;
 
@@ -837,24 +834,25 @@ PODBC::Statement::Statement(PODBC & odbc)
   : m_odbc(odbc)
   , m_lastResult(SQL_SUCCESS)
 {
-  SQLRETURN m_nReturn = SQLAllocHandle(SQL_HANDLE_STMT, odbc.m_link->m_hDBC, &m_hStmt);
+  if (SQLFailed(odbc, SQL_HANDLE_DBC, odbc.m_link->m_hDBC, SQLAllocHandle(SQL_HANDLE_STMT, odbc.m_link->m_hDBC, &m_hStmt))) {
+    m_hStmt = SQL_NULL_HSTMT;
+    return;
+  }
+
   SQLSetStmtAttr(m_hStmt, SQL_ATTR_CONCURRENCY,    (SQLPOINTER) SQL_CONCUR_ROWVER, 0);
   SQLSetStmtAttr(m_hStmt, SQL_ATTR_CURSOR_TYPE,    (SQLPOINTER)SQL_CURSOR_KEYSET_DRIVEN, 0);
   SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_BIND_TYPE,  (SQLPOINTER)SQL_BIND_BY_COLUMN, 0);
   SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)1, 0);
   SQLSetStmtAttr(m_hStmt, SQL_ATTR_ROW_STATUS_PTR, NULL, 0);
-
-  if(!SQL_OK(m_nReturn))
-    m_hStmt = SQL_NULL_HSTMT;
 }
 
 
 PODBC::Statement::~Statement()
 {
-  SQLCloseCursor(m_hStmt);
-
-  if (IsValid())
+  if (IsValid()) {
+    SQLCloseCursor(m_hStmt);
     SQLFreeHandle(SQL_HANDLE_STMT, m_hStmt);
+  }
 }
 
 
@@ -867,6 +865,7 @@ DWORD PODBC::Statement::GetChangedRowCount(void)
 
 bool PODBC::Statement::Execute(const PString & sql)
 {
+  SQLCloseCursor(m_hStmt);
   return SQL_OK(SQLExecDirect(m_hStmt, (SQLCHAR *)sql.GetPointer(), sql.GetLength()));
 }
 
@@ -969,8 +968,9 @@ PODBC::Field::Field(Row & row, PINDEX column)
   Statement & statement = *m_row.m_recordSet.m_statement;
 
   SQLULEN suColSize = 0;
+  SWORD swType = 0;
   {
-    SWORD swNameLen = 0, swType = 0, swScale = 0, swNull = 0;
+    SWORD swNameLen = 0, swScale = 0, swNull = 0;
     SQLCHAR nameBuf[256];
     if (!statement.DescribeCol(m_column,        // ColumnNumber
                                nameBuf,         // ColumnName
@@ -1000,41 +1000,30 @@ PODBC::Field::Field(Row & row, PINDEX column)
     m_decimals = attr;
   }
 
-  switch (m_odbcType) {
-    case SQL_C_BIT :
+  switch (swType) {
+    case SQL_BIT :
       PVarType::SetType(VarBoolean);
+      m_odbcType = SQL_C_BIT;
       break;
 
-    case SQL_C_TINYINT :
+    case SQL_TINYINT :
       PVarType::SetType(VarInt8);
+      m_odbcType = SQL_C_STINYINT;
       break;
 
-    case SQL_C_UTINYINT :
-      PVarType::SetType(VarUInt8);
-      break;
-
-    case SQL_C_SSHORT :
+    case SQL_SMALLINT :
       PVarType::SetType(VarInt16);
+      m_odbcType = SQL_C_SSHORT;
       break;
 
-    case SQL_C_USHORT :
-      PVarType::SetType(VarUInt16);
-      break;
-
-    case SQL_C_LONG :
+    case SQL_INTEGER :
       PVarType::SetType(VarInt32);
+      m_odbcType = SQL_C_LONG;
       break;
 
-    case SQL_C_ULONG :
-      PVarType::SetType(VarUInt32);
-      break;
-
-    case SQL_C_SBIGINT :
+    case SQL_BIGINT :
       PVarType::SetType(VarInt64);
-      break;
-
-    case SQL_C_UBIGINT :
-      PVarType::SetType(VarUInt64);
+      m_odbcType = SQL_C_SBIGINT;
       break;
 
     case SQL_NUMERIC :
@@ -1046,40 +1035,44 @@ PODBC::Field::Field(Row & row, PINDEX column)
       m_odbcType = SQL_C_DOUBLE;
       break;
 
-    case SQL_C_GUID:
+    case SQL_GUID:
       PVarType::SetType(VarGUID);
+      m_odbcType = SQL_C_GUID;
       break;
 
     case SQL_DATETIME:
-    case SQL_C_TYPE_TIMESTAMP:
-    case SQL_C_TYPE_DATE:
-    case SQL_C_TYPE_TIME:
+    case SQL_TYPE_DATE:
+    case SQL_TYPE_TIME:
+    case SQL_TYPE_TIMESTAMP:
       switch (m_odbcType) {
         case SQL_DATETIME:
-          m_odbcType = SQL_C_TYPE_TIMESTAMP;
-        case SQL_C_TYPE_TIMESTAMP:
+        case SQL_TYPE_TIMESTAMP:
           PVarType::SetType(VarTime, statement.m_odbc.GetDateTimeFormat());
+          m_odbcType = SQL_C_TYPE_TIMESTAMP;
           break;
 
-        case SQL_C_TYPE_DATE:
+        case SQL_TYPE_DATE:
           PVarType::SetType(VarTime, statement.m_odbc.GetDateFormat());
+          m_odbcType = SQL_C_TYPE_DATE;
           break;
 
-        case SQL_C_TYPE_TIME:
+        case SQL_TYPE_TIME:
           PVarType::SetType(VarTime, statement.m_odbc.GetTimeFormat());
+          m_odbcType = SQL_C_TYPE_TIME;
           break;
       }
       if (!m_isReadOnly)
         statement.BindCol(m_column, m_odbcType, m_extra, sizeof(*m_extra), &m_extra->bindLenOrInd);
       return;
 
+    case SQL_CHAR :
     case SQL_VARCHAR :
-    case SQL_C_CHAR :
       PVarType::SetType(suColSize <= 1 ? VarChar : VarFixedString, suColSize+1);
       m_odbcType = SQL_C_CHAR;
       break;
 
     case SQL_BINARY :
+    case SQL_VARBINARY :
       PVarType::SetType(VarDynamicBinary, suColSize);
       m_odbcType = SQL_C_BINARY;
       break;
@@ -1102,7 +1095,8 @@ PODBC::Field::Field(Row & row, PINDEX column)
       return;
 
     default :
-      PTRACE(2, "ODBC\tUnknown/unsupported column data type " << m_odbcType << " for " << m_name);
+      PTRACE(2, "ODBC\tUnknown/unsupported column data type " << swType << " for " << m_name);
+      m_odbcType = swType;
       // Do next case, assume a char field
   }
 
@@ -1503,7 +1497,6 @@ PODBC::RecordSet::~RecordSet()
 
 bool PODBC::RecordSet::Query(const PString & query)
 {
-  m_statement->Cancel();
   m_cursor.m_rowIndex = 0;
   m_cursor.m_fields.RemoveAll();
 
