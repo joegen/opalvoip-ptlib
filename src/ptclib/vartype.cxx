@@ -236,7 +236,7 @@ void PVarType::PrintOn(ostream & strm) const
       strm << m_.int32;
       break;
     case VarInt64 :
-      strm << m_.int32;
+      strm << m_.int64;
       break;
     case VarUInt8 :
       strm << (unsigned)m_.uint8;
@@ -305,7 +305,7 @@ void PVarType::ReadFrom(istream & strm)
       strm >> m_.int32;
       break;
     case VarInt64 :
-      strm >> m_.int32;
+      strm >> m_.int64;
       break;
     case VarUInt8 :
       { unsigned i; strm >> i; m_.uint8 = (uint8_t)i; }
