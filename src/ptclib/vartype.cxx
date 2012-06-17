@@ -443,7 +443,7 @@ int PVarType::AsInteger() const
     case VarUInt32 :
       return m_.uint32;
     case VarUInt64 :
-      if (m_.uint64 > std::numeric_limits<int>::max())
+      if (m_.uint64 > (uint64_t)std::numeric_limits<int>::max())
         return std::numeric_limits<int>::max();
       return(int)m_.uint64;
     case VarFloatSingle :
