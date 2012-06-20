@@ -35,6 +35,8 @@
 #include <ptlib.h>
 #include <ptclib/vartype.h>
 
+#include <limits>
+
 
 #define new PNEW
 
