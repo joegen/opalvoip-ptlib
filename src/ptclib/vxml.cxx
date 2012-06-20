@@ -1108,7 +1108,9 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 
     PTRACE(3, "VXML\tEnd of VoiceXML elements.");
 
+    m_sessionMutex.Signal();
     OnEndDialog();
+    m_sessionMutex.Wait();
 
     // Wait for anything OnEndDialog plays to complete.
     while (ProcessEvents())
