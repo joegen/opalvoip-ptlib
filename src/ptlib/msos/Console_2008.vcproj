@@ -7712,7 +7712,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\ptclib\javascript.cxx"
+					RelativePath="..\..\ptclib\jscript.cxx"
 					>
 				</File>
 				<File
@@ -9591,7 +9591,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptclib\javascript.h"
+					RelativePath="..\..\..\include\ptclib\jscript.h"
 					>
 				</File>
 				<File
