@@ -62,6 +62,13 @@
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
 
+// Somewhere in C headers you get this, which blows up STL version
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 #define P_REMOVE_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_removed ****** fn { return 0; }
 
@@ -1622,25 +1629,22 @@ typedef PIntSameOrder<long double> PFloat80b;
 #define PARRAYSIZE(array) ((PINDEX)(sizeof(array)/sizeof(array[0])))
 
 /*$MACRO PMIN(v1, v2)
-   This macro is used to calculate the minimum of two values. As this is a
-   macro the expression in <code>v1</code> or <code>v2</code> is executed
-   twice so extreme care should be made in its use.
+   This macro is used to calculate the minimum of two values.
+   Maps to std::min and is for backward compatibility only.
  */
-#define PMIN(v1, v2) ((v1) < (v2) ? (v1) : (v2))
+#define PMIN(v1, v2) std::min(v1, v2)
 
 /*$MACRO PMAX(v1, v2)
-   This macro is used to calculate the maximum of two values. As this is a
-   macro the expression in <code>v1</code> or <code>v2</code> is executed
-   twice so extreme care should be made in its use.
+   This macro is used to calculate the maximum of two values.
+   Maps to std::max and is for backward compatibility only.
  */
-#define PMAX(v1, v2) ((v1) > (v2) ? (v1) : (v2))
+#define PMAX(v1, v2) std::max(v1, v2)
 
 /*$MACRO PABS(val)
-   This macro is used to calculate an absolute value. As this is a macro the
-   expression in <code>val</code> is executed twice so extreme care should be
-   made in its use.
+   This macro is used to calculate an absolute value.
+   Maps to std::abs and is for backward compatibility only.
  */
-#define PABS(v) ((v) < 0 ? -(v) : (v))
+#define PABS(v) std::abs(v)
 
 
 #endif // PTLIB_OBJECT_H

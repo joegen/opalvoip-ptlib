@@ -1499,8 +1499,8 @@ bool NT_ServiceManager::IsRunning(PServiceProcess * svc)
 
   // if pending periodicaly re-query the status
   while (serviceStatus.dwCurrentState == SERVICE_START_PENDING) {
-    DWORD waitTime = PMIN(serviceStatus.dwWaitHint / 10, 10000);
-	Sleep(waitTime);
+    DWORD waitTime = std::min(serviceStatus.dwWaitHint / 10, 10000UL);
+    Sleep(waitTime);
 
     if (!QueryServiceStatus(schService, &serviceStatus)) {
       error = ::GetLastError();
