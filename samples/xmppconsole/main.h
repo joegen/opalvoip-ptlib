@@ -24,24 +24,9 @@
 #include <ptclib/xmpp_muc.h>
 
 
-class XMPPFrameBase : public PObject
+class XMPPFrame : public PObject
 {
-  PCLASSINFO(XMPPFrameBase, PObject);
-  PDECLARE_SMART_NOTIFIEE;
-protected:
-  XMPPFrameBase() { PCREATE_SMART_NOTIFIEE; }
-  PDECLARE_SMART_NOTIFIER(XMPP::C2S::StreamHandler, XMPPFrameBase, OnSessionEstablished) = 0;
-  PDECLARE_SMART_NOTIFIER(XMPP::C2S::StreamHandler, XMPPFrameBase, OnSessionReleased) = 0;
-  PDECLARE_SMART_NOTIFIER(XMPP::Message, XMPPFrameBase, OnMessage) = 0;
-  PDECLARE_SMART_NOTIFIER(XMPP::Message, XMPPFrameBase, OnError) = 0;
-  PDECLARE_SMART_NOTIFIER(XMPP::Roster, XMPPFrameBase, OnRosterChanged) = 0;
-  PDECLARE_SMART_NOTIFIER(XMPP::Presence,  XMPPFrameBase, OnPresence) = 0;
-  PDECLARE_SMART_NOTIFIER(XMPP::IQ,  XMPPFrameBase, OnIQ) = 0;
-};
-
-
-class XMPPFrame : public XMPPFrameBase
-{
+  PCLASSINFO(XMPPFrame, PObject);
 public:
   XMPPFrame();
   ~XMPPFrame();
@@ -52,27 +37,27 @@ public:
   PDECLARE_NOTIFIER(PTimer, XMPPFrame, OnReadyForUse);
   PTimer onReadyForUseTimer;
 
-  PBoolean    LocalPartyIsEmpty() { return localParty.IsEmpty(); }
-  PBoolean    OtherPartyIsEmpty() { return otherParty.IsEmpty(); }
+  bool    LocalPartyIsEmpty() { return localParty.IsEmpty(); }
+  bool    OtherPartyIsEmpty() { return otherParty.IsEmpty(); }
   PString GetOtherParty() { return otherParty; }
   PString GetLocalParty() { return localParty; }
-  PBoolean    IsConnected() {  return isReadyForUse; }
+  bool    IsConnected() {  return isReadyForUse; }
 
-  PBoolean Send(XMPP::Stanza * stanza) { return m_Client->Send(stanza); }
+  bool Send(XMPP::Stanza * stanza) { return m_Client->Send(stanza); }
 
   void OnConnect();
-
-  // pwlib events
   virtual void OnDisconnect();
-  virtual void OnError(XMPP::Message &, INT);
-  virtual void OnMessage(XMPP::Message&, INT);
-  virtual void OnPresence(XMPP::Presence& pdu, INT);
   virtual void OnQuit();
-  virtual void OnIQ(XMPP::IQ& pdu, INT);
-  virtual void OnRosterChanged(XMPP::Roster&, INT);
-  virtual void OnSessionEstablished(XMPP::C2S::StreamHandler&, INT);
-  virtual void OnSessionReleased(XMPP::C2S::StreamHandler&, INT);
-  
+
+  // PTLib events
+  PDECLARE_NOTIFIER(XMPP::Message, XMPPFrame, OnError);
+  PDECLARE_NOTIFIER(XMPP::Message, XMPPFrame, OnMessage);
+  PDECLARE_NOTIFIER(XMPP::Presence, XMPPFrame, OnPresence);
+  PDECLARE_NOTIFIER(XMPP::IQ, XMPPFrame, OnIQ);
+  PDECLARE_NOTIFIER(XMPP::Roster, XMPPFrame, OnRosterChanged);
+  PDECLARE_NOTIFIER(XMPP::C2S::StreamHandler, XMPPFrame, OnSessionEstablished);
+  PDECLARE_NOTIFIER(XMPP::C2S::StreamHandler, XMPPFrame, OnSessionReleased);
+
   void ReportRoster();
 
   PStringArray & GetAvailableNodes();
@@ -86,7 +71,7 @@ private:
 
   PString otherParty;
   PString localParty;
-  PBoolean    isReadyForUse;
+  bool    isReadyForUse;
 };
 
 
