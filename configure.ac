@@ -108,7 +108,7 @@ HAS_SOAP=1
 HAS_XMLRPC=1
 HAS_JABBER=1
 HAS_CONFIG_FILE=1
-default_ipv6=yes
+default_ipv6=no
 HAS_QOS=1
 HAS_VIDFILE=1
 HAS_FFVDEV=1
@@ -1259,7 +1259,7 @@ dnl look for IPV6 functions
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
 dnl MSWIN_CHECK_FILE ipv6,include\ws2tcpip.h,P_HAS_IPV6=1
 
-AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
+AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--enable-ipv6],[enable IPV6 support]))
 
 if test "${enable_ipv6}z" = "z" ; then
   enable_ipv6=$default_ipv6
