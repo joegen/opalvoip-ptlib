@@ -15,6 +15,8 @@
  * $Date$
  */
 
+#include <ptlib.h>
+
 #include "main.h"
 #include "version.h"
 
@@ -30,7 +32,7 @@
 XMPPFrame::XMPPFrame()
   : m_Roster(new XMPP::Roster), m_Client(NULL)
 {
-  m_Roster->RosterChangedHandlers().Add(new PCREATE_SMART_NOTIFIER(OnRosterChanged));
+  m_Roster->RosterChangedHandlers().Add(PCREATE_NOTIFIER(OnRosterChanged));
   isReadyForUse = PFalse;
 }
 
@@ -45,12 +47,12 @@ void XMPPFrame::OnConnect()
   //  cout << "On Connect is running " << endl;
 
   m_Client = new XMPP::C2S::StreamHandler(XMPPConsole::Current().GetServer(), XMPPConsole::Current().GetPassword());
-  m_Client->SessionEstablishedHandlers().Add(new PCREATE_SMART_NOTIFIER(OnSessionEstablished));
-  m_Client->SessionReleasedHandlers().Add   (new PCREATE_SMART_NOTIFIER(OnSessionReleased));
-  m_Client->MessageHandlers().Add           (new PCREATE_SMART_NOTIFIER(OnMessage));
-  m_Client->ErrorHandlers().Add             (new PCREATE_SMART_NOTIFIER(OnError));
-  m_Client->PresenceHandlers().Add          (new PCREATE_SMART_NOTIFIER(OnPresence));
-  m_Client->IQHandlers().Add                (new PCREATE_SMART_NOTIFIER(OnIQ));
+  m_Client->SessionEstablishedHandlers().Add(PCREATE_NOTIFIER(OnSessionEstablished));
+  m_Client->SessionReleasedHandlers().Add   (PCREATE_NOTIFIER(OnSessionReleased));
+  m_Client->MessageHandlers().Add           (PCREATE_NOTIFIER(OnMessage));
+  m_Client->ErrorHandlers().Add             (PCREATE_NOTIFIER(OnError));
+  m_Client->PresenceHandlers().Add          (PCREATE_NOTIFIER(OnPresence));
+  m_Client->IQHandlers().Add                (PCREATE_NOTIFIER(OnIQ));
   m_Client->Start();
 }
 
@@ -78,7 +80,7 @@ void XMPPFrame::OnQuit()
   OnDisconnect();
 }
 
-void XMPPFrame::OnIQ(XMPP::IQ& pdu, INT)
+void XMPPFrame::OnIQ(XMPP::IQ& , INT)
 {
   // cout << "On IQ for " << pdu << endl;
 }
@@ -117,7 +119,7 @@ void XMPPFrame::OnPresence(XMPP::Presence& pdu, INT)
 #endif
 }
 
-void XMPPFrame::OnSessionEstablished(XMPP::C2S::StreamHandler& client, INT)
+void XMPPFrame::OnSessionEstablished(XMPP::C2S::StreamHandler& , INT)
 {
   cout << "On Session Established." << endl;
 
@@ -134,7 +136,7 @@ void XMPPFrame::OnReadyForUse(PTimer &, INT)
   isReadyForUse = PTrue;
 }
 
-void XMPPFrame::OnSessionReleased(XMPP::C2S::StreamHandler& client, INT)
+void XMPPFrame::OnSessionReleased(XMPP::C2S::StreamHandler& , INT)
 {
   cout << "Disconnected" << endl;
   m_Roster->Detach();
@@ -149,7 +151,7 @@ void XMPPFrame::OnMessage(XMPP::Message& msg, INT)
     cout << " Message received. Subject:" << msg.GetSubject() << "    body:" << msg.GetBody() << "  from: " << msg.GetFrom() << endl;
 }
 
-void XMPPFrame::OnRosterChanged(XMPP::Roster& rost, INT)
+void XMPPFrame::OnRosterChanged(XMPP::Roster& , INT)
 {
   //  cout << " ON Roster changed " << endl;
   //cout << endl;
@@ -337,7 +339,7 @@ void UserInterface::Main()
  
   console.SetReadTimeout(P_MAX_INDEX);
   for (;;) {
-    char ch = console.ReadChar();
+    int ch = console.ReadChar();
  
     switch (tolower(ch)) {
 
