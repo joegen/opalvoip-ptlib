@@ -117,6 +117,22 @@ class PLua : public PScriptLanguage
     );
 
 
+    /**Get a variable in the script 
+       See class description for how \p name is parsed.
+      */
+    virtual bool GetVar(
+      const PString & name,  ///< Name of global
+      PVarType & var
+    ) = 0;
+
+    /**Set a variable in the script 
+       See class description for how \p name is parsed.
+      */
+    virtual bool SetVar(
+      const PString & name, ///< Name of global
+      const PVarType & var
+    ) = 0;
+
     /**Get a variable in the script as a string value.
        See class description for how \p name is parsed.
       */

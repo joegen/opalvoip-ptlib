@@ -76,12 +76,30 @@ void MyProcess::Main()
 
   PJavaScript jscript;
 
+  if (!jscript.SetString("myString", "hello, world"))
+    cerr << "Cannot set string" << endl;
+
+  if (!jscript.SetInteger("myInt", 42))
+    cerr << "Cannot set integer" << endl;
+
+  if (!jscript.SetNumber("myNumber", 3.14))
+    cerr << "Cannot set number" << endl;
+
+  if (!jscript.SetBoolean("myBool", true))
+    cerr << "Cannot set bool" << endl;
+
   for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
     if (jscript.Run(args[arg]))
-      cout << "Executed " << args[arg] << endl;
+      cout << "Executed '" << args[arg] << "'" << endl;
     else
-      cerr << jscript.GetLastErrorText() << " executing " << args[arg] << endl;
+      cerr << jscript.GetLastErrorText() << " executing '" << args[arg] << "'" << endl;
   }
+
+  cout << "myString = " << jscript.GetString("myString") << endl
+       << "myInt    = " << jscript.GetInteger("myInt") << endl
+       << "myNumber    = " << jscript.GetNumber("myNumber") << endl
+       << "myBool    = " << jscript.GetBoolean("myBool") << endl
+       ;
 }
 
 #else
