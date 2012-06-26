@@ -51,6 +51,7 @@ class PBitwiseEnum
   public:
     __inline PBitwiseEnum(Enumeration e = initialValue) : m_enum(e) { }
     __inline PBitwiseEnum(const PBitwiseEnum & e) : m_enum(e.m_enum) { }
+    __inline explicit PBitwiseEnum(IntType bitNum) : m_enum((Enumeration)(1 << bitNum)) { if (m_enum > maxValue) m_enum  = maxValue; }
 
     __inline PBitwiseEnum & operator=(const PBitwiseEnum & e) { m_enum = e.m_enum; return *this; }
     __inline PBitwiseEnum & operator=(Enumeration          e) { m_enum = e; return *this; }
