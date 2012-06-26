@@ -193,6 +193,90 @@ bool PLua::DeleteTable(const PString & name, bool metaTable)
 }
 
 
+bool PLua::GetVar(const PString & name, PVarType & var)
+{
+  if (!InternalGetVariable(name))
+    return false;
+
+  bool result = true;
+  switch (lua_type(m_lua, -1)) {
+    case LUA_TNONE:
+      return false;
+
+    case LUA_TNIL:
+      var = PVarType();
+      break;
+
+    case LUA_TBOOLEAN:
+      var = PVarType(lua_toboolean(m_lua, -1));
+      break;
+
+    case LUA_TNUMBER:
+      var = PVarType(lua_tonumber(m_lua, -1));
+      break;
+
+    case LUA_TSTRING:
+      var = PVarType(lua_tostring(m_lua, -1));
+      break;
+
+    case LUA_TLIGHTUSERDATA:
+    case LUA_TTABLE:
+    case LUA_TFUNCTION:
+    case LUA_TUSERDATA:
+    case LUA_TTHREAD:
+      result = false;
+  }
+
+  lua_pop(m_lua, 1);
+  return result;
+}
+
+
+bool PLua::SetVar(const PString & name, const PVarType & var)
+{
+  switch (var.GetType()) {
+    case PVarType::VarNULL:
+      lua_pushnil(m_lua);
+      break;
+
+    case PVarType::VarBoolean:
+      lua_pushboolean(m_lua, var.AsBoolean() ? 1 : 0);
+      break;
+
+    case PVarType::VarInt8:
+    case PVarType::VarInt16:
+    case PVarType::VarInt32:
+    case PVarType::VarInt64:
+    case PVarType::VarUInt8:
+    case PVarType::VarUInt16:
+    case PVarType::VarUInt32:
+    case PVarType::VarUInt64:
+      lua_pushinteger(m_lua, var.AsInteger());
+      break;
+
+    case PVarType::VarFloatSingle:
+    case PVarType::VarFloatDouble:
+    case PVarType::VarFloatExtended:
+      lua_pushnumber(m_lua, var.AsFloat());
+      break;
+
+    case PVarType::VarChar:
+    case PVarType::VarGUID:
+    case PVarType::VarTime:
+    case PVarType::VarStaticString:
+    case PVarType::VarFixedString:
+    case PVarType::VarDynamicString:
+      lua_pushstring(m_lua, var.AsString());
+      break;
+
+    case PVarType::VarStaticBinary:
+    case PVarType::VarDynamicBinary:
+    default:
+      return false;
+  }
+  return InternalSetVariable(name);
+}
+
 bool PLua::GetBoolean(const PString & name)
 {
   if (!InternalGetVariable(name))
