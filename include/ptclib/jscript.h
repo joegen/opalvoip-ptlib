@@ -109,6 +109,22 @@ class PJavaScript : public PScriptLanguage
     );
 
 
+    /**Get a variable in the script 
+       See class description for how \p name is parsed.
+      */
+    virtual bool GetVar(
+      const PString & name,  ///< Name of global
+      PVarType & var
+    );
+
+    /**Set a variable in the script 
+       See class description for how \p name is parsed.
+      */
+    virtual bool SetVar(
+      const PString & name, ///< Name of global
+      const PVarType & var
+    );
+
     /**Get a variable in the script as a string value.
        See class description for how \p name is parsed.
       */
@@ -219,6 +235,18 @@ class PJavaScript : public PScriptLanguage
     /**Check for an error and set m_lastErrorText to error text.
       */
     virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0);
+
+    template <class v8Type, class cppType>
+    bool SetValue(const PString & name, const cppType & value)
+    {
+      v8::Locker locker;
+      v8::HandleScope handleScope;
+      v8::Context::Scope contextScope(m_context);
+      return m_context->Global()->Set(v8::String::New(name), v8Type::New(value));
+    }
+
+    v8::Persistent<v8::Context> m_context;
+    PString m_resultText;
 };
 
 
