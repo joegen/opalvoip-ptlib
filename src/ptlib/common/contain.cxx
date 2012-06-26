@@ -3115,4 +3115,62 @@ PString PRegularExpression::EscapeString(const PString & str)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * names)
+{
+  if (bits == 0) {
+    strm << *names;
+    return;
+  }
+
+  bool needSpace = false;
+  ++names;
+  for (unsigned bit = 1; *names != NULL; bit <<= 1, ++names) {
+    if (bits & bit) {
+      if (needSpace)
+        strm << ' ';
+      else
+        needSpace = true;
+      strm << *names;
+    }
+  }
+}
+
+
+unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names)
+{
+  unsigned bits = 0;
+  while (strm.good()) {
+    char name[100]; // If soomeone has an enumeration longer than this, it deservices to fail!
+    strm >> ws;
+    strm.get(name, sizeof(name), ' ');
+    if (strm.fail() || strm.bad())
+      break;
+
+    if (strcmp(name, *names) == 0)
+      return 0;
+
+    bool unknown = true;
+    for (unsigned i = 1; names[i] != NULL; ++i) {
+      if (strcmp(name, names[i]) == 0) {
+        bits |= (1 << (i-1));
+        unknown = false;
+        break;
+      }
+    }
+
+    if (unknown) {
+      size_t i = strlen(name);
+      do {
+        strm.putback(name[--i]);
+      } while (i > 0);
+
+      break;
+    }
+  }
+  return bits;
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
