@@ -777,6 +777,9 @@
     <ClInclude Include="..\..\..\include\ptclib\ssdp.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\bitwise_enum.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
