@@ -960,7 +960,7 @@ void PThread::WaitForTermination() const
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   pthread_t id = PX_threadId;
-  if ((id == 0) || (id == Current()->GetThreadId())) {
+  if (id == 0 || this == Current()) {
     PTRACE(2, "WaitForTermination on 0x" << hex << id << dec << " short circuited");
     return true;
   }
