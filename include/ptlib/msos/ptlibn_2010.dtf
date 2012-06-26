@@ -2568,7 +2568,7 @@ EXPORTS
     ??0PIPRouteTableIPv6@@QAE@XZ @2510 NONAME
     ??0PIPSocket@@IAE@XZ @2511 NONAME
     ??0PIPSocketAddressAndPort@@QAE@ABV0@@Z @2512 NONAME
-    ??0PIPSocketAddressAndPort@@QAE@ABVPString@@GD@Z @2513 NONAME
+    ??0PIPSocketAddressAndPort@@QAE@XZ @21359 NONAME
     ??0PLDAPAttributeBase@@QAE@PBDPAXH@Z @2514 NONAME
     ??0PLDAPAttr_c@RTPerson@PILSSession@@QAE@XZ @2515 NONAME
     ??0PLDAPAttr_cn@RTPerson@PILSSession@@QAE@XZ @2516 NONAME
@@ -4151,7 +4151,7 @@ EXPORTS
     ??1PSafePtrBase@@UAE@XZ @4068 NONAME
     ??1PSafePtrMultiThreaded@@UAE@XZ @4069 NONAME
     ??1PSASLClient@@UAE@XZ @4070 NONAME
-    ??1PSDL_Window@@QAE@XZ @20542 NONAME
+    ??1PSDL_Window@@UAE@XZ @21360 NONAME
     ??1PSecureConfig@@UAE@XZ @4071 NONAME
     ??1PSecureHTTPServiceProcess@@UAE@XZ @4072 NONAME
     ??1PSemaphore@@UAE@XZ @4073 NONAME
@@ -6937,7 +6937,7 @@ EXPORTS
     ??_8TCPTransport@C2S@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @6806 NONAME
     ??_8Transport@XMPP@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @6807 NONAME
     ??_8Transport@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @6808 NONAME
-    ??_9PSDL_Window@@$BA@AE @20555 NONAME
+    ??_9PSDL_Window@@$BCM@AE @21361 NONAME
     ??_B?1???0PPlugin_PNatMethod_STUN_Registration@@QAE@PAVPPluginManager@@@Z@51 @6809 NONAME
     ??_B?1???0PPlugin_PSoundChannel_DirectSound_Registration@@QAE@PAVPPluginManager@@@Z@51 @6810 NONAME
     ??_B?1???0PPlugin_PSoundChannel_WAVFile_Registration@@QAE@PAVPPluginManager@@@Z@51 @6811 NONAME
@@ -14241,6 +14241,7 @@ EXPORTS
     ?CreateOpenedDevice@PVideoInputDevice@@SAPAV1@ABVPString@@0_NPAVPPluginManager@@@Z @13973 NONAME
     ?CreateOpenedDevice@PVideoOutputDevice@@SAPAV1@ABUOpenArgs@PVideoDevice@@_N@Z @13974 NONAME
     ?CreateOpenedDevice@PVideoOutputDevice@@SAPAV1@ABVPString@@0_NPAVPPluginManager@@@Z @13975 NONAME
+    ?CreateOverlay@PVideoOutputDevice_SDL@@AAEXPAUSDL_Surface@@@Z @21362 NONAME
     ?CreatePluginsDevice@PPluginManager@@QBEPAVPObject@@ABVPString@@0H@Z @13976 NONAME
     ?CreatePluginsDeviceByName@PPluginManager@@QBEPAVPObject@@ABVPString@@0H0@Z @13977 NONAME
     ?CreateRedirectMessage@PSecureHTTPServiceProcess@@UAE?AVPString@@ABV2@@Z @13978 NONAME
@@ -14988,6 +14989,7 @@ EXPORTS
     ?ForwardDomain@PSMTPServer@@UAE?AW4ForwardResult@1@AAVPCaselessString@@0@Z @14669 NONAME
     ?ForwardedTag@PHTTP@@SAABVPCaselessString@@XZ @14670 NONAME
     ?FrameComplete@PVideoOutputDevice_Window@@UAE_NXZ @14671 NONAME
+    ?FreeOverlay@PVideoOutputDevice_SDL@@AAEXXZ @21363 NONAME
     ?FromBase64@PXMLRPCVariableBase@@QAEXABVPString@@AAVPAbstractArray@@@Z @14672 NONAME
     ?FromBinary@PLDAPAttributeBase@@UAEXABV?$PArray@VPBYTEArray@@@@@Z @14673 NONAME
     ?FromString@Address@PIPSocket@@QAE_NABVPString@@@Z @14674 NONAME
@@ -15024,6 +15026,7 @@ EXPORTS
     ?GetAbsoluteTime@PTimer@@QBE_JXZ @14704 NONAME
     ?GetAddress@InterfaceEntry@PIPSocket@@QBE?AVAddress@2@XZ @14705 NONAME
     ?GetAddress@PEthSocket@@QAE_NAATAddress@1@@Z @14706 NONAME
+    ?GetAddress@PIPSocketAddressAndPort@@QBEABVAddress@PIPSocket@@XZ @21364 NONAME
     ?GetAddress@PMonitoredSocketBundle@@UBE_NABVPString@@AAVAddress@PIPSocket@@AAG_N@Z @14707 NONAME
     ?GetAddress@PRemoteConnection@@QAE?AVPString@@XZ @14708 NONAME
     ?GetAddress@PSingleMonitoredSocket@@UBE_NABVPString@@AAVAddress@PIPSocket@@AAG_N@Z @14709 NONAME
@@ -15622,6 +15625,7 @@ EXPORTS
     ?GetCurrentDirectoryA@PFTPClient@@QAE?AVPString@@XZ @15299 NONAME
     ?GetCurrentElement@PXER_Stream@@QAEPAVPXMLElement@@XZ @15300 NONAME
     ?GetCurrentPosition@PVideoInputControl@@IAE_NW4InputControlType@PVideoControlInfo@@AAJ@Z @15301 NONAME
+    ?GetCurrentProcessID@PProcess@@SAKXZ @21365 NONAME
     ?GetCurrentThreadId@PThread@@SAKXZ @15302 NONAME
     ?GetCyclesPassed@PSoundChannelDirectSound@@AAEKXZ @21220 NONAME
     ?GetData@PSSLCertificate@@QBE?AVPBYTEArray@@XZ @15303 NONAME
@@ -15725,7 +15729,6 @@ EXPORTS
     ?GetDeviceNames@PVideoOutputDevice_Window_PluginServiceDescriptor@@UBE?AVPStringArray@@H@Z @15397 NONAME
     ?GetDeviceNames@PVideoOutputDevice_YUVFile@@UBE?AVPStringArray@@XZ @15398 NONAME
     ?GetDeviceNames@PVideoOutputDevice_YUVFile_PluginServiceDescriptor@@UBE?AVPStringArray@@H@Z @15399 NONAME
-    ?GetDirection@PSoundChannel@@UBE?AW4Directions@1@XZ @21223 NONAME
     ?GetDirectionText@PSoundChannel@@SAPBDW4Directions@1@@Z @21224 NONAME
     ?GetDirectionText@PSoundChannel@@UBEPBDXZ @21225 NONAME
     ?GetDirectory@PFilePath@@QBE?AVPDirectory@@XZ @15400 NONAME
@@ -16097,7 +16100,6 @@ EXPORTS
     ?GetMonth@PTime@@QBE?AW4Months@1@XZ @15758 NONAME
     ?GetMonthName@PTime@@SA?AVPString@@W4Months@1@W4NameType@1@@Z @15759 NONAME
     ?GetMultipartFormInfo@PHTTPConnectionInfo@@QBEABVPMultiPartList@@XZ @15760 NONAME
-    ?GetMutex@PSDL_Window@@QAEAAVPCriticalSection@@XZ @20603 NONAME
     ?GetMutex@PXML@@QAEAAVPCriticalSection@@XZ @15761 NONAME
     ?GetName@InterfaceEntry@PIPSocket@@QBEABVPString@@XZ @15762 NONAME
     ?GetName@Item@Roster@XMPP@@QBEABVPString@@XZ @15763 NONAME
@@ -16274,6 +16276,7 @@ EXPORTS
     ?GetPointer@PPointer@@QBEPAXXZ @15933 NONAME
     ?GetPointer@PWaveFormat@@QBEPAXXZ @15934 NONAME
     ?GetPointer@Result@PMessageDigest@@QBEPBEXZ @15935 NONAME
+    ?GetPort@PIPSocketAddressAndPort@@QBEGXZ @21366 NONAME
     ?GetPort@Psockaddr@@QBEGXZ @15936 NONAME
     ?GetPort@PSocket@@QBEGXZ @15937 NONAME
     ?GetPort@PURL@@QBEGXZ @15938 NONAME
@@ -16293,7 +16296,6 @@ EXPORTS
     ?GetPriority@PInterfaceMonitorClient@@QBEHXZ @15952 NONAME
     ?GetPriority@Presence@XMPP@@UBEEXZ @15953 NONAME
     ?GetPriority@PThread@@UBE?AW4Priority@1@XZ @15954 NONAME
-    ?GetProcessID@PProcess@@QBEKXZ @15955 NONAME
     ?GetProductKey@PHTTPServiceProcess@@QBEABUKey@PTEACypher@@XZ @15956 NONAME
     ?GetProductKey@PSecureConfig@@QBEXAAUKey@PTEACypher@@@Z @15957 NONAME
     ?GetProductName@PHTTPServiceProcess@@QBEABVPString@@XZ @15958 NONAME
@@ -16573,6 +16575,7 @@ EXPORTS
     ?GetValue@PHTTPRadioField@@UBE?AVPString@@_N@Z @16230 NONAME
     ?GetValue@PHTTPSelectField@@UBE?AVPString@@_N@Z @16231 NONAME
     ?GetValue@PHTTPStringField@@UBE?AVPString@@_N@Z @16232 NONAME
+    ?GetValue@PLua@@UAE?AVPString@@PBD@Z @21367 NONAME
     ?GetValueByName@PASN_Choice@@QBEHVPString@@@Z @16234 NONAME
     ?GetValueByName@PASN_Enumeration@@QBEHVPString@@@Z @16235 NONAME
     ?GetValuesIndex@PAbstractDictionary@@UBEHABVPObject@@@Z @16236 NONAME
@@ -18234,7 +18237,7 @@ EXPORTS
     ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@1@Z @17865 NONAME
     ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@1AAV4@@Z @17866 NONAME
     ?PostDelete@PODBCRecord@@QAE_NH@Z @17867 NONAME
-    ?PostEvent@PVideoOutputDevice_SDL@@AAEXI@Z @20615 NONAME
+    ?PostEvent@PVideoOutputDevice_SDL@@AAEXI_N@Z @21368 NONAME
     ?PostNew@PODBCRecord@@QAE_NAAVRow@PODBC@@@Z @17868 NONAME
     ?PostShutdown@PProcess@@SAXXZ @17869 NONAME
     ?PostUpdate@PODBCRecord@@QAE_NAAVRow@PODBC@@@Z @17870 NONAME
@@ -19639,6 +19642,7 @@ EXPORTS
     ?StartRegistration@StreamHandler@C2S@XMPP@@MAEXXZ @19247 NONAME
     ?StartResponse@PHTTPServer@@QAE_NW4StatusCode@PHTTP@@AAVPMIMEInfo@@J@Z @19248 NONAME
     ?StartRunning@PTimer@@AAEX_N@Z @19249 NONAME
+    ?StartTLS@PLDAPSession@@QAE_NXZ @21369 NONAME
     ?StartWrite@PHTTPSpace@@QBEXXZ @19250 NONAME
     ?StartWrite@PReadWriteMutex@@QAEXXZ @19251 NONAME
     ?StaticControlEntry@PServiceProcess@@CGXK@Z @19252 NONAME
