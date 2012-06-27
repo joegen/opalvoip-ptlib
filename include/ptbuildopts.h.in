@@ -567,9 +567,11 @@
   #pragma include_alias(<v8.h>, <@V8_DIR@/include/v8.h>)
   
   #ifdef _DEBUG
-    #define P_V8_LIBRARY "@V8_DIR@/build/Debug/lib/v8_base.lib"
+    #define P_V8_LIBRARY1 "@V8_DIR@/build/Debug/lib/v8_snapshot.lib"
+    #define P_V8_LIBRARY2 "@V8_DIR@/build/Debug/lib/v8_base.lib"
   #else
-    #define P_V8_LIBRARY "@V8_DIR@/build/Release/lib/v8_base.lib"
+    #define P_V8_LIBRARY1 "@V8_DIR@/build/Release/lib/v8_snapshot.lib"
+    #define P_V8_LIBRARY2 "@V8_DIR@/build/Release/lib/v8_base.lib"
   #endif
 #endif
 
