@@ -623,8 +623,8 @@ PBoolean PVideoInputDevice_V4L::Open(const PString & devName, PBoolean startImme
 
     
   // set height and width
-  frameHeight = PMIN (videoCapability.maxheight, QCIFHeight);
-  frameWidth  = PMIN (videoCapability.maxwidth, QCIFWidth);
+  frameHeight = std::min(videoCapability.maxheight, (int)QCIFHeight);
+  frameWidth  = std::min(videoCapability.maxwidth, (int)QCIFWidth);
   
 
   // Init audio
