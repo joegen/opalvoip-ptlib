@@ -41,7 +41,8 @@
 #include <ptclib/jscript.h>
 
 #ifdef _MSC_VER
-  #pragma comment(lib, P_V8_LIBRARY)
+  #pragma comment(lib, P_V8_LIBRARY1)
+  #pragma comment(lib, P_V8_LIBRARY2)
   #pragma message("JavaScript support enabled")
 #endif
 
