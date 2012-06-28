@@ -534,10 +534,6 @@ void PThread::PX_ThreadEnd(void * arg)
 #endif
 
   process.OnThreadEnded(*thread);
-  
-  bool deleteThread = thread->autoDelete; // make copy of the flag before perhaps deleting the thread
-  if (deleteThread)
-    delete thread;
 }
 
 
@@ -1501,10 +1497,24 @@ PBoolean PSemaphore::WillBlock() const
 #endif
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
 PTimedMutex::PTimedMutex()
-//  : PSemaphore(PXMutex)
+{
+  Construct();
+}
+
+PTimedMutex::PTimedMutex(const PTimedMutex &)
+{
+  Construct();
+}
+
+
+void PTimedMutex::Construct()
 {
 #if P_HAS_RECURSIVE_MUTEX
+
   pthread_mutexattr_t attr;
   PAssertPTHREAD(pthread_mutexattr_init, (&attr));
 
@@ -1514,94 +1524,90 @@ PTimedMutex::PTimedMutex()
   PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
 #endif
 
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
-#else
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-#endif
+
+#else // P_HAS_RECURSIVE_MUTEX
+
+  m_lockerId = (pthread_id)-1;
+  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, NULL));
+
+#endif // P_HAS_RECURSIVE_MUTEX
 }
 
-PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
-//  : PSemaphore(PXMutex)
-{
-#if P_HAS_RECURSIVE_MUTEX
-  pthread_mutexattr_t attr;
-  PAssertPTHREAD(pthread_mutexattr_init, (&attr));
-#if P_HAS_RECURSIVE_MUTEX == 2
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE));
-#else
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
-#endif
-
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
-  PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
-#else
-  pthread_mutex_init(&mutex, NULL);
-#endif
-}
 
 PTimedMutex::~PTimedMutex()
 {
-  int result = pthread_mutex_destroy(&mutex);
-  PINDEX i = 0;
-  while ((result == EBUSY) && (i++ < 20)) {
-    pthread_mutex_unlock(&mutex);
-    result = pthread_mutex_destroy(&mutex);
+  int result = pthread_mutex_destroy(&m_mutex);
+  if (result == EBUSY) {
+    // In case it is us
+    while (pthread_mutex_unlock(&m_mutex) == 0)
+      ;
+
+    // Wait a bit for someone else to unlock it
+    for (PINDEX i = 0; i < 100; ++i) {
+      if ((result = pthread_mutex_destroy(&m_mutex)) != EBUSY)
+        break;
+      pthread_yield();
+    }
   }
+
 #ifdef _DEBUG
-  PAssert((result == 0), "Error destroying mutex");
+  PAssert(result == 0, "Error destroying mutex");
 #endif
 }
 
+
 void PTimedMutex::Wait() 
 {
-  pthread_t currentThreadId = pthread_self();
+#if P_HAS_RECURSIVE_MUTEX
 
-#if P_HAS_RECURSIVE_MUTEX == 0
+  PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+
+#else //P_HAS_RECURSIVE_MUTEX
+
+  pthread_t currentThreadId = pthread_self();
 
   // if the mutex is already acquired by this thread,
   // then just increment the lock count
-  if (pthread_equal(lockerId, currentThreadId)) {
+  if (pthread_equal(m_lockerId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-    ++lockCount;
+    ++m_lockCount;
     return;
   }
-#endif
 
   // acquire the lock for real
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
 
-#if P_HAS_RECURSIVE_MUTEX == 0
-  PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
+  PAssert(m_lockerId == (pthread_t)-1 && m_lockCount.IsZero(),
           "PMutex acquired whilst locked by another thread");
+
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
-#endif
+  m_lockerId = currentThreadId;
 
-  lockerId = currentThreadId;
+#endif // P_HAS_RECURSIVE_MUTEX
 }
 
 
 PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime) 
 {
-  // get the current thread ID
-  pthread_t currentThreadId = pthread_self();
-
   // if waiting indefinitely, then do so
   if (waitTime == PMaxTimeInterval) {
     Wait();
-    lockerId = currentThreadId;
-    return PTrue;
+    return true;
   }
 
-#if P_HAS_RECURSIVE_MUTEX == 0
+#if !P_HAS_RECURSIVE_MUTEX
+  pthread_t currentThreadId = pthread_self();
+
   // if we already have the mutex, return immediately
-  if (pthread_equal(lockerId, currentThreadId)) {
+  if (pthread_equal(m_lockerId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-    ++lockCount;
-    return PTrue;
+    ++m_lockCount;
+    return true;
   }
 #endif
 
@@ -1615,45 +1621,36 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  if (pthread_mutex_timedlock(&mutex, &absTime) != 0)
-    return PFalse;
-
-#if P_HAS_RECURSIVE_MUTEX == 0
-  PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
-          "PMutex acquired whilst locked by another thread");
-#endif
-
-  // Note this is protected by the mutex itself only the thread with
-  // the lock can alter it.
-  lockerId = currentThreadId;
-  return PTrue;
+  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0)
+    return false;
 
 #else // P_PTHREADS_XPG6
 
-  for (;;) {
-    if (pthread_mutex_trylock(&mutex) == 0) {
-#if P_HAS_RECURSIVE_MUTEX == 0
-      PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
-              "PMutex acquired whilst locked by another thread");
-#endif
-      lockerId = currentThreadId;
-
-      return PTrue;
-    }
-
+  while (pthread_mutex_trylock(&m_mutex) != 0) {
     if (PTime() >= finishTime)
-      return PFalse;
-
-    PThread::Current()->Sleep(10); // sleep for 10ms
+      return false;
+    usleep(10000);
   }
+
 #endif // P_PTHREADS_XPG6
+
+#if !P_HAS_RECURSIVE_MUTEX
+  PAssert((lockerId == (pthread_t)-1) && m_lockCount.IsZero(),
+          "PMutex acquired whilst locked by another thread");
+
+  // Note this is protected by the mutex itself only the thread with
+  // the lock can alter it.
+  m_lockerId = currentThreadId;
+#endif
+
+  return true;
 }
 
 
 void PTimedMutex::Signal()
 {
-#if P_HAS_RECURSIVE_MUTEX == 0
-  if (!pthread_equal(lockerId, pthread_self())) {
+#if !P_HAS_RECURSIVE_MUTEX
+  if (!pthread_equal(m_lockerId, pthread_self())) {
     PAssertAlways("PMutex signal failed - no matching wait or signal by wrong thread");
     return;
   }
@@ -1661,36 +1658,36 @@ void PTimedMutex::Signal()
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
-  if (!lockCount.IsZero()) {
-    --lockCount;
+  if (!m_lockCount.IsZero()) {
+    --m_lockCount;
     return;
   }
 
   // otherwise mark mutex as available
-  lockerId = (pthread_t)-1;
+  m_lockerId = (pthread_t)-1;
 
 #endif
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertPTHREAD(pthread_mutex_unlock, (&m_mutex));
 }
 
 
 PBoolean PTimedMutex::WillBlock() const
 {
-#if P_HAS_RECURSIVE_MUTEX == 0
-  pthread_t currentThreadId = pthread_self();
-  if (currentThreadId == lockerId)
-    return PFalse;
+#if !P_HAS_RECURSIVE_MUTEX
+  if (pthread_equal(m_lockerId, pthread_self()))
+    return false;
 #endif
 
-  pthread_mutex_t * mp = (pthread_mutex_t*)&mutex;
-  if (pthread_mutex_trylock(mp) != 0)
-    return PTrue;
+  if (pthread_mutex_trylock(&m_mutex) != 0)
+    return true;
 
-  PAssertPTHREAD(pthread_mutex_unlock, (mp));
-  return PFalse;
+  PAssertPTHREAD(pthread_mutex_unlock, (&m_mutex));
+  return false;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
 
 PSyncPoint::PSyncPoint()
   : PSemaphore(PXSyncPoint)
