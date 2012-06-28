@@ -35,24 +35,25 @@
 // PMutex
 
 #if defined(P_PTHREADS) || defined(VX_TASKS)
+  public:
     virtual ~PTimedMutex();
-    mutable pthread_mutex_t mutex;
+  protected:
+    mutable pthread_mutex_t m_mutex;
+    void Construct();
 #endif
 
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
+  public:
     virtual void Wait();
     virtual PBoolean Wait(const PTimeInterval & timeout);
     virtual void Signal();
     virtual PBoolean WillBlock() const;
+#endif
 
+#if !P_HAS_RECURSIVE_MUTEX
   protected:
-
-#  if defined(P_PTHREADS) && !defined(VX_TASKS)
-#    if P_HAS_RECURSIVE_MUTEX == 0
-       mutable PAtomicInteger lockCount;
-#    endif
-#  endif
-
+     mutable PAtomicInteger m_lockCount;
+     mutable pthread_t      m_lockerId;
 #endif
 
 
