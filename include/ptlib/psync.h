@@ -55,13 +55,6 @@ class PSync : public PObject
      */
     virtual void Signal() = 0;
   //@}
-
-#ifdef P_PTHREADS
-    PSync()
-      : lockerId(pthread_t(-1)) { }
-  protected:
-    pthread_t lockerId;
-#endif
 };
 
 class PSyncNULL : public PSync
