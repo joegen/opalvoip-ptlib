@@ -1583,8 +1583,8 @@ dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
-dnl MSWIN_CHECK_FILE libsdl,include\SDL.h,P_SDL=1
-dnl MSWIN_CHECK_FILE libsdl,include\SDL\SDL.h,P_SDL=2
+dnl MSWIN_CHECK_FILE libsdl,include\SDL.h,P_SDL_WIN32=1
+dnl MSWIN_CHECK_FILE libsdl,include\SDL\SDL.h,P_SDL_WIN32=2
 dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
 dnl MSWIN_FIND_FILE  libsdl,P_SDL_LIBRARY,SDL.lib,lib
 dnl MSWIN_CHECK_DIR  libsdl,..\sdl*

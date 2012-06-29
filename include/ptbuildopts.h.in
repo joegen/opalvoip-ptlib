@@ -672,8 +672,16 @@
 // SDL toolkit
 //
 
-#if P_VIDEO && !P_64BIT && !defined(_WIN32_WCE)
+#if P_VIDEO
   #undef P_SDL
+  #undef P_SDL_WIN64
+  #undef P_SDL_WIN32
+#endif
+
+#if defined(P_SDL_WIN64) && defined(P_64BIT)
+  #define P_SDL P_SDL_WIN64
+#elif defined(P_SDL_WIN32) && !defined(P_64BIT)
+  #define P_SDL P_SDL_WIN32
 #endif
 
 #if defined(_MSC_VER) && P_SDL
