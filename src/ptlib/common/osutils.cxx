@@ -554,7 +554,7 @@ ostream & PTrace::End(ostream & paramStream)
 
   unsigned currentLevel;
 
-  if (threadInfo != NULL) {
+  if (threadInfo != NULL && !threadInfo->m_traceStreams.IsEmpty()) {
     PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
     if (!PAssert(&paramStream == stackStream, PLogicError))
       return paramStream;
