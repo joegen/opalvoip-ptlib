@@ -543,7 +543,7 @@ ostream & PTrace::End(ostream & paramStream)
   paramStream.flags(info.oldStreamFlags);
   paramStream.precision(info.oldPrecision);
 
-  if (threadInfo != NULL) {
+  if (threadInfo != NULL && !threadInfo->traceStreams.IsEmpty()) {
     PStringStream * stackStream = threadInfo->traceStreams.Pop();
     if (!PAssert(&paramStream == stackStream, PLogicError))
       return paramStream;
