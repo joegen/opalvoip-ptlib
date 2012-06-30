@@ -1537,7 +1537,7 @@ PTimedMutex::~PTimedMutex()
     for (PINDEX i = 0; i < 100; ++i) {
       if ((result = pthread_mutex_destroy(&m_mutex)) != EBUSY)
         break;
-      pthread_yield();
+      usleep(100);
     }
   }
 
