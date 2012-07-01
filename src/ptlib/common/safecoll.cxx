@@ -65,7 +65,7 @@ PBoolean PSafeObject::SafeReference()
 #endif
   }
 
-  PTRACE(6, "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PTRACE(7, "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
   return PTrue;
 }
 
@@ -87,7 +87,7 @@ PBoolean PSafeObject::SafeDereference()
 #endif
   safetyMutex.Signal();
 
-  PTRACE(6, "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PTRACE(7, "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
 
   return mayBeDeleted;
 }
@@ -95,7 +95,7 @@ PBoolean PSafeObject::SafeDereference()
 
 PBoolean PSafeObject::LockReadOnly() const
 {
-  PTRACE(6, "SafeColl\tWaiting read ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tWaiting read ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
@@ -120,7 +120,7 @@ void PSafeObject::UnlockReadOnly() const
 
 PBoolean PSafeObject::LockReadWrite()
 {
-  PTRACE(6, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
@@ -473,6 +473,12 @@ PObject::Comparison PSafePtrBase::Compare(const PObject & obj) const
   if (currentObject > other->currentObject)
     return GreaterThan;
   return EqualTo;
+}
+
+
+void PSafePtrBase::PrintOn(ostream &strm) const
+{
+  strm << currentObject;
 }
 
 
