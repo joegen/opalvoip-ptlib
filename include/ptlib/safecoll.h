@@ -536,6 +536,16 @@ class PSafePtrBase : public PObject
     virtual Comparison Compare(
       const PObject & obj   ///< Other instance to compare against
     ) const;
+
+    /** Output the contents of the object to the stream. The exact output is
+       dependent on the exact semantics of the descendent class. This is
+       primarily used by the standard <code>#operator<<</code> function.
+
+       The default behaviour is to print the class name.
+     */
+    virtual void PrintOn(
+      ostream &strm   // Stream to print the object into.
+    ) const;
   //@}
 
   /**@name Operations */
