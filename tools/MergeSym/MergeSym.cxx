@@ -76,7 +76,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 7, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 7, ReleaseCode, 1)
 {
 }
 
@@ -305,17 +305,16 @@ void MergeSym::Main()
     cout << '\n' << lib_symbols.GetSize() << " symbols read.\n"
             "Sorting symbols... " << flush;
 
-  PINDEX i;
-  for (i = 0; i < def_symbols.GetSize(); i++) {
-    if (lib_symbols.GetValuesIndex(def_symbols[i]) != P_MAX_INDEX &&
-        !def_symbols[i].IsExternal())
+  SortedSymbolList::iterator it;
+  for (it = def_symbols.begin(); it != def_symbols.end(); ++it) {
+    if (lib_symbols.GetValuesIndex(*it) != P_MAX_INDEX && !it->IsExternal())
       removed--;
   }
 
   PINDEX added = 0;
-  for (i = 0; i < lib_symbols.GetSize(); i++) {
-    if (def_symbols.GetValuesIndex(lib_symbols[i]) == P_MAX_INDEX) {
-      lib_symbols[i].SetOrdinal(++max_ordinal);
+  for (it = lib_symbols.begin(); it != lib_symbols.end(); ++it) {
+    if (def_symbols.GetValuesIndex(*it) == P_MAX_INDEX) {
+      it->SetOrdinal(++max_ordinal);
       added++;
     }
   }
@@ -343,25 +342,27 @@ void MergeSym::Main()
       SortedSymbolList merged_symbols;
       merged_symbols.DisallowDeleteObjects();
 
-      for (i = 0; i < def_symbols.GetSize(); i++) {
-        if (lib_symbols.GetValuesIndex(def_symbols[i]) != P_MAX_INDEX &&
-            !def_symbols[i].IsExternal()) {
-          merged_symbols.Append(&def_symbols[i]);
+      unsigned count = 0;
+      for (it = def_symbols.begin(); it != def_symbols.end(); ++it) {
+        if (lib_symbols.GetValuesIndex(*it) != P_MAX_INDEX && !it->IsExternal()) {
+          merged_symbols.Append(&*it);
         }
-        if (args.HasOption('v') && i%100 == 0)
-          cout << '.' << flush;
-      }
-      for (i = 0; i < lib_symbols.GetSize(); i++) {
-        if (def_symbols.GetValuesIndex(lib_symbols[i]) == P_MAX_INDEX)
-          merged_symbols.Append(&lib_symbols[i]);
-        if (args.HasOption('v') && i%100 == 0)
+        if (args.HasOption('v') && (count++)%100 == 0)
           cout << '.' << flush;
       }
 
-      for (i = 0; i < def_file_lines.GetSize(); i++)
-        def << def_file_lines[i] << '\n';
-      for (i = 0; i < merged_symbols.GetSize(); i++)
-        def << merged_symbols[i];
+      count = 0;
+      for (it = lib_symbols.begin(); it != lib_symbols.end(); ++it) {
+        if (def_symbols.GetValuesIndex(*it) == P_MAX_INDEX)
+          merged_symbols.Append(&*it);
+        if (args.HasOption('v') && (count++)%100 == 0)
+          cout << '.' << flush;
+      }
+
+      for (PStringList::iterator line = def_file_lines.begin(); line != def_file_lines.end(); ++line)
+        def << *line << '\n';
+      for (it = merged_symbols.begin(); it != merged_symbols.end(); ++it)
+        def << *it;
 
       if (args.HasOption('v'))
         cout << merged_symbols.GetSize() << " symbols written." << endl;
