@@ -43,7 +43,16 @@
 #include <ptclib/script.h>
 #include <ptclib/vartype.h>
 
+#ifdef _MSC_VER
+#pragma warning(disable:4100)
+#endif
+
 #include <v8.h>
+
+#ifdef _MSC_VER
+#pragma warning(default:4100)
+#endif
+
 
 //////////////////////////////////////////////////////////////
 
