@@ -2622,43 +2622,42 @@ void PSortedStringList::ReadFrom(istream & strm)
 PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 {
   PINDEX len = str.GetLength();
-  Element * lastElement;
-  PINDEX lastIndex = InternalStringSelect(str, len, info->root, lastElement);
+  PSortedListElement * element;
+  PINDEX index = InternalStringSelect(str, len, m_root, element);
 
-  if (lastIndex != 0) {
-    Element * prev;
-    while ((prev = info->Predecessor(lastElement)) != &info->nil &&
-                    ((PString *)prev->data)->NumCompare(str, len) >= EqualTo) {
-      lastElement = prev;
-      lastIndex--;
+  if (index != 0) {
+    PSortedListElement * prev;
+    while ((prev = Predecessor(element)) != &nil && ((PString *)prev->m_data)->NumCompare(str, len) >= EqualTo) {
+      element = prev;
+      index--;
     }
   }
 
-  return lastIndex;
+  return index;
 }
 
 
 PINDEX PSortedStringList::InternalStringSelect(const char * str,
                                                PINDEX len,
-                                               Element * thisElement,
-                                               Element * & lastElement) const
+                                               PSortedListElement * thisElement,
+                                               PSortedListElement * & selectedElement) const
 {
-  if (thisElement == &info->nil)
+  if (thisElement == &nil)
     return 0;
 
-  switch (((PString *)thisElement->data)->NumCompare(str, len)) {
+  switch (((PString *)thisElement->m_data)->NumCompare(str, len)) {
     case PObject::LessThan :
     {
-      PINDEX index = InternalStringSelect(str, len, thisElement->right, lastElement);
-      return thisElement->left->subTreeSize + index + 1;
+      PINDEX index = InternalStringSelect(str, len, thisElement->m_right, selectedElement);
+      return thisElement->m_left->m_subTreeSize + index + 1;
     }
 
     case PObject::GreaterThan :
-      return InternalStringSelect(str, len, thisElement->left, lastElement);
+      return InternalStringSelect(str, len, thisElement->m_left, selectedElement);
 
     default :
-      lastElement = thisElement;
-      return thisElement->left->subTreeSize;
+      selectedElement = thisElement;
+      return thisElement->m_left->m_subTreeSize;
   }
 }
 

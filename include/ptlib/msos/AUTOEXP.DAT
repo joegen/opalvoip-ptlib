@@ -251,13 +251,13 @@ PSortedList<*> {
          [members]: [$c,!],
          #tree
          (
-            head : $c.info->root,
-            skip : &$c.info->nil,
+            head : $c.m_root,
+            skip : &$c.nil,
             size : $c.reference->size,
-            left : left,
-            right: right,
+            left : m_left,
+            right: m_right,
             base : 0
-         ) : $e.data
+         ) : $e.m_data
       )
    )
 
@@ -268,12 +268,12 @@ PSortedList<*> {
          "(",
          #tree
          (
-            head : $c.info->root, 
-            skip : &$c.info->nil,
-            size : $c.reference->size, 
-            left : left, 
-            right : right
-         ) : $e.data,
+            head : $c.m_root,
+            skip : &$c.nil,
+            size : $c.reference->size,
+            left : m_left,
+            right : m_right
+         ) : $e.m_data,
          ")"
       )
    )		     
@@ -287,12 +287,12 @@ PSortedStringList {
          "(",
          #tree
          (
-            head : $c.info->root, 
-            skip : &$c.info->nil,
-            size : $c.reference->size, 
-            left : left, 
-            right : right
-         ) : [((PString *)$e.data)->theArray,s],
+            head : $c.m_root,
+            skip : &$c.nil,
+            size : $c.reference->size,
+            left : m_left,
+            right : m_right
+         ) : [((PString *)$e.m_data)->theArray,s],
          ")"
        )
    )
