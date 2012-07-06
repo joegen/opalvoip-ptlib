@@ -11,10 +11,10 @@ public:
 };
 
 
-class DoSomeThing:public PThread {
-  PCLASSINFO(DoSomeThing, PThread);
+class DoSomeThing1:public PThread {
+  PCLASSINFO(DoSomeThing1, PThread);
 public:
-  DoSomeThing(PINDEX _index);
+  DoSomeThing1(PINDEX _index);
   void Main();
 private:
   PINDEX index;
