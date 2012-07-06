@@ -2498,8 +2498,8 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     PINDEX InternalStringSelect(
       const char * str,
       PINDEX len,
-      Element * thisElement,
-      Element * & lastElement
+      PSortedListElement * thisElement,
+      PSortedListElement * & lastElement
     ) const;
 };
 

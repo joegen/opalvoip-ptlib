@@ -37,7 +37,6 @@
 PDEFINE_POOL_ALLOCATOR(PListElement)
 PDEFINE_POOL_ALLOCATOR(PListInfo)
 PDEFINE_POOL_ALLOCATOR(PSortedListElement)
-PDEFINE_POOL_ALLOCATOR(PSortedListInfo)
 PDEFINE_POOL_ALLOCATOR(PHashTableElement)
 
 
@@ -587,51 +586,38 @@ PListElement::PListElement(PObject * theData)
 ///////////////////////////////////////////////////////////////////////////////
 
 PAbstractSortedList::PAbstractSortedList()
+  : m_root(&nil)
 {
-  info = new PSortedListInfo;
-  PAssert(info != NULL, POutOfMemory);
-}
-
-
-PSortedListInfo::PSortedListInfo()
-{
-  root = &nil;
-  nil.parent = nil.left = nil.right = &nil;
-  nil.subTreeSize = 0;
-  nil.colour = Element::Black;
-  nil.data = NULL;
+  nil.m_parent = nil.m_left = nil.m_right = &nil;
+  nil.m_subTreeSize = 0;
+  nil.m_colour = PSortedListElement::Black;
+  nil.m_data = NULL;
 }
 
 
 void PAbstractSortedList::DestroyContents()
 {
   RemoveAll();
-  delete info;
-  info = NULL;
 }
 
 
 void PAbstractSortedList::CopyContents(const PAbstractSortedList & list)
 {
-  info = list.info;
+  m_root = list.m_root;
 }
 
 
 void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
 {
-  PSortedListInfo * otherInfo = list->info;
-
-  info = new PSortedListInfo;
-  PAssert(info != NULL, POutOfMemory);
   reference->size = 0;
 
   // Have to do this in this manner rather than just doing a for() loop
   // as "this" and "list" may be the same object and we just changed info in
   // "this" so we need to use the info in "list" saved previously.
-  Element * element = otherInfo->OrderSelect(otherInfo->root, 1);
-  while (element != &otherInfo->nil) {
-    Append(element->data->Clone());
-    element = otherInfo->Successor(element);
+  PSortedListElement * element = OrderSelect(list->m_root, 1);
+  while (element != &nil) {
+    Append(element->m_data->Clone());
+    element = Successor(element);
   }
 }
 
@@ -645,25 +631,25 @@ PBoolean PAbstractSortedList::SetSize(PINDEX)
 PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PAbstractSortedList), PInvalidCast);
-  Element * elmt1 = info->root;
-  while (elmt1->left != &info->nil)
-    elmt1 = elmt1->left;
+  PSortedListElement * elmt1 = m_root;
+  while (elmt1->m_left != &nil)
+    elmt1 = elmt1->m_left;
 
-  Element * elmt2 = ((const PAbstractSortedList &)obj).info->root;
-  while (elmt2->left != &info->nil)
-    elmt2 = elmt2->left;
+  PSortedListElement * elmt2 = dynamic_cast<const PAbstractSortedList &>(obj).m_root;
+  while (elmt2->m_left != &nil)
+    elmt2 = elmt2->m_left;
 
-  while (elmt1 != &info->nil && elmt2 != &info->nil) {
-    if (elmt1 == &info->nil)
+  while (elmt1 != &nil && elmt2 != &nil) {
+    if (elmt1 == &nil)
       return LessThan;
-    if (elmt2 == &info->nil)
+    if (elmt2 == &nil)
       return GreaterThan;
-    if (*elmt1->data < *elmt2->data)
+    if (*elmt1->m_data < *elmt2->m_data)
       return LessThan;
-    if (*elmt1->data > *elmt2->data)
+    if (*elmt1->m_data > *elmt2->m_data)
       return GreaterThan;
-    elmt1 = info->Successor(elmt1);
-    elmt2 = info->Successor(elmt2);
+    elmt1 = Successor(elmt1);
+    elmt2 = Successor(elmt2);
   }
   return EqualTo;
 }
@@ -674,78 +660,78 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
   if (PAssertNULL(obj) == NULL)
     return P_MAX_INDEX;
 
-  Element * z = new Element;
-  z->parent = z->left = z->right = &info->nil;
-  z->colour = Element::Black;
-  z->subTreeSize = 1;
-  z->data = obj;
+  PSortedListElement * z = new PSortedListElement;
+  z->m_parent = z->m_left = z->m_right = &nil;
+  z->m_colour = PSortedListElement::Black;
+  z->m_subTreeSize = 1;
+  z->m_data = obj;
 
-  Element * x = info->root;
-  Element * y = &info->nil;
-  while (x != &info->nil) {
-    x->subTreeSize++;
+  PSortedListElement * x = m_root;
+  PSortedListElement * y = &nil;
+  while (x != &nil) {
+    x->m_subTreeSize++;
     y = x;
-    x = *z->data < *x->data ? x->left : x->right;
+    x = *z->m_data < *x->m_data ? x->m_left : x->m_right;
   }
-  z->parent = y;
-  if (y == &info->nil)
-    info->root = z;
-  else if (*z->data < *y->data)
-    y->left = z;
+  z->m_parent = y;
+  if (y == &nil)
+    m_root = z;
+  else if (*z->m_data < *y->m_data)
+    y->m_left = z;
   else
-    y->right = z;
+    y->m_right = z;
 
   PSortedListElement * lastElement = x = z;
   PINDEX lastIndex;
 
-  x->colour = Element::Red;
-  while (x != info->root && x->parent->colour == Element::Red) {
-    if (x->parent == x->parent->parent->left) {
-      y = x->parent->parent->right;
-      if (y->colour == Element::Red) {
-        x->parent->colour = Element::Black;
-        y->colour = Element::Black;
-        x->parent->parent->colour = Element::Red;
-        x = x->parent->parent;
+  x->m_colour = PSortedListElement::Red;
+  while (x != m_root && x->m_parent->m_colour == PSortedListElement::Red) {
+    if (x->m_parent == x->m_parent->m_parent->m_left) {
+      y = x->m_parent->m_parent->m_right;
+      if (y->m_colour == PSortedListElement::Red) {
+        x->m_parent->m_colour = PSortedListElement::Black;
+        y->m_colour = PSortedListElement::Black;
+        x->m_parent->m_parent->m_colour = PSortedListElement::Red;
+        x = x->m_parent->m_parent;
       }
       else {
-        if (x == x->parent->right) {
-          x = x->parent;
+        if (x == x->m_parent->m_right) {
+          x = x->m_parent;
           LeftRotate(x);
         }
-        x->parent->colour = Element::Black;
-        x->parent->parent->colour = Element::Red;
-        RightRotate(x->parent->parent);
+        x->m_parent->m_colour = PSortedListElement::Black;
+        x->m_parent->m_parent->m_colour = PSortedListElement::Red;
+        RightRotate(x->m_parent->m_parent);
       }
     }
     else {
-      y = x->parent->parent->left;
-      if (y->colour == Element::Red) {
-        x->parent->colour = Element::Black;
-        y->colour = Element::Black;
-        x->parent->parent->colour = Element::Red;
-        x = x->parent->parent;
+      y = x->m_parent->m_parent->m_left;
+      if (y->m_colour == PSortedListElement::Red) {
+        x->m_parent->m_colour = PSortedListElement::Black;
+        y->m_colour = PSortedListElement::Black;
+        x->m_parent->m_parent->m_colour = PSortedListElement::Red;
+        x = x->m_parent->m_parent;
       }
       else {
-        if (x == x->parent->left) {
-          x = x->parent;
+        if (x == x->m_parent->m_left) {
+          x = x->m_parent;
           RightRotate(x);
         }
-        x->parent->colour = Element::Black;
-        x->parent->parent->colour = Element::Red;
-        LeftRotate(x->parent->parent);
+        x->m_parent->m_colour = PSortedListElement::Black;
+        x->m_parent->m_parent->m_colour = PSortedListElement::Red;
+        LeftRotate(x->m_parent->m_parent);
       }
     }
   }
 
-  info->root->colour = Element::Black;
+  m_root->m_colour = PSortedListElement::Black;
 
   x = lastElement;
-  lastIndex = x->left->subTreeSize;
-  while (x != info->root) {
-    if (x != x->parent->left)
-      lastIndex += x->parent->left->subTreeSize+1;
-    x = x->parent;
+  lastIndex = x->m_left->m_subTreeSize;
+  while (x != m_root) {
+    if (x != x->m_parent->m_left)
+      lastIndex += x->m_parent->m_left->m_subTreeSize+1;
+    x = x->m_parent;
   }
 
   reference->size++;
@@ -755,22 +741,22 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
 
 PBoolean PAbstractSortedList::Remove(const PObject * obj)
 {
-  PSortedListElement * lastElement;
-  if (GetObjectsIndex(obj, lastElement) == P_MAX_INDEX)
-    return PFalse;
+  PSortedListElement * element = FindElement(obj, NULL);
+  if (element == NULL)
+    return false;
 
-  RemoveElement(lastElement);
-  return PTrue;
+  RemoveElement(element);
+  return true;
 }
 
 
 PObject * PAbstractSortedList::RemoveAt(PINDEX index)
 {
-  Element * node = info->OrderSelect(info->root, index+1);
-  if (node == &info->nil)
+  PSortedListElement * node = OrderSelect(m_root, index+1);
+  if (node == &nil)
     return NULL;
 
-  PObject * data = node->data;
+  PObject * data = node->m_data;
   RemoveElement(node);
   return reference->deleteObjects ? (PObject *)NULL : data;
 }
@@ -778,10 +764,10 @@ PObject * PAbstractSortedList::RemoveAt(PINDEX index)
 
 void PAbstractSortedList::RemoveAll()
 {
-  if (info->root != &info->nil) {
-    DeleteSubTrees(info->root, reference->deleteObjects);
-    delete info->root;
-    info->root = &info->nil;
+  if (m_root != &nil) {
+    DeleteSubTrees(m_root, reference->deleteObjects);
+    delete m_root;
+    m_root = &nil;
     reference->size = 0;
   }
 }
@@ -810,153 +796,159 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
   if (index >= GetSize())
     return NULL;
 
-  PSortedListElement * lastElement = info->OrderSelect(info->root, index+1);
-  return PAssertNULL(lastElement)->data;
+  return OrderSelect(m_root, index+1)->m_data;
 }
 
 
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
-  PSortedListElement * lastElement;
-  return PAbstractSortedList::GetObjectsIndex(obj, lastElement);
+  PINDEX index;
+  return FindElement(obj, &index) != NULL ? index : P_MAX_INDEX;
 }
 
-PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj, PSortedListElement * & lastElement) const
-{
-  Element * elmt = NULL;
-  PINDEX pos = ValueSelect(info->root, *obj, (const Element **)&elmt);
-  if (pos == P_MAX_INDEX)
-    return P_MAX_INDEX;
 
-  if (elmt->data != obj) {
+PSortedListElement * PAbstractSortedList::FindElement(const PObject * obj, PINDEX * index) const
+{
+  PSortedListElement * element = NULL;
+  PINDEX pos = ValueSelect(m_root, *obj, element);
+  if (pos == P_MAX_INDEX)
+    return NULL;
+
+  if (element->m_data != obj) {
     PINDEX savePos = pos;
-    Element * saveElmt = elmt;
-    while (elmt->data != obj &&
-            (elmt = info->Predecessor(elmt)) != &info->nil &&
-            *obj == *elmt->data)
+    PSortedListElement * saveElmt = element;
+    while (element->m_data != obj && (element = Predecessor(element)) != &nil && *obj == *element->m_data)
       pos--;
-    if (elmt->data != obj) {
+    if (element->m_data != obj) {
       pos = savePos;
-      elmt = saveElmt;
-      while (elmt->data != obj &&
-              (elmt = info->Successor(elmt)) != &info->nil &&
-              *obj == *elmt->data)
+      element = saveElmt;
+      while (element->m_data != obj && (element = Successor(element)) != &nil && *obj == *element->m_data)
         pos++;
-      if (elmt->data != obj)
-        return P_MAX_INDEX;
+      if (element->m_data != obj)
+        return NULL;
     }
   }
 
-  lastElement = elmt;
+  if (index != NULL)
+    *index = pos;
 
-  return pos;
+  return element;
 }
 
 
 PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 {
-  PSortedListElement * lastElement;
-  PINDEX lastIndex = ValueSelect(info->root, obj, (const Element **)&lastElement);
-  if (lastIndex == P_MAX_INDEX)
-    return P_MAX_INDEX;
-
-  Element * prev;
-  while ((prev = info->Predecessor(lastElement)) != &info->nil &&
-                                  prev->data->Compare(obj) == EqualTo) {
-    lastElement = prev;
-    lastIndex--;
-  }
-
-  return lastIndex;
+  PINDEX index;
+  return FindElement(obj, &index) != NULL ? index : P_MAX_INDEX;
 }
 
 
-void PAbstractSortedList::RemoveElement(Element * node)
+PSortedListElement * PAbstractSortedList::FindElement(const PObject & obj, PINDEX * index) const
 {
-  // Don't try an remove one of the special leaf nodes!
-  if (PAssertNULL(node) == &info->nil)
-    return;
+  PSortedListElement * element;
+  PINDEX pos = ValueSelect(m_root, obj, element);
+  if (pos == P_MAX_INDEX)
+    return NULL;
 
-  if (node->data != NULL && reference->deleteObjects)
-    delete node->data;
-
-  Element * y = node->left == &info->nil || node->right == &info->nil ? node : info->Successor(node);
-
-  Element * t = y;
-  while (t != &info->nil) {
-    t->subTreeSize--;
-    t = t->parent;
+  PSortedListElement * prev;
+  while ((prev = Predecessor(element)) != &nil && prev->m_data->Compare(obj) == EqualTo) {
+    element = prev;
+    pos--;
   }
 
-  Element * x = y->left != &info->nil ? y->left : y->right;
-  x->parent = y->parent;
+  if (index != NULL)
+    *index = pos;
 
-  if (y->parent == &info->nil)
-    info->root = x;
-  else if (y == y->parent->left)
-    y->parent->left = x;
+  return element;
+}
+
+
+void PAbstractSortedList::RemoveElement(PSortedListElement * node)
+{
+  // Don't try an remove one of the special leaf nodes!
+  if (PAssertNULL(node) == &nil)
+    return;
+
+  if (node->m_data != NULL && reference->deleteObjects)
+    delete node->m_data;
+
+  PSortedListElement * y = node->m_left == &nil || node->m_right == &nil ? node : Successor(node);
+
+  PSortedListElement * t = y;
+  while (t != &nil) {
+    t->m_subTreeSize--;
+    t = t->m_parent;
+  }
+
+  PSortedListElement * x = y->m_left != &nil ? y->m_left : y->m_right;
+  x->m_parent = y->m_parent;
+
+  if (y->m_parent == &nil)
+    m_root = x;
+  else if (y == y->m_parent->m_left)
+    y->m_parent->m_left = x;
   else
-    y->parent->right = x;
+    y->m_parent->m_right = x;
 
   if (y != node)
-    node->data = y->data;
+    node->m_data = y->m_data;
 
-  if (y->colour == Element::Black) {
-    while (x != info->root && x->colour == Element::Black) {
-      if (x == x->parent->left) {
-        Element * w = x->parent->right;
-        if (w->colour == Element::Red) {
-          w->colour = Element::Black;
-          x->parent->colour = Element::Red;
-          LeftRotate(x->parent);
-          w = x->parent->right;
+  if (y->m_colour == PSortedListElement::Black) {
+    while (x != m_root && x->m_colour == PSortedListElement::Black) {
+      if (x == x->m_parent->m_left) {
+        PSortedListElement * w = x->m_parent->m_right;
+        if (w->m_colour == PSortedListElement::Red) {
+          w->m_colour = PSortedListElement::Black;
+          x->m_parent->m_colour = PSortedListElement::Red;
+          LeftRotate(x->m_parent);
+          w = x->m_parent->m_right;
         }
-        if (w->left->colour == Element::Black && w->right->colour == Element::Black) {
-          w->colour = Element::Red;
-          x = x->parent;
+        if (w->m_left->m_colour == PSortedListElement::Black && w->m_right->m_colour == PSortedListElement::Black) {
+          w->m_colour = PSortedListElement::Red;
+          x = x->m_parent;
         }
         else {
-          if (w->right->colour == Element::Black) {
-            w->left->colour = Element::Black;
-            w->colour = Element::Red;
+          if (w->m_right->m_colour == PSortedListElement::Black) {
+            w->m_left->m_colour = PSortedListElement::Black;
+            w->m_colour = PSortedListElement::Red;
             RightRotate(w);
-            w = x->parent->right;
+            w = x->m_parent->m_right;
           }
-          w->colour = x->parent->colour;
-          x->parent->colour = Element::Black;
-          w->right->colour = Element::Black;
-          LeftRotate(x->parent);
-          x = info->root;
+          w->m_colour = x->m_parent->m_colour;
+          x->m_parent->m_colour = PSortedListElement::Black;
+          w->m_right->m_colour = PSortedListElement::Black;
+          LeftRotate(x->m_parent);
+          x = m_root;
         }
       }
       else {
-        Element * w = x->parent->left;
-        if (w->colour == Element::Red) {
-          w->colour = Element::Black;
-          x->parent->colour = Element::Red;
-          RightRotate(x->parent);
-          w = x->parent->left;
+        PSortedListElement * w = x->m_parent->m_left;
+        if (w->m_colour == PSortedListElement::Red) {
+          w->m_colour = PSortedListElement::Black;
+          x->m_parent->m_colour = PSortedListElement::Red;
+          RightRotate(x->m_parent);
+          w = x->m_parent->m_left;
         }
-        if (w->right->colour == Element::Black && w->left->colour == Element::Black) {
-          w->colour = Element::Red;
-          x = x->parent;
+        if (w->m_right->m_colour == PSortedListElement::Black && w->m_left->m_colour == PSortedListElement::Black) {
+          w->m_colour = PSortedListElement::Red;
+          x = x->m_parent;
         }
         else {
-          if (w->left->colour == Element::Black) {
-            w->right->colour = Element::Black;
-            w->colour = Element::Red;
+          if (w->m_left->m_colour == PSortedListElement::Black) {
+            w->m_right->m_colour = PSortedListElement::Black;
+            w->m_colour = PSortedListElement::Red;
             LeftRotate(w);
-            w = x->parent->left;
+            w = x->m_parent->m_left;
           }
-          w->colour = x->parent->colour;
-          x->parent->colour = Element::Black;
-          w->left->colour = Element::Black;
-          RightRotate(x->parent);
-          x = info->root;
+          w->m_colour = x->m_parent->m_colour;
+          x->m_parent->m_colour = PSortedListElement::Black;
+          w->m_left->m_colour = PSortedListElement::Black;
+          RightRotate(x->m_parent);
+          x = m_root;
         }
       }
     }
-    x->colour = Element::Black;
+    x->m_colour = PSortedListElement::Black;
   }
 
   delete y;
@@ -965,124 +957,122 @@ void PAbstractSortedList::RemoveElement(Element * node)
 }
 
 
-void PAbstractSortedList::LeftRotate(Element * node)
+void PAbstractSortedList::LeftRotate(PSortedListElement * node)
 {
-  Element * pivot = PAssertNULL(node)->right;
-  node->right = pivot->left;
-  if (pivot->left != &info->nil)
-    pivot->left->parent = node;
-  pivot->parent = node->parent;
-  if (node->parent == &info->nil)
-    info->root = pivot;
-  else if (node == node->parent->left)
-    node->parent->left = pivot;
+  PSortedListElement * pivot = node->m_right;
+  node->m_right = pivot->m_left;
+  if (pivot->m_left != &nil)
+    pivot->m_left->m_parent = node;
+  pivot->m_parent = node->m_parent;
+  if (node->m_parent == &nil)
+    m_root = pivot;
+  else if (node == node->m_parent->m_left)
+    node->m_parent->m_left = pivot;
   else
-    node->parent->right = pivot;
-  pivot->left = node;
-  node->parent = pivot;
-  pivot->subTreeSize = node->subTreeSize;
-  node->subTreeSize = node->left->subTreeSize + node->right->subTreeSize + 1;
+    node->m_parent->m_right = pivot;
+  pivot->m_left = node;
+  node->m_parent = pivot;
+  pivot->m_subTreeSize = node->m_subTreeSize;
+  node->m_subTreeSize = node->m_left->m_subTreeSize + node->m_right->m_subTreeSize + 1;
 }
 
 
-void PAbstractSortedList::RightRotate(Element * node)
+void PAbstractSortedList::RightRotate(PSortedListElement * node)
 {
-  Element * pivot = PAssertNULL(node)->left;
-  node->left = pivot->right;
-  if (pivot->right != &info->nil)
-    pivot->right->parent = node;
-  pivot->parent = node->parent;
-  if (node->parent == &info->nil)
-    info->root = pivot;
-  else if (node == node->parent->right)
-    node->parent->right = pivot;
+  PSortedListElement * pivot = node->m_left;
+  node->m_left = pivot->m_right;
+  if (pivot->m_right != &nil)
+    pivot->m_right->m_parent = node;
+  pivot->m_parent = node->m_parent;
+  if (node->m_parent == &nil)
+    m_root = pivot;
+  else if (node == node->m_parent->m_right)
+    node->m_parent->m_right = pivot;
   else
-    node->parent->left = pivot;
-  pivot->right = node;
-  node->parent = pivot;
-  pivot->subTreeSize = node->subTreeSize;
-  node->subTreeSize = node->left->subTreeSize + node->right->subTreeSize + 1;
+    node->m_parent->m_left = pivot;
+  pivot->m_right = node;
+  node->m_parent = pivot;
+  pivot->m_subTreeSize = node->m_subTreeSize;
+  node->m_subTreeSize = node->m_left->m_subTreeSize + node->m_right->m_subTreeSize + 1;
 }
 
 
-PSortedListElement * PSortedListInfo::Successor(const PSortedListElement * node) const
+PSortedListElement * PAbstractSortedList::Successor(PSortedListElement * node) const
 {
-  Element * next;
-  if (node->right != &nil) {
-    next = node->right;
-    while (next->left != &nil)
-      next = next->left;
+  PSortedListElement * next;
+  if (node->m_right != &nil) {
+    next = node->m_right;
+    while (next->m_left != &nil)
+      next = next->m_left;
   }
   else {
-    next = node->parent;
-    while (next != &nil && node == next->right) {
+    next = node->m_parent;
+    while (next != &nil && node == next->m_right) {
       node = next;
-      next = node->parent;
+      next = node->m_parent;
     }
   }
   return next;
 }
 
 
-PSortedListElement * PSortedListInfo::Predecessor(const PSortedListElement * node) const
+PSortedListElement * PAbstractSortedList::Predecessor(PSortedListElement * node) const
 {
-  Element * pred;
-  if (node->left != &nil) {
-    pred = node->left;
-    while (pred->right != &nil)
-      pred = pred->right;
+  PSortedListElement * pred;
+  if (node->m_left != &nil) {
+    pred = node->m_left;
+    while (pred->m_right != &nil)
+      pred = pred->m_right;
   }
   else {
-    pred = node->parent;
-    while (pred != &nil && node == pred->left) {
+    pred = node->m_parent;
+    while (pred != &nil && node == pred->m_left) {
       node = pred;
-      pred = node->parent;
+      pred = node->m_parent;
     }
   }
   return pred;
 }
 
 
-PSortedListElement * PSortedListInfo::OrderSelect(PSortedListElement * node, PINDEX index) const
+PSortedListElement * PAbstractSortedList::OrderSelect(PSortedListElement * node, PINDEX index) const
 {
-  PINDEX r = node->left->subTreeSize+1;
+  PINDEX r = node->m_left->m_subTreeSize+1;
   if (index == r)
     return node;
 
   if (index < r) {
-    if (node->left != &nil)
-      return OrderSelect(node->left, index);
+    if (node->m_left != &nil)
+      return OrderSelect(node->m_left, index);
   }
   else {
-    if (node->right != &nil)
-      return OrderSelect(node->right, index - r);
+    if (node->m_right != &nil)
+      return OrderSelect(node->m_right, index - r);
   }
 
   PAssertAlways2("PAbstractSortedList::Element", "Order select failed!");
-  return (Element *)&nil;
+  return const_cast<PSortedListElement *>(&nil);
 }
 
 
-PINDEX PAbstractSortedList::ValueSelect(const Element * node,
-                                        const PObject & obj,
-                                        const Element ** lastElement) const
+PINDEX PAbstractSortedList::ValueSelect(PSortedListElement * node, const PObject & obj, PSortedListElement * & selectedElement) const
 {
-  if (node != &info->nil) {
-    switch (node->data->Compare(obj)) {
+  if (node != &nil) {
+    switch (node->m_data->Compare(obj)) {
       case PObject::LessThan :
       {
-        PINDEX index = ValueSelect(node->right, obj, lastElement);
+        PINDEX index = ValueSelect(node->m_right, obj, selectedElement);
         if (index != P_MAX_INDEX)
-          return node->left->subTreeSize + index + 1;
+          return node->m_left->m_subTreeSize + index + 1;
         break;
       }
 
       case PObject::GreaterThan :
-        return ValueSelect(node->left, obj, lastElement);
+        return ValueSelect(node->m_left, obj, selectedElement);
 
       default :
-        *lastElement = node;
-        return node->left->subTreeSize;
+        selectedElement = node;
+        return node->m_left->m_subTreeSize;
     }
   }
 
@@ -1090,21 +1080,21 @@ PINDEX PAbstractSortedList::ValueSelect(const Element * node,
 }
 
 
-void PAbstractSortedList::DeleteSubTrees(Element * node, PBoolean deleteObject)
+void PAbstractSortedList::DeleteSubTrees(PSortedListElement * node, PBoolean deleteObject)
 {
-  if (node->left != &info->nil) {
-    DeleteSubTrees(node->left, deleteObject);
-    delete node->left;
-    node->left = &info->nil;
+  if (node->m_left != &nil) {
+    DeleteSubTrees(node->m_left, deleteObject);
+    delete node->m_left;
+    node->m_left = &nil;
   }
-  if (node->right != &info->nil) {
-    DeleteSubTrees(node->right, deleteObject);
-    delete node->right;
-    node->right = &info->nil;
+  if (node->m_right != &nil) {
+    DeleteSubTrees(node->m_right, deleteObject);
+    delete node->m_right;
+    node->m_right = &nil;
   }
   if (deleteObject) {
-    delete node->data;
-    node->data = NULL;
+    delete node->m_data;
+    node->m_data = NULL;
   }
 }
 

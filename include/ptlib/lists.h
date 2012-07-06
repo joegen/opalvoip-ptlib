@@ -694,33 +694,16 @@ template <class T> class PStack : public PAbstractList
 
 struct PSortedListElement
 {
-  PSortedListElement * parent;
-  PSortedListElement * left;
-  PSortedListElement * right;
-  PObject            * data;
-  PINDEX               subTreeSize;
-  enum { Red, Black }  colour;
+  PSortedListElement * m_parent;
+  PSortedListElement * m_left;
+  PSortedListElement * m_right;
+  PObject            * m_data;
+  PINDEX               m_subTreeSize;
+  enum { Red, Black }  m_colour;
 
   PDECLARE_POOL_ALLOCATOR();
 };
 
-struct PSortedListInfo
-{
-  PSortedListInfo();
-
-  PSortedListElement * root;
-  //PSortedListElement * lastElement;
-  //PINDEX               lastIndex;
-  PSortedListElement   nil;
-
-  PSortedListElement * Successor(const PSortedListElement * node) const;
-  PSortedListElement * Predecessor(const PSortedListElement * node) const;
-  PSortedListElement * OrderSelect(PSortedListElement * node, PINDEX index) const;
-
-  typedef PSortedListElement Element;
-
-  PDECLARE_POOL_ALLOCATOR();
-};
 
 /**This class is a collection of objects which are descendents of the
    <code>PObject</code> class. It is implemeted as a Red-Black binary tree to
@@ -918,10 +901,6 @@ class PAbstractSortedList : public PCollection
     virtual PINDEX GetObjectsIndex(
       const PObject * obj
     ) const;
-    virtual PINDEX GetObjectsIndex(
-      const PObject * obj,
-      PSortedListElement * & lastElement
-    ) const;
 
     /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
@@ -936,20 +915,23 @@ class PAbstractSortedList : public PCollection
     ) const;
   //@}
 
-    // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
-    typedef PSortedListElement Element;
-
   protected:
-    
+
     // New functions for class
-    void RemoveElement(Element * node);
-    void LeftRotate(Element * node);
-    void RightRotate(Element * node);
-    void DeleteSubTrees(Element * node, PBoolean deleteObject);
-    PINDEX ValueSelect(const Element * node, const PObject & obj, const Element ** lastElement) const;
+    void RemoveElement(PSortedListElement * node);
+    void LeftRotate(PSortedListElement * node);
+    void RightRotate(PSortedListElement * node);
+    void DeleteSubTrees(PSortedListElement * node, bool deleteObject);
+    PSortedListElement * FindElement(const PObject & obj, PINDEX * index) const;
+    PSortedListElement * FindElement(const PObject * obj, PINDEX * index) const;
+    PSortedListElement * Successor(PSortedListElement * node) const;
+    PSortedListElement * Predecessor(PSortedListElement * node) const;
+    PSortedListElement * OrderSelect(PSortedListElement * node, PINDEX index) const;
+    PINDEX ValueSelect(PSortedListElement * node, const PObject & obj, PSortedListElement * & element) const;
 
     // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
-    PSortedListInfo * info;
+    PSortedListElement * m_root;
+    PSortedListElement   nil;
 };
 
 
@@ -1000,6 +982,98 @@ template <class T> class PSortedList : public PAbstractSortedList
     T & operator[](
       PINDEX index  ///< Index for entry
     ) const { return *(T *)this->GetAt(index); }
+  //@}
+
+  /**@name Iterators */
+  //@{
+    typedef T value_type;
+    friend class iterator_base;
+
+  private:
+    void NextElement(PSortedListElement * & element)
+    {
+      element = this->Successor(element);
+      if (element == &this->nil)
+        element = NULL;
+    }
+
+    void PrevElement(PSortedListElement * & element)
+    {
+      element = this->Predecessor(element);
+      if (element == &this->nil)
+        element = NULL;
+    }
+
+    class iterator_base : public std::iterator<std::bidirectional_iterator_tag, value_type> {
+      protected:
+        typedef PSortedList<T> List_T;
+        typedef typename PSortedListElement Element_T;
+        List_T    * m_list;
+        Element_T * m_element;
+
+        iterator_base(List_T * l, Element_T * e) : m_list(l), m_element(e) { }
+
+        bool Valid() const { return PAssert(this->m_list != NULL && this->m_element != NULL && this->m_element != &m_list->nil, PInvalidArrayIndex); }
+        void Next() { if (Valid()) this->m_list->NextElement(this->m_element); }
+        void Prev() { if (Valid()) this->m_list->PrevElement(this->m_element); }
+        value_type * Ptr() const { return (value_type *)(Valid() ? this->m_element->m_data : NULL); }
+
+      public:
+        bool operator==(const iterator_base & it) const { return this->m_element == it.m_element; }
+        bool operator!=(const iterator_base & it) const { return this->m_element != it.m_element; }
+
+      friend class PSortedList<T>;
+    };
+
+  public:
+    class iterator : public iterator_base {
+      public:
+        iterator() : iterator_base(NULL, NULL) { }
+        iterator(List_T * l, Element_T * e) : iterator_base(l, e) { }
+
+        iterator operator++()    {                      this->Next(); return *this; }
+        iterator operator--()    {                      this->Prev(); return *this; }
+        iterator operator++(int) { iterator it = *this; this->Next(); return it;    }
+        iterator operator--(int) { iterator it = *this; this->Prev(); return it;    }
+
+        value_type * operator->() const { return  this->Ptr(); }
+        value_type & operator* () const { return *this->Ptr(); }
+    };
+
+    iterator begin()  { return IsEmpty() ? iterator() : iterator(this, this->OrderSelect(this->m_root, 1));                 }
+    iterator end()    { return             iterator();                                                                }
+    iterator rbegin() { return IsEmpty() ? iterator() : iterator(this, this->OrderSelect(this->m_root, this->GetSize())); }
+    iterator rend()   { return             iterator();                                                                }
+
+    class const_iterator : public iterator_base {
+      public:
+        const_iterator() : iterator_base(NULL, NULL) { }
+        const_iterator(List_T * l, Element_T * e) : iterator_base(l, e) { }
+
+        const_iterator operator++()    {                            this->Next(); return *this; }
+        const_iterator operator--()    {                            this->Prev(); return *this; }
+        const_iterator operator++(int) { const_iterator it = *this; this->Next(); return it;    }
+        const_iterator operator--(int) { const_iterator it = *this; this->Prev(); return it;    }
+
+        const value_type * operator->() const { return  this->Ptr(); }
+        const value_type & operator* () const { return *this->Ptr(); }
+    };
+
+    const_iterator begin()  const { return IsEmpty() ? const_iterator() : const_iterator(this, this->OrderSelect(this->m_root, 1));                 }
+    const_iterator end()    const { return             const_iterator();                                                                            }
+    const_iterator rbegin() const { return IsEmpty() ? const_iterator() : const_iterator(this, this->OrderSelect(this->m_root, this->GetSize())); }
+    const_iterator rend()   const { return             const_iterator();                                                                            }
+
+    value_type & front() { return *this->begin(); }
+    value_type & back()  { return *this->rbegin(); }
+    const value_type & front() const { return *this->begin(); }
+    const value_type & back()  const { return *this->rbegin(); }
+
+          iterator find(const value_type & obj)       { return       iterator(this, this->FindElement(obj, NULL));                      }
+    const_iterator find(const value_type & obj) const { return const_iterator(this, this->FindElement(obj, NULL)); }
+
+    void erase(const iterator & it)       { PAssert(this == it.m_list, PLogicError); this->RemoveElement(it.m_element); }
+    void erase(const const_iterator & it) { PAssert(this == it.m_list, PLogicError); this->RemoveElement(it.m_element); }
   //@}
 
   protected:

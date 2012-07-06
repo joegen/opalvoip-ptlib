@@ -6,6 +6,27 @@
 
 PCREATE_PROCESS(SortedListTest);
 
+class Fred : public PObject
+{
+    char m_character;
+  public:
+    Fred(char c)
+      : m_character(c)
+    {
+    }
+
+    Comparison Compare(const PObject & obj) const
+    {
+      const Fred & other = dynamic_cast<const Fred &>(obj);
+      if (m_character < other.m_character)
+        return GreaterThan;
+      if (m_character > other.m_character)
+        return LessThan;
+      return EqualTo;
+    }
+};
+
+
 PMutex coutMutex;
 
 SortedListTest::SortedListTest()
@@ -15,31 +36,6 @@ SortedListTest::SortedListTest()
 
 
 void SortedListTest::Main()
-{
-
-  PINDEX i;
-  for (i = 0; i < 10; i++) {
-    new DoSomeThing(i);
-  }
-
-  for (PINDEX j = i; j < i + 5; j++) {
-    new DoSomeThing2(j);
-  }
-
-  Suspend();
-}
-
-
-DoSomeThing::DoSomeThing(PINDEX _index)
-  : PThread(1000, AutoDeleteThread, NormalPriority, psprintf("DoSomeThing %u", _index)), index(_index)
-{
-  Resume();
-}
-
-
-class Fred : public PObject { char m_character; public: Fred(char c) : m_character(c) { } };
-
-void DoSomeThing::Main()
 {
 #ifdef _MSC_VER
   // Tests for Visual Studio debugger autoexp.dat
@@ -61,6 +57,51 @@ void DoSomeThing::Main()
   }
 #endif
 
+  {
+    PSortedStringList ss;
+    PAssert(ss.begin() == ss.end(), "Bad PSortedStringList implemetation");
+    ss.AppendString("fred");
+    ss.AppendString("nurk");
+    ss.AppendString("rocky");
+    ss.AppendString("bullwinkle");
+    ss.AppendString("boris");
+    ss.AppendString("natasha");
+
+    cout << "front()=\"" << ss.front() << "\", back()=\"" << ss.back() << "\"\n"
+            "Forwards, iteration:\n";
+    for (PSortedStringList::iterator it = ss.begin(); it != ss.end(); ++it)
+      cout << "  \"" << *it << "\"\n";
+
+    cout << "Reverse iteration:\n";
+    for (PSortedStringList::iterator it = ss.rbegin(); it != ss.rend(); --it)
+      cout << "  \"" << *it << "\"\n";
+    cout << endl;
+
+    PSortedStringList::iterator found = ss.find("fred");
+    PAssert(found != ss.end() && *found == "fred", "Bad PSortedStringList implemetation");
+    ss.erase(found);
+  }
+
+  for (PINDEX i = 0; i < 15; i++) {
+    if (i < 10)
+      new DoSomeThing1(i);
+    else
+      new DoSomeThing2(i);
+  }
+
+  Suspend();
+}
+
+
+DoSomeThing1::DoSomeThing1(PINDEX _index)
+  : PThread(1000, AutoDeleteThread, NormalPriority, psprintf("DoSomeThing1 %u", _index)), index(_index)
+{
+  Resume();
+}
+
+
+void DoSomeThing1::Main()
+{
   list.AllowDeleteObjects();
 
   PRandom rand(PRandom::Number());
