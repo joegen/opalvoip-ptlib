@@ -1006,12 +1006,10 @@ template <class T> class PSortedList : public PAbstractSortedList
 
     class iterator_base : public std::iterator<std::bidirectional_iterator_tag, value_type> {
       protected:
-        typedef PSortedList<T> List_T;
-        typedef typename PSortedListElement Element_T;
-        List_T    * m_list;
-        Element_T * m_element;
+        PSortedList<T>     * m_list;
+        PSortedListElement * m_element;
 
-        iterator_base(List_T * l, Element_T * e) : m_list(l), m_element(e) { }
+        iterator_base(PSortedList<T> * l, PSortedListElement * e) : m_list(l), m_element(e) { }
 
         bool Valid() const { return PAssert(this->m_list != NULL && this->m_element != NULL && this->m_element != &m_list->nil, PInvalidArrayIndex); }
         void Next() { if (Valid()) this->m_list->NextElement(this->m_element); }
@@ -1029,7 +1027,7 @@ template <class T> class PSortedList : public PAbstractSortedList
     class iterator : public iterator_base {
       public:
         iterator() : iterator_base(NULL, NULL) { }
-        iterator(List_T * l, Element_T * e) : iterator_base(l, e) { }
+        iterator(PSortedList<T> * l, PSortedListElement * e) : iterator_base(l, e) { }
 
         iterator operator++()    {                      this->Next(); return *this; }
         iterator operator--()    {                      this->Prev(); return *this; }
@@ -1048,7 +1046,7 @@ template <class T> class PSortedList : public PAbstractSortedList
     class const_iterator : public iterator_base {
       public:
         const_iterator() : iterator_base(NULL, NULL) { }
-        const_iterator(List_T * l, Element_T * e) : iterator_base(l, e) { }
+        const_iterator(PSortedList<T> * l, PSortedListElement * e) : iterator_base(l, e) { }
 
         const_iterator operator++()    {                            this->Next(); return *this; }
         const_iterator operator--()    {                            this->Prev(); return *this; }
