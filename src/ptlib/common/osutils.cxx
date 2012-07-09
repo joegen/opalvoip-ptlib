@@ -792,30 +792,6 @@ PInt64 PTimer::GetMilliSeconds() const
 }
 
 
-PTimer & PTimer::operator=(DWORD milliseconds)
-{
-  m_resetTime.SetInterval(milliseconds);
-  StartRunning(m_oneshot);
-  return *this;
-}
- 
-
-PTimer & PTimer::operator=(const PTimeInterval & time)
-{
-  m_resetTime = time;
-  StartRunning(m_oneshot);
-  return *this;
-}
-
-
-PTimer & PTimer::operator=(const PTimer & timer)
-{
-  m_resetTime.SetInterval(timer.GetMilliSeconds());
-  StartRunning(m_oneshot);
-  return *this;
-}
- 
- 
 PTimer::~PTimer()
 {
   // queue a request to remove this timer, and always do it synchronously
