@@ -444,10 +444,10 @@ int PServiceProcess::InternalMain(void * arg)
 
   // Set thread ID for process to this thread
   m_activeThreadMutex.Wait();
-  m_activeThreads.erase(threadId);
-  threadId = GetCurrentThreadId();
+  m_activeThreads.erase(m_threadId);
+  m_threadId = GetCurrentThreadId();
   threadHandle = GetCurrentThread();
-  m_activeThreads[threadId] = this;
+  m_activeThreads[m_threadId] = this;
   m_activeThreadMutex.Signal();
   OnStop();
 
@@ -1023,9 +1023,9 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 void PServiceProcess::ThreadEntry()
 {
   m_activeThreadMutex.Wait();
-  threadId = GetCurrentThreadId();
+  m_threadId = ::GetCurrentThreadId();
   threadHandle = GetCurrentThread();
-  m_activeThreads[threadId] = this;
+  m_activeThreads[m_threadId] = this;
   m_activeThreadMutex.Signal();
 
   SetTerminationValue(1);

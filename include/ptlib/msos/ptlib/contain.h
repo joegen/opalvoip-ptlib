@@ -319,7 +319,7 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 #undef Yield
 
-typedef DWORD PThreadIdentifier;
+typedef UINT  PThreadIdentifier;
 typedef DWORD PProcessIdentifier;
 
 

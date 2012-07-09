@@ -58,6 +58,7 @@ class PExternalThread : public PThread
   PCLASSINFO(PExternalThread, PThread);
   public:
     PExternalThread()
+      : PThread(false)
     {
       SetThreadName(PString::Empty());
       PTRACE(5, "PTLib\tCreated external thread " << this << ", id " << GetCurrentThreadId());
@@ -1557,7 +1558,8 @@ void PProcess::PreInitialise(int c, char ** v, char **)
 PProcess::PProcess(const char * manuf, const char * name,
                    WORD major, WORD minor, CodeStatus stat, WORD build,
                    bool library)
-  : m_library(library)
+  : PThread(true)
+  , m_library(library)
   , terminationValue(0)
   , manufacturer(manuf)
   , productName(name)
@@ -1959,8 +1961,8 @@ void PThread::PrintOn(ostream & strm) const
 
 PString PThread::GetThreadName() const
 {
-  PWaitAndSignal m(threadNameMutex);
-  PString reply = threadName;
+  PWaitAndSignal mutex(m_threadNameMutex);
+  PString reply = m_threadName;
   reply.MakeUnique();
   return reply; 
 }
@@ -1997,25 +1999,25 @@ static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 
 void PThread::SetThreadName(const PString & name)
 {
-  PWaitAndSignal m(threadNameMutex);
+  PWaitAndSignal mutex(m_threadNameMutex);
 
   PThreadIdentifier threadId = GetThreadId();
   if (name.Find('%') != P_MAX_INDEX)
-    threadName = psprintf(name, threadId);
+    m_threadName = psprintf(name, threadId);
   else if (name.IsEmpty()) {
-    threadName = GetClass();
-    threadName.sprintf(PTHREAD_ID_FMT, threadId);
+    m_threadName = GetClass();
+    m_threadName.sprintf(PTHREAD_ID_FMT, threadId);
   }
   else {
     PString idStr;
     idStr.sprintf(PTHREAD_ID_FMT, threadId);
 
-    threadName = name;
-    if (threadName.Find(idStr) == P_MAX_INDEX)
-      threadName += idStr;
+    m_threadName = name;
+    if (m_threadName.Find(idStr) == P_MAX_INDEX)
+      m_threadName += idStr;
   }
 
-  SetWinDebugThreadName(threadName, threadId);
+  SetWinDebugThreadName(m_threadName, threadId);
 }
  
 PThread * PThread::Create(const PNotifier & notifier,

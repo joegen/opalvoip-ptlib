@@ -54,22 +54,19 @@
     static void * PX_ThreadStart(void *);
     static void PX_ThreadEnd(void *);
 
-    PINDEX          PX_origStackSize;
-    Priority        PX_priority;
-    mutable pthread_t PX_threadId;
+    Priority          PX_priority;
 #if defined(P_LINUX)
     mutable pid_t     PX_linuxId;
     PTimeInterval     PX_startTick;
     PTimeInterval     PX_endTick;
 #endif
-    pthread_mutex_t PX_suspendMutex;
-    int             PX_suspendCount;
-    PBoolean            PX_firstTimeStart;
-    PBoolean            ending;
+    pthread_mutex_t   PX_suspendMutex;
+    int               PX_suspendCount;
+    bool              PX_firstTimeStart;
 
 #ifndef P_HAS_SEMAPHORES
-    PSemaphore    * PX_waitingSemaphore;
-    pthread_mutex_t PX_WaitSemMutex;
+    PSemaphore      * PX_waitingSemaphore;
+    pthread_mutex_t   PX_WaitSemMutex;
 #endif
 
     int unblockPipe[2];
