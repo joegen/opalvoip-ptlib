@@ -694,6 +694,8 @@ template <class T> class PStack : public PAbstractList
 
 struct PSortedListElement
 {
+  PSortedListElement(PSortedListElement * nil = NULL, PObject * obj = NULL);
+
   PSortedListElement * m_parent;
   PSortedListElement * m_left;
   PSortedListElement * m_right;
@@ -930,8 +932,8 @@ class PAbstractSortedList : public PCollection
     PINDEX ValueSelect(PSortedListElement * node, const PObject & obj, PSortedListElement * & element) const;
 
     // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
+    PSortedListElement * nil;
     PSortedListElement * m_root;
-    PSortedListElement   nil;
 };
 
 
