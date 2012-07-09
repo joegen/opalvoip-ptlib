@@ -2623,11 +2623,11 @@ PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 {
   PINDEX len = str.GetLength();
   PSortedListElement * element;
-  PINDEX index = InternalStringSelect(str, len, m_root, element);
+  PINDEX index = InternalStringSelect(str, len, m_info->m_root, element);
 
   if (index != 0) {
     PSortedListElement * prev;
-    while ((prev = Predecessor(element)) != nil && ((PString *)prev->m_data)->NumCompare(str, len) >= EqualTo) {
+    while ((prev = m_info->Predecessor(element)) != &m_info->nil && ((PString *)prev->m_data)->NumCompare(str, len) >= EqualTo) {
       element = prev;
       index--;
     }
@@ -2642,7 +2642,7 @@ PINDEX PSortedStringList::InternalStringSelect(const char * str,
                                                PSortedListElement * thisElement,
                                                PSortedListElement * & selectedElement) const
 {
-  if (thisElement == nil)
+  if (thisElement == &m_info->nil)
     return 0;
 
   switch (((PString *)thisElement->m_data)->NumCompare(str, len)) {
