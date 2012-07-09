@@ -288,7 +288,7 @@ class PThread : public PObject
       * if called by the owning thread. Calling this function for another
       * thread that may be terminating is a very bad idea.
       */
-    virtual PThreadIdentifier GetThreadId() const;
+    virtual PThreadIdentifier GetThreadId() const { return m_threadId; }
     static PThreadIdentifier GetCurrentThreadId();
 
     /// Times for execution of the thread.
@@ -353,10 +353,10 @@ class PThread : public PObject
     ) { return Create(notifier, 0, NoAutoDeleteThread, NormalPriority, threadName); }
   //@}
   
-    bool IsAutoDelete() const { return autoDelete; }
+    bool IsAutoDelete() const { return m_autoDelete; }
 
   private:
-    PThread();
+    PThread(bool isProcess);
     // Create a new thread instance as part of a <code>PProcess</code> class.
 
     friend class PProcess;
@@ -370,12 +370,15 @@ class PThread : public PObject
     PThread & operator=(const PThread &) { return *this; }
     // Empty assignment operator to prevent copying of thread instances.
 
-    PBoolean autoDelete;
-    // Automatically delete the thread on completion.
+  protected:
+    bool   m_isProcess;
+    bool   m_autoDelete; // Automatically delete the thread on completion.
+    PINDEX m_originalStackSize;
 
-    // Give the thread a name for debugging purposes.
-    PString threadName;
-    PMutex threadNameMutex;
+    PString m_threadName; // Give the thread a name for debugging purposes.
+    PMutex  m_threadNameMutex;
+
+    PThreadIdentifier m_threadId;
 
 #if PTRACING
   public:

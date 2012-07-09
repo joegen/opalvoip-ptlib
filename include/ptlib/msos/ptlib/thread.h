@@ -41,12 +41,8 @@
 
   protected:
     HANDLE threadHandle;
-    UINT   threadId;
 
   private:
-    bool   m_isProcess;
-    PINDEX originalStackSize;
-
     void CleanUp();
     static UINT __stdcall MainFunction(void * thread);
 
