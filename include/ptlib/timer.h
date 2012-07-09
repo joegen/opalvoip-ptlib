@@ -38,9 +38,21 @@
 #pragma interface
 #endif
 
-class PThread;
 
 #include <ptlib/notifier.h>
+#include <ptclib/threadpool.h>
+
+
+// To avoid ambiguous operator error we need a one for every integer variant
+#define PTIMER_OPERATORS(cls) \
+    cls & operator=( int16_t rhs)              { this->SetInterval(rhs); return *this; } \
+    cls & operator=(uint16_t rhs)              { this->SetInterval(rhs); return *this; } \
+    cls & operator=( int32_t rhs)              { this->SetInterval(rhs); return *this; } \
+    cls & operator=(uint32_t rhs)              { this->SetInterval(rhs); return *this; } \
+    cls & operator=( int64_t rhs)              { this->SetInterval(rhs); return *this; } \
+    cls & operator=(uint64_t rhs)              { this->SetInterval(rhs); return *this; } \
+    cls & operator=(const PTimeInterval & rhs) { this->SetInterval(rhs.GetMilliSeconds()); return *this; } \
+
 
 /**A class represeting a simple timer.
    Unlike the PTimer class this does not support call back operations, nor is
@@ -214,14 +226,10 @@ class PTimer : public PTimeInterval
        reference to the timer.
      */
     PTimer & operator=(
-      DWORD milliseconds            ///< New time interval for timer.
-    );
-    PTimer & operator=(
-      const PTimeInterval & time    ///< New time interval for timer.
-    );
-    PTimer & operator=(
       const PTimer & timer          ///< New time interval for timer.
-    );
+    ) { SetInterval(timer.GetMilliSeconds()); return *this; }
+
+    PTIMER_OPERATORS(PTimer);
 
     /** Destroy the timer object, removing it from the applications timer list
        if it was running.
@@ -430,6 +438,166 @@ class PTimer : public PTimeInterval
 #include "unix/ptlib/timer.h"
 #endif
 };
+
+
+/**Template abstract class for a PTimer that queues a work item to a thread pool.
+   THis allows for load balancing of timer actions and, in complex muti-threading
+   sytems, it is very easy for a deadlock to occur with the usual PNotifier
+   method of executing a PTimer call back. This tries to largely avoid the
+   issue by the housekeeper thread queuing a PThreadPool "work item" for later
+   processing. The thread pooling system has a sophisticated system for
+   avoiding deadlocks by making sure a particular target, indicated through a
+   string "token", is always handled by the same thread.
+
+   Usage:
+     class MyWork1 : public MyWork
+     {
+       MyWork1(int value);
+       virtual void Work();
+     };
+     PPoolTimerArg1<MyWork1, int, MyWork> timer;
+
+     timer(threadPool, 27)
+
+   Note if more than three parameters are required for the Work class, then you
+   will need to use a struct and PPoolTimerArg1<WorkLotsParams, ParamsStruct>
+  */
+template <
+  class Work_T,
+  class Pool_T = PQueuedThreadPool<Work_T>
+>
+class PPoolTimer : public PTimer
+{
+    PCLASSINFO(PPoolTimer, PTimer);
+  protected:
+    Pool_T & m_pool;
+  public:
+    PPoolTimer(Pool_T & pool)
+      : m_pool(pool)
+    {
+    }
+
+    virtual void OnTimeout()
+    {
+      Work_T * work = CreateWork();
+      if (work != NULL)
+        m_pool.AddWork(work);
+    }
+
+    virtual Work_T * CreateWork() = 0;
+
+    PTIMER_OPERATORS(PPoolTimer);
+};
+
+
+/// Create a thread pooled timer execution with no parameters to work item.
+template <
+  class Work_T,
+  class Base_T = Work_T,
+  class Pool_T = PQueuedThreadPool<Base_T>
+>
+class PPoolTimerArg0 : public PPoolTimer<Base_T, Pool_T>
+{
+    typedef PPoolTimer<Base_T, Pool_T> BaseClass;
+    PCLASSINFO(PPoolTimerArg0, BaseClass);
+  public:
+    PPoolTimerArg0(Pool_T & pool)
+      : BaseClass(pool)
+    {
+    }
+
+    virtual Work_T * CreateWork() { return new Work_T(); }
+
+    PTIMER_OPERATORS(PPoolTimerArg0);
+};
+
+
+/// Create a thread pooled timer execution with one parameter to work item.
+template <
+  class Work_T,
+  typename Arg1,
+  class Base_T = Work_T,
+  class Pool_T = PQueuedThreadPool<Base_T>
+>
+class PPoolTimerArg1: public PPoolTimer<Base_T, Pool_T>
+{
+    typedef PPoolTimer<Base_T, Pool_T> BaseClass;
+    PCLASSINFO(PPoolTimerArg1, BaseClass);
+  protected:
+    Arg1 m_arg1;
+  public:
+    PPoolTimerArg1(Pool_T & pool, Arg1 arg1)
+      : BaseClass(pool)
+      , m_arg1(arg1)
+    {
+    }
+
+    virtual Work_T * CreateWork() { return new Work_T(m_arg1); }
+
+    PTIMER_OPERATORS(PPoolTimerArg1);
+};
+
+
+/// Create a thread pooled timer execution with two parameters to work item.
+template <
+  class Work_T,
+  typename Arg1,
+  typename Arg2,
+  class Base_T = Work_T,
+  class Pool_T = PQueuedThreadPool<Base_T>
+>
+class PPoolTimerArg2: public PPoolTimer<Base_T, Pool_T>
+{
+    typedef PPoolTimer<Base_T, Pool_T> BaseClass;
+    PCLASSINFO(PPoolTimerArg2, BaseClass);
+  protected:
+    Arg1 m_arg1;
+    Arg2 m_arg2;
+  public:
+    PPoolTimerArg2(Pool_T & pool, Arg1 arg1, Arg2 arg2)
+      : BaseClass(pool)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+    {
+    }
+
+    virtual Work_T * CreateWork() { return new Work_T(m_arg1, m_arg2); }
+
+    PTIMER_OPERATORS(PPoolTimerArg2);
+};
+
+
+/// Create a thread pooled timer execution with three parameters to work item.
+template <
+  class Work_T,
+  typename Arg1,
+  typename Arg2,
+  typename Arg3,
+  class Base_T = Work_T,
+  class Pool_T = PQueuedThreadPool<Base_T>
+>
+class PPoolTimerArg3: public PPoolTimer<Base_T, Pool_T>
+{
+    typedef PPoolTimer<Base_T, Pool_T> BaseClass;
+    PCLASSINFO(PPoolTimerArg3, BaseClass);
+  protected:
+    Arg1 m_arg1;
+    Arg2 m_arg2;
+    Arg3 m_arg3;
+  public:
+    PPoolTimerArg3(Pool_T & pool, Arg1 arg1, Arg2 arg2, Arg3 arg3)
+      : BaseClass(pool)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      , m_arg3(arg3)
+    {
+    }
+
+    virtual Work_T * CreateWork() { return new Work_T(m_arg1, m_arg2, m_arg3); }
+
+    PTIMER_OPERATORS(PPoolTimerArg3);
+};
+
 
 #endif // PTLIB_TIMER_H
 
