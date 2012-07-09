@@ -706,6 +706,22 @@ struct PSortedListElement
   PDECLARE_POOL_ALLOCATOR();
 };
 
+struct PSortedListInfo
+{
+  PSortedListInfo() : m_root(&nil) { }
+
+  PSortedListElement   nil;
+  PSortedListElement * m_root;
+
+  PSortedListElement * Successor(PSortedListElement * node) const;
+  PSortedListElement * Predecessor(PSortedListElement * node) const;
+  PSortedListElement * OrderSelect(PSortedListElement * node, PINDEX index) const;
+  PSortedListElement * OrderSelect(PINDEX index) const { return OrderSelect(m_root, index); }
+  PINDEX ValueSelect(PSortedListElement * node, const PObject & obj, PSortedListElement * & element) const;
+  PINDEX ValueSelect(const PObject & obj, PSortedListElement * & element) const { return ValueSelect(m_root, obj, element); }
+
+  PDECLARE_POOL_ALLOCATOR();
+};
 
 /**This class is a collection of objects which are descendents of the
    <code>PObject</code> class. It is implemeted as a Red-Black binary tree to
@@ -926,14 +942,9 @@ class PAbstractSortedList : public PCollection
     void DeleteSubTrees(PSortedListElement * node, bool deleteObject);
     PSortedListElement * FindElement(const PObject & obj, PINDEX * index) const;
     PSortedListElement * FindElement(const PObject * obj, PINDEX * index) const;
-    PSortedListElement * Successor(PSortedListElement * node) const;
-    PSortedListElement * Predecessor(PSortedListElement * node) const;
-    PSortedListElement * OrderSelect(PSortedListElement * node, PINDEX index) const;
-    PINDEX ValueSelect(PSortedListElement * node, const PObject & obj, PSortedListElement * & element) const;
 
     // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
-    PSortedListElement * nil;
-    PSortedListElement * m_root;
+    PSortedListInfo * m_info;
 };
 
 
@@ -1040,9 +1051,9 @@ template <class T> class PSortedList : public PAbstractSortedList
         value_type & operator* () const { return *this->Ptr(); }
     };
 
-    iterator begin()  { return IsEmpty() ? iterator() : iterator(this, this->OrderSelect(this->m_root, 1));                 }
+    iterator begin()  { return IsEmpty() ? iterator() : iterator(this, this->m_info->OrderSelect(1));                 }
     iterator end()    { return             iterator();                                                                }
-    iterator rbegin() { return IsEmpty() ? iterator() : iterator(this, this->OrderSelect(this->m_root, this->GetSize())); }
+    iterator rbegin() { return IsEmpty() ? iterator() : iterator(this, this->m_info->OrderSelect(this->GetSize())); }
     iterator rend()   { return             iterator();                                                                }
 
     class const_iterator : public iterator_base {
@@ -1059,9 +1070,9 @@ template <class T> class PSortedList : public PAbstractSortedList
         const value_type & operator* () const { return *this->Ptr(); }
     };
 
-    const_iterator begin()  const { return IsEmpty() ? const_iterator() : const_iterator(this, this->OrderSelect(this->m_root, 1));                 }
+    const_iterator begin()  const { return IsEmpty() ? const_iterator() : const_iterator(this, this->m_info->OrderSelect(1));                 }
     const_iterator end()    const { return             const_iterator();                                                                            }
-    const_iterator rbegin() const { return IsEmpty() ? const_iterator() : const_iterator(this, this->OrderSelect(this->m_root, this->GetSize())); }
+    const_iterator rbegin() const { return IsEmpty() ? const_iterator() : const_iterator(this, this->m_info->OrderSelect(this->GetSize())); }
     const_iterator rend()   const { return             const_iterator();                                                                            }
 
     value_type & front() { return *this->begin(); }
