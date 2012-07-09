@@ -77,7 +77,7 @@ static PBoolean PAssertThreadOp(int retval,
 {
   if (retval == 0) {
     PTRACE_IF(2, retry > 0, "PTLib\t" << funcname << " required " << retry << " retries!");
-    return PFalse;
+    return false;
   }
 
   if (errno == EINTR || errno == EAGAIN) {
@@ -87,7 +87,7 @@ static PBoolean PAssertThreadOp(int retval,
 #else
       usleep(10000); // Basically just swap out thread to try and clear blockage
 #endif
-      return PTrue;   // Return value to try again
+      return true;   // Return value to try again
     }
     // Give up and assert
   }
@@ -95,7 +95,7 @@ static PBoolean PAssertThreadOp(int retval,
 #if P_USE_ASSERTS
   PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
 #endif
-  return PFalse;
+  return false;
 }
 
 
@@ -147,10 +147,10 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
     PHouseKeepingThread()
       : PThread(1000, NoAutoDeleteThread, HighestPriority, "Housekeeper")
-      { closing = PFalse; Resume(); }
+      { closing = false; Resume(); }
 
     void Main();
-    void SetClosing() { closing = PTrue; }
+    void SetClosing() { closing = true; }
 
   protected:
     PBoolean closing;
@@ -180,13 +180,13 @@ void PHouseKeepingThread::Main()
       found = false;
       for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
         PThread * thread = it->second;
-        if (thread->autoDelete && thread->IsTerminated()) {
+        if (thread->IsAutoDelete() && thread->IsTerminated()) {
           process.m_activeThreads.erase(it);
 
           // unlock the m_activeThreadMutex to avoid deadlocks:
           // if somewhere in the destructor a call to PTRACE() is made,
           // which itself calls PThread::Current(), deadlocks are possible
-          thread->PX_threadId = 0;
+          thread->m_threadId = 0;
           process.m_activeThreadMutex.Signal();
           delete thread;
           process.m_activeThreadMutex.Wait();
@@ -213,7 +213,7 @@ bool PProcess::SignalTimerChange()
   PWaitAndSignal m(housekeepingMutex);
   if (housekeepingThread == NULL) {
 #if PMEMORY_CHECK
-    PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(PTrue);
+    PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(true);
 #endif
     housekeepingThread = new PHouseKeepingThread;
 #if PMEMORY_CHECK
@@ -264,14 +264,14 @@ PBoolean PProcess::SetMaxHandles(int newMax)
     maxHandles = rl.rlim_cur;
     if (maxHandles == newMax) {
       PTRACE(2, "PTLib\tNew maximum per-process file handles set to " << maxHandles);
-      return PTrue;
+      return true;
     }
   }
 #endif // !P_RTEMS
 
   PTRACE(1, "PTLib\tCannot set per-process file handle limit to "
          << newMax << " (is " << maxHandles << ") - check permissions");
-  return PFalse;
+  return false;
 }
 
 
@@ -312,7 +312,7 @@ void PProcess::PXSetThread(pthread_t id, PThread * thread)
   m_activeThreadMutex.Wait();
 
   ThreadMap::iterator it = m_activeThreads.find(id);
-  if (it != m_activeThreads.end() && it->second->autoDelete)
+  if (it != m_activeThreads.end() && it->second->IsAutoDelete())
     currentThread = it->second;
 
   m_activeThreads[id] = thread;
@@ -335,43 +335,34 @@ void PProcess::PXSetThread(pthread_t id, PThread * thread)
 //  is not paused
 //
 
-PThread::PThread()
-{
-  autoDelete          = PFalse;
-
-  // PX_origStackSize = 0 indicates external thread
-  PX_origStackSize    = 0;
-  PX_threadId         = pthread_self();
+PThread::PThread(bool isProcess)
+  : m_isProcess(isProcess)
+  , m_autoDelete(!isProcess)
+  , m_originalStackSize(0) // 0 indicates external thread
+  , m_threadId(pthread_self())
+  , PX_priority(NormalPriority)
 #if defined(P_LINUX)
-  PX_linuxId          = syscall(SYS_gettid);
+  , PX_linuxId(syscall(SYS_gettid))
 #endif
-  PX_priority         = NormalPriority;
-  PX_suspendCount     = 0;
-
+  , PX_suspendMutex(MutexInitialiser)
+  , PX_suspendCount(0)
+  , PX_firstTimeStart(false)
 #ifndef P_HAS_SEMAPHORES
-  PX_waitingSemaphore = NULL;
-  PX_WaitSemMutex = MutexInitialiser;
+  , PX_waitingSemaphore(NULL)
+  , PX_WaitSemMutex(MutexInitialiser)
 #endif
-
-  PX_suspendMutex = MutexInitialiser;
-
+{
 #ifdef P_RTEMS
   PAssertOS(socketpair(AF_INET,SOCK_STREAM,0,unblockPipe) == 0);
 #else
   PAssertOS(::pipe(unblockPipe) == 0);
 #endif
 
-  PX_firstTimeStart = PFalse;
-
-  if (!PProcess::IsInitialised())
+  if (isProcess)
     return;
 
-  autoDelete = true;
-
   PProcess & process = PProcess::Current();
-
-  process.PXSetThread(PX_threadId, this);
-
+  process.PXSetThread(m_threadId, this);
   process.SignalTimerChange();
 }
 
@@ -386,29 +377,24 @@ PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
                  const PString & name)
-  : threadName(name)
-{
-  autoDelete = (deletion == AutoDeleteThread);
-
-  PAssert(stackSize > 0, PInvalidParameter);
-  PX_priority = priorityLevel;
-  PX_suspendCount = 1;
-
-  // PX_origStackSize != 0 indicates PTLib created thread
-  PX_origStackSize = stackSize;
-
-  // PX_threadId = 0 indicates thread has not started
-  PX_threadId = 0;                          
+  : m_isProcess(false)
+  , m_autoDelete(deletion == AutoDeleteThread)
+  , m_originalStackSize(stackSize) // 0 indicates PTLib created thread
+  , m_threadName(name)
+  , m_threadId(0)  // 0 indicates thread has not started
+  , PX_priority(priorityLevel)
 #if defined(P_LINUX)
-  PX_linuxId = 0;
+  , PX_linuxId(0)
 #endif
-
+  , PX_suspendMutex(MutexInitialiser)
+  , PX_suspendCount(1)
+  , PX_firstTimeStart(true) // new thread is actually started the first time Resume() is called.
 #ifndef P_HAS_SEMAPHORES
-  PX_waitingSemaphore = NULL;
-  PX_WaitSemMutex = MutexInitialiser;
+  , PX_waitingSemaphore(NULL)
+  , PX_WaitSemMutex(MutexInitialiser)
 #endif
-
-  PX_suspendMutex = MutexInitialiser;
+{
+  PAssert(stackSize > 0, PInvalidParameter);
 
 #ifdef P_RTEMS
   PAssertOS(socketpair(AF_INET,SOCK_STREAM,0,unblockPipe) == 0);
@@ -417,10 +403,7 @@ PThread::PThread(PINDEX stackSize,
 #endif
   PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 
-  // new thread is actually started the first time Resume() is called.
-  PX_firstTimeStart = PTrue;
-
-  PTRACE(5, "PTLib\tCreated thread " << this << ' ' << threadName);
+  PTRACE(5, "PTLib\tCreated thread " << this << ' ' << m_threadName);
 }
 
 //
@@ -437,7 +420,7 @@ PThread::~PThread()
     PTrace::Cleanup();
 #endif
   } else {
-    pthread_t id = PX_threadId;
+    pthread_t id = m_threadId;
     PProcess & process = PProcess::Current();
 
     // need to terminate the thread if it was ever started and it is not us
@@ -448,13 +431,13 @@ PThread::~PThread()
     process.SignalTimerChange();
 
     // last gasp tracing
-    PTRACE(5, "PTLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << id << ::dec << ")");
+    PTRACE(5, "PTLib\tDestroyed thread " << this << ' ' << m_threadName << "(id = " << ::hex << id << ::dec << ")");
 
 
     // if thread was started, remove it from the active thread list and detach it to release thread resources
     if (id != 0) {
       process.m_activeThreadMutex.Wait();
-      if (PX_origStackSize != 0)
+      if (m_originalStackSize != 0)
         pthread_detach(id);
       process.m_activeThreads.erase(id);
       process.m_activeThreadMutex.Signal();
@@ -483,7 +466,7 @@ void * PThread::PX_ThreadStart(void * arg)
 { 
   PThread * thread = (PThread *)arg;
   // Added this to guarantee that the thread creation (PThread::Restart)
-  // has completed before we start the thread. Then the PX_threadId has
+  // has completed before we start the thread. Then the m_threadId has
   // been set.
   pthread_mutex_lock(&thread->PX_suspendMutex);
   thread->SetThreadName(thread->GetThreadName());
@@ -571,10 +554,10 @@ void PThread::Restart()
   process.m_activeThreadMutex.Wait();
 
   // create the thread
-  PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
+  PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, PX_ThreadStart, this));
 
   // put the thread into the thread list
-  process.PXSetThread(PX_threadId, this);
+  process.PXSetThread(m_threadId, this);
   if (process.m_activeThreads.size() > highWaterMark)
     newHighWaterMark = highWaterMark = process.m_activeThreads.size();
 
@@ -599,7 +582,7 @@ void PX_SuspendSignalHandler(int)
   if (thread == NULL)
     return;
 
-  PBoolean notResumed = PTrue;
+  PBoolean notResumed = true;
   while (notResumed) {
     BYTE ch;
     notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
@@ -622,7 +605,7 @@ void PThread::Suspend(PBoolean susp)
       if (PX_suspendCount > 0)
         PX_suspendCount--;
       if (PX_suspendCount == 0) {
-        PX_firstTimeStart = PFalse;
+        PX_firstTimeStart = false;
         Restart();
       }
     }
@@ -635,15 +618,15 @@ void PThread::Suspend(PBoolean susp)
   // Suspend - warn the user with an Assertion
   PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
 #else
-  if (PPThreadKill(PX_threadId, 0)) {
+  if (PPThreadKill(m_threadId, 0)) {
 
     // if suspending, then see if already suspended
     if (susp) {
       PX_suspendCount++;
       if (PX_suspendCount == 1) {
-        if (PX_threadId != pthread_self()) {
+        if (m_threadId != pthread_self()) {
           signal(SUSPEND_SIG, PX_SuspendSignalHandler);
-          PPThreadKill(PX_threadId, SUSPEND_SIG);
+          PPThreadKill(m_threadId, SUSPEND_SIG);
         }
         else {
           PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
@@ -668,17 +651,17 @@ void PThread::Suspend(PBoolean susp)
 
 void PThread::Resume()
 {
-  Suspend(PFalse);
+  Suspend(false);
 }
 
 
 PBoolean PThread::IsSuspended() const
 {
   if (PX_firstTimeStart)
-    return PTrue;
+    return true;
 
   if (IsTerminated())
-    return PFalse;
+    return false;
 
   PAssertPTHREAD(pthread_mutex_lock, ((pthread_mutex_t *)&PX_suspendMutex));
   PBoolean suspended = PX_suspendCount != 0;
@@ -689,8 +672,8 @@ PBoolean PThread::IsSuspended() const
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 {
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  autoDelete = deletion == AutoDeleteThread;
+  PAssert(deletion != AutoDeleteThread || (!m_isProcess && this != &PProcess::Current()), PLogicError);
+  m_autoDelete = deletion == AutoDeleteThread;
 }
 
 #ifdef P_MACOSX
@@ -751,7 +734,7 @@ void PThread::SetPriority(Priority priorityLevel)
 
 #if defined(P_LINUX)
   struct sched_param params;
-  PAssertPTHREAD(pthread_setschedparam, (PX_threadId, GetSchedParam(priorityLevel, params), &params));
+  PAssertPTHREAD(pthread_setschedparam, (m_threadId, GetSchedParam(priorityLevel, params), &params));
 
 #elif defined(P_MACOSX)
   if (priorityLevel == HighestPriority) {
@@ -764,7 +747,7 @@ void PThread::SetPriority(Priority priorityLevel)
       long                            relativePriority;
 
       theFixedPolicy.timeshare = false; // set to true for a non-fixed thread
-      result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
+      result = thread_policy_set (pthread_mach_thread_np(m_threadId),
                                   THREAD_EXTENDED_POLICY,
                                   (thread_policy_t)&theFixedPolicy,
                                   THREAD_EXTENDED_POLICY_COUNT);
@@ -781,7 +764,7 @@ void PThread::SetPriority(Priority priorityLevel)
       PTRACE(3,  "relativePriority is " << relativePriority << " base priority is " << GetThreadBasePriority());
       
       thePrecedencePolicy.importance = relativePriority;
-      result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
+      result = thread_policy_set (pthread_mach_thread_np(m_threadId),
                                   THREAD_PRECEDENCE_POLICY,
                                   (thread_policy_t)&thePrecedencePolicy, 
                                   THREAD_PRECEDENCE_POLICY_COUNT);
@@ -800,7 +783,7 @@ PThread::Priority PThread::GetPriority() const
   int policy;
   struct sched_param params;
   
-  PAssertPTHREAD(pthread_getschedparam, (PX_threadId, &policy, &params));
+  PAssertPTHREAD(pthread_getschedparam, (m_threadId, &policy, &params));
   
   switch (policy)
   {
@@ -890,13 +873,13 @@ void PThread::Yield()
 void PThread::Terminate()
 {
   // if thread was not created by PTLib, then don't terminate it
-  if (PX_origStackSize <= 0)
+  if (m_originalStackSize <= 0)
     return;
 
   // if thread calls Terminate on itself, then do it
   // don't use PThread::Current, as the thread may already not be in the
   // active threads list
-  if (PX_threadId == pthread_self()) {
+  if (m_threadId == pthread_self()) {
     pthread_exit(0);
     return;   // keeps compiler happy
   }
@@ -923,30 +906,26 @@ void PThread::Terminate()
 #endif
 
 #if ( defined(P_NETBSD) && defined(P_NO_CANCEL) )
-  PPThreadKill(PX_threadId,SIGKILL);
+  PPThreadKill(m_threadId, SIGKILL);
 #else
-  if (PX_threadId) {
-    pthread_cancel(PX_threadId);
+  if (m_threadId) {
+    pthread_cancel(m_threadId);
   }
 #endif
 }
 
 
-//  
-//  See if thread is still running
-//  Note PX_threadId = 0 means thread has been created but not yet started
-//
 PBoolean PThread::IsTerminated() const
 {
-  pthread_t id = PX_threadId;
-  return (id == 0) || (PX_origStackSize <= 0) || (pthread_kill(id, 0) != 0);
+  if (m_isProcess)
+    return false; // Process is always still running
+
+  // See if thread is still running
+  pthread_t id = m_threadId;
+  return id == 0 || pthread_kill(id, 0) != 0;
 }
 
 
-//  
-//  Wait for thread to terminate
-//  
-//
 void PThread::WaitForTermination() const
 {
   WaitForTermination(PMaxTimeInterval);
@@ -955,7 +934,7 @@ void PThread::WaitForTermination() const
 
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-  pthread_t id = PX_threadId;
+  pthread_t id = m_threadId;
   if (id == 0 || this == Current()) {
     PTRACE(2, "WaitForTermination on 0x" << hex << id << dec << " short circuited");
     return true;
@@ -1368,7 +1347,7 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
 {
   if (waitTime == PMaxTimeInterval) {
     Wait();
-    return PTrue;
+    return true;
   }
 
   // create absolute finish time 
@@ -1398,7 +1377,7 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
   // thread to get very busy
   do {
     if (sem_trywait(&semId) == 0)
-      return PTrue;
+      return true;
 
 #if defined(P_LINUX)
   // sched_yield in a tight loop is bad karma
@@ -1409,17 +1388,17 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
 #endif
   } while (PTime() < finishTime);
 
-  return PFalse;
+  return false;
 
 #endif
 #elif defined(P_HAS_NAMED_SEMAPHORES)
   do {
     if(sem_trywait(semId) == 0)
-      return PTrue;
+      return true;
     PThread::Current()->Sleep(10);
   } while (PTime() < finishTime);
   
-  return PFalse;
+  return false;
 #else
 
   struct timespec absTime;
@@ -1432,11 +1411,11 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
   thread->PXSetWaitingSemaphore(this);
   queuedLocks++;
 
-  PBoolean ok = PTrue;
+  PBoolean ok = true;
   while (currentCount == 0) {
     int err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
     if (err == ETIMEDOUT) {
-      ok = PFalse;
+      ok = false;
       break;
     }
     else
@@ -1481,17 +1460,17 @@ PBoolean PSemaphore::WillBlock() const
 #if defined(P_HAS_SEMAPHORES)
   if (sem_trywait((sem_t *)&semId) != 0) {
     PAssertOS(errno == EAGAIN || errno == EINTR);
-    return PTrue;
+    return true;
   }
   PAssertPTHREAD(sem_post, ((sem_t *)&semId));
-  return PFalse;
+  return false;
 #elif defined(P_HAS_NAMED_SEMAPHORES)
   if (sem_trywait(semId) != 0) {
     PAssertOS(errno == EAGAIN || errno == EINTR);
-    return PTrue;
+    return true;
   }
   PAssertPTHREAD(sem_post, (semId));
-  return PFalse;
+  return false;
 #else
   return currentCount == 0;
 #endif
