@@ -39,6 +39,8 @@
 #pragma interface
 #endif
 
+
+#include <ptlib/thread.h>
 #include <map>
 #include <queue>
 
