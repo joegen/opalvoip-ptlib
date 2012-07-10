@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="JavaScript"
+	ProjectGUID="{0A32A0A0-B15D-4403-B86E-1929C8E7E4C2}"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
