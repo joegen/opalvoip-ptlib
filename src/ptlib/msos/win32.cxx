@@ -848,7 +848,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 */
 
   process.m_activeThreadMutex.Wait();
-  process.m_activeThreads[thread->threadId] = thread;
+  process.m_activeThreads[thread->m_threadId] = thread;
   process.m_activeThreadMutex.Signal();
 
   process.SignalTimerChange();
@@ -877,30 +877,28 @@ void PThread::Win32AttachThreadInput()
 {
 #ifndef _WIN32_WCE
   PProcess & process = PProcess::Current();
-  ::AttachThreadInput(threadId, ((PThread&)process).threadId, PTrue);
-  ::AttachThreadInput(((PThread&)process).threadId, threadId, PTrue);
+  ::AttachThreadInput(m_threadId, ((PThread&)process).m_threadId, PTrue);
+  ::AttachThreadInput(((PThread&)process).m_threadId, m_threadId, PTrue);
 #endif
 }
 
 
-PThread::PThread()
-  : autoDelete(false)
+PThread::PThread(bool isProcess)
+  : m_isProcess(isProcess)
+  , m_autoDelete(!isProcess)
+  , m_originalStackSize(0)
   , threadHandle(GetCurrentThread())
-  , threadId(GetCurrentThreadId())
-  , m_isProcess(true)
-  , originalStackSize(0)
+  , m_threadId(GetCurrentThreadId())
 {
-  if (!PProcess::IsInitialised())
+  if (isProcess)
     return;
 
-  m_isProcess = false;
-  autoDelete = true;
   DuplicateHandle(GetCurrentProcess(), threadHandle, GetCurrentProcess(), &threadHandle, 0, 0, DUPLICATE_SAME_ACCESS);
 
   PProcess & process = PProcess::Current();
 
   process.m_activeThreadMutex.Wait();
-  process.m_activeThreads[threadId] = this;
+  process.m_activeThreads[m_threadId] = this;
   process.m_activeThreadMutex.Signal();
 
   process.deleteThreadMutex.Wait();
@@ -913,17 +911,16 @@ PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
                  const PString & name)
-  : threadName(name)
-  , m_isProcess(false)
+  : m_isProcess(false)
+  , m_autoDelete(deletion == AutoDeleteThread)
+  , m_originalStackSize(stackSize)
+  , m_threadName(name)
 {
   PAssert(stackSize > 0, PInvalidParameter);
-  originalStackSize = stackSize;
-
-  autoDelete = deletion == AutoDeleteThread;
 
 #ifndef _WIN32_WCE
   threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction,
-                                        this, CREATE_SUSPENDED, &threadId);
+                                        this, CREATE_SUSPENDED, &m_threadId);
 #else
    threadHandle = CreateThread(NULL, stackSize, 
                                (LPTHREAD_START_ROUTINE)MainFunction,
@@ -934,7 +931,7 @@ PThread::PThread(PINDEX stackSize,
 
   SetPriority(priorityLevel);
 
-  if (autoDelete) {
+  if (IsAutoDelete()) {
     PProcess & process = PProcess::Current();
     process.deleteThreadMutex.Wait();
     process.autoDeleteThreads.Append(this);
@@ -986,7 +983,7 @@ void PThread::CleanUp()
 
   PProcess & process = PProcess::Current();
   process.m_activeThreadMutex.Wait();
-  process.m_activeThreads.erase(threadId);
+  process.m_activeThreads.erase(m_threadId);
   process.m_activeThreadMutex.Signal();
 
   if (!IsTerminated())
@@ -999,7 +996,7 @@ void PThread::CleanUp()
 
 void PThread::Restart()
 {
-  if (!PAssert(originalStackSize != 0, "Cannot restart process/external thread") ||
+  if (!PAssert(m_originalStackSize != 0, "Cannot restart process/external thread") ||
       !PAssert(IsTerminated(), "Cannot restart running thread"))
     return;
 
@@ -1007,7 +1004,7 @@ void PThread::Restart()
 
 #ifndef _WIN32_WCE
   threadHandle = (HANDLE)_beginthreadex(NULL,
-                         originalStackSize, MainFunction, this, 0, &threadId);
+                         m_originalStackSize, MainFunction, this, 0, &m_threadId);
 #else
    threadHandle = CreateThread(NULL, originalStackSize, 
                 (LPTHREAD_START_ROUTINE) MainFunction,
@@ -1113,17 +1110,17 @@ PBoolean PThread::IsSuspended() const
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 {
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+  PAssert(deletion != AutoDeleteThread || (!m_isProcess && this != &PProcess::Current()), PLogicError);
   bool newAutoDelete = (deletion == AutoDeleteThread);
-  if (autoDelete == newAutoDelete)
+  if (m_autoDelete == newAutoDelete)
     return;
 
-  autoDelete = newAutoDelete;
+  m_autoDelete = newAutoDelete;
 
   PProcess & process = PProcess::Current();
 
   process.deleteThreadMutex.Wait();
-  if (autoDelete)
+  if (m_autoDelete)
     process.autoDeleteThreads.Append(this);
   else {
     process.autoDeleteThreads.DisallowDeleteObjects();
