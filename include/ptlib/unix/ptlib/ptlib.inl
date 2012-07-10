@@ -104,9 +104,6 @@ PINLINE PThreadIdentifier PThread::GetThreadId() const
 
 #else // !BE_THREADS
 
-PINLINE PThreadIdentifier PThread::GetThreadId() const
-  { return PX_threadId; }
-
 #ifndef VX_TASKS
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
   { return ::pthread_self(); }
