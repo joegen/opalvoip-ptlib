@@ -90,9 +90,6 @@ PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean force)
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-PINLINE PThreadIdentifier PThread::GetThreadId() const
-  { return threadId; }
-
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
   { return ::GetCurrentThreadId(); }
 
