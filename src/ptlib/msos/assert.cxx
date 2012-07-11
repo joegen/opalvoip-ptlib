@@ -333,10 +333,9 @@ bool PAssertFunc(const char * msg)
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
 #endif
+        return false;
     }
   }
-
-  return false;
 }
 
 
