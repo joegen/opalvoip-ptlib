@@ -249,7 +249,8 @@ class PProcess : public PThread
       WORD minorVersion = 0,           ///< Minor version number of the product
       CodeStatus status = ReleaseCode, ///< Development status of the product
       WORD buildNumber = 1,            ///< Build number of the product
-      bool library = false             ///< PProcess is a library rather than an application
+      bool library = false,            ///< PProcess is a library rather than an application
+      bool suppressStartup = false     ///< Do not execute Startup()
     );
   //@}
 
@@ -298,6 +299,10 @@ class PProcess : public PThread
        pointer to current process instance.
      */
     static PProcess & Current();
+
+    /**Start up all items registered with PProcessStartupFactory.
+      */
+    void Startup();
 
     /**Callback for when a thread is started by the PTLib system. Note this is
        called in the context of the new thread.

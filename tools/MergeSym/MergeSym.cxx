@@ -76,7 +76,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 7, ReleaseCode, 1)
+  : PProcess("Equivalence", "MergeSym", 1, 7, ReleaseCode, 2, false, true)
 {
 }
 
