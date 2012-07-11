@@ -1005,15 +1005,15 @@ template <class T> class PSortedList : public PAbstractSortedList
   private:
     void NextElement(PSortedListElement * & element)
     {
-      element = this->Successor(element);
-      if (element == &this->nil)
+      element = this->m_info->Successor(element);
+      if (element == &this->m_info->nil)
         element = NULL;
     }
 
     void PrevElement(PSortedListElement * & element)
     {
-      element = this->Predecessor(element);
-      if (element == &this->nil)
+      element = this->m_info->Predecessor(element);
+      if (element == &this->m_info->nil)
         element = NULL;
     }
 
@@ -1024,7 +1024,7 @@ template <class T> class PSortedList : public PAbstractSortedList
 
         iterator_base(PSortedList<T> * l, PSortedListElement * e) : m_list(l), m_element(e) { }
 
-        bool Valid() const { return PAssert(this->m_list != NULL && this->m_element != NULL && this->m_element != &m_list->nil, PInvalidArrayIndex); }
+        bool Valid() const { return PAssert(this->m_list != NULL && this->m_element != NULL && this->m_element != &m_list->m_info->nil, PInvalidArrayIndex); }
         void Next() { if (Valid()) this->m_list->NextElement(this->m_element); }
         void Prev() { if (Valid()) this->m_list->PrevElement(this->m_element); }
         value_type * Ptr() const { return (value_type *)(Valid() ? this->m_element->m_data : NULL); }
