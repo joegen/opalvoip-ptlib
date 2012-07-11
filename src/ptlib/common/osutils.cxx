@@ -1627,7 +1627,7 @@ void PProcess::PreInitialise(int c, char ** v, char **)
 
 PProcess::PProcess(const char * manuf, const char * name,
                    WORD major, WORD minor, CodeStatus stat, WORD build,
-                   bool library)
+                   bool library, bool suppressStartup)
   : PThread(true)
   , m_library(library)
   , terminationValue(0)
@@ -1673,6 +1673,20 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
+  if (!suppressStartup)
+    Startup();
+
+#if PMEMORY_HEAP
+  // Now we start looking for memory leaks!
+  PMemoryHeap::SetIgnoreAllocations(false);
+#endif
+}
+
+
+void PProcess::Startup()
+{
+  PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+
   // create one instance of each class registered in the PProcessStartup abstract factory
   // But make sure we have plugins first, to avoid bizarre behaviour where static objects
   // are initialised multiple times when libraries are loaded in Linux.
@@ -1684,11 +1698,6 @@ PProcess::PProcess(const char * manuf, const char * name,
     if (startup != NULL)
       startup->OnStartup();
   }
-
-#if PMEMORY_HEAP
-  // Now we start looking for memory leaks!
-  PMemoryHeap::SetIgnoreAllocations(false);
-#endif
 }
 
 
