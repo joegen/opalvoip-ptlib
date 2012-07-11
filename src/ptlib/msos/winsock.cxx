@@ -169,10 +169,10 @@ PBoolean PSocket::Close()
 
 int PSocket::os_close()
 {
-  int err = closesocket(os_handle);
-  os_handle = -1;
   clear();
-  return err;
+  SOCKET s = os_handle;
+  os_handle = -1;
+  return closesocket(s);
 }
 
 
