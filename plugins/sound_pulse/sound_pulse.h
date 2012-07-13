@@ -94,4 +94,9 @@ class PSoundChannelPulse: public PSoundChannel
   const void* record_data;
   size_t record_len;
 
+  // This locks all access of this channel to this device. Thus, there
+  // is only one activity hitting this instance of sound. if this
+  // sound channel instance is used for read, it does not interfere
+  // with anything related to write
+  PMutex deviceMutex;
 };
