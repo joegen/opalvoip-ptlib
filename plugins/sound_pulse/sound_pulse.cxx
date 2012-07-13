@@ -124,7 +124,6 @@ PSoundChannelPulse::PSoundChannelPulse()
 {
   PTRACE(6, "Pulse\tConstructor for no args");
   PSoundChannelPulse::Construct();
-  s = NULL;
   setenv ("PULSE_PROP_media.role", "phone", true);
 }
 
@@ -147,7 +146,7 @@ PSoundChannelPulse::PSoundChannelPulse(const PString & device,
 
 void PSoundChannelPulse::Construct()
 {
-  PTRACE(6, "Pulse\tConstruct "); 
+  PTRACE(6, "Pulse\tConstruct ");
   os_handle = -1;
   s = NULL;
   ss.format =  PA_SAMPLE_S16LE;
@@ -224,6 +223,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
 				  unsigned _sampleRate,
 				  unsigned _bitsPerSample)
 {
+  PWaitAndSignal m(deviceMutex);
   PTRACE(6, "Pulse\t Open on device name of " << _device);
   Close();
   direction = _dir;
@@ -304,6 +304,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
 
 PBoolean PSoundChannelPulse::Close()
 {
+  PWaitAndSignal m(deviceMutex);
   PTRACE(6, "Pulse\tClose");
   PulseLock lock;
 
@@ -328,6 +329,7 @@ PBoolean PSoundChannelPulse::IsOpen() const
 
 PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
 {
+  PWaitAndSignal m(deviceMutex);
   PTRACE(6, "Pulse\tWrite " << len << " bytes");
   PulseLock lock;
   char* buff=(char*) buf;
@@ -345,7 +347,7 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
     int err=pa_stream_write(s,buff,ws,NULL,0,PA_SEEK_RELATIVE);
     if (err) {
       PTRACE(4, ": pa_stream_write() failed: " << pa_strerror(err));
-      return PFalse;   
+      return PFalse;
     }
     toWrite-=ws;
     buff+=ws;
@@ -359,6 +361,7 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
 
 PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
 {
+  PWaitAndSignal m(deviceMutex);
   PTRACE(6, "Pulse\tRead " << len << " bytes");
   PulseLock lock;
   char* buff=(char*) buf;
