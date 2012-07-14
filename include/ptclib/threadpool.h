@@ -41,6 +41,7 @@
 
 
 #include <ptlib/thread.h>
+#include <ptlib/safecoll.h>
 #include <map>
 #include <queue>
 
@@ -480,6 +481,164 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
     {
       return new QueuedWorkerThread(*this, this->m_priority, this->m_threadName);
+    }
+};
+
+
+/**A PThreadPool work item template that uses PSafePtr to execute callback
+   function.
+  */
+template <class PtrClass>
+class PSafeWork {
+  public:
+    typedef PSafePtr<PtrClass> Pointer;
+
+    PSafeWork(
+      PtrClass * ptr
+    ) : m_pointer(ptr, PSafeReference) { }
+
+    virtual ~PSafeWork() { }
+
+    virtual void Work() = 0;
+
+  protected:
+    Pointer m_pointer;
+};
+
+
+/// A PSafeWork thread pool item where call back has no arguments.
+template <class PtrClass, class PtrBase = PtrClass>
+class PSafeWorkNoArg : public PSafeWork<PtrBase> {
+  public:
+    typedef PSafeWork<PtrBase> BaseClass;
+    typedef void (PtrClass::*Function)();
+
+  protected:
+    Function m_function;
+
+  public:
+    PSafeWorkNoArg(
+      PtrClass * ptr,
+      Function function
+    ) : BaseClass(ptr)
+      , m_function(function)
+    { }
+
+    virtual void Work()
+    {
+      if (m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)();
+    }
+};
+
+
+/// A PSafeWork thread pool item where call back has 1 argument.
+template <
+  class PtrClass,
+  typename Arg1Type,
+  class PtrBase = PtrClass
+>
+class PSafeWorkArg1 : public PSafeWork<PtrBase> {
+  public:
+    typedef PSafeWork<PtrBase> BaseClass;
+    typedef void (PtrClass::*Function)(Arg1Type arg1);
+
+  protected:
+    Function m_function;
+    Arg1Type m_arg1;
+
+  public:
+    PSafeWorkArg1(
+      PtrClass * ptr,
+      Arg1Type arg1,
+      Function function
+    ) : BaseClass(ptr)
+      , m_function(function)
+      , m_arg1(arg1)
+    { }
+
+    virtual void Work()
+    {
+      if (m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)(m_arg1);
+    }
+};
+
+
+/// A PSafeWork thread pool item where call back has 2 arguments.
+template <
+  class PtrClass,
+  typename Arg1Type,
+  typename Arg2Type,
+  class PtrBase = PtrClass
+>
+class PSafeWorkArg2 : public PSafeWork<PtrBase> {
+  public:
+    typedef PSafeWork<PtrBase> BaseClass;
+    typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2);
+
+  protected:
+    Function m_function;
+    Arg1Type m_arg1;
+    Arg2Type m_arg2;
+
+  public:
+    PSafeWorkArg2(
+      PtrClass * ptr,
+      Arg1Type arg1,
+      Arg2Type arg2,
+      Function function
+    ) : BaseClass(ptr)
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+    { }
+
+    virtual void Work()
+    {
+      if (m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)(m_arg1, m_arg2);
+    }
+};
+
+
+/// A PSafeWork thread pool item where call back has 3 arguments.
+template <
+  class PtrClass,
+  typename Arg1Type,
+  typename Arg2Type,
+  typename Arg3Type,
+  class PtrBase = PtrClass
+>
+class PSafeWorkArg3 : public PSafeWork<PtrBase> {
+  public:
+    typedef PSafeWork<PtrBase> BaseClass;
+    typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3);
+
+  protected:
+    Function m_function;
+    Arg1Type m_arg1;
+    Arg2Type m_arg2;
+    Arg3Type m_arg3;
+
+  public:
+    PSafeWorkArg3(
+      PtrClass * ptr,
+      Arg1Type arg1,
+      Arg2Type arg2,
+      Arg2Type arg3,
+      Function function
+    ) : BaseClass(ptr)
+      , m_function(function)
+      , m_arg1(arg1)
+      , m_arg2(arg2)
+      , m_arg3(arg3)
+    { }
+
+    virtual void Work()
+    {
+      if (m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)(m_arg1, m_arg2, m_arg3);
     }
 };
 
