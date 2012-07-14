@@ -495,7 +495,7 @@ PObject * PASN_Enumeration::Clone() const
 
 void PASN_Enumeration::PrintOn(ostream & strm) const
 {
-  PINDEX idx = FindNameByValue(names, namesCount, value);
+  unsigned idx = FindNameByValue(names, namesCount, value);
   if (idx != UINT_MAX)
     strm << names[idx].name;
   else
