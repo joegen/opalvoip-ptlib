@@ -36,6 +36,12 @@
 #endif
 
 
+#include <ptlib/syncthrd.h>
+
+
+class PTimer;
+
+
 /** This class defines a thread-safe object in a collection.
 
   This is part of a set of classes to solve the general problem of a
@@ -439,7 +445,7 @@ class PSafeCollection : public PObject
     bool               deleteObjects;
     PList<PSafeObject> toBeRemoved;
     PMutex             removalMutex;
-    PTimer             deleteObjectsTimer;
+    PTimer           * m_deleteObjectsTimer;
 
   private:
     PSafeCollection(const PSafeCollection & other) : PObject(other) { }
