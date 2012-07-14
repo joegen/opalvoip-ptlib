@@ -942,8 +942,8 @@ bool PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 ///////////////////////////////////////////////////////////////////////////////
 
 PEthSocket::PEthSocket(PINDEX nReadBuffers, PINDEX nWriteBuffers, PINDEX size)
-  : readBuffers(min(nReadBuffers, MAXIMUM_WAIT_OBJECTS)),
-    writeBuffers(min(nWriteBuffers, MAXIMUM_WAIT_OBJECTS))
+  : readBuffers(std::min(nReadBuffers, (PINDEX)MAXIMUM_WAIT_OBJECTS)),
+    writeBuffers(std::min(nWriteBuffers, (PINDEX)MAXIMUM_WAIT_OBJECTS))
 {
   driver = PWin32PacketDriver::Create();
   PINDEX i;

@@ -278,7 +278,7 @@ class PASN_Enumeration : public PASN_Object
     PASN_Enumeration(unsigned val = 0);
     PASN_Enumeration(unsigned tag,
                      TagClass tagClass,
-                     unsigned nEnums = P_MAX_INDEX,
+                     unsigned nEnums = UINT_MAX,
                      PBoolean extendable = false,
                      unsigned val = 0);
     PASN_Enumeration(unsigned tag,
