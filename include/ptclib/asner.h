@@ -266,7 +266,7 @@ class PASN_Integer : public PASN_ConstrainedObject
 
 struct PASN_Names{
     const char * name;
-    PINDEX value; 
+    unsigned value; 
 };
 
 /** Class for ASN Enumerated type.
