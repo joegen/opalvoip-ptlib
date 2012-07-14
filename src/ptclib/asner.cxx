@@ -71,15 +71,15 @@ inline PBoolean CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
   return (0 <= offset && offset <= upper);
 }
 
-static PINDEX FindNameByValue(const PASN_Names *names, unsigned namesCount, PINDEX value)
+static unsigned FindNameByValue(const PASN_Names *names, unsigned namesCount, unsigned value)
 {
   if (names != NULL) {
-    for (unsigned int i = 0;i < namesCount;i++) {
+    for (unsigned i = 0;i < namesCount;i++) {
       if (names[i].value == value)
         return i;
     }
   }
-  return P_MAX_INDEX;
+  return UINT_MAX;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -441,7 +441,7 @@ PASN_Enumeration::PASN_Enumeration(unsigned val)
 : PASN_Object(UniversalEnumeration, UniversalTagClass, PFalse),names(NULL),namesCount(0)
 {
   value = val;
-  maxEnumValue = P_MAX_INDEX;
+  maxEnumValue = UINT_MAX;
 }
 
 
@@ -496,7 +496,7 @@ PObject * PASN_Enumeration::Clone() const
 void PASN_Enumeration::PrintOn(ostream & strm) const
 {
   PINDEX idx = FindNameByValue(names, namesCount, value);
-  if (idx != P_MAX_INDEX)
+  if (idx != UINT_MAX)
     strm << names[idx].name;
   else
     strm << '<' << value << '>';
