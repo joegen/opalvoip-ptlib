@@ -526,8 +526,8 @@ class PSafeWorkNoArg : public PSafeWork<PtrBase> {
 
     virtual void Work()
     {
-      if (m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)();
+      if (this->m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)();
     }
 };
 
@@ -559,8 +559,8 @@ class PSafeWorkArg1 : public PSafeWork<PtrBase> {
 
     virtual void Work()
     {
-      if (m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)(m_arg1);
+      if (this->m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)(m_arg1);
     }
 };
 
@@ -596,8 +596,8 @@ class PSafeWorkArg2 : public PSafeWork<PtrBase> {
 
     virtual void Work()
     {
-      if (m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)(m_arg1, m_arg2);
+      if (this->m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)(m_arg1, m_arg2);
     }
 };
 
@@ -637,8 +637,8 @@ class PSafeWorkArg3 : public PSafeWork<PtrBase> {
 
     virtual void Work()
     {
-      if (m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*m_pointer).*m_function)(m_arg1, m_arg2, m_arg3);
+      if (this->m_pointer != NULL)
+        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)(m_arg1, m_arg2, m_arg3);
     }
 };
 
