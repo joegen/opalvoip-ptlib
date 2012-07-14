@@ -153,8 +153,6 @@
 /////////////////////////////////////////////////////////////////
 // Some backward compatbility stuff, really should use stdint now
 
-// Declaration for integer that is the same size as a void *
-typedef intptr_t INT;
 // Declaration for signed integer that is 16 bits
 typedef int16_t PInt16;
 
