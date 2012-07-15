@@ -35,9 +35,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+#define PTHREAD_ID_FMT ":%u"
+
   public:
     HANDLE GetHandle() const { return threadHandle; }
     void Win32AttachThreadInput();
+
+    typedef DWORD LocalStorageKey;
+    __inline static void   CreateLocalStorage(LocalStorageKey & key) { key = TlsAlloc(); }
+    __inline static void   RemoveLocalStorage(const LocalStorageKey & key) { TlsFree(key);  }
+    __inline static void * GetLocalStoragePtr(const LocalStorageKey & key) { return TlsGetValue(key); }
+    __inline static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr) { TlsSetValue(key, ptr); }
 
   protected:
     HANDLE threadHandle;
@@ -50,4 +58,5 @@
     void CleanUp();
     static UINT __stdcall MainFunction(void * thread);
 
+  
 // End Of File ///////////////////////////////////////////////////////////////

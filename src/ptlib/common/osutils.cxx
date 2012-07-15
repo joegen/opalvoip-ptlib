@@ -179,9 +179,17 @@ PTHREAD_MUTEX_RECURSIVE_NP
   void Unlock()    { mutex->Signal(); }
 #endif
   
-#if P_HAS_THREADLOCAL_STORAGE
-  PThreadLocalStorage<PThread::TraceInfo> traceStorageKey;
-#endif
+  struct ThreadLocalInfo {
+    ThreadLocalInfo()
+      : m_traceLevel(1)
+      , m_traceBlockIndentLevel(0)
+    { }
+
+    PStack<PStringStream> m_traceStreams;
+    unsigned              m_traceLevel;
+    unsigned              m_traceBlockIndentLevel;
+  };
+  PThreadLocalStorage<ThreadLocalInfo> m_threadStorage;
 
   PTraceInfo()
     : currentLevel(0)
@@ -406,18 +414,6 @@ PBoolean PTrace::CanTrace(unsigned level)
   return level <= PTraceInfo::Instance().thresholdLevel;
 }
 
-static PThread::TraceInfo * AllocateTraceInfo()
-{
-  PTraceInfo & info = PTraceInfo::Instance();
-
-  PThread::TraceInfo * threadInfo = info.traceStorageKey.Get();
-  if (threadInfo == NULL) {
-    threadInfo = new PThread::TraceInfo;
-    info.traceStorageKey.Set(threadInfo);
-  }
-  return threadInfo;
-}
-
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, const PObject * instance)
 {
@@ -425,6 +421,24 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 
   if (level == UINT_MAX)
     return *info.stream;
+
+  PTraceInfo::ThreadLocalInfo * threadInfo = info.m_threadStorage.Get();
+
+  PStringStream * streamPtr = NULL;
+  if (threadInfo != NULL) {
+    streamPtr = new PStringStream;
+    threadInfo->m_traceStreams.Push(streamPtr);
+  }
+
+  ostream & stream = streamPtr != NULL ? (ostream &)*streamPtr : *info.stream;
+
+  info.oldStreamFlags = stream.flags();
+  info.oldPrecision   = stream.precision();
+
+  // Before we do new trace, make sure we clear any errors on the stream
+  stream.clear();
+
+  PThread * thread = PThread::Current();
 
   info.Lock();
 
@@ -437,31 +451,6 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
         info.SetStream(&cerr);
     }
   }
-
-  PThread * thread = PThread::Current();
-  PThread::TraceInfo * threadInfo = NULL;
-
-#if P_HAS_THREADLOCAL_STORAGE
-  {
-    threadInfo = AllocateTraceInfo();
-    threadInfo->traceStreams.Push(new PStringStream);
-  }
-#else
-  {
-    if (thread != NULL) {
-      threadInfo = &thread->traceInfo;
-      threadInfo->traceStreams.Push(new PStringStream);
-    }
-  }
-#endif
-
-  ostream & stream = threadInfo != NULL ? (ostream &)threadInfo->traceStreams.Top() : *info.stream;
-
-  info.oldStreamFlags = stream.flags();
-  info.oldPrecision   = stream.precision();
-
-  // Before we do new trace, make sure we clear any errors on the stream
-  stream.clear();
 
   if ((info.options&SystemLogStream) == 0) {
     if ((info.options&DateAndTime) != 0) {
@@ -535,17 +524,12 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local
-#if P_HAS_THREADLOCAL_STORAGE
-  threadInfo->traceLevel = level;
-  info.Unlock();
-#else
-  if (thread == NULL)
+  if (threadInfo == NULL)
     info.currentLevel = level;
   else {
-    thread->traceInfo.traceLevel = level;
+    threadInfo->m_traceLevel = level;
     info.Unlock();
   }
-#endif
 
   return stream;
 }
@@ -555,34 +539,30 @@ ostream & PTrace::End(ostream & paramStream)
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
-  PThread::TraceInfo * threadInfo = NULL;
-
-#if P_HAS_THREADLOCAL_STORAGE
-  threadInfo = AllocateTraceInfo();
-#else
-  PThread * thread = PThread::Current();
-  {
-    if (thread != NULL) 
-      threadInfo = &thread->traceInfo;
-  }
-#endif
+  PTraceInfo::ThreadLocalInfo * threadInfo = info.m_threadStorage.Get();
 
   paramStream.flags(info.oldStreamFlags);
   paramStream.precision(info.oldPrecision);
 
+  unsigned currentLevel;
+
   if (threadInfo != NULL) {
-    PStringStream * stackStream = threadInfo->traceStreams.Pop();
+    PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
     if (!PAssert(&paramStream == stackStream, PLogicError))
       return paramStream;
     *stackStream << ends << flush;
     info.Lock();
     *info.stream << *stackStream;
     delete stackStream;
+
+    currentLevel = threadInfo->m_traceLevel;
   }
   else {
     if (!PAssert(&paramStream == info.stream, PLogicError))
       return paramStream;
     info.Lock();
+
+    currentLevel = info.currentLevel;
   }
 
   if ((info.options&SystemLogStream) != 0) {
@@ -590,7 +570,7 @@ ostream & PTrace::End(ostream & paramStream)
     // level so that the PSystemLog can extract the log level back out of the
     // ios structure. There could be portability issues with this though it
     // should work pretty universally.
-    info.stream->width((threadInfo != NULL ? threadInfo->traceLevel : info.currentLevel) + 1);
+    info.stream->width(currentLevel + 1);
   }
   else
     *info.stream << '\n';
@@ -608,24 +588,15 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
   name = traceName;
 
   if ((PTraceInfo::Instance().options&Blocks) != 0) {
-    PThread::TraceInfo * threadInfo = NULL;
+    unsigned indent = 20;
 
-#if P_HAS_THREADLOCAL_STORAGE
-    threadInfo = AllocateTraceInfo();
-#else
-    {
-      PThread * thread = PThread::Current();
-      if (thread != NULL) 
-        threadInfo = &thread->traceInfo;
-    }
-#endif
-
+    PTraceInfo::ThreadLocalInfo * threadInfo = PTraceInfo::Instance().m_threadStorage.Get();
     if (threadInfo != NULL)
-      threadInfo->traceBlockIndentLevel += 2;
+      indent = (threadInfo->m_traceBlockIndentLevel += 2);
 
     ostream & s = PTrace::Begin(1, file, line);
     s << "B-Entry\t";
-    for (unsigned i = 0; i < ((threadInfo != NULL) ? threadInfo->traceBlockIndentLevel : 20); i++)
+    for (unsigned i = 0; i < indent; i++)
       s << '=';
     s << "> " << name << PTrace::End;
   }
@@ -635,36 +606,25 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
 PTrace::Block::~Block()
 {
   if ((PTraceInfo::Instance().options&Blocks) != 0) {
-    PThread::TraceInfo * threadInfo = NULL;
+    unsigned indent = 20;
 
-#if P_HAS_THREADLOCAL_STORAGE
-    threadInfo = AllocateTraceInfo();
-#else
-    {
-      PThread * thread = PThread::Current();
-      if (thread != NULL) 
-        threadInfo = &thread->traceInfo;
+    PTraceInfo::ThreadLocalInfo * threadInfo = PTraceInfo::Instance().m_threadStorage.Get();
+    if (threadInfo != NULL) {
+      indent = threadInfo->m_traceBlockIndentLevel;
+      threadInfo->m_traceBlockIndentLevel -= 2;
     }
-#endif
 
     ostream & s = PTrace::Begin(1, file, line);
     s << "B-Exit\t<";
-    for (unsigned i = 0; i < ((threadInfo != NULL) ? threadInfo->traceBlockIndentLevel : 20); i++)
+    for (unsigned i = 0; i < indent; i++)
       s << '=';
     s << ' ' << name << PTrace::End;
-
-    if (threadInfo != NULL)
-      threadInfo->traceBlockIndentLevel -= 2;
   }
 }
 
 void PTrace::Cleanup()
 {
-#if P_HAS_THREADLOCAL_STORAGE
-  PThreadLocalStorage<PThread::TraceInfo> & key = PTraceInfo::Instance().traceStorageKey;
-  delete key.Get();
-  key.Set(NULL);
-#endif
+  PTraceInfo::Instance().m_threadStorage.Clean();
 }
 
 
