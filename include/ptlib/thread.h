@@ -380,24 +380,6 @@ class PThread : public PObject
     PString threadName;
     PMutex threadNameMutex;
 
-#if PTRACING
-  public:
-    struct TraceInfo {
-      TraceInfo()
-      { traceBlockIndentLevel = 0; }
-
-      PStack<PStringStream> traceStreams;
-      unsigned traceLevel;
-      unsigned traceBlockIndentLevel;
-    };
-
-#ifndef P_HAS_THREADLOCAL_STORAGE
-  private:
-    friend class PTrace;
-    TraceInfo traceInfo;
-#endif // P_HAS_THREADLOCAL_STORAGE
-#endif // PTRACING
-
 // Include platform dependent part of class
 #ifdef _WIN32
 #include "msos/ptlib/thread.h"
@@ -406,12 +388,6 @@ class PThread : public PObject
 #endif
 };
 
-// Include definition of platform dependent thread ID format
-#if defined(_WIN32) && !defined(_WIN32_WCE)
-  #define PTHREAD_ID_FMT ":%u"
-#else
-  #define PTHREAD_ID_FMT ":0x%x"
-#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4121)
@@ -760,74 +736,44 @@ class PThreadObj2Arg : public PThread
 // PThreadLocalStorage
 //
 
-#ifdef _WIN32
-
-#define P_HAS_THREADLOCAL_STORAGE 1
-
 template <class Storage_T>
 class PThreadLocalStorage
 {
   public:
-    typedef DWORD Key_T;
-    typedef Storage_T value_type;
+    typedef typename PThread::LocalStorageKey Key_T;
+    typedef Storage_T * Ptr_T;
 
-    PThreadLocalStorage()
-    { key = TlsAlloc(); }
+    PThreadLocalStorage()  { PThread::CreateLocalStorage(m_key); }
+    ~PThreadLocalStorage() { PThread::RemoveLocalStorage(m_key); }
 
-    ~PThreadLocalStorage()
-    { TlsFree(key);  }
+    Key_T GetKey() const   { return m_key; }
 
-    Key_T GetKey() const
-    { return key; }
+    Ptr_T Get() const
+    {
+      // Inherently thread safe
+      Ptr_T ptr = (Ptr_T)PThread::GetLocalStoragePtr(m_key);
+      if (ptr == NULL)
+        PThread::SetLocalStoragePtr(m_key, ptr = new Storage_T());
+      return (Ptr_T)ptr;
+    }
 
-    value_type * Get()
-    { return (value_type *) TlsGetValue(key); }
+    operator Ptr_T() const { return Get(); }
+    Ptr_T operator->() const { return Get(); }
+    Storage_T & operator*() const { return *Get(); }
 
-    void Set(value_type * v)
-    { TlsSetValue(key, (LPVOID)v); }
-
-  protected:
-    DWORD key;
-};
-
-#elif defined(P_PTHREADS)
-
-#include <pthread.h>
-
-#define P_HAS_THREADLOCAL_STORAGE 1
-
-template <class Storage_T>
-class PThreadLocalStorage
-{
-  public:
-    typedef pthread_key_t Key_T;
-    typedef Storage_T value_type;
-
-    PThreadLocalStorage()
-    { pthread_key_create(&key, NULL); }
-
-    ~PThreadLocalStorage()
-    { pthread_key_delete(key); }
-
-    Key_T GetKey() const
-    { return key; }
-
-    value_type * Get()
-    { return (value_type *)pthread_getspecific(key); }
-
-    void Set(value_type * v)
-    { pthread_setspecific(key, v); }
+    void Clean()
+    {
+      // Inherently thread safe
+      delete (Ptr_T)PThread::GetLocalStoragePtr(m_key);
+      PThread::SetLocalStoragePtr(m_key, NULL);
+    }
 
   private:
-    Key_T key;
+    Key_T m_key;
 };
 
-#else
 
-#undef P_HAS_THREADLOCAL_STORAGE 1
-#warning("Thread local storage not supported");
-
-#endif
+#define P_HAS_THREADLOCAL_STORAGE 1  // For backward compatbility
 
 
 #ifdef _MSC_VER
