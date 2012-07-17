@@ -2443,6 +2443,7 @@ PINDEX PSortedStringList::InternalStringSelect(const char * str,
 ///////////////////////////////////////////////////////////////////////////////
 
 PStringSet::PStringSet(PINDEX count, char const * const * strarr, PBoolean caseless)
+  : BaseClass(true)
 {
   if (count == 0)
     return;
@@ -2460,12 +2461,14 @@ PStringSet::PStringSet(PINDEX count, char const * const * strarr, PBoolean casel
 
 
 PStringSet::PStringSet(const PString & str)
+  : BaseClass(true)
 {
   Include(str);
 }
 
 
 PStringSet::PStringSet(const PStringArray & strArray)
+  : BaseClass(true)
 {
   for (PINDEX i = 0; i < strArray.GetSize(); ++i)
     Include(strArray[i]);
@@ -2473,6 +2476,7 @@ PStringSet::PStringSet(const PStringArray & strArray)
 
 
 PStringSet::PStringSet(const PStringList & strList)
+  : BaseClass(true)
 {
   for (PStringList::const_iterator it = strList.begin(); it != strList.end(); ++it)
     Include(*it);
