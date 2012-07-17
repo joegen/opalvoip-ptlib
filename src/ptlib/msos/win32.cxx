@@ -919,12 +919,10 @@ PThread::PThread(PINDEX stackSize,
   PAssert(stackSize > 0, PInvalidParameter);
 
 #ifndef _WIN32_WCE
-  threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction,
-                                        this, CREATE_SUSPENDED, &m_threadId);
+  threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction, this, CREATE_SUSPENDED, &m_threadId);
 #else
    threadHandle = CreateThread(NULL, stackSize, 
-                               (LPTHREAD_START_ROUTINE)MainFunction,
-                               this, CREATE_SUSPENDED, (LPDWORD) &threadId);
+                       (LPTHREAD_START_ROUTINE)MainFunction, this, CREATE_SUSPENDED, (LPDWORD) &m_threadId);
 #endif
 
   PAssertOS(threadHandle != NULL);
@@ -1003,12 +1001,10 @@ void PThread::Restart()
   CleanUp();
 
 #ifndef _WIN32_WCE
-  threadHandle = (HANDLE)_beginthreadex(NULL,
-                         m_originalStackSize, MainFunction, this, 0, &m_threadId);
+  threadHandle = (HANDLE)_beginthreadex(NULL, m_originalStackSize, MainFunction, this, 0, &m_threadId);
 #else
-   threadHandle = CreateThread(NULL, originalStackSize, 
-                (LPTHREAD_START_ROUTINE) MainFunction,
-                  this, 0, (LPDWORD) &threadId);
+   threadHandle = CreateThread(NULL, m_originalStackSize, 
+                                  (LPTHREAD_START_ROUTINE)MainFunction, this, 0, (LPDWORD)&m_threadId);
 #endif
   PAssertOS(threadHandle != NULL);
 }
