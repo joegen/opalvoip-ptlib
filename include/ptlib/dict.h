@@ -602,14 +602,14 @@ template <class T> class PSet : public PAbstractSet
    See the <code>PSet</code> and <code>PAbstractSet</code> classes for more information.
  */
 #define PDECLARE_SET(cls, T, initDelObj) \
-  PSET(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  class cls : public PSet<T> { \
+    typedef PSet<T> BaseClass; PCLASSINFO(cls, BaseClass) \
   protected: \
     cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
+      : BaseClass(dummy, c) { } \
   public: \
     cls(PBoolean initialDeleteObjects = initDelObj) \
-      : cls##_PTemplate(initialDeleteObjects) { } \
+      : BaseClass(initialDeleteObjects) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
