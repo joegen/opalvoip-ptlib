@@ -408,9 +408,9 @@ class PThread : public PObject
 
 // Include definition of platform dependent thread ID format
 #if defined(_WIN32) && !defined(_WIN32_WCE)
-  #define PTHREAD_ID_FMT ":%u"
+  #define PTHREAD_ID_FMT "%u"
 #else
-  #define PTHREAD_ID_FMT ":0x%x"
+  #define PTHREAD_ID_FMT "0x%lx"
 #endif
 
 #ifdef _MSC_VER

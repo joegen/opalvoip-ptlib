@@ -61,7 +61,7 @@ class PExternalThread : public PThread
       : PThread(false)
     {
       SetThreadName(PString::Empty());
-      PTRACE(5, "PTLib\tCreated external thread " << this << ", id " << GetCurrentThreadId());
+      PTRACE(5, "PTLib\tCreated external thread " << this << ", id=" << GetCurrentThreadId());
     }
 
     ~PExternalThread()
@@ -473,7 +473,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     if ((info.options&Thread) != 0) {
       PString name;
       if (thread == NULL)
-        name.sprintf("ThreadID" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
+        name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
       else
         name = thread->GetThreadName();
       if (name.GetLength() <= 23)
@@ -2006,11 +2006,11 @@ void PThread::SetThreadName(const PString & name)
     m_threadName = psprintf(name, threadId);
   else if (name.IsEmpty()) {
     m_threadName = GetClass();
-    m_threadName.sprintf(PTHREAD_ID_FMT, threadId);
+    m_threadName.sprintf(":" PTHREAD_ID_FMT, threadId);
   }
   else {
     PString idStr;
-    idStr.sprintf(PTHREAD_ID_FMT, threadId);
+    idStr.sprintf(":" PTHREAD_ID_FMT, threadId);
 
     m_threadName = name;
     if (m_threadName.Find(idStr) == P_MAX_INDEX)
