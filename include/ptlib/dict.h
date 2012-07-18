@@ -721,8 +721,8 @@ template <class T> class PSet : public PAbstractSet
 
 
 /// A set of ordinal integers
-typedef PSet<POrdinalKey> POrdinalSet;
-
+PDECLARE_SET(POrdinalSet, POrdinalKey, true)
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
