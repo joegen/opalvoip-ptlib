@@ -551,7 +551,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   ThreadMap::iterator thread = m_activeThreads.find(tid);
 
   char msg[200];
-  sprintf(msg, "\nCaught %s, thread_id=%08lx", sigmsg, (long)tid);
+  sprintf(msg, "\nCaught %s, thread_id=" PTHREAD_ID_FMT, sigmsg, tid);
 
   if (thread != m_activeThreads.end()) {
     PString thread_name = thread->second->GetThreadName();

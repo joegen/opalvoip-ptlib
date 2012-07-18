@@ -223,7 +223,7 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   PThread * thread = PThread::Current();
   PString threadName;
   if (thread == NULL)
-    threadName.sprintf("ThreadID" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
+    threadName.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
   else
     threadName = thread->GetThreadName();
   if (threadName.GetLength() <= 23)

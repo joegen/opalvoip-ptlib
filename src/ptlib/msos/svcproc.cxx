@@ -211,7 +211,7 @@ class PSystemLogToEvent : public PSystemLogTarget
     if (thread != NULL)
       threadName = thread->GetThreadName();
     else
-      threadName.sprintf("%u", GetCurrentThreadId());
+      threadName.sprintf(PTHREAD_ID_FMT, GetCurrentThreadId());
 
     char thrdbuf[16];
     if (threadName.IsEmpty())
