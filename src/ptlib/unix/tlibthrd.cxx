@@ -547,8 +547,6 @@ void PThread::Restart()
 #endif
 
   PProcess & process = PProcess::Current();
-  size_t newHighWaterMark = 0;
-  static size_t highWaterMark = 0;
 
   // lock the thread list
   process.m_activeThreadMutex.Wait();
@@ -558,11 +556,17 @@ void PThread::Restart()
 
   // put the thread into the thread list
   process.PXSetThread(m_threadId, this);
+
+  // Inside process.m_activeThreadMutex so simple static is OK
+  size_t newHighWaterMark = 0;
+  static size_t highWaterMark = 0;
   if (process.m_activeThreads.size() > highWaterMark)
     newHighWaterMark = highWaterMark = process.m_activeThreads.size();
 
   // unlock the thread list
   process.m_activeThreadMutex.Signal();
+
+  pthread_attr_destroy(&threadAttr);
 
   PTRACE_IF(newHighWaterMark%100 == 0 ? 2 : 4, newHighWaterMark > 0,
             "PTLib\tThread high water mark set: " << newHighWaterMark);
