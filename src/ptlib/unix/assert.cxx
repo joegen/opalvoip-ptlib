@@ -63,8 +63,12 @@ static PBoolean PAssertAction(int c, const char * msg)
     case 'd' :
     case 'D' :
       {
-        PString cmd = "gdb " + PProcess::Current().GetFile();
+        PString cmd = ::getenv("PTLIB_ASSERT_DEBUGGER");
+        if (cmd.IsEmpty())
+          cmd = "gdb";
+        cmd &= PProcess::Current().GetFile();
         cmd.sprintf(" %d", getpid());
+        PError << "\nStarting debugger \"" << cmd << "\"\n";
         system((const char *)cmd);
       }
       break;
@@ -116,14 +120,18 @@ void PAssertFunc(const char * msg)
 
 #if P_EXCEPTIONS
   //Throw a runtime exception if the environment variable PWLIB_ASSERT_EXCEPTION is set
-  env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
   if (env != NULL){
     throw std::runtime_error(msg);
   }
 #endif
   
 #ifndef P_VXWORKS
-  env = ::getenv("PWLIB_ASSERT_ACTION");
+  env = ::getenv("PTLIB_ASSERT_ACTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_ACTION");
   if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
     inAssert = PFalse;
     return;
