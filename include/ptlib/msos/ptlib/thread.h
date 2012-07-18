@@ -35,7 +35,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#define PTHREAD_ID_FMT ":%u"
+#define PTHREAD_ID_FMT "%u"
 
   public:
     HANDLE GetHandle() const { return threadHandle; }
