@@ -2522,12 +2522,12 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
  */
 class PStringSet : public PSet<PString>
 {
-    typedef PSet<PString> ParentClass;
-    PCLASSINFO(PStringSet, ParentClass);
+    typedef PSet<PString> BaseClass;
+    PCLASSINFO(PStringSet, BaseClass);
 
   protected:
     PStringSet(int dummy, const PStringSet * c)
-      : ParentClass(dummy, c) { }
+      : BaseClass(dummy, c) { }
 
   public:
   /**@name Construction */
@@ -2535,7 +2535,7 @@ class PStringSet : public PSet<PString>
     /**Create a PStringSet.
      */
     PStringSet(PBoolean initialDeleteObjects = true)
-      : ParentClass(initialDeleteObjects) { }
+      : BaseClass(initialDeleteObjects) { }
 
     /**Create a PStringSet from the array of C strings.
      */
