@@ -615,7 +615,8 @@ template <class T> class PSet : public PAbstractSet
 
 
 
-PSET(POrdinalSet, POrdinalKey);
+PDECLARE_SET(POrdinalSet, POrdinalKey, true)
+};
 
 
 //////////////////////////////////////////////////////////////////////////////
