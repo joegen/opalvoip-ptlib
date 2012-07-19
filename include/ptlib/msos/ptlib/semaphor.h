@@ -35,14 +35,13 @@
 // PSemaphore
 
   public:
-    HANDLE GetHandle() const { return handle; }
-    unsigned GetInitialVal() const  { return initialVal; }
-    unsigned GetMaxCountVal() const { return maxCountVal; }
+    HANDLE GetHandle() const { return m_handle; }
+    unsigned GetInitialVal() const  { return m_initialVal; }
+    unsigned GetMaxCountVal() const { return m_maxCountVal; }
 
   protected:
-    PSemaphore(HANDLE h);
-    HANDLE handle;
-    unsigned initialVal;
-    unsigned maxCountVal;
+    unsigned     m_maxCountVal;
+    unsigned     m_initialVal;
+    PWin32Handle m_handle;
 
 // End Of File ///////////////////////////////////////////////////////////////

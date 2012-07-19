@@ -402,8 +402,9 @@ int PServiceProcess::InternalMain(void * arg)
   terminationEvent = CreateEvent(NULL, true, false, GetName());
   PAssertOS(terminationEvent != NULL);
 
-  threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
-  PAssertOS(threadHandle != (HANDLE)-1);
+  m_threadHandle.Detach();
+  m_threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
+  PAssertOS(m_threadHandle.IsValid());
 
   SetTerminationValue(0);
 
@@ -446,7 +447,7 @@ int PServiceProcess::InternalMain(void * arg)
   m_activeThreadMutex.Wait();
   m_activeThreads.erase(m_threadId);
   m_threadId = GetCurrentThreadId();
-  threadHandle = GetCurrentThread();
+  m_threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
   m_activeThreadMutex.Signal();
   OnStop();
@@ -999,8 +1000,9 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
   GetArguments().SetArgs(argc, argv);
 
   // start the thread that performs the work of the service.
-  threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
-  if (threadHandle != (HANDLE)-1) {
+  m_threadHandle.Detach();
+  m_threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
+  if (m_threadHandle.IsValid()) {
     while (WaitForSingleObject(startedEvent, 10000) == WAIT_TIMEOUT) {
       if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 20000))
         return;
@@ -1025,7 +1027,6 @@ void PServiceProcess::ThreadEntry()
 {
   m_activeThreadMutex.Wait();
   m_threadId = ::GetCurrentThreadId();
-  threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
   m_activeThreadMutex.Signal();
 
@@ -1133,14 +1134,14 @@ void PServiceProcess::OnStop()
 
 PBoolean PServiceProcess::OnPause()
 {
-  SuspendThread(threadHandle);
+  SuspendThread(m_threadHandle);
   return true;
 }
 
 
 void PServiceProcess::OnContinue()
 {
-  ResumeThread(threadHandle);
+  ResumeThread(m_threadHandle);
 }
 
 

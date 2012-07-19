@@ -39,6 +39,8 @@
     virtual PBoolean IsOpen() const;
   protected:
     PROCESS_INFORMATION info;
-    HANDLE hToChild, hFromChild, hStandardError;
+    PWin32Handle m_hToChild;
+    PWin32Handle m_hFromChild;
+    PWin32Handle m_hStandardError;
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -44,20 +44,15 @@
     mutable MPSemaphoreID semId;
 #elif defined(P_PTHREADS)
 
-    enum PXClass { PXSemaphore, PXMutex, PXSyncPoint } pxClass;
-    PXClass GetSemClass() const { return pxClass; }
-
   protected:
-    PSemaphore(PXClass);
-    mutable pthread_mutex_t mutex;
-    mutable pthread_cond_t  condVar;
-    
 #if defined(P_HAS_SEMAPHORES)
     mutable sem_t semId;
 #elif defined(P_HAS_NAMED_SEMAPHORES)
     mutable sem_t *semId;
     sem_t *CreateSem(unsigned initialValue);
 #else
+    mutable pthread_mutex_t mutex;
+    mutable pthread_cond_t  condVar;
     mutable unsigned currentCount;
     mutable unsigned maximumCount;
     mutable unsigned queuedLocks;
