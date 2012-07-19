@@ -599,25 +599,23 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   inHandler = PTrue;
 
-  PThreadIdentifier tid = GetCurrentThreadId();
-  ThreadMap::iterator thread = m_activeThreads.find(tid);
+  {
+    PThreadIdentifier tid = GetCurrentThreadId();
+    ThreadMap::iterator thread = m_activeThreads.find(tid);
 
-  char msg[200];
-  sprintf(msg, "\nCaught %s, thread_id=" PTHREAD_ID_FMT, sigmsg, tid);
+    PSystemLog log(PSystemLog::Fatal);
+    log << "\nCaught " << sigmsg << ", thread_id=" << tid;
 
-  if (thread != m_activeThreads.end()) {
-    PString thread_name = thread->second->GetThreadName();
-    if (thread_name.IsEmpty())
-      sprintf(&msg[strlen(msg)], " obj_ptr=%p", thread->second);
-    else {
-      strcat(msg, " name=");
-      strcat(msg, thread_name);
+    if (thread != m_activeThreads.end()) {
+      PString thread_name = thread->second->GetThreadName();
+      if (thread_name.IsEmpty())
+        log << " obj_ptr=" << thread->second;
+      else
+        log << " name=" << thread_name;
     }
+
+    log << ", aborting.\n";
   }
-
-  strcat(msg, ", aborting.\n");
-
-  PSYSTEMLOG(Fatal, msg);
 
   raise(SIGQUIT); // Dump core
   _exit(-1); // Fail safe if raise() didn't dump core and exit
