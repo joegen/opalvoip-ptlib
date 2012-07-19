@@ -24,9 +24,9 @@
  * Contributor(s): Craig Southeren
  *                 Robert Jongbloed
  *
- * $Revision: 27552 $
- * $Author: rjongbloed $
- * $Date: 2012-05-02 16:04:44 +1000 (Wed, 02 May 2012) $
+ * $Revision$
+ * $Author$
+ * $Date$
  */
 
 #ifdef __GNUC__
