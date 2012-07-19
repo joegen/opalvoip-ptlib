@@ -44,13 +44,13 @@
 #include <ptclib/vartype.h>
 
 #ifdef _MSC_VER
-#pragma warning(disable:4100)
+  #pragma warning(disable:4100 4127)
 #endif
 
 #include <v8.h>
 
 #ifdef _MSC_VER
-#pragma warning(default:4100)
+#pragma warning(default:4100 4127)
 #endif
 
 
@@ -241,10 +241,6 @@ class PJavaScript : public PScriptLanguage
   //@}
 
   protected:
-    /**Check for an error and set m_lastErrorText to error text.
-      */
-    virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0);
-
     template <class v8Type, class cppType>
     bool SetValue(const PString & name, const cppType & value)
     {
