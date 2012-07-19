@@ -209,13 +209,8 @@ bool PJavaScript::SetVar(const PString & name, const PVarType & var)
       break;
 
     case PVarType::VarInt64:
-      global->Set(key, v8::Number::New(var.AsInteger64()));
-      break;
-
     case PVarType::VarUInt64:
-      global->Set(key, v8::Number::New(var.AsUnsigned64()));
-      break;
-
+      // Until V8 has 64 bit integer type, use doube float
     case PVarType::VarFloatSingle:
     case PVarType::VarFloatDouble:
     case PVarType::VarFloatExtended:
@@ -307,12 +302,6 @@ bool PJavaScript::Call(const PString & name, Signature & signature)
 
 
 bool PJavaScript::SetFunction(const PString & name, const FunctionNotifier & func)
-{
-  return false;
-}
-
-
-bool PJavaScript::OnError(int code, const PString & str, int pop)
 {
   return false;
 }

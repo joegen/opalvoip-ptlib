@@ -43,12 +43,15 @@
 
 PScriptLanguage::PScriptLanguage()
   : m_loaded(false)
+  , m_lastErrorCode(0)
 {
 }
+
 
 PScriptLanguage::~PScriptLanguage()
 {
 }
+
 
 bool PScriptLanguage::Load(const PString & script)
 {
@@ -65,3 +68,13 @@ bool PScriptLanguage::Load(const PString & script)
   return true;
 }
 
+
+void PScriptLanguage::OnError(int code, const PString & str)
+{
+  m_mutex.Wait();
+  m_lastErrorCode = code;
+  m_lastErrorText = str;
+  m_mutex.Signal();
+
+  PTRACE(2, GetClass(), "Error " << code << ": " << str);
+}

@@ -222,6 +222,7 @@ class PScriptLanguage : public PObject
     ) = 0;
 
     typedef PNotifierTemplate<Signature &>  FunctionNotifier;
+    #define PDECLARE_ScriptFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PScriptLanguage, cls, fn, PScriptLanguage::Signature &)
 
     /**Set a notifier as a script callable function.
        See class description for how \p name is parsed.
@@ -235,20 +236,26 @@ class PScriptLanguage : public PObject
   /**@name member variables */
   //@{
     /// Rerturn true if script is successfully loaded.
-    virtual bool IsLoaded() const { return m_loaded; }
+    __inline bool IsLoaded() const { return m_loaded; }
+
+    /// Get the last error text for an operation.
+    virtual int GetLastErrorCode() const { return m_lastErrorCode; }
 
     /// Get the last error text for an operation.
     virtual const PString & GetLastErrorText() const { return m_lastErrorText; }
   //@}
 
   protected:
-    /**Check for an error and set m_lastErrorText to error text.
+    /**Set m_lastErrorCode and m_lastErrorText members, with mutex.
       */
-    virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0) = 0;
+    virtual void OnError(int code, const PString & str);
 
     bool m_loaded;
+    int m_lastErrorCode;
     PString m_lastErrorText;
     map<PString, FunctionNotifier> m_functions;
+
+    PMutex m_mutex;
 };
 
 

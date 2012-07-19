@@ -230,8 +230,7 @@ class PLua : public PScriptLanguage
     );
 
 
-    typedef PNotifierTemplate<Signature &>  FunctionNotifier;
-    #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, PLua::Signature &)
+    #define PDECLARE_LuaFunctionNotifier(cls, fn) PDECLARE_NOTIFIER2(PLua, cls, fn, PScriptLanguage::Signature &)
 
     /**Set a notifier as a Lua callable function.
        See class description for how \p name is parsed.
@@ -245,7 +244,7 @@ class PLua : public PScriptLanguage
   protected:
     /**Check for an error and set m_lastErrorText to error text.
       */
-    virtual bool OnError(int code, const PString & str = PString::Empty(), int pop = 0);
+    virtual bool OnLuaError(int code, const PString & str = PString::Empty(), int pop = 0);
 
     bool ParseVariableName(const PString & name, PStringArray & vars);
     bool InternalGetVariable(const PString & name);
