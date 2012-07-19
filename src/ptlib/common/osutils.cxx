@@ -69,7 +69,12 @@ class PExternalThread : public PThread
 #ifdef _WIN32
       CleanUp();
 #endif
+
       PTRACE(5, "PTLib\tDestroyed external thread " << this << ", id " << GetThreadId());
+
+#if PTRACING
+      PTrace::Cleanup();
+#endif
     }
 
     virtual void Main()
