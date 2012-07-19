@@ -104,21 +104,25 @@ PLua::~PLua()
 
 bool PLua::LoadFile(const PFilePath & filename)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   int err = luaL_loadfile(m_lua, filename);
   m_loaded = err == 0;
   if (m_loaded)
     return true;
 
   if (err != LUA_ERRFILE)
-    return OnError(err);
+    return OnLuaError(err);
 
-  return OnError(err, "Cannot load/open file " + filename, 1);
+  return OnLuaError(err, PSTRSTRM("Cannot load/open file \"" << filename << '"'), 1);
 }
 
 
 bool PLua::LoadText(const PString & text)
 {
-  m_loaded = OnError(luaL_loadstring(m_lua, text));
+  PWaitAndSignal mutex(m_mutex);
+
+  m_loaded = OnLuaError(luaL_loadstring(m_lua, text));
   return m_loaded;
 }
 
@@ -129,14 +133,16 @@ bool PLua::Run(const char * script)
     return false;
 
   if (IsLoaded())
-    return OnError(lua_pcall(m_lua, 0, 0, 0));
+    return OnLuaError(lua_pcall(m_lua, 0, 0, 0));
 
-  return OnError(LUA_ERRRUN, "Script not loaded");
+  return OnLuaError(LUA_ERRRUN, "Script not loaded");
 }
 
 
 bool PLua::CreateTable(const PString & name, const PString & metatable)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
@@ -151,7 +157,7 @@ bool PLua::CreateTable(const PString & name, const PString & metatable)
       return true;
 
     default :
-      return OnError(LUA_ERRSYNTAX, "Already using name " + name + ", type " + lua_typename(m_lua, type));
+      return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Already using name \"" << name << "\" of type " << lua_typename(m_lua, type)));
   }
 
   lua_newtable(m_lua);
@@ -167,6 +173,8 @@ bool PLua::CreateTable(const PString & name, const PString & metatable)
 
 bool PLua::DeleteTable(const PString & name, bool metaTable)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (metaTable) {
     lua_pushnil(m_lua);
     lua_setfield(m_lua, LUA_REGISTRYINDEX, name);
@@ -187,7 +195,7 @@ bool PLua::DeleteTable(const PString & name, bool metaTable)
       return InternalSetVariable(name);
 
     default :
-      return OnError(LUA_ERRSYNTAX, "Not a table: name " + name + ", type " + lua_typename(m_lua, type));
+      return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Not a table: \"" << name << "\" is " << lua_typename(m_lua, type)));
   }
 
 }
@@ -195,6 +203,8 @@ bool PLua::DeleteTable(const PString & name, bool metaTable)
 
 bool PLua::GetVar(const PString & name, PVarType & var)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
@@ -234,6 +244,8 @@ bool PLua::GetVar(const PString & name, PVarType & var)
 
 bool PLua::SetVar(const PString & name, const PVarType & var)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   switch (var.GetType()) {
     case PVarType::VarNULL:
       lua_pushnil(m_lua);
@@ -277,8 +289,11 @@ bool PLua::SetVar(const PString & name, const PVarType & var)
   return InternalSetVariable(name);
 }
 
+
 bool PLua::GetBoolean(const PString & name)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
@@ -290,6 +305,8 @@ bool PLua::GetBoolean(const PString & name)
 
 bool PLua::SetBoolean(const PString & name, bool value)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   lua_pushboolean(m_lua, value);
   return InternalSetVariable(name);
 }
@@ -297,6 +314,8 @@ bool PLua::SetBoolean(const PString & name, bool value)
 
 int PLua::GetInteger(const PString & name)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
@@ -308,6 +327,8 @@ int PLua::GetInteger(const PString & name)
 
 bool PLua::SetInteger(const PString & name, int value)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   lua_pushinteger(m_lua, value);
   return InternalSetVariable(name);
 }
@@ -315,6 +336,8 @@ bool PLua::SetInteger(const PString & name, int value)
 
 double PLua::GetNumber(const PString & name)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
@@ -326,6 +349,8 @@ double PLua::GetNumber(const PString & name)
 
 bool PLua::SetNumber(const PString & name, double value)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   lua_pushnumber(m_lua, value);
   return InternalSetVariable(name);
 }
@@ -333,6 +358,8 @@ bool PLua::SetNumber(const PString & name, double value)
 
 PString PLua::GetString(const PString & name)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
@@ -344,6 +371,8 @@ PString PLua::GetString(const PString & name)
 
 bool PLua::SetString(const PString & name, const char * value)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   lua_pushstring(m_lua, value);
   return InternalSetVariable(name);
 }
@@ -363,6 +392,8 @@ static char * my_lua_tostring(lua_State * lua, int index)
 
 bool PLua::Call(const PString & name, const char * signature, ...)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   va_list args;
   va_start(args, signature);
 
@@ -370,7 +401,7 @@ bool PLua::Call(const PString & name, const char * signature, ...)
     return false;
 
   if (!lua_isfunction(m_lua, -1))
-    return OnError(LUA_ERRRUN, "No such function as " + name, 1);
+    return OnLuaError(LUA_ERRRUN, PSTRSTRM("No such function as \"" << name << '"'), 1);
 
   int nargs = 0, nresults = 0;
   const char * resultSignature = NULL;
@@ -435,7 +466,7 @@ bool PLua::Call(const PString & name, const char * signature, ...)
     }
   }
 
-  if (!OnError(lua_pcall(m_lua, nargs, nresults, 0)))
+  if (!OnLuaError(lua_pcall(m_lua, nargs, nresults, 0)))
     return false;
 
   if (resultSignature != NULL) {
@@ -479,15 +510,17 @@ bool PLua::Call(const PString & name, const char * signature, ...)
 
 bool PLua::Call(const PString & name, Signature & signature)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (!InternalGetVariable(name))
     return false;
 
   if (!lua_isfunction(m_lua, -1))
-    return OnError(LUA_ERRRUN, "No such function as " + name, 1);
+    return OnLuaError(LUA_ERRRUN, PSTRSTRM("No such function as \"" << name << '"'), 1);
 
   signature.m_arguments.Push(m_lua);
 
-  if (!OnError(lua_pcall(m_lua, signature.m_arguments.size(), LUA_MULTRET, 0)))
+  if (!OnLuaError(lua_pcall(m_lua, signature.m_arguments.size(), LUA_MULTRET, 0)))
     return false;
 
   signature.m_results.Pop(m_lua);
@@ -524,6 +557,8 @@ int PLua::InternalCallback()
 
 bool PLua::SetFunction(const PString & name, const FunctionNotifier & func)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   map<PString, FunctionNotifier>::iterator it = m_functions.find(name);
   if (it == m_functions.end()) {
     if (func.IsNULL())
@@ -536,7 +571,7 @@ bool PLua::SetFunction(const PString & name, const FunctionNotifier & func)
     lua_pop(m_lua, 1);
 
     if (type != LUA_TNIL)
-      return OnError(LUA_ERRSYNTAX, "Already using name " + name + ", type " + lua_typename(m_lua, type));
+      return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Already using name \"" << name << "\", is " << lua_typename(m_lua, type)));
   }
   else {
     if (it->second == func)
@@ -551,24 +586,25 @@ bool PLua::SetFunction(const PString & name, const FunctionNotifier & func)
 }
 
 
-bool PLua::OnError(int code, const PString & str, int pop)
+bool PLua::OnLuaError(int code, const PString & str, int pop)
 {
   if (code == 0)
     return true;
 
-  m_lastErrorText = str;
-  if (str.IsEmpty()) {
-    m_lastErrorText = lua_tostring(m_lua, -1);
+  if (!str.IsEmpty())
+    OnError(code, str);
+  else {
     ++pop;
-
-    if (m_lastErrorText.IsEmpty())
-      m_lastErrorText.sprintf("Error code %i", code);
+    PString luaError = lua_tostring(m_lua, -1);
+    if (luaError.IsEmpty())
+      OnError(code, psprintf("Error code %i", code));
+    else
+      OnError(code, str);
   }
 
   if (pop > 0)
     lua_pop(m_lua, pop);
 
-  PTRACE(2, "Error " << code << ": " << m_lastErrorText);
   return false;
 }
 
@@ -583,13 +619,13 @@ static bool ValidIdentifer(const PString & identifier)
 bool PLua::ParseVariableName(const PString & name, PStringArray & elements)
 {
   if (name.IsEmpty())
-    return OnError(LUA_ERRSYNTAX, "Empty name");
+    return OnLuaError(LUA_ERRSYNTAX, "Empty name");
 
   // First element must be a straight variable
   PINDEX elementPos = name.FindOneOf(".[");
   PString element = name.Left(elementPos);
   if (!ValidIdentifer(element))
-    return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
+    return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Illegal variable name: \"" << name << '"'));
 
   while (elementPos != P_MAX_INDEX) {
     elements.AppendString(element);
@@ -599,18 +635,18 @@ bool PLua::ParseVariableName(const PString & name, PStringArray & elements)
       elementPos = name.FindOneOf(".[", lastElementPos);
       element = name(lastElementPos, elementPos-1);
       if (!ValidIdentifer(element))
-        return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
+        return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Illegal variable name: \"" << name << '"'));
     }
     else {
       element = name.FromLiteral(elementPos);
       if (name[elementPos++] != ']')
-        return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
+        return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Illegal variable name: \"" << name << '"'));
 
       if (elementPos >= name.GetLength())
         elementPos = P_MAX_INDEX;
       else {
         if (name[elementPos] != '.' && name[elementPos] != '[')
-          return OnError(LUA_ERRSYNTAX, "Illegal variable name: " + name);
+          return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Illegal variable name: \"" << name << '"'));
       }
     }
   }
@@ -635,7 +671,7 @@ bool PLua::InternalGetVariable(const PString & name)
   for (PINDEX var = 1; var < elements.GetSize(); ++var) {
     int type = lua_type(m_lua, -1);
     if (type != LUA_TTABLE)
-      return OnError(LUA_ERRSYNTAX, "No such table as " + elements[var-1] + ", type " + lua_typename(m_lua, type), 1);
+      return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("No such table as \"" << elements[var-1] << "\", is " << lua_typename(m_lua, type)), 1);
 
     lua_getfield(m_lua, -1, elements[var]);
     lua_remove(m_lua, -2); // Remove the table from underneath
@@ -665,7 +701,7 @@ bool PLua::InternalSetVariable(const PString & name)
   for (;;) {
     int type = lua_type(m_lua, -1);
     if (type != LUA_TTABLE)
-      return OnError(LUA_ERRSYNTAX, "No such table as " + elements[var-1] + ", type " + lua_typename(m_lua, type), 2);
+      return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("No such table as \"" << elements[var-1] << "\", is " << lua_typename(m_lua, type)), 2);
 
     if (var >= elements.GetSize()-1)
       break;
