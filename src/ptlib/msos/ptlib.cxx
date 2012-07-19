@@ -893,13 +893,11 @@ PBoolean PTextFile::IsTextFile() const
 // PConsoleChannel
 
 PConsoleChannel::PConsoleChannel()
-  : m_hConsole(INVALID_HANDLE_VALUE)
 {
 }
 
 
 PConsoleChannel::PConsoleChannel(ConsoleType type)
-  : m_hConsole(INVALID_HANDLE_VALUE)
 {
   Open(type);
 }
@@ -920,9 +918,7 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
   return false;
 #else
   static DWORD HandleNames[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
-  if (!DuplicateHandle(GetCurrentProcess(), GetStdHandle(HandleNames[type]),
-                       GetCurrentProcess(), &m_hConsole,
-                       NULL, FALSE, DUPLICATE_SAME_ACCESS))
+  if (!m_hConsole.Duplicate(GetStdHandle(HandleNames[type])))
     return ConvertOSError(-2);
 
   os_handle = type;
@@ -939,7 +935,7 @@ PString PConsoleChannel::GetName() const
 
 PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 {
-  if (m_hConsole == INVALID_HANDLE_VALUE)
+  if (!m_hConsole.IsValid())
     return ConvertOSError(-2, LastReadError);
 
   flush();
@@ -956,7 +952,7 @@ PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 
 PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
-  if (m_hConsole == INVALID_HANDLE_VALUE)
+  if (!m_hConsole.IsValid())
     return ConvertOSError(-2, LastReadError);
 
   flush();
@@ -973,11 +969,10 @@ PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 
 PBoolean PConsoleChannel::Close()
 {
-  if (m_hConsole == INVALID_HANDLE_VALUE)
+  if (!m_hConsole.IsValid())
     return false;
 
-  CloseHandle(m_hConsole);
-  m_hConsole = INVALID_HANDLE_VALUE;
+  m_hConsole.Close();
   os_handle = -1;
   return true;
 }
@@ -991,7 +986,7 @@ bool PConsoleChannel::SetLocalEcho(bool)
 #else
 bool PConsoleChannel::SetLocalEcho(bool localEcho)
 {
-  if (m_hConsole == INVALID_HANDLE_VALUE)
+  if (!m_hConsole.IsValid())
     return ConvertOSError(-2, LastReadError);
 
   DWORD mode;

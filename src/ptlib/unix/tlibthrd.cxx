@@ -404,11 +404,7 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (PProcessInstance == NULL) {
-#if PTRACING
-    PTrace::Cleanup();
-#endif
-  } else {
+  if (!m_isProcess) {
     pthread_t id = m_threadId;
     PProcess & process = PProcess::Current();
 
@@ -1193,39 +1189,10 @@ void PThread::PXAbortBlock() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PSemaphore::PSemaphore(PXClass pxc)
-{
-  pxClass = pxc;
-
-  // these should never be used, as this constructor is
-  // only used for PMutex and PSyncPoint and they have their
-  // own copy constructors
-  
-  initialVar = maxCountVar = 0;
-  
-  if(pxClass == PXSemaphore) {
-#if defined(P_HAS_SEMAPHORES)
-    /* call sem_init, otherwise sem_destroy fails*/
-    PAssertPTHREAD(sem_init, (&semId, 0, 0));
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-    semId = CreateSem(0);
-#else
-    currentCount = maximumCount = 0;
-    queuedLocks = 0;
-    pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&condVar, NULL);
-#endif
-  }
-}
-
-
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
+  : initialVar(initial)
+  , maxCountVar(maxCount)
 {
-  pxClass = PXSemaphore;
-
-  initialVar  = initial;
-  maxCountVar = maxCount;
-
 #if defined(P_HAS_SEMAPHORES)
   PAssertPTHREAD(sem_init, (&semId, 0, initial));
 #elif defined(P_HAS_NAMED_SEMAPHORES)
@@ -1246,46 +1213,41 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 
 
 PSemaphore::PSemaphore(const PSemaphore & sem) 
+  : initialVar(sem.initialVar)
+  , maxCountVar(sem.maxCountVar)
 {
-  pxClass = sem.GetSemClass();
-
-  initialVar  = sem.GetInitial();
-  maxCountVar = sem.GetMaxCount();
-
-  if(pxClass == PXSemaphore) {
 #if defined(P_HAS_SEMAPHORES)
-    PAssertPTHREAD(sem_init, (&semId, 0, initialVar));
+  PAssertPTHREAD(sem_init, (&semId, 0, initialVar));
 #elif defined(P_HAS_NAMED_SEMAPHORES)
-    semId = CreateSem(initialVar);
+  semId = CreateSem(initialVar);
 #else
-    PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-    PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
   
-    PAssert(maxCountVar > 0, "Invalid semaphore maximum.");
-    if (initialVar > maxCountVar)
-      initialVar = maxCountVar;
+  PAssert(maxCountVar > 0, "Invalid semaphore maximum.");
+  if (initialVar > maxCountVar)
+    initialVar = maxCountVar;
 
-    currentCount = initialVar;
-    maximumCount = maxCountVar;
-    queuedLocks  = 0;
+  currentCount = initialVar;
+  maximumCount = maxCountVar;
+  queuedLocks  = 0;
 #endif
-  }
 }
+
 
 PSemaphore::~PSemaphore()
 {
-  if(pxClass == PXSemaphore) {
 #if defined(P_HAS_SEMAPHORES)
-    PAssertPTHREAD(sem_destroy, (&semId));
+  PAssertPTHREAD(sem_destroy, (&semId));
 #elif defined(P_HAS_NAMED_SEMAPHORES)
-    PAssertPTHREAD(sem_close, (semId));
+  PAssertPTHREAD(sem_close, (semId));
 #else
-    PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-    PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
-    PAssertPTHREAD(pthread_cond_destroy, (&condVar));
+  PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
+  PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
+  PAssertPTHREAD(pthread_cond_destroy, (&condVar));
 #endif
-  }
 }
+
 
 #if defined(P_HAS_NAMED_SEMAPHORES)
 sem_t * PSemaphore::CreateSem(unsigned initialValue)
@@ -1308,6 +1270,7 @@ sem_t * PSemaphore::CreateSem(unsigned initialValue)
   return sem;
 }
 #endif
+
 
 void PSemaphore::Wait() 
 {
@@ -1448,28 +1411,6 @@ void PSemaphore::Signal()
 }
 
 
-PBoolean PSemaphore::WillBlock() const
-{
-#if defined(P_HAS_SEMAPHORES)
-  if (sem_trywait((sem_t *)&semId) != 0) {
-    PAssertOS(errno == EAGAIN || errno == EINTR);
-    return true;
-  }
-  PAssertPTHREAD(sem_post, ((sem_t *)&semId));
-  return false;
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  if (sem_trywait(semId) != 0) {
-    PAssertOS(errno == EAGAIN || errno == EINTR);
-    return true;
-  }
-  PAssertPTHREAD(sem_post, (semId));
-  return false;
-#else
-  return currentCount == 0;
-#endif
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 PTimedMutex::PTimedMutex()
@@ -1501,7 +1442,7 @@ void PTimedMutex::Construct()
 
 #else // P_HAS_RECURSIVE_MUTEX
 
-  m_lockerId = (pthread_id)-1;
+  m_lockerId = PNullThreadIdentifier;
   PAssertPTHREAD(pthread_mutex_init, (&m_mutex, NULL));
 
 #endif // P_HAS_RECURSIVE_MUTEX
@@ -1532,13 +1473,26 @@ PTimedMutex::~PTimedMutex()
 
 void PTimedMutex::Wait() 
 {
+  pthread_t currentThreadId = pthread_self();
+
 #if P_HAS_RECURSIVE_MUTEX
 
+#if PTRACING && P_PTHREADS_XPG6
+  struct timespec absTime;
+  absTime.tv_sec = time(NULL)+15;
+  absTime.tv_nsec = 0;
+  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
+    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id=" << m_lockerId);
+    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+  }
+#else
   PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+#endif
+
+  if (m_lockCount++ == 0)
+    m_lockerId = currentThreadId;
 
 #else //P_HAS_RECURSIVE_MUTEX
-
-  pthread_t currentThreadId = pthread_self();
 
   // if the mutex is already acquired by this thread,
   // then just increment the lock count
@@ -1552,7 +1506,7 @@ void PTimedMutex::Wait()
   // acquire the lock for real
   PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
 
-  PAssert(m_lockerId == (pthread_t)-1 && m_lockCount.IsZero(),
+  PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount.IsZero(),
           "PMutex acquired whilst locked by another thread");
 
   // Note this is protected by the mutex itself only the thread with
@@ -1571,9 +1525,9 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
     return true;
   }
 
-#if !P_HAS_RECURSIVE_MUTEX
   pthread_t currentThreadId = pthread_self();
 
+#if !P_HAS_RECURSIVE_MUTEX
   // if we already have the mutex, return immediately
   if (pthread_equal(m_lockerId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
@@ -1606,13 +1560,20 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 #endif // P_PTHREADS_XPG6
 
-#if !P_HAS_RECURSIVE_MUTEX
-  PAssert((lockerId == (pthread_t)-1) && m_lockCount.IsZero(),
+#if P_HAS_RECURSIVE_MUTEX
+
+  if (m_lockCount++ == 0)
+    m_lockerId = currentThreadId;
+
+#else
+
+  PAssert((lockerId == PNullThreadIdentifier) && m_lockCount.IsZero(),
           "PMutex acquired whilst locked by another thread");
 
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
   m_lockerId = currentThreadId;
+
 #endif
 
   return true;
@@ -1621,7 +1582,13 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 void PTimedMutex::Signal()
 {
-#if !P_HAS_RECURSIVE_MUTEX
+#if P_HAS_RECURSIVE_MUTEX
+
+  if (--m_lockCount == 0)
+    m_lockerId = PNullThreadIdentifier;
+
+#else
+
   if (!pthread_equal(m_lockerId, pthread_self())) {
     PAssertAlways("PMutex signal failed - no matching wait or signal by wrong thread");
     return;
@@ -1636,33 +1603,17 @@ void PTimedMutex::Signal()
   }
 
   // otherwise mark mutex as available
-  m_lockerId = (pthread_t)-1;
+  m_lockerId = PNullThreadIdentifier;
 
 #endif
 
   PAssertPTHREAD(pthread_mutex_unlock, (&m_mutex));
-}
-
-
-PBoolean PTimedMutex::WillBlock() const
-{
-#if !P_HAS_RECURSIVE_MUTEX
-  if (pthread_equal(m_lockerId, pthread_self()))
-    return false;
-#endif
-
-  if (pthread_mutex_trylock(&m_mutex) != 0)
-    return true;
-
-  PAssertPTHREAD(pthread_mutex_unlock, (&m_mutex));
-  return false;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PSyncPoint::PSyncPoint()
-  : PSemaphore(PXSyncPoint)
 {
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
@@ -1670,7 +1621,6 @@ PSyncPoint::PSyncPoint()
 }
 
 PSyncPoint::PSyncPoint(const PSyncPoint &)
-  : PSemaphore(PXSyncPoint)
 {
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
@@ -1727,12 +1677,6 @@ void PSyncPoint::Signal()
   signalled = true;
   PAssertPTHREAD(pthread_cond_signal, (&condVar));
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
-}
-
-
-PBoolean PSyncPoint::WillBlock() const
-{
-  return !signalled;
 }
 
 

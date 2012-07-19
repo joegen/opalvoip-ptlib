@@ -38,7 +38,7 @@
 #define PTHREAD_ID_FMT "%u"
 
   public:
-    HANDLE GetHandle() const { return threadHandle; }
+    HANDLE GetHandle() const { return m_threadHandle; }
     void Win32AttachThreadInput();
 
     typedef DWORD LocalStorageKey;
@@ -48,7 +48,7 @@
     __inline static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr) { TlsSetValue(key, ptr); }
 
   protected:
-    HANDLE threadHandle;
+    PWin32Handle m_threadHandle;
 
   private:
     void CleanUp();

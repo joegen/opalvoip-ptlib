@@ -41,7 +41,6 @@
 
 PPipeChannel::PPipeChannel()
 {
-  hToChild = hFromChild = hStandardError = INVALID_HANDLE_VALUE;
 }
 
 
@@ -111,36 +110,34 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   // ReadOnly means child has no stdin
   // otherwise create a pipe for us to send data to child
   if (mode == ReadOnly)
-    hToChild = INVALID_HANDLE_VALUE;
+    m_hToChild.Close();
   else {
     HANDLE writeEnd;
     PAssertOS(CreatePipe(&startup.hStdInput, &writeEnd, &security, 0));
     PAssertOS(SetHandleInformation(writeEnd, HANDLE_FLAG_INHERIT, 0));
-    PAssertOS(DuplicateHandle(GetCurrentProcess(), writeEnd,
-                              GetCurrentProcess(), &hToChild, 0, PFalse,
-                              DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS));
+    PAssertOS(m_hToChild.Duplicate(writeEnd, DUPLICATE_CLOSE_SOURCE|DUPLICATE_SAME_ACCESS));
   }
 
   // WriteOnly means child has no stdout
   // ReadWriteStd means child uses our stdout and stderr
   // otherwise, create a pipe to read stdout from child, and perhaps a seperate one for stderr too
   if (mode == WriteOnly)
-    hFromChild = INVALID_HANDLE_VALUE;
+    m_hFromChild.Close();
   else if (mode == ReadWriteStd) {
-    hFromChild = INVALID_HANDLE_VALUE;
+    m_hFromChild.Close();
     startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   }
   else {
-    PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 1));
-    PAssertOS(SetHandleInformation(hFromChild, HANDLE_FLAG_INHERIT, 0));
+    PAssertOS(CreatePipe(m_hFromChild.GetPointer(), &startup.hStdOutput, &security, 1));
+    PAssertOS(SetHandleInformation(m_hFromChild, HANDLE_FLAG_INHERIT, 0));
     if (stderrSeparate) {
-      PAssertOS(CreatePipe(&hStandardError, &startup.hStdError, &security, 1));
-      PAssertOS(SetHandleInformation(hStandardError, HANDLE_FLAG_INHERIT, 0));
+      PAssertOS(CreatePipe(m_hStandardError.GetPointer(), &startup.hStdError, &security, 1));
+      PAssertOS(SetHandleInformation(m_hStandardError, HANDLE_FLAG_INHERIT, 0));
     }
     else {
       startup.hStdError = startup.hStdOutput;
-      hStandardError = INVALID_HANDLE_VALUE;
+      m_hStandardError.Close();
     }
   }
 
@@ -149,12 +146,9 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
                                    NULL, &startup, &info) ? 0 : -2))
     os_handle = info.dwProcessId;
   else {
-    if (hToChild != INVALID_HANDLE_VALUE)
-      CloseHandle(hToChild);
-    if (hFromChild != INVALID_HANDLE_VALUE)
-      CloseHandle(hFromChild);
-    if (hStandardError != INVALID_HANDLE_VALUE)
-      CloseHandle(hStandardError);
+    m_hToChild.Close();
+    m_hFromChild.Close();
+    m_hStandardError.Close();
   }
 
   if (startup.hStdInput != INVALID_HANDLE_VALUE)
@@ -244,14 +238,14 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
   // So have all this hideous code. :-(
 
   if (readTimeout == PMaxTimeInterval) {
-    if (!ConvertOSError(ReadFile(hFromChild, buffer, 1, &count, NULL) ? 0 : -2, LastReadError))
+    if (!ConvertOSError(ReadFile(m_hFromChild, buffer, 1, &count, NULL) ? 0 : -2, LastReadError))
       return false;
 
     lastReadCount = 1;
     if (len == 1)
       return true;
 
-    if (!PeekNamedPipe(hFromChild, NULL, 0, NULL, &count, NULL))
+    if (!PeekNamedPipe(m_hFromChild, NULL, 0, NULL, &count, NULL))
       return ConvertOSError(-2, LastReadError);
 
     if (count == 0)
@@ -263,7 +257,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
   else {
     PSimpleTimer timeout(readTimeout);
     for (;;) {
-      if (!PeekNamedPipe(hFromChild, NULL, 0, NULL, &count, NULL))
+      if (!PeekNamedPipe(m_hFromChild, NULL, 0, NULL, &count, NULL))
         return ConvertOSError(-2, LastReadError);
 
       if (count > 0)
@@ -282,7 +276,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
     len = count;
 #endif
 
-  if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 : -2, LastReadError))
+  if (!ConvertOSError(ReadFile(m_hFromChild, buffer, len, &count, NULL) ? 0 : -2, LastReadError))
     return false;
 
   lastReadCount += count;
@@ -294,7 +288,7 @@ PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
 {
   lastWriteCount = 0;
   DWORD count;
-  if (!ConvertOSError(WriteFile(hToChild, buffer, len, &count, NULL) ? 0 : -2, LastWriteError))
+  if (!ConvertOSError(WriteFile(m_hToChild, buffer, len, &count, NULL) ? 0 : -2, LastWriteError))
     return PFalse;
   lastWriteCount = count;
   return lastWriteCount >= len;
@@ -305,12 +299,9 @@ PBoolean PPipeChannel::Close()
 {
   if (IsOpen()) {
     os_handle = -1;
-    if (hToChild != INVALID_HANDLE_VALUE)
-      CloseHandle(hToChild);
-    if (hFromChild != INVALID_HANDLE_VALUE)
-      CloseHandle(hFromChild);
-    if (hStandardError != INVALID_HANDLE_VALUE)
-      CloseHandle(hStandardError);
+    m_hToChild.Close();
+    m_hFromChild.Close();
+    m_hStandardError.Close();
     if (!TerminateProcess(info.hProcess, 1))
       return PFalse;
   }
@@ -322,9 +313,7 @@ PBoolean PPipeChannel::Execute()
 {
   flush();
   clear();
-  if (hToChild != INVALID_HANDLE_VALUE)
-    CloseHandle(hToChild);
-  hToChild = INVALID_HANDLE_VALUE;
+  m_hToChild.Close();
   return IsRunning();
 }
 
@@ -338,11 +327,11 @@ PBoolean PPipeChannel::ReadStandardError(PString &, PBoolean)
 PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 {
   DWORD available, bytesRead;
-  if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
+  if (!PeekNamedPipe(m_hStandardError, NULL, 0, NULL, &available, NULL))
     return ConvertOSError(-2, LastReadError);
 
   if (available != 0)
-    return ConvertOSError(ReadFile(hStandardError,
+    return ConvertOSError(ReadFile(m_hStandardError,
                           errors.GetPointerAndSetLength(available), available,
                           &bytesRead, NULL) ? 0 : -2, LastReadError);
 
@@ -350,18 +339,18 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
     return PFalse;
 
   char firstByte;
-  if (!ReadFile(hStandardError, &firstByte, 1, &bytesRead, NULL))
+  if (!ReadFile(m_hStandardError, &firstByte, 1, &bytesRead, NULL))
     return ConvertOSError(-2, LastReadError);
 
   errors = firstByte;
 
-  if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
+  if (!PeekNamedPipe(m_hStandardError, NULL, 0, NULL, &available, NULL))
     return ConvertOSError(-2, LastReadError);
 
   if (available == 0)
     return PTrue;
 
-  return ConvertOSError(ReadFile(hStandardError,
+  return ConvertOSError(ReadFile(m_hStandardError,
                         errors.GetPointerAndSetLength(available+1)+1, available,
                         &bytesRead, NULL) ? 0 : -2, LastReadError);
 }

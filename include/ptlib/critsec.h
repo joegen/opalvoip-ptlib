@@ -101,12 +101,21 @@ class PCriticalSection : public PSync
 
     /** Enter the critical section by waiting for exclusive access.
      */
-    void Wait();
+    virtual void Wait();
     inline void Enter() { Wait(); }
+
+    /**Block, for a time, until the synchronisation object is available.
+
+       @return
+       true if lock is acquired, false if timed out
+     */
+    virtual PBoolean Wait(
+      const PTimeInterval & timeout // Amount of time to wait.
+    );
 
     /** Leave the critical section by unlocking the mutex
      */
-    void Signal();
+    virtual void Signal();
     inline void Leave() { Signal(); }
 
     /** Try to enter the critical section for exlusive access. Does not wait.
