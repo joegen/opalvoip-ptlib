@@ -2109,6 +2109,20 @@ class PStringStream : public PString, public iostream
 };
 
 
+/**Output a stream expression to a string parameter.
+   This allows a string parameter to a function use a stream expression to
+   generate that string. For example, given the function:
+<pre><code>
+      void DoSomething(const PString & str);
+</code></pre>
+   you could make a call to that function as:
+<pre><code>
+      DoSomething(PSTRSTRM("Fred used" << number << " of \"" << item << '"'));
+</code></pre>
+ */
+#define PSTRSTRM(arg) dynamic_cast<const PString &>(PStringStream() << arg)
+
+
 class PStringList;
 class PSortedStringList;
 
