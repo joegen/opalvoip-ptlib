@@ -302,21 +302,26 @@ class PReadWriteMutex : public PObject
   //@}
 
   protected:
-    PSemaphore readerSemaphore;
-    PMutex     readerMutex;
-    unsigned   readerCount;
-    PMutex     starvationPreventer;
+    PSemaphore  m_readerSemaphore;
+    PTimedMutex m_readerMutex;
+    unsigned    m_readerCount;
+    PTimedMutex m_starvationPreventer;
 
-    PSemaphore writerSemaphore;
-    PMutex     writerMutex;
-    unsigned   writerCount;
+    PSemaphore  m_writerSemaphore;
+    PTimedMutex m_writerMutex;
+    unsigned    m_writerCount;
 
-    class Nest : public PObject
+    struct Nest
     {
-      PCLASSINFO(Nest, PObject);
-      Nest() { readerCount = writerCount = 0; }
-      unsigned readerCount;
-      unsigned writerCount;
+      unsigned m_readerCount;
+      unsigned m_writerCount;
+      bool     m_waiting;
+
+      Nest()
+        : m_readerCount(0)
+        , m_writerCount(0)
+        , m_waiting(false)
+      { }
     };
     typedef std::map<PThreadIdentifier, Nest> NestMap;
     NestMap m_nestedThreads;
@@ -325,9 +330,9 @@ class PReadWriteMutex : public PObject
     Nest * GetNest();
     Nest & StartNest();
     void EndNest();
-    void InternalStartRead();
-    void InternalEndRead();
-    void InternalWait(PSemaphore & semaphore) const;
+    void InternalStartRead(Nest & nest);
+    void InternalEndRead(Nest & nest);
+    void InternalWait(Nest & nest, PSync & sync) const;
 };
 
 

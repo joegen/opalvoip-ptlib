@@ -64,15 +64,32 @@
   are waiting on the event, only one thread will be released. As you cannot know
   which thread will be released this mode of use is not recommended.
  */
-class PSyncPoint : public PSemaphore
+class PSyncPoint : public PSync
 {
-  PCLASSINFO(PSyncPoint, PSemaphore);
+  PCLASSINFO(PSyncPoint, PSync);
 
   public:
     /** Create a new sync point.
      */
     PSyncPoint();
     PSyncPoint(const PSyncPoint &);
+
+    /**Block until the synchronisation object is available.
+     */
+    virtual void Wait();
+
+    /**Block, for a time, until the synchronisation object is available.
+
+       @return
+       true if lock is acquired, false if timed out
+     */
+    virtual PBoolean Wait(
+      const PTimeInterval & timeout // Amount of time to wait.
+    );
+
+    /**Signal that the synchronisation object is available.
+     */
+    virtual void Signal();
 
 
 // Include platform dependent part of class

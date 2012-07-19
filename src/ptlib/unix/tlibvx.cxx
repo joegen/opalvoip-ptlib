@@ -641,10 +641,6 @@ void PSemaphore::Signal()
   section.Unlock();
 }
 
-PBoolean PSemaphore::WillBlock() const
-{
-  return initialVar == 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex  
@@ -697,14 +693,6 @@ void PMutex::Signal()
 	::semGive(semId);
 }
 
-PBoolean PMutex::WillBlock() const 
-{
-  STATUS result = ::semTake(semId, NO_WAIT);
-  PAssertOS((result != ERROR) || (errno == S_objLib_OBJ_UNAVAILABLE));
-  if (result != ERROR)
-    ::semGive(semId);
-		return result == ERROR;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint

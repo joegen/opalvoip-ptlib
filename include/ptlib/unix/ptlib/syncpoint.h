@@ -34,18 +34,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
-#if defined(P_PTHREADS)
-  public:
-    virtual ~PSyncPoint();
-#endif
-
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS)
   public:
-    virtual void Wait();
-    virtual PBoolean Wait(const PTimeInterval & timeout);
-    virtual void Signal();
-    virtual PBoolean WillBlock() const;
+    virtual ~PSyncPoint();
   private:
+    mutable pthread_mutex_t mutex;
+    mutable pthread_cond_t  condVar;
     bool signalled;
 #endif
 
