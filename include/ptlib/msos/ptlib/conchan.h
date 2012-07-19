@@ -54,6 +54,6 @@
       // Close the channel.
 
   protected:
-    HANDLE m_hConsole;
+    PWin32Handle m_hConsole;
 
 // End Of File ///////////////////////////////////////////////////////////////

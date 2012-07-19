@@ -123,18 +123,7 @@ class PSemaphore : public PSync
        maximum then increment the semaphore.
      */
     virtual void Signal();
-
-    /**Determine if the semaphore would block if the Wait() function
-       were called.
-
-       @return
-       true if semaphore will block when Wait() is called.
-     */
-    virtual PBoolean WillBlock() const;
   //@}
-
-  private:
-    PSemaphore & operator=(const PSemaphore &) { return *this; }
 
 
 // Include platform dependent part of class

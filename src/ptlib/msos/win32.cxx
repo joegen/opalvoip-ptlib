@@ -887,13 +887,14 @@ PThread::PThread(bool isProcess)
   : m_isProcess(isProcess)
   , m_autoDelete(!isProcess)
   , m_originalStackSize(0)
-  , threadHandle(GetCurrentThread())
   , m_threadId(GetCurrentThreadId())
 {
-  if (isProcess)
+  if (isProcess) {
+    m_threadHandle = GetCurrentThread();
     return;
+  }
 
-  DuplicateHandle(GetCurrentProcess(), threadHandle, GetCurrentProcess(), &threadHandle, 0, 0, DUPLICATE_SAME_ACCESS);
+  m_threadHandle.Duplicate(GetCurrentThread());
 
   PProcess & process = PProcess::Current();
 
@@ -919,13 +920,13 @@ PThread::PThread(PINDEX stackSize,
   PAssert(stackSize > 0, PInvalidParameter);
 
 #ifndef _WIN32_WCE
-  threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction, this, CREATE_SUSPENDED, &m_threadId);
+  m_threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction, this, CREATE_SUSPENDED, &m_threadId);
 #else
-   threadHandle = CreateThread(NULL, stackSize, 
+  m_threadHandle = CreateThread(NULL, stackSize, 
                        (LPTHREAD_START_ROUTINE)MainFunction, this, CREATE_SUSPENDED, (LPDWORD) &m_threadId);
 #endif
 
-  PAssertOS(threadHandle != NULL);
+  PAssertOS(m_threadHandle.IsValid());
 
   SetPriority(priorityLevel);
 
@@ -976,7 +977,7 @@ bool PThread::GetTimes(Times & times)
 
 void PThread::CleanUp()
 {
-  if (threadHandle == NULL)
+  if (!m_threadHandle.IsValid())
     return;
 
   PProcess & process = PProcess::Current();
@@ -987,8 +988,7 @@ void PThread::CleanUp()
   if (!IsTerminated())
     Terminate();
 
-  CloseHandle(threadHandle);
-  threadHandle = NULL;
+  m_threadHandle.Close();
 }
 
 
@@ -1001,12 +1001,12 @@ void PThread::Restart()
   CleanUp();
 
 #ifndef _WIN32_WCE
-  threadHandle = (HANDLE)_beginthreadex(NULL, m_originalStackSize, MainFunction, this, 0, &m_threadId);
+  m_threadHandle = (HANDLE)_beginthreadex(NULL, m_originalStackSize, MainFunction, this, 0, &m_threadId);
 #else
-   threadHandle = CreateThread(NULL, m_originalStackSize, 
+  m_threadHandle = CreateThread(NULL, m_originalStackSize, 
                                   (LPTHREAD_START_ROUTINE)MainFunction, this, 0, (LPDWORD)&m_threadId);
 #endif
-  PAssertOS(threadHandle != NULL);
+  PAssertOS(m_threadHandle.IsValid());
 }
 
 
@@ -1018,7 +1018,7 @@ void PThread::Terminate()
   if (Current() == this)
     ExitThread(0);
   else
-    TerminateThread(threadHandle, 1);
+    TerminateThread(m_threadHandle, 1);
 }
 
 
@@ -1037,43 +1037,14 @@ void PThread::WaitForTermination() const
 }
 
 
-bool PWaitForSingleObject(HANDLE handle, DWORD timeout)
-{
-  int retry = 0;
-  while (retry < 10) {
-    DWORD tick = ::GetTickCount();
-    switch (WaitForSingleObjectEx(handle, timeout, TRUE)) {
-      case WAIT_OBJECT_0 :
-        return true;
-
-      case WAIT_TIMEOUT :
-        return false;
-
-      case WAIT_IO_COMPLETION :
-        timeout -= (::GetTickCount() - tick);
-        break;
-
-      default :
-        if (::GetLastError() != ERROR_INVALID_HANDLE) {
-          PAssertAlways(POperatingSystemError);
-          return true;
-        }
-        ++retry;
-    }
-  }
-
-  return false;
-}
-
-
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-  if ((this == PThread::Current()) || threadHandle == NULL) {
+  if ((this == PThread::Current()) || !m_threadHandle.IsValid()) {
     PTRACE(3, "PTLib\tWaitForTermination short circuited");
     return true;
   }
 
-  return PWaitForSingleObject(threadHandle, maxWait.GetInterval());
+  return m_threadHandle.Wait(maxWait.GetInterval());
 }
 
 
@@ -1081,7 +1052,7 @@ void PThread::Suspend(PBoolean susp)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
   if (susp)
-    SuspendThread(threadHandle);
+    SuspendThread(m_threadHandle);
   else
     Resume();
 }
@@ -1090,7 +1061,7 @@ void PThread::Suspend(PBoolean susp)
 void PThread::Resume()
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
-  ResumeThread(threadHandle);
+  ResumeThread(m_threadHandle);
 }
 
 
@@ -1099,8 +1070,8 @@ PBoolean PThread::IsSuspended() const
   if (this == PThread::Current())
     return false;
 
-  SuspendThread(threadHandle);
-  return ResumeThread(threadHandle) > 1;
+  SuspendThread(m_threadHandle);
+  return ResumeThread(m_threadHandle) > 1;
 }
 
 
@@ -1139,7 +1110,7 @@ void PThread::SetPriority(Priority priorityLevel)
     THREAD_PRIORITY_ABOVE_NORMAL,
     THREAD_PRIORITY_HIGHEST
   };
-  SetThreadPriority(threadHandle, priorities[priorityLevel]);
+  SetThreadPriority(m_threadHandle, priorities[priorityLevel]);
 }
 
 
@@ -1147,7 +1118,7 @@ PThread::Priority PThread::GetPriority() const
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
-  switch (GetThreadPriority(threadHandle)) {
+  switch (GetThreadPriority(m_threadHandle)) {
     case THREAD_PRIORITY_LOWEST :
       return LowestPriority;
     case THREAD_PRIORITY_BELOW_NORMAL :
@@ -1331,6 +1302,8 @@ PProcess::~PProcess()
 #endif
 
   PostShutdown();
+
+  m_threadHandle.Detach();
 }
 
 
@@ -1576,73 +1549,48 @@ PBoolean PProcess::IsGUIProcess() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
-PSemaphore::PSemaphore(HANDLE h)
-{
-  handle = h;
-  PAssertOS(handle != NULL);
-}
-
-
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
+  : m_maxCountVal(maxCount)
+  , m_initialVal(std::min(initial, maxCount))
+  , m_handle(CreateSemaphore(NULL, m_initialVal, m_maxCountVal, NULL))
 {
-  initialVal  = initial;
-  maxCountVal = maxCount;
-
-  if (initial > maxCount)
-    initial = maxCount;
-  handle = CreateSemaphore(NULL, initial, maxCount, NULL);
-  PAssertOS(handle != NULL);
+  PAssertOS(m_handle.IsValid());
 }
 
 PSemaphore::PSemaphore(const PSemaphore & sem)
+  : m_maxCountVal(sem.m_maxCountVal)
+  , m_initialVal(sem.m_initialVal)
+  , m_handle(CreateSemaphore(NULL, m_initialVal, m_maxCountVal, NULL))
 {
-  initialVal  = sem.GetInitialVal();
-  maxCountVal = sem.GetMaxCountVal();
-
-  if (initialVal > maxCountVal)
-    initialVal = maxCountVal;
-  handle = CreateSemaphore(NULL, initialVal, maxCountVal, NULL);
-  PAssertOS(handle != NULL);
+  PAssertOS(m_handle.IsValid());
 }
 
 PSemaphore::~PSemaphore()
 {
-  if (handle != NULL)
-    PAssertOS(CloseHandle(handle));
 }
 
 
 void PSemaphore::Wait()
 {
-  PWaitForSingleObject(handle, INFINITE);
+  m_handle.Wait(INFINITE);
 }
 
 
 PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 {
-  return PWaitForSingleObject(handle, timeout.GetInterval());
+  return m_handle.Wait(timeout.GetInterval());
 }
 
 
 void PSemaphore::Signal()
 {
-  if (!ReleaseSemaphore(handle, 1, NULL))
+  if (!ReleaseSemaphore(m_handle, 1, NULL))
     PAssertOS(::GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
-}
-
-
-PBoolean PSemaphore::WillBlock() const
-{
-  PSemaphore * unconst = (PSemaphore *)this;
-
-  if (!unconst->Wait(0))
-    return PTrue;
-
-  unconst->Signal();
-  return PFalse;
 }
 
 
@@ -1650,36 +1598,166 @@ PBoolean PSemaphore::WillBlock() const
 // PTimedMutex
 
 PTimedMutex::PTimedMutex()
-  : PSemaphore(::CreateMutex(NULL, PFalse, NULL))
+  : m_lockerId(PNullThreadIdentifier)
+  , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
 
+
 PTimedMutex::PTimedMutex(const PTimedMutex &)
-  : PSemaphore(::CreateMutex(NULL, PFalse, NULL))
+  : m_lockerId(PNullThreadIdentifier)
+  , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
+
+
+void PTimedMutex::Wait()
+{
+#if PTRACING
+  if (!m_handle.Wait(15000)) {
+    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id=" << m_lockerId);
+    m_handle.Wait(INFINITE);
+  }
+#else
+  m_handle.Wait(INFINITE);
+#endif
+
+  if (m_lockCount++ == 0)
+    m_lockerId = ::GetCurrentThreadId();
+}
+
+
+PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
+{
+  if (!m_handle.Wait(timeout.GetInterval()))
+    return false;
+
+  if (m_lockCount++ == 0)
+    m_lockerId = ::GetCurrentThreadId();
+  return true;
+}
+
 
 void PTimedMutex::Signal()
 {
-  PAssertOS(::ReleaseMutex(handle));
+  if (--m_lockCount == 0)
+    m_lockerId = PNullThreadIdentifier;
+
+  PAssertOS(::ReleaseMutex(m_handle));
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
+
+PBoolean PCriticalSection::Wait(const PTimeInterval & timeout)
+{
+  PSimpleTimer timer(timeout);
+  do {
+    if (Try())
+      return true;
+    PThread::Sleep(100);
+  } while (timer.IsRunning());
+  return false;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
-  : PSemaphore(::CreateEvent(NULL, PFalse, PFalse, NULL))
+  : m_handle(::CreateEvent(NULL, FALSE, FALSE, NULL))
 {
 }
 
 PSyncPoint::PSyncPoint(const PSyncPoint &)
-  : PSemaphore(::CreateEvent(NULL, PFalse, PFalse, NULL))
+  : m_handle(::CreateEvent(NULL, FALSE, FALSE, NULL))
 {
 }
 
+void PSyncPoint::Wait()
+{
+  m_handle.Wait(INFINITE);
+}
+
+
+PBoolean PSyncPoint::Wait(const PTimeInterval & timeout)
+{
+  return m_handle.Wait(timeout.GetInterval());
+}
+
+
 void PSyncPoint::Signal()
 {
-  PAssertOS(::SetEvent(handle));
+  PAssertOS(::SetEvent(m_handle));
+}
+
+
+void PWin32Handle::Close()
+{
+  if (IsValid()) {
+    HANDLE h = m_handle; // This is a little more thread safe
+    m_handle = NULL;
+    PAssertOS(CloseHandle(h));
+  }
+}
+
+
+HANDLE PWin32Handle::Detach()
+{
+  HANDLE h = m_handle;
+  m_handle = NULL;
+  return h;
+}
+
+
+HANDLE * PWin32Handle::GetPointer()
+{
+  Close();
+  return &m_handle;
+}
+
+
+PWin32Handle & PWin32Handle::operator=(HANDLE h)
+{
+  Close();
+  m_handle = h;
+  return *this;
+}
+
+
+bool PWin32Handle::Wait(DWORD timeout) const
+{
+  int retry = 0;
+  while (retry < 10) {
+    DWORD tick = ::GetTickCount();
+    switch (::WaitForSingleObjectEx(m_handle, timeout, TRUE)) {
+      case WAIT_OBJECT_0 :
+        return true;
+
+      case WAIT_TIMEOUT :
+        return false;
+
+      case WAIT_IO_COMPLETION :
+        timeout -= (::GetTickCount() - tick);
+        break;
+
+      default :
+        if (::GetLastError() != ERROR_INVALID_HANDLE) {
+          PAssertAlways(POperatingSystemError);
+          return true;
+        }
+        ++retry;
+    }
+  }
+
+  return false;
+}
+
+
+bool PWin32Handle::Duplicate(HANDLE h, DWORD flags)
+{
+  Close();
+  return DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &m_handle, 0, 0, flags);
 }
 
 

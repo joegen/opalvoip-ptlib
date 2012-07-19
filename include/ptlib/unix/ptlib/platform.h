@@ -535,6 +535,7 @@ typedef pid_t PProcessIdentifier;
 
   #include <pthread.h>
   typedef pthread_t PThreadIdentifier;
+  #define PNullThreadIdentifier ((PThreadIdentifier)-1)
 
   #if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
     #include <semaphore.h>
@@ -543,6 +544,7 @@ typedef pid_t PProcessIdentifier;
 #elif defined(BE_THREADS)
 
   typedef thread_id PThreadIdentifier;
+  #define PNullThreadIdentifier ((PThreadIdentifier)-1)
 
 #endif
 

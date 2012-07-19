@@ -35,6 +35,10 @@
 // PMutex
 
   public:
-    virtual void Signal();
+    HANDLE GetHandle() const { return m_handle; }
+
+  protected:
+    PWin32Handle m_handle;
+
 
 // End Of File ///////////////////////////////////////////////////////////////

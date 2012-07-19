@@ -42,19 +42,5 @@
     void Construct();
 #endif
 
-#if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
-  public:
-    virtual void Wait();
-    virtual PBoolean Wait(const PTimeInterval & timeout);
-    virtual void Signal();
-    virtual PBoolean WillBlock() const;
-#endif
-
-#if !P_HAS_RECURSIVE_MUTEX
-  protected:
-     mutable PAtomicInteger m_lockCount;
-     mutable pthread_t      m_lockerId;
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////
