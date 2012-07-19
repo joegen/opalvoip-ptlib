@@ -72,7 +72,7 @@ class PSync : public PObject
   //@}
 
   private:
-    PSync(const PSync &) { }
+    PSync(const PSync &) : PObject() { }
     void operator=(const PSync &) { }
 };
 
