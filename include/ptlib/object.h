@@ -506,11 +506,6 @@ public:
     ostream & strm ///< Trace output stream being completed
   );
 
-  /** Cleanup the trace system for a specific thread
-      When using thread local storage, this will delete the per-thread trace context
-    */
-  static void Cleanup();
-
   /** Class to trace Execution blocks.
   This class is used for tracing the entry and exit of program blocks. Upon
   construction it outputs an entry trace message and on destruction outputs an

@@ -238,13 +238,8 @@ PThread::PThread(PINDEX stackSize,
 }
 
 
-PThread::~PThread()
+void PThread::InternalDestroy()
 {
-  if (originalStackSize <= 0)
-    return;
-
-  if (!IsTerminated())
-    Terminate();
 }
 
 

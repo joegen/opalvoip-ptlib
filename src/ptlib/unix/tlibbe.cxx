@@ -137,20 +137,9 @@ PThread::PThread(PINDEX stackSize,
   PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 }
 
-PThread::~PThread()
+
+void PThread::InternalDestroy()
 {
-  // if we are not process, remove this thread from the active thread list
-  PProcess & process = PProcess::Current();
-  if(process.GetThreadId() != GetThreadId())
-  {
-    process.activeThreadMutex.Wait();
-    process.activeThreads.RemoveAt((unsigned) mId);
-    process.activeThreadMutex.Signal();
-  }
-
-  if (!IsTerminated())
-    Terminate();
-
   ::close(unblockPipe[0]);
   ::close(unblockPipe[1]);
 }
