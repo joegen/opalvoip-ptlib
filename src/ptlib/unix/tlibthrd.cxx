@@ -179,12 +179,9 @@ void PHouseKeepingThread::Main()
       for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
         PThread * thread = it->second;
         if (thread->IsAutoDelete() && thread->IsTerminated()) {
-          process.m_activeThreads.erase(it);
-
-          // unlock the m_activeThreadMutex to avoid deadlocks:
-          // if somewhere in the destructor a call to PTRACE() is made,
-          // which itself calls PThread::Current(), deadlocks are possible
-          thread->m_threadId = 0;
+          /* unlock the m_activeThreadMutex to avoid deadlocks, as user may do
+             who knows what in their derived class destructor and this is a
+             critical mutex, used by all sorts of stuff. */
           process.m_activeThreadMutex.Signal();
           delete thread;
           process.m_activeThreadMutex.Wait();
@@ -368,9 +365,9 @@ PThread::PThread(PINDEX stackSize,
                  const PString & name)
   : m_isProcess(false)
   , m_autoDelete(deletion == AutoDeleteThread)
-  , m_originalStackSize(stackSize) // 0 indicates PTLib created thread
+  , m_originalStackSize(stackSize) // 0 indicates externally created thread
   , m_threadName(name)
-  , m_threadId(0)  // 0 indicates thread has not started
+  , m_threadId(PNullThreadIdentifier)  // indicates thread has not started
   , PX_priority(priorityLevel)
 #if defined(P_LINUX)
   , PX_linuxId(0)
@@ -402,35 +399,10 @@ PThread::PThread(PINDEX stackSize,
 //  for that thread to stop before continuing
 //
 
-PThread::~PThread()
+void PThread::InternalDestroy()
 {
-  if (!m_isProcess) {
-    pthread_t id = m_threadId;
-    PProcess & process = PProcess::Current();
-
-    // need to terminate the thread if it was ever started and it is not us
-    if ((id != 0) && (id != pthread_self()))
-      Terminate();
-
-    // cause the housekeeping thread to be created, if not already running
-    process.SignalTimerChange();
-
-    // last gasp tracing
-    PTRACE(5, "PTLib\tDestroyed thread " << this << ' ' << m_threadName << "(id = " << ::hex << id << ::dec << ")");
-
-
-    // if thread was started, remove it from the active thread list and detach it to release thread resources
-    if (id != 0) {
-      process.m_activeThreadMutex.Wait();
-      if (m_originalStackSize != 0)
-        pthread_detach(id);
-      process.m_activeThreads.erase(id);
-      process.m_activeThreadMutex.Signal();
-    }
-
-    // cause the housekeeping thread to wake up (we know it must be running)
-    process.SignalTimerChange();
-  }
+  if (m_originalStackSize != 0 && m_threadId != PNullThreadIdentifier)
+    pthread_detach(m_threadId);
 
   // close I/O unblock pipes
   ::close(unblockPipe[0]);
@@ -478,11 +450,6 @@ void * PThread::PX_ThreadStart(void * arg)
   // execute the cleanup routine
   //pthread_cleanup_pop(1);
   PX_ThreadEnd(arg);
-
-  // clean up tracing 
-#if PTRACING
-  PTrace::Cleanup();
-#endif
 
   // Inform the helgrind finite state machine that this thread has finished
   // Commented out as on some platforms it causes a crash, no idea why!
@@ -894,7 +861,7 @@ void PThread::Terminate()
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
-  if (m_threadId != 0) {
+  if (m_threadId != PNullThreadIdentifier) {
 #if defined(P_NO_CANCEL)
     pthread_kill(m_threadId, SIGKILL);
 #else
@@ -909,9 +876,9 @@ PBoolean PThread::IsTerminated() const
   if (m_isProcess)
     return false; // Process is always still running
 
-  // See if thread is still running
+  // See if thread is still running, copy variable in case changes between two statements
   pthread_t id = m_threadId;
-  return id == 0 || pthread_kill(id, 0) != 0;
+  return id == PNullThreadIdentifier || pthread_kill(id, 0) != 0;
 }
 
 
@@ -924,7 +891,7 @@ void PThread::WaitForTermination() const
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   pthread_t id = m_threadId;
-  if (id == 0 || this == Current()) {
+  if (id == PNullThreadIdentifier || this == Current()) {
     PTRACE(2, "WaitForTermination on 0x" << hex << id << dec << " short circuited");
     return true;
   }

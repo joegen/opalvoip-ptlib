@@ -54,12 +54,8 @@ PThread::PThread(PINDEX stackSize, AutoDeleteFlag deletion,
   PAssert(stat == NU_SUCCESS, "Failure to find TaskInfo block");
   }
 
-PThread::~PThread()
+void PThread::InternalDestroy()
   {
-  if (!IsTerminated())
-    {
-    Terminate();
-    }
   delete NucleusTask;
   }
   

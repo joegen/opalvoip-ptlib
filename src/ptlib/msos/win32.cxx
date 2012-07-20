@@ -865,10 +865,6 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   ::CoUninitialize();
 #endif
 
-#if PTRACING
-  PTrace::Cleanup();
-#endif
-
   return 0;
 }
 
@@ -939,15 +935,6 @@ PThread::PThread(PINDEX stackSize,
 }
 
 
-PThread::~PThread()
-{
-  if (m_isProcess)
-    return;
-
-  CleanUp();
-}
-
-
 static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
 {
   ULARGE_INTEGER i;
@@ -975,20 +962,12 @@ bool PThread::GetTimes(Times & times)
 }
 
 
-void PThread::CleanUp()
+void PThread::InternalDestroy()
 {
-  if (!m_threadHandle.IsValid())
-    return;
-
-  PProcess & process = PProcess::Current();
-  process.m_activeThreadMutex.Wait();
-  process.m_activeThreads.erase(m_threadId);
-  process.m_activeThreadMutex.Signal();
-
-  if (!IsTerminated())
-    Terminate();
-
-  m_threadHandle.Close();
+  if (m_isProcess)
+    m_threadHandle.Detach();
+  else
+    m_threadHandle.Close();
 }
 
 
@@ -998,7 +977,7 @@ void PThread::Restart()
       !PAssert(IsTerminated(), "Cannot restart running thread"))
     return;
 
-  CleanUp();
+  InternalDestroy();
 
 #ifndef _WIN32_WCE
   m_threadHandle = (HANDLE)_beginthreadex(NULL, m_originalStackSize, MainFunction, this, 0, &m_threadId);
@@ -1297,13 +1276,10 @@ PProcess::~PProcess()
 
   // Can't do any more tracing after this ...
 #if PTRACING
-  PTrace::Cleanup();
   PTrace::SetStream(NULL);
 #endif
 
   PostShutdown();
-
-  m_threadHandle.Detach();
 }
 
 
