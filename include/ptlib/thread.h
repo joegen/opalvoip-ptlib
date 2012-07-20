@@ -43,6 +43,8 @@
 #endif
 
 #include <ptlib/mutex.h>
+#include <set>
+
 
 class PSemaphore;
 
@@ -355,9 +357,31 @@ class PThread : public PObject
   
     bool IsAutoDelete() const { return m_autoDelete; }
 
+    /// Thread local storage base class, see PThreadLocalStorage for template.
+    class LocalStorageBase
+    {
+      public:
+        virtual ~LocalStorageBase() { }
+      protected:
+        LocalStorageBase() { }
+        void StorageDestroyed();
+        virtual void * Allocate() const = 0;
+        virtual void Deallocate(void * ptr) const = 0;
+        virtual void * GetStorage() const;
+      private:
+        void ThreadDestroyed(PThread * thread) const;
+        typedef std::map<PThread *, void *> StorageMap;
+        mutable StorageMap m_storage;
+        PMutex m_mutex;
+      friend class PThread;
+    };
+    friend class LocalStorageBase;
+
   private:
     PThread(bool isProcess);
     // Create a new thread instance as part of a <code>PProcess</code> class.
+
+    void InternalDestroy();
 
     friend class PProcess;
     friend class PExternalThread;
@@ -380,6 +404,7 @@ class PThread : public PObject
 
     PThreadIdentifier m_threadId;
 
+    std::set<const LocalStorageBase *> m_localStorage;
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -738,39 +763,20 @@ class PThreadObj2Arg : public PThread
 //
 
 template <class Storage_T>
-class PThreadLocalStorage
+class PThreadLocalStorage : public PThread::LocalStorageBase
 {
   public:
-    typedef typename PThread::LocalStorageKey Key_T;
     typedef Storage_T * Ptr_T;
 
-    PThreadLocalStorage()  { PThread::CreateLocalStorage(m_key); }
-    ~PThreadLocalStorage() { PThread::RemoveLocalStorage(m_key); }
+    ~PThreadLocalStorage()        { this->StorageDestroyed(); }
+    Ptr_T Get() const             { return  (Ptr_T)this->GetStorage(); }
+    operator Ptr_T() const        { return  (Ptr_T)this->GetStorage(); }
+    Ptr_T operator->() const      { return  (Ptr_T)this->GetStorage(); }
+    Storage_T & operator*() const { return *(Ptr_T)this->GetStorage(); }
 
-    Key_T GetKey() const   { return m_key; }
-
-    Ptr_T Get() const
-    {
-      // Inherently thread safe
-      Ptr_T ptr = (Ptr_T)PThread::GetLocalStoragePtr(m_key);
-      if (ptr == NULL)
-        PThread::SetLocalStoragePtr(m_key, ptr = new Storage_T());
-      return (Ptr_T)ptr;
-    }
-
-    operator Ptr_T() const { return Get(); }
-    Ptr_T operator->() const { return Get(); }
-    Storage_T & operator*() const { return *Get(); }
-
-    void Clean()
-    {
-      // Inherently thread safe
-      delete (Ptr_T)PThread::GetLocalStoragePtr(m_key);
-      PThread::SetLocalStoragePtr(m_key, NULL);
-    }
-
-  private:
-    Key_T m_key;
+  protected:
+    virtual void * Allocate() const           { return new Storage_T(); }
+    virtual void Deallocate(void * ptr) const { delete (Ptr_T)ptr; }
 };
 
 

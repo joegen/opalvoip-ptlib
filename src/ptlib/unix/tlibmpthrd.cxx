@@ -351,11 +351,8 @@ PThread::PThread(PINDEX stackSize,
 }
 
 
-PThread::~PThread()
+void PThread::InternalDestroy()
 {
-  if (!IsTerminated()) 
-    Terminate();
-
   ::close(unblockPipe[0]);
   ::close(unblockPipe[1]);
 
@@ -367,6 +364,7 @@ PThread::~PThread()
 #endif
   PX_signature = kMPDeadSig;
 }
+
 
 void PThread::PX_NewThread(PBoolean startSuspended)
 {

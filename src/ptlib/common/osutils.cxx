@@ -66,15 +66,7 @@ class PExternalThread : public PThread
 
     ~PExternalThread()
     {
-#ifdef _WIN32
-      CleanUp();
-#endif
-
       PTRACE(5, "PTLib\tDestroyed external thread " << this << ", id " << GetThreadId());
-
-#if PTRACING
-      PTrace::Cleanup();
-#endif
     }
 
     virtual void Main()
@@ -634,11 +626,6 @@ PTrace::Block::~Block()
       s << '=';
     s << ' ' << name << PTrace::End;
   }
-}
-
-void PTrace::Cleanup()
-{
-  PTraceInfo::Instance().m_threadStorage.Clean();
 }
 
 
@@ -1650,6 +1637,11 @@ PProcess::PProcess(const char * manuf, const char * name,
 {
   m_activeThreads[GetCurrentThreadId()] = this;
 
+#if PTRACING
+  // Do this before PProcessInstance is set to avoid a recursive loop with PTimedMutex
+  PTrace::SetLevel(0);
+#endif
+
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
 
@@ -2123,6 +2115,75 @@ PThread * PThread::Create(const PNotifier & notifier,
   return NULL;
 }
 
+
+PThread::~PThread()
+{
+  if (!m_isProcess && !IsTerminated())
+    Terminate();
+
+  InternalDestroy();
+
+  if (!m_isProcess && m_threadId != PNullThreadIdentifier) {
+    PProcess & process = PProcess::Current();
+    process.m_activeThreadMutex.Wait();
+    process.m_activeThreads.erase(m_threadId);
+    process.m_activeThreadMutex.Signal();
+    PTRACE(5, "PTLib\tDestroyed thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
+  }
+
+  // Clean up any thread local storage
+  for (std::set<const LocalStorageBase *>::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
+    (*it)->ThreadDestroyed(this);
+}
+
+
+void PThread::LocalStorageBase::StorageDestroyed()
+{
+  m_mutex.Wait();
+  for (StorageMap::iterator it = m_storage.begin(); it != m_storage.end(); ++it) {
+    Deallocate(it->second);
+    it->first->m_localStorage.erase(this);
+  }
+  m_mutex.Signal();
+}
+
+
+void PThread::LocalStorageBase::ThreadDestroyed(PThread * thread) const
+{
+  PWaitAndSignal mutex(m_mutex);
+
+  StorageMap::iterator it = m_storage.find(thread);
+  if (it == m_storage.end())
+    return;
+
+  Deallocate(it->second);
+  m_storage.erase(it);
+}
+
+
+void * PThread::LocalStorageBase::GetStorage() const
+{
+  PWaitAndSignal mutex(m_mutex);
+
+  PThread * thread = PThread::Current();
+  if (thread == NULL)
+    return NULL;
+
+  StorageMap::const_iterator it = m_storage.find(thread);
+  if (it != m_storage.end())
+    return it->second;
+
+  void * threadLocal = Allocate();
+  if (threadLocal == NULL)
+    return NULL;
+
+  m_storage[thread] = threadLocal;
+  thread->m_localStorage.insert(this);
+  return threadLocal;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 
 PSimpleThread::PSimpleThread(const PNotifier & notifier,
                              INT param,
