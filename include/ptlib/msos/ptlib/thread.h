@@ -41,17 +41,10 @@
     HANDLE GetHandle() const { return m_threadHandle; }
     void Win32AttachThreadInput();
 
-    typedef DWORD LocalStorageKey;
-    __inline static void   CreateLocalStorage(LocalStorageKey & key) { key = TlsAlloc(); }
-    __inline static void   RemoveLocalStorage(const LocalStorageKey & key) { TlsFree(key);  }
-    __inline static void * GetLocalStoragePtr(const LocalStorageKey & key) { return TlsGetValue(key); }
-    __inline static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr) { TlsSetValue(key, ptr); }
-
   protected:
     PWin32Handle m_threadHandle;
 
   private:
-    void CleanUp();
     static UINT __stdcall MainFunction(void * thread);
 
   

@@ -811,40 +811,5 @@ void* POSIX_Init(void*);
 #include "tlibvx.cxx"
 #endif
 
-static PAtomicInteger NextLocalStorageKey;
-
-void PThread::CreateLocalStorage(LocalStorageKey & key)
-{
-  key = ++NextLocalStorageKey;
-}
-
-
-void PThread::RemoveLocalStorage(const LocalStorageKey & key)
-{
-  PThread * current = PThread::Current();
-  if (current != NULL)
-    current->m_localStorage.erase(key);
-}
-
-
-void * PThread::GetLocalStoragePtr(const LocalStorageKey & key)
-{
-  PThread * current = PThread::Current();
-  if (current != NULL) {
-    map<unsigned, void *>::iterator it = current->m_localStorage.find(key);
-    if (it != current->m_localStorage.end())
-      return it->second;
-  }
-  return NULL;
-}
-
-
-void PThread::SetLocalStoragePtr(const LocalStorageKey & key, void * ptr)
-{
-  PThread * current = PThread::Current();
-  if (current != NULL)
-    current->m_localStorage[key] = ptr;
-}
-
 #endif // P_PTHREADS
 

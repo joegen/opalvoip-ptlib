@@ -39,9 +39,11 @@
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
-    int PXBlockOnIO(int handle,
-                    int type,
-                   const PTimeInterval & timeout);
+    int PXBlockOnIO(
+      int handle,
+      int type,
+      const PTimeInterval & timeout
+    );
 
     void PXAbortBlock() const;
 
@@ -51,12 +53,6 @@
 #ifndef P_HAS_SEMAPHORES
     void PXSetWaitingSemaphore(PSemaphore * sem);
 #endif
-
-    typedef pthread_key_t LocalStorageKey;
-    __inline static void   CreateLocalStorage(LocalStorageKey & key) { pthread_key_create(&key, NULL); }
-    __inline static void   RemoveLocalStorage(const LocalStorageKey & key) { pthread_key_delete(key); }
-    __inline static void * GetLocalStoragePtr(const LocalStorageKey & key) { return pthread_getspecific(key); }
-    __inline static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr) { pthread_setspecific(key, ptr); }
 
   protected:
     static void * PX_ThreadStart(void *);
@@ -82,14 +78,6 @@
     friend void PX_SuspendSignalHandler(int);
 
 #else // P_PTHREADS
-
-    typedef unsigned LocalStorageKey;
-    static void   CreateLocalStorage(LocalStorageKey & key);
-    static void   RemoveLocalStorage(const LocalStorageKey & key);
-    static void * GetLocalStoragePtr(const LocalStorageKey & key);
-    static void   SetLocalStoragePtr(const LocalStorageKey & key, void * ptr);
-
-    map<unsigned, void *> m_localStorage;
 
 #if defined(__BEOS__)
 
