@@ -141,83 +141,25 @@ static int GetSchedParam(PThread::Priority priority, sched_param & param)
 #endif
 
 
-PDECLARE_CLASS(PHouseKeepingThread, PThread)
-  public:
-    PHouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread, HighestPriority, "Housekeeper")
-      { closing = false; Resume(); }
-
-    void Main();
-    void SetClosing() { closing = true; }
-
-  protected:
-    PBoolean closing;
-};
-
-
 static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
 
 
 #define new PNEW
 
 
-void PHouseKeepingThread::Main()
+void PProcess::HouseKeeping()
 {
-  PProcess & process = PProcess::Current();
-
-  while (!closing) {
-    PTimeInterval delay = process.timers.Process();
+  while (m_keepingHouse) {
+    PTimeInterval delay = m_timers.Process();
     if (delay > 10000)
       delay = 10000;
 
-    process.breakBlock.Wait(delay);
+    m_signalHouseKeeper.Wait(delay);
 
-    process.m_activeThreadMutex.Wait();
-    PBoolean found;
-    do {
-      found = false;
-      for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
-        PThread * thread = it->second;
-        if (thread->IsAutoDelete() && thread->IsTerminated()) {
-          /* unlock the m_activeThreadMutex to avoid deadlocks, as user may do
-             who knows what in their derived class destructor and this is a
-             critical mutex, used by all sorts of stuff. */
-          process.m_activeThreadMutex.Signal();
-          delete thread;
-          process.m_activeThreadMutex.Wait();
+    InternalCleanAutoDeleteThreads();
 
-          found = true;
-          break;
-        }
-      }
-    } while (found);
-    process.m_activeThreadMutex.Signal();
-
-    process.PXCheckSignals();
+    PXCheckSignals();
   }
-
-  PTRACE(5, "Housekeeping thread ended");
-}
-
-
-bool PProcess::SignalTimerChange()
-{
-  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
-    return false;
-
-  PWaitAndSignal m(housekeepingMutex);
-  if (housekeepingThread == NULL) {
-#if PMEMORY_CHECK
-    PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(true);
-#endif
-    housekeepingThread = new PHouseKeepingThread;
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
-#endif
-  }
-
-  breakBlock.Signal();
-  return true;
 }
 
 
@@ -232,9 +174,6 @@ void PProcess::Construct()
 #else
   maxHandles = 500; // arbitrary value
 #endif
-
-  // initialise the housekeeping thread
-  housekeepingThread = NULL;
 
 #ifdef P_MACOSX
   // records the main thread for priority adjusting
@@ -274,40 +213,11 @@ PProcess::~PProcess()
 {
   PreShutdown();
 
-  // Don't wait for housekeeper to stop if Terminate() is called from it.
-  {
-    PWaitAndSignal m(housekeepingMutex);
-    if ((housekeepingThread != NULL) && (PThread::Current() != housekeepingThread)) {
-      housekeepingThread->SetClosing();
-      SignalTimerChange();
-      housekeepingThread->WaitForTermination();
-      delete housekeepingThread;
-    }
-  }
-
   CommonDestruct();
 
   PostShutdown();
 }
 
-
-void PProcess::PXSetThread(pthread_t id, PThread * thread)
-{
-  PThread * currentThread = NULL;
-
-  m_activeThreadMutex.Wait();
-
-  ThreadMap::iterator it = m_activeThreads.find(id);
-  if (it != m_activeThreads.end() && it->second->IsAutoDelete())
-    currentThread = it->second;
-
-  m_activeThreads[id] = thread;
-
-  m_activeThreadMutex.Signal();
-
-  if (currentThread != NULL) 
-    delete currentThread;
-}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -347,9 +257,7 @@ PThread::PThread(bool isProcess)
   if (isProcess)
     return;
 
-  PProcess & process = PProcess::Current();
-  process.PXSetThread(m_threadId, this);
-  process.SignalTimerChange();
+  PProcess::Current().InternalSetThread(this);
 }
 
 
@@ -500,28 +408,13 @@ void PThread::Restart()
 
   PProcess & process = PProcess::Current();
 
-  // lock the thread list
-  process.m_activeThreadMutex.Wait();
-
   // create the thread
   PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, PX_ThreadStart, this));
 
   // put the thread into the thread list
-  process.PXSetThread(m_threadId, this);
-
-  // Inside process.m_activeThreadMutex so simple static is OK
-  size_t newHighWaterMark = 0;
-  static size_t highWaterMark = 0;
-  if (process.m_activeThreads.size() > highWaterMark)
-    newHighWaterMark = highWaterMark = process.m_activeThreads.size();
-
-  // unlock the thread list
-  process.m_activeThreadMutex.Signal();
+  process.InternalSetThread(this);
 
   pthread_attr_destroy(&threadAttr);
-
-  PTRACE_IF(newHighWaterMark%100 == 0 ? 2 : 4, newHighWaterMark > 0,
-            "PTLib\tThread high water mark set: " << newHighWaterMark);
 
 #ifdef P_MACOSX
   if (PX_priority == HighestPriority) {
@@ -625,12 +518,6 @@ PBoolean PThread::IsSuspended() const
   return suspended;
 }
 
-
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || (!m_isProcess && this != &PProcess::Current()), PLogicError);
-  m_autoDelete = deletion == AutoDeleteThread;
-}
 
 #ifdef P_MACOSX
 // obtain thread priority of the main thread

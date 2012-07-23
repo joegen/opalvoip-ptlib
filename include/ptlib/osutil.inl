@@ -530,7 +530,7 @@ PINLINE int PProcess::GetMaxHandles() const
   { return maxHandles; }
 
 PINLINE PTimerList * PProcess::GetTimerList()
-  { return &timers; }
+  { return &m_timers; }
 
 PINLINE void PProcess::SetTerminationValue(int value)
   { terminationValue = value; }
