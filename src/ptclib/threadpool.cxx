@@ -48,6 +48,7 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
                                  PThread::Priority priority)
   : m_maxWorkerCount(maxWorkerCount)
   , m_maxWorkUnitCount(maxWorkUnitCount)
+  , m_highWaterMark(0)
   , m_threadName(threadName != NULL ? threadName : "Pool")
   , m_priority(priority)
 {
@@ -55,14 +56,12 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
 
 PThreadPoolBase::~PThreadPoolBase()
 {
-  for (;;) {
-    PWaitAndSignal mutex(m_listMutex);
-    if (m_workers.size() == 0)
-      break;
-
-    WorkerThreadBase * worker = m_workers[0];
-    worker->Shutdown();
+  while (!m_workers.empty()) {
+    m_listMutex.Wait();
+    WorkerThreadBase * worker = m_workers.front();
     m_workers.erase(m_workers.begin());
+    m_listMutex.Signal();
+
     StopWorker(worker);
   }
 }
@@ -105,9 +104,18 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
 {
   // create a new worker thread
   WorkerThreadBase * worker = CreateWorkerThread();
-  worker->Resume();
+
+  m_listMutex.Wait();
   m_workers.push_back(worker);
 
+  if (m_workers.size() > m_highWaterMark) {
+    m_highWaterMark = m_workers.size();
+    PTRACE(4, "ThreadPool\tTotal threads in pool: " << m_highWaterMark);
+  }
+
+  m_listMutex.Signal();
+
+  worker->Resume();
   return worker;
 }
 
@@ -155,6 +163,7 @@ void PThreadPoolBase::StopWorker(WorkerThreadBase * worker)
   if (!worker->WaitForTermination(10000)) {
     PTRACE(4, "ThreadPool\tWorker did not terminate promptly");
   }
+
   PTRACE(4, "ThreadPool\tDestroying pool thread");
   delete worker;
 }
