@@ -363,7 +363,7 @@ PMemoryHeap::Wrapper::~Wrapper()
 
 PMemoryHeap::PMemoryHeap()
 {
-  isDestroyed = PFalse;
+  isDestroyed = false;
 
   listHead = NULL;
   listTail = NULL;
@@ -406,12 +406,13 @@ PMemoryHeap::PMemoryHeap()
 
 PMemoryHeap::~PMemoryHeap()
 {
+  isDestroyed = true;
+
   if (leakDumpStream != NULL) {
+    *leakDumpStream << "Final memory statistics:\n";
     InternalDumpStatistics(*leakDumpStream);
     InternalDumpObjectsSince(firstRealObject, *leakDumpStream);
   }
-
-  isDestroyed = PTrue;
 
 #if defined(_WIN32)
   DeleteCriticalSection(&mutex);
@@ -464,15 +465,8 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   if (firstRealObject == 0 && (flags&NoLeakPrint) == 0)
     firstRealObject = allocationRequest;
 
-  if (allocationBreakpoint != 0 && allocationRequest == allocationBreakpoint) {
-#ifdef _WIN32
-    __asm int 3;
-#elif defined(P_VXWORKS)
-    kill(taskIdSelf(), SIGABRT);
-#else
-    kill(getpid(), SIGABRT);
-#endif 
-  }
+  if (allocationBreakpoint != 0 && allocationRequest == allocationBreakpoint)
+    PBreakToDebugger();
 
   currentMemoryUsage += nSize;
   if (currentMemoryUsage > peakMemoryUsage)
@@ -534,15 +528,8 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
     return NULL;
   }
 
-  if (mem->allocationBreakpoint != 0 && mem->allocationRequest == mem->allocationBreakpoint) {
-#ifdef _WIN32
-    __asm int 3;
-#elif defined(P_VXWORKS)
-    kill(taskIdSelf(), SIGABRT);
-#else
-    kill(getpid(), SIGABRT);
-#endif 
-  }
+  if (mem->allocationBreakpoint != 0 && mem->allocationRequest == mem->allocationBreakpoint)
+    PBreakToDebugger();
 
   mem->currentMemoryUsage -= obj->size;
   mem->currentMemoryUsage += nSize;
@@ -787,7 +774,7 @@ void PMemoryHeap::DumpObjectsSince(const State & state, ostream & strm)
 
 void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 {
-  PBoolean first = PTrue;
+  bool first = true;
   for (Header * obj = listHead; obj != NULL; obj = obj->next) {
     if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
       continue;
@@ -797,7 +784,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 #if !defined(_WIN32)
       cin.get();
 #endif
-      first = PFalse;
+      first = false;
     }
 
     BYTE * data = (BYTE *)&obj[1];
@@ -810,9 +797,11 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     if (obj->className != NULL)
       strm << '"' << obj->className << "\" ";
 
-    PThread * thread = PProcess::Current().GetThread(obj->threadId);
-    if (thread != NULL)
-      strm << '"' << thread->GetThreadName() << "\" ";
+    if (PProcess::IsInitialised()) {
+      PThread * thread = PProcess::Current().GetThread(obj->threadId);
+      if (thread != NULL)
+        strm << '"' << thread->GetThreadName() << "\" ";
+    }
 
     strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->size), PFalse)
                  << dec << setfill(' ') << endl;
