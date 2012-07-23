@@ -11525,12 +11525,11 @@ if test "${enable_memcheck+set}" = set; then :
   enableval=$enable_memcheck;
 fi
 
-
-if test "$memcheck" = "yes" ; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Memory checking... $enable_memcheck" >&5
+$as_echo "$as_me: Memory checking... $enable_memcheck" >&6;}
+if test "$enable_memcheck" = "yes" ; then
   $as_echo "#define PMEMORY_CHECK 1" >>confdefs.h
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Memory checking enabled" >&5
-$as_echo "$as_me: Memory checking enabled" >&6;}
 fi
 
 
