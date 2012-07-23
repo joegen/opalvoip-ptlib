@@ -1772,9 +1772,7 @@ PProcess & PProcess::Current()
 {
   if (PProcessInstance == NULL) {
     fputs("Catastrophic failure, PProcess::Current() = NULL!!\n", stderr);
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE) && !defined(_WIN64)
-    __asm int 3;
-#endif
+    PBreakToDebugger();
     _exit(1);
   }
   return *PProcessInstance;
