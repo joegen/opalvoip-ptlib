@@ -318,6 +318,7 @@ void *dlsym(void *handle, const char *symbol);
 #undef TCP_MAXSEG
 #endif // MPThreads
 
+#include <unistd.h>
 #include <paths.h>
 #include <termios.h>
 #include <sys/fcntl.h>
@@ -325,6 +326,7 @@ void *dlsym(void *handle, const char *symbol);
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/signal.h>
+#include <signal.h>
 #include <net/if.h>
 #include <netinet/tcp.h>
 #include <sys/ioctl.h>
@@ -334,9 +336,6 @@ typedef int socklen_t;
 #endif
  
 #define HAS_IFREQ
-#ifndef P_IPHONEOS
-#define _POSIX_MONOTONIC_CLOCK
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
