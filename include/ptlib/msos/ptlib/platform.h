@@ -320,6 +320,12 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 typedef UINT  PThreadIdentifier;
 typedef DWORD PProcessIdentifier;
 
+#ifdef _DEBUG
+  __inline void PBreakToDebugger() { ::DebugBreak(); }
+#else
+  __inline void PBreakToDebugger() { }
+#endif
+
 #if defined(_MSC_VER)
   #pragma warning(disable:4201)
 #endif

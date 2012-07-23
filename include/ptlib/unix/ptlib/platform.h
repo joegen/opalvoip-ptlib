@@ -548,6 +548,12 @@ typedef pid_t PProcessIdentifier;
 
 #endif
 
+#ifdef _DEBUG
+  __inline void PBreakToDebugger() { kill(getpid(), SIGABRT); }
+#else
+  __inline void PBreakToDebugger() { }
+#endif
+
 
 ///////////////////////////////////////////
 //
