@@ -40,8 +40,6 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     friend class PApplication;
     friend class PServiceProcess;
     friend void PXSignalHandler(int);
-    friend class PHouseKeepingThread;
-    friend PString PX_GetThreadName(pthread_t id);
 
     ~PProcess();
 
@@ -66,48 +64,5 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     void CreateConfigFilesDictionary();
     PAbstractDictionary * configFiles;
 
-
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS) || defined (__BEOS__)
-
-  public:
-    bool SignalTimerChange();
-    void PXSetThread(pthread_t id, PThread * thread);
-
-  protected:
-    PSyncPoint breakBlock;
-    class PHouseKeepingThread * housekeepingThread;
-    PMutex housekeepingMutex;
-
-#elif defined(VX_TASKS)
-
-  public:
-    bool SignalTimerChange();
-
-  private:
-    PLIST(ThreadList, PThread);
-    ThreadList autoDeleteThreads;
-    PMutex deleteThreadMutex;
-
-    PDECLARE_CLASS(HouseKeepingThread, PThread)
-        public:
-        HouseKeepingThread();
-        void Main();
-        PSyncPoint breakBlock;
-    };
-    friend class HouseKeepingThread;
-    HouseKeepingThread * houseKeeper;
-    // Thread for doing timers, thread clean up etc.
-
-  friend PThread * PThread::Current();
-  friend int PThread::ThreadFunction(void * thread);
-
-
-#else
-
-  public:
-    void PXAbortIOBlock(int fd);
-  protected:
-    PXFdDict     ioBlocks[3];
-#endif
 
 // End Of File ////////////////////////////////////////////////////////////////

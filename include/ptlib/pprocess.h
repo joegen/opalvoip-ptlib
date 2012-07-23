@@ -643,7 +643,7 @@ class PProcess : public PThread
     /**Internal shutdown function called directly from the ~PProcess
        <code>InternalMain()</code>. The user should never call this function.
      */
-    static void PreShutdown();
+    void PreShutdown();
     static void PostShutdown();
 
     /// Main function for process, called from real main after initialisation
@@ -702,6 +702,9 @@ class PProcess : public PThread
     };
   //@}
 
+    PThread * GetThread(PThreadIdentifier threadId) const;
+    bool SignalTimerChange();
+
   protected:
     void Construct();
 
@@ -724,13 +727,24 @@ class PProcess : public PThread
 
     PTime programStartTime;           // time at which process was intantiated, i.e. started
 
-    bool m_shuttingDown;
+    bool   m_shuttingDown;
+    PMutex m_threadMutex;
 
     typedef std::map<PThreadIdentifier, PThread *> ThreadMap;
     ThreadMap m_activeThreads;
-    PMutex    m_activeThreadMutex;
+    void InternalSetThread(PThread * thread);
     
-    PTimerList timers;
+    typedef PList<PThread> ThreadList;
+    ThreadList m_autoDeleteThreads;
+    void InternalSetAutoDeleteThread(PThread * thread);
+    void InternalCleanAutoDeleteThreads();
+
+    PAtomicBoolean m_keepingHouse;
+    PThread      * m_houseKeeper; // Thread for doing timers, thread clean up etc.
+    PSyncPoint     m_signalHouseKeeper;
+    void HouseKeeping();
+
+    PTimerList m_timers;
 
     PProcessIdentifier m_processID;
 

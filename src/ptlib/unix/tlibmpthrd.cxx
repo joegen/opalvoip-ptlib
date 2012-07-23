@@ -39,19 +39,6 @@
 extern int debug_mpthreads;
 #endif
 
-PDECLARE_CLASS(PHouseKeepingThread, PThread)
-  public:
-    PHouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread, HighestPriority, "Housekeeper")
-      { closing = PFalse; Resume(); }
-
-    void Main();
-    void SetClosing() { closing = PTrue; }
-
-  protected:
-    PBoolean closing;
-};
-
 
 #define new PNEW
 
@@ -215,13 +202,11 @@ static PBoolean PollNotificationQueue(Duration timeout)
     return err == noErr;
 }
 
-void PHouseKeepingThread::Main()
+void PProcess::HouseKeeping()
 {
-    PProcess & process = PProcess::Current();
-
     SetUpTermQueue();
 
-    while (!closing) {
+    while (m_keepingHouse) {
         PTimeInterval waitTime = process.timers.Process();
 
         Duration timeout;
@@ -262,36 +247,30 @@ void PProcess::Construct()
 
   SetUpTermQueue();
 
-  // initialise the housekeeping thread
-  housekeepingThread = NULL;
-
   CommonConstruct();
 }
 
 
 PProcess::~PProcess()
 {
-  // Don't wait for housekeeper to stop if Terminate() is called from it.
-  if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
-    housekeepingThread->SetClosing();
-    SignalTimerChange();
-    housekeepingThread->WaitForTermination();
-    delete housekeepingThread;
-    housekeepingThread = 0;
-  }
+  PreShutdown();
+
   // XXX try to gracefully handle shutdown transient where the housekeeping
   // XXX thread hasn't managed to clean up all the threads
   while (PollNotificationQueue(kDurationImmediate)) ;
   
   CommonDestruct();
+
+  PostShutdown();
 }
 
 
-PThread::PThread()
+PThread::PThread(bool isProcess)
+  : m_isProcess(isProcess)
+  , m_autoDelete(!isProcess)
 {
   OSStatus err        = 0;
   PX_origStackSize    = 0;
-  autoDelete          = PFalse;
   PX_threadId         = MPCurrentTaskID();
   PX_suspendCount     = 0;
 
@@ -307,18 +286,10 @@ PThread::PThread()
       throw std::bad_alloc();
   }
 
-  if (!PProcess::IsInitialised())
+  if (isProcess)
     return;
 
-  autoDelete = true;
-
-  PProcess & process = PProcess::Current();
-
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(PX_threadId, this);
-  process.activeThreadMutex.Signal();
-
-  process.SignalTimerChange();
+  PProcess::Current().InternalSetThread(this);
 }
 
 
@@ -434,26 +405,6 @@ long PThread::PX_ThreadStart(void * arg)
       fprintf(stderr,"thread %p returning\n", thread);
 #endif
   return 0;
-}
-
-
-void PProcess::SignalTimerChange()
-{
-  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
-    return false;
-
-  if (housekeepingThread == NULL) {
-#if PMEMORY_CHECK
-    PBoolean oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(PTrue);
-#endif
-    housekeepingThread = new PHouseKeepingThread;
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
-#endif
-  }
-
-  SetUpTermQueue();
-  MPNotifyQueue(terminationNotificationQueue, 0, 0, 0);
 }
 
 
@@ -611,13 +562,6 @@ PBoolean PThread::IsSuspended() const
   err = MPSignalSemaphore(PX_suspendMutex);
   PAssert(err == 0, "MPSignalSemaphore failed");
   return suspended;
-}
-
-
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  autoDelete = deletion == AutoDeleteThread;
 }
 
 

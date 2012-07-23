@@ -1036,8 +1036,6 @@ void PProcess::Construct()
   _wsetsize(1, &ws);
 #endif
 
-  houseKeeper = NULL;
-
 #ifndef _WIN32_WCE 
   PreviousSigIntHandler = signal(SIGINT, SignalHandler);
   PreviousSigTermHandler = signal(SIGTERM, SignalHandler);

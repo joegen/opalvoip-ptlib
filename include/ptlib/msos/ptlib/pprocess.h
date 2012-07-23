@@ -38,33 +38,12 @@
   public:
     ~PProcess();
 
-    bool SignalTimerChange();
-    // Signal to the timer thread that a change was made.
-
     virtual PBoolean IsServiceProcess() const;
     virtual PBoolean IsGUIProcess() const;
     void WaitOnExitConsoleWindow();
 
   private:
-    PLIST(ThreadList, PThread);
-    ThreadList autoDeleteThreads;
-    PMutex deleteThreadMutex;
-
-    class HouseKeepingThread : public PThread
-    {
-        PCLASSINFO(HouseKeepingThread, PThread)
-      public:
-        HouseKeepingThread();
-        ~HouseKeepingThread();
-        void Main();
-        PSyncPoint m_breakBlock;
-        bool       m_running;
-    };
-    HouseKeepingThread * houseKeeper;
-    // Thread for doing timers, thread clean up etc.
-
   friend PThread * PThread::Current();
-  friend void HouseKeepingThread::Main();
   friend UINT __stdcall PThread::MainFunction(void * thread);
   friend class PServiceProcess;
   friend class PApplication;
