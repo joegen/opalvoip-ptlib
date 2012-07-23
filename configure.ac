@@ -1667,10 +1667,9 @@ dnl ########################################################################
 dnl look for MEMORY_CHECK enabled.
 
 AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
-
-if test "$memcheck" = "yes" ; then
+AC_MSG_NOTICE(Memory checking... $enable_memcheck)
+if test "$enable_memcheck" = "yes" ; then
   AC_DEFINE(PMEMORY_CHECK, 1)
-  AC_MSG_NOTICE(Memory checking enabled)
 fi
 
 
