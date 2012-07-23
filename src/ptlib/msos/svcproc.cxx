@@ -444,12 +444,12 @@ int PServiceProcess::InternalMain(void * arg)
     DestroyWindow(controlWindow);
 
   // Set thread ID for process to this thread
-  m_activeThreadMutex.Wait();
+  m_threadMutex.Wait();
   m_activeThreads.erase(m_threadId);
   m_threadId = GetCurrentThreadId();
   m_threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
-  m_activeThreadMutex.Signal();
+  m_threadMutex.Signal();
   OnStop();
 
   controlWindow = NULL; // This stops the logging
@@ -1025,10 +1025,10 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 
 void PServiceProcess::ThreadEntry()
 {
-  m_activeThreadMutex.Wait();
+  m_threadMutex.Wait();
   m_threadId = ::GetCurrentThreadId();
   m_activeThreads[m_threadId] = this;
-  m_activeThreadMutex.Signal();
+  m_threadMutex.Signal();
 
   SetTerminationValue(1);
   bool ok = OnStart();

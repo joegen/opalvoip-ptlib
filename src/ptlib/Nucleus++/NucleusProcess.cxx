@@ -108,27 +108,9 @@ void PProcess::Construct()
 // Normally in CommonConstruct
   CreateConfigFilesDictionary();
 
-// Apparently housekeepingThread is undefined.  Might need one, but I don't
-// know what to do with it!
-//  housekeepingThread = NULL;
-
 #pragma message("PProcess::Construct() looks a little light relative to the Unix version!")
   }
 
-void PProcess::SignalTimerChange()
-{
-  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
-    return false;
-
-#if __NUCLEUS_PLUS__
-#pragma message ("Do we need to do anything in PProcess::SignalTimerChange?")
-#else
-  if (housekeepingThread == NULL)
-    housekeepingThread = PNEW HouseKeepingThread;
-  else
-    timerChangeSemaphore.Signal();
-#endif
-}
 
 // stolen from tlibthrd
 void PProcess::PXCheckSignals()

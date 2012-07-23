@@ -51,10 +51,6 @@
 #include <signal.h>
 #endif
 
-#ifdef P_LINUX
-extern PString PX_GetThreadName(pthread_t);
-#endif
-
 
 PFactoryBase::FactoryMap & PFactoryBase::GetFactories()
 {
@@ -322,6 +318,7 @@ void operator delete[](void * ptr)
 
 DWORD PMemoryHeap::allocationBreakpoint = 0;
 char PMemoryHeap::Header::GuardBytes[NumGuardBytes];
+static const size_t MaxMemoryDumBytes = 16;
 
 
 PMemoryHeap::Wrapper::Wrapper()
@@ -493,9 +490,7 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   obj->size      = nSize;
   obj->fileName  = file;
   obj->line      = (WORD)line;
-#ifdef P_LINUX
-   obj->thread    = pthread_self();
-#endif
+   obj->threadId = PThread::GetCurrentThreadId();
   obj->className = className;
   obj->request   = allocationRequest++;
   obj->flags     = flags;
@@ -812,14 +807,14 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
     strm << '#' << obj->request << ' ' << (void *)data << " [" << obj->size << "] ";
 
-#ifdef P_LINUX
-    strm << '"' << PX_GetThreadName(obj->thread) << "\" ";
-#endif
-
     if (obj->className != NULL)
       strm << '"' << obj->className << "\" ";
 
-    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(16, obj->size), PFalse)
+    PThread * thread = PProcess::Current().GetThread(obj->threadId);
+    if (thread != NULL)
+      strm << '"' << thread->GetThreadName() << "\" ";
+
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->size), PFalse)
                  << dec << setfill(' ') << endl;
   }
 }

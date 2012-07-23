@@ -847,11 +847,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #endif
 */
 
-  process.m_activeThreadMutex.Wait();
-  process.m_activeThreads[thread->m_threadId] = thread;
-  process.m_activeThreadMutex.Signal();
-
-  process.SignalTimerChange();
+  process.InternalSetThread(thread);
 
 #if defined(P_WIN_COM)
   ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -892,15 +888,7 @@ PThread::PThread(bool isProcess)
 
   m_threadHandle.Duplicate(GetCurrentThread());
 
-  PProcess & process = PProcess::Current();
-
-  process.m_activeThreadMutex.Wait();
-  process.m_activeThreads[m_threadId] = this;
-  process.m_activeThreadMutex.Signal();
-
-  process.deleteThreadMutex.Wait();
-  process.autoDeleteThreads.Append(this);
-  process.deleteThreadMutex.Signal();
+  PProcess::Current().InternalSetThread(this);
 }
 
 
@@ -925,13 +913,6 @@ PThread::PThread(PINDEX stackSize,
   PAssertOS(m_threadHandle.IsValid());
 
   SetPriority(priorityLevel);
-
-  if (IsAutoDelete()) {
-    PProcess & process = PProcess::Current();
-    process.deleteThreadMutex.Wait();
-    process.autoDeleteThreads.Append(this);
-    process.deleteThreadMutex.Signal();
-  }
 }
 
 
@@ -994,19 +975,16 @@ void PThread::Terminate()
   if (!PAssert(!m_isProcess, "Cannot terminate the process!"))
     return;
 
-  if (Current() == this)
+  if (GetThreadId() == GetCurrentThreadId())
     ExitThread(0);
-  else
+  else if (m_threadHandle.IsValid())
     TerminateThread(m_threadHandle, 1);
 }
 
 
 PBoolean PThread::IsTerminated() const
 {
-  if (this == PThread::Current())
-    return PFalse;
-
-  return WaitForTermination(0);
+  return m_threadHandle.Wait(0);
 }
 
 
@@ -1018,7 +996,10 @@ void PThread::WaitForTermination() const
 
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-  if ((this == PThread::Current()) || !m_threadHandle.IsValid()) {
+  if (!m_threadHandle.IsValid())
+    return true;
+
+  if (GetThreadId() == GetCurrentThreadId()) {
     PTRACE(3, "PTLib\tWaitForTermination short circuited");
     return true;
   }
@@ -1046,35 +1027,11 @@ void PThread::Resume()
 
 PBoolean PThread::IsSuspended() const
 {
-  if (this == PThread::Current())
+  if (GetThreadId() == GetCurrentThreadId())
     return false;
 
   SuspendThread(m_threadHandle);
   return ResumeThread(m_threadHandle) > 1;
-}
-
-
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || (!m_isProcess && this != &PProcess::Current()), PLogicError);
-  bool newAutoDelete = (deletion == AutoDeleteThread);
-  if (m_autoDelete == newAutoDelete)
-    return;
-
-  m_autoDelete = newAutoDelete;
-
-  PProcess & process = PProcess::Current();
-
-  process.deleteThreadMutex.Wait();
-  if (m_autoDelete)
-    process.autoDeleteThreads.Append(this);
-  else {
-    process.autoDeleteThreads.DisallowDeleteObjects();
-    process.autoDeleteThreads.Remove(this);
-    process.autoDeleteThreads.AllowDeleteObjects();
-  }
-  process.deleteThreadMutex.Signal();
-
 }
 
 
@@ -1129,63 +1086,40 @@ void PThread::Yield()
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess::TimerThread
 
-PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, HighestPriority, "PTLib Housekeeper")
-  , m_running(true)
+void PProcess::HouseKeeping()
 {
-  Resume();
-}
-
-
-PProcess::HouseKeepingThread::~HouseKeepingThread()
-{
-  m_running = false;
-  m_breakBlock.Signal();
-  WaitForTermination(500);
-}
-
-
-void PProcess::HouseKeepingThread::Main()
-{
-  PProcess & process = PProcess::Current();
-
-  while (m_running) {
+  while (m_keepingHouse) {
 
     // collect a list of thread handles to check, and clean up 
     // handles for threads that disappeared without telling us
-    process.deleteThreadMutex.Wait();
+    m_threadMutex.Wait();
     HANDLE handles[MAXIMUM_WAIT_OBJECTS];
     DWORD numHandles = 1;
-    handles[0] = m_breakBlock.GetHandle();
-    ThreadList::iterator thread = process.autoDeleteThreads.begin();
-    while (thread != process.autoDeleteThreads.end()) {
+    handles[0] = m_signalHouseKeeper.GetHandle();
+    for (ThreadList::iterator thread = m_autoDeleteThreads.begin(); thread != m_autoDeleteThreads.end(); ++thread) {
       if (thread->IsTerminated())
-        process.autoDeleteThreads.erase(thread++);
+        continue;
 
-      else {
-        handles[numHandles] = thread->GetHandle();
+      handles[numHandles] = thread->GetHandle();
 
-        // make sure we don't put invalid handles into the list
+      // make sure we don't put invalid handles into the list
 #ifndef _WIN32_WCE
-        DWORD dwFlags;
-        if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
-          PTRACE(2, "PTLib\tRefused to put invalid handle into wait list");
-        }
-        else
+      DWORD dwFlags;
+      if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
+        PTRACE(2, "PTLib\tRefused to put invalid handle into wait list");
+      }
+      else
 #endif
-        // don't put the handle for the current process in the list
-        if (handles[numHandles] != process.GetHandle()) {
-          numHandles++;
-          if (numHandles >= MAXIMUM_WAIT_OBJECTS)
-            break;
-        }
-
-        ++thread;
+      // don't put the handle for the current process in the list
+      if (handles[numHandles] != GetHandle()) {
+        numHandles++;
+        if (numHandles >= MAXIMUM_WAIT_OBJECTS)
+          break;
       }
     }
-    process.deleteThreadMutex.Signal();
+    m_threadMutex.Signal();
 
-    PTimeInterval nextTimer = process.timers.Process();
+    PTimeInterval nextTimer = m_timers.Process();
     DWORD delay;
     if (nextTimer == PMaxTimeInterval)
       delay = INFINITE;
@@ -1212,24 +1146,9 @@ void PProcess::HouseKeepingThread::Main()
           break;
       }
     }
+
+    InternalCleanAutoDeleteThreads();
   }
-}
-
-
-bool PProcess::SignalTimerChange()
-{
-  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
-    return false;
-
-  deleteThreadMutex.Wait();
-
-  if (houseKeeper == NULL)
-    houseKeeper = new HouseKeepingThread;
-  else
-    houseKeeper->m_breakBlock.Signal();
-
-  deleteThreadMutex.Signal();
-  return true;
 }
 
 
@@ -1238,45 +1157,11 @@ bool PProcess::SignalTimerChange()
 
 PProcess::~PProcess()
 {
-  PTRACE(4, "PTLib\tStarting process destruction.");
-
   // do whatever needs to shutdown
   PreShutdown();
 
-  Sleep(100);  // Give threads time to die a natural death
-
-  // Get rid of the house keeper (majordomocide)
-  PTRACE(4, "PTLib\tTerminating housekeeper thread.");
-  delete houseKeeper;
-  houseKeeper = NULL;
-
-  // OK, if there are any left we get really insistent...
-  m_activeThreadMutex.Wait();
-  PTRACE(4, "PTLib\tTerminating " << m_activeThreads.size()-1 << " remaining threads.");
-  for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it) {
-    PThread & thread = *it->second;
-    if (this != &thread && !thread.IsTerminated()) {
-      PTRACE(3, "PTLib\tTerminating thread " << thread);
-      thread.Terminate();  // With extreme prejudice
-    }
-  }
-  PTRACE(4, "PTLib\tTerminated all threads.");
-  m_activeThreadMutex.Signal();
-
-  deleteThreadMutex.Wait();
-  PTRACE(4, "PTLib\tDestroying " << autoDeleteThreads.GetSize() << " remaining auto-delete threads.");
-  autoDeleteThreads.RemoveAll();
-  deleteThreadMutex.Signal();
-
 #if _DEBUG
   WaitOnExitConsoleWindow();
-#endif
-
-  PTRACE(4, "PTLib\tCompleted process destruction.");
-
-  // Can't do any more tracing after this ...
-#if PTRACING
-  PTrace::SetStream(NULL);
 #endif
 
   PostShutdown();
@@ -1525,6 +1410,132 @@ PBoolean PProcess::IsGUIProcess() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void PProcess::HostSystemURLHandlerInfo::SetIcon(const PString & _icon)
+{
+  PString icon(_icon);
+  PFilePath exe(PProcess::Current().GetFile());
+  icon.Replace("%exe",  exe, true);
+  icon.Replace("%base", exe.GetFileName(), true);
+  iconFileName = icon;
+}
+
+PString PProcess::HostSystemURLHandlerInfo::GetIcon() const 
+{
+  return iconFileName;
+}
+
+void PProcess::HostSystemURLHandlerInfo::SetCommand(const PString & key, const PString & _cmd)
+{
+  PString cmd(_cmd);
+
+  // do substitutions
+  PFilePath exe(PProcess::Current().GetFile());
+  cmd.Replace("%exe", "\"" + exe + "\"", true);
+  cmd.Replace("%1",   "\"%1\"", true);
+
+  // save command
+  cmds.SetAt(key, cmd);
+}
+
+PString PProcess::HostSystemURLHandlerInfo::GetCommand(const PString & key) const
+{
+  return cmds(key);
+}
+
+bool PProcess::HostSystemURLHandlerInfo::GetFromSystem()
+{
+  if (type.IsEmpty())
+    return false;
+
+  // get icon file
+  {
+    RegistryKey key("HKEY_CLASSES_ROOT\\" + type + "\\DefaultIcon", RegistryKey::ReadOnly);
+    key.QueryValue("", iconFileName);
+  }
+
+  // enumerate the commands
+  {
+    PString keyRoot("HKEY_CLASSES_ROOT\\" + type + "\\");
+    RegistryKey key(keyRoot + "shell", RegistryKey::ReadOnly);
+    PString str;
+    for (PINDEX idx = 0; key.EnumKey(idx, str); ++idx) {
+      RegistryKey cmd(keyRoot + "shell\\" + str + "\\command", RegistryKey::ReadOnly);
+      PString value;
+      if (cmd.QueryValue("", value)) 
+        cmds.SetAt(str, value);
+    }
+  }
+
+  return true;
+}
+
+bool PProcess::HostSystemURLHandlerInfo::CheckIfRegistered()
+{
+  // if no type information in system, definitely not registered
+  HostSystemURLHandlerInfo currentInfo(type);
+  if (!currentInfo.GetFromSystem()) 
+    return false;
+
+  // check icon file
+  if (!iconFileName.IsEmpty() && !(iconFileName *= currentInfo.GetIcon()))
+    return false;
+
+  // check all of the commands
+  return (currentInfo.cmds.GetSize() != 0) && (currentInfo.cmds == cmds);
+}
+
+bool PProcess::HostSystemURLHandlerInfo::Register()
+{
+  if (type.IsEmpty())
+    return false;
+
+  // delete any existing icon name
+  {
+    RegistryKey key("HKEY_CLASSES_ROOT\\" + type, RegistryKey::ReadOnly);
+    key.DeleteKey("DefaultIcon");
+  }
+
+  // set icon file
+  if (!iconFileName.IsEmpty()) {
+    RegistryKey key("HKEY_CLASSES_ROOT\\" + type + "\\DefaultIcon", RegistryKey::Create);
+    key.SetValue("", iconFileName);
+  }
+
+  // delete existing commands
+  PString keyRoot("HKEY_CLASSES_ROOT\\" + type);
+  {
+    RegistryKey key(keyRoot + "\\shell", RegistryKey::ReadOnly);
+    PString str;
+    for (PINDEX idx = 0; key.EnumKey(idx, str); ++idx) {
+      {
+        RegistryKey key(keyRoot + "\\shell\\" + str, RegistryKey::ReadOnly);
+        key.DeleteKey("command");
+      }
+      {
+        RegistryKey key(keyRoot + "\\shell", RegistryKey::ReadOnly);
+        key.DeleteKey(str);
+      }
+    }
+  }
+
+  // create new commands
+  {
+    RegistryKey key3(keyRoot, RegistryKey::Create);
+    key3.SetValue("", type & "protocol");
+    key3.SetValue("URL Protocol", "");
+
+    RegistryKey key2(keyRoot + "\\shell",  RegistryKey::Create);
+
+    for (PStringToString::iterator it = cmds.begin(); it != cmds.end(); ++it) {
+      RegistryKey key1(keyRoot + "\\shell\\" + it->first,              RegistryKey::Create);
+      RegistryKey key(keyRoot + "\\shell\\" + it->first + "\\command", RegistryKey::Create);
+      key.SetValue("", it->second);
+    }
+  }
+
+  return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore

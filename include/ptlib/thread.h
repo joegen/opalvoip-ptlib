@@ -385,7 +385,6 @@ class PThread : public PObject
 
     friend class PProcess;
     friend class PExternalThread;
-    friend class PHouseKeepingThread;
     // So a PProcess can get at PThread() constructor but nothing else.
 
     PThread(const PThread &) : PObject () { }
