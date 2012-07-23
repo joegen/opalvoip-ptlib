@@ -60,7 +60,7 @@ default: $(CONFIG_FILES)
 	@$(MAKE) -f $(TOP_LEVEL_MAKE) $(MAKECMDGOALS)
 
 .PHONY:config
-config:
+config: $(CONFIGURE)
 	$(CONFIGURE) $(CFG_ARGS)
 
 $(firstword $(CONFIG_FILES)): $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES)) $(CONFIGURE)
