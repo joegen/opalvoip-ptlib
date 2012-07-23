@@ -270,16 +270,14 @@ bool PAssertFunc(const char * msg)
   // Copy to local variable so char ptr does not become invalidated
   std::string sstr = str.str();
 
-  if (PProcess::Current().IsServiceProcess()) {
 #ifndef _WIN32_WCE
+  if (PProcess::Current().IsServiceProcess()) {
     PSYSTEMLOG(Fatal, sstr);
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN64)
     if (PServiceProcess::Current().debugMode)
-      __asm int 3;
-#endif
-#endif // !_WIN32_WCE
+      PBreakToDebugger();;
     return false;
   }
+#endif // !_WIN32_WCE
 
   PTRACE(0, sstr);
 
@@ -322,9 +320,8 @@ bool PAssertFunc(const char * msg)
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
 #endif
-#if defined(_MSC_VER) && !defined(_WIN32_WCE) && !defined(_WIN64)
-        __asm int 3;
-#endif
+        PBreakToDebugger();
+        // Then ignore it
 
       case 'I' :
       case 'i' :
