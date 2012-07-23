@@ -149,7 +149,7 @@ static int KillProcess(int pid, int sig)
 
 void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 {
-  PSYSTEMLOG(Warning, "PWLib\t" << GetOSClass() << " error #" << code << '-' << str);
+  PSYSTEMLOG(Warning, "PTLib\t" << GetOSClass() << " error #" << code << '-' << str);
 }
 
 
