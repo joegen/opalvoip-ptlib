@@ -110,7 +110,7 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
 
   if (m_workers.size() > m_highWaterMark) {
     m_highWaterMark = m_workers.size();
-    PTRACE(4, "ThreadPool\tTotal threads in pool: " << m_highWaterMark);
+    PTRACE(4, "PTLib\tThread pool high water mark: " << m_highWaterMark);
   }
 
   m_listMutex.Signal();

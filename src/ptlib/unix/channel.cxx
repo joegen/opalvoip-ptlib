@@ -98,7 +98,7 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
         if (px_readThread != NULL && px_lastBlockType != PXReadBlock)
           return SetErrorValues(DeviceInUse, EBUSY, LastReadError);
 
-        PTRACE(6, "PWLib\tBlocking on write.");
+        PTRACE(6, "PTLib\tBlocking on write.");
         px_writeMutex.Wait();
         px_writeThread = blockedThread;
         break;
@@ -328,7 +328,7 @@ int PChannel::PXClose()
   if (os_handle < 0)
     return -1;
 
-  PTRACE(6, "PWLib\tClosing channel, fd=" << os_handle);
+  PTRACE(6, "PTLib\tClosing channel, fd=" << os_handle);
 
   // make sure we don't have any problems
   IOSTREAM_MUTEX_WAIT();

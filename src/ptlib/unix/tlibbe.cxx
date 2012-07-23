@@ -334,10 +334,10 @@ PThreadIdentifier PThread::GetCurrentThreadId(void)
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
-  PTRACE(7, "PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
+  PTRACE(7, "PTLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
   if ((handle < 0) || (handle >= PProcess::Current().GetMaxHandles())) {
-    PTRACE(2, "PWLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
+    PTRACE(2, "PTLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
     errno = EBADF;
     return -1;
   }
@@ -384,7 +384,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
-    PTRACE(6, "PWLib\tUnblocked I/O");
+    PTRACE(6, "PTLib\tUnblocked I/O");
   }
 
   return retval;
@@ -402,7 +402,7 @@ void PThread::PXAbortBlock(void) const
 void PProcess::Construct()
 {
   maxHandles = FOPEN_MAX;
-  PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
+  PTRACE(3, "PTLib\tMaximum per-process file handles is " << maxHandles);
 
   CommonConstruct();
 }
