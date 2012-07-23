@@ -114,13 +114,11 @@ static int const priorities[] = {
 
 int PThread::ThreadFunction(void *threadPtr)
 {
-	PAssertNULL(threadPtr);
+  PAssertNULL(threadPtr);
   PThread * thread = (PThread *)threadPtr;
+
   PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(thread->PX_threadId, thread);
-  process.activeThreadMutex.Signal();
-  process.SignalTimerChange();
+  process.InternalSetThread(this);
 
   if (::semTake(thread->syncPoint, WAIT_FOREVER) == OK) {
     if (::semDelete(thread->syncPoint) == OK)
@@ -159,26 +157,19 @@ void PThread::Trace(PThreadIdentifer threadId)
   ::checkStack(0);
 }
 
-PThread::PThread()
- : autoDelete(false)
- , PX_threadId(::taskIdSelf())
- , priority(VX_NORMAL_PRIORITY)
- , originalStackSize(0)
+PThread::PThread(bool isProcess)
+  : m_isProcess(isProcess)
+  , m_autoDelete(!isProcess)
+  , m_originalStackSize(0) // 0 indicates external thread
+  , PX_threadId(::taskIdSelf())
+  , priority(VX_NORMAL_PRIORITY)
 {
   PAssertOS((PX_threadId != ERROR) && (PX_threadId != 0));
 
-  if (!PProcess::IsInitialised())
+  if (isProcess)
     return;
 
-  autoDelete = true;
-
-  PProcess & process = PProcess::Current();
-
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(PX_threadId, this);
-  process.activeThreadMutex.Signal();
-
-  process.SignalTimerChange();
+  PProcess::Current().InternalSetThread(this);
 }
 
 PThread::PThread(PINDEX stackSize,
@@ -212,13 +203,6 @@ PThread::PThread(PINDEX stackSize,
 
         if (taskLocked == OK) 
           ::taskUnlock();
-
-        if (autoDelete) {
-          PProcess & process = PProcess::Current();
-          process.deleteThreadMutex.Wait();
-          process.autoDeleteThreads.Append(this);
-          process.deleteThreadMutex.Signal();
-        }
       }
       else {
         if (taskLocked == OK) 
@@ -353,11 +337,6 @@ PBoolean PThread::IsSuspended() const
   return isSuspended;
 }
 
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  autoDelete = deletion == AutoDeleteThread;
-}
 
 void PThread::SetPriority(Priority priorityLevel)
 {
@@ -456,62 +435,28 @@ void PThread::PXAbortBlock() const
 {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// PProcess::HouseKeepingThread
 
 void PProcess::Construct()
 {
   // hard coded value, change this to handle more sockets at once with the select call
   maxHandles = 1024; 
-  houseKeeper=NULL;
   CommonConstruct();
 }
 
-PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(10000, NoAutoDeleteThread, HighPriority, PString("HKeeping"))
-{
-  Resume();
-}
 
-void PProcess::HouseKeepingThread::Main()
+void PProcess::HouseKeeping()
 {
-	PProcess & process = PProcess::Current();
-
-	while(1) {
-		process.deleteThreadMutex.Wait();
-    for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
-			PThread * pThread = (PThread *) process.autoDeleteThreads.GetAt(i);
-			if( pThread->IsTerminated() )
-				process.autoDeleteThreads.RemoveAt(i--);
-			}
-		process.deleteThreadMutex.Signal();
-		PTimeInterval nextTimer = process.timers.Process();
+  while (m_signalHouseKeeper) {
+    PTimeInterval nextTimer = process.timers.Process();
     if (nextTimer != PMaxTimeInterval) {
-			if ( nextTimer.GetInterval() > 10000 )
-				nextTimer = 10000;
-			}
-		breakBlock.Wait( nextTimer );
-	}
-}
-
-void PProcess::SignalTimerChange()
-{
-  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
-    return false;
-
-  if (houseKeeper == NULL) {
-    // Prevent reentrance before the following assignment is done
-    // Placed after above if-statement due to efficiency, and so 
-    // requires an another NULL-test.
-    CCriticalSection section;
-    section.Lock();
-  if (houseKeeper == NULL)
-     houseKeeper = new HouseKeepingThread;  
-    section.Unlock();
+      if ( nextTimer.GetInterval() > 10000 )
+        nextTimer = 10000;
+    }
+    m_signalHouseKeeper.Wait( nextTimer );
+    InternalCleanAutoDeleteThreads();
   }
-  else
-    houseKeeper->breakBlock.Signal();
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess

@@ -27,20 +27,17 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
 #include "../../pprocess.h"
 
-public:
-  void SignalTimerChange();
-
+  public:
     virtual void PXOnSignal(int);
     void         PXCheckSignals();
 
-  static void PXShowSystemWarning(PINDEX code, const PString & str);
-  virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
+    static void PXShowSystemWarning(PINDEX code, const PString & str);
+    virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
 
-protected:
-  int pxSignals;
-  void CreateConfigFilesDictionary();
-  PAbstractDictionary * configFiles;
-  void DoArgs(void);
-};
+  protected:
+    int pxSignals;
+    void CreateConfigFilesDictionary();
+    PAbstractDictionary * configFiles;
+    void DoArgs(void);
 
 #endif

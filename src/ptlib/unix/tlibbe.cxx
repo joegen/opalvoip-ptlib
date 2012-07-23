@@ -82,12 +82,13 @@ int32 PThread::ThreadFunction(void * threadPtr)
   return 0;
 }
 
-PThread::PThread()
- : autoDelete(false)
- , mId(find_thread(NULL))
- , mPriority(B_NORMAL_PRIORITY)
- , mStackSize(0)
- , mSuspendCount(1)
+PThread::PThread(bool isProcess)
+  : m_isProcess(isProcess)
+  , m_autoDelete(!isProcess)
+  , mId(find_thread(NULL))
+  , mPriority(B_NORMAL_PRIORITY)
+  , mStackSize(0)
+  , mSuspendCount(1)
 {
   PAssert(::pipe(unblockPipe) == 0, "Pipe creation failed in PThread::PThread()!");
   PAssertOS(unblockPipe[0]);
@@ -96,16 +97,9 @@ PThread::PThread()
   if (!PProcess::IsInitialised())
     return;
 
-  autoDelete = true;
-
-  PProcess & process = PProcess::Current();
-
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(PX_threadId, this);
-  process.activeThreadMutex.Signal();
-
-  process.SignalTimerChange();
+  PProcess::Current().InternalSetThread(this);
 }
+
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
@@ -252,11 +246,6 @@ PBoolean PThread::IsSuspended() const
   return (mSuspendCount > 0);
 }
 
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  autoDelete = deletion == AutoDeleteThread;
-}
 
 void PThread::SetPriority(Priority priorityLevel)
 {
@@ -409,31 +398,16 @@ void PThread::PXAbortBlock(void) const
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
-PDECLARE_CLASS(PHouseKeepingThread, PThread)
-  public:
-    PHouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread, HighestPriority, "Housekeeper")
-      { closing = PFalse; Resume(); }
-
-    void Main();
-    void SetClosing() { closing = PTrue; }
-
-  protected:
-    PBoolean closing;
-};
 
 void PProcess::Construct()
 {
   maxHandles = FOPEN_MAX;
   PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
 
-  // initialise the housekeeping thread
-  housekeepingThread = NULL;
-
   CommonConstruct();
 }
 
-void PHouseKeepingThread::Main()
+void PProcess::HouseKeeping()
 {
   PProcess & process = PProcess::Current();
 
@@ -446,18 +420,6 @@ void PHouseKeepingThread::Main()
   }    
 }
 
-void PProcess::SignalTimerChange()
-{
-  if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
-    return false;
-
-  if (housekeepingThread == NULL)
-  {  
-    housekeepingThread = new PHouseKeepingThread;
-  }
-
-  globalBreakBlock.Signal();
-}
 
 PBoolean PProcess::SetMaxHandles(int newMax)
 {
@@ -467,15 +429,6 @@ PBoolean PProcess::SetMaxHandles(int newMax)
 PProcess::~PProcess()
 {
   PreShutdown();
-
-  // Don't wait for housekeeper to stop if Terminate() is called from it.
-  if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
-    housekeepingThread->SetClosing();
-    SignalTimerChange();
-    housekeepingThread->WaitForTermination();
-    delete housekeepingThread;
-  }
-
   CommonDestruct();
   PostShutdown();
 }

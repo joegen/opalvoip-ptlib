@@ -424,17 +424,41 @@ PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean permanent)
 #endif // P_VXWORKS
 }
 
-extern PProcess * PProcessInstance;;
 
-PString PX_GetThreadName(pthread_t id)
+void PProcess::HostSystemURLHandlerInfo::SetIcon(const PString & _icon)
 {
-  if (PProcessInstance != NULL) {
-    PWaitAndSignal m(PProcessInstance->m_activeThreadMutex);
-    PThread * thread = PProcessInstance->m_activeThreads[id];
-    return thread->GetThreadName();
-  }
-  return psprintf("%08x", id);
 }
+
+PString PProcess::HostSystemURLHandlerInfo::GetIcon() const 
+{
+  return PString();
+}
+
+void PProcess::HostSystemURLHandlerInfo::SetCommand(const PString & key, const PString & _cmd)
+{
+}
+
+PString PProcess::HostSystemURLHandlerInfo::GetCommand(const PString & key) const
+{
+  return PString();
+}
+
+bool PProcess::HostSystemURLHandlerInfo::GetFromSystem()
+{
+  return false;
+}
+
+bool PProcess::HostSystemURLHandlerInfo::CheckIfRegistered()
+{
+  return false;
+}
+
+bool PProcess::HostSystemURLHandlerInfo::Register()
+{
+  return false;
+}
+
+
 
 void PProcess::PXShowSystemWarning(PINDEX num)
 {
@@ -460,12 +484,7 @@ void PXSignalHandler(int sig)
   PProcess & process = PProcess::Current();
   process.pxSignals |= 1 << sig;
   process.PXOnAsyncSignal(sig);
-#if defined(P_MAC_MPTHREADS)
-  process.SignalTimerChange();
-#elif defined(P_PTHREADS)
-  // Inform house keeping thread we have a signal to be processed
-  process.SignalTimerChange();
-#endif
+  process.SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
   signal(sig, PXSignalHandler);
 }
 
@@ -555,7 +574,7 @@ void PProcess::PXOnSignal(int sig)
     PMemoryHeap::GetState(state);
 #endif
     PStringStream strm;
-    m_activeThreadMutex.Wait();
+    m_threadMutex.Wait();
     strm << "===============\n"
          << m_activeThreads.size() << " active threads\n";
     for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it)
@@ -566,7 +585,7 @@ void PProcess::PXOnSignal(int sig)
     PMemoryHeap::GetState(state);
 #endif
     strm << "===============\n";
-    m_activeThreadMutex.Signal();
+    m_threadMutex.Signal();
     fprintf(stderr, "%s", (const char *)strm);
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(oldIgnore);
