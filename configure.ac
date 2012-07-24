@@ -662,6 +662,49 @@ AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
 AC_DEFINE_UNQUOTED(P_NEEDS_GNU_CXX_NAMESPACE, ${P_NEEDS_GNU_CXX_NAMESPACE})
 
 dnl ########################################################################
+dnl Memory allocator optimisations
+
+AC_MSG_CHECKING(C++ memory allocator)
+
+AC_ARG_WITH(allocator, AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]), [], [withval="mt"])
+if test "$withval" = "std"; then
+  AC_MSG_RESULT(std)
+elif test "$withval" = "mt"; then
+   AC_TRY_COMPILE(
+    [#include <ext/mt_allocator.h>],
+    [typedef __gnu_cxx::__mt_alloc<char> TestAllocator;],
+    [
+      AC_DEFINE(P_GNU_ALLOCATOR, 1)
+      AC_MSG_RESULT([mt])
+    ],
+    [
+      AC_MSG_RESULT([std (mt unavailable)])
+    ]
+  )
+elif test "$withval" = "bitmap"; then
+   AC_TRY_COMPILE(
+    [
+      #include <ext/mt_allocator.h>
+      #include <ext/bitmap_allocator.h>
+    ],
+    [
+      typedef __gnu_cxx::__mt_alloc<char> VariableAllocator;
+      typedef __gnu_cxx::bitmap_allocator<char> FixedAllocator;
+    ],
+    [
+      AC_DEFINE(P_GNU_ALLOCATOR, 2)
+      AC_MSG_RESULT(bitmap)
+    ],
+    [
+      AC_ERROR([bitmap_allocator not available])
+    ]
+  )
+else
+  AC_ERROR([Unknown allocator type $withval])
+fi
+
+
+dnl ########################################################################
 dnl check for Unix semaphores
 
 # mingw implements itself the semaphores in src/ptlib/msos/win32.cxx
