@@ -823,6 +823,7 @@ enable_tracing
 enable_trace_instance
 enable_ansi_bool
 enable_atomicity
+with_allocator
 enable_internalregex
 enable_samples
 enable_resolver
@@ -1605,6 +1606,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-allocator=std,mt,bitmap
+                          Set the allocator type
   --with-ldap-dir=PFX     Location of LDAP
   --with-expat-dir=PFX    Location of expat XML parser
   --with-directx-includedir=DIR
@@ -6989,6 +6992,85 @@ _ACEOF
 cat >>confdefs.h <<_ACEOF
 #define P_NEEDS_GNU_CXX_NAMESPACE ${P_NEEDS_GNU_CXX_NAMESPACE}
 _ACEOF
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking C++ memory allocator" >&5
+$as_echo_n "checking C++ memory allocator... " >&6; }
+
+
+# Check whether --with-allocator was given.
+if test "${with_allocator+set}" = set; then :
+  withval=$with_allocator;
+else
+  withval="mt"
+fi
+
+if test "$withval" = "std"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: std" >&5
+$as_echo "std" >&6; }
+elif test "$withval" = "mt"; then
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <ext/mt_allocator.h>
+int
+main ()
+{
+typedef __gnu_cxx::__mt_alloc<char> TestAllocator;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+      $as_echo "#define P_GNU_ALLOCATOR 1" >>confdefs.h
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: mt" >&5
+$as_echo "mt" >&6; }
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: std (mt unavailable)" >&5
+$as_echo "std (mt unavailable)" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+elif test "$withval" = "bitmap"; then
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <ext/mt_allocator.h>
+      #include <ext/bitmap_allocator.h>
+
+int
+main ()
+{
+
+      typedef __gnu_cxx::__mt_alloc<char> VariableAllocator;
+      typedef __gnu_cxx::bitmap_allocator<char> FixedAllocator;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+      $as_echo "#define P_GNU_ALLOCATOR 2" >>confdefs.h
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: bitmap" >&5
+$as_echo "bitmap" >&6; }
+
+else
+
+      as_fn_error $? "bitmap_allocator not available" "$LINENO" 5
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  as_fn_error $? "Unknown allocator type $withval" "$LINENO" 5
+fi
 
 
 
