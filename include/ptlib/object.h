@@ -273,7 +273,6 @@ An application could change this pointer to a <i>std::ofstream</i> variable of
 #define PError (PGetErrorStream())
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Debug and tracing
 
@@ -764,10 +763,11 @@ also initialises memory on allocation and deallocation to help catch errors
 involving the use of dangling pointers.
 */
 class PMemoryHeap {
-  public:
+  protected:
     /// Initialise the memory checking subsystem.
     PMemoryHeap();
 
+  public:
     // Clear up the memory checking subsystem, dumping memory leaks.
     ~PMemoryHeap();
 
@@ -1003,6 +1003,7 @@ class PMemoryHeap {
 
 #else
 
+    static void CreateInstance();
 #define P_CLIENT_BLOCK (_CLIENT_BLOCK|(0x61<<16)) // This identifies a PObject derived class
     _CrtMemState initialState;
 
@@ -1173,45 +1174,116 @@ public:
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
 
-/*
- *  Implement "construct on first use" paradigm
+///////////////////////////////////////////////////////////////////////////////
+/** Template class for a simple singleton object.
+     Usage is typically like:
+<pre><code>
+        typedef PSingleton<MyClass> MySingleton;
+        MySingleton()->DoSomething();
+</code></pre>
+     Default is not thread safe, however the following is:
+<pre><code>
+        typedef PSingleton<MyClass, PAtomicInteger> MySafeSingleton;
+        MySafeSingleton()->DoSomething();
+</code></pre>
  */
-
-template <class GnuAllocator, class Type>
-struct PAllocatorTemplate
+template <class Type, typename GuardType = unsigned>
+class PSingleton
 {
-  Type * allocate(size_t v)  
-  {
-    return GetAllocator().allocate(v);
-  }
-
-  void deallocate(Type * p, size_t v)  
-  {
-    GetAllocator().deallocate(p, v);
-  }
-
-  private:
-    static GnuAllocator & GetAllocator()
+  protected:
+    Type * m_instance;
+  public:
+    PSingleton()
     {
-      static GnuAllocator instance;
-      return instance;
+      static Type * s_pointer;
+      static GuardType s_guard;
+      if (s_guard++ != 0)
+        s_guard = 1;
+      else {
+#if PMEMORY_HEAP
+        // Do this to make sure debugging is initialised as early as possible
+        PMemoryHeap::Validate(NULL, NULL, NULL);
+#endif
+        static Type s_instance;
+        s_pointer = &s_instance;
+      }
+      m_instance = s_pointer;
     }
+
+    Type * operator->() const { return  m_instance; }
+    Type & operator* () const { return *m_instance; }
 };
 
-#define GCC_VERSION (__GNUC__ * 10000 \
-                   + __GNUC_MINOR__ * 100 \
-                   + __GNUC_PATCHLEVEL__)
 
-// Memory pooling allocators
-#if defined(__GNUC__) && (GCC_VERSION > 40000) && !defined(P_MINGW) && !defined(P_MACOSX) 
-#include <ext/mt_allocator.h>
-template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<__gnu_cxx::__mt_alloc<Type>, Type> { };
-template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<__gnu_cxx::__mt_alloc<Type>, Type> { };
+///////////////////////////////////////////////////////////////////////////////
+// Memory pool allocators
+
+#if P_GNU_ALLOCATOR
+
+  #include <ext/mt_allocator.h>
+
+  /* Need this tempalte class specialisation of standard class to do the
+     de-allocation of the pool memory. As per:
+     http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup
+   */
+  template <bool _Thread>
+  struct PMemoryPool : public __gnu_cxx::__pool<_Thread>
+    {
+    PMemoryPool()
+      : __gnu_cxx::__pool<_Thread>()
+    {
+    }
+
+    PMemoryPool(const __gnu_cxx::__pool_base::_Tune& t) 
+      : __gnu_cxx::__pool<_Thread>(t)
+    {
+    }
+
+    ~PMemoryPool() throw()
+    {
+      this->_M_destroy();
+    }
+  };
+
+  /*Do this template class specialisation so each type has it's own separate
+    memory block for the pool. */
+  template <class Type>
+  struct PCommonPool : public __gnu_cxx::__common_pool_policy<PMemoryPool, true>
+  {
+  };
+
+  /*This template class specialisation adds the singleton instance.
+   */
+  template <class Type, class Pool = PCommonPool<Type> >
+  struct PVariablePoolAllocator : public PSingleton<__gnu_cxx::__mt_alloc<Type, Pool> >
+  {
+  };
+
+  #if P_GNU_ALLOCATOR==1
+    template <class Type>
+    struct PFixedPoolAllocator : public PSingleton<__gnu_cxx::__mt_alloc<Type, PCommonPool<Type> > >
+    {
+    };
+  #else
+    #include <ext/bitmap_allocator.h>
+    template <class Type>
+    struct PFixedPoolAllocator : public PSingleton<__gnu_cxx::bitmap_allocator<Type> >
+    {
+    };
+  #endif
 
 #else
 
-template <class Type> struct PFixedPoolAllocator    : public PAllocatorTemplate<std::allocator<Type>, Type> { };
-template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<std::allocator<Type>, Type> { };
+  template <class Type, class Pool = void>
+  struct PVariablePoolAllocator : public PSingleton<std::allocator<Type> >
+  {
+  };
+
+  template <class Type>
+  struct PFixedPoolAllocator    : public PSingleton<std::allocator<Type> >
+  {
+  };
+
 #endif
 
 #define PDECLARE_POOL_ALLOCATOR() \
@@ -1221,11 +1293,10 @@ template <class Type> struct PVariablePoolAllocator : public PAllocatorTemplate<
     void operator delete(void * ptr, const char *, int)
 
 #define PDEFINE_POOL_ALLOCATOR(cls) \
-  static PFixedPoolAllocator<cls> cls##_allocator; \
-  void * cls::operator new(size_t)                           { return cls##_allocator.allocate(1);               } \
-  void * cls::operator new(size_t, const char *, int)        { return cls##_allocator.allocate(1);               } \
-  void   cls::operator delete(void * ptr)                    {        cls##_allocator.deallocate((cls *)ptr, 1); } \
-  void   cls::operator delete(void * ptr, const char *, int) {        cls##_allocator.deallocate((cls *)ptr, 1); }
+  void * cls::operator new(size_t)                           { return PFixedPoolAllocator<cls>()->allocate(1);               } \
+  void * cls::operator new(size_t, const char *, int)        { return PFixedPoolAllocator<cls>()->allocate(1);               } \
+  void   cls::operator delete(void * ptr)                    {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); } \
+  void   cls::operator delete(void * ptr, const char *, int) {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); }
 
 
 

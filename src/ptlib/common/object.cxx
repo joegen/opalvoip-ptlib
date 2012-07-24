@@ -844,30 +844,29 @@ PMemoryHeap::~PMemoryHeap()
 }
 
 
-static PMemoryHeap & MemoryHeapInstance()
+void PMemoryHeap::CreateInstance()
 {
   static PMemoryHeap instance;
-  return instance;
 }
 
 
 void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   return _malloc_dbg(nSize, className != NULL ? P_CLIENT_BLOCK : _NORMAL_BLOCK, file, line);
 }
 
 
 void * PMemoryHeap::Allocate(size_t count, size_t iSize, const char * file, int line)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   return _calloc_dbg(count, iSize, _NORMAL_BLOCK, file, line);
 }
 
 
 void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   return _realloc_dbg(ptr, nSize, _NORMAL_BLOCK, file, line);
 }
 
@@ -880,7 +879,7 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
 
 PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * className, ostream * /*strm*/)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   if (!_CrtIsValidHeapPointer(ptr))
     return Bad;
 
@@ -894,14 +893,14 @@ PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * cla
 
 PBoolean PMemoryHeap::ValidateHeap(ostream * /*strm*/)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   return _CrtCheckMemory();
 }
 
 
 PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   if (ignore)
     _CrtSetDbgFlag(flags & ~_CRTDBG_ALLOC_MEM_DF);
@@ -913,7 +912,7 @@ PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 
 void PMemoryHeap::DumpStatistics()
 {
-  MemoryHeapInstance();
+  CreateInstance();
   _CrtMemState state;
   _CrtMemCheckpoint(&state);
   _CrtMemDumpStatistics(&state);
@@ -928,28 +927,28 @@ void PMemoryHeap::DumpStatistics(ostream & /*strm*/)
 
 void PMemoryHeap::GetState(State & state)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   _CrtMemCheckpoint(&state);
 }
 
 
 void PMemoryHeap::DumpObjectsSince(const State & state)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   _CrtMemDumpAllObjectsSince(&state);
 }
 
 
 void PMemoryHeap::DumpObjectsSince(const State & state, ostream & /*strm*/)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   DumpObjectsSince(state);
 }
 
 
 void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
 {
-  MemoryHeapInstance();
+  CreateInstance();
   _CrtSetBreakAlloc(objectNumber);
 }
 
