@@ -795,12 +795,15 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     strm << '#' << obj->request << ' ' << (void *)data << " [" << obj->size << "] ";
 
     if (obj->className != NULL)
-      strm << '"' << obj->className << "\" ";
+      strm << "class=\"" << obj->className << "\" ";
 
-    if (PProcess::IsInitialised()) {
+    if (PProcess::IsInitialised() && obj->threadId != PNullThreadIdentifier) {
+      strm << "thread=";
       PThread * thread = PProcess::Current().GetThread(obj->threadId);
       if (thread != NULL)
         strm << '"' << thread->GetThreadName() << "\" ";
+      else
+        strm << "0x" << hex << obj->threadId << dec << ' ';
     }
 
     strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->size), PFalse)
