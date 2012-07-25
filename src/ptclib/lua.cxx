@@ -191,6 +191,7 @@ bool PLua::DeleteTable(const PString & name, bool metaTable)
       return true;
 
     case LUA_TTABLE :
+      InternalRemoveFunction(name);
       lua_pushnil(m_lua);
       return InternalSetVariable(name);
 
@@ -559,24 +560,17 @@ bool PLua::SetFunction(const PString & name, const FunctionNotifier & func)
 {
   PWaitAndSignal mutex(m_mutex);
 
-  map<PString, FunctionNotifier>::iterator it = m_functions.find(name);
-  if (it == m_functions.end()) {
-    if (func.IsNULL())
-      return true;
+  if (InternalSetFunction(name, func))
+    return true;
 
-    if (!InternalGetVariable(name))
-      return false;
+  if (!InternalGetVariable(name))
+    return false;
 
-    int type = lua_type(m_lua, -1);
-    lua_pop(m_lua, 1);
+  int type = lua_type(m_lua, -1);
+  lua_pop(m_lua, 1);
 
-    if (type != LUA_TNIL)
-      return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Already using name \"" << name << "\", is " << lua_typename(m_lua, type)));
-  }
-  else {
-    if (it->second == func)
-      return true;
-  }
+  if (type != LUA_TNIL)
+    return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Already using name \"" << name << "\", is " << lua_typename(m_lua, type)));
 
   m_functions[name] = func;
   lua_pushlightuserdata(m_lua, &m_functions[name]);
