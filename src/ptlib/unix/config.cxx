@@ -135,7 +135,7 @@ PDECLARE_CLASS(PXConfigWriteThread, PThread)
 };
 
 
-static PXConfigDictionary * g_configDict;
+typedef PSingleton<PXConfigDictionary, PAtomicInteger> PXConfigData;
 
 #define	new PNEW
 
@@ -159,9 +159,9 @@ void PXConfigWriteThread::Main()
 {
   PTRACE(4, "PTLib\tConfig file cache write back thread started.");
   while (!stop.Wait(30000))  // if stop.Wait() returns PTrue, we are shutting down
-    g_configDict->WriteChangedInstances();   // check dictionary for items that need writing
+    PXConfigData()->WriteChangedInstances();   // check dictionary for items that need writing
 
-  g_configDict->WriteChangedInstances();
+  PXConfigData()->WriteChangedInstances();
 
   stop.Acknowledge();
 }
@@ -392,7 +392,6 @@ PXConfigDictionary::PXConfigDictionary()
 {
   environmentInstance = NULL;
   writeThread = NULL;
-  g_configDict = this;
 }
 
 
@@ -478,7 +477,7 @@ void PConfig::Construct(Source src,
 {
   // handle cnvironment configs differently
   if (src == PConfig::Environment)  {
-    config = g_configDict->GetEnvironmentInstance();
+    config = PXConfigData()->GetEnvironmentInstance();
     return;
   }
   
@@ -492,7 +491,7 @@ void PConfig::Construct(Source src,
     filename = readFilename = PProcess::Current().GetConfigurationFile();
 
   // get, or create, the configuration
-  config = g_configDict->GetFileConfigInstance(filename, readFilename);
+  config = PXConfigData()->GetFileConfigInstance(filename, readFilename);
 }
 
 PConfig::PConfig(int, const PString & name)
@@ -500,19 +499,19 @@ PConfig::PConfig(int, const PString & name)
 {
   PFilePath readFilename, filename;
   LocateFile(name, readFilename, filename);
-  config = g_configDict->GetFileConfigInstance(filename, readFilename);
+  config = PXConfigData()->GetFileConfigInstance(filename, readFilename);
 }
 
 
 void PConfig::Construct(const PFilePath & theFilename)
 {
-  config = g_configDict->GetFileConfigInstance(theFilename, theFilename);
+  config = PXConfigData()->GetFileConfigInstance(theFilename, theFilename);
 }
 
 
 PConfig::~PConfig()
 {
-  g_configDict->RemoveInstance(config);
+  PXConfigData()->RemoveInstance(config);
 }
 
 
