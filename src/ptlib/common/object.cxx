@@ -618,11 +618,12 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
 
   Header * obj = ((Header *)ptr)-1;
 
+  unsigned count = currentObjects;
   Header * link = listTail;  
-  while (link != NULL && link != obj) 
+  while (link != NULL && link != obj && count-- > 0) 
     link = link->prev;  
 
-  if (link == NULL) {
+  if (link != obj) {
     if (error != NULL)
       *error << "Block " << ptr << " not in heap!" << endl;
     return Trashed;
