@@ -250,10 +250,14 @@ class PScriptLanguage : public PObject
       */
     virtual void OnError(int code, const PString & str);
 
+    virtual bool InternalSetFunction(const PString & name, const FunctionNotifier & func);
+    virtual void InternalRemoveFunction(const PString & prefix);
+
     bool m_loaded;
     int m_lastErrorCode;
     PString m_lastErrorText;
-    map<PString, FunctionNotifier> m_functions;
+    typedef map<PString, FunctionNotifier> FunctionMap;
+    FunctionMap m_functions;
 
     PMutex m_mutex;
 };
