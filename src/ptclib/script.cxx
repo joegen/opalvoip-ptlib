@@ -78,3 +78,29 @@ void PScriptLanguage::OnError(int code, const PString & str)
 
   PTRACE(2, GetClass(), "Error " << code << ": " << str);
 }
+
+
+bool PScriptLanguage::InternalSetFunction(const PString & name, const FunctionNotifier & func)
+{
+  FunctionMap::iterator it = m_functions.find(name);
+  if (it == m_functions.end())
+    return func.IsNULL();
+
+  if (func.IsNULL())
+    m_functions.erase(it);
+  else
+    it->second = func;
+  return true;
+}
+
+
+void PScriptLanguage::InternalRemoveFunction(const PString & prefix)
+{
+  FunctionMap::iterator it = m_functions.lower_bound(prefix);
+  while (it != m_functions.end() && it->first.NumCompare(prefix) == EqualTo) {
+    if (isalnum(it->first[prefix.GetLength()]))
+      ++it;
+    else
+      m_functions.erase(it++);
+  }
+}
