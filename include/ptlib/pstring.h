@@ -2120,7 +2120,7 @@ class PStringStream : public PString, public iostream
       DoSomething(PSTRSTRM("Fred used" << number << " of \"" << item << '"'));
 </code></pre>
  */
-#define PSTRSTRM(arg) dynamic_cast<const PString &>(PStringStream() << arg)
+#define PSTRSTRM(arg) dynamic_cast<const PString &>(PStringStream() << std::flush << arg)
 
 
 class PStringList;
