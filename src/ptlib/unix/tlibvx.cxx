@@ -118,7 +118,7 @@ int PThread::ThreadFunction(void *threadPtr)
   PThread * thread = (PThread *)threadPtr;
 
   PProcess & process = PProcess::Current();
-  process.InternalSetThread(this);
+  process.InternalThreadStarted(this);
 
   if (::semTake(thread->syncPoint, WAIT_FOREVER) == OK) {
     if (::semDelete(thread->syncPoint) == OK)
@@ -169,7 +169,7 @@ PThread::PThread(bool isProcess)
   if (isProcess)
     return;
 
-  PProcess::Current().InternalSetThread(this);
+  PProcess::Current().InternalThreadStarted(this);
 }
 
 PThread::PThread(PINDEX stackSize,

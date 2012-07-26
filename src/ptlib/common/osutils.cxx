@@ -1634,7 +1634,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   , m_processID(GetCurrentProcessID())
 #endif
 {
-  m_activeThreads[GetCurrentThreadId()] = this;
+  m_activeThreads[GetThreadId()] = this;
   m_autoDeleteThreads.DisallowDeleteObjects();
 
 #if PTRACING
@@ -1903,21 +1903,14 @@ PThread * PProcess::GetThread(PThreadIdentifier threadId) const
 }
 
 
-void PProcess::InternalSetThread(PThread * thread)
+void PProcess::InternalThreadStarted(PThread * thread)
 {
   if (PAssertNULL(thread) == NULL)
     return;
 
-  PThread * previousThread = NULL;
-  PThreadIdentifier threadId = thread->GetThreadId();
-
   m_threadMutex.Wait();
 
-  ThreadMap::iterator it = m_activeThreads.find(threadId);
-  if (it != m_activeThreads.end() && it->second->IsAutoDelete())
-    previousThread = it->second;
-
-  m_activeThreads[threadId] = thread;
+  m_activeThreads[thread->GetThreadId()] = thread;
 
   if (thread->IsAutoDelete())
     InternalSetAutoDeleteThread(thread);
@@ -1933,10 +1926,25 @@ void PProcess::InternalSetThread(PThread * thread)
 
   PTRACE_IF(3, newHighWaterMark  > 0, "PTLib\tThread high water mark set: " << newHighWaterMark);
 
-  if (previousThread != NULL && previousThread != thread) 
-    delete previousThread;
-
   SignalTimerChange();
+}
+
+
+void PProcess::InternalThreadEnded(PThread * thread)
+{
+  if (PAssertNULL(thread) == NULL)
+    return;
+
+  PWaitAndSignal mutex(m_threadMutex);
+
+  ThreadMap::iterator it = m_activeThreads.find(thread->GetThreadId());
+  if (it == m_activeThreads.end())
+    return; // Already gone
+
+  if (it->second != thread)
+    return; // Already re-used the thread ID for new thread.
+
+  m_activeThreads.erase(it);
 }
 
 
@@ -2129,19 +2137,16 @@ PThread::~PThread()
   if (!m_isProcess && !IsTerminated())
     Terminate();
 
+  PTRACE(5, "PTLib\tDestroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
+
   InternalDestroy();
 
-  if (!m_isProcess && m_threadId != PNullThreadIdentifier) {
-    PProcess & process = PProcess::Current();
-    process.m_threadMutex.Wait();
-    process.m_activeThreads.erase(m_threadId);
-    process.m_threadMutex.Signal();
-    PTRACE(5, "PTLib\tDestroyed thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
-  }
-
   // Clean up any thread local storage
-  for (std::set<const LocalStorageBase *>::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
+  for (LocalStorageList::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
     (*it)->ThreadDestroyed(this);
+
+  if (!m_isProcess)
+    PProcess::Current().InternalThreadEnded(this);
 }
 
 
@@ -2150,8 +2155,9 @@ void PThread::LocalStorageBase::StorageDestroyed()
   m_mutex.Wait();
   for (StorageMap::iterator it = m_storage.begin(); it != m_storage.end(); ++it) {
     Deallocate(it->second);
-    it->first->m_localStorage.erase(this);
+    it->first->m_localStorage.remove(this);
   }
+  m_storage.clear();
   m_mutex.Signal();
 }
 
@@ -2161,7 +2167,7 @@ void PThread::LocalStorageBase::ThreadDestroyed(PThread * thread) const
   PWaitAndSignal mutex(m_mutex);
 
   StorageMap::iterator it = m_storage.find(thread);
-  if (it == m_storage.end())
+  if (!PAssert(it != m_storage.end(), PLogicError))
     return;
 
   Deallocate(it->second);
@@ -2171,11 +2177,11 @@ void PThread::LocalStorageBase::ThreadDestroyed(PThread * thread) const
 
 void * PThread::LocalStorageBase::GetStorage() const
 {
-  PWaitAndSignal mutex(m_mutex);
-
   PThread * thread = PThread::Current();
   if (thread == NULL)
     return NULL;
+
+  PWaitAndSignal mutex(m_mutex);
 
   StorageMap::const_iterator it = m_storage.find(thread);
   if (it != m_storage.end())
@@ -2186,7 +2192,7 @@ void * PThread::LocalStorageBase::GetStorage() const
     return NULL;
 
   m_storage[thread] = threadLocal;
-  thread->m_localStorage.insert(this);
+  thread->m_localStorage.push_back(this);
   return threadLocal;
 }
 

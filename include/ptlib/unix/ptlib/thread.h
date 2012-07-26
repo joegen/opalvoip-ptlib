@@ -55,7 +55,11 @@
 #endif
 
   protected:
-    static void * PX_ThreadStart(void *);
+    void PX_StartThread();
+    void PX_ThreadBegin();
+    void PX_ThreadEnd();
+    void PX_Suspended();
+    static void * PX_ThreadMain(void *);
     static void PX_ThreadEnd(void *);
 
     Priority          PX_priority;
@@ -64,9 +68,14 @@
     PTimeInterval     PX_startTick;
     PTimeInterval     PX_endTick;
 #endif
-    pthread_mutex_t   PX_suspendMutex;
+    mutable pthread_mutex_t   PX_suspendMutex;
     int               PX_suspendCount;
-    bool              PX_firstTimeStart;
+    enum {
+      PX_firstResume,
+      PX_starting,
+      PX_running,
+      PX_finished
+    } PX_state;
 
 #ifndef P_HAS_SEMAPHORES
     PSemaphore      * PX_waitingSemaphore;
