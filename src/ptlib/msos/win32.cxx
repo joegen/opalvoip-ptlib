@@ -847,7 +847,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #endif
 */
 
-  process.InternalSetThread(thread);
+  process.InternalThreadStarted(thread);
 
 #if defined(P_WIN_COM)
   ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -888,7 +888,7 @@ PThread::PThread(bool isProcess)
 
   m_threadHandle.Duplicate(GetCurrentThread());
 
-  PProcess::Current().InternalSetThread(this);
+  PProcess::Current().InternalThreadStarted(this);
 }
 
 
@@ -898,10 +898,10 @@ PThread::PThread(PINDEX stackSize,
                  const PString & name)
   : m_isProcess(false)
   , m_autoDelete(deletion == AutoDeleteThread)
-  , m_originalStackSize(stackSize)
+  , m_originalStackSize(std::max(stackSize, 65535))
   , m_threadName(name)
 {
-  PAssert(stackSize > 0, PInvalidParameter);
+  PAssert(m_originalStackSize > 0, PInvalidParameter);
 
 #ifndef _WIN32_WCE
   m_threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction, this, CREATE_SUSPENDED, &m_threadId);

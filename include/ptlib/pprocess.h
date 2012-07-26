@@ -732,7 +732,8 @@ class PProcess : public PThread
 
     typedef std::map<PThreadIdentifier, PThread *> ThreadMap;
     ThreadMap m_activeThreads;
-    void InternalSetThread(PThread * thread);
+    void InternalThreadStarted(PThread * thread);
+    void InternalThreadEnded(PThread * thread);
     
     typedef PList<PThread> ThreadList;
     ThreadList m_autoDeleteThreads;
