@@ -114,12 +114,11 @@ class PThread : public PObject
        may be freed using the delete operator as soon as the thread is
        terminated or executes to completion (usually the latter).
 
-       The stack size argument retained only for source code compatibility for
-       previous implementations. It is not used in the current code and
-       may be removed in subsequent versions.
+       The stack size argument is highly platform specific and should alamost
+       always be zero for the default.
      */
     PThread(
-      PINDEX,                 ///< Not used - previously stack size
+      PINDEX stack,  ///< Stack size on some platforms, 0 == default
       AutoDeleteFlag deletion = AutoDeleteThread,
         ///< Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  ///< Initial priority of thread.
@@ -347,7 +346,7 @@ class PThread : public PObject
         ///< Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  ///< Initial priority of thread.
       const PString & threadName = PString::Empty(), ///< The name of the thread (for Debug/Trace)
-      PINDEX stackSize = 65536         ///< Stack size on some platforms
+      PINDEX stackSize = 0            ///< Stack size on some platforms, 0 == default
     );
     static PThread * Create(
       const PNotifier & notifier,     ///< Function to execute in thread.
@@ -403,7 +402,8 @@ class PThread : public PObject
 
     PThreadIdentifier m_threadId;
 
-    std::set<const LocalStorageBase *> m_localStorage;
+    typedef std::list<const LocalStorageBase *> LocalStorageList;
+    LocalStorageList m_localStorage;
 
 // Include platform dependent part of class
 #ifdef _WIN32

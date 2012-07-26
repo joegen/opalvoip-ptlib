@@ -31,6 +31,8 @@
  * $Date$
  */
 
+#define P_USE_THREAD_CANCEL 1
+
 #include <ptlib/socket.h>
 #include <sched.h>
 #include <pthread.h>
@@ -78,7 +80,8 @@ static PBoolean PAssertThreadOp(int retval,
     return false;
   }
 
-  if (errno == EINTR || errno == EAGAIN) {
+  int err = errno;
+  if (err == EINTR || err == EAGAIN) {
     if (++retry < 1000) {
 #if defined(P_RTEMS)
       sched_yield();
@@ -91,7 +94,7 @@ static PBoolean PAssertThreadOp(int retval,
   }
 
 #if P_USE_ASSERTS
-  PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
+  PAssertFunc(file, line, NULL, psprintf("Function %s failed, errno=%u", funcname, err));
 #endif
   return false;
 }
@@ -242,7 +245,7 @@ PThread::PThread(bool isProcess)
 #endif
   , PX_suspendMutex(MutexInitialiser)
   , PX_suspendCount(0)
-  , PX_firstTimeStart(false)
+  , PX_state(PX_running)
 #ifndef P_HAS_SEMAPHORES
   , PX_waitingSemaphore(NULL)
   , PX_WaitSemMutex(MutexInitialiser)
@@ -257,7 +260,7 @@ PThread::PThread(bool isProcess)
   if (isProcess)
     return;
 
-  PProcess::Current().InternalSetThread(this);
+  PProcess::Current().InternalThreadStarted(this);
 }
 
 
@@ -273,7 +276,7 @@ PThread::PThread(PINDEX stackSize,
                  const PString & name)
   : m_isProcess(false)
   , m_autoDelete(deletion == AutoDeleteThread)
-  , m_originalStackSize(stackSize) // 0 indicates externally created thread
+  , m_originalStackSize(std::max(stackSize, 16*PTHREAD_STACK_MIN)) // Set a decent (256K) stack size that won't eat all virtual memory
   , m_threadName(name)
   , m_threadId(PNullThreadIdentifier)  // indicates thread has not started
   , PX_priority(priorityLevel)
@@ -282,13 +285,13 @@ PThread::PThread(PINDEX stackSize,
 #endif
   , PX_suspendMutex(MutexInitialiser)
   , PX_suspendCount(1)
-  , PX_firstTimeStart(true) // new thread is actually started the first time Resume() is called.
+  , PX_state(PX_firstResume) // new thread is actually started the first time Resume() is called.
 #ifndef P_HAS_SEMAPHORES
   , PX_waitingSemaphore(NULL)
   , PX_WaitSemMutex(MutexInitialiser)
 #endif
 {
-  PAssert(stackSize > 0, PInvalidParameter);
+  PAssert(m_originalStackSize > 0, PInvalidParameter);
 
 #ifdef P_RTEMS
   PAssertOS(socketpair(AF_INET,SOCK_STREAM,0,unblockPipe) == 0);
@@ -309,9 +312,6 @@ PThread::PThread(PINDEX stackSize,
 
 void PThread::InternalDestroy()
 {
-  if (m_originalStackSize != 0 && m_threadId != PNullThreadIdentifier)
-    pthread_detach(m_threadId);
-
   // close I/O unblock pipes
   ::close(unblockPipe[0]);
   ::close(unblockPipe[1]);
@@ -327,41 +327,68 @@ void PThread::InternalDestroy()
 }
 
 
-void * PThread::PX_ThreadStart(void * arg)
+void PThread::PX_ThreadBegin()
 { 
-  PThread * thread = (PThread *)arg;
   // Added this to guarantee that the thread creation (PThread::Restart)
   // has completed before we start the thread. Then the m_threadId has
   // been set.
-  pthread_mutex_lock(&thread->PX_suspendMutex);
-  thread->SetThreadName(thread->GetThreadName());
+  pthread_mutex_lock(&PX_suspendMutex);
+
+  PAssert(PX_state == PX_starting, PLogicError);
+  PX_state = PX_running;
+
+  SetThreadName(GetThreadName());
+
 #if defined(P_LINUX)
-  thread->PX_linuxId = syscall(SYS_gettid);
-  thread->PX_startTick = PTimer::Tick();
+  PX_linuxId = syscall(SYS_gettid);
+  PX_startTick = PTimer::Tick();
 #endif
-  pthread_mutex_unlock(&thread->PX_suspendMutex);
 
-  // make sure the cleanup routine is called when the thread exits
-  //pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
+  pthread_mutex_unlock(&PX_suspendMutex);
+
+  PX_Suspended();
 
 #if defined(P_LINUX)
-  PTRACE2(5, thread, "PTLib\tStarted thread " << thread << " (" << thread->PX_linuxId << ") " << thread->GetThreadName());
+  PTRACE(5, "PTLib\tStarted thread " << this << " (" << PX_linuxId << ") \"" << m_threadName << '"');
 #else
-  PTRACE2(5, thread, "PTLib\tStarted thread " << thread << ' ' << thread->GetThreadName());
+  PTRACE(5, "PTLib\tStarted thread " << this << ' ' << m_threadName);
 #endif
 
-  PProcess::Current().OnThreadStart(*thread);
+  PProcess::Current().OnThreadStart(*this);
+}
+
+
+void PThread::PX_ThreadEnd()
+{
+#if defined(P_LINUX)
+  PX_endTick = PTimer::Tick();
+#endif
+
+  PProcess::Current().OnThreadEnded(*this);
+
+  PX_state = PX_finished; // Must be last thing to avoid races
+}
+
+
+void * PThread::PX_ThreadMain(void * arg)
+{
+  PThread * thread = reinterpret_cast<PThread *>(arg);
+
+#if P_USE_THREAD_CANCEL
+  // make sure the cleanup routine is called when the threade cancelled
+  pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
+#endif
+
+  thread->PX_ThreadBegin();
 
   // now call the the thread main routine
   thread->Main();
 
-  // execute the cleanup routine
-  //pthread_cleanup_pop(1);
+#if P_USE_THREAD_CANCEL
+  pthread_cleanup_pop(1); // execute the cleanup routine
+#else
   PX_ThreadEnd(arg);
-
-  // Inform the helgrind finite state machine that this thread has finished
-  // Commented out as on some platforms it causes a crash, no idea why!
-  // pthread_exit(0);
+#endif
 
   return NULL;
 }
@@ -369,14 +396,7 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PThread::PX_ThreadEnd(void * arg)
 {
-  PThread * thread = (PThread *)arg;
-  PProcess & process = PProcess::Current();
-
-#if defined(P_LINUX)
-  thread->PX_endTick = PTimer::Tick();
-#endif
-
-  process.OnThreadEnded(*thread);
+  ((PThread *)arg)->PX_ThreadEnd();
 }
 
 
@@ -385,13 +405,26 @@ void PThread::Restart()
   if (!IsTerminated())
     return;
 
+  PTRACE(2, "PTlib\tRestarting thread " << this << " \"" << GetThreadName() << '"');
+  pthread_mutex_lock(&PX_suspendMutex);
+  PX_StartThread();
+  pthread_mutex_unlock(&PX_suspendMutex);
+}
+
+
+void PThread::PX_StartThread()
+{
+  // This should be executed inside the PX_suspendMutex to avoid races
+  // with the thread starting.
+  PX_state = PX_starting;
+
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
+  PAssertPTHREAD(pthread_attr_setdetachstate, (&threadAttr, PTHREAD_CREATE_DETACHED));
 
 #if defined(P_LINUX)
 
-  // Set a decent (256K) stack size that won't eat all virtual memory
-  pthread_attr_setstacksize(&threadAttr, 16*PTHREAD_STACK_MIN);
+  pthread_attr_setstacksize(&threadAttr, m_originalStackSize);
 
   struct sched_param sched_params;
   PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, GetSchedParam(PX_priority, sched_params)));
@@ -409,10 +442,10 @@ void PThread::Restart()
   PProcess & process = PProcess::Current();
 
   // create the thread
-  PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, PX_ThreadStart, this));
+  PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, &PThread::PX_ThreadMain, this));
 
   // put the thread into the thread list
-  process.InternalSetThread(this);
+  process.InternalThreadStarted(this);
 
   pthread_attr_destroy(&threadAttr);
 
@@ -425,20 +458,25 @@ void PThread::Restart()
 }
 
 
-void PX_SuspendSignalHandler(int)
+void PThread::PX_Suspended()
 {
-  PThread * thread = PThread::Current();
-  if (thread == NULL)
+  while (PX_suspendCount > 0) {
+    BYTE ch;
+    if (::read(unblockPipe[0], &ch, 1) == 1 || errno != EINTR)
     return;
 
-  PBoolean notResumed = true;
-  while (notResumed) {
-    BYTE ch;
-    notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
-#if !defined(P_NO_CANCEL)
+#if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
   }
+}
+
+
+void PX_SuspendSignalHandler(int)
+{
+  PThread * thread = PThread::Current();
+  if (thread != NULL)
+    thread->PX_Suspended();
 }
 
 
@@ -447,16 +485,14 @@ void PThread::Suspend(PBoolean susp)
   PAssertPTHREAD(pthread_mutex_lock, (&PX_suspendMutex));
 
   // Check for start up condition, first time Resume() is called
-  if (PX_firstTimeStart) {
+  if (PX_state == PX_firstResume) {
     if (susp)
       PX_suspendCount++;
     else {
       if (PX_suspendCount > 0)
         PX_suspendCount--;
-      if (PX_suspendCount == 0) {
-        PX_firstTimeStart = false;
-        Restart();
-      }
+      if (PX_suspendCount == 0)
+        PX_StartThread();
     }
 
     PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
@@ -506,15 +542,9 @@ void PThread::Resume()
 
 PBoolean PThread::IsSuspended() const
 {
-  if (PX_firstTimeStart)
-    return true;
-
-  if (IsTerminated())
-    return false;
-
-  PAssertPTHREAD(pthread_mutex_lock, ((pthread_mutex_t *)&PX_suspendMutex));
-  PBoolean suspended = PX_suspendCount != 0;
-  PAssertPTHREAD(pthread_mutex_unlock, ((pthread_mutex_t *)&PX_suspendMutex));
+  PAssertPTHREAD(pthread_mutex_lock, (&PX_suspendMutex));
+  bool suspended = PX_state == PX_starting || (PX_suspendCount != 0 && !IsTerminated());
+  PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
   return suspended;
 }
 
@@ -662,47 +692,30 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 #endif
 
 
-#ifdef P_GNU_PTH
-// GNU PTH threads version (used by NetBSD)
-// Taken from NetBSD pkg patches
-void PThread::Sleep(const PTimeInterval & timeout)
-{
-  PTime lastTime;
-  PTime targetTime = PTime() + timeout;
-
-  sched_yield();
-  lastTime = PTime();
-
-  while (lastTime < targetTime) {
-    P_timeval tval = targetTime - lastTime;
-    if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
-      break;
-
-    pthread_testcancel();
-
-    lastTime = PTime();
-  }
-}
-
-#else
 // Normal Posix threads version
 void PThread::Sleep(const PTimeInterval & timeout)
 {
   PTime lastTime;
   PTime targetTime = lastTime + timeout;
+
+#ifdef P_GNU_PTH
+// GNU PTH threads version (used by NetBSD)
+// Taken from NetBSD pkg patches
+  sched_yield();
+#endif
+
   do {
     P_timeval tval = targetTime - lastTime;
     if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
       break;
 
-#if !defined(P_NO_CANCEL)
+#if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
 
     lastTime = PTime();
   } while (lastTime < targetTime);
 }
-#endif
 
 void PThread::Yield()
 {
@@ -732,10 +745,11 @@ void PThread::Terminate()
     return;
 
   // otherwise force thread to die
-  PTRACE(2, "PTLib\tForcing termination of thread " << (void *)this);
+  PTRACE(2, "PTLib\tForcing termination of thread id=0x" << hex << m_threadId << dec);
 
   PXAbortBlock();
-  WaitForTermination(20);
+  if (WaitForTermination(20))
+    return;
 
 #if !defined(P_HAS_SEMAPHORES) && !defined(P_HAS_NAMED_SEMAPHORES)
   PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
@@ -749,11 +763,14 @@ void PThread::Terminate()
 #endif
 
   if (m_threadId != PNullThreadIdentifier) {
-#if defined(P_NO_CANCEL)
-    pthread_kill(m_threadId, SIGKILL);
-#else
+#if P_USE_THREAD_CANCEL
     pthread_cancel(m_threadId);
+    if (WaitForTermination(20))
+      return;
+    // get more forceful
 #endif
+
+    pthread_kill(m_threadId, SIGKILL);
   }
 }
 
@@ -762,6 +779,9 @@ PBoolean PThread::IsTerminated() const
 {
   if (m_isProcess)
     return false; // Process is always still running
+
+  if (PX_state == PX_finished)
+    return true;
 
   // See if thread is still running, copy variable in case changes between two statements
   pthread_t id = m_threadId;

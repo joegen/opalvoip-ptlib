@@ -289,7 +289,7 @@ PThread::PThread(bool isProcess)
   if (isProcess)
     return;
 
-  PProcess::Current().InternalSetThread(this);
+  PProcess::Current().InternalThreadStarted(this);
 }
 
 
