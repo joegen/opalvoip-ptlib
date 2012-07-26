@@ -97,7 +97,7 @@ PThread::PThread(bool isProcess)
   if (!PProcess::IsInitialised())
     return;
 
-  PProcess::Current().InternalSetThread(this);
+  PProcess::Current().InternalThreadStarted(this);
 }
 
 
