@@ -258,7 +258,8 @@ void PHTTPServiceProcess::ShutdownListener()
 
   while (httpThreads.GetSize() > 0) {
     httpThreadsMutex.Signal();
-    Sleep(1);
+    SignalTimerChange();
+    Sleep(10);
     httpThreadsMutex.Wait();
   }
 
