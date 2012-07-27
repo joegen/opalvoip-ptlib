@@ -1907,7 +1907,7 @@ PHTTPField * PHTTPForm::Add(PHTTPField * fld)
   if (PAssertNULL(fld) == NULL)
     return NULL;
 
-  PAssert(!fieldNames[fld->GetName()], "Field already on form!");
+  PAssert(!fieldNames[fld->GetName()], "Field " + fld->GetName() + " already on form!");
   fieldNames += fld->GetName();
   fields.Append(fld);
   return fld;
