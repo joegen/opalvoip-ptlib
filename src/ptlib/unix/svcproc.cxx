@@ -642,7 +642,7 @@ void PServiceProcess::PXOnSignal(int sig)
     case SIGINT :
     case SIGHUP :
     case SIGTERM :
-      Terminate();
+      new PThreadObj<PServiceProcess>(*this, &PServiceProcess::Terminate);
       break;
 
     case TraceUpSignal :
