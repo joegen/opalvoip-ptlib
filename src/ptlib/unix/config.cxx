@@ -282,14 +282,14 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
   while (file.good()) {
     PString line;
     file >> line;
-    line = line.Trim();
+    line = line.LeftTrim();
     if ((len = line.GetLength()) > 0) {
       // Preserve comments
       if (IsComment(line))
         SetAt(line, new PStringToString());
       else {
         if (line[0] == '[') {
-          PCaselessString sectionName = (line.Mid(1,len-(line[len-1]==']'?2:1))).Trim();
+          PCaselessString sectionName = line(1, line.Find(']')-1).Trim();
           iterator iter;
           if ((iter = find(sectionName)) != end())
             currentSection = &iter->second;
@@ -299,13 +299,11 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
           }
         }
         else if (currentSection != NULL) {
-          PINDEX equals = line.Find('=');
-          if (equals > 0 && equals != P_MAX_INDEX) {
-            PString keyStr = line.Left(equals).Trim();
-            PString valStr = line.Right(len - equals - 1).Trim();
-
-            if (currentSection->Contains(keyStr))
-              (*currentSection)[keyStr] += '\n' + valStr;
+          PString keyStr, valStr;
+          if (line.Split('=', keyStr, valStr, false) && !(keyStr = keyStr.Trim()).IsEmpty()) {
+            PStringToString::iterator iter = currentSection->find(keyStr);
+            if (iter != currentSection->end())
+              iter->second += '\n' + valStr;
             else
               currentSection->SetAt(keyStr, valStr);
           }
