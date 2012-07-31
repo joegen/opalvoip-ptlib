@@ -666,7 +666,7 @@ dnl Memory allocator optimisations
 
 AC_MSG_CHECKING(C++ memory allocator)
 
-AC_ARG_WITH(allocator, AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]), [], [withval="mt"])
+AC_ARG_WITH(allocator, AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]), [], [withval="std"])
 if test "$withval" = "std"; then
   AC_MSG_RESULT(std)
 elif test "$withval" = "mt"; then
