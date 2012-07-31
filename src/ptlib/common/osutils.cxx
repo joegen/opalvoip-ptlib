@@ -2021,7 +2021,7 @@ PThread * PThread::Current()
 
   PWaitAndSignal mutex(process.m_threadMutex);
   PProcess::ThreadMap::iterator it = process.m_activeThreads.find(GetCurrentThreadId());
-  if (it != process.m_activeThreads.end())
+  if (it != process.m_activeThreads.end() && !it->second->IsTerminated())
     return it->second;
 
   return process.m_shuttingDown ? NULL : new PExternalThread;
