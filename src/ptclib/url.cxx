@@ -232,6 +232,18 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
       safeChars += ":@&=+$,|";   // Section 3.3
       break;
 
+    case ParameterTranslation :
+      /* By strict RFC2396/3.3 this should be as for PathTranslation, but many
+         URI schemes have parameters of the form key=value so we don't allow
+         '=' character in the allowed set. Also, including ',' is incompatible
+         with some schemes, leave it out too. */
+      safeChars += ":@&+$|";
+      break;
+
+    case QuotedParameterTranslation :
+      safeChars += "[]/:@&=+$,|";
+      return str.FindSpan(safeChars) != P_MAX_INDEX ? str.ToLiteral() : str;
+
     default :
       break;    // Section 3.4, no reserved characters may be used
   }
