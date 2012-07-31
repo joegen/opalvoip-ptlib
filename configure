@@ -7003,7 +7003,7 @@ $as_echo_n "checking C++ memory allocator... " >&6; }
 if test "${with_allocator+set}" = set; then :
   withval=$with_allocator;
 else
-  withval="mt"
+  withval="std"
 fi
 
 if test "$withval" = "std"; then
