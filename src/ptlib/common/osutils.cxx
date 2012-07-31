@@ -1972,6 +1972,7 @@ void PProcess::InternalCleanAutoDeleteThreads()
   ThreadList::iterator thread = m_autoDeleteThreads.begin();
   while (thread != m_autoDeleteThreads.end()) {
     if (thread->IsAutoDelete() && thread->IsTerminated()) {
+      InternalThreadEnded(&*thread);
       threadsToDelete.Append(&*thread);
       m_autoDeleteThreads.erase(thread++);
     }
@@ -2145,7 +2146,7 @@ PThread::~PThread()
   for (LocalStorageList::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
     (*it)->ThreadDestroyed(this);
 
-  if (!m_isProcess)
+  if (!m_isProcess && !m_autoDelete)
     PProcess::Current().InternalThreadEnded(this);
 }
 
