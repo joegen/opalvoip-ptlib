@@ -463,26 +463,26 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 
     if ((info.options&Timestamp) != 0)
       stream << setprecision(3) << setw(10) << (PTimer::Tick()-info.startTick) << '\t';
-
-    if ((info.options&Thread) != 0) {
-      PString name;
-      if (thread == NULL)
-        name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
-      else
-        name = thread->GetThreadName();
-      if (name.GetLength() <= 23)
-        stream << setw(23) << name;
-      else
-        stream << name.Left(10) << "..." << name.Right(10);
-      stream << '\t';
-    }
-
-    if ((info.options&ThreadAddress) != 0)
-      stream << hex << setfill('0') << setw(7) << (void *)thread << dec << setfill(' ') << '\t';
   }
 
   if ((info.options&TraceLevel) != 0)
     stream << level << '\t';
+
+  if ((info.options&Thread) != 0) {
+    PString name;
+    if (thread == NULL)
+      name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
+    else
+      name = thread->GetThreadName();
+    if (name.GetLength() <= 23)
+      stream << setw(23) << name;
+    else
+      stream << name.Left(10) << "..." << name.Right(10);
+    stream << '\t';
+  }
+
+  if ((info.options&ThreadAddress) != 0)
+    stream << hex << setfill('0') << setw(7) << (void *)thread << dec << setfill(' ') << '\t';
 
   if ((info.options&FileAndLine) != 0) {
     const char * file;
