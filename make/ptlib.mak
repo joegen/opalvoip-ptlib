@@ -31,16 +31,14 @@
 # $Date$
 #
 
-ifndef PTLIBDIR
-
-$(error No PTLIBDIR environment variable defined! \
-You need to define PTLIBDIR! \
-Try something like: \
-PTLIBDIR = $(HOME)/ptlib)
-
+ifdef PTLIBDIR
+  PT_MAKE_DIR := $(PTLIBDIR)/make
+else
+  PT_MAKE_DIR := $(shell pkg-config ptlib --variable=makedir)
 endif
 
-include $(PTLIBDIR)/make/unix.mak
-include $(PTLIBDIR)/make/common.mak
+include $(PT_MAKE_DIR)/ptbuildopts.mak
+include $(PT_MAKE_DIR)/unix.mak
+include $(PT_MAKE_DIR)/common.mak
 
 # End of ptlib.mak

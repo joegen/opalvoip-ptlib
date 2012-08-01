@@ -33,18 +33,7 @@
 # $Date$
 #
 
-ifndef PTLIBDIR
-	echo "No PTLIBDIR environment variable defined!"
-	echo "You need to define PTLIBDIR!"
-	echo "Try something like:"
-	echo "PTLIBDIR = $(HOME)/ptlib"
-	exit 1
-endif
-
 ####################################################
-
-# include generated build options file, then include it
-include $(PTLIBDIR)/make/ptbuildopts.mak
 
 STANDARD_TARGETS=\
 opt         debug         both \
@@ -238,13 +227,13 @@ ifeq ($(target_os),solaris)
 
 #  Solaris (Sunos 5.x)
 
-CFLAGS +=-DSOLARIS -D__inline=inline
+PTLIB_CFLAGS +=-DSOLARIS -D__inline=inline
 CXXFLAGS +=-DSOLARIS -D__inline=inline
 
 ifeq ($(target_cpu),x86)
 ifeq ($(USE_GCC),yes)
 DEBUG_FLAG	:= -gstabs+
-CFLAGS           += -DUSE_GCC
+PTLIB_CFLAGS           += -DUSE_GCC
 CXXFLAGS         += -DUSE_GCC
 endif
 endif
@@ -463,13 +452,11 @@ PTLIB_CFLAGS	+= -I$(NUCLEUSDIR)/plus \
 		-I$(NUCLEUSDIR)/plusplus \
 		-I$(NUCLEUSDIR)/net \
 		-I$(NUCLEUSDIR) \
-		-I$(PTLIBDIR)/include/ptlib/Nucleus++ \
 		-I$(WORK)/embedded/libraries/socketshim/BerkleySockets \
 		-I${STLDIR} \
 		-I/usr/local/powerpc-motorola-eabi/include \
 		-I${WORK}/embedded/libraries/configuration
 
-UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/Nucleus++
 MEMORY_CHECK	=	0
 endif # Nucleus
 
@@ -557,11 +544,11 @@ endif
 
 # Directories
 
-ifndef UNIX_SRC_DIR
-UNIX_SRC_DIR	= $(PTLIBDIR)/src/ptlib/unix
+ifdef PTLIBDIR
+  PTLIB_LIBDIR	= $(PTLIBDIR)/lib_$(target)
+else
+  PTLIB_LIBDIR	= $(shell pkg-config ptlib --variable=libdir)
 endif
-
-PTLIB_LIBDIR	= $(PTLIBDIR)/lib_$(target)
 
 # set name of the PT library
 PTLIB_BASE	= pt$(OBJ_SUFFIX)
