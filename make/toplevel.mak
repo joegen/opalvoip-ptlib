@@ -183,7 +183,10 @@ uninstall:
 	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc
 	rm -f $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
 	      $(DESTDIR)$(libdir)/$(PTLIB_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_SONAME)
+	      $(DESTDIR)$(libdir)/$(PTLIB_SONAME) \
+	      $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_d_s.a \
+	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_FILE) \
+	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SONAME)
 
 endif
 
