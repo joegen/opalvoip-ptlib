@@ -38,7 +38,9 @@
 ######################################################################
 
 # Submodules built with make lib
-LIBDIRS += $(PTLIBDIR)
+ifdef PTLIBDIR
+  LIBDIRS += $(PTLIBDIR)
+endif
 
 
 ifndef OBJDIR
@@ -53,12 +55,15 @@ vpath %.cpp $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
 vpath %.dep $(DEPDIR)
-vpath %.gch $(PTLIBDIR)/include
 
 #
 # add common directory to include path - must be after PT directories
 #
-PTLIB_CFLAGS	:= -I$(PTLIBDIR)/include $(PTLIB_CFLAGS)
+ifdef PTLIBDIR
+  PTLIB_CFLAGS := -I$(PTLIBDIR)/include $(PTLIB_CFLAGS)
+else
+  PTLIB_CFLAGS := $(shell pkg-config ptlib --cflags-only-I) $(PTLIB_CFLAGS)
+endif
 
 ifneq ($(P_SHAREDLIB),1)
 
@@ -75,9 +80,6 @@ ENDLDLIBS += $(P_STATIC_ENDLDLIBS)
 endif
 
 endif
-
-#  clean whitespace out of source file list
-SOURCES         := $(strip $(SOURCES))
 
 
 ifeq ($(V)$(VERBOSE),)
@@ -110,7 +112,7 @@ $(OBJDIR)/%.o : %.c
 SRC_OBJS := $(SOURCES:.c=.o)
 SRC_OBJS := $(SRC_OBJS:.cxx=.o)
 SRC_OBJS := $(SRC_OBJS:.cpp=.o)
-OBJS	 := $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS)))
+OBJS	 := $(strip $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS))))
 
 #
 # create list of dependency files 
@@ -166,7 +168,7 @@ ifeq ($(target_os),beos)
 # directory
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PTLIB_LIBDIR) lib; fi
 endif
-	$(Q_LD)$(LD) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
+	$(Q_LD)$(LD) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
 $(TARGET_LIBS) :
@@ -189,11 +191,14 @@ endif # PROG
 #
 
 USE_PCH:=no
+ifeq ($(USE_PCH),yes)
+
+vpath %.gch $(PTLIBDIR)/include
+
 $(PTLIBDIR)/include/ptlib.h.gch/$(PTLIB_OBJBASE): $(PTLIBDIR)/include/ptlib.h
 	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
 	$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -x c++ -c $< -o $@
 
-ifeq ($(USE_PCH),yes)
 PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PTLIB_OBJBASE)
 CLEAN_FILES  += $(PCH_FILES)
 
@@ -222,7 +227,11 @@ default_depend :: $(DEPS)
 	@echo Created dependencies.
 
 libs ::
+ifneq ($(LIBDIRS),)
 	@set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i default_depend default_target; done
+else
+	@true
+endif
 
 help:
 	@echo "The following targets are available:"

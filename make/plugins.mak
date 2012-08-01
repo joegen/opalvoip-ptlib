@@ -29,9 +29,10 @@
 #
 
 ifndef PTLIBDIR
-PTLIBDIR=$(HOME)/ptlib
+  $(error Must have PTLIBDIR defined to build plugins)
 endif
 
+include $(PTLIBDIR)/make/ptbuildopts.mak
 include $(PTLIBDIR)/make/unix.mak
 
 PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)

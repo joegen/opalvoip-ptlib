@@ -29,6 +29,7 @@ ifndef PTLIBDIR
   $(error PTLIBDIR must be defined)
 endif
 
+include $(PTLIBDIR)/make/ptbuildopts.mak
 include $(PTLIBDIR)/make/unix.mak
 
 OBJDIR	= $(PTLIB_OBJDIR)
