@@ -2,6 +2,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+makedir=@datarootdir@/ptlib/make
 target_cpu=@target_cpu@
 target_os=@target_os@
 target=@target@

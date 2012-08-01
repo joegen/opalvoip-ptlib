@@ -3,10 +3,11 @@
 PROG    = hello
 SOURCES = hello.cxx
 
-ifndef PTLIBDIR
-PTLIBDIR=$(HOME)/ptlib
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
 endif
 
-include $(PTLIBDIR)/make/ptlib.mak
 
 # End of Makefile
