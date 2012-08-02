@@ -29,7 +29,7 @@
 #
 
 ifdef PTLIBDIR
-  CFG_ARGS:=--prefix=$(PTLIBDIR) $(CFG_ARGS)
+  override CFG_ARGS+=--prefix=$(PTLIBDIR)
 else
   export PTLIBDIR:=$(CURDIR)
   $(info Setting default PTLIBDIR to $(PTLIBDIR))
