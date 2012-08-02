@@ -1902,6 +1902,7 @@ EXPORTS
     ??0PASN_VisibleString@@QAE@ABV0@@Z @1188 NONAME
     ??0PASN_VisibleString@@QAE@IW4TagClass@PASN_Object@@@Z @1189 NONAME
     ??0PASN_VisibleString@@QAE@PBD@Z @1190 NONAME
+    ??0PAtomicBase@@IAE@J@Z @39048 NONAME
     ??0PAtomicInteger@@QAE@J@Z @1191 NONAME
     ??0PBase64@@QAE@XZ @1192 NONAME
     ??0PBER_Stream@@QAE@ABVPBYTEArray@@@Z @1193 NONAME
@@ -3454,6 +3455,7 @@ EXPORTS
     ??1PASN_Set@@UAE@XZ @2369 NONAME
     ??1PASN_Stream@@UAE@XZ @2370 NONAME
     ??1PASN_VisibleString@@UAE@XZ @2371 NONAME
+    ??1PAtomicBase@@QAE@XZ @39049 NONAME
     ??1PAtomicInteger@@QAE@XZ @22231 NONAME
     ??1PBase64@@UAE@XZ @2372 NONAME
     ??1PBER_Stream@@UAE@XZ @2373 NONAME
