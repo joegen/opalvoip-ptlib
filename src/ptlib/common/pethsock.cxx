@@ -195,8 +195,8 @@ PBoolean PEthSocket::Write(const void *, PINDEX)
 
 
 PEthSocket::PEthSocket()
-  : m_pcap(NULL)
-  , m_filterMask(FilterPromiscuous)
+  : m_filterMask(FilterPromiscuous)
+  , m_pcap(NULL)
 {
 }
 
