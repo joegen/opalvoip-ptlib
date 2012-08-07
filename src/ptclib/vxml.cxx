@@ -110,11 +110,6 @@ TRAVERSE_NODE(Choice);
 TRAVERSE_NODE(Property);
 TRAVERSE_NODE(Disconnect);
 TRAVERSE_NODE(Prompt);
-TRAVERSE_NODE(Filled);
-TRAVERSE_NODE(NoInput);
-TRAVERSE_NODE(NoMatch);
-TRAVERSE_NODE(Error);
-TRAVERSE_NODE(Catch);
 
 #define TRAVERSE_NODE2(name) \
   class PVXMLTraverse##name : public PVXMLNodeHandler { \
@@ -130,6 +125,25 @@ TRAVERSE_NODE2(Form);
 TRAVERSE_NODE2(Field);
 TRAVERSE_NODE2(Transfer);
 TRAVERSE_NODE2(Record);
+
+class PVXMLTraverseEvent : public PVXMLNodeHandler
+{
+  virtual bool Start(PVXMLSession &, PXMLElement & element) const
+  {
+    return element.GetAttribute("fired") == "true";
+  }
+
+  virtual bool Finish(PVXMLSession &, PXMLElement & element) const
+  {
+    element.SetAttribute("fired", "false");
+    return true;
+  }
+};
+static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> FilledNodeHandler("Filled", true);
+static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> NoInputNodeHandler("NoInput", true);
+static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> NoMatchNodeHandler("NoMatch", true);
+static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> ErrorNodeHandler("Error", true);
+static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> CatchNodeHandler("Catch", true);
 
 #if PTRACING
 class PVXMLTraverseLog : public PVXMLNodeHandler {
@@ -986,6 +1000,20 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
               (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
            ) {
           PTRACE(3, "VXML\tFound <" << xmlElement->GetName() << " id=\"" << xmlElement->GetAttribute("id") << "\">");
+
+          if (m_currentNode != NULL) {
+            PXMLElement * element = m_currentNode->GetParent();
+            while (element != NULL) {
+              PCaselessString nodeType = element->GetName();
+              PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
+              if (handler != NULL) {
+                handler->Finish(*this, *element);
+                PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
+              }
+              element = element->GetParent();
+            }
+          }
+
           m_currentNode = xmlObject;
           return true;
         }
@@ -1240,8 +1268,10 @@ bool PVXMLSession::NextNode(bool processChildren)
     PCaselessString nodeType = element->GetName();
     PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
     if (handler != NULL) {
-      if (!handler->Finish(*this, *element))
+      if (!handler->Finish(*this, *element)) {
+        PTRACE(4, "VXML\tContinue processing VoiceXML element: <" << nodeType << '>');
         return true;
+      }
       PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
     }
 
@@ -1257,7 +1287,7 @@ bool PVXMLSession::NextNode(bool processChildren)
 bool PVXMLSession::ProcessGrammar()
 {
   if (m_grammar == NULL) {
-    PTRACE(1, "VXML\tNo grammar was created!");
+    PTRACE(4, "VXML\tNo grammar was created!");
     return true;
   }
 
@@ -2214,44 +2244,6 @@ PBoolean PVXMLSession::TraverseField(PXMLElement &)
 PBoolean PVXMLSession::TraversedField(PXMLElement &)
 {
   return ProcessGrammar();
-}
-
-
-static bool HasFired(PXMLElement & element)
-{
-  bool fired = element.GetAttribute("fired") == "true";
-  element.SetAttribute("fired", "false");
-  return fired;
-}
-
-
-PBoolean PVXMLSession::TraverseFilled(PXMLElement & element)
-{
-  return HasFired(element);
-}
-
-
-PBoolean PVXMLSession::TraverseNoInput(PXMLElement & element)
-{
-  return HasFired(element);
-}
-
-
-PBoolean PVXMLSession::TraverseNoMatch(PXMLElement & element)
-{
-  return HasFired(element);
-}
-
-
-PBoolean PVXMLSession::TraverseError(PXMLElement & element)
-{
-  return HasFired(element);
-}
-
-
-PBoolean PVXMLSession::TraverseCatch(PXMLElement & element)
-{
-  return HasFired(element);
 }
 
 
