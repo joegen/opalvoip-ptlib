@@ -208,6 +208,33 @@
 
 /////////////////////////////////////////////////
 //
+// PCAP support
+//
+
+#undef P_PCAP
+#undef P_PCAP_WIN64
+#undef P_PCAP_WIN32
+
+#if (defined(P_PCAP_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_PCAP_WIN32) && !defined(P_64BIT))
+  #define P_PCAP 1
+#endif
+
+#if defined(_MSC_VER) && defined(P_PCAP)
+  #pragma include_alias(<pcap.h>, <@PCAP_DIR@/include/pcap.h>)
+  
+  #if defined(P_64BIT)
+    #define P_PCAP_LIBRARY1 "@PCAP_DIR@/lib/x64/Packet.lib"
+    #define P_PCAP_LIBRARY2 "@PCAP_DIR@/lib/x64/wpcap.lib"
+  #else
+    #define P_PCAP_LIBRARY1 "@PCAP_DIR@/lib/Packet.lib"
+    #define P_PCAP_LIBRARY2 "@PCAP_DIR@/lib/wpcap.lib"
+  #endif
+#endif
+
+
+/////////////////////////////////////////////////
+//
 // OpenSSL library for secure sockets layer
 //
 
@@ -558,6 +585,7 @@
   #define P_LUA_LIBRARY "@LUA_DIR@/lib/lua5.1.lib"
 #endif
 
+
 /////////////////////////////////////////////////
 //
 // V8 Javascript interpreter
@@ -583,6 +611,7 @@
     #define P_V8_LIBRARY2 "@V8_DIR@/build/Release/lib/v8_base.lib"
   #endif
 #endif
+
 
 /////////////////////////////////////////////////
 //

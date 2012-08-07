@@ -40,6 +40,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMPP Console", "samples\xmp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SortedListTest", "samples\sortedlist\SortedListTest_2010.vcxproj", "{87578277-AE7F-4B03-A8F8-EBB301EB4EC8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ethernet", "samples\ether\ether_2010.vcxproj", "{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -263,6 +265,15 @@ Global
 		{87578277-AE7F-4B03-A8F8-EBB301EB4EC8}.Release|Win32.ActiveCfg = Release|Win32
 		{87578277-AE7F-4B03-A8F8-EBB301EB4EC8}.Release|Win32.Build.0 = Release|Win32
 		{87578277-AE7F-4B03-A8F8-EBB301EB4EC8}.Release|x64.ActiveCfg = Release|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.Debug|Win32.Build.0 = Debug|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.Debug|x64.ActiveCfg = Debug|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.No Trace|Win32.Build.0 = No Trace|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.No Trace|x64.ActiveCfg = No Trace|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.Release|Win32.ActiveCfg = Release|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.Release|Win32.Build.0 = Release|Win32
+		{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

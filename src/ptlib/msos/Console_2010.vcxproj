@@ -296,7 +296,6 @@
     </ClCompile>
     <ClCompile Include="..\common\collect.cxx" />
     <ClCompile Include="..\common\contain.cxx" />
-    <ClCompile Include="ethsock.cxx" />
     <ClCompile Include="..\common\getdate_tab.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -318,7 +317,9 @@
     <ClCompile Include="..\common\osutils.cxx" />
     <ClCompile Include="..\Common\pchannel.cxx" />
     <ClCompile Include="..\Common\pconfig.cxx" />
-    <ClCompile Include="..\common\pethsock.cxx" />
+    <ClCompile Include="..\common\pethsock.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">c:/work/external/wpdpack/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="pipe.cxx" />
     <ClCompile Include="..\common\pipechan.cxx" />
     <ClCompile Include="..\common\pluginmgr.cxx" />
