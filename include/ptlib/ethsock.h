@@ -39,33 +39,21 @@
 #endif
 
 #include <ptlib/socket.h>
+#include <ptlib/bitwise_enum.h>
 
-#ifdef _WIN32
-class PWin32PacketDriver;
-class PWin32SnmpLibrary;
-class PWin32PacketBuffer;
-
-PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
-#endif
 
 /**This class describes a type of socket that will communicate using
    raw ethernet packets.
  */
 class PEthSocket : public PSocket
 {
-  PCLASSINFO(PEthSocket, PSocket);
-
+    PCLASSINFO(PEthSocket, PSocket);
   public:
   /**@name Constructor */
   //@{
-    /**Create a new ethernet packet socket. Some platforms require a set of
-       buffers to be allocated to avoid losing frequent packets.
+    /**Create a new ethernet packet socket.
      */
-    PEthSocket(
-      PINDEX nReadBuffers = 8,  ///< Number of buffers used for reading.
-      PINDEX nWriteBuffers = 1, ///< Number of buffers used for writing.
-      PINDEX size = 1514        ///< Size of each buffer.
-    );
+    PEthSocket();
 
       /// Close the socket
     ~PEthSocket();
@@ -208,79 +196,29 @@ class PEthSocket : public PSocket
   /**@name Information functions */
   //@{
     /**Enumerate all the interfaces that are capable of being accessed at the
-       ethernet level. Begin with index 0, and increment until the function
-       returns false. The name string returned can be passed, unchanged, to
+       ethernet level. The name string(s) returned can be passed, unchanged, to
        the Connect() function.
 
        Note that the driver does not need to be open for this function to work.
 
        @return
-       true if an interface has the index supplied.
+       Empty array if no devices are available.
      */
-    PBoolean EnumInterfaces(
-      PINDEX idx,      ///< Index of interface
-      PString & name   ///< Interface name
-    );
-
-
-    /**Get the low level MAC address of the open interface.
-
-       @return
-       true if the address is returned, false on error.
-     */
-    PBoolean GetAddress(
-      Address & addr   ///< Variable to receive the MAC address.
-    );
-
-    /**Get the prime IP number bound to the open interface.
-
-       @return
-       true if the address is returned, false on error.
-     */
-    PBoolean GetIpAddress(
-      PIPSocket::Address & addr     ///< Variable to receive the IP address.
-    );
-
-    /**Get the prime IP number bound to the open interface.
-       This also returns the net mask associated with the open interface.
-
-       @return
-       true if the address is returned, false on error.
-     */
-    PBoolean GetIpAddress(
-      PIPSocket::Address & addr,    ///< Variable to receive the IP address.
-      PIPSocket::Address & netMask  ///< Variable to receive the net mask.
-    );
-
-    /**Enumerate all of the IP addresses and net masks bound to the open
-       interface. This allows all the addresses to be found on multi-homed
-       hosts. Begin with index 0 and increment until the function returns
-       false to enumerate all the addresses.
-
-       @return
-       true if the address is returned, false on error or if there are no more
-       addresses bound to the interface.
-     */
-    PBoolean EnumIpAddress(
-      PINDEX idx,                   ///< Index 
-      PIPSocket::Address & addr,    ///< Variable to receive the IP address.
-      PIPSocket::Address & netMask  ///< Variable to receive the net mask.
-    );
+    PStringArray EnumInterfaces(
+      bool detailed = true
+    ) const;
 
 
     /// Medium types for the open interface.
     enum MediumTypes {
-      /// A Loopback Network
-      MediumLoop,     
-      /// An ethernet Network Interface Card (10base2, 10baseT etc)
-      Medium802_3,    
-      /// A Wide Area Network (modem etc)
-      MediumWan,      
-      /// Something else
-      MediumUnknown,  
+      MediumLoop,      ///< A Loopback Network
+      Medium802_3,     ///< An ethernet Network Interface Card (10base2, 10baseT etc)
+      MediumWan,       ///< A Wide Area Network (modem etc)
+      MediumLinuxSLL,  ///< Linux "cooked" capture encapsulation
+      MediumUnknown,   ///< Something else
       NumMediumTypes
     };
-    /**Return the type of the interface.
+    /**Return the data link of the interface.
 
        @return
        Type enum for the interface, or NumMediumTypes if interface not open.
@@ -312,18 +250,14 @@ class PEthSocket : public PSocket
     };
 
     /// Mask filter bits for GetFilter() function.
-    enum FilterMask {
-      /// Packets directed at the interface.
-      FilterDirected     = 0x01,    
-      /// Multicast packets directed at the interface.
-      FilterMulticast    = 0x02,    
-      /// All multicast packets.
-      FilterAllMulticast = 0x04,    
-      /// Packets with a broadcast address.
-      FilterBroadcast    = 0x08,    
-      /// All packets.
-      FilterPromiscuous  = 0x10     
-    };
+    P_DECLARE_BITWISE_ENUM(FilterMask,5,(
+      NoFiltering,
+      FilterPromiscuous,    ///< Defines if the adapter has to go in promiscuous mode.
+      FilterDataTxUDP,      ///< Defines if the data trasfer (in case of a remote capture) has to be done with UDP protocol.
+      FilterNoCaptureRPCAP, ///< Defines if the remote probe will capture its own generated traffic.
+      FilterNoCaptureLocal, ///< Defines if the local adapter will capture its own generated traffic.
+      FilterMaxResponsiveness ///< This flag configures the adapter for maximum responsiveness.
+    ));
 
     /**Get the current filtering criteria for receiving packets.
 
@@ -336,10 +270,7 @@ class PEthSocket : public PSocket
        @return
        A bit mask is returned, a value of 0 indicates an error.
      */
-    PBoolean GetFilter(
-      unsigned & mask,  ///< Bits for filtering on address
-      WORD & type       ///< Code for filtering on type.
-    );
+    FilterMask GetFilter() const { return m_filterMask; }
 
     /**Set the current filtering criteria for receiving packets. A bit-wise OR
        of the FilterMask values will filter packets so that they do not appear
@@ -353,19 +284,14 @@ class PEthSocket : public PSocket
        @return
        true if the address is returned, false on error.
      */
-    PBoolean SetFilter(
-      unsigned mask,       ///< Bits for filtering on address
-      WORD type = TypeAll  ///< Code for filtering on type.
+    bool SetFilter(
+      FilterMask mask   ///< Bits for filtering on address
     );
   //@}
 
 
   /**@name I/O functions */
   //@{
-    /**Reset the interface.
-     */
-    PBoolean ResetAdaptor();
-
     /**Read a packet from the interface and parse out the information
        specified by the parameters. This will automatically adjust for 802.2
        and 802.3 ethernet frames.
@@ -373,7 +299,7 @@ class PEthSocket : public PSocket
        @return
        true if the packet read, false on error.
      */
-    PBoolean ReadPacket(
+    bool ReadPacket(
       PBYTEArray & buffer,  ///< Buffer to receive the raw packet
       Address & dest,       ///< Destination address of packet
       Address & src,        ///< Source address of packet
@@ -387,16 +313,9 @@ class PEthSocket : public PSocket
     virtual PBoolean OpenSocket();
     virtual const char * GetProtocolName() const;
 
+    FilterMask m_filterMask;  // Remember the set filter frame type
 
-    WORD filterType;  // Remember the set filter frame type
-
-
-// Include platform dependent part of class
-#ifdef _WIN32
-#include "msos/ptlib/ethsock.h"
-#else
-#include "unix/ptlib/ethsock.h"
-#endif
+    void * m_pcap;
 };
 
 

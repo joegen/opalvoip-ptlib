@@ -32,6 +32,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_sasl=no
   default_mlib=no
   default_ipv6=no
+  default_pcap=no
   default_lua=no
   HAS_TTS=
   HAS_ASN=1
@@ -78,6 +79,7 @@ else
   default_sasl=yes
   default_mlib=no
   default_ipv6=yes
+  default_pcap=yes
   default_lua=yes
   HAS_TTS=1
   HAS_ASN=1
@@ -1333,6 +1335,36 @@ else
   AC_DEFINE(P_HAS_INET_NTOP, 1)
   AC_MSG_RESULT(yes)
 fi
+
+dnl ########################################################################
+dnl look for pcap functions
+
+dnl MSWIN_DISPLAY    pcap,WinPCAP Support
+dnl MSWIN_CHECK_FILE pcap,include\pcap.h,P_PCAP_WIN32=1
+dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
+dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
+dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
+dnl MSWIN_CHECK_DIR  pcap,..\external\WpdPack*
+dnl MSWIN_CHECK_DIR  pcap,\WpdPack\
+dnl MSWIN_CHECK_DIR  pcap,c:\WpdPack\
+
+AC_ARG_ENABLE(pcap, AS_HELP_STRING([--disable-pcap],[disable PCAP support]))
+
+if test "x$enable_pcap" = "x" ; then
+  enable_pcap=$default_pcap
+fi
+
+HAS_PCAP=
+if test "$enable_pcap" = "no" ; then
+  AC_MSG_NOTICE(PCAP disabled)
+else
+  AC_MSG_CHECKING(for PCAP support)
+  AC_TRY_COMPILE([#include <pcap.h>], [pcap_t *h;], [HAS_PCAP=yes], [HAS_PCAP=no])
+  AC_MSG_RESULT($HAS_PCAP)
+fi
+AC_SUBST(HAS_PCAP)
+PTLIB_NEW_OPTION(PCAP)
+
 
 dnl ########################################################################
 dnl check for enabling config file support

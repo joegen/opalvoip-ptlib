@@ -145,9 +145,6 @@
     <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="ethsock.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
     <ClCompile Include="icmp.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
