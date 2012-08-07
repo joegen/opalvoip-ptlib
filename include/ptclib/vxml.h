@@ -272,11 +272,6 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean TraversePrompt(PXMLElement & element);
     virtual PBoolean TraverseField(PXMLElement & element);
     virtual PBoolean TraversedField(PXMLElement & element);
-    virtual PBoolean TraverseFilled(PXMLElement & element);
-    virtual PBoolean TraverseNoInput(PXMLElement & element);
-    virtual PBoolean TraverseNoMatch(PXMLElement & element);
-    virtual PBoolean TraverseError(PXMLElement & element);
-    virtual PBoolean TraverseCatch(PXMLElement & element);
     virtual PBoolean TraverseTransfer(PXMLElement & element);
     virtual PBoolean TraversedTransfer(PXMLElement & element);
 
