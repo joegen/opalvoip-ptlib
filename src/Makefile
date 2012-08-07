@@ -414,7 +414,7 @@ $(REVISION_FILE) : $(REVISION_FILE).in
 ifeq ($(shell which svn 2> /dev/null),)
 	sed -e "s/.WCREV./`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $<`/" $< > $@
 else
-ifeq ($(wildcard .svn),)
+ifeq ($(wildcard $(PTLIBDIR)/.svn),)
 	sed -e "s/.WCREV./`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $<`/" $< > $@
 else
 	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `LC_ALL=C svn info | sed -n 's/Revision: //p'`/" $< > $@.tmp
