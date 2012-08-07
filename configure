@@ -702,6 +702,8 @@ PTLIB_URL
 HAS_URL
 PTLIB_CONFIG_FILE
 HAS_CONFIG_FILE
+PTLIB_PCAP
+HAS_PCAP
 PTLIB_IPV6
 HAS_IPV6
 PTLIB_V8
@@ -837,6 +839,7 @@ with_expat_dir
 enable_lua
 enable_v8
 enable_ipv6
+enable_pcap
 enable_configfile
 enable_url
 enable_http
@@ -1551,6 +1554,7 @@ Optional Features:
   --disable-lua           disable Lua script support
   --disable-v8            disable V8 Javascript script support
   --disable-ipv6          disable IPV6 support
+  --disable-pcap          disable PCAP support
   --enable-configfile     enable config file support
   --enable-url            enable URL support
   --enable-http           enable HTTP support
@@ -3112,6 +3116,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_sasl=no
   default_mlib=no
   default_ipv6=no
+  default_pcap=no
   default_lua=no
   HAS_TTS=
   HAS_ASN=1
@@ -3158,6 +3163,7 @@ else
   default_sasl=yes
   default_mlib=no
   default_ipv6=yes
+  default_pcap=yes
   default_lua=yes
   HAS_TTS=1
   HAS_ASN=1
@@ -9247,6 +9253,58 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 fi
+
+
+
+# Check whether --enable-pcap was given.
+if test "${enable_pcap+set}" = set; then :
+  enableval=$enable_pcap;
+fi
+
+
+if test "x$enable_pcap" = "x" ; then
+  enable_pcap=$default_pcap
+fi
+
+HAS_PCAP=
+if test "$enable_pcap" = "no" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: PCAP disabled" >&5
+$as_echo "$as_me: PCAP disabled" >&6;}
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PCAP support" >&5
+$as_echo_n "checking for PCAP support... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <pcap.h>
+int
+main ()
+{
+pcap_t *h;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  HAS_PCAP=yes
+else
+  HAS_PCAP=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $HAS_PCAP" >&5
+$as_echo "$HAS_PCAP" >&6; }
+fi
+
+
+          if test "x${HAS_PCAP}" = "x1" ; then
+            PTLIB_PCAP=yes
+
+          else
+            PTLIB_PCAP=no
+
+          fi
+
+
+
 
 
 
