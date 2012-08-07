@@ -833,6 +833,17 @@ PMonitoredSocketBundle::~PMonitoredSocketBundle()
 }
 
 
+PStringArray PMonitoredSocketBundle::GetInterfaces(bool /*includeLoopBack*/, const PIPSocket::Address & /*destination*/)
+{
+  PSafeLockReadOnly guard(*this);
+
+  PStringList names;
+  for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter)
+    names.AppendString(iter->first);
+  return names;
+}
+
+
 PBoolean PMonitoredSocketBundle::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
@@ -848,7 +859,7 @@ PBoolean PMonitoredSocketBundle::Open(WORD port)
   while (!socketInfoMap.empty())
     CloseSocket(socketInfoMap.begin());
 
-  PStringArray interfaces = GetInterfaces();
+  PStringArray interfaces = PInterfaceMonitor::GetInstance().GetInterfaces();
   for (PINDEX i = 0; i < interfaces.GetSize(); ++i)
     OpenSocket(interfaces[i]);
 
