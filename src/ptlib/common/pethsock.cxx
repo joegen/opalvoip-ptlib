@@ -34,6 +34,234 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
+#if P_PCAP
+
+#include <pcap.h>
+
+#if _MSC_VER
+  #pragma comment(lib, P_PCAP_LIBRARY1)
+  #pragma comment(lib, P_PCAP_LIBRARY2)
+#endif
+
+
+#define M_PCAP reinterpret_cast<pcap_t *>(m_pcap)
+
+PStringArray PEthSocket::EnumInterfaces(bool detailed) const
+{
+  PStringArray interfaces;
+
+  pcap_if_t *alldevs;
+  char errbuf[PCAP_ERRBUF_SIZE];
+  if (pcap_findalldevs(&alldevs, errbuf) == -1) {
+    PTRACE(1, "EthSock\tCould not enumerate interfaces, error: " << errbuf);
+  }
+  else {
+    for (pcap_if_t * dev = alldevs; dev != NULL; dev = dev->next) {
+      PStringStream strm;
+      strm << dev->name;
+      if (detailed)
+        strm << '\t' << dev->description;
+      interfaces += strm;
+    }
+    pcap_freealldevs(alldevs);
+  }
+
+  return interfaces;
+}
+
+
+PBoolean PEthSocket::Connect(const PString & newName)
+{
+  Close();
+
+  channelName = newName.Left(newName.Find('\t'));
+
+  char errbuf[PCAP_ERRBUF_SIZE];
+  if ((m_pcap = pcap_open_live(channelName, 65536, m_filterMask, GetReadTimeout().GetInterval(), errbuf)) == NULL) {
+    PTRACE(1, "EthSock\tCould not open interface \"" << channelName << "\", error: " << errbuf);
+    return false;
+  }
+
+  os_handle = 1;
+  return true;
+}
+
+
+PBoolean PEthSocket::Close()
+{
+  if (m_pcap != NULL) {
+    pcap_close(M_PCAP);
+    m_pcap = NULL;
+  }
+
+  os_handle = -1;
+  return true;
+}
+
+
+PEthSocket::MediumTypes PEthSocket::GetMedium()
+{
+  if (IsOpen()) {
+    switch (pcap_datalink(M_PCAP)) {
+      case DLT_EN10MB :
+        return Medium802_3;
+      case DLT_PPP :
+        return MediumWan;
+      case DLT_LINUX_SLL :
+        return MediumLinuxSLL;
+    }
+  }
+
+  return MediumUnknown;
+}
+
+
+PBoolean PEthSocket::Read(void * data, PINDEX length)
+{
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
+
+  struct pcap_pkthdr *header;
+  const u_char *pkt_data;
+  int err = pcap_next_ex(M_PCAP, &header, &pkt_data);
+  switch (err) {
+    case 1 :
+      memcpy(data, pkt_data, std::min(length, (PINDEX)header->caplen));
+      lastReadCount = header->caplen;
+      return true;
+
+    case 0 :
+      return SetErrorValues(Timeout, 0, LastReadError);
+
+    default :
+      return SetErrorValues(Miscellaneous, err, LastReadError);
+  }
+}
+
+
+PBoolean PEthSocket::Write(const void * data, PINDEX length)
+{
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+
+  if (!ConvertOSError(pcap_sendpacket(M_PCAP, (u_char *)data, length), LastWriteError))
+    return false;
+
+  lastWriteCount = length;
+  return true;
+}
+
+
+#else
+
+PStringArray PEthSocket::EnumInterfaces(bool) const
+{
+  return PStringArray();
+}
+
+
+PBoolean PEthSocket::Connect(const PString & newName)
+{
+  PTRACE(1, "EthSock\tNo PCAP library compiled into system.");
+  return false;
+}
+
+
+PBoolean PEthSocket::Close()
+{
+  os_handle = -1;
+  return true;
+}
+
+
+PEthSocket::MediumTypes PEthSocket::GetMedium()
+{
+  return MediumUnknown;
+}
+
+
+PBoolean PEthSocket::Read(void *, PINDEX)
+{
+  return false;
+}
+
+
+PBoolean PEthSocket::Write(const void *, PINDEX)
+{
+  return false;
+}
+
+#endif
+
+
+PEthSocket::PEthSocket()
+  : m_pcap(NULL)
+  , m_filterMask(FilterPromiscuous)
+{
+}
+
+
+PEthSocket::~PEthSocket()
+{
+  Close();
+}
+
+
+bool PEthSocket::SetFilter(FilterMask mask)
+{
+  bool wasOpen = IsOpen();
+  Close();
+  m_filterMask = mask;
+  return !wasOpen || Connect(channelName);
+}
+
+
+const char * PEthSocket::GetProtocolName() const
+{
+  return "eth";
+}
+
+
+PBoolean PEthSocket::OpenSocket()
+{
+  PAssertAlways(PUnimplementedFunction);
+  return false;
+}
+
+
+PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return PFalse;
+}
+
+
+PBoolean PEthSocket::ReadPacket(PBYTEArray & buffer,
+                            Address & dest,
+                            Address & src,
+                            WORD & type,
+                            PINDEX & length,
+                            BYTE * & payload)
+{
+  Frame * frame = (Frame *)buffer.GetPointer(sizeof(Frame));
+  const PINDEX MinFrameSize = sizeof(frame->dst_addr)+sizeof(frame->src_addr)+sizeof(frame->snap.length);
+
+  do {
+    if (!Read(frame, sizeof(*frame)))
+      return PFalse;
+  } while (lastReadCount < MinFrameSize);
+
+  dest = frame->dst_addr;
+  src = frame->src_addr;
+  length = lastReadCount;
+  frame->Parse(type, payload, length);
+
+  return PTrue;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PEthSocket::Address::Address()
 {
   memset(b, 0xff, sizeof(b));
@@ -159,56 +387,6 @@ void PEthSocket::Frame::Parse(WORD & type, BYTE * & payload, PINDEX & length)
   payload = snap.oui;
   // Subtract off the 802.2 header
   length = len_or_type - (sizeof(snap.dsap)+sizeof(snap.ssap)+sizeof(snap.ctrl));
-}
-
-
-const char * PEthSocket::GetProtocolName() const
-{
-  return "eth";
-}
-
-
-PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
-{
-  PAssertAlways(PUnimplementedFunction);
-  return PFalse;
-}
-
-
-PBoolean PEthSocket::GetIpAddress(PIPSocket::Address & addr)
-{
-  PIPSocket::Address net_mask;
-  return EnumIpAddress(0, addr, net_mask);
-}
-
-
-PBoolean PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
-{
-  return EnumIpAddress(0, addr, net_mask);
-}
-
-
-PBoolean PEthSocket::ReadPacket(PBYTEArray & buffer,
-                            Address & dest,
-                            Address & src,
-                            WORD & type,
-                            PINDEX & length,
-                            BYTE * & payload)
-{
-  Frame * frame = (Frame *)buffer.GetPointer(sizeof(Frame));
-  const PINDEX MinFrameSize = sizeof(frame->dst_addr)+sizeof(frame->src_addr)+sizeof(frame->snap.length);
-
-  do {
-    if (!Read(frame, sizeof(*frame)))
-      return PFalse;
-  } while (lastReadCount < MinFrameSize);
-
-  dest = frame->dst_addr;
-  src = frame->src_addr;
-  length = lastReadCount;
-  frame->Parse(type, payload, length);
-
-  return PTrue;
 }
 
 
