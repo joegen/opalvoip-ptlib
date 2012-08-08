@@ -898,7 +898,7 @@ PThread::PThread(PINDEX stackSize,
                  const PString & name)
   : m_isProcess(false)
   , m_autoDelete(deletion == AutoDeleteThread)
-  , m_originalStackSize(std::max(stackSize, 65535))
+  , m_originalStackSize(std::max(stackSize, (PINDEX)65535))
   , m_threadName(name)
 {
   PAssert(m_originalStackSize > 0, PInvalidParameter);
