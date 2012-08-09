@@ -36,7 +36,7 @@
 
 #if P_PCAP
 
-#include <pcap.h>
+#include <pcap/pcap.h>
 
 #if _MSC_VER
   #pragma comment(lib, P_PCAP_LIBRARY1)
