@@ -44,16 +44,23 @@
 #endif
 
 
-#define M_PCAP reinterpret_cast<pcap_t *>(m_pcap)
+#define PTraceModule() "EthSock"
 
-PStringArray PEthSocket::EnumInterfaces(bool detailed) const
+
+struct PEthSocket::InternalData {
+  pcap_t    * m_pcap;
+  bpf_program m_program;
+};
+
+
+PStringArray PEthSocket::EnumInterfaces(bool detailed)
 {
   PStringArray interfaces;
 
   pcap_if_t *alldevs;
   char errbuf[PCAP_ERRBUF_SIZE];
   if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-    PTRACE(1, "EthSock\tCould not enumerate interfaces, error: " << errbuf);
+    PTRACE(1, NULL, PTraceModule(), "Could not enumerate interfaces, error: " << errbuf);
   }
   else {
     for (pcap_if_t * dev = alldevs; dev != NULL; dev = dev->next) {
@@ -77,11 +84,12 @@ PBoolean PEthSocket::Connect(const PString & newName)
   channelName = newName.Left(newName.Find('\t'));
 
   char errbuf[PCAP_ERRBUF_SIZE];
-  if ((m_pcap = pcap_open_live(channelName, 65536, m_filterMask, GetReadTimeout().GetInterval(), errbuf)) == NULL) {
-    PTRACE(1, "EthSock\tCould not open interface \"" << channelName << "\", error: " << errbuf);
+  if ((m_internal->m_pcap = pcap_open_live(channelName, m_snapLength, m_promiscuous, GetReadTimeout().GetInterval(), errbuf)) == NULL) {
+    PTRACE(1, "Could not open interface \"" << channelName << "\", error: " << errbuf);
     return false;
   }
 
+  SetFilter(m_filter);
   os_handle = 1;
   return true;
 }
@@ -89,9 +97,9 @@ PBoolean PEthSocket::Connect(const PString & newName)
 
 PBoolean PEthSocket::Close()
 {
-  if (m_pcap != NULL) {
-    pcap_close(M_PCAP);
-    m_pcap = NULL;
+  if (m_internal->m_pcap != NULL) {
+    pcap_close(m_internal->m_pcap);
+    m_internal->m_pcap = NULL;
   }
 
   os_handle = -1;
@@ -102,7 +110,7 @@ PBoolean PEthSocket::Close()
 PEthSocket::MediumTypes PEthSocket::GetMedium()
 {
   if (IsOpen()) {
-    switch (pcap_datalink(M_PCAP)) {
+    switch (pcap_datalink(m_internal->m_pcap)) {
       case DLT_EN10MB :
         return Medium802_3;
       case DLT_PPP :
@@ -116,6 +124,26 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
 }
 
 
+bool PEthSocket::SetFilter(const PString & filter)
+{
+  pcap_freecode(&m_internal->m_program);
+
+  if (m_internal->m_pcap == NULL)
+    return pcap_compile_nopcap(m_snapLength, DLT_EN10MB, &m_internal->m_program, filter, true, 0) >= 0;
+
+  if (pcap_compile(m_internal->m_pcap, &m_internal->m_program, filter, true, 0) < 0)
+    return false;
+
+  if (pcap_setfilter(m_internal->m_pcap, &m_internal->m_program) < 0) {
+    PTRACE(1, "Could not use filter \"" << filter << "\", error: " << pcap_geterr(m_internal->m_pcap));
+    return false;
+  }
+
+  m_filter = filter;
+  return true;
+}
+
+
 PBoolean PEthSocket::Read(void * data, PINDEX length)
 {
   if (!IsOpen())
@@ -123,7 +151,7 @@ PBoolean PEthSocket::Read(void * data, PINDEX length)
 
   struct pcap_pkthdr *header;
   const u_char *pkt_data;
-  int err = pcap_next_ex(M_PCAP, &header, &pkt_data);
+  int err = pcap_next_ex(m_internal->m_pcap, &header, &pkt_data);
   switch (err) {
     case 1 :
       memcpy(data, pkt_data, std::min(length, (PINDEX)header->caplen));
@@ -134,6 +162,7 @@ PBoolean PEthSocket::Read(void * data, PINDEX length)
       return SetErrorValues(Timeout, 0, LastReadError);
 
     default :
+      PTRACE(2, "Read error: " << pcap_geterr(m_internal->m_pcap));
       return SetErrorValues(Miscellaneous, err, LastReadError);
   }
 }
@@ -144,8 +173,10 @@ PBoolean PEthSocket::Write(const void * data, PINDEX length)
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
-  if (!ConvertOSError(pcap_sendpacket(M_PCAP, (u_char *)data, length), LastWriteError))
+  if (!ConvertOSError(pcap_sendpacket(m_internal->m_pcap, (u_char *)data, length), LastWriteError)) {
+    PTRACE(2, "Write error: " << pcap_geterr(m_internal->m_pcap));
     return false;
+  }
 
   lastWriteCount = length;
   return true;
@@ -154,7 +185,13 @@ PBoolean PEthSocket::Write(const void * data, PINDEX length)
 
 #else
 
-PStringArray PEthSocket::EnumInterfaces(bool) const
+struct PEthSocket::InternalData
+{
+  int m_dummy;
+};
+
+
+PStringArray PEthSocket::EnumInterfaces(bool)
 {
   return PStringArray();
 }
@@ -162,7 +199,6 @@ PStringArray PEthSocket::EnumInterfaces(bool) const
 
 PBoolean PEthSocket::Connect(const PString & newName)
 {
-  PTRACE(1, "EthSock\tNo PCAP library compiled into system.");
   return false;
 }
 
@@ -177,6 +213,12 @@ PBoolean PEthSocket::Close()
 PEthSocket::MediumTypes PEthSocket::GetMedium()
 {
   return MediumUnknown;
+}
+
+
+bool PEthSocket::SetFilter(const PString &)
+{
+  return false;
 }
 
 
@@ -194,25 +236,19 @@ PBoolean PEthSocket::Write(const void *, PINDEX)
 #endif
 
 
-PEthSocket::PEthSocket()
-  : m_filterMask(FilterPromiscuous)
-  , m_pcap(NULL)
+PEthSocket::PEthSocket(bool promiscuous, unsigned snapLength)
+  : m_promiscuous(promiscuous)
+  , m_snapLength(snapLength)
+  , m_internal(new InternalData)
 {
+  memset(m_internal, 0, sizeof(InternalData));
 }
 
 
 PEthSocket::~PEthSocket()
 {
   Close();
-}
-
-
-bool PEthSocket::SetFilter(FilterMask mask)
-{
-  bool wasOpen = IsOpen();
-  Close();
-  m_filterMask = mask;
-  return !wasOpen || Connect(channelName);
+  delete m_internal;
 }
 
 
