@@ -53,7 +53,11 @@ class PEthSocket : public PSocket
   //@{
     /**Create a new ethernet packet socket.
      */
-    PEthSocket();
+    PEthSocket(
+      bool promiscuous =  true,     /**< Indicates all packets to be received,
+                                         not just ones directed to this interface address */
+      unsigned snapLength = 65536   ///< Maximum data size for each apcket capture.
+    );
 
       /// Close the socket
     ~PEthSocket();
@@ -204,9 +208,9 @@ class PEthSocket : public PSocket
        @return
        Empty array if no devices are available.
      */
-    PStringArray EnumInterfaces(
+    static PStringArray EnumInterfaces(
       bool detailed = true
-    ) const;
+    );
 
 
     /// Medium types for the open interface.
@@ -249,43 +253,18 @@ class PEthSocket : public PSocket
       TypeIPv6 = 0x86DD     
     };
 
-    /// Mask filter bits for GetFilter() function.
-    P_DECLARE_BITWISE_ENUM(FilterMask,5,(
-      NoFiltering,
-      FilterPromiscuous,    ///< Defines if the adapter has to go in promiscuous mode.
-      FilterDataTxUDP,      ///< Defines if the data trasfer (in case of a remote capture) has to be done with UDP protocol.
-      FilterNoCaptureRPCAP, ///< Defines if the remote probe will capture its own generated traffic.
-      FilterNoCaptureLocal, ///< Defines if the local adapter will capture its own generated traffic.
-      FilterMaxResponsiveness ///< This flag configures the adapter for maximum responsiveness.
-    ));
-
     /**Get the current filtering criteria for receiving packets.
-
-       A bit-wise OR of the FilterMask values will filter packets so that
-       they do not appear in the Read() function at all.
-
-       The type is be the specific frame type to accept. A value of TypeAll
-       may be used to match all frame types.
-
-       @return
-       A bit mask is returned, a value of 0 indicates an error.
      */
-    FilterMask GetFilter() const { return m_filterMask; }
+    const PString & GetFilter() const { return m_filter; }
 
-    /**Set the current filtering criteria for receiving packets. A bit-wise OR
-       of the FilterMask values will filter packets so that they do not appear
-       in the Read() function at all.
-
-       The type is be the specific frame type to accept. A value of TypeAll
-       may be used to match all frame types.
-
-       A value of zero for the filter mask is useless and will assert.
+    /**Set the current filtering criteria for receiving packets.
+       See http://www.tcpdump.org for the expression syntax.
 
        @return
-       true if the address is returned, false on error.
+       true if the filter expression is valid.
      */
     bool SetFilter(
-      FilterMask mask   ///< Bits for filtering on address
+      const PString & filter   ///< Bits for filtering on address
     );
   //@}
 
@@ -313,9 +292,12 @@ class PEthSocket : public PSocket
     virtual PBoolean OpenSocket();
     virtual const char * GetProtocolName() const;
 
-    FilterMask m_filterMask;  // Remember the set filter frame type
+    bool     m_promiscuous;
+    unsigned m_snapLength;
+    PString  m_filter;  // Filter expression
 
-    void * m_pcap;
+    struct InternalData;
+    InternalData * m_internal;
 };
 
 
