@@ -1340,7 +1340,7 @@ dnl ########################################################################
 dnl look for pcap functions
 
 dnl MSWIN_DISPLAY    pcap,WinPCAP Support
-dnl MSWIN_CHECK_FILE pcap,include\pcap.h,P_PCAP_WIN32=1
+dnl MSWIN_CHECK_FILE pcap,include\pcap\pcap.h,P_PCAP_WIN32=1
 dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
 dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
 dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
