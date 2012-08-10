@@ -81,7 +81,8 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket::Address
 
-static int defaultIpAddressFamily = PF_INET;  // PF_UNSPEC;   // default to IPV4
+static int g_defaultIpAddressFamily = PF_INET;  // PF_UNSPEC;   // default to IPV4
+static bool g_suppressCanonicalName = false;
 
 static PIPSocket::Address loopback4(127,0,0,1);
 static PIPSocket::Address broadcast4(INADDR_BROADCAST);
@@ -100,15 +101,27 @@ static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 #endif
 
 
+void PIPSocket::SetSuppressCanonicalName(bool suppress)
+{
+  g_suppressCanonicalName = suppress;
+}
+
+
+bool PIPSocket::GetSuppressCanonicalName()
+{
+  return g_suppressCanonicalName;
+}
+
+
 int PIPSocket::GetDefaultIpAddressFamily()
 {
-  return defaultIpAddressFamily;
+  return g_defaultIpAddressFamily;
 }
 
 
 void PIPSocket::SetDefaultIpAddressFamily(int ipAdressFamily)
 {
-  defaultIpAddressFamily = ipAdressFamily;
+  g_defaultIpAddressFamily = ipAdressFamily;
 }
 
 
@@ -155,7 +168,7 @@ PBoolean PIPSocket::IsIpAddressFamilyV6Supported()
 PIPSocket::Address PIPSocket::GetDefaultIpAny()
 {
 #if P_HAS_IPV6
-  if (defaultIpAddressFamily != PF_INET)
+  if (g_defaultIpAddressFamily != PF_INET)
     return any6;
 #endif
 
@@ -395,6 +408,8 @@ PIPCacheData::PIPCacheData(struct addrinfo * addr_info, const char * original)
 
   // Fill Host primary informations
   hostname = addr_info->ai_canonname; // Fully Qualified Domain Name (FQDN)
+  if (hostname.IsEmpty())
+    hostname = original;
   if (addr_info->ai_addr != NULL)
     address = PIPSocket::Address(addr_info->ai_family, addr_info->ai_addrlen, addr_info->ai_addr);
 
@@ -543,9 +558,9 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #if HAS_GETADDRINFO
 
     struct addrinfo *res = NULL;
-    struct addrinfo hints = { AI_CANONNAME, defaultIpAddressFamily };
+    struct addrinfo hints = { g_suppressCanonicalName ? 0 : AI_CANONNAME, g_defaultIpAddressFamily };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
-    if (localErrNo != 0 && defaultIpAddressFamily == AF_INET6) {
+    if (localErrNo != 0 && g_defaultIpAddressFamily == AF_INET6) {
       hints.ai_family = AF_INET;
       localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     }
@@ -1678,7 +1693,7 @@ PBoolean PIPSocket::Address::IsAny() const
 PIPSocket::Address::Address()
 {
 #if P_HAS_IPV6
-  if(defaultIpAddressFamily == AF_INET6)
+  if (g_defaultIpAddressFamily == AF_INET6)
     *this = loopback6;
   else
 #endif
