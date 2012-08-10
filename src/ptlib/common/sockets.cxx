@@ -573,7 +573,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct addrinfo hints = { g_suppressCanonicalName ? 0 : AI_CANONNAME, g_defaultIpAddressFamily };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     if (localErrNo != 0) {
-      hints.ai_family = defaultIpAddressFamily == AF_INET6 ? AF_INET : AF_INET6;
+      hints.ai_family = g_defaultIpAddressFamily == AF_INET6 ? AF_INET : AF_INET6;
       localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     }
     host = new PIPCacheData(localErrNo != NETDB_SUCCESS ? NULL : res, name);
