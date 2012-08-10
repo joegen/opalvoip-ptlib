@@ -289,10 +289,26 @@ class PIPSocket : public PSocket
     static void SetDefaultIpAddressFamilyV6(); // PF_INET6
     static PBoolean IsIpAddressFamilyV6Supported();
 
-	static void SetDefaultV6ScopeId(int scopeId); // local-link adresses require one
+    static void SetDefaultV6ScopeId(int scopeId); // local-link adresses require one
     static int GetDefaultV6ScopeId(); 
 #endif
     static PIPSocket::Address GetDefaultIpAny();
+
+    /**Set flag for suppress getting canonical name when doing lookup via
+       hostname.
+
+       Some badly configured DNS servers can cause long delays when this
+       feature is used.
+      */
+    static void SetSuppressCanonicalName(bool suppress);
+
+    /**Get flag for suppress getting canonical name when doing lookup via
+       hostname.
+
+       Some badly configured DNS servers can cause long delays when this
+       feature is used.
+      */
+    static bool GetSuppressCanonicalName();
 
     /**Open an IPv4 or IPv6 socket
      */
