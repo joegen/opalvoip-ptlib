@@ -311,6 +311,22 @@ class PIPSocket : public PSocket
     static const PIPSocket::Address & GetDefaultIpAny();
     static const PIPSocket::Address & GetInvalidAddress();
 
+    /**Set flag for suppress getting canonical name when doing lookup via
+       hostname.
+
+       Some badly configured DNS servers can cause long delays when this
+       feature is used.
+      */
+    static void SetSuppressCanonicalName(bool suppress);
+
+    /**Get flag for suppress getting canonical name when doing lookup via
+       hostname.
+
+       Some badly configured DNS servers can cause long delays when this
+       feature is used.
+      */
+    static bool GetSuppressCanonicalName();
+
     /**Open an IPv4 or IPv6 socket
      */
     virtual PBoolean OpenSocket(
