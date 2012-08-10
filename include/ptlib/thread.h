@@ -650,7 +650,6 @@ class PThreadObj : public PThread
       , m_object(obj)
       , m_function(function)
     {
-      PTRACE_CONTEXT_ID_FROM(obj);
       PThread::Resume();
     }
 
@@ -703,7 +702,6 @@ class PThreadObj1Arg : public PThread
       , m_function(function)
       , m_arg1(arg1)
     {
-      PTRACE_CONTEXT_ID_FROM(obj);
       PThread::Resume();
     }
 
@@ -742,7 +740,6 @@ class PThreadObj2Arg : public PThread
       , m_arg1(arg1)
       , m_arg2(arg2)
     {
-      PTRACE_CONTEXT_ID_FROM(obj);
       PThread::Resume();
     }
 
