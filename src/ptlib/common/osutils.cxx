@@ -2277,6 +2277,7 @@ PSimpleThread::PSimpleThread(const PNotifier & notifier,
     callback(notifier),
     parameter(param)
 {
+  PTRACE_CONTEXT_ID_FROM(notifier.GetObject());
   Resume();
 }
 
