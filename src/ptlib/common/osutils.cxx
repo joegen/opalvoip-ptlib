@@ -1125,8 +1125,23 @@ void PArgList::ReadFrom(istream & strm)
 }
 
 
-void PArgList::Usage(ostream & strm) const
+ostream & PArgList::Usage(ostream & strm, const char * usage) const
 {
+  PStringArray usages = PString(usage).Lines();
+  switch (usages.GetSize()) {
+    case 0 :
+      break;
+
+    case 1 :
+      strm << "usage: " << PProcess::Current().GetFile().GetTitle() << ' ' << usage << '\n';
+      break;
+
+    default :
+      strm << "Usage:\n";
+      for (PINDEX i = 0; i < usages.GetSize(); ++i)
+        strm << "   " << PProcess::Current().GetFile().GetTitle() << ' ' << usages[i] << '\n';
+  }
+
   size_t i;
   PINDEX maxNameLength = 0;
   for (i = 0; i < m_options.size(); ++i) {
@@ -1157,12 +1172,16 @@ void PArgList::Usage(ostream & strm) const
     else
       strm << opt.m_name << setw(maxNameLength-opt.m_name.GetLength()) << " <arg>";
     PStringArray lines = opt.m_usage.Lines();
-    if (!lines.IsEmpty()) {
+    if (lines.IsEmpty())
+      strm << '\n';
+    else {
       strm << "  : " << lines[0] << '\n';
       for (PINDEX i = 1; i < lines.GetSize(); ++i)
         strm << setw(maxNameLength+14) << ' ' << lines[i] << '\n';
     }
   }
+
+  return strm;
 }
 
 

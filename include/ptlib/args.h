@@ -189,9 +189,13 @@ class PArgList : public PObject
     bool IsParsed() const { return !m_options.empty(); }
 
     /**Output usage text for parsed arguments.
+       If \p usage is non-null then text of the form "usage: processname args"
+       is output wgere args is the text in the \p usage parameter. If \p usage
+       has multiple lines in it, then each argument pattern is output.
       */
-    void Usage(
-      ostream & strm    ///< Stream to output usage text.
+    ostream & Usage(
+      ostream & strm,    ///< Stream to output usage text.
+      const char * usage = NULL ///< Usage first line
     ) const;
     PString Usage() const;
   //@}
