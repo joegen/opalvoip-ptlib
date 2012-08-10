@@ -907,9 +907,12 @@ void PTimer::OnTimeout()
 void PTimer::Process(PInt64 now)
 {
   if (m_state == Running && m_absoluteTime <= now) {
-    if (m_oneshot) 
-      m_state = Stopped;
+    m_state = InTimeout;
+
     OnTimeout();
+
+    if (m_state == InTimeout)
+      m_state = m_oneshot ? Stopped : Running;
   }
 }
 

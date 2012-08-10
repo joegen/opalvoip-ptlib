@@ -422,7 +422,7 @@ class PTimer : public PTimeInterval
     PBoolean m_oneshot;
 
     // Timer state.
-    enum { Stopped, Running, Paused } m_state;
+    enum { Stopped, Running, Paused, InTimeout } m_state;
 
     friend class PTimerList;              // needed for Process
     class PTimerList * m_timerList;  
