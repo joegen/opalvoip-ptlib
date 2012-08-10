@@ -152,7 +152,7 @@ typedef PNotifierTemplate<INT> PNotifier;
 #define PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
   class func##_PNotifier : public BaseClass { \
     public: \
-      func##_PNotifier(notifiee * target) : BaseClass(target, target) { PTRACE_CONTEXT_ID_FROM(target); } \
+      func##_PNotifier(notifiee * target) : BaseClass(target, target) { } \
       virtual void Call(PObject & note, ParamType extra) const \
 
 #define PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, BaseClass) \
