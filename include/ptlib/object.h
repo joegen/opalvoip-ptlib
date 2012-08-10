@@ -283,6 +283,7 @@ An application could change this pointer to a <i>std::ofstream</i> variable of
 #if PTRACING
 
 class PObject;
+class PArgList;
 
 /**Class to encapsulate tracing functions.
    This class does not require any instances and is only being used as a
@@ -341,6 +342,42 @@ public:
     SystemLogStream = 32768
   };
 
+
+  #define PTRACE_ARGLIST_OPT_HELP \
+    "use +X or -X to add/remove option where X is one of:\r" \
+    "  block    PTrace::Block constructs in output\r" \
+    "  time     time since prgram start\r" \
+    "  date     date and time\r" \
+    "  gmt      Date/time is in UTC\r" \
+    "  thread   thread name and identifier\r" \
+    "  level    log level\r" \
+    "  file     source file name and line number\r" \
+    "  object   PObject pointer\r" \
+    "  context  context identifier\r" \
+    "  daily    rotate output file daily\r" \
+    "  hour     rotate output file hourly\r" \
+    "  minute   rotate output file every minute\r" \
+    "  append   append to output file, otherwise overwrites"
+
+  #define PTRACE_ARGLIST \
+    "t-trace.               Trace enable (use multiple times for more detail)\n" \
+    "o-output:              Specify filename for trace output\n" \
+    "-trace-option:         Specify trace option(s),\r" PTRACE_ARGLIST_OPT_HELP "\n" \
+    "-trace-rollover:       Specify trace file rollover file name pattern\n"
+
+  #define PTRACE_INITIALISE(...) PTrace::Initialise(__VA_ARGS__)
+
+  /**Set the most common trace options.
+     This sets trace options based on command line arguments.
+    */
+  static void Initialise(
+    const PArgList & args,                   ///< Command line arguments
+    unsigned options = Timestamp | Thread | Blocks, ///< Default #Options for tracing
+    const char * traceLevel = "trace",       ///< Argument option name for trace level
+    const char * outputFile = "output",      ///< Argument option name for log output file
+    const char * traceOpts  = "trace-option", ///< Argument option name for trace options
+    const char * traceRollover  = "trace-rollover" ///< Argument option name for trace file roll over pattern
+  );
 
   /**Set the most common trace options.
      If \p filename is not NULL then a PTextFile is created and attached the
@@ -698,6 +735,14 @@ class PTraceSaveContextIdentifier
 #endif // PTRACING==2
 
 #endif // PTRACING
+
+#ifndef PTRACE_ARGLIST
+#define PTRACE_ARGLIST
+#endif
+
+#ifndef PTRACE_INITIALISE
+#define PTRACE_INITIALISE(...)
+#endif
 
 #ifndef PTRACE_PARAM
 #define PTRACE_PARAM(...)

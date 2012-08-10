@@ -328,11 +328,59 @@ ostream * PTrace::GetStream()
   return PTraceInfo::Instance().GetStream();
 }
 
-void PTrace::Initialise(
-    unsigned level,
-    const char * filename,
-    unsigned options
-)
+static void SetOptionBit(unsigned & options, PTrace::Options option)
+{
+  options |= option;
+}
+
+static void ClearOptionBit(unsigned & options, PTrace::Options option)
+{
+  options &= ~option;
+}
+
+void PTrace::Initialise(const PArgList & args,
+                        unsigned options,
+                        const char * traceLevel,
+                        const char * outputFile,
+                        const char * traceOpts,
+                        const char * traceRollover)
+{
+  PCaselessString optStr = args.GetOptionString(traceOpts);
+  PINDEX pos = 0;
+  while ((pos = optStr.FindOneOf("+-", pos)) != P_MAX_INDEX) {
+    void (*operation)(unsigned & options, PTrace::Options option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
+    if (optStr.NumCompare("block", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::Blocks);
+    else if (optStr.NumCompare("date", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::DateAndTime);
+    else if (optStr.NumCompare("time", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::Timestamp);
+    else if (optStr.NumCompare("thread", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::Thread);
+    else if (optStr.NumCompare("level", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::TraceLevel);
+    else if (optStr.NumCompare("file", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::FileAndLine);
+    else if (optStr.NumCompare("object", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::ObjectInstance);
+    else if (optStr.NumCompare("context", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::ContextIdentifier);
+    else if (optStr.NumCompare("gmt", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::GMTTime);
+    else if (optStr.NumCompare("daily", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::RotateDaily);
+    else if (optStr.NumCompare("hour", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::RotateHourly);
+    else if (optStr.NumCompare("minute", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::RotateMinutely);
+    else if (optStr.NumCompare("append", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PTrace::AppendToFile);
+  }
+
+  Initialise(args.GetOptionCount(traceLevel), args.GetOptionString(outputFile), args.GetOptionString(traceRollover), options);
+}
+
+void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 {
   Initialise(level, filename, NULL, options);
 }
