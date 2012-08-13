@@ -420,7 +420,7 @@ PIPCacheData::PIPCacheData(struct addrinfo * addr_info, const char * original)
 
   // Fill Host primary informations
   hostname = addr_info->ai_canonname; // Fully Qualified Domain Name (FQDN)
-  if (hostname.IsEmpty())
+  if (g_suppressCanonicalName || hostname.IsEmpty())
     hostname = original;
   if (addr_info->ai_addr != NULL)
     address = PIPSocket::Address(addr_info->ai_family, addr_info->ai_addrlen, addr_info->ai_addr);
@@ -570,7 +570,11 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #if HAS_GETADDRINFO
 
     struct addrinfo *res = NULL;
-    struct addrinfo hints = { g_suppressCanonicalName ? 0 : AI_CANONNAME, g_defaultIpAddressFamily };
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    if (!g_suppressCanonicalName)
+      hints.ai_flags = AI_CANONNAME;
+    hints.ai_family = g_defaultIpAddressFamily;
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     if (localErrNo != 0) {
       hints.ai_family = g_defaultIpAddressFamily == AF_INET6 ? AF_INET : AF_INET6;
