@@ -39,7 +39,7 @@
 #include <signal.h>
 #include <sys/ioctl.h>
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_GNU)
 #define  TCSETATTR(f,t)  tcsetattr(f,TCSANOW,t)
 #define  TCGETATTR(f,t)  tcgetattr(f,t)
 
@@ -376,9 +376,9 @@ PBoolean PSerialChannel::SetSpeed(DWORD newBaudRate)
   // save new baud rate
   baudRate = newBaudRate;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU)
   // The BSD way
-  Termio.c_ispeed = baud; 
+  Termio.c_ispeed = baud;
   Termio.c_ospeed = baud;
 #else
   // The Linux way
