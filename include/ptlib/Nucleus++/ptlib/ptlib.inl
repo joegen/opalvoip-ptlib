@@ -29,7 +29,7 @@
  * $Id$
  */
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_GNU)
 #if (__GNUC_MINOR__ < 7)
 #include <localeinfo.h>
 #else
