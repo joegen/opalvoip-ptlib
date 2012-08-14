@@ -55,7 +55,8 @@
 #undef    P_MACOSX
 #undef    P_CYGWIN
 #undef    P_MINGW
-#undef    P_UNKNOWN_OS 
+#undef    P_GNU
+#undef    P_UNKNOWN_OS
 
 #ifndef _WIN32_WCE
 
