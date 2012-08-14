@@ -57,7 +57,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX cygwin mingw))
+ifeq (,$(findstring $(OSTYPE),linux gnu FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX cygwin mingw))
 
 default_target :
 	@echo
@@ -70,7 +70,7 @@ default_target :
 	@echo
 	@echo "         Currently supported OSTYPE names are:"
 	@echo "              linux Linux linux-gnu mklinux"
-	@echo "              solaris Solaris SunOS"
+	@echo "              gnu solaris Solaris SunOS"
 	@echo "              FreeBSD OpenBSD NetBSD beos Darwin Carbon"
 	@echo "              VxWorks rtems mingw"
 	@echo
@@ -165,6 +165,41 @@ SYSLIBDIR	:= $(shell $(PTLIBDIR)/make/ptlib-config --libdir)
 
 endif # linux
 
+####################################################
+
+ifeq ($(OSTYPE),gnu)
+
+ifeq ($(MACHTYPE),x86)
+ifdef CPUTYPE
+ifeq ($(CPUTYPE),crusoe)
+STDCCFLAGS	+= -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=0
+STDCCFLAGS      += -malign-jumps=0 -malign-loops=0
+else
+STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+endif
+endif
+endif
+
+ifeq ($(MACHTYPE),ia64)
+STDCCFLAGS     += -DP_64BIT
+endif
+
+ifeq ($(MACHTYPE),x86_64)
+STDCCFLAGS     += -DP_64BIT
+LDLIBS		+= -lresolv
+endif
+
+ifeq ($(P_SHAREDLIB),1)
+ifndef PROG
+STDCCFLAGS	+= -fPIC -DPIC
+endif # PROG
+endif # P_SHAREDLIB
+
+
+STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
+SYSLIBDIR	:= $(shell $(PTLIBDIR)/make/ptlib-config --libdir)
+
+endif # gnu
 
 ####################################################
 

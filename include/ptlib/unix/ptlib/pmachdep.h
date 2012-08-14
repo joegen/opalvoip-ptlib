@@ -61,6 +61,23 @@ typedef size_t socklen_t;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_GNU)
+
+#include <paths.h>
+#include <errno.h>
+#include <signal.h>
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
+#include <sys/termios.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <dlfcn.h>
+
+#define HAS_IFREQ
+
+///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_FREEBSD)
 
 #if defined(P_PTHREADS)
