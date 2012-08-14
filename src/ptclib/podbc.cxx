@@ -1540,6 +1540,7 @@ PODBC::RecordSet::RecordSet(const RecordSet & other)
 
 PODBC::RecordSet::~RecordSet()
 {
+  m_cursor.m_fields.RemoveAll(); // Delete fields before m_statement
   delete m_statement;
 }
 
