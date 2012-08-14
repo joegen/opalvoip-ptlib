@@ -29,7 +29,7 @@
  * $Id: ptlib.inl 19008 2007-11-29 09:17:41Z rjongbloed $
  */
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_GNU)
 #if (__GNUC_MINOR__ < 7 && __GNUC__ <= 2)
 #include <localeinfo.h>
 #else

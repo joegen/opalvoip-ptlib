@@ -759,6 +759,9 @@ class PMemoryHeap {
 #ifdef P_LINUX
                               + sizeof(pthread_t)
 #endif
+#ifdef P_GNU
+                              + sizeof(pthread_t)
+#endif
                               )%8
       };
 
@@ -771,6 +774,9 @@ class PMemoryHeap {
       WORD         line;
       BYTE         flags;
 #ifdef P_LINUX
+      pthread_t    thread;
+#endif
+#ifdef P_GNU
       pthread_t    thread;
 #endif
       char         guard[NumGuardBytes];

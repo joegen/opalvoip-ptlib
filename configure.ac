@@ -178,9 +178,17 @@ OSTYPE=
 NEEDS_PTHREADS=yes
 
 case "$target_os" in
-  linux*)          OSTYPE=linux ;  
+  linux*)          OSTYPE=linux ;
                    OSRELEASE="\"`uname -r`\"";
 		   OS_TAG="P_LINUX" ;
+                   need_pragma=yes ;
+		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+                   ;;
+
+  gnu*)            OSTYPE=gnu ;
+                   OSRELEASE="\"`uname -r`\"";
+		   OS_TAG="P_GNU" ;
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
