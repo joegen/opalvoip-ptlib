@@ -48,7 +48,7 @@
 #pragma implementation "object.h"
 #pragma implementation "contain.h"
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_GNU)
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
@@ -69,7 +69,7 @@
 #endif
 #include <ctype.h>
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_GNU)
 
 #include <mntent.h>
 #include <sys/vfs.h>
@@ -506,7 +506,7 @@ PString PDirectory::GetVolume() const
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
 
-#if defined(P_LINUX) || defined(P_IRIX)
+#if defined(P_LINUX) || defined(P_IRIX) || defined(P_GNU)
 
     FILE * fp = setmntent(MOUNTED, "r");
     if (fp != NULL) {
@@ -574,7 +574,7 @@ PString PDirectory::GetVolume() const
 
 PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU)
 
   struct statfs fs;
 
@@ -1238,11 +1238,11 @@ PString PTime::GetTimePM()
 
 PString PTime::GetTimeSeparator()
 {
-#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS) || defined(P_IRIX)
+#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS) || defined(P_IRIX) || defined(P_GNU)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(T_FMT);
-#  elif defined(P_LINUX)
-     char * p = _time_info->time; 
+#  elif defined(P_LINUX) || defined(P_GNU)
+     char * p = _time_info->time;
 #  endif
   char buffer[2];
   while (*p == '%' || isalpha(*p))
@@ -1271,7 +1271,7 @@ PString PTime::GetTimeSeparator()
 
 PTime::DateOrder PTime::GetDateOrder()
 {
-#if defined(P_USE_LANGINFO) || defined(P_LINUX)
+#if defined(P_USE_LANGINFO) || defined(P_LINUX) || defined(P_GNU)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
 #  else
@@ -1315,7 +1315,7 @@ PTime::DateOrder PTime::GetDateOrder()
 
 PString PTime::GetDateSeparator()
 {
-#if defined(P_USE_LANGINFO) || defined(P_LINUX)
+#if defined(P_USE_LANGINFO) || defined(P_LINUX) || defined(P_GNU)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
 #  else
@@ -1354,7 +1354,7 @@ PString PTime::GetDayName(PTime::Weekdays day, NameType type)
                    nl_langinfo((nl_item)(DAY_1+(int)day))
                 );
 
-#elif defined(P_LINUX)
+#elif defined(P_LINUX) || defined(P_GNU)
   return (type == Abbreviated) ? PString(_time_info->abbrev_wkday[(int)day]) :
                        PString(_time_info->full_wkday[(int)day]);
 
@@ -1387,7 +1387,7 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
      (type == Abbreviated) ? nl_langinfo((nl_item)(ABMON_1+(int)month-1)) :
                    nl_langinfo((nl_item)(MON_1+(int)month-1))
                 );
-#elif defined(P_LINUX)
+#elif defined(P_LINUX) || defined(P_GNU)
   return (type == Abbreviated) ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
 #elif defined(P_USE_STRFTIME)
@@ -1422,7 +1422,7 @@ PBoolean PTime::IsDaylightSavings()
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX)
+#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX) || defined(P_GNU)
   long tz = -::timezone/60;
   if (type == StandardTime)
     return tz;
@@ -1454,7 +1454,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU)
   const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
   if (str != NULL)
     return str;

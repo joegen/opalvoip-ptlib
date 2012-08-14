@@ -64,13 +64,13 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_GNU)
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #elif defined(P_RTEMS)
@@ -217,7 +217,7 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU)
   ::getpwuid_r(geteuid(), &pwd,
                buffer, 1024,
                &pw);
@@ -268,7 +268,7 @@ PString PProcess::GetUserName() const
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU)
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
@@ -309,7 +309,7 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
     struct passwd pwd;
     char buffer[1024];
     struct passwd * pw = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU)
     ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
 #else
     pw = ::getpwnam_r(username, &pwd, buffer, 1024);
@@ -356,7 +356,7 @@ PString PProcess::GetGroupName() const
   struct group grp;
   char buffer[1024];
   struct group * gr = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU)
   ::getgrgid_r(getegid(), &grp, buffer, 1024, &gr);
 #else
   gr = ::getgrgid_r(getegid(), &grp, buffer, 1024);
@@ -397,7 +397,7 @@ PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean permanent)
     struct group grp;
     char buffer[1024];
     struct group * gr = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU)
     ::getgrnam_r(groupname, &grp, buffer, 1024, &gr);
 #else
     gr = ::getgrnam_r(groupname, &grp, buffer, 1024);
