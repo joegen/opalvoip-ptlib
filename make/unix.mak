@@ -123,6 +123,41 @@ STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 
 endif # linux
 
+####################################################
+
+ifeq ($(OSTYPE),gnu)
+
+ifeq ($(MACHTYPE),x86)
+ifdef CPUTYPE
+ifeq ($(CPUTYPE),crusoe)
+STDCCFLAGS	+= -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=0
+STDCCFLAGS      += -malign-jumps=0 -malign-loops=0
+else
+STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+endif
+endif
+endif
+
+ifeq ($(MACHTYPE),ia64)
+STDCCFLAGS     += -DP_64BIT
+endif
+
+ifeq ($(MACHTYPE),x86_64)
+STDCCFLAGS     += -DP_64BIT
+LDLIBS		+= -lresolv
+endif
+
+ifeq ($(P_SHAREDLIB),1)
+ifndef PROG
+STDCCFLAGS	+= -fPIC -DPIC
+endif # PROG
+endif # P_SHAREDLIB
+
+
+STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
+SYSLIBDIR	:= $(shell $(PTLIBDIR)/make/ptlib-config --libdir)
+
+endif # gnu
 
 ####################################################
 

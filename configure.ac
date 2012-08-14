@@ -189,6 +189,11 @@ case "$target_os" in
       need_pragma=yes
    ;;
 
+   gnu )
+      OS_TAG="P_GNU"
+      need_pragma=yes
+   ;;
+
    FreeBSD )
       OS_TAG="P_FREEBSD"
       need_pragma=yes
