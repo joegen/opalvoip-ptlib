@@ -61,7 +61,7 @@ typedef size_t socklen_t;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-#elif defined(P_GNU)
+#elif defined(P_GNU_HURD)
 
 #include <paths.h>
 #include <errno.h>

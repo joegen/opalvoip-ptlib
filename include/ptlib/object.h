@@ -756,10 +756,7 @@ class PMemoryHeap {
                               sizeof(DWORD) +
                               sizeof(WORD) +
                               sizeof(BYTE)
-#ifdef P_LINUX
-                              + sizeof(pthread_t)
-#endif
-#ifdef P_GNU
+#if P_PTHREADS
                               + sizeof(pthread_t)
 #endif
                               )%8
@@ -773,10 +770,7 @@ class PMemoryHeap {
       DWORD        request;
       WORD         line;
       BYTE         flags;
-#ifdef P_LINUX
-      pthread_t    thread;
-#endif
-#ifdef P_GNU
+#if P_PTHREADS
       pthread_t    thread;
 #endif
       char         guard[NumGuardBytes];

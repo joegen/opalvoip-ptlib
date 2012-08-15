@@ -188,7 +188,7 @@ case "$target_os" in
 
   gnu*)            OSTYPE=gnu ;
                    OSRELEASE="\"`uname -r`\"";
-		   OS_TAG="P_GNU" ;
+		   OS_TAG="P_GNU_HURD" ;
                    need_pragma=yes ;
 		   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 		   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
