@@ -29,17 +29,6 @@
  * $Id$
  */
 
-#if defined(P_LINUX) || defined(P_GNU)
-#if (__GNUC_MINOR__ < 7)
-#include <localeinfo.h>
-#else
-#define P_USE_LANGINFO
-#endif
-#elif defined(P_HPUX9)
-#define P_USE_LANGINFO
-#elif defined(P_SUN4)
-#endif
-
 #ifdef P_USE_LANGINFO
 #include <langinfo.h>
 #endif
