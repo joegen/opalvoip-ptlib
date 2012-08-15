@@ -190,7 +190,7 @@ case "$target_os" in
    ;;
 
    gnu )
-      OS_TAG="P_GNU"
+      OS_TAG="P_GNU_HURD"
       need_pragma=yes
    ;;
 
