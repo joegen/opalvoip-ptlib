@@ -601,7 +601,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     host_info = Vx_gethostbyname((char *)name, &hostEnt);
     localErrNo = h_errno;
 
-#elif defined P_LINUX || defined(P_GNU)
+#elif defined P_LINUX || defined(P_GNU_HURD)
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
@@ -730,7 +730,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     struct hostent hostEnt;
     host_info = Vx_gethostbyaddr(addr.GetPointer(), &hostEnt);
 
-#elif defined P_LINUX || defined(P_GNU)
+#elif defined P_LINUX || defined(P_GNU_HURD)
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
