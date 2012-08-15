@@ -4395,6 +4395,22 @@ fi
 
                    ;;
 
+  gnu*)            OSTYPE=gnu ;
+                   OSRELEASE="\"`uname -r`\"";
+		   OS_TAG="P_GNU_HURD" ;
+                   need_pragma=yes ;
+
+$as_echo "#define P_PTHREADS 1" >>confdefs.h
+
+		   ac_fn_cxx_check_func "$LINENO" "swab" "ac_cv_func_swab"
+if test "x$ac_cv_func_swab" = xyes; then :
+
+$as_echo "#define USE_SYSTEM_SWAB /**/" >>confdefs.h
+
+fi
+
+                   ;;
+
   freebsd*|kfreebsd*)       OSTYPE=FreeBSD ;
 		   OS_TAG="P_FREEBSD" ;
                    if test "x$OSRELEASE" = "x"; then

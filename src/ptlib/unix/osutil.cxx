@@ -48,7 +48,7 @@
 #pragma implementation "object.h"
 #pragma implementation "contain.h"
 
-#if defined(P_LINUX) || defined(P_GNU)
+#if defined(P_LINUX) || defined(P_GNU_HURD)
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
@@ -69,7 +69,7 @@
 #endif
 #include <ctype.h>
 
-#if defined(P_LINUX) || defined(P_GNU)
+#if defined(P_LINUX) || defined(P_GNU_HURD)
 
 #include <mntent.h>
 #include <sys/vfs.h>
@@ -507,7 +507,7 @@ PString PDirectory::GetVolume() const
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
 
-#if defined(P_LINUX) || defined(P_IRIX) || defined(P_GNU)
+#if defined(P_LINUX) || defined(P_IRIX) || defined(P_GNU_HURD)
 
     FILE * fp = setmntent(MOUNTED, "r");
     if (fp != NULL) {
@@ -575,7 +575,7 @@ PString PDirectory::GetVolume() const
 
 PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU_HURD)
 
   struct statfs fs;
 
@@ -1262,10 +1262,10 @@ PString PTime::GetTimePM()
 
 PString PTime::GetTimeSeparator()
 {
-#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS) || defined(P_IRIX) || defined(P_GNU)
+#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS) || defined(P_IRIX) || defined(P_GNU_HURD)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(T_FMT);
-#  elif defined(P_LINUX) || defined(P_GNU)
+#  elif defined(P_LINUX) || defined(P_GNU_HURD)
      char * p = _time_info->time; 
 #  endif
   char buffer[2];
@@ -1295,7 +1295,7 @@ PString PTime::GetTimeSeparator()
 
 PTime::DateOrder PTime::GetDateOrder()
 {
-#if defined(P_USE_LANGINFO) || defined(P_LINUX) || defined(P_GNU)
+#if defined(P_USE_LANGINFO) || defined(P_LINUX) || defined(P_GNU_HURD)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
 #  else
@@ -1339,7 +1339,7 @@ PTime::DateOrder PTime::GetDateOrder()
 
 PString PTime::GetDateSeparator()
 {
-#if defined(P_USE_LANGINFO) || defined(P_LINUX) || defined(P_GNU)
+#if defined(P_USE_LANGINFO) || defined(P_LINUX) || defined(P_GNU_HURD)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
 #  else
@@ -1378,7 +1378,7 @@ PString PTime::GetDayName(PTime::Weekdays day, NameType type)
                    nl_langinfo((nl_item)(DAY_1+(int)day))
                 );
 
-#elif defined(P_LINUX) || defined(P_GNU)
+#elif defined(P_LINUX) || defined(P_GNU_HURD)
   return (type == Abbreviated) ? PString(_time_info->abbrev_wkday[(int)day]) :
                        PString(_time_info->full_wkday[(int)day]);
 
@@ -1411,7 +1411,7 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
      (type == Abbreviated) ? nl_langinfo((nl_item)(ABMON_1+(int)month-1)) :
                    nl_langinfo((nl_item)(MON_1+(int)month-1))
                 );
-#elif defined(P_LINUX) || defined(P_GNU)
+#elif defined(P_LINUX) || defined(P_GNU_HURD)
   return (type == Abbreviated) ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
 #elif defined(P_USE_STRFTIME)
@@ -1446,13 +1446,13 @@ PBoolean PTime::IsDaylightSavings()
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX) || defined(P_GNU)
+#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX) || defined(P_GNU_HURD)
   long tz = -::timezone/60;
   if (type == StandardTime)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX) || defined(P_GNU)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX) || defined(P_GNU_HURD)
   time_t t;
   time(&t);
   struct tm ts;
