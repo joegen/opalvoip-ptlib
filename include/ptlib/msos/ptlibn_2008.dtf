@@ -1179,20 +1179,16 @@ EXPORTS
     ??0?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @29834 NONAME
     ??0?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29835 NONAME
     ??0?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29836 NONAME
-    ??0?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29837 NONAME
     ??0?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29838 NONAME
     ??0?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29839 NONAME
-    ??0?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29840 NONAME
+    ??0?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @33629 NONAME
     ??0?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29841 NONAME
     ??0?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29842 NONAME
-    ??0?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29843 NONAME
     ??0?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29844 NONAME
     ??0?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29845 NONAME
     ??0?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29846 NONAME
     ??0?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29847 NONAME
     ??0?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29848 NONAME
-    ??0?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29849 NONAME
-    ??0?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29850 NONAME
     ??0?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29851 NONAME
     ??0?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29852 NONAME
     ??0?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QAE@ABVPCaselessString@@_N@Z @29853 NONAME
@@ -2786,20 +2782,16 @@ EXPORTS
     ??0PVXMLSession@@QAE@PAVPTextToSpeech@@_N@Z @30058 NONAME
     ??0PVXMLTraverseAudio@@QAE@XZ @30059 NONAME
     ??0PVXMLTraverseBreak@@QAE@XZ @30060 NONAME
-    ??0PVXMLTraverseCatch@@QAE@XZ @30061 NONAME
     ??0PVXMLTraverseChoice@@QAE@XZ @30062 NONAME
     ??0PVXMLTraverseDisconnect@@QAE@XZ @30063 NONAME
-    ??0PVXMLTraverseError@@QAE@XZ @30064 NONAME
+    ??0PVXMLTraverseEvent@@QAE@XZ @33630 NONAME
     ??0PVXMLTraverseExit@@QAE@XZ @30065 NONAME
     ??0PVXMLTraverseField@@QAE@XZ @30066 NONAME
-    ??0PVXMLTraverseFilled@@QAE@XZ @30067 NONAME
     ??0PVXMLTraverseForm@@QAE@XZ @30068 NONAME
     ??0PVXMLTraverseGoto@@QAE@XZ @30069 NONAME
     ??0PVXMLTraverseGrammar@@QAE@XZ @30070 NONAME
     ??0PVXMLTraverseIf@@QAE@XZ @30071 NONAME
     ??0PVXMLTraverseMenu@@QAE@XZ @30072 NONAME
-    ??0PVXMLTraverseNoInput@@QAE@XZ @30073 NONAME
-    ??0PVXMLTraverseNoMatch@@QAE@XZ @30074 NONAME
     ??0PVXMLTraversePrompt@@QAE@XZ @30075 NONAME
     ??0PVXMLTraverseProperty@@QAE@XZ @30076 NONAME
     ??0PVXMLTraverseRecord@@QAE@XZ @30077 NONAME
@@ -3352,20 +3344,16 @@ EXPORTS
     ??1?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @30191 NONAME
     ??1?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30192 NONAME
     ??1?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30193 NONAME
-    ??1?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30194 NONAME
     ??1?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30195 NONAME
     ??1?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30196 NONAME
-    ??1?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30197 NONAME
+    ??1?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @33631 NONAME
     ??1?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30198 NONAME
     ??1?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30199 NONAME
-    ??1?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30200 NONAME
     ??1?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30201 NONAME
     ??1?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30202 NONAME
     ??1?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30203 NONAME
     ??1?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30204 NONAME
     ??1?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30205 NONAME
-    ??1?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30206 NONAME
-    ??1?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30207 NONAME
     ??1?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30208 NONAME
     ??1?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30209 NONAME
     ??1?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@UAE@XZ @30210 NONAME
@@ -4213,20 +4201,16 @@ EXPORTS
     ??1PVXMLSession@@UAE@XZ @30344 NONAME
     ??1PVXMLTraverseAudio@@UAE@XZ @30345 NONAME
     ??1PVXMLTraverseBreak@@UAE@XZ @30346 NONAME
-    ??1PVXMLTraverseCatch@@UAE@XZ @30347 NONAME
     ??1PVXMLTraverseChoice@@UAE@XZ @30348 NONAME
     ??1PVXMLTraverseDisconnect@@UAE@XZ @30349 NONAME
-    ??1PVXMLTraverseError@@UAE@XZ @30350 NONAME
+    ??1PVXMLTraverseEvent@@UAE@XZ @33632 NONAME
     ??1PVXMLTraverseExit@@UAE@XZ @30351 NONAME
     ??1PVXMLTraverseField@@UAE@XZ @30352 NONAME
-    ??1PVXMLTraverseFilled@@UAE@XZ @30353 NONAME
     ??1PVXMLTraverseForm@@UAE@XZ @30354 NONAME
     ??1PVXMLTraverseGoto@@UAE@XZ @30355 NONAME
     ??1PVXMLTraverseGrammar@@UAE@XZ @30356 NONAME
     ??1PVXMLTraverseIf@@UAE@XZ @30357 NONAME
     ??1PVXMLTraverseMenu@@UAE@XZ @30358 NONAME
-    ??1PVXMLTraverseNoInput@@UAE@XZ @30359 NONAME
-    ??1PVXMLTraverseNoMatch@@UAE@XZ @30360 NONAME
     ??1PVXMLTraversePrompt@@UAE@XZ @30361 NONAME
     ??1PVXMLTraverseProperty@@UAE@XZ @30362 NONAME
     ??1PVXMLTraverseRecord@@UAE@XZ @30363 NONAME
@@ -5749,20 +5733,16 @@ EXPORTS
     ??_7?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @30551 NONAME
     ??_7?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30552 NONAME
     ??_7?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30553 NONAME
-    ??_7?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30554 NONAME
     ??_7?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30555 NONAME
     ??_7?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30556 NONAME
-    ??_7?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30557 NONAME
+    ??_7?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @33633 NONAME
     ??_7?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30558 NONAME
     ??_7?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30559 NONAME
-    ??_7?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30560 NONAME
     ??_7?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30561 NONAME
     ??_7?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30562 NONAME
     ??_7?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30563 NONAME
     ??_7?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30564 NONAME
     ??_7?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30565 NONAME
-    ??_7?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30566 NONAME
-    ??_7?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30567 NONAME
     ??_7?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30568 NONAME
     ??_7?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30569 NONAME
     ??_7?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @30570 NONAME
@@ -6391,20 +6371,16 @@ EXPORTS
     ??_7PVXMLSession@@6BPObject@@@ @30667 NONAME
     ??_7PVXMLTraverseAudio@@6B@ @30668 NONAME
     ??_7PVXMLTraverseBreak@@6B@ @30669 NONAME
-    ??_7PVXMLTraverseCatch@@6B@ @30670 NONAME
     ??_7PVXMLTraverseChoice@@6B@ @30671 NONAME
     ??_7PVXMLTraverseDisconnect@@6B@ @30672 NONAME
-    ??_7PVXMLTraverseError@@6B@ @30673 NONAME
+    ??_7PVXMLTraverseEvent@@6B@ @33634 NONAME
     ??_7PVXMLTraverseExit@@6B@ @30674 NONAME
     ??_7PVXMLTraverseField@@6B@ @30675 NONAME
-    ??_7PVXMLTraverseFilled@@6B@ @30676 NONAME
     ??_7PVXMLTraverseForm@@6B@ @30677 NONAME
     ??_7PVXMLTraverseGoto@@6B@ @30678 NONAME
     ??_7PVXMLTraverseGrammar@@6B@ @30679 NONAME
     ??_7PVXMLTraverseIf@@6B@ @30680 NONAME
     ??_7PVXMLTraverseMenu@@6B@ @30681 NONAME
-    ??_7PVXMLTraverseNoInput@@6B@ @30682 NONAME
-    ??_7PVXMLTraverseNoMatch@@6B@ @30683 NONAME
     ??_7PVXMLTraversePrompt@@6B@ @30684 NONAME
     ??_7PVXMLTraverseProperty@@6B@ @30685 NONAME
     ??_7PVXMLTraverseRecord@@6B@ @30686 NONAME
@@ -7018,20 +6994,16 @@ EXPORTS
     ??_R0?AV?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @30814 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30815 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30816 NONAME
-    ??_R0?AV?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30817 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30818 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30819 NONAME
-    ??_R0?AV?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30820 NONAME
+    ??_R0?AV?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @33635 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30821 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30822 NONAME
-    ??_R0?AV?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30823 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30824 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30825 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30826 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30827 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30828 NONAME
-    ??_R0?AV?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30829 NONAME
-    ??_R0?AV?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30830 NONAME
     ??_R0?AV?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30831 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30832 NONAME
     ??_R0?AV?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@@8 @30833 NONAME
@@ -7570,20 +7542,16 @@ EXPORTS
     ??_R0?AVPVXMLSession@@@8 @30898 NONAME
     ??_R0?AVPVXMLTraverseAudio@@@8 @30899 NONAME
     ??_R0?AVPVXMLTraverseBreak@@@8 @30900 NONAME
-    ??_R0?AVPVXMLTraverseCatch@@@8 @30901 NONAME
     ??_R0?AVPVXMLTraverseChoice@@@8 @30902 NONAME
     ??_R0?AVPVXMLTraverseDisconnect@@@8 @30903 NONAME
-    ??_R0?AVPVXMLTraverseError@@@8 @30904 NONAME
+    ??_R0?AVPVXMLTraverseEvent@@@8 @33636 NONAME
     ??_R0?AVPVXMLTraverseExit@@@8 @30905 NONAME
     ??_R0?AVPVXMLTraverseField@@@8 @30906 NONAME
-    ??_R0?AVPVXMLTraverseFilled@@@8 @30907 NONAME
     ??_R0?AVPVXMLTraverseForm@@@8 @30908 NONAME
     ??_R0?AVPVXMLTraverseGoto@@@8 @30909 NONAME
     ??_R0?AVPVXMLTraverseGrammar@@@8 @30910 NONAME
     ??_R0?AVPVXMLTraverseIf@@@8 @30911 NONAME
     ??_R0?AVPVXMLTraverseMenu@@@8 @30912 NONAME
-    ??_R0?AVPVXMLTraverseNoInput@@@8 @30913 NONAME
-    ??_R0?AVPVXMLTraverseNoMatch@@@8 @30914 NONAME
     ??_R0?AVPVXMLTraversePrompt@@@8 @30915 NONAME
     ??_R0?AVPVXMLTraverseProperty@@@8 @30916 NONAME
     ??_R0?AVPVXMLTraverseRecord@@@8 @30917 NONAME
@@ -7947,20 +7915,16 @@ EXPORTS
     ??_R1A@?0A@EA@?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @30991 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30992 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30993 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30994 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30995 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30996 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30997 NONAME
+    ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @33637 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30998 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @30999 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31000 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31001 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31002 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31003 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31004 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31005 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31006 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31007 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31008 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31009 NONAME
     ??_R1A@?0A@EA@?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31010 NONAME
@@ -8530,20 +8494,16 @@ EXPORTS
     ??_R1A@?0A@EA@PVXMLSession@@8 @31102 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseAudio@@8 @31103 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseBreak@@8 @31104 NONAME
-    ??_R1A@?0A@EA@PVXMLTraverseCatch@@8 @31105 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseChoice@@8 @31106 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseDisconnect@@8 @31107 NONAME
-    ??_R1A@?0A@EA@PVXMLTraverseError@@8 @31108 NONAME
+    ??_R1A@?0A@EA@PVXMLTraverseEvent@@8 @33638 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseExit@@8 @31109 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseField@@8 @31110 NONAME
-    ??_R1A@?0A@EA@PVXMLTraverseFilled@@8 @31111 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseForm@@8 @31112 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseGoto@@8 @31113 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseGrammar@@8 @31114 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseIf@@8 @31115 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseMenu@@8 @31116 NONAME
-    ??_R1A@?0A@EA@PVXMLTraverseNoInput@@8 @31117 NONAME
-    ??_R1A@?0A@EA@PVXMLTraverseNoMatch@@8 @31118 NONAME
     ??_R1A@?0A@EA@PVXMLTraversePrompt@@8 @31119 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseProperty@@8 @31120 NONAME
     ??_R1A@?0A@EA@PVXMLTraverseRecord@@8 @31121 NONAME
@@ -8934,20 +8894,16 @@ EXPORTS
     ??_R2?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @31198 NONAME
     ??_R2?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31199 NONAME
     ??_R2?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31200 NONAME
-    ??_R2?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31201 NONAME
     ??_R2?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31202 NONAME
     ??_R2?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31203 NONAME
-    ??_R2?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31204 NONAME
+    ??_R2?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @33639 NONAME
     ??_R2?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31205 NONAME
     ??_R2?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31206 NONAME
-    ??_R2?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31207 NONAME
     ??_R2?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31208 NONAME
     ??_R2?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31209 NONAME
     ??_R2?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31210 NONAME
     ??_R2?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31211 NONAME
     ??_R2?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31212 NONAME
-    ??_R2?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31213 NONAME
-    ??_R2?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31214 NONAME
     ??_R2?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31215 NONAME
     ??_R2?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31216 NONAME
     ??_R2?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31217 NONAME
@@ -9517,20 +9473,16 @@ EXPORTS
     ??_R2PVXMLSession@@8 @31309 NONAME
     ??_R2PVXMLTraverseAudio@@8 @31310 NONAME
     ??_R2PVXMLTraverseBreak@@8 @31311 NONAME
-    ??_R2PVXMLTraverseCatch@@8 @31312 NONAME
     ??_R2PVXMLTraverseChoice@@8 @31313 NONAME
     ??_R2PVXMLTraverseDisconnect@@8 @31314 NONAME
-    ??_R2PVXMLTraverseError@@8 @31315 NONAME
+    ??_R2PVXMLTraverseEvent@@8 @33640 NONAME
     ??_R2PVXMLTraverseExit@@8 @31316 NONAME
     ??_R2PVXMLTraverseField@@8 @31317 NONAME
-    ??_R2PVXMLTraverseFilled@@8 @31318 NONAME
     ??_R2PVXMLTraverseForm@@8 @31319 NONAME
     ??_R2PVXMLTraverseGoto@@8 @31320 NONAME
     ??_R2PVXMLTraverseGrammar@@8 @31321 NONAME
     ??_R2PVXMLTraverseIf@@8 @31322 NONAME
     ??_R2PVXMLTraverseMenu@@8 @31323 NONAME
-    ??_R2PVXMLTraverseNoInput@@8 @31324 NONAME
-    ??_R2PVXMLTraverseNoMatch@@8 @31325 NONAME
     ??_R2PVXMLTraversePrompt@@8 @31326 NONAME
     ??_R2PVXMLTraverseProperty@@8 @31327 NONAME
     ??_R2PVXMLTraverseRecord@@8 @31328 NONAME
@@ -9886,20 +9838,16 @@ EXPORTS
     ??_R3?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @31402 NONAME
     ??_R3?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31403 NONAME
     ??_R3?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31404 NONAME
-    ??_R3?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31405 NONAME
     ??_R3?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31406 NONAME
     ??_R3?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31407 NONAME
-    ??_R3?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31408 NONAME
+    ??_R3?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @33641 NONAME
     ??_R3?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31409 NONAME
     ??_R3?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31410 NONAME
-    ??_R3?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31411 NONAME
     ??_R3?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31412 NONAME
     ??_R3?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31413 NONAME
     ??_R3?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31414 NONAME
     ??_R3?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31415 NONAME
     ??_R3?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31416 NONAME
-    ??_R3?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31417 NONAME
-    ??_R3?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31418 NONAME
     ??_R3?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31419 NONAME
     ??_R3?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31420 NONAME
     ??_R3?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@8 @31421 NONAME
@@ -10469,20 +10417,16 @@ EXPORTS
     ??_R3PVXMLSession@@8 @31513 NONAME
     ??_R3PVXMLTraverseAudio@@8 @31514 NONAME
     ??_R3PVXMLTraverseBreak@@8 @31515 NONAME
-    ??_R3PVXMLTraverseCatch@@8 @31516 NONAME
     ??_R3PVXMLTraverseChoice@@8 @31517 NONAME
     ??_R3PVXMLTraverseDisconnect@@8 @31518 NONAME
-    ??_R3PVXMLTraverseError@@8 @31519 NONAME
+    ??_R3PVXMLTraverseEvent@@8 @33642 NONAME
     ??_R3PVXMLTraverseExit@@8 @31520 NONAME
     ??_R3PVXMLTraverseField@@8 @31521 NONAME
-    ??_R3PVXMLTraverseFilled@@8 @31522 NONAME
     ??_R3PVXMLTraverseForm@@8 @31523 NONAME
     ??_R3PVXMLTraverseGoto@@8 @31524 NONAME
     ??_R3PVXMLTraverseGrammar@@8 @31525 NONAME
     ??_R3PVXMLTraverseIf@@8 @31526 NONAME
     ??_R3PVXMLTraverseMenu@@8 @31527 NONAME
-    ??_R3PVXMLTraverseNoInput@@8 @31528 NONAME
-    ??_R3PVXMLTraverseNoMatch@@8 @31529 NONAME
     ??_R3PVXMLTraversePrompt@@8 @31530 NONAME
     ??_R3PVXMLTraverseProperty@@8 @31531 NONAME
     ??_R3PVXMLTraverseRecord@@8 @31532 NONAME
@@ -10833,20 +10777,16 @@ EXPORTS
     ??_R4?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @31606 NONAME
     ??_R4?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31607 NONAME
     ??_R4?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31608 NONAME
-    ??_R4?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31609 NONAME
     ??_R4?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31610 NONAME
     ??_R4?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31611 NONAME
-    ??_R4?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31612 NONAME
+    ??_R4?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @33643 NONAME
     ??_R4?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31613 NONAME
     ??_R4?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31614 NONAME
-    ??_R4?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31615 NONAME
     ??_R4?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31616 NONAME
     ??_R4?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31617 NONAME
     ??_R4?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31618 NONAME
     ??_R4?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31619 NONAME
     ??_R4?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31620 NONAME
-    ??_R4?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31621 NONAME
-    ??_R4?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31622 NONAME
     ??_R4?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31623 NONAME
     ??_R4?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31624 NONAME
     ??_R4?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@6B@ @31625 NONAME
@@ -11475,20 +11415,16 @@ EXPORTS
     ??_R4PVXMLSession@@6BPObject@@@ @31722 NONAME
     ??_R4PVXMLTraverseAudio@@6B@ @31723 NONAME
     ??_R4PVXMLTraverseBreak@@6B@ @31724 NONAME
-    ??_R4PVXMLTraverseCatch@@6B@ @31725 NONAME
     ??_R4PVXMLTraverseChoice@@6B@ @31726 NONAME
     ??_R4PVXMLTraverseDisconnect@@6B@ @31727 NONAME
-    ??_R4PVXMLTraverseError@@6B@ @31728 NONAME
+    ??_R4PVXMLTraverseEvent@@6B@ @33644 NONAME
     ??_R4PVXMLTraverseExit@@6B@ @31729 NONAME
     ??_R4PVXMLTraverseField@@6B@ @31730 NONAME
-    ??_R4PVXMLTraverseFilled@@6B@ @31731 NONAME
     ??_R4PVXMLTraverseForm@@6B@ @31732 NONAME
     ??_R4PVXMLTraverseGoto@@6B@ @31733 NONAME
     ??_R4PVXMLTraverseGrammar@@6B@ @31734 NONAME
     ??_R4PVXMLTraverseIf@@6B@ @31735 NONAME
     ??_R4PVXMLTraverseMenu@@6B@ @31736 NONAME
-    ??_R4PVXMLTraverseNoInput@@6B@ @31737 NONAME
-    ??_R4PVXMLTraverseNoMatch@@6B@ @31738 NONAME
     ??_R4PVXMLTraversePrompt@@6B@ @31739 NONAME
     ??_R4PVXMLTraverseProperty@@6B@ @31740 NONAME
     ??_R4PVXMLTraverseRecord@@6B@ @31741 NONAME
@@ -13813,20 +13749,16 @@ EXPORTS
     ?Create@?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPVXMLPlayable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @32165 NONAME
     ?Create@?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32166 NONAME
     ?Create@?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32167 NONAME
-    ?Create@?$Worker@VPVXMLTraverseCatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32168 NONAME
     ?Create@?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32169 NONAME
     ?Create@?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32170 NONAME
-    ?Create@?$Worker@VPVXMLTraverseError@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32171 NONAME
+    ?Create@?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @33645 NONAME
     ?Create@?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32172 NONAME
     ?Create@?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32173 NONAME
-    ?Create@?$Worker@VPVXMLTraverseFilled@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32174 NONAME
     ?Create@?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32175 NONAME
     ?Create@?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32176 NONAME
     ?Create@?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32177 NONAME
     ?Create@?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32178 NONAME
     ?Create@?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32179 NONAME
-    ?Create@?$Worker@VPVXMLTraverseNoInput@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32180 NONAME
-    ?Create@?$Worker@VPVXMLTraverseNoMatch@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32181 NONAME
     ?Create@?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32182 NONAME
     ?Create@?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32183 NONAME
     ?Create@?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@MBEPAVPVXMLNodeHandler@@ABVPCaselessString@@@Z @32184 NONAME
@@ -14773,6 +14705,7 @@ EXPORTS
     ?FindSpan@PString@@QBEHABV1@H@Z @12011 NONAME
     ?FindSpan@PString@@QBEHPBDH@Z @12012 NONAME
     ?Finish@PVXMLNodeHandler@@UBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @32324 NONAME
+    ?Finish@PVXMLTraverseEvent@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33646 NONAME
     ?Finish@PVXMLTraverseField@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @32325 NONAME
     ?Finish@PVXMLTraverseForm@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @32326 NONAME
     ?Finish@PVXMLTraverseMenu@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @32327 NONAME
@@ -15790,6 +15723,7 @@ EXPORTS
     ?GetInterfaceInfo@PInterfaceMonitorClient@@UBE_NABVPString@@AAVInterfaceEntry@PIPSocket@@@Z @22432 NONAME
     ?GetInterfaces@PInterfaceMonitor@@QAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @17811 NONAME
     ?GetInterfaces@PInterfaceMonitorClient@@UAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @17812 NONAME
+    ?GetInterfaces@PMonitoredSocketBundle@@UAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @33647 NONAME
     ?GetInterfaces@PSingleMonitoredSocket@@UAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @17813 NONAME
     ?GetInterfaceTable@PIPSocket@@SA_NAAV?$PArray@VInterfaceEntry@PIPSocket@@@@_N@Z @19986 NONAME
     ?GetInterval@PSoundChannelDirectSound@@AAE?AVPTimeInterval@@XZ @29523 NONAME
@@ -16268,6 +16202,7 @@ EXPORTS
     ?GetSubject@Message@XMPP@@UAE?AVPString@@ABV3@@Z @32576 NONAME
     ?GetSubjectElement@Message@XMPP@@UAEPAVPXMLElement@@ABVPString@@@Z @32577 NONAME
     ?GetSubObjects@PXMLElement@@QBE?AV?$PArray@VPXMLObject@@@@XZ @32578 NONAME
+    ?GetSuppressCanonicalName@PIPSocket@@SA_NXZ @33648 NONAME
     ?GetSystemType@PFTPClient@@QAE?AVPString@@XZ @13332 NONAME
     ?GetSystemTypeString@PFTPServer@@UBE?AVPString@@XZ @13333 NONAME
     ?GetTag@PASN_Object@@QBEIXZ @13334 NONAME
@@ -19250,6 +19185,7 @@ EXPORTS
     ?SetStructure@PStructuredFile@@QAEXPAUElement@1@H@Z @15921 NONAME
     ?SetSubject@Message@XMPP@@UAEXABVPString@@0@Z @33148 NONAME
     ?SetSubject@PRFC822Channel@@QAEXABVPString@@@Z @15923 NONAME
+    ?SetSuppressCanonicalName@PIPSocket@@SAX_N@Z @33649 NONAME
     ?SetTag@PASN_Choice@@UAEXIW4TagClass@PASN_Object@@@Z @15924 NONAME
     ?SetTag@PASN_Object@@UAEXIW4TagClass@1@@Z @15925 NONAME
     ?SetTarget@PSystemLog@@SAXPAVPSystemLogTarget@@_N@Z @22640 NONAME
@@ -19452,20 +19388,16 @@ EXPORTS
     ?Start@PVXMLNodeHandler@@UBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33181 NONAME
     ?Start@PVXMLTraverseAudio@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33182 NONAME
     ?Start@PVXMLTraverseBreak@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33183 NONAME
-    ?Start@PVXMLTraverseCatch@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33184 NONAME
     ?Start@PVXMLTraverseChoice@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33185 NONAME
     ?Start@PVXMLTraverseDisconnect@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33186 NONAME
-    ?Start@PVXMLTraverseError@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33187 NONAME
+    ?Start@PVXMLTraverseEvent@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33650 NONAME
     ?Start@PVXMLTraverseExit@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33188 NONAME
     ?Start@PVXMLTraverseField@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33189 NONAME
-    ?Start@PVXMLTraverseFilled@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33190 NONAME
     ?Start@PVXMLTraverseForm@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33191 NONAME
     ?Start@PVXMLTraverseGoto@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33192 NONAME
     ?Start@PVXMLTraverseGrammar@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33193 NONAME
     ?Start@PVXMLTraverseIf@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33194 NONAME
     ?Start@PVXMLTraverseMenu@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33195 NONAME
-    ?Start@PVXMLTraverseNoInput@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33196 NONAME
-    ?Start@PVXMLTraverseNoMatch@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33197 NONAME
     ?Start@PVXMLTraversePrompt@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33198 NONAME
     ?Start@PVXMLTraverseProperty@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33199 NONAME
     ?Start@PVXMLTraverseRecord@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @33200 NONAME
@@ -19626,7 +19558,6 @@ EXPORTS
     ?TranslateString@PURL@@SA?AVPString@@ABV2@W4TranslationType@1@@Z @16220 NONAME
     ?TraverseAudio@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33232 NONAME
     ?TraverseBreak@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33233 NONAME
-    ?TraverseCatch@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33234 NONAME
     ?TraverseChoice@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33235 NONAME
     ?TraversedField@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33236 NONAME
     ?TraversedForm@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33237 NONAME
@@ -19634,17 +19565,13 @@ EXPORTS
     ?TraversedMenu@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33239 NONAME
     ?TraversedRecord@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33240 NONAME
     ?TraversedTransfer@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33241 NONAME
-    ?TraverseError@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33242 NONAME
     ?TraverseExit@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33243 NONAME
     ?TraverseField@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33244 NONAME
-    ?TraverseFilled@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33245 NONAME
     ?TraverseForm@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33246 NONAME
     ?TraverseGoto@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33247 NONAME
     ?TraverseGrammar@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33248 NONAME
     ?TraverseIf@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33249 NONAME
     ?TraverseMenu@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33250 NONAME
-    ?TraverseNoInput@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33251 NONAME
-    ?TraverseNoMatch@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33252 NONAME
     ?TraversePrompt@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33253 NONAME
     ?TraverseProperty@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33254 NONAME
     ?TraverseRecord@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @33255 NONAME
