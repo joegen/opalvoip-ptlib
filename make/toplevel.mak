@@ -45,17 +45,29 @@ endif
 
 ifeq (1, $(HAS_SAMPLES))
 SUBDIRS += samples/hello_world \
-           samples/dnstest \
-           samples/httptest \
-           samples/ipv6test \
-           samples/find_ip \
            samples/map_dict \
            samples/netif \
            samples/sockbundle \
-           samples/stunclient \
-           samples/thread \
-           samples/url \
-           samples/vcard
+           samples/thread
+ifdef HAS_IPV6
+SUBDIRS += samples/ipv6test
+endif
+ifdef HAS_DNS_RESOLVER
+SUBDIRS += samples/dnstest
+endif
+ifdef HAS_STUN
+SUBDIRS += samples/stunclient
+endif
+ifdef HAS_URL
+SUBDIRS += samples/url
+endif
+ifdef HAS_HTTP
+SUBDIRS += samples/httptest \
+           samples/find_ip
+endif
+ifdef HAS_VCARD
+SUBDIRS += samples/vcard
+endif
 ifdef HAS_ODBC
 SUBDIRS += samples/ODBC
 endif

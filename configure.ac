@@ -1428,7 +1428,7 @@ dnl check for VCard support
 dnl MSWIN_DISPLAY    vcard,VCard support
 dnl MSWIN_DEFINE     vcard,P_VCARD
 
-PTLIB_SIMPLE_OPTION([vcard], [VCARD], [enable VCard support])
+PTLIB_SIMPLE_OPTION([vcard], [VCARD], [enable VCard support], [HAS_URL])
 
 dnl ########################################################################
 dnl Jabber
@@ -1441,13 +1441,22 @@ PTLIB_SIMPLE_OPTION([jabber], [JABBER], [enable Jabber support], [HAS_EXPAT])
 PTLIB_NEW_OPTION(JABBER)
 
 dnl ########################################################################
+dnl Speech
+dnl MSWIN_DISPLAY       sapi,Speech API
+dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
+dnl MSWIN_DEFINE        sapi,P_TTS
+
+PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
+PTLIB_NEW_OPTION(TTS)
+
+dnl ########################################################################
 dnl VXML 
 dnl MSWIN_DISPLAY    vxml,VXML Support
 dnl MSWIN_DEFINE     vxml,P_VXML
-dnl MSWIN_IF_FEATURE vxml,http&expat
-dnl MSWIN_IF_FEATURE vxml,http&expat32
+dnl MSWIN_IF_FEATURE vxml,http&sapi&expat
+dnl MSWIN_IF_FEATURE vxml,http&sapi&expat32
 
-PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP])
+PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP], [HAS_TTS])
 PTLIB_NEW_OPTION(VXML)
 
 dnl ########################################################################
@@ -1473,16 +1482,6 @@ PTLIB_NEW_OPTION(SOAP)
 dnl ########################################################################
 dnl MSWIN_DISPLAY       atl,Active Template Library
 dnl MSWIN_CHECK_FILE    atl,atlbase.h,P_ATL=1
-
-dnl ########################################################################
-dnl Speech
-dnl MSWIN_DISPLAY       sapi,Speech API
-dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
-dnl MSWIN_DEFINE        sapi,P_TTS
-
-
-PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
-PTLIB_NEW_OPTION(TTS)
 
 dnl ########################################################################
 dnl check for enabling ASN support
@@ -1574,7 +1573,7 @@ dnl check for enabling REMCONN support
 dnl MSWIN_DISPLAY    remconn,remote connection support
 dnl MSWIN_DEFINE     remconn,P_REMCONN
 
-PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support], [HAS_CONFIG_FILE])
+PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support], [HAS_CONFIG_FILE], [HAS_PIPECHAN])
 PTLIB_NEW_OPTION(REMCONN)
 
 dnl ########################################################################

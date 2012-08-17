@@ -501,6 +501,9 @@ PBoolean PDNS::GetSRVRecords(
   return GetSRVRecords(service, recordList);
 }
 
+
+#if P_URL
+
 PBoolean PDNS::LookupSRV(
            const PURL & url,
         const PString & service,
@@ -528,6 +531,9 @@ PBoolean PDNS::LookupSRV(
 
   return returnList.GetSize() != 0;;
 }
+
+#endif // P_URL
+
 
 PBoolean PDNS::LookupSRV(
          const PString & domain,            ///< domain to lookup

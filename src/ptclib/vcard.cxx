@@ -36,6 +36,8 @@
 
 #include <ptclib/vcard.h>
 
+#if P_VCARD
+
 
 static long MaxLineLength = 72;
 
@@ -728,6 +730,9 @@ PString PvCard::AsString(Format fmt)
   strm << setw(fmt) << *this;
   return strm;
 }
+
+
+#endif // P_VCARD
 
 
 // End of File ///////////////////////////////////////////////////////////////

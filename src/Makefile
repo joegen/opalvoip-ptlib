@@ -216,9 +216,12 @@ ifeq ($(HAS_CLI),1)
 SOURCES += $(COMPONENT_SRC_DIR)/cli.cxx
 endif
 
+ifeq ($(HAS_NAT),1)
+SOURCES += $(COMPONENT_SRC_DIR)/pnat.cxx
+endif
+
 ifeq ($(HAS_STUN),1)
-SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
-           $(COMPONENT_SRC_DIR)/pnat.cxx
+SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx
 
 $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi

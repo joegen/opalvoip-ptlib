@@ -562,6 +562,7 @@ PBoolean PSoundChannelALSA::PlaySound(const PSound & sound, PBoolean wait)
 
 PBoolean PSoundChannelALSA::PlayFile(const PFilePath & filename, PBoolean wait)
 {
+#if P_WAVFILE
   BYTE buffer [512];
   PTRACE(1, "ALSA\tPlayFile " << filename);
 
@@ -595,6 +596,9 @@ PBoolean PSoundChannelALSA::PlayFile(const PFilePath & filename, PBoolean wait)
     return WaitForPlayCompletion();
 
   return true;
+#else
+  return false;
+#endif // P_WAVFILE
 }
 
 

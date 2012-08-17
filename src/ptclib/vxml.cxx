@@ -283,6 +283,7 @@ bool PVXMLPlayableFile::OnStart()
 
   PFile * file = NULL;
 
+#if P_WAVFILE
   // check the file extension and open a .wav or a raw (.sw or .g723) file
   if (m_filePath.GetType() == ".wav") {
     file = m_vxmlChannel->CreateWAVFile(m_filePath);
@@ -291,7 +292,9 @@ bool PVXMLPlayableFile::OnStart()
       return false;
     }
   }
-  else {
+  else
+#endif // P_WAVFILE
+  {
     // Assume file just has bytes of correct media format
     file = new PFile(m_filePath);
     if (!file->Open(PFile::ReadOnly)) {
@@ -498,6 +501,8 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableData> vxmlPlayableDataFactory("PCM 
 
 ///////////////////////////////////////////////////////////////
 
+#if P_DTMF
+
 PBoolean PVXMLPlayableTone::Open(PVXMLChannel & chan, const PString & toneSpec, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
   // populate the tone buffer
@@ -515,6 +520,8 @@ PBoolean PVXMLPlayableTone::Open(PVXMLChannel & chan, const PString & toneSpec, 
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableTone> vxmlPlayableToneFactory("Tone");
+
+#endif // P_DTMF
 
 
 ///////////////////////////////////////////////////////////////
@@ -574,6 +581,7 @@ bool PVXMLRecordableFilename::OnStart(PVXMLChannel & outgoingChannel)
 {
   PFile * file = NULL;
 
+#if P_WAVFILE
   // check the file extension and open a .wav or a raw (.sw or .g723) file
   if (m_fileName.GetType() == ".wav") {
     file = outgoingChannel.CreateWAVFile(m_fileName, true);
@@ -582,7 +590,9 @@ bool PVXMLRecordableFilename::OnStart(PVXMLChannel & outgoingChannel)
       return false;
     }
   }
-  else {
+  else
+#endif // P_WAVFILE
+  {
     file = new PFile(m_fileName);
     if (!file->Open(PFile::WriteOnly)) {
       PTRACE(2, "VXML\tCannot open audio file \"" << m_fileName << '"');
@@ -1623,14 +1633,14 @@ PBoolean PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToS
 
     // if not cached, then use the text to speech converter
     if (spoken) {
-     PTRACE(3, "VXML\tUsing cached WAV file for " << _text);
+     PTRACE(3, "VXML\tUsing cached audio file for " << _text);
     } else {
       PFilePath tmpfname;
       if (m_textToSpeech != NULL) {
         tmpfname = PVXMLCache::GetResourceCache().GetRandomFilename("tts", "wav");
         if (m_textToSpeech->OpenFile(tmpfname)) {
           spoken = m_textToSpeech->Speak(text, type);
-          PTRACE(3, "VXML\tCreated new WAV file for " << _text);
+          PTRACE(3, "VXML\tCreated new audio file for " << _text);
         }
         else {
           PTRACE(2, "VXML\tcannot open file " << tmpfname);
@@ -2468,6 +2478,8 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 }
 
 
+#if P_WAVFILE
+
 PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
 {
   PWAVFile * wav = new PWAVFile;
@@ -2508,6 +2520,8 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
   delete wav;
   return NULL;
 }
+
+#endif // P_WAVFILE
 
 
 PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
@@ -3037,13 +3051,15 @@ PBoolean TextToSpeech_Sample::Close()
 
   PBoolean stat = true;
 
+#if P_WAVFILE
   if (usingFile) {
     PWAVFile outputFile("PCM-16", path, PFile::WriteOnly);
     if (!outputFile.IsOpen()) {
       PTRACE(1, "TTS\tCannot create output file " << path);
       stat = false;
     }
-    else {
+    else
+    {
       std::vector<PFilePath>::const_iterator r;
       for (r = filenames.begin(); r != filenames.end(); ++r) {
         PFilePath f = *r;
@@ -3065,6 +3081,7 @@ PBoolean TextToSpeech_Sample::Close()
     }
     filenames.erase(filenames.begin(), filenames.end());
   }
+#endif // P_WAVFILE
 
   opened = false;
   return stat;

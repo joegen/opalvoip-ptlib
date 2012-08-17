@@ -457,6 +457,8 @@ class PVXMLPlayableData : public PVXMLPlayable
 
 //////////////////////////////////////////////////////////////////
 
+#if P_DTMF
+
 #include <ptclib/dtmf.h>
 
 class PVXMLPlayableTone : public PVXMLPlayableData
@@ -467,6 +469,9 @@ class PVXMLPlayableTone : public PVXMLPlayableData
   protected:
     PTones m_tones;
 };
+
+#endif // P_DTMF
+
 
 //////////////////////////////////////////////////////////////////
 
@@ -534,8 +539,10 @@ class PVXMLChannel : public PDelayChannel
     virtual PBoolean Read(void * buffer, PINDEX amount);
     virtual PBoolean Write(const void * buf, PINDEX len);
 
+#if P_WAVFILE
     // new functions
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PBoolean recording = false);
+#endif
 
     const PString & GetMediaFormat() const { return mediaFormat; }
     PBoolean IsMediaPCM() const { return mediaFormat == "PCM-16"; }
