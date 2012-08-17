@@ -35,6 +35,8 @@
 #pragma interface
 #endif
 
+#if P_ASN
+
 // provide options to omit vertain encodings, if needed
 #define     P_INCLUDE_PER
 #define     P_INCLUDE_BER
@@ -994,6 +996,8 @@ class PASN_Stream : public PBYTEArray
 #ifdef  P_INCLUDE_XER
 #include "asnxer.h"
 #endif
+
+#endif // P_ASN
 
 #endif // PTLIB_ASNER_H
 

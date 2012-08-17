@@ -37,7 +37,7 @@
 #define new PNEW
 
 
-#if P_DNS_RESOLVER
+#if P_DNS_RESOLVER && P_URL
 
 #ifdef  _WIN32
 #define PATH_SEP   ";"
@@ -621,6 +621,6 @@ PBoolean PDNS::RDSLookup(
 }
 
 
-#endif
+#endif // P_DNS_RESOLVER && P_URL
 
 // End of File ///////////////////////////////////////////////////////////////

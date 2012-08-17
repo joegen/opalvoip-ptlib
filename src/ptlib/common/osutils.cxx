@@ -1958,10 +1958,12 @@ PString PProcess::GetLibVersion()
 }
 
 
+#if P_CONFIG_FILE
 void PProcess::SetConfigurationPath(const PString & path)
 {
   configurationPaths = path.Tokenise(";:", false);
 }
+#endif
 
 
 PThread * PProcess::GetThread(PThreadIdentifier threadId) const

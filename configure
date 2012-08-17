@@ -680,14 +680,14 @@ PTLIB_NAT
 HAS_NAT
 PTLIB_ASN
 HAS_ASN
-PTLIB_TTS
-HAS_TTS
 PTLIB_SOAP
 HAS_SOAP
 PTLIB_XMLRPC
 HAS_XMLRPC
 PTLIB_VXML
 HAS_VXML
+PTLIB_TTS
+HAS_TTS
 PTLIB_JABBER
 HAS_JABBER
 HAS_VCARD
@@ -848,10 +848,10 @@ enable_httpsvc
 enable_ssdp
 enable_vcard
 enable_jabber
+enable_tts
 enable_vxml
 enable_xmlrpc
 enable_soap
-enable_tts
 enable_asn
 enable_nat
 enable_stun
@@ -1563,10 +1563,10 @@ Optional Features:
   --enable-ssdp           enable SSDP support
   --enable-vcard          enable VCard support
   --enable-jabber         enable Jabber support
+  --enable-tts            enable Text-To-Speech server support
   --enable-vxml           enable VXML support
   --enable-xmlrpc         enable XMLRPC support
   --enable-soap           enable SOAP support
-  --enable-tts            enable Text-To-Speech server support
   --enable-asn            enable ASN decoding/encoding support
   --enable-nat            enable NAT traversal support
   --enable-stun           enable STUN support
@@ -5173,6 +5173,11 @@ case "$target_os" in
       need_pragma=yes
    ;;
 
+   gnu )
+      OS_TAG="P_GNU_HURD"
+      need_pragma=yes
+   ;;
+
    FreeBSD )
       OS_TAG="P_FREEBSD"
       need_pragma=yes
@@ -7575,18 +7580,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: samples support disabled due to disabled dependency " >&5
 $as_echo "$as_me: samples support disabled due to disabled dependency " >&6;}
-	      HAS_SAMPLES=
-	    fi
-	  fi
+              HAS_SAMPLES=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: samples support disabled due to disabled dependency " >&5
 $as_echo "$as_me: samples support disabled due to disabled dependency " >&6;}
-	      HAS_SAMPLES=
-	    fi
-	  fi
+              HAS_SAMPLES=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: samples support disabled due to disabled dependency " >&5
+$as_echo "$as_me: samples support disabled due to disabled dependency " >&6;}
+              HAS_SAMPLES=
+            fi
+          fi
 
           if test "x${HAS_SAMPLES}" = "x1"; then
 
@@ -7600,8 +7612,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -8715,12 +8725,12 @@ fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: Using expat dir ${with_expat_dir}" >&5
 $as_echo "$as_me: Using expat dir ${with_expat_dir}" >&6;}
             if test -d ${with_expat_dir}/include; then
-	      ptlib_expat_cflags="-I${with_expat_dir}/include"
-	      ptlib_expat_libs="-L${with_expat_dir}/lib"
-	    else
-	      ptlib_expat_cflags="-I${with_expat_dir}/lib"
-	      ptlib_expat_libs="-L${with_expat_dir}/.libs"
-	    fi
+              ptlib_expat_cflags="-I${with_expat_dir}/include"
+              ptlib_expat_libs="-L${with_expat_dir}/lib"
+            else
+              ptlib_expat_cflags="-I${with_expat_dir}/lib"
+              ptlib_expat_libs="-L${with_expat_dir}/.libs"
+            fi
           fi
 
           old_LIBS="$LIBS"
@@ -9326,18 +9336,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: configfile support disabled due to disabled dependency " >&5
 $as_echo "$as_me: configfile support disabled due to disabled dependency " >&6;}
-	      HAS_CONFIG_FILE=
-	    fi
-	  fi
+              HAS_CONFIG_FILE=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: configfile support disabled due to disabled dependency " >&5
 $as_echo "$as_me: configfile support disabled due to disabled dependency " >&6;}
-	      HAS_CONFIG_FILE=
-	    fi
-	  fi
+              HAS_CONFIG_FILE=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: configfile support disabled due to disabled dependency " >&5
+$as_echo "$as_me: configfile support disabled due to disabled dependency " >&6;}
+              HAS_CONFIG_FILE=
+            fi
+          fi
 
           if test "x${HAS_CONFIG_FILE}" = "x1"; then
 
@@ -9351,8 +9368,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9386,18 +9401,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: url support disabled due to disabled dependency " >&5
 $as_echo "$as_me: url support disabled due to disabled dependency " >&6;}
-	      HAS_URL=
-	    fi
-	  fi
+              HAS_URL=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: url support disabled due to disabled dependency " >&5
 $as_echo "$as_me: url support disabled due to disabled dependency " >&6;}
-	      HAS_URL=
-	    fi
-	  fi
+              HAS_URL=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: url support disabled due to disabled dependency " >&5
+$as_echo "$as_me: url support disabled due to disabled dependency " >&6;}
+              HAS_URL=
+            fi
+          fi
 
           if test "x${HAS_URL}" = "x1"; then
 
@@ -9411,8 +9433,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9446,18 +9466,25 @@ fi
             if test "x$HAS_URL" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: http support disabled due to disabled dependency HAS_URL" >&5
 $as_echo "$as_me: http support disabled due to disabled dependency HAS_URL" >&6;}
-	      HAS_HTTP=
-	    fi
-	  fi
+              HAS_HTTP=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: http support disabled due to disabled dependency " >&5
 $as_echo "$as_me: http support disabled due to disabled dependency " >&6;}
-	      HAS_HTTP=
-	    fi
-	  fi
+              HAS_HTTP=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: http support disabled due to disabled dependency " >&5
+$as_echo "$as_me: http support disabled due to disabled dependency " >&6;}
+              HAS_HTTP=
+            fi
+          fi
 
           if test "x${HAS_HTTP}" = "x1"; then
 
@@ -9471,8 +9498,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9506,18 +9531,25 @@ fi
             if test "x$HAS_HTTP" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: httpforms support disabled due to disabled dependency HAS_HTTP" >&5
 $as_echo "$as_me: httpforms support disabled due to disabled dependency HAS_HTTP" >&6;}
-	      HAS_HTTPFORMS=
-	    fi
-	  fi
+              HAS_HTTPFORMS=
+            fi
+          fi
 
           if test "xHAS_CONFIG_FILE" != "x"; then
             if test "x$HAS_CONFIG_FILE" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: httpforms support disabled due to disabled dependency HAS_CONFIG_FILE" >&5
 $as_echo "$as_me: httpforms support disabled due to disabled dependency HAS_CONFIG_FILE" >&6;}
-	      HAS_HTTPFORMS=
-	    fi
-	  fi
+              HAS_HTTPFORMS=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: httpforms support disabled due to disabled dependency " >&5
+$as_echo "$as_me: httpforms support disabled due to disabled dependency " >&6;}
+              HAS_HTTPFORMS=
+            fi
+          fi
 
           if test "x${HAS_HTTPFORMS}" = "x1"; then
 
@@ -9531,8 +9563,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9567,18 +9597,25 @@ fi
             if test "x$HAS_HTTPFORMS" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: httpsvc support disabled due to disabled dependency HAS_HTTPFORMS" >&5
 $as_echo "$as_me: httpsvc support disabled due to disabled dependency HAS_HTTPFORMS" >&6;}
-	      HAS_HTTPSVC=
-	    fi
-	  fi
+              HAS_HTTPSVC=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: httpsvc support disabled due to disabled dependency " >&5
 $as_echo "$as_me: httpsvc support disabled due to disabled dependency " >&6;}
-	      HAS_HTTPSVC=
-	    fi
-	  fi
+              HAS_HTTPSVC=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: httpsvc support disabled due to disabled dependency " >&5
+$as_echo "$as_me: httpsvc support disabled due to disabled dependency " >&6;}
+              HAS_HTTPSVC=
+            fi
+          fi
 
           if test "x${HAS_HTTPSVC}" = "x1"; then
 
@@ -9592,8 +9629,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9627,18 +9662,25 @@ fi
             if test "x$HAS_HTTP" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: ssdp support disabled due to disabled dependency HAS_HTTP" >&5
 $as_echo "$as_me: ssdp support disabled due to disabled dependency HAS_HTTP" >&6;}
-	      HAS_SSDP=
-	    fi
-	  fi
+              HAS_SSDP=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: ssdp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: ssdp support disabled due to disabled dependency " >&6;}
-	      HAS_SSDP=
-	    fi
-	  fi
+              HAS_SSDP=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: ssdp support disabled due to disabled dependency " >&5
+$as_echo "$as_me: ssdp support disabled due to disabled dependency " >&6;}
+              HAS_SSDP=
+            fi
+          fi
 
           if test "x${HAS_SSDP}" = "x1"; then
 
@@ -9652,8 +9694,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9673,22 +9713,29 @@ if test "${enable_vcard+set}" = set; then :
 fi
 
 
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: vcard support disabled due to disabled dependency " >&5
-$as_echo "$as_me: vcard support disabled due to disabled dependency " >&6;}
-	      HAS_VCARD=
-	    fi
-	  fi
+          if test "xHAS_URL" != "x"; then
+            if test "x$HAS_URL" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: vcard support disabled due to disabled dependency HAS_URL" >&5
+$as_echo "$as_me: vcard support disabled due to disabled dependency HAS_URL" >&6;}
+              HAS_VCARD=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vcard support disabled due to disabled dependency " >&5
 $as_echo "$as_me: vcard support disabled due to disabled dependency " >&6;}
-	      HAS_VCARD=
-	    fi
-	  fi
+              HAS_VCARD=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: vcard support disabled due to disabled dependency " >&5
+$as_echo "$as_me: vcard support disabled due to disabled dependency " >&6;}
+              HAS_VCARD=
+            fi
+          fi
 
           if test "x${HAS_VCARD}" = "x1"; then
 
@@ -9702,8 +9749,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9727,18 +9772,25 @@ fi
             if test "x$HAS_EXPAT" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: jabber support disabled due to disabled dependency HAS_EXPAT" >&5
 $as_echo "$as_me: jabber support disabled due to disabled dependency HAS_EXPAT" >&6;}
-	      HAS_JABBER=
-	    fi
-	  fi
+              HAS_JABBER=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: jabber support disabled due to disabled dependency " >&5
 $as_echo "$as_me: jabber support disabled due to disabled dependency " >&6;}
-	      HAS_JABBER=
-	    fi
-	  fi
+              HAS_JABBER=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: jabber support disabled due to disabled dependency " >&5
+$as_echo "$as_me: jabber support disabled due to disabled dependency " >&6;}
+              HAS_JABBER=
+            fi
+          fi
 
           if test "x${HAS_JABBER}" = "x1"; then
 
@@ -9755,13 +9807,76 @@ $as_echo "no" >&6; }
 
 
 
-
-
           if test "x${HAS_JABBER}" = "x1" ; then
             PTLIB_JABBER=yes
 
           else
             PTLIB_JABBER=no
+
+          fi
+
+
+
+
+
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable Text-To-Speech server support" >&5
+$as_echo_n "checking enable Text-To-Speech server support... " >&6; }
+          # Check whether --enable-tts was given.
+if test "${enable_tts+set}" = set; then :
+  enableval=$enable_tts;
+                         if test "x$enableval" = "xyes"; then
+                           HAS_TTS=1
+                         else
+                           HAS_TTS=
+                         fi
+
+fi
+
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: tts support disabled due to disabled dependency " >&5
+$as_echo "$as_me: tts support disabled due to disabled dependency " >&6;}
+              HAS_TTS=
+            fi
+          fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: tts support disabled due to disabled dependency " >&5
+$as_echo "$as_me: tts support disabled due to disabled dependency " >&6;}
+              HAS_TTS=
+            fi
+          fi
+
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: tts support disabled due to disabled dependency " >&5
+$as_echo "$as_me: tts support disabled due to disabled dependency " >&6;}
+              HAS_TTS=
+            fi
+          fi
+
+          if test "x${HAS_TTS}" = "x1"; then
+
+$as_echo "#define P_TTS 1" >>confdefs.h
+
+            HAS_TTS=1
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+          else
+            HAS_TTS=
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+          fi
+
+
+
+          if test "x${HAS_TTS}" = "x1" ; then
+            PTLIB_TTS=yes
+
+          else
+            PTLIB_TTS=no
 
           fi
 
@@ -9787,18 +9902,25 @@ fi
             if test "x$HAS_EXPAT" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vxml support disabled due to disabled dependency HAS_EXPAT" >&5
 $as_echo "$as_me: vxml support disabled due to disabled dependency HAS_EXPAT" >&6;}
-	      HAS_VXML=
-	    fi
-	  fi
+              HAS_VXML=
+            fi
+          fi
 
           if test "xHAS_HTTP" != "x"; then
             if test "x$HAS_HTTP" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vxml support disabled due to disabled dependency HAS_HTTP" >&5
 $as_echo "$as_me: vxml support disabled due to disabled dependency HAS_HTTP" >&6;}
-	      HAS_VXML=
-	    fi
-	  fi
+              HAS_VXML=
+            fi
+          fi
 
+          if test "xHAS_TTS" != "x"; then
+            if test "x$HAS_TTS" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: vxml support disabled due to disabled dependency HAS_TTS" >&5
+$as_echo "$as_me: vxml support disabled due to disabled dependency HAS_TTS" >&6;}
+              HAS_VXML=
+            fi
+          fi
 
           if test "x${HAS_VXML}" = "x1"; then
 
@@ -9812,8 +9934,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9847,18 +9967,25 @@ fi
             if test "x$HAS_EXPAT" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: xmlrpc support disabled due to disabled dependency HAS_EXPAT" >&5
 $as_echo "$as_me: xmlrpc support disabled due to disabled dependency HAS_EXPAT" >&6;}
-	      HAS_XMLRPC=
-	    fi
-	  fi
+              HAS_XMLRPC=
+            fi
+          fi
 
           if test "xHAS_HTTP" != "x"; then
             if test "x$HAS_HTTP" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: xmlrpc support disabled due to disabled dependency HAS_HTTP" >&5
 $as_echo "$as_me: xmlrpc support disabled due to disabled dependency HAS_HTTP" >&6;}
-	      HAS_XMLRPC=
-	    fi
-	  fi
+              HAS_XMLRPC=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: xmlrpc support disabled due to disabled dependency " >&5
+$as_echo "$as_me: xmlrpc support disabled due to disabled dependency " >&6;}
+              HAS_XMLRPC=
+            fi
+          fi
 
           if test "x${HAS_XMLRPC}" = "x1"; then
 
@@ -9872,8 +9999,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -9907,18 +10032,25 @@ fi
             if test "x$HAS_EXPAT" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: soap support disabled due to disabled dependency HAS_EXPAT" >&5
 $as_echo "$as_me: soap support disabled due to disabled dependency HAS_EXPAT" >&6;}
-	      HAS_SOAP=
-	    fi
-	  fi
+              HAS_SOAP=
+            fi
+          fi
 
           if test "xHAS_HTTP" != "x"; then
             if test "x$HAS_HTTP" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: soap support disabled due to disabled dependency HAS_HTTP" >&5
 $as_echo "$as_me: soap support disabled due to disabled dependency HAS_HTTP" >&6;}
-	      HAS_SOAP=
-	    fi
-	  fi
+              HAS_SOAP=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: soap support disabled due to disabled dependency " >&5
+$as_echo "$as_me: soap support disabled due to disabled dependency " >&6;}
+              HAS_SOAP=
+            fi
+          fi
 
           if test "x${HAS_SOAP}" = "x1"; then
 
@@ -9935,8 +10067,6 @@ $as_echo "no" >&6; }
 
 
 
-
-
           if test "x${HAS_SOAP}" = "x1" ; then
             PTLIB_SOAP=yes
 
@@ -9945,67 +10075,6 @@ $as_echo "no" >&6; }
 
           fi
 
-
-
-
-
-
-
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable Text-To-Speech server support" >&5
-$as_echo_n "checking enable Text-To-Speech server support... " >&6; }
-          # Check whether --enable-tts was given.
-if test "${enable_tts+set}" = set; then :
-  enableval=$enable_tts;
-                         if test "x$enableval" = "xyes"; then
-                           HAS_TTS=1
-                         else
-                           HAS_TTS=
-                         fi
-
-fi
-
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: tts support disabled due to disabled dependency " >&5
-$as_echo "$as_me: tts support disabled due to disabled dependency " >&6;}
-	      HAS_TTS=
-	    fi
-	  fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: tts support disabled due to disabled dependency " >&5
-$as_echo "$as_me: tts support disabled due to disabled dependency " >&6;}
-	      HAS_TTS=
-	    fi
-	  fi
-
-
-          if test "x${HAS_TTS}" = "x1"; then
-
-$as_echo "#define P_TTS 1" >>confdefs.h
-
-            HAS_TTS=1
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-          else
-            HAS_TTS=
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-          fi
-
-
-
-
-
-          if test "x${HAS_TTS}" = "x1" ; then
-            PTLIB_TTS=yes
-
-          else
-            PTLIB_TTS=no
-
-          fi
 
 
 
@@ -10029,18 +10098,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: asn support disabled due to disabled dependency " >&5
 $as_echo "$as_me: asn support disabled due to disabled dependency " >&6;}
-	      HAS_ASN=
-	    fi
-	  fi
+              HAS_ASN=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: asn support disabled due to disabled dependency " >&5
 $as_echo "$as_me: asn support disabled due to disabled dependency " >&6;}
-	      HAS_ASN=
-	    fi
-	  fi
+              HAS_ASN=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: asn support disabled due to disabled dependency " >&5
+$as_echo "$as_me: asn support disabled due to disabled dependency " >&6;}
+              HAS_ASN=
+            fi
+          fi
 
           if test "x${HAS_ASN}" = "x1"; then
 
@@ -10054,8 +10130,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10089,18 +10163,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: nat support disabled due to disabled dependency " >&5
 $as_echo "$as_me: nat support disabled due to disabled dependency " >&6;}
-	      HAS_NAT=
-	    fi
-	  fi
+              HAS_NAT=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: nat support disabled due to disabled dependency " >&5
 $as_echo "$as_me: nat support disabled due to disabled dependency " >&6;}
-	      HAS_NAT=
-	    fi
-	  fi
+              HAS_NAT=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: nat support disabled due to disabled dependency " >&5
+$as_echo "$as_me: nat support disabled due to disabled dependency " >&6;}
+              HAS_NAT=
+            fi
+          fi
 
           if test "x${HAS_NAT}" = "x1"; then
 
@@ -10114,8 +10195,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10149,18 +10228,25 @@ fi
             if test "x$HAS_NAT" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: stun support disabled due to disabled dependency HAS_NAT" >&5
 $as_echo "$as_me: stun support disabled due to disabled dependency HAS_NAT" >&6;}
-	      HAS_STUN=
-	    fi
-	  fi
+              HAS_STUN=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: stun support disabled due to disabled dependency " >&5
 $as_echo "$as_me: stun support disabled due to disabled dependency " >&6;}
-	      HAS_STUN=
-	    fi
-	  fi
+              HAS_STUN=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: stun support disabled due to disabled dependency " >&5
+$as_echo "$as_me: stun support disabled due to disabled dependency " >&6;}
+              HAS_STUN=
+            fi
+          fi
 
           if test "x${HAS_STUN}" = "x1"; then
 
@@ -10174,8 +10260,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10207,18 +10291,25 @@ fi
             if test "x$HAS_NAT" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: stunsrvr support disabled due to disabled dependency HAS_NAT" >&5
 $as_echo "$as_me: stunsrvr support disabled due to disabled dependency HAS_NAT" >&6;}
-	      HAS_STUNSRVR=
-	    fi
-	  fi
+              HAS_STUNSRVR=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: stunsrvr support disabled due to disabled dependency " >&5
 $as_echo "$as_me: stunsrvr support disabled due to disabled dependency " >&6;}
-	      HAS_STUNSRVR=
-	    fi
-	  fi
+              HAS_STUNSRVR=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: stunsrvr support disabled due to disabled dependency " >&5
+$as_echo "$as_me: stunsrvr support disabled due to disabled dependency " >&6;}
+              HAS_STUNSRVR=
+            fi
+          fi
 
           if test "x${HAS_STUNSRVR}" = "x1"; then
 
@@ -10232,8 +10323,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10267,18 +10356,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: pipechan support disabled due to disabled dependency " >&5
 $as_echo "$as_me: pipechan support disabled due to disabled dependency " >&6;}
-	      HAS_PIPECHAN=
-	    fi
-	  fi
+              HAS_PIPECHAN=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: pipechan support disabled due to disabled dependency " >&5
 $as_echo "$as_me: pipechan support disabled due to disabled dependency " >&6;}
-	      HAS_PIPECHAN=
-	    fi
-	  fi
+              HAS_PIPECHAN=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: pipechan support disabled due to disabled dependency " >&5
+$as_echo "$as_me: pipechan support disabled due to disabled dependency " >&6;}
+              HAS_PIPECHAN=
+            fi
+          fi
 
           if test "x${HAS_PIPECHAN}" = "x1"; then
 
@@ -10292,8 +10388,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10327,18 +10421,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: dtmf support disabled due to disabled dependency " >&5
 $as_echo "$as_me: dtmf support disabled due to disabled dependency " >&6;}
-	      HAS_DTMF=
-	    fi
-	  fi
+              HAS_DTMF=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: dtmf support disabled due to disabled dependency " >&5
 $as_echo "$as_me: dtmf support disabled due to disabled dependency " >&6;}
-	      HAS_DTMF=
-	    fi
-	  fi
+              HAS_DTMF=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: dtmf support disabled due to disabled dependency " >&5
+$as_echo "$as_me: dtmf support disabled due to disabled dependency " >&6;}
+              HAS_DTMF=
+            fi
+          fi
 
           if test "x${HAS_DTMF}" = "x1"; then
 
@@ -10352,8 +10453,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10387,18 +10486,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: socks support disabled due to disabled dependency " >&5
 $as_echo "$as_me: socks support disabled due to disabled dependency " >&6;}
-	      HAS_SOCKS=
-	    fi
-	  fi
+              HAS_SOCKS=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: socks support disabled due to disabled dependency " >&5
 $as_echo "$as_me: socks support disabled due to disabled dependency " >&6;}
-	      HAS_SOCKS=
-	    fi
-	  fi
+              HAS_SOCKS=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: socks support disabled due to disabled dependency " >&5
+$as_echo "$as_me: socks support disabled due to disabled dependency " >&6;}
+              HAS_SOCKS=
+            fi
+          fi
 
           if test "x${HAS_SOCKS}" = "x1"; then
 
@@ -10412,8 +10518,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10447,18 +10551,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: ftp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: ftp support disabled due to disabled dependency " >&6;}
-	      HAS_FTP=
-	    fi
-	  fi
+              HAS_FTP=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: ftp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: ftp support disabled due to disabled dependency " >&6;}
-	      HAS_FTP=
-	    fi
-	  fi
+              HAS_FTP=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: ftp support disabled due to disabled dependency " >&5
+$as_echo "$as_me: ftp support disabled due to disabled dependency " >&6;}
+              HAS_FTP=
+            fi
+          fi
 
           if test "x${HAS_FTP}" = "x1"; then
 
@@ -10472,8 +10583,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10507,18 +10616,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: snmp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: snmp support disabled due to disabled dependency " >&6;}
-	      HAS_SNMP=
-	    fi
-	  fi
+              HAS_SNMP=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: snmp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: snmp support disabled due to disabled dependency " >&6;}
-	      HAS_SNMP=
-	    fi
-	  fi
+              HAS_SNMP=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: snmp support disabled due to disabled dependency " >&5
+$as_echo "$as_me: snmp support disabled due to disabled dependency " >&6;}
+              HAS_SNMP=
+            fi
+          fi
 
           if test "x${HAS_SNMP}" = "x1"; then
 
@@ -10532,8 +10648,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10567,18 +10681,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: telnet support disabled due to disabled dependency " >&5
 $as_echo "$as_me: telnet support disabled due to disabled dependency " >&6;}
-	      HAS_TELNET=
-	    fi
-	  fi
+              HAS_TELNET=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: telnet support disabled due to disabled dependency " >&5
 $as_echo "$as_me: telnet support disabled due to disabled dependency " >&6;}
-	      HAS_TELNET=
-	    fi
-	  fi
+              HAS_TELNET=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: telnet support disabled due to disabled dependency " >&5
+$as_echo "$as_me: telnet support disabled due to disabled dependency " >&6;}
+              HAS_TELNET=
+            fi
+          fi
 
           if test "x${HAS_TELNET}" = "x1"; then
 
@@ -10592,8 +10713,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10627,18 +10746,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: cli support disabled due to disabled dependency " >&5
 $as_echo "$as_me: cli support disabled due to disabled dependency " >&6;}
-	      HAS_CLI=
-	    fi
-	  fi
+              HAS_CLI=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: cli support disabled due to disabled dependency " >&5
 $as_echo "$as_me: cli support disabled due to disabled dependency " >&6;}
-	      HAS_CLI=
-	    fi
-	  fi
+              HAS_CLI=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: cli support disabled due to disabled dependency " >&5
+$as_echo "$as_me: cli support disabled due to disabled dependency " >&6;}
+              HAS_CLI=
+            fi
+          fi
 
           if test "x${HAS_CLI}" = "x1"; then
 
@@ -10652,8 +10778,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10687,18 +10811,25 @@ fi
             if test "x$HAS_CONFIG_FILE" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: remconn support disabled due to disabled dependency HAS_CONFIG_FILE" >&5
 $as_echo "$as_me: remconn support disabled due to disabled dependency HAS_CONFIG_FILE" >&6;}
-	      HAS_REMCONN=
-	    fi
-	  fi
+              HAS_REMCONN=
+            fi
+          fi
+
+          if test "xHAS_PIPECHAN" != "x"; then
+            if test "x$HAS_PIPECHAN" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: remconn support disabled due to disabled dependency HAS_PIPECHAN" >&5
+$as_echo "$as_me: remconn support disabled due to disabled dependency HAS_PIPECHAN" >&6;}
+              HAS_REMCONN=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: remconn support disabled due to disabled dependency " >&5
 $as_echo "$as_me: remconn support disabled due to disabled dependency " >&6;}
-	      HAS_REMCONN=
-	    fi
-	  fi
-
+              HAS_REMCONN=
+            fi
+          fi
 
           if test "x${HAS_REMCONN}" = "x1"; then
 
@@ -10712,8 +10843,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10747,18 +10876,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: serial support disabled due to disabled dependency " >&5
 $as_echo "$as_me: serial support disabled due to disabled dependency " >&6;}
-	      HAS_SERIAL=
-	    fi
-	  fi
+              HAS_SERIAL=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: serial support disabled due to disabled dependency " >&5
 $as_echo "$as_me: serial support disabled due to disabled dependency " >&6;}
-	      HAS_SERIAL=
-	    fi
-	  fi
+              HAS_SERIAL=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: serial support disabled due to disabled dependency " >&5
+$as_echo "$as_me: serial support disabled due to disabled dependency " >&6;}
+              HAS_SERIAL=
+            fi
+          fi
 
           if test "x${HAS_SERIAL}" = "x1"; then
 
@@ -10772,8 +10908,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10807,18 +10941,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: pop3smtp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: pop3smtp support disabled due to disabled dependency " >&6;}
-	      HAS_POP3SMTP=
-	    fi
-	  fi
+              HAS_POP3SMTP=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: pop3smtp support disabled due to disabled dependency " >&5
 $as_echo "$as_me: pop3smtp support disabled due to disabled dependency " >&6;}
-	      HAS_POP3SMTP=
-	    fi
-	  fi
+              HAS_POP3SMTP=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: pop3smtp support disabled due to disabled dependency " >&5
+$as_echo "$as_me: pop3smtp support disabled due to disabled dependency " >&6;}
+              HAS_POP3SMTP=
+            fi
+          fi
 
           if test "x${HAS_POP3SMTP}" = "x1"; then
 
@@ -10832,8 +10973,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10867,18 +11006,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: audio support disabled due to disabled dependency " >&5
 $as_echo "$as_me: audio support disabled due to disabled dependency " >&6;}
-	      HAS_AUDIO=
-	    fi
-	  fi
+              HAS_AUDIO=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: audio support disabled due to disabled dependency " >&5
 $as_echo "$as_me: audio support disabled due to disabled dependency " >&6;}
-	      HAS_AUDIO=
-	    fi
-	  fi
+              HAS_AUDIO=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: audio support disabled due to disabled dependency " >&5
+$as_echo "$as_me: audio support disabled due to disabled dependency " >&6;}
+              HAS_AUDIO=
+            fi
+          fi
 
           if test "x${HAS_AUDIO}" = "x1"; then
 
@@ -10892,8 +11038,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10927,18 +11071,25 @@ fi
             if test "x$HAS_AUDIO" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: wavfile support disabled due to disabled dependency HAS_AUDIO" >&5
 $as_echo "$as_me: wavfile support disabled due to disabled dependency HAS_AUDIO" >&6;}
-	      HAS_WAVFILE=
-	    fi
-	  fi
+              HAS_WAVFILE=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: wavfile support disabled due to disabled dependency " >&5
 $as_echo "$as_me: wavfile support disabled due to disabled dependency " >&6;}
-	      HAS_WAVFILE=
-	    fi
-	  fi
+              HAS_WAVFILE=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: wavfile support disabled due to disabled dependency " >&5
+$as_echo "$as_me: wavfile support disabled due to disabled dependency " >&6;}
+              HAS_WAVFILE=
+            fi
+          fi
 
           if test "x${HAS_WAVFILE}" = "x1"; then
 
@@ -10952,8 +11103,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -10989,18 +11138,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
 $as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-	      HAS_QOS=
-	    fi
-	  fi
+              HAS_QOS=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
 $as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-	      HAS_QOS=
-	    fi
-	  fi
+              HAS_QOS=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
+$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
+              HAS_QOS=
+            fi
+          fi
 
           if test "x${HAS_QOS}" = "x1"; then
 
@@ -11014,8 +11170,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11039,18 +11193,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: video support disabled due to disabled dependency " >&5
 $as_echo "$as_me: video support disabled due to disabled dependency " >&6;}
-	      HAS_VIDEO=
-	    fi
-	  fi
+              HAS_VIDEO=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: video support disabled due to disabled dependency " >&5
 $as_echo "$as_me: video support disabled due to disabled dependency " >&6;}
-	      HAS_VIDEO=
-	    fi
-	  fi
+              HAS_VIDEO=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: video support disabled due to disabled dependency " >&5
+$as_echo "$as_me: video support disabled due to disabled dependency " >&6;}
+              HAS_VIDEO=
+            fi
+          fi
 
           if test "x${HAS_VIDEO}" = "x1"; then
 
@@ -11064,8 +11225,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11105,18 +11264,25 @@ fi
             if test "x$HAS_VIDEO" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vidfile support disabled due to disabled dependency HAS_VIDEO" >&5
 $as_echo "$as_me: vidfile support disabled due to disabled dependency HAS_VIDEO" >&6;}
-	      HAS_VIDFILE=
-	    fi
-	  fi
+              HAS_VIDFILE=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vidfile support disabled due to disabled dependency " >&5
 $as_echo "$as_me: vidfile support disabled due to disabled dependency " >&6;}
-	      HAS_VIDFILE=
-	    fi
-	  fi
+              HAS_VIDFILE=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: vidfile support disabled due to disabled dependency " >&5
+$as_echo "$as_me: vidfile support disabled due to disabled dependency " >&6;}
+              HAS_VIDFILE=
+            fi
+          fi
 
           if test "x${HAS_VIDFILE}" = "x1"; then
 
@@ -11130,8 +11296,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11165,18 +11329,25 @@ fi
             if test "x$HAS_FFVDEV" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: ffvdev support disabled due to disabled dependency HAS_FFVDEV" >&5
 $as_echo "$as_me: ffvdev support disabled due to disabled dependency HAS_FFVDEV" >&6;}
-	      HAS_FFVDEV=
-	    fi
-	  fi
+              HAS_FFVDEV=
+            fi
+          fi
 
           if test "xHAS_PIPECHAN" != "x"; then
             if test "x$HAS_PIPECHAN" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: ffvdev support disabled due to disabled dependency HAS_PIPECHAN" >&5
 $as_echo "$as_me: ffvdev support disabled due to disabled dependency HAS_PIPECHAN" >&6;}
-	      HAS_FFVDEV=
-	    fi
-	  fi
+              HAS_FFVDEV=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: ffvdev support disabled due to disabled dependency " >&5
+$as_echo "$as_me: ffvdev support disabled due to disabled dependency " >&6;}
+              HAS_FFVDEV=
+            fi
+          fi
 
           if test "x${HAS_FFVDEV}" = "x1"; then
 
@@ -11190,8 +11361,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11225,18 +11394,25 @@ fi
             if test "x$HAS_VIDEO" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: appshare support disabled due to disabled dependency HAS_VIDEO" >&5
 $as_echo "$as_me: appshare support disabled due to disabled dependency HAS_VIDEO" >&6;}
-	      HAS_APPSHARE=
-	    fi
-	  fi
+              HAS_APPSHARE=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: appshare support disabled due to disabled dependency " >&5
 $as_echo "$as_me: appshare support disabled due to disabled dependency " >&6;}
-	      HAS_APPSHARE=
-	    fi
-	  fi
+              HAS_APPSHARE=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: appshare support disabled due to disabled dependency " >&5
+$as_echo "$as_me: appshare support disabled due to disabled dependency " >&6;}
+              HAS_APPSHARE=
+            fi
+          fi
 
           if test "x${HAS_APPSHARE}" = "x1"; then
 
@@ -11250,8 +11426,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11275,18 +11449,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: shmvideo support disabled due to disabled dependency " >&5
 $as_echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
-	      HAS_SHM_VIDEO=
-	    fi
-	  fi
+              HAS_SHM_VIDEO=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: shmvideo support disabled due to disabled dependency " >&5
 $as_echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
-	      HAS_SHM_VIDEO=
-	    fi
-	  fi
+              HAS_SHM_VIDEO=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: shmvideo support disabled due to disabled dependency " >&5
+$as_echo "$as_me: shmvideo support disabled due to disabled dependency " >&6;}
+              HAS_SHM_VIDEO=
+            fi
+          fi
 
           if test "x${HAS_SHM_VIDEO}" = "x1"; then
 
@@ -11300,8 +11481,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11436,9 +11615,9 @@ if test "x${HAS_VIDEO}" = "x1" ; then
   case "$target_os" in
     cygwin* | mingw* )
 
-	  ptlib_has_directx=yes
-	  DIRECTX_INCLUDES=
-	  DIRECTX_LIBS=
+          ptlib_has_directx=yes
+          DIRECTX_INCLUDES=
+          DIRECTX_LIBS=
 
 
 # Check whether --with-directx-includedir was given.
@@ -11450,21 +11629,21 @@ else
 fi
 
 
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for DirectX includes in ${with_directx_dir}" >&5
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for DirectX includes in ${with_directx_dir}" >&5
 $as_echo_n "checking for DirectX includes in ${with_directx_dir}... " >&6; }
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: " >&5
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: " >&5
 $as_echo "" >&6; }
 
-	  old_CPPFLAGS="$CPPFLAGS"
-	  CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
-	  ac_ext=cpp
+          old_CPPFLAGS="$CPPFLAGS"
+          CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
+          ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-	  for ac_header in control.h
+          for ac_header in control.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "control.h" "ac_cv_header_control_h" "$ac_includes_default"
 if test "x$ac_cv_header_control_h" = xyes; then :
@@ -11478,7 +11657,7 @@ fi
 
 done
 
-	  for ac_header in ddraw.h
+          for ac_header in ddraw.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes; then :
@@ -11492,7 +11671,7 @@ fi
 
 done
 
-	  for ac_header in dshow.h
+          for ac_header in dshow.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "dshow.h" "ac_cv_header_dshow_h" "$ac_includes_default"
 if test "x$ac_cv_header_dshow_h" = xyes; then :
@@ -11506,7 +11685,7 @@ fi
 
 done
 
-	  for ac_header in dsound.h
+          for ac_header in dsound.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "dsound.h" "ac_cv_header_dsound_h" "$ac_includes_default"
 if test "x$ac_cv_header_dsound_h" = xyes; then :
@@ -11520,7 +11699,7 @@ fi
 
 done
 
-	  for ac_header in strmif.h
+          for ac_header in strmif.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "strmif.h" "ac_cv_header_strmif_h" "$ac_includes_default"
 if test "x$ac_cv_header_strmif_h" = xyes; then :
@@ -11534,7 +11713,7 @@ fi
 
 done
 
-	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 ksuuids.h
 _ACEOF
@@ -11544,7 +11723,7 @@ else
   ptlib_has_directx=no
 fi
 rm -f conftest.err conftest.i conftest.$ac_ext
-	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 uuids.h
 _ACEOF
@@ -11554,7 +11733,7 @@ else
   ptlib_has_directx=no
 fi
 rm -f conftest.err conftest.i conftest.$ac_ext
-	  CPPFLAGS="$old_CPPFLAGS"
+          CPPFLAGS="$old_CPPFLAGS"
 
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for DirectX includes" >&5
@@ -11562,10 +11741,10 @@ $as_echo_n "checking for DirectX includes... " >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ptlib_has_directx}" >&5
 $as_echo "${ptlib_has_directx}" >&6; }
 
-	  if test "x${ptlib_has_directx}" = "xyes" ; then
-	    DIRECTX_INCLUDES="-I${with_directx_dir}"
-	    DIRECTX_LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
-	  fi
+          if test "x${ptlib_has_directx}" = "xyes" ; then
+            DIRECTX_INCLUDES="-I${with_directx_dir}"
+            DIRECTX_LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+          fi
 
           if test $ptlib_has_directx = yes; then :
   HAS_VIDEO_CAPTURE=1
@@ -11627,18 +11806,25 @@ fi
             if test "x$HAS_VIDEO" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vfw support disabled due to disabled dependency HAS_VIDEO" >&5
 $as_echo "$as_me: vfw support disabled due to disabled dependency HAS_VIDEO" >&6;}
-	      HAS_VFW_CAPTURE=
-	    fi
-	  fi
+              HAS_VFW_CAPTURE=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: vfw support disabled due to disabled dependency " >&5
 $as_echo "$as_me: vfw support disabled due to disabled dependency " >&6;}
-	      HAS_VFW_CAPTURE=
-	    fi
-	  fi
+              HAS_VFW_CAPTURE=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: vfw support disabled due to disabled dependency " >&5
+$as_echo "$as_me: vfw support disabled due to disabled dependency " >&6;}
+              HAS_VFW_CAPTURE=
+            fi
+          fi
 
           if test "x${HAS_VFW_CAPTURE}" = "x1"; then
 
@@ -11652,8 +11838,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11702,7 +11886,7 @@ fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: Using odbc dir ${with_odbc_dir}" >&5
 $as_echo "$as_me: Using odbc dir ${with_odbc_dir}" >&6;}
             ptlib_odbc_cflags="-I${with_odbc_dir}/include"
-	    ptlib_odbc_libs="-L${with_odbc_dir}/lib"
+            ptlib_odbc_libs="-L${with_odbc_dir}/lib"
           fi
 
           old_LIBS="$LIBS"
@@ -11839,18 +12023,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: exceptions support disabled due to disabled dependency " >&5
 $as_echo "$as_me: exceptions support disabled due to disabled dependency " >&6;}
-	      HAS_EXCEPTIONS=
-	    fi
-	  fi
+              HAS_EXCEPTIONS=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: exceptions support disabled due to disabled dependency " >&5
 $as_echo "$as_me: exceptions support disabled due to disabled dependency " >&6;}
-	      HAS_EXCEPTIONS=
-	    fi
-	  fi
+              HAS_EXCEPTIONS=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: exceptions support disabled due to disabled dependency " >&5
+$as_echo "$as_me: exceptions support disabled due to disabled dependency " >&6;}
+              HAS_EXCEPTIONS=
+            fi
+          fi
 
           if test "x${HAS_EXCEPTIONS}" = "x1"; then
 
@@ -11864,8 +12055,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -11901,18 +12090,25 @@ fi
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: plugins support disabled due to disabled dependency " >&5
 $as_echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
-	      HAS_PLUGINS=
-	    fi
-	  fi
+              HAS_PLUGINS=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: plugins support disabled due to disabled dependency " >&5
 $as_echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
-	      HAS_PLUGINS=
-	    fi
-	  fi
+              HAS_PLUGINS=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: plugins support disabled due to disabled dependency " >&5
+$as_echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
+              HAS_PLUGINS=
+            fi
+          fi
 
           if test "x${HAS_PLUGINS}" = "x1"; then
 
@@ -11926,8 +12122,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
 
@@ -12113,18 +12307,25 @@ fi
             if test "x$HAS_LIBDL" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: plugins support disabled due to disabled dependency HAS_LIBDL" >&5
 $as_echo "$as_me: plugins support disabled due to disabled dependency HAS_LIBDL" >&6;}
-	      HAS_PLUGINS=
-	    fi
-	  fi
+              HAS_PLUGINS=
+            fi
+          fi
 
           if test "x" != "x"; then
             if test "x$" != "x1"; then
               { $as_echo "$as_me:${as_lineno-$LINENO}: plugins support disabled due to disabled dependency " >&5
 $as_echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
-	      HAS_PLUGINS=
-	    fi
-	  fi
+              HAS_PLUGINS=
+            fi
+          fi
 
+          if test "x" != "x"; then
+            if test "x$" != "x1"; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: plugins support disabled due to disabled dependency " >&5
+$as_echo "$as_me: plugins support disabled due to disabled dependency " >&6;}
+              HAS_PLUGINS=
+            fi
+          fi
 
           if test "x${HAS_PLUGINS}" = "x1"; then
 
@@ -12138,8 +12339,6 @@ $as_echo "yes" >&6; }
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
           fi
-
-
 
 
    ;;

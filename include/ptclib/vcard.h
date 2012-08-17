@@ -35,6 +35,7 @@
 #pragma interface
 #endif
 
+#if P_VCARD
 
 #include <ptclib/url.h>
 
@@ -264,7 +265,9 @@ class PvCard : public PObject
 };
 
 
-#endif  // PTLIB_VCARD_H
+#endif // P_VCARD
+
+#endif // PTLIB_VCARD_H
 
 
 // End of File ///////////////////////////////////////////////////////////////
