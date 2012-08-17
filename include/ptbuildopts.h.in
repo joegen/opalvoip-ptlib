@@ -168,18 +168,23 @@
 #undef P_ASN
 #undef P_PIPECHAN
 #undef P_DTMF
-#undef P_VCARD
 #undef P_WAVFILE
 #undef P_SOCKS
 #undef P_FTP
-#undef P_SNMP
 #undef P_TELNET
 #undef P_CLI
 #undef P_ODBC
-#undef P_REMCONN
 #undef P_SERIAL
 #undef P_POP3SMTP
 #undef P_CONFIG_FILE
+
+#if WIN32 || P_PIPECHAN
+  #undef P_REMCONN
+#endif
+
+#if P_ASN
+  #undef P_SNMP
+#endif
 
 #undef P_NAT
 #if P_NAT
@@ -191,6 +196,7 @@
 
 #undef P_URL
 #ifdef P_URL
+  #undef P_VCARD
   #undef P_HTTP
   #if P_HTTP
     #if P_CONFIG_FILE
@@ -552,10 +558,8 @@
 #endif
 
 #ifdef P_EXPAT
-  #if P_DTMF
-    #if P_TTS
-      #undef P_VXML
-    #endif
+  #if P_TTS
+    #undef P_VXML
   #endif
   #undef P_JABBER
   #undef P_XMLRPC

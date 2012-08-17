@@ -39,7 +39,8 @@ TOP_LEVEL_MAKE := $(PTLIBDIR)/make/toplevel.mak
 CONFIGURE      := $(PTLIBDIR)/configure
 CONFIG_FILES   := $(PTLIBDIR)/ptlib.pc \
                   $(PTLIBDIR)/ptlib_cfg.dxy \
-                  $(PTLIBDIR)/make/ptbuildopts.mak
+                  $(PTLIBDIR)/make/ptbuildopts.mak \
+                  $(PTLIBDIR)/include/ptbuildopts.h
 
 ifneq (,$(findstring --disable-plugins,$(CFG_ARGS)))
   CONFIG_FILES += $(PTLIBDIR)/plugins/Makefile \
@@ -63,8 +64,18 @@ default: $(CONFIG_FILES)
 config: $(CONFIGURE)
 	$(CONFIGURE) $(CFG_ARGS)
 
-$(firstword $(CONFIG_FILES)): $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES)) $(CONFIGURE)
+# this complexity is so if any of CONFIG_FILES does not exist it is created
+# with ./configure only being executed once.
+FIRST_CONFIG := $(firstword $(CONFIG_FILES))
+OTHER_CONFIGS := $(wordlist 2,1000,$(CONFIG_FILES))
+
+$(FIRST_CONFIG): $(OTHER_CONFIGS) $(CONFIGURE) $(PLUGIN_CONFIG) $(addsuffix .in, $(CONFIG_FILES))
 	$(CONFIGURE) $(CFG_ARGS)
+	touch $@
+
+$(OTHER_CONFIGS):
+	touch $@
+
 
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))

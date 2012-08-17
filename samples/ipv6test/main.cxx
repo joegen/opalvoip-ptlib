@@ -267,6 +267,7 @@ void IPV6Test::Main()
     cout << "Please do manual check ...";
     cout << endl;
   }
+#if P_URL
   {
     // test #9 - see if URLs decode correctly
     cout << "test #9: Please do manual check if parsing IPV6 URLs works" << endl;
@@ -280,6 +281,7 @@ void IPV6Test::Main()
          << "  address     = " << addr    << " (should be ::ffff:220.244.81.10)\n"
          << "  port        = " << port    << " (should be 1234)\n";
   }
+#endif // P_URL
   {
     // test #10 - check PIPSocket::GetGatewayAddress()
     cout << "test #10: PIPSocket::GetGatewayAddress() ";
@@ -290,7 +292,7 @@ void IPV6Test::Main()
         cout << "OK";
     cout << endl;
   }
-#endif
+#endif // P_HAS_IPV6
 }
 
 // End of File ///////////////////////////////////////////////////////////////

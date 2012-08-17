@@ -38,6 +38,8 @@
 #pragma interface
 #endif
 
+#if P_REMCONN
+
 #include <ptlib/pipechan.h>
 
 #ifdef _WIN32
@@ -292,6 +294,8 @@ class PRemoteConnection : public PObject
 #endif
 };
 
+
+#endif // P_REMCONN
 
 #endif // PTLIB_REMOTECONNECTION_H
 
