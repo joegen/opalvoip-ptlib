@@ -39,13 +39,13 @@ void SockBundleProcess::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
-  PMonitoredSocketBundle bundle(PString::Empty(), 0, false, NULL);
+  PMonitoredSocketBundle bundle(PString::Empty(), 0, false);
   if (!bundle.Open(5080)) {
     cout << "Cannot open monitored socket bundle" << endl;
     return;
   }
 
-  PSingleMonitoredSocket single(bundle.GetInterfaces()[0], false, NULL);
+  PSingleMonitoredSocket single(bundle.GetInterfaces()[0], false);
   if (!single.Open(1719)) {
     cout << "Cannot open single monitored socket" << endl;
     return;

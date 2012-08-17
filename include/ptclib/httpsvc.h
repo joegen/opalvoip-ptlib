@@ -31,6 +31,8 @@
 #ifndef PTLIB_HTTPSVC_H
 #define PTLIB_HTTPSVC_H
 
+#if P_HTTPFORMS
+
 #include <ptlib/svcproc.h>
 #include <ptlib/sockets.h>
 #include <ptclib/httpform.h>
@@ -193,6 +195,7 @@ class PHTTPServiceProcess : public PServiceProcess
 
 
 /////////////////////////////////////////////////////////////////////
+
 
 class PConfigPage : public PHTTPConfig
 {
@@ -473,6 +476,8 @@ class PServiceHTTPDirectory : public PHTTPDirectory
     PBoolean needSignature;
 };
 
+
+#endif // P_HTTPFORMS
 
 #endif // PTLIB_HTTPSVC_H
 

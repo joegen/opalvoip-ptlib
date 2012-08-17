@@ -38,6 +38,8 @@
 #pragma interface
 #endif
 
+#if P_PIPECHAN
+
 #include <ptlib/channel.h>
 
 
@@ -409,6 +411,8 @@ class PPipeChannel : public PChannel
 #endif
 };
 
+
+#endif // P_PIPECHAN
 
 #endif // PTLIB_PIPECHANNEL_H
 

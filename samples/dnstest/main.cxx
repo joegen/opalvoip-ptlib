@@ -101,6 +101,9 @@ PBoolean FindSRVRecords(std::vector<LookupRecord> & recs,
   return found;
 }
 
+
+#if P_URL
+
 void LookupSRVURL(const PString & url, const PString & service)
 {
   PStringList addrs;
@@ -120,12 +123,18 @@ void LookupRDSURL(const PString & url, const PString & service)
     cout << setfill('\n') << addrs << setfill(' ');
   }
 }
+#endif // P_URL
+
 
 void DNSTest::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse("r:t:u.");
+  args.Parse("r:t:"
+#if P_URL
+             "u."
+#endif
+            );
 
   if (args.GetCount() < 1) {
     Usage();
@@ -146,6 +155,7 @@ void DNSTest::Main()
     if (showCount)
       cout << "#" << (int)count++ << " ";
 
+#if P_URL
     if (args.HasOption('u')) {
       if (args.GetCount() < 0) {
         Usage();
@@ -210,20 +220,22 @@ void DNSTest::Main()
         PError << "error: unsupported scheme " << url.GetScheme() << endl;
       }
     }
+#endif // P_URL
 
     else if (args.HasOption('t')) {
       PString type = args.GetOptionString('t');
       if ((type *= "SRV") && (args.GetCount() == 1)) 
         GetAndDisplayRecords<PDNS::SRVRecordList>(args[0]);
 
+      else if (type *= "MX")
+        GetAndDisplayRecords<PDNS::MXRecordList>(args[0]);
+
+#if P_URL
       else if ((type *= "SRV") && (args.GetCount() == 2)) 
         LookupSRVURL(args[1], args[0]);
 
       else if ((type *= "RDS") && (args.GetCount() == 2)) 
         LookupRDSURL(args[1], args[0]);
-
-      else if (type *= "MX")
-        GetAndDisplayRecords<PDNS::MXRecordList>(args[0]);
 
       else if (type *= "NAPTR") {
         if (args.GetCount() == 1)
@@ -256,6 +268,7 @@ void DNSTest::Main()
             cout << "E164 number " << e164 << " with service " << service << " resolved to " << str << endl;
         }
       }
+#endif // P_URL
 
       else if (type *= "IP") {
         if (args.GetCount() < 1)

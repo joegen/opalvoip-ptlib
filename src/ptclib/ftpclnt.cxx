@@ -295,6 +295,8 @@ PTCPSocket * PFTPClient::PutFile(const PString & filename,
 }
 
 
+#if P_URL
+
 PTCPSocket * PFTPClient::GetURL(const PURL & url, RepresentationType type, DataChannelType channel)
 {
   PStringArray path = url.GetPath();
@@ -375,6 +377,7 @@ class PURL_FtpLoader : public PURLLoader
 
 PFACTORY_CREATE(PURLLoaderFactory, PURL_FtpLoader, "ftp", true);
 
+#endif // P_URL
 
 #endif // P_FTP
 

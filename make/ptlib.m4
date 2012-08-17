@@ -10,7 +10,7 @@ AC_DEFUN([PTLIB_SIMPLE_OPTION],
          [
 dnl          if test "x${HAS_$2}" = "x"; then
 dnl            AC_MSG_ERROR([No default specified for HAS_$2, please correct configure.ac])
-dnl	  fi
+dnl          fi
           AC_MSG_CHECKING([$3])
           AC_ARG_ENABLE([$1],
                         [AC_HELP_STRING([--enable-$1],[$3])],
@@ -25,17 +25,23 @@ dnl	  fi
           if test "x$4" != "x"; then
             if test "x$$4" != "x1"; then
               AC_MSG_NOTICE([$1 support disabled due to disabled dependency $4])
-	      HAS_$2=
-	    fi
-	  fi
+              HAS_$2=
+            fi
+          fi
 
           if test "x$5" != "x"; then
             if test "x$$5" != "x1"; then
               AC_MSG_NOTICE([$1 support disabled due to disabled dependency $5])
-	      HAS_$2=
-	    fi
-	  fi
+              HAS_$2=
+            fi
+          fi
 
+          if test "x$6" != "x"; then
+            if test "x$$6" != "x1"; then
+              AC_MSG_NOTICE([$1 support disabled due to disabled dependency $6])
+              HAS_$2=
+            fi
+          fi
 
           if test "x${HAS_$2}" = "x1"; then
             AC_DEFINE([P_$2], [1], [$3])
@@ -46,8 +52,6 @@ dnl	  fi
             AC_MSG_RESULT([no])
           fi
           AC_SUBST(HAS_$2)
-
-
          ])
 
 dnl Forward compatibility for pkg-config options
@@ -66,45 +70,45 @@ dnl Check for directX
 dnl Arguments:
 dnl Return:    $1 action if-found
 dnl            $2 action if-not-found
-dnl	       $DIRECTX_INCLUDES
-dnl	       $DIRECTX_LIBS
+dnl               $DIRECTX_INCLUDES
+dnl               $DIRECTX_LIBS
 AC_DEFUN([PTLIB_FIND_DIRECTX],
          [
-	  ptlib_has_directx=yes
-	  DIRECTX_INCLUDES=
-	  DIRECTX_LIBS=
+          ptlib_has_directx=yes
+          DIRECTX_INCLUDES=
+          DIRECTX_LIBS=
 
-	  AC_ARG_WITH([directx-includedir],
-	              AS_HELP_STRING([--with-directx-includedir=DIR],[Location of DirectX include files]),
-	              [with_directx_dir="$withval"],
-		      [with_directx_dir="include"]
-	  )
+          AC_ARG_WITH([directx-includedir],
+                      AS_HELP_STRING([--with-directx-includedir=DIR],[Location of DirectX include files]),
+                      [with_directx_dir="$withval"],
+                      [with_directx_dir="include"]
+          )
 
-	  AC_MSG_CHECKING(for DirectX includes in ${with_directx_dir})
-	  AC_MSG_RESULT()
+          AC_MSG_CHECKING(for DirectX includes in ${with_directx_dir})
+          AC_MSG_RESULT()
 
-	  old_CPPFLAGS="$CPPFLAGS"
-	  CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
-	  AC_LANG(C++)
+          old_CPPFLAGS="$CPPFLAGS"
+          CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
+          AC_LANG(C++)
 
-	  AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
-	  AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
-	  AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
-	  AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
-	  AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
+          AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
+          AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
+          AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
+          AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
+          AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
 dnl ##### the two following headers are included by other headers, so check only if they exist
-	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [], [ptlib_has_directx=no])
-	  AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [], [ptlib_has_directx=no])
-	  CPPFLAGS="$old_CPPFLAGS"
+          AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [], [ptlib_has_directx=no])
+          AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [], [ptlib_has_directx=no])
+          CPPFLAGS="$old_CPPFLAGS"
 
 
       AC_MSG_CHECKING([for DirectX includes])
       AC_MSG_RESULT(${ptlib_has_directx})
 
-	  if test "x${ptlib_has_directx}" = "xyes" ; then
-	    DIRECTX_INCLUDES="-I${with_directx_dir}"
-	    DIRECTX_LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
-	  fi
+          if test "x${ptlib_has_directx}" = "xyes" ; then
+            DIRECTX_INCLUDES="-I${with_directx_dir}"
+            DIRECTX_LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+          fi
 
           AS_IF([test AS_VAR_GET([ptlib_has_directx]) = yes], [$1], [$2])[]
          ])
@@ -424,12 +428,12 @@ AC_DEFUN([PTLIB_FIND_EXPAT],
           if test "x${with_expat_dir}" != "x"; then
             AC_MSG_NOTICE(Using expat dir ${with_expat_dir})
             if test -d ${with_expat_dir}/include; then
-	      ptlib_expat_cflags="-I${with_expat_dir}/include"
-	      ptlib_expat_libs="-L${with_expat_dir}/lib"
-	    else
-	      ptlib_expat_cflags="-I${with_expat_dir}/lib"
-	      ptlib_expat_libs="-L${with_expat_dir}/.libs"
-	    fi
+              ptlib_expat_cflags="-I${with_expat_dir}/include"
+              ptlib_expat_libs="-L${with_expat_dir}/lib"
+            else
+              ptlib_expat_cflags="-I${with_expat_dir}/lib"
+              ptlib_expat_libs="-L${with_expat_dir}/.libs"
+            fi
           fi
 
           old_LIBS="$LIBS"
@@ -468,7 +472,7 @@ AC_DEFUN([PTLIB_FIND_ODBC],
           if test "x${with_odbc_dir}" != "x"; then
             AC_MSG_NOTICE(Using odbc dir ${with_odbc_dir})
             ptlib_odbc_cflags="-I${with_odbc_dir}/include"
-	    ptlib_odbc_libs="-L${with_odbc_dir}/lib"
+            ptlib_odbc_libs="-L${with_odbc_dir}/lib"
           fi
 
           old_LIBS="$LIBS"

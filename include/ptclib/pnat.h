@@ -620,7 +620,7 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
   PCREATE_PLUGIN(name, PNatMethod, &PNatMethod_##name##_descriptor) \
 
 
-#define P_NAT_PARAM(p) ,p
+#define P_NAT_PARAM(...) ,__VA_ARGS__
 
 
 #if P_STUN
@@ -633,7 +633,7 @@ PFACTORY_LOAD(PTURNClient);
 
 #else  // P_NAT
 
-#define P_NAT_PARAM(p)
+#define P_NAT_PARAM(...)
 
 #endif // P_NAT
 

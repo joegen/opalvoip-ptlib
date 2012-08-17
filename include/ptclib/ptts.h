@@ -82,7 +82,7 @@ class PTextToSpeech : public PObject
   PFACTORY_LOAD(PTextToSpeech_SAPI);
 #endif
 
-#ifndef _WIN32_WCE
+#if P_PIPECHAN
   PFACTORY_LOAD(PTextToSpeech_Festival);
 #endif
 

@@ -336,11 +336,13 @@ PBoolean LookupSRV(
          PIPSocketAddressAndPortVector & addrList ///< returned list of sockets and ports
 ); 
 
+#if P_URL
 PBoolean LookupSRV( 
          const PURL & url,          ///< URL to lookup
          const PString & service,   ///< service to use
          PStringList & returnStr    ///< resolved addresses, if return value is true
-);  
+);
+#endif
 
 ////////////////////////////////////////////////////////////////
 

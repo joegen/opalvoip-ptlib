@@ -290,7 +290,7 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 #endif // P_SAPI
 
 
-#ifndef _WIN32_WCE
+#if P_PIPECHAN
 
 ////////////////////////////////////////////////////////////
 //
@@ -491,7 +491,7 @@ PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath &
   return code == 0;
 }
 
-#endif // _WIN32_WCE
+#endif // P_PIPECHAN
 
 #endif // P_TTS
 
