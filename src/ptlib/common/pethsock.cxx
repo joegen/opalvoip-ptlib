@@ -197,7 +197,7 @@ PStringArray PEthSocket::EnumInterfaces(bool)
 }
 
 
-PBoolean PEthSocket::Connect(const PString & newName)
+PBoolean PEthSocket::Connect(const PString & /*newName*/)
 {
   return false;
 }
