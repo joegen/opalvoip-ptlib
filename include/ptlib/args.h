@@ -125,15 +125,6 @@ class PArgList : public PObject
       const PStringArray & theArgs ///< A string array constituting the arguments
     );
 
-    /// Argument parsing result for Parse() function.
-    enum ParseResult {
-      ParseInvalidOptions = -100, ///< Multiple argument option names/letters
-      ParseUnknownOption,         ///< Unknown option was entered
-      ParseMissingOptionString,   ///< Option string was not present and required
-      ParseNoArguments = 0,       ///< Parsed options, but no argmented entered
-      ParseWithArguments          ///< Parsed options and arguments.
-    };
-
     /** Parse the arguments.
        Parse the standard C program arguments into an argument of options and
        parameters.
@@ -172,14 +163,16 @@ class PArgList : public PObject
        For example, "ab:c" allows for "-a -b arg -barg -c" and
        "a-an-arg. help\nb-option:c;" allows for "-a --an-arg --option arg -c -copt".
 
-       @return Result of the parsing.
+       @return true if there is at least one parameter after parsing. Note if
+               false is returned, IsParsed() should be used to determined if
+               there was a parsing error, or there was just no parameters.
      */
-    virtual ParseResult Parse(
-      const char * theArgumentSpec,    ///< The specification string for argument options. See description for details.
+    virtual bool Parse(
+      const char * theArgumentSpec = NULL, ///< The specification string for argument options. See description for details.
       PBoolean optionsBeforeParams = true  ///< Parse options only before parameters
     );
     /** Parse the arguments. */
-    virtual ParseResult Parse(
+    virtual bool Parse(
       const PString & theArgumentStr,  ///< The specification string for argument options. See description for details.       
       PBoolean optionsBeforeParams = true  ///< Parse options only before parameters
     );
@@ -187,6 +180,12 @@ class PArgList : public PObject
     /**Determine if already parsed at least once.
       */
     bool IsParsed() const { return !m_options.empty(); }
+
+    /**Return error message after a call to Parse().
+       The return value will be an empty string if there was no error in
+       parsing the command line.
+      */
+    const PString & GetParseError() const { return m_parseError; }
 
     /**Output usage text for parsed arguments.
        If \p usage is non-null then text of the form "usage: processname args"
@@ -317,8 +316,8 @@ class PArgList : public PObject
   //@}
 
   protected:
-    /// The original program arguments.
-    PStringArray m_argumentArray;
+    PString m_parseError;         // An error was detected during parsing of arguments
+    PStringArray m_argumentArray; // The original program arguments.
 
     enum OptionType {
       NoString,
@@ -343,14 +342,14 @@ class PArgList : public PObject
 
     /// Shift count for the parameters in the argument list.
     int m_shift;
+    int m_argsParsed;
 
     // Internal stuff
-    size_t FindOption(char letter) const;
-    size_t FindOption(const PString & name) const;
-    ParseResult ParseOption(size_t idx, PINDEX offset, PINDEX & arg);
-    PINDEX GetOptionCountByIndex(size_t idx) const;
-    PString GetOptionStringByIndex(size_t idx, const char * dflt) const;
-    int m_argsParsed;
+    bool InternalSpecificationError(bool isError, const PString & msg);
+    size_t InternalFindOption(const PString & name) const;
+    int InternalParseOption(const PString & opt, PINDEX offset, PINDEX & arg);
+    PINDEX InternalGetOptionCountByIndex(size_t idx) const;
+    PString InternalGetOptionStringByIndex(size_t idx, const char * dflt) const;
 };
 
 
