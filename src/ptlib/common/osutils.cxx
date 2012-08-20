@@ -1130,6 +1130,9 @@ void PArgList::ReadFrom(istream & strm)
 
 ostream & PArgList::Usage(ostream & strm, const char * usage) const
 {
+  if (!m_parseError.IsEmpty())
+    strm << m_parseError << "\n\n";
+
   PStringArray usages = PString(usage).Lines();
   switch (usages.GetSize()) {
     case 0 :
@@ -1141,8 +1144,15 @@ ostream & PArgList::Usage(ostream & strm, const char * usage) const
 
     default :
       strm << "Usage:\n";
-      for (PINDEX i = 0; i < usages.GetSize(); ++i)
+      PINDEX i;
+      for (i = 0; i < usages.GetSize(); ++i) {
+        if (usages[i].IsEmpty())
+          break;
         strm << "   " << PProcess::Current().GetFile().GetTitle() << ' ' << usages[i] << '\n';
+      }
+
+      for (; i < usages.GetSize(); ++i)
+        strm << usages[i] << '\n';
   }
 
   size_t i;
@@ -1253,8 +1263,22 @@ void PArgList::SetArgs(const PStringArray & theArgs)
 }
 
 
-PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
+bool PArgList::InternalSpecificationError(bool isError, const PString & msg)
 {
+  if (!isError)
+    return false;
+
+  m_parseError = msg;
+  PAssertAlways(msg);
+  m_options.clear();
+  return true;
+}
+
+
+bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
+{
+  m_parseError.MakeEmpty();
+
   // Find starting point, start at shift if first Parse() call.
   PINDEX arg = m_options.empty() ? m_shift : 0;
 
@@ -1264,8 +1288,8 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
     arg = m_argsParsed;
 
   if (spec == NULL) {
-    if (m_options.empty() || !optionsBeforeParams)
-      return ParseInvalidOptions;
+    if (InternalSpecificationError(m_options.empty() || !optionsBeforeParams, "Cannot reparse without any options."))
+      return false;
     for (size_t opt = 0; opt < m_options.size(); ++opt) {
       m_options[opt].m_count = 0;
       m_options[opt].m_string.MakeEmpty();
@@ -1280,12 +1304,12 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
 
       if (*spec == '[') {
         const char * end = strchr(++spec, ']');
-        if (end == NULL || spec == end)
-          return ParseInvalidOptions;
+        if (InternalSpecificationError(end == NULL || spec == end, "Unbalanced [] clause in specification."))
+          return false;
         opts.m_section = PString(spec, end-spec);
         spec = end+1;
-        if (spec == '\0')
-          return ParseInvalidOptions;
+        if (InternalSpecificationError(spec == '\0', "Empty [] clause in specification."))
+          return false;
       }
 
       if (*spec != '-')
@@ -1293,8 +1317,8 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
 
       if (*spec == '-') {
         size_t pos = strcspn(++spec, ".:; ");
-        if (pos < 2)
-          return ParseInvalidOptions;
+        if (InternalSpecificationError(pos < 2, "Empty long form for option."))
+          return false;
         opts.m_name = PString(spec, pos);
         spec += pos;
       }
@@ -1330,10 +1354,11 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
 
       // Check for duplicates
       for (size_t i = 0; i < m_options.size(); ++i) {
-        if (opts.m_letter != '\0' && opts.m_letter == m_options[i].m_letter)
-          return ParseInvalidOptions;
-        if (!opts.m_name.IsEmpty() && opts.m_name == m_options[i].m_name)
-          return ParseInvalidOptions;
+        if (InternalSpecificationError(opts.m_letter != '\0' && opts.m_letter == m_options[i].m_letter,
+                                                         "Duplicate option character in specification") ||
+            InternalSpecificationError(!opts.m_name.IsEmpty() && opts.m_name == m_options[i].m_name,
+                                                            "Duplicate option string in specification"))
+          return false;
       }
 
       m_options.push_back(opts);
@@ -1365,16 +1390,15 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
       }
     }
     else if (argStr[1] == '-') {
-      ParseResult result = ParseOption(FindOption(argStr.Mid(2)), 0, arg);
-      if (result < 0)
-        return result;
+      if (InternalParseOption(argStr.Mid(2), 0, arg) < 0)
+        return false;
     }
     else {
       for (PINDEX i = 1; i < argStr.GetLength(); i++) {
-        ParseResult result = ParseOption(FindOption(argStr[i]), i+1, arg);
+        int result = InternalParseOption(argStr[i], i+1, arg);
         if (result < 0)
-          return result;
-        if (result == ParseWithArguments)
+          return false;
+        if (result == 0)
           break;
       }
     }
@@ -1385,77 +1409,73 @@ PArgList::ParseResult PArgList::Parse(const char * spec, PBoolean optionsBeforeP
   if (optionsBeforeParams)
     m_argsParsed = arg;
 
-  return param > 0 ? ParseWithArguments : ParseNoArguments;
+  return param > 0;
 }
 
 
-size_t PArgList::FindOption(char letter) const
+size_t PArgList::InternalFindOption(const PString & name) const
 {
   size_t opt;
   for (opt = 0; opt < m_options.size(); ++opt) {
-    if (m_options[opt].m_letter == letter)
+    if (name.GetLength() == 1 ? (m_options[opt].m_letter == name[0]) : (m_options[opt].m_name == name))
       break;
   }
   return opt;
 }
 
 
-size_t PArgList::FindOption(const PString & name) const
+int PArgList::InternalParseOption(const PString & optStr, PINDEX offset, PINDEX & arg)
 {
-  size_t opt;
-  for (opt = 0; opt < m_options.size(); ++opt) {
-    if (m_options[opt].m_name == name)
-      break;
+  size_t idx = InternalFindOption(optStr);
+  if (idx >= m_options.size()) {
+    m_parseError = "Unknown option \"" + optStr + "\".";
+    m_options.clear();
+    return -1;
   }
-  return opt;
-}
-
-
-PArgList::ParseResult PArgList::ParseOption(size_t idx, PINDEX offset, PINDEX & arg)
-{
-  if (idx >= m_options.size())
-    return ParseUnknownOption;
 
   OptionSpec & opt = m_options[idx];
   ++opt.m_count;
   if (opt.m_type == NoString)
-    return ParseNoArguments;
+    return 0;
 
   if (!opt.m_string)
     opt.m_string += '\n';
 
   if (offset != 0 && (opt.m_type == StringWithLetter || m_argumentArray[arg][offset] != '\0')) {
     opt.m_string += m_argumentArray[arg].Mid(offset);
-    return ParseWithArguments;
+    return 1;
   }
 
-  if (++arg >= m_argumentArray.GetSize())
-    return ParseMissingOptionString;
+  if (++arg < m_argumentArray.GetSize()) {
+    opt.m_string += m_argumentArray[arg];
+    return 1;
+  }
 
-  opt.m_string += m_argumentArray[arg];
-  return ParseWithArguments;
+  m_parseError = "Option \"" + optStr + "\" requires an argument.";
+  m_options.clear();
+  return -1;
 }
 
 
 PINDEX PArgList::GetOptionCount(char option) const
 {
-  return GetOptionCountByIndex(FindOption(option));
+  return InternalGetOptionCountByIndex(InternalFindOption(option));
 }
 
 
 PINDEX PArgList::GetOptionCount(const char * option) const
 {
-  return GetOptionCountByIndex(FindOption(PString(option)));
+  return InternalGetOptionCountByIndex(InternalFindOption(PString(option)));
 }
 
 
 PINDEX PArgList::GetOptionCount(const PString & option) const
 {
-  return GetOptionCountByIndex(FindOption(option));
+  return InternalGetOptionCountByIndex(InternalFindOption(option));
 }
 
 
-PINDEX PArgList::GetOptionCountByIndex(size_t idx) const
+PINDEX PArgList::InternalGetOptionCountByIndex(size_t idx) const
 {
   return idx < m_options.size() ? m_options[idx].m_count : 0;
 }
@@ -1463,23 +1483,23 @@ PINDEX PArgList::GetOptionCountByIndex(size_t idx) const
 
 PString PArgList::GetOptionString(char option, const char * dflt) const
 {
-  return GetOptionStringByIndex(FindOption(option), dflt);
+  return InternalGetOptionStringByIndex(InternalFindOption(option), dflt);
 }
 
 
 PString PArgList::GetOptionString(const char * option, const char * dflt) const
 {
-  return GetOptionStringByIndex(FindOption(PString(option)), dflt);
+  return InternalGetOptionStringByIndex(InternalFindOption(option), dflt);
 }
 
 
 PString PArgList::GetOptionString(const PString & option, const char * dflt) const
 {
-  return GetOptionStringByIndex(FindOption(option), dflt);
+  return InternalGetOptionStringByIndex(InternalFindOption(option), dflt);
 }
 
 
-PString PArgList::GetOptionStringByIndex(size_t idx, const char * dflt) const
+PString PArgList::InternalGetOptionStringByIndex(size_t idx, const char * dflt) const
 {
   if (idx < m_options.size() && !m_options[idx].m_string.IsEmpty())
     return m_options[idx].m_string;
@@ -1645,10 +1665,13 @@ void PConfigArgs::Save(const PString & saveOptionName)
 }
 
 
-PString PConfigArgs::CharToString(char ch) const
+PString PConfigArgs::CharToString(char letter) const
 {
-  size_t index = FindOption(ch);
-  return index < m_options.size() ? m_options[index].m_name : PString::Empty();
+  for (size_t opt = 0; opt < m_options.size(); ++opt) {
+    if (m_options[opt].m_letter == letter)
+      return m_options[opt].m_name;
+  }
+  return PString::Empty();
 }
 
 #endif // P_CONFIG_ARGS

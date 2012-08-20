@@ -80,21 +80,18 @@ void MyProcess::Main()
   cout << "Ethernet Test Utility" << endl;
 
   PArgList & args = GetArguments();
-  PArgList::ParseResult parseResult = args.Parse(
+  bool hasArgs = args.Parse(
           "l-list.      List available interfaces\n"
           "b-binary.    Payload is binary\n"
 #if PTRACING
           "o-output:    Trace log output file\n"
           "t-trace.     Trace log level\n"
 #endif
-          "h-help.      Help text\n"
-          );
-  if (parseResult < PArgList::ParseNoArguments || args.HasOption('h') ||
-          (parseResult == PArgList::ParseNoArguments && !args.HasOption('l'))) {
-    cerr << "\nusage: " << GetName() << " <interface> [ <filter> ]\n";
-    args.Usage(cerr);
-    cerr << "\nThe <interface> is either #N for the N'th interface, or the full string name.\n";
-    return;
+          "h-help.      Help text\n");
+  if (!args.IsParsed() || args.HasOption('h') || !(hasArgs || args.HasOption('l'))) {
+    args.Usage(cerr, "[ options] <interface> [ <filter> ] -- [ [ options] <interface> [ <filter> ] ] ...")
+        << "\nThe <interface> is either #N for the N'th interface, or the full string name.\n";
+     return;
   }
 
 #if PTRACING
@@ -117,7 +114,7 @@ void MyProcess::Main()
     tests.Append(new TestThread(tests.GetSize()+1, args));
     if (!tests.back().IsOpen())
       return;
-  } while (args.Parse(NULL) > PArgList::ParseNoArguments);
+  } while (args.Parse());
 
   m_exit.Wait();
 

@@ -487,7 +487,7 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 PINLINE void PArgList::SetArgs(int argc, char ** argv)
   { SetArgs(PStringArray(argc, argv)); }
 
-PINLINE PArgList::ParseResult PArgList::Parse(const PString & theArgumentSpec, PBoolean optionsBeforeParams)
+PINLINE bool PArgList::Parse(const PString & theArgumentSpec, PBoolean optionsBeforeParams)
   { return Parse((const char *)theArgumentSpec, optionsBeforeParams); }
 
 PINLINE PBoolean PArgList::HasOption(char option) const
