@@ -1379,16 +1379,15 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
       m_parameterIndex.SetSize(param+1);
       m_parameterIndex[param++] = arg;
     }
-    else if (optionsBeforeParams && m_parameterIndex.GetSize() > 0)
-      break;
     else if (argStr == "--") {
-      if (optionsBeforeParams)
-        hadMinusMinus = true; // ALL remaining args are parameters not options
-      else {
-        m_argsParsed = arg+1;
+      if (optionsBeforeParams) {
+        ++arg;
         break;
       }
+      hadMinusMinus = true; // ALL remaining args are parameters not options
     }
+    else if (optionsBeforeParams && m_parameterIndex.GetSize() > 0)
+      break;
     else if (argStr[1] == '-') {
       if (InternalParseOption(argStr.Mid(2), 0, arg) < 0)
         return false;
