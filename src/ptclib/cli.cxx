@@ -567,10 +567,16 @@ void PCLI::OnReceivedLine(Arguments & args)
       args.Shift(nesting);
       args.m_command = cmd->first;
       args.m_usage = cmd->second.m_usage;
-      if (cmd->second.m_argSpec.IsEmpty() || args.Parse(cmd->second.m_argSpec) >= PArgList::ParseNoArguments)
-        cmd->second.m_notifier(args, 0);
-      else
-        args.WriteUsage();
+
+      if (!cmd->second.m_argSpec.IsEmpty()) {
+        args.Parse(cmd->second.m_argSpec, true);
+        if (!args.IsParsed()) {
+          args.WriteUsage() << args.GetParseError();
+          return;
+        }
+      }
+
+      cmd->second.m_notifier(args, 0);
       return;
     }
   }
