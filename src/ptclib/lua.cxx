@@ -51,6 +51,8 @@
 
 #define PTraceModule() "Lua"
 
+PFACTORY_CREATE(PFactory<PScriptLanguage>, PLua, "Lua", false);
+
 #define new PNEW
 
 
@@ -199,6 +201,18 @@ bool PLua::DeleteTable(const PString & name, bool metaTable)
       return OnLuaError(LUA_ERRSYNTAX, PSTRSTRM("Not a table: \"" << name << "\" is " << lua_typename(m_lua, type)));
   }
 
+}
+
+
+bool PLua::CreateComposite(const PString & name)
+{
+  return CreateTable(name);
+}
+
+
+bool PLua::ReleaseVariable(const PString & name)
+{
+  return DeleteTable(name);
 }
 
 

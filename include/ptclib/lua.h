@@ -117,6 +117,15 @@ class PLua : public PScriptLanguage
     );
 
 
+    /**Create a composite structure.
+       For Lua this creates a table.
+
+       See class description for how \p name is parsed.
+      */
+    virtual bool CreateComposite(
+      const PString & name   ///< Name of new table
+    );
+
     /**Get a variable in the script 
        See class description for how \p name is parsed.
       */
@@ -191,6 +200,15 @@ class PLua : public PScriptLanguage
     bool SetString(
       const PString & name, ///< Name of global
       const char * value    ///< New value
+    );
+
+    /**Release a variable name.
+       Note this only applies to metatables and global tables/variables.
+       Variables contained within other tables are garbage collected when the
+       enclosing table no longer reference it.
+      */
+    virtual bool ReleaseVariable(
+      const PString & name    ///< Name of table to delete
     );
 
     /**Call a specific function in the script.
