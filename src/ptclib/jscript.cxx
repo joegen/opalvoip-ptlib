@@ -43,6 +43,7 @@
 #ifdef _MSC_VER
   #pragma comment(lib, P_V8_LIBRARY1)
   #pragma comment(lib, P_V8_LIBRARY2)
+  #pragma comment(lib, "winmm.lib")
   #pragma message("JavaScript support enabled")
 #endif
 
