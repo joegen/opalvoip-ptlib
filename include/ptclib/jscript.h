@@ -97,26 +97,13 @@ class PJavaScript : public PScriptLanguage
       const char * script = NULL
     );
 
-    /**Create a table with optional metatable.
-       If the metatable does not exist it is created.
 
+    /**Create a composite structure.
        See class description for how \p name is parsed.
       */
-    bool CreateTable(
-      const PString & name,   ///< Name of new table
-      const PString & metatable = PString::Empty() ///< Metatable to attach
+    virtual bool CreateComposite(
+      const PString & name   ///< Name of new composite structure
     );
-
-    /**Delete table.
-       Note this only applies to metatables and global tables. Tables
-       contained within other tables are garbage collected when the
-       enclosing table no longer reference it.
-      */
-    bool DeleteTable(
-      const PString & name,   ///< Name of table to delete
-      bool metaTable = false  ///< Table it a metatable
-    );
-
 
     /**Get a variable in the script 
        See class description for how \p name is parsed.
@@ -192,6 +179,12 @@ class PJavaScript : public PScriptLanguage
     bool SetString(
       const PString & name, ///< Name of global
       const char * value    ///< New value
+    );
+
+    /**Release a variable name.
+      */
+    virtual bool ReleaseVariable(
+      const PString & name    ///< Name of table to delete
     );
 
     /**Call a specific function in the script.
