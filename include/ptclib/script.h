@@ -36,11 +36,7 @@
 #pragma interface
 #endif
 
-#include <ptlib.h>
-#include <ptbuildopts.h>
-
-//#if P_SCRIPT
-
+#include <ptlib/pfactory.h>
 #include <ptclib/vartype.h>
 
 
@@ -92,6 +88,15 @@ class PScriptLanguage : public PObject
       */
     virtual bool Run(
       const char * script = NULL
+    ) = 0;
+
+    /**Create a composite structure.
+       The exact semantics is language dependant. For Lua this is a table.
+
+       See class description for how \p name is parsed.
+      */
+    virtual bool CreateComposite(
+      const PString & name   ///< Name of new composite structure
     ) = 0;
 
     /**Get a variable in the script 
@@ -168,6 +173,15 @@ class PScriptLanguage : public PObject
     virtual bool SetString(
       const PString & name, ///< Name of global
       const char * value    ///< New value
+    ) = 0;
+
+    /**Release a variable name.
+       Note the exact semantics is language dependant. It generally applies
+       to global variables as most languages have automatic garbage collection
+       for other variable types.
+      */
+    virtual bool ReleaseVariable(
+      const PString & name    ///< Name of table to delete
     ) = 0;
 
     /// Individual Parameter in ParamVector.
@@ -263,7 +277,13 @@ class PScriptLanguage : public PObject
 };
 
 
-//#endif // P_SCRIPT
+#if P_LUA
+  PFACTORY_LOAD(PLua);
+#endif
+#if P_V8
+  PFACTORY_LOAD(PJavaScript);
+#endif
+
 
 #endif  // PTLIB_SCRIPT_H
 
