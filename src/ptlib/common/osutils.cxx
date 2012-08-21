@@ -1397,7 +1397,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
         int result = InternalParseOption(argStr[i], i+1, arg);
         if (result < 0)
           return false;
-        if (result == 0)
+        if (result > 0)
           break;
       }
     }
