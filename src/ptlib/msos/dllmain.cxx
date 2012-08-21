@@ -45,6 +45,7 @@
 #include <ptclib/pwavfile.h>
 #include <ptclib/pvidfile.h>
 #include <ptclib/ptts.h>
+#include <ptclib/script.h>
 
 
 #ifndef _WIN32_WCE

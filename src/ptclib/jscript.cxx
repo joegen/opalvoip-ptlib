@@ -50,11 +50,10 @@
 
 #define PTraceModule() "JavaScript"
 
+PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
+
 #define new PNEW
 
-
-#if PTRACING
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -128,6 +127,12 @@ bool PJavaScript::Run(const char * text)
   PTRACE(1, "V8", "Returned '" << m_resultText << "'");
 
   return true;
+}
+
+
+bool PJavaScript::CreateComposite(const PString & name)
+{
+  return false;
 }
 
 
@@ -287,6 +292,12 @@ PString PJavaScript::GetString(const PString & name)
 bool PJavaScript::SetString(const PString & name, const char * value)
 {
   return SetValue<v8::String, PString>(name, value);
+}
+
+
+bool PJavaScript::ReleaseVariable(const PString & name)
+{
+  return false;
 }
 
 
