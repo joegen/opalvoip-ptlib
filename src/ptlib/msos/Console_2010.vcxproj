@@ -669,6 +669,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptlib\bitwise_enum.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\revision.h" />
+    <ClInclude Include="..\..\..\version.h" />
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </Command>
