@@ -798,6 +798,9 @@
     <ClInclude Include="..\..\..\include\ptclib\jscript.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
