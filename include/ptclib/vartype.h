@@ -156,7 +156,7 @@ class PVarType : public PObject
        Not for "dynamic" types this is not very efficient as it will make a
        duplicate of the memory used.
       */
-    PVarType(const PVarType & other) : m_type(VarNULL) { InternalCopy(other); }
+    PVarType(const PVarType & other) : PObject(other), m_type(VarNULL) { InternalCopy(other); }
 
     /**Assign a boolean type object.
      */
