@@ -489,29 +489,24 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 /**A PThreadPool work item template that uses PSafePtr to execute callback
    function.
   */
-template <class PtrClass>
-class PSafeWork {
+class PSafeWork : public PSafePtrBase {
   public:
-    typedef PSafePtr<PtrClass> Pointer;
-
     PSafeWork(
-      PtrClass * ptr
-    ) : m_pointer(ptr, PSafeReference) { }
-
-    virtual ~PSafeWork() { }
+      PSafeObject * ptr
+    ) : PSafePtrBase(ptr) { }
 
     virtual void Work() = 0;
-
-  protected:
-    Pointer m_pointer;
 };
 
 
+/// The thread pool for PSafeWork items.
+typedef PQueuedThreadPool<PSafeWork> PSafeThreadPool;
+
+
 /// A PSafeWork thread pool item where call back has no arguments.
-template <class PtrClass, class PtrBase = PtrClass>
-class PSafeWorkNoArg : public PSafeWork<PtrBase> {
+template <class PtrClass>
+class PSafeWorkNoArg : public PSafeWork {
   public:
-    typedef PSafeWork<PtrBase> BaseClass;
     typedef void (PtrClass::*Function)();
 
   protected:
@@ -521,14 +516,15 @@ class PSafeWorkNoArg : public PSafeWork<PtrBase> {
     PSafeWorkNoArg(
       PtrClass * ptr,
       Function function
-    ) : BaseClass(ptr)
+    ) : PSafeWork(ptr)
       , m_function(function)
     { }
 
     virtual void Work()
     {
-      if (this->m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)();
+      PtrClass * p = this->GetObjectAs<PtrClass>();
+      if (p != NULL)
+        (p->*(this->m_function))();
     }
 };
 
@@ -536,12 +532,10 @@ class PSafeWorkNoArg : public PSafeWork<PtrBase> {
 /// A PSafeWork thread pool item where call back has 1 argument.
 template <
   class PtrClass,
-  typename Arg1Type,
-  class PtrBase = PtrClass
+  typename Arg1Type
 >
-class PSafeWorkArg1 : public PSafeWork<PtrBase> {
+class PSafeWorkArg1 : public PSafeWork {
   public:
-    typedef PSafeWork<PtrBase> BaseClass;
     typedef void (PtrClass::*Function)(Arg1Type arg1);
 
   protected:
@@ -553,15 +547,16 @@ class PSafeWorkArg1 : public PSafeWork<PtrBase> {
       PtrClass * ptr,
       Arg1Type arg1,
       Function function
-    ) : BaseClass(ptr)
+    ) : PSafeWork(ptr)
       , m_function(function)
       , m_arg1(arg1)
     { }
 
     virtual void Work()
     {
-      if (this->m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)(m_arg1);
+      PtrClass * p = this->GetObjectAs<PtrClass>();
+      if (p != NULL)
+        (p->*(this->m_function))(m_arg1);
     }
 };
 
@@ -570,12 +565,10 @@ class PSafeWorkArg1 : public PSafeWork<PtrBase> {
 template <
   class PtrClass,
   typename Arg1Type,
-  typename Arg2Type,
-  class PtrBase = PtrClass
+  typename Arg2Type
 >
-class PSafeWorkArg2 : public PSafeWork<PtrBase> {
+class PSafeWorkArg2 : public PSafeWork {
   public:
-    typedef PSafeWork<PtrBase> BaseClass;
     typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2);
 
   protected:
@@ -589,7 +582,7 @@ class PSafeWorkArg2 : public PSafeWork<PtrBase> {
       Arg1Type arg1,
       Arg2Type arg2,
       Function function
-    ) : BaseClass(ptr)
+    ) : PSafeWork(ptr)
       , m_function(function)
       , m_arg1(arg1)
       , m_arg2(arg2)
@@ -597,8 +590,9 @@ class PSafeWorkArg2 : public PSafeWork<PtrBase> {
 
     virtual void Work()
     {
-      if (this->m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)(m_arg1, m_arg2);
+      PtrClass * p = this->GetObjectAs<PtrClass>();
+      if (p != NULL)
+        (p->*(this->m_function))(m_arg1, m_arg2);
     }
 };
 
@@ -608,12 +602,10 @@ template <
   class PtrClass,
   typename Arg1Type,
   typename Arg2Type,
-  typename Arg3Type,
-  class PtrBase = PtrClass
+  typename Arg3Type
 >
-class PSafeWorkArg3 : public PSafeWork<PtrBase> {
+class PSafeWorkArg3 : public PSafeWork {
   public:
-    typedef PSafeWork<PtrBase> BaseClass;
     typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3);
 
   protected:
@@ -629,7 +621,7 @@ class PSafeWorkArg3 : public PSafeWork<PtrBase> {
       Arg2Type arg2,
       Arg2Type arg3,
       Function function
-    ) : BaseClass(ptr)
+    ) : PSafeWork(ptr)
       , m_function(function)
       , m_arg1(arg1)
       , m_arg2(arg2)
@@ -638,8 +630,9 @@ class PSafeWorkArg3 : public PSafeWork<PtrBase> {
 
     virtual void Work()
     {
-      if (this->m_pointer != NULL)
-        (dynamic_cast<PtrClass &>(*this->m_pointer).*this->m_function)(m_arg1, m_arg2, m_arg3);
+      PtrClass * p = this->GetObjectAs<PtrClass>();
+      if (p != NULL)
+        (p->*(this->m_function))(m_arg1, m_arg2, m_arg3);
     }
 };
 
