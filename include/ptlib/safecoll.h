@@ -564,6 +564,15 @@ class PSafePtrBase : public PObject
       */
     bool operator!() const { return currentObject == NULL; }
 
+    /**Return pointer to safe object.
+      */
+    PSafeObject * GetObject() const { return currentObject; }
+
+    /**Return pointer to safe object.
+      */
+    template <class T>
+    T * GetObjectAs() const { return dynamic_cast<T *>(currentObject); }
+
     /**Get the locking mode used by this pointer.
       */
     PSafetyMode GetSafetyMode() const { return lockMode; }
