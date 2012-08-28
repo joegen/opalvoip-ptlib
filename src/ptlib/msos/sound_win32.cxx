@@ -805,7 +805,7 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
 
   line.cbStruct = sizeof(line);
   if ((osError = mixerGetLineInfo((HMIXEROBJ)hMixer, &line,
-            MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE)) = MMSYSERR_NOERROR) {
+            MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE)) != MMSYSERR_NOERROR) {
     PTRACE(2, "WinSnd\tFailed to get mixer info, error=" << osError);
   }
   else {
