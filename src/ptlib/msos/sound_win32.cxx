@@ -774,8 +774,6 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
   MIXERLINE line;
 
   DWORD osError = MMSYSERR_BADDEVICEID;
-  DWORD fdwInfo;
-  DWORD dwComponentType;
   switch (direction) {
     case Player :
       osError = waveOutOpen(&hWaveOut, id, format, (DWORD)hEventDone, 0, CALLBACK_EVENT);
@@ -783,8 +781,6 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
         mixerOpen(&hMixer, (UINT)hWaveOut, NULL, NULL, MIXER_OBJECTF_HWAVEOUT);
         line.dwComponentType = MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT;
       }
-      fdwInfo = MIXER_GETLINEINFOF_DESTINATION;
-      dwComponentType = MIXERLINE_COMPONENTTYPE_DST_SPEAKERS;
       break;
 
     case Recorder :
@@ -793,12 +789,7 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
         mixerOpen(&hMixer, (UINT)hWaveIn, NULL, NULL, MIXER_OBJECTF_HWAVEIN);
         line.dwComponentType = MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
       }
-      fdwInfo = MIXER_GETLINEINFOF_SOURCE;
-      dwComponentType = MIXERLINE_COMPONENTTYPE_SRC_MICROPHONE;
       break;
-
-    default :
-      return false;
   }
 
   if (osError != MMSYSERR_NOERROR)
@@ -811,24 +802,11 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
       hMixer = NULL;
     }
     else {
-      DWORD dwDestination = line.dwDestination;
-      //Loop through the dest lines attached to the playback source line, if more than 1
-      for (DWORD iConn = 1; iConn < line.cConnections; ++iConn) {
-        line.cbStruct = sizeof(line);
-        line.dwDestination = dwDestination;
-        line.dwSource = iConn-1; // Zero based
-        if (mixerGetLineInfo((HMIXEROBJ)hMixer, &line, fdwInfo) == MMSYSERR_NOERROR &&
-                                               line.dwComponentType == dwComponentType) {
-          PTRACE(5, "WinSnd\tFound device source=" << iConn-1);
-          break;
-        }
-      }
-
       volumeControl.cbStruct = sizeof(volumeControl);
 
       MIXERLINECONTROLS controls;
       controls.cbStruct = sizeof(controls);
-      controls.dwLineID = line.dwLineID&0xffff;
+      controls.dwLineID = line.dwLineID;
       controls.dwControlType = MIXERCONTROL_CONTROLTYPE_VOLUME;
       controls.cControls = 1;
       controls.pamxctrl = &volumeControl;
@@ -1414,7 +1392,8 @@ PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
     volume.dwValue = volumeControl.Bounds.dwMaximum;
   else
     volume.dwValue = volumeControl.Bounds.dwMinimum +
-            (DWORD)((volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum) * newVolume /MaxVolume);
+            (DWORD)((volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum) *
+                                                   log10(9.0*newVolume/MaxVolume + 1.0));
   PTRACE(5, "WinSnd\tVolume set to " << newVolume << " -> " << volume.dwValue);
 
   MIXERCONTROLDETAILS details;
@@ -1431,6 +1410,7 @@ PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
 
   return true;
 }
+
 
 
 PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
@@ -1452,7 +1432,7 @@ PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
   if (result != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
-  oldVolume = MaxVolume*(volume.dwValue - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
+  oldVolume = 100*(volume.dwValue - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
   return true;
 }
 
