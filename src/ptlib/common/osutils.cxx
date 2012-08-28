@@ -1190,11 +1190,11 @@ PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
       PString newOpt(base, spec-base);
       PAssert(optionNames.GetValuesIndex(newOpt) == P_MAX_INDEX, "Multiple occurrences of same option string");
       optionNames[codeCount] = newOpt;
-      if (*spec == '.')
-        spec++;
     }
 
-    if (*spec == ':' || *spec == ';') {
+    if (*spec == '.')
+      spec++;
+    else if (*spec == ':' || *spec == ';') {
       canHaveOptionString.SetSize(codeCount+1);
       canHaveOptionString[codeCount] = *spec == ':' ? 2 : 1;
       spec++;
