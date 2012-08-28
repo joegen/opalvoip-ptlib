@@ -1176,6 +1176,9 @@ PBoolean PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
 
   PINDEX codeCount = 0;
   while (*spec != '\0') {
+    while (*spec != '\0' && isspace(*spec))
+      ++spec;
+
     if (*spec == '-')
       optionLetters += ' ';
     else {
