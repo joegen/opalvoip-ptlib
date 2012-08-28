@@ -795,13 +795,43 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
   if (osError != MMSYSERR_NOERROR)
     return SetErrorValues(NotFound, osError|PWIN32ErrorFlag);
 
-  if (hMixer != NULL) {
-    line.cbStruct = sizeof(line);
-    if (mixerGetLineInfo((HMIXEROBJ)hMixer, &line, MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE) != MMSYSERR_NOERROR) {
-      mixerClose(hMixer);
-      hMixer = NULL;
+  opened = true;
+  os_handle = id;
+
+  if (hMixer == NULL) {
+    PTRACE(2, "WinSnd\tNo mixer available");
+    return true; // Still return true as have actual device
+  }
+
+  line.cbStruct = sizeof(line);
+  if ((osError = mixerGetLineInfo((HMIXEROBJ)hMixer, &line,
+            MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE)) = MMSYSERR_NOERROR) {
+    PTRACE(2, "WinSnd\tFailed to get mixer info, error=" << osError);
+  }
+  else {
+    bool haveControl = true;
+
+    if (direction == Recorder) {
+      /* There is no "master" for the recording side, so need to find the
+         individual microphone input */
+      DWORD iConn = line.cConnections;
+      while (iConn > 0) {
+        line.dwSource = --iConn;
+        if ((osError = mixerGetLineInfo((HMIXEROBJ)hMixer, &line, MIXER_GETLINEINFOF_SOURCE)) != MMSYSERR_NOERROR)
+          PTRACE(2, "WinSnd\tFailed to get mixer info, error=" << osError);
+        else if (line.dwComponentType == MIXERLINE_COMPONENTTYPE_SRC_MICROPHONE) {
+          PTRACE(5, "WinSnd\tFfound microphone, source=" << iConn);
+          break;
+        }
+
+        if (iConn == 0) {
+          PTRACE(2, "WinSnd\tFailed to find microphone info");
+          haveControl = false;
+        }
+      }
     }
-    else {
+
+    if (haveControl) {
       volumeControl.cbStruct = sizeof(volumeControl);
 
       MIXERLINECONTROLS controls;
@@ -812,16 +842,17 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
       controls.pamxctrl = &volumeControl;
       controls.cbmxctrl = volumeControl.cbStruct;
 
-      if (mixerGetLineControls((HMIXEROBJ)hMixer, &controls, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE) != MMSYSERR_NOERROR) {
-        mixerClose(hMixer);
-        hMixer = NULL;
-      }
+      if ((osError = mixerGetLineControls((HMIXEROBJ)hMixer, &controls,
+                MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) == MMSYSERR_NOERROR)
+        return true;
+
+      PTRACE(2, "WinSnd\tFailed to get mixer line control, error=" << osError);
     }
   }
 
-  opened = true;
-  os_handle = id;
-  return PTrue;
+  mixerClose(hMixer);
+  hMixer = NULL;
+  return true; // Still return true as have actual device
 }
 
 PBoolean PSoundChannelWin32::IsOpen() const
@@ -1392,8 +1423,7 @@ PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
     volume.dwValue = volumeControl.Bounds.dwMaximum;
   else
     volume.dwValue = volumeControl.Bounds.dwMinimum +
-            (DWORD)((volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum) *
-                                                   log10(9.0*newVolume/MaxVolume + 1.0));
+            (DWORD)((volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum)*newVolume/MaxVolume);
   PTRACE(5, "WinSnd\tVolume set to " << newVolume << " -> " << volume.dwValue);
 
   MIXERCONTROLDETAILS details;
@@ -1432,7 +1462,7 @@ PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
   if (result != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
-  oldVolume = 100*(volume.dwValue - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
+  oldVolume = MaxVolume*(volume.dwValue - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
   return true;
 }
 
