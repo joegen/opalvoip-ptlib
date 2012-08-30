@@ -306,6 +306,20 @@ PBoolean PSoundChannel::SetVolume(unsigned volume)
 }
 
 
+PBoolean PSoundChannel::GetMute(bool & mute)
+{
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->GetMute(mute);
+}
+
+
+PBoolean PSoundChannel::SetMute(bool mute)
+{
+  PReadWaitAndSignal mutex(m_baseMutex);
+  return m_baseChannel != NULL && m_baseChannel->SetMute(mute);
+}
+
+
 PBoolean PSoundChannel::GetVolume(unsigned & volume)
 {
   PReadWaitAndSignal mutex(m_baseMutex);
