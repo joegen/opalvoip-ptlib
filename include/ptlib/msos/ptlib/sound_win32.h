@@ -173,6 +173,8 @@ class PSoundChannelWin32: public PSoundChannel
     PBoolean Abort();
     PBoolean SetVolume(unsigned newVal);
     PBoolean GetVolume(unsigned &devVol);
+    PBoolean SetMute(bool mute);
+    PBoolean GetMute(bool & mute);
 
   public:
     // Overrides from class PChannel
@@ -195,6 +197,7 @@ class PSoundChannelWin32: public PSoundChannel
     HWAVEOUT     hWaveOut;
     HMIXER       hMixer;
     MIXERCONTROL volumeControl;
+    MIXERCONTROL muteControl;
     HANDLE       hEventDone;
     PWaveFormat  waveFormat;
     bool         opened;
