@@ -506,6 +506,25 @@ class PSoundChannel : public PChannel
     virtual PBoolean GetVolume(
       unsigned & volume   ///< Variable to receive volume level.
     );
+
+    /**Set the mute state of the play/read process.
+        
+       @return
+       true if there were no errors.
+    */
+    virtual bool SetMute(
+      bool mute   ///< New mute state
+    );
+
+    /**Get the mute state of the play/read process.
+
+       @return
+       true if there were no errors.
+    */
+    virtual bool GetMute(
+      bool & mute   ///< Variable to receive mute state.
+    );
+
   //@}
 
   /**@name Play functions */
