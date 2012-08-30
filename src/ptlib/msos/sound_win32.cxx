@@ -843,9 +843,18 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
       controls.cbmxctrl = volumeControl.cbStruct;
 
       if ((osError = mixerGetLineControls((HMIXEROBJ)hMixer, &controls,
-                MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) == MMSYSERR_NOERROR)
+                MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) == MMSYSERR_NOERROR) {
+        muteControl.cbStruct = sizeof(muteControl);
+        controls.dwControlType = MIXERCONTROL_CONTROLTYPE_MUTE;
+        controls.pamxctrl = &muteControl;
+        controls.cbmxctrl = muteControl.cbStruct;
+        if ((osError = mixerGetLineControls((HMIXEROBJ)hMixer, &controls,
+                MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) != MMSYSERR_NOERROR) {
+          PTRACE(2, "WinSnd\tFailed to get mixer line mute control ("
+                 << (direction == Recorder ? "Recorder" : "Player") << "), error=" << osError);
+        }
         return true;
-
+      }
       PTRACE(2, "WinSnd\tFailed to get mixer line control, error=" << osError);
     }
   }
@@ -1462,9 +1471,59 @@ PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
   if (result != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
 
-  oldVolume = MaxVolume*(volume.dwValue - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
+  oldVolume = MaxVolume*(volume.dwValue + 1 - volumeControl.Bounds.dwMinimum)/(volumeControl.Bounds.dwMaximum - volumeControl.Bounds.dwMinimum);
   return true;
 }
+
+
+bool PSoundChannelWin32::SetMute(bool newMute)
+{
+  if (!IsOpen() || hMixer == NULL)
+    return SetErrorValues(NotOpen, EBADF);
+
+  MIXERCONTROLDETAILS_UNSIGNED mute;
+  mute.dwValue = newMute;
+  PTRACE(5, "WinSnd\tMute set to " << newMute << " -> " << mute.dwValue);
+
+  MIXERCONTROLDETAILS details;
+  details.cbStruct = sizeof(details);
+  details.dwControlID = muteControl.dwControlID;
+  details.cChannels = 1;
+  details.cMultipleItems = 0;
+  details.cbDetails = sizeof(mute);
+  details.paDetails = &mute;
+
+  MMRESULT result = mixerSetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_SETCONTROLDETAILSF_VALUE);
+  if (result != MMSYSERR_NOERROR)
+    return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
+
+  return true;
+}
+
+
+bool PSoundChannelWin32::GetMute(bool & oldMute)
+{
+  if (!IsOpen() || hMixer == NULL)
+    return SetErrorValues(NotOpen, EBADF);
+
+  MIXERCONTROLDETAILS_UNSIGNED mute;
+
+  MIXERCONTROLDETAILS details;
+  details.cbStruct = sizeof(details);
+  details.dwControlID = muteControl.dwControlID;
+  details.cChannels = 1;
+  details.cMultipleItems = 0;
+  details.cbDetails = sizeof(mute);
+  details.paDetails = &mute;
+
+  MMRESULT result = mixerGetControlDetails((HMIXEROBJ)hMixer, &details, MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_VALUE);
+  if (result != MMSYSERR_NOERROR)
+    return SetErrorValues(Miscellaneous, result|PWIN32ErrorFlag);
+
+  oldMute = mute.dwValue;
+  return true;
+}
+
 
 // End of File ///////////////////////////////////////////////////////////////
 
