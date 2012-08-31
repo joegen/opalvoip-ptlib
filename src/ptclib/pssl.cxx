@@ -102,7 +102,7 @@ extern "C" {
 #include <openssl/sha.h>
 
 #ifdef P_SSL_AES
-  #include P_SSL_AES
+  #include <openssl/aes.h>
 #endif
 };
 
