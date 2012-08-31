@@ -99,7 +99,11 @@ extern "C" {
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <openssl/sha.h>
 
+#ifdef P_SSL_AES
+  #include P_SSL_AES
+#endif
 };
 
 
@@ -610,6 +614,89 @@ PBoolean PSSLCertificate::Save(const PFilePath & certFile, PBoolean append, PSSL
 
   PTRACE(2, "SSL\tError writing certificate file \"" << certFile << '"');
   return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef P_SSL_AES
+PAESContext::PAESContext()
+  : m_key(new AES_KEY)
+{
+}
+
+
+PAESContext::PAESContext(bool encrypt, const void * data, PINDEX numBits)
+  : m_key(new AES_KEY)
+{
+  if (encrypt)
+    SetEncrypt(data, numBits);
+  else
+    SetEncrypt(data, numBits);
+}
+
+
+PAESContext::~PAESContext()
+{
+  delete m_key;
+}
+
+
+void PAESContext::SetEncrypt(const void * data, PINDEX numBits)
+{
+  AES_set_encrypt_key((const unsigned char *)data, numBits, m_key);
+}
+
+
+void PAESContext::SetDecrypt(const void * data, PINDEX numBits)
+{
+  AES_set_decrypt_key((const unsigned char *)data, numBits, m_key);
+}
+
+
+void PAESContext::Encrypt(const void * in, void * out)
+{
+  AES_encrypt((const unsigned char *)in, (unsigned char *)out, m_key);
+}
+
+
+void PAESContext::Decrypt(const void * in, void * out)
+{
+  AES_decrypt((const unsigned char *)in, (unsigned char *)out, m_key);
+}
+#endif // P_SSL_AES
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PSHA1Context::PSHA1Context()
+  : m_context(new SHA_CTX)
+{
+  SHA1_Init(m_context);
+}
+
+
+PSHA1Context::~PSHA1Context()
+{
+  delete m_context;
+}
+
+
+void PSHA1Context::Update(const void * data, PINDEX length)
+{
+  SHA1_Update(m_context, data, length);
+}
+
+
+void PSHA1Context::Finalise(BYTE * result)
+{
+  SHA1_Final(result, m_context);
+}
+
+
+void PSHA1Context::Process(const void * data, PINDEX length, Digest result)
+{
+  SHA1((const unsigned char *)data, length, result);
 }
 
 

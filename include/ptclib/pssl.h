@@ -43,6 +43,8 @@ struct ssl_ctx_st;
 struct x509_st;
 struct evp_pkey_st;
 struct dh_st;
+struct aes_key_st;
+struct SHAstate_st;
 
 enum PSSLFileTypes {
   PSSLFileTypePEM,
@@ -329,6 +331,52 @@ class PSSLDiffieHellman : public PObject
 
   protected:
     dh_st * dh;
+};
+
+
+#ifdef P_SSL_AES
+/// AES encryption scheme
+class PAESContext : public PObject
+{
+  PCLASSINFO(PAESContext, PObject);
+  public:
+    PAESContext();
+    PAESContext(bool encrypt, const void * key, PINDEX numBits);
+    ~PAESContext();
+
+    void SetEncrypt(const void * key, PINDEX numBits);
+    void SetDecrypt(const void * key, PINDEX numBits);
+
+    void Encrypt(const void * in, void * out);
+    void Decrypt(const void * in, void * out);
+
+  protected:
+    aes_key_st * m_key;
+};
+#endif // P_SSL_AES
+
+
+/// SHA1 digest scheme
+class PSHA1Context : public PObject
+{
+  PCLASSINFO(PSHA1Context, PObject);
+  public:
+    PSHA1Context();
+    ~PSHA1Context();
+
+    enum { BlockSize = 64 };
+
+    void Update(const void * data, PINDEX length);
+    void Update(const PString & str) { Update((const char *)str, str.GetLength()); }
+
+    typedef BYTE Digest[20];
+    void Finalise(Digest result);
+
+    static void Process(const void * data, PINDEX length, Digest result);
+    static void Process(const PString & str, Digest result) { Process((const char *)str, str.GetLength(), result); }
+
+  protected:
+    SHAstate_st * m_context;
 };
 
 
