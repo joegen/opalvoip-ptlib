@@ -52,6 +52,10 @@
   #pragma warning(disable:4097)  // typedef synonym for class
   #pragma warning(disable:4800)  // forcing value to bool 'true' or 'false' (performance warning)
 
+  #if P_64BIT
+    #pragma warning(disable:4267)  // possible loss of data -- just too many to fix.
+  #endif
+
   #if !defined(_CRT_SECURE_NO_DEPRECATE) && (_MSC_VER>=1400)
     #define _CRT_SECURE_NO_DEPRECATE 1
   #endif

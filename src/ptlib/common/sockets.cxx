@@ -142,7 +142,7 @@ void PIPSocket::SetDefaultIpAddressFamilyV6()
 
 PBoolean PIPSocket::IsIpAddressFamilyV6Supported()
 {
-  int s = ::socket(PF_INET6, SOCK_DGRAM, 0);
+  int s = (int)::socket(PF_INET6, SOCK_DGRAM, 0);
   if (s < 0)
     return false;
 
@@ -2727,7 +2727,7 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
     if ((qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) &&
         (qosProtocol->iSocketType == type) &&
         (qosProtocol->iAddressFamily == af)) {
-      os_handle = WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
+      os_handle = (int)WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
       break;
     }
   }
@@ -2735,7 +2735,7 @@ PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
   delete[] installedProtocols;
 
   if (!IsOpen())
-    os_handle = WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
+    os_handle = (int)WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 
   return ConvertOSError(os_handle);
 
