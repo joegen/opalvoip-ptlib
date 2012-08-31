@@ -2231,8 +2231,8 @@ streambuf::int_type PStringStream::Buffer::overflow(int_type c)
     if (fixedBufferSize)
       return EOF;
 
-    int gpos = gptr() - eback();
-    int ppos = pptr() - pbase();
+    size_t gpos = gptr() - eback();
+    size_t ppos = pptr() - pbase();
     char * newptr = string.GetPointer(string.GetSize() + 32);
     setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
@@ -2266,9 +2266,9 @@ int PStringStream::Buffer::sync()
 
 streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode mode)
 {
-  int len = strlen(string);
-  int gpos = gptr() - eback();
-  int ppos = pptr() - pbase();
+  off_type len = (off_type)strlen(string);
+  off_type gpos = (off_type)(gptr() - eback());
+  off_type ppos = (off_type)(pptr() - pbase());
   char * newgptr;
   char * newpptr;
   switch (dir) {

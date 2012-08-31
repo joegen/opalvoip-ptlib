@@ -213,7 +213,7 @@ int PSocket::os_close()
 
 int PSocket::os_socket(int af, int type, int proto)
 {
-  return ::socket(af, type, proto);
+  return (int)::socket(af, type, proto);
 }
 
 
@@ -317,7 +317,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
         return ConvertOSError(-1);
     }
   }
-  return ConvertOSError(os_handle = ::accept(listener.GetHandle(), addr, size));
+  return ConvertOSError(os_handle = (int)::accept(listener.GetHandle(), addr, size));
 }
 
 
