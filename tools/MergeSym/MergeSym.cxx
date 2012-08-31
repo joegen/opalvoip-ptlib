@@ -31,10 +31,16 @@
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptlib/pprocess.h>
+#include <set>
+
 void unsetenv(const char *);
 
 PDECLARE_CLASS(Symbol, PCaselessString)
   public:
+    Symbol(const PString & sym)
+      : PCaselessString(sym)
+    { }
+
     Symbol(const PString & sym, const PString & cpp, PINDEX ord, bool ext, bool nonam)
       : PCaselessString(sym)
       , unmangled(cpp)
@@ -45,6 +51,7 @@ PDECLARE_CLASS(Symbol, PCaselessString)
 
     void SetOrdinal(PINDEX ord) { ordinal = ord; }
     bool IsExternal() const { return external; }
+    bool HasName() const { return !noname; }
 
     void PrintOn(ostream & s) const
     {
@@ -61,7 +68,7 @@ PDECLARE_CLASS(Symbol, PCaselessString)
     bool noname;
 };
 
-PSORTED_LIST(SortedSymbolList, Symbol);
+typedef std::set<Symbol> SortedSymbolList;
 
 
 PDECLARE_CLASS(MergeSym, PProcess)
@@ -74,7 +81,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 7, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 0)
 {
 }
 
@@ -131,6 +138,7 @@ void MergeSym::Main()
 
   SortedSymbolList def_symbols;
   SortedSymbolList lib_symbols;
+  std::vector<bool> ordinals_used(65536);
 
   if (args.HasOption('x')) {
     PStringArray include_path;
@@ -149,8 +157,8 @@ void MergeSym::Main()
       if (PFilePath(ext_filename).GetType().IsEmpty())
         ext_filename += ".def";
 
-      PINDEX previous_def_symbols_size = def_symbols.GetSize();
-	  PINDEX inc_index = 0;
+      PINDEX previous_def_symbols_size = def_symbols.size();
+      PINDEX inc_index = 0;
       for (inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
         PString trial_filename = PDirectory(include_path[inc_index]) + ext_filename;
         if (args.HasOption('v'))
@@ -172,8 +180,8 @@ void MergeSym::Main()
               PINDEX end = start;
               while (line[end] != '\0' && !isspace(line[end]))
                 end++;
-              def_symbols.Append(new Symbol(line(start, end-1), "", 0, true, true));
-              if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
+              def_symbols.insert(Symbol(line(start, end-1), "", 0, true, true));
+              if (args.HasOption('v') && def_symbols.size()%100 == 0)
                 cout << '.' << flush;
             }
           }
@@ -183,13 +191,13 @@ void MergeSym::Main()
       if (inc_index >= include_path.GetSize())
         PError << "MergeSym: external symbol file \"" << base_ext_filename << "\" not found.\n";
       if (args.HasOption('v'))
-        cout << '\n' << (def_symbols.GetSize() - previous_def_symbols_size)
+        cout << '\n' << (def_symbols.size() - previous_def_symbols_size)
              << " symbols read." << endl;
     }
   }
 
   PStringList def_file_lines;
-  PINDEX max_ordinal = 0;
+  PINDEX next_ordinal = 0;
   PINDEX removed = 0;
 
   PTextFile def;
@@ -215,19 +223,20 @@ void MergeSym::Main()
         PINDEX ordpos = line.Find('@', end);
         if (ordpos != P_MAX_INDEX) {
           PINDEX ordinal = line.Mid(ordpos+1).AsInteger();
-          if (ordinal > max_ordinal)
-            max_ordinal = ordinal;
+          ordinals_used[ordinal] = true;
+          if (ordinal > next_ordinal)
+            next_ordinal = ordinal;
           PINDEX unmanglepos = line.Find(';', ordpos);
           if (unmanglepos != P_MAX_INDEX)
             unmanglepos++;
           bool noname = line.Find("NONAME", ordpos) < unmanglepos;
           Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal, false, noname);
-          if (def_symbols.GetValuesIndex(sym) == P_MAX_INDEX)
-            def_symbols.Append(new Symbol(sym));
-          if (!noname && lib_symbols.GetValuesIndex(sym) == P_MAX_INDEX)
-            lib_symbols.Append(new Symbol(sym));
+          if (def_symbols.find(sym) == def_symbols.end())
+            def_symbols.insert(Symbol(sym));
+          if (!noname && lib_symbols.find(sym) == lib_symbols.end())
+            lib_symbols.insert(Symbol(sym));
           removed++;
-          if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
+          if (args.HasOption('v') && def_symbols.size()%100 == 0)
             cout << '.' << flush;
         }
       }
@@ -268,30 +277,28 @@ void MergeSym::Main()
     pipe >> line;
     symfile << line;
 
-    char * namepos = (char *)strchr(line, '|');
-    if (namepos != NULL) {
-      *namepos = '\0';
-      while (*++namepos == ' ');
-      if (strstr(line, " UNDEF ") == NULL &&
-          strstr(line, " External ") != NULL &&
-          strstr(namepos, "deleting destructor") == NULL) {
-        int namelen = strcspn(namepos, "\r\n\t ");
-        PString name(namepos, namelen);
-        if (strncmp(name, "??_C@_", 6) != 0 &&
-            strncmp(name, "__real@", 7) != 0 &&
-            strncmp(name, "?__LINE__Var@", 13) != 0 &&
-            lib_symbols.GetValuesIndex(name) == P_MAX_INDEX) {
-          const char * unmangled = strchr(namepos+namelen, '(');
-          if (unmangled == NULL)
-            unmangled = name;
-          else {
-            unmangled++;
-            char * endunmangle = (char *)strrchr(unmangled, ')');
-            if (endunmangle != NULL)
-              *endunmangle = '\0';
-          }
-          lib_symbols.Append(new Symbol(name, unmangled, 0, false, true));
+    PINDEX namepos = line.Find('|');
+    if (namepos != P_MAX_INDEX &&
+        line.Find(" UNDEF ") == P_MAX_INDEX &&
+        line.Find(" External ") != P_MAX_INDEX &&
+        line.Find("deleting destructor") == P_MAX_INDEX) {
+      while (line[++namepos] == ' ')
+        ;
+      PINDEX nameend = line.FindOneOf("\r\n\t ", namepos);
+      PString name = line(namepos, nameend-1);
+      if (name.NumCompare("??_C@_") != EqualTo &&
+          name.NumCompare("__real@") != EqualTo &&
+          name.NumCompare("?__LINE__Var@") != EqualTo &&
+          name.FindOneOf("'\"=") == P_MAX_INDEX &&
+          lib_symbols.find(name) == lib_symbols.end()) {
+        PINDEX endunmangle, unmangled = line.Find('(', nameend);
+        if (unmangled != P_MAX_INDEX)
+          endunmangle = line.Find(')', ++unmangled);
+        else {
+          unmangled = namepos;
+          endunmangle = nameend;
         }
+        lib_symbols.insert(Symbol(name, line(unmangled, endunmangle-1), 0, false, true));
       }
     }
     if (args.HasOption('v') && linecount%500 == 0)
@@ -300,76 +307,92 @@ void MergeSym::Main()
   }
 
   if (args.HasOption('v'))
-    cout << '\n' << lib_symbols.GetSize() << " symbols read.\n"
+    cout << '\n' << lib_symbols.size() << " symbols read.\n"
             "Sorting symbols... " << flush;
 
-  PINDEX i;
-  for (i = 0; i < def_symbols.GetSize(); i++) {
-    if (lib_symbols.GetValuesIndex(def_symbols[i]) != P_MAX_INDEX &&
-        !def_symbols[i].IsExternal())
+  SortedSymbolList::iterator it;
+  for (it = def_symbols.begin(); it != def_symbols.end(); ++it) {
+    if (lib_symbols.find(*it) != lib_symbols.end() && !it->IsExternal())
       removed--;
   }
 
   PINDEX added = 0;
-  for (i = 0; i < lib_symbols.GetSize(); i++) {
-    if (def_symbols.GetValuesIndex(lib_symbols[i]) == P_MAX_INDEX) {
-      lib_symbols[i].SetOrdinal(++max_ordinal);
+  for (it = lib_symbols.begin(); it != lib_symbols.end(); ++it) {
+    if (def_symbols.find(*it) == def_symbols.end()) {
+      if (++next_ordinal > 65535)
+        next_ordinal = 1;
+      while (ordinals_used[next_ordinal]) {
+        if (++next_ordinal > 65535) {
+          cerr << "Catastrophe! More than 65535 exported symbols in DLL!" << endl;
+          SetTerminationValue(1);
+          return;
+        }
+      }
+      it->SetOrdinal(next_ordinal);
       added++;
     }
   }
 
-  if (added == 0 && removed == 0)
+  if (added == 0 && removed == 0) {
     cout << "\nNo changes to symbols.\n";
-  else
-    cout << "\nSymbols merged: " << added << " added, " << removed << " removed.\n";
+    return;
+  }
 
-  if (added != 0 || removed != 0 || def_filename != out_filename) {
-    if (args.HasOption('v'))
-      cout << "Writing .DEF file..." << flush;
+  SortedSymbolList merged_symbols;
+  PINDEX i;
 
-    // If file is read/only, set it to read/write
-    PFileInfo info;
-    if (PFile::GetInfo(out_filename, info)) {
-      if ((info.permissions&PFileInfo::UserWrite) == 0) {
-        PFile::SetPermissions(out_filename, info.permissions|PFileInfo::UserWrite);
-        cout << "Setting \"" << out_filename << "\" to read/write mode." << flush;
-        PFile::Copy(out_filename, out_filename+".original");
-      }
-    }
+  for (i = 0, it = def_symbols.begin(); it != def_symbols.end(); ++it, ++i) {
+    if (lib_symbols.find(*it) != lib_symbols.end() && !it->IsExternal())
+      merged_symbols.insert(*it);
+    if (args.HasOption('v') && i%100 == 0)
+      cout << '.' << flush;
+  }
+  for (i = 0, it = lib_symbols.begin(); it != lib_symbols.end(); ++it, ++i) {
+    if (def_symbols.find(*it) == def_symbols.end())
+      merged_symbols.insert(*it);
+    if (args.HasOption('v') && i%100 == 0)
+      cout << '.' << flush;
+  }
 
-    if (def.Open(out_filename, PFile::WriteOnly)) {
-      SortedSymbolList merged_symbols;
-      merged_symbols.DisallowDeleteObjects();
+  cout << "\nSymbols merged: " << added << " added, "
+       << removed << " removed, "
+       << merged_symbols.size() << " total.\n";
 
-      for (i = 0; i < def_symbols.GetSize(); i++) {
-        if (lib_symbols.GetValuesIndex(def_symbols[i]) != P_MAX_INDEX &&
-            !def_symbols[i].IsExternal()) {
-          merged_symbols.Append(&def_symbols[i]);
-        }
-        if (args.HasOption('v') && i%100 == 0)
-          cout << '.' << flush;
-      }
-      for (i = 0; i < lib_symbols.GetSize(); i++) {
-        if (def_symbols.GetValuesIndex(lib_symbols[i]) == P_MAX_INDEX)
-          merged_symbols.Append(&lib_symbols[i]);
-        if (args.HasOption('v') && i%100 == 0)
-          cout << '.' << flush;
-      }
+  if (def_filename == out_filename)
+    return;
 
-      for (i = 0; i < def_file_lines.GetSize(); i++)
-        def << def_file_lines[i] << '\n';
-      for (i = 0; i < merged_symbols.GetSize(); i++)
-        def << merged_symbols[i];
+  if (args.HasOption('v'))
+    cout << "Writing .DEF file..." << flush;
 
-      if (args.HasOption('v'))
-        cout << merged_symbols.GetSize() << " symbols written." << endl;
-    }
-    else {
-      PError << "Could not create file " << out_filename << ':' << def.GetErrorText() << endl;
-      SetTerminationValue(1);
+  // If file is read/only, set it to read/write
+  PFileInfo info;
+  if (PFile::GetInfo(out_filename, info)) {
+    if ((info.permissions&PFileInfo::UserWrite) == 0) {
+      PFile::SetPermissions(out_filename, info.permissions|PFileInfo::UserWrite);
+      cout << "Setting \"" << out_filename << "\" to read/write mode." << flush;
+      PFile::Copy(out_filename, out_filename+".original");
     }
   }
 
+  if (!def.Open(out_filename, PFile::WriteOnly)) {
+    cerr << "Could not create file " << out_filename << ':' << def.GetErrorText() << endl;
+    SetTerminationValue(1);
+    return;
+  }
+
+  for (PStringList::iterator is = def_file_lines.begin(); is != def_file_lines.end(); ++is)
+    def << *is << '\n';
+  for (it = merged_symbols.begin(); it != merged_symbols.end(); ++it, ++i) {
+    if (it->HasName())
+      def << *it;
+  }
+  for (it = merged_symbols.begin(); it != merged_symbols.end(); ++it, ++i) {
+    if (!it->HasName())
+      def << *it;
+  }
+
+  if (args.HasOption('v'))
+    cout << merged_symbols.size() << " symbols written." << endl;
 } 
 // End MergeSym.cxx
 
