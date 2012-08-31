@@ -121,7 +121,7 @@ streambuf::int_type PSystemLog::Buffer::overflow(int_type c)
   if (pptr() >= epptr()) {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-    int ppos = pptr() - pbase();
+    size_t ppos = pptr() - pbase();
     char * newptr = m_string.GetPointer(m_string.GetSize() + 32);
     setp(newptr, newptr + m_string.GetSize() - 1);
     pbump(ppos);

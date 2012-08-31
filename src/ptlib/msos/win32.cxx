@@ -541,7 +541,7 @@ void PChannel::AsyncContext::SetOffset(off_t offset)
 {
   Offset = (DWORD)offset;
 #if P_64BIT
-  OffsetHigh = (DWORD)(offset>>32);
+  OffsetHigh = (DWORD)((int64_t)offset>>32);
 #endif
 }
 
@@ -1879,7 +1879,7 @@ PDebugStream::Buffer::Buffer()
 
 int PDebugStream::Buffer::overflow(int c)
 {
-  int bufSize = pptr() - pbase();
+  size_t bufSize = pptr() - pbase();
 
   if (c != EOF) {
     *pptr() = (char)c;

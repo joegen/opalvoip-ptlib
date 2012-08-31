@@ -822,7 +822,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels) {
             SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
 #if PTRACING
-            PTrace::SetLevel(wParam-LogLevelBaseMenuID-PSystemLog::Warning);
+            PTrace::SetLevel((UINT)wParam-LogLevelBaseMenuID-PSystemLog::Warning);
 #endif
           }
           else if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds) {

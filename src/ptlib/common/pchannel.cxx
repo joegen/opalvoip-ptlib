@@ -61,7 +61,7 @@ streambuf::int_type PChannelStreamBuffer::overflow(int_type c)
     setp(p, p+output.GetSize());
   }
 
-  int bufSize = pptr() - pbase();
+  size_t bufSize = pptr() - pbase();
   if (bufSize > 0) {
     setp(pbase(), epptr());
     if (!channel->Write(pbase(), bufSize))
@@ -102,11 +102,10 @@ streambuf::int_type PChannelStreamBuffer::underflow()
 
 int PChannelStreamBuffer::sync()
 {
-  int inAvail = egptr() - gptr();
-  if (inAvail > 0) {
+  if (egptr() > gptr()) {
     setg(eback(), egptr(), egptr());
     if (PIsDescendant(channel, PFile))
-      ((PFile *)channel)->SetPosition(-inAvail, PFile::Current);
+      ((PFile *)channel)->SetPosition((off_t)(gptr() - egptr()), PFile::Current);
   }
 
   if (pptr() > pbase())

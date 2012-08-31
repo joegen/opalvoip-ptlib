@@ -439,7 +439,7 @@ class PVideoFrameInfoArray : public std::vector<PVideoFrameInfo*>
       sort(begin(), end(), PVideoFrameInfoSort());
       unique(begin(), end(), PVideoFrameInfoMatch());
 
-      unsigned lastWidth = P_MAX_INDEX;
+      unsigned lastWidth = UINT_MAX;
       int pos = 0;
       iterator r = begin();
       while (r != end()) {
