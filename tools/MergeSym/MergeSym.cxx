@@ -35,40 +35,46 @@
 
 void unsetenv(const char *);
 
-PDECLARE_CLASS(Symbol, PCaselessString)
+class SymbolInfo
+{
   public:
-    Symbol(const PString & sym)
-      : PCaselessString(sym)
+    SymbolInfo()
+      : m_ordinal(0)
+      , m_external(true)
+      , m_noName(true)
     { }
 
-    Symbol(const PString & sym, const PString & cpp, PINDEX ord, bool ext, bool nonam)
-      : PCaselessString(sym)
-      , unmangled(cpp)
-      , ordinal(ord)
-      , external(ext)
-      , noname(nonam)
-    { }
-
-    void SetOrdinal(PINDEX ord) { ordinal = ord; }
-    bool IsExternal() const { return external; }
-    bool HasName() const { return !noname; }
-
-    void PrintOn(ostream & s) const
+    void Set(const PString & cpp, PINDEX ord, bool ext, bool nonam)
     {
-      s << "    " << theArray << " @" << ordinal;
-      if (noname)
-        s << " NONAME";
-      s << '\n';
+      m_unmangled = cpp;
+      m_ordinal = ord;
+      m_external = ext;
+      m_noName = nonam;
     }
 
+    void SetOrdinal(PINDEX ord) { m_ordinal = ord; }
+    unsigned GetOrdinal() const { return m_ordinal; }
+    bool IsExternal() const { return m_external; }
+    bool NoName() const { return m_noName; }
+
   private:
-    PString unmangled;
-    PINDEX ordinal;
-    bool external;
-    bool noname;
+    PString m_unmangled;
+    PINDEX  m_ordinal;
+    bool    m_external;
+    bool    m_noName;
 };
 
-typedef std::set<Symbol> SortedSymbolList;
+typedef std::map<PCaselessString, SymbolInfo> SortedSymbolList;
+
+
+std::ostream & operator<<(std::ostream & strm, const SortedSymbolList::iterator & it)
+{
+  strm << "    " << it->first << " @" << it->second.GetOrdinal();
+  if (!it->second.NoName())
+    strm << " NONAME";
+  return strm << '\n';
+}
+
 
 
 PDECLARE_CLASS(MergeSym, PProcess)
@@ -180,7 +186,7 @@ void MergeSym::Main()
               PINDEX end = start;
               while (line[end] != '\0' && !isspace(line[end]))
                 end++;
-              def_symbols.insert(Symbol(line(start, end-1), "", 0, true, true));
+              def_symbols[line(start, end-1)]; // Create default
               if (args.HasOption('v') && def_symbols.size()%100 == 0)
                 cout << '.' << flush;
             }
@@ -230,11 +236,12 @@ void MergeSym::Main()
           if (unmanglepos != P_MAX_INDEX)
             unmanglepos++;
           bool noname = line.Find("NONAME", ordpos) < unmanglepos;
-          Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal, false, noname);
+          PString unmangled(line.Mid(unmanglepos));
+          PCaselessString sym(line(start, end-1));
           if (def_symbols.find(sym) == def_symbols.end())
-            def_symbols.insert(Symbol(sym));
+            def_symbols[sym].Set(unmangled, ordinal, false, noname);
           if (!noname && lib_symbols.find(sym) == lib_symbols.end())
-            lib_symbols.insert(Symbol(sym));
+            lib_symbols[sym].Set(unmangled, ordinal, false, noname);
           removed++;
           if (args.HasOption('v') && def_symbols.size()%100 == 0)
             cout << '.' << flush;
@@ -298,7 +305,7 @@ void MergeSym::Main()
           unmangled = namepos;
           endunmangle = nameend;
         }
-        lib_symbols.insert(Symbol(name, line(unmangled, endunmangle-1), 0, false, true));
+        lib_symbols[name].Set(line(unmangled, endunmangle-1), 0, false, true);
       }
     }
     if (args.HasOption('v') && linecount%500 == 0)
@@ -312,13 +319,13 @@ void MergeSym::Main()
 
   SortedSymbolList::iterator it;
   for (it = def_symbols.begin(); it != def_symbols.end(); ++it) {
-    if (lib_symbols.find(*it) != lib_symbols.end() && !it->IsExternal())
+    if (lib_symbols.find(it->first) != lib_symbols.end() && !it->second.IsExternal())
       removed--;
   }
 
   PINDEX added = 0;
   for (it = lib_symbols.begin(); it != lib_symbols.end(); ++it) {
-    if (def_symbols.find(*it) == def_symbols.end()) {
+    if (def_symbols.find(it->first) == def_symbols.end()) {
       if (++next_ordinal > 65535)
         next_ordinal = 1;
       while (ordinals_used[next_ordinal]) {
@@ -328,7 +335,7 @@ void MergeSym::Main()
           return;
         }
       }
-      it->SetOrdinal(next_ordinal);
+      it->second.SetOrdinal(next_ordinal);
       added++;
     }
   }
@@ -342,13 +349,13 @@ void MergeSym::Main()
   PINDEX i;
 
   for (i = 0, it = def_symbols.begin(); it != def_symbols.end(); ++it, ++i) {
-    if (lib_symbols.find(*it) != lib_symbols.end() && !it->IsExternal())
+    if (lib_symbols.find(it->first) != lib_symbols.end() && !it->second.IsExternal())
       merged_symbols.insert(*it);
     if (args.HasOption('v') && i%100 == 0)
       cout << '.' << flush;
   }
   for (i = 0, it = lib_symbols.begin(); it != lib_symbols.end(); ++it, ++i) {
-    if (def_symbols.find(*it) == def_symbols.end())
+    if (def_symbols.find(it->first) == def_symbols.end())
       merged_symbols.insert(*it);
     if (args.HasOption('v') && i%100 == 0)
       cout << '.' << flush;
@@ -383,12 +390,12 @@ void MergeSym::Main()
   for (PStringList::iterator is = def_file_lines.begin(); is != def_file_lines.end(); ++is)
     def << *is << '\n';
   for (it = merged_symbols.begin(); it != merged_symbols.end(); ++it, ++i) {
-    if (it->HasName())
-      def << *it;
+    if (!it->second.NoName())
+      def << it;
   }
   for (it = merged_symbols.begin(); it != merged_symbols.end(); ++it, ++i) {
-    if (!it->HasName())
-      def << *it;
+    if (it->second.NoName())
+      def << it;
   }
 
   if (args.HasOption('v'))
