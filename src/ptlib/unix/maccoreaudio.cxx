@@ -358,13 +358,13 @@ PStringList PSoundChannelCoreAudio::GetDeviceNames(Directions dir)
 
   numDevices = CADeviceList(&deviceList);
 
-  PTRACE(4, "MaxAudio\tPSoundChannelCoreAudio::GetDeviceNames - numDevices " << numDevices);
+  PTRACE(4, NULL, "MaxAudio", "PSoundChannelCoreAudio::GetDeviceNames - numDevices " << numDevices);
 
   for (int i = 0; i < numDevices; i++) {
     PString s = CADeviceName(deviceList[i]);
-    PTRACE(5, "MaxAudio\tGetDeviceNames - name " << s);
+    PTRACE(5, NULL, "MaxAudio", "GetDeviceNames - name " << s);
     if (CADeviceSupportDirection(deviceList[i], isInput) > 0) {
-      PTRACE(5, "MaxAudio\tGetDeviceNames -supports direction" << s);
+      PTRACE(5, NULL, "MaxAudio", "GetDeviceNames -supports direction" << s);
       devices.AppendString(s);
     }
   }
@@ -1448,7 +1448,7 @@ OSStatus PSoundChannelCoreAudio::VolumeChangePropertyListener(AudioDeviceID id,
    UInt32 theSize = sizeof(Float32);
    Float32 volume;
 
-   PTRACE(1, "MaxAudio\tVolume updated " << "TODO: show value");
+   PTRACE(1, This, "MaxAudio", "Volume updated " << "TODO: show value");
 
    return noErr;
 #if 0
@@ -1475,7 +1475,7 @@ OSStatus PSoundChannelCoreAudio::VolumeChangePropertyListener(AudioDeviceID id,
 											 0, NULL, &theSize, &volume);
 	}
 
-	PTRACE(4, "MaxAudio\t" << (isInput?"Recorder":"Player") << " volume updated " << unsigned(100*volume));
+	PTRACE(4, This, "MaxAudio", (isInput?"Recorder":"Player") << " volume updated " << unsigned(100*volume));
 
 	return noErr;
 #endif
