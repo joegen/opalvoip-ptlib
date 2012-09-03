@@ -18,11 +18,11 @@
  *          
  */
  
+#define P_FORCE_STATIC_PLUGIN
+
 #pragma implementation "maccoreaudio.h" 
 
 #include <ptbuildopts.h>
-
-#if P_MACOSX < 1006
 
 #include <ptlib/unix/ptlib/maccoreaudio.h>
 #include <iostream>  // used for Volume Listener
@@ -119,8 +119,8 @@ ostream& operator<<(ostream &os, PSoundChannelCoreAudio::State &state)
 #define checkStatus( err, This ) \
     if(err) {\
       OSStatus error = static_cast<OSStatus>(err);\
-      cout << "CoreAudio Error " << __func__ << " "  \
-           <<  error   << "("  << (char*)&err <<  ")" << endl;  \
+      PTRACE(1, "MaxAudio\tCoreAudio Error " << __func__ << " "  \
+             <<  error   << "("  << (char*)&err <<  ")");  \
     }         
 #endif
 
@@ -196,6 +196,7 @@ PSoundChannelCoreAudio::PSoundChannelCoreAudio()
    : state(init_), mCircularBuffer(NULL), converter_buffer(NULL),
      mInputCircularBuffer(NULL), mInputBufferList(NULL), mOutputBufferList(NULL)
 {
+   PTRACE(5, "MaxAudio\tPSoundChannelCoreAudio");
    CommonConstruct();
 
 }
@@ -244,9 +245,15 @@ PSoundChannelCoreAudio::~PSoundChannelCoreAudio()
       case open_:
          err = CloseComponent(mAudioUnit);
          checkStatus(err);
-			err = AudioDeviceRemovePropertyListener(mDeviceID,  1, 	
-					kAudioPropertyWildcardSection, kAudioDevicePropertyVolumeScalar, 
-					VolumeChangePropertyListener);
+			AudioObjectPropertyAddress property_address;
+
+			property_address.mScope = kAudioPropertyWildcardSection;
+			property_address.mElement = 1;
+			property_address.mSelector = kAudioDevicePropertyVolumeScalar;
+
+			err = AudioObjectRemovePropertyListener(mDeviceID,
+					&property_address,
+					VolumeChangePropertyListener, (void*)this);
 			checkStatus(err);
          /* fall through */
       case init_:
@@ -318,18 +325,21 @@ PString PSoundChannelCoreAudio::GetDefaultDevice(Directions dir)
   UInt32 theSize;
   AudioDeviceID theID;
 
+  AudioObjectPropertyAddress property_address;
+
+  property_address.mScope = kAudioObjectPropertyScopeGlobal;
+  property_address.mElement = kAudioObjectPropertyElementMaster;
+
   theSize = sizeof(AudioDeviceID);
 
   if (dir == Player) {
-    err = AudioHardwareGetProperty(
-          kAudioHardwarePropertyDefaultOutputDevice,
-               &theSize, &theID);
+	  property_address.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
   }
   else {
-    err =  AudioHardwareGetProperty(
-           kAudioHardwarePropertyDefaultInputDevice,
-                &theSize, &theID);
+	  property_address.mSelector = kAudioHardwarePropertyDefaultInputDevice;
   }
+  err = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property_address,
+               0, NULL, &theSize, &theID);
 
   if (err == 0) {
      return CADeviceName(theID);
@@ -348,9 +358,13 @@ PStringList PSoundChannelCoreAudio::GetDeviceNames(Directions dir)
 
   numDevices = CADeviceList(&deviceList);
 
+  PTRACE(4, "MaxAudio\tPSoundChannelCoreAudio::GetDeviceNames - numDevices " << numDevices);
+
   for (int i = 0; i < numDevices; i++) {
     PString s = CADeviceName(deviceList[i]);
+    PTRACE(5, "MaxAudio\tGetDeviceNames - name " << s);
     if (CADeviceSupportDirection(deviceList[i], isInput) > 0) {
+      PTRACE(5, "MaxAudio\tGetDeviceNames -supports direction" << s);
       devices.AppendString(s);
     }
   }
@@ -789,16 +803,21 @@ OSStatus PSoundChannelCoreAudio::SetDeviceAsCurrent(AudioDeviceID id)
    UInt32 size = sizeof(AudioDeviceID);
    OSStatus err = noErr;
 
+  AudioObjectPropertyAddress property_address;
+
+  property_address.mScope = kAudioObjectPropertyScopeGlobal;
+  property_address.mElement = kAudioObjectPropertyElementMaster;
+
    //get the default device if the device id not specified // bogus 
    if(id == kAudioDeviceUnknown) 
    {  
       if(direction == Recorder) {
-         err = AudioHardwareGetProperty(
-                  kAudioHardwarePropertyDefaultOutputDevice, &size, &id);
+	     property_address.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
       } else {
-         err = AudioHardwareGetProperty(
-               kAudioHardwarePropertyDefaultInputDevice, &size, &id);
+	     property_address.mSelector = kAudioHardwarePropertyDefaultInputDevice;
       }
+	  err = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property_address,
+				   0, NULL, &size, &id);
       checkStatus(err);   
    }                   
 
@@ -833,6 +852,8 @@ PBoolean PSoundChannelCoreAudio::Open(const PString & deviceName,
 {
   OSStatus err;
 
+  PTRACE(5, "MaxAudio\tPSoundChannelCoreAudio::Open" << deviceName << " " << numChannels);
+
   /* Save whether this is a Player or Recorder */
   this->direction = dir;
 
@@ -857,8 +878,13 @@ PBoolean PSoundChannelCoreAudio::Open(const PString & deviceName,
   /*
    * Add a listener to print current volume setting in case it is changed
    */
-  err = AudioDeviceAddPropertyListener(mDeviceID,  1, 	
-					kAudioPropertyWildcardSection, kAudioDevicePropertyVolumeScalar, 
+   AudioObjectPropertyAddress property_address;
+
+   property_address.mScope = kAudioPropertyWildcardSection;
+   property_address.mElement = 1;
+   property_address.mSelector = kAudioDevicePropertyVolumeScalar;
+
+  err = AudioObjectAddPropertyListener(mDeviceID, &property_address,
 					VolumeChangePropertyListener, (void *)this);
   checkStatus(err);
 
@@ -982,19 +1008,20 @@ OSStatus PSoundChannelCoreAudio::MatchHALInputFormat()
    */
 
    /* This code asks for the supported sample rates of the microphone
+   AudioObjectPropertyAddress property_address;
+
+   property_address.mScope = kAudioObjectPropertyScopeGlobal;
+   property_address.mElement = kAudioObjectPropertyElementMaster;
+   property_address.mSelector = kAudioDevicePropertyAvailableNominalSampleRates;
    UInt32 count, numRanges;
-   err = AudioDeviceGetPropertyInfo ( mDeviceID, 
-               0, true,
-             kAudioDevicePropertyAvailableNominalSampleRates, 
-             &count, NULL );
+   err = AudioDeviceGetPropertyDataSize ( mDeviceID, &property_address,
+               				  0, NULL, &count);
 
    numRanges = count / sizeof(AudioValueRange);
    AudioValueRange* rangeArray = (AudioValueRange*)malloc ( count );
 
-   err = AudioDeviceGetProperty ( mDeviceID, 
-         0, true, 
-         kAudioDevicePropertyAvailableNominalSampleRates, 
-         &count, (void*)rangeArray );
+   err = AudioDeviceGetPropertyData ( mDeviceID, &property_address,
+         			      0, NULL, &count, (void*)rangeArray );
    checkStatus(err);
    */
 
@@ -1183,6 +1210,7 @@ PBoolean PSoundChannelCoreAudio::Abort()
 PBoolean PSoundChannelCoreAudio::SetBuffers(PINDEX bufferSize,
                   PINDEX bufferCount)
 {
+   AudioObjectPropertyAddress property_address;
    OSStatus err = noErr;
 
    if(state != setformat_){
@@ -1242,25 +1270,21 @@ PBoolean PSoundChannelCoreAudio::SetBuffers(PINDEX bufferSize,
    PTRACE(2, __func__ <<  " AudioDevice buffer size set to " 
             << targetSizeBytes);
 
+   property_address.mSelector = kAudioDevicePropertyBufferFrameSize;
+   property_address.mElement = kAudioObjectPropertyElementMaster;
+
    UInt32 targetSizeFrames = targetSizeBytes / hwASBD.mBytesPerFrame;
    if (direction == Player) {
-      err = AudioDeviceSetProperty( mDeviceID,
-         0, //&ts, timestruct 
-         0, // output channel 
-         true, // isInput 
-         // kAudioDevicePropertyBufferSize, 
-         kAudioDevicePropertyBufferFrameSize,
-         sizeof(UInt32),
-         &targetSizeFrames);
+      property_address.mScope = kAudioDevicePropertyScopeInput;
+      property_address.mElement = 0; // output channel 
    } else {
-      err = AudioDeviceSetProperty( mDeviceID,
-         0, //&ts, timestruct 
-         1, // input channel
-         false, // isInput 
-         kAudioDevicePropertyBufferFrameSize,
-         sizeof(UInt32),
-         &targetSizeFrames);
+      property_address.mScope = kAudioDevicePropertyScopeOutput;
+      property_address.mElement = 1; // input channel
    }
+   err = AudioObjectSetPropertyData(mDeviceID, &property_address,
+									0, NULL, 
+									sizeof(UInt32),
+									&targetSizeFrames);
    checkStatus(err);
 	*/
 
@@ -1270,10 +1294,13 @@ PBoolean PSoundChannelCoreAudio::SetBuffers(PINDEX bufferSize,
     */
    UInt32 bufferSizeFrames, bufferSizeBytes;
    UInt32 propertySize = sizeof(UInt32);
-   err = AudioDeviceGetProperty( mDeviceID,
-            0,  // output channel,  
-            true,  // isInput 
-            kAudioDevicePropertyBufferFrameSize,
+
+   property_address.mScope = kAudioDevicePropertyScopeOutput;
+   property_address.mElement = kAudioObjectPropertyElementMaster;
+   property_address.mSelector = kAudioDevicePropertyBufferFrameSize;
+
+   err = AudioObjectGetPropertyData(mDeviceID, &property_address,
+			0, NULL, 
             &propertySize,
             &bufferSizeFrames);
    checkStatus(err);
@@ -1326,17 +1353,20 @@ OSStatus PSoundChannelCoreAudio::SetupAdditionalRecordBuffers()
   OSStatus err = noErr;
   UInt32 bufferSizeFrames, bufferSizeBytes;
    
+  AudioObjectPropertyAddress property_address;
+
+  property_address.mScope = kAudioDevicePropertyScopeInput;
+  property_address.mElement = kAudioObjectPropertyElementMaster;
+  property_address.mSelector = kAudioDevicePropertyBufferFrameSize;
+
   /** 
    * build buffer list to take over the data from the microphone 
    */
   UInt32 propertySize = sizeof(UInt32);
-  err = AudioDeviceGetProperty( mDeviceID,
-      0,  // channel, probably all  
-      true,  // isInput 
-      //false,  // isInput ()
-      kAudioDevicePropertyBufferFrameSize,
-      &propertySize,
-      &bufferSizeFrames);
+  err = AudioObjectGetPropertyData(mDeviceID, &property_address,
+									0, NULL, 
+									&propertySize,
+									&bufferSizeFrames);
   checkStatus(err);
   bufferSizeBytes = bufferSizeFrames * hwASBD.mBytesPerFrame;
 	bufferSizeBytes += bufferSizeBytes / 10; // +10%
@@ -1408,7 +1438,8 @@ PBoolean PSoundChannelCoreAudio::GetBuffers(PINDEX & size,
 
 
 OSStatus PSoundChannelCoreAudio::VolumeChangePropertyListener(AudioDeviceID id, 
-						UInt32 chan, Boolean isInput, AudioDevicePropertyID propID, 
+						UInt32 numberAddresses,
+						const AudioObjectPropertyAddress addresses[],
 						void *user_data)
 {
 	PSoundChannelCoreAudio *This = 
@@ -1417,27 +1448,37 @@ OSStatus PSoundChannelCoreAudio::VolumeChangePropertyListener(AudioDeviceID id,
    UInt32 theSize = sizeof(Float32);
    Float32 volume;
 
+   PTRACE(1, "MaxAudio\tVolume updated " << "TODO: show value");
+
+   return noErr;
+#if 0
+   AudioObjectPropertyAddress property_address;
+
+   property_address.mScope = isInput ? kAudioDevicePropertyScopeInput : 
+				       kAudioDevicePropertyScopeOutput;
+   property_address.mElement = kAudioObjectPropertyElementMaster;
+   property_address.mSelector = kAudioDevicePropertyVolumeScalar;
+
 	/*
 	 * Function similar to GetVolume, but we are free to ask the volume 	
 	 * for the intput/output direction 
 	 */
 
 	// not all devices have a master channel
-	err = AudioDeviceGetProperty(This->mDeviceID, 0, isInput,
-						  kAudioDevicePropertyVolumeScalar,
-						  &theSize, &volume);
+	err = AudioObjectGetPropertyData(This->mDeviceID, &property_address,
+										 0, NULL, &theSize, &volume);
 	if(err != kAudioHardwareNoError) {
 		// take the value of first channel to be the volume
 	   theSize = sizeof(volume);
-		err = AudioDeviceGetProperty(This->mDeviceID, 1, isInput,
-					kAudioDevicePropertyVolumeScalar,
-					&theSize, &volume);
+	   property_address.mElement = 1;
+		err = AudioObjectGetPropertyData(This->mDeviceID, &property_address,
+											 0, NULL, &theSize, &volume);
 	}
 
-	std::cout << (isInput?"Recorder":"Player")
-		  << " volume updated " << unsigned(100*volume) << std::endl;
+	PTRACE(4, "MaxAudio\t" << (isInput?"Recorder":"Player") << " volume updated " << unsigned(100*volume));
 
 	return noErr;
+#endif
 }
 
 #include "maccoreaudio/mute_hack.inl"
@@ -1454,6 +1495,13 @@ PBoolean PSoundChannelCoreAudio::GetVolume(unsigned & volume)
    Float32 theValue;
    bool isInput = (direction == Player ? false : true);
 
+   AudioObjectPropertyAddress property_address;
+
+   property_address.mScope = isInput ? kAudioDevicePropertyScopeInput : 
+				       kAudioDevicePropertyScopeOutput;
+   property_address.mElement = kAudioObjectPropertyElementMaster;
+   property_address.mSelector = kAudioDevicePropertyVolumeScalar;
+
    if(mDeviceID == kAudioDeviceDummy){
 	   //in the case of a dummy device, we simply return 0 in all cases
       PTRACE(1, "Dummy device");
@@ -1464,17 +1512,15 @@ PBoolean PSoundChannelCoreAudio::GetVolume(unsigned & volume)
 
 	theSize = sizeof(theValue);
 	// not all devices have a master channel
-	err = AudioDeviceGetProperty(mDeviceID, 0, isInput,
-						  kAudioDevicePropertyVolumeScalar,
-						  &theSize, &theValue);
+	err = AudioObjectGetPropertyData(mDeviceID, &property_address,
+										 0, NULL, &theSize, &theValue);
 	if(err != kAudioHardwareNoError) {
 		// take the value of first channel to be the volume
-	   theSize = sizeof(theValue);
-		err = AudioDeviceGetProperty(mDeviceID, 1, isInput,
-					kAudioDevicePropertyVolumeScalar,
-					&theSize, &theValue);
+	   theSize = sizeof(volume);
+	   property_address.mElement = 1;
+		err = AudioObjectGetPropertyData(mDeviceID, &property_address,
+											 0, NULL, &theSize, &theValue);
 	}
-		
 
    if (err == kAudioHardwareNoError) {
      // volume is between 0 and 100? 
@@ -1496,10 +1542,16 @@ PBoolean PSoundChannelCoreAudio::GetVolume(unsigned & volume)
 PBoolean PSoundChannelCoreAudio::SetVolume(unsigned volume)
 {
    OSStatus err = noErr;
-   Boolean isWritable;
    bool isInput = (direction == Player ? false : true);
 	bool useMaster = false;
+   UInt32 ignore;
 
+   AudioObjectPropertyAddress property_address;
+
+   property_address.mScope = isInput ? kAudioDevicePropertyScopeInput : 
+				       kAudioDevicePropertyScopeOutput;
+   property_address.mElement = kAudioObjectPropertyElementMaster;
+   property_address.mSelector = kAudioDevicePropertyVolumeScalar;
 
    if(mDeviceID == kAudioDeviceDummy) {
       PTRACE(1, "Dummy device");
@@ -1513,34 +1565,38 @@ PBoolean PSoundChannelCoreAudio::SetVolume(unsigned volume)
 
 
 	 // not all devices have a master channel 
-	err = AudioDeviceGetPropertyInfo(mDeviceID, 0, isInput,
-	             kAudioDevicePropertyVolumeScalar,
-	             NULL, &isWritable);
+	err = AudioObjectGetPropertyDataSize(mDeviceID, &property_address,
+										 0, NULL, &ignore);
 	if(err != kAudioHardwareNoError) 
 	{
 		// check if we can access the individual channels 
-		err = AudioDeviceGetPropertyInfo(mDeviceID, 1, isInput,
-					kAudioDevicePropertyVolumeScalar,
-					NULL, &isWritable);
+		property_address.mElement = 1;
+		err = AudioObjectGetPropertyDataSize(mDeviceID,
+					&property_address,
+					0, NULL, &ignore);
 					useMaster = false;
 	}
 	checkStatus(err);
 	                                                                                             
-   if ((err == kAudioHardwareNoError) && isWritable) 
+   if (err == kAudioHardwareNoError) 
 	{
       // is the volume between 0 and 100 ? 
       float theValue = ((float)volume)/100.0;
 		if(useMaster){
-			err = AudioDeviceSetProperty(mDeviceID, NULL, 0, isInput,
-						 kAudioDevicePropertyVolumeScalar,
+			property_address.mElement = kAudioObjectPropertyElementMaster;
+			err = AudioObjectSetPropertyData(mDeviceID,
+						 &property_address,
+						 0, NULL,
 						 sizeof(float), &theValue);
 			checkStatus(err);
 		} else {
 			// iterate over all channels
 			for(unsigned ch = 1; ch <= hwASBD.mChannelsPerFrame; ch++)
 			{
-				err = AudioDeviceSetProperty(mDeviceID, NULL, ch, isInput,
-							 kAudioDevicePropertyVolumeScalar,
+				property_address.mElement = ch;
+				err = AudioObjectSetPropertyData(mDeviceID, 
+							 &property_address,
+							 0, NULL,
 							 sizeof(float), &theValue);
 				checkStatus(err);
 			}
@@ -1550,11 +1606,17 @@ PBoolean PSoundChannelCoreAudio::SetVolume(unsigned volume)
 		 * code alltogether
 		{
 			UInt32 mute = (volume == 0)? 1 * mute * : 0 * unmute * ;
-			err = AudioDeviceSetProperty(mDeviceID, NULL, useMaster?0:1, 
-					isInput, kAudioDevicePropertyMute, sizeof(UInt32), &mute);
+			property_address.mSelector = kAudioDevicePropertyVolumeScalar;
+			property_address.mElement = useMaster ?
+										kAudioObjectPropertyElementMaster : 1;
+			err = AudioObjectSetPropertyData(mDeviceID, &property_address,
+						0, NULL,
+						sizeof(UInt32), &mute);
 			checkStatus(err);
-			err = AudioDeviceSetProperty(mDeviceID, NULL, useMaster?0:1,
-					isInput, kAudioDevicePropertySubMute, sizeof(UInt32), &mute);
+			property_address.mSelector = kAudioDevicePropertyVolumeScalar;
+			err = AudioObjectSetPropertyData(mDeviceID, &property_address,
+						0, NULL,
+						sizeof(UInt32), &mute);
 			checkStatus(err);
 
 		}
@@ -1781,7 +1843,5 @@ PBoolean PSoundChannelCoreAudio::WaitForAllRecordBuffersFull()
    PAssert(0, PUnimplementedFunction);
    return false;
 }
-
-#endif
 
 // End of file
