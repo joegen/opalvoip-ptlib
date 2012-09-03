@@ -1940,10 +1940,10 @@ class PConstantString : public ParentString
     PContainerReference m_staticReference;
   public:
     PConstantString(typename ParentString::Initialiser init)
-      : ParentString(m_staticReference, strlen(PAssertNULL(init)))
+      : ParentString(m_staticReference, init != NULL ? strlen(init) : 0)
       , m_staticReference(this->m_length+1, true)
     {
-      this->theArray = (char *)init;
+      this->theArray = (char *)(init != NULL ? init : "");
     }
     ~PConstantString() { this->Destruct(); }
 
