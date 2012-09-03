@@ -179,12 +179,10 @@ class PSoundChannelCoreAudio : public PSoundChannel
          AudioBufferList * ioData);
 
    static OSStatus VolumeChangePropertyListener(
-         AudioDeviceID id, 
-         UInt32 chan,
-         Boolean isInput,
-         AudioDevicePropertyID propID, 
-         void* inUserData
-   );
+        AudioDeviceID id,
+        UInt32 numberAddresses,
+        const AudioObjectPropertyAddress addresses[],
+        void *user_data);
 
 
    /**

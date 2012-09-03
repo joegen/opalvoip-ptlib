@@ -25,8 +25,15 @@ static int CADeviceList(AudioDeviceID **devlist)
   int numDevices;
   AudioDeviceID *deviceList;
 
-  theStatus = AudioHardwareGetPropertyInfo(kAudioHardwarePropertyDevices,
-					   &theSize, NULL);
+  AudioObjectPropertyAddress property_address;
+
+  property_address.mScope = kAudioObjectPropertyScopeGlobal;
+  property_address.mElement = kAudioObjectPropertyElementMaster;
+  property_address.mSelector = kAudioHardwarePropertyDevices;
+  theStatus = AudioObjectGetPropertyDataSize ( kAudioObjectSystemObject,
+                              &property_address,
+                              0, NULL, &theSize);
+
   if (theStatus != 0) {
     (*devlist) = NULL;
     return 0;
@@ -40,8 +47,10 @@ static int CADeviceList(AudioDeviceID **devlist)
     return 0;
   }
 
-  theStatus = AudioHardwareGetProperty(kAudioHardwarePropertyDevices,
-				       &theSize, deviceList);
+  theStatus = AudioObjectGetPropertyData ( kAudioObjectSystemObject,
+                              &property_address,
+                              0, NULL, &theSize, (void*)deviceList );
+
   if (theStatus != 0) {
     free(deviceList);
     (*devlist) = NULL;
@@ -62,9 +71,15 @@ static PString CADeviceName(AudioDeviceID id)
   UInt32 theSize;
   char name[128];
 
+  AudioObjectPropertyAddress property_address;
+
+  property_address.mScope = kAudioObjectPropertyScopeGlobal;
+  property_address.mElement = kAudioObjectPropertyElementMaster;
+  property_address.mSelector = kAudioDevicePropertyDeviceName;
+
   theSize = sizeof(name);
-  theStatus = AudioDeviceGetProperty(id, 0, false,
-				     kAudioDevicePropertyDeviceName,
+  theStatus = AudioObjectGetPropertyData ( id, &property_address,
+				     0, NULL,
 				     &theSize, name);
   if (theStatus != 0 || *name == 0)
     return 0;
@@ -86,11 +101,19 @@ static int CADeviceSupportDirection(AudioDeviceID id, bool isInput )
   UInt32 theSize;
 
   UInt32 numStreams;
+  theSize = sizeof(numStreams);
+
+  AudioObjectPropertyAddress property_address;
 
 
-  theStatus = AudioDeviceGetPropertyInfo(id, 0, isInput,
-					 kAudioDevicePropertyStreams,
-					 &theSize, NULL );
+  property_address.mScope = isInput ? kAudioDevicePropertyScopeInput :
+                       kAudioDevicePropertyScopeOutput;
+  property_address.mElement = kAudioObjectPropertyElementMaster;
+  property_address.mSelector = kAudioDevicePropertyStreams;
+
+  theStatus = AudioObjectGetPropertyData ( id, &property_address,
+				     0, NULL,
+				     &theSize, &numStreams);
 
   if (theStatus == 0) {
     numStreams = theSize/sizeof(AudioStreamID);
