@@ -2955,6 +2955,39 @@ PBoolean PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
+PIPSocketAddressAndPort::PIPSocketAddressAndPort(char separator)
+  : m_address(PIPSocket::GetInvalidAddress())
+  , m_port(0)
+  , m_separator(separator)
+{
+}
+
+
+PIPSocketAddressAndPort::PIPSocketAddressAndPort(WORD defaultPort, char separator)
+  : m_address(PIPSocket::GetInvalidAddress())
+  , m_port(defaultPort)
+  , m_separator(separator)
+{
+}
+
+
+PIPSocketAddressAndPort::PIPSocketAddressAndPort(const PString & str, WORD defaultPort, char separator, const char * proto)
+  : m_address(PIPSocket::GetInvalidAddress())
+  , m_port(defaultPort)
+  , m_separator(separator)
+{
+  Parse(str, defaultPort, m_separator, proto);
+}
+
+
+PIPSocketAddressAndPort::PIPSocketAddressAndPort(const PIPSocket::Address & addr, WORD defaultPort, char separator)
+  : m_address(addr)
+  , m_port(defaultPort)
+  , m_separator(separator)
+{
+}
+
+
 PIPSocketAddressAndPort::PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen)
   : m_address(ai_addr->sa_family, ai_addrlen, ai_addr)
   , m_port(ntohs((ai_addr->sa_family == AF_INET) ? ((sockaddr_in *)ai_addr)->sin_port : ((sockaddr_in6 *)ai_addr)->sin6_port))
@@ -2963,14 +2996,17 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(struct sockaddr *ai_addr, const
 }
 
 
-PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char separator)
+PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char separator, const char * proto)
 {
   if (separator != '\0')
     m_separator = separator;
 
-  PINDEX pos = str.Find(m_separator);
+  PINDEX pos = 0;
+  if (str[0] == '[')
+    pos = str.Find(']');
+  pos = str.Find(m_separator, pos);
   if (pos != P_MAX_INDEX)
-    port = (WORD)str.Mid(pos+1).AsUnsigned();
+    port = PIPSocket::GetPortByService(proto, str.Mid(pos+1));
 
   if (port != 0)
     m_port = port;
