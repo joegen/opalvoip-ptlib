@@ -741,45 +741,35 @@ class PIPSocket : public PSocket
 class PIPSocketAddressAndPort
 {
   public:
-    PIPSocketAddressAndPort()
-      : m_address(PIPSocket::GetInvalidAddress())
-      , m_port(0)
-      , m_separator(':')
-    {
-    }
+    PIPSocketAddressAndPort(
+      char separator = ':'
+    );
+    PIPSocketAddressAndPort(
+      WORD defaultPort,
+      char separator = ':'
+    );
+    PIPSocketAddressAndPort(
+      const PString & str,
+      WORD defaultPort = 0,
+      char separator = ':',
+      const char * proto = NULL
+    );
+    PIPSocketAddressAndPort(
+      const PIPSocket::Address & addr,
+      WORD defaultPort = 0,
+      char separator = ':'
+    );
+    PIPSocketAddressAndPort(
+      struct sockaddr *ai_addr,
+      const int ai_addrlen
+    );
 
-    PIPSocketAddressAndPort(char separator)
-      : m_address(PIPSocket::GetInvalidAddress())
-      , m_port(0)
-      , m_separator(separator)
-    {
-    }
-
-    PIPSocketAddressAndPort(WORD defaultPort, char separator = ':')
-      : m_address(PIPSocket::GetInvalidAddress())
-      , m_port(defaultPort)
-      , m_separator(separator)
-    {
-    }
-
-    PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char separator = ':')
-      : m_address(PIPSocket::GetInvalidAddress())
-      , m_port(defaultPort)
-      , m_separator(separator)
-    {
-        Parse(str, defaultPort, m_separator);
-    }
-
-    PIPSocketAddressAndPort(const PIPSocket::Address & addr, WORD defaultPort = 0, char separator = ':')
-      : m_address(addr)
-      , m_port(defaultPort)
-      , m_separator(separator)
-    {
-    }
-
-    PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen);
-
-    PBoolean Parse(const PString & str, WORD defaultPort = 0, char separator = ':');
+    PBoolean Parse(
+      const PString & str,
+      WORD defaultPort = 0,
+      char separator = ':',
+      const char * proto = NULL
+    );
 
     PString AsString(char separator = 0) const;
 
