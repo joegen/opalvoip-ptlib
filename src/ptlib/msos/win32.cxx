@@ -1379,7 +1379,7 @@ PBoolean PProcess::IsGUIProcess() const
 
 #else
 
-static int IsGUIProcessStatus;
+static bool s_IsGUIProcess = true;
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
@@ -1393,17 +1393,16 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   if (wndProcess != (DWORD)thisProcess)
     return TRUE;
 
-  IsGUIProcessStatus = -1;
+  s_IsGUIProcess = false;
   return FALSE;
 }
 
 PBoolean PProcess::IsGUIProcess() const
 {
-  if (IsGUIProcessStatus == 0) {
-    IsGUIProcessStatus = 1;
+  static PAtomicBoolean CheckGUIProcess;
+  if (!CheckGUIProcess.TestAndSet(true))
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
-  }
-  return IsGUIProcessStatus > 0;
+  return s_IsGUIProcess;
 }
 
 #endif // _WIN32_WCE
