@@ -40,9 +40,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#if defined(_WIN32)
-#ifndef _WIN32_WCE
-#include <imagehlp.h>
+#ifdef _WIN32_WCE
+
+void PProcess::WaitOnExitConsoleWindow()
+{
+}
+
+#define StackWalk(strm)
+
+#else
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
@@ -68,268 +74,219 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   ReadConsole(in, &dummy, 1, &readBytes, NULL);
   return PFalse;
 }
-#endif // _WIN32_WCE
 
 
 void PProcess::WaitOnExitConsoleWindow()
 {
-#ifndef _WIN32_WCE
   if (!m_library)
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
-#endif // _WIN32_WCE
 }
 
-
-#ifndef _WIN32_WCE
-class PImageDLL : public PDynaLink
-{
-  PCLASSINFO(PImageDLL, PDynaLink)
-  public:
-    PImageDLL();
-
-  PBoolean (__stdcall *SymInitialize)(
-    IN HANDLE   hProcess,
-    IN LPSTR    UserSearchPath,
-    IN PBoolean     fInvadeProcess
-    );
-  PBoolean (__stdcall *SymCleanup)(
-    IN HANDLE hProcess
-    );
-  DWORD (__stdcall *SymGetOptions)();
-  DWORD (__stdcall *SymSetOptions)(
-    DWORD options
-    );
-  DWORD (__stdcall *SymLoadModule)(
-    HANDLE hProcess,
-    HANDLE hFile,     
-    PSTR   ImageName,  
-    PSTR   ModuleName, 
-    DWORD  BaseOfDll,  
-    DWORD  SizeOfDll   
-    );
-  PBoolean (__stdcall *StackWalk)(
-    DWORD                             MachineType,
-    HANDLE                            hProcess,
-    HANDLE                            hThread,
-    LPSTACKFRAME                      StackFrame,
-    LPVOID                            ContextRecord,
-    PREAD_PROCESS_MEMORY_ROUTINE      ReadMemoryRoutine,
-    PFUNCTION_TABLE_ACCESS_ROUTINE    FunctionTableAccessRoutine,
-    PGET_MODULE_BASE_ROUTINE          GetModuleBaseRoutine,
-    PTRANSLATE_ADDRESS_ROUTINE        TranslateAddress
-    );
-  PBoolean (__stdcall *SymGetSymFromAddr)(
-    IN  HANDLE              hProcess,
-    IN  DWORD               dwAddr,
-    OUT PDWORD              pdwDisplacement,
-    OUT PIMAGEHLP_SYMBOL    Symbol
-    );
-
-  PFUNCTION_TABLE_ACCESS_ROUTINE SymFunctionTableAccess;
-  PGET_MODULE_BASE_ROUTINE       SymGetModuleBase;
-
-  PBoolean (__stdcall *SymGetModuleInfo)(
-    IN  HANDLE              hProcess,
-    IN  DWORD               dwAddr,
-    OUT PIMAGEHLP_MODULE    ModuleInfo
-    );
-};
-
-
-PImageDLL::PImageDLL()
-  : PDynaLink("IMAGEHLP.DLL")
-{
-  if (!GetFunction("SymInitialize", (Function &)SymInitialize) ||
-      !GetFunction("SymCleanup", (Function &)SymCleanup) ||
-      !GetFunction("SymGetOptions", (Function &)SymGetOptions) ||
-      !GetFunction("SymSetOptions", (Function &)SymSetOptions) ||
-      !GetFunction("SymLoadModule", (Function &)SymLoadModule) ||
-      !GetFunction("StackWalk", (Function &)StackWalk) ||
-      !GetFunction("SymGetSymFromAddr", (Function &)SymGetSymFromAddr) ||
-      !GetFunction("SymFunctionTableAccess", (Function &)SymFunctionTableAccess) ||
-      !GetFunction("SymGetModuleBase", (Function &)SymGetModuleBase) ||
-      !GetFunction("SymGetModuleInfo", (Function &)SymGetModuleInfo))
-    Close();
-}
-
-
-#endif
-#endif
-
-bool PAssertFunc(const char * msg)
-{
-  ostringstream str;
-  str << msg;
-
-#if defined(_WIN32) && defined(_M_IX86)
-  PImageDLL imagehlp;
-  if (imagehlp.IsLoaded()) {
-    // Turn on load lines.
-    imagehlp.SymSetOptions(imagehlp.SymGetOptions()|SYMOPT_LOAD_LINES);
-    HANDLE hProcess;
-    OSVERSIONINFO ver;
-    ver.dwOSVersionInfoSize = sizeof(ver);
-    ::GetVersionEx(&ver);
-    if (ver.dwPlatformId == VER_PLATFORM_WIN32_NT)
-      hProcess = GetCurrentProcess();
-    else
-      hProcess = (HANDLE)GetCurrentProcessId();
-    if (imagehlp.SymInitialize(hProcess, NULL, PTrue)) {
-      HANDLE hThread = GetCurrentThread();
-      // The thread information.
-      CONTEXT threadContext;
-      threadContext.ContextFlags = CONTEXT_FULL ;
-      if (GetThreadContext(hThread, &threadContext)) {
-        STACKFRAME frame;
-        memset(&frame, 0, sizeof(frame));
+#include <DbgHelp.h>
 
 #if defined (_M_IX86)
 #define IMAGE_FILE_MACHINE IMAGE_FILE_MACHINE_I386
-        frame.AddrPC.Offset    = threadContext.Eip;
-        frame.AddrPC.Mode      = AddrModeFlat;
-        frame.AddrStack.Offset = threadContext.Esp;
-        frame.AddrStack.Mode   = AddrModeFlat;
-        frame.AddrFrame.Offset = threadContext.Ebp;
-        frame.AddrFrame.Mode   = AddrModeFlat;
-
-#elif defined (_M_ALPHA)
-#define IMAGE_FILE_MACHINE IMAGE_FILE_MACHINE_ALPHA
-        frame.AddrPC.Offset = (unsigned long)threadContext.Fir;
-        frame.AddrPC.Mode   = AddrModeFlat;
+#elif _M_X64
+#define IMAGE_FILE_MACHINE IMAGE_FILE_MACHINE_AMD64
+#elif _M_IA64
+#define IMAGE_FILE_MACHINE IMAGE_FILE_MACHINE_IA64
 #else
 #error ( "Unknown machine!" )
 #endif
 
-        int frameCount = 0;
-        while (frameCount++ < 16 &&
-               imagehlp.StackWalk(IMAGE_FILE_MACHINE,
-                                  hProcess,
-                                  hThread,
-                                  &frame,
-                                  &threadContext,
-                                  NULL, // ReadMemoryRoutine
-                                  imagehlp.SymFunctionTableAccess,
-                                  imagehlp.SymGetModuleBase,
-                                  NULL)) {
-          if (frameCount > 1 && frame.AddrPC.Offset != 0) {
-            char buffer[sizeof(IMAGEHLP_SYMBOL)+100];
-            PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)buffer;
-            symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
-            symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL);
-            DWORD displacement = 0;
-            if (imagehlp.SymGetSymFromAddr(hProcess,
-                                           frame.AddrPC.Offset,
-                                           &displacement,
-                                           symbol)) {
-              str << "\n    " << symbol->Name;
-            }
-            else {
-              str << "\n    0x"
-                  << hex << setfill('0')
-                  << setw(8) << frame.AddrPC.Offset
-                  << dec << setfill(' ');
-            }
-            str << '(' << hex << setfill('0');
-            for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
-              if (i > 0)
-                str << ", ";
-              if (frame.Params[i] != 0)
-                str << "0x";
-              str << frame.Params[i];
-            }
-            str << setfill(' ') << ')';
-            if (displacement != 0)
-              str << " + 0x" << displacement;
-          }
-        }
+class PDebugDLL : public PDynaLink
+{
+  PCLASSINFO(PDebugDLL, PDynaLink)
+  public:
+    BOOL (__stdcall *SymInitialize)(
+      __in HANDLE hProcess,
+      __in_opt PCSTR UserSearchPath,
+      __in BOOL fInvadeProcess
+    );
+    BOOL (__stdcall *SymCleanup)(
+      __in HANDLE hProcess
+    );
+    DWORD (__stdcall *SymGetOptions)(
+      VOID
+    );
+    DWORD (__stdcall *SymSetOptions)(
+      __in DWORD   SymOptions
+    );
+    BOOL (__stdcall *StackWalk64)(
+      __in DWORD MachineType,
+      __in HANDLE hProcess,
+      __in HANDLE hThread,
+      __inout LPSTACKFRAME64 StackFrame,
+      __inout PVOID ContextRecord,
+      __in_opt PREAD_PROCESS_MEMORY_ROUTINE64 ReadMemoryRoutine,
+      __in_opt PFUNCTION_TABLE_ACCESS_ROUTINE64 FunctionTableAccessRoutine,
+      __in_opt PGET_MODULE_BASE_ROUTINE64 GetModuleBaseRoutine,
+      __in_opt PTRANSLATE_ADDRESS_ROUTINE64 TranslateAddress
+    );
+    BOOL (__stdcall *SymGetSymFromAddr64)(
+      __in HANDLE hProcess,
+      __in DWORD64 qwAddr,
+      __out_opt PDWORD64 pdwDisplacement,
+      __inout PIMAGEHLP_SYMBOL64  Symbol
+    );
 
-        if (frameCount <= 2) {
-          DWORD e = ::GetLastError();
-          str << "\n    No stack dump: IMAGEHLP.DLL StackWalk failed: error=" << e;
-        }
-      }
-      else {
-        DWORD e = ::GetLastError();
-        str << "\n    No stack dump: IMAGEHLP.DLL GetThreadContext failed: error=" << e;
-      }
+    PFUNCTION_TABLE_ACCESS_ROUTINE64 SymFunctionTableAccess64;
+    PGET_MODULE_BASE_ROUTINE64       SymGetModuleBase64;
 
-      imagehlp.SymCleanup(hProcess);
+    PDebugDLL()
+      : PDynaLink("DBGHELP.DLL")
+    {
     }
-    else {
-      DWORD e = ::GetLastError();
-      str << "\n    No stack dump: IMAGEHLP.DLL SymInitialise failed: error=" << e;
-    }
-  }
-  else {
-    DWORD e = ::GetLastError();
-    str << "\n    No stack dump: IMAGEHLP.DLL could not be loaded: error=" << e;
-  }
-#endif
 
-  str << ends;
-  // Copy to local variable so char ptr does not become invalidated
-  std::string sstr = str.str();
+    ~PDebugDLL()
+    {
+      if (IsLoaded())
+        SymCleanup(GetCurrentProcess());
+    }
+
+    void StackWalk(ostream & strm)
+    {
+      if (!GetFunction("SymInitialize", (Function &)SymInitialize) ||
+          !GetFunction("SymCleanup", (Function &)SymCleanup) ||
+          !GetFunction("SymGetOptions", (Function &)SymGetOptions) ||
+          !GetFunction("SymSetOptions", (Function &)SymSetOptions) ||
+          !GetFunction("StackWalk64", (Function &)StackWalk64) ||
+          !GetFunction("SymGetSymFromAddr64", (Function &)SymGetSymFromAddr64) ||
+          !GetFunction("SymFunctionTableAccess64", (Function &)SymFunctionTableAccess64) ||
+          !GetFunction("SymGetModuleBase64", (Function &)SymGetModuleBase64) ||
+          !SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+        DWORD err = ::GetLastError();
+        Close();
+        strm << "\n    No stack dump: " << GetName() << " failed: error=" << err;
+        return;
+      }
+
+      SymSetOptions(SymGetOptions()|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS);
+
+      // The thread information.
+      CONTEXT threadContext;
+      memset(&threadContext, 0, sizeof(threadContext));
+      RtlCaptureContext(&threadContext);
+
+      STACKFRAME64 frame;
+      memset(&frame, 0, sizeof(frame));
+      frame.AddrPC.Mode    = AddrModeFlat;
+      frame.AddrStack.Mode = AddrModeFlat;
+      frame.AddrFrame.Mode = AddrModeFlat;
+
+      int frameCount = 0;
+      while (frameCount++ < 16 &&
+                        StackWalk64(IMAGE_FILE_MACHINE,
+                                    GetCurrentProcess(),
+                                    GetCurrentThread(),
+                                    &frame,
+                                    &threadContext,
+                                    NULL,
+                                    SymFunctionTableAccess64,
+                                    SymGetModuleBase64,
+                                    NULL) && frame.AddrPC.Offset != 0) {
+        if (frameCount <= 1)
+          continue;
+
+        char buffer[sizeof(IMAGEHLP_SYMBOL64)+200];
+        PIMAGEHLP_SYMBOL64 symbol = (PIMAGEHLP_SYMBOL64)buffer;
+        symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
+        symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL64);
+        DWORD64 displacement = 0;
+        strm << "\n    ";
+        if (SymGetSymFromAddr64(GetCurrentProcess(), frame.AddrPC.Offset, &displacement, symbol))
+          strm << symbol->Name;
+        else
+          strm << hex << setfill('0') << setw(8) << frame.AddrPC.Offset << dec << setfill(' ');
+        strm << '(' << hex << setfill('0');
+        for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
+          if (i > 0)
+            strm << ", ";
+          if (frame.Params[i] != 0)
+            strm << "0x";
+          strm << frame.Params[i];
+        }
+        strm << setfill(' ') << ')';
+        if (displacement != 0)
+          strm << " + 0x" << displacement;
+      }
+
+      if (frameCount <= 2) {
+        DWORD err = ::GetLastError();
+        strm << "\n    No stack dump: " << GetName() << " StackWalk64 failed: error=" << err;
+      }
+    }
+};
+
+
+static void StackWalk(ostream & strm)
+{
+  PDebugDLL debughelp;
+  if (debughelp.IsLoaded())
+    debughelp.StackWalk(strm);
+}
+
+#endif // _WIN32_WCE
+
+static PCriticalSection AssertMutex;
+
+bool PAssertFunc(const char * msg)
+{
+  std::string str;
+  {
+    ostringstream strm;
+    strm << msg;
+    StackWalk(strm);
+    strm << ends;
+    str = strm.str();
+  }
 
 #ifndef _WIN32_WCE
   if (PProcess::Current().IsServiceProcess()) {
-    PSYSTEMLOG(Fatal, sstr);
+    PSYSTEMLOG(Fatal, str);
     if (PServiceProcess::Current().debugMode)
       PBreakToDebugger();;
     return false;
   }
 #endif // !_WIN32_WCE
 
-  PTRACE(0, sstr);
+  PTRACE(0, str);
 
-#if defined(_WIN32)
-  static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
-  WaitForSingleObject(mutex, INFINITE);
-#endif
+  PWaitAndSignal mutex(AssertMutex);
 
   if (PProcess::Current().IsGUIProcess()) {
-    PVarString msg = sstr.c_str();
+    PVarString msg = str;
     PVarString name = PProcess::Current().GetName();
     switch (MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
       case IDABORT :
-#if !defined(_WIN32_WCE)
-		  FatalExit(1);  // Never returns
-#else
-		  ExitProcess(1);
-#endif // !_WIN32_WCE
+	_exit(100); // Never returns
+
       case IDRETRY :
-        DebugBreak();
+        PBreakToDebugger();
     }
-#if defined(_WIN32)
-    ReleaseSemaphore(mutex, 1, NULL);
-#endif
     return false;
   }
 
   for (;;) {
-    cerr << sstr << "\n<A>bort, <B>reak, <I>gnore? ";
+    cerr << str << "\n<A>bort, <B>reak, <I>gnore? ";
     cerr.flush();
     switch (cin.get()) {
       case 'A' :
       case 'a' :
         cerr << "Aborted" << endl;
-        _exit(100);
-        
+        _exit(100); // Never returns
+
       case 'B' :
       case 'b' :
         cerr << "Break" << endl;
-#if defined(_WIN32)
-        ReleaseSemaphore(mutex, 1, NULL);
-#endif
         PBreakToDebugger();
-        // Then ignore it
+        return false; // Then ignore it
 
       case 'I' :
       case 'i' :
-      case EOF :
         cerr << "Ignored" << endl;
-#if defined(_WIN32)
-        ReleaseSemaphore(mutex, 1, NULL);
-#endif
+
+      case EOF :
         return false;
     }
   }
