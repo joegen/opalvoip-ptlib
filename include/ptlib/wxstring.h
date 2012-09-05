@@ -42,9 +42,9 @@ class PwxString : public wxString
   public:
     PwxString() { }
     PwxString(const wxString & str) : wxString(str) { }
-    PwxString(const PString & str) : wxString((const char *)str, wxConvUTF8 ) { }
-    PwxString(const PFilePath & fn) : wxString((const char *)fn, wxConvUTF8 ) { }
-    PwxString(const char * str) : wxString(str, wxConvUTF8) { }
+    PwxString(const char     * str) : wxString(              str, wxConvUTF8) { }
+    PwxString(const  PString & str) : wxString((const char *)str, wxConvUTF8) { }
+    PwxString(const PFilePath & fn) : wxString((const char *)fn,  wxConvUTF8) { }
 #ifdef OPAL_OPAL_MEDIAFMT_H
     PwxString(const OpalMediaFormat & fmt) : wxString((const char *)fmt.GetName(), wxConvUTF8) { }
 #endif
@@ -105,6 +105,11 @@ class PwxString : public wxString
 #endif
     inline friend ostream & operator<<(ostream & stream, const PwxString & string) { return stream << string.c_str(); }
     inline friend wostream & operator<<(wostream & stream, const PwxString & string) { return stream << string.c_str(); }
+#endif
+
+#if !wxCHECK_VERSION(2,9,2)
+    PwxString & operator<<(const char    * str) { *this += wxString(              str, wxConvUTF8); return *this; }
+    PwxString & operator<<(const PString & str) { *this += wxString((const char *)str, wxConvUTF8); return *this; }
 #endif
 };
 
