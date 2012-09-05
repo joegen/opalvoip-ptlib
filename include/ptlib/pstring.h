@@ -135,6 +135,14 @@ class PString : public PCharArray
       const PCharArray & buf  ///< Buffer to create new reference to.
     );
 
+    /**Create a new string based on the BYTE array.
+       Note it is up to the caller to assure the semantics of a binary object
+       such as PBYTEArray are suitable to be used as a string.
+     */
+    PString(
+      const PBYTEArray & buf  ///< Buffer to create new reference to.
+    );
+
     /**Create a new string from the specified std::string
      */
     PString(

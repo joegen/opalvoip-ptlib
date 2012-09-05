@@ -307,7 +307,7 @@ PString PBase64::Decode(const PString & str)
 {
   PBYTEArray data;
   Decode(str, data);
-  return PString((const char *)(const BYTE *)data, data.GetSize());
+  return PString(data);
 }
 
 
