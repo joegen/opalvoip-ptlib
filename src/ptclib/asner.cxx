@@ -1118,7 +1118,7 @@ PString PASN_OctetString::AsString() const
 {
   if (value.IsEmpty())
     return PString();
-  return PString((const char *)(const BYTE *)value, value.GetSize());
+  return PString(value);
 }
 
 
