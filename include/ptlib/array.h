@@ -643,6 +643,14 @@ class PBYTEArray : public PBaseArray<BYTE>
       return PNEW PBYTEArray(*this, GetSize());
     }
   //@}
+
+    /**Function to cast block of memory in PBYTEArray to another structure.
+      */
+    template <typename T> const T & GetAs(PINDEX offset = 0)
+    {
+      PAssert(offset+(PINDEX)sizeof(T) <= GetSize(), PInvalidParameter);
+      return *(const T *)(theArray+offset);
+    }
 };
 
 
