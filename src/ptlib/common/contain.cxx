@@ -654,6 +654,13 @@ PString::PString(const PCharArray & buf)
 }
 
 
+PString::PString(const PBYTEArray & buf)
+  : PCharArray((const char *)(const BYTE *)buf, buf.GetSize())
+  , m_length(strlen(theArray))
+{
+}
+
+
 PString::PString(int, const PString * str)
   : PCharArray(*str)
   , m_length(str->GetLength())
