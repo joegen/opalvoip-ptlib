@@ -453,15 +453,15 @@ class PIPSocket : public PSocket
        @return
        false (or empty string) if the IP number was not available.
      */
-    virtual PString GetLocalAddress();
-    virtual bool GetLocalAddress(
+    PString GetLocalAddress();
+    bool GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address.
     );
-    virtual bool GetLocalAddress(
+    bool GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
     );
-    virtual bool GetLocalAddress(
+    bool GetLocalAddress(
       PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
     )
     { return InternalGetLocalAddress(addr); }
@@ -472,15 +472,15 @@ class PIPSocket : public PSocket
        @return
        false (or empty string) if the IP number was not available.
      */
-    virtual PString GetPeerAddress();
-    virtual bool GetPeerAddress(
+    PString GetPeerAddress();
+    bool GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address.
     );
-    virtual bool GetPeerAddress(
+    bool GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
     );
-    virtual bool GetPeerAddress(
+    bool GetPeerAddress(
       PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
     )
     { return InternalGetPeerAddress(addr); }
@@ -707,7 +707,6 @@ class PIPSocket : public PSocket
 #include "unix/ptlib/ipsock.h"
 #endif
 
-  protected:
     virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort);
     virtual bool InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort);
     virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
