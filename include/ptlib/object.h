@@ -147,6 +147,61 @@ using namespace std; // Not a good practice (name space polution), but will take
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Handy macros
+
+/// Count the number of arguments passed in macro
+#define PARG_COUNT(...) PARG_COUNT_PART1(PARG_COUNT_PART2(__VA_ARGS__,9,8,7,6,5,4,3,2,1,0))
+#define PARG_COUNT_PART1(arg) arg
+#define PARG_COUNT_PART2(_1,_2,_3,_4,_5,_6,_7,_8,_9,N,...) N
+
+/// Turn the argument into a string
+#define P_STRINGISE(v) P_STRINGISE_PART2(v)
+#define P_STRINGIZE(v) P_STRINGISE_PART2(v)
+#define P_STRINGISE_PART2(v) #v
+
+/// This declares a standard enumeration (enum) of symbols with ++ and -- operators
+#define P_DECLARE_ENUM_EX(name, firstName, firstValue, ...) \
+  enum name { firstName = firstValue, Begin##name = firstName, __VA_ARGS__, End##name }; \
+  friend __inline name operator++(name & e     ) { PAssert(e <    End##name, PInvalidParameter); return    e = (name)(e+1);           } \
+  friend __inline name operator++(name & e, int) { PAssert(e <    End##name, PInvalidParameter); name o=e; e = (name)(e+1); return o; } \
+  friend __inline name operator--(name & e     ) { PAssert(e >= Begin##name, PInvalidParameter); return    e = (name)(e-1);           } \
+  friend __inline name operator--(name & e, int) { PAssert(e >= Begin##name, PInvalidParameter); name o=e; e = (name)(e-1); return o; } \
+
+/// This declares a standard enumeration (enum) of symbols with ++ and -- operators
+#define P_DECLARE_ENUM(name, first, ...) P_DECLARE_ENUM_EX(name, first, 0, __VA_ARGS__)
+
+extern void PPrintEnum(std::ostream & strm, int e, int begin, int end, char const * const * names);
+extern int PReadEnum(std::istream & strm, int begin, int end, char const * const * names);
+
+#define P_ENUM_NAMES_PART1(narg, args)P_ENUM_NAMES_PART2(narg, args)
+#define P_ENUM_NAMES_PART2(narg, args) P_ENUM_NAMES_ARG_##narg args
+#define P_ENUM_NAMES_ARG_1(_1)#_1
+#define P_ENUM_NAMES_ARG_2(_1,_2)P_ENUM_NAMES_ARG_1(_1),#_2
+#define P_ENUM_NAMES_ARG_3(_1,_2,_3)P_ENUM_NAMES_ARG_2(_1,_2),#_3
+#define P_ENUM_NAMES_ARG_4(_1,_2,_3,_4)P_ENUM_NAMES_ARG_3(_1,_2,_3),#_4
+#define P_ENUM_NAMES_ARG_5(_1,_2,_3,_4,_5)P_ENUM_NAMES_ARG_4(_1,_2,_3,_4),#_5
+#define P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6)P_ENUM_NAMES_ARG_5(_1,_2,_3,_4,_5),#_6
+#define P_ENUM_NAMES_ARG_7(_1,_2,_3,_4,_5,_6,_7)P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6),#_7
+#define P_ENUM_NAMES_ARG_8(_1,_2,_3,_4,_5,_6,_7,_8)P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6,_7),#_8
+#define P_ENUM_NAMES_ARG_9(_1,_2,_3,_4,_5,_6,_7,_8,_9)P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6,_7,_8),#_9
+
+/// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
+#define P_DECLARE_STREAMABLE_ENUM_EX(name, firstName, firstValue, ...) \
+  P_DECLARE_ENUM_EX(name, firstName, firstValue, __VA_ARGS__) \
+  struct PEnumNames_##name { \
+    static char const * const * Names() { static char const * const Strings[] = \
+      { #firstName, P_ENUM_NAMES_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__)) }; return Strings; } \
+  }; \
+  friend __inline std::ostream & operator<<(std::ostream & strm, name e) \
+    { PPrintEnum(strm, e, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
+  friend __inline std::istream & operator>>(std::istream & strm, name & e) \
+    { e = (name)PReadEnum(strm, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
+
+/// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
+#define P_DECLARE_STREAMABLE_ENUM(name, first, ...) P_DECLARE_STREAMABLE_ENUM_EX(name, first, 0, __VA_ARGS__)
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Declare the debugging support
 
 #ifndef P_USE_ASSERTS
@@ -640,10 +695,6 @@ This macro outputs a trace of a source file line execution.
       PTrace::Begin(level, __FILE__, __LINE__, PTraceObjectInstance(), PTraceModule())
 
 
-#define PTRACE_NARG(...) PTRACE_NARG_PART1(PTRACE_NARG_PART2(__VA_ARGS__,4,3,2,1,0))
-#define PTRACE_NARG_PART1(arg) arg
-#define PTRACE_NARG_PART2(_1,_2,_3,_4,N,...) N
-
 // Backward compatibility
 #define PTRACE2(level, object, args) \
         PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, object, PTraceModule())
@@ -675,7 +726,7 @@ will be an issue with the default usage of PTraceObjectInstance(). To avoid
 the issue you will need to make sure the PTRACE macro has four parameters, as
 in the full form descibed above.
 */
-#define PTRACE(...) PTRACE_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
+#define PTRACE(...) PTRACE_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 /** Output trace on condition.
 This macro conditionally outputs a trace of any information needed.
@@ -689,7 +740,7 @@ threshold, and stream is only evaluated if condition is evaluated to true.
 
 See PTRACE() for more information on level, instance, module and stream.
 */
-#define PTRACE_IF(...) PTRACE_IF_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
+#define PTRACE_IF(...) PTRACE_IF_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 /** Begin output trace.
 This macro returns a ostream & for trace output.
@@ -700,7 +751,7 @@ This macro has variable arguments, and is of the form:
 
 See PTRACE() for more information on level, instance, module.
 */
-#define PTRACE_BEGIN(...) PTRACE_BEGIN_PART1(PTRACE_NARG(__VA_ARGS__), (__VA_ARGS__))
+#define PTRACE_BEGIN(...) PTRACE_BEGIN_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
