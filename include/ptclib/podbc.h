@@ -497,8 +497,7 @@ class PODBC  : public PObject
     //@{
     /** Driver types that are supported by this implementation.
     */
-    enum DriverType
-    {
+    P_DECLARE_ENUM(DriverType,
       DSN,
       mySQL,
       postgreSQL,
@@ -511,12 +510,11 @@ class PODBC  : public PObject
       dBase,
       Excel,
       Ascii,
-      ConnectionString,
-      NumDriverTypes
-    };
-    friend DriverType & operator++(DriverType & type) { return type = (DriverType)(type+1); }
+      ConnectionString
+    );
     static const char * GetDriverName(DriverType type);
     friend std::ostream & operator<<(std::ostream & strm, DriverType type) { return strm << PODBC::GetDriverName(type); }
+
 
     /** MSSQL protocols.If your interested?
     */
