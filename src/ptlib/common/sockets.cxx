@@ -3037,4 +3037,11 @@ void PIPSocketAddressAndPort::SetAddress(const PIPSocket::Address & addr, WORD p
 }
 
 
+bool PIPSocketAddressAndPort::MatchWildcard(const PIPSocketAddressAndPort & wild) const
+{
+  return (!wild.m_address.IsValid() || wild.m_address == m_address) &&
+         ( wild.m_port == 0         || wild.m_port    == m_port);
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
