@@ -3191,6 +3191,37 @@ PString PRegularExpression::EscapeString(const PString & str)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void PPrintEnum(std::ostream & strm, int value, int begin, int end, char const * const * names)
+{
+  if (value < begin || value >= end)
+    strm << '<' << value << '>';
+  else
+    strm << names[value-begin];
+}
+
+
+int PReadEnum(std::istream & strm, int begin, int end, char const * const * names)
+{
+  char name[100]; // If someone has an enumeration longer than this, it deserves to fail!
+  strm >> ws;
+  strm.get(name, sizeof(name), ' ');
+  if (strm.fail() || strm.bad())
+    return end;
+
+  for (int value = begin; value < end; ++value) {
+    if (strcmp(name, names[value-begin]) == 0)
+      return value;
+  }
+
+  size_t i = strlen(name);
+  do {
+    strm.putback(name[--i]);
+  } while (i > 0);
+
+  return end;
+}
+
+
 void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * names)
 {
   if (bits == 0) {
@@ -3216,7 +3247,7 @@ unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names)
 {
   unsigned bits = 0;
   while (strm.good()) {
-    char name[100]; // If soomeone has an enumeration longer than this, it deservices to fail!
+    char name[100]; // If someone has an enumeration longer than this, it deserves to fail!
     strm >> ws;
     strm.get(name, sizeof(name), ' ');
     if (strm.fail() || strm.bad())
