@@ -806,6 +806,10 @@ class PIPSocketAddressAndPort
       return strm << ap.AsString();
     }
 
+    bool MatchWildcard(
+      const PIPSocketAddressAndPort & wild
+    ) const;
+
   protected:
     PIPSocket::Address m_address;
     WORD               m_port;
