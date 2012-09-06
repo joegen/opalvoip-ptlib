@@ -117,11 +117,11 @@ PCREATE_PROCESS(ODBCtest)
   if (args.GetCount() == 0)
     data.m_driver = PODBC::MSAccess;
   else {
-    for (data.m_driver = PODBC::DSN; data.m_driver < PODBC::NumDriverTypes; ++data.m_driver) {
+    for (data.m_driver = PODBC::BeginDriverType; data.m_driver < PODBC::EndDriverType; ++data.m_driver) {
       if (args[0].NumCompare(PODBC::GetDriverName(data.m_driver)) == EqualTo)
         break;
     }
-    if (data.m_driver == PODBC::NumDriverTypes) {
+    if (data.m_driver == PODBC::EndDriverType) {
       cout << "\n\nCannot use driver \"" << args[0] << '"' << endl;
       return;
     }
