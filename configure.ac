@@ -1370,6 +1370,7 @@ else
       [pcap_t *h;],
       [
          AC_DEFINE(P_PCAP, 1, "PCAP found")
+         ENDLDLIBS="$ENDLDLIBS -lpcap"
          HAS_PCAP=yes
       ],
       [HAS_PCAP=no]
