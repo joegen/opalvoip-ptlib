@@ -47,6 +47,32 @@
 #define PTraceModule() "EthSock"
 
 
+#pragma pack(1)
+
+struct PEthFrameHeader {
+  PEthSocket::Address dst_addr;
+  PEthSocket::Address src_addr;
+  union {
+    struct {
+      uint16_t type;
+      uint8_t  payload[1500];
+    } ether;
+    struct {
+      uint16_t length;
+      uint8_t  dsap;
+      uint8_t  ssap;
+      uint8_t  ctrl;
+      uint8_t  oui[3];
+      uint16_t type;
+      uint8_t  payload[1492];
+    } snap;
+  };
+};
+
+
+#pragma pack()
+
+
 struct PEthSocket::InternalData {
   pcap_t    * m_pcap;
   bpf_program m_program;
@@ -300,7 +326,7 @@ bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
     if (!channel.Read(m_rawData.GetPointer(), size))
       return false;
     m_rawSize = channel.GetLastReadCount();
-  } while (m_rawSize < sizeof(Address)+sizeof(Address)+sizeof(2));
+  } while ((size_t)m_rawSize < sizeof(Address)+sizeof(Address)+sizeof(2));
 
   m_timestamp.SetCurrentTime();
 
@@ -317,27 +343,9 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload)
 
 int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address & dst)
 {
-  struct FrameHeader {
-    Address dst_addr;
-    Address src_addr;
-    union {
-      struct {
-        uint16_t type;
-        uint8_t  payload[1500];
-      } ether;
-      struct {
-        uint16_t length;
-        uint8_t  dsap;
-        uint8_t  ssap;
-        uint8_t  ctrl;
-        uint8_t  oui[3];
-        uint16_t type;
-        uint8_t  payload[1492];
-      } snap;
-    };
-  } const & header = m_rawData.GetAs<FrameHeader>();
+  const PEthFrameHeader & header = m_rawData.GetAs<PEthFrameHeader>();
 
-  if (m_rawSize < sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length)) {
+  if ((size_t)m_rawSize < sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length)) {
     PTRACE(2, "Frame severely truncated, size=" << m_rawSize);
     return -1;
   }
