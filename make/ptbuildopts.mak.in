@@ -36,6 +36,7 @@ USE_GCC           := @USE_GCC@
 USE_PCH		  := @USE_PCH@
 HAS_IPV6          := @HAS_IPV6@
 HAS_DNS_RESOLVER  := @HAS_DNS_RESOLVER@
+HAS_PCAP          := @HAS_PCAP@
 HAS_SSL 	  := @HAS_SSL@
 HAS_LDAP	  := @HAS_LDAP@
 HAS_SASL	  := @HAS_SASL@
