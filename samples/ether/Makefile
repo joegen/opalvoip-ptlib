@@ -1,5 +1,5 @@
-PROG = netif
-SOURCES := netif.cxx
+PROG = ether
+SOURCES := ether.cxx
 
 ifdef PTLIBDIR
   include $(PTLIBDIR)/make/ptlib.mak

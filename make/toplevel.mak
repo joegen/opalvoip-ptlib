@@ -74,6 +74,9 @@ endif
 ifdef HAS_LUA
 SUBDIRS += samples/lua
 endif
+ifdef HAS_PCAP
+SUBDIRS += samples/ether
+endif
 endif
 
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
