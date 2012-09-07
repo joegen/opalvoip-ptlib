@@ -97,17 +97,19 @@ PBoolean PEthSocket::Connect(const PString & newName)
 
 PBoolean PEthSocket::Close()
 {
-  if (m_internal->m_pcap != NULL) {
-    pcap_close(m_internal->m_pcap);
-    m_internal->m_pcap = NULL;
-  }
-
   os_handle = -1;
+
+  pcap_t * pcap = m_internal->m_pcap;
+  m_internal->m_pcap = NULL;
+
+  if (pcap != NULL)
+    pcap_close(pcap);
+
   return true;
 }
 
 
-PEthSocket::MediumTypes PEthSocket::GetMedium()
+PEthSocket::MediumType PEthSocket::GetMedium()
 {
   if (IsOpen()) {
     switch (pcap_datalink(m_internal->m_pcap)) {
@@ -162,6 +164,9 @@ PBoolean PEthSocket::Read(void * data, PINDEX length)
       return SetErrorValues(Timeout, 0, LastReadError);
 
     default :
+      if (m_internal->m_pcap == NULL)
+        return SetErrorValues(NotOpen, err, LastReadError);
+
       PTRACE(2, "Read error: " << pcap_geterr(m_internal->m_pcap));
       return SetErrorValues(Miscellaneous, err, LastReadError);
   }
@@ -272,27 +277,245 @@ PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
 }
 
 
-PBoolean PEthSocket::ReadPacket(PBYTEArray & buffer,
-                            Address & dest,
-                            Address & src,
-                            WORD & type,
-                            PINDEX & length,
-                            BYTE * & payload)
+///////////////////////////////////////////////////////////////////////////////
+
+PEthSocket::Frame::Frame(PINDEX maxSize)
+  : m_rawData(maxSize)
+  , m_rawSize(0)
+  , m_fragmentated(false)
+  , m_fragmentProto(0)
 {
-  Frame * frame = (Frame *)buffer.GetPointer(sizeof(Frame));
-  const PINDEX MinFrameSize = sizeof(frame->dst_addr)+sizeof(frame->src_addr)+sizeof(frame->snap.length);
+}
 
+
+bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
+{
+  if (m_fragmentated) {
+    m_fragments.SetSize(0);
+    m_fragmentated = false;
+  }
+
+  PINDEX size = std::min(packetSize, m_rawData.GetSize());
   do {
-    if (!Read(frame, sizeof(*frame)))
-      return PFalse;
-  } while (lastReadCount < MinFrameSize);
+    if (!channel.Read(m_rawData.GetPointer(), size))
+      return false;
+    m_rawSize = channel.GetLastReadCount();
+  } while (m_rawSize < sizeof(Address)+sizeof(Address)+sizeof(2));
 
-  dest = frame->dst_addr;
-  src = frame->src_addr;
-  length = lastReadCount;
-  frame->Parse(type, payload, length);
+  m_timestamp.SetCurrentTime();
 
-  return PTrue;
+  return true;
+}
+
+
+int PEthSocket::Frame::GetDataLink(PBYTEArray & payload)
+{
+  Address src, dst;
+  return GetDataLink(payload, src, dst);
+}
+
+
+int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address & dst)
+{
+  struct FrameHeader {
+    Address dst_addr;
+    Address src_addr;
+    union {
+      struct {
+        uint16_t type;
+        uint8_t  payload[1500];
+      } ether;
+      struct {
+        uint16_t length;
+        uint8_t  dsap;
+        uint8_t  ssap;
+        uint8_t  ctrl;
+        uint8_t  oui[3];
+        uint16_t type;
+        uint8_t  payload[1492];
+      } snap;
+    };
+  } const & header = m_rawData.GetAs<FrameHeader>();
+
+  if (m_rawSize < sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length)) {
+    PTRACE(2, "Frame severely truncated, size=" << m_rawSize);
+    return -1;
+  }
+
+  src = header.src_addr;
+  dst = header.dst_addr;
+
+  uint16_t len_or_type = ntohs(header.snap.length);
+
+  // Ethernet II header
+  if (len_or_type > 1500) {
+    // Subtract off the Ethernet II header
+    payload.Attach(header.ether.payload, m_rawSize - sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length));
+    return len_or_type;
+  }
+
+  // SNAP header
+  if (header.snap.dsap == 0xaa && header.snap.ssap == 0xaa) {
+    if (len_or_type < sizeof(header.snap)-sizeof(header.snap.payload)) {
+      PTRACE(2, "Frame (SNAP) invalid, size=" << m_rawSize);
+      return -1;
+    }
+
+    // Subtract off the 802.2 header and SNAP data
+    len_or_type -= sizeof(header.snap)-sizeof(header.snap.payload);
+    if (m_rawSize < len_or_type + (header.snap.payload - &m_rawData[0])) {
+      PTRACE(2, "Frame (SNAP) truncated, size=" << m_rawSize);
+      return -1;
+    }
+
+    payload.Attach(header.snap.payload, len_or_type);
+    return ntohs(header.snap.type);
+  }
+
+  // Special case for Novell netware's stuffed up 802.3
+  if (header.snap.dsap == 0xff && header.snap.ssap == 0xff) {
+    if (m_rawSize < len_or_type + (&header.snap.dsap - &m_rawData[0])) {
+      PTRACE(2, "Frame (802.3) truncated, size=" << m_rawSize);
+      return -1;
+    }
+    payload.Attach(&header.snap.dsap, len_or_type); // Whole thing is IPX payload
+    return 0x8137;
+  }
+
+  if (len_or_type < sizeof(header.snap.dsap)+sizeof(header.snap.ssap)+sizeof(header.snap.ctrl)) {
+    PTRACE(2, "Frame (802.2) invalid, size=" << m_rawSize);
+    return -1;
+  }
+
+  // Subtract off the 802.2 header
+  len_or_type -= sizeof(header.snap.dsap)+sizeof(header.snap.ssap)+sizeof(header.snap.ctrl);
+  if (m_rawSize < len_or_type + (header.snap.oui - &m_rawData[0])) {
+    PTRACE(2, "Frame (802.2) truncated, size=" << m_rawSize);
+    return -1;
+  }
+
+  payload.Attach(header.snap.oui, len_or_type);
+
+  if (header.snap.dsap == 0xe0 && header.snap.ssap == 0xe0)
+    return 0x8137;   // Special case for Novell netware's 802.2
+
+  return header.snap.dsap;    // A pure 802.2 protocol id
+}
+
+
+int PEthSocket::Frame::GetIP(PBYTEArray & payload)
+{
+  PIPSocket::Address src, dst;
+  return GetIP(payload, src, dst);
+}
+
+
+int PEthSocket::Frame::GetIP(PBYTEArray & payload, PIPSocket::Address & src, PIPSocket::Address & dst)
+{
+  PBYTEArray ip;
+  if (GetDataLink(ip) != 0x800) // IPv4
+    return -1;
+
+  PINDEX headerLength = (ip[0]&0xf)*4; // low 4 bits in DWORDS, is this in bytes
+  payload.Attach(&ip[headerLength], ip.GetSize()-headerLength);
+
+  src = PIPSocket::Address(4, ip+12);
+  dst = PIPSocket::Address(4, ip+16);
+
+  // Check for fragmentation
+  bool isFragment = (ip[6] & 0x20) != 0;
+  int fragmentOffset = (((ip[6]&0x1f)<<8)+ip[7])*8;
+  PINDEX fragmentsSize = m_fragments.GetSize();
+  if (!isFragment && fragmentsSize == 0)
+    return ip[9]; // Next protocol layer
+
+  if (fragmentsSize != fragmentOffset) {
+    PTRACE(2, "Missing IP fragment, expected " << fragmentsSize << ", got " << fragmentOffset);
+    m_fragments.SetSize(0);
+    return -1;
+  }
+
+  if (fragmentsSize == 0)
+    m_fragmentProto = ip[9]; // Next protocol layer
+
+  m_fragments.Concatenate(payload);
+
+  if (isFragment)
+    return -1;
+
+  payload.Attach(m_fragments, m_fragments.GetSize());
+  m_fragmentated = true;
+
+  return m_fragmentProto; // Next protocol layer
+}
+
+
+bool PEthSocket::Frame::GetUDP(PBYTEArray & payload, WORD & srcPort, WORD & dstPort)
+{
+  PIPSocketAddressAndPort src, dst;
+  if (!GetUDP(payload, src, dst))
+    return false;
+
+  srcPort = src.GetPort();
+  dstPort = dst.GetPort();
+  return true;
+}
+
+
+bool PEthSocket::Frame::GetUDP(PBYTEArray & payload, PIPSocketAddressAndPort & src, PIPSocketAddressAndPort & dst)
+{
+  PBYTEArray udp;
+  PIPSocket::Address srcIP, dstIP;
+  if (GetIP(udp, srcIP, dstIP) != 0x11)
+    return false;
+
+  if (udp.GetSize() < 8) {
+    PTRACE(2, "UDP truncated, size=" << udp.GetSize());
+    return false;
+  }
+
+  src.SetAddress(srcIP);
+  src.SetPort(udp.GetAs<PUInt16b>(0));
+  dst.SetAddress(dstIP);
+  dst.SetPort(udp.GetAs<PUInt16b>(2));
+
+  payload.Attach(&udp[8], udp.GetSize() - 8);
+  return true;
+}
+
+
+bool PEthSocket::Frame::GetTCP(PBYTEArray & payload, WORD & srcPort, WORD & dstPort)
+{
+  PIPSocketAddressAndPort src, dst;
+  if (!GetTCP(payload, src, dst))
+    return false;
+
+  srcPort = src.GetPort();
+  dstPort = dst.GetPort();
+  return true;
+}
+
+
+bool PEthSocket::Frame::GetTCP(PBYTEArray & payload, PIPSocketAddressAndPort & src, PIPSocketAddressAndPort & dst)
+{
+  PBYTEArray tcp;
+  PIPSocket::Address srcIP, dstIP;
+  if (GetIP(tcp, srcIP, dstIP) != 6)
+    return false;
+
+  PINDEX headerSize;
+  if (tcp.GetSize() < 20 || tcp.GetSize() < (headerSize = (tcp[12]&0xf0)>>2)) {
+    PTRACE(2, "TCP truncated, size=" << tcp.GetSize());
+    return false;
+  }
+
+  src.SetAddress(srcIP);
+  src.SetPort(tcp.GetAs<PUInt16b>(0));
+  dst.SetAddress(dstIP);
+  dst.SetPort(tcp.GetAs<PUInt16b>(2));
+
+  payload.Attach(&tcp[headerSize], tcp.GetSize() - headerSize);
+  return true;
 }
 
 
@@ -389,40 +612,84 @@ PEthSocket::Address::operator PString() const
 }
 
 
-void PEthSocket::Frame::Parse(WORD & type, BYTE * & payload, PINDEX & length)
+///////////////////////////////////////////////////////////////////////////////
+
+PEthSocketThread::PEthSocketThread(const FrameNotifier & notifier)
+  : m_notifier(notifier)
+  , m_thread(NULL)
+  , m_socket(NULL)
+  , m_running(false)
 {
-  WORD len_or_type = ntohs(snap.length);
-  if (len_or_type > sizeof(*this)) {
-    type = len_or_type;
-    payload = ether.payload;
-    // Subtract off the Ethernet II header
-    length -= sizeof(dst_addr)+sizeof(src_addr)+sizeof(snap.length);
-    return;
+}
+
+
+bool PEthSocketThread::Start(const PString & device, const PString & filter)
+{
+  Stop();
+
+  m_socket = CreateEthSocket();
+
+  /* Only reliable way to exit the thread loop is to have a timeout and wait
+     for the read to exit, then the thread can exit. Other methods such as
+     closing the channel has difficult reace conditions and platform
+     independence issues. */
+  m_socket->SetReadTimeout(1000);
+
+  if (m_socket->Connect(device) && m_socket->SetFilter(filter)) {
+    m_running = true;
+    m_thread = new PThreadObj<PEthSocketThread>(*this, &PEthSocketThread::MainLoop, false, "Sniffer");
+    return true;
   }
 
-  if (snap.dsap == 0xaa && snap.ssap == 0xaa) {
-    type = ntohs(snap.type);   // SNAP header
-    payload = snap.payload;
-    // Subtract off the 802.2 header and SNAP data
-    length = len_or_type - (sizeof(snap)-sizeof(snap.payload));
+  delete m_socket;
+  m_socket = NULL;
+  return false;
+}
+
+
+void PEthSocketThread::Stop()
+{
+  if (m_thread == NULL)
     return;
-  }
-  
-  if (snap.dsap == 0xff && snap.ssap == 0xff) {
-    type = TypeIPX;   // Special case for Novell netware's stuffed up 802.3
-    payload = &snap.dsap;
-    length = len_or_type;  // Whole thing is IPX payload
-    return;
+
+  m_running = false;
+  m_thread->WaitForTermination();
+
+  delete m_thread;
+  m_thread = NULL;
+
+  delete m_socket;
+  m_socket = NULL;
+}
+
+
+PEthSocket * PEthSocketThread::CreateEthSocket() const
+{
+  return new PEthSocket;
+}
+
+
+void PEthSocketThread::MainLoop()
+{
+  PTRACE(4, "Ethernet sniffer thread started");
+
+  while (m_running) {
+    if (m_socket->ReadFrame(m_frame))
+      m_notifier(*m_socket, m_frame);
+    else {
+      switch (m_socket->GetErrorCode(PChannel::LastReadError)) {
+        case PChannel::Timeout :
+        case PChannel::NotOpen :
+          break;
+
+        default :
+          PTRACE(1, "Ethernet read error: " << m_socket->GetErrorText(PChannel::LastReadError));
+          m_running = false;
+      }
+    }
   }
 
-  if (snap.dsap == 0xe0 && snap.ssap == 0xe0)
-    type = TypeIPX;   // Special case for Novell netware's 802.2
-  else
-    type = snap.dsap;    // A pure 802.2 protocol id
-
-  payload = snap.oui;
-  // Subtract off the 802.2 header
-  length = len_or_type - (sizeof(snap.dsap)+sizeof(snap.ssap)+sizeof(snap.ctrl));
+  PTRACE(4, "Ethernet sniffer thread finished");
 }
 
 

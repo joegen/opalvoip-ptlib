@@ -38,8 +38,11 @@
 #pragma interface
 #endif
 
-#include <ptlib/socket.h>
-#include <ptlib/bitwise_enum.h>
+#include <ptbuildopts.h>
+
+#if P_PCAP
+
+#include <ptlib/ipsock.h>
 
 
 /**This class describes a type of socket that will communicate using
@@ -65,6 +68,15 @@ class PEthSocket : public PSocket
 
 
   public:
+    /// Medium types for the open interface.
+    P_DECLARE_STREAMABLE_ENUM(MediumType,
+      MediumLoop,      ///< A Loopback Network
+      Medium802_3,     ///< An ethernet Network Interface Card (10base2, 10baseT etc)
+      MediumWan,       ///< A Wide Area Network (modem etc)
+      MediumLinuxSLL,  ///< Linux "cooked" capture encapsulation
+      MediumUnknown   ///< Something else
+    );
+
 #pragma pack(1)
     /** An ethernet MAC Address specification.
      */
@@ -92,38 +104,6 @@ class PEthSocket : public PSocket
 
       friend ostream & operator<<(ostream & s, const Address & a)
         { return s << (PString)a; }
-    };
-
-    /** An ethernet MAC frame.
-     */
-    struct Frame {
-      Address dst_addr;
-      Address src_addr;
-      union {
-        struct {
-          WORD type;
-          BYTE payload[1500];
-        } ether;
-        struct {
-          WORD length;
-          BYTE dsap;
-          BYTE ssap;
-          BYTE ctrl;
-          BYTE oui[3];
-          WORD type;
-          BYTE payload[1492];
-        } snap;
-      };
-
-      /**Parse the Ethernet Frame to extract the frame type and the address of
-         the payload. The length should be the original bytes read in the frame
-         and may be altered to information contained in the frame, if available.
-       */
-      void Parse(
-        WORD & type,      // Type of frame
-        BYTE * & payload, // Pointer to payload
-        PINDEX & length   // Length of payload (on input is full frame length)
-      );
     };
 #pragma pack()
 
@@ -213,46 +193,17 @@ class PEthSocket : public PSocket
     );
 
 
-    /// Medium types for the open interface.
-    enum MediumTypes {
-      MediumLoop,      ///< A Loopback Network
-      Medium802_3,     ///< An ethernet Network Interface Card (10base2, 10baseT etc)
-      MediumWan,       ///< A Wide Area Network (modem etc)
-      MediumLinuxSLL,  ///< Linux "cooked" capture encapsulation
-      MediumUnknown,   ///< Something else
-      NumMediumTypes
-    };
     /**Return the data link of the interface.
 
        @return
        Type enum for the interface, or NumMediumTypes if interface not open.
      */
-    MediumTypes GetMedium();
+    MediumType GetMedium();
   //@}
 
 
   /**@name Filtering functions */
   //@{
-    /// Type codes for ethernet frames.
-    enum EthTypes {
-      /// All frames (3 is value for Linux)
-      TypeAll = 3,          
-      /// Internet Protocol
-      TypeIP  = 0x800,      
-      /// X.25
-      TypeX25 = 0x805,      
-      /// Address Resolution Protocol
-      TypeARP = 0x806,      
-      /// Appletalk DDP
-      TypeAtalk = 0x809B,   
-      /// Appletalk AARP
-      TypeAARP = 0x80F3,    
-      /// Novell IPX
-      TypeIPX = 0x8137,     
-      /// Bluebook IPv6
-      TypeIPv6 = 0x86DD     
-    };
-
     /**Get the current filtering criteria for receiving packets.
      */
     const PString & GetFilter() const { return m_filter; }
@@ -271,21 +222,97 @@ class PEthSocket : public PSocket
 
   /**@name I/O functions */
   //@{
-    /**Read a packet from the interface and parse out the information
-       specified by the parameters. This will automatically adjust for 802.2
-       and 802.3 ethernet frames.
+    /** An ethernet MAC frame.
+     */
+    class Frame : public PObject
+    {
+        PCLASSINFO(Frame, PObject);
+      public:
+        Frame(
+          PINDEX maxSize = 65536
+        );
+
+        virtual bool Read(
+          PChannel & channel,
+          PINDEX packetSize = P_MAX_INDEX
+        );
+
+        /** Extract the data link payload.
+            @return the protocol identifier for the payload.
+         */
+        int GetDataLink(
+          PBYTEArray & payload
+        );
+        int GetDataLink(
+          PBYTEArray & payload,
+          Address & src,
+          Address & dst
+        );
+
+        /** Extract the Internet Protocol payload.
+            @return the protocol identifier for the payload.
+         */
+        int GetIP(
+          PBYTEArray & payload
+        );
+        int GetIP(
+          PBYTEArray & payload,
+          PIPSocket::Address & src,
+          PIPSocket::Address & dst
+        );
+
+        /** Extract the UDP payload.
+            @return the protocol identifier for the payload.
+         */
+        bool GetUDP(
+          PBYTEArray & payload,
+          WORD & srcPort,
+          WORD & dstPort
+        );
+        bool GetUDP(
+          PBYTEArray & payload,
+          PIPSocketAddressAndPort & src,
+          PIPSocketAddressAndPort & dst
+        );
+
+        /** Extract the TCP payload.
+            @return the protocol identifier for the payload.
+         */
+        bool GetTCP(
+          PBYTEArray & payload,
+          WORD & srcPort,
+          WORD & dstPort
+        );
+        bool GetTCP(
+          PBYTEArray & payload,
+          PIPSocketAddressAndPort & src,
+          PIPSocketAddressAndPort & dst
+        );
+
+        const PTime & GetTimestamp() const { return m_timestamp; }
+        bool IsFragmentated() const { return m_fragmentated; }
+
+      protected:
+        PTime       m_timestamp;
+        PBYTEArray  m_rawData;
+        PINDEX      m_rawSize;
+
+        PBYTEArray  m_fragments;
+        bool        m_fragmentated;
+        unsigned    m_fragmentProto;
+    };
+
+    /**Read a frame from the interface.
+       Note that for correct decoding of fragmented IP packets, you should
+       make consecutive calls to this function with the same instance of
+       Frame which maintains some context.
 
        @return
        true if the packet read, false on error.
-     */
-    bool ReadPacket(
-      PBYTEArray & buffer,  ///< Buffer to receive the raw packet
-      Address & dest,       ///< Destination address of packet
-      Address & src,        ///< Source address of packet
-      WORD & type,          ///< Packet frame type ID
-      PINDEX & len,         ///< Length of payload
-      BYTE * & payload      ///< Pointer into <code>buffer</code> of payload.
-    );
+      */
+    bool ReadFrame(
+      Frame & frame
+    ) { return frame.Read(*this); }
   //@}
 
   protected:
@@ -300,6 +327,42 @@ class PEthSocket : public PSocket
     InternalData * m_internal;
 };
 
+
+class PEthSocketThread : public PObject
+{
+    PCLASSINFO(PEthSocketThread, PObject);
+  public:
+    #define PDECLARE_EthFrameNotifier(cls, fn) PDECLARE_NOTIFIER2(PEthSocket, cls, fn, PEthSocket::Frame &)
+    typedef PNotifierTemplate<PEthSocket::Frame &> FrameNotifier;
+
+    PEthSocketThread(const FrameNotifier & notifier = NULL);
+    ~PEthSocketThread() { Stop(); }
+
+    virtual bool Start(
+      const PString & device,
+      const PString & filter = PString::Empty()
+    );
+
+    virtual void Stop();
+
+    virtual PEthSocket * CreateEthSocket() const;
+
+    void SetNotifier(
+      const FrameNotifier & notifier
+    ) { m_notifier = notifier; }
+
+  protected:
+    virtual void MainLoop();
+
+    FrameNotifier     m_notifier;
+    PThread         * m_thread;
+    PEthSocket      * m_socket;
+    PEthSocket::Frame m_frame;
+    bool              m_running;
+};
+
+
+#endif // P_PCAP
 
 #endif // PTLIB_ETHSOCKET_H
 
