@@ -34,15 +34,6 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
-#if P_PCAP
-
-#include <pcap/pcap.h>
-
-#if _MSC_VER
-  #pragma comment(lib, P_PCAP_LIBRARY1)
-  #pragma comment(lib, P_PCAP_LIBRARY2)
-#endif
-
 
 #define PTraceModule() "EthSock"
 
@@ -71,6 +62,16 @@ struct PEthFrameHeader {
 
 
 #pragma pack()
+
+
+#if P_PCAP
+
+#include <pcap/pcap.h>
+
+#if _MSC_VER
+  #pragma comment(lib, P_PCAP_LIBRARY1)
+  #pragma comment(lib, P_PCAP_LIBRARY2)
+#endif
 
 
 struct PEthSocket::InternalData {
@@ -241,7 +242,7 @@ PBoolean PEthSocket::Close()
 }
 
 
-PEthSocket::MediumTypes PEthSocket::GetMedium()
+PEthSocket::MediumType PEthSocket::GetMedium()
 {
   return MediumUnknown;
 }

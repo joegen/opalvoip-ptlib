@@ -38,10 +38,6 @@
 #pragma interface
 #endif
 
-#include <ptbuildopts.h>
-
-#if P_PCAP
-
 #include <ptlib/ipsock.h>
 
 
@@ -361,8 +357,6 @@ class PEthSocketThread : public PObject
     bool              m_running;
 };
 
-
-#endif // P_PCAP
 
 #endif // PTLIB_ETHSOCKET_H
 
