@@ -172,19 +172,15 @@ void TestThread::Stop()
 void TestThread::Main()
 {
   g_coutMutex.Wait();
-  cout << m_index << ": Listening on \"" << m_socket.GetName() << '"';
+  cout << m_index << ": Listening on \"" << m_socket.GetName() << "\", medium=" << m_socket.GetMedium();
   if (!m_socket.GetFilter().IsEmpty())
-    cout << " filtered by \"" << m_socket.GetFilter() << '"';
+    cout << ", filtered by \"" << m_socket.GetFilter() << '"';
   cout << endl;
   g_coutMutex.Signal();
 
-  PBYTEArray buffer;
-  PEthSocket::Address src, dst;
-  WORD type;
-  PINDEX payloadSize;
-  BYTE * payloadPtr;
   while (m_running) {
-    if (!m_socket.ReadPacket(buffer, dst, src, type, payloadSize, payloadPtr)) {
+    PEthSocket::Frame frame;
+    if (!m_socket.ReadFrame(frame)) {
       if (m_socket.GetErrorCode(PChannel::LastReadError) == PChannel::Timeout)
         continue;
 
@@ -192,40 +188,30 @@ void TestThread::Main()
       break;
     }
 
+    int proto;
+    PBYTEArray payload;
+    PIPSocket::Address srcIP, dstIP;
+    PIPSocketAddressAndPort src, dst;
+    PEthSocket::Address srcMac, dstMac;
+
     g_coutMutex.Wait();
     cout << m_index << ": ";
-    if (type != PEthSocket::TypeIP)
-      cout << dst << "<=" << src << ' ' << hex << setfill('0') << setw(4) << type << dec << ' ' << payloadSize;
+    if (frame.GetTCP(payload, src, dst))
+      cout << "TCP " << src << " => " << dst;
+    else if (frame.GetUDP(payload, src, dst))
+      cout << "UDP " << src << " => " << dst;
+    else if ((proto = frame.GetIP(payload, srcIP, dstIP)) > 0)
+      cout << "IP " << src << " => " << dst << " protocol=" << proto;
+    else if ((proto = frame.GetDataLink(payload, srcMac, dstMac)) > 0)
+      cout << "DataLink " << srcMac << " => " << dstMac << " protocol=" << proto;
+
+    cout << ' ';
+
+    if (m_binary)
+      cout << PBYTEArray(payload, std::min(payload.GetSize(), 16), false);
     else {
-      PIPSocket::Address srcIP(4, payloadPtr+12);
-      PIPSocket::Address dstIP(4, payloadPtr+16);
-      int proto = payloadPtr[9];
-
-      size_t len = (payloadPtr[0]&0xf)*4; // low 4 bits in DWORDS, is this in bytes
-      payloadSize -= len;
-      payloadPtr += len;
-
-      WORD srcPort = ((PUInt16b *)payloadPtr)[0];
-      WORD dstPort = ((PUInt16b *)payloadPtr)[1];
-      cout << dstIP << ':' << dstPort << "<=" << srcIP << ':' << srcPort << ' ';
-
-      if (proto != 0x11) {
-        payloadSize -= 8;
-        payloadPtr += 8;
-        cout << "UDP ";
-      }
-      else {
-        payloadSize -= 20;
-        payloadPtr += 20;
-        cout << "TCP ";
-      }
-
-      if (m_binary)
-        cout << PBYTEArray(payloadPtr, std::min(payloadSize, 16), false);
-      else {
-        PString str((char *)payloadPtr, payloadSize);
-        cout << str.Left(str.FindOneOf("\r\n"));
-      }
+      PString str((const char *)(const BYTE *)payload, payload.GetSize());
+      cout << str.Left(str.FindOneOf("\r\n"));
     }
 
     cout << endl;
