@@ -1357,18 +1357,25 @@ dnl MSWIN_CHECK_DIR  pcap,c:\WpdPack\
 AC_ARG_ENABLE(pcap, AS_HELP_STRING([--disable-pcap],[disable PCAP support]))
 
 if test "x$enable_pcap" = "x" ; then
-  enable_pcap=$default_pcap
+   enable_pcap=$default_pcap
 fi
 
 HAS_PCAP=
 if test "$enable_pcap" = "no" ; then
-  AC_MSG_NOTICE(PCAP disabled)
+   AC_MSG_NOTICE(PCAP disabled)
 else
-  AC_MSG_CHECKING(for PCAP support)
-  AC_TRY_COMPILE([#include <pcap.h>], [pcap_t *h;], [HAS_PCAP=yes], [HAS_PCAP=no])
-  AC_MSG_RESULT($HAS_PCAP)
+   AC_MSG_CHECKING(for PCAP support)
+   AC_TRY_COMPILE(
+      [#include <pcap.h>],
+      [pcap_t *h;],
+      [
+         AC_DEFINE(P_PCAP, 1, "PCAP found")
+         HAS_PCAP=yes
+      ],
+      [HAS_PCAP=no]
+   )
+   AC_MSG_RESULT($HAS_PCAP)
 fi
-AC_SUBST(HAS_PCAP)
 PTLIB_NEW_OPTION(PCAP)
 
 
