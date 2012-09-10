@@ -510,7 +510,9 @@ class PSafeWorkNoArg : public PSafeWork {
     typedef void (PtrClass::*Function)();
 
   protected:
+#pragma pack(16)
     Function m_function;
+#pragma pack()
 
   public:
     PSafeWorkNoArg(
@@ -539,8 +541,10 @@ class PSafeWorkArg1 : public PSafeWork {
     typedef void (PtrClass::*Function)(Arg1Type arg1);
 
   protected:
+#pragma pack(16)
     Function m_function;
     Arg1Type m_arg1;
+#pragma pack()
 
   public:
     PSafeWorkArg1(
@@ -572,9 +576,11 @@ class PSafeWorkArg2 : public PSafeWork {
     typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2);
 
   protected:
+#pragma pack(16)
     Function m_function;
     Arg1Type m_arg1;
     Arg2Type m_arg2;
+#pragma pack()
 
   public:
     PSafeWorkArg2(
@@ -609,10 +615,12 @@ class PSafeWorkArg3 : public PSafeWork {
     typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3);
 
   protected:
+#pragma pack(16)
     Function m_function;
     Arg1Type m_arg1;
     Arg2Type m_arg2;
     Arg3Type m_arg3;
+#pragma pack()
 
   public:
     PSafeWorkArg3(
