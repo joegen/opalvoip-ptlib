@@ -1176,13 +1176,13 @@ PBoolean PString::SetSize(PINDEX newSize)
   if (newSize < 1)
     newSize = 1;
 
-  if (!InternalSetSize(newSize, true))
+  if (!InternalSetSize(newSize, !IsUnique()))
     return false;
 
-  theArray[newSize-1] = '\0';
-
-  if (m_length >= newSize)
+  if (m_length >= newSize) {
     m_length = newSize-1;
+    theArray[m_length] = '\0';
+  }
 
   return true;
 }
@@ -1209,7 +1209,7 @@ PString PString::operator+(const char * cstr) const
   str.m_length = olen + alen;
   str.SetSize(str.m_length+1);
   memmove(str.theArray, theArray, olen);
-  memcpy(str.theArray+olen, cstr, alen);
+  memcpy(str.theArray+olen, cstr, alen+1);
   return str;
 }
 
@@ -1221,7 +1221,8 @@ PString PString::operator+(char c) const
   str.m_length = olen + 1;
   str.SetSize(str.m_length+1);
   memmove(str.theArray, theArray, olen);
-  str.theArray[olen] = c;
+  str.theArray[olen++] = c;
+  str.theArray[olen] = '\0';
   return str;
 }
 
@@ -1235,7 +1236,7 @@ PString & PString::operator+=(const char * cstr)
   PINDEX alen = strlen(cstr);
   m_length = olen + alen;
   SetMinSize(m_length+1);
-  memcpy(theArray+olen, cstr, alen);
+  memcpy(theArray+olen, cstr, alen+1);
   return *this;
 }
 
@@ -1246,6 +1247,7 @@ PString & PString::operator+=(char ch)
   m_length = olen + 1;
   SetMinSize(m_length+1);
   theArray[olen] = ch;
+  theArray[m_length] = '\0';
   return *this;
 }
 
@@ -1267,7 +1269,7 @@ PString PString::operator&(const char * cstr) const
   memmove(str.theArray, theArray, olen);
   if (space != 0)
     str.theArray[olen] = ' ';
-  memcpy(str.theArray+olen+space, cstr, alen);
+  memcpy(str.theArray+olen+space, cstr, alen+1);
   return str;
 }
 
@@ -1283,6 +1285,7 @@ PString PString::operator&(char c) const
   if (space != 0)
     str.theArray[olen] = ' ';
   str.theArray[olen+space] = c;
+  str.theArray[str.m_length] = '\0';
   return str;
 }
 
@@ -1302,7 +1305,7 @@ PString & PString::operator&=(const char * cstr)
   SetMinSize(m_length+1);
   if (space != 0)
     theArray[olen] = ' ';
-  memcpy(theArray+olen+space, cstr, alen);
+  memcpy(theArray+olen+space, cstr, alen+1);
   return *this;
 }
 
@@ -1316,6 +1319,7 @@ PString & PString::operator&=(char ch)
   if (space != 0)
     theArray[olen] = ' ';
   theArray[olen+space] = ch;
+  theArray[m_length] = '\0';
   return *this;
 }
 
