@@ -810,23 +810,95 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
   }
   else {
     bool haveControl = true;
+    MIXERLINECONTROLS controls;
 
-    if (direction == Recorder) {
+    if ((direction == Recorder) && ((DWORD)(LOBYTE(LOWORD(GetVersion()))) < 6)) { //5=XP/win2003
       /* There is no "master" for the recording side, so need to find the
-         individual microphone input */
-      DWORD iConn = line.cConnections;
-      while (iConn > 0) {
-        line.dwSource = --iConn;
-        if ((osError = mixerGetLineInfo((HMIXEROBJ)hMixer, &line, MIXER_GETLINEINFOF_SOURCE)) != MMSYSERR_NOERROR)
-          PTRACE(2, "WinSnd\tFailed to get mixer info, error=" << osError);
-        else if (line.dwComponentType == MIXERLINE_COMPONENTTYPE_SRC_MICROPHONE) {
-          PTRACE(5, "WinSnd\tFfound microphone, source=" << iConn);
-          break;
-        }
+         single selected input or at least individual microphone input
+         No need to do all of these on Vista/Win7/Win2008 as there is
+         a "master" for every input on those OS */
 
-        if (iConn == 0) {
-          PTRACE(2, "WinSnd\tFailed to find microphone info");
+      DWORD iConn = line.cConnections; //should save first
+      
+      //1)Attempt to find currently selected input
+      MIXERCONTROL muxControl;
+      muxControl.cbStruct = sizeof(muxControl);
+      controls.cbStruct = sizeof(controls);
+      controls.dwLineID = line.dwLineID;
+      controls.dwControlType = MIXERCONTROL_CONTROLTYPE_MUX;
+      controls.cControls = 1;
+      controls.pamxctrl = &muxControl;
+      controls.cbmxctrl = muxControl.cbStruct;
+      if ((osError = mixerGetLineControls((HMIXEROBJ)hMixer, &controls,
+                                          MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) == MMSYSERR_NOERROR) {
+        MIXERCONTROLDETAILS mxcd;
+        mxcd.cbStruct = sizeof(mxcd);
+        mxcd.dwControlID = muxControl.dwControlID;
+        mxcd.cChannels = 1;
+        mxcd.cMultipleItems = muxControl.cMultipleItems;
+        mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_LISTTEXT);
+        std::vector<MIXERCONTROLDETAILS_LISTTEXT> mxcdlt(mxcd.cChannels * mxcd.cMultipleItems); 
+        mxcd.paDetails = &mxcdlt[0];
+        // Get the control list text items (input lines id's)
+        if ((osError = mixerGetControlDetails((HMIXEROBJ)hMixer, &mxcd,
+                                              MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_LISTTEXT)) == MMSYSERR_NOERROR) {
+          mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_BOOLEAN);
+          std::vector<MIXERCONTROLDETAILS_BOOLEAN> mxcdb(mxcd.cChannels * mxcd.cMultipleItems);
+          mxcd.paDetails = &mxcdb[0];
+          // Get the control values for line states (selected/not selected)
+          if ((osError = mixerGetControlDetails((HMIXEROBJ)hMixer, &mxcd,
+                                                MIXER_OBJECTF_HMIXER | MIXER_GETCONTROLDETAILSF_VALUE)) == MMSYSERR_NOERROR) {
+            DWORD iMult = mxcd.cMultipleItems;
+            while (iMult > 0) {
+              line.dwLineID = mxcdlt[--iMult].dwParam1;
+              if ((osError = mixerGetLineInfo((HMIXEROBJ)hMixer, &line,
+                                              MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_LINEID)) != MMSYSERR_NOERROR)
+                PTRACE(2, "WinSnd\tRecorder: Failed to get mixer info, error=" << osError);
+              else {
+                if (mxcdb[iMult].fValue == 1) {
+                  PTRACE(2, "WinSnd\tRecorder: Found selected input device: " << line.szName);
+                  break;
+                }
+
+                if (iMult == 0) {
+                  haveControl = false;
+                  PTRACE(2, "WinSnd\tRecorder: Failed to find selected input device");
+                }
+              }
+            }
+          }
+          else {
+            haveControl = false;
+            PTRACE(2, "WinSnd\tRecorder: failed to get info about states of input lines, error=" << osError);
+          }
+        }
+        else {
           haveControl = false;
+          PTRACE(2, "WinSnd\tRecorder: failed to get info about input lines, error=" << osError);
+        }
+      }
+      else {
+        haveControl = false;
+        PTRACE(2, "WinSnd\tRecorder: failed to get mixer line mux control, error=" << osError);
+      }
+
+      //2) Attempt to find microphone input if not seccessfull with selected input
+      if (!haveControl) {
+        haveControl = true;
+        PTRACE(2, "WinSnd\tRecorder: trying to find microphone now...");
+        while (iConn > 0) {
+          line.dwSource = --iConn;
+          if ((osError = mixerGetLineInfo((HMIXEROBJ)hMixer, &line, MIXER_GETLINEINFOF_SOURCE)) != MMSYSERR_NOERROR)
+            PTRACE(2, "WinSnd\tFailed to get mixer info, error=" << osError);
+          else if (line.dwComponentType == MIXERLINE_COMPONENTTYPE_SRC_MICROPHONE) {
+            PTRACE(5, "WinSnd\tFfound microphone, source=" << iConn);
+            break;
+          }
+
+          if (iConn == 0) {
+            PTRACE(2, "WinSnd\tFailed to find microphone info");
+            haveControl = false;
+          }
         }
       }
     }
@@ -834,7 +906,6 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
     if (haveControl) {
       volumeControl.cbStruct = sizeof(volumeControl);
 
-      MIXERLINECONTROLS controls;
       controls.cbStruct = sizeof(controls);
       controls.dwLineID = line.dwLineID;
       controls.dwControlType = MIXERCONTROL_CONTROLTYPE_VOLUME;
