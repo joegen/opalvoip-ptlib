@@ -589,7 +589,7 @@ template <class T> class PSet : public PAbstractSet
     virtual const T & GetKeyAt(
       PINDEX index    ///< Index of value to get.
     ) const
-      { return (const T &)this->AbstractGetKeyAt(index); }
+      { return dynamic_cast<const T &>(this->AbstractGetKeyAt(index)); }
   //@}
 
   /**@name Iterators */
@@ -985,10 +985,10 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     const D & operator[](
       const K & key   ///< Key to look for in the dictionary.
-    ) const { return (const D &)this->GetRefAt(key); }
+    ) const { return dynamic_cast<const D &>(this->GetRefAt(key)); }
     D & operator[](
       const K & key   ///< Key to look for in the dictionary.
-    ) { return (D &)this->GetRefAt(key); }
+    ) { return dynamic_cast<D &>(this->GetRefAt(key)); }
 
     /**Determine if the value of the object is contained in the hash table. The
        object values are compared, not the pointers.  So the objects in the
@@ -1013,7 +1013,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     virtual D * RemoveAt(
       const K & key   ///< Key for position in dictionary to get object.
-    ) { return (D *)this->AbstractSetAt(key, NULL); }
+    ) { return dynamic_cast<D *>(this->AbstractSetAt(key, NULL)); }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
@@ -1039,7 +1039,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
      */
     virtual D * GetAt(
       const K & key   // Key for position in dictionary to get object.
-    ) const { return (D *)this->AbstractGetAt(key); }
+    ) const { return dynamic_cast<D *>(this->AbstractGetAt(key)); }
 
     /**Get the key in the dictionary at the ordinal index position.
 
@@ -1057,7 +1057,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
-      { return (const K &)this->AbstractGetKeyAt(index); }
+      { return dynamic_cast<const K &>(this->AbstractGetKeyAt(index)); }
 
     /**Get the data in the dictionary at the ordinal index position.
 
@@ -1075,7 +1075,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     D & GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
-      { return (D &)this->AbstractGetDataAt(index); }
+      { return dynamic_cast<D &>(this->AbstractGetDataAt(index)); }
 
     /**Get an array containing all the keys for the dictionary.
       */
@@ -1295,7 +1295,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     PINDEX operator[](
       const K & key   // Key to look for in the dictionary.
     ) const
-      { return (POrdinalKey &)this->GetRefAt(key); }
+      { return dynamic_cast<POrdinalKey &>(this->GetRefAt(key)); }
 
     /**Set the data at the specified ordinal index position in the dictionary.
 
@@ -1347,7 +1347,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     const K & GetKeyAt(
       PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
-      { return (const K &)this->AbstractGetKeyAt(index); }
+      { return dynamic_cast<const K &>(this->AbstractGetKeyAt(index)); }
 
     /**Get the data in the dictionary at the ordinal index position.
 
@@ -1368,7 +1368,7 @@ template <class K> class POrdinalDictionary : public PDictionary<K, POrdinalKey>
     PINDEX GetDataAt(
       PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
-      { return (POrdinalKey &)this->AbstractGetDataAt(index); }
+      { return dynamic_cast<POrdinalKey &>(this->AbstractGetDataAt(index)); }
   //@}
 
   protected:

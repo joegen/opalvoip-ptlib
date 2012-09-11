@@ -891,15 +891,15 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
   //@{
     /**Return the physical pointer to the object.
       */
-    operator T*()    const { return  (T *)BaseClass::currentObject; }
+    operator T*()    const { return  dynamic_cast<T *>(BaseClass::currentObject); }
 
     /**Return the physical pointer to the object.
       */
-    T & operator*()  const { return *(T *)PAssertNULL(BaseClass::currentObject); }
+    T & operator*()  const { return *dynamic_cast<T *>(PAssertNULL(BaseClass::currentObject)); }
 
     /**Allow access to the physical object the pointer is pointing to.
       */
-    T * operator->() const { return  (T *)PAssertNULL(BaseClass::currentObject); }
+    T * operator->() const { return  dynamic_cast<T *>(PAssertNULL(BaseClass::currentObject)); }
 
     /**Post-increment the pointer.
        This requires that the pointer has been created with a PSafeCollection
@@ -907,7 +907,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator++(int)
       {
-        T * previous = (T *)BaseClass::currentObject;
+        T * previous = dynamic_cast<T *>(BaseClass::currentObject);
         BaseClass::Next();
         return previous;
       }
@@ -919,7 +919,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
     T * operator++()
       {
         BaseClass::Next();
-        return (T *)BaseClass::currentObject;
+        return dynamic_cast<T *>(BaseClass::currentObject);
       }
 
     /**Post-decrement the pointer.
@@ -928,7 +928,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator--(int)
       {
-        T * previous = (T *)BaseClass::currentObject;
+        T * previous = dynamic_cast<T *>(BaseClass::currentObject);
         BaseClass::Previous();
         return previous;
       }
@@ -940,7 +940,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
     T * operator--()
       {
         BaseClass::Previous();
-        return (T *)BaseClass::currentObject;
+        return dynamic_cast<T *>(BaseClass::currentObject);
       }
   //@}
 };
@@ -1172,10 +1172,10 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     virtual void SetAt(const Key & key, Base * obj)
       {
         collectionMutex.Wait();
-        SafeRemove(((Coll *)collection)->GetAt(key));
+        SafeRemove(dynamic_cast<Coll &>(*collection).GetAt(key));
         if (PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") &&
             obj->SafeReference())
-          ((Coll *)collection)->SetAt(key, obj);
+          dynamic_cast<Coll &>(*collection).SetAt(key, obj);
         collectionMutex.Signal();
       }
 
@@ -1191,7 +1191,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       const Key & key   ///< Key to fund object to delete
     ) {
         PWaitAndSignal mutex(collectionMutex);
-        return SafeRemove(((Coll *)collection)->GetAt(key));
+        return SafeRemove(dynamic_cast<Coll &>(*collection).GetAt(key));
       }
 
     /**Determine of the dictionary contains an entry for the key.
@@ -1200,7 +1200,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       const Key & key
     ) {
         PWaitAndSignal lock(collectionMutex);
-        return ((Coll *)collection)->Contains(key);
+        return dynamic_cast<Coll &>(*collection).Contains(key);
       }
 
     /**Get the instance in the collection of the index.
@@ -1225,7 +1225,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       PSafetyMode mode = PSafeReadWrite
     ) const {
         collectionMutex.Wait();
-        PSafePtr<Base> ptr(*this, PSafeReference, ((Coll *)collection)->GetAt(key));
+        PSafePtr<Base> ptr(*this, PSafeReference, dynamic_cast<Coll &>(*collection).GetAt(key));
         collectionMutex.Signal();
         ptr.SetSafetyMode(mode);
         return ptr;
@@ -1237,7 +1237,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     {
       PArray<Key> keys;
       collectionMutex.Wait();
-      ((Coll *)collection)->AbstractGetKeys(keys);
+      dynamic_cast<Coll &>(*collection).AbstractGetKeys(keys);
       collectionMutex.Signal();
       return keys;
     }
