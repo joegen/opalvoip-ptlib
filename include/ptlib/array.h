@@ -939,7 +939,7 @@ template <class T> class PArray : public PArrayObjects
     ) const {
       PObject * obj = this->GetAt(index);
       PAssert(obj != NULL, PInvalidArrayElement);
-      return (T &)*obj;
+      return dynamic_cast<T &>(*obj);
     }
   //@}
 

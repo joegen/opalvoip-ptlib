@@ -359,7 +359,7 @@ template <class T> class PList : public PAbstractList
 
         void Next() { this->element = PAssertNULL(this->element)->next; }
         void Prev() { this->element = PAssertNULL(this->element)->prev; }
-        value_type * Ptr() const { return  (value_type *)PAssertNULL(this->element)->data; }
+        value_type * Ptr() const { return  dynamic_cast<value_type *>(PAssertNULL(this->element)->data); }
 
       public:
         bool operator==(const iterator_base & it) const { return this->element == it.element; }
@@ -428,7 +428,7 @@ template <class T> class PList : public PAbstractList
      */
     T & operator[](
       PINDEX index  ///< Index for entry
-    ) const { return (T &)this->GetReferenceAt(index); }
+    ) const { return dynamic_cast<T &>(this->GetReferenceAt(index)); }
   //@}
 
   protected:
@@ -526,7 +526,7 @@ template <class T> class PQueue : public PAbstractList
        first object added to the queue or NULL if queue empty.
      */
     virtual T * Dequeue()
-      { return (T *)PAbstractList::RemoveHead();}
+      { return dynamic_cast<T *>(PAbstractList::RemoveHead()); }
   //@}
 
   protected:
@@ -630,7 +630,7 @@ template <class T> class PStack : public PAbstractList
        object on top of the stack.
      */
     virtual T * Pop()
-      { return (T *)PAbstractList::RemoveHead(); }
+      { return dynamic_cast<T *>(PAbstractList::RemoveHead()); }
 
     /**Get the element that is currently on top of the stack without removing
        it.
@@ -639,7 +639,7 @@ template <class T> class PStack : public PAbstractList
        reference to object on top of the stack.
      */
     virtual T & Top()
-      { PAssert(this->GetSize() > 0, PStackEmpty); return *(T *)this->info->head->data; }
+      { PAssert(this->GetSize() > 0, PStackEmpty); return dynamic_cast<T &>(*this->info->head->data); }
   //@}
 
   protected:
@@ -994,7 +994,7 @@ template <class T> class PSortedList : public PAbstractSortedList
      */
     T & operator[](
       PINDEX index  ///< Index for entry
-    ) const { return *(T *)this->GetAt(index); }
+    ) const { return dynamic_cast<T &>(*this->GetAt(index)); }
   //@}
 
   /**@name Iterators */
@@ -1027,7 +1027,7 @@ template <class T> class PSortedList : public PAbstractSortedList
         bool Valid() const { return PAssert(this->m_list != NULL && this->m_element != NULL && this->m_element != &m_list->m_info->nil, PInvalidArrayIndex); }
         void Next() { if (Valid()) this->m_list->NextElement(this->m_element); }
         void Prev() { if (Valid()) this->m_list->PrevElement(this->m_element); }
-        value_type * Ptr() const { return (value_type *)(Valid() ? this->m_element->m_data : NULL); }
+        value_type * Ptr() const { return dynamic_cast<value_type *>(Valid() ? this->m_element->m_data : NULL); }
 
       public:
         bool operator==(const iterator_base & it) const { return this->m_element == it.m_element; }
