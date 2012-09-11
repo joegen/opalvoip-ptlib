@@ -150,25 +150,45 @@ using namespace std; // Not a good practice (name space polution), but will take
 // Handy macros
 
 /// Count the number of arguments passed in macro
-#define PARG_COUNT(...) PARG_COUNT_PART1(PARG_COUNT_PART2(__VA_ARGS__,9,8,7,6,5,4,3,2,1,0))
+#define PARG_COUNT(...) PARG_COUNT_PART1(PARG_COUNT_PART2(__VA_ARGS__,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
 #define PARG_COUNT_PART1(arg) arg
-#define PARG_COUNT_PART2(_1,_2,_3,_4,_5,_6,_7,_8,_9,N,...) N
+#define PARG_COUNT_PART2(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,N,...) N
 
 /// Turn the argument into a string
 #define P_STRINGISE(v) P_STRINGISE_PART2(v)
 #define P_STRINGIZE(v) P_STRINGISE_PART2(v)
 #define P_STRINGISE_PART2(v) #v
 
-/// This declares a standard enumeration (enum) of symbols with ++ and -- operators
-#define P_DECLARE_ENUM_EX(name, firstName, firstValue, ...) \
-  enum name { firstName = firstValue, Begin##name = firstName, __VA_ARGS__, End##name }; \
+/** This declares a standard enumeration (enum) of symbols with ++ and -- operators.
+    The symbols Begin##name and End##name are automatically added to the enumeration
+    and is equal to the first value, and one beyond the last value respectively.
+    This operates in a similar manner to STL iterators so that a for loop like:
+    <PRE><CODE>
+       for (MyEnum e = BeginMyEnum; e < EndMyEnum; ++e)
+    </CODE></PRE>
+    works as epected.
+
+    A symbol for the count of enumerations (End##name - Begin##name) is also defined.
+  */
+#define P_DECLARE_ENUM_EX(name, countName, firstName, firstValue, ...) \
+  enum name { firstName = firstValue, Begin##name = firstName, __VA_ARGS__, End##name, countName = End##name-Begin##name }; \
   friend __inline name operator++(name & e     ) { PAssert(e <    End##name, PInvalidParameter); return    e = (name)(e+1);           } \
   friend __inline name operator++(name & e, int) { PAssert(e <    End##name, PInvalidParameter); name o=e; e = (name)(e+1); return o; } \
   friend __inline name operator--(name & e     ) { PAssert(e >= Begin##name, PInvalidParameter); return    e = (name)(e-1);           } \
   friend __inline name operator--(name & e, int) { PAssert(e >= Begin##name, PInvalidParameter); name o=e; e = (name)(e-1); return o; } \
 
-/// This declares a standard enumeration (enum) of symbols with ++ and -- operators
-#define P_DECLARE_ENUM(name, first, ...) P_DECLARE_ENUM_EX(name, first, 0, __VA_ARGS__)
+/** This declares a standard enumeration (enum) of symbols with ++ and -- operators.
+    The symbols Begin##name and End##name are automatically added to the enumeration
+    and is equal to the first value, and one beyond the last value respectively.
+    This operates in a similar manner to STL iterators so that a for loop like:
+    <PRE><CODE>
+       for (MyEnum e = BeginMyEnum; e < EndMyEnum; ++e)
+    </CODE></PRE>
+    works as epected.
+
+    A symbol Num##name for the count of enumerations (End##name - Begin##name) is also defined.
+  */
+#define P_DECLARE_ENUM(name, first, ...) P_DECLARE_ENUM_EX(name, Num##name, first, 0, __VA_ARGS__)
 
 extern void PPrintEnum(std::ostream & strm, int e, int begin, int end, char const * const * names);
 extern int PReadEnum(std::istream & strm, int begin, int end, char const * const * names);
@@ -182,12 +202,19 @@ extern int PReadEnum(std::istream & strm, int begin, int end, char const * const
 #define P_ENUM_NAMES_ARG_5(_1,_2,_3,_4,_5)P_ENUM_NAMES_ARG_4(_1,_2,_3,_4),#_5
 #define P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6)P_ENUM_NAMES_ARG_5(_1,_2,_3,_4,_5),#_6
 #define P_ENUM_NAMES_ARG_7(_1,_2,_3,_4,_5,_6,_7)P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6),#_7
-#define P_ENUM_NAMES_ARG_8(_1,_2,_3,_4,_5,_6,_7,_8)P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6,_7),#_8
-#define P_ENUM_NAMES_ARG_9(_1,_2,_3,_4,_5,_6,_7,_8,_9)P_ENUM_NAMES_ARG_6(_1,_2,_3,_4,_5,_6,_7,_8),#_9
+#define P_ENUM_NAMES_ARG_8(_1,_2,_3,_4,_5,_6,_7,_8)P_ENUM_NAMES_ARG_7(_1,_2,_3,_4,_5,_6,_7),#_8
+#define P_ENUM_NAMES_ARG_9(_1,_2,_3,_4,_5,_6,_7,_8,_9)P_ENUM_NAMES_ARG_8(_1,_2,_3,_4,_5,_6,_7,_8),#_9
+#define P_ENUM_NAMES_ARG_10(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)P_ENUM_NAMES_ARG_9(_1,_2,_3,_4,_5,_6,_7,_8,_9),#_10
+#define P_ENUM_NAMES_ARG_11(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11)P_ENUM_NAMES_ARG_10(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10),#_11
+#define P_ENUM_NAMES_ARG_12(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12)P_ENUM_NAMES_ARG_11(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11),#_12
+#define P_ENUM_NAMES_ARG_13(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13)P_ENUM_NAMES_ARG_12(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12),#_13
+#define P_ENUM_NAMES_ARG_14(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14)P_ENUM_NAMES_ARG_13(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13),#_14
+#define P_ENUM_NAMES_ARG_15(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15)P_ENUM_NAMES_ARG_14(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14),#_15
+#define P_ENUM_NAMES_ARG_16(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16)P_ENUM_NAMES_ARG_15(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15),#_16
 
 /// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
-#define P_DECLARE_STREAMABLE_ENUM_EX(name, firstName, firstValue, ...) \
-  P_DECLARE_ENUM_EX(name, firstName, firstValue, __VA_ARGS__) \
+#define P_DECLARE_STREAMABLE_ENUM_EX(name, countName, firstName, firstValue, ...) \
+  P_DECLARE_ENUM_EX(name, countName, firstName, firstValue, __VA_ARGS__) \
   struct PEnumNames_##name { \
     static char const * const * Names() { static char const * const Strings[] = \
       { #firstName, P_ENUM_NAMES_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__)) }; return Strings; } \
@@ -198,7 +225,7 @@ extern int PReadEnum(std::istream & strm, int begin, int end, char const * const
     { e = (name)PReadEnum(strm, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
 
 /// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
-#define P_DECLARE_STREAMABLE_ENUM(name, first, ...) P_DECLARE_STREAMABLE_ENUM_EX(name, first, 0, __VA_ARGS__)
+#define P_DECLARE_STREAMABLE_ENUM(name, first, ...) P_DECLARE_STREAMABLE_ENUM_EX(name, Num##name, first, 0, __VA_ARGS__)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -785,6 +812,10 @@ class PTraceSaveContextIdentifier
 
 #endif // PTRACING==2
 
+
+#define P_DECLARE_TRACED_ENUM    P_DECLARE_STREAMABLE_ENUM
+#define P_DECLARE_TRACED_ENUM_EX P_DECLARE_STREAMABLE_ENUM_EX
+
 #endif // PTRACING
 
 #ifndef PTRACE_ARGLIST
@@ -845,6 +876,14 @@ class PTraceSaveContextIdentifier
 
 #ifndef PTRACE_CONTEXT_ID_PUSH_THREAD
 #define PTRACE_CONTEXT_ID_PUSH_THREAD(obj)
+#endif
+
+#ifndef P_DECLARE_TRACED_ENUM
+#define P_DECLARE_TRACED_ENUM P_DECLARE_ENUM
+#endif
+
+#ifndef P_DECLARE_TRACED_ENUM_EX
+#define P_DECLARE_TRACED_ENUM_EX P_DECLARE_ENUM_EX
 #endif
 
 
