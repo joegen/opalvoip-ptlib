@@ -98,21 +98,21 @@ class PDebugDLL : public PDynaLink
 {
   PCLASSINFO(PDebugDLL, PDynaLink)
   public:
-    BOOL (__stdcall *SymInitialize)(
+    BOOL (__stdcall *m_SymInitialize)(
       __in HANDLE hProcess,
       __in_opt PCSTR UserSearchPath,
       __in BOOL fInvadeProcess
     );
-    BOOL (__stdcall *SymCleanup)(
+    BOOL (__stdcall *m_SymCleanup)(
       __in HANDLE hProcess
     );
-    DWORD (__stdcall *SymGetOptions)(
+    DWORD (__stdcall *m_SymGetOptions)(
       VOID
     );
-    DWORD (__stdcall *SymSetOptions)(
+    DWORD (__stdcall *m_SymSetOptions)(
       __in DWORD   SymOptions
     );
-    BOOL (__stdcall *StackWalk64)(
+    BOOL (__stdcall *m_StackWalk64)(
       __in DWORD MachineType,
       __in HANDLE hProcess,
       __in HANDLE hThread,
@@ -123,15 +123,15 @@ class PDebugDLL : public PDynaLink
       __in_opt PGET_MODULE_BASE_ROUTINE64 GetModuleBaseRoutine,
       __in_opt PTRANSLATE_ADDRESS_ROUTINE64 TranslateAddress
     );
-    BOOL (__stdcall *SymGetSymFromAddr64)(
+    BOOL (__stdcall *m_SymGetSymFromAddr64)(
       __in HANDLE hProcess,
       __in DWORD64 qwAddr,
       __out_opt PDWORD64 pdwDisplacement,
       __inout PIMAGEHLP_SYMBOL64  Symbol
     );
 
-    PFUNCTION_TABLE_ACCESS_ROUTINE64 SymFunctionTableAccess64;
-    PGET_MODULE_BASE_ROUTINE64       SymGetModuleBase64;
+    PFUNCTION_TABLE_ACCESS_ROUTINE64 m_SymFunctionTableAccess64;
+    PGET_MODULE_BASE_ROUTINE64       m_SymGetModuleBase64;
 
     PDebugDLL()
       : PDynaLink("DBGHELP.DLL")
@@ -141,27 +141,27 @@ class PDebugDLL : public PDynaLink
     ~PDebugDLL()
     {
       if (IsLoaded())
-        SymCleanup(GetCurrentProcess());
+        m_SymCleanup(GetCurrentProcess());
     }
 
     void StackWalk(ostream & strm)
     {
-      if (!GetFunction("SymInitialize", (Function &)SymInitialize) ||
-          !GetFunction("SymCleanup", (Function &)SymCleanup) ||
-          !GetFunction("SymGetOptions", (Function &)SymGetOptions) ||
-          !GetFunction("SymSetOptions", (Function &)SymSetOptions) ||
-          !GetFunction("StackWalk64", (Function &)StackWalk64) ||
-          !GetFunction("SymGetSymFromAddr64", (Function &)SymGetSymFromAddr64) ||
-          !GetFunction("SymFunctionTableAccess64", (Function &)SymFunctionTableAccess64) ||
-          !GetFunction("SymGetModuleBase64", (Function &)SymGetModuleBase64) ||
-          !SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+      if (!GetFunction("SymInitialize", (Function &)m_SymInitialize) ||
+          !GetFunction("SymCleanup", (Function &)m_SymCleanup) ||
+          !GetFunction("SymGetOptions", (Function &)m_SymGetOptions) ||
+          !GetFunction("SymSetOptions", (Function &)m_SymSetOptions) ||
+          !GetFunction("StackWalk64", (Function &)m_StackWalk64) ||
+          !GetFunction("SymGetSymFromAddr64", (Function &)m_SymGetSymFromAddr64) ||
+          !GetFunction("SymFunctionTableAccess64", (Function &)m_SymFunctionTableAccess64) ||
+          !GetFunction("SymGetModuleBase64", (Function &)m_SymGetModuleBase64) ||
+          !m_SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
         DWORD err = ::GetLastError();
         Close();
         strm << "\n    No stack dump: " << GetName() << " failed: error=" << err;
         return;
       }
 
-      SymSetOptions(SymGetOptions()|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS);
+      m_SymSetOptions(m_SymGetOptions()|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS);
 
       // The thread information.
       CONTEXT threadContext;
@@ -176,14 +176,14 @@ class PDebugDLL : public PDynaLink
 
       int frameCount = 0;
       while (frameCount++ < 16 &&
-                        StackWalk64(IMAGE_FILE_MACHINE,
+                      m_StackWalk64(IMAGE_FILE_MACHINE,
                                     GetCurrentProcess(),
                                     GetCurrentThread(),
                                     &frame,
                                     &threadContext,
                                     NULL,
-                                    SymFunctionTableAccess64,
-                                    SymGetModuleBase64,
+                                    m_SymFunctionTableAccess64,
+                                    m_SymGetModuleBase64,
                                     NULL) && frame.AddrPC.Offset != 0) {
         if (frameCount <= 1)
           continue;
@@ -194,7 +194,7 @@ class PDebugDLL : public PDynaLink
         symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL64);
         DWORD64 displacement = 0;
         strm << "\n    ";
-        if (SymGetSymFromAddr64(GetCurrentProcess(), frame.AddrPC.Offset, &displacement, symbol))
+        if (m_SymGetSymFromAddr64(GetCurrentProcess(), frame.AddrPC.Offset, &displacement, symbol))
           strm << symbol->Name;
         else
           strm << hex << setfill('0') << setw(8) << frame.AddrPC.Offset << dec << setfill(' ');
