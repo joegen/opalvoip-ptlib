@@ -100,6 +100,7 @@ extern "C" {
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <openssl/x509v3.h>
 
 #ifdef P_SSL_AES
   #include <openssl/aes.h>
@@ -173,69 +174,99 @@ class PSSL_BIO
 ///////////////////////////////////////////////////////////////////////////////
 
 PSSLPrivateKey::PSSLPrivateKey()
+  : m_pkey(NULL)
 {
-  key = NULL;
 }
 
 
 PSSLPrivateKey::PSSLPrivateKey(unsigned modulus,
                                void (*callback)(int,int,void *),
                                void *cb_arg)
+  : m_pkey(NULL)
 {
-  key = NULL;
   Create(modulus, callback, cb_arg);
 }
 
 
 PSSLPrivateKey::PSSLPrivateKey(const PFilePath & keyFile, PSSLFileTypes fileType)
+  : m_pkey(NULL)
 {
-  key = NULL;
   Load(keyFile, fileType);
 }
 
 
 PSSLPrivateKey::PSSLPrivateKey(const BYTE * keyData, PINDEX keySize)
+  : m_pkey(NULL)
 {
-#if P_SSL_USE_CONST
-  key = d2i_AutoPrivateKey(NULL, &keyData, keySize);
-#else
-  key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyData, keySize);
-#endif
+  SetData(PBYTEArray(keyData, keySize, false));
 }
 
 
 PSSLPrivateKey::PSSLPrivateKey(const PBYTEArray & keyData)
+  : m_pkey(NULL)
 {
-  const BYTE * keyPtr = keyData;
-#if P_SSL_USE_CONST
-  key = d2i_AutoPrivateKey(NULL, &keyPtr, keyData.GetSize());
-#else
-  key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyPtr, keyData.GetSize());
-#endif
+  SetData(keyData);
 }
 
 
 PSSLPrivateKey::PSSLPrivateKey(const PSSLPrivateKey & privKey)
 {
-  key = privKey.key;
+  SetData(privKey.GetData());
+}
+
+
+PSSLPrivateKey::PSSLPrivateKey(evp_pkey_st * privKey, bool duplicate)
+{
+  if (privKey == NULL || !duplicate)
+    m_pkey = privKey;
+  else {
+    m_pkey = privKey;
+    PBYTEArray data = GetData();
+    m_pkey = NULL;
+    SetData(data);
+  }
 }
 
 
 PSSLPrivateKey & PSSLPrivateKey::operator=(const PSSLPrivateKey & privKey)
 {
-  if (key != NULL)
-    EVP_PKEY_free(key);
+  if (this != &privKey) {
+    FreePrivateKey();
+    m_pkey = privKey.m_pkey;
+  }
+  return *this;
+}
 
-  key = privKey.key;
 
+PSSLPrivateKey & PSSLPrivateKey::operator=(evp_pkey_st * privKey)
+{
+  if (m_pkey != privKey) {
+    FreePrivateKey();
+    m_pkey = privKey;
+  }
   return *this;
 }
 
 
 PSSLPrivateKey::~PSSLPrivateKey()
 {
-  if (key != NULL)
-    EVP_PKEY_free(key);
+  FreePrivateKey();
+}
+
+
+void PSSLPrivateKey::FreePrivateKey()
+{
+  if (m_pkey != NULL) {
+    EVP_PKEY_free(m_pkey);
+    m_pkey = NULL;
+  }
+}
+
+
+void PSSLPrivateKey::Attach(evp_pkey_st * key)
+{
+  FreePrivateKey();
+  m_pkey = key;
 }
 
 
@@ -243,24 +274,35 @@ PBoolean PSSLPrivateKey::Create(unsigned modulus,
                             void (*callback)(int,int,void *),
                             void *cb_arg)
 {
-  if (key != NULL) {
-    EVP_PKEY_free(key);
-    key = NULL;
-  }
+  FreePrivateKey();
 
   if (!PAssert(modulus >= 384, PInvalidParameter))
     return false;
 
-  key = EVP_PKEY_new();
-  if (key == NULL)
+  m_pkey = EVP_PKEY_new();
+  if (m_pkey == NULL)
     return false;
 
-  if (EVP_PKEY_assign_RSA(key, RSA_generate_key(modulus, 0x10001, callback, cb_arg)))
+  if (EVP_PKEY_assign_RSA(m_pkey, RSA_generate_key(modulus, 0x10001, callback, cb_arg)))
     return true;
 
-  EVP_PKEY_free(key);
-  key = NULL;
+  FreePrivateKey();
   return false;
+}
+
+
+bool PSSLPrivateKey::SetData(const PBYTEArray & keyData)
+{
+  FreePrivateKey();
+
+  const BYTE * keyPtr = keyData;
+#if P_SSL_USE_CONST
+  m_pkey = d2i_AutoPrivateKey(NULL, &keyPtr, keyData.GetSize());
+#else
+  m_pkey = d2i_AutoPrivateKey(NULL, (BYTE **)&keyPtr, keyData.GetSize());
+#endif
+
+  return m_pkey != NULL;
 }
 
 
@@ -268,9 +310,9 @@ PBYTEArray PSSLPrivateKey::GetData() const
 {
   PBYTEArray data;
 
-  if (key != NULL) {
-    BYTE * keyPtr = data.GetPointer(i2d_PrivateKey(key, NULL));
-    i2d_PrivateKey(key, &keyPtr);
+  if (m_pkey != NULL) {
+    BYTE * keyPtr = data.GetPointer(i2d_PrivateKey(m_pkey, NULL));
+    i2d_PrivateKey(m_pkey, &keyPtr);
   }
 
   return data;
@@ -285,10 +327,7 @@ PString PSSLPrivateKey::AsString() const
 
 PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
 {
-  if (key != NULL) {
-    EVP_PKEY_free(key);
-    key = NULL;
-  }
+  FreePrivateKey();
 
   PSSL_BIO in;
   if (!in.OpenRead(keyFile)) {
@@ -298,28 +337,28 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
 
   switch (fileType) {
     case PSSLFileTypeASN1 :
-      key = d2i_PrivateKey_bio(in, NULL);
-      if (key != NULL)
+      m_pkey = d2i_PrivateKey_bio(in, NULL);
+      if (m_pkey != NULL)
         break;
 
       PTRACE(2, "SSL\tInvalid ASN.1 private key file \"" << keyFile << '"');
       return false;
 
     case PSSLFileTypePEM :
-      key = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
-      if (key != NULL)
+      m_pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
+      if (m_pkey != NULL)
         break;
 
       PTRACE(2, "SSL\tInvalid PEM private key file \"" << keyFile << '"');
       return false;
 
     default :
-      key = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
-      if (key != NULL)
+      m_pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
+      if (m_pkey != NULL)
         break;
 
-      key = d2i_PrivateKey_bio(in, NULL);
-      if (key != NULL)
+      m_pkey = d2i_PrivateKey_bio(in, NULL);
+      if (m_pkey != NULL)
         break;
 
       PTRACE(2, "SSL\tInvalid private key file \"" << keyFile << '"');
@@ -333,7 +372,7 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
 
 PBoolean PSSLPrivateKey::Save(const PFilePath & keyFile, PBoolean append, PSSLFileTypes fileType)
 {
-  if (key == NULL)
+  if (m_pkey == NULL)
     return false;
 
   PSSL_BIO out;
@@ -347,12 +386,12 @@ PBoolean PSSLPrivateKey::Save(const PFilePath & keyFile, PBoolean append, PSSLFi
 
   switch (fileType) {
     case PSSLFileTypeASN1 :
-      if (i2d_PrivateKey_bio(out, key))
+      if (i2d_PrivateKey_bio(out, m_pkey))
         return true;
       break;
 
     case PSSLFileTypePEM :
-      if (PEM_write_bio_PrivateKey(out, key, NULL, NULL, 0, 0, NULL))
+      if (PEM_write_bio_PrivateKey(out, m_pkey, NULL, NULL, 0, 0, NULL))
         return true;
       break;
 
@@ -369,92 +408,113 @@ PBoolean PSSLPrivateKey::Save(const PFilePath & keyFile, PBoolean append, PSSLFi
 ///////////////////////////////////////////////////////////////////////////////
 
 PSSLCertificate::PSSLCertificate()
+  : m_certificate(NULL)
 {
-  certificate = NULL;
 }
 
 
 PSSLCertificate::PSSLCertificate(const PFilePath & certFile, PSSLFileTypes fileType)
+  : m_certificate(NULL)
 {
-  certificate = NULL;
   Load(certFile, fileType);
 }
 
 
 PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize)
+  : m_certificate(NULL)
 {
-#if P_SSL_USE_CONST
-  certificate = d2i_X509(NULL, &certData, certSize);
-#else
-  certificate = d2i_X509(NULL, (unsigned char **)&certData, certSize);
-#endif
+  SetData(PBYTEArray(certData, certSize, false));
 }
 
 
 PSSLCertificate::PSSLCertificate(const PBYTEArray & certData)
+  : m_certificate(NULL)
 {
-  const BYTE * certPtr = certData;
-#if P_SSL_USE_CONST
-  certificate = d2i_X509(NULL, &certPtr, certData.GetSize());
-#else
-  certificate = d2i_X509(NULL, (unsigned char **)&certPtr, certData.GetSize());
-#endif
+  SetData(certData);
 }
 
 
 PSSLCertificate::PSSLCertificate(const PString & certStr)
+  : m_certificate(NULL)
 {
   PBYTEArray certData;
-  PBase64::Decode(certStr, certData);
-  if (certData.GetSize() > 0) {
-    const BYTE * certPtr = certData;
-#if P_SSL_USE_CONST
-    certificate = d2i_X509(NULL, &certPtr, certData.GetSize());
-#else
-    certificate = d2i_X509(NULL, (unsigned char **)&certPtr, certData.GetSize());
-#endif
-  }
-  else
-    certificate = NULL;
+  if (PBase64::Decode(certStr, certData))
+    SetData(certData);
 }
 
 
 PSSLCertificate::PSSLCertificate(const PSSLCertificate & cert)
 {
-  if (cert.certificate == NULL)
-    certificate = NULL;
+  if (cert.m_certificate == NULL)
+    m_certificate = NULL;
   else
-    certificate = X509_dup(cert.certificate);
+    m_certificate = X509_dup(cert.m_certificate);
+}
+
+
+PSSLCertificate::PSSLCertificate(x509_st * cert, bool duplicate)
+{
+  if (cert == NULL)
+    m_certificate = NULL;
+  else if (duplicate)
+    m_certificate = X509_dup(cert);
+  else
+    m_certificate = cert;
 }
 
 
 PSSLCertificate & PSSLCertificate::operator=(const PSSLCertificate & cert)
 {
-  if (certificate != NULL)
-    X509_free(certificate);
-  if (cert.certificate == NULL)
-    certificate = NULL;
-  else
-    certificate = X509_dup(cert.certificate);
+  if (this != &cert) {
+    FreeCertificate();
 
+    if (cert.m_certificate != NULL)
+      m_certificate = X509_dup(cert.m_certificate);
+  }
+  return *this;
+}
+
+
+PSSLCertificate & PSSLCertificate::operator=(x509_st * cert)
+{
+  if (m_certificate !=  cert) {
+    FreeCertificate();
+
+    if (cert != NULL)
+      m_certificate = X509_dup(cert);
+  }
   return *this;
 }
 
 
 PSSLCertificate::~PSSLCertificate()
 {
-  if (certificate != NULL)
-    X509_free(certificate);
+  FreeCertificate();
+}
+
+
+void PSSLCertificate::FreeCertificate()
+{
+  if (m_certificate != NULL) {
+    X509_free(m_certificate);
+    m_certificate = NULL;
+  }
+}
+
+
+void PSSLCertificate::Attach(x509_st * cert)
+{
+  if (m_certificate != cert) {
+    FreeCertificate();
+    m_certificate = cert;
+  }
 }
 
 
 PBoolean PSSLCertificate::CreateRoot(const PString & subject,
                                  const PSSLPrivateKey & privateKey)
 {
-  if (certificate != NULL) {
-    X509_free(certificate);
-    certificate = NULL;
-  }
+  FreeCertificate();
 
   if (privateKey == NULL)
     return false;
@@ -474,13 +534,13 @@ PBoolean PSSLCertificate::CreateRoot(const PString & subject,
   if (info.IsEmpty())
     return false;
 
-  certificate = X509_new();
-  if (certificate == NULL)
+  m_certificate = X509_new();
+  if (m_certificate == NULL)
     return false;
 
-  if (X509_set_version(certificate, 2)) {
+  if (X509_set_version(m_certificate, 2)) {
     /* Set version to V3 */
-    ASN1_INTEGER_set(X509_get_serialNumber(certificate), 0L);
+    ASN1_INTEGER_set(X509_get_serialNumber(m_certificate), 0L);
 
     X509_NAME * name = X509_NAME_new();
     for (POrdinalToString::iterator it = info.begin(); it != info.end(); ++it)
@@ -489,29 +549,42 @@ PBoolean PSSLCertificate::CreateRoot(const PString & subject,
                                  MBSTRING_ASC,
                                  (unsigned char *)(const char *)it->second,
                                  -1,-1, 0);
-    X509_set_issuer_name(certificate, name);
-    X509_set_subject_name(certificate, name);
+    X509_set_issuer_name(m_certificate, name);
+    X509_set_subject_name(m_certificate, name);
     X509_NAME_free(name);
 
-    X509_gmtime_adj(X509_get_notBefore(certificate), 0);
-    X509_gmtime_adj(X509_get_notAfter(certificate), (long)60*60*24*365*5);
+    X509_gmtime_adj(X509_get_notBefore(m_certificate), 0);
+    X509_gmtime_adj(X509_get_notAfter(m_certificate), (long)60*60*24*365*5);
 
     X509_PUBKEY * pubkey = X509_PUBKEY_new();
     if (pubkey != NULL) {
       X509_PUBKEY_set(&pubkey, privateKey);
       EVP_PKEY * pkey = X509_PUBKEY_get(pubkey);
-      X509_set_pubkey(certificate, pkey);
+      X509_set_pubkey(m_certificate, pkey);
       EVP_PKEY_free(pkey);
       X509_PUBKEY_free(pubkey);
 
-      if (X509_sign(certificate, privateKey, EVP_md5()) > 0)
+      if (X509_sign(m_certificate, privateKey, EVP_md5()) > 0)
         return true;
     }
   }
 
-  X509_free(certificate);
-  certificate = NULL;
+  FreeCertificate();
   return false;
+}
+
+
+bool PSSLCertificate::SetData(const PBYTEArray & certData)
+{
+  FreeCertificate();
+
+  const BYTE * certPtr = certData;
+#if P_SSL_USE_CONST
+  m_certificate = d2i_X509(NULL, &certPtr, certData.GetSize());
+#else
+  m_certificate = d2i_X509(NULL, (unsigned char **)&certPtr, certData.GetSize());
+#endif
+  return m_certificate != NULL;
 }
 
 
@@ -519,9 +592,9 @@ PBYTEArray PSSLCertificate::GetData() const
 {
   PBYTEArray data;
 
-  if (certificate != NULL) {
-    BYTE * certPtr = data.GetPointer(i2d_X509(certificate, NULL));
-    i2d_X509(certificate, &certPtr);
+  if (m_certificate != NULL) {
+    BYTE * certPtr = data.GetPointer(i2d_X509(m_certificate, NULL));
+    i2d_X509(m_certificate, &certPtr);
   }
 
   return data;
@@ -536,10 +609,7 @@ PString PSSLCertificate::AsString() const
 
 PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileType)
 {
-  if (certificate != NULL) {
-    X509_free(certificate);
-    certificate = NULL;
-  }
+  FreeCertificate();
 
   PSSL_BIO in;
   if (!in.OpenRead(certFile)) {
@@ -549,28 +619,28 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
 
   switch (fileType) {
     case PSSLFileTypeASN1 :
-      certificate = d2i_X509_bio(in, NULL);
-      if (certificate != NULL)
+      m_certificate = d2i_X509_bio(in, NULL);
+      if (m_certificate != NULL)
         break;
 
       PTRACE(2, "SSL\tInvalid ASN.1 certificate file \"" << certFile << '"');
       return false;
 
     case PSSLFileTypePEM :
-      certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
-      if (certificate != NULL)
+      m_certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
+      if (m_certificate != NULL)
         break;
 
       PTRACE(2, "SSL\tInvalid PEM certificate file \"" << certFile << '"');
       return false;
 
     default :
-      certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
-      if (certificate != NULL)
+      m_certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
+      if (m_certificate != NULL)
         break;
 
-      certificate = d2i_X509_bio(in, NULL);
-      if (certificate != NULL)
+      m_certificate = d2i_X509_bio(in, NULL);
+      if (m_certificate != NULL)
         break;
 
       PTRACE(2, "SSL\tInvalid certificate file \"" << certFile << '"');
@@ -584,7 +654,7 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
 
 PBoolean PSSLCertificate::Save(const PFilePath & certFile, PBoolean append, PSSLFileTypes fileType)
 {
-  if (certificate == NULL)
+  if (m_certificate == NULL)
     return false;
 
   PSSL_BIO out;
@@ -598,12 +668,12 @@ PBoolean PSSLCertificate::Save(const PFilePath & certFile, PBoolean append, PSSL
 
   switch (fileType) {
     case PSSLFileTypeASN1 :
-      if (i2d_X509_bio(out, certificate))
+      if (i2d_X509_bio(out, m_certificate))
         return true;
       break;
 
     case PSSLFileTypePEM :
-      if (PEM_write_bio_X509(out, certificate))
+      if (PEM_write_bio_X509(out, m_certificate))
         return true;
       break;
 
@@ -614,6 +684,125 @@ PBoolean PSSLCertificate::Save(const PFilePath & certFile, PBoolean append, PSSL
 
   PTRACE(2, "SSL\tError writing certificate file \"" << certFile << '"');
   return false;
+}
+
+
+bool PSSLCertificate::GetSubjectName(X509_Name & name) const
+{
+  if (m_certificate == NULL)
+    return false;
+
+  name = X509_Name(X509_get_subject_name(m_certificate));
+  return name.IsValid();
+}
+
+
+PString PSSLCertificate::GetSubjectName() const
+{
+  X509_Name name;
+  return GetSubjectName(name) ? name.AsString() : PString::Empty();
+}
+
+
+bool PSSLCertificate::GetIssuerName(X509_Name & name) const
+{
+  if (m_certificate == NULL)
+    return false;
+
+  name = X509_Name(X509_get_subject_name(m_certificate));
+  return name.IsValid();
+}
+
+
+static PString From_ASN1_STRING(ASN1_STRING * asn)
+{
+  PString str;
+  if (asn != NULL) {
+    unsigned char * utf8;
+    int len = ASN1_STRING_to_UTF8(&utf8, asn);
+    str = PString((const char *)utf8, len);
+    OPENSSL_free(utf8);
+  }
+  return str;
+}
+
+
+PString PSSLCertificate::GetSubjectAltName() const
+{
+  if (m_certificate == NULL)
+    return PString::Empty();
+
+  const GENERAL_NAMES * sANs = (const GENERAL_NAMES *)X509_get_ext_d2i(m_certificate, NID_subject_alt_name, 0, 0);
+  if (sANs == NULL)
+    return PString::Empty();
+ 
+  int numAN = sk_GENERAL_NAME_num(sANs);
+  for (int i = 0; i < numAN; ++i) {
+    GENERAL_NAME * sAN = sk_GENERAL_NAME_value(sANs, i);
+    // we only care about DNS entries
+    if (sAN->type == GEN_DNS)
+      return From_ASN1_STRING(sAN->d.dNSName);
+  }
+
+  return PString::Empty();
+}
+
+
+PObject::Comparison PSSLCertificate::X509_Name::Compare(const PObject & other) const
+{
+  int cmp = X509_NAME_cmp(m_name, dynamic_cast<const X509_Name &>(other).m_name);
+  if (cmp < 0)
+    return LessThan;
+  if (cmp > 0)
+    return GreaterThan;
+  return EqualTo;
+}
+
+
+void PSSLCertificate::X509_Name::PrintOn(ostream & strm) const
+{
+  strm << AsString();
+}
+
+
+PString PSSLCertificate::X509_Name::GetCommonName() const
+{
+  return GetNID(NID_commonName);
+}
+
+
+PString PSSLCertificate::X509_Name::GetNID(int id) const
+{
+  if (m_name != NULL) {
+    X509_NAME_ENTRY * entry = X509_NAME_get_entry(m_name, X509_NAME_get_index_by_NID(m_name, id, -1));
+    if (entry != NULL)
+      return From_ASN1_STRING(X509_NAME_ENTRY_get_data(entry));
+  }
+
+  return PString::Empty();
+}
+
+
+PString PSSLCertificate::X509_Name::AsString(bool oneLine) const
+{
+  PString str;
+
+  if (m_name == NULL)
+    return str;
+
+  BIO * bio = BIO_new(BIO_s_mem());
+  if (bio == NULL)
+    return str;
+
+  X509_NAME_print_ex(bio, m_name, 0, oneLine ? XN_FLAG_ONELINE : XN_FLAG_MULTILINE);
+
+  char * data;
+  int len = BIO_get_mem_data(bio, &data);
+  str = PString(data, len);
+
+  (void)BIO_set_close(bio, BIO_CLOSE);
+  BIO_free(bio);
+  return str;
 }
 
 
@@ -902,18 +1091,15 @@ static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
 #if PTRACING
   static const unsigned Level = 3;
   if (PTrace::GetLevel() >= Level) {
-    X509 * err_cert = X509_STORE_CTX_get_current_cert(ctx);
-    //int err         = X509_STORE_CTX_get_error(ctx);
-
-    // get the subject name, just for verification
-    char buf[256];
-    X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
+    PSSLCertificate cert(X509_STORE_CTX_get_current_cert(ctx));
+    int err     = X509_STORE_CTX_get_error(ctx);
 
     ostream & trace = PTRACE_BEGIN(Level);
-    trace << "SSL\tVerify callback depth "
+    trace << "SSL\tVerify callback: depth="
            << X509_STORE_CTX_get_error_depth(ctx)
-           << " : cert name = " << buf
-           << PTrace::End;
+           << ", err=" << err
+           << ", name=\"" << cert.GetSubjectName()
+           << '"' << PTrace::End;
   }
 #endif // PTRACING
 
@@ -965,62 +1151,73 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
       break;
   }
 
-  context  = SSL_CTX_new(meth);
-  if (context == NULL)
+  m_context = SSL_CTX_new(meth);
+  if (m_context == NULL)
     PSSLAssert("Error creating context: ");
 
   if (sessionId != NULL) {
     if (idSize == 0)
       idSize = ::strlen((const char *)sessionId)+1;
-    SSL_CTX_set_session_id_context(context, (const BYTE *)sessionId, idSize);
-    SSL_CTX_sess_set_cache_size(context, 128);
+    SSL_CTX_set_session_id_context(m_context, (const BYTE *)sessionId, idSize);
+    SSL_CTX_sess_set_cache_size(m_context, 128);
   }
 
-  SSL_CTX_set_info_callback(context, InfoCallback);
-  SSL_CTX_set_verify(context, SSL_VERIFY_NONE, VerifyCallback);
+  SSL_CTX_set_info_callback(m_context, InfoCallback);
+  SSL_CTX_set_verify(m_context, SSL_VERIFY_NONE, VerifyCallback);
 }
 
 
 PSSLContext::~PSSLContext()
 {
-  SSL_CTX_free(context);
+  SSL_CTX_free(m_context);
 }
 
 
 PBoolean PSSLContext::SetCAPath(const PDirectory & caPath)
 {
   PString path = caPath.Left(caPath.GetLength()-1);
-  if (!SSL_CTX_load_verify_locations(context, NULL, path))
+  if (!SSL_CTX_load_verify_locations(m_context, NULL, path))
     return false;
 
-  return SSL_CTX_set_default_verify_paths(context);
+  return SSL_CTX_set_default_verify_paths(m_context);
 }
 
 
 PBoolean PSSLContext::AddCA(const PSSLCertificate & certificate)
 {
-  return SSL_CTX_add_client_CA(context, certificate);
+  return SSL_CTX_add_client_CA(m_context, certificate);
+}
+
+
+PBoolean PSSLContext::AddCA(const PList<PSSLCertificate> & certificates)
+{
+  for (PList<PSSLCertificate>::const_iterator it = certificates.begin(); it != certificates.end(); ++it) {
+    if (!SSL_CTX_add_client_CA(m_context, *it))
+      return false;
+  }
+
+  return true;
 }
 
 
 PBoolean PSSLContext::UseCertificate(const PSSLCertificate & certificate)
 {
-  return SSL_CTX_use_certificate(context, certificate) > 0;
+  return SSL_CTX_use_certificate(m_context, certificate) > 0;
 }
 
 
 PBoolean PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
 {
-  if (SSL_CTX_use_PrivateKey(context, key) <= 0)
+  if (SSL_CTX_use_PrivateKey(m_context, key) <= 0)
     return false;
 
-  return SSL_CTX_check_private_key(context);
+  return SSL_CTX_check_private_key(m_context);
 }
 
 
 PBoolean PSSLContext::UseDiffieHellman(const PSSLDiffieHellman & dh)
 {
-  return SSL_CTX_set_tmp_dh(context, (dh_st *)dh) > 0;
+  return SSL_CTX_set_tmp_dh(m_context, (dh_st *)dh) > 0;
 }
 
 
@@ -1029,7 +1226,7 @@ PBoolean PSSLContext::SetCipherList(const PString & ciphers)
   if (ciphers.IsEmpty())
     return false;
 
-  return SSL_CTX_set_cipher_list(context, (char *)(const char *)ciphers);
+  return SSL_CTX_set_cipher_list(m_context, (char *)(const char *)ciphers);
 }
 
 
@@ -1055,15 +1252,15 @@ PSSLChannel::PSSLChannel(PSSLContext & ctx)
 
 void PSSLChannel::Construct(PSSLContext * ctx, PBoolean autoDel)
 {
-  context = ctx;
-  autoDeleteContext = autoDel;
+  m_context = ctx;
+  m_autoDeleteContext = autoDel;
 
-  ssl = SSL_new(*context);
-  if (ssl == NULL)
+  m_ssl = SSL_new(*m_context);
+  if (m_ssl == NULL)
     PSSLAssert("Error creating channel: ");
   else {
-    SSL_set_info_callback(ssl, InfoCallback);
-    SSL_set_verify(ssl, SSL_VERIFY_NONE, VerifyCallback);
+    SSL_set_info_callback(m_ssl, InfoCallback);
+    SSL_set_verify(m_ssl, SSL_VERIFY_NONE, VerifyCallback);
   }
 }
 
@@ -1071,11 +1268,11 @@ void PSSLChannel::Construct(PSSLContext * ctx, PBoolean autoDel)
 PSSLChannel::~PSSLChannel()
 {
   // free the SSL connection
-  if (ssl != NULL)
-    SSL_free(ssl);
+  if (m_ssl != NULL)
+    SSL_free(m_ssl);
 
-  if (autoDeleteContext)
-    delete context;
+  if (m_autoDeleteContext)
+    delete m_context;
 }
 
 
@@ -1090,12 +1287,12 @@ PBoolean PSSLChannel::Read(void * buf, PINDEX len)
   PBoolean returnValue = false;
   if (readChannel == NULL)
     SetErrorValues(NotOpen, EBADF, LastReadError);
-  else if (readTimeout == 0 && SSL_pending(ssl) == 0)
+  else if (readTimeout == 0 && SSL_pending(m_ssl) == 0)
     SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
   else {
     readChannel->SetReadTimeout(readTimeout);
 
-    int readResult = SSL_read(ssl, (char *)buf, len);
+    int readResult = SSL_read(m_ssl, (char *)buf, len);
     lastReadCount = readResult;
     returnValue = readResult > 0;
     if (readResult < 0 && GetErrorCode(LastReadError) == NoError)
@@ -1123,7 +1320,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
   else {
     writeChannel->SetWriteTimeout(writeTimeout);
 
-    int writeResult = SSL_write(ssl, (const char *)buf, len);
+    int writeResult = SSL_write(m_ssl, (const char *)buf, len);
     lastWriteCount = writeResult;
     returnValue = lastWriteCount >= len;
     if (writeResult < 0 && GetErrorCode(LastWriteError) == NoError)
@@ -1138,7 +1335,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 
 PBoolean PSSLChannel::Close()
 {
-  PBoolean ok = SSL_shutdown(ssl);
+  PBoolean ok = SSL_shutdown(m_ssl);
   return PIndirectChannel::Close() && ok;
 }
 
@@ -1147,7 +1344,7 @@ PBoolean PSSLChannel::ConvertOSError(int error, ErrorGroup group)
 {
   Errors lastError = NoError;
   DWORD osError = 0;
-  if (SSL_get_error(ssl, error) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
+  if (SSL_get_error(m_ssl, error) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
     osError |= 0x80000000;
     lastError = Miscellaneous;
   }
@@ -1169,7 +1366,7 @@ PString PSSLChannel::GetErrorText(ErrorGroup group) const
 PBoolean PSSLChannel::Accept()
 {
   if (IsOpen())
-    return ConvertOSError(SSL_accept(ssl));
+    return ConvertOSError(SSL_accept(m_ssl));
   return false;
 }
 
@@ -1177,7 +1374,7 @@ PBoolean PSSLChannel::Accept()
 PBoolean PSSLChannel::Accept(PChannel & channel)
 {
   if (Open(channel))
-    return ConvertOSError(SSL_accept(ssl));
+    return ConvertOSError(SSL_accept(m_ssl));
   return false;
 }
 
@@ -1185,7 +1382,7 @@ PBoolean PSSLChannel::Accept(PChannel & channel)
 PBoolean PSSLChannel::Accept(PChannel * channel, PBoolean autoDelete)
 {
   if (Open(channel, autoDelete))
-    return ConvertOSError(SSL_accept(ssl));
+    return ConvertOSError(SSL_accept(m_ssl));
   return false;
 }
 
@@ -1193,7 +1390,7 @@ PBoolean PSSLChannel::Accept(PChannel * channel, PBoolean autoDelete)
 PBoolean PSSLChannel::Connect()
 {
   if (IsOpen())
-    return ConvertOSError(SSL_connect(ssl));
+    return ConvertOSError(SSL_connect(m_ssl));
   return false;
 }
 
@@ -1201,7 +1398,7 @@ PBoolean PSSLChannel::Connect()
 PBoolean PSSLChannel::Connect(PChannel & channel)
 {
   if (Open(channel))
-    return ConvertOSError(SSL_connect(ssl));
+    return ConvertOSError(SSL_connect(m_ssl));
   return false;
 }
 
@@ -1209,29 +1406,40 @@ PBoolean PSSLChannel::Connect(PChannel & channel)
 PBoolean PSSLChannel::Connect(PChannel * channel, PBoolean autoDelete)
 {
   if (Open(channel, autoDelete))
-    return ConvertOSError(SSL_connect(ssl));
+    return ConvertOSError(SSL_connect(m_ssl));
   return false;
 }
 
 
 PBoolean PSSLChannel::AddCA(const PSSLCertificate & certificate)
 {
-  return SSL_add_client_CA(ssl, certificate);
+  return SSL_add_client_CA(m_ssl, certificate);
+}
+
+
+PBoolean PSSLChannel::AddCA(const PList<PSSLCertificate> & certificates)
+{
+  for (PList<PSSLCertificate>::const_iterator it = certificates.begin(); it != certificates.end(); ++it) {
+    if (!SSL_add_client_CA(m_ssl, *it))
+      return false;
+  }
+
+  return true;
 }
 
 
 PBoolean PSSLChannel::UseCertificate(const PSSLCertificate & certificate)
 {
-  return SSL_use_certificate(ssl, certificate);
+  return SSL_use_certificate(m_ssl, certificate);
 }
 
 
 PBoolean PSSLChannel::UsePrivateKey(const PSSLPrivateKey & key)
 {
-  if (SSL_use_PrivateKey(ssl, key) <= 0)
+  if (SSL_use_PrivateKey(m_ssl, key) <= 0)
     return false;
 
-  return SSL_check_private_key(ssl);
+  return SSL_check_private_key(m_ssl);
 }
 
 
@@ -1240,7 +1448,7 @@ PString PSSLChannel::GetCipherList() const
   PStringStream strm;
   int i = -1;
   const char * str;
-  while ((str = SSL_get_cipher_list(ssl,++i)) != NULL) {
+  while ((str = SSL_get_cipher_list(m_ssl,++i)) != NULL) {
     if (i > 0)
       strm << ':';
     strm << str;
@@ -1252,7 +1460,7 @@ PString PSSLChannel::GetCipherList() const
 
 void PSSLChannel::SetVerifyMode(VerifyMode mode)
 {
-  if (ssl == NULL)
+  if (m_ssl == NULL)
     return;
 
   int verify;
@@ -1271,7 +1479,26 @@ void PSSLChannel::SetVerifyMode(VerifyMode mode)
       verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
   }
 
-  SSL_set_verify(ssl, verify, VerifyCallback);
+  SSL_set_verify(m_ssl, verify, VerifyCallback);
+}
+
+
+bool PSSLChannel::GetPeerCertificate(PSSLCertificate & certificate, PString * error)
+{
+  long err = SSL_get_verify_result(m_ssl);
+  certificate.Attach(SSL_get_peer_certificate(m_ssl));
+
+  if (err == X509_V_OK && certificate.IsValid())
+    return true;
+
+  if (error != NULL) {
+    if (err != X509_V_OK)
+      *error = X509_verify_cert_error_string(err);
+    else
+      *error = "Peer did not offer certificate";
+  }
+
+  return (SSL_get_verify_mode(m_ssl)&SSL_VERIFY_FAIL_IF_NO_PEER_CERT) == 0;
 }
 
 
@@ -1449,7 +1676,7 @@ PBoolean PSSLChannel::OnOpen()
   bio->ptr  = this;
   bio->init = 1;
 
-  SSL_set_bio(ssl, bio, bio);
+  SSL_set_bio(m_ssl, bio, bio);
   return true;
 }
 
