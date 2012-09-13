@@ -340,7 +340,10 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* start
       if (videoStreamParm.parm.capture.timeperframe.numerator == 0) {
         PTRACE(1,"PVidInDev\tnumerator is zero and denominator is " << videoStreamParm.parm.capture.timeperframe.denominator << ", driver bug??");
       }
-      PVideoDevice::SetFrameRate (videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator);
+      unsigned rate = videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator;
+      if(rate <= 0 || rate > 1000) 
+        rate = 1;
+      PVideoDevice::SetFrameRate (rate);
     }
   }
 
@@ -417,11 +420,13 @@ PBoolean PVideoInputDevice_V4L2::Start()
 PBoolean PVideoInputDevice_V4L2::Stop()
 {
   if (started) {
+    PWaitAndSignal m(stopMutex);
     PTRACE(6,"PVidInDev\tstop streaming, fd=" << videoFd);
 
     StopStreaming();
     ClearMapping();
 
+    areBuffersQueued = PFalse;  // Looks like at kernel 3.5.3 queued buffers vanish after ClearMapping() SetMapping() sequence
     started = PFalse;
 
     // no need to dequeue filled buffers, as this is handled by V4L2 at the next VIDIOC_STREAMON
@@ -577,9 +582,6 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   if (started == PTrue) {
     Stop();
   }
-  if (isMapped == PTrue) {
-    ClearMapping();
-  }
 
   struct v4l2_format videoFormat;
   CLEAR(videoFormat);
@@ -661,7 +663,6 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 
   colorFormatSet = PTrue;
   if (resume) {
-    colorFormatSet = SetMapping();
     if (colorFormatSet) {
       colorFormatSet = Start();
     }
@@ -703,9 +704,6 @@ PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
   }
 
   if (resume) {
-    if (PFalse == SetMapping()) {
-      return PFalse;
-    }
     if (PFalse == Start()) {
       return PFalse;
     }
@@ -780,9 +778,6 @@ PBoolean PVideoInputDevice_V4L2::SetFrameSize(unsigned width, unsigned height) {
   }
 
   if (resume) {
-    if (PFalse == SetMapping()) {
-      return PFalse;
-    }
     if (PFalse == Start()) {
       return PFalse;
     }
@@ -817,9 +812,6 @@ PBoolean PVideoInputDevice_V4L2::SetNearestFrameSize(unsigned width, unsigned he
   }
 
   if (resume) {
-    if (PFalse == SetMapping()) {
-      return PFalse;
-    }
     if (PFalse == Start()) {
       return PFalse;
     }
@@ -897,7 +889,6 @@ PBoolean PVideoInputDevice_V4L2::SetMapping()
 
 void PVideoInputDevice_V4L2::ClearMapping()
 {
-  PWaitAndSignal m(mmapMutex);
   if (!canStream) // 'isMapped' wouldn't handle partial mappings
     return;
 
@@ -935,7 +926,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
 {
   PTRACE(8,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
 
-  PWaitAndSignal m(mmapMutex);
+  PWaitAndSignal m(stopMutex);
   if (!started)
     return NormalReadProcess(buffer, bytesReturned);
 
