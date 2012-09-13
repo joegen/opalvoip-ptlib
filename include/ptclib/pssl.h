@@ -41,6 +41,7 @@
 struct ssl_st;
 struct ssl_ctx_st;
 struct x509_st;
+struct X509_name_st;
 struct evp_pkey_st;
 struct dh_st;
 struct aes_key_st;
@@ -101,11 +102,18 @@ class PSSLPrivateKey : public PObject
     PSSLPrivateKey(
       const PSSLPrivateKey & privKey
     );
+    PSSLPrivateKey(
+      evp_pkey_st * privKey,
+      bool duplicate = true
+    );
 
     /**Create a copy of the private key.
       */
     PSSLPrivateKey & operator=(
       const PSSLPrivateKey & privKay
+    );
+    PSSLPrivateKey & operator=(
+      evp_pkey_st * privKay
     );
 
     /**Destroy and release storage for private key.
@@ -114,7 +122,11 @@ class PSSLPrivateKey : public PObject
 
     /**Get internal OpenSSL private key structure.
       */
-    operator evp_pkey_st *() const { return key; }
+    operator evp_pkey_st *() const { return m_pkey; }
+
+    /**Set internal OpenSSL private key structure.
+      */
+    void Attach(evp_pkey_st * key);
 
     /**Create a new private key.
      */
@@ -122,6 +134,16 @@ class PSSLPrivateKey : public PObject
       unsigned modulus,   ///< Number of bits
       void (*callback)(int,int,void *) = NULL,  ///< Progress callback function
       void *cb_arg = NULL                       ///< Argument passed to callback
+    );
+
+    /**Return true if is a valid private key.
+     */
+    bool IsValid() const { return m_pkey != NULL; }
+
+    /**Set the certificate as binary ASN1 DER encoded data.
+      */
+    bool SetData(
+      const PBYTEArray & data
     );
 
     /**Get the certificate as binary ASN1 DER encoded data.
@@ -155,7 +177,8 @@ class PSSLPrivateKey : public PObject
 
 
   protected:
-    evp_pkey_st * key;
+    void FreePrivateKey();
+    evp_pkey_st * m_pkey;
 };
 
 
@@ -165,7 +188,7 @@ class PSSLPrivateKey : public PObject
   */
 class PSSLCertificate : public PObject
 {
-  PCLASSINFO(PSSLCertificate, PObject);
+    PCLASSINFO(PSSLCertificate, PObject);
   public:
     /**Create an empty certificate.
       */
@@ -205,11 +228,18 @@ class PSSLCertificate : public PObject
     PSSLCertificate(
       const PSSLCertificate & cert
     );
+    PSSLCertificate(
+      x509_st * cert,
+      bool duplicate = true
+    );
 
     /**Create a copy of the certificate.
       */
     PSSLCertificate & operator=(
       const PSSLCertificate & cert
+    );
+    PSSLCertificate & operator=(
+      x509_st * cert
     );
 
     /**Destroy and release storage for certificate.
@@ -218,8 +248,17 @@ class PSSLCertificate : public PObject
 
     /**Get internal OpenSSL X509 structure.
       */
-    operator x509_st *() const { return certificate; }
+    operator x509_st *() const { return m_certificate; }
 
+    /**Set internal OpenSSL X509 structure.
+      */
+    void Attach(x509_st * cert);
+
+    /**Return true if is a valid certificate.
+     */
+    bool IsValid() const { return m_certificate != NULL; }
+
+    
     /**Create a new root certificate.
        The subject name is a string of the form "/name=value/name=value" where
        name is a short name for the field and value is a string value for the
@@ -231,6 +270,12 @@ class PSSLCertificate : public PObject
     PBoolean CreateRoot(
       const PString & subject,    ///< Subject name for certificate
       const PSSLPrivateKey & key  ///< Key to sign certificate with
+    );
+
+    /**Set the certificate as binary ASN1 DER encoded data.
+      */
+    bool SetData(
+      const PBYTEArray & data
     );
 
     /**Get the certificate as binary ASN1 DER encoded data.
@@ -262,9 +307,40 @@ class PSSLCertificate : public PObject
       PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to write
     );
 
+    class X509_Name : public PObject {
+        PCLASSINFO(X509_Name, PObject);
+      public:
+        X509_Name(X509_name_st * name = NULL) : m_name(name) { }
+
+        Comparison Compare(const PObject & other) const;
+        void PrintOn(ostream & strm) const;
+
+        bool IsValid() const { return m_name != NULL; }
+
+        PString GetCommonName() const;
+        PString GetNID(int id) const;
+        PString AsString(bool oneLine = true) const;
+
+      protected:
+        X509_name_st * m_name;
+    };
+
+    /**Get certificate issuer name.
+      */
+    bool GetIssuerName(X509_Name & name) const;
+
+    /**Get certificate subject name.
+      */
+    bool GetSubjectName(X509_Name & name) const;
+    PString GetSubjectName() const;
+
+    /**Get certificate alternate subject name.
+      */
+    PString GetSubjectAltName() const;
 
   protected:
-    x509_st * certificate;
+    void FreeCertificate();
+    x509_st * m_certificate;
 };
 
 
@@ -417,7 +493,7 @@ class PSSLContext {
 
     /**Get the internal SSL context structure.
       */
-    operator ssl_ctx_st *() const { return context; }
+    operator ssl_ctx_st *() const { return m_context; }
 
     /**Set the path to locate CA certificates.
       */
@@ -427,8 +503,11 @@ class PSSLContext {
 
     /**Set the CA certificate to send to client from server.
       */
-    PBoolean AddCA(
+    bool AddCA(
       const PSSLCertificate & certificate
+    );
+    bool AddCA(
+      const PList<PSSLCertificate> & certificates
     );
 
     /**Use the certificate specified.
@@ -457,7 +536,7 @@ class PSSLContext {
 
   protected:
     void Construct(Method method, const void * sessionId, PINDEX idSize);
-    ssl_ctx_st * context;
+    ssl_ctx_st * m_context;
 };
 
 
@@ -532,8 +611,11 @@ class PSSLChannel : public PIndirectChannel
 
     /**Set the CA certificate to send to client from server.
       */
-    PBoolean AddCA(
+    bool AddCA(
       const PSSLCertificate & certificate
+    );
+    bool AddCA(
+      const PList<PSSLCertificate> & certificates
     );
 
     /**Use the certificate specified.
@@ -558,11 +640,24 @@ class PSSLChannel : public PIndirectChannel
       VerifyPeerMandatory,
     };
 
+    /**Set certificate verification mode for connection.
+      */
     void SetVerifyMode(
       VerifyMode mode
     );
 
-    PSSLContext * GetContext() const { return context; }
+    /**Get the peer certificate, if there is one.
+       If SetVerifyMode() has been called with VerifyPeer then this will
+       return true if the remote does not offer a certiciate. If set to
+       VerifyPeerMandatory, then it will return false. In both cases it will
+       return false if the certificate is offered but cannot be authenticated.
+      */
+    bool GetPeerCertificate(
+      PSSLCertificate & certificate,
+      PString * error = NULL
+    );
+
+    PSSLContext * GetContext() const { return m_context; }
 
     virtual PBoolean RawSSLRead(void * buf, PINDEX & len);
 
@@ -581,9 +676,9 @@ class PSSLChannel : public PIndirectChannel
     virtual PBoolean OnOpen();
 
   protected:
-    PSSLContext * context;
-    PBoolean          autoDeleteContext;
-    ssl_st      * ssl;
+    PSSLContext * m_context;
+    bool          m_autoDeleteContext;
+    ssl_st      * m_ssl;
 };
 
 #endif // PTLIB_PSSL_H
