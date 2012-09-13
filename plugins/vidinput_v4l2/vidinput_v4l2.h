@@ -150,7 +150,7 @@ private:
   uint   videoBufferCount;
   uint   currentVideoBuffer;
 
-  PMutex mmapMutex;                             /** Has MMAP frame buffers in use? */
+  PMutex stopMutex;                            /** Prevent Stop() operations while reading frame from another thread */
   PBoolean isOpen;				/** Has the Video Input Device successfully been openend? */
   PBoolean areBuffersQueued;
   PBoolean isStreaming;
