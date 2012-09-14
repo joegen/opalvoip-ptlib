@@ -62,9 +62,6 @@ PINLINE unsigned PTimer::Resolution()
 PINLINE PBoolean PDirectory::IsSeparator(char c)
   { return c == ':' || c == '/' || c == '\\'; }
 
-PINLINE PBoolean PDirectory::Exists(const PString & p)
-  { return _access(p+".", 0) == 0; }
-
 PINLINE PBoolean PDirectory::Create(const PString & p, int)
   { return _mkdir(p) == 0; }
 
