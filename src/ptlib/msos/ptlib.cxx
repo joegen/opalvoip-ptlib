@@ -340,6 +340,17 @@ PBoolean PDirectory::GetInfo(PFileInfo & info) const
 }
 
 
+PBoolean PDirectory::Exists(const PString & path)
+{
+  if (_access(path, 0) != 0)
+    return false;
+
+  // Could be a file, so actually need to try and open it
+  PDirectory dir(path);
+  return dir.Open();
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // File Path
 
