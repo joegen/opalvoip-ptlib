@@ -541,13 +541,12 @@ PBoolean PDNS::LookupSRV(
     return PFalse;
   }
 
-  PTRACE(4,"DNS\tSRV Lookup " << domain << " service " << service);
-  
   PString srvLookupStr = service;
   if (srvLookupStr.Right(1) != ".")
     srvLookupStr += ".";
   srvLookupStr += domain;
   
+  PTRACE(4,"DNS\tSRV Lookup \"" << srvLookupStr << '"');
   return LookupSRV(srvLookupStr, defaultPort, addrList);
 }
 
@@ -758,6 +757,7 @@ DNS_STATUS PDNS::Cached_DnsQuery(
                                (PIP4_ARRAY)NULL, 
                                &info.m_results, 
                                NULL);
+    PTRACE_IF(3, info.m_status != 0, "DNS\tSRV query failed, error=" << info.m_status);
 
     r = g_dnsCache.insert(DNSCache::value_type(key.str(), info)).first;
   }
