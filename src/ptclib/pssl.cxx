@@ -1176,8 +1176,8 @@ PSSLContext::~PSSLContext()
 bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory & caDir)
 {
   PString caPath = caDir.Left(caDir.GetLength()-1);
-  if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : caFile,
-                                               caPath.IsEmpty() ? NULL : caPath)) {
+  if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
+                                               caPath.IsEmpty() ? NULL : (const char *)caPath)) {
     PTRACE(4, "SSL\tSet verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
     return true;
   }
