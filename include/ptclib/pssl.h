@@ -495,42 +495,60 @@ class PSSLContext {
       */
     operator ssl_ctx_st *() const { return m_context; }
 
-    /**Set the path to locate CA certificates.
+    /**Set the locations for CA certificates used to verify peer
+       certificates.
       */
-    PBoolean SetCAPath(
-      const PDirectory & caPath   ///< Directory for CA certificates
+    bool SetVerifyLocations(
+      const PFilePath & caFile, ///< File for CA certificates
+      const PDirectory & caDir  ///< Directory for CA certificates
     );
 
-    /**Set the CA certificate to send to client from server.
+    P_DECLARE_ENUM(VerifyMode,
+      VerifyNone,
+      VerifyPeer,
+      VerifyPeerMandatory
+    );
+
+    /**Set certificate verification mode for connection.
       */
-    bool AddCA(
+    void SetVerifyMode(
+      VerifyMode mode
+    );
+
+    /**Set certificate verification mode for connection.
+      */
+    VerifyMode GetVerifyMode() const;
+
+    /**Set the CA certificate(s) to send to client from server.
+      */
+    bool AddClientCA(
       const PSSLCertificate & certificate
     );
-    bool AddCA(
+    bool AddClientCA(
       const PList<PSSLCertificate> & certificates
     );
 
     /**Use the certificate specified.
       */
-    PBoolean UseCertificate(
+    bool UseCertificate(
       const PSSLCertificate & certificate
     );
 
     /**Use the private key specified.
       */
-    PBoolean UsePrivateKey(
+    bool UsePrivateKey(
       const PSSLPrivateKey & key
     );
 
     /**Use the Diffie-Hellman parameters specified.
       */
-    PBoolean UseDiffieHellman(
+    bool UseDiffieHellman(
       const PSSLDiffieHellman & dh
     );
 
     /**Set the available ciphers to those listed.
       */
-    PBoolean SetCipherList(
+    bool SetCipherList(
       const PString & ciphers   ///< List of cipher names.
     );
 
@@ -609,12 +627,12 @@ class PSSLChannel : public PIndirectChannel
       PBoolean autoDelete = true  ///< Flag for if channel should be automatically deleted.
     );
 
-    /**Set the CA certificate to send to client from server.
+    /**Set the CA certificate(s) to send to client from server.
       */
-    bool AddCA(
+    bool AddClientCA(
       const PSSLCertificate & certificate
     );
-    bool AddCA(
+    bool AddClientCA(
       const PList<PSSLCertificate> & certificates
     );
 
@@ -634,11 +652,7 @@ class PSSLChannel : public PIndirectChannel
       */
     PString GetCipherList() const;
 
-    enum VerifyMode {
-      VerifyNone,
-      VerifyPeer,
-      VerifyPeerMandatory,
-    };
+    typedef PSSLContext::VerifyMode VerifyMode;
 
     /**Set certificate verification mode for connection.
       */

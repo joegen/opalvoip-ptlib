@@ -1173,23 +1173,55 @@ PSSLContext::~PSSLContext()
 }
 
 
-PBoolean PSSLContext::SetCAPath(const PDirectory & caPath)
+bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory & caDir)
 {
-  PString path = caPath.Left(caPath.GetLength()-1);
-  if (!SSL_CTX_load_verify_locations(m_context, NULL, path))
-    return false;
+  PString caPath = caDir.Left(caDir.GetLength()-1);
+  if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : caFile,
+                                               caPath.IsEmpty() ? NULL : caPath)) {
+    PTRACE(4, "SSL\tSet verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+    return true;
+  }
 
+  PTRACE(2, "SSL\tCould not set verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
   return SSL_CTX_set_default_verify_paths(m_context);
 }
 
 
-PBoolean PSSLContext::AddCA(const PSSLCertificate & certificate)
+static int VerifyModeBits[PSSLContext::EndVerifyMode] = {
+  SSL_VERIFY_NONE,
+  SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE,
+  SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT
+};
+
+
+void PSSLContext::SetVerifyMode(VerifyMode mode)
+{
+  if (m_context != NULL)
+    SSL_CTX_set_verify(m_context, VerifyModeBits[mode], VerifyCallback);
+}
+
+
+PSSLContext::VerifyMode PSSLContext::GetVerifyMode() const
+{
+  if (m_context == NULL)
+    return VerifyNone;
+
+  int v = SSL_CTX_get_verify_mode(m_context);
+  if (v == SSL_VERIFY_NONE)
+    return VerifyNone;
+  if ((v&SSL_VERIFY_FAIL_IF_NO_PEER_CERT) == 0)
+    return VerifyPeer;
+  return VerifyPeerMandatory;
+}
+
+
+bool PSSLContext::AddClientCA(const PSSLCertificate & certificate)
 {
   return SSL_CTX_add_client_CA(m_context, certificate);
 }
 
 
-PBoolean PSSLContext::AddCA(const PList<PSSLCertificate> & certificates)
+bool PSSLContext::AddClientCA(const PList<PSSLCertificate> & certificates)
 {
   for (PList<PSSLCertificate>::const_iterator it = certificates.begin(); it != certificates.end(); ++it) {
     if (!SSL_CTX_add_client_CA(m_context, *it))
@@ -1200,13 +1232,13 @@ PBoolean PSSLContext::AddCA(const PList<PSSLCertificate> & certificates)
 }
 
 
-PBoolean PSSLContext::UseCertificate(const PSSLCertificate & certificate)
+bool PSSLContext::UseCertificate(const PSSLCertificate & certificate)
 {
   return SSL_CTX_use_certificate(m_context, certificate) > 0;
 }
 
 
-PBoolean PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
+bool PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
 {
   if (SSL_CTX_use_PrivateKey(m_context, key) <= 0)
     return false;
@@ -1215,13 +1247,13 @@ PBoolean PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
 }
 
 
-PBoolean PSSLContext::UseDiffieHellman(const PSSLDiffieHellman & dh)
+bool PSSLContext::UseDiffieHellman(const PSSLDiffieHellman & dh)
 {
   return SSL_CTX_set_tmp_dh(m_context, (dh_st *)dh) > 0;
 }
 
 
-PBoolean PSSLContext::SetCipherList(const PString & ciphers)
+bool PSSLContext::SetCipherList(const PString & ciphers)
 {
   if (ciphers.IsEmpty())
     return false;
@@ -1258,10 +1290,6 @@ void PSSLChannel::Construct(PSSLContext * ctx, PBoolean autoDel)
   m_ssl = SSL_new(*m_context);
   if (m_ssl == NULL)
     PSSLAssert("Error creating channel: ");
-  else {
-    SSL_set_info_callback(m_ssl, InfoCallback);
-    SSL_set_verify(m_ssl, SSL_VERIFY_NONE, VerifyCallback);
-  }
 }
 
 
@@ -1411,13 +1439,13 @@ PBoolean PSSLChannel::Connect(PChannel * channel, PBoolean autoDelete)
 }
 
 
-PBoolean PSSLChannel::AddCA(const PSSLCertificate & certificate)
+PBoolean PSSLChannel::AddClientCA(const PSSLCertificate & certificate)
 {
   return SSL_add_client_CA(m_ssl, certificate);
 }
 
 
-PBoolean PSSLChannel::AddCA(const PList<PSSLCertificate> & certificates)
+PBoolean PSSLChannel::AddClientCA(const PList<PSSLCertificate> & certificates)
 {
   for (PList<PSSLCertificate>::const_iterator it = certificates.begin(); it != certificates.end(); ++it) {
     if (!SSL_add_client_CA(m_ssl, *it))
@@ -1460,26 +1488,8 @@ PString PSSLChannel::GetCipherList() const
 
 void PSSLChannel::SetVerifyMode(VerifyMode mode)
 {
-  if (m_ssl == NULL)
-    return;
-
-  int verify;
-
-  switch (mode) {
-    default :
-    case VerifyNone:
-      verify = SSL_VERIFY_NONE;
-      break;
-
-    case VerifyPeer:
-      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE;
-      break;
-
-    case VerifyPeerMandatory:
-      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-  }
-
-  SSL_set_verify(m_ssl, verify, VerifyCallback);
+  if (m_ssl != NULL)
+    SSL_set_verify(m_ssl, VerifyModeBits[mode], VerifyCallback);
 }
 
 
