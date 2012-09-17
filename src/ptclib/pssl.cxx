@@ -783,7 +783,7 @@ PString PSSLCertificate::X509_Name::GetNID(int id) const
 }
 
 
-PString PSSLCertificate::X509_Name::AsString(bool oneLine) const
+PString PSSLCertificate::X509_Name::AsString(int indent) const
 {
   PString str;
 
@@ -794,7 +794,7 @@ PString PSSLCertificate::X509_Name::AsString(bool oneLine) const
   if (bio == NULL)
     return str;
 
-  X509_NAME_print_ex(bio, m_name, 0, oneLine ? XN_FLAG_ONELINE : XN_FLAG_MULTILINE);
+  X509_NAME_print_ex(bio, m_name, std::max(0, indent), indent < 0 ? XN_FLAG_ONELINE : XN_FLAG_MULTILINE);
 
   char * data;
   int len = BIO_get_mem_data(bio, &data);
@@ -1089,17 +1089,22 @@ static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(where),
 static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
 {
 #if PTRACING
-  static const unsigned Level = 3;
+  const unsigned Level = ok ? 5 : 2;
   if (PTrace::GetLevel() >= Level) {
+    int err = X509_STORE_CTX_get_error(ctx);
+    int depth = X509_STORE_CTX_get_error_depth(ctx);
     PSSLCertificate cert(X509_STORE_CTX_get_current_cert(ctx));
-    int err     = X509_STORE_CTX_get_error(ctx);
+    PSSLCertificate::X509_Name issuer, subject;
+    cert.GetIssuerName(issuer);
+    cert.GetSubjectName(subject);
 
-    ostream & trace = PTRACE_BEGIN(Level);
-    trace << "SSL\tVerify callback: depth="
-           << X509_STORE_CTX_get_error_depth(ctx)
-           << ", err=" << err
-           << ", name=\"" << cert.GetSubjectName()
-           << '"' << PTrace::End;
+    PTRACE_BEGIN(Level)
+        << "SSL\tVerify callback: depth="
+        << depth
+        << ", err=" << err << " - " << X509_verify_cert_error_string(err)
+        << "\n  Subject:\n" << subject.AsString(4)
+        << "\n  Issuer:\n" << issuer.AsString(4)
+        << PTrace::End;
   }
 #endif // PTRACING
 
@@ -1163,7 +1168,7 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
   }
 
   SSL_CTX_set_info_callback(m_context, InfoCallback);
-  SSL_CTX_set_verify(m_context, SSL_VERIFY_NONE, VerifyCallback);
+  SetVerifyMode(VerifyNone);
 }
 
 
@@ -1178,11 +1183,11 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
   PString caPath = caDir.Left(caDir.GetLength()-1);
   if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
                                                caPath.IsEmpty() ? NULL : (const char *)caPath)) {
-    PTRACE(4, "SSL\tSet verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+    PTRACE(4, "SSL\tSet context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
     return true;
   }
 
-  PTRACE(2, "SSL\tCould not set verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+  PTRACE(2, "SSL\tCould not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
   return SSL_CTX_set_default_verify_paths(m_context);
 }
 
@@ -1194,10 +1199,13 @@ static int VerifyModeBits[PSSLContext::EndVerifyMode] = {
 };
 
 
-void PSSLContext::SetVerifyMode(VerifyMode mode)
+void PSSLContext::SetVerifyMode(VerifyMode mode, unsigned depth)
 {
-  if (m_context != NULL)
-    SSL_CTX_set_verify(m_context, VerifyModeBits[mode], VerifyCallback);
+  if (m_context == NULL)
+    return;
+
+  SSL_CTX_set_verify(m_context, VerifyModeBits[mode], VerifyCallback);
+  SSL_CTX_set_verify_depth(m_context, depth);
 }
 
 

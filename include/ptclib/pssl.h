@@ -319,7 +319,9 @@ class PSSLCertificate : public PObject
 
         PString GetCommonName() const;
         PString GetNID(int id) const;
-        PString AsString(bool oneLine = true) const;
+        PString AsString(
+          int indent = -1  // Negative means single line
+        ) const;
 
       protected:
         X509_name_st * m_name;
@@ -337,6 +339,8 @@ class PSSLCertificate : public PObject
     /**Get certificate alternate subject name.
       */
     PString GetSubjectAltName() const;
+
+    virtual void PrintOn(ostream & strm) const { strm << GetSubjectName(); }
 
   protected:
     void FreeCertificate();
@@ -512,7 +516,8 @@ class PSSLContext {
     /**Set certificate verification mode for connection.
       */
     void SetVerifyMode(
-      VerifyMode mode
+      VerifyMode mode,    ///< New verification mode
+      unsigned depth = 9  ///< Verifiaction depth (max number of certs in chain)
     );
 
     /**Set certificate verification mode for connection.
