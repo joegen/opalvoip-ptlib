@@ -359,7 +359,7 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address 
   // Ethernet II header
   if (len_or_type > 1500) {
     // Subtract off the Ethernet II header
-    payload.Attach(header.ether.payload, m_rawSize - sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length));
+    payload.Attach(header.ether.payload, m_rawSize - (sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length)));
     return len_or_type;
   }
 
