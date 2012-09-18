@@ -347,6 +347,8 @@ class PEthSocketThread : public PObject
       const FrameNotifier & notifier
     ) { m_notifier = notifier; }
 
+    PEthSocket * GetSocket() const { return m_socket; }
+
   protected:
     virtual void MainLoop();
 
