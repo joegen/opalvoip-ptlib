@@ -440,12 +440,15 @@ PString PVideoOutputDevice_SDL::GetTitle() const
 
 void PVideoOutputDevice_SDL::UpdateContent()
 {
+  if (m_overlay == NULL)
+    return;
+
   SDL_Rect rect;
   rect.x = (Uint16)m_x;
   rect.y = (Uint16)m_y;
   rect.w = (Uint16)frameWidth;
   rect.h = (Uint16)frameHeight;
-  ::SDL_DisplayYUVOverlay(PAssertNULL(m_overlay), &rect);
+  ::SDL_DisplayYUVOverlay(m_overlay, &rect);
 }
 
 
